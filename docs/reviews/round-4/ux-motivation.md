@@ -1,0 +1,26 @@
+# Round 4: UX + motivation review (v3 overhaul)
+
+Reviewer: UI/UX designer + motivational coach · 2026-10-28 · Live app (390×844 and 375×667, day/night, winter, reduced motion, `?demo=harvest`) + `.shots/v3/`.
+
+**Verdict.** Big step up: the real villagers, Isabelle and the NookPhone read as NH at a glance. Check-in takes 3 taps, the banned-word sweep is clean, and art and fonts are light with no jank. Two things still block "understand my week in 3 seconds": unreadable ripeness and a primary button that disappears.
+
+| ID | Sev | What | Evidence | Fix (ja / en) |
+|---|---|---|---|---|
+| U1 | Blocking | **You can't tell ripeness apart on the trees.** Fruit at 20%, 40% and 100% look almost the same: scale goes .7→1, and only fruit under 25% is dimmed | Live: Bean's apple at 40% looks the same as Mochi's peach at 100%. `FruitRing.svelte:88,92` | 4 clear stages: bud (grey, 0.55) · small (desaturated, 0.75) · nearly (0.9) · ripe (full colour + sparkle). Add a small `/100` to the score pills |
+| U2 | Blocking | **The primary action disappears.** When a strength question is pending, the yes/no card takes the place of 今夜のチェック. The only other way into check-in is tapping your own villager (not discoverable) | `island-390-day.png`, `island-375-se.png`, live | Keep the leaf button. Move the question into Isabelle's bubble with two small chips: 「ヨガ45分は筋トレ？」[はい][いいえ] / "Yoga 45 min as strength?" [Yes][No] |
+| U3 | Should | **Feels like a scoreboard.** Two equal score pills (43 vs 57) sit side by side, and the harvest stacks 88 over 74 | `island-390-day.png`, `harvest-390.png` | My pill is the hero. The partner's pill shows name + fruit only, and their number stays in the partner sheet. Rename harvest 「チーム」 → 「ふたりボーナス」 / "Team bonus" |
+| U4 | Should | **Jar has several competing actions.** Coral 使う is the loudest button even at ¥0, and it opens six greyed-out tiles with no reason given. The payday row 「¥41,200 移したらタップ」 is unclear and competes too | Live `/jar` (¥0), `jar-390-day.png` | Make 使う quiet or disabled until the purse reaches the cheapest treat, with the line 「あと¥2,000でカフェデート」 / "¥2,000 to café date". Payday: 「¥41,200 貯金に移したら ✓」 / "Moved ¥41,200 to savings? Tick" |
+| U5 | Should | **Isabelle wears summer clothes in snow.** The winter outfit only replaces `'stand'`, and the island uses `'wave'`. In the harvest she also changes outfit between steps (wave → bow/sweater in October) | `?season=winter` live, `Bubble.svelte:27`, harvest step 2 | Let the season pick the outfit for every pose. Use one outfit for the whole harvest |
+| U6 | Should | **High-five toast overlaps the harvest.** It covers the header and sits on top of Isabelle's bubble. It also uses Isabelle's head for the partner's action, so two Isabelles are on screen | `?demo=harvest`, `+layout.svelte:103,130` | Use the partner's icon. Hold toasts while an overlay is open. Copy: 「まめさんからハイタッチ！」 / "High-five from Mame!" |
+| U7 | Should | **Canned post-save line.** 「洋なしが育ちましたよ！」 shows even when the pear stays dim, and it never changes | `ja.json` `juniper.checkin_done`, live after saving | Name the fruit that actually moved: 「{fruit}が育ちましたよ！」 / "Your {fruit} grew!". Fallback: 「今日もおつかれさまでした！」 / "Nice work today!" |
+| U8 | Should | **Motivation gap.** With promises gone, nothing points to one doable step. The default line 「いい島ですね！」 is filler | Live default, `juniper.default` | No new feature: generalise `strength_left` to the fruit closest to ripe, e.g. 「りんご、あと1日です！」 / "1 more day for the apple!" |
+| U9 | Should | **Harvest isn't a true modal.** Island buttons behind it stay in the accessibility tree. The Sheet uses `showModal`, but the harvest doesn't | a11y snapshot, `HarvestOverlay.svelte:48` | Use `<dialog>.showModal()` or make `main` inert |
+| U10 | Should | **しまフォン icons send the wrong signal.** シェア uses the Nook Shopping cart (reads as "shop"), お知らせ uses Nook Miles, 同期 uses the Island Designer hard hat, and 言語 is our flat tile among official ones | `launcher-390.png`, `assets.ts:73-78` | Help → `phone/diy` (recipe = how-to). Make シェア our own lock tile in the squircle style, labelled 「見せる範囲」 / "Privacy". Restyle 言語 to match the official tiles |
+| U11 | Nice | **Check-in header repeats the date** that's already in the status pill. The blue dot on 昨日 is never explained | `checkin-390.png`, live | Title 「今夜のチェック」 with the date small. Dot gets the label 「昨日はまだ」 / "Yesterday open" |
+| U12 | Nice | **Harvest rows are missing pieces.** They have no names or official fruit (style guide B.4). The card keeps empty height while rows reveal. 「暫定」 is jargon | `harvest-390.png` | Add 4 × 22 px fruit and the name. Let the card grow as rows appear. 暫定 → 「見込み」 / "estimate" |
+| U13 | Nice | **Fruit chip looks off-brand.** It's a dark grey tooltip that covers the neighbouring fruit | Live tap on 歩数 | Cream bubble with `--c-ink-talk` text, placed above the canopy |
+| U14 | Nice | **Voice drift.** Toasts show Isabelle's head but use casual copy (「記録したよ ✓」, 「あとでもう一度ためしてね」) | `ja.json` `jar.paydayNoted`, `state.saveFailed` | Switch to です/ます: 「記録しました！」, 「あとでもう一度お願いします」 |
+
+**Checked OK:** tap targets (≥ 44 px), night contrast, reduced motion, the rung celebration, image weight.
+
+Signed off with changes: U1–U2 before the next build; U3–U10 this round. UI/UX designer + motivational coach.
