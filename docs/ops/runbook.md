@@ -21,7 +21,13 @@ One Mac, Tailscale only on the Mac (ADR 0010), the app in Docker on `127.0.0.1:3
 
 Upgrade: `git pull && docker compose up -d --build`. Migrations run automatically on boot.
 
+## 1b. The UI on GitHub Pages
+The UI is deployed automatically to https://huangwaylon.github.io/fitness/ by `.github/workflows/pages.yml` on every push to main ([ADR 0013](../decisions/0013-ui-on-github-pages.md)). It calls the Mac's API at the repo variable `API_BASE`.
+- Start the Mac server with `CORS_ORIGINS=https://huangwaylon.github.io` (plus `PORT=3100` here, since 3000 is taken).
+- Changing the Funnel hostname: `gh variable set API_BASE --body https://<new>.ts.net`, then re-run the workflow.
+
 ## 2. Pairing the phones (PWA)
+Open **https://huangwaylon.github.io/fitness/** in Safari → Share → Add to Home Screen, then pair inside the installed app.
 1. On each iPhone, open the URL in Safari, choose **Share → Add to Home Screen**, then open the app **from the Home Screen icon**. The installed app has its own cookie jar.
 2. On the Mac, run `docker compose exec island node scripts/pair.ts A` (or `B`). This prints a 6-digit code that works once, for 10 minutes, with 10 attempts. The URL is public, so a stranger can burn a code with wrong guesses; if pairing says the code is invalid or busy, wait a few minutes and run it again.
 3. Type the code into the installed app. The app sets a session cookie for about a year.
