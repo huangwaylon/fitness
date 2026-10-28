@@ -1,0 +1,28 @@
+{
+  "metrics": [
+    {
+      "name": "step_count",
+      "units": "count",
+      "data": [
+        { "date": "2026-11-02 00:00:00 +0900", "qty": 6900 },
+        { "date": "not a date", "qty": 10 }
+      ]
+    },
+    {
+      "name": "apple_exercise_time",
+      "units": "min",
+      "data": [{ "date": "2026-11-02 00:00:00 +0900", "qty": 31 }]
+    }
+  ],
+  "workouts": [
+    {
+      "id": "B2B2B2B2-0000-4000-8000-000000000001",
+      "name": "Functional Strength Training",
+      "start": "2026-11-02 18:00:00 +0900",
+      "end": "2026-11-02 18:55:00 +0900",
+      "duration": 3300,
+      "heartRate": { "min": { "qty": 85 }, "avg": { "qty": 124 }, "max": { "qty": 160 } }
+    },
+    { "name": "Broken workout without times" }
+  ]
+}
