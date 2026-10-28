@@ -51,7 +51,7 @@ One ~1-minute history export per phone gives the baseline: the median of 12 week
 | **B** strength (personal trainer) | PT sessions count automatically; **trainer owns the programming** | ← | ← | ← |
 | **Steps** (5 of 7 days) | A 7,500 · B 6,250 | A 8,000 · B 6,750 | A 8,500 · B 7,250 | A 9,000 · B **8,000** (MHLW ✓) |
 | **Sleep** | 7 h asleep, 5 of 7 nights | → | → | → |
-| **Eating** (always 3 habits) | 野菜を2食で · 甘い飲み物なし · 減塩デー | swap in 毎食たんぱく質 | swap in カルシウム食品 (B's bones) | keep your favourite three |
+| **Eating** (3 habits each, personal) | **B:** 昼ごはんを食べる · おやつは果物・ナッツ・ヨーグルト · 野菜を2食で — **A:** ランチは定食スタイル · 減塩デー · 野菜を2食で | swap in 毎食たんぱく質 | B: swap in カルシウム食品 (bones) | keep your favourite three |
 | **Japan calendar** | 忘年会 & 正月: two easy weeks; eating not scored Dec 29–Jan 3 | hanami walks | **Golden Week** = recovery week; tsuyu: active minutes can count for the apple | **Obon** easy week; heat alerts → indoor; vacation = paused |
 | **Together** | Nabe night | Hanami bento walk | Summer veg box | **5K or 紅葉 hike together** (Oct–Nov) |
 
@@ -59,6 +59,7 @@ One ~1-minute history export per phone gives the baseline: the median of 12 week
 - **Partner A, self-guided at Anytime Fitness:** a concrete 12-month template. Full-body A/B (→ A/B/C) with double progression (+2.5 kg once every set hits the top of the rep range), deloads in the app's easy weeks, and a pain rule. He starts "Traditional Strength Training" on the Watch at the door.
 - **Adaptive targets:** each 4-week block advances, holds, or steps back 10% ("re-tuned to fit your life"). In the MVP, targets are set by hand at each season start.
 - **Japanese nutrition references** (used for tips only, never scored): salt **< 7.5 g (A) / < 6.5 g (B)**, the biggest lever in Japan. Calcium 800 / 650 mg. Protein 1.2–1.6 g/kg for strength training (≈ A 80–105 g, B 65–90 g). Iron and fibre values are pending a human check.
+- **Personal eating habits** ([nutritionist-personalized.md](team/nutritionist-personalized.md)): B works from home and sometimes skips lunch, so 「昼ごはんを食べる」 comes first (it's also the main under-fuelling risk with PT training), plus a snack swap (chips aren't banned). A eats lunch out 3 office days, so a teishoku-style lunch + salt-smart day. Neither drinks coffee or alcohol, so 休肝日 is dropped. Weekday home cooking is already a strength, so there's no dinner habit; weekend meals out are normal life, and the Treat Purse is for special outings.
 - **Fuelling safeguard:** "refuel" tips after big training days, plus a private monthly self-check (energy, sleep, cycle regularity). Weight is not tracked.
 
 ---
@@ -145,7 +146,7 @@ Detail: [ui-ux-designer.md](team/ui-ux-designer.md), [style-guide.md](design/sty
 | 🫙 **旅の壺 (Jar)** | A boat on a simple route to the destination (e.g. Okinawa), with real milestones (flights, hotel). Per-person and team layers, the Treat Purse, and a short yen treat list. A quiet "≈ ¥ this week" line. A monthly "moved ✓" button for the real bank transfer. |
 | 💞 **ふたり (Us)** | Partner view (fruit and %), promise history, goals, Cozy Day / pause, Health sync status. Settings live here: 言語/Language, villager (species, colour, name), privacy, gym locations. |
 | 🌙 **日曜の収穫 (Sunday harvest)**, overlay | ≤ 60 s: each person's score → yen into the jar → team part → purse → set next week's promise → both tap 「壺に入れる」. |
-| ✅ Check-in sheet | Three big toggles (e.g. 野菜を2食で · 甘い飲み物なし · 減塩デー), plus a neutral 「おやつ OK」 chip, a for-partner-too option and a 48 h fill-in. |
+| ✅ Check-in sheet | Three big toggles, each person's own (e.g. B: 昼ごはん · おやつ swap · 野菜2食), plus a neutral 「おやつ OK」 chip, a for-partner-too option and a 48 h fill-in. |
 
 **Look:** a cozy island scrapbook, original and Animal Crossing–*inspired*. Cream paper, leaf green, sky blue, sand and coral. Zen Maru Gothic / M PLUS Rounded 1c (Japanese) and Fredoka/Nunito (numbers), all SIL OFL. Night palette 19:00–06:00. WCAG AA contrast, reduce-motion support.
 **Cast:** each partner picks a villager (placeholders: Mochi the cat, Bean the dog). Juniper the capybara with a yuzu on her head hosts.
@@ -217,7 +218,7 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 1. **Destination** and target month (the sample is Okinawa, Oct 2027).
 2. **Pre-commitment:** move the ¥520,000 to a separate account up front, or set up a monthly standing transfer (〜¥43,000/month)?
 3. **Unclaimed yen at year-end:** stays in savings (default), rolls over, or is donated?
-4. **Eating:** how often do you cook vs. eat conbini, teishoku or out? Daily canned coffee or sports drinks? Drinking frequency (should 休肝日 be a habit option)?
+4. **Sweet drinks:** does either of you drink juice, milk tea, Calpis, soda or sports drinks 3+ times a week? (If yes, 甘い飲み物なし comes back as a habit.)
 5. **Health:** injuries, conditions, check-up findings (blood pressure, anaemia, bone density), history of disordered eating?
 6. **Gyms:** which Anytime branch, and where B's PT studio is; OK to use location for gym detection? How many PT sessions a week? Would the trainer like a monthly summary?
 7. **Sleep:** will you both wear the Watch to bed?
