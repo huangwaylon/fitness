@@ -1,9 +1,7 @@
 <script lang="ts">
   import VillagerArt from '#lib/villagers/VillagerArt.svelte';
-  import JuniperArt from '#lib/villagers/JuniperArt.svelte';
-  import { resolveVillager, SHIRT } from '#lib/villagers/species.ts';
-  const bean = resolveVillager('dog', 'biscuit', 'A');
-  const mochi = resolveVillager('cat', 'lilac', 'B');
+  import IsabelleArt from '#lib/villagers/IsabelleArt.svelte';
+  import { ROSTER } from '#lib/villagers/roster.ts';
 </script>
 
 <!-- SVG symbol library (v0.4 + v2). Rendered once in the root layout;
@@ -12,13 +10,13 @@
   <defs>
     <!-- v0.4 avatar symbols, now drawn by the v2 character system (heads, viewBox 0 0 100 100) -->
     <symbol id="v-mochi" viewBox="9 1 82 82">
-      <VillagerArt species={mochi.species} colourway={mochi.colourway} head animate={false} lw={3} shirt={SHIRT.B} />
+      <VillagerArt look={ROSTER.raymond} head animate={false} lw={3} />
     </symbol>
     <symbol id="v-bean" viewBox="9 1 82 82">
-      <VillagerArt species={bean.species} colourway={bean.colourway} head animate={false} lw={3} shirt={SHIRT.A} />
+      <VillagerArt look={ROSTER.goldie} head animate={false} lw={3} />
     </symbol>
-    <symbol id="v-juni" viewBox="7 -6 86 86">
-      <JuniperArt head animate={false} lw={3} />
+    <symbol id="v-juni" viewBox="6 -9 88 88">
+      <IsabelleArt head animate={false} lw={3} />
     </symbol>
 
     <!-- しまフォン app-tile glyphs (style guide v2 §8): 24-grid, flat ink (currentColor, default --c-ink)
