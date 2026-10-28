@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Db } from '#lib/server/db/index.ts';
 import { setNow } from '#lib/server/clock.ts';
-import { getWeekView } from '#lib/server/week.ts';
+import { getWeekView, monthEarnings } from '#lib/server/week.ts';
+import { ledgerEntry } from '#lib/server/db/schema.ts';
 import { setVisibility } from '#lib/server/actions.ts';
 import { settleWeek } from '#lib/server/ledger.ts';
 import { confirmHarvest } from '#lib/server/actions.ts';
@@ -58,5 +59,22 @@ describe('WeekView privacy', () => {
     expect(confirmHarvest(db, 'B').closed).toBe(true);
     expect(getWeekView(db, 'B').harvest).toBeNull();
     setNow(null);
+  });
+});
+
+describe('monthEarnings', () => {
+  it('counts jar earn/top-up rows by the month of the week\'s Sunday', () => {
+    const add = (weekKey: string, kind: 'earn' | 'topup' | 'spend', amountYen: number, bucket: 'jar' | 'purse' = 'jar') =>
+      db.insert(ledgerEntry).values({ bucket, layer: bucket === 'jar' ? 'A' : null, kind, weekKey, amountYen, idemKey: `${kind}:${bucket}:${weekKey}:${amountYen}` }).run();
+    add('2026-10-26', 'earn', 100); // Sunday Nov 1 → November
+    add('2026-11-23', 'earn', 200); // Sunday Nov 29 → November
+    add('2026-11-23', 'topup', 30);
+    add('2026-11-30', 'earn', 400); // Sunday Dec 6 → December
+    add('2026-10-19', 'earn', 800); // Sunday Oct 25 → October
+    add('2026-11-16', 'spend', -50, 'purse');
+    expect(monthEarnings(db, '2026-11')).toBe(330);
+    expect(monthEarnings(db, '2026-10')).toBe(800);
+    expect(monthEarnings(db, '2026-12')).toBe(400);
+    expect(monthEarnings(db, '2027-01')).toBe(0);
   });
 });

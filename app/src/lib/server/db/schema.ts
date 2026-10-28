@@ -1,5 +1,5 @@
 // SQLite schema (Drizzle). Sources of truth that can't be recreated: ledger_entry, transfer, checkin,
-// presence_event, visit_confirmation, raw_payload. Everything else is derivable from raw payloads.
+// presence_event, visit_confirmation, raw_payload (bodies kept 90 days). Daily metrics and workouts come from raw payloads.
 import { sqliteTable, text, integer, real, primaryKey, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 
 const now = () => new Date().toISOString();
@@ -25,15 +25,19 @@ export const pairingCode = sqliteTable('pairing_code', {
   usedAt: text('used_at')
 });
 
-export const rawPayload = sqliteTable('raw_payload', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  person: text('person', { enum: ['A', 'B'] }).notNull(),
-  source: text('source', { enum: ['shortcut'] }).notNull(),
-  receivedAt: text('received_at').notNull().$defaultFn(now),
-  bodyGz: text('body_gz').notNull(), // base64 gzip
-  parseStatus: text('parse_status', { enum: ['ok', 'partial', 'error'] }).notNull(),
-  parseError: text('parse_error')
-});
+export const rawPayload = sqliteTable(
+  'raw_payload',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    person: text('person', { enum: ['A', 'B'] }).notNull(),
+    source: text('source', { enum: ['shortcut'] }).notNull(),
+    receivedAt: text('received_at').notNull().$defaultFn(now),
+    bodyGz: text('body_gz').notNull(), // base64 gzip; emptied after RAW_BODY_KEEP_DAYS (jobs.ts)
+    parseStatus: text('parse_status', { enum: ['ok', 'partial', 'error'] }).notNull(),
+    parseError: text('parse_error')
+  },
+  (t) => [index('raw_person_received').on(t.person, t.receivedAt)]
+);
 
 export const dailyMetric = sqliteTable(
   'daily_metric',

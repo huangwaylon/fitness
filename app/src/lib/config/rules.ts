@@ -1,5 +1,8 @@
 // The rules as data (PROPOSAL §3, ADRs 0008, 0009, 0011, 0014). Edit here, then `npm run recompute -- --dry-run`.
-import type { PersonId, PersonTargets } from '#lib/types.ts';
+import type { FruitKey, PersonId, PersonTargets } from '#lib/types.ts';
+
+/** The four fruit categories, in display order. */
+export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
 
 export const MONEY = {
   yenPerFruit: 50,

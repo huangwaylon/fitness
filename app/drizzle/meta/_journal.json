@@ -29,6 +29,13 @@
       "when": 1793195666242,
       "tag": "0003_simplify_no_promises_no_cozy",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793198348976,
+      "tag": "0004_raw_payload_index",
+      "breakpoints": true
     }
   ]
 }

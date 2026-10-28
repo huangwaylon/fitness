@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Db } from '#lib/server/db/index.ts';
-import { checkin, pushSubscription } from '#lib/server/db/schema.ts';
+import { checkin, pushSubscription, rawPayload } from '#lib/server/db/schema.ts';
 import { setNow } from '#lib/server/clock.ts';
 import { forcePushEnabled, setSender } from '#lib/server/push.ts';
 import { settleWeek } from '#lib/server/ledger.ts';
-import { runReminders } from '#lib/server/jobs.ts';
+import { pruneRawBodies, runReminders } from '#lib/server/jobs.ts';
 import { freshDb } from '#lib/server/test-utils.ts';
 
 let db: Db;
@@ -54,5 +54,16 @@ describe('one push per person per day, by priority', () => {
   it('no eating reminder over 正月', async () => {
     await at('2026-12-30T11:00:00Z');
     expect(sent).toEqual([]);
+  });
+});
+
+describe('raw payload pruning', () => {
+  it('empties bodies older than 90 days and keeps the rows', () => {
+    for (const receivedAt of ['2026-07-01T00:00:00Z', '2026-10-01T00:00:00Z']) {
+      db.insert(rawPayload).values({ person: 'A', source: 'shortcut', receivedAt, bodyGz: 'H4sI', parseStatus: 'ok' }).run();
+    }
+    expect(pruneRawBodies(db, new Date('2026-10-28T00:00:00Z'))).toBe(1);
+    expect(db.select().from(rawPayload).all().map((r) => r.bodyGz)).toEqual(['', 'H4sI']);
+    expect(pruneRawBodies(db, new Date('2026-10-28T00:00:00Z'))).toBe(0);
   });
 });
