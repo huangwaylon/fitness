@@ -130,7 +130,7 @@ describe('/api/* accepts only the session cookie + Origin', () => {
   });
 });
 
-describe('round 3 security fixes', () => {
+describe('security fixes', () => {
   it('S1: anonymous floods do not rate-limit a paired device', async () => {
     const secret = pairA();
     for (let i = 0; i < 130; i++) await guard(fakeEvent('/api/week'), opts());

@@ -1,6 +1,6 @@
 # Island Fund: Style Guide v3 (official NH art · ease of use)
 
-Owner: UI/UX Designer · Status: **v3** (2026-10-28) · Tokens: `app/src/lib/styles/tokens.css` · Research: [ac-research.md](ac-research.md) · Art: `app/static/art/` ([runbook §1c](../ops/runbook.md)) · Decision: [ADR 0014](../decisions/0014-simplify-no-promises-no-cozy.md) (no promises, no Cozy Days, no ふたり) · Previous: v2 (git history), v0.4 [mockup.html](mockup.html)
+Owner: UI/UX Designer · Status: **v3** (2026-10-28) · Tokens: `app/src/lib/styles/tokens.css` · Research: [ac-research.md](ac-research.md) · Art: `app/static/art/` ([runbook §1c](../ops/runbook.md)) · Decision: [ADR 0014](../decisions/0014-simplify-no-promises-no-cozy.md) (no promises, no Cozy Days, no ふたり) · Previous: v2 and the v0.4 mockup (git history)
 
 **Direction.** The app should read as *あつまれ どうぶつの森* at a glance: the real villagers standing by their trees, Isabelle (しずえ) hosting every line, inventory-icon fruit, a Bells bag for money, a NookPhone-style launcher. Our own UI chrome (cream bubbles, chunky lipped buttons, paper cards, checkered grass) stays drawn by us and wraps the official art.
 

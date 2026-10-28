@@ -3,10 +3,8 @@
 *A cozy two-player island where healthy habits, measured automatically by Apple Watch, grow fruit, and every Sunday that fruit puts real yen into savings for trips you earn together.*
 
 From the team (lead, software engineer, UI/UX designer, nutritionist, fitness coach, motivational coach).
-Detail: [`team/`](team/) memos (round 1 + round 3 Japan updates) · [`reviews/`](reviews/) · [`decisions/`](decisions/) 0001–0010 · [`design/mockup.html`](design/mockup.html) · [`profiles.md`](profiles.md).
+Detail: [`decisions/`](decisions/) 0001–0014 · [`design/style-guide.md`](design/style-guide.md) · [`reviews/round-4/`](reviews/round-4/) · [`profiles.md`](profiles.md). The role memos and review rounds 1–3 are in git history.
 v1.0 (USD, more game systems) is in git history. v2.0 added Japan, yen, gyms and simplicity. **v2.1** (round 4): open-ended savings at ¥50/fruit, four fruits (no sleep), and no VPN on the phones.
-
-![Mockup preview](design/mockup-preview.png)
 
 ---
 
@@ -29,7 +27,7 @@ v1.0 (USD, more game systems) is in git history. v2.0 added Japan, yen, gyms and
 ## 2. Health goals (realistic, personal, Japan-aligned)
 
 Grounded in the **MHLW Physical Activity Guide 2023** (健康づくりのための身体活動・運動ガイド2023: ~8,000 steps/day, ≥ 60 min/week of exercise, strength 2–3 days/week), the CDC guidelines (150–300 min/week) and the **Dietary Reference Intakes for Japanese 2025** (日本人の食事摂取基準 2025年版).
-Detail: [fitness-coach.md](team/fitness-coach.md), [fitness-coach-round3.md](team/fitness-coach-round3.md), [nutritionist.md](team/nutritionist.md), [nutritionist-round3.md](team/nutritionist-round3.md).
+Detail: [round 4 fitness/nutrition review](reviews/round-4/fitness-nutrition.md) (the earlier coach and nutritionist memos are in git history).
 
 ### 2.1 Principles
 1. **Reward behaviours, never body outcomes.** Weight, calories burned, the Move ring, HRV and VO2 max are never paid.
@@ -58,7 +56,7 @@ One ~1-minute history export per phone gives the baseline: the median of 12 week
 - **Partner A, self-guided at Anytime Fitness:** a concrete 12-month template. Full-body A/B (→ A/B/C) with double progression (+2.5 kg once every set hits the top of the rep range), deloads in the app's easy weeks, and a pain rule. He starts "Traditional Strength Training" on the Watch at the door.
 - **Adaptive targets:** each 4-week block advances, holds, or steps back 10% ("re-tuned to fit your life"). In the MVP, targets are set by hand at each season start.
 - **Japanese nutrition references** (used for tips only, never scored): salt **< 7.5 g (A) / < 6.5 g (B)**, the biggest lever in Japan. Calcium 800 / 650 mg. Protein 1.2–1.6 g/kg for strength training (≈ A 80–105 g, B 65–90 g). Iron and fibre values are pending a human check.
-- **Personal eating habits** ([nutritionist-personalized.md](team/nutritionist-personalized.md)): B works from home and sometimes skips lunch, so 「昼ごはんを食べる」 comes first (it's also the main under-fuelling risk with PT training), plus a snack swap (chips aren't banned). A eats lunch out 3 office days, so a teishoku-style lunch + salt-smart day. Neither drinks coffee or alcohol, so 休肝日 is dropped. Weekday home cooking is already a strength, so there's no dinner habit; weekend meals out are normal life, and the Treat Purse is for special outings.
+- **Personal eating habits** (from the participants' eating patterns in [profiles.md](profiles.md)): B works from home and sometimes skips lunch, so 「昼ごはんを食べる」 comes first (it's also the main under-fuelling risk with PT training), plus a snack swap (chips aren't banned). A eats lunch out 3 office days, so a teishoku-style lunch + salt-smart day. Neither drinks coffee or alcohol, so 休肝日 is dropped. Weekday home cooking is already a strength, so there's no dinner habit; weekend meals out are normal life, and the Treat Purse is for special outings.
 - **Fuelling safeguard:** "refuel" tips after big training days, plus a private monthly self-check (energy, sleep, cycle regularity). Weight is not tracked.
 - **Sleep:** not scored (no Watch at night). There's an optional iPhone Sleep Focus bedtime reminder, unscored.
 
@@ -66,7 +64,7 @@ One ~1-minute history export per phone gives the baseline: the median of 12 week
 
 ## 3. Rewards: fruit, jar, purse
 
-Rules: [ADR 0006](decisions/0006-yen-single-currency-and-accountability.md), [0008](decisions/0008-open-ended-savings-per-fruit-rate.md), [0009](decisions/0009-no-sleep-four-fruits.md) (these supersede parts of 0002/0003). Rationale: [motivational-coach-round3.md](team/motivational-coach-round3.md), [motivational-coach-round4.md](team/motivational-coach-round4.md), [fitness-coach-round4.md](team/fitness-coach-round4.md).
+Rules: [ADR 0006](decisions/0006-yen-single-currency-and-accountability.md), [0008](decisions/0008-open-ended-savings-per-fruit-rate.md), [0009](decisions/0009-no-sleep-four-fruits.md) (these supersede parts of 0002/0003). Rationale: [ADR 0014](decisions/0014-simplify-no-promises-no-cozy.md), [round 4 UX/motivation review](reviews/round-4/ux-motivation.md).
 
 ### 3.1 No intermediate currencies
 | | What | Real money? |
@@ -136,7 +134,7 @@ At most one notification a day, sleep-aware, celebratory. Banned in both languag
 
 ## 4. Presentation: super simple, Japanese-first
 
-Detail: [ui-ux-designer.md](team/ui-ux-designer.md), [style-guide.md](design/style-guide.md), [mockup.html](design/mockup.html), [ADR 0007](decisions/0007-japanese-first-ui.md).
+Detail: [style-guide.md](design/style-guide.md), [ac-research.md](design/ac-research.md), [ADR 0007](decisions/0007-japanese-first-ui.md).
 
 **Simplicity budget:** 2 pages + the しまフォン launcher + 1 overlay; one primary action per screen; ≈ 20–25 English words / 40–50 Japanese characters of non-numeric text per screen; big numbers; icons over rows of text; explanations live in a one-time onboarding and a "?" sheet.
 
@@ -156,7 +154,7 @@ Detail: [ui-ux-designer.md](team/ui-ux-designer.md), [style-guide.md](design/sty
 
 ## 5. Architecture
 
-Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-round3.md](team/software-engineer-round3.md), [software-engineer-round4.md](team/software-engineer-round4.md), ADR [0010](decisions/0010-no-vpn-on-phones-tailscale-funnel.md), [research/apple-health-ingestion.md](research/apple-health-ingestion.md), ADRs [0001](decisions/0001-health-data-ingestion.md), [0005](decisions/0005-client-and-hosting.md).
+Detail: ADRs [0010](decisions/0010-no-vpn-on-phones-tailscale-funnel.md), [0012](decisions/0012-shortcuts-health-sync.md), [0013](decisions/0013-ui-on-github-pages.md), [0001](decisions/0001-health-data-ingestion.md), [0005](decisions/0005-client-and-hosting.md); [runbook](ops/runbook.md); [no-Mac options](research/no-mac/README.md).
 
 ```
  iPhone A / iPhone B

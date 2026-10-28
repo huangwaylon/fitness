@@ -2,7 +2,7 @@
 
 Sends steps, exercise minutes and workouts from each iPhone to the Mac **every time you open an app you use daily** (e.g. LINE), at most once an hour. No app to buy and no third party involved. You set it up once per phone; after that, nothing is manual.
 
-**Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening an app means the phone is unlocked, so the read always works. Background: [research](../research/apple-health-ingestion.md), [ADR 0012](../decisions/0012-shortcuts-health-sync.md).
+**Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening an app means the phone is unlocked, so the read always works. Background: [ADR 0012](../decisions/0012-shortcuts-health-sync.md).
 
 Things marked **[U]** are unverified until Phase 0 (exact action names/options on iOS 27, whether runs are silent).
 

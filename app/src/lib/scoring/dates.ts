@@ -1,4 +1,4 @@
-// Calendar helpers. Asia/Tokyo is UTC+9 with no DST, so a fixed offset is exact (SE round 3 §2).
+// Calendar helpers. Asia/Tokyo is UTC+9 with no DST, so a fixed offset is exact.
 import type { LocalDate, WeekKey } from '#lib/types.ts';
 
 const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;

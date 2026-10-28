@@ -13,4 +13,4 @@
 - **Settlement:** Sunday 19:30 JST writes provisional `earn` entries; Wednesday 04:00 JST writes `topup` entries for any increase, then locks the week. No clawbacks.
 - **Notifications:** at most one push per person per day, by priority: Sunday harvest (from 19:30) → evening check-in (20:00; not on 正月 days) → payday (25th). Gym-visit questions are in-app only. Nothing 22:00–07:00.
 
-Amended after the round 3 review (`docs/reviews/round-3/`).
+Amended after the round 3 review (in git history).
