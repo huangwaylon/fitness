@@ -134,7 +134,7 @@
       <span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
     </button>
 
-    <div class="purse card">
+    <div class="purse card" class:calm={!canSpend}>
       <span class="tape" style:--tape="var(--c-coral-soft)">{t('purse.title')}</span>
       <svg class="pic" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>
       <span class="big pamt">{formatYen(jar.purseYen)}</span>
@@ -278,7 +278,9 @@
   .pic { width: 44px; height: 44px; flex: none; }
   .pamt { font-size: 1.9rem; flex: 1; }
   .go { width: auto; min-width: 112px; }
-  .need { flex: 0 1 auto; max-width: 48%; text-align: right; font-weight: 700; font-size: var(--fs-caption); line-height: 1.35; color: var(--c-ink-talk); }
+  .purse.calm { background: var(--surface); border-color: var(--edge); box-shadow: var(--sh-lip); color: var(--text); --stitch: inherit; }
+  .calm .pamt { flex: none; }
+  .need { flex: 1; min-width: 0; text-align: right; word-break: auto-phrase; text-wrap: balance; font-weight: 700; font-size: var(--fs-caption); line-height: 1.35; color: var(--text-soft); }
 
   .sheet-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .hd-ic { width: 40px; height: 40px; color: var(--text-soft); flex: none; }

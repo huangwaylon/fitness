@@ -393,7 +393,8 @@
   /* Partner: quieter, smaller, no number. */
   .pill.theirs { padding-right: 1.6cqw; gap: 1cqw; box-shadow: 0 2px 0 var(--lip); border-width: 1.5px; }
   .pill.theirs .tag { font-size: min(.75rem, 3cqw); }
-  .pf { line-height: 0; }
+  .pf { display: block; flex: none; line-height: 0; }
+  .pf :global(img) { max-width: none; }
   .pf.bud { opacity: .6; filter: grayscale(.9); }
   .pf.small { filter: saturate(.45); }
 

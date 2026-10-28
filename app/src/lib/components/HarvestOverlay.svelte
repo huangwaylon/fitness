@@ -177,13 +177,15 @@
   .who { flex: 1; min-width: 0; display: grid; gap: 4px; }
   .nm { font-weight: 700; font-size: var(--fs-body-lg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .frs { display: flex; gap: 4px; }
-  .fr { line-height: 0; }
+  .fr { display: block; flex: none; line-height: 0; }
+  .fr :global(img) { max-width: none; }
   .fr.bud { opacity: .55; filter: grayscale(.8); }
   .fr.small { filter: saturate(.5); }
   .av { width: 48px; height: 48px; flex: none; border-radius: var(--r-blob); background: var(--night-sky-2); display: grid; place-items: center; overflow: hidden; }
   .av.team svg { width: 26px; height: 26px; color: var(--p-berry); }
   .yen { margin-left: auto; font-size: 1.45rem; color: var(--moon); flex: none; }
-  .ttotal { display: flex; justify-content: space-between; align-items: center; min-height: 70px; opacity: 0; animation: rowIn .6s var(--ease-bounce) 2.4s forwards; }
+  .ttotal { display: flex; justify-content: space-between; align-items: center; animation: totalGrow .6s var(--ease-soft) 2.4s both; }
+  @keyframes totalGrow { from { max-height: 0; opacity: 0; padding-block: 0; overflow: hidden; } 99% { overflow: hidden; } to { max-height: 110px; opacity: 1; padding-block: 12px; overflow: visible; } }
   .ttotal .lbl { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--night-ink-soft); line-height: 1.3; }
   .ttotal :global(.total) { font-size: 2.3rem; color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both; }
   .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--night-ink-soft); background: rgba(255, 255, 255, .08); border-radius: var(--r-pill); padding: 2px 9px; }
