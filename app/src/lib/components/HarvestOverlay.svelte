@@ -80,7 +80,7 @@
       <section class="tally card" aria-live="polite">
         {#each people as who, i (who)}
           <div class="trow" style="animation-delay:{0.3 + i * 0.7}s">
-            <span class="av"><Villager person={who} species={view.people[who].villagerSpecies} colourway={view.people[who].villagerColor} size={44} label={view.people[who].villagerName} /></span>
+            <span class="av"><Villager person={who} size={44} label={view.people[who].villagerName} /></span>
             <span class="sc big">{p[who].score}</span>
             <span class="yen big">+{formatYen(p[who].fruitYen)}</span>
           </div>
@@ -111,7 +111,7 @@
             {@const m = mark(harvest.promiseResults[who])}
             {#if m}
               <span class="prom">
-                <Villager person={who} species={view.people[who].villagerSpecies} colourway={view.people[who].villagerColor} size={32} />
+                <Villager person={who} size={32} />
                 <i class="mk {m.key}" aria-label={t('promise.result.' + m.key)}>
                   {#if m.key === 'paused'}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>{:else}{m.sym}{/if}
                 </i>
@@ -132,8 +132,8 @@
             <path d="M172 88 Q140 64 116 86 M172 88 Q204 58 230 80 M172 88 Q160 50 136 52 M172 88 Q192 100 196 126" stroke="var(--c-leaf-lip)" stroke-width="12" fill="none" stroke-linecap="round" />
             <circle cx="232" cy="44" r="16" fill="var(--c-yuzu)" />
           </svg>
-          <span class="v1"><Villager person={me} species={view.people[me].villagerSpecies} colourway={view.people[me].villagerColor} size={72} expression="cheer" emote /></span>
-          <span class="v2"><Villager person={partner} species={view.people[partner].villagerSpecies} colourway={view.people[partner].villagerColor} size={72} expression="cheer" emote /></span>
+          <span class="v1"><Villager person={me} size={72} expression="cheer" emote /></span>
+          <span class="v2"><Villager person={partner} size={72} expression="cheer" emote /></span>
         </div>
         <div class="rname">{t('rung.' + rung.key)}</div>
         <div class="ramt hero-num">{formatYen(rung.yen)}</div>
