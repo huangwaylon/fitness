@@ -114,9 +114,9 @@ All fonts are from Google Fonts and licensed under the **SIL Open Font License 1
 |---|---|---|---|
 | Display / numbers | **Fredoka** | 500, 600, 700 | Rounded, chunky; for headings, money, big stats |
 | Body / UI | **Nunito** | 400, 600, 700, 800 | Rounded terminals, highly legible at small sizes |
-| **Japanese (default UI language)** | **Zen Maru Gothic** | 500, 700 | Rounded gothic with full JIS kana + kanji coverage (all strings in the mockup render with it). OFL 1.1. Alternative: **M PLUS Rounded 1c** (also OFL, also full Japanese coverage) |
+| **Japanese (default UI language)** | **M PLUS Rounded 1c** | 500, 700, 800 | Rounded gothic with full Japanese coverage, OFL 1.1. Chosen over Zen Maru Gothic because its small kana (ェ, ッ) are tighter. Always `letter-spacing: 0` for Japanese |
 
-**Japanese-first.** The UI is Japanese by default and switchable to English in ふたり → 言語 / Language. Latin digits and ¥ amounts stay in Fredoka, because the stack falls back per glyph and Fredoka has no CJK, so kana and kanji render in Zen Maru Gothic. Set `<html lang="ja">` (or `en`) so line breaking and the font fallback are correct. Use `font-feature-settings: "palt"` for proportional kana where supported. Japanese copy is denser, so budget about 40 characters per screen. Self-host only the subset you need (Zen Maru Gothic is large): `pyftsubset` with the strings in use plus JIS level 1.
+**Japanese-first.** The UI is Japanese by default and switchable to English in ふたり → 言語 / Language. Latin digits and ¥ amounts stay in Fredoka, because the stack falls back per glyph and Fredoka has no CJK, so kana and kanji render in M PLUS Rounded 1c. Set `<html lang="ja">` (or `en`) so line breaking and the font fallback are correct. Use `font-feature-settings: "palt"` for proportional kana where supported. Japanese copy is denser, so budget about 40 characters per screen. Self-host only the subset you need (Japanese fonts are large): `pyftsubset` with the strings in use plus JIS level 1.
 
 **Formats (Japan):** yen as `¥10,000` (integers, no decimals, comma thousands), times in 24 h JST (`19:30`), dates as `10月28日 水曜日` (JA) / `Wed 28 Oct` (EN), weeks as `第21週` / `Week 21`, metric units (km, kg, min).
 
@@ -125,7 +125,7 @@ Self-host the `.woff2` files in the PWA (offline + privacy); during prototyping 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
 ```
 
 ### Type scale (rem-based so iOS Dynamic Type / browser zoom scales it)
@@ -226,8 +226,8 @@ Under `prefers-reduced-motion: reduce`, all durations collapse to cross-fades �
   --accent: var(--leaf); --focus: var(--sky-deep);
 
   /* type */
-  --font-display: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
-  --font-body: "Nunito", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --font-display: "Fredoka", "M PLUS Rounded 1c", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --font-body: "Nunito", "M PLUS Rounded 1c", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
   --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-body-lg:1.0625rem;
   --fs-body:.9375rem; --fs-caption:.8125rem; --fs-micro:.6875rem;
 
@@ -351,7 +351,7 @@ html, body { min-height: 100dvh; overscroll-behavior-y: none; }
 
 **Promise row**: avatar · last week's marks (✓ kept, ○ not kept, **never ✗**) · next week's plan (when/where/what, ≤ 16 characters) · the partner's "応援してる" pill. No yen and no streak.
 
-**Habit switch (check-in)**: a 76px-tall card row with a 50px icon, a ≤ 2-word label (e.g. 野菜 2食, 甘い飲み物なし, 自炊) and a 60×36 pill switch (off `--sand`, on `--leaf`), `role="switch"`, saved on tap. Co-log = the partner's face button with a small "+".
+**Habit switch (check-in)**: a 76px-tall card row with a 50px icon, a ≤ 2-word label (each person's own habits, e.g. 昼ごはん, おやつ, 野菜 2食) and a 60×36 pill switch (off `--sand`, on `--leaf`), `role="switch"`, saved on tap. Co-log = the partner's face button with a small "+".
 
 **Tab bar**: floating rounded "leaf" bar, **3 items** (島 Island, 旅の壺 Jar, ふたり Us), active item gets a sand pebble behind its icon and the label turns `--ink`.
 
