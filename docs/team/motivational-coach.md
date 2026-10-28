@@ -1,5 +1,7 @@
 # Motivational Coach / Gamification Design Memo
 
+> **Superseded naming (round 2):** this memo is the original round-1 rationale. Its Nintendo-derived names (Bells, Nook Miles, Isabelle, Blathers, Nook's Cranny) and its Miles/Lost & Found economy were replaced by Fruit / Jar / Tickets and Juniper. See `docs/decisions/0002`–`0003` and `docs/PROPOSAL.md` for the binding rules.
+
 **Role:** Motivational Coach / Gamification Designer
 **Status:** Draft v1, for team review
 **Scope:** Behavioral grounding, the real-money economy, reward shop, couple dynamics, game loops, tone, honor system, and long-term retention.
