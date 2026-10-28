@@ -67,12 +67,25 @@ export interface ParsedShortcut extends ParsedIngest { unknownTypes: string[] }
 const SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": [...]} with one start date per value (docs/ops/shortcut-health-sync.md step 12)';
 
 export function parseShortcut(raw: unknown): ParsedShortcut {
-  const r = raw as Record<string, unknown> | null;
+  let r = raw as Record<string, unknown> | null;
+  // Simple form: {"date": "2026-10-28", "steps": "12\n3\n…"}: every value belongs to that one day. (Filter the
+  // samples to one source in the Shortcut, or Watch + iPhone steps are counted twice.)
+  const day = typeof r?.date === 'string' ? looseDate(r.date) : null;
+  if (r && day) {
+    const asSeries = (v: unknown) => {
+      const values = splitLines(v);
+      return Array.isArray(values) ? { values, starts: values.map(() => day) } : v;
+    };
+    r = { ...r };
+    for (const k of ['steps', 'exercise'] as const) if (typeof r[k] === 'string' || Array.isArray(r[k])) r[k] = asSeries(r[k]);
+  }
   for (const k of ['steps', 'exercise'] as const) {
     const v = r?.[k];
-    if (typeof v === 'string' || Array.isArray(v)) throw new Error(`${k} has values but no start dates: ${SHAPE_HINT.replace('steps', k)}`);
+    if (typeof v === 'string' || Array.isArray(v)) {
+      throw new Error(`${k} has values but no start dates: add "date": "YYYY-MM-DD" for one day, or ${SHAPE_HINT.replace('steps', k)}`);
+    }
   }
-  const parsed = bodySchema.safeParse(raw);
+  const parsed = bodySchema.safeParse(r);
   if (!parsed.success) throw new Error(`unexpected shape: ${parsed.error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.message}`).join('; ')}`);
   const body = parsed.data;
   if (!body.steps && !body.exercise && !body.days && !body.workouts) throw new Error('no steps, exercise, days or workouts');

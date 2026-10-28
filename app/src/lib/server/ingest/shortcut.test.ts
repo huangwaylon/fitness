@@ -103,4 +103,12 @@ describe('Shortcut ingest', () => {
     const r2 = ingestShortcut(db, 'A', JSON.stringify({ steps: { values: '1\n2', starts: '2026-10-28T08:00:00+09:00' } }));
     expect(r2.error).toMatch(/got 2 values but 1 start dates/);
   });
+
+  it('simple form: values + one date', () => {
+    const r = ingestShortcut(db, 'A', JSON.stringify({ date: '2026-10-28', steps: '12\n3\n27', calories: '' }));
+    expect(r).toMatchObject({ ok: true, metrics: 1 });
+    expect(metrics()).toEqual([{ d: '2026-10-28', m: 'steps', v: 42 }]);
+    ingestShortcut(db, 'A', JSON.stringify({ date: '2026/10/28 21:30', exercise: ['20', '15'] }));
+    expect(metrics()).toContainEqual({ d: '2026-10-28', m: 'exercise_min', v: 35 });
+  });
 });
