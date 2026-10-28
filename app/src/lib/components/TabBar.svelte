@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+  import { routeOf } from '#lib/client/paths.ts';
   // しまフォン dock (style guide §4.2): a floating phone slab with three squircle app tiles.
   import { onMount } from 'svelte';
   import { page } from '$app/state';
@@ -6,18 +8,19 @@
 
   // Builder A ships flat app-tile glyphs (#app-*); until then fall back to the line icons (#i-*).
   const tabs = [
-    { href: '/', app: 'app-island', icon: 'i-island', fill: 'var(--app-island)', key: 'tab.island' },
-    { href: '/jar', app: 'app-jar', icon: 'i-jar', fill: 'var(--app-jar)', key: 'tab.jar' },
-    { href: '/us', app: 'app-us', icon: 'i-us', fill: 'var(--app-us)', key: 'tab.us' }
+    { route: '/', href: resolve('/'), app: 'app-island', icon: 'i-island', fill: 'var(--app-island)', key: 'tab.island' },
+    { route: '/jar', href: resolve('/jar'), app: 'app-jar', icon: 'i-jar', fill: 'var(--app-jar)', key: 'tab.jar' },
+    { route: '/us', href: resolve('/us'), app: 'app-us', icon: 'i-us', fill: 'var(--app-us)', key: 'tab.us' }
   ];
   let hasApp = $state(false);
   onMount(() => (hasApp = !!document.getElementById('app-island')));
-  const path = $derived(page.url.pathname);
+  // Route path without the base (GitHub Pages serves the app under /fitness).
+  const path = $derived(routeOf(page.url.pathname));
 </script>
 
 <nav class="dock" aria-label={t('tab.label')}>
   {#each tabs as tab (tab.href)}
-    {@const on = tab.href === '/' ? path === '/' : path.startsWith(tab.href)}
+    {@const on = tab.route === '/' ? path === '/' : path.startsWith(tab.route)}
     <a class="tab" class:on href={tab.href} aria-current={on ? 'page' : undefined}>
       <span class="tile" style:--fill={tab.fill}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{hasApp ? tab.app : tab.icon}" /></svg>

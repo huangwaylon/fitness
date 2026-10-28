@@ -15,10 +15,12 @@
     "recompute": "tsx scripts/recompute.ts",
     "prepare": "svelte-kit sync || true",
     "vapid": "tsx scripts/vapid.ts",
-    "devices": "tsx scripts/devices.ts"
+    "devices": "tsx scripts/devices.ts",
+    "build:pages": "BUILD_TARGET=pages vite build && cp build-pages/index.html build-pages/404.html && touch build-pages/.nojekyll"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^6.0.0",
+    "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/kit": "^3.1.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@types/better-sqlite3": "^9.6.0",
