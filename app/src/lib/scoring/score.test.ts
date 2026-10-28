@@ -6,8 +6,9 @@ import { ratioMilli, scoreWeek } from '#lib/scoring/score.ts';
 import { targetsFor } from '#lib/scoring/targets.ts';
 
 const WK = '2026-11-02';
-const A = SEASONS[0].targets.A; // 135 min, 2 strength, 7500 × 5, 15 ticks
-const B = SEASONS[0].targets.B; // 85 min
+// Fixed targets so tuning rules.ts doesn't break the arithmetic below.
+const A: PersonTargets = { activeMinPerWeek: 135, strengthDaysPerWeek: 2, stepGoal: 7500, stepDaysPerWeek: 5, habits: [...SEASONS[0].targets.A.habits], pearTicksPerWeek: 15 };
+const B: PersonTargets = { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoal: 6250, stepDaysPerWeek: 5, habits: [...SEASONS[0].targets.B.habits], pearTicksPerWeek: 15 };
 
 let n = 0;
 function workout(date: string, type: string, durationMin: number, avgHr: number | null = null, includesStrength: boolean | null = null): Workout {
@@ -74,7 +75,7 @@ describe('scoreWeek: totals', () => {
     expect(s.score).toBe(0);
     expect(s.dataDays).toBe(0);
   });
-  it('a typical week matches hand-computed values (73)', () => {
+  it('a typical week matches hand-computed values (77)', () => {
     const d = weekDays(WK);
     const s = scoreWeek(input({
       days: days(WK, [10, 70, 0, 15, 5, 20, 0], [8000, 7000, 9000, 7500, 3000, 12000, null]),
@@ -90,9 +91,10 @@ describe('scoreWeek: totals', () => {
         ...ticks(d[5], ['low_salt_day', 'veg_two_meals'])
       ]
     }));
-    // Peach: 10 + 67.5 (cap) + 0 + 15 + 5 + 20 + 0 = 117.5 min → floor(30000 × 117.5 / 135) = 26111, + 5000 rest
-    expect(s.categories.peach.actual).toBe(117.5);
-    expect(s.categories.peach.milli).toBe(31111);
+    // Peach, per day max(Watch min, (steps − 7500)/100), capped at 67.5:
+    // 10 + 67.5 + 15 + 15 + 5 + 45 + 0 = 157.5 min ≥ 135 → 30000, + 5000 rest
+    expect(s.categories.peach.actual).toBe(157.5);
+    expect(s.categories.peach.milli).toBe(35000);
     expect(s.restDays).toBe(6);
     // Coconut: 1 of 2 → 12500
     expect(s.categories.coconut.milli).toBe(12500);
@@ -100,8 +102,8 @@ describe('scoreWeek: totals', () => {
     expect(s.categories.apple).toMatchObject({ actual: 4, milli: 12000 });
     // Pear: 11 of 15 → floor(25000 × 11 / 15) = 18333
     expect(s.categories.pear).toMatchObject({ actual: 11, milli: 18333 });
-    // 31111 + 12500 + 12000 + 18333 = 73944 → 73
-    expect(s.score).toBe(73);
+    // 35000 + 12500 + 12000 + 18333 = 77833 → 77
+    expect(s.score).toBe(77);
     expect(s.dataDays).toBe(7); // Sunday has exerciseMin 0 (non-null) even without steps
   });
 });
@@ -225,11 +227,12 @@ describe('scoreWeek: no prorating (ADR 0014)', () => {
       workouts: [workout(d[0], 'Pilates', 30)],
       checkins: [...ticks(d[0], [...A.habits]), ...ticks(d[1], [...A.habits]), ...ticks(d[2], [...A.habits])]
     }));
-    expect(s.categories.peach).toMatchObject({ target: 135, milli: Math.floor((30000 * 100) / 135) + 5000 }); // 22222 + 5000
+    // max(50, 15) + max(50, 15) + max(0, 15) = 115 min (9,000 steps = 15 step-minutes)
+    expect(s.categories.peach).toMatchObject({ target: 135, milli: Math.floor((30000 * 115) / 135) + 5000 }); // 25555 + 5000
     expect(s.categories.coconut).toMatchObject({ target: 2, milli: 12500 });
     expect(s.categories.apple).toMatchObject({ target: 5, milli: 9000 });
     expect(s.categories.pear).toMatchObject({ target: 15, milli: 15000 });
-    expect(s.score).toBe(63);
+    expect(s.score).toBe(67); // 30555 + 12500 + 9000 + 15000
   });
 });
 
@@ -246,10 +249,11 @@ describe('scoreWeek: 正月 holiday', () => {
   it('easy-week targets ×0.7 apply to Peach/Coconut/Apple', () => {
     const wk = '2026-12-21';
     const d = weekDays(wk);
-    const s = scoreWeek(input({ weekKey: wk, targets: targetsFor('B', wk), days: days(wk, [], [7000, 7000, 7000]), workouts: [workout(d[0], 'Pilates', 30)] }));
+    const t = targetsFor('B', wk);
+    const s = scoreWeek(input({ weekKey: wk, targets: t, days: days(wk, [], [7000, 7000, 7000]), workouts: [workout(d[0], 'Pilates', 30)] }));
     expect(s.categories.coconut.target).toBe(1.4);
     expect(s.categories.coconut.milli).toBe(Math.floor((25000 * 1000) / 1400)); // 17857
-    expect(s.categories.apple.milli).toBe(Math.floor((15000 * 3) / 3.5)); // 12857
+    expect(s.categories.apple.milli).toBe(Math.min(15000, Math.floor((15000 * 3) / t.stepDaysPerWeek)));
     expect(s.categories.peach.target).toBe(59.5);
     // Dec 21–27: no pear-off days
     expect(s.categories.pear.target).toBe(15);
@@ -272,6 +276,19 @@ describe('scoreWeek: calibration', () => {
   });
   it('calibration pays 60 even when the computed score is higher', () => {
     expect(scoreWeek({ ...perfect(), calibration: true }).score).toBe(60);
+  });
+});
+
+describe('scoreWeek: no Watch (round 4 review W1, W7)', () => {
+  it('steps above the goal count as active minutes; the Watch value wins when larger', () => {
+    const s = scoreWeek(input({ days: days(WK, [null, 30, 0], [13500, 9000, 7000]) }));
+    // (13500 − 7500)/100 = 60; max(30, 15) = 30; max(0, 0) = 0
+    expect(s.categories.peach.actual).toBe(90);
+  });
+  it('a gym visit is a busy day even before it is confirmed', () => {
+    const d = weekDays(WK);
+    const s = scoreWeek(input({ days: days(WK, [0], [4000]), visits: [visit(d[0], 45, false, null)] }));
+    expect(s.restDays).toBe(0);
   });
 });
 

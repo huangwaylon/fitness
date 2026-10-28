@@ -22,7 +22,7 @@ describe('targetsFor', () => {
     const b = targetsFor('B', '2026-12-21');
     expect(b.activeMinPerWeek).toBe(59.5);
     expect(b.strengthDaysPerWeek).toBe(1.4);
-    expect(b.stepDaysPerWeek).toBe(3.5);
+    expect(b.stepDaysPerWeek).toBe(2.8); // 4 × 0.7
     expect(b.stepGoal).toBe(s1.targets.B.stepGoal);
     expect(b.pearTicksPerWeek).toBe(s1.targets.B.pearTicksPerWeek);
     expect(targetsFor('A', '2026-12-28').activeMinPerWeek).toBe(94.5);
