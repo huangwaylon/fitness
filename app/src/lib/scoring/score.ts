@@ -33,8 +33,8 @@ export const isStrengthVisit = (v: WeekInput['visits'][number]): boolean =>
  * Score one person's week.
  *
  * Judgement calls (documented for the server/UI):
- * - Rest days are evaluated over the dates present in `input.days` (the caller passes the week so far, or all 7
- *   days). A day with no hard workout counts as rest, so a not-yet-elapsed day passed in will count as rest.
+ * - A rest day is a cozy day, or a day with Health data and no hard workout. A week with no data and no cozy
+ *   day has no rest days, so it scores 0.
  * - Cozy days shrink every target by exact fractions; activity logged on a cozy day still counts.
  * - `actual` is the counted amount after per-day caps (daily minute cap, 1 strength day/day, 3 ticks/day), not
  *   clipped to the target; the pay itself is capped at the target.
@@ -64,7 +64,10 @@ export function scoreWeek(input: WeekInput): WeekScore {
   const isHard = (w: WeekInput['workouts'][number]): boolean =>
     w.durationMin >= REST.hardWorkoutMin && w.avgHr !== null && w.avgHr * 1000 >= hardHrPermille * maxHr;
   const hardDates = new Set(workouts.filter(isHard).map((w) => w.date));
-  const restDays = [...dayRows.keys()].filter((d) => cozy.has(d) || !hardDates.has(d)).length +
+  // A non-cozy day is a rest day only if Health data arrived for it, so an empty (or future) day never pays.
+  const hasData = (d: WeekInput['days'][number]): boolean => d.steps !== null || d.exerciseMin !== null;
+  const restDays =
+    [...dayRows.values()].filter((d) => cozy.has(d.date) || (hasData(d) && !hardDates.has(d.date))).length +
     [...cozy].filter((d) => !dayRows.has(d)).length;
   const peachMax = (POINTS.peachActive + POINTS.peachRest) * 1000;
   const peachMilli =

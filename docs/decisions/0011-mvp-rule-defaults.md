@@ -7,7 +7,7 @@
 - **Calibration (2 weeks):** flat **60 fruit** per person per week when Health data is present on **≥ 6 of 7 days** (no wear-time metric exists in HAE), otherwise 0. Pays like a normal week (¥50 × 60, team bonus, Treat Purse).
 - **One holiday window:** 正月 **Dec 29–Jan 3**: Pear not scored (those days drop out of the 15/21 target). The two easy weeks (Mon–Sun weeks touching Dec 22–Jan 3) use targets × 0.7 for Peach, Coconut and Apple.
 - **Score rounding:** categories are computed in integer milli-fruit and summed; the weekly score is `floor(sum / 1000)`. Yen are computed from that integer score.
-- **Rest day:** no workout ≥ 20 min with average HR ≥ 77% of `220 − age`. Cozy Days count as rest days.
+- **Rest day:** a day with Health data and no workout ≥ 20 min at average HR ≥ 77% of `220 − age`, or a Cozy Day. Days without data never count, so an empty week scores 0.
 - **Strength day sources (max 1 per day):** Traditional/Functional Strength, Core or Pilates ≥ 15 min; a HIIT/yoga workout the person tapped "included strength"; a visit (arrive→leave ≥ 30 min) to a place marked `autoStrength` (B's PT studio); a gym visit the person confirmed.
 - **Promise check:** each promised day needs a matching activity (workout of the promised kind, or a visit) on that day ±1, each activity used once.
 - **Settlement:** Sunday 19:30 JST writes provisional `earn` entries; Wednesday 04:00 JST writes `topup` entries for any increase, then locks the week. No clawbacks.
