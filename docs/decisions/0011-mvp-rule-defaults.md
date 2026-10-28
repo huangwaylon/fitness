@@ -1,5 +1,5 @@
 # 0011 — MVP rule defaults for implementation
-**Status:** Accepted (lead, start of implementation). Fills gaps left after 0008/0009 removed the shortfall bank and sleep. Values live in `app/src/lib/config/rules.ts` and can be tuned without code changes.
+**Status:** Accepted (lead, start of implementation); **amended by [0014](0014-simplify-no-promises-no-cozy.md)**: Cozy Days, the promise check and the cozy clauses on calibration and rest days are gone. Fills gaps left after 0008/0009 removed the shortfall bank and sleep. Values live in `app/src/lib/config/rules.ts` and can be tuned without code changes.
 
 ## Decision
 - **No pause weeks in the MVP.** Cozy Days are the only rest mechanism (as SE round 3 §4 already cut). The "paused partner counts as 100" clauses in 0008 stay dormant until pause ships in v1.

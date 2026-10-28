@@ -26,6 +26,11 @@ The UI is deployed automatically to https://huangwaylon.github.io/fitness/ by `.
 - Start the Mac server with `CORS_ORIGINS=https://huangwaylon.github.io` (plus `PORT=3100` here, since 3000 is taken).
 - Changing the Funnel hostname: `gh variable set API_BASE --body https://<new>.ts.net`, then re-run the workflow.
 
+## 1c. Official art (Nintendo's, personal use)
+The villagers, Isabelle, fruit, money and NookPhone images are official *Animal Crossing: New Horizons* art from Nookipedia, kept in the repo under `app/static/art/` (58 downscaled `.webp` files, ~580 KB, plus `manifest.json`) and shipped with both builds. It's Nintendo's art, used for this private two-person app only: **keep the repo private** and don't reuse the files elsewhere.
+- Refresh / add: edit the `SPECS` list in `app/scripts/fetch-assets.ts`, then `cd app && npm run assets:fetch` (skips files already on disk; `--force` re-downloads everything; needs `cwebp`: `brew install webp`). It prints any title it couldn't find. Commit `app/static/art/`.
+- The UI renders art through `<OfficialArt>` (`$lib/components/OfficialArt.svelte`) and falls back to our own fan-art vectors if a file is missing or fails to load, so deleting `static/art/` degrades gracefully.
+
 ## 2. Pairing the phones (PWA)
 Open **https://huangwaylon.github.io/fitness/** in Safari → Share → Add to Home Screen, then pair inside the installed app.
 1. On each iPhone, open the URL in Safari, choose **Share → Add to Home Screen**, then open the app **from the Home Screen icon**. The installed app has its own cookie jar.
@@ -51,13 +56,13 @@ After a visit of 30 minutes or more with no Watch strength workout, the app show
 ## 5. Schedules (JST, in-process, idempotent)
 - **Sun 19:30:** provisional pay (`earn:*` ledger entries). The harvest overlay opens.
 - **Wed 04:00:** final pass. It writes top-ups only, then locks the week.
-- **20:00:** check-in reminder (skipped if already checked in or on a Cozy Day). **25th, 12:00:** payday reminder.
+- **20:00:** check-in reminder (skipped if already checked in, and on 正月 days). **25th, 12:00:** payday reminder.
 - Missed runs (Mac off) catch up on the next boot. To preview what the current rules would pay: `node scripts/recompute.ts --dry-run`.
 
 ## 6. Backups (the ledger can't be recreated)
 - Every night, `scripts/backup.sh` makes a `sqlite3 .backup` snapshot, checks it with an integrity check, then runs `restic backup` to a bucket **outside Kantō**, encrypted on the client side. Run it from launchd or cron on the Mac host, with `RESTIC_REPOSITORY`, `RESTIC_PASSWORD_FILE` and the bucket credentials set. Keep the restic password somewhere off the Mac as well, such as a password manager.
 - **Monthly restore drill:** `scripts/restore-drill.sh` restores the latest snapshot to a temp folder, runs an integrity check and prints the ledger totals. Compare the totals with the Jar screen.
-- Health metrics can be re-sent from the phones (run the baseline Shortcut from shortcut-health-sync.md §5). Check-ins, promises, presence and the ledger exist only in the DB.
+- Health metrics can be re-sent from the phones (run the baseline Shortcut from shortcut-health-sync.md §5). Check-ins, presence (and visit answers) and the ledger exist only in the DB.
 
 ## 7. Troubleshooting
 | Symptom | Check |
