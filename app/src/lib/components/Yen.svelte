@@ -1,8 +1,6 @@
 <script lang="ts">
-  // A savings amount: the Bells bag (official, Leaf-coin fallback) before `¥146,200` (§A).
-  import OfficialArt from './OfficialArt.svelte';
+  // A savings amount: the Bells bag (LeafCoin) before `¥146,200` (style guide v3 §A).
   import LeafCoin from './LeafCoin.svelte';
-  import { moneyArt } from '#lib/client/assets.ts';
   import { formatYen } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -16,15 +14,8 @@
   let { yen, sign = '', bag = '1.1em', class: cls = '' }: Props = $props();
 </script>
 
-<span class="yen money {cls}">
-  <span class="bag" style:height={bag} style:width={bag}>
-    <OfficialArt key={moneyArt('bells')} size={bag}>
-      {#snippet fallback()}<LeafCoin size={bag} />{/snippet}
-    </OfficialArt>
-  </span>{sign}{formatYen(yen)}
-</span>
+<span class="yen money {cls}"><LeafCoin size={bag} eager />{sign}{formatYen(yen)}</span>
 
 <style>
   .yen { display: inline-flex; align-items: center; gap: .25em; white-space: nowrap; }
-  .bag { display: inline-grid; place-items: center; flex: none; }
 </style>

@@ -9,9 +9,10 @@
   import Avatar from './Avatar.svelte';
   import Villager from './Villager.svelte';
   import OfficialArt from './OfficialArt.svelte';
+  import LeafCoin from './LeafCoin.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
-  import { art, fruitArt, moneyArt, villagerArt } from '#lib/client/assets.ts';
+  import { art, fruitArt, phoneArt } from '#lib/client/assets.ts';
   import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
   import { pushState, enablePush, type PushState } from '#lib/client/push.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
@@ -20,14 +21,14 @@
   type AppId = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
   let { open = $bindable(), topic }: { open: boolean; topic: 'island' | 'jar' } = $props();
 
-  // Official NookPhone tiles (full squircles); `glyph` = our tile glyph when the art is missing.
-  const APPS: { id: AppId; key: string; glyph: string; fill: string; tile?: boolean }[] = [
-    { id: 'help', key: 'phone/diy', glyph: 'app-help', fill: 'var(--app-help)' },
-    { id: 'villager', key: 'phone/passport', glyph: 'app-villager', fill: 'var(--app-villager)' },
-    { id: 'lang', key: moneyArt('leaf'), glyph: 'app-lang', fill: 'var(--app-lang)', tile: true },
-    { id: 'bell', key: 'phone/rescue', glyph: 'app-bell', fill: 'var(--app-bell)' },
-    { id: 'sync', key: 'phone/nook-miles', glyph: 'app-sync', fill: 'var(--app-sync)' },
-    { id: 'share', key: 'phone/island-designer', glyph: 'i-eye', fill: 'var(--app-share)' }
+  // Official NookPhone icons via phoneArt(); `glyph` = our tile glyph when the art is missing.
+  const APPS: { id: AppId; glyph: string; fill: string }[] = [
+    { id: 'help', glyph: 'app-help', fill: 'var(--app-help)' },
+    { id: 'villager', glyph: 'app-villager', fill: 'var(--app-villager)' },
+    { id: 'lang', glyph: 'app-lang', fill: 'var(--app-lang)' },
+    { id: 'bell', glyph: 'app-bell', fill: 'var(--app-bell)' },
+    { id: 'sync', glyph: 'app-sync', fill: 'var(--app-sync)' },
+    { id: 'share', glyph: 'i-eye', fill: 'var(--app-share)' }
   ];
   /** Raw numbers that can be shared. Eating answers are never shared. */
   const SHAREABLE: FruitKey[] = ['peach', 'coconut', 'apple'];
@@ -80,7 +81,7 @@
 <Sheet bind:open label={t('phone.name')} variant="phone">
   <div class="status" aria-hidden="true">
     <span class="money">{clock}</span>
-    <OfficialArt key={moneyArt('leaf')} size={18} />
+    <LeafCoin kind="leaf" size={18} />
     <svg class="season" viewBox="0 0 24 24">
       {#if theme.season === 'spring'}
         {#each [0, 72, 144, 216, 288] as r (r)}<ellipse cx="12" cy="7" rx="3.4" ry="4.6" fill="#FFC2D4" transform="rotate({r} 12 12)" />{/each}<circle cx="12" cy="12" r="2.4" fill="#FFD66B" />
@@ -106,11 +107,12 @@
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
-        {@const official = !!art(a.key)}
+        {@const pa = phoneArt(a.id)}
+        {@const official = !!pa && !!art(pa.key)}
         <button type="button" class="app" style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
-          <span class="tile" class:bare={official && !a.tile} style:--fill={a.fill}>
-            {#if official}
-              <OfficialArt key={a.key} size={a.tile ? 36 : 64} eager />
+          <span class="tile" class:bare={official && pa?.tile} style:--fill={a.fill}>
+            {#if official && pa}
+              <OfficialArt key={pa.key} size={pa.tile ? 64 : 36} eager />
             {:else}
               <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>
             {/if}
@@ -128,9 +130,7 @@
       <div class="preview">
         {#key current}
           <span class="pv">
-            <OfficialArt key={villagerArt(current)} alt="" size={96} eager>
-              {#snippet fallback()}<Villager person={view.me} villager={current} size={96} expression="cheer" emote />{/snippet}
-            </OfficialArt>
+            <Villager person={view.me} villager={current} size={96} head={false} expression="cheer" emote eager />
             <span class="vn">{vName(current)}</span>
           </span>
         {/key}
@@ -159,7 +159,7 @@
     </div>
   {:else if app === 'bell'}
     <div class="panel center">
-      <OfficialArt key="phone/rescue" size={72} />
+      <OfficialArt key={phoneArt('bell')?.key} size={72} />
       {#if push === 'on'}
         <p class="state ok">✓ {t('phone.push.on')}</p>
       {:else if push === 'install' || push === 'unsupported'}

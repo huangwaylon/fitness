@@ -16,7 +16,6 @@
   import Bubble from '#lib/components/Bubble.svelte';
   import Juniper from '#lib/components/Juniper.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
-  import { hostArt } from '#lib/client/assets.ts';
   import HarvestOverlay from '#lib/components/HarvestOverlay.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { startTheme } from '#lib/client/theme.svelte.ts';
@@ -83,11 +82,7 @@
   </main>
 {:else if !week.view}
   <main class="state" aria-busy="true">
-    <span class="bob">
-      <OfficialArt key={hostArt('wave')} alt="" size={120} eager>
-        {#snippet fallback()}<Juniper size={120} />{/snippet}
-      </OfficialArt>
-    </span>
+    <span class="bob"><Juniper pose="wave" size={120} animate={false} eager /></span>
     <p>{t('state.loading')}</p>
     <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
   </main>
@@ -105,7 +100,7 @@
 {#if week.toast}
   {#key week.toast.id}
     <div class="toast" role="status" popover="manual" use:topLayer>
-      <OfficialArt key={hostArt('icon')} alt="" size={32} eager />{week.toast.text}
+      <Juniper head size={32} animate={false} eager />{week.toast.text}
     </div>
   {/key}
 {/if}
