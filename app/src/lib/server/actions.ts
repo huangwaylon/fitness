@@ -33,6 +33,7 @@ export const schemas = {
   prefs: z.object({
     locale: z.enum(['ja', 'en']).optional(),
     villagerName: z.string().trim().min(1).max(20).optional(),
+    villager: z.string().regex(/^[a-z][a-z0-9_]{0,23}$/).optional(),
     villagerSpecies: z.string().max(20).optional(),
     villagerColor: z.string().max(20).optional()
   }),

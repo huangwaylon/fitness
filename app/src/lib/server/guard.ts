@@ -80,7 +80,8 @@ export async function guard(event: GuardEvent, opts: GuardOptions): Promise<Resp
     if (!token && zone === 'presence' && method === 'POST') token = await tokenFromBody(request);
     const limitKey = token ? `tok:${sha256(token).slice(0, 16)}` : `ip:${ip}`;
     if (!hit(`${zone}:${limitKey}`, zone === 'ingest' ? LIMITS.ingest : LIMITS.api)) return errorJson(429, 'rate_limited');
-    const kinds: DeviceKind[] = zone === 'ingest' ? ['hae'] : ['shortcut'];
+    // /ingest/shortcut/* takes the phone's Shortcuts token (the same one the gym Arrive/Leave Shortcuts use).
+    const kinds: DeviceKind[] = zone === 'ingest' ? (path.startsWith('/ingest/shortcut/') ? ['shortcut'] : ['hae']) : ['shortcut'];
     let dev = token ? findDevice(opts.db(), token, kinds) : null;
     if (!dev && !token && opts.dev) {
       const p = devPerson();

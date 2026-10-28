@@ -1,6 +1,5 @@
 // Health Auto Export (JSON, export version 2) ingest: store raw → lenient parse → idempotent upserts.
 import { gzipSync } from 'node:zlib';
-import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { z } from 'zod';
 import type { PersonId } from '#lib/types.ts';
@@ -8,6 +7,7 @@ import { toLocalDate } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
 import { dailyMetric, rawPayload, workout } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
+import { canonicalWorkoutType, workoutKey } from '#lib/server/ingest/workout-names.ts';
 
 type MetricKey = 'steps' | 'exercise_min' | 'resting_hr' | 'walking_hr';
 
@@ -113,9 +113,11 @@ export function parseHae(raw: unknown): ParsedHae {
     const endAt = haeDateToIso(wr.data.end);
     if (!startAt || !endAt) { skipped++; continue; }
     const durS = wr.data.duration ?? (Date.parse(endAt) - Date.parse(startAt)) / 1000;
-    const extId = wr.data.id ?? `hash:${createHash('sha256').update(`${wr.data.name}|${startAt}`).digest('hex').slice(0, 24)}`;
+    // Same key the Shortcut path uses, so a workout sent by both lands on one row (HAE's own id isn't shared).
+    const type = canonicalWorkoutType(wr.data.name);
+    const extId = workoutKey(type, startAt);
     workouts.push({
-      extId, localDate: toLocalDate(startAt), type: wr.data.name, startAt, endAt,
+      extId, localDate: toLocalDate(startAt), type, startAt, endAt,
       durationMin: Math.round((durS / 60) * 10) / 10, avgHr: avgHrOf(wr.data)
     });
   }
@@ -126,24 +128,39 @@ export interface IngestResult { ok: boolean; metrics: number; workouts: number; 
 
 /** Store the raw body (gzipped) and apply it. Re-sending the same payload yields the same state. */
 export function ingestHae(db: Db, person: PersonId, bodyText: string): IngestResult {
+  return ingestWith(db, person, 'hae', bodyText, (raw) => parseHae(raw));
+}
+
+/**
+ * Shared by every ingest source: parse, keep the raw payload (also on failure), then upsert daily metrics and
+ * workouts in one transaction.
+ */
+export function ingestWith(
+  db: Db, person: PersonId, source: 'hae' | 'shortcut', bodyText: string, parse: (raw: unknown) => ParsedHae,
+  /** 'max': a day's value only ever rises (the Shortcut may see a partial first day of its window). */
+  metricMode: 'replace' | 'max' = 'replace'
+): IngestResult {
   const bodyGz = gzipSync(Buffer.from(bodyText, 'utf8')).toString('base64');
   let parsed: ParsedHae;
   try {
-    parsed = parseHae(JSON.parse(bodyText));
+    parsed = parse(JSON.parse(bodyText));
   } catch (e) {
     const msg = (e instanceof Error ? e.message : String(e)).slice(0, 500);
-    db.insert(rawPayload).values({ person, source: 'hae', bodyGz, parseStatus: 'error', parseError: msg }).run();
+    db.insert(rawPayload).values({ person, source, bodyGz, parseStatus: 'error', parseError: msg }).run();
     return { ok: false, metrics: 0, workouts: 0, status: 'error', error: msg };
   }
   const status = parsed.skipped > 0 ? 'partial' : 'ok';
   const t = now().toISOString();
   db.transaction((tx) => {
     tx.insert(rawPayload).values({
-      person, source: 'hae', bodyGz, parseStatus: status, parseError: parsed.skipped ? `${parsed.skipped} items skipped` : null, receivedAt: t
+      person, source, bodyGz, parseStatus: status, parseError: parsed.skipped ? `${parsed.skipped} items skipped` : null, receivedAt: t
     }).run();
     for (const m of parsed.metrics) {
       tx.insert(dailyMetric).values({ person, ...m, updatedAt: t })
-        .onConflictDoUpdate({ target: [dailyMetric.person, dailyMetric.localDate, dailyMetric.metric], set: { value: m.value, updatedAt: t } })
+        .onConflictDoUpdate({
+          target: [dailyMetric.person, dailyMetric.localDate, dailyMetric.metric],
+          set: { value: metricMode === 'max' ? sql`max(${dailyMetric.value}, excluded.value)` : m.value, updatedAt: t }
+        })
         .run();
     }
     for (const w of parsed.workouts) {

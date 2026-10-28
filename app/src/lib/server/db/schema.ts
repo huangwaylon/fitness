@@ -28,7 +28,7 @@ export const pairingCode = sqliteTable('pairing_code', {
 export const rawPayload = sqliteTable('raw_payload', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   person: text('person', { enum: ['A', 'B'] }).notNull(),
-  source: text('source', { enum: ['hae', 'presence'] }).notNull(),
+  source: text('source', { enum: ['hae', 'shortcut', 'presence'] }).notNull(),
   receivedAt: text('received_at').notNull().$defaultFn(now),
   bodyGz: text('body_gz').notNull(), // base64 gzip
   parseStatus: text('parse_status', { enum: ['ok', 'partial', 'error'] }).notNull(),
@@ -141,6 +141,8 @@ export const personPref = sqliteTable('person_pref', {
   person: text('person', { enum: ['A', 'B'] }).primaryKey(),
   locale: text('locale', { enum: ['ja', 'en'] }).notNull().default('ja'),
   villagerName: text('villager_name'),
+  /** Animal Crossing villager key from the roster, e.g. 'goldie', 'raymond'. */
+  villager: text('villager'),
   villagerSpecies: text('villager_species'),
   villagerColor: text('villager_color')
 });
