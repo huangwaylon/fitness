@@ -20,9 +20,9 @@ self.addEventListener('install', (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
       await cache.addAll(PRECACHE);
-      // The SPA shell (ssr = false): any navigation can be served by "/".
+      // The SPA shell (ssr = false): any navigation can be served by the scope root.
       try {
-        await cache.add('/');
+        await cache.add(SCOPE);
       } catch {
         /* offline at install; the shell is cached on the next navigation */
       }
@@ -104,8 +104,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || 'しまの貯金箱', {
       body: data.body ?? '',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      icon: inScope('/icons/icon-192.png'),
+      badge: inScope('/icons/icon-192.png'),
       tag: data.tag,
       data: { url: data.url || '/' }
     })

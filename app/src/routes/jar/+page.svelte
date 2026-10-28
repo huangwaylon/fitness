@@ -239,7 +239,7 @@
   .rung:active { transform: translateY(3px); box-shadow: var(--sh-lip-pressed); }
   .rtxt { flex: 1; min-width: 0; display: grid; gap: 8px; }
   .rl { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .rl b { font-size: var(--fs-h2); font-weight: 900; }
+  .rl b { font-size: var(--fs-h2); font-weight: 700; }
   .rgoal { font-size: 1.1rem; color: var(--text-soft); }
   .chev { width: 28px; height: 28px; color: var(--text-soft); flex: none; }
   .chev svg { width: 100%; height: 100%; display: block; }

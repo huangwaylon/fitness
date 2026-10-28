@@ -21,6 +21,8 @@ class WeekStore {
   toast = $state<{ text: string; id: number } | null>(null);
 
   #refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Bumped per request; a response is applied only if no newer refresh started meanwhile. */
+  #refreshSeq = 0;
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Read `?demo` / `?demo=harvest` once; it sticks for the tab session. */
@@ -52,8 +54,10 @@ class WeekStore {
       setLocale(this.view.locale);
       return;
     }
+    const seq = ++this.#refreshSeq;
     this.syncing = true;
     const r = await getJSON<WeekView>('/api/week');
+    if (seq !== this.#refreshSeq) return; // a newer refresh owns the view (and `syncing`)
     this.syncing = false;
     if (r.status === 401) {
       this.status = 'ready';

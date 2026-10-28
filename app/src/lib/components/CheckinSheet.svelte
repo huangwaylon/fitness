@@ -108,7 +108,7 @@
   /* Habit cards stay paper at night, so their switches keep the day colours. */
   .habit[role="switch"] .switch { background: var(--c-paper-2); border-color: var(--paper-edge); }
   .habit.on[role="switch"] .switch { background: var(--c-leaf); border-color: var(--c-leaf-lip); }
-  .txt { flex: 1; line-height: 1.25; text-wrap: pretty; font-weight: 900; font-size: var(--fs-body-lg); }
+  .txt { flex: 1; line-height: 1.25; text-wrap: pretty; font-weight: 700; font-size: var(--fs-body-lg); }
   .txt small { display: block; font: 700 var(--fs-micro)/1.3 var(--font-ui); color: var(--c-ink-talk); margin-top: 3px; font-size: var(--fs-caption); }
   .plus { position: absolute; right: 86px; top: 14px; width: 28px; height: 28px; animation: floatUp .9s var(--ease-soft) forwards; }
 

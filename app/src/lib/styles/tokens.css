@@ -80,7 +80,7 @@
   --font-num: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
   --font-display: var(--font-num);  /* legacy name */
   --font-body: var(--font-ui);      /* legacy name */
-  --fw-body:500; --fw-bold:700; --fw-black:900; --fw-num:600;
+  --fw-body:500; --fw-bold:700; --fw-black:700; --fw-num:600;
   --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-talk:1.0625rem; --fs-body-lg:1.0625rem;
   --fs-body:.9375rem; --fs-caption:.8125rem; --fs-tag:.8125rem; --fs-micro:.6875rem;
   --lh-tight:1.1; --lh-talk:1.5; --lh-body:1.45;

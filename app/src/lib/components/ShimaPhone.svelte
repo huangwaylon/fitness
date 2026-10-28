@@ -209,7 +209,7 @@
   .status .money { font-size: .95rem; }
   .season { width: 18px; height: 18px; }
   .titlebar { position: relative; display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 14px; }
-  .titlebar h2 { font-size: var(--fs-h2); font-weight: 900; text-align: center; }
+  .titlebar h2 { font-size: var(--fs-h2); font-weight: 700; text-align: center; }
   .back {
     position: absolute; left: 0; top: 2px; width: 44px; height: 44px; border-radius: 50%; border: var(--bw) solid var(--edge); cursor: pointer;
     background: var(--surface); box-shadow: 0 3px 0 var(--lip); color: var(--text); display: grid; place-items: center; padding: 0;
