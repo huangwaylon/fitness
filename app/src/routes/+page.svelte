@@ -1,5 +1,7 @@
 <script lang="ts">
-  // 島 Island: two trees, two scores, the jar total, one Juniper line, one button.
+  // 島 Island: two trees, two scores, the jar total, one Juniper line, ONE primary action.
+  // While a confirmation is pending, its yes/no card replaces the check-in button (review M6),
+  // and Juniper doesn't repeat the question. After today's check-in the button goes quiet.
   import IslandScene from '#lib/components/IslandScene.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
   import CheckinSheet from '#lib/components/CheckinSheet.svelte';
@@ -12,12 +14,32 @@
   let checkinOpen = $state(false);
   const view = $derived(week.view);
   const pending = $derived(view?.pending[0] ?? null);
+  const checkedIn = $derived(!!view && (view.people[view.me].habits?.ticksByDate[view.today] ?? []).length > 0);
+  const line = $derived.by(() => {
+    if (!view) return '';
+    const key = view.juniper.key.replace(/^juniper\./, '');
+    // M6: the pending card already asks; Juniper says something else.
+    if (key === 'pending_confirm') return t('juniper.default');
+    return juniperLine(view.juniper.key, view.juniper.params);
+  });
 
   function sendHighFive() {
     if (!view) return;
     highFive();
     week.showToast(t('island.highfiveSent'), 1600);
   }
+
+  // M5: tell me when my partner sent a high-five today (once per new one, per device).
+  $effect(() => {
+    const v = week.view;
+    if (!v || v.highFivesToday <= 0) return;
+    const k = `hf-seen:${v.today}`;
+    const seen = Number(localStorage.getItem(k) ?? 0);
+    if (v.highFivesToday > seen) {
+      localStorage.setItem(k, String(v.highFivesToday));
+      setTimeout(() => week.showToast(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200), 700);
+    }
+  });
 </script>
 
 {#if view}
@@ -31,22 +53,22 @@
     </div>
 
     <div class="below">
-      <Bubble text={juniperLine(view.juniper.key, view.juniper.params)} />
+      <Bubble text={line} />
 
       {#if pending}
         <div class="pending card" role="group" aria-label={t('pending.strength')}>
-          <div class="ptxt">
-            <span class="plabel">{pending.label} · {formatDate(pending.date)}</span>
-            <b>{t('pending.strength')}</b>
+          <span class="tape">{pending.label} · {formatDate(pending.date)}</span>
+          <b class="q">{t('pending.strength')}</b>
+          <div class="yn">
+            <button type="button" class="btn paper" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
+            <button type="button" class="btn" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
           </div>
-          <button type="button" class="btn small" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
-          <button type="button" class="btn small quiet" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
         </div>
+      {:else}
+        <button type="button" class="btn cta" class:paper={checkedIn} onclick={() => (checkinOpen = true)}>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{checkedIn ? t('island.checkedIn') : t('island.checkin')}
+        </button>
       {/if}
-
-      <button type="button" class="btn cta" onclick={() => (checkinOpen = true)}>
-        <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkin')}
-      </button>
     </div>
   </main>
   <CheckinSheet bind:open={checkinOpen} />
@@ -57,23 +79,24 @@
     max-width: var(--col); margin: 0 auto;
     padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
   }
-  .top { position: relative; }
+  .top { position: relative; container-type: inline-size; }
   .head {
-    position: absolute; z-index: 8; top: calc(var(--safe-top) + 8px); left: calc(20px + var(--safe-left)); right: calc(20px + var(--safe-right));
+    position: absolute; z-index: 8; top: calc(var(--safe-top) + 8px); left: calc(16px + var(--safe-left)); right: calc(16px + var(--safe-right));
     display: flex; justify-content: space-between; align-items: center;
   }
-  .below { padding: 0 calc(20px + var(--safe-right)) 0 calc(20px + var(--safe-left)); margin-top: -18px; position: relative; z-index: 6; display: grid; gap: 14px; }
-  .pending { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
-  .ptxt { flex: 1; min-width: 0; display: grid; line-height: 1.3; }
-  .plabel { font-size: var(--fs-caption); color: var(--text-faint); font-weight: 700; }
-  .pending b { font-size: var(--fs-body); }
-  .pending .btn.small { padding: 0 14px; }
-  /* The one primary action stays in the thumb zone, above the tab bar, even on short phones. */
-  .cta { margin-top: 4px; position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
-  .top { container-type: inline-size; }
+  .below {
+    padding: 0 calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left)); margin-top: -26px; position: relative; z-index: 6;
+    display: grid; gap: 12px;
+  }
+  .pending { display: grid; gap: 10px; padding: 24px 16px 12px; margin-top: 8px; }
+  .pending .tape { --tape: var(--c-sky-soft); }
+  .q { font-size: var(--fs-body-lg); font-weight: 900; text-align: center; }
+  .yn { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+  /* The one primary action stays in the thumb zone, above the dock, even on short phones. */
+  .cta { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
   /* iPhone SE-height screens: trim empty sky so the scene, Juniper and the button fit. */
   @media (max-height: 720px) {
-    .top { margin-top: -18cqw; }
-    .head { top: calc(var(--safe-top) + 8px + 18cqw); }
+    .top { margin-top: -20cqw; }
+    .head { top: calc(var(--safe-top) + 8px + 20cqw); }
   }
 </style>

@@ -125,3 +125,11 @@ export function setVisibility(metric: string, shareRaw: boolean) {
   });
 }
 
+
+/** Villager look (しまフォン → 村人): species id + colourway id (lib/villagers/species.ts). */
+export function setVillagerLook(villagerSpecies: string, villagerColor: string) {
+  return week.mutate('/api/prefs', { villagerSpecies, villagerColor }, (v) => {
+    mine(v).villagerSpecies = villagerSpecies;
+    mine(v).villagerColor = villagerColor;
+  });
+}

@@ -227,3 +227,11 @@
 @keyframes if-wiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(5deg); } }
 /* coin flip for the leaf-coin counter */
 @keyframes if-coin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+
+/* ---------- Builder B (UI chrome & screens) ---------- */
+:root {
+  --tabbar-h: 72px;          /* しまフォン dock landed (§4.2) */
+  --app-share:#7CCFD6;       /* しまフォン "シェア" (privacy) tile */
+  --toast-bg: var(--c-bubble);
+}
+:root[data-theme="night"] { --toast-bg:#F7EEDB; }
