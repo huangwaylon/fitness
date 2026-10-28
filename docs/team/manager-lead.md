@@ -32,3 +32,7 @@ Two people, one year, one vacation they *earned*. A cozy island app that turns e
 3. **Lead synthesis**: resolve conflicts and record decisions in `docs/decisions/`, then write `docs/PROPOSAL.md`.
 4. **Round 3 – Final sign-off review** of the proposal → `docs/reviews/round-2.md`, then fix-ups.
 5. Commit and push after each step.
+
+## Update (2026-10-28, after round 3)
+The working assumptions were superseded by user input: they live in Japan, use **yen** (¥520,000 trip + up to ¥104,000 treats), want a **Japanese-first** UI and a **super simple** app, B has a personal trainer, and A goes to Anytime Fitness. See `docs/profiles.md` and ADRs 0006–0007.
+Process ran as planned, plus a round 3 for Japan localization and simplification.
