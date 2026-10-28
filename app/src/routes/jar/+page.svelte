@@ -1,6 +1,7 @@
 <script lang="ts">
   // 旅の壺 Trip Jar (style guide v3 §B.3): しずえ's line, one hero total (Bells bag), then ≤ 3 cards:
-  // next trip (ladder one tap away), the Treat Purse (the one action: 使う), then the jar's layers.
+  // next trip (ladder one tap away), the Treat Purse, then the jar's layers. 使う stays quiet until the
+  // purse can pay for the cheapest treat, and says how far that is (U4).
   import Sheet from '#lib/components/Sheet.svelte';
   import Rope from '#lib/components/Rope.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
@@ -9,7 +10,7 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { spendPurse, approveSpend, transferDone } from '#lib/client/actions.ts';
   import { MONEY, SEASONS } from '#lib/config/rules.ts';
-  import { t, formatYen, juniperLine } from '#lib/i18n/index.ts';
+  import { t, formatYen, hostLine } from '#lib/i18n/index.ts';
   import { dateMs } from '#lib/scoring/dates.ts';
 
   const TREATS = [
@@ -27,6 +28,8 @@
   let ladderOpen = $state(false);
   let purseOpen = $state(false);
   let picked = $state<(typeof TREATS)[number] | null>(null);
+  const cheapest = TREATS.reduce((a, b) => (b.yen < a.yen ? b : a));
+  const canSpend = $derived(!!jar && jar.purseYen >= cheapest.yen);
 
   // The big jar fills toward the next trip (one combined total; per-person layers are one tap deeper, M8).
   const fillH = $derived.by(() => {
@@ -61,7 +64,7 @@
 
   /** しずえ's one line here: how far the next trip is (the rung card shows the bar). */
   const line = $derived(
-    jar?.nextRung ? juniperLine('next_rung', { rung: jar.nextRung.key, yen: jar.nextRung.remainingYen }) : t('jar.allReached')
+    jar?.nextRung ? hostLine('next_rung', { rung: jar.nextRung.key, yen: jar.nextRung.remainingYen }) : t('jar.allReached')
   );
   const nextPct = $derived(jar?.nextRung ? (jar.totalYen / jar.nextRung.yen) * 100 : 100);
   const nextUnreachedKey = $derived(jar?.rungs.find((r) => !r.reached)?.key ?? null);
@@ -135,7 +138,11 @@
       <span class="tape" style:--tape="var(--c-coral-soft)">{t('purse.title')}</span>
       <svg class="pic" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>
       <span class="big pamt">{formatYen(jar.purseYen)}</span>
-      <button type="button" class="btn coral go" onclick={() => (purseOpen = true)}>{t('purse.spend')}</button>
+      {#if canSpend}
+        <button type="button" class="btn coral go" onclick={() => (purseOpen = true)}>{t('purse.spend')}</button>
+      {:else}
+        <span class="need">{t('purse.need', { yen: formatYen(cheapest.yen - jar.purseYen), label: t(`treat.${cheapest.key}`) })}</span>
+      {/if}
     </div>
 
     {#if jar.transfer}
@@ -209,6 +216,7 @@
           <svg class="art" viewBox={item.vb} aria-hidden="true"><use href="#{item.icon}" /></svg>
           <b>{t(`treat.${item.key}`)}</b>
           <span class="p money">{formatYen(item.yen)}</span>
+          {#if out}<span class="short">{t('purse.short', { yen: formatYen(item.yen - jar.purseYen) })}</span>{/if}
         </button>
       {/each}
     </div>
@@ -270,6 +278,7 @@
   .pic { width: 44px; height: 44px; flex: none; }
   .pamt { font-size: 1.9rem; flex: 1; }
   .go { width: auto; min-width: 112px; }
+  .need { flex: 0 1 auto; max-width: 48%; text-align: right; font-weight: 700; font-size: var(--fs-caption); line-height: 1.35; color: var(--c-ink-talk); }
 
   .sheet-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .hd-ic { width: 40px; height: 40px; color: var(--text-soft); flex: none; }
@@ -296,10 +305,12 @@
   }
   .item:active:not(:disabled) { transform: translateY(3px) scale(1.04, .94); transition-duration: var(--dur-tap); }
   .item.sel { border-color: var(--c-coral); background: var(--c-coral-soft); box-shadow: 0 4px 0 var(--c-coral-lip); outline-color: rgba(224, 127, 107, .5); transform: translateY(-3px); }
-  .item:disabled { opacity: .45; cursor: default; }
+  .item:disabled { cursor: default; background: var(--c-paper-2); box-shadow: none; outline-color: transparent; }
+  .item:disabled .art, .item:disabled .both { opacity: .45; filter: grayscale(.6); }
+  .short { font: 700 var(--fs-micro) var(--font-ui); color: var(--c-ink-talk); }
   .art { width: 44px; height: 44px; margin-bottom: 4px; }
   .item b { font: 700 .9rem var(--font-ui); }
-  .item .p { font-size: 1rem; color: var(--coral-ink); }
+  .item .p { font-size: 1rem; color: var(--c-coral-ink); }
   .both { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; color: #F28BA8; }
   .confirm { margin-top: 16px; display: grid; gap: 10px; }
   .confirm p { margin: 0; text-align: center; font-weight: 700; font-size: var(--fs-body-lg); }

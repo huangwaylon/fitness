@@ -1,11 +1,12 @@
 <script lang="ts">
   // Speech bubble (style guide v3 §4.1, §A): wobbly cream box, tilted name tag, letter-by-letter
   // reveal (tap to finish), amber ▼ when another page follows (tap = next). しずえ stands on the
-  // left (official art by pose, fan-art fallback), tail pointing at her.
+  // left (official art by pose; the season picks her outfit), tail pointing at her.
+  // `actions`: small answer chips inside the bubble (U2), shown under the text.
   // Reduced motion: text appears at once. The real text lives in an aria-live node.
+  import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
-  import Juniper from './Juniper.svelte';
-  import { theme } from '#lib/client/theme.svelte.ts';
+  import Host from './Host.svelte';
   import type { HostPose } from '#lib/client/assets.ts';
 
   interface Props {
@@ -21,10 +22,10 @@
     size?: number;
     /** Called once the last page has finished typing. */
     onfinish?: () => void;
+    /** Answer chips inside the bubble, under the text. */
+    actions?: Snippet;
   }
-  let { text, name, tag = 'var(--tag-juniper)', host = 'wave', size = 72, onfinish }: Props = $props();
-  /** Dec–Feb: the winter outfit replaces the calm pose. */
-  const pose = $derived<HostPose | false>(host === 'stand' && theme.season === 'winter' ? 'winter' : host);
+  let { text, name, tag = 'var(--tag-host)', host = 'wave', size = 72, onfinish, actions }: Props = $props();
 
   const pages = $derived(Array.isArray(text) ? text : [text]);
   let pageIdx = $state(0);
@@ -88,34 +89,36 @@
 </script>
 
 <div class="talk">
-  {#if pose}
+  {#if host}
     <span class="spk" style:--h="{size}px">
-      <Juniper {pose} {size} eager />
+      <Host pose={host} {size} eager />
     </span>
   {/if}
-  <button type="button" class="bubble" class:tail={!!pose} onclick={tap} aria-label={more ? t('common.next') : undefined}>
-    <span class="who" style:--tag={tag}>{name ?? t('juniper.name')}</span>
-    <span class="sr-only" aria-live="polite">{current}</span>
-    <span class="txt" aria-hidden="true">
-      <span class="live">
-        {#if typing}
-          {#key current}
-            {#each glyphs as g, i (i)}<span class="g" style:animation-delay="{g.at}ms">{g.ch}</span>{/each}
-          {/key}
-        {:else}
-          {current}
-        {/if}
+  <div class="bubble" class:tail={!!host}>
+    <span class="who" style:--tag={tag}>{name ?? t('host.name')}</span>
+    <button type="button" class="tap" onclick={tap} aria-label={more ? t('common.next') : undefined}>
+      <span class="sr-only" aria-live="polite">{current}</span>
+      <span class="txt" aria-hidden="true">
+        <span class="live">
+          {#if typing}
+            {#key current}
+              {#each glyphs as g, i (i)}<span class="g" style:animation-delay="{g.at}ms">{g.ch}</span>{/each}
+            {/key}
+          {:else}
+            {current}
+          {/if}
+        </span>
+        <span class="ghost">{current}</span>
       </span>
-      <span class="ghost">{current}</span>
-    </span>
+    </button>
+    {#if actions}<div class="acts">{@render actions()}</div>{/if}
     {#if more && !typing}<span class="next" aria-hidden="true"></span>{/if}
-  </button>
+  </div>
 </div>
 
 <style>
   .talk { display: flex; align-items: flex-end; gap: 6px; }
   .bubble {
-    appearance: none; border: 0; font: inherit; cursor: pointer; text-align: left;
     position: relative; flex: 1; min-width: 0; min-height: 64px; margin: 14px 0 6px;
     background: var(--bubble); color: var(--c-ink-talk); border-radius: var(--r-bubble);
     padding: 18px 20px 16px; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-soft);
@@ -123,7 +126,12 @@
     text-wrap: pretty; word-break: auto-phrase;
     transform-origin: 0 100%; animation: open var(--dur-pop) var(--ease-bounce) both;
   }
-  .bubble:focus-visible { outline-offset: 4px; border-radius: var(--r-bubble); }
+  .tap {
+    appearance: none; border: 0; padding: 0; margin: 0; background: none; font: inherit; color: inherit; cursor: pointer;
+    text-align: left; display: block; width: 100%;
+  }
+  .tap:focus-visible { outline-offset: 8px; border-radius: 18px; }
+  .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
   :global(:root[data-theme="night"]) .bubble { box-shadow: 0 4px 0 #CFC4AA, var(--sh-soft); }
   @keyframes open { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
   .who {
@@ -146,7 +154,7 @@
     position: absolute; left: 50%; bottom: -6px; margin-left: -7px; width: 14px; height: 10px; background: var(--c-amber);
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
-  /* しずえ: feet on the bubble's baseline (Juniper floats gently by itself). */
+  /* しずえ: feet on the bubble's baseline (Host floats gently by itself). */
   .spk { flex: none; display: grid; justify-items: center; min-height: var(--h); align-items: end; margin-bottom: 4px; }
   :global(:root[data-theme="night"]) .spk :global(img) { filter: brightness(.9); }
   @media (prefers-reduced-motion: reduce) {

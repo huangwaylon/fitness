@@ -52,7 +52,7 @@
   --app-island:#5CC9B0; --app-jar:#F7D44C; --app-us:#F5A3C0; --app-help:#B98AE8;
   --app-villager:#F09A5B; --app-lang:#7FA8F5; --app-bell:#C8DC5A; --app-sync:#A88462;
   /* name-tag colours (speech bubbles) */
-  --tag-juniper:#FFD66B; --tag-plum:#D9C6F5; --tag-apricot:#FFCFB0; --tag-mint:#BDEBDA;
+  --tag-host:#FFD66B; --tag-plum:#D9C6F5; --tag-apricot:#FFCFB0; --tag-mint:#BDEBDA;
   --tag-berry:#F9C2D3; --tag-lemon:#FFE89A;
   /* villager drawing */
   --v-line:#4A3A2C; --v-line-w:2.6; --v-eye:#3A2C20; --v-mouth:#8A3B2E; --v-tongue:#FF8A7A;
@@ -199,7 +199,7 @@
 }
 
 /* ---------- 12. shared keyframes (prefix if-) ---------- */
-/* idle bob for villagers/Juniper: apply with transform-origin: 50% 100% */
+/* idle bob for villagers: apply with transform-origin: 50% 100% */
 @keyframes if-bob { 0%,100% { transform: translateY(0) scale(1,1); } 50% { transform: translateY(-2%) scale(.985,1.015); } }
 /* pop-in for emotes, badges, fruit: 0 -> 1.15 -> 1 */
 @keyframes if-pop { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }

@@ -1,29 +1,29 @@
 <script lang="ts">
   // The Island scene (style guide v3 §5): sky, sea, a curved checkered island, two trees with the
   // official fruit ripening on them, the jar filling with coins, and the two villagers (official
-  // renders) standing at the foot of their trees with their score pill.
+  // renders) standing at the foot of their trees. My pill is the hero (score /100); the partner's
+  // shows name + their ripest fruit only, their number stays in the partner sheet (U3).
   // Colours come from tokens.css (data-season / data-theme / data-tod on <html>); `season` / `night`
   // props override for the dev gallery. Everything scales with the container width: the SVG uses
   // viewBox 390×540 and the HTML overlays use cqw (1 unit = 1/3.9 cqw).
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import { FRUITS } from '#lib/config/rules.ts';
-  import FruitRing from './FruitRing.svelte';
+  import FruitRing, { ripeness } from './FruitRing.svelte';
   import Villager from './Villager.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import LeafCoin from './LeafCoin.svelte';
   import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
+  import { fruitArt } from '#lib/client/assets.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { theme, type Season } from '#lib/client/theme.svelte.ts';
 
   interface Props {
     view: WeekView;
-    /** Partner tapped: both cheer and the partner pops a ♥ (default when `onpartner` isn't set). */
-    onhighfive?: () => void;
-    /** Partner villager tapped (e.g. open the partner sheet). Replaces the built-in high-five. */
+    /** Partner villager tapped (e.g. open the partner sheet). */
     onpartner?: () => void;
-    /** My villager tapped (e.g. open 今夜のチェック). Without it, my villager just hops. */
+    /** My villager tapped (e.g. open 今夜のチェック). */
     onme?: () => void;
-    /** Jar tapped (e.g. go to 旅の壺). Without it, the jar wiggles. */
+    /** Jar tapped (e.g. go to 旅の壺). */
     onjar?: () => void;
     /** Override the villagers' expressions (default happy). */
     meExpression?: Expression;
@@ -36,7 +36,7 @@
     night?: boolean;
   }
   let {
-    view, onhighfive, onpartner, onme, onjar, meExpression, partnerExpression, meEmote = false, partnerEmote = false,
+    view, onpartner, onme, onjar, meExpression, partnerExpression, meEmote = false, partnerEmote = false,
     season: seasonProp, night: nightProp
   }: Props = $props();
 
@@ -48,26 +48,13 @@
   const warm = $derived(!night && nightProp === undefined && (theme.tod === 'dawn' || theme.tod === 'dusk'));
   const TAG: Record<PersonId, string> = { A: 'var(--tag-apricot)', B: 'var(--tag-plum)' };
 
-  // Tap partner (no onpartner) = high-five: both cheer, partner pops a ♥.
-  let fiveAt = $state(0);
-  let fiving = $state(false);
-  let fiveTimer: ReturnType<typeof setTimeout> | null = null;
-  function highFive() {
-    fiveAt += 1;
-    fiving = true;
-    if (fiveTimer) clearTimeout(fiveTimer);
-    fiveTimer = setTimeout(() => (fiving = false), 2200);
-    onhighfive?.();
-  }
-  let meHop = $state(0);
-  const meExpr = $derived<Expression>(fiving || meHop ? 'cheer' : (meExpression ?? 'happy'));
-  const partnerExpr = $derived<Expression>(fiving ? 'cheer' : (partnerExpression ?? 'happy'));
 
   // Jar fill: share of the top rung (a little visible as soon as there is anything in it).
   const topYen = $derived(Math.max(1, ...view.jar.rungs.map((r) => r.yen), view.jar.nextRung?.yen ?? 0));
   const fill = $derived(view.jar.totalYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(view.jar.totalYen / topYen))));
   const coinTop = $derived(66 - fill * 44); // jar-local y of the coin surface (body spans y 18–66)
-  let jarWiggle = $state(0);
+  /** The partner's ripest fruit, for their pill. */
+  const partnerFruit = $derived(FRUITS.reduce((a, f) => (partner.fruits[f].pct > partner.fruits[a].pct ? f : a), FRUITS[0]));
 
   // Tree canopy: five overlapping circles (local coords, centred on the trunk at x 0).
   const CANOPY = [
@@ -100,17 +87,6 @@
     { side: 'theirs', x: 326 }
   ];
   const who = (side: 'mine' | 'theirs'): PersonWeekView => (side === 'mine' ? me : partner);
-
-  function tapVillager(side: 'mine' | 'theirs') {
-    if (side === 'theirs') return onpartner ? onpartner() : highFive();
-    if (onme) return onme();
-    meHop += 1;
-    setTimeout(() => (meHop = Math.max(0, meHop - 1)), 900);
-  }
-  function tapJar() {
-    if (onjar) onjar();
-    else jarWiggle += 1;
-  }
 </script>
 
 <div class="scene" class:night data-season-art={season}>
@@ -204,8 +180,7 @@
 
     <!-- jar (centre 195, 405): glass, coins up to the fill line, yuzu lid -->
     <ellipse cx="195" cy="438" rx="28" ry="5" class="shadow" />
-    {#key jarWiggle}
-      <g class="jar" class:wiggle={jarWiggle > 0} transform="translate(168 372)">
+    <g class="jar" transform="translate(168 372)">
         <path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" class="glass" />
         <g clip-path="url(#{uid}-jarbody)">
           {#if fill > 0}
@@ -222,8 +197,7 @@
         <rect x="11" y="9" width="32" height="11" rx="4" class="lid" />
         <path d="M14 12.5 H40" class="lidline" />
         <path d="M27 9 Q29 2 36 2.6 Q33 9 27 9 Z" fill="#7BC67E" stroke="#4A3A2C" stroke-width="1.6" stroke-linejoin="round" />
-      </g>
-    {/key}
+    </g>
 
     <!-- villager ground shadows (the villagers themselves are HTML overlays) -->
     {#each SPOTS as v (v.side)}<ellipse cx={v.x} cy={FOOT_Y} rx="20" ry="4.6" class="shadow" />{/each}
@@ -257,7 +231,7 @@
     {/each}
   {/if}
 
-  <button type="button" class="jartap" aria-label={t('island.jar', { yen: formatYen(view.jar.totalYen) })} onclick={tapJar}></button>
+  <button type="button" class="jartap" aria-label={t('island.jar', { yen: formatYen(view.jar.totalYen) })} onclick={() => onjar?.()}></button>
 
   {#each SPOTS as v (v.side)}
     {@const p = who(v.side)}
@@ -273,23 +247,29 @@
       aria-label={mine
         ? t('island.score', { name: p.villagerName, score: p.score })
         : t('island.highfive', { name: p.villagerName })}
-      onclick={() => tapVillager(v.side)}
+      onclick={() => (mine ? onme : onpartner)?.()}
     >
       <Villager
         person={p.person}
         villager={p.villager}
         size="23cqw"
         eager
-        expression={mine ? meExpr : partnerExpr}
-        emote={mine ? (fiving ? true : meHop ? true : meEmote) : fiving ? 'heart' : partnerEmote}
-        replay={mine ? fiveAt + meHop : fiveAt}
+        expression={(mine ? meExpression : partnerExpression) ?? 'happy'}
+        emote={mine ? meEmote : partnerEmote}
       />
     </button>
-    <div class="pill {v.side}" style:left={cq(v.x)} style:--tag={TAG[p.person]}
-      aria-label={t('island.score', { name: p.villagerName, score: p.score })}>
-      <span class="tag">{p.villagerName}</span>
-      <b class="money">{p.score}</b>
-    </div>
+    {#if mine}
+      <div class="pill mine" style:left={cq(v.x)} style:--tag={TAG[p.person]} role="img"
+        aria-label={t('island.score', { name: p.villagerName, score: p.score })}>
+        <span class="tag">{p.villagerName}</span>
+        <b class="money">{p.score}</b><small class="money">/100</small>
+      </div>
+    {:else}
+      <div class="pill theirs" style:left={cq(v.x)} style:--tag={TAG[p.person]} aria-hidden="true">
+        <span class="tag">{p.villagerName}</span>
+        <span class="pf {ripeness(p.fruits[partnerFruit].pct)}"><OfficialArt key={fruitArt(partnerFruit)} size="5.6cqw" eager /></span>
+      </div>
+    {/if}
   {/each}
 
   <div class="jarsign" aria-hidden="true">
@@ -339,8 +319,6 @@
   .glint { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .85; }
   .lid { fill: var(--c-yuzu); stroke: #4A3A2C; stroke-width: 2.4; }
   .lidline { stroke: var(--c-yuzu-lip); stroke-width: 1.6; stroke-linecap: round; }
-  .jar { transform-box: fill-box; transform-origin: 50% 100%; }
-  .jar.wiggle { animation: if-wiggle 420ms var(--ease-soft) 1; }
 
   .petal { fill: var(--season-accent); animation: fall 10s linear infinite; }
   .fall-leaf { fill: var(--season-accent); stroke: #8A4A2A; stroke-width: .8; animation: fall-leaf 9s linear infinite; }
@@ -367,7 +345,7 @@
   .petal, .flake, .fall-leaf, .firefly { transform-box: fill-box; transform-origin: center; }
 
   @media (prefers-reduced-motion: reduce) {
-    .sway, .cloud, .foam path, .stars path, .jar.wiggle { animation: none; }
+    .sway, .cloud, .foam path, .stars path { animation: none; }
     .particles { display: none; }
   }
 
@@ -410,7 +388,14 @@
     background: var(--tag); border-radius: 999px; padding: .8cqw 2.2cqw;
     font-size: min(.8125rem, 3.3cqw); font-weight: 700; line-height: 1;
   }
-  .pill b { font-family: var(--font-num); font-weight: 700; font-size: min(1.5rem, 6.2cqw); line-height: 1; }
+  .pill b { font-family: var(--font-num); font-weight: 700; font-size: min(1.75rem, 7.2cqw); line-height: 1; }
+  .pill small { font-size: min(.8125rem, 3.3cqw); font-weight: 600; color: var(--c-ink-talk); margin-left: -.8cqw; align-self: flex-end; padding-bottom: .4cqw; }
+  /* Partner: quieter, smaller, no number. */
+  .pill.theirs { padding-right: 1.6cqw; gap: 1cqw; box-shadow: 0 2px 0 var(--lip); border-width: 1.5px; }
+  .pill.theirs .tag { font-size: min(.75rem, 3cqw); }
+  .pf { line-height: 0; }
+  .pf.bud { opacity: .6; filter: grayscale(.9); }
+  .pf.small { filter: saturate(.45); }
 
   .jarsign {
     position: absolute; z-index: 5; top: 114.9cqw; left: 50%; transform: translateX(-50%);

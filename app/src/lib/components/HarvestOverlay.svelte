@@ -1,14 +1,18 @@
 <script lang="ts">
   // 日曜の収穫 (Sunday harvest overlay, ≤ 60 s): tally → rung reached (optional) → 壺に入れる.
-  import type { HarvestView, PersonId } from '#lib/types.ts';
-  import { RUNGS } from '#lib/config/rules.ts';
+  // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
+  // Rows show name + the four fruits + yen, not a scoreboard (U3, U12); しずえ keeps one outfit (U5).
+  import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
+  import { FRUITS, RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
   import Avatar from './Avatar.svelte';
   import Yen from './Yen.svelte';
   import Bubble from './Bubble.svelte';
+  import OfficialArt from './OfficialArt.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import type { WeekView } from '#lib/types.ts';
   import { confirmHarvest } from '#lib/client/actions.ts';
+  import { fruitArt } from '#lib/client/assets.ts';
+  import { ripeness } from './FruitRing.svelte';
   import { t, formatYen } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -40,12 +44,20 @@
   }
 
   const people: PersonId[] = $derived([me, partner]);
+  /** The fruits' ripeness, when the view is still the harvested week (Sunday evening); else plain icons. */
+  const sameWeek = $derived(view.weekKey === harvest.weekKey);
+
+  function modal(node: HTMLDialogElement) {
+    if (!node.open) node.showModal?.();
+    node.focus();
+  }
   const steps = $derived<('tally' | 'rung')[]>(rung ? ['tally', 'rung'] : ['tally']);
-  const juniLine = $derived(step === 'tally' ? t('harvest.hello') : t('harvest.rungReached'));
+  const hostLine = $derived(step === 'tally' ? t('harvest.hello') : t('harvest.rungReached'));
   const CONFETTI = ['#E8F59A', '#FFB38A', '#7BC67E', '#F28BA8', '#8FD3F4', '#F6E7B0'];
 </script>
 
-<div class="overlay" role="dialog" aria-modal="true" aria-label={t('harvest.title')}>
+<dialog class="overlay" aria-label={t('harvest.title')} tabindex="-1" use:modal
+  oncancel={(e) => { e.preventDefault(); onlater(); }}>
   <div class="confetti" aria-hidden="true">
     {#each CONFETTI as c, i (i)}<i style="left:{8 + i * 16}%;background:{c};animation-delay:{(step === 'tally' ? 3 : 0) + i * 0.3}s"></i>{/each}
   </div>
@@ -57,20 +69,26 @@
       <button type="button" class="pill later" onclick={onlater}>{t('common.later')}</button>
     </div>
 
-    <Bubble text={juniLine} host={step === 'rung' || !rung ? 'bow' : 'wave'} />
+    <Bubble text={hostLine} host="wave" />
 
     {#if step === 'tally'}
       <section class="tally card" aria-live="polite">
         {#each people as who, i (who)}
+          {@const pv = view.people[who]}
           <div class="trow" style="animation-delay:{0.3 + i * 0.7}s">
-            <Avatar person={who} villager={view.people[who].villager} size={48} label={view.people[who].villagerName} />
-            <span class="sc big">{p[who].score}<small>/100</small></span>
+            <Avatar person={who} villager={pv.villager} size={48} />
+            <span class="who">
+              <b class="nm">{pv.villagerName}</b>
+              <span class="frs" aria-hidden="true">
+                {#each FRUITS as f (f)}<span class="fr {sameWeek ? ripeness(pv.fruits[f].pct) : ''}"><OfficialArt key={fruitArt(f)} size={22} /></span>{/each}
+              </span>
+            </span>
             <span class="yen big">+{formatYen(p[who].fruitYen)}</span>
           </div>
         {/each}
         <div class="trow" style="animation-delay:1.7s">
           <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart" /></svg></span>
-          <span class="sc team-l">{t('harvest.team')}</span>
+          <span class="who"><b class="nm">{t('harvest.team')}</b></span>
           <span class="yen big">+{formatYen(p.teamYen)}</span>
         </div>
         <div class="ttotal">
@@ -120,17 +138,20 @@
       </div>
     {/if}
   </div>
-</div>
+</dialog>
 
 <style>
   .overlay {
     position: fixed; inset: 0; z-index: 60; overflow: auto; color: var(--night-ink);
+    width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
     --surface: var(--night-card); --edge: var(--night-edge); --stitch: #5A6F9C; --sh-lip: 0 4px 0 #18213A;
     --text: var(--night-ink); --text-soft: var(--night-ink-soft); --text-faint: var(--night-ink-soft); --bg: var(--night-sky); --lip: #18213A;
     background: radial-gradient(circle, rgba(255, 255, 255, .5) 1.2px, transparent 1.8px) 11px 23px / 61px 53px, radial-gradient(circle, rgba(246, 231, 176, .4) 1px, transparent 1.6px) 29px 7px / 43px 71px, linear-gradient(180deg, #16203A 0%, var(--night-sky) 45%, var(--night-sky-2) 100%);
     background-attachment: fixed;
     animation: fade var(--dur-base) var(--ease-soft);
   }
+  .overlay:focus { outline: none; }
+  .overlay::backdrop { background: transparent; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   .col {
     position: relative; max-width: var(--col); margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 14px;
@@ -147,13 +168,21 @@
   .confetti i { position: absolute; top: -20px; width: 12px; height: 8px; border-radius: 8px 0; animation: fall 4.5s linear infinite; }
 
   .tally { padding: 6px 18px; box-shadow: 0 4px 0 #18213A, 0 18px 40px rgba(0, 0, 0, .35); }
-  .trow { display: flex; align-items: center; gap: 12px; min-height: 62px; border-bottom: 2px dashed var(--stitch); opacity: 0; animation: rowIn .5s var(--ease-soft) forwards; }
+  /* Rows grow in one by one, so the card grows with them (no empty height while revealing). */
+  .trow {
+    display: flex; align-items: center; gap: 12px; border-bottom: 2px dashed var(--stitch); overflow: hidden;
+    animation: rowGrow .5s var(--ease-soft) both;
+  }
+  @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 90px; opacity: 1; padding-block: 7px; } }
+  .who { flex: 1; min-width: 0; display: grid; gap: 4px; }
+  .nm { font-weight: 700; font-size: var(--fs-body-lg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .frs { display: flex; gap: 4px; }
+  .fr { line-height: 0; }
+  .fr.bud { opacity: .55; filter: grayscale(.8); }
+  .fr.small { filter: saturate(.5); }
   .av { width: 48px; height: 48px; flex: none; border-radius: var(--r-blob); background: var(--night-sky-2); display: grid; place-items: center; overflow: hidden; }
-  .sc small { font-size: .9rem; color: var(--night-ink-soft); }
   .av.team svg { width: 26px; height: 26px; color: var(--p-berry); }
-  .sc { font-size: 1.9rem; min-width: 62px; }
-  .team-l { font: 900 1.1rem var(--font-ui); }
-  .yen { margin-left: auto; font-size: 1.45rem; color: var(--moon); }
+  .yen { margin-left: auto; font-size: 1.45rem; color: var(--moon); flex: none; }
   .ttotal { display: flex; justify-content: space-between; align-items: center; min-height: 70px; opacity: 0; animation: rowIn .6s var(--ease-bounce) 2.4s forwards; }
   .ttotal .lbl { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--night-ink-soft); line-height: 1.3; }
   .ttotal :global(.total) { font-size: 2.3rem; color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both; }
