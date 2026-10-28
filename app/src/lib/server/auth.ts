@@ -9,7 +9,7 @@ import { now } from '#lib/server/clock.ts';
 export const SESSION_COOKIE = '__Host-session';
 export const SESSION_MAX_AGE_S = 365 * 24 * 3600;
 export const PAIRING_TTL_MS = 10 * 60 * 1000;
-export const PAIRING_MAX_ATTEMPTS = 5;
+export const PAIRING_MAX_ATTEMPTS = 10;
 
 export type DeviceKind = 'pwa' | 'hae' | 'shortcut';
 export interface AuthedDevice { id: number; person: PersonId; kind: DeviceKind; lastSeenAt: string | null }

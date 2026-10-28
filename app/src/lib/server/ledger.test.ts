@@ -77,9 +77,9 @@ describe('settlement', () => {
     expect(runSettlement(db, new Date('2026-11-13T00:00:00Z')).filter((r) => r.weekKey === WK)).toEqual([]);
   });
 
-  it('a missed provisional is paid in full as earn by the final pass', () => {
+  it('a missed provisional is caught up first (so the harvest opens), then the final pass', () => {
     const r = runSettlement(db, new Date('2026-11-12T00:00:00Z'));
-    expect(r.map((x) => x.mode)).toEqual(['final']);
+    expect(r.map((x) => x.mode)).toEqual(['provisional', 'final']);
     expect(entries().every((e) => e.kind === 'earn')).toBe(true);
     expect(entries().length).toBeGreaterThan(0);
     setNow(null);

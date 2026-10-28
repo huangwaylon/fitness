@@ -16,6 +16,7 @@ beforeEach(() => {
   forcePushEnabled(true);
   setSender(async (sub, payload) => {
     sent.push({ person: sub.endpoint.endsWith('/A') ? 'A' : 'B', kind: JSON.parse(payload).kind });
+    return { statusCode: 201 };
   });
   for (const p of ['A', 'B'] as const) {
     db.insert(pushSubscription).values({ person: p, deviceId: 1, endpoint: `https://push.example/${p}`, keysJson: '{"p256dh":"x","auth":"y"}' }).run();

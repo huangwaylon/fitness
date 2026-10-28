@@ -203,7 +203,8 @@
     <h2 class="sh-t">{t('promise.next')}</h2>
     <PromiseEditor bind:daysMask bind:kind bind:note />
     <button type="button" class="btn sh-b" disabled={daysMask === 0} onclick={savePromise}>{t('promise.set')}</button>
-    {#if me.promise?.result === 'open'}
+    <!-- Ask "what got in the way?" only once the week is over (harvest open), never mid-week. -->
+    {#if me.promise?.result === 'open' && view.harvest}
       <div class="blocker">
         {#if blockerSent}
           <p>{t('promise.blockerThanks')}</p>

@@ -23,7 +23,7 @@ Upgrade: `git pull && docker compose up -d --build`. Migrations run automaticall
 
 ## 2. Pairing the phones (PWA)
 1. On each iPhone, open the URL in Safari, choose **Share → Add to Home Screen**, then open the app **from the Home Screen icon**. The installed app has its own cookie jar.
-2. On the Mac, run `docker compose exec island node scripts/pair.ts A` (or `B`). This prints a 6-digit code that works once, for 10 minutes, with 5 attempts.
+2. On the Mac, run `docker compose exec island node scripts/pair.ts A` (or `B`). This prints a 6-digit code that works once, for 10 minutes, with 10 attempts. The URL is public, so a stranger can burn a code with wrong guesses; if pairing says the code is invalid or busy, wait a few minutes and run it again.
 3. Type the code into the installed app. The app sets a session cookie for about a year.
 4. In the app, tap **Enable reminders** to turn on web push.
 

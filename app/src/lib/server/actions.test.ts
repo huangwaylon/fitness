@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { Db } from '#lib/server/db/index.ts';
 import { ledgerEntry, presenceEvent, pushSubscription, workout } from '#lib/server/db/schema.ts';
 import { setNow } from '#lib/server/clock.ts';
-import { approveSpend, confirm, setCheckin, setCozyDay, setPromise, spendPurse } from '#lib/server/actions.ts';
+import { approveSpend, confirm, isPushServiceUrl, setCheckin, setCozyDay, setPromise, spendPurse } from '#lib/server/actions.ts';
 import { purseBalance, settleWeek } from '#lib/server/ledger.ts';
 import { HttpError } from '#lib/server/http.ts';
 import { recordPresence, promptRecentVisits } from '#lib/server/presence.ts';
@@ -129,3 +129,14 @@ describe('gym visits', () => {
     setSender(null);
   });
 });
+
+describe('push subscriptions', () => {
+  it('only accept endpoints at real push services (no SSRF from the Mac)', () => {
+    expect(isPushServiceUrl('https://web.push.apple.com/QGx')).toBe(true);
+    expect(isPushServiceUrl('https://fcm.googleapis.com/fcm/send/x')).toBe(true);
+    expect(isPushServiceUrl('https://192.168.1.1/admin')).toBe(false);
+    expect(isPushServiceUrl('https://evilpush.apple.com.example/x')).toBe(false);
+    expect(isPushServiceUrl('http://web.push.apple.com/x')).toBe(false);
+  });
+});
+

@@ -35,12 +35,12 @@ describe('pairing', () => {
     expect(row.codeHash).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('dies after 5 wrong attempts', () => {
+  it('dies after 10 wrong attempts', () => {
     const { code } = createPairingCode(db, 'A');
     const wrong = code === '000000' ? '111111' : '000000';
-    for (let i = 0; i < 5; i++) expect(redeemPairingCode(db, wrong, 'x')).toBeNull();
+    for (let i = 0; i < 10; i++) expect(redeemPairingCode(db, wrong, 'x')).toBeNull();
     expect(redeemPairingCode(db, code, 'x')).toBeNull();
-    expect(db.select().from(pairingCode).where(eq(pairingCode.id, 1)).get()!.attempts).toBe(5);
+    expect(db.select().from(pairingCode).where(eq(pairingCode.id, 1)).get()!.attempts).toBe(10);
   });
 
   it('expires after 10 minutes', () => {
@@ -51,9 +51,9 @@ describe('pairing', () => {
     setNow(null);
   });
 
-  it('rate-limits POST /api/pair to 5 per 10 min per IP', async () => {
+  it('rate-limits POST /api/pair to 20 per 10 min', async () => {
     const mk = () => fakeEvent('/api/pair', { method: 'POST', headers: { origin: ORIGIN }, body: '{}' });
-    for (let i = 0; i < 5; i++) expect(await guard(mk(), opts())).toBeNull();
+    for (let i = 0; i < 20; i++) expect(await guard(mk(), opts())).toBeNull();
     expect((await guard(mk(), opts()))?.status).toBe(429);
   });
 });
@@ -117,15 +117,33 @@ describe('/api/* accepts only the session cookie + Origin', () => {
     expect((await guard(big, opts()))?.status).toBe(413);
   });
 
-  it('DEV_PERSON works only outside production', async () => {
+  it('DEV_PERSON works only in a dev build and outside production', async () => {
     process.env.DEV_PERSON = 'B';
+    expect((await guard(fakeEvent('/api/week'), opts()))?.status).toBe(401); // built server ignores it
     const e = fakeEvent('/api/week');
-    expect(await guard(e, opts())).toBeNull();
+    expect(await guard(e, { ...opts(), dev: true })).toBeNull();
     expect(e.locals.person).toBe('B');
     const prev = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
-    expect((await guard(fakeEvent('/api/week'), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/api/week'), { ...opts(), dev: true }))?.status).toBe(401);
     process.env.NODE_ENV = prev;
     delete process.env.DEV_PERSON;
   });
 });
+
+describe('round 3 security fixes', () => {
+  it('S1: anonymous floods do not rate-limit a paired device', async () => {
+    const secret = pairA();
+    for (let i = 0; i < 130; i++) await guard(fakeEvent('/api/week'), opts());
+    expect((await guard(fakeEvent('/api/week'), opts()))?.status).toBe(429);
+    const e = fakeEvent('/api/week', { cookie: secret });
+    expect(await guard(e, opts())).toBeNull();
+  });
+  it('S3: percent-encoded paths are classified like the decoded route', async () => {
+    const foreign = { method: 'POST', headers: { origin: 'https://evil.example' } };
+    expect((await guard(fakeEvent('/%61pi/high-five', foreign), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/%69ngest/hae/A', { method: 'POST' }), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/%E0%A4%A', { method: 'GET' }), opts()))?.status).toBe(400);
+  });
+});
+
