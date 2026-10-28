@@ -1,12 +1,10 @@
 <script lang="ts">
   import { asset } from '$app/paths';
   import { routeOf } from '#lib/client/paths.ts';
-  import '@fontsource/fredoka/500.css';
   import '@fontsource/fredoka/600.css';
   import '@fontsource/fredoka/700.css';
   import '@fontsource/zen-maru-gothic/500.css';
   import '@fontsource/zen-maru-gothic/700.css';
-  import '@fontsource/zen-maru-gothic/900.css';
   import '#lib/styles/tokens.css';
   import '#lib/components/theme.css';
   import { onMount, type Snippet } from 'svelte';

@@ -122,7 +122,7 @@
   .cta, .pending { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
   .pending { display: grid; gap: 12px; padding: 24px 14px 10px; margin-top: 6px; box-shadow: var(--sh-lip), var(--sh-float); }
   .pending .tape { --tape: var(--c-sky-soft); max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
-  .q { font-size: var(--fs-h2); font-weight: 900; line-height: 1.3; text-align: center; word-break: auto-phrase; }
+  .q { font-size: var(--fs-h2); font-weight: 700; line-height: 1.3; text-align: center; word-break: auto-phrase; }
   .yn { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   /* iPhone SE-height screens: trim empty sky so the scene, しずえ and the button fit. */
   @media (max-height: 720px) {
