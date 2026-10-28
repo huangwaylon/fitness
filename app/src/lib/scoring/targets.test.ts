@@ -29,11 +29,15 @@ describe('targetsFor', () => {
   });
   it('identifies the two easy weeks around 正月 (year wrap)', () => {
     expect(isEasyWeek('2026-12-14')).toBe(false); // Dec 14–20
-    expect(isEasyWeek('2026-12-21')).toBe(true); // touches Dec 22
+    expect(isEasyWeek('2026-12-21')).toBe(true); // touches Dec 25
     expect(isEasyWeek('2026-12-28')).toBe(true); // Dec 28–Jan 3
     expect(isEasyWeek('2027-01-04')).toBe(false);
     expect(isEasyWeek('2027-12-20')).toBe(true); // Dec 20–26, 2027
     expect(isEasyWeek('2027-12-13')).toBe(false); // Dec 13–19
-    expect(isEasyWeek('2028-01-03')).toBe(true); // Mon Jan 3, 2028
+    expect(isEasyWeek('2027-12-27')).toBe(true); // Dec 27–Jan 2
+    expect(isEasyWeek('2028-01-03')).toBe(false); // Jan 3–9, 2028: always exactly two easy weeks
+    expect(isEasyWeek('2028-12-18')).toBe(false); // Dec 18–24, 2028
+    expect(isEasyWeek('2028-12-25')).toBe(true);
+    expect(isEasyWeek('2029-01-01')).toBe(true); // Jan 1–7, 2029
   });
 });

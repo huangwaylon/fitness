@@ -6,6 +6,8 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin, cozyDay } from '#lib/client/actions.ts';
   import { t, addDays, weekdayShort, formatDate } from '#lib/i18n/index.ts';
+  import { HOLIDAY } from '#lib/config/rules.ts';
+  import { inMonthDayRange } from '#lib/scoring/dates.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -24,8 +26,9 @@
   let which = $state<'today' | 'yesterday'>('today');
   const date = $derived(which === 'today' ? today : yesterday);
   const ticks = $derived(me?.habits?.ticksByDate[date] ?? []);
+  /** 正月: eating isn't scored, so no toggles to fill in (ADR 0011). */
+  const newYearOff = $derived(date !== '' && inMonthDayRange(date, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to));
   const yesterdayEmpty = $derived((me?.habits?.ticksByDate[yesterday] ?? []).length === 0);
-  let snackOk = $state(false);
   let pop = $state<string | null>(null);
 
   function toggle(key: string) {
@@ -40,7 +43,7 @@
   async function cozy() {
     if (!me) return;
     const r = await cozyDay(today, !me.isCozyToday);
-    if (r === 'limit') week.showToast(t('us.cozyLimit'), 3600);
+    if (typeof r === 'object') week.showToast(t(r.message), 3600);
   }
 </script>
 
@@ -57,23 +60,24 @@
       </div>
     </div>
 
+    {#if newYearOff}
+      <p class="off">{t('checkin.newYearOff')}</p>
+    {:else}
     <div class="habits">
       {#each me.habits?.keys ?? [] as key (key)}
         {@const on = ticks.includes(key)}
         {@const ic = ICONS[key] ?? ICONS.eat_lunch}
         <button type="button" class="habit" class:on role="switch" aria-checked={on} onclick={() => toggle(key)}>
           <svg class="ic" viewBox={ic.vb} aria-hidden="true"><use href="#{ic.id}" /></svg>
-          <span class="txt">{t(`habit.${key}`)}{#if key === 'snack_swap'}<small>{t('habit.snack_swap.hint')}</small>{/if}</span>
+          <span class="txt">{t(`habit.${key}`)}{#if t(`habit.${key}.hint`)}<small>{t(`habit.${key}.hint`)}</small>{/if}</span>
           {#if pop === key}<svg class="plus" viewBox="0 0 24 24" aria-hidden="true"><use href="#f-pear" /></svg>{/if}
           <span class="sw" aria-hidden="true"></span>
         </button>
       {/each}
     </div>
+    {/if}
 
     <div class="extras">
-      <button type="button" class="chip treat" aria-pressed={snackOk} onclick={() => (snackOk = !snackOk)}>
-        <svg viewBox="0 0 26 26" aria-hidden="true"><use href="#i-cake" /></svg>{t('checkin.snackOk')}
-      </button>
       {#if which === 'today'}
         <button type="button" class="chip cozy" aria-pressed={me.isCozyToday} onclick={cozy}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>{t('checkin.cozy')}
@@ -123,6 +127,5 @@
   .extras .chip svg { width: 26px; height: 26px; }
   .chip.cozy { background: #EEF0FB; border-color: #C5CBEF; color: var(--ink-soft); }
   .chip.cozy[aria-pressed='true'] { background: #DCE0FA; border-color: #9FA8E8; border-style: solid; color: var(--ink); }
-  .chip.treat[aria-pressed='true'] { background: var(--coral-soft); border-color: var(--coral); border-style: solid; color: var(--ink); }
-  :global(:root[data-theme="night"]) .chip.treat:not([aria-pressed='true']) { color: var(--night-ink); }
+  .off { text-align: center; padding: 28px 12px; font-size: 1.05rem; }
 </style>

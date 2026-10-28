@@ -22,10 +22,12 @@ export const POINTS = {
 } as const;
 
 export const STRENGTH = {
-  autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Core Training', 'Pilates'],
-  askTypes: ['High Intensity Interval Training', 'Yoga', 'Mixed Cardio', 'Cross Training'],
+  autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
+  askTypes: ['Core Training', 'High Intensity Interval Training', 'Yoga', 'Mixed Cardio', 'Cross Training'],
   minWorkoutMin: 15,
-  minVisitMin: 30
+  minVisitMin: 30,
+  /** Confirmed (non-auto) gym visits paid per week. */
+  maxConfirmedVisitsPerWeek: 2
 } as const;
 
 /** Daily active-minute cap: min(maxMin, max(minMin, ½ × weekly target)) (ADR 0002 round 2). */
@@ -34,9 +36,11 @@ export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
 /** Promise auto-check thresholds (ADR 0011). */
 export const PROMISE_RULES = { walkTypes: ['Outdoor Walk', 'Indoor Walk', 'Walking', 'Hiking'], walkAnyWorkoutMin: 30, anyWorkoutMin: 15 } as const;
 
-export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77 } as const;
+/** Rest day: no strength day, no workout ≥ longWorkoutMin, none ≥ hardWorkoutMin at ≥ hardHrFraction of 220 − age. */
+export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77, longWorkoutMin: 45 } as const;
 
-export const COZY = { maxPerMonth: 4 } as const;
+/** Cozy Days: per month and per Mon–Sun week; only today or yesterday, and not on a day already trained. */
+export const COZY = { maxPerMonth: 4, maxPerWeek: 3, maxDaysBack: 1, trainedActiveMin: 30 } as const;
 
 export const CALIBRATION = { flatScore: 60, minDataDays: 6 } as const;
 
@@ -44,7 +48,7 @@ export const CALIBRATION = { flatScore: 60, minDataDays: 6 } as const;
 export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
 
 /** 正月: Pear not scored; easy weeks use targets × factor (ADR 0011). */
-export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' }, easy: { from: '12-22', to: '01-03', factor: 0.7 } } as const;
+export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' }, easy: { from: '12-25', to: '01-01', factor: 0.7 } } as const;
 
 export const PEOPLE: Record<PersonId, { age: number; villager: string }> = {
   A: { age: 29, villager: 'Bean' },

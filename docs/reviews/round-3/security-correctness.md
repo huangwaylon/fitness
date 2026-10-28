@@ -1,0 +1,24 @@
+# Round 3 review: security and correctness (server)
+
+Reviewer: senior SE. Branch `impl/phase-0-1` @ 669de97, read-only. Line numbers for `actions.ts` are from HEAD, because the working tree has uncommitted edits to it. `vitest`: 103/103 pass. I probed the built server with raw HTTP (temp DB, port 4111). **V** = I reproduced it. **U** = found by reading only.
+
+**What holds up:** secrets are stored as SHA-256 hashes only. Pairing uses `timingSafeEqual`. The cookie is `__Host-`, HttpOnly, Secure and SameSite=Strict. Revocation takes effect at once. Bearer kinds are kept apart, and ingest checks the URL person against the token. Ledger keys are idempotent. A requester can't approve their own spend. The purse can't go below zero. The partner filter is correct: habits and blocker text are never sent, and `actual/target` only with opt-in. The origin is `https://<Host>`, so the Origin check works behind Funnel, and spoofing Host gains nothing. Brute-forcing a pairing code isn't feasible (5 guesses per code, 10⁶ codes).
+
+| ID | Sev | What | Evidence | Fix |
+|---|---|---|---|---|
+| S1 | **High** | **Anyone can lock both users out with rate-limit hits (V).** All Funnel traffic arrives from one socket IP (`ADDRESS_HEADER` unset), and `api:${ip}` (120/min) is counted *before* auth. 125 anonymous `GET /api/week` → the paired user gets 429. The hostname is in CT logs, so ~2 req/s keeps the app down. | `guard.ts:96`, `ratelimit.ts:8`, `.env.example` | Authenticate first, then limit by device id. Give anonymous requests their own bucket. Check whether Funnel sends XFF before setting `ADDRESS_HEADER`. |
+| S2 | Medium | **Anyone can burn the pairing code (V).** Wrong guesses count against every live code, and the pair limit is global. 5 anonymous guesses → code dead, then the real code gets 429. | `auth.ts:50-52`, `guard.ts:90` | Print 8–10 digit codes, or accept the risk and document re-issuing. Use real IPs once S1 is fixed. |
+| S3 | Medium | **Percent-encoded paths skip the zone guard (V).** `zoneOf` matches the raw pathname, but SvelteKit routes on the decoded one. `POST /%61pi/high-five` with an evil `Origin` → 200. `/%69ngest/hae/A` and `/%61pi/presence` accept the session cookie. These paths have no rate limit. SameSite=Strict still blocks browser-based CSRF. | `guard.ts:27-33, 64-68` | Classify on the decoded path (or on `event.route.id`), and add tests for encoded paths. |
+| S4 | Medium | **Catch-up skips the harvest (V).** If the Mac is off past Wed 04:00, only `final` runs and `provisionalAt` is never set. The week is paid and locked, but `harvestWeekKey` returns null and the week isn't counted. | `jobs.ts:43`, `ledger.ts:83-85`, `week.ts:108` | In final mode, set `provisionalAt = coalesce(provisionalAt, t)`. |
+| S5 | Low | **The rolling cookie never rolls for daily users.** The refresh compares against `lastSeenAt`, which every request updates. A phone used daily gets logged out after 365 days. | `guard.ts:122-124` | Track when the cookie was issued, or re-set it once a day. |
+| S6 | Low | **The ¥5,000 partner OK can be split around.** Spends of ¥4,999 or less need no partner, however many there are. | `actions.ts:150` | Count rolling-24h spends toward the threshold. |
+| S7 | Low | **The transfer amount is frozen at first mark.** A month ending on a Sunday can be marked before Wednesday's top-up. | `actions.ts:172-177` | Allow marking only after `finalAt` of the month's last week. |
+| S8 | Low | **Presence reads the body before auth.** A chunked body with no length is read up to 20 MB (U). | `guard.ts:73, 132-135` | Read it with `readText(clone, BODY_CAP.default)`. |
+| S9 | Low | **Push endpoint can be any https URL (SSRF).** An existing endpoint can also be reassigned to the other person. Only logged-in users can do this. | `actions.ts:31, 180-184` | Allowlist the push-service hosts. |
+| S10 | Low | **`DEV_PERSON` is gated only on `NODE_ENV`.** Running `node build` outside Docker with it set impersonates user A. | `auth.ts:97-99`, `guard.ts:78,128` | Gate it on SvelteKit's `dev` flag (`opts.dev`). |
+| S11 | Low | **Backup snapshots are plaintext.** 7 days of `.db` files in `~/island-backups` under the default umask. No secrets are in the script. | `backup.sh:6-9` | Add `umask 077`, and delete each snapshot after restic succeeds. |
+| S12 | Low (U) | **The bind mount ignores `chown /data`.** Fine on Docker Desktop for Mac, but breaks on Linux. | `Dockerfile:24`, `docker-compose.yml:12` | Use a named volume or document the needed ownership. |
+
+Also checked, no issue: zod coverage, error leakage, service-worker caching (`/api` is never cached), settlement double-pay (idempotency keys, synchronous ticks, WAL conflict on a concurrent CLI run), locked-week rejection.
+
+**Sign-off: not approved yet.** S1 must be fixed before the URL goes on Funnel. S3 and S4 should land in the same pass. The rest can be tracked.

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Db } from '#lib/server/db/index.ts';
-import { ledgerEntry, presenceEvent, pushSubscription } from '#lib/server/db/schema.ts';
+import { ledgerEntry, presenceEvent, pushSubscription, workout } from '#lib/server/db/schema.ts';
 import { setNow } from '#lib/server/clock.ts';
 import { approveSpend, confirm, setCheckin, setCozyDay, setPromise, spendPurse } from '#lib/server/actions.ts';
 import { purseBalance, settleWeek } from '#lib/server/ledger.ts';
@@ -26,14 +26,31 @@ beforeEach(() => {
 });
 
 describe('cozy days', () => {
-  it('allows 4 per calendar month, then 409 cozy_month_cap', () => {
-    for (const d of ['2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13']) expect(code(() => setCozyDay(db, 'A', { date: d, on: true }))).toBe('ok');
-    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-10', on: true }))).toBe('ok'); // same day again is a no-op
-    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-14', on: true }))).toBe('409:cozy_month_cap');
-    expect(code(() => setCozyDay(db, 'B', { date: '2026-11-14', on: true }))).toBe('ok'); // per person
-    expect(code(() => setCozyDay(db, 'A', { date: '2026-12-01', on: true }))).toBe('ok'); // new month
-    setCozyDay(db, 'A', { date: '2026-11-13', on: false });
-    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-14', on: true }))).toBe('ok');
+  const on = (who: 'A' | 'B', date: string, at: string) => {
+    setNow(at);
+    return code(() => setCozyDay(db, who, { date, on: true }));
+  };
+  it('only today or yesterday', () => {
+    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-10', on: true }))).toBe('ok');
+    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-09', on: true }))).toBe('ok');
+    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-08', on: true }))).toBe('422:date_out_of_range');
+    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-11', on: true }))).toBe('422:date_out_of_range');
+  });
+  it('max 3 per Mon–Sun week, 4 per calendar month (a week spanning two months is still capped)', () => {
+    // Week Mar 29–Apr 4 2027 spans two months: 3 in March would allow 4 more in April under a month-only cap.
+    expect(on('A', '2027-03-29', '2027-03-29T03:00:00Z')).toBe('ok');
+    expect(on('A', '2027-03-30', '2027-03-30T03:00:00Z')).toBe('ok');
+    expect(on('A', '2027-03-31', '2027-03-31T03:00:00Z')).toBe('ok');
+    expect(on('A', '2027-04-01', '2027-04-01T03:00:00Z')).toBe('409:cozy_week_cap');
+    expect(on('B', '2027-04-01', '2027-04-01T03:00:00Z')).toBe('ok'); // per person
+    for (const d of ['2027-04-05', '2027-04-06', '2027-04-07']) expect(on('A', d, `${d}T03:00:00Z`)).toBe('ok');
+    expect(on('A', '2027-04-12', '2027-04-12T03:00:00Z')).toBe('ok'); // 4th in April
+    expect(on('A', '2027-04-13', '2027-04-13T03:00:00Z')).toBe('409:cozy_month_cap');
+  });
+  it("can't be set on a day that already has training", () => {
+    db.insert(workout).values({ person: 'A', extId: 'w1', localDate: '2026-11-09', type: 'Traditional Strength Training',
+      startAt: '2026-11-09T09:00:00+09:00', endAt: '2026-11-09T10:00:00+09:00', durationMin: 60, avgHr: 120 }).run();
+    expect(code(() => setCozyDay(db, 'A', { date: '2026-11-09', on: true }))).toBe('409:cozy_already_active');
   });
 });
 

@@ -62,7 +62,7 @@ describe('scoreWeek: totals', () => {
     expect(s.categories.pear).toMatchObject({ milli: 25000, actual: 21, target: 15 });
     expect(s.strengthDays).toEqual(['2026-11-02', '2026-11-04', '2026-11-06']);
     expect(s.dataDays).toBe(7);
-    expect(s.restDays).toBe(7); // no workout has avgHr, so none is hard
+    expect(s.restDays).toBe(4); // the 3 strength days are not rest days; the other 4 are
   });
   it('a perfect week for B, and in easy/holiday weeks, is exactly 100', () => {
     expect(scoreWeek(perfect(WK, B)).score).toBe(100);
@@ -128,7 +128,9 @@ describe('scoreWeek: peach', () => {
     expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 147)) })).restDays).toBe(7);
     expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 147.1)) })).restDays).toBe(0);
     expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 19, 180)) })).restDays).toBe(7);
-    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 60, null)) })).restDays).toBe(7);
+    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 44, null)) })).restDays).toBe(7);
+    // ≥ 45 min is a long workout: not a rest day even without HR
+    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 45, null)) })).restDays).toBe(0);
   });
   it('rest threshold scales with age', () => {
     const d = weekDays(WK);
@@ -154,8 +156,11 @@ describe('scoreWeek: coconut', () => {
   const d = weekDays(WK);
   const strength = (ws: Workout[] = [], vs: Visit[] = []) => scoreWeek(input({ workouts: ws, visits: vs }));
   it('auto types ≥ 15 min count; shorter do not', () => {
-    expect(strength([workout(d[0], 'Core Training', 15)]).strengthDays).toEqual([d[0]]);
-    expect(strength([workout(d[0], 'Core Training', 14)]).strengthDays).toEqual([]);
+    expect(strength([workout(d[0], 'Pilates', 15)]).strengthDays).toEqual([d[0]]);
+    expect(strength([workout(d[0], 'Pilates', 14)]).strengthDays).toEqual([]);
+    // Core Training is an ask type: a 15-min plank set isn't a full session unless confirmed
+    expect(strength([workout(d[0], 'Core Training', 30)]).strengthDays).toEqual([]);
+    expect(strength([workout(d[0], 'Core Training', 30, null, true)]).strengthDays).toEqual([d[0]]);
     expect(strength([workout(d[0], 'Running', 60)]).strengthDays).toEqual([]);
   });
   it('ask types count only when includesStrength === true', () => {
@@ -245,16 +250,17 @@ describe('scoreWeek: Cozy Day prorating (exact fractions)', () => {
   it('3 cozy days → × 4/7', () => {
     expect(scoreWeek(base([d[4], d[5], d[6]])).categories.coconut.milli).toBe(21875); // 25000 × 7/8
   });
-  it('4 cozy days → × 3/7', () => {
+  it('4 cozy days → only the first 3 count (× 4/7)', () => {
     const s = scoreWeek(base([d[3], d[4], d[5], d[6]]));
-    expect(s.categories.coconut).toMatchObject({ milli: 25000 });
-    expect(s.categories.coconut.target).toBeCloseTo(6 / 7, 10);
+    expect(s.categories.coconut).toMatchObject({ milli: 21875 });
+    expect(s.categories.coconut.target).toBeCloseTo(8 / 7, 10);
   });
   it('cozy days outside the week are ignored; duplicates count once', () => {
     expect(scoreWeek(base(['2026-11-09', d[6], d[6]])).categories.coconut.milli).toBe(14583);
   });
-  it('an all-cozy week pays in full', () => {
-    expect(scoreWeek(input({ cozyDays: d })).score).toBe(100);
+  it('a week can never be fully excused: 7 cozy days count as 3', () => {
+    // Weeks spanning two months could otherwise hold 7 (review round 3, F1).
+    expect(scoreWeek(input({ cozyDays: d })).score).toBe(5);
   });
 });
 

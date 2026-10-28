@@ -1,19 +1,18 @@
 // In-process scheduler. Every minute: settle due weeks (state-based, so missed runs catch up on boot and
-// double-firing is harmless), 20:00 check-in reminder, payday push, gym-visit prompts.
+// double-firing is harmless), then at most one push per person per day (harvest → check-in → payday).
 import { and, eq } from 'drizzle-orm';
 import type { PersonId, WeekKey } from '#lib/types.ts';
-import { JOBS, MONEY, SEASONS } from '#lib/config/rules.ts';
+import { HOLIDAY, JOBS, MONEY, SEASONS } from '#lib/config/rules.ts';
+import { inMonthDayRange } from '#lib/scoring/dates.ts';
 import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
-import { checkin, cozyDay, transfer, weekLock } from '#lib/server/db/schema.ts';
+import { checkin, cozyDay, harvestConfirm, transfer, weekLock } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 import { settleWeek, type SettleResult } from '#lib/server/ledger.ts';
 import { notify } from '#lib/server/push.ts';
-import { promptRecentVisits } from '#lib/server/presence.ts';
-import { finalAt, monthEarnings, prevMonth, provisionalAt } from '#lib/server/week.ts';
+import { finalAt, harvestWeekKey, monthEarnings, prevMonth, provisionalAt } from '#lib/server/week.ts';
 
 const LOOKBACK_WEEKS = 8;
-const PAYDAY_HOUR = 12;
 
 /** First settled week: the first full Mon–Sun week of season 1 (or SETTLE_FROM_WEEK). */
 export function firstWeek(): WeekKey {
@@ -46,21 +45,35 @@ export function runSettlement(db: Db, t: Date = now()): SettleResult[] {
   return results;
 }
 
+/**
+ * At most one push per person per day (PROPOSAL §3.8), decided by priority (review round 3, M1/M2):
+ * Sunday harvest (from 19:30) → evening check-in (20:00) → payday (25th, evening). Gym-visit questions are
+ * in-app only (the pending card on Island), and nothing is sent 22:00–07:00 (see notify()).
+ */
 export async function runReminders(db: Db, t: Date = now()): Promise<void> {
   const z = nowInZone(t);
   const minutes = z.hour * 60 + z.minute;
   const day = Number(z.date.slice(8, 10));
+  const harvestWk = harvestWeekKey(db, t);
+  const start = JOBS.checkinReminder.hour * 60 + JOBS.checkinReminder.minute;
   for (const person of ['A', 'B'] as PersonId[]) {
-    if (day === MONEY.paydayDayOfMonth && z.hour >= PAYDAY_HOUR && z.hour < 21) {
+    if (harvestWk) {
+      const confirmed = db.select().from(harvestConfirm)
+        .where(and(eq(harvestConfirm.weekKey, harvestWk), eq(harvestConfirm.person, person))).get();
+      if (!confirmed && (await notify(db, person, 'harvest', { url: '/' }))) continue;
+    }
+    if (minutes < start) continue;
+    const pearOff = inMonthDayRange(z.date, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to);
+    const ticked = db.select().from(checkin).where(and(eq(checkin.person, person), eq(checkin.localDate, z.date))).get();
+    const cozy = db.select().from(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, z.date))).get();
+    if (!pearOff && !ticked && !cozy) {
+      await notify(db, person, 'checkin', { url: '/?checkin=1' });
+      continue;
+    }
+    if (day === MONEY.paydayDayOfMonth) {
       const month = prevMonth(z.date);
       const done = db.select().from(transfer).where(eq(transfer.month, month)).get();
       if (!done && monthEarnings(db, month) > 0) await notify(db, person, 'payday', { url: '/jar' });
-    }
-    const start = JOBS.checkinReminder.hour * 60 + JOBS.checkinReminder.minute;
-    if (minutes >= start && minutes < start + 120) {
-      const ticked = db.select().from(checkin).where(and(eq(checkin.person, person), eq(checkin.localDate, z.date))).get();
-      const cozy = db.select().from(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, z.date))).get();
-      if (!ticked && !cozy) await notify(db, person, 'checkin', { url: '/?checkin=1' });
     }
   }
 }
@@ -72,7 +85,6 @@ export async function tick(db: Db, t: Date = now()): Promise<void> {
     console.error('[jobs] settlement failed', e instanceof Error ? e.message : e);
   }
   try {
-    await promptRecentVisits(db);
     await runReminders(db, t);
   } catch (e) {
     console.error('[jobs] notifications failed', e instanceof Error ? e.message : e);
