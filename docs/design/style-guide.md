@@ -8,7 +8,7 @@ Owner: UI/UX Designer · Status: v0.3 (simplicity first, Japanese-first, yen; de
 |---|---|
 | Tabs | **3 max**: 島 Island · 旅の壺 Trip Jar · ふたり Us. Everything else is a sheet, never a tab |
 | Words per screen | **≤ 20–25** visible words (Japanese: ≤ ~40 characters), *excluding numbers*. Count them for every new screen |
-| Primary action | **One** per screen, in the thumb zone (Island: 今夜のチェック; Jar: 使う; Sunday: 壺に入れる) |
+| Primary action | **One** per screen, in the thumb zone (Island: 今夜のチェック; Jar: 使う; Sunday: 壺に入れる; rung reached: やった！) |
 | Big numbers | The key number is ≥ 2.5rem (Fredoka 600). Secondary numbers ≥ 1rem. A screen has at most **one hero number** |
 | Labels | Icons first; labels appear **on tap** (tooltip) when an icon is self-explanatory. No captions or explanations on screens |
 | Explanations | Go in the one-time onboarding or the **"?" sheet** (top-right on every screen) |
@@ -64,17 +64,18 @@ All tokens below are plain CSS custom properties. Paste the `:root` block into t
 | `--moon` | `#F6E7B0` | Moon, lantern glow, highlights |
 | `--firefly` | `#E8F59A` | Sparkles, confetti at night |
 
-### 1.3 Fruit colors (one per scoring category, decision 0002)
+### 1.3 Fruit colors (one per scoring category, decisions 0002 + 0009)
 
 | Token | Hex | Fruit | Category (weight /100) |
 |---|---|---|---|
-| `--f-peach` | `#FFB38A` | Peach | Active minutes (30) |
-| `--f-coconut` | `#9C6B45` | Coconut | Strength days (20) |
-| `--f-apple` | `#FF8A7A` | Apple | Step days (10) |
-| `--f-plum` | `#9FA8E8` | Moon-plum | Sleep & rest (15) |
+| `--f-peach` | `#FFB38A` | Peach | Active minutes + rest day (35) |
+| `--f-coconut` | `#9C6B45` | Coconut | Strength days (25) |
+| `--f-apple` | `#FF8A7A` | Apple | Step days (15) |
 | `--f-pear` | `#C9DE6E` | Pear | Eating habits (25) |
 
-Each fruit also has a distinct silhouette (coconut = round with three "eyes", pear = teardrop, moon-plum = crescent mark, and so on), so color is never the only cue. Always pair it with the category label.
+The moon-plum (sleep) was removed in v0.4. `#9FA8E8` survives only as the のんびりデー icon color.
+
+Each fruit also has a distinct silhouette (coconut = round with three "eyes", pear = teardrop, apple = round with a stem, peach = cleft), so color is never the only cue. Always pair it with the category label.
 
 ### 1.4 Partner colors
 
@@ -218,7 +219,7 @@ Under `prefers-reduced-motion: reduce`, all durations collapse to cross-fades �
   /* partners */
   --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-mint:#8ED9C0; --p-berry:#F28BA8; --p-lemon:#FFD66B;
   /* fruit = scoring categories */
-  --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-plum:#9FA8E8; --f-pear:#C9DE6E;
+  --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-pear:#C9DE6E;
 
   /* semantic (swap these for night mode) */
   --bg: var(--cream); --surface: var(--paper); --edge: var(--paper-edge);
@@ -341,13 +342,17 @@ html, body { min-height: 100dvh; overscroll-behavior-y: none; }
 
 **Progress bar ("rope")**: track `--leaf-soft` + `--sh-inset`, fill `--leaf` with a subtle diagonal stripe; ends fully rounded; label inside or right-aligned in tabular numbers.
 
-**Fruit ring (weekly progress, no text)**: the category fruit (24–32px) inside a conic-gradient ring in its fruit color that fills to the % of that week's target. `background: conic-gradient(var(--c) calc(var(--p) * 1%), #EADFC8 0)` with a paper-colored inner disc (`inset: 4–5px`). Full = a 3px `--sun` halo plus a sparkle. Five rings sit on each tree on the Island. The label shows only on tap, as a tooltip ("筋トレ 1/2日").
+**Fruit ring (weekly progress, no text)**: the category fruit (24–32px) inside a conic-gradient ring in its fruit color that fills to the % of that week's target. `background: conic-gradient(var(--c) calc(var(--p) * 1%), #EADFC8 0)` with a paper-colored inner disc (`inset: 4–5px`). Full = a 3px `--sun` halo plus a sparkle. Four rings sit on each tree on the Island in a 2×2 grid (46px each). The label shows only on tap, as a tooltip ("筋トレ 1/2日").
 
-**Hero score**: `43` at 2.6rem Fredoka + `/85` at 1rem `--ink-faint`, placed under each tree.
+**Hero score**: `43` at 2.6rem Fredoka + `/100` at 1rem `--ink-faint`, placed under each tree. Never `/85`.
 
-**Jar (Trip Jar)**: one hero number (`¥186,500`) + `目標 ¥520,000`. The jar drawing has three strata (partner B plum, partner A apricot, team leaf). The per-person mini-jars fill against **their own maximum** (¥208,000 personal / ¥104,000 team per year), so they never read as a leaderboard. Island shows only the combined total.
+**Jar (Trip Jar, open-ended)**: one hero number (`¥146,200`), no goal amount. Below it is the **rung card**: the destination icon, `次は 沖縄`, a 12px striped bar, `残り ¥3,800`, the rung amount, and a `›` that opens the **ladder sheet** (passed rungs ✓, next rung with bar, future rungs plain). The jar drawing has three strata (partner B plum, partner A apricot, team leaf). Per-person mini-jars fill against **their own maximum to date** (¥5,000 / ¥5,000 / ¥2,000 × weeks), so they never read as a leaderboard. Island shows only the combined total.
 
-**Settlement row**: avatar 42px · score at 1.9rem · ✓ if ≥ 85 · yen right-aligned at 1.45rem `--moon`. The team row shows only the yen, and copy never says whose score set its rate. A "暫定 / provisional" pill sits next to the total.
+**Payday cue**: a single pill on Jar, `✓ 給料日 25日 · 貯金に移した` (leaf-soft background, leaf-ink text). Before the transfer it reads `給料日 25日 · 貯金に移す` and is tappable.
+
+**Rung-reached screen**: night palette, confetti, an island illustration, the place name at 2.6rem, the amount at 3rem `--moon`, `次は …` in `--night-ink-soft`, and one button.
+
+**Settlement row**: avatar 42px · score (out of 100, no suffix) at 1.9rem · yen right-aligned at 1.45rem `--moon` (score × ¥50). The team row shows only the yen, and copy never says whose score set its rate. A "暫定 / provisional" pill sits next to the total.
 
 **Promise row**: avatar · last week's marks (✓ kept, ○ not kept, **never ✗**) · next week's plan (when/where/what, ≤ 16 characters) · the partner's "応援してる" pill. No yen and no streak.
 

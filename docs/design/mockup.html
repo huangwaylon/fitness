@@ -161,17 +161,17 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 .home-cta{position:absolute;left:20px;right:20px;top:668px}
 
 /* ===== JAR ===== */
-.bigjar{position:absolute;top:112px;left:50%;transform:translateX(-50%);width:200px;height:240px}
-.jar-total{position:absolute;top:362px;left:0;right:0;text-align:center}
+.bigjar{position:absolute;top:110px;left:50%;transform:translateX(-50%);width:125px;height:150px}
+.jar-total{position:absolute;top:268px;left:0;right:0;text-align:center}
 .jar-total .big{font-size:3rem}
 .jar-total .of{font:700 1rem var(--font-display);color:var(--ink-faint);margin-top:4px}
-.layers{position:absolute;top:446px;left:20px;right:20px;display:flex;gap:8px}
+.layers{position:absolute;top:436px;left:20px;right:20px;display:flex;gap:8px}
 .layer{flex:1;border-radius:var(--r-sm);padding:8px 6px;text-align:center;background:var(--paper);border:2px solid var(--paper-edge)}
 .layer i{display:block;width:26px;height:8px;border-radius:4px;margin:0 auto 5px}
 .layer b{display:block;font:600 1.05rem var(--font-display);font-variant-numeric:tabular-nums}
 .layer span{font-size:var(--fs-caption);font-weight:800;color:var(--ink-soft)}
 .wk{position:absolute;top:552px;left:0;right:0;text-align:center;font-size:var(--fs-caption);font-weight:800;color:var(--ink-faint)}
-.purse{position:absolute;top:590px;left:20px;right:20px;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--coral-soft);border:2px solid var(--coral);border-radius:var(--r-lg);box-shadow:0 4px 0 #E8B4A8}
+.purse{position:absolute;top:600px;left:20px;right:20px;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--coral-soft);border:2px solid var(--coral);border-radius:var(--r-lg);box-shadow:0 4px 0 #E8B4A8}
 .purse svg{width:46px;height:46px;flex:none}
 .purse .lbl{font-weight:800;font-size:var(--fs-caption);color:var(--coral-ink)}
 .purse .big{font-size:1.9rem}
@@ -261,12 +261,10 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 .item.no{opacity:.45}
 /* island v0.3b: trees carry the fruit */
 .scene2{position:absolute;top:0;left:0;width:390px;height:540px}
-.treefr{position:absolute;z-index:4;display:grid;grid-template-columns:repeat(3,42px);gap:6px 4px;justify-items:center}
-.treefr .fr{width:40px;height:40px}
+.treefr{position:absolute;z-index:4;display:grid;grid-template-columns:repeat(2,46px);gap:8px 8px;justify-items:center}
+.treefr .fr{width:46px;height:46px}
 .treefr .fr::before{inset:4px}
-.treefr .fr svg{width:24px;height:24px}
-.treefr .fr:nth-child(4){grid-column:1/2;margin-left:23px}
-.treefr .fr:nth-child(5){grid-column:3/4;margin-right:23px}
+.treefr .fr svg{width:28px;height:28px}
 .score{position:absolute;top:452px;z-index:5;width:150px;text-align:center}
 .score .big{font-size:2.6rem;color:var(--ink)}
 .score .big small{font-size:1rem;color:var(--ink-faint)}
@@ -276,6 +274,35 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 .minijar{display:block;width:30px;height:36px;margin:0 auto 4px}
 .gotyou{display:inline-flex;align-items:center;gap:4px;margin-top:3px;padding:2px 8px;border-radius:var(--r-pill);background:rgba(242,139,168,.22);color:#FFC2D1;font:800 11px var(--font-body)}
 .gotyou svg{width:14px;height:14px}
+
+/* v0.4 */
+.rung{position:absolute;top:334px;left:20px;right:20px;display:flex;align-items:center;gap:12px;padding:12px 14px}
+.rung .rart{width:48px;height:48px;flex:none}
+.rung .rtxt{flex:1;min-width:0}
+.rung .rl{font-weight:800;font-size:var(--fs-body);color:var(--ink-soft)}
+.rung .rl b{font-size:1.2rem;color:var(--ink)}
+.rbar,.lbar{display:block;height:12px;border-radius:var(--r-pill);background:var(--leaf-soft);box-shadow:var(--sh-inset);margin:6px 0 4px;overflow:hidden}
+.rbar i,.lbar i{display:block;height:100%;border-radius:var(--r-pill);background:repeating-linear-gradient(-45deg,var(--leaf) 0 8px,#8FD092 8px 16px);animation:stripes 1.6s linear infinite}
+.rung .rleft{font-size:var(--fs-caption);font-weight:800;color:var(--leaf-ink)}
+.rung .rgoal{font-size:1.25rem}
+.rung .chev{font:700 1.6rem var(--font-display);color:var(--ink-faint)}
+.payday{position:absolute;top:550px;left:0;right:0;margin:auto;width:max-content;display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r-pill);background:#EAF7E6;border:2px solid var(--leaf-soft);font-size:var(--fs-caption);font-weight:800;color:var(--leaf-ink)}
+.payday svg{width:16px;height:16px;color:var(--leaf-ink)}
+.rung-hero{position:absolute;top:110px;left:45px;width:300px;height:260px}
+.rung-name{position:absolute;top:396px;left:0;right:0;text-align:center;font:700 2.6rem var(--font-display)}
+.rung-amt{position:absolute;top:462px;left:0;right:0;text-align:center;font-size:3rem;color:var(--moon);text-shadow:0 0 18px rgba(246,231,176,.45)}
+.rung-next{position:absolute;top:540px;left:0;right:0;text-align:center;font-weight:800;color:var(--night-ink-soft)}
+.ladder{display:grid;gap:4px}
+.lr{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 6px;border-bottom:2px dashed var(--paper-edge)}
+.lr:last-child{border-bottom:0}
+.lr .dot{width:30px;height:30px;flex:none;border-radius:50%;border:2.5px solid var(--sand-deep);display:grid;place-items:center}
+.lr.done .dot{background:var(--leaf);border-color:var(--leaf)}
+.lr.done .dot svg{width:16px;height:16px;color:var(--ink)}
+.lr.next .dot{border-color:var(--gold);box-shadow:var(--sh-glow)}
+.lr .ln{flex:1;font:600 1.15rem var(--font-display)}
+.lr .lbar{margin:4px 0 0;height:10px}
+.lr .la{font:600 1.1rem var(--font-display);font-variant-numeric:tabular-nums}
+.lr.done .ln,.lr.done .la{color:var(--ink-faint)}
 
 /* ===== WIDGETS ===== */
 .extras{max-width:2100px;margin:64px auto 0}
@@ -443,8 +470,8 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 <input type="checkbox" id="safe" class="sr-only">
 <header class="page-head">
   <div>
-    <h1>Island Fund · Mockup v0.3 <span style="font-size:1rem;vertical-align:middle;background:var(--paper);border:2px solid var(--paper-edge);border-radius:999px;padding:4px 12px">日本語 ⇄ English</span></h1>
-    <p>Super simple and Japanese-first (switchable to English, see 1-EN). 3 tabs: 島 · 旅の壺 · ふたり. Big numbers, ≤ ~20 words per screen. Yen only: 旅の壺 ¥10,000/week + ごほうび財布. JST. Sample: もち (cat, Partner B, PT) and まめ (dog, Partner A, Anytime).</p>
+    <h1>Island Fund · Mockup v0.4 <span style="font-size:1rem;vertical-align:middle;background:var(--paper);border:2px solid var(--paper-edge);border-radius:999px;padding:4px 12px">日本語 ⇄ English</span></h1>
+    <p>Super simple and Japanese-first (switchable to English, see 1-EN). 3 tabs: 島 · 旅の壺 · ふたり. Big numbers, ≤ ~20 words per screen. Yen only, open-ended: 1 fruit = ¥50 into 旅の壺, team bonus ¥20 × lower score, ごほうび財布 ¥1,000 each at ≥ 60. JST. Sample: もち (cat, Partner B, PT) and まめ (dog, Partner A, Anytime).</p>
   </div>
   <label class="toggle" for="safe"><span class="box" aria-hidden="true"></span> Show safe areas + thumb zone</label>
 </header>
@@ -454,7 +481,7 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 <figure>
 <div class="phone paper" aria-label="Island home">
   <div class="statusbar"><span>14:14</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
-  <svg class="scene2" viewBox="0 0 390 540" aria-label="Mochi 43 of 85, Bean 57 of 85. Jar 186,500 yen.">
+  <svg class="scene2" viewBox="0 0 390 540" aria-label="Mochi 43, Bean 57. Jar 146,200 yen.">
     <defs><linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9BD8F5"/><stop offset="1" stop-color="#DDF2FB"/></linearGradient></defs>
     <rect width="390" height="540" fill="url(#sky3)"/>
     <circle cx="336" cy="96" r="20" fill="#FFE59A"/><circle cx="336" cy="96" r="30" fill="#FFE59A" opacity=".35"/>
@@ -470,59 +497,62 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
     <g class="breathe" style="animation-delay:-1.2s"><use href="#v-bean" x="276" y="370" width="64" height="64"/></g>
     <use href="#jar" x="168" y="372" width="54" height="66"/>
   </svg>
-  <div class="treefr" style="top:178px;left:37px">
+  <div class="treefr" style="top:184px;left:50px">
     <span class="fr" style="--p:47;--c:var(--f-peach)"><svg><use href="#f-peach"/></svg></span>
     <span class="fr" style="--p:50;--c:var(--f-coconut)"><svg><use href="#f-coconut"/></svg></span>
     <span class="fr" style="--p:40;--c:var(--f-apple)"><svg><use href="#f-apple"/></svg></span>
-    <span class="fr" style="--p:40;--c:var(--f-plum)"><svg><use href="#f-plum"/></svg></span>
     <span class="fr" style="--p:36;--c:var(--f-pear)"><svg><use href="#f-pear"/></svg></span>
   </div>
-  <span class="tip" style="top:140px;left:76px">筋トレ 1/2日</span>
-  <div class="treefr" style="top:178px;left:227px">
+  <span class="tip" style="top:146px;left:84px">筋トレ 1/2日</span>
+  <div class="treefr" style="top:184px;left:240px">
     <span class="fr" style="--p:57;--c:var(--f-peach)"><svg><use href="#f-peach"/></svg></span>
     <span class="fr full" style="--p:100;--c:var(--f-coconut)"><svg><use href="#f-coconut"/></svg></span>
     <span class="fr" style="--p:20;--c:var(--f-apple)"><svg><use href="#f-apple"/></svg></span>
-    <span class="fr" style="--p:53;--c:var(--f-plum)"><svg><use href="#f-plum"/></svg></span>
     <span class="fr" style="--p:40;--c:var(--f-pear)"><svg><use href="#f-pear"/></svg></span>
   </div>
-  <div class="score" style="left:8px"><span class="big">43<small>/85</small></span></div>
-  <div class="score" style="right:8px"><span class="big">57<small>/85</small></span></div>
-  <div class="jarsign">¥186,500</div>
-  <div class="screen-head"><span class="pill">第21週</span><span class="help">?</span></div>
+  <div class="score" style="left:8px"><span class="big">43<small>/100</small></span></div>
+  <div class="score" style="right:8px"><span class="big">57<small>/100</small></span></div>
+  <div class="jarsign">¥146,200</div>
+  <div class="screen-head"><span class="pill">第16週</span><span class="help">?</span></div>
   <svg class="juni-mini" aria-hidden="true"><use href="#v-juni"/></svg>
   <div class="home-bubble bubble"><span class="who">ジュニパー</span>もち、筋トレあと1回！</div>
   <div class="home-cta"><button class="btn"><svg viewBox="0 0 48 48"><use href="#i-bowl"/></svg>今夜のチェック</button></div>
   <nav class="tabbar" aria-label="Main" style="grid-template-columns:repeat(3,1fr)"><div class="tab on"><svg><use href="#i-island"/></svg>島</div><div class="tab"><svg><use href="#i-jar"/></svg>旅の壺</div><div class="tab"><svg><use href="#i-us"/></svg>ふたり</div></nav>
   <div class="home-ind"></div><div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div><div class="thumb-zone"><span>thumb zone</span></div>
 </div>
-<figcaption><b>1 · Island</b>Two trees, the jar, one Juniper line and one button. Each tree carries its five fruits, and each ring ripens toward that week's target. Tap a fruit for its label. The jar shows only the combined total.</figcaption>
+<figcaption><b>1 · Island</b>Two trees, the jar, one Juniper line and one button. Each tree carries four fruits (peach = active + rest, coconut = strength, apple = steps, pear = eating), and each ring ripens toward that week's target. The score is out of 100. Tap a fruit for its label. The jar shows only the combined total.</figcaption>
 </figure>
 
 <!-- ============ 2. JAR ============ -->
 <figure>
 <div class="phone paper" aria-label="Trip Jar">
   <div class="statusbar"><span>14:15</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
-  <div class="screen-head"><h1><svg><use href="#i-island"/></svg>沖縄</h1><span class="help">?</span></div>
-  <svg class="bigjar" viewBox="0 0 200 240" aria-label="Jar 36% full">
+  <div class="screen-head"><h1><svg><use href="#i-jar"/></svg>旅の壺</h1><span class="help">?</span></div>
+  <svg class="bigjar" viewBox="0 0 200 240" aria-hidden="true">
     <defs><clipPath id="bj"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z"/></clipPath></defs>
     <rect x="58" y="6" width="84" height="24" rx="7" fill="#F2B53A" stroke="#4A3A2C" stroke-width="3"/>
     <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="#DDF2FB" fill-opacity=".85"/>
     <g clip-path="url(#bj)">
-      <rect x="0" y="204" width="200" height="40" fill="#B79CE0"/>
-      <rect x="0" y="177" width="200" height="27" fill="#FFB38A"/>
-      <path d="M0 166 Q25 160 50 166 T100 166 T150 166 T200 166 V177 H0Z" fill="#7BC67E"/>
-      <path d="M24 44 H176" stroke="#8A5A3B" stroke-width="2" stroke-dasharray="4 6" opacity=".5"/>
+      <rect x="0" y="160" width="200" height="80" fill="#B79CE0"/>
+      <rect x="0" y="88" width="200" height="72" fill="#FFB38A"/>
+      <path d="M0 58 Q25 52 50 58 T100 58 T150 58 T200 58 V88 H0Z" fill="#7BC67E"/>
     </g>
     <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="none" stroke="#4A3A2C" stroke-width="3"/>
-    <path d="M44 80 Q40 110 44 140" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+    <path d="M44 100 Q40 130 44 160" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+    <path class="glint" d="M160 40 l4 -9 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 z" fill="#FFD66B"/>
   </svg>
-  <div class="jar-total"><div class="big">¥186,500</div><div class="of">目標 ¥520,000</div></div>
-  <div class="layers">
-    <div class="layer"><svg class="minijar" viewBox="0 0 30 36"><path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="#fff" stroke="#4A3A2C" stroke-width="2"/><path d="M3 23 H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" fill="#B79CE0"/></svg><b>¥76,000</b><span>もち</span></div>
-    <div class="layer"><svg class="minijar" viewBox="0 0 30 36"><path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="#fff" stroke="#4A3A2C" stroke-width="2"/><path d="M3 23.5 H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" fill="#FFB38A"/></svg><b>¥72,500</b><span>まめ</span></div>
-    <div class="layer"><svg class="minijar" viewBox="0 0 30 36"><path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="#fff" stroke="#4A3A2C" stroke-width="2"/><path d="M3 23 H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" fill="#7BC67E"/></svg><b>¥38,000</b><span>チーム</span></div>
+  <div class="jar-total"><div class="big">¥146,200</div></div>
+  <div class="card rung" role="button" aria-label="Next rung: Okinawa. Tap for the full ladder">
+    <svg class="rart" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#DDF2FB"/><ellipse cx="24" cy="36" rx="16" ry="6" fill="#E9D8B4"/><path d="M25 34 Q23 24 28 15" stroke="#8A5A3B" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M28 15 Q20 10 15 15 M28 15 Q36 9 40 14 M28 15 Q26 8 21 8" stroke="#4E9A55" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+    <div class="rtxt"><div class="rl">次は <b>沖縄</b></div><div class="rbar"><i style="width:97%"></i></div><div class="rleft">残り ¥3,800</div></div>
+    <div class="rgoal big">¥150,000</div><span class="chev">›</span>
   </div>
-  <div class="wk">今週 ≈ ¥6,800</div>
+  <div class="layers">
+    <div class="layer"><svg class="minijar" viewBox="0 0 30 36"><path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="#fff" stroke="#4A3A2C" stroke-width="2"/><path d="M3 15 H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" fill="#B79CE0"/></svg><b>¥61,800</b><span>もち</span></div>
+    <div class="layer"><svg class="minijar" viewBox="0 0 30 36"><path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="#fff" stroke="#4A3A2C" stroke-width="2"/><path d="M3 16 H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" fill="#FFB38A"/></svg><b>¥58,600</b><span>まめ</span></div>
+    <div class="layer"><svg class="minijar" viewBox="0 0 30 36"><path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="#fff" stroke="#4A3A2C" stroke-width="2"/><path d="M3 14 H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" fill="#7BC67E"/></svg><b>¥25,800</b><span>チーム</span></div>
+  </div>
+  <div class="payday"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>給料日 25日 · 貯金に移した</div>
   <div class="purse">
     <svg viewBox="0 0 48 48"><use href="#i-purse"/></svg>
     <div><div class="lbl">ごほうび財布</div><div class="big">¥7,000</div></div>
@@ -531,7 +561,7 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
   <nav class="tabbar" aria-label="Main" style="grid-template-columns:repeat(3,1fr)"><div class="tab"><svg><use href="#i-island"/></svg>島</div><div class="tab on"><svg><use href="#i-jar"/></svg>旅の壺</div><div class="tab"><svg><use href="#i-us"/></svg>ふたり</div></nav>
   <div class="home-ind"></div><div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div><div class="thumb-zone"><span>thumb zone</span></div>
 </div>
-<figcaption><b>2 · Jar</b>One big number. The jar has three layers, and each mini-jar is filled against its <i>own</i> maximum, so it never reads as a leaderboard. The Treat Purse is its own pot. "Spend" opens the shop sheet (screen 5).</figcaption>
+<figcaption><b>2 · 旅の壺 Jar (open-ended)</b>One hero number, then only the <i>next</i> rung (次は 沖縄 ¥150,000, 残り ¥3,800); tap it for the full ladder (screen 6). Mini-jars fill against each one's own weekly maximum (¥5,000 / ¥5,000 / ¥2,000 × weeks). Payday cue: a single line, ticked once the 25th transfer is done.</figcaption>
 </figure>
 
 <!-- ============ 3. SUNDAY ============ -->
@@ -540,12 +570,12 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
   <div class="stars"><i style="top:70px;left:40px"></i><i style="top:96px;left:300px;animation-delay:.6s"></i><i style="top:150px;left:20px;animation-delay:1.2s"></i><i style="top:720px;left:360px;animation-delay:.3s"></i></div>
   <div class="confetti"><i style="left:12%;background:#E8F59A;animation-delay:3s"></i><i style="left:34%;background:#FFB38A;animation-delay:3.4s"></i><i style="left:58%;background:#7BC67E;animation-delay:3.1s"></i><i style="left:82%;background:#F28BA8;animation-delay:3.6s"></i></div>
   <div class="statusbar light"><span>19:30</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
-  <div class="screen-head"><span class="pill">日曜の収穫 · 第21週</span><span class="help">?</span></div>
+  <div class="screen-head"><span class="pill">日曜の収穫 · 第16週</span><span class="help">?</span></div>
   <section class="tally" aria-live="polite">
-    <div class="trow"><svg class="av"><use href="#v-mochi"/></svg><span class="sc">88<small>/85</small></span><svg class="ok"><use href="#i-check"/></svg><span class="yen">¥4,000</span></div>
-    <div class="trow"><svg class="av"><use href="#v-bean"/></svg><span class="sc">74<small>/85</small></span><span class="yen">¥3,482</span></div>
-    <div class="trow"><svg class="av" viewBox="0 0 24 24" style="padding:9px;color:#F28BA8"><use href="#i-us"/></svg><span class="sc" style="font-size:1.2rem">チーム</span><span class="yen">¥1,741</span></div>
-    <div class="ttotal"><span class="lbl"><svg><use href="#i-jar"/></svg><span>旅の壺<br><span class="prov"><svg><use href="#i-info"/></svg>暫定</span></span></span><span class="big">¥9,223</span></div>
+    <div class="trow"><svg class="av"><use href="#v-mochi"/></svg><span class="sc">88</span><span class="yen">¥4,400</span></div>
+    <div class="trow"><svg class="av"><use href="#v-bean"/></svg><span class="sc">74</span><span class="yen">¥3,700</span></div>
+    <div class="trow"><svg class="av" viewBox="0 0 24 24" style="padding:9px;color:#F28BA8"><use href="#i-us"/></svg><span class="sc" style="font-size:1.2rem">チーム</span><span class="yen">¥1,480</span></div>
+    <div class="ttotal"><span class="lbl"><svg><use href="#i-jar"/></svg><span>旅の壺<br><span class="prov"><svg><use href="#i-info"/></svg>暫定</span></span></span><span class="big">¥9,580</span></div>
   </section>
   <div class="purse-n"><svg viewBox="0 0 48 48"><use href="#i-purse"/></svg><span class="lbl">ごほうび財布</span><span class="big">+¥2,000</span></div>
   <div class="promises">
@@ -556,7 +586,30 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
   <div class="settle-cta"><button class="btn moon"><svg viewBox="0 0 24 24" style="color:var(--ink)"><use href="#i-jar"/></svg>壺に入れる！</button></div>
   <div class="home-ind light"></div><div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div><div class="thumb-zone"><span>thumb zone</span></div>
 </div>
-<figcaption><b>3 · Sunday 19:30 JST</b>A few big rows: score, then yen. The team row never says whose score set its rate. Both Purse shares are ¥1,000 because both scored ≥ 60. Promises: last week's ✓ / ○ (never ✗), next week's when/where/what, and the partner's 応援してる ("I've got you"). No money or streak is attached to promises.</figcaption>
+<figcaption><b>3 · Sunday 19:30 JST</b>A few big rows: score (out of 100), then yen. 1 fruit = ¥50 (88 → ¥4,400, 74 → ¥3,700). Team = ¥20 × the lower score (¥1,480), and the copy never says whose. Purse +¥1,000 each at ≥ 60. Promises: last week's ✓ / ○ (never ✗), next week's when/where/what, and the partner's 応援してる ("I've got you"). No money or streak is attached to promises.</figcaption>
+</figure>
+
+<!-- ============ 3b. RUNG REACHED ============ -->
+<figure>
+<div class="phone night" aria-label="Rung reached">
+  <div class="stars"><i style="top:80px;left:50px"></i><i style="top:120px;left:320px;animation-delay:.8s"></i><i style="top:640px;left:40px;animation-delay:1.4s"></i></div>
+  <div class="confetti"><i style="left:10%;background:#E8F59A"></i><i style="left:28%;background:#FFB38A;animation-delay:.6s"></i><i style="left:46%;background:#7BC67E;animation-delay:1.2s"></i><i style="left:64%;background:#F28BA8;animation-delay:.3s"></i><i style="left:82%;background:#8FD3F4;animation-delay:.9s"></i><i style="left:92%;background:#F6E7B0;animation-delay:1.6s"></i></div>
+  <div class="statusbar light"><span>19:31</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
+  <svg class="rung-hero" viewBox="0 0 300 260" aria-hidden="true">
+    <circle cx="150" cy="120" r="110" fill="#2B3A5C"/><circle cx="150" cy="120" r="110" fill="none" stroke="#F6E7B0" stroke-width="3" stroke-dasharray="4 10"/>
+    <ellipse cx="150" cy="190" rx="100" ry="28" fill="#E9D8B4"/><ellipse cx="150" cy="182" rx="80" ry="18" fill="#7BC67E"/>
+    <path d="M160 180 Q150 130 172 88" stroke="#8A5A3B" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M172 88 Q140 64 116 86 M172 88 Q204 58 230 80 M172 88 Q160 50 136 52 M172 88 Q192 100 196 126" stroke="#4E9A55" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <use href="#v-mochi" x="90" y="146" width="48" height="48"/><use href="#v-bean" x="186" y="146" width="50" height="50"/>
+    <circle cx="232" cy="44" r="16" fill="#FFD66B"/>
+  </svg>
+  <div class="rung-name">沖縄</div>
+  <div class="rung-amt big">¥150,000</div>
+  <div class="rung-next">次は 台湾 ¥300,000</div>
+  <div class="settle-cta"><button class="btn moon">やった！</button></div>
+  <div class="home-ind light"></div><div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div><div class="thumb-zone"><span>thumb zone</span></div>
+</div>
+<figcaption><b>3b · Rung reached (optional Sunday step)</b>Shown right after the tally when the jar crosses a rung (¥146,200 + ¥9,580 passes ¥150,000). One big place name, one amount, the next rung, one button.</figcaption>
 </figure>
 
 <!-- ============ 4. CHECK-IN ============ -->
@@ -595,8 +648,8 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 <figure>
 <div class="phone paper" aria-label="Treat Purse shop sheet">
   <div class="statusbar"><span>18:02</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
-  <div class="screen-head"><h1><svg><use href="#i-island"/></svg>沖縄</h1></div>
-  <div class="jar-total" style="top:150px"><div class="big">¥186,500</div></div>
+  <div class="screen-head"><h1><svg><use href="#i-jar"/></svg>旅の壺</h1></div>
+  <div class="jar-total" style="top:150px"><div class="big">¥146,200</div></div>
   <div class="dim" style="background:rgba(74,58,44,.35)"></div>
   <section class="sheet" aria-label="Spend Treat Purse">
     <div class="grabber"></div>
@@ -615,11 +668,34 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 <figcaption><b>5 · Treat Purse sheet (opened from Jar, not a tab)</b>Prices in yen. Greyed items are out of reach for now. Hearts mean both partners tap to agree. 4 of 6 items are non-food. Redeeming is slide-to-confirm.</figcaption>
 </figure>
 
+<!-- ============ 6. LADDER SHEET ============ -->
+<figure>
+<div class="phone paper" aria-label="What this could buy ladder">
+  <div class="statusbar"><span>14:16</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
+  <div class="screen-head"><h1><svg><use href="#i-jar"/></svg>旅の壺</h1></div>
+  <div class="jar-total" style="top:150px"><div class="big">¥146,200</div></div>
+  <div class="dim" style="background:rgba(74,58,44,.35)"></div>
+  <section class="sheet" aria-label="Ladder">
+    <div class="grabber"></div>
+    <div class="shop-head"><svg viewBox="0 0 24 24" style="width:34px;height:34px;color:var(--leaf-deep)"><use href="#i-island"/></svg><h2>この壺で行けるところ</h2></div>
+    <div class="ladder">
+      <div class="lr done"><span class="dot"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span><span class="ln">日帰り温泉</span><span class="la">¥30,000</span></div>
+      <div class="lr done"><span class="dot"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span><span class="ln">箱根</span><span class="la">¥80,000</span></div>
+      <div class="lr next"><span class="dot"></span><span class="ln">沖縄<span class="lbar"><i style="width:97%"></i></span></span><span class="la">¥150,000</span></div>
+      <div class="lr"><span class="dot"></span><span class="ln">台湾</span><span class="la">¥300,000</span></div>
+      <div class="lr"><span class="dot"></span><span class="ln">ハワイ</span><span class="la">¥500,000</span></div>
+    </div>
+  </section>
+  <div class="home-ind"></div><div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div><div class="thumb-zone"><span>thumb zone</span></div>
+</div>
+<figcaption><b>6 · Ladder sheet (tap the rung card)</b>The whole "what this could buy" ladder, editable in ふたり. Passed rungs get ✓, the next one has the bar, and later ones are plain. No end goal.</figcaption>
+</figure>
+
 <!-- ============ 1-EN. ISLAND (English) ============ -->
 <figure>
 <div class="phone paper" aria-label="Island home (English)" lang="en">
   <div class="statusbar"><span>14:14</span><span class="icons"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="15" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div><div class="island-pill"></div>
-  <svg class="scene2" viewBox="0 0 390 540" aria-label="Mochi 43 of 85, Bean 57 of 85. Jar 186,500 yen.">
+  <svg class="scene2" viewBox="0 0 390 540" aria-label="Mochi 43, Bean 57. Jar 146,200 yen.">
     <defs><linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9BD8F5"/><stop offset="1" stop-color="#DDF2FB"/></linearGradient></defs>
     <rect width="390" height="540" fill="url(#sky3)"/>
     <circle cx="336" cy="96" r="20" fill="#FFE59A"/><circle cx="336" cy="96" r="30" fill="#FFE59A" opacity=".35"/>
@@ -635,25 +711,23 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
     <g class="breathe" style="animation-delay:-1.2s"><use href="#v-bean" x="276" y="370" width="64" height="64"/></g>
     <use href="#jar" x="168" y="372" width="54" height="66"/>
   </svg>
-  <div class="treefr" style="top:178px;left:37px">
+  <div class="treefr" style="top:184px;left:50px">
     <span class="fr" style="--p:47;--c:var(--f-peach)"><svg><use href="#f-peach"/></svg></span>
     <span class="fr" style="--p:50;--c:var(--f-coconut)"><svg><use href="#f-coconut"/></svg></span>
     <span class="fr" style="--p:40;--c:var(--f-apple)"><svg><use href="#f-apple"/></svg></span>
-    <span class="fr" style="--p:40;--c:var(--f-plum)"><svg><use href="#f-plum"/></svg></span>
     <span class="fr" style="--p:36;--c:var(--f-pear)"><svg><use href="#f-pear"/></svg></span>
   </div>
-  <span class="tip" style="top:140px;left:66px">Strength · 1 of 2 days</span>
-  <div class="treefr" style="top:178px;left:227px">
+  <span class="tip" style="top:146px;left:62px">Strength · 1 of 2 days</span>
+  <div class="treefr" style="top:184px;left:240px">
     <span class="fr" style="--p:57;--c:var(--f-peach)"><svg><use href="#f-peach"/></svg></span>
     <span class="fr full" style="--p:100;--c:var(--f-coconut)"><svg><use href="#f-coconut"/></svg></span>
     <span class="fr" style="--p:20;--c:var(--f-apple)"><svg><use href="#f-apple"/></svg></span>
-    <span class="fr" style="--p:53;--c:var(--f-plum)"><svg><use href="#f-plum"/></svg></span>
     <span class="fr" style="--p:40;--c:var(--f-pear)"><svg><use href="#f-pear"/></svg></span>
   </div>
-  <div class="score" style="left:8px"><span class="big">43<small>/85</small></span></div>
-  <div class="score" style="right:8px"><span class="big">57<small>/85</small></span></div>
-  <div class="jarsign">¥186,500</div>
-  <div class="screen-head"><span class="pill">Week 21</span><span class="help">?</span></div>
+  <div class="score" style="left:8px"><span class="big">43<small>/100</small></span></div>
+  <div class="score" style="right:8px"><span class="big">57<small>/100</small></span></div>
+  <div class="jarsign">¥146,200</div>
+  <div class="screen-head"><span class="pill">Week 16</span><span class="help">?</span></div>
   <svg class="juni-mini" aria-hidden="true"><use href="#v-juni"/></svg>
   <div class="home-bubble bubble"><span class="who">Juniper</span>One strength day to go, Mochi!</div>
   <div class="home-cta"><button class="btn"><svg viewBox="0 0 48 48"><use href="#i-bowl"/></svg>Check in</button></div>
@@ -671,7 +745,7 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
     <div class="wcol">
       <div class="w-small" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
         <svg width="54" height="64"><use href="#jar"/></svg>
-        <div class="big" style="font-size:1.5rem">¥186,500</div>
+        <div class="big" style="font-size:1.5rem">¥146,200</div>
         <div class="big" style="font-size:1.1rem;color:var(--ink-faint)">43 · 57</div>
       </div>
       <span class="cap">Home Screen · small</span>
@@ -682,7 +756,7 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
         <div class="time">9:41</div>
         <div class="lock-row">
           <div class="acc-circ"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="5"/><circle cx="28" cy="28" r="23" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="73 144.5" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" fill="#fff" font-family="-apple-system,system-ui" font-weight="700" font-size="15">43</text></svg></div>
-          <div class="acc-rect" style="display:flex;align-items:center;justify-content:center;font-size:20px">¥186,500</div>
+          <div class="acc-rect" style="display:flex;align-items:center;justify-content:center;font-size:20px">¥146,200</div>
         </div>
       </div>
       <span class="cap">Lock Screen</span>
@@ -690,9 +764,9 @@ html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
     <div class="wcol">
       <div class="watch">
         <div class="crown"></div>
-        <svg width="80" height="80" viewBox="0 0 80 80" aria-label="43 of 85"><circle cx="40" cy="40" r="33" fill="none" stroke="#333" stroke-width="8"/><circle cx="40" cy="40" r="33" fill="none" stroke="#FFB38A" stroke-width="8" stroke-linecap="round" stroke-dasharray="105 207" transform="rotate(-90 40 40)"/><use href="#v-mochi" x="20" y="20" width="40" height="40"/></svg>
+        <svg width="80" height="80" viewBox="0 0 80 80" aria-label="43 of 100"><circle cx="40" cy="40" r="33" fill="none" stroke="#333" stroke-width="8"/><circle cx="40" cy="40" r="33" fill="none" stroke="#FFB38A" stroke-width="8" stroke-linecap="round" stroke-dasharray="89 207" transform="rotate(-90 40 40)"/><use href="#v-mochi" x="20" y="20" width="40" height="40"/></svg>
         <div class="wt">9:41</div>
-        <div style="font:700 13px -apple-system,system-ui;color:#FFD66B">43/85</div>
+        <div style="font:700 13px -apple-system,system-ui;color:#FFD66B">43</div>
       </div>
       <span class="cap">Apple Watch</span>
     </div>
