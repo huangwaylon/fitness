@@ -33,7 +33,11 @@ export function t(key: string, params?: Params, locale: Locale = i18n.locale): s
 /** Juniper's line: the server picks the key; unknown keys fall back to `juniper.default`. */
 export function juniperLine(key: string, params?: Params): string {
   const full = key.startsWith('juniper.') ? key : `juniper.${key}`;
-  return has(full) ? t(full, params) : t('juniper.default');
+  if (!has(full)) return t('juniper.default');
+  const p = { ...params };
+  if (typeof p.rung === 'string') p.rung = t(`rung.${p.rung}`);
+  if (typeof p.yen === 'number') p.yen = formatYen(p.yen);
+  return t(full, p);
 }
 
 /** `¥128,000` with a half-width yen sign (Intl ja-JP yields full-width ￥). */

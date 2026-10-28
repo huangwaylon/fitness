@@ -165,6 +165,10 @@
 
   "juniper.name": "Juniper",
   "juniper.default": "Lovely island today",
+  "juniper.harvest_waiting": "Waiting for {name}",
+  "juniper.pending_confirm": "{label}: log it?",
+  "juniper.evening": "Evening check-in: 10 seconds",
+  "juniper.next_rung": "{yen} to go to {rung}",
   "juniper.morning": "Morning! Nice and easy",
   "juniper.checkin_reminder": "Check-in takes 10 seconds",
   "juniper.checkin_done": "Thanks! The pears grew",

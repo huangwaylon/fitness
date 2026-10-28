@@ -1,10 +1,11 @@
 // One function per API mutation, each with its optimistic update. Pages call these.
 import type { PromiseKind } from '#lib/types.ts';
 import { COZY } from '#lib/config/rules.ts';
-import { week, type WeekViewX } from './week.svelte.ts';
+import type { WeekView } from '#lib/types.ts';
+import { week } from './week.svelte.ts';
 import { setLocale, type Locale } from '#lib/i18n/index.ts';
 
-function mine(v: WeekViewX) {
+function mine(v: WeekView) {
   return v.people[v.me];
 }
 
@@ -33,7 +34,7 @@ export async function cozyDay(date: string, on: boolean): Promise<'ok' | 'limit'
   return 'error';
 }
 
-export function cozyLeft(v: WeekViewX): number {
+export function cozyLeft(v: WeekView): number {
   return Math.max(0, COZY.maxPerMonth - mine(v).cozyDaysThisMonth);
 }
 
@@ -77,19 +78,19 @@ export function confirmHarvest() {
 export function spendPurse(label: string, amountYen: number, needsBoth: boolean) {
   return week.mutate<{ id?: string | number; status?: string }>('/api/purse/spend', { label, amountYen }, (v) => {
     if (needsBoth) {
-      v.jar.pendingSpends = [...(v.jar.pendingSpends ?? []), { id: `local-${Date.now()}`, label, amountYen, by: v.me }];
+      v.jar.pendingSpends = [...(v.jar.pendingSpends), { id: -Date.now(), label, amountYen, by: v.me }];
     } else {
       v.jar.purseYen = Math.max(0, v.jar.purseYen - amountYen);
     }
   });
 }
 
-export function approveSpend(id: string | number) {
+export function approveSpend(id: number) {
   return week.mutate('/api/purse/approve', { id }, (v) => {
-    const s = v.jar.pendingSpends?.find((p) => p.id === id);
+    const s = v.jar.pendingSpends.find((p) => p.id === id);
     if (s) {
       v.jar.purseYen = Math.max(0, v.jar.purseYen - s.amountYen);
-      v.jar.pendingSpends = v.jar.pendingSpends?.filter((p) => p.id !== id);
+      v.jar.pendingSpends = v.jar.pendingSpends.filter((p) => p.id !== id);
     }
   });
 }

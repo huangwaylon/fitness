@@ -165,6 +165,10 @@
 
   "juniper.name": "ジュニパー",
   "juniper.default": "いい島だね",
+  "juniper.harvest_waiting": "{name}を待ってるよ",
+  "juniper.pending_confirm": "{label}、記録する?",
+  "juniper.evening": "今夜のチェック、10秒だよ",
+  "juniper.next_rung": "{rung}まで あと{yen}",
   "juniper.morning": "おはよう！ゆっくりいこう",
   "juniper.checkin_reminder": "今夜のチェック、10秒だよ",
   "juniper.checkin_done": "ありがとう、なしが育ったよ",

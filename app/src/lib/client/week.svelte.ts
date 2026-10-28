@@ -3,29 +3,17 @@
 // when the API isn't there yet).
 import { goto } from '$app/navigation';
 import { dev } from '$app/env';
-import type { JarView, PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
+import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import { getJSON, postJSON, type ApiResult } from './api.ts';
 import { sampleWeek } from './fixtures.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
 
-/** Optional fields the UI can use if/when the server adds them (see contract requests). */
-export interface PendingSpend {
-  id: string | number;
-  label: string;
-  amountYen: number;
-  by: PersonId;
-}
-export type WeekViewX = WeekView & {
-  jar: JarView & { pendingSpends?: PendingSpend[]; weeks?: number };
-  /** My raw-number sharing prefs by metric. */
-  visibility?: Partial<Record<string, boolean>>;
-  people: Record<PersonId, PersonWeekView & { villagerSpecies?: string; villagerColor?: string }>;
-};
+export type PendingSpend = WeekView['jar']['pendingSpends'][number];
 
 type DemoMode = false | 'plain' | 'harvest';
 
 class WeekStore {
-  view = $state<WeekViewX | null>(null);
+  view = $state<WeekView | null>(null);
   status = $state<'loading' | 'ready' | 'error'>('loading');
   syncing = $state(false);
   offline = $state(false);
@@ -66,7 +54,7 @@ class WeekStore {
       return;
     }
     this.syncing = true;
-    const r = await getJSON<WeekViewX>('/api/week');
+    const r = await getJSON<WeekView>('/api/week');
     this.syncing = false;
     if (r.status === 401) {
       this.status = 'ready';
@@ -100,8 +88,8 @@ class WeekStore {
    * POST a mutation. `optimistic` edits the view immediately; on failure the previous view is
    * restored. 409s are left to the caller (e.g. cozy_limit) without a generic toast.
    */
-  async mutate<T = unknown>(path: string, body?: unknown, optimistic?: (v: WeekViewX) => void): Promise<ApiResult<T>> {
-    const before = this.view ? ($state.snapshot(this.view) as WeekViewX) : null;
+  async mutate<T = unknown>(path: string, body?: unknown, optimistic?: (v: WeekView) => void): Promise<ApiResult<T>> {
+    const before = this.view ? ($state.snapshot(this.view) as WeekView) : null;
     if (optimistic && this.view) optimistic(this.view);
     if (this.demo) return { ok: true, status: 200, data: null };
     const r = await postJSON<T>(path, body);

@@ -1,5 +1,5 @@
 // Load a person-week from the DB, score it, and build the privacy-filtered WeekView for the requester.
-import { and, eq, gte, inArray, lt, lte, max, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, lt, lte, max, sql, isNull, isNotNull } from 'drizzle-orm';
 import type {
   CheckinTick, DayMetrics, FruitKey, FruitView, HarvestView, JarView, LocalDate, PendingConfirmation, PersonId,
   PersonWeekView, PromiseView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
@@ -11,7 +11,7 @@ import {
 import type { Db } from '#lib/server/db/index.ts';
 import {
   checkin, cozyDay, dailyMetric, harvestConfirm, highFive, ledgerEntry, personPref, place, presenceEvent, rawPayload,
-  transfer, visibilityPref, visitConfirmation, weekLock, weekPromise, workout
+  transfer, visibilityPref, visitConfirmation, weekLock, weekPromise, workout, purseSpend
 } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 import { isStrengthWorkout } from '#lib/server/presence.ts';
@@ -187,7 +187,9 @@ export function personView(db: Db, person: PersonId, weekKey: WeekKey, today: Lo
     lastSyncAt: lastSync,
     promise: promiseView(db, person, weekKey, today),
     cozyDaysThisMonth: cozyRows.filter((c) => c.localDate.startsWith(month)).length,
-    isCozyToday: cozyRows.some((c) => c.localDate === today)
+    isCozyToday: cozyRows.some((c) => c.localDate === today),
+    villagerSpecies: pref?.villagerSpecies ?? null,
+    villagerColor: pref?.villagerColor ?? null
   };
   if (full) {
     const dates = weekDays(weekKey);
@@ -236,7 +238,10 @@ function jarView(db: Db, today: LocalDate, estimate: WeekPayout): JarView {
     thisWeekEstimateYen: estimate.A.fruitYen + estimate.B.fruitYen + estimate.teamYen,
     nextRung: nextRung(totalYen),
     rungs: RUNGS.map((r) => ({ key: r.key, yen: r.yen, reached: totalYen >= r.yen })),
-    transfer: amountYen > 0 || done ? { month, amountYen, done } : null
+    transfer: amountYen > 0 || done ? { month, amountYen, done } : null,
+    pendingSpends: db.select().from(purseSpend).where(and(isNull(purseSpend.approvedBy), isNull(purseSpend.ledgerEntryId))).all()
+      .map((p) => ({ id: p.id, label: p.label, amountYen: p.amountYen, by: p.requestedBy })),
+    weeks: db.select().from(weekLock).where(isNotNull(weekLock.provisionalAt)).all().length
   };
 }
 
@@ -296,7 +301,8 @@ export function getWeekView(db: Db, me: PersonId, t: Date = now()): WeekView {
     jar: jarView(db, today, payout),
     harvest: hwk ? harvestView(db, hwk, today) : null,
     pending: pendingConfirmations(db, me, today),
-    highFivesToday: db.select().from(highFive).where(and(eq(highFive.from, partner), gte(highFive.at, startOfToday))).all().length
+    highFivesToday: db.select().from(highFive).where(and(eq(highFive.from, partner), gte(highFive.at, startOfToday))).all().length,
+    visibility: Object.fromEntries([...sharedRawMetrics(db, me)].map((m) => [m, true]))
   };
   return { ...base, juniper: juniperLine(base, z.hour, Number(today.slice(8, 10))) };
 }

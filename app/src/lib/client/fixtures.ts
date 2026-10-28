@@ -62,7 +62,9 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
         lastSyncAt: '2026-10-28T13:58:00+09:00',
         promise: { daysMask: 2 | 8 | 32, kind: 'gym', note: 'エニタイム 7時', result: 'open', cheered: true },
         cozyDaysThisMonth: 0,
-        isCozyToday: false
+        isCozyToday: false,
+        villagerSpecies: null,
+        villagerColor: null
       },
       B: {
         person: 'B',
@@ -73,6 +75,8 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
         promise: { daysMask: 4 | 32, kind: 'pt', note: '水曜 PT＋土曜ヨガ', result: 'open', cheered: false },
         cozyDaysThisMonth: 1,
         isCozyToday: false,
+        villagerSpecies: null,
+        villagerColor: null,
         habits: {
           keys: ['eat_lunch', 'snack_swap', 'veg_two_meals'],
           ticksByDate: { '2026-10-27': ['eat_lunch', 'veg_two_meals'], '2026-10-28': ['eat_lunch'] }
@@ -86,11 +90,14 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
       thisWeekEstimateYen: 5860,
       nextRung: { key: 'okinawa', yen: 150000, remainingYen: 150000 - total },
       rungs: RUNGS.map((r) => ({ key: r.key, yen: r.yen, reached: total >= r.yen })),
-      transfer: { month: '2026-10', amountYen: 41200, done: false }
+      transfer: { month: '2026-10', amountYen: 41200, done: false },
+      pendingSpends: [],
+      weeks: 8
     },
     harvest: opts.harvest ? harvest : null,
     pending: [{ kind: 'workout', id: 'w-yoga-1027', date: '2026-10-27', label: 'ヨガ 45分' }],
     juniper: { key: 'strength_left', params: { name: 'もち', n: 1 } },
-    highFivesToday: 1
+    highFivesToday: 1,
+    visibility: {}
   };
 }

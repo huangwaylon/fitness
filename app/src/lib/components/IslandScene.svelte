@@ -2,13 +2,13 @@
   // The Island scene (mockup screen 1): sky, sea, island, two trees with four fruit rings each,
   // two villagers, the jar sign and two big scores. Everything scales with the container width (cqw).
   import type { FruitKey } from '#lib/types.ts';
-  import type { WeekViewX } from '#lib/client/week.svelte.ts';
+  import type { WeekView } from '#lib/types.ts';
   import FruitRing from './FruitRing.svelte';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
 
   interface Props {
-    view: WeekViewX;
+    view: WeekView;
     onhighfive?: () => void;
   }
   let { view, onhighfive }: Props = $props();
@@ -17,7 +17,7 @@
   const me = $derived(view.people[view.me]);
   const partner = $derived(view.people[view.partner]);
   const night = $derived(theme.night);
-  const species = (p: { person: string; villagerSpecies?: string }) =>
+  const species = (p: { person: string; villagerSpecies?: string | null }) =>
     (p.villagerSpecies ?? (p.person === 'A' ? 'dog' : 'cat')) === 'dog' ? '#v-bean' : '#v-mochi';
 
   let hearts = $state<number[]>([]);
