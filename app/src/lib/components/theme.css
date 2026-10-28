@@ -1,4 +1,4 @@
-/* Island Fund base styles: element defaults + shared building blocks (style guide v2 §3, §4).
+/* Island Fund base styles: element defaults + shared building blocks (style guide v3 §3, §4).
    All custom properties (tokens) live in lib/styles/tokens.css, which is imported first. */
 
 @media (prefers-reduced-motion: reduce) {
@@ -51,7 +51,6 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
   background: var(--tape, var(--c-yuzu-soft)); box-shadow: 0 2px 0 color-mix(in srgb, var(--tape, var(--c-yuzu-soft)) 80%, #000 20%);
 }
 .tape svg { width: 16px; height: 16px; }
-.divide + .divide { border-top: 2px dashed var(--stitch); }
 
 /* ---------- pill (status, counters) ---------- */
 .pill {
@@ -81,9 +80,8 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
 .btn.coral { --fill: var(--c-coral); --lip-c: var(--c-coral-lip); }
-.btn.sky { --fill: var(--c-sky); --lip-c: var(--c-sky-lip); }
-.btn.moon, :root[data-theme="night"] .btn:not(.yuzu, .coral, .sky, .paper, .quiet) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
-.btn.paper, .btn.quiet { --fill: var(--surface); --lip-c: var(--lip); color: var(--text); border: var(--bw) solid var(--edge); }
+.btn.moon, :root[data-theme="night"] .btn:not(.yuzu, .coral, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
+.btn.paper { --fill: var(--surface); --lip-c: var(--lip); color: var(--text); border: var(--bw) solid var(--edge); }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
 }
@@ -96,17 +94,6 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
   box-shadow: 0 3px 0 var(--lip); transition: transform var(--dur-base) var(--ease-bounce);
 }
 .icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 var(--lip); transition-duration: var(--dur-tap); }
-
-/* ---------- chips (§4.6) ---------- */
-.chip {
-  appearance: none; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 0 14px; border-radius: var(--r-pill); background: var(--surface); border: var(--bw) solid var(--edge);
-  font-weight: 700; font-size: var(--fs-body); color: var(--text-soft); user-select: none;
-  box-shadow: 0 3px 0 var(--lip); transition: transform var(--dur-base) var(--ease-bounce);
-}
-.chip:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--lip); transition-duration: var(--dur-tap); }
-.chip[aria-pressed="true"], .chip[aria-checked="true"] { background: var(--c-leaf-soft); border-color: var(--c-leaf); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-leaf-lip); }
-:root[data-theme="night"] .chip[aria-pressed="true"], :root[data-theme="night"] .chip[aria-checked="true"] { background: var(--c-moon); border-color: var(--c-moon); box-shadow: 0 3px 0 var(--c-moon-lip); }
 
 /* ---------- switch (§4.6): put <span class="switch"></span> inside a [role=switch] ---------- */
 .switch {
@@ -138,12 +125,9 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 }
 .screen-head h1 .tile svg { width: 26px; height: 26px; color: var(--c-ink); }
 
-/* legacy keyframes still used by Builder A's scene until it lands its own */
+/* shared keyframes (scene, sheets, harvest) */
 @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
 @keyframes sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
-@keyframes breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(.97); } }
-@keyframes drift { from { transform: translateX(-60px); } to { transform: translateX(420px); } }
 @keyframes stripes { to { background-position: 32px 0; } }
 @keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
 @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }

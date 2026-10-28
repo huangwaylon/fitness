@@ -2,6 +2,8 @@
   // 島 Island (style guide v3 §B.1): the scene, one しずえ line, ONE primary action (今夜のチェック).
   // A pending 「筋トレとして記録する？」 replaces the button (one tap each way) and しずえ doesn't
   // repeat it. After today's check-in the button goes quiet. Tap the partner → partner sheet.
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import IslandScene from '#lib/components/IslandScene.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
   import CheckinSheet from '#lib/components/CheckinSheet.svelte';
@@ -69,7 +71,7 @@
 {#if view}
   <main class="island">
     <div class="top">
-      <IslandScene {view} onhighfive={() => (partnerOpen = true)}
+      <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={() => (checkinOpen = true)} onjar={() => goto(resolve('/jar'))}
         partnerExpression={partnerCheer ? 'cheer' : undefined} partnerEmote={partnerCheer ? 'heart' : false}
         meExpression={meCheer ? 'cheer' : undefined} meEmote={meCheer} />
       <div class="head">

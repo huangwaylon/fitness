@@ -5,10 +5,8 @@
   // Reduced motion: text appears at once. The real text lives in an aria-live node.
   import { t } from '#lib/i18n/index.ts';
   import Juniper from './Juniper.svelte';
-  import OfficialArt from './OfficialArt.svelte';
-  import { hostArt, type HostPose } from '#lib/client/assets.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
-  import type { Expression } from '#lib/villagers/species.ts';
+  import type { HostPose } from '#lib/client/assets.ts';
 
   interface Props {
     /** One line, or several pages (tap to step through). */
@@ -27,7 +25,6 @@
   let { text, name, tag = 'var(--tag-juniper)', host = 'wave', size = 72, onfinish }: Props = $props();
   /** Dec–Feb: the winter outfit replaces the calm pose. */
   const pose = $derived<HostPose | false>(host === 'stand' && theme.season === 'winter' ? 'winter' : host);
-  const FALLBACK: Record<string, Expression> = { wave: 'cheer', stand: 'happy', winter: 'happy', bow: 'proud' };
 
   const pages = $derived(Array.isArray(text) ? text : [text]);
   let pageIdx = $state(0);
@@ -93,9 +90,7 @@
 <div class="talk">
   {#if pose}
     <span class="spk" style:--h="{size}px">
-      <OfficialArt key={hostArt(pose)} alt="" {size} eager>
-        {#snippet fallback()}<Juniper expression={FALLBACK[pose as string]} {size} />{/snippet}
-      </OfficialArt>
+      <Juniper {pose} {size} eager />
     </span>
   {/if}
   <button type="button" class="bubble" class:tail={!!pose} onclick={tap} aria-label={more ? t('common.next') : undefined}>
@@ -151,12 +146,10 @@
     position: absolute; left: 50%; bottom: -6px; margin-left: -7px; width: 14px; height: 10px; background: var(--c-amber);
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
-  /* しずえ: feet on the bubble's baseline, a gentle idle bob (transform only). */
+  /* しずえ: feet on the bubble's baseline (Juniper floats gently by itself). */
   .spk { flex: none; display: grid; justify-items: center; min-height: var(--h); align-items: end; margin-bottom: 4px; }
-  .spk :global(img) { transform-origin: 50% 100%; animation: host-idle 2.8s var(--ease-idle) infinite; }
-  @keyframes host-idle { 50% { transform: translateY(-1.5%); } }
   :global(:root[data-theme="night"]) .spk :global(img) { filter: brightness(.9); }
   @media (prefers-reduced-motion: reduce) {
-    .bubble, .who, .next, .spk :global(img) { animation: none; }
+    .bubble, .who, .next { animation: none; }
   }
 </style>
