@@ -99,8 +99,8 @@
     border-radius: var(--r-lg); border: var(--bw) solid var(--edge); background: var(--bg); color: var(--text); box-shadow: var(--sh-inset);
   }
   .code::placeholder { color: var(--text-faint); opacity: .5; }
-  .msg { min-height: 1.4em; margin: 0; color: var(--coral-ink); font-weight: 700; text-align: center; }
-  :global(:root[data-theme="night"]) .msg { color: var(--coral); }
+  .msg { min-height: 1.4em; margin: 0; color: var(--c-coral-ink); font-weight: 700; text-align: center; }
+  :global(:root[data-theme="night"]) .msg { color: var(--c-coral); }
   .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-caption); }
   .hint.strong { background: var(--c-sky-soft); color: var(--c-ink); border-radius: var(--r-sm); }
 </style>

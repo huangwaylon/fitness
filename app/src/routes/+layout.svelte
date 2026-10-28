@@ -6,7 +6,7 @@
   import '@fontsource/zen-maru-gothic/500.css';
   import '@fontsource/zen-maru-gothic/700.css';
   import '#lib/styles/tokens.css';
-  import '#lib/components/theme.css';
+  import '#lib/styles/theme.css';
   import { onMount, type Snippet } from 'svelte';
   import { page } from '$app/state';
   import Sprites from '#lib/components/Sprites.svelte';

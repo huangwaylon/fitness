@@ -34,7 +34,7 @@ export const ROSTER_IDS = Object.keys(ROSTER) as RosterId[];
 /** Defaults until the users pick: A = Goldie (dog), B = Raymond (cat). */
 const DEFAULT_VILLAGER: Record<'A' | 'B', RosterId> = { A: 'goldie', B: 'raymond' };
 
-export function isRosterId(s: unknown): s is RosterId {
+function isRosterId(s: unknown): s is RosterId {
   return typeof s === 'string' && s in ROSTER;
 }
 

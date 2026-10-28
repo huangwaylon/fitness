@@ -26,7 +26,7 @@ button, [role="button"], [role="switch"], a {
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 12px; }
-:root[data-theme="night"] :focus-visible { outline-color: var(--moon); }
+:root[data-theme="night"] :focus-visible { outline-color: var(--c-moon); }
 input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .sr-only {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -80,7 +80,7 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
 .btn.coral { --fill: var(--c-coral); --lip-c: var(--c-coral-lip); }
-.btn.moon, :root[data-theme="night"] .btn:not(.yuzu, .coral, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
+:root[data-theme="night"] .btn:not(.yuzu, .coral, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
 .btn.paper { --fill: var(--surface); --lip-c: var(--lip); color: var(--text); border: var(--bw) solid var(--edge); }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
@@ -127,11 +127,9 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 
 /* shared keyframes (scene, sheets, harvest) */
 @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-@keyframes sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
 @keyframes stripes { to { background-position: 32px 0; } }
 @keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
 @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(110vh) rotate(540deg); } }
-@keyframes drop { from { transform: translateY(-30px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes glint { 0%,70%,100% { opacity: 0; } 80% { opacity: 1; } }
 @keyframes floatUp { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; transform: translateY(-10px) scale(1); } 100% { transform: translateY(-80px) scale(1.1); opacity: 0; } }
