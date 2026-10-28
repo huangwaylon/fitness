@@ -49,3 +49,12 @@ export function workoutKey(type: string, startIso: string): string {
   const minute = new Date(Math.floor(Date.parse(startIso) / 60000) * 60000).toISOString();
   return `w:${createHash('sha256').update(`${canonicalWorkoutType(type)}|${minute}`).digest('hex').slice(0, 24)}`;
 }
+
+/** Preferred Japanese label for a canonical workout name (first alias wins), for UI text. */
+const JA_LABEL: Record<string, string> = {};
+for (const [ja, en] of Object.entries(ALIASES)) if (!(en in JA_LABEL) && /[^\x00-\x7F]/.test(ja)) JA_LABEL[en] = ja;
+JA_LABEL['Traditional Strength Training'] = '筋力トレーニング';
+
+export function workoutLabel(type: string, locale: 'ja' | 'en'): string {
+  return locale === 'ja' ? (JA_LABEL[type] ?? type) : type;
+}

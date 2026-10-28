@@ -119,7 +119,7 @@ describe('gym visits', () => {
     expect(getWeekView(db, 'A').pending).toEqual([{ kind: 'visit', id: String(arrive.id), date: '2026-11-10', label: 'エニタイム' }]);
     expect(await promptRecentVisits(db)).toBe(1);
     expect(await promptRecentVisits(db)).toBe(0);
-    expect(JSON.parse(sent[0])).toMatchObject({ kind: 'visit', body: '筋トレとして記録する?' });
+    expect(JSON.parse(sent[0])).toMatchObject({ kind: 'visit', body: '筋トレとして記録する？' });
 
     confirm(db, 'A', { kind: 'visit', id: String(arrive.id), yes: true });
     expect(getWeekView(db, 'A').pending).toEqual([]);

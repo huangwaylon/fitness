@@ -15,6 +15,7 @@ import {
 } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 import { isStrengthWorkout } from '#lib/server/presence.ts';
+import { workoutLabel } from '#lib/server/ingest/workout-names.ts';
 
 export const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -203,7 +204,7 @@ export function personView(db: Db, person: PersonId, weekKey: WeekKey, today: Lo
   return view;
 }
 
-export function pendingConfirmations(db: Db, person: PersonId, today: LocalDate): PendingConfirmation[] {
+export function pendingConfirmations(db: Db, person: PersonId, today: LocalDate, locale: 'ja' | 'en' = 'ja'): PendingConfirmation[] {
   const cur = weekKeyOf(today);
   const out: PendingConfirmation[] = [];
   for (const wk of [addDays(cur, -7), cur]) {
@@ -219,7 +220,7 @@ export function pendingConfirmations(db: Db, person: PersonId, today: LocalDate)
     }
     for (const w of workouts) {
       if ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === null && w.durationMin >= STRENGTH.minWorkoutMin) {
-        out.push({ kind: 'workout', id: w.extId, date: w.date, label: w.type });
+        out.push({ kind: 'workout', id: w.extId, date: w.date, label: workoutLabel(w.type, locale) });
       }
     }
   }
@@ -301,7 +302,7 @@ export function getWeekView(db: Db, me: PersonId, t: Date = now()): WeekView {
     people,
     jar: jarView(db, today, payout),
     harvest: hwk ? harvestView(db, hwk, today) : null,
-    pending: pendingConfirmations(db, me, today),
+    pending: pendingConfirmations(db, me, today, db.select().from(personPref).where(eq(personPref.person, me)).get()?.locale ?? 'ja'),
     highFivesToday: db.select().from(highFive).where(and(eq(highFive.from, partner), gte(highFive.at, startOfToday))).all().length,
     visibility: Object.fromEntries([...sharedRawMetrics(db, me)].map((m) => [m, true]))
   };

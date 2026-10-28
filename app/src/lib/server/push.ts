@@ -19,7 +19,7 @@ const MESSAGES: Record<PushKind, Record<'ja' | 'en', { title: string; body: stri
     en: { title: 'Island Fund', body: "Sunday harvest: put this week's fruit in the jar 🍑" }
   },
   checkin: {
-    ja: { title: 'しまの貯金箱', body: '今夜のチェック、10秒だけどう? 🌙' },
+    ja: { title: 'しまの貯金箱', body: '今夜のチェック、10秒だけどう？ 🌙' },
     en: { title: 'Island Fund', body: "Tonight's check-in — 10 seconds? 🌙" }
   },
   payday: {
@@ -27,7 +27,7 @@ const MESSAGES: Record<PushKind, Record<'ja' | 'en', { title: string; body: stri
     en: { title: 'Payday 🐚', body: "Moved last month's yen to savings? Tap ✓" }
   },
   visit: {
-    ja: { title: 'ジムに行ってきたね 🏋️', body: '筋トレとして記録する?' },
+    ja: { title: 'ジムに行ってきたね 🏋️', body: '筋トレとして記録する？' },
     en: { title: 'Gym visit 🏋️', body: 'Count it as a strength day?' }
   }
 };
