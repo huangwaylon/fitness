@@ -10,9 +10,9 @@
   import LeafCoin from './LeafCoin.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
-  import { setLanguage, setVillagerName, setVillagerLook, setVisibility } from '#lib/client/actions.ts';
+  import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
   import { pushState, enablePush, type PushState } from '#lib/client/push.ts';
-  import { SPECIES, SPECIES_IDS, resolveVillager } from '#lib/villagers/species.ts';
+  import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
   import { t, i18n, formatSyncTime } from '#lib/i18n/index.ts';
 
   type AppId = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
@@ -43,7 +43,8 @@
 
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
-  const look = $derived(me && view ? resolveVillager(me.villagerSpecies, me.villagerColor, view.me) : null);
+  /** My current roster villager (prefs `villager`, else the per-person default). */
+  const current = $derived(me && view ? resolveLook({ villager: me.villager, species: me.villagerSpecies, colourway: me.villagerColor, person: view.me }).id : null);
   const title = $derived(app ? t(`phone.app.${app}`) : t('phone.name'));
 
   function tick() {
@@ -78,11 +79,6 @@
     if (me && name.trim() && name.trim() !== me.villagerName) setVillagerName(name);
   }
 
-  function pickSpecies(id: string) {
-    if (!view || !me) return;
-    const cw = resolveVillager(id, me.villagerColor, view.me).colourway.id;
-    setVillagerLook(id, cw);
-  }
 </script>
 
 <Sheet bind:open label={t('phone.name')} variant="phone">
@@ -123,24 +119,20 @@
       <span class="juni"><Juniper size={84} /></span>
       <p class="talk">{t(`help.${topic}`)}</p>
     </div>
-  {:else if app === 'villager' && view && me && look}
+  {:else if app === 'villager' && view && me && current}
     <div class="panel">
       <div class="preview">
-        <Villager person={view.me} species={look.species.id} colourway={look.colourway.id} size={96} expression="cheer" />
+        {#key current}<Villager person={view.me} villager={current} size={104} expression="cheer" emote />{/key}
         <input class="name" type="text" maxlength="12" aria-label={t('us.name')} bind:value={name} onblur={saveName}
           onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
       </div>
-      <div class="species" role="radiogroup" aria-label={t('phone.species')}>
-        {#each SPECIES_IDS as id (id)}
-          <button type="button" class="sp" role="radio" aria-checked={look.species.id === id} aria-label={i18n.locale === 'ja' ? SPECIES[id].nameJa : SPECIES[id].nameEn} onclick={() => pickSpecies(id)}>
-            <Villager person={view.me} species={id} size={40} head />
+      <div class="roster" role="radiogroup" aria-label={t('phone.app.villager')}>
+        {#each ROSTER_IDS as id (id)}
+          {@const v = ROSTER[id]}
+          <button type="button" class="rv" role="radio" aria-checked={current === id} onclick={() => setVillager(id)}>
+            <Villager person={view.me} villager={id} size={44} head />
+            <span>{i18n.locale === 'ja' ? v.nameJa : v.nameEn}</span>
           </button>
-        {/each}
-      </div>
-      <div class="colours" role="radiogroup" aria-label={t('phone.colour')}>
-        {#each look.species.colourways as cw (cw.id)}
-          <button type="button" class="cw" role="radio" aria-checked={look.colourway.id === cw.id} aria-label={i18n.locale === 'ja' ? cw.nameJa : cw.nameEn}
-            style:--base={cw.base} style:--shade={cw.shade} onclick={() => setVillagerLook(look.species.id, cw.id)}></button>
         {/each}
       </div>
     </div>
@@ -170,7 +162,7 @@
     <div class="panel rows">
       {#each [view.people[view.me], view.people[view.partner]] as p (p.person)}
         <div class="row static">
-          <Villager person={p.person} species={p.villagerSpecies} colourway={p.villagerColor} size={36} head />
+          <Villager person={p.person} size={36} head />
           <span class="rl">{p.villagerName}</span>
           <span class="money when">{formatSyncTime(p.lastSyncAt, view.today)}</span>
         </div>
@@ -231,20 +223,15 @@
     flex: 1; max-width: 12em; min-height: 48px; border-radius: var(--r-sm); border: var(--bw) solid var(--edge);
     background: var(--surface); color: var(--text); padding: 0 14px; font-weight: 700; box-shadow: var(--sh-inset);
   }
-  .species { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .sp {
-    appearance: none; cursor: pointer; aspect-ratio: 1; border-radius: var(--r-squircle); border: var(--bw) solid var(--edge);
-    background: var(--surface); display: grid; place-items: center; box-shadow: 0 3px 0 var(--lip); padding: 0;
+  .roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 42dvh; overflow: auto; padding: 2px 2px 6px; }
+  .rv {
+    appearance: none; cursor: pointer; border-radius: var(--r-md); border: var(--bw) solid var(--edge); padding: 6px 2px 5px;
+    background: var(--surface); display: grid; justify-items: center; gap: 2px; box-shadow: 0 3px 0 var(--lip); color: var(--text);
+    transition: transform var(--dur-base) var(--ease-bounce);
   }
-  .sp[aria-checked='true'] { border-color: var(--c-leaf); background: var(--c-leaf-soft); box-shadow: 0 3px 0 var(--c-leaf-lip); }
-  .colours { display: flex; justify-content: center; gap: 16px; }
-  .cw {
-    appearance: none; cursor: pointer; width: 48px; height: 48px; border-radius: 50%; padding: 0;
-    background: radial-gradient(circle at 50% 70%, var(--shade) 0 30%, var(--base) 31%);
-    border: 3px solid var(--edge); box-shadow: 0 3px 0 var(--lip);
-  }
-  .cw[aria-checked='true'] { border-color: var(--c-ink); transform: scale(1.1); }
-  :global(:root[data-theme="night"]) .cw[aria-checked='true'] { border-color: var(--c-moon); }
+  .rv:active { transform: translateY(2px) scale(1.05, .93); transition-duration: var(--dur-tap); }
+  .rv span { font: 700 .64rem/1.1 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .rv[aria-checked='true'] { border-color: var(--c-leaf); background: var(--c-leaf-soft); box-shadow: 0 3px 0 var(--c-leaf-lip); color: var(--c-ink); }
 
   .rows { gap: 8px; }
   .row {

@@ -77,7 +77,7 @@
     <section class="card partner">
       <span class="tape" style:--tape={tagOf(view.partner)}>{partner.villagerName}</span>
       <div class="who">
-        <span class="av"><Villager person={view.partner} species={partner.villagerSpecies} colourway={partner.villagerColor} size={64} /></span>
+        <span class="av"><Villager person={view.partner} size={64} /></span>
         <span class="score"><span class="hero-num">{partner.score}</span><small class="money">/100</small></span>
       </div>
       <div class="fruits">
@@ -89,7 +89,7 @@
     <section class="card proms">
       <span class="tape" style:--tape="var(--c-leaf-soft)">{t('promise.title')}</span>
       <div class="prom">
-        <Villager person={view.me} species={me.villagerSpecies} colourway={me.villagerColor} size={40} />
+        <Villager person={view.me} size={40} />
         <button type="button" class="ptxt edit" onclick={openEdit}>
           {#if me.promise}
             <span>{summary(me.promise)}</span>
@@ -101,7 +101,7 @@
         {#if me.promise}<span class="mk {me.promise.result}" aria-label={t('promise.result.' + me.promise.result)}>{#if me.promise.result === 'kept'}✓{:else if me.promise.result === 'paused'}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>{:else}○{/if}</span>{/if}
       </div>
       <div class="prom">
-        <Villager person={view.partner} species={partner.villagerSpecies} colourway={partner.villagerColor} size={40} />
+        <Villager person={view.partner} size={40} />
         <span class="ptxt">{partner.promise ? summary(partner.promise) : t('promise.none')}</span>
         {#if partner.promise}
           <button type="button" class="chip cheer" aria-pressed={partner.promise.cheered} disabled={partner.promise.cheered} onclick={() => cheer()}>

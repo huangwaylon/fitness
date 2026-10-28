@@ -133,3 +133,10 @@ export function setVillagerLook(villagerSpecies: string, villagerColor: string) 
     mine(v).villagerColor = villagerColor;
   });
 }
+
+/** Villager from the roster (しまフォン → 村人), e.g. 'goldie' (lib/villagers/roster.ts). */
+export function setVillager(villager: string) {
+  return week.mutate('/api/prefs', { villager }, (v) => {
+    mine(v).villager = villager;
+  });
+}

@@ -51,7 +51,7 @@
 <Sheet bind:open label={t('checkin.title')} {onclose}>
   {#if view && me}
     <div class="head">
-      <span class="av"><Villager person={view.me} species={me.villagerSpecies} colourway={me.villagerColor} size={52} /></span>
+      <span class="av"><Villager person={view.me} size={52} /></span>
       <h2>{which === 'today' ? t('checkin.title') : t('checkin.yesterday')}</h2>
       <div class="days" role="tablist">
         <button type="button" role="tab" class="day" class:fillable={yesterdayFillable} aria-selected={which === 'yesterday'}
