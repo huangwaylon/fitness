@@ -7,10 +7,17 @@ import type { Db } from '#lib/server/db/index.ts';
 import { notificationLog, personPref, pushSubscription } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 
-export type PushKind = 'checkin' | 'payday' | 'visit';
+/** Quiet hours (JST). */
+const QUIET = { from: 22, until: 7 } as const;
+
+export type PushKind = 'harvest' | 'checkin' | 'payday' | 'visit';
 
 /** Push copy lives here (not in the UI catalogs) because the server renders it. Keep the banned-words list in mind. */
 const MESSAGES: Record<PushKind, Record<'ja' | 'en', { title: string; body: string }>> = {
+  harvest: {
+    ja: { title: 'しまの貯金箱', body: '日曜の収穫だよ。今週の果物を壺へ 🍑' },
+    en: { title: 'Island Fund', body: "Sunday harvest: put this week's fruit in the jar 🍑" }
+  },
   checkin: {
     ja: { title: 'しまの貯金箱', body: '今夜のチェック、10秒だけどう? 🌙' },
     en: { title: 'Island Fund', body: "Tonight's check-in — 10 seconds? 🌙" }
@@ -56,7 +63,9 @@ export async function notify(db: Db, person: PersonId, kind: PushKind, extra: { 
   if (!forceEnabled && !configure()) return false;
   const subs = db.select().from(pushSubscription).where(eq(pushSubscription.person, person)).all();
   if (subs.length === 0) return false;
-  const localDate = nowInZone(now()).date;
+  const z = nowInZone(now());
+  if (z.hour < QUIET.until || z.hour >= QUIET.from) return false; // sleep-aware: nothing 22:00–07:00
+  const localDate = z.date;
   const claimed = db.insert(notificationLog).values({ person, localDate, kind }).onConflictDoNothing().run();
   if (claimed.changes !== 1) return false;
   const locale = db.select().from(personPref).where(eq(personPref.person, person)).get()?.locale ?? 'ja';

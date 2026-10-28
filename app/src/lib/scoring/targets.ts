@@ -5,7 +5,7 @@ import { inMonthDayRange, weekDays, weekKeyOf } from '#lib/scoring/dates.ts';
 /** Round to 3 decimals so factors like 85 × 0.7 give 59.5, not 59.49999999999999. Scoring works in milli-units. */
 const roundMilli = (x: number): number => Math.round(x * 1000) / 1000;
 
-/** True if any day of the Mon–Sun week falls in the 正月 easy window (Dec 22–Jan 3, wraps the year). */
+/** True if any day of the Mon–Sun week falls in the 正月 easy window (Dec 25–Jan 1: always two weeks; wraps the year). */
 export function isEasyWeek(weekKey: WeekKey): boolean {
   return weekDays(weekKey).some((d) => inMonthDayRange(d, HOLIDAY.easy.from, HOLIDAY.easy.to));
 }

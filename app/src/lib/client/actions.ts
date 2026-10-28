@@ -20,8 +20,8 @@ export function checkin(date: string, habitKey: string, done: boolean) {
   });
 }
 
-/** Returns 'ok' | 'limit' | 'error'. A 409 `cozy_limit` gets a gentle message from the caller. */
-export async function cozyDay(date: string, on: boolean): Promise<'ok' | 'limit' | 'error'> {
+/** Returns 'ok', 'error', or an i18n key for a gentle message when the server says no (409). */
+export async function cozyDay(date: string, on: boolean): Promise<'ok' | 'error' | { message: string }> {
   const r = await week.mutate<{ error?: string }>('/api/cozy-day', { date, on }, (v) => {
     const me = mine(v);
     if (v.today === date && me.isCozyToday !== on) {
@@ -30,7 +30,10 @@ export async function cozyDay(date: string, on: boolean): Promise<'ok' | 'limit'
     }
   });
   if (r.ok) return 'ok';
-  if (r.status === 409) return 'limit';
+  if (r.status === 409) {
+    const code = r.data?.error;
+    return { message: code === 'cozy_week_cap' ? 'us.cozyWeekLimit' : code === 'cozy_already_active' ? 'us.cozyActive' : 'us.cozyLimit' };
+  }
   return 'error';
 }
 

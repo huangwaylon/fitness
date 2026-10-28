@@ -75,7 +75,7 @@
     if (!view || !me) return;
     cozyMsg = '';
     const r = await cozyDay(view.today, !me.isCozyToday);
-    if (r === 'limit') cozyMsg = t('us.cozyLimit');
+    if (typeof r === 'object') cozyMsg = t(r.message);
   }
 
   async function turnOnPush() {

@@ -1,5 +1,5 @@
 // Business rules behind the /api/* endpoints (routes only parse + delegate here). All throw HttpError on refusal.
-import { and, eq, isNull, like } from 'drizzle-orm';
+import { and, eq, gte, isNull, like, lte } from 'drizzle-orm';
 import { z } from 'zod';
 import type { LocalDate, PersonId } from '#lib/types.ts';
 import { COZY, MONEY } from '#lib/config/rules.ts';
@@ -7,9 +7,10 @@ import { addDays, nowInZone, targetsFor, weekKeyOf } from '#lib/scoring/index.ts
 import type { Db } from '#lib/server/db/index.ts';
 import {
   checkin, cozyDay, harvestConfirm, highFive, ledgerEntry, personPref, presenceEvent, purseSpend, pushSubscription,
-  transfer, visibilityPref, visitConfirmation, weekPromise, workout
+  transfer, visibilityPref, visitConfirmation, weekPromise, workout, dailyMetric
 } from '#lib/server/db/schema.ts';
 import { HttpError } from '#lib/server/http.ts';
+import { isStrengthWorkout } from '#lib/server/presence.ts';
 import { now } from '#lib/server/clock.ts';
 import { purseBalance } from '#lib/server/ledger.ts';
 import { harvestWeekKey, isLocked, monthEarnings, partnerOf, promiseTargetWeek } from '#lib/server/week.ts';
@@ -60,7 +61,8 @@ export function setCheckin(db: Db, person: PersonId, input: z.infer<typeof schem
 // ---------- cozy day ----------
 export function setCozyDay(db: Db, person: PersonId, input: z.infer<typeof schemas.cozy>): { date: LocalDate; on: boolean; usedThisMonth: number } {
   const t = today();
-  if (input.date < addDays(t, -2) || input.date > addDays(t, 30)) throw new HttpError(422, 'date_out_of_range');
+  // Only today or yesterday: a Cozy Day is for rest you're taking, not a backdated discount (review round 3, F3).
+  if (input.date > t || input.date < addDays(t, -COZY.maxDaysBack)) throw new HttpError(422, 'date_out_of_range');
   assertUnlocked(db, input.date);
   const month = input.date.slice(0, 7);
   const count = () => db.select().from(cozyDay).where(and(eq(cozyDay.person, person), like(cozyDay.localDate, `${month}-%`))).all().length;
@@ -68,12 +70,26 @@ export function setCozyDay(db: Db, person: PersonId, input: z.infer<typeof schem
     const exists = db.select().from(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, input.date))).get();
     if (!exists) {
       if (count() >= COZY.maxPerMonth) throw new HttpError(409, 'cozy_month_cap', { max: COZY.maxPerMonth });
+      const wk = weekKeyOf(input.date);
+      const inWeek = db.select().from(cozyDay)
+        .where(and(eq(cozyDay.person, person), gte(cozyDay.localDate, wk), lte(cozyDay.localDate, addDays(wk, 6)))).all().length;
+      if (inWeek >= COZY.maxPerWeek) throw new HttpError(409, 'cozy_week_cap', { max: COZY.maxPerWeek });
+      if (trainedOn(db, person, input.date)) throw new HttpError(409, 'cozy_already_active');
       db.insert(cozyDay).values({ person, localDate: input.date }).onConflictDoNothing().run();
     }
   } else {
     db.delete(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, input.date))).run();
   }
   return { date: input.date, on: input.on, usedThisMonth: count() };
+}
+
+/** A day that already has a strength workout or ≥ COZY.trainedActiveMin active minutes can't be made cozy afterwards. */
+function trainedOn(db: Db, person: PersonId, date: LocalDate): boolean {
+  const ex = db.select().from(dailyMetric)
+    .where(and(eq(dailyMetric.person, person), eq(dailyMetric.localDate, date), eq(dailyMetric.metric, 'exercise_min'))).get();
+  if (ex && ex.value >= COZY.trainedActiveMin) return true;
+  const rows = db.select().from(workout).where(and(eq(workout.person, person), eq(workout.localDate, date))).all();
+  return rows.some((w) => isStrengthWorkout({ ...w, includesStrength: w.includesStrength ?? null }));
 }
 
 // ---------- promise ----------
