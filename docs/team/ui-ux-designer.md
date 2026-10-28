@@ -43,7 +43,7 @@ Artifacts: `docs/design/mockup.html` (5 screens + an English rendering of Island
 ## 4. Language: Japanese-first, English switchable
 
 - The UI is Japanese by default (`lang="ja"`). ふたり → 言語 / Language switches every label to English. Numbers, layout and icons stay identical (mockup screen "1-EN").
-- Font: **Zen Maru Gothic** (OFL 1.1, full Japanese coverage) for kana and kanji. **Fredoka** stays for digits and ¥ amounts. Alternative: M PLUS Rounded 1c (OFL).
+- Font: **M PLUS Rounded 1c** (OFL 1.1, full Japanese coverage) for kana and kanji, with `letter-spacing: 0` on all Japanese text. It sets small kana tighter than Zen Maru Gothic, which looked over-spaced. **Fredoka** stays for digits and ¥ amounts.
 - Formats: `¥186,500`, 24 h JST (`20:00`, `19:30`), `10月28日 水曜日`, `第21週`, metric units.
 - Glossary (JA → EN):
 
@@ -58,10 +58,10 @@ Artifacts: `docs/design/mockup.html` (5 screens + an English rendering of Island
 | 来週の約束 | Next week's promise | ceremony |
 | 応援してる | I've got you | partner's tap on a promise |
 | のんびりデー | Cozy Day | check-in chip |
-| おやつ | Treat (neutral) | check-in chip |
 | チーム | Team | jar layer, ceremony |
 | 暫定 | Provisional | ceremony total |
-| 野菜 2食 / 甘い飲み物なし / 自炊 | Veggies / No sugary drinks / Home-cooked | habits |
+| 昼ごはん / おやつ (果物・ナッツ・ヨーグルト) / 野菜 2食 | Lunch / Snack swap / Veggies at 2 meals | もち's habits (personal per partner) |
+| ごちそう | Treat (neutral) | check-in chip |
 | 筋トレ・活動・歩数・睡眠・食事 | Strength · Active · Steps · Sleep · Eats | fruit tooltips |
 
 - Example of one element in both languages (the Jar's purse row): **JA** 「ごほうび財布 ¥7,000 ［使う］」 / **EN** "Treat Purse ¥7,000 [Spend]".
@@ -103,7 +103,7 @@ Full-screen: 日曜の収穫 (Sunday 19:30 JST)   ·   Onboarding (once)
 
 Then ごほうび財布 +¥2,000 (¥1,000 per person at ≥ 60). Then 来週の約束: last week's ✓/○ marks and next week's when/where/what (もち: 「水曜 PT＋土曜ヨガ」, まめ: 「エニタイム 火・木・土 7時」), with the partner's 応援してる pill. Promises carry no money and no streak; a kept promise gives a small fruit bonus inside the 100 cap (0006). One button: 壺に入れる！ Late data can only add; Wednesday top-ups show as a small "+¥" on Island.
 
-**4 · 今夜のチェック Evening check-in (20:00 JST).** Title 今夜 and a day chip (火 has a coral dot = open for the 48 h backfill). Three big switches: 野菜 2食 · 甘い飲み物なし · 自炊, the last with the partner's face to co-log. Two chips: おやつ (neutral, costs nothing) and のんびりデー (prorates the week; 4/month). Saves on tap; the toast is just a pear icon and "+2" with an undo button. The partner only ever sees the pear count.
+**4 · 今夜のチェック Evening check-in (20:00 JST).** Title 今夜 and a day chip (火 has a coral dot = open for the 48 h backfill). Three big switches showing **that person's own habits** (もち / Partner B: 昼ごはん · おやつ 果物・ナッツ・ヨーグルト · 野菜 2食). The shared 野菜 2食 has the partner's face to co-log. まめ sees his own three (e.g. 定食スタイル · 減塩デー · 野菜 2食). Two chips: ごちそう (neutral treat, costs nothing) and のんびりデー (prorates the week; 4/month). Saves on tap; the toast is just a pear icon and "+2" with an undo button. The partner only ever sees the pear count.
 
 **5 · ごほうび財布 Treat Purse sheet (from Jar).** Header `¥7,000`. A 3×2 grid priced in yen: カフェデート ¥1,500, 温泉 ¥5,000, 焼肉 ¥8,000 (greyed: not enough yet), 映画 ¥3,600, マッサージ ¥6,000, 観葉植物 ¥1,200. 4 of 6 are non-food. A heart badge means both partners agree. Slide to confirm.
 
@@ -154,7 +154,7 @@ Small widget: jar + `¥186,500` + `43 · 57`. Lock Screen: a circular weekly rin
 ## 14. Open questions for the user
 
 1. **Names and villagers**: keep もち (cat) and まめ (dog), or choose your own?
-2. **Season 1 habits**: are 野菜 2食 · 甘い飲み物なし · 自炊 the right three for each of you?
+2. **Season 1 habits**: the personal sets are now in `nutritionist-personalized.md`. Are the short labels (昼ごはん, おやつ, 野菜 2食) clear?
 3. **Destination art**: 沖縄 as the placeholder. Do you have a real destination for the jar header and the year-end screen?
 4. **Japanese wording**: are 旅の壺 / ごほうび財布 / のんびりデー / 応援してる natural to you, or do you prefer other words?
 5. **Native appetite**: are widgets and the Watch worth the $99/yr developer account later?

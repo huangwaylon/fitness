@@ -6,7 +6,7 @@
 <title>Island Fund · Mockup v0.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 /* ===== Tokens (mirror docs/design/style-guide.md) ===== */
 :root{
@@ -22,8 +22,8 @@
   --p-plum:#B79CE0; --p-apricot:#FFB38A;
   --f-apple:#FF8A7A; --f-peach:#FFB38A; --f-plum:#9FA8E8; --f-pear:#C9DE6E;
 
-  --font-display:"Fredoka","Zen Maru Gothic",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
-  --font-body:"Nunito","Zen Maru Gothic",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --font-display:"Fredoka","M PLUS Rounded 1c",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --font-body:"Nunito","M PLUS Rounded 1c",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
   --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-body-lg:1.0625rem;
   --fs-body:.9375rem; --fs-caption:.8125rem; --fs-micro:.6875rem;
   --r-xs:8px; --r-sm:14px; --r-md:20px; --r-lg:28px; --r-xl:40px; --r-pill:999px;
@@ -128,6 +128,7 @@ figcaption b{font-family:var(--font-display);font-weight:600;font-size:1.05rem;c
 .tab .dot{position:absolute;top:2px;right:16px;width:9px;height:9px;border-radius:50%;background:var(--coral);border:2px solid var(--cream)}
 
 /* ===== v0.3 shared ===== */
+html[lang="ja"] .phone:not([lang="en"]) *{letter-spacing:0 !important}
 .help{width:44px;height:44px;border-radius:50%;background:rgba(255,248,231,.92);border:2px solid var(--paper-edge);display:grid;place-items:center;font:700 1.2rem var(--font-display);color:var(--ink-soft);box-shadow:0 2px 0 var(--sand-deep)}
 .night .help{background:rgba(51,69,107,.9);border-color:var(--night-edge);color:var(--night-ink);box-shadow:0 2px 0 #18213A}
 .screen-head{position:absolute;top:calc(var(--safe-top) + 4px);left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;z-index:5}
@@ -228,7 +229,8 @@ figcaption b{font-family:var(--font-display);font-weight:600;font-size:1.05rem;c
 .habits{display:grid;gap:10px}
 .habit{display:flex;align-items:center;gap:14px;min-height:76px;padding:10px 14px;border-radius:var(--r-lg);background:var(--paper);border:2.5px solid var(--paper-edge);box-shadow:var(--sh-lip);font:600 1.2rem var(--font-display)}
 .habit .ic{width:50px;height:50px;flex:none}
-.habit .txt{flex:1}
+.habit .txt{flex:1;line-height:1.2}
+.habit .txt small{display:block;font:700 .75rem var(--font-body);color:var(--ink-faint)}
 .habit.on{background:#EAF7E6;border-color:var(--leaf);box-shadow:0 4px 0 #8FC98F}
 .sw{width:60px;height:36px;border-radius:var(--r-pill);background:var(--sand);position:relative;flex:none;box-shadow:var(--sh-inset)}
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 2px 0 var(--sand-deep)}
@@ -433,6 +435,7 @@ figcaption b{font-family:var(--font-display);font-weight:600;font-size:1.05rem;c
     <symbol id="i-cafe" viewBox="0 0 48 48"><path d="M10 18 H34 V30 Q34 38 26 38 H18 Q10 38 10 30Z" fill="#fff" stroke="#4A3A2C" stroke-width="2.6" stroke-linejoin="round"/><path d="M34 21 Q41 21 40 27 Q39 32 34 31" fill="none" stroke="#4A3A2C" stroke-width="2.6"/><ellipse cx="22" cy="20" rx="10" ry="2.4" fill="#A8754E"/><path d="M19 23 Q22 27 25 23" stroke="#F28BA8" stroke-width="2" fill="none"/><path d="M17 13 Q15 9 18 6 M25 12 Q23 8 26 5" stroke="#B9A48A" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
     <symbol id="i-onsen" viewBox="0 0 48 48"><path d="M6 30 Q6 40 24 40 Q42 40 42 30Z" fill="#8FD3F4" stroke="#4A3A2C" stroke-width="2.6" stroke-linejoin="round"/><path d="M15 24 Q12 19 15 14 Q18 9 15 5 M24 24 Q21 19 24 14 Q27 9 24 5 M33 24 Q30 19 33 14 Q36 9 33 5" stroke="#E2604E" stroke-width="2.6" fill="none" stroke-linecap="round"/></symbol>
     <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 7 L4 11 L9 15 M4 11 H14 Q20 11 20 16 Q20 20 15 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-snack" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#FFF0DA"/><circle cx="15" cy="22" r="7" fill="#FFB347" stroke="#4A3A2C" stroke-width="2"/><path d="M15 15 Q17 12 20 13" stroke="#7BC67E" stroke-width="2.2" fill="none" stroke-linecap="round"/><ellipse cx="27" cy="25" rx="4" ry="6" transform="rotate(25 27 25)" fill="#C1915F" stroke="#4A3A2C" stroke-width="2"/><ellipse cx="25" cy="15" rx="3" ry="4.5" transform="rotate(-20 25 15)" fill="#C1915F" stroke="#4A3A2C" stroke-width="2"/></symbol>
   </defs>
 </svg>
 
@@ -574,18 +577,18 @@ figcaption b{font-family:var(--font-display);font-weight:600;font-size:1.05rem;c
       <div class="days"><span class="day miss">火</span><span class="day on">水</span></div>
     </div>
     <div class="habits">
-      <div class="habit on" role="switch" aria-checked="true"><svg class="ic"><use href="#i-veg"/></svg><span class="txt">野菜 2食</span><span class="sw"></span></div>
-      <div class="habit" role="switch" aria-checked="false"><svg class="ic"><use href="#i-drink"/></svg><span class="txt">甘い飲み物なし</span><span class="sw"></span></div>
-      <div class="habit on" role="switch" aria-checked="true"><svg class="ic"><use href="#i-pot"/></svg><span class="txt">自炊</span><span class="co" title="Also log for Bean"><svg><use href="#v-bean"/></svg></span><span class="sw"></span></div>
+      <div class="habit on" role="switch" aria-checked="true"><svg class="ic" viewBox="0 0 48 48"><use href="#i-bowl"/></svg><span class="txt">昼ごはん</span><span class="sw"></span></div>
+      <div class="habit" role="switch" aria-checked="false"><svg class="ic"><use href="#i-snack"/></svg><span class="txt">おやつ<small>果物・ナッツ・ヨーグルト</small></span><span class="sw"></span></div>
+      <div class="habit on" role="switch" aria-checked="true"><svg class="ic"><use href="#i-veg"/></svg><span class="txt">野菜 2食</span><span class="co" title="まめも"><svg><use href="#v-bean"/></svg></span><span class="sw"></span></div>
     </div>
     <div class="extras-row">
-      <span class="chip"><svg viewBox="0 0 26 26"><use href="#i-cake"/></svg>おやつ</span>
+      <span class="chip"><svg viewBox="0 0 26 26"><use href="#i-cake"/></svg>ごちそう</span>
       <span class="chip cozy"><svg><use href="#i-cozy"/></svg>のんびりデー</span>
     </div>
   </section>
   <div class="home-ind"></div><div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div><div class="thumb-zone"><span>thumb zone</span></div>
 </div>
-<figcaption><b>4 · Evening check-in (20:00 JST push)</b>Three big switches that save on tap. The coral dot on 火 (Tue) marks the 48 h backfill. Bean's face on 自炊 (home-cooked) co-logs a shared dinner. おやつ (treat) never costs fruit, and のんびりデー (Cozy Day) prorates the week. The toast is just "+2 pears".</figcaption>
+<figcaption><b>4 · Evening check-in (20:00 JST push)</b>Three big switches that save on tap. The coral dot on 火 (Tue) marks the 48 h backfill. These are もち's personal habits (Partner B): 昼ごはん, the おやつ swap and 野菜 2食. Bean's face on the shared 野菜 2食 co-logs it for both. ごちそう (treat) never costs fruit, and のんびりデー (Cozy Day) prorates the week. The toast is just "+2 pears".</figcaption>
 </figure>
 
 <!-- ============ 5. SHOP SHEET ============ -->
