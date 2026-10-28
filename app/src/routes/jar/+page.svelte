@@ -3,6 +3,7 @@
   // max, payday cue, quiet weekly estimate, and the Treat Purse (one primary action: 使う).
   import Sheet from '#lib/components/Sheet.svelte';
   import Rope from '#lib/components/Rope.svelte';
+  import LeafCoin from '#lib/components/LeafCoin.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { spendPurse, approveSpend, transferDone } from '#lib/client/actions.ts';
@@ -82,7 +83,7 @@
 {#if view && jar}
   <main class="screen jar-screen">
     <div class="screen-head">
-      <h1><span class="tile" style:--tile="var(--app-jar)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg></span>{t('jar.title')}</h1>
+      <h1><span class="tile" style:--tile="var(--app-jar)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#app-jar" /></svg></span>{t('jar.title')}</h1>
       <HelpButton topic="jar" />
     </div>
 
@@ -104,7 +105,7 @@
         <path d="M44 100 Q40 130 44 160" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75" />
         <path class="glint" d="M160 40 l4 -9 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 z" fill="var(--c-yuzu)" />
       </svg>
-      <span class="total hero-num">{formatYen(jar.totalYen)}</span>
+      <span class="total"><LeafCoin size={36} spin={jar.totalYen} /><span class="hero-num">{formatYen(jar.totalYen)}</span></span>
       <span class="wk">{t('jar.week', { yen: formatYen(jar.thisWeekEstimateYen) })}</span>
     </button>
 
@@ -225,7 +226,7 @@
   .bigjar { width: 132px; height: 158px; display: block; overflow: visible; transform-origin: 50% 100%; transition: transform var(--dur-base) var(--ease-bounce); }
   .hero:active .bigjar { transform: scale(1.05, .94); transition-duration: var(--dur-tap); }
   .glint { animation: glint 4s ease-in-out infinite; }
-  .total { margin-top: 6px; }
+  .total { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
   .wk { font-size: var(--fs-caption); font-weight: 700; color: var(--text-faint); }
 
   .rung { appearance: none; cursor: pointer; text-align: left; color: var(--text); display: flex; align-items: center; gap: 12px; padding: 20px 16px 14px; width: 100%; font: inherit; }

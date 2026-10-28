@@ -69,7 +69,7 @@
 {#if view && me && partner}
   <main class="screen us">
     <div class="screen-head">
-      <h1><span class="tile" style:--tile="var(--app-us)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-us" /></svg></span>{t('us.title')}</h1>
+      <h1><span class="tile" style:--tile="var(--app-us)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#app-us" /></svg></span>{t('us.title')}</h1>
       <HelpButton topic="us" />
     </div>
 

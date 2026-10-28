@@ -75,10 +75,8 @@
         <div class="pending card" role="group" aria-label={t('pending.strength')}>
           <span class="tape">{pending.label} · {formatDate(pending.date)}</span>
           <b class="q">{t('pending.strength')}</b>
-          <div class="yn">
-            <button type="button" class="btn paper" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
-            <button type="button" class="btn" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
-          </div>
+          <button type="button" class="btn paper small" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
+          <button type="button" class="btn small" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
         </div>
       {:else}
         <button type="button" class="btn cta" class:paper={checkedIn} onclick={() => (checkinOpen = true)}>
@@ -105,16 +103,18 @@
     padding: 0 calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left)); margin-top: -11cqw; position: relative; z-index: 6;
     display: grid; gap: 12px;
   }
-  .pending { display: grid; gap: 8px; padding: 22px 14px 8px; margin-top: 6px; }
+  .pending {
+    display: flex; align-items: center; gap: 8px; padding: 22px 12px 10px 16px; margin-top: 6px;
+    position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; box-shadow: var(--sh-lip), var(--sh-float);
+  }
   .pending .tape { --tape: var(--c-sky-soft); }
-  .q { font-size: var(--fs-body-lg); font-weight: 900; text-align: center; }
-  .yn .btn { min-height: 50px; }
-  .yn { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+  .q { flex: 1; font-size: var(--fs-body); font-weight: 900; line-height: 1.3; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
+  .pending .btn { min-width: 64px; padding: 0 14px; }
   /* The one primary action stays in the thumb zone, above the dock, even on short phones. */
   .cta { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
   /* iPhone SE-height screens: trim empty sky so the scene, Juniper and the button fit. */
   @media (max-height: 720px) {
-    .top { margin-top: -20cqw; }
-    .head { top: calc(var(--safe-top) + 8px + 20cqw); }
+    .top { margin-top: -26cqw; }
+    .head { top: calc(var(--safe-top) + 8px + 26cqw); }
   }
 </style>
