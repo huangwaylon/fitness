@@ -1,5 +1,5 @@
 # 0005 — Client delivery and hosting
-**Status:** Accepted (round 1)
+**Status:** Accepted (round 1). Network section superseded by 0010 (no VPN on phones).
 
 **Decision.**
 - **Server:** SvelteKit (adapter-node) + SQLite (WAL) + Drizzle in Docker on an always-on home machine (Mac mini or Raspberry Pi 5; a $5 VPS is the fallback). Backups via Litestream to encrypted object storage, plus a monthly restore drill.
