@@ -6,7 +6,8 @@
   import type { FruitKey, PersonId, WeekView } from '#lib/types.ts';
   import FruitRing from './FruitRing.svelte';
   import VillagerArt from '#lib/villagers/VillagerArt.svelte';
-  import { resolveVillager, SHIRT, SHIRT_PATTERN, type EmoteKind, type Expression } from '#lib/villagers/species.ts';
+  import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
+  import { resolveLook } from '#lib/villagers/roster.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
 
@@ -30,7 +31,7 @@
   const warm = $derived(!night && (theme.tod === 'dawn' || theme.tod === 'dusk'));
 
   const look = (p: { person: PersonId; villagerSpecies: string | null; villagerColor: string | null }) =>
-    resolveVillager(p.villagerSpecies, p.villagerColor, p.person);
+    resolveLook({ villager: (p as { villager?: string | null }).villager, species: p.villagerSpecies, colourway: p.villagerColor, person: p.person });
   const meV = $derived(look(me));
   const partnerV = $derived(look(partner));
 
@@ -209,13 +210,11 @@
     <ellipse cx="62" cy="446" rx="18" ry="4" class="shadow" />
     <ellipse cx="328" cy="446" rx="18" ry="4" class="shadow" />
     <g transform={place(62, 446)}>
-      <VillagerArt species={meV.species} colourway={meV.colourway} expression={meExpr}
-        shirt={SHIRT[me.person]} pattern={SHIRT_PATTERN[me.person]} lw={3}
+      <VillagerArt look={meV} expression={meExpr} lw={3}
         emote={fiving ? true : meEmote} replay={fiveAt} />
     </g>
     <g transform={place(328, 446)}>
-      <VillagerArt species={partnerV.species} colourway={partnerV.colourway} expression={partnerExpr}
-        shirt={SHIRT[partner.person]} pattern={SHIRT_PATTERN[partner.person]} lw={3}
+      <VillagerArt look={partnerV} expression={partnerExpr} lw={3}
         emote={fiving ? 'heart' : partnerEmote} replay={fiveAt} />
     </g>
 
