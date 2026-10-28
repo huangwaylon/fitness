@@ -137,7 +137,7 @@ At the end of each 4-week block, count how many weeks the goal was met (easy wee
 |---|---|---|
 | **Sick day** | One tap. Removes the day from all weekly targets pro-rata (target × (7 − paused days)/7). Sleep goal stays (sleep helps recovery) but at a reduced count. | No hard cap. It's honor system and visible to the partner. More than 7 days in a row turns into a **Pause week**. |
 | **Pause week** (illness, injury, family stuff) | Week is skipped completely: no points, no penalty, progression **frozen**. On return, targets restart at **80%** of the previous level for 1 week (×0.8), then resume. | After more than 3 weeks paused, return at 70% and redo a mini 1-week check. |
-| **Low-energy / gentle day** (period symptoms, bad night, stress, for anyone) | Turns the day into a recovery day: no movement targets, and 10 minutes of walking, yoga, or stretching earns that day's daily-goal credit. Never labeled by gender. If the person opts in, menstrual cycle data from Health can trigger a *suggestion*, which stays private. | 4 per month |
+| **Low-energy / gentle day** (period symptoms, bad night, stress, for anyone) | Turns the day into a recovery day: no movement targets, and 10 minutes of walking, yoga, or stretching earns that day's daily-goal credit. Never labeled by gender. Self-tapped with no reason asked. Cycle data is **not** ingested (agreed with the Nutritionist in Round 1). | 4 per month |
 | **Travel mode** | Steps and stand goals stay. Exercise and strength targets drop to 60% for the trip. Detected by time-zone change or toggled on. | Unlimited, including the vacation itself. |
 | **Injury mode** | Shows modality-safe alternatives (e.g., upper body only, or swim instead of run) and lowers targets to 50%. Suggests seeing a professional if it lasts more than 2 weeks. | Same as Pause rules |
 
@@ -330,6 +330,5 @@ All thresholds are relative to the person's current target (§3). Weekly goals a
 6. How much are you willing to tap for strength workouts (start a Workout on the Watch)? Is a one-tap "was this strength?" prompt acceptable?
 7. Do you want vigorous minutes to count double (75 vigorous = 150 moderate)? It's more accurate to the guidelines but more complex.
 8. Should sick and gentle days be fully honor-system and visible to the partner, or capped?
-9. Should menstrual-cycle data from Health be used (opt-in, private) to suggest gentle days?
-10. Should weight be tracked at all? (Recommendation: no, or private only with no money attached.)
-11. Points-to-dollars rate and yearly fund goal? (These set how motivating each point feels.)
+9. Should weight be tracked at all? (Recommendation: no, or private only with no money attached.)
+10. Points-to-dollars rate and yearly fund goal? (These set how motivating each point feels.)
