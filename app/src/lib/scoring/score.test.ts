@@ -69,9 +69,9 @@ describe('scoreWeek: totals', () => {
     expect(scoreWeek(perfect('2026-12-21', targetsFor('B', '2026-12-21'))).score).toBe(100);
     expect(scoreWeek(perfect('2026-12-28', targetsFor('A', '2026-12-28'))).score).toBe(100);
   });
-  it('an empty week scores only the rest bonus', () => {
+  it('an empty week scores 0 (no data → no rest days)', () => {
     const s = scoreWeek(input());
-    expect(s.score).toBe(5);
+    expect(s.score).toBe(0);
     expect(s.dataDays).toBe(0);
   });
   it('a typical week matches hand-computed values (73)', () => {
@@ -120,20 +120,22 @@ describe('scoreWeek: peach', () => {
   });
   it('rest day: hard = ≥ 20 min at ≥ 77% of 220 − age; null HR is not hard', () => {
     const d = weekDays(WK);
+    const withData = days(WK, Array(7).fill(0), Array(7).fill(1000));
     // age 29 → 0.77 × 191 = 147.07
     const hardEveryDay = d.map((x) => workout(x, 'Running', 30, 160));
-    expect(scoreWeek(input({ workouts: hardEveryDay })).restDays).toBe(0);
-    expect(scoreWeek(input({ workouts: hardEveryDay })).categories.peach.milli).toBe(0);
-    expect(scoreWeek(input({ workouts: d.map((x) => workout(x, 'Running', 30, 147)) })).restDays).toBe(7);
-    expect(scoreWeek(input({ workouts: d.map((x) => workout(x, 'Running', 30, 147.1)) })).restDays).toBe(0);
-    expect(scoreWeek(input({ workouts: d.map((x) => workout(x, 'Running', 19, 180)) })).restDays).toBe(7);
-    expect(scoreWeek(input({ workouts: d.map((x) => workout(x, 'Running', 60, null)) })).restDays).toBe(7);
+    expect(scoreWeek(input({ days: withData, workouts: hardEveryDay })).restDays).toBe(0);
+    expect(scoreWeek(input({ days: withData, workouts: hardEveryDay })).categories.peach.milli).toBe(0);
+    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 147)) })).restDays).toBe(7);
+    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 147.1)) })).restDays).toBe(0);
+    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 19, 180)) })).restDays).toBe(7);
+    expect(scoreWeek(input({ days: withData, workouts: d.map((x) => workout(x, 'Running', 60, null)) })).restDays).toBe(7);
   });
   it('rest threshold scales with age', () => {
     const d = weekDays(WK);
+    const withData = days(WK, Array(7).fill(0), Array(7).fill(1000));
     // age 40 → 0.77 × 180 = 138.6
-    expect(scoreWeek(input({ age: 40, workouts: d.map((x) => workout(x, 'Running', 30, 138)) })).restDays).toBe(7);
-    expect(scoreWeek(input({ age: 40, workouts: d.map((x) => workout(x, 'Running', 30, 139)) })).restDays).toBe(0);
+    expect(scoreWeek(input({ age: 40, days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 138)) })).restDays).toBe(7);
+    expect(scoreWeek(input({ age: 40, days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 139)) })).restDays).toBe(0);
   });
   it('a cozy day counts as rest even with a hard workout', () => {
     const d = weekDays(WK);
@@ -302,3 +304,4 @@ describe('scoreWeek: calibration', () => {
     expect(scoreWeek({ ...perfect(), calibration: true }).score).toBe(60);
   });
 });
+
