@@ -8,3 +8,7 @@
 - **Client, MVP+:** an optional Scriptable home/lock-screen widget reading `/api/widget`.
 - **Client, v1:** a native SwiftUI companion (see 0001) for HealthKit sync, widgets with interactive check-in buttons, and a Watch complication. The PWA remains the main UI.
 - **Rejected:** Capacitor/Expo wrappers (widgets and background HealthKit still need Swift); fully native from day one (slower to first value); Shortcuts-only ingestion (fails on a locked device).
+
+## Round 2 amendments
+- Off-site backups are **client-side encrypted** (restic, or Litestream with age encryption; check version support). Health data otherwise lives only on the home server.
+- The Phase 0 spike measures VPN On Demand reliability for background HAE posts. If it's poor, expose only `/ingest` via Tailscale Funnel with a per-device token.

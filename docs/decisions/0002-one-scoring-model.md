@@ -21,3 +21,12 @@ All five reviewers converged on one 100-point weekly card per person.
 
 **Consequences.** One generic ratio formula serves every category. Five fruits map 1:1 onto the island trees.
 The mockup needs a coconut and loses "Move" as a calorie-based label.
+
+## Round 2 amendments
+- **Strength day:** Traditional/Functional Strength, Core or Pilates workouts ≥ 15 min count automatically. HIIT, yoga and similar count after a one-time "did this include strength work?" tap per workout.
+- **Daily active-minute cap:** `min(90, max(60, ½ × weekly target))`. This supersedes the flat 90.
+- **Rest day:** no workout ≥ 20 min with average HR ≥ 77% of age-predicted max.
+- **Together:** workouts overlapping ≥ 70% in time.
+- **Prorating:** Cozy Days scale day-count targets by exact fractions, with no rounding.
+- **Pear:** always exactly 3 active habits. Seasons *swap* one habit rather than adding one. Holiday grace Dec 20–Jan 1 lowers the target to 12 of 21.
+- **Extra fruit** recovers only that person's own earlier shortfall (see 0003 §4).
