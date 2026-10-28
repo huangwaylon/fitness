@@ -1,13 +1,7 @@
 // Weekly score: four fruits, integer milli-fruit per category, score = floor(sum / 1000) (ADR 0009, 0011).
-import { CALIBRATION, HOLIDAY, POINTS, REST, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { CALIBRATION, HOLIDAY, PEACH_DAILY_CAP, POINTS, REST, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { CategoryResult, FruitKey, LocalDate, WeekInput, WeekScore } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/scoring/dates.ts';
-
-/**
- * Daily active-minute cap bounds: `min(90, max(60, ½ × weekly target))` (ADR 0002 round 2).
- * Not yet in rules.ts — see the contract change request in the scoring report.
- */
-export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
 
 /** Convert a (possibly fractional) count to integer milli-units. Targets are pre-rounded to 3 dp by targetsFor. */
 const toMilli = (x: number): number => Math.round(x * 1000);
