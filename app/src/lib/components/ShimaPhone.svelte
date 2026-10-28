@@ -6,7 +6,7 @@
   import type { FruitKey } from '#lib/types.ts';
   import Sheet from './Sheet.svelte';
   import Villager from './Villager.svelte';
-  import Juniper from './Juniper.svelte';
+  import Bubble from './Bubble.svelte';
   import LeafCoin from './LeafCoin.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
@@ -115,9 +115,8 @@
       {/each}
     </div>
   {:else if app === 'help'}
-    <div class="panel help">
-      <span class="juni"><Juniper size={84} /></span>
-      <p class="talk">{t(`help.${topic}`)}</p>
+    <div class="panel">
+      <Bubble text={t(`help.${topic}`)} side="left" />
     </div>
   {:else if app === 'villager' && view && me && current}
     <div class="panel">
@@ -212,12 +211,6 @@
 
   .panel { display: grid; gap: 14px; animation: rise var(--dur-base) var(--ease-soft); }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .help { grid-template-columns: 72px 1fr; align-items: start; }
-  .juni { width: 72px; display: grid; justify-items: center; }
-  .talk {
-    margin: 0; background: var(--bubble); color: var(--c-ink-talk); border-radius: var(--r-bubble); padding: 16px 18px;
-    font-size: var(--fs-talk); font-weight: 700; line-height: var(--lh-talk); box-shadow: 0 4px 0 var(--c-paper-2);
-  }
   .preview { display: flex; align-items: center; gap: 14px; justify-content: center; }
   .name {
     flex: 1; max-width: 12em; min-height: 48px; border-radius: var(--r-sm); border: var(--bw) solid var(--edge);

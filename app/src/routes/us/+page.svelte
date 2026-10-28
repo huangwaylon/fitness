@@ -167,7 +167,7 @@
   .mk svg { width: 18px; height: 18px; }
   .cheer { min-height: 44px; font-size: var(--fs-caption); }
   .cheer svg { width: 18px; height: 18px; color: var(--p-berry); }
-  .cheer:disabled { cursor: default; background: color-mix(in srgb, var(--p-berry) 20%, var(--surface)); border-color: var(--p-berry); color: var(--text); box-shadow: none; }
+  .chip.cheer[aria-pressed='true'] { cursor: default; background: var(--tag-berry); border-color: var(--p-berry); color: var(--c-ink); box-shadow: 0 3px 0 var(--p-berry); opacity: 1; }
 
   .cozy { padding: 4px 8px; }
   .toggle-row {
