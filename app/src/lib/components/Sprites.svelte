@@ -1,24 +1,7 @@
-<script lang="ts">
-  import VillagerArt from '#lib/villagers/VillagerArt.svelte';
-  import IsabelleArt from '#lib/villagers/IsabelleArt.svelte';
-  import { ROSTER } from '#lib/villagers/roster.ts';
-</script>
-
 <!-- SVG symbol library (v0.4 + v2). Rendered once in the root layout;
      use with <svg><use href="#f-peach" /></svg>. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <!-- v0.4 avatar symbols, now drawn by the v2 character system (heads, viewBox 0 0 100 100) -->
-    <symbol id="v-mochi" viewBox="9 1 82 82">
-      <VillagerArt look={ROSTER.raymond} head animate={false} lw={3} />
-    </symbol>
-    <symbol id="v-bean" viewBox="9 1 82 82">
-      <VillagerArt look={ROSTER.goldie} head animate={false} lw={3} />
-    </symbol>
-    <symbol id="v-juni" viewBox="6 -9 88 88">
-      <IsabelleArt head animate={false} lw={3} />
-    </symbol>
-
     <!-- しまフォン app-tile glyphs (style guide v2 §8): 24-grid, flat ink (currentColor, default --c-ink)
          with one white or accent detail. Use inside a coloured squircle. -->
     <symbol id="app-island" viewBox="0 0 24 24">

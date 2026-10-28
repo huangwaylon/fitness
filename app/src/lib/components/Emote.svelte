@@ -1,12 +1,13 @@
 <script lang="ts">
-  // Standalone emote bubble (style guide v2 §4.7): ♪ note · ! bang · z z · ✦ sparkle · ♥ heart.
+  // Standalone emote bubble (style guide §4.7): ♪ note · ! bang · z z · ✦ sparkle · ♥ heart.
   // Expression names are accepted too (cheer → note, surprised → bang, sleepy → zz, proud → sparkle).
   import EmoteArt from '#lib/villagers/EmoteArt.svelte';
   import { EXPRESSION_EMOTE, type EmoteKind, type Expression } from '#lib/villagers/species.ts';
 
   interface Props {
     kind: EmoteKind | Expression;
-    size?: number;
+    /** Width: px number or CSS length (height follows). */
+    size?: number | string;
     /** Keep it on screen after the pop instead of fading out. */
     hold?: boolean;
     animate?: boolean;
@@ -19,10 +20,10 @@
 </script>
 
 <svg
-  class="emote" viewBox="-4 -2 38 40" width={size} height={size * 40 / 38}
+  class="emote" viewBox="-4 -2 38 40" style:width={typeof size === 'number' ? `${size}px` : size}
   role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : 'true'}
 ><EmoteArt kind={k} x={17} y={16} {hold} {animate} /></svg>
 
 <style>
-  .emote { display: block; flex: none; overflow: visible; }
+  .emote { display: block; flex: none; overflow: visible; aspect-ratio: 38 / 40; height: auto; }
 </style>

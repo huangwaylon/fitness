@@ -1,40 +1,53 @@
 <script lang="ts">
-  // The Island scene (style guide v2 §5): sky, sea, a curved checkered island, two trees whose
-  // four fruit rings ripen with pct, the jar filling with coins, and the two villagers by their trees.
-  // Colours come from tokens.css (data-season / data-theme / data-tod on <html>).
-  // Everything scales with the container width (viewBox 390×540, HTML overlays in cqw).
-  import type { FruitKey, PersonId, WeekView } from '#lib/types.ts';
+  // The Island scene (style guide v3 §5): sky, sea, a curved checkered island, two trees with the
+  // official fruit ripening on them, the jar filling with coins, and the two villagers (official
+  // renders) standing at the foot of their trees with their score pill.
+  // Colours come from tokens.css (data-season / data-theme / data-tod on <html>); `season` / `night`
+  // props override for the dev gallery. Everything scales with the container width: the SVG uses
+  // viewBox 390×540 and the HTML overlays use cqw (1 unit = 1/3.9 cqw).
+  import type { FruitKey, PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import FruitRing from './FruitRing.svelte';
-  import VillagerArt from '#lib/villagers/VillagerArt.svelte';
+  import Villager from './Villager.svelte';
+  import OfficialArt from './OfficialArt.svelte';
+  import LeafCoin from './LeafCoin.svelte';
   import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
-  import { resolveLook } from '#lib/villagers/roster.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
-  import { theme } from '#lib/client/theme.svelte.ts';
+  import { theme, type Season } from '#lib/client/theme.svelte.ts';
 
   interface Props {
     view: WeekView;
+    /** Partner tapped: both cheer and the partner pops a ♥ (default when `onpartner` isn't set). */
     onhighfive?: () => void;
-    /** Override the villagers' expressions (default: happy, sleepy on a のんびりデー). */
+    /** Partner villager tapped (e.g. open the partner sheet). Replaces the built-in high-five. */
+    onpartner?: () => void;
+    /** My villager tapped (e.g. open 今夜のチェック). Without it, my villager just hops. */
+    onme?: () => void;
+    /** Jar tapped (e.g. go to 旅の壺). Without it, the jar wiggles. */
+    onjar?: () => void;
+    /** Override the villagers' expressions (default happy). */
     meExpression?: Expression;
     partnerExpression?: Expression;
-    /** Show the expression's emote above a villager. */
+    /** Show the expression's emote (or a specific one) above a villager. */
     meEmote?: boolean | EmoteKind;
     partnerEmote?: boolean | EmoteKind;
+    /** Dev gallery: force a season / night instead of the theme clock. */
+    season?: Season;
+    night?: boolean;
   }
-  let { view, onhighfive, meExpression, partnerExpression, meEmote = false, partnerEmote = false }: Props = $props();
+  let {
+    view, onhighfive, onpartner, onme, onjar, meExpression, partnerExpression, meEmote = false, partnerEmote = false,
+    season: seasonProp, night: nightProp
+  }: Props = $props();
 
   const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
   const me = $derived(view.people[view.me]);
   const partner = $derived(view.people[view.partner]);
-  const night = $derived(theme.night);
-  const season = $derived(theme.season);
-  const warm = $derived(!night && (theme.tod === 'dawn' || theme.tod === 'dusk'));
+  const night = $derived(nightProp ?? theme.night);
+  const season = $derived(seasonProp ?? theme.season);
+  const warm = $derived(!night && nightProp === undefined && (theme.tod === 'dawn' || theme.tod === 'dusk'));
+  const TAG: Record<PersonId, string> = { A: 'var(--tag-apricot)', B: 'var(--tag-plum)' };
 
-  const look = (p: { person: PersonId; villager: string | null }) => resolveLook({ villager: p.villager, person: p.person });
-  const meV = $derived(look(me));
-  const partnerV = $derived(look(partner));
-
-  // Tap partner = high-five: both cheer, partner pops a ♥.
+  // Tap partner (no onpartner) = high-five: both cheer, partner pops a ♥.
   let fiveAt = $state(0);
   let fiving = $state(false);
   let fiveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -45,7 +58,8 @@
     fiveTimer = setTimeout(() => (fiving = false), 2200);
     onhighfive?.();
   }
-  const meExpr = $derived<Expression>(fiving ? 'cheer' : (meExpression ?? 'happy'));
+  let meHop = $state(0);
+  const meExpr = $derived<Expression>(fiving || meHop ? 'cheer' : (meExpression ?? 'happy'));
   const partnerExpr = $derived<Expression>(fiving ? 'cheer' : (partnerExpression ?? 'happy'));
 
   // Jar fill: share of the top rung (a little visible as soon as there is anything in it).
@@ -64,21 +78,38 @@
     { x: 100, cy: 248, base: 382, delay: '0s' },
     { x: 290, cy: 248, base: 382, delay: '-2s' }
   ];
-  const STARS = [[30, 60], [92, 34], [150, 82], [212, 40], [262, 112], [372, 50], [20, 170], [180, 150]];
+  const STARS = [[30, 60], [92, 34], [150, 82], [212, 40], [262, 112], [372, 50], [20, 170], [180, 150], [120, 210], [300, 190]];
+  // Official flowers on the grass (viewBox x, foot y, art key); none in winter.
   const FLOWERS: [number, number, string][] = [
-    [40, 418, '#fff'], [152, 470, '#F28BA8'], [236, 476, '#FFD66B'], [352, 416, '#F28BA8'], [214, 360, '#fff'], [126, 368, '#FFD66B']
+    [34, 420, 'flowers/white-cosmos'], [150, 486, 'flowers/red-tulips'], [244, 490, 'flowers/yellow-tulips'],
+    [360, 420, 'flowers/red-roses'], [222, 372, 'flowers/white-cosmos'], [160, 374, 'flowers/yellow-tulips']
   ];
-  const TUFTS = [[80, 470], [304, 472], [178, 448], [258, 366]];
-  // Particles (spring petals, autumn leaves, winter snow); left %, delay s, duration s.
+  const TUFTS = [[80, 476], [304, 478], [190, 458], [262, 372], [120, 400]];
+  // Particles (spring petals, autumn leaves, winter snow); x, delay s, duration s.
   const PETALS = Array.from({ length: 8 }, (_, i) => ({ x: 20 + i * 47, d: -i * 1.7, s: 9 + (i % 3) * 2 }));
   const LEAVES = Array.from({ length: 4 }, (_, i) => ({ x: 70 + i * 82, d: -i * 2.3, s: 8 + (i % 2) * 2 }));
   const SNOW = Array.from({ length: 12 }, (_, i) => ({ x: 14 + i * 32, d: -i * 1.1, s: 7 + (i % 4) * 1.5, r: 1.8 + (i % 3) * 0.7 }));
   const FIREFLIES = [[60, 380], [150, 340], [240, 350], [330, 392], [200, 300]];
 
-  // Villager placement: feet on the grass at the tree foot, 64u tall.
-  const VH = 64;
-  const k = VH / 116;
-  const place = (cx: number, foot: number) => `translate(${cx - 50 * k} ${foot - 116 * k}) scale(${k})`;
+  /** viewBox units → cqw. */
+  const cq = (u: number) => `${(u / 3.9).toFixed(2)}cqw`;
+  const FOOT_Y = 446;
+  const SPOTS: { side: 'mine' | 'theirs'; x: number }[] = [
+    { side: 'mine', x: 64 },
+    { side: 'theirs', x: 326 }
+  ];
+  const who = (side: 'mine' | 'theirs'): PersonWeekView => (side === 'mine' ? me : partner);
+
+  function tapVillager(side: 'mine' | 'theirs') {
+    if (side === 'theirs') return onpartner ? onpartner() : highFive();
+    if (onme) return onme();
+    meHop += 1;
+    setTimeout(() => (meHop = Math.max(0, meHop - 1)), 900);
+  }
+  function tapJar() {
+    if (onjar) onjar();
+    else jarWiggle += 1;
+  }
 </script>
 
 <div class="scene" class:night data-season-art={season}>
@@ -143,14 +174,6 @@
     <ellipse cx="195" cy="430" rx="186" ry="92" fill="url(#isl-round)" />
     <ellipse cx="195" cy="430" rx="186" ry="92" class="rim" />
 
-    {#each season === 'winter' ? [] : FLOWERS as [x, y, c], i (i)}
-      <g transform="translate({x} {y})">
-        {#each [0, 72, 144, 216, 288] as a (a)}
-          <circle cx={Math.cos((a * Math.PI) / 180) * 3} cy={Math.sin((a * Math.PI) / 180) * 3 * 0.7} r="2.4" fill={c} />
-        {/each}
-        <circle r="1.6" fill="#F5A623" />
-      </g>
-    {/each}
     {#each TUFTS as [x, y], i (i)}
       <path d="M{x - 6} {y} q2 -7 3 -1 q2 -9 4 0 q2 -7 4 1" class="tuft" />
     {/each}
@@ -204,17 +227,8 @@
       </g>
     {/key}
 
-    <!-- villagers -->
-    <ellipse cx="62" cy="446" rx="18" ry="4" class="shadow" />
-    <ellipse cx="328" cy="446" rx="18" ry="4" class="shadow" />
-    <g transform={place(62, 446)}>
-      <VillagerArt look={meV} expression={meExpr} lw={3}
-        emote={fiving ? true : meEmote} replay={fiveAt} />
-    </g>
-    <g transform={place(328, 446)}>
-      <VillagerArt look={partnerV} expression={partnerExpr} lw={3}
-        emote={fiving ? 'heart' : partnerEmote} replay={fiveAt} />
-    </g>
+    <!-- villager ground shadows (the villagers themselves are HTML overlays) -->
+    {#each SPOTS as v (v.side)}<ellipse cx={v.x} cy={FOOT_Y} rx="20" ry="4.6" class="shadow" />{/each}
 
     <!-- seasonal particles -->
     <g class="particles">
@@ -239,23 +253,50 @@
     {#if warm}<rect width="390" height="540" class="dim" />{/if}
   </svg>
 
-  <button type="button" class="hf" aria-label={t('island.highfive', { name: partner.villagerName })} onclick={highFive}></button>
-  <button type="button" class="jartap" aria-label={t('island.jar', { yen: formatYen(view.jar.totalYen) })} onclick={() => (jarWiggle += 1)}></button>
+  {#if season !== 'winter'}
+    {#each FLOWERS as [x, y, key], i (i)}
+      <span class="flower" style:left={cq(x)} style:top={cq(y)}><OfficialArt {key} size="6.4cqw" /></span>
+    {/each}
+  {/if}
 
-  <div class="treefr mine">
-    {#each FRUITS as f (f)}<FruitRing fruit={f} view={me.fruits[f]} size="11.8cqw" onTree />{/each}
-  </div>
-  <div class="treefr theirs">
-    {#each FRUITS as f (f)}<FruitRing fruit={f} view={partner.fruits[f]} size="11.8cqw" onTree />{/each}
-  </div>
+  <button type="button" class="jartap" aria-label={t('island.jar', { yen: formatYen(view.jar.totalYen) })} onclick={tapJar}></button>
 
-  <div class="score left" aria-label={t('island.score', { name: me.villagerName, score: me.score })}>
-    <span class="big">{me.score}<small>/100</small></span>
+  {#each SPOTS as v (v.side)}
+    {@const p = who(v.side)}
+    {@const mine = v.side === 'mine'}
+    <div class="treefr {v.side}">
+      {#each FRUITS as f (f)}<FruitRing fruit={f} view={p.fruits[f]} size="11.8cqw" onTree eager />{/each}
+    </div>
+    <button
+      type="button"
+      class="vil {v.side}"
+      style:left={cq(v.x)}
+      style:top={cq(FOOT_Y)}
+      aria-label={mine
+        ? t('island.score', { name: p.villagerName, score: p.score })
+        : t('island.highfive', { name: p.villagerName })}
+      onclick={() => tapVillager(v.side)}
+    >
+      <Villager
+        person={p.person}
+        villager={p.villager}
+        size="23cqw"
+        eager
+        expression={mine ? meExpr : partnerExpr}
+        emote={mine ? (fiving ? true : meHop ? true : meEmote) : fiving ? 'heart' : partnerEmote}
+        replay={mine ? fiveAt + meHop : fiveAt}
+      />
+    </button>
+    <div class="pill {v.side}" style:left={cq(v.x)} style:--tag={TAG[p.person]}
+      aria-label={t('island.score', { name: p.villagerName, score: p.score })}>
+      <span class="tag">{p.villagerName}</span>
+      <b class="money">{p.score}</b>
+    </div>
+  {/each}
+
+  <div class="jarsign" aria-hidden="true">
+    <LeafCoin size="5.4cqw" eager /><span class="money">{formatYen(view.jar.totalYen)}</span>
   </div>
-  <div class="score right" aria-label={t('island.score', { name: partner.villagerName, score: partner.score })}>
-    <span class="big">{partner.score}<small>/100</small></span>
-  </div>
-  <div class="jarsign money" aria-hidden="true">{formatYen(view.jar.totalYen)}</div>
 </div>
 
 <style>
@@ -339,28 +380,45 @@
   .treefr.mine { left: 12.3cqw; }
   .treefr.theirs { left: 61cqw; }
 
-  .hf {
-    position: absolute; z-index: 3; left: 74.4cqw; top: 93cqw; width: 19cqw; height: 22cqw;
-    appearance: none; background: transparent; border: 0; border-radius: 40%; cursor: pointer;
-  }
   .jartap {
     position: absolute; z-index: 3; left: 42.5cqw; top: 94.5cqw; width: 15cqw; height: 18cqw;
     appearance: none; background: transparent; border: 0; border-radius: 30%; cursor: pointer;
   }
-  .hf:focus-visible, .jartap:focus-visible { outline: 3px solid var(--focus); }
+  .jartap:focus-visible, .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  .score { position: absolute; z-index: 5; top: 115.9cqw; width: 38.5cqw; text-align: center; color: var(--ink); }
-  .night .score { color: var(--night-ink); }
-  .score.left { left: 2.05cqw; }
-  .score.right { right: 2.05cqw; }
-  .score .big { font-family: var(--font-num); font-size: min(2.6rem, 10.7cqw); font-weight: 700; text-shadow: 0 2px 0 rgba(255, 255, 255, .5); }
-  .night .score .big { text-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
-  .score small { font-size: min(1rem, 4.1cqw); color: var(--ink-faint); font-weight: 600; }
-  .night .score small { color: var(--night-ink-soft); }
+  /* Official flowers stand on the grass (anchor = stem foot). */
+  .flower { position: absolute; z-index: 1; transform: translate(-50%, -88%); pointer-events: none; }
+
+  /* Villagers: feet on the grass at (left, top); the whole figure + 8px is the tap target. */
+  .vil {
+    position: absolute; z-index: 5; transform: translate(-50%, calc(-100% + 2px));
+    appearance: none; background: none; border: 0; padding: 8px 8px 0; margin: 0; cursor: pointer;
+    border-radius: 40% 40% 20% 20%; -webkit-tap-highlight-color: transparent; min-width: 64px;
+    display: flex; justify-content: center;
+  }
+  .vil:active :global(.villager) { transform: scale(1.06, .92); transition: transform var(--dur-tap) var(--ease-squash); }
+  .vil.theirs { --bob-delay: -1.2s; }
+  .night :global(.official) { filter: brightness(.9); }
+
+  /* Score pill under each villager: name tag + score. */
+  .pill {
+    position: absolute; z-index: 6; top: 115.6cqw; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 1.4cqw; white-space: nowrap;
+    padding: .9cqw 2.6cqw .9cqw .9cqw; border-radius: 999px;
+    background: var(--bubble); color: var(--c-ink); border: 2px solid var(--c-ink);
+    box-shadow: 0 3px 0 var(--lip);
+  }
+  .pill .tag {
+    background: var(--tag); border-radius: 999px; padding: .8cqw 2.2cqw;
+    font-size: min(.8125rem, 3.3cqw); font-weight: 700; line-height: 1;
+  }
+  .pill b { font-family: var(--font-num); font-weight: 700; font-size: min(1.5rem, 6.2cqw); line-height: 1; }
 
   .jarsign {
     position: absolute; z-index: 5; top: 114.9cqw; left: 50%; transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 1cqw;
     background: var(--paper); color: var(--ink); border: 2px solid var(--bark); border-radius: var(--r-sm);
-    padding: 4px 10px; font-size: min(1.05rem, 4.3cqw); box-shadow: 0 3px 0 var(--sand-deep); white-space: nowrap;
+    padding: .6cqw 2.4cqw .6cqw 1.4cqw; font-size: min(1.05rem, 4.3cqw); font-weight: 600;
+    box-shadow: 0 3px 0 var(--sand-deep); white-space: nowrap;
   }
 </style>
