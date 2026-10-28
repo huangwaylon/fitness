@@ -4,7 +4,7 @@
 **Status:** Draft v1, for team review
 **Scope:** Behavioral grounding, the real-money economy, reward shop, couple dynamics, game loops, tone, honor system, and long-term retention.
 
-> **TL;DR:** Pre-commit a vacation budget into a real savings account at the start of the year (a commitment device). Healthy behavior earns **Miles** (non-monetary points, always kept). Each Sunday, a person's weekly Miles **unlock** their share of that week's locked **Bells** (real dollars), with linear partial credit. Hitting about 81% of the weekly maximum unlocks 100%. Money that isn't unlocked goes to the **Lost & Found**, not away. Overflow effort, comeback quests, and seasonal events can win it back. A shared "Together Bonus" pays out at the *lower* partner's rate, which keeps the game cooperative. Streaks are weekly and forgiving. The tone is always Isabelle, never a drill sergeant.
+> **TL;DR:** Pre-commit a vacation budget into a real savings account at the start of the year (a commitment device). Healthy behavior earns **Miles** (non-monetary points, always kept). Each Sunday, a person's weekly Miles **unlock** their share of that week's locked **Bells** (real dollars), with linear partial credit. Hitting about 81% of the weekly maximum unlocks 100%. Money that isn't unlocked goes to the **Lost & Found**, not away. Overflow effort, comeback quests, and seasonal events can win it back. A shared "Together Bonus" pays out at the *lower* partner's rate, which keeps the game cooperative. Streaks are weekly and forgiving. The tone is always Isabelle, never a drill sergeant. Both partners are at a healthy weight, so everything is framed around maintenance, fitness, strength, and habits. Scoring uses minutes and baseline-relative goals, never calories compared across partners of different body sizes.
 
 ---
 
@@ -129,7 +129,7 @@ Targets are **personalized per person**. Scoring is deliberately weighted toward
 Notes:
 - The diet slots are *configurable*. Each person picks 3 eating habits from a menu (no late-night snacking, protein at breakfast, alcohol-free day, etc.). Autonomy matters more than nutritional precision.
 - **No calorie counting, no weight tracking in the economy.** Weight-based money incentives encourage unhealthy shortcuts and have poor long-run evidence (Volpp 2008 regain). Weight can be an optional private chart, never a scoring input.
-- **Weekly workout bonus (Miles only, no Bells effect):** 3+ logged workouts in a week gives +10 Miles toward cosmetics. This adds variety without breaking the money calibration.
+- **Weekly strength bonus (Miles only, no Bells effect):** 2+ strength sessions in a week gives +10 Miles toward cosmetics (see 4.4). This adds a strength emphasis without breaking the money calibration.
 
 ### 2.5 Weekly settlement (Sunday night ceremony)
 
@@ -321,7 +321,7 @@ Active energy scales roughly with body mass. If both had a "500 kcal" Move goal,
 | Steps/day | 8,000 or own 60th-percentile day | 8,000 or own 60th-percentile day |
 | Sleep | 7h asleep | 7h asleep |
 
-- **Weekly workout bonus becomes strength-flavored:** 2+ strength sessions in a week gives +10 Miles (cosmetic). The museum gets a **"Strength Wing"** (fossils for 10/25/50/100 strength sessions, art pieces for personal bests if they log lifts). This gives Partner B's long-term bone-density goal visible progress.
+- **Strength Wing:** a new museum section with fossils for 10/25/50/100 strength sessions, art pieces for personal bests if they log lifts. This gives Partner B's long-term bone-density goal visible progress.
 - **Cardio / VO2 max:** Apple Watch VO2 max estimates (Cardio Fitness) are *not* scored, since they're noisy and slow-moving. Instead they appear as **seasonal informational feedback** ("Your Cardio Fitness rose from 38 to 41 this season! 🫀") and as museum art milestones. That's competence feedback with no stakes.
 - **Equal money share.** Each person's weekly pool is identical ($25.10). Contribution is measured by *adherence to your own plan*, not absolute output.
 - **Goal-setting from baseline.** At setup, pull 4–8 weeks of Health history. Suggest targets at about the person's 60th percentile day, so they're achievable but slightly stretching. Re-suggest each season based on recent data (the "competence ramp").
@@ -507,3 +507,5 @@ Recommendation: default to **Option 1 with a lighter money dial**, and offer Opt
 8. **Destination:** Do you have a vacation in mind? Having it pictured from week 1 helps a lot.
 9. **Start date:** When do you start? It sets the season calendar and the first fresh-start moment.
 10. **After the year:** Gut feeling: continue with money, fade to island-only, or decide later?
+11. **Baseline:** Can you both share 4–8 weeks of Apple Health history (or wear the Watch for 2 weeks before "Day 1") so targets start from your real baselines instead of placeholder numbers?
+12. **Strength logging:** Is logging strength sessions as a Watch "Strength Training" workout realistic for you both, or do you want a one-tap "I lifted today" check-in as a fallback?
