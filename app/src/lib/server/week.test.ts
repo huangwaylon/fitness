@@ -25,6 +25,7 @@ describe('WeekView privacy', () => {
     expect(v.people.A.habits?.keys).toHaveLength(3);
     expect(v.people.A.fruits.apple.actual).toBeTypeOf('number');
     expect(v.people.B.habits).toBeUndefined();
+    expect(Object.keys(v.people.B).sort()).toEqual(['fruits', 'lastSyncAt', 'person', 'score', 'villager', 'villagerName']);
     for (const f of Object.values(v.people.B.fruits)) {
       expect(Object.keys(f).sort()).toEqual(['maxMilli', 'milli', 'pct']);
     }

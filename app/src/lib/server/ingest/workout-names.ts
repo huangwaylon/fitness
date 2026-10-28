@@ -1,5 +1,5 @@
 // Shortcuts returns workout names in the phone's language (Japanese here). Normalise to the English names the
-// rules use (rules.ts STRENGTH / PROMISE_RULES).
+// rules use (rules.ts STRENGTH).
 import { createHash } from 'node:crypto';
 
 /** Japanese (and alternate English) display names → canonical English names. Unknown names pass through. */
@@ -15,7 +15,7 @@ const ALIASES: Record<string, string> = {
   'HIIT': 'High Intensity Interval Training',
   'ミックスカーディオ': 'Mixed Cardio',
   'クロストレーニング': 'Cross Training',
-  // Walking / hiking
+  // Walking / hiking (kept for readable labels)
   'ウォーキング': 'Walking',
   '屋外ウォーキング': 'Outdoor Walk',
   '室内ウォーキング': 'Indoor Walk',

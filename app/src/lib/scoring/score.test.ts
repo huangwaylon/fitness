@@ -26,7 +26,7 @@ function input(p: Partial<WeekInput> & { targets?: PersonTargets } = {}): WeekIn
   const weekKey = p.weekKey ?? WK;
   return {
     person: 'A', weekKey, age: 29, targets: A,
-    days: days(weekKey, [], []), workouts: [], visits: [], checkins: [], cozyDays: [], calibration: false,
+    days: days(weekKey, [], []), workouts: [], visits: [], checkins: [], calibration: false,
     ...p
   };
 }
@@ -114,10 +114,6 @@ describe('scoreWeek: peach', () => {
     expect(scoreWeek(input({ targets: { ...A, activeMinPerWeek: 150 }, days: days(WK, big, []) })).categories.peach.actual).toBe(75);
     expect(scoreWeek(input({ targets: { ...A, activeMinPerWeek: 300 }, days: days(WK, big, []) })).categories.peach.actual).toBe(90);
   });
-  it('the cap uses the un-prorated weekly target', () => {
-    const s = scoreWeek(input({ days: days(WK, [200], []), cozyDays: ['2026-11-07', '2026-11-08'] }));
-    expect(s.categories.peach.actual).toBe(67.5);
-  });
   it('rest day: hard = ≥ 20 min at ≥ 77% of 220 − age; null HR is not hard', () => {
     const d = weekDays(WK);
     const withData = days(WK, Array(7).fill(0), Array(7).fill(1000));
@@ -139,11 +135,10 @@ describe('scoreWeek: peach', () => {
     expect(scoreWeek(input({ age: 40, days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 138)) })).restDays).toBe(7);
     expect(scoreWeek(input({ age: 40, days: withData, workouts: d.map((x) => workout(x, 'Running', 30, 139)) })).restDays).toBe(0);
   });
-  it('a cozy day counts as rest even with a hard workout', () => {
-    const d = weekDays(WK);
-    const s = scoreWeek(input({ workouts: d.map((x) => workout(x, 'Running', 30, 170)), cozyDays: [d[6]] }));
+  it('a day without Health data is never a rest day, even with no workouts', () => {
+    const s = scoreWeek(input({ days: days(WK, [null, 0], [null, null]) }));
     expect(s.restDays).toBe(1);
-    expect(s.categories.peach.milli).toBe(5000); // active minutes come from day metrics (none here), not workouts
+    expect(s.categories.peach.milli).toBe(5000);
   });
   it('rest days only cover dates passed in (week so far)', () => {
     const d = weekDays(WK);
@@ -222,45 +217,19 @@ describe('scoreWeek: pear', () => {
   });
 });
 
-describe('scoreWeek: Cozy Day prorating (exact fractions)', () => {
-  const d = weekDays(WK);
-  const base = (cozyDays: string[]) => input({
-    days: days(WK, [50, 50, 0, 0, 0, 0, 0], [9000, 9000, 9000, 9000, 0, 0, 0]),
-    workouts: [workout(d[0], 'Pilates', 30)],
-    checkins: [...ticks(d[0], [...A.habits]), ...ticks(d[1], [...A.habits]), ...ticks(d[2], [...A.habits]), ...ticks(d[3], [...A.habits])],
-    cozyDays
-  });
-  it('1 cozy day → targets × 6/7', () => {
-    const s = scoreWeek(base([d[6]]));
-    expect(s.categories.peach.target).toBeCloseTo((135 * 6) / 7, 10);
-    expect(s.categories.coconut.target).toBeCloseTo(12 / 7, 10);
-    expect(s.categories.apple.target).toBeCloseTo(30 / 7, 10);
-    expect(s.categories.pear.target).toBeCloseTo(90 / 7, 10);
-    expect(s.categories.peach.milli).toBe(Math.floor((30000 * 100 * 7) / (135 * 6)) + 5000); // 25925 + 5000
-    expect(s.categories.coconut.milli).toBe(14583); // 25000 × 7/12
-    expect(s.categories.apple.milli).toBe(14000); // 15000 × 28/30
-    expect(s.categories.pear.milli).toBe(23333); // 25000 × 84/90
-  });
-  it('2 cozy days → × 5/7', () => {
-    const s = scoreWeek(base([d[5], d[6]]));
-    expect(s.categories.peach.milli).toBe(35000); // 100 ≥ 96.43
-    expect(s.categories.coconut.milli).toBe(17500); // 25000 × 7/10
-    expect(s.categories.apple.milli).toBe(15000); // 4 ≥ 3.57
-  });
-  it('3 cozy days → × 4/7', () => {
-    expect(scoreWeek(base([d[4], d[5], d[6]])).categories.coconut.milli).toBe(21875); // 25000 × 7/8
-  });
-  it('4 cozy days → only the first 3 count (× 4/7)', () => {
-    const s = scoreWeek(base([d[3], d[4], d[5], d[6]]));
-    expect(s.categories.coconut).toMatchObject({ milli: 21875 });
-    expect(s.categories.coconut.target).toBeCloseTo(8 / 7, 10);
-  });
-  it('cozy days outside the week are ignored; duplicates count once', () => {
-    expect(scoreWeek(base(['2026-11-09', d[6], d[6]])).categories.coconut.milli).toBe(14583);
-  });
-  it('a week can never be fully excused: 7 cozy days count as 3', () => {
-    // Weeks spanning two months could otherwise hold 7 (review round 3, F1).
-    expect(scoreWeek(input({ cozyDays: d })).score).toBe(5);
+describe('scoreWeek: no prorating (ADR 0014)', () => {
+  it('targets stay weekly: a short (e.g. sick) week just scores lower', () => {
+    const d = weekDays(WK);
+    const s = scoreWeek(input({
+      days: days(WK, [50, 50, 0], [9000, 9000, 9000]),
+      workouts: [workout(d[0], 'Pilates', 30)],
+      checkins: [...ticks(d[0], [...A.habits]), ...ticks(d[1], [...A.habits]), ...ticks(d[2], [...A.habits])]
+    }));
+    expect(s.categories.peach).toMatchObject({ target: 135, milli: Math.floor((30000 * 100) / 135) + 5000 }); // 22222 + 5000
+    expect(s.categories.coconut).toMatchObject({ target: 2, milli: 12500 });
+    expect(s.categories.apple).toMatchObject({ target: 5, milli: 9000 });
+    expect(s.categories.pear).toMatchObject({ target: 15, milli: 15000 });
+    expect(s.score).toBe(63);
   });
 });
 
@@ -273,11 +242,6 @@ describe('scoreWeek: 正月 holiday', () => {
     expect(s.categories.pear.actual).toBe(2);
     expect(s.categories.pear.target).toBeCloseTo(15 / 7, 10);
     expect(s.categories.pear.milli).toBe(23333); // 25000 × 2 × 7 / 15
-  });
-  it('a cozy Dec 28 leaves no pear days → full pear', () => {
-    const wk = '2026-12-28';
-    const s = scoreWeek(input({ weekKey: wk, targets: targetsFor('A', wk), cozyDays: [wk] }));
-    expect(s.categories.pear).toMatchObject({ milli: 25000, target: 0 });
   });
   it('easy-week targets ×0.7 apply to Peach/Coconut/Apple', () => {
     const wk = '2026-12-21';

@@ -2,19 +2,18 @@
 import { and, eq, gte, inArray, lt, lte, max, sql, isNull, isNotNull } from 'drizzle-orm';
 import type {
   CheckinTick, DayMetrics, FruitKey, FruitView, HarvestView, JarView, LocalDate, PendingConfirmation, PersonId,
-  PersonWeekView, PromiseView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
+  PersonWeekView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
 } from '#lib/types.ts';
 import { CALIBRATION_WEEKS, JOBS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
 import {
-  addDays, checkPromise, deriveVisits, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
+  addDays, deriveVisits, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
 } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
 import {
-  checkin, cozyDay, dailyMetric, harvestConfirm, highFive, ledgerEntry, personPref, place, presenceEvent, rawPayload,
-  transfer, visibilityPref, visitConfirmation, weekLock, weekPromise, workout, purseSpend
+  checkin, dailyMetric, harvestConfirm, highFive, ledgerEntry, personPref, place, presenceEvent, rawPayload,
+  transfer, visibilityPref, visitConfirmation, weekLock, workout, purseSpend
 } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
-import { isStrengthWorkout } from '#lib/server/presence.ts';
 import { workoutLabel } from '#lib/server/ingest/workout-names.ts';
 
 export const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
@@ -68,12 +67,9 @@ export function loadWeekInput(db: Db, person: PersonId, weekKey: WeekKey): WeekI
   const checkins: CheckinTick[] = db.select().from(checkin)
     .where(and(eq(checkin.person, person), gte(checkin.localDate, from), lte(checkin.localDate, to))).all()
     .map((c) => ({ date: c.localDate, habitKey: c.habitKey }));
-  const cozyDays = db.select().from(cozyDay)
-    .where(and(eq(cozyDay.person, person), gte(cozyDay.localDate, from), lte(cozyDay.localDate, to))).all()
-    .map((c) => c.localDate);
   return {
     person, weekKey, age: PEOPLE[person].age, targets: targetsFor(person, weekKey), days, workouts,
-    visits: visits.map(({ arriveEventId: _id, ...v }) => v), checkins, cozyDays, calibration: CALIBRATION_WEEKS.includes(weekKey)
+    visits: visits.map(({ arriveEventId: _id, ...v }) => v), checkins, calibration: CALIBRATION_WEEKS.includes(weekKey)
   };
 }
 
@@ -111,12 +107,6 @@ export function harvestWeekKey(db: Db, t: Date = now()): WeekKey | null {
     return n < 2 ? wk : null;
   }
   return null;
-}
-
-/** Week a new promise applies to: next week once Sunday's harvest has started, else this week. */
-export function promiseTargetWeek(t: Date = now()): WeekKey {
-  const cur = weekKeyOf(nowInZone(t).date);
-  return t >= provisionalAt(cur) ? addDays(cur, 7) : cur;
 }
 
 // ---------- ledger reads ----------
@@ -162,36 +152,20 @@ export function sharedRawMetrics(db: Db, person: PersonId): Set<string> {
   return new Set(db.select().from(visibilityPref).where(and(eq(visibilityPref.person, person), eq(visibilityPref.shareRaw, true))).all().map((r) => r.metric));
 }
 
-function promiseView(db: Db, person: PersonId, weekKey: WeekKey, today: LocalDate): PromiseView | null {
-  const p = db.select().from(weekPromise).where(and(eq(weekPromise.person, person), eq(weekPromise.weekKey, weekKey))).get();
-  if (!p) return null;
-  const { workouts, visits } = loadActivity(db, person, addDays(weekKey, -1), addDays(weekKey, 7));
-  const cozy = db.select().from(cozyDay).where(eq(cozyDay.person, person)).all().map((c) => c.localDate);
-  const result = checkPromise({ daysMask: p.daysMask, kind: p.kind, note: p.note }, weekKey, workouts, visits, cozy, today);
-  return { daysMask: p.daysMask, kind: p.kind, note: p.note, result, cheered: Boolean(p.cheeredAt) } satisfies PromiseView;
-}
-
 /** Build one person's card. `full` = the requester's own card; otherwise the privacy-filtered partner card. */
-export function personView(db: Db, person: PersonId, weekKey: WeekKey, today: LocalDate, score: WeekScore, full: boolean): PersonWeekView {
+export function personView(db: Db, person: PersonId, weekKey: WeekKey, score: WeekScore, full: boolean): PersonWeekView {
   const shared = full ? null : sharedRawMetrics(db, person);
   const fruits = Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k, full || shared!.has(k))])) as Record<FruitKey, FruitView>;
   const pref = db.select().from(personPref).where(eq(personPref.person, person)).get();
   const lastSync = db.select({ at: max(rawPayload.receivedAt) }).from(rawPayload)
     .where(and(eq(rawPayload.person, person), eq(rawPayload.source, 'shortcut'), inArray(rawPayload.parseStatus, ['ok', 'partial']))).get()?.at ?? null;
-  const month = today.slice(0, 7);
-  const cozyRows = db.select().from(cozyDay).where(eq(cozyDay.person, person)).all();
   const view: PersonWeekView = {
     person,
     villagerName: pref?.villagerName ?? PEOPLE[person].villager,
+    villager: pref?.villager ?? null,
     score: score.score,
     fruits,
-    lastSyncAt: lastSync,
-    promise: promiseView(db, person, weekKey, today),
-    cozyDaysThisMonth: cozyRows.filter((c) => c.localDate.startsWith(month)).length,
-    isCozyToday: cozyRows.some((c) => c.localDate === today),
-    villager: pref?.villager ?? null,
-    villagerSpecies: pref?.villagerSpecies ?? null,
-    villagerColor: pref?.villagerColor ?? null
+    lastSyncAt: lastSync
   };
   if (full) {
     const dates = weekDays(weekKey);
@@ -204,15 +178,16 @@ export function personView(db: Db, person: PersonId, weekKey: WeekKey, today: Lo
   return view;
 }
 
+/** Gym visits and ask-type workouts waiting for 「筋トレとして記録する?」 (in-app only; no push), in unlocked weeks. */
 export function pendingConfirmations(db: Db, person: PersonId, today: LocalDate, locale: 'ja' | 'en' = 'ja'): PendingConfirmation[] {
   const cur = weekKeyOf(today);
+  const names = new Map(db.select().from(place).where(eq(place.person, person)).all().map((p) => [p.key, p.name]));
   const out: PendingConfirmation[] = [];
   for (const wk of [addDays(cur, -7), cur]) {
     if (isLocked(db, wk)) continue;
     const { workouts, visits } = loadActivity(db, person, wk, addDays(wk, 6));
-    const names = new Map(db.select().from(place).where(eq(place.person, person)).all().map((p) => [p.key, p.name]));
     for (const v of visits) {
-      if (v.autoStrength || v.confirmed !== null || v.dwellMin < STRENGTH.minVisitMin) continue;
+      if (v.autoStrength || v.confirmed !== null) continue; // deriveVisits already drops visits < STRENGTH.minVisitMin
       const a = Date.parse(v.arriveAt);
       const l = Date.parse(v.leaveAt);
       if (workouts.some((w) => isStrengthWorkout(w) && Date.parse(w.startAt) < l && Date.parse(w.endAt) > a)) continue;
@@ -247,20 +222,16 @@ function jarView(db: Db, today: LocalDate, estimate: WeekPayout): JarView {
   };
 }
 
-function harvestView(db: Db, wk: WeekKey, today: LocalDate): HarvestView {
+function harvestView(db: Db, wk: WeekKey): HarvestView {
   const { payout } = computePayout(db, wk);
   const before = jarBalances(db, wk);
   const upTo = jarBalances(db, addDays(wk, 1));
   const beforeTotal = before.A + before.B + before.team;
   const afterTotal = upTo.A + upTo.B + upTo.team;
-  const promiseDay = today < addDays(wk, 6) ? today : addDays(wk, 6);
-  const promiseResults = { A: null, B: null } as HarvestView['promiseResults'];
-  for (const p of ['A', 'B'] as const) promiseResults[p] = promiseView(db, p, wk, promiseDay)?.result ?? null;
   return {
     weekKey: wk,
     payout,
     rungsReached: RUNGS.filter((r) => beforeTotal < r.yen && afterTotal >= r.yen).map((r) => r.key),
-    promiseResults,
     confirmedBy: db.select().from(harvestConfirm).where(eq(harvestConfirm.weekKey, wk)).all().map((r) => r.person).sort()
   };
 }
@@ -272,7 +243,6 @@ function juniperLine(v: Omit<WeekView, 'juniper'>, hour: number, dayOfMonth: num
   if (v.harvest) return { key: 'juniper.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
   if (dayOfMonth === MONEY.paydayDayOfMonth && v.jar.transfer && !v.jar.transfer.done) return { key: 'juniper.payday', params: { yen: v.jar.transfer.amountYen } };
   if (v.pending.length > 0) return { key: 'juniper.pending_confirm', params: { label: v.pending[0].label } };
-  if (me.isCozyToday) return { key: 'juniper.cozy' };
   if (todayTicks > 0 && hour >= 17) return { key: 'juniper.checkin_done' };
   if (hour >= 18) return { key: 'juniper.evening' };
   if (hour < 11) return { key: 'juniper.morning', params: { name: me.villagerName } };
@@ -288,21 +258,22 @@ export function getWeekView(db: Db, me: PersonId, t: Date = now()): WeekView {
   const { a, b, payout } = computePayout(db, weekKey);
   const scores: Record<PersonId, WeekScore> = { A: a, B: b };
   const people = {
-    [me]: personView(db, me, weekKey, today, scores[me], true),
-    [partner]: personView(db, partner, weekKey, today, scores[partner], false)
+    [me]: personView(db, me, weekKey, scores[me], true),
+    [partner]: personView(db, partner, weekKey, scores[partner], false)
   } as Record<PersonId, PersonWeekView>;
   const hwk = harvestWeekKey(db, t);
   const startOfToday = jstInstant(today, 0, 0).toISOString();
+  const locale = db.select().from(personPref).where(eq(personPref.person, me)).get()?.locale ?? 'ja';
   const base: Omit<WeekView, 'juniper'> = {
     me,
     partner,
-    locale: db.select().from(personPref).where(eq(personPref.person, me)).get()?.locale ?? 'ja',
+    locale,
     weekKey,
     today,
     people,
     jar: jarView(db, today, payout),
-    harvest: hwk ? harvestView(db, hwk, today) : null,
-    pending: pendingConfirmations(db, me, today, db.select().from(personPref).where(eq(personPref.person, me)).get()?.locale ?? 'ja'),
+    harvest: hwk ? harvestView(db, hwk) : null,
+    pending: pendingConfirmations(db, me, today, locale),
     highFivesToday: db.select().from(highFive).where(and(eq(highFive.from, partner), gte(highFive.at, startOfToday))).all().length,
     visibility: Object.fromEntries([...sharedRawMetrics(db, me)].map((m) => [m, true]))
   };

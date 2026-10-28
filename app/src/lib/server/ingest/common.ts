@@ -1,4 +1,4 @@
-// Shared ingest plumbing: date parsing, the parsed shape, and the store-raw-then-upsert transaction.
+// Ingest plumbing for the Shortcuts sync: date parsing, the parsed shape, and the store-raw-then-upsert transaction.
 import { gzipSync } from 'node:zlib';
 import { sql } from 'drizzle-orm';
 import type { PersonId } from '#lib/types.ts';
@@ -6,7 +6,7 @@ import type { Db } from '#lib/server/db/index.ts';
 import { dailyMetric, rawPayload, workout } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 
-export type MetricKey = 'steps' | 'exercise_min' | 'resting_hr' | 'walking_hr';
+export type MetricKey = 'steps' | 'exercise_min';
 
 /** `2026-11-02 07:00:00 +0900`, ISO 8601, or a bare date → ISO 8601 with offset (no offset → Tokyo); null if unparseable. */
 export function toIsoDate(s: string): string | null {
@@ -34,7 +34,8 @@ export interface IngestResult { ok: boolean; metrics: number; workouts: number; 
  * Parse, keep the raw payload (also on failure), then upsert daily metrics and workouts in one transaction.
  * Day values only ever rise: an upload may see a partial first day of its window. Re-sending is idempotent.
  */
-export function ingestWith(db: Db, person: PersonId, source: 'shortcut', bodyText: string, parse: (raw: unknown) => ParsedIngest): IngestResult {
+export function ingestWith(db: Db, person: PersonId, bodyText: string, parse: (raw: unknown) => ParsedIngest): IngestResult {
+  const source = 'shortcut';
   const bodyGz = gzipSync(Buffer.from(bodyText, 'utf8')).toString('base64');
   let parsed: ParsedIngest;
   try {

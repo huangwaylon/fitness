@@ -6,7 +6,7 @@ import { HOLIDAY, JOBS, MONEY, SEASONS } from '#lib/config/rules.ts';
 import { inMonthDayRange } from '#lib/scoring/dates.ts';
 import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
-import { checkin, cozyDay, harvestConfirm, transfer, weekLock } from '#lib/server/db/schema.ts';
+import { checkin, harvestConfirm, transfer, weekLock } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 import { settleWeek, type SettleResult } from '#lib/server/ledger.ts';
 import { notify } from '#lib/server/push.ts';
@@ -69,8 +69,7 @@ export async function runReminders(db: Db, t: Date = now()): Promise<void> {
     if (minutes < start) continue;
     const pearOff = inMonthDayRange(z.date, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to);
     const ticked = db.select().from(checkin).where(and(eq(checkin.person, person), eq(checkin.localDate, z.date))).get();
-    const cozy = db.select().from(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, z.date))).get();
-    if (!pearOff && !ticked && !cozy) {
+    if (!pearOff && !ticked) {
       await notify(db, person, 'checkin', { url: '/?checkin=1' });
       continue;
     }

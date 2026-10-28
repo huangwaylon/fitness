@@ -30,8 +30,7 @@
   const season = $derived(theme.season);
   const warm = $derived(!night && (theme.tod === 'dawn' || theme.tod === 'dusk'));
 
-  const look = (p: { person: PersonId; villagerSpecies: string | null; villagerColor: string | null }) =>
-    resolveLook({ villager: (p as { villager?: string | null }).villager, species: p.villagerSpecies, colourway: p.villagerColor, person: p.person });
+  const look = (p: { person: PersonId; villager: string | null }) => resolveLook({ villager: p.villager, person: p.person });
   const meV = $derived(look(me));
   const partnerV = $derived(look(partner));
 
@@ -46,9 +45,8 @@
     fiveTimer = setTimeout(() => (fiving = false), 2200);
     onhighfive?.();
   }
-  const restExpr = (p: { isCozyToday: boolean }): Expression => (p.isCozyToday ? 'sleepy' : 'happy');
-  const meExpr = $derived<Expression>(fiving ? 'cheer' : (meExpression ?? restExpr(me)));
-  const partnerExpr = $derived<Expression>(fiving ? 'cheer' : (partnerExpression ?? restExpr(partner)));
+  const meExpr = $derived<Expression>(fiving ? 'cheer' : (meExpression ?? 'happy'));
+  const partnerExpr = $derived<Expression>(fiving ? 'cheer' : (partnerExpression ?? 'happy'));
 
   // Jar fill: share of the top rung (a little visible as soon as there is anything in it).
   const topYen = $derived(Math.max(1, ...view.jar.rungs.map((r) => r.yen), view.jar.nextRung?.yen ?? 0));

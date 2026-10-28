@@ -44,7 +44,6 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
       teamYen: 1480
     },
     rungsReached: ['okinawa'],
-    promiseResults: { A: 'kept', B: 'open' },
     confirmedBy: []
   };
   return {
@@ -60,11 +59,7 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
         score: score(aFruits),
         fruits: aFruits,
         lastSyncAt: '2026-10-28T13:58:00+09:00',
-        promise: { daysMask: 2 | 8 | 32, kind: 'gym', note: 'エニタイム 7時', result: 'open', cheered: true },
-        cozyDaysThisMonth: 0,
-        isCozyToday: false,
-        villagerSpecies: null,
-        villagerColor: null
+        villager: null
       },
       B: {
         person: 'B',
@@ -72,11 +67,7 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
         score: score(bFruits),
         fruits: bFruits,
         lastSyncAt: '2026-10-28T14:05:00+09:00',
-        promise: { daysMask: 4 | 32, kind: 'pt', note: '水曜 PT＋土曜ヨガ', result: 'open', cheered: false },
-        cozyDaysThisMonth: 1,
-        isCozyToday: false,
-        villagerSpecies: null,
-        villagerColor: null,
+        villager: null,
         habits: {
           keys: ['eat_lunch', 'snack_swap', 'veg_two_meals'],
           ticksByDate: { '2026-10-27': ['eat_lunch', 'veg_two_meals'], '2026-10-28': ['eat_lunch'] }

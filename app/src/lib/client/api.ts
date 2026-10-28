@@ -25,12 +25,6 @@ export interface ApiResult<T = unknown> {
   offline?: boolean;
 }
 
-export class Unauthorized extends Error {
-  constructor() {
-    super('unauthorized');
-  }
-}
-
 async function parse<T>(res: Response): Promise<T | null> {
   const text = await res.text();
   if (!text) return null;

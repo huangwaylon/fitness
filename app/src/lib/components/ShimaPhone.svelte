@@ -44,7 +44,7 @@
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
   /** My current roster villager (prefs `villager`, else the per-person default). */
-  const current = $derived(me && view ? resolveLook({ villager: me.villager, species: me.villagerSpecies, colourway: me.villagerColor, person: view.me }).id : null);
+  const current = $derived(me && view ? resolveLook({ villager: me.villager, person: view.me }).id : null);
   const title = $derived(app ? t(`phone.app.${app}`) : t('phone.name'));
 
   function tick() {

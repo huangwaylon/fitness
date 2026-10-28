@@ -1,14 +1,12 @@
 <script lang="ts">
-  // 日曜の収穫 (Sunday harvest overlay, ≤ 60 s): tally → rung reached (optional) → next promise → 壺に入れる.
-  import { untrack } from 'svelte';
-  import type { HarvestView, PersonId, PromiseKind, PromiseResult } from '#lib/types.ts';
+  // 日曜の収穫 (Sunday harvest overlay, ≤ 60 s): tally → rung reached (optional) → 壺に入れる.
+  import type { HarvestView, PersonId } from '#lib/types.ts';
   import { RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
-  import PromiseEditor from './PromiseEditor.svelte';
   import Bubble from './Bubble.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import type { WeekView } from '#lib/types.ts';
-  import { confirmHarvest, setPromise } from '#lib/client/actions.ts';
+  import { confirmHarvest } from '#lib/client/actions.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -27,22 +25,11 @@
   const rung = $derived(rungKey ? RUNGS.find((r) => r.key === rungKey) ?? null : null);
   const nextRung = $derived(rung ? RUNGS.find((r) => r.yen > rung.yen) ?? null : null);
 
-  let step = $state<'tally' | 'rung' | 'promise'>('tally');
+  let step = $state<'tally' | 'rung'>('tally');
   let busy = $state(false);
-
-  // Promise defaults: this week's promise carried over, else empty.
-  const cur = untrack(() => view.people[view.me].promise);
-  let daysMask = $state(cur?.daysMask ?? 0);
-  let kind = $state<PromiseKind>(cur?.kind ?? 'any');
-  let note = $state(cur?.note ?? '');
-
-  function next() {
-    step = step === 'tally' && rung ? 'rung' : 'promise';
-  }
 
   async function drop() {
     busy = true;
-    if (daysMask > 0) await setPromise(daysMask, kind, note);
     const r = await confirmHarvest();
     busy = false;
     if (r.ok && !harvest.confirmedBy.includes(partner)) {
@@ -50,22 +37,16 @@
     }
   }
 
-  function mark(r: PromiseResult | null): { sym: string; key: string } | null {
-    if (!r) return null;
-    return { kept: { sym: '✓', key: 'kept' }, open: { sym: '○', key: 'open' }, paused: { sym: '', key: 'paused' } }[r];
-  }
   const people: PersonId[] = $derived([me, partner]);
-  const steps = $derived<('tally' | 'rung' | 'promise')[]>(rung ? ['tally', 'rung', 'promise'] : ['tally', 'promise']);
-  const juniLine = $derived(step === 'tally' ? t('harvest.hello') : step === 'rung' ? t('harvest.rungReached') : t('harvest.promiseAsk'));
+  const steps = $derived<('tally' | 'rung')[]>(rung ? ['tally', 'rung'] : ['tally']);
+  const juniLine = $derived(step === 'tally' ? t('harvest.hello') : t('harvest.rungReached'));
   const CONFETTI = ['#E8F59A', '#FFB38A', '#7BC67E', '#F28BA8', '#8FD3F4', '#F6E7B0'];
 </script>
 
 <div class="overlay" role="dialog" aria-modal="true" aria-label={t('harvest.title')}>
-  {#if step !== 'promise'}
-    <div class="confetti" aria-hidden="true">
-      {#each CONFETTI as c, i (i)}<i style="left:{8 + i * 16}%;background:{c};animation-delay:{(step === 'tally' ? 3 : 0) + i * 0.3}s"></i>{/each}
-    </div>
-  {/if}
+  <div class="confetti" aria-hidden="true">
+    {#each CONFETTI as c, i (i)}<i style="left:{8 + i * 16}%;background:{c};animation-delay:{(step === 'tally' ? 3 : 0) + i * 0.3}s"></i>{/each}
+  </div>
 
   <div class="col">
     <div class="head">
@@ -74,7 +55,7 @@
       <button type="button" class="pill later" onclick={onlater}>{t('common.later')}</button>
     </div>
 
-    <Bubble text={juniLine} expression={step === 'promise' ? 'happy' : 'cheer'} />
+    <Bubble text={juniLine} expression="cheer" />
 
     {#if step === 'tally'}
       <section class="tally card" aria-live="polite">
@@ -106,23 +87,14 @@
             <span class="big">+{formatYen(purseTotal)}</span>
           </div>
         {/if}
-        <div class="mini promises" aria-label={t('promise.last')}>
-          {#each people as who (who)}
-            {@const m = mark(harvest.promiseResults[who])}
-            {#if m}
-              <span class="prom">
-                <Villager person={who} size={32} />
-                <i class="mk {m.key}" aria-label={t('promise.result.' + m.key)}>
-                  {#if m.key === 'paused'}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>{:else}{m.sym}{/if}
-                </i>
-              </span>
-            {/if}
-          {/each}
-        </div>
       </div>
 
-      <div class="cta"><button type="button" class="btn yuzu" onclick={next}>{t('common.next')}</button></div>
-    {:else if step === 'rung' && rung}
+      <div class="cta">
+        {#if rung}<button type="button" class="btn yuzu" onclick={() => (step = 'rung')}>{t('common.next')}</button>{:else}<button type="button" class="btn yuzu" disabled={busy} onclick={drop}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.drop')}
+        </button>{/if}
+      </div>
+    {:else if rung}
       <div class="rung">
         <div class="hero">
           <svg viewBox="0 0 300 240" aria-hidden="true">
@@ -138,12 +110,6 @@
         <div class="rname">{t('rung.' + rung.key)}</div>
         <div class="ramt hero-num">{formatYen(rung.yen)}</div>
         {#if nextRung}<div class="rnext">{t('harvest.nextRung', { place: t('rung.' + nextRung.key), yen: formatYen(nextRung.yen) })}</div>{/if}
-      </div>
-      <div class="cta"><button type="button" class="btn yuzu" onclick={next}>{t('harvest.yay')}</button></div>
-    {:else}
-      <div class="promise-step card">
-        <span class="tape" style:--tape="var(--c-moon)">{t('promise.next')}</span>
-        <PromiseEditor bind:daysMask bind:kind bind:note night />
       </div>
       <div class="cta">
         <button type="button" class="btn yuzu" disabled={busy} onclick={drop}>
@@ -199,12 +165,6 @@
   .purse-n { background: rgba(255, 155, 135, .14); border: 2px solid rgba(255, 155, 135, .6); }
   .purse-n svg { width: 34px; height: 34px; }
   .purse-n .big { font-size: 1.35rem; color: #FFC9BC; }
-  .promises { background: rgba(51, 69, 107, .7); border: 2px solid var(--night-edge); gap: 16px; animation-delay: 3.4s; }
-  .prom { display: flex; align-items: center; gap: 6px; }
-  .mk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 16px; background: rgba(232, 245, 154, .18); color: var(--firefly); }
-  .mk.open { background: rgba(255, 255, 255, .08); color: var(--night-ink-soft); }
-  .mk.paused { background: rgba(159, 168, 232, .2); }
-  .mk svg { width: 18px; height: 18px; }
 
   .cta { margin-top: auto; padding-top: 8px; }
 
@@ -218,5 +178,4 @@
   .ramt { color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); }
   .rnext { font-weight: 700; color: var(--night-ink-soft); margin-top: 6px; }
 
-  .promise-step { padding: 26px 14px 14px; }
 </style>

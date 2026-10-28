@@ -9,9 +9,9 @@ const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 export function parseInstant(ts: string): number {
   let s = ts.trim();
   // "YYYY-MM-DD HH:MM:SS +HHMM" → "YYYY-MM-DDTHH:MM:SS+HH:MM"
-  const hae = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)\s*([+-])(\d{2}):?(\d{2})$/.exec(s);
-  if (hae) {
-    s = `${hae[1]}T${hae[2]}${hae[3]}${hae[4]}:${hae[5]}`;
+  const compact = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)\s*([+-])(\d{2}):?(\d{2})$/.exec(s);
+  if (compact) {
+    s = `${compact[1]}T${compact[2]}${compact[3]}${compact[4]}:${compact[5]}`;
   } else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) {
     // No offset at all: treat as Tokyo wall-clock time (never the server's zone).
     s = `${s.replace(' ', 'T')}+09:00`;
@@ -68,9 +68,4 @@ export function nowInZone(now: Date = new Date()): { date: LocalDate; weekday: n
 export function inMonthDayRange(date: LocalDate, from: string, to: string): boolean {
   const md = date.slice(5);
   return from <= to ? md >= from && md <= to : md >= from || md <= to;
-}
-
-/** Minutes between two instants. */
-export function minutesBetween(startIso: string, endIso: string): number {
-  return (parseInstant(endIso) - parseInstant(startIso)) / 60000;
 }
