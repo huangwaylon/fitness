@@ -1,0 +1,353 @@
+{
+  "version": 3,
+  "files": {
+    "flowers/red-roses": {
+      "path": "flowers/red-roses.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Red_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/red-tulips": {
+      "path": "flowers/red-tulips.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Red_Tulips_NH_Inv_Icon.png"
+    },
+    "flowers/white-cosmos": {
+      "path": "flowers/white-cosmos.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:White_Cosmos_NH_Inv_Icon.png"
+    },
+    "flowers/yellow-tulips": {
+      "path": "flowers/yellow-tulips.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Yellow_Tulips_NH_Inv_Icon.png"
+    },
+    "fruit/apple": {
+      "path": "fruit/apple.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Apple_NH_Inv_Icon.png"
+    },
+    "fruit/cherry": {
+      "path": "fruit/cherry.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Cherry_NH_Inv_Icon.png"
+    },
+    "fruit/coconut": {
+      "path": "fruit/coconut.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Coconut_NH_Inv_Icon.png"
+    },
+    "fruit/orange": {
+      "path": "fruit/orange.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Orange_NH_Inv_Icon.png"
+    },
+    "fruit/peach": {
+      "path": "fruit/peach.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peach_NH_Inv_Icon.png"
+    },
+    "fruit/pear": {
+      "path": "fruit/pear.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pear_NH_Inv_Icon.png"
+    },
+    "host/isabelle": {
+      "path": "host/isabelle.webp",
+      "w": 280,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Transparent.png"
+    },
+    "host/isabelle-bow": {
+      "path": "host/isabelle-bow.webp",
+      "w": 512,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model_2.png"
+    },
+    "host/isabelle-icon": {
+      "path": "host/isabelle-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Character_Icon.png"
+    },
+    "host/isabelle-stand": {
+      "path": "host/isabelle-stand.webp",
+      "w": 512,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model.png"
+    },
+    "host/isabelle-winter": {
+      "path": "host/isabelle-winter.webp",
+      "w": 160,
+      "h": 229,
+      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Winter.png"
+    },
+    "host/tom-nook": {
+      "path": "host/tom-nook.webp",
+      "w": 312,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH.png"
+    },
+    "host/tom-nook-icon": {
+      "path": "host/tom-nook-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH_Character_Icon.png"
+    },
+    "items/piggy-bank": {
+      "path": "items/piggy-bank.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Piggy_Bank_(Pink)_NH_Icon.png"
+    },
+    "items/star-fragment": {
+      "path": "items/star-fragment.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Star_Fragment_NH_Inv_Icon.png"
+    },
+    "money/bells": {
+      "path": "money/bells.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:99k_Bells_NH_Inv_Icon.png"
+    },
+    "money/bells-badge": {
+      "path": "money/bells-badge.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Bells_NH_Nook_Miles_Icon.png"
+    },
+    "money/leaf": {
+      "path": "money/leaf.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Leaf_NH_Icon.png"
+    },
+    "money/nook-miles": {
+      "path": "money/nook-miles.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
+    },
+    "money/nook-miles-ticket": {
+      "path": "money/nook-miles-ticket.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Nook_Miles_Ticket_NH_Inv_Icon.png"
+    },
+    "phone/diy": {
+      "path": "phone/diy.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_DIY_NH_Icon.png"
+    },
+    "phone/island-designer": {
+      "path": "phone/island-designer.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Island_Designer_NH_Icon.png"
+    },
+    "phone/nook-miles": {
+      "path": "phone/nook-miles.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Miles_NH_Icon.png"
+    },
+    "phone/nook-shopping": {
+      "path": "phone/nook-shopping.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Shopping_NH_Icon.png"
+    },
+    "phone/nookphone": {
+      "path": "phone/nookphone.webp",
+      "w": 512,
+      "h": 444,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_NH_Model.png"
+    },
+    "phone/passport": {
+      "path": "phone/passport.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Passport_NH_Icon.png"
+    },
+    "phone/rescue": {
+      "path": "phone/rescue.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Rescue_Service_NH_Icon.png"
+    },
+    "trees/apple-tree": {
+      "path": "trees/apple-tree.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Apple_Tree_NH_Inv_Icon.png"
+    },
+    "trees/cedar": {
+      "path": "trees/cedar.webp",
+      "w": 263,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Cedar_Tree_NH.png"
+    },
+    "trees/coconut-tree": {
+      "path": "trees/coconut-tree.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Coconut_Tree_NH_Inv_Icon.png"
+    },
+    "trees/hardwood-sapling": {
+      "path": "trees/hardwood-sapling.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Hardwood_Tree_NH_Inv_Icon.png"
+    },
+    "trees/palm": {
+      "path": "trees/palm.webp",
+      "w": 512,
+      "h": 484,
+      "source": "https://nookipedia.com/wiki/File:Palm_Tree_NH.png"
+    },
+    "trees/peach-tree": {
+      "path": "trees/peach-tree.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peach_Tree_NH_Inv_Icon.png"
+    },
+    "trees/pear-tree": {
+      "path": "trees/pear-tree.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pear_Tree_NH_Inv_Icon.png"
+    },
+    "villagers/bob": {
+      "path": "villagers/bob.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Bob_NH.png"
+    },
+    "villagers/bob-icon": {
+      "path": "villagers/bob-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Bob_NH_Villager_Icon.png"
+    },
+    "villagers/bunnie": {
+      "path": "villagers/bunnie.webp",
+      "w": 272,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Bunnie_NH_Transparent.png"
+    },
+    "villagers/bunnie-icon": {
+      "path": "villagers/bunnie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Bunnie_NH_Villager_Icon.png"
+    },
+    "villagers/dom": {
+      "path": "villagers/dom.webp",
+      "w": 374,
+      "h": 456,
+      "source": "https://nookipedia.com/wiki/File:Dom_NH_1.png"
+    },
+    "villagers/dom-icon": {
+      "path": "villagers/dom-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Dom_NH_Villager_Icon.png"
+    },
+    "villagers/goldie": {
+      "path": "villagers/goldie.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Goldie_NH_1.png"
+    },
+    "villagers/goldie-icon": {
+      "path": "villagers/goldie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Goldie_NH_Villager_Icon.png"
+    },
+    "villagers/hamlet": {
+      "path": "villagers/hamlet.webp",
+      "w": 390,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Hamlet_NH_2.png"
+    },
+    "villagers/hamlet-icon": {
+      "path": "villagers/hamlet-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Hamlet_NH_Villager_Icon.png"
+    },
+    "villagers/judy": {
+      "path": "villagers/judy.webp",
+      "w": 261,
+      "h": 456,
+      "source": "https://nookipedia.com/wiki/File:Judy_NH_1.png"
+    },
+    "villagers/judy-icon": {
+      "path": "villagers/judy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Judy_NH_Villager_Icon.png"
+    },
+    "villagers/lily": {
+      "path": "villagers/lily.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Lily_NH_1.png"
+    },
+    "villagers/lily-icon": {
+      "path": "villagers/lily-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Lily_NH_Villager_Icon.png"
+    },
+    "villagers/molly": {
+      "path": "villagers/molly.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Molly_NH_1.png"
+    },
+    "villagers/molly-icon": {
+      "path": "villagers/molly-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Molly_NH_Villager_Icon.png"
+    },
+    "villagers/raymond": {
+      "path": "villagers/raymond.webp",
+      "w": 184,
+      "h": 387,
+      "source": "https://nookipedia.com/wiki/File:Raymond_NH_1.png"
+    },
+    "villagers/raymond-icon": {
+      "path": "villagers/raymond-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Raymond_NH_Villager_Icon.png"
+    },
+    "villagers/stitches": {
+      "path": "villagers/stitches.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Stitches_NH_1.png"
+    },
+    "villagers/stitches-icon": {
+      "path": "villagers/stitches-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Stitches_NH_Villager_Icon.png"
+    }
+  }
+}
