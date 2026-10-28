@@ -1,7 +1,7 @@
 <script lang="ts">
   // Partner sheet (style guide v3 §0, §B.1): tap the partner's villager on 島 → their head icon,
   // score, four fruit rings, last sync, and one action: ハイタッチ.
-  import type { FruitKey } from '#lib/types.ts';
+  import { FRUITS } from '#lib/config/rules.ts';
   import Sheet from './Sheet.svelte';
   import Avatar from './Avatar.svelte';
   import FruitRing from './FruitRing.svelte';
@@ -10,7 +10,6 @@
 
   let { open = $bindable(), onhighfive }: { open: boolean; onhighfive: () => void } = $props();
 
-  const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
   const view = $derived(week.view);
   const p = $derived(view ? view.people[view.partner] : null);
 

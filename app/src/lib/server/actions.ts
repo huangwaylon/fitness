@@ -2,7 +2,7 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import type { LocalDate, PersonId } from '#lib/types.ts';
-import { MONEY } from '#lib/config/rules.ts';
+import { FRUITS, MONEY } from '#lib/config/rules.ts';
 import { addDays, nowInZone, targetsFor, weekKeyOf } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
 import {
@@ -31,7 +31,7 @@ export const schemas = {
     villagerName: z.string().trim().min(1).max(20).optional(),
     villager: z.string().regex(/^[a-z][a-z0-9_]{0,23}$/).optional()
   }),
-  visibility: z.object({ metric: z.enum(['peach', 'coconut', 'apple', 'pear']), shareRaw: z.boolean() })
+  visibility: z.object({ metric: z.enum(FRUITS), shareRaw: z.boolean() })
 };
 
 const today = () => nowInZone(now()).date;

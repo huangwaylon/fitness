@@ -5,7 +5,8 @@
   // Colours come from tokens.css (data-season / data-theme / data-tod on <html>); `season` / `night`
   // props override for the dev gallery. Everything scales with the container width: the SVG uses
   // viewBox 390×540 and the HTML overlays use cqw (1 unit = 1/3.9 cqw).
-  import type { FruitKey, PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
+  import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
+  import { FRUITS } from '#lib/config/rules.ts';
   import FruitRing from './FruitRing.svelte';
   import Villager from './Villager.svelte';
   import OfficialArt from './OfficialArt.svelte';
@@ -40,7 +41,6 @@
   }: Props = $props();
 
   const uid = $props.id(); // unique SVG paint-server ids (several scenes can share a page)
-  const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
   const me = $derived(view.people[view.me]);
   const partner = $derived(view.people[view.partner]);
   const night = $derived(nightProp ?? theme.night);

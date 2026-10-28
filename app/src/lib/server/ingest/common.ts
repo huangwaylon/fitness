@@ -42,7 +42,7 @@ export function ingestWith(db: Db, person: PersonId, bodyText: string, parse: (r
     parsed = parse(JSON.parse(bodyText));
   } catch (e) {
     const msg = (e instanceof Error ? e.message : String(e)).slice(0, 500);
-    db.insert(rawPayload).values({ person, source, bodyGz, parseStatus: 'error', parseError: msg }).run();
+    db.insert(rawPayload).values({ person, source, bodyGz, parseStatus: 'error', parseError: msg, receivedAt: now().toISOString() }).run();
     return { ok: false, metrics: 0, workouts: 0, status: 'error', error: msg };
   }
   const status = parsed.skipped > 0 ? 'partial' : 'ok';

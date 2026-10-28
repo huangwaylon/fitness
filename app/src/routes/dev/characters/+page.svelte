@@ -16,12 +16,12 @@
   import { ROSTER, ROSTER_IDS, isRosterId } from '#lib/villagers/roster.ts';
   import { art, artKeys, phoneArt, type HostPose, type PhoneApp } from '#lib/client/assets.ts';
   import type { FruitKey } from '#lib/types.ts';
+  import { FRUITS } from '#lib/config/rules.ts';
   import { week } from '#lib/client/week.svelte.ts';
 
   const KEYS = artKeys();
   const GROUPS = [...new Set(KEYS.map((k) => k.split('/')[0]))];
   const POSES: HostPose[] = ['wave', 'stand', 'bow', 'winter', 'icon'];
-  const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
   const APPS: PhoneApp[] = ['help', 'villager', 'lang', 'bell', 'sync', 'share'];
   const GLYPH: Record<PhoneApp, string> = {
     help: 'app-help', villager: 'app-villager', lang: 'app-lang', bell: 'app-bell', sync: 'app-sync', share: 'app-help'
