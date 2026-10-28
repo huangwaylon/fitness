@@ -118,4 +118,15 @@ describe('Shortcut ingest', () => {
     ingestShortcut(db, 'A', JSON.stringify({ date: '2026/10/28 21:30', exercise: ['20', '15'] }));
     expect(metrics()).toContainEqual({ d: '2026-10-28', m: 'exercise_min', v: 35 });
   });
+
+  it('daily form: parallel dates + steps (Shortcuts default date text), calories ignored', () => {
+    const r = ingestShortcut(db, 'A', JSON.stringify({
+      dates: 'Sep 28, 2026 at 7:11\u202fAM\nSep 29, 2026 at 7:55\u202fAM\nSep 29, 2026 at 8:00\u202fPM',
+      steps: '855\n9106\n100',
+      calories: '0\n248.2\n10'
+    }));
+    expect(r).toMatchObject({ ok: true, status: 'ok', metrics: 2 });
+    expect(metrics()).toEqual([{ d: '2026-09-28', m: 'steps', v: 855 }, { d: '2026-09-29', m: 'steps', v: 9206 }]);
+  });
 });
+

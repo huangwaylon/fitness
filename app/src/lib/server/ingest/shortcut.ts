@@ -114,6 +114,18 @@ export function parseShortcut(raw: unknown): ParsedShortcut {
     r = { ...r };
     for (const k of ['steps', 'exercise'] as const) if (typeof r[k] === 'string' || Array.isArray(r[k])) r[k] = asSeries(r[k]);
   }
+  // Daily form: {"dates": [...], "steps": [...], "exercise"?: [...]}, parallel lists (e.g. one total per day from
+  // Find Health Samples grouped by day). Values on the same date are added up.
+  if (r && r.dates !== undefined) {
+    const dates = splitLines(r.dates);
+    if (Array.isArray(dates)) {
+      r = { ...r };
+      for (const k of ['steps', 'exercise'] as const) {
+        const values = splitLines(r[k]);
+        if (Array.isArray(values)) r[k] = { values, starts: dates };
+      }
+    }
+  }
   for (const k of ['steps', 'exercise'] as const) {
     const v = r?.[k];
     if (typeof v === 'string' || Array.isArray(v)) {
