@@ -144,6 +144,8 @@ export interface PersonWeekView {
   promise: PromiseView | null;
   cozyDaysThisMonth: number;
   isCozyToday: boolean;
+  /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
+  villager?: string | null;
   villagerSpecies: string | null;
   villagerColor: string | null;
   /** Only present for `me`: eating answers are never shared. */

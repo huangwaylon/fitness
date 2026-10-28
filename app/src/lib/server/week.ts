@@ -176,7 +176,7 @@ export function personView(db: Db, person: PersonId, weekKey: WeekKey, today: Lo
   const fruits = Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k, full || shared!.has(k))])) as Record<FruitKey, FruitView>;
   const pref = db.select().from(personPref).where(eq(personPref.person, person)).get();
   const lastSync = db.select({ at: max(rawPayload.receivedAt) }).from(rawPayload)
-    .where(and(eq(rawPayload.person, person), eq(rawPayload.source, 'hae'), inArray(rawPayload.parseStatus, ['ok', 'partial']))).get()?.at ?? null;
+    .where(and(eq(rawPayload.person, person), inArray(rawPayload.source, ['hae', 'shortcut']), inArray(rawPayload.parseStatus, ['ok', 'partial']))).get()?.at ?? null;
   const month = today.slice(0, 7);
   const cozyRows = db.select().from(cozyDay).where(eq(cozyDay.person, person)).all();
   const view: PersonWeekView = {
@@ -188,6 +188,7 @@ export function personView(db: Db, person: PersonId, weekKey: WeekKey, today: Lo
     promise: promiseView(db, person, weekKey, today),
     cozyDaysThisMonth: cozyRows.filter((c) => c.localDate.startsWith(month)).length,
     isCozyToday: cozyRows.some((c) => c.localDate === today),
+    villager: pref?.villager ?? null,
     villagerSpecies: pref?.villagerSpecies ?? null,
     villagerColor: pref?.villagerColor ?? null
   };
