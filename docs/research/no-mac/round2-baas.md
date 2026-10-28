@@ -1,7 +1,7 @@
 # Round 2: client-direct BaaS (no server code of ours)
-2026-10-29. **[V]** = verified (official page fetched, or tested locally). **[U]** = unverified. Spikes are in `/tmp/nomac2-baas/` (`fb/spike.sh`, `sb/all.sql`, `size/`). Nothing was blocked this round: firebase.google.com, supabase.com, appwrite.io and pockethost.io all loaded.
+2026-10-29. **[V]** = verified (official page fetched, or tested locally). **[U]** = unverified. Spikes: `/tmp/nomac2-baas/`. No site was blocked this round.
 
-Assumes round-1 D (compute-on-read): the backend only stores **uploads** (`dates`, `steps`, `exercise_minutes` newline strings + a **host** timestamp) and **events**, and returns them.
+Assumes compute-on-read: the backend stores **uploads** (the Shortcut's newline lists + a **host** timestamp) and **events**.
 
 ## Comparison
 | | **Supabase Free (RPC + secret)** | **Firebase Spark** | Appwrite Cloud Free | PocketHost |
@@ -16,7 +16,7 @@ Assumes round-1 D (compute-on-read): the backend only stores **uploads** (`dates
 | Data region | Tokyo selectable [U] | Firestore `asia-northeast1` [U]; Auth is global | No Tokyo region [U] | — |
 | Effort | **2 days** | 3 days | — | — |
 
-Current PWA JS is ~86 KB gz (`app/build-pages`), so the Firebase SDK would nearly double it.
+Current PWA JS is ~86 KB gz, so the Firebase SDK would nearly double it.
 
 ## 1. Firebase Spark
 **Quotas [V]** ([pricing](https://firebase.google.com/pricing)): Firestore 1 GiB, 50K reads/20K writes/20K deletes per day. Hosting 10 GB stored, 360 MB/day transfer. Auth 50K MAU. Cloud Functions are "Not applicable" on Spark, so they need Blaze. FCM is free.
@@ -25,13 +25,13 @@ Current PWA JS is ~86 KB gz (`app/build-pages`), so the Firebase SDK would nearl
 1. `POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=<web key>` with `{email, password, returnSecureToken:true}`. The reply has `idToken` (1 h), `refreshToken` and `localId`. An alternative is `POST https://securetoken.googleapis.com/v1/token?key=…` with a form body `grant_type=refresh_token&refresh_token=…`, which returns `id_token`.
 2. `POST https://firestore.googleapis.com/v1/projects/<id>/databases/(default)/documents:commit` with `Authorization: Bearer <idToken>` and this body:
    `{"writes":[{"update":{"name":"…/documents/uploads/<uid>/items/<yyyyMMddHHmmss>","fields":{"dates":{"stringValue":…},…}},"currentDocument":{"exists":false},"updateTransforms":[{"fieldPath":"receivedAt","setToServerValue":"REQUEST_TIME"}]}]}`
-   Build it with nested **Dictionary** actions so the newlines are escaped for you.
+   Build it with nested **Dictionary** actions.
 
 **Rules (emulator, 12/12 as intended) [V]:** a `config/members` uid map, written once in the console, gates everything. Each person can only `create` under their own uid, and `receivedAt == request.time` makes the host timestamp unforgeable. `hasOnly` fixes the field list, and size caps apply. There is no update or delete.
 - Blocked: a forged timestamp (403), writing to the partner's path (403), a stranger's account (403 for read and write), a re-send with the same id (409), and update/delete (403).
 - Allowed: the partner reads both people's data, which compute-on-read needs.
 
-**Hosting:** `firebase deploy --only hosting` runs from a local folder, or from Actions with a service-account secret [U]. It doesn't depend on repo visibility, so **it solves private-repo UI hosting**. `<id>.web.app` is also its own origin, which fixes the shared-`github.io`-localStorage issue in 0013.
+**Hosting:** `firebase deploy --only hosting` runs from a local folder, or from Actions with a service-account secret [U]. It doesn't depend on repo visibility, so **it solves private-repo UI hosting**. `<id>.web.app` is also its own origin (fixes the shared-localStorage issue in 0013).
 
 **Failure modes:**
 - **Read quota.** Re-reading every upload on each app open (hourly uploads × 2 people) can approach 50K/day. Reads must be incremental (`receivedAt > lastSeen`), with a local cache.
@@ -47,7 +47,7 @@ Current PWA JS is ~86 KB gz (`app/build-pages`), so the Firebase SDK would nearl
   - `feed(secret, since)` returns uploads and events since a time.
 - Results: a bad secret gets 403, and anon gets 401 on the tables. CORS is `*`, and the preflight allows `apikey` and `content-type`. The newline lists arrive intact.
 
-An RLS variant with Supabase Auth also passed 12/12 in PGlite (own-row inserts, members-only reads, column grants stopping forged `received_at`). It needs supabase-js (+59 KB), though. **The secret-RPC variant needs no Auth and no SDK.**
+An RLS variant with Supabase Auth also passed 12/12 in PGlite, but it needs supabase-js (+59 KB). **The secret-RPC variant needs no Auth and no SDK.**
 
 **Shortcut change:** set the URL to `https://<ref>.supabase.co/rest/v1/rpc/ingest`. Add the header `apikey: sb_publishable_…` (publishable keys go in `apikey`, not `Authorization`; the request runs as `anon`) [V] ([keys](https://supabase.com/docs/guides/api/api-keys)). Move `isl_…` from the bearer header into the body as `secret`. Reading it from a custom header via `request.headers` should work, but whether Supabase's gateway passes it through is [U].
 
@@ -57,10 +57,10 @@ An RLS variant with Supabase Auth also passed 12/12 in PGlite (own-row inserts, 
 
 **UI:** Supabase doesn't host static sites. Use Firebase Hosting for the UI only (no Firebase data), or Cloudflare Pages [U].
 
-**Failure modes:** the pause above; a 500 MB cap (years of headroom); the secret sits in the Shortcut and in localStorage, as it does today.
+**Failure modes:** the pause above; the 500 MB cap (years of headroom); the secret sits in the Shortcut and localStorage, as today.
 
 ## 3. Appwrite Cloud and PocketHost
-- **Appwrite Free [V]** ([plans.ts](https://github.com/appwrite/appwrite/blob/main/apps/console/src/lib/pricing/plans.ts), [changelog 2026-02-20](https://github.com/appwrite/appwrite/blob/main/apps/console/src/content/changelog/entries/2026-02-20-1.markdoc)): projects pause after "no **development activity** for 7 consecutive days… remain active as long as they show development activity in the Console". Our steady API traffic wouldn't keep it alive, so someone would have to log in weekly. When a limit is hit, the project freezes. Sites hosting is free. **Rejected.**
+- **Appwrite Free [V]** ([plans.ts](https://github.com/appwrite/appwrite/blob/main/apps/console/src/lib/pricing/plans.ts), [changelog 2026-02-20](https://github.com/appwrite/appwrite/blob/main/apps/console/src/content/changelog/entries/2026-02-20-1.markdoc)): projects pause after "no **development activity** for 7 consecutive days… remain active as long as they show development activity in the Console". Our steady API traffic wouldn't keep it alive, so someone would have to log in weekly. **Rejected.**
 - **PocketHost [V]** ([pricing](https://pockethost.io/pricing)): paid only. Self-hosted PocketBase needs a server. **Rejected.**
 
 ## Verdict
