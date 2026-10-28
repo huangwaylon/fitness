@@ -1,0 +1,12 @@
+services:
+  island:
+    build: .
+    image: island-fund:latest
+    container_name: island
+    restart: unless-stopped
+    env_file: .env
+    # Only localhost: Tailscale Funnel on the Mac is the sole public entry point.
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./data:/data
