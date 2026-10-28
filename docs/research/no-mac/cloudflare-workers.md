@@ -18,7 +18,7 @@ These parts were reused unchanged: `scoring/*`, `config/rules.ts`, `types.ts`, `
 - [V] `GET /api/week?week=2026-11-02` returned scores 62/62, ¥3,100 each, team ¥1,240. CORS answers only `https://huangwaylon.github.io` (preflight 204; any other origin 403). A Shortcut token on `/api` → 401.
 - [V] `scheduled()`, fired via `/cdn-cgi/local/scheduled`: at Sun 10:29 UTC nothing happened. At 10:30 UTC (19:30 JST) it wrote 5 provisional ledger rows, and a repeat run wrote nothing. A run on Tue 19:00 UTC (Wed 04:00 JST) caught up provisional + final and locked the week.
 - [V] **CPU** (Node 26, same V8 engine; production limits apply to CPU only, not I/O wait): parsing the user-format payload 0.04 ms, a raw-sample payload (2,400 samples, 85 KB) 1.6 ms, scoring A + B + payout 0.02 ms warm / 0.6 ms cold. Global-scope startup 16 ms (limit 1 s). Local wall time per request including D1: 1–12 ms. `performance.now()` in workerd only shows whole milliseconds (Spectre mitigation), so real per-request CPU time must come from the dashboard. [U] In production we expect 2–4 ms, well under 10 ms.
-- [V] Bundle 562 KiB minified, 126 KiB gzip (zod + drizzle make up most of it). The limit is 64 MiB.
+- [V] Bundle 562 KiB minified, 126 KiB gzip (the limit is 64 MiB).
 - [V] **Web push**: `@block65/webcrypto-web-push` 2.0.0 (updated 2026-09) produced a VAPID ES256 JWT and an **aes128gcm** body inside workerd, using our existing `web-push`-format VAPID keys. `@pushforge/builder` also runs but emits legacy `aesgcm`, so avoid it. [U] Actual delivery to `web.push.apple.com`.
 
 ## Free-plan limits
@@ -31,15 +31,12 @@ These parts were reused unchanged: `scoring/*`, `config/rules.ts`, `types.ts`, `
 | D1 | 5 M rows read, 100 k rows written per day; 500 MB per DB, 5 GB total | ~2 k writes/day | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/), [D1 limits](https://developers.cloudflare.com/d1/platform/limits/) [V] |
 | D1 queries | 50 per invocation | ~15 (`/api/week`) | D1 limits [V] |
 | Time Travel | 7 days point-in-time restore | backups | [Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/) [V] |
-| `*.workers.dev` | free, on by default, "for personal or hobby projects" | yes | [workers.dev](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) [V] |
-| Cold start | isolates, "eliminates the cold starts of the VM model" | n/a | [How Workers works](https://developers.cloudflare.com/workers/reference/how-workers-works/) [V] |
+| `*.workers.dev` | free, on by default, "for personal or hobby projects"; no cold starts (isolates, [docs](https://developers.cloudflare.com/workers/reference/how-workers-works/)) | yes | [workers.dev](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/) [V] |
 | Credit card | not stated in the docs | none expected | [U] (R2 asks for a card, but we don't need R2) |
-
-If the D1 daily limit is exceeded, queries error until 00:00 UTC. That is very unlikely at our volume.
 
 ## Pages + Worker, or SvelteKit `adapter-cloudflare`?
 - **Pages + small Worker API (recommended).** The PWA origin doesn't change, so there's no reinstall and no re-pairing. Only the repo variable `API_BASE` changes, plus the Shortcut URL. CORS and the bearer-token setup stay as they are (ADR 0013).
-- **`adapter-cloudflare` 8.0.1 (one Worker, UI + API).** Gives one origin (no CORS, HttpOnly cookie again, no longer shares `huangwaylon.github.io`), and static assets are free. Downsides: the PWA must be reinstalled and re-paired and push re-subscribed. [V] The adapter emits `fetch` only (no `scheduled`), so a wrapper entry is needed for crons. svelte.dev was blocked from here, so its docs weren't read. A reasonable later step, not needed for "no Mac".
+- **`adapter-cloudflare` 8.0.1 (one Worker, UI + API).** Gives one origin (no CORS, HttpOnly cookie again, no longer shares `huangwaylon.github.io`), and static assets are free. Downsides: the PWA must be reinstalled and re-paired and push re-subscribed. [V] The adapter emits `fetch` only (no `scheduled`), so a wrapper entry is needed for crons. A reasonable later step, not needed for "no Mac".
 
 ## Migration effort (about 1–2 days)
 1. Make `lib/server/**` async on `drizzle-orm/d1`. Replace `db.transaction` with `db.batch` (ingest, settlement). `redeemPairingCode` needs `UPDATE … RETURNING` and then an insert.
