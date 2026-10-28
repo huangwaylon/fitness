@@ -1,6 +1,7 @@
 <script lang="ts">
   // しまフォン launcher (style guide v3 §B.6): a phone-shaped sheet with a status row, a title and a
-  // 3-column grid of official NookPhone app icons. Each app opens in-phone with a ‹ back.
+  // 3-column grid of app tiles: official NookPhone icons where their meaning fits (help, villager),
+  // our own flat squircle tiles in the same style for the rest (U10). Each app opens in-phone with a ‹ back.
   // Settings live here: help, villager, language, notifications, sync, sharing.
   import { onMount } from 'svelte';
   import type { FruitKey } from '#lib/types.ts';
@@ -12,7 +13,7 @@
   import LeafCoin from './LeafCoin.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
-  import { art, fruitArt, phoneArt } from '#lib/client/assets.ts';
+  import { fruitArt, phoneArt } from '#lib/client/assets.ts';
   import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
   import { pushState, enablePush, type PushState } from '#lib/client/push.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
@@ -21,14 +22,14 @@
   type AppId = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
   let { open = $bindable(), topic }: { open: boolean; topic: 'island' | 'jar' } = $props();
 
-  // Official NookPhone icons via phoneArt(); `glyph` = our tile glyph when the art is missing.
+  // Official icon via phoneArt() when there is one; `glyph` = our tile glyph otherwise (or if the art is missing).
   const APPS: { id: AppId; glyph: string; fill: string }[] = [
     { id: 'help', glyph: 'app-help', fill: 'var(--app-help)' },
     { id: 'villager', glyph: 'app-villager', fill: 'var(--app-villager)' },
     { id: 'lang', glyph: 'app-lang', fill: 'var(--app-lang)' },
     { id: 'bell', glyph: 'app-bell', fill: 'var(--app-bell)' },
     { id: 'sync', glyph: 'app-sync', fill: 'var(--app-sync)' },
-    { id: 'share', glyph: 'i-eye', fill: 'var(--app-share)' }
+    { id: 'share', glyph: 'app-lock', fill: 'var(--app-share)' }
   ];
   /** Raw numbers that can be shared. Eating answers are never shared. */
   const SHAREABLE: FruitKey[] = ['peach', 'coconut', 'apple'];
@@ -107,15 +108,12 @@
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
-        {@const pa = phoneArt(a.id)}
-        {@const official = !!pa && !!art(pa.key)}
+        {@const key = phoneArt(a.id)}
         <button type="button" class="app" style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
-          <span class="tile" class:bare={official && pa?.tile} style:--fill={a.fill}>
-            {#if official && pa}
-              <OfficialArt key={pa.key} size={pa.tile ? 64 : 36} eager />
-            {:else}
-              <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>
-            {/if}
+          <span class="tile" style:--fill={a.fill}>
+            <OfficialArt {key} size={64} eager>
+              {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>{/snippet}
+            </OfficialArt>
           </span>
           <span class="lbl">{t(`phone.app.${a.id}`)}</span>
         </button>
@@ -159,7 +157,7 @@
     </div>
   {:else if app === 'bell'}
     <div class="panel center">
-      <OfficialArt key={phoneArt('bell')?.key} size={72} />
+      <span class="tile big" style:--fill="var(--app-bell)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#app-bell" /></svg></span>
       {#if push === 'on'}
         <p class="state ok">✓ {t('phone.push.on')}</p>
       {:else if push === 'install' || push === 'unsupported'}
@@ -221,15 +219,16 @@
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 8px;
     animation: if-pop var(--dur-pop) var(--ease-bounce) both; border-radius: 18px;
   }
+  /* Flat squircle like the official NookPhone icons (which fill it edge to edge and cover our fill). */
   .tile {
-    width: 64px; height: 64px; border-radius: var(--r-squircle); background: var(--fill); display: grid; place-items: center;
-    box-shadow: 0 4px 0 color-mix(in srgb, var(--fill) 72%, #000 28%), inset 0 3px 0 rgba(255, 255, 255, .35);
+    width: 64px; height: 64px; border-radius: 30%; background: var(--fill); display: grid; place-items: center; overflow: hidden;
+    filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .22));
     transition: transform var(--dur-base) var(--ease-bounce);
   }
-  /* Official icons are full squircle tiles already: no tile of ours, just the lip. */
-  .tile.bare { background: none; box-shadow: none; filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .22)); }
+  .tile.big { width: 80px; height: 80px; }
+  .tile.big svg { width: 44px; height: 44px; }
   .app:active .tile { transform: translateY(3px) scale(1.06, .9); transition-duration: var(--dur-tap); }
-  .tile svg { width: 34px; height: 34px; color: var(--c-ink); }
+  .tile svg { width: 36px; height: 36px; color: var(--c-ink); }
   .lbl { font: 700 var(--fs-caption)/1.1 var(--font-ui); color: var(--text); white-space: nowrap; }
 
   .panel { display: grid; gap: 14px; animation: rise var(--dur-base) var(--ease-soft); }

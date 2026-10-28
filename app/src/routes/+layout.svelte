@@ -12,10 +12,12 @@
   import Sprites from '#lib/components/Sprites.svelte';
   import TabBar from '#lib/components/TabBar.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
-  import Juniper from '#lib/components/Juniper.svelte';
+  import Host from '#lib/components/Host.svelte';
+  import Toast from '#lib/components/Toast.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import HarvestOverlay from '#lib/components/HarvestOverlay.svelte';
   import { week } from '#lib/client/week.svelte.ts';
+  import { ui } from '#lib/client/ui.svelte.ts';
   import { startTheme } from '#lib/client/theme.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -26,19 +28,15 @@
   /** Page pattern (style guide §3): island dots, jar sand stripes. */
   const pageKind = $derived(route.startsWith('/jar') ? 'jar' : 'island');
 
-  /** Toasts go in the top layer (popover) so they sit above an open sheet's scrim. */
-  function topLayer(node: HTMLElement) {
-    try {
-      node.showPopover?.();
-    } catch {
-      /* no popover support: stays a fixed element */
-    }
-  }
   let laterFor = $state<string | null>(null);
   const harvest = $derived(week.view?.harvest ?? null);
   const showHarvest = $derived(
     !onPair && !!week.view && !!harvest && !harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey
   );
+  // Pages hold their toasts while the harvest is up (U6).
+  $effect(() => {
+    ui.overlay = showHarvest;
+  });
 
   onMount(() => {
     const stopTheme = startTheme();
@@ -67,20 +65,21 @@
 
 <Sprites />
 
-<div class="page" data-page={onPair ? 'pair' : pageKind}>
+<!-- U9: the harvest is a real modal, so everything behind it is inert. -->
+<div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest}>
 {#if onPair}
   {@render children()}
 {:else if !week.view && week.status === 'error'}
   <main class="state">
     <OfficialArt key="host/tom-nook" alt="" size={120} eager>
-      {#snippet fallback()}<Juniper expression="sleepy" size={120} />{/snippet}
+      {#snippet fallback()}<Host pose="stand" size={120} />{/snippet}
     </OfficialArt>
     <Bubble text={t('state.error')} host={false} />
     <button type="button" class="btn" onclick={() => week.refresh()}>{t('state.retry')}</button>
   </main>
 {:else if !week.view}
   <main class="state" aria-busy="true">
-    <span class="bob"><Juniper pose="wave" size={120} animate={false} eager /></span>
+    <span class="bob"><Host size={120} animate={false} eager /></span>
     <p>{t('state.loading')}</p>
     <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
   </main>
@@ -89,18 +88,14 @@
 {/if}
 </div>
 
-{#if !onPair}<TabBar />{/if}
+{#if !onPair}<div inert={showHarvest}><TabBar /></div>{/if}
 
 {#if showHarvest && week.view && harvest}
   <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)} />
 {/if}
 
-{#if week.toast}
-  {#key week.toast.id}
-    <div class="toast" role="status" popover="manual" use:topLayer>
-      <Juniper head size={32} animate={false} eager />{week.toast.text}
-    </div>
-  {/key}
+{#if week.toast && !showHarvest}
+  {#key week.toast.id}<Toast text={week.toast.text} />{/key}
 {/if}
 
 <style>
@@ -118,12 +113,4 @@
   .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--c-leaf); animation: if-nudge .9s var(--ease-idle) infinite; }
   .dots i:nth-child(2) { animation-delay: .15s; background: var(--c-yuzu); }
   .dots i:nth-child(3) { animation-delay: .3s; background: var(--c-coral); }
-  .toast {
-    position: fixed; inset: auto 0; margin: 0 auto; width: max-content; max-width: calc(100vw - 48px);
-    top: calc(var(--safe-top) + 12px); padding: 12px 20px; border-radius: var(--r-bubble); z-index: 90; overflow: visible;
-    background: var(--toast-bg); color: var(--c-ink-talk); border: 0; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-float);
-    font-weight: 700; font-size: var(--fs-body-lg); animation: if-pop var(--dur-pop) var(--ease-bounce) both;
-    display: flex; align-items: center; gap: 10px; padding-left: 12px;
-  }
-  .toast:popover-open { inset: auto 0; top: calc(var(--safe-top) + 12px); }
 </style>

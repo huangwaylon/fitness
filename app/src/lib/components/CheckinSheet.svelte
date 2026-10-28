@@ -6,9 +6,8 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
   import { t, formatDate } from '#lib/i18n/index.ts';
-  import { addDays } from '#lib/scoring/dates.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
-  import { inMonthDayRange } from '#lib/scoring/dates.ts';
+  import { addDays, inMonthDayRange } from '#lib/scoring/dates.ts';
 
   let { open = $bindable(), onclose }: { open: boolean; onclose?: () => void } = $props();
 
@@ -48,14 +47,18 @@
   {#if view && me}
     <div class="head">
       <Avatar person={view.me} villager={me.villager} size={56} />
-      <h2 class="date">{formatDate(date)}</h2>
+      <h2 class="title">{t('island.checkin')}<small class="money">{formatDate(date)}</small></h2>
       <div class="days" role="tablist">
         <button type="button" role="tab" class="day" class:fillable={yesterdayFillable} aria-selected={which === 'yesterday'}
+          aria-label={yesterdayFillable ? `${t('checkin.yesterday')} · ${t('checkin.yesterdayOpen')}` : undefined}
           onclick={() => (which = 'yesterday')}>{t('checkin.yesterday')}</button>
         <button type="button" role="tab" class="day" aria-selected={which === 'today'}
           onclick={() => (which = 'today')}>{t('checkin.today')}</button>
       </div>
     </div>
+    {#if yesterdayFillable && which === 'today'}
+      <p class="legend" aria-hidden="true"><i></i>{t('checkin.yesterdayOpen')}</p>
+    {/if}
 
     {#if newYearOff}
       <div class="off card">
@@ -82,7 +85,10 @@
 
 <style>
   .head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .date { font: 700 1.2rem/1.2 var(--font-num); flex: 1; min-width: 0; }
+  .title { flex: 1; min-width: 0; font-size: var(--fs-h2); display: grid; gap: 2px; }
+  .title small { font-size: var(--fs-caption); font-weight: 600; color: var(--text-soft); }
+  .legend { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin: -8px 4px 12px; font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
+  .legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--c-sky); }
   .days { display: flex; gap: 4px; margin-left: auto; padding: 4px; border-radius: var(--r-pill); background: var(--c-paper-2); box-shadow: var(--sh-inset); }
   :global(:root[data-theme="night"]) .days { background: #24314F; }
   .day {

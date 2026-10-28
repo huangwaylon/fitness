@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A person's round villager head (official icon, fan-art fallback) on a pebble in their tag colour (§A).
+  // A person's round villager head (official icon, silhouette fallback) on a pebble in their tag colour (§A).
   import type { PersonId } from '#lib/types.ts';
   import Villager from './Villager.svelte';
 
@@ -8,14 +8,13 @@
     /** Roster id; null/undefined = the person's current villager. */
     villager?: string | null;
     size?: number;
-    label?: string;
   }
-  let { person, villager, size = 56, label = '' }: Props = $props();
+  let { person, villager, size = 56 }: Props = $props();
   const icon = $derived(Math.round(size * 0.86));
 </script>
 
 <span class="av" style:--s="{size}px" style:--tag={person === 'A' ? 'var(--tag-apricot)' : 'var(--tag-plum)'}>
-  <Villager {person} villager={villager ?? undefined} size={icon} head label={label || undefined} />
+  <Villager {person} villager={villager ?? undefined} size={icon} head />
 </span>
 
 <style>

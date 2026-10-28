@@ -66,24 +66,17 @@ export function fruitArt(fruit: FruitKey): string {
   return `fruit/${fruit}`;
 }
 
-/** しまフォン launcher app → official icon key. `tile: true` = the icon is a full squircle tile
- *  (render it without our tile background); false = a loose item icon (keep our tile behind it). */
+/** しまフォン launcher app → official NookPhone icon (a full squircle tile), only where the icon's meaning
+ *  matches (U10): help = DIY recipes (how-to), villager = passport. The rest use our own tiles. */
 export type PhoneApp = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
-const PHONE: Record<PhoneApp, { key: string; tile: boolean }> = {
-  help: { key: 'phone/rescue', tile: true },
-  villager: { key: 'phone/passport', tile: true },
-  lang: { key: 'money/leaf', tile: false },
-  bell: { key: 'phone/nook-miles', tile: true },
-  sync: { key: 'phone/island-designer', tile: true },
-  share: { key: 'phone/nook-shopping', tile: true }
-};
-export function phoneArt(app: PhoneApp | string): { key: string; tile: boolean } | null {
-  return PHONE[app as PhoneApp] ?? null;
+const PHONE: Partial<Record<PhoneApp, string>> = { help: 'phone/diy', villager: 'phone/passport' };
+export function phoneArt(app: PhoneApp): string | null {
+  return PHONE[app] ?? null;
 }
 /** The NookPhone itself (launcher button). */
 export const NOOKPHONE = 'phone/nookphone';
 
-/** Money UI: 'bells' (Bells bag, = yen), 'miles' (Nook Miles), 'leaf'. */
-export function moneyArt(kind: 'bells' | 'miles' | 'leaf' | 'ticket'): string {
-  return { bells: 'money/bells', miles: 'money/nook-miles', leaf: 'money/leaf', ticket: 'money/nook-miles-ticket' }[kind];
+/** Money UI: 'bells' (Bells bag, = yen) or 'leaf'. */
+export function moneyArt(kind: 'bells' | 'leaf'): string {
+  return kind === 'bells' ? 'money/bells' : 'money/leaf';
 }

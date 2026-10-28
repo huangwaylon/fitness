@@ -87,7 +87,7 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
     },
     harvest: opts.harvest ? harvest : null,
     pending: [{ kind: 'workout', id: 'w-yoga-1027', date: '2026-10-27', label: 'ヨガ 45分' }],
-    juniper: { key: 'strength_left', params: { name: 'もち', n: 1 } },
+    juniper: { key: 'juniper.default' },
     highFivesToday: 1,
     visibility: {}
   };

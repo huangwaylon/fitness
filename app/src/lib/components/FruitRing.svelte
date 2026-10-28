@@ -1,9 +1,18 @@
+<script lang="ts" module>
+  /** Four clearly different ripeness stages (U1): bud < 25% · small < 60% · nearly < 100% · ripe. */
+  export type Ripeness = 'bud' | 'small' | 'nearly' | 'ripe';
+  export function ripeness(pct: number): Ripeness {
+    return pct >= 100 ? 'ripe' : pct >= 60 ? 'nearly' : pct >= 25 ? 'small' : 'bud';
+  }
+</script>
+
 <script lang="ts">
   // One fruit's weekly progress (style guide v3 §A): the official inventory icon.
-  //   ring (default): our conic progress ring, the fruit in the centre growing 0.7 → 1 with pct.
-  //   onTree: the fruit hangs on an island tree (no ring); it ripens (grows, fills in) with pct and
-  //           sparkles when full. Tap either → the detail chip.
-  // Below 25% the fruit shows at 55% opacity.
+  //   ring (default): our conic progress ring with the fruit in the centre.
+  //   onTree: the fruit hangs on an island tree (no ring). Tap either → the detail chip
+  //           (a cream bubble; on a tree it sits above the whole canopy, U13).
+  // The fruit shows its ripeness stage: bud (grey, 0.55) · small (desaturated, 0.75) · nearly (0.9) ·
+  // ripe (full colour + sparkle).
   import type { FruitKey, FruitView } from '#lib/types.ts';
   import OfficialArt from './OfficialArt.svelte';
   import { fruitArt } from '#lib/client/assets.ts';
@@ -26,7 +35,7 @@
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const pct = $derived(Math.max(0, Math.min(100, Math.round(view.pct))));
-  const full = $derived(pct >= 100);
+  const stage = $derived(ripeness(pct));
   const label = $derived(
     view.actual !== undefined && view.target !== undefined
       ? t(`fruit.${fruit}.detail`, { actual: fmt(view.actual), target: fmt(view.target) })
@@ -45,15 +54,12 @@
   }
 </script>
 
-<span class="wrap" style:--size={size}>
+<span class="wrap" class:tree={onTree} style:--size={size}>
   <button
     type="button"
-    class="fr"
-    class:full
+    class="fr {stage}"
     class:tree={onTree}
-    class:unripe={pct < 25}
     style:--p={pct}
-    style:--ripe={pct / 100}
     style:--c="var(--f-{fruit})"
     aria-label={label}
     aria-expanded={open}
@@ -85,37 +91,43 @@
   .fr::before { content: ''; position: absolute; inset: 9%; border-radius: 50%; background: var(--surface); }
   .fruit {
     position: relative; display: grid; place-items: center; width: 68%; height: 68%;
-    transform: scale(calc(.7 + var(--ripe) * .3));
-    transition: transform var(--dur-slow) var(--ease-bounce), opacity var(--dur-slow) var(--ease-soft);
+    transition: transform var(--dur-slow) var(--ease-bounce), opacity var(--dur-slow) var(--ease-soft), filter var(--dur-slow);
   }
   .fruit :global(img), .fruit :global(svg) { width: 100%; height: 100%; }
-  .unripe .fruit { opacity: .55; }
-  .fr.full { box-shadow: 0 0 0 3px var(--sun); }
-  .fr.full::after {
+  .bud .fruit { transform: scale(.55); opacity: .6; filter: grayscale(.9); }
+  .small .fruit { transform: scale(.75); filter: saturate(.45); }
+  .nearly .fruit { transform: scale(.9); }
+  .fr.ripe { box-shadow: 0 0 0 3px var(--sun); }
+  .fr.ripe::after {
     content: ''; position: absolute; top: -4px; right: -2px; width: 14px; height: 14px; background: var(--sun);
     clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   }
 
-  /* Hanging on a tree: no ring, a soft shadow on the canopy, a sparkle when ripe. */
+  /* Hanging on a tree: no ring, a sparkle when ripe. */
   .fr.tree { background: none; border-radius: 40%; }
   .fr.tree::before { display: none; }
   .fr.tree .fruit { width: 88%; height: 88%; transform-origin: 50% 10%; }
-  .fr.tree.full { box-shadow: none; }
-  .fr.tree.full::after {
-    top: 2%; right: 4%; width: 30%; height: 30%; background: #FFF6C9;
-    animation: twinkle 2.4s var(--ease-idle) infinite;
+  .fr.tree.ripe { box-shadow: none; }
+  .fr.tree.ripe::after {
+    top: 0; right: 0; width: 34%; height: 34%; background: #FFF6C9;
+    filter: drop-shadow(0 0 2px #fff); animation: twinkle 2.4s var(--ease-idle) infinite;
   }
 
+  /* Detail chip: a cream speech bubble. On a tree, .wrap is static, so the chip anchors to the
+     whole fruit grid and floats above the canopy instead of covering the neighbouring fruit. */
+  .wrap.tree { position: static; }
   .tip {
-    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 20;
-    background: var(--ink); color: var(--cream); font-weight: 700; font-size: var(--fs-caption);
-    padding: 6px 10px; border-radius: 10px; white-space: nowrap; pointer-events: none;
-    animation: drop var(--dur-base) var(--ease-bounce) both;
+    position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 20;
+    background: var(--bubble); color: var(--c-ink-talk); font-weight: 700; font-size: var(--fs-caption);
+    padding: 7px 12px; border-radius: 14px; white-space: nowrap; pointer-events: none;
+    box-shadow: 0 3px 0 var(--c-paper-2), var(--sh-soft);
+    animation: if-pop var(--dur-base) var(--ease-bounce) both;
   }
   .tip::after {
     content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -6px;
-    border: 6px solid transparent; border-bottom: 0; border-top-color: var(--ink);
+    border: 6px solid transparent; border-bottom: 0; border-top-color: var(--bubble);
   }
+  .wrap.tree .tip { bottom: calc(100% + 4px); }
   .pct { font-size: 1rem; color: var(--text); }
-  @media (prefers-reduced-motion: reduce) { .fr.tree.full::after { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .fr.tree.ripe::after { animation: none; } }
 </style>

@@ -8,7 +8,7 @@
   import { onMount } from 'svelte';
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';
   import Bubble from '#lib/components/Bubble.svelte';
-  import Juniper from '#lib/components/Juniper.svelte';
+  import Host from '#lib/components/Host.svelte';
 
   let code = $state('');
   let busy = $state(false);
@@ -56,7 +56,7 @@
       <path d="M150 82 Q144 52 160 28" stroke="var(--trunk)" stroke-width="6" fill="none" stroke-linecap="round" />
       <path d="M160 28 Q140 14 124 26 M160 28 Q182 10 200 22 M160 28 Q156 6 138 8 M160 28 Q176 36 180 54" stroke="var(--tree-leaf-2)" stroke-width="8" fill="none" stroke-linecap="round" />
     </svg>
-    <span class="juni"><Juniper size={96} /></span>
+    <span class="host"><Host size={96} /></span>
   </div>
 
   <Bubble text={t('pair.title')} host={false} />
@@ -92,7 +92,7 @@
   .lang svg { width: 18px; height: 18px; }
   .island { position: relative; width: 240px; margin: 0 auto; }
   .island > svg:first-child { width: 240px; height: 120px; display: block; }
-  .juni { position: absolute; left: 52px; bottom: 24px; }
+  .host { position: absolute; left: 52px; bottom: 24px; }
   form { display: grid; gap: 8px; padding: 26px 16px 12px; margin-top: 8px; }
   .code {
     width: 100%; min-height: 72px; text-align: center; font-size: 2.4rem !important; letter-spacing: .3em !important;

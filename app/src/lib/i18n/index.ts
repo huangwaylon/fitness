@@ -31,14 +31,19 @@ export function t(key: string, params?: Params, locale: Locale = i18n.locale): s
   return interpolate(msg, params);
 }
 
-/** Juniper's line: the server picks the key; unknown keys fall back to `juniper.default`. */
-export function juniperLine(key: string, params?: Params): string {
-  const full = key.startsWith('juniper.') ? key : `juniper.${key}`;
-  if (!has(full)) return t('juniper.default');
+/**
+ * しずえ's (the host's) line. The server picks the key and still sends `juniper.*`; `host.*` and bare
+ * keys work too. Unknown keys fall back to `host.default`. `{rung}` / `{fruit}` ids and `{yen}` amounts
+ * are formatted; `n === 1` picks a `.one` variant when the catalog has one (en plurals).
+ */
+export function hostLine(key: string, params?: Params): string {
+  const full = `host.${key.replace(/^(juniper|host)\./, '')}`;
+  if (!has(full)) return t('host.default');
   const p = { ...params };
   if (typeof p.rung === 'string') p.rung = t(`rung.${p.rung}`);
+  if (typeof p.fruit === 'string') p.fruit = t(`fruit.${p.fruit}.name`);
   if (typeof p.yen === 'number') p.yen = formatYen(p.yen);
-  return t(full, p);
+  return t(p.n === 1 && has(`${full}.one`) ? `${full}.one` : full, p);
 }
 
 /** `¥128,000` with a half-width yen sign (Intl ja-JP yields full-width ￥). */

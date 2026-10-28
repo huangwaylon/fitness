@@ -5,16 +5,14 @@
 
   interface Props {
     yen: number;
-    /** Prefix, e.g. '+'. */
-    sign?: string;
     /** Bag height (CSS length); default 1.1em. */
     bag?: string;
     class?: string;
   }
-  let { yen, sign = '', bag = '1.1em', class: cls = '' }: Props = $props();
+  let { yen, bag = '1.1em', class: cls = '' }: Props = $props();
 </script>
 
-<span class="yen money {cls}"><LeafCoin size={bag} eager />{sign}{formatYen(yen)}</span>
+<span class="yen money {cls}"><LeafCoin size={bag} eager />{formatYen(yen)}</span>
 
 <style>
   .yen { display: inline-flex; align-items: center; gap: .25em; white-space: nowrap; }
