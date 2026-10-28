@@ -26,7 +26,7 @@
       <Avatar person={p.person} villager={p.villager} size={64} />
       <div class="who">
         <h2>{p.villagerName}</h2>
-        <span class="sync">{t('partner.synced', { time: formatSyncTime(p.lastSyncAt, view.today) })}</span>
+        <span class="sync">{p.lastSyncAt ? t('partner.synced', { time: formatSyncTime(p.lastSyncAt, view.today) }) : t('partner.never')}</span>
       </div>
       <span class="score"><b class="money">{p.score}</b><small class="money">/100</small></span>
     </div>

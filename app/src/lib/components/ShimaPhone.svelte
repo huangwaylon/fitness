@@ -128,14 +128,15 @@
       <div class="preview">
         {#key current}
           <span class="pv">
-            <OfficialArt key={villagerArt(current)} alt="" size={104} eager>
-              {#snippet fallback()}<Villager person={view.me} villager={current} size={104} expression="cheer" emote />{/snippet}
+            <OfficialArt key={villagerArt(current)} alt="" size={96} eager>
+              {#snippet fallback()}<Villager person={view.me} villager={current} size={96} expression="cheer" emote />{/snippet}
             </OfficialArt>
+            <span class="vn">{vName(current)}</span>
           </span>
         {/key}
         <label class="namefield">
-          <span>{vName(current)}</span>
-          <input class="name" type="text" maxlength="12" aria-label={t('phone.name.label')} bind:value={name} onblur={saveName}
+          <span>{t('phone.name.label')}</span>
+          <input class="name" type="text" maxlength="12" bind:value={name} onblur={saveName}
             onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
         </label>
       </div>
@@ -234,7 +235,8 @@
   .panel { display: grid; gap: 14px; animation: rise var(--dur-base) var(--ease-soft); }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .preview { display: flex; align-items: flex-end; gap: 14px; }
-  .pv { width: 96px; display: grid; justify-items: center; flex: none; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .vn { font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
+  .pv { width: 96px; display: grid; gap: 4px; justify-items: center; flex: none; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .namefield { flex: 1; min-width: 0; display: grid; gap: 6px; padding-bottom: 6px; }
   .namefield span { font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
   .name {

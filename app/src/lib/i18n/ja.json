@@ -36,7 +36,7 @@
   "habit.low_salt_day": "減塩デー",
   "habit.low_salt_day.hint": "汁は残す・しょうゆ少なめ",
   "habit.veg_two_meals": "野菜 2食",
-  "habit.veg_two_meals.hint": "野菜を2食で",
+  "habit.veg_two_meals.hint": "2食で野菜を1皿ずつ",
   "habit.eat_lunch": "昼ごはん",
   "habit.eat_lunch.hint": "14時までに主食＋たんぱく質",
   "habit.snack_swap": "おやつに果物・ナッツ",
@@ -99,7 +99,7 @@
   "phone.push.enable": "ONにする",
   "phone.push.install": "ホーム画面から開いてね",
   "phone.push.denied": "設定アプリで許可してね",
-  "pair.title": "ようこそ",
+  "pair.title": "ようこそ！コードを入れてね",
   "pair.hint": "ホーム画面に追加して、そこから開いてね",
   "pair.code": "6けたのコード",
   "pair.go": "つなぐ",
@@ -129,7 +129,7 @@
   "phone.app.share": "シェア",
   "phone.pushHint": "収穫と今夜のチェックをお知らせ",
   "phone.syncNow": "いま同期",
-  "island.checkedIn": "チェック済み ✓",
+  "island.checkedIn": "チェック済み",
   "island.highfiveGot": "{name}からハイタッチ！",
   "jar.paydayNoted": "記録したよ ✓",
   "jar.layers": "壺の中身",
@@ -137,5 +137,7 @@
   "harvest.hello": "今週もおつかれさまでした！",
   "partner.synced": "{time} 同期",
   "partner.highfive": "ハイタッチ",
-  "phone.name.label": "名前"
+  "phone.name.label": "名前",
+  "partner.never": "まだ同期していません",
+  "pending.saved": "記録しました"
 }

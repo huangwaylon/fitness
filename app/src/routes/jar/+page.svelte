@@ -1,6 +1,6 @@
 <script lang="ts">
   // 旅の壺 Trip Jar (style guide v3 §B.3): しずえ's line, one hero total (Bells bag), then ≤ 3 cards:
-  // next trip (ladder one tap away), the jar's layers, and the Treat Purse (the one action: 使う).
+  // next trip (ladder one tap away), the Treat Purse (the one action: 使う), then the jar's layers.
   import Sheet from '#lib/components/Sheet.svelte';
   import Rope from '#lib/components/Rope.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
@@ -112,7 +112,7 @@
         <path class="glint" d="M160 40 l4 -9 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 z" fill="var(--c-yuzu)" />
       </svg>
       <div class="totals">
-        <Yen yen={jar.totalYen} bag="2.4rem" class="hero-num total" />
+        <Yen yen={jar.totalYen} bag="2.2rem" class="hero-num total" />
         <span class="wk">{t('jar.week', { yen: formatYen(jar.thisWeekEstimateYen) })}</span>
       </div>
     </div>
@@ -130,20 +130,12 @@
       <span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
     </button>
 
-    <section class="card layers" aria-label={t('jar.layers')}>
-      <span class="tape">{t('jar.layers')}</span>
-      {#each layers as l (l.key)}
-        {@const fill = 25 * Math.max(0.08, Math.min(1, l.ratio))}
-        <div class="layer">
-          <svg class="minijar" viewBox="0 0 30 36" aria-hidden="true">
-            <path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="var(--c-bubble)" stroke="var(--c-ink)" stroke-width="2" />
-            <path d="M3 {33 - fill} H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" style:fill={l.color} />
-          </svg>
-          <span class="ln">{l.name}</span>
-          <b class="money">{formatYen(l.yen)}</b>
-        </div>
-      {/each}
-    </section>
+    <div class="purse card">
+      <span class="tape" style:--tape="var(--c-coral-soft)">{t('purse.title')}</span>
+      <svg class="pic" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>
+      <span class="big pamt">{formatYen(jar.purseYen)}</span>
+      <button type="button" class="btn coral go" onclick={() => (purseOpen = true)}>{t('purse.spend')}</button>
+    </div>
 
     {#if jar.transfer}
       {#if jar.transfer.done}
@@ -168,12 +160,21 @@
       </div>
     {/each}
 
-    <div class="purse card">
-      <span class="tape" style:--tape="var(--c-coral-soft)">{t('purse.title')}</span>
-      <svg class="pic" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>
-      <span class="big pamt">{formatYen(jar.purseYen)}</span>
-      <button type="button" class="btn coral go" onclick={() => (purseOpen = true)}>{t('purse.spend')}</button>
-    </div>
+    <section class="card layers" aria-label={t('jar.layers')}>
+      <span class="tape">{t('jar.layers')}</span>
+      {#each layers as l (l.key)}
+        {@const fill = 25 * Math.max(0.08, Math.min(1, l.ratio))}
+        <div class="layer">
+          <svg class="minijar" viewBox="0 0 30 36" aria-hidden="true">
+            <path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="var(--c-bubble)" stroke="var(--c-ink)" stroke-width="2" />
+            <path d="M3 {33 - fill} H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" style:fill={l.color} />
+          </svg>
+          <span class="ln">{l.name}</span>
+          <b class="money">{formatYen(l.yen)}</b>
+        </div>
+      {/each}
+    </section>
+
   </main>
 
   <Sheet bind:open={ladderOpen} label={t('jar.ladder')}>
@@ -225,8 +226,13 @@
   .hero { display: flex; align-items: center; justify-content: center; gap: 14px; color: var(--text); }
   .bigjar { width: 92px; height: 110px; display: block; overflow: visible; flex: none; }
   .glint { animation: glint 4s ease-in-out infinite; }
+  /* SE-height screens: a smaller jar keeps the purse (the one action) above the dock. */
+  @media (max-height: 720px) {
+    .jar-screen { gap: 16px; }
+    .bigjar { width: 64px; height: 76px; }
+  }
   .totals { display: grid; gap: 6px; }
-  .totals :global(.total) { font-size: var(--fs-hero); }
+  .totals :global(.total) { font-size: min(var(--fs-hero), 10vw); }
   .wk { font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
 
   .rung { appearance: none; cursor: pointer; text-align: left; color: var(--text); display: flex; align-items: center; gap: 12px; padding: 22px 12px 16px 18px; width: 100%; font: inherit; }
