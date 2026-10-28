@@ -5,7 +5,7 @@
   import Avatar from './Avatar.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
-  import { t, addDays, weekdayShort, formatDate } from '#lib/i18n/index.ts';
+  import { t, addDays, formatDate } from '#lib/i18n/index.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { inMonthDayRange } from '#lib/scoring/dates.ts';
 
@@ -43,16 +43,16 @@
 
 </script>
 
-<Sheet bind:open label={t('checkin.title')} {onclose}>
+<Sheet bind:open label={t('island.checkin')} {onclose}>
   {#if view && me}
     <div class="head">
       <Avatar person={view.me} villager={me.villager} size={56} />
-      <h2>{which === 'today' ? t('checkin.title') : t('checkin.yesterday')}</h2>
+      <h2 class="date">{formatDate(date)}</h2>
       <div class="days" role="tablist">
         <button type="button" role="tab" class="day" class:fillable={yesterdayFillable} aria-selected={which === 'yesterday'}
-          aria-label="{t('checkin.yesterday')} {formatDate(yesterday)}" onclick={() => (which = 'yesterday')}>{weekdayShort(yesterday)}</button>
+          onclick={() => (which = 'yesterday')}>{t('checkin.yesterday')}</button>
         <button type="button" role="tab" class="day" aria-selected={which === 'today'}
-          aria-label="{t('checkin.today')} {formatDate(today)}" onclick={() => (which = 'today')}>{weekdayShort(today)}</button>
+          onclick={() => (which = 'today')}>{t('checkin.today')}</button>
       </div>
     </div>
 
@@ -81,7 +81,7 @@
 
 <style>
   .head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  h2 { font-size: var(--fs-h1); }
+  .date { font: 700 1.2rem/1.2 var(--font-num); flex: 1; min-width: 0; }
   .days { display: flex; gap: 4px; margin-left: auto; padding: 4px; border-radius: var(--r-pill); background: var(--c-paper-2); box-shadow: var(--sh-inset); }
   :global(:root[data-theme="night"]) .days { background: #24314F; }
   .day {
