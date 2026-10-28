@@ -18,10 +18,10 @@ v1.0 (USD, more game systems) is in git history. v2.0 added Japan, yen, gyms and
 | | |
 |---|---|
 | **Who** | **Partner A** (M, 29, 175 cm, 66 kg, Anytime Fitness) · **Partner B** (F, 26, 153 cm, 55 kg, personal trainer). Both are at a healthy weight, so the goal is **fitness, strength and eating habits**, not weight loss. Living in Tokyo. |
-| **Effort** | **0 s** for activity and gym visits (automatic; no Watch at night, so sleep isn't scored). **≤ 10 s/day** for an evening 3-tap eating check-in. **~1 min on Sunday** for the ceremony and next week's promise. |
+| **Effort** | **0 s** for activity and gym visits (automatic; no Watch at night, so sleep isn't scored). **≤ 10 s/day** for an evening 3-tap eating check-in. **~1 min on Sunday** for the harvest ceremony. |
 | **Money** | **One currency: yen. No fixed goal: save as much as you can.** 1 fruit = **¥50**; up to 100 fruit/person/week. A realistic 85/week each ≈ **¥530,000/year**, and a perfect 100 = ¥624,000. Treat Purse **up to ¥104,000/year**. The jar shows the *next* trip it could buy. |
-| **Team + accountability** | Each week: **your fruit × ¥50 + your partner's fruit × ¥50 + a team bonus of ¥20 × the *lower* score** (≈ 17%). Each person sets one **Sunday promise**, visible to the other. |
-| **App** | Super simple: **3 pages + a Sunday overlay**, big numbers, little text. **Japanese UI**, switchable to English per person. Self-hosted on your Mac; on the phones it's just a home-screen web app (**no VPN app**), with a native companion for widgets later. |
+| **Team + accountability** | Each week: **your fruit × ¥50 + your partner's fruit × ¥50 + a team bonus of ¥20 × the *lower* score** (≈ 17%). Each partner's fruit is visible to the other. |
+| **App** | Super simple: **2 pages + the しまフォン launcher + a Sunday overlay**, big numbers, little text. **Japanese UI**, switchable to English per person. Self-hosted on your Mac; on the phones it's just a home-screen web app (**no VPN app**), with a native companion for widgets later. |
 | **Year** | 52 weeks in 4 seasons (Nov–Jan · Feb–Apr · May–Jul · Aug–Oct) on the Japanese calendar. |
 
 ---
@@ -36,7 +36,7 @@ Detail: [fitness-coach.md](team/fitness-coach.md), [fitness-coach-round3.md](tea
 2. **Your own baseline.** Both partners earn identical yen for hitting *their own* targets. Body size and starting fitness don't matter.
 3. **Weekly with slack** ("5 of 7 days"), so one bad day never ruins a week.
 4. **More isn't better.** Category caps, a daily cap on active minutes, and at most 3 paid strength days.
-5. **Rest counts.** Easy weeks, rest days and Cozy Days (のんびりデー) still pay.
+5. **Rest counts.** Easy weeks and rest days still pay.
 
 ### 2.2 Setup
 One ~1-minute history export per phone gives the baseline: the median of 12 weeks. Then a 2-week calibration, and a short safety questionnaire.
@@ -84,7 +84,7 @@ Rules: [ADR 0006](decisions/0006-yen-single-currency-and-accountability.md), [00
 | 🍎 Apple | Step goal on 5 of 7 days (in tsuyu: or ≥ 30 active min) | 15 | Watch (auto) |
 | 🍐 Pear | 3 eating habits, 15 of 21 ticks | 25 | Evening check-in |
 
-Linear partial credit per category, capped at your own target, so training beyond the plan earns nothing extra. Daily active-minute cap `min(90, max(60, ½ weekly target))`. Cozy Days prorate targets.
+Linear partial credit per category, capped at your own target, so training beyond the plan earns nothing extra. Daily active-minute cap `min(90, max(60, ½ weekly target))`. Targets are never prorated (ADR 0014).
 
 ### 3.3 The yen (weekly)
 
@@ -118,18 +118,15 @@ Spending ≥ ¥5,000 needs both partners to tap OK. Treats are planned and guilt
 ### 3.5 Team effort + individual accountability
 - **Your fruit is yours:** ¥50 each, depending only on your own score. That's the accountability.
 - **The team bonus lifts together:** ¥20 × the lower score, so the person who's ahead is rewarded for *inviting* the other on a walk, not for out-performing them. The copy never says whose score set the rate.
-- **Sunday promise (約束):** in the ceremony each person sets **one** when/where/what plan, e.g. B 「水曜 PT＋土曜ヨガ」, A 「エニタイム 火・木・土 7時」. The partner can tap 「応援する」 (I've got you).
-  The app checks it automatically against Watch workouts and gym visits: kept = ✓, not kept = ○ (never ✗). Only the promiser is asked "what got in the way?". Promises carry no money and no streak.
 - **The jar on Home is the combined total.** Each person's layer is one tap deeper, drawn against their own maximum. It's not a leaderboard.
 - After two rough weeks for one partner, the *other* gets a gentle "invite them to something" idea (v1).
 
 ### 3.6 Life happens
-**Cozy Day (のんびりデー)**, one tap: sick, travel or low energy, and that week's targets prorate. 4 a month need no explanation.
-Any one warning sign from daytime data (resting HR up ≥ 7 bpm, walking HR unusually high, a big jump in training load) makes Juniper *suggest* one.
+No excused days (Cozy Days were cut, ADR 0014): a sick or travel week just scores lower, cushioned by the weekly slack and linear partial credit.
 The vacation and long illness count as paused weeks (v1).
 
 ### 3.7 What we deliberately cut (simplicity)
-Cut: sleep scoring, a single fixed destination, the 85 threshold and shortfall bank, streaks and freeze tokens, critters and collections, monthly quests, tournaments, a cosmetic shop, outfits, lucky days, an extra NPC, and "+¥ today" chips.
+Cut: sleep scoring, Sunday promises, Cozy Days, a single fixed destination, the 85 threshold and shortfall bank, streaks and freeze tokens, critters and collections, monthly quests, tournaments, a cosmetic shop, outfits, lucky days, an extra NPC, and "+¥ today" chips.
 Later (v1): season recap, quiet island upgrades, one milestone shelf, one seasonal event per season, widgets.
 
 ### 3.8 Tone
@@ -141,14 +138,14 @@ At most one notification a day, sleep-aware, celebratory. Banned in both languag
 
 Detail: [ui-ux-designer.md](team/ui-ux-designer.md), [style-guide.md](design/style-guide.md), [mockup.html](design/mockup.html), [ADR 0007](decisions/0007-japanese-first-ui.md).
 
-**Simplicity budget:** ≤ 3 pages + 1 overlay; one primary action per screen; ≈ 20–25 English words / 40–50 Japanese characters of non-numeric text per screen; big numbers; icons over rows of text; explanations live in a one-time onboarding and a "?" sheet.
+**Simplicity budget:** 2 pages + the しまフォン launcher + 1 overlay; one primary action per screen; ≈ 20–25 English words / 40–50 Japanese characters of non-numeric text per screen; big numbers; icons over rows of text; explanations live in a one-time onboarding and a "?" sheet.
 
 | Page | At a glance |
 |---|---|
 | 🏝️ **島 (Island)**, home | Two villagers and two trees. Each tree shows this week's **4 fruits** ripening, plus a big score (**72**). The combined jar total. One Juniper line. **One button: 今夜のチェック (evening check-in).** Tap your partner's tree to send a high-five. |
 | 🫙 **旅の壺 (Jar)** | One big total, then **the next rung only** (e.g. 次は 沖縄 ¥150,000 · 残り ¥X) with a progress bar; the full ladder is one tap away. Per-person and team layers, the Treat Purse with a short yen treat list, a quiet "≈ ¥ this week" line, and the 給料日 "moved to savings ✓" cue. |
-| 💞 **ふたり (Us)** | Partner view (fruit and %), promise history, goals, Cozy Day / pause, Health sync status. Settings live here: 言語/Language, villager (species, colour, name), privacy, gym locations. |
-| 🌙 **日曜の収穫 (Sunday harvest)**, overlay | ≤ 60 s: each person's score → yen into the jar → team part → purse → set next week's promise → both tap 「壺に入れる」. |
+| 📱 **しまフォン (launcher)** | Settings: 言語/Language, villager and name, privacy, notifications, Health sync status. (No ふたり tab: the partner's fruit and score are on Island.) |
+| 🌙 **日曜の収穫 (Sunday harvest)**, overlay | ≤ 60 s: each person's score → yen into the jar → team part → purse → both tap 「壺に入れる」. |
 | ✅ Check-in sheet | Three big toggles, each person's own (e.g. B: 昼ごはん · おやつ swap · 野菜2食), plus a neutral 「おやつ OK」 chip, a for-partner-too option and a 48 h fill-in. |
 
 **Look:** a cozy island scrapbook, original and Animal Crossing–*inspired*. Cream paper, leaf green, sky blue, sand and coral. Zen Maru Gothic / M PLUS Rounded 1c (Japanese) and Fredoka/Nunito (numbers), all SIL OFL. Night palette 19:00–06:00. WCAG AA contrast, reduce-motion support.
@@ -184,7 +181,7 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 | i18n | `ja.json` / `en.json` message catalogs from day one. `¥128,000` with a half-width ¥ sign. Dates as `10月28日(水)`. |
 | Resilience | UPS + auto-restart; Litestream/restic client-side-encrypted to a bucket outside Kantō; monthly restore drill. A Mac mini rather than a Pi, because of summer heat. |
 
-**MVP API (9 endpoints):** `POST /ingest/shortcut/:person` · `POST /api/presence` · `GET /api/week` · `POST /api/checkin` · `POST /api/cozy-day` · `POST /api/promise` · `POST /api/purse/spend` · `POST /api/transfer/done` · `POST /api/push/subscribe`.
+**MVP API (core endpoints):** `POST /ingest/shortcut/:person` · `POST /api/presence` · `GET /api/week` · `POST /api/checkin` · `POST /api/confirm` · `POST /api/harvest/confirm` · `POST /api/purse/spend` · `POST /api/transfer/done` · `POST /api/push/subscribe`.
 
 **Privacy:** the partner sees fruit and % only. Raw numbers are opt-in. Eating answers are never shared. All of this is enforced server-side. No third-party analytics and no cloud AI on health data.
 
@@ -195,7 +192,7 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 | Phase | Effort | Scope | Done when |
 |---|---|---|---|
 | **0 · Spike** | 1 evening | Tailscale Funnel on the Mac + pairing; Shortcuts health sync (bearer token, App trigger); gym Arrive/Leave Shortcuts; test the Wallet-pass trigger at Anytime; save real payloads | Data from both phones and one gym visit land on the server |
-| **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay + promise → ¥ ledger; 3 pages in ja/en; check-in; Cozy Day; web push; backups | 2 weeks hands-off, ≤ 1 missed day per person |
+| **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay → ¥ ledger; 2 pages + しまフォン in ja/en; check-in; web push; backups | 2 weeks hands-off, ≤ 1 missed day per person |
 | *Calibration* | 2 weeks | Flat participation pay; baselines measured; B's targets agreed with her trainer | Season 1 starts |
 | **2 · v1** | ~4–6 weekends | Season re-tune and recap, pause weeks, partner-invite idea, quiet island upgrades, **native companion** (HealthKit sync, widget with a check-in button, Watch complication) | Widget used daily |
 | **3 · Later** | seasonal | One seasonal event per season, milestone shelf, year-end recap | Still opened weekly in month 12 |
@@ -208,7 +205,7 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 |---|---|
 | Late or irregular Health data | Re-send yesterday on every run; D+2; Wednesday final top-up; native sync in v1 |
 | Geofence misses a gym visit | Evening chip + Sunday "anything missed?" row |
-| Novelty fades | Weekly ritual, promises, seasons tied to the Japanese calendar, one event per season |
+| Novelty fades | Weekly ritual, seasons tied to the Japanese calendar, one event per season |
 | Money crowds out intrinsic motivation | Mastery framing ("you're someone who lifts"), visible progress, and an option to fade the money in year 2 |
 | Overtraining / injury | Caps, easy weeks, paid rest days, pain rule, trainer-led programming for B |
 | Disordered eating | Habits not calories, no meal grading, private answers, guilt-free treats, banned-words list |
