@@ -1,5 +1,5 @@
 # No-Mac backend: other free options (excluding Apps Script and Cloudflare Workers)
-Survey, 2026-10-28. Need: Shortcut POSTs day totals with a secret, ~10 small endpoints, 2 users, 1 push/day, weekly settlement cron, PWA on GitHub Pages.
+Survey, 2026-10-28.
 **[V]** = verified (official page fetched, or tested locally). **[U]** = unverified (known from memory or community reports; the page was blocked or didn't say).
 **Blocked by the proxy (allowlists left alone):** firebase.google.com, val.town, deno.com, vercel.com, netlify.com, render.com, docs.oracle.com, turso.tech, upstash.com, ngrok.com. developer.apple.com only returned a JS shell.
 
@@ -14,7 +14,7 @@ Survey, 2026-10-28. Need: Shortcut POSTs day totals with a secret, ~10 small end
 | **Vercel Hobby + Turso/Upstash** | ¥0 [U] | Function | Function | Hobby cron: daily only, ±1 h [U] | yes | Medium (2 vendors) | Hobby is non-commercial; DB on a second free tier |
 | **Netlify free** | ¥0, credit cap [U] | Function | Function | Scheduled functions [U] | yes | Medium | Credit plan pauses the site at the cap [U]; needs a DB elsewhere |
 | **Render free** | ¥0 [U] | Web service | Web service | No free cron [U] | yes | Low (runs the existing Node app) | Sleeps after ~15 min idle (cold start ~1 min, Shortcut may time out); no disk; free Postgres expires [U] |
-| **Oracle Always Free VM** | ¥0, **card required** [U] | Existing app as-is | same | systemd timer | same | High (VM, TLS, patching) | Idle reclamation; ARM capacity errors; Oracle account lockouts [U] |
+| **Oracle Always Free VM** | ¥0, **card required** [U] | Existing app as-is | same | systemd timer | same | High (VM, TLS, patching) | Idle reclaim, capacity errors [U] |
 | **PocketBase on a free host** | Only Oracle is truly free (Fly.io free plan ended) [U] | — | — | — | — | High | Same as Oracle |
 | **Tunnels** (ngrok, Cloudflare Tunnel, localtunnel, Funnel) | ¥0 | — | — | — | — | — | All need an always-on machine; iOS can't host a server |
 | **CloudKit** | Needs the $99/yr Apple Developer Program [U] | Can't: server-to-server needs ECDSA request signing, which Shortcuts can't do | CloudKit JS with Apple ID sign-in | None | No | High | Cost; ¥0 rule broken |
@@ -33,7 +33,7 @@ Survey, 2026-10-28. Need: Shortcut POSTs day totals with a secret, ~10 small end
 - An hourly Actions cron (~1 min a run, ~750 min/month) folds the inbox into `state.json` with the existing TS scoring code, runs Sunday settlement, and sends the daily Web Push.
 - The PWA reads `state.json` with a read-only PAT kept in `localStorage`.
 - Writes from the PWA (gym check-ins etc.) are more inbox files.
-Latency is minutes to an hour, which is fine for daily totals. If you'd rather keep everything public, encrypt with a shared passphrase: WebCrypto PBKDF2 + AES-GCM round-trips in Node 26 [V]. But Shortcuts can't encrypt, so the inbox still needs a private repo or a relay.
+Latency is minutes to an hour, which is fine for daily totals. Public-only alternative: encrypt with a shared passphrase (WebCrypto PBKDF2 + AES-GCM works [V]). Shortcuts can't encrypt, though, so the inbox stays private.
 
 **6–7. Tunnels, CloudKit.** Every tunnel forwards to a local process, so it still needs an always-on host, and iOS can't host one. CloudKit needs a $99/yr membership, and Shortcuts can't sign server-to-server requests.
 
