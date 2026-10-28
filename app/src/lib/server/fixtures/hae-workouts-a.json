@@ -1,0 +1,41 @@
+{
+  "data": {
+    "workouts": [
+      {
+        "id": "6F1C2A3B-0D4E-4F5A-9B6C-7D8E9F0A1B2C",
+        "name": "Traditional Strength Training",
+        "start": "2026-11-01 23:30:00 +0000",
+        "end": "2026-11-02 00:22:00 +0000",
+        "duration": 3120,
+        "location": "Indoor",
+        "isIndoor": true,
+        "activeEnergyBurned": { "qty": 241.3, "units": "kcal" },
+        "avgHeartRate": { "qty": 118, "units": "bpm" },
+        "maxHeartRate": { "qty": 152, "units": "bpm" },
+        "intensity": { "qty": 5.1, "units": "kcal/hr·kg" },
+        "metadata": {}
+      },
+      {
+        "id": "A0B1C2D3-E4F5-4A6B-8C7D-9E0F1A2B3C4D",
+        "name": "Yoga",
+        "start": "2026-11-03 19:05:00 +0900",
+        "end": "2026-11-03 19:50:00 +0900",
+        "duration": 2700,
+        "location": "Indoor",
+        "heartRateData": [
+          { "date": "2026-11-03 19:05:00 +0900", "Min": 80, "Avg": 92, "Max": 101, "units": "bpm" },
+          { "date": "2026-11-03 19:06:00 +0900", "Min": 88, "Avg": 98, "Max": 110, "units": "bpm" }
+        ]
+      },
+      {
+        "id": "11111111-2222-4333-8444-555555555555",
+        "name": "Outdoor Walk",
+        "start": "2026-11-03 12:10:00 +0900",
+        "end": "2026-11-03 12:41:30 +0900",
+        "duration": 1890,
+        "location": "Outdoor",
+        "distance": { "qty": 2.41, "units": "km" }
+      }
+    ]
+  }
+}
