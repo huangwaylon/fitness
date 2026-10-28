@@ -15,6 +15,8 @@
   import TabBar from '#lib/components/TabBar.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
   import Juniper from '#lib/components/Juniper.svelte';
+  import OfficialArt from '#lib/components/OfficialArt.svelte';
+  import { hostArt } from '#lib/client/assets.ts';
   import HarvestOverlay from '#lib/components/HarvestOverlay.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { startTheme } from '#lib/client/theme.svelte.ts';
@@ -24,8 +26,8 @@
 
   const route = $derived(routeOf(page.url.pathname));
   const onPair = $derived(route.startsWith('/pair'));
-  /** Page pattern (style guide §3): island dots, jar sand stripes, us pink dots. */
-  const pageKind = $derived(route.startsWith('/jar') ? 'jar' : route.startsWith('/us') ? 'us' : 'island');
+  /** Page pattern (style guide §3): island dots, jar sand stripes. */
+  const pageKind = $derived(route.startsWith('/jar') ? 'jar' : 'island');
 
   /** Toasts go in the top layer (popover) so they sit above an open sheet's scrim. */
   function topLayer(node: HTMLElement) {
@@ -73,13 +75,19 @@
   {@render children()}
 {:else if !week.view && week.status === 'error'}
   <main class="state">
-    <Bubble text={t('state.error')} side="none" juniper={false} />
-    <Juniper expression="surprised" size={120} />
+    <OfficialArt key="host/tom-nook" alt="" size={120} eager>
+      {#snippet fallback()}<Juniper expression="sleepy" size={120} />{/snippet}
+    </OfficialArt>
+    <Bubble text={t('state.error')} host={false} />
     <button type="button" class="btn" onclick={() => week.refresh()}>{t('state.retry')}</button>
   </main>
 {:else if !week.view}
   <main class="state" aria-busy="true">
-    <span class="bob"><Juniper size={120} /></span>
+    <span class="bob">
+      <OfficialArt key={hostArt('wave')} alt="" size={120} eager>
+        {#snippet fallback()}<Juniper size={120} />{/snippet}
+      </OfficialArt>
+    </span>
     <p>{t('state.loading')}</p>
     <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
   </main>
@@ -96,14 +104,15 @@
 
 {#if week.toast}
   {#key week.toast.id}
-    <div class="toast" role="status" popover="manual" use:topLayer>{week.toast.text}</div>
+    <div class="toast" role="status" popover="manual" use:topLayer>
+      <OfficialArt key={hostArt('icon')} alt="" size={32} eager />{week.toast.text}
+    </div>
   {/key}
 {/if}
 
 <style>
   .page { min-height: 100dvh; background: var(--pat-dots), var(--bg); }
   .page[data-page='jar'] { background: var(--pat-stripes), var(--bg); }
-  .page[data-page='us'] { background: var(--pat-dots-pink), var(--bg); }
   .state {
     max-width: 360px; margin: 0 auto;
     min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 14px; text-align: center;
@@ -121,6 +130,7 @@
     top: calc(var(--safe-top) + 12px); padding: 12px 20px; border-radius: var(--r-bubble); z-index: 90; overflow: visible;
     background: var(--toast-bg); color: var(--c-ink-talk); border: 0; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-float);
     font-weight: 700; font-size: var(--fs-body-lg); animation: if-pop var(--dur-pop) var(--ease-bounce) both;
+    display: flex; align-items: center; gap: 10px; padding-left: 12px;
   }
   .toast:popover-open { inset: auto 0; top: calc(var(--safe-top) + 12px); }
 </style>

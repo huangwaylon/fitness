@@ -1,30 +1,33 @@
 <script lang="ts">
-  // Speech bubble (style guide §4.1): wobbly cream box, tilted speaker-coloured name tag,
-  // letter-by-letter reveal (tap to finish), amber ▼ when another page follows (tap = next).
+  // Speech bubble (style guide v3 §4.1, §A): wobbly cream box, tilted name tag, letter-by-letter
+  // reveal (tap to finish), amber ▼ when another page follows (tap = next). しずえ stands on the
+  // left (official art by pose, fan-art fallback), tail pointing at her.
   // Reduced motion: text appears at once. The real text lives in an aria-live node.
-  import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import Juniper from './Juniper.svelte';
+  import OfficialArt from './OfficialArt.svelte';
+  import { hostArt, type HostPose } from '#lib/client/assets.ts';
+  import { theme } from '#lib/client/theme.svelte.ts';
   import type { Expression } from '#lib/villagers/species.ts';
 
   interface Props {
     /** One line, or several pages (tap to step through). */
     text: string | string[];
-    /** Name on the tag; defaults to Juniper. */
+    /** Name on the tag; defaults to しずえ. */
     name?: string;
-    /** Tag fill (CSS colour); defaults to Juniper's yuzu. */
+    /** Tag fill (CSS colour); defaults to しずえ's yuzu. */
     tag?: string;
-    /** Side the speaker stands on (tail points there). 'none' hides the tail. */
-    side?: 'left' | 'right' | 'none';
-    /** Show Juniper beside the bubble (default true). Pass `speaker` to draw someone else. */
-    juniper?: boolean;
-    /** The host's expression (style guide §7.4). */
-    expression?: Expression;
-    speaker?: Snippet;
+    /** しずえ's pose ('wave' cheer, 'stand' calm, 'bow' thanks/sorry), or false for no host (no tail). */
+    host?: Exclude<HostPose, 'icon' | 'winter'> | false;
+    /** Host height in px (96 on 島, 72 elsewhere). */
+    size?: number;
     /** Called once the last page has finished typing. */
     onfinish?: () => void;
   }
-  let { text, name, tag = 'var(--tag-juniper)', side = 'right', juniper = true, expression = 'happy', speaker, onfinish }: Props = $props();
+  let { text, name, tag = 'var(--tag-juniper)', host = 'wave', size = 72, onfinish }: Props = $props();
+  /** Dec–Feb: the winter outfit replaces the calm pose. */
+  const pose = $derived<HostPose | false>(host === 'stand' && theme.season === 'winter' ? 'winter' : host);
+  const FALLBACK: Record<string, Expression> = { wave: 'cheer', stand: 'happy', winter: 'happy', bow: 'proud' };
 
   const pages = $derived(Array.isArray(text) ? text : [text]);
   let pageIdx = $state(0);
@@ -87,8 +90,15 @@
   }
 </script>
 
-<div class="talk" class:left={side === 'left'}>
-  <button type="button" class="bubble" class:tail={side !== 'none'} onclick={tap} aria-label={more ? t('common.next') : undefined}>
+<div class="talk">
+  {#if pose}
+    <span class="spk" style:--h="{size}px">
+      <OfficialArt key={hostArt(pose)} alt="" {size} eager>
+        {#snippet fallback()}<Juniper expression={FALLBACK[pose as string]} {size} />{/snippet}
+      </OfficialArt>
+    </span>
+  {/if}
+  <button type="button" class="bubble" class:tail={!!pose} onclick={tap} aria-label={more ? t('common.next') : undefined}>
     <span class="who" style:--tag={tag}>{name ?? t('juniper.name')}</span>
     <span class="sr-only" aria-live="polite">{current}</span>
     <span class="txt" aria-hidden="true">
@@ -105,26 +115,21 @@
     </span>
     {#if more && !typing}<span class="next" aria-hidden="true"></span>{/if}
   </button>
-  {#if speaker}
-    <span class="spk">{@render speaker()}</span>
-  {:else if juniper}
-    <span class="spk juni"><Juniper {expression} size={84} /></span>
-  {/if}
 </div>
 
 <style>
-  .talk { display: flex; align-items: flex-end; gap: 8px; }
-  .talk.left { flex-direction: row-reverse; }
+  .talk { display: flex; align-items: flex-end; gap: 6px; }
   .bubble {
     appearance: none; border: 0; font: inherit; cursor: pointer; text-align: left;
-    position: relative; flex: 1; min-width: 0; min-height: 64px; margin: 14px 0 10px;
+    position: relative; flex: 1; min-width: 0; min-height: 64px; margin: 14px 0 6px;
     background: var(--bubble); color: var(--c-ink-talk); border-radius: var(--r-bubble);
     padding: 18px 20px 16px; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-soft);
     font-size: var(--fs-talk); font-weight: var(--fw-bold); line-height: var(--lh-talk);
-    transform-origin: 100% 100%; animation: open var(--dur-pop) var(--ease-bounce) both;
+    text-wrap: pretty; word-break: auto-phrase;
+    transform-origin: 0 100%; animation: open var(--dur-pop) var(--ease-bounce) both;
   }
+  .bubble:focus-visible { outline-offset: 4px; border-radius: var(--r-bubble); }
   :global(:root[data-theme="night"]) .bubble { box-shadow: 0 4px 0 #CFC4AA, var(--sh-soft); }
-  .left .bubble { transform-origin: 0 100%; }
   @keyframes open { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
   .who {
     position: absolute; top: -14px; left: 18px; padding: 5px 12px; border-radius: var(--r-pill);
@@ -139,17 +144,19 @@
   .ghost { visibility: hidden; }
   .g { opacity: 0; display: inline-block; animation: if-letter 120ms var(--ease-soft) forwards; white-space: pre; }
   .tail::after {
-    content: ''; position: absolute; right: -9px; bottom: 18px; width: 22px; height: 18px; background: var(--bubble);
-    clip-path: polygon(0 0, 100% 55%, 0 100%); border-radius: 4px;
+    content: ''; position: absolute; left: -9px; bottom: 18px; width: 22px; height: 18px; background: var(--bubble);
+    clip-path: polygon(100% 0, 0 55%, 100% 100%); border-radius: 4px;
   }
-  .left .tail::after { right: auto; left: -9px; clip-path: polygon(100% 0, 0 55%, 100% 100%); }
   .next {
     position: absolute; left: 50%; bottom: -6px; margin-left: -7px; width: 14px; height: 10px; background: var(--c-amber);
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
-  .spk { flex: none; display: block; }
-  .juni { width: 72px; display: grid; justify-items: center; margin-bottom: 4px; }
+  /* しずえ: feet on the bubble's baseline, a gentle idle bob (transform only). */
+  .spk { flex: none; display: grid; justify-items: center; min-height: var(--h); align-items: end; margin-bottom: 4px; }
+  .spk :global(img) { transform-origin: 50% 100%; animation: host-idle 2.8s var(--ease-idle) infinite; }
+  @keyframes host-idle { 50% { transform: translateY(-1.5%); } }
+  :global(:root[data-theme="night"]) .spk :global(img) { filter: brightness(.9); }
   @media (prefers-reduced-motion: reduce) {
-    .bubble, .who, .next { animation: none; }
+    .bubble, .who, .next, .spk :global(img) { animation: none; }
   }
 </style>
