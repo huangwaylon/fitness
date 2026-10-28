@@ -12,7 +12,8 @@
     "db:generate": "drizzle-kit generate",
     "pair": "tsx scripts/pair.ts",
     "token": "tsx scripts/token.ts",
-    "recompute": "tsx scripts/recompute.ts"
+    "recompute": "tsx scripts/recompute.ts",
+    "prepare": "svelte-kit sync || true"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^6.0.0",
