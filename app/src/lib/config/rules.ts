@@ -32,7 +32,7 @@ export const STRENGTH = {
 export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
 
 /** Promise auto-check thresholds (ADR 0011). */
-export const PROMISE_RULES = { walkTypes: ['Walking', 'Hiking'], walkAnyWorkoutMin: 30, anyWorkoutMin: 15 } as const;
+export const PROMISE_RULES = { walkTypes: ['Outdoor Walk', 'Indoor Walk', 'Walking', 'Hiking'], walkAnyWorkoutMin: 30, anyWorkoutMin: 15 } as const;
 
 export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77 } as const;
 
