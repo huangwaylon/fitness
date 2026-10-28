@@ -29,7 +29,11 @@ Upgrade: `git pull && docker compose up -d --build`. Migrations run automaticall
 
 Devices: `docker compose exec island node scripts/devices.ts` lists them. Add `revoke <id>` to revoke a lost phone or a leaked token.
 
-## 3. Health Auto Export (per phone, Premium via Family Sharing)
+## 3. Health data from the phones
+
+**Recommended: iOS Shortcuts, free and built in.** Follow [shortcut-health-sync.md](shortcut-health-sync.md): it syncs each time you open LINE (or similar), at most hourly. Health Auto Export below is the alternative; both can run at once, since the server merges them (same workout key, and day totals only rise).
+
+### 3b. Health Auto Export (alternative; per phone, Premium via Family Sharing)
 Create a token with `docker compose exec island node scripts/token.ts A hae "A iPhone HAE"`. It is printed once.
 Set up **two REST API automations**:
 
