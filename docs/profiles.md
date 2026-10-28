@@ -18,3 +18,9 @@ Body-size differences mean active-energy (Move ring) numbers aren't comparable b
 - **Design constraint:** the app must be super simple: few pages, little text, readable at a glance.
 - **Language:** app UI in **Japanese by default**, switchable to English.
 - **Budget confirmed:** Trip Jar ¥520,000/yr (¥10,000/week); Treat Purse up to ¥104,000/yr (¥1,000 per person per week at ≥ 60 fruit).
+
+## Eating patterns (added 2026-10-28)
+- Cook at home on weekdays; sometimes eat out at weekends.
+- **Partner B:** works from home all week; sometimes skips lunch; often snacks (potato chips).
+- **Partner A:** in the office 3 days a week; eats lunch out on those days.
+- **Neither drinks coffee or alcohol.**
