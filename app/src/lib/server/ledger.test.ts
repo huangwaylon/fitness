@@ -8,7 +8,8 @@ import { runSettlement } from '#lib/server/jobs.ts';
 import { computePayout } from '#lib/server/week.ts';
 import { freshDb, seedWeek } from '#lib/server/test-utils.ts';
 
-const WK = '2026-11-02';
+const WK = '2026-11-02'; // first settled week (a calibration week)
+const WK_SCORED = '2026-11-16';
 let db: Db;
 const entries = () => db.select().from(ledgerEntry).orderBy(ledgerEntry.id).all();
 const total = () => entries().reduce((s, e) => s + e.amountYen, 0);
@@ -33,6 +34,10 @@ describe('settlement', () => {
   });
 
   it('final tops up only increases, then locks; locked week is untouched', () => {
+    // A normal (non-calibration) week, so late data can raise the score.
+    const WK = WK_SCORED;
+    seedWeek(db, 'A', WK, { steps: 5000, exerciseMin: 10, ticksPerDay: 1 });
+    seedWeek(db, 'B', WK, { steps: 7000, exerciseMin: 15, ticksPerDay: 2 });
     settleWeek(db, WK, 'provisional');
     const provisional = total();
     // Late data raises A's score.

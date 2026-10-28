@@ -7,14 +7,14 @@ import { settleWeek } from '#lib/server/ledger.ts';
 import { confirmHarvest } from '#lib/server/actions.ts';
 import { freshDb, seedWeek } from '#lib/server/test-utils.ts';
 
-const WK = '2026-11-02';
+const WK = '2026-11-16'; // a normal scored week (Nov 2 and 9 are calibration weeks)
 let db: Db;
 
 beforeEach(() => {
   db = freshDb();
   seedWeek(db, 'A', WK, { steps: 8000, exerciseMin: 30, ticksPerDay: 2, days: 3 });
   seedWeek(db, 'B', WK, { steps: 7000, exerciseMin: 20, ticksPerDay: 3, days: 3 });
-  setNow('2026-11-04T12:00:00Z'); // Wed 21:00 JST
+  setNow('2026-11-18T12:00:00Z'); // Wed 21:00 JST
 });
 
 describe('WeekView privacy', () => {
@@ -46,7 +46,7 @@ describe('WeekView privacy', () => {
   });
 
   it('harvest appears after Sunday provisional and closes when both confirm', () => {
-    setNow('2026-11-08T10:31:00Z'); // Sun 19:31 JST
+    setNow('2026-11-22T10:31:00Z'); // Sun 19:31 JST
     expect(getWeekView(db, 'A').harvest).toBeNull();
     settleWeek(db, WK, 'provisional');
     const v = getWeekView(db, 'A');

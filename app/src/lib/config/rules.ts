@@ -31,6 +31,12 @@ export const STRENGTH = {
 /** Daily active-minute cap: min(maxMin, max(minMin, ½ × weekly target)) (ADR 0002 round 2). */
 export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
 
+/**
+ * No Watch? Steps above the step goal count as active minutes at a moderate pace (round 4 review W1).
+ * A day's minutes = max(Watch exercise minutes, (steps − stepGoal) / stepsPerMin), so nothing counts twice.
+ */
+export const STEP_MINUTES = { stepsPerMin: 100 } as const;
+
 /** Rest day: a day with Health data, no strength day, no workout ≥ longWorkoutMin, none ≥ hardWorkoutMin at ≥ hardHrFraction of 220 − age. */
 export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77, longWorkoutMin: 45 } as const;
 
@@ -59,14 +65,14 @@ export const SEASONS: Season[] = [
     key: 's1',
     from: '2026-11-01',
     targets: {
-      A: { activeMinPerWeek: 135, strengthDaysPerWeek: 2, stepGoal: 7500, stepDaysPerWeek: 5, habits: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], pearTicksPerWeek: 15 },
-      B: { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoal: 6250, stepDaysPerWeek: 5, habits: ['eat_lunch', 'snack_swap', 'veg_two_meals'], pearTicksPerWeek: 15 }
+      A: { activeMinPerWeek: 135, strengthDaysPerWeek: 2, stepGoal: 7500, stepDaysPerWeek: 4, habits: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], pearTicksPerWeek: 15 },
+      B: { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoal: 6250, stepDaysPerWeek: 4, habits: ['eat_lunch', 'snack_swap', 'veg_two_meals'], pearTicksPerWeek: 15 }
     }
   }
 ];
 
 /** Weeks (WeekKey) paid at the flat calibration rate. Set when Phase 1 goes live. */
-export const CALIBRATION_WEEKS: string[] = [];
+export const CALIBRATION_WEEKS: string[] = ['2026-11-02', '2026-11-09'];
 
 /** Trip ladder for the Jar (editable). Labels in i18n as `rung.<key>`. */
 export const RUNGS = [

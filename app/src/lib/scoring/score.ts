@@ -1,5 +1,5 @@
 // Weekly score: four fruits, integer milli-fruit per category, score = floor(sum / 1000) (ADR 0009, 0011, 0014).
-import { CALIBRATION, HOLIDAY, PEACH_DAILY_CAP, POINTS, REST, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { CALIBRATION, HOLIDAY, PEACH_DAILY_CAP, POINTS, REST, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { CategoryResult, FruitKey, LocalDate, Visit, WeekInput, WeekScore, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/scoring/dates.ts';
 
@@ -74,14 +74,20 @@ export function scoreWeek(input: WeekInput): WeekScore {
   const activeTargetMilli = toMilli(targets.activeMinPerWeek);
   const capMilli = Math.min(PEACH_DAILY_CAP.maxMin * 1000, Math.max(PEACH_DAILY_CAP.minMin * 1000, Math.floor(activeTargetMilli / 2)));
   let activeMilli = 0;
-  for (const d of days) activeMilli += Math.min(Math.max(0, toMilli(d.exerciseMin ?? 0)), capMilli);
+  for (const d of days) {
+    const watchMilli = toMilli(d.exerciseMin ?? 0);
+    const stepMilli = d.steps === null ? 0 : Math.floor(Math.max(0, d.steps - targets.stepGoal) * 1000 / STEP_MINUTES.stepsPerMin);
+    activeMilli += Math.min(Math.max(0, watchMilli, stepMilli), capMilli);
+  }
   const maxHr = 220 - input.age;
   const hardHrPermille = Math.round(REST.hardHrFraction * 1000);
   const isHard = (w: Workout): boolean =>
     w.durationMin >= REST.hardWorkoutMin && w.avgHr !== null && w.avgHr * 1000 >= hardHrPermille * maxHr;
   const busyDates = new Set([
     ...workouts.filter((w) => isHard(w) || w.durationMin >= REST.longWorkoutMin).map((w) => w.date),
-    ...strengthSet
+    ...strengthSet,
+    // Any gym visit makes a busy day, even one not (yet) confirmed as strength (round 4 review W7).
+    ...visits.filter((v) => v.dwellMin >= STRENGTH.minVisitMin).map((v) => v.date)
   ]);
   // Only days with Health data can be rest days, so an empty (or future) day never pays.
   const restDays = dataRows.filter((d) => !busyDates.has(d.date)).length;
