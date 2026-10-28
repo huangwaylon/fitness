@@ -99,7 +99,7 @@
   /* Hanging on a tree: no ring, a soft shadow on the canopy, a sparkle when ripe. */
   .fr.tree { background: none; border-radius: 40%; }
   .fr.tree::before { display: none; }
-  .fr.tree .fruit { width: 80%; height: 80%; transform-origin: 50% 10%; }
+  .fr.tree .fruit { width: 88%; height: 88%; transform-origin: 50% 10%; }
   .fr.tree.full { box-shadow: none; }
   .fr.tree.full::after {
     top: 2%; right: 4%; width: 30%; height: 30%; background: #FFF6C9;
