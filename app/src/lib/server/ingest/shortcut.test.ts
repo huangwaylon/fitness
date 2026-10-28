@@ -86,4 +86,21 @@ describe('Shortcut ingest', () => {
     expect(canonicalWorkoutType('Yoga')).toBe('Yoga');
     expect(canonicalWorkoutType(' ヨガ ')).toBe('Yoga');
   });
+
+  it('accepts newline-joined text lists (Dictionary fields typed as Text)', () => {
+    const r = ingestShortcut(db, 'A', JSON.stringify({
+      steps: { values: '300\n700', starts: '2026-10-28T08:00:00+09:00\n2026-10-28T12:00:00+09:00', sources: 'Apple Watch\nApple Watch' },
+      calories: ''
+    }));
+    expect(r).toMatchObject({ ok: true, metrics: 1 });
+    expect(metrics()).toEqual([{ d: '2026-10-28', m: 'steps', v: 1000 }]);
+  });
+
+  it('explains what is missing when only values are sent', () => {
+    const r = ingestShortcut(db, 'A', JSON.stringify({ steps: '12\n3\n27', calories: '' }));
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/steps has values but no start dates/);
+    const r2 = ingestShortcut(db, 'A', JSON.stringify({ steps: { values: '1\n2', starts: '2026-10-28T08:00:00+09:00' } }));
+    expect(r2.error).toMatch(/got 2 values but 1 start dates/);
+  });
 });
