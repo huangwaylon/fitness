@@ -25,7 +25,9 @@ export function looseDate(v: unknown): string | null {
   return toIsoDate(s);
 }
 
-const list = z.array(z.unknown()).default([]);
+/** Shortcuts turns a list into newline-joined text when a Dictionary field is typed as Text: accept both. */
+const splitLines = (v: unknown) => (typeof v === 'string' ? (v.trim() === '' ? [] : v.split(/\r?\n/)) : v);
+const list = z.preprocess(splitLines, z.array(z.unknown())).default([]);
 const series = z.object({ values: list, starts: list, sources: list.optional() }).loose();
 const workoutObj = z.object({
   type: z.string(), start: z.unknown(), end: z.unknown(), avgHr: z.unknown().optional(), durationMin: z.unknown().optional()
@@ -44,6 +46,7 @@ const bodySchema = z.object({
  */
 function dailyTotals(s: z.infer<typeof series>, onSkip: () => void): Map<string, number> {
   const bySource = new Map<string, number>();
+  if (s.values.length > 0 && s.starts.length !== s.values.length) throw new Error(`got ${s.values.length} values but ${s.starts.length} start dates: ${SHAPE_HINT}`);
   for (let i = 0; i < s.values.length; i++) {
     const v = looseNumber(s.values[i]);
     const iso = looseDate(s.starts[i]);
@@ -61,8 +64,17 @@ function dailyTotals(s: z.infer<typeof series>, onSkip: () => void): Map<string,
 
 export interface ParsedShortcut extends ParsedIngest { unknownTypes: string[] }
 
+const SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": [...]} with one start date per value (docs/ops/shortcut-health-sync.md step 12)';
+
 export function parseShortcut(raw: unknown): ParsedShortcut {
-  const body = bodySchema.parse(raw);
+  const r = raw as Record<string, unknown> | null;
+  for (const k of ['steps', 'exercise'] as const) {
+    const v = r?.[k];
+    if (typeof v === 'string' || Array.isArray(v)) throw new Error(`${k} has values but no start dates: ${SHAPE_HINT.replace('steps', k)}`);
+  }
+  const parsed = bodySchema.safeParse(raw);
+  if (!parsed.success) throw new Error(`unexpected shape: ${parsed.error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.message}`).join('; ')}`);
+  const body = parsed.data;
   if (!body.steps && !body.exercise && !body.days && !body.workouts) throw new Error('no steps, exercise, days or workouts');
   let skipped = 0;
   const skip = () => void skipped++;
