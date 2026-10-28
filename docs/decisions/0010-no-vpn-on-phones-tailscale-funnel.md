@@ -2,7 +2,7 @@
 **Status:** Accepted (round 4; user input). Supersedes the network parts of 0005 and the Tailscale-on-iPhone setup in 0001.
 
 **User input:** avoid Tailscale or any VPN running on the phones; something simpler, e.g. ngrok or GitHub Pages + a spreadsheet.
-Detail: [software-engineer-round4.md](../team/software-engineer-round4.md).
+Detail: the round 4 software-engineer memo (git history) and the [runbook](../ops/runbook.md).
 
 | Option | Verdict |
 |---|---|

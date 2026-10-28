@@ -1,4 +1,4 @@
-// Pairing codes, session cookies and bearer tokens (SE round 4 §3). Only SHA-256 hashes are stored.
+// Pairing codes, session cookies and bearer tokens (ADR 0010). Only SHA-256 hashes are stored.
 import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import { and, eq, gt, isNull, lt, sql } from 'drizzle-orm';
 import type { PersonId } from '#lib/types.ts';

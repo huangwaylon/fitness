@@ -53,7 +53,7 @@ export function runSettlement(db: Db, t: Date = now()): SettleResult[] {
 }
 
 /**
- * At most one push per person per day (PROPOSAL §3.8), decided by priority (review round 3, M1/M2):
+ * At most one push per person per day (PROPOSAL §3.8), decided by priority (ADR 0011):
  * Sunday harvest (from 19:30) → evening check-in (20:00) → payday (25th, evening). Gym-visit questions are
  * in-app only (the pending card on Island), and nothing is sent 22:00–07:00 (see notify()).
  */
