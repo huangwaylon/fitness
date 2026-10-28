@@ -88,7 +88,7 @@ Both are under 60, so the **step ceiling is 10,000/day** for both. Both are youn
 | Metric | First target | Floor | Ceiling (stops rising) |
 |---|---|---|---|
 | Weekly exercise minutes | baseline × 1.10, rounded up to the nearest 5 | 60 min/wk | **300 min/wk** |
-| Strength days/wk | 1 if baseline is 0, else 2 | 1 | **2 paid** (3rd day earns a badge only) |
+| Strength days/wk | 1 if baseline is 0, else 2 | 1 | **2, or 3 if opted in from Season 3.** Always worth 20 points total (§6.3) |
 | Daily steps (goal is "days hit") | baseline × 1.05 | 3,000 | **10,000** (8,000 if 60+) |
 | Sleep (goal is "nights hit") | min(baseline + 15 min, 7h) | 6h | **7h** asleep (adjustable to 7.5h, never above) |
 | Stand hours (goal is "days hit") | min(baseline, 10) | 6 | 12 |
@@ -178,45 +178,114 @@ No head-to-head competitions that pay money. Friendly "who closed more weeks" st
 
 ---
 
-## 6. Worked examples
+## 6. Personalized plans: Partner A and Partner B
 
-### 6.1 Example people (made up)
-- **Beginner "B":** history shows 60 exercise min/wk, 4,500 steps/day, 0 strength days, sleeps 6h20, 8 stand hours.
-- **Intermediate "I":** 170 exercise min/wk, 8,500 steps/day, 1 strength day/wk, sleeps 7h00, 10 stand hours.
+> **Activity history is still unknown.** The numbers below use **placeholder baselines**, picked to show two *different* starting points. On day 1 the HealthKit baseline (§3.1) replaces them, and the same rules produce the real targets. If Partner B turns out to be the more active one, the tables simply swap.
 
-### 6.2 12-month progression (targets for build weeks; easy weeks ×0.8, week 13 ×0.6)
+### 6.1 Starting tier from the measured baseline (applies to both)
 
-| Month | Season | **B** min/wk | **B** strength | **B** steps/day | **B** sleep | **I** min/wk | **I** strength | **I** steps/day | **I** sleep |
-|---|---|---|---|---|---|---|---|---|---|
-| 0 (2 wk) | Calibration | (measure) | — | — | — | (measure) | — | — | — |
-| 1 | S1 Sprout | 70 | 1 | 4,750 | 6h35 | 185 | 2 | 8,900 | 7h00 |
-| 2 | S1 | 80 | 2 | 4,750 | 6h35 | 185 | 2 | 8,900 | 7h00 |
-| 3 | S1 | 90 | 2 | 4,750 | 6h35 | 185 | 2 | 8,900 | 7h00 |
-| 4 | S2 Bloom | 100 | 2 | 5,250 | 6h50 | 200 | 2 | 9,300 | 7h00 |
-| 5 | S2 | 110 | 2 | 5,250 | 6h50 | 200 | 2 | 9,300 | 7h00 |
-| 6 | S2 | 120 *(held: busy month)* | 2 | 5,250 | 6h50 | 200 | 2 | 9,300 | 7h00 |
-| 7 | S3 Harvest | 130 | 2 | 5,750 | 7h00 | 215 | 2 (≥30 min each) | 9,700 | 7h00 |
-| 8 | S3 | 140 | 2 | 5,750 | 7h00 | 215 | 2 | 9,700 | 7h00 |
-| 9 | S3 | **150** (guideline met) | 2 | 5,750 | 7h00 | 215 | 2 | 9,700 | 7h00 |
-| 10 | S4 Snowfall | 150 (consolidate) | 2 | 6,250 | 7h00 | 230 | 2 | 10,000 (ceiling) | 7h00 |
-| 11 | S4 | 160 | 2 | 6,250 | 7h00 | 230 | 2 | 10,000 | 7h00 |
-| 12 | S4 | 170 | 2 | 6,250 | 7h00 | 230 *(vacation = travel mode)* | 2 | 10,000 | 7h00 |
+| Baseline exercise min/wk | Tier | Starting min target | Strength days to start | Cardio focus in Season 1 |
+|---|---|---|---|---|
+| < 90 | Starter | baseline × 1.1 (min 60) | 1 → 2 by month 2 | All easy/moderate (walk, jog-walk, easy bike) |
+| 90–149 | Builder | baseline × 1.1 | 2 | Easy/moderate, plus 1 brisk hill walk |
+| 150–220 | Active | baseline × 1.05 | 2 | 80% easy, 1 tempo session |
+| > 220 | Athletic | baseline (maintain) | 2–3 | 80% easy, 1 interval session |
 
-The beginner goes from 60 to about 170 min/wk and from 0 to 2 strength days, and reaches the guideline minimum around month 9. Steps are deliberately slow, because exercise minutes are the main goal. The intermediate person rises about 8% per season toward the middle of the 150–300 range. **Both can earn exactly the same money every week.**
+### 6.2 Intensity guide, personalized
+CDC (verified): moderate = effort "5 or 6" out of 10, or you "can talk but not sing". Vigorous = "7 or 8", only a few words between breaths. Heart-rate ranges below are approximate, using the ACSM convention (moderate about 64–76% of max HR, vigorous about 77–93%) and the Tanaka formula for max HR (208 − 0.7 × age). This is coach knowledge, not fetched this session. These are used only for coaching text and the optional v2 vigorous credit, never for money.
 
-### 6.3 Sample week: B in Month 4 (target 100 min, 2 strength, steps ≥ 5,250 on 5 days, sleep ≥ 6h50 on 5 nights)
+| | Est. max HR | Moderate | Vigorous |
+|---|---|---|---|
+| Partner A (29) | ~188 bpm | ~120–143 bpm | ~145–175 bpm |
+| Partner B (26) | ~190 bpm | ~122–144 bpm | ~146–177 bpm |
+
+Formula estimates can be off by ±10 bpm or more. After a few months, the app can switch to each person's observed peak HR.
+
+### 6.3 Strength progression (same structure for both, loads are personal)
+
+| Season | Sessions/wk (paid target) | Session | Focus |
+|---|---|---|---|
+| S1 Sprout: Foundation | 2 (Starter: 1 in month 1) | 25–35 min full body | Learn the patterns: squat, hinge (RDL / hip thrust), push (incline push-up → push-up), pull (row), carry, plank. 2–3 sets × 8–12 reps, finishing each set with 2–3 reps left in the tank. |
+| S2 Bloom: Build | 2 | 35–45 min | **Progressive overload:** once every set reaches the top of the rep range, add the smallest load step (~2.5–5%). |
+| S3 Harvest: Strength | **3 if opted in** (else 2) | 35–45 min | Main lifts go heavier (5–8 reps). Add single-leg work. Split upper/lower/full. |
+| S4 Snowfall: Consolidate | 2–3 | 30–45 min | Maintain, then do an optional "season test" (e.g., max push-ups, 5-rep goblet squat, plank hold) to compare with S1. The result is a badge, not money. |
+
+The strength points stay at **20 per week no matter what**. They're split across the target number of days (2 days = 10 each, 3 days = ~6.7 each). Choosing 3 days never earns more, so adding a third day is purely for health.
+
+**Partner B: bone density.** Bone mass peaks around the late 20s to about 30, so at 26 Partner B is near the end of the window for building bone. After that, the goal becomes keeping it. The strongest evidence-backed stimuli are (a) **progressive, reasonably heavy resistance training** that loads the hips and spine (squats, deadlifts/hinges, lunges, carries) and (b) **short bursts of impact** (jumps, skipping, hopping, jogging). Plan:
+- S1: 10–20 low jumps or skips in the warm-up on strength days.
+- S2: 20–40 jumps (squat jumps, jump rope), 2–3 days/wk.
+- S3–S4: 40–60 jumps across 3+ days/wk, plus heavier lower-body lifts (5–8 reps).
+- Detection: `jumpRope`, `running`, and some HIIT workouts count automatically. Otherwise a one-tap "included jumps" chip appears on the strength-workout confirmation.
+- *For the nutritionist:* calcium, vitamin D, protein, and especially **eating enough overall**. Under-fueling (low energy availability) is a well-known cause of bone loss in young women, which is one more reason this app must never reward weight loss.
+
+**Partner A** gets the same strength plan. Long-term benefits for him: keeping muscle mass, injury resilience, and metabolic health. He can pick the parallel "Engine Builder" cardio quest (§6.4) or the Bone Builder quest. Both are available to either partner.
+
+### 6.4 Cardio and VO2 max progression
+| Season | Aerobic structure |
+|---|---|
+| S1 | All easy/moderate ("talk-but-not-sing"). One outdoor walk or run of **20+ min** per week so the Watch keeps updating the **Cardio Fitness (VO2 max)** estimate (it needs outdoor walk/run/hike workouts with GPS and HR). |
+| S2 | About 80% easy. Add 1 harder session/wk: 15–20 min of hills or tempo. |
+| S3 | About 80% easy. 1 interval session/wk, e.g., **4 × 4 min hard (vigorous zone) with 3 min easy between** (the "Norwegian 4×4"). Starters can use 6–8 × 1 min hard / 2 min easy instead. |
+| S4 | Maintain. Joint goal event before the vacation: a **5K together or a long hike** (shared quest). |
+
+**VO2 max is shown, not paid** (§2). Use Apple's own Cardio Fitness levels, which are already adjusted for age and sex, so A and B are each compared with their own group. **Badge:** move up one Apple level, or improve the estimate by about 3 ml/kg/min over the year. Untrained young adults commonly gain 5–15% with consistent training.
+
+**Personal focus quest** (monthly, either partner, pick one per season): **Bone Builder** (12+ impact days a month) or **Engine Builder** (4 interval or tempo sessions a month plus at least 1 outdoor run or walk per week). Worth +10 points per month and equal for both (rule P1 in §7).
+
+### 6.5 12-month plan: Partner A (placeholder baseline: Builder, 120 min/wk, 7,000 steps, 1 strength day, sleep 6h45)
+Build-week targets. Easy weeks ×0.8, week 13 ×0.6.
+
+| Month | Season | Exercise min/wk | Strength | Cardio focus | Steps/day (days hit, 5/wk) | Sleep |
+|---|---|---|---|---|---|---|
+| 0 | Calibration (2 wk) | measure | — | — | — | — |
+| 1 | S1 | 135 | 2 × foundation | easy + 1 outdoor 20-min | 7,500 | 7h00 |
+| 2 | S1 | **150** (guideline reached) | 2 | easy | 7,500 | 7h00 |
+| 3 | S1 | 150 | 2 | easy | 7,500 | 7h00 |
+| 4 | S2 | 160 | 2 × build | +1 hill/tempo | 8,000 | 7h00 |
+| 5 | S2 | 160 | 2 | +1 hill/tempo | 8,000 | 7h00 |
+| 6 | S2 | 160 | 2 | +1 hill/tempo | 8,000 | 7h00 |
+| 7 | S3 | 175 | 3 (opt-in) × strength | +1 interval (4×4) | 8,500 | 7h00 |
+| 8 | S3 | 175 | 3 | +1 interval | 8,500 | 7h00 |
+| 9 | S3 | 175 | 3 | +1 interval | 8,500 | 7h00 |
+| 10 | S4 | 185 | 3 × consolidate | maintain + 5K prep | 9,000 | 7h00 |
+| 11 | S4 | 185 | 3 | maintain | 9,000 | 7h00 |
+| 12 | S4 | 185 (vacation = travel mode) | 2–3 | 5K / long hike together | 9,000 | 7h00 |
+
+### 6.6 12-month plan: Partner B (placeholder baseline: Starter, 75 min/wk, 6,000 steps, 0 strength days, sleep 7h00)
+
+| Month | Season | Exercise min/wk | Strength (+ bone loading) | Cardio focus | Steps/day (days hit, 5/wk) | Sleep |
+|---|---|---|---|---|---|---|
+| 0 | Calibration (2 wk) | measure | — | — | — | — |
+| 1 | S1 | 85 | 1 × foundation, 10–20 jumps | easy + 1 outdoor 20-min | 6,250 | 7h00 |
+| 2 | S1 | 95 | 2 × foundation | easy | 6,250 | 7h00 |
+| 3 | S1 | 105 | 2 | easy | 6,250 | 7h00 |
+| 4 | S2 | 115 | 2 × build, 20–40 jumps | +1 hill walk | 6,750 | 7h00 |
+| 5 | S2 | 125 | 2 | +1 hill walk | 6,750 | 7h00 |
+| 6 | S2 | 135 | 2 | +1 hill / jog-walk | 6,750 | 7h00 |
+| 7 | S3 | **150** (guideline reached) | 3 (opt-in) × strength, 40–60 jumps | +1 interval (6×1 min → 4×4) | 7,250 | 7h00 |
+| 8 | S3 | 150 | 3 | +1 interval | 7,250 | 7h00 |
+| 9 | S3 | 150 (consolidate) | 3 | +1 interval | 7,250 | 7h00 |
+| 10 | S4 | 160 | 3 × consolidate | maintain + 5K prep | 7,750 | 7h00 |
+| 11 | S4 | 160 | 3 | maintain | 7,750 | 7h00 |
+| 12 | S4 | 160 (vacation = travel mode) | 2–3 | 5K / long hike together | 7,750 | 7h00 |
+
+These are planned paths. The adaptive rules (§3.4) will hold or re-tune a month when life happens. Partner A ends at about 185 min/wk and Partner B at about 160, but **both earn the same points** for hitting their own targets.
+
+### 6.7 Sample week: Partner B, Month 4
+Targets: 115 min, 2 strength days, steps ≥ 6,750 on 5 days, sleep ≥ 7h on 5 nights.
 
 | Day | Activity (automatic) | Counts toward | Notes |
 |---|---|---|---|
-| Mon | 25-min brisk walk at lunch, 5,900 steps, slept 7h05 | 25 min, steps ✓, sleep ✓ | |
-| Tue | 20-min strength (Workout app: Functional Strength), 4,800 steps, 6h40 | 20 min, strength 1/2 | Step and sleep goals missed, no problem |
-| Wed | Rest. 5,400 steps, 7h10 | steps ✓, sleep ✓, **recovery ✓** | Rest day pays |
-| Thu | 30-min walk **together** with partner (overlap 28 min) | 30 min, steps ✓, sleep ✓, **joint +5** | |
-| Fri | Felt run-down → **gentle day**: 10-min stretch | gentle-day credit | Targets reduced pro-rata |
-| Sat | 45-min bike ride together, 20-min strength in the evening | minutes capped at 60/day (65 logged), strength 2/2 ✓, **joint +5** | Daily cap applied |
-| Sun | 15-min walk, 6,100 steps, 7h00 | 15 min, steps ✓, sleep ✓ | |
+| Mon | 25-min brisk walk at lunch. 7,200 steps, slept 7h10 | 25 min, steps ✓, sleep ✓ | |
+| Tue | 35-min Functional Strength with 30 jumps (Watch credits 22 exercise min). 6,100 steps, 6h40 | 22 min, strength 1/2, Bone Builder day | Step and sleep goals missed, no problem |
+| Wed | Rest. 6,900 steps, 7h15 | steps ✓, sleep ✓, **recovery ✓** | Rest day pays |
+| Thu | 30-min walk **together** with Partner A (28 min overlap). 7,400 steps, 7h05 | 30 min, steps ✓, sleep ✓, **joint +5** | |
+| Fri | Period cramps, low energy → **gentle day**: 10-min yoga | gentle-day credit | Weekly targets × 6/7 |
+| Sat | 45-min bike ride together, then 30-min strength in the evening (Watch credits 20). 6,800 steps, 7h20 | 65 min logged, **60 counted** (daily cap), strength 2/2, **joint +5** | |
+| Sun | 20-min outdoor jog-walk (updates VO2 max). 8,000 steps, 7h00 | 20 min, steps ✓, sleep ✓ | |
 
-**Result:** 150 min counted against an adjusted target of 86 (100 × 6/7) = capped at 100% → full minutes points. Strength 2/2. Steps 4 of the pro-rated 4.3 days. Sleep hit. Recovery ✓. Two joint workouts. **About 98/100 points + 10 joint points + team-week bonus if the partner also hits 80%.**
+**Result:** 157 min counted against an adjusted target of ~99 (115 × 6/7), capped at 100% → 40. Strength 2/2 → 20. Steps on 5 days → 15. Sleep 5 nights → 10. Active days 5 → 5. Stand 4/5 → 4. Recovery → 5. **= 99/100**, plus **10 joint points**, plus **10 team-week points** if Partner A reaches 80+.
 
 ---
 
@@ -227,7 +296,7 @@ All thresholds are relative to the person's current target (§3). Weekly goals a
 | # | Metric (source) | Threshold | Frequency | Points | Notes |
 |---|---|---|---|---|---|
 | 1 | **Exercise minutes** (`appleExerciseTime`) | Weekly total ≥ personal target (daily cap applies) | Weekly | **40** (0 below 50% of target; linear from 50% to 100%; capped at 100%) | Main goal. Rises toward 150, stops at 300 |
-| 2 | **Strength days** (workout types, §2) | Distinct days with a strength workout of ≥ 15 min, vs. target (1–2) | Weekly | **20** (10 per day, max 2) | 3rd day = badge only |
+| 2 | **Strength days** (workout types, §2) | Distinct days with a strength workout of ≥ 15 min, vs. target (1–3) | Weekly | **20**, split evenly across the target days | Days above target = badge only. Opting into 3 days never pays more |
 | 3 | **Daily movement** (`stepCount`) | Days with steps ≥ personal step target | Weekly (count of days) | **15** (3/day, max 5 days) | 2 days off built in |
 | 4 | **Sleep** (`sleepAnalysis`) | Nights asleep ≥ personal sleep target (up to 7h) | Weekly (count of nights) | **10** (2/night, max 5) | Optional v2: +bonus for bedtime within ±45 min of personal median |
 | 5 | **Active days** (`appleExerciseTime`) | Days with ≥ 10 exercise min | Weekly | **5** (needs ≥ 4 days) | Rewards spreading activity out (CDC "spread it out") |
@@ -238,6 +307,7 @@ All thresholds are relative to the person's current target (§3). Weekly goals a
 | C2 | Team week | Both ≥ 80 personal points (paused partner = met) | Weekly | +10 each | |
 | C3 | Monthly shared quest | Combined % of personal targets | Monthly | +20 each | |
 | C4 | Season finale | Both ≥ 9 of 13 weeks at ≥ 70 points | Quarterly | Lead/Economist sets $ | |
+| P1 | Personal focus quest (§6.4): Bone Builder or Engine Builder | Monthly quest criteria met | Monthly | +10 | Same value for both partners |
 | X | Calibration participation | Watch worn ≥ 20 h/day | Daily, weeks 1–2 only | 60% of max, flat | |
 
 **Money mapping is for the lead/finance role to decide.** For scale: if 100 points = $10, a strong year (about 85 points/week average per person, plus about 15 couple points) adds up to roughly **$2,000+** for the fund. Smaller treats (meals out) could unlock on streak milestones, e.g., 4 weeks in a row at 80+ points = a dinner out.
@@ -246,17 +316,20 @@ All thresholds are relative to the person's current target (§3). Weekly goals a
 
 ## 8. Notes for other roles
 - **Engineering:** read HealthKit daily/weekly statistics in the user's local time zone. Steps need source priority (Watch over iPhone) to avoid double counting. Workout duplicates need merging. Sleep "asleep" = core + deep + REM + unspecified. Recompute the past 7 days for late Watch syncs before closing a week (close weeks on Monday at noon, not midnight Sunday).
-- **Nutritionist:** don't combine calorie-deficit rewards with high-training weeks. Don't use weight in rewards.
+- **Nutritionist:** both partners have a healthy BMI, so the goal is **maintenance and fueling performance**, not a deficit. Don't combine calorie-deficit rewards with high-training weeks. Don't use weight in rewards. Partner B's bone goal needs enough total energy, calcium, vitamin D, and protein.
 - **Designer:** language like "re-tuned", "rest is progress", "paused" — never "failed" or "lost streak".
 
 ---
 
 ## Open questions for the user
-1. Ages, any injuries or medical conditions, pregnancy plans? (These affect step ceilings, balance work for 65+, and safety screening.)
-2. Will you both wear the Watch while sleeping? If not, sleep points need a different source or should be dropped.
-3. How much are you willing to tap for strength workouts (start a Workout on the Watch)? Is a one-tap "was this strength?" prompt acceptable?
-4. Do you want vigorous minutes to count double (75 vigorous = 150 moderate)? It's more accurate to the guidelines but more complex.
-5. Should sick and gentle days be fully honor-system and visible to the partner, or capped?
-6. Should menstrual-cycle data from Health be used (opt-in, private) to suggest gentle days?
-7. Should weight be tracked at all? (Recommendation: no, or private only with no money attached.)
-8. Points-to-dollars rate and yearly fund goal? (These set how motivating each point feels.)
+1. Any injuries, medical conditions, or pregnancy plans in the next year? (These affect impact loading and intensity work, especially Partner B's bone/jump plan.)
+2. Roughly how active is each of you now, and do you have any strength-training experience? (Until calibration, this only changes the placeholder tables in §6.)
+3. Do you have access to weights or a gym, or should strength sessions assume bodyweight plus dumbbells at home?
+4. Would you like a joint event in Season 4 (a 5K or a long hike) as a pre-vacation milestone?
+5. Will you both wear the Watch while sleeping? If not, sleep points need a different source or should be dropped.
+6. How much are you willing to tap for strength workouts (start a Workout on the Watch)? Is a one-tap "was this strength?" prompt acceptable?
+7. Do you want vigorous minutes to count double (75 vigorous = 150 moderate)? It's more accurate to the guidelines but more complex.
+8. Should sick and gentle days be fully honor-system and visible to the partner, or capped?
+9. Should menstrual-cycle data from Health be used (opt-in, private) to suggest gentle days?
+10. Should weight be tracked at all? (Recommendation: no, or private only with no money attached.)
+11. Points-to-dollars rate and yearly fund goal? (These set how motivating each point feels.)
