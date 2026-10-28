@@ -226,6 +226,11 @@
   .bigjar { width: 132px; height: 158px; display: block; overflow: visible; transform-origin: 50% 100%; transition: transform var(--dur-base) var(--ease-bounce); }
   .hero:active .bigjar { transform: scale(1.05, .94); transition-duration: var(--dur-tap); }
   .glint { animation: glint 4s ease-in-out infinite; }
+  /* SE-height screens: a smaller jar keeps the purse (the one action) above the dock. */
+  @media (max-height: 720px) {
+    .jar-screen { gap: 12px; }
+    .bigjar { width: 88px; height: 106px; }
+  }
   .total { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
   .wk { font-size: var(--fs-caption); font-weight: 700; color: var(--text-faint); }
 

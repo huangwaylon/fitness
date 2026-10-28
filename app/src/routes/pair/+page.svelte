@@ -57,7 +57,7 @@
     <span class="juni"><Juniper size={96} /></span>
   </div>
 
-  <Bubble text={[t('pair.title'), t('pair.hint')]} side="none" juniper={false} />
+  <Bubble text={t('pair.title')} side="none" juniper={false} />
 
   <form class="card" onsubmit={submit}>
     <span class="tape" style:--tape="var(--c-sky-soft)">{t('pair.code')}</span>
@@ -77,7 +77,7 @@
     <p id="pair-msg" class="msg" role="status">{msg}</p>
     <button type="submit" class="btn" disabled={!ready || busy}>{t('pair.go')}</button>
   </form>
-  {#if !standalone}<p class="hint">{t('pair.hint')}</p>{/if}
+  <p class="hint" class:strong={!standalone}>{t('pair.hint')}</p>
 </main>
 
 <style>
@@ -99,5 +99,6 @@
   .code::placeholder { color: var(--text-faint); opacity: .5; }
   .msg { min-height: 1.4em; margin: 0; color: var(--coral-ink); font-weight: 700; text-align: center; }
   :global(:root[data-theme="night"]) .msg { color: var(--coral); }
-  .hint { margin: 0; text-align: center; background: var(--c-sky-soft); color: var(--c-ink); border-radius: var(--r-sm); padding: 10px 14px; font-weight: 700; font-size: var(--fs-caption); }
+  .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-caption); }
+  .hint.strong { background: var(--c-sky-soft); color: var(--c-ink); border-radius: var(--r-sm); }
 </style>
