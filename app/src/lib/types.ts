@@ -144,6 +144,8 @@ export interface PersonWeekView {
   promise: PromiseView | null;
   cozyDaysThisMonth: number;
   isCozyToday: boolean;
+  villagerSpecies: string | null;
+  villagerColor: string | null;
   /** Only present for `me`: eating answers are never shared. */
   habits?: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
 }
@@ -166,6 +168,10 @@ export interface JarView {
   rungs: { key: string; yen: number; reached: boolean }[];
   /** Payday cue: last month's earnings and whether "moved ✓" was tapped. */
   transfer: { month: string; amountYen: number; done: boolean } | null;
+  /** Treat spends ≥ the both-OK threshold waiting for the partner's approval. */
+  pendingSpends: { id: number; label: string; amountYen: number; by: PersonId }[];
+  /** Weeks paid so far: each layer's own maximum is weeks × its weekly max (not a leaderboard). */
+  weeks: number;
 }
 
 export interface HarvestView {
@@ -191,4 +197,6 @@ export interface WeekView {
   /** i18n key for Juniper's one line, plus params. */
   juniper: { key: string; params?: Record<string, string | number> };
   highFivesToday: number;
+  /** My raw-number sharing prefs, by fruit key. */
+  visibility: Partial<Record<FruitKey, boolean>>;
 }

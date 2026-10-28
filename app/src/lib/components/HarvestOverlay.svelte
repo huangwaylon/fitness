@@ -5,12 +5,13 @@
   import { RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
   import PromiseEditor from './PromiseEditor.svelte';
-  import { week, type WeekViewX } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/client/week.svelte.ts';
+  import type { WeekView } from '#lib/types.ts';
   import { confirmHarvest, setPromise } from '#lib/client/actions.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
 
   interface Props {
-    view: WeekViewX;
+    view: WeekView;
     harvest: HarvestView;
     onlater: () => void;
   }
