@@ -1,6 +1,5 @@
 <script lang="ts">
-  // ふたり Us: partner's fruit + %, promises (応援する), Cozy Day, and settings.
-  import { onMount } from 'svelte';
+  // ふたり Us: partner's fruit + %, promises (応援する) and Cozy Day. Settings live in しまフォン.
   import type { FruitKey, PromiseKind, PromiseView } from '#lib/types.ts';
   import FruitRing from '#lib/components/FruitRing.svelte';
   import Villager from '#lib/components/Villager.svelte';
@@ -8,36 +7,22 @@
   import PromiseEditor from '#lib/components/PromiseEditor.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { cheer, cozyDay, cozyLeft, setPromise, blocker, setLanguage, setVillagerName, setVisibility } from '#lib/client/actions.ts';
-  import { pushState, enablePush, type PushState } from '#lib/client/push.ts';
-  import { t, i18n, formatSyncTime } from '#lib/i18n/index.ts';
+  import { cheer, cozyDay, cozyLeft, setPromise, blocker } from '#lib/client/actions.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
-  /** Metrics whose raw numbers can be shared. Eating answers are never shared. */
-  const SHAREABLE: FruitKey[] = ['peach', 'coconut', 'apple'];
 
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
   const partner = $derived(view ? view.people[view.partner] : null);
 
   let cozyMsg = $state('');
-  let push = $state<PushState>('off');
-  let pushBusy = $state(false);
-  let name = $state('');
   let editOpen = $state(false);
   let daysMask = $state(0);
   let kind = $state<PromiseKind>('any');
   let note = $state('');
   let blockerText = $state('');
   let blockerSent = $state(false);
-
-  onMount(() => {
-    pushState().then((s) => (push = s));
-  });
-
-  $effect(() => {
-    if (me && !name) name = me.villagerName;
-  });
 
   function days(mask: number): string {
     const out: string[] = [];
@@ -78,60 +63,49 @@
     if (typeof r === 'object') cozyMsg = t(r.message);
   }
 
-  async function turnOnPush() {
-    pushBusy = true;
-    try {
-      push = await enablePush();
-    } finally {
-      pushBusy = false;
-    }
-  }
-
-  function saveName() {
-    if (me && name.trim() && name.trim() !== me.villagerName) setVillagerName(name);
-  }
+  const tagOf = (who: 'A' | 'B') => (who === 'A' ? 'var(--tag-apricot)' : 'var(--tag-plum)');
 </script>
 
 {#if view && me && partner}
   <main class="screen us">
     <div class="screen-head">
-      <h1><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-us" /></svg>{t('us.title')}</h1>
+      <h1><span class="tile" style:--tile="var(--app-us)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-us" /></svg></span>{t('us.title')}</h1>
       <HelpButton topic="us" />
     </div>
 
     <!-- Partner -->
     <section class="card partner">
+      <span class="tape" style:--tape={tagOf(view.partner)}>{partner.villagerName}</span>
       <div class="who">
-        <span class="av"><Villager person={view.partner} size={44} /></span>
-        <h2>{partner.villagerName}</h2>
-        <span class="big score">{partner.score}<small>/100</small></span>
+        <span class="av"><Villager person={view.partner} species={partner.villagerSpecies} colourway={partner.villagerColor} size={64} /></span>
+        <span class="score"><span class="hero-num">{partner.score}</span><small class="money">/100</small></span>
       </div>
       <div class="fruits">
-        {#each FRUITS as f (f)}<FruitRing fruit={f} view={partner.fruits[f]} size="54px" showPct />{/each}
+        {#each FRUITS as f (f)}<FruitRing fruit={f} view={partner.fruits[f]} size="56px" showPct />{/each}
       </div>
     </section>
 
     <!-- Promises -->
-    <section class="card">
-      <h3 class="ttl">{t('promise.title')}</h3>
+    <section class="card proms">
+      <span class="tape" style:--tape="var(--c-leaf-soft)">{t('promise.title')}</span>
       <div class="prom">
-        <Villager person={view.me} size={34} />
+        <Villager person={view.me} species={me.villagerSpecies} colourway={me.villagerColor} size={40} />
         <button type="button" class="ptxt edit" onclick={openEdit}>
           {#if me.promise}
             <span>{summary(me.promise)}</span>
             {#if me.promise.cheered}<span class="gotyou"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart" /></svg>{t('promise.cheeredBy', { name: partner.villagerName })}</span>{/if}
           {:else}
-            <span class="none">{t('promise.edit')}</span>
+            <span class="none"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pencil" /></svg>{t('promise.edit')}</span>
           {/if}
         </button>
         {#if me.promise}<span class="mk {me.promise.result}" aria-label={t('promise.result.' + me.promise.result)}>{#if me.promise.result === 'kept'}✓{:else if me.promise.result === 'paused'}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>{:else}○{/if}</span>{/if}
       </div>
       <div class="prom">
-        <Villager person={view.partner} size={34} />
+        <Villager person={view.partner} species={partner.villagerSpecies} colourway={partner.villagerColor} size={40} />
         <span class="ptxt">{partner.promise ? summary(partner.promise) : t('promise.none')}</span>
         {#if partner.promise}
           <button type="button" class="chip cheer" aria-pressed={partner.promise.cheered} disabled={partner.promise.cheered} onclick={() => cheer()}>
-            <svg viewBox="0 0 24 24" aria-hidden="true" style="color:#F28BA8;width:18px;height:18px"><use href="#i-heart" /></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart" /></svg>
             {partner.promise.cheered ? t('promise.cheered') : t('promise.cheer')}
           </button>
         {/if}
@@ -139,63 +113,12 @@
     </section>
 
     <!-- Cozy Day -->
-    <section class="card row-card">
+    <section class="card cozy">
       <button type="button" class="toggle-row" role="switch" aria-checked={me.isCozyToday} onclick={toggleCozy}>
-        <svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><use href="#i-cozy" /></svg>
+        <span class="cz-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg></span>
         <span class="tl">{t('us.cozy')}<small>{cozyMsg || t('us.cozyLeft', { n: cozyLeft(view) })}</small></span>
-        <span class="sw" aria-hidden="true"></span>
+        <span class="switch" aria-hidden="true"></span>
       </button>
-    </section>
-
-    <!-- Settings -->
-    <section class="card settings">
-      <div class="set">
-        <svg viewBox="0 0 24 24" class="si" aria-hidden="true"><use href="#i-globe" /></svg>
-        <span class="sl">{t('us.lang')}</span>
-        <div class="seg" role="radiogroup" aria-label={t('us.lang')}>
-          <button type="button" role="radio" aria-checked={i18n.locale === 'ja'} onclick={() => setLanguage('ja')} lang="ja">日本語</button>
-          <button type="button" role="radio" aria-checked={i18n.locale === 'en'} onclick={() => setLanguage('en')} lang="en">English</button>
-        </div>
-      </div>
-      <label class="set">
-        <svg viewBox="0 0 24 24" class="si" aria-hidden="true"><use href="#i-pencil" /></svg>
-        <span class="sl">{t('us.name')}</span>
-        <input class="name" type="text" maxlength="12" bind:value={name} onblur={saveName} onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
-      </label>
-      <div class="set share">
-        <svg viewBox="0 0 24 24" class="si" aria-hidden="true"><use href="#i-eye" /></svg>
-        <span class="sl">{t('us.share')}</span>
-        <div class="shares">
-          {#each SHAREABLE as m (m)}
-            {@const on = view.visibility?.[m] ?? false}
-            <button type="button" class="chip" role="switch" aria-checked={on} aria-label="{t('us.share')}: {t('fruit.' + m)}" onclick={() => setVisibility(m, !on)}>
-              <svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px"><use href="#f-{m}" /></svg>
-            </button>
-          {/each}
-        </div>
-      </div>
-      <div class="set">
-        <svg viewBox="0 0 24 24" class="si" aria-hidden="true"><use href="#i-bell" /></svg>
-        <span class="sl">{t('us.push')}</span>
-        {#if push === 'on'}
-          <span class="val ok">✓ {t('us.pushOn')}</span>
-        {:else if push === 'install' || push === 'unsupported'}
-          <span class="val">{t('us.pushInstall')}</span>
-        {:else if push === 'denied'}
-          <span class="val">{t('us.pushDenied')}</span>
-        {:else}
-          <button type="button" class="btn small" disabled={pushBusy} onclick={turnOnPush}>{t('us.pushEnable')}</button>
-        {/if}
-      </div>
-      <div class="set sync">
-        <svg viewBox="0 0 24 24" class="si" aria-hidden="true"><use href="#i-sync" /></svg>
-        <span class="sl">{t('us.sync')}</span>
-        <span class="syncs">
-          {#each [me, partner] as p (p.person)}
-            <span class="sy"><Villager person={p.person} size={22} label={p.villagerName} /><span class="money">{formatSyncTime(p.lastSyncAt, view.today)}</span></span>
-          {/each}
-        </span>
-      </div>
     </section>
   </main>
 
@@ -218,64 +141,47 @@
 {/if}
 
 <style>
-  .us { display: flex; flex-direction: column; gap: 12px; }
-  .card { padding: 14px 16px; }
-  .partner .who { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .av { width: 48px; height: 48px; border-radius: var(--r-blob); background: #FFE6D6; display: grid; place-items: center; flex: none; }
-  .partner h2 { font-size: 1.25rem; }
-  .score { margin-left: auto; font-size: 2.6rem; }
+  .us { display: flex; flex-direction: column; gap: 22px; }
+  .partner { padding: 24px 16px 14px; }
+  .partner .who { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .av { width: 76px; height: 76px; border-radius: var(--r-blob); background: color-mix(in srgb, var(--p-apricot) 30%, var(--surface)); display: grid; place-items: center; flex: none; }
+  .score { display: flex; align-items: baseline; gap: 2px; }
   .score small { font-size: 1rem; color: var(--text-faint); }
   .fruits { display: flex; justify-content: space-between; }
 
-  .ttl { font-size: 1rem; color: var(--text-soft); margin-bottom: 4px; }
-  .prom { display: flex; align-items: center; gap: 10px; min-height: 52px; }
-  .prom + .prom { border-top: 2px dashed var(--edge); }
-  .ptxt { flex: 1; min-width: 0; font-weight: 700; display: grid; gap: 2px; text-align: left; }
-  .edit { appearance: none; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--text); min-height: 44px; }
-  .none { color: var(--sky-deep); text-decoration: underline; text-underline-offset: 3px; }
-  :global(:root[data-theme="night"]) .none { color: var(--moon); }
-  .gotyou { display: inline-flex; align-items: center; gap: 4px; width: max-content; padding: 2px 8px; border-radius: var(--r-pill); background: rgba(242, 139, 168, .22); font-size: 11px; color: var(--text); }
-  .gotyou svg { width: 14px; height: 14px; color: #F28BA8; }
-  .mk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex: none; background: var(--leaf-soft); color: var(--leaf-ink); }
-  .mk.open { background: var(--sand); color: var(--ink-soft); }
-  .mk.paused { background: #E3E6FA; }
+  .proms { padding: 18px 14px 6px; }
+  .prom { display: flex; align-items: center; gap: 10px; min-height: 60px; }
+  .prom + .prom { border-top: 2px dashed var(--stitch); }
+  .ptxt { flex: 1; min-width: 0; font-weight: 700; display: grid; gap: 3px; text-align: left; }
+  .edit { appearance: none; background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--text); min-height: 44px; font: inherit; font-weight: 700; }
+  .none {
+    display: inline-flex; align-items: center; gap: 6px; width: max-content; padding: 6px 14px; border-radius: var(--r-pill);
+    background: var(--c-sky-soft); color: var(--c-sky-ink); box-shadow: 0 3px 0 var(--c-sky);
+  }
+  .none svg { width: 18px; height: 18px; }
+  .gotyou { display: inline-flex; align-items: center; gap: 4px; width: max-content; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--p-berry) 22%, transparent); font-size: var(--fs-micro); color: var(--text); }
+  .gotyou svg { width: 14px; height: 14px; color: var(--p-berry); }
+  .mk { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex: none; background: var(--c-leaf-soft); color: var(--c-leaf-ink); }
+  .mk.open { background: var(--c-paper-2); color: var(--c-ink-soft); }
+  .mk.paused { background: var(--c-sky-soft); }
   .mk svg { width: 18px; height: 18px; }
   .cheer { min-height: 44px; font-size: var(--fs-caption); }
-  .cheer:disabled { cursor: default; background: rgba(242, 139, 168, .18); border-color: #F28BA8; color: var(--text); }
+  .cheer svg { width: 18px; height: 18px; color: var(--p-berry); }
+  .cheer:disabled { cursor: default; background: color-mix(in srgb, var(--p-berry) 20%, var(--surface)); border-color: var(--p-berry); color: var(--text); box-shadow: none; }
 
-  .row-card { padding: 4px 8px; }
+  .cozy { padding: 4px 8px; }
   .toggle-row {
     appearance: none; background: none; border: 0; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px;
-    min-height: 64px; padding: 6px 8px; color: var(--text); text-align: left;
+    min-height: 68px; padding: 6px 8px; color: var(--text); text-align: left; font: inherit;
   }
-  .toggle-row .ic { width: 34px; height: 34px; flex: none; }
-  .tl { flex: 1; font: 600 1.1rem var(--font-display); display: grid; }
-  .tl small { font: 700 var(--fs-caption) var(--font-body); color: var(--text-faint); }
-  .sw { width: 60px; height: 36px; border-radius: var(--r-pill); background: var(--sand); position: relative; flex: none; box-shadow: var(--sh-inset); transition: background var(--dur-base); }
-  .sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 30px; height: 30px; border-radius: 50%; background: #fff; box-shadow: 0 2px 0 var(--sand-deep); transition: left var(--dur-base) var(--ease-bounce); }
-  .toggle-row[aria-checked='true'] .sw { background: #9FA8E8; }
-  .toggle-row[aria-checked='true'] .sw::after { left: 27px; }
+  .cz-ic { width: 44px; height: 44px; border-radius: var(--r-squircle); background: var(--c-sky-soft); display: grid; place-items: center; flex: none; }
+  .cz-ic svg { width: 28px; height: 28px; color: var(--c-ink); }
+  .tl { flex: 1; font: 900 var(--fs-body-lg) var(--font-ui); display: grid; }
+  .tl small { font: 700 var(--fs-caption) var(--font-ui); color: var(--text-faint); }
 
-  .settings { display: grid; padding: 4px 14px; }
-  .set { display: flex; align-items: center; gap: 10px; min-height: 58px; flex-wrap: wrap; }
-  .set + .set { border-top: 2px dashed var(--edge); }
-  .si { width: 22px; height: 22px; color: var(--text-soft); flex: none; }
-  .sl { font-weight: 700; flex: 1; min-width: 5em; }
-  .seg { display: inline-flex; border: 2px solid var(--edge); border-radius: var(--r-pill); overflow: hidden; }
-  .seg button { appearance: none; border: 0; background: transparent; color: var(--text-soft); min-height: 40px; padding: 0 14px; font-weight: 700; cursor: pointer; }
-  .seg button[aria-checked='true'] { background: var(--leaf); color: var(--ink); }
-  .name { width: 9.5em; min-height: 44px; border-radius: var(--r-sm); border: 2px solid var(--edge); background: var(--bg); color: var(--text); padding: 0 12px; text-align: right; }
-  .shares { display: flex; gap: 6px; }
-  .shares .chip { width: 48px; padding: 0; }
-  .val { font-size: var(--fs-caption); font-weight: 700; color: var(--text-faint); }
-  .val.ok { color: var(--leaf-ink); font-size: var(--fs-body); }
-  :global(:root[data-theme="night"]) .val.ok { color: var(--leaf-soft); }
-  .syncs { display: flex; gap: 12px; }
-  .sy { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-caption); }
-
-  .sh-t { font-size: 1.4rem; margin-bottom: 12px; }
+  .sh-t { margin-bottom: 12px; }
   .sh-b { margin-top: 14px; }
   .blocker { display: flex; gap: 8px; margin-top: 16px; align-items: center; }
-  .blocker input { flex: 1; min-height: 44px; border-radius: var(--r-sm); border: 2px solid var(--edge); background: var(--surface); color: var(--text); padding: 0 12px; }
+  .blocker input { flex: 1; min-height: 44px; border-radius: var(--r-sm); border: 2px solid var(--edge); background: var(--bg); color: var(--text); padding: 0 12px; }
   .blocker p { margin: 0; font-weight: 700; color: var(--text-soft); }
 </style>

@@ -21,6 +21,7 @@
 </span>
 
 <style>
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--leaf); animation: twinkle 1s ease-in-out infinite; }
-  .demo { background: var(--sun); color: var(--ink); border-radius: var(--r-pill); padding: 1px 7px; font-size: var(--fs-micro); }
+  .pill { font-family: var(--font-num); font-weight: 600; font-size: .9rem; padding: 6px 14px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c-leaf); animation: twinkle 1s ease-in-out infinite; }
+  .demo { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-pill); padding: 2px 8px; font: 700 var(--fs-micro) var(--font-ui); }
 </style>

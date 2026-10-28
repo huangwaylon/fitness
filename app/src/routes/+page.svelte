@@ -12,6 +12,9 @@
   import { t, juniperLine, formatDate } from '#lib/i18n/index.ts';
 
   let checkinOpen = $state(false);
+  /** Short-lived reactions on the island (style guide §7.4). */
+  let partnerCheer = $state(false);
+  let meCheer = $state(false);
   const view = $derived(week.view);
   const pending = $derived(view?.pending[0] ?? null);
   const checkedIn = $derived(!!view && (view.people[view.me].habits?.ticksByDate[view.today] ?? []).length > 0);
@@ -22,6 +25,13 @@
     if (key === 'pending_confirm') return t('juniper.default');
     return juniperLine(view.juniper.key, view.juniper.params);
   });
+
+  // Closing the check-in sheet with today ticked → my villager cheers once.
+  function celebrate() {
+    if (!checkedIn) return;
+    meCheer = true;
+    setTimeout(() => (meCheer = false), 2400);
+  }
 
   function sendHighFive() {
     if (!view) return;
@@ -37,7 +47,11 @@
     const seen = Number(localStorage.getItem(k) ?? 0);
     if (v.highFivesToday > seen) {
       localStorage.setItem(k, String(v.highFivesToday));
-      setTimeout(() => week.showToast(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200), 700);
+      setTimeout(() => {
+        partnerCheer = true;
+        week.showToast(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200);
+        setTimeout(() => (partnerCheer = false), 2600);
+      }, 700);
     }
   });
 </script>
@@ -45,7 +59,9 @@
 {#if view}
   <main class="island">
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} />
+      <IslandScene {view} onhighfive={sendHighFive}
+        partnerExpression={partnerCheer ? 'cheer' : undefined} partnerEmote={partnerCheer ? 'heart' : false}
+        meExpression={meCheer ? 'cheer' : undefined} meEmote={meCheer} />
       <div class="head">
         <SyncPill />
         <HelpButton topic="island" />
@@ -53,7 +69,7 @@
     </div>
 
     <div class="below">
-      <Bubble text={line} />
+      <Bubble text={line} expression={meCheer || partnerCheer ? 'cheer' : 'happy'} />
 
       {#if pending}
         <div class="pending card" role="group" aria-label={t('pending.strength')}>
@@ -71,7 +87,7 @@
       {/if}
     </div>
   </main>
-  <CheckinSheet bind:open={checkinOpen} />
+  <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
 {/if}
 
 <style>
@@ -84,13 +100,15 @@
     position: absolute; z-index: 8; top: calc(var(--safe-top) + 8px); left: calc(16px + var(--safe-left)); right: calc(16px + var(--safe-right));
     display: flex; justify-content: space-between; align-items: center;
   }
+  .island { container-type: inline-size; }
   .below {
-    padding: 0 calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left)); margin-top: -26px; position: relative; z-index: 6;
+    padding: 0 calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left)); margin-top: -11cqw; position: relative; z-index: 6;
     display: grid; gap: 12px;
   }
-  .pending { display: grid; gap: 10px; padding: 24px 16px 12px; margin-top: 8px; }
+  .pending { display: grid; gap: 8px; padding: 22px 14px 8px; margin-top: 6px; }
   .pending .tape { --tape: var(--c-sky-soft); }
   .q { font-size: var(--fs-body-lg); font-weight: 900; text-align: center; }
+  .yn .btn { min-height: 50px; }
   .yn { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
   /* The one primary action stays in the thumb zone, above the dock, even on short phones. */
   .cta { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
