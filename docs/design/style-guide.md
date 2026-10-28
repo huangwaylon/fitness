@@ -152,7 +152,7 @@ Numbers: use `font-variant-numeric: tabular-nums;` for money in lists and tallie
 | `--sp-10` | 40px |
 | `--sp-12` | 48px |
 
-Layout: screen side padding `--sp-5`; card padding `--sp-4`; gap between cards `--sp-3`. Minimum tap target 48×48px (larger than Apple's 44 for chunky fingers + cuteness).
+Layout: screen side padding `--sp-5`; card padding `--sp-4`; gap between cards `--sp-3`. Minimum tap target 44×44pt (Apple HIG); primary tiles and buttons use 48pt+. See §5.
 
 ### Motion
 
@@ -236,7 +236,69 @@ Under `prefers-reduced-motion: reduce`, all durations collapse to cross-fades �
 
 ---
 
-## 5. Component recipes
+## 5. iPhone / PWA platform rules (mobile-first)
+
+Target: iPhone in portrait, 375 to 430pt wide (SE 3 → Pro Max), mobile Safari **and** standalone PWA (Add to Home Screen). Design at 390×844 (iPhone 14/15/16), verify at 375×667 (SE) and 430×932 (Pro Max).
+
+**Head tags**
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Island Fund">
+<meta name="theme-color" content="#FFF8E7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1F2A44" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
+```
+
+Manifest: `"display": "standalone"`, `"orientation": "portrait"`, `"background_color": "#FFF8E7"`, `"theme_color": "#FFF8E7"`. Provide a 180×180 apple-touch-icon (cream background, the fund jar with a leaf; no transparency, iOS adds the corner mask).
+
+**Safe areas (notch / Dynamic Island / home indicator)**
+
+```css
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);       /* ~59px on Dynamic Island phones */
+  --safe-bottom: env(safe-area-inset-bottom, 0px); /* ~34px home-indicator zone */
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --tabbar-h: 64px;
+}
+.app-header { padding-top: calc(var(--safe-top) + var(--sp-2)); }
+.tabbar {
+  position: fixed; left: var(--sp-3); right: var(--sp-3);
+  bottom: calc(var(--safe-bottom) + var(--sp-2));
+  height: var(--tabbar-h);
+}
+.screen { padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-6)); }
+html, body { min-height: 100dvh; overscroll-behavior-y: none; }
+```
+
+- Island illustration bleeds *behind* the status bar (sky fills the Dynamic Island area); text/controls never sit inside `--safe-top`.
+- Nothing interactive in the bottom 34px home-indicator zone; the tab bar floats above it.
+- Use `100dvh`, not `100vh` (Safari's collapsing toolbar).
+
+**Thumb zone**
+
+- Primary actions (Check in, Collect, Drop in the jar) live in the bottom third, above the tab bar.
+- The top area is for glanceable, read-only content (island scene, totals). No essential button in the top-left corner.
+- Bottom sheets (not centered modals) for check-in, shop redemption, and confirmations; they open from the thumb.
+
+**Touch & input**
+
+- Minimum target: **44×44pt** (Apple HIG); our default is 48pt for primary tiles. Keep ≥ 8pt between targets.
+- **No hover dependence.** Every hover style has an `:active` / `:focus-visible` twin; tooltips are replaced by tap-to-reveal or long-press.
+- `touch-action: manipulation;` on buttons (removes double-tap-zoom delay); `-webkit-tap-highlight-color: transparent;` paired with our own pressed state.
+- `user-select: none` on tiles/buttons only, never on text content.
+- Inputs at ≥ 16px font size so iOS Safari doesn't auto-zoom.
+- Haptics: the Web Vibration API is **not** supported on iOS Safari, so in the PWA haptics are best-effort/absent; real haptics come only with a native shell (see designer memo §8). Never rely on haptics alone for feedback.
+
+**Dynamic Type**: sizes are in `rem`; in a native/WebView shell, map root font size to the iOS content-size category. In Safari, support at least 200% text zoom without horizontal scrolling; cards wrap, numbers stay on one line (they shrink via `clamp()` before truncating).
+
+---
+
+## 6. Component recipes
 
 **Button (primary)**: `background: var(--leaf); color: var(--ink); font: 700 var(--fs-body-lg) var(--font-body); border-radius: var(--r-pill); padding: 14px 22px; box-shadow: 0 4px 0 #5FA862;` On `:active`: `transform: translateY(3px); box-shadow: 0 1px 0 #5FA862;` + light haptic.
 
