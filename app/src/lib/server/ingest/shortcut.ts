@@ -103,6 +103,11 @@ const SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": 
 
 export function parseShortcut(raw: unknown): ParsedShortcut {
   let r = raw as Record<string, unknown> | null;
+  // Accept the obvious spellings for exercise minutes.
+  if (r && typeof r === 'object' && r.exercise === undefined) {
+    const alias = ['exercise_minutes', 'exerciseMinutes', 'exercise_min', 'exerciseMin'].find((k) => r![k] !== undefined);
+    if (alias) r = { ...r, exercise: r[alias] };
+  }
   // Simple form: {"date": "2026-10-28", "steps": "12\n3\n…"}: every value belongs to that one day. (Filter the
   // samples to one source in the Shortcut, or Watch + iPhone steps are counted twice.)
   const day = typeof r?.date === 'string' ? looseDate(r.date) : null;

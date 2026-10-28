@@ -123,10 +123,14 @@ describe('Shortcut ingest', () => {
     const r = ingestShortcut(db, 'A', JSON.stringify({
       dates: 'Sep 28, 2026 at 7:11\u202fAM\nSep 29, 2026 at 7:55\u202fAM\nSep 29, 2026 at 8:00\u202fPM',
       steps: '855\n9106\n100',
+      exercise_minutes: '0\n23\n7',
       calories: '0\n248.2\n10'
     }));
-    expect(r).toMatchObject({ ok: true, status: 'ok', metrics: 2 });
-    expect(metrics()).toEqual([{ d: '2026-09-28', m: 'steps', v: 855 }, { d: '2026-09-29', m: 'steps', v: 9206 }]);
+    expect(r).toMatchObject({ ok: true, status: 'ok', metrics: 4 });
+    expect(metrics()).toEqual([
+      { d: '2026-09-28', m: 'exercise_min', v: 0 }, { d: '2026-09-28', m: 'steps', v: 855 },
+      { d: '2026-09-29', m: 'exercise_min', v: 30 }, { d: '2026-09-29', m: 'steps', v: 9206 }
+    ]);
   });
 });
 
