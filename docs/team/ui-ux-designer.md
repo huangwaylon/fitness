@@ -1,6 +1,6 @@
 # UI/UX Designer Memo: Island Fund
 
-Role: UI/UX Designer · Status: v0.1 for team review
+Role: UI/UX Designer · Status: v0.2, aligned with decisions 0002–0004 (one scoring model, economy, check-in and privacy)
 Artifacts: `docs/design/mockup.html` (open in a browser; there's a "show safe areas + thumb zone" toggle), `docs/design/style-guide.md` (CSS tokens).
 
 ---
@@ -8,11 +8,11 @@ Artifacts: `docs/design/mockup.html` (open in a browser; there's a "show safe ar
 ## 1. Design principles
 
 1. **Cozy, never naggy.** The app is a little island you *visit*. It shouldn't feel like a dashboard that grades you. No red numbers, no "you failed." Missed goals show as empty dashed fruit slots, a gentle "not yet."
-2. **Glanceable in 2 seconds.** Open the app and you instantly see: did we each grow our fruit today, and how full is the jar. Everything else is one tap deeper.
-3. **Zero friction.** Health data arrives automatically. The only manual act, the meal check-in, takes one tap and under 10 seconds, with no Save button. Anything that needs typing is optional.
-4. **Together, not versus.** Two villagers side by side, shared jar, a team bonus. Partner visibility is warm ("Bean is 2,900 steps from a perfect day! Evening stroll?") and never a leaderboard.
-5. **Real money, plainly shown.** Cute metaphors wrap the experience, but dollar amounts are always shown in real `$` next to the fruit or shells. No fake in-game currency that hides the stakes.
-6. **Honesty is rewarded.** Logging a treat meal still counts as a successful check-in (a streak saver), so neither partner is tempted to fudge it.
+2. **Glanceable in 2 seconds.** Open the app and you instantly see how full each of our trees is this week (out of 85 for a full share) and how full the jar is. Everything else is one tap deeper.
+3. **Zero friction.** Health data arrives automatically. The only manual act is the evening check-in card (3 habit switches, ≤10 s, no Save button). Anything that needs typing is optional.
+4. **Together, not versus.** Two villagers side by side, shared jar, a team bonus. Partner visibility is warm ("Bean's coconuts are all in!"), fruit-only by default, and never a leaderboard.
+5. **Real money, plainly shown, at the right moment.** Three concepts only: **Fruit** (weekly score), **Jar** (real vacation $), **Treat tickets** (separate treat budget). Daily feedback is fruit only. Dollars appear at the Sunday ceremony and on the Jar screen ("≈ $X so far this week"), always in real `$` and never in a pretend currency.
+6. **Honesty is safe.** A neutral "treat today" chip never costs fruit, and individual eating answers are never shown to the partner (only the pear count), so there is no reason to fudge.
 7. **Rhythm like real life.** The palette follows the local clock (day/night), there's a Sunday-evening ritual, and seasons change across the 1-year journey.
 8. **Original, not a copy.** We evoke the mood of island-life games (soft rounded shapes, speech bubbles, fruit trees, wooden signs, a gentle animal helper) but use no Nintendo assets, names, characters, fonts, sounds, or currency names. See §11.
 
@@ -63,8 +63,8 @@ Artifacts: `docs/design/mockup.html` (open in a browser; there's a "show safe ar
 
 - 24pt grid, **2.2pt rounded strokes** in ink brown, round caps and joins, with at most one flat fill from the palette. Hand-drawn feel, not geometric.
 - Every icon is drawn as inline SVG `<symbol>`s (see the mockup library). No icon fonts, no third-party sets with game art.
-- Goal fruits double as icons: **apple = steps**, **peach = move/exercise minutes**, **moon-plum = sleep**, **pear = healthy eating**. Each fruit has a distinct silhouette, so color isn't the only signal (color-blind safe), and labels are always shown next to them.
-- Tab icons: palm (Island), jar (Fund), bag (Shop), shell (Museum), two hearts (Us).
+- The five category fruits double as icons: **peach = active minutes**, **coconut = strength days**, **apple = step days**, **moon-plum = sleep & rest**, **pear = eating habits**. Each fruit has a distinct silhouette, so color isn't the only signal (color-blind safe), and labels are always shown next to them.
+- Tab icons: palm (Island), jar (Jar), bag (Shop), shell (Museum), two hearts (Us).
 
 ## 5. Characters
 
@@ -72,7 +72,7 @@ All original designs, drawn with simple geometry so we can build them in SVG and
 
 ### Villagers (one per partner, customizable)
 - **Mochi**, a sleepy cream cat with a plum ear-patch. Default "chill" personality: yawns in the morning, little "z z" when sleep fruit is missing, stretches when steps come in.
-- **Bean**, a cheerful tan pup with floppy ears. Default "peppy" personality: wiggles when the move goal hits, tongue-out grin.
+- **Bean**, a cheerful tan pup with floppy ears. Default "peppy" personality: wiggles when a peach (active minutes) lands, tongue-out grin.
 - **Customization (onboarding + Settings)**: species (cat, dog, bunny, bear, duck, hamster, frog), fur color (6), accent color (plum, apricot, mint, berry, lemon; this becomes the partner's color across the app), personality (chill / peppy / bookish / sporty, which changes their idle lines), plus cosmetic items unlocked in the Museum (hats, scarves, glasses).
 - **Expressions** (5 states): happy, sleepy, proud (perfect day), cozy (rest day), cheering (partner hit a goal).
 
@@ -85,13 +85,13 @@ All original designs, drawn with simple geometry so we can build them in SVG and
 ## 6. Information architecture
 
 ```
-Tab bar (5):  Island | Fund | Shop | Museum | Us
+Tab bar (5):  Island | Jar  | Shop | Museum | Us
                 │       │      │      │        └ Partner view, Settings, Health permissions, Goals
                 │       │      │      └ Badges, island decorations, villager outfits
                 │       │      └ Redeem treat tickets (dining, desserts), history
                 │       └ Voyage map, milestones, deposits history, treat wallet
                 └ Home: both villagers + trees, jar, Juniper tip, Check-in CTA
-Global:  Check-in sheet (from Home CTA / notification / widget / Watch)
+Global:  Evening check-in card (8 pm push / Home CTA / widget / Watch), incl. Cozy Day
          Weekly Settlement (full-screen ceremony, Sunday evening)
          Onboarding (Health permissions, pick villager, set trip + goals)
 ```
@@ -99,74 +99,83 @@ Global:  Check-in sheet (from Home CTA / notification / widget / Watch)
 ## 7. Key screens
 
 ### 7.1 Island (Home), mockup screen 1
-- **Top (read-only)**: island scene. Two trees (Mochi left, Bean right), each with 4 fruit slots. Earned fruit is drawn filled; unearned slots are dashed outlines. Villagers stand by their trees. The jar sits in the middle with a sparkle glint. Pills show date/weather and the jar total.
-- **Juniper bubble**: one contextual, achievable nudge, generated from data (closest unfinished goal, partner encouragement, rest-day reassurance). Tap the bubble to cycle tips; long-press to mute tips for the day.
-- **Today's fruit cards**: per partner, 4 goal rows with value and fruit. In-progress goals show a thin rope bar. A "+$3" chip shows today's earnings. "Refreshed 2 min ago · Health" builds trust in auto-sync. Pull to refresh.
-- **Primary CTA** (thumb zone): "Check in a meal." It changes to "Collect today's fruit" when there's unclaimed fruit (optional ritual tap; otherwise collected automatically at midnight).
-- **Microinteractions**: a fruit *grows* (scale 0→1 with bounce plus a leaf sparkle) the first time you open the app after a goal completes. Tap a fruit for a tooltip-bubble showing the metric. Tap your partner's villager for a "wave" (it sends them a tiny cheer notification, max 3/day). Villagers breathe and the trees sway slowly when idle.
+- **Five fruits, mapped 1:1 to the weekly score (decision 0002):** **peach** = active minutes (30), **coconut** = strength days (20), **apple** = step days (10), **moon-plum** = sleep & rest (15), **pear** = eating habits (25). Each person can earn up to 100 fruit a week; **85 = a full share**. "Move" is no longer a label anywhere.
+- **Trees are weekly.** Each tree fills in as the week's fruit is earned (in the drawing, each piece ≈ 10 fruit). Today's new fruit sparkles, Sunday is the harvest, and **Monday brings a fresh tree** (the fresh-start effect). Wooden signs show "Mochi 43", and the header pill says "Wed · week 21 · fresh tree Mon".
+- **Juniper bubble**: one contextual, achievable nudge ("Mochi, one strength day finishes yours"). Tap to cycle tips; long-press to mute them for the day.
+- **This week's fruit cards**: per partner, a score chip (`43/85`) and 5 rows (fruit, category, `earned/weight`) where the row background fills like a bar. **No "+$" chips and no raw numbers for the partner** (decision 0004). Your own raw numbers are one tap deeper ("How was this counted?"). "Synced 2 min ago" builds trust in auto-sync, and the card shows a gentle stale-sync state after 18 h.
+- **Primary CTA** (thumb zone): "Evening check-in · 3 habits".
+- **Microinteractions**: fruit *grows* (scale 0→1 with bounce plus a leaf sparkle) the first time you open the app after it's earned. Tap a fruit row for its breakdown. Tap your partner's villager for a "wave" (a cheer, max 3/day). Villagers breathe and the trees sway when idle.
 
-### 7.2 Vacation Fund, mockup screen 2
-- **Voyage map**: a dotted route from home island to the destination island (name and illustration set in onboarding). The boat with both villagers sits at `saved / goal` along the path. Buoy flags mark milestones: green = passed, yellow glowing = next, white = future.
-- **Hero total**: real dollars, "of $3,000," weekly average, and pace status ("on pace ✓" or a gentle "2 weeks behind, a strong week catches up").
-- **Milestones list**: each one is tied to a real trip action (book flights, hotel deposit, excursion), so progress turns into concrete plans. Reaching one triggers a mini celebration and a "Did you book it?" checkbox.
-- **Treat wallet**: coral paper tickets (Dinner out ×2, Dessert ×1). Tap one to go to the Shop/redeem flow. Treats are funded separately and never subtract from the trip jar (to be confirmed with PM).
-- Secondary: deposits history (weekly bars), and a manual adjustment entry (e.g., a birthday bonus) behind a "…" menu.
+### 7.2 Jar (vacation), mockup screen 2
+- **Voyage map**: a dotted route from home island to the destination. The boat sits at `saved / goal`, and buoys mark milestones (green = passed, glowing yellow = next, white = future).
+- **Hero total**: real dollars, "of $3,000", and pace status.
+- **Quiet week line**: "≈ $31 so far this week · settles Sun 7:30 pm". This is the only in-week dollar hint (decision 0003).
+- **Milestones list**: each tied to a real trip action (book flights, hotel deposit, excursion).
+- **Treat wallet**: a separate coral card ("2 treat tickets · separate from the trip jar") linking to the Shop. Tickets never come out of the jar.
+- Secondary: weekly deposits history and the monthly **Transfer Day** screen ("You earned $X in October. I moved it ✓").
 
 ### 7.3 Weekly Settlement ceremony, mockup screen 3
-- **When**: Sunday 19:30 local (configurable). A web-push/local notification says: "Juniper has lit the lanterns. Time to count your fruit!" The app opens to the ceremony until it's completed. Always uses the night palette.
-- **Flow (about 30 to 45 seconds, skippable at every step)**:
-  1. Juniper greets them (speech bubble).
-  2. Tally rows animate in one by one: Mochi (fruit dots per day, perfect days, $), Bean, then the Team bonus. Each row gets a soft coin chime; the numbers count up.
-  3. The total glows: "Into the jar: $59.00."
-  4. **Both partners tap "Drop it in the jar!"** (together on one phone or async on two). Coins fall into the jar and the boat sails forward on a mini map.
-  5. Reveal the weekly island upgrade (bridge, flower bed, lanterns, dock) or a Museum badge.
-- **Missed-week handling**: still a ceremony, with a kind framing ("A quiet week. The tide comes back in."). It shows the best thing that happened and never shows $0 in red.
-- **Transparency**: a "How was this counted?" link shows the per-day breakdown from Health data and lets them fix gaps (e.g., Watch was charging).
+- **When**: Sunday 19:30 local, night palette. The push says "Juniper has lit the lanterns." The app opens to the ceremony until it's completed.
+- **Flow (about 30–45 s, skippable)**:
+  1. Juniper greets them.
+  2. Rows tally in with soft chimes. **Each person**: score out of 100 on a bar with a marker at 85, then their personal share (42.5% of the weekly $57.69 × `min(score/85, 1)`). Extra fruit above 85 is shown as "banked" (it recovers earlier shortfalls only). **Team share** (15%) is paid at the *lower* partner's %.
+  3. The total glows: "Into the jar: $53.40".
+  4. **"+1 treat ticket"** drops into the wallet if **both scored ≥ 60**.
+  5. Both tap "Drop it in the jar!" (together or async). Coins fall and the boat sails forward.
+- **Provisional note** (always visible): "Sunday's data may still be syncing. Final on Wednesday, and late data can only add." A Wednesday top-up appears as a small "+$2.10 washed ashore" note on Home.
+- **Quiet weeks**: still a ceremony, kindly framed ("A cozy week. The tide comes back in."). Never $0 in red.
+- **Transparency**: "How was this counted?" opens the per-category, per-day breakdown.
 
-### 7.4 Daily Check-in (≤ 10 seconds), mockup screen 4
-- **Entry points**: Home CTA, a meal-time notification (action buttons directly on the notification if feasible), widget button (native), Watch tap (native).
-- **Bottom sheet**: avatar + "Lunch check-in." The meal is pre-selected from the time of day (editable chips). **Three big tiles: Healthy plate / Pretty balanced / Treat meal.** Tapping a tile saves immediately. The sheet auto-dismisses after 1.2 s, the fruit pops onto the tree, and a toast confirms with a 10-second undo.
-- **Optional bonus chips** (home-cooked, no soda, + fruit): toggle them before or within 3 s after the tap. They never block saving.
-- Measured target: 1 tap, about 3 seconds median, under 10 seconds worst case.
+### 7.4 Evening check-in (≤ 10 s), mockup screen 4
+- **One card a day** (decision 0004): opened from the ~8 pm push, the Home CTA, a widget, or the Watch.
+- **3 habit switches** for the season (e.g. veggies at 2+ meals, no sugary drinks, home-cooked dinner). Each saves on tap and grows a pear. There is no per-meal grading and no Save button.
+- **Day strip** (Mon / Tue / Today) with a coral dot on open days: **48 h backfill**.
+- **Co-log**: "Also for Bean ✓" on shared items like home-cooked dinner.
+- **"Treat today" chip**: neutral and never costs fruit.
+- **Cozy Day chip** (sick, travel, low energy; "3 of 4 left this month"): it lives here because the evening is when you know how the day went. It prorates the week's targets. It's also available from the Us tab.
+- **Toast**: "2 pears on Mochi's tree · Saved", with Undo. It shows fruit only, never $. Footer: "Bean sees only your pear count."
+- Target: 1 card, ≤4 taps, about 5 s.
 
-### 7.5 Shop (redeem rewards)
-- A wooden market stall run by a heron chef (later). Items are paper tickets: Dinner out (earned per N perfect days), Treat dessert, Breakfast in bed, Movie night pick. Each shows its price in fruit or tickets and its real $ value if any.
-- **Redeem** opens a bottom sheet: "Use 1 Dinner-out ticket?" Slide-to-redeem (prevents accidental taps), then a celebratory stamp animation. The partner gets a notification ("Mochi redeemed Dinner out, date night!").
-- History tab: past treats with optional photo plus a one-line memory. It doubles as a couple's scrapbook.
+### 7.5 Treat Shop, mockup screen 5
+- **Wallet header**: "2 tickets · ≈ $11.50 each · separate from the trip jar". A ticket is earned in each week where both partners score ≥ 60 (decision 0003).
+- **Shelf**: at least half non-food (movie night, massage, balcony plant, cooking class) alongside food experiences (dinner out, dessert date). Big items carry a "both agree" tag, and redeeming sends the partner a one-tap "Let's do it!"
+- **Redeem**: slide-to-confirm, stamp animation, then a scrapbook entry (optional photo plus a one-line memory).
 
 ### 7.6 Museum (collection)
 - Shelves of badges as display items: shells (streaks), fossils (lifetime totals like "1,000,000 steps"), bugs and fish (seasonal challenges), plus decorations and outfits unlocked for the island. Unknown items appear as silhouettes with hints.
 - Tap an item for a curator speech bubble with the story of when and how it was earned. A coral dot on the tab marks new items.
 
 ### 7.7 Us (partner view + settings)
-- **Partner view**: both villagers facing each other, this week's fruit grid (7 days × 4 goals) side by side, shared streaks, "send a cheer" (preset cute stickers, no free-text chat needed). Privacy: each partner can hide individual metrics (e.g., sleep detail shows only fruit / no fruit).
-- **Settings**: villager customization; goals per person (steps, move minutes, sleep hours, meals/day) with "suggested from your last 30 days"; reward rules (view-only, or editable with a two-partner approval flow); trip details; notification times; theme (follow clock / follow iOS / day); sound and haptics; reduce motion (also follows iOS); text size preview; Health connection status and re-sync; data export.
+- **Partner view**: both villagers facing each other, this week's five-fruit cards side by side (fruit and % only; raw numbers are opt-in per person per metric, enforced server-side; eating answers are never shown), Cozy Day / pause controls,  "send a cheer" (preset cute stickers, no free-text chat needed). Privacy: each partner can hide individual metrics (e.g., sleep detail shows only fruit / no fruit).
+- **Settings**: villager customization; goals per person (active minutes, strength days, step goal, sleep target, the 3 season habits) with "suggested from your last 30 days"; reward rules (view-only, or editable with a two-partner approval flow); trip details; notification times; theme (follow clock / follow iOS / day); sound and haptics; reduce motion (also follows iOS); text size preview; Health connection status and re-sync; data export.
 
 ## 8. Progress metaphors and data mapping
 
-| Real data | Metaphor | Detail |
+| Real data (weekly, vs. own target) | Fruit / metaphor | Weight |
 |---|---|---|
-| Daily step goal met | apple on your tree | from Apple Health `stepCount` vs personal goal |
-| Exercise minutes goal met | peach | `appleExerciseTime` |
-| Sleep goal met (prev. night) | moon-plum | `sleepAnalysis` asleep duration; ripens in the morning |
-| Healthy-eating check-ins met | pear | from in-app check-ins (Healthy or Pretty balanced counts as configured) |
-| All 4 fruits in a day | **perfect day**: tree sparkles, golden leaf | +bonus $ |
-| Both partners hit X days in the week | team bonus, two villagers high-five | |
-| Weekly total | coins into the **jar**; the **boat** advances on the map | Sunday ceremony |
-| N good weeks | **island upgrade** (bridge, dock, lanterns, garden, café) | the island visibly grows over the year |
-| Fund milestones | **buoys** on the voyage; real trip step unlocked | |
-| Treat rewards | coral **paper tickets** in the Treat wallet → Shop | |
+| Active minutes (`appleExerciseTime`, ≤90 min/day counted) | peach | 30 |
+| Strength days (strength/HIIT/yoga workout ≥ 20 min, ≤1/day) | coconut | 20 |
+| Step days (goal hit, 5 of 7) | apple | 10 |
+| Sleep nights (5 of 7) + ≥1 rest day | moon-plum | 15 (12 + 3) |
+| Eating habit ticks (15 of 21) | pear | 25 |
+| Week total | tree fullness; **85 = full share**; 85–100 "extra fruit" banked to recover past weeks | 100 max |
+| Weekly settlement | coins into the **jar**; the **boat** advances | Sunday ceremony |
+| Both partners ≥ 60 | **+1 treat ticket** (separate wallet → Shop) | |
+| Workouts together (≥70% overlap) | golden leaf / cosmetic only, no $ | |
+| Good weeks over time | **island upgrades** (bridge, dock, lanterns, garden) | |
+| Fund milestones | **buoys** on the voyage | |
 | Long-term achievements | **Museum** items, villager outfits | |
-| Season (calendar) | island decor (autumn leaves, winter snow) | purely aesthetic |
-| Workouts logged (any type) | a tiny footprint trail on the beach for that day | flavor; could feed badges |
+| Cozy Day / paused week | villager in a blanket; tree shows "cozy" leaves, not empty slots | |
+
+Not paid and shown as personal trends only: Move ring and active calories, weight, HRV, resting HR, VO2 max, sleep stages.
 
 ## 9. Widgets, Lock Screen and Apple Watch (native shell or companion only)
 
 Shown at the bottom of the mockup. None of these are possible in a PWA; they need WidgetKit/WatchKit.
-- **Small Home Screen widget**: jar + $ total + "39% to Kauai," and two rows of four fruit icons (one per partner). Tapping it opens Home.
-- **Medium widget**: your tree with today's fruit, a Juniper one-liner about your partner, and the fund rope bar. On iOS 17+ it can include an interactive "Check in" button using App Intents (one tap logs "Healthy plate" for the current meal without opening the app).
-- **Lock Screen accessories** (monochrome, system-tinted): a *circular* gauge of jar progress with the jar glyph; a *rectangular* "Today's fruit M ●●○● · B ○●●●" with the jar total.
-- **Apple Watch**: a *circular complication* as a 4-segment fruit ring around your villager's face (segments use fruit colors, unearned segments are grey). A *rectangular* complication shows the jar total and today's fruit. A tiny Watch app holds the 3 meal-check-in tiles (tap to log, with Watch haptic).
+- **Small Home Screen widget**: jar + $ total + "39% to Kauai", plus a weekly fruit bar per partner (43, 57).
+- **Medium widget**: your weekly tree, "43 fruit · full share at 85", a Juniper one-liner, and an interactive **Check in** button (iOS 17+ App Intent) that opens the evening card.
+- **Lock Screen accessories** (monochrome): a *circular* weekly fruit gauge; a *rectangular* "Fruit this week: Mochi 43 · Bean 57 · Jar $1,184 · 39%".
+- **Apple Watch**: a *circular complication* with a weekly fruit ring (43/85) around your villager, plus a tiny Watch app with the 3 habit switches.
 - **Live Activity (optional)**: during the Sunday ceremony window, a Dynamic Island activity: "Lanterns lit · $59 ready to drop."
 
 ## 10. Sound and haptics
@@ -180,7 +189,7 @@ Shown at the bottom of the mockup. None of these are possible in a PWA; they nee
 - **Not color alone**: each fruit has a distinct shape and label; progress shows numbers too.
 - **Dynamic Type / text zoom**: rem-based scale. Layouts reflow at 200% (cards stack to one column; the island scene shrinks before text does). Money uses `clamp()` to shrink rather than truncate.
 - **Reduce Motion** (follows the iOS setting plus an in-app toggle): no bounce, sway, parallax, confetti, or typewriter. The settlement becomes simple fades, and the boat jumps instead of sailing.
-- **VoiceOver**: the island scene has a single summary label ("Mochi's tree: 3 of 4 fruit, sleep remaining. Bean's tree: 3 of 4, steps remaining. Jar: $1,184.50, 39 percent."). Tiles are buttons with `aria-pressed`. The tally uses `aria-live="polite"`. Character bubbles are read as "Juniper says: …".
+- **VoiceOver**: the island scene has a single summary label ("Mochi's tree: 43 of 85 fruit this week. Bean's tree: 57 of 85. Jar: $1,184.50, 39 percent."). Habit switches use `role=switch`. The tally uses `aria-live="polite"`. Character bubbles are read as "Juniper says: …".
 - **Touch**: 44pt minimum targets. No gesture-only actions (swipe-to-dismiss always has an ✕ button; slide-to-redeem has a hold-button alternative).
 - **Cognitive**: one primary action per screen, plain-language copy, no time pressure (the ceremony waits for them).
 
@@ -194,9 +203,9 @@ Shown at the bottom of the mockup. None of these are possible in a PWA; they nee
 
 1. **Trip and amount**: the real destination (for the map illustration), the target $ amount, and the date? (The mockup assumes $3,000 by Aug 2027.)
 2. **Names and villagers**: what species, colors, and names would each of you like? (Mochi the cat and Bean the dog are placeholders.)
-3. **Treats vs. trip**: should treat tickets be a separate budget from the vacation jar, or do they come out of it?
-4. **Healthy eating definition**: is the 3-tile scale (Healthy / Balanced / Treat) right, or do you prefer specific habits (veggies at every meal, no soda, cook at home)? How many check-ins a day?
-5. **Partner visibility**: is it OK for each of you to see the other's sleep hours and step counts, or only fruit / no fruit?
+3. ~~Treats vs. trip~~: decided. Separate treat budget, with tickets earned when both score ≥ 60 (0003).
+4. **Season 1 habits**: are veggies at 2+ meals, no sugary drinks and home-cooked dinner the right 3 for each of you? (Cadence decided: one evening card, 0004.)
+5. **Partner visibility**: the default is fruit and % only (0004). Does either of you want to opt in to sharing raw numbers?
 6. **Ceremony timing**: Sunday 7:30 pm, together on one phone or separately?
 7. **Native appetite**: are widgets, Watch complications, and haptics worth a native/TestFlight app (it needs an Apple Developer account, $99/yr), or is a PWA enough for v1?
 8. **Sound**: would you like ambient island sound on, or keep the app silent by default?
