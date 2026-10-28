@@ -28,6 +28,12 @@
     return juniperLine(view.juniper.key, view.juniper.params);
   });
 
+  function answer(yes: boolean) {
+    if (!pending) return;
+    confirmPending(pending.kind, pending.id, yes);
+    if (yes) week.showToast(t('pending.saved'), 1600);
+  }
+
   // Closing the check-in sheet with today ticked → my villager cheers once.
   function celebrate() {
     if (!checkedIn) return;
@@ -80,8 +86,8 @@
           <span class="tape">{pending.label} · {formatDate(pending.date)}</span>
           <b class="q" id="pending-q">{t('pending.strength')}</b>
           <div class="yn">
-            <button type="button" class="btn paper" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
-            <button type="button" class="btn" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
+            <button type="button" class="btn paper" onclick={() => answer(false)}>{t('common.no')}</button>
+            <button type="button" class="btn" onclick={() => answer(true)}>{t('common.yes')}</button>
           </div>
         </div>
       {:else}
@@ -120,5 +126,13 @@
   @media (max-height: 720px) {
     .top { margin-top: -26cqw; }
     .head { top: calc(var(--safe-top) + 8px + 26cqw); }
+    .below { gap: 8px; }
+    .below :global(.spk img) { height: 64px !important; }
+    .below :global(.spk) { min-height: 64px; }
+    /* Compact yes/no: question beside the two buttons. */
+    .pending { grid-template-columns: 1fr auto; align-items: center; padding: 20px 10px 8px 14px; gap: 8px; }
+    .q { font-size: var(--fs-body-lg); text-align: left; }
+    .yn { grid-template-columns: auto auto; gap: 8px; }
+    .yn .btn { width: auto; min-width: 68px; padding: 0 14px; }
   }
 </style>

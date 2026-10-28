@@ -36,7 +36,7 @@
   "habit.low_salt_day": "Low-salt day",
   "habit.low_salt_day.hint": "Leave the broth, light on soy",
   "habit.veg_two_meals": "Veg × 2",
-  "habit.veg_two_meals.hint": "Veggies at 2 meals",
+  "habit.veg_two_meals.hint": "A veg dish at 2 meals",
   "habit.eat_lunch": "Lunch",
   "habit.eat_lunch.hint": "Staple + protein by 2 pm",
   "habit.snack_swap": "Fruit or nut snack",
@@ -99,7 +99,7 @@
   "phone.push.enable": "Turn on",
   "phone.push.install": "Open from your Home Screen",
   "phone.push.denied": "Allow in Settings",
-  "pair.title": "Welcome",
+  "pair.title": "Welcome! Enter your code",
   "pair.hint": "Add to Home Screen first, then open it from there",
   "pair.code": "6-digit code",
   "pair.go": "Connect",
@@ -129,7 +129,7 @@
   "phone.app.share": "Sharing",
   "phone.pushHint": "Harvest and check-in reminders",
   "phone.syncNow": "Sync now",
-  "island.checkedIn": "Checked in ✓",
+  "island.checkedIn": "Checked in",
   "island.highfiveGot": "{name} sent you a high-five!",
   "jar.paydayNoted": "Noted ✓",
   "jar.layers": "Inside the jar",
@@ -137,5 +137,7 @@
   "harvest.hello": "Great week, you two!",
   "partner.synced": "Synced {time}",
   "partner.highfive": "High-five",
-  "phone.name.label": "Name"
+  "phone.name.label": "Name",
+  "partner.never": "Not synced yet",
+  "pending.saved": "Logged"
 }

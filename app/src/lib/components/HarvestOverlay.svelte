@@ -75,7 +75,6 @@
         </div>
         <div class="ttotal">
           <span class="lbl">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>
             <span>{t('harvest.jar')}<br /><span class="prov">{t('harvest.provisional')}</span></span>
           </span>
           <Yen yen={jarTotal} bag="48px" class="total" />
@@ -86,6 +85,7 @@
         {#if purseTotal > 0}
           <div class="mini purse-n">
             <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>
+            <span class="pl">{t('purse.title')}</span>
             <span class="big">+{formatYen(purseTotal)}</span>
           </div>
         {/if}
@@ -156,7 +156,6 @@
   .yen { margin-left: auto; font-size: 1.45rem; color: var(--moon); }
   .ttotal { display: flex; justify-content: space-between; align-items: center; min-height: 70px; opacity: 0; animation: rowIn .6s var(--ease-bounce) 2.4s forwards; }
   .ttotal .lbl { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--night-ink-soft); line-height: 1.3; }
-  .ttotal .lbl svg { width: 28px; height: 28px; }
   .ttotal :global(.total) { font-size: 2.3rem; color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both; }
   .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--night-ink-soft); background: rgba(255, 255, 255, .08); border-radius: var(--r-pill); padding: 2px 9px; }
 
@@ -167,6 +166,7 @@
   }
   .purse-n { background: rgba(255, 155, 135, .14); border: 2px solid rgba(255, 155, 135, .6); }
   .purse-n svg { width: 34px; height: 34px; }
+  .pl { font-weight: 700; color: var(--night-ink-soft); }
   .purse-n .big { font-size: 1.35rem; color: #FFC9BC; }
 
   .cta { margin-top: auto; padding-top: 8px; }
