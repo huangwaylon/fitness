@@ -1,6 +1,4 @@
 // One function per API mutation, each with its optimistic update. Pages call these.
-import type { PromiseKind } from '#lib/types.ts';
-import { COZY } from '#lib/config/rules.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
 import { setLocale, type Locale } from '#lib/i18n/index.ts';
@@ -20,27 +18,6 @@ export function checkin(date: string, habitKey: string, done: boolean) {
   });
 }
 
-/** Returns 'ok', 'error', or an i18n key for a gentle message when the server says no (409). */
-export async function cozyDay(date: string, on: boolean): Promise<'ok' | 'error' | { message: string }> {
-  const r = await week.mutate<{ error?: string }>('/api/cozy-day', { date, on }, (v) => {
-    const me = mine(v);
-    if (v.today === date && me.isCozyToday !== on) {
-      me.isCozyToday = on;
-      me.cozyDaysThisMonth = Math.max(0, me.cozyDaysThisMonth + (on ? 1 : -1));
-    }
-  });
-  if (r.ok) return 'ok';
-  if (r.status === 409) {
-    const code = r.data?.error;
-    return { message: code === 'cozy_week_cap' ? 'us.cozyWeekLimit' : code === 'cozy_already_active' ? 'us.cozyActive' : 'us.cozyLimit' };
-  }
-  return 'error';
-}
-
-export function cozyLeft(v: WeekView): number {
-  return Math.max(0, COZY.maxPerMonth - mine(v).cozyDaysThisMonth);
-}
-
 export function highFive() {
   return week.mutate('/api/high-five', {}, (v) => {
     v.highFivesToday += 1;
@@ -51,25 +28,6 @@ export function confirmPending(kind: 'visit' | 'workout', id: string, yes: boole
   return week.mutate('/api/confirm', { kind, id, yes }, (v) => {
     v.pending = v.pending.filter((p) => !(p.kind === kind && p.id === id));
   });
-}
-
-export function setPromise(daysMask: number, kind: PromiseKind, note: string) {
-  const clean = note.trim();
-  return week.mutate('/api/promise', { daysMask, kind, ...(clean ? { note: clean } : {}) }, (v) => {
-    const me = mine(v);
-    me.promise = { daysMask, kind, note: clean || null, result: 'open', cheered: me.promise?.cheered ?? false };
-  });
-}
-
-export function cheer() {
-  return week.mutate('/api/promise/cheer', {}, (v) => {
-    const p = v.people[v.partner].promise;
-    if (p) p.cheered = true;
-  });
-}
-
-export function blocker(text: string) {
-  return week.mutate('/api/promise/blocker', { text });
 }
 
 export function confirmHarvest() {
@@ -122,15 +80,6 @@ export function setVillagerName(name: string) {
 export function setVisibility(metric: string, shareRaw: boolean) {
   return week.mutate('/api/visibility', { metric, shareRaw }, (v) => {
     v.visibility = { ...(v.visibility ?? {}), [metric]: shareRaw };
-  });
-}
-
-
-/** Villager look (しまフォン → 村人): species id + colourway id (lib/villagers/species.ts). */
-export function setVillagerLook(villagerSpecies: string, villagerColor: string) {
-  return week.mutate('/api/prefs', { villagerSpecies, villagerColor }, (v) => {
-    mine(v).villagerSpecies = villagerSpecies;
-    mine(v).villagerColor = villagerColor;
   });
 }
 

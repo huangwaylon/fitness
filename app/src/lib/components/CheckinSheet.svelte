@@ -1,10 +1,10 @@
 <script lang="ts">
   // 今夜のチェック: my three habits for today (or yesterday, 48 h fill-in), saved on tap.
-  // No snack chip (round 3). のんびりデー toggles today's Cozy Day. 正月: eating isn't scored, so it's "off".
+  // No snack chip (round 3). 正月: eating isn't scored, so it's "off".
   import Sheet from './Sheet.svelte';
   import Villager from './Villager.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { checkin, cozyDay } from '#lib/client/actions.ts';
+  import { checkin } from '#lib/client/actions.ts';
   import { t, addDays, weekdayShort, formatDate } from '#lib/i18n/index.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { inMonthDayRange } from '#lib/scoring/dates.ts';
@@ -41,11 +41,6 @@
     checkin(date, key, done);
   }
 
-  async function cozy() {
-    if (!me) return;
-    const r = await cozyDay(today, !me.isCozyToday);
-    if (typeof r === 'object') week.showToast(t(r.message), 3600);
-  }
 </script>
 
 <Sheet bind:open label={t('checkin.title')} {onclose}>
@@ -80,14 +75,6 @@
       {/each}
     </div>
     {/if}
-
-    <div class="extras">
-      {#if which === 'today'}
-        <button type="button" class="chip cozy" aria-pressed={me.isCozyToday} onclick={cozy}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>{t('checkin.cozy')}
-        </button>
-      {/if}
-    </div>
   {/if}
 </Sheet>
 
@@ -124,11 +111,6 @@
   .txt small { display: block; font: 700 var(--fs-micro)/1.3 var(--font-ui); color: var(--c-ink-faint); margin-top: 2px; }
   .plus { position: absolute; right: 86px; top: 14px; width: 28px; height: 28px; animation: floatUp .9s var(--ease-soft) forwards; }
 
-  .extras { display: flex; gap: 10px; margin-top: 16px; }
-  .extras .chip { flex: 1; min-height: 52px; border-style: dashed; }
-  .extras .chip svg { width: 26px; height: 26px; }
-  .chip.cozy { background: var(--c-sky-soft); border-color: var(--c-sky); color: var(--c-ink-soft); box-shadow: 0 3px 0 var(--c-sky-lip); }
-  .chip.cozy[aria-pressed='true'] { background: var(--c-sky); border-style: solid; color: var(--c-ink); }
   .off { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 26px 16px; }
   .off svg { width: 40px; height: 40px; color: var(--text-soft); }
   .off p { margin: 0; font-size: var(--fs-talk); font-weight: 700; }

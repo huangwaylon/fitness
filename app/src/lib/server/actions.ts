@@ -1,19 +1,18 @@
 // Business rules behind the /api/* endpoints (routes only parse + delegate here). All throw HttpError on refusal.
-import { and, eq, gte, isNull, like, lte } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import type { LocalDate, PersonId } from '#lib/types.ts';
-import { COZY, MONEY } from '#lib/config/rules.ts';
+import { MONEY } from '#lib/config/rules.ts';
 import { addDays, nowInZone, targetsFor, weekKeyOf } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
 import {
-  checkin, cozyDay, harvestConfirm, highFive, ledgerEntry, personPref, presenceEvent, purseSpend, pushSubscription,
-  transfer, visibilityPref, visitConfirmation, weekPromise, workout, dailyMetric
+  checkin, harvestConfirm, highFive, ledgerEntry, personPref, presenceEvent, purseSpend, pushSubscription,
+  transfer, visibilityPref, visitConfirmation, workout
 } from '#lib/server/db/schema.ts';
 import { HttpError } from '#lib/server/http.ts';
-import { isStrengthWorkout } from '#lib/server/presence.ts';
 import { now } from '#lib/server/clock.ts';
 import { purseBalance } from '#lib/server/ledger.ts';
-import { harvestWeekKey, isLocked, monthEarnings, partnerOf, promiseTargetWeek } from '#lib/server/week.ts';
+import { harvestWeekKey, isLocked, monthEarnings } from '#lib/server/week.ts';
 
 // ---------- schemas ----------
 const localDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -21,10 +20,7 @@ export const schemas = {
   pair: z.object({ code: z.string().regex(/^\d{6}$/), label: z.string().max(60).optional() }),
   presence: z.object({ place: z.string().min(1).max(40), event: z.enum(['arrive', 'leave']), at: z.string().max(40).optional(), token: z.string().optional() }),
   checkin: z.object({ date: localDate, habitKey: z.string().min(1).max(40), done: z.boolean() }),
-  cozy: z.object({ date: localDate, on: z.boolean() }),
-  promise: z.object({ daysMask: z.number().int().min(1).max(127), kind: z.enum(['gym', 'pt', 'walk', 'any']), note: z.string().max(140).nullish() }),
   empty: z.object({}).loose(),
-  blocker: z.object({ text: z.string().trim().min(1).max(280) }),
   confirm: z.object({ kind: z.enum(['visit', 'workout']), id: z.string().min(1).max(100), yes: z.boolean() }),
   spend: z.object({ label: z.string().trim().min(1).max(60), amountYen: z.number().int().positive().max(1_000_000) }),
   approve: z.object({ id: z.number().int().positive() }),
@@ -33,9 +29,7 @@ export const schemas = {
   prefs: z.object({
     locale: z.enum(['ja', 'en']).optional(),
     villagerName: z.string().trim().min(1).max(20).optional(),
-    villager: z.string().regex(/^[a-z][a-z0-9_]{0,23}$/).optional(),
-    villagerSpecies: z.string().max(20).optional(),
-    villagerColor: z.string().max(20).optional()
+    villager: z.string().regex(/^[a-z][a-z0-9_]{0,23}$/).optional()
   }),
   visibility: z.object({ metric: z.enum(['peach', 'coconut', 'apple', 'pear']), shareRaw: z.boolean() })
 };
@@ -67,69 +61,6 @@ export function isPushServiceUrl(u: string): boolean {
   } catch {
     return false;
   }
-}
-
-// ---------- cozy day ----------
-export function setCozyDay(db: Db, person: PersonId, input: z.infer<typeof schemas.cozy>): { date: LocalDate; on: boolean; usedThisMonth: number } {
-  const t = today();
-  // Only today or yesterday: a Cozy Day is for rest you're taking, not a backdated discount (review round 3, F3).
-  if (input.date > t || input.date < addDays(t, -COZY.maxDaysBack)) throw new HttpError(422, 'date_out_of_range');
-  assertUnlocked(db, input.date);
-  const month = input.date.slice(0, 7);
-  const count = () => db.select().from(cozyDay).where(and(eq(cozyDay.person, person), like(cozyDay.localDate, `${month}-%`))).all().length;
-  if (input.on) {
-    const exists = db.select().from(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, input.date))).get();
-    if (!exists) {
-      if (count() >= COZY.maxPerMonth) throw new HttpError(409, 'cozy_month_cap', { max: COZY.maxPerMonth });
-      const wk = weekKeyOf(input.date);
-      const inWeek = db.select().from(cozyDay)
-        .where(and(eq(cozyDay.person, person), gte(cozyDay.localDate, wk), lte(cozyDay.localDate, addDays(wk, 6)))).all().length;
-      if (inWeek >= COZY.maxPerWeek) throw new HttpError(409, 'cozy_week_cap', { max: COZY.maxPerWeek });
-      if (trainedOn(db, person, input.date)) throw new HttpError(409, 'cozy_already_active');
-      db.insert(cozyDay).values({ person, localDate: input.date }).onConflictDoNothing().run();
-    }
-  } else {
-    db.delete(cozyDay).where(and(eq(cozyDay.person, person), eq(cozyDay.localDate, input.date))).run();
-  }
-  return { date: input.date, on: input.on, usedThisMonth: count() };
-}
-
-/** A day that already has a strength workout or ≥ COZY.trainedActiveMin active minutes can't be made cozy afterwards. */
-function trainedOn(db: Db, person: PersonId, date: LocalDate): boolean {
-  const ex = db.select().from(dailyMetric)
-    .where(and(eq(dailyMetric.person, person), eq(dailyMetric.localDate, date), eq(dailyMetric.metric, 'exercise_min'))).get();
-  if (ex && ex.value >= COZY.trainedActiveMin) return true;
-  const rows = db.select().from(workout).where(and(eq(workout.person, person), eq(workout.localDate, date))).all();
-  return rows.some((w) => isStrengthWorkout({ ...w, includesStrength: w.includesStrength ?? null }));
-}
-
-// ---------- promise ----------
-export function setPromise(db: Db, person: PersonId, input: z.infer<typeof schemas.promise>): { weekKey: string } {
-  const weekKey = promiseTargetWeek(now());
-  if (isLocked(db, weekKey)) throw new HttpError(409, 'week_locked');
-  const values = { daysMask: input.daysMask, kind: input.kind, note: input.note ?? null, cheeredAt: null, blocker: null };
-  db.insert(weekPromise).values({ person, weekKey, ...values })
-    .onConflictDoUpdate({ target: [weekPromise.person, weekPromise.weekKey], set: values }).run();
-  return { weekKey };
-}
-
-export function cheerPromise(db: Db, person: PersonId): { weekKey: string } {
-  const partner = partnerOf(person);
-  for (const weekKey of [promiseTargetWeek(now()), weekKeyOf(today())]) {
-    const r = db.update(weekPromise).set({ cheeredAt: now().toISOString() })
-      .where(and(eq(weekPromise.person, partner), eq(weekPromise.weekKey, weekKey))).run();
-    if (r.changes === 1) return { weekKey };
-  }
-  throw new HttpError(404, 'no_promise');
-}
-
-/** "What got in the way?" — only the promiser, for the week being harvested (else this week). */
-export function setBlocker(db: Db, person: PersonId, text: string): { weekKey: string } {
-  const weekKey = harvestWeekKey(db, now()) ?? weekKeyOf(today());
-  const r = db.update(weekPromise).set({ blocker: text })
-    .where(and(eq(weekPromise.person, person), eq(weekPromise.weekKey, weekKey))).run();
-  if (r.changes !== 1) throw new HttpError(404, 'no_promise');
-  return { weekKey };
 }
 
 // ---------- confirmations ----------

@@ -1,7 +1,5 @@
-// The rules as data (PROPOSAL §3, ADRs 0008, 0009, 0011). Edit here, then `npm run recompute -- --dry-run`.
+// The rules as data (PROPOSAL §3, ADRs 0008, 0009, 0011, 0014). Edit here, then `npm run recompute -- --dry-run`.
 import type { PersonId, PersonTargets } from '#lib/types.ts';
-
-export const ZONE = 'Asia/Tokyo';
 
 export const MONEY = {
   yenPerFruit: 50,
@@ -33,14 +31,8 @@ export const STRENGTH = {
 /** Daily active-minute cap: min(maxMin, max(minMin, ½ × weekly target)) (ADR 0002 round 2). */
 export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
 
-/** Promise auto-check thresholds (ADR 0011). */
-export const PROMISE_RULES = { walkTypes: ['Outdoor Walk', 'Indoor Walk', 'Walking', 'Hiking'], walkAnyWorkoutMin: 30, anyWorkoutMin: 15 } as const;
-
-/** Rest day: no strength day, no workout ≥ longWorkoutMin, none ≥ hardWorkoutMin at ≥ hardHrFraction of 220 − age. */
+/** Rest day: a day with Health data, no strength day, no workout ≥ longWorkoutMin, none ≥ hardWorkoutMin at ≥ hardHrFraction of 220 − age. */
 export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77, longWorkoutMin: 45 } as const;
-
-/** Cozy Days: per month and per Mon–Sun week; only today or yesterday, and not on a day already trained. */
-export const COZY = { maxPerMonth: 4, maxPerWeek: 3, maxDaysBack: 1, trainedActiveMin: 30 } as const;
 
 export const CALIBRATION = { flatScore: 60, minDataDays: 6 } as const;
 

@@ -1,5 +1,5 @@
 // SQLite schema (Drizzle). Sources of truth that can't be recreated: ledger_entry, transfer, checkin,
-// cozy_day, promise, presence_event, raw_payload. Everything else is derivable from raw payloads.
+// presence_event, visit_confirmation, raw_payload. Everything else is derivable from raw payloads.
 import { sqliteTable, text, integer, real, primaryKey, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 
 const now = () => new Date().toISOString();
@@ -28,7 +28,7 @@ export const pairingCode = sqliteTable('pairing_code', {
 export const rawPayload = sqliteTable('raw_payload', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   person: text('person', { enum: ['A', 'B'] }).notNull(),
-  source: text('source', { enum: ['shortcut', 'presence'] }).notNull(),
+  source: text('source', { enum: ['shortcut'] }).notNull(),
   receivedAt: text('received_at').notNull().$defaultFn(now),
   bodyGz: text('body_gz').notNull(), // base64 gzip
   parseStatus: text('parse_status', { enum: ['ok', 'partial', 'error'] }).notNull(),
@@ -40,7 +40,7 @@ export const dailyMetric = sqliteTable(
   {
     person: text('person', { enum: ['A', 'B'] }).notNull(),
     localDate: text('local_date').notNull(),
-    metric: text('metric', { enum: ['steps', 'exercise_min', 'resting_hr', 'walking_hr'] }).notNull(),
+    metric: text('metric', { enum: ['steps', 'exercise_min'] }).notNull(),
     value: real('value').notNull(),
     updatedAt: text('updated_at').notNull().$defaultFn(now)
   },
@@ -102,31 +102,6 @@ export const checkin = sqliteTable(
   (t) => [uniqueIndex('checkin_unique').on(t.person, t.localDate, t.habitKey)]
 );
 
-export const cozyDay = sqliteTable(
-  'cozy_day',
-  {
-    person: text('person', { enum: ['A', 'B'] }).notNull(),
-    localDate: text('local_date').notNull(),
-    createdAt: text('created_at').notNull().$defaultFn(now)
-  },
-  (t) => [primaryKey({ columns: [t.person, t.localDate] })]
-);
-
-export const weekPromise = sqliteTable(
-  'week_promise',
-  {
-    person: text('person', { enum: ['A', 'B'] }).notNull(),
-    weekKey: text('week_key').notNull(),
-    daysMask: integer('days_mask').notNull(),
-    kind: text('kind', { enum: ['gym', 'pt', 'walk', 'any'] }).notNull(),
-    note: text('note'),
-    cheeredAt: text('cheered_at'),
-    blocker: text('blocker'),
-    createdAt: text('created_at').notNull().$defaultFn(now)
-  },
-  (t) => [primaryKey({ columns: [t.person, t.weekKey] })]
-);
-
 export const visibilityPref = sqliteTable(
   'visibility_pref',
   {
@@ -142,9 +117,7 @@ export const personPref = sqliteTable('person_pref', {
   locale: text('locale', { enum: ['ja', 'en'] }).notNull().default('ja'),
   villagerName: text('villager_name'),
   /** Animal Crossing villager key from the roster, e.g. 'goldie', 'raymond'. */
-  villager: text('villager'),
-  villagerSpecies: text('villager_species'),
-  villagerColor: text('villager_color')
+  villager: text('villager')
 });
 
 export const ledgerEntry = sqliteTable(

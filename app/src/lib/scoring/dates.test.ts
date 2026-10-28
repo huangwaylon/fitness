@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, inMonthDayRange, minutesBetween, nowInZone, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/scoring/dates.ts';
+import { addDays, inMonthDayRange, nowInZone, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/scoring/dates.ts';
 
 describe('toLocalDate', () => {
   it('flips to the next Tokyo day at 15:00 UTC', () => {
@@ -53,7 +53,7 @@ describe('week helpers', () => {
     expect(inMonthDayRange('2027-06-01', '06-01', '07-20')).toBe(true);
     expect(inMonthDayRange('2027-07-21', '06-01', '07-20')).toBe(false);
   });
-  it('minutesBetween across formats', () => {
-    expect(minutesBetween('2026-11-02 07:00:00 +0900', '2026-11-01T22:45:00Z')).toBe(45);
+  it('parses the compact-offset form', () => {
+    expect((parseInstant('2026-11-02 07:00:00 +0900') - parseInstant('2026-11-01T22:00:00Z')) / 60000).toBe(0);
   });
 });

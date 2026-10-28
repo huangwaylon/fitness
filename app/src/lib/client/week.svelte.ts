@@ -9,8 +9,6 @@ import { getJSON, postJSON, type ApiResult } from './api.ts';
 import { sampleWeek } from './fixtures.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
 
-export type PendingSpend = WeekView['jar']['pendingSpends'][number];
-
 type DemoMode = false | 'plain' | 'harvest';
 
 class WeekStore {
@@ -87,7 +85,7 @@ class WeekStore {
 
   /**
    * POST a mutation. `optimistic` edits the view immediately; on failure the previous view is
-   * restored. 409s are left to the caller (e.g. cozy_limit) without a generic toast.
+   * restored. 409s are left to the caller (e.g. insufficient_purse) without a generic toast.
    */
   async mutate<T = unknown>(path: string, body?: unknown, optimistic?: (v: WeekView) => void): Promise<ApiResult<T>> {
     const before = this.view ? ($state.snapshot(this.view) as WeekView) : null;

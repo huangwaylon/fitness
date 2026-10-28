@@ -7,7 +7,6 @@ export type LocalDate = string;
 export type WeekKey = string;
 
 export type FruitKey = 'peach' | 'coconut' | 'apple' | 'pear';
-export type PromiseKind = 'gym' | 'pt' | 'walk' | 'any';
 
 export interface DayMetrics {
   date: LocalDate;
@@ -46,13 +45,6 @@ export interface CheckinTick {
   habitKey: string;
 }
 
-export interface WeekPromise {
-  /** Mon=1, Tue=2, Wed=4 … Sun=64. */
-  daysMask: number;
-  kind: PromiseKind;
-  note?: string | null;
-}
-
 export interface PersonTargets {
   activeMinPerWeek: number;
   strengthDaysPerWeek: number;
@@ -73,7 +65,6 @@ export interface WeekInput {
   workouts: Workout[];
   visits: Visit[];
   checkins: CheckinTick[];
-  cozyDays: LocalDate[];
   calibration: boolean;
 }
 
@@ -84,7 +75,7 @@ export interface CategoryResult {
   maxMilli: number;
   /** Counted amount (minutes, days or ticks) after caps. */
   actual: number;
-  /** Prorated target in the same unit (may be fractional). */
+  /** Target in the same unit (fractional in 正月 easy weeks; Pear is prorated over 正月 pear-off days). */
   target: number;
 }
 
@@ -113,8 +104,6 @@ export interface WeekPayout {
   teamYen: number;
 }
 
-export type PromiseResult = 'kept' | 'open' | 'paused';
-
 // ---- View model returned by GET /api/week (server → UI). Partner fields are already privacy-filtered. ----
 
 export interface FruitView {
@@ -127,27 +116,14 @@ export interface FruitView {
   target?: number;
 }
 
-export interface PromiseView {
-  daysMask: number;
-  kind: PromiseKind;
-  note: string | null;
-  result: PromiseResult;
-  cheered: boolean;
-}
-
 export interface PersonWeekView {
   person: PersonId;
   villagerName: string;
+  /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
+  villager: string | null;
   score: number;
   fruits: Record<FruitKey, FruitView>;
   lastSyncAt: string | null;
-  promise: PromiseView | null;
-  cozyDaysThisMonth: number;
-  isCozyToday: boolean;
-  /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
-  villager?: string | null;
-  villagerSpecies: string | null;
-  villagerColor: string | null;
   /** Only present for `me`: eating answers are never shared. */
   habits?: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
 }
@@ -181,7 +157,6 @@ export interface HarvestView {
   payout: WeekPayout;
   /** Rung keys newly reached by this harvest. */
   rungsReached: string[];
-  promiseResults: Record<PersonId, PromiseResult | null>;
   confirmedBy: PersonId[];
 }
 

@@ -189,7 +189,7 @@ export function parseShortcut(raw: unknown): ParsedShortcut {
 
 export function ingestShortcut(db: Db, person: PersonId, bodyText: string): IngestResult & { unknownTypes?: string[] } {
   let unknownTypes: string[] = [];
-  const r = ingestWith(db, person, 'shortcut', bodyText, (raw) => {
+  const r = ingestWith(db, person, bodyText, (raw) => {
     const p = parseShortcut(raw);
     unknownTypes = p.unknownTypes;
     return p;
