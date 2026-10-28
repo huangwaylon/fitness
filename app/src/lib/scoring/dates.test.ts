@@ -7,7 +7,7 @@ describe('toLocalDate', () => {
     expect(toLocalDate('2026-11-01T15:00:00Z')).toBe('2026-11-02');
     expect(toLocalDate('2026-11-01T15:30:00.000Z')).toBe('2026-11-02');
   });
-  it('accepts HAE timestamps with compact offsets', () => {
+  it('accepts timestamps with compact offsets', () => {
     expect(toLocalDate('2026-11-02 07:15:00 +0900')).toBe('2026-11-02');
     expect(toLocalDate('2026-11-02 00:30:00 +0000')).toBe('2026-11-02');
     expect(toLocalDate('2026-11-01 23:30:00 -0800')).toBe('2026-11-02');

@@ -59,15 +59,14 @@ describe('pairing', () => {
 });
 
 describe('machine endpoints accept only bearer tokens', () => {
-  it('ingest: hae token ok, shortcut token / cookie / nothing rejected', async () => {
-    const hae = createDeviceToken(db, 'A', 'hae', 'phone').token;
-    const sc = createDeviceToken(db, 'A', 'shortcut', 'gym').token;
-    const ok = fakeEvent('/ingest/hae/A', { method: 'POST', headers: { authorization: `Bearer ${hae}` } });
+  it('ingest: shortcut token ok, cookie / nothing rejected', async () => {
+    const sc = createDeviceToken(db, 'A', 'shortcut', 'phone').token;
+    const ok = fakeEvent('/ingest/shortcut/A', { method: 'POST', headers: { authorization: `Bearer ${sc}` } });
     expect(await guard(ok, opts())).toBeNull();
     expect(ok.locals.person).toBe('A');
-    expect((await guard(fakeEvent('/ingest/hae/A', { method: 'POST', headers: { authorization: `Bearer ${sc}` } }), opts()))?.status).toBe(401);
-    expect((await guard(fakeEvent('/ingest/hae/A', { method: 'POST', cookie: pairA() }), opts()))?.status).toBe(401);
-    expect((await guard(fakeEvent('/ingest/hae/A', { method: 'POST' }), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST', headers: { authorization: 'Bearer isl_nope' } }), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST', cookie: pairA() }), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST' }), opts()))?.status).toBe(401);
   });
 
   it('presence: bearer header or {"token"} body', async () => {
@@ -82,9 +81,9 @@ describe('machine endpoints accept only bearer tokens', () => {
   });
 
   it('revoked tokens are rejected', async () => {
-    const { token, deviceId } = createDeviceToken(db, 'A', 'hae', 'phone');
+    const { token, deviceId } = createDeviceToken(db, 'A', 'shortcut', 'phone');
     revokeDevice(db, deviceId);
-    expect((await guard(fakeEvent('/ingest/hae/A', { method: 'POST', headers: { authorization: `Bearer ${token}` } }), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST', headers: { authorization: `Bearer ${token}` } }), opts()))?.status).toBe(401);
   });
 });
 
@@ -94,8 +93,8 @@ describe('/api/* accepts only the session cookie + Origin', () => {
     const e = fakeEvent('/api/week', { cookie });
     expect(await guard(e, opts())).toBeNull();
     expect(e.locals).toMatchObject({ person: 'A' });
-    const hae = createDeviceToken(db, 'A', 'hae', 'phone').token;
-    expect((await guard(fakeEvent('/api/week', { headers: { authorization: `Bearer ${hae}` } }), opts()))?.status).toBe(401);
+    const sc = createDeviceToken(db, 'A', 'shortcut', 'phone').token;
+    expect((await guard(fakeEvent('/api/week', { headers: { authorization: `Bearer ${sc}` } }), opts()))?.status).toBe(401);
     const res = await guard(fakeEvent('/api/week'), opts());
     expect(res?.status).toBe(401);
     expect(await res!.json()).toEqual({ error: 'unauthorized' });
@@ -142,7 +141,7 @@ describe('round 3 security fixes', () => {
   it('S3: percent-encoded paths are classified like the decoded route', async () => {
     const foreign = { method: 'POST', headers: { origin: 'https://evil.example' } };
     expect((await guard(fakeEvent('/%61pi/high-five', foreign), opts()))?.status).toBe(401);
-    expect((await guard(fakeEvent('/%69ngest/hae/A', { method: 'POST' }), opts()))?.status).toBe(401);
+    expect((await guard(fakeEvent('/%69ngest/shortcut/A', { method: 'POST' }), opts()))?.status).toBe(401);
     expect((await guard(fakeEvent('/%E0%A4%A', { method: 'GET' }), opts()))?.status).toBe(400);
   });
 });

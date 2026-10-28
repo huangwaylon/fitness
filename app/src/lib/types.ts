@@ -18,7 +18,7 @@ export interface DayMetrics {
 export interface Workout {
   extId: string;
   date: LocalDate;
-  /** HAE workout name, e.g. "Traditional Strength Training", "Yoga", "Walking". */
+  /** Canonical (English) workout name, e.g. "Traditional Strength Training", "Yoga", "Outdoor Walk". */
   type: string;
   startAt: string; // ISO with offset
   endAt: string;

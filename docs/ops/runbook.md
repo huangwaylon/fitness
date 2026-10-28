@@ -29,35 +29,18 @@ Upgrade: `git pull && docker compose up -d --build`. Migrations run automaticall
 
 Devices: `docker compose exec island node scripts/devices.ts` lists them. Add `revoke <id>` to revoke a lost phone or a leaked token.
 
-## 3. Health data from the phones
-
-**Recommended: iOS Shortcuts, free and built in.** Follow [shortcut-health-sync.md](shortcut-health-sync.md): it syncs each time you open LINE (or similar), at most hourly. Health Auto Export below is the alternative; both can run at once, since the server merges them (same workout key, and day totals only rise).
-
-### 3b. Health Auto Export (alternative; per phone, Premium via Family Sharing)
-Create a token with `docker compose exec island node scripts/token.ts A hae "A iPhone HAE"`. It is printed once.
-Set up **two REST API automations**:
-
-| Setting | `island-metrics` | `island-workouts` |
-|---|---|---|
-| URL | `https://island.<tailnet>.ts.net/ingest/hae/A` | same |
-| Header | `Authorization: Bearer isl_…` | same |
-| Data | Health Metrics: Step Count, Apple Exercise Time, Resting Heart Rate, Walking Heart Rate Average | Workouts (no route, no detailed metrics) |
-| Format | JSON, **Export Version 2** | JSON, Export Version 2 |
-| Summarize Data | **On** (daily totals) | n/a |
-| Date range | **Default (previous day + today)** | Default |
-| Interval | the shortest available | the shortest available |
-
-Also add the HAE Automations widget to the Home Screen and keep Background App Refresh on. Each run re-sends yesterday, so a missed run fixes itself. Check the Activity Log in HAE, and check "last synced" in the app.
+## 3. Health data from the phones (iOS Shortcuts)
+Follow [shortcut-health-sync.md](shortcut-health-sync.md). A built-in Shortcut sends steps, exercise minutes and workouts to `/ingest/shortcut/A` (or `/B`) when you open an everyday app, at most hourly. No third-party app is needed. Token: `docker compose exec island node scripts/token.ts A shortcut "A iPhone"`; the same token works for the gym Shortcuts below.
 
 ## 4. Gym Arrive/Leave Shortcuts (per phone)
-Token: `node scripts/token.ts A shortcut "A gym"`. Place keys come from `PLACES` in `.env`; the defaults are `anytime` (A), and `pt_studio` and `anytime_b` (B).
+Token: the phone's Shortcuts token from §3 (or a separate one: `node scripts/token.ts A shortcut "A gym"`). Place keys come from `PLACES` in `.env`; the defaults are `anytime` (A), and `pt_studio` and `anytime_b` (B).
 In **Shortcuts → Automation**, create a **new Arrive automation** at the gym address. Choose **Run Immediately** and allow it to run while locked. Add the action **Get Contents of URL**:
 - URL `https://island.<tailnet>.ts.net/api/presence`, Method **POST**
 - Headers: `Authorization` = `Bearer isl_…`
 - Request Body **JSON**: `place` = `anytime`, `event` = `arrive`
 
 Duplicate it as a **Leave** automation with `event` = `leave`. If adding the header is awkward, put `token` = `isl_…` in the JSON body instead [U].
-After a visit of 30 minutes or more with no Watch strength workout, the app sends 「筋トレとして記録する?」 about 10 minutes after Leave. Notifications are capped at one per person per day. The visit also appears as a pending confirmation in the app.
+After a visit of 30 minutes or more with no Watch strength workout, the app shows 「筋トレとして記録する？」 as a card on the Island page (in-app only, no push).
 
 ## 5. Schedules (JST, in-process, idempotent)
 - **Sun 19:30:** provisional pay (`earn:*` ledger entries). The harvest overlay opens.
@@ -68,13 +51,13 @@ After a visit of 30 minutes or more with no Watch strength workout, the app send
 ## 6. Backups (the ledger can't be recreated)
 - Every night, `scripts/backup.sh` makes a `sqlite3 .backup` snapshot, checks it with an integrity check, then runs `restic backup` to a bucket **outside Kantō**, encrypted on the client side. Run it from launchd or cron on the Mac host, with `RESTIC_REPOSITORY`, `RESTIC_PASSWORD_FILE` and the bucket credentials set. Keep the restic password somewhere off the Mac as well, such as a password manager.
 - **Monthly restore drill:** `scripts/restore-drill.sh` restores the latest snapshot to a temp folder, runs an integrity check and prints the ledger totals. Compare the totals with the Jar screen.
-- Health metrics can be re-sent from the phones (set HAE to "Previous 7 Days" once). Check-ins, promises, presence and the ledger exist only in the DB.
+- Health metrics can be re-sent from the phones (run the baseline Shortcut from shortcut-health-sync.md §5). Check-ins, promises, presence and the ledger exist only in the DB.
 
 ## 7. Troubleshooting
 | Symptom | Check |
 |---|---|
-| HAE shows 401 | Token revoked or mistyped; the URL person must match the token's person (403 `person_mismatch`) |
-| HAE shows 413 | Turn on Summarize Data and the Default range |
+| Shortcut gets 401 | Token revoked or mistyped; the URL person must match the token's person (403 `person_mismatch`) |
+| Shortcut gets 413 | The body is over 20 MB: shorten the date range |
 | PWA asks to pair again | Cookie lost (reinstalled app); run `pair.ts` again |
 | No pushes | `VAPID_*` set? Reminders enabled inside the installed app? Only one push per day by design |
 | Logs | `docker compose logs -f island`. Payload bodies are never logged |

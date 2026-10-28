@@ -163,7 +163,7 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 
 ```
  iPhone A / iPhone B
- ├─ Apple Watch → Apple Health ─► Health Auto Export (auto REST)  ──┐
+ ├─ Apple Watch → Apple Health ─► Shortcuts health sync (auto POST) ┐
  ├─ Shortcuts: arrive/leave gym (runs locked, no prompt) ───────────┤  public HTTPS (Tailscale Funnel)
  └─ PWA (ja/en) ◄── web push ───────────────────────────────────────┤  nothing installed on phones
                                                                     ▼
@@ -175,16 +175,16 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 
 | Area | Choice |
 |---|---|
-| Health data | **Health Auto Export** (~¥4,000 one-time, Family Sharing) → automatic REST. v1: native SwiftUI companion (HealthKit background), $99/yr dev program. |
+| Health data | **iOS Shortcuts** (built in, ¥0): an App-trigger automation reads Health samples and POSTs them when the phone is in use, at most hourly ([ADR 0012](decisions/0012-shortcuts-health-sync.md)). v1 option: native SwiftUI companion (HealthKit background), $99/yr dev program. |
 | Gym visits | **Shortcuts Arrive/Leave automation** per gym (Anytime branch for A; the PT studio for B), allowed to run while locked → `POST /api/presence`. A visit ≥ 30 min with no Watch workout → push 「筋トレとして記録する?」 → one tap. Fallbacks: an evening chip, then a Sunday "anything we missed?" row. (Anytime Fitness Japan has no API; the Wallet-pass trigger gets tested in Phase 0.) |
 | Server | SvelteKit (node) + SQLite + Drizzle in Docker. Rules in a TypeScript config + a `recompute --dry-run` CLI (no admin UI in the MVP). |
 | Network | **Tailscale Funnel on the Mac only**: a public `https://<mac>.<tailnet>.ts.net` URL. ¥0, no domain, no port forwarding (Japanese fibre is often MAP-E / DS-Lite anyway), and TLS terminates on the Mac. **Nothing to install on the phones.** Runner-up: Cloudflare Tunnel (~$10/yr domain). Rejected: ngrok (free warning page breaks the PWA; $10/month to remove) and GitHub Pages + Sheets (public site, no request headers, no push, health data in Google). |
-| Auth | **One-time 6-digit pairing code** entered in the installed PWA → long-lived HttpOnly signed cookie per device. **Per-device revocable bearer tokens** for HAE and the Shortcuts. Rate limiting and lockout. No admin endpoints exposed. |
+| Auth | **One-time 6-digit pairing code** entered in the installed PWA → long-lived HttpOnly signed cookie per device. **Per-device revocable bearer tokens** for the Shortcuts. Rate limiting and lockout. No admin endpoints exposed. |
 | Money | Integer-yen ledger, append-only, with idempotency keys (`earn`, `topup`) and buckets `jar` and `purse`. No bank APIs; there's a payday "moved ✓". |
 | i18n | `ja.json` / `en.json` message catalogs from day one. `¥128,000` with a half-width ¥ sign. Dates as `10月28日(水)`. |
 | Resilience | UPS + auto-restart; Litestream/restic client-side-encrypted to a bucket outside Kantō; monthly restore drill. A Mac mini rather than a Pi, because of summer heat. |
 
-**MVP API (9 endpoints):** `POST /ingest/hae/:person` · `POST /api/presence` · `GET /api/week` · `POST /api/checkin` · `POST /api/cozy-day` · `POST /api/promise` · `POST /api/purse/spend` · `POST /api/transfer/done` · `POST /api/push/subscribe`.
+**MVP API (9 endpoints):** `POST /ingest/shortcut/:person` · `POST /api/presence` · `GET /api/week` · `POST /api/checkin` · `POST /api/cozy-day` · `POST /api/promise` · `POST /api/purse/spend` · `POST /api/transfer/done` · `POST /api/push/subscribe`.
 
 **Privacy:** the partner sees fruit and % only. Raw numbers are opt-in. Eating answers are never shared. All of this is enforced server-side. No third-party analytics and no cloud AI on health data.
 
@@ -194,10 +194,10 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 
 | Phase | Effort | Scope | Done when |
 |---|---|---|---|
-| **0 · Spike** | 1 evening | Tailscale Funnel on the Mac + pairing; HAE automations (bearer token) + the one-time 12-week export; gym Arrive/Leave Shortcuts; test the Wallet-pass trigger at Anytime; save real payloads | Data from both phones and one gym visit land on the server |
+| **0 · Spike** | 1 evening | Tailscale Funnel on the Mac + pairing; Shortcuts health sync (bearer token, App trigger); gym Arrive/Leave Shortcuts; test the Wallet-pass trigger at Anytime; save real payloads | Data from both phones and one gym visit land on the server |
 | **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay + promise → ¥ ledger; 3 pages in ja/en; check-in; Cozy Day; web push; backups | 2 weeks hands-off, ≤ 1 missed day per person |
 | *Calibration* | 2 weeks | Flat participation pay; baselines measured; B's targets agreed with her trainer | Season 1 starts |
-| **2 · v1** | ~4–6 weekends | Season re-tune and recap, pause weeks, partner-invite idea, quiet island upgrades, **native companion** (HealthKit sync, widget with a check-in button, Watch complication) | HAE retired; widget used daily |
+| **2 · v1** | ~4–6 weekends | Season re-tune and recap, pause weeks, partner-invite idea, quiet island upgrades, **native companion** (HealthKit sync, widget with a check-in button, Watch complication) | Widget used daily |
 | **3 · Later** | seasonal | One seasonal event per season, milestone shelf, year-end recap | Still opened weekly in month 12 |
 
 ---
@@ -223,6 +223,6 @@ Detail: [software-engineer.md](team/software-engineer.md), [software-engineer-ro
 
 1. **Rate:** is a maximum of ≈ ¥624,000/yr savings + ¥104,000/yr treats comfortable? (One setting: ¥50/fruit.)
 2. **Gyms:** which Anytime branch, and where is B's PT studio? OK to use location for gym detection? How many PT sessions a week? Would the trainer like a monthly summary?
-3. **Costs:** ~¥4,000 one-time (Health Auto Export) now; $99/yr (Apple Developer) for the v1 native companion?
+3. **Costs:** ¥0 now (Shortcuts); $99/yr (Apple Developer) only if we build the v1 native companion?
 4. **Villagers:** animal, colour and name for each of you.
 5. **Trips:** any planned for 正月 / GW / Obon (these become paused or easy weeks)?

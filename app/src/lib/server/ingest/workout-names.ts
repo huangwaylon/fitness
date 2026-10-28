@@ -1,5 +1,5 @@
-// Workout names arrive in English from HAE but may be localised (e.g. Japanese) from Shortcuts on a phone set to
-// Japanese. Normalise to the English names the rules use (rules.ts STRENGTH / PROMISE_RULES).
+// Shortcuts returns workout names in the phone's language (Japanese here). Normalise to the English names the
+// rules use (rules.ts STRENGTH / PROMISE_RULES).
 import { createHash } from 'node:crypto';
 
 /** Japanese (and alternate English) display names → canonical English names. Unknown names pass through. */
@@ -42,8 +42,8 @@ export function isUnknownLocalisedType(name: string): boolean {
 }
 
 /**
- * Source-independent workout id: canonical type + start time to the minute (UTC). HAE and the Shortcut can both
- * send the same workout, and must land on the same row.
+ * Stable workout id: canonical type + start time to the minute (UTC), so re-sends (or a phone switching language)
+ * land on the same row.
  */
 export function workoutKey(type: string, startIso: string): string {
   const minute = new Date(Math.floor(Date.parse(startIso) / 60000) * 60000).toISOString();

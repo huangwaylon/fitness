@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Db } from '#lib/server/db/index.ts';
 import { dailyMetric, rawPayload, workout } from '#lib/server/db/schema.ts';
-import { ingestHae } from '#lib/server/ingest/hae.ts';
 import { ingestShortcut, looseDate, looseNumber } from '#lib/server/ingest/shortcut.ts';
 import { canonicalWorkoutType } from '#lib/server/ingest/workout-names.ts';
 import { guard } from '#lib/server/guard.ts';
@@ -53,7 +52,7 @@ describe('Shortcut ingest', () => {
     expect(metrics()).toEqual([{ d: '2026-10-27', m: 'exercise_min', v: 40 }, { d: '2026-10-27', m: 'steps', v: 9000 }]);
   });
 
-  it('workouts: Japanese names normalised, unknown ones reported, same row as HAE for the same workout', () => {
+  it('workouts: Japanese names normalised, unknown ones reported, re-sends land on the same row', () => {
     const r = ingestShortcut(db, 'A', JSON.stringify({
       workouts: {
         types: ['伝統的な筋力トレーニング', '屋外ウォーキング', 'カバディ'],
@@ -67,8 +66,8 @@ describe('Shortcut ingest', () => {
     expect(ws.map((w) => [w.type, w.durationMin, w.avgHr])).toEqual([
       ['Traditional Strength Training', 52, 118], ['Outdoor Walk', 31.5, null], ['カバディ', 30, null]
     ]);
-    // HAE sends the same strength workout (23:30 UTC Nov 1 = 08:30 JST, English name): still one row.
-    ingestHae(db, 'A', JSON.stringify({ data: { workouts: [{ id: 'hae-1', name: 'Traditional Strength Training', start: '2026-11-01 23:30:00 +0000', end: '2026-11-02 00:22:00 +0000', duration: 3120 }] } }));
+    // Same strength workout again, in English and UTC (23:30 UTC Nov 1 = 08:30 JST): still one row.
+    ingestShortcut(db, 'A', JSON.stringify({ workouts: [{ type: 'Traditional Strength Training', start: '2026-11-01 23:30:40 +0000', end: '2026-11-02 00:22:10 +0000' }] }));
     expect(db.select().from(workout).all()).toHaveLength(3);
   });
 
@@ -77,12 +76,10 @@ describe('Shortcut ingest', () => {
     expect(db.select().from(rawPayload).get()!.parseStatus).toBe('error');
   });
 
-  it('only the Shortcuts token may post to /ingest/shortcut', async () => {
+  it('/ingest/shortcut needs a Shortcuts bearer token', async () => {
     const sc = createDeviceToken(db, 'A', 'shortcut', 'iPhone').token;
-    const hae = createDeviceToken(db, 'A', 'hae', 'iPhone').token;
     expect(await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST', headers: { authorization: `Bearer ${sc}` } }), { db: () => db })).toBeNull();
-    expect((await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST', headers: { authorization: `Bearer ${hae}` } }), { db: () => db }))?.status).toBe(401);
-    expect((await guard(fakeEvent('/ingest/hae/A', { method: 'POST', headers: { authorization: `Bearer ${sc}` } }), { db: () => db }))?.status).toBe(401);
+    expect((await guard(fakeEvent('/ingest/shortcut/A', { method: 'POST' }), { db: () => db }))?.status).toBe(401);
   });
 
   it('canonical names leave English alone', () => {
