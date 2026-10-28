@@ -1,20 +1,22 @@
 <script lang="ts">
   // Dev art gallery (Builder A, style guide v3 §10): every official art key next to its fan-art
   // fallback, the villager roster, しずえ poses, money marks, fruit rings, emotes, and the island
-  // in every season × day/night (iframes of ./scene). Guarded by +page.ts (dev only).
-  import { resolve } from '$app/paths';
+  // in every season × day/night. Guarded by +page.ts (dev only).
+  import { onMount } from 'svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import Villager from '#lib/components/Villager.svelte';
   import Juniper from '#lib/components/Juniper.svelte';
   import Emote from '#lib/components/Emote.svelte';
   import LeafCoin from '#lib/components/LeafCoin.svelte';
   import FruitRing from '#lib/components/FruitRing.svelte';
+  import IslandScene from '#lib/components/IslandScene.svelte';
   import IsabelleArt from '#lib/villagers/IsabelleArt.svelte';
   import VillagerFallback from '#lib/villagers/VillagerFallback.svelte';
   import { EXPRESSIONS } from '#lib/villagers/species.ts';
   import { ROSTER, ROSTER_IDS, isRosterId } from '#lib/villagers/roster.ts';
   import { art, artKeys, phoneArt, type HostPose, type PhoneApp } from '#lib/client/assets.ts';
   import type { FruitKey } from '#lib/types.ts';
+  import { week } from '#lib/client/week.svelte.ts';
 
   const KEYS = artKeys();
   const GROUPS = [...new Set(KEYS.map((k) => k.split('/')[0]))];
@@ -28,7 +30,33 @@
     { s, n: false },
     { s, n: true }
   ]);
-  const sceneUrl = (s: string, n: boolean) => `${resolve('/dev/characters/scene')}?s=${s}&n=${n ? 1 : 0}`;
+
+  // The scene palette lives on :root[data-season][data-theme] (tokens.css), so to show all eight
+  // side by side we briefly apply each combination, snapshot every custom property those rules
+  // set, and replay the snapshot as inline variables on that scene's wrapper.
+  let sceneVars = $state<string[]>([]);
+  onMount(() => {
+    const names = new Set<string>();
+    for (const sheet of Array.from(document.styleSheets)) {
+      let rules: CSSRuleList;
+      try { rules = sheet.cssRules; } catch { continue; }
+      for (const r of Array.from(rules)) {
+        if (r instanceof CSSStyleRule && /:root\[data-(season|theme|tod)/.test(r.selectorText)) {
+          for (const n of Array.from(r.style)) if (n.startsWith('--')) names.add(n);
+        }
+      }
+    }
+    const root = document.documentElement;
+    const saved = { ...root.dataset };
+    sceneVars = SCENES.map(({ s, n }) => {
+      root.dataset.season = s;
+      root.dataset.theme = n ? 'night' : 'day';
+      root.dataset.tod = n ? 'night' : 'day';
+      const cs = getComputedStyle(root);
+      return [...names].map((k) => `${k}:${cs.getPropertyValue(k)}`).join(';');
+    });
+    Object.assign(root.dataset, saved);
+  });
 
   /** What a key falls back to (for the side-by-side column). */
   function fbKind(key: string): 'villager' | 'villager-head' | 'host' | 'host-head' | 'fruit' | 'coin' | 'none' {
@@ -163,12 +191,14 @@
   <section>
     <h2>Island · season × day / night</h2>
     <div class="scenes">
-      {#each SCENES as sc (sc.s + sc.n)}
-        <figure>
-          <iframe title="{sc.s} {sc.n ? 'night' : 'day'}" src={sceneUrl(sc.s, sc.n)} loading="lazy"></iframe>
-          <figcaption>{sc.s} · {sc.n ? 'night' : 'day'}</figcaption>
-        </figure>
-      {/each}
+      {#if week.view}
+        {#each SCENES as sc, i (sc.s + sc.n)}
+          <figure>
+            <div class="sc" style={sceneVars[i] ?? ''}><IslandScene view={week.view} season={sc.s} night={sc.n} /></div>
+            <figcaption>{sc.s} · {sc.n ? 'night' : 'day'}</figcaption>
+          </figure>
+        {/each}
+      {/if}
     </div>
   </section>
 </main>
@@ -197,5 +227,8 @@
   .amt { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 700; font-size: 1.25rem; }
   .plain { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; }
   .scenes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  iframe { width: 100%; aspect-ratio: 390 / 540; border: 2px solid var(--edge); border-radius: 14px; background: var(--bg); }
+  .sc { width: 176px; aspect-ratio: 390 / 540; border: 2px solid var(--edge); border-radius: 14px; overflow: hidden; background: var(--bg); }
+  /* Render at phone width, then zoom down, so the min tap sizes don't distort the thumbnail. */
+  .sc > :global(*) { width: 390px; zoom: .441; }
+  .scenes figure { align-content: start; }
 </style>

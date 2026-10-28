@@ -39,6 +39,7 @@
     season: seasonProp, night: nightProp
   }: Props = $props();
 
+  const uid = $props.id(); // unique SVG paint-server ids (several scenes can share a page)
   const FRUITS: FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
   const me = $derived(view.people[view.me]);
   const partner = $derived(view.people[view.partner]);
@@ -115,28 +116,25 @@
 <div class="scene" class:night data-season-art={season}>
   <svg class="art" viewBox="0 0 390 540" aria-hidden="true">
     <defs>
-      <linearGradient id="isl-sky" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="{uid}-sky" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" class="sky-top" /><stop offset="1" class="sky-bottom" />
       </linearGradient>
-      <pattern id="isl-check" width="28" height="28" patternUnits="userSpaceOnUse"
+      <pattern id="{uid}-check" width="28" height="28" patternUnits="userSpaceOnUse"
         patternTransform="translate(195 430) scale(1 .55) rotate(45)">
         <rect width="28" height="28" class="g1" />
         <rect width="14" height="14" class="g2" /><rect x="14" y="14" width="14" height="14" class="g2" />
       </pattern>
-      <radialGradient id="isl-round" cx=".5" cy=".38" r=".62">
+      <radialGradient id="{uid}-round" cx=".5" cy=".38" r=".62">
         <stop offset=".55" stop-color="#fff" stop-opacity="0" />
         <stop offset="1" stop-color="#1E3A1E" stop-opacity=".16" />
       </radialGradient>
-      <radialGradient id="isl-shine" cx=".5" cy=".5" r=".5">
-        <stop offset="0" stop-color="#fff" stop-opacity=".22" /><stop offset="1" stop-color="#fff" stop-opacity="0" />
-      </radialGradient>
-      <clipPath id="isl-jarbody">
+      <clipPath id="{uid}-jarbody">
         <path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" />
       </clipPath>
     </defs>
 
     <!-- sky -->
-    <rect width="390" height="340" fill="url(#isl-sky)" />
+    <rect width="390" height="340" fill="url(#{uid}-sky)" />
     {#if night}
       <g class="stars">
         {#each STARS as [x, y], i (i)}
@@ -170,8 +168,8 @@
     <!-- island: beach ring, cliff band, curved checkered top -->
     <ellipse cx="195" cy="448" rx="198" ry="100" class="beach" />
     <ellipse cx="195" cy="442" rx="186" ry="92" class="cliff" />
-    <ellipse cx="195" cy="430" rx="186" ry="92" fill="url(#isl-check)" />
-    <ellipse cx="195" cy="430" rx="186" ry="92" fill="url(#isl-round)" />
+    <ellipse cx="195" cy="430" rx="186" ry="92" fill="url(#{uid}-check)" />
+    <ellipse cx="195" cy="430" rx="186" ry="92" fill="url(#{uid}-round)" />
     <ellipse cx="195" cy="430" rx="186" ry="92" class="rim" />
 
     {#each TUFTS as [x, y], i (i)}
@@ -209,7 +207,7 @@
     {#key jarWiggle}
       <g class="jar" class:wiggle={jarWiggle > 0} transform="translate(168 372)">
         <path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" class="glass" />
-        <g clip-path="url(#isl-jarbody)">
+        <g clip-path="url(#{uid}-jarbody)">
           {#if fill > 0}
             <rect x="0" y={coinTop + 3} width="54" height="70" fill="#F7C548" />
             {#each Array.from({ length: Math.ceil((66 - coinTop) / 6) + 1 }) as _, row (row)}
