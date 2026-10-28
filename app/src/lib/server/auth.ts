@@ -8,7 +8,7 @@ import { now } from '#lib/server/clock.ts';
 
 export const SESSION_COOKIE = '__Host-session';
 export const SESSION_MAX_AGE_S = 365 * 24 * 3600;
-export const PAIRING_TTL_MS = 10 * 60 * 1000;
+const PAIRING_TTL_MS = 10 * 60 * 1000;
 export const PAIRING_MAX_ATTEMPTS = 10;
 
 export type DeviceKind = 'pwa' | 'shortcut';
@@ -22,7 +22,7 @@ function newSecret(): string {
   return randomBytes(32).toString('base64url');
 }
 
-export function safeEqualHex(a: string, b: string): boolean {
+function safeEqualHex(a: string, b: string): boolean {
   const ba = Buffer.from(a, 'hex');
   const bb = Buffer.from(b, 'hex');
   return ba.length === bb.length && timingSafeEqual(ba, bb);

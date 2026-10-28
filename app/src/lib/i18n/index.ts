@@ -2,6 +2,7 @@
 import ja from './ja.json';
 import en from './en.json';
 import { i18n, setLocale, type Locale } from './state.svelte.ts';
+import { dateMs } from '#lib/scoring/dates.ts';
 
 export { i18n, setLocale, type Locale };
 
@@ -19,7 +20,7 @@ function interpolate(msg: string, params?: Params): string {
 }
 
 /** True when the key exists in the current (or default) catalog. */
-export function has(key: string, locale: Locale = i18n.locale): boolean {
+function has(key: string, locale: Locale = i18n.locale): boolean {
   return key in catalogs[locale] || key in catalogs.ja;
 }
 
@@ -48,41 +49,13 @@ export function formatYen(amount: number): string {
   return s.replace(/￥/g, '¥');
 }
 
-/** Plain grouped number (no currency). */
-export function formatNumber(n: number): string {
-  return new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 }).format(n);
-}
-
-/** Parse `YYYY-MM-DD` as a calendar date (UTC midnight, formatted in UTC so it never shifts). */
-export function parseLocalDate(d: string): Date {
-  const [y, m, day] = d.split('-').map(Number);
-  return new Date(Date.UTC(y, m - 1, day));
-}
-
-/** ISO weekday 1 (Mon) … 7 (Sun) of a `YYYY-MM-DD`. */
-export function isoWeekday(d: string): number {
-  const wd = parseLocalDate(d).getUTCDay();
-  return wd === 0 ? 7 : wd;
-}
-
-export function addDays(d: string, n: number): string {
-  const dt = parseLocalDate(d);
-  dt.setUTCDate(dt.getUTCDate() + n);
-  return dt.toISOString().slice(0, 10);
-}
-
 /** `10月28日(水)` / `Wed, Oct 28`. */
 export function formatDate(d: string, locale: Locale = i18n.locale): string {
-  const dt = parseLocalDate(d);
+  const dt = new Date(dateMs(d)); // UTC midnight, formatted in UTC so it never shifts
   if (locale === 'ja') {
-    return `${dt.getUTCMonth() + 1}月${dt.getUTCDate()}日(${t('weekday.' + isoWeekday(d), undefined, 'ja')})`;
+    return `${dt.getUTCMonth() + 1}月${dt.getUTCDate()}日(${t('weekday.' + (dt.getUTCDay() || 7), undefined, 'ja')})`;
   }
   return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(dt);
-}
-
-/** Short weekday label for a date (`水` / `Wed`). */
-export function weekdayShort(d: string): string {
-  return t('weekday.' + isoWeekday(d));
 }
 
 const ZONE = 'Asia/Tokyo';

@@ -24,7 +24,7 @@ export function openDb(path = process.env.DATABASE_PATH ?? './data/island.db'): 
   return db;
 }
 
-export function seedPlaces(db: Db): void {
+function seedPlaces(db: Db): void {
   for (const p of loadPlaces()) {
     db.insert(schema.place)
       .values(p)

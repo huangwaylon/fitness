@@ -6,9 +6,9 @@ import { ledgerEntry, weekLock } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 import { computePayout } from '#lib/server/week.ts';
 
-export interface BucketKey { bucket: 'jar' | 'purse'; layer: 'A' | 'B' | 'team' | null; person: PersonId | null; slug: string }
+interface BucketKey { bucket: 'jar' | 'purse'; layer: 'A' | 'B' | 'team' | null; person: PersonId | null; slug: string }
 
-export const BUCKETS: BucketKey[] = [
+const BUCKETS: BucketKey[] = [
   { bucket: 'jar', layer: 'A', person: 'A', slug: 'jar:A' },
   { bucket: 'jar', layer: 'B', person: 'B', slug: 'jar:B' },
   { bucket: 'jar', layer: 'team', person: null, slug: 'jar:team' },
@@ -16,7 +16,7 @@ export const BUCKETS: BucketKey[] = [
   { bucket: 'purse', layer: null, person: 'B', slug: 'purse:B' }
 ];
 
-export function amountFor(p: WeekPayout, k: BucketKey): number {
+function amountFor(p: WeekPayout, k: BucketKey): number {
   switch (k.slug) {
     case 'jar:A': return p.A.fruitYen;
     case 'jar:B': return p.B.fruitYen;
@@ -28,7 +28,7 @@ export function amountFor(p: WeekPayout, k: BucketKey): number {
 }
 
 /** Sum of earn + topup already written for a bucket/week. */
-export function paidFor(db: Db, weekKey: WeekKey, k: BucketKey): { paid: number; hasEarn: boolean } {
+function paidFor(db: Db, weekKey: WeekKey, k: BucketKey): { paid: number; hasEarn: boolean } {
   const rows = db.select().from(ledgerEntry)
     .where(and(
       eq(ledgerEntry.weekKey, weekKey), eq(ledgerEntry.bucket, k.bucket), inArray(ledgerEntry.kind, ['earn', 'topup']),
@@ -38,7 +38,7 @@ export function paidFor(db: Db, weekKey: WeekKey, k: BucketKey): { paid: number;
   return { paid: rows.reduce((s, r) => s + r.amountYen, 0), hasEarn: rows.some((r) => r.kind === 'earn') };
 }
 
-export interface SettleLine { slug: string; computed: number; paid: number; written: number }
+interface SettleLine { slug: string; computed: number; paid: number; written: number }
 export interface SettleResult { weekKey: WeekKey; mode: 'provisional' | 'final'; skipped?: 'locked'; lines: SettleLine[] }
 
 /**

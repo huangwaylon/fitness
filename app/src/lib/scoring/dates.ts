@@ -30,8 +30,8 @@ function ymd(d: Date): LocalDate {
   return `${y}-${m}-${day}`;
 }
 
-/** LocalDate → epoch ms at UTC midnight (used only for calendar arithmetic). */
-function dateMs(date: LocalDate): number {
+/** LocalDate → epoch ms at UTC midnight (for calendar arithmetic; format the result in UTC). */
+export function dateMs(date: LocalDate): number {
   const m = DATE_RE.exec(date);
   if (!m) throw new Error(`Invalid LocalDate: ${date}`);
   return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));

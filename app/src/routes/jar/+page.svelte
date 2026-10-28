@@ -9,7 +9,8 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { spendPurse, approveSpend, transferDone } from '#lib/client/actions.ts';
   import { MONEY, SEASONS } from '#lib/config/rules.ts';
-  import { t, formatYen, juniperLine, parseLocalDate } from '#lib/i18n/index.ts';
+  import { t, formatYen, juniperLine } from '#lib/i18n/index.ts';
+  import { dateMs } from '#lib/scoring/dates.ts';
 
   const TREATS = [
     { key: 'cafe', yen: 2000, icon: 'i-cafe', vb: '0 0 48 48' },
@@ -38,8 +39,8 @@
   const weeks = $derived.by(() => {
     if (!jar || !view) return 1;
     if (jar.weeks) return jar.weeks;
-    const start = parseLocalDate(SEASONS[0].from).getTime() - 14 * 86400000; // incl. 2 calibration weeks
-    const since = Math.floor((parseLocalDate(view.weekKey).getTime() - start) / (7 * 86400000));
+    const start = dateMs(SEASONS[0].from) - 14 * 86400000; // incl. 2 calibration weeks
+    const since = Math.floor((dateMs(view.weekKey) - start) / (7 * 86400000));
     const floor = Math.ceil(Math.max(jar.layers.A / MONEY.yenPerFruit / 100, jar.layers.B / MONEY.yenPerFruit / 100, jar.layers.team / MONEY.teamYenPerFruit / 100));
     return Math.max(1, since, floor);
   });

@@ -2,7 +2,7 @@
 // Same origin (the Mac serves the UI): the HttpOnly session cookie. GitHub Pages build: the API is another origin
 // (VITE_API_BASE), where Safari drops cross-site cookies, so the session is a bearer token kept in localStorage.
 
-export const API_BASE = (import.meta.env.VITE_API_BASE ?? '').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_BASE ?? '').replace(/\/$/, '');
 const crossOrigin = API_BASE !== '';
 const SESSION_KEY = 'island.session';
 

@@ -5,7 +5,8 @@
   import Avatar from './Avatar.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
-  import { t, addDays, formatDate } from '#lib/i18n/index.ts';
+  import { t, formatDate } from '#lib/i18n/index.ts';
+  import { addDays } from '#lib/scoring/dates.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { inMonthDayRange } from '#lib/scoring/dates.ts';
 
