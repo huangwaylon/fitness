@@ -143,7 +143,7 @@ Detail: [ui-ux-designer.md](team/ui-ux-designer.md), [style-guide.md](design/sty
 |---|---|
 | 🏝️ **島 (Island)**, home | Two villagers and two trees. Each tree shows this week's 5 fruits ripening, plus a big **57/85**. The combined jar total. One Juniper line. **One button: 今夜のチェック (evening check-in).** Tap your partner's tree to send a high-five. |
 | 🫙 **旅の壺 (Jar)** | A boat on a simple route to the destination (e.g. Okinawa), with real milestones (flights, hotel). Per-person and team layers, the Treat Purse, and a short yen treat list. A quiet "≈ ¥ this week" line. A monthly "moved ✓" button for the real bank transfer. |
-| ⚙️ **設定 (Settings)** | Language 日本語/English, villager (species, colour, name), privacy, Cozy Day, gym locations. |
+| 💞 **ふたり (Us)** | Partner view (fruit and %), promise history, goals, Cozy Day / pause, Health sync status. Settings live here: 言語/Language, villager (species, colour, name), privacy, gym locations. |
 | 🌙 **日曜の収穫 (Sunday harvest)**, overlay | ≤ 60 s: each person's score → yen into the jar → team part → purse → set next week's promise → both tap 「壺に入れる」. |
 | ✅ Check-in sheet | Three big toggles (e.g. 野菜を2食で · 甘い飲み物なし · 減塩デー), plus a neutral 「おやつ OK」 chip, a for-partner-too option and a 48 h fill-in. |
 
