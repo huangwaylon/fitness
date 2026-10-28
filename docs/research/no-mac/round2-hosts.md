@@ -1,5 +1,5 @@
 # No Mac, round 2: serverless hosts other than Workers, and UI hosting for a private repo
-Survey, 2026-10-29. **[V]** = verified (official page fetched in this round, or tested here). **[U]** = unverified. Blocked or unreachable: neon.com (proxy refused; neon.tech only redirects there). Val Town's limits/pricing doc pages return 404, so its pricing page is the only source. Spike: `/tmp/nomac2-hosts/` (not committed).
+Survey, 2026-10-29. **[V]** = verified (official page fetched in this round, or tested here). **[U]** = unverified. Blocked or unreachable: neon.com (proxy refused; neon.tech only redirects there). Spike: `/tmp/nomac2-hosts/` (not committed).
 
 ## Backends
 | | **Deno Deploy** (new platform) | **Val Town Free** | **Netlify Free** (credits) | **Vercel Hobby** + store |
@@ -12,20 +12,20 @@ Survey, 2026-10-29. **[V]** = verified (official page fetched in this round, or 
 | URL | `*.deno.net` [U]; 5 custom domains [V] | `*.val.run` [U]; no custom domains [V] | `*.netlify.app` [U] | `*.vercel.app` [U] |
 | Gotchas | Classic shut down 2026-07-20; KV data not auto-migrated [V] | Free lists only *public* vals; private vals are a Pro feature (2,000) [V]. Source would be public; secrets go in env vars [U] | Hard cap: **all projects paused** with "Site not available" when credits run out [V]. **Each production deploy costs 15 credits**, so 300/month is about 20 deploys [V] | Two vendors; Hobby is non-commercial only (fine here) [V] |
 
-**Cold starts:** all four are isolate- or function-based, typically well under a second [U]. None sleep the way Render does, so the Shortcut won't time out.
+**Cold starts:** typically well under a second [U]; none sleep like Render, so the Shortcut won't time out.
 
 **Shortcut POST:** all four accept arbitrary headers, so `Authorization: Bearer` and the JSON body work unchanged, and only the URL changes [V for Deno in the spike; U for the others].
 
 **PWA reads:** the CORS headers come from our own code on every host, as tested below.
 
-**Web push:** ES256 VAPID signing with WebCrypto is [V] in Deno. Netlify and Vercel run Node, so the current `web-push` dependency works as-is [U]. Val Town runs Deno [U]. On Vercel Hobby, a once-a-day ±1 h cron is too coarse for a 20:00 reminder.
+**Web push:** ES256 VAPID signing with WebCrypto is [V] in Deno. Netlify and Vercel can run the current `web-push` as-is [U]. On Vercel Hobby, a once-a-day ±1 h cron is too coarse for a 20:00 reminder.
 
 ### Port effort
 - **As-is SvelteKit:** `adapter-netlify` and `adapter-vercel` exist, but `better-sqlite3` writes to a local file and serverless hosts don't keep one. The DB layer has to move to an async driver anyway: drizzle + libsql (Turso) keeps the SQLite schema, which is the same sync-to-async work as D1. Estimate 1–2 days, same as Workers [U].
 - **Minimal store API** (`ingest`, `events`, `state`, from [minimal-backend.md](minimal-backend.md)): about 80 lines on any of these hosts, about half a day. Deno KV fits it directly: append keys, prefix-list after a cursor, and `atomic().check()` for idempotent events.
 
 ### Spike [V] (Deno 2.9.6, `Deno.openKv` local SQLite backend, `Deno.cron`)
-`main.ts` is one fetch handler with KV-backed `POST /ingest/shortcut/:person`, `POST /event` and `GET /state?since=`. I tested it in-process because the sandbox blocks curl to localhost.
+`main.ts` is one fetch handler with KV-backed `POST /ingest/shortcut/:person`, `POST /event` and `GET /state?since=`. Tested in-process (the sandbox blocks curl to localhost).
 - **Ingest:** the user's body (`dates`/`steps`/`exercise_minutes` as newline text) returned 200 with 2 days parsed (855 steps, 0 minutes).
 - **Auth:** wrong person → 403; missing or bad token → 401.
 - **Idempotency:** the same event `id` sent twice → `duplicate:true` on the second.
@@ -34,7 +34,7 @@ Survey, 2026-10-29. **[V]** = verified (official page fetched in this round, or 
 - **Push:** WebCrypto P-256 signing produced a valid 3-part ES256 JWT.
 - **Gotcha [V]:** Deno.cron rejects day-of-week `0`. Use `SUN` or `7`. Sunday 19:30 JST is `30 10 * * SUN` (UTC).
 
-Netlify and Vercel CLIs are not installed and weren't tried, since that needs a login.
+Netlify and Vercel CLIs weren't tried (they need a login).
 
 ## UI hosting with a private repo
 | Host | ¥0? | Private GitHub repo | Bandwidth / requests | Builds | Notes |
@@ -54,8 +54,8 @@ Netlify and Vercel CLIs are not installed and weren't tried, since that needs a 
 **Moving the UI changes the PWA's origin.** Both users reinstall once, re-paste the token, and re-subscribe to push (ADR 0013).
 
 ## Recommendation
-1. **Simplest ¥0 for a private repo: one Cloudflare Worker serving the static SPA plus the API**, deployed from Actions. It extends round 1's tested Workers + D1 spike. The UI costs nothing, there's no CORS and no second vendor, and moving off Pages is a one-time reinstall anyway.
-2. **Runner-up: Deno Deploy (KV + cron + static SPA) on one platform.** The minimal store API ran here in the Deno runtime against local KV (the hosted KV wasn't tested). Hosted limits are generous, but card and private-repo details are unknown.
+1. **Simplest ¥0 for a private repo: one Cloudflare Worker serving the static SPA plus the API**, deployed from Actions. It extends round 1's tested Workers + D1 spike: free UI, no CORS, one vendor.
+2. **Runner-up: Deno Deploy (KV + cron + static SPA) on one platform.** The minimal store API ran here in the Deno runtime against local KV (the hosted KV wasn't tested). Card and private-repo details are unknown.
 3. **Avoid:**
    - Netlify: the deploy-credit cap pauses everything.
    - Vercel Hobby: daily cron, and the database sits with a second vendor.
