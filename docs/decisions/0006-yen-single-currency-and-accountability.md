@@ -28,3 +28,8 @@ Both live in Japan: one partner has a personal trainer, the other an Anytime Fit
 - Concepts drop to: **Fruit (score) · Trip Jar (¥) · Treat Purse (¥)**. One sentence: *"Healthy habits grow fruit; every Sunday your fruit puts yen in the trip jar and the treat purse."*
 - The shortfall bank (0003 amendment) works unchanged, in yen, on personal shares.
 - UI copy is English by default, with Japanese labels as an option (TBD with the users).
+
+## Round 3 amendments (motivational coach review)
+- **No fruit bonus for kept promises.** It would reward easy promises. Promises carry no money and no streak; a kept one shows ✓, a missed one ○ (never ✗).
+- **The Home screen shows only the combined jar.** Personal layers are one tap deeper, each against its own maximum (not a leaderboard). Copy never names whose score set the team rate.
+- **Year-end yen** (steady weekly scores, floor per entry): ≥85 → **¥520,000** · 75 → ¥458,744 · 60 → ¥366,964 · 40 → ¥244,660.
