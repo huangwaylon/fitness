@@ -22,3 +22,11 @@
 | 75 | ~$2,650, plus whatever extra-fruit weeks recover |
 | 60 | ~$2,100 |
 | 40 | ~$1,400 |
+
+## Round 2 amendments (supersede the matching items above)
+- **Tickets:** each person scoring ≥ 60 earns **½ ticket** per week, and a paused week counts as ≥ 60. This replaces "both ≥ 60 → 1 ticket", so one partner's rough week never costs the other.
+- **Team share:** a partner on a paused week counts as ratio 1.0.
+- **Shortfall bank (extra fruit):** per person, `S += (1 − min(score,85)/85) × personal_weekly`. Then `recovery = min(S, max(0, score − 85)/85 × personal_weekly)` and `S −= recovery`. It applies to personal shares only. It's computed sequentially from week 1, with ledger key `recover:<person>:<week>`. Weeks excluded by a long pause add their personal share to `S`.
+- **Locking:** Sunday 19:30 writes provisional `earn:` entries. **Wednesday 04:00 is the final pass** (all days ≥ D+2): it writes `topup:` = max(0, final − provisional), then the week locks. Edits to locked weeks are rejected with a friendly message.
+- **Transfer Day** moves the total of ledger entries *created* in the previous calendar month.
+- Year-end table assumes steady weekly scores. Revisit "85 = full share" after Season 1 using real data.

@@ -38,7 +38,7 @@ See [fitness-coach.md](team/fitness-coach.md) and [nutritionist.md](team/nutriti
 5. **Rest is part of the plan.** Easy weeks, rest days and Cozy Days are built in and still pay.
 
 ### 2.2 Starting point
-- At setup the server backfills **~12 weeks of Health history**. The baseline is the median week, which a sick week or one big hike can't distort.
+- At setup each of you taps **one export** in Health Auto Export that sends **~12 weeks of history** (one time only; automations themselves only send up to 7 days). The baseline is the median week, which a sick week or one big hike can't distort.
 - Then a **2-week calibration** pays a flat participation rate while the Watch observes normal life.
 - A short PAR-Q+-style safety questionnaire runs once at onboarding.
 
@@ -51,13 +51,14 @@ See [fitness-coach.md](team/fitness-coach.md) and [nutritionist.md](team/nutriti
 | **Strength days** | A: 2 · B: 1 → 2 | 2 (build) | 3 (opt-in) | 2–3 (consolidate) |
 | **Steps (5 of 7 days)** | A 7,500 · B 6,250 | A 8,000 · B 6,750 | A 8,500 · B 7,250 | A 9,000 · B 7,750 |
 | **Sleep** | 7 h asleep, 5 of 7 nights | → | → | → |
-| **Eating habits** | Veggies at 2+ meals · No sugary drinks · Home-cooked dinner | + Palm of protein each meal | + Calcium-rich foods (bone health) *or* kitchen closes 2–3 h before bed | Maintain; lighter targets through the holidays |
+| **Eating habits** (always 3 active) | Veggies at 2+ meals · No sugary drinks · Home-cooked dinner. *Holiday grace Dec 20–Jan 1: pear target 12 of 21* | Swap one in: palm of protein each meal | Swap one in: calcium-rich foods 2–3×/day (bone health) *or* kitchen closes 2–3 h before bed | No new habit; keep your favourite three |
 | **Couple milestone** | Meal-prep Sunday | Cook-together night | Couples cooking class (treat) | **5K or long hike together**, then the vacation |
 
 - Every season has 3 build blocks with an **easy week (×0.8)** after each, then a **recovery and re-tune week (×0.6)**. Both still pay in full when met.
 - **Adaptive progression:** each 4-week block either *advances* (3–4 weeks met), *holds* (2 met) or *steps back 10%* (0–1 met). The step-back message is "re-tuned to fit your life", never a penalty. Targets stop rising at 300 min/wk, 10,000 steps and 7–7.5 h of sleep.
 - **Partner B's bone-density focus:** progressive strength plus short jump sets (10 → 60 landings). Bone density built in your 20s pays off for decades.
-- Nutrition background numbers are used for advice and tips only, **never shown or scored**. Protein: A ~80–105 g/day, B ~65–90 g/day. Fiber: A ~30–38 g, B ~25 g. B also needs 18 mg iron and 1,000 mg calcium a day.
+- Nutrition background numbers are used for advice and tips only, **never shown or scored**. Protein: A ~80–105 g/day, B ~65–90 g/day. Fiber: A ~30–38 g, B ~25 g. Iron: B 18 mg/day (A 8 mg). Calcium: 1,000 mg/day for both.
+- **Fuelling safeguard:** as training ramps up, the app shows gentle "refuel" tips after big workout days (protein + carbs, snack ideas) and a private monthly self-check ("energy OK? sleeping well? cycles regular?"). Concerning answers suggest a chat with a doctor or dietitian. Answers are never shared or scored.
 - **Weight is not tracked** by default. If it's ever enabled, it's opt-in, private, trend-only, and only used to flag *under*-fuelling, which is the bigger risk for active people at a healthy weight.
 
 ---
@@ -79,21 +80,28 @@ Full rationale is in [motivational-coach.md](team/motivational-coach.md). Bindin
 | Fruit | Category | Weight | How it's measured |
 |---|---|---|---|
 | 🍑 Peach | Active minutes vs. personal weekly target | **30** | Watch exercise minutes (auto) |
-| 🥥 Coconut | Strength days (strength, HIIT, yoga/pilates ≥ 20 min) | **20** | Watch workout type (auto; one tap to start the workout on the Watch) |
+| 🥥 Coconut | Strength days: Traditional/Functional Strength, Core or Pilates workout ≥ 15 min count automatically; HIIT, yoga, etc. count after a one-time "did this include strength work?" tap | **20** | Watch workout type (auto; one tap to start the workout on the Watch) |
 | 🍎 Apple | Step goal hit on 5 of 7 days | **10** | Watch (auto) |
 | 🫐 Moon-plum | Sleep target hit on 5 of 7 nights (12) + at least 1 rest day (3) | **15** | Watch sleep (auto) |
 | 🍐 Pear | Eating habits, 15 of 21 ticks (3 habits × 7 days) | **25** | One evening check-in (≈ 3 taps) |
 
 Each category pays linearly by percentage of target, capped at its weight. **85 fruit = a full week.**
-Fruit above 85 is *extra fruit*: it can make up an earlier shortfall, but never adds beyond the plan.
+Fruit above 85 is *extra fruit*: it can make up **your own** earlier shortfall, but never adds beyond the plan (see §3.3).
+
+- **Daily cap on active minutes:** `min(90, max(60, ½ × weekly target))` per day, so nobody can fill a week in one heroic day. At most 1 strength day per calendar day.
+- **Rest day** = no workout ≥ 20 min with average HR ≥ 77% of age-predicted max.
+- **Together** = two workouts overlapping ≥ 70% in time.
+- Day-count targets prorate for Cozy Days using exact fractions, with no rounding.
 
 ### 3.3 The money, worked through (defaults; all configurable)
 - **Jar per week** = $3,000 / 52 = **$57.69**, split three ways:
   - Partner A share 42.5% (**$24.52**) → paid at `min(A's fruit / 85, 1)`
   - Partner B share 42.5% (**$24.52**) → paid at `min(B's fruit / 85, 1)`
-  - **Team share** 15% (**$8.65**) → paid at the **lower** partner's ratio. Helping each other is literally worth money.
-- **Treat ticket:** each week that *both* partners score ≥ 60 earns 1 ticket (≈ **$11.54**), which works out to roughly the $50/month treat budget. It's deliberately easy, close to a "showed up" allowance, so food rewards stay guilt-free and decoupled from performance.
-- **Year-end outcomes** (both partners at a similar level):
+  - **Team share** 15% (**$8.65**) → paid at the **lower** partner's ratio. Helping each other is literally worth money. A partner on a paused week counts as 1.0, so being sick never costs the other partner.
+- **Treat tickets:** each person who scores ≥ 60 in a week earns **½ ticket** (a paused week counts), and a full ticket is ≈ **$11.54**. Two people × ½ × 52 weeks ≈ the $50/month treat budget. It's deliberately easy, close to a "showed up" allowance, so food rewards stay guilt-free and decoupled from performance, and one partner's rough week never costs the other their treat.
+- **Extra fruit (shortfall bank):** each person keeps a running shortfall `S`. Each week, `S += (1 − min(score,85)/85) × personal share`. Then extra fruit pays `recovery = min(S, (score − 85)/85 × personal share)` and `S −= recovery`. It's personal shares only, never the team share or the partner's. With `S = 0`, extra fruit is cosmetic. Weeks excluded from a long pause add their personal share to `S`, so it stays recoverable.
+- **Settlement timing:** Sunday 19:30 pays a provisional amount from the data on hand. **Wednesday 04:00 is the final pass** (every day of the week is ≥ D+2 by then): it writes top-ups only, then the week **locks**. Later Cozy Days, check-ins or data for a locked week are politely declined. Downward changes never claw back.
+- **Year-end outcomes** (assumes a steady weekly score for both partners; real weeks vary, and the shortfall bank partly smooths this):
 
 | Typical week | Jar after 52 weeks |
 |---|---|
@@ -122,8 +130,8 @@ Any item costing 4+ tickets needs both partners to tap "yes" (shared money, shar
 | Loop | Rhythm | What happens |
 |---|---|---|
 | **Daily** (~30 s) | Open the app, or just glance at a widget | Your tree grows fruit as Watch data arrives; Juniper suggests *one* doable next step ("Bean is 2,900 steps from an apple. Evening stroll together?"); evening check-in. |
-| **Weekly** | **Sunday 7:30 pm Settlement** (night palette) | Rows tally with soft chimes, coins drop into the jar, both partners tap "Drop it in the jar!", and an island upgrade is revealed after good weeks. The amount is provisional; late data can only *add* (a Wednesday top-up). |
-| **Monthly** | Transfer Day | Reminder to move the month's unlocked money into the vacation account; tap Done. A landmark: "1/12 of the way there 🏝️". |
+| **Weekly** | **Sunday 7:30 pm Settlement** (night palette) | Rows tally with soft chimes, coins drop into the jar, both partners tap "Drop it in the jar!", and an island upgrade is revealed after good weeks. The amount is provisional; late data can only *add* (final pass Wednesday 04:00). |
+| **Monthly** | Transfer Day + a small monthly quest | Reminder to move the money unlocked in ledger entries from the previous calendar month (top-ups included, so nothing is double-counted); tap Done. A landmark: "1/12 of the way there 🏝️". Plus one light cooperative quest (e.g. "try a new trail", "cook a new vegetable") for a cosmetic reward. |
 | **Seasonal** (13 wk) | Season opener + finale | Targets re-tuned, fresh-start bonus week, 2–3 cooperative events (e.g. *Fishing Tourney*: each workout is a cast that catches a random critter), 10–15 seasonal collectibles that return next year, and a recap card with a "keep / drop / swap" habit retro. |
 | **Yearly** | **Big Unlock Day** | Confetti, the final total, a museum tour of the year, a printable "Island Passport". The vacation itself runs in auto-pause mode. |
 
@@ -134,7 +142,8 @@ Any item costing 4+ tickets needs both partners to tap "yes" (shared money, shar
 
 ### 3.7 Life happens: Cozy Days
 A single mechanism replaces all the sick / travel / low-energy rules. Mark a day as a **Cozy Day** and that week's targets prorate, so a full share is still reachable.
-Up to 4 per month need no explanation. A fully paused week (illness, or the vacation itself) pays at your trailing 4-week rate, up to 2 weeks per season. If the Watch sees a resting-HR spike or HRV dip *and* poor sleep, Juniper gently suggests a Cozy Day. That's a suggestion only.
+Up to 4 per month need no explanation. A fully paused week (illness, or the vacation itself) pays at your trailing 4-week rate, up to 2 weeks per season. Longer pauses are excluded from scoring (their money moves to your shortfall bank), and you return with a gentle ramp: one week at ×0.8 targets.
+If the Watch sees **any one** warning sign (resting HR ≥ 7 bpm above your baseline, HRV well below your norm, or two short nights), Juniper gently suggests a Cozy Day. That's a suggestion only.
 
 ### 3.8 Couple dynamics
 - **Cooperative, never competitive.** No leaderboards on raw numbers; each person is compared only with their own past self.
@@ -146,7 +155,7 @@ Up to 4 per month need no explanation. A fully paused week (illness, or the vaca
 ### 3.9 Tone
 At most one notification a day, sleep-aware, and celebratory rather than nagging.
 *"Strength day done! Your bones say thank you, and so does the whole island."* / *"Some weeks are cozy weeks. A brand-new week starts tomorrow 🌱"*
-The words **failed, missed, lost, behind, cheat day, burn off, earn your food** and any body commentary are banned from the copy.
+The words **failed, missed, lost, behind, lazy, cheat day/meal, burn off, work it off, earn your food, deserve (food), junk/clean food, good/bad food, guilty, detox** and any body commentary are banned from the copy.
 
 ---
 
@@ -178,7 +187,7 @@ Detail: [software-engineer.md](team/software-engineer.md), [research/apple-healt
 | Health data, MVP | **Health Auto Export** Premium (~$24.99 lifetime; Family Sharing covers both phones) → REST to our server | About 10 min of setup per phone, then hands-off. The only path that's reliable *today* without writing Swift. |
 | Health data, v1 | **Native SwiftUI companion** (HealthKit observer + anchored queries + background delivery), $99/yr Developer Program + TestFlight; CI re-uploads before the 90-day expiry | Removes the third-party dependency and adds home/lock-screen widgets with an interactive check-in button, plus a Watch complication |
 | Server | SvelteKit (node) + SQLite + Drizzle, Docker | One language end to end; SQLite is perfect for 2 users |
-| Hosting | Always-on home Mac mini or Raspberry Pi 5 (a $5 VPS is the fallback) | Health data never leaves your hardware |
+| Hosting | Always-on home Mac mini or Raspberry Pi 5 (a $5 VPS is the fallback) | Health data lives only on your home server, plus client-side-encrypted off-site backups |
 | Network | **Tailscale only**, VPN On Demand on both phones | Nothing on the public internet; free Personal plan |
 | Client | **PWA** installed to the home screen; mobile-first (safe areas, Dynamic Island, bottom tabs, 44 pt targets) | Instant updates, no App Store, web push on iOS 16.4+ |
 | Money | **Virtual ledger + monthly Transfer Day**; no bank APIs | Simple, safe, and humans stay in control |
@@ -191,8 +200,8 @@ Detail: [software-engineer.md](team/software-engineer.md), [research/apple-healt
 - **Free Apple signing:** builds expire every 7 days. Not viable for "no manual work".
 
 ### 4.3 Data and rules engine
-- **Tables:** `person`, `raw_payload`, `daily_metric(person, day, metric, value)`, `workout`, `checkin`, `season`, `target(person, season_block, category, value)`, `weekly_score`, `ledger_entry(idem_key UNIQUE, kind, amount, …)`, `ticket`, `redemption`, `cozy_day`, `collectible`.
-- **Idempotent by construction:** ingest upserts by (person, day, metric). The rules engine is a pure function of daily aggregates and targets. Days are provisional until **D+2**. The ledger is append-only with unique idempotency keys. Late data produces **top-ups only**, never clawbacks.
+- **Tables:** `person`, `device_token`, `push_subscription`, `raw_payload`, `daily_metric(person, day, metric, value)`, `workout`, `workout_type_map(hae_name → category)`, `checkin`, `habit_choice(person, season, habit×3)`, `season`, `target(person, season_block, category, value)`, `cozy_day(person, day, kind ∈ {cozy, pause})`, `visibility_pref(person, metric, share_raw)`, `weekly_score`, `ledger_entry(idem_key UNIQUE, bucket ∈ {jar, tickets}, kind ∈ {earn, topup, recover}, amount, …)`, `redemption(…, requested_by, approved_by)`, `transfer(month, amount, done_by, done_at)`, `ceremony_ack(week, person)` (cosmetic only; never gates the ledger), `collectible`.
+- **Idempotent by construction:** ingest upserts by (person, day, metric). The rules engine is a pure function of daily aggregates and targets, recomputed sequentially from week 1 (the shortfall bank depends on order). Days are provisional until **D+2**; weeks lock after the Wednesday 04:00 final pass. The ledger is append-only with unique idempotency keys (`earn:<rule>:<person>:<week>`, `topup:…`, `recover:<person>:<week>`). Late data produces **top-ups only**, never clawbacks.
 - **Rules as data (v1):** a versioned rules table plus an admin page with a dry-run diff before recompute.
 
 ### 4.4 Privacy and security
@@ -226,7 +235,7 @@ Fonts are Fredoka, Nunito and Zen Maru Gothic (all SIL OFL). A night palette run
 
 | Phase | Effort | Scope | Exit criteria |
 |---|---|---|---|
-| **0 · Spike** | 1 evening | Tailscale on server + phones; HAE automations; capture real payloads as fixtures; test the history backfill | Real data from both phones lands on the server |
+| **0 · Spike** | 1 evening | Tailscale on server + phones; HAE automations; capture real payloads as fixtures; one-time 12-week manual export; build the workout-name → category map; measure arrival delay and VPN On Demand reliability (fallback: Tailscale Funnel for `/ingest` only) | Real data from both phones lands on the server |
 | **1 · MVP** | ~3 weekends | Ingest → daily metrics → 5-fruit weekly scoring → Sunday settlement → ledger; PWA screens Island / Fund / Check-in / Shop (basic) / Transfer Day; web push; Litestream | 2 weeks of hands-off data with ≤ 1 missed day per person; nobody touched HAE |
 | *Calibration* | 2 weeks | Flat participation pay while baselines are measured | Season 1 targets agreed by both |
 | **2 · v1** | ~4–6 weekends (after 6–8 weeks of use) | Seasons + adaptive targets, Museum, streaks/freezes, Cozy Days, rules-as-data admin, **native SwiftUI companion** (HealthKit sync, widgets, Watch complication) | HAE retired; widgets in daily use |
