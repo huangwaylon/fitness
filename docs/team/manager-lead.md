@@ -23,7 +23,7 @@ Two people, one year, one vacation they *earned*. A cozy island app that turns e
 | A2 | Budget is configurable; example used in docs: $3,000 vacation + ~$50/mo dining treats | Calibrates the economy |
 | A3 | Currency USD (configurable) | Copy and formatting |
 | A4 | One partner (the builder) is comfortable self-hosting on a home machine or small VPS | Architecture |
-| A5 | Fitness levels differ and are unknown, so everything is relative to personal baselines | Fairness |
+| A5 | Profiles in `docs/profiles.md`; both have healthy BMI, so goals are fitness and habits, not weight loss. Fitness levels unknown, so everything is relative to personal baselines | Fairness |
 | A6 | Start date ≈ Nov 2026, so year ends ≈ Nov 2027 | Seasons calendar |
 
 ## Process
