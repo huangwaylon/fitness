@@ -221,7 +221,7 @@ Fonts are Fredoka, Nunito and Zen Maru Gothic (all SIL OFL). A night palette run
 | Screen (bottom tab) | What it shows |
 |---|---|
 | 🏝️ **Island** (home) | Both villagers and their trees. Each tree carries this week's five fruit slots, ripening as goals progress, and Monday brings a fresh tree. Juniper's one-line suggestion. The evening check-in button sits in the thumb zone. |
-| 🫙 **Fund** | "Our Voyage": a little boat sails a dotted route to your real destination, with buoys at real milestones (flights booked, hotel deposit). The jar shows dollars, plus a quiet "≈ $X so far this week" and your ticket wallet. |
+| 🫙 **Jar** | "Our Voyage": a little boat sails a dotted route to your real destination, with buoys at real milestones (flights booked, hotel deposit). The jar shows dollars, plus a quiet "≈ $X so far this week" and your ticket wallet. |
 | 🎟️ **Shop** | Redeem treat tickets; big items need both partners to say yes. |
 | 🏛️ **Museum** | Fossils, critters, art and recipes from your year. |
 | 💞 **Us** | Partner view (fruit and %), high-fives, Cozy Day toggle, privacy settings. |

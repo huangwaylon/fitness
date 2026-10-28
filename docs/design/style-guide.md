@@ -29,7 +29,7 @@ All tokens below are plain CSS custom properties. Paste the `:root` block into t
 | `--coral-ink` | `#B04A3B` | Coral **text** (rare; warnings phrased gently) |
 | `--sun` | `#FFD66B` | Highlights, stars, "new!" badges |
 | `--gold` | `#F2B53A` | Money glints, coin rims, jar lid |
-| `--peach` | `#FFB38A` | Fruit (daily goals), villager blush |
+| `--peach` | `#FFB38A` | Villager blush, warm accents |
 | `--bark` | `#8A5A3B` | Tree trunks, wooden signs, dock |
 | `--ink` | `#4A3A2C` | Body text (warm brown; never pure black) |
 | `--ink-soft` | `#6B5544` | Secondary text |
@@ -49,7 +49,19 @@ All tokens below are plain CSS custom properties. Paste the `:root` block into t
 | `--moon` | `#F6E7B0` | Moon, lantern glow, highlights |
 | `--firefly` | `#E8F59A` | Sparkles, confetti at night |
 
-### 1.3 Partner colors
+### 1.3 Fruit colors (one per scoring category, decision 0002)
+
+| Token | Hex | Fruit | Category (weight /100) |
+|---|---|---|---|
+| `--f-peach` | `#FFB38A` | Peach | Active minutes (30) |
+| `--f-coconut` | `#9C6B45` | Coconut | Strength days (20) |
+| `--f-apple` | `#FF8A7A` | Apple | Step days (10) |
+| `--f-plum` | `#9FA8E8` | Moon-plum | Sleep & rest (15) |
+| `--f-pear` | `#C9DE6E` | Pear | Eating habits (25) |
+
+Each fruit also has a distinct silhouette (coconut = round with three "eyes", pear = teardrop, moon-plum = crescent mark, and so on), so color is never the only cue. Always pair it with the category label.
+
+### 1.4 Partner colors
 
 Each partner picks an accent from this set (defaults shown); used for their tree fruit ring, avatar backdrop, and chart series.
 
@@ -61,7 +73,7 @@ Each partner picks an accent from this set (defaults shown); used for their tree
 | `--p-berry` | `#F28BA8` | option |
 | `--p-lemon` | `#FFD66B` | option |
 
-### 1.4 Contrast rules (verified, WCAG 2.2)
+### 1.5 Contrast rules (verified, WCAG 2.2)
 
 | Pair | Ratio | Verdict |
 |---|---|---|
@@ -101,7 +113,7 @@ Self-host the `.woff2` files in the PWA (offline + privacy); during prototyping 
 
 | Token | Size | Line height | Family/weight | Use |
 |---|---|---|---|---|
-| `--fs-hero` | 2.75rem (44px) | 1.05 | Fredoka 700 | Fund total, settlement total |
+| `--fs-hero` | 2.75rem (44px) | 1.05 | Fredoka 700 | Jar total, settlement total |
 | `--fs-h1` | 1.75rem (28px) | 1.15 | Fredoka 600 | Screen titles |
 | `--fs-h2` | 1.25rem (20px) | 1.2 | Fredoka 600 | Card titles |
 | `--fs-body-lg` | 1.0625rem (17px) | 1.4 | Nunito 700 | Speech bubbles, primary copy (iOS body size) |
@@ -186,6 +198,8 @@ Under `prefers-reduced-motion: reduce`, all durations collapse to cross-fades �
   --night-ink:#F7EEDB; --night-ink-soft:#B9C3DA; --moon:#F6E7B0; --firefly:#E8F59A;
   /* partners */
   --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-mint:#8ED9C0; --p-berry:#F28BA8; --p-lemon:#FFD66B;
+  /* fruit = scoring categories */
+  --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-plum:#9FA8E8; --f-pear:#C9DE6E;
 
   /* semantic (swap these for night mode) */
   --bg: var(--cream); --surface: var(--paper); --edge: var(--paper-edge);
@@ -308,8 +322,14 @@ html, body { min-height: 100dvh; overscroll-behavior-y: none; }
 
 **Progress bar ("rope")**: track `--leaf-soft` + `--sh-inset`, fill `--leaf` with a subtle diagonal stripe; ends fully rounded; label inside or right-aligned in tabular numbers.
 
-**Fruit (daily goal)**: 28px circle in `--peach` (or the partner accent) with a leaf sprig; *unearned* = dashed outline at 40% opacity; *earned* = filled + 1px white highlight; *just earned* = bounce + sparkle.
+**Fruit (weekly score unit)**: a 20 to 28px SVG fruit in its category color with a leaf sprig. *Unearned slot* = dashed outline at 40% opacity; *earned* = filled with a white highlight; *just earned* = bounce + sparkle. Trees show the **week**, and Monday resets them.
 
-**Tab bar**: floating rounded "leaf" bar, 5 items (Island, Fund, Shop, Museum, Us), active item gets a sand pebble behind its icon and the label turns `--ink`.
+**Category row (score card)**: fruit icon + label + `earned/weight` in tabular numbers. The row background fills as a bar: `background: linear-gradient(90deg, var(--leaf-soft) var(--p), rgba(233,216,180,.35) var(--p))`. Full rows switch the value to `--leaf-ink`. Partner cards show only this (fruit and %), never raw metrics.
+
+**Score bar (settlement)**: 10px track, moon-to-firefly fill, plus a 2px marker at 85% labelled "85" (full share).
+
+**Habit switch (check-in)**: a 62px-tall card row with a 54×32 pill switch (off = `--sand`, on = `--leaf`), `role="switch"`, saved on tap.
+
+**Tab bar**: floating rounded "leaf" bar, 5 items (Island, Jar, Shop, Museum, Us), active item gets a sand pebble behind its icon and the label turns `--ink`.
 
 **Icons**: 24px grid, 2.25px rounded stroke in `--ink` with optional single flat fill from palette. See designer memo §4.
