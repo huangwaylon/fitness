@@ -13,7 +13,9 @@
     "pair": "tsx scripts/pair.ts",
     "token": "tsx scripts/token.ts",
     "recompute": "tsx scripts/recompute.ts",
-    "prepare": "svelte-kit sync || true"
+    "prepare": "svelte-kit sync || true",
+    "vapid": "tsx scripts/vapid.ts",
+    "devices": "tsx scripts/devices.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^6.0.0",
