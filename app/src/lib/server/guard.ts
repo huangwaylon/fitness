@@ -6,6 +6,7 @@ import {
   type AuthedDevice, type DeviceKind
 } from '#lib/server/auth.ts';
 import { LIMITS, hit } from '#lib/server/ratelimit.ts';
+import { allowedOrigins } from '#lib/server/cors.ts';
 import { BODY_CAP, errorJson } from '#lib/server/http.ts';
 
 /** The subset of SvelteKit's RequestEvent the guard needs (keeps it testable without the framework). */
@@ -100,10 +101,19 @@ export async function guard(event: GuardEvent, opts: GuardOptions): Promise<Resp
     return null;
   }
 
-  // Other /api/*: session cookie only (+ Origin check on unsafe methods). Authenticate first, then rate-limit per
+  // Other /api/*: session cookie or pwa bearer session (+ Origin check on unsafe methods). Authenticate first, then rate-limit per
   // device: behind Funnel every request shares one IP, so an IP limit would let strangers lock both of us out.
-  if (request.headers.get('authorization')) return unauthorized();
-  const dev = cookieDevice(event, opts, { refresh: false });
+  // The GitHub Pages UI can't use the cookie (cross-site), so it sends its pairing session as a bearer token.
+  // Only 'pwa' sessions count here; the phone's Shortcuts tokens never open /api/*.
+  const auth = request.headers.get('authorization');
+  let dev: AuthedDevice | null;
+  if (auth) {
+    const token = bearerFrom(auth);
+    dev = token ? findDevice(opts.db(), token, ['pwa']) : null;
+    if (dev) touchDevice(opts.db(), dev.id);
+  } else {
+    dev = cookieDevice(event, opts, { refresh: false });
+  }
   if (!dev) return hit(`api:anon:${ip}`, LIMITS.api) ? unauthorized() : errorJson(429, 'rate_limited');
   if (!hit(`api:dev:${dev.id}`, LIMITS.api)) return errorJson(429, 'rate_limited');
   if (!SAFE_METHODS.has(method) && !originOk(event)) return errorJson(403, 'bad_origin');
@@ -118,7 +128,7 @@ function setLocals(event: GuardEvent, dev: AuthedDevice) {
 
 function originOk(event: GuardEvent): boolean {
   const origin = event.request.headers.get('origin');
-  return origin !== null && origin === event.url.origin;
+  return origin !== null && (origin === event.url.origin || allowedOrigins().has(origin));
 }
 
 function cookieDevice(event: GuardEvent, opts: GuardOptions, { refresh = true } = {}): AuthedDevice | null {

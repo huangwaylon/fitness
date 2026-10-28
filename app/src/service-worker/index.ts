@@ -3,6 +3,11 @@ import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 
+// The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
+const SCOPE = new URL(self.registration.scope).pathname;
+/** App-relative URL ('/jar', '/?checkin=1') → absolute URL inside the scope. */
+const inScope = (u: string) => new URL(u.replace(/^\//, ''), self.registration.scope).href;
+
 const CACHE = `island-shell-${version}`;
 const FONTS = 'island-fonts-v1';
 const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
@@ -48,10 +53,10 @@ self.addEventListener('fetch', (event) => {
         const cache = await caches.open(CACHE);
         try {
           const res = await fetch(req);
-          if (res.ok) await cache.put('/', res.clone());
+          if (res.ok) await cache.put(SCOPE, res.clone());
           return res;
         } catch {
-          return (await cache.match('/')) ?? Response.error();
+          return (await cache.match(SCOPE)) ?? Response.error();
         }
       })()
     );
@@ -109,7 +114,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = new URL((event.notification.data as { url?: string } | null)?.url || '/', self.location.origin).href;
+  const target = inScope((event.notification.data as { url?: string } | null)?.url || '/');
   event.waitUntil(
     (async () => {
       const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });

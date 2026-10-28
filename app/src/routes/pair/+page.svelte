@@ -1,7 +1,8 @@
 <script lang="ts">
   // Pairing: a one-time 6-digit code, entered inside the installed PWA (cookies are per-app on iOS).
   import { goto } from '$app/navigation';
-  import { postJSON } from '#lib/client/api.ts';
+  import { postJSON, setSession } from '#lib/client/api.ts';
+  import { resolve } from '$app/paths';
   import { week } from '#lib/client/week.svelte.ts';
   import { isStandalone } from '#lib/client/push.ts';
   import { onMount } from 'svelte';
@@ -29,11 +30,12 @@
     e.preventDefault();
     if (!ready || busy) return;
     busy = true;
-    const r = await postJSON('/api/pair', { code });
+    const r = await postJSON<{ token?: string }>('/api/pair', { code });
     busy = false;
     if (r.ok) {
+      setSession(r.data?.token);
       await week.refresh();
-      await goto('/');
+      await goto(resolve('/'));
     } else {
       msg = r.status === 429 ? t('pair.wait') : t('pair.wrong');
       code = '';

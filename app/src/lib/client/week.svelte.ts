@@ -2,6 +2,7 @@
 // mutations and when the app becomes visible. Falls back to fixtures with `?demo` (or in dev
 // when the API isn't there yet).
 import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 import { dev } from '$app/env';
 import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import { getJSON, postJSON, type ApiResult } from './api.ts';
@@ -58,7 +59,7 @@ class WeekStore {
     this.syncing = false;
     if (r.status === 401) {
       this.status = 'ready';
-      await goto('/pair');
+      await goto(resolve('/pair'));
       return;
     }
     if (r.ok && r.data) {
@@ -94,7 +95,7 @@ class WeekStore {
     if (this.demo) return { ok: true, status: 200, data: null };
     const r = await postJSON<T>(path, body);
     if (r.status === 401) {
-      await goto('/pair');
+      await goto(resolve('/pair'));
       return r;
     }
     if (!r.ok) {

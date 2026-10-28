@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { asset } from '$app/paths';
+  import { routeOf } from '#lib/client/paths.ts';
   import '@fontsource/fredoka/500.css';
   import '@fontsource/fredoka/600.css';
   import '@fontsource/fredoka/700.css';
@@ -20,9 +22,10 @@
 
   let { children }: { children: Snippet } = $props();
 
-  const onPair = $derived(page.url.pathname.startsWith('/pair'));
+  const route = $derived(routeOf(page.url.pathname));
+  const onPair = $derived(route.startsWith('/pair'));
   /** Page pattern (style guide §3): island dots, jar sand stripes, us pink dots. */
-  const pageKind = $derived(page.url.pathname.startsWith('/jar') ? 'jar' : page.url.pathname.startsWith('/us') ? 'us' : 'island');
+  const pageKind = $derived(route.startsWith('/jar') ? 'jar' : route.startsWith('/us') ? 'us' : 'island');
 
   /** Toasts go in the top layer (popover) so they sit above an open sheet's scrim. */
   function topLayer(node: HTMLElement) {
@@ -41,9 +44,9 @@
   onMount(() => {
     const stopTheme = startTheme();
     week.init();
-    if (!location.pathname.startsWith('/pair')) week.refresh();
+    if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
-      if (document.visibilityState === 'visible' && !location.pathname.startsWith('/pair')) week.refresh();
+      if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh();
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
@@ -59,8 +62,8 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="しまの貯金箱" />
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
-  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href={asset('icons/apple-touch-icon-180.png')} />
+  <link rel="icon" href={asset('icons/icon.svg')} type="image/svg+xml" />
 </svelte:head>
 
 <Sprites />

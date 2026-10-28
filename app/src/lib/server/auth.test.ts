@@ -146,3 +146,30 @@ describe('round 3 security fixes', () => {
   });
 });
 
+describe('GitHub Pages UI (cross-origin)', () => {
+  const PAGES = 'https://huangwaylon.github.io';
+  it('a pwa session works as a bearer token; Shortcuts tokens still do not', async () => {
+    process.env.CORS_ORIGINS = PAGES;
+    const secret = pairA();
+    const e = fakeEvent('/api/week', { headers: { authorization: `Bearer ${secret}`, origin: PAGES } });
+    expect(await guard(e, opts())).toBeNull();
+    expect(e.locals.person).toBe('A');
+    const post = fakeEvent('/api/checkin', { method: 'POST', headers: { authorization: `Bearer ${secret}`, origin: PAGES }, body: '{}' });
+    expect(await guard(post, opts())).toBeNull();
+    const evil = fakeEvent('/api/checkin', { method: 'POST', headers: { authorization: `Bearer ${secret}`, origin: 'https://evil.example' }, body: '{}' });
+    expect((await guard(evil, opts()))?.status).toBe(403);
+    const sc = createDeviceToken(db, 'A', 'shortcut', 'phone').token;
+    expect((await guard(fakeEvent('/api/week', { headers: { authorization: `Bearer ${sc}` } }), opts()))?.status).toBe(401);
+    delete process.env.CORS_ORIGINS;
+  });
+  it('CORS only for allowed origins and only on /api/*', async () => {
+    const { corsOrigin } = await import('#lib/server/cors.ts');
+    const env = { CORS_ORIGINS: `${PAGES}, https://x.example/` } as NodeJS.ProcessEnv;
+    const req = (o: string) => new Request('https://mac/api/week', { headers: { origin: o } });
+    expect(corsOrigin(req(PAGES), '/api/week', env)).toBe(PAGES);
+    expect(corsOrigin(req('https://x.example'), '/api/week', env)).toBe('https://x.example');
+    expect(corsOrigin(req('https://evil.example'), '/api/week', env)).toBeNull();
+    expect(corsOrigin(req(PAGES), '/ingest/shortcut/A', env)).toBeNull();
+  });
+});
+
