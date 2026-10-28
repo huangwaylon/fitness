@@ -1,18 +1,8 @@
 // Sunday promise auto-check (motivational-coach round 3 §2, ADR 0011). Never a failure state: ○ "open", not ✗.
-import { STRENGTH } from '#lib/config/rules.ts';
+import { PROMISE_RULES } from '#lib/config/rules.ts';
 import type { LocalDate, PromiseKind, PromiseResult, Visit, WeekKey, WeekPromise, Workout } from '#lib/types.ts';
 import { addDays, weekDays } from '#lib/scoring/dates.ts';
 import { isStrengthWorkout } from '#lib/scoring/score.ts';
-
-/**
- * Promise thresholds. Not yet in rules.ts — see the contract change request in the scoring report.
- * `walkAnyWorkoutMin`: any workout this long satisfies a walk promise. `anyWorkoutMin` reuses the strength minimum.
- */
-export const PROMISE_RULES = {
-  walkTypes: ['Walking', 'Hiking'],
-  walkAnyWorkoutMin: 30,
-  anyWorkoutMin: STRENGTH.minWorkoutMin
-} as const;
 
 type Activity = { date: LocalDate; workout?: Workout; visit?: Visit };
 

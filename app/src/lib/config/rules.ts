@@ -28,6 +28,12 @@ export const STRENGTH = {
   minVisitMin: 30
 } as const;
 
+/** Daily active-minute cap: min(maxMin, max(minMin, ½ × weekly target)) (ADR 0002 round 2). */
+export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
+
+/** Promise auto-check thresholds (ADR 0011). */
+export const PROMISE_RULES = { walkTypes: ['Walking', 'Hiking'], walkAnyWorkoutMin: 30, anyWorkoutMin: 15 } as const;
+
 export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77 } as const;
 
 export const COZY = { maxPerMonth: 4 } as const;
