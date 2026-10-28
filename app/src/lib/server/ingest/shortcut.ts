@@ -16,9 +16,44 @@ export function looseNumber(v: unknown): number | null {
   return m ? Number(m[0]) : null;
 }
 
-/** ISO 8601, `2026-10-28 07:05:00 +0900` or `2026/10/28 7:05` (no offset → Tokyo). */
+const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+
+/** Shortcuts' default date text (when no Format Date step is used): English or Japanese locale. */
+function shortcutsDefaultDate(v: string): string | null {
+  const pad = (n: number | string) => String(n).padStart(2, '0');
+  const hm = (h: string, m: string, sec: string | undefined, ap: string | undefined) => {
+    let hour = Number(h);
+    const a = ap?.toLowerCase();
+    if (a === 'pm' || a === '午後') hour = hour % 12 + 12;
+    if (a === 'am' || a === '午前') hour = hour % 12;
+    return `${pad(hour)}:${m}:${sec ?? '00'}`;
+  };
+  // "Oct 28, 2026 at 8:10 AM" / "October 28, 2026 at 8:10:05 PM" / "Oct 28, 2026"
+  let m = v.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
+  if (m && MONTHS[m[1].toLowerCase()]) {
+    const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : '00:00:00';
+    return `${m[3]}-${pad(MONTHS[m[1].toLowerCase()])}-${pad(m[2])}T${t}+09:00`;
+  }
+  // "28 Oct 2026 at 08:10"
+  m = v.match(/^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
+  if (m && MONTHS[m[2].toLowerCase()]) {
+    const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : '00:00:00';
+    return `${m[3]}-${pad(MONTHS[m[2].toLowerCase()])}-${pad(m[1])}T${t}+09:00`;
+  }
+  // "2026年10月28日 8:10" / "2026年10月28日 午後8:10"
+  m = v.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m) {
+    const t = m[5] ? hm(m[5], m[6], m[7], m[4]) : '00:00:00';
+    return `${m[1]}-${pad(m[2])}-${pad(m[3])}T${t}+09:00`;
+  }
+  return null;
+}
+
+/** ISO 8601, `2026-10-28 07:05:00 +0900`, `2026/10/28 7:05`, or Shortcuts' default text (no offset → Tokyo). */
 export function looseDate(v: unknown): string | null {
   if (typeof v !== 'string') return null;
+  const native = shortcutsDefaultDate(v.trim().replace(/\u202f|\u00a0/g, ' '));
+  if (native) return native;
   let s = v.trim().replace(/\//g, '-');
   s = s.replace(/^(\d{4})-(\d{1,2})-(\d{1,2})/, (_, y, m, d) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
   s = s.replace(/([ T])(\d):/, '$10$2:');

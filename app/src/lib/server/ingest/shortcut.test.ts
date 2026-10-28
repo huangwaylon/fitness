@@ -24,6 +24,13 @@ describe('Shortcut ingest', () => {
     expect(looseDate('2026-10-28T07:05:00+09:00')).toBe('2026-10-28T07:05:00+09:00');
     expect(looseDate('2026/10/28 7:05')).toBe('2026-10-28T07:05:00+09:00');
     expect(looseDate('2026-10-27 23:30:00 +0000')).toBe('2026-10-27T23:30:00+00:00');
+    // Shortcuts' default date text, no Format Date step
+    expect(looseDate('Oct 28, 2026 at 8:10 PM')).toBe('2026-10-28T20:10:00+09:00');
+    expect(looseDate('Oct 28, 2026 at 12:05\u202fAM')).toBe('2026-10-28T00:05:00+09:00');
+    expect(looseDate('October 3, 2026')).toBe('2026-10-03T00:00:00+09:00');
+    expect(looseDate('28 Oct 2026 at 08:10')).toBe('2026-10-28T08:10:00+09:00');
+    expect(looseDate('2026年10月28日 午後8:10')).toBe('2026-10-28T20:10:00+09:00');
+    expect(looseDate('2026年10月3日 7:05')).toBe('2026-10-03T07:05:00+09:00');
   });
 
   it('totals raw samples per day; Watch + iPhone steps are not double-counted', () => {
