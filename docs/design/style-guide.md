@@ -1,6 +1,21 @@
 # Island Fund: Style Guide & Design Tokens
 
-Owner: UI/UX Designer · Status: v0.1 (design phase) · Companion files: `docs/design/mockup.html`, `docs/team/ui-ux-designer.md`
+Owner: UI/UX Designer · Status: v0.3 (simplicity first, Japanese-first, yen; decisions 0002–0006) · Companion files: `docs/design/mockup.html`, `docs/team/ui-ux-designer.md`
+
+## 0. Simplicity budget (top constraint; it overrides everything else)
+
+| Rule | Limit |
+|---|---|
+| Tabs | **3 max**: 島 Island · 旅の壺 Trip Jar · ふたり Us. Everything else is a sheet, never a tab |
+| Words per screen | **≤ 20–25** visible words (Japanese: ≤ ~40 characters), *excluding numbers*. Count them for every new screen |
+| Primary action | **One** per screen, in the thumb zone (Island: 今夜のチェック; Jar: 使う; Sunday: 壺に入れる) |
+| Big numbers | The key number is ≥ 2.5rem (Fredoka 600). Secondary numbers ≥ 1rem. A screen has at most **one hero number** |
+| Labels | Icons first; labels appear **on tap** (tooltip) when an icon is self-explanatory. No captions or explanations on screens |
+| Explanations | Go in the one-time onboarding or the **"?" sheet** (top-right on every screen) |
+| Rows | ≤ 5 rows per card, ≤ 3 cards per screen. Settlement ≤ 4 big rows + 1 purse row + promises |
+| Check-in | 3 big switches + 2 chips. No other inputs, no free text |
+| New feature test | If it adds a tab, a second primary action, or pushes a screen over the word budget, it goes into "?" or Us, or it's cut |
+| Copy | Short, warm, specific. One Juniper line (≤ ~8 words / ~16 characters) per screen at most |
 
 All tokens below are plain CSS custom properties. Paste the `:root` block into the app's base stylesheet; the mockup uses exactly these names.
 
@@ -20,11 +35,11 @@ All tokens below are plain CSS custom properties. Paste the `:root` block into t
 | `--leaf` | `#7BC67E` | Primary buttons, progress fill, grass |
 | `--leaf-soft` | `#BFE5B9` | Progress track, success backgrounds |
 | `--leaf-deep` | `#4E9A55` | Tree canopy shading, icon strokes (not text) |
-| `--leaf-ink` | `#2E6B38` | Green **text** (success labels, "+$2.50") |
+| `--leaf-ink` | `#2E6B38` | Green **text** (success labels, "+¥2,000") |
 | `--sky` | `#8FD3F4` | Sky, water, info accents |
 | `--sky-pale` | `#DDF2FB` | Info backgrounds, sea on the map |
 | `--sky-deep` | `#2F86B8` | Links / focus-ring (on cream) |
-| `--coral` | `#FF9B87` | Secondary buttons, treats, Shop accent |
+| `--coral` | `#FF9B87` | Treat Purse (ごほうび財布) accent, secondary buttons |
 | `--coral-soft` | `#FFD9CF` | Treat backgrounds |
 | `--coral-ink` | `#B04A3B` | Coral **text** (rare; warnings phrased gently) |
 | `--sun` | `#FFD66B` | Highlights, stars, "new!" badges |
@@ -99,14 +114,18 @@ All fonts are from Google Fonts and licensed under the **SIL Open Font License 1
 |---|---|---|---|
 | Display / numbers | **Fredoka** | 500, 600, 700 | Rounded, chunky; for headings, money, big stats |
 | Body / UI | **Nunito** | 400, 600, 700, 800 | Rounded terminals, highly legible at small sizes |
-| CJK / alt display | **Zen Maru Gothic** | 500, 700 | Optional: soft rounded Japanese-flavored headings, or if either partner prefers Japanese UI |
+| **Japanese (default UI language)** | **Zen Maru Gothic** | 500, 700 | Rounded gothic with full JIS kana + kanji coverage (all strings in the mockup render with it). OFL 1.1. Alternative: **M PLUS Rounded 1c** (also OFL, also full Japanese coverage) |
+
+**Japanese-first.** The UI is Japanese by default and switchable to English in ふたり → 言語 / Language. Latin digits and ¥ amounts stay in Fredoka, because the stack falls back per glyph and Fredoka has no CJK, so kana and kanji render in Zen Maru Gothic. Set `<html lang="ja">` (or `en`) so line breaking and the font fallback are correct. Use `font-feature-settings: "palt"` for proportional kana where supported. Japanese copy is denser, so budget about 40 characters per screen. Self-host only the subset you need (Zen Maru Gothic is large): `pyftsubset` with the strings in use plus JIS level 1.
+
+**Formats (Japan):** yen as `¥10,000` (integers, no decimals, comma thousands), times in 24 h JST (`19:30`), dates as `10月28日 水曜日` (JA) / `Wed 28 Oct` (EN), weeks as `第21週` / `Week 21`, metric units (km, kg, min).
 
 Self-host the `.woff2` files in the PWA (offline + privacy); during prototyping use:
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
 ```
 
 ### Type scale (rem-based so iOS Dynamic Type / browser zoom scales it)
@@ -297,7 +316,7 @@ html, body { min-height: 100dvh; overscroll-behavior-y: none; }
 
 - Primary actions (Check in, Collect, Drop in the jar) live in the bottom third, above the tab bar.
 - The top area is for glanceable, read-only content (island scene, totals). No essential button in the top-left corner.
-- Bottom sheets (not centered modals) for check-in, shop redemption, and confirmations; they open from the thumb.
+- Bottom sheets (not centered modals) for 今夜のチェック, the ごほうび財布 shop, the "?" help and confirmations; they open from the thumb.
 
 **Touch & input**
 
@@ -322,14 +341,18 @@ html, body { min-height: 100dvh; overscroll-behavior-y: none; }
 
 **Progress bar ("rope")**: track `--leaf-soft` + `--sh-inset`, fill `--leaf` with a subtle diagonal stripe; ends fully rounded; label inside or right-aligned in tabular numbers.
 
-**Fruit (weekly score unit)**: a 20 to 28px SVG fruit in its category color with a leaf sprig. *Unearned slot* = dashed outline at 40% opacity; *earned* = filled with a white highlight; *just earned* = bounce + sparkle. Trees show the **week**, and Monday resets them.
+**Fruit ring (weekly progress, no text)**: the category fruit (24–32px) inside a conic-gradient ring in its fruit color that fills to the % of that week's target. `background: conic-gradient(var(--c) calc(var(--p) * 1%), #EADFC8 0)` with a paper-colored inner disc (`inset: 4–5px`). Full = a 3px `--sun` halo plus a sparkle. Five rings sit on each tree on the Island. The label shows only on tap, as a tooltip ("筋トレ 1/2日").
 
-**Category row (score card)**: fruit icon + label + `earned/weight` in tabular numbers. The row background fills as a bar: `background: linear-gradient(90deg, var(--leaf-soft) var(--p), rgba(233,216,180,.35) var(--p))`. Full rows switch the value to `--leaf-ink`. Partner cards show only this (fruit and %), never raw metrics.
+**Hero score**: `43` at 2.6rem Fredoka + `/85` at 1rem `--ink-faint`, placed under each tree.
 
-**Score bar (settlement)**: 10px track, moon-to-firefly fill, plus a 2px marker at 85% labelled "85" (full share).
+**Jar (Trip Jar)**: one hero number (`¥186,500`) + `目標 ¥520,000`. The jar drawing has three strata (partner B plum, partner A apricot, team leaf). The per-person mini-jars fill against **their own maximum** (¥208,000 personal / ¥104,000 team per year), so they never read as a leaderboard. Island shows only the combined total.
 
-**Habit switch (check-in)**: a 62px-tall card row with a 54×32 pill switch (off = `--sand`, on = `--leaf`), `role="switch"`, saved on tap.
+**Settlement row**: avatar 42px · score at 1.9rem · ✓ if ≥ 85 · yen right-aligned at 1.45rem `--moon`. The team row shows only the yen, and copy never says whose score set its rate. A "暫定 / provisional" pill sits next to the total.
 
-**Tab bar**: floating rounded "leaf" bar, 5 items (Island, Jar, Shop, Museum, Us), active item gets a sand pebble behind its icon and the label turns `--ink`.
+**Promise row**: avatar · last week's marks (✓ kept, ○ not kept, **never ✗**) · next week's plan (when/where/what, ≤ 16 characters) · the partner's "応援してる" pill. No yen and no streak.
+
+**Habit switch (check-in)**: a 76px-tall card row with a 50px icon, a ≤ 2-word label (e.g. 野菜 2食, 甘い飲み物なし, 自炊) and a 60×36 pill switch (off `--sand`, on `--leaf`), `role="switch"`, saved on tap. Co-log = the partner's face button with a small "+".
+
+**Tab bar**: floating rounded "leaf" bar, **3 items** (島 Island, 旅の壺 Jar, ふたり Us), active item gets a sand pebble behind its icon and the label turns `--ink`.
 
 **Icons**: 24px grid, 2.25px rounded stroke in `--ink` with optional single flat fill from palette. See designer memo §4.
