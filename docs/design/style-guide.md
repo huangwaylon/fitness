@@ -29,13 +29,13 @@ All art is `.webp` with alpha, already downscaled. Render with `<OfficialArt key
 |---|---|---|---|
 | 島: the two villagers, one at the foot of each tree | `villagers/<id>` (full body, ≤ 512 px tall) | **22–24 cqw tall** (~88 px on a 390 pt phone) | Ground-shadow ellipse under the feet (ours). Idle bob on the `<img>` (transform only). Tap = squash + our emote bubble above the head |
 | Avatars: partner sheet, check-in sheet header, harvest rows, しまフォン 村人 picker | `villagers/<id>-icon` (128 px round head) | 40 / 56 / 64 px | Always on a pebble (`--r-blob`) in the person's tag colour at 30% |
-| Isabelle bubble (島, Jar, check-in done, harvest) | `hostArt('wave')` default · `'stand'` calm/info · `'bow'` thanks/sorry · `'winter'` Dec–Feb · `'icon'` in compact spots | **96 px** tall beside the bubble on 島 (72 px on Jar / sheets); icon 44 px | Sits outside the scene, left of the bubble, feet on the bubble's baseline. Name tag 「しずえ」 in `--tag-juniper` (yellow) |
-| The four fruit rings (peach · coconut · apple · pear) | `fruitArt(f)` (128 px inventory icon) | 34–40 px inside a 56 px ring (FruitRing), 22 px in lists | The ring (ours) shows progress; the official fruit sits in the centre and scales 0.7 → 1 with pct. Below 25% show it at 55% opacity |
-| On the trees | `fruitArt(f)` | 26–30 px | Hang 2 per tree; same ripening rule |
-| Money: every ¥ amount that is **savings** (jar total, harvest, ladder) | `moneyArt('bells')` (Bells bag) | 1.1em inline before the number; 48 px on the harvest total | Amounts stay ¥ (`¥146,200`). Treat purse uses the same bag at 85% |
-| Score / streak accents | `moneyArt('miles')`, `items/star-fragment` | 20–24 px | Optional, max one per card |
-| しまフォン launcher | `phone/*` app icons (92 px) for help/villager/notifications/sync/share; `money/leaf` for language | 56 px tiles | The icons are full squircle tiles: render without our tile background |
-| Jar screen ladder rungs / island scenery | `trees/palm`, `trees/cedar` (seasonal winter), `flowers/*` | Palm 30–40 cqw; flowers 20–28 px | Palm replaces our left tree in summer; cedar in winter (optional polish) |
+| Isabelle bubble (島, Jar, check-in done, harvest) | `<Host pose>`: `'wave'` default · `'stand'` calm/info · `'bow'` thanks/sorry; Dec–Feb the winter outfit replaces **every** pose (one outfit per screen, also through the harvest) · `head` in compact spots | **96 px** tall beside the bubble on 島 (72 px on Jar / sheets); icon 44 px | Sits outside the scene, left of the bubble, feet on the bubble's baseline. Name tag 「しずえ」 in `--tag-host` (yellow). A pending question is asked here, with two answer chips inside the bubble |
+| The four fruit rings (peach · coconut · apple · pear) | `fruitArt(f)` (128 px inventory icon) | 34–40 px inside a 56 px ring (FruitRing), 22 px in lists | The ring (ours) shows progress; the official fruit sits in the centre in one of **four ripeness stages**: bud < 25% (grey, 0.55) · small < 60% (desaturated, 0.75) · nearly < 100% (0.9) · ripe (full colour + sparkle). Tap = a cream detail bubble (`--c-ink-talk`), above the canopy on trees |
+| On the trees | `fruitArt(f)` | 26–30 px | 4 per tree (2×2); same four stages |
+| Score pills under the villagers | — | — | **Mine is the hero**: name tag + score + small `/100`. The partner's pill is quieter: name tag + their ripest fruit only (their number lives in the partner sheet) |
+| Money: every ¥ amount that is **savings** (jar total, harvest, ladder) | `moneyArt('bells')` (Bells bag) | 1.1em inline before the number; 48 px on the harvest total | Amounts stay ¥ (`¥146,200`) |
+| しまフォン launcher | `phone/diy` (使い方: a recipe = how-to) and `phone/passport` (村人) only, where the meaning matches; 言語 · お知らせ · 同期 · 見せる範囲 (lock) are our own flat squircle tiles in the same style | 64 px tiles | Official icons are full squircle tiles: render without our tile fill |
+| Island scenery | `flowers/*` | 20–28 px | None in winter |
 | Empty / error states | `host/tom-nook` (sleepy-friendly, calm) | 120 px | Only where a screen would otherwise be blank |
 
 Not used: Isabelle's white-background renders, Nook Miles ticket (reserved), `items/piggy-bank` (gallery only).
@@ -59,10 +59,10 @@ Hero: the jar + Bells bag + total (`--fs-hero`). Then ≤ 3 cards: 地層 (layer
 Night + stars. Steps as v2, but each person's row shows their villager icon, their four official fruit, and the earned amount with the Bells bag; the total pops with a 48 px bag. Isabelle `'bow'` on the final step 「おつかれさまでした！」.
 
 ### B.5 Pair screen (before pairing)
-Fan-art only (no official art needed, but allowed once loaded). Big 6-digit input, one button. Isabelle (fan-art fallback) explains in one line.
+Big 6-digit input, one button. Isabelle explains in one line.
 
 ### B.6 しまフォン launcher
-44 px phone button top-right on every screen. Opens the phone sheet: status row, title, a 3-column grid of 56 px icons (labels under): 使い方 · 村人 · 言語 · お知らせ · 同期 · 共有. Each opens in-phone with a ‹ back. 村人 shows the roster as 64 px official head icons in a 5-column grid (selected = leaf ring + check).
+44 px phone button top-right on every screen. Opens the phone sheet: status row, title, a 3-column grid of 56 px icons (labels under): 使い方 · 村人 · 言語 · お知らせ · 同期 · 見せる範囲. Each opens in-phone with a ‹ back. 村人 shows the roster as 64 px official head icons in a 5-column grid (selected = leaf ring + check).
 
 ---
 ## 1. Colour
@@ -161,7 +161,7 @@ No other packages. The stack falls back per glyph, so `¥146,200` in `--font-num
 
 ### 4.1 Speech bubble `Bubble.svelte`
 - **Box:** fill `--bubble`, radius `--r-bubble`, **no border**; `box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-soft)`; padding 18px 20px 16px; min-height 64px. Text `--fs-talk` 700 `--c-ink-talk`.
-- **Name tag:** a pill at `top: -14px; left: 18px`, `rotate(-4deg)`, padding 5px 12px, `--fs-tag` 700 `--c-ink`, fill = speaker tag colour (`--tag-juniper` for しずえ, `--tag-<partnerColour>` for villagers), lip `0 2px 0` 15% darker. It pops in 120ms after the box.
+- **Name tag:** a pill at `top: -14px; left: 18px`, `rotate(-4deg)`, padding 5px 12px, `--fs-tag` 700 `--c-ink`, fill = speaker tag colour (`--tag-host` for しずえ, `--tag-<partnerColour>` for villagers), lip `0 2px 0` 15% darker. It pops in 120ms after the box.
 - **Tail:** a 16px rounded triangle on the side facing the speaker, same fill, no stroke. Omit it when the speaker isn't on screen.
 - **▼:** 14×10px rounded triangle in `--c-amber`, centred at `bottom: -6px`, `if-nudge 700ms infinite`. Show only when typing has finished **and** another page follows (tap = next page). Single-page lines don't show it.
 - **Letter reveal:** each glyph is a `<span>` animated with `if-letter 120ms` at `--type-ms` (33ms) intervals. Add `--type-pause` after 。！？!? and half after 、,. Tapping the bubble finishes instantly. The real text sits in a visually hidden `aria-live="polite"` node; the animated spans are `aria-hidden`. Reduced motion: no reveal.
@@ -204,7 +204,7 @@ viewBox `0 0 390 540`, scaled to container width; the sky bleeds under the statu
 
 | Layer | v3 spec |
 |---|---|
-| Trees (×2) | Our canopy stays (it carries the seasons), but the fruit hanging on it are the **official fruit icons** (26–30 px, 2 per tree: left tree = peach + coconut, right = apple + pear), ripening 0.7 → 1 scale with pct. Optional polish: in summer the left tree may be `trees/palm`, in winter `trees/cedar` |
+| Trees (×2) | Our canopy stays (it carries the seasons), but the fruit hanging on it are the **official fruit icons** (26–30 px, 2 per tree: left tree = peach + coconut, right = apple + pear), in four ripeness stages (§A) |
 | Villagers | HTML overlay (`<OfficialArt key={villagerArt(id)}>`, fallback = `VillagerArt`), positioned in cqw at each tree's foot, **22–24 cqw tall**, feet on the grass, our ground shadow (rx 18 ry 4 `--sh-ground`) under them. Idle bob `if-bob` (transform only, offset −1.2s for the partner). Tap target = the whole figure + 8px. Emotes (§4.7) float above the head at 4 cqw from the top of the image |
 | Score pills | Under each villager: name tag (villager name) + score `NN` in `--font-num`, cream pill with lip |
 | Jar | Unchanged; tap → 旅の壺 |
@@ -314,9 +314,10 @@ Data shape (in `lib/villagers/species.ts`): `{ id, nameJa, colourways: [{ id, ba
 API: `<Villager species colourway expression="happy" size={64} head={false} emote={false} label />`.
 
 ### 7.5 Host: しずえ (Isabelle)
-- **Primary:** official art via `hostArt(pose)` (§A). Pose by situation: `wave` = cheer / greeting / check-in saved; `stand` = info, neutral, Jar; `bow` = harvest done, thanks, error apologies; `winter` replaces `stand` Dec–Feb; `icon` in the check-in sheet header and toasts.
-- **Fallback:** our fan-art `IsabelleArt.svelte` (via `Isabelle.svelte` / `Juniper.svelte`, same props: `expression size head emote`). The fallback keeps the five expressions; the official art maps `cheer → wave`, `happy → stand` (or `wave` on 島), `proud → wave`, `surprised → stand`, `sleepy → stand`.
-- Name tag 「しずえ」 / "Isabelle" in `--tag-juniper`.
+- **Primary:** official art via `hostArt(pose)` (§A). Pose by situation: `wave` = cheer / greeting / check-in saved; `stand` = info, neutral, Jar; `bow` = harvest done, thanks, error apologies; Dec–Feb the `winter` outfit replaces every pose; `head` (icon) in toasts. A partner's action (high-five) toasts with the partner's villager icon instead.
+- **Component:** `<Host pose size head />` (`Host.svelte`). **Fallback:** one generic `Silhouette.svelte` (a soft blob with two eyes, also used for villagers in their colour) if an image is missing.
+- **Voice:** です/ます in every line and toast (「記録しました！」, 「あとでもう一度お願いします」).
+- Name tag 「しずえ」 / "Isabelle" in `--tag-host`. i18n keys `host.*` (the server still sends `juniper.*`; `hostLine()` accepts both).
 
 ---
 
@@ -337,8 +338,8 @@ iPhone portrait, 375–430pt, standalone PWA. Safe areas via `--safe-*`. 44pt mi
 
 | | **Builder A: scene & art integration** | **Builder B: UI chrome & screens** |
 |---|---|---|
-| Owns (create / edit) | `lib/components/IslandScene.svelte`, `Villager.svelte`, `Isabelle.svelte` / `Juniper.svelte`, `FruitRing.svelte`, `LeafCoin.svelte` (→ Bells bag wrapper), `Emote.svelte`, `Sprites.svelte`, `Icon.svelte`, `OfficialArt.svelte`, `lib/client/assets.ts`, `lib/villagers/*`, `routes/dev/characters/+page.svelte` (art gallery: every manifest key + its fallback side by side), `scripts/fetch-assets.ts`, `static/art/**`, `static/icons/*` | `lib/components/theme.css`, `TabBar.svelte` (→ 2 tabs), `ShimaPhone.svelte` + `HelpButton.svelte` (launcher, 村人 picker with official icons via A's helpers), `Bubble.svelte` (Isabelle placement per §A), `Sheet.svelte`, `SyncPill.svelte`, `Rope.svelte`, `CheckinSheet.svelte`, `HarvestOverlay.svelte`, `routes/+layout.svelte`, `routes/+page.svelte`, `routes/jar/+page.svelte`, `routes/pair/+page.svelte`, **delete** `routes/us/` and any promise / cozy UI, partner sheet (new `PartnerSheet.svelte`), `lib/client/theme.svelte.ts`, `lib/i18n/*` |
-| Delivers | §A placement inside the scene, §5, §7.5 art mapping, §8; stable APIs: `<OfficialArt key alt size width eager fallback>`, `villagerArt(id, icon?)`, `hostArt(pose)`, `fruitArt(f)`, `moneyArt(k)`, `<Villager … />` and `<Isabelle expression size />` rendering official art with fan-art fallback (new optional prop `official={true}` default) | §0, §B (all screens), §4.2 dock + launcher, §5.1 polish (spacing, hierarchy, targets, copy), Bells bag next to savings amounts using A's `moneyArt('bells')` |
+| Owns (create / edit) | `lib/components/IslandScene.svelte`, `Villager.svelte`, `Host.svelte`, `FruitRing.svelte`, `LeafCoin.svelte` (→ Bells bag wrapper), `Emote.svelte`, `Sprites.svelte`, `OfficialArt.svelte`, `lib/client/assets.ts`, `lib/villagers/*`, `routes/dev/characters/+page.svelte` (art gallery: every manifest key + its fallback side by side), `scripts/fetch-assets.ts`, `static/art/**`, `static/icons/*` | `lib/styles/theme.css`, `TabBar.svelte` (→ 2 tabs), `ShimaPhone.svelte` + `HelpButton.svelte` (launcher, 村人 picker with official icons via A's helpers), `Bubble.svelte` (Isabelle placement per §A), `Sheet.svelte`, `SyncPill.svelte`, `Rope.svelte`, `CheckinSheet.svelte`, `HarvestOverlay.svelte`, `routes/+layout.svelte`, `routes/+page.svelte`, `routes/jar/+page.svelte`, `routes/pair/+page.svelte`, **delete** `routes/us/` and any promise / cozy UI, partner sheet (new `PartnerSheet.svelte`), `lib/client/theme.svelte.ts`, `lib/i18n/*` |
+| Delivers | §A placement inside the scene, §5, §7.5 art mapping, §8; stable APIs: `<OfficialArt key alt size width eager fallback>`, `villagerArt(id, icon?)`, `hostArt(pose)`, `fruitArt(f)`, `moneyArt(k)`, `<Villager … />` and `<Host pose size head />` rendering official art with the `Silhouette` fallback | §0, §B (all screens), §4.2 dock + launcher, §5.1 polish (spacing, hierarchy, targets, copy), Bells bag next to savings amounts using A's `moneyArt('bells')` |
 | Until the other lands | Keep existing props working | Use `<OfficialArt>` directly for icons; keep using `Villager` / `Isabelle` (they upgrade in place) |
 
 **Off-limits to both:** `lib/server/**`, `routes/api/**`, `lib/scoring/**`, `lib/types.ts` (engineer). **Shared:** `lib/styles/tokens.css` is owned by the designer; builders only **append** in a marked `/* Builder A */` or `/* Builder B */` block, never rename. Run `npm run check` and `npx vite build` before every push; `git pull --rebase --autostash origin main`; `git add` only your own paths.
