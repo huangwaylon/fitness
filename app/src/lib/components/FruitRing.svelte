@@ -9,8 +9,10 @@
     size?: string;
     /** Show the % under the ring (Us page). */
     showPct?: boolean;
+    /** Hanging on an island tree: a leaf on top, and the fruit ripens (grows, colours in) with pct. */
+    onTree?: boolean;
   }
-  let { fruit, view, size = '46px', showPct = false }: Props = $props();
+  let { fruit, view, size = '46px', showPct = false, onTree = false }: Props = $props();
 
   let open = $state(false);
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -40,13 +42,21 @@
     type="button"
     class="fr"
     class:full
+    class:tree={onTree}
     style:--p={pct}
+    style:--ripe={pct / 100}
     style:--c="var(--f-{fruit})"
     aria-label={label}
     aria-expanded={open}
     onclick={toggle}
   >
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{fruit}" /></svg>
+    {#if onTree}
+      <svg class="stem" viewBox="0 0 16 10" aria-hidden="true">
+        <path d="M8 9 Q9 3 15 2 Q12.6 8.6 8 9 Z" fill="#7BC67E" stroke="#4A3A2C" stroke-width="1.3" stroke-linejoin="round" />
+        <path d="M8 9.4 V5.4" stroke="#8A5A3B" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+    {/if}
   </button>
   {#if open}
     <span class="tip" role="status">{label}</span>
@@ -67,6 +77,16 @@
   .fr:active { transform: scale(.94); }
   .fr::before { content: ''; position: absolute; inset: 9%; border-radius: 50%; background: var(--surface); }
   .fr svg { position: relative; width: 60%; height: 60%; }
+  /* On the tree: a cream bubble on a branch; the fruit grows and colours in as it ripens. */
+  .fr.tree { box-shadow: 0 3px 0 rgba(46, 80, 40, .28); }
+  .fr.tree::before { background: var(--bubble); }
+  .fr.tree svg:first-child {
+    transform: scale(calc(.62 + var(--ripe) * .38));
+    filter: saturate(calc(.25 + var(--ripe) * .75)) brightness(calc(1.12 - var(--ripe) * .12));
+    transition: transform var(--dur-slow) var(--ease-bounce), filter var(--dur-slow) var(--ease-soft);
+  }
+  .fr.tree .stem { position: absolute; top: -18%; left: 50%; width: 38%; height: 24%; transform: translateX(-30%); }
+  .fr.tree.full { box-shadow: 0 0 0 3px var(--sun), 0 3px 0 rgba(46, 80, 40, .28); }
   .fr.full { box-shadow: 0 0 0 3px var(--sun); }
   .fr.full::after {
     content: ''; position: absolute; top: -4px; right: -2px; width: 14px; height: 14px; background: var(--sun);
