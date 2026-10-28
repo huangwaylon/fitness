@@ -212,3 +212,14 @@ export const notificationLog = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.person, t.localDate] })]
 );
+
+/** Each person's tap on 「壺に入れる」 for a harvested week; both rows → harvest closes. */
+export const harvestConfirm = sqliteTable(
+  'harvest_confirm',
+  {
+    weekKey: text('week_key').notNull(),
+    person: text('person', { enum: ['A', 'B'] }).notNull(),
+    at: text('at').notNull().$defaultFn(now)
+  },
+  (t) => [primaryKey({ columns: [t.weekKey, t.person] })]
+);
