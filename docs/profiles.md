@@ -14,5 +14,7 @@ Body-size differences mean active-energy (Move ring) numbers aren't comparable b
 
 ## Context (added 2026-10-28)
 - **Location:** Japan (JST, metric, ¥). Currency for all rewards: **yen**.
-- **Gyms:** one partner trains with a **personal trainer**; the other has an **Anytime Fitness (Japan)** membership. Which partner has which is TBD.
+- **Gyms:** **Partner B (F, 26)** trains with a **personal trainer**. **Partner A (M, 29)** has an **Anytime Fitness (Japan)** membership.
 - **Design constraint:** the app must be super simple: few pages, little text, readable at a glance.
+- **Language:** app UI in **Japanese by default**, switchable to English.
+- **Budget confirmed:** Trip Jar ¥520,000/yr (¥10,000/week); Treat Purse up to ¥104,000/yr (¥1,000 per person per week at ≥ 60 fruit).
