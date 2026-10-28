@@ -1,8 +1,8 @@
 <script lang="ts">
-  // 今夜のチェック: my three habits for today (or yesterday, 48 h fill-in), saved on tap.
-  // No snack chip (round 3). 正月: eating isn't scored, so it's "off".
+  // 今夜のチェック (style guide v3 §B.2): my three habits for today (or yesterday, 48 h fill-in).
+  // Each tap saves at once; 保存 just closes. 正月: eating isn't scored, so it's "off".
   import Sheet from './Sheet.svelte';
-  import Villager from './Villager.svelte';
+  import Avatar from './Avatar.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
   import { t, addDays, weekdayShort, formatDate } from '#lib/i18n/index.ts';
@@ -46,7 +46,7 @@
 <Sheet bind:open label={t('checkin.title')} {onclose}>
   {#if view && me}
     <div class="head">
-      <span class="av"><Villager person={view.me} size={52} /></span>
+      <Avatar person={view.me} villager={me.villager} size={56} />
       <h2>{which === 'today' ? t('checkin.title') : t('checkin.yesterday')}</h2>
       <div class="days" role="tablist">
         <button type="button" role="tab" class="day" class:fillable={yesterdayFillable} aria-selected={which === 'yesterday'}
@@ -58,7 +58,7 @@
 
     {#if newYearOff}
       <div class="off card">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>
         <p>{t('checkin.newYearOff')}</p>
       </div>
     {:else}
@@ -75,12 +75,12 @@
       {/each}
     </div>
     {/if}
+    <button type="button" class="btn save" onclick={() => (open = false)}>{t('common.save')}</button>
   {/if}
 </Sheet>
 
 <style>
   .head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .av { width: 56px; height: 56px; border-radius: var(--r-blob); background: color-mix(in srgb, var(--p-plum) 28%, var(--surface)); display: grid; place-items: center; flex: none; }
   h2 { font-size: var(--fs-h1); }
   .days { display: flex; gap: 4px; margin-left: auto; padding: 4px; border-radius: var(--r-pill); background: var(--c-paper-2); box-shadow: var(--sh-inset); }
   :global(:root[data-theme="night"]) .days { background: #24314F; }
@@ -93,9 +93,10 @@
   .day.fillable::after { content: ''; position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-sky); }
 
   .habits { display: grid; gap: 12px; }
+  .save { margin-top: 18px; }
   .habit {
     appearance: none; cursor: pointer; text-align: left; position: relative; width: 100%; font: inherit;
-    display: flex; align-items: center; gap: 14px; min-height: 78px; padding: 10px 16px; border-radius: var(--r-card);
+    display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 10px 16px; border-radius: var(--r-card);
     background: var(--c-paper); color: var(--c-ink); border: var(--bw) solid var(--paper-edge); box-shadow: 0 4px 0 var(--sand-deep);
     outline: 2px dashed var(--c-stitch); outline-offset: -7px;
     transition: transform var(--dur-base) var(--ease-bounce), background var(--dur-base);
@@ -108,7 +109,7 @@
   .habit[role="switch"] .switch { background: var(--c-paper-2); border-color: var(--paper-edge); }
   .habit.on[role="switch"] .switch { background: var(--c-leaf); border-color: var(--c-leaf-lip); }
   .txt { flex: 1; line-height: 1.25; text-wrap: pretty; font-weight: 900; font-size: var(--fs-body-lg); }
-  .txt small { display: block; font: 700 var(--fs-micro)/1.3 var(--font-ui); color: var(--c-ink-faint); margin-top: 2px; }
+  .txt small { display: block; font: 700 var(--fs-micro)/1.3 var(--font-ui); color: var(--c-ink-talk); margin-top: 3px; font-size: var(--fs-caption); }
   .plus { position: absolute; right: 86px; top: 14px; width: 28px; height: 28px; animation: floatUp .9s var(--ease-soft) forwards; }
 
   .off { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 26px 16px; }

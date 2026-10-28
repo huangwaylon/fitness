@@ -1,41 +1,38 @@
 <script lang="ts">
-  // しまフォン launcher (style guide §4.2): a phone-shaped sheet with a status row, the focused
-  // app's title and a 3-column grid of squircle apps. Each app opens its panel inside the phone.
-  // Settings live here (moved out of ふたり): help, villager, language, notifications, sync, sharing.
+  // しまフォン launcher (style guide v3 §B.6): a phone-shaped sheet with a status row, a title and a
+  // 3-column grid of official NookPhone app icons. Each app opens in-phone with a ‹ back.
+  // Settings live here: help, villager, language, notifications, sync, sharing.
   import { onMount } from 'svelte';
   import type { FruitKey } from '#lib/types.ts';
   import Sheet from './Sheet.svelte';
-  import Villager from './Villager.svelte';
   import Bubble from './Bubble.svelte';
-  import LeafCoin from './LeafCoin.svelte';
+  import Avatar from './Avatar.svelte';
+  import Villager from './Villager.svelte';
+  import OfficialArt from './OfficialArt.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
+  import { art, fruitArt, moneyArt, villagerArt } from '#lib/client/assets.ts';
   import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
   import { pushState, enablePush, type PushState } from '#lib/client/push.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
   import { t, i18n, formatSyncTime } from '#lib/i18n/index.ts';
 
   type AppId = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
-  interface Props {
-    open: boolean;
-    topic: 'island' | 'jar' | 'us';
-  }
-  let { open = $bindable(), topic }: Props = $props();
+  let { open = $bindable(), topic }: { open: boolean; topic: 'island' | 'jar' } = $props();
 
-  // Builder A's flat app glyphs (#app-*), with line-icon fallbacks until they land.
-  const APPS: { id: AppId; glyph: string; fb: string; fill: string }[] = [
-    { id: 'help', glyph: 'app-help', fb: 'i-info', fill: 'var(--app-help)' },
-    { id: 'villager', glyph: 'app-villager', fb: 'i-pencil', fill: 'var(--app-villager)' },
-    { id: 'lang', glyph: 'app-lang', fb: 'i-globe', fill: 'var(--app-lang)' },
-    { id: 'bell', glyph: 'app-bell', fb: 'i-bell', fill: 'var(--app-bell)' },
-    { id: 'sync', glyph: 'app-sync', fb: 'i-sync', fill: 'var(--app-sync)' },
-    { id: 'share', glyph: 'app-share', fb: 'i-eye', fill: 'var(--app-share)' }
+  // Official NookPhone tiles (full squircles); `glyph` = our tile glyph when the art is missing.
+  const APPS: { id: AppId; key: string; glyph: string; fill: string; tile?: boolean }[] = [
+    { id: 'help', key: 'phone/diy', glyph: 'app-help', fill: 'var(--app-help)' },
+    { id: 'villager', key: 'phone/passport', glyph: 'app-villager', fill: 'var(--app-villager)' },
+    { id: 'lang', key: moneyArt('leaf'), glyph: 'app-lang', fill: 'var(--app-lang)', tile: true },
+    { id: 'bell', key: 'phone/rescue', glyph: 'app-bell', fill: 'var(--app-bell)' },
+    { id: 'sync', key: 'phone/nook-miles', glyph: 'app-sync', fill: 'var(--app-sync)' },
+    { id: 'share', key: 'phone/island-designer', glyph: 'i-eye', fill: 'var(--app-share)' }
   ];
   /** Raw numbers that can be shared. Eating answers are never shared. */
   const SHAREABLE: FruitKey[] = ['peach', 'coconut', 'apple'];
 
   let app = $state<AppId | null>(null);
-  let has = $state<Record<string, boolean>>({});
   let clock = $state('');
   let push = $state<PushState>('off');
   let pushBusy = $state(false);
@@ -46,13 +43,13 @@
   /** My current roster villager (prefs `villager`, else the per-person default). */
   const current = $derived(me && view ? resolveLook({ villager: me.villager, person: view.me }).id : null);
   const title = $derived(app ? t(`phone.app.${app}`) : t('phone.name'));
+  const vName = (id: string) => (i18n.locale === 'ja' ? ROSTER[id as keyof typeof ROSTER].nameJa : ROSTER[id as keyof typeof ROSTER].nameEn);
 
   function tick() {
     clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
   }
 
   onMount(() => {
-    for (const a of APPS) has[a.glyph] = !!document.getElementById(a.glyph);
     tick();
     const id = setInterval(tick, 20_000);
     pushState().then((s) => (push = s));
@@ -78,13 +75,12 @@
   function saveName() {
     if (me && name.trim() && name.trim() !== me.villagerName) setVillagerName(name);
   }
-
 </script>
 
 <Sheet bind:open label={t('phone.name')} variant="phone">
   <div class="status" aria-hidden="true">
     <span class="money">{clock}</span>
-    <LeafCoin size={18} />
+    <OfficialArt key={moneyArt('leaf')} size={18} />
     <svg class="season" viewBox="0 0 24 24">
       {#if theme.season === 'spring'}
         {#each [0, 72, 144, 216, 288] as r (r)}<ellipse cx="12" cy="7" rx="3.4" ry="4.6" fill="#FFC2D4" transform="rotate({r} 12 12)" />{/each}<circle cx="12" cy="12" r="2.4" fill="#FFD66B" />
@@ -100,7 +96,9 @@
 
   <div class="titlebar">
     {#if app}
-      <button type="button" class="back" aria-label={t('common.back')} onclick={() => (app = null)}>‹</button>
+      <button type="button" class="back" aria-label={t('common.back')} onclick={() => (app = null)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </button>
     {/if}
     <h2>{title}</h2>
   </div>
@@ -108,29 +106,44 @@
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
-        <button type="button" class="app" style:--fill={a.fill} style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
-          <span class="tile"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{has[a.glyph] ? a.glyph : a.fb}" /></svg></span>
+        {@const official = !!art(a.key)}
+        <button type="button" class="app" style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
+          <span class="tile" class:bare={official && !a.tile} style:--fill={a.fill}>
+            {#if official}
+              <OfficialArt key={a.key} size={a.tile ? 36 : 64} eager />
+            {:else}
+              <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>
+            {/if}
+          </span>
           <span class="lbl">{t(`phone.app.${a.id}`)}</span>
         </button>
       {/each}
     </div>
   {:else if app === 'help'}
     <div class="panel">
-      <Bubble text={t(`help.${topic}`)} side="left" />
+      <Bubble text={t(`help.${topic}`)} host="stand" />
     </div>
   {:else if app === 'villager' && view && me && current}
     <div class="panel">
       <div class="preview">
-        {#key current}<Villager person={view.me} villager={current} size={104} expression="cheer" emote />{/key}
-        <input class="name" type="text" maxlength="12" aria-label={t('us.name')} bind:value={name} onblur={saveName}
-          onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
+        {#key current}
+          <span class="pv">
+            <OfficialArt key={villagerArt(current)} alt="" size={104} eager>
+              {#snippet fallback()}<Villager person={view.me} villager={current} size={104} expression="cheer" emote />{/snippet}
+            </OfficialArt>
+          </span>
+        {/key}
+        <label class="namefield">
+          <span>{vName(current)}</span>
+          <input class="name" type="text" maxlength="12" aria-label={t('phone.name.label')} bind:value={name} onblur={saveName}
+            onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
+        </label>
       </div>
       <div class="roster" role="radiogroup" aria-label={t('phone.app.villager')}>
         {#each ROSTER_IDS as id (id)}
-          {@const v = ROSTER[id]}
-          <button type="button" class="rv" role="radio" aria-checked={current === id} onclick={() => setVillager(id)}>
-            <Villager person={view.me} villager={id} size={44} head />
-            <span>{i18n.locale === 'ja' ? v.nameJa : v.nameEn}</span>
+          <button type="button" class="rv" role="radio" aria-checked={current === id} aria-label={vName(id)} onclick={() => setVillager(id)}>
+            <Avatar person={view.me} villager={id} size={52} />
+            {#if current === id}<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}
           </button>
         {/each}
       </div>
@@ -145,37 +158,40 @@
     </div>
   {:else if app === 'bell'}
     <div class="panel center">
-      <svg class="hero-ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bell" /></svg>
+      <OfficialArt key="phone/rescue" size={72} />
       {#if push === 'on'}
-        <p class="state ok">✓ {t('us.pushOn')}</p>
+        <p class="state ok">✓ {t('phone.push.on')}</p>
       {:else if push === 'install' || push === 'unsupported'}
-        <p class="state">{t('us.pushInstall')}</p>
+        <p class="state">{t('phone.push.install')}</p>
       {:else if push === 'denied'}
-        <p class="state">{t('us.pushDenied')}</p>
+        <p class="state">{t('phone.push.denied')}</p>
       {:else}
         <p class="state">{t('phone.pushHint')}</p>
-        <button type="button" class="btn" disabled={pushBusy} onclick={turnOnPush}>{t('us.pushEnable')}</button>
+        <button type="button" class="btn" disabled={pushBusy} onclick={turnOnPush}>{t('phone.push.enable')}</button>
       {/if}
     </div>
   {:else if app === 'sync' && view}
     <div class="panel rows">
       {#each [view.people[view.me], view.people[view.partner]] as p (p.person)}
         <div class="row static">
-          <Villager person={p.person} size={36} head />
+          <Avatar person={p.person} villager={p.villager} size={40} />
           <span class="rl">{p.villagerName}</span>
           <span class="money when">{formatSyncTime(p.lastSyncAt, view.today)}</span>
         </div>
       {/each}
-      <p class="cap">{t('us.sync')} · {week.offline ? t('sync.offline', { time: week.lastSync ? formatSyncTime(week.lastSync) : '' }) : week.syncing ? t('sync.syncing') : t('sync.last', { time: week.lastSync ? formatSyncTime(week.lastSync) : '' })}</p>
-      <button type="button" class="btn paper small" disabled={week.syncing} onclick={() => week.refresh()}>{t('phone.syncNow')}</button>
+      <button type="button" class="btn paper" disabled={week.syncing} onclick={() => week.refresh()}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sync" /></svg>{week.syncing ? t('sync.syncing') : t('phone.syncNow')}
+      </button>
     </div>
   {:else if app === 'share' && view}
     <div class="panel rows">
-      <p class="cap">{t('help.us')}</p>
+      <p class="cap">{t('help.share')}</p>
       {#each SHAREABLE as m (m)}
         {@const on = view.visibility?.[m] ?? false}
         <button type="button" class="row" role="switch" aria-checked={on} onclick={() => setVisibility(m, !on)}>
-          <svg class="fruit" viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{m}" /></svg>
+          <OfficialArt key={fruitArt(m)} size={32}>
+            {#snippet fallback()}<svg class="fruit" viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{m}" /></svg>{/snippet}
+          </OfficialArt>
           <span class="rl">{t('fruit.' + m)}</span>
           <span class="switch" aria-hidden="true"></span>
         </button>
@@ -187,61 +203,71 @@
 <style>
   .status {
     display: flex; justify-content: center; align-items: center; gap: 10px; margin: -2px 0 6px;
-    font-size: var(--fs-caption); font-weight: 700; color: var(--text-faint);
+    font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft);
   }
   .status .money { font-size: .95rem; }
   .season { width: 18px; height: 18px; }
   .titlebar { position: relative; display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 14px; }
   .titlebar h2 { font-size: var(--fs-h2); font-weight: 900; text-align: center; }
   .back {
-    position: absolute; left: 0; top: 2px; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
-    background: var(--surface); box-shadow: 0 3px 0 var(--lip); font: 700 1.7rem/1 var(--font-num); color: var(--text-soft);
-    display: grid; place-items: center; padding-bottom: 4px;
+    position: absolute; left: 0; top: 2px; width: 44px; height: 44px; border-radius: 50%; border: var(--bw) solid var(--edge); cursor: pointer;
+    background: var(--surface); box-shadow: 0 3px 0 var(--lip); color: var(--text); display: grid; place-items: center; padding: 0;
   }
-  .grid { display: grid; grid-template-columns: repeat(3, 64px); justify-content: center; gap: 22px 28px; padding: 8px 0 18px; }
-  .app { appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 7px; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .back svg { width: 22px; height: 22px; }
+  .back:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--lip); }
+  .grid { display: grid; grid-template-columns: repeat(3, 72px); justify-content: center; gap: 20px 30px; padding: 8px 0 18px; }
+  .app {
+    appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 8px;
+    animation: if-pop var(--dur-pop) var(--ease-bounce) both; border-radius: 18px;
+  }
   .tile {
     width: 64px; height: 64px; border-radius: var(--r-squircle); background: var(--fill); display: grid; place-items: center;
     box-shadow: 0 4px 0 color-mix(in srgb, var(--fill) 72%, #000 28%), inset 0 3px 0 rgba(255, 255, 255, .35);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
+  /* Official icons are full squircle tiles already: no tile of ours, just the lip. */
+  .tile.bare { background: none; box-shadow: none; filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .22)); }
   .app:active .tile { transform: translateY(3px) scale(1.06, .9); transition-duration: var(--dur-tap); }
   .tile svg { width: 34px; height: 34px; color: var(--c-ink); }
   .lbl { font: 700 var(--fs-caption)/1.1 var(--font-ui); color: var(--text); white-space: nowrap; }
 
   .panel { display: grid; gap: 14px; animation: rise var(--dur-base) var(--ease-soft); }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .preview { display: flex; align-items: center; gap: 14px; justify-content: center; }
+  .preview { display: flex; align-items: flex-end; gap: 14px; }
+  .pv { width: 96px; display: grid; justify-items: center; flex: none; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .namefield { flex: 1; min-width: 0; display: grid; gap: 6px; padding-bottom: 6px; }
+  .namefield span { font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
   .name {
-    flex: 1; max-width: 12em; min-height: 48px; border-radius: var(--r-sm); border: var(--bw) solid var(--edge);
+    width: 100%; min-height: 52px; border-radius: var(--r-sm); border: var(--bw) solid var(--edge);
     background: var(--surface); color: var(--text); padding: 0 14px; font-weight: 700; box-shadow: var(--sh-inset);
   }
-  .roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 42dvh; overflow: auto; padding: 2px 2px 6px; }
+  .roster { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; justify-items: center; max-height: 40dvh; overflow: auto; padding: 4px 2px 8px; }
   .rv {
-    appearance: none; cursor: pointer; border-radius: var(--r-md); border: var(--bw) solid var(--edge); padding: 6px 2px 5px;
-    background: var(--surface); display: grid; justify-items: center; gap: 2px; box-shadow: 0 3px 0 var(--lip); color: var(--text);
-    transition: transform var(--dur-base) var(--ease-bounce);
+    appearance: none; cursor: pointer; border: 0; padding: 0; background: none; border-radius: var(--r-blob); position: relative;
+    box-shadow: 0 0 0 3px transparent; transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-quick);
   }
-  .rv:active { transform: translateY(2px) scale(1.05, .93); transition-duration: var(--dur-tap); }
-  .rv span { font: 700 .64rem/1.1 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .rv[aria-checked='true'] { border-color: var(--c-leaf); background: var(--c-leaf-soft); box-shadow: 0 3px 0 var(--c-leaf-lip); color: var(--c-ink); }
+  .rv:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
+  .rv[aria-checked='true'] { box-shadow: 0 0 0 3px var(--c-leaf), 0 3px 0 3px var(--c-leaf-lip); }
+  .ck {
+    position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; padding: 3px; border-radius: 50%;
+    background: var(--c-leaf); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-leaf-lip);
+  }
 
-  .rows { gap: 8px; }
+  .rows { gap: 10px; }
   .row {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px;
     border-radius: var(--r-card); border: var(--bw) solid var(--edge); background: var(--surface); color: var(--text);
     box-shadow: var(--sh-lip); text-align: left; width: 100%;
   }
+  .row:not(.static):active { transform: translateY(2px); }
   .row.static { cursor: default; }
   .rl { flex: 1; font-weight: 700; font-size: var(--fs-body-lg); }
   .when { font-size: 1rem; color: var(--text-soft); }
   .radio { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--edge); flex: none; }
   .row[aria-checked='true'] .radio { border-color: var(--c-leaf-lip); background: radial-gradient(circle, var(--c-leaf) 0 6px, transparent 7px); }
   .fruit { width: 32px; height: 32px; flex: none; }
-  .cap { margin: 2px 4px 4px; font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); text-align: center; }
-  .rows .btn { justify-self: center; }
+  .cap { margin: 0 4px 4px; font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); text-align: center; }
   .center { justify-items: center; text-align: center; padding-top: 8px; }
-  .hero-ic { width: 56px; height: 56px; color: var(--text-soft); }
   .state { margin: 0; font-weight: 700; font-size: var(--fs-body-lg); color: var(--text-soft); }
   .state.ok { color: var(--c-leaf-ink); }
   :global(:root[data-theme="night"]) .state.ok { color: var(--c-leaf-soft); }

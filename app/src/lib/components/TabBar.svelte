@@ -1,20 +1,15 @@
 <script lang="ts">
+  // しまフォン dock (style guide v3 §4.2): a floating phone slab with two half-width tabs,
+  // each a squircle app tile with its label beside it.
   import { resolve } from '$app/paths';
-  import { routeOf } from '#lib/client/paths.ts';
-  // しまフォン dock (style guide §4.2): a floating phone slab with three squircle app tiles.
-  import { onMount } from 'svelte';
   import { page } from '$app/state';
+  import { routeOf } from '#lib/client/paths.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  // Builder A ships flat app-tile glyphs (#app-*); until then fall back to the line icons (#i-*).
   const tabs = [
-    { route: '/', href: resolve('/'), app: 'app-island', icon: 'i-island', fill: 'var(--app-island)', key: 'tab.island' },
-    { route: '/jar', href: resolve('/jar'), app: 'app-jar', icon: 'i-jar', fill: 'var(--app-jar)', key: 'tab.jar' },
-    { route: '/us', href: resolve('/us'), app: 'app-us', icon: 'i-us', fill: 'var(--app-us)', key: 'tab.us' }
+    { route: '/', href: resolve('/'), glyph: 'app-island', fill: 'var(--app-island)', key: 'tab.island' },
+    { route: '/jar', href: resolve('/jar'), glyph: 'app-jar', fill: 'var(--app-jar)', key: 'tab.jar' }
   ];
-  let hasApp = $state(false);
-  onMount(() => (hasApp = !!document.getElementById('app-island')));
-  // Route path without the base (GitHub Pages serves the app under /fitness).
   const path = $derived(routeOf(page.url.pathname));
 </script>
 
@@ -23,7 +18,7 @@
     {@const on = tab.route === '/' ? path === '/' : path.startsWith(tab.route)}
     <a class="tab" class:on href={tab.href} aria-current={on ? 'page' : undefined}>
       <span class="tile" style:--fill={tab.fill}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{hasApp ? tab.app : tab.icon}" /></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{tab.glyph}" /></svg>
       </span>
       <span class="lbl">{t(tab.key)}</span>
     </a>
@@ -36,25 +31,22 @@
     bottom: calc(var(--safe-bottom) + 8px); height: var(--tabbar-h);
     background: var(--phone-bg); border: var(--bw) solid var(--phone-edge); border-radius: 30px;
     box-shadow: var(--sh-float), inset 0 2px 0 rgba(255, 255, 255, .45);
-    display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; padding: 0 6px;
+    display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 6px; padding: 0 6px;
   }
   .tab {
-    display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 64px; justify-content: center;
-    color: var(--text-faint); font: 700 var(--fs-micro)/1 var(--font-ui); text-decoration: none; position: relative;
-    user-select: none; -webkit-user-select: none;
+    display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; border-radius: 24px;
+    color: var(--text-soft); font: 700 var(--fs-body-lg)/1 var(--font-ui); text-decoration: none;
+    user-select: none; -webkit-user-select: none; transition: background-color var(--dur-quick);
   }
+  .tab:focus-visible { outline-offset: -3px; border-radius: 24px; }
   .tile {
-    width: 44px; height: 44px; border-radius: var(--r-squircle); display: grid; place-items: center;
+    width: 44px; height: 44px; border-radius: var(--r-squircle); display: grid; place-items: center; flex: none;
     background: var(--fill); box-shadow: 0 3px 0 color-mix(in srgb, var(--fill) 72%, #000 28%), inset 0 2px 0 rgba(255, 255, 255, .4);
-    transition: transform var(--dur-base) var(--ease-bounce); filter: saturate(.7);
+    transition: transform var(--dur-base) var(--ease-bounce);
   }
-  .tile svg { width: 26px; height: 26px; color: var(--c-ink); }
+  .tile svg { width: 28px; height: 28px; color: var(--c-ink); }
   .tab:active .tile { transform: translateY(2px) scale(1.08, .9); transition-duration: var(--dur-tap); }
-  .tab.on { color: var(--text); }
-  .tab.on .tile { transform: translateY(-6px) scale(1.08); filter: none; }
-  .tab.on .lbl { transform: translateY(-4px); }
-  .tab.on .lbl::after {
-    content: ''; display: block; width: 5px; height: 5px; margin: 3px auto 0; border-radius: 50%; background: currentColor;
-  }
-  .lbl { transition: transform var(--dur-base) var(--ease-bounce); }
+  .tab.on { color: var(--text); background: color-mix(in srgb, var(--c-leaf-soft) 70%, transparent); }
+  .tab.on .tile { transform: translateY(-3px) scale(1.06); }
+  :global(:root[data-theme="night"]) .tab.on { background: rgba(246, 231, 176, .16); }
 </style>

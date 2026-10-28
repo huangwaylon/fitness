@@ -3,6 +3,8 @@
   import type { HarvestView, PersonId } from '#lib/types.ts';
   import { RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
+  import Avatar from './Avatar.svelte';
+  import Yen from './Yen.svelte';
   import Bubble from './Bubble.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -55,19 +57,19 @@
       <button type="button" class="pill later" onclick={onlater}>{t('common.later')}</button>
     </div>
 
-    <Bubble text={juniLine} expression="cheer" />
+    <Bubble text={juniLine} host={step === 'rung' || !rung ? 'bow' : 'wave'} />
 
     {#if step === 'tally'}
       <section class="tally card" aria-live="polite">
         {#each people as who, i (who)}
           <div class="trow" style="animation-delay:{0.3 + i * 0.7}s">
-            <span class="av"><Villager person={who} size={44} label={view.people[who].villagerName} /></span>
-            <span class="sc big">{p[who].score}</span>
+            <Avatar person={who} villager={view.people[who].villager} size={48} label={view.people[who].villagerName} />
+            <span class="sc big">{p[who].score}<small>/100</small></span>
             <span class="yen big">+{formatYen(p[who].fruitYen)}</span>
           </div>
         {/each}
         <div class="trow" style="animation-delay:1.7s">
-          <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-us" /></svg></span>
+          <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart" /></svg></span>
           <span class="sc team-l">{t('harvest.team')}</span>
           <span class="yen big">+{formatYen(p.teamYen)}</span>
         </div>
@@ -76,7 +78,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>
             <span>{t('harvest.jar')}<br /><span class="prov">{t('harvest.provisional')}</span></span>
           </span>
-          <span class="big total">{formatYen(jarTotal)}</span>
+          <Yen yen={jarTotal} bag="48px" class="total" />
         </div>
       </section>
 
@@ -146,7 +148,8 @@
 
   .tally { padding: 6px 18px; box-shadow: 0 4px 0 #18213A, 0 18px 40px rgba(0, 0, 0, .35); }
   .trow { display: flex; align-items: center; gap: 12px; min-height: 62px; border-bottom: 2px dashed var(--stitch); opacity: 0; animation: rowIn .5s var(--ease-soft) forwards; }
-  .av { width: 46px; height: 46px; flex: none; border-radius: 50%; background: var(--night-sky-2); display: grid; place-items: center; overflow: hidden; }
+  .av { width: 48px; height: 48px; flex: none; border-radius: var(--r-blob); background: var(--night-sky-2); display: grid; place-items: center; overflow: hidden; }
+  .sc small { font-size: .9rem; color: var(--night-ink-soft); }
   .av.team svg { width: 26px; height: 26px; color: var(--p-berry); }
   .sc { font-size: 1.9rem; min-width: 62px; }
   .team-l { font: 900 1.1rem var(--font-ui); }
@@ -154,7 +157,7 @@
   .ttotal { display: flex; justify-content: space-between; align-items: center; min-height: 70px; opacity: 0; animation: rowIn .6s var(--ease-bounce) 2.4s forwards; }
   .ttotal .lbl { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--night-ink-soft); line-height: 1.3; }
   .ttotal .lbl svg { width: 28px; height: 28px; }
-  .total { font-size: 2.5rem; color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); }
+  .ttotal :global(.total) { font-size: 2.3rem; color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both; }
   .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--night-ink-soft); background: rgba(255, 255, 255, .08); border-radius: var(--r-pill); padding: 2px 9px; }
 
   .minis { display: flex; gap: 10px; }

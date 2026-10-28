@@ -22,11 +22,10 @@
     } else if (!open && dlg.open) dlg.close();
   });
 
+  /** The native close event (Esc, backdrop, grabber, or `open = false`). */
   function closed() {
-    if (open) {
-      open = false;
-      onclose?.();
-    }
+    open = false;
+    onclose?.();
   }
 
   function backdrop(e: MouseEvent) {

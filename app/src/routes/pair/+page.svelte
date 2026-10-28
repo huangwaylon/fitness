@@ -59,7 +59,7 @@
     <span class="juni"><Juniper size={96} /></span>
   </div>
 
-  <Bubble text={t('pair.title')} side="none" juniper={false} />
+  <Bubble text={t('pair.title')} host={false} />
 
   <form class="card" onsubmit={submit}>
     <span class="tape" style:--tape="var(--c-sky-soft)">{t('pair.code')}</span>

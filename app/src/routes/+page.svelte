@@ -1,17 +1,19 @@
 <script lang="ts">
-  // 島 Island: two trees, two scores, the jar total, one Juniper line, ONE primary action.
-  // While a confirmation is pending, its yes/no card replaces the check-in button (review M6),
-  // and Juniper doesn't repeat the question. After today's check-in the button goes quiet.
+  // 島 Island (style guide v3 §B.1): the scene, one しずえ line, ONE primary action (今夜のチェック).
+  // A pending 「筋トレとして記録する？」 replaces the button (one tap each way) and しずえ doesn't
+  // repeat it. After today's check-in the button goes quiet. Tap the partner → partner sheet.
   import IslandScene from '#lib/components/IslandScene.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
   import CheckinSheet from '#lib/components/CheckinSheet.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
+  import PartnerSheet from '#lib/components/PartnerSheet.svelte';
   import SyncPill from '#lib/components/SyncPill.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { highFive, confirmPending } from '#lib/client/actions.ts';
   import { t, juniperLine, formatDate } from '#lib/i18n/index.ts';
 
   let checkinOpen = $state(false);
+  let partnerOpen = $state(false);
   /** Short-lived reactions on the island (style guide §7.4). */
   let partnerCheer = $state(false);
   let meCheer = $state(false);
@@ -37,6 +39,8 @@
     if (!view) return;
     highFive();
     week.showToast(t('island.highfiveSent'), 1600);
+    partnerCheer = true;
+    setTimeout(() => (partnerCheer = false), 2400);
   }
 
   // M5: tell me when my partner sent a high-five today (once per new one, per device).
@@ -59,7 +63,7 @@
 {#if view}
   <main class="island">
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive}
+      <IslandScene {view} onhighfive={() => (partnerOpen = true)}
         partnerExpression={partnerCheer ? 'cheer' : undefined} partnerEmote={partnerCheer ? 'heart' : false}
         meExpression={meCheer ? 'cheer' : undefined} meEmote={meCheer} />
       <div class="head">
@@ -69,28 +73,32 @@
     </div>
 
     <div class="below">
-      <Bubble text={line} expression={meCheer || partnerCheer ? 'cheer' : 'happy'} />
+      <Bubble text={line} host="wave" size={96} />
 
       {#if pending}
-        <div class="pending card" role="group" aria-label={t('pending.strength')}>
+        <div class="pending card" role="group" aria-labelledby="pending-q">
           <span class="tape">{pending.label} · {formatDate(pending.date)}</span>
-          <b class="q">{t('pending.strength')}</b>
-          <button type="button" class="btn paper small" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
-          <button type="button" class="btn small" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
+          <b class="q" id="pending-q">{t('pending.strength')}</b>
+          <div class="yn">
+            <button type="button" class="btn paper" onclick={() => confirmPending(pending.kind, pending.id, false)}>{t('common.no')}</button>
+            <button type="button" class="btn" onclick={() => confirmPending(pending.kind, pending.id, true)}>{t('common.yes')}</button>
+          </div>
         </div>
       {:else}
         <button type="button" class="btn cta" class:paper={checkedIn} onclick={() => (checkinOpen = true)}>
-          <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{checkedIn ? t('island.checkedIn') : t('island.checkin')}
+          {#if checkedIn}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+          {:else}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkin')}{/if}
         </button>
       {/if}
     </div>
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
+  <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
 {/if}
 
 <style>
   .island {
-    max-width: var(--col); margin: 0 auto;
+    max-width: var(--col); margin: 0 auto; container-type: inline-size;
     padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
   }
   .top { position: relative; container-type: inline-size; }
@@ -98,21 +106,17 @@
     position: absolute; z-index: 8; top: calc(var(--safe-top) + 8px); left: calc(16px + var(--safe-left)); right: calc(16px + var(--safe-right));
     display: flex; justify-content: space-between; align-items: center;
   }
-  .island { container-type: inline-size; }
   .below {
     padding: 0 calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left)); margin-top: -11cqw; position: relative; z-index: 6;
     display: grid; gap: 12px;
   }
-  .pending {
-    display: flex; align-items: center; gap: 8px; padding: 22px 12px 10px 16px; margin-top: 6px;
-    position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; box-shadow: var(--sh-lip), var(--sh-float);
-  }
-  .pending .tape { --tape: var(--c-sky-soft); }
-  .q { flex: 1; font-size: var(--fs-body); font-weight: 900; line-height: 1.3; text-wrap: balance; word-break: keep-all; overflow-wrap: anywhere; }
-  .pending .btn { min-width: 64px; padding: 0 14px; }
   /* The one primary action stays in the thumb zone, above the dock, even on short phones. */
-  .cta { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
-  /* iPhone SE-height screens: trim empty sky so the scene, Juniper and the button fit. */
+  .cta, .pending { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
+  .pending { display: grid; gap: 12px; padding: 24px 14px 10px; margin-top: 6px; box-shadow: var(--sh-lip), var(--sh-float); }
+  .pending .tape { --tape: var(--c-sky-soft); max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+  .q { font-size: var(--fs-h2); font-weight: 900; line-height: 1.3; text-align: center; word-break: auto-phrase; }
+  .yn { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* iPhone SE-height screens: trim empty sky so the scene, しずえ and the button fit. */
   @media (max-height: 720px) {
     .top { margin-top: -26cqw; }
     .head { top: calc(var(--safe-top) + 8px + 26cqw); }
