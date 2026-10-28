@@ -16,6 +16,7 @@
     "prepare": "svelte-kit sync || true",
     "vapid": "tsx scripts/vapid.ts",
     "devices": "tsx scripts/devices.ts",
+    "assets:fetch": "tsx scripts/fetch-assets.ts",
     "build:pages": "BUILD_TARGET=pages vite build && cp build-pages/index.html build-pages/404.html && touch build-pages/.nojekyll"
   },
   "devDependencies": {
