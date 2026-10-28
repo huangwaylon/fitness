@@ -1,49 +1,72 @@
-<!-- SVG symbol library, ported from docs/design/mockup.html (v0.4). Rendered once in the root layout;
+<script lang="ts">
+  import VillagerArt from '#lib/villagers/VillagerArt.svelte';
+  import JuniperArt from '#lib/villagers/JuniperArt.svelte';
+  import { resolveVillager, SHIRT } from '#lib/villagers/species.ts';
+  const bean = resolveVillager('dog', 'biscuit', 'A');
+  const mochi = resolveVillager('cat', 'lilac', 'B');
+</script>
+
+<!-- SVG symbol library (v0.4 + v2). Rendered once in the root layout;
      use with <svg><use href="#f-peach" /></svg>. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
   <defs>
-    <symbol id="v-mochi" viewBox="0 0 100 100">
-      <path d="M20 46 L16 14 Q18 8 24 12 L44 28 Z" fill="#FFF3E6" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M80 46 L84 14 Q82 8 76 12 L56 28 Z" fill="#FFF3E6" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M23 36 L21 19 L35 29 Z" fill="#E6D6F7"/>
-      <path d="M77 36 L79 19 L65 29 Z" fill="#E6D6F7"/>
-      <ellipse cx="50" cy="58" rx="38" ry="32" fill="#FFF3E6" stroke="#4A3A2C" stroke-width="3"/>
-      <path d="M58 28 Q78 30 84 48 Q72 46 60 38 Z" fill="#B79CE0" opacity=".85"/>
-      <path d="M31 57 Q37 62 43 57" stroke="#4A3A2C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      <path d="M57 57 Q63 62 69 57" stroke="#4A3A2C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      <ellipse cx="28" cy="67" rx="6.5" ry="3.8" fill="#FFB3A8" opacity=".85"/>
-      <ellipse cx="72" cy="67" rx="6.5" ry="3.8" fill="#FFB3A8" opacity=".85"/>
-      <path d="M47 64 L53 64 L50 67.5 Z" fill="#F28BA8" stroke="#4A3A2C" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M44 70 Q47 73 50 70 Q53 73 56 70" stroke="#4A3A2C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <path d="M12 60 L22 62 M12 68 L22 66 M88 60 L78 62 M88 68 L78 66" stroke="#4A3A2C" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+    <!-- v0.4 avatar symbols, now drawn by the v2 character system (heads, viewBox 0 0 100 100) -->
+    <symbol id="v-mochi" viewBox="9 1 82 82">
+      <VillagerArt species={mochi.species} colourway={mochi.colourway} head animate={false} lw={3} shirt={SHIRT.B} />
     </symbol>
-    <symbol id="v-bean" viewBox="0 0 100 100">
-      <ellipse cx="50" cy="56" rx="36" ry="33" fill="#F2C48D" stroke="#4A3A2C" stroke-width="3"/>
-      <path d="M24 30 Q8 32 10 58 Q13 68 22 61 Q27 46 32 34 Z" fill="#A8754E" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M76 30 Q92 32 90 58 Q87 68 78 61 Q73 46 68 34 Z" fill="#A8754E" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
-      <ellipse cx="50" cy="67" rx="16" ry="12" fill="#FFF1DE"/>
-      <circle cx="36" cy="52" r="5.2" fill="#4A3A2C"/><circle cx="37.8" cy="50.2" r="1.8" fill="#fff"/>
-      <circle cx="64" cy="52" r="5.2" fill="#4A3A2C"/><circle cx="65.8" cy="50.2" r="1.8" fill="#fff"/>
-      <ellipse cx="50" cy="61.5" rx="5.5" ry="3.8" fill="#4A3A2C"/>
-      <path d="M43 68 Q50 74 57 68" stroke="#4A3A2C" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-      <path d="M47 71 Q50 80 53 71 Z" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="1.5" stroke-linejoin="round"/>
-      <ellipse cx="25" cy="64" rx="6" ry="3.6" fill="#FF9B87" opacity=".7"/>
-      <ellipse cx="75" cy="64" rx="6" ry="3.6" fill="#FF9B87" opacity=".7"/>
-      <path d="M44 26 Q50 20 56 26" stroke="#4A3A2C" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
+    <symbol id="v-bean" viewBox="9 1 82 82">
+      <VillagerArt species={bean.species} colourway={bean.colourway} head animate={false} lw={3} shirt={SHIRT.A} />
     </symbol>
-    <symbol id="v-juni" viewBox="0 0 100 100">
-      <circle cx="26" cy="34" r="7" fill="#9C6F48" stroke="#4A3A2C" stroke-width="3"/>
-      <circle cx="74" cy="34" r="7" fill="#9C6F48" stroke="#4A3A2C" stroke-width="3"/>
-      <rect x="16" y="30" width="68" height="62" rx="30" fill="#C1915F" stroke="#4A3A2C" stroke-width="3"/>
-      <rect x="29" y="58" width="42" height="30" rx="15" fill="#A97B50"/>
-      <ellipse cx="42" cy="66" rx="2.6" ry="3.4" fill="#4A3A2C"/><ellipse cx="58" cy="66" rx="2.6" ry="3.4" fill="#4A3A2C"/>
-      <path d="M44 77 Q50 81 56 77" stroke="#4A3A2C" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-      <path d="M30 50 Q34 47 38 50" stroke="#4A3A2C" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-      <path d="M62 50 Q66 47 70 50" stroke="#4A3A2C" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-      <ellipse cx="25" cy="60" rx="5" ry="3" fill="#FF9B87" opacity=".6"/><ellipse cx="75" cy="60" rx="5" ry="3" fill="#FF9B87" opacity=".6"/>
-      <circle cx="50" cy="22" r="11" fill="#FFD66B" stroke="#4A3A2C" stroke-width="3"/>
-      <circle cx="46" cy="19" r="2.5" fill="#fff" opacity=".8"/>
-      <path d="M50 11 Q58 3 64 8 Q58 14 50 11 Z" fill="#7BC67E" stroke="#4A3A2C" stroke-width="2" stroke-linejoin="round"/>
+    <symbol id="v-juni" viewBox="7 -6 86 86">
+      <JuniperArt head animate={false} lw={3} />
+    </symbol>
+
+    <!-- しまフォン app-tile glyphs (style guide v2 §8): 24-grid, flat ink (currentColor, default --c-ink)
+         with one white or accent detail. Use inside a coloured squircle. -->
+    <symbol id="app-island" viewBox="0 0 24 24">
+      <circle cx="18.6" cy="5.4" r="3" fill="#fff" />
+      <path d="M2.5 20.2 Q12 13.6 21.5 20.2 Q21.6 21.6 20 21.6 H4 Q2.4 21.6 2.5 20.2 Z" fill="currentColor" />
+      <path d="M10.3 18.4 Q9.6 13 11.6 8.6 L13.2 9.2 Q11.8 13.2 12.6 18.2 Z" fill="currentColor" />
+      <path d="M12.4 8.8 Q8.6 5.2 3.6 7.4 Q8.2 7.4 10.4 10.4 Z M12.4 8.8 Q15.4 4.4 20.4 6.6 Q15.8 6.8 13.8 10 Z M12.4 8.8 Q11.6 3.8 7.6 2.6 Q10.4 5.6 11 9.4 Z M12.4 8.8 Q17 8.6 18.6 13.2 Q15.6 10.6 12.8 10.6 Z" fill="currentColor" />
+    </symbol>
+    <symbol id="app-jar" viewBox="0 0 24 24">
+      <rect x="7" y="2" width="10" height="4" rx="1.6" fill="currentColor" />
+      <path d="M8 6.8 H16 Q20 8.6 20 13 V18.4 Q20 21.6 16.8 21.6 H7.2 Q4 21.6 4 18.4 V13 Q4 8.6 8 6.8 Z" fill="currentColor" />
+      <circle cx="12" cy="15" r="3.6" fill="#fff" />
+      <path d="M12 13 V17 M10.6 15.4 H13.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+    </symbol>
+    <symbol id="app-us" viewBox="0 0 24 24">
+      <path d="M9.5 21 C1.6 16.4 1.8 10 5 8.6 C7.2 7.6 8.8 8.8 9.5 10.2 C10.2 8.8 11.8 7.6 14 8.6 C17.2 10 17.4 16.4 9.5 21 Z" fill="currentColor" />
+      <path d="M17 13.4 C12.6 10.8 12.8 6.8 14.8 6 C16 5.5 16.8 6.2 17 7 C17.4 6.2 18.2 5.5 19.4 6 C21.4 6.8 21.4 10.8 17 13.4 Z" fill="#fff" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+    </symbol>
+    <symbol id="app-help" viewBox="0 0 24 24">
+      <path d="M2 6 Q7 3.6 11.2 6 V20.4 Q7 18.2 2 20.2 Z M12.8 6 Q17 3.6 22 6 V20.2 Q17 18.2 12.8 20.4 Z" fill="currentColor" />
+      <path d="M4.4 9.4 Q6.8 8.4 9 9.4 M4.4 12.4 Q6.8 11.4 9 12.4 M15 9.4 Q17.2 8.4 19.6 9.4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" />
+    </symbol>
+    <symbol id="app-villager" viewBox="0 0 24 24">
+      <path d="M4.4 9.6 L4.6 3.4 Q4.8 2 6 2.8 L9.6 5.6 Z M19.6 9.6 L19.4 3.4 Q19.2 2 18 2.8 L14.4 5.6 Z" fill="currentColor" />
+      <ellipse cx="12" cy="13" rx="9.6" ry="8.4" fill="currentColor" />
+      <circle cx="8.6" cy="12.4" r="1.5" fill="#fff" /><circle cx="15.4" cy="12.4" r="1.5" fill="#fff" />
+      <path d="M10.2 16 Q12 17.6 13.8 16" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none" />
+    </symbol>
+    <symbol id="app-lang" viewBox="0 0 24 24">
+      <path d="M3.6 2.6 H13 Q15.4 2.6 15.4 5 V10.4 Q15.4 12.8 13 12.8 H8 L4.6 15.6 V12.8 H3.6 Q1.2 12.8 1.2 10.4 V5 Q1.2 2.6 3.6 2.6 Z" fill="currentColor" />
+      <path d="M11 9.6 H20.4 Q22.8 9.6 22.8 12 V17.4 Q22.8 19.8 20.4 19.8 H19.4 V22.4 L16 19.8 H11 Q8.6 19.8 8.6 17.4 V12 Q8.6 9.6 11 9.6 Z" fill="#fff" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+      <path d="M5.2 5.2 H11 M8 4 Q7.4 8.6 5 10.6 M10.6 7.6 Q6.4 7 5.6 9.4 Q5.6 10.8 7.8 10.2 Q11 9.4 10.6 7.6 Z" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      <path d="M13 17.6 L15.7 11.8 L18.4 17.6 M14 15.6 H17.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    </symbol>
+    <symbol id="app-bell" viewBox="0 0 24 24">
+      <circle cx="12" cy="3.2" r="1.8" fill="currentColor" />
+      <path d="M12 4 Q18.2 4 18.4 11 V15.4 L20.8 18.6 Q21.2 19.4 20.2 19.4 H3.8 Q2.8 19.4 3.2 18.6 L5.6 15.4 V11 Q5.8 4 12 4 Z" fill="currentColor" />
+      <path d="M9.4 20.6 Q12 23.4 14.6 20.6 Z" fill="currentColor" />
+      <path d="M8.4 8.4 Q9.2 6.6 11 6.2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none" />
+    </symbol>
+    <symbol id="app-sync" viewBox="0 0 24 24">
+      <path d="M19.4 9.4 A8 8 0 0 0 5.2 7.4" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" fill="none" />
+      <path d="M4.6 14.6 A8 8 0 0 0 18.8 16.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" fill="none" />
+      <path d="M2.6 3.8 L3.4 9.8 L9 7.6 Z M21.4 20.2 L20.6 14.2 L15 16.4 Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round" />
+      <path d="M8.6 15.2 Q8.4 9 15.4 8.6 Q15.6 15 8.6 15.2 Z" fill="#fff" />
+      <path d="M9.6 14.2 L13.4 10.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
     </symbol>
 
     <symbol id="f-apple" viewBox="0 0 24 24"><circle cx="12" cy="14" r="8" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="1.8"/><path d="M12 6 Q12 3 14 2" stroke="#8A5A3B" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M13 5 Q17 2 19 5 Q16 7 13 5Z" fill="#7BC67E"/><circle cx="9" cy="11" r="1.8" fill="#fff" opacity=".7"/></symbol>
