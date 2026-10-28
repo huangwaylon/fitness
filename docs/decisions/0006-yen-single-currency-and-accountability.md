@@ -8,7 +8,7 @@ Both live in Japan: one partner has a personal trainer, the other an Anytime Fit
 1. **One currency: yen (¥).** There's no intermediate spendable currency. **Fruit is a score** (e.g. "57 / 85"), never spent or banked as currency. Treat tickets are **dropped**.
 2. **Two pots of real yen:**
    - **Trip Jar (旅の壺):** default **¥520,000/year = ¥10,000/week**. That's about $3,300 at ¥158/USD (2026-10-27).
-   - **Treat Purse (ごほうび財布):** default **¥8,000/month (about ¥2,000/week)**. Each person who scores ≥ 60 adds **¥1,000** that week (a paused week counts). Shop items are priced in yen (e.g. yakiniku dinner ¥8,000, café date ¥1,500, onsen day ¥5,000).
+   - **Treat Purse (ごほうび財布):** up to **¥2,000/week (¥104,000/yr, about ¥8,700/month)**. Each person who scores ≥ 60 adds **¥1,000** that week (a paused week counts). Shop items are priced in yen (e.g. yakiniku dinner ¥8,000, café date ¥1,500, onsen day ¥5,000).
 3. **Accountability + team split of the weekly ¥10,000:**
 
    | Share | Amount | Paid at | Purpose |
