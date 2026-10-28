@@ -73,7 +73,7 @@ Verified 2026-10-28 from the MHLW adult sheet (成人版, mhlw.go.jp/content/001
 4. **1–3 items** that line up with this week's targets.
 5. **Has an if-then backup:** "if X, then Y".
 
-**Kept** = every item done, *or* its backup done. A Cozy Day or pause auto-marks it "kept by resting". The app gently flags promises that exceed the week's target by more than 30%: *"Big week! Keep one rest day?"* Never promise weight, "every day", or "no rest".
+**Kept (✓)** = every item done, *or* its backup done. Otherwise it shows ○, never ✗. A promise carries no fruit or money (per the ADR 0006 amendment). A Cozy Day or pause auto-marks it "kept by resting". The app gently flags promises that exceed the week's target by more than 30%: *"Big week! Keep one rest day?"* Never promise weight, "every day", or "no rest".
 
 | Who | Example promises |
 |---|---|
