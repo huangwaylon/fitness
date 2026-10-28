@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { PersonId } from '#lib/types.ts';
 import { toLocalDate } from '#lib/scoring/index.ts';
 import type { Db } from '#lib/server/db/index.ts';
-import { haeDateToIso, ingestWith, type IngestResult, type ParsedHae } from '#lib/server/ingest/hae.ts';
+import { ingestWith, toIsoDate, type IngestResult, type ParsedIngest } from '#lib/server/ingest/common.ts';
 import { canonicalWorkoutType, isUnknownLocalisedType, workoutKey } from '#lib/server/ingest/workout-names.ts';
 
 /** "8,123", "8123 歩", 8123 → 8123; null if there's no number. */
@@ -16,13 +16,13 @@ export function looseNumber(v: unknown): number | null {
   return m ? Number(m[0]) : null;
 }
 
-/** ISO 8601, HAE (`2026-10-28 07:05:00 +0900`) or `2026/10/28 7:05` (no offset → Tokyo). */
+/** ISO 8601, `2026-10-28 07:05:00 +0900` or `2026/10/28 7:05` (no offset → Tokyo). */
 export function looseDate(v: unknown): string | null {
   if (typeof v !== 'string') return null;
   let s = v.trim().replace(/\//g, '-');
   s = s.replace(/^(\d{4})-(\d{1,2})-(\d{1,2})/, (_, y, m, d) => `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
   s = s.replace(/([ T])(\d):/, '$10$2:');
-  return haeDateToIso(s);
+  return toIsoDate(s);
 }
 
 const list = z.array(z.unknown()).default([]);
@@ -59,14 +59,14 @@ function dailyTotals(s: z.infer<typeof series>, onSkip: () => void): Map<string,
   return out;
 }
 
-export interface ParsedShortcut extends ParsedHae { unknownTypes: string[] }
+export interface ParsedShortcut extends ParsedIngest { unknownTypes: string[] }
 
 export function parseShortcut(raw: unknown): ParsedShortcut {
   const body = bodySchema.parse(raw);
   if (!body.steps && !body.exercise && !body.days && !body.workouts) throw new Error('no steps, exercise, days or workouts');
   let skipped = 0;
   const skip = () => void skipped++;
-  const metrics: ParsedHae['metrics'] = [];
+  const metrics: ParsedIngest['metrics'] = [];
   const round = (v: number) => Math.round(v * 100) / 100;
   for (const [key, s] of [['steps', body.steps], ['exercise_min', body.exercise]] as const) {
     if (!s) continue;
@@ -93,7 +93,7 @@ export function parseShortcut(raw: unknown): ParsedShortcut {
           end: (body.workouts as z.infer<typeof workoutLists>).ends[i], avgHr: (body.workouts as z.infer<typeof workoutLists>).avgHrs?.[i]
         }))
       : [];
-  const workouts: ParsedHae['workouts'] = [];
+  const workouts: ParsedIngest['workouts'] = [];
   const unknownTypes = new Set<string>();
   for (const w of items) {
     const startAt = looseDate(w.start);
@@ -116,6 +116,6 @@ export function ingestShortcut(db: Db, person: PersonId, bodyText: string): Inge
     const p = parseShortcut(raw);
     unknownTypes = p.unknownTypes;
     return p;
-  }, 'max');
+  });
   return unknownTypes.length ? { ...r, unknownTypes } : r;
 }

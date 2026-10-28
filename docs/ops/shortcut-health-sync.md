@@ -1,8 +1,8 @@
-# Health sync with iOS Shortcuts (no Health Auto Export needed)
+# Health sync with iOS Shortcuts
 
 Sends steps, exercise minutes and workouts from each iPhone to the Mac **every time you open an app you use daily** (e.g. LINE), at most once an hour. No app to buy and no third party involved. You set it up once per phone; after that, nothing is manual.
 
-**Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening an app means the phone is unlocked, so the read always works. Background: [research](../research/apple-health-ingestion.md), [HAE notes](runbook.md).
+**Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening an app means the phone is unlocked, so the read always works. Background: [research](../research/apple-health-ingestion.md), [ADR 0012](../decisions/0012-shortcuts-health-sync.md).
 
 Things marked **[U]** are unverified until Phase 0 (exact action names/options on iOS 27, whether runs are silent).
 
@@ -74,13 +74,13 @@ On phone A: share the Shortcut → **Copy iCloud Link** → send it to B. B open
 
 ## 5. One-time baseline (optional)
 
-Duplicate the Shortcut and change step 5 to **− 84 days**, then run it once. The server accepts big bodies (20 MB) and totals per day. That replaces HAE's Manual Export. (With calibration we don't strictly need it.)
+Duplicate the Shortcut and change step 5 to **− 84 days**, then run it once. The server accepts big bodies (20 MB) and totals per day. (With calibration we don't strictly need it.)
 
 ## 6. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| Reply `401` | Wrong token, or a HAE token used here. Make one with `npm run token -- A shortcut …` |
+| Reply `401` | Wrong or revoked token. Make one with `npm run token -- A shortcut …` |
 | Reply `422 unparseable` | Look at `detail`; the raw body is saved in `raw_payload` for inspection |
 | `status: partial` | Some dates or numbers didn't parse. Add Format Date (ISO 8601) |
 | `unknownTypes: [...]` | A workout name we don't map yet. Add it to `app/src/lib/server/ingest/workout-names.ts` |

@@ -7,9 +7,9 @@ const now = () => new Date().toISOString();
 export const device = sqliteTable('device', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   person: text('person', { enum: ['A', 'B'] }).notNull(),
-  kind: text('kind', { enum: ['pwa', 'hae', 'shortcut'] }).notNull(),
+  kind: text('kind', { enum: ['pwa', 'shortcut'] }).notNull(),
   label: text('label').notNull(),
-  /** SHA-256 hex of the session secret (pwa) or bearer token (hae/shortcut). */
+  /** SHA-256 hex of the session secret (pwa) or bearer token (shortcut). */
   tokenHash: text('token_hash').notNull().unique(),
   createdAt: text('created_at').notNull().$defaultFn(now),
   lastSeenAt: text('last_seen_at'),
@@ -28,7 +28,7 @@ export const pairingCode = sqliteTable('pairing_code', {
 export const rawPayload = sqliteTable('raw_payload', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   person: text('person', { enum: ['A', 'B'] }).notNull(),
-  source: text('source', { enum: ['hae', 'shortcut', 'presence'] }).notNull(),
+  source: text('source', { enum: ['shortcut', 'presence'] }).notNull(),
   receivedAt: text('received_at').notNull().$defaultFn(now),
   bodyGz: text('body_gz').notNull(), // base64 gzip
   parseStatus: text('parse_status', { enum: ['ok', 'partial', 'error'] }).notNull(),

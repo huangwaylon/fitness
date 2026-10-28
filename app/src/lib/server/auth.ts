@@ -11,7 +11,7 @@ export const SESSION_MAX_AGE_S = 365 * 24 * 3600;
 export const PAIRING_TTL_MS = 10 * 60 * 1000;
 export const PAIRING_MAX_ATTEMPTS = 10;
 
-export type DeviceKind = 'pwa' | 'hae' | 'shortcut';
+export type DeviceKind = 'pwa' | 'shortcut';
 export interface AuthedDevice { id: number; person: PersonId; kind: DeviceKind; lastSeenAt: string | null }
 
 export function sha256(s: string): string {
@@ -63,8 +63,8 @@ export function redeemPairingCode(db: Db, code: string, label: string): { person
   });
 }
 
-/** Admin CLI: create a bearer token for HAE or a Shortcut. The plaintext is returned once. */
-export function createDeviceToken(db: Db, person: PersonId, kind: 'hae' | 'shortcut', label: string): { token: string; deviceId: number } {
+/** Admin CLI: create a bearer token for the phone's Shortcuts. The plaintext is returned once. */
+export function createDeviceToken(db: Db, person: PersonId, kind: 'shortcut', label: string): { token: string; deviceId: number } {
   const token = `isl_${newSecret()}`;
   const row = db.insert(device).values({ person, kind, label, tokenHash: sha256(token) }).returning({ id: device.id }).get();
   return { token, deviceId: row.id };

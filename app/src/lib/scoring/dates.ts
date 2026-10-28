@@ -5,10 +5,10 @@ const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-/** Parse an ISO instant or an HAE timestamp (`2026-11-02 07:15:00 +0900`) to epoch ms. */
+/** Parse an ISO instant or a compact-offset timestamp (`2026-11-02 07:15:00 +0900`) to epoch ms. */
 export function parseInstant(ts: string): number {
   let s = ts.trim();
-  // HAE: "YYYY-MM-DD HH:MM:SS +HHMM" → "YYYY-MM-DDTHH:MM:SS+HH:MM"
+  // "YYYY-MM-DD HH:MM:SS +HHMM" → "YYYY-MM-DDTHH:MM:SS+HH:MM"
   const hae = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)\s*([+-])(\d{2}):?(\d{2})$/.exec(s);
   if (hae) {
     s = `${hae[1]}T${hae[2]}${hae[3]}${hae[4]}:${hae[5]}`;
