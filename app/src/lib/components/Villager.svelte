@@ -1,88 +1,99 @@
 <script lang="ts">
-  // A villager (style guide v2 §7): roster villagers (Goldie, Raymond, Bob...) or generic species
-  // colourways, 5 expressions, emotes.
-  // API: <Villager villager="raymond" expression size head emote label />
-  //      <Villager person species colourway size label />   (older paths; species may be a roster id)
-  // With only `person`, the person's prefs in the week view decide (villager → villagerSpecies /
-  // villagerColor), falling back to A = Goldie, B = Raymond.
+  // A villager (style guide v3 §A, §7): the official NH render (full body, or the round head icon),
+  // with one lightweight fan-art silhouette as the fallback if the image is missing.
+  //   <Villager villager="raymond" size={88} />            full body, `size` = figure height
+  //   <Villager person="B" size={44} head />               head icon; villager from that person's prefs
+  //   <Villager person="A" expression="cheer" emote />     hop once + ♪ emote above the head
+  // `villager` (roster id) wins; else `person`'s prefs in the week view; else A = Goldie, B = Raymond.
+  // Unknown ids fall back to that default.
   import type { PersonId } from '#lib/types.ts';
-  import VillagerArt from '#lib/villagers/VillagerArt.svelte';
-  import type { EmoteKind, Expression, ShirtPattern } from '#lib/villagers/species.ts';
-  import { resolveLook, type Look } from '#lib/villagers/roster.ts';
+  import OfficialArt from './OfficialArt.svelte';
+  import Emote from './Emote.svelte';
+  import VillagerFallback from '#lib/villagers/VillagerFallback.svelte';
+  import { EXPRESSION_EMOTE, type EmoteKind, type Expression } from '#lib/villagers/species.ts';
+  import { resolveLook } from '#lib/villagers/roster.ts';
+  import { villagerArt } from '#lib/client/assets.ts';
   import { week } from '#lib/client/week.svelte.ts';
 
   interface Props {
     person?: PersonId;
     /** Roster id (goldie, raymond, bob, bunnie, judy, stitches, hamlet, molly, lily, dom). */
     villager?: string | null;
-    /** Species id (cat, dog, rabbit, bear, hamster, duck, frog, sheep) or a roster id. */
+    /** Older alias of `villager`. */
     species?: string | null;
-    /** Colourway id within the species (generic looks only); alias: `color`. */
-    colourway?: string | null;
-    color?: string | null;
+    /** cheer / surprised hop once; the emote (if `emote`) follows the expression. */
     expression?: Expression;
-    /** Rendered height in px (or any CSS length). Head-only renders are square. */
+    /** Rendered height: px number or any CSS length (e.g. '23cqw'). */
     size?: number | string;
-    /** Head-only avatar. Default: auto (true when a numeric size is under 56). */
+    /** Head icon instead of the full body. Default: auto (true when a numeric size is under 56). */
     head?: boolean;
     /** true = the expression's emote, or a specific kind; false = none. */
     emote?: boolean | EmoteKind;
     emoteHold?: boolean;
-    /** Outfit overrides. */
-    shirt?: string;
-    pattern?: ShirtPattern;
+    /** Idle bob (full body) and hops. Off under reduced motion regardless. */
     animate?: boolean;
     /** Bump to replay the hop / emote. */
     replay?: number;
+    /** Accessible name; omit for decorative use next to a text label. */
     label?: string;
+    /** false = always draw the fan-art fallback (gallery). */
+    official?: boolean;
+    /** Eager-load (above the fold). */
+    eager?: boolean;
   }
   let {
-    person = 'A', villager, species, colourway, color, expression = 'happy', size = 48, head,
-    emote = false, emoteHold = false, shirt, pattern, animate = true, replay = 0, label
+    person = 'A', villager, species, expression = 'happy', size = 48, head, emote = false, emoteHold = false,
+    animate = true, replay = 0, label, official = true, eager = false
   }: Props = $props();
 
-  const pref = $derived(
-    week.view?.people?.[person] as { villager?: string | null; villagerSpecies?: string | null; villagerColor?: string | null } | undefined
+  const pref = $derived(week.view?.people?.[person]?.villager);
+  const look = $derived(
+    villager !== undefined || species !== undefined
+      ? resolveLook({ villager, species, person })
+      : resolveLook({ villager: pref, person })
   );
-  const look = $derived.by<Look>(() => {
-    const explicit = villager !== undefined || species !== undefined;
-    const base = resolveLook({
-      villager: explicit ? villager : pref?.villager,
-      species: explicit ? species : pref?.villagerSpecies,
-      colourway: colourway ?? color ?? (explicit ? null : pref?.villagerColor),
-      person
-    });
-    return shirt || pattern ? { ...base, shirt: shirt ?? base.shirt, outfit: pattern ?? base.outfit } : base;
-  });
-  const sp = $derived(look.species.id);
-  const px = $derived(typeof size === 'number' ? size : null);
-  const headOnly = $derived(head ?? (px !== null && px < 56));
-  // Full body frame leaves room above for tall ears and tufts; head frame is square.
-  const vbH = $derived(headOnly ? (sp === 'rabbit' ? 92 : sp === 'duck' || sp === 'sheep' ? 86 : 82) : 134);
-  const vb = $derived(
-    headOnly
-      ? sp === 'rabbit' ? '4 -16 92 92' : sp === 'duck' ? '7 -5 86 86' : sp === 'sheep' ? '7 0 86 86' : '9 1 82 82'
-      : '0 -14 100 134'
-  );
-  // Keep the outline ≈ 1.1 px or more on screen however small we draw.
-  const lw = $derived(px ? Math.max(2.6, (1.15 * vbH) / px) : 2.6);
-  const small = $derived(px !== null && px < 34);
+  const headOnly = $derived(head ?? (typeof size === 'number' && size < 56));
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
-  const w = $derived(headOnly ? h : typeof size === 'number' ? `${(size * 100) / 134}px` : `calc(${size} * 100 / 134)`);
+  const key = $derived(official ? villagerArt(look.id, headOnly) : null);
+  const emoteKind = $derived<EmoteKind | null>(
+    emote === false ? null : emote === true ? (EXPRESSION_EMOTE[expression] ?? 'note') : emote
+  );
+  const hop = $derived(animate && (expression === 'cheer' || expression === 'surprised'));
 </script>
 
-<svg
+<span
   class="villager"
-  viewBox={vb}
-  style:width={w}
-  style:height={h}
+  class:head={headOnly}
+  style:--h={h}
   role={label ? 'img' : undefined}
   aria-label={label}
   aria-hidden={label ? undefined : 'true'}
 >
-  <VillagerArt {look} {expression} {lw} {small} head={headOnly} {animate} {emote} {emoteHold} {replay} />
-</svg>
+  {#key replay}
+    <span class="fig" class:hop>
+      <span class="body" class:bob={animate && !headOnly}>
+        <OfficialArt {key} size={h} {eager}>
+          {#snippet fallback()}<VillagerFallback {look} head={headOnly} height={h} />{/snippet}
+        </OfficialArt>
+      </span>
+    </span>
+    {#if emoteKind}
+      <span class="emote"><Emote kind={emoteKind} size="100%" hold={emoteHold} animate={animate} /></span>
+    {/if}
+  {/key}
+</span>
 
 <style>
-  .villager { display: block; flex: none; overflow: visible; }
+  .villager { position: relative; display: inline-block; flex: none; line-height: 0; vertical-align: bottom; }
+  .fig, .body { display: block; transform-origin: 50% 100%; }
+  .fig.hop { animation: if-hop 600ms var(--ease-soft) 1; }
+  .body.bob { animation: if-bob var(--dur-bob, 2400ms) var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
+  .emote {
+    position: absolute; z-index: 1; left: 52%; top: calc(var(--h) * -0.3);
+    width: max(22px, calc(var(--h) * .38)); pointer-events: none;
+  }
+  .head .emote { left: 62%; top: calc(var(--h) * -0.42); width: max(20px, calc(var(--h) * .5)); }
+  @media (prefers-reduced-motion: reduce) {
+    .fig.hop, .body.bob { animation: none; }
+  }
 </style>
