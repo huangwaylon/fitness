@@ -117,7 +117,10 @@
   .habit:active { transform: translateY(3px) scale(1.02, .96); box-shadow: 0 1px 0 var(--sand-deep); transition-duration: var(--dur-tap); }
   .habit.on { background: #EAF7E6; border-color: var(--c-leaf); box-shadow: 0 4px 0 var(--c-leaf-lip); outline-color: rgba(95, 168, 98, .4); }
   .ic { width: 50px; height: 50px; flex: none; }
-  .txt { flex: 1; line-height: 1.25; font-weight: 900; font-size: var(--fs-body-lg); }
+  /* Habit cards stay paper at night, so their switches keep the day colours. */
+  .habit[role="switch"] .switch { background: var(--c-paper-2); border-color: var(--paper-edge); }
+  .habit.on[role="switch"] .switch { background: var(--c-leaf); border-color: var(--c-leaf-lip); }
+  .txt { flex: 1; line-height: 1.25; text-wrap: pretty; font-weight: 900; font-size: var(--fs-body-lg); }
   .txt small { display: block; font: 700 var(--fs-micro)/1.3 var(--font-ui); color: var(--c-ink-faint); margin-top: 2px; }
   .plus { position: absolute; right: 86px; top: 14px; width: 28px; height: 28px; animation: floatUp .9s var(--ease-soft) forwards; }
 
