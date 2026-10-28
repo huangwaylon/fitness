@@ -133,7 +133,7 @@
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
   {#if fiveToast && !ui.overlay}
-    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} />{/key}
+    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} second={!!week.toast} />{/key}
   {/if}
 {/if}
 

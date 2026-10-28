@@ -110,7 +110,7 @@
       {#each APPS as a, i (a.id)}
         {@const key = phoneArt(a.id)}
         <button type="button" class="app" style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
-          <span class="tile" style:--fill={a.fill}>
+          <span class="tile" class:bare={!!key} style:--fill={a.fill}>
             <OfficialArt {key} size={64} eager>
               {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>{/snippet}
             </OfficialArt>
@@ -225,6 +225,7 @@
     filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .22));
     transition: transform var(--dur-base) var(--ease-bounce);
   }
+  .tile.bare { background: none; }
   .tile.big { width: 80px; height: 80px; }
   .tile.big svg { width: 44px; height: 44px; }
   .app:active .tile { transform: translateY(3px) scale(1.06, .9); transition-duration: var(--dur-tap); }

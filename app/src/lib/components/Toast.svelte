@@ -5,7 +5,8 @@
   import Host from './Host.svelte';
   import Villager from './Villager.svelte';
 
-  let { text, person }: { text: string; person?: PersonId } = $props();
+  /** `second`: another toast is up, so sit one row lower instead of on top of it. */
+  let { text, person, second = false }: { text: string; person?: PersonId; second?: boolean } = $props();
 
   function topLayer(node: HTMLElement) {
     try {
@@ -16,7 +17,7 @@
   }
 </script>
 
-<div class="toast" role="status" popover="manual" use:topLayer>
+<div class="toast" class:second role="status" popover="manual" use:topLayer>
   {#if person}<Villager {person} size={32} head animate={false} eager />{:else}<Host head size={32} animate={false} eager />{/if}{text}
 </div>
 
@@ -29,4 +30,5 @@
     display: flex; align-items: center; gap: 10px;
   }
   .toast:popover-open { inset: auto 0; top: calc(var(--safe-top) + 12px); }
+  .toast.second, .toast.second:popover-open { top: calc(var(--safe-top) + 76px); }
 </style>
