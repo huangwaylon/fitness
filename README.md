@@ -13,7 +13,7 @@ Japanese-first UI (switchable to English), 3 simple pages, self-hosted.
 |---|---|
 | `docs/PROPOSAL.md` | The cohesive proposal (v2.1) |
 | `docs/profiles.md` | Participant profiles, gyms, eating patterns |
-| `docs/decisions/` | Decision records 0001–0013 (latest: 0013 UI on GitHub Pages, API on the Mac) |
+| `docs/decisions/` | Decision records 0001–0014 (latest: 0014 no Sunday promises, no Cozy Days, no ふたり tab) |
 | `app/` | The app: SvelteKit 3 + SQLite server, scoring engine, PWA (ja/en) |
 | `docs/ops/` | Runbook: Funnel, pairing, Shortcuts health sync, gym Shortcuts, backups |
 | `docs/team/` | Role memos: round 1, round 3 (Japan), personalized nutrition |
