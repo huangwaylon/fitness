@@ -24,3 +24,11 @@ Body-size differences mean active-energy (Move ring) numbers aren't comparable b
 - **Partner B:** works from home all week; sometimes skips lunch; often snacks (potato chips).
 - **Partner A:** in the office 3 days a week; eats lunch out on those days.
 - **Neither drinks coffee or alcohol.**
+
+## Answers (2026-10-28, round 4)
+- No regular sweet drinks → "no sweetened drinks" habit stays dropped.
+- **No fixed destination or goal:** save as much as possible. ¥520,000/yr is only a *calibration* for how much each action earns.
+- Always-on **Mac at home**: yes. Location: **Tokyo**.
+- **Neither wears the Watch to bed** → sleep can't be measured automatically.
+- No health conditions.
+- Wants **no VPN app (Tailscale etc.) running on the phones**; something simpler (ngrok or similar).
