@@ -1,6 +1,6 @@
 <script lang="ts">
   // 今夜のチェック: my three habits for today (or yesterday, 48 h fill-in), saved on tap.
-  // 「おやつ OK」 is purely decorative and never sent. のんびりデー toggles today's Cozy Day.
+  // No snack chip (round 3). のんびりデー toggles today's Cozy Day. 正月: eating isn't scored, so it's "off".
   import Sheet from './Sheet.svelte';
   import Villager from './Villager.svelte';
   import { week } from '#lib/client/week.svelte.ts';
@@ -9,7 +9,7 @@
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { inMonthDayRange } from '#lib/scoring/dates.ts';
 
-  let { open = $bindable() }: { open: boolean } = $props();
+  let { open = $bindable(), onclose }: { open: boolean; onclose?: () => void } = $props();
 
   const ICONS: Record<string, { id: string; vb: string }> = {
     teishoku_lunch: { id: 'i-tray', vb: '0 0 40 40' },
@@ -28,7 +28,8 @@
   const ticks = $derived(me?.habits?.ticksByDate[date] ?? []);
   /** 正月: eating isn't scored, so no toggles to fill in (ADR 0011). */
   const newYearOff = $derived(date !== '' && inMonthDayRange(date, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to));
-  const yesterdayEmpty = $derived((me?.habits?.ticksByDate[yesterday] ?? []).length === 0);
+  /** Yesterday can still be filled in (48 h): a neutral hint dot, never an alert colour (M10). */
+  const yesterdayFillable = $derived((me?.habits?.ticksByDate[yesterday] ?? []).length === 0);
   let pop = $state<string | null>(null);
 
   function toggle(key: string) {
@@ -47,13 +48,13 @@
   }
 </script>
 
-<Sheet bind:open label={t('checkin.title')}>
+<Sheet bind:open label={t('checkin.title')} {onclose}>
   {#if view && me}
     <div class="head">
-      <span class="av"><Villager person={view.me} size={46} /></span>
+      <span class="av"><Villager person={view.me} species={me.villagerSpecies} colourway={me.villagerColor} size={52} /></span>
       <h2>{which === 'today' ? t('checkin.title') : t('checkin.yesterday')}</h2>
       <div class="days" role="tablist">
-        <button type="button" role="tab" class="day" class:miss={yesterdayEmpty} aria-selected={which === 'yesterday'}
+        <button type="button" role="tab" class="day" class:fillable={yesterdayFillable} aria-selected={which === 'yesterday'}
           aria-label="{t('checkin.yesterday')} {formatDate(yesterday)}" onclick={() => (which = 'yesterday')}>{weekdayShort(yesterday)}</button>
         <button type="button" role="tab" class="day" aria-selected={which === 'today'}
           aria-label="{t('checkin.today')} {formatDate(today)}" onclick={() => (which = 'today')}>{weekdayShort(today)}</button>
@@ -61,7 +62,10 @@
     </div>
 
     {#if newYearOff}
-      <p class="off">{t('checkin.newYearOff')}</p>
+      <div class="off card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cozy" /></svg>
+        <p>{t('checkin.newYearOff')}</p>
+      </div>
     {:else}
     <div class="habits">
       {#each me.habits?.keys ?? [] as key (key)}
@@ -71,7 +75,7 @@
           <svg class="ic" viewBox={ic.vb} aria-hidden="true"><use href="#{ic.id}" /></svg>
           <span class="txt">{t(`habit.${key}`)}{#if t(`habit.${key}.hint`)}<small>{t(`habit.${key}.hint`)}</small>{/if}</span>
           {#if pop === key}<svg class="plus" viewBox="0 0 24 24" aria-hidden="true"><use href="#f-pear" /></svg>{/if}
-          <span class="sw" aria-hidden="true"></span>
+          <span class="switch" aria-hidden="true"></span>
         </button>
       {/each}
     </div>
@@ -88,44 +92,41 @@
 </Sheet>
 
 <style>
-  .head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .av { width: 50px; height: 50px; border-radius: var(--r-blob); background: #EFE6FA; display: grid; place-items: center; flex: none; }
-  h2 { font-size: 1.6rem; }
-  .days { display: flex; gap: 6px; margin-left: auto; }
+  .head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .av { width: 56px; height: 56px; border-radius: var(--r-blob); background: color-mix(in srgb, var(--p-plum) 28%, var(--surface)); display: grid; place-items: center; flex: none; }
+  h2 { font-size: var(--fs-h1); }
+  .days { display: flex; gap: 4px; margin-left: auto; padding: 4px; border-radius: var(--r-pill); background: var(--c-paper-2); box-shadow: var(--sh-inset); }
+  :global(:root[data-theme="night"]) .days { background: #24314F; }
   .day {
-    appearance: none; cursor: pointer; min-width: 44px; min-height: 44px; padding: 0 8px; border-radius: var(--r-sm);
-    display: grid; place-items: center; font-weight: 700; font-size: var(--fs-caption); position: relative;
-    background: var(--surface); border: 2px solid var(--edge); color: var(--text-soft);
+    appearance: none; cursor: pointer; min-width: 48px; min-height: 44px; padding: 0 10px; border-radius: var(--r-pill); border: 0;
+    display: grid; place-items: center; font-weight: 700; font-size: var(--fs-body); position: relative;
+    background: transparent; color: var(--text-soft); transition: background var(--dur-quick);
   }
-  .day[aria-selected='true'] { background: var(--sky-pale); border-color: var(--sky); color: var(--ink); }
-  .day.miss::after { content: ''; position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+  .day[aria-selected='true'] { background: var(--c-bubble); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-stitch); }
+  .day.fillable::after { content: ''; position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-sky); }
 
-  .habits { display: grid; gap: 10px; }
+  .habits { display: grid; gap: 12px; }
   .habit {
-    appearance: none; cursor: pointer; text-align: left; position: relative; width: 100%;
-    display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 10px 14px; border-radius: var(--r-lg);
-    background: var(--paper); color: var(--ink); border: 2.5px solid var(--paper-edge); box-shadow: 0 4px 0 var(--sand-deep);
-    font: 600 1.2rem var(--font-display); transition: transform var(--dur-quick), background var(--dur-base);
-    user-select: none;
+    appearance: none; cursor: pointer; text-align: left; position: relative; width: 100%; font: inherit;
+    display: flex; align-items: center; gap: 14px; min-height: 78px; padding: 10px 16px; border-radius: var(--r-card);
+    background: var(--c-paper); color: var(--c-ink); border: var(--bw) solid var(--paper-edge); box-shadow: 0 4px 0 var(--sand-deep);
+    outline: 2px dashed var(--c-stitch); outline-offset: -7px;
+    transition: transform var(--dur-base) var(--ease-bounce), background var(--dur-base);
+    user-select: none; -webkit-user-select: none;
   }
-  .habit:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--sand-deep); }
-  .habit.on { background: #EAF7E6; border-color: var(--leaf); box-shadow: 0 4px 0 #8FC98F; }
+  .habit:active { transform: translateY(3px) scale(1.02, .96); box-shadow: 0 1px 0 var(--sand-deep); transition-duration: var(--dur-tap); }
+  .habit.on { background: #EAF7E6; border-color: var(--c-leaf); box-shadow: 0 4px 0 var(--c-leaf-lip); outline-color: rgba(95, 168, 98, .4); }
   .ic { width: 50px; height: 50px; flex: none; }
-  .txt { flex: 1; line-height: 1.2; }
-  .txt small { display: block; font: 700 .75rem var(--font-body); color: var(--ink-faint); }
-  .sw { width: 60px; height: 36px; border-radius: var(--r-pill); background: var(--sand); position: relative; flex: none; box-shadow: var(--sh-inset); transition: background var(--dur-base); }
-  .sw::after {
-    content: ''; position: absolute; top: 3px; left: 3px; width: 30px; height: 30px; border-radius: 50%;
-    background: #fff; box-shadow: 0 2px 0 var(--sand-deep); transition: left var(--dur-base) var(--ease-bounce);
-  }
-  .habit.on .sw { background: var(--leaf); }
-  .habit.on .sw::after { left: 27px; }
+  .txt { flex: 1; line-height: 1.25; font-weight: 900; font-size: var(--fs-body-lg); }
+  .txt small { display: block; font: 700 var(--fs-micro)/1.3 var(--font-ui); color: var(--c-ink-faint); margin-top: 2px; }
   .plus { position: absolute; right: 86px; top: 14px; width: 28px; height: 28px; animation: floatUp .9s var(--ease-soft) forwards; }
 
-  .extras { display: flex; gap: 10px; margin-top: 14px; }
+  .extras { display: flex; gap: 10px; margin-top: 16px; }
   .extras .chip { flex: 1; min-height: 52px; border-style: dashed; }
   .extras .chip svg { width: 26px; height: 26px; }
-  .chip.cozy { background: #EEF0FB; border-color: #C5CBEF; color: var(--ink-soft); }
-  .chip.cozy[aria-pressed='true'] { background: #DCE0FA; border-color: #9FA8E8; border-style: solid; color: var(--ink); }
-  .off { text-align: center; padding: 28px 12px; font-size: 1.05rem; }
+  .chip.cozy { background: var(--c-sky-soft); border-color: var(--c-sky); color: var(--c-ink-soft); box-shadow: 0 3px 0 var(--c-sky-lip); }
+  .chip.cozy[aria-pressed='true'] { background: var(--c-sky); border-style: solid; color: var(--c-ink); }
+  .off { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 26px 16px; }
+  .off svg { width: 40px; height: 40px; color: var(--text-soft); }
+  .off p { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
 </style>

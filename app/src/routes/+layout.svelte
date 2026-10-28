@@ -12,6 +12,7 @@
   import Sprites from '#lib/components/Sprites.svelte';
   import TabBar from '#lib/components/TabBar.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
+  import Juniper from '#lib/components/Juniper.svelte';
   import HarvestOverlay from '#lib/components/HarvestOverlay.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { startTheme } from '#lib/client/theme.svelte.ts';
@@ -70,12 +71,12 @@
 {:else if !week.view && week.status === 'error'}
   <main class="state">
     <Bubble text={t('state.error')} side="none" juniper={false} />
-    <svg viewBox="0 0 100 100" class="juni" aria-hidden="true"><use href="#v-juni" /></svg>
+    <Juniper expression="surprised" size={120} />
     <button type="button" class="btn" onclick={() => week.refresh()}>{t('state.retry')}</button>
   </main>
 {:else if !week.view}
   <main class="state" aria-busy="true">
-    <svg viewBox="0 0 100 100" class="juni bob" aria-hidden="true"><use href="#v-juni" /></svg>
+    <span class="bob"><Juniper size={120} /></span>
     <p>{t('state.loading')}</p>
     <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
   </main>
@@ -107,8 +108,7 @@
   }
   .state :global(.talk) { width: 100%; }
   .state p { margin: 0; font-size: var(--fs-talk); font-weight: 700; color: var(--text-soft); }
-  .juni { width: 104px; height: 104px; }
-  .bob { transform-origin: 50% 100%; animation: if-hop 1.1s var(--ease-idle) infinite; }
+  .bob { display: block; transform-origin: 50% 100%; animation: if-hop 1.1s var(--ease-idle) infinite; }
   .dots { display: flex; gap: 8px; }
   .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--c-leaf); animation: if-nudge .9s var(--ease-idle) infinite; }
   .dots i:nth-child(2) { animation-delay: .15s; background: var(--c-yuzu); }

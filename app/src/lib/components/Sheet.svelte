@@ -61,7 +61,7 @@
   dialog.phone {
     width: calc(100% - 24px); max-width: calc(var(--col) - 24px); margin-bottom: calc(var(--safe-bottom) + 10px);
     background: var(--phone-bg); border: 3px solid var(--phone-edge); border-radius: var(--r-phone);
-    box-shadow: var(--sh-float), inset 0 3px 0 rgba(255, 255, 255, .5); min-height: min(560px, 80dvh);
+    box-shadow: var(--sh-float), inset 0 3px 0 rgba(255, 255, 255, .5); min-height: min(480px, 80dvh);
   }
   dialog.phone .inner { padding: 6px 20px 22px; }
   @keyframes up {

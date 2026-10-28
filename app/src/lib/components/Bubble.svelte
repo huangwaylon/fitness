@@ -4,6 +4,8 @@
   // Reduced motion: text appears at once. The real text lives in an aria-live node.
   import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
+  import Juniper from './Juniper.svelte';
+  import type { Expression } from '#lib/villagers/species.ts';
 
   interface Props {
     /** One line, or several pages (tap to step through). */
@@ -16,11 +18,13 @@
     side?: 'left' | 'right' | 'none';
     /** Show Juniper beside the bubble (default true). Pass `speaker` to draw someone else. */
     juniper?: boolean;
+    /** The host's expression (style guide §7.4). */
+    expression?: Expression;
     speaker?: Snippet;
     /** Called once the last page has finished typing. */
     onfinish?: () => void;
   }
-  let { text, name, tag = 'var(--tag-juniper)', side = 'right', juniper = true, speaker, onfinish }: Props = $props();
+  let { text, name, tag = 'var(--tag-juniper)', side = 'right', juniper = true, expression = 'happy', speaker, onfinish }: Props = $props();
 
   const pages = $derived(Array.isArray(text) ? text : [text]);
   let pageIdx = $state(0);
@@ -104,7 +108,7 @@
   {#if speaker}
     <span class="spk">{@render speaker()}</span>
   {:else if juniper}
-    <svg class="spk juni" viewBox="0 0 100 100" aria-hidden="true"><use href="#v-juni" /></svg>
+    <span class="spk juni"><Juniper {expression} size={84} /></span>
   {/if}
 </div>
 
@@ -144,8 +148,8 @@
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
   .spk { flex: none; display: block; }
-  .juni { width: 72px; height: 72px; transform-origin: 50% 100%; animation: if-bob var(--dur-idle) var(--ease-idle) infinite; }
+  .juni { width: 72px; display: grid; justify-items: center; margin-bottom: 4px; }
   @media (prefers-reduced-motion: reduce) {
-    .bubble, .who, .juni, .next { animation: none; }
+    .bubble, .who, .next { animation: none; }
   }
 </style>
