@@ -1,0 +1,7 @@
+// Usage: npx tsx scripts/vapid.ts   → prints VAPID keys for .env (generate once; changing them breaks subscriptions).
+import webpush from 'web-push';
+
+const { publicKey, privateKey } = webpush.generateVAPIDKeys();
+console.log(`VAPID_PUBLIC_KEY=${publicKey}`);
+console.log(`VAPID_PRIVATE_KEY=${privateKey}`);
+console.log('VAPID_SUBJECT=mailto:you@example.com');
