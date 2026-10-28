@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Island Fund · Mockup v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Tokens (mirror docs/design/style-guide.md) ===== */
+:root{
+  --cream:#FFF8E7; --paper:#FDF1D6; --paper-edge:#EAD9B5;
+  --sand:#E9D8B4; --sand-deep:#D4BC8E;
+  --leaf:#7BC67E; --leaf-soft:#BFE5B9; --leaf-deep:#4E9A55; --leaf-ink:#2E6B38;
+  --sky:#8FD3F4; --sky-pale:#DDF2FB; --sky-deep:#2F86B8;
+  --coral:#FF9B87; --coral-soft:#FFD9CF; --coral-ink:#B04A3B;
+  --sun:#FFD66B; --gold:#F2B53A; --peach:#FFB38A; --bark:#8A5A3B;
+  --ink:#4A3A2C; --ink-soft:#6B5544; --ink-faint:#7A6553; --white:#fff;
+  --night-sky:#1F2A44; --night-sky-2:#2B3A5C; --night-card:#33456B; --night-edge:#4A5E8A;
+  --night-ink:#F7EEDB; --night-ink-soft:#B9C3DA; --moon:#F6E7B0; --firefly:#E8F59A;
+  --p-plum:#B79CE0; --p-apricot:#FFB38A;
+  --f-apple:#FF8A7A; --f-peach:#FFB38A; --f-plum:#9FA8E8; --f-pear:#C9DE6E;
+
+  --font-display:"Fredoka","Zen Maru Gothic",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --font-body:"Nunito","Zen Maru Gothic",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-body-lg:1.0625rem;
+  --fs-body:.9375rem; --fs-caption:.8125rem; --fs-micro:.6875rem;
+  --r-xs:8px; --r-sm:14px; --r-md:20px; --r-lg:28px; --r-xl:40px; --r-pill:999px;
+  --r-blob:46% 54% 52% 48% / 55% 45% 55% 45%;
+  --sh-lip:0 4px 0 var(--sand-deep);
+  --sh-soft:0 6px 18px rgba(138,90,59,.14);
+  --sh-float:0 14px 34px rgba(74,58,44,.22);
+  --sh-inset:inset 0 2px 0 rgba(74,58,44,.10);
+  --sh-glow:0 0 0 6px rgba(255,214,107,.45);
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
+  --ease-bounce:cubic-bezier(.34,1.56,.64,1); --ease-soft:cubic-bezier(.25,.8,.25,1);
+
+  /* simulated iPhone 15 safe areas (real app uses env(safe-area-inset-*)) */
+  --safe-top:59px; --safe-bottom:34px; --tabbar-h:64px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--font-body); color:var(--ink); font-weight:600;
+  background:
+    radial-gradient(circle at 12% 8%, #fff 0 2px, transparent 3px) 0 0/38px 38px,
+    linear-gradient(180deg,#E6F5EC 0%, #F6EFD9 60%, #F3E3C2 100%);
+  min-height:100vh; padding:32px 24px 64px;
+}
+h1,h2,h3{font-family:var(--font-display); margin:0; font-weight:600}
+.page-head{max-width:1700px;margin:0 auto 28px;display:flex;flex-wrap:wrap;align-items:end;gap:16px 32px;justify-content:space-between}
+.page-head h1{font-size:2.2rem;color:var(--ink)}
+.page-head p{margin:.3rem 0 0;color:var(--ink-soft);max-width:60ch}
+.toggle{display:inline-flex;align-items:center;gap:10px;background:var(--paper);border:2px solid var(--paper-edge);border-radius:var(--r-pill);padding:10px 16px;box-shadow:var(--sh-lip);cursor:pointer;font-weight:700;min-height:44px}
+.toggle .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--sand-deep);background:#fff;display:grid;place-items:center}
+.sr-only{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+#safe:checked ~ .page-head .toggle .box{background:var(--leaf);border-color:var(--leaf-deep)}
+#safe:checked ~ .page-head .toggle .box::after{content:"";width:6px;height:11px;border:solid var(--ink);border-width:0 3px 3px 0;transform:translateY(-1px) rotate(45deg)}
+#safe:focus-visible ~ .page-head .toggle{outline:3px solid var(--sky-deep);outline-offset:3px}
+
+.stage{display:flex;flex-wrap:wrap;gap:40px 36px;justify-content:center;max-width:1760px;margin:0 auto}
+figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+figcaption{max-width:390px;font-size:var(--fs-caption);color:var(--ink-soft);line-height:1.45;text-align:left}
+figcaption b{font-family:var(--font-display);font-weight:600;font-size:1.05rem;color:var(--ink);display:block;margin-bottom:2px}
+
+/* ===== Phone frame ===== */
+.phone{
+  position:relative;width:390px;height:844px;border-radius:56px;overflow:hidden;
+  background:var(--cream);
+  box-shadow:0 0 0 10px #3B3029, 0 0 0 12px #5A4A3E, 0 30px 60px rgba(74,58,44,.35);
+  isolation:isolate;
+}
+.paper{ /* subtle paper grain */
+  background-color:var(--cream);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .54 0 0 0 0 .35 0 0 0 0 .23 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.statusbar{position:absolute;inset:0 0 auto 0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:6px 32px 0 40px;font:600 16px/1 -apple-system,"SF Pro Text",system-ui,sans-serif;z-index:50;color:#1d1d1f;pointer-events:none}
+.statusbar.light{color:#fff}
+.statusbar .icons{display:flex;gap:6px;align-items:center}
+.island-pill{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:60}
+.home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#1d1d1f;z-index:60;opacity:.85}
+.home-ind.light{background:#fff}
+.safe-overlay{display:none;position:absolute;inset:0;z-index:70;pointer-events:none}
+.safe-overlay::before,.safe-overlay::after{content:"";position:absolute;left:0;right:0;background:repeating-linear-gradient(45deg,rgba(255,80,80,.22) 0 6px,rgba(255,80,80,.08) 6px 12px);border:1px dashed rgba(200,40,40,.6)}
+.safe-overlay::before{top:0;height:var(--safe-top)}
+.safe-overlay::after{bottom:0;height:var(--safe-bottom)}
+.safe-overlay span{position:absolute;right:10px;font:800 10px var(--font-body);color:#B03030;background:#fff;padding:2px 6px;border-radius:6px}
+#safe:checked ~ .stage .safe-overlay{display:block}
+#safe:checked ~ .stage .thumb-zone{display:block}
+.thumb-zone{display:none;position:absolute;left:0;right:0;bottom:0;height:46%;z-index:65;pointer-events:none;background:linear-gradient(0deg,rgba(123,198,126,.28),rgba(123,198,126,0));border-top:2px dashed rgba(46,107,56,.5)}
+.thumb-zone span{position:absolute;left:12px;top:6px;font:800 10px var(--font-body);color:var(--leaf-ink);background:#fff;padding:2px 6px;border-radius:6px}
+
+.scroll{position:absolute;inset:0;overflow:hidden}
+.pad{padding:0 var(--sp-5)}
+
+/* ===== Common components ===== */
+.card{background:var(--paper);border:2px solid var(--paper-edge);border-radius:var(--r-md);box-shadow:var(--sh-lip)}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);padding:6px 12px;font-weight:800;font-size:var(--fs-caption);background:rgba(255,248,231,.92);border:2px solid var(--paper-edge);box-shadow:0 2px 0 var(--sand-deep)}
+.money{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums}
+.btn{
+  appearance:none;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;min-height:56px;border-radius:var(--r-pill);
+  font:800 var(--fs-body-lg) var(--font-body);color:var(--ink);
+  background:var(--leaf);box-shadow:0 5px 0 #5FA862;transition:transform .14s, box-shadow .14s;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent
+}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #5FA862}
+.btn.coral{background:var(--coral);box-shadow:0 5px 0 #E07F6B}
+.btn.moon{background:var(--moon);box-shadow:0 5px 0 #C9B676}
+.btn svg{width:26px;height:26px}
+
+/* speech bubble */
+.bubble{position:relative;background:#fff;border:2px solid var(--paper-edge);border-radius:var(--r-lg);padding:16px 16px 14px;font-size:var(--fs-body-lg);font-weight:700;line-height:1.38;box-shadow:var(--sh-soft)}
+.bubble .who{position:absolute;top:-13px;left:18px;font:800 12px/1 var(--font-body);background:var(--sun);color:var(--ink);padding:5px 10px;border-radius:var(--r-pill);transform:rotate(-3deg);box-shadow:0 2px 0 var(--gold)}
+.bubble::after{content:"";position:absolute;left:30px;bottom:-12px;width:20px;height:20px;background:#fff;border-right:2px solid var(--paper-edge);border-bottom:2px solid var(--paper-edge);transform:rotate(45deg);border-bottom-right-radius:5px}
+.bubble.tail-left::after{left:-11px;top:24px;bottom:auto;transform:rotate(135deg)}
+.bubble .more{position:absolute;right:16px;bottom:8px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--coral);animation:bob 1.2s ease-in-out infinite}
+
+/* tab bar */
+.tabbar{position:absolute;left:12px;right:12px;bottom:calc(var(--safe-bottom) + 6px);height:var(--tabbar-h);z-index:40;
+  background:rgba(255,248,231,.96);border:2px solid var(--paper-edge);border-radius:28px;box-shadow:var(--sh-float);
+  display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:0 6px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px;justify-content:center;color:var(--ink-faint);font:800 var(--fs-micro)/1 var(--font-body);letter-spacing:.04em;position:relative}
+.tab svg{width:26px;height:26px}
+.tab.on{color:var(--ink)}
+.tab.on::before{content:"";position:absolute;top:-1px;width:46px;height:34px;border-radius:var(--r-blob);background:var(--sand);z-index:-1}
+.tab .dot{position:absolute;top:2px;right:16px;width:9px;height:9px;border-radius:50%;background:var(--coral);border:2px solid var(--cream)}
+
+/* ===== HOME ===== */
+.home-scene{position:absolute;top:0;left:0;width:390px;height:318px}
+.home-top{position:absolute;top:calc(var(--safe-top) + 4px);left:16px;right:16px;display:flex;justify-content:space-between;z-index:5}
+.home-bubble{position:absolute;top:300px;left:20px;right:20px;z-index:6}
+.juni-mini{position:absolute;top:262px;right:22px;width:62px;height:62px;z-index:7;filter:drop-shadow(0 3px 0 rgba(74,58,44,.15))}
+.today{position:absolute;top:410px;left:20px;right:20px}
+.today-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.today-head h2{font-size:var(--fs-h2)}
+.today-head span{font-size:var(--fs-caption);color:var(--ink-faint);font-weight:800}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.who-card{padding:10px 10px 10px;position:relative}
+.who-card .name{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:1.05rem;margin-bottom:6px}
+.who-card .name svg{width:30px;height:30px;border-radius:50%}
+.who-card .earned{margin-left:auto;font-size:.85rem;color:var(--leaf-ink);background:var(--leaf-soft);padding:2px 8px;border-radius:var(--r-pill)}
+.goal{display:flex;align-items:center;gap:7px;font-size:var(--fs-caption);font-weight:800;min-height:28px}
+.goal .fruit{width:22px;height:22px;flex:none}
+.goal .lbl{flex:1;color:var(--ink-soft)}
+.goal .val{font-variant-numeric:tabular-nums;color:var(--ink)}
+.goal.done .val{color:var(--leaf-ink)}
+.minibar{height:5px;border-radius:3px;background:var(--leaf-soft);margin:-2px 0 3px 29px;overflow:hidden;box-shadow:var(--sh-inset)}
+.minibar i{display:block;height:100%;background:var(--leaf);border-radius:3px}
+.home-cta{position:absolute;left:20px;right:20px;top:654px}
+
+/* fruit grow animation */
+.grow{transform-origin:center;transform-box:fill-box;animation:pop .7s var(--ease-bounce) both}
+.sway{transform-origin:50% 100%;transform-box:fill-box;animation:sway 5s ease-in-out infinite}
+.breathe{transform-origin:50% 100%;transform-box:fill-box;animation:breathe 3.2s ease-in-out infinite}
+.cloud{animation:drift 30s linear infinite}
+.glint{animation:glint 2.4s ease-in-out infinite}
+
+/* ===== FUND ===== */
+.screen-head{position:absolute;top:calc(var(--safe-top) + 6px);left:20px;right:20px;display:flex;align-items:center;justify-content:space-between}
+.screen-head h1{font-size:var(--fs-h1)}
+.screen-head .sub{font-size:var(--fs-caption);color:var(--ink-faint);font-weight:800;margin-top:2px}
+.map-card{position:absolute;top:118px;left:20px;right:20px;height:206px;overflow:hidden;padding:0;border-radius:var(--r-lg)}
+.fund-total{position:absolute;top:336px;left:20px;right:20px;display:flex;align-items:center;gap:14px}
+.fund-total .hero{font-size:2.5rem;line-height:1}
+.fund-total .of{font-size:var(--fs-caption);color:var(--ink-faint);font-weight:800}
+.rope{position:relative;height:18px;border-radius:var(--r-pill);background:var(--leaf-soft);box-shadow:var(--sh-inset);margin-top:8px;overflow:hidden}
+.rope i{position:absolute;inset:0 auto 0 0;border-radius:var(--r-pill);background:repeating-linear-gradient(-45deg,var(--leaf) 0 8px,#8FD092 8px 16px);animation:stripes 1.6s linear infinite}
+.rope b{position:absolute;top:0;bottom:0;width:3px;background:rgba(255,248,231,.9)}
+.milestones{position:absolute;top:430px;left:20px;right:20px;padding:6px 12px}
+.ms{display:flex;align-items:center;gap:12px;min-height:44px;border-bottom:2px dashed var(--paper-edge);font-size:var(--fs-body)}
+.ms:last-child{border-bottom:0}
+.ms .flag{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:var(--r-blob);background:var(--sand)}
+.ms.done .flag{background:var(--leaf-soft)}
+.ms.next .flag{background:var(--sun);box-shadow:var(--sh-glow)}
+.ms .t{flex:1;font-weight:700}
+.ms .t small{display:block;color:var(--ink-faint);font-size:var(--fs-caption);font-weight:700}
+.ms .amt{font-family:var(--font-display);font-weight:600;font-variant-numeric:tabular-nums}
+.treats{position:absolute;top:636px;left:20px;right:20px;display:flex;gap:8px}
+.ticket{flex:1;display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--coral-soft);border:2px dashed var(--coral);border-radius:var(--r-sm);font-size:var(--fs-caption);font-weight:800;min-height:48px}
+.ticket svg{width:26px;height:26px;flex:none}
+
+/* ===== SETTLEMENT (night) ===== */
+.night{background:linear-gradient(180deg,#16203A 0%,var(--night-sky) 40%,var(--night-sky-2) 100%);color:var(--night-ink)}
+.stars{position:absolute;inset:0;pointer-events:none}
+.stars i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:twinkle 3s ease-in-out infinite}
+.settle-head{position:absolute;top:calc(var(--safe-top) + 4px);left:20px;right:20px;display:flex;justify-content:space-between;align-items:center}
+.settle-head .pill{background:rgba(51,69,107,.9);border-color:var(--night-edge);color:var(--night-ink);box-shadow:0 2px 0 #18213A}
+.settle-host{position:absolute;top:118px;left:16px;right:16px;display:flex;gap:10px;align-items:flex-start}
+.settle-host .av{width:84px;height:84px;flex:none;filter:drop-shadow(0 0 18px rgba(246,231,176,.35))}
+.settle-host .bubble{flex:1;color:var(--ink);font-size:1rem}
+.settle-host .bubble .who{background:var(--moon);box-shadow:0 2px 0 #C9B676}
+.tally{position:absolute;top:236px;left:20px;right:20px;background:var(--night-card);border:2px solid var(--night-edge);border-radius:var(--r-lg);box-shadow:0 4px 0 #18213A, 0 18px 40px rgba(0,0,0,.35);padding:14px 16px 10px}
+.tally h3{font-size:1rem;color:var(--night-ink-soft);font-weight:600;display:flex;justify-content:space-between}
+.trow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:2px dashed var(--night-edge);opacity:0;animation:rowIn .5s var(--ease-soft) forwards}
+.trow:nth-of-type(1){animation-delay:.3s}.trow:nth-of-type(2){animation-delay:1.1s}.trow:nth-of-type(3){animation-delay:1.9s}
+.trow .av{width:38px;height:38px;flex:none;border-radius:50%;background:var(--night-sky-2)}
+.trow .t{flex:1;font-weight:800}
+.trow .t small{display:block;font-weight:700;color:var(--night-ink-soft);font-size:var(--fs-caption)}
+.trow .amt{font-family:var(--font-display);font-size:1.3rem;font-weight:600;color:var(--moon);font-variant-numeric:tabular-nums}
+.fruitrow{display:flex;gap:2px;margin-top:3px}
+.fruitrow i{width:9px;height:9px;border-radius:50%;background:var(--f-peach)}
+.fruitrow i.o{background:transparent;border:1.5px dashed var(--night-ink-soft)}
+.ttotal{display:flex;justify-content:space-between;align-items:center;padding:10px 0 2px;opacity:0;animation:rowIn .6s var(--ease-bounce) 2.8s forwards}
+.ttotal span{font-weight:800;color:var(--night-ink-soft)}
+.ttotal .money{font-size:2.4rem;color:var(--moon);text-shadow:0 0 18px rgba(246,231,176,.45)}
+.upgrade{position:absolute;top:572px;left:20px;right:20px;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--r-md);background:rgba(232,245,154,.12);border:2px dashed var(--firefly);opacity:0;animation:rowIn .6s var(--ease-soft) 3.4s forwards}
+.upgrade svg{width:56px;height:44px;flex:none}
+.upgrade b{font-family:var(--font-display);font-weight:600;color:var(--firefly)}
+.upgrade small{display:block;color:var(--night-ink-soft);font-weight:700;font-size:var(--fs-caption)}
+.settle-cta{position:absolute;left:20px;right:20px;bottom:calc(var(--safe-bottom) + 18px)}
+.settle-cta .skip{text-align:center;margin-top:12px;font-size:var(--fs-caption);color:var(--night-ink-soft);font-weight:800;min-height:24px}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:12px;height:8px;border-radius:8px 0;animation:fall 4.5s linear infinite}
+
+/* ===== CHECK-IN ===== */
+.dim{position:absolute;inset:0;background:rgba(43,58,92,.45);z-index:20}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:30;border-radius:34px 34px 0 0;background:var(--cream);box-shadow:0 -10px 40px rgba(31,42,68,.3);padding:10px 20px calc(var(--safe-bottom) + 12px)}
+.grabber{width:44px;height:5px;border-radius:3px;background:var(--sand-deep);margin:0 auto 12px}
+.sheet-head{display:flex;align-items:center;gap:12px}
+.sheet-head .av{width:54px;height:54px;flex:none;border-radius:var(--r-blob);background:#EFE6FA}
+.sheet-head h2{font-size:1.45rem}
+.sheet-head p{margin:2px 0 0;font-size:var(--fs-caption);color:var(--ink-faint);font-weight:800}
+.close{margin-left:auto;width:44px;height:44px;border-radius:50%;background:var(--sand);display:grid;place-items:center}
+.meals{display:flex;gap:6px;margin:12px 0 12px}
+.meal{flex:1;min-height:44px;border-radius:var(--r-pill);display:grid;place-items:center;font-weight:800;font-size:var(--fs-caption);background:var(--paper);border:2px solid var(--paper-edge);color:var(--ink-soft)}
+.meal.on{background:var(--sky-pale);border-color:var(--sky);color:var(--ink);box-shadow:0 3px 0 #74B9D9}
+.q{font-family:var(--font-display);font-weight:600;font-size:1.15rem;margin:0 0 10px}
+.choices{display:grid;grid-template-columns:1fr;gap:10px}
+.choice{position:relative;display:flex;align-items:center;gap:14px;min-height:66px;padding:8px 16px;border-radius:var(--r-lg);background:var(--paper);border:2.5px solid var(--paper-edge);box-shadow:var(--sh-lip);font-weight:800;font-size:var(--fs-body-lg)}
+.choice svg.ic{width:48px;height:48px;flex:none}
+.choice small{display:block;font-weight:700;font-size:var(--fs-caption);color:var(--ink-faint)}
+.choice.picked{background:#EAF7E6;border-color:var(--leaf);box-shadow:0 4px 0 #8FC98F, var(--sh-glow)}
+.choice.picked{padding-right:58px}
+.choice.picked .check{position:absolute;right:14px;width:34px;height:34px;border-radius:50%;background:var(--leaf);display:grid;place-items:center;animation:pop .5s var(--ease-bounce) both}
+.ripple{position:absolute;right:52px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:rgba(123,198,126,.5);animation:ripple 1.6s ease-out infinite}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:var(--r-pill);background:var(--paper);border:2px dashed var(--paper-edge);font-weight:800;font-size:var(--fs-caption);color:var(--ink-soft)}
+.chip.on{border-style:solid;border-color:var(--leaf);background:var(--leaf-soft);color:var(--ink)}
+.toast{position:absolute;left:24px;right:24px;top:calc(var(--safe-top) + 8px);z-index:35;display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border-radius:var(--r-lg);border:2px solid var(--leaf);box-shadow:var(--sh-float);font-weight:800;animation:drop .6s var(--ease-bounce) .4s both}
+.toast svg{width:40px;height:40px;flex:none}
+.toast small{display:block;color:var(--ink-faint);font-weight:700;font-size:var(--fs-caption)}
+.sheet-foot{margin-top:12px;text-align:center;font-size:var(--fs-caption);color:var(--ink-faint);font-weight:800}
+
+/* ===== WIDGETS ===== */
+.extras{max-width:1700px;margin:64px auto 0}
+.extras h2{font-size:1.6rem;margin-bottom:6px}
+.extras > p{color:var(--ink-soft);margin:0 0 22px;max-width:75ch}
+.wall{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;padding:28px;border-radius:var(--r-xl);
+  background:linear-gradient(160deg,#8FC4E8,#B9A8E0 55%,#F2B7A5)}
+.wcol{display:flex;flex-direction:column;align-items:center;gap:10px}
+.wcol .cap{font-size:var(--fs-caption);font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.w-small{width:170px;height:170px;border-radius:24px;padding:14px;background:var(--cream);box-shadow:0 10px 24px rgba(0,0,0,.18);position:relative;overflow:hidden}
+.w-medium{width:364px;height:170px;border-radius:24px;padding:14px 16px;background:var(--cream);box-shadow:0 10px 24px rgba(0,0,0,.18);display:flex;gap:14px;overflow:hidden}
+.w-label{font:800 11px var(--font-body);color:var(--ink-faint);letter-spacing:.06em;text-transform:uppercase}
+.lock{width:300px;padding:18px 16px 20px;border-radius:30px;background:rgba(20,24,40,.38);backdrop-filter:blur(6px);color:#fff;text-align:center}
+.lock .time{font:600 64px/1 -apple-system,"SF Pro Display",system-ui;letter-spacing:-1px;margin:4px 0 12px}
+.lock .date{font:600 15px -apple-system,system-ui;opacity:.9}
+.lock-row{display:flex;gap:10px;justify-content:center}
+.acc-circ{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center}
+.acc-rect{width:176px;height:64px;border-radius:14px;background:rgba(255,255,255,.18);padding:7px 10px;text-align:left;font:700 12px/1.25 -apple-system,system-ui}
+.watch{width:184px;height:224px;border-radius:52px;background:#111;box-shadow:0 0 0 8px #2b2b2b, 0 14px 30px rgba(0,0,0,.35);padding:16px;position:relative;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.watch .wt{font:600 40px/1 -apple-system,system-ui}
+.watch .crown{position:absolute;right:-14px;top:62px;width:8px;height:34px;background:#3a3a3a;border-radius:4px}
+
+/* ===== Keyframes ===== */
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.97)}}
+@keyframes drift{from{transform:translateX(-60px)}to{transform:translateX(420px)}}
+@keyframes glint{0%,70%,100%{opacity:0}80%{opacity:1}}
+@keyframes stripes{to{background-position:32px 0}}
+@keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(900px) rotate(540deg)}}
+@keyframes ripple{0%{transform:scale(.4);opacity:.9}100%{transform:scale(5);opacity:0}}
+@keyframes drop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
+@keyframes boat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(3deg)}}
+.boat{transform-box:fill-box;transform-origin:50% 80%;animation:boat 2.6s ease-in-out infinite}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;animation-delay:0s !important;transition:none !important}
+  .confetti{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== SVG LIBRARY ===================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Mochi: sleepy cat (plum accent) -->
+    <symbol id="v-mochi" viewBox="0 0 100 100">
+      <path d="M20 46 L16 14 Q18 8 24 12 L44 28 Z" fill="#FFF3E6" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M80 46 L84 14 Q82 8 76 12 L56 28 Z" fill="#FFF3E6" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M23 36 L21 19 L35 29 Z" fill="#E6D6F7"/>
+      <path d="M77 36 L79 19 L65 29 Z" fill="#E6D6F7"/>
+      <ellipse cx="50" cy="58" rx="38" ry="32" fill="#FFF3E6" stroke="#4A3A2C" stroke-width="3"/>
+      <path d="M58 28 Q78 30 84 48 Q72 46 60 38 Z" fill="#B79CE0" opacity=".85"/>
+      <path d="M31 57 Q37 62 43 57" stroke="#4A3A2C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M57 57 Q63 62 69 57" stroke="#4A3A2C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="28" cy="67" rx="6.5" ry="3.8" fill="#FFB3A8" opacity=".85"/>
+      <ellipse cx="72" cy="67" rx="6.5" ry="3.8" fill="#FFB3A8" opacity=".85"/>
+      <path d="M47 64 L53 64 L50 67.5 Z" fill="#F28BA8" stroke="#4A3A2C" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M44 70 Q47 73 50 70 Q53 73 56 70" stroke="#4A3A2C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M12 60 L22 62 M12 68 L22 66 M88 60 L78 62 M88 68 L78 66" stroke="#4A3A2C" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+    </symbol>
+    <!-- Bean: cheerful dog (apricot accent) -->
+    <symbol id="v-bean" viewBox="0 0 100 100">
+      <ellipse cx="50" cy="56" rx="36" ry="33" fill="#F2C48D" stroke="#4A3A2C" stroke-width="3"/>
+      <path d="M24 30 Q8 32 10 58 Q13 68 22 61 Q27 46 32 34 Z" fill="#A8754E" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M76 30 Q92 32 90 58 Q87 68 78 61 Q73 46 68 34 Z" fill="#A8754E" stroke="#4A3A2C" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="50" cy="67" rx="16" ry="12" fill="#FFF1DE"/>
+      <circle cx="36" cy="52" r="5.2" fill="#4A3A2C"/><circle cx="37.8" cy="50.2" r="1.8" fill="#fff"/>
+      <circle cx="64" cy="52" r="5.2" fill="#4A3A2C"/><circle cx="65.8" cy="50.2" r="1.8" fill="#fff"/>
+      <ellipse cx="50" cy="61.5" rx="5.5" ry="3.8" fill="#4A3A2C"/>
+      <path d="M43 68 Q50 74 57 68" stroke="#4A3A2C" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M47 71 Q50 80 53 71 Z" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="1.5" stroke-linejoin="round"/>
+      <ellipse cx="25" cy="64" rx="6" ry="3.6" fill="#FF9B87" opacity=".7"/>
+      <ellipse cx="75" cy="64" rx="6" ry="3.6" fill="#FF9B87" opacity=".7"/>
+      <path d="M44 26 Q50 20 56 26" stroke="#4A3A2C" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
+    </symbol>
+    <!-- Juniper: capybara harbor-keeper with a yuzu on her head -->
+    <symbol id="v-juni" viewBox="0 0 100 100">
+      <circle cx="26" cy="34" r="7" fill="#9C6F48" stroke="#4A3A2C" stroke-width="3"/>
+      <circle cx="74" cy="34" r="7" fill="#9C6F48" stroke="#4A3A2C" stroke-width="3"/>
+      <rect x="16" y="30" width="68" height="62" rx="30" fill="#C1915F" stroke="#4A3A2C" stroke-width="3"/>
+      <rect x="29" y="58" width="42" height="30" rx="15" fill="#A97B50"/>
+      <ellipse cx="42" cy="66" rx="2.6" ry="3.4" fill="#4A3A2C"/><ellipse cx="58" cy="66" rx="2.6" ry="3.4" fill="#4A3A2C"/>
+      <path d="M44 77 Q50 81 56 77" stroke="#4A3A2C" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <path d="M30 50 Q34 47 38 50" stroke="#4A3A2C" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <path d="M62 50 Q66 47 70 50" stroke="#4A3A2C" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="25" cy="60" rx="5" ry="3" fill="#FF9B87" opacity=".6"/><ellipse cx="75" cy="60" rx="5" ry="3" fill="#FF9B87" opacity=".6"/>
+      <circle cx="50" cy="22" r="11" fill="#FFD66B" stroke="#4A3A2C" stroke-width="3"/>
+      <circle cx="46" cy="19" r="2.5" fill="#fff" opacity=".8"/>
+      <path d="M50 11 Q58 3 64 8 Q58 14 50 11 Z" fill="#7BC67E" stroke="#4A3A2C" stroke-width="2" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- fruits (one per goal type) -->
+    <symbol id="f-apple" viewBox="0 0 24 24"><circle cx="12" cy="14" r="8" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="1.8"/><path d="M12 6 Q12 3 14 2" stroke="#8A5A3B" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M13 5 Q17 2 19 5 Q16 7 13 5Z" fill="#7BC67E"/><circle cx="9" cy="11" r="1.8" fill="#fff" opacity=".7"/></symbol>
+    <symbol id="f-peach" viewBox="0 0 24 24"><path d="M12 6 C4 6 3 15 6 18 C9 22 15 22 18 18 C21 15 20 6 12 6Z" fill="#FFB38A" stroke="#4A3A2C" stroke-width="1.8"/><path d="M12 7 Q10 13 12 20" stroke="#E8946A" stroke-width="1.4" fill="none"/><path d="M12 6 Q15 2 19 4 Q16 8 12 6Z" fill="#7BC67E"/><circle cx="8.5" cy="11" r="1.6" fill="#fff" opacity=".7"/></symbol>
+    <symbol id="f-plum" viewBox="0 0 24 24"><circle cx="12" cy="14" r="8" fill="#9FA8E8" stroke="#4A3A2C" stroke-width="1.8"/><path d="M15 10 a4 4 0 1 0 2 5 a3 3 0 1 1 -2 -5z" fill="#F6E7B0"/><path d="M12 6 Q14 2 18 3" stroke="#8A5A3B" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="f-pear" viewBox="0 0 24 24"><path d="M12 5 C9 5 9 9 8 11 C5 14 5 21 12 21 C19 21 19 14 16 11 C15 9 15 5 12 5Z" fill="#C9DE6E" stroke="#4A3A2C" stroke-width="1.8"/><path d="M12 5 Q12 2 14 1.5" stroke="#8A5A3B" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="9.5" cy="14" r="1.6" fill="#fff" opacity=".7"/></symbol>
+    <symbol id="f-empty" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="#7A6553" stroke-width="1.8" stroke-dasharray="3 3" opacity=".55"/></symbol>
+
+    <!-- UI icons: 24 grid, rounded stroke -->
+    <symbol id="i-island" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 Q12 15 21 20"/><path d="M12 18 Q11 12 13 7"/><path d="M13 7 Q8 4 4 7 M13 7 Q18 3 21 7 M13 7 Q11 3 8 3 M13 7 Q16 9 17 12"/></g></symbol>
+    <symbol id="i-jar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="3" rx="1.2"/><path d="M8 6 Q5 8 5 12 V18 Q5 21 8 21 H16 Q19 21 19 18 V12 Q19 8 16 6"/><circle cx="12" cy="15" r="2.6"/></g></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8 H19 L18 20 Q18 21 17 21 H7 Q6 21 6 20 Z"/><path d="M9 10 V6 a3 3 0 0 1 6 0 V10"/></g></symbol>
+    <symbol id="i-shell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 L4 11 Q6 4 12 4 Q18 4 20 11 Z"/><path d="M12 20 V5 M12 20 L8 6 M12 20 L16 6"/></g></symbol>
+    <symbol id="i-us" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19 C3 15 3 10 5.5 8.5 C7.5 7.3 9 8.5 9 9.5 C9 8.5 10.5 7.3 12.5 8.5 C15 10 15 15 9 19Z"/><path d="M16 13.5 C19.5 11 20.5 8 19 6.5 C17.8 5.4 16.3 6 16 7 C15.7 6 14.2 5.4 13 6.5"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-bowl" viewBox="0 0 48 48"><path d="M6 22 H42 Q41 38 24 40 Q7 38 6 22Z" fill="#FFF1DE" stroke="#4A3A2C" stroke-width="2.6" stroke-linejoin="round"/><path d="M14 22 Q14 12 22 14 Q20 20 18 22" fill="#7BC67E" stroke="#4A3A2C" stroke-width="2.2" stroke-linejoin="round"/><path d="M22 22 Q26 10 34 13 Q32 20 28 22" fill="#BFE5B9" stroke="#4A3A2C" stroke-width="2.2" stroke-linejoin="round"/><circle cx="34" cy="19" r="4" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="2"/><path d="M14 30 Q24 34 34 30" stroke="#E9D8B4" stroke-width="2.4" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-okbowl" viewBox="0 0 48 48"><ellipse cx="24" cy="30" rx="18" ry="10" fill="#FFE7A8" stroke="#4A3A2C" stroke-width="2.6"/><path d="M10 28 Q24 16 38 28" fill="#F2C48D" stroke="#4A3A2C" stroke-width="2.4"/><circle cx="18" cy="25" r="3.4" fill="#7BC67E" stroke="#4A3A2C" stroke-width="1.8"/><circle cx="28" cy="23" r="3" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="1.8"/></symbol>
+    <symbol id="i-treat" viewBox="0 0 48 48"><circle cx="24" cy="26" r="16" fill="#F2C48D" stroke="#4A3A2C" stroke-width="2.6"/><path d="M9 24 Q12 12 24 11 Q36 12 39 24 Q36 28 32 25 Q28 30 24 26 Q20 30 16 25 Q12 28 9 24Z" fill="#F28BA8" stroke="#4A3A2C" stroke-width="2.2" stroke-linejoin="round"/><circle cx="24" cy="26" r="5" fill="#FFF8E7" stroke="#4A3A2C" stroke-width="2.2"/><path d="M16 17 l2 1 M28 15 l2 -1 M33 20 l1 2 M20 14 l1 -2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M7 21 V4" stroke="#8A5A3B" stroke-width="2.4" stroke-linecap="round"/><path d="M8 4 H18 L15.5 7.5 L18 11 H8 Z" fill="currentColor" stroke="#4A3A2C" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 26 26"><path d="M3 8 Q3 6 5 6 H21 Q23 6 23 8 V10 Q21 10 21 13 Q21 16 23 16 V18 Q23 20 21 20 H5 Q3 20 3 18 V16 Q5 16 5 13 Q5 10 3 10Z" fill="#fff" stroke="#B04A3B" stroke-width="1.8"/><path d="M10 10 V16 M10 10 Q13 10 13 12 Q13 13.5 10 13.5 M16 10 V16" stroke="#B04A3B" stroke-width="1.8" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-cake" viewBox="0 0 26 26"><path d="M4 13 H22 V21 H4Z" fill="#FFD9CF" stroke="#B04A3B" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 16 Q7 18 10 16 Q13 18 16 16 Q19 18 22 16" stroke="#B04A3B" stroke-width="1.6" fill="none"/><path d="M13 13 V8" stroke="#B04A3B" stroke-width="1.8"/><path d="M13 4 Q15 6 13 8 Q11 6 13 4Z" fill="#FFD66B"/></symbol>
+
+    <!-- Fund jar -->
+    <symbol id="jar" viewBox="0 0 60 72">
+      <rect x="15" y="4" width="30" height="9" rx="3" fill="#F2B53A" stroke="#4A3A2C" stroke-width="2.4"/>
+      <path d="M17 13 Q8 18 8 30 V60 Q8 68 16 68 H44 Q52 68 52 60 V30 Q52 18 43 13 Z" fill="#DDF2FB" fill-opacity=".85" stroke="#4A3A2C" stroke-width="2.4"/>
+      <clipPath id="jarclip"><path d="M17 13 Q8 18 8 30 V60 Q8 68 16 68 H44 Q52 68 52 60 V30 Q52 18 43 13 Z"/></clipPath>
+      <g clip-path="url(#jarclip)">
+        <rect x="0" y="42" width="60" height="30" fill="#FFD66B"/>
+        <g fill="#F2B53A" stroke="#C98E1D" stroke-width="1.2"><ellipse cx="16" cy="44" rx="7" ry="3"/><ellipse cx="30" cy="42" rx="7" ry="3"/><ellipse cx="44" cy="45" rx="7" ry="3"/><ellipse cx="23" cy="50" rx="7" ry="3"/><ellipse cx="38" cy="51" rx="7" ry="3"/></g>
+      </g>
+      <path d="M14 26 Q13 34 14 40" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      <path d="M22 30 Q30 24 38 30 Q30 36 22 30Z" fill="#7BC67E" stroke="#4A3A2C" stroke-width="1.8"/>
+    </symbol>
+
+    <!-- Tree with a slot layout; fruit placed by <use> outside -->
+    <symbol id="tree" viewBox="0 0 120 140">
+      <path d="M54 136 Q56 100 52 80 H68 Q64 100 66 136 Z" fill="#8A5A3B" stroke="#4A3A2C" stroke-width="2.5" stroke-linejoin="round"/>
+      <g stroke="#4A3A2C" stroke-width="2.5">
+        <circle cx="60" cy="52" r="40" fill="#4E9A55"/>
+        <circle cx="32" cy="64" r="24" fill="#5FAE63"/>
+        <circle cx="88" cy="64" r="24" fill="#5FAE63"/>
+        <circle cx="60" cy="40" r="30" fill="#7BC67E"/>
+      </g>
+      <path d="M44 28 Q52 20 62 22" stroke="#BFE5B9" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- checkbox must precede .stage as a sibling for the pure-CSS toggle -->
+<input type="checkbox" id="safe" class="sr-only">
+<header class="page-head">
+  <div>
+    <h1>Island Fund · Mockup v0.1</h1>
+    <p>Static mockups at iPhone 15 size (390×844pt) for the cozy two-player fitness + healthy-eating app. Sample data: <b>Mochi</b> (sleepy cat) and <b>Bean</b> (cheerful dog), Week 21 of 52, saving toward a $3,000 trip.</p>
+  </div>
+  <label class="toggle" for="safe"><span class="box" aria-hidden="true"></span> Show safe areas + thumb zone</label>
+</header>
+<main class="stage">
+
+<!-- ===================== 1. HOME / ISLAND ===================== -->
+<figure>
+<div class="phone paper" aria-label="Home island screen">
+  <div class="statusbar"><span>2:14</span><span class="icons">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+    <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div>
+  <div class="island-pill"></div>
+
+  <!-- Island scene bleeds under status bar / Dynamic Island -->
+  <svg class="home-scene" viewBox="0 0 390 318" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9BD8F5"/><stop offset="1" stop-color="#DDF2FB"/></linearGradient>
+    </defs>
+    <rect width="390" height="318" fill="url(#sky1)"/>
+    <circle cx="330" cy="104" r="22" fill="#FFE59A"/><circle cx="330" cy="104" r="32" fill="#FFE59A" opacity=".35"/>
+    <g class="cloud" fill="#fff" opacity=".95"><ellipse cx="60" cy="96" rx="34" ry="13"/><ellipse cx="80" cy="88" rx="20" ry="12"/></g>
+    <g class="cloud" style="animation-duration:46s;animation-delay:-20s" fill="#fff" opacity=".8"><ellipse cx="40" cy="130" rx="26" ry="9"/><ellipse cx="54" cy="124" rx="14" ry="9"/></g>
+    <rect y="214" width="390" height="104" fill="#8FD3F4"/>
+    <path d="M20 240 q10 -6 20 0 M120 296 q10 -6 20 0 M300 250 q10 -6 20 0 M340 300 q10 -6 20 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+    <ellipse cx="195" cy="262" rx="182" ry="46" fill="#E9D8B4" stroke="#D4BC8E" stroke-width="3"/>
+    <ellipse cx="195" cy="250" rx="160" ry="36" fill="#7BC67E"/>
+    <path d="M60 250 q4 -8 8 0 M320 246 q4 -8 8 0 M150 274 q4 -8 8 0" stroke="#4E9A55" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- flowers -->
+    <g><circle cx="168" cy="262" r="4" fill="#F28BA8"/><circle cx="178" cy="266" r="4" fill="#FFD66B"/><circle cx="218" cy="264" r="4" fill="#fff"/><circle cx="292" cy="268" r="4" fill="#F28BA8"/></g>
+
+    <!-- Mochi's tree (left) -->
+    <g class="sway"><use href="#tree" x="38" y="110" width="104" height="122"/>
+      <use href="#f-apple" x="56" y="150" width="22" height="22" class="grow"/>
+      <use href="#f-peach" x="98" y="138" width="22" height="22" class="grow" style="animation-delay:.15s"/>
+      <use href="#f-empty" x="78" y="168" width="22" height="22"/>
+      <use href="#f-pear"  x="108" y="168" width="22" height="22" class="grow" style="animation-delay:.3s"/>
+    </g>
+    <!-- Bean's tree (right) -->
+    <g class="sway" style="animation-delay:-2s"><use href="#tree" x="248" y="110" width="104" height="122"/>
+      <use href="#f-empty" x="266" y="150" width="22" height="22"/>
+      <use href="#f-peach" x="308" y="138" width="22" height="22" class="grow"/>
+      <use href="#f-plum"  x="288" y="168" width="22" height="22" class="grow" style="animation-delay:.15s"/>
+      <use href="#f-pear"  x="318" y="168" width="22" height="22" class="grow" style="animation-delay:.3s"/>
+    </g>
+    <!-- tiny name signs -->
+    <g font-family="Nunito, sans-serif" font-weight="800" font-size="11" fill="#4A3A2C" text-anchor="middle">
+      <rect x="66" y="236" width="48" height="18" rx="6" fill="#FDF1D6" stroke="#8A5A3B" stroke-width="2"/><text x="90" y="249">Mochi</text>
+      <rect x="276" y="236" width="48" height="18" rx="6" fill="#FDF1D6" stroke="#8A5A3B" stroke-width="2"/><text x="300" y="249">Bean</text>
+    </g>
+    <!-- villagers -->
+    <g class="breathe"><use href="#v-mochi" x="114" y="214" width="54" height="54"/></g>
+    <g class="breathe" style="animation-delay:-1.2s"><use href="#v-bean" x="222" y="212" width="56" height="56"/></g>
+    <!-- Zz for sleepy cat -->
+    <text x="160" y="214" font-family="Fredoka, sans-serif" font-weight="600" font-size="13" fill="#7A6553">z</text><text x="168" y="204" font-family="Fredoka, sans-serif" font-weight="600" font-size="10" fill="#7A6553">z</text>
+    <!-- fund jar in the middle -->
+    <use href="#jar" x="176" y="188" width="38" height="46"/>
+    <path class="glint" d="M207 196 l3 -6 l3 6 l6 3 l-6 3 l-3 6 l-3 -6 l-6 -3 z" fill="#fff"/>
+  </svg>
+
+  <div class="home-top">
+    <span class="pill">Wed, Oct 28 · <span style="color:#E8A01F">&#9728;</span> 64°</span>
+    <span class="pill"><svg width="16" height="16"><use href="#i-jar"/></svg><span class="money">$1,184.50</span></span>
+  </div>
+
+  <svg class="juni-mini" aria-hidden="true"><use href="#v-juni"/></svg>
+  <div class="home-bubble bubble">
+    <span class="who">Juniper</span>
+    Bean's tree needs just one more apple! About 2,900 steps. Evening stroll together?
+    <span class="more"></span>
+  </div>
+
+  <section class="today">
+    <div class="today-head"><h2>Today's fruit</h2><span>refreshed 2 min ago · Health</span></div>
+    <div class="duo">
+      <div class="card who-card">
+        <div class="name"><svg style="background:#EFE6FA"><use href="#v-mochi"/></svg>Mochi<span class="earned money">+$3</span></div>
+        <div class="goal done"><svg class="fruit"><use href="#f-apple"/></svg><span class="lbl">Steps</span><span class="val">8,412</span></div>
+        <div class="goal done"><svg class="fruit"><use href="#f-peach"/></svg><span class="lbl">Move</span><span class="val">34m</span></div>
+        <div class="goal"><svg class="fruit"><use href="#f-empty"/></svg><span class="lbl">Sleep</span><span class="val">6h40</span></div>
+        <div class="goal done"><svg class="fruit"><use href="#f-pear"/></svg><span class="lbl">Eats</span><span class="val">2/2</span></div>
+      </div>
+      <div class="card who-card">
+        <div class="name"><svg style="background:#FFE6D6"><use href="#v-bean"/></svg>Bean<span class="earned money">+$3</span></div>
+        <div class="goal"><svg class="fruit"><use href="#f-empty"/></svg><span class="lbl">Steps</span><span class="val">6,120</span></div>
+        <div class="minibar"><i style="width:68%"></i></div>
+        <div class="goal done"><svg class="fruit"><use href="#f-peach"/></svg><span class="lbl">Move</span><span class="val">45m</span></div>
+        <div class="goal done"><svg class="fruit"><use href="#f-plum"/></svg><span class="lbl">Sleep</span><span class="val">7h50</span></div>
+        <div class="goal done"><svg class="fruit"><use href="#f-pear"/></svg><span class="lbl">Eats</span><span class="val">2/2</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="home-cta"><button class="btn"><svg viewBox="0 0 48 48"><use href="#i-bowl"/></svg>Check in a meal</button></div>
+
+  <nav class="tabbar" aria-label="Main">
+    <div class="tab on"><svg><use href="#i-island"/></svg>Island</div>
+    <div class="tab"><svg><use href="#i-jar"/></svg>Fund</div>
+    <div class="tab"><svg><use href="#i-bag"/></svg>Shop</div>
+    <div class="tab"><span class="dot"></span><svg><use href="#i-shell"/></svg>Museum</div>
+    <div class="tab"><svg><use href="#i-us"/></svg>Us</div>
+  </nav>
+  <div class="home-ind"></div>
+  <div class="safe-overlay"><span style="top:40px">safe-area-inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div>
+  <div class="thumb-zone"><span>thumb zone: primary actions live here</span></div>
+</div>
+<figcaption><b>1 · Island (Home)</b>Each partner has a tree; each daily goal is a fruit (apple = steps, peach = move minutes, moon-plum = sleep, pear = healthy eats). Empty dashed slots show what's left. The shared jar sits between them. Juniper's bubble always suggests one doable next step. The check-in button sits in the thumb zone.</figcaption>
+</figure>
+
+<!-- ===================== 2. VACATION FUND ===================== -->
+<figure>
+<div class="phone paper" aria-label="Vacation fund screen">
+  <div class="statusbar"><span>2:15</span><span class="icons">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+    <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div>
+  <div class="island-pill"></div>
+
+  <div class="screen-head">
+    <div><h1>Our Voyage</h1><div class="sub">to Kauai · target Aug 2027 · week 21 of 52</div></div>
+    <span class="pill" style="background:var(--sun);border-color:var(--gold);box-shadow:0 2px 0 var(--gold)">39%</span>
+  </div>
+
+  <div class="card map-card">
+    <svg viewBox="0 0 346 236" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-label="Sea map: boat 39% along the route from home island to Kauai">
+      <rect width="346" height="236" fill="#DDF2FB"/>
+      <g stroke="#8FD3F4" stroke-width="2.5" fill="none" stroke-linecap="round">
+        <path d="M30 40 q8 -5 16 0 M200 30 q8 -5 16 0 M120 70 q8 -5 16 0 M250 200 q8 -5 16 0 M300 150 q8 -5 16 0 M20 130 q8 -5 16 0 M180 120 q8 -5 16 0"/>
+      </g>
+      <!-- home island -->
+      <ellipse cx="44" cy="214" rx="46" ry="20" fill="#E9D8B4" stroke="#D4BC8E" stroke-width="2.5"/>
+      <ellipse cx="44" cy="210" rx="34" ry="13" fill="#7BC67E"/>
+      <use href="#jar" x="34" y="188" width="18" height="22"/>
+      <!-- destination island -->
+      <ellipse cx="296" cy="74" rx="44" ry="20" fill="#E9D8B4" stroke="#D4BC8E" stroke-width="2.5"/>
+      <ellipse cx="296" cy="70" rx="32" ry="13" fill="#7BC67E"/>
+      <path d="M300 70 Q298 52 304 38" stroke="#8A5A3B" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M304 38 Q292 30 284 38 M304 38 Q316 28 324 36 M304 38 Q300 26 292 26 M304 38 Q312 42 314 50" stroke="#4E9A55" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="322" cy="22" r="10" fill="#FFD66B"/>
+      <text x="296" y="108" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="13" fill="#4A3A2C">Kauai</text>
+      <!-- route -->
+      <path d="M52 222 C130 120 210 250 292 78" fill="none" stroke="#8A5A3B" stroke-width="2.5" stroke-dasharray="2 7" stroke-linecap="round"/>
+      <path d="M52 222 C70 196 88 186 91 188 C110 170 130 178 145 177" fill="none" stroke="#2F86B8" stroke-width="3.5" stroke-linecap="round" opacity=".55"/>
+      <!-- milestone buoys -->
+      <g>
+        <use href="#i-flag" x="80" y="170" width="20" height="20" style="color:#7BC67E"/>
+        <use href="#i-flag" x="120" y="160" width="20" height="20" style="color:#7BC67E"/>
+        <use href="#i-flag" x="160" y="158" width="20" height="20" style="color:#FFD66B"/>
+        <use href="#i-flag" x="220" y="141" width="20" height="20" style="color:#fff"/>
+      </g>
+      <!-- the boat -->
+      <g class="boat">
+        <path d="M128 182 H164 L158 192 H134 Z" fill="#8A5A3B" stroke="#4A3A2C" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M146 182 V156" stroke="#4A3A2C" stroke-width="2"/>
+        <path d="M147 157 L163 179 H147 Z" fill="#FFF8E7" stroke="#4A3A2C" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M145 160 L132 179 H145 Z" fill="#FF9B87" stroke="#4A3A2C" stroke-width="2" stroke-linejoin="round"/>
+        <use href="#v-mochi" x="134" y="170" width="14" height="14"/>
+        <use href="#v-bean" x="148" y="170" width="14" height="14"/>
+      </g>
+      <g font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="#4A3A2C">
+        <rect x="160" y="196" width="58" height="18" rx="9" fill="#fff" stroke="#EAD9B5" stroke-width="1.5"/><text x="168" y="209">1,816 left</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="fund-total">
+    <svg width="64" height="76" aria-hidden="true"><use href="#jar"/></svg>
+    <div style="flex:1">
+      <div class="hero money">$1,184.50</div>
+      <div class="of">of $3,000 · ~$56/week · on pace ✓</div>
+      <div class="rope" role="progressbar" aria-valuenow="39" aria-valuemin="0" aria-valuemax="100" aria-label="Fund progress"><i style="width:39.5%"></i><b style="left:16.6%"></b><b style="left:33.3%"></b><b style="left:50%"></b><b style="left:75%"></b></div>
+    </div>
+  </div>
+
+  <div class="card milestones">
+    <div class="ms done"><span class="flag"><svg width="18" height="18" style="color:var(--leaf-ink)"><use href="#i-check"/></svg></span><span class="t">Snorkel set<small>reached Jul 12</small></span><span class="amt">$500</span></div>
+    <div class="ms done"><span class="flag"><svg width="18" height="18" style="color:var(--leaf-ink)"><use href="#i-check"/></svg></span><span class="t">Flights booked<small>reached Oct 4 · you did it!</small></span><span class="amt">$1,000</span></div>
+    <div class="ms next"><span class="flag"><svg width="20" height="20" style="color:var(--sun)"><use href="#i-flag"/></svg></span><span class="t">Beach-hut deposit<small>~6 weeks away</small></span><span class="amt">$1,500</span></div>
+    <div class="ms"><span class="flag"><svg width="20" height="20" style="color:#fff"><use href="#i-flag"/></svg></span><span class="t">Boat tour<small>Napali coast</small></span><span class="amt">$2,250</span></div>
+  </div>
+
+  <div class="treats" aria-label="Treat wallet">
+    <div class="ticket"><svg><use href="#i-ticket"/></svg><span>2 × Dinner out<br><small style="font-weight:700;color:var(--coral-ink)">tap to redeem</small></span></div>
+    <div class="ticket"><svg><use href="#i-cake"/></svg><span>1 × Treat dessert<br><small style="font-weight:700;color:var(--coral-ink)">expires never</small></span></div>
+  </div>
+
+  <nav class="tabbar" aria-label="Main">
+    <div class="tab"><svg><use href="#i-island"/></svg>Island</div>
+    <div class="tab on"><svg><use href="#i-jar"/></svg>Fund</div>
+    <div class="tab"><svg><use href="#i-bag"/></svg>Shop</div>
+    <div class="tab"><span class="dot"></span><svg><use href="#i-shell"/></svg>Museum</div>
+    <div class="tab"><svg><use href="#i-us"/></svg>Us</div>
+  </nav>
+  <div class="home-ind"></div>
+  <div class="safe-overlay"><span style="top:40px">inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div>
+  <div class="thumb-zone"><span>thumb zone</span></div>
+</div>
+<figcaption><b>2 · Vacation Fund</b>Savings are a voyage: the couple's little boat sails a dotted route from home island to the destination. Buoys are milestones that unlock real trip steps (book flights at $1,000). Real dollars are always shown plainly. Treat tickets (meals out, desserts) live in a separate wallet so they never eat into the trip.</figcaption>
+</figure>
+
+<!-- ===================== 3. WEEKLY SETTLEMENT (night) ===================== -->
+<figure>
+<div class="phone night" aria-label="Weekly settlement ceremony, night mode">
+  <div class="stars"><i style="top:70px;left:40px"></i><i style="top:96px;left:300px;animation-delay:.6s"></i><i style="top:150px;left:20px;animation-delay:1.2s"></i><i style="top:84px;left:200px;animation-delay:1.8s"></i><i style="top:210px;left:360px;animation-delay:.9s"></i><i style="top:120px;left:350px;animation-delay:2.2s"></i><i style="top:560px;left:30px;animation-delay:1.5s"></i><i style="top:700px;left:360px;animation-delay:.3s"></i></div>
+  <svg style="position:absolute;top:66px;right:28px" width="44" height="44" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="#F6E7B0"/><circle cx="31" cy="15" r="15" fill="#1C2640"/></svg>
+  <div class="confetti"><i style="left:8%;background:#E8F59A;animation-delay:3s"></i><i style="left:22%;background:#FFB38A;animation-delay:3.4s"></i><i style="left:38%;background:#7BC67E;animation-delay:3.1s"></i><i style="left:55%;background:#F6E7B0;animation-delay:3.7s"></i><i style="left:70%;background:#F28BA8;animation-delay:3.2s"></i><i style="left:86%;background:#8FD3F4;animation-delay:3.5s"></i></div>
+
+  <div class="statusbar light"><span>7:30</span><span class="icons">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+    <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="12" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div>
+  <div class="island-pill"></div>
+
+  <div class="settle-head">
+    <span class="pill">Sunday Settlement · Week 21</span>
+  </div>
+
+  <div class="settle-host">
+    <svg class="av" aria-hidden="true"><use href="#v-juni"/></svg>
+    <div class="bubble tail-left"><span class="who">Juniper</span>Evening, you two! Lanterns are lit. Let's count this week's fruit together.</div>
+  </div>
+
+  <section class="tally" aria-live="polite">
+    <h3><span>This week's harvest</span><span>Oct 19–25</span></h3>
+    <div class="trow"><svg class="av"><use href="#v-mochi"/></svg><span class="t">Mochi<small>22 fruit · 3 perfect days</small><span class="fruitrow"><i></i><i></i><i></i><i></i><i></i><i></i><i class="o"></i></span></span><span class="amt">$25.00</span></div>
+    <div class="trow"><svg class="av"><use href="#v-bean"/></svg><span class="t">Bean<small>25 fruit · 4 perfect days</small><span class="fruitrow"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></span><span class="amt">$29.00</span></div>
+    <div class="trow"><svg class="av" viewBox="0 0 24 24" style="padding:7px;color:#F28BA8"><use href="#i-us"/></svg><span class="t">Team bonus<small>both moved 5+ days</small></span><span class="amt">+$5.00</span></div>
+    <div class="ttotal"><span>Into the jar</span><span class="money">$59.00</span></div>
+  </section>
+
+  <div class="upgrade">
+    <svg viewBox="0 0 56 44" aria-hidden="true"><path d="M4 34 Q28 12 52 34" fill="none" stroke="#C1915F" stroke-width="7" stroke-linecap="round"/><path d="M4 34 Q28 12 52 34" fill="none" stroke="#8A5A3B" stroke-width="2" stroke-dasharray="3 5"/><path d="M8 34 V40 M48 34 V40" stroke="#8A5A3B" stroke-width="3" stroke-linecap="round"/><circle cx="46" cy="10" r="3" fill="#E8F59A"/><circle cx="10" cy="14" r="2" fill="#E8F59A"/></svg>
+    <div><b>Island upgrade: Little bridge!</b><small>4 good weeks in a row. The east beach is open.</small></div>
+  </div>
+
+  <div class="settle-cta">
+    <button class="btn moon"><svg viewBox="0 0 24 24" style="color:var(--ink)"><use href="#i-jar"/></svg>Drop it in the jar!</button>
+    <div class="skip">Both of you tap to finish together · Bean ✓ joined</div>
+  </div>
+  <div class="home-ind light"></div>
+  <div class="safe-overlay"><span style="top:40px">inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div>
+  <div class="thumb-zone"><span>thumb zone</span></div>
+</div>
+<figcaption><b>3 · Weekly Settlement (Sunday 7:30 pm, night palette)</b>A short, skippable ceremony. Rows tally in one by one with soft coin chimes, the total glows, then both partners tap "Drop it in the jar" (it works async too). Coins fall into the jar and the weekly island upgrade is revealed. With reduce-motion on, everything simply fades in.</figcaption>
+</figure>
+
+<!-- ===================== 4. DAILY CHECK-IN ===================== -->
+<figure>
+<div class="phone paper" aria-label="Daily healthy-eating check-in sheet">
+  <!-- dimmed island behind -->
+  <svg style="position:absolute;inset:0" width="390" height="844" viewBox="0 0 390 844" aria-hidden="true">
+    <rect width="390" height="844" fill="#FFF8E7"/>
+    <rect width="390" height="318" fill="#BDE5F7"/>
+    <rect y="214" width="390" height="104" fill="#8FD3F4"/>
+    <ellipse cx="195" cy="262" rx="182" ry="46" fill="#E9D8B4"/>
+    <ellipse cx="195" cy="250" rx="160" ry="36" fill="#7BC67E"/>
+    <use href="#tree" x="38" y="110" width="104" height="122"/>
+    <use href="#tree" x="248" y="110" width="104" height="122"/>
+  </svg>
+  <div class="dim"></div>
+
+  <div class="statusbar light" style="z-index:50"><span>12:41</span><span class="icons">
+    <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+    <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="2" fill="currentColor"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div>
+  <div class="island-pill"></div>
+
+  <div class="toast" role="status">
+    <svg viewBox="0 0 24 24"><use href="#f-pear"/></svg>
+    <div>A pear grew on Mochi's tree!<small>Saved · +$1.00 · took 3 seconds</small></div>
+  </div>
+
+  <section class="sheet" role="dialog" aria-label="Meal check-in">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <svg class="av"><use href="#v-mochi"/></svg>
+      <div><h2>Lunch check-in</h2><p>Mochi · picked by time (12:41 pm)</p></div>
+      <span class="close" aria-label="Close"><svg width="18" height="18" style="color:var(--ink-soft)"><use href="#i-x"/></svg></span>
+    </div>
+    <div class="meals" role="radiogroup" aria-label="Meal">
+      <span class="meal">Breakfast</span><span class="meal on" aria-checked="true">Lunch</span><span class="meal">Dinner</span><span class="meal">Snack</span>
+    </div>
+    <p class="q">How was it? One tap is enough.</p>
+    <div class="choices">
+      <div class="choice picked" role="button" aria-pressed="true"><svg class="ic"><use href="#i-bowl"/></svg><span>Healthy plate<small>Lots of veggies, lean protein</small></span><span class="ripple"></span><span class="check"><svg width="20" height="20" style="color:var(--ink)"><use href="#i-check"/></svg></span></div>
+      <div class="choice" role="button"><svg class="ic"><use href="#i-okbowl"/></svg><span>Pretty balanced<small>Some good stuff, some not</small></span></div>
+      <div class="choice" role="button"><svg class="ic"><use href="#i-treat"/></svg><span>Treat meal<small>Totally okay! Logging it is a win.</small></span></div>
+    </div>
+    <div class="chips" aria-label="Optional extras">
+      <span class="chip on"><svg width="16" height="16" style="color:var(--leaf-ink)"><use href="#i-check"/></svg>Home-cooked</span>
+      <span class="chip">No soda</span>
+      <span class="chip">+ Fruit</span>
+    </div>
+    <div class="sheet-foot">Saves on tap · swipe down to close · 10 s undo</div>
+  </section>
+  <div class="home-ind"></div>
+  <div class="safe-overlay"><span style="top:40px">inset-top 59</span><span style="bottom:12px">inset-bottom 34</span></div>
+  <div class="thumb-zone"><span>thumb zone</span></div>
+</div>
+<figcaption><b>4 · Daily Check-in (≤ 10 s)</b>A bottom sheet from the Home button, a notification, or a widget. The meal is pre-selected from the clock. One tap on a big tile saves it right away (no Save button), a pear pops onto the tree, and a toast confirms with a 10-second undo. Extras are optional bonus chips. "Treat meal" is never punished, so people stay honest.</figcaption>
+</figure>
+
+</main>
+
+<!-- ===================== WIDGETS & WATCH ===================== -->
+<section class="extras">
+  <h2>Beyond the app: widgets and Watch (if we go native or add a companion)</h2>
+  <p>These need a native shell (SwiftUI WidgetKit / ClockKit). A PWA can't provide them. They reuse the same tokens: the jar and today's fruit, glanceable in under a second. Tapping any of them deep-links to Home or the check-in sheet.</p>
+  <div class="wall">
+    <div class="wcol">
+      <div class="w-small">
+        <div class="w-label">Island Fund</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <svg width="46" height="56"><use href="#jar"/></svg>
+          <div><div class="money" style="font-size:1.45rem;line-height:1">$1,184</div><div style="font-size:11px;font-weight:800;color:var(--ink-faint)">39% to Kauai</div></div>
+        </div>
+        <div style="margin-top:10px;display:grid;gap:4px">
+          <div style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:800"><svg width="16" height="16" style="border-radius:50%;background:#EFE6FA"><use href="#v-mochi"/></svg><svg width="16" height="16"><use href="#f-apple"/></svg><svg width="16" height="16"><use href="#f-peach"/></svg><svg width="16" height="16"><use href="#f-empty"/></svg><svg width="16" height="16"><use href="#f-pear"/></svg></div>
+          <div style="display:flex;align-items:center;gap:3px;font-size:11px;font-weight:800"><svg width="16" height="16" style="border-radius:50%;background:#FFE6D6"><use href="#v-bean"/></svg><svg width="16" height="16"><use href="#f-empty"/></svg><svg width="16" height="16"><use href="#f-peach"/></svg><svg width="16" height="16"><use href="#f-plum"/></svg><svg width="16" height="16"><use href="#f-pear"/></svg></div>
+        </div>
+      </div>
+      <span class="cap">Home Screen · small</span>
+    </div>
+
+    <div class="wcol">
+      <div class="w-medium">
+        <svg width="120" height="140" viewBox="0 0 120 140" style="flex:none"><use href="#tree" width="120" height="140"/><use href="#f-apple" x="22" y="44" width="22" height="22"/><use href="#f-peach" x="70" y="30" width="22" height="22"/><use href="#f-empty" x="46" y="62" width="22" height="22"/><use href="#f-pear" x="80" y="62" width="22" height="22"/></svg>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+          <div><div class="w-label">Mochi · today</div><div style="font-weight:800;font-size:13px;margin-top:4px">3 of 4 fruit · sleep is left</div></div>
+          <div style="background:#fff;border:2px solid var(--paper-edge);border-radius:14px;padding:6px 10px;font-size:12px;font-weight:800;line-height:1.3">Bean is 2,900 steps from a perfect day!</div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span class="money" style="font-size:15px">$1,184.50</span><span style="color:var(--ink-faint)">of $3,000</span></div><div class="rope" style="height:10px;margin-top:4px"><i style="width:39.5%"></i></div></div>
+        </div>
+      </div>
+      <span class="cap">Home Screen · medium (+ interactive "Check in" button on iOS 17+)</span>
+    </div>
+
+    <div class="wcol">
+      <div class="lock">
+        <div class="date">Wednesday, October 28</div>
+        <div class="time">9:41</div>
+        <div class="lock-row">
+          <div class="acc-circ">
+            <svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="5"/><circle cx="28" cy="28" r="23" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="57 144.5" transform="rotate(-90 28 28)"/><g transform="translate(17 15) scale(.38)" fill="none" stroke="#fff" stroke-width="5"><rect x="15" y="4" width="30" height="9" rx="3"/><path d="M17 13 Q8 18 8 30 V60 Q8 68 16 68 H44 Q52 68 52 60 V30 Q52 18 43 13 Z"/></g></svg>
+          </div>
+          <div class="acc-rect">
+            <div style="opacity:.8">Today's fruit</div>
+            <div style="font-size:13px;margin:2px 0;white-space:nowrap;letter-spacing:.5px">M ●●○● · B ○●●●</div>
+            <div style="opacity:.8">Jar $1,184 · 39%</div>
+          </div>
+        </div>
+      </div>
+      <span class="cap">Lock Screen · circular gauge + rectangular (monochrome, system-tinted)</span>
+    </div>
+
+    <div class="wcol">
+      <div class="watch">
+        <div class="crown"></div>
+        <svg width="76" height="76" viewBox="0 0 76 76" aria-label="Four fruit segments, three filled">
+          <g fill="none" stroke-width="8" stroke-linecap="round">
+            <path d="M38 6 A32 32 0 0 1 70 38" stroke="#FF8A7A"/>
+            <path d="M70 38 A32 32 0 0 1 38 70" stroke="#FFB38A"/>
+            <path d="M38 70 A32 32 0 0 1 6 38" stroke="#444"/>
+            <path d="M6 38 A32 32 0 0 1 38 6" stroke="#C9DE6E"/>
+          </g>
+          <use href="#v-mochi" x="18" y="18" width="40" height="40"/>
+        </svg>
+        <div class="wt">9:41</div>
+        <div style="font:700 12px -apple-system,system-ui;color:#FFD66B">Jar $1,184 · 39%</div>
+      </div>
+      <span class="cap">Apple Watch · fruit-ring complication + face</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
