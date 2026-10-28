@@ -97,9 +97,9 @@
   .bud .fruit { transform: scale(.55); opacity: .6; filter: grayscale(.9); }
   .small .fruit { transform: scale(.75); filter: saturate(.45); }
   .nearly .fruit { transform: scale(.9); }
-  .fr.ripe { box-shadow: 0 0 0 3px var(--sun); }
+  .fr.ripe { box-shadow: 0 0 0 3px var(--c-yuzu); }
   .fr.ripe::after {
-    content: ''; position: absolute; top: -4px; right: -2px; width: 14px; height: 14px; background: var(--sun);
+    content: ''; position: absolute; top: -4px; right: -2px; width: 14px; height: 14px; background: var(--c-yuzu);
     clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   }
 

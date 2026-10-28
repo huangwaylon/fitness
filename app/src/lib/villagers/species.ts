@@ -4,8 +4,6 @@
 export type Expression = 'happy' | 'cheer' | 'sleepy' | 'surprised' | 'proud';
 export type EmoteKind = 'note' | 'bang' | 'zz' | 'sparkle' | 'heart';
 
-export const EXPRESSIONS: Expression[] = ['happy', 'cheer', 'sleepy', 'surprised', 'proud'];
-
 /** The emote each expression pops (happy has none). */
 export const EXPRESSION_EMOTE: Record<Expression, EmoteKind | null> = {
   happy: null,

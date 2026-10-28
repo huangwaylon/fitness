@@ -118,7 +118,7 @@
       <div class="rung">
         <div class="hero">
           <svg viewBox="0 0 300 240" aria-hidden="true">
-            <circle cx="150" cy="120" r="110" fill="var(--night-sky-2)" /><circle cx="150" cy="120" r="110" fill="none" stroke="var(--moon)" stroke-width="3" stroke-dasharray="4 10" />
+            <circle cx="150" cy="120" r="110" fill="var(--night-sky-2)" /><circle cx="150" cy="120" r="110" fill="none" stroke="var(--c-moon)" stroke-width="3" stroke-dasharray="4 10" />
             <ellipse cx="150" cy="190" rx="104" ry="28" fill="var(--c-paper-2)" /><ellipse cx="150" cy="182" rx="84" ry="18" fill="var(--c-leaf)" />
             <path d="M160 180 Q150 130 172 88" stroke="var(--trunk)" stroke-width="9" fill="none" stroke-linecap="round" />
             <path d="M172 88 Q140 64 116 86 M172 88 Q204 58 230 80 M172 88 Q160 50 136 52 M172 88 Q192 100 196 126" stroke="var(--c-leaf-lip)" stroke-width="12" fill="none" stroke-linecap="round" />
@@ -162,7 +162,7 @@
   .title svg { width: 18px; height: 18px; }
   .steps { display: flex; gap: 6px; }
   .steps i { width: 8px; height: 8px; border-radius: 50%; background: var(--night-edge); transition: all var(--dur-base) var(--ease-bounce); }
-  .steps i.on { width: 22px; border-radius: 4px; background: var(--moon); }
+  .steps i.on { width: 22px; border-radius: 4px; background: var(--c-moon); }
   .later { cursor: pointer; min-height: 44px; }
   .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
   .confetti i { position: absolute; top: -20px; width: 12px; height: 8px; border-radius: 8px 0; animation: fall 4.5s linear infinite; }
@@ -183,11 +183,11 @@
   .fr.small { filter: saturate(.5); }
   .av { width: 48px; height: 48px; flex: none; border-radius: var(--r-blob); background: var(--night-sky-2); display: grid; place-items: center; overflow: hidden; }
   .av.team svg { width: 26px; height: 26px; color: var(--p-berry); }
-  .yen { margin-left: auto; font-size: 1.45rem; color: var(--moon); flex: none; }
+  .yen { margin-left: auto; font-size: 1.45rem; color: var(--c-moon); flex: none; }
   .ttotal { display: flex; justify-content: space-between; align-items: center; animation: totalGrow .6s var(--ease-soft) 2.4s both; }
   @keyframes totalGrow { from { max-height: 0; opacity: 0; padding-block: 0; overflow: hidden; } 99% { overflow: hidden; } to { max-height: 110px; opacity: 1; padding-block: 12px; overflow: visible; } }
   .ttotal .lbl { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--night-ink-soft); line-height: 1.3; }
-  .ttotal :global(.total) { font-size: 2.3rem; color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both; }
+  .ttotal :global(.total) { font-size: 2.3rem; color: var(--c-moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both; }
   .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--night-ink-soft); background: rgba(255, 255, 255, .08); border-radius: var(--r-pill); padding: 2px 9px; }
 
   .minis { display: flex; gap: 10px; }
@@ -209,7 +209,7 @@
   .v1 { left: 18%; }
   .v2 { right: 18%; }
   .rname { font: 900 2.4rem/1.1 var(--font-ui); margin-top: 6px; }
-  .ramt { color: var(--moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); }
+  .ramt { color: var(--c-moon); text-shadow: 0 0 18px rgba(246, 231, 176, .45); }
   .rnext { font-weight: 700; color: var(--night-ink-soft); margin-top: 6px; }
 
 </style>

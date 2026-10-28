@@ -285,8 +285,8 @@
   .sky-bottom { stop-color: var(--sky-bottom); }
   .sun { fill: var(--sun-disc); }
   .sunhalo { fill: var(--sun-disc); opacity: .35; }
-  .moon { fill: var(--moon); }
-  .moonhalo { fill: var(--moon); opacity: .12; }
+  .moon { fill: var(--c-moon); }
+  .moonhalo { fill: var(--c-moon); opacity: .12; }
   .stars path { fill: #FFF6D6; animation: twinkle 3s var(--ease-idle) infinite; }
   .cloud { fill: #fff; opacity: .92; animation: cloud 60s linear infinite; }
   .cloud.c2 { opacity: .8; animation-duration: 80s; animation-delay: -30s; }
@@ -401,7 +401,7 @@
   .jarsign {
     position: absolute; z-index: 5; top: 114.9cqw; left: 50%; transform: translateX(-50%);
     display: inline-flex; align-items: center; gap: 1cqw;
-    background: var(--paper); color: var(--ink); border: 2px solid var(--bark); border-radius: var(--r-sm);
+    background: var(--c-paper); color: var(--c-ink); border: 2px solid var(--bark); border-radius: var(--r-sm);
     padding: .6cqw 2.4cqw .6cqw 1.4cqw; font-size: min(1.05rem, 4.3cqw); font-weight: 600;
     box-shadow: 0 3px 0 var(--sand-deep); white-space: nowrap;
   }

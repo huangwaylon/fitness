@@ -1,38 +1,26 @@
 /* Island Fund design tokens v2 (docs/design/style-guide.md).
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte
-   BEFORE components/theme.css (which holds element styles and utility classes only).
+   BEFORE styles/theme.css (which holds element styles and utility classes only).
 
    Attributes on <html> (set by lib/client/theme.svelte.ts):
      data-theme  = day | night                     (UI chrome + scene palette)
      data-season = spring | summer | autumn | winter (scene: grass, trees, sea)
      data-tod    = dawn | day | dusk | night        (scene: sky gradient only)
 
-   Sections: 1 legacy names (v0.4, kept so existing components keep working)
-             2 v2 palette  3 scene (season x theme)  4 type  5 shape  6 elevation
-             7 patterns  8 motion  9 platform  10 night overrides  11 reduced motion
-             12 shared keyframes (prefixed if-). Builders: append-only, in your own
-             clearly marked block at the end; never rename an existing token. */
+   Sections: 1 palette (+ semantic, swapped at night)  3 scene (season x theme)  4 type
+             5 shape  6 elevation  7 patterns  8 motion  9 platform  10 night overrides
+             11 reduced motion  12 shared keyframes (prefixed if-). */
 
 :root {
-  /* ---------- 1. legacy palette (v0.4 names; values unchanged) ---------- */
-  --cream:#FFF8E7; --paper:#FDF1D6; --paper-edge:#EAD9B5;
-  --sand:#E9D8B4; --sand-deep:#D4BC8E;
-  --leaf:#7BC67E; --leaf-soft:#BFE5B9; --leaf-deep:#4E9A55; --leaf-ink:#2E6B38;
-  --sky:#8FD3F4; --sky-pale:#DDF2FB; --sky-deep:#2F86B8;
-  --coral:#FF9B87; --coral-soft:#FFD9CF; --coral-ink:#B04A3B;
-  --sun:#FFD66B; --gold:#F2B53A; --peach:#FFB38A; --bark:#8A5A3B;
-  --ink:#4A3A2C; --ink-soft:#6B5544; --ink-faint:#7A6553; --white:#FFFFFF;
-  --night-sky:#1F2A44; --night-sky-2:#2B3A5C; --night-card:#33456B; --night-edge:#4A5E8A;
-  --night-ink:#F7EEDB; --night-ink-soft:#B9C3DA; --moon:#F6E7B0; --firefly:#E8F59A;
-  --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-mint:#8ED9C0; --p-berry:#F28BA8; --p-lemon:#FFD66B;
-  --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-pear:#C9DE6E;
-
-  /* ---------- 2. v2 palette ---------- */
+  /* ---------- 1. palette ---------- */
   /* paper & ink */
   --c-cream:#FFF8E7;        /* app background */
   --c-bubble:#FFFBEA;       /* speech bubble fill (warm off-white, never pure white) */
   --c-paper:#FDF1D6;        /* cards */
   --c-paper-2:#F6E6C1;      /* card lip / pressed paper */
+  --paper-edge:#EAD9B5;     /* paper card border */
+  --sand-deep:#D4BC8E;      /* paper card lip */
+  --bark:#8A5A3B;           /* jar sign border */
   --c-stitch:#DCC79B;       /* dashed stitching inside cards */
   --c-ink:#4A3A2C;          /* text, outlines (never pure black) */
   --c-ink-talk:#6A5641;     /* bubble text (the game-like brown-grey; 6.7:1 on bubble) */
@@ -42,32 +30,34 @@
   --c-leaf:#7BC67E;  --c-leaf-lip:#5FA862;  --c-leaf-soft:#BFE5B9; --c-leaf-ink:#2E6B38;
   --c-yuzu:#FFD66B;  --c-yuzu-lip:#E3B23C;  --c-yuzu-soft:#FFF0BF;
   --c-coral:#FF9B87; --c-coral-lip:#E07F6B; --c-coral-soft:#FFD9CF; --c-coral-ink:#B04A3B;
-  --c-sky:#8FD3F4;   --c-sky-lip:#5FB3DD;   --c-sky-soft:#DDF2FB;  --c-sky-ink:#2F6F96;
+  --c-sky:#8FD3F4; --c-sky-soft:#DDF2FB;
   --c-moon:#F6E7B0;  --c-moon-lip:#C9B676;
   --c-amber:#F5A623;        /* the ▼ "next" arrow, small highlights */
   --c-coin:#F7C548; --c-coin-rim:#D9962A; --c-coin-shine:#FFF1B8; /* leaf-coin */
-  --c-blush:#FF9E8F;
-  --c-emote-blue:#4D7CF2;   /* "!" surprise emote */
+
+  /* night chrome */
+  --night-sky:#1F2A44; --night-sky-2:#2B3A5C; --night-card:#33456B; --night-edge:#4A5E8A;
+  --night-ink:#F7EEDB; --night-ink-soft:#B9C3DA; --firefly:#E8F59A;
+  /* people (A apricot, B plum) and fruit-ring colours (var(--f-{fruit})) */
+  --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-berry:#F28BA8;
+  --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-pear:#C9DE6E;
   /* しまフォン app tiles (squircle fills; glyphs are --c-ink) */
-  --app-island:#5CC9B0; --app-jar:#F7D44C; --app-us:#F5A3C0; --app-help:#B98AE8;
-  --app-villager:#F09A5B; --app-lang:#7FA8F5; --app-bell:#C8DC5A; --app-sync:#A88462;
+  --app-island:#5CC9B0; --app-jar:#F7D44C; --app-help:#B98AE8;
+  --app-villager:#F09A5B; --app-lang:#7FA8F5; --app-bell:#C8DC5A; --app-sync:#A88462; --app-share:#7CCFD6;
   /* name-tag colours (speech bubbles) */
-  --tag-host:#FFD66B; --tag-plum:#D9C6F5; --tag-apricot:#FFCFB0; --tag-mint:#BDEBDA;
-  --tag-berry:#F9C2D3; --tag-lemon:#FFE89A;
-  /* villager drawing */
-  --v-line:#4A3A2C; --v-line-w:2.6; --v-eye:#3A2C20; --v-mouth:#8A3B2E; --v-tongue:#FF8A7A;
+  --tag-host:#FFD66B; --tag-plum:#D9C6F5; --tag-apricot:#FFCFB0;
 
   /* semantic (swapped at night, section 10) */
-  --bg: var(--cream); --surface: var(--paper); --edge: var(--paper-edge);
-  --text: var(--ink); --text-soft: var(--ink-soft); --text-faint: var(--ink-faint);
-  --accent: var(--leaf); --focus: var(--sky-deep);
+  --bg: var(--c-cream); --surface: var(--c-paper); --edge: var(--paper-edge);
+  --text: var(--c-ink); --text-soft: var(--c-ink-soft); --text-faint: var(--c-ink-faint);
+  --focus:#2F86B8;
   --ring-track:#EADFC8; --bubble: var(--c-bubble); --lip: var(--sand-deep);
   --stitch: var(--c-stitch);
-  --tabbar-bg: rgba(255,248,231,.96);
   --phone-bg:#F7F1DE; --phone-edge:#E3D6B4;
+  --toast-bg: var(--c-bubble);
 
   /* ---------- 3. scene (default = spring day; overridden by data-season / data-theme) ---------- */
-  --grass:#8DD16A; --grass-2:#80C55E; --grass-edge:#5EA448; --grass-dot:#FFFFFF;
+  --grass:#8DD16A; --grass-2:#80C55E; --grass-edge:#5EA448;
   --tree-leaf:#6CBF5A; --tree-leaf-2:#55A84A; --trunk:#9A6A44;
   --season-accent:#FFC2D4;  /* spring blossom / autumn leaf / winter snow highlight */
   --sea:#6FCBE8; --sea-deep:#4FB3D6; --foam:#FFFFFF; --beach:#F1E2B8; --beach-edge:#DCC58F;
@@ -78,15 +68,14 @@
   /* Zen Maru Gothic carries kana/kanji + Latin text; Fredoka carries numbers and ¥ */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
   --font-num: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
-  --font-display: var(--font-num);  /* legacy name */
-  --font-body: var(--font-ui);      /* legacy name */
+
   --fw-body:500; --fw-bold:700; --fw-black:700; --fw-num:600;
   --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-talk:1.0625rem; --fs-body-lg:1.0625rem;
   --fs-body:.9375rem; --fs-caption:.8125rem; --fs-tag:.8125rem; --fs-micro:.6875rem;
-  --lh-tight:1.1; --lh-talk:1.5; --lh-body:1.45;
+ --lh-talk:1.5; --lh-body:1.45;
 
   /* ---------- 5. shape ---------- */
-  --r-xs:8px; --r-sm:14px; --r-md:20px; --r-card:22px; --r-lg:28px; --r-xl:40px; --r-phone:44px; --r-pill:999px;
+ --r-sm:14px; --r-card:22px; --r-lg:28px; --r-phone:44px; --r-pill:999px;
   --r-squircle:30%;  /* app-tile icons */
   --r-blob:46% 54% 52% 48% / 55% 45% 55% 45%;
   --r-bubble:34px 46px 38px 42px / 40px 34px 46px 40px; /* slightly wobbly speech bubble */
@@ -105,11 +94,8 @@
 
   /* ---------- 7. patterns (use as `background: var(--pat-…), var(--bg)`) ---------- */
   --pat-dots: radial-gradient(circle, rgba(138,90,59,.07) 2px, transparent 2.6px) 0 0 / 18px 18px;
-  --pat-dots-pink: radial-gradient(circle, rgba(242,139,168,.12) 3px, transparent 3.6px) 0 0 / 22px 22px;
   --pat-stripes: repeating-linear-gradient(135deg, rgba(212,188,142,.18) 0 12px, transparent 12px 24px);
   --pat-stripes-fill: repeating-linear-gradient(135deg, rgba(255,255,255,.28) 0 8px, transparent 8px 16px);
-  --pat-check: conic-gradient(var(--grass) 25%, var(--grass-2) 0 50%, var(--grass) 0 75%, var(--grass-2) 0) 0 0 / 28px 28px;
-  --pat-stars: radial-gradient(circle, rgba(246,231,176,.55) 1px, transparent 1.6px) 0 0 / 34px 34px;
 
   /* ---------- 8. motion ---------- */
   --ease-bounce:cubic-bezier(.34,1.56,.64,1);   /* pop / release overshoot */
@@ -117,19 +103,16 @@
   --ease-squash:cubic-bezier(.3,0,.5,1);        /* press-down, anticipation */
   --ease-idle:cubic-bezier(.45,0,.55,1);        /* looping bob/sway (sine-like) */
   --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms;
-  --dur-slow:600ms; --dur-ceremony:1200ms; --dur-emote:2200ms; --dur-idle:2400ms;
-  --type-ms:33ms;      /* letter reveal: per character (≈30 chars/s) */
-  --type-pause:180ms;  /* extra pause after 。！？!? ; half after 、, */
+  --dur-slow:600ms; --dur-emote:2200ms;
 
   /* ---------- 9. platform ---------- */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --tabbar-h: 64px;   /* v2 dock target: 72px (Builder B switches when the dock lands) */
+  --tabbar-h: 72px;   /* しまフォン dock */
   --col: 480px;
-  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
-  --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+  --sp-2:8px; --sp-3:12px; --sp-5:20px; --sp-8:32px;
 
   color-scheme: light;
 }
@@ -151,7 +134,7 @@
   --sea:#5BB3CF; --sea-deep:#4298B8; --beach:#EAD9AE;
 }
 :root[data-season="winter"] {
-  --grass:#F4F7FA; --grass-2:#E4ECF4; --grass-edge:#B9CADD; --grass-dot:#C9D8E8;
+  --grass:#F4F7FA; --grass-2:#E4ECF4; --grass-edge:#B9CADD;
   --tree-leaf:#4F8F6A; --tree-leaf-2:#3F7A59; --season-accent:#FFFFFF;
   --sea:#6AA9C9; --sea-deep:#4F8FB2; --beach:#E6E1D3; --beach-edge:#C9C1AC;
 }
@@ -168,10 +151,8 @@
 :root[data-theme="night"] {
   --bg: var(--night-sky); --surface: var(--night-card); --edge: var(--night-edge);
   --text: var(--night-ink); --text-soft: var(--night-ink-soft); --text-faint: var(--night-ink-soft);
-  --accent: var(--moon);
   --ring-track:#24314F; --bubble:#F7EEDB; --lip:#18213A; --stitch:#5A6F9C;
-  --tabbar-bg: rgba(43,58,92,.96);
-  --phone-bg:#2B3A5C; --phone-edge:#4A5E8A;
+  --phone-bg:#2B3A5C; --phone-edge:#4A5E8A; --toast-bg:#F7EEDB;
   --sh-lip: 0 4px 0 #18213A; --sh-lip-pressed: 0 1px 0 #18213A;
   --sh-soft: 0 6px 18px rgba(0,0,0,.35); --sh-float: 0 14px 34px rgba(0,0,0,.4);
   --sh-inset: inset 0 2px 0 rgba(0,0,0,.25); --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.25);
@@ -179,8 +160,8 @@
   --pat-dots: radial-gradient(circle, rgba(246,231,176,.06) 2px, transparent 2.6px) 0 0 / 18px 18px;
   --pat-stripes: repeating-linear-gradient(135deg, rgba(74,94,138,.25) 0 12px, transparent 12px 24px);
   /* scene */
-  --sky-top:#16203A; --sky-bottom:#2B3A5C; --sun-disc:var(--moon); --scene-dim:.35;
-  --grass:#3E6B52; --grass-2:#376049; --grass-edge:#2A4B3A; --grass-dot:#E8F59A;
+  --sky-top:#16203A; --sky-bottom:#2B3A5C; --sun-disc:var(--c-moon); --scene-dim:.35;
+  --grass:#3E6B52; --grass-2:#376049; --grass-edge:#2A4B3A;
   --tree-leaf:#2F5E45; --tree-leaf-2:#264E3A; --trunk:#5C4634;
   --sea:#2B3A5C; --sea-deep:#22304D; --foam:rgba(255,255,255,.3); --beach:#4A5E8A; --beach-edge:#3B4C72;
   color-scheme: dark;
@@ -192,8 +173,7 @@
 /* ---------- 11. reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --dur-tap:0ms; --dur-quick:0ms; --dur-base:120ms; --dur-pop:120ms; --dur-slow:120ms;
-    --dur-ceremony:120ms; --dur-emote:1600ms; --type-ms:0ms; --type-pause:0ms;
+    --dur-tap:0ms; --dur-quick:0ms; --dur-base:120ms; --dur-pop:120ms; --dur-slow:120ms; --dur-emote:1600ms;
     --ease-bounce: ease; --ease-squash: ease;
   }
 }
@@ -223,15 +203,3 @@
 }
 /* letter reveal: each glyph */
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
-/* gentle wiggle (tap feedback on scene objects) */
-@keyframes if-wiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(5deg); } }
-/* coin flip for the leaf-coin counter */
-@keyframes if-coin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
-
-/* ---------- Builder B (UI chrome & screens) ---------- */
-:root {
-  --tabbar-h: 72px;          /* しまフォン dock landed (§4.2) */
-  --app-share:#7CCFD6;       /* しまフォン "シェア" (privacy) tile */
-  --toast-bg: var(--c-bubble);
-}
-:root[data-theme="night"] { --toast-bg:#F7EEDB; }

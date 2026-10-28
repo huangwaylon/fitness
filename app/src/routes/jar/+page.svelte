@@ -59,7 +59,7 @@
       ratio: jar.layers[who] / personMax,
       color: who === 'A' ? 'var(--p-apricot)' : 'var(--p-plum)'
     });
-    return [row(view.me), row(view.partner), { key: 'team', name: t('jar.team'), yen: jar.layers.team, ratio: jar.layers.team / teamMax, color: 'var(--leaf)' }];
+    return [row(view.me), row(view.partner), { key: 'team', name: t('jar.team'), yen: jar.layers.team, ratio: jar.layers.team / teamMax, color: 'var(--c-leaf)' }];
   });
 
   /** しずえ's one line here: how far the next trip is (the rung card shows the bar). */
@@ -292,7 +292,7 @@
   .lr:last-child { border-bottom: 0; }
   .dot { width: 32px; height: 32px; flex: none; border-radius: 50%; border: 3px solid var(--stitch); background: var(--bg); display: grid; place-items: center; }
   .lr.done .dot { background: var(--c-leaf); border-color: var(--c-leaf-lip); }
-  .lr.done .dot svg { width: 16px; height: 16px; color: var(--ink); }
+  .lr.done .dot svg { width: 16px; height: 16px; color: var(--c-ink); }
   .lr.next .dot { border-color: var(--c-yuzu-lip); background: var(--c-yuzu); box-shadow: var(--sh-glow); animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .ln { flex: 1; font: 900 1.1rem var(--font-ui); display: grid; gap: 6px; }
   .la { font-size: 1.1rem; }

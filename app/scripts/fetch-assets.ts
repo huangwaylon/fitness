@@ -30,42 +30,23 @@ const SPECS: Record<string, Spec> = {
   'host/isabelle-winter': [512, 'Isabelle_NH_Winter.png'],
   'host/isabelle-icon': [128, 'Isabelle_NH_Character_Icon.png'],
   'host/tom-nook': [512, 'Tom_Nook_NH.png'],
-  'host/tom-nook-icon': [128, 'Tom_Nook_NH_Character_Icon.png'],
-  // The four fruit rings (+ the other native fruit, for the gallery / island fruit).
+  // The four fruit rings.
   'fruit/peach': [128, 'Peach_NH_Inv_Icon.png'],
   'fruit/coconut': [128, 'Coconut_NH_Inv_Icon.png'],
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],
   'fruit/pear': [128, 'Pear_NH_Inv_Icon.png'],
-  'fruit/orange': [128, 'Orange_NH_Inv_Icon.png'],
-  'fruit/cherry': [128, 'Cherry_NH_Inv_Icon.png'],
-  // Island scenery.
-  'trees/palm': [512, 'Palm_Tree_NH.png'],
-  'trees/cedar': [512, 'Cedar_Tree_NH.png'],
-  'trees/peach-tree': [128, 'Peach_Tree_NH_Inv_Icon.png'],
-  'trees/coconut-tree': [128, 'Coconut_Tree_NH_Inv_Icon.png'],
-  'trees/apple-tree': [128, 'Apple_Tree_NH_Inv_Icon.png'],
-  'trees/pear-tree': [128, 'Pear_Tree_NH_Inv_Icon.png'],
-  'trees/hardwood-sapling': [128, 'Hardwood_Tree_NH_Inv_Icon.png'],
+  // Island flowers.
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
   'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],
   'flowers/white-cosmos': [128, 'White_Cosmos_NH_Inv_Icon.png'],
   'flowers/red-roses': [128, 'Red_Roses_NH_Inv_Icon.png'],
-  'items/star-fragment': [128, 'Star_Fragment_NH_Inv_Icon.png'],
-  'items/piggy-bank': [128, 'Piggy_Bank_(Pink)_NH_Icon.png'],
   // Money UI.
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
-  'money/bells-badge': [128, 'Bells_NH_Nook_Miles_Icon.png'],
-  'money/nook-miles': [128, 'Nook_Miles_NH_Icon.png'],
-  'money/nook-miles-ticket': [128, 'Nook_Miles_Ticket_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
   // NookPhone (しまフォン launcher).
   'phone/nookphone': [512, 'NookPhone_NH_Model.png'],
   'phone/diy': [92, 'NookPhone_DIY_NH_Icon.png'],
-  'phone/island-designer': [92, 'NookPhone_Island_Designer_NH_Icon.png'],
-  'phone/nook-miles': [92, 'NookPhone_Nook_Miles_NH_Icon.png'],
-  'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'],
-  'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png'],
-  'phone/rescue': [92, 'NookPhone_Rescue_Service_NH_Icon.png']
+  'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png']
 };
 for (const name of ROSTER) {
   const id = name.toLowerCase();
@@ -135,7 +116,13 @@ async function main() {
     ([key]) => force || !manifest.files[key] || !existsSync(join(OUT, manifest.files[key].path))
   );
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
-  if (!todo.length) return;
+  // Drop manifest entries (and files) the UI no longer uses.
+  for (const [key, e] of Object.entries(manifest.files)) {
+    if (SPECS[key]) continue;
+    rmSync(join(OUT, e.path), { force: true });
+    delete manifest.files[key];
+  }
+  if (!todo.length) return writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
 
   const infos = await resolve([...new Set(todo.flatMap(([, [, ...t]]) => t))]);
   const tmp = join(tmpdir(), `island-art-${process.pid}`);
