@@ -3,11 +3,14 @@
 
 ## Decision
 - **No pause weeks in the MVP.** Cozy Days are the only rest mechanism (as SE round 3 §4 already cut). The "paused partner counts as 100" clauses in 0008 stay dormant until pause ships in v1.
-- **Cozy Days:** at most **4 per calendar month** per person, enforced by the API. A Cozy Day counts as a rest day and removes that day from every day-count target (exact fractions, no rounding). If every non-holiday day of a category is excused, that category pays in full.
-- **Calibration (2 weeks):** flat **60 fruit** per person per week when Health data is present on **≥ 6 of 7 days** (no wear-time metric exists in HAE), otherwise 0. Pays like a normal week (¥50 × 60, team bonus, Treat Purse).
-- **One holiday window:** 正月 **Dec 29–Jan 3**: Pear not scored (those days drop out of the 15/21 target). The two easy weeks (Mon–Sun weeks touching Dec 22–Jan 3) use targets × 0.7 for Peach, Coconut and Apple.
+- **Cozy Days:** at most **4 per calendar month and 3 per Mon–Sun week** per person (scoring also ignores any beyond 3, so a week is never fully excused). Only **today or yesterday**, and not on a day that already has a strength workout or ≥ 30 active minutes. A Cozy Day counts as a rest day and removes that day from every day-count target (exact fractions, no rounding).
+- **Calibration (2 weeks):** flat **60 fruit** per person per week when Health data is present on **≥ 6 of 7 days** (no wear-time metric exists in HAE; Cozy Days count as data days), otherwise 0. Pays like a normal week (¥50 × 60, team bonus, Treat Purse).
+- **One holiday window:** 正月 **Dec 29–Jan 3**: Pear not scored (those days drop out of the 15/21 target). The two easy weeks (Mon–Sun weeks touching Dec 25–Jan 1, always exactly two) use targets × 0.7 for Peach, Coconut and Apple.
 - **Score rounding:** categories are computed in integer milli-fruit and summed; the weekly score is `floor(sum / 1000)`. Yen are computed from that integer score.
-- **Rest day:** a day with Health data and no workout ≥ 20 min at average HR ≥ 77% of `220 − age`, or a Cozy Day. Days without data never count, so an empty week scores 0.
-- **Strength day sources (max 1 per day):** Traditional/Functional Strength, Core or Pilates ≥ 15 min; a HIIT/yoga workout the person tapped "included strength"; a visit (arrive→leave ≥ 30 min) to a place marked `autoStrength` (B's PT studio); a gym visit the person confirmed.
+- **Rest day:** a Cozy Day, or a day with Health data and no strength day, no workout ≥ 45 min and none ≥ 20 min at average HR ≥ 77% of `220 − age`. Days without data never count, so an empty week scores 0.
+- **Strength day sources (max 1 per day):** Traditional/Functional Strength or Pilates ≥ 15 min; a Core/HIIT/yoga workout the person tapped "included strength"; a visit (arrive→leave ≥ 30 min) to a place marked `autoStrength` (B's PT studio); a gym visit the person confirmed (at most 2 confirmed visits paid per week).
 - **Promise check:** each promised day needs a matching activity (workout of the promised kind, or a visit) on that day ±1, each activity used once.
 - **Settlement:** Sunday 19:30 JST writes provisional `earn` entries; Wednesday 04:00 JST writes `topup` entries for any increase, then locks the week. No clawbacks.
+- **Notifications:** at most one push per person per day, by priority: Sunday harvest (from 19:30) → evening check-in (20:00; not on 正月 days) → payday (25th). Gym-visit questions are in-app only. Nothing 22:00–07:00.
+
+Amended after the round 3 review (`docs/reviews/round-3/`).

@@ -13,11 +13,13 @@ Japanese-first UI (switchable to English), 3 simple pages, self-hosted.
 |---|---|
 | `docs/PROPOSAL.md` | The cohesive proposal (v2.1) |
 | `docs/profiles.md` | Participant profiles, gyms, eating patterns |
-| `docs/decisions/` | Decision records 0001–0010 (latest: 0008 ¥50/fruit open-ended, 0009 four fruits, 0010 no VPN on phones) |
+| `docs/decisions/` | Decision records 0001–0011 (latest: 0011 MVP rule defaults) |
+| `app/` | The app: SvelteKit 3 + SQLite server, scoring engine, PWA (ja/en) |
+| `docs/ops/` | Runbook: Funnel, pairing, HAE, Shortcuts, backups |
 | `docs/team/` | Role memos: round 1, round 3 (Japan), personalized nutrition |
 | `docs/reviews/` | Cross-review round 1 and sign-off round 2 |
 | `docs/research/` | Apple Health ingestion research |
 | `docs/design/` | Mockup, style guide, preview |
 
 ## Status
-Design complete (v2.1). Next: the remaining questions in PROPOSAL §8, then the Phase 0 spike (Tailscale Funnel on the Mac + Health Auto Export + gym Shortcuts; nothing extra on the phones).
+Design complete (v2.1). **Implementation in progress** on branch `impl/phase-0-1`: MVP server, scoring and PWA built and reviewed (round 3). Next: the Phase 0 spike on the real phones (Tailscale Funnel + Health Auto Export + gym Shortcuts), then calibration. App: [`app/`](app/), ops: [`docs/ops/runbook.md`](docs/ops/runbook.md).

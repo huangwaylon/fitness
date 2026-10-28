@@ -3,7 +3,8 @@ interface Bucket { count: number; resetAt: number }
 const buckets = new Map<string, Bucket>();
 
 export const LIMITS = {
-  pair: { max: 5, windowMs: 10 * 60_000 },
+  // Shared by everyone behind Funnel: 20 guesses / 10 min against a 10⁶ code space, each code dead after 10 misses.
+  pair: { max: 20, windowMs: 10 * 60_000 },
   ingest: { max: 60, windowMs: 60_000 },
   api: { max: 120, windowMs: 60_000 }
 } as const;

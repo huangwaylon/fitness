@@ -29,7 +29,7 @@ export const schemas = {
   spend: z.object({ label: z.string().trim().min(1).max(60), amountYen: z.number().int().positive().max(1_000_000) }),
   approve: z.object({ id: z.number().int().positive() }),
   transfer: z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) }),
-  subscribe: z.object({ endpoint: z.url().max(1000).refine((u) => u.startsWith('https://'), 'https only'), keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }) }),
+  subscribe: z.object({ endpoint: z.url().max(1000).refine(isPushServiceUrl, 'unknown push service'), keys: z.object({ p256dh: z.string().min(1).max(200), auth: z.string().min(1).max(100) }) }),
   prefs: z.object({
     locale: z.enum(['ja', 'en']).optional(),
     villagerName: z.string().trim().min(1).max(20).optional(),
@@ -56,6 +56,16 @@ export function setCheckin(db: Db, person: PersonId, input: z.infer<typeof schem
   else db.delete(checkin).where(and(eq(checkin.person, person), eq(checkin.localDate, input.date), eq(checkin.habitKey, input.habitKey))).run();
   const ticks = db.select().from(checkin).where(and(eq(checkin.person, person), eq(checkin.localDate, input.date))).all().map((r) => r.habitKey);
   return { date: input.date, ticks };
+}
+
+/** Web push endpoints we'll POST to from the home Mac: Apple, Google, Mozilla, Microsoft only. */
+export function isPushServiceUrl(u: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(u);
+    return protocol === 'https:' && /(^|\.)(push\.apple\.com|fcm\.googleapis\.com|push\.services\.mozilla\.com|notify\.windows\.com)$/.test(hostname);
+  } catch {
+    return false;
+  }
 }
 
 // ---------- cozy day ----------

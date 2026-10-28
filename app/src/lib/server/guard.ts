@@ -53,7 +53,14 @@ export async function guard(event: GuardEvent, opts: GuardOptions): Promise<Resp
   const { request, url, locals } = event;
   locals.person = null;
   locals.deviceId = null;
-  const zone = zoneOf(url.pathname);
+  // Classify on the decoded path: SvelteKit matches routes after decoding, so `/%61pi/…` must not skip the guard.
+  let path: string;
+  try {
+    path = decodeURIComponent(url.pathname);
+  } catch {
+    return errorJson(400, 'bad_path');
+  }
+  const zone = zoneOf(path);
   const method = request.method.toUpperCase();
   const ip = clientIp(event);
 
@@ -75,7 +82,7 @@ export async function guard(event: GuardEvent, opts: GuardOptions): Promise<Resp
     if (!hit(`${zone}:${limitKey}`, zone === 'ingest' ? LIMITS.ingest : LIMITS.api)) return errorJson(429, 'rate_limited');
     const kinds: DeviceKind[] = zone === 'ingest' ? ['hae'] : ['shortcut'];
     let dev = token ? findDevice(opts.db(), token, kinds) : null;
-    if (!dev && !token) {
+    if (!dev && !token && opts.dev) {
       const p = devPerson();
       if (p) dev = devDevice(opts.db(), p);
     }
@@ -92,11 +99,12 @@ export async function guard(event: GuardEvent, opts: GuardOptions): Promise<Resp
     return null;
   }
 
-  // Other /api/*: session cookie only (+ Origin check on unsafe methods).
-  if (!hit(`api:${ip}`, LIMITS.api)) return errorJson(429, 'rate_limited');
+  // Other /api/*: session cookie only (+ Origin check on unsafe methods). Authenticate first, then rate-limit per
+  // device: behind Funnel every request shares one IP, so an IP limit would let strangers lock both of us out.
   if (request.headers.get('authorization')) return unauthorized();
-  const dev = cookieDevice(event, opts);
-  if (!dev) return unauthorized();
+  const dev = cookieDevice(event, opts, { refresh: false });
+  if (!dev) return hit(`api:anon:${ip}`, LIMITS.api) ? unauthorized() : errorJson(429, 'rate_limited');
+  if (!hit(`api:dev:${dev.id}`, LIMITS.api)) return errorJson(429, 'rate_limited');
   if (!SAFE_METHODS.has(method) && !originOk(event)) return errorJson(403, 'bad_origin');
   setLocals(event, dev);
   return null;
@@ -112,20 +120,19 @@ function originOk(event: GuardEvent): boolean {
   return origin !== null && origin === event.url.origin;
 }
 
-function cookieDevice(event: GuardEvent, opts: GuardOptions): AuthedDevice | null {
+function cookieDevice(event: GuardEvent, opts: GuardOptions, { refresh = true } = {}): AuthedDevice | null {
   const secret = event.cookies.get(SESSION_COOKIE);
   const db = opts.db();
   if (secret) {
     const dev = findDevice(db, secret, ['pwa']);
     if (dev) {
-      // Rolling cookie: refresh expiry at most daily.
-      const last = dev.lastSeenAt ? Date.parse(dev.lastSeenAt) : 0;
-      if (Date.now() - last > 24 * 3600_000) event.cookies.set(SESSION_COOKIE, secret, sessionCookieOptions);
+      // Rolling cookie: re-issue on page loads so a device used daily never hits the 1-year expiry.
+      if (refresh) event.cookies.set(SESSION_COOKIE, secret, sessionCookieOptions);
       touchDevice(db, dev.id);
       return dev;
     }
   }
-  const p = devPerson();
+  const p = opts.dev ? devPerson() : null;
   return p ? devDevice(db, p) : null;
 }
 

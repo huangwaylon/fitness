@@ -39,7 +39,11 @@ export function runSettlement(db: Db, t: Date = now()): SettleResult[] {
   for (const wk of candidateWeeks(t)) {
     const lock = db.select().from(weekLock).where(eq(weekLock.weekKey, wk)).get();
     if (lock?.lockedAt) continue;
-    if (t >= finalAt(wk)) results.push(settleWeek(db, wk, 'final'));
+    if (t >= finalAt(wk)) {
+      // Mac was off through Wednesday: still record the provisional pass so the harvest opens.
+      if (!lock?.provisionalAt) results.push(settleWeek(db, wk, 'provisional'));
+      results.push(settleWeek(db, wk, 'final'));
+    }
     else if (t >= provisionalAt(wk) && !lock?.provisionalAt) results.push(settleWeek(db, wk, 'provisional'));
   }
   return results;
