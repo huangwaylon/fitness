@@ -6,7 +6,7 @@ import type { Db } from '#lib/server/db/index.ts';
 import { dailyMetric, rawPayload, workout } from '#lib/server/db/schema.ts';
 import { now } from '#lib/server/clock.ts';
 
-export type MetricKey = 'steps' | 'exercise_min';
+type MetricKey = 'steps' | 'exercise_min';
 
 /** `2026-11-02 07:00:00 +0900`, ISO 8601, or a bare date → ISO 8601 with offset (no offset → Tokyo); null if unparseable. */
 export function toIsoDate(s: string): string | null {

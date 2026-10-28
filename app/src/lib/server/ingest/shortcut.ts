@@ -97,11 +97,11 @@ function dailyTotals(s: z.infer<typeof series>, onSkip: () => void): Map<string,
   return out;
 }
 
-export interface ParsedShortcut extends ParsedIngest { unknownTypes: string[] }
+interface ParsedShortcut extends ParsedIngest { unknownTypes: string[] }
 
 const SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": [...]} with one start date per value (docs/ops/shortcut-health-sync.md step 12)';
 
-export function parseShortcut(raw: unknown): ParsedShortcut {
+function parseShortcut(raw: unknown): ParsedShortcut {
   let r = raw as Record<string, unknown> | null;
   // Accept the obvious spellings for exercise minutes.
   if (r && typeof r === 'object' && r.exercise === undefined) {

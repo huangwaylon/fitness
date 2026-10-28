@@ -25,7 +25,7 @@ export interface GuardOptions { db: () => Db; dev?: boolean }
 
 type Zone = 'ingest' | 'presence' | 'pair' | 'api' | 'page';
 
-export function zoneOf(path: string): Zone {
+function zoneOf(path: string): Zone {
   if (path.startsWith('/ingest/')) return 'ingest';
   if (path === '/api/presence') return 'presence';
   if (path === '/api/pair') return 'pair';

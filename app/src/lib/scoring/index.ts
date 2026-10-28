@@ -4,4 +4,3 @@ export { targetsFor } from '#lib/scoring/targets.ts';
 export { isStrengthWorkout, scoreWeek } from '#lib/scoring/score.ts';
 export { nextRung, payoutWeek } from '#lib/scoring/payout.ts';
 export { deriveVisits } from '#lib/scoring/visits.ts';
-export type { PlaceRow, PresenceRow } from '#lib/scoring/visits.ts';

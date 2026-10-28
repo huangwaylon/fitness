@@ -28,7 +28,7 @@ export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'inc
   ((STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
     ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
 
-export const isStrengthVisit = (v: Visit): boolean =>
+const isStrengthVisit = (v: Visit): boolean =>
   v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true);
 
 /**
