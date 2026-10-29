@@ -123,9 +123,10 @@
 <div class="kiroku" bind:this={root}>
   {#if m && view}
     {#if !top}
-      <div class="pills" role="tablist" aria-label={t('phone.app.kiroku')}>
+      <!-- A segmented switch (toggle buttons), not tabs: there is no tab panel to move to. -->
+      <div class="pills" role="group" aria-label={t('phone.app.kiroku')}>
         {#each ['body', 'money'] as const as id (id)}
-          <button type="button" role="tab" class="pill" aria-selected={tab === id} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
+          <button type="button" class="pill" aria-pressed={tab === id} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
         {/each}
       </div>
       {#if weeks}
@@ -205,7 +206,7 @@
     appearance: none; border: 0; cursor: pointer; min-height: 40px; min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); background: color-mix(in srgb, var(--lip) 40%, transparent);
   }
-  .pill[aria-selected='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); }
+  .pill[aria-pressed='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); }
   .wcard { display: grid; gap: 6px; justify-items: start; }
   .wcard b { font-size: var(--fs-talk); }
   .wcard .money { font-size: var(--fs-body); color: var(--text-soft); }

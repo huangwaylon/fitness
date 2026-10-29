@@ -6,7 +6,7 @@
   import { fruitArt } from '#lib/art.ts';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { has, t } from '#lib/i18n/index.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { addDays, inMonthDayRange } from '#lib/scoring/dates.ts';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -33,12 +33,15 @@
   /** Yesterday can still be filled in (48 h): a neutral hint dot, never an alert colour (M10). */
   const yesterdayFillable = $derived((me?.habits?.ticksByDate[yesterday] ?? []).length === 0);
   let pop = $state<string | null>(null);
+  let popTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(popTimer));
 
   function toggle(key: string) {
     const done = !ticks.includes(key);
     if (done) {
       pop = key;
-      setTimeout(() => (pop = pop === key ? null : pop), 900);
+      clearTimeout(popTimer);
+      popTimer = setTimeout(() => (pop = null), 900);
     }
     checkin(date, key, done);
   }
@@ -49,11 +52,12 @@
   {#if view && me}
     <div class="head">
       <span class="date money">{formatDate(date)}</span>
-      <div class="days" role="tablist">
-        <button type="button" role="tab" class="day" class:fillable={yesterdayFillable} aria-selected={which === 'yesterday'}
+      <!-- A segmented switch (two toggle buttons), not tabs: there is no tab panel to move to. -->
+      <div class="days" role="group" aria-label={t('island.checkin')}>
+        <button type="button" class="day" class:fillable={yesterdayFillable} aria-pressed={which === 'yesterday'}
           aria-label={yesterdayFillable ? `${t('checkin.yesterday')} · ${t('checkin.yesterdayOpen')}` : undefined}
           onclick={() => (which = 'yesterday')}>{t('checkin.yesterday')}</button>
-        <button type="button" role="tab" class="day" aria-selected={which === 'today'}
+        <button type="button" class="day" aria-pressed={which === 'today'}
           onclick={() => (which = 'today')}>{t('checkin.today')}</button>
       </div>
     </div>
@@ -70,7 +74,7 @@
           {@const ic = ICONS[key] ?? ICONS.eat_lunch}
           <button type="button" class="habit" class:on role="switch" aria-checked={on} onclick={() => toggle(key)}>
             <span class="ic"><svg viewBox={ic.vb} aria-hidden="true"><use href="#{ic.id}" /></svg></span>
-            <span class="txt">{t(`habit.${key}`)}{#if t(`habit.${key}.hint`)}<small>{t(`habit.${key}.hint`)}</small>{/if}</span>
+            <span class="txt">{t(`habit.${key}`)}{#if has(`habit.${key}.hint`)}<small>{t(`habit.${key}.hint`)}</small>{/if}</span>
             <span class="tick" aria-hidden="true">
               {#if on}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}
               {#if pop === key}<span class="plus"><OfficialArt key={fruitArt('pear')} size={26} /></span>{/if}
@@ -94,7 +98,7 @@
     display: grid; place-items: center; font-weight: 700; font-size: var(--fs-body); position: relative;
     background: transparent; color: var(--text-soft); transition: background var(--dur-quick);
   }
-  .day[aria-selected='true'] { background: var(--c-cream); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-lip); }
+  .day[aria-pressed='true'] { background: var(--c-cream); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-lip); }
   .day.fillable::after { content: ''; position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-mint-lip); }
 
   .habits { display: grid; gap: 12px; }

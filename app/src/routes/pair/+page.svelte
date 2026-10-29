@@ -10,21 +10,16 @@
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';
   import Bubble from '#lib/components/Bubble.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
+  import { keyboardInset } from '#lib/components/keyboardInset.ts';
 
   let code = $state('');
   let busy = $state(false);
   let msg = $state('');
   let standalone = $state(true);
-  /** On-screen keyboard height (design.md §R): the button rides above it. */
-  let kb = $state(0);
 
   const ready = $derived(/^[0-9a-f]{16,128}$/.test(code));
 
   onMount(() => {
-    const vv = window.visualViewport;
-    const onVV = () => vv && (kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop)));
-    vv?.addEventListener('resize', onVV);
-    vv?.addEventListener('scroll', onVV);
     standalone = isStandalone();
     const fromHash = keyFromHash(location.hash);
     if (fromHash) {
@@ -32,10 +27,6 @@
       code = fromHash;
       void pair();
     }
-    return () => {
-      vv?.removeEventListener('resize', onVV);
-      vv?.removeEventListener('scroll', onVV);
-    };
   });
 
   function onInput(e: Event) {
@@ -66,7 +57,8 @@
 </script>
 
 <!-- Style guide v4 §R.7: the dodo airport brings you to the island; しずえ greets you; paste the key. -->
-<main class="pair" style:--kb="{kb}px">
+<!-- The key field and the button ride above the on-screen keyboard (--kb, keyboardInset). -->
+<main class="pair" {@attach keyboardInset}>
   <button type="button" class="lang" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe" /></svg>{i18n.locale === 'ja' ? 'English' : '日本語'}
   </button>
@@ -88,11 +80,6 @@
       placeholder="••••••"
       value={code}
       oninput={onInput}
-      onfocus={(e) => {
-        const el = e.currentTarget;
-        const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-        setTimeout(() => el.scrollIntoView({ block: 'center', behavior }), 300);
-      }}
       aria-describedby="pair-msg"
     />
     <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button (N8). -->
@@ -129,7 +116,7 @@
   .msg:not(.info):not(:empty) { background: var(--c-coral); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; }
   .msg.info { color: var(--text-soft); font-size: var(--fs-s); }
   /* The button rides above the keyboard. */
-  .go { position: sticky; bottom: calc(var(--safe-bottom) + 8px); transform: translateY(calc(-1 * var(--kb))); }
+  .go { position: sticky; bottom: calc(var(--safe-bottom) + 8px); transform: translateY(calc(-1 * var(--kb, 0px))); }
   .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-s); }
   .hint.strong { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-btn); }
   @media (max-height: 700px), (max-width: 359px) {
