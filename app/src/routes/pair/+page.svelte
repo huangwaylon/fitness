@@ -58,7 +58,9 @@
 </script>
 
 <!-- Style guide v4 §R.7: the dodo airport brings you to the island; しずえ greets you; paste the key. -->
-<!-- The key field and the button ride above the on-screen keyboard (--kb, keyboardInset). -->
+<!-- The key field and the button ride above the on-screen keyboard (--kb, keyboardInset): the page gains --kb of
+     bottom padding so it can scroll, and on focus the whole form (field + つなぐ) scrolls to just above the keyboard
+     (data-kb-scroll). Round 10 H3: no transform and no sticky lift, which moved the button over the art or the field. -->
 <main class="pair" {@attach keyboardInset}>
   <button type="button" class="lang" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe" /></svg>{i18n.locale === 'ja' ? 'English' : '日本語'}
@@ -68,7 +70,7 @@
 
   <Bubble text={t('pair.title')} host="wave" size="var(--pair-host)" />
 
-  <form class="card" onsubmit={submit}>
+  <form class="card" onsubmit={submit} data-kb-scroll>
     <label class="lbl" for="code">{t('pair.code')}</label>
     <input
       id="code"
@@ -85,7 +87,7 @@
     />
     <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button (N8). -->
     <p id="pair-msg" class="msg" class:info={!msg} role="status">{msg || (code && !ready ? t('pair.keyHint') : '')}</p>
-    <div class="go"><button type="submit" class="btn" disabled={!ready || busy}>{t('pair.go')}</button></div>
+    <button type="submit" class="btn" disabled={!ready || busy}>{t('pair.go')}</button>
   </form>
   <p class="hint" class:strong={!standalone}>{t('pair.hint')}</p>
 </main>
@@ -93,9 +95,9 @@
 <style>
   .pair {
     --pair-host: 72px;
-    max-width: 420px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; align-items: stretch; justify-content: center;
+    max-width: 420px; margin: 0 auto; min-height: var(--vh-page); display: flex; flex-direction: column; align-items: stretch; justify-content: center;
     gap: 14px; position: relative;
-    padding: calc(var(--safe-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 20px) calc(var(--side) + var(--safe-left));
+    padding: calc(var(--safe-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 20px + var(--kb, 0px)) calc(var(--side) + var(--safe-left));
   }
   .lang {
     position: absolute; top: calc(var(--safe-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px;
@@ -109,15 +111,13 @@
   form { display: grid; gap: 8px; padding: 14px 16px 10px; }
   .lbl { font-weight: 700; font-size: var(--fs-talk); text-align: center; }
   .code {
-    width: 100%; min-height: 56px; text-align: center; font-size: 1.1rem !important; letter-spacing: .02em !important;
+    width: 100%; min-height: 56px; text-align: center; font-size: max(var(--fs-input), 1.1rem) !important; letter-spacing: .02em !important;
     border-radius: var(--r-btn); border: 0; background: var(--c-cream); color: var(--c-ink); box-shadow: inset 0 3px 0 var(--c-lip);
   }
   .code::placeholder { color: var(--c-ink-soft); opacity: .5; }
   .msg { min-height: 1.4em; margin: 0; font-weight: 700; text-align: center; }
   .msg:not(.info):not(:empty) { background: var(--c-coral); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; }
   .msg.info { color: var(--text-soft); font-size: var(--fs-s); }
-  /* The button rides above the keyboard. */
-  .go { position: sticky; bottom: calc(var(--safe-bottom) + 8px); transform: translateY(calc(-1 * var(--kb, 0px))); }
   .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-s); }
   .hint.strong { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-btn); }
   @media (max-height: 700px), (max-width: 359px) {

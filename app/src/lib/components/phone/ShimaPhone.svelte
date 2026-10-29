@@ -2,6 +2,7 @@
   // しまフォン launcher (v5 §4): a NookPhone-screen sheet with a status row (time · leaf · デモ in demo),
   // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
+  // The status row and title bar stay put; only `.phone-body` (home grid or the app) scrolls (round 10).
   // Apps: help, villager (+ name), language, sync. (No privacy settings: both players see everything; no alerts.)
   import { tick as nextTick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -92,6 +93,7 @@
     </button>
   </div>
 
+  <div class="phone-body">
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
@@ -120,16 +122,18 @@
       {/if}
     </div>
   {/if}
+  </div>
 </Sheet>
 
 <style>
   .status {
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: -4px 4px 4px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: -4px 4px 8px;
     font: 700 var(--fs-body)/1 var(--font-num); color: var(--text);
   }
   .demo-wrap { justify-self: end; }
   .demo { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
-  .titlebar { position: relative; display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 14px; }
+  .status, .titlebar { flex: none; }
+  .titlebar { position: relative; display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 8px; }
   .titlebar h2 { font-size: var(--fs-title); text-align: center; }
   .back { position: absolute; left: 0; top: 2px; }
   .back svg { width: 22px; height: 22px; }
@@ -137,9 +141,12 @@
   .close svg { width: 20px; height: 20px; }
   .titlebar h2 { padding: 0 48px; }
 
+  /* Home: five tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
+     the top third of an empty screen); the row gap grows with the phone's height. */
   .grid {
     display: grid; grid-template-columns: repeat(3, minmax(var(--tile), 1fr)); justify-items: center;
-    gap: calc(var(--tile-gap) + 4px) var(--tile-gap); padding: 10px 0 18px;
+    gap: clamp(calc(var(--tile-gap) + 4px), calc(5 * var(--vh1)), 48px) var(--tile-gap); padding: 10px 0 18px;
+    margin: auto 0; translate: 0 -6%;
   }
   .app {
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 8px;
@@ -154,16 +161,26 @@
   .tile.full { background: none; box-shadow: none; filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .2)); }
   .fb { width: 50%; height: 50%; border-radius: 30%; background: rgba(255, 255, 255, .6); }
   .app:active .tile { transform: translateY(2px) scale(1.08, .9); transition-duration: var(--dur-tap); }
-  .lbl { font: 700 var(--fs-s)/1.1 var(--font-ui); white-space: nowrap; }
+  .lbl { font: 700 clamp(var(--fs-s), calc(var(--tile) / 5.5), var(--fs-body))/1.1 var(--font-ui); white-space: nowrap; }
 
-  .page { display: grid; gap: 14px; animation: slide var(--dur-base) var(--ease-soft); }
+  /* The one scroller (ios-scroll-audit M2 / architecture §1). It bleeds 8px past the phone's side padding so
+     focus rings and lips are not clipped by its overflow. A screen that fills the phone (the NumberPad) is
+     stretched to the body's height, so its keys sit at the bottom with no magic number. */
+  .phone-body {
+    flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
+    margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column;
+  }
+  .phone-body > * { flex: none; }
+  .phone-body > .page:has(:global(.atm)) { flex: 1 0 auto; }
+  .phone-body > .page:has(:global(.atm)) > :global(*) { flex: 1 0 auto; }
+  .page { display: flex; flex-direction: column; gap: 14px; animation: slide var(--dur-base) var(--ease-soft); }
   @keyframes slide { from { opacity: 0; transform: translateX(40%); } to { opacity: 1; transform: none; } }
 
   /* Rows shared by the ことば and 通信 apps. */
   .page :global(.prows) { display: grid; gap: 10px; }
   .page :global(.prow) {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px;
-    border-radius: var(--r-card); border: 0; background: var(--surface); color: var(--text);
+    border-radius: var(--r-card); border: 0; background: var(--fill-on-surface); color: var(--text);
     box-shadow: var(--sh-lip); text-align: left; width: 100%; font: inherit;
   }
   .page :global(.prow:not(.static):active) { transform: translateY(2px); box-shadow: 0 1px 0 var(--lip); }

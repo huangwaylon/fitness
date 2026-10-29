@@ -1,6 +1,9 @@
 // The on-screen keyboard (design.md §R): `{@attach keyboardInset}` sets `--kb` on the element to the keyboard's height
 // (innerHeight − visualViewport.height − offsetTop) so a sticky action can ride above it, and scrolls a focused
 // field to the centre once the keyboard is up. Used by Sheet and the pair page (round 8: one copy).
+// Round 10: iOS does not shrink the layout viewport, so "centre" is taken in the part above the keyboard: fields get
+// `scroll-margin-bottom: --kb` (styles/theme.css). A `[data-kb-scroll]` ancestor (the pair form: field + button)
+// is scrolled into view as a whole, its bottom just above the keyboard.
 import type { Attachment } from 'svelte/attachments';
 import { reducedMotion } from '../../time/clock.ts';
 
@@ -11,9 +14,10 @@ export const keyboardInset: Attachment<HTMLElement> = (node) => {
   const focusin = (e: FocusEvent) => {
     const el = e.target as HTMLElement;
     if (!el.matches('input, textarea, select')) return;
+    const box = el.closest<HTMLElement>('[data-kb-scroll]');
     const t = setTimeout(() => {
       timers.delete(t);
-      el.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+      (box ?? el).scrollIntoView({ block: box ? 'end' : 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
     }, 300);
     timers.add(t);
   };
