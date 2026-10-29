@@ -94,8 +94,8 @@
     transition: transform var(--dur-slow) var(--ease-bounce), opacity var(--dur-slow) var(--ease-soft), filter var(--dur-slow);
   }
   .fruit :global(img), .fruit :global(svg) { width: 100%; height: 100%; }
-  .bud .fruit { transform: scale(.55); opacity: .6; filter: grayscale(.9); }
-  .small .fruit { transform: scale(.75); filter: saturate(.45); }
+  .bud .fruit { transform: scale(.55); opacity: .55; filter: saturate(.3); }
+  .small .fruit { transform: scale(.75); opacity: .8; filter: saturate(.7); }
   .nearly .fruit { transform: scale(.9); }
   .fr.ripe { box-shadow: 0 0 0 3px var(--c-yuzu); }
   .fr.ripe::after {
