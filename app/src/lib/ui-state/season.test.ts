@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { deriveTheme, foliageFor, previewParams, seasonFor, SKY_TOP, themeColor, TOD_TOP, todFor } from './season.ts';
 
-const at = (s: string) => new Date(s); // local time
+const at = (s: string) => new Date(`${s}+09:00`); // Tokyo time (time/clock.ts jst)
 
 describe('season windows (NH, northern hemisphere)', () => {
   it.each([

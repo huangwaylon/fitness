@@ -8,7 +8,7 @@ import { ripeness } from '../sheets/ripeness.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { on } from '../motion/bus.svelte.ts';
-import { dayKey, minuteNow, now, reducedMotion } from '../../time/clock.ts';
+import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
 
 interface Ctx {
@@ -21,7 +21,7 @@ interface Ctx {
   day: () => boolean;
 }
 
-const asleepHour = (d: Date) => d.getHours() >= 22 || d.getHours() < 5;
+const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
 
 /** True the first time `key` is seen today on this device. */
 function once(key: string): boolean {
@@ -129,11 +129,10 @@ export class IslandLife {
 
     // Startup beats, spaced so they never overlap: greeting, morning stretch, evening nudge, low week.
     const d = now();
-    const h = d.getHours();
+    const { hour: h, weekday: wd } = jst(d);
     const view = ctx.view();
     const me = view.people[view.me];
     const checkedIn = (me.habits?.ticksByDate[view.today] ?? []).length > 0;
-    const wd = d.getDay();
     const beats: ReactionId[] = [];
     if (!asleepHour(d)) {
       if (once('open')) beats.push('R1');

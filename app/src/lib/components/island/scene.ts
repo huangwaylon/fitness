@@ -2,6 +2,7 @@
 // x 0–390, y 0–360, origin top-left, y down; "base" = the y of the feet / trunk bottom.
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { BushId, FlowerId } from '#lib/art.ts';
+import { jst } from '#lib/time/clock.ts';
 
 const STAGE_W = 390;
 const STAGE_H = 360;
@@ -124,13 +125,11 @@ export interface Events {
   newYear: boolean;
 }
 export function eventsAt(d: Date): Events {
-  const m = d.getMonth() + 1;
-  const day = d.getDate();
-  const h = d.getHours();
+  const { month: m, day, hour: h, weekday } = jst(d);
   return {
     cherry: m === 4 && day <= 10,
     maple: m === 11 && day >= 16 && day <= 25,
-    fireworks: m === 8 && d.getDay() === 0 && h >= 19,
+    fireworks: m === 8 && weekday === 0 && h >= 19,
     toyDay: m === 12 && day === 24,
     newYear: (m === 12 && day === 31 && h >= 22) || (m === 1 && day === 1 && h < 2)
   };
