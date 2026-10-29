@@ -14,7 +14,6 @@ declare namespace GAS {
     getLastRow(): number;
     getMaxRows(): number;
     getRange(row: number, column: number, numRows?: number, numColumns?: number): Range;
-    appendRow(row: unknown[]): Sheet;
     insertRowsAfter(afterPosition: number, howMany: number): Sheet;
     setFrozenRows(rows: number): void;
   }

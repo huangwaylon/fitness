@@ -1,5 +1,5 @@
 // Pure, dependency-free parser of the iOS Shortcuts health body (ADR 0015, sheets-architecture.md §3). It runs in
-// three places: the Apps Script web app (bundled by esbuild into apps-script/Code.js), the browser, and Node tests.
+// the Apps Script web app (bundled by esbuild into apps-script/Code.js) and in Node tests.
 // So: no zod, no Node APIs, no `crypto`, no TextEncoder, no Intl; only plain ES2019.
 //
 // It is a port of the old Mac server's Shortcut parser (deleted; ADR 0015). Accepted shapes:
@@ -11,8 +11,7 @@
 // Every list may be a JSON array or newline-joined text (Shortcuts' Dictionary fields typed as Text).
 import { toLocalDate } from '../scoring/dates.ts';
 import { WORKOUT_LABELS_JA } from '../model/labels.ts';
-
-export type MetricKey = 'steps' | 'exercise_min';
+import { DATE_RE, isRec, type MetricKey } from './sheet-api.ts';
 
 export interface ParsedMetric { date: string; metric: MetricKey; value: number }
 export interface ParsedWorkout {
@@ -50,6 +49,10 @@ export function looseNumber(v: unknown): number | null {
 const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 const pad = (n: number | string) => String(n).padStart(2, '0');
 
+const EN_TIME = String.raw`(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$`;
+const EN_MONTH_FIRST = new RegExp(String.raw`^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})` + EN_TIME);
+const EN_DAY_FIRST = new RegExp(String.raw`^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})` + EN_TIME);
+
 /** Shortcuts' default date text (when no Format Date step is used): English or Japanese locale. */
 function shortcutsDefaultDate(v: string): string | null {
   const hm = (h: string, m: string, sec: string | undefined, ap: string | undefined) => {
@@ -59,20 +62,17 @@ function shortcutsDefaultDate(v: string): string | null {
     if (a === 'am' || a === '午前') hour = hour % 12;
     return `${pad(hour)}:${m}:${sec ?? '00'}`;
   };
-  // "Oct 28, 2026 at 8:10 AM" / "October 28, 2026 at 8:10:05 PM" / "Oct 28, 2026"
-  let m = v.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
-  if (m && MONTHS[m[1].toLowerCase()]) {
+  // "Oct 28, 2026 at 8:10 AM" / "October 28, 2026 at 8:10:05 PM" / "Oct 28, 2026", and "28 Oct 2026 at 08:10"
+  const english = (re: RegExp, mon: number, day: number): string | null => {
+    const m = v.match(re);
+    if (!m || !MONTHS[m[mon].toLowerCase()]) return null;
     const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : '00:00:00';
-    return `${m[3]}-${pad(MONTHS[m[1].toLowerCase()])}-${pad(m[2])}T${t}+09:00`;
-  }
-  // "28 Oct 2026 at 08:10"
-  m = v.match(/^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
-  if (m && MONTHS[m[2].toLowerCase()]) {
-    const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : '00:00:00';
-    return `${m[3]}-${pad(MONTHS[m[2].toLowerCase()])}-${pad(m[1])}T${t}+09:00`;
-  }
+    return `${m[3]}-${pad(MONTHS[m[mon].toLowerCase()])}-${pad(m[day])}T${t}+09:00`;
+  };
+  const en = english(EN_MONTH_FIRST, 1, 2) ?? english(EN_DAY_FIRST, 2, 1);
+  if (en) return en;
   // "2026年10月28日 8:10" / "2026年10月28日 午後8:10"
-  m = v.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  const m = v.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
   if (m) {
     const t = m[5] ? hm(m[5], m[6], m[7], m[4]) : '00:00:00';
     return `${m[1]}-${pad(m[2])}-${pad(m[3])}T${t}+09:00`;
@@ -90,7 +90,7 @@ export function toIsoDate(s: string): string | null {
     const iso = `${m[1]}T${time}${off}`;
     return Number.isNaN(Date.parse(iso)) ? null : iso;
   }
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s.trim())) return `${s.trim()}T00:00:00+09:00`;
+  if (DATE_RE.test(s.trim())) return `${s.trim()}T00:00:00+09:00`;
   return null;
 }
 
@@ -204,7 +204,6 @@ export function sha256Hex(s: string): string {
 const SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": [...]} with one start date per value';
 
 type Rec = Record<string, unknown>;
-const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** Shortcuts turns a list into newline-joined text when a Dictionary field is typed as Text: accept both. */
 const splitLines = (v: unknown): unknown => (typeof v === 'string' ? (v.trim() === '' ? [] : v.split(/\r?\n/)) : v);
@@ -256,7 +255,7 @@ function dailyTotals(s: Series, onSkip: () => void): Map<string, number> {
 /** Parse a Shortcut body (already JSON-parsed). Throws ShapeError when nothing usable or the shape is wrong. */
 export function parseShortcut(raw: unknown): ParsedBody {
   if (!isRec(raw)) throw new ShapeError('unexpected shape: body: expected an object');
-  let r: Rec = { ...raw };
+  const r: Rec = { ...raw };
   // Accept the obvious spellings for exercise minutes.
   if (r.exercise === undefined) {
     const alias = ['exercise_minutes', 'exerciseMinutes', 'exercise_min', 'exerciseMin'].find((k) => r[k] !== undefined);
@@ -276,7 +275,6 @@ export function parseShortcut(raw: unknown): ParsedBody {
   if (r.dates !== undefined) {
     const dates = splitLines(r.dates);
     if (Array.isArray(dates)) {
-      r = { ...r };
       for (const k of ['steps', 'exercise']) {
         const values = splitLines(r[k]);
         if (Array.isArray(values)) r[k] = { values, starts: dates };
@@ -308,7 +306,7 @@ export function parseShortcut(raw: unknown): ParsedBody {
   for (const d of days ?? []) {
     const date = isRec(d) ? looseDate(d.date) : null;
     if (!isRec(d) || !date) { skip(); continue; }
-    const localDate = date.slice(0, 10);
+    const localDate = toLocalDate(date);
     const st = looseNumber(d.steps);
     const ex = looseNumber(d.exerciseMin);
     if (st !== null) metrics.push({ date: localDate, metric: 'steps', value: round(st) });

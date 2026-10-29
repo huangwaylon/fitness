@@ -7,8 +7,14 @@
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
 import { looseDate, parseShortcut } from '../src/lib/ingest/parse.ts';
+import { parseInstant } from '../src/lib/scoring/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/model/labels.ts';
-import { EVENT_TYPES, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, NUMERIC_COLUMNS, TABS, type ApiError, type Person, type SnapshotRows, type TabName } from '../src/lib/ingest/sheet-api.ts';
+import type { PersonId } from '../src/lib/types.ts';
+import {
+  DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, NUMERIC_COLUMNS, TABS,
+  type ApiError, type EventReply, type Fail, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows, type TabName,
+  type WhoamiReply
+} from '../src/lib/ingest/sheet-api.ts';
 
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
@@ -16,11 +22,11 @@ const LOCK_WAIT_MS = 10_000;
 const MIN_KEY_CHARS = 32;
 const MAX_EVENT_DATA_CHARS = 20_000;
 
-type Reply = Record<string, unknown>;
+/** Every reply is one of the client contract's shapes (sheet-api.ts), so the server is compile-checked against it. */
+type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply;
 type Rec = Record<string, unknown>;
 
-const fail = (error: ApiError, detail?: string): Reply => (detail ? { ok: false, error, detail } : { ok: false, error });
-const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
+const fail = (error: ApiError, detail?: string): Fail => (detail ? { ok: false, error, detail } : { ok: false, error });
 
 export function doPost(e: GAS.PostEvent | undefined): GAS.TextOutput {
   let reply: Reply;
@@ -55,7 +61,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     case 'presence': return presence(me, body);
     case 'event': return event(me, body);
     case 'snapshot': return snapshot(me, body);
-    case 'whoami': return withLock(() => { for (const t of Object.keys(TABS) as TabName[]) tab(t); return { ok: true, me }; });
+    case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) tab(t); return { ok: true, me }; });
     default: return fail('bad_request');
   }
 }
@@ -63,14 +69,14 @@ function handle(e: GAS.PostEvent | undefined): Reply {
 // ---------------------------------------------------------------- auth and limits
 
 /** Compares every character of the longer string, so the time taken says nothing about where they differ. */
-export function constantTimeEqual(a: string, b: string): boolean {
+function constantTimeEqual(a: string, b: string): boolean {
   let diff = a.length ^ b.length;
   const n = Math.max(a.length, b.length);
   for (let i = 0; i < n; i++) diff |= (a.charCodeAt(i) | 0) ^ (b.charCodeAt(i) | 0);
   return diff === 0;
 }
 
-function personFor(key: unknown): Person | null {
+function personFor(key: unknown): PersonId | null {
   if (typeof key !== 'string' || key.length < MIN_KEY_CHARS) return null;
   const props = PropertiesService.getScriptProperties();
   const a = props.getProperty('KEY_A');
@@ -82,7 +88,7 @@ function personFor(key: unknown): Person | null {
 }
 
 /** Per-key-per-minute counter. Not atomic (CacheService has no increment); good enough to stop a runaway loop. */
-function underRateLimit(me: Person): boolean {
+function underRateLimit(me: PersonId): boolean {
   try {
     const cache = CacheService.getScriptCache();
     const k = `rl:${me}:${Math.floor(Date.now() / 60000)}`;
@@ -100,7 +106,7 @@ function underRateLimit(me: Person): boolean {
  * request's rows: all rows of one request share one `at`, and a client that saw part of them would skip the rest
  * with `at > since`.
  */
-function withLock(fn: () => Reply): Reply {
+function withLock<R extends Reply>(fn: () => R): R | Fail {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(LOCK_WAIT_MS)) return fail('busy');
   try {
@@ -174,7 +180,7 @@ function num(v: unknown): number | null {
 
 // ---------------------------------------------------------------- actions
 
-function ingest(me: Person, body: Rec, bytes: number): Reply {
+function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   let parsed: ReturnType<typeof parseShortcut>;
   try {
     parsed = parseShortcut(body);
@@ -182,11 +188,11 @@ function ingest(me: Person, body: Rec, bytes: number): Reply {
     const msg = (err instanceof Error ? err.message : String(err)).slice(0, 300);
     // Audit the failure (best effort: a busy lock just skips the row).
     try {
-      withLock(() => { appendRows(tab('uploads'), 'uploads', [[nextAt(), me, 'error', bytes, msg]]); return { ok: true }; });
+      withLock((): PresenceReply => { appendRows(tab('uploads'), 'uploads', [[nextAt(), me, 'error', bytes, msg]]); return { ok: true }; });
     } catch { /* the reply matters more than the audit row */ }
     return fail('bad_request', msg);
   }
-  return withLock(() => {
+  return withLock((): IngestReply => {
     const at = nextAt();
     const mSheet = tab('metrics');
     const latest = new Map<string, number>();
@@ -224,14 +230,15 @@ function ingest(me: Person, body: Rec, bytes: number): Reply {
     ].filter(Boolean).join('; ');
     appendRows(tab('uploads'), 'uploads', [[at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes.slice(0, 300)]]);
 
-    const reply: Reply = { ok: true, metrics: newMetrics.length, workouts: newWorkouts.length };
-    if (parsed.skipped) reply.skipped = parsed.skipped;
-    if (parsed.unknownTypes.length) reply.unknownTypes = parsed.unknownTypes;
-    return reply;
+    return {
+      ok: true, metrics: newMetrics.length, workouts: newWorkouts.length,
+      ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
+      ...(parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {})
+    };
   });
 }
 
-function presence(me: Person, body: Rec): Reply {
+function presence(me: PersonId, body: Rec): PresenceReply {
   const place = typeof body.place === 'string' ? body.place.trim() : '';
   if (!place || place.length > 100) return fail('bad_request');
   if (body.event !== 'arrive' && body.event !== 'leave') return fail('bad_request');
@@ -242,14 +249,14 @@ function presence(me: Person, body: Rec): Reply {
     eventAt = new Date(Date.parse(iso)).toISOString();
   }
   const ev = body.event;
-  return withLock(() => {
+  return withLock((): PresenceReply => {
     const at = nextAt();
     appendRows(tab('presence'), 'presence', [[at, me, place, ev, eventAt ?? at]]);
     return { ok: true };
   });
 }
 
-function event(me: Person, body: Rec): Reply {
+function event(me: PersonId, body: Rec): EventReply {
   const id = body.id;
   if (typeof id !== 'string' || id.length === 0 || id.length > 128) return fail('bad_request');
   if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
@@ -259,7 +266,7 @@ function event(me: Person, body: Rec): Reply {
   if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
   if (!validEditData(body.type, data)) return fail('bad_request');
   const type = body.type;
-  return withLock(() => {
+  return withLock((): EventReply => {
     const sh = tab('events');
     const last = sh.getLastRow();
     if (last >= 2) {
@@ -271,7 +278,6 @@ function event(me: Person, body: Rec): Reply {
   });
 }
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
 const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
@@ -282,39 +288,52 @@ const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v
 function validEditData(type: string, d: Rec): boolean {
   switch (type) {
     case 'metric_set':
-      return typeof d.date === 'string' && DATE_RE.test(d.date) && (d.metric === 'steps' || d.metric === 'exercise_min') &&
+      return typeof d.date === 'string' && DATE_RE.test(d.date) && isMetricKey(d.metric) &&
         isInt(d.value, 0, METRIC_BOUNDS[d.metric]);
     case 'workout_edit':
       return isId(d.id) && (d.strength !== undefined || d.excluded !== undefined) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean') &&
         (d.excluded === undefined || typeof d.excluded === 'boolean');
     case 'workout_add':
-      return typeof d.id === 'string' && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === 'string' && DATE_RE.test(d.date) &&
+      return typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) && typeof d.date === 'string' && DATE_RE.test(d.date) &&
         typeof d.type === 'string' && WORKOUT_TYPES.includes(d.type) && // the model drops any other type (round 7 L7)
         isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');
     case 'spend_void':
-      return (typeof d.spendId === 'string' && isId(d.spendId)) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId));
+      return isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId));
     case 'transfer_undo':
-      return typeof d.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month);
+      return typeof d.month === 'string' && MONTH_RE.test(d.month);
     default:
       return true;
   }
 }
 
-function snapshot(me: Person, body: Rec): Reply {
+/**
+ * A row's server `at` as ISO UTC with milliseconds, so it compares as text with `since`. Defensive against a
+ * hand-pasted `at` (a Date cell, no milliseconds, another offset or none: Tokyo); unreadable text is kept as is.
+ */
+function instant(v: unknown): string {
+  const s = text(v, 'at');
+  try {
+    return new Date(parseInstant(s)).toISOString();
+  } catch {
+    return s;
+  }
+}
+
+function snapshot(me: PersonId, body: Rec): SnapshotReply {
   if (body.since !== undefined && body.since !== null && typeof body.since !== 'string') return fail('bad_request');
-  const since = typeof body.since === 'string' ? body.since : '';
-  return withLock(() => {
-    const pick = (name: TabName, row: (r: unknown[]) => unknown[]) =>
-      readRows(tab(name), name).filter((r) => text(r[0], 'at') > since).map(row);
+  const since = typeof body.since === 'string' && body.since ? instant(body.since) : '';
+  return withLock((): SnapshotReply => {
+    const pick = (name: TabName, row: (r: unknown[], at: string) => unknown[]) =>
+      readRows(tab(name), name).map((r) => [r, instant(r[0])] as const).filter(([, at]) => at > since).map(([r, at]) => row(r, at));
     const rows = {
-      metrics: pick('metrics', (r) => [text(r[0], 'at'), text(r[1]), text(r[2], 'date'), text(r[3]), num(r[4]) ?? 0]),
-      workouts: pick('workouts', (r) => [
-        text(r[0], 'at'), text(r[1]), text(r[2]), text(r[3], 'date'), text(r[4]), text(r[5], 'at'), text(r[6], 'at'), num(r[7]) ?? 0, num(r[8])
+      metrics: pick('metrics', (r, at) => [at, text(r[1]), text(r[2], 'date'), text(r[3]), num(r[4]) ?? 0]),
+      workouts: pick('workouts', (r, at) => [
+        at, text(r[1]), text(r[2]), text(r[3], 'date'), text(r[4]), text(r[5], 'at'), text(r[6], 'at'), num(r[7]) ?? 0, num(r[8])
       ]),
-      presence: pick('presence', (r) => [text(r[0], 'at'), text(r[1]), text(r[2]), text(r[3]), text(r[4], 'at')]),
-      events: pick('events', (r) => [text(r[0], 'at'), text(r[1]), text(r[2]), text(r[3]), text(r[4])])
+      presence: pick('presence', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4], 'at')]),
+      events: pick('events', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
     } as SnapshotRows;
     return { ok: true, me, now: new Date().toISOString(), rows };
   });

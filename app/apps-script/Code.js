@@ -24,9 +24,47 @@ var IslandFund = (() => {
   __export(main_exports, {
     MAX_BODY_CHARS: () => MAX_BODY_CHARS,
     RATE_PER_MINUTE: () => RATE_PER_MINUTE,
-    constantTimeEqual: () => constantTimeEqual,
     doPost: () => doPost
   });
+
+  // src/lib/ingest/sheet-api.ts
+  var TABS = {
+    metrics: ["at", "person", "date", "metric", "value"],
+    workouts: ["at", "person", "id", "date", "type", "start", "end", "duration_min", "avg_hr"],
+    presence: ["at", "person", "place", "event", "event_at"],
+    events: ["at", "person", "id", "type", "data"],
+    uploads: ["at", "person", "status", "bytes", "error"]
+  };
+  var NUMERIC_COLUMNS = {
+    metrics: ["value"],
+    workouts: ["duration_min", "avg_hr"],
+    presence: [],
+    events: [],
+    uploads: ["bytes"]
+  };
+  var EVENT_TYPES = [
+    "checkin",
+    "confirm",
+    "spend",
+    "approve",
+    "transfer",
+    "harvest",
+    "highfive",
+    "pref",
+    // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
+    "metric_set",
+    "workout_edit",
+    "workout_add",
+    "spend_void",
+    "transfer_undo"
+  ];
+  var isMetricKey = (v) => v === "steps" || v === "exercise_min";
+  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  var MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+  var MANUAL_ID_RE = /^m:[\w-]{1,100}$/;
+  var isRec = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var METRIC_BOUNDS = { steps: 1e5, exercise_min: 1440 };
+  var MANUAL_WORKOUT_MIN = { min: 1, max: 600 };
 
   // src/lib/scoring/dates.ts
   var ZONE_OFFSET_MS = 9 * 60 * 60 * 1e3;
@@ -91,7 +129,11 @@ var IslandFund = (() => {
   }
   var MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
   var pad = (n) => String(n).padStart(2, "0");
+  var EN_TIME = String.raw`(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$`;
+  var EN_MONTH_FIRST = new RegExp(String.raw`^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})` + EN_TIME);
+  var EN_DAY_FIRST = new RegExp(String.raw`^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})` + EN_TIME);
   function shortcutsDefaultDate(v) {
+    var _a;
     const hm = (h, m2, sec, ap) => {
       let hour = Number(h);
       const a = ap ? ap.toLowerCase() : void 0;
@@ -99,17 +141,15 @@ var IslandFund = (() => {
       if (a === "am" || a === "午前") hour = hour % 12;
       return `${pad(hour)}:${m2}:${sec != null ? sec : "00"}`;
     };
-    let m = v.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
-    if (m && MONTHS[m[1].toLowerCase()]) {
-      const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : "00:00:00";
-      return `${m[3]}-${pad(MONTHS[m[1].toLowerCase()])}-${pad(m[2])}T${t}+09:00`;
-    }
-    m = v.match(/^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
-    if (m && MONTHS[m[2].toLowerCase()]) {
-      const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : "00:00:00";
-      return `${m[3]}-${pad(MONTHS[m[2].toLowerCase()])}-${pad(m[1])}T${t}+09:00`;
-    }
-    m = v.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+    const english = (re, mon, day) => {
+      const m2 = v.match(re);
+      if (!m2 || !MONTHS[m2[mon].toLowerCase()]) return null;
+      const t = m2[4] ? hm(m2[4], m2[5], m2[6], m2[7]) : "00:00:00";
+      return `${m2[3]}-${pad(MONTHS[m2[mon].toLowerCase()])}-${pad(m2[day])}T${t}+09:00`;
+    };
+    const en = (_a = english(EN_MONTH_FIRST, 1, 2)) != null ? _a : english(EN_DAY_FIRST, 2, 1);
+    if (en) return en;
+    const m = v.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
     if (m) {
       const t = m[5] ? hm(m[5], m[6], m[7], m[4]) : "00:00:00";
       return `${m[1]}-${pad(m[2])}-${pad(m[3])}T${t}+09:00`;
@@ -126,7 +166,7 @@ var IslandFund = (() => {
       const iso = `${m[1]}T${time}${off}`;
       return Number.isNaN(Date.parse(iso)) ? null : iso;
     }
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s.trim())) return `${s.trim()}T00:00:00+09:00`;
+    if (DATE_RE.test(s.trim())) return `${s.trim()}T00:00:00+09:00`;
     return null;
   }
   function looseDate(v) {
@@ -283,7 +323,6 @@ var IslandFund = (() => {
     return h.map((x) => (x >>> 0).toString(16).padStart(8, "0")).join("");
   }
   var SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": [...]} with one start date per value';
-  var isRec = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   var splitLines = (v) => typeof v === "string" ? v.trim() === "" ? [] : v.split(/\r?\n/) : v;
   function list(v, path) {
     if (v === void 0 || v === null) return [];
@@ -325,7 +364,7 @@ var IslandFund = (() => {
   }
   function parseShortcut(raw) {
     if (!isRec(raw)) throw new ShapeError("unexpected shape: body: expected an object");
-    let r = { ...raw };
+    const r = { ...raw };
     if (r.exercise === void 0) {
       const alias = ["exercise_minutes", "exerciseMinutes", "exercise_min", "exerciseMin"].find((k) => r[k] !== void 0);
       if (alias) r.exercise = r[alias];
@@ -342,7 +381,6 @@ var IslandFund = (() => {
     if (r.dates !== void 0) {
       const dates = splitLines(r.dates);
       if (Array.isArray(dates)) {
-        r = { ...r };
         for (const k of ["steps", "exercise"]) {
           const values = splitLines(r[k]);
           if (Array.isArray(values)) r[k] = { values, starts: dates };
@@ -376,7 +414,7 @@ var IslandFund = (() => {
         skip();
         continue;
       }
-      const localDate = date.slice(0, 10);
+      const localDate = toLocalDate(date);
       const st = looseNumber(d.steps);
       const ex = looseNumber(d.exerciseMin);
       if (st !== null) metrics.push({ date: localDate, metric: "steps", value: round(st) });
@@ -415,40 +453,6 @@ var IslandFund = (() => {
     return { metrics, workouts, skipped, unknownTypes };
   }
 
-  // src/lib/ingest/sheet-api.ts
-  var TABS = {
-    metrics: ["at", "person", "date", "metric", "value"],
-    workouts: ["at", "person", "id", "date", "type", "start", "end", "duration_min", "avg_hr"],
-    presence: ["at", "person", "place", "event", "event_at"],
-    events: ["at", "person", "id", "type", "data"],
-    uploads: ["at", "person", "status", "bytes", "error"]
-  };
-  var NUMERIC_COLUMNS = {
-    metrics: ["value"],
-    workouts: ["duration_min", "avg_hr"],
-    presence: [],
-    events: [],
-    uploads: ["bytes"]
-  };
-  var EVENT_TYPES = [
-    "checkin",
-    "confirm",
-    "spend",
-    "approve",
-    "transfer",
-    "harvest",
-    "highfive",
-    "pref",
-    // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
-    "metric_set",
-    "workout_edit",
-    "workout_add",
-    "spend_void",
-    "transfer_undo"
-  ];
-  var METRIC_BOUNDS = { steps: 1e5, exercise_min: 1440 };
-  var MANUAL_WORKOUT_MIN = { min: 1, max: 600 };
-
   // gas/main.ts
   var MAX_BODY_CHARS = 1e6;
   var RATE_PER_MINUTE = 120;
@@ -456,7 +460,6 @@ var IslandFund = (() => {
   var MIN_KEY_CHARS = 32;
   var MAX_EVENT_DATA_CHARS = 2e4;
   var fail = (error, detail) => detail ? { ok: false, error, detail } : { ok: false, error };
-  var isRec2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   function doPost(e) {
     let reply;
     try {
@@ -481,7 +484,7 @@ var IslandFund = (() => {
     } catch {
       return fail("bad_request");
     }
-    if (!isRec2(body)) return fail("bad_request");
+    if (!isRec(body)) return fail("bad_request");
     const me = personFor(body.key);
     if (!me) return fail("unauthorized");
     if (!underRateLimit(me)) return fail("busy");
@@ -642,10 +645,13 @@ var IslandFund = (() => {
         parsed.unknownTypes.length ? `unknown workout types: ${parsed.unknownTypes.join(", ")}` : ""
       ].filter(Boolean).join("; ");
       appendRows(tab("uploads"), "uploads", [[at, me, parsed.skipped ? "partial" : "ok", bytes, notes.slice(0, 300)]]);
-      const reply = { ok: true, metrics: newMetrics.length, workouts: newWorkouts.length };
-      if (parsed.skipped) reply.skipped = parsed.skipped;
-      if (parsed.unknownTypes.length) reply.unknownTypes = parsed.unknownTypes;
-      return reply;
+      return {
+        ok: true,
+        metrics: newMetrics.length,
+        workouts: newWorkouts.length,
+        ...parsed.skipped ? { skipped: parsed.skipped } : {},
+        ...parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {}
+      };
     });
   }
   function presence(me, body) {
@@ -670,7 +676,7 @@ var IslandFund = (() => {
     if (typeof id !== "string" || id.length === 0 || id.length > 128) return fail("bad_request");
     if (typeof body.type !== "string" || !EVENT_TYPES.includes(body.type)) return fail("bad_request");
     const data = body.data === void 0 ? {} : body.data;
-    if (!isRec2(data)) return fail("bad_request");
+    if (!isRec(data)) return fail("bad_request");
     const json = JSON.stringify(data);
     if (json.length > MAX_EVENT_DATA_CHARS) return fail("too_large");
     if (!validEditData(body.type, data)) return fail("bad_request");
@@ -686,40 +692,47 @@ var IslandFund = (() => {
       return { ok: true };
     });
   }
-  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   var isInt = (v, lo, hi) => typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi;
   var isId = (v) => typeof v === "string" && v.length > 0 && v.length <= 128;
   function validEditData(type, d) {
     switch (type) {
       case "metric_set":
-        return typeof d.date === "string" && DATE_RE.test(d.date) && (d.metric === "steps" || d.metric === "exercise_min") && isInt(d.value, 0, METRIC_BOUNDS[d.metric]);
+        return typeof d.date === "string" && DATE_RE.test(d.date) && isMetricKey(d.metric) && isInt(d.value, 0, METRIC_BOUNDS[d.metric]);
       case "workout_edit":
         return isId(d.id) && (d.strength !== void 0 || d.excluded !== void 0) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean") && (d.excluded === void 0 || typeof d.excluded === "boolean");
       case "workout_add":
-        return typeof d.id === "string" && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === "string" && DATE_RE.test(d.date) && typeof d.type === "string" && WORKOUT_TYPES.includes(d.type) && // the model drops any other type (round 7 L7)
+        return typeof d.id === "string" && MANUAL_ID_RE.test(d.id) && typeof d.date === "string" && DATE_RE.test(d.date) && typeof d.type === "string" && WORKOUT_TYPES.includes(d.type) && // the model drops any other type (round 7 L7)
         isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean");
       case "spend_void":
-        return typeof d.spendId === "string" && isId(d.spendId) || typeof d.spendId === "number" && Number.isFinite(d.spendId);
+        return isId(d.spendId) || typeof d.spendId === "number" && Number.isFinite(d.spendId);
       case "transfer_undo":
-        return typeof d.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month);
+        return typeof d.month === "string" && MONTH_RE.test(d.month);
       default:
         return true;
     }
   }
+  function instant(v) {
+    const s = text(v, "at");
+    try {
+      return new Date(parseInstant(s)).toISOString();
+    } catch {
+      return s;
+    }
+  }
   function snapshot(me, body) {
     if (body.since !== void 0 && body.since !== null && typeof body.since !== "string") return fail("bad_request");
-    const since = typeof body.since === "string" ? body.since : "";
+    const since = typeof body.since === "string" && body.since ? instant(body.since) : "";
     return withLock(() => {
-      const pick = (name, row) => readRows(tab(name), name).filter((r) => text(r[0], "at") > since).map(row);
+      const pick = (name, row) => readRows(tab(name), name).map((r) => [r, instant(r[0])]).filter(([, at]) => at > since).map(([r, at]) => row(r, at));
       const rows = {
-        metrics: pick("metrics", (r) => {
+        metrics: pick("metrics", (r, at) => {
           var _a;
-          return [text(r[0], "at"), text(r[1]), text(r[2], "date"), text(r[3]), (_a = num(r[4])) != null ? _a : 0];
+          return [at, text(r[1]), text(r[2], "date"), text(r[3]), (_a = num(r[4])) != null ? _a : 0];
         }),
-        workouts: pick("workouts", (r) => {
+        workouts: pick("workouts", (r, at) => {
           var _a;
           return [
-            text(r[0], "at"),
+            at,
             text(r[1]),
             text(r[2]),
             text(r[3], "date"),
@@ -730,8 +743,8 @@ var IslandFund = (() => {
             num(r[8])
           ];
         }),
-        presence: pick("presence", (r) => [text(r[0], "at"), text(r[1]), text(r[2]), text(r[3]), text(r[4], "at")]),
-        events: pick("events", (r) => [text(r[0], "at"), text(r[1]), text(r[2]), text(r[3]), text(r[4])])
+        presence: pick("presence", (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4], "at")]),
+        events: pick("events", (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
       };
       return { ok: true, me, now: (/* @__PURE__ */ new Date()).toISOString(), rows };
     });

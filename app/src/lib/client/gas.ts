@@ -198,7 +198,7 @@ const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.n
 export function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
   const d = ev.data;
   switch (ev.type) {
-    case 'checkin': return `checkin|${String(d.date)}|${String(d.habit ?? d.habitKey)}`;
+    case 'checkin': return `checkin|${String(d.date)}|${String(d.habit)}`;
     case 'metric_set': return `metric|${String(d.date)}|${String(d.metric)}`;
     case 'workout_edit': return `workout|${String(d.id)}`;
     case 'confirm': return `${d.kind === 'workout' ? 'workout' : 'visit'}|${String(d.id)}`;

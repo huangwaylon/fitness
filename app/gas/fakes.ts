@@ -25,12 +25,6 @@ export class FakeSheet {
     return this;
   }
   setFrozenRows(n: number) { this.frozen = n; }
-  appendRow(row: unknown[]) {
-    const r = this.getLastRow() + 1;
-    if (r > this.maxRows) this.maxRows = r;
-    this.getRange(r, 1, 1, row.length).setValues([row]);
-    return this;
-  }
   getRange(row: number, col: number, numRows = 1, numCols = 1) {
     if (row < 1 || col < 1 || numRows < 1 || numCols < 1) throw new Error(`bad range ${row},${col},${numRows},${numCols}`);
     if (row + numRows - 1 > this.maxRows || col + numCols - 1 > MAX_COLS) {
