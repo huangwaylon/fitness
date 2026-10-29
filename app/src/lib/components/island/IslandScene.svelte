@@ -1,16 +1,29 @@
 <script lang="ts">
-  // The island (style guide v4 §S, v5 §3/§5): an elastic sky over a fixed-aspect stage (390 × 360 units),
-  // drawn in the flat NH map look (no strokes; depth = a lip + ground ellipses).
+  // The island (style guide v4 §S, v5 §3/§5, round 6): a capped sky, one flat map sea and a fixed-aspect
+  // stage (390 × 360 units) anchored to the bottom, drawn in the flat NH map look (no strokes; depth = a
+  // lip + ground ellipses).
   //   <IslandScene {view} total={yen} onme onpartner onjar onfruit paused />
   // Sky: 2-stop gradient, flat sun / moon + stars, two clouds, balloon present, event fireworks.
-  // Stage: flat map sea with ▲ marks, sand + foam line, cliff band, NH diamond grass, the T path, the
-  // back row (cedar, four bushes, Resident Services, mailbox, bench / bonfire), the two orchards (three
-  // official fruit trees each + the palm's coconut: my week's progress), the jar + its ¥ nameplate (the
-  // scene's only label, and the doorway to 旅の壺), flower beds, front palms, the villagers (me on the
-  // left, the partner on the right) on their motion rig, ≤ 3 particles and the time-of-day tint.
+  // Sea (Sea.svelte): one flat layer with ▲ marks from the horizon to the bottom edge, under the island
+  // and behind the bottom chrome. Stage: sand + foam line, cliff band, NH diamond grass, one hedge along
+  // the back, one plain seasonal oak per person with the week's four fruit items on the ground at its base
+  // (FruitTree), the jar + its ¥ nameplate in the middle (the scene's only label, and the doorway to
+  // 旅の壺), a front row of flowers, the villagers (me on the left, the partner on the right) on their
+  // motion rig, ≤ 3 particles and the time-of-day tint.
   // The HUD (clock, NookPhone, score ribbon) is Builder B's: it overlays the sky; clouds and the sun
   // keep below it (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
-  // Height: `--scene-h` from the parent, else clamp(300px, 100dvh − var(--chrome-below, 282px), 600px).
+  // Layout contract (F1/F2, for the page):
+  //   --scene-h       the scene's height (give it the whole page, e.g. 100dvh, and keep it stable);
+  //                   fallback clamp(300px, 100dvh − var(--chrome-below, 282px), 600px).
+  //   --island-bottom the band under the stage kept for the bottom chrome (dialogue + action), from the
+  //                   scene's bottom edge. Keep it STABLE (the tallest chrome state), so the island never
+  //                   moves when the dialogue shows or hides; the chrome overlays the sea there. Default 0.
+  //   --sky-cap       the lowest the horizon may sit (default safe-top + min(180px, 21dvh): ribbon bottom
+  //                   + 88 at 393×852, the game designer's band table at 375 / 320).
+  // The stage grows up to 1.22× the width (the beach crops at the sides; all props sit in u 34–356, which
+  // stays visible) to fill a tall band; the horizon
+  // sits at min(--sky-cap, stage top + 20u), so spare height goes to the patterned sea, never to an
+  // empty sky. Read back --horizon-y / --stage-top (set on .if-scene) to place overlays.
   // Reactions: listens to the motion bus (emit('checkin-saved') etc.) and diffs `view` (partner data,
   // fruit stages, a received high-five); idle life runs while `live` and not `paused`.
   import { onMount, untrack } from 'svelte';
@@ -24,19 +37,21 @@
   import { theme, type Season } from '#lib/client/theme.svelte.ts';
   import { defaultFoliage, type Foliage } from '#lib/client/season.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
+  import { Tween } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
   import Sky from './Sky.svelte';
   import Sea from './Sea.svelte';
+  import Jar from './Jar.svelte';
   import Ground from './Ground.svelte';
   import BackRow from './BackRow.svelte';
   import FruitTree from './FruitTree.svelte';
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
   import Balloon from './Balloon.svelte';
-  import { JAR, ORCHARD, PALM, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
+  import { JAR, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
 
-  /** Jar art: 60u wide (viewBox 54 × 68), so 75.6u tall; the button's top sits that far above the base. */
-  const JAR_H = (60 * 68) / 54;
-  const JAR_BODY = 'M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z';
+  /** Jar art: JAR.w wide (viewBox 54 × 68); the button's top sits that far above the base. */
+  const JAR_H = (JAR.w * 68) / 54;
   import { actors, applyStep, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
   import { startIdleLife } from '../motion/idleLife.svelte.ts';
   import { on } from '../motion/bus.svelte.ts';
@@ -93,8 +108,8 @@
   // v5 §3: I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.
   const slot = (pid: PersonId): 'A' | 'B' => (pid === view.me ? 'A' : 'B');
   const sides = $derived<Record<'mine' | 'partner', { person: PersonWeekView; x: number; side: 'left' | 'right' }>>({
-    mine: { person: view.people[view.me], x: TREE.x.A, side: 'left' },
-    partner: { person: view.people[view.partner], x: TREE.x.B, side: 'right' }
+    mine: { person: view.people[view.me], x: VILLAGER.x.A, side: 'left' },
+    partner: { person: view.people[view.partner], x: VILLAGER.x.B, side: 'right' }
   });
 
   // Jar (U5). `view.jar.totalYen` already counts an open harvest, but its yen are "in the jar" only
@@ -124,7 +139,14 @@
   // drawn full and slid down by (1 − fill), so a change animates.
   const topYen = $derived(Math.max(1, ...view.jar.rungs.map((r) => r.yen), view.jar.nextRung?.yen ?? 0));
   const fill = $derived(jarYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(jarYen / topYen))));
-  const COIN_FULL = 22;
+  /** The plate counts up to the new total (no jump), in step with the coins rising. */
+  // svelte-ignore state_referenced_locally
+  const plateYen = new Tween(jarYen, { duration: 1200, easing: cubicOut });
+  $effect(() => {
+    plateYen.set(jarYen, { duration: live && !reducedMotion() ? 1200 : 0 });
+  });
+  /** Press squash on the jar (pointer down), released with a springy overshoot. */
+  let pressed = $state(false);
 
   // ---- interaction ----
   let shakeN = $state<Record<PersonId, number>>({ A: 0, B: 0 });
@@ -141,10 +163,14 @@
     }, 200);
   }
 
+  /** Tap: squash (pointer down, 80ms), spring back, the villagers glance at the jar (R18) during the morph
+   *  and, 90ms later (no dead wait), the route changes: the page zooms about the jar (client/jarTransition.ts)
+   *  and this jar morphs into the 旅の壺 hero jar when that one is <Jar name="jar">. */
   function tapJar() {
+    pressed = false;
     if (live && !reducedMotion()) {
       react('R18');
-      later(() => onjar?.(), 450);
+      later(() => onjar?.(), 90);
     } else onjar?.();
   }
 
@@ -319,48 +345,30 @@
   <Sky {tod} fireworks={ev.fireworks || ev.newYear || devFireworks}>
     {#if balloon}<Balloon ondone={() => (balloon = false)} />{/if}
   </Sky>
+  <Sea />
 
   <div class="stage">
     <svg class="ground" viewBox="0 0 390 360" preserveAspectRatio="none" aria-hidden="true">
-      <Sea {uid} />
       <Ground {uid} {season} />
     </svg>
 
-    <BackRow {season} {tod} {month} toyDay={ev.toyDay} />
+    <BackRow {season} {month} toyDay={ev.toyDay} />
 
     {#each ['A', 'B'] as const as pid (pid)}
-      <FruitTree person={view.people[pid]} trees={ORCHARD[slot(pid)]} {foliage} palm={PALM[slot(pid)]} shakeN={shakeN[pid]}
+      <FruitTree person={view.people[pid]} x={TREE.x[slot(pid)]} {foliage} shakeN={shakeN[pid]}
         celebrate={celebrate[pid]} ontap={() => onfruit?.(pid)} />
     {/each}
 
-    <!-- the jar (v5 §5): flat glass with one highlight, coins up to the fill line, a yuzu lid; no ink.
-         Jar + plate are one button, the doorway to 旅の壺. -->
-    <button type="button" class="jar" style:left={u(JAR.x)} style:top={u(JAR.base - JAR_H)} disabled={!live}
-      aria-label={t('island.jar', { yen: formatYen(jarYen) })} onclick={tapJar}>
-      <svg class="jarart" viewBox="0 0 54 68" style:width={u(60)} aria-hidden="true">
-        <defs><clipPath id="{uid}-jarbody"><path d={JAR_BODY} /></clipPath></defs>
-        <path d={JAR_BODY} class="glass-lip" />
-        <path d={JAR_BODY} class="glass" transform="translate(0 -2.4)" />
-        <g clip-path="url(#{uid}-jarbody)">
-          <g class="coins" style:transform="translateY({((1 - fill) * 44 + (fill > 0 ? 0 : 8)).toFixed(2)}px)">
-            <rect x="0" y={COIN_FULL + 3} width="54" height="70" class="coinfill" />
-            {#each Array.from({ length: 8 }) as _, row (row)}
-              {#each [0, 1, 2, 3] as col (col)}
-                <ellipse cx={8 + col * 13 + (row % 2) * 6} cy={COIN_FULL + 2 + row * 6} rx="5.8" ry="2.4" class="coin" />
-              {/each}
-            {/each}
-          </g>
-        </g>
-        <path d="M8.6 30 Q7.4 38 8.6 47 Q9.4 48.6 10.8 47.4 Q9.8 38 11.2 30.6 Q10.2 28.6 8.6 30 Z" class="glint" />
-        <rect x="11" y="10.4" width="32" height="10" rx="4" class="lid-lip" />
-        <rect x="11" y="8" width="32" height="10" rx="4" class="lid" />
-        <path d="M27 8 Q29 1 36 1.6 Q33 8 27 8 Z" class="jarleaf" />
-      </svg>
-      <span class="plate"><b class="money">{formatYen(jarYen)}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>
+    <!-- the jar (v5 §5, Jar.svelte: the one jar drawing). Jar + plate are one button, the doorway to 旅の壺. -->
+    <button type="button" class="jar" class:pressed style:left={u(JAR.x)} style:top={u(JAR.base - JAR_H)} disabled={!live}
+      aria-label={t('island.jar', { yen: formatYen(jarYen) })} onclick={tapJar}
+      onpointerdown={() => live && (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
+      <span class="squash"><Jar {fill} width={u(JAR.w)} name={live ? 'jar' : undefined} /></span>
+      <span class="plate"><b class="money">{formatYen(Math.round(plateYen.current))}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>
     </button>
     {#if jarGain}
       {#key jarGain.n}
-        <span class="jargain" style:left={u(JAR.x)} style:top={u(JAR.base - 72)} aria-hidden="true"
+        <span class="jargain" style:left={u(JAR.x)} style:top={u(JAR.base - JAR_H - 4)} aria-hidden="true"
           onanimationend={(e) => e.animationName.endsWith('gain-rise') && (jarGain = null)}>
           <span class="fxa"><Fx kind="sparkles" spread={u(46)} /></span>
           <b class="money">+{formatYen(jarGain.yen)}</b>
@@ -398,12 +406,20 @@
     --emote-size: 44px;
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: hidden;
     container-type: inline-size; isolation: isolate;
-    --stage-w: min(100cqw, 480px);
-    --sky-h: max(0px, calc(var(--scene-h, var(--scene-h-auto)) - var(--stage-w) * 360 / 390 + 8px));
+    /* F1/F2 layout (see the contract at the top of the script) */
+    --sh: var(--scene-h, var(--scene-h-auto));
+    --ib: var(--island-bottom, 0px);
+    --cap: var(--sky-cap, calc(var(--safe-top) + min(180px, 21dvh)));
+    /* the stage fills a tall band: up to 1.22× the width (the beach crops), never under the column width */
+    --stage-w: max(min(100cqw, 480px), min(calc((var(--sh) - var(--ib) - var(--cap) - 12px) * 390 / 360), 122cqw, 560px));
+    --stage-h: calc(var(--stage-w) * 360 / 390);
+    --stage-top: calc(var(--sh) - var(--ib) - var(--stage-h));
+    --horizon-y: max(40px, min(var(--cap), calc(var(--stage-top) + var(--stage-w) * 20 / 390)));
+    --sky-h: var(--horizon-y);
   }
   @media (max-height: 700px), (max-width: 359px) { .scene { --emote-size: 36px; } }
   .stage {
-    position: absolute; bottom: 0; left: 0; right: 0; margin: 0 auto; width: min(100%, 480px); aspect-ratio: 390 / 360;
+    position: absolute; bottom: var(--ib); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
     container-type: inline-size; z-index: 1;
   }
   .ground { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
@@ -413,44 +429,37 @@
     /* above the time-of-day tint: the jar and its plate stay game-object bright (v5 §5) */
     position: absolute; z-index: 81; translate: -50% 0; display: flex; flex-direction: column; align-items: center;
     min-width: 64px; min-height: 64px; padding: 0 6px; margin: 0; appearance: none; background: none; border: 0;
-    border-radius: 24px; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent;
-    transition: transform 160ms var(--ease-soft, ease-out);
+    border-radius: 24px; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .jar:active { transform: scale(.95); }
   .jar:disabled { cursor: default; }
-  .jarart { display: block; height: auto; overflow: visible; }
-  .glass-lip { fill: var(--jar-glass-lip); }
-  .glass { fill: var(--jar-glass); }
-  .coinfill { fill: var(--jar-coin-rim); }
-  .coin { fill: var(--jar-coin); }
-  .coins { transition: transform 1.4s var(--ease-soft, cubic-bezier(.3, 1.3, .5, 1)); }
-  .glint { fill: #fff; opacity: .9; }
-  .lid-lip { fill: var(--c-yuzu-lip, #E6B22E); }
-  .lid { fill: var(--c-yuzu, #FFD84D); }
-  .jarleaf { fill: var(--jar-leaf); }
+  /* press squash from the base, released with a springy overshoot (mobile-game feel) */
+  .squash { display: block; transform-origin: 50% 100%; transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1); }
+  .jar.pressed .squash { transform: scale(.92); transition: transform 80ms var(--ease-squash); }
+  .jar.pressed .plate { transform: translateY(2px); box-shadow: 0 1px 0 var(--plate-lip); }
   /* the ¥ nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot */
   .plate {
-    display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: 999px;
-    background: var(--plate); color: var(--plate-ink); box-shadow: 0 3px 0 var(--plate-lip); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: var(--r-pill);
+    background: var(--plate); color: var(--plate-ink); box-shadow: 0 4px 0 var(--plate-lip); white-space: nowrap;
+    transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft); font-variant-numeric: tabular-nums;
   }
   .plate b { font: 700 12px/1.25 var(--font-num); letter-spacing: .02em; }
   .go { width: 15px; height: 15px; flex: none; }
-  .go circle { fill: var(--c-leaf-lip, #4FB35C); }
-  .go path { fill: #fff; }
+  .go circle { fill: var(--c-leaf-lip); }
+  .go path { fill: var(--c-cream); }
   .jargain {
     position: absolute; z-index: 92; translate: -50% -100%; pointer-events: none; white-space: nowrap;
-    animation: gain-rise 3s ease-out both;
+    animation: gain-rise 2.4s var(--ease-soft) both; will-change: transform, opacity;
   }
   .jargain b {
     display: block; padding: 2px 10px; border-radius: 999px; font: 700 15px/1.3 var(--font-num);
-    background: var(--plate); color: var(--plate-ink); box-shadow: 0 3px 0 var(--plate-lip);
+    background: var(--plate); color: var(--plate-ink); box-shadow: 0 4px 0 var(--plate-lip);
   }
   .jargain .fxa { position: absolute; left: 50%; top: 100%; width: 0; height: 0; }
   @keyframes gain-rise {
-    0% { opacity: 0; transform: translateY(8px) scale(.8); } 15% { opacity: 1; transform: none; }
-    80% { opacity: 1; transform: translateY(-6px); } 100% { opacity: 0; transform: translateY(-10px); }
+    0% { opacity: 0; transform: translateY(10px) scale(.6); } 14% { opacity: 1; transform: translateY(0) scale(1.08); }
+    22% { transform: scale(1); } 78% { opacity: 1; transform: translateY(-8px); } 100% { opacity: 0; transform: translateY(-14px); }
   }
-  @media (prefers-reduced-motion: reduce) { .coins, .jar { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .squash, .plate { transition: none; } .jar.pressed .squash { transform: none; } }
 
   .actor {
     position: absolute; width: 0; height: 0;
@@ -465,10 +474,13 @@
   .vil:disabled { cursor: default; }
   .jar:focus-visible, .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  /* the tint also covers the back sea drawn 40u above the stage box, up to the horizon */
-  .tint { position: absolute; inset: calc(-40 * 100cqw / 390) 0 0 0; z-index: 80; background: var(--tod-tint); pointer-events: none; }
+  /* the tint covers the whole sea, from the horizon to the scene's bottom edge (and the cropped sides) */
+  .tint {
+    position: absolute; z-index: 80; background: var(--tod-tint); pointer-events: none;
+    top: calc(var(--horizon-y) - var(--stage-top)); bottom: calc(-1 * var(--ib)); left: -100vw; right: -100vw;
+  }
   /* falling leaves pass behind the villagers (z 51/52), never across their faces */
-  .fall { position: absolute; left: 0; right: 0; bottom: 0; height: var(--scene-h, var(--scene-h-auto)); z-index: 50; pointer-events: none; }
+  .fall { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--sh) - var(--ib)); z-index: 50; pointer-events: none; }
   .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }
 
 </style>

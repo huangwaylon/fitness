@@ -156,7 +156,7 @@
   /* ground shadow: shrinks while the body is in the air */
   .shadow {
     position: absolute; left: 50%; bottom: calc(var(--h) * -0.035); width: calc(var(--h) * .42); height: calc(var(--h) * .1);
-    margin-left: calc(var(--h) * -0.21); border-radius: 50%; background: var(--sh-ground, rgba(46, 100, 40, .22));
+    margin-left: calc(var(--h) * -0.21); border-radius: 50%; background: var(--sh-ground);
     transform: scaleX(var(--sh-scale, 1));
   }
   .shadow:global([data-act='hop']) { animation: sh-hop 600ms var(--ease-soft) both; }

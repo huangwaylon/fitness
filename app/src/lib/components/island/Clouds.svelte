@@ -31,9 +31,9 @@
   }
   .lip { fill: var(--cloud-lip); }
   @keyframes drift { from { transform: translateX(-110%); } to { transform: translateX(calc(100cqw + 10%)); } }
-  /* short skies: two small far-off clouds resting on the horizon (40u above the band's bottom) */
+  /* short skies: two small far-off clouds resting just above the horizon (the band's bottom) */
   @container sky (max-height: 160px) {
-    .cloud { top: auto; bottom: calc(var(--stage-w, 100cqw) * 40 / 390 - 5px); }
+    .cloud { top: auto; bottom: 2px; }
     .c1 { width: 64px !important; }
     .c2 { width: 48px !important; }
   }

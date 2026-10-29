@@ -23,7 +23,8 @@
   --hud: var(--c-ink);         /* the corner clock over the sky */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
-  --sea-flat:#7BD7C1;  /* the map sea under 島's chrome (= the scene's flat sea), tinted by time of day */
+  /* --sea-flat (the map sea under 島's chrome = the scene's sea) lives in the ONE time-of-day sea table
+     in the Builder A block below */
 
   /* ---------- type: 12 · 15 body · 18 talk/button · 24 title/score · 44 hero ---------- */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
@@ -67,12 +68,11 @@
 }
 
 /* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
-:root[data-tod="dawn"] { --sea-flat:#8FD8C8; }
-:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --sea-flat:#86C9B9; }
+:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; }
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#45559A; --lip:#2E3A72;
   --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;
-  --scrim: rgba(30, 36, 80, .45); --sea-flat:#3F6F9C;
+  --scrim: rgba(30, 36, 80, .45);
   color-scheme: dark;
 }
 
@@ -114,22 +114,31 @@
    ====================================================================================== */
 :root {
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
-  --jar-glass:#DDF2FB; --jar-glass-lip:#BFDCEA; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf:#6ED07A;
+  --jar-glass:#DDF2FB; --jar-glass-lip:#BFDCEA; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
   --firefly:#F3FF9E; --firefly-glow:#E8F59A;
   --dur-walk:1600ms; /* = WALK_MS in motion/director.svelte.ts */
+  /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar), v5 §5 */
+  --sh-ground: rgba(40, 60, 40, .18);
 }
+/* The ONE time-of-day sea table (v5 §5): the scene's sea (island/Sea.svelte) and the chrome under 島
+   (+layout) both read --sea-flat. Keyed on <html data-tod> for the chrome and on the scene's own
+   data-tod, so a gallery scene shows its forced time of day. */
+:root, .if-scene { --sea-flat: var(--c-mint); --sea-mark:#71C6B1; --horizon:#A6E6D6; }
+:root[data-tod="dawn"], .if-scene[data-tod="dawn"] { --sea-flat:#8FD8C8; --sea-mark:#84C7B8; --horizon:#C2EBDF; }
+:root[data-tod="dusk"], .if-scene[data-tod="dusk"] { --sea-flat:#86C9B9; --sea-mark:#7BB9AA; --horizon:#F2D9B8; }
+:root[data-tod="night"], .if-scene[data-tod="night"] { --sea-flat:#3F6F9C; --sea-mark:#5585B3; --horizon:#5E80B8; }
 /* v5 (docs/design/v5-direction.md §5): the NH map look. Flat fills, no strokes; depth = one lip
    (12% darker bottom edge) + a ground ellipse. The sea is the map's mint with small ▲ marks, the
    shore is flat sand with a 4u foam line, the grass texture stays under 5% contrast. */
 .if-scene {
   --foam:#F4FFF8; --cloud:#FFFFFF; --cloud-lip:#E3ECFA; --cloud-op:1; --tod-tint:transparent;
-  --moon:#FFF3C4; --sh-scale:1; --sh-ground:rgba(40,60,40,.18);
+  --moon:#FFF3C4; --sh-scale:1;
   /* spring (default) */
   --grass:#9BE070; --grass-2:#94DA69; --grass-lip:#7FC25C;
   --cliff:#C9A26B; --path:#EDD39A;
-  --sea:#7BD7C1; --sea-mark:#71C6B1; --horizon:#A6E6D6; --beach:#FBEABB; --beach-lip:#E9D49E;
+  --beach:#FBEABB; --beach-lip:#E9D49E;
   --sky-top:#57B8F7; --sky-bottom:#CDEEFF; --sun-disc:#FFE68A;
-  --plate:#FFF9E3; --plate-lip:#E0C48A; --plate-ink:#4A3A2C;
+  --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
 }
 .if-scene[data-season="summer"] {
   --grass:#80D958; --grass-2:#7AD252; --grass-lip:#66BA45;
@@ -148,17 +157,14 @@
 }
 .if-scene[data-tod="dawn"] {
   --sky-top:#FFC6A8; --sky-bottom:#CDEBFF; --tod-tint:rgba(255,170,140,.1); --cloud:#FFF6F0; --cloud-lip:#FFDCCB;
-  --sea:#8FD8C8; --sea-mark:#84C7B8; --horizon:#C2EBDF;
 }
 .if-scene[data-tod="dusk"] {
   --sky-top:#FF9E7A; --sky-bottom:#FFE2A8; --tod-tint:rgba(255,140,90,.12); --cloud:#FFF0E0; --cloud-lip:#FFC4AC;
   --sun-disc:#FFB35C; --sh-scale:1.25;
-  --sea:#86C9B9; --sea-mark:#7BB9AA; --horizon:#F2D9B8;
 }
 .if-scene[data-tod="night"] {
   --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(48,60,130,.22); --cloud:#9AA6E0; --cloud-lip:#8692D0;
   --cloud-op:.5; --foam:#9CC3DE;
-  --sea:#3F6F9C; --sea-mark:#5585B3; --horizon:#5E80B8;
   --plate:#FFF6E0;
 }
 /* Pause every scene animation while the tab is hidden (§S.13). */
@@ -221,9 +227,10 @@
   0%,50%,100% { transform: none; } 25% { transform: translateY(-4%) rotate(2deg); } 75% { transform: translateY(-4%) rotate(-2deg); }
 }
 /* trees: origin at the trunk base */
+/* NH's tree shake: ±4°, three swings, 500ms */
 @keyframes if-shake {
-  0%,100% { transform: none; } 20% { transform: rotate(3deg); } 40% { transform: rotate(-3deg); }
-  60% { transform: rotate(2deg); } 80% { transform: rotate(-1deg); }
+  0%,100% { transform: none; } 16% { transform: rotate(4deg); } 33% { transform: rotate(-4deg); }
+  50% { transform: rotate(3deg); } 67% { transform: rotate(-3deg); } 84% { transform: rotate(1.5deg); }
 }
 @keyframes if-sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
 /* a front-facing bow (N2: there is no official bow render): the figure dips and squashes from the feet, holds, rises */
@@ -243,3 +250,11 @@
 @keyframes if-glow { from { opacity: .65; } to { opacity: 1; } }
 @keyframes if-wave { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
 @keyframes if-shore { from { transform: scaleY(1); opacity: .75; } to { transform: scaleY(1.05); opacity: 1; } }
+
+/* Jar ⇄ 旅の壺 shared element (round 6): the island jar carries view-transition-name: jar (<Jar name="jar">);
+   when the 旅の壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (client/jarTransition.ts,
+   data-vt in / out / fade). In: 320ms, back: 280ms, both cubic-bezier(.4,0,.2,1). */
+::view-transition-group(jar) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+::view-transition-old(jar), ::view-transition-new(jar) { animation-duration: 320ms; height: 100%; }
+:root[data-vt="out"]::view-transition-group(jar), :root[data-vt="out"]::view-transition-old(jar), :root[data-vt="out"]::view-transition-new(jar) { animation-duration: 280ms; }
+:root[data-vt="fade"]::view-transition-group(jar) { animation-duration: 150ms; }

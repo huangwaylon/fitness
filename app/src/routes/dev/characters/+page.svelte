@@ -24,9 +24,9 @@
   const KEYS = artKeys();
   const GROUPS = [...new Set(KEYS.map((k) => k.split('/')[0]))];
   const POSES = ['wave', 'stand', 'bow'] as const;
-  const APPS: PhoneApp[] = ['help', 'villager', 'lang', 'bell', 'sync', 'share'];
+  const APPS: PhoneApp[] = ['help', 'villager', 'lang', 'sync'];
   const GLYPH: Record<PhoneApp, string> = {
-    help: 'app-help', villager: 'app-villager', lang: 'app-lang', bell: 'app-bell', sync: 'app-sync', share: 'app-lock'
+    help: 'app-help', villager: 'app-villager', lang: 'app-lang', sync: 'app-sync'
   };
   const SCENES = [
     ...(['spring', 'summer', 'autumn', 'winter'] as const).flatMap((s) => [
@@ -119,10 +119,10 @@
   <section>
     <h2>Fruit ripeness · money · emotes</h2>
     <div class="row">
-      {#each FRUITS as f, i (f)}<FruitRing fruit={f} view={{ milli: 0, maxMilli: 0, pct: [10, 40, 75, 100][i] }} showPct />{/each}
+      {#each FRUITS as f, i (f)}<FruitRing fruit={f} view={{ milli: 0, maxMilli: 0, pct: [10, 40, 75, 100][i], actual: 0, target: 0 }} showPct />{/each}
     </div>
     <div class="row tree">
-      {#each [10, 40, 75, 100] as pct (pct)}<FruitRing fruit="apple" view={{ milli: 0, maxMilli: 0, pct }} onTree size="46px" />{/each}
+      {#each [10, 40, 75, 100] as pct (pct)}<FruitRing fruit="apple" view={{ milli: 0, maxMilli: 0, pct, actual: 0, target: 0 }} onTree size="46px" />{/each}
     </div>
     <div class="row">
       <span class="amt"><LeafCoin size="1.1em" />¥146,200</span>
