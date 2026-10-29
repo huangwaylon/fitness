@@ -1,4 +1,4 @@
-// Gym / studio places for presence events (dependency-free, shared by the browser model and the old server).
+// Gym / studio places for presence events (dependency-free; read by the browser model).
 import type { PersonId } from '#lib/types.ts';
 
 export interface PlaceConfig { key: string; person: PersonId; name: string; autoStrength: boolean }

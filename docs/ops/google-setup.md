@@ -103,10 +103,10 @@ Each person opens the app once and pastes their key (or opens `…/#key=<key>` o
 ## 8. Migrate the Mac data (once)
 
 1. Stop the Mac server so nothing arrives after the export.
-2. `cd app && npm run export:sheet` reads `data/island.db` **read-only** (or `DATABASE_PATH=…`) and writes
-   header-less TSVs to `app/data/export/` (gitignored): `metrics.tsv`, `workouts.tsv`, `presence.tsv`, `events.tsv`.
-   It prints the row counts and the column order, and warns about anything it can't carry over (ledger entries are
-   recomputed by the app, visit confirmations have to be answered again).
+2. `cd app && npm run export:sheet` (plain Node ≥ 24, built-in `node:sqlite`) reads `data/island.db` **read-only**
+   (or `DATABASE_PATH=…`) and writes header-less TSVs to `app/data/export/` (gitignored): `metrics.tsv`,
+   `workouts.tsv`, `presence.tsv`, `events.tsv`. It prints the row counts and the column order. Ledger entries
+   aren't exported (the app recomputes payouts); it warns if there were manual `adjust` entries.
 3. For each file with rows: open it in a text editor, select all, copy. In the sheet, click the first empty cell in
    column A of the matching tab (A2 on a fresh tab), and paste with **⌘⇧V** (values only). The text columns are
    preformatted as plain text, so dates stay text. The script also copes if Sheets turned some into dates anyway.
