@@ -108,7 +108,7 @@ export function props(season: Season, tod: Tod, month: number): Prop[] {
       : { key: 'deco/log-bench', h: 24, x: 140, base: 168, z: 22 },
     { key: 'deco/rock', h: 18, x: 352, base: 162, z: 22 },
     // distant islet palm (the sand is drawn in the SVG)
-    { key: 'trees/palm', h: 26, x: 345, base: 14, z: 11, cls: 'islet' },
+    { key: 'trees/palm-sm', h: 26, x: 345, base: 14, z: 11, cls: 'islet' },
     // front palms on the beach corners (each carries its person's coconut, FruitTree)
     ...(['A', 'B'] as const).map((p) => ({ key: 'trees/palm', h: PALM[p].h, x: PALM[p].x, base: PALM[p].base, z: 45, flip: PALM[p].flip }))
   ];
