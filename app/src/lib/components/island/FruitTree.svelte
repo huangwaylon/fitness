@@ -27,9 +27,8 @@
     foliage: Foliage;
     shakeN?: number;
     celebrate?: { fruit: FruitKey; n: number } | null;
-    ontap?: () => void;
   }
-  let { person, x, foliage, shakeN = 0, celebrate = null, ontap }: Props = $props();
+  let { person, x, foliage, shakeN = 0, celebrate = null }: Props = $props();
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
   let open = $state(false);
@@ -98,7 +97,6 @@
     open = true;
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => (open = false), 2600);
-    ontap?.();
   }
 
   /** The fruit nearest the tap along the row (keyboard: none highlighted). */

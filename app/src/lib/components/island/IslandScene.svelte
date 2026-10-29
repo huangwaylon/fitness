@@ -3,7 +3,7 @@
   // docs/design/environment-style.md). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
   // (390 × 360 units) anchored to the bottom, painted like the official renders (light from the upper left,
   // soft gradients and contact shadows, no strokes or lips on scenery).
-  //   <IslandScene {view} total={yen} onme onpartner onjar onfruit paused />
+  //   <IslandScene {view} onme onpartner onjar paused />
   // Sky: sky table per time of day, sun / moon at the upper left with a soft glow + stars, two soft clouds,
   // balloon present, event fireworks. Stage: the sea (Sea.svelte: one layer from the horizon to below the
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
@@ -37,7 +37,6 @@
   import { ripeness } from '../FruitRing.svelte';
   import Villager from '../Villager.svelte';
   import Fx from '../Fx.svelte';
-  import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { theme, type Season } from '#lib/client/theme.svelte.ts';
   import { defaultFoliage, type Foliage } from '#lib/client/season.ts';
@@ -57,7 +56,7 @@
 
   /** Jar art: JAR.w wide (viewBox 54 × 68); the button's top sits that far above the base. */
   const JAR_H = (JAR.w * 68) / 54;
-  import { actors, applyStep, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
+  import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
   import { startIdleLife } from '../motion/idleLife.svelte.ts';
   import { on } from '../motion/bus.svelte.ts';
   import { dayKey, now, reducedMotion } from '../motion/clock.ts';
@@ -65,27 +64,16 @@
 
   interface Props {
     view: WeekView;
-    /** Total in the jar, shown on the jar plate (defaults to view.jar.totalYen minus an unconfirmed harvest). */
-    total?: number;
     /** My villager tapped (open 今夜のチェック). Fires 200 ms after the tap, after the squish. */
     onme?: () => void;
     /** Partner villager tapped (open the partner sheet). */
     onpartner?: () => void;
-    /** Either villager tapped: 'me' | 'partner' (alternative to onme / onpartner). */
-    onvillager?: (who: 'me' | 'partner') => void;
     /** Jar tapped (go to 旅の壺), after a short look-at-the-jar beat. */
     onjar?: () => void;
-    /** A tree canopy tapped (the scene already shakes it and shows the fruit bubble). */
-    onfruit?: (person: PersonId) => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
     /** Interactive + idle life + reactions (false for gallery thumbnails). */
     live?: boolean;
-    /** v3 compatibility: a cheer on rising edge plays the check-in / high-five reactions. */
-    meExpression?: Expression;
-    partnerExpression?: Expression;
-    meEmote?: boolean | EmoteKind;
-    partnerEmote?: boolean | EmoteKind;
     /** Dev gallery: force a season / night / time of day instead of the theme clock. */
     season?: Season;
     /** Oak foliage (defaults to the season's signature look when `season` is forced, else the clock). */
@@ -94,8 +82,7 @@
     tod?: Tod;
   }
   let {
-    view, total, onme, onpartner, onvillager, onjar, onfruit, paused = false, live = true,
-    meExpression, partnerExpression, meEmote = false, partnerEmote = false,
+    view, onme, onpartner, onjar, paused = false, live = true,
     season: seasonProp, foliage: foliageProp, night: nightProp, tod: todProp
   }: Props = $props();
 
@@ -126,7 +113,7 @@
     if (!h || h.confirmedBy.includes(view.me)) return 0;
     return h.payout.A.fruitYen + h.payout.B.fruitYen + h.payout.teamYen;
   });
-  const targetYen = $derived(total ?? Math.max(0, view.jar.totalYen - harvestYen));
+  const targetYen = $derived(Math.max(0, view.jar.totalYen - harvestYen));
   // svelte-ignore state_referenced_locally
   let jarYen = $state(targetYen);
   let jarGain = $state<{ yen: number; n: number } | null>(null);
@@ -163,8 +150,8 @@
     if (actors[id].asleep) wake(id);
     else react(id === 'mine' ? 'R9' : 'R10');
     later(() => {
-      if (id === 'mine') (onme ?? (() => onvillager?.('me')))();
-      else (onpartner ?? (() => onvillager?.('partner')))();
+      if (id === 'mine') onme?.();
+      else onpartner?.();
     }, 200);
   }
 
@@ -216,20 +203,6 @@
     }
     if (v.people[v.partner].score > p.people[v.partner].score) react('R3');
   }
-
-  // v3 props: a cheer on the rising edge.
-  let meWas = false;
-  let partnerWas = false;
-  $effect(() => {
-    const m = !!meEmote || meExpression === 'cheer';
-    const pa = !!partnerEmote || partnerExpression === 'cheer';
-    untrack(() => {
-      if (live && m && !meWas) react('R2');
-      if (live && pa && !partnerWas) applyStep('partner', { actor: 'partner', motion: 'hop2', emote: 'love', fx: 'hearts' });
-      meWas = m;
-      partnerWas = pa;
-    });
-  });
 
   // ---- timers, bus, idle life ----
   const pending = new Set<ReturnType<typeof setTimeout>>();
@@ -361,7 +334,7 @@
 
     {#each ['A', 'B'] as const as pid (pid)}
       <FruitTree person={view.people[pid]} x={TREE.x[slot(pid)]} {foliage} shakeN={shakeN[pid]}
-        celebrate={celebrate[pid]} ontap={() => onfruit?.(pid)} />
+        celebrate={celebrate[pid]} />
     {/each}
 
     <!-- the jar (v5 §5, Jar.svelte: the one jar drawing). Jar + plate are one button, the doorway to 旅の壺. -->
