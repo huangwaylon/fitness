@@ -176,7 +176,7 @@ describe('workouts', () => {
       ]
     });
     const s = reduce(rows);
-    expect(s.manualWorkouts.A.map((w) => w.extId)).toEqual(['m:1']);
+    expect(s.manualWorkouts.A.map((w) => w.id)).toEqual(['m:1']);
     expect(scoreAt(rows, 'A', LIVE).strengthDays).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
     expect(dayDetail(s, DAYS[2], WED_MID).people.A.workouts).toMatchObject([{ id: 'm:1', manual: true, strength: true }]);
   });

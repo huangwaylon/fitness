@@ -1,7 +1,8 @@
 // Weekly score: four fruits, integer milli-fruit per category, score = floor(sum / 1000) (ADR 0009, 0011, 0014).
-import { CALIBRATION, HOLIDAY, PEACH_DAILY_CAP, POINTS, REST, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { CALIBRATION, DAILY, HOLIDAY, PEACH_DAILY_CAP, REST, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { CategoryResult, FruitKey, LocalDate, Visit, WeekInput, WeekScore, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/scoring/dates.ts';
+import { rulesFor } from '#lib/scoring/targets.ts';
 
 /** Convert a (possibly fractional) count to integer milli-units. Targets are pre-rounded to 3 dp by targetsFor. */
 const toMilli = (x: number): number => Math.round(x * 1000);
@@ -70,6 +71,7 @@ const isStrengthVisit = (v: Visit): boolean =>
  */
 export function scoreWeek(input: WeekInput): WeekScore {
   const { targets } = input;
+  const points = rulesFor(input.weekKey).points;
   const week = weekDays(input.weekKey);
   const inWeek = new Set(week);
   const isPearOff = (d: LocalDate) => inMonthDayRange(d, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to);
@@ -95,7 +97,7 @@ export function scoreWeek(input: WeekInput): WeekScore {
   }
   const strengthDays = [...strengthSet].sort();
   const strengthTargetMilli = toMilli(targets.strengthDaysPerWeek);
-  const coconutMilli = ratioMilli(POINTS.coconut * 1000, strengthDays.length * 1000, strengthTargetMilli);
+  const coconutMilli = ratioMilli(points.coconut * 1000, strengthDays.length * 1000, strengthTargetMilli);
 
   // 🍑 Peach: active minutes with a daily cap, plus a rest-day bonus. A day's minutes are the largest of the Watch's
   // exercise minutes, the steps over the goal (STEP_MINUTES pace) and the workouts added by hand in きろく, so nothing
@@ -119,8 +121,8 @@ export function scoreWeek(input: WeekInput): WeekScore {
   ]);
   // Only days with Health data can be rest days, so an empty (or future) day never pays.
   const restDays = dataRows.filter((d) => !busyDates.has(d.date)).length;
-  const peachMax = (POINTS.peachActive + POINTS.peachRest) * 1000;
-  const peachMilli = ratioMilli(POINTS.peachActive * 1000, activeMilli, activeTargetMilli) + (restDays >= 1 ? POINTS.peachRest * 1000 : 0);
+  const peachMax = (points.peachActive + points.peachRest) * 1000;
+  const peachMilli = ratioMilli(points.peachActive * 1000, activeMilli, activeTargetMilli) + (restDays >= 1 ? points.peachRest * 1000 : 0);
 
   // 🍎 Apple: step-goal days (in tsuyu, ≥ 30 active minutes also counts).
   let stepDays = 0;
@@ -130,26 +132,26 @@ export function scoreWeek(input: WeekInput): WeekScore {
     if (stepsOk || tsuyuOk) stepDays++;
   }
   const stepTargetMilli = toMilli(targets.stepDaysPerWeek);
-  const appleMilli = ratioMilli(POINTS.apple * 1000, stepDays * 1000, stepTargetMilli);
+  const appleMilli = ratioMilli(points.apple * 1000, stepDays * 1000, stepTargetMilli);
 
   // 🍐 Pear: distinct ticks of the person's 3 habits, max 3/day, not on 正月 pear-off days.
   const habits = new Set(targets.habits);
   const ticksByDay = new Map<LocalDate, Set<string>>();
   for (const c of input.checkins) {
-    if (!inWeek.has(c.date) || isPearOff(c.date) || !habits.has(c.habitKey)) continue;
+    if (!inWeek.has(c.date) || isPearOff(c.date) || !habits.has(c.habit)) continue;
     if (!ticksByDay.has(c.date)) ticksByDay.set(c.date, new Set());
-    ticksByDay.get(c.date)!.add(c.habitKey);
+    ticksByDay.get(c.date)!.add(c.habit);
   }
   let ticks = 0;
-  for (const s of ticksByDay.values()) ticks += Math.min(3, s.size);
+  for (const s of ticksByDay.values()) ticks += Math.min(DAILY.maxTicks, s.size);
   const pearTargetMilli = toMilli(targets.pearTicksPerWeek);
-  const pearMilli = ratioMilli(POINTS.pear * 1000, ticks * 1000, pearTargetMilli, pearDays);
+  const pearMilli = ratioMilli(points.pear * 1000, ticks * 1000, pearTargetMilli, pearDays);
 
   const categories: Record<FruitKey, CategoryResult> = {
     peach: { key: 'peach', milli: peachMilli, maxMilli: peachMax, actual: activeMilli / 1000, target: targets.activeMinPerWeek },
-    coconut: { key: 'coconut', milli: coconutMilli, maxMilli: POINTS.coconut * 1000, actual: strengthDays.length, target: targets.strengthDaysPerWeek },
-    apple: { key: 'apple', milli: appleMilli, maxMilli: POINTS.apple * 1000, actual: stepDays, target: targets.stepDaysPerWeek },
-    pear: { key: 'pear', milli: pearMilli, maxMilli: POINTS.pear * 1000, actual: ticks, target: (pearTargetMilli * pearDays) / 7000 }
+    coconut: { key: 'coconut', milli: coconutMilli, maxMilli: points.coconut * 1000, actual: strengthDays.length, target: targets.strengthDaysPerWeek },
+    apple: { key: 'apple', milli: appleMilli, maxMilli: points.apple * 1000, actual: stepDays, target: targets.stepDaysPerWeek },
+    pear: { key: 'pear', milli: pearMilli, maxMilli: points.pear * 1000, actual: ticks, target: (pearTargetMilli * pearDays) / 7000 }
   };
 
   const dataDays = dataRows.length;

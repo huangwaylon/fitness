@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { deriveVisits, type PresenceRow } from '#lib/scoring/visits.ts';
+import { deriveVisits, type PresenceEvent } from '#lib/scoring/visits.ts';
 
 const places = [{ key: 'gym', autoStrength: false }, { key: 'pt', autoStrength: true }];
-const ev = (id: number, placeKey: string, event: 'arrive' | 'leave', at: string): PresenceRow => ({ id, placeKey, event, at });
+const ev = (id: number, placeKey: string, event: 'arrive' | 'leave', at: string): PresenceEvent => ({ id, placeKey, event, at });
 
 describe('deriveVisits', () => {
   it('pairs arrive→leave per place, sorts by time, applies place and confirmation flags', () => {
