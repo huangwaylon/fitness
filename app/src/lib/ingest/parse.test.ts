@@ -123,6 +123,11 @@ describe('parse: shapes', () => {
     expect(r.skipped).toBe(2);
   });
 
+  it('days form: a timestamp with an offset lands on its Tokyo date, not the UTC one', () => {
+    const r = parseShortcut({ days: [{ date: '2026-10-28T20:00:00Z', steps: 500 }, { date: '2026-10-29 08:00:00 +0900', steps: 600 }] });
+    expect(r.metrics).toEqual([{ date: '2026-10-29', metric: 'steps', value: 500 }, { date: '2026-10-29', metric: 'steps', value: 600 }]);
+  });
+
   it('workouts: Japanese names normalised, unknown ones reported, ids stable across language and zone', () => {
     const r = parseShortcut({
       workouts: {

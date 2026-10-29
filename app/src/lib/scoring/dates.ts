@@ -1,9 +1,9 @@
 // Calendar helpers. Asia/Tokyo is UTC+9 with no DST, so a fixed offset is exact.
 import type { LocalDate, WeekKey } from '#lib/types.ts';
+import { DATE_RE } from '../ingest/sheet-api.ts';
 
 const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** Parse an ISO instant or a compact-offset timestamp (`2026-11-02 07:15:00 +0900`) to epoch ms. */
 export function parseInstant(ts: string): number {
@@ -32,9 +32,9 @@ function ymd(d: Date): LocalDate {
 
 /** LocalDate → epoch ms at UTC midnight (for calendar arithmetic; format the result in UTC). */
 export function dateMs(date: LocalDate): number {
-  const m = DATE_RE.exec(date);
-  if (!m) throw new Error(`Invalid LocalDate: ${date}`);
-  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  if (!DATE_RE.test(date)) throw new Error(`Invalid LocalDate: ${date}`);
+  const [y, m, d] = date.split('-').map(Number);
+  return Date.UTC(y, m - 1, d);
 }
 
 /** ISO timestamp (with offset) → local date in Asia/Tokyo. */

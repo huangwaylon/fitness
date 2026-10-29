@@ -323,6 +323,15 @@ describe('snapshot', () => {
     // …and the higher-only index reads them too.
     expect(a('ingest', { days: [{ date: '2026-09-01', steps: 6000 }] })).toMatchObject({ metrics: 0 });
   });
+
+  it('a hand-pasted `at` without milliseconds or UTC is normalised, so `since` compares it correctly', () => {
+    a('whoami');
+    gas.sheets.get('metrics')!.rows.push(['2026-10-29 12:00:00', 'A', '2026-10-29', 'steps', 7000], ['2026-10-29T12:00:01+09:00', 'A', '2026-10-30', 'steps', 1]);
+    const ats = (since: string) => a('snapshot', { since }).rows.metrics.map((r: unknown[]) => r[0]);
+    expect(ats('2026-10-29T02:59:59.999Z')).toEqual(['2026-10-29T03:00:00.000Z', '2026-10-29T03:00:01.000Z']);
+    expect(ats('2026-10-29T03:00:00.000Z')).toEqual(['2026-10-29T03:00:01.000Z']);
+    expect(ats('2026-10-29T12:00:00+09:00')).toEqual(['2026-10-29T03:00:01.000Z']);
+  });
 });
 
 describe('limits', () => {

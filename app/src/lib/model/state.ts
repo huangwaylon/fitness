@@ -6,7 +6,7 @@ import { PLACES } from '#lib/config/places.ts';
 import { addDays, targetsFor, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { parseInstant } from '#lib/scoring/dates.ts';
 import type { Snapshot, SnapshotRows } from './snapshot.ts';
-import { MANUAL_WORKOUT_MIN, METRIC_BOUNDS } from '#lib/ingest/sheet-api.ts';
+import { DATE_RE, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE } from '#lib/ingest/sheet-api.ts';
 import { WORKOUT_TYPES } from './labels.ts';
 
 export const PEOPLE_IDS: PersonId[] = ['A', 'B'];
@@ -89,7 +89,6 @@ export interface PresenceRec {
 
 /** `edit`: a fix from きろく (`edit:true`), allowed for any open day; it shows in the change log. */
 export interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean; edit?: true }
-export type MetricKey = 'steps' | 'exercise_min';
 /** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
 export interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
 /** `spendId` is the dedupe key; `rawId` is the id as the client sent it (number or string), echoed back for `approve`. */
@@ -130,7 +129,6 @@ export interface State {
   calendar: DemoCalendar | null;
 }
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const PRESENCE_DUP_MS = 120_000;
 const PRESENCE_WINDOW_MS = 48 * 3600_000;
 
@@ -221,7 +219,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     const [iso, person, d, metric, v] = row;
     const date = normDate(d);
     const value = num(v);
-    if (!date || (metric !== 'steps' && metric !== 'exercise_min') || value === null) continue;
+    if (!date || !isMetricKey(metric) || value === null) continue;
     push(s.metrics[person], `${date}|${metric}`, { at, v: value });
     synced(person, at, String(iso));
   }
@@ -263,7 +261,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     switch (type) {
       case 'checkin': {
         const date = normDate(d.date);
-        const habit = typeof d.habit === 'string' ? d.habit : typeof d.habitKey === 'string' ? d.habitKey : null;
+        const habit = typeof d.habit === 'string' ? d.habit : null;
         if (!date || !habit || typeof d.done !== 'boolean') break;
         const today = localDateAt(at);
         if (d.edit === true) {
@@ -304,7 +302,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
         if (d.spendId !== undefined && d.spendId !== null) s.approves.push({ at, person, spendId: String(d.spendId) });
         break;
       case 'transfer':
-        if (typeof d.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month) && d.month < localDateAt(at).slice(0, 7)) {
+        if (typeof d.month === 'string' && MONTH_RE.test(d.month) && d.month < localDateAt(at).slice(0, 7)) {
           s.transfers.push({ at, month: d.month });
         }
         break;
@@ -313,7 +311,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
       case 'metric_set': {
         const date = normDate(d.date);
         const metric = d.metric;
-        if (!date || (metric !== 'steps' && metric !== 'exercise_min')) break;
+        if (!date || !isMetricKey(metric)) break;
         if (typeof d.value !== 'number' || !Number.isInteger(d.value) || d.value < 0 || d.value > METRIC_BOUNDS[metric]) break;
         if (!editableAt(date, at)) break;
         push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value });
@@ -335,7 +333,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
       }
       case 'workout_add': {
         const date = normDate(d.date);
-        const id = typeof d.id === 'string' && /^m:[\w-]{1,100}$/.test(d.id) ? d.id : null;
+        const id = typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) ? d.id : null;
         const dur = d.durationMin;
         if (!id || !date || typeof d.type !== 'string' || !WORKOUT_TYPES.includes(d.type)) break;
         if (typeof dur !== 'number' || !Number.isInteger(dur) || dur < MANUAL_WORKOUT_MIN.min || dur > MANUAL_WORKOUT_MIN.max) break;
@@ -360,7 +358,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
         break;
       }
       case 'transfer_undo':
-        if (typeof d.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month)) s.transferUndos.push({ at, person, month: d.month });
+        if (typeof d.month === 'string' && MONTH_RE.test(d.month)) s.transferUndos.push({ at, person, month: d.month });
         break;
       case 'harvest': {
         const week = normDate(d.week);

@@ -1,5 +1,7 @@
 // The sheet layout and the web-app API shapes (docs/design/sheets-architecture.md §1–2). Shared by the Apps
-// Script (app/gas/main.ts) and anything client-side that wants the row tuple types. Dependency-free.
+// Script (app/gas/main.ts), the model and the client: row tuples, reply shapes and the validation regexes both sides
+// apply. Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
+import type { PersonId } from '../types.ts';
 
 export const TABS = {
   metrics: ['at', 'person', 'date', 'metric', 'value'],
@@ -27,7 +29,18 @@ export const EVENT_TYPES = [
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
-export type Person = 'A' | 'B';
+export const METRIC_KEYS = ['steps', 'exercise_min'] as const;
+export type MetricKey = (typeof METRIC_KEYS)[number];
+export const isMetricKey = (v: unknown): v is MetricKey => v === 'steps' || v === 'exercise_min';
+
+/** A local date `YYYY-MM-DD`. */
+export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+/** A month `YYYY-MM` (`transfer`, `transfer_undo`). */
+export const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+/** A `workout_add` id: `m:` + up to 100 word characters or dashes. */
+export const MANUAL_ID_RE = /^m:[\w-]{1,100}$/;
+
+export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** `metric_set` bounds (inclusive, integers). The Apps Script refuses anything else with `bad_request`. */
 export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440 } as const;
@@ -35,11 +48,11 @@ export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440 } as const;
 export const MANUAL_WORKOUT_MIN = { min: 1, max: 600 } as const;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
-export type MetricRow = [at: string, person: Person, date: string, metric: 'steps' | 'exercise_min', value: number];
-export type WorkoutRow = [at: string, person: Person, id: string, date: string, type: string, start: string, end: string, durationMin: number, avgHr: number | null];
-export type PresenceRow = [at: string, person: Person, place: string, event: 'arrive' | 'leave', eventAt: string];
+export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
+export type WorkoutRow = [at: string, person: PersonId, id: string, date: string, type: string, start: string, end: string, durationMin: number, avgHr: number | null];
+export type PresenceRow = [at: string, person: PersonId, place: string, event: 'arrive' | 'leave', eventAt: string];
 /** `data` is the JSON text exactly as stored in the cell. */
-export type EventRow = [at: string, person: Person, id: string, type: EventType, data: string];
+export type EventRow = [at: string, person: PersonId, id: string, type: EventType, data: string];
 
 export interface SnapshotRows { metrics: MetricRow[]; workouts: WorkoutRow[]; presence: PresenceRow[]; events: EventRow[] }
 
@@ -49,5 +62,5 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
 export type IngestReply = { ok: true; metrics: number; workouts: number; skipped?: number; unknownTypes?: string[] } | Fail;
 export type PresenceReply = { ok: true } | Fail;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
-export type SnapshotReply = { ok: true; me: Person; now: string; rows: SnapshotRows } | Fail;
-export type WhoamiReply = { ok: true; me: Person } | Fail;
+export type SnapshotReply = { ok: true; me: PersonId; now: string; rows: SnapshotRows } | Fail;
+export type WhoamiReply = { ok: true; me: PersonId } | Fail;
