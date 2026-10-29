@@ -44,7 +44,10 @@
     .c2 { bottom: 26%; }
   }
   @media (max-width: 339px) { .c1 { width: 64px; } .c2 { width: 48px; } }
+  /* reduced motion: still clouds, placed clear of the sun (the global rule would park them off screen) */
   @media (prefers-reduced-motion: reduce) {
-    .cloud { animation-play-state: paused; }
+    .cloud { animation: none !important; }
+    .c1 { left: 36%; }
+    .c2 { left: 62%; }
   }
 </style>
