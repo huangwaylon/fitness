@@ -22,11 +22,16 @@ export function ratioMilli(maxMilli: number, actualMilli: number, weeklyTargetMi
   return idiv(maxMilli * num, den);
 }
 
-/** Strength workout: an auto type, or an ask type answered "yes", of at least STRENGTH.minWorkoutMin. */
-export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'includesStrength'>): boolean =>
+/**
+ * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
+ * type, or an ask type answered "yes".
+ */
+export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'includesStrength' | 'strengthOverride'>): boolean =>
   w.durationMin >= STRENGTH.minWorkoutMin &&
-  ((STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
-    ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
+  (typeof w.strengthOverride === 'boolean'
+    ? w.strengthOverride
+    : (STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
+      ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
 
 const isStrengthVisit = (v: Visit): boolean =>
   v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true);

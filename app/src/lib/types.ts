@@ -25,6 +25,8 @@ export interface Workout {
   avgHr: number | null;
   /** The one-tap "included strength?" answer for HIIT/yoga; null = not asked/answered. */
   includesStrength: boolean | null;
+  /** A きろく edit (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
+  strengthOverride?: boolean | null;
 }
 
 /** An arrive→leave pair derived from presence events. */

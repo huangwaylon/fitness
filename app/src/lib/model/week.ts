@@ -6,7 +6,7 @@ import type {
   CheckinTick, DayMetrics, FruitKey, FruitView, HarvestView, JarView, LocalDate, PendingConfirmation, PersonId,
   PersonWeekView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
 } from '#lib/types.ts';
-import { CALIBRATION_WEEKS, FRUITS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
+import { FRUITS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import {
   addDays, deriveVisits, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
@@ -14,25 +14,34 @@ import {
 import { workoutLabel } from './labels.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  finalMs, firstWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, type State
+  finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, type State, type Timed
 } from './state.ts';
 
 const LIVE = Infinity;
 
 // ---------- inputs as of T ----------
 
-type VisitRec = Visit & { id: string };
+export type VisitRec = Visit & { id: string };
 
-function workoutsAsOf(s: State, person: PersonId, t: number): Workout[] {
-  return s.workouts[person]
-    .filter((w) => w.at <= t)
-    .map((w) => ({
+/** Ingested + manual workouts as of T, without the ones excluded from scoring, with their strength override. */
+export function workoutsAsOf(s: State, person: PersonId, t: number): Workout[] {
+  const out: Workout[] = [];
+  for (const w of [...s.workouts[person], ...s.manualWorkouts[person]]) {
+    if (w.at > t) continue;
+    const key = `${person}|${w.extId}`;
+    if (latestAt(s.workoutExcluded.get(key), t) === true) continue;
+    const wo: Workout = {
       extId: w.extId, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr,
-      includesStrength: latestAt(s.workoutConfirms.get(`${person}|${w.extId}`), t) ?? null
-    }));
+      includesStrength: latestAt(s.workoutConfirms.get(key), t) ?? null
+    };
+    const override = latestAt(s.workoutStrength.get(key), t);
+    if (override !== undefined && override !== null) wo.strengthOverride = override;
+    out.push(wo);
+  }
+  return out;
 }
 
-function visitsAsOf(s: State, person: PersonId, t: number): VisitRec[] {
+export function visitsAsOf(s: State, person: PersonId, t: number): VisitRec[] {
   const events = s.presence[person].filter((e) => e.at <= t);
   const idOf = new Map(events.map((e) => [e.n, e.id]));
   const confirmations = new Map<number, boolean>();
@@ -46,7 +55,7 @@ function visitsAsOf(s: State, person: PersonId, t: number): VisitRec[] {
 }
 
 /** Current ticks as of T, keyed `date|habit`, in the order the tick was (last) set. */
-function ticksAsOf(s: State, person: PersonId, t: number): Map<string, CheckinTick> {
+export function ticksAsOf(s: State, person: PersonId, t: number): Map<string, CheckinTick> {
   const on = new Map<string, CheckinTick>();
   for (const c of s.checkins[person]) {
     if (c.at > t) break;
@@ -58,20 +67,28 @@ function ticksAsOf(s: State, person: PersonId, t: number): Map<string, CheckinTi
   return on;
 }
 
-function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 'steps' | 'exercise_min', t: number): number | null {
-  // Append-only and higher-only: the max of rows ≤ T is the latest value ≤ T (and robust to a hand-edited sheet).
-  let best: number | null = null;
-  for (const r of s.metrics[person].get(`${date}|${metric}`) ?? []) if (r.at <= t && (best === null || r.v > best)) best = r.v;
+/**
+ * A day's metric as of T (history-and-editing.md §4.1). Ingest rows are append-only and higher-only, so their max ≤ T
+ * is the latest value (and robust to a hand-edited sheet). A `metric_set` S (the latest with at ≤ T) overrides it, even
+ * lower, but a later and higher sync still wins: max(S, ingest rows with S.at < at ≤ T).
+ */
+export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 'steps' | 'exercise_min', t: number): number | null {
+  const sets = s.metricSets[person].get(`${date}|${metric}`);
+  let set: Timed<number> | undefined;
+  if (sets) for (let i = sets.length - 1; i >= 0; i--) if (sets[i].at <= t) { set = sets[i]; break; }
+  let best: number | null = set ? set.v : null;
+  const after = set ? set.at : -Infinity;
+  for (const r of s.metrics[person].get(`${date}|${metric}`) ?? []) if (r.at <= t && r.at > after && (best === null || r.v > best)) best = r.v;
   return best;
 }
 
-interface Activity { workouts: Workout[]; visits: VisitRec[] }
+export interface Activity { workouts: Workout[]; visits: VisitRec[] }
 
-function activityAsOf(s: State, person: PersonId, t: number): Activity {
+export function activityAsOf(s: State, person: PersonId, t: number): Activity {
   return { workouts: workoutsAsOf(s, person, t), visits: visitsAsOf(s, person, t) };
 }
 
-function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t)): WeekInput {
+export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t)): WeekInput {
   const dates = weekDays(wk);
   const inWeek = (d: LocalDate) => d >= dates[0] && d <= dates[6];
   const days: DayMetrics[] = dates.map((date) => ({
@@ -82,7 +99,7 @@ function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Acti
     workouts: act.workouts.filter((w) => inWeek(w.date)),
     visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v),
     checkins: [...ticksAsOf(s, person, t).values()].filter((c) => inWeek(c.date)),
-    calibration: CALIBRATION_WEEKS.includes(wk)
+    calibration: isCalibrationWeek(wk)
   };
 }
 
@@ -96,8 +113,8 @@ export function payoutAsOf(s: State, wk: WeekKey, t: number, act?: Record<Person
 
 export interface Buckets { A: number; B: number; team: number; purseA: number; purseB: number }
 const ZERO: Buckets = { A: 0, B: 0, team: 0, purseA: 0, purseB: 0 };
-const buckets = (p: WeekPayout): Buckets => ({ A: p.A.fruitYen, B: p.B.fruitYen, team: p.teamYen, purseA: p.A.purseYen, purseB: p.B.purseYen });
-const maxBuckets = (x: Buckets, y: Buckets): Buckets => ({
+export const buckets = (p: WeekPayout): Buckets => ({ A: p.A.fruitYen, B: p.B.fruitYen, team: p.teamYen, purseA: p.A.purseYen, purseB: p.B.purseYen });
+export const maxBuckets = (x: Buckets, y: Buckets): Buckets => ({
   A: Math.max(x.A, y.A), B: Math.max(x.B, y.B), team: Math.max(x.team, y.team), purseA: Math.max(x.purseA, y.purseA), purseB: Math.max(x.purseB, y.purseB)
 });
 
@@ -123,44 +140,93 @@ export function paidAt(w: SettledWeek, t: number): Buckets {
   return maxBuckets(w.provisional, w.final);
 }
 
-const jarSum = (b: Buckets) => b.A + b.B + b.team;
+export const jarSum = (b: Buckets) => b.A + b.B + b.team;
+
+export type SpendStatus = 'done' | 'waiting' | 'refused' | 'voided';
+
+export interface SpendLog {
+  spendId: string;
+  id: number | string;
+  at: number;
+  by: PersonId;
+  label: string;
+  amountYen: number;
+  status: SpendStatus;
+  /** When it was paid (at once, or at the partner's OK). */
+  doneAt: number | null;
+  voidedAt: number | null;
+  /** It had been paid when voided: the purse got it back. */
+  refunded: boolean;
+}
 
 export interface PurseState {
   spentYen: number;
   pending: JarView['pendingSpends'];
+  /** Every spend in server order with its outcome (きろく → お金). */
+  log: SpendLog[];
 }
 
-/** Replay spends/approvals in server order: an overdraw is void, ≥ ¥5,000 waits for the partner's OK. */
+/**
+ * Replay spends/approvals/voids in server order: an overdraw is refused (never recorded), ≥ ¥5,000 waits for the
+ * partner's OK, and the spender's void refunds a paid spend or cancels a waiting one (refusals stay refusals).
+ */
 export function replayPurse(s: State, weeks: SettledWeek[], now: number): PurseState {
   const earnedAt = (t: number) => weeks.reduce((sum, w) => { const b = paidAt(w, t); return sum + b.purseA + b.purseB; }, 0);
-  type Live = { rec: State['spends'][number]; done: boolean; pending: boolean };
+  type Live = { rec: State['spends'][number]; log: SpendLog };
   const spends = new Map<string, Live>();
+  const log: SpendLog[] = [];
   let spent = 0;
   const ops = [
     ...s.spends.map((rec) => ({ at: rec.at, kind: 'spend' as const, rec })),
-    ...s.approves.map((rec) => ({ at: rec.at, kind: 'approve' as const, rec }))
+    ...s.approves.map((rec) => ({ at: rec.at, kind: 'approve' as const, rec })),
+    ...s.spendVoids.map((rec) => ({ at: rec.at, kind: 'void' as const, rec }))
   ].filter((o) => o.at <= now).sort((x, y) => x.at - y.at);
   for (const o of ops) {
     if (o.kind === 'spend') {
+      const entry: SpendLog = {
+        spendId: o.rec.spendId, id: o.rec.rawId, at: o.at, by: o.rec.person, label: o.rec.label, amountYen: o.rec.amountYen,
+        status: 'refused', doneAt: null, voidedAt: null, refunded: false
+      };
+      log.push(entry);
       if (earnedAt(o.at) - spent < o.rec.amountYen) continue; // insufficient_purse: never recorded
-      if (o.rec.amountYen >= MONEY.purseNeedsBothAtYen) spends.set(o.rec.spendId, { rec: o.rec, done: false, pending: true });
+      if (o.rec.amountYen >= MONEY.purseNeedsBothAtYen) entry.status = 'waiting';
       else {
         spent += o.rec.amountYen;
-        spends.set(o.rec.spendId, { rec: o.rec, done: true, pending: false });
+        entry.status = 'done';
+        entry.doneAt = o.at;
       }
-    } else {
+      spends.set(o.rec.spendId, { rec: o.rec, log: entry });
+    } else if (o.kind === 'approve') {
       const sp = spends.get(o.rec.spendId);
-      if (!sp || sp.done || sp.rec.person === o.rec.person) continue;
+      if (!sp || sp.log.status !== 'waiting' || sp.rec.person === o.rec.person) continue;
       if (earnedAt(o.at) - spent < sp.rec.amountYen) continue;
       spent += sp.rec.amountYen;
-      sp.done = true;
-      sp.pending = false;
+      sp.log.status = 'done';
+      sp.log.doneAt = o.at;
+    } else {
+      const sp = spends.get(o.rec.spendId);
+      if (!sp || (sp.log.status !== 'done' && sp.log.status !== 'waiting')) continue;
+      if (sp.log.status === 'done') {
+        spent -= sp.rec.amountYen;
+        sp.log.refunded = true;
+      }
+      sp.log.status = 'voided';
+      sp.log.voidedAt = o.at;
     }
   }
   return {
     spentYen: spent,
-    pending: [...spends.values()].filter((x) => x.pending).map((x) => ({ id: x.rec.rawId, label: x.rec.label, amountYen: x.rec.amountYen, by: x.rec.person }))
+    pending: [...spends.values()].filter((x) => x.log.status === 'waiting').map((x) => ({ id: x.rec.rawId, label: x.rec.label, amountYen: x.rec.amountYen, by: x.rec.person })),
+    log
   };
+}
+
+/** A month's transfer ✓ as of t: the latest of its `transfer` / `transfer_undo` rows wins. */
+export function transferDoneAt(s: State, month: string, t: number): { done: boolean; at: number | null } {
+  let best: { done: boolean; at: number | null } = { done: false, at: null };
+  for (const x of s.transfers) if (x.month === month && x.at <= t && (best.at === null || x.at >= best.at)) best = { done: true, at: x.at };
+  for (const x of s.transferUndos) if (x.month === month && x.at <= t && best.at !== null && x.at > best.at) best = { done: false, at: x.at };
+  return best;
 }
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
@@ -245,7 +311,7 @@ function pendingConfirmations(person: PersonId, cur: WeekKey, act: Activity, loc
       out.push({ kind: 'visit', id: v.id, date: v.date, label: names.get(v.placeKey) ?? v.placeKey });
     }
     for (const w of workouts) {
-      if ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === null && w.durationMin >= STRENGTH.minWorkoutMin) {
+      if ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === null && w.strengthOverride === undefined && w.durationMin >= STRENGTH.minWorkoutMin) {
         out.push({ kind: 'workout', id: w.extId, date: w.date, label: workoutLabel(w.type, locale) });
       }
     }
@@ -293,7 +359,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const totalYen = layers.A + layers.B + layers.team;
   const month = prevMonth(today);
   const amountYen = monthEarnings(weeks, month, now);
-  const done = s.transfers.some((x) => x.month === month && x.at <= now);
+  const done = transferDoneAt(s, month, now).done;
   const jar: JarView = {
     totalYen,
     layers,

@@ -202,6 +202,83 @@ describe('presence and events', () => {
   });
 });
 
+describe('edit events (history-and-editing.md §4.1)', () => {
+  const edits = [
+    { type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } },
+    { type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 0 } },
+    { type: 'workout_edit', data: { id: 'Yoga@2026-10-28T09:00:00.000Z', strength: false } },
+    { type: 'workout_edit', data: { id: 'w1', strength: null, excluded: true } },
+    { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
+    { type: 'spend_void', data: { spendId: 'sp-1' } },
+    { type: 'transfer_undo', data: { month: '2026-09' } },
+    { type: 'checkin', data: { date: '2026-10-26', habit: 'veg_two_meals', done: true, edit: true } }
+  ];
+
+  it('each new type appends with the server `at`, the sender as person and the data as JSON', () => {
+    edits.forEach((e, i) => {
+      expect(a('event', { id: `e${i}`, ...e }), e.type).toEqual({ ok: true });
+      tick();
+    });
+    const rows = data('events');
+    expect(rows.map((r) => [r[1], r[3], r[4]])).toEqual(edits.map((e) => ['A', e.type, JSON.stringify(e.data)]));
+    expect(rows.map((r) => r[0])).toEqual(edits.map((_, i) => new Date(Date.parse('2026-10-29T03:00:00.000Z') + i * 1000).toISOString()));
+  });
+
+  it('an unknown type is bad_request', () => {
+    expect(a('event', { id: 'x1', type: 'metric_delete', data: {} })).toEqual({ ok: false, error: 'bad_request' });
+    expect(data('events')).toEqual([]);
+  });
+
+  it('metric_set with a non-integer or out-of-range value (or a bad date/metric) is refused', () => {
+    const bad = [
+      { date: '2026-10-28', metric: 'steps', value: 100_001 },
+      { date: '2026-10-28', metric: 'steps', value: -1 },
+      { date: '2026-10-28', metric: 'steps', value: 12.5 },
+      { date: '2026-10-28', metric: 'steps', value: '9800' },
+      { date: '2026-10-28', metric: 'exercise_min', value: 1441 },
+      { date: '2026-10-28', metric: 'calories', value: 10 },
+      { date: '10/28', metric: 'steps', value: 10 },
+      { metric: 'steps', value: 10 }
+    ];
+    bad.forEach((d, i) => expect(a('event', { id: `b${i}`, type: 'metric_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' }));
+    expect(a('event', { id: 'ok-max', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 100_000 } })).toEqual({ ok: true });
+    expect(a('event', { id: 'ok-min', type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 1440 } })).toEqual({ ok: true });
+    expect(data('events')).toHaveLength(2);
+  });
+
+  it('other edit shapes are checked too', () => {
+    const bad = [
+      { type: 'workout_edit', data: { id: 'w1' } },
+      { type: 'workout_edit', data: { id: 'w1', strength: 'yes' } },
+      { type: 'workout_add', data: { id: 'w-no-prefix', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
+      { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 601 } },
+      { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 0 } },
+      { type: 'spend_void', data: {} },
+      { type: 'transfer_undo', data: { month: '2026-13' } }
+    ];
+    bad.forEach((e, i) => expect(a('event', { id: `c${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
+    expect(data('events')).toEqual([]);
+  });
+
+  it('a duplicate edit id is acknowledged and ignored', () => {
+    const ev = { id: 'm-1', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } };
+    expect(a('event', ev)).toEqual({ ok: true });
+    tick();
+    expect(a('event', { ...ev, data: { ...ev.data, value: 1 } })).toEqual({ ok: true, duplicate: true });
+    expect(data('events')).toHaveLength(1);
+    expect(JSON.parse(String(data('events')[0][4])).value).toBe(9800);
+  });
+
+  it('a lowering metric_set does not stop later ingests from appending only above the sheet max', () => {
+    a('ingest', { dates: '2026-10-28', steps: '12410', exercise_minutes: '30' });
+    tick();
+    a('event', { id: 'm-2', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } });
+    tick();
+    // A stale re-send of the wrong value appends nothing, so it cannot revive it.
+    expect(a('ingest', { dates: '2026-10-28', steps: '12410', exercise_minutes: '30' })).toMatchObject({ ok: true, metrics: 0 });
+  });
+});
+
 describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);

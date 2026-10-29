@@ -7,7 +7,7 @@
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
 import { looseDate, parseShortcut } from '../src/lib/ingest/parse.ts';
-import { EVENT_TYPES, NUMERIC_COLUMNS, TABS, type ApiError, type Person, type SnapshotRows, type TabName } from '../src/lib/ingest/sheet-api.ts';
+import { EVENT_TYPES, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, NUMERIC_COLUMNS, TABS, type ApiError, type Person, type SnapshotRows, type TabName } from '../src/lib/ingest/sheet-api.ts';
 
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
@@ -256,6 +256,7 @@ function event(me: Person, body: Rec): Reply {
   if (!isRec(data)) return fail('bad_request');
   const json = JSON.stringify(data);
   if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
+  if (!validEditData(body.type, data)) return fail('bad_request');
   const type = body.type;
   return withLock(() => {
     const sh = tab('events');
@@ -267,6 +268,37 @@ function event(me: Person, body: Rec): Reply {
     appendRows(sh, 'events', [[nextAt(), me, id, type, json]]);
     return { ok: true };
   });
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
+const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v.length <= 128;
+
+/**
+ * Shape checks for the edit events (history-and-editing.md §4.1). Only the shape: who may edit what and which weeks
+ * are still open stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
+ */
+function validEditData(type: string, d: Rec): boolean {
+  switch (type) {
+    case 'metric_set':
+      return typeof d.date === 'string' && DATE_RE.test(d.date) && (d.metric === 'steps' || d.metric === 'exercise_min') &&
+        isInt(d.value, 0, METRIC_BOUNDS[d.metric]);
+    case 'workout_edit':
+      return isId(d.id) && (d.strength !== undefined || d.excluded !== undefined) &&
+        (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean') &&
+        (d.excluded === undefined || typeof d.excluded === 'boolean');
+    case 'workout_add':
+      return typeof d.id === 'string' && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === 'string' && DATE_RE.test(d.date) &&
+        typeof d.type === 'string' && d.type.length > 0 && d.type.length <= 60 &&
+        isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) &&
+        (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');
+    case 'spend_void':
+      return (typeof d.spendId === 'string' && isId(d.spendId)) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId));
+    case 'transfer_undo':
+      return typeof d.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month);
+    default:
+      return true;
+  }
 }
 
 function snapshot(me: Person, body: Rec): Reply {

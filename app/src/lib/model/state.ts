@@ -1,11 +1,13 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
 import type { FruitKey, LocalDate, PersonId, WeekKey } from '#lib/types.ts';
-import { FRUITS, JOBS, SEASONS } from '#lib/config/rules.ts';
+import { CALIBRATION_WEEKS, FRUITS, JOBS, SEASONS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, targetsFor, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { parseInstant } from '#lib/scoring/dates.ts';
 import type { Snapshot, SnapshotRows } from './snapshot.ts';
+import { MANUAL_WORKOUT_MIN, METRIC_BOUNDS } from '#lib/ingest/sheet-api.ts';
+import { WORKOUT_TYPES } from './labels.ts';
 
 export const PEOPLE_IDS: PersonId[] = ['A', 'B'];
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -21,8 +23,21 @@ export const provisionalMs = (wk: WeekKey): number => jstMs(addDays(wk, 6), JOBS
 /** Wednesday 04:00 JST after the week: late data can still raise the payout up to here, then the week locks. */
 export const finalMs = (wk: WeekKey): number => jstMs(addDays(wk, 9), JOBS.final.hour, JOBS.final.minute);
 
+/**
+ * The demo (`?demo`, lib/client/demoRows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
+ * week and no calibration weeks. Never set outside the demo (and never in tests of the real rules).
+ */
+let demoCalendar: { firstWeek: WeekKey } | null = null;
+export function setDemoCalendar(c: { firstWeek: WeekKey } | null): void {
+  demoCalendar = c;
+}
+
+/** Weeks paid at the flat calibration rate. */
+export const isCalibrationWeek = (wk: WeekKey): boolean => !demoCalendar && CALIBRATION_WEEKS.includes(wk);
+
 /** First paid week: the first full Mon–Sun week of season 1. */
 export function firstWeek(): WeekKey {
+  if (demoCalendar) return demoCalendar.firstWeek;
   const from = [...SEASONS].sort((a, b) => a.from.localeCompare(b.from))[0].from;
   const wk = weekKeyOf(from);
   return wk < from ? addDays(wk, 7) : wk;
@@ -31,7 +46,14 @@ export function firstWeek(): WeekKey {
 /** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first paid week never lock. */
 export const isLockedAt = (wk: WeekKey, t: number): boolean => wk >= firstWeek() && t >= finalMs(wk);
 
-const localDateAt = (ms: number): LocalDate => toLocalDate(new Date(ms).toISOString());
+export const localDateAt = (ms: number): LocalDate => toLocalDate(new Date(ms).toISOString());
+
+/**
+ * Open for edits at t (history-and-editing.md §4.3): the day has happened, and its week has not reached its
+ * Wednesday 04:00 lock. Unlike `isLockedAt` this also closes weeks before the first paid week, so edits never reach
+ * more than ~9.5 days back.
+ */
+export const editableAt = (date: LocalDate, t: number): boolean => date <= localDateAt(t) && t < finalMs(weekKeyOf(date));
 
 // ---------- records ----------
 
@@ -46,6 +68,8 @@ export interface WorkoutRec {
   endAt: string;
   durationMin: number;
   avgHr: number | null;
+  /** A `workout_add` (Watch forgotten), not an ingested Health workout. */
+  manual?: true;
 }
 
 export interface PresenceRec {
@@ -59,7 +83,11 @@ export interface PresenceRec {
   eventAt: string;
 }
 
-export interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean }
+/** `edit`: a fix from きろく (`edit:true`), allowed for any open day; it shows in the change log. */
+export interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean; edit?: true }
+export type MetricKey = 'steps' | 'exercise_min';
+/** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
+export interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
 /** `spendId` is the dedupe key; `rawId` is the id as the client sent it (number or string), echoed back for `approve`. */
 export interface SpendRec { at: number; person: PersonId; spendId: string; rawId: number | string; label: string; amountYen: number }
 export interface ApproveRec { at: number; person: PersonId; spendId: string }
@@ -76,6 +104,18 @@ export interface State {
   spends: SpendRec[];
   approves: ApproveRec[];
   transfers: { at: number; month: string }[];
+  /** Accepted `metric_set` per person, keyed `date|metric`, ascending `at`. */
+  metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
+  /** Accepted `workout_edit`s (ascending `at`); `strength`/`excluded` per workout key `person|id`. */
+  workoutEdits: WorkoutEditRec[];
+  workoutStrength: Map<string, Timed<boolean | null>[]>;
+  workoutExcluded: Map<string, Timed<boolean>[]>;
+  /** Accepted `workout_add`s, in `workouts`' shape (`manual: true`). */
+  manualWorkouts: Record<PersonId, WorkoutRec[]>;
+  /** Accepted `spend_void`s (by the spender, after the spend). */
+  spendVoids: { at: number; person: PersonId; spendId: string }[];
+  /** Accepted `transfer_undo`s (either person). */
+  transferUndos: { at: number; person: PersonId; month: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
@@ -149,6 +189,13 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
     spends: [],
     approves: [],
     transfers: [],
+    metricSets: { A: new Map(), B: new Map() },
+    workoutEdits: [],
+    workoutStrength: new Map(),
+    workoutExcluded: new Map(),
+    manualWorkouts: { A: [], B: [] },
+    spendVoids: [],
+    transferUndos: [],
     harvests: [],
     highfives: [],
     prefs: { A: {}, B: {} },
@@ -211,10 +258,15 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         const habit = typeof d.habit === 'string' ? d.habit : typeof d.habitKey === 'string' ? d.habitKey : null;
         if (!date || !habit || typeof d.done !== 'boolean') break;
         const today = localDateAt(at);
-        if (date > today || date < addDays(today, -2)) break; // 48 h fill-in window
-        if (isLockedAt(weekKeyOf(date), at)) break;
+        if (d.edit === true) {
+          // A fix from きろく: any day of an open week (history-and-editing.md §4.1).
+          if (!editableAt(date, at) || isLockedAt(weekKeyOf(date), at)) break;
+        } else {
+          if (date > today || date < addDays(today, -2)) break; // 48 h fill-in window
+          if (isLockedAt(weekKeyOf(date), at)) break;
+        }
         if (!targetsFor(person, weekKeyOf(date)).habits.includes(habit)) break;
-        s.checkins[person].push({ at, date, habit, done: d.done });
+        s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
         break;
       }
       case 'confirm': {
@@ -247,6 +299,69 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         if (typeof d.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month) && d.month < localDateAt(at).slice(0, 7)) {
           s.transfers.push({ at, month: d.month });
         }
+        break;
+      // ---- edits (history-and-editing.md §4): the subject is always the sender, so the partner's data is
+      // unreachable; activity edits only count while the day's week is open (§4.3).
+      case 'metric_set': {
+        const date = normDate(d.date);
+        const metric = d.metric;
+        if (!date || (metric !== 'steps' && metric !== 'exercise_min')) break;
+        if (typeof d.value !== 'number' || !Number.isInteger(d.value) || d.value < 0 || d.value > METRIC_BOUNDS[metric]) break;
+        if (!editableAt(date, at)) break;
+        push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value });
+        break;
+      }
+      case 'workout_edit': {
+        if (typeof d.id !== 'string') break;
+        const key = `${person}|${d.id}`;
+        const w = workoutById.get(key);
+        if (!w || w.at > at || !editableAt(w.date, at)) break;
+        const strength = d.strength === null || typeof d.strength === 'boolean' ? d.strength : undefined;
+        const excluded = typeof d.excluded === 'boolean' ? d.excluded : undefined;
+        if (strength === undefined && excluded === undefined) break;
+        const rec: WorkoutEditRec = { at, person, id: d.id };
+        if (strength !== undefined) {
+          rec.strength = strength;
+          push(s.workoutStrength, key, { at, v: strength });
+        }
+        if (excluded !== undefined) {
+          rec.excluded = excluded;
+          push(s.workoutExcluded, key, { at, v: excluded });
+        }
+        s.workoutEdits.push(rec);
+        break;
+      }
+      case 'workout_add': {
+        const date = normDate(d.date);
+        const id = typeof d.id === 'string' && /^m:[\w-]{1,100}$/.test(d.id) ? d.id : null;
+        const dur = d.durationMin;
+        if (!id || !date || typeof d.type !== 'string' || !WORKOUT_TYPES.includes(d.type)) break;
+        if (typeof dur !== 'number' || !Number.isInteger(dur) || dur < MANUAL_WORKOUT_MIN.min || dur > MANUAL_WORKOUT_MIN.max) break;
+        const key = `${person}|${id}`;
+        if (workoutById.has(key) || !editableAt(date, at)) break;
+        // No clock time is asked for: it sits at noon (Tokyo) so it never overlaps a gym visit by accident.
+        const startAt = `${date}T12:00:00+09:00`;
+        const endAt = new Date(Date.parse(startAt) + dur * 60_000).toISOString();
+        const w: WorkoutRec = { at, extId: id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true };
+        workoutById.set(key, w);
+        s.manualWorkouts[person].push(w);
+        if (d.strength === null || typeof d.strength === 'boolean') {
+          push(s.workoutStrength, key, { at, v: d.strength });
+          s.workoutEdits.push({ at, person, id, strength: d.strength });
+        }
+        break;
+      }
+      case 'spend_void': {
+        if (d.spendId === undefined || d.spendId === null) break;
+        const spendId = String(d.spendId);
+        const sp = s.spends.find((x) => x.spendId === spendId);
+        // The spender only (§4.2), once, after the spend.
+        if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) break;
+        s.spendVoids.push({ at, person, spendId });
+        break;
+      }
+      case 'transfer_undo':
+        if (typeof d.month === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month)) s.transferUndos.push({ at, person, month: d.month });
         break;
       case 'harvest': {
         const week = normDate(d.week);
