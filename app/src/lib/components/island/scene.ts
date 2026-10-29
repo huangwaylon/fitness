@@ -86,8 +86,6 @@ export const BUSH_U = 48;
  *  (x 30–360, down to y 352) with a wet band, two foam lines and a turquoise shallow ring. */
 export const PLATEAU = { x0: 44, y0: 50, x1: 346, y1: 316, rt: 60, rb: 26 } as const;
 export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as const;
-/** The plateau's top edge (grass), in u. */
-export const PLATEAU_TOP = PLATEAU.y0;
 /** The plateau's front edge (grass), in u: the cliff and the beach lie below it. */
 export const PLATEAU_BOTTOM = PLATEAU.y1;
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the stage's front beach (below y 360 − TUCK_U) tucks under
@@ -108,7 +106,6 @@ export const BEDS: Record<Season, { back: FlowerId; front: FlowerId }> = {
 export const FLOWER_U = 32;
 /** Per-species height (pansies and mums grow low). */
 export const FLOWER_SCALE: Partial<Record<FlowerId, number>> = { 'orange-pansies': 0.8, 'purple-mums': 0.92 };
-export const BED_COLS = [-3, -2, 2, 3];
 export const BED_X = { left: [col(-3), col(-2)], right: [col(2), col(3)] };
 export const BED_ROWS = [ROWS.bedBack, ROWS.front];
 
