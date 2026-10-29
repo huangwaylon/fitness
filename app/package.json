@@ -18,7 +18,8 @@
     "devices": "tsx scripts/devices.ts",
     "assets:fetch": "tsx scripts/fetch-assets.ts",
     "build:pages": "BUILD_TARGET=pages vite build && cp build-pages/index.html build-pages/404.html && touch build-pages/.nojekyll",
-    "gas:build": "tsx gas/build.ts"
+    "gas:build": "tsx gas/build.ts",
+    "export:sheet": "tsx scripts/export-to-sheet.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^6.0.0",
