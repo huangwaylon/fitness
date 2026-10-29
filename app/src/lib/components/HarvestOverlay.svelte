@@ -214,7 +214,9 @@
   .av.team svg { width: 24px; height: 24px; fill: var(--c-yuzu-lip); }
   .plus { font-size: var(--fs-talk); flex: none; }
 
-  .total { display: grid; justify-items: center; gap: 4px; padding-top: 10px; margin-top: 6px; box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 50%, transparent); animation: rowIn .6s var(--ease-soft) 2.1s both; }
+  .total { display: grid; justify-items: center; gap: 4px; padding-top: 10px; margin-top: 6px; box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 50%, transparent); overflow: hidden; animation: totalGrow .6s var(--ease-soft) 2.1s both; }
+  /* Like the rows, the total takes no room until it arrives, so the card is always sized to what it shows (round 7 F11). */
+  @keyframes totalGrow { from { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; } to { max-height: 220px; opacity: 1; padding-top: 10px; margin-top: 6px; } }
   .lbl { font-weight: 700; color: var(--text-soft); }
   .lbl small { font-size: var(--fs-s); }
   .total :global(.hero-num) { animation: if-pop var(--dur-pop) var(--ease-bounce) 2.3s both; }
@@ -225,7 +227,6 @@
   .djar { position: relative; display: block; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .get { position: absolute; right: -18px; top: -10px; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) .3s both; }
   .dhead, .rname { font-size: var(--fs-title); }
-  @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
   .hero { position: relative; width: min(220px, 64vw); padding-bottom: 6px; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .port { display: block; }

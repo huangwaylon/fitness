@@ -32,6 +32,13 @@
           {#if w.locked}<Glyph kind="lock" size={16} label={t('kiroku.locked')} />{/if}
           {#if w.harvested}<span class="hv" title={t('kiroku.harvested')}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg></span>{/if}
         </span>
+        {#if i === 0}
+          <!-- 月…日 over the first card's stamps (round 7 F15). -->
+          <span class="who wdrow" aria-hidden="true">
+            <span class="avsp"></span><span class="score"></span>
+            <span class="stamps">{#each [1, 2, 3, 4, 5, 6, 7] as d (d)}<span class="wdl">{t(`weekday.${d}`)}</span>{/each}</span>
+          </span>
+        {/if}
         {#each order as p (p)}
           <span class="who">
             <Avatar person={p} villager={villagers[p]} size={30} />
@@ -67,7 +74,11 @@
   .who { display: flex; align-items: center; gap: 10px; }
   .score { width: 2.2em; font-size: var(--fs-title); text-align: right; }
   .stamps { flex: 1; display: flex; justify-content: space-between; max-width: 220px; }
+  .wdrow { margin: -2px 0 -6px; }
+  .avsp { width: 30px; flex: none; }
+  .wdl { width: 18px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-soft); }
   @media (max-width: 359px) {
+    .wdl { width: 14px; }
     .stamps :global(svg) { width: 14px; height: 14px; }
     .score { font-size: var(--fs-talk); width: 1.9em; }
     .wk { padding: 10px 12px; }

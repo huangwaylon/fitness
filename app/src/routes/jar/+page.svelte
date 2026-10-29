@@ -3,7 +3,7 @@
   // point, then 今週 ≈ ¥), and two cream Nook Miles+ cards in one skin: the trip (miles ticket, 次は 沖縄, a bar,
   // あと ¥; tap = the ladder) and ごほうび財布 (Nook Shopping, 使う). Payday is an NH banner. No しずえ here.
   // 使う stays quiet until the purse can pay for the cheapest treat (U4). Payday ✓ and 使う！ show at once but
-  // wait 5 s with 取り消す on the banner before they are sent (U9).
+  // wait 5 s with もとに戻す on the banner before they are sent (U9).
   import { resolve } from '$app/paths';
   import Sheet from '#lib/components/Sheet.svelte';
   import Rope from '#lib/components/Rope.svelte';
@@ -18,6 +18,9 @@
   import { MONEY, SEASONS } from '#lib/config/rules.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { dateMs } from '#lib/scoring/dates.ts';
+  import { moneyLog } from '#lib/model/history.ts';
+  import { provisionalMs } from '#lib/model/state.ts';
+  import { addDays } from '#lib/scoring/index.ts';
 
   const TREATS = [
     { key: 'cafe', yen: 2000, icon: 'i-cafe', vb: '0 0 48 48' },
@@ -68,6 +71,19 @@
       color: who === 'A' ? 'var(--c-yuzu)' : 'var(--c-mint)'
     });
     return [row(view.me), row(view.partner), { key: 'team', name: t('jar.teamShort'), yen: jar.layers.team, ratio: jar.layers.team / teamMax, color: 'var(--c-leaf)' }];
+  });
+
+  /** The bottom of the screen: the last three money moves (paid weeks, treats), tap → きろく お金 (round 7 F11). */
+  const recent = $derived.by(() => {
+    const m = week.model;
+    if (!m) return [];
+    const log = moneyLog(m.state, m.now);
+    const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+    const rows = [
+      ...log.months.flatMap((mo) => mo.weeks.map((w) => ({ key: `w${w.weekKey}`, at: provisionalMs(w.weekKey), label: t('kiroku.range', { a: md(w.weekKey), b: md(addDays(w.weekKey, 6)) }), yen: w.yen, by: null as 'A' | 'B' | null, off: false }))),
+      ...log.months.flatMap((mo) => mo.spends.map((sp) => ({ key: `s${sp.spendId}`, at: sp.at, label: sp.label, yen: -sp.amountYen, by: sp.by, off: sp.status === 'voided' || sp.status === 'refused' })))
+    ];
+    return rows.sort((a, b) => b.at - a.at).slice(0, 3);
   });
 
   const nextPct = $derived(jar?.nextRung ? (jar.totalYen / jar.nextRung.yen) * 100 : 100);
@@ -179,6 +195,15 @@
         </div>
       {/each}
 
+      {#if recent.length}
+        <button type="button" class="card recent" onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
+          <span class="rh"><small>{t('kiroku.recent')}</small><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+          {#each recent as r (r.key)}
+            <span class="rr" class:off={r.off}><span class="rl">{r.label}</span><b class="money">{r.yen < 0 ? '−' : '+'}{formatYen(Math.abs(r.yen))}</b></span>
+          {/each}
+        </button>
+      {/if}
+
       {#if jar.transfer?.done}
         <p class="paid" tabindex="-1" bind:this={paydayDone}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('jar.payday.done')}</p>
       {/if}
@@ -279,6 +304,16 @@
   .purse .btn { flex: none; min-width: 96px; margin-bottom: 4px; }
   .need { flex: none; max-width: 9em; text-align: right; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); word-break: auto-phrase; }
   .spend { min-height: 64px; }
+  .recent { appearance: none; border: 0; cursor: pointer; width: 100%; font: inherit; color: inherit; text-align: left; display: grid; gap: 2px; align-items: stretch; padding-top: 10px; padding-bottom: 10px; }
+  .recent:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lip); }
+  .rh { display: flex; justify-content: space-between; align-items: center; }
+  .rh small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
+  .rh .chev { width: 18px; height: 18px; }
+  .rr { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; min-height: 30px; font-weight: 700; font-size: var(--fs-body); }
+  .rr + .rr { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); padding-top: 4px; }
+  .rl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rr b { font-size: var(--fs-body); }
+  .rr.off .rl, .rr.off b { color: var(--text-soft); text-decoration: line-through; }
   .paid { margin: 0; display: flex; justify-content: center; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .paid svg { width: 16px; height: 16px; }
 
