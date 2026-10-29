@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -432,6 +432,18 @@
       "w": 329,
       "h": 409,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH_Winter.png"
+    },
+    "villagers/anchovy": {
+      "path": "villagers/anchovy.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Anchovy_NH.png"
+    },
+    "villagers/anchovy-icon": {
+      "path": "villagers/anchovy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Anchovy_NH_Villager_Icon.png"
     },
     "villagers/bob": {
       "path": "villagers/bob.webp",

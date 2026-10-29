@@ -9,6 +9,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
+import { ROSTER } from '../src/lib/villagers/roster.ts';
 
 const UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
@@ -21,8 +22,6 @@ const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '')
 
 /** key → [max px on the longer side, ...candidate file titles in preference order]. */
 type Spec = [number, ...string[]];
-
-const ROSTER = ['Goldie', 'Raymond', 'Bob', 'Bunnie', 'Judy', 'Stitches', 'Hamlet', 'Molly', 'Lily', 'Dom'];
 
 const SPECS: Record<string, Spec> = {
   // Isabelle, the host. Only the transparent renders (NH_2..4 have white backgrounds). There is no
@@ -93,6 +92,9 @@ const SPECS: Record<string, Spec> = {
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design/design.md §S.2). */
 const TRIM = ['bushes/', 'flowers/'];
+/** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
+const trims = (key: string) =>
+  TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');
 
 // v4 reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.
 const EMOTIONS = [
@@ -103,10 +105,11 @@ const EMOTIONS = [
 for (const e of EMOTIONS) SPECS[`reactions/${e.toLowerCase()}`] = [96, `Emotion_${e}_NH_Icon.png`];
 // The pose-style reaction (a player silhouette) of the both-of-us dance (motion/reactions.ts).
 SPECS['reactions/pose-viva'] = [96, 'Viva_NH_Reaction_Icon.png'];
-for (const name of ROSTER) {
-  const id = name.toLowerCase();
+// Every roster villager (src/lib/villagers/roster.ts): a full-body render + the round head icon.
+for (const { id, nameEn } of Object.values(ROSTER)) {
+  const name = nameEn.replace(/ /g, '_'); // file titles use underscores ('Agent S' → Agent_S_NH.png)
   // Prefer the large transparent renders; `<Name>_NH.png` (the infobox image) is the safe last resort.
-  const extra = name === 'Hamlet' ? ['Hamlet_NH_2.png'] : []; // Hamlet's _1 doesn't exist; _2 is the big front render
+  const extra = id === 'hamlet' ? ['Hamlet_NH_2.png'] : []; // Hamlet's _1 doesn't exist; _2 is the big front render
   SPECS[`villagers/${id}`] = [512, `${name}_NH_Transparent.png`, `${name}_NH_1.png`, ...extra, `${name}_NH.png`];
   SPECS[`villagers/${id}-icon`] = [128, `${name}_NH_Villager_Icon.png`];
 }
@@ -217,7 +220,7 @@ async function main() {
     const info = infos.get(title)!;
     const src = join(tmp, 'src' + (title.match(/\.\w+$/)?.[0] ?? '.png'));
     writeFileSync(src, Buffer.from(await (await get(info.url)).arrayBuffer()));
-    const crop = TRIM.some((p) => key.startsWith(p)) ? alphaBox(src, tmp) : null;
+    const crop = trims(key) ? alphaBox(src, tmp) : null;
     const [w, h] = crop ? fit(crop[2], crop[3], max) : fit(info.width, info.height, max);
     const rel = `${key}.webp`;
     const dest = join(OUT, rel);
