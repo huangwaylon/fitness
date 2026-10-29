@@ -1,7 +1,7 @@
 // History and editing (docs/design/history-and-editing.md §4–5): edits are new behaviour on top of the golden model.
 // Own data only (the sender is the subject), open weeks only (this week, and last week until Wednesday 04:00 JST).
 import { describe, expect, it } from 'vitest';
-import type { EventRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/ingest/sheet-api.ts';
+import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/ingest/sheet-api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/scoring/index.ts';
 import { reduce } from './state.ts';
@@ -417,5 +417,30 @@ describe('harvest taps (one acceptance rule for the island and きろく)', () =
     const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A', '2026-11-09'), harvest(jst(SUN, '20:00'), 'B')] });
     expect(view(rows, 'A', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['B'] });
     expect(harvested(rows, AFTER)).toBe(false);
+  });
+});
+
+describe('presence rows (read-time rules in reduce)', () => {
+  const pres = (at: string, person: PersonId, place: string, event: 'arrive' | 'leave', eventAt = at): PresenceRow => [at, person, place, event, eventAt];
+  const kept = (presence: PresenceRow[], p: PersonId = 'A') => reduce({ metrics: [], workouts: [], presence, events: [] }).presence[p].map((e) => `${e.event}@${e.eventAt}`);
+  const T = jst(DAYS[1], '18:00');
+
+  it('a repeat of the same event within 2 minutes is dropped; later than that it counts', () => {
+    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:02'), 'A', 'anytime', 'arrive')])).toEqual([`arrive@${new Date(T).toISOString()}`]);
+    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:03'), 'A', 'anytime', 'arrive')])).toHaveLength(2);
+    // A different event (leave) is never a duplicate of an arrive.
+    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:01'), 'A', 'anytime', 'leave')])).toHaveLength(2);
+  });
+
+  it('an event_at more than 48 h from the server `at` is ignored; within it, event_at is the time used', () => {
+    expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '18:01'))])).toEqual([]);
+    expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '17:59'))])).toEqual([`arrive@${new Date(jst(DAYS[3], '17:59')).toISOString()}`]);
+  });
+
+  it("an unknown place, or another person's place, is ignored", () => {
+    expect(kept([pres(T, 'A', 'nowhere', 'arrive')])).toEqual([]);
+    expect(kept([pres(T, 'A', 'pt_studio', 'arrive')])).toEqual([]);
+    expect(kept([pres(T, 'A', 'pt_studio', 'arrive')], 'B')).toEqual([]);
+    expect(kept([pres(T, 'B', 'pt_studio', 'arrive')], 'B')).toHaveLength(1);
   });
 });

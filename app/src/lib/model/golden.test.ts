@@ -45,14 +45,17 @@ const canon = (v: unknown): string =>
 const digest = (v: unknown) => createHash('sha256').update(canon(v)).digest('hex').slice(0, 16);
 
 /** The sheet as it stood at t: rows the script had stamped by then. */
+const AT = new Map<readonly unknown[], number>(Object.values(ROWS).flatMap((tab: (readonly unknown[])[]) => tab.map((r) => [r, Date.parse(String(r[0]))] as const)));
 function rowsAt(tMs: number): SnapshotRows {
-  const upTo = <T extends readonly unknown[]>(tab: T[]) => tab.filter((r) => Date.parse(String(r[0])) <= tMs);
+  const upTo = <T extends readonly unknown[]>(tab: T[]) => tab.filter((r) => AT.get(r)! <= tMs);
   return { metrics: upTo(ROWS.metrics), workouts: upTo(ROWS.workouts), presence: upTo(ROWS.presence), events: upTo(ROWS.events) };
 }
 
-const view = (t: string, me: PersonId): WeekView => {
+/** Both people's views at t, from one reduce of the rows (the State is shared, as in the app). */
+const views = (t: string): Record<PersonId, WeekView> => {
   const tMs = Date.parse(t);
-  return buildWeekView({ me, now: t, rows: rowsAt(tMs) }, me, tMs);
+  const s = reduce(rowsAt(tMs));
+  return { A: buildWeekView(s, 'A', tMs), B: buildWeekView(s, 'B', tMs) };
 };
 
 describe('golden: model vs the frozen server views on a 10-week timeline', () => {
@@ -69,12 +72,18 @@ describe('golden: model vs the frozen server views on a 10-week timeline', () =>
   });
 
   it('matches the full server WeekView at every key instant, for both people', () => {
-    for (const [t, byPerson] of Object.entries(VIEWS)) for (const me of PEOPLE) expect(view(t, me), `${t} ${me}`).toStrictEqual(byPerson[me]);
+    for (const [t, byPerson] of Object.entries(VIEWS)) {
+      const v = views(t);
+      for (const me of PEOPLE) expect(v[me], `${t} ${me}`).toStrictEqual(byPerson[me]);
+    }
   });
 
   it('matches the server WeekView digest at every checkpoint, for both people', () => {
     const mismatches: string[] = [];
-    for (const [t, byPerson] of Object.entries(DIGESTS)) for (const me of PEOPLE) if (digest(view(t, me)) !== byPerson[me]) mismatches.push(`${t} ${me}`);
+    for (const [t, byPerson] of Object.entries(DIGESTS)) {
+      const v = views(t);
+      for (const me of PEOPLE) if (digest(v[me]) !== byPerson[me]) mismatches.push(`${t} ${me}`);
+    }
     expect(mismatches.slice(0, 10), `${mismatches.length} views differ`).toEqual([]);
   }, 120_000);
 

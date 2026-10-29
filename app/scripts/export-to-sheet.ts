@@ -11,9 +11,9 @@
 //   workout.includes_strength → confirm {kind:'workout'}  purse_spend → spend (+ approve, at = the ledger entry's time)
 //   visit_confirmation → confirm {kind:'visit', id:'<place>@<arrive ISO>'} (the model's visit id)
 //   transfer → transfer {month}   harvest_confirm → harvest {week}   high_five → highfive {}
-//   person_pref → pref {key, value}                       visibility_pref → share {metric, on}
+//   person_pref → pref {key, value}
 // Not exported (warned about): ledger entries (compute-on-read replaces the ledger), raw payloads, devices, push
-// subscriptions.
+// subscriptions, and visibility_pref (both players see all data; the model ignores `share` rows).
 import { DatabaseSync } from 'node:sqlite';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -78,7 +78,6 @@ for (const r of all('select * from person_pref')) {
     if (r[col] !== null && r[col] !== undefined) ev(exportAt, r.person, `pref:${r.person}:${key}`, 'pref', { key, value: r[col] });
   }
 }
-for (const r of all('select * from visibility_pref')) ev(exportAt, r.person, `share:${r.person}:${r.metric}`, 'share', { metric: r.metric, on: r.share_raw === 1 });
 events.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
 
 mkdirSync(outDir, { recursive: true });

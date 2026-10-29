@@ -51,7 +51,7 @@ export function minuteSourcesMilli(steps: number | null, exerciseMin: number | n
 }
 
 /** A day's active milli-minutes before the daily cap: max(Watch, step-derived, manual workouts). */
-export function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
+function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
   const m = minuteSourcesMilli(steps, exerciseMin, manualMin, stepGoal);
   return Math.max(0, m.watch, m.steps, m.manual);
 }

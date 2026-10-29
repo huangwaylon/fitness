@@ -29,8 +29,7 @@ export const EVENT_TYPES = [
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
-export const METRIC_KEYS = ['steps', 'exercise_min'] as const;
-export type MetricKey = (typeof METRIC_KEYS)[number];
+export type MetricKey = 'steps' | 'exercise_min';
 export const isMetricKey = (v: unknown): v is MetricKey => v === 'steps' || v === 'exercise_min';
 
 /** A local date `YYYY-MM-DD`. */
