@@ -2,7 +2,7 @@
 
 Scope: `app/gas`, `app/apps-script`, `src/lib/{ingest,model,scoring}`, `config/rules.ts`, `types.ts`, `app/scripts` at `d74268f`. Read-only.
 
-**Checks:** `npm run check` gives 0 errors and 0 warnings (455 files). `npx vitest run` gives 219/219 in 2.4 s. `golden.test.ts` digests take 1.95 s of that. `npx knip` reports 39 unused exports and 35 unused types; the items below are each confirmed by grep. Knip's `@fontsource/zen-maru-gothic` hit is a false positive (it is loaded by a `fonts.css` url). `Code.js` is 29.8 KB / 768 lines, which is lean: dates, parse (SHA-256 is about 85 lines), labels, sheet-api and main. The only bloat is a second `isRec` (`isRec2`) and the esbuild export shim.
+**Checks:** `npm run check` gives 0 errors and 0 warnings (455 files). `npx vitest run` gives 219/219 in 2.4 s. `golden.test.ts` digests take 1.95 s of that. `npx knip` reports 39 unused exports and 35 unused types; the items below are each confirmed by grep. Knip's `@fontsource/zen-maru-gothic` hit is a false positive (it is loaded by a `fonts.css` url). `Code.js` is 29.8 KB / 768 lines: lean; the only bloat is a duplicate `isRec2` and the esbuild export shim.
 
 **Measured** (Node, golden rows: 543 metrics, 48 workouts, 71 presence, 410 events): `reduce` 2.2 ms, `buildWeekView` 1.9 ms, `historyWeeks` 2.4 ms. At week 52 with **no extra rows**, these rise to 8.6 ms and 15.5 ms. Cost grows as weeks × rows. Expect 3–5× that on a phone, and it runs on every tap and every minute.
 
@@ -15,7 +15,7 @@ Scope: `app/gas`, `app/apps-script`, `src/lib/{ingest,model,scoring}`, `config/r
 - [ ] `gas.d.ts:17` and `fakes.ts:28` `appendRow`: unused, since `main.ts` only uses `setValues`.
 - [ ] `sheet-api.ts:47-50` `Fail/IngestReply/PresenceReply`: unused. Better, use them to type `main.ts` replies (see Simplify).
 - [ ] `state.ts:263` and `client/gas.ts:201`: the `d.habitKey` fallback. Nothing writes it, not even `export-to-sheet.ts:51`.
-- [ ] `export-to-sheet.ts:81`: it still emits `share` rows (privacy was removed and the model ignores them). Drop the line now.
+- [ ] `export-to-sheet.ts:81`: it still emits `share` rows, which the model ignores. Drop it now.
 - [ ] **Risky, after the migration** (runbook §5, due before 2026-11-08): delete `scripts/export-to-sheet.ts` (95 LOC), the `export:sheet` npm script, runbook §5, and the `facts`/"Mac server" comments in `parse.ts:5,151` (keep the SHA id rationale).
 - [ ] Unexport internal-only symbols: `constantTimeEqual`, `toIsoDate`, `isUnknownLocalisedType`, `seasonFirstWeek`, `visitsAsOf`, `ticksAsOf`, `monthEarnings`, `ACTIVE_DAY_MIN`, `dayMinutes`, and `activeMilliOfDay` from `scoring/index.ts:4`. Inline `weekOpen` (`history.ts:57` is just `editableAt`).
 - [ ] Add a `knip.json` that ignores `apps-script/Code.js` (generated), the zen-maru dependency, and `cwebp`/`dwebp` (system binaries used by `fetch-assets.ts`).
@@ -62,7 +62,7 @@ Scope: `app/gas`, `app/apps-script`, `src/lib/{ingest,model,scoring}`, `config/r
 - [ ] Align field names: `CheckinRec.habit` vs `CheckinTick.habitKey`, and `extId` vs `id` (`WorkoutRec`, `DayWorkout`).
 
 ## Perf
-- [ ] **P1:** memoise `settledWeeks` per `State` (a `WeakMap`, like `editLog`). `buildWeekView`, `historyWeeks`, `moneyLog` and `weekDetail` each recompute it, at 2 `payoutAsOf` per week. Zero risk.
+- [ ] **P1:** memoise `settledWeeks` per `State` (`WeakMap`). `buildWeekView`, `historyWeeks`, `moneyLog` and `weekDetail` each recompute it, at 2 `payoutAsOf` per week. Zero risk.
 - [ ] **P2:** `activityAsOf` builds *all-time* workouts and visits for each week × person × cutoff (`week.ts:92` default argument, `history.ts:63`). Filter to the week's dates (±1 day for visits) before deriving. This turns weeks × rows into roughly rows.
 - [ ] **P3:** memoise `targetsFor(person, wk)` and `seasonFirstWeek()`. Both re-sort `SEASONS` and allocate 7 dates per call. They are called per check-in in `reduce`, per day in stamps, and in every `isLockedAt`.
 - [ ] **P4:** `mergeTab` (`snapshot.ts:42`) calls `Date.parse` inside the sort comparator and re-sorts everything on every poll. Parse once per row, and append without sorting when every added row is newer (the usual case).
@@ -75,5 +75,5 @@ Scope: `app/gas`, `app/apps-script`, `src/lib/{ingest,model,scoring}`, `config/r
   - `reduce` presence rules have no unit test: the 2-min duplicate, the 48 h window, and the place/person mismatch.
   - The days form with an offset timestamp.
   - `since` with a non-millisecond `at`.
-- [ ] **Speed:** in `golden.test.ts:77`, build each instant's `reduce` once for A and B (currently 1,320 reduces, about −1 s). Keep both the 50 full views and the 660 digests: the views give readable diffs, the digests give breadth.
-- [ ] **Redundant or removed behaviour:** none found. `main.test.ts:257` correctly asserts that `share` is refused, and the `labels`-vs-`server-facts` check stays useful as an id/label pin once the alias merge lands.
+- [ ] **Speed:** in `golden.test.ts:77`, build each instant's `reduce` once for A and B (currently 1,320 reduces, about −1 s).
+- [ ] **Redundant or removed behaviour:** none found. (`main.test.ts:257` rightly asserts `share` is refused).
