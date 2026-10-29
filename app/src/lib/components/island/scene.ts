@@ -3,8 +3,8 @@
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { BushId, FlowerId } from '#lib/art.ts';
 
-export const STAGE_W = 390;
-export const STAGE_H = 360;
+const STAGE_W = 390;
+const STAGE_H = 360;
 
 /** Stage units → CSS length (relative to the stage width; the stage is the container). */
 export const u = (n: number): string => `${((n * 100) / STAGE_W).toFixed(3)}cqw`;
@@ -17,10 +17,10 @@ export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
  *  villager height VILLAGER.h ≈ 1.8 tiles, measured against in-game screenshots (`.refs/scale/`). */
 export const TILE = 44;
 export const ROW = 31;
-export const col = (k: number): number => 195 + k * TILE;
+const col = (k: number): number => 195 + k * TILE;
 /** Row bases (y of the feet / trunk bottom): back hedge, trees + jar, the flower beds' back and front rows
  *  (the villagers stand on the front row). */
-export const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
+const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
 
 /** One tree per person (round 6): a plain official hardwood of the season (in AC a tree bears one kind of
  *  fruit, so this one bears none), trunk on column ±2. NH hardwood ≈ 1.5 × a villager tall, canopy ≈ 2.2
@@ -65,7 +65,7 @@ export interface Prop {
 /** The hedge's species of the month (NH flowering seasons, northern hemisphere): one species per hedge,
  *  its two colours alternating (how NH players plant a tidy hedge). Spring azaleas, June hydrangeas,
  *  Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly, Jan–Mar camellias. */
-export function hedgePair(_season: Season, month: number): [BushId, BushId] {
+function hedgePair(_season: Season, month: number): [BushId, BushId] {
   if (month >= 4 && month <= 5) return ['pink-azalea', 'white-azalea'];
   if (month === 6) return ['blue-hydrangea', 'pink-hydrangea'];
   if (month >= 7 && month <= 8) return ['red-hibiscus', 'yellow-hibiscus'];
@@ -87,11 +87,11 @@ export const BUSH_U = 48;
 export const PLATEAU = { x0: 44, y0: 50, x1: 346, y1: 316, rt: 60, rb: 26 } as const;
 export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as const;
 /** The plateau's front edge (grass), in u: the cliff and the beach lie below it. */
-export const PLATEAU_BOTTOM = PLATEAU.y1;
+const PLATEAU_BOTTOM = PLATEAU.y1;
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the stage's front beach (below y 360 − TUCK_U) tucks under
  *  the top of the fixed chrome slot, so the shore runs down to the dialogue instead of an empty sea band. */
-export const HORIZON_U = 8;
-export const TUCK_U = 34;
+const HORIZON_U = 8;
+const TUCK_U = 34;
 
 /** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the jar, on columns ±2/±3 of the
  *  front two rows (the villagers stand on columns ±1; column 0 stays open for their strolls). One flower per
