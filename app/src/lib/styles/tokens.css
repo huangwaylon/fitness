@@ -281,6 +281,7 @@
 .if-scene[data-tod="night"] {
   --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(64,78,160,.26); --cloud:#9AA6E0; --cloud-shade:#7F8BCB;
   --cloud-op:.5; --foam:rgba(255,255,255,.75);
+  --sea-far:#8FCBE8; --sea:#4FB2DA; --sea-deep:#3A92C6;
 }
 /* Pause every scene animation while the tab is hidden (§S.13). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
