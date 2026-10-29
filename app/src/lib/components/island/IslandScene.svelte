@@ -214,6 +214,8 @@
   let balloon = $state(false);
   let devFireworks = $state(false);
   const covered = $derived(paused || ui.overlay);
+  /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
+  const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 
   function asleepHour(d = now()) {
     const h = d.getHours();
@@ -384,9 +386,9 @@
       </div>
     {/each}
 
-    <Particles {season} {foliage} {tod} mode="fireflies" />
+    <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" />
     <div class="tint"></div>
-    <div class="fall"><Particles {season} {foliage} {tod} festival={ev.cherry || ev.maple} /></div>
+    <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>
   </div>
 </div>
 
@@ -408,7 +410,8 @@
 
   /* jar + plate: one button (≥ 64px), anchored at the jar's base; the plate hangs just below it */
   .jar {
-    position: absolute; z-index: 43; translate: -50% 0; display: flex; flex-direction: column; align-items: center;
+    /* above the time-of-day tint: the jar and its plate stay game-object bright (v5 §5) */
+    position: absolute; z-index: 81; translate: -50% 0; display: flex; flex-direction: column; align-items: center;
     min-width: 64px; min-height: 64px; padding: 0 6px; margin: 0; appearance: none; background: none; border: 0;
     border-radius: 24px; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent;
     transition: transform 160ms var(--ease-soft, ease-out);
@@ -462,7 +465,8 @@
   .vil:disabled { cursor: default; }
   .jar:focus-visible, .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  .tint { position: absolute; inset: 0; z-index: 80; background: var(--tod-tint); pointer-events: none; }
+  /* the tint also covers the back sea drawn 40u above the stage box, up to the horizon */
+  .tint { position: absolute; inset: calc(-40 * 100cqw / 390) 0 0 0; z-index: 80; background: var(--tod-tint); pointer-events: none; }
   /* falling leaves pass behind the villagers (z 51/52), never across their faces */
   .fall { position: absolute; left: 0; right: 0; bottom: 0; height: var(--scene-h, var(--scene-h-auto)); z-index: 50; pointer-events: none; }
   .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }

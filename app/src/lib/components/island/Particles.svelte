@@ -15,16 +15,19 @@
     /** Petals only fall while the cherry blossoms are out, maple leaves once the oaks turn. */
     foliage?: Foliage;
     tod: Tod;
+    /** The villagers sleep (their zzz loops count against the budget): one particle at most. */
+    quiet?: boolean;
     /** Cherry-blossom / maple week: a few more. */
     festival?: boolean;
     mode?: 'fall' | 'fireflies';
   }
-  let { season, foliage = 'green', tod, festival = false, mode = 'fall' }: Props = $props();
+  let { season, foliage = 'green', tod, quiet = false, festival = false, mode = 'fall' }: Props = $props();
 
   const kind = $derived(
-    foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
+    // leaves and petals rest at night (v5 §6 budget); snow keeps falling
+    foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' && tod !== 'night' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
   );
-  const count = $derived(kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);
+  const count = $derived(quiet ? (kind ? 1 : 0) : kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);
   const items = $derived.by(() => {
     const r = rng(season.length * 97 + count);
     const [d0, d1] = kind === 'snowflake' ? [12, 18] : kind === 'maple-leaf' ? [10, 15] : [9, 14];
@@ -40,7 +43,8 @@
       };
     });
   });
-  const FIREFLIES = [[60, 200], [268, 222], [104, 132]];
+  const FIREFLIES_ALL = [[60, 200], [268, 222], [104, 132]];
+  const FIREFLIES = $derived(quiet ? FIREFLIES_ALL.slice(0, 1) : FIREFLIES_ALL);
 </script>
 
 {#if mode === 'fall' && kind}
