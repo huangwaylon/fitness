@@ -192,10 +192,11 @@ class WeekStore {
   async #flush(reconcile: boolean): Promise<void> {
     if (this.#retryTimer) clearTimeout(this.#retryTimer);
     this.#retryTimer = null;
-    const before = queued();
     const r = await flush();
-    const left = new Set([...queued(), ...r.dropped].map((e) => e.id));
-    this.#sent.push(...before.filter((e) => !left.has(e.id)));
+    // Only events the server acked stay on screen until the snapshot has them. An event that left the
+    // queue because it was undone mid-flush must not come back (review r2 N1).
+    const known = new Set(this.#sent.map((e) => e.id));
+    this.#sent.push(...r.acked.filter((e) => !known.has(e.id)));
     if (r.dropped.length) {
       this.showToast(t('state.saveFailed'));
       this.#recompute();

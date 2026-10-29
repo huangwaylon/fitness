@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
 import {
-  applySnapshot, backoffMs, configure, enqueue, flush, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
+  applySnapshot, backoffMs, configure, enqueue, flush, unqueue, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
 } from './gas.ts';
 import { composeView } from './view.ts';
 import { emptyRows, mergeRows, maxAt } from '#lib/model/snapshot.ts';
@@ -87,6 +87,19 @@ describe('write queue', () => {
     expect(calls.map((c) => c.type)).toEqual(['checkin', 'highfive']);
     expect(calls[0]).toMatchObject({ action: 'event', key: KEY, data: { date: '2026-11-02', habit: 'h', done: true } });
     expect(typeof calls[0].id).toBe('string');
+    expect(queued()).toEqual([]);
+  });
+  it('reports only acked events: one undone while an earlier event is in flight is not acked (r2 N1)', async () => {
+    const first = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true });
+    const second = enqueue('transfer', { month: '2026-10' });
+    handler = (body) => {
+      // While the first event is on the wire, the user taps 取り消す on the second.
+      if (body.id === first.id) expect(unqueue(second.id)).toBe(true);
+      return { ok: true };
+    };
+    const r = await flush();
+    expect(r.acked.map((e) => e.id)).toEqual([first.id]);
+    expect(calls.map((c) => c.id)).toEqual([first.id]);
     expect(queued()).toEqual([]);
   });
   it('keeps the event (and order) with a backoff on transient errors, then retries', async () => {
