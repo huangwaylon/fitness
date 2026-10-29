@@ -120,6 +120,8 @@
   "partner.highfive": "High-five",
   "partner.today": "Meals today",
   "phone.name.label": "Name",
+  "phone.villager.search": "Search name or species",
+  "phone.villager.none": "No villagers found",
   "partner.never": "Not synced yet",
   "host.grew": "Your {fruit} grew!",
   "pending.ask": "Count {label} as strength?",
