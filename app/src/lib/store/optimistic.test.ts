@@ -2,8 +2,13 @@
 // (the demo runs the same model on generated rows: demoRows.test.ts), and must not snap back between the server's ack and the next fetch.
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/contract/api.ts';
-import { applySnapshot, configure, enqueue, flush, queued, setKey, unqueue, type KV, type QueuedEvent } from './gas.ts';
-import { composeView, notInCache } from './view.ts';
+import { configureStorage, type KV } from '#lib/sync/storage.ts';
+import { configureTransport } from '#lib/sync/transport.ts';
+import { enqueue, flush, queued, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
+import { applySnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
+import { setKey } from '#lib/sync/pairing.ts';
+import { buildWeekView } from '#lib/model/week.ts';
+import { composeModel, notInCache } from './view.ts';
 import { mergeRows } from '#lib/model/snapshot.ts';
 
 class Mem implements KV {
@@ -23,8 +28,14 @@ const rows = (): SnapshotRows => ({
 });
 const ev = (id: string, type: QueuedEvent['type'], data: Record<string, unknown>): QueuedEvent => ({ id, type, data, queuedAt: NOW, tries: 0, nextAt: NOW });
 
+function composeView(cache: SnapshotCache, queue: QueuedEvent[], now: number) {
+  const m = composeModel(cache, queue, now);
+  return buildWeekView(m.state, m.me, m.now);
+}
+
 beforeEach(() => {
-  configure({ storage: new Mem(), fetch: (async () => new Response(JSON.stringify({ ok: true }))) as typeof fetch, url: 'https://script.example/exec' });
+  configureStorage({ local: new Mem() });
+  configureTransport({ fetch: (async () => new Response(JSON.stringify({ ok: true }))) as typeof fetch, url: 'https://script.example/exec' });
   setKey('ab'.repeat(32), 'A');
 });
 

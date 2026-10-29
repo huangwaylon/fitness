@@ -7,9 +7,9 @@ import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from 
 import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
 import { prevMonth } from '#lib/model/week.ts';
-import type { SnapshotCache } from './gas.ts';
+import type { SnapshotCache } from '#lib/sync/cache.ts';
 
-export const DEMO_WEEKS_BACK = 8;
+const DEMO_WEEKS_BACK = 8;
 
 /** mulberry32, seeded by a string. */
 function rng(seed: string): () => number {
@@ -29,12 +29,12 @@ const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
 const HABITS: Record<PersonId, string[]> = { A: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], B: ['eat_lunch', 'snack_swap', 'veg_two_meals'] };
 
-export function demoFirstWeek(now: number): WeekKey {
+function demoFirstWeek(now: number): WeekKey {
   return addDays(weekKeyOf(nowInZone(new Date(now)).date), -7 * DEMO_WEEKS_BACK);
 }
 
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
-export function demoRows(now: number): SnapshotRows {
+function demoRows(now: number): SnapshotRows {
   const today = nowInZone(new Date(now)).date;
   const cur = weekKeyOf(today);
   const first = demoFirstWeek(now);

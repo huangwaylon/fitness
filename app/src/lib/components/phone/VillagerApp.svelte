@@ -6,7 +6,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import Villager from '../characters/Villager.svelte';
   import { roving } from '../ui/roving.ts';
-  import { setVillagerName, setVillager } from '#lib/client/actions.ts';
+  import { setVillagerName, setVillager } from '#lib/store/actions.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
   import { t, i18n } from '#lib/i18n/index.ts';
 

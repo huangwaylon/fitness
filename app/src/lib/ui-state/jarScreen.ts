@@ -5,7 +5,7 @@ import { RULES, SEASONS } from '#lib/config/rules.ts';
 import { dateMs } from '#lib/time/dates.ts';
 import { moneyLog } from '#lib/model/history.ts';
 import { provisionalMs } from '#lib/model/state.ts';
-import type { ComposedModel } from '../client/view.ts';
+import type { ComposedModel } from '#lib/store/view.ts';
 import { t } from '#lib/i18n/index.ts';
 import { weekRange } from '#lib/i18n/format.ts';
 

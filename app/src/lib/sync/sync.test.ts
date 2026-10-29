@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { IDBFactory } from 'fake-indexeddb';
 import type { SnapshotRows } from '#lib/contract/api.ts';
-import {
-  applySnapshot, backoffMs, configure, enqueue, flush, holdEvent, nextRetryAt, unqueue, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
-} from './gas.ts';
-import { composeModel, composeView, missesLock } from './view.ts';
+import { configureStorage, getKey, type KV } from './storage.ts';
+import { configureTransport, post } from './transport.ts';
+import { backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, unqueue } from './queue.ts';
+import { applySnapshot, configureCache, loadCache, refreshSnapshot } from './cache.ts';
+import { keyFromHash, setKey } from './pairing.ts';
+import { composeModel, missesLock } from '#lib/store/view.ts';
+import { buildWeekView } from '#lib/model/week.ts';
 import { emptyRows, mergeRows, maxAt } from '#lib/model/snapshot.ts';
 
 class Mem implements KV {
@@ -31,10 +35,22 @@ function fakeFetch(): typeof fetch {
 
 const KEY = 'ab'.repeat(32);
 
+function configure(o: { storage?: KV; fetch?: typeof fetch; url?: string }): void {
+  if (o.storage) configureStorage({ local: o.storage });
+  configureTransport(o);
+}
+
+/** Cache + queue → WeekView, as the store composes it. */
+function composeView(cache: Parameters<typeof composeModel>[0], queue: Parameters<typeof composeModel>[1], now: number) {
+  const m = composeModel(cache, queue, now);
+  return buildWeekView(m.state, m.me, m.now);
+}
+
 beforeEach(() => {
   calls = [];
   handler = () => ({ ok: true });
   configure({ storage: new Mem(), fetch: fakeFetch(), url: 'https://script.example/exec' });
+  configureCache({ indexedDB: new IDBFactory() });
   setKey(KEY, 'A');
 });
 
@@ -257,7 +273,7 @@ describe('snapshot cache', () => {
     const second = await refreshSnapshot();
     expect(calls[1].since).toBe('2026-11-02T01:00:00.000Z');
     expect(second.ok && second.cache.rows.metrics).toHaveLength(2);
-    expect(loadCache()?.since).toBe('2026-11-02T04:00:00.000Z');
+    expect((await loadCache())?.since).toBe('2026-11-02T04:00:00.000Z');
   });
   it('overlapping refreshes share one request, so neither merges from a stale cache (r2 N2)', async () => {
     handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() });

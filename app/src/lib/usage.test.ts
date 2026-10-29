@@ -1,5 +1,5 @@
 // Every i18n key, sprite symbol and art file the UI uses exists, and none is left unused (round 8). Usage is read
-// from the UI's sources (components, routes, client code, i18n, villagers, the art helpers): string literals, plus
+// from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
 // the static prefix of a dynamic key (`habit.${k}`, 'rung.' + key). The host's lines (`host.<line>`) are picked by
 // name: `hostLine('grew')` or `key === 'payday'`.
 import { readFileSync, readdirSync } from 'node:fs';
@@ -13,7 +13,7 @@ import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
-const UI_DIRS = ['lib/components', 'lib/client', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts'];
+const UI_DIRS = ['lib/components', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts'];
 
 function files(p: string): string[] {
   try {

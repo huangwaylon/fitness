@@ -16,7 +16,7 @@
   import Host from '#lib/components/characters/Host.svelte';
   import ToastHost from '#lib/components/ui/ToastHost.svelte';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { startTheme } from '#lib/ui-state/theme.svelte.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';

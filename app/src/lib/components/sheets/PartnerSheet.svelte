@@ -7,7 +7,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import FruitRing from './FruitRing.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
 

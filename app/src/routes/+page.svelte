@@ -15,10 +15,10 @@
   import ChoiceList from '#lib/components/ui/ChoiceList.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
   import PartnerSheet from '#lib/components/sheets/PartnerSheet.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { highFive, confirmPending } from '#lib/client/actions.ts';
+  import { highFive, confirmPending } from '#lib/store/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
 
   let checkinOpen = $state(false);

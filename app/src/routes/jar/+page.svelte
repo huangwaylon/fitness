@@ -11,9 +11,9 @@
   import Yen from '#lib/components/ui/Yen.svelte';
   import Jar, { jarFill } from '#lib/components/island/Jar.svelte';
   import PhoneButton from '#lib/components/ui/PhoneButton.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
-  import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/client/actions.ts';
+  import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/store/actions.ts';
   import { tick } from 'svelte';
   import { MONEY } from '#lib/config/rules.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
@@ -44,7 +44,7 @@
 
   async function markPayday() {
     if (!jar?.transfer) return;
-    const r = await transferDone(jar.transfer.month);
+    const r = transferDone(jar.transfer.month);
     undoBanner(t('jar.paydayNotedYen', { yen: formatYen(jar.transfer.amountYen) }), r, {
       after: async () => {
         await tick();
@@ -55,17 +55,16 @@
     paydayDone?.focus(); // U15: focus stays on the row (now ✓), not <body>
   }
 
-  async function spend() {
+  function spend() {
     if (!picked) return;
     const needsBoth = picked.yen >= MONEY.purseNeedsBothAtYen;
     const label = t(`treat.${picked.key}`);
     const yen = formatYen(picked.yen);
-    const r = await spendPurse(label, picked.yen, needsBoth);
+    const r = spendPurse(label, picked.yen, needsBoth);
     if (r.ok) {
       purseOpen = false;
       picked = null;
-      const pending = r.data?.status ? r.data.status === 'pending' : needsBoth;
-      undoBanner(t(pending ? 'purse.asked' : 'purse.spent', { label, yen }), r, { reaction: pending ? 'thought' : 'joy' });
+      undoBanner(t(r.pending ? 'purse.asked' : 'purse.spent', { label, yen }), r, { reaction: r.pending ? 'thought' : 'joy' });
     }
   }
 </script>
