@@ -1,0 +1,98 @@
+{
+ "labels": {
+  "Traditional Strength Training": {
+   "ja": "筋力トレーニング",
+   "en": "Traditional Strength Training"
+  },
+  "Functional Strength Training": {
+   "ja": "機能的な筋力トレーニング",
+   "en": "Functional Strength Training"
+  },
+  "Core Training": {
+   "ja": "コアトレーニング",
+   "en": "Core Training"
+  },
+  "Pilates": {
+   "ja": "ピラティス",
+   "en": "Pilates"
+  },
+  "Yoga": {
+   "ja": "ヨガ",
+   "en": "Yoga"
+  },
+  "High Intensity Interval Training": {
+   "ja": "高強度インターバルトレーニング",
+   "en": "High Intensity Interval Training"
+  },
+  "Mixed Cardio": {
+   "ja": "ミックスカーディオ",
+   "en": "Mixed Cardio"
+  },
+  "Cross Training": {
+   "ja": "クロストレーニング",
+   "en": "Cross Training"
+  },
+  "Walking": {
+   "ja": "ウォーキング",
+   "en": "Walking"
+  },
+  "Outdoor Walk": {
+   "ja": "屋外ウォーキング",
+   "en": "Outdoor Walk"
+  },
+  "Indoor Walk": {
+   "ja": "室内ウォーキング",
+   "en": "Indoor Walk"
+  },
+  "Hiking": {
+   "ja": "ハイキング",
+   "en": "Hiking"
+  },
+  "Running": {
+   "ja": "ランニング",
+   "en": "Running"
+  },
+  "Outdoor Run": {
+   "ja": "屋外ランニング",
+   "en": "Outdoor Run"
+  },
+  "Indoor Run": {
+   "ja": "室内ランニング",
+   "en": "Indoor Run"
+  },
+  "Cycling": {
+   "ja": "サイクリング",
+   "en": "Cycling"
+  },
+  "Swimming": {
+   "ja": "水泳",
+   "en": "Swimming"
+  },
+  "Dance": {
+   "ja": "ダンス",
+   "en": "Dance"
+  },
+  "Elliptical": {
+   "ja": "エリプティカル",
+   "en": "Elliptical"
+  },
+  "Rowing": {
+   "ja": "ローイング",
+   "en": "Rowing"
+  },
+  "Unknown Thing": {
+   "ja": "Unknown Thing",
+   "en": "Unknown Thing"
+  }
+ },
+ "clawback": {
+  "week": "2026-11-16",
+  "at": "2026-11-24T19:01:00.000Z",
+  "paidB": 3600
+ },
+ "ledger": {
+  "topups": 18,
+  "spends": 4
+ },
+ "refused": 37
+}
