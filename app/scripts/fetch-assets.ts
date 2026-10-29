@@ -46,8 +46,86 @@ const SPECS: Record<string, Spec> = {
   // NookPhone (しまフォン launcher).
   'phone/nookphone': [512, 'NookPhone_NH_Model.png'],
   'phone/diy': [92, 'NookPhone_DIY_NH_Icon.png'],
-  'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png']
+  'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png'],
+  // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
+  'phone/rescue': [92, 'NookPhone_Rescue_Service_NH_Icon.png'],
+  'phone/miles': [92, 'NookPhone_Nook_Miles_NH_Icon.png'],
+  'phone/designer': [92, 'NookPhone_Island_Designer_NH_Icon.png'],
+  'phone/glyph-help': [96, 'Menu_Island_Life_101_NH_Icon.png'],
+  'phone/glyph-chat': [96, 'Menu_Chat_Log_NH_Icon.png'],
+  'phone/glyph-friends': [96, 'Menu_Best_Friends_List_NH_Icon.png'],
+  'phone/glyph-resident': [96, 'Menu_Call_Resident_NH_Icon.png'],
+  'phone/glyph-camera': [96, 'Menu_Camera_NH_Icon.png'],
+  'phone/glyph-map': [96, 'Menu_Map_NH_Icon.png'],
+  'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
+  // v4 trees: the hardwood (oak) in its four seasonal looks carries the fruit; cedar + palm frame the island.
+  'trees/oak-spring': [384, 'Oak_Tree_NH_Spring.png'],
+  'trees/oak-summer': [384, 'Oak_Tree_NH.png'],
+  'trees/oak-fall': [384, 'Oak_Tree_NH_Fall.png'],
+  'trees/oak-winter': [384, 'Oak_Tree_NH_Winter.png'],
+  'trees/cedar': [384, 'Cedar_Tree_NH.png'],
+  'trees/palm': [320, 'Palm_Tree_NH.png'],
+  'trees/apple-icon': [96, 'Apple_Tree_NH_Icon.png'],
+  'trees/peach-icon': [96, 'Peach_Tree_NH_Icon.png'],
+  'trees/pear-icon': [96, 'Pear_Tree_NH_Icon.png'],
+  'trees/coconut-icon': [96, 'Coconut_Tree_NH_Icon.png'],
+  // v4 bushes (one pair per season).
+  'bushes/pink-azalea': [96, 'Pink-Azalea_Bush_NH_Inv_Icon.png'],
+  'bushes/blue-hydrangea': [96, 'Blue-Hydrangea_Bush_NH_Inv_Icon.png'],
+  'bushes/red-hibiscus': [96, 'Red-Hibiscus_Bush_NH_Inv_Icon.png'],
+  'bushes/orange-tea-olive': [96, 'Orange-Tea-Olive_Bush_NH_Inv_Icon.png'],
+  'bushes/pink-camellia': [96, 'Pink-Camellia_Bush_NH_Inv_Icon.png'],
+  'bushes/holly': [96, 'Holly_Bush_NH_Inv_Icon.png'],
+  'bushes/green': [96, 'Bush_NH_Inv_Icon.png'],
+  // v4 island decorations.
+  'deco/fence-wood': [96, 'Simple_Wooden_Fence_NH_Icon.png'],
+  'deco/fence-log': [96, 'Log_Fence_NH_Icon.png'],
+  'deco/log-bench': [96, 'Log_Bench_NH_Icon.png'],
+  'deco/mailbox': [96, 'Wooden_Mailbox_NH_Icon.png'],
+  'deco/bonfire': [96, 'Bonfire_NH_Icon.png'],
+  'deco/rock': [96, 'Mossy_Garden_Rock_NH_Icon.png'],
+  'deco/stone': [96, 'Stone_NH_Inv_Icon.png'],
+  'deco/resident-services': [256, 'Resident_Services_NH_Map_Icon.png'],
+  'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
+  'deco/sand-dollar': [64, 'Sand_Dollar_NH_Inv_Icon.png'],
+  'deco/cowrie': [64, 'Cowrie_NH_Inv_Icon.png'],
+  'deco/conch': [64, 'Conch_NH_Inv_Icon.png'],
+  'deco/star-fragment': [96, 'Star_Fragment_NH_Inv_Icon.png'],
+  'deco/star-fragment-large': [96, 'Large_Star_Fragment_NH_Inv_Icon.png'],
+  'deco/party-popper': [96, 'Party_Popper_NH_Inv_Icon.png'],
+  'deco/present': [96, 'Present_NH_Inv_Icon.png'],
+  // v4 seasonal particles + seasonal ground items.
+  'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
+  'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
+  'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
+  'season/snowflake-large': [96, 'Large_Snowflake_NH_Inv_Icon.png'],
+  'season/acorn': [64, 'Acorn_NH_Inv_Icon.png'],
+  'season/pine-cone': [64, 'Pine_Cone_NH_Inv_Icon.png'],
+  'season/mushroom': [64, 'Mushroom_NH_Inv_Icon.png'],
+  // v4 flower beds (more varieties; see style guide §S.5 for the per-season beds).
+  'flowers/pink-cosmos': [96, 'Pink_Cosmos_NH_Inv_Icon.png'],
+  'flowers/orange-pansies': [96, 'Orange_Pansies_NH_Inv_Icon.png'],
+  'flowers/blue-hyacinths': [96, 'Blue_Hyacinths_NH_Inv_Icon.png'],
+  'flowers/pink-lilies': [96, 'Pink_Lilies_NH_Inv_Icon.png'],
+  'flowers/white-windflowers': [96, 'White_Windflowers_NH_Inv_Icon.png'],
+  'flowers/purple-mums': [96, 'Purple_Mums_NH_Inv_Icon.png'],
+  'flowers/yellow-roses': [96, 'Yellow_Roses_NH_Inv_Icon.png'],
+  'flowers/pink-tulips': [96, 'Pink_Tulips_NH_Inv_Icon.png'],
+  'flowers/lily-of-the-valley': [96, 'Lily-of-the-Valley_Plant_NH_Inv_Icon.png']
 };
+// v4 reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.
+const EMOTIONS = [
+  'Joy', 'Delight', 'Love', 'Surprise', 'Laughter', 'Sleepy', 'Happiness', 'Greetings', 'Encouraging',
+  'Glee', 'Pleased', 'Pride', 'Inspiration', 'Daydreaming', 'Dozing', 'Amazed', 'Curiosity', 'Thought',
+  'Flourish', 'Bashfulness', 'Sheepishness', 'Worry', 'Confident', 'Shocked'
+];
+for (const e of EMOTIONS) SPECS[`reactions/${e.toLowerCase()}`] = [96, `Emotion_${e}_NH_Icon.png`];
+// Pose-style reactions (player silhouettes) for the harvest / cheer moments.
+const POSES: Record<string, string> = {
+  excited: 'Excited', confetti: 'Confetti', viva: 'Viva', 'lets-go': "Let's_Go", 'ta-da': 'Ta-da',
+  'double-wave': 'Double_Wave', jump: 'Jump', 'work-out': 'Work_Out', stretch: 'Stretch', flex: 'Flex'
+};
+for (const [id, t] of Object.entries(POSES)) SPECS[`reactions/pose-${id}`] = [96, `${t}_NH_Reaction_Icon.png`];
 for (const name of ROSTER) {
   const id = name.toLowerCase();
   // Prefer the large transparent renders; `<Name>_NH.png` (the infobox image) is the safe last resort.
