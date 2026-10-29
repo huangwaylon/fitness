@@ -1,7 +1,8 @@
 <script lang="ts">
-  // 島 Island (style guide v3 §B.1): the scene, one しずえ line, ONE primary action (今夜のチェック),
-  // always visible (U2). A pending 「筋トレとして記録する？」 is asked in しずえ's bubble with two chips.
-  // After today's check-in the button goes quiet. Tap the partner → partner sheet.
+  // 島 Island (style guide v4 §R.1): the scene (height = 100dvh − the chrome below it), one しずえ line,
+  // ONE primary action (今夜のチェック) in the thumb zone. A pending 「筋トレでしたか？」 is asked in しずえ's
+  // bubble and two chips take the button's slot (same height, no jump). After today's check-in the button
+  // goes quiet. Tap my villager → check-in sheet; the partner → partner sheet.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import type { FruitKey } from '#lib/types.ts';
@@ -16,7 +17,7 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
   import { highFive, confirmPending } from '#lib/client/actions.ts';
-  import { t, hostLine, formatDate } from '#lib/i18n/index.ts';
+  import { t, hostLine } from '#lib/i18n/index.ts';
 
   let checkinOpen = $state(false);
   let partnerOpen = $state(false);
@@ -107,67 +108,48 @@
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         partnerExpression={partnerCheer ? 'cheer' : undefined} partnerEmote={partnerCheer ? 'heart' : false}
         meExpression={meCheer ? 'cheer' : undefined} meEmote={meCheer} />
-      <div class="head">
-        <SyncPill />
-        <HelpButton topic="island" />
-      </div>
+    </div>
+    <div class="status-row">
+      <SyncPill />
+      <HelpButton />
     </div>
 
     <div class="below">
-      <Bubble text={line} host="wave" size={96}>
-        {#snippet actions()}
-          {#if pending}
-            <span class="when">{formatDate(pending.date)}</span>
-            <button type="button" class="chip" onclick={() => answer(true)}>{t('common.yes')}</button>
-            <button type="button" class="chip no" onclick={() => answer(false)}>{t('common.no')}</button>
-          {/if}
-        {/snippet}
-      </Bubble>
+      <Bubble text={line} host={pending ? 'stand' : 'wave'} />
 
-      <button type="button" class="btn cta" class:paper={checkedIn} onclick={openCheckin}>
-        {#if checkedIn}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
-        {:else}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkin')}{/if}
-      </button>
+      <!-- One primary action in the thumb zone. A pending question swaps in two chips, same slot. -->
+      <div class="slot">
+        {#if pending}
+          <button type="button" class="btn" onclick={() => answer(true)}>{t('common.yes')}</button>
+          <button type="button" class="btn paper" onclick={() => answer(false)}>{t('common.no')}</button>
+        {:else}
+          <button type="button" class="btn" class:paper={checkedIn} onclick={openCheckin}>
+            {#if checkedIn}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+            {:else}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkin')}{/if}
+          </button>
+        {/if}
+      </div>
     </div>
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
   {#if fiveToast && !ui.overlay}
-    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} second={!!week.toast} />{/key}
+    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} reaction="love" second={!!week.toast} />{/key}
   {/if}
 {/if}
 
 <style>
+  /* §R.1: the scene takes what the chrome below leaves (sky absorbs the difference); nothing scrolls. */
   .island {
-    max-width: var(--col); margin: 0 auto; container-type: inline-size;
-    padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
+    --chrome-below: calc(3 * var(--gap) + var(--host-h) + var(--cta-h) + var(--dock-h) + var(--dock-bottom));
+    --scene-h: clamp(300px, calc(100dvh - var(--chrome-below)), 600px);
+    position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
   }
-  .top { position: relative; container-type: inline-size; }
-  .head {
-    position: absolute; z-index: 8; top: calc(var(--safe-top) + 8px); left: calc(16px + var(--safe-left)); right: calc(16px + var(--safe-right));
-    display: flex; justify-content: space-between; align-items: center;
-  }
+  .top { position: relative; height: var(--scene-h); overflow: hidden; background: var(--sky-top); display: flex; flex-direction: column; justify-content: flex-end; container-type: inline-size; }
   .below {
-    padding: 0 calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left)); margin-top: -11cqw; position: relative; z-index: 6;
-    display: grid; gap: 12px;
+    display: grid; gap: var(--gap); padding: var(--gap) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
-  /* The one primary action stays in the thumb zone, above the dock, even on short phones. */
-  .cta { position: sticky; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px); z-index: 7; }
-  /* Answer chips inside しずえ's bubble. */
-  .when { flex: 1 0 100%; font-size: var(--fs-caption); color: var(--c-ink-talk); opacity: .8; margin-top: -6px; }
-  .chip {
-    appearance: none; cursor: pointer; min-height: 44px; min-width: 76px; padding: 0 18px; border-radius: var(--r-pill);
-    font: 700 var(--fs-body) var(--font-ui); color: var(--c-ink); background: var(--c-leaf); border: 0;
-    box-shadow: var(--sh-btn-hi), 0 3px 0 var(--c-leaf-lip);
-  }
-  .chip.no { background: var(--c-paper); box-shadow: 0 3px 0 var(--c-paper-2); border: var(--bw) solid var(--c-stitch); }
-  .chip:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-leaf-lip); }
-  /* iPhone SE-height screens: trim empty sky so the scene, しずえ and the button fit. */
-  @media (max-height: 720px) {
-    .top { margin-top: -26cqw; }
-    .head { top: calc(var(--safe-top) + 8px + 26cqw); }
-    .below { gap: 8px; }
-    .below :global(.spk img) { height: 64px !important; }
-    .below :global(.spk) { min-height: 64px; }
-  }
+  .below > :global(.talk) { height: var(--host-h); align-items: flex-end; }
+  .slot { display: flex; gap: 10px; height: var(--cta-h); }
+  .slot .btn { margin-bottom: 0; }
 </style>

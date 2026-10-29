@@ -1,4 +1,4 @@
-/* Island Fund base styles: element defaults + shared building blocks (style guide v3 §3, §4).
+/* Island Fund base styles v4: element defaults + shared building blocks (style guide §3, §4, §T, §R).
    All custom properties (tokens) live in lib/styles/tokens.css, which is imported first. */
 
 @media (prefers-reduced-motion: reduce) {
@@ -9,12 +9,12 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100dvh; overscroll-behavior-y: none; }
+html, body { margin: 0; min-height: 100dvh; overscroll-behavior: none; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); }
 body {
   font-family: var(--font-ui); font-weight: var(--fw-body); color: var(--text); background: var(--bg);
   font-size: var(--fs-body); line-height: var(--lh-body); font-feature-settings: "palt";
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
   transition: background-color var(--dur-base) var(--ease-soft), color var(--dur-base);
 }
 html[lang="ja"] * { letter-spacing: 0 !important; }
@@ -26,7 +26,6 @@ button, [role="button"], [role="switch"], a {
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 12px; }
-:root[data-theme="night"] :focus-visible { outline-color: var(--c-moon); }
 input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .sr-only {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -43,28 +42,56 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
   box-shadow: var(--sh-lip); padding: 16px;
   outline: 2px dashed var(--stitch); outline-offset: calc(-1 * var(--stitch-gap));
 }
-.card.plain { outline: 0; }
 .tape {
   position: absolute; top: -13px; left: 16px; z-index: 1; display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 12px; border-radius: var(--r-pill); transform: rotate(-3deg);
   font: 700 var(--fs-tag)/1 var(--font-ui); color: var(--c-ink);
   background: var(--tape, var(--c-yuzu-soft)); box-shadow: 0 2px 0 color-mix(in srgb, var(--tape, var(--c-yuzu-soft)) 80%, #000 20%);
 }
-.tape svg { width: 16px; height: 16px; }
+
+/* ---------- Nook Miles+ card (§T.4): pastel fill, darker border, scallop texture. Set --card. ---------- */
+.miles {
+  --card: var(--card-butter); --text: var(--c-ink); --text-soft: var(--c-ink-soft);
+  position: relative; border-radius: 18px; padding: 14px 16px; color: var(--c-ink);
+  background: var(--pat-scallop), var(--card); border: var(--bw) solid color-mix(in srgb, var(--card) 88%, #000 12%);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--card) 78%, #000 22%);
+}
+/* Miles stamp: a dashed white circle, filled with the Miles icon once the goal is done. */
+.stamp {
+  --s: 40px;
+  width: var(--s); height: var(--s); flex: none; border-radius: 50%; display: grid; place-items: center;
+  border: 2px dashed rgba(255, 255, 255, .95); background: rgba(255, 255, 255, .35); transform: rotate(-8deg);
+}
+.stamp.on { background: rgba(255, 255, 255, .7); animation: if-stamp 260ms var(--ease-bounce) both; }
+
+/* ---------- DIY recipe card (§T.4): grid paper ---------- */
+.diy {
+  --text: var(--c-ink); --text-soft: var(--c-ink-soft);
+  position: relative; border-radius: var(--r-card); color: var(--c-ink);
+  background: var(--pat-grid), var(--diy-paper); border: var(--bw) solid #E6D8B4; box-shadow: 0 4px 0 #DCCBA0;
+}
+
+/* ---------- Bells pill (§T.5): the bag overlaps the left edge ---------- */
+.bells {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; position: relative;
+  min-height: 34px; padding: 2px 12px 2px 26px; margin-left: 8px; border-radius: var(--r-pill);
+  background: var(--bells-fill); border: var(--bw) solid var(--bells-edge); box-shadow: 0 3px 0 var(--bells-lip);
+  font: var(--fw-num) 1.0625rem/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink);
+}
 
 /* ---------- pill (status, counters) ---------- */
 .pill {
   display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-pill); padding: 6px 12px; min-height: 36px;
-  font-weight: 700; font-size: var(--fs-caption); background: color-mix(in srgb, var(--bg) 94%, transparent);
-  border: var(--bw) solid var(--edge); box-shadow: 0 3px 0 var(--lip); color: var(--text);
+  font-weight: 700; font-size: var(--fs-caption); background: color-mix(in srgb, var(--bubble) 94%, transparent);
+  border: var(--bw) solid #EADBB8; box-shadow: 0 3px 0 rgba(74, 58, 44, .14); color: var(--c-ink);
 }
 
-/* ---------- chunky button (§4.3) ---------- */
+/* ---------- chunky button (§4) ---------- */
 .btn {
   --fill: var(--c-leaf); --lip-c: var(--c-leaf-lip);
   appearance: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; min-height: 56px; border-radius: var(--r-pill); padding: 0 24px;
-  font: 700 var(--fs-body-lg) var(--font-ui); color: var(--c-ink);
+  width: 100%; min-height: var(--cta-h); border-radius: var(--r-pill); padding: 0 24px;
+  font: 700 var(--fs-body-lg) var(--font-ui); color: var(--c-ink); text-decoration: none;
   background: var(--fill); box-shadow: var(--sh-btn-hi), 0 5px 0 var(--lip-c);
   transform-origin: 50% 100%;
   transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce), background-color var(--dur-quick);
@@ -75,13 +102,15 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
   transition-duration: var(--dur-tap); transition-timing-function: var(--ease-squash);
 }
 .btn:disabled { opacity: .55; cursor: default; box-shadow: var(--sh-btn-hi); transform: translateY(4px); }
-.btn svg { width: 26px; height: 26px; flex: none; }
+.btn svg, .btn .ic { width: 26px; height: 26px; flex: none; }
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; margin-bottom: 4px; box-shadow: var(--sh-btn-hi), 0 4px 0 var(--lip-c); }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
 .btn.coral { --fill: var(--c-coral); --lip-c: var(--c-coral-lip); }
-:root[data-theme="night"] .btn:not(.yuzu, .coral, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
-.btn.paper { --fill: var(--surface); --lip-c: var(--lip); color: var(--text); border: var(--bw) solid var(--edge); }
+.btn.sky { --fill: var(--c-sky); --lip-c: var(--c-sky-lip); }
+:root[data-theme="night"] .btn:not(.yuzu, .coral, .sky, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
+.btn.paper { --fill: var(--c-bubble); --lip-c: var(--c-paper-2); color: var(--c-ink); border: var(--bw) solid #EADBB8; }
+:root[data-theme="night"] .btn.paper { --lip-c: #26306A; border-color: #D9CFB4; }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
 }
@@ -89,15 +118,15 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 /* ---------- round icon button ---------- */
 .icon-btn {
   appearance: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; padding: 0;
-  background: color-mix(in srgb, var(--bg) 94%, transparent); border: var(--bw) solid var(--edge);
-  display: grid; place-items: center; font: 700 1.2rem var(--font-num); color: var(--text-soft);
-  box-shadow: 0 3px 0 var(--lip); transition: transform var(--dur-base) var(--ease-bounce);
+  background: var(--bubble); border: var(--bw) solid #EADBB8;
+  display: grid; place-items: center; color: var(--c-ink);
+  box-shadow: 0 3px 0 rgba(74, 58, 44, .16); transition: transform var(--dur-base) var(--ease-bounce);
 }
-.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 var(--lip); transition-duration: var(--dur-tap); }
+.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 rgba(74, 58, 44, .16); transition-duration: var(--dur-tap); }
 
-/* ---------- switch (§4.6): put <span class="switch"></span> inside a [role=switch] ---------- */
+/* ---------- switch: put <span class="switch"></span> inside a [role=switch] ---------- */
 .switch {
-  width: 60px; height: 36px; border-radius: var(--r-pill); background: var(--c-paper-2); position: relative; flex: none;
+  width: 60px; height: 36px; border-radius: var(--r-pill); background: var(--track); position: relative; flex: none;
   box-shadow: var(--sh-inset); border: var(--bw) solid var(--edge); transition: background var(--dur-base);
 }
 .switch::after {
@@ -107,29 +136,26 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 }
 [aria-checked="true"] > .switch { background: var(--c-leaf); border-color: var(--c-leaf-lip); }
 [aria-checked="true"] > .switch::after { left: 26px; animation: if-knob var(--dur-base) var(--ease-squash); }
-:root[data-theme="night"] .switch { background: #24314F; }
 :root[data-theme="night"] [aria-checked="true"] > .switch { background: var(--c-moon); border-color: var(--c-moon-lip); }
 @keyframes if-knob { 50% { transform: scaleX(1.25); } }
 
-/* ---------- screens ---------- */
+/* ---------- status row (§R): top of every screen, 44px, clears the notch ---------- */
+.status-row {
+  position: absolute; z-index: 8; left: 0; right: 0; top: calc(var(--safe-top) + 8px); height: 44px;
+  padding: 0 calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none;
+}
+.status-row > * { pointer-events: auto; }
+
+/* ---------- screens (Jar) ---------- */
 .screen {
   max-width: var(--col); margin: 0 auto; position: relative;
-  padding: calc(var(--safe-top) + var(--sp-2)) calc(var(--sp-5) + var(--safe-right)) calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-8)) calc(var(--sp-5) + var(--safe-left));
+  padding: calc(var(--safe-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--dock-h) + var(--dock-bottom) + 16px) calc(var(--side) + var(--safe-left));
 }
-.screen-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); min-height: 56px; }
-.screen-head h1 { display: flex; align-items: center; gap: 10px; }
-.screen-head h1 .tile {
-  width: 40px; height: 40px; border-radius: var(--r-squircle); display: grid; place-items: center; flex: none;
-  background: var(--tile, var(--app-island)); box-shadow: 0 3px 0 color-mix(in srgb, var(--tile, var(--app-island)) 75%, #000 25%);
-  transform: rotate(-4deg);
-}
-.screen-head h1 .tile svg { width: 26px; height: 26px; color: var(--c-ink); }
 
-/* shared keyframes (scene, sheets, harvest) */
+/* shared keyframes still used by the scene (Builder A) */
 @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-@keyframes stripes { to { background-position: 32px 0; } }
 @keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
-@keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(110vh) rotate(540deg); } }
 @keyframes glint { 0%,70%,100% { opacity: 0; } 80% { opacity: 1; } }
-@keyframes floatUp { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; transform: translateY(-10px) scale(1); } 100% { transform: translateY(-80px) scale(1.1); opacity: 0; } }
+@keyframes stripes { to { background-position: 32px 0; } }

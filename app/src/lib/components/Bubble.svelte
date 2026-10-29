@@ -1,9 +1,10 @@
 <script lang="ts">
-  // Speech bubble (style guide v3 §4.1, §A): wobbly cream box, tilted name tag, letter-by-letter
-  // reveal (tap to finish), amber ▼ when another page follows (tap = next). しずえ stands on the
-  // left (official art by pose; the season picks her outfit), tail pointing at her.
-  // `actions`: small answer chips inside the bubble (U2), shown under the text.
-  // Reduced motion: text appears at once. The real text lives in an aria-live node.
+  // Speech bubble (style guide v4 §T.2): wobbly cream box, tilted nameplate that pops in after the box,
+  // letter-by-letter reveal at 33 ms/char (tap to finish), amber ▼ only when another page follows
+  // (tap = next). The box holds --talk-lines lines (2; 1 on compact screens) and never grows.
+  // しずえ stands on the left with her feet on the bubble's baseline (official art by pose; the season
+  // picks her outfit), the tail pointing at her. Reduced motion: text appears at once.
+  // The real text lives in an aria-live node.
   import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import Host from './Host.svelte';
@@ -18,14 +19,15 @@
     tag?: string;
     /** しずえ's pose ('wave' cheer, 'stand' calm, 'bow' thanks/sorry), or false for no host (no tail). */
     host?: Exclude<HostPose, 'icon' | 'winter'> | false;
-    /** Host height in px (96 on 島, 72 elsewhere). */
-    size?: number;
+    /** Host height: px or a CSS length (default var(--host-h): 84 / 64 compact / 56 tiny). */
+    size?: number | string;
     /** Called once the last page has finished typing. */
     onfinish?: () => void;
-    /** Answer chips inside the bubble, under the text. */
+    /** Extra content inside the bubble, under the text (lets the box grow; use sparingly). */
     actions?: Snippet;
   }
-  let { text, name, tag = 'var(--tag-host)', host = 'wave', size = 72, onfinish, actions }: Props = $props();
+  let { text, name, tag = 'var(--tag-host)', host = 'wave', size = 'var(--host-h)', onfinish, actions }: Props = $props();
+  const h = $derived(typeof size === 'number' ? `${size}px` : size);
 
   const pages = $derived(Array.isArray(text) ? text : [text]);
   let pageIdx = $state(0);
@@ -90,11 +92,11 @@
 
 <div class="talk">
   {#if host}
-    <span class="spk" style:--h="{size}px">
-      <Host pose={host} {size} eager />
+    <span class="spk" style:--h={h}>
+      <Host pose={host} size={h} eager />
     </span>
   {/if}
-  <div class="bubble" class:tail={!!host}>
+  <div class="bubble" class:tail={!!host} class:grow={!!actions}>
     <span class="who" style:--tag={tag}>{name ?? t('host.name')}</span>
     <button type="button" class="tap" onclick={tap} aria-label={more ? t('common.next') : undefined}>
       <span class="sr-only" aria-live="polite">{current}</span>
@@ -117,22 +119,31 @@
 </div>
 
 <style>
-  .talk { display: flex; align-items: flex-end; gap: 6px; }
+  .talk { display: flex; align-items: flex-end; gap: 4px; }
   .bubble {
-    position: relative; flex: 1; min-width: 0; min-height: 64px; margin: 14px 0 6px;
+    position: relative; flex: 1; min-width: 0; margin: 12px 0 4px;
     background: var(--bubble); color: var(--c-ink-talk); border-radius: var(--r-bubble);
-    padding: 18px 20px 16px; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-soft);
+    padding: 8px 16px; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-soft);
     font-size: var(--fs-talk); font-weight: var(--fw-bold); line-height: var(--lh-talk);
     text-wrap: pretty; word-break: auto-phrase;
+    /* Fixed box: --talk-lines lines of text (2; 1 compact), so the layout never jumps between lines. */
+    min-height: max(var(--bubble-min), calc(var(--talk-lines) * var(--fs-talk) * var(--lh-talk) + 16px));
+    display: flex; flex-direction: column; justify-content: center;
     transform-origin: 0 100%; animation: open var(--dur-pop) var(--ease-bounce) both;
   }
   .tap {
     appearance: none; border: 0; padding: 0; margin: 0; background: none; font: inherit; color: inherit; cursor: pointer;
-    text-align: left; display: block; width: 100%;
+    text-align: left; display: flex; align-items: center; min-height: 44px;
+    /* the whole box is the tap target */
+    margin: -8px -16px; padding: 8px 16px; width: calc(100% + 32px); border-radius: inherit;
   }
-  .tap:focus-visible { outline-offset: 8px; border-radius: 18px; }
+  .tap:focus-visible { outline-offset: 6px; border-radius: 18px; }
+  .txt { display: grid; flex: 1; min-width: 0; }
+  .bubble:not(.grow) .live, .bubble:not(.grow) .ghost {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--talk-lines); line-clamp: var(--talk-lines); overflow: hidden;
+  }
   .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
-  :global(:root[data-theme="night"]) .bubble { box-shadow: 0 4px 0 #CFC4AA, var(--sh-soft); }
+  :global(:root[data-theme="night"]) .bubble { box-shadow: 0 4px 0 #D9CFB4, var(--sh-soft); }
   @keyframes open { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
   .who {
     position: absolute; top: -14px; left: 18px; padding: 5px 12px; border-radius: var(--r-pill);
@@ -141,13 +152,11 @@
     transform: rotate(-4deg); animation: tag var(--dur-pop) var(--ease-bounce) 120ms both;
   }
   @keyframes tag { from { transform: rotate(-4deg) scale(0); } to { transform: rotate(-4deg) scale(1); } }
-  /* Overlay the animated glyphs on an invisible copy so the box never reflows while typing. */
-  .txt { display: grid; }
   .live, .ghost { grid-area: 1 / 1; }
   .ghost { visibility: hidden; }
-  .g { opacity: 0; display: inline-block; animation: if-letter 120ms var(--ease-soft) forwards; white-space: pre; }
+  .g { opacity: 0; animation: if-letter 120ms var(--ease-soft) forwards; white-space: pre-wrap; }
   .tail::after {
-    content: ''; position: absolute; left: -9px; bottom: 18px; width: 22px; height: 18px; background: var(--bubble);
+    content: ''; position: absolute; left: -9px; bottom: 16px; width: 22px; height: 18px; background: var(--bubble);
     clip-path: polygon(100% 0, 0 55%, 100% 100%); border-radius: 4px;
   }
   .next {
@@ -155,8 +164,7 @@
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
   /* しずえ: feet on the bubble's baseline (Host floats gently by itself). */
-  .spk { flex: none; display: grid; justify-items: center; min-height: var(--h); align-items: end; margin-bottom: 4px; }
-  :global(:root[data-theme="night"]) .spk :global(img) { filter: brightness(.9); }
+  .spk { flex: none; display: grid; justify-items: center; height: var(--h); align-items: end; margin-bottom: 4px; }
   @media (prefers-reduced-motion: reduce) {
     .bubble, .who, .next { animation: none; }
   }
