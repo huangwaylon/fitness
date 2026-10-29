@@ -13,7 +13,7 @@
   import Fx from './Fx.svelte';
   import Silhouette from './Silhouette.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
-  import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
+  import type { Expression } from '#lib/villagers/species.ts';
   import { resolveLook } from '#lib/villagers/roster.ts';
   import { villagerArt } from '#lib/art.ts';
   import { week } from '#lib/client/week.svelte.ts';
@@ -30,8 +30,8 @@
     size?: number | string;
     /** Head icon instead of the full body. Default: auto (true when a numeric size is under 56). */
     head?: boolean;
-    /** true = the expression's reaction, a v4 reaction icon id, a legacy kind; false = none. */
-    emote?: boolean | EmoteIcon | EmoteKind;
+    /** true = the expression's reaction, or a v4 reaction icon id; false = none. */
+    emote?: boolean | EmoteIcon;
     /** Idle bob (full body) and motions. Off under reduced motion regardless. */
     animate?: boolean;
     eager?: boolean;
@@ -62,9 +62,8 @@
 
   // Villagers show floating NH marks / colour glyphs, never the player's cat faces (A1, villagerEmote).
   const EXPR: Record<Expression, EmoteIcon | null> = { happy: null, cheer: 'glee', sleepy: 'mark-zzz', surprised: 'surprise', proud: 'mark-sparkle' };
-  const LEGACY: Record<EmoteKind, EmoteIcon> = { note: 'mark-note', bang: 'surprise', zz: 'mark-zzz', sparkle: 'mark-sparkle', heart: 'love' };
   const propEmote = $derived<EmoteIcon | null>(
-    emote === false ? null : emote === true ? (EXPR[expression] ?? 'mark-note') : ((LEGACY as Record<string, EmoteIcon>)[emote] ?? (emote as EmoteIcon))
+    emote === false ? null : emote === true ? (EXPR[expression] ?? 'mark-note') : emote
   );
   const propMotion = $derived<Motion | null>(
     !animate ? null : expression === 'cheer' ? 'hop' : expression === 'surprised' ? 'surprise' : expression === 'proud' ? 'proud' : null

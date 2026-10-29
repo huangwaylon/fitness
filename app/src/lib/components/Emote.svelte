@@ -2,21 +2,16 @@
   // Emote bubble (style guide v4 §M.3): a cream circle holding an official NH reaction icon.
   //   <Emote id="joy" />                 pops in, holds, fades (2.2 s); `hold` keeps it up
   //   <Emote id="sleepy" hold size={36} />
-  //   <Emote kind="heart" />             legacy v3 vector emote (♪ ! z ✦ ♥), still supported
   // `tail` = which side the little tail points from ('left' | 'right' | 'none').
   //   <Emote id="mark-note" bare />      floating symbol, no cream disc (villagers, A1); `mark-*` are ours
   // Under reduced motion it fades in for 120 ms instead of popping.
-  import EmoteArt from '#lib/villagers/EmoteArt.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import Mark from './Mark.svelte';
   import { isMark, reactionArt, type EmoteIcon, type MarkId } from '#lib/art.ts';
-  import type { EmoteKind } from '#lib/villagers/species.ts';
 
   interface Props {
-    /** Official reaction icon (v4). */
-    id?: EmoteIcon;
-    /** Legacy vector emote (v3). */
-    kind?: EmoteKind;
+    /** Official reaction icon (v4) or one of our marks. */
+    id: EmoteIcon;
     /** Bubble width: px number or CSS length. Default 44px. */
     size?: number | string;
     /** Stay on screen after the pop instead of fading out. */
@@ -26,33 +21,22 @@
     /** Float the symbol on its own, without the cream disc (villagers). */
     bare?: boolean;
   }
-  let { id, kind, size, hold = false, animate = true, tail = 'left', bare = false }: Props = $props();
-  const w = $derived(size === undefined ? (id ? '44px' : '32px') : typeof size === 'number' ? `${size}px` : size);
-  const legacy: Record<EmoteKind, EmoteIcon> = { note: 'joy', bang: 'surprise', zz: 'sleepy', sparkle: 'pleased', heart: 'love' };
-  const icon = $derived(id ?? (kind ? legacy[kind] : undefined));
+  let { id, size = 44, hold = false, animate = true, tail = 'left', bare = false }: Props = $props();
+  const w = $derived(typeof size === 'number' ? `${size}px` : size);
 </script>
 
-{#if id && (bare || isMark(id))}
+{#if bare || isMark(id)}
   <span class="float {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true">
     {#if isMark(id)}<Mark id={id.slice(5) as MarkId} />
     {:else}<OfficialArt key={reactionArt(id)} size="100%" eager />{/if}
   </span>
-{:else if id || !kind}
-  {#if icon}
-    <span class="bubble {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true">
-      <span class="ico">
-        <OfficialArt key={reactionArt(icon)} size="100%" eager>
-          {#snippet fallback()}{#if kind}<svg viewBox="-4 -2 38 40"><EmoteArt {kind} x={17} y={16} hold animate={false} /></svg>{/if}{/snippet}
-        </OfficialArt>
-      </span>
-    </span>
-  {/if}
 {:else}
-  <svg class="emote" viewBox="-4 -2 38 40" style:width={w} aria-hidden="true"><EmoteArt {kind} x={17} y={16} {hold} {animate} /></svg>
+  <span class="bubble {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true">
+    <span class="ico"><OfficialArt key={reactionArt(id)} size="100%" eager /></span>
+  </span>
 {/if}
 
 <style>
-  .emote { display: block; flex: none; overflow: visible; aspect-ratio: 38 / 40; height: auto; }
   .bubble {
     position: relative; display: grid; place-items: center; flex: none;
     width: var(--w); height: var(--w); border-radius: 50%;

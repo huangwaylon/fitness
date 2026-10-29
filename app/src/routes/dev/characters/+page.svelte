@@ -9,7 +9,7 @@
   import Emote from '#lib/components/Emote.svelte';
   import LeafCoin from '#lib/components/LeafCoin.svelte';
   import FruitRing from '#lib/components/FruitRing.svelte';
-  import IslandScene from '#lib/components/IslandScene.svelte';
+  import IslandScene from '#lib/components/island/IslandScene.svelte';
   import Fx from '#lib/components/Fx.svelte';
   import { REACTIONS as ICONS, MARKS, COLOUR_GLYPHS, art, artKeys } from '#lib/art.ts';
   import { REACTIONS, REACTION_IDS } from '#lib/components/motion/reactions.ts';
@@ -112,7 +112,7 @@
   </section>
 
   <section>
-    <h2>Fruit ripeness · money · emotes</h2>
+    <h2>Fruit ripeness · money</h2>
     <div class="row">
       {#each FRUITS as f, i (f)}<FruitRing fruit={f} view={{ milli: 0, maxMilli: 0, pct: [10, 40, 75, 100][i], actual: 0, target: 0 }} showPct />{/each}
     </div>
@@ -122,7 +122,6 @@
     <div class="row">
       <span class="amt"><LeafCoin size="1.1em" />¥146,200</span>
       <LeafCoin kind="leaf" size={32} />
-      {#each ['note', 'bang', 'zz', 'sparkle', 'heart'] as const as k (k)}<Emote kind={k} size={36} hold />{/each}
     </div>
   </section>
 
