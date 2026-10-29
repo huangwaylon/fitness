@@ -61,3 +61,13 @@ The game uses Fontworks rounded families (fans cite **FOT-Seurat** for dialogue 
 ## 4. What we deliberately avoid (IP)
 
 No game characters, sprites, screenshots, icons, sounds, logos, fonts or names (its phone, currency, miles, company, cast) in the repo or UI. No pointing hand, no leaf-logo lookalike (our leaf-coin is a ¥ coin with a sprouting yuzu leaf), no animalese voice. Everything in `app/` is drawn from scratch from the style-guide specs.
+
+## v4 findings (2026-10-29, art director)
+
+Sources: the Nookipedia MediaWiki API (`action=parse&prop=images` on Reaction, Tree, Bush, NookPhone, Weather pages), plus file pages. Reference images are in `.refs/v4/` (gitignored).
+
+- **Reactions.** NH has 44+ reaction-wheel icons named `Emotion_<Name>_NH_Icon.png` (128 px: a grey cat face plus coloured accents such as flowers for Joy and sparkles for Excited). There are also pose reactions named `<Name>_NH_Reaction_Icon.png` (player silhouettes: Viva, Confetti, Stretch…). Villagers emote by popping a bubble over the head with a small hop, turn, or laugh bounce. The game has no separate "emotion bubble" art, so the bubble is ours.
+- **Trees.** The hardwood tree has four seasonal renders (`Oak_Tree_NH_Spring` = cherry blossom, `Oak_Tree_NH` summer, `_Fall` red-orange, `_Winter` snow-capped). Fruit trees in NH share the hardwood silhouette, so an oak plus fruit icons reads as a fruit tree. Cedar and palm (with coconuts) have big transparent renders. Bushes exist only as 128 px inventory icons (azalea, hydrangea, hibiscus, tea olive, camellia, holly).
+- **Sky.** Sunny NH skies are a saturated blue (≈ `#3FA9F5` at the top) with long, flat-bottomed, soft cumulus clouds that have a lavender-blue underside. Snowy skies are pale lilac-grey. There is no cloud art, so we draw it.
+- **UI.** The Nook Miles+ screen uses a periwinkle background, a wavy cream header edge, pastel cards (pink, teal, butter, lime) with a scallop texture, round date stamps, and a navy counter pill with white digits. NookPhone app glyphs (`Menu_*_NH_Icon.png`, 180 px) are bare glyphs that the phone draws on coloured squircles. A few full tiles also exist (`NookPhone_*_NH_Icon.png`, 92 px).
+- **Buildings.** Map icons (`Resident_Services_NH_Map_Icon.png`, `Airport_(Blue)_NH_Map_Icon.png`, 320×256) are clean 3/4-view renders, usable as small set pieces.
