@@ -32,6 +32,9 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci --ignore-scripts
       - run: npx svelte-kit sync
+      # Red main never deploys: type-check and the unit tests (golden fixtures included) gate the build.
+      - run: npm run check
+      - run: npx vitest run
       - run: npm run build
         env:
           VITE_GAS_URL: ${{ vars.GAS_URL }}
