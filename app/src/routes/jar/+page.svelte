@@ -138,7 +138,9 @@
 
     {#if jar.transfer && !jar.transfer.done}
       <button type="button" class="payday" onclick={markPayday} bind:this={paydayBtn}>
-        <span>{t('jar.payday.todo', { yen: formatYen(jar.transfer.amountYen) })}</span>
+        <span class="pico" aria-hidden="true"><OfficialArt key="money/bells" size={28} /></span>
+        <span class="ptxt">{t('jar.payday.todo', { yen: formatYen(jar.transfer.amountYen) })}</span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </button>
     {/if}
 
@@ -241,7 +243,7 @@
   /* NH's back pill. */
   .back {
     display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px 0 12px; border-radius: var(--r-btn);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip); text-decoration: none;
+    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); text-decoration: none;
     font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .back svg { width: 16px; height: 16px; fill: var(--c-yuzu-lip); }
@@ -253,13 +255,17 @@
   .hero :global(.total) { font-size: min(var(--fs-hero), 12vw); }
   .wk { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
 
-  /* Payday: an NH banner (yuzu band, the action's lip). */
+  /* Payday (F7): a quiet cream NH banner with a small bells icon, well under the total (body text, no button fill). */
   .payday {
-    appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 48px; margin: 0 0 18px; padding: 0 16px;
-    border-radius: var(--r-btn); background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 4px 0 var(--c-yuzu-lip);
+    appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 48px; margin: 0 0 18px; padding: 6px 12px 6px 10px;
+    display: flex; align-items: center; gap: 10px; text-align: left;
+    border-radius: var(--r-chip); background: var(--c-cream); color: var(--c-ink-soft); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     font: 700 var(--fs-body)/1.3 var(--font-ui);
   }
-  .payday:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--c-yuzu-lip); }
+  .payday .pico { flex: none; line-height: 0; }
+  .payday .ptxt { flex: 1; min-width: 0; word-break: auto-phrase; text-wrap: balance; }
+  .payday .chev { width: 16px; height: 16px; flex: none; color: var(--c-lip); }
+  .payday:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--c-lip); }
 
   .cards { display: grid; gap: 16px; }
   .card { display: flex; align-items: center; gap: 14px; min-height: 84px; }
@@ -300,7 +306,7 @@
     flex-direction: column; justify-content: center; gap: 2px; transition: transform var(--dur-base) var(--ease-bounce);
   }
   .item:active:not(:disabled) { transform: translateY(3px) scale(1.04, .94); transition-duration: var(--dur-tap); }
-  .item.sel { background: var(--c-leaf); color: var(--c-ink); box-shadow: 0 4px 0 var(--c-leaf-lip); transform: translateY(-3px); }
+  .item.sel { background: var(--c-leaf); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-leaf-lip); transform: translateY(-3px); }
   .item:disabled { cursor: default; opacity: .5; }
   .ic { width: 44px; height: 44px; margin-bottom: 4px; }
   .item b { font-size: var(--fs-body); line-height: 1.2; }

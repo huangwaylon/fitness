@@ -99,8 +99,9 @@
   const teamStars = $derived(stars(p.A.score) + stars(p.B.score));
   // Confetti (§M.4 colours): 36 pieces, CSS only; skipped under reduced motion.
   const COLOURS = ['var(--c-yuzu)', 'var(--c-leaf)', 'var(--c-mint)', 'var(--c-coral)', 'var(--c-cream)'];
+  // F4: ≤ 1.2 s, and behind the dialogue box and the card (both opaque), so it never covers the numbers.
   const CONFETTI = Array.from({ length: 24 }, (_, i) => ({
-    x: (i * 37) % 100, c: COLOURS[i % 5], d: (i % 12) * 0.12, r: (i * 53) % 360, round: i % 3 === 0, dur: 2.4 + (i % 5) * 0.3
+    x: (i * 37) % 100, c: COLOURS[i % 5], d: (i % 8) * 0.04, r: (i * 53) % 360, round: i % 3 === 0, dur: 0.9 + (i % 4) * 0.1
   }));
 </script>
 
@@ -108,7 +109,7 @@
   oncancel={(e) => { e.preventDefault(); if (step === 'done') ondone?.(); else onlater(); }}>
   {#key step}
     {#if !reduced}<div class="confetti" aria-hidden="true">
-      {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.6 : step === 'done' ? 0.9 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
+      {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.4 : step === 'done' ? 0.9 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
     </div>{/if}
   {/key}
 
@@ -120,7 +121,7 @@
     </div>
 
     <div class="bottom">
-      <Bubble text={hostLine} host={step === 'tally' ? 'wave' : 'bow'} size={56} />
+      <Bubble text={hostLine} host={false} />
 
       {#if step === 'tally'}
         <section class="card tally" aria-live="polite">
@@ -188,19 +189,21 @@
 </dialog>
 
 <style>
-  /* The island stays visible behind a 30% tint (v5 §4). */
+  /* The island stays visible (v5 §4) under a cool tint (F3) that fades in below the sky: by day a light
+     periwinkle over the sea and island only, so the clouds stay white and the sun yellow; softer at night. */
   .overlay {
     position: fixed; inset: 0; z-index: 60; overflow: auto; overscroll-behavior: contain;
     width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    --fr: 24px; background: rgba(74, 58, 44, .3); color: var(--text);
+    --fr: 24px; color: var(--text);
+    background: linear-gradient(to bottom, rgba(58, 72, 134, 0) 22%, rgba(58, 72, 134, .18) 48%);
     animation: fade var(--dur-base) var(--ease-soft);
   }
-  :global(:root[data-tod='night']) .overlay { background: rgba(30, 36, 80, .3); }
+  :global(:root[data-tod='night']) .overlay { background: rgba(30, 36, 80, .16); }
   .overlay:focus { outline: none; }
   .overlay::backdrop { background: transparent; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   .col {
-    position: relative; max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
+    position: relative; z-index: 1; max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
     padding: calc(var(--safe-top) + 12px) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
   }
   .head { display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 8px; }
@@ -210,21 +213,21 @@
   .later, .later-sp { min-width: 80px; }
   .later {
     appearance: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: var(--r-btn);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
+    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .bottom { display: grid; gap: var(--gap); --talk-lines: 2; }
   .bottom :global(.talk) { margin-bottom: -4px; }
 
-  .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
+  .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
   .confetti i {
     position: absolute; top: -16px; width: 6px; height: 10px; border-radius: 2px; opacity: 0;
-    animation: drop 2.6s cubic-bezier(.3, .6, .5, 1) both;
+    animation: drop 1.2s cubic-bezier(.3, .6, .5, 1) both;
   }
   .confetti i.round { width: 6px; height: 6px; border-radius: 50%; }
   @keyframes drop {
     0% { opacity: 1; transform: translateY(0) rotate(0); }
     85% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(105vh) rotate(calc(var(--r) + 540deg)); }
+    100% { opacity: 0; transform: translateY(70vh) rotate(calc(var(--r) + 360deg)); }
   }
 
   .tally { display: grid; padding: 8px 16px 14px; }

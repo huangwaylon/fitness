@@ -112,7 +112,7 @@
   .lang {
     position: absolute; top: calc(var(--safe-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px;
     display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: var(--r-btn); background: var(--c-cream); color: var(--c-ink);
-    box-shadow: 0 3px 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
+    box-shadow: 0 var(--lip-h) 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .lang svg { width: 18px; height: 18px; }
   .port { width: 220px; margin: 0 auto; }

@@ -100,12 +100,12 @@
   .habit {
     appearance: none; border: 0; cursor: pointer; text-align: left; position: relative; width: 100%; font: inherit;
     display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 10px 14px; border-radius: var(--r-card);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 4px 0 var(--c-lip);
+    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     transition: transform var(--dur-base) var(--ease-bounce), background var(--dur-base);
     user-select: none; -webkit-user-select: none;
   }
   .habit:active { transform: translateY(3px) scale(1.02, .96); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
-  .habit.on { background: var(--c-leaf); box-shadow: 0 4px 0 var(--c-leaf-lip); }
+  .habit.on { background: var(--c-leaf); box-shadow: 0 var(--lip-h) 0 var(--c-leaf-lip); }
   .ic { width: 44px; height: 44px; flex: none; display: grid; place-items: center; }
   .ic svg { width: 40px; height: 40px; }
   .txt { flex: 1; min-width: 0; line-height: 1.25; text-wrap: pretty; word-break: auto-phrase; font-weight: 700; font-size: var(--fs-talk); }
