@@ -34,7 +34,9 @@ export const SCENE = {
   /** localStorage `if-<beat>` = the Tokyo day a startup beat (open, morning, evening, lowweek) last played. */
   beat: (beat: string) => `if-${beat}`,
   /** sessionStorage: balloons shown this session (at most 3). */
-  balloons: 'if-balloon'
+  balloons: 'if-balloon',
+  /** localStorage `hf-seen:<day>` = how many of the partner's high-fives that day were already announced. */
+  highFivesSeen: (day: string) => `hf-seen:${day}`
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */
