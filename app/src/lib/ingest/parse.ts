@@ -10,6 +10,7 @@
 //   - workouts:    {"workouts": {"types": […], "starts": […], "ends": […], "avgHrs": […]}} or an array of objects
 // Every list may be a JSON array or newline-joined text (Shortcuts' Dictionary fields typed as Text).
 import { toLocalDate } from '../scoring/dates.ts';
+import { WORKOUT_LABELS_JA } from '../model/labels.ts';
 
 export type MetricKey = 'steps' | 'exercise_min';
 
@@ -106,33 +107,14 @@ export function looseDate(v: unknown): string | null {
 
 // ---------------------------------------------------------------- workout names and ids
 
-/** Japanese (and alternate English) display names → canonical English names. Unknown names pass through. */
+/**
+ * Japanese (and alternate English) display names → canonical English names: the inverse of the UI labels, plus two
+ * names Health also uses. Unknown names pass through. `workoutKey` ids depend on this (pinned in parse.test.ts).
+ */
 const ALIASES: Record<string, string> = {
-  // Strength
+  ...Object.fromEntries(Object.entries(WORKOUT_LABELS_JA).map(([en, ja]) => [ja, en])),
   '伝統的な筋力トレーニング': 'Traditional Strength Training',
-  '筋力トレーニング': 'Traditional Strength Training',
-  '機能的な筋力トレーニング': 'Functional Strength Training',
-  'コアトレーニング': 'Core Training',
-  'ピラティス': 'Pilates',
-  'ヨガ': 'Yoga',
-  '高強度インターバルトレーニング': 'High Intensity Interval Training',
-  'HIIT': 'High Intensity Interval Training',
-  'ミックスカーディオ': 'Mixed Cardio',
-  'クロストレーニング': 'Cross Training',
-  // Walking / hiking (kept for readable labels)
-  'ウォーキング': 'Walking',
-  '屋外ウォーキング': 'Outdoor Walk',
-  '室内ウォーキング': 'Indoor Walk',
-  'ハイキング': 'Hiking',
-  // Common others (kept for readable labels)
-  'ランニング': 'Running',
-  '屋外ランニング': 'Outdoor Run',
-  '室内ランニング': 'Indoor Run',
-  'サイクリング': 'Cycling',
-  '水泳': 'Swimming',
-  'ダンス': 'Dance',
-  'エリプティカル': 'Elliptical',
-  'ローイング': 'Rowing'
+  HIIT: 'High Intensity Interval Training'
 };
 
 export function canonicalWorkoutType(name: string): string {
