@@ -36,11 +36,7 @@
 
   const pct = $derived(Math.max(0, Math.min(100, Math.round(view.pct))));
   const stage = $derived(ripeness(pct));
-  const label = $derived(
-    view.actual !== undefined && view.target !== undefined
-      ? t(`fruit.${fruit}.detail`, { actual: fmt(view.actual), target: fmt(view.target) })
-      : t('fruit.pct', { label: t(`fruit.${fruit}`), pct })
-  );
+  const label = $derived(t(`fruit.${fruit}.detail`, { actual: fmt(view.actual), target: fmt(view.target) }));
 
   function fmt(n: number): string {
     return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');

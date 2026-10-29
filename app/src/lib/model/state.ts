@@ -79,7 +79,6 @@ export interface State {
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
-  shares: Record<PersonId, Map<FruitKey, boolean>>;
   /** Newest metrics/workouts row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
 }
@@ -153,7 +152,6 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
     harvests: [],
     highfives: [],
     prefs: { A: {}, B: {} },
-    shares: { A: new Map(), B: new Map() },
     lastSync: { A: null, B: null }
   };
   const lastSyncMs: Record<PersonId, number> = { A: -Infinity, B: -Infinity };
@@ -267,9 +265,7 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(d.value)) p.villager = d.value;
         break;
       }
-      case 'share':
-        if ((FRUITS as readonly string[]).includes(String(d.metric)) && typeof d.on === 'boolean') s.shares[person].set(d.metric as FruitKey, d.on);
-        break;
+      // Old `share` rows (the removed privacy toggles) are ignored: both players see all data.
     }
   }
   return s;

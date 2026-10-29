@@ -202,38 +202,29 @@ export function monthEarnings(weeks: SettledWeek[], month: string, now: number):
 
 // ---------- view ----------
 
-function fruitView(score: WeekScore, key: FruitKey, raw: boolean): FruitView {
+function fruitView(score: WeekScore, key: FruitKey): FruitView {
   const c = score.categories[key];
-  const v: FruitView = { milli: c.milli, maxMilli: c.maxMilli, pct: c.maxMilli > 0 ? Math.floor((c.milli * 100) / c.maxMilli) : 0 };
-  if (raw) {
-    v.actual = c.actual;
-    v.target = c.target;
-  }
-  return v;
+  return { milli: c.milli, maxMilli: c.maxMilli, pct: c.maxMilli > 0 ? Math.floor((c.milli * 100) / c.maxMilli) : 0, actual: c.actual, target: c.target };
 }
 
-function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore, full: boolean): PersonWeekView {
-  const shared = s.shares[person];
+/** One person's card. Both players see everything (no privacy filter): raw numbers and eating check-ins. */
+function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): PersonWeekView {
   const pref = s.prefs[person];
   const view: PersonWeekView = {
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
     score: score.score,
-    // The partner card never carries raw numbers unless they shared that fruit, and never habits.
-    fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k, full || shared.get(k) === true)])) as Record<FruitKey, FruitView>,
-    lastSyncAt: s.lastSync[person]
+    fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k)])) as Record<FruitKey, FruitView>,
+    lastSyncAt: s.lastSync[person],
+    habits: { keys: targetsFor(person, wk).habits, ticksByDate: {} }
   };
-  if (full) {
-    const from = addDays(wk, -2);
-    const to = addDays(wk, 6);
-    const ticks = [...ticksAsOf(s, person, LIVE).values()]
-      .filter((c) => c.date >= from && c.date <= to)
-      .sort((x, y) => x.date.localeCompare(y.date) || x.habitKey.localeCompare(y.habitKey));
-    const ticksByDate: Record<LocalDate, string[]> = {};
-    for (const c of ticks) (ticksByDate[c.date] ??= []).push(c.habitKey);
-    view.habits = { keys: targetsFor(person, wk).habits, ticksByDate };
-  }
+  const from = addDays(wk, -2);
+  const to = addDays(wk, 6);
+  const ticks = [...ticksAsOf(s, person, LIVE).values()]
+    .filter((c) => c.date >= from && c.date <= to)
+    .sort((x, y) => x.date.localeCompare(y.date) || x.habitKey.localeCompare(y.habitKey));
+  for (const c of ticks) (view.habits.ticksByDate[c.date] ??= []).push(c.habitKey);
   return view;
 }
 
@@ -338,14 +329,13 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     weekKey,
     today,
     people: {
-      [me]: personView(s, me, weekKey, scores[me], true),
-      [partner]: personView(s, partner, weekKey, scores[partner], false)
+      [me]: personView(s, me, weekKey, scores[me]),
+      [partner]: personView(s, partner, weekKey, scores[partner])
     } as Record<PersonId, PersonWeekView>,
     jar,
     harvest,
     pending: pendingConfirmations(me, weekKey, act[me], locale, now),
-    highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length,
-    visibility: Object.fromEntries([...s.shares[me]].filter(([, on]) => on).map(([m]) => [m, true]))
+    highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
   return { ...base, juniper: hostLine(base, z.hour, Number(today.slice(8, 10))) };
 }

@@ -63,7 +63,7 @@
     if (!view) return null;
     if (pending) return t('pending.ask', { label: pending.label });
     if (said) return said.text;
-    // After my 壺に入れる (also in demo, whose host key is fixed): 「まめさんの番です！」 until they drop theirs.
+    // After my 壺に入れる (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
     if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
     const key = view.juniper.key.replace(/^(juniper|host)\./, '');
     if (key === 'harvest_ready' || key === 'payday') return hostLine(key, view.juniper.params);
@@ -128,28 +128,31 @@
 </script>
 
 {#if view && me}
-  <main class="island" class:covered={ui.overlay} class:asking={!!pending}>
+  <main class="island" class:covered={ui.overlay}>
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         paused={checkinOpen || partnerOpen || phoneOpen} />
       <Hud score={me.score} today={view.today} bind:phoneOpen />
     </div>
 
-    <!-- F1: しずえ's box floats over the bottom of the scene (the sea band); it never changes the scene's height. -->
-    {#if news}
-      <div class="news" class:ask={!!pending}>
-        <Bubble text={news} host={false} />
-        {#if pending}
-          <ChoiceList choices={[{ label: t('common.yes'), run: () => answer(true) }, { label: t('common.no'), run: () => answer(false) }]} />
-        {/if}
-      </div>
-    {/if}
-    <div class="below">
-      <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin} inert={!!pending} aria-hidden={pending ? 'true' : undefined}>
-        {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
-        {:else if checkedIn}{t('island.checkinLeft', { n: habitCount - ticksToday })}
-        {:else}{t('island.checkin')}{/if}
-      </button>
+    <!-- F1: one fixed slot under the scene (round 6 band table): しずえ's box on top when she has news, the action
+         below; a question puts the box and NH's choice list in one row. The slot never changes height. -->
+    <div class="below" class:ask={!!pending}>
+      {#if news}
+        <div class="news">
+          <Bubble text={news} host={false} />
+          {#if pending}
+            <ChoiceList choices={[{ label: t('common.yes'), run: () => answer(true) }, { label: t('common.no'), run: () => answer(false) }]} />
+          {/if}
+        </div>
+      {/if}
+      {#if !pending}
+        <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin}>
+          {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+          {:else if checkedIn}{t('island.checkinLeft', { n: habitCount - ticksToday })}
+          {:else}{t('island.checkin')}{/if}
+        </button>
+      {/if}
     </div>
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
@@ -160,34 +163,26 @@
 {/if}
 
 <style>
-  /* v5 §3 + F1: the chrome below the scene is ONE fixed slot (the action, 56 / 48 + its lip), so the scene's
-     height never changes. しずえ's box overlays the scene's bottom band (--chrome-talk tall, over the sea) when
-     she has news; a question puts the box and NH's choice list in one row over the action's slot instead.
-     Contract with the scene (Builder A): --chrome-below and --chrome-talk are constants per viewport. */
+  /* v5 §3 + round 6 F1 (band table): the chrome under the scene is ONE fixed slot, tall enough for しずえ's box
+     (--talk-lines lines + nameplate) over the action (or the box + the choice list in one row), on the flat map
+     sea. Its height is a constant per viewport, so the scene (100dvh − --chrome-below, stage bottom-anchored)
+     never moves when she speaks or goes quiet. ≈ 176 at 393×852, 150 at 375×667, 142 at 320×568. */
   .island {
-    --chrome-below: calc(var(--gap) + var(--cta-h) + var(--lip-h) + var(--pad-bottom));
-    --chrome-talk: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px + 18px + var(--gap));
+    --talk-h: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px + 14px + var(--lip-h));
+    --chrome-below: calc(var(--talk-h) + 8px + var(--cta-h) + var(--lip-h) + var(--gap) + var(--pad-bottom));
     --scene-h: max(300px, calc(100dvh - var(--chrome-below)));
     position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
     display: flex; flex-direction: column;
   }
   .top { position: relative; height: var(--scene-h); flex: none; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
   .below {
-    height: var(--chrome-below); flex: none; margin-top: auto;
-    padding: var(--gap) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
+    height: var(--chrome-below); flex: none; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+    padding: var(--gap) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + var(--lip-h)) calc(var(--side) + var(--safe-left));
   }
-  .asking .below .btn { visibility: hidden; }
   /* Under the harvest only the island shows through the tint: no HUD, no dialogue, no action. */
-  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below, .covered .news { visibility: hidden; }
-  .news {
-    position: absolute; z-index: 9; left: 0; right: 0; bottom: var(--chrome-below); display: grid;
-    padding: 0 calc(var(--side) + var(--safe-right)) var(--gap) calc(var(--side) + var(--safe-left));
-    pointer-events: none;
-  }
-  .news > :global(*) { pointer-events: auto; }
-  /* A question: the box and the choices stacked on its right share one row, over the action's slot. */
-  .news.ask {
-    bottom: 0; grid-template-columns: 1fr auto; gap: 10px; align-items: end; --talk-lines: 2;
-    padding-bottom: calc(var(--pad-bottom) + var(--lip-h));
-  }
+  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below { visibility: hidden; }
+  .news { display: grid; }
+  .news :global(.bubble) { margin-bottom: 0; }
+  /* A question: the box and the choices stacked on its right share one row (the action's slot is theirs). */
+  .ask .news { grid-template-columns: 1fr auto; gap: 10px; align-items: end; --talk-lines: 2; }
 </style>
