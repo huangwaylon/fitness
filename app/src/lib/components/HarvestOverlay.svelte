@@ -11,10 +11,11 @@
   import Villager from './Villager.svelte';
   import Avatar from './Avatar.svelte';
   import Emote from './Emote.svelte';
-  import { reducedMotion } from './motion/clock.ts';
+  import { Tween, prefersReducedMotion } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
   import Yen from './Yen.svelte';
   import Bubble from './Bubble.svelte';
-  import Jar from './island/Jar.svelte';
+  import Jar, { jarFill } from './island/Jar.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import { confirmHarvest } from '#lib/client/actions.ts';
   import { fruitArt } from '#lib/art.ts';
@@ -43,37 +44,31 @@
 
   let step = $state<'tally' | 'rung' | 'done'>('tally');
   let busy = $state(false);
-  /** Live (review P10): the count-up follows the setting even if it changes while open. */
-  const reduced = $derived(reducedMotion());
 
   /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
   const after = $derived(view.jar.totalYen);
   const before = $derived(Math.max(0, after - jarTotal));
-  /** Jar fill (0–0.82 of the glass, never a solid block); this harvest is a lighter band on top, ≥ 10% tall. */
-  const fillOf = (yen: number) => 0.82 * Math.max(0.08, Math.min(1, view.jar.nextRung ? yen / view.jar.nextRung.yen : 1));
-  const oldFill = $derived(Math.min(fillOf(before), fillOf(after) - 0.1));
-  let shown = $state(0);
+  /** The jar's one fill rule (Jar.svelte); this harvest is a lighter band on top, ≥ 10% of the glass tall. */
+  const newFill = $derived(jarFill(after, view.jar));
+  const oldFill = $derived(Math.max(0, Math.min(jarFill(before, view.jar), newFill - 0.1)));
+  const shown = new Tween(0, { duration: 1400, easing: cubicOut });
   let filled = $state(false);
   const partnerDone = $derived(harvest.confirmedBy.includes(partner));
 
+  /** The end card: the band fills and the total counts up (at once under reduced motion, live: review P10). */
   function countUp() {
-    shown = before;
-    if (reduced) {
-      shown = after;
+    shown.set(before, { duration: 0 });
+    if (prefersReducedMotion.current) {
+      shown.set(after, { duration: 0 });
       filled = true;
       return;
     }
-    const t0 = performance.now();
-    const DUR = 1400;
     requestAnimationFrame(() => (filled = true));
-    const frame = (now: number) => {
-      const k = Math.min(1, (now - t0) / DUR);
-      shown = Math.round(before + (after - before) * (1 - (1 - k) ** 3));
-      if (reduced) shown = after;
-      else if (k < 1 && step === 'done') requestAnimationFrame(frame);
-    };
-    setTimeout(() => requestAnimationFrame(frame), 500);
+    shown.set(after, { delay: 500 });
   }
+  $effect(() => {
+    if (prefersReducedMotion.current && step === 'done') shown.set(after, { duration: 0 });
+  });
 
   async function drop() {
     busy = true;
@@ -158,9 +153,9 @@
         <button type="button" class="btn" disabled={busy} onclick={drop}>{t('harvest.drop')}</button>
       {:else if step === 'done'}
         <section class="card done" role="status">
-          <span class="djar"><span class="get" aria-hidden="true"><Emote id="mark-sparkle" bare hold size={28} /></span><Jar fill={oldFill} band={filled ? fillOf(after) : oldFill} width="80px" /></span>
+          <span class="djar"><span class="get" aria-hidden="true"><Emote id="mark-sparkle" bare hold size={28} /></span><Jar fill={oldFill} band={filled ? newFill : oldFill} width="80px" /></span>
           <b class="dhead">{t('harvest.done', { yen: formatYen(jarTotal) })}</b>
-          <span class="hero-num">{formatYen(shown)}</span>
+          <span class="hero-num">{formatYen(Math.round(shown.current))}</span>
           {#if !partnerDone}<span class="mini">{t('harvest.waiting', { name: view.people[partner].villagerName })}</span>{/if}
         </section>
         <button type="button" class="btn" onclick={() => ondone?.()}>{t('harvest.home')}</button>

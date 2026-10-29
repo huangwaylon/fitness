@@ -2,6 +2,7 @@
 // the browser (lib/model), then syncs in the background: flush the write queue, fetch rows `since` the last seen
 // server time, recompute. `?demo` (or dev without VITE_GAS_URL) runs the model on generated rows (demoRows.ts);
 // `?demo&as=B` plays うめ. The demo's taps are kept in localStorage for the day, shared by both players' tabs.
+import { untrack } from 'svelte';
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { dev } from '$app/env';
@@ -13,6 +14,7 @@ import type { PersonId } from '#lib/types.ts';
 import { buildWeekView, payoutAsOf } from '#lib/model/week.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
+import { minuteNow } from '#lib/components/motion/clock.ts';
 
 type DemoMode = false | 'plain' | 'harvest';
 const DEMO_EVENTS = 'island.demo.events';
@@ -85,7 +87,7 @@ class WeekStore {
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
-  #clock: ReturnType<typeof setInterval> | null = null;
+  #stopClock: (() => void) | null = null;
 
   /** Read `?demo` / `?demo=harvest` once; it sticks for the tab session. */
   init(): void {
@@ -155,9 +157,16 @@ class WeekStore {
   }
 
   #start(): void {
-    if (this.#clock) return;
-    // The view depends on the clock (harvest opens Sunday 19:30, "today", the host's line).
-    this.#clock = setInterval(() => this.#recompute(), 60_000);
+    if (this.#stopClock) return;
+    // The view depends on the clock (harvest opens Sunday 19:30, "today", the host's line): recompute at each new minute.
+    this.#stopClock = $effect.root(() => {
+      let first = true;
+      $effect(() => {
+        minuteNow();
+        if (first) first = false;
+        else untrack(() => this.#recompute());
+      });
+    });
     if (!this.demo) addEventListener('online', () => void this.refresh());
   }
 

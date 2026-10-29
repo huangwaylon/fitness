@@ -1,3 +1,14 @@
+<script module lang="ts">
+  import type { JarView } from '#lib/types.ts';
+
+  /** How full the jar looks for `yen` (the one rule: island, 旅の壺 hero, harvest end card): the square root of its
+   *  share of the top rung, with a little showing as soon as there is anything in it. */
+  export function jarFill(yen: number, jar: Pick<JarView, 'rungs' | 'nextRung'>): number {
+    const top = Math.max(1, ...jar.rungs.map((r) => r.yen), jar.nextRung?.yen ?? 0);
+    return yen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(yen / top)));
+  }
+</script>
+
 <script lang="ts">
   // The jar (v5 §5, F6): ONE drawing for the island, the 旅の壺 hero and the harvest end card.
   // Glass #DDF2FB (round 7: lit from the upper left, a white streak there and a soft #BFDCEA shade toward the

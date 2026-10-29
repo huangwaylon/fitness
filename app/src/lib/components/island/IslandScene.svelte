@@ -45,7 +45,7 @@
   import { cubicOut } from 'svelte/easing';
   import Sky from './Sky.svelte';
   import Sea from './Sea.svelte';
-  import Jar from './Jar.svelte';
+  import Jar, { jarFill } from './Jar.svelte';
   import Ground from './Ground.svelte';
   import BackRow from './BackRow.svelte';
   import FruitTree from './FruitTree.svelte';
@@ -59,7 +59,7 @@
   import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
   import { startIdleLife } from '../motion/idleLife.svelte.ts';
   import { on } from '../motion/bus.svelte.ts';
-  import { dayKey, now, reducedMotion } from '../motion/clock.ts';
+  import { dayKey, minuteNow, now, reducedMotion } from '../motion/clock.ts';
   import type { ReactionId } from '../motion/reactions.ts';
 
   interface Props {
@@ -92,8 +92,8 @@
   const tod = $derived<Tod>(todProp ?? (nightProp === true ? 'night' : nightProp === false && theme.tod === 'night' ? 'day' : theme.tod));
   const night = $derived(tod === 'night');
 
-  // The clock (device time or ?date=), refreshed every minute.
-  let clock = $state(now());
+  // The clock (device time or ?date=), at each new minute.
+  const clock = $derived(minuteNow());
   const month = $derived(clock.getMonth() + 1);
   const ev = $derived(eventsAt(clock));
 
@@ -127,10 +127,8 @@
     }, untrack(() => jarYen) < target && live ? 450 : 0);
     return () => clearTimeout(t);
   });
-  // Fill: share of the top rung (a little visible as soon as there is anything in it). The coin stack is
-  // drawn full and slid down by (1 − fill), so a change animates.
-  const topYen = $derived(Math.max(1, ...view.jar.rungs.map((r) => r.yen), view.jar.nextRung?.yen ?? 0));
-  const fill = $derived(jarYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(jarYen / topYen))));
+  // The coin stack is drawn full and slid down by (1 − fill), so a change animates.
+  const fill = $derived(jarFill(jarYen, view.jar));
   /** The plate counts up to the new total (no jump), in step with the coins rising. */
   // svelte-ignore state_referenced_locally
   const plateYen = new Tween(jarYen, { duration: 1200, easing: cubicOut });
@@ -226,6 +224,16 @@
     return h >= 22 || h < 5;
   }
 
+  // Naps 22:00–5:00, checked at each new minute (a tap wakes a villager for a moment; director.svelte.ts).
+  $effect(() => {
+    if (!live) return;
+    const s = asleepHour(clock);
+    untrack(() => {
+      setAsleep('mine', s);
+      setAsleep('partner', s);
+    });
+  });
+
   function once(key: string): boolean {
     const k = `if-${key}`;
     const day = dayKey();
@@ -272,14 +280,6 @@
     // the director's event queue plays them one at a time
     later(() => beats.forEach((r) => react(r)), 700);
 
-    const sleepCheck = () => {
-      clock = now();
-      const s = asleepHour(clock);
-      setAsleep('mine', s);
-      setAsleep('partner', s);
-    };
-    sleepCheck();
-    const tick = setInterval(sleepCheck, 60_000);
 
     const stopIdle = startIdleLife({
       paused: () => covered || hidden,
@@ -310,7 +310,6 @@
     document.addEventListener('visibilitychange', onVis);
     return () => {
       offs.forEach((o) => o());
-      clearInterval(tick);
       stopIdle();
       for (const t of pending) clearTimeout(t);
       document.removeEventListener('visibilitychange', onVis);

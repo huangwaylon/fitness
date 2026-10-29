@@ -6,7 +6,7 @@
   }
   let { choices }: Props = $props();
   let sel = $state(0);
-  const btns: HTMLButtonElement[] = [];
+  const btns: HTMLButtonElement[] = $state([]);
 
   function key(e: KeyboardEvent, i: number) {
     const d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;

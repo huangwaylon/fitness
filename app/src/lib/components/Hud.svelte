@@ -2,10 +2,13 @@
   // 島's HUD (v5 §3), NH island-view light: the corner clock (plain text, no pill) with the sync chip under it
   // only when sync is not ok, the score ribbon (a copy of the NH map's yellow title banner: the screen's one
   // focal point) and the bare NookPhone. After a check-in the ribbon counts up (the focus beat).
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
+  import { Tween, prefersReducedMotion } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
   import HelpButton from './HelpButton.svelte';
   import SyncPill from './SyncPill.svelte';
-  import { now, reducedMotion } from './motion/clock.ts';
+  import { minuteNow } from './motion/clock.ts';
+  import { clockTime, weekdayOf } from '#lib/i18n/format.ts';
   import { openKiroku } from '#lib/client/ui.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -19,44 +22,27 @@
   }
   let { score, today, phoneOpen = $bindable(false) }: Props = $props();
 
-  // Clock: device time (or ?date=), refreshed every 20 s.
-  let time = $state('');
-  $effect(() => {
-    const tick = () => {
-      const d = now();
-      time = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
-    };
-    tick();
-    const id = setInterval(tick, 20_000);
-    return () => clearInterval(id);
-  });
-  const date = $derived.by(() => {
-    const [, m, d] = today.split('-').map(Number);
-    const w = new Date(Date.UTC(+today.slice(0, 4), m - 1, d)).getUTCDay() || 7;
-    return t('hud.date', { m, d, w: t(`weekday.${w}`) });
-  });
+  // Clock: device time (or ?date=), at each new minute.
+  const time = $derived(clockTime(minuteNow()));
+  const date = $derived(t('hud.date', { m: Number(today.slice(5, 7)), d: Number(today.slice(8, 10)), w: weekdayOf(today) }));
 
-  // Count-up on a rise (instant under reduced motion and on first paint).
-  let shown = $state(untrack(() => score));
-  let beat = $state(0);
+  // Count-up on a rise (instant under reduced motion, on a fall and on first paint), with a beat. The ribbon is never
+  // remounted for it, so a focused ribbon keeps its focus (round 8).
+  const shown = new Tween(untrack(() => score), { duration: 900, easing: cubicOut });
+  let beat = $state(false);
+  let ribbon: HTMLButtonElement | undefined = $state();
   $effect(() => {
     const to = score;
-    const from = untrack(() => shown);
-    if (to <= from || reducedMotion()) {
-      shown = to;
-      return;
-    }
-    untrack(() => (beat += 1));
-    const t0 = performance.now();
-    let raf = 0;
-    const step = (ms: number) => {
-      const k = Math.min(1, (ms - t0) / 900);
-      shown = Math.round(from + (to - from) * (1 - (1 - k) ** 3));
-      if (k < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    const rise = to > untrack(() => shown.target) && !prefersReducedMotion.current;
+    shown.set(to, { duration: rise ? 900 : 0 });
+    if (rise) void replayBeat();
   });
+  async function replayBeat() {
+    beat = false;
+    await tick();
+    void ribbon?.offsetWidth; // restart the animation
+    beat = true;
+  }
 </script>
 
 <div class="hud">
@@ -67,13 +53,11 @@
   <HelpButton bind:open={phoneOpen} />
 </div>
 <div class="ribbon-wrap">
-  {#key beat}
-    <!-- Tap → きろく, this week (history-and-editing.md §2). -->
-    <button type="button" class="ribbon" class:beat={beat > 0} aria-label={t('hud.score', { score })}
-      onclick={() => { openKiroku({ tab: 'body', week: 'current' }); phoneOpen = true; }}>
-      <span class="wk" aria-hidden="true">{t('hud.week')}</span><b class="money" aria-hidden="true">{shown}<small>/100</small></b>
-    </button>
-  {/key}
+  <!-- Tap → きろく, this week (history-and-editing.md §2). -->
+  <button type="button" class="ribbon" class:beat bind:this={ribbon} aria-label={t('hud.score', { score })} onanimationend={() => (beat = false)}
+    onclick={() => { openKiroku({ tab: 'body', week: 'current' }); phoneOpen = true; }}>
+    <span class="wk" aria-hidden="true">{t('hud.week')}</span><b class="money" aria-hidden="true">{Math.round(shown.current)}<small>/100</small></b>
+  </button>
 </div>
 
 <style>

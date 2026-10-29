@@ -8,7 +8,8 @@
   import FruitRing from './FruitRing.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { t, formatSyncTime } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { formatSyncTime } from '#lib/i18n/format.ts';
 
   let { open = $bindable(), onhighfive }: { open: boolean; onhighfive: () => void } = $props();
 

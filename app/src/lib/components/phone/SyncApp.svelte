@@ -3,7 +3,8 @@
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../Avatar.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { t, formatSyncTime } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { formatSyncTime } from '#lib/i18n/format.ts';
 
   let { view }: { view: WeekView } = $props();
 </script>

@@ -3,8 +3,9 @@
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog } from '#lib/model/history.ts';
   import Avatar from '../Avatar.svelte';
-  import { dayTitle, editText, stampOf } from './fmt.ts';
+  import { dayTitle, editText } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { stampOf } from '#lib/i18n/format.ts';
 
   let { edits, villagers, withDate = false }: { edits: EditLog[]; villagers: Record<PersonId, string | null>; withDate?: boolean } = $props();
 </script>

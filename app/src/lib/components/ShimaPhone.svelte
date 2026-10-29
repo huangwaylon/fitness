@@ -3,7 +3,7 @@
   // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
   // Apps: help, villager (+ name), language, sync. (No privacy settings: both players see everything; no alerts.)
-  import { onMount, tick as nextTick, untrack } from 'svelte';
+  import { tick as nextTick, untrack } from 'svelte';
   import Sheet from './Sheet.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import LeafCoin from './LeafCoin.svelte';
@@ -14,7 +14,8 @@
   import type { KirokuEntry } from './kiroku/Kiroku.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
-  import { now } from './motion/clock.ts';
+  import { minuteNow } from './motion/clock.ts';
+  import { clockTime } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
 
   type AppId = 'kiroku' | 'help' | 'villager' | 'lang' | 'sync';
@@ -36,20 +37,11 @@
   const loadKiroku = () => (kirokuMod ??= import('./kiroku/Kiroku.svelte'));
   let kiroku: { back: () => boolean } | undefined = $state();
   let entry = $state<KirokuEntry | null>(null);
-  let clock = $state('');
 
   const view = $derived(week.view);
   const title = $derived(app ? t(`phone.app.${app}`) : t('phone.name'));
 
-  function tick() {
-    clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now());
-  }
-
-  onMount(() => {
-    tick();
-    const id = setInterval(tick, 20_000);
-    return () => clearInterval(id);
-  });
+  const clock = $derived(clockTime(minuteNow()));
 
   /** U15: もどる puts focus back on the app tile it came from. */
   async function back() {
@@ -66,10 +58,6 @@
     app = null;
     entry = null;
   }
-
-  $effect(() => {
-    if (open) untrack(tick);
-  });
 
   // A shortcut (score ribbon, jar total) opens straight into きろく.
   $effect(() => {

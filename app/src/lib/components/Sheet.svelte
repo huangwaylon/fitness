@@ -33,8 +33,13 @@
 
   $effect(() => {
     if (!open) return;
-    untrack(() => (ui.sheets = [...ui.sheets.filter((x) => x !== id), id]));
-    return () => untrack(() => (ui.sheets = ui.sheets.filter((x) => x !== id)));
+    untrack(() => {
+      ui.sheets = [...ui.sheets.filter((x) => x !== id), id];
+    });
+    return () =>
+      untrack(() => {
+        ui.sheets = ui.sheets.filter((x) => x !== id);
+      });
   });
 
   $effect(() => {
