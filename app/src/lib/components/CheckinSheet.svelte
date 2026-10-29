@@ -6,9 +6,10 @@
   import { fruitArt } from '#lib/art.ts';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
-  import { t, formatDate } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { addDays, inMonthDayRange } from '#lib/scoring/dates.ts';
+  import { formatDate } from '#lib/i18n/format.ts';
 
   let { open = $bindable(), onclose }: { open: boolean; onclose?: () => void } = $props();
 

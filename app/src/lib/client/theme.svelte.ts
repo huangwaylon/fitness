@@ -2,7 +2,8 @@
 // data-season and data-foliage. Time of day alone drives the chrome (v5 §5): the phone's dark mode is ignored.
 // Rules: client/season.ts. `?theme=night|day`, `?season=…` and `?date=` (motion/clock.ts) preview for this load
 // only; they are never persisted, so a later plain load is back to the real date and time.
-import { now } from '#lib/components/motion/clock.ts';
+import { untrack } from 'svelte';
+import { minuteNow, now } from '#lib/components/motion/clock.ts';
 import { deriveTheme, previewParams, themeColor, type Foliage, type Season, type ThemeInput, type TimeOfDay } from './season.ts';
 
 export type { Foliage, Season, TimeOfDay };
@@ -16,8 +17,8 @@ export const theme = $state<{ night: boolean; season: Season; tod: TimeOfDay; fo
 
 let preview: ThemeInput = {};
 
-function apply() {
-  Object.assign(theme, deriveTheme(now(), preview));
+function apply(at: Date) {
+  Object.assign(theme, deriveTheme(at, preview));
   const root = document.documentElement;
   root.dataset.theme = theme.night ? 'night' : 'day';
   root.dataset.season = theme.season;
@@ -26,12 +27,14 @@ function apply() {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(theme));
 }
 
-/** Start the clock; returns a cleanup function. */
+/** Follow the clock (at each new minute); returns a cleanup function. */
 export function startTheme(): () => void {
   preview = previewParams(location.search);
-  // Older builds saved previews in sessionStorage; drop any leftovers.
-  for (const k of ['theme', 'season', 'if-date']) sessionStorage.removeItem(k);
-  apply();
-  const id = setInterval(apply, 60_000);
-  return () => clearInterval(id);
+  apply(now()); // before the first paint
+  return $effect.root(() => {
+    $effect(() => {
+      const at = minuteNow();
+      untrack(() => apply(at));
+    });
+  });
 }

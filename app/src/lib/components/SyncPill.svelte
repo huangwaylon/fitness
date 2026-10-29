@@ -3,7 +3,8 @@
   // or send failed). A lasting system state, so it is a chip, not しずえ. Tap = retry now (flush + refresh);
   // while that runs it says 同期中…. A failed save (data may be lost) is the store's one banner + R17 instead.
   import { week } from '#lib/client/week.svelte.ts';
-  import { t, formatSyncTime } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { formatSyncTime } from '#lib/i18n/format.ts';
 
   const time = $derived(week.lastSync ? formatSyncTime(week.lastSync) : t('sync.never'));
 </script>

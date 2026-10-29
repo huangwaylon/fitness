@@ -5,8 +5,9 @@
   import type { HistoryWeek } from '#lib/model/history.ts';
   import Avatar from '../Avatar.svelte';
   import Glyph from './Glyph.svelte';
-  import { weekRange } from './fmt.ts';
+  
   import { t, formatYen } from '#lib/i18n/index.ts';
+  import { weekRange } from '#lib/i18n/format.ts';
 
   interface Props {
     weeks: HistoryWeek[];

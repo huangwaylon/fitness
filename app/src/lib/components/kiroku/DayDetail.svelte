@@ -7,8 +7,9 @@
   import Avatar from '../Avatar.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
-  import { dayTitle, leftLabel, num, timeOf, typeLabel } from './fmt.ts';
+  import { dayTitle, leftLabel, num, typeLabel } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { timeOf } from '#lib/i18n/format.ts';
 
   interface Props {
     d: DayDetail;

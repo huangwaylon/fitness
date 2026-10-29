@@ -5,8 +5,9 @@
   import type { MoneyLog } from '#lib/model/history.ts';
   import { RUNGS } from '#lib/config/rules.ts';
   import Avatar from '../Avatar.svelte';
-  import { weekRange } from './fmt.ts';
+  
   import { t, formatYen } from '#lib/i18n/index.ts';
+  import { weekRange } from '#lib/i18n/format.ts';
 
   interface Props {
     log: MoneyLog;

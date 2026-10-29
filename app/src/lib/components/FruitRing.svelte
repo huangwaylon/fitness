@@ -108,6 +108,8 @@
     top: 0; right: 0; width: 34%; height: 34%; background: #FFF6C9;
     filter: drop-shadow(0 0 2px #fff); animation: twinkle 2.4s var(--ease-idle) infinite;
   }
+  @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+  @keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
 
   /* Detail chip: a cream speech bubble. On a tree, .wrap is static, so the chip anchors to the
      whole fruit grid and floats above the canopy instead of covering the neighbouring fruit. */

@@ -9,7 +9,7 @@
   import Rope from '#lib/components/Rope.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import Yen from '#lib/components/Yen.svelte';
-  import Jar from '#lib/components/island/Jar.svelte';
+  import Jar, { jarFill } from '#lib/components/island/Jar.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { openKiroku } from '#lib/client/ui.svelte.ts';
@@ -44,11 +44,7 @@
   const canSpend = $derived(!!jar && jar.purseYen >= cheapest.yen);
 
   // The hero jar = the island's jar (one drawing, the same fill rule), so the route change morphs one into the other.
-  const jarFill = $derived.by(() => {
-    if (!jar) return 0;
-    const top = Math.max(1, ...jar.rungs.map((r) => r.yen), jar.nextRung?.yen ?? 0);
-    return jar.totalYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(jar.totalYen / top)));
-  });
+  const fill = $derived(jar ? jarFill(jar.totalYen, jar) : 0);
 
   /** Weeks paid so far, for "against your own max" mini-jars. Server may send jar.weeks. */
   const weeks = $derived.by(() => {
@@ -141,7 +137,7 @@
     <h1 class="sr-only">{t('jar.title')}</h1>
 
     <div class="hero">
-      <span class="bigjar"><Jar fill={jarFill} width="calc(var(--jar-h) * 54 / 68)" name="jar" /></span>
+      <span class="bigjar"><Jar {fill} width="calc(var(--jar-h) * 54 / 68)" name="jar" /></span>
       <button type="button" class="totalbtn" aria-label="{t('kiroku.jar')} {formatYen(jar.totalYen)}: {t('phone.app.kiroku')}"
         onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
         <Yen yen={jar.totalYen} class="hero-num total" />

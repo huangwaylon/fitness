@@ -1,6 +1,7 @@
 // Scene clock: the device time, or `?date=YYYY-MM-DDTHH:mm` (testing seasonal events, night naps).
 // The preview lasts for this page load only (kept across in-app navigation, never persisted).
-import { MediaQuery } from 'svelte/reactivity';
+import { prefersReducedMotion } from 'svelte/motion';
+import { createSubscriber } from 'svelte/reactivity';
 
 let offset: number | null = null;
 
@@ -20,16 +21,30 @@ export function now(): Date {
   return new Date(Date.now() + init());
 }
 
-/** True when the date was forced with `?date=`. */
-export function forcedDate(): boolean {
-  return init() !== 0;
+/** One timer for every clock on screen: it fires as the scene clock's minute changes, while anything reads it. */
+const minuteTick = createSubscriber((update) => {
+  let id: ReturnType<typeof setTimeout>;
+  const arm = () => {
+    const d = now();
+    id = setTimeout(() => {
+      update();
+      arm();
+    }, 60_000 - (d.getSeconds() * 1000 + d.getMilliseconds()) + 20);
+  };
+  arm();
+  return () => clearTimeout(id);
+});
+
+/** The scene clock, reactive: an effect or template that reads it re-runs at each new minute (HUD, しまフォン, the
+ *  island's naps, the theme, the store's recompute). */
+export function minuteNow(): Date {
+  minuteTick();
+  return now();
 }
 
 /** Shared, reactive `prefers-reduced-motion` (follows the setting when the user toggles it). */
-const rmq = new MediaQuery('(prefers-reduced-motion: reduce)', false);
-
 export function reducedMotion(): boolean {
-  return rmq.current;
+  return prefersReducedMotion.current;
 }
 
 /** Local `YYYY-MM-DD` of the scene clock. */

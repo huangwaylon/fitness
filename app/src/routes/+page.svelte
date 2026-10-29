@@ -65,8 +65,8 @@
     if (said) return said.text;
     // After my 壺に入れる (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
     if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
-    const key = view.juniper.key.replace(/^(juniper|host)\./, '');
-    if (key === 'harvest_ready' || key === 'payday') return hostLine(key, view.juniper.params);
+    const key = view.host.key.replace(/^host\./, '');
+    if (key === 'harvest_ready' || key === 'payday') return hostLine(key, view.host.params);
     if (grewNews) return hostLine('grew', { fruit: grewNews, activity: grewNews });
     return null;
   });

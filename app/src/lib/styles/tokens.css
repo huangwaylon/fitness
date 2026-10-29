@@ -95,14 +95,6 @@
 /* ---------- chrome keyframes (prefix if-; if-pop / if-hop live in the Builder A block) ---------- */
 /* ▼ next arrow nudge */
 @keyframes if-nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
-/* emote float: rise + fade at the end of --dur-emote */
-@keyframes if-emote {
-  0% { transform: translateY(6px) scale(0); opacity: 0; }
-  15% { transform: translateY(0) scale(1.15); opacity: 1; }
-  25% { transform: scale(1); }
-  85% { opacity: 1; transform: translateY(-4px); }
-  100% { opacity: 0; transform: translateY(-10px); }
-}
 /* letter reveal: each glyph */
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 
@@ -114,7 +106,7 @@
    ====================================================================================== */
 :root {
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
-  --jar-glass:#DDF2FB; --jar-glass-lip:#BFDCEA; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
+  --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
   --firefly:#F3FF9E; --firefly-glow:#E8F59A;
   --dur-walk:1600ms; /* = WALK_MS in motion/director.svelte.ts */
   /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar), v5 §5 */
@@ -249,7 +241,6 @@
   0%,100% { transform: none; } 16% { transform: rotate(4deg); } 33% { transform: rotate(-4deg); }
   50% { transform: rotate(3deg); } 67% { transform: rotate(-3deg); } 84% { transform: rotate(1.5deg); }
 }
-@keyframes if-sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
 /* a front-facing bow (N2: there is no official bow render): the figure dips and squashes from the feet, holds, rises */
 @keyframes if-bow { 0%,100% { transform: none; } 30%,62% { transform: translateY(1.5%) scale(1.03,.91); } }
 @keyframes if-talk { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
@@ -264,9 +255,6 @@
 }
 @keyframes if-fade-hold { 0% { opacity: 0; } 5.5%, 94.5% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
-@keyframes if-glow { from { opacity: .65; } to { opacity: 1; } }
-@keyframes if-wave { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
-@keyframes if-shore { from { transform: scaleY(1); opacity: .75; } to { transform: scaleY(1.05); opacity: 1; } }
 
 /* Jar ⇄ 旅の壺 shared element (round 6): the island jar carries view-transition-name: jar (<Jar name="jar">);
    when the 旅の壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (client/jarTransition.ts,

@@ -1,22 +1,10 @@
-// Small formatters shared by the きろく screens (dates in Tokyo, the change-log line).
+// Small formatters shared by the きろく screens (the day title, numbers, the change-log line); dates: i18n/format.ts.
 import type { EditLog } from '#lib/model/history.ts';
-import { addDays } from '#lib/scoring/index.ts';
 import { workoutLabel } from '#lib/model/labels.ts';
 import { i18n, t } from '#lib/i18n/index.ts';
+import { weekdayOf } from '#lib/i18n/format.ts';
 
-const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
-export const weekRange = (wk: string) => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
-export const weekdayOf = (d: string) => {
-  const w = new Date(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10))).getUTCDay() || 7;
-  return t(`weekday.${w}`);
-};
 export const dayTitle = (d: string) => t('kiroku.dayTitle', { m: Number(d.slice(5, 7)), d: Number(d.slice(8, 10)), w: weekdayOf(d) });
-
-const hm = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Tokyo' });
-const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo' });
-export const timeOf = (t: number | string) => hm.format(new Date(t));
-/** `10/22 21:04` (Tokyo). */
-export const stampOf = (t: number) => `${md(ymd.format(new Date(t)))} ${timeOf(t)}`;
 
 export const num = (n: number | null) => (n === null ? '–' : n.toLocaleString('en-US'));
 export const typeLabel = (type: string) => workoutLabel(type, i18n.locale);

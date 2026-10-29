@@ -32,7 +32,7 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 }
 
 /* ---------- numbers (Fredoka) ---------- */
-.money, .big { font-family: var(--font-num); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.money { font-family: var(--font-num); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .hero-num { font: 700 var(--fs-hero)/1.05 var(--font-num); font-variant-numeric: tabular-nums; }
 
 /* ---------- the one card skin: a cream Nook Miles+ card with a lip ---------- */
@@ -46,14 +46,6 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
   display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--r-pill);
   font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: var(--c-yuzu);
   box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); transform: rotate(-3deg);
-}
-
-/* ---------- Bells pill: the bag overlaps the left edge (game object: stays cream) ---------- */
-.bells {
-  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; position: relative;
-  min-height: 36px; padding: 2px 14px 2px 28px; margin-left: 8px; border-radius: var(--r-pill);
-  background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
-  font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink);
 }
 
 /* ---------- chunky button: radius 16, a lip, squash on press ---------- */
@@ -88,23 +80,6 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
   box-shadow: 0 var(--lip-h) 0 var(--c-lip); transition: transform var(--dur-base) var(--ease-bounce);
 }
 .icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
-
-/* ---------- switch: put <span class="switch"></span> inside a [role=switch] ---------- */
-.switch {
-  width: 56px; height: 32px; border-radius: var(--r-pill); background: var(--lip); position: relative; flex: none;
-  transition: background var(--dur-base);
-}
-.switch::after {
-  content: ''; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
-  background: var(--c-cream); transition: left var(--dur-base) var(--ease-bounce);
-}
-[aria-checked="true"] > .switch { background: var(--c-leaf); }
-[aria-checked="true"] > .switch::after { left: 27px; }
-
-/* shared keyframes still used by the scene and fx (Builder A) */
-@keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-@keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
-@keyframes glint { 0%,70%,100% { opacity: 0; } 80% { opacity: 1; } }
 
 /* ---------- 島 ⇄ 旅の壺 (client/jarTransition.ts) ----------
    The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).

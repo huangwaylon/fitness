@@ -9,8 +9,9 @@
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
   import { fruitArt } from '#lib/art.ts';
-  import { leftLabel, num, weekRange, weekdayOf } from './fmt.ts';
+  import { leftLabel, num } from './fmt.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
+  import { weekRange, weekdayOf } from '#lib/i18n/format.ts';
 
   interface Props {
     d: WeekDetail;
