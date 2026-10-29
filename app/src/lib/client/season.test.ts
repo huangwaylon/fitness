@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveTheme, foliageFor, previewParams, seasonFor, todFor } from './season.ts';
+import { deriveTheme, foliageFor, previewParams, seasonFor, themeColor, todFor } from './season.ts';
 
 const at = (s: string) => new Date(s); // local time
 
@@ -35,16 +35,26 @@ describe('time of day follows the clock', () => {
     ['15:59', 'day'], ['16:00', 'dusk'], ['18:59', 'dusk'], ['19:00', 'night'], ['23:30', 'night']
   ])('%s → %s', (hm, tod) => expect(todFor(at(`2026-10-29T${hm}`))).toBe(tod));
 
-  it('OS dark mode restyles the chrome only, never the sky', () => {
-    const t = deriveTheme(at('2026-10-29T12:26'), { systemDark: true });
-    expect(t.night).toBe(true);
-    expect(t.tod).toBe('day');
+  it('the chrome follows the time of day alone: night only 19–05', () => {
+    expect(deriveTheme(at('2026-10-29T12:26'))).toMatchObject({ tod: 'day', night: false });
+    expect(deriveTheme(at('2026-10-29T05:30'))).toMatchObject({ tod: 'dawn', night: false });
+    expect(deriveTheme(at('2026-10-29T17:30'))).toMatchObject({ tod: 'dusk', night: false });
+    expect(deriveTheme(at('2026-10-29T21:00'))).toMatchObject({ tod: 'night', night: true });
+    expect(deriveTheme(at('2026-10-29T04:59'))).toMatchObject({ tod: 'night', night: true });
   });
 
-  it('chrome night 19–06 by the clock', () => {
-    expect(deriveTheme(at('2026-10-29T05:30')).night).toBe(true);
-    expect(deriveTheme(at('2026-10-29T05:30')).tod).toBe('dawn');
-    expect(deriveTheme(at('2026-10-29T06:30')).night).toBe(false);
+  it('OS dark mode is not an input (v5: the sky sets the theme)', () => {
+    // An old caller passing systemDark must not turn a noon chrome dark.
+    const t = deriveTheme(at('2026-10-29T12:26'), { systemDark: true } as never);
+    expect(t.night).toBe(false);
+  });
+
+  it('theme-color = the top of the sky', () => {
+    expect(themeColor({ tod: 'night', season: 'summer' })).toBe('#3A4886');
+    expect(themeColor({ tod: 'dusk', season: 'summer' })).toBe('#FF9E7A');
+    expect(themeColor({ tod: 'dawn', season: 'winter' })).toBe('#FFC6A8');
+    expect(themeColor({ tod: 'day', season: 'autumn' })).toBe('#69B8F0');
+    expect(themeColor({ tod: 'day', season: 'spring' })).toBe('#57B8F7');
   });
 });
 

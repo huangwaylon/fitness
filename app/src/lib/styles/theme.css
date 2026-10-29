@@ -1,5 +1,6 @@
-/* Island Fund base styles v4: element defaults + shared building blocks (style guide §3, §4, §T, §R).
-   All custom properties (tokens) live in lib/styles/tokens.css, which is imported first. */
+/* Island Fund base styles v5: element defaults + the few shared building blocks (v5 §5).
+   All custom properties (tokens) live in lib/styles/tokens.css, which is imported first.
+   No outlines anywhere: depth is the 4px lip (--sh-lip) and --sh-float on floating layers only. */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -12,149 +13,95 @@
 html, body { margin: 0; min-height: 100dvh; overscroll-behavior: none; }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); }
 body {
-  font-family: var(--font-ui); font-weight: var(--fw-body); color: var(--text); background: var(--bg);
-  font-size: var(--fs-body); line-height: var(--lh-body); font-feature-settings: "palt";
+  font-family: var(--font-ui); font-weight: 500; color: var(--text); background: var(--bg);
+  font-size: var(--fs-body); line-height: var(--lh); font-feature-settings: "palt";
   -webkit-font-smoothing: antialiased; overflow-x: hidden;
   transition: background-color var(--dur-base) var(--ease-soft), color var(--dur-base);
 }
 html[lang="ja"] * { letter-spacing: 0 !important; }
-h1, h2, h3 { font-family: var(--font-ui); font-weight: var(--fw-black); margin: 0; line-height: 1.2; }
-h1 { font-size: var(--fs-h1); line-height: 1.15; }
-h2 { font-size: var(--fs-h2); }
+h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
 button { font: inherit; color: inherit; }
 button, [role="button"], [role="switch"], a {
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 12px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: var(--r-chip); }
 input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .sr-only {
   position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-/* ---------- numbers ---------- */
-.money, .big { font-family: var(--font-num); font-weight: var(--fw-num); font-variant-numeric: tabular-nums; line-height: 1; }
+/* ---------- numbers (Fredoka) ---------- */
+.money, .big { font-family: var(--font-num); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .hero-num { font: 700 var(--fs-hero)/1.05 var(--font-num); font-variant-numeric: tabular-nums; }
 
-/* ---------- paper card (§4.4): lip + dashed stitching + optional label tape ---------- */
+/* ---------- the one card skin: a cream Nook Miles+ card with a lip ---------- */
 .card {
-  position: relative; background: var(--surface); border: var(--bw) solid var(--edge); border-radius: var(--r-card);
+  position: relative; background: var(--surface); color: var(--text); border-radius: var(--r-card);
   box-shadow: var(--sh-lip); padding: 16px;
-  outline: 2px dashed var(--stitch); outline-offset: calc(-1 * var(--stitch-gap));
-}
-.tape {
-  position: absolute; top: -13px; left: 16px; z-index: 1; display: inline-flex; align-items: center; gap: 6px;
-  padding: 5px 12px; border-radius: var(--r-pill); transform: rotate(-3deg);
-  font: 700 var(--fs-tag)/1 var(--font-ui); color: var(--c-ink);
-  background: var(--tape, var(--c-yuzu-soft)); box-shadow: 0 2px 0 color-mix(in srgb, var(--tape, var(--c-yuzu-soft)) 80%, #000 20%);
 }
 
-/* ---------- Nook Miles+ card (§T.4): pastel fill, darker border, scallop texture. Set --card. ---------- */
-.miles {
-  --card: var(--card-butter); --text: var(--c-ink); --text-soft: var(--c-ink-soft); --track: rgba(255, 255, 255, .75); --edge: color-mix(in srgb, var(--card) 80%, #000 20%);
-  position: relative; border-radius: 18px; padding: 14px 16px; color: var(--c-ink);
-  background: var(--pat-scallop), var(--card); border: var(--bw) solid color-mix(in srgb, var(--card) 88%, #000 12%);
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--card) 78%, #000 22%);
-}
-/* Miles stamp: a dashed white circle, filled with the Miles icon once the goal is done. */
-.stamp {
-  --s: 40px;
-  width: var(--s); height: var(--s); flex: none; border-radius: 50%; display: grid; place-items: center;
-  border: 2px dashed rgba(255, 255, 255, .95); background: rgba(255, 255, 255, .35); transform: rotate(-8deg);
-}
-.stamp.on { background: rgba(255, 255, 255, .7); animation: if-stamp 260ms var(--ease-bounce) both; }
-
-/* ---------- DIY recipe card (§T.4): grid paper ---------- */
-.diy {
-  --text: var(--c-ink); --text-soft: var(--c-ink-soft);
-  position: relative; border-radius: var(--r-card); color: var(--c-ink);
-  background: var(--pat-grid), var(--diy-paper); border: var(--bw) solid #E6D8B4; box-shadow: 0 4px 0 #DCCBA0;
+/* ---------- nameplate: the tilted yuzu tag (dialogue box, sheet titles) ---------- */
+.plate {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--r-pill);
+  font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: var(--c-yuzu);
+  box-shadow: 0 3px 0 var(--c-yuzu-lip); transform: rotate(-3deg);
 }
 
-/* ---------- Bells pill (§T.5): the bag overlaps the left edge ---------- */
+/* ---------- Bells pill: the bag overlaps the left edge (game object: stays cream) ---------- */
 .bells {
   display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; position: relative;
-  min-height: 34px; padding: 2px 12px 2px 26px; margin-left: 8px; border-radius: var(--r-pill);
-  background: var(--bells-fill); border: var(--bw) solid var(--bells-edge); box-shadow: 0 3px 0 var(--bells-lip);
-  font: var(--fw-num) 1.0625rem/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink);
+  min-height: 36px; padding: 2px 14px 2px 28px; margin-left: 8px; border-radius: var(--r-pill);
+  background: var(--c-cream); box-shadow: 0 3px 0 var(--c-lip);
+  font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink);
 }
 
-/* ---------- pill (status, counters) ---------- */
-.pill {
-  display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-pill); padding: 6px 12px; min-height: 36px;
-  font-weight: 700; font-size: var(--fs-caption); background: color-mix(in srgb, var(--bubble) 94%, transparent);
-  border: var(--bw) solid var(--c-pill-edge); box-shadow: 0 3px 0 rgba(74, 58, 44, .14); color: var(--c-ink);
-}
-
-/* ---------- chunky button (§4) ---------- */
+/* ---------- chunky button: radius 16, a lip, squash on press ---------- */
 .btn {
   --fill: var(--c-leaf); --lip-c: var(--c-leaf-lip);
   appearance: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; min-height: var(--cta-h); border-radius: var(--r-pill); padding: 0 24px;
-  font: 700 var(--fs-body-lg) var(--font-ui); color: var(--c-ink); text-decoration: none;
-  background: var(--fill); box-shadow: var(--sh-btn-hi), 0 5px 0 var(--lip-c);
+  width: 100%; min-height: var(--cta-h); border-radius: var(--r-btn); padding: 0 24px; margin-bottom: 4px;
+  font: 700 var(--fs-talk) var(--font-ui); color: var(--c-ink); text-decoration: none;
+  background: var(--fill); box-shadow: 0 4px 0 var(--lip-c);
   transform-origin: 50% 100%;
   transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce), background-color var(--dur-quick);
-  user-select: none; -webkit-user-select: none; margin-bottom: 5px;
+  user-select: none; -webkit-user-select: none;
 }
 .btn:active:not(:disabled) {
-  transform: translateY(4px) scale(1.03, .94); box-shadow: var(--sh-btn-hi), 0 1px 0 var(--lip-c);
+  transform: translateY(3px) scale(1.03, .95); box-shadow: 0 1px 0 var(--lip-c);
   transition-duration: var(--dur-tap); transition-timing-function: var(--ease-squash);
 }
-.btn:disabled { opacity: .55; cursor: default; box-shadow: var(--sh-btn-hi); transform: translateY(4px); }
-.btn svg, .btn .ic { width: 26px; height: 26px; flex: none; }
-.btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; margin-bottom: 4px; box-shadow: var(--sh-btn-hi), 0 4px 0 var(--lip-c); }
+.btn:disabled { opacity: .55; cursor: default; box-shadow: none; transform: translateY(4px); }
+.btn svg, .btn .ic { width: 24px; height: 24px; flex: none; }
+.btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
-.btn.coral { --fill: var(--c-coral); --lip-c: var(--c-coral-lip); }
-.btn.sky { --fill: var(--c-sky); --lip-c: var(--c-sky-lip); }
-:root[data-theme="night"] .btn:not(.yuzu, .coral, .sky, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
-.btn.paper { --fill: var(--c-bubble); --lip-c: var(--c-paper-2); color: var(--c-ink); border: var(--bw) solid var(--c-pill-edge); }
-:root[data-theme="night"] .btn.paper { --lip-c: #26306A; border-color: #D9CFB4; }
+.btn.paper { --fill: var(--c-cream); --lip-c: var(--c-lip); }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
 }
 
-/* ---------- round icon button ---------- */
+/* ---------- round icon button (sheet close / back): cream, a lip ---------- */
 .icon-btn {
-  appearance: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; padding: 0;
-  background: var(--bubble); border: var(--bw) solid var(--c-pill-edge);
-  display: grid; place-items: center; color: var(--c-ink);
-  box-shadow: 0 3px 0 rgba(74, 58, 44, .16); transition: transform var(--dur-base) var(--ease-bounce);
+  appearance: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; padding: 0; border: 0;
+  background: var(--c-cream); display: grid; place-items: center; color: var(--c-ink);
+  box-shadow: 0 3px 0 var(--c-lip); transition: transform var(--dur-base) var(--ease-bounce);
 }
-.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 rgba(74, 58, 44, .16); transition-duration: var(--dur-tap); }
+.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
 
 /* ---------- switch: put <span class="switch"></span> inside a [role=switch] ---------- */
 .switch {
-  width: 60px; height: 36px; border-radius: var(--r-pill); background: var(--track); position: relative; flex: none;
-  box-shadow: var(--sh-inset); border: var(--bw) solid var(--edge); transition: background var(--dur-base);
+  width: 56px; height: 32px; border-radius: var(--r-pill); background: var(--lip); position: relative; flex: none;
+  transition: background var(--dur-base);
 }
 .switch::after {
-  content: ''; position: absolute; top: 2px; left: 2px; width: 28px; height: 28px; border-radius: 50%;
-  background: var(--c-bubble); box-shadow: 0 2px 0 var(--c-stitch);
-  transition: left var(--dur-base) var(--ease-bounce);
+  content: ''; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--c-cream); transition: left var(--dur-base) var(--ease-bounce);
 }
-[aria-checked="true"] > .switch { background: var(--c-leaf); border-color: var(--c-leaf-lip); }
-[aria-checked="true"] > .switch::after { left: 26px; animation: if-knob var(--dur-base) var(--ease-squash); }
-:root[data-theme="night"] [aria-checked="true"] > .switch { background: var(--c-moon); border-color: var(--c-moon-lip); }
-@keyframes if-knob { 50% { transform: scaleX(1.25); } }
+[aria-checked="true"] > .switch { background: var(--c-leaf); }
+[aria-checked="true"] > .switch::after { left: 27px; }
 
-/* ---------- status row (§R): top of every screen, 44px, clears the notch ---------- */
-.status-row {
-  position: absolute; z-index: 8; left: 0; right: 0; top: calc(var(--safe-top) + 8px); height: 44px;
-  padding: 0 calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
-  display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none;
-}
-.status-row > * { pointer-events: auto; }
-
-/* ---------- screens (Jar) ---------- */
-.screen {
-  max-width: var(--col); margin: 0 auto; position: relative;
-  padding: calc(var(--safe-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--dock-h) + var(--dock-bottom) + 16px) calc(var(--side) + var(--safe-left));
-}
-
-/* shared keyframes still used by the scene (Builder A) */
+/* shared keyframes still used by the scene and fx (Builder A) */
 @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 @keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
 @keyframes glint { 0%,70%,100% { opacity: 0; } 80% { opacity: 1; } }
-@keyframes stripes { to { background-position: 32px 0; } }

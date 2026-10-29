@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Speech bubble (style guide v4 §T.2): wobbly cream box, tilted nameplate that pops in after the box,
+  // NH dialogue box (v5 §3): wobbly cream box (a game object: cream at every time of day), tilted yuzu nameplate that pops in after the box,
   // letter-by-letter reveal at 33 ms/char (tap to finish), amber ▼ only when another page follows
   // (tap = next). The box holds --talk-lines lines (2; 1 on compact screens) and never grows.
   // しずえ stands on the left with her feet on the bubble's baseline (official art by pose; the season
@@ -21,14 +21,14 @@
     tag?: string;
     /** しずえ's pose ('wave' cheer, 'stand' calm, 'bow' thanks/sorry), or false for no host (no tail). */
     host?: Exclude<HostPose, 'icon' | 'winter'> | false;
-    /** Host height: px or a CSS length (default var(--host-h): 84 / 64 compact / 56 tiny). */
+    /** Host height: px or a CSS length (default 72). */
     size?: number | string;
     /** Called once the last page has finished typing. */
     onfinish?: () => void;
     /** Extra content inside the bubble, under the text (lets the box grow; use sparingly). */
     actions?: Snippet;
   }
-  let { text, name, tag = 'var(--tag-host)', host = 'wave', size = 'var(--host-h)', onfinish, actions }: Props = $props();
+  let { text, name, tag = 'var(--c-yuzu)', host = 'wave', size = 72, onfinish, actions }: Props = $props();
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
 
   const pages = $derived(Array.isArray(text) ? text : [text]);
@@ -122,15 +122,15 @@
 </div>
 
 <style>
-  .talk { display: flex; align-items: flex-end; gap: 4px; }
+  .talk { display: flex; align-items: flex-end; gap: 4px; min-width: 0; }
   .bubble {
-    position: relative; flex: 1; min-width: 0; margin: 12px 0 4px;
-    background: var(--bubble); color: var(--c-ink-talk); border-radius: var(--r-bubble);
-    padding: 8px 16px; box-shadow: 0 4px 0 var(--c-paper-2), var(--sh-soft);
-    font-size: var(--fs-talk); font-weight: var(--fw-bold); line-height: var(--lh-talk);
+    position: relative; flex: 1; min-width: 0; margin: 14px 0 4px;
+    background: var(--c-cream); color: var(--c-ink); border-radius: 24px 30px 26px 28px / 28px 24px 30px 26px;
+    padding: 10px 18px; box-shadow: 0 4px 0 var(--c-lip);
+    font-size: var(--fs-talk); font-weight: 700; line-height: 1.5;
     text-wrap: pretty; word-break: auto-phrase;
     /* Fixed box: --talk-lines lines of text (2; 1 compact), so the layout never jumps between lines. */
-    min-height: max(var(--bubble-min), calc(var(--talk-lines) * var(--fs-talk) * var(--lh-talk) + 16px));
+    min-height: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px);
     display: flex; flex-direction: column; justify-content: center;
     transform-origin: 0 100%; animation: open var(--dur-pop) var(--ease-bounce) both;
   }
@@ -138,20 +138,18 @@
     appearance: none; border: 0; padding: 0; margin: 0; background: none; font: inherit; color: inherit; cursor: pointer;
     text-align: left; display: flex; align-items: center; min-height: 44px;
     /* the whole box is the tap target */
-    margin: -8px -16px; padding: 8px 16px; width: calc(100% + 32px); border-radius: inherit;
+    margin: -10px -18px; padding: 10px 18px; width: calc(100% + 36px); border-radius: inherit;
   }
-  .tap:focus-visible { outline-offset: 6px; border-radius: 18px; }
+  .tap:focus-visible { outline-offset: 4px; }
   .txt { display: grid; flex: 1; min-width: 0; }
   .bubble:not(.grow) .live, .bubble:not(.grow) .ghost {
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--talk-lines); line-clamp: var(--talk-lines); overflow: hidden;
   }
   .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
-  :global(:root[data-theme="night"]) .bubble { box-shadow: 0 4px 0 #D9CFB4, var(--sh-soft); }
   @keyframes open { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
   .who {
-    position: absolute; top: -14px; left: 18px; padding: 5px 12px; border-radius: var(--r-pill);
-    font: 700 var(--fs-tag)/1 var(--font-ui); color: var(--c-ink); background: var(--tag);
-    box-shadow: 0 2px 0 color-mix(in srgb, var(--tag) 85%, #000 15%);
+    position: absolute; top: -15px; left: 18px; padding: 5px 12px; border-radius: var(--r-pill);
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: var(--tag);
     transform: rotate(-4deg); animation: tag var(--dur-pop) var(--ease-bounce) 120ms both;
   }
   @keyframes tag { from { transform: rotate(-4deg) scale(0); } to { transform: rotate(-4deg) scale(1); } }
@@ -159,17 +157,17 @@
   .ghost { visibility: hidden; }
   .g { opacity: 0; animation: if-letter 120ms var(--ease-soft) forwards; white-space: pre-wrap; }
   .tail::after {
-    content: ''; position: absolute; left: -9px; bottom: 16px; width: 22px; height: 18px; background: var(--bubble);
+    content: ''; position: absolute; left: -9px; bottom: 16px; width: 22px; height: 18px; background: var(--c-cream);
     clip-path: polygon(100% 0, 0 55%, 100% 100%); border-radius: 4px;
   }
   .next {
-    position: absolute; left: 50%; bottom: -6px; margin-left: -7px; width: 14px; height: 10px; background: var(--c-amber);
+    position: absolute; left: 50%; bottom: -6px; margin-left: -7px; width: 14px; height: 10px; background: var(--c-yuzu-lip);
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
-  /* しずえ: feet on the bubble's baseline (Host floats gently by itself). */
+  /* しずえ: feet on the box's baseline (Host floats gently by itself). */
   .spk {
     flex: none; display: grid; justify-items: center; align-items: end; height: var(--h); min-width: 56px; margin-bottom: 4px;
-    appearance: none; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 18px;
+    appearance: none; border: 0; padding: 0; background: none; cursor: pointer; border-radius: var(--r-btn);
   }
   @media (prefers-reduced-motion: reduce) {
     .bubble, .who, .next { animation: none; }

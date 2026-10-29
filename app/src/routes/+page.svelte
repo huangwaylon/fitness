@@ -1,8 +1,8 @@
 <script lang="ts">
-  // 島 Island (style guide v4 §R.1): the scene (height = 100dvh − the chrome below it), one しずえ line,
-  // ONE primary action (今夜のチェック) in the thumb zone. A pending 「筋トレでしたか？」 is asked in しずえ's
-  // bubble and two chips take the button's slot (same height, no jump). After today's check-in the button
-  // goes quiet. Tap my villager → check-in sheet; the partner → partner sheet.
+  // 島 Island (v5 §3): the scene full bleed under a light HUD (clock, NookPhone, the score ribbon = the one
+  // focal point) and ONE action (今夜のチェック) in the thumb zone. しずえ's dialogue box shows only when she
+  // has news (a pending question, harvest, payday, "grew", an answer just given); a pending 「筋トレでしたか？」
+  // puts NH's choice list in the action's slot. Tap the jar → 旅の壺; my villager → check-in; the partner → sheet.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -12,9 +12,9 @@
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import Bubble from '#lib/components/Bubble.svelte';
   import CheckinSheet from '#lib/components/CheckinSheet.svelte';
-  import HelpButton from '#lib/components/HelpButton.svelte';
+  import ChoiceList from '#lib/components/ChoiceList.svelte';
+  import Hud from '#lib/components/Hud.svelte';
   import PartnerSheet from '#lib/components/PartnerSheet.svelte';
-  import SyncPill from '#lib/components/SyncPill.svelte';
   import Toast from '#lib/components/Toast.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
@@ -24,6 +24,8 @@
   let checkinOpen = $state(false);
   let partnerOpen = $state(false);
   let phoneOpen = $state(false);
+  /** The chrome below the scene (CTA, plus しずえ when she has news): the scene takes the rest. */
+  let belowH = $state(0);
   /** The partner's high-five toast (their icon, not しずえ's; U6). */
   let fiveToast = $state<{ text: string; id: number } | null>(null);
   /** My fruit % when the check-in sheet opened, to name the fruit that actually grew (U7). */
@@ -55,28 +57,20 @@
   });
   const grew = $derived(me && before ? (FRUITS.find((f) => me.fruits[f].pct > before![f]) ?? null) : null);
 
-  /** U8: the unripe fruit closest to ripe, as "{fruit}, {n} more {unit}". Needs my raw numbers. */
-  const UNIT: Record<FruitKey, string> = { peach: 'nearly_min', coconut: 'nearly_day', apple: 'nearly_day', pear: 'nearly_tick' };
-  function nearlyLine(): string | null {
-    if (!me) return null;
-    const open = FRUITS.filter((f) => me.fruits[f].pct < 100 && me.fruits[f].target !== undefined && me.fruits[f].actual !== undefined);
-    if (!open.length) return null;
-    const f = open.reduce((a, b) => (me.fruits[b].pct > me.fruits[a].pct ? b : a));
-    const n = Math.ceil((me.fruits[f].target ?? 0) - (me.fruits[f].actual ?? 0));
-    return n > 0 ? hostLine(UNIT[f], { activity: f, n }) : null;
-  }
+  /** "Grew" is news for a few seconds after the check-in sheet closes. */
+  let grewNews = $state<FruitKey | null>(null);
 
-  const line = $derived.by(() => {
-    if (!view) return '';
+  /** しずえ's news, or null (then she stays away and the island is HUD-light). */
+  const news = $derived.by((): string | null => {
+    if (!view) return null;
     if (pending) return t('pending.ask', { label: pending.label });
     if (said) return said.text;
     // After my 壺に入れる (also in demo, whose host key is fixed): 「まめさんの番です！」 until they drop theirs.
     if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
     const key = view.juniper.key.replace(/^(juniper|host)\./, '');
-    if (key === 'harvest_ready' || key === 'harvest_waiting' || key === 'payday') return hostLine(key, view.juniper.params);
-    if (grew) return hostLine('grew', { fruit: grew, activity: grew });
-    if (key === 'default' || key === 'pending_confirm') return nearlyLine() ?? hostLine('default');
-    return hostLine(key, view.juniper.params);
+    if (key === 'harvest_ready' || key === 'payday') return hostLine(key, view.juniper.params);
+    if (grewNews) return hostLine('grew', { fruit: grewNews, activity: grewNews });
+    return null;
   });
 
   // はい counts it at once (the store recomputes the fruit); しずえ says so and my villager hops.
@@ -85,7 +79,7 @@
     confirmPending(pending.kind, pending.id, yes);
     const msg = { text: yes ? t('pending.counted', { activity: t('fruit.coconut') }) : t('pending.skipped'), id: Date.now() };
     said = msg;
-    later(() => said?.id === msg.id && (said = null), 5000);
+    later(() => said?.id === msg.id && (said = null), 4000);
     if (yes) emit('checkin-saved');
   }
 
@@ -97,6 +91,11 @@
   // Closing the check-in sheet with today ticked → my villager hops (R2, style guide §M.5).
   function celebrate() {
     if (checkedIn) emit('checkin-saved');
+    const g = grew;
+    if (g) {
+      grewNews = g;
+      later(() => grewNews === g && (grewNews = null), 6000);
+    }
   }
 
   // The partner sheet has closed by now, so R4 plays in the scene behind it.
@@ -130,33 +129,30 @@
   });
 </script>
 
-{#if view}
-  <main class="island">
+{#if view && me}
+  <main class="island" style:--below="{belowH}px">
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         paused={checkinOpen || partnerOpen || phoneOpen} />
-    </div>
-    <div class="status-row">
-      <SyncPill />
-      <HelpButton bind:open={phoneOpen} />
+      <Hud score={me.score} today={view.today} bind:phoneOpen />
     </div>
 
-    <div class="below">
-      <Bubble text={line} host={pending ? 'stand' : 'wave'} />
-
-      <!-- One primary action in the thumb zone. A pending question swaps in two chips, same slot. -->
-      <div class="slot">
-        {#if pending}
-          <button type="button" class="btn" onclick={() => answer(true)}>{t('common.yes')}</button>
-          <button type="button" class="btn paper" onclick={() => answer(false)}>{t('common.no')}</button>
-        {:else}
-          <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin}>
-            {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
-            {:else if checkedIn}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkinLeft', { n: habitCount - ticksToday })}
-            {:else}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkin')}{/if}
-          </button>
-        {/if}
-      </div>
+    <div class="below" bind:offsetHeight={belowH}>
+      {#if news}
+        <div class="news" class:ask={!!pending}>
+          <Bubble text={news} host={false} />
+          {#if pending}
+            <ChoiceList choices={[{ label: t('common.yes'), run: () => answer(true) }, { label: t('common.no'), run: () => answer(false) }]} />
+          {/if}
+        </div>
+      {/if}
+      {#if !pending}
+        <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin}>
+          {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+          {:else if checkedIn}{t('island.checkinLeft', { n: habitCount - ticksToday })}
+          {:else}{t('island.checkin')}{/if}
+        </button>
+      {/if}
     </div>
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
@@ -167,17 +163,19 @@
 {/if}
 
 <style>
-  /* §R.1: the scene takes what the chrome below leaves (sky absorbs the difference); nothing scrolls. */
+  /* v5 §3: the scene takes everything the chrome below leaves (the sky absorbs it); nothing scrolls. */
   .island {
-    --chrome-below: calc(3 * var(--gap) + var(--host-h) + var(--cta-h) + var(--dock-h) + var(--dock-bottom));
-    --scene-h: clamp(300px, calc(100dvh - var(--chrome-below)), 600px);
+    --scene-h: max(300px, calc(100dvh - var(--below)));
     position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
+    display: flex; flex-direction: column;
   }
-  .top { position: relative; height: var(--scene-h); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; container-type: inline-size; }
+  .top { position: relative; height: var(--scene-h); flex: none; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
   .below {
-    display: grid; gap: var(--gap); padding: var(--gap) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
+    display: grid; gap: var(--gap); margin-top: auto;
+    padding: var(--gap) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
   }
-  .below > :global(.talk) { height: var(--host-h); align-items: flex-end; }
-  .slot { display: flex; gap: 10px; height: var(--cta-h); }
-  .slot .btn { margin-bottom: 0; }
+  .below > .btn { margin-bottom: 4px; }
+  .news { display: grid; }
+  /* A question: the dialogue box and the choices stacked on its right share one row (the action's slot). */
+  .news.ask { grid-template-columns: 1fr auto; gap: 10px; align-items: end; padding-bottom: 4px; --talk-lines: 2; }
 </style>

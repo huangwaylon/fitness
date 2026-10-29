@@ -4,8 +4,8 @@
 //     summer Jun 1 – Sep 15, autumn Sep 16 – Dec 10.
 //   foliage (the oaks): cherry blossom only Apr 1–10, green leaves Feb 25 – Oct 15 otherwise,
 //     red-orange fall leaves Oct 16 – Dec 10 (maple week Nov 16–25 is the peak), snow Dec 11 – Feb 24.
-//   time of day (the scene sky): always the clock, never OS dark mode: dawn 05–07, day 07–16,
-//     dusk 16–19, night 19–05. The chrome may still go night for OS dark mode.
+//   time of day: always the clock, never OS dark mode: dawn 05–07, day 07–16, dusk 16–19, night 19–05.
+//     It drives both the scene sky and the chrome (v5 §5: the sky sets the theme; prefers-color-scheme is ignored).
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type Foliage = 'blossom' | 'green' | 'fall' | 'snow';
@@ -49,11 +49,9 @@ export interface ThemeInput {
   theme?: 'night' | 'day' | null;
   /** `?season=` preview (this load only). */
   season?: Season | null;
-  /** OS dark mode: restyles the chrome only. */
-  systemDark?: boolean;
 }
 export interface ThemeState {
-  /** Chrome palette. */
+  /** Night chrome (= tod is night). */
   night: boolean;
   season: Season;
   foliage: Foliage;
@@ -63,10 +61,8 @@ export interface ThemeState {
 
 export function deriveTheme(d: Date, o: ThemeInput = {}): ThemeState {
   const clockTod = todFor(d);
-  const h = d.getHours();
-  const clockNight = h >= 19 || h < 6;
   const tod: TimeOfDay = o.theme === 'night' ? 'night' : o.theme === 'day' ? (clockTod === 'night' ? 'day' : clockTod) : clockTod;
-  const night = o.theme ? o.theme === 'night' : clockNight || !!o.systemDark;
+  const night = tod === 'night';
   const season = o.season ?? seasonFor(d);
   const foliage = o.season ? defaultFoliage(o.season) : foliageFor(d);
   return { night, season, foliage, tod };
@@ -81,4 +77,13 @@ export function previewParams(search: string): Pick<ThemeInput, 'theme' | 'seaso
     theme: t === 'night' || t === 'day' ? t : null,
     season: s && SEASONS.includes(s) ? s : null
   };
+}
+
+/** Season sky tops (= the scene tokens in tokens.css), for <meta name="theme-color">. */
+const SKY_TOP: Record<Season, string> = { spring: '#57B8F7', summer: '#3FA9F5', autumn: '#69B8F0', winter: '#8EC6F0' };
+const TOD_TOP: Partial<Record<TimeOfDay, string>> = { dawn: '#FFC6A8', dusk: '#FF9E7A', night: '#3A4886' };
+
+/** The browser chrome colour: the top of the sky (v5 §5). */
+export function themeColor(s: Pick<ThemeState, 'tod' | 'season'>): string {
+  return TOD_TOP[s.tod] ?? SKY_TOP[s.season];
 }
