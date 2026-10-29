@@ -1,5 +1,6 @@
 <script lang="ts">
-  // しまフォン → あそびかた: the four things to know, one card each.
+  // しまフォン → あそびかた: the four things to know, one card each, and which build this is (round 9).
+  import { version } from '$app/env';
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -23,9 +24,11 @@
     <span class="hi"><OfficialArt key="money/bells" size={36} /></span>{t('help.row.harvest')}
   </li>
 </ul>
+<p class="ver">{t('help.version')} <span dir="ltr">{version}</span></p>
 
 <style>
   .howto { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .howto li { display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 8px 14px; font-weight: 700; font-size: var(--fs-body); line-height: 1.3; }
+  .ver { margin: 16px 0 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
   .hi { width: 44px; display: grid; place-items: center; flex: none; }
 </style>
