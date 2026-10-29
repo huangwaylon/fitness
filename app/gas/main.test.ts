@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost, MAX_BODY_CHARS, RATE_PER_MINUTE } from './main.ts';
+import { doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -37,8 +37,8 @@ describe('auth', () => {
   });
 
   it('identifies each person by key', () => {
-    expect(a('whoami')).toEqual({ ok: true, me: 'A' });
-    expect(b('whoami')).toEqual({ ok: true, me: 'B' });
+    expect(a('whoami')).toEqual({ ok: true, me: 'A', build: 'dev' });
+    expect(b('whoami')).toEqual({ ok: true, me: 'B', build: 'dev' });
   });
 
   it('whoami creates every tab with its header', () => {
@@ -63,8 +63,49 @@ describe('auth', () => {
       Object.defineProperty(e, 'parameters', { get() { throw new Error('doPost read e.parameters'); } });
       return e;
     };
-    expect(raw(trap({ key: KEY_A, action: 'whoami' }))).toEqual({ ok: true, me: 'A' });
+    expect(raw(trap({ key: KEY_A, action: 'whoami' }))).toEqual({ ok: true, me: 'A', build: 'dev' });
     expect(raw(trap({ action: 'whoami' }))).toEqual({ ok: false, error: 'unauthorized' });
+  });
+});
+
+describe('keys (round 9)', () => {
+  it('a non-hex key is refused before any Properties read', () => {
+    for (const key of ['wrong', `${KEY_A}x`, 'g'.repeat(64), 'a'.repeat(31), 'a'.repeat(129)]) {
+      expect(post({ key, action: 'whoami' })).toEqual({ ok: false, error: 'unauthorized' });
+    }
+    expect(gas.state.propReads).toBe(0);
+  });
+
+  it('the keys are cached, so repeated anonymous guesses cost no Properties reads', () => {
+    post({ key: 'c'.repeat(64), action: 'whoami' });
+    const reads = gas.state.propReads;
+    for (let i = 0; i < 5; i++) expect(post({ key: 'c'.repeat(64), action: 'whoami' }).error).toBe('unauthorized');
+    expect(gas.state.propReads).toBe(reads);
+  });
+
+  it(`a rotated key stops working within ${KEY_CACHE_SECONDS} s`, () => {
+    expect(a('whoami').ok).toBe(true);
+    gas.props.set('KEY_A', 'd'.repeat(64));
+    expect(a('whoami').ok).toBe(true); // still cached
+    tick(KEY_CACHE_SECONDS * 1000 + 1);
+    expect(a('whoami')).toEqual({ ok: false, error: 'unauthorized' });
+    expect(post({ key: 'd'.repeat(64), action: 'whoami' })).toMatchObject({ ok: true, me: 'A' });
+  });
+
+  it('a locked request reads and writes Properties once each', () => {
+    a('whoami');
+    const [r, w] = [gas.state.propReads, gas.state.propWrites];
+    a('event', { id: 'e1', type: 'highfive' });
+    expect([gas.state.propReads - r, gas.state.propWrites - w]).toEqual([1, 1]);
+  });
+});
+
+describe('health', () => {
+  it('keyless {"action":"health"} answers the build without touching Properties or the sheet', () => {
+    expect(post({ action: 'health' })).toEqual({ ok: true, build: 'dev' });
+    expect(gas.state.propReads).toBe(0);
+    expect(gas.sheets.size).toBe(0);
+    expect(post({})).toEqual({ ok: false, error: 'unauthorized' });
   });
 });
 
@@ -331,6 +372,54 @@ describe('snapshot', () => {
     expect(ats('2026-10-29T02:59:59.999Z')).toEqual(['2026-10-29T03:00:00.000Z', '2026-10-29T03:00:01.000Z']);
     expect(ats('2026-10-29T03:00:00.000Z')).toEqual(['2026-10-29T03:00:01.000Z']);
     expect(ats('2026-10-29T12:00:00+09:00')).toEqual(['2026-10-29T03:00:01.000Z']);
+  });
+});
+
+describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => {
+  const rev = () => a('snapshot').rev as string;
+
+  it('is stable across the app\'s own writes', () => {
+    const r0 = rev();
+    expect(r0).toMatch(/^[0-9a-z]+$/);
+    a('ingest', REAL);
+    b('event', { id: 'e1', type: 'highfive' });
+    b('presence', { place: 'gym', event: 'arrive' });
+    a('ingest', { workouts: [{ type: 'Yoga', start: '2026-10-29T07:00:00+09:00', end: '2026-10-29T07:30:00+09:00' }] });
+    expect(rev()).toBe(r0);
+  });
+
+  it('changes when rows are deleted or pasted by hand, also when the next request is a write', () => {
+    a('ingest', REAL);
+    const r0 = rev();
+    gas.sheets.get('metrics')!.rows.pop(); // a deleted row
+    const r1 = rev();
+    expect(r1).not.toBe(r0);
+    expect(rev()).toBe(r1);
+    gas.sheets.get('events')!.rows.push(['2026-01-01T00:00:00.000Z', 'A', 'old', 'highfive', '{}']); // pasted, `at` below since
+    a('event', { id: 'e2', type: 'highfive' });
+    expect(rev()).not.toBe(r1);
+  });
+
+  it('changes on a hand edit (onEdit) of a synced tab and on resync(); not for uploads', () => {
+    a('whoami');
+    const r0 = rev();
+    onEdit({ range: gas.sheets.get('uploads')!.getRange(2, 1) as never });
+    expect(rev()).toBe(r0);
+    onEdit({ range: gas.sheets.get('metrics')!.getRange(2, 5) as never });
+    const r1 = rev();
+    expect(r1).not.toBe(r0);
+    resync();
+    expect(rev()).not.toBe(r1);
+    expect(() => onEdit(undefined)).not.toThrow();
+  });
+
+  it('a concurrent onEdit bump is not overwritten by a locked request', () => {
+    const r0 = rev();
+    resync();
+    const bumped = gas.props.get('REV');
+    a('event', { id: 'e3', type: 'highfive' });
+    expect(gas.props.get('REV')).toBe(bumped);
+    expect(rev()).not.toBe(r0);
   });
 });
 

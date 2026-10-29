@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
-import { bundle, OUT_FILE } from './build.ts';
+import { bundle, buildHash, OUT_FILE } from './build.ts';
 import { makeGas } from './fakes.ts';
 
 const code = readFileSync(OUT_FILE, 'utf8');
@@ -13,8 +13,10 @@ describe('apps-script/Code.js', () => {
     expect(code).toBe(bundle());
   });
 
-  it('has a top-level doPost and no doGet, imports or exports', () => {
+  it('has a top-level doPost, onEdit and resync, and no doGet, imports or exports', () => {
     expect(code).toMatch(/^function doPost\(e\) \{$/m);
+    expect(code).toMatch(/^function onEdit\(e\) \{$/m);
+    expect(code).toMatch(/^function resync\(\) \{$/m);
     expect(code).not.toMatch(/function doGet/);
     expect(code).not.toMatch(/^\s*(import|export)\s/m);
     expect(code).not.toMatch(/\brequire\(/);
@@ -48,6 +50,11 @@ describe('apps-script/Code.js', () => {
     ]);
     expect(call('{oops')).toEqual({ ok: false, error: 'bad_request' });
     expect(JSON.parse(ctx.doPost(undefined).text)).toEqual({ ok: false, error: 'bad_request' });
-    expect(call({ key: 'b'.repeat(64), action: 'whoami' })).toEqual({ ok: true, me: 'B' });
+    expect(call({ key: 'b'.repeat(64), action: 'whoami' })).toEqual({ ok: true, me: 'B', build: buildHash() });
+    expect(call({ action: 'health' })).toEqual({ ok: true, build: buildHash() });
+    expect(buildHash()).toMatch(/^[0-9a-f]{12}$/);
+    expect(call({ key, action: 'snapshot' }).rev).toEqual(expect.any(String));
+    expect(() => ctx.onEdit(undefined)).not.toThrow();
+    expect(typeof ctx.resync).toBe('function');
   });
 });

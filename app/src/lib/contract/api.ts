@@ -61,5 +61,12 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
 export type IngestReply = { ok: true; metrics: number; workouts: number; skipped?: number; unknownTypes?: string[] } | Fail;
 export type PresenceReply = { ok: true } | Fail;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
-export type SnapshotReply = { ok: true; me: PersonId; now: string; rows: SnapshotRows } | Fail;
-export type WhoamiReply = { ok: true; me: PersonId } | Fail;
+/**
+ * `rev` is the data revision (sheets-architecture.md §2.1): when it differs from the one the client cached with, rows
+ * were changed by hand, so drop the cache and fetch everything (no `since`).
+ */
+export type SnapshotReply = { ok: true; me: PersonId; now: string; rev: string; rows: SnapshotRows } | Fail;
+/** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. */
+export type WhoamiReply = { ok: true; me: PersonId; build: string } | Fail;
+/** Keyless `{"action":"health"}`: the deployment is up, authorized and running `build` (runbook §5). */
+export type HealthReply = { ok: true; build: string } | Fail;

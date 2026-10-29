@@ -22,9 +22,13 @@ var IslandFund = (() => {
   // gas/main.ts
   var main_exports = {};
   __export(main_exports, {
+    BUILD: () => BUILD,
+    KEY_CACHE_SECONDS: () => KEY_CACHE_SECONDS,
     MAX_BODY_CHARS: () => MAX_BODY_CHARS,
     RATE_PER_MINUTE: () => RATE_PER_MINUTE,
-    doPost: () => doPost
+    doPost: () => doPost,
+    onEdit: () => onEdit,
+    resync: () => resync
   });
 
   // src/lib/contract/api.ts
@@ -454,10 +458,14 @@ var IslandFund = (() => {
   }
 
   // gas/main.ts
+  var BUILD = true ? "c1057cfd88aa" : "dev";
   var MAX_BODY_CHARS = 1e6;
   var RATE_PER_MINUTE = 120;
   var LOCK_WAIT_MS = 1e4;
   var MIN_KEY_CHARS = 32;
+  var KEY_RE = /^[0-9a-fA-F]{32,128}$/;
+  var KEY_CACHE_SECONDS = 300;
+  var SYNCED_TABS = ["metrics", "workouts", "presence", "events"];
   var MAX_EVENT_DATA_CHARS = 2e4;
   var fail = (error, detail) => detail ? { ok: false, error, detail } : { ok: false, error };
   function doPost(e) {
@@ -485,6 +493,7 @@ var IslandFund = (() => {
       return fail("bad_request");
     }
     if (!isRec(body)) return fail("bad_request");
+    if (body.action === "health" && body.key === void 0) return { ok: true, build: BUILD };
     const me = personFor(body.key);
     if (!me) return fail("unauthorized");
     if (!underRateLimit(me)) return fail("busy");
@@ -500,7 +509,7 @@ var IslandFund = (() => {
       case "whoami":
         return withLock(() => {
           for (const t of Object.keys(TABS)) tab(t);
-          return { ok: true, me };
+          return { ok: true, me, build: BUILD };
         });
       default:
         return fail("bad_request");
@@ -512,13 +521,31 @@ var IslandFund = (() => {
     for (let i = 0; i < n; i++) diff |= (a.charCodeAt(i) | 0) ^ (b.charCodeAt(i) | 0);
     return diff === 0;
   }
-  function personFor(key) {
-    if (typeof key !== "string" || key.length < MIN_KEY_CHARS) return null;
+  function keys() {
+    var _a, _b;
+    let cache = null;
+    try {
+      cache = CacheService.getScriptCache();
+      const hit = cache.get("keys");
+      if (hit) {
+        const k2 = JSON.parse(hit);
+        if (typeof k2.a === "string" && typeof k2.b === "string") return { a: k2.a, b: k2.b };
+      }
+    } catch {
+    }
     const props = PropertiesService.getScriptProperties();
-    const a = props.getProperty("KEY_A");
-    const b = props.getProperty("KEY_B");
-    const isA = constantTimeEqual(key, a != null ? a : "") && !!a && a.length >= MIN_KEY_CHARS;
-    const isB = constantTimeEqual(key, b != null ? b : "") && !!b && b.length >= MIN_KEY_CHARS;
+    const k = { a: (_a = props.getProperty("KEY_A")) != null ? _a : "", b: (_b = props.getProperty("KEY_B")) != null ? _b : "" };
+    try {
+      cache == null ? void 0 : cache.put("keys", JSON.stringify(k), KEY_CACHE_SECONDS);
+    } catch {
+    }
+    return k;
+  }
+  function personFor(key) {
+    if (typeof key !== "string" || !KEY_RE.test(key)) return null;
+    const { a, b } = keys();
+    const isA = constantTimeEqual(key, a) && a.length >= MIN_KEY_CHARS;
+    const isB = constantTimeEqual(key, b) && b.length >= MIN_KEY_CHARS;
     return isA && !isB ? "A" : isB && !isA ? "B" : null;
   }
   function underRateLimit(me) {
@@ -537,20 +564,68 @@ var IslandFund = (() => {
     const lock = LockService.getScriptLock();
     if (!lock.tryLock(LOCK_WAIT_MS)) return fail("busy");
     try {
+      state = loadState();
       const r = fn();
       SpreadsheetApp.flush();
+      saveState(state);
       return r;
     } finally {
+      state = null;
       lock.releaseLock();
     }
   }
+  var state = null;
+  var newRev = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, "0")}`;
+  function loadState() {
+    var _a, _b;
+    const p = PropertiesService.getScriptProperties().getProperties();
+    let rows = {};
+    try {
+      const r = JSON.parse((_a = p.ROWS) != null ? _a : "{}");
+      if (isRec(r)) rows = r;
+    } catch {
+    }
+    const rev = p.REV || newRev();
+    return { lastAt: Date.parse((_b = p.LAST_AT) != null ? _b : "") || 0, rows, rev, revChanged: !p.REV, dirty: !p.REV };
+  }
+  function saveState(st) {
+    if (!st.dirty) return;
+    const out = { ROWS: JSON.stringify(st.rows) };
+    if (st.lastAt) out.LAST_AT = new Date(st.lastAt).toISOString();
+    if (st.revChanged) out.REV = st.rev;
+    PropertiesService.getScriptProperties().setProperties(out);
+  }
+  function current() {
+    if (!state) throw new Error("not under the lock");
+    return state;
+  }
+  function noteRows(name, lastRow) {
+    if (!SYNCED_TABS.includes(name)) return;
+    const st = current();
+    const known = st.rows[name];
+    if (known === lastRow) return;
+    if (known !== void 0) {
+      st.rev = newRev();
+      st.revChanged = true;
+    }
+    st.rows[name] = lastRow;
+    st.dirty = true;
+  }
   function nextAt() {
-    var _a;
-    const props = PropertiesService.getScriptProperties();
-    const last = Date.parse((_a = props.getProperty("LAST_AT")) != null ? _a : "") || 0;
-    const at = new Date(Math.max(Date.now(), last + 1)).toISOString();
-    props.setProperty("LAST_AT", at);
-    return at;
+    const st = current();
+    st.lastAt = Math.max(Date.now(), st.lastAt + 1);
+    st.dirty = true;
+    return new Date(st.lastAt).toISOString();
+  }
+  function onEdit(e) {
+    try {
+      const name = e && e.range ? e.range.getSheet().getName() : "";
+      if (SYNCED_TABS.includes(name)) resync();
+    } catch {
+    }
+  }
+  function resync() {
+    PropertiesService.getScriptProperties().setProperty("REV", newRev());
   }
   function tab(name) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -569,17 +644,25 @@ var IslandFund = (() => {
   }
   function readRows(sh, name) {
     const last = sh.getLastRow();
+    noteRows(name, last);
     if (last < 2) return [];
     return sh.getRange(2, 1, last - 1, TABS[name].length).getValues();
   }
   function appendRows(sh, name, rows) {
     if (rows.length === 0) return;
     const cols = TABS[name];
-    const start = Math.max(sh.getLastRow(), 1) + 1;
+    const last = sh.getLastRow();
+    noteRows(name, last);
+    const start = Math.max(last, 1) + 1;
     const need = start + rows.length - 1 - sh.getMaxRows();
     if (need > 0) sh.insertRowsAfter(sh.getMaxRows(), need);
     const formats = cols.map((c) => NUMERIC_COLUMNS[name].includes(c) ? "0.##" : "@");
     sh.getRange(start, 1, rows.length, cols.length).setNumberFormats(rows.map(() => formats)).setValues(rows);
+    if (SYNCED_TABS.includes(name)) {
+      const st = current();
+      st.rows[name] = start + rows.length - 1;
+      st.dirty = true;
+    }
   }
   var isDate = (v) => Object.prototype.toString.call(v) === "[object Date]";
   function text(v, kind = "text") {
@@ -684,6 +767,7 @@ var IslandFund = (() => {
     return withLock(() => {
       const sh = tab("events");
       const last = sh.getLastRow();
+      noteRows("events", last);
       if (last >= 2) {
         const ids = sh.getRange(2, 3, last - 1, 1).getValues();
         for (const r of ids) if (text(r[0]) === id) return { ok: true, duplicate: true };
@@ -746,7 +830,7 @@ var IslandFund = (() => {
         presence: pick("presence", (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4], "at")]),
         events: pick("events", (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
       };
-      return { ok: true, me, now: (/* @__PURE__ */ new Date()).toISOString(), rows };
+      return { ok: true, me, now: (/* @__PURE__ */ new Date()).toISOString(), rev: current().rev, rows };
     });
   }
   return __toCommonJS(main_exports);
@@ -755,5 +839,15 @@ var IslandFund = (() => {
 /** Apps Script entry point. There is deliberately no doGet. */
 function doPost(e) {
   return IslandFund.doPost(e);
+}
+
+/** Simple trigger: a hand edit of a synced tab bumps REV, so the phones refetch everything. */
+function onEdit(e) {
+  IslandFund.onEdit(e);
+}
+
+/** Run from the editor after fixing rows by hand (sheets-architecture.md §2.1). */
+function resync() {
+  IslandFund.resync();
 }
 

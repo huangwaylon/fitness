@@ -41,12 +41,25 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 | `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `workouts` (types/starts/ends/avgHrs lists) | `{ok, metrics, workouts, skipped?, unknownTypes?}`: rows actually appended, plus unparsed entries and unmapped workout names when there are any |
 | `presence` | `place, event, at?` | `{ok}` |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
-| `snapshot` | `since?` (ISO, the max `at` the client has seen) | `{ok, me, now, rows:{metrics, workouts, presence, events}}` (rows with `at > since`; both people) |
-| `whoami` | — | `{ok, me}` (used when pairing) |
+| `snapshot` | `since?` (ISO, the max `at` the client has seen) | `{ok, me, now, rev, rows:{metrics, workouts, presence, events}}` (rows with `at > since`; both people; `rev`: §2.1) |
+| `whoami` | — | `{ok, me, build}` (used when pairing; `build` = the deployed code's hash) |
+| `health` | **no `key`** | `{ok:true, build}`: up, authorized, and running `build` (no Properties read, no lock, no sheet). The monitor's probe (runbook §5) |
 
-- Person = whichever of `KEY_A`/`KEY_B` matches, compared in constant time. The rate limit is a per-key-per-minute counter in `CacheService`.
-- Writes take `LockService.getScriptLock()` (wait ≤ 10 s, else `busy`).
-- `snapshot` without `since` returns everything: ~a few thousand rows a year, compact arrays (`rows.metrics = [[at, person, date, metric, value], …]`).
+- Person = whichever of `KEY_A`/`KEY_B` matches, compared in constant time. A key that isn't 32–128 hex characters is `unauthorized` before anything is read. The keys are cached in `CacheService` for 5 minutes, so a rotated key keeps working for up to 5 minutes. The rate limit is a per-key-per-minute counter in `CacheService`.
+- Writes (and `snapshot`) take `LockService.getScriptLock()` (wait ≤ 10 s, else `busy`). Each locked request reads Script Properties once (`getProperties`) and writes them at most once (`LAST_AT`, `ROWS`, `REV`).
+- `snapshot` without `since` returns everything, as compact arrays (`rows.metrics = [[at, person, date, metric, value], …]`). With hourly syncs that is ~18k rows a year (3.7 MB of JSON by year 3, `npm run bench`).
+
+### 2.1 Resync: `rev` (added round 9; **redeploy `Code.js`**)
+`since` only finds rows appended after it, so a cached client never sees a row that was **deleted or corrected by hand**, or pasted with an old `at`. The server therefore keeps a data revision, the Script Property `REV`, and returns it in every `snapshot` reply. It changes when, and only when, a synced tab (`metrics`, `workouts`, `presence`, `events`; not `uploads`) changed outside the app:
+- **Rows added or deleted by hand** (or a tab deleted and recreated): the script records each synced tab's last row (`ROWS`) after its own appends and compares it on every read or append under the lock. A difference bumps `REV`.
+- **Cells edited or pasted by hand:** the simple trigger `onEdit` bumps `REV` (script writes don't fire it).
+- **Manually:** run `resync` from the script editor's function menu (or set `REV` to any new value in Script Properties). Do this after any hand fix if in doubt.
+
+`rev` is an opaque short string; compare it only for equality. The app's own writes never change it.
+
+**Client side (WS2):** store `rev` with the snapshot cache. When a reply's `rev` differs from the stored one, discard the reply's rows and the whole cache (keep the unsent write queue), fetch a full `snapshot` without `since`, and store the new `rev`. A cache with no stored `rev` (from before this change) resyncs once the same way. A manual *resync* button in the app does the same full fetch. Derived caches (finalized weeks, round 8 P5) are keyed by `rev`.
+
+`whoami.build` / `health.build`: the first 12 hex characters of SHA-256 over the bundle (`buildHash()` in `app/gas/build.ts`; `dev` when `main.ts` runs unbundled). `bundle.test.ts` checks that `Code.js` carries it.
 
 ## 3. Code layout
 - `app/gas/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. A port of `server/ingest/shortcut.ts` + `workout-names.ts`, without zod, so it runs in Apps Script (the browser never parses Shortcut bodies).

@@ -8,6 +8,7 @@ declare namespace GAS {
     setNumberFormats(formats: string[][]): Range;
     setNumberFormat(format: string): Range;
     setFontWeight(weight: string): Range;
+    getSheet(): Sheet;
   }
   interface Sheet {
     getName(): string;
@@ -32,9 +33,15 @@ declare namespace GAS {
   interface Properties {
     getProperty(key: string): string | null;
     setProperty(key: string, value: string): Properties;
+    getProperties(): Record<string, string>;
+    /** Sets the given properties; the others are kept. */
+    setProperties(properties: Record<string, string>): Properties;
   }
   interface TextOutput {
     setMimeType(mime: unknown): TextOutput;
+  }
+  interface EditEvent {
+    range?: Range;
   }
   interface PostEvent {
     postData?: { contents?: string; length?: number; type?: string };
