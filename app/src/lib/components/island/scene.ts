@@ -27,13 +27,13 @@ export const FRUIT_U = 18;
 /** Items earned for a fruit kind: thirds of the target (0–3). */
 export const fruitCount = (pct: number): number => Math.max(0, Math.min(3, Math.floor((pct * 3) / 100 + 1e-9)));
 
-/** Villagers (§S.8): feet at y 302, 94u tall, on the inside of their trees, flanking the jar (their heads
+/** Villagers (§S.8): feet at y 306, 94u tall, on the inside of their trees, flanking the jar (their heads
  *  stay below the ground fruit and the jar's base). */
-export const VILLAGER = { foot: 302, h: 94, x: { A: 148, B: 242 } as const };
+export const VILLAGER = { foot: 306, h: 94, x: { A: 148, B: 242 } as const };
 
-/** Jar (§S.6, round 6): the plaza centrepiece, ~55% down the island on a round sand patch; 56u wide
+/** Jar (§S.6, round 6): the plaza centrepiece, ~50% down the island (its plate clears the villagers' heads at 320) on a round sand patch; 56u wide
  *  (70u tall ≈ 75px at 393). */
-export const JAR = { x: 195, base: 204, w: 56 };
+export const JAR = { x: 195, base: 186, w: 56 };
 
 export interface Prop {
   key: string;
