@@ -1,11 +1,3 @@
-<script lang="ts" module>
-  /** Four clearly different ripeness stages (U1): bud < 25% · small < 60% · nearly < 100% · ripe. */
-  export type Ripeness = 'bud' | 'small' | 'nearly' | 'ripe';
-  export function ripeness(pct: number): Ripeness {
-    return pct >= 100 ? 'ripe' : pct >= 60 ? 'nearly' : pct >= 25 ? 'small' : 'bud';
-  }
-</script>
-
 <script lang="ts">
   // One fruit's weekly progress (design.md §A): the official inventory icon.
   //   ring (default): our conic progress ring with the fruit in the centre.
@@ -16,6 +8,7 @@
   import type { FruitKey, FruitView } from '#lib/types.ts';
   import OfficialArt from './OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
+  import { ripeness } from './ripeness.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {

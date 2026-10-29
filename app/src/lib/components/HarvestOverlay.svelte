@@ -19,7 +19,7 @@
   import OfficialArt from './OfficialArt.svelte';
   import { confirmHarvest } from '#lib/client/actions.ts';
   import { fruitArt } from '#lib/art.ts';
-  import { ripeness } from './FruitRing.svelte';
+  import { ripeness } from './ripeness.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
 
   interface Props {
