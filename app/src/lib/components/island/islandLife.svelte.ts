@@ -116,15 +116,20 @@ export class IslandLife {
       on('highfive-sent', () => react('R4')),
       on('highfive-received', () => react('R5')),
       on('sync-error', () => react('R17')),
-      on('dev:react', (id) => {
-        if (id === 'R13') {
-          setAsleep('mine', !actors.mine.asleep);
-          setAsleep('partner', !actors.partner.asleep);
-        } else if (id === 'R14') wake('mine');
-        else if (id) react(id as ReactionId);
-      }),
-      on('dev:balloon', () => (this.balloon = true)),
-      on('dev:fireworks', () => (this.devFireworks = !this.devFireworks))
+      // The dev gallery's triggers: compiled out of the production build.
+      ...(import.meta.env.DEV
+        ? [
+            on('dev:react', (id) => {
+              if (id === 'R13') {
+                setAsleep('mine', !actors.mine.asleep);
+                setAsleep('partner', !actors.partner.asleep);
+              } else if (id === 'R14') wake('mine');
+              else if (id) react(id as ReactionId);
+            }),
+            on('dev:balloon', () => (this.balloon = true)),
+            on('dev:fireworks', () => (this.devFireworks = !this.devFireworks))
+          ]
+        : [])
     ];
 
     // Startup beats, spaced so they never overlap: greeting, morning stretch, evening nudge, low week.
