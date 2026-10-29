@@ -199,8 +199,8 @@
   /* narrow stages: one item per kind, sized by its count (readable at 320) */
   @container (max-width: 359px) {
     .fruit.k1, .fruit.k2 { display: none; }
-    .fruit.ghost .f { scale: .9; }
-    .fruit.n1 .f { scale: 1; } .fruit.n2 .f { scale: 1.15; } .fruit.n3 .f { scale: 1.33; }
+    .fruit.ghost .f { scale: 1; }
+    .fruit.n1 .f { scale: 1.15; } .fruit.n2 .f { scale: 1.3; } .fruit.n3 .f { scale: 1.5; }
   }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .canopy, .row-btn {
