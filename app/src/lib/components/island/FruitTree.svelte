@@ -1,11 +1,12 @@
 <script lang="ts">
-  // One fruit tree (style guide §S.8): the official hardwood of the season carrying the four official
-  // fruit at their ripeness stage (bud / small / nearly / ripe + glint). Sways gently; a tap on the
-  // canopy shakes it, drops two seasonal leaves and shows the fruit detail bubble (icons + %).
+  // One person's fruit (style guide §S.8): the official oak of the foliage carrying peach, pear and apple
+  // at their ripeness stage (bud / small / nearly / ripe + glint), and the coconut in the crown of the
+  // beach palm beside it (coconuts only grow on palms). The oak sways gently; a tap on its canopy or on
+  // the palm crown shakes the oak, drops two seasonal leaves and shows the detail bubble (all 4 + %).
   // `shakeN` (bumped by idle life) shakes it without the bubble; `celebrate` pops + sparkles a fruit.
-  import { untrack } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import type { FruitKey, PersonWeekView } from '#lib/types.ts';
-  import type { Season } from '#lib/client/theme.svelte.ts';
+  import type { Foliage } from '#lib/client/season.ts';
   import { FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../OfficialArt.svelte';
   import Fx from '../Fx.svelte';
@@ -13,23 +14,30 @@
   import { fruitArt } from '#lib/client/assets.ts';
   import { seasonArt, treeArt } from '../art.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { FRUIT_POS, FRUIT_U, TREE, u } from './scene.ts';
+  import { COCONUT_POS, COCONUT_U, FRUIT_POS, FRUIT_U, OAK_FRUITS, PALM_AR, TREE, u } from './scene.ts';
 
   interface Props {
     person: PersonWeekView;
     x: number;
-    season: Season;
+    foliage: Foliage;
+    /** The beach palm that carries this person's coconut. */
+    palm: { x: number; base: number; h: number; flip: boolean };
     /** Sway phase offset (s). */
     delay?: number;
     shakeN?: number;
     celebrate?: { fruit: FruitKey; n: number } | null;
     ontap?: () => void;
   }
-  let { person, x, season, delay = 0, shakeN = 0, celebrate = null, ontap }: Props = $props();
+  let { person, x, foliage, palm, delay = 0, shakeN = 0, celebrate = null, ontap }: Props = $props();
 
   let open = $state(false);
   let taps = $state(0);
   let timer: ReturnType<typeof setTimeout> | null = null;
+  const leafTimers = new Set<ReturnType<typeof setTimeout>>();
+  onDestroy(() => {
+    if (timer) clearTimeout(timer);
+    for (const t of leafTimers) clearTimeout(t);
+  });
   let leaves = $state<number[]>([]);
   let leafN = 0;
   let treeEl = $state<HTMLElement | null>(null);
@@ -46,7 +54,11 @@
     treeEl.classList.add('shaking');
     const a = ++leafN, b = ++leafN;
     leaves = [...leaves.slice(-2), a, b];
-    setTimeout(() => (leaves = leaves.filter((n) => n !== a && n !== b)), 2000);
+    const lt = setTimeout(() => {
+      leafTimers.delete(lt);
+      leaves = leaves.filter((n) => n !== a && n !== b);
+    }, 2000);
+    leafTimers.add(lt);
   }
 
   // React to `shakeN` only: shake() reads and writes `leaves`, which must not become a dependency
@@ -64,31 +76,46 @@
     ontap?.();
   }
 
-  const leafKey = $derived(season === 'spring' ? seasonArt('petal') : season === 'autumn' ? seasonArt('maple-leaf') : season === 'winter' ? seasonArt('snowflake') : null);
+  const leafKey = $derived(foliage === 'blossom' ? seasonArt('petal') : foliage === 'fall' ? seasonArt('maple-leaf') : foliage === 'snow' ? seasonArt('snowflake') : null);
+  // coconut centre in stage units (the palm art is mirrored for the left palm)
+  const palmW = $derived(palm.h * PALM_AR);
+  const coco = $derived({
+    x: palm.x + ((palm.flip ? 100 - COCONUT_POS[0] : COCONUT_POS[0]) / 100 - 0.5) * palmW,
+    y: palm.base - palm.h + (COCONUT_POS[1] / 100) * palm.h
+  });
 </script>
 
 <div class="tree" bind:this={treeEl} style:left={u(x)} style:top={u(TREE.base)} style:width={u(TREE.w)} style:height={u(TREE.h)}
   style:--delay="{delay}s" onanimationend={(e) => e.animationName === 'if-shake' && treeEl?.classList.remove('shaking')}>
-  <span class="oak"><OfficialArt key={treeArt(season)} size={u(TREE.h)} eager /></span>
-  {#each FRUITS as f (f)}
-    {@const st = ripeness(pct(f))}
+  <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(TREE.h)} eager /></span>
+  {#each OAK_FRUITS as f (f)}
     <span class="fruit" style:left="{FRUIT_POS[f][0]}%" style:top="{FRUIT_POS[f][1]}%" style:width={u(FRUIT_U)}>
-      {#key st}
-        <span class="f {st}">
-          <OfficialArt key={fruitArt(f)} size={u(FRUIT_U)} eager>
-            {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{f}" /></svg>{/snippet}
-          </OfficialArt>
-        </span>
-      {/key}
-      {#if st === 'ripe'}<svg class="glint" viewBox="0 0 24 24" aria-hidden="true" style:animation-delay="{(FRUITS.indexOf(f) * 0.9 + delay).toFixed(1)}s"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>{/if}
-      {#if celebrate?.fruit === f}
-        {#key celebrate.n}<span class="fxa"><Fx kind="sparkles" spread={u(40)} /></span>{/key}
-      {/if}
+      {@render fruit(f, FRUIT_U)}
     </span>
   {/each}
 </div>
+<span class="fruit coco" style:left={u(coco.x)} style:top={u(coco.y)} style:width={u(COCONUT_U)}>
+  {@render fruit('coconut', COCONUT_U)}
+</span>
 <button type="button" class="canopy" style:left={u(x)} style:top={u(TREE.base - TREE.h)} style:width={u(TREE.w)} style:height={u(TREE.h * 0.66)}
   aria-label={label} aria-expanded={open} onclick={tap}></button>
+<button type="button" class="canopy crown" style:left={u(coco.x)} style:top={u(coco.y)} style:width={u(palmW * 0.8)} style:height={u(palm.h * 0.5)}
+  aria-label={label} aria-expanded={open} tabindex="-1" onclick={tap}></button>
+
+{#snippet fruit(f: FruitKey, size: number)}
+  {@const st = ripeness(pct(f))}
+  {#key st}
+    <span class="f {st}">
+      <OfficialArt key={fruitArt(f)} size={u(size)} eager>
+        {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{f}" /></svg>{/snippet}
+      </OfficialArt>
+    </span>
+  {/key}
+  {#if st === 'ripe'}<svg class="glint" viewBox="0 0 24 24" aria-hidden="true" style:animation-delay="{(FRUITS.indexOf(f) * 0.9 + delay).toFixed(1)}s"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>{/if}
+  {#if celebrate?.fruit === f}
+    {#key celebrate.n}<span class="fxa"><Fx kind="sparkles" spread={u(40)} /></span>{/key}
+  {/if}
+{/snippet}
 
 {#each leaves as n (n)}
   <span class="leaf" style:left={u(x + (n % 2 ? -26 : 22))} style:top={u(TREE.base - TREE.h * 0.55)}>
@@ -115,6 +142,7 @@
   .tree:global(.shaking) { animation: if-shake 480ms ease-in-out 1; }
   .oak { position: absolute; inset: 0; display: flex; justify-content: center; line-height: 0; }
   .fruit { position: absolute; aspect-ratio: 1; translate: -50% -50%; line-height: 0; }
+  .fruit.coco { z-index: 46; pointer-events: none; }
   .f { display: block; transform-origin: 50% 20%; animation: if-pop 360ms var(--ease-bounce) both; }
   .f :global(.official) { filter: drop-shadow(0 0 1.5px #fff); }
   /* stage scale via the `scale` property, so the if-pop transform can run on top of it */
@@ -133,6 +161,7 @@
     position: absolute; z-index: 32; translate: -50% 0; appearance: none; border: 0; background: none; padding: 0;
     cursor: pointer; border-radius: 45%; -webkit-tap-highlight-color: transparent;
   }
+  .canopy.crown { z-index: 47; translate: -50% -50%; min-height: 44px; min-width: 44px; }
   .canopy:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
   .leaf { position: absolute; z-index: 70; line-height: 0; pointer-events: none; animation: leaf 1800ms ease-in both; }
   @keyframes leaf {

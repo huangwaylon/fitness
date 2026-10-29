@@ -1,24 +1,27 @@
 <script lang="ts">
-  // Seasonal particles (style guide §S.9), ≤ 14 on screen, transform/opacity only: spring-day petals,
+  // Seasonal particles (style guide §S.9), ≤ 14 on screen, transform/opacity only: cherry-blossom-week petals,
   // autumn maple leaves, winter snow (+ one big flake every 45 s), all official art; summer nights get
   // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size
   // container, so the fall distance is in cqh of the whole scene.
   import OfficialArt from '../OfficialArt.svelte';
   import type { Season } from '#lib/client/theme.svelte.ts';
+  import type { Foliage } from '#lib/client/season.ts';
   import { seasonArt } from '../art.ts';
   import { rng, u, type Tod } from './scene.ts';
 
   interface Props {
     season: Season;
+    /** Petals only fall while the cherry blossoms are out, maple leaves once the oaks turn. */
+    foliage?: Foliage;
     tod: Tod;
     /** Cherry-blossom / maple week: a few more. */
     festival?: boolean;
     mode?: 'fall' | 'fireflies';
   }
-  let { season, tod, festival = false, mode = 'fall' }: Props = $props();
+  let { season, foliage = 'green', tod, festival = false, mode = 'fall' }: Props = $props();
 
   const kind = $derived(
-    season === 'spring' && tod !== 'night' ? 'petal' : season === 'autumn' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
+    foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
   );
   const count = $derived(kind === 'petal' ? (festival ? 14 : 10) : kind === 'maple-leaf' ? (festival ? 12 : 8) : kind === 'snowflake' ? 12 : 0);
   const items = $derived.by(() => {

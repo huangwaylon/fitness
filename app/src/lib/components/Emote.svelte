@@ -4,10 +4,12 @@
   //   <Emote id="sleepy" hold size={36} />
   //   <Emote kind="heart" />             legacy v3 vector emote (♪ ! z ✦ ♥), still supported
   // `tail` = which side the little tail points from ('left' | 'right' | 'none').
+  //   <Emote id="mark-note" bare />      floating symbol, no cream disc (villagers, A1); `mark-*` are ours
   // Under reduced motion it fades in for 120 ms instead of popping.
   import EmoteArt from '#lib/villagers/EmoteArt.svelte';
   import OfficialArt from './OfficialArt.svelte';
-  import { reactionArt, type EmoteIcon } from './art.ts';
+  import Mark from './Mark.svelte';
+  import { isMark, reactionArt, type EmoteIcon, type MarkId } from './art.ts';
   import type { EmoteKind } from '#lib/villagers/species.ts';
 
   interface Props {
@@ -21,14 +23,21 @@
     hold?: boolean;
     animate?: boolean;
     tail?: 'left' | 'right' | 'none';
+    /** Float the symbol on its own, without the cream disc (villagers). */
+    bare?: boolean;
   }
-  let { id, kind, size, hold = false, animate = true, tail = 'left' }: Props = $props();
+  let { id, kind, size, hold = false, animate = true, tail = 'left', bare = false }: Props = $props();
   const w = $derived(size === undefined ? (id ? '44px' : '32px') : typeof size === 'number' ? `${size}px` : size);
   const legacy: Record<EmoteKind, EmoteIcon> = { note: 'joy', bang: 'surprise', zz: 'sleepy', sparkle: 'pleased', heart: 'love' };
   const icon = $derived(id ?? (kind ? legacy[kind] : undefined));
 </script>
 
-{#if id || !kind}
+{#if id && (bare || isMark(id))}
+  <span class="float {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true">
+    {#if isMark(id)}<Mark id={id.slice(5) as MarkId} />
+    {:else}<OfficialArt key={reactionArt(id)} size="100%" eager />{/if}
+  </span>
+{:else if id || !kind}
   {#if icon}
     <span class="bubble {tail}" class:hold class:still={!animate} style:--w={w} aria-hidden="true">
       <span class="ico">
@@ -52,6 +61,13 @@
     animation: if-bubble var(--dur-emote, 2200ms) var(--ease-bounce) both;
   }
   .bubble.right { transform-origin: 70% 110%; }
+  .float {
+    position: relative; display: grid; place-items: center; flex: none; width: var(--w); height: var(--w); line-height: 0;
+    transform-origin: 50% 100%; animation: if-bubble var(--dur-emote, 2200ms) var(--ease-bounce) both;
+  }
+  .float :global(.official) { width: 100%; height: 100%; }
+  .float.hold { animation: if-pop var(--dur-pop, 360ms) var(--ease-bounce) both; }
+  .float.still { animation: none; }
   .bubble.hold { animation: if-pop var(--dur-pop, 360ms) var(--ease-bounce) both; }
   .bubble.still { animation: none; }
   /* the tail: a small rounded triangle under the bubble, toward the speaker */
@@ -65,8 +81,8 @@
   .ico { width: 77%; height: 77%; display: grid; place-items: center; line-height: 0; }
   .ico :global(.official) { height: 100%; width: 100%; }
   @media (prefers-reduced-motion: reduce) {
-    .bubble { animation: if-fade-hold 2200ms linear both; }
-    .bubble.hold { animation: fade-in 120ms linear both; }
+    .bubble, .float { animation: if-fade-hold 2200ms linear both; }
+    .bubble.hold, .float.hold { animation: fade-in 120ms linear both; }
   }
   @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 </style>

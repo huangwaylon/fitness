@@ -204,7 +204,7 @@
   --grass:#CAD764; --grass-2:#BAC955; --grass-edge:#9DAE45;
   --cliff:#C49A62; --cliff-dark:#A07A4A; --path:#E4C185; --path-edge:#CCA463;
   --sea-far:#A9E3F0; --sea:#5CC8E2; --sea-deep:#3AAED6; --beach:#F5E2B0; --beach-wet:#E6CD92;
-  --sky-top:#69B8F0; --sky-bottom:#F8EDD3; --sun-disc:#FFD27A; --sh-ground:rgba(90,80,30,.22);
+  --sky-top:#69B8F0; --sky-bottom:#C4E8FF; --sun-disc:#FFD27A; --sh-ground:rgba(90,80,30,.22);
 }
 .if-scene[data-season="winter"] {
   --grass:#FAFCFF; --grass-2:#E8F0FB; --grass-edge:#C7D9EE;
@@ -223,7 +223,7 @@
 .if-scene[data-tod="night"] {
   --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(64,78,160,.26); --cloud:#9AA6E0; --cloud-shade:#7F8BCB;
   --cloud-op:.5; --foam:rgba(255,255,255,.75);
-  --sea-far:#8FCBE8; --sea:#4FB2DA; --sea-deep:#3A92C6;
+  --sea-far:#6F86CC; --sea:#4D6FBE; --sea-deep:#3F5CA8; --moon-glint:rgba(255,243,196,.75);
 }
 /* Pause every scene animation while the tab is hidden (§S.13). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
@@ -250,10 +250,12 @@
   0%,100% { transform: none; } 16.6% { transform: rotate(-7deg); } 33.3% { transform: rotate(7deg); }
   50% { transform: rotate(-5deg); } 66.6% { transform: rotate(5deg); } 83.3% { transform: rotate(-2deg); }
 }
-/* on .face: flip to the other side, look, flip back (respects the current facing) */
+/* on .face (origin at the feet): look around = lean and tilt toward the middle, then the other way, and
+   back (A9: no paper-doll mirror flip). --in = +1 when the middle of the island is to the right. */
 @keyframes if-turn {
-  0%,100% { transform: scaleX(var(--facing,1)); } 12%,80% { transform: scaleX(calc(var(--facing,1) * -1)); }
-  92% { transform: scaleX(var(--facing,1)); }
+  0%,100% { transform: scaleX(var(--facing,1)); }
+  14%,42% { transform: scaleX(var(--facing,1)) translateX(calc(var(--in,1) * 4%)) rotate(calc(var(--in,1) * 6deg)); }
+  58%,84% { transform: scaleX(var(--facing,1)) translateX(calc(var(--in,1) * -3%)) rotate(calc(var(--in,1) * -5deg)); }
 }
 @keyframes if-turn-dip {
   0%,6%,18%,86%,98%,100% { transform: none; } 12%,92% { transform: scale(1.04,.96); }

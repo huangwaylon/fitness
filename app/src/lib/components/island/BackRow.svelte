@@ -7,16 +7,20 @@
   // stage's stacking context with its own z-index, so palms can sit between the jar and villagers.
   import OfficialArt from '../OfficialArt.svelte';
   import type { Season } from '#lib/client/theme.svelte.ts';
+  import type { Foliage } from '#lib/client/season.ts';
   import { EXTRAS, TREE, props as sceneProps, u, type Tod } from './scene.ts';
   import { seasonArt } from '../art.ts';
 
   interface Props {
     season: Season;
+    /** Fallen petals on the grass only while the cherry blossoms are out. */
+    foliage?: Foliage;
     tod: Tod;
     month: number;
     toyDay?: boolean;
   }
-  let { season, tod, month, toyDay = false }: Props = $props();
+  let { season, foliage = 'green', tod, month, toyDay = false }: Props = $props();
+  const extras = $derived(EXTRAS[season].filter(([item]) => item !== 'petal' || foliage === 'blossom'));
   const list = $derived(sceneProps(season, tod, month));
   const night = $derived(tod === 'night');
 </script>
@@ -31,7 +35,7 @@
   </span>
 {/each}
 
-{#each EXTRAS[season] as [item, x, base, h, rot], i (i)}
+{#each extras as [item, x, base, h, rot], i (i)}
   <span class="prop extra" style:left={u(x)} style:top={u(base)} style:z-index="15" style:--rot="{rot}deg">
     <OfficialArt key={seasonArt(item)} size={u(h)} />
   </span>

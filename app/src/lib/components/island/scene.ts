@@ -13,14 +13,26 @@ export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
 /** Fruit trees (§S.8): official oak of the season, base y 238, 150u tall. */
 export const TREE = { h: 150, base: 238, x: { A: 84, B: 306 } as const, w: 121 };
-/** Fruit placement inside the tree box (% of tree width / height, centre point), 27u each. */
+/** Fruit on the oak (% of tree width / height, centre point), 27u each. Coconuts grow only on palms
+ *  (A5), so each person's coconut hangs in the crown of the beach palm beside their oak. */
 export const FRUIT_POS = {
-  peach: [30, 30],
-  coconut: [68, 22],
-  apple: [22, 52],
-  pear: [74, 50]
+  peach: [28, 30],
+  pear: [72, 27],
+  apple: [50, 50]
 } as const;
+export const OAK_FRUITS = ['peach', 'pear', 'apple'] as const;
 export const FRUIT_U = 27;
+
+/** The two front palms (§S.6), one beside each oak: [x, base, height u, mirrored]. */
+export const PALM = {
+  A: { x: 26, base: 348, h: 70, flip: true },
+  B: { x: 366, base: 344, h: 72, flip: false }
+} as const;
+/** The coconut in the palm crown (% of the palm box, as drawn, unmirrored), 24u. */
+export const COCONUT_POS = [46, 34] as const;
+export const COCONUT_U = 24;
+/** palm.webp is 320 × 302. */
+export const PALM_AR = 320 / 302;
 
 /** Villagers (§S.8): feet at y 286, 94u tall, standing in front of their own tree. */
 export const VILLAGER = { foot: 286, h: 94 };
@@ -54,12 +66,13 @@ export function hedgePair(season: Season, month: number): [BushId, BushId] {
 }
 export const HEDGE_X = [28, 62, 96, 128, 262, 294, 326, 360];
 
-/** Flower beds (§S.7): [left back, left front], [right back, right front]; winter = snow mounds. */
-export const BEDS: Record<Season, [FlowerId, FlowerId, FlowerId, FlowerId] | null> = {
+/** Flower beds (§S.7): [left back, left front], [right back, right front]. NH flowers keep blooming
+ *  under snow (A13), so winter keeps red roses and pansies, with snow caps, on the snow mounds. */
+export const BEDS: Record<Season, [FlowerId, FlowerId, FlowerId, FlowerId]> = {
   spring: ['pink-tulips', 'yellow-tulips', 'blue-hyacinths', 'white-windflowers'],
   summer: ['red-roses', 'yellow-roses', 'pink-lilies', 'lily-of-the-valley'],
   autumn: ['pink-cosmos', 'white-cosmos', 'purple-mums', 'orange-pansies'],
-  winter: null
+  winter: ['red-roses', 'orange-pansies', 'orange-pansies', 'red-roses']
 };
 export const BED_X = { left: [134, 150, 166], right: [224, 240, 256] };
 export const BED_ROWS = [292, 306];
@@ -96,9 +109,8 @@ export function props(season: Season, tod: Tod, month: number): Prop[] {
     { key: 'deco/rock', h: 18, x: 352, base: 162, z: 22 },
     // distant islet palm (the sand is drawn in the SVG)
     { key: 'trees/palm', h: 26, x: 345, base: 14, z: 11, cls: 'islet' },
-    // front palms on the beach corners
-    { key: 'trees/palm', h: 72, x: 366, base: 344, z: 45 },
-    { key: 'trees/palm', h: 56, x: 24, base: 348, z: 45, flip: true }
+    // front palms on the beach corners (each carries its person's coconut, FruitTree)
+    ...(['A', 'B'] as const).map((p) => ({ key: 'trees/palm', h: PALM[p].h, x: PALM[p].x, base: PALM[p].base, z: 45, flip: PALM[p].flip }))
   ];
   if (night) {
     list.push(
@@ -137,10 +149,6 @@ export function eventsAt(d: Date): Events {
   };
 }
 
-export function seasonOf(d: Date): Season {
-  const m = d.getMonth() + 1;
-  return m >= 3 && m <= 5 ? 'spring' : m <= 8 && m >= 6 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter';
-}
 
 /** Small deterministic PRNG so scattered details sit still between renders. */
 export function rng(seed: number): () => number {

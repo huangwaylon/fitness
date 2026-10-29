@@ -33,7 +33,7 @@
   }
   let { kind, spread = '60px', dir = 1, count = 16, scale = 1, ondone }: Props = $props();
 
-  const reduced = reducedMotion();
+  const reduced = $derived(reducedMotion());
   const CONFETTI = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
   // deterministic-ish pieces per instance
   const pieces = $derived(Array.from({ length: kind === 'confetti' ? count : 0 }, (_, i) => {

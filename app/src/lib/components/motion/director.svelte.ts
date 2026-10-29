@@ -41,12 +41,52 @@ const timers: Record<ActorId, Set<ReturnType<typeof setTimeout>>> = { mine: new 
 /** Last time any event reaction ran (idle life waits 3 s after one). */
 export const lastEvent = { at: 0 };
 
-function later(id: ActorId, ms: number, fn: () => void) {
+/** Run `fn` on an actor after `ms`; `cancel(id)` / `resetAll()` drop it. Returns its own canceller. */
+export function later(id: ActorId, ms: number, fn: () => void): () => void {
   const t = setTimeout(() => {
     timers[id].delete(t);
     fn();
   }, ms);
   timers[id].add(t);
+  return () => {
+    clearTimeout(t);
+    timers[id].delete(t);
+  };
+}
+
+/** Pending timers per actor (tests). */
+export function pendingTimers(id: ActorId): number {
+  return timers[id].size;
+}
+
+// しずえ: several <Host>s can be mounted (island bubble, harvest overlay, gallery). The director drives
+// only the most recent live claim; `present` stays true while any claim is held (P3).
+const hostClaims: number[] = [];
+let claimN = 0;
+export const hostOwner = $state({ id: 0 });
+
+export function claimHost(): { id: number; release: () => void } {
+  const id = ++claimN;
+  hostClaims.push(id);
+  if (hostOwner.id) cancel('host');
+  hostOwner.id = id;
+  actors.host.present = true;
+  return {
+    id,
+    release() {
+      const i = hostClaims.indexOf(id);
+      if (i < 0) return;
+      hostClaims.splice(i, 1);
+      const next = hostClaims.at(-1) ?? 0;
+      if (hostOwner.id !== next) {
+        cancel('host');
+        actors.host.emote = null;
+        actors.host.fx = [];
+      }
+      hostOwner.id = next;
+      actors.host.present = hostClaims.length > 0;
+    }
+  };
 }
 
 /** Cancel everything pending on an actor and snap it back to rest (keeps sleep). */
@@ -162,15 +202,18 @@ export function stroll(id: 'mine' | 'partner', dx: number, onWait?: () => void) 
   later(id, 4400, () => (a.walking = false));
 }
 
-/** Night naps (R13): asleep = slow breath + held `sleepy` + zzz. */
+/** Night naps (R13): asleep = slow breath + a zzz loop (reduced motion: a held zzz mark). */
 export function setAsleep(id: ActorId, asleep: boolean) {
   const a = actors[id];
   if (a.asleep === asleep) return;
   a.asleep = asleep;
   if (asleep) {
-    setEmote(id, 'dozing');
-    later(id, EMOTE_MS, () => actors[id].asleep && setEmote(id, 'sleepy', true));
-    if (!reducedMotion()) addFx(id, 'zzz');
+    // the zzz loop is the sleep sign; under reduced motion a held (static) zzz mark instead
+    if (reducedMotion()) setEmote(id, 'sleepy', true);
+    else {
+      setEmote(id, 'dozing');
+      addFx(id, 'zzz');
+    }
   } else if (a.emoteHold) {
     setEmote(id, null);
   }

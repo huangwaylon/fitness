@@ -19,6 +19,7 @@
   import { fruitArt } from '#lib/client/assets.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { theme, type Season } from '#lib/client/theme.svelte.ts';
+  import { defaultFoliage, type Foliage } from '#lib/client/season.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
   import Sky from './Sky.svelte';
   import Sea from './Sea.svelte';
@@ -28,7 +29,7 @@
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
   import Balloon from './Balloon.svelte';
-  import { JAR, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
+  import { JAR, PALM, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { actors, applyStep, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
   import { startIdleLife } from '../motion/idleLife.svelte.ts';
   import { on } from '../motion/bus.svelte.ts';
@@ -58,17 +59,20 @@
     partnerEmote?: boolean | EmoteKind;
     /** Dev gallery: force a season / night / time of day instead of the theme clock. */
     season?: Season;
+    /** Oak foliage (defaults to the season's signature look when `season` is forced, else the clock). */
+    foliage?: Foliage;
     night?: boolean;
     tod?: Tod;
   }
   let {
     view, onme, onpartner, onvillager, onjar, onfruit, paused = false, live = true,
     meExpression, partnerExpression, meEmote = false, partnerEmote = false,
-    season: seasonProp, night: nightProp, tod: todProp
+    season: seasonProp, foliage: foliageProp, night: nightProp, tod: todProp
   }: Props = $props();
 
   const uid = $props.id();
   const season = $derived(seasonProp ?? theme.season);
+  const foliage = $derived<Foliage>(foliageProp ?? (seasonProp ? defaultFoliage(seasonProp) : theme.foliage));
   const tod = $derived<Tod>(todProp ?? (nightProp === true ? 'night' : nightProp === false && theme.tod === 'night' ? 'day' : theme.tod));
   const night = $derived(tod === 'night');
 
@@ -100,7 +104,7 @@
     if (!live) return;
     if (actors[id].asleep) wake(id);
     else react(id === 'mine' ? 'R9' : 'R10');
-    setTimeout(() => {
+    later(() => {
       if (id === 'mine') (onme ?? (() => onvillager?.('me')))();
       else (onpartner ?? (() => onvillager?.('partner')))();
     }, 200);
@@ -109,7 +113,7 @@
   function tapJar() {
     if (live && !reducedMotion()) {
       react('R18');
-      setTimeout(() => onjar?.(), 450);
+      later(() => onjar?.(), 450);
     } else onjar?.();
   }
 
@@ -242,6 +246,7 @@
     const stopIdle = startIdleLife({
       paused: () => covered || hidden,
       asleep: () => actors.mine.asleep && actors.partner.asleep,
+      night: () => tod === 'night',
       scores: () => [view.people.A.score, view.people.B.score],
       treeShake: (id) => {
         const pid = id === 'mine' ? view.me : view.partner;
@@ -249,15 +254,19 @@
       }
     });
 
-    // Balloon present: day only, at most once per session, after 60 s on the island.
-    if (!sessionStorage.getItem('if-balloon')) {
+    // Balloon present (A8: a bit more often): day only, first after 45 s on the island, then every
+    // 4 min, at most 3 per session.
+    const balloonTry = (ms: number) =>
       later(() => {
-        if (tod === 'day' && !covered && !hidden && !reducedMotion()) {
-          sessionStorage.setItem('if-balloon', '1');
+        const n = Number(sessionStorage.getItem('if-balloon') ?? 0);
+        if (n >= 3) return;
+        if (tod === 'day' && !covered && !hidden && !reducedMotion() && !balloon) {
+          sessionStorage.setItem('if-balloon', String(n + 1));
           balloon = true;
-        }
-      }, 60_000);
-    }
+          balloonTry(240_000);
+        } else balloonTry(30_000);
+      }, ms);
+    balloonTry(45_000);
 
     const onVis = () => (hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);
@@ -283,10 +292,10 @@
       <Ground {uid} {season} />
     </svg>
 
-    <BackRow {season} {tod} {month} toyDay={ev.toyDay} />
+    <BackRow {season} {foliage} {tod} {month} toyDay={ev.toyDay} />
 
     {#each ['A', 'B'] as const as pid (pid)}
-      <FruitTree person={view.people[pid]} x={TREE.x[pid]} {season} delay={pid === 'B' ? -2.1 : 0} shakeN={shakeN[pid]}
+      <FruitTree person={view.people[pid]} x={TREE.x[pid]} {foliage} palm={PALM[pid]} delay={pid === 'B' ? -2.1 : 0} shakeN={shakeN[pid]}
         celebrate={celebrate[pid]} ontap={() => onfruit?.(pid)} />
     {/each}
 
@@ -331,16 +340,16 @@
       </div>
     {/each}
 
-    <Particles {season} {tod} mode="fireflies" />
+    <Particles {season} {foliage} {tod} mode="fireflies" />
     <div class="tint"></div>
-    <div class="fall"><Particles {season} {tod} festival={ev.cherry || ev.maple} /></div>
+    <div class="fall"><Particles {season} {foliage} {tod} festival={ev.cherry || ev.maple} /></div>
 
     {#each ['mine', 'partner'] as const as id (id)}
       {@const s = sides[id]}
       {#if id === 'mine'}
-        <div class="pill mine" style:left={u(s.x)} style:top={u(VILLAGER.foot + 6)} style:--tag={TAG[s.person.person]} role="img"
-          aria-label={t('island.score', { name: s.person.villagerName, score: s.person.score })}>
-          <span class="tag">{s.person.villagerName}</span><span class="dot"></span>
+        <!-- the villager button already announces the score, so the pill is visual only -->
+        <div class="pill mine" style:left={u(s.x)} style:top={u(VILLAGER.foot + 6)} style:--tag={TAG[s.person.person]} aria-hidden="true">
+          <span class="you">{t('island.you')}</span>
           <b class="money">{s.person.score}</b><small class="money">/100</small>
         </div>
       {:else}
@@ -395,7 +404,8 @@
   .jartap:focus-visible, .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   .tint { position: absolute; inset: 0; z-index: 80; background: var(--tod-tint); pointer-events: none; }
-  .fall { position: absolute; left: 0; right: 0; bottom: 0; height: var(--scene-h, var(--scene-h-auto)); z-index: 70; pointer-events: none; }
+  /* falling leaves pass behind the villagers (z 51/52), never across their faces */
+  .fall { position: absolute; left: 0; right: 0; bottom: 0; height: var(--scene-h, var(--scene-h-auto)); z-index: 50; pointer-events: none; }
   .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }
 
   /* Score pills under the villagers, above the tint. */
@@ -410,6 +420,11 @@
   .pill .dot { display: none; width: 10px; height: 10px; border-radius: 50%; background: var(--tag); margin-left: 4px; }
   .pill b { font-family: var(--font-num); font-weight: 700; font-size: var(--fs-h2, 1.25rem); line-height: 1; }
   .pill small { font-size: 11px; font-weight: 600; color: var(--c-ink-talk); margin-left: -3px; align-self: flex-end; padding-bottom: 2px; }
+  /* U2: "which one is me?" — a leaf chip on my own pill, kept at every size */
+  .pill .you {
+    background: var(--c-leaf-soft); color: var(--c-leaf-ink); border-radius: 999px; padding: 3px 7px;
+    font-size: 11px; font-weight: 700; line-height: 1.1; box-shadow: inset 0 0 0 1.5px var(--c-leaf);
+  }
   .pill.theirs { padding-right: 5px; gap: 3px; }
   .pf { display: block; flex: none; line-height: 0; }
   .pf.bud { opacity: .6; filter: saturate(.3); }
