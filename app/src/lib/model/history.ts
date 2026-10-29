@@ -8,7 +8,7 @@ import {
 } from '#lib/scoring/index.ts';
 import { editableAt, finalMs, firstWeek, isLockedAt, latestAt, localDateAt, PEOPLE_IDS, type State, type Timed } from './state.ts';
 import {
-  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, paidAt, replayHarvests, replayPurse, settledWeeks, transferDoneAt, weekInput, workoutsAsOf,
+  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, paidAt, replayHarvests, replayPurse, settledWeeks, settleWeek, transferDoneAt, weekDates, weekInput, workoutsAsOf,
   type Activity, type Buckets, type SettledWeek, type SpendLog
 } from './week.ts';
 
@@ -60,7 +60,7 @@ interface WeekCalc { t: number; scores: Record<PersonId, WeekScore>; act: Record
 
 function calc(s: State, wk: WeekKey, now: number): WeekCalc {
   const t = timeOf(wk, now);
-  const act = { A: activityAsOf(s, 'A', t), B: activityAsOf(s, 'B', t) };
+  const act = { A: activityAsOf(s, 'A', t, weekDates(wk)), B: activityAsOf(s, 'B', t, weekDates(wk)) };
   const scores = { A: scoreWeek(weekInput(s, 'A', wk, t, act.A)), B: scoreWeek(weekInput(s, 'B', wk, t, act.B)) };
   return { t, scores, act };
 }
@@ -206,7 +206,7 @@ function editedFields(s: State, person: PersonId): Map<LocalDate, Set<EditedFiel
 export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const today = localDateAt(now);
   const c = calc(s, wk, now);
-  const settled = settledWeeks(s, now).find((w) => w.weekKey === wk);
+  const settled = settleWeek(s, wk, now) ?? undefined;
   const y = weekYen(s, wk, now, settled, c);
   const person = (p: PersonId): WeekDetailPerson => {
     const score = c.scores[p];
@@ -374,7 +374,7 @@ function buildEditLog(s: State): EditLog[] {
     if (!w) continue;
     if (e.at === w.at) continue; // the strength choice made with a workout_add is part of the add
     const counts = (t: number) => {
-      const wo = workoutsAsOf(s, e.person, t).find((x) => x.extId === e.id);
+      const wo = workoutsAsOf(s, e.person, t, { from: w.date, to: w.date }).find((x) => x.extId === e.id);
       return !!wo && isStrengthWorkout(wo);
     };
     if (e.excluded !== undefined) {

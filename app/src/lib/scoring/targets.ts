@@ -10,8 +10,17 @@ export function isEasyWeek(weekKey: WeekKey): boolean {
   return weekDays(weekKey).some((d) => inMonthDayRange(d, HOLIDAY.easy.from, HOLIDAY.easy.to));
 }
 
-/** Season targets for a person in a week, with holiday easy-week factors applied (ADR 0011). */
+const cache = new Map<string, PersonTargets>();
+
+/** Season targets for a person in a week, with holiday easy-week factors applied (ADR 0011). A fresh copy per call. */
 export function targetsFor(person: PersonId, weekKey: WeekKey): PersonTargets {
+  const k = `${person}|${weekKey}`;
+  let t = cache.get(k);
+  if (!t) cache.set(k, (t = computeTargets(person, weekKey)));
+  return { ...t, habits: [...t.habits] as [string, string, string] };
+}
+
+function computeTargets(person: PersonId, weekKey: WeekKey): PersonTargets {
   const wk = weekKeyOf(weekKey);
   const sorted = [...SEASONS].sort((a, b) => a.from.localeCompare(b.from));
   if (sorted.length === 0) throw new Error('No SEASONS configured');

@@ -35,14 +35,14 @@ type Cal = Pick<State, 'calendar'>;
 export const isCalibrationWeek = (s: Cal, wk: WeekKey): boolean => !s.calendar && CALIBRATION_WEEKS.includes(wk);
 
 /** First paid week of the season calendar: the first full Mon–Sun week of season 1. */
-export function seasonFirstWeek(): WeekKey {
+const SEASON_FIRST_WEEK: WeekKey = (() => {
   const from = [...SEASONS].sort((a, b) => a.from.localeCompare(b.from))[0].from;
   const wk = weekKeyOf(from);
   return wk < from ? addDays(wk, 7) : wk;
-}
+})();
 
 /** First paid week (the demo's own one in the demo). */
-export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? seasonFirstWeek();
+export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? SEASON_FIRST_WEEK;
 
 /** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first paid week never lock. */
 export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
@@ -82,6 +82,9 @@ export interface PresenceRec {
   placeKey: string;
   event: 'arrive' | 'leave';
   eventAt: string;
+  eventMs: number;
+  /** Tokyo date of `eventAt`. */
+  date: LocalDate;
 }
 
 /** `edit`: a fix from きろく (`edit:true`), allowed for any open day; it shows in the change log. */
@@ -246,9 +249,9 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     if (Math.abs(eventMs - at) > PRESENCE_WINDOW_MS) continue;
     // Shortcuts sometimes fire twice: a repeat of the same event within 2 minutes is dropped.
     const list = s.presence[person];
-    if (list.some((e) => e.placeKey === placeKey && e.event === event && Math.abs(Date.parse(e.eventAt) - eventMs) <= PRESENCE_DUP_MS)) continue;
+    if (list.some((e) => e.placeKey === placeKey && e.event === event && Math.abs(e.eventMs - eventMs) <= PRESENCE_DUP_MS)) continue;
     const eventAt = new Date(eventMs).toISOString();
-    const rec: PresenceRec = { n: ++n, id: `${placeKey}@${eventAt}`, at, placeKey, event, eventAt };
+    const rec: PresenceRec = { n: ++n, id: `${placeKey}@${eventAt}`, at, placeKey, event, eventAt, eventMs, date: toLocalDate(eventAt) };
     list.push(rec);
     if (event === 'arrive' && !presenceById.has(rec.id)) presenceById.set(rec.id, { person, rec });
   }
@@ -282,7 +285,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
           push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
         } else if (d.kind === 'visit') {
           const p = presenceById.get(d.id);
-          if (!p || p.person !== person || p.rec.at > at || isLockedAt(s, weekKeyOf(toLocalDate(p.rec.eventAt)), at)) break;
+          if (!p || p.person !== person || p.rec.at > at || isLockedAt(s, weekKeyOf(p.rec.date), at)) break;
           push(s.visitConfirms, d.id, { at, v: d.yes });
         }
         break;
