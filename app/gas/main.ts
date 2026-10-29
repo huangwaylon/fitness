@@ -12,18 +12,27 @@ import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import {
   DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, NUMERIC_COLUMNS, TABS,
-  type ApiError, type EventReply, type Fail, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows, type TabName,
-  type WhoamiReply
+  type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
+  type TabName, type WhoamiReply
 } from '../src/lib/contract/api.ts';
+
+/** Set by `npm run gas:build` (a hash of the bundle); `dev` when main.ts runs unbundled (tests). */
+declare const __BUILD__: string | undefined;
+export const BUILD: string = typeof __BUILD__ === 'string' ? __BUILD__ : 'dev';
 
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
 const LOCK_WAIT_MS = 10_000;
 const MIN_KEY_CHARS = 32;
-const MAX_EVENT_DATA_CHARS = 20_000;
+/** Keys are `openssl rand -hex 32`; anything else is refused before any Properties read. */
+const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
+/** How long the keys stay in CacheService. A rotated key keeps working for at most this long (google-setup.md §10). */
+export const KEY_CACHE_SECONDS = 300;
+/** Tabs whose rows the client caches; a hand change to any of them bumps `REV`. */
+const SYNCED_TABS = ['metrics', 'workouts', 'presence', 'events'] as const satisfies readonly TabName[];const MAX_EVENT_DATA_CHARS = 20_000;
 
 /** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
-type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply;
+type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
 type Rec = Record<string, unknown>;
 
 const fail = (error: ApiError, detail?: string): Fail => (detail ? { ok: false, error, detail } : { ok: false, error });
@@ -51,6 +60,8 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     return fail('bad_request');
   }
   if (!isRec(body)) return fail('bad_request');
+  // Keyless liveness and version probe for the monitor (runbook §5): no Properties, no lock, no sheet.
+  if (body.action === 'health' && body.key === undefined) return { ok: true, build: BUILD };
 
   const me = personFor(body.key);
   if (!me) return fail('unauthorized');
@@ -61,7 +72,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     case 'presence': return presence(me, body);
     case 'event': return event(me, body);
     case 'snapshot': return snapshot(me, body);
-    case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) tab(t); return { ok: true, me }; });
+    case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) tab(t); return { ok: true, me, build: BUILD }; });
     default: return fail('bad_request');
   }
 }
@@ -76,14 +87,29 @@ function constantTimeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-function personFor(key: unknown): PersonId | null {
-  if (typeof key !== 'string' || key.length < MIN_KEY_CHARS) return null;
+/** KEY_A and KEY_B, from CacheService when possible (Properties reads have a daily quota). */
+function keys(): { a: string; b: string } {
+  let cache: GAS.Cache | null = null;
+  try {
+    cache = CacheService.getScriptCache();
+    const hit = cache.get('keys');
+    if (hit) {
+      const k = JSON.parse(hit) as { a?: unknown; b?: unknown };
+      if (typeof k.a === 'string' && typeof k.b === 'string') return { a: k.a, b: k.b };
+    }
+  } catch { /* fall through to Properties */ }
   const props = PropertiesService.getScriptProperties();
-  const a = props.getProperty('KEY_A');
-  const b = props.getProperty('KEY_B');
+  const k = { a: props.getProperty('KEY_A') ?? '', b: props.getProperty('KEY_B') ?? '' };
+  try { cache?.put('keys', JSON.stringify(k), KEY_CACHE_SECONDS); } catch { /* best effort */ }
+  return k;
+}
+
+function personFor(key: unknown): PersonId | null {
+  if (typeof key !== 'string' || !KEY_RE.test(key)) return null;
+  const { a, b } = keys();
   // Both comparisons always run; an unset or short property can never match.
-  const isA = constantTimeEqual(key, a ?? '') && !!a && a.length >= MIN_KEY_CHARS;
-  const isB = constantTimeEqual(key, b ?? '') && !!b && b.length >= MIN_KEY_CHARS;
+  const isA = constantTimeEqual(key, a) && a.length >= MIN_KEY_CHARS;
+  const isB = constantTimeEqual(key, b) && b.length >= MIN_KEY_CHARS;
   return isA && !isB ? 'A' : isB && !isA ? 'B' : null;
 }
 
@@ -110,21 +136,93 @@ function withLock<R extends Reply>(fn: () => R): R | Fail {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(LOCK_WAIT_MS)) return fail('busy');
   try {
+    state = loadState();
     const r = fn();
     SpreadsheetApp.flush();
+    saveState(state);
     return r;
   } finally {
+    state = null;
     lock.releaseLock();
   }
 }
 
+/**
+ * The script's own bookkeeping in Script Properties, read once and written at most once per locked request:
+ * - `LAST_AT`: the last server `at` handed out (they strictly increase).
+ * - `ROWS`: JSON `{tab: last row}` of the synced tabs as this script last left them.
+ * - `REV`: the data revision (sheets-architecture.md §2.1). Changes when the synced tabs were changed by hand.
+ */
+interface ServerState { lastAt: number; rows: Partial<Record<TabName, number>>; rev: string; revChanged: boolean; dirty: boolean }
+let state: ServerState | null = null;
+
+const newRev = (): string => `${Date.now().toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+
+function loadState(): ServerState {
+  const p = PropertiesService.getScriptProperties().getProperties();
+  let rows: ServerState['rows'] = {};
+  try {
+    const r = JSON.parse(p.ROWS ?? '{}');
+    if (isRec(r)) rows = r as ServerState['rows'];
+  } catch { /* re-learnt below */ }
+  const rev = p.REV || newRev();
+  return { lastAt: Date.parse(p.LAST_AT ?? '') || 0, rows, rev, revChanged: !p.REV, dirty: !p.REV };
+}
+
+function saveState(st: ServerState): void {
+  if (!st.dirty) return;
+  const out: Record<string, string> = { ROWS: JSON.stringify(st.rows) };
+  if (st.lastAt) out.LAST_AT = new Date(st.lastAt).toISOString();
+  // Only a bump of our own is written, so a concurrent `onEdit` bump (outside the lock) is never overwritten.
+  if (st.revChanged) out.REV = st.rev;
+  PropertiesService.getScriptProperties().setProperties(out);
+}
+
+function current(): ServerState {
+  if (!state) throw new Error('not under the lock');
+  return state;
+}
+
+/**
+ * Compare a synced tab's last row with what this script last wrote. A difference means rows were added or deleted
+ * by hand (or the tab was recreated), so cached clients can't catch up with `since`: bump `REV`. The first sight of
+ * a tab (no `ROWS` entry yet) only learns it.
+ */
+function noteRows(name: TabName, lastRow: number): void {
+  if (!(SYNCED_TABS as readonly string[]).includes(name)) return;
+  const st = current();
+  const known = st.rows[name];
+  if (known === lastRow) return;
+  if (known !== undefined) {
+    st.rev = newRev();
+    st.revChanged = true;
+  }
+  st.rows[name] = lastRow;
+  st.dirty = true;
+}
+
 /** Server timestamp for this request's rows: strictly later than any `at` written before (under the lock). */
 function nextAt(): string {
-  const props = PropertiesService.getScriptProperties();
-  const last = Date.parse(props.getProperty('LAST_AT') ?? '') || 0;
-  const at = new Date(Math.max(Date.now(), last + 1)).toISOString();
-  props.setProperty('LAST_AT', at);
-  return at;
+  const st = current();
+  st.lastAt = Math.max(Date.now(), st.lastAt + 1);
+  st.dirty = true;
+  return new Date(st.lastAt).toISOString();
+}
+
+/**
+ * Simple trigger: a hand edit of a synced tab in the spreadsheet UI bumps `REV`. (Script writes don't fire it.)
+ * Row inserts and deletes are also caught by `noteRows`; `resync` is the manual fallback.
+ */
+export function onEdit(e: GAS.EditEvent | undefined): void {
+  try {
+    const name = e && e.range ? e.range.getSheet().getName() : '';
+    if ((SYNCED_TABS as readonly string[]).includes(name)) resync();
+  } catch { /* a trigger must not fail the user's edit */ }
+}
+
+/** Run from the script editor after fixing rows by hand: every client drops its cache on its next snapshot. */
+export function resync(): void {
+  PropertiesService.getScriptProperties().setProperty('REV', newRev());
 }
 
 // ---------------------------------------------------------------- sheet helpers
@@ -146,6 +244,7 @@ function tab(name: TabName): GAS.Sheet {
 
 function readRows(sh: GAS.Sheet, name: TabName): unknown[][] {
   const last = sh.getLastRow();
+  noteRows(name, last);
   if (last < 2) return [];
   return sh.getRange(2, 1, last - 1, TABS[name].length).getValues();
 }
@@ -153,11 +252,18 @@ function readRows(sh: GAS.Sheet, name: TabName): unknown[][] {
 function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
   if (rows.length === 0) return;
   const cols = TABS[name];
-  const start = Math.max(sh.getLastRow(), 1) + 1;
+  const last = sh.getLastRow();
+  noteRows(name, last);
+  const start = Math.max(last, 1) + 1;
   const need = start + rows.length - 1 - sh.getMaxRows();
   if (need > 0) sh.insertRowsAfter(sh.getMaxRows(), need);
   const formats = cols.map((c) => (NUMERIC_COLUMNS[name].includes(c) ? '0.##' : '@'));
   sh.getRange(start, 1, rows.length, cols.length).setNumberFormats(rows.map(() => formats)).setValues(rows);
+  if ((SYNCED_TABS as readonly string[]).includes(name)) {
+    const st = current();
+    st.rows[name] = start + rows.length - 1;
+    st.dirty = true;
+  }
 }
 
 const isDate = (v: unknown): v is Date => Object.prototype.toString.call(v) === '[object Date]';
@@ -269,6 +375,7 @@ function event(me: PersonId, body: Rec): EventReply {
   return withLock((): EventReply => {
     const sh = tab('events');
     const last = sh.getLastRow();
+    noteRows('events', last);
     if (last >= 2) {
       const ids = sh.getRange(2, 3, last - 1, 1).getValues();
       for (const r of ids) if (text(r[0]) === id) return { ok: true, duplicate: true };
@@ -335,6 +442,6 @@ function snapshot(me: PersonId, body: Rec): SnapshotReply {
       presence: pick('presence', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4], 'at')]),
       events: pick('events', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
     } as SnapshotRows;
-    return { ok: true, me, now: new Date().toISOString(), rows };
+    return { ok: true, me, now: new Date().toISOString(), rev: current().rev, rows };
   });
 }

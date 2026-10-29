@@ -51,7 +51,10 @@ openssl rand -hex 32   # → KEY_B
 | `KEY_A` | first key |
 | `KEY_B` | second key |
 
-The script also creates a `LAST_AT` property itself. It keeps server timestamps strictly increasing. Leave it alone.
+The script also creates `LAST_AT` (keeps server timestamps strictly increasing), `ROWS` (each tab's last row as
+the script left it) and `REV` (the data revision: it changes when rows are edited by hand, so the phones refetch
+everything; sheets-architecture.md §2.1). Leave `LAST_AT` and `ROWS` alone. After fixing rows by hand, run `resync`
+from the editor's function menu to be sure the phones pick it up.
 
 ## 4. Deploy
 
@@ -131,14 +134,15 @@ and the app reports the server as unreachable. Check once, on day 8 or later, wi
 ## 10. Rotating a key
 
 Do it if a phone is lost, or a key leaks, or at any doubt. Generate a new one with `openssl rand -hex 32`, then
-**Project Settings → Script Properties** → edit `KEY_A` (or `KEY_B`) → **Save**. It takes effect on the next
-request, with no redeploy. Then paste the new key into that person's app and Shortcut. The old key stops working
-at once. Rows already written stay, since they are tagged with the person, not the key.
+**Project Settings → Script Properties** → edit `KEY_A` (or `KEY_B`) → **Save**. It takes effect within 5 minutes
+(the script caches the keys), with no redeploy. Then paste the new key into that person's app and Shortcut. The old
+key stops working within those 5 minutes. Rows already written stay, since they are tagged with the person, not the key.
 
 ## 11. Updating the code (keeps the same URL)
 
 After changing `app/gas/**` or the parser: `cd app && npm run gas:build`, commit, paste the new `Code.js` (or
 `clasp push`). Saving the editor doesn't change what the deployment runs, because a deployment is pinned to a
 version. Go to **Deploy → Manage deployments** → pencil on the existing deployment → **Version: New version** →
-**Deploy**. **Don't** use *New deployment*: that creates a second, different `/exec` URL, and the phones and the
+**Deploy**. Then check the version: `post '{"action":"health"}'` (the §5 helper, no key needed) must answer the
+`build` printed by `npm run gas:build` (runbook §5). **Don't** use *New deployment*: that creates a second, different `/exec` URL, and the phones and the
 Shortcut would keep calling the old one.

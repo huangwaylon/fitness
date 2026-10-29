@@ -1,7 +1,8 @@
 // `npm run gas:build`: bundle app/gas/main.ts (+ the parser) into app/apps-script/Code.js, one plain global script
 // for the Apps Script editor (or `clasp push`). Apps Script only calls top-level functions, so the IIFE bundle is
-// followed by a top-level `function doPost(e)` that forwards to it.
+// followed by top-level functions that forward to it. The bundle carries its own `BUILD` hash (whoami, health).
 import { buildSync } from 'esbuild';
+import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -16,9 +17,28 @@ const FOOTER = `
 function doPost(e) {
   return IslandFund.doPost(e);
 }
+
+/** Simple trigger: a hand edit of a synced tab bumps REV, so the phones refetch everything. */
+function onEdit(e) {
+  IslandFund.onEdit(e);
+}
+
+/** Run from the editor after fixing rows by hand (sheets-architecture.md §2.1). */
+function resync() {
+  IslandFund.resync();
+}
 `;
 
+/** The first 12 hex chars of SHA-256 over the bundle built with BUILD = "dev": changes with any code change. */
+export function buildHash(): string {
+  return createHash('sha256').update(build('dev')).digest('hex').slice(0, 12);
+}
+
 export function bundle(): string {
+  return build(buildHash());
+}
+
+function build(id: string): string {
   const r = buildSync({
     entryPoints: [here('./main.ts')],
     bundle: true,
@@ -31,7 +51,8 @@ export function bundle(): string {
     legalComments: 'none',
     tsconfigRaw: {}, // the app tsconfig extends SvelteKit's generated one, irrelevant here
     banner: { js: BANNER },
-    footer: { js: FOOTER }
+    footer: { js: FOOTER },
+    define: { __BUILD__: JSON.stringify(id) }
   });
   return r.outputFiles[0].text;
 }
@@ -39,5 +60,5 @@ export function bundle(): string {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const code = bundle();
   writeFileSync(OUT_FILE, code);
-  console.log(`wrote ${OUT_FILE} (${(Buffer.byteLength(code) / 1024).toFixed(1)} KB)`);
+  console.log(`wrote ${OUT_FILE} (${(Buffer.byteLength(code) / 1024).toFixed(1)} KB), build ${buildHash()}`);
 }

@@ -54,7 +54,8 @@ export class FakeSheet {
       },
       setNumberFormat(f: string) { cells((r, c) => sheet.formats.set(`${r}:${c}`, f)); return range; },
       setNumberFormats(fs: string[][]) { cells((r, c, i, j) => sheet.formats.set(`${r}:${c}`, fs[i][j])); return range; },
-      setFontWeight() { return range; }
+      setFontWeight() { return range; },
+      getSheet() { return sheet; }
     };
     return range;
   }
@@ -69,8 +70,9 @@ export function makeGas(opts: FakeOptions = {}) {
   const props = new Map<string, string>();
   if (opts.keyA !== null) props.set('KEY_A', opts.keyA ?? 'a'.repeat(64));
   if (opts.keyB !== null) props.set('KEY_B', opts.keyB ?? 'b'.repeat(64));
-  const cache = new Map<string, string>();
-  const state = { lockAvailable: true, lockHeld: false, flushes: 0, spreadsheetThrows: false };
+  // Values with their expiry (ms since epoch), honouring `put`'s expirationSeconds against the (fakeable) Date.
+  const cache = new Map<string, { v: string; until: number }>();
+  const state = { lockAvailable: true, lockHeld: false, flushes: 0, spreadsheetThrows: false, propReads: 0, propWrites: 0 };
 
   const globals = {
     SpreadsheetApp: {
@@ -91,8 +93,10 @@ export function makeGas(opts: FakeOptions = {}) {
     PropertiesService: {
       getScriptProperties() {
         const p = {
-          getProperty: (k: string) => props.get(k) ?? null,
-          setProperty: (k: string, v: string) => { props.set(k, v); return p; }
+          getProperty: (k: string) => { state.propReads++; return props.get(k) ?? null; },
+          setProperty: (k: string, v: string) => { props.set(k, v); state.propWrites++; return p; },
+          getProperties: () => { state.propReads++; return Object.fromEntries(props); },
+          setProperties: (o: Record<string, string>) => { for (const [k, v] of Object.entries(o)) props.set(k, v); state.propWrites++; return p; }
         };
         return p;
       }
@@ -109,8 +113,8 @@ export function makeGas(opts: FakeOptions = {}) {
     },
     CacheService: {
       getScriptCache: () => ({
-        get: (k: string) => cache.get(k) ?? null,
-        put: (k: string, v: string) => { cache.set(k, v); }
+        get: (k: string) => { const e = cache.get(k); return e && e.until > Date.now() ? e.v : null; },
+        put: (k: string, v: string, seconds = 600) => { cache.set(k, { v, until: Date.now() + seconds * 1000 }); }
       })
     },
     ContentService: {
