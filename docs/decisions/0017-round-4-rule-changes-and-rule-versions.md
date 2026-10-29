@@ -10,7 +10,12 @@
 4. **Calibration weeks are the weeks of Mon 2026-11-02 and Mon 2026-11-09** (`CALIBRATION_WEEKS`): a flat 60 fruit per person with Health data on ≥ 6 of 7 days, otherwise 0. Use those two weeks to check items 2 and 3 against real data.
 5. **Gym visits are A's strength signal.** A visit ≥ 30 min that the person confirms (one tap) is a strength day, at most **2 confirmed visits paid per week** (`maxConfirmedVisitsPerWeek`). "Wear the Watch at the gym" is a hint, never a rule.
 6. **Any visit ≥ 30 min is a busy day**, confirmed or not, so it is never a rest day.
-7. **Rules are versioned by week.** Payouts are computed on read from the rows, so editing `MONEY`, `POINTS` or targets in place would re-price every past week, including weeks already moved to savings. Each rule set therefore has a start week, like `SEASONS`, and every week is scored and paid with the rules in force that week. To change a rule, add a new dated entry that starts at a future Monday (ideally a season start), never edit an old one; tests pin the old weeks' payouts.
+7. **Rules are versioned by week.** Payouts are computed on read from the rows, so editing a value in place would re-price every past week, including weeks already moved to savings. So:
+   - **Money and points** live in `RULES`, a list of `{from, money, points}` versions in ascending `from` (a Monday week key). `rulesFor(week)` picks the version in force; weeks before the first version use it. Version 1 starts 2026-11-02 (¥50/fruit, ¥20 team, ¥1,000 purse at ≥ 60; points 30 + 5 / 25 / 15 / 25).
+   - **Targets** are versioned the same way by `SEASONS` (`from` date).
+   - `MONEY` keeps only what prices no week: the both-OK spend threshold (¥5,000) and payday (the 25th).
+   - **To change a rate or target:** append a version (or season) with a later `from`, ideally a future season start; never edit one whose weeks have paid. `rules.test.ts` pins the paid versions, and a new version re-prices only weeks from its `from`.
+   - **Not versioned:** the scoring mechanics (`STEP_MINUTES`, `PEACH_DAILY_CAP`, `STRENGTH`, `REST`, `DAILY`, `CALIBRATION`, `TSUYU`, `HOLIDAY`, `CUTOFFS`). Changing one of these still re-prices history, so treat them as fixed, or move the one you need to change into `RULES` first.
 
 ## Not adopted
 - **Excused weeks** (W3: up to 2 sick or travel weeks per season paid at ≥ 60) are not built. A sick week just scores lower ([0014](0014-simplify-no-promises-no-cozy.md)); pause weeks (v1) remain the way back.
@@ -18,6 +23,6 @@
 
 ## Consequences
 - Without the Watch, A's realistic week is about 60–85 instead of 30–45. With the Watch, nothing changes (the `max`).
-- Changing a rate or target is a code change plus a redeploy, not a tuning knob. The previous rule sets stay in `rules.ts` for as long as their weeks exist.
+- Changing a rate or target is a code change plus a redeploy (push to main), not a tuning knob. Old versions stay in `rules.ts` for as long as their weeks exist.
 - After Season 1, check that Pear is ≤ 30% of A's median score.
 - The round-4 review that proposed items 1–6 is in git history (`docs/reviews/round-4/fitness-nutrition.md`).
