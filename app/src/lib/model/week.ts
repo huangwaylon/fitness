@@ -349,18 +349,18 @@ function pendingConfirmations(s: State, person: PersonId, cur: WeekKey, act: Act
   return out.sort((x, y) => x.date.localeCompare(y.date));
 }
 
-function hostLine(v: Omit<WeekView, 'juniper'>, hour: number, dayOfMonth: number): WeekView['juniper'] {
+function hostLine(v: Omit<WeekView, 'host'>, hour: number, dayOfMonth: number): WeekView['host'] {
   const me = v.people[v.me];
   const todayTicks = me.habits?.ticksByDate[v.today]?.length ?? 0;
-  if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'juniper.harvest_ready', params: { score: me.score } };
-  if (v.harvest) return { key: 'juniper.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
-  if (dayOfMonth === MONEY.paydayDayOfMonth && v.jar.transfer && !v.jar.transfer.done) return { key: 'juniper.payday', params: { yen: v.jar.transfer.amountYen } };
-  if (v.pending.length > 0) return { key: 'juniper.pending_confirm', params: { label: v.pending[0].label } };
-  if (todayTicks > 0 && hour >= 17) return { key: 'juniper.checkin_done' };
-  if (hour >= 18) return { key: 'juniper.evening' };
-  if (hour < 11) return { key: 'juniper.morning', params: { name: me.villagerName } };
-  if (v.jar.nextRung) return { key: 'juniper.next_rung', params: { rung: v.jar.nextRung.key, yen: v.jar.nextRung.remainingYen } };
-  return { key: 'juniper.default', params: { score: me.score } };
+  if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { score: me.score } };
+  if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
+  if (dayOfMonth === MONEY.paydayDayOfMonth && v.jar.transfer && !v.jar.transfer.done) return { key: 'host.payday', params: { yen: v.jar.transfer.amountYen } };
+  if (v.pending.length > 0) return { key: 'host.pending_confirm', params: { label: v.pending[0].label } };
+  if (todayTicks > 0 && hour >= 17) return { key: 'host.checkin_done' };
+  if (hour >= 18) return { key: 'host.evening' };
+  if (hour < 11) return { key: 'host.morning', params: { name: me.villagerName } };
+  if (v.jar.nextRung) return { key: 'host.next_rung', params: { rung: v.jar.nextRung.key, yen: v.jar.nextRung.remainingYen } };
+  return { key: 'host.default', params: { score: me.score } };
 }
 
 const toMs = (t: Date | string | number): number => (t instanceof Date ? t.getTime() : typeof t === 'number' ? t : Date.parse(t));
@@ -386,7 +386,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const livePayout = (wk: WeekKey) => (wk === weekKey ? current.payout : payoutAsOf(s, wk, LIVE, act).payout);
 
   const startOfToday = jstMs(today, 0, 0);
-  const base: Omit<WeekView, 'juniper'> = {
+  const base: Omit<WeekView, 'host'> = {
     me,
     partner,
     locale,
@@ -401,7 +401,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     pending: pendingConfirmations(s, me, weekKey, act[me], locale, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
-  return { ...base, juniper: hostLine(base, z.hour, Number(today.slice(8, 10))) };
+  return { ...base, host: hostLine(base, z.hour, Number(today.slice(8, 10))) };
 }
 
 type Paid = { w: SettledWeek; b: Buckets }[];

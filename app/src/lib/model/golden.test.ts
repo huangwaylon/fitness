@@ -17,7 +17,9 @@
 // Regenerated from the model on 2026-10-29 for two user decisions, each checked to be the only difference first:
 // (1) no privacy: the partner card now carries raw actual/target for every fruit and their eating check-ins
 // (`habits`), and WeekView.visibility is gone (old `share` rows are ignored); (2) the default names are
-// ウェイ (A) and うめ (B) instead of Bean / Mochi. Everything else is still the frozen server's output.
+// ウェイ (A) and うめ (B) instead of Bean / Mochi. Round 8 renamed WeekView.juniper → host and its keys juniper.* →
+// host.* (regenerated after checking every view and digest matched with the old name restored). Everything else is
+// still the frozen server's output.
 //
 // If a change to the rules is intended, regenerate the goldens from the model and review the diff of
 // timeline-views.json (see git history for the original harness, commit bc39eba).
