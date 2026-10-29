@@ -3,8 +3,9 @@
   // iOS). `whoami` confirms the person; the key is kept in localStorage and sent in each request body.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { week } from '#lib/client/week.svelte.ts';
-  import { keyFromHash, setKey, whoami } from '#lib/client/gas.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { keyFromHash, setKey } from '#lib/sync/pairing.ts';
+  import { whoami } from '#lib/sync/transport.ts';
   import { isStandalone } from '#lib/ui-state/standalone.ts';
   import { onMount } from 'svelte';
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';

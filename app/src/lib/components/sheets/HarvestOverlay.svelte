@@ -17,7 +17,7 @@
   import Bubble from '../ui/Bubble.svelte';
   import Jar, { jarFill } from '../island/Jar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { confirmHarvest } from '#lib/client/actions.ts';
+  import { confirmHarvest } from '#lib/store/actions.ts';
   import { fruitArt } from '#lib/art.ts';
   import { ripeness } from './ripeness.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
@@ -70,10 +70,10 @@
     if (prefersReducedMotion.current && step === 'done') shown.set(after, { duration: 0 });
   });
 
-  async function drop() {
+  function drop() {
     busy = true;
     onkeep?.();
-    const r = await confirmHarvest();
+    const r = confirmHarvest();
     busy = false;
     if (r.ok) {
       step = 'done';

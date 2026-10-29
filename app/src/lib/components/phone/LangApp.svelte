@@ -1,7 +1,7 @@
 <script lang="ts">
   // しまフォン → ことば: 日本語 | English.
   import { roving } from '../ui/roving.ts';
-  import { setLanguage } from '#lib/client/actions.ts';
+  import { setLanguage } from '#lib/store/actions.ts';
   import { t, i18n, type Locale } from '#lib/i18n/index.ts';
 
   const LANGS: { id: Locale; label: string }[] = [{ id: 'ja', label: '日本語' }, { id: 'en', label: 'English' }];

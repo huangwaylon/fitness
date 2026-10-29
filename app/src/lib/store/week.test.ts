@@ -1,10 +1,15 @@
 // The week store's undo/lock logic (round 7 M1, round 8 tests) and the banner controller: fake timers, a memory
 // queue, a backend that never answers (nothing held is sent during a test).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configure, queued, setKey, type KV } from './gas.ts';
-import { week, HOLD_MAX_MS, LOCK_MARGIN_MS } from './week.svelte.ts';
-import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS } from '../ui-state/toast.svelte.ts';
-import { toasts } from '../ui-state/toast.svelte.ts';
+import { configureStorage, type KV } from '#lib/sync/storage.ts';
+import { configureTransport } from '#lib/sync/transport.ts';
+import { queued } from '#lib/sync/queue.ts';
+import { setKey } from '#lib/sync/pairing.ts';
+import { week } from './week.svelte.ts';
+import { HOLD_MAX_MS } from './backend.ts';
+import { LOCK_MARGIN_MS } from './live.ts';
+import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS } from '#lib/ui-state/toast.svelte.ts';
+import { toasts } from '#lib/ui-state/toast.svelte.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 
@@ -19,7 +24,8 @@ const NOW = Date.parse('2026-11-18T12:00:00.000Z');
 
 beforeEach(() => {
   vi.useFakeTimers({ now: NOW });
-  configure({ storage: new Mem(), fetch: (() => new Promise<Response>(() => {})) as typeof fetch, url: 'https://script.example/exec' });
+  configureStorage({ local: new Mem() });
+  configureTransport({ fetch: (() => new Promise<Response>(() => {})) as typeof fetch, url: 'https://script.example/exec' });
   setKey('ab'.repeat(32), 'A');
   toasts.dismiss();
 });
@@ -27,38 +33,38 @@ afterEach(() => vi.useRealTimers());
 
 describe('week.send with a lock (M1)', () => {
   it('refuses an edit closer than 5 s to its lock, with a banner', async () => {
-    const r = await week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 4000 });
-    expect(r).toMatchObject({ ok: false, status: 409 });
+    const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 4000 });
+    expect(r).toEqual({ ok: false });
     expect(queued()).toEqual([]);
     expect(toasts.current?.reaction).toBe('sheepishness');
   });
 
   it('shrinks the undo window so the edit still lands a minute before the lock', async () => {
     const lockAt = NOW + LOCK_MARGIN_MS + 2000;
-    const r = await week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
+    const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
     expect(r.ok).toBe(true);
     expect(queued()[0].nextAt).toBe(NOW + 2000);
   });
 
   it('sends at once (no undo) when the lock is within the margin', async () => {
-    const r = await week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 30_000 });
+    const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 30_000 });
     expect(r.ok).toBe(true);
     expect(r.undo).toBeUndefined();
     expect(queued()[0].nextAt).toBe(NOW);
   });
 
   it('caps a hold at HOLD_MAX_MS, and before the lock', async () => {
-    const far = await week.send('transfer', { month: '2026-11' }, { holdMs: 5000 });
+    const far = week.send('transfer', { month: '2026-11' }, { holdMs: 5000 });
     expect(far.hold!(null)).toBe(HOLD_MAX_MS);
     const lockAt = NOW + LOCK_MARGIN_MS + 30_000;
-    const near = await week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
+    const near = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
     expect(near.hold!(null)).toBe(30_000);
     expect(queued().find((e) => e.lockAt === lockAt)!.nextAt).toBe(NOW + 30_000);
   });
 
   it('undo takes back only its own event', async () => {
-    const a = await week.send('transfer', { month: '2026-10' }, { holdMs: 5000 });
-    await week.send('transfer', { month: '2026-11' }, { holdMs: 5000 });
+    const a = week.send('transfer', { month: '2026-10' }, { holdMs: 5000 });
+    week.send('transfer', { month: '2026-11' }, { holdMs: 5000 });
     expect(a.undo!()).toBe(true);
     expect(queued().map((e) => e.data.month)).toEqual(['2026-11']);
     expect(a.undo!()).toBe(false);

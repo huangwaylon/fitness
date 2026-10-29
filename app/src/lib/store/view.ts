@@ -1,22 +1,18 @@
-// Cached snapshot + still-queued events → WeekView (optimistic: a tap shows at once, before the server acks it).
-import type { WeekView } from '#lib/types.ts';
+// Cached snapshot + still-queued events → the reduced state (optimistic: a tap shows at once, before the server acks it).
 import type { EventRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { buildWeekView } from '#lib/model/week.ts';
 import { reduce, type State } from '#lib/model/state.ts';
-import type { QueuedEvent, SnapshotCache } from './gas.ts';
+import type { QueuedEvent } from '#lib/sync/queue.ts';
+import type { SnapshotCache } from '#lib/sync/cache.ts';
 
-/**
- * Queued events become rows stamped just after the newest server row (in queue order) on the server's clock, so
- * read-time rules (48 h check-in window, purse balance, harvest week) judge them as the server will.
- */
-export function composeView(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number): WeekView {
-  const m = composeModel(cache, queue, clientNow);
-  return buildWeekView(m.state, m.me, m.now);
+/** The reduced state (cache + queue) and the server-clock "now": what the island and きろく (model/history.ts) read. */
+export interface ComposedModel {
+  state: State;
+  me: PersonId;
+  now: number;
+  /** What `state` was reduced from: an unchanged input reuses it (the minute tick only moves `now`). */
+  readonly from?: { rows: SnapshotCache['rows']; demo: SnapshotCache['demo']; extra: string };
 }
-
-/** The reduced state (cache + queue) and the server-clock "now": what きろく (model/history.ts) reads. */
-export interface ComposedModel { state: State; me: PersonId; now: number }
 
 /**
  * An unsent edit that can no longer land before its week's lock (server clock): it would be refused, so it is not
@@ -25,8 +21,14 @@ export interface ComposedModel { state: State; me: PersonId; now: number }
 export const missesLock = (ev: Pick<QueuedEvent, 'lockAt' | 'nextAt'>, clientNow: number, skewMs: number): boolean =>
   ev.lockAt !== undefined && Math.max(ev.nextAt, clientNow) + skewMs >= ev.lockAt;
 
-/** `pending`: the still-unsent part of `queue` (only those can miss their lock; acked ones already landed). */
-export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, pending?: Set<string>): ComposedModel {
+/**
+ * Queued events become rows stamped just after the newest server row (in queue order) on the server's clock, so
+ * read-time rules (48 h check-in window, purse balance, harvest week) judge them as the server will.
+ * `pending`: the still-unsent part of `queue` (only those can miss their lock; acked ones already landed).
+ * `prev`: the last result; its state is reused when the rows and the queued rows are the same (reduce is the
+ * expensive part: round 9 §2 item 11).
+ */
+export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, pending?: Set<string>, prev?: ComposedModel | null): ComposedModel {
   const known = new Set(cache.rows.events.map((r) => String(r[2])));
   const lastAt = cache.since ? Date.parse(cache.since) : 0;
   let floor = Number.isNaN(lastAt) ? 0 : lastAt;
@@ -41,8 +43,13 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
     extra.push([new Date(at).toISOString(), (cache.demo && ev.person) || cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
+  const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra) };
+  const p = prev?.from;
+  if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && prev.me === cache.me) {
+    return { state: prev.state, me: cache.me, now, from };
+  }
   const rows = extra.length ? { ...cache.rows, events: [...cache.rows.events, ...extra] } : cache.rows;
-  return { state: reduce(rows, cache.demo ?? null), me: cache.me, now };
+  return { state: reduce(rows, cache.demo ?? null), me: cache.me, now, from };
 }
 
 /** The events from `list` whose rows the cache doesn't have yet (acked events drop out once fetched back). */

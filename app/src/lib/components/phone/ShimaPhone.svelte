@@ -12,7 +12,7 @@
   import LangApp from './LangApp.svelte';
   import SyncApp from './SyncApp.svelte';
   import type { KirokuEntry } from '../kiroku/Kiroku.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { lazy } from '#lib/ui-state/reload.ts';

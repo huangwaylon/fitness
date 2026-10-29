@@ -16,7 +16,7 @@
   import type { Expression } from '#lib/villagers/species.ts';
   import { resolveLook } from '#lib/villagers/roster.ts';
   import { villagerArt } from '#lib/art.ts';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { actors, removeFx } from '../motion/director.svelte.ts';
   import type { ActorId, Motion } from '../motion/reactions.ts';
 

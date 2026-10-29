@@ -18,7 +18,7 @@
   import type { FxKind } from '#lib/components/characters/Fx.svelte';
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';
   import { FRUITS } from '#lib/config/rules.ts';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
 
   const KEYS = artKeys();
   const GROUPS = [...new Set(KEYS.map((k) => k.split('/')[0]))];

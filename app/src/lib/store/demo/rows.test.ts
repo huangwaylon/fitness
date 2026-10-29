@@ -1,7 +1,8 @@
 // The demo runs the real model on generated rows: it must show a believable, consistent history.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { composeView } from './view.ts';
-import { demoCache } from './demoRows.ts';
+import { composeModel } from '../view.ts';
+import { demoCache } from './rows.ts';
+import { buildWeekView } from '#lib/model/week.ts';
 import { reduce } from '#lib/model/state.ts';
 import { editLog, historyWeeks, moneyLog } from '#lib/model/history.ts';
 
@@ -33,7 +34,8 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const money = moneyLog(s, now);
     const spends = money.months.flatMap((m) => m.spends);
     expect(Object.fromEntries(spends.map((x) => [x.label, x.status]))).toEqual({ カフェ: 'done', カラオケ: 'done', 映画: 'voided', 温泉: 'done' });
-    const view = composeView(cache, [], now);
+    const m = composeModel(cache, [], now);
+    const view = buildWeekView(m.state, m.me, m.now);
     expect(view.pending.some((p) => p.kind === 'workout')).toBe(true);
     expect(view.jar.totalYen).toBe(money.totalYen);
     expect(view.jar.purseYen).toBeGreaterThanOrEqual(0);

@@ -4,8 +4,8 @@
   import Sheet from '../ui/Sheet.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
-  import { week } from '#lib/client/week.svelte.ts';
-  import { checkin } from '#lib/client/actions.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { checkin } from '#lib/store/actions.ts';
   import { has, t } from '#lib/i18n/index.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { addDays, inMonthDayRange } from '#lib/time/dates.ts';

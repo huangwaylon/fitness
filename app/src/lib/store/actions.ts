@@ -1,16 +1,17 @@
-// One function per user action. Each queues an event for the Apps Script backend (lib/client/gas.ts); the store
-// recomputes the view with it at once through the model (in demo mode too: the demo is generated rows, demoRows.ts),
-// so a tap moves the fruit, the score and the jar the same way everywhere.
+// One function per user action. Each records an event through the store's backend (live: the write queue,
+// lib/sync/queue.ts; demo: kept in memory, demo/backend.ts) and the store recomputes the view with it at once through
+// the model, so a tap moves the fruit, the score and the jar the same way everywhere. Results are synchronous.
 import { MONEY } from '#lib/config/rules.ts';
-import { week, type SendResult } from './week.svelte.ts';
-import { toasts } from '../ui-state/toast.svelte.ts';
-import { newId } from './gas.ts';
+import { week } from './week.svelte.ts';
+import type { SendResult } from './backend.ts';
+import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 
 /** Payday, 使う！ and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
-export const UNDO_MS = 5000;
+const UNDO_MS = 5000;
 /** きろく's edit controls close this long before a week's lock: an edit made then still lands in time (round 7 M1). */
 export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
 
@@ -45,18 +46,17 @@ export function confirmPending(kind: 'visit' | 'workout', id: string, yes: boole
   return week.send('confirm', { kind, id, yes });
 }
 
-export function confirmHarvest(): Promise<SendResult> {
+export function confirmHarvest(): SendResult {
   const wk = week.view?.harvest?.weekKey;
-  if (!wk) return Promise.resolve({ ok: false, status: 409, data: null });
+  if (!wk) return { ok: false };
   return week.send('harvest', { week: wk });
 }
 
-export async function spendPurse(label: string, amountYen: number, needsBoth: boolean): Promise<SendResult<{ id?: string | number; status?: string }>> {
-  if ((week.view?.jar.purseYen ?? 0) < amountYen) return { ok: false, status: 409, data: null }; // insufficient_purse
-  const spendId = newId();
+/** `pending`: it waits for the other's OK (≥ ¥5,000, or asked for). */
+export function spendPurse(label: string, amountYen: number, needsBoth: boolean): SendResult & { pending: boolean } {
   const pending = needsBoth || amountYen >= MONEY.purseNeedsBothAtYen;
-  const r = await week.send('spend', { spendId, label, amountYen }, { holdMs: UNDO_MS });
-  return { ...r, data: { id: spendId, status: pending ? 'pending' : 'spent' } };
+  if ((week.view?.jar.purseYen ?? 0) < amountYen) return { ok: false, pending }; // insufficient purse
+  return { ...week.send('spend', { spendId: newId(), label, amountYen }, { holdMs: UNDO_MS }), pending };
 }
 
 export function approveSpend(id: number | string) {
@@ -107,7 +107,7 @@ export function setLanguage(locale: Locale) {
 
 export function setVillagerName(name: string) {
   const villagerName = name.trim().slice(0, 12);
-  if (!villagerName) return Promise.resolve(null);
+  if (!villagerName) return null;
   return week.send('pref', { key: 'villagerName', value: villagerName });
 }
 

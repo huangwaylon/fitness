@@ -12,8 +12,8 @@
   import type { PersonId } from '#lib/types.ts';
   import { dayDetail, historyWeeks, moneyLog, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
-  import { week } from '#lib/client/week.svelte.ts';
-  import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoTransfer, voidSpend, EDIT_CUTOFF_MS } from '#lib/client/actions.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoTransfer, voidSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
   import WeekDetail from './WeekDetail.svelte';
