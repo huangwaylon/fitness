@@ -14,7 +14,7 @@ import {
 import { workoutLabel } from './labels.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, type State, type Timed
+  finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, type PresenceRec, type State, type Timed
 } from './state.ts';
 
 const LIVE = Infinity;
@@ -23,11 +23,16 @@ const LIVE = Infinity;
 
 export type VisitRec = Visit & { id: string };
 
+/** An inclusive date window; the default is all time. Every per-week caller passes its week (perf: weeks × rows). */
+export interface Dates { from: LocalDate; to: LocalDate }
+const ALL: Dates = { from: '0000-00-00', to: '9999-99-99' };
+export const weekDates = (wk: WeekKey): Dates => ({ from: wk, to: addDays(wk, 6) });
+
 /** Ingested + manual workouts as of T, without the ones excluded from scoring, with their strength override. */
-export function workoutsAsOf(s: State, person: PersonId, t: number): Workout[] {
+export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Workout[] {
   const out: Workout[] = [];
   for (const w of [...s.workouts[person], ...s.manualWorkouts[person]]) {
-    if (w.at > t) continue;
+    if (w.at > t || w.date < dates.from || w.date > dates.to) continue;
     const key = `${person}|${w.extId}`;
     if (latestAt(s.workoutExcluded.get(key), t) === true) continue;
     const wo: Workout = {
@@ -42,8 +47,20 @@ export function workoutsAsOf(s: State, person: PersonId, t: number): Workout[] {
   return out;
 }
 
-export function visitsAsOf(s: State, person: PersonId, t: number): VisitRec[] {
-  const events = s.presence[person].filter((e) => e.at <= t);
+/**
+ * Gym visits as of T whose arrive falls in `dates`. Exact with a window: events before it can only pair into visits
+ * dated before it, and after it only the first event per place can still close an arrive inside it.
+ */
+function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
+  const firstAfter = new Map<string, PresenceRec>();
+  const events = s.presence[person].filter((e) => {
+    if (e.at > t || e.date < dates.from) return false;
+    if (e.date <= dates.to) return true;
+    const f = firstAfter.get(e.placeKey);
+    if (!f || e.eventMs < f.eventMs || (e.eventMs === f.eventMs && e.n < f.n)) firstAfter.set(e.placeKey, e);
+    return false;
+  });
+  events.push(...firstAfter.values());
   const idOf = new Map(events.map((e) => [e.n, e.id]));
   const confirmations = new Map<number, boolean>();
   for (const e of events) {
@@ -56,10 +73,11 @@ export function visitsAsOf(s: State, person: PersonId, t: number): VisitRec[] {
 }
 
 /** Current ticks as of T, keyed `date|habit`, in the order the tick was (last) set. */
-export function ticksAsOf(s: State, person: PersonId, t: number): Map<string, CheckinTick> {
+function ticksAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Map<string, CheckinTick> {
   const on = new Map<string, CheckinTick>();
   for (const c of s.checkins[person]) {
     if (c.at > t) break;
+    if (c.date < dates.from || c.date > dates.to) continue;
     const k = `${c.date}|${c.habit}`;
     if (c.done) {
       if (!on.has(k)) on.set(k, { date: c.date, habitKey: c.habit });
@@ -85,11 +103,11 @@ export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 
 
 export interface Activity { workouts: Workout[]; visits: VisitRec[] }
 
-export function activityAsOf(s: State, person: PersonId, t: number): Activity {
-  return { workouts: workoutsAsOf(s, person, t), visits: visitsAsOf(s, person, t) };
+export function activityAsOf(s: State, person: PersonId, t: number, dates: Dates): Activity {
+  return { workouts: workoutsAsOf(s, person, t, dates), visits: visitsAsOf(s, person, t, dates) };
 }
 
-export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t)): WeekInput {
+export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): WeekInput {
   const dates = weekDays(wk);
   const inWeek = (d: LocalDate) => d >= dates[0] && d <= dates[6];
   const days: DayMetrics[] = dates.map((date) => ({
@@ -99,7 +117,7 @@ export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, ac
     person, weekKey: wk, age: PEOPLE[person].age, targets: targetsFor(person, wk), days,
     workouts: act.workouts.filter((w) => inWeek(w.date)),
     visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v),
-    checkins: [...ticksAsOf(s, person, t).values()].filter((c) => inWeek(c.date)),
+    checkins: [...ticksAsOf(s, person, t, weekDates(wk)).values()],
     calibration: isCalibrationWeek(s, wk)
   };
 }
@@ -121,16 +139,26 @@ export const maxBuckets = (x: Buckets, y: Buckets): Buckets => ({
 
 export interface SettledWeek { weekKey: WeekKey; provisional: Buckets; final: Buckets | null }
 
+/** Per State: each week's payout as of its two cutoffs. They depend only on rows stamped by then, never on `now`. */
+const snapshots = new WeakMap<State, Map<WeekKey, { provisional?: Buckets; final?: Buckets }>>();
+
+/** A paid week whose Sunday 19:30 has passed at `now`, with its two payout snapshots; null otherwise. */
+export function settleWeek(s: State, wk: WeekKey, now: number): SettledWeek | null {
+  if (wk < firstWeek(s) || provisionalMs(wk) > now) return null;
+  let byWeek = snapshots.get(s);
+  if (!byWeek) snapshots.set(s, (byWeek = new Map()));
+  let x = byWeek.get(wk);
+  if (!x) byWeek.set(wk, (x = {}));
+  x.provisional ??= buckets(payoutAsOf(s, wk, provisionalMs(wk)).payout);
+  if (finalMs(wk) > now) return { weekKey: wk, provisional: x.provisional, final: null };
+  x.final ??= buckets(payoutAsOf(s, wk, finalMs(wk)).payout);
+  return { weekKey: wk, provisional: x.provisional, final: x.final };
+}
+
 /** Every paid week whose Sunday 19:30 has passed at `now`, with its two payout snapshots. */
 export function settledWeeks(s: State, now: number): SettledWeek[] {
   const out: SettledWeek[] = [];
-  for (let wk = firstWeek(s); provisionalMs(wk) <= now; wk = addDays(wk, 7)) {
-    out.push({
-      weekKey: wk,
-      provisional: buckets(payoutAsOf(s, wk, provisionalMs(wk)).payout),
-      final: finalMs(wk) <= now ? buckets(payoutAsOf(s, wk, finalMs(wk)).payout) : null
-    });
-  }
+  for (let wk = firstWeek(s); provisionalMs(wk) <= now; wk = addDays(wk, 7)) out.push(settleWeek(s, wk, now)!);
   return out;
 }
 
@@ -289,10 +317,7 @@ function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): 
     lastSyncAt: s.lastSync[person],
     habits: { keys: targetsFor(person, wk).habits, ticksByDate: {} }
   };
-  const from = addDays(wk, -2);
-  const to = addDays(wk, 6);
-  const ticks = [...ticksAsOf(s, person, LIVE).values()]
-    .filter((c) => c.date >= from && c.date <= to)
+  const ticks = [...ticksAsOf(s, person, LIVE, { from: addDays(wk, -2), to: addDays(wk, 6) }).values()]
     .sort((x, y) => x.date.localeCompare(y.date) || x.habitKey.localeCompare(y.habitKey));
   for (const c of ticks) (view.habits.ticksByDate[c.date] ??= []).push(c.habitKey);
   return view;
@@ -350,7 +375,9 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const today = z.date;
   const weekKey = weekKeyOf(today);
   const partner = partnerOf(me);
-  const act = { A: activityAsOf(s, 'A', LIVE), B: activityAsOf(s, 'B', LIVE) };
+  // This week and last (the pending questions and the harvest week).
+  const dates = { from: addDays(weekKey, -7), to: addDays(weekKey, 6) };
+  const act = { A: activityAsOf(s, 'A', LIVE, dates), B: activityAsOf(s, 'B', LIVE, dates) };
   const current = payoutAsOf(s, weekKey, LIVE, act);
   const scores: Record<PersonId, WeekScore> = { A: current.a, B: current.b };
   const locale = s.prefs[me].locale ?? 'ja';
