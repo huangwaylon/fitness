@@ -51,7 +51,7 @@
   /* semantic (swapped at night, section 10) */
   --bg: var(--c-cream); --surface: var(--c-paper); --edge: var(--paper-edge);
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
-  --focus:#2F86B8;
+  --focus:#2E7A3A; /* N11: a leaf-green ring (not browser blue), >= 3:1 on cream, paper and the Jar periwinkle */
   --ring-track:#F1E3C2; --bubble: var(--c-bubble); --lip: var(--sand-deep);
   --stitch: var(--c-stitch);
   --phone-bg:#FFF7DF; --phone-edge:#EBDDB4;
