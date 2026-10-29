@@ -1,6 +1,8 @@
 # Animal Crossing: New Horizons style research (for the v2 revamp)
 
-Owner: UI/UX Designer · 2026-10-28 · Feeds [style-guide.md](style-guide.md) v2
+> Research only. Superseded by official art (ADR [0018](../decisions/0018-official-art-public-site.md)): we no longer draw everything ourselves. The current design is [design.md](design.md).
+
+Owner: UI/UX Designer · 2026-10-28
 
 Reference images live in the repo root at `.refs/`. It is git-ignored, so nothing Nintendo-owned ships. **Rule: we study the traits and draw everything ourselves.**
 
