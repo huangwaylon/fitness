@@ -193,6 +193,7 @@
   @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 110px; opacity: 1; padding-block: 8px; } }
   .who { flex: 1; min-width: 0; display: grid; gap: 3px; }
   .nm { font-weight: 700; font-size: var(--fs-body-lg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .team + .who .nm { white-space: normal; line-height: 1.2; }
   .frs { display: flex; gap: 3px; }
   .fr { display: block; flex: none; line-height: 0; }
   .fr.bud { opacity: .55; filter: saturate(.3); }
@@ -244,8 +245,8 @@
   }
   @media (max-width: 339px) {
     .overlay { --fr: 20px; }
-    .trow { flex-wrap: wrap; }
-    .trow :global(.bells) { margin-left: 50px; }
+    .trow { gap: 8px; }
+    .trow :global(.bells) { font-size: .95rem; padding-right: 10px; }
   }
   @media (max-height: 600px) { .hero { width: min(180px, 60vw); } }
   @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
