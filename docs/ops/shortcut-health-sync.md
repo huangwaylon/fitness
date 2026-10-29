@@ -74,7 +74,11 @@ Shortcuts → **Automation** → **+** → **App** → **LINE** (or whatever you
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Optional: **Apple Watch Workout → Ends**.
 
 ## 4. Copy to the other phone
-Share → **Copy iCloud Link** → send it to B. B changes only **Key** (B's key), then adds the automation from §3.
+An iCloud link carries the Shortcut's text, so **a link to the Shortcut with A's key in it leaks KEY_A** to anyone who
+gets the link. Before sharing: Shortcut settings (ⓘ) → **Setup** → **Import Questions** → add a question for the
+**Key** Text action in step 1 ("Paste your Island Fund key") [U: menu names]. Then clear the key text, Share →
+**Copy iCloud Link** → send it to B. Importing asks B for B's key. Put your own key back afterwards. B then adds the
+automation from §3. If a link with a key in it was ever shared, rotate that key (google-setup.md §10).
 
 ## 5. Gym Arrive/Leave (optional, per phone)
 Shortcuts → Automation → **Arrive** at the gym address → **Run Immediately** → **Get Contents of URL**: the `/exec`
