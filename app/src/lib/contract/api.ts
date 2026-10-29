@@ -58,7 +58,8 @@ export interface SnapshotRows { metrics: MetricRow[]; workouts: WorkoutRow[]; pr
 export type ApiError = 'unauthorized' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
-export type IngestReply = { ok: true; metrics: number; workouts: number; skipped?: number; unknownTypes?: string[] } | Fail;
+/** `warnings`: daily-form lists that were dropped (length mismatch) while the rest was saved. */
+export type IngestReply = { ok: true; metrics: number; workouts: number; skipped?: number; unknownTypes?: string[]; warnings?: string[] } | Fail;
 export type PresenceReply = { ok: true } | Fail;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**

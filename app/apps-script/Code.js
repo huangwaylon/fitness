@@ -382,13 +382,25 @@ var IslandFund = (() => {
         }
       }
     }
-    if (r.dates !== void 0) {
-      const dates = splitLines(r.dates);
-      if (Array.isArray(dates)) {
-        for (const k of ["steps", "exercise"]) {
-          const values = splitLines(r[k]);
-          if (Array.isArray(values)) r[k] = { values, starts: dates };
+    const warnings = [];
+    let dropped = 0;
+    const pick = (...names) => names.map((n) => r[n]).find((v) => v !== void 0);
+    const exDates = pick("exercise_dates", "exerciseDates");
+    if (r.dates !== void 0 || exDates !== void 0) {
+      for (const k of ["steps", "exercise"]) {
+        const dates = splitLines(k === "exercise" && exDates !== void 0 ? exDates : r.dates);
+        const values = splitLines(r[k]);
+        if (!Array.isArray(dates) || !Array.isArray(values)) continue;
+        const src = k === "steps" ? pick("steps_sources", "stepsSources") : pick("exercise_sources", "exerciseSources");
+        const sources = src === void 0 ? void 0 : list(src, `${k}_sources`);
+        const datesName = k === "exercise" && exDates !== void 0 ? "exercise_dates" : "dates";
+        if (values.length !== dates.length || sources && sources.length !== values.length) {
+          warnings.push(`${k}: ${values.length} values but ${dates.length} ${datesName}${sources ? ` and ${sources.length} sources` : ""}; ${k} not saved`);
+          dropped += values.length;
+          delete r[k];
+          continue;
         }
+        r[k] = { values, starts: dates, ...sources ? { sources } : {} };
       }
     }
     for (const k of ["steps", "exercise"]) {
@@ -403,8 +415,8 @@ var IslandFund = (() => {
     const days = r.days;
     const w = r.workouts;
     if (w !== void 0 && !Array.isArray(w) && !isRec(w)) throw new ShapeError("unexpected shape: workouts: expected a list or an object");
-    if (!steps && !exercise && !days && w === void 0) throw new ShapeError("no steps, exercise, days or workouts");
-    let skipped = 0;
+    if (!steps && !exercise && !days && w === void 0) throw new ShapeError(warnings.length ? warnings.join("; ") : "no steps, exercise, days or workouts");
+    let skipped = dropped;
     const skip = () => void skipped++;
     const metrics = [];
     const round = (v) => Math.round(v * 100) / 100;
@@ -454,11 +466,11 @@ var IslandFund = (() => {
         avgHr: looseNumber(it.avgHr)
       });
     }
-    return { metrics, workouts, skipped, unknownTypes };
+    return { metrics, workouts, skipped, unknownTypes, warnings };
   }
 
   // gas/main.ts
-  var BUILD = true ? "c1057cfd88aa" : "dev";
+  var BUILD = true ? "a9e48ec37bf4" : "dev";
   var MAX_BODY_CHARS = 1e6;
   var RATE_PER_MINUTE = 120;
   var LOCK_WAIT_MS = 1e4;
@@ -724,6 +736,7 @@ var IslandFund = (() => {
       appendRows(mSheet, "metrics", newMetrics);
       appendRows(wSheet, "workouts", newWorkouts);
       const notes = [
+        ...parsed.warnings,
         parsed.skipped ? `${parsed.skipped} items skipped` : "",
         parsed.unknownTypes.length ? `unknown workout types: ${parsed.unknownTypes.join(", ")}` : ""
       ].filter(Boolean).join("; ");
@@ -733,7 +746,8 @@ var IslandFund = (() => {
         metrics: newMetrics.length,
         workouts: newWorkouts.length,
         ...parsed.skipped ? { skipped: parsed.skipped } : {},
-        ...parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {}
+        ...parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {},
+        ...parsed.warnings.length ? { warnings: parsed.warnings } : {}
       };
     });
   }

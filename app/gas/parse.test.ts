@@ -112,6 +112,33 @@ describe('parse: shapes', () => {
     ]);
   });
 
+  it('daily form: exercise samples on their own exercise_dates, steps per source (round 9)', () => {
+    const r = parseShortcut({
+      dates: 'Oct 27, 2026 at 8:00 AM\nOct 27, 2026 at 8:00 AM\nOct 28, 2026 at 9:00 AM',
+      steps: '3000\n2800\n1500',
+      steps_sources: 'Apple Watch\niPhone\niPhone',
+      exercise_dates: 'Oct 28, 2026 at 7:00 AM',
+      exercise_minutes: '30'
+    });
+    expect(r.skipped).toBe(0);
+    expect(r.warnings).toEqual([]);
+    expect(byDate(r.metrics)).toEqual([
+      { date: '2026-10-27', metric: 'steps', value: 3000 }, // max(Watch, iPhone), not 5800
+      { date: '2026-10-28', metric: 'exercise_min', value: 30 }, // on its own date, not paired with a step date
+      { date: '2026-10-28', metric: 'steps', value: 1500 }
+    ]);
+  });
+
+  it('daily form: a list whose length differs from its dates is dropped with a warning; the steps are kept', () => {
+    const r = parseShortcut({ dates: '2026-10-27\n2026-10-28', steps: '100\n200', exercise_minutes: '1\n2\n3' });
+    expect(byDate(r.metrics)).toEqual([{ date: '2026-10-27', metric: 'steps', value: 100 }, { date: '2026-10-28', metric: 'steps', value: 200 }]);
+    expect(r.skipped).toBe(3);
+    expect(r.warnings).toEqual(['exercise: 3 values but 2 dates; exercise not saved']);
+    // Nothing usable left: refused, with the reason.
+    expect(() => parseShortcut({ dates: '2026-10-27', steps: '100', steps_sources: 'a\nb' })).toThrow('steps: 1 values but 1 dates and 2 sources; steps not saved');
+    expect(() => parseShortcut({ dates: '2026-10-27', exercise_minutes: '1\n2' })).toThrow(/exercise: 2 values but 1 dates/);
+  });
+
   it('a UTC sample late in the evening lands on the next Tokyo day', () => {
     const r = parseShortcut({ steps: { values: [10], starts: ['2026-10-27T16:00:00Z'] } });
     expect(r.metrics).toEqual([{ date: '2026-10-28', metric: 'steps', value: 10 }]);

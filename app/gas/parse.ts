@@ -3,7 +3,9 @@
 // So: no zod, no Node APIs, no `crypto`, no TextEncoder, no Intl; only plain ES2019.
 //
 // It is a port of the legacy server's Shortcut parser (deleted; ADR 0015). Accepted shapes:
-//   - daily form:  {"dates": "Sep 28, 2026 at 7:11 AM\n…", "steps": "855\n…", "exercise_minutes": "0\n…"}
+//   - daily form:  {"dates": "Sep 28, 2026 at 7:11 AM\n…", "steps": "855\n…", "exercise_minutes": "0\n…"}, optionally
+//                  with "exercise_dates" (exercise samples' own dates) and "steps_sources" / "exercise_sources"
+//                  (each sample's source device, so iPhone and Watch samples aren't summed)
 //   - series form: {"steps": {"values": […], "starts": […], "sources": […]}, "exercise": {…}}
 //   - simple form: {"date": "2026-10-28", "steps": "12\n3\n27"}
 //   - days form:   {"days": [{"date": "2026-10-28", "steps": 8123, "exerciseMin": 34}]}
@@ -31,6 +33,8 @@ export interface ParsedBody {
   skipped: number;
   /** Non-ASCII workout names with no alias yet (worth adding to ALIASES). */
   unknownTypes: string[];
+  /** Daily-form lists that were dropped (and why), while the rest of the body was kept. */
+  warnings: string[];
 }
 
 /** Thrown for a body with the wrong shape; the message says what to fix in the Shortcut. */
@@ -271,14 +275,29 @@ export function parseShortcut(raw: unknown): ParsedBody {
       }
     }
   }
-  // Daily form: {"dates": [...], "steps": [...], "exercise"?: [...]}, parallel lists. Same-date values are added.
-  if (r.dates !== undefined) {
-    const dates = splitLines(r.dates);
-    if (Array.isArray(dates)) {
-      for (const k of ['steps', 'exercise']) {
-        const values = splitLines(r[k]);
-        if (Array.isArray(values)) r[k] = { values, starts: dates };
+  // Daily form: {"dates": [...], "steps": [...], "exercise"?: [...]}, parallel lists. Same-date values are added,
+  // per source when `<metric>_sources` is given (the larger source wins, as in the series form). Exercise samples
+  // may carry their own `exercise_dates`. A list whose length doesn't match its dates is dropped with a warning
+  // instead of refusing the whole body, so a bad exercise list never costs the steps.
+  const warnings: string[] = [];
+  let dropped = 0;
+  const pick = (...names: string[]) => names.map((n) => r[n]).find((v) => v !== undefined);
+  const exDates = pick('exercise_dates', 'exerciseDates');
+  if (r.dates !== undefined || exDates !== undefined) {
+    for (const k of ['steps', 'exercise'] as const) {
+      const dates = splitLines(k === 'exercise' && exDates !== undefined ? exDates : r.dates);
+      const values = splitLines(r[k]);
+      if (!Array.isArray(dates) || !Array.isArray(values)) continue;
+      const src = k === 'steps' ? pick('steps_sources', 'stepsSources') : pick('exercise_sources', 'exerciseSources');
+      const sources = src === undefined ? undefined : list(src, `${k}_sources`);
+      const datesName = k === 'exercise' && exDates !== undefined ? 'exercise_dates' : 'dates';
+      if (values.length !== dates.length || (sources && sources.length !== values.length)) {
+        warnings.push(`${k}: ${values.length} values but ${dates.length} ${datesName}${sources ? ` and ${sources.length} sources` : ''}; ${k} not saved`);
+        dropped += values.length;
+        delete r[k];
+        continue;
       }
+      r[k] = { values, starts: dates, ...(sources ? { sources } : {}) };
     }
   }
   for (const k of ['steps', 'exercise']) {
@@ -293,9 +312,9 @@ export function parseShortcut(raw: unknown): ParsedBody {
   const days = r.days as unknown[] | undefined;
   const w = r.workouts;
   if (w !== undefined && !Array.isArray(w) && !isRec(w)) throw new ShapeError('unexpected shape: workouts: expected a list or an object');
-  if (!steps && !exercise && !days && w === undefined) throw new ShapeError('no steps, exercise, days or workouts');
+  if (!steps && !exercise && !days && w === undefined) throw new ShapeError(warnings.length ? warnings.join('; ') : 'no steps, exercise, days or workouts');
 
-  let skipped = 0;
+  let skipped = dropped;
   const skip = () => void skipped++;
   const metrics: ParsedMetric[] = [];
   const round = (v: number) => Math.round(v * 100) / 100;
@@ -336,5 +355,5 @@ export function parseShortcut(raw: unknown): ParsedBody {
       avgHr: looseNumber(it.avgHr)
     });
   }
-  return { metrics, workouts, skipped, unknownTypes };
+  return { metrics, workouts, skipped, unknownTypes, warnings };
 }
