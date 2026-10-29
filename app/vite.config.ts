@@ -3,8 +3,8 @@ import adapterNode from '@sveltejs/adapter-node';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig } from 'vitest/config';
 
-// BUILD_TARGET=pages → static SPA for GitHub Pages (UI only; the API stays on the Mac behind Funnel, set
-// VITE_API_BASE). Default → Node server for the Mac (UI + API on one origin).
+// BUILD_TARGET=pages → static SPA for GitHub Pages (the backend is the Apps Script web app: set VITE_GAS_URL).
+// Default → the old Node server for the Mac (removed in the final ADR 0015 phase).
 const pages = process.env.BUILD_TARGET === 'pages';
 
 export default defineConfig({

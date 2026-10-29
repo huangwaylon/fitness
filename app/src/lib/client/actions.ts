@@ -1,6 +1,9 @@
-// One function per API mutation, each with its optimistic update. Pages call these.
+// One function per user action. Each queues an event for the Apps Script backend (lib/client/gas.ts); the store
+// recomputes the view with it at once. The optimistic edits below are only used in demo mode (fixtures).
 import type { WeekView } from '#lib/types.ts';
-import { week } from './week.svelte.ts';
+import { MONEY } from '#lib/config/rules.ts';
+import { week, type SendResult } from './week.svelte.ts';
+import { newId } from './gas.ts';
 import { setLocale, type Locale } from '#lib/i18n/index.ts';
 
 function mine(v: WeekView) {
@@ -8,7 +11,7 @@ function mine(v: WeekView) {
 }
 
 export function checkin(date: string, habitKey: string, done: boolean) {
-  return week.mutate('/api/checkin', { date, habitKey, done }, (v) => {
+  return week.send('checkin', { date, habit: habitKey, done }, (v) => {
     const h = mine(v).habits;
     if (!h) return;
     const list = h.ticksByDate[date] ?? [];
@@ -19,35 +22,38 @@ export function checkin(date: string, habitKey: string, done: boolean) {
 }
 
 export function highFive() {
-  return week.mutate('/api/high-five', {}, (v) => {
+  return week.send('highfive', {}, (v) => {
     v.highFivesToday += 1;
   });
 }
 
 export function confirmPending(kind: 'visit' | 'workout', id: string, yes: boolean) {
-  return week.mutate('/api/confirm', { kind, id, yes }, (v) => {
+  return week.send('confirm', { kind, id, yes }, (v) => {
     v.pending = v.pending.filter((p) => !(p.kind === kind && p.id === id));
   });
 }
 
-export function confirmHarvest() {
-  return week.mutate('/api/harvest/confirm', {}, (v) => {
+export function confirmHarvest(): Promise<SendResult> {
+  const wk = week.view?.harvest?.weekKey;
+  if (!wk) return Promise.resolve({ ok: false, status: 409, data: null });
+  return week.send('harvest', { week: wk }, (v) => {
     if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) v.harvest.confirmedBy.push(v.me);
   });
 }
 
-export function spendPurse(label: string, amountYen: number, needsBoth: boolean) {
-  return week.mutate<{ id?: string | number; status?: string }>('/api/purse/spend', { label, amountYen }, (v) => {
-    if (needsBoth) {
-      v.jar.pendingSpends = [...(v.jar.pendingSpends), { id: -Date.now(), label, amountYen, by: v.me }];
-    } else {
-      v.jar.purseYen = Math.max(0, v.jar.purseYen - amountYen);
-    }
+export async function spendPurse(label: string, amountYen: number, needsBoth: boolean): Promise<SendResult<{ id?: string | number; status?: string }>> {
+  if ((week.view?.jar.purseYen ?? 0) < amountYen) return { ok: false, status: 409, data: null }; // insufficient_purse
+  const spendId = newId();
+  const pending = needsBoth || amountYen >= MONEY.purseNeedsBothAtYen;
+  const r = await week.send('spend', { spendId, label, amountYen }, (v) => {
+    if (pending) v.jar.pendingSpends = [...v.jar.pendingSpends, { id: spendId, label, amountYen, by: v.me }];
+    else v.jar.purseYen = Math.max(0, v.jar.purseYen - amountYen);
   });
+  return { ...r, data: { id: spendId, status: pending ? 'pending' : 'spent' } };
 }
 
-export function approveSpend(id: number) {
-  return week.mutate('/api/purse/approve', { id }, (v) => {
+export function approveSpend(id: number | string) {
+  return week.send('approve', { spendId: id }, (v) => {
     const s = v.jar.pendingSpends.find((p) => p.id === id);
     if (s) {
       v.jar.purseYen = Math.max(0, v.jar.purseYen - s.amountYen);
@@ -57,14 +63,14 @@ export function approveSpend(id: number) {
 }
 
 export function transferDone(month: string) {
-  return week.mutate('/api/transfer/done', { month }, (v) => {
+  return week.send('transfer', { month }, (v) => {
     if (v.jar.transfer) v.jar.transfer.done = true;
   });
 }
 
 export function setLanguage(locale: Locale) {
   setLocale(locale);
-  return week.mutate('/api/prefs', { locale }, (v) => {
+  return week.send('pref', { key: 'locale', value: locale }, (v) => {
     v.locale = locale;
   });
 }
@@ -72,20 +78,20 @@ export function setLanguage(locale: Locale) {
 export function setVillagerName(name: string) {
   const villagerName = name.trim().slice(0, 12);
   if (!villagerName) return Promise.resolve(null);
-  return week.mutate('/api/prefs', { villagerName }, (v) => {
+  return week.send('pref', { key: 'villagerName', value: villagerName }, (v) => {
     mine(v).villagerName = villagerName;
   });
 }
 
 export function setVisibility(metric: string, shareRaw: boolean) {
-  return week.mutate('/api/visibility', { metric, shareRaw }, (v) => {
+  return week.send('share', { metric, on: shareRaw }, (v) => {
     v.visibility = { ...(v.visibility ?? {}), [metric]: shareRaw };
   });
 }
 
 /** Villager from the roster (しまフォン → 村人), e.g. 'goldie' (lib/villagers/roster.ts). */
 export function setVillager(villager: string) {
-  return week.mutate('/api/prefs', { villager }, (v) => {
+  return week.send('pref', { key: 'villager', value: villager }, (v) => {
     mine(v).villager = villager;
   });
 }

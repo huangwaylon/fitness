@@ -127,7 +127,7 @@ const jarSum = (b: Buckets) => b.A + b.B + b.team;
 
 export interface PurseState {
   spentYen: number;
-  pending: { id: number; label: string; amountYen: number; by: PersonId }[];
+  pending: JarView['pendingSpends'];
 }
 
 /** Replay spends/approvals in server order: an overdraw is void, ≥ ¥5,000 waits for the partner's OK. */
@@ -159,7 +159,7 @@ export function replayPurse(s: State, weeks: SettledWeek[], now: number): PurseS
   }
   return {
     spentYen: spent,
-    pending: [...spends.values()].filter((x) => x.pending).map((x) => ({ id: Number(x.rec.spendId), label: x.rec.label, amountYen: x.rec.amountYen, by: x.rec.person }))
+    pending: [...spends.values()].filter((x) => x.pending).map((x) => ({ id: x.rec.rawId, label: x.rec.label, amountYen: x.rec.amountYen, by: x.rec.person }))
   };
 }
 
