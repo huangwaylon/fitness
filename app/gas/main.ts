@@ -331,6 +331,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     appendRows(mSheet, 'metrics', newMetrics);
     appendRows(wSheet, 'workouts', newWorkouts);
     const notes = [
+      ...parsed.warnings,
       parsed.skipped ? `${parsed.skipped} items skipped` : '',
       parsed.unknownTypes.length ? `unknown workout types: ${parsed.unknownTypes.join(', ')}` : ''
     ].filter(Boolean).join('; ');
@@ -339,7 +340,8 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     return {
       ok: true, metrics: newMetrics.length, workouts: newWorkouts.length,
       ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
-      ...(parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {})
+      ...(parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {}),
+      ...(parsed.warnings.length ? { warnings: parsed.warnings } : {})
     };
   });
 }

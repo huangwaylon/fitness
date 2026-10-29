@@ -208,6 +208,12 @@ describe('ingest', () => {
     expect(data('metrics')).toEqual([]);
   });
 
+  it('a mismatched exercise list is reported in the reply and the audit row, and the steps are saved', () => {
+    const r = a('ingest', { dates: '2026-10-27\n2026-10-28', steps: '100\n200', exercise_minutes: '1' });
+    expect(r).toEqual({ ok: true, metrics: 2, workouts: 0, skipped: 1, warnings: ['exercise: 1 values but 2 dates; exercise not saved'] });
+    expect(data('uploads').at(-1)!.slice(2)).toEqual(['partial', expect.any(Number), 'exercise: 1 values but 2 dates; exercise not saved; 1 items skipped']);
+  });
+
   it('partial uploads say how many items were skipped', () => {
     expect(a('ingest', { steps: { values: [1, 'x'], starts: ['2026-10-28', '2026-10-28'] } })).toEqual({ ok: true, metrics: 1, workouts: 0, skipped: 1 });
     expect(data('uploads')[0].slice(2)).toEqual(['partial', expect.any(Number), '1 items skipped']);

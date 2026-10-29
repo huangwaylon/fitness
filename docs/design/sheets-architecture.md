@@ -38,7 +38,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 
 | `action` | Request | Reply |
 |---|---|---|
-| `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `workouts` (types/starts/ends/avgHrs lists) | `{ok, metrics, workouts, skipped?, unknownTypes?}`: rows actually appended, plus unparsed entries and unmapped workout names when there are any |
+| `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `exercise_dates` (exercise samples' own dates), `steps_sources`/`exercise_sources` (per-sample source: totals per source, the larger wins), `workouts` (types/starts/ends/avgHrs lists) | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows actually appended, plus unparsed entries, unmapped workout names and dropped lists (a list whose length differs from its dates is dropped, the rest saved) |
 | `presence` | `place, event, at?` | `{ok}` |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
 | `snapshot` | `since?` (ISO, the max `at` the client has seen) | `{ok, me, now, rev, rows:{metrics, workouts, presence, events}}` (rows with `at > since`; both people; `rev`: §2.1) |
