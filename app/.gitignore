@@ -1,7 +1,5 @@
 node_modules/
 .svelte-kit/
-build/
-data/
 .env
 build-pages/
 apps-script/.clasp.json

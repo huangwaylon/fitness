@@ -37,7 +37,7 @@ describe('parse: workoutKey', () => {
     }
   });
 
-  it('is the same id the Mac server computed (migrated workouts keep their ids)', () => {
+  it('is the same id the legacy server computed (migrated workouts keep their ids)', () => {
     const minute = '2026-11-01T23:30:00.000Z';
     const server = `w:${createHash('sha256').update(`Traditional Strength Training|${minute}`).digest('hex').slice(0, 24)}`;
     expect(workoutKey('伝統的な筋力トレーニング', '2026-11-02T08:30:10+09:00')).toBe(server);

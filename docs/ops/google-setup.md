@@ -7,7 +7,7 @@ Use the **same Google account as the shared-finances app** (ADR 0015). Sign in t
 Google's consoles quietly act as the wrong account when several are signed in.
 
 **Order** (the full path is [runbook §1](runbook.md#1-one-time-setup-the-canonical-order-the-other-docs-link-here)): §1–5 here → `GAS_URL` →
-[shortcut-health-sync.md](shortcut-health-sync.md) (§6 below is the short version) → §7 pairing → §8 migration (before Sun 2026-11-08 19:30 JST) → §9 check on day 8.
+[shortcut-health-sync.md](shortcut-health-sync.md) (§6 below is the short version) → §7 pairing → §9 check on day 8.
 
 ## 1. Create the spreadsheet
 
@@ -105,20 +105,9 @@ On each iPhone, **Add to Home Screen first** (Safari → Share → Add to Home S
 that person's key. `whoami` confirms who it is. A `…/#key=<key>` link only works when opened inside the installed
 app: iOS keeps a separate storage for the Home Screen app, so a key saved in Safari isn't seen there.
 
-## 8. Migrate the Mac data (once)
+## 8. (Retired) Mac data migration
 
-The Shortcut moved to the sheet in §6, so the Mac receives nothing new: export now.
-
-1. `cd app && npm run export:sheet` (plain Node ≥ 24, built-in `node:sqlite`) reads `data/island.db` **read-only**
-   (or `DATABASE_PATH=…`) and writes header-less TSVs to `app/data/export/` (gitignored): `metrics.tsv`,
-   `workouts.tsv`, `presence.tsv`, `events.tsv`. It prints the row counts and the column order. Ledger entries
-   aren't exported (the app recomputes payouts); it warns if there were manual `adjust` entries.
-2. For each file with rows: open it in a text editor, select all, copy. In the sheet, click the first empty cell in
-   column A of the matching tab (A2 on a fresh tab), and paste with **⌘⇧V** (values only). The text columns are
-   preformatted as plain text, so dates stay text. The script also copes if Sheets turned some into dates anyway.
-3. Rows already sent by the Shortcut to the sheet are fine: metrics are read as "highest value per day" and workouts
-   by id (workout ids are the same SHA-256 keys the Mac used), so overlaps change nothing.
-4. Compare the jar with what the Mac showed, then retire the Mac: [runbook §5](runbook.md#5-migrating-from-the-mac-once).
+Done on 2026-10-29. The export script is deleted; the old database is archived privately, off the repo.
 
 ## 9. Does it need the shared-finances Cloud project or a published consent screen?
 

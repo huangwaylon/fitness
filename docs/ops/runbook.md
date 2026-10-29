@@ -1,4 +1,4 @@
-# Runbook: Island Fund without the Mac (ADR 0015)
+# Runbook: Island Fund (ADR 0015)
 
 Three pieces, no server of our own:
 - **The data:** the Google Sheet *Island Fund* (append-only rows).
@@ -13,11 +13,10 @@ Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.m
    then re-run the *Deploy UI to GitHub Pages* workflow (or push). Until `GAS_URL` is set, the site shows
    「まだ設定されていません / Not set up yet」 with a link to the demo.
 3. **Shortcut on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §5 (gym
-   Arrive/Leave), §6 (the optional 84-day baseline). From here on the Mac receives nothing.
+   Arrive/Leave), §6 (the optional 84-day baseline).
 4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
    **Add to Home Screen** *first*, open it from the icon, and paste that person's key ([google-setup.md §7](google-setup.md#7-pairing-the-phones)).
-5. **Migrate the Mac data:** §5 below, **before the first payout, Sun 2026-11-08 19:30 JST**.
-6. **Day 8 or later:** run the `whoami` curl again ([google-setup.md §9](google-setup.md#9-does-it-need-the-shared-finances-cloud-project-or-a-published-consent-screen)).
+5. **Day 8 or later:** run the `whoami` curl again ([google-setup.md §9](google-setup.md#9-does-it-need-the-shared-finances-cloud-project-or-a-published-consent-screen)).
 
 ## 2. Deploying the UI
 Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `npm ci`, `npm run build` with
@@ -41,14 +40,8 @@ the existing deployment**, never a new deployment).
   no `Authorization` header).
 - Gym Arrive/Leave: same doc, §5.
 
-## 5. Migrating from the Mac (once)
-1. Export and paste: [google-setup.md §8](google-setup.md#8-migrate-the-mac-data-once) (`npm run export:sheet`, then paste the TSVs).
-2. Open the app and compare the jar and this week's scores with what the Mac showed. They should match (verified on
-   a copy of the DB on 2026-10-29). Do it **before the first payout (Sun 2026-11-08 19:30 JST)**: the DB keeps only
-   each day's latest value and its last upload time, so for weeks already paid on the Mac a late re-send can make
-   the recomputed amount lower than what the Mac paid.
-3. After a week of the phones working against the sheet: stop the Mac server, `tailscale funnel reset`, and delete
-   `app/build/`, `app/data/` (keep a copy of `island.db` somewhere private) and `app/node_modules/` (then `npm ci`).
+## 5. Monitoring and the deployed version
+Health check: the `whoami` curl (google-setup.md §5). JSON means healthy; HTML means the authorization lapsed (§9 there).
 
 ## 6. Backups
 The sheet is the only copy of check-ins, answers and purse events. Google keeps version history (File → Version
