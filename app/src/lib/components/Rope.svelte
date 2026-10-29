@@ -1,5 +1,5 @@
 <script lang="ts">
-  /** Striped "rope" progress bar (style guide §6). */
+  /** Striped progress bar (style guide v4 §3: --pat-stripes-fill, animated; stopped under reduced motion). */
   interface Props {
     pct: number;
     height?: number;
@@ -20,12 +20,11 @@
 ><i style:width="{w}%"></i></span>
 
 <style>
-  .rope { display: block; border-radius: var(--r-pill); background: var(--c-paper-2); box-shadow: var(--sh-inset); overflow: hidden; border: var(--bw) solid var(--edge); }
+  .rope { display: block; border-radius: var(--r-pill); background: var(--track); box-shadow: var(--sh-inset); overflow: hidden; border: var(--bw) solid var(--edge); }
   i {
     display: block; height: 100%; border-radius: var(--r-pill); min-width: 8px;
     background: var(--pat-stripes-fill), var(--c-leaf); box-shadow: inset 0 -3px 0 var(--c-leaf-lip);
     animation: stripes 1s linear infinite;
     transition: width var(--dur-slow) var(--ease-soft);
   }
-  :global(:root[data-theme="night"]) .rope { background: #24314F; }
 </style>
