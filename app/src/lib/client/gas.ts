@@ -163,7 +163,8 @@ export function backoffMs(tries: number, rand = Math.random): number {
   return Math.round(base * (0.8 + 0.4 * rand()));
 }
 
-export interface FlushResult { sent: number; dropped: QueuedEvent[]; remaining: number; error?: GasError }
+/** `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo). */
+export interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; remaining: number; error?: GasError }
 
 let flushing: Promise<FlushResult> | null = null;
 /** The event currently in flight (it can't be undone any more). */
@@ -178,6 +179,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
   if (flushing) return flushing;
   const p = (async (): Promise<FlushResult> => {
     let sent = 0;
+    const acked: QueuedEvent[] = [];
     const dropped: QueuedEvent[] = [];
     let error: GasError | undefined;
     for (;;) {
@@ -190,6 +192,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       const cur = queued();
       if (r.ok) {
         sent++;
+        acked.push(ev);
         saveQueue(cur.filter((x) => x.id !== ev.id));
         continue;
       }
@@ -205,7 +208,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       }
       break;
     }
-    return { sent, dropped, remaining: queued().length, error };
+    return { sent, acked, dropped, remaining: queued().length, error };
   })();
   flushing = p;
   void p.then(() => {
