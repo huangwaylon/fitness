@@ -248,7 +248,6 @@
   "kiroku.lockedNow": "ごめんなさい、この週はもうしめきりです。保存できませんでした",
   "kiroku.missedLock": "ごめんなさい、週がしめきりになって保存できませんでした",
   "kiroku.voidAsk": "{label} {yen}をなかったことにしますか？",
-  "kiroku.voidAskDone": "{label} {yen}をなかったことにしますか？財布にもどります",
   "kiroku.voidYes": "なかったことにする",
   "kiroku.col.steps": "歩数",
   "kiroku.col.min": "運動",
@@ -256,5 +255,6 @@
   "kiroku.purseApart": "財布へ {yen}（別）",
   "kiroku.addNote": "運動の分にも入ります（Watchと多いほう）",
   "kiroku.recent": "さいきんのお金",
-  "kiroku.recentAll": "きろくで全部見る"
+  "kiroku.recentAll": "きろくで全部見る",
+  "kiroku.voidRefund": "財布にもどります"
 }

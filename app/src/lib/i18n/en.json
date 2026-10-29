@@ -251,7 +251,6 @@
   "kiroku.lockedNow": "Sorry, this week has closed. That wasn't saved",
   "kiroku.missedLock": "Sorry, the week closed before that could be saved",
   "kiroku.voidAsk": "Void {label} {yen}?",
-  "kiroku.voidAskDone": "Void {label} {yen}? It goes back to the purse",
   "kiroku.voidYes": "Void it",
   "kiroku.col.steps": "Steps",
   "kiroku.col.min": "Active",
@@ -259,5 +258,6 @@
   "kiroku.purseApart": "To the purse {yen} (separate)",
   "kiroku.addNote": "Also counts as active minutes (Watch or this, whichever is more)",
   "kiroku.recent": "Recent money",
-  "kiroku.recentAll": "See all in きろく"
+  "kiroku.recentAll": "See all in きろく",
+  "kiroku.voidRefund": "It goes back to the purse"
 }
