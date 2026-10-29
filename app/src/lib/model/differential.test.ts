@@ -1,6 +1,15 @@
 // Differential test: the compute-on-read model must reproduce the old server's WeekView (incl. the earn + top-up
 // ledger, purse, harvest, pending questions and privacy filtering) at every checkpoint of a 10-week timeline, and on
-// a copy of the real database. Intentional differences are listed in docs/design/sheets-model.md.
+// a copy of the real database. When the server is deleted, freeze these timelines' views as golden files.
+//
+// Intentional differences (normalised by the harness, not bugs):
+// - lastSyncAt: the server stamps every upload; the snapshot has no `uploads` tab, so the model uses the newest
+//   metrics/workouts row. An upload that changed nothing (same or lower values) doesn't move it.
+// - Ids: a pending visit's id is `<place>@<arrive ISO>` (not the SQLite arrive-event id), and a purse spend's id is
+//   the client's `spendId` (any string/number), not an autoincrement.
+// - Workouts: the sheet keeps the first row per id (the server overwrote fields on re-send).
+// - Live numbers include rows stamped after the phone's `now` (clock skew); settlement cutoffs use `now`.
+// - No push: nothing push-related is in the WeekView, so nothing is dropped from it.
 import { afterAll, describe, expect, it } from 'vitest';
 import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
