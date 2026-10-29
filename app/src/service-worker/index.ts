@@ -17,7 +17,7 @@ const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
 // (bump the suffix if villager art is re-fetched under the same paths).
 const VILLAGERS = 'island-villagers-v1';
 const isVillagerArt = (p: string) => p.includes('/art/villagers/');
-const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|raymond)(-icon)?\.webp$/; // lib/villagers/roster.ts DEFAULT_VILLAGER
+const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/; // lib/villagers/roster.ts DEFAULT_VILLAGER
 
 // Precache built JS/CSS + static files. Font subsets (Japanese = many files) are cached on first use instead; the art
 // manifest is bundled into the JS (lib/art.ts), so its file is never fetched. Villager art: see VILLAGERS.
