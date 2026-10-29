@@ -13,8 +13,7 @@
   import { dayDetail, historyWeeks, moneyLog, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/ingest/sheet-api.ts';
   import { week } from '#lib/client/week.svelte.ts';
-  import { addWorkout, editWorkout, fixCheckin, setMetric, undoTransfer, voidSpend, EDIT_CUTOFF_MS, UNDO_MS } from '#lib/client/actions.ts';
-  import type { SendResult } from '#lib/client/week.svelte.ts';
+  import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoTransfer, voidSpend, EDIT_CUTOFF_MS } from '#lib/client/actions.ts';
   import ChoiceList from '../ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
   import WeekDetail from './WeekDetail.svelte';
@@ -82,16 +81,6 @@
     const el = root?.querySelector<HTMLElement>(`[data-focus="${CSS.escape(key)}"]`);
     if (el) el.focus();
     else root?.closest('dialog')?.focus();
-  }
-
-  function undoToast(text: string, r: SendResult) {
-    if (!r.ok) return; // refused (the week closed): the store already said so
-    const undo = r.undo;
-    week.showToast(text, UNDO_MS, {
-      reaction: 'pleased',
-      hold: r.hold,
-      ...(undo ? { action: { label: t('common.undo'), run: () => undo() } } : {})
-    });
   }
 
   async function saveMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {

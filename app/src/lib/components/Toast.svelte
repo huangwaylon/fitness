@@ -64,8 +64,11 @@
 {#if !gone}
   <div bind:this={el} class="banner" class:undo={!!action} class:leaving role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
-    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe down still dismisses. -->
-    <button type="button" class="hit" aria-label={t('common.close')} onclick={() => !action && dismiss()}
+    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe down still dismisses. Then
+         this layer is pointer-only (no "close" that does nothing for a screen reader or the keyboard): 取り消す is the
+         one control, and the banner ends by itself. -->
+    <button type="button" class="hit" aria-label={action ? undefined : t('common.close')} aria-hidden={action ? true : undefined}
+      tabindex={action ? -1 : undefined} onclick={() => !action && dismiss()}
       onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
       {#if person}<Villager {person} size={36} head animate={false} eager />

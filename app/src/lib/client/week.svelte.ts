@@ -15,6 +15,7 @@ import { buildWeekView, payoutAsOf } from '#lib/model/week.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
 import { minuteNow } from '#lib/components/motion/clock.ts';
+import { toasts } from './toast.svelte.ts';
 
 type DemoMode = false | 'plain' | 'harvest';
 const DEMO_EVENTS = 'island.demo.events';
@@ -40,24 +41,6 @@ export interface SendResult<T = unknown> {
   hold?: (ms: number | null) => number;
 }
 
-export interface Toast {
-  text: string;
-  id: number;
-  /** A button on the banner, e.g. 取り消す (undo). */
-  action?: { label: string; run: () => void };
-  /** Official reaction icon on the banner (`reactions/<id>`). */
-  reaction?: string;
-  /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
-  code?: 'save-failed';
-  /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step (returns the ms granted). */
-  hold?: (ms: number | null) => number;
-  /** Sliding out; dropped right after (round 7 F2: never left to a transition). */
-  leaving?: boolean;
-}
-
-/** The banner's slide-out before it is dropped. */
-const TOAST_OUT_MS = 240;
-
 class WeekStore {
   view = $state<WeekView | null>(null);
   /** The reduced state behind `view` (きろく computes its history from it). Replaced, never mutated. */
@@ -67,7 +50,6 @@ class WeekStore {
   offline = $state(false);
   lastSync = $state<Date | null>(null);
   demo = $state<DemoMode>(false);
-  toast = $state<Toast | null>(null);
 
   #cache: SnapshotCache | null = null;
   /** Demo: the session's events (never sent, never persisted), applied by the model like the live queue. */
@@ -84,7 +66,6 @@ class WeekStore {
   #lastFetch = 0;
   /** Bumped per refresh; a response is applied only if no newer refresh started meanwhile. */
   #refreshSeq = 0;
-  #toastTimer: ReturnType<typeof setTimeout> | null = null;
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
   #stopClock: (() => void) | null = null;
@@ -250,7 +231,7 @@ class WeekStore {
       // now; close → its undo window shrinks (to none) so it is sent in time.
       const left = lockAt - (this.#cache?.skewMs ?? 0) - Date.now();
       if (left < LOCK_LATE_MS) {
-        this.showToast(t('kiroku.lockedNow'), 4000, { reaction: 'sheepishness' });
+        toasts.show(t('kiroku.lockedNow'), 4000, { reaction: 'sheepishness' });
         return Promise.resolve({ ok: false, status: 409, data: null });
       }
       holdMs = Math.max(0, Math.min(holdMs, left - LOCK_MARGIN_MS));
@@ -300,7 +281,7 @@ class WeekStore {
     const skew = this.#cache?.skewMs ?? 0;
     const r = await flush(Date.now, (ev, t) => missesLock(ev, t, skew));
     if (r.expired.length) {
-      this.showToast(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
+      toasts.show(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
       this.#recompute();
     }
     // Only events the server acked stay on screen until the snapshot has them. An event that left the
@@ -308,7 +289,7 @@ class WeekStore {
     const known = new Set(this.#sent.map((e) => e.id));
     this.#sent.push(...r.acked.filter((e) => !known.has(e.id)));
     if (r.dropped.length) {
-      this.showToast(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
+      toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#recompute();
     }
     if (r.error === 'unauthorized') {
@@ -331,7 +312,7 @@ class WeekStore {
     const late = this.#sent.filter((e) => e.lockAt !== undefined);
     if (!late.length) return;
     const atOf = new Map(cache.rows.events.map((r) => [String(r[2]), Date.parse(String(r[0]))]));
-    if (late.some((e) => (atOf.get(e.id) ?? -Infinity) >= e.lockAt!)) this.showToast(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
+    if (late.some((e) => (atOf.get(e.id) ?? -Infinity) >= e.lockAt!)) toasts.show(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
   }
 
   /** Wake the queue when its next event is due (a backoff, or the end of an undo window). */
@@ -341,64 +322,6 @@ class WeekStore {
     const next = nextRetryAt();
     if (next === null) return;
     this.#retryTimer = setTimeout(() => void this.#flush(true), Math.max(250, next - Date.now()));
-  }
-
-  showToast(text: string, ms = 2600, opts: Pick<Toast, 'action' | 'reaction' | 'code' | 'hold'> = {}): void {
-    if (this.#toastPaused) this.toast?.hold?.(0); // its banner is gone, so its undo is too: send it
-    const toast: Toast = { text, id: Date.now(), ...opts };
-    this.toast = toast;
-    this.#toastPaused = false;
-    this.#armToast(toast, ms);
-  }
-
-  #toastPaused = false;
-  #toastEndsAt = 0;
-  #armToast(toast: Toast, ms: number): void {
-    if (this.#toastTimer) clearTimeout(this.#toastTimer);
-    this.#toastEndsAt = Date.now() + ms;
-    this.#toastTimer = setTimeout(() => this.#endToast(toast.id), ms);
-  }
-
-  /** Slide the banner out, then drop it (its undo window is over, so its held action goes out). */
-  #endToast(id: number): void {
-    if (this.toast?.id !== id) return;
-    this.toast.leaving = true;
-    this.#toastPaused = false;
-    this.#toastTimer = setTimeout(() => {
-      if (this.toast?.id === id) this.toast = null;
-    }, TOAST_OUT_MS);
-  }
-
-  /**
-   * Hold the banner while it is hovered or focused (WCAG 2.2.1, review r2 N7): its undo stays available as long
-   * as the person is on it. With an undo it also holds back the send (the undo window is the banner's life).
-   */
-  pauseToast(): void {
-    const toast = this.toast;
-    if (!toast || toast.leaving || this.#toastPaused) return;
-    this.#toastPaused = true;
-    if (this.#toastTimer) clearTimeout(this.#toastTimer);
-    this.#toastTimer = null;
-    // With an undo the hold is capped (HOLD_MAX_MS, and before the week's lock): the banner ends when its send does.
-    const granted = toast.hold?.(null);
-    if (granted !== undefined) this.#toastTimer = setTimeout(() => this.#endToast(toast.id), granted);
-  }
-
-  /** Resume after hover/focus leaves: at least 2 s more, so it never vanishes the moment you look away. */
-  resumeToast(): void {
-    const toast = this.toast;
-    if (!toast || !this.#toastPaused) return;
-    this.#toastPaused = false;
-    const ms = Math.max(2000, this.#toastEndsAt - Date.now());
-    const granted = toast.hold?.(ms);
-    this.#armToast(toast, granted === undefined ? ms : Math.min(ms, granted));
-  }
-
-  dismissToast(): void {
-    if (this.#toastTimer) clearTimeout(this.#toastTimer);
-    if (this.#toastPaused) this.toast?.hold?.(0); // dismissed while held: it's accepted, send it now
-    this.#toastPaused = false;
-    this.toast = null;
   }
 }
 

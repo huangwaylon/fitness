@@ -15,17 +15,15 @@
   import ChoiceList from '#lib/components/ChoiceList.svelte';
   import Hud from '#lib/components/Hud.svelte';
   import PartnerSheet from '#lib/components/PartnerSheet.svelte';
-  import Toast from '#lib/components/Toast.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
+  import { toasts } from '#lib/client/toast.svelte.ts';
   import { highFive, confirmPending } from '#lib/client/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
 
   let checkinOpen = $state(false);
   let partnerOpen = $state(false);
   let phoneOpen = $state(false);
-  /** The partner's high-five toast (their icon, not しずえ's; U6). */
-  let fiveToast = $state<{ text: string; id: number } | null>(null);
   /** My fruit % when the check-in sheet opened, to name the fruit that actually grew (U7). */
   let before = $state<Record<FruitKey, number> | null>(null);
 
@@ -100,29 +98,25 @@
   function sendHighFive() {
     if (!view) return;
     highFive();
-    week.showToast(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { reaction: 'encouraging' });
+    toasts.show(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { reaction: 'encouraging' });
     emit('highfive-sent');
   }
 
   // A failed save (the store's toast, by its code, not its wording: review P9) → my villager looks sheepish (R17).
   $effect(() => {
-    if (week.toast?.code === 'save-failed') emit('sync-error');
+    if (toasts.current?.code === 'save-failed') emit('sync-error');
   });
 
-  // M5: tell me when my partner sent a high-five today (once per new one, per device), but not over
-  // the harvest: wait until it closes (U6), and not over another banner: one at a time (round 5 U13).
+  // M5: tell me when my partner sent a high-five today (once per new one, per device), with their villager on the
+  // banner (U6), but not over the harvest: wait until it closes, and not over another banner: one at a time (U13).
   $effect(() => {
     const v = week.view;
-    if (!v || v.highFivesToday <= 0 || ui.overlay || week.toast) return;
+    if (!v || v.highFivesToday <= 0 || ui.overlay || toasts.current) return;
     const k = `hf-seen:${v.today}`;
     const seen = Number(localStorage.getItem(k) ?? 0);
     if (v.highFivesToday > seen) {
       localStorage.setItem(k, String(v.highFivesToday));
-      later(() => {
-        const toast = { text: t('island.highfiveGot', { name: v.people[v.partner].villagerName }), id: Date.now() };
-        fiveToast = toast;
-        later(() => fiveToast === toast && (fiveToast = null), 3200);
-      }, 700);
+      later(() => toasts.show(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200, { person: v.partner, reaction: 'love' }), 700);
     }
   });
 </script>
@@ -157,9 +151,6 @@
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
-  {#if fiveToast && !ui.overlay && !week.toast}
-    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} reaction="love" />{/key}
-  {/if}
 {/if}
 
 <style>

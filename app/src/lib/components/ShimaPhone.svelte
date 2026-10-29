@@ -14,6 +14,7 @@
   import type { KirokuEntry } from './kiroku/Kiroku.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
+  import { toasts } from '#lib/client/toast.svelte.ts';
   import { minuteNow } from './motion/clock.ts';
   import { clockTime } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -54,7 +55,7 @@
 
   /** Closing the phone ends its banner too (round 7 F2), and the next open starts on the home screen. */
   function closed() {
-    if (week.toast) week.dismissToast();
+    if (toasts.current) toasts.dismiss();
     app = null;
     entry = null;
   }
