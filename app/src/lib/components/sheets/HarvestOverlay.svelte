@@ -21,6 +21,7 @@
   import { fruitArt } from '#lib/art.ts';
   import { ripeness } from './ripeness.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
+  import { lockScroll } from '../ui/scrollLock.ts';
 
   interface Props {
     view: WeekView;
@@ -85,6 +86,8 @@
   function modal(node: HTMLDialogElement) {
     if (!node.open) node.showModal?.();
     node.focus();
+    // the island behind stays put while the overlay is up (round 10 H2)
+    return { destroy: lockScroll() };
   }
   const steps = $derived<('tally' | 'rung' | 'done')[]>(rung ? ['tally', 'rung', 'done'] : ['tally', 'done']);
   const hostLine = $derived(step === 'tally' ? t('harvest.hello') : step === 'rung' ? t('harvest.rungReached') : t('harvest.doneHost'));
@@ -165,9 +168,9 @@
   /* The island stays visible (v5 §4) under a cool tint (F3) that fades in below the sky: by day a light
      periwinkle over the sea and island only, so the clouds stay white and the sun yellow; softer at night. */
   .overlay {
-    position: fixed; inset: 0; z-index: 60; overflow: auto; overscroll-behavior: contain;
+    position: fixed; inset: 0; z-index: 60; overflow: hidden auto; overscroll-behavior: contain;
     width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    --fr: 24px; color: var(--text);
+    --fr: clamp(20px, 6.4vw, 30px); color: var(--text);
     background: linear-gradient(to bottom, rgba(58, 72, 134, 0) 22%, rgba(58, 72, 134, .18) 48%);
     animation: fade var(--dur-base) var(--ease-soft);
   }
@@ -228,8 +231,6 @@
   .re { line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) .5s both; }
 
   @media (max-height: 700px), (max-width: 359px) {
-    .bottom :global(.hero-num) { font-size: 2.25rem; }
     .hero { width: min(160px, 50vw); }
   }
-  @media (max-width: 339px) { .overlay { --fr: 20px; } }
 </style>

@@ -1,8 +1,8 @@
 <script lang="ts">
   // しまフォン → 村人: my villager (roster radios) and its name. The name field is seeded once, when the app opens:
   // the store recomputes `view` on every tick, sync and tap, and must never overwrite what is being typed (round 8).
-  // Picker: a search field (name / species / personality, ja or en: villagers/search.ts) over a scrolling icon grid;
-  // icons load lazily as they scroll in. The chosen villager stays in the tab order even when filtered out of view.
+  // Picker: a search field (name / species / personality, ja or en: villagers/search.ts) over the icon grid, which
+  // flows in the phone's one scroller (round 10 M2: no scroller inside the scroller); icons load lazily as they scroll in. The chosen villager stays in the tab order even when filtered out of view.
   import { untrack } from 'svelte';
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -72,7 +72,7 @@
 <style>
   .preview { display: flex; align-items: flex-end; gap: 14px; }
   .vn { font-size: var(--fs-s); font-weight: 700; color: var(--text); text-align: center; }
-  .vk { margin-top: -4px; font-size: 11px; font-weight: 700; color: var(--text-soft); text-align: center; line-height: 1.25; }
+  .vk { margin-top: -4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-align: center; line-height: 1.25; }
   .pv { width: 88px; display: grid; gap: 4px; justify-items: center; flex: none; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .namefield { flex: 1; min-width: 0; display: grid; gap: 6px; padding-bottom: 20px; }
   .namefield span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
@@ -85,11 +85,10 @@
     border-radius: 999px; background: var(--c-cream); color: var(--c-ink); box-shadow: inset 0 3px 0 var(--c-lip);
   }
   .search svg { width: 20px; height: 20px; flex: none; opacity: .55; }
-  .search input { flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: inherit; font: 700 var(--fs-body) var(--font-ui); outline: none; }
+  .search input { flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: inherit; font: 700 var(--fs-input) var(--font-ui); outline: none; }
   .search input::placeholder { color: color-mix(in srgb, var(--c-ink) 45%, transparent); }
   .search:focus-within { box-shadow: inset 0 3px 0 var(--c-lip), 0 0 0 3px var(--c-leaf); }
-  /* The grid scrolls on its own so the preview and the search stay in view (about three rows at 320×568). */
-  .scroll { max-height: min(46dvh, 400px); overflow-y: auto; overscroll-behavior: contain; margin: 0 -4px; padding: 6px 4px; border-radius: 16px; }
+  .scroll { margin: 0 -4px; padding: 6px 4px; }
   .none { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
   .roster { display: grid; grid-template-columns: repeat(5, 64px); justify-content: space-between; row-gap: 12px; padding: 4px 4px 8px; }
   @media (max-width: 374px) {

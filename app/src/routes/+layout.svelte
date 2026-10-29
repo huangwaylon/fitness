@@ -121,14 +121,14 @@
 {#if !showHarvest && !ui.sheets.length}<ToastHost />{/if}
 
 <style>
-  .page { min-height: 100dvh; background: var(--bg); }
+  .page { min-height: var(--vh-page); background: var(--bg); }
   /* 島: the island floats in the flat map sea, which runs on under the dialogue box and the action. */
   .page[data-page='island'] { background: var(--sea-flat); }
   /* Not set up / error / loading: one figure, one line, one action. */
   .state {
     --nook-h: 120px;
     max-width: 380px; margin: 0 auto;
-    min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center;
+    min-height: var(--vh-page); display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center;
     padding: calc(var(--safe-top) + 24px) calc(var(--side) + 6px) calc(var(--pad-bottom) + 24px);
   }
   .state :global(.talk) { width: 100%; }

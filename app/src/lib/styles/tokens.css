@@ -77,7 +77,8 @@
 
   /* ---------- fluid scale (round 10 T4): clamps instead of breakpoint steps ---------- */
   --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
-  --tile: clamp(52px, 18vw, 80px); --tile-gap: clamp(12px, 4.5vw, 22px);  /* しまフォン grid */
+  /* しまフォン grid: tiles follow the smaller of width and height, so a tall phone gets bigger tiles (sizing #7) */
+  --tile: clamp(52px, min(22vw, calc(11 * var(--vh1))), 96px); --tile-gap: clamp(12px, 4.5vw, 22px);
   --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* 旅の壺 hero jar */
   --key-h: clamp(46px, calc(7 * var(--vh1)), 64px);    /* NumberPad keys */
 

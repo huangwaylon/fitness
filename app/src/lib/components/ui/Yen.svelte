@@ -28,7 +28,7 @@
 
 <style>
   .yen { display: inline-flex; align-items: center; gap: .25em; white-space: nowrap; }
-  .bag { display: inline-flex; line-height: 0; transform-origin: 50% 100%; }
+  .bag { display: inline-flex; flex: none; line-height: 0; transform-origin: 50% 100%; }
   .hop { animation: bag-hop 600ms var(--ease-bounce); }
   @keyframes bag-hop { 0%, 100% { transform: none; } 30% { transform: translateY(-10%) scale(.94, 1.06); } 60% { transform: scale(1.06, .94); } }
 </style>

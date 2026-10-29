@@ -29,7 +29,7 @@
 <style>
   .choices { display: grid; gap: 8px; justify-items: stretch; align-content: end; }
   .choice {
-    position: relative; appearance: none; border: 0; cursor: pointer; min-height: 44px; min-width: 112px; padding: 0 22px 0 30px;
+    position: relative; appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: clamp(112px, 30vw, 140px); padding: 0 22px 0 30px;
     border-radius: var(--r-pill); background: var(--c-cream); color: var(--c-ink-soft); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     font: 700 var(--fs-talk)/1 var(--font-ui); animation: if-pop var(--dur-pop) var(--ease-bounce) both;
     transition: transform var(--dur-base) var(--ease-bounce), color var(--dur-quick);
