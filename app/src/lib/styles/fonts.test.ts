@@ -1,10 +1,12 @@
 // fonts.css is generated (scripts/font-subsets.ts) with only the Zen Maru Gothic slices the app uses. If new copy
-// brings a kanji outside them, this fails: run `npm run fonts:subset`.
+// (a catalog, or a name in any .ts / .svelte under src/) brings a kanji outside them, this fails: run
+// `npm run fonts:subset`.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
+import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');
 
@@ -32,6 +34,12 @@ describe('trimmed Zen Maru Gothic', () => {
       }
     }
     expect([...missing].join('')).toBe('');
+  });
+  it.each([500, 700])('weight %i covers every character the full font has that any source file uses (r2 N9)', (w) => {
+    const rs = ranges(w);
+    const full = [...readFileSync(join(PKG, `${w}.css`), 'utf8').matchAll(/unicode-range:\s*([^;]+);/g)].flatMap((m) => parseRanges(m[1]));
+    const missing = [...wanted()].filter((cp) => cp > 0x20 && covers(full, cp) && !covers(rs, cp));
+    expect(String.fromCodePoint(...missing)).toBe('');
   });
   it('stays far below the full font CSS (250 rules)', () => {
     expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(120);

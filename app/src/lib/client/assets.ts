@@ -20,7 +20,7 @@ const FILES = manifest.files as Record<string, ArtEntry>;
 // "figure height" for every character. (Measured from the alpha channel; the rest are already tight.)
 const BOX: Record<string, [number, number, number, number]> = {
   'host/isabelle-stand': [140, 42, 231, 428],
-  'host/isabelle-bow': [140, 42, 231, 428],
+  'host/isabelle-winter': [140, 42, 231, 428],
   'villagers/hamlet': [28, 20, 329, 482]
 };
 
@@ -52,11 +52,13 @@ export type HostPose = 'wave' | 'stand' | 'bow' | 'winter' | 'icon';
 const HOST: Record<HostPose, string> = {
   wave: 'host/isabelle',
   stand: 'host/isabelle-stand',
-  bow: 'host/isabelle-bow',
+  bow: 'host/isabelle-stand',
   winter: 'host/isabelle-winter',
   icon: 'host/isabelle-icon'
 };
-/** Isabelle: 'wave' (cheerful, default), 'stand' (calm), 'bow' (sorry / thanks), 'winter', 'icon'. */
+/** Isabelle: 'wave' (cheerful, default), 'stand' (calm), 'bow' (sorry / thanks), 'winter', 'icon'.
+ *  NH has no official bow render, so 'bow' is the stand render (same outfit) and <Host> adds a CSS bow
+ *  (N2). 'winter' is the full-body cardigan model on the same canvas as 'stand' (N3). */
 export function hostArt(pose: HostPose = 'wave'): string {
   return HOST[pose];
 }

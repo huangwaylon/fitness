@@ -164,5 +164,9 @@
   "error.title": "うまく開けませんでした",
   "error.hint": "もう一度お試しください",
   "error.home": "島へもどる",
-  "error.notFound": "このページは見つかりませんでした"
+  "error.notFound": "このページは見つかりませんでした",
+  "purse.spent": "{label} {yen} 使いました！",
+  "purse.asked": "{label} {yen}、OK待ちです",
+  "jar.paydayNotedYen": "{yen} 貯金に記録しました",
+  "pair.keyHint": "16文字以上の英数字キーです"
 }

@@ -79,10 +79,15 @@
   let paydayDone = $state<HTMLElement | undefined>();
   let paydayBtn = $state<HTMLElement | undefined>();
 
-  /** A banner with 取り消す for the undo window. */
-  function undoToast(text: string, reaction: string, undo: (() => boolean) | undefined, after?: () => void) {
+  /**
+   * A banner with 取り消す for the undo window. It names what was done (round 5 N5), and hovering, touching or
+   * focusing it holds both the banner and the send (N7).
+   */
+  function undoToast(text: string, reaction: string, r: { undo?: () => boolean; hold?: (ms: number | null) => void }, after?: () => void) {
+    const undo = r.undo;
     week.showToast(text, UNDO_MS, {
       reaction,
+      hold: r.hold,
       ...(undo ? { action: { label: t('common.undo'), run: () => { if (undo()) after?.(); } } } : {})
     });
   }
@@ -90,7 +95,7 @@
   async function markPayday() {
     if (!jar?.transfer) return;
     const r = await transferDone(jar.transfer.month);
-    undoToast(t('jar.paydayNoted'), 'pleased', r.undo, async () => {
+    undoToast(t('jar.paydayNotedYen', { yen: formatYen(jar.transfer.amountYen) }), 'pleased', r, async () => {
       await tick();
       paydayBtn?.focus();
     });
@@ -101,12 +106,14 @@
   async function spend() {
     if (!picked) return;
     const needsBoth = picked.yen >= MONEY.purseNeedsBothAtYen;
-    const r = await spendPurse(t(`treat.${picked.key}`), picked.yen, needsBoth);
+    const label = t(`treat.${picked.key}`);
+    const yen = formatYen(picked.yen);
+    const r = await spendPurse(label, picked.yen, needsBoth);
     if (r.ok) {
       purseOpen = false;
       picked = null;
       const pending = r.data?.status ? r.data.status === 'pending' : needsBoth;
-      undoToast(pending ? t('purse.waiting') : t('purse.enjoy'), pending ? 'thought' : 'joy', r.undo);
+      undoToast(t(pending ? 'purse.asked' : 'purse.spent', { label, yen }), pending ? 'thought' : 'joy', r);
     }
   }
 </script>

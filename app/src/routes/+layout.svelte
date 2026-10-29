@@ -57,15 +57,6 @@
     return () => mo.disconnect();
   }
 
-  /** Banner reaction icon for the store's toasts (§T.3): the text says which event it was. */
-  function reactionFor(text: string): string {
-    const map: [string, string][] = [
-      ['state.saveFailed', 'sheepishness'], ['pending.saved', 'pleased'],
-      ['jar.paydayNoted', 'pleased'], ['purse.enjoy', 'joy'], ['purse.waiting', 'thought']
-    ];
-    return map.find(([k]) => t(k) === text)?.[1] ?? 'happiness';
-  }
-
   onMount(() => {
     const stopTheme = startTheme();
     const stopMeta = themeColor();
@@ -90,7 +81,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="しまの貯金箱" />
   <link rel="apple-touch-icon" href={asset('icons/apple-touch-icon-180.png')} />
-  <link rel="icon" href={asset('icons/icon.svg')} type="image/svg+xml" />
 </svelte:head>
 
 <Sprites />
@@ -136,8 +126,8 @@
 {/if}
 
 {#if week.toast && !showHarvest}
-  {#key week.toast.id}<Toast text={week.toast.text} reaction={week.toast.reaction ?? reactionFor(week.toast.text)}
-    action={week.toast.action} />{/key}
+  {#key week.toast.id}<Toast text={week.toast.text} reaction={week.toast.reaction ?? 'happiness'} action={week.toast.action}
+    onhold={(on) => (on ? week.pauseToast() : week.resumeToast())} ondismiss={() => week.dismissToast()} />{/key}
 {/if}
 
 <style>

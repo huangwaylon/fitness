@@ -15,6 +15,7 @@ export function composeView(cache: SnapshotCache, queue: QueuedEvent[], clientNo
   const extra: EventRow[] = [];
   for (const ev of queue) {
     if (known.has(ev.id)) continue; // acked but the ack was lost: the server row wins
+    known.add(ev.id); // the same event twice (sent + still queued, overlapping flushes) is one row (review r2 N2)
     const at = Math.max(ev.queuedAt + cache.skewMs, floor + 1);
     floor = at;
     extra.push([new Date(at).toISOString(), cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);

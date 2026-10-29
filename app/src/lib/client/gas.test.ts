@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
 import {
-  applySnapshot, backoffMs, configure, enqueue, flush, unqueue, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
+  applySnapshot, backoffMs, configure, enqueue, flush, holdEvent, nextRetryAt, unqueue, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
 } from './gas.ts';
 import { composeView } from './view.ts';
 import { emptyRows, mergeRows, maxAt } from '#lib/model/snapshot.ts';
@@ -130,6 +130,46 @@ describe('write queue', () => {
     expect(r).toMatchObject({ sent: 0, remaining: 1, error: 'unauthorized' });
     expect(queued()[0]).toMatchObject({ type: 'highfive', tries: 0 });
   });
+  it('a held (undo-window) event does not block later events; it still goes once due (r2 N3)', async () => {
+    const t = 1_000_000;
+    const held = enqueue('transfer', { month: '2026-10' }, t, 5000);
+    const tick = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true }, t);
+    expect(nextRetryAt(t)).toBe(t); // the check-in is due now, not in 5 s
+    let r = await flush(() => t);
+    expect(r.acked.map((e) => e.id)).toEqual([tick.id]);
+    expect(queued().map((e) => e.id)).toEqual([held.id]);
+    expect(nextRetryAt(t)).toBe(t + 5000);
+    r = await flush(() => t + 5000);
+    expect(r.acked.map((e) => e.id)).toEqual([held.id]);
+    expect(calls.map((c) => c.id)).toEqual([tick.id, held.id]);
+  });
+  it('a backed-off event still blocks everything after it, held or not (order kept)', async () => {
+    const t = 1_000_000;
+    handler = () => ({ ok: false, error: 'busy' });
+    const a = enqueue('highfive', {}, t);
+    await flush(() => t);
+    const retryAt = queued()[0].nextAt;
+    enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true }, t);
+    handler = () => ({ ok: true });
+    calls = [];
+    await flush(() => t + 1);
+    expect(calls).toHaveLength(0);
+    expect(nextRetryAt(t + 1)).toBe(retryAt);
+    await flush(() => retryAt);
+    expect(calls.map((c) => c.type)).toEqual(['highfive', 'checkin']);
+    expect(calls[0].id).toBe(a.id);
+  });
+  it('holdEvent keeps a held event back while its banner is held, and releases it (r2 N7)', async () => {
+    const t = 1_000_000;
+    const held = enqueue('spend', { spendId: 's', label: 'x', amountYen: 2000 }, t, 5000);
+    expect(holdEvent(held.id, t + 60_000)).toBe(true);
+    await flush(() => t + 5000);
+    expect(calls).toHaveLength(0);
+    expect(holdEvent(held.id, t + 6000)).toBe(true);
+    await flush(() => t + 6000);
+    expect(calls.map((c) => c.id)).toEqual([held.id]);
+    expect(holdEvent(held.id, t + 9000)).toBe(false); // already sent
+  });
   it('a second flush while one is running shares it', async () => {
     enqueue('highfive', {});
     const [x, y] = await Promise.all([flush(), flush()]);
@@ -183,6 +223,14 @@ describe('snapshot cache', () => {
     expect(second.ok && second.cache.rows.metrics).toHaveLength(2);
     expect(loadCache()?.since).toBe('2026-11-02T04:00:00.000Z');
   });
+  it('overlapping refreshes share one request, so neither merges from a stale cache (r2 N2)', async () => {
+    handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() });
+    const [x, y] = await Promise.all([refreshSnapshot(), refreshSnapshot()]);
+    expect(x).toBe(y);
+    expect(calls).toHaveLength(1);
+    await refreshSnapshot();
+    expect(calls).toHaveLength(2); // a later refresh is a new request
+  });
   it('a reply for another person starts from scratch', () => {
     const prev = applySnapshot(null, { me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
     const next = applySnapshot(prev, { me: 'B', now: '2026-11-02T02:00:00.000Z', rows: emptyRows() }, 0);
@@ -206,5 +254,13 @@ describe('optimistic view', () => {
     // Once the server has the event (same id), the queued copy is ignored.
     const acked = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-04T12:00:01.000Z', 'A', 'q3', 'pref', '{"key":"locale","value":"en"}']] }) };
     expect(composeView(acked, q, now).locale).toBe('en');
+  });
+  it('the same event listed twice is applied once (r2 N2)', () => {
+    const now = Date.parse('2026-11-04T12:00:00.000Z');
+    const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
+    const ev = (id: string, done: boolean) => ({ id, type: 'checkin' as const, data: { date: '2026-11-04', habit: 'teishoku_lunch', done }, queuedAt: now, tries: 0, nextAt: now });
+    // tick, untick, then the tick again as a duplicate (acked copy + queued copy): still unticked.
+    const v = composeView(cache, [ev('on', true), ev('off', false), ev('on', true)], now);
+    expect(v.people.A.habits?.ticksByDate['2026-11-04'] ?? []).toEqual([]);
   });
 });

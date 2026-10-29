@@ -56,7 +56,13 @@ export async function spendPurse(label: string, amountYen: number, needsBoth: bo
   const r = await week.send('spend', { spendId, label, amountYen }, (v) => {
     if (pending) v.jar.pendingSpends = [...v.jar.pendingSpends, { id: spendId, label, amountYen, by: v.me }];
     else v.jar.purseYen = Math.max(0, v.jar.purseYen - amountYen);
-  }, { holdMs: UNDO_MS });
+  }, {
+    holdMs: UNDO_MS,
+    revert: (v) => {
+      if (pending) v.jar.pendingSpends = v.jar.pendingSpends.filter((s) => s.id !== spendId);
+      else v.jar.purseYen += amountYen;
+    }
+  });
   return { ...r, data: { id: spendId, status: pending ? 'pending' : 'spent' } };
 }
 
@@ -73,7 +79,12 @@ export function approveSpend(id: number | string) {
 export function transferDone(month: string) {
   return week.send('transfer', { month }, (v) => {
     if (v.jar.transfer) v.jar.transfer.done = true;
-  }, { holdMs: UNDO_MS });
+  }, {
+    holdMs: UNDO_MS,
+    revert: (v) => {
+      if (v.jar.transfer?.month === month) v.jar.transfer.done = false;
+    }
+  });
 }
 
 export function setLanguage(locale: Locale) {
