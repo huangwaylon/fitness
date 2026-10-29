@@ -21,7 +21,7 @@
   import { artUrl, hostArt, type HostPose } from '#lib/art.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { actors, claimHost, hostOwner, removeFx } from '../motion/director.svelte.ts';
-  import { now } from '../../time/clock.ts';
+  import { jst } from '#lib/time/clock.ts';
 
   interface Props {
     pose?: Exclude<HostPose, 'icon' | 'winter'>;
@@ -48,7 +48,7 @@
   // asleep-ish by the scene clock (the island naps 22–05), not by the chrome palette
   const night = $derived.by(() => {
     void theme.tod; // re-check when the minute clock ticks
-    const hr = now().getHours();
+    const hr = jst().hour;
     return hr >= 22 || hr < 5;
   });
 

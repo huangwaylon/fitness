@@ -49,7 +49,7 @@
   import { IslandLife } from './islandLife.svelte.ts';
   import { TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { actors } from '../motion/director.svelte.ts';
-  import { minuteNow } from '../../time/clock.ts';
+  import { jst, minuteNow } from '#lib/time/clock.ts';
 
   interface Props {
     view: WeekView;
@@ -82,7 +82,7 @@
 
   // The clock (device time or ?date=), at each new minute.
   const clock = $derived(minuteNow());
-  const month = $derived(clock.getMonth() + 1);
+  const month = $derived(jst(clock).month);
   const ev = $derived(eventsAt(clock));
 
   // v5 §3: I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.

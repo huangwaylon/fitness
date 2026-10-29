@@ -7,7 +7,7 @@
 // stop() cancels them all (P2), so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
 import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
-import { now, reducedMotion } from '../../time/clock.ts';
+import { jst, reducedMotion } from '#lib/time/clock.ts';
 
 export interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
@@ -125,7 +125,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
 
   function villagerIdle(id: 'mine' | 'partner') {
     const other = id === 'mine' ? 'partner' : 'mine';
-    const h = now().getHours();
+    const h = jst().hour;
     const evening = ctx.night?.() ?? false;
     const [sa, sb] = ctx.scores();
     const t = Date.now();

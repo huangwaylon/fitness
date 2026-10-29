@@ -6,6 +6,8 @@
 //     red-orange fall leaves Oct 16 – Dec 10 (maple week Nov 16–25 is the peak), snow Dec 11 – Feb 24.
 //   time of day: always the clock, never OS dark mode: dawn 05–07, day 07–16, dusk 16–19, night 19–05.
 //     It drives both the scene sky and the chrome (v5 §5: the sky sets the theme; prefers-color-scheme is ignored).
+import { jst } from '#lib/time/clock.ts';
+
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type Foliage = 'blossom' | 'green' | 'fall' | 'snow';
@@ -13,7 +15,10 @@ export type Foliage = 'blossom' | 'green' | 'fall' | 'snow';
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
 
 /** Month-day as a sortable number (Apr 3 → 403). */
-const md = (d: Date) => (d.getMonth() + 1) * 100 + d.getDate();
+const md = (d: Date) => {
+  const { month, day } = jst(d);
+  return month * 100 + day;
+};
 
 export function seasonFor(d: Date): Season {
   const x = md(d);
@@ -37,7 +42,7 @@ export function defaultFoliage(s: Season): Foliage {
 }
 
 export function todFor(d: Date): TimeOfDay {
-  const h = d.getHours();
+  const h = jst(d).hour;
   if (h >= 19 || h < 5) return 'night';
   if (h < 7) return 'dawn';
   if (h >= 16) return 'dusk';
