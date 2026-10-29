@@ -2,7 +2,7 @@
   // しまフォン launcher (style guide v3 §B.6): a phone-shaped sheet with a status row, a title and a
   // 3-column grid of app tiles: official NookPhone icons where their meaning fits (help, villager),
   // our own flat squircle tiles in the same style for the rest (U10). Each app opens in-phone with a ‹ back.
-  // Settings live here: help, villager, language, notifications, sync, sharing.
+  // Settings live here: help, villager, language, reminders (a Shortcuts hint), sync, sharing.
   import { onMount } from 'svelte';
   import type { FruitKey } from '#lib/types.ts';
   import Sheet from './Sheet.svelte';
@@ -15,7 +15,6 @@
   import { theme } from '#lib/client/theme.svelte.ts';
   import { fruitArt, phoneArt } from '#lib/client/assets.ts';
   import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
-  import { pushState, enablePush, type PushState } from '#lib/client/push.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
   import { t, i18n, formatSyncTime } from '#lib/i18n/index.ts';
 
@@ -36,8 +35,6 @@
 
   let app = $state<AppId | null>(null);
   let clock = $state('');
-  let push = $state<PushState>('off');
-  let pushBusy = $state(false);
   let name = $state('');
 
   const view = $derived(week.view);
@@ -54,7 +51,6 @@
   onMount(() => {
     tick();
     const id = setInterval(tick, 20_000);
-    pushState().then((s) => (push = s));
     return () => clearInterval(id);
   });
 
@@ -64,15 +60,6 @@
       if (me) name = me.villagerName;
     } else app = null;
   });
-
-  async function turnOnPush() {
-    pushBusy = true;
-    try {
-      push = await enablePush();
-    } finally {
-      pushBusy = false;
-    }
-  }
 
   function saveName() {
     if (me && name.trim() && name.trim() !== me.villagerName) setVillagerName(name);
@@ -158,16 +145,8 @@
   {:else if app === 'bell'}
     <div class="panel center">
       <span class="tile big" style:--fill="var(--app-bell)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#app-bell" /></svg></span>
-      {#if push === 'on'}
-        <p class="state ok">✓ {t('phone.push.on')}</p>
-      {:else if push === 'install' || push === 'unsupported'}
-        <p class="state">{t('phone.push.install')}</p>
-      {:else if push === 'denied'}
-        <p class="state">{t('phone.push.denied')}</p>
-      {:else}
-        <p class="state">{t('phone.pushHint')}</p>
-        <button type="button" class="btn" disabled={pushBusy} onclick={turnOnPush}>{t('phone.push.enable')}</button>
-      {/if}
+      <!-- No web push (ADR 0015): reminders are iOS Shortcuts automations. -->
+      <p class="state">{t('phone.pushHint')}</p>
     </div>
   {:else if app === 'sync' && view}
     <div class="panel rows">
@@ -271,6 +250,4 @@
   .cap { margin: 0 4px 4px; font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); text-align: center; }
   .center { justify-items: center; text-align: center; padding-top: 8px; }
   .state { margin: 0; font-weight: 700; font-size: var(--fs-body-lg); color: var(--text-soft); }
-  .state.ok { color: var(--c-leaf-ink); }
-  :global(:root[data-theme="night"]) .state.ok { color: var(--c-leaf-soft); }
 </style>

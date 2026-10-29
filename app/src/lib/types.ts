@@ -147,7 +147,7 @@ export interface JarView {
   /** Payday cue: last month's earnings and whether "moved ✓" was tapped. */
   transfer: { month: string; amountYen: number; done: boolean } | null;
   /** Treat spends ≥ the both-OK threshold waiting for the partner's approval. */
-  pendingSpends: { id: number; label: string; amountYen: number; by: PersonId }[];
+  pendingSpends: { id: number | string; label: string; amountYen: number; by: PersonId }[];
   /** Weeks paid so far: each layer's own maximum is weeks × its weekly max (not a leaderboard). */
   weeks: number;
 }

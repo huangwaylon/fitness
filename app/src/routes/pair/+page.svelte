@@ -1,10 +1,11 @@
 <script lang="ts">
-  // Pairing: a one-time 6-digit code, entered inside the installed PWA (cookies are per-app on iOS).
+  // Pairing (ADR 0015): paste your key, or open `…/pair#key=…` once inside the installed PWA (storage is per-app on
+  // iOS). `whoami` confirms the person; the key is kept in localStorage and sent in each request body.
   import { goto } from '$app/navigation';
-  import { postJSON, setSession } from '#lib/client/api.ts';
   import { resolve } from '$app/paths';
   import { week } from '#lib/client/week.svelte.ts';
-  import { isStandalone } from '#lib/client/push.ts';
+  import { keyFromHash, setKey, whoami } from '#lib/client/gas.ts';
+  import { isStandalone } from '#lib/client/standalone.ts';
   import { onMount } from 'svelte';
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';
   import Bubble from '#lib/components/Bubble.svelte';
@@ -15,31 +16,42 @@
   let msg = $state('');
   let standalone = $state(true);
 
+  const ready = $derived(/^[0-9a-f]{16,128}$/.test(code));
+
   onMount(() => {
     standalone = isStandalone();
+    const fromHash = keyFromHash(location.hash);
+    if (fromHash) {
+      history.replaceState(history.state, '', location.pathname + location.search); // don't leave the key in the URL
+      code = fromHash;
+      void pair();
+    }
   });
 
-  const ready = $derived(/^\d{6}$/.test(code));
-
   function onInput(e: Event) {
-    code = (e.currentTarget as HTMLInputElement).value.replace(/\D/g, '').slice(0, 6);
+    code = (e.currentTarget as HTMLInputElement).value.replace(/[^0-9a-fA-F]/g, '').toLowerCase().slice(0, 128);
     msg = '';
   }
 
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
+  async function pair() {
     if (!ready || busy) return;
     busy = true;
-    const r = await postJSON<{ token?: string }>('/api/pair', { code });
+    const r = await whoami(code);
     busy = false;
     if (r.ok) {
-      setSession(r.data?.token);
-      await week.refresh();
+      setKey(code, r.me);
+      week.reset();
+      void week.refresh();
       await goto(resolve('/'));
     } else {
-      msg = r.status === 429 ? t('pair.wait') : t('pair.wrong');
-      code = '';
+      msg = r.error === 'unauthorized' || r.error === 'bad_request' ? t('pair.wrong') : t('pair.wait');
+      if (r.error === 'unauthorized') code = '';
     }
+  }
+
+  function submit(e: SubmitEvent) {
+    e.preventDefault();
+    void pair();
   }
 </script>
 
@@ -67,10 +79,9 @@
     <input
       id="code"
       class="code money"
-      inputmode="numeric"
-      autocomplete="one-time-code"
-      pattern="[0-9]*"
-      maxlength="6"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
       placeholder="••••••"
       value={code}
       oninput={onInput}
@@ -95,7 +106,7 @@
   .host { position: absolute; left: 52px; bottom: 24px; }
   form { display: grid; gap: 8px; padding: 26px 16px 12px; margin-top: 8px; }
   .code {
-    width: 100%; min-height: 72px; text-align: center; font-size: 2.4rem !important; letter-spacing: .3em !important;
+    width: 100%; min-height: 72px; text-align: center; font-size: 1.1rem !important; letter-spacing: .02em !important;
     border-radius: var(--r-lg); border: var(--bw) solid var(--edge); background: var(--bg); color: var(--text); box-shadow: var(--sh-inset);
   }
   .code::placeholder { color: var(--text-faint); opacity: .5; }

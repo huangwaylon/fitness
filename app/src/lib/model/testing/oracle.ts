@@ -206,7 +206,7 @@ export class Harness {
     setNow(new Date(tMs));
     const server = structuredClone(getWeekView(this.db, me, new Date(tMs)));
     for (const p of server.pending) if (p.kind === 'visit') p.id = this.#visitIds.get(p.id) ?? `unmapped:${p.id}`;
-    for (const s of server.jar.pendingSpends) s.id = this.#spendIds.get(s.id) ?? -s.id;
+    for (const s of server.jar.pendingSpends) s.id = this.#spendIds.get(s.id as number) ?? -(s.id as number);
     const model = buildWeekView(this.snapshot(me, t), me, tMs);
     let lastSyncDiffers = false;
     for (const p of ['A', 'B'] as PersonId[]) {

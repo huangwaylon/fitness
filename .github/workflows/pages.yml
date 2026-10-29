@@ -1,5 +1,5 @@
 # Builds the UI as a static site and deploys it to GitHub Pages: https://huangwaylon.github.io/fitness/
-# The API stays on the home Mac behind Tailscale Funnel; its URL comes from the repo variable API_BASE.
+# The backend is the Apps Script web app (ADR 0015); its /exec URL comes from the repo variable GAS_URL.
 name: Deploy UI to GitHub Pages
 
 on:
@@ -35,7 +35,7 @@ jobs:
       - run: npx svelte-kit sync
       - run: npm run build:pages
         env:
-          VITE_API_BASE: ${{ vars.API_BASE }}
+          VITE_GAS_URL: ${{ vars.GAS_URL }}
           BASE_PATH: /${{ github.event.repository.name }}
       - uses: actions/upload-pages-artifact@v3
         with:

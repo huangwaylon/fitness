@@ -43,7 +43,7 @@
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
-      if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh();
+      if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => {

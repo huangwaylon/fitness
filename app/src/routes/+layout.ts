@@ -1,3 +1,3 @@
-// Client-rendered PWA: data comes from /api/week in the browser (session cookie).
+// Client-rendered PWA: the browser computes the week from the Apps Script snapshot (lib/model).
 export const ssr = false;
 export const prerender = false;

@@ -60,7 +60,8 @@ export interface PresenceRec {
 }
 
 export interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean }
-export interface SpendRec { at: number; person: PersonId; spendId: string; label: string; amountYen: number }
+/** `spendId` is the dedupe key; `rawId` is the id as the client sent it (number or string), echoed back for `approve`. */
+export interface SpendRec { at: number; person: PersonId; spendId: string; rawId: number | string; label: string; amountYen: number }
 export interface ApproveRec { at: number; person: PersonId; spendId: string }
 
 export interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
@@ -238,7 +239,7 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         if (typeof amountYen !== 'number' || !Number.isInteger(amountYen) || amountYen <= 0 || amountYen > 1_000_000) break;
         const spendId = String(d.spendId);
         if (s.spends.some((x) => x.spendId === spendId)) break;
-        s.spends.push({ at, person, spendId, label, amountYen });
+        s.spends.push({ at, person, spendId, rawId: typeof d.spendId === 'number' ? d.spendId : spendId, label, amountYen });
         break;
       }
       case 'approve':
