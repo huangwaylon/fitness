@@ -7,7 +7,8 @@
   import { resolve } from '$app/paths';
   import type { FruitKey } from '#lib/types.ts';
   import { FRUITS } from '#lib/config/rules.ts';
-  import IslandScene from '#lib/components/IslandScene.svelte';
+  import IslandScene from '#lib/components/island/IslandScene.svelte';
+  import { emit } from '#lib/components/motion/bus.svelte.ts';
   import Bubble from '#lib/components/Bubble.svelte';
   import CheckinSheet from '#lib/components/CheckinSheet.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
@@ -21,9 +22,7 @@
 
   let checkinOpen = $state(false);
   let partnerOpen = $state(false);
-  /** Short-lived reactions on the island (style guide §7.4). */
-  let partnerCheer = $state(false);
-  let meCheer = $state(false);
+  let phoneOpen = $state(false);
   /** The partner's high-five toast (their icon, not しずえ's; U6). */
   let fiveToast = $state<{ text: string; id: number } | null>(null);
   /** My fruit % when the check-in sheet opened, to name the fruit that actually grew (U7). */
@@ -67,20 +66,23 @@
     checkinOpen = true;
   }
 
-  // Closing the check-in sheet with today ticked → my villager cheers once.
+  // Closing the check-in sheet with today ticked → my villager hops (R2, style guide §M.5).
   function celebrate() {
-    if (!checkedIn) return;
-    meCheer = true;
-    setTimeout(() => (meCheer = false), 2400);
+    if (checkedIn) emit('checkin-saved');
   }
 
+  // The partner sheet has closed by now, so R4 plays in the scene behind it.
   function sendHighFive() {
     if (!view) return;
     highFive();
     week.showToast(t('island.highfiveSent'), 1600);
-    partnerCheer = true;
-    setTimeout(() => (partnerCheer = false), 2400);
+    emit('highfive-sent');
   }
+
+  // A failed save (the store's toast) → my villager looks sheepish (R17).
+  $effect(() => {
+    if (week.toast?.text === t('state.saveFailed')) emit('sync-error');
+  });
 
   // M5: tell me when my partner sent a high-five today (once per new one, per device), but not over
   // the harvest: wait until it closes (U6).
@@ -92,10 +94,8 @@
     if (v.highFivesToday > seen) {
       localStorage.setItem(k, String(v.highFivesToday));
       setTimeout(() => {
-        partnerCheer = true;
         const toast = { text: t('island.highfiveGot', { name: v.people[v.partner].villagerName }), id: Date.now() };
         fiveToast = toast;
-        setTimeout(() => (partnerCheer = false), 2600);
         setTimeout(() => fiveToast === toast && (fiveToast = null), 3200);
       }, 700);
     }
@@ -106,12 +106,11 @@
   <main class="island">
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
-        partnerExpression={partnerCheer ? 'cheer' : undefined} partnerEmote={partnerCheer ? 'heart' : false}
-        meExpression={meCheer ? 'cheer' : undefined} meEmote={meCheer} />
+        paused={checkinOpen || partnerOpen || phoneOpen} />
     </div>
     <div class="status-row">
       <SyncPill />
-      <HelpButton />
+      <HelpButton bind:open={phoneOpen} />
     </div>
 
     <div class="below">
