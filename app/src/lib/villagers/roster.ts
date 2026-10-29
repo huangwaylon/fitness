@@ -14,6 +14,10 @@ export interface Look {
   gender: 'm' | 'f';
   /** Silhouette tint (the infobox title colour), only seen if an image is missing. */
   colour: string;
+  /** The render looks toward the viewer's right as drawn (most NH renders are near-frontal and count as left). */
+  looksRight: boolean;
+  /** Never mirror: text/numbers on the outfit or a one-sided design (Raymond's odd eyes). Leans in instead. */
+  noMirror: boolean;
 }
 
 type Row = readonly [id: string, nameJa: string, nameEn: string, species: Species, personality: Personality, gender: 'm' | 'f', colour: string];
@@ -102,8 +106,17 @@ const ROWS = [
 
 export type RosterId = (typeof ROWS)[number][0];
 
+// Checked by eye against the renders (a contact sheet of static/art/villagers); update when adding villagers.
+const LOOKS_RIGHT: ReadonlySet<RosterId> = new Set<RosterId>(['goldie', 'bunnie', 'judy', 'molly', 'dom']);
+const NO_MIRROR: ReadonlySet<RosterId> = new Set<RosterId>([
+  'raymond', 'sasha', 'stitches', 'lucky', 'agent-s', 'kid-cat', 'rocket', 'tad', 'octavian'
+]);
+
 export const ROSTER = Object.fromEntries(
-  ROWS.map(([id, nameJa, nameEn, species, personality, gender, colour]) => [id, { id, nameJa, nameEn, species, personality, gender, colour }])
+  ROWS.map(([id, nameJa, nameEn, species, personality, gender, colour]) => [
+    id,
+    { id, nameJa, nameEn, species, personality, gender, colour, looksRight: LOOKS_RIGHT.has(id), noMirror: NO_MIRROR.has(id) }
+  ])
 ) as Record<RosterId, Look>;
 
 const SPECIES_ORDER = Object.keys(SPECIES);

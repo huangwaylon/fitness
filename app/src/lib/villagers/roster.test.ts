@@ -58,4 +58,12 @@ describe('villager roster', () => {
     expect(resolveLook({ villager: 'nobody', person: 'B' }).id).toBe('raymond');
     expect(resolveLook({ villager: null }).id).toBe('goldie');
   });
+
+  it('knows which renders face right and which must never mirror', () => {
+    expect(ROSTER.goldie.looksRight).toBe(true);
+    expect(ROSTER.anchovy.looksRight).toBe(false);
+    // Outfit numbers would read backwards if mirrored.
+    for (const id of ['raymond', 'kid-cat', 'agent-s', 'rocket', 'tad', 'octavian'] as const) expect(ROSTER[id].noMirror).toBe(true);
+    expect(ROSTER.bob.noMirror).toBe(false);
+  });
 });

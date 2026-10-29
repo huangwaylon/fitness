@@ -22,7 +22,7 @@
 
   interface Props {
     person?: PersonId;
-    /** Roster id (goldie, raymond, bob, bunnie, judy, stitches, hamlet, molly, lily, dom). */
+    /** Roster id (villagers/roster.ts), e.g. goldie, raymond, anchovy. */
     villager?: string | null;
     /** cheer / surprised hop once; proud puffs up; sleepy breathes slowly. */
     expression?: Expression;
@@ -55,11 +55,6 @@
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
   const key = $derived(villagerArt(look.id, headOnly));
 
-  // Which way each render looks (as drawn), so "face in" turns toward the middle of the island.
-  const LOOKS_RIGHT = new Set(['goldie', 'bunnie', 'judy', 'molly', 'dom']);
-  // Asymmetric designs never mirror (Raymond's heterochromia would swap sides): they lean in instead.
-  const NO_MIRROR = new Set(['raymond']);
-
   // Villagers show floating NH marks / colour glyphs, never the player's cat faces (A1, villagerEmote).
   const EXPR: Record<Expression, EmoteIcon | null> = { happy: null, cheer: 'glee', sleepy: 'mark-zzz', surprised: 'surprise', proud: 'mark-sparkle' };
   const propEmote = $derived<EmoteIcon | null>(
@@ -78,11 +73,12 @@
   const asleep = $derived(st ? st.asleep : expression === 'sleepy');
   const walking = $derived(st?.walking ?? false);
   const inward = $derived(st?.face === 'in');
-  const lean = $derived(inward && NO_MIRROR.has(look.id));
+  // "Face in" turns toward the middle of the island; the roster says which way each render looks as drawn.
+  const lean = $derived(inward && look.noMirror);
   const facing = $derived.by(() => {
-    if (!inward || NO_MIRROR.has(look.id)) return 1;
+    if (!inward || look.noMirror) return 1;
     const wantRight = side === 'left';
-    return wantRight === LOOKS_RIGHT.has(look.id) ? 1 : -1;
+    return wantRight === look.looksRight ? 1 : -1;
   });
 
   // Replay the same motion back to back: drop the attribute, reflow, set it again.
