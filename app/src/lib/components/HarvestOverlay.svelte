@@ -45,7 +45,9 @@
   /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
   const after = $derived(view.jar.totalYen);
   const before = $derived(Math.max(0, after - jarTotal));
-  const fillOf = (yen: number) => Math.max(0.08, Math.min(1, view.jar.nextRung ? yen / view.jar.nextRung.yen : 1));
+  /** Jar fill (0–0.82 of the glass, never a solid block); this harvest is a lighter band on top, ≥ 10% tall. */
+  const fillOf = (yen: number) => 0.82 * Math.max(0.08, Math.min(1, view.jar.nextRung ? yen / view.jar.nextRung.yen : 1));
+  const oldFill = $derived(Math.min(fillOf(before), fillOf(after) - 0.1));
   let shown = $state(0);
   let filled = $state(false);
   const partnerDone = $derived(harvest.confirmedBy.includes(partner));
@@ -100,7 +102,7 @@
 </script>
 
 <dialog class="overlay" aria-label={t('harvest.title')} tabindex="-1" use:modal
-  oncancel={(e) => { e.preventDefault(); onlater(); }}>
+  oncancel={(e) => { e.preventDefault(); if (step === 'done') ondone?.(); else onlater(); }}>
   {#key step}
     <div class="confetti" aria-hidden="true">
       {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.6 : step === 'done' ? 0.9 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
@@ -111,7 +113,7 @@
     <div class="head">
       <span class="pill title"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.title')}</span>
       <span class="steps" aria-hidden="true">{#each steps as s (s)}<i class:on={s === step}></i>{/each}</span>
-      <button type="button" class="pill later" onclick={onlater}>{t('common.later')}</button>
+      {#if step !== 'done'}<button type="button" class="pill later" onclick={onlater}>{t('common.later')}</button>{:else}<span></span>{/if}
     </div>
 
     <Bubble text={hostLine} host={step === 'tally' ? 'wave' : 'bow'} />
@@ -179,7 +181,8 @@
           <defs><clipPath id="hv-jar"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" /></clipPath></defs>
           <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="var(--c-sky-soft)" fill-opacity=".9" />
           <g clip-path="url(#hv-jar)">
-            <rect class="coins" x="0" y="30" width="200" height="210" fill="var(--c-coin)" style:--f={filled ? fillOf(after) : fillOf(before)} />
+            <rect class="coins new" x="0" y="30" width="200" height="202" fill="var(--c-coin-shine)" style:--f={filled ? fillOf(after) : oldFill} />
+            <rect class="coins" x="0" y="30" width="200" height="202" fill="var(--c-coin)" style:--f={oldFill} />
           </g>
           <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="none" stroke="var(--c-ink)" stroke-width="5" stroke-linejoin="round" />
           <rect x="56" y="8" width="88" height="26" rx="9" fill="var(--c-yuzu)" stroke="var(--c-ink)" stroke-width="5" />
@@ -275,7 +278,8 @@
 
   .done { display: grid; justify-items: center; gap: 10px; text-align: center; padding-top: 6px; }
   .djar { width: 120px; height: 144px; display: block; overflow: visible; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
-  .coins { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--f)); transition: transform 1.4s var(--ease-soft) .4s; }
+  .coins { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--f)); }
+  .coins.new { stroke: var(--c-coin-rim); stroke-width: 3; transition: transform 1.4s var(--ease-soft) .4s; }
   .dhead { margin: 4px 0 0; font: 900 1.5rem/1.2 var(--font-ui); }
   .dnext { margin: 0; font-weight: 700; color: var(--text-soft); }
   @media (prefers-reduced-motion: reduce) { .coins { transition: none; } }

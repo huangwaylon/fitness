@@ -11,6 +11,7 @@
     "test": "vitest run",
     "prepare": "svelte-kit sync || true",
     "assets:fetch": "node scripts/fetch-assets.ts",
+    "fonts:subset": "node scripts/font-subsets.ts",
     "gas:build": "node gas/build.ts",
     "export:sheet": "node scripts/export-to-sheet.ts"
   },

@@ -272,7 +272,7 @@
   .row.static { cursor: default; }
   .ri { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: var(--r-squircle); background: var(--app-bell); color: var(--c-ink); }
   .ri svg { width: 28px; height: 28px; }
-  .rl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body-lg); }
+  .rl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body-lg); word-break: auto-phrase; text-wrap: balance; line-height: 1.3; }
   .when { font-size: 1rem; color: var(--text-soft); white-space: nowrap; }
   .radio { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--edge); flex: none; }
   .row[aria-checked='true'] .radio { border-color: var(--c-leaf-lip); background: radial-gradient(circle, var(--c-leaf) 0 6px, transparent 7px); }
