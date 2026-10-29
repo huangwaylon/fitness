@@ -2,7 +2,7 @@
 // the Apps Script web app (bundled by esbuild into apps-script/Code.js) and in Node tests.
 // So: no zod, no Node APIs, no `crypto`, no TextEncoder, no Intl; only plain ES2019.
 //
-// It is a port of the old Mac server's Shortcut parser (deleted; ADR 0015). Accepted shapes:
+// It is a port of the legacy server's Shortcut parser (deleted; ADR 0015). Accepted shapes:
 //   - daily form:  {"dates": "Sep 28, 2026 at 7:11 AM\n…", "steps": "855\n…", "exercise_minutes": "0\n…"}
 //   - series form: {"steps": {"values": […], "starts": […], "sources": […]}, "exercise": {…}}
 //   - simple form: {"date": "2026-10-28", "steps": "12\n3\n27"}
@@ -130,7 +130,7 @@ function isUnknownLocalisedType(name: string): boolean {
 /**
  * Stable workout id: `w:` + the first 24 hex chars of SHA-256(`<canonical type>|<start minute, UTC ISO>`).
  *
- * Why SHA-256 in plain JS rather than FNV: it is byte-for-byte the id the Mac server computed with node:crypto
+ * Why SHA-256 in plain JS rather than FNV: it is byte-for-byte the id the legacy server computed with node:crypto
  * (before ADR 0015), so migrated workouts and their `confirm` events keep their ids, and 96 bits
  * makes collisions a non-issue. It only needs to be deterministic, and this runs identically in Apps Script V8,
  * browsers and Node (no crypto API, no TextEncoder).

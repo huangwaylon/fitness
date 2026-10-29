@@ -1,5 +1,5 @@
 # 0015 — Google Sheet as the database; Apps Script as the only backend; no Mac
-**Status:** Accepted (user decision, 2026-10-29). Supersedes the hosting/backend parts of 0005, 0010, 0012 (endpoint) and 0013 (API on the Mac). Notifications dropped by [0016](0016-no-privacy-no-alerts.md). Research: [`docs/research/no-mac/`](../research/no-mac/).
+**Status:** Accepted (user decision, 2026-10-29). Supersedes the hosting/backend parts of 0005, 0010, 0012 (endpoint) and 0013 (API on the Mac). Notifications dropped by [0016](0016-no-privacy-no-alerts.md). Research: [`docs/archive/no-mac/`](../archive/no-mac/).
 
 **User input:** "Let's go with the Sheet approach." Use **the same Google account as the shared-finances app**; the user creates resources as needed.
 
