@@ -19,13 +19,15 @@
   --paper-edge:#EED9A8;     /* paper card border */
   --sand-deep:#E0C48A;      /* paper card lip */
   --c-stitch:#E5CC94;       /* dashed stitching inside cards */
+  --c-pill-edge:#EADBB8;    /* cream pills, banners, paper buttons */
+  --c-ring-low:#E8CF9A;     /* a fruit ring under 25%: warm sand, never coral (round 5 U7) */
   --c-ink:#4A3A2C;          /* text, outlines (never pure black) */
   --c-ink-talk:#6A5641;     /* bubble text (6.7:1 on bubble) */
   --c-ink-soft:#6B5544;
   /* accents (fill / lip / soft / ink) */
   --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C;  --c-leaf-soft:#C8F0C4; --c-leaf-ink:#2E6B38;
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;  --c-yuzu-soft:#FFF2B8;
-  --c-coral:#FF8F7A; --c-coral-lip:#E5735F; --c-coral-soft:#FFDCD3; --c-coral-ink:#B04A3B;
+  --c-coral:#FF8F7A; --c-coral-lip:#E5735F; --c-coral-soft:#FFDCD3; --c-coral-ink:#B04A3B; --c-coral-ink-strong:#9A3E31;
   --c-sky:#6FCFF6;   --c-sky-lip:#3FB0E3;   --c-sky-soft:#D8F3FF;   --c-sky-ink:#23688F;
   --c-moon:#FFE9A8;  --c-moon-lip:#D9BE6A;  /* night primary button */
   --c-amber:#F5A623;        /* the ▼ "next" arrow */

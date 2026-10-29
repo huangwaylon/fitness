@@ -1,8 +1,9 @@
 <script lang="ts">
   // 旅の壺 Trip Jar (style guide v4 §T.4, §R.2): a cream hero (jar art + total) with a wavy edge over the
   // Nook Miles+ periwinkle page, しずえ's one line, then ≤ 3 pastel Miles+ cards: next trip (the ladder of
-  // stamped rungs is one tap away), the Treat Purse (Bells pill; 使う opens DIY-card treats), the jar's layers.
-  // 使う stays quiet until the purse can pay for the cheapest treat, and says how far that is (U4).
+  // stamped rungs is one tap away, with the jar's layers: round 5 U9 text budget), the Treat Purse (Bells pill;
+  // 使う opens DIY-card treats). 使う stays quiet until the purse can pay for the cheapest treat (U4).
+  // Payday ✓ and 使う！ show at once but wait 5 s with 取り消す on the banner before they are sent (U9).
   import Sheet from '#lib/components/Sheet.svelte';
   import Rope from '#lib/components/Rope.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
@@ -10,7 +11,8 @@
   import Yen from '#lib/components/Yen.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { spendPurse, approveSpend, transferDone } from '#lib/client/actions.ts';
+  import { spendPurse, approveSpend, transferDone, UNDO_MS } from '#lib/client/actions.ts';
+  import { tick } from 'svelte';
   import { MONEY, SEASONS } from '#lib/config/rules.ts';
   import { t, formatYen, hostLine } from '#lib/i18n/index.ts';
 
@@ -64,7 +66,7 @@
       ratio: jar.layers[who] / personMax,
       color: who === 'A' ? 'var(--p-apricot)' : 'var(--p-plum)'
     });
-    return [row(view.me), row(view.partner), { key: 'team', name: t('jar.team'), yen: jar.layers.team, ratio: jar.layers.team / teamMax, color: 'var(--c-leaf)' }];
+    return [row(view.me), row(view.partner), { key: 'team', name: t('jar.teamShort'), yen: jar.layers.team, ratio: jar.layers.team / teamMax, color: 'var(--c-leaf)' }];
   });
 
   /** しずえ's one line here: how far the next trip is (the rung card shows the bar). */
@@ -74,10 +76,26 @@
   const nextPct = $derived(jar?.nextRung ? (jar.totalYen / jar.nextRung.yen) * 100 : 100);
   const nextUnreachedKey = $derived(jar?.rungs.find((r) => !r.reached)?.key ?? null);
 
-  function markPayday() {
+  let paydayDone = $state<HTMLElement | undefined>();
+  let paydayBtn = $state<HTMLElement | undefined>();
+
+  /** A banner with 取り消す for the undo window. */
+  function undoToast(text: string, reaction: string, undo: (() => boolean) | undefined, after?: () => void) {
+    week.showToast(text, UNDO_MS, {
+      reaction,
+      ...(undo ? { action: { label: t('common.undo'), run: () => { if (undo()) after?.(); } } } : {})
+    });
+  }
+
+  async function markPayday() {
     if (!jar?.transfer) return;
-    transferDone(jar.transfer.month);
-    week.showToast(t('jar.paydayNoted'), 1800);
+    const r = await transferDone(jar.transfer.month);
+    undoToast(t('jar.paydayNoted'), 'pleased', r.undo, async () => {
+      await tick();
+      paydayBtn?.focus();
+    });
+    await tick();
+    paydayDone?.focus(); // U15: focus stays on the row (now ✓), not <body>
   }
 
   async function spend() {
@@ -88,7 +106,7 @@
       purseOpen = false;
       picked = null;
       const pending = r.data?.status ? r.data.status === 'pending' : needsBoth;
-      week.showToast(pending ? t('purse.waiting') : t('purse.enjoy'));
+      undoToast(pending ? t('purse.waiting') : t('purse.enjoy'), pending ? 'thought' : 'joy', r.undo);
     }
   }
 </script>
@@ -155,9 +173,9 @@
 
       {#if jar.transfer}
         {#if jar.transfer.done}
-          <p class="payday done"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('jar.payday.done')}</p>
+          <p class="payday done" tabindex="-1" bind:this={paydayDone}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('jar.payday.done')}</p>
         {:else}
-          <button type="button" class="payday" onclick={markPayday}>
+          <button type="button" class="payday" onclick={markPayday} bind:this={paydayBtn}>
             <span class="pd-t">{t('jar.payday.todo', { yen: formatYen(jar.transfer.amountYen) })}</span>
             <span class="tick" aria-hidden="true"></span>
           </button>
@@ -176,22 +194,6 @@
         </div>
       {/each}
 
-      <section class="miles layers" style:--card="var(--card-lilac)" aria-label={t('jar.layers')}>
-        <h2 class="ct">{t('jar.layers')}</h2>
-        <div class="lgrid">
-          {#each layers as l (l.key)}
-            {@const fill = 25 * Math.max(0.08, Math.min(1, l.ratio))}
-            <div class="layer">
-              <svg class="minijar" viewBox="0 0 30 36" aria-hidden="true">
-                <path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="var(--c-bubble)" stroke="var(--c-ink)" stroke-width="2" />
-                <path d="M3 {33 - fill} H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" style:fill={l.color} />
-              </svg>
-              <span class="ln">{l.name}</span>
-              <b class="money">{formatYen(l.yen)}</b>
-            </div>
-          {/each}
-        </div>
-      </section>
     </div>
   </main>
 
@@ -207,6 +209,22 @@
         </li>
       {/each}
     </ul>
+    <section class="miles layers" style:--card="var(--card-lilac)" aria-label={t('jar.layers')}>
+      <h2 class="ct">{t('jar.layers')}</h2>
+      <div class="lgrid">
+        {#each layers as l (l.key)}
+          {@const fill = 25 * Math.max(0.08, Math.min(1, l.ratio))}
+          <div class="layer">
+            <svg class="minijar" viewBox="0 0 30 36" aria-hidden="true">
+              <path d="M8 4 H22 V8 Q28 10 28 16 V30 Q28 34 24 34 H6 Q2 34 2 30 V16 Q2 10 8 8Z" fill="var(--c-bubble)" stroke="var(--c-ink)" stroke-width="2" />
+              <path d="M3 {33 - fill} H27 V30 Q27 33 24 33 H6 Q3 33 3 30Z" style:fill={l.color} />
+            </svg>
+            <span class="ln">{l.name}</span>
+            <b class="money">{formatYen(l.yen)}</b>
+          </div>
+        {/each}
+      </div>
+    </section>
   </Sheet>
 
   <Sheet bind:open={purseOpen} label={t('purse.title')} onclose={() => (picked = null)}>
@@ -279,7 +297,7 @@
   .lgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .layer { display: grid; justify-items: center; gap: 4px; text-align: center; min-width: 0; }
   .minijar { display: block; width: 32px; height: 38px; }
-  .layer .ln { font-size: var(--fs-caption); font-weight: 700; color: var(--c-ink-soft); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .layer .ln { font: 700 var(--fs-caption)/1.25 var(--font-ui); color: var(--c-ink-soft); max-width: 100%; overflow-wrap: anywhere; display: block; }
   .layer b { font-size: 1.05rem; }
 
   .payday {
@@ -302,6 +320,7 @@
   .sheet-head h2 { font-size: var(--fs-h2); }
 
   .ladder { list-style: none; margin: 0; padding: 0 0 6px; display: grid; gap: 12px; }
+  .layers { margin-top: 14px; }
   .lr { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 14px; }
   .ln { flex: 1; min-width: 0; font: 900 1.1rem var(--font-ui); display: grid; gap: 6px; }
   .la { font-size: 1.1rem; }
@@ -321,6 +340,7 @@
   .art { width: 44px; height: 44px; margin-bottom: 4px; }
   .item b { font: 700 .9rem/1.2 var(--font-ui); }
   .item .p { font-size: .95rem; color: var(--c-coral-ink); }
+  .item.sel .p { color: var(--c-coral-ink-strong); } /* U15: ≥ 4.5:1 on the selected coral-soft card */
   .item:disabled .p { color: var(--c-ink-talk); font-size: var(--fs-caption); }
   .both { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; color: var(--p-berry); }
   .bothnote { font-size: var(--fs-caption); margin-left: 4px; }

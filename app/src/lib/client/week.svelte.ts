@@ -6,8 +6,8 @@ import { resolve } from '$app/paths';
 import { dev } from '$app/env';
 import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import type { EventType } from '#lib/ingest/sheet-api.ts';
-import { GAS_CONFIGURED, enqueue, flush, getKey, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, type SnapshotCache } from './gas.ts';
-import { composeView } from './view.ts';
+import { GAS_CONFIGURED, enqueue, flush, getKey, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
+import { composeView, notInCache } from './view.ts';
 import { sampleWeek } from './fixtures.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
 
@@ -22,6 +22,17 @@ export interface SendResult<T = unknown> {
   ok: boolean;
   status: number;
   data: T | null;
+  /** Only with `holdMs`: take the action back while it is still held (returns false once it was sent). */
+  undo?: () => boolean;
+}
+
+export interface Toast {
+  text: string;
+  id: number;
+  /** A button on the banner, e.g. 取り消す (undo). */
+  action?: { label: string; run: () => void };
+  /** Official reaction icon on the banner (`reactions/<id>`). */
+  reaction?: string;
 }
 
 class WeekStore {
@@ -31,9 +42,14 @@ class WeekStore {
   offline = $state(false);
   lastSync = $state<Date | null>(null);
   demo = $state<DemoMode>(false);
-  toast = $state<{ text: string; id: number } | null>(null);
+  toast = $state<Toast | null>(null);
 
   #cache: SnapshotCache | null = null;
+  /**
+   * Events the server acked but the cache hasn't fetched back yet. They stay in the view until the reconcile
+   * refresh brings their rows; otherwise any recompute in between (the next tap) would undo them on screen.
+   */
+  #sent: QueuedEvent[] = [];
   #lastFetch = 0;
   /** Bumped per refresh; a response is applied only if no newer refresh started meanwhile. */
   #refreshSeq = 0;
@@ -72,7 +88,8 @@ class WeekStore {
   /** Recompute the view from the cache + queue (cheap: pure, a few ms). */
   #recompute(): void {
     if (!this.#cache) return;
-    this.view = composeView(this.#cache, queued(), Date.now());
+    this.#sent = notInCache(this.#cache, this.#sent);
+    this.view = composeView(this.#cache, [...this.#sent, ...queued()], Date.now());
     setLocale(this.view.locale);
   }
 
@@ -136,6 +153,7 @@ class WeekStore {
   /** Forget the cached state (after pairing as someone else). */
   reset(): void {
     this.#cache = null;
+    this.#sent = [];
     this.view = null;
     this.status = 'loading';
     this.#lastFetch = 0;
@@ -144,22 +162,40 @@ class WeekStore {
   /**
    * Queue an event and show it at once (the model applies it like the server will). In demo mode `optimistic` edits
    * the fixture view instead. Never fails for network reasons: the queue retries until the server acks.
+   * `holdMs`: an undo window. The change shows at once but is not sent before then; `undo()` takes it back.
    */
-  send<T = unknown>(type: EventType, data: Record<string, unknown>, optimistic?: (v: WeekView) => void): Promise<SendResult<T>> {
+  send<T = unknown>(type: EventType, data: Record<string, unknown>, optimistic?: (v: WeekView) => void, opts: { holdMs?: number } = {}): Promise<SendResult<T>> {
+    const held = (opts.holdMs ?? 0) > 0;
     if (this.demo) {
+      const before = held && this.view ? $state.snapshot(this.view) : null;
       if (optimistic && this.view) optimistic(this.view);
-      return Promise.resolve({ ok: true, status: 200, data: null });
+      let undone = false;
+      const undo = () => {
+        if (undone || !before) return false;
+        undone = true;
+        this.view = before as WeekView;
+        return true;
+      };
+      return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo } : {}) });
     }
-    enqueue(type, data);
+    const ev = enqueue(type, data, Date.now(), opts.holdMs ?? 0);
     this.#recompute();
     void this.#flush(true);
-    return Promise.resolve({ ok: true, status: 200, data: null });
+    const undo = () => {
+      const ok = unqueue(ev.id);
+      if (ok) this.#recompute();
+      return ok;
+    };
+    return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo } : {}) });
   }
 
   async #flush(reconcile: boolean): Promise<void> {
     if (this.#retryTimer) clearTimeout(this.#retryTimer);
     this.#retryTimer = null;
+    const before = queued();
     const r = await flush();
+    const left = new Set([...queued(), ...r.dropped].map((e) => e.id));
+    this.#sent.push(...before.filter((e) => !left.has(e.id)));
     if (r.dropped.length) {
       this.showToast(t('state.saveFailed'));
       this.#recompute();
@@ -179,10 +215,16 @@ class WeekStore {
     }
   }
 
-  showToast(text: string, ms = 2600): void {
+  showToast(text: string, ms = 2600, opts: Pick<Toast, 'action' | 'reaction'> = {}): void {
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
-    this.toast = { text, id: Date.now() };
-    this.#toastTimer = setTimeout(() => (this.toast = null), ms);
+    const toast: Toast = { text, id: Date.now(), ...opts };
+    this.toast = toast;
+    this.#toastTimer = setTimeout(() => this.toast?.id === toast.id && (this.toast = null), ms);
+  }
+
+  dismissToast(): void {
+    if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    this.toast = null;
   }
 }
 

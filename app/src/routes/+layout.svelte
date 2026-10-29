@@ -8,6 +8,7 @@
   import '#lib/styles/tokens.css';
   import '#lib/styles/theme.css';
   import { onMount, type Snippet } from 'svelte';
+  import type { HarvestView } from '#lib/types.ts';
   import { page } from '$app/state';
   import Sprites from '#lib/components/Sprites.svelte';
   import TabBar from '#lib/components/TabBar.svelte';
@@ -29,9 +30,11 @@
   const pageKind = $derived(route.startsWith('/jar') ? 'jar' : 'island');
 
   let laterFor = $state<string | null>(null);
-  const harvest = $derived(week.view?.harvest ?? null);
+  /** The harvest being finished: kept through the end card even after confirming drops it from the view (U5). */
+  let kept = $state<HarvestView | null>(null);
+  const harvest = $derived(kept ?? week.view?.harvest ?? null);
   const showHarvest = $derived(
-    !onPair && !!week.view && !!harvest && !harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey
+    !onPair && !!week.view && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
   );
   // Pages hold their toasts while the harvest is up (U6).
   $effect(() => {
@@ -57,7 +60,7 @@
   /** Banner reaction icon for the store's toasts (§T.3): the text says which event it was. */
   function reactionFor(text: string): string {
     const map: [string, string][] = [
-      ['state.saveFailed', 'sheepishness'], ['island.highfiveSent', 'encouraging'], ['pending.saved', 'pleased'],
+      ['state.saveFailed', 'sheepishness'], ['pending.saved', 'pleased'],
       ['jar.paydayNoted', 'pleased'], ['purse.enjoy', 'joy'], ['purse.waiting', 'thought']
     ];
     return map.find(([k]) => t(k) === text)?.[1] ?? 'happiness';
@@ -128,11 +131,13 @@
 {#if !onPair && week.status !== 'unconfigured'}<div inert={showHarvest}><TabBar /></div>{/if}
 
 {#if showHarvest && week.view && harvest}
-  <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)} />
+  <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)}
+    onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
 {/if}
 
 {#if week.toast && !showHarvest}
-  {#key week.toast.id}<Toast text={week.toast.text} reaction={reactionFor(week.toast.text)} />{/key}
+  {#key week.toast.id}<Toast text={week.toast.text} reaction={week.toast.reaction ?? reactionFor(week.toast.text)}
+    action={week.toast.action} />{/key}
 {/if}
 
 <style>

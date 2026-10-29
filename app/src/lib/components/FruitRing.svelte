@@ -60,7 +60,7 @@
     class="fr {stage}"
     class:tree={onTree}
     style:--p={pct}
-    style:--c="var(--f-{fruit})"
+    style:--c={stage === 'bud' ? 'var(--c-ring-low)' : `var(--f-${fruit})`}
     aria-label={label}
     aria-expanded={open}
     onclick={toggle}

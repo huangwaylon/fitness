@@ -88,7 +88,11 @@
       placeholder="••••••"
       value={code}
       oninput={onInput}
-      onfocus={(e) => setTimeout(() => e.currentTarget.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)}
+      onfocus={(e) => {
+        const el = e.currentTarget;
+        const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+        setTimeout(() => el.scrollIntoView({ block: 'center', behavior }), 300);
+      }}
       aria-describedby="pair-msg"
     />
     <p id="pair-msg" class="msg" role="status">{msg}</p>

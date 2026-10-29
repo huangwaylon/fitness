@@ -31,7 +31,13 @@
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
   const pending = $derived(view?.pending[0] ?? null);
-  const checkedIn = $derived(!!view && (me?.habits?.ticksByDate[view.today] ?? []).length > 0);
+  /** Today's ticks out of 3: the button says how many are left, and only 3/3 reads as done (round 5 U4). */
+  const ticksToday = $derived(view ? (me?.habits?.ticksByDate[view.today] ?? []).length : 0);
+  const habitCount = $derived(me?.habits?.keys.length ?? 3);
+  const checkedIn = $derived(ticksToday > 0);
+  const allChecked = $derived(ticksToday >= habitCount);
+  /** しずえ says what an answer just did (U3), for a few seconds; then her usual line again. */
+  let said = $state<{ text: string; id: number } | null>(null);
   const grew = $derived(me && before ? (FRUITS.find((f) => me.fruits[f].pct > before![f]) ?? null) : null);
 
   /** U8: the unripe fruit closest to ripe, as "{fruit}, {n} more {unit}". Needs my raw numbers. */
@@ -42,23 +48,30 @@
     if (!open.length) return null;
     const f = open.reduce((a, b) => (me.fruits[b].pct > me.fruits[a].pct ? b : a));
     const n = Math.ceil((me.fruits[f].target ?? 0) - (me.fruits[f].actual ?? 0));
-    return n > 0 ? hostLine(UNIT[f], { fruit: f, n }) : null;
+    return n > 0 ? hostLine(UNIT[f], { activity: f, n }) : null;
   }
 
   const line = $derived.by(() => {
     if (!view) return '';
     if (pending) return t('pending.ask', { label: pending.label });
+    if (said) return said.text;
+    // After my 壺に入れる (also in demo, whose host key is fixed): 「まめさんの番です！」 until they drop theirs.
+    if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
     const key = view.juniper.key.replace(/^(juniper|host)\./, '');
     if (key === 'harvest_ready' || key === 'harvest_waiting' || key === 'payday') return hostLine(key, view.juniper.params);
-    if (grew) return hostLine('grew', { fruit: grew });
+    if (grew) return hostLine('grew', { fruit: grew, activity: grew });
     if (key === 'default' || key === 'pending_confirm') return nearlyLine() ?? hostLine('default');
     return hostLine(key, view.juniper.params);
   });
 
+  // はい counts it at once (the store recomputes the fruit); しずえ says so and my villager hops.
   function answer(yes: boolean) {
     if (!pending) return;
     confirmPending(pending.kind, pending.id, yes);
-    if (yes) week.showToast(t('pending.saved'), 1600);
+    const msg = { text: yes ? t('pending.counted', { activity: t('fruit.coconut') }) : t('pending.skipped'), id: Date.now() };
+    said = msg;
+    setTimeout(() => said?.id === msg.id && (said = null), 5000);
+    if (yes) emit('checkin-saved');
   }
 
   function openCheckin() {
@@ -75,7 +88,7 @@
   function sendHighFive() {
     if (!view) return;
     highFive();
-    week.showToast(t('island.highfiveSent'), 1600);
+    week.showToast(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { reaction: 'encouraging' });
     emit('highfive-sent');
   }
 
@@ -85,10 +98,10 @@
   });
 
   // M5: tell me when my partner sent a high-five today (once per new one, per device), but not over
-  // the harvest: wait until it closes (U6).
+  // the harvest: wait until it closes (U6), and not over another banner: one at a time (round 5 U13).
   $effect(() => {
     const v = week.view;
-    if (!v || v.highFivesToday <= 0 || ui.overlay) return;
+    if (!v || v.highFivesToday <= 0 || ui.overlay || week.toast) return;
     const k = `hf-seen:${v.today}`;
     const seen = Number(localStorage.getItem(k) ?? 0);
     if (v.highFivesToday > seen) {
@@ -122,8 +135,9 @@
           <button type="button" class="btn" onclick={() => answer(true)}>{t('common.yes')}</button>
           <button type="button" class="btn paper" onclick={() => answer(false)}>{t('common.no')}</button>
         {:else}
-          <button type="button" class="btn" class:paper={checkedIn} onclick={openCheckin}>
-            {#if checkedIn}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+          <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin}>
+            {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+            {:else if checkedIn}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkinLeft', { n: habitCount - ticksToday })}
             {:else}<svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg>{t('island.checkin')}{/if}
           </button>
         {/if}
@@ -132,8 +146,8 @@
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
-  {#if fiveToast && !ui.overlay}
-    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} reaction="love" second={!!week.toast} />{/key}
+  {#if fiveToast && !ui.overlay && !week.toast}
+    {#key fiveToast.id}<Toast text={fiveToast.text} person={view.partner} reaction="love" />{/key}
   {/if}
 {/if}
 

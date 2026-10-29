@@ -4,6 +4,8 @@
   // pill. The jar total sits in the Miles-style navy pill. Confetti in the §M.4 colours (none under reduced motion).
   // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   // Rows show name + the four fruits + yen, not a scoreboard (U3, U12); しずえ keeps one outfit (U5).
+  // Round 5: no ★ vs ★ per person, only the team's stars (U7); the purse is one line under the total (U6); after
+  // 壺に入れる a short end card fills the jar and counts its total up before going back to 島 (U5).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
   import { FRUITS, RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
@@ -11,7 +13,6 @@
   import Yen from './Yen.svelte';
   import Bubble from './Bubble.svelte';
   import OfficialArt from './OfficialArt.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
   import { confirmHarvest } from '#lib/client/actions.ts';
   import { fruitArt } from '#lib/client/assets.ts';
   import { ripeness } from './FruitRing.svelte';
@@ -21,8 +22,12 @@
     view: WeekView;
     harvest: HarvestView;
     onlater: () => void;
+    /** Called before the harvest is confirmed: keep the overlay up for the end card. */
+    onkeep?: () => void;
+    /** The end card's 島へもどる. */
+    ondone?: () => void;
   }
-  let { view, harvest, onlater }: Props = $props();
+  let { view, harvest, onlater, onkeep, ondone }: Props = $props();
 
   const me = $derived(view.me);
   const partner = $derived(view.partner);
@@ -33,15 +38,44 @@
   const rung = $derived(rungKey ? RUNGS.find((r) => r.key === rungKey) ?? null : null);
   const nextRung = $derived(rung ? RUNGS.find((r) => r.yen > rung.yen) ?? null : null);
 
-  let step = $state<'tally' | 'rung'>('tally');
+  let step = $state<'tally' | 'rung' | 'done'>('tally');
   let busy = $state(false);
+  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
+  const after = $derived(view.jar.totalYen);
+  const before = $derived(Math.max(0, after - jarTotal));
+  const fillOf = (yen: number) => Math.max(0.08, Math.min(1, view.jar.nextRung ? yen / view.jar.nextRung.yen : 1));
+  let shown = $state(0);
+  let filled = $state(false);
+  const partnerDone = $derived(harvest.confirmedBy.includes(partner));
+
+  function countUp() {
+    shown = before;
+    if (reduced) {
+      shown = after;
+      filled = true;
+      return;
+    }
+    const t0 = performance.now();
+    const DUR = 1400;
+    requestAnimationFrame(() => (filled = true));
+    const frame = (now: number) => {
+      const k = Math.min(1, (now - t0) / DUR);
+      shown = Math.round(before + (after - before) * (1 - (1 - k) ** 3));
+      if (k < 1 && step === 'done') requestAnimationFrame(frame);
+    };
+    setTimeout(() => requestAnimationFrame(frame), 500);
+  }
 
   async function drop() {
     busy = true;
+    onkeep?.();
     const r = await confirmHarvest();
     busy = false;
-    if (r.ok && !harvest.confirmedBy.includes(partner)) {
-      week.showToast(t('harvest.waiting', { name: view.people[partner].villagerName }), 3200);
+    if (r.ok) {
+      step = 'done';
+      countUp();
     }
   }
 
@@ -53,10 +87,11 @@
     if (!node.open) node.showModal?.();
     node.focus();
   }
-  const steps = $derived<('tally' | 'rung')[]>(rung ? ['tally', 'rung'] : ['tally']);
-  const hostLine = $derived(step === 'tally' ? t('harvest.hello') : t('harvest.rungReached'));
-  /** Island-evaluation stars (§T.5): ceil(score / 20), 0–5. */
+  const steps = $derived<('tally' | 'rung' | 'done')[]>(rung ? ['tally', 'rung', 'done'] : ['tally', 'done']);
+  const hostLine = $derived(step === 'tally' ? t('harvest.hello') : step === 'rung' ? t('harvest.rungReached') : t('harvest.doneHost'));
+  /** Island-evaluation stars (§T.5): ceil(score / 20), 0–5; shown only as the pair's total (★ out of 10). */
   const stars = (score: number) => Math.max(0, Math.min(5, Math.ceil(score / 20)));
+  const teamStars = $derived(stars(p.A.score) + stars(p.B.score));
   // Confetti (§M.4 colours): 36 pieces, CSS only; skipped under reduced motion.
   const COLOURS = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
   const CONFETTI = Array.from({ length: 36 }, (_, i) => ({
@@ -68,7 +103,7 @@
   oncancel={(e) => { e.preventDefault(); onlater(); }}>
   {#key step}
     <div class="confetti" aria-hidden="true">
-      {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.6 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
+      {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.6 : step === 'done' ? 0.9 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
     </div>
   {/key}
 
@@ -92,16 +127,19 @@
               <span class="frs" aria-hidden="true">
                 {#each FRUITS as f (f)}<span class="fr {sameWeek ? ripeness(pv.fruits[f].pct) : ''}"><OfficialArt key={fruitArt(f)} size="var(--fr)" /></span>{/each}
               </span>
-              <span class="stars" role="img" aria-label="{stars(p[who].score)}/5">
-                {#each [0, 1, 2, 3, 4] as s (s)}<svg viewBox="0 0 24 24" class:on={s < stars(p[who].score)} style="animation-delay:{0.6 + i * 0.7 + s * 0.12}s"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" /></svg>{/each}
-              </span>
             </span>
             <Yen yen={p[who].fruitYen} sign="+" pill />
           </div>
         {/each}
         <div class="trow" style="animation-delay:1.7s">
           <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart" /></svg></span>
-          <span class="who"><b class="nm">{t('harvest.team')}</b></span>
+          <span class="who"><b class="nm">{t('harvest.team')}</b>
+            <span class="stars" role="img" aria-label="{t('harvest.teamStars')} ★{teamStars}/10">
+              <span aria-hidden="true">{t('harvest.teamStars')}</span>
+              <svg viewBox="0 0 24 24" class="on" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" /></svg>
+              <b class="money" aria-hidden="true">{teamStars}</b>
+            </span>
+          </span>
           <Yen yen={p.teamYen} sign="+" pill />
         </div>
       </section>
@@ -109,22 +147,17 @@
       <div class="total">
         <span class="lbl">{t('harvest.jar')} <span class="prov">{t('harvest.provisional')}</span></span>
         <span class="navy money"><OfficialArt key="money/bells" size="1em" />{formatYen(jarTotal)}</span>
+        {#if purseTotal > 0}
+          <span class="mini"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>{t('harvest.purse')} <b class="money">+{formatYen(purseTotal)}</b></span>
+        {/if}
       </div>
-
-      {#if purseTotal > 0}
-        <div class="mini">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>
-          <span class="pl">{t('purse.title')}</span>
-          <Yen yen={purseTotal} sign="+" pill />
-        </div>
-      {/if}
 
       <div class="cta">
         {#if rung}<button type="button" class="btn yuzu" onclick={() => (step = 'rung')}>{t('common.next')}</button>{:else}<button type="button" class="btn yuzu" disabled={busy} onclick={drop}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.drop')}
         </button>{/if}
       </div>
-    {:else if rung}
+    {:else if step === 'rung' && rung}
       <div class="rung">
         <div class="hero">
           <span class="port"><OfficialArt key="deco/airport" width="100%" /></span>
@@ -139,6 +172,25 @@
         <button type="button" class="btn yuzu" disabled={busy} onclick={drop}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.drop')}
         </button>
+      </div>
+    {:else if step === 'done'}
+      <div class="done" role="status">
+        <svg class="djar" viewBox="0 0 200 240" aria-hidden="true">
+          <defs><clipPath id="hv-jar"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" /></clipPath></defs>
+          <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="var(--c-sky-soft)" fill-opacity=".9" />
+          <g clip-path="url(#hv-jar)">
+            <rect class="coins" x="0" y="30" width="200" height="210" fill="var(--c-coin)" style:--f={filled ? fillOf(after) : fillOf(before)} />
+          </g>
+          <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="none" stroke="var(--c-ink)" stroke-width="5" stroke-linejoin="round" />
+          <rect x="56" y="8" width="88" height="26" rx="9" fill="var(--c-yuzu)" stroke="var(--c-ink)" stroke-width="5" />
+          <path d="M44 100 Q40 130 44 160" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75" />
+        </svg>
+        <p class="dhead">{t('harvest.done', { yen: formatYen(jarTotal) })}</p>
+        <span class="navy money"><OfficialArt key="money/bells" size="1em" />{formatYen(shown)}</span>
+        {#if !partnerDone}<p class="dnext">{t('harvest.waiting', { name: view.people[partner].villagerName })}</p>{/if}
+      </div>
+      <div class="cta">
+        <button type="button" class="btn yuzu" onclick={() => ondone?.()}>{t('harvest.home')}</button>
       </div>
     {/if}
   </div>
@@ -198,9 +250,10 @@
   .fr { display: block; flex: none; line-height: 0; }
   .fr.bud { opacity: .55; filter: saturate(.3); }
   .fr.small { opacity: .8; filter: saturate(.7); }
-  .stars { display: flex; gap: 1px; }
-  .stars svg { width: 18px; height: 18px; fill: var(--star-off); stroke: var(--star-edge); stroke-width: 1.5; stroke-linejoin: round; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .stars { display: flex; align-items: center; gap: 3px; font-size: var(--fs-caption); font-weight: 700; color: var(--c-ink-soft); }
+  .stars svg { width: 18px; height: 18px; fill: var(--star-off); stroke: var(--star-edge); stroke-width: 1.5; stroke-linejoin: round; animation: if-pop var(--dur-pop) var(--ease-bounce) 2s both; }
   .stars svg.on { fill: var(--star-on); }
+  .stars b { font-size: 1rem; color: var(--c-ink); }
   .av { width: 40px; height: 40px; flex: none; border-radius: var(--r-blob); background: var(--card-pink); display: grid; place-items: center; }
   .av.team svg { width: 24px; height: 24px; color: var(--p-berry); }
   .trow :global(.bells) { flex: none; }
@@ -215,12 +268,17 @@
     box-shadow: 0 5px 0 #26306A, inset 0 2px 0 rgba(255, 255, 255, .2); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both;
   }
   .rung .navy { animation-delay: .3s; }
-  .mini {
-    display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 56px; padding: 6px 14px; border-radius: var(--r-card);
-    background: rgba(255, 255, 255, .12); border: 2px dashed rgba(255, 255, 255, .4); animation: rowIn .6s var(--ease-soft) 3s both;
-  }
-  .mini svg { width: 32px; height: 32px; }
-  .pl { font-weight: 700; }
+  /* The purse: one quiet line under the total (U6: no extra card under the sticky button at 320). */
+  .mini { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; animation: rowIn .6s var(--ease-soft) 3s both; }
+  .mini svg { width: 24px; height: 24px; }
+  .mini b { font-size: 1.05rem; }
+
+  .done { display: grid; justify-items: center; gap: 10px; text-align: center; padding-top: 6px; }
+  .djar { width: 120px; height: 144px; display: block; overflow: visible; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .coins { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--f)); transition: transform 1.4s var(--ease-soft) .4s; }
+  .dhead { margin: 4px 0 0; font: 900 1.5rem/1.2 var(--font-ui); }
+  .dnext { margin: 0; font-weight: 700; color: var(--text-soft); }
+  @media (prefers-reduced-motion: reduce) { .coins { transition: none; } }
   @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
   .cta {

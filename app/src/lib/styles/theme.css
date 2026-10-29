@@ -83,7 +83,7 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .pill {
   display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-pill); padding: 6px 12px; min-height: 36px;
   font-weight: 700; font-size: var(--fs-caption); background: color-mix(in srgb, var(--bubble) 94%, transparent);
-  border: var(--bw) solid #EADBB8; box-shadow: 0 3px 0 rgba(74, 58, 44, .14); color: var(--c-ink);
+  border: var(--bw) solid var(--c-pill-edge); box-shadow: 0 3px 0 rgba(74, 58, 44, .14); color: var(--c-ink);
 }
 
 /* ---------- chunky button (§4) ---------- */
@@ -109,7 +109,7 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 .btn.coral { --fill: var(--c-coral); --lip-c: var(--c-coral-lip); }
 .btn.sky { --fill: var(--c-sky); --lip-c: var(--c-sky-lip); }
 :root[data-theme="night"] .btn:not(.yuzu, .coral, .sky, .paper) { --fill: var(--c-moon); --lip-c: var(--c-moon-lip); }
-.btn.paper { --fill: var(--c-bubble); --lip-c: var(--c-paper-2); color: var(--c-ink); border: var(--bw) solid #EADBB8; }
+.btn.paper { --fill: var(--c-bubble); --lip-c: var(--c-paper-2); color: var(--c-ink); border: var(--bw) solid var(--c-pill-edge); }
 :root[data-theme="night"] .btn.paper { --lip-c: #26306A; border-color: #D9CFB4; }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
@@ -118,7 +118,7 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 /* ---------- round icon button ---------- */
 .icon-btn {
   appearance: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; padding: 0;
-  background: var(--bubble); border: var(--bw) solid #EADBB8;
+  background: var(--bubble); border: var(--bw) solid var(--c-pill-edge);
   display: grid; place-items: center; color: var(--c-ink);
   box-shadow: 0 3px 0 rgba(74, 58, 44, .16); transition: transform var(--dur-base) var(--ease-bounce);
 }

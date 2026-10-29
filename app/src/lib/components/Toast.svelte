@@ -19,8 +19,10 @@
     reaction?: string;
     /** Another banner is up: sit one row lower. */
     second?: boolean;
+    /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */
+    action?: { label: string; run: () => void };
   }
-  let { text, person, miles = false, reaction, second = false }: Props = $props();
+  let { text, person, miles = false, reaction, second = false, action }: Props = $props();
 
   let gone = $state(false);
   let startY = 0;
@@ -54,7 +56,8 @@
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
     <span class="txt">{text}</span>
-    {#if reaction}<span class="re" aria-hidden="true"><OfficialArt key="reactions/{reaction}" size={28} eager /></span>{/if}
+    {#if action}<button type="button" class="act" onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
+    {:else if reaction}<span class="re" aria-hidden="true"><OfficialArt key="reactions/{reaction}" size={28} eager /></span>{/if}
   </div>
 {/if}
 
@@ -63,7 +66,7 @@
     position: fixed; inset: auto 0; margin: 0 auto; z-index: 90; overflow: hidden;
     top: calc(var(--safe-top) + 56px); height: 52px; width: min(100% - 24px, 420px);
     display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; border-radius: var(--r-pill);
-    background: var(--c-bubble); color: var(--c-ink-talk); border: 2px solid #EADBB8; box-shadow: 0 4px 0 rgba(74, 58, 44, .12), var(--sh-float);
+    background: var(--c-bubble); color: var(--c-ink-talk); border: 2px solid var(--c-pill-edge); box-shadow: 0 4px 0 rgba(74, 58, 44, .12), var(--sh-float);
     font: 700 var(--fs-body)/1.2 var(--font-ui);
     animation: in 320ms var(--ease-bounce) both;
   }
@@ -76,6 +79,13 @@
   }
   .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .re { flex: none; line-height: 0; }
+  /* Undo: above the dismiss layer, a 44px-tall pill on the right. */
+  .act {
+    position: relative; z-index: 2; flex: none; appearance: none; cursor: pointer; min-height: 44px; margin-right: -6px; padding: 0 14px;
+    border-radius: var(--r-pill); border: 2px solid var(--c-leaf-lip); background: var(--c-leaf-soft); color: var(--c-leaf-ink);
+    font: 700 var(--fs-caption)/1 var(--font-ui);
+  }
+  .act:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @keyframes in { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .banner { animation: fade 120ms both; }
