@@ -60,7 +60,7 @@
     class="fr {stage}"
     class:tree={onTree}
     style:--p={pct}
-    style:--c={stage === 'bud' ? 'var(--c-ring-low)' : `var(--f-${fruit})`}
+    style:--c={stage === 'ripe' ? 'var(--c-yuzu)' : 'var(--c-leaf)'}
     aria-label={label}
     aria-expanded={open}
     onclick={toggle}
@@ -82,13 +82,13 @@
   .fr {
     appearance: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
     width: var(--size); height: var(--size); min-width: 44px; min-height: 44px; border-radius: 50%;
-    background: conic-gradient(var(--c) calc(var(--p) * 1%), var(--ring-track) 0);
+    background: conic-gradient(var(--c) calc(var(--p) * 1%), color-mix(in srgb, var(--c-lip) 50%, transparent) 0);
     display: grid; place-items: center; position: relative;
     transition: transform var(--dur-quick) var(--ease-bounce);
     animation: pop var(--dur-slow) var(--ease-bounce) both;
   }
   .fr:active { transform: scale(.94); }
-  .fr::before { content: ''; position: absolute; inset: 9%; border-radius: 50%; background: var(--surface); }
+  .fr::before { content: ''; position: absolute; inset: 9%; border-radius: 50%; background: var(--c-cream); }
   .fruit {
     position: relative; display: grid; place-items: center; width: 68%; height: 68%;
     transition: transform var(--dur-slow) var(--ease-bounce), opacity var(--dur-slow) var(--ease-soft), filter var(--dur-slow);
@@ -118,16 +118,16 @@
   .wrap.tree { position: static; }
   .tip {
     position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 20;
-    background: var(--bubble); color: var(--c-ink-talk); font-weight: 700; font-size: var(--fs-caption);
-    padding: 7px 12px; border-radius: 14px; white-space: nowrap; pointer-events: none;
-    box-shadow: 0 3px 0 var(--c-paper-2), var(--sh-soft);
+    background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s);
+    padding: 7px 12px; border-radius: var(--r-chip); white-space: nowrap; pointer-events: none;
+    box-shadow: 0 3px 0 var(--c-lip);
     animation: if-pop var(--dur-base) var(--ease-bounce) both;
   }
   .tip::after {
     content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -6px;
-    border: 6px solid transparent; border-bottom: 0; border-top-color: var(--bubble);
+    border: 6px solid transparent; border-bottom: 0; border-top-color: var(--c-cream);
   }
   .wrap.tree .tip { bottom: calc(100% + 4px); }
-  .pct { font-size: 1rem; color: var(--text); }
+  .pct { font-size: var(--fs-body); color: inherit; }
   @media (prefers-reduced-motion: reduce) { .fr.tree.ripe::after { animation: none; } }
 </style>

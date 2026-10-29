@@ -32,16 +32,16 @@
   .err {
     --nook-h: 120px;
     max-width: 380px; margin: 0 auto; min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 14px;
-    text-align: center; background: var(--pat-dots), var(--bg); color: var(--text);
-    padding: calc(var(--safe-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--dock-h) + var(--dock-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
+    text-align: center; background: var(--bg); color: var(--text);
+    padding: calc(var(--safe-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--pad-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
   }
   .nook { line-height: 0; }
-  h1 { margin: 0; display: grid; gap: 4px; font-size: var(--fs-h2); text-wrap: balance; word-break: auto-phrase; }
+  h1 { margin: 0; display: grid; gap: 4px; font-size: var(--fs-title); text-wrap: balance; word-break: auto-phrase; }
   h1 [lang='en'] { font-size: .85em; color: var(--text-soft); }
   p { margin: 0; font-weight: 700; color: var(--text-soft); text-wrap: balance; }
   .btn { width: 100%; text-decoration: none; }
   .two { display: grid; line-height: 1.2; text-align: left; }
-  .two small { font-size: var(--fs-caption); }
+  .two small { font-size: var(--fs-s); }
   .btn svg { width: 22px; height: 22px; }
   .demo { min-height: 44px; display: inline-flex; align-items: center; font-weight: 700; color: var(--text-soft); }
   @media (max-height: 700px), (max-width: 359px) { .err { --nook-h: 96px; gap: 10px; } }

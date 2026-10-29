@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しまフォン launcher (style guide v4 §T.1, §R.5): a NookPhone-screen sheet with a status row (time · leaf),
+  // しまフォン launcher (v5 §4): a NookPhone-screen sheet with a status row (time · leaf · デモ in demo),
   // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
   // Apps: help, villager (+ name), language, reminders (iOS Shortcuts), sync, sharing.
@@ -21,12 +21,13 @@
 
   // `tile`: a full official NookPhone tile. Otherwise `glyph` (official) sits on our `fill`.
   const APPS: { id: AppId; tile?: string; glyph?: string; fill?: string }[] = [
-    { id: 'help', glyph: 'phone/glyph-help', fill: 'var(--app-help)' },
+    { id: 'help', glyph: 'phone/glyph-help', fill: 'var(--c-yuzu)' },
     { id: 'villager', tile: 'phone/passport' },
-    { id: 'lang', glyph: 'phone/glyph-chat', fill: 'var(--app-lang)' },
-    { id: 'bell', glyph: 'phone/glyph-resident', fill: 'var(--app-bell)' },
+    { id: 'lang', glyph: 'phone/glyph-chat', fill: 'var(--c-mint)' },
+    { id: 'bell', glyph: 'phone/glyph-resident', fill: 'var(--c-leaf)' },
     { id: 'sync', tile: 'phone/rescue' },
-    { id: 'share', glyph: 'phone/glyph-friends', fill: 'var(--app-share)' }
+    // settings (who sees which numbers) = the official Island Designer tile
+    { id: 'share', tile: 'phone/island-designer' }
   ];
   /** Raw numbers that can be shared. Eating answers are never shared. */
   const SHAREABLE: FruitKey[] = ['peach', 'coconut', 'apple'];
@@ -76,7 +77,7 @@
   <div class="status" aria-hidden="true">
     <span class="money">{clock}</span>
     <LeafCoin kind="leaf" size={16} />
-    <span></span>
+    <span class="demo-wrap">{#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}</span>
   </div>
 
   <div class="titlebar">
@@ -96,7 +97,7 @@
     <div class="grid">
       {#each APPS as a, i (a.id)}
         <button type="button" class="app" data-app={a.id} style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
-          <span class="tile" class:full={!!a.tile} style:--fill={a.fill ?? 'var(--c-sky)'}>
+          <span class="tile" class:full={!!a.tile} style:--fill={a.fill ?? 'var(--c-mint)'}>
             <OfficialArt key={a.tile ?? a.glyph} size={a.tile ? '100%' : '69%'} eager>
               {#snippet fallback()}<span class="fb"></span>{/snippet}
             </OfficialArt>
@@ -105,21 +106,20 @@
         </button>
       {/each}
     </div>
-    <span class="mark" aria-hidden="true"><LeafCoin kind="leaf" size={96} /></span>
   {:else}
     <div class="page">
       {#if app === 'help' && view}
         <ul class="howto">
-          <li class="miles" style:--card="var(--card-lime)">
+          <li class="card">
             <span class="hi"><Avatar person={view.me} villager={me?.villager} size={44} /></span>{t('help.row.checkin')}
           </li>
-          <li class="miles" style:--card="var(--card-butter)">
+          <li class="card">
             <span class="hi"><OfficialArt key={fruitArt('peach')} size={36} /></span>{t('help.row.fruit')}
           </li>
-          <li class="miles" style:--card="var(--card-pink)">
+          <li class="card">
             <span class="hi"><Avatar person={view.partner} villager={view.people[view.partner].villager} size={44} /></span>{t('help.row.partner')}
           </li>
-          <li class="miles" style:--card="var(--card-lilac)">
+          <li class="card">
             <span class="hi"><OfficialArt key="money/bells" size={36} /></span>{t('help.row.harvest')}
           </li>
         </ul>
@@ -175,7 +175,7 @@
               <span class="money when">{formatSyncTime(p.lastSyncAt, view.today)}</span>
             </div>
           {/each}
-          <button type="button" class="btn sky" disabled={week.syncing} onclick={() => week.refresh()}>
+          <button type="button" class="btn" disabled={week.syncing} onclick={() => week.refresh()}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sync" /></svg>{week.syncing ? t('sync.syncing') : t('phone.syncNow')}
           </button>
         </div>
@@ -199,10 +199,12 @@
 <style>
   .status {
     display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: -4px 4px 4px;
-    font: 600 15px/1 var(--font-num); color: var(--text);
+    font: 700 var(--fs-body)/1 var(--font-num); color: var(--text);
   }
+  .demo-wrap { justify-self: end; }
+  .demo { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .titlebar { position: relative; display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 14px; }
-  .titlebar h2 { font-size: var(--fs-h2); font-weight: 900; text-align: center; }
+  .titlebar h2 { font-size: var(--fs-title); text-align: center; }
   .back { position: absolute; left: 0; top: 2px; }
   .back svg { width: 22px; height: 22px; }
   .close { position: absolute; right: 0; top: 2px; }
@@ -215,36 +217,34 @@
   }
   .app {
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 8px;
-    min-width: var(--tile); animation: if-pop var(--dur-pop) var(--ease-bounce) both; border-radius: 18px; color: var(--text);
+    min-width: var(--tile); animation: if-pop var(--dur-pop) var(--ease-bounce) both; border-radius: var(--r-btn); color: var(--text);
   }
   .tile {
-    width: var(--tile); height: var(--tile); border-radius: var(--r-squircle); background: var(--fill); display: grid; place-items: center; overflow: hidden;
-    box-shadow: 0 4px 0 color-mix(in srgb, var(--fill) 85%, #000 15%), inset 0 2px 0 rgba(255, 255, 255, .45);
+    width: var(--tile); height: var(--tile); border-radius: var(--r-tile); background: var(--fill); display: grid; place-items: center; overflow: hidden;
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--fill) 85%, #000 15%);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
   /* Official full tiles bring their own squircle and colour. */
   .tile.full { background: none; box-shadow: none; filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .2)); }
   .fb { width: 50%; height: 50%; border-radius: 30%; background: rgba(255, 255, 255, .6); }
   .app:active .tile { transform: translateY(2px) scale(1.08, .9); transition-duration: var(--dur-tap); }
-  .lbl { font: 700 12px/1.1 var(--font-ui); white-space: nowrap; }
-  /* NookPhone home screen: the leaf, faint, low on the empty screen. */
-  .mark { display: flex; justify-content: center; margin-top: max(24px, 12dvh); opacity: .14; filter: grayscale(.2); }
+  .lbl { font: 700 var(--fs-s)/1.1 var(--font-ui); white-space: nowrap; }
 
   .page { display: grid; gap: 14px; animation: slide var(--dur-base) var(--ease-soft); }
   @keyframes slide { from { opacity: 0; transform: translateX(40%); } to { opacity: 1; transform: none; } }
 
   .howto { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-  .howto li { display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 8px 14px; font-weight: 700; font-size: var(--fs-body-lg); line-height: 1.3; }
+  .howto li { display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 8px 14px; font-weight: 700; font-size: var(--fs-body); line-height: 1.3; }
   .hi { width: 44px; display: grid; place-items: center; flex: none; }
 
   .preview { display: flex; align-items: flex-end; gap: 14px; }
-  .vn { font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
+  .vn { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .pv { width: 88px; display: grid; gap: 4px; justify-items: center; flex: none; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .namefield { flex: 1; min-width: 0; display: grid; gap: 6px; padding-bottom: 20px; }
-  .namefield span { font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); }
+  .namefield span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .name {
-    width: 100%; min-height: 52px; border-radius: var(--r-sm); border: var(--bw) solid var(--edge);
-    background: var(--c-bubble); color: var(--c-ink); padding: 0 14px; font-weight: 700; box-shadow: var(--sh-inset);
+    width: 100%; min-height: 52px; border-radius: var(--r-btn); border: 0;
+    background: var(--c-cream); color: var(--c-ink); padding: 0 14px; font-weight: 700; box-shadow: inset 0 3px 0 var(--c-lip);
   }
   .roster { display: grid; grid-template-columns: repeat(5, 64px); justify-content: space-between; row-gap: 12px; padding: 4px 4px 8px; }
   @media (max-width: 374px) {
@@ -252,29 +252,29 @@
     .rv :global(.av) { --s: 56px !important; }
   }
   .rv {
-    appearance: none; cursor: pointer; border: 0; padding: 0; background: none; border-radius: var(--r-blob); position: relative;
+    appearance: none; cursor: pointer; border: 0; padding: 0; background: none; border-radius: 50%; position: relative;
     box-shadow: 0 0 0 3px transparent; transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-quick);
   }
   .rv:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
-  .rv[aria-checked='true'] { box-shadow: 0 0 0 3px var(--c-leaf), 0 3px 0 3px var(--c-leaf-lip); }
+  .rv[aria-checked='true'] { box-shadow: 0 0 0 4px var(--c-leaf); }
   .ck {
     position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; padding: 3px; border-radius: 50%;
-    background: var(--c-leaf); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-leaf-lip);
+    background: var(--c-leaf); color: var(--c-ink);
   }
 
   .rows { display: grid; gap: 10px; }
   .row {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px;
-    border-radius: var(--r-card); border: var(--bw) solid var(--edge); background: var(--surface); color: var(--text);
+    border-radius: var(--r-card); border: 0; background: var(--surface); color: var(--text);
     box-shadow: var(--sh-lip); text-align: left; width: 100%; font: inherit;
   }
-  .row:not(.static):active { transform: translateY(2px); box-shadow: var(--sh-lip-pressed); }
+  .row:not(.static):active { transform: translateY(2px); box-shadow: 0 1px 0 var(--lip); }
   .row.static { cursor: default; }
-  .ri { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: var(--r-squircle); background: var(--app-bell); color: var(--c-ink); }
+  .ri { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: var(--r-tile); background: var(--c-yuzu); color: var(--c-ink); }
   .ri svg { width: 28px; height: 28px; }
-  .rl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body-lg); word-break: auto-phrase; text-wrap: balance; line-height: 1.3; }
-  .when { font-size: 1rem; color: var(--text-soft); white-space: nowrap; }
-  .radio { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--edge); flex: none; }
-  .row[aria-checked='true'] .radio { border-color: var(--c-leaf-lip); background: radial-gradient(circle, var(--c-leaf) 0 6px, transparent 7px); }
-  .cap { margin: 0 4px; font-size: var(--fs-caption); font-weight: 700; color: var(--text-soft); text-align: center; text-wrap: balance; }
+  .rl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); word-break: auto-phrase; text-wrap: balance; line-height: 1.3; }
+  .when { font-size: var(--fs-body); color: var(--text-soft); white-space: nowrap; }
+  .radio { width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--lip) 60%, transparent); flex: none; }
+  .row[aria-checked='true'] .radio { background: radial-gradient(circle, var(--c-cream) 0 5px, var(--c-leaf) 6px); }
+  .cap { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-align: center; text-wrap: balance; }
 </style>

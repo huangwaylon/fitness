@@ -67,7 +67,7 @@
 
 <!-- Style guide v4 §R.7: the dodo airport brings you to the island; しずえ greets you; paste the key. -->
 <main class="pair" style:--kb="{kb}px">
-  <button type="button" class="lang pill" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
+  <button type="button" class="lang" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe" /></svg>{i18n.locale === 'ja' ? 'English' : '日本語'}
   </button>
 
@@ -75,7 +75,7 @@
 
   <Bubble text={t('pair.title')} host="wave" size="var(--pair-host)" />
 
-  <form class="miles" style:--card="var(--card-teal)" onsubmit={submit}>
+  <form class="card" onsubmit={submit}>
     <label class="lbl" for="code">{t('pair.code')}</label>
     <input
       id="code"
@@ -109,24 +109,29 @@
     gap: 14px; position: relative;
     padding: calc(var(--safe-top) + 60px) calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 20px) calc(var(--side) + var(--safe-left));
   }
-  .lang { position: absolute; top: calc(var(--safe-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px; }
+  .lang {
+    position: absolute; top: calc(var(--safe-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px;
+    display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: var(--r-btn); background: var(--c-cream); color: var(--c-ink);
+    box-shadow: 0 3px 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
+  }
   .lang svg { width: 18px; height: 18px; }
-  .port { width: 220px; margin: 0 auto; filter: drop-shadow(0 6px 0 rgba(74, 58, 44, .1)); }
+  .port { width: 220px; margin: 0 auto; }
   /* しずえ's only instruction here: always room for 2 lines, also on compact screens (N4 / C33). */
   .pair :global(.talk) { --talk-lines: 2; min-height: calc(var(--pair-host) + 4px); }
   form { display: grid; gap: 8px; padding: 14px 16px 10px; }
-  .lbl { font-weight: 900; font-size: var(--fs-h2); text-align: center; }
+  .lbl { font-weight: 700; font-size: var(--fs-talk); text-align: center; }
   .code {
     width: 100%; min-height: 56px; text-align: center; font-size: 1.1rem !important; letter-spacing: .02em !important;
-    border-radius: var(--r-sm); border: var(--bw) solid color-mix(in srgb, var(--card) 70%, #000 30%); background: var(--c-bubble); color: var(--c-ink); box-shadow: var(--sh-inset);
+    border-radius: var(--r-btn); border: 0; background: var(--c-cream); color: var(--c-ink); box-shadow: inset 0 3px 0 var(--c-lip);
   }
   .code::placeholder { color: var(--c-ink-soft); opacity: .5; }
-  .msg { min-height: 1.4em; margin: 0; color: var(--c-coral-ink); font-weight: 700; text-align: center; }
-  .msg.info { color: var(--c-ink-talk); font-size: var(--fs-caption); }
+  .msg { min-height: 1.4em; margin: 0; font-weight: 700; text-align: center; }
+  .msg:not(.info):not(:empty) { background: var(--c-coral); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; }
+  .msg.info { color: var(--text-soft); font-size: var(--fs-s); }
   /* The button rides above the keyboard. */
   .go { position: sticky; bottom: calc(var(--safe-bottom) + 8px); transform: translateY(calc(-1 * var(--kb))); }
-  .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-caption); }
-  .hint.strong { background: var(--c-sky-soft); color: var(--c-ink); border-radius: var(--r-sm); }
+  .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-s); }
+  .hint.strong { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-btn); }
   @media (max-height: 700px), (max-width: 359px) {
     .pair { --pair-host: 56px; gap: 10px; }
     .port { width: 160px; }
