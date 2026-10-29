@@ -136,7 +136,7 @@ No notifications or reminders ([ADR 0016](decisions/0016-no-privacy-no-alerts.md
 
 Detail: [design.md](design/design.md) (the current design spec), [history-and-editing.md](design/history-and-editing.md) (きろく), [ADR 0007](decisions/0007-japanese-first-ui.md), [ADR 0018](decisions/0018-official-art-public-site.md) (official art).
 
-**Simplicity budget:** two screens (島 and 旅の壺), the NookPhone, one overlay and one sheet. No tab bar. One primary action per screen, ≈ 40–50 Japanese characters of non-numeric text per screen, big numbers, icons over rows of text; explanations live in the 使い方 app.
+**Simplicity budget:** two screens (島 and 旅の壺), the NookPhone, one overlay and one sheet. No tab bar. One primary action per screen, ≤ 40 Japanese characters of non-numeric text per screen, big numbers, icons over rows of text; explanations live in the 使い方 app.
 
 | Screen | At a glance |
 |---|---|
