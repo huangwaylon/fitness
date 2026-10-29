@@ -243,14 +243,14 @@
     },
     "host/isabelle": {
       "path": "host/isabelle.webp",
-      "w": 280,
-      "h": 512,
+      "w": 175,
+      "h": 320,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Transparent.png"
     },
     "host/isabelle-bow": {
       "path": "host/isabelle-bow.webp",
-      "w": 512,
-      "h": 512,
+      "w": 320,
+      "h": 320,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model_2.png"
     },
     "host/isabelle-icon": {
@@ -261,8 +261,8 @@
     },
     "host/isabelle-stand": {
       "path": "host/isabelle-stand.webp",
-      "w": 512,
-      "h": 512,
+      "w": 320,
+      "h": 320,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model.png"
     },
     "host/isabelle-winter": {
@@ -647,6 +647,12 @@
       "path": "trees/palm.webp",
       "w": 320,
       "h": 302,
+      "source": "https://nookipedia.com/wiki/File:Palm_Tree_NH.png"
+    },
+    "trees/palm-sm": {
+      "path": "trees/palm-sm.webp",
+      "w": 128,
+      "h": 121,
       "source": "https://nookipedia.com/wiki/File:Palm_Tree_NH.png"
     },
     "trees/peach-icon": {

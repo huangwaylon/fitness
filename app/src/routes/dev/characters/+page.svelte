@@ -11,7 +11,7 @@
   import FruitRing from '#lib/components/FruitRing.svelte';
   import IslandScene from '#lib/components/IslandScene.svelte';
   import Fx from '#lib/components/Fx.svelte';
-  import { REACTIONS as ICONS, POSES as POSE_IDS } from '#lib/components/art.ts';
+  import { REACTIONS as ICONS, POSES as POSE_IDS, MARKS, COLOUR_GLYPHS } from '#lib/components/art.ts';
   import { REACTIONS, REACTION_IDS } from '#lib/components/motion/reactions.ts';
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import { hostTap } from '#lib/components/motion/director.svelte.ts';
@@ -33,6 +33,8 @@
       { s, tod: 'day' as const },
       { s, tod: 'night' as const }
     ]),
+    { s: 'spring' as const, tod: 'day' as const, f: 'green' as const },
+    { s: 'autumn' as const, tod: 'day' as const, f: 'green' as const },
     { s: 'spring' as const, tod: 'dawn' as const },
     { s: 'autumn' as const, tod: 'dusk' as const }
   ];
@@ -65,7 +67,12 @@
   </section>
 
   <section>
-    <h2>Reaction icons (emote bubble) · fx</h2>
+    <h2>Villager marks (floating, no disc; ours + official colour glyphs)</h2>
+    <div class="row">
+      {#each MARKS as id (id)}<figure><Emote id="mark-{id}" hold bare size={44} /><figcaption>mark-{id}</figcaption></figure>{/each}
+      {#each COLOUR_GLYPHS as id (id)}<figure><Emote {id} hold bare size={44} /><figcaption>{id}</figcaption></figure>{/each}
+    </div>
+    <h2>Reaction icons (しずえ's bubble) · fx</h2>
     <div class="row">
       {#each ICONS as id (id)}<figure><Emote {id} hold size={44} /><figcaption>{id}</figcaption></figure>{/each}
       {#each POSE_IDS as id (id)}<figure><Emote id="pose-{id}" hold size={44} /><figcaption>pose-{id}</figcaption></figure>{/each}
@@ -103,7 +110,7 @@
     <h2>しずえ poses (winter: always the winter outfit)</h2>
     <div class="row">
       {#each POSES as p (p)}
-        <figure><Host pose={p} size={96} /><figcaption>{p}</figcaption></figure>
+        <figure><Host pose={p} size={96} animate={false} /><figcaption>{p}</figcaption></figure>
       {/each}
       <figure><Host head size={44} /><figcaption>icon</figcaption></figure>
     </div>
@@ -159,10 +166,10 @@
     <h2>Island · season × time of day</h2>
     <div class="scenes">
       {#if week.view}
-        {#each SCENES as sc (sc.s + sc.tod)}
+        {#each SCENES as sc (sc.s + sc.tod + ('f' in sc ? sc.f : ''))}
           <figure>
-            <div class="sc"><IslandScene view={week.view} season={sc.s} tod={sc.tod} live={false} /></div>
-            <figcaption>{sc.s} · {sc.tod}</figcaption>
+            <div class="sc"><IslandScene view={week.view} season={sc.s} foliage={'f' in sc ? sc.f : undefined} tod={sc.tod} live={false} /></div>
+            <figcaption>{sc.s} · {sc.tod}{'f' in sc ? ` · ${sc.f} oaks` : ''}</figcaption>
           </figure>
         {/each}
       {/if}
