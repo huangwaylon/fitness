@@ -1,47 +1,71 @@
 {
-  "version": 8,
+  "version": 9,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Blue-Hydrangea_Bush_NH_Inv_Icon.png"
-    },
-    "bushes/green": {
-      "path": "bushes/green.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Bush_NH_Inv_Icon.png"
+      "w": 105,
+      "h": 102,
+      "source": "https://nookipedia.com/wiki/File:Blue-Hydrangea_Bush_NH_Icon.png"
     },
     "bushes/holly": {
       "path": "bushes/holly.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Holly_Bush_NH_Inv_Icon.png"
+      "w": 107,
+      "h": 100,
+      "source": "https://nookipedia.com/wiki/File:Holly_Bush_NH_Icon.png"
     },
     "bushes/orange-tea-olive": {
       "path": "bushes/orange-tea-olive.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Orange-Tea-Olive_Bush_NH_Inv_Icon.png"
+      "w": 100,
+      "h": 102,
+      "source": "https://nookipedia.com/wiki/File:Orange-Tea-Olive_Bush_NH_Icon.png"
     },
     "bushes/pink-azalea": {
       "path": "bushes/pink-azalea.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pink-Azalea_Bush_NH_Inv_Icon.png"
+      "w": 106,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:Pink-Azalea_Bush_NH_Icon.png"
     },
     "bushes/pink-camellia": {
       "path": "bushes/pink-camellia.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pink-Camellia_Bush_NH_Inv_Icon.png"
+      "w": 102,
+      "h": 101,
+      "source": "https://nookipedia.com/wiki/File:Pink-Camellia_Bush_NH_Icon.png"
+    },
+    "bushes/pink-hydrangea": {
+      "path": "bushes/pink-hydrangea.webp",
+      "w": 104,
+      "h": 102,
+      "source": "https://nookipedia.com/wiki/File:Pink-Hydrangea_Bush_NH_Icon.png"
+    },
+    "bushes/red-camellia": {
+      "path": "bushes/red-camellia.webp",
+      "w": 102,
+      "h": 101,
+      "source": "https://nookipedia.com/wiki/File:Red-Camellia_Bush_NH_Icon.png"
     },
     "bushes/red-hibiscus": {
       "path": "bushes/red-hibiscus.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Red-Hibiscus_Bush_NH_Inv_Icon.png"
+      "w": 106,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Red-Hibiscus_Bush_NH_Icon.png"
+    },
+    "bushes/white-azalea": {
+      "path": "bushes/white-azalea.webp",
+      "w": 106,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:White-Azalea_Bush_NH_Icon.png"
+    },
+    "bushes/yellow-hibiscus": {
+      "path": "bushes/yellow-hibiscus.webp",
+      "w": 106,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Yellow-Hibiscus_Bush_NH_Icon.png"
+    },
+    "bushes/yellow-tea-olive": {
+      "path": "bushes/yellow-tea-olive.webp",
+      "w": 100,
+      "h": 101,
+      "source": "https://nookipedia.com/wiki/File:Yellow-Tea-Olive_Bush_NH_Icon.png"
     },
     "deco/airport": {
       "path": "deco/airport.webp",
@@ -139,82 +163,46 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Stone_NH_Inv_Icon.png"
     },
-    "flowers/blue-hyacinths": {
-      "path": "flowers/blue-hyacinths.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Blue_Hyacinths_NH_Inv_Icon.png"
-    },
-    "flowers/lily-of-the-valley": {
-      "path": "flowers/lily-of-the-valley.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Lily-of-the-Valley_Plant_NH_Inv_Icon.png"
-    },
     "flowers/orange-pansies": {
       "path": "flowers/orange-pansies.webp",
-      "w": 96,
-      "h": 96,
+      "w": 95,
+      "h": 95,
       "source": "https://nookipedia.com/wiki/File:Orange_Pansies_NH_Inv_Icon.png"
     },
     "flowers/pink-cosmos": {
       "path": "flowers/pink-cosmos.webp",
-      "w": 96,
-      "h": 96,
+      "w": 78,
+      "h": 104,
       "source": "https://nookipedia.com/wiki/File:Pink_Cosmos_NH_Inv_Icon.png"
-    },
-    "flowers/pink-lilies": {
-      "path": "flowers/pink-lilies.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pink_Lilies_NH_Inv_Icon.png"
-    },
-    "flowers/pink-tulips": {
-      "path": "flowers/pink-tulips.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pink_Tulips_NH_Inv_Icon.png"
     },
     "flowers/purple-mums": {
       "path": "flowers/purple-mums.webp",
-      "w": 96,
-      "h": 96,
+      "w": 90,
+      "h": 105,
       "source": "https://nookipedia.com/wiki/File:Purple_Mums_NH_Inv_Icon.png"
     },
     "flowers/red-roses": {
       "path": "flowers/red-roses.webp",
-      "w": 128,
-      "h": 128,
+      "w": 83,
+      "h": 104,
       "source": "https://nookipedia.com/wiki/File:Red_Roses_NH_Inv_Icon.png"
     },
     "flowers/red-tulips": {
       "path": "flowers/red-tulips.webp",
-      "w": 128,
-      "h": 128,
+      "w": 66,
+      "h": 107,
       "source": "https://nookipedia.com/wiki/File:Red_Tulips_NH_Inv_Icon.png"
     },
-    "flowers/white-cosmos": {
-      "path": "flowers/white-cosmos.webp",
-      "w": 128,
-      "h": 128,
-      "source": "https://nookipedia.com/wiki/File:White_Cosmos_NH_Inv_Icon.png"
-    },
-    "flowers/white-windflowers": {
-      "path": "flowers/white-windflowers.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:White_Windflowers_NH_Inv_Icon.png"
-    },
-    "flowers/yellow-roses": {
-      "path": "flowers/yellow-roses.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Yellow_Roses_NH_Inv_Icon.png"
+    "flowers/white-roses": {
+      "path": "flowers/white-roses.webp",
+      "w": 83,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:White_Roses_NH_Inv_Icon.png"
     },
     "flowers/yellow-tulips": {
       "path": "flowers/yellow-tulips.webp",
-      "w": 128,
-      "h": 128,
+      "w": 66,
+      "h": 107,
       "source": "https://nookipedia.com/wiki/File:Yellow_Tulips_NH_Inv_Icon.png"
     },
     "fruit/apple": {

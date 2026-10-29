@@ -32,7 +32,7 @@
 ## Spec
 u = stage unit. Light from the upper left. Gradients use `userSpaceOnUse` over each element's bounding box.
 
-**Framing.** Keep the stage formula and the horizon cap. Redraw the plateau as an **organic shape spanning x 40–350u** and move the **trees to x 88 / 302**, so sea shows on both sides at every width:
+**Framing.** Keep the stage formula and the horizon cap. Redraw the plateau as an **organic shape spanning x 40–350u** and put the **trees on tile columns ±2 (x 107 / 283)**, so sea shows on both sides at every width. Object sizes and positions follow the NH tile grid in `scale-and-ground.md`:
 | Viewport | Horizon | Stage (1u) | Plateau on screen | Sun core / glow | Clouds C1 / C2 |
 |---|---|---|---|---|---|
 | 393×852 | 179px | 479 (1.23px) | 6–387px | 30 / 84px | 120 / 86px |
@@ -75,11 +75,11 @@ The tint (below) darkens the sea, so delete the per-time sea tables. The chrome 
 | Autumn | #A8C457 | #C2D46E | #D9C26A | #8AA845 |
 | Winter | #F5F8FF | #FFFFFF | none | shade #D5E0F2 |
 
-The highlight is radial, centred at (30%, 25%). Flecks are 5u NH triangles, randomly rotated, about 3% coverage, seeded with `rng()`. Winter: 6u scalloped snow over the cliff edge.
+The highlight is radial, centred at (30%, 25%), with broad blurred lighter and darker patches. Flecks are NH leaf triangles about 0.2 tile (6–10.5u), randomly rotated, squashed to 0.7 depth, on a seeded jittered tile grid (≈ 2.4 cells per tile, 62% filled, two opacities per tone). Winter: soft snow dimples instead, and 6u scalloped snow over the cliff edge. The grass overhang casts a soft shade on the cliff top (scale pass, `scale-and-ground.md`).
 
 **Contact shadows.** Radial, fading to 0, offset +6% right and down.
 - Colour: on grass rgba(34,74,28,.32), on sand rgba(140,98,40,.28), on snow rgba(80,110,160,.25).
-- Size (rx / ry): villager 0.30h / 0.06h, tree 0.26h, jar 0.55w, fruit 0.45 of its size.
+- Size (rx / ry): villager 0.30h / 0.06h, tree 0.26h, jar 0.55w, fruit 0.45 of its size, hedge bush 0.56 of its height / 5.5u, flower 11 / 3.2u.
 - Dusk: ×1.25 to the right.
 
 **Jar.** Glass #DDF2FB, an upper-left white streak at 30%, a lower-right shade of #BFDCEA. No outline.

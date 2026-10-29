@@ -8,13 +8,15 @@
   //   turquoise shallow ring (blurred, fades outward) · a second foam line 7u out (45%) · the 2.5u foam line
   //   on the beach edge · the 5u wet band · the sand crescent (radial, lighter at the upper left) · a soft
   //   shade at the cliff foot · the terracotta cliff (12u at the front, 6u at the sides, lit on top, two faint
-  //   strata) · the 3u grass overhang · the grass (radial highlight at (30%, 25%), a soft lower shade, seeded
-  //   5u triangle flecks; winter: snow, a blue-lilac lower shade and scallops over the cliff edge) · the plaza
-  //   patch under the jar · soft radial contact shadows under the trees and the jar.
+  //   strata) · the overhang's soft shade on the cliff top · the 3u grass overhang · the grass (radial highlight
+  //   at (30%, 25%), broad blurred tonal patches, a soft lower shade, NH leaf triangles ≈ 0.2 tile on a jittered
+  //   tile grid, flattened to the camera; winter: snow dimples, a blue-lilac lower shade and scallops over the
+  //   cliff edge) · the plaza patch under the jar · soft radial contact shadows under the trees, the jar, every
+  //   hedge bush and every flower (docs/design/scale-and-ground.md).
   // Colours: the season tables in tokens.css (Builder A block). The time of day is ONE multiply tint over
   // land and sea (IslandScene .tint), so nothing here is keyed on tod (except the dusk shadow stretch).
   import type { Season } from '#lib/client/theme.svelte.ts';
-  import { BED_ROWS, BED_X, JAR, PLATEAU, SAND, TREE, outline, rng, smooth } from './scene.ts';
+  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, JAR, PLATEAU, ROW, SAND, TILE, TREE, outline, rng, smooth } from './scene.ts';
 
   interface Props {
     uid: string;
@@ -55,7 +57,9 @@
   // 6u scallops along the straight front run (the corners stay smooth)
   const SCALLOPS: Pt[] = Array.from({ length: Math.floor((P.x1 - P.x0 - 2 * P.rb) / 5.5) + 1 }, (_, i) => [P.x0 + P.rb + i * 5.5, P.y1 + 1.4]);
 
-  // ---- grass flecks: NH's sparse two-tone 5u triangles, randomly rotated, seeded (~2% coverage) ----
+  // ---- grass (scale pass, docs/design/scale-and-ground.md): NH's grass is a plain green with two-tone leaf
+  // triangles about a fifth of a tile across, lying flat on the ground (squashed to the camera's 0.7 depth),
+  // a couple per tile, never in a repeating pattern; plus broad, soft lighter and darker patches. ----
   const inside = (x: number, y: number, m: number) => {
     if (x < P.x0 + m || x > P.x1 - m || y < P.y0 + m || y > P.y1 - m) return false;
     const r = y < (P.y0 + P.y1) / 2 ? P.rt : P.rb;
@@ -64,32 +68,68 @@
     const inCorner = (x < P.x0 + r || x > P.x1 - r) && (y < P.y0 + r || y > P.y1 - r);
     return !inCorner || Math.hypot(x - cx, y - cy) < r - m;
   };
+  /** Clear ground: the plaza patch under the jar and the trunks' root flare. */
+  const clear = (x: number, y: number) =>
+    Math.hypot((x - JAR.x) / 52, (y - JAR.base + 6) / 22) < 1 ||
+    [TREE.x.A, TREE.x.B].some((tx) => Math.hypot((x - tx) / 26, (y - TREE.base + 3) / 9) < 1);
   const FLECKS = (() => {
     const r = rng(1907);
+    // a jittered grid (≈ 2.4 cells per tile, 62% filled): even cover, no clumps, no repeat
+    const cw = TILE / 2.4, ch = ROW / 2.2;
     const tri = (x: number, y: number, a: number, s: number) =>
       [0, 1, 2].map((k) => {
         const t = a + (k * 2 * Math.PI) / 3;
-        return `${(x + s * 0.58 * Math.cos(t)).toFixed(1)} ${(y + s * 0.58 * Math.sin(t)).toFixed(1)}`;
+        return `${(x + s * 0.58 * Math.cos(t)).toFixed(1)} ${(y + s * 0.58 * 0.72 * Math.sin(t)).toFixed(1)}`;
       });
-    let hi = '', lo = '';
-    for (let i = 0; i < 260 && (hi + lo).length < 9000; i++) {
-      const x = P.x0 + r() * (P.x1 - P.x0), y = P.y0 + r() * (P.y1 - P.y0);
-      const a = r() * Math.PI * 2, s = 4 + r() * 1.4, light = r() < 0.58;
-      // keep the plaza patch and the tree trunks' footing clean
-      if (!inside(x, y, 6) || Math.hypot((x - JAR.x) / 60, (y - JAR.base + 6) / 26) < 1) continue;
-      if (r() > 0.45) continue;
-      const [p, q, w] = tri(x, y, a, s);
-      const d = `M${p}L${q}L${w}Z`;
-      if (light) hi += d; else lo += d;
-    }
-    return { hi, lo };
+    const out = { hi: '', hi2: '', lo: '', lo2: '' };
+    for (let gy = P.y0 + 2; gy < P.y1; gy += ch)
+      for (let gx = P.x0 + 2; gx < P.x1; gx += cw) {
+        const x = gx + r() * cw, y = gy + r() * ch;
+        const a = r() * Math.PI * 2, s = 6 + r() * 4.5, tone = r(), keep = r();
+        if (keep > 0.62 || !inside(x, y, 5) || clear(x, y)) continue;
+        const [p, q, w] = tri(x, y, a, s);
+        const d = `M${p}L${q}L${w}Z`;
+        // light flecks outnumber the dark ones (as in-game); two opacities each for gentle variation
+        if (tone < 0.36) out.hi += d;
+        else if (tone < 0.62) out.hi2 += d;
+        else if (tone < 0.84) out.lo += d;
+        else out.lo2 += d;
+      }
+    return out;
   })();
+  /** Winter: NH's snow ground has soft round dimples instead of leaves. */
+  const DIMPLES = (() => {
+    const r = rng(77);
+    let d = '';
+    for (let gy = P.y0 + 4; gy < P.y1; gy += 16)
+      for (let gx = P.x0 + 4; gx < P.x1; gx += 20) {
+        const x = gx + r() * 20, y = gy + r() * 16, rx = 2.5 + r() * 4;
+        if (r() > 0.55 || !inside(x, y, 6) || clear(x, y)) continue;
+        d += `M${(x - rx).toFixed(1)} ${y.toFixed(1)}a${rx.toFixed(1)} ${(rx * 0.7).toFixed(1)} 0 1 0 ${(2 * rx).toFixed(1)} 0a${rx.toFixed(1)} ${(rx * 0.7).toFixed(1)} 0 1 0 ${(-2 * rx).toFixed(1)} 0Z`;
+      }
+    return d;
+  })();
+  /** Broad tonal patches (blurred): lighter where the light falls, darker worn/shaded spots, seeded. */
+  const PATCHES = (() => {
+    const r = rng(311);
+    return Array.from({ length: 14 }, (_, i) => {
+      const rx = 24 + r() * 40;
+      return { x: P.x0 + 24 + r() * (P.x1 - P.x0 - 48), y: P.y0 + 18 + r() * (P.y1 - P.y0 - 36), rx, ry: rx * (0.45 + r() * 0.25), light: i % 3 !== 2, o: 0.35 + r() * 0.3 };
+    });
+  })();
+  /** The cliff's top under the grass overhang: a soft shade (the overhang's own shadow). */
+  const LIP_SHADE = smooth(shift(top, (y) => Math.min(drop(y), 5)));
 
+  /** Contact shadows of the hedge and the flowers (one per tile). */
+  const BUSH_SH = HEDGE_X.map((x) => ({ x: x + 2, y: HEDGE_BASE + 1, rx: BUSH_U * 0.56, ry: 5.5 }));
+  const FLOWER_SH = BED_ROWS.flatMap((y) => [...BED_X.left, ...BED_X.right].map((x) => ({ x: x + 1.5, y: y + 0.5, rx: 11, ry: 3.2 })));
   const SH_TREE = { rx: TREE.h * 0.26, ry: TREE.h * 0.06 };
 </script>
 
 <defs>
   <filter id="{uid}-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" /></filter>
+  <filter id="{uid}-patch" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9" /></filter>
+  <filter id="{uid}-lip" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation="1.6" /></filter>
   <filter id="{uid}-foot" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="4" /></filter>
   <radialGradient id="{uid}-sand" gradientUnits="userSpaceOnUse" cx="110" cy="120" r="300">
     <stop offset="0" style:stop-color="var(--sand-hi)" /><stop offset=".72" style:stop-color="var(--sand)" />
@@ -133,38 +173,46 @@
 <g clip-path="url(#{uid}-cliffclip)" fill="none" stroke="var(--strata)" stroke-width="1" opacity=".7">
   {#each STRATA as d, i (i)}<path {d} />{/each}
 </g>
+<path d={LIP_SHADE} fill="var(--cliff-bottom)" opacity=".45" filter="url(#{uid}-lip)" clip-path="url(#{uid}-cliffclip)" />
 <path d={OVERHANG} fill="var(--overhang)" />
 
-<!-- grass: base + radial highlight, a soft lower shade, sparse flecks -->
+<!-- grass: base + radial highlight, broad soft patches, a soft lower shade, NH leaf flecks (winter: dimples) -->
 <path d={GRASS} fill="url(#{uid}-grass)" />
-<path d={GRASS} fill="url(#{uid}-lower)" />
-{#if !winter}
-  <g clip-path="url(#{uid}-grassclip)">
-    <path d={FLECKS.hi} fill="var(--fleck-hi)" />
-    <path d={FLECKS.lo} fill="var(--fleck-lo)" opacity=".55" />
+<g clip-path="url(#{uid}-grassclip)">
+  <g filter="url(#{uid}-patch)">
+    {#each PATCHES as p, i (i)}
+      <ellipse cx={p.x} cy={p.y} rx={p.rx} ry={p.ry} fill={p.light ? 'var(--grass-hi)' : 'var(--grass-shade)'} opacity={p.light ? p.o : p.o * 0.32} />
+    {/each}
   </g>
-{:else}
+</g>
+<path d={GRASS} fill="url(#{uid}-lower)" />
+<g clip-path="url(#{uid}-grassclip)" stroke-linejoin="round" stroke-width="1.2">
+  {#if !winter}
+    <path d={FLECKS.hi} fill="var(--fleck-hi)" stroke="var(--fleck-hi)" opacity=".85" />
+    <path d={FLECKS.hi2} fill="var(--fleck-hi)" stroke="var(--fleck-hi)" opacity=".5" />
+    <path d={FLECKS.lo} fill="var(--fleck-lo)" stroke="var(--fleck-lo)" opacity=".5" />
+    <path d={FLECKS.lo2} fill="var(--fleck-lo)" stroke="var(--fleck-lo)" opacity=".3" />
+  {:else}
+    <path d={DIMPLES} fill="var(--grass-shade)" opacity=".2" />
+  {/if}
+</g>
+{#if winter}
   <!-- 6u scalloped snow over the cliff edge -->
   <g fill="var(--grass)">{#each SCALLOPS as [x, y], i (i)}<circle cx={x} cy={y} r="3.2" />{/each}</g>
 {/if}
 
 <!-- the plaza: a soft round sand patch under the jar (where NH puts the plaza) -->
-<ellipse cx={JAR.x} cy={JAR.base - 6} rx="58" ry="24" fill="url(#{uid}-plaza)" />
+<ellipse cx={JAR.x} cy={JAR.base - 5} rx="52" ry="22" fill="url(#{uid}-plaza)" />
 
 <!-- contact shadows (+6% right and down; dusk: stretched to the right) -->
 {#each [TREE.x.A, TREE.x.B] as x (x)}
   <ellipse cx={x + SH_TREE.rx * 0.12} cy={TREE.base + 1.5} rx={SH_TREE.rx} ry={SH_TREE.ry} fill="url(#{uid}-sh)" class="sh" />
 {/each}
 <ellipse cx={JAR.x + 3} cy={JAR.base + 1} rx={JAR.w * 0.55} ry="7" fill="url(#{uid}-sh-sand)" class="sh" />
+{#each BUSH_SH as b, i (i)}<ellipse cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} fill="url(#{uid}-sh)" class="sh" />{/each}
+{#each FLOWER_SH as f, i (i)}<ellipse cx={f.x} cy={f.y} rx={f.rx} ry={f.ry} fill="url(#{uid}-sh)" opacity=".8" class="sh" />{/each}
 
-{#if winter}
-  {#each [BED_X.left, BED_X.right] as xs, i (i)}
-    {#each BED_ROWS as y (y)}
-      <rect x={xs[0] - 10} y={y - 5} width={xs[xs.length - 1] - xs[0] + 20} height="7" rx="3.5" fill="var(--grass-shade)" opacity=".6" />
-      <rect x={xs[0] - 10} y={y - 6.5} width={xs[xs.length - 1] - xs[0] + 20} height="7" rx="3.5" fill="#fff" />
-    {/each}
-  {/each}
-{/if}
+
 
 <style>
   .sh { transform-box: fill-box; transform-origin: 30% 50%; transform: scaleX(var(--sh-scale, 1)); }

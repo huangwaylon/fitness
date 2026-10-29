@@ -57,7 +57,9 @@ export function treeArt(f: Foliage | 'cedar' | 'palm'): string {
   return `trees/${OAK[f]}`;
 }
 
-export type BushId = 'pink-azalea' | 'blue-hydrangea' | 'red-hibiscus' | 'orange-tea-olive' | 'pink-camellia' | 'holly' | 'green';
+export type BushId =
+  | 'pink-azalea' | 'white-azalea' | 'blue-hydrangea' | 'pink-hydrangea' | 'red-hibiscus' | 'yellow-hibiscus'
+  | 'orange-tea-olive' | 'yellow-tea-olive' | 'holly' | 'pink-camellia' | 'red-camellia';
 export function bushArt(id: BushId): string {
   return `bushes/${id}`;
 }
@@ -75,8 +77,7 @@ export function seasonArt(id: SeasonItem): string {
 }
 
 export type FlowerId =
-  | 'red-tulips' | 'yellow-tulips' | 'white-cosmos' | 'red-roses' | 'pink-cosmos' | 'orange-pansies' | 'blue-hyacinths'
-  | 'pink-lilies' | 'white-windflowers' | 'purple-mums' | 'yellow-roses' | 'pink-tulips' | 'lily-of-the-valley';
+  | 'red-tulips' | 'yellow-tulips' | 'red-roses' | 'white-roses' | 'pink-cosmos' | 'purple-mums' | 'orange-pansies';
 export function flowerArt(id: FlowerId): string {
   return `flowers/${id}`;
 }

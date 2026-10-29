@@ -38,11 +38,14 @@ const SPECS: Record<string, Spec> = {
   'fruit/coconut': [128, 'Coconut_NH_Inv_Icon.png'],
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],
   'fruit/pear': [128, 'Pear_NH_Inv_Icon.png'],
-  // Island flowers.
+  // Island flower beds (scale pass): the NH inventory art of each planted flower, trimmed to the figure (TRIM).
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
   'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],
-  'flowers/white-cosmos': [128, 'White_Cosmos_NH_Inv_Icon.png'],
   'flowers/red-roses': [128, 'Red_Roses_NH_Inv_Icon.png'],
+  'flowers/white-roses': [128, 'White_Roses_NH_Inv_Icon.png'],
+  'flowers/pink-cosmos': [128, 'Pink_Cosmos_NH_Inv_Icon.png'],
+  'flowers/purple-mums': [128, 'Purple_Mums_NH_Inv_Icon.png'],
+  'flowers/orange-pansies': [128, 'Orange_Pansies_NH_Inv_Icon.png'],
   // Money UI.
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
@@ -74,14 +77,19 @@ const SPECS: Record<string, Spec> = {
   'trees/peach-icon': [96, 'Peach_Tree_NH_Icon.png'],
   'trees/pear-icon': [96, 'Pear_Tree_NH_Icon.png'],
   'trees/coconut-icon': [96, 'Coconut_Tree_NH_Icon.png'],
-  // v4 bushes (one pair per season).
-  'bushes/pink-azalea': [96, 'Pink-Azalea_Bush_NH_Inv_Icon.png'],
-  'bushes/blue-hydrangea': [96, 'Blue-Hydrangea_Bush_NH_Inv_Icon.png'],
-  'bushes/red-hibiscus': [96, 'Red-Hibiscus_Bush_NH_Inv_Icon.png'],
-  'bushes/orange-tea-olive': [96, 'Orange-Tea-Olive_Bush_NH_Inv_Icon.png'],
-  'bushes/pink-camellia': [96, 'Pink-Camellia_Bush_NH_Inv_Icon.png'],
-  'bushes/holly': [96, 'Holly_Bush_NH_Inv_Icon.png'],
-  'bushes/green': [96, 'Bush_NH_Inv_Icon.png'],
+  // Scale pass (docs/design/scale-and-ground.md): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
+  // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
+  'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
+  'bushes/white-azalea': [128, 'White-Azalea_Bush_NH_Icon.png'],
+  'bushes/blue-hydrangea': [128, 'Blue-Hydrangea_Bush_NH_Icon.png'],
+  'bushes/pink-hydrangea': [128, 'Pink-Hydrangea_Bush_NH_Icon.png'],
+  'bushes/red-hibiscus': [128, 'Red-Hibiscus_Bush_NH_Icon.png'],
+  'bushes/yellow-hibiscus': [128, 'Yellow-Hibiscus_Bush_NH_Icon.png'],
+  'bushes/orange-tea-olive': [128, 'Orange-Tea-Olive_Bush_NH_Icon.png'],
+  'bushes/yellow-tea-olive': [128, 'Yellow-Tea-Olive_Bush_NH_Icon.png'],
+  'bushes/holly': [128, 'Holly_Bush_NH_Icon.png'],
+  'bushes/pink-camellia': [128, 'Pink-Camellia_Bush_NH_Icon.png'],
+  'bushes/red-camellia': [128, 'Red-Camellia_Bush_NH_Icon.png'],
   // v4 island decorations.
   'deco/fence-wood': [96, 'Simple_Wooden_Fence_NH_Icon.png'],
   'deco/fence-log': [96, 'Log_Fence_NH_Icon.png'],
@@ -113,17 +121,11 @@ const SPECS: Record<string, Spec> = {
   'season/acorn': [64, 'Acorn_NH_Inv_Icon.png'],
   'season/pine-cone': [64, 'Pine_Cone_NH_Inv_Icon.png'],
   'season/mushroom': [64, 'Mushroom_NH_Inv_Icon.png'],
-  // v4 flower beds (more varieties; see style guide §S.5 for the per-season beds).
-  'flowers/pink-cosmos': [96, 'Pink_Cosmos_NH_Inv_Icon.png'],
-  'flowers/orange-pansies': [96, 'Orange_Pansies_NH_Inv_Icon.png'],
-  'flowers/blue-hyacinths': [96, 'Blue_Hyacinths_NH_Inv_Icon.png'],
-  'flowers/pink-lilies': [96, 'Pink_Lilies_NH_Inv_Icon.png'],
-  'flowers/white-windflowers': [96, 'White_Windflowers_NH_Inv_Icon.png'],
-  'flowers/purple-mums': [96, 'Purple_Mums_NH_Inv_Icon.png'],
-  'flowers/yellow-roses': [96, 'Yellow_Roses_NH_Inv_Icon.png'],
-  'flowers/pink-tulips': [96, 'Pink_Tulips_NH_Inv_Icon.png'],
-  'flowers/lily-of-the-valley': [96, 'Lily-of-the-Valley_Plant_NH_Inv_Icon.png']
 };
+/** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
+ *  scene sizes are true to the tile unit (docs/design/scale-and-ground.md). */
+const TRIM = ['bushes/', 'flowers/'];
+
 // v4 reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.
 const EMOTIONS = [
   'Joy', 'Delight', 'Love', 'Surprise', 'Laughter', 'Sleepy', 'Happiness', 'Greetings', 'Encouraging',
@@ -192,6 +194,29 @@ async function resolve(titles: string[]): Promise<Map<string, Info>> {
   return out;
 }
 
+/** Alpha bounding box of an image (via a lossless webp → PAM round trip; no image library needed), padded 2 px. */
+function alphaBox(src: string, tmp: string): [number, number, number, number] {
+  const lossless = join(tmp, 'trim.webp'), pam = join(tmp, 'trim.pam');
+  execFileSync('cwebp', ['-quiet', '-lossless', '-exact', src, '-o', lossless]);
+  execFileSync('dwebp', ['-quiet', lossless, '-pam', '-o', pam]);
+  const buf = readFileSync(pam);
+  const head = buf.subarray(0, 200).toString('latin1');
+  const end = head.indexOf('ENDHDR\n') + 7;
+  const W = Number(/WIDTH (\d+)/.exec(head)![1]), H = Number(/HEIGHT (\d+)/.exec(head)![1]);
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++)
+      if (buf[end + (y * W + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+  if (x1 < 0) return [0, 0, W, H];
+  x0 = Math.max(0, x0 - 2); y0 = Math.max(0, y0 - 2); x1 = Math.min(W - 1, x1 + 2); y1 = Math.min(H - 1, y1 + 2);
+  return [x0, y0, x1 - x0 + 1, y1 - y0 + 1];
+}
+
 function fit(w: number, h: number, max: number): [number, number] {
   const s = Math.min(1, max / Math.max(w, h));
   return [Math.round(w * s), Math.round(h * s)];
@@ -228,11 +253,13 @@ async function main() {
     const info = infos.get(title)!;
     const src = join(tmp, 'src' + (title.match(/\.\w+$/)?.[0] ?? '.png'));
     writeFileSync(src, Buffer.from(await (await get(info.url)).arrayBuffer()));
-    const [w, h] = fit(info.width, info.height, max);
+    const crop = TRIM.some((p) => key.startsWith(p)) ? alphaBox(src, tmp) : null;
+    const [w, h] = crop ? fit(crop[2], crop[3], max) : fit(info.width, info.height, max);
     const rel = `${key}.webp`;
     const dest = join(OUT, rel);
     mkdirSync(dirname(dest), { recursive: true });
-    execFileSync('cwebp', ['-quiet', '-q', '86', '-alpha_q', '100', '-m', '6', '-resize', String(w), String(h), src, '-o', dest]);
+    const cropArgs = crop ? ['-crop', ...crop.map(String)] : [];
+    execFileSync('cwebp', ['-quiet', '-q', '86', '-alpha_q', '100', '-m', '6', ...cropArgs, '-resize', String(w), String(h), src, '-o', dest]);
     manifest.files[key] = { path: rel, w, h, source: `https://nookipedia.com/wiki/File:${title}` };
     console.log(`  ✓ ${key}  ${w}×${h}  ← ${title}`);
     await sleep(DELAY_MS);
