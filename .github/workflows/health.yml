@@ -1,12 +1,12 @@
-# Daily backend monitor (round 9): a keyless {"action":"health"} POST to the Apps Script /exec URL (repo variable
-# GAS_URL). JSON {ok:true} means up and authorized; an HTML page means the deployment's authorization lapsed
-# (google-setup.md §9) and this run fails, so GitHub emails the repo owner. A `build` that differs from the
-# committed apps-script/Code.js means main has backend changes that were never redeployed (a warning only).
+# Backend monitor (round 9; docs/ops/runbook.md §5): a keyless {"action":"health"} POST to the Apps Script /exec URL
+# (repo variable GAS_URL). It fails, so GitHub e-mails the owner, unless the reply is JSON with ok:true and a `build`
+# equal to the committed Code.js's (line 3, `// build: <12 hex>`). HTML = the authorization lapsed (google-setup.md
+# §9); another build = Code.js changed but was not redeployed (google-setup.md §11).
 name: Backend health
 
 on:
   schedule:
-    - cron: '17 21 * * *' # 06:17 JST
+    - cron: '17 */6 * * *' # every 6 h (06:17, 12:17, 18:17, 00:17 JST)
   workflow_dispatch:
 
 permissions:
@@ -29,7 +29,9 @@ jobs:
           echo "$body" | head -c 300; echo
           echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::/exec did not answer JSON ok (authorization lapsed? google-setup.md §9)"; exit 1; }
           live=$(echo "$body" | jq -r '.build // ""')
-          repo=$(grep -oE 'var BUILD = true \? "[0-9a-f]+"' app/apps-script/Code.js | grep -oE '[0-9a-f]{12}' || true)
-          if [ -n "$repo" ] && [ "$live" != "$repo" ]; then
-            echo "::warning::/exec runs build $live but main's apps-script/Code.js is $repo: redeploy (runbook)"
+          repo=$(sed -n 's#^// build: ##p' app/apps-script/Code.js)
+          if [ "$live" != "$repo" ]; then
+            echo "::error::/exec runs build '$live' but main's apps-script/Code.js is '$repo': redeploy (google-setup.md §11)"
+            exit 1
           fi
+          echo "healthy, build $live"
