@@ -19,9 +19,9 @@
   import Emote from './Emote.svelte';
   import Fx from './Fx.svelte';
   import { artUrl, hostArt, type HostPose } from '#lib/art.ts';
-  import { theme } from '#lib/client/theme.svelte.ts';
-  import { actors, claimHost, hostOwner, removeFx } from './motion/director.svelte.ts';
-  import { now } from './motion/clock.ts';
+  import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { actors, claimHost, hostOwner, removeFx } from '../motion/director.svelte.ts';
+  import { now } from '../../time/clock.ts';
 
   interface Props {
     pose?: Exclude<HostPose, 'icon' | 'winter'>;

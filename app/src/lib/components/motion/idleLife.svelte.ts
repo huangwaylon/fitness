@@ -7,7 +7,7 @@
 // stop() cancels them all (P2), so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
 import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
-import { now, reducedMotion } from './clock.ts';
+import { now, reducedMotion } from '../../time/clock.ts';
 
 export interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */

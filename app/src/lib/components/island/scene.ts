@@ -1,6 +1,6 @@
 // Island scene v4 data (design.md §S): stage coordinates and season tables. Stage units (u):
 // x 0–390, y 0–360, origin top-left, y down; "base" = the y of the feet / trunk bottom.
-import type { Season } from '#lib/client/theme.svelte.ts';
+import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { BushId, FlowerId } from '#lib/art.ts';
 
 export const STAGE_W = 390;

@@ -6,7 +6,7 @@
   // The fruit shows its ripeness stage: bud (grey, 0.55) · small (desaturated, 0.75) · nearly (0.9) ·
   // ripe (full colour + sparkle).
   import type { FruitKey, FruitView } from '#lib/types.ts';
-  import OfficialArt from './OfficialArt.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { ripeness } from './ripeness.ts';
   import { t } from '#lib/i18n/index.ts';

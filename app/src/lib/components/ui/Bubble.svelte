@@ -5,9 +5,9 @@
   // picks her outfit), the tail pointing at her. Reduced motion: text appears at once.
   // The real text lives in an aria-live node.
   import { t } from '#lib/i18n/index.ts';
-  import Host from './Host.svelte';
-  import { hostTap } from './motion/director.svelte.ts';
-  import { reducedMotion } from './motion/clock.ts';
+  import Host from '../characters/Host.svelte';
+  import { hostTap } from '../motion/director.svelte.ts';
+  import { reducedMotion } from '../../time/clock.ts';
   import type { HostPose } from '#lib/art.ts';
 
   interface Props {

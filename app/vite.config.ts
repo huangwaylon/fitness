@@ -16,7 +16,7 @@ const slimArtManifest: Plugin = {
 };
 
 // A static SPA (GitHub Pages). The backend is the Apps Script web app (ADR 0015): its /exec URL is VITE_GAS_URL.
-// Output goes to build-pages/ (app/build/ is the old Mac server's output; leave it alone until it's retired).
+// Output goes to build-pages/.
 export default defineConfig({
   plugins: [
     slimArtManifest,

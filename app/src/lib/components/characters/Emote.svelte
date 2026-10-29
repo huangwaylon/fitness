@@ -6,7 +6,7 @@
   //   <Emote id="mark-note" bare />      floating symbol, no cream disc (villagers, A1); `mark-*` are ours
   // Under reduced motion it fades in for 120 ms instead of popping.
   import OfficialArt from './OfficialArt.svelte';
-  import Mark from './Mark.svelte';
+  import Mark from '../ui/Mark.svelte';
   import { isMark, reactionArt, type EmoteIcon, type MarkId } from '#lib/art.ts';
 
   interface Props {

@@ -8,10 +8,10 @@
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import type { WeekView } from '#lib/types.ts';
-  import Fx from '../Fx.svelte';
+  import Fx from '../characters/Fx.svelte';
   import Jar, { jarFill } from './Jar.svelte';
   import { react } from '../motion/director.svelte.ts';
-  import { reducedMotion } from '../motion/clock.ts';
+  import { reducedMotion } from '../../time/clock.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { JAR, u } from './scene.ts';
 
@@ -61,7 +61,7 @@
   let pressed = $state(false);
 
   /** Tap: squash (pointer down, 80ms), spring back, the villagers glance at the jar (R18) during the morph
-   *  and, 90ms later (no dead wait), the route changes: the page zooms about the jar (client/jarTransition.ts)
+   *  and, 90ms later (no dead wait), the route changes: the page zooms about the jar (ui-state/jarTransition.ts)
    *  and this jar morphs into the 旅の壺 hero jar when that one is <Jar name="jar">. */
   function tap() {
     pressed = false;

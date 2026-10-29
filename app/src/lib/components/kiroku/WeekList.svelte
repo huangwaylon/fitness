@@ -3,7 +3,7 @@
   // (≈ while it can still change), 収穫✓ / 🔒, and per person the villager, the score and 7 day stamps.
   import type { PersonId } from '#lib/types.ts';
   import type { HistoryWeek } from '#lib/model/history.ts';
-  import Avatar from '../Avatar.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   import Glyph from './Glyph.svelte';
   
   import { t, formatYen } from '#lib/i18n/index.ts';

@@ -4,11 +4,11 @@
 import { onMount, untrack } from 'svelte';
 import type { FruitKey, PersonId, WeekView } from '#lib/types.ts';
 import { FRUITS } from '#lib/config/rules.ts';
-import { ripeness } from '../ripeness.ts';
+import { ripeness } from '../sheets/ripeness.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { on } from '../motion/bus.svelte.ts';
-import { dayKey, minuteNow, now, reducedMotion } from '../motion/clock.ts';
+import { dayKey, minuteNow, now, reducedMotion } from '../../time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
 
 interface Ctx {

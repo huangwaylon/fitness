@@ -3,8 +3,8 @@
   // drifting left → right across the sky in 26 s, bobbing ±6px. Tap (48×56 target) → pop: a confetti
   // burst and the present drops behind the hedge. No text. The parent mounts it when one is due.
   import { onDestroy } from 'svelte';
-  import OfficialArt from '../OfficialArt.svelte';
-  import Fx from '../Fx.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import Fx from '../characters/Fx.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {

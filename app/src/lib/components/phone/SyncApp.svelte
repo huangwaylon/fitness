@@ -1,7 +1,7 @@
 <script lang="ts">
   // しまフォン → 通信: when each of us last synced, and 今すぐ同期.
   import type { WeekView } from '#lib/types.ts';
-  import Avatar from '../Avatar.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';

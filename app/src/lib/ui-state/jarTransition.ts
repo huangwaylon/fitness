@@ -5,7 +5,7 @@
 // The jar's own press squash (R18) is the scene's (Builder A); it calls `onjar` once the squash has played.
 import { onNavigate } from '$app/navigation';
 import { routeOf } from './paths.ts';
-import { reducedMotion } from '#lib/components/motion/clock.ts';
+import { reducedMotion } from '#lib/time/clock.ts';
 
 type Dir = 'in' | 'out';
 

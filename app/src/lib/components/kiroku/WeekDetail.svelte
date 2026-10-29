@@ -4,8 +4,8 @@
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog, WeekDetail } from '#lib/model/history.ts';
   import { FRUITS } from '#lib/config/rules.ts';
-  import Avatar from '../Avatar.svelte';
-  import OfficialArt from '../OfficialArt.svelte';
+  import Avatar from '../characters/Avatar.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
   import { fruitArt } from '#lib/art.ts';

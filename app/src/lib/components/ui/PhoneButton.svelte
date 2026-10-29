@@ -1,7 +1,7 @@
 <script lang="ts">
   // The NookPhone button (HUD, top right): the bare official NookPhone, 40 tall in a 44px hit area. Opens the launcher.
-  import ShimaPhone from './ShimaPhone.svelte';
-  import OfficialArt from './OfficialArt.svelte';
+  import ShimaPhone from '../phone/ShimaPhone.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { NOOKPHONE } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 

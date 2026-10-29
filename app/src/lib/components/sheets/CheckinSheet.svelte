@@ -1,8 +1,8 @@
 <script lang="ts">
   // 今夜のチェック (v5 §4: one sheet skin): my three habits for today (or yesterday, 48 h fill-in) as big toggles. Each tap saves at once (check-in = 2 taps); the sticky 保存 just closes.
   // 正月: eating isn't scored, so it's "off".
-  import Sheet from './Sheet.svelte';
-  import OfficialArt from './OfficialArt.svelte';
+  import Sheet from '../ui/Sheet.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';

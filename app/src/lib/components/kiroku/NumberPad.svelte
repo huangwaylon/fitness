@@ -1,7 +1,7 @@
 <script lang="ts">
   // 3.4 Edit a number: the Nook Stop ATM keypad. The old value sits grey in brackets, the new one in Fredoka 44,
   // then NH's choice list ▶ けってい / やめる. Digits and Backspace on a keyboard work too.
-  import ChoiceList from '../ChoiceList.svelte';
+  import ChoiceList from '../ui/ChoiceList.svelte';
   import { num } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
 
