@@ -1,4 +1,4 @@
-// App routes vs. URL paths: on GitHub Pages the app lives under a base path (/fitness); on the Mac it's at /.
+// App routes vs. URL paths: on GitHub Pages the app lives under a base path (/fitness).
 import { resolve } from '$app/paths';
 
 const BASE = resolve('/').replace(/\/$/, '');

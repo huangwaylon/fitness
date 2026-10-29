@@ -1,1 +1,0 @@
-CREATE INDEX `raw_person_received` ON `raw_payload` (`person`,`received_at`);

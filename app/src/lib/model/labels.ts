@@ -1,5 +1,5 @@
-// UI label for a canonical (English) workout type. Dependency-free copy of server/ingest/workout-names.ts
-// `workoutLabel` (the differential test checks they agree).
+// UI label for a canonical (English) workout type. Dependency-free copy of the old server's
+// `workoutLabel` (golden.test.ts checks they still agree).
 
 const JA: Record<string, string> = {
   'Traditional Strength Training': '筋力トレーニング',

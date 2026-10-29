@@ -5,54 +5,40 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
-    "start": "node build",
+    "build": "vite build && cp build-pages/index.html build-pages/404.html && touch build-pages/.nojekyll",
+    "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
-    "db:generate": "drizzle-kit generate",
-    "pair": "tsx scripts/pair.ts",
-    "token": "tsx scripts/token.ts",
-    "recompute": "tsx scripts/recompute.ts",
     "prepare": "svelte-kit sync || true",
-    "vapid": "tsx scripts/vapid.ts",
-    "devices": "tsx scripts/devices.ts",
-    "assets:fetch": "tsx scripts/fetch-assets.ts",
-    "build:pages": "BUILD_TARGET=pages vite build && cp build-pages/index.html build-pages/404.html && touch build-pages/.nojekyll",
-    "gas:build": "tsx gas/build.ts",
-    "export:sheet": "tsx scripts/export-to-sheet.ts"
+    "assets:fetch": "node scripts/fetch-assets.ts",
+    "gas:build": "node gas/build.ts",
+    "export:sheet": "node scripts/export-to-sheet.ts"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^6.0.0",
     "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/kit": "^3.1.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^26.6.5",
-    "@types/web-push": "^3.6.4",
-    "drizzle-kit": "^0.31.11",
     "esbuild": "^0.28.2",
     "svelte": "^5.57.3",
     "svelte-check": "^4.7.7",
-    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   },
   "dependencies": {
     "@fontsource/fredoka": "^5.3.0",
-    "@fontsource/zen-maru-gothic": "^5.3.1",
-    "better-sqlite3": "^13.0.3",
-    "drizzle-orm": "^0.45.4",
-    "web-push": "^3.6.7",
-    "zod": "^4.6.7"
+    "@fontsource/zen-maru-gothic": "^5.3.1"
   },
   "allowScripts": {
-    "better-sqlite3@13.0.3": true,
     "esbuild@0.18.20": true,
     "esbuild@0.25.12": true,
     "esbuild@0.28.2": true
   },
   "imports": {
     "#lib/*": "./src/lib/*"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

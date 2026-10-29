@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { asset } from '$app/paths';
+  import { asset, resolve } from '$app/paths';
   import { routeOf } from '#lib/client/paths.ts';
   import '@fontsource/fredoka/600.css';
   import '@fontsource/fredoka/700.css';
@@ -67,7 +67,15 @@
 
 <!-- U9: the harvest is a real modal, so everything behind it is inert. -->
 <div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest}>
-{#if onPair}
+{#if week.status === 'unconfigured'}
+  <main class="state">
+    <span class="bob"><Host size={120} animate={false} eager /></span>
+    <h1 class="unset"><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><span lang="en">{t('state.notSetUp', undefined, 'en')}</span></h1>
+    <p lang="ja">{t('state.notSetUpHint', undefined, 'ja')}</p>
+    <p lang="en" class="en">{t('state.notSetUpHint', undefined, 'en')}</p>
+    <a class="btn" href={resolve('/') + '?demo'} data-sveltekit-reload>{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
+  </main>
+{:else if onPair}
   {@render children()}
 {:else if !week.view && week.status === 'error'}
   <main class="state">
@@ -88,7 +96,7 @@
 {/if}
 </div>
 
-{#if !onPair}<div inert={showHarvest}><TabBar /></div>{/if}
+{#if !onPair && week.status !== 'unconfigured'}<div inert={showHarvest}><TabBar /></div>{/if}
 
 {#if showHarvest && week.view && harvest}
   <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)} />
@@ -107,6 +115,9 @@
     padding: var(--safe-top) 24px calc(var(--tabbar-h) + var(--safe-bottom) + 24px);
   }
   .state :global(.talk) { width: 100%; }
+  .state a.btn { text-decoration: none; }
+  .unset { margin: 0; display: grid; gap: 2px; font-size: var(--fs-talk); }
+  .unset [lang='en'], .state .en { font-size: .85em; }
   .state p { margin: 0; font-size: var(--fs-talk); font-weight: 700; color: var(--text-soft); }
   .bob { display: block; transform-origin: 50% 100%; animation: if-hop 1.1s var(--ease-idle) infinite; }
   .dots { display: flex; gap: 8px; }

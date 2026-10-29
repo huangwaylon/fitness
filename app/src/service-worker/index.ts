@@ -1,12 +1,10 @@
-// Island Fund service worker: caches the app shell, shows web push notifications, opens the right page on tap.
+// Island Fund service worker: caches the app shell so the PWA opens offline. (No web push: ADR 0015.)
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
-/** App-relative URL ('/jar', '/?checkin=1') → absolute URL inside the scope. */
-const inScope = (u: string) => new URL(u.replace(/^\//, ''), self.registration.scope).href;
 
 const CACHE = `island-shell-${version}`;
 const FONTS = 'island-fonts-v1';
@@ -44,8 +42,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/ingest/')) return; // always live
+  if (url.origin !== self.location.origin) return; // the Apps Script backend: always live
 
   if (req.mode === 'navigate') {
     event.respondWith(
@@ -83,49 +80,6 @@ self.addEventListener('fetch', (event) => {
       const hit = await cache.match(req);
       if (hit) return hit;
       return fetch(req);
-    })()
-  );
-});
-
-interface PushPayload {
-  title?: string;
-  body?: string;
-  url?: string;
-  tag?: string;
-}
-
-self.addEventListener('push', (event) => {
-  let data: PushPayload = {};
-  try {
-    data = event.data?.json() ?? {};
-  } catch {
-    data = { body: event.data?.text() };
-  }
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'しまの貯金箱', {
-      body: data.body ?? '',
-      icon: inScope('/icons/icon-192.png'),
-      badge: inScope('/icons/icon-192.png'),
-      tag: data.tag,
-      data: { url: data.url || '/' }
-    })
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const target = inScope((event.notification.data as { url?: string } | null)?.url || '/');
-  event.waitUntil(
-    (async () => {
-      const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      for (const w of wins) {
-        if (new URL(w.url).origin === self.location.origin) {
-          await w.focus();
-          if (w.url !== target) await w.navigate(target).catch(() => undefined);
-          return;
-        }
-      }
-      await self.clients.openWindow(target);
     })()
   );
 });

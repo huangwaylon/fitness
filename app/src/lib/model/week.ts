@@ -1,5 +1,5 @@
-// Compute-on-read: validated state + "now" → the WeekView the UI renders. Replaces server/week.ts + server/ledger.ts
-// + the settlement scheduler (server/jobs.ts):
+// Compute-on-read: validated state + "now" → the WeekView the UI renders. Replaces the old server's week + ledger
+// + the settlement scheduler (deleted; golden.test.ts pins the behaviour):
 //   paid(week, bucket) = max(payout as of Sunday 19:30 JST, payout as of Wednesday 04:00 JST)
 // where "as of T" only uses rows the server stamped at ≤ T. That is exactly the old earn + top-up ledger.
 import type {
