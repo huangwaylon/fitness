@@ -1,5 +1,5 @@
 # 0003 — Economy: Fruit, Jar, Tickets
-**Status:** Accepted (round 1). Resolves C2, C5, C6 and C8.
+**Status:** Accepted (round 1). Resolves C2, C5, C6 and C8. Currency superseded by [0006](0006-yen-single-currency-and-accountability.md), goal and shortfall bank by [0008](0008-open-ended-savings-per-fruit-rate.md), ledger and locking by [0015](0015-google-sheet-backend.md) (compute-on-read).
 
 **One sentence:** *Healthy habits grow fruit; every Sunday your fruit fills the vacation jar and earns treat tickets.*
 

@@ -1,5 +1,5 @@
 # 0014 — Simplify: no Sunday promises, no Cozy Days, no ふたり tab
-**Status:** Accepted (user input, 2026-10-28). Supersedes the Sunday-promise parts of 0006 and 0011, and the Cozy Day, calibration-cozy and rest-day-cozy clauses of 0011.
+**Status:** Accepted (user input, 2026-10-28). Supersedes the Sunday-promise parts of 0006 and 0011, and the Cozy Day, calibration-cozy and rest-day-cozy clauses of 0011. Step days (5 of 7 below) are now 4 of 7: [0017](0017-round-4-rule-changes-and-rule-versions.md). Reminders dropped by [0016](0016-no-privacy-no-alerts.md).
 
 **User input:** remove the Sunday promise feature and Cozy Days entirely; drop the ふたり (Us) tab. The partner's fruit and score stay on Island, and settings live in the しまフォン launcher.
 

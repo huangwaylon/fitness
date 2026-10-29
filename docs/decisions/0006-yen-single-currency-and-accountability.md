@@ -1,5 +1,5 @@
 # 0006 — Yen, a single real currency, and team + individual accountability
-**Status:** Accepted (round 3; user input). Supersedes the currency parts of 0003. The Sunday promise is removed by [0014](0014-simplify-no-promises-no-cozy.md).
+**Status:** Accepted (round 3; user input). Supersedes the currency parts of 0003. Partly superseded by [0008](0008-open-ended-savings-per-fruit-rate.md) (the 85 threshold, shortfall bank and fixed goal). The Sunday promise is removed by [0014](0014-simplify-no-promises-no-cozy.md).
 
 **User input (2026-10-28):** the final currency is yen. Worry that intermediate currencies are too complicated. Want a team effort *and* accountability for each person.
 Both live in Japan: one partner has a personal trainer, the other an Anytime Fitness membership.
