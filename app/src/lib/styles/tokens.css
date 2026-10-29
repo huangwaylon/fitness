@@ -1,159 +1,92 @@
-/* Island Fund design tokens v4 (docs/design/style-guide.md).
-   The single source of CSS custom properties. Loaded globally from routes/+layout.svelte
-   BEFORE styles/theme.css (which holds element styles and utility classes only).
+/* Island Fund design tokens v5 (docs/design/v5-direction.md §5; overrides style guide v4.1).
+   The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
+   styles/theme.css (element styles and the few shared building blocks).
 
-   data-theme = day | night on <html> (set by lib/client/theme.svelte.ts) swaps the semantic chrome tokens.
-   Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene.
-
-   Sections: 1 palette (+ semantic, swapped at night)  4 type  5 shape  6 elevation  7 patterns
-             8 motion  9 platform + small-screen layout  10 night  10b compact / tiny  11 reduced motion
-             12 chrome keyframes  · then the Builder A block (scene, fx, motion keyframes). */
+   One system: 12 colours, 5 radii (+ pill for the ribbon / plate / choices), 5 type sizes, weights 500/700,
+   no outlines, one depth rule (a 4px lip; --sh-float only on floating layers).
+   Time of day re-tints the chrome from <html data-tod> (lib/client/theme.svelte.ts); the phone's dark mode is
+   ignored. Game objects (ribbon, plate, dialogue box, choices) stay cream / yellow at every time of day.
+   Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
 
 :root {
-  /* ---------- 1. palette (v4: brighter, sunnier; style guide §1.1) ---------- */
-  /* paper & ink */
-  --c-cream:#FFF9E3;        /* app background */
-  --c-bubble:#FFFCEB;       /* speech bubble, emote bubble, banner (warm off-white, never pure white) */
-  --c-paper:#FFF3D6;        /* cards */
-  --c-paper-2:#F8E5BA;      /* card lip / pressed paper */
-  --paper-edge:#EED9A8;     /* paper card border */
-  --sand-deep:#E0C48A;      /* paper card lip */
-  --c-stitch:#E5CC94;       /* dashed stitching inside cards */
-  --c-pill-edge:#EADBB8;    /* cream pills, banners, paper buttons */
-  --c-ring-low:#E8CF9A;     /* a fruit ring under 25%: warm sand, never coral (round 5 U7) */
-  --c-ink:#4A3A2C;          /* text, outlines (never pure black) */
-  --c-ink-talk:#6A5641;     /* bubble text (6.7:1 on bubble) */
-  --c-ink-soft:#6B5544;
-  /* accents (fill / lip / soft / ink) */
-  --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C;  --c-leaf-soft:#C8F0C4; --c-leaf-ink:#2E6B38;
-  --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;  --c-yuzu-soft:#FFF2B8;
-  --c-coral:#FF8F7A; --c-coral-lip:#E5735F; --c-coral-soft:#FFDCD3; --c-coral-ink:#B04A3B; --c-coral-ink-strong:#9A3E31;
-  --c-sky:#6FCFF6;   --c-sky-lip:#3FB0E3;   --c-sky-soft:#D8F3FF;   --c-sky-ink:#23688F;
-  --c-moon:#FFE9A8;  --c-moon-lip:#D9BE6A;  /* night primary button */
-  --c-amber:#F5A623;        /* the ▼ "next" arrow */
-  --tree-leaf:#6CBF5A;      /* dev gallery swatch row */
-  --c-coin:#FFCB45; --c-coin-rim:#E0992A; --c-coin-shine:#FFF1B8; /* vector jar coins */
-  /* NH accents (§T) */
-  --c-nook-teal:#3FC1B0; --miles-navy:#3B4A8F; --miles-bg:#C9D2FA;
-  --card-pink:#FFD9D9; --card-teal:#C6EFE9; --card-butter:#FCEDAA; --card-lime:#DFF3AA; --card-lilac:#E4D9FB;
-  --bells-fill:#FFF6D6; --bells-edge:#EAD29A; --bells-lip:#E3C77E;
-  --star-on:#FFD84D; --star-off:#FFF3C4; --star-edge:#C99A2E;
-  --diy-paper:#F6EEDA; --diy-grid:rgba(110,160,200,.14);
-  /* people (A apricot, B plum) and fruit-ring colours (var(--f-{fruit})) */
-  --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-berry:#FF7FA8;
-  --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-pear:#C9DE6E;
-  /* しまフォン tiles (§T.1) */
-  --app-island:#4FD1B5; --app-jar:#FFD84D;
-  --app-help:#FFF0B8; --app-lang:#8EB6FF; --app-bell:#FFE27A; --app-share:#FFD1D1;
-  /* name-tag colours (speech bubbles, nameplates) */
-  --tag-host:#FFD84D; --tag-plum:#E2D2FA; --tag-apricot:#FFD6BC;
+  /* ---------- palette (12) ---------- */
+  --c-ink:#4A3A2C;   --c-ink-soft:#6B5544;              /* text (never black) */
+  --c-cream:#FFF9E3; --c-paper:#FFF3D6; --c-lip:#E0C48A; /* surfaces + the lip under them */
+  --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C;               /* the action */
+  --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
+  --c-mint:#7BD7C1;  --c-mint-lip:#63B4B5;               /* NH map mint (tiles, bars track) */
+  --c-coral:#FF8F7A;                                     /* errors only */
 
-  /* semantic (swapped at night, section 10) */
-  --bg: var(--c-cream); --surface: var(--c-paper); --edge: var(--paper-edge);
+  /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
+  --bg: var(--c-cream); --surface: var(--c-paper); --lip: var(--c-lip);
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
-  --focus:#2E7A3A; /* N11: a leaf-green ring (not browser blue), >= 3:1 on cream, paper and the Jar periwinkle */
-  --ring-track:#F1E3C2; --bubble: var(--c-bubble); --lip: var(--sand-deep);
-  --stitch: var(--c-stitch);
-  --phone-bg:#FFF7DF; --phone-edge:#EBDDB4;
-  --page-jar: var(--miles-bg);
-  --track: var(--c-paper-2);
+  --hud: var(--c-ink);         /* the corner clock over the sky */
+  --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
+  --scrim: rgba(74, 58, 44, .32);
+  --sea-flat:#7BD7C1;  /* the map sea under 島's chrome (= the scene's flat sea), tinted by time of day */
 
-  /* ---------- 4. type (§2, §T.6) ---------- */
-  /* Zen Maru Gothic carries kana/kanji + Latin text; Fredoka carries numbers and ¥ */
+  /* ---------- type: 12 · 15 body · 18 talk/button · 24 title/score · 44 hero ---------- */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
-  --font-num: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
-  --fw-body:500; --fw-bold:700; --fw-black:900; --fw-num:600;
-  --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-talk:1.0625rem; --fs-body-lg:1.0625rem;
-  --fs-body:.9375rem; --fs-caption:.8125rem; --fs-tag:.8125rem; --fs-micro:.6875rem;
-  --lh-talk:1.5; --lh-body:1.45;
+  --font-num: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif; /* numbers only */
+  --fs-s:.75rem; --fs-body:.9375rem; --fs-talk:1.125rem; --fs-title:1.5rem; --fs-hero:2.75rem;
+  --lh:1.45;
 
-  /* ---------- 5. shape ---------- */
-  --r-sm:14px; --r-card:22px; --r-lg:28px; --r-phone:44px; --r-pill:999px;
-  --r-squircle:30%;  /* app tiles */
-  --r-blob:46% 54% 52% 48% / 55% 45% 55% 45%;
-  --r-bubble:34px 46px 38px 42px / 40px 34px 46px 40px; /* slightly wobbly speech bubble */
-  --bw:2px;
-  --stitch-gap:7px;
+  /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/phone · 30% tiles ---------- */
+  --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-tile:30%; --r-pill:999px;
 
-  /* ---------- 6. elevation (warm, never grey-black) ---------- */
-  --sh-lip:0 4px 0 var(--sand-deep);
-  --sh-lip-pressed:0 1px 0 var(--sand-deep);
-  --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.5);
-  --sh-soft:0 6px 18px rgba(138,90,59,.12);
-  --sh-float:0 14px 34px rgba(74,58,44,.2);
-  --sh-inset:inset 0 2px 0 rgba(74,58,44,.10);
-  --sh-glow:0 0 0 6px rgba(255,216,77,.45);
-  --sh-ground: rgba(46,100,40,.22);
+  /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
+  --sh-lip:0 4px 0 var(--lip);
+  --sh-float:0 12px 32px rgba(74, 58, 44, .18);
 
-  /* ---------- 7. patterns (≤ 7% opacity; `background: var(--pat-…), var(--bg)`) ---------- */
-  --pat-dots: radial-gradient(circle, rgba(214,160,70,.12) 2px, transparent 2.6px) 0 0 / 18px 18px;
-  --pat-stripes-fill: repeating-linear-gradient(135deg, rgba(255,255,255,.32) 0 8px, transparent 8px 16px);
-  --pat-scallop: radial-gradient(circle at 50% 0, rgba(255,255,255,.35) 6px, transparent 6.5px) 0 0 / 16px 10px;
-  --pat-grid: linear-gradient(var(--diy-grid) 1px, transparent 1px) 0 0 / 16px 16px, linear-gradient(90deg, var(--diy-grid) 1px, transparent 1px) 0 0 / 16px 16px;
-
-  /* ---------- 8. motion ---------- */
+  /* ---------- motion ---------- */
   --ease-bounce:cubic-bezier(.34,1.56,.64,1);
   --ease-soft:cubic-bezier(.25,.8,.25,1);
   --ease-squash:cubic-bezier(.3,0,.5,1);
   --ease-idle:cubic-bezier(.45,0,.55,1);
-  --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms;
-  --dur-slow:600ms; --dur-emote:2200ms;
+  --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms; --dur-slow:600ms; --dur-emote:2200ms;
 
-  /* ---------- 9. platform + small-screen layout (§R; compact / tiny overrides below) ---------- */
+  /* ---------- platform + layout ---------- */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --kb: 0px;              /* on-screen keyboard height (Sheet / pair set it from visualViewport) */
+  --pad-bottom: max(var(--safe-bottom), 8px);
+  --kb: 0px;          /* on-screen keyboard height (Sheet / pair set it from visualViewport) */
   --col: 480px;
-  --side: 18px;           /* page side padding (14 tiny) */
-  --gap: 12px;            /* island stack gaps (10 compact, 8 tiny) */
-  --dock-h: 72px; --dock-tile: 48px; --dock-fs: var(--fs-body-lg);
-  --dock-bottom: max(var(--safe-bottom), 8px); /* §R.1 table: home indicator 34 / 8 */
-  --tabbar-h: var(--dock-h);
-  --host-h: 84px;         /* しずえ beside the bubble on 島 */
-  --bubble-min: 64px;     /* speech bubble box (46 compact, 42 tiny) */
-  --talk-lines: 2;
-  --cta-h: 56px;
+  --side: 18px;       /* page side padding (14 at 320) */
+  --gap: 12px;        /* stack gap (8 compact) */
+  --cta-h: 56px;      /* the one action (48 compact) */
+  --talk-lines: 2;    /* dialogue box lines (1 compact) */
   --tile: 64px; --tile-gap: 18px;  /* しまフォン grid */
-  --sp-2:8px; --sp-3:12px; --sp-5:20px; --sp-8:32px;
+
+  /* ---------- aliases still read by the scene (Builder A); no new colours, delete once unused ---------- */
+  --c-bubble: var(--c-cream); --c-pill-edge: var(--c-lip); --c-ink-talk: var(--c-ink-soft);
+  --c-leaf-soft: color-mix(in srgb, var(--c-leaf) 30%, var(--c-cream)); --c-leaf-ink: var(--c-ink);
+  --tag-apricot: var(--c-yuzu); --tag-plum: var(--c-mint); --fs-h2: var(--fs-talk);
+  --sh-ground: rgba(40, 60, 40, .18);
 
   color-scheme: light;
 }
 
-/* ---------- 10. night (§1.2: soft periwinkle, friendly; UI chrome) ---------- */
-:root[data-theme="night"] {
-  --bg:#33417A; --surface:#45559A; --edge:#6070B4;
-  --text:#FFF6E0; --text-soft:#D2D9F5;
-  --ring-track:#3A4886; --bubble:#FFF6E0; --lip:#26306A; --stitch:#6E7EC0;
-  --phone-bg:#3D4C8C; --phone-edge:#6070B4; --track:#2E3A72;
-  --page-jar:#5262A8;
-  --focus:#FFF3C4;
-  --sh-lip: 0 4px 0 #26306A; --sh-lip-pressed: 0 1px 0 #26306A;
-  --sh-soft: 0 6px 18px rgba(20,24,60,.3); --sh-float: 0 14px 34px rgba(20,24,60,.38);
-  --sh-inset: inset 0 2px 0 rgba(20,24,60,.25); --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.35);
-  --sh-ground: rgba(20,26,70,.3);
-  --pat-dots: radial-gradient(circle, rgba(255,243,196,.07) 2px, transparent 2.6px) 0 0 / 18px 18px;
+/* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
+:root[data-tod="dawn"] { --sea-flat:#8FD8C8; }
+:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --sea-flat:#86C9B9; }
+:root[data-tod="night"] {
+  --bg:#3A4886; --surface:#45559A; --lip:#2E3A72;
+  --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;
+  --scrim: rgba(30, 36, 80, .45); --sea-flat:#3F6F9C;
   color-scheme: dark;
 }
 
-/* ---------- 10b. small screens (§R): compact = SE height or < 360 wide; tiny = 320 phones ---------- */
+/* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ---------- */
 @media (max-height: 700px), (max-width: 359px) {
-  :root {
-    --gap: 10px; --host-h: 64px; --bubble-min: 46px; --talk-lines: 1; --fs-talk: .9375rem; --cta-h: 52px;
-    --dock-h: 60px; --dock-tile: 40px; --dock-fs: var(--fs-body);
-    --tile: 56px; --tile-gap: 14px;
-  }
+  :root { --gap: 8px; --cta-h: 48px; --talk-lines: 1; --fs-talk: 1rem; --tile: 56px; --tile-gap: 14px; }
 }
 @media (max-width: 339px) {
-  :root {
-    --side: 14px; --gap: 8px; --host-h: 56px; --bubble-min: 42px;
-    --dock-h: 56px; --dock-tile: 38px; --dock-fs: var(--fs-micro);
-    --tile: 52px; --tile-gap: 12px;
-  }
+  :root { --side: 14px; --tile: 52px; --tile-gap: 12px; }
 }
 
-/* ---------- 11. reduced motion ---------- */
+/* ---------- reduced motion = static ---------- */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --dur-tap:0ms; --dur-quick:0ms; --dur-base:120ms; --dur-pop:120ms; --dur-slow:120ms; --dur-emote:1600ms;
@@ -161,7 +94,7 @@
   }
 }
 
-/* ---------- 12. chrome keyframes (prefix if-; if-pop / if-hop / if-bob live in the Builder A block) ---------- */
+/* ---------- chrome keyframes (prefix if-; if-pop / if-hop live in the Builder A block) ---------- */
 /* ▼ next arrow nudge */
 @keyframes if-nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
 /* emote float: rise + fade at the end of --dur-emote */
@@ -172,8 +105,6 @@
   85% { opacity: 1; transform: translateY(-4px); }
   100% { opacity: 0; transform: translateY(-10px); }
 }
-/* Miles stamp landing on a completed rung (§T.4) */
-@keyframes if-stamp { 0% { transform: rotate(-8deg) scale(1.6); opacity: 0; } 70% { transform: rotate(-8deg) scale(.95); opacity: 1; } 100% { transform: rotate(-8deg) scale(1); opacity: 1; } }
 /* letter reveal: each glyph */
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 

@@ -168,5 +168,8 @@
   "purse.spent": "{label} {yen} 使いました！",
   "purse.asked": "{label} {yen}、OK待ちです",
   "jar.paydayNotedYen": "{yen} 貯金に記録しました",
-  "pair.keyHint": "16文字以上の英数字キーです"
+  "pair.keyHint": "16文字以上の英数字キーです",
+  "hud.date": "{m}/{d}({w})",
+  "hud.week": "今週",
+  "hud.score": "今週 {score}/100"
 }

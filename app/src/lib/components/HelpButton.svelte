@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The しまフォン button (status row, top right, 44×44): the NookPhone on a cream circle. Opens the launcher.
+  // The NookPhone button (HUD, top right): the bare official NookPhone, 40 tall in a 44px hit area. Opens the launcher.
   import ShimaPhone from './ShimaPhone.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import { NOOKPHONE } from '#lib/client/assets.ts';
@@ -9,13 +9,12 @@
   let { open = $bindable(false) }: { open?: boolean } = $props();
 </script>
 
-<button type="button" class="icon-btn phone-btn" aria-label={t('phone.open')} onclick={() => (open = true)}>
-  <OfficialArt key={NOOKPHONE} size={30} eager>
+<button type="button" class="phone-btn" aria-label={t('phone.open')} onclick={() => (open = true)}>
+  <OfficialArt key={NOOKPHONE} size={40} eager>
     {#snippet fallback()}
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="5.5" y="2.5" width="13" height="19" rx="4" fill="var(--c-bubble)" stroke="currentColor" stroke-width="2" />
-        <rect x="8" y="6" width="3.2" height="3.2" rx="1" fill="var(--app-island)" /><rect x="12.8" y="6" width="3.2" height="3.2" rx="1" fill="var(--app-jar)" />
-        <rect x="8" y="10.8" width="3.2" height="3.2" rx="1" fill="var(--app-lang)" /><rect x="12.8" y="10.8" width="3.2" height="3.2" rx="1" fill="var(--app-share)" />
+        <rect x="5.5" y="2.5" width="13" height="19" rx="4" fill="var(--c-cream)" />
+        <rect x="8" y="6" width="3.2" height="3.2" rx="1" fill="var(--c-mint)" /><rect x="12.8" y="6" width="3.2" height="3.2" rx="1" fill="var(--c-yuzu)" />
       </svg>
     {/snippet}
   </OfficialArt>
@@ -23,6 +22,10 @@
 <ShimaPhone bind:open />
 
 <style>
-  .phone-btn { background: var(--phone-bg); }
-  .phone-btn svg { width: 28px; height: 28px; }
+  .phone-btn {
+    appearance: none; border: 0; padding: 0; background: none; cursor: pointer; width: 52px; height: 52px; margin-top: -4px;
+    display: grid; place-items: center; border-radius: var(--r-btn); transition: transform var(--dur-base) var(--ease-bounce);
+  }
+  .phone-btn:active { transform: scale(1.1, .9); transition-duration: var(--dur-tap); }
+  .phone-btn svg { width: 40px; height: 40px; }
 </style>
