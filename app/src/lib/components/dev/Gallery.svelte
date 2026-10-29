@@ -1,7 +1,7 @@
 <script lang="ts">
   // Dev art gallery (style guide v4 §W, C18, C20): every official art key, the villager roster, しずえ poses,
   // the fallback silhouette, money marks, fruit ripeness stages, emotes, and the island in every
-  // season × day/night. Guarded by +page.ts (dev only).
+  // season × day/night. Loaded by routes/dev/characters only in `vite dev`, so the production build drops it.
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import Villager from '#lib/components/Villager.svelte';
   import Host from '#lib/components/Host.svelte';

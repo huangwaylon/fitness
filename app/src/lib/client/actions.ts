@@ -64,9 +64,9 @@ export function editWorkout(id: string, date: string, change: { strength?: boole
   return week.send('workout_edit', { id, ...change }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
-export function addWorkout(date: string, type: string, durationMin: number, strength?: boolean) {
+export function addWorkout(date: string, type: string, durationMin: number) {
   const id = `m:${newId().replace(/[^\w-]/g, '').slice(0, 36)}`;
-  return week.send('workout_add', { id, date, type, durationMin: Math.round(durationMin), ...(strength === undefined ? {} : { strength }) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+  return week.send('workout_add', { id, date, type, durationMin: Math.round(durationMin) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 /** A fix of any day's check-in in an open week (the 48 h window doesn't apply). */

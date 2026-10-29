@@ -6,7 +6,7 @@ import { untrack } from 'svelte';
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { dev } from '$app/env';
-import type { PersonWeekView, WeekView } from '#lib/types.ts';
+import type { WeekView } from '#lib/types.ts';
 import type { EventType } from '#lib/ingest/sheet-api.ts';
 import { GAS_CONFIGURED, enqueue, flush, getKey, holdEvent, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
 import { composeModel, missesLock, notInCache, type ComposedModel } from './view.ts';
@@ -109,13 +109,6 @@ class WeekStore {
     // A build without the Apps Script URL (the Pages site before GAS_URL is set): a friendly screen, not errors.
     if (!this.demo && !GAS_CONFIGURED) this.status = 'unconfigured';
     if (this.demo) this.#demoMe = sessionStorage.getItem('demo-as') === 'B' ? 'B' : 'A';
-  }
-
-  get me(): PersonWeekView | null {
-    return this.view ? this.view.people[this.view.me] : null;
-  }
-  get partner(): PersonWeekView | null {
-    return this.view ? this.view.people[this.view.partner] : null;
   }
 
   /** Recompute the view from the cache + queue (cheap: pure, a few ms). */

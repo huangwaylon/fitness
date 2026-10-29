@@ -64,10 +64,6 @@ export function setKey(key: string, me: PersonId): void {
   write(KEYS.me, me);
 }
 
-export function clearKey(): void {
-  kv?.removeItem(KEYS.key);
-}
-
 /** The key from `#key=…` (first open from a shared link), or null. */
 export function keyFromHash(hash: string): string | null {
   const m = /(?:^#|&)key=([0-9a-fA-F]{16,128})(?:&|$)/.exec(hash);

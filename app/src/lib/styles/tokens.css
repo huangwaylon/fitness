@@ -93,8 +93,6 @@
 }
 
 /* ---------- chrome keyframes (prefix if-; if-pop / if-hop live in the Builder A block) ---------- */
-/* ▼ next arrow nudge */
-@keyframes if-nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
 /* letter reveal: each glyph */
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 
