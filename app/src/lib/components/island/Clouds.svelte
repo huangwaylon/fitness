@@ -4,8 +4,9 @@
   // (A8). C1 / C2 / C3 drift at 140 / 100 / 75 s; C2 needs ≥ 70px of sky, C3 ≥ 120px (container query
   // on the sky band). Night: C1 + C2 only, at half opacity.
   // C8: clouds drift across the whole width, so they keep a lane below the status row (date pill and
-  // phone button, ≈ 54px under the band top): top = max(54px, the cloud's %). In short skies (≤ 120px,
-  // compact / tiny) C1 shrinks and C2 needs ≥ 100px; a cloud's foot may tuck behind the far sea.
+  // phone button, ≈ 54px under the band top): top = max(54px, the cloud's %). In short skies (band ≤ 160px,
+  // i.e. ≤ ~120px above the horizon: compact / tiny) C1 and C2 shrink to small far-off clouds sitting
+  // on the horizon (feet tucked 5px behind the sea) and C3 hides.
   interface Props {
     night?: boolean;
   }
@@ -47,8 +48,14 @@
   }
   .halo { fill: var(--cloud); opacity: .35; }
   @keyframes drift { from { transform: translateX(-110%); } to { transform: translateX(calc(100cqw + 10%)); } }
-  @container sky (max-height: 120px) { .c3 { display: none; } .c1 { width: 120px !important; } }
-  @container sky (max-height: 100px) { .c2 { display: none; } }
+  /* short skies (compact / tiny): two small far-off clouds resting on the horizon, under the status row */
+  /* (the sea is drawn 40u above the stage top, so the horizon sits 40u above the band's bottom) */
+  @container sky (max-height: 160px) {
+    .cloud { top: auto; bottom: calc(var(--stage-w, 100cqw) * 40 / 390 - 5px); }
+    .c1 { width: 72px !important; }
+    .c2 { width: 56px !important; }
+    .c3 { display: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .cloud { animation-play-state: paused; }
   }

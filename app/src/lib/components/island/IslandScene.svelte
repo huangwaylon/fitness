@@ -420,7 +420,7 @@
   .coins { transition: transform 1.4s var(--ease-soft, cubic-bezier(.3, 1.3, .5, 1)); }
   .jargain {
     position: absolute; z-index: 92; translate: -50% -100%; pointer-events: none; white-space: nowrap;
-    animation: gain-rise 2.2s ease-out both;
+    animation: gain-rise 3s ease-out both;
   }
   .jargain b {
     display: block; padding: 2px 10px; border-radius: 999px; font: 700 15px/1.3 var(--font-num);

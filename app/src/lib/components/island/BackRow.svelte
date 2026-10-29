@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Back row + beach props (style guide §S.5–S.7, §S.10): cedar (winter: snowy oak), the hedge of the
+  // Back row + beach props (style guide §S.5–S.7, §S.10): cedar (all year), the hedge of the
   // season, Resident Services (night: lit windows), fences (winter: log), mailbox, bench (autumn /
   // winter evenings: bonfire with a warm glow), rock, the islet palm, the two front palms, shells by
   // day / glowing star fragments by night, seasonal ground items and Toy Day presents. All official
