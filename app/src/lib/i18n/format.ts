@@ -4,11 +4,11 @@ import { i18n, t, type Locale } from './index.ts';
 import { addDays, dateMs } from '#lib/time/dates.ts';
 
 /** ISO weekday of a `YYYY-MM-DD`: 1 = Monday … 7 = Sunday. */
-export const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
+const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
 /** `水` / `Wed`. */
 export const weekdayOf = (d: string, locale: Locale = i18n.locale): string => t(`weekday.${isoWeekday(d)}`, undefined, locale);
 /** `10/28`. */
-export const md = (d: string): string => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+const md = (d: string): string => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
 /** A week from its Monday: `10/26–11/1`. */
 export const weekRange = (wk: string): string => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
 

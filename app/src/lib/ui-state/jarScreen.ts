@@ -25,7 +25,7 @@ export const CHEAPEST_TREAT: Treat = TREATS.reduce<Treat>((a, b) => (b.yen < a.y
 const pay = () => RULES[RULES.length - 1].money;
 
 /** Weeks paid so far (incl. the 2 calibration weeks), for "against your own max" layer jars. The server may send it. */
-export function paidWeeks(view: WeekView): number {
+function paidWeeks(view: WeekView): number {
   const jar = view.jar;
   if (jar.weeks) return jar.weeks;
   const p = pay();

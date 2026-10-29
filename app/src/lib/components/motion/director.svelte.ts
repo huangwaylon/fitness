@@ -35,7 +35,7 @@ const blank = (): ActorState => ({
 
 export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partner: blank(), host: blank() });
 
-export const EMOTE_MS = 2200;
+const EMOTE_MS = 2200;
 let fxN = 0;
 /** Pending timers per actor → an optional "dropped" hook, called when cancel() / resetAll() drops it. */
 type Dropped = (() => void) | undefined;
@@ -222,7 +222,7 @@ function play(rid: ReactionId, swap: boolean) {
 }
 
 /** Walk leg length (= --dur-walk in tokens.css), the wait at the far end, and the puff cadence. */
-export const WALK_MS = 1600;
+const WALK_MS = 1600;
 const WALK_WAIT_MS = 1200;
 const PUFF_MS = 640;
 

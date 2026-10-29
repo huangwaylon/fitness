@@ -10,7 +10,7 @@ export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type Foliage = 'blossom' | 'green' | 'fall' | 'snow';
 
-export const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
+const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
 
 /** Month-day as a sortable number (Apr 3 → 403). */
 const md = (d: Date) => (d.getMonth() + 1) * 100 + d.getDate();
