@@ -2,13 +2,12 @@
 
 Build `f3e68e5`, `?demo` / `?demo&as=B` / `?demo=harvest` / `?date=` (noon, 17:55 dusk, 22:00 night, Jan dawn snow, Apr harvest). Viewports 393×852, 375×667, 320×568. Screenshots in `.shots/r7/exp-*`.
 
-Tasks I did: read the week; answered ヨガ→筋トレ (score 41→54); checked in 定食ランチ; tapped a tree; jar → 旅の壺 → 島へ; opened きろく from the NookPhone, the ribbon and the 旅の壺 total; list → week → day; steps 4,387→8,000→3,000; a locked week and day; うめ's data; voided カフェ; marked and then undid the September transfer; added a 45-minute ピラティス.
 
 ## 1. Visual consistency
 
 | Element | Verdict |
 |---|---|
-| Sky | **Pass.** The 3-stop gradients read as NH at noon, dusk, night and dawn. The dusk peach-to-violet is the best yet. |
+| Sky | **Pass.** The 3-stop gradients read as NH at noon, dusk, night and dawn. |
 | Sun / moon | **Pass, one small issue.** Glow and placement work. At 375 dusk the sun is drawn on top of a cloud (it should sit behind it). |
 | Clouds | **Pass.** Same soft-underside style for the floating clouds and the horizon bank. |
 | Sea | **Pass.** NH blue with glints. At night it stays quite bright next to the navy sky; acceptable. |
@@ -18,15 +17,15 @@ Tasks I did: read the week; answered ヨガ→筋トレ (score 41→54); checked
 | Grass | **Pass.** The radial highlight and flecks lift the old flat green. |
 | Shadows | **Pass.** Soft, surface-coloured contact shadows under trees, jar and villagers. |
 | Trees | **Pass.** One tree per person, with fruit on the ground. The autumn, winter and spring canopies all match. |
-| Characters | **Pass.** Official renders. The sleep "Zz" at night is a good touch. |
-| Jar | **Pass.** It is the focal point. Left untinted at night it reads as glowing, which I'd keep. |
+| Characters | **Pass.** Official renders. |
+| Jar | **Pass.** It is the focal point. |
 | UI chrome | **Mostly passes.** The ribbon, plates and dialogue are consistent. Clock contrast and the browser bar colour still need fixing (F12, F13). |
 
 Overall, the scene finally reads as one Pocket Camp diorama at every time of day. One focal point (the jar), no big empty sky. Jar ⇄ 旅の壺 is smooth: 55 frames in 900 ms, worst frame 19 ms, no jank, and state survives the round trip.
 
 ## 2. きろく usability
 
-- **Findability: good.** It is the first app on the phone. The ribbon opens this week's detail and the 旅の壺 total opens お金, both as the design specifies. The island's own jar plate goes to 旅の壺, which is correct.
+- **Findability: good.** It is the first app on the phone. The ribbon opens this week's detail and the 旅の壺 total opens お金, both as the design specifies. 
 - **Locked vs open: clear on the week screen, weak on the day screen.** The week screen has a green "✎ あと5日 修正できます" for open weeks and "この週はしめきり済み。見るだけです" for locked ones; list cards show 🔒✓. On a locked day, though, my check-in chips look exactly like the tappable ones (F5).
 - **Partner data: correct.** It is view-only with a 見るだけ badge, and their edits appear in my change log with their face.
 - **Keypad: works.** ATM digits, the old value in grey, and ▶けってい/やめる all behave. But it sits at the top with about 40% empty below it, far from the thumb (F10).
