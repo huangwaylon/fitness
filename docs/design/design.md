@@ -68,7 +68,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 
 ## A. Official art map
 
-WebP with alpha, already downscaled; never upscale past the manifest height. `<OfficialArt key alt size>`, `size` = rendered height; `alt=""` when decorative or labelled. Key helpers: `lib/client/assets.ts` and `lib/components/art.ts`.
+WebP with alpha, already downscaled; never upscale past the manifest height. `<OfficialArt key alt size>`, `size` = rendered height; `alt=""` when decorative or labelled. Key helpers and the manifest (bundled at build time, without its source credits): `lib/art.ts`.
 
 | Group | Keys (`static/art/<key>.webp`) | Where |
 |---|---|---|
