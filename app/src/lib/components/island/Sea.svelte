@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Sea (round 7, environment-style.md): ONE layer from the horizon down past the bottom edge, so it runs on
+  // Sea (round 7, design.md §S.3): ONE layer from the horizon down past the bottom edge, so it runs on
   // under the island and behind the bottom chrome. It lives INSIDE the stage (first child), so the scene's
   // multiply tint (IslandScene .tint) darkens land and sea together; it bleeds out to both screen edges.
   //   1. gradient: a 4u horizon haze, then #4C9DE8, then the open NH blue #3D8FE2 (the chrome under 島 is the

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Balloon present (style guide §S.10): ours (a balloon + string) carrying the official present,
+  // Balloon present (design.md §S.4): ours (a balloon + string) carrying the official present,
   // drifting left → right across the sky in 26 s, bobbing ±6px. Tap (48×56 target) → pop: a confetti
   // burst and the present drops behind the hedge. No text. The parent mounts it when one is due.
   import { onDestroy } from 'svelte';

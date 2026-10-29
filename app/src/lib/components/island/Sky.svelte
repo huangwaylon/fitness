@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Sky (round 7, environment-style.md): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
+  // Sky (round 7, design.md §S.3): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
   // season shifts by day) bleeding under the status bar; the sun at the upper left (left 18%, 58% down the
   // band; dawn / dusk: 22% above the horizon) as ONE soft radial glow, or the moon (a crescent with a soft
   // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and event

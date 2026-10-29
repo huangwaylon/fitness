@@ -1,4 +1,4 @@
-// Island scene v4 data (style guide §S): stage coordinates and season tables. Stage units (u):
+// Island scene v4 data (design.md §S): stage coordinates and season tables. Stage units (u):
 // x 0–390, y 0–360, origin top-left, y down; "base" = the y of the feet / trunk bottom.
 import type { Season } from '#lib/client/theme.svelte.ts';
 import type { BushId, FlowerId } from '#lib/art.ts';
@@ -11,7 +11,7 @@ export const u = (n: number): string => `${((n * 100) / STAGE_W).toFixed(3)}cqw`
 
 export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
-/** The NH tile grid (scale pass, docs/design/scale-and-ground.md). One tile = TILE u wide; a tile row is
+/** The NH tile grid (scale pass, docs/design/design.md §S.2). One tile = TILE u wide; a tile row is
  *  ROW u deep on screen (NH's camera foreshortens ground depth to ≈ 0.7 of the width). Columns are centred on
  *  the jar: col(k) = 195 + k·TILE, k = −3…3 (7 tiles across the plateau). Every size is a multiple of the
  *  villager height VILLAGER.h ≈ 1.8 tiles, measured against in-game screenshots (`.refs/scale/`). */
@@ -80,7 +80,7 @@ export const HEDGE_X = [-3, -2, -1, 0, 1, 2, 3].map(col);
 export const HEDGE_BASE = ROWS.hedge;
 export const BUSH_U = 48;
 
-/** Round 7 (environment-style.md, "Pocket Camp diorama"): the island is an organic rounded plateau with
+/** Round 7 (design.md §S.3, "Pocket Camp diorama"): the island is an organic rounded plateau with
  *  sea on both sides. Grass top surface x 44–346, y 50–316 (rounded corners: rt at the back, rb at the
  *  front), a cliff 12u tall at the front tapering to 6u at the sides, and a sand crescent around it
  *  (x 30–360, down to y 352) with a wet band, two foam lines and a turquoise shallow ring. */

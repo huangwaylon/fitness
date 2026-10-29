@@ -1,4 +1,4 @@
-// Idle life (style guide §M.7, v5 §6): one scheduler per live scene. Every 9–15 s one actor does one
+// Idle life (design.md §M.7, v5 §6): one scheduler per live scene. Every 9–15 s one actor does one
 // small background thing from its pool (look around, wiggle, hop, stroll, peek into the jar, tree shake,
 // chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab

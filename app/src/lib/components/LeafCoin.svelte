@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Money mark (style guide v3 §A): the official Bells bag next to every savings ¥ amount
+  // Money mark (design.md §A): the official Bells bag next to every savings ¥ amount
   // (amounts stay ¥). `kind="leaf"` = the NH leaf (small accents). A drawn coin is the fallback.
   //   <LeafCoin size={22} />  <LeafCoin size="1.1em" />  <LeafCoin kind="leaf" size={18} />
   import OfficialArt from './OfficialArt.svelte';

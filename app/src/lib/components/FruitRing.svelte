@@ -7,7 +7,7 @@
 </script>
 
 <script lang="ts">
-  // One fruit's weekly progress (style guide v3 §A): the official inventory icon.
+  // One fruit's weekly progress (design.md §A): the official inventory icon.
   //   ring (default): our conic progress ring with the fruit in the centre.
   //   onTree: the fruit hangs on an island tree (no ring). Tap either → the detail chip
   //           (a cream bubble; on a tree it sits above the whole canopy, U13).

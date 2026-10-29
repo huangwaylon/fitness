@@ -86,7 +86,7 @@
     checkinOpen = true;
   }
 
-  // Closing the check-in sheet with today ticked → my villager hops (R2, style guide §M.5).
+  // Closing the check-in sheet with today ticked → my villager hops (R2, design.md §M.5).
   function celebrate() {
     if (checkedIn) emit('checkin-saved');
     const g = grew;

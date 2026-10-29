@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Seasonal particles (style guide §S.9), transform/opacity only, ONE animation each (the side-to-side
+  // Seasonal particles (design.md §S.4), transform/opacity only, ONE animation each (the side-to-side
   // flutter is folded into the fall keyframes; v5 §6: ≤ 3 particles in the idle budget): cherry-blossom
   // petals, autumn maple leaves (2, 3 in festival week), winter snow (3), all official art; summer nights get
   // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size

@@ -1,4 +1,4 @@
-/* Island Fund design tokens v5 (docs/design/v5-direction.md §5; overrides style guide v4.1).
+/* Island Fund design tokens v5 (docs/design/design.md, Tokens).
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
@@ -97,7 +97,7 @@
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 
 /* ======================================================================================
-   Builder A: scene + fx + keyframes (style guide v4 §1.3, §S.11, §M.2, §M.4).
+   Builder A: scene + fx + keyframes (design.md §M.2, §M.4).
    Scene tokens live on the scene element itself (.if-scene[data-season][data-tod], set by
    island/IslandScene.svelte), so a scene renders the same whatever <html> says and the dev
    gallery can show every season × time of day side by side.
@@ -110,7 +110,7 @@
   /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar), v5 §5 */
   --sh-ground: rgba(40, 60, 40, .18);
 }
-/* Round 7 (docs/design/environment-style.md, "Pocket Camp diorama"): the scene is painted like the official
+/* Round 7 (docs/design/design.md §S.3, "Pocket Camp diorama"): the scene is painted like the official
    renders. Light from the upper left; every surface = one base + one gentle gradient + one soft lower shade +
    sparse flecks; no strokes or lips on scenery; soft radial contact shadows in the colour of the surface.
    The sea is NH blue with a turquoise shallow ring; time of day = ONE multiply tint over land and sea

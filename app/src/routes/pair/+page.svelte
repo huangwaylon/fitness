@@ -15,7 +15,7 @@
   let busy = $state(false);
   let msg = $state('');
   let standalone = $state(true);
-  /** On-screen keyboard height (style guide §R): the button rides above it. */
+  /** On-screen keyboard height (design.md §R): the button rides above it. */
   let kb = $state(0);
 
   const ready = $derived(/^[0-9a-f]{16,128}$/.test(code));

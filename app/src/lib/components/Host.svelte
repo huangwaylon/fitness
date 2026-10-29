@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The host しずえ (Isabelle), style guide v4 §M.6: the official render by pose, a generic silhouette
+  // The host しずえ (Isabelle), design.md §M.6: the official render by pose, a generic silhouette
   // as fallback, plus her motion: idle bob, a bounce while her line is typing (`talking`), and the
   // beats the stage director plays (greeting hop, bow, head-shake, pose swaps with a 160 ms
   // crossfade, a reaction bubble at her top-right, sparkles / notes / sweat).

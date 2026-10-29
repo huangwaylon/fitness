@@ -2,7 +2,7 @@
 // Usage (from app/): npm run assets:fetch   [--force to re-download everything]
 //                    npm run assets:fetch -- --only=trees/oak,host/   (re-download keys with these prefixes)
 //
-// The art is Nintendo's, used here for a private, personal app: keep the repo private.
+// The art is Nintendo's, used for a personal, non-commercial app: see docs/decisions/0018-official-art-public-site.md for where it is published.
 // Output: static/art/<category>/<id>.webp (+ static/art/manifest.json), downscaled to ≤ the size the UI needs.
 // Idempotent: files already on disk are skipped. Requires `cwebp` (brew install webp).
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -66,7 +66,7 @@ const SPECS: Record<string, Spec> = {
   'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
   'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
   'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
-  // Scale pass (docs/design/scale-and-ground.md): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
+  // Scale pass (docs/design/design.md §S.2): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
   // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
   'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
   'bushes/white-azalea': [128, 'White-Azalea_Bush_NH_Icon.png'],
@@ -82,7 +82,7 @@ const SPECS: Record<string, Spec> = {
   // v4 island decorations.
   'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
-  // v5 (docs/design/v5-direction.md): game-derived replacements for hand-drawn chrome.
+  // v5 (docs/design/design.md): game-derived replacements for hand-drawn chrome.
   'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'], // ごほうび財布 (reward wallet)
   'money/miles-ticket': [128, 'Nook_Miles_Ticket_NH_Inv_Icon.png'], // the trip goal (次は 沖縄)
   // v4 seasonal particles.
@@ -91,7 +91,7 @@ const SPECS: Record<string, Spec> = {
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
 };
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
- *  scene sizes are true to the tile unit (docs/design/scale-and-ground.md). */
+ *  scene sizes are true to the tile unit (docs/design/design.md §S.2). */
 const TRIM = ['bushes/', 'flowers/'];
 
 // v4 reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.

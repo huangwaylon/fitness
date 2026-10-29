@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A savings amount (style guide v4 §T.5): the official Bells bag before `¥146,200` (amounts stay ¥).
+  // A savings amount (design.md §T): the official Bells bag before `¥146,200` (amounts stay ¥).
   //   <Yen yen={n} />        inline, bag at 1.1em (hero totals)
   // When the amount changes, the digits count up over 600 ms and the bag hops (instant under reduced motion).
   import { untrack } from 'svelte';
