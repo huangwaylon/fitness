@@ -1,5 +1,6 @@
 // Fetch the official New Horizons art the UI uses (from Nookipedia's file pages) into static/art/.
 // Usage (from app/): npm run assets:fetch   [--force to re-download everything]
+//                    npm run assets:fetch -- --only=trees/oak,host/   (re-download keys with these prefixes)
 //
 // The art is Nintendo's, used here for a private, personal app: keep the repo private.
 // Output: static/art/<category>/<id>.webp (+ static/art/manifest.json), downscaled to ≤ the size the UI needs.
@@ -16,6 +17,7 @@ const OUT = join(import.meta.dirname, '..', 'static', 'art');
 const MANIFEST = join(OUT, 'manifest.json');
 const DELAY_MS = 400;
 const force = process.argv.includes('--force');
+const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
 /** key → [max px on the longer side, ...candidate file titles in preference order]. */
 type Spec = [number, ...string[]];
@@ -23,11 +25,12 @@ type Spec = [number, ...string[]];
 const ROSTER = ['Goldie', 'Raymond', 'Bob', 'Bunnie', 'Judy', 'Stitches', 'Hamlet', 'Molly', 'Lily', 'Dom'];
 
 const SPECS: Record<string, Spec> = {
-  // Isabelle, the host. Only the transparent renders (NH_2..4 have white backgrounds).
+  // Isabelle, the host. Only the transparent renders (NH_2..4 have white backgrounds). There is no
+  // official bow render: 'bow' is the stand render + a CSS bow (N2). Winter = the full-body cardigan
+  // model (same canvas as the stand model, N3); the old `Isabelle_NH_Winter.png` is a waist-up bust.
   'host/isabelle': [512, 'Isabelle_NH_Transparent.png'],
   'host/isabelle-stand': [512, 'Isabelle_NH_Model.png'],
-  'host/isabelle-bow': [512, 'Isabelle_NH_Model_2.png'],
-  'host/isabelle-winter': [512, 'Isabelle_NH_Winter.png'],
+  'host/isabelle-winter': [512, 'Isabelle_NH_Model_2.png'],
   'host/isabelle-icon': [128, 'Isabelle_NH_Character_Icon.png'],
   'host/tom-nook': [512, 'Tom_Nook_NH.png'],
   // The four fruit rings.
@@ -44,7 +47,7 @@ const SPECS: Record<string, Spec> = {
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
   // NookPhone (しまフォン launcher).
-  'phone/nookphone': [512, 'NookPhone_NH_Model.png'],
+  'phone/nookphone': [208, 'NookPhone_NH_Model.png'], // drawn 30px tall (35 wide) → 2× at 3x DPR
   'phone/diy': [92, 'NookPhone_DIY_NH_Icon.png'],
   'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png'],
   // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
@@ -56,13 +59,17 @@ const SPECS: Record<string, Spec> = {
   'phone/glyph-resident': [96, 'Menu_Call_Resident_NH_Icon.png'],
   'phone/glyph-map': [96, 'Menu_Map_NH_Icon.png'],
   'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
-  // v4 trees: the hardwood (oak) in its four seasonal looks carries the fruit; cedar + palm frame the island.
-  'trees/oak-spring': [384, 'Oak_Tree_NH_Spring.png'],
-  'trees/oak-summer': [384, 'Oak_Tree_NH.png'],
-  'trees/oak-fall': [384, 'Oak_Tree_NH_Fall.png'],
-  'trees/oak-winter': [384, 'Oak_Tree_NH_Winter.png'],
+  // v4 trees: the hardwood in its four seasonal looks is the NH fruit tree (each bears one fruit kind);
+  // cedar + palm frame the island. A11: the seasonal sources are only 329×409, so they ship at full
+  // resolution (never upscaled: the orchard draws them ≤ 104u ≈ 315 device px); summer has a big
+  // source and ships at 2× the drawn size.
+  'trees/oak-spring': [409, 'Oak_Tree_NH_Spring.png'],
+  'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
+  'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
+  'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
   'trees/cedar': [384, 'Cedar_Tree_NH.png'],
   'trees/palm': [320, 'Palm_Tree_NH.png'],
+  'trees/palm-sm': [128, 'Palm_Tree_NH.png'], // the distant islet (26u): a small decode
   'trees/apple-icon': [96, 'Apple_Tree_NH_Icon.png'],
   'trees/peach-icon': [96, 'Peach_Tree_NH_Icon.png'],
   'trees/pear-icon': [96, 'Pear_Tree_NH_Icon.png'],
@@ -189,7 +196,8 @@ async function main() {
     ? JSON.parse(readFileSync(MANIFEST, 'utf8'))
     : { version: 1, files: {} };
   const todo = Object.entries(SPECS).filter(
-    ([key]) => force || !manifest.files[key] || !existsSync(join(OUT, manifest.files[key].path))
+    ([key]) =>
+      force || only.some((o) => key.startsWith(o)) || !manifest.files[key] || !existsSync(join(OUT, manifest.files[key].path))
   );
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
   // Drop manifest entries (and files) the UI no longer uses.

@@ -293,7 +293,8 @@
   60% { transform: rotate(2deg); } 80% { transform: rotate(-1deg); }
 }
 @keyframes if-sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
-@keyframes if-bow { 0%,100% { transform: none; } 35%,65% { transform: translateY(3%) scale(1.02,.98); } }
+/* a front-facing bow (N2: there is no official bow render): the figure dips and squashes from the feet, holds, rises */
+@keyframes if-bow { 0%,100% { transform: none; } 30%,62% { transform: translateY(1.5%) scale(1.03,.91); } }
 @keyframes if-talk { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
 @keyframes if-headshake {
   0%,100% { transform: none; } 25% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } 75% { transform: rotate(-3deg); }

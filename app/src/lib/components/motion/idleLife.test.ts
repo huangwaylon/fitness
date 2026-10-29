@@ -55,4 +55,32 @@ describe('idle life cleanup (P2)', () => {
     await vi.advanceTimersByTimeAsync(120_000);
     expect(actors.mine.motionN + actors.partner.motionN + actors.mine.emoteN + actors.partner.emoteN).toBe(0);
   });
+
+  it('a reaction that preempts an actor also drops the idle-owned cancellers (N8)', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { actors, cancel, resetAll } = await import('./director.svelte.ts');
+    const { IDLE_POOL } = await import('./reactions.ts');
+    resetAll();
+    vi.setSystemTime(new Date('2026-10-29T12:00:00'));
+    const pool = IDLE_POOL.filter((e) => e.action !== 'stretch' && e.action !== 'dance');
+    const total = pool.reduce((s, e) => s + e.weight, 0);
+    const before = pool.slice(0, pool.findIndex((e) => e.action === 'chat')).reduce((s, e) => s + e.weight, 0);
+    const seq = [0, 0.5, (before + 1) / total, 0, 0, 0, 0, 0];
+    let calls = 0;
+    const stop = startIdleLife({
+      paused: () => false,
+      asleep: () => false,
+      scores: () => [50, 50],
+      treeShake: () => {},
+      random: () => seq[Math.min(calls++, seq.length - 1)]
+    });
+    await vi.advanceTimersByTimeAsync(2_600);
+    expect(actors.mine.face).toBe('in');
+    expect(stop.owned()).toBeGreaterThan(0);
+    cancel('mine');
+    cancel('partner');
+    expect(stop.owned()).toBe(0);
+    stop();
+    resetAll();
+  });
 });
