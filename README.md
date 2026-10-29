@@ -19,7 +19,7 @@ iOS Shortcuts (health sync, gym Arrive/Leave) and the PWA (check-ins, harvest, p
 | `app/src/lib/client/` | Apps Script client (`gas.ts`: keys, write queue, snapshot cache), stores, actions |
 | `app/src/lib/ingest/` | Dependency-free Shortcut body parser (bundled into Apps Script) and the sheet contract types |
 | `app/gas/` → `app/apps-script/` | Apps Script source (TS) and its bundled `Code.js` (`npm run gas:build`) |
-| `app/scripts/` | `fetch-assets` (official art), `export-to-sheet` (one-time Mac DB → sheet migration) |
+| `app/scripts/` | `fetch-assets` (official art), `bench-model` (`npm run bench`: a year of rows through the model), `export-to-sheet` (one-time Mac DB → sheet migration; deleted after it) |
 | `docs/PROPOSAL.md` | The product description (v2.2) |
 | `docs/profiles.md` | Participant profiles, gyms, eating patterns |
 | `docs/decisions/` | Decision records 0001–0018, with an [index](docs/decisions/README.md) |
