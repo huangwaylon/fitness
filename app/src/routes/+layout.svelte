@@ -3,8 +3,8 @@
   import { routeOf } from '#lib/client/paths.ts';
   import '@fontsource/fredoka/600.css';
   import '@fontsource/fredoka/700.css';
-  import '@fontsource/zen-maru-gothic/500.css';
-  import '@fontsource/zen-maru-gothic/700.css';
+  // Zen Maru Gothic trimmed to the slices the app uses (round 5 P6; scripts/font-subsets.ts).
+  import '#lib/styles/fonts.css';
   import '#lib/styles/tokens.css';
   import '#lib/styles/theme.css';
   import { onMount, type Snippet } from 'svelte';
@@ -153,7 +153,7 @@
   .nook { line-height: 0; }
   .unset { margin: 0; display: grid; gap: 2px; font-size: var(--fs-h2); }
   .unset [lang='en'], .state .en { font-size: .85em; }
-  .state p { margin: 0; font-size: var(--fs-body-lg); font-weight: 700; color: var(--text-soft); text-wrap: balance; }
+  .state p { margin: 0; font-size: var(--fs-body-lg); font-weight: 700; color: var(--text-soft); text-wrap: balance; word-break: auto-phrase; }
   .bob { display: block; transform-origin: 50% 100%; animation: if-hop 1.1s var(--ease-idle) infinite; }
   .dots { display: flex; gap: 8px; }
   .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--c-leaf); animation: if-nudge .9s var(--ease-idle) infinite; }
