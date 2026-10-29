@@ -128,7 +128,7 @@ Cut: sleep scoring, Sunday promises, Cozy Days, a single fixed destination, the 
 Later (v1): season recap, quiet island upgrades, one milestone shelf, one seasonal event per season, widgets.
 
 ### 3.8 Tone
-At most one notification a day, sleep-aware, celebratory. Banned in both languages: failed/失敗, missed, lost, behind, lazy/サボり, cheat day/チートデイ, burn off, earn your food, good/bad food, guilty/罪悪感, detox, and any body comment (太る…).
+No notifications or reminders ([ADR 0016](decisions/0016-no-privacy-no-alerts.md)). Banned in both languages: failed/失敗, missed, lost, behind, lazy/サボり, cheat day/チートデイ, burn off, earn your food, good/bad food, guilty/罪悪感, detox, and any body comment (太る…).
 
 ---
 
@@ -142,7 +142,7 @@ Detail: [style-guide.md](design/style-guide.md), [ac-research.md](design/ac-rese
 |---|---|
 | 🏝️ **島 (Island)**, home | Two villagers and two trees. Each tree shows this week's **4 fruits** ripening, plus a big score (**72**). The combined jar total. One Juniper line. **One button: 今夜のチェック (evening check-in).** Tap your partner's tree to send a high-five. |
 | 🫙 **旅の壺 (Jar)** | One big total, then **the next rung only** (e.g. 次は 沖縄 ¥150,000 · 残り ¥X) with a progress bar; the full ladder is one tap away. Per-person and team layers, the Treat Purse with a short yen treat list, a quiet "≈ ¥ this week" line, and the 給料日 "moved to savings ✓" cue. |
-| 📱 **しまフォン (launcher)** | Settings: 言語/Language, villager and name, privacy, notifications, Health sync status. (No ふたり tab: the partner's fruit and score are on Island.) |
+| 📱 **しまフォン (launcher)** | Settings: 言語/Language, villager and name, Health sync status. (No ふたり tab: the partner's fruit and score are on Island.) |
 | 🌙 **日曜の収穫 (Sunday harvest)**, overlay | ≤ 60 s: each person's score → yen into the jar → team part → purse → both tap 「壺に入れる」. |
 | ✅ Check-in sheet | Three big toggles, each person's own (e.g. B: 昼ごはん · おやつ swap · 野菜2食), plus a neutral 「おやつ OK」 chip, a for-partner-too option and a 48 h fill-in. |
 
@@ -160,7 +160,6 @@ Detail: ADR [0015](decisions/0015-google-sheet-backend.md) (supersedes the hosti
  iPhone A / iPhone B
  ├─ Apple Watch → Apple Health ─► Shortcuts health sync (auto POST) ┐
  ├─ Shortcuts: arrive/leave gym (runs locked, no prompt) ───────────┤  POST {key, action, …}
- ├─ Shortcuts: 20:00 / Sun 19:30 reminders (local, no push)         │
  └─ PWA (ja/en, GitHub Pages) ◄── snapshot rows / events ───────────┤
       computes scores + ¥ in the browser                            ▼
                                      Apps Script web app (bound, spreadsheets.currentonly)
@@ -179,7 +178,7 @@ Detail: ADR [0015](decisions/0015-google-sheet-backend.md) (supersedes the hosti
 | i18n | `ja.json` / `en.json` message catalogs from day one. `¥128,000` with a half-width ¥ sign. Dates as `10月28日(水)`. |
 | Resilience | Nothing of ours to keep running. Google's version history plus a monthly `.xlsx` download. |
 
-**Privacy:** the partner sees fruit and % only. Raw numbers are opt-in. Eating answers are never shared. Both people's rows sit in one private sheet owned by the shared account; the app applies the privacy rules when it builds the view. No third-party analytics and no cloud AI on health data.
+**Data:** both people see all of each other's data, including raw numbers and eating check-ins ([ADR 0016](decisions/0016-no-privacy-no-alerts.md)). The rows sit in one private sheet owned by the shared account. No third-party analytics and no cloud AI on health data.
 
 ---
 
@@ -188,7 +187,7 @@ Detail: ADR [0015](decisions/0015-google-sheet-backend.md) (supersedes the hosti
 | Phase | Effort | Scope | Done when |
 |---|---|---|---|
 | **0 · Spike** | 1 evening | Sheet + Apps Script deployed, keys pasted; Shortcuts health sync (App trigger); gym Arrive/Leave Shortcuts; test the Wallet-pass trigger at Anytime | Data from both phones and one gym visit land in the sheet |
-| **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay → ¥ ledger; 2 pages + しまフォン in ja/en; check-in; Shortcuts reminders | 2 weeks hands-off, ≤ 1 missed day per person |
+| **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay → ¥ ledger; 2 pages + しまフォン in ja/en; check-in | 2 weeks hands-off, ≤ 1 missed day per person |
 | *Calibration* | 2 weeks | Flat participation pay; baselines measured; B's targets agreed with her trainer | Season 1 starts |
 | **2 · v1** | ~4–6 weekends | Season re-tune and recap, pause weeks, partner-invite idea, quiet island upgrades, **native companion** (HealthKit sync, widget with a check-in button, Watch complication) | Widget used daily |
 | **3 · Later** | seasonal | One seasonal event per season, milestone shelf, year-end recap | Still opened weekly in month 12 |
