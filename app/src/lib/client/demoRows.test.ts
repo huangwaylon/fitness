@@ -1,19 +1,17 @@
 // The demo runs the real model on generated rows: it must show a believable, consistent history.
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { composeView } from './view.ts';
 import { demoCache } from './demoRows.ts';
-import { reduce, setDemoCalendar } from '#lib/model/state.ts';
+import { reduce } from '#lib/model/state.ts';
 import { editLog, historyWeeks, moneyLog } from '#lib/model/history.ts';
-
-afterAll(() => setDemoCalendar(null));
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);
   let cache: ReturnType<typeof demoCache>;
   let s: ReturnType<typeof reduce>;
   beforeEach(() => {
-    cache = demoCache(now); // also moves the model's calendar to this demo's weeks
-    s = reduce(cache.rows);
+    cache = demoCache(now);
+    s = reduce(cache.rows, cache.demo);
   });
 
   it('has 9 weeks of history for both people, with scores, yen and edits by both', () => {

@@ -27,6 +27,8 @@ export interface Workout {
   includesStrength: boolean | null;
   /** A きろく edit (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
   strengthOverride?: boolean | null;
+  /** Added by hand in きろく (Watch forgotten): its minutes count toward the day's active minutes (ADR 0011). */
+  manual?: boolean;
 }
 
 /** An arrive→leave pair derived from presence events. */

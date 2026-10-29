@@ -23,7 +23,10 @@
   }
   let { d, edits, order, names, villagers, now, onday }: Props = $props();
   const fmtActual = (k: string, x: number) => (k === 'peach' ? Math.round(x) : Number.isInteger(x) ? x : x.toFixed(1));
+  const purse = $derived(d.breakdown.purseA + d.breakdown.purseB);
 </script>
+
+{#snippet pen(on: boolean)}{#if on}<span class="ed"><Glyph kind="pen" size={10} label={t('kiroku.edited')} /></span>{/if}{/snippet}
 
 <header class="sub">
   <h3>{d.current ? t('kiroku.thisWeek') + ' ' : ''}<span class="money">{weekRange(d.weekKey)}</span></h3>
@@ -50,6 +53,18 @@
 </section>
 
 <section class="card days" aria-label={t('kiroku.weekOf', { range: weekRange(d.weekKey) })}>
+  <!-- Column labels (round 7 F8): whose half, then steps · minutes · strength · meals. -->
+  <div class="head" aria-hidden="true">
+    <span></span>
+    {#each order as p, j (p)}<span class="half who2" class:right={j === 1}>{names[p]}</span>{/each}
+    <span></span>
+    {#each order as p, j (p)}
+      <span class="half hd" class:right={j === 1}>
+        <span class="st">{t('kiroku.col.steps')}</span><span class="mn">{t('kiroku.col.min')}</span>
+        <span class="star"><Glyph kind="strength" size={11} /></span><span class="tk lbl">{t('kiroku.col.meals')}</span>
+      </span>
+    {/each}
+  </div>
   {#each d.people[order[0]].days as row, i (row.date)}
     {@const other = d.people[order[1]].days[i]}
     <button type="button" class="day" disabled={row.future} onclick={() => onday(row.date)}>
@@ -58,11 +73,10 @@
         <span class="half" class:right={j === 1}>
           {#if r.future}<span class="dim">·</span>
           {:else}
-            <span class="st money">{num(r.steps)}</span>
-            <span class="mn money">{t('kiroku.min', { n: r.minutes })}</span>
-            <span class="star">{#if r.strength}<Glyph kind="strength" size={14} />{/if}</span>
-            <span class="tk" aria-label="{r.ticks}/3">{#each [0, 1, 2] as n (n)}<i class:on={n < r.ticks}></i>{/each}</span>
-            {#if r.edited}<span class="ed"><Glyph kind="pen" size={11} label={t('kiroku.edited')} /></span>{/if}
+            <span class="st money">{num(r.steps)}{@render pen(r.editedFields.includes('steps'))}</span>
+            <span class="mn money">{t('kiroku.min', { n: r.minutes })}{@render pen(r.editedFields.includes('minutes'))}</span>
+            <span class="star">{#if r.strength}<Glyph kind="strength" size={14} />{/if}{@render pen(r.editedFields.includes('workout'))}</span>
+            <span class="tk" aria-label="{r.ticks}/3">{#each [0, 1, 2] as n (n)}<i class:on={n < r.ticks}></i>{/each}{@render pen(r.editedFields.includes('ticks'))}</span>
           {/if}
         </span>
       {/each}
@@ -70,12 +84,13 @@
   {/each}
 </section>
 
+<!-- 内訳 adds up to the week's jar yen; the purse share is paid on top, on its own line (round 7 F9). -->
 <p class="split">
   <span>{t('kiroku.breakdown')}</span>
   <span>{names[order[0]]} <b class="money">{formatYen(d.breakdown[order[0]])}</b></span>
   <span>{names[order[1]]} <b class="money">{formatYen(d.breakdown[order[1]])}</b></span>
   <span>{t('kiroku.team')} <b class="money">{formatYen(d.breakdown.team)}</b></span>
-  {#if d.breakdown.purseA + d.breakdown.purseB > 0}<span>{t('kiroku.purse')} <b class="money">{formatYen(d.breakdown.purseA + d.breakdown.purseB)}</b></span>{/if}
+  {#if purse > 0}<span class="apart">{t('kiroku.purseApart', { yen: formatYen(purse) })}</span>{/if}
 </p>
 
 <ChangeLog {edits} {villagers} withDate />
@@ -108,16 +123,23 @@
   .wd { font-weight: 700; font-size: var(--fs-body); }
   .half { display: flex; align-items: center; gap: 5px; min-width: 0; position: relative; font-size: var(--fs-s); padding-right: 10px; }
   .half.right { padding-left: 8px; box-shadow: -2px 0 0 color-mix(in srgb, var(--lip) 45%, transparent); }
-  .st { width: 3.4em; text-align: right; font-size: var(--fs-s); }
-  .mn { width: 3.3em; text-align: right; font-size: var(--fs-s); color: var(--text-soft); }
-  .star { width: 14px; display: grid; }
-  .tk { display: flex; gap: 2px; }
+  .head { display: grid; grid-template-columns: 22px 1fr 1fr; gap: 2px 6px; padding: 6px 6px 4px; border-bottom: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
+  .hd { font-size: 11px; font-weight: 700; color: var(--text-soft); white-space: nowrap; }
+  .who2 { display: block; font-weight: 700; font-size: var(--fs-s); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hd .st, .hd .mn { font-size: 11px; color: var(--text-soft); }
+  .tk.lbl { justify-content: center; }
+  .st { width: 3.4em; text-align: right; font-size: var(--fs-s); position: relative; }
+  .mn { width: 3.3em; text-align: right; font-size: var(--fs-s); color: var(--text-soft); position: relative; }
+  .star { width: 14px; display: grid; position: relative; }
+  .tk { display: flex; gap: 2px; width: 22px; position: relative; }
   .tk i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--lip) 70%, transparent); }
   .tk i.on { background: var(--c-mint-lip); }
-  .ed { position: absolute; right: -2px; top: -6px; }
+  /* ✎ sits on the corner of the number it changed. */
+  .ed { position: absolute; right: -9px; top: -8px; line-height: 0; color: var(--c-leaf-lip); }
   .dim { color: var(--text-soft); }
   .split { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 4px 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .split b { color: var(--text); font-size: var(--fs-s); }
+  .apart { flex-basis: 100%; font-weight: 700; }
   /* 320: steps, minutes and ★ stay; the ticks move to the day. */
   @media (max-width: 374px) {
     .tk { display: none; }

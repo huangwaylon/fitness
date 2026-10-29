@@ -1,6 +1,6 @@
 <script lang="ts">
   // 3.5 お金: the jar total and a step line (no axes, rung labels only), then months, newest first: the transfer
-  // (✓ → 取り消す, either of us), the weekly yen, and the treats with their outcome (my own → 取り消す).
+  // (✓ → ✓をはずす, either of us), the weekly yen, and the treats with their outcome (my own → なかったことに, asked first).
   import type { PersonId } from '#lib/types.ts';
   import type { MoneyLog } from '#lib/model/history.ts';
   import { RUNGS } from '#lib/config/rules.ts';
@@ -12,7 +12,8 @@
     log: MoneyLog;
     me: PersonId;
     villagers: Record<PersonId, string | null>;
-    onvoid: (spendId: string | number, label: string) => void;
+    /** `refund`: it was paid, so voiding gives the yen back to the purse. */
+    onvoid: (spendId: string | number, label: string, yen: number, refund: boolean) => void;
     onundo: (month: string) => void;
   }
   let { log, me, villagers, onvoid, onundo }: Props = $props();
@@ -75,7 +76,7 @@
           <span class="money yen">−{formatYen(s.amountYen)}</span>
           <span class="chip {s.status}">{t(`kiroku.spend.${s.status}`)}</span>
           {#if s.by === me && (s.status === 'done' || s.status === 'waiting')}
-            <button type="button" class="mini" onclick={() => onvoid(s.id, s.label)}>{t('kiroku.voidSpend')}</button>
+            <button type="button" class="mini" onclick={() => onvoid(s.id, s.label, s.amountYen, s.status === 'done')}>{t('kiroku.voidSpend')}</button>
           {/if}
         </li>
       {/each}

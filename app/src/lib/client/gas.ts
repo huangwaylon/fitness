@@ -4,6 +4,7 @@
 import type { PersonId } from '#lib/types.ts';
 import type { EventReply, EventType, SnapshotReply, SnapshotRows, WhoamiReply } from '#lib/ingest/sheet-api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
+import type { DemoCalendar } from '#lib/model/state.ts';
 
 export type GasError = 'offline' | 'unauthorized' | 'busy' | 'unavailable' | 'bad_request' | 'too_large';
 export type GasResult<T> = ({ ok: true } & T) | { ok: false; error: GasError; detail?: string };
@@ -133,6 +134,8 @@ export interface QueuedEvent {
   nextAt: number;
   /** Demo only: the sender when it isn't `me` (the demo's two players share one event list across tabs). */
   person?: PersonId;
+  /** An edit of a week that locks (server-clock ms): rows stamped at or after it are refused (round 7 M1). */
+  lockAt?: number;
 }
 
 export function newId(): string {
@@ -145,8 +148,8 @@ export const queued = (): QueuedEvent[] => read<QueuedEvent[]>(KEYS.queue) ?? []
 const saveQueue = (q: QueuedEvent[]) => write(KEYS.queue, q);
 
 /** `holdMs`: not sent before then (an undo window); it still shows in the optimistic view at once. */
-export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0): QueuedEvent {
-  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs };
+export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0, lockAt?: number): QueuedEvent {
+  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs, ...(lockAt === undefined ? {} : { lockAt }) };
   saveQueue([...queued(), ev]);
   return ev;
 }
@@ -174,8 +177,11 @@ export function backoffMs(tries: number, rand = Math.random): number {
   return Math.round(base * (0.8 + 0.4 * rand()));
 }
 
-/** `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo). */
-export interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; remaining: number; error?: GasError }
+/**
+ * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo).
+ * `expired`: edits dropped unsent because their week locked while they waited (offline, round 7 M1).
+ */
+export interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; expired: QueuedEvent[]; remaining: number; error?: GasError }
 
 let flushing: Promise<FlushResult> | null = null;
 /** The event currently in flight (it can't be undone any more). */
@@ -185,25 +191,72 @@ let flushingId: string | null = null;
 const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.nextAt > now;
 
 /**
- * Send queued events in order until one fails. Events still in their undo window are skipped, not waited for
- * (a held payday must not delay a check-in behind it by 5 s); everything else keeps queue order. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
- * `too_large` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
- * so order is preserved) with a backoff. `unauthorized` stops the flush.
+ * What an event changes, for ordering: a later event on the same thing (a habit tick of the same day, the same
+ * workout, metric, spend or month) never passes a held one, so the server keeps the order the screen showed
+ * (round 7 M2). Null: nothing else touches it.
  */
-export function flush(now: () => number = Date.now): Promise<FlushResult> {
+export function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
+  const d = ev.data;
+  switch (ev.type) {
+    case 'checkin': return `checkin|${String(d.date)}|${String(d.habit ?? d.habitKey)}`;
+    case 'metric_set': return `metric|${String(d.date)}|${String(d.metric)}`;
+    case 'workout_edit': return `workout|${String(d.id)}`;
+    case 'confirm': return `${d.kind === 'workout' ? 'workout' : 'visit'}|${String(d.id)}`;
+    case 'spend_void': case 'approve': return `spend|${String(d.spendId)}`;
+    case 'transfer': case 'transfer_undo': return `transfer|${String(d.month)}`;
+    default: return null;
+  }
+}
+
+/**
+ * The queue in send order at `now`: the events that may go now, then whether a due-later (backed-off) event blocks
+ * the rest. Held events are skipped (with every later event on the same subject); a backed-off one stops the scan.
+ */
+function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean = () => false): { ev: QueuedEvent | null; wake: number | null } {
+  const heldSubjects = new Set<string>();
+  let wake: number | null = null;
+  for (const ev of q) {
+    if (skip(ev)) continue;
+    const subj = subjectOf(ev);
+    if (isHeld(ev, now)) {
+      wake = wake === null ? ev.nextAt : Math.min(wake, ev.nextAt);
+      if (subj) heldSubjects.add(subj);
+      continue;
+    }
+    if (subj && heldSubjects.has(subj)) continue; // waits for the held one (it wakes the queue)
+    if (ev.nextAt > now) return { ev: null, wake: wake === null ? ev.nextAt : Math.min(wake, ev.nextAt) };
+    return { ev, wake: ev.nextAt };
+  }
+  return { ev: null, wake };
+}
+
+/**
+ * Send queued events in order until one fails. Events still in their undo window are skipped, not waited for
+ * (a held payday must not delay a check-in behind it by 5 s), except by later events on the same subject (M2);
+ * everything else keeps queue order. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
+ * `too_large` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
+ * so order is preserved) with a backoff. `unauthorized` stops the flush. `expired(ev, t)`: an edit that can no
+ * longer land before its lock → dropped unsent (reported).
+ */
+export function flush(now: () => number = Date.now, expired: (ev: QueuedEvent, t: number) => boolean = () => false): Promise<FlushResult> {
   if (flushing) return flushing;
   const p = (async (): Promise<FlushResult> => {
     let sent = 0;
     const acked: QueuedEvent[] = [];
     const dropped: QueuedEvent[] = [];
+    const late: QueuedEvent[] = [];
     let error: GasError | undefined;
     const tried = new Set<string>();
     for (;;) {
       const t = now();
-      // The first event not yet tried in this flush that isn't held; a due-later (backed-off) one blocks the rest.
-      const ev = queued().find((x) => !tried.has(x.id) && !isHeld(x, t));
-      if (!ev || ev.nextAt > t) break;
+      const { ev } = due(queued(), t, (x) => tried.has(x.id));
+      if (!ev) break;
       tried.add(ev.id);
+      if (expired(ev, t)) {
+        late.push(ev);
+        saveQueue(queued().filter((x) => x.id !== ev.id));
+        continue;
+      }
       flushingId = ev.id;
       const r = await post<Extract<EventReply, { ok: true }>>('event', { id: ev.id, type: ev.type, data: ev.data });
       flushingId = null;
@@ -226,7 +279,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       }
       break;
     }
-    return { sent, acked, dropped, remaining: queued().length, error };
+    return { sent, acked, dropped, expired: late, remaining: queued().length, error };
   })();
   flushing = p;
   void p.then(() => {
@@ -237,12 +290,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
 
 /** When the flush can next make progress (ms): the earliest held event or the first blocking one; null if empty. */
 export function nextRetryAt(now = Date.now()): number | null {
-  let best: number | null = null;
-  for (const ev of queued()) {
-    best = best === null ? ev.nextAt : Math.min(best, ev.nextAt);
-    if (!isHeld(ev, now)) break; // a backed-off or due event: nothing after it goes first
-  }
-  return best;
+  return due(queued(), now).wake;
 }
 
 // ---------- snapshot cache ----------
@@ -257,6 +305,8 @@ export interface SnapshotCache {
   skewMs: number;
   /** Client time of the last successful fetch (ms). */
   fetchedAt: number;
+  /** Demo only (never persisted): the demo's calendar, and queued events may name their sender (`person`). */
+  demo?: DemoCalendar;
 }
 
 export function loadCache(): SnapshotCache | null {

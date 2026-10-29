@@ -34,6 +34,7 @@ export function workoutsAsOf(s: State, person: PersonId, t: number): Workout[] {
       extId: w.extId, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr,
       includesStrength: latestAt(s.workoutConfirms.get(key), t) ?? null
     };
+    if (w.manual) wo.manual = true;
     const override = latestAt(s.workoutStrength.get(key), t);
     if (override !== undefined && override !== null) wo.strengthOverride = override;
     out.push(wo);
@@ -99,7 +100,7 @@ export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, ac
     workouts: act.workouts.filter((w) => inWeek(w.date)),
     visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v),
     checkins: [...ticksAsOf(s, person, t).values()].filter((c) => inWeek(c.date)),
-    calibration: isCalibrationWeek(wk)
+    calibration: isCalibrationWeek(s, wk)
   };
 }
 
@@ -123,7 +124,7 @@ export interface SettledWeek { weekKey: WeekKey; provisional: Buckets; final: Bu
 /** Every paid week whose Sunday 19:30 has passed at `now`, with its two payout snapshots. */
 export function settledWeeks(s: State, now: number): SettledWeek[] {
   const out: SettledWeek[] = [];
-  for (let wk = firstWeek(); provisionalMs(wk) <= now; wk = addDays(wk, 7)) {
+  for (let wk = firstWeek(s); provisionalMs(wk) <= now; wk = addDays(wk, 7)) {
     out.push({
       weekKey: wk,
       provisional: buckets(payoutAsOf(s, wk, provisionalMs(wk)).payout),
@@ -230,10 +231,10 @@ export function transferDoneAt(s: State, month: string, t: number): { done: bool
 }
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
-function harvestWeekAt(t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
+function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
   const cur = weekKeyOf(nowInZone(new Date(t)).date);
   for (const wk of [cur, addDays(cur, -7)]) {
-    if (t < provisionalMs(wk) || wk < firstWeek()) continue;
+    if (t < provisionalMs(wk) || wk < firstWeek(s)) continue;
     return (confirms.get(wk)?.size ?? 0) < 2 ? wk : null;
   }
   return null;
@@ -244,7 +245,7 @@ function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
   const confirms = new Map<WeekKey, Set<PersonId>>();
   for (const h of s.harvests) {
     if (h.at > now) break;
-    if (harvestWeekAt(h.at, confirms) !== h.week) continue;
+    if (harvestWeekAt(s, h.at, confirms) !== h.week) continue;
     const set = confirms.get(h.week) ?? new Set<PersonId>();
     set.add(h.person);
     confirms.set(h.week, set);
@@ -295,11 +296,11 @@ function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): 
 }
 
 /** Gym visits and ask-type workouts waiting for 「筋トレとして記録する?」, in weeks not locked yet. */
-function pendingConfirmations(person: PersonId, cur: WeekKey, act: Activity, locale: 'ja' | 'en', now: number): PendingConfirmation[] {
+function pendingConfirmations(s: State, person: PersonId, cur: WeekKey, act: Activity, locale: 'ja' | 'en', now: number): PendingConfirmation[] {
   const out: PendingConfirmation[] = [];
   const names = new Map(PLACES.filter((p) => p.person === person).map((p) => [p.key, p.name]));
   for (const wk of [addDays(cur, -7), cur]) {
-    if (isLockedAt(wk, now)) continue;
+    if (isLockedAt(s, wk, now)) continue;
     const end = addDays(wk, 6);
     const inWeek = (d: LocalDate) => d >= wk && d <= end;
     const workouts = act.workouts.filter((w) => inWeek(w.date)).sort((x, y) => x.date.localeCompare(y.date));
@@ -373,7 +374,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   };
 
   const confirms = replayHarvests(s, now);
-  const hwk = harvestWeekAt(now, confirms);
+  const hwk = harvestWeekAt(s, now, confirms);
   let harvest: HarvestView | null = null;
   if (hwk) {
     const payout = hwk === weekKey ? current.payout : payoutAsOf(s, hwk, LIVE, act).payout;
@@ -400,7 +401,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     } as Record<PersonId, PersonWeekView>,
     jar,
     harvest,
-    pending: pendingConfirmations(me, weekKey, act[me], locale, now),
+    pending: pendingConfirmations(s, me, weekKey, act[me], locale, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
   return { ...base, juniper: hostLine(base, z.hour, Number(today.slice(8, 10))) };

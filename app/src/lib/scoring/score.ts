@@ -33,6 +33,28 @@ export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'inc
     : (STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
       ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
 
+/** Minutes of the workouts added by hand, per day. */
+export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin' | 'manual'>[]): Map<LocalDate, number> {
+  const out = new Map<LocalDate, number>();
+  for (const w of workouts) if (w.manual) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
+  return out;
+}
+
+/** The three minute sources of a day, in milli-minutes (uncapped); the day counts the largest. */
+export function minuteSourcesMilli(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): { watch: number; steps: number; manual: number } {
+  return {
+    watch: toMilli(exerciseMin ?? 0),
+    steps: steps === null ? 0 : Math.floor(Math.max(0, steps - stepGoal) * 1000 / STEP_MINUTES.stepsPerMin),
+    manual: toMilli(manualMin)
+  };
+}
+
+/** A day's active milli-minutes before the daily cap: max(Watch, step-derived, manual workouts). */
+export function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
+  const m = minuteSourcesMilli(steps, exerciseMin, manualMin, stepGoal);
+  return Math.max(0, m.watch, m.steps, m.manual);
+}
+
 const isStrengthVisit = (v: Visit): boolean =>
   v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true);
 
@@ -75,14 +97,15 @@ export function scoreWeek(input: WeekInput): WeekScore {
   const strengthTargetMilli = toMilli(targets.strengthDaysPerWeek);
   const coconutMilli = ratioMilli(POINTS.coconut * 1000, strengthDays.length * 1000, strengthTargetMilli);
 
-  // 🍑 Peach: active minutes with a daily cap, plus a rest-day bonus.
+  // 🍑 Peach: active minutes with a daily cap, plus a rest-day bonus. A day's minutes are the largest of the Watch's
+  // exercise minutes, the steps over the goal (STEP_MINUTES pace) and the workouts added by hand in きろく, so nothing
+  // counts twice (ADR 0011).
   const activeTargetMilli = toMilli(targets.activeMinPerWeek);
   const capMilli = Math.min(PEACH_DAILY_CAP.maxMin * 1000, Math.max(PEACH_DAILY_CAP.minMin * 1000, Math.floor(activeTargetMilli / 2)));
+  const manualMin = manualMinutesByDay(workouts);
   let activeMilli = 0;
   for (const d of days) {
-    const watchMilli = toMilli(d.exerciseMin ?? 0);
-    const stepMilli = d.steps === null ? 0 : Math.floor(Math.max(0, d.steps - targets.stepGoal) * 1000 / STEP_MINUTES.stepsPerMin);
-    activeMilli += Math.min(Math.max(0, watchMilli, stepMilli), capMilli);
+    activeMilli += Math.min(activeMilliOfDay(d.steps, d.exerciseMin, manualMin.get(d.date) ?? 0, targets.stepGoal), capMilli);
   }
   const maxHr = 220 - input.age;
   const hardHrPermille = Math.round(REST.hardHrFraction * 1000);

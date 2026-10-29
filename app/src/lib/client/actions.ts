@@ -5,9 +5,16 @@ import { MONEY } from '#lib/config/rules.ts';
 import { week, type SendResult } from './week.svelte.ts';
 import { newId } from './gas.ts';
 import { setLocale, type Locale } from '#lib/i18n/index.ts';
+import { finalMs } from '#lib/model/state.ts';
+import { weekKeyOf } from '#lib/scoring/index.ts';
 
-/** Payday, 使う！ and きろく edits wait this long before they are sent, with 取り消す on the banner (round 5 U9). */
+/** Payday, 使う！ and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
 export const UNDO_MS = 5000;
+/** きろく's edit controls close this long before a week's lock: an edit made then still lands in time (round 7 M1). */
+export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
+
+/** Server-clock lock of the week a day belongs to (an edit stamped at or after it is refused). */
+const lockOf = (date: string): number => finalMs(weekKeyOf(date));
 
 export function checkin(date: string, habitKey: string, done: boolean) {
   return week.send('checkin', { date, habit: habitKey, done });
@@ -45,25 +52,26 @@ export function transferDone(month: string) {
 }
 
 // ---- きろく edits (history-and-editing.md §4): always my own data, open weeks only (the model refuses the rest).
-// Each shows at once and waits UNDO_MS with 取り消す on the banner, like payday and 使う！.
+// Each shows at once and waits UNDO_MS with もとに戻す on the banner, like payday and 使う！, unless that would miss
+// the week's lock (the store shortens or refuses it, round 7 M1).
 
 export function setMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
-  return week.send('metric_set', { date, metric, value: Math.round(value) }, { holdMs: UNDO_MS });
+  return week.send('metric_set', { date, metric, value: Math.round(value) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
-/** `strength`: count as strength (true), not (false) or automatic (null); `excluded`: out of scoring. */
-export function editWorkout(id: string, change: { strength?: boolean | null; excluded?: boolean }) {
-  return week.send('workout_edit', { id, ...change }, { holdMs: UNDO_MS });
+/** `strength`: count as strength (true), not (false) or automatic (null); `excluded`: out of scoring. `date`: the workout's day. */
+export function editWorkout(id: string, date: string, change: { strength?: boolean | null; excluded?: boolean }) {
+  return week.send('workout_edit', { id, ...change }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 export function addWorkout(date: string, type: string, durationMin: number, strength?: boolean) {
   const id = `m:${newId().replace(/[^\w-]/g, '').slice(0, 36)}`;
-  return week.send('workout_add', { id, date, type, durationMin: Math.round(durationMin), ...(strength === undefined ? {} : { strength }) }, { holdMs: UNDO_MS });
+  return week.send('workout_add', { id, date, type, durationMin: Math.round(durationMin), ...(strength === undefined ? {} : { strength }) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 /** A fix of any day's check-in in an open week (the 48 h window doesn't apply). */
 export function fixCheckin(date: string, habitKey: string, done: boolean) {
-  return week.send('checkin', { date, habit: habitKey, done, edit: true }, { holdMs: UNDO_MS });
+  return week.send('checkin', { date, habit: habitKey, done, edit: true }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 /** Only the spender's void counts (a paid spend goes back to the purse, a waiting one is cancelled). */

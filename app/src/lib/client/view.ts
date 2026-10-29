@@ -18,7 +18,15 @@ export function composeView(cache: SnapshotCache, queue: QueuedEvent[], clientNo
 /** The reduced state (cache + queue) and the server-clock "now": what きろく (model/history.ts) reads. */
 export interface ComposedModel { state: State; me: PersonId; now: number }
 
-export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number): ComposedModel {
+/**
+ * An unsent edit that can no longer land before its week's lock (server clock): it would be refused, so it is not
+ * shown as applied and the queue drops it with a message (round 7 M1). It goes out no earlier than `nextAt`.
+ */
+export const missesLock = (ev: Pick<QueuedEvent, 'lockAt' | 'nextAt'>, clientNow: number, skewMs: number): boolean =>
+  ev.lockAt !== undefined && Math.max(ev.nextAt, clientNow) + skewMs >= ev.lockAt;
+
+/** `pending`: the still-unsent part of `queue` (only those can miss their lock; acked ones already landed). */
+export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, pending?: Set<string>): ComposedModel {
   const known = new Set(cache.rows.events.map((r) => String(r[2])));
   const lastAt = cache.since ? Date.parse(cache.since) : 0;
   let floor = Number.isNaN(lastAt) ? 0 : lastAt;
@@ -26,13 +34,15 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
   for (const ev of queue) {
     if (known.has(ev.id)) continue; // acked but the ack was lost: the server row wins
     known.add(ev.id); // the same event twice (sent + still queued, overlapping flushes) is one row (review r2 N2)
+    if ((!pending || pending.has(ev.id)) && missesLock(ev, clientNow, cache.skewMs)) continue;
     const at = Math.max(ev.queuedAt + cache.skewMs, floor + 1);
     floor = at;
-    extra.push([new Date(at).toISOString(), ev.person ?? cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
+    // Only the demo's shared event list names another sender; live events are always mine (round 7 L2).
+    extra.push([new Date(at).toISOString(), (cache.demo && ev.person) || cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
   const rows = extra.length ? { ...cache.rows, events: [...cache.rows.events, ...extra] } : cache.rows;
-  return { state: reduce(rows), me: cache.me, now };
+  return { state: reduce(rows, cache.demo ?? null), me: cache.me, now };
 }
 
 /** The events from `list` whose rows the cache doesn't have yet (acked events drop out once fetched back). */

@@ -9,7 +9,7 @@
   import Villager from './Villager.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import LeafCoin from './LeafCoin.svelte';
-  import Kiroku, { type KirokuEntry } from './kiroku/Kiroku.svelte';
+  import type { KirokuEntry } from './kiroku/Kiroku.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
   import { now } from './motion/clock.ts';
@@ -32,6 +32,9 @@
   ];
 
   let app = $state<AppId | null>(null);
+  /** きろく is loaded the first time it opens, so the island doesn't pay for it up front (round 7 L1). */
+  let kirokuMod: Promise<typeof import('./kiroku/Kiroku.svelte')> | null = null;
+  const loadKiroku = () => (kirokuMod ??= import('./kiroku/Kiroku.svelte'));
   let kiroku: { back: () => boolean } | undefined = $state();
   let entry = $state<KirokuEntry | null>(null);
   let clock = $state('');
@@ -62,6 +65,12 @@
     await nextTick();
     document.querySelector<HTMLElement>(`.app[data-app="${from}"]`)?.focus();
   }
+
+  let wasOpen = false;
+  $effect(() => {
+    if (!open && wasOpen && week.toast) week.dismissToast(); // closing the phone ends its banner too (round 7 F2)
+    wasOpen = open;
+  });
 
   $effect(() => {
     if (open) {
@@ -121,7 +130,7 @@
   {:else}
     <div class="page">
       {#if app === 'kiroku'}
-        <Kiroku bind:this={kiroku} {entry} />
+        {#await loadKiroku() then { default: Kiroku }}<Kiroku bind:this={kiroku} {entry} />{/await}
       {:else if app === 'help' && view}
         <ul class="howto">
           <li class="card">

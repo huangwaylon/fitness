@@ -13,7 +13,7 @@
   import Sprites from '#lib/components/Sprites.svelte';
   import Bubble from '#lib/components/Bubble.svelte';
   import Host from '#lib/components/Host.svelte';
-  import Toast from '#lib/components/Toast.svelte';
+  import ToastHost from '#lib/components/ToastHost.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import HarvestOverlay from '#lib/components/HarvestOverlay.svelte';
   import { week } from '#lib/client/week.svelte.ts';
@@ -104,10 +104,8 @@
     onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
 {/if}
 
-{#if week.toast && !showHarvest}
-  {#key week.toast.id}<Toast text={week.toast.text} reaction={week.toast.reaction ?? 'happiness'} action={week.toast.action}
-    onhold={(on) => (on ? week.pauseToast() : week.resumeToast())} ondismiss={() => week.dismissToast()} />{/key}
-{/if}
+<!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert (round 7 F1). -->
+{#if !showHarvest && !ui.sheets.length}<ToastHost />{/if}
 
 <style>
   .page { min-height: 100dvh; background: var(--bg); }
