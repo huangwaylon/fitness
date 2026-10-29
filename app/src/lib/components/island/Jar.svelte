@@ -1,6 +1,7 @@
 <script lang="ts">
   // The jar (v5 §5, F6): ONE drawing for the island, the 旅の壺 hero and the harvest end card.
-  // Flat glass with one highlight, a stack of coins up to the fill line, a yuzu lid with a leaf; no ink.
+  // Glass #DDF2FB (round 7: lit from the upper left, a white streak there and a soft #BFDCEA shade toward the
+  // lower right, over the coins too), a stack of coins up to the fill line, a yuzu lid with a leaf; no ink.
   //   <Jar fill={0.6} width="132px" />            fill 0–1 of the glass (the coins slide, 1.4 s, eased)
   //   <Jar fill={old} band={after} width="96px" /> band: a lighter "this harvest" layer up to `band`
   // The art is 54 × 68 (height = width × 68 / 54). Set `name` to give it a view-transition-name, so a
@@ -26,15 +27,20 @@
 </script>
 
 <svg class="jarart {cls}" viewBox="0 0 54 68" style:width style:view-transition-name={name} aria-hidden="true">
-  <defs><clipPath id="{uid}-body"><path d={BODY} /></clipPath></defs>
-  <path d={BODY} class="glass-lip" />
-  <path d={BODY} class="glass" transform="translate(0 -2.4)" />
+  <defs>
+    <clipPath id="{uid}-body"><path d={BODY} /></clipPath>
+    <linearGradient id="{uid}-shade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset=".4" stop-color="#BFDCEA" stop-opacity="0" /><stop offset="1" stop-color="#BFDCEA" stop-opacity=".85" />
+    </linearGradient>
+  </defs>
+  <path d={BODY} class="glass" />
   <g clip-path="url(#{uid}-body)">
     {#if band != null && band > fill}
       <g class="coins band" style:transform="translateY({slide(band)}px)">{@render coins()}</g>
     {/if}
     <g class="coins" style:transform="translateY({slide(fill)}px)">{@render coins()}</g>
   </g>
+  <path d={BODY} fill="url(#{uid}-shade)" />
   <path d="M8.6 30 Q7.4 38 8.6 47 Q9.4 48.6 10.8 47.4 Q9.8 38 11.2 30.6 Q10.2 28.6 8.6 30 Z" class="glint" />
   <rect x="11" y="10.4" width="32" height="10" rx="4" class="lid-lip" />
   <rect x="11" y="8" width="32" height="10" rx="4" class="lid" />
@@ -52,13 +58,12 @@
 
 <style>
   .jarart { display: block; height: auto; aspect-ratio: 54 / 68; overflow: visible; }
-  .glass-lip { fill: var(--jar-glass-lip); }
   .glass { fill: var(--jar-glass); }
   .coinfill { fill: var(--jar-coin-rim); }
   .coin { fill: var(--jar-coin); }
   .coins { transition: transform 1.4s var(--ease-soft); will-change: transform; }
   .band { opacity: .5; }
-  .glint { fill: #fff; opacity: .9; }
+  .glint { fill: #fff; opacity: .85; }
   .lid-lip { fill: var(--c-yuzu-lip); }
   .lid { fill: var(--c-yuzu); }
   .leaf { fill: var(--jar-leaf); }

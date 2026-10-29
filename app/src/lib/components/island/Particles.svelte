@@ -72,8 +72,9 @@
     80% { transform: translate(calc(var(--sx) * -1), 86cqh) rotate(calc(var(--rot) * .8)); }
     100% { transform: translate(0, 110cqh) rotate(var(--rot)); }
   }
+  /* above the time-of-day tint (z 80): fireflies glow */
   .ff {
-    position: absolute; z-index: 70; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
+    position: absolute; z-index: 82; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
     background: var(--firefly); box-shadow: 0 0 6px var(--firefly-glow); pointer-events: none;
     animation: firefly 4s var(--ease-idle) infinite alternate;
   }

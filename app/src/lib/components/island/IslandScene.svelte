@@ -1,29 +1,34 @@
 <script lang="ts">
-  // The island (style guide v4 §S, v5 §3/§5, round 6): a capped sky, one flat map sea and a fixed-aspect
-  // stage (390 × 360 units) anchored to the bottom, drawn in the flat NH map look (no strokes; depth = a
-  // lip + ground ellipses).
+  // The island (style guide v4 §S, v5 §3, round 6 layout, round 7 "Pocket Camp diorama" environment:
+  // docs/design/environment-style.md). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
+  // (390 × 360 units) anchored to the bottom, painted like the official renders (light from the upper left,
+  // soft gradients and contact shadows, no strokes or lips on scenery).
   //   <IslandScene {view} total={yen} onme onpartner onjar onfruit paused />
-  // Sky: 2-stop gradient, flat sun / moon + stars, two clouds, balloon present, event fireworks.
-  // Sea (Sea.svelte): one flat layer with ▲ marks from the horizon to the bottom edge, under the island
-  // and behind the bottom chrome. Stage: sand + foam line, cliff band, NH diamond grass, one hedge along
-  // the back, one plain seasonal oak per person with the week's four fruit items on the ground at its base
-  // (FruitTree), the jar + its ¥ nameplate in the middle (the scene's only label, and the doorway to
-  // 旅の壺), a front row of flowers, the villagers (me on the left, the partner on the right) on their
-  // motion rig, ≤ 3 particles and the time-of-day tint.
-  // The HUD (clock, NookPhone, score ribbon) is Builder B's: it overlays the sky; clouds and the sun
-  // keep below it (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
+  // Sky: sky table per time of day, sun / moon at the upper left with a soft glow + stars, two soft clouds,
+  // balloon present, event fireworks. Stage: the sea (Sea.svelte: one layer from the horizon to below the
+  // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
+  // wet band, foam, shallows, terracotta cliff, NH grass with flecks), one hedge along the back, one plain
+  // seasonal oak per person with the week's fruit on the ground at its base (FruitTree), the jar + its ¥
+  // nameplate in the middle (the scene's only label and the doorway to 旅の壺), a front row of flowers, the
+  // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
+  // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
+  // The HUD (clock, NookPhone, score ribbon) is Builder B's: it overlays the sky; clouds keep below it
+  // (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
   // Layout contract (F1/F2, for the page):
   //   --scene-h       the scene's height (give it the whole page, e.g. 100dvh, and keep it stable);
   //                   fallback clamp(300px, 100dvh − var(--chrome-below, 282px), 600px).
   //   --island-bottom the band under the stage kept for the bottom chrome (dialogue + action), from the
   //                   scene's bottom edge. Keep it STABLE (the tallest chrome state), so the island never
   //                   moves when the dialogue shows or hides; the chrome overlays the sea there. Default 0.
-  //   --sky-cap       the lowest the horizon may sit (default safe-top + min(180px, 21dvh): ribbon bottom
-  //                   + 88 at 393×852, the game designer's band table at 375 / 320).
-  // The stage grows up to 1.22× the width (the beach crops at the sides; all props sit in u 34–356, which
-  // stays visible) to fill a tall band; the horizon
-  // sits at min(--sky-cap, stage top + 20u), so spare height goes to the patterned sea, never to an
-  // empty sky. Read back --horizon-y / --stage-top (set on .if-scene) to place overlays.
+  //                   Round 7: the stage's front beach (its last TUCK_U = 34u: sand, foam, shallows, nothing
+  //                   you tap) tucks under the top of that band, so the shore meets the dialogue instead of an
+  //                   empty sea band. The flowers and the villagers' feet stay above it.
+  //   --sky-cap       the least sky height used to size the stage (default safe-top + min(180px, 21dvh)).
+  // The stage fills the band from the sky cap to the chrome (+ the tuck), never wider than keeps the sand
+  // ≥ 5px inside each screen edge (sea on both sides at 393 / 375 / 320), never narrower than the column.
+  // The horizon sits at stage y HORIZON_U (a short open-sea strip behind the island), so on a tall phone the
+  // spare height goes to the sky (sun + clouds), never to an empty sea band. Read back --horizon-y /
+  // --stage-top (set on .if-scene) to place overlays.
   // Reactions: listens to the motion bus (emit('checkin-saved') etc.) and diffs `view` (partner data,
   // fruit stages, a received high-five); idle life runs while `live` and not `paused`.
   import { onMount, untrack } from 'svelte';
@@ -345,9 +350,9 @@
   <Sky {tod} fireworks={ev.fireworks || ev.newYear || devFireworks}>
     {#if balloon}<Balloon ondone={() => (balloon = false)} />{/if}
   </Sky>
-  <Sea />
 
   <div class="stage">
+    <Sea />
     <svg class="ground" viewBox="0 0 390 360" preserveAspectRatio="none" aria-hidden="true">
       <Ground {uid} {season} />
     </svg>
@@ -410,17 +415,22 @@
     --sh: var(--scene-h, var(--scene-h-auto));
     --ib: var(--island-bottom, 0px);
     --cap: var(--sky-cap, calc(var(--safe-top) + min(180px, 21dvh)));
-    /* the stage fills a tall band: up to 1.22× the width (the beach crops), never under the column width */
-    --stage-w: max(min(100cqw, 480px), min(calc((var(--sh) - var(--ib) - var(--cap) - 12px) * 390 / 360), 122cqw, 560px));
+    /* the stage fills the band from the sky cap to the chrome (+ the 34u tuck of the front beach under it),
+       at most as wide as keeps the sand (u 30–360) 5px inside each screen edge, never under the column width */
+    --stage-w: max(min(100cqw, 480px), min(calc((var(--sh) - var(--ib) - var(--cap) - 12px) * 390 / 326), calc((100cqw - 10px) * 390 / 330), 560px));
     --stage-h: calc(var(--stage-w) * 360 / 390);
-    --stage-top: calc(var(--sh) - var(--ib) - var(--stage-h));
-    --horizon-y: max(40px, min(var(--cap), calc(var(--stage-top) + var(--stage-w) * 20 / 390)));
+    --tuck: calc(var(--stage-w) * 34 / 390);
+    --stage-top: calc(var(--sh) - var(--ib) + var(--tuck) - var(--stage-h));
+    --horizon-y: max(40px, calc(var(--stage-top) + var(--stage-w) * 8 / 390));
     --sky-h: var(--horizon-y);
   }
   @media (max-height: 700px), (max-width: 359px) { .scene { --emote-size: 36px; } }
   .stage {
-    position: absolute; bottom: var(--ib); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
+    position: absolute; bottom: calc(var(--ib) - var(--tuck)); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
     container-type: inline-size; z-index: 1;
+    /* registered <length>s (tokens.css): resolved here against the scene, so the stage's children (whose cqw
+       is the stage) read the horizon and the stage top in px */
+    --if-st: var(--stage-top); --if-hy: var(--horizon-y);
   }
   .ground { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
 
@@ -474,10 +484,19 @@
   .vil:disabled { cursor: default; }
   .jar:focus-visible, .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  /* the tint covers the whole sea, from the horizon to the scene's bottom edge (and the cropped sides) */
+  /* ONE time-of-day layer (round 7): a multiply tint over land, sea and the sprites, from the horizon to the
+     scene's bottom edge and out to both screen edges (the sky has its own table; the jar z 81, fireflies z 82
+     and the stars stay above it). Day: none. */
   .tint {
-    position: absolute; z-index: 80; background: var(--tod-tint); pointer-events: none;
-    top: calc(var(--horizon-y) - var(--stage-top)); bottom: calc(-1 * var(--ib)); left: -100vw; right: -100vw;
+    position: absolute; z-index: 80; background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
+    top: calc(var(--if-hy) - var(--if-st)); bottom: -100vh; left: -100vw; right: -100vw;
+  }
+  /* villager contact shadow (round 7): radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk:
+     stretched to the right (--sh-scale) */
+  .vil :global(.shadow) {
+    width: calc(var(--h) * .6); height: calc(var(--h) * .12); margin-left: calc(var(--h) * -.3); bottom: calc(var(--h) * -.05);
+    background: radial-gradient(closest-side, var(--sh-c), color-mix(in srgb, var(--sh-c) 70%, transparent) 50%, transparent);
+    translate: calc(var(--h) * .036) calc(var(--h) * .007); transform-origin: 30% 50%;
   }
   /* falling leaves pass behind the villagers (z 51/52), never across their faces */
   .fall { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--sh) - var(--ib)); z-index: 50; pointer-events: none; }

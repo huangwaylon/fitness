@@ -1,7 +1,10 @@
 <script lang="ts">
-  // Sky (v5 §5): a 2-stop gradient bleeding under the status bar, a flat sun (high by day, low at
-  // dawn / dusk) or a flat moon + 10 stars (2 twinkle), two drifting clouds, the balloon present and
-  // event fireworks. No halos. The visible band (below the safe area) is a size container named `sky`.
+  // Sky (round 7, environment-style.md): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
+  // season shifts by day) bleeding under the status bar; the sun at the upper left (left 18%, 58% down the
+  // band; dawn / dusk: 22% above the horizon) as ONE soft radial glow, or the moon (a crescent with a soft
+  // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and event
+  // fireworks. The sun / moon sit above the clouds, so a cloud never hides them. The visible band (below the
+  // safe area) is a size container named `sky`.
   import type { Snippet } from 'svelte';
   import Clouds from './Clouds.svelte';
   import type { Tod } from './scene.ts';
@@ -13,6 +16,7 @@
     children?: Snippet;
   }
   let { tod, fireworks = false, children }: Props = $props();
+  const uid = $props.id();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
   // 2 twinkling + 8 still stars (v5 §6: idle budget ≤ 10)
@@ -30,15 +34,23 @@
           <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
         </svg>
       {/each}
-      <svg class="moon" viewBox="12 12 36 36">
-        <path d="M34 12 A18 18 0 1 0 48 40 A14 14 0 1 1 34 12 Z" class="disc" />
-      </svg>
-    {:else}
-      <svg class="sun" class:low viewBox="12 12 44 44">
-        <circle cx="34" cy="34" r="22" class="disc" />
-      </svg>
     {/if}
+    <!-- NH's distant cloud bank resting on the horizon (static): fills the low sky on tall phones -->
+    <svg class="bank" viewBox="0 0 400 40" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="{uid}-bank" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" style:stop-color="var(--cloud-top)" /><stop offset=".6" style:stop-color="var(--cloud-mid)" />
+          <stop offset="1" style:stop-color="var(--sky-hz)" />
+        </linearGradient>
+      </defs>
+      <path fill="url(#{uid}-bank)" d="M0 40 V30 Q8 18 22 24 Q30 10 48 18 Q58 8 72 20 Q84 14 92 26 Q104 20 112 30 Q126 28 132 34 Q150 26 164 32 Q176 22 192 28 Q204 14 222 20 Q234 6 252 16 Q264 10 274 22 Q288 16 296 28 Q312 22 322 30 Q338 20 352 26 Q364 12 380 20 Q392 16 400 26 V40 Z" />
+    </svg>
     <Clouds />
+    {#if night}
+      <span class="orb moon"><svg viewBox="12 12 36 36"><path d="M34 12 A18 18 0 1 0 48 40 A14 14 0 1 1 34 12 Z" /></svg></span>
+    {:else}
+      <span class="orb sun" class:low></span>
+    {/if}
     {#if fireworks}
       <!-- one burst element (§S.10: 1 burst every 6 s; P5 budget) that moves and changes colour each time -->
       <span class="burst">
@@ -52,15 +64,28 @@
 <style>
   .sky {
     position: absolute; inset: 0 0 auto 0; z-index: 0; height: var(--sky-h);
-    background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
+    background: linear-gradient(180deg, var(--sky-top), var(--sky-mid) 55%, var(--sky-hz));
+  }
+  .bank {
+    position: absolute; left: 0; bottom: -8px; width: 100%; height: clamp(16px, 18cqh, 54px);
+    opacity: calc(.9 * var(--cloud-op, 1)); pointer-events: none;
   }
   .band { position: absolute; left: 0; right: 0; top: var(--safe-top); bottom: 8px; container: sky / size; }
-  .sun, .moon { position: absolute; right: 20%; top: 112px; width: 44px; height: 44px; translate: 50% 0; }
-  .moon { width: 40px; height: 40px; }
-  @container sky (max-height: 160px) { .sun, .moon { top: auto; bottom: 30%; width: 32px; height: 32px; } }
-  .sun.low { top: auto; bottom: 22%; }
-  .sun .disc { fill: var(--sun-disc); }
-  .moon .disc { fill: var(--moon); }
+  /* sun / moon: glow box = 2.8 × the core (core 30 / glow 84 at 393, 26 / 72 compact, 22 / 60 at 320) */
+  .orb {
+    --glow: 84px;
+    position: absolute; z-index: 2; left: 18%; top: 58%; width: var(--glow); height: var(--glow); translate: -50% -50%;
+    border-radius: 50%; pointer-events: none;
+  }
+  @media (max-height: 700px), (max-width: 359px) { .orb { --glow: 72px; } }
+  @media (max-width: 339px) { .orb { --glow: 60px; } }
+  /* keep the glow inside the band and clear of the clock in a short sky */
+  @container sky (max-height: 150px) { .orb { top: 60%; } }
+  .sun { background: radial-gradient(closest-side, var(--sun-core) 0 35%, var(--sun-ring) 50%, transparent 100%); }
+  .sun.low { top: 78%; }
+  .moon { background: radial-gradient(closest-side, var(--moon-glow) 45%, transparent 100%); display: grid; place-items: center; }
+  /* crescent radius = glow / 2.2 / 2 */
+  .moon svg { width: calc(var(--glow) / 2.2); height: auto; fill: var(--moon); overflow: visible; }
   .star { position: absolute; height: auto; fill: #FFF6D6; animation: if-twinkle 3s var(--ease-idle) infinite; }
   .star.still { animation: none; opacity: .75; }
   .burst { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: burst 18s ease-out infinite; opacity: 0; }
