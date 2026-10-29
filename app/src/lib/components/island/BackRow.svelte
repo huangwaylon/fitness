@@ -51,7 +51,8 @@
   .prop { position: absolute; width: max-content; transform: translate(-50%, -100%); line-height: 0; pointer-events: none; }
   .prop.flip :global(.official) { transform: scaleX(-1); }
   .extra { transform: translate(-50%, -100%) rotate(var(--rot)); }
-  .glow :global(.official) { filter: drop-shadow(0 0 6px #FFF3A0); animation: if-glow 2.4s var(--ease-idle) infinite alternate; }
+  /* star fragments glow steadily (only the bonfire flickers: P5 budget) */
+  .glow :global(.official) { filter: drop-shadow(0 0 6px #FFF3A0) drop-shadow(0 0 2px #FFF8CC); }
   .fireglow {
     position: absolute; left: 50%; top: 60%; width: 400%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
     background: radial-gradient(circle, rgba(255, 196, 107, .4), rgba(255, 196, 107, 0) 65%);
@@ -64,6 +65,6 @@
   }
   .w1 { left: 22%; } .w2 { right: 22%; }
   @media (prefers-reduced-motion: reduce) {
-    .glow :global(.official), .fireglow { animation: none; }
+    .fireglow { animation: none; }
   }
 </style>

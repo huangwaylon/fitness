@@ -19,11 +19,6 @@
   const STARS = [
     [8, 18], [17, 52], [26, 30], [34, 70], [43, 14], [52, 46], [60, 26], [67, 64], [75, 40], [88, 58], [93, 20], [5, 78]
   ];
-  const BURSTS = [
-    { x: 24, y: 30, c: '#FF7FA8', d: 0 },
-    { x: 58, y: 18, c: '#FFD84D', d: -2 },
-    { x: 40, y: 48, c: '#6FCFF6', d: -4 }
-  ];
 </script>
 
 <div class="sky" aria-hidden="true">
@@ -47,11 +42,10 @@
     {/if}
     <Clouds {night} />
     {#if fireworks}
-      {#each BURSTS as b, i (i)}
-        <span class="burst" style:left="{b.x}%" style:top="{b.y}%" style:--c={b.c} style:animation-delay="{b.d}s">
-          {#each Array.from({ length: 12 }) as _, k (k)}<i style:--a="{k * 30}deg"></i>{/each}
-        </span>
-      {/each}
+      <!-- one burst element (§S.10: 1 burst every 6 s; P5 budget) that moves and changes colour each time -->
+      <span class="burst">
+        {#each Array.from({ length: 12 }) as _, k (k)}<i style:--a="{k * 30}deg"></i>{/each}
+      </span>
     {/if}
     {@render children?.()}
   </div>
@@ -72,14 +66,22 @@
   .moon .disc { fill: var(--moon); }
   .star { position: absolute; height: auto; fill: #FFF6D6; animation: if-twinkle 3s var(--ease-idle) infinite; }
   .star.still { animation: none; opacity: .75; }
-  .burst { position: absolute; width: 0; height: 0; animation: burst 6s ease-out infinite; opacity: 0; }
+  .burst { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: burst 18s ease-out infinite; opacity: 0; }
   .burst i {
-    position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c);
+    position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: currentColor;
     transform: rotate(var(--a)) translateY(-34px);
   }
+  /* three 6 s beats: pink at (24%, 30%), yellow at (58%, 18%), blue at (40%, 48%) of the sky band */
   @keyframes burst {
-    0% { transform: scale(.1); opacity: 0; } 4% { opacity: 1; } 18% { transform: scale(1); opacity: 1; }
-    23% { transform: scale(1.08) translateY(4px); opacity: 0; } 100% { opacity: 0; }
+    0% { translate: 24cqw 30cqh; color: #FF7FA8; scale: .1; opacity: 0; } 1.3% { opacity: 1; }
+    6% { translate: 24cqw 30cqh; scale: 1; opacity: 1; } 7.7% { translate: 24cqw 31cqh; scale: 1.08; opacity: 0; }
+    33.2% { translate: 24cqw 30cqh; color: #FF7FA8; opacity: 0; }
+    33.3% { translate: 58cqw 18cqh; color: #FFD84D; scale: .1; opacity: 0; } 34.6% { opacity: 1; }
+    39.3% { translate: 58cqw 18cqh; scale: 1; opacity: 1; } 41% { translate: 58cqw 19cqh; scale: 1.08; opacity: 0; }
+    66.5% { translate: 58cqw 18cqh; color: #FFD84D; opacity: 0; }
+    66.6% { translate: 40cqw 48cqh; color: #6FCFF6; scale: .1; opacity: 0; } 67.9% { opacity: 1; }
+    72.6% { translate: 40cqw 48cqh; scale: 1; opacity: 1; } 74.3% { translate: 40cqw 49cqh; scale: 1.08; opacity: 0; }
+    100% { translate: 40cqw 48cqh; color: #6FCFF6; opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .star { animation: none; opacity: .9; transform: none; }

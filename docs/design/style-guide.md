@@ -1,8 +1,8 @@
 # Island Fund: Style Guide v4 (living island · cheerful NH theme · small phones)
 
-Owner: Art director + motion designer · Status: **v4** (2026-10-29) · Tokens: `app/src/lib/styles/tokens.css` · Research: [ac-research.md](ac-research.md), reference images in `.refs/v4/` (gitignored) · Art: `app/static/art/` (`manifest.json`, fetched by `app/scripts/fetch-assets.ts`) · Decision: [ADR 0014](../decisions/0014-simplify-no-promises-no-cozy.md) · Previous: v3 (`git show 1bbe781:docs/design/style-guide.md`)
+Owner: Art director + motion designer · Status: **v4.1** (2026-10-29, round-5 polish: orchards, Isabelle poses, cloud lane, animation budget) · Tokens: `app/src/lib/styles/tokens.css` · Research: [ac-research.md](ac-research.md), reference images in `.refs/v4/` (gitignored) · Art: `app/static/art/` (`manifest.json`, fetched by `app/scripts/fetch-assets.ts`) · Decision: [ADR 0014](../decisions/0014-simplify-no-promises-no-cozy.md) · Previous: v3 (`git show 1bbe781:docs/design/style-guide.md`)
 
-**Direction v4.** The app should read as *あつまれ どうぶつの森* at a glance, on a sunny day. It should feel bright, light-hearted and cheerful. The island is a small, living diorama: the real hardwood trees change with the season and carry our fruit, clouds drift, the sea sparkles, the hedges and flower beds come from the game, and the two villagers and しずえ are never quite still. They hop, turn around, hum, doze at night and react to everything you do with the game's own reaction icons. Our chrome (cream bubbles, chunky lipped buttons, paper cards) follows the NookPhone and Nook Miles+ look. Night is soft periwinkle and friendly. It is never navy-black or gloomy.
+**Direction v4.** The app should read as *あつまれ どうぶつの森* at a glance, on a sunny day. It should feel bright, light-hearted and cheerful. The island is a small, living diorama: each person's small orchard of real NH fruit trees changes with the season, clouds drift, the sea sparkles, the hedges and flower beds come from the game, and the two villagers and しずえ are never quite still. They hop, turn around, hum, doze at night and react to everything you do with the game's own reaction icons. Our chrome (cream bubbles, chunky lipped buttons, paper cards) follows the NookPhone and Nook Miles+ look. Night is soft periwinkle and friendly. It is never navy-black or gloomy.
 
 **IP rule (unchanged).** Official art comes only from `static/art/` through `<OfficialArt>` (Nintendo's art, for personal use, so the repo stays private). On-screen names follow the Japanese game: しずえ, ベル (the icon only; amounts stay ¥), しまフォン. No Nintendo fonts or sounds. Every official image has a fallback (our vector or `Silhouette`), so a missing file never breaks a screen.
 
@@ -25,9 +25,9 @@ All files are `.webp` with alpha, already downscaled. Render them with `<Officia
 | Group (count) | Keys (`static/art/<key>.webp`) | Px (h) | Where |
 |---|---|---|---|
 | Villagers (20) | `villagers/<id>` (full body ≤ 512), `villagers/<id>-icon` (128) | 512 / 128 | Scene, avatars |
-| Host (6) | `host/isabelle`, `-stand`, `-bow`, `-winter`, `-icon`, `host/tom-nook` | 512 / 128 | Bubble host, empty states |
+| Host (5) | `host/isabelle` (wave, aloha), `-stand` (aloha), `-winter` (full-body cardigan, same canvas as `-stand`), `-icon`, `host/tom-nook` | 512 / 128 | Bubble host, empty states. There is no official bow render: `bow` = `-stand` + the CSS `if-bow` (§M.6) |
 | Fruit (4) | `fruit/peach · coconut · apple · pear` | 128 | Trees, rings |
-| **Trees (10)** | `trees/oak-spring` (cherry blossom) · `oak-summer` · `oak-fall` (red-orange) · `oak-winter` (snow), all 309×384 · `trees/cedar` 197×384 · `trees/palm` 320×302 (with coconuts) · `trees/{apple,peach,pear,coconut}-icon` 96 | 384 / 302 / 96 | The two fruit trees = oak of the season; cedar and palms frame the island; tree icons in Jar / harvest rows |
+| **Trees (11)** | `trees/oak-spring` (cherry blossom) · `oak-fall` (red-orange) · `oak-winter` (snow) at their full source size 329×409 · `oak-summer` 509×640 · `trees/cedar` 197×384 · `trees/palm` 320×302 (with coconuts) · `trees/palm-sm` 128 (islet) · `trees/{apple,peach,pear,coconut}-icon` 96 | 409 / 640 / 302 / 96 | The six orchard fruit trees = the hardwood of the season (§S.8); cedar and palms frame the island; tree icons in Jar / harvest rows. A11: drawn ≤ 100u (≈ 300 device px at 3×), so the seasonal art is never upscaled (1.36×; Nookipedia has nothing larger) and summer is ≥ 2× |
 | **Bushes (7)** | `bushes/pink-azalea · blue-hydrangea · red-hibiscus · orange-tea-olive · pink-camellia · holly · green` | 96 | Back hedge (§S.6) |
 | **Decor (17)** | `deco/fence-wood · fence-log · log-bench · mailbox · bonfire · rock · stone · resident-services (256×205) · airport (256×205) · sand-dollar · cowrie · conch · star-fragment · star-fragment-large · party-popper · present` | 64–256 | Island props, beach, events, pair screen |
 | **Season (7)** | `season/petal · maple-leaf · snowflake · snowflake-large · acorn · pine-cone · mushroom` | 64 / 96 | Particles, seasonal ground items |
@@ -62,12 +62,12 @@ v4 added 91 files (≈ 277 KB). Art total is about 0.65 MB. Clouds, waves, sky, 
 
 | Viewport (CSS px, safe top/bottom) | Scene h | Stage h | Visible sky under the status row | 1u | Villager h | Oak h | Fruit icon |
 |---|---|---|---|---|---|---|---|
-| **iPhone 15** 393×852 (59/34) | 852 − 282 = **570** | 363 | 570 − 363 − 59 = **148** | 1.008px | 95px | 151px | 27px |
-| **iPhone SE** 375×667 (20/0), compact | 667 − 214 = **453** | 346 | **87** | 0.962px | 90px | 144px | 26px |
-| **320 fallback** 320×568 (20/0), tiny | 568 − 200 = **368** | 295 | **53** (just above the 52px floor; on shorter screens the back sea crops) | 0.821px | 77px | 123px | 22px |
+| **iPhone 15** 393×852 (59/34) | 852 − 282 = **570** | 363 | 570 − 363 − 59 = **148** | 1.008px | 95px | 101 / 83px | 24 / 20px |
+| **iPhone SE** 375×667 (20/0), compact | 667 − 214 = **453** | 346 | **87** | 0.962px | 90px | 96 / 79px | 23 / 19px |
+| **320 fallback** 320×568 (20/0), tiny | 568 − 200 = **368** | 295 | **53** (just above the 52px floor; on shorter screens the back sea crops) | 0.821px | 77px | 82 / 67px | 20 / 16px |
 | Wide (≥ 430) | column max 480, centred; sky continues full-bleed behind | 443 max | — | ≤ 1.23px | — | — | — |
 
-On iPhone 15, the 148px of sky holds three clouds and the sun. On SE it holds two clouds and the sun. At 320 it holds the status row and one cloud (C1) behind it.
+On iPhone 15, the 148px of sky holds three clouds and the sun. On SE and at 320 the sky above the horizon is barely taller than the status row, so two small far-off clouds rest on the horizon (§S.4, C8). (Tree column: back / front orchard tree; fruit column: back / front fruit.)
 
 ### S.3 Layer stack (back → front, z-index in brackets)
 
@@ -83,8 +83,8 @@ On iPhone 15, the 148px of sky holds three clouds and the sun. On SE it holds tw
 | 8 [13] | Cliff + grass plateau | (§S.6) |
 | 9 [14] | Path | Dirt path (§S.6) |
 | 10 [20] | Back row | Cedar, hedge, Resident Services, fences, mailbox, bench / bonfire (§S.6) |
-| 11 [30] | Fruit trees | Two oaks + fruit (§S.8) |
-| 12 [40] | Jar | Existing vector jar, centre (§S.6) |
+| 11 [29–31] | Orchards | 2 × 3 fruit trees + the palms' coconuts (§S.8) |
+| 12 [40] | Jar | Existing vector jar, centre (§S.6). Coin level = √(yen / top rung), ≥ 12% when not empty. While a harvest is open and I haven't tapped 壺に入れる, it shows the total *without* this week's jar share; once the harvest closes and the overlay is gone, the coin stack rises over 1.4s (`transform` on one group) with sparkles and a 3s 「+¥…」 pop (U5) |
 | 13 [41] | Flower beds | (§S.7) |
 | 14 [50+] | Villagers | Sorted by base y so the one standing lower is in front. Ground shadow, body, emote bubble, fx (§M) |
 | 15 [45] | Front palms | Palms on the beach corners, behind the villagers |
@@ -99,8 +99,10 @@ On iPhone 15, the 148px of sky holds three clouds and the sun. On SE it holds tw
 | Cloud | Size (px, iPhone 15) | top (% of visible sky) | Drift duration | Opacity | Shown on |
 |---|---|---|---|---|---|
 | C1 | 150×46 | 14% | 140s | .96 | all |
-| C2 | 108×34 | 46% | 100s | .92 | sky ≥ 70px |
-| C3 | 72×24 | 72% | 75s | .88 | sky ≥ 120px |
+| C2 | 108×34 | 46% | 100s | .92 | all |
+| C3 | 72×24 | 72% | 75s | .88 | sky band > 160px |
+
+* **Cloud lane (C8, v4.1).** Clouds drift across the whole width, so they never sit in the status row: `top: max(54px, <top %>)` of the band. When the band is ≤ 160px (≈ ≤ 120px above the horizon, i.e. compact / tiny), C1 shrinks to 72px and C2 to 56px wide, they rest on the horizon (`bottom` = the sea's 40u overhang − 5px, feet tucked behind the far sea) and C3 hides.
 
 * **Drift:** `transform: translateX()` from `-110%` (of its own width) to `calc(100vw + 10%)`, `linear infinite`. Negative `animation-delay` (−30%, −62%, −15% of each duration) spreads them across the sky on load. `will-change: transform` on clouds only.
 * **Colours.** Day: `--cloud #FFFFFF`, `--cloud-shade #DCE6FF`. Dawn: `#FFF6F0` / `#FFD9C7`. Dusk: `#FFF0E0` / `#FFB9A0`. Night: `#9AA6E0` at 50% opacity, shade `#7F8BCB`, C1 and C2 only. Winter day shade: `#E2E8F5`.
@@ -109,20 +111,20 @@ On iPhone 15, the 148px of sky holds three clouds and the sun. On SE it holds tw
 
 * **Sea:** stage rect fill `--sea`. The back sea (y 0–40, above the plateau) is a vertical gradient from `--sea-far` at the horizon to `--sea`. The sea that shows at the front corners, outside the beach, is `--sea-deep`.
 * **Wave bands** (×3: back sea at y 12 and y 28, front corners at y 354): scalloped crest lines, each an SVG path of 7–9 small arcs (radius 6u, stroke `--foam` 2.4u, round caps, opacity .7). Animation `if-wave`: `translateX(-6u) → translateX(6u)`, 4s `--ease-idle` alternate infinite, with delays 0, −1.3s and −2.6s.
-* **Sparkles** (×6): 4-point stars, 6–9u, `#FFFFFF`, scattered over the back sea (y 4–36) and the front corners (y 340–358). `if-twinkle`: `scale(.2) opacity 0 → scale(1) opacity 1 → scale(.2) opacity 0`, 2.8s, random delays 0–2.8s. Night: 3 sparkles, tinted `#FFF3C4`.
+* **Sparkles** (×4, v4.1 budget): 4-point stars, 7–9u, `#FFFFFF`, three over the back sea (y 8–30) and one at the front right corner. `if-twinkle`: `scale(.2) opacity 0 → scale(1) opacity 1 → scale(.2) opacity 0`, 2.8s, staggered delays. Night: 2 sparkles, tinted `#FFF3C4`.
 * **Beach:** a sand band hugging the plateau, drawn under it: a rounded rect x −6–396, y 170–358, corner radius 60u. Only the front strip (y 298–358, 46u deep at the centre) and the front corners show. Fill `--beach`. Wet edge: the same shape offset 6u outward, fill `--beach-wet`. Shore foam: a 3u `--foam` stroke along the outer edge, `if-shore` `scaleY(1 → 1.05)` + opacity `.75 → 1`, 3.2s alternate, origin at the beach centre.
 * **Shells:** `deco/sand-dollar` 14u at (112, 332), `deco/cowrie` 13u at (268, 338), `deco/conch` 15u at (214, 346). Night replaces two of them with `deco/star-fragment` 16u at (150, 338) and (300, 330), glowing with `if-glow` (opacity .65 → 1 plus drop glow `0 0 6px #FFF3A0`, 2.4s alternate). Opacity animates; the shadow stays static.
 
 ### S.6 Island plateau, path, back row, jar
 
 * **Cliff and plateau:** the grass top is a rounded, slightly wobbly rectangle from x 12 to 378 and y 40 to 298, corner radius 44u, with edges that deviate ±3u (hand-drawn feel). Below its front and side edges sits a 14u **cliff face** (y 298–312) in `--cliff`, with two 1.5u strata lines in `--cliff-dark` at y 303 and 308. A 3u **grass lip** in `--grass-edge` runs along the plateau's top edge.
-* **Grass texture (NH checker):** an SVG `<pattern>` 24u square holding two diamonds (squares rotated 45°, side 8.5u) in `--grass-2` on `--grass`, plus 12 grass tufts (`ʌʌ` paths 8×5u, stroke `--grass-edge` 1.6u) scattered at fixed positions that avoid the path. Winter adds no tufts. Instead, 10 snow sparkles twinkle like the sea sparkles but in `#FFFFFF` at 70% opacity.
+* **Grass texture (NH checker):** an SVG `<pattern>` 24u square holding two diamonds (squares rotated 45°, side 8.5u) in `--grass-2` on `--grass`, plus 12 grass tufts (`ʌʌ` paths 8×5u, stroke `--grass-edge` 1.6u) scattered at fixed positions that avoid the path. Winter adds no tufts. Instead, 10 snow sparkles: 2 twinkle like the sea sparkles (`#FFFFFF`, 70%), the rest are still at 45%. At night all 10 are still.
 * **Path (dirt, NH style):** a vertical strip x 175–215 from the beach (y 300) up to the Resident Services door (y 106), plus a horizontal strip y 248–276 from x 58 to x 332 (the villagers stand at its ends). Fill `--path`, edge 2u `--path-edge` with ±2u wobble, and 5 pebbles (r 1.6–2.4u, `--path-edge`). In winter the path is `#E9E4DA` with a `#D5CFC2` edge, like trodden snow.
 * **Back row** (all `<OfficialArt>`, feet anchored at "base"):
 
 | Prop | Key | Height (u) | x centre | base y | Seasons / time |
 |---|---|---|---|---|---|
-| Cedar (back left) | `trees/cedar` | 118 | 40 | 150 | Spring–autumn. **Winter:** replaced by `trees/oak-winter` 96u at the same spot |
+| Cedar (back left) | `trees/cedar` | 118 | 40 | 150 | All year (v4.1: the evergreen stays; a fourth snowy hardwood crowded the orchards) |
 | Hedge | bush pair of the season (§S.7), alternating | 30 | 28, 62, 96, 128 · 262, 294, 326, 360 | 82 | all |
 | Resident Services | `deco/resident-services` | 66 (w 82) | 195 | 106 | all. Night: 2 window glows (§S.11) |
 | Fences | `deco/fence-wood` ×2 per side (winter: `deco/fence-log`) | 22 | 136, 158 · 232, 254 | 114 | all |
@@ -142,26 +144,28 @@ Two **flower beds** flank the vertical path just below the crossing. Each bed is
 |---|---|---|---|---|
 | Spring (Mar–May) | pink-tulips · yellow-tulips | blue-hyacinths · white-windflowers | pink-azalea + green | `season/petal` ×3 lying on grass (12u, rotated) |
 | Summer (Jun–Aug) | red-roses · yellow-roses | pink-lilies · lily-of-the-valley | blue-hydrangea (Jun) / red-hibiscus (Jul–Aug) + green | — |
-| Autumn (Sep–Nov) | pink-cosmos · white-cosmos | purple-mums · orange-pansies | orange-tea-olive + green | `season/mushroom` ×3 at the cedar base (14u, x 22–58, y 152), `season/acorn` ×2 under each oak |
-| Winter (Dec–Feb) | none (snow mounds: white ellipses rx 8 ry 4) | none | holly + pink-camellia | `season/pine-cone` ×2 near the winter oak |
+| Autumn (Sep–Nov) | pink-cosmos · white-cosmos | purple-mums · orange-pansies | orange-tea-olive + green | `season/mushroom` ×3 at the cedar base (14u, x 22–58, y 152), `season/acorn` ×4 under the orchards |
+| Winter (Dec–Feb) | none (snow mounds: white ellipses rx 8 ry 4) | none | holly + pink-camellia | `season/pine-cone` ×2 near the cedar |
 
-### S.8 The two fruit trees (official oak + official fruit)
+### S.8 The two orchards (official fruit trees + official fruit), v4.1 (A5)
 
-* `trees/oak-<season>` (summer art for summer; spring art = cherry blossom) at **x 84 (person A) and x 306 (person B)**, base y 238, **150u tall** (121u wide). Shadow: ellipse rx 46 ry 9 `--sh-ground` at base + 2.
-* **Fruit:** 4 official fruit per tree, placed in the tree box (% of tree width/height, centre point), each 27u (22% of the tree width) with a 1u white glow (`drop-shadow(0 0 1.5px #fff)`):
-  peach (30%, 30%) · coconut (68%, 22%) · apple (22%, 52%) · pear (74%, 50%).
-* **Ripeness stages** (unchanged thresholds): bud < 25% → `scale(.55)`, opacity .55, `saturate(.3)`. Small < 60% → `scale(.75)`, opacity .8, `saturate(.7)`. Nearly < 100% → `scale(.9)`. Ripe → `scale(1)` + a sparkle glint every 4s (`if-glint` on a 4-point star at the fruit's top-right, 600ms). `filter` is allowed on fruit **only** (not on villagers). Stage changes animate with `if-pop` (360ms).
-* **Villagers** stand in front of their own oak: feet at **y 286**, x 84 (A) / 306 (B), **94u tall** (24cqw), ground shadow ellipse rx 20 ry 4.6 `--sh-ground`.
-* **Tree idle:** `if-sway` ±1.2° around the base, 5s, with the B tree offset by −2.1s. Tap → **tree shake** (§M.2 `if-shake`) + 2 seasonal particles fall from the canopy + the fruit detail bubble (all 4 fruit with %).
+In NH every fruit tree is the hardwood of the season bearing **three of one fruit**, and coconuts grow only on palms. So each person has a small orchard of three fruit trees, and the beach palm beside it carries their coconut. All four fruit stay visible and tappable.
 
-### S.9 Particles (≤ 14 on screen, transform/opacity only)
+* **Trees** (`trees/oak-<foliage>`; width = 0.804 × height), listed back to front for person A; person B mirrors around x 195:
+  peach (back) x 84, base 196, **100u** · pear (outside) x 38, base 246, **82u** · apple (inside, by the path) x 132, base 248, **82u**. B: peach 306 · pear 352 · apple 258. Shadow per tree: ellipse rx 0.27h ry 0.055h `--sh-ground` at base + 1.
+* **Fruit:** 3 of the tree's fruit at (27%, 31%) · (73%, 28%) · (50%, 50%) of the tree box, each **30% of the tree width** (24u back, 20u front), white glow `drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1px #fff)`. **Coconut:** one 24u coconut in the crown of the person's front palm (46%, 34% of the palm box, mirrored on the left palm).
+* **Ripeness stages** (unchanged thresholds): bud < 25% → `scale(.55)`, opacity .55, `saturate(.3)`. Small < 60% → `scale(.75)`, opacity .8, `saturate(.7)`. Nearly < 100% → `scale(.9)`. Ripe → `scale(1)`; **one glint per orchard** (§S.13): on the first ripe fruit kind, back to front (else the ripe coconut), a 4-point star at the fruit's top-right every 4s. `filter` is allowed on fruit **only** (not on villagers). Stage changes animate with `if-pop` (360ms).
+* **Villagers** stand in front of their own orchard, between the two front trees: feet at **y 286**, x 84 (A) / 306 (B), **94u tall** (24cqw), ground shadow ellipse rx 20 ry 4.6 `--sh-ground`.
+* **Tree idle:** only the back tree of each orchard sways (`if-sway` ±1.2° around the base, 5s, B offset −2.1s); the front trees stand still. **Tap:** one canopy `<button>` per orchard covers the three crowns (label: name + all 4 fruit %); the tree nearest the tap shakes (§M.2 `if-shake`, keyboard: the back tree) + 2 seasonal particles fall from it + the fruit detail bubble (all 4 fruit with %). The palm crown has its own pointer target labelled with the coconut only (N9). Idle-life shakes rotate through the three trees.
+
+### S.9 Particles (≤ 6 on screen, one animation each, transform/opacity only)
 
 | When | Art | Count | Size | Motion |
 |---|---|---|---|---|
-| Spring day | `season/petal` | 10 (20 during 4/1–4/10 cherry blossom week, but stay ≤ 14 visible) | 10–16px | `if-fall`: translateY from −10% to 110% of the scene + `if-flutter` (translateX ±18px, rotate ±40°), 9–14s, random delays |
-| Autumn | `season/maple-leaf` | 8 (12 during 11/16–11/25 maple week) | 12–16px | Same as above, 10–15s, rotate 0–540° |
-| Winter | `season/snowflake` + 1 `season/snowflake-large` | 12 + 1 | 8–14px / 22px | 12–18s, flutter ±10px. The large flake drifts once every 45s, 20s across |
-| Summer night | ours: firefly (r 2.2u `#F3FF9E` + glow `0 0 6px #E8F59A`) | 8 | — | `if-firefly` wander ±14u, opacity .2 → 1, 3–5s |
+| Spring day | `season/petal` | 5 (6 during the 4/1–4/10 cherry blossom week) | 10–16px | `fall`: one keyframe track, translateY −10% → 110% of the scene with the flutter folded in (translateX ±18px zig-zag at 20/40/60/80%, rotate to 40°), 9–14s, random delays |
+| Autumn | `season/maple-leaf` | 5 (6 during the 11/16–11/25 maple week) | 12–16px | Same as above, 10–15s, rotate 180–540° |
+| Winter | `season/snowflake` + 1 `season/snowflake-large` | 3 + 1 | 8–14px / 22px | 12–18s, zig-zag ±10px. The large flake drifts once every 45s, 20s across |
+| Summer night | ours: firefly (r 2.2u `#F3FF9E` + glow `0 0 6px #E8F59A`) | 5 | — | `if-firefly` wander ±14u, opacity .2 → 1, 3–5s |
 | Summer day | none (sea sparkles carry it) | — | — | — |
 
 ### S.10 Seasonal events (by Japan date)
@@ -171,7 +175,7 @@ Two **flower beds** flank the vertical path just below the crossing. Each bed is
 | Cherry blossom week | Apr 1–10 | Extra petals; しずえ uses `inspiration` on the first open |
 | Summer fireworks | Sundays in August, 19:00–24:00 | Harvest overlay plays fireworks (ours: 6 radial bursts, 12 dots each, colours of the confetti set, 1.4s, staggered 0.7s). The scene sky gets 1 burst every 6s |
 | Maple week | Nov 16–25 | Extra maple leaves |
-| Toy Day eve | Dec 24 | `deco/present` 18u under each oak; the balloon carries `deco/present` |
+| Toy Day eve | Dec 24 | `deco/present` 18u by each orchard; the balloon carries `deco/present` |
 | New Year's Eve | Dec 31 22:00 – Jan 1 02:00 | Fireworks in the sky; both villagers `if-dance` once on open; `deco/party-popper` is used as the harvest confetti source |
 | Balloon present (any day) | Day only, ≤ 1× per session, after 60s on 島 | A balloon (ours: an ellipse 22×28px in `#FF6B6B`, `#FFD84D` or `#6FCFF6`, string 18px) carrying `deco/present` 20px drifts left → right across the sky in 26s, bobbing ±6px. **Tap (target 48×56) → pop**: confetti burst + the present falls behind the hedge. No text |
 
@@ -182,7 +186,7 @@ Two **flower beds** flank the vertical path just below the crossing. Each bed is
 | dawn 05–07 | `#FFC6A8 → #CDEBFF` | `rgba(255,170,140,.12)` | Sun low (top: sky 70%), pink cloud shade |
 | day | season sky (§1.3) | none | Sun high |
 | dusk 16–19 | `#FF9E7A → #FFE2A8` | `rgba(255,140,90,.14)` | Sun `#FFB35C` low; long shadows: ground ellipses `scaleX(1.25)` |
-| night 19–05 | `#3A4886 → #7584CC` (periwinkle, not navy) | `rgba(64,78,160,.26)` | Moon + 12 stars (`if-twinkle` 2.4–4s); Resident Services windows glow (two 8×10u rounded rects `#FFE38A` + `0 0 8px #FFD45A`); bonfire glow (autumn/winter); fireflies (summer); star fragments on the beach |
+| night 19–05 | `#3A4886 → #7584CC` (periwinkle, not navy) | `rgba(64,78,160,.26)` | Moon + 12 stars (4 twinkle 2.4–4s, 8 still); Resident Services windows glow (two 8×10u rounded rects `#FFE38A` + `0 0 8px #FFD45A`); bonfire glow (autumn/winter, flickers); fireflies (summer); star fragments on the beach (steady glow, no animation) |
 
 The tint covers the stage only. Villagers and the jar sit **under** the tint and score pills sit **above** it. Official art gets **no** `brightness()` filter in v4 because the tint does that job.
 
@@ -202,11 +206,11 @@ Nothing else is tappable: no tap on Resident Services, fences, flowers or shells
 
 ### S.13 Performance budget
 
-* Animate **only `transform` and `opacity`**. The exceptions are fruit `filter` (static per stage, never animated) and the one-time `if-glow` drop shadow on ≤ 3 small items. No `box-shadow`/`filter`/`clip-path` animation and no `mix-blend-mode`.
-* ≤ **24 infinitely animated elements** in the scene: 3 clouds + 3 waves + 6 sparkles + 2 trees + 2 villager bobs + Isabelle bob + shore + ≤ 6 glows/twinkles. Particles (≤ 14) are on top of that. Use CSS keyframes only. JS (`setTimeout`) only schedules idle life and events. No rAF loop.
+* Animate **only `transform` and `opacity`**. The exceptions are fruit `filter` (static per stage, never animated) and the bonfire's `if-glow`. No `box-shadow`/`filter`/`clip-path` animation and no `mix-blend-mode`.
+* ≤ **24 running infinite animations in total, particles included** (v4.1, P5; measure with `document.getAnimations()`): 3 clouds (2 at night) + 3 waves + 4 sparkles (2 at night) + shore + 2 swaying back trees + ≤ 2 fruit glints (one per orchard) + 2 villager bobs + しずえ bob + ≤ 4 star twinkles / 2 snow glints / 1 bonfire / 1 firework burst + ≤ 6 particles (one animation each). Measured: autumn day 22, winter night 23, summer-Sunday night with fireworks 24. (Round 5 R2 counted 36 = 19 scene + 16 particle animations, because each particle ran a fall *and* a flutter animation and the old rule kept particles outside the cap.) Use CSS keyframes only. JS (`setTimeout`) only schedules idle life and events. No rAF loop.
 * `will-change: transform` on clouds and villagers only.
 * **Pause** everything when the tab is hidden: `visibilitychange` sets `data-paused` on `.scene`, and `[data-paused] * { animation-play-state: paused !important }`. The idle-life scheduler stops too. A sheet covering the scene also pauses particles and idle life (clouds and waves keep going).
-* Images: trees, villagers and Resident Services are `eager`, everything else `loading="lazy" decoding="async"`. First paint of 島 loads ≤ 30 art files (≈ 220 KB, cached by the SW after that).
+* Images: trees, villagers and Resident Services are `eager`, everything else `loading="lazy" decoding="async"`. First paint of 島 loads ≤ 30 art files (≈ 220 KB, cached by the SW after that). v4.1: 30 on an autumn day (the beach uses two sand dollars instead of a cowrie; the orchards reuse the oak and fruit files).
 * Target: 60fps on an iPhone SE 2 in Safari, with no long task > 50ms from the scene after load. Check with the Performance panel at 4× CPU throttle (≥ 50fps).
 * **Reduced motion** (`prefers-reduced-motion: reduce`): clouds sit still at their delay positions; no waves, sparkles, sway, bob, particles or balloon; idle life off; reactions show their emote bubble with a 120ms fade (§M.6). The scene still shows season and time of day.
 
@@ -247,7 +251,7 @@ Squash and stretch conserve volume (scaleX × scaleY ≈ 1), never exceed 14% de
 | `if-dance` | 1600ms (4 beats × 400ms) | per beat: −8° + translateX(−4%) + hop −5% → +8° + translateX(4%) + hop −5% … end none |
 | `if-walkbounce` | 320ms ∞ while walking | 0/100% none · 50% `translateY(-4%) rotate(2deg)`, alternating sign per cycle (`alternate`) |
 | `if-shake` (trees) | 480ms | rotate 0 · 3° · −3° · 2° · −1° · 0, origin at the trunk base |
-| `if-bow` (しずえ) | 1100ms | 0 none · 35–65% `translateY(3%) scale(1.02,.98)` · 100% none |
+| `if-bow` (しずえ) | 1100ms | 0 none · 30–62% `translateY(1.5%) scale(1.03,.91)` (a front-facing dip from the feet) · 100% none |
 | `if-talk` (しずえ, while typing) | 260ms ∞ | 0/100% none · 50% `translateY(-1.5%)` |
 | `if-headshake` (しずえ sorry) | 600ms | rotate 0 · −3° · 3° · −3° · 0 |
 
@@ -258,7 +262,8 @@ Squash and stretch conserve volume (scaleX × scaleY ≈ 1), never exceed 14% de
 * Cream circle **44px** (36px when `--compact`), fill `--bubble`, 2px border `#EADBB8`, lip `0 3px 0 rgba(74,58,44,.12)`. Tail: an 8px rounded triangle at the bottom, offset 30% toward the villager's head. The icon inside is `reactionArt(id)` at **34px** (28px compact).
 * Position: centre 6u above the head top (the art box top + 6%), shifted 18% of the figure width **toward the screen edge** on the villager's side so the two bubbles never meet over the jar.
 * Timing: in = `if-pop` 360ms `--ease-bounce` (scale 0 → 1.15 → 1, origin at the tail). Hold 1600ms (default; `sleepy` holds while sleeping). Out = 200ms `scale(.8)` + fade. Total `--dur-emote` 2200ms. Max **one per actor**. A new one replaces the old one immediately.
-* Isabelle's emotes sit at the top-right of her render, 40px.
+* Isabelle's emotes sit at the top-right of her render in a **48px** bubble.
+* **Villagers never show the player's cat-face reaction icons (A1, v4.1).** They get our floating marks (`Mark.svelte`: ♪ ! ? 💦 ♥ ✦ zz) or the official colour glyphs (`love · surprise · glee · inspiration · curiosity · thought · daydreaming`), drawn at the same 34px (28px compact) without a bubble. `villagerEmote()` maps every cat face to one of these. The cream bubble is for しずえ only.
 
 ### M.4 Cute overlay effects (`Fx.svelte`, ours, SVG/CSS)
 
@@ -311,19 +316,19 @@ All fx are `pointer-events:none` and `aria-hidden`, and remove themselves on `an
 | Greeting (first open, R1) | `isabelle` (wave) | `if-hop` (−8% max) | `greetings` |
 | Check-in saved | wave | `if-hop` | `joy` + notes |
 | Info / Jar / neutral | `-stand` | idle | — |
-| Thanks, harvest done | `-bow` | `if-bow` | `happiness` + sparkles |
-| Error / sorry | `-bow` | `if-headshake` | `sheepishness` + sweat |
+| Thanks, harvest done | `bow` = `-stand` art (same outfit) | `if-bow`, played each time the pose becomes `bow` | `happiness` + sparkles |
+| Error / sorry | `bow` = `-stand` art | `if-headshake` | `sheepishness` + sweat |
 | Cherry blossom / maple week first open | wave | `if-wiggle` | `inspiration` |
 | Night 22–05 | `-stand` | `if-breath-slow`; every 60s a `dozing` emote | zzz (1 cycle) |
 | Tap (not typing, no next page) | — | `if-hop` | random of `joy · laughter · happiness · flourish` |
 | Idle life (every 20–30s, §M.7) | swap `-stand` ↔ wave with a 160ms crossfade, or `if-wiggle` | — | — |
-| Winter (Dec–Feb) | `-winter` replaces every pose; motions unchanged | — | — |
+| Winter (Dec–Feb) | `-winter` (the full-body cardigan model, same canvas and crop box as `-stand`, so the same height and feet line) replaces every pose; motions unchanged | — | — |
 
-Pose swaps crossfade two stacked `<img>`s over 160ms (opacity only). The incoming image must already be decoded (`img.decode()` before the swap).
+Outfit rule (N2): outside winter every pose is the aloha shirt; in winter every pose is the cardigan. Never mix outfits across screens. Pose swaps crossfade two stacked `<img>`s over 160ms (opacity only). The incoming image must already be decoded (`img.decode()` before the swap).
 
 ### M.7 Idle life (`lib/components/motion/idleLife.svelte.ts`)
 
-* **One scheduler per scene.** After each action, wait `8000 + random() * 7000` ms (8–15s). Pick an actor: partner 40%, mine 40%, しずえ 20% (しずえ at most once every 20s). Skip any actor that is busy.
+* **One scheduler per scene.** After each action, wait `5000 + random() * 4000` ms (5–9s; v4.1: the 8–15s gap felt asleep). After 3 min without input: 20–30s; after 10 min: stop. Pick an actor: partner 40%, mine 40%, しずえ 20% (しずえ at most once every 20s). Skip any actor that is busy.
 * **Pools** (weights; filtered by context; never the same action twice in a row per actor):
 
 | Action | Weight | Context | Motion · emote · fx |
@@ -527,37 +532,37 @@ Both run `npm run check`, `npm test` and `npm run build` before every push, `git
 - [ ] C1 The stage keeps `aspect-ratio: 390/360` at all three sizes, and only the sky height changes (§S.2 numbers ±4px).
 - [ ] C2 At 320×568 the villagers, trees, jar, beds and beach are fully visible. Only the back sea may crop (on screens shorter than 568).
 - [ ] C3 No layout shift on load (Lighthouse CLS = 0 on 島). Every image box is reserved from the manifest.
-- [ ] C4 Villagers stand at x 84 / 306u, feet at y 286u ±2. Oaks at base y 238u, 150u tall.
-- [ ] C5 Each oak carries 4 official fruit at the §S.8 positions, 22% of the tree width, in the right ripeness stage.
+- [ ] C4 Villagers stand at x 84 / 306u, feet at y 286u ±2. Orchard trees at the §S.8 positions (back 100u, front 82u).
+- [ ] C5 Each orchard shows all 4 fruit: 3 peaches / pears / apples on their own fruit tree (30% of the tree width, §S.8 positions) + the coconut in the palm crown, each in the right ripeness stage.
 - [ ] C6 Score pills stay readable at night (above the tint) and follow the compact/tiny rules (§R.1).
 
 **Background detail**
 - [ ] C7 Sky gradient matches §1.3 for the season and §S.11 for dawn/dusk/night (sample the top and bottom pixels).
-- [ ] C8 Clouds: 3 / 2 / 1 visible at 393 / 375 / 320, drifting at 140 / 100 / 75s with a flat bottom and a `--cloud-shade` underside.
-- [ ] C9 The sea has 3 animated wave bands, 6 sparkles (3 at night) and a breathing shore foam line.
+- [ ] C8 Clouds: 3 / 2 / 2 visible at 393 / 375 / 320, never behind the status row except while drifting past it (§S.4 cloud lane), drifting at 140 / 100 / 75s with a soft base and a `--cloud-shade` underside.
+- [ ] C9 The sea has 3 animated wave bands, 4 sparkles (2 at night) and a breathing shore foam line.
 - [ ] C10 The beach has 3 shells by day and 2 glowing star fragments at night.
 - [ ] C11 The plateau has a wobbly edge, a 14u cliff face with 2 strata lines, the diamond-checker grass texture and 12 tufts (no tufts in winter).
 - [ ] C12 The dirt path forms a T: from the beach up to the Resident Services door, and across between the villagers.
-- [ ] C13 Back row is complete: cedar (oak-winter in winter), 8 hedge bushes of the season pair, Resident Services, 4 fences (log in winter), mailbox, bench (bonfire on autumn/winter evenings), rock, 2 front palms, distant islet (≥ 375 only).
+- [ ] C13 Back row is complete: cedar (all year), 8 hedge bushes of the season pair, Resident Services, 4 fences (log in winter), mailbox, bench (bonfire on autumn/winter evenings), rock, 2 front palms, distant islet (≥ 375 only).
 - [ ] C14 The flower beds show the §S.7 flowers for the season. Winter shows snow mounds instead.
 - [ ] C15 Seasonal ground extras are present (petals / mushrooms + acorns / pine cones).
-- [ ] C16 Night: moon + 12 stars, periwinkle sky (not navy), Resident Services windows lit, tint `rgba(64,78,160,.26)`, fireflies in summer.
-- [ ] C17 Particles are of the right season, ≤ 14 on screen, using official petal/leaf/snowflake art.
+- [ ] C16 Night: moon + 12 stars (4 twinkle, §S.13), periwinkle sky (not navy), Resident Services windows lit, tint `rgba(64,78,160,.26)`, fireflies in summer.
+- [ ] C17 Particles are of the right season, ≤ 6 on screen (one animation each), using official petal/leaf/snowflake art.
 - [ ] C18 Events can be forced with `?date=YYYY-MM-DDTHH:mm` on the dev gallery: cherry week, August Sunday fireworks, maple week, Toy Day presents, NYE.
 - [ ] C19 The balloon present appears at most once per session (day only) and pops into confetti on tap.
 
 **Characters & motion**
 - [ ] C20 Every reaction R1–R19 can be triggered from `/dev/characters` and matches its §M.5 motion, emote icon, fx and duration (±50ms).
-- [ ] C21 The emote bubble is 44px (36px compact) with a 34px official reaction icon, shifted toward the screen edge, ≤ 1 per actor.
+- [ ] C21 Villagers show floating marks / colour glyphs (34px, 28px compact, no cat faces), しずえ a 48px bubble with an official reaction icon; shifted toward the screen edge, ≤ 1 per actor (§M.3).
 - [ ] C22 Reactions start and end at `transform: none`, so there is no visible jump back into the idle bob.
 - [ ] C23 Squash/stretch keeps scaleX×scaleY within 0.95–1.05 of 1, the origin is at the feet, and deformation never exceeds 14%.
-- [ ] C24 Idle life fires every 8–15s, never puts two actors within 2s of each other (except chat/dance), and repeats no action back to back.
+- [ ] C24 Idle life fires every 5–9s, never puts two actors within 2s of each other (except chat/dance), and repeats no action back to back.
 - [ ] C25 Idle life pauses when the tab is hidden, while a sheet is open and under reduced motion. It slows after 3 min and stops after 10 min idle.
 - [ ] C26 A stroll walks ≤ 40u, flips facing, bounces and puffs dust, never reaches the jar, and the tap target moves with the villager.
 - [ ] C27 Night 22–05: both villagers doze (slow breath, zzz, `sleepy`); a tap wakes them (`shocked` + sweat) and they fall asleep again after 10s.
-- [ ] C28 しずえ bobs while idle, bounces while typing, and swaps pose with a 160ms crossfade and no flash of a blank image. She wears the winter outfit Dec–Feb.
+- [ ] C28 しずえ bobs while idle, bounces while typing, and swaps pose with a 160ms crossfade and no flash of a blank image. She keeps one outfit across screens (aloha; the full-body cardigan Dec–Feb, same size as the other poses), and her bow is a CSS dip on the stand render.
 - [ ] C29 Tapping a villager plays the squish + emote and opens the sheet ≤ 250ms after the tap.
-- [ ] C30 Tree tap: shake 480ms, 2 seasonal leaves fall, the fruit detail bubble appears.
+- [ ] C30 Orchard tap: the tree under the finger shakes 480ms, 2 seasonal leaves fall from it, the fruit detail bubble appears.
 
 **Theme & chrome**
 - [ ] C31 The launcher has 3 columns with 64px tiles (56 compact, 52 tiny) and uses the §T.1 official tiles/glyphs and tile colours. Labels stay on one line, with no ellipsis.
@@ -566,7 +571,7 @@ Both run `npm run check`, `npm test` and `npm run build` before every push, `git
 - [ ] C34 Notification banner: below the status row, 52px tall, icon + ≤ 16 chars + reaction icon; bounces in at 320ms, holds 2600ms; swipe or tap dismisses it.
 - [ ] C35 Jar: periwinkle Miles+ background, pastel scalloped rung cards, a Miles stamp on completed rungs (`if-stamp`).
 - [ ] C36 The check-in sheet looks like a DIY card (grid paper + label tape).
-- [ ] C37 Bells pill with the bag overlapping on every savings amount. Navy pill only on the harvest total. Harvest rows show week stars.
+- [ ] C37 Bells pill with the bag overlapping on every savings amount. Navy pill only on the harvest total. Harvest rows show no stars (U7): the shared ★ count sits on the ふたりボーナス row only.
 - [ ] C38 Palette: day colours match §1.1/§1.3 (bright, saturated). Night matches §1.2. All text contrast is ≥ 4.5:1 (body) and ≥ 3:1 (≥ 18px bold).
 
 **Small screens & a11y**
