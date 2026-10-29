@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
+import { doPost, INGEST_TAIL_ROWS, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -212,6 +212,20 @@ describe('ingest', () => {
     const r = a('ingest', { dates: '2026-10-27\n2026-10-28', steps: '100\n200', exercise_minutes: '1' });
     expect(r).toEqual({ ok: true, metrics: 2, workouts: 0, skipped: 1, warnings: ['exercise: 1 values but 2 dates; exercise not saved'] });
     expect(data('uploads').at(-1)!.slice(2)).toEqual(['partial', expect.any(Number), 'exercise: 1 values but 2 dates; exercise not saved; 1 items skipped']);
+  });
+
+  it(`recent dates read only the last ${INGEST_TAIL_ROWS} metrics rows; older dates read the whole tab`, () => {
+    a('whoami');
+    const sh = gas.sheets.get('metrics')!;
+    sh.maxRows = INGEST_TAIL_ROWS + 100;
+    sh.rows.push(['2026-09-01T00:00:00.000Z', 'A', '2026-09-01', 'steps', 7000]);
+    for (let i = 0; i < INGEST_TAIL_ROWS; i++) sh.rows.push(['2026-10-28T00:00:00.000Z', 'B', '2026-10-28', 'steps', i]);
+    const reads: number[] = [];
+    const getRange = sh.getRange.bind(sh);
+    sh.getRange = (row: number, col: number, n?: number, c?: number) => { if (col === 1 && (c ?? 1) === 5) reads.push(n ?? 1); return getRange(row, col, n, c); };
+    expect(a('ingest', { days: [{ date: '2026-10-28', steps: 10 }] })).toMatchObject({ metrics: 1 });
+    expect(a('ingest', { days: [{ date: '2026-09-01', steps: 6000 }] })).toMatchObject({ metrics: 0 }); // still higher-only
+    expect(reads.filter((n) => n > 1)).toEqual([INGEST_TAIL_ROWS, INGEST_TAIL_ROWS + 2]); // (1-row ranges are the appends)
   });
 
   it('partial uploads say how many items were skipped', () => {

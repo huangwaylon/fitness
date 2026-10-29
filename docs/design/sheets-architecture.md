@@ -46,6 +46,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 | `health` | **no `key`** | `{ok:true, build}`: up, authorized, and running `build` (no Properties read, no lock, no sheet). The monitor's probe (runbook §5) |
 
 - Person = whichever of `KEY_A`/`KEY_B` matches, compared in constant time. A key that isn't 32–128 hex characters is `unauthorized` before anything is read. The keys are cached in `CacheService` for 5 minutes, so a rotated key keeps working for up to 5 minutes. The rate limit is a per-key-per-minute counter in `CacheService`.
+- `ingest`'s higher-only check reads only the last 5,000 `metrics` rows when every date in the body is at most 14 days old (the hourly Shortcut); a body with older dates (the baseline) reads the whole tab.
 - Writes (and `snapshot`) take `LockService.getScriptLock()` (wait ≤ 10 s, else `busy`). Each locked request reads Script Properties once (`getProperties`) and writes them at most once (`LAST_AT`, `ROWS`, `REV`).
 - `snapshot` without `since` returns everything, as compact arrays (`rows.metrics = [[at, person, date, metric, value], …]`). With hourly syncs that is ~18k rows a year (3.7 MB of JSON by year 3, `npm run bench`).
 

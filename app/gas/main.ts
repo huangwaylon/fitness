@@ -30,6 +30,13 @@ const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 export const KEY_CACHE_SECONDS = 300;
 /** Tabs whose rows the client caches; a hand change to any of them bumps `REV`. */
 const SYNCED_TABS = ['metrics', 'workouts', 'presence', 'events'] as const satisfies readonly TabName[];const MAX_EVENT_DATA_CHARS = 20_000;
+/**
+ * `ingest` reads only this many trailing `metrics` rows for its higher-only check when every date in the body is
+ * recent (≤ RECENT_DAYS old): hourly syncs append ~40 rows a day, so the tail covers months, and the hourly Shortcut
+ * (yesterday and today) never needs the whole tab under the lock. Older dates (the baseline) read everything.
+ */
+export const INGEST_TAIL_ROWS = 5000;
+const RECENT_DAYS = 14;
 
 /** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
 type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
@@ -242,11 +249,13 @@ function tab(name: TabName): GAS.Sheet {
   return sh;
 }
 
-function readRows(sh: GAS.Sheet, name: TabName): unknown[][] {
+/** The tab's data rows; with `tail`, only the last `tail` of them. */
+function readRows(sh: GAS.Sheet, name: TabName, tail = Infinity): unknown[][] {
   const last = sh.getLastRow();
   noteRows(name, last);
   if (last < 2) return [];
-  return sh.getRange(2, 1, last - 1, TABS[name].length).getValues();
+  const first = Math.max(2, last - tail + 1);
+  return sh.getRange(first, 1, last - first + 1, TABS[name].length).getValues();
 }
 
 function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
@@ -302,7 +311,9 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const at = nextAt();
     const mSheet = tab('metrics');
     const latest = new Map<string, number>();
-    for (const r of readRows(mSheet, 'metrics')) {
+    const recent = new Date(Date.now() + 9 * 3600_000 - RECENT_DAYS * 86400_000).toISOString().slice(0, 10);
+    const tail = parsed.metrics.every((m) => m.date >= recent) ? INGEST_TAIL_ROWS : Infinity;
+    for (const r of readRows(mSheet, 'metrics', tail)) {
       const k = `${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`;
       const v = num(r[4]);
       if (v !== null && v > (latest.get(k) ?? -Infinity)) latest.set(k, v);
