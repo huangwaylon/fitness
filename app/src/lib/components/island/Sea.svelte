@@ -33,8 +33,8 @@
 {#if night}
   <!-- moon glint: short warm streaks on the water under the moon (static) -->
   <g class="moonglint">
-    <rect x="309" y="-34" width="18" height="1.8" rx=".9" /><rect x="303" y="-27" width="28" height="2.2" rx="1.1" />
-    <rect x="307" y="-19" width="20" height="2" rx="1" /><rect x="299" y="-10" width="34" height="2.4" rx="1.2" />
+    <ellipse cx="318" cy="-34" rx="6" ry=".9" /><ellipse cx="315" cy="-27" rx="11" ry="1.1" />
+    <ellipse cx="319" cy="-19" rx="8" ry="1" /><ellipse cx="314" cy="-10" rx="15" ry="1.3" />
   </g>
 {/if}
 <!-- three wave bands, each one animated group (P5 budget) -->
@@ -57,7 +57,7 @@
     animation: if-twinkle 2.8s var(--ease-idle) infinite;
   }
   .sparkles.night path { fill: #FFF3C4; }
-  .moonglint rect { fill: var(--moon-glint, #FFF3C4); }
+  .moonglint ellipse { fill: var(--moon-glint, #FFF3C4); opacity: .55; }
   @media (prefers-reduced-motion: reduce) {
     .waves g { animation: none; }
     .sparkles path { animation: none; opacity: 0; }
