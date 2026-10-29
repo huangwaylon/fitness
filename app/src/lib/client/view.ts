@@ -1,7 +1,9 @@
 // Cached snapshot + still-queued events → WeekView (optimistic: a tap shows at once, before the server acks it).
 import type { WeekView } from '#lib/types.ts';
 import type { EventRow } from '#lib/ingest/sheet-api.ts';
+import type { PersonId } from '#lib/types.ts';
 import { buildWeekView } from '#lib/model/week.ts';
+import { reduce, type State } from '#lib/model/state.ts';
 import type { QueuedEvent, SnapshotCache } from './gas.ts';
 
 /**
@@ -9,6 +11,14 @@ import type { QueuedEvent, SnapshotCache } from './gas.ts';
  * read-time rules (48 h check-in window, purse balance, harvest week) judge them as the server will.
  */
 export function composeView(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number): WeekView {
+  const m = composeModel(cache, queue, clientNow);
+  return buildWeekView(m.state, m.me, m.now);
+}
+
+/** The reduced state (cache + queue) and the server-clock "now": what きろく (model/history.ts) reads. */
+export interface ComposedModel { state: State; me: PersonId; now: number }
+
+export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number): ComposedModel {
   const known = new Set(cache.rows.events.map((r) => String(r[2])));
   const lastAt = cache.since ? Date.parse(cache.since) : 0;
   let floor = Number.isNaN(lastAt) ? 0 : lastAt;
@@ -22,7 +32,7 @@ export function composeView(cache: SnapshotCache, queue: QueuedEvent[], clientNo
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
   const rows = extra.length ? { ...cache.rows, events: [...cache.rows.events, ...extra] } : cache.rows;
-  return buildWeekView({ me: cache.me, now: new Date(now).toISOString(), rows }, cache.me, now);
+  return { state: reduce(rows), me: cache.me, now };
 }
 
 /** The events from `list` whose rows the cache doesn't have yet (acked events drop out once fetched back). */

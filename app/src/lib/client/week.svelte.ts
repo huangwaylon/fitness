@@ -7,8 +7,10 @@ import { dev } from '$app/env';
 import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import type { EventType } from '#lib/ingest/sheet-api.ts';
 import { GAS_CONFIGURED, enqueue, flush, getKey, holdEvent, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
-import { composeView, notInCache } from './view.ts';
-import { sampleWeek } from './fixtures.ts';
+import { composeModel, notInCache, type ComposedModel } from './view.ts';
+import { demoCache } from './demoRows.ts';
+import { buildWeekView, payoutAsOf } from '#lib/model/week.ts';
+import { addDays } from '#lib/scoring/index.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
 
 type DemoMode = false | 'plain' | 'harvest';
@@ -45,6 +47,8 @@ export interface Toast {
 
 class WeekStore {
   view = $state<WeekView | null>(null);
+  /** The reduced state behind `view` (きろく computes its history from it). Replaced, never mutated. */
+  model = $state.raw<ComposedModel | null>(null);
   status = $state<'loading' | 'ready' | 'error' | 'unconfigured'>('loading');
   syncing = $state(false);
   offline = $state(false);
@@ -53,6 +57,10 @@ class WeekStore {
   toast = $state<Toast | null>(null);
 
   #cache: SnapshotCache | null = null;
+  /** Demo: the session's events (never sent, never persisted), applied by the model like the live queue. */
+  #demoEvents: QueuedEvent[] = [];
+  /** Demo `?demo=harvest`: the harvest overlay over last week, until I drop it in. */
+  #demoHarvested = false;
   /**
    * Events the server acked but the cache hasn't fetched back yet. They stay in the view until the reconcile
    * refresh brings their rows; otherwise any recompute in between (the next tap) would undo them on screen.
@@ -96,25 +104,37 @@ class WeekStore {
   /** Recompute the view from the cache + queue (cheap: pure, a few ms). */
   #recompute(): void {
     if (!this.#cache) return;
-    this.#sent = notInCache(this.#cache, this.#sent);
-    this.view = composeView(this.#cache, [...this.#sent, ...queued()], Date.now());
-    setLocale(this.view.locale);
+    if (!this.demo) this.#sent = notInCache(this.#cache, this.#sent);
+    const m = composeModel(this.#cache, this.demo ? this.#demoEvents : [...this.#sent, ...queued()], Date.now());
+    const v = buildWeekView(m.state, m.me, m.now);
+    if (this.demo === 'harvest' && !v.harvest) v.harvest = this.#demoHarvest(m, v);
+    this.model = m;
+    this.view = v;
+    setLocale(v.locale);
+  }
+
+  /** `?demo=harvest` shows last week's harvest whatever the day (the model opens it only from Sunday 19:30). */
+  #demoHarvest(m: ComposedModel, v: WeekView): WeekView['harvest'] {
+    const wk = addDays(v.weekKey, -7);
+    const payout = payoutAsOf(m.state, wk, Infinity).payout;
+    return { weekKey: wk, payout, rungsReached: [], confirmedBy: this.#demoHarvested ? [v.me] : [] };
   }
 
   #start(): void {
     if (this.#clock) return;
     // The view depends on the clock (harvest opens Sunday 19:30, "today", the host's line).
     this.#clock = setInterval(() => this.#recompute(), 60_000);
-    addEventListener('online', () => void this.refresh());
+    if (!this.demo) addEventListener('online', () => void this.refresh());
   }
 
   /** Paint from cache, then flush queued writes and fetch new rows. `background` refreshes respect a 30 s floor. */
   async refresh(opts: { background?: boolean } = {}): Promise<void> {
     if (this.demo) {
-      if (!this.view) this.view = sampleWeek({ harvest: this.demo === 'harvest' });
+      if (!this.#cache) this.#cache = demoCache(Date.now());
+      this.#recompute();
+      this.#start();
       this.status = 'ready';
       this.lastSync = new Date();
-      setLocale(this.view.locale);
       return;
     }
     if (this.status === 'unconfigured') return;
@@ -163,26 +183,30 @@ class WeekStore {
     this.#cache = null;
     this.#sent = [];
     this.view = null;
+    this.model = null;
     this.status = 'loading';
     this.#lastFetch = 0;
   }
 
   /**
-   * Queue an event and show it at once (the model applies it like the server will). In demo mode `optimistic` edits
-   * the fixture view instead. Never fails for network reasons: the queue retries until the server acks.
-   * `holdMs`: an undo window. The change shows at once but is not sent before then; `undo()` takes it back.
-   * `revert` (demo): the inverse of `optimistic`, so an undo takes back only this action, not others made in the
-   * window (review r2 N4).
+   * Queue an event and show it at once (the model applies it like the server will; the demo keeps its events in
+   * memory and never sends them). Never fails for network reasons: the queue retries until the server acks.
+   * `holdMs`: an undo window. The change shows at once but is not sent before then; `undo()` takes back only this
+   * event, not others made in the window (review r2 N4).
    */
-  send<T = unknown>(type: EventType, data: Record<string, unknown>, optimistic?: (v: WeekView) => void, opts: { holdMs?: number; revert?: (v: WeekView) => void } = {}): Promise<SendResult<T>> {
+  send<T = unknown>(type: EventType, data: Record<string, unknown>, opts: { holdMs?: number } = {}): Promise<SendResult<T>> {
     const held = (opts.holdMs ?? 0) > 0;
     if (this.demo) {
-      if (optimistic && this.view) optimistic(this.view);
-      let undone = false;
+      const now = Date.now();
+      const ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#demoEvents.length}`, type, data, queuedAt: now, tries: 0, nextAt: now };
+      this.#demoEvents.push(ev);
+      if (type === 'harvest') this.#demoHarvested = true;
+      this.#recompute();
       const undo = () => {
-        if (undone || !opts.revert || !this.view) return false;
-        undone = true;
-        opts.revert(this.view);
+        const i = this.#demoEvents.indexOf(ev);
+        if (i < 0) return false;
+        this.#demoEvents.splice(i, 1);
+        this.#recompute();
         return true;
       };
       return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo, hold: () => {} } : {}) });

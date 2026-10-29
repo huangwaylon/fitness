@@ -1,12 +1,10 @@
 // Round 5 U3: an action must move the score and fruit at once, in live mode (queued events through the model)
-// and in demo mode (fixture edits), and must not snap back between the server's ack and the next fetch.
+// (the demo runs the same model on generated rows: demoRows.test.ts), and must not snap back between the server's ack and the next fetch.
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
 import { applySnapshot, configure, enqueue, flush, queued, setKey, unqueue, type KV, type QueuedEvent } from './gas.ts';
 import { composeView, notInCache } from './view.ts';
 import { mergeRows } from '#lib/model/snapshot.ts';
-import { sampleWeek } from './fixtures.ts';
-import { bumpFruit } from './demo.ts';
 
 class Mem implements KV {
   m = new Map<string, string>();
@@ -70,21 +68,5 @@ describe('live optimistic view', () => {
     const later = enqueue('transfer', { month: '2026-10' }, NOW, 5000);
     expect((await flush(() => NOW + 5000)).sent).toBe(1);
     expect(unqueue(later.id)).toBe(false);
-  });
-});
-
-describe('demo optimistic view', () => {
-  it('bumpFruit moves the fruit and re-derives the score', () => {
-    const v = sampleWeek();
-    const me = v.people[v.me];
-    const score = me.score;
-    bumpFruit(me, 'coconut', 1); // yoga 1/2 → 2/2
-    expect(me.fruits.coconut).toMatchObject({ actual: 2, pct: 100, milli: me.fruits.coconut.maxMilli });
-    expect(me.score).toBeGreaterThan(score);
-    bumpFruit(me, 'pear', 1);
-    expect(me.fruits.pear.actual).toBe(6);
-    bumpFruit(me, 'pear', -1);
-    bumpFruit(me, 'coconut', -1);
-    expect(me.score).toBe(score);
   });
 });
