@@ -5,6 +5,7 @@
 import type { PersonId } from '#lib/types.ts';
 import type { SnapshotReply, SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
+import { compactRows } from '#lib/model/compact.ts';
 import type { DemoCalendar } from '#lib/model/state.ts';
 import { LIVE, getStoredMe, localKV, readJson, remove, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type GasResult } from './transport.ts';
@@ -17,6 +18,11 @@ export interface SnapshotCache {
   since: string | null;
   /** The server's data revision these rows were fetched under (absent: cached before revisions existed). */
   rev?: string;
+  /**
+   * Client time the row set last lost rows (compaction, or a full fetch). With `rev` it keys the model's payouts of
+   * past cutoffs (`reduce(…, rev)` counts rows up to a cutoff, which only holds while rows are only added).
+   */
+  rowsAt?: number;
   /** Server clock − client clock at the last fetch (ms). */
   skewMs: number;
   /** Client time of the last successful fetch (ms). */
@@ -107,7 +113,7 @@ export function loadCache(): Promise<SnapshotCache | null> {
     }
     const legacy = readJson<unknown>(localKV(), LIVE.legacyCache);
     if (!c && valid(legacy)) {
-      c = compact(legacy);
+      c = legacy;
       if (await put(c)) remove(localKV(), LIVE.legacyCache);
     } else if (legacy !== null && c) {
       remove(localKV(), LIVE.legacyCache); // migrated by an earlier tab
@@ -154,25 +160,25 @@ export function clearCache(): Promise<void> {
   return p;
 }
 
-/**
- * Health rows the model can never need again, dropped on merge (round 9 §2 item 2). The identity until
- * model/compact.ts lands (WS1); views must stay identical either way (cache.test.ts).
- */
-const compact = (c: SnapshotCache): SnapshotCache => c;
-
 type Reply = { me: PersonId; now: string; rev?: string; rows: Partial<SnapshotRows> };
 
-/** Merge a snapshot reply into the cache (pure; exported for tests). `prev` null: the reply is everything. */
+/**
+ * Merge a snapshot reply into the cache (pure; exported for tests). `prev` null: the reply is everything. Metrics of
+ * locked weeks are compacted to the rows the model still reads (model/compact.ts: ~90% fewer at year 3, views
+ * identical: round 9 §2 item 2).
+ */
 export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNow: number): SnapshotCache {
-  const base = prev && prev.me === reply.me ? prev.rows : emptyRows();
-  const rows = mergeRows(base, reply.rows);
+  const same = prev && prev.me === reply.me ? prev : null;
+  const merged = mergeRows(same?.rows ?? emptyRows(), reply.rows);
   const serverNow = Date.parse(reply.now);
-  const rev = reply.rev ?? (prev?.me === reply.me ? prev.rev : undefined);
-  return compact({
-    v: 1, me: reply.me, rows, since: maxAt(rows), ...(rev === undefined ? {} : { rev }),
+  const rows = Number.isNaN(serverNow) ? merged : compactRows(merged, serverNow);
+  const rev = reply.rev ?? same?.rev;
+  const rowsAt = !same || rows !== merged ? clientNow : (same.rowsAt ?? clientNow);
+  return {
+    v: 1, me: reply.me, rows, since: maxAt(merged), ...(rev === undefined ? {} : { rev }), rowsAt,
     skewMs: Number.isNaN(serverNow) ? (prev?.skewMs ?? 0) : serverNow - clientNow,
     fetchedAt: clientNow
-  });
+  };
 }
 
 let fetching: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
