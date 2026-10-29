@@ -57,6 +57,7 @@ const SPECS: Record<string, Spec> = {
   'phone/miles': [92, 'NookPhone_Nook_Miles_NH_Icon.png'],
   'phone/glyph-help': [96, 'Menu_Island_Life_101_NH_Icon.png'],
   'phone/glyph-chat': [96, 'Menu_Chat_Log_NH_Icon.png'],
+  'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
   // v4 trees: the hardwood in its four seasonal looks is the NH fruit tree (each bears one fruit kind);
   // A11: the seasonal sources are only 329×409, so they ship at full
   // resolution (never upscaled: the orchard draws them ≤ 104u ≈ 315 device px); summer has a big
