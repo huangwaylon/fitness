@@ -9,18 +9,22 @@
   import Villager from './Villager.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import LeafCoin from './LeafCoin.svelte';
+  import Kiroku, { type KirokuEntry } from './kiroku/Kiroku.svelte';
   import { week } from '#lib/client/week.svelte.ts';
+  import { ui } from '#lib/client/ui.svelte.ts';
   import { now } from './motion/clock.ts';
   import { fruitArt } from '#lib/client/assets.ts';
   import { setLanguage, setVillagerName, setVillager } from '#lib/client/actions.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
   import { t, i18n, formatSyncTime } from '#lib/i18n/index.ts';
 
-  type AppId = 'help' | 'villager' | 'lang' | 'sync';
+  type AppId = 'kiroku' | 'help' | 'villager' | 'lang' | 'sync';
   let { open = $bindable() }: { open: boolean } = $props();
 
   // `tile`: a full official NookPhone tile. Otherwise `glyph` (official) sits on our `fill`.
   const APPS: { id: AppId; tile?: string; glyph?: string; fill?: string }[] = [
+    // NH's Nook Miles app is the "what you did" log with stamp cards: きろく sits on its tile, first.
+    { id: 'kiroku', tile: 'phone/miles' },
     { id: 'help', glyph: 'phone/glyph-help', fill: 'var(--c-yuzu)' },
     { id: 'villager', tile: 'phone/passport' },
     { id: 'lang', glyph: 'phone/glyph-chat', fill: 'var(--c-mint)' },
@@ -28,6 +32,8 @@
   ];
 
   let app = $state<AppId | null>(null);
+  let kiroku: { back: () => boolean } | undefined = $state();
+  let entry = $state<KirokuEntry | null>(null);
   let clock = $state('');
   let name = $state('');
 
@@ -50,6 +56,7 @@
 
   /** U15: もどる puts focus back on the app tile it came from. */
   async function back() {
+    if (app === 'kiroku' && kiroku?.back()) return;
     const from = app;
     app = null;
     await nextTick();
@@ -60,7 +67,17 @@
     if (open) {
       tick();
       if (me) name = me.villagerName;
-    } else app = null;
+      // A shortcut (score ribbon, jar total) opens straight into きろく.
+      const e = ui.phoneEntry;
+      if (e) {
+        entry = { ...e };
+        app = 'kiroku';
+        ui.phoneEntry = null;
+      }
+    } else {
+      app = null;
+      entry = null;
+    }
   });
 
   function saveName() {
@@ -103,7 +120,9 @@
     </div>
   {:else}
     <div class="page">
-      {#if app === 'help' && view}
+      {#if app === 'kiroku'}
+        <Kiroku bind:this={kiroku} {entry} />
+      {:else if app === 'help' && view}
         <ul class="howto">
           <li class="card">
             <span class="hi"><Avatar person={view.me} villager={me?.villager} size={44} /></span>{t('help.row.checkin')}

@@ -28,7 +28,7 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
     known.add(ev.id); // the same event twice (sent + still queued, overlapping flushes) is one row (review r2 N2)
     const at = Math.max(ev.queuedAt + cache.skewMs, floor + 1);
     floor = at;
-    extra.push([new Date(at).toISOString(), cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
+    extra.push([new Date(at).toISOString(), ev.person ?? cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
   const rows = extra.length ? { ...cache.rows, events: [...cache.rows.events, ...extra] } : cache.rows;

@@ -1,0 +1,195 @@
+<script module lang="ts">
+  export type KirokuEntry = { tab: 'body' | 'money'; week?: string };
+</script>
+
+<script lang="ts">
+  // きろく (records) NookPhone app (history-and-editing.md): からだ | お金 pills, week cards → week → day → edit,
+  // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first.
+  // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
+  // queue (held 5 s with 取り消す) and recompute the island's ribbon and ≈¥ at once.
+  import { tick, untrack } from 'svelte';
+  import type { PersonId } from '#lib/types.ts';
+  import { dayDetail, historyWeeks, moneyLog, weekDetail, weekEdits } from '#lib/model/history.ts';
+  import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/ingest/sheet-api.ts';
+  import { week } from '#lib/client/week.svelte.ts';
+  import { addWorkout, editWorkout, fixCheckin, setMetric, undoTransfer, voidSpend, UNDO_MS } from '#lib/client/actions.ts';
+  import type { SendResult } from '#lib/client/week.svelte.ts';
+  import ChoiceList from '../ChoiceList.svelte';
+  import WeekList from './WeekList.svelte';
+  import WeekDetail from './WeekDetail.svelte';
+  import DayDetail from './DayDetail.svelte';
+  import MoneyLog from './MoneyLog.svelte';
+  import NumberPad from './NumberPad.svelte';
+  import { dayTitle, typeLabel } from './fmt.ts';
+  import { t } from '#lib/i18n/index.ts';
+
+  type Screen =
+    | { k: 'week'; wk: string }
+    | { k: 'day'; date: string }
+    | { k: 'metric'; date: string; metric: 'steps' | 'exercise_min' }
+    | { k: 'workout'; date: string; id: string }
+    | { k: 'add'; date: string };
+
+  let { entry = null }: { entry?: KirokuEntry | null } = $props();
+  let tab = $state<'body' | 'money'>('body');
+  let stack = $state<Screen[]>([]);
+  let root: HTMLElement | undefined = $state();
+
+  const m = $derived(week.model);
+  const view = $derived(week.view);
+  const me = $derived<PersonId>(view?.me ?? 'A');
+  const partner = $derived<PersonId>(view?.partner ?? 'B');
+  const order = $derived<PersonId[]>([me, partner]);
+  const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
+  const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
+  const top = $derived(stack.at(-1) ?? null);
+
+  // Apply an entry (ribbon → this week, jar total → お金) each time one arrives.
+  $effect(() => {
+    const e = entry;
+    if (!e) return;
+    untrack(() => {
+      tab = e.tab;
+      stack = e.week ? [{ k: 'week', wk: e.week === 'current' ? (view?.weekKey ?? '') : e.week }] : [];
+    });
+  });
+
+  async function go(s: Screen) {
+    stack = [...stack, s];
+    await tick();
+    root?.closest('dialog')?.scrollTo({ top: 0 });
+  }
+  /** ◀: one level up. False at the top (the phone goes back to its home screen). */
+  export function back(): boolean {
+    if (!stack.length) return false;
+    stack = stack.slice(0, -1);
+    return true;
+  }
+
+  function undoToast(text: string, r: SendResult) {
+    const undo = r.undo;
+    week.showToast(text, UNDO_MS, {
+      reaction: 'pleased',
+      hold: r.hold,
+      ...(undo ? { action: { label: t('common.undo'), run: () => undo() } } : {})
+    });
+  }
+
+  async function saveMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
+    back();
+    undoToast(t('kiroku.saved', { field: t(`kiroku.field.${metric}`) }), await setMetric(date, metric, value));
+  }
+  async function workoutChange(id: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
+    back();
+    undoToast(t('kiroku.savedWorkout', { label }), await editWorkout(id, change));
+  }
+  async function tickFix(date: string, habit: string, done: boolean) {
+    undoToast(t('kiroku.saved', { field: t(`habit.${habit}`) }), await fixCheckin(date, habit, done));
+  }
+  async function voidIt(id: string | number, label: string) {
+    undoToast(t('kiroku.spendVoided', { label }), await voidSpend(id));
+  }
+  async function undoIt(month: string) {
+    undoToast(t('kiroku.transferUndone', { month: t('kiroku.monthLabel', { y: month.slice(0, 4), m: Number(month.slice(5, 7)) }) }), await undoTransfer(month));
+  }
+
+  // Add a workout: pick a type, then the minutes on the keypad.
+  const ADD_TYPES = ['Traditional Strength Training', 'Pilates', 'Yoga', 'Outdoor Walk', 'Outdoor Run', 'Cycling', 'Swimming', 'Dance', 'High Intensity Interval Training'];
+  let addType = $state<string | null>(null);
+  async function saveAdd(date: string, min: number) {
+    const type = addType!;
+    addType = null;
+    back();
+    undoToast(t('kiroku.added', { label: typeLabel(type) }), await addWorkout(date, type, min));
+  }
+</script>
+
+<div class="kiroku" bind:this={root}>
+  {#if m && view}
+    {#if !top}
+      <div class="pills" role="tablist" aria-label={t('phone.app.kiroku')}>
+        {#each ['body', 'money'] as const as id (id)}
+          <button type="button" role="tab" class="pill" aria-selected={tab === id} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
+        {/each}
+      </div>
+      {#if tab === 'body'}
+        <WeekList weeks={historyWeeks(m.state, m.now)} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
+      {:else}
+        <MoneyLog log={moneyLog(m.state, m.now)} {me} {villagers} onvoid={voidIt} onundo={undoIt} />
+      {/if}
+    {:else if top.k === 'week'}
+      <WeekDetail d={weekDetail(m.state, top.wk, m.now)} edits={weekEdits(m.state, top.wk)} {order} {names} {villagers} now={m.now}
+        onday={(date) => go({ k: 'day', date })} />
+    {:else if top.k === 'day'}
+      {@const date = top.date}
+      <DayDetail d={dayDetail(m.state, date, m.now)} {me} {partner} {names} {villagers} now={m.now}
+        onmetric={(metric) => go({ k: 'metric', date, metric })} onworkout={(id) => go({ k: 'workout', date, id })}
+        onadd={() => { addType = null; go({ k: 'add', date }); }} ontick={(h, done) => tickFix(date, h, done)} />
+    {:else if top.k === 'metric'}
+      {@const s = top}
+      {@const d = dayDetail(m.state, s.date, m.now).people[me]}
+      <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={dayTitle(s.date)} max={METRIC_BOUNDS[s.metric]}
+        old={s.metric === 'steps' ? d.steps.value : d.minutes.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
+        onok={(v) => saveMetric(s.date, s.metric, v)} oncancel={back} />
+    {:else if top.k === 'workout'}
+      {@const s = top}
+      {@const w = dayDetail(m.state, s.date, m.now).people[me].workouts.find((x) => x.id === s.id)}
+      {#if w}
+        {@const label = typeLabel(w.type)}
+        <section class="card wcard">
+          <b>{label}</b><span class="money">{dayTitle(s.date)} · {t('kiroku.min', { n: w.durationMin })}</span>
+          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
+        </section>
+        <div class="wchoices">
+          <ChoiceList choices={[
+            ...(w.excluded ? [{ label: t('kiroku.include'), run: () => workoutChange(s.id, label, { excluded: false }) }] : [
+              ...(w.eligible && !w.strength ? [{ label: t('kiroku.count'), run: () => workoutChange(s.id, label, { strength: true }) }] : []),
+              ...(w.strength ? [{ label: t('kiroku.nocount'), run: () => workoutChange(s.id, label, { strength: false }) }] : []),
+              ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.id, label, { strength: null }) }] : []),
+              { label: t('kiroku.exclude'), run: () => workoutChange(s.id, label, { excluded: true }) }
+            ]),
+            { label: t('kiroku.cancel'), run: back }
+          ]} />
+        </div>
+      {/if}
+    {:else if top.k === 'add'}
+      {@const s = top}
+      {#if !addType}
+        <h3 class="addh">{t('kiroku.addWorkout')} <span class="money">{dayTitle(s.date)}</span></h3>
+        <div class="types" role="group" aria-label={t('kiroku.pickType')}>
+          {#each ADD_TYPES as ty (ty)}
+            <button type="button" class="type" onclick={() => (addType = ty)}>{typeLabel(ty)}</button>
+          {/each}
+        </div>
+      {:else}
+        <NumberPad label={typeLabel(addType)} sub={dayTitle(s.date)} old={null} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
+          onok={(v) => v >= MANUAL_WORKOUT_MIN.min && saveAdd(s.date, v)} oncancel={() => (addType = null)} />
+      {/if}
+    {/if}
+  {/if}
+</div>
+
+<style>
+  .kiroku { display: grid; gap: 12px; padding-bottom: 8px; }
+  .pills { display: flex; gap: 8px; justify-content: center; margin: -4px 0 4px; }
+  .pill {
+    appearance: none; border: 0; cursor: pointer; min-height: 40px; min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); background: color-mix(in srgb, var(--lip) 40%, transparent);
+  }
+  .pill[aria-selected='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); }
+  .wcard { display: grid; gap: 6px; justify-items: start; }
+  .wcard b { font-size: var(--fs-talk); }
+  .wcard .money { font-size: var(--fs-body); color: var(--text-soft); }
+  em { font-style: normal; font-size: var(--fs-s); font-weight: 700; padding: 3px 8px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
+  em.ok { background: var(--c-yuzu); color: var(--c-ink); }
+  .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
+  .addh { margin: 0 2px; font-size: var(--fs-talk); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .addh .money { font-size: var(--fs-body); color: var(--text-soft); }
+  .types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .type {
+    appearance: none; border: 0; cursor: pointer; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);
+    font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--c-ink); background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    word-break: auto-phrase;
+  }
+  .type:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--c-lip); }
+</style>
