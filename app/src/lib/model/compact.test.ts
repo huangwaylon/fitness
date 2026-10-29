@@ -9,8 +9,8 @@ import type { MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
 
 /** Everything the app shows, as one comparable value. */
-function views(rows: SnapshotRows, now: number) {
-  const s = reduce(rows);
+function views(rows: SnapshotRows, now: number, rev: string | null = null) {
+  const s = reduce(rows, null, rev);
   const today = new Date(now + 9 * 3600_000).toISOString().slice(0, 10);
   const wk = weekKeyOf(today);
   const weeks = [wk, addDays(wk, -7), addDays(wk, -14), addDays(wk, -35)];
@@ -50,6 +50,16 @@ describe('compactRows', () => {
       cache = compactRows(mergeRows(cache, fresh), t);
       expect(views(cache, t)).toBe(views(fresh, t));
       expect(views(cache, t + 3 * 86400_000)).toBe(views(fresh, t + 3 * 86400_000));
+    }
+  });
+
+  it('with a rev, payouts of past cutoffs are reused across States and stay exact as rows arrive and get compacted', () => {
+    let cache = until(all, nowAt(40, '12:00'));
+    for (const t of [nowAt(40, '12:00'), nowAt(41, '12:00'), nowAt(47, '20:00'), nowAt(50, '04:30'), nowAt(90, '09:00')]) {
+      const fresh = until(all, t);
+      cache = compactRows(mergeRows(cache, fresh), t);
+      expect(views(cache, t, 'r1')).toBe(views(fresh, t));
+      expect(views(fresh, t, 'r1')).toBe(views(fresh, t));
     }
   });
 
