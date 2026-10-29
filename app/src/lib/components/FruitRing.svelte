@@ -120,7 +120,7 @@
     position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; z-index: 20;
     background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s);
     padding: 7px 12px; border-radius: var(--r-chip); white-space: nowrap; pointer-events: none;
-    box-shadow: 0 3px 0 var(--c-lip);
+    box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     animation: if-pop var(--dur-base) var(--ease-bounce) both;
   }
   .tip::after {

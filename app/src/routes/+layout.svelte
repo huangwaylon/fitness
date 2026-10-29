@@ -19,6 +19,7 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
   import { startTheme } from '#lib/client/theme.svelte.ts';
+  import { jarTransition } from '#lib/client/jarTransition.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -38,6 +39,9 @@
   $effect(() => {
     ui.overlay = showHarvest;
   });
+
+  // 島 ⇄ 旅の壺: a zoom into the jar and back out of it.
+  jarTransition();
 
   onMount(() => {
     const stopTheme = startTheme();

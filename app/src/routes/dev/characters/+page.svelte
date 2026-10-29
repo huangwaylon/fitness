@@ -180,7 +180,7 @@
 <style>
   .gal { padding: 16px 12px 140px; max-width: 100%; }
   h1 { font-size: var(--fs-title); font-weight: 700; margin: 0; }
-  h2 { font-size: var(--fs-h2); font-weight: 700; margin: 26px 0 8px; }
+  h2 { font-size: var(--fs-talk); font-weight: 700; margin: 26px 0 8px; }
   .cap { color: var(--text-soft); font-size: var(--fs-s); margin: 4px 0 0; }
   section { border-bottom: 2px dashed var(--lip); padding-bottom: 12px; }
   .row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 14px 0 6px; }

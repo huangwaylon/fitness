@@ -34,14 +34,19 @@ bottom   [しずえ box, 2 lines (1)]   [はい] [いいえ] stacked right   ←
 - **Focus: the score ribbon**, a copy of the NH map's yellow title banner (yuzu, with ribbon tails). It shows `今週 43/100` (Fredoka 24; `今週` is dropped at 320). The fruit on my orchard is the only other progress cue.
 - **Jar plate:** a 12px cream nameplate with the total. It is the scene's only label. Tap the jar to open 旅の壺.
 - **One action:** 今夜のチェック, full width, leaf green. A pending question uses NH's **choice list** (cream bubbles stacked at the right), which takes the same slot.
-- **しずえ:** the NH dialogue box (wobbly cream box, tilted nameplate, ▼). It shows only for a pending question, harvest, payday, "grew" or a sync error.
-- **Moves:** デモ goes to the NookPhone status row. The clock is plain HUD text with no pill. The partner's progress goes to the partner sheet. SyncPill shows only when sync is not ok.
+- **しずえ:** the NH dialogue box (wobbly cream box, tilted nameplate, ▼). It shows only for a pending question, harvest, payday or "grew". It **overlays** the bottom band of the scene (the sea) and never changes the scene's height (round 6 F1). A question puts the box and the choice list in one row over the action's slot. The harvest uses the same box (no tail, no figure).
+- **Choice list:** cream pills stacked at the right; a yuzu ▶ cursor starts on the first option (はい), and hover, focus or ↑/↓ moves it.
+- **Sync errors are not しずえ's** (round 6 (c)). Offline or a failed refresh is a lasting state: the chip under the clock, `オフライン · タップで再接続`, tap = retry now (`同期中…` while it runs). A failed save (data may be lost) gets one banner, and my villager plays the sheepish R17 (`emit('sync-error')`).
+- **Moves:** デモ goes to the NookPhone status row. The clock is plain HUD text with no pill; at 320 it keeps the date (it fits; round 6 F11). The partner's progress goes to the partner sheet. The sync chip shows only when sync is not ok.
+- **Layout contract (A ↔ B):** on `main.island`, `--chrome-below` = gap + CTA + lip + bottom pad (the one fixed slot under the scene) and `--chrome-talk` = the band at the scene's bottom that the dialogue box may cover. Both are constants per viewport; the scene is `100dvh − --chrome-below` tall with the stage anchored to its bottom.
 - **Goes:** the dock. The Jar returns with NH's `◀ 島へ` pill.
 
 ## 4. Other screens
 
 - **旅の壺:** hero = the jar + **¥146,200** (44) + `今週 ≈ ¥5,860`. Then **two cream Nook Miles+ cards, one skin**: the trip (`money/miles-ticket`, 次は 沖縄, a bar, `あと ¥3,800`) and ごほうび財布 (`phone/nook-shopping`, 使う). Payday becomes an NH banner. No しずえ.
-- **Harvest:** the island stays visible behind a 30% tint, with the card at the bottom above the CTA.
+- **Harvest:** the island stays visible behind a cool tint (`rgba(58,72,134,.18)` fading in below the sky, so the clouds stay white and the sun yellow; `rgba(30,36,80,.16)` at night), with the dialogue box and the card at the bottom above the CTA. Confetti ≤ 1.2 s falls behind the box and the card, never over the numbers.
+- **Payday (Jar):** a quiet cream banner with the small official bells icon, body text, quieter than the total.
+- **島 ⇄ 旅の壺:** the jar squashes (R18), then a 360 ms eased zoom from the jar into the Jar page; `◀ 島へ` (or back) shrinks the page into the jar. View Transitions where supported, the same zoom as a CSS entrance otherwise, a short crossfade under reduced motion (`client/jarTransition.ts`).
 - **しまフォン / sheets:** official tiles (settings = `phone/island-designer`). One sheet skin: cream, radius 32, a lip, a nameplate title, one CTA.
 
 ## 5. Unified visual system
@@ -57,7 +62,7 @@ bottom   [しずえ box, 2 lines (1)]   [はい] [いいえ] stacked right   ←
 | Sky | 2-stop gradient. Flat sun/moon, 2 clouds. |
 | Jar | No ink outline. Flat glass, one highlight. |
 
-**Outline/shadow:** no strokes anywhere. Depth = one lip (12% darker bottom edge) + a ground ellipse `rgba(40,60,40,.18)`. Chrome = a 4px lip. `--sh-float` only on floating layers.
+**Outline/shadow:** no strokes anywhere. Depth = one lip (12% darker bottom edge) + a ground ellipse `rgba(40,60,40,.18)`. Chrome = a 4px lip everywhere (`--lip-h`; round 6 F9). `--sh-float` only on floating layers.
 
 **Radius:** `8` chips · `16` buttons · `24` cards/dialogue · `32` sheets/phone · `30%` tiles · pill only for the ribbon, plate and choices.
 

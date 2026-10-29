@@ -91,7 +91,7 @@
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
     position: relative; margin: 0; height: 36px; padding: 0 22px; display: flex; align-items: center; gap: 10px;
-    background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); box-shadow: 0 3px 0 var(--c-yuzu-lip);
+    background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip);
   }
   .ribbon::before, .ribbon::after {
     content: ''; position: absolute; z-index: -1; top: 9px; width: 24px; height: 30px; background: var(--c-yuzu-lip);

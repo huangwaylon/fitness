@@ -43,7 +43,7 @@
   .who { flex: 1; min-width: 0; display: grid; gap: 4px; }
   .who h2 { font-size: var(--fs-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sync { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .fruits { display: grid; grid-template-columns: repeat(4, 1fr); justify-items: center; gap: 10px 4px; padding: 14px 6px; margin-bottom: 20px; background: var(--c-cream); color: var(--c-ink); box-shadow: 0 4px 0 var(--c-lip); }
+  .fruits { display: grid; grid-template-columns: repeat(4, 1fr); justify-items: center; gap: 10px 4px; padding: 14px 6px; margin-bottom: 20px; background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
   @media (max-width: 359px) { .fruits { grid-template-columns: repeat(2, 1fr); } }
   @media (max-height: 700px), (max-width: 359px) {
     .head :global(.av) { --s: 56px !important; }

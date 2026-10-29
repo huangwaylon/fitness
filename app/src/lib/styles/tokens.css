@@ -35,7 +35,8 @@
   --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-tile:30%; --r-pill:999px;
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
-  --sh-lip:0 4px 0 var(--lip);
+  --lip-h:4px;      /* the one lip depth (F9) */
+  --sh-lip:0 var(--lip-h) 0 var(--lip);
   --sh-float:0 12px 32px rgba(74, 58, 44, .18);
 
   /* ---------- motion ---------- */
@@ -59,10 +60,7 @@
   --talk-lines: 2;    /* dialogue box lines (1 compact) */
   --tile: 64px; --tile-gap: 18px;  /* しまフォン grid */
 
-  /* ---------- aliases still read by the scene (Builder A); no new colours, delete once unused ---------- */
-  --c-bubble: var(--c-cream); --c-pill-edge: var(--c-lip); --c-ink-talk: var(--c-ink-soft);
-  --c-leaf-soft: color-mix(in srgb, var(--c-leaf) 30%, var(--c-cream)); --c-leaf-ink: var(--c-ink);
-  --tag-apricot: var(--c-yuzu); --tag-plum: var(--c-mint); --fs-h2: var(--fs-talk);
+  /* ---------- the ground ellipse under villagers / props (v5 §5 depth rule; also read outside .if-scene) ---------- */
   --sh-ground: rgba(40, 60, 40, .18);
 
   color-scheme: light;

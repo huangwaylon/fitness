@@ -24,8 +24,6 @@
   let checkinOpen = $state(false);
   let partnerOpen = $state(false);
   let phoneOpen = $state(false);
-  /** The chrome below the scene (CTA, plus しずえ when she has news): the scene takes the rest. */
-  let belowH = $state(0);
   /** The partner's high-five toast (their icon, not しずえ's; U6). */
   let fiveToast = $state<{ text: string; id: number } | null>(null);
   /** My fruit % when the check-in sheet opened, to name the fruit that actually grew (U7). */
@@ -130,29 +128,28 @@
 </script>
 
 {#if view && me}
-  <main class="island" class:covered={ui.overlay} style:--below="{belowH}px">
+  <main class="island" class:covered={ui.overlay} class:asking={!!pending}>
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         paused={checkinOpen || partnerOpen || phoneOpen} />
       <Hud score={me.score} today={view.today} bind:phoneOpen />
     </div>
 
-    <div class="below" bind:offsetHeight={belowH}>
-      {#if news}
-        <div class="news" class:ask={!!pending}>
-          <Bubble text={news} host={false} />
-          {#if pending}
-            <ChoiceList choices={[{ label: t('common.yes'), run: () => answer(true) }, { label: t('common.no'), run: () => answer(false) }]} />
-          {/if}
-        </div>
-      {/if}
-      {#if !pending}
-        <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin}>
-          {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
-          {:else if checkedIn}{t('island.checkinLeft', { n: habitCount - ticksToday })}
-          {:else}{t('island.checkin')}{/if}
-        </button>
-      {/if}
+    <!-- F1: しずえ's box floats over the bottom of the scene (the sea band); it never changes the scene's height. -->
+    {#if news}
+      <div class="news" class:ask={!!pending}>
+        <Bubble text={news} host={false} />
+        {#if pending}
+          <ChoiceList choices={[{ label: t('common.yes'), run: () => answer(true) }, { label: t('common.no'), run: () => answer(false) }]} />
+        {/if}
+      </div>
+    {/if}
+    <div class="below">
+      <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin} inert={!!pending} aria-hidden={pending ? 'true' : undefined}>
+        {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
+        {:else if checkedIn}{t('island.checkinLeft', { n: habitCount - ticksToday })}
+        {:else}{t('island.checkin')}{/if}
+      </button>
     </div>
   </main>
   <CheckinSheet bind:open={checkinOpen} onclose={celebrate} />
@@ -163,21 +160,34 @@
 {/if}
 
 <style>
-  /* v5 §3: the scene takes everything the chrome below leaves (the sky absorbs it); nothing scrolls. */
+  /* v5 §3 + F1: the chrome below the scene is ONE fixed slot (the action, 56 / 48 + its lip), so the scene's
+     height never changes. しずえ's box overlays the scene's bottom band (--chrome-talk tall, over the sea) when
+     she has news; a question puts the box and NH's choice list in one row over the action's slot instead.
+     Contract with the scene (Builder A): --chrome-below and --chrome-talk are constants per viewport. */
   .island {
-    --scene-h: max(300px, calc(100dvh - var(--below)));
+    --chrome-below: calc(var(--gap) + var(--cta-h) + var(--lip-h) + var(--pad-bottom));
+    --chrome-talk: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px + 18px + var(--gap));
+    --scene-h: max(300px, calc(100dvh - var(--chrome-below)));
     position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
     display: flex; flex-direction: column;
   }
   .top { position: relative; height: var(--scene-h); flex: none; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
   .below {
-    display: grid; gap: var(--gap); margin-top: auto;
-    padding: var(--gap) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
+    height: var(--chrome-below); flex: none; margin-top: auto;
+    padding: var(--gap) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
-  .below > .btn { margin-bottom: 4px; }
+  .asking .below .btn { visibility: hidden; }
   /* Under the harvest only the island shows through the tint: no HUD, no dialogue, no action. */
-  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below { visibility: hidden; }
-  .news { display: grid; }
-  /* A question: the dialogue box and the choices stacked on its right share one row (the action's slot). */
-  .news.ask { grid-template-columns: 1fr auto; gap: 10px; align-items: end; padding-bottom: 4px; --talk-lines: 2; }
+  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below, .covered .news { visibility: hidden; }
+  .news {
+    position: absolute; z-index: 9; left: 0; right: 0; bottom: var(--chrome-below); display: grid;
+    padding: 0 calc(var(--side) + var(--safe-right)) var(--gap) calc(var(--side) + var(--safe-left));
+    pointer-events: none;
+  }
+  .news > :global(*) { pointer-events: auto; }
+  /* A question: the box and the choices stacked on its right share one row, over the action's slot. */
+  .news.ask {
+    bottom: 0; grid-template-columns: 1fr auto; gap: 10px; align-items: end; --talk-lines: 2;
+    padding-bottom: calc(var(--pad-bottom) + var(--lip-h));
+  }
 </style>
