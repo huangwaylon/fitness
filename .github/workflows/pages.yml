@@ -42,6 +42,11 @@ jobs:
         env:
           VITE_GAS_URL: ${{ vars.GAS_URL }}
           BASE_PATH: /${{ github.event.repository.name }}
+      # The demo smoke test (tap, undo, harvest, きろく edit) against the build just made, before it deploys.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:

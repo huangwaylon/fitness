@@ -3,3 +3,5 @@ node_modules/
 .env
 build-pages/
 apps-script/.clasp.json
+test-results/
+playwright-report/
