@@ -43,7 +43,7 @@ export class DemoBackend implements Backend {
       this.#cache = demoCache(Date.now(), this.#me);
       remove(localKV(), DEMO.legacyEvents);
       this.#events = this.#load();
-      addEventListener('storage', (e) => {
+      globalThis.window?.addEventListener('storage', (e) => {
         if (e.key !== DEMO.events) return;
         this.#events = this.#load();
         this.#host.changed();

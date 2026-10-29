@@ -16,7 +16,8 @@ iOS Shortcuts (health sync, gym Arrive/Leave) and the PWA (check-ins, harvest, p
 | `app/src/lib/model/` | Compute-on-read: sheet rows → WeekView (scores, ¥, harvest, jar); golden fixtures frozen from the old server |
 | `app/src/lib/config/rules.ts` | The rules as data, versioned by week ([ADR 0017](docs/decisions/0017-round-4-rule-changes-and-rule-versions.md)) |
 | `app/src/lib/scoring/` | Pure scoring: targets, visits, score, payout (calendar helpers are in `app/src/lib/time/`) |
-| `app/src/lib/client/` | Apps Script client (`gas.ts`: keys, write queue, snapshot cache), stores, actions |
+| `app/src/lib/sync/` | Apps Script client: storage key registry, transport, write queue, IndexedDB snapshot cache (`rev` resync, compaction), pairing |
+| `app/src/lib/store/` | The week store, user actions, cache + queue → model, and its two backends (live, `demo/`) |
 | `app/src/lib/contract/` | Dependency-free sheet/API contract types and workout labels (bundled into Apps Script); the Shortcut parser is `app/gas/parse.ts` |
 | `app/gas/` → `app/apps-script/` | Apps Script source (TS) and its bundled `Code.js` (`npm run gas:build`) |
 | `app/scripts/` | `fetch-assets` (official art), `bench-model` (`npm run bench`: a year of rows through the model) |
