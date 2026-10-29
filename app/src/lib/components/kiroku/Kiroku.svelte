@@ -83,40 +83,40 @@
     else root?.closest('dialog')?.focus();
   }
 
-  async function saveMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
+  function saveMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
     back();
     void refocus(metric);
-    undoToast(t('kiroku.saved', { field: t(`kiroku.field.${metric}`) }), await setMetric(date, metric, value));
+    undoToast(t('kiroku.saved', { field: t(`kiroku.field.${metric}`) }), setMetric(date, metric, value));
   }
-  async function workoutChange(id: string, date: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
+  function workoutChange(id: string, date: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
     back();
     void refocus(`w:${id}`);
-    undoToast(t('kiroku.savedWorkout', { label }), await editWorkout(id, date, change));
+    undoToast(t('kiroku.savedWorkout', { label }), editWorkout(id, date, change));
   }
-  async function tickFix(date: string, habit: string, done: boolean) {
-    undoToast(t('kiroku.saved', { field: t(`habit.${habit}`) }), await fixCheckin(date, habit, done));
+  function tickFix(date: string, habit: string, done: boolean) {
+    undoToast(t('kiroku.saved', { field: t(`habit.${habit}`) }), fixCheckin(date, habit, done));
   }
   /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
   function askVoid(id: string | number, label: string, yen: number, refund: boolean) {
     void go({ k: 'void', id, label, yen, refund });
   }
-  async function voidIt(id: string | number, label: string) {
+  function voidIt(id: string | number, label: string) {
     back();
-    undoToast(t('kiroku.spendVoided', { label }), await voidSpend(id));
+    undoToast(t('kiroku.spendVoided', { label }), voidSpend(id));
   }
-  async function undoIt(month: string) {
-    undoToast(t('kiroku.transferUndone', { month: t('kiroku.monthLabel', { y: month.slice(0, 4), m: Number(month.slice(5, 7)) }) }), await undoTransfer(month));
+  function undoIt(month: string) {
+    undoToast(t('kiroku.transferUndone', { month: t('kiroku.monthLabel', { y: month.slice(0, 4), m: Number(month.slice(5, 7)) }) }), undoTransfer(month));
   }
 
   // Add a workout: pick a type, then the minutes on the keypad.
   const ADD_TYPES = ['Traditional Strength Training', 'Pilates', 'Yoga', 'Outdoor Walk', 'Outdoor Run', 'Cycling', 'Swimming', 'Dance', 'High Intensity Interval Training'];
   let addType = $state<string | null>(null);
-  async function saveAdd(date: string, min: number) {
+  function saveAdd(date: string, min: number) {
     const type = addType!;
     addType = null;
     back();
     void refocus('add');
-    undoToast(t('kiroku.added', { label: typeLabel(type) }), await addWorkout(date, type, min));
+    undoToast(t('kiroku.added', { label: typeLabel(type) }), addWorkout(date, type, min));
   }
 </script>
 

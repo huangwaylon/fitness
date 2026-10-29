@@ -43,7 +43,6 @@
   const nextRung = $derived(rung ? RUNGS.find((r) => r.yen > rung.yen) ?? null : null);
 
   let step = $state<'tally' | 'rung' | 'done'>('tally');
-  let busy = $state(false);
 
   /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
   const after = $derived(view.jar.totalYen);
@@ -71,10 +70,8 @@
   });
 
   function drop() {
-    busy = true;
     onkeep?.();
     const r = confirmHarvest();
-    busy = false;
     if (r.ok) {
       step = 'done';
       countUp();
@@ -138,7 +135,7 @@
           </div>
         </section>
         {#if rung}<button type="button" class="btn" onclick={() => (step = 'rung')}>{t('common.next')}</button>
-        {:else}<button type="button" class="btn" disabled={busy} onclick={drop}>{t('harvest.drop')}</button>{/if}
+        {:else}<button type="button" class="btn" onclick={drop}>{t('harvest.drop')}</button>{/if}
       {:else if step === 'rung' && rung}
         <section class="card rung">
           <div class="hero">
@@ -150,7 +147,7 @@
           <span class="hero-num">{formatYen(rung.yen)}</span>
           {#if nextRung}<span class="mini">{t('harvest.nextRung', { place: t('rung.' + nextRung.key), yen: formatYen(nextRung.yen) })}</span>{/if}
         </section>
-        <button type="button" class="btn" disabled={busy} onclick={drop}>{t('harvest.drop')}</button>
+        <button type="button" class="btn" onclick={drop}>{t('harvest.drop')}</button>
       {:else if step === 'done'}
         <section class="card done" role="status">
           <span class="djar"><span class="get" aria-hidden="true"><Emote id="mark-sparkle" bare hold size={28} /></span><Jar fill={oldFill} band={filled ? newFill : oldFill} width="80px" /></span>
