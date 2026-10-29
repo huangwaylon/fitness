@@ -13,6 +13,7 @@
   import { ui } from '#lib/client/ui.svelte.ts';
   import { toasts } from '#lib/client/toast.svelte.ts';
   import ToastHost from './ToastHost.svelte';
+  import { keyboardInset } from './keyboardInset.ts';
 
   interface Props {
     open: boolean;
@@ -26,7 +27,6 @@
   }
   let { open = $bindable(), label, title, variant = 'paper', onclose, children, footer }: Props = $props();
   let dlg: HTMLDialogElement | undefined = $state();
-  let kb = $state(0);
   const id = ++seq;
   /** The topmost open sheet hosts the banner (round 7 F1). */
   const hosts = $derived(open && ui.sheets.at(-1) === id);
@@ -50,28 +50,6 @@
     } else if (!open && dlg.open) dlg.close();
   });
 
-  // Keyboard height while open: innerHeight − visualViewport.height − offsetTop.
-  $effect(() => {
-    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
-    if (!open || !vv) return;
-    const update = () => (kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop)));
-    update();
-    vv.addEventListener('resize', update);
-    vv.addEventListener('scroll', update);
-    return () => {
-      vv.removeEventListener('resize', update);
-      vv.removeEventListener('scroll', update);
-      kb = 0;
-    };
-  });
-
-  function focusin(e: FocusEvent) {
-    const el = e.target as HTMLElement;
-    if (!el.matches('input, textarea, select')) return;
-    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    setTimeout(() => el.scrollIntoView({ block: 'center', behavior }), 300);
-  }
-
   /** The native close event (Esc, backdrop, grabber, or `open = false`). */
   function closed() {
     open = false;
@@ -83,8 +61,8 @@
   }
 </script>
 
-<dialog bind:this={dlg} class={variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label} style:--kb="{kb}px"
-  onclose={closed} onclick={backdrop} onfocusin={focusin}>
+<dialog bind:this={dlg} class={variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
+  onclose={closed} onclick={backdrop} {@attach open && keyboardInset}>
   {#if open}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
@@ -120,7 +98,7 @@
   .grabber:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
   .title { display: flex; justify-content: center; margin: 2px 0 18px; }
   .foot {
-    position: sticky; bottom: 0; z-index: 2; transform: translateY(calc(-1 * var(--kb)));
+    position: sticky; bottom: 0; z-index: 2; transform: translateY(calc(-1 * var(--kb, 0px)));
     padding: 10px calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 12px) calc(var(--side) + var(--safe-left));
     background: linear-gradient(transparent, var(--surface) 30%);
   }

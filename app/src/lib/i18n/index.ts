@@ -19,7 +19,7 @@ function interpolate(msg: string, params?: Params): string {
 }
 
 /** True when the key exists in the current (or default) catalog. */
-function has(key: string, locale: Locale = i18n.locale): boolean {
+export function has(key: string, locale: Locale = i18n.locale): boolean {
   return key in catalogs[locale] || key in catalogs.ja;
 }
 

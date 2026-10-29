@@ -44,7 +44,7 @@
       <div class="who"><Avatar person={p} villager={villagers[p]} size={32} /><span class="nm">{names[p]}</span><b class="money sc">{pp.score}</b></div>
       {#each FRUITS as k (k)}
         <div class="bar" title={t(`fruit.${k}`)}>
-          <OfficialArt key={fruitArt(k)} size={18} />
+          <OfficialArt key={fruitArt(k)} size={18} /><span class="sr-only">{t(`fruit.${k}`)}</span>
           <span class="track"><span class="fill" style:width="{pp.fruits[k].pct}%"></span></span>
           <span class="num money">{fmtActual(k, pp.fruits[k].actual)}/{fmtActual(k, pp.fruits[k].target)}</span>
         </div>
