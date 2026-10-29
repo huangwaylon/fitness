@@ -45,7 +45,7 @@ the existing deployment**, never a new deployment).
 
 ```sh
 curl -sSL "$GAS_URL" -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"health"}'
-# → {"ok":true,"build":"754d228827a3"}
+# → {"ok":true,"build":"<12 hex>"}
 ```
 
 | Reply | Meaning |
