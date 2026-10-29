@@ -391,8 +391,14 @@ const ON_EVENT: Record<EventType, OnEvent> = {
 };
 
 /** Latest entry with `at ≤ t`, or undefined. Lists are in ascending `at`. */
-export function latestAt<T>(list: Timed<T>[] | undefined, t: number): T | undefined {
+export function latestTimed<T>(list: Timed<T>[] | undefined, t: number): Timed<T> | undefined {
   if (!list) return undefined;
-  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t) return list[i].v;
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t) return list[i];
   return undefined;
 }
+
+/** The value of the latest entry with `at ≤ t`, or undefined. */
+export const latestAt = <T>(list: Timed<T>[] | undefined, t: number): T | undefined => latestTimed(list, t)?.v;
+
+/** Ingested and hand-added workouts of a person. */
+export const allWorkouts = (s: State, p: PersonId): WorkoutRec[] => [...s.workouts[p], ...s.manualWorkouts[p]];

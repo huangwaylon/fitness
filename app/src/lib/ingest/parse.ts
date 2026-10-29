@@ -81,7 +81,7 @@ function shortcutsDefaultDate(v: string): string | null {
 }
 
 /** `2026-11-02 07:00:00 +0900`, ISO 8601, or a bare date → ISO 8601 with offset (no offset → Tokyo); null if unparseable. */
-export function toIsoDate(s: string): string | null {
+function toIsoDate(s: string): string | null {
   const m = s.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2})?)(?:\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?$/);
   if (m) {
     const time = m[2].length === 5 ? `${m[2]}:00` : m[2];
@@ -123,7 +123,7 @@ export function canonicalWorkoutType(name: string): string {
 }
 
 /** True if we have no mapping for a non-ASCII name. */
-export function isUnknownLocalisedType(name: string): boolean {
+function isUnknownLocalisedType(name: string): boolean {
   return /[^\x00-\x7F]/.test(name) && canonicalWorkoutType(name) === name.trim().replace(/\s+/g, ' ');
 }
 

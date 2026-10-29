@@ -27,7 +27,7 @@ import type { PersonId, WeekView } from '#lib/types.ts';
 import { buildWeekView, paidAt, settledWeeks } from './week.ts';
 import { reduce } from './state.ts';
 import { WORKOUT_TYPES, workoutLabel } from './labels.ts';
-import type { SnapshotRows } from './snapshot.ts';
+import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
 import rowsJson from './fixtures/timeline-rows.json' with { type: 'json' };
 import viewsJson from './fixtures/timeline-views.json' with { type: 'json' };
 import digestsJson from './fixtures/timeline-digests.json' with { type: 'json' };
