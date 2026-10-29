@@ -1,5 +1,5 @@
 # 0009 — No sleep tracking: four fruits
-**Status:** Accepted (round 4; user input). Amends 0002.
+**Status:** Accepted (round 4; user input). Amends [0002](0002-one-scoring-model.md). Step days are now 4 of 7 and Peach also counts step-derived minutes: [0017](0017-round-4-rule-changes-and-rule-versions.md).
 
 **Context.** Neither partner wears the Watch to bed, so sleep can't be measured without manual work.
 
