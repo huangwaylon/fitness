@@ -10,6 +10,7 @@ import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
+import { localKV, SCENE, sessionKV, writeRaw, type KV } from '#lib/sync/storage.ts';
 
 interface Ctx {
   view: () => WeekView;
@@ -25,11 +26,21 @@ const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
 
 /** True the first time `key` is seen today on this device. */
 function once(key: string): boolean {
-  const k = `if-${key}`;
+  const k = SCENE.beat(key);
   const day = dayKey();
-  if (localStorage.getItem(k) === day) return false;
-  localStorage.setItem(k, day);
+  const kv = localKV();
+  if (safeGet(kv, k) === day) return false;
+  writeRaw(kv, k, day);
   return true;
+}
+
+/** Storage that throws on access (Safari, blocked) reads as empty: the beat plays, nothing breaks. */
+function safeGet(kv: KV | null, k: string): string | null {
+  try {
+    return kv?.getItem(k) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export class IslandLife {
@@ -163,10 +174,10 @@ export class IslandLife {
     // 4 min, at most 3 per session.
     const balloonTry = (ms: number) =>
       this.later(() => {
-        const n = Number(sessionStorage.getItem('if-balloon') ?? 0);
+        const n = Number(safeGet(sessionKV(), SCENE.balloons) ?? 0);
         if (n >= 3) return;
         if (ctx.day() && !ctx.covered() && !this.hidden && !reducedMotion() && !this.balloon) {
-          sessionStorage.setItem('if-balloon', String(n + 1));
+          writeRaw(sessionKV(), SCENE.balloons, String(n + 1));
           this.balloon = true;
           balloonTry(240_000);
         } else balloonTry(30_000);
