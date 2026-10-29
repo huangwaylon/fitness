@@ -16,5 +16,5 @@ export default defineConfig({
   ],
   // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS.
   build: { assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined) },
-  test: { include: ['src/**/*.test.ts'] }
+  test: { include: ['src/**/*.test.ts', 'gas/**/*.test.ts'] }
 });
