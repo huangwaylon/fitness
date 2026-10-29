@@ -3,9 +3,10 @@
 import type { LocalDate, PersonId, WeekKey } from '#lib/types.ts';
 import { CALIBRATION_WEEKS, CUTOFFS, LIMITS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
-import { addDays, targetsFor, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
+import { localDateOfMs } from '#lib/time/dates.ts';
 import { parseInstant } from '#lib/time/dates.ts';
-import { seasonsByStart } from '#lib/scoring/targets.ts';
+import { habitsFor, seasonsByStart } from '#lib/scoring/targets.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
   DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, type EventType, type SnapshotRows
@@ -22,12 +23,20 @@ export function jstMs(date: LocalDate, hour: number, minute: number): number {
   return Date.parse(`${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+09:00`);
 }
 /** Sunday 19:30 JST of the week: the harvest opens and the first payout is taken. */
-export const provisionalMs = (wk: WeekKey): number => jstMs(addDays(wk, 6), CUTOFFS.provisional.hour, CUTOFFS.provisional.minute);
+const cutoffMemo = (fn: (wk: WeekKey) => number) => {
+  const memo = new Map<WeekKey, number>();
+  return (wk: WeekKey): number => {
+    let t = memo.get(wk);
+    if (t === undefined) memo.set(wk, (t = fn(wk)));
+    return t;
+  };
+};
+export const provisionalMs = cutoffMemo((wk) => jstMs(addDays(wk, 6), CUTOFFS.provisional.hour, CUTOFFS.provisional.minute));
 /** Wednesday 04:00 JST after the week: late data can still raise the payout up to here, then the week locks. */
-export const finalMs = (wk: WeekKey): number => jstMs(addDays(wk, 9), CUTOFFS.final.hour, CUTOFFS.final.minute);
+export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.hour, CUTOFFS.final.minute));
 
 /**
- * The demo (`?demo`, lib/client/demoRows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
+ * The demo (`?demo`, lib/store/demo/rows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
  * week and no calibration weeks. It travels with the state (`reduce(rows, calendar)`), never as a module global
  * (round 7 L2); live state always has `calendar: null`.
  */
@@ -50,7 +59,7 @@ export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? SEASON_FI
 /** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first paid week never lock. */
 export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
 
-export const localDateAt = (ms: number): LocalDate => toLocalDate(new Date(ms).toISOString());
+export const localDateAt = localDateOfMs;
 
 /**
  * Open for edits at t (history-and-editing.md §4.3): the day has happened, and its week has not reached its
@@ -130,6 +139,30 @@ export interface State {
   lastSync: Record<PersonId, string | null>;
   /** The demo's calendar; null for real data. */
   calendar: DemoCalendar | null;
+  /**
+   * The sheet's data revision (`snapshot.rev`, sheets-architecture.md §2.1) the rows were cached under, or null. With
+   * it, payouts of past cutoffs are reused across States (`settleWeek`), since rows stamped before a past time never
+   * change while `rev` stays the same.
+   */
+  rev: string | null;
+  /** Server `at`s of the accepted-for-indexing rows, ascending, per tab (`rowsUpTo`). */
+  ats: number[][];
+}
+
+/** How many rows are stamped at or before t: with `rev`, identifies the rows a cutoff's payout depends on. */
+export function rowsUpTo(s: Pick<State, 'ats'>, t: number): number {
+  let n = 0;
+  for (const list of s.ats) {
+    let lo = 0;
+    let hi = list.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (list[mid] <= t) lo = mid + 1;
+      else hi = mid;
+    }
+    n += lo;
+  }
+  return n;
 }
 
 /** Sheets may hand dates back as full ISO instants; normalise to a Tokyo `YYYY-MM-DD`. */
@@ -182,7 +215,7 @@ const push = <K, V>(m: Map<K, V[]>, k: K, v: V) => {
 };
 
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
-export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | null = null): State {
+export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | null = null, rev: string | null = null): State {
   const r = 'rows' in rows ? rows.rows : rows;
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
@@ -205,7 +238,14 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     highfives: [],
     prefs: { A: {}, B: {} },
     lastSync: { A: null, B: null },
-    calendar
+    calendar,
+    rev: calendar ? null : rev,
+    ats: []
+  };
+  const byAt = <T extends readonly unknown[]>(rows: T[]) => {
+    const out = sortedByAt(rows);
+    s.ats.push(out.map((x) => x.at));
+    return out;
   };
   const c: Ctx = { s, workoutById: new Map(), arriveById: new Map() };
   const lastSyncMs: Record<PersonId, number> = { A: -Infinity, B: -Infinity };
@@ -216,7 +256,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     }
   };
 
-  for (const { r: row, at } of sortedByAt(r.metrics ?? [])) {
+  for (const { r: row, at } of byAt(r.metrics ?? [])) {
     const [iso, person, d, metric, v] = row;
     const date = normDate(d);
     const value = num(v);
@@ -225,7 +265,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     synced(person, at, String(iso));
   }
 
-  for (const { r: row, at } of sortedByAt(r.workouts ?? [])) {
+  for (const { r: row, at } of byAt(r.workouts ?? [])) {
     const [iso, person, id, d, type, start, end, dur, hr] = row;
     const date = normDate(d);
     const durationMin = num(dur);
@@ -238,7 +278,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   }
 
   let n = 0;
-  for (const { r: row, at } of sortedByAt(r.presence ?? [])) {
+  for (const { r: row, at } of byAt(r.presence ?? [])) {
     const [, person, placeKey, event, eventAtRaw] = row;
     const place = PLACES.find((p) => p.key === placeKey);
     if (!place || place.person !== person || (event !== 'arrive' && event !== 'leave')) continue;
@@ -252,7 +292,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     if (event === 'arrive' && !c.arriveById.has(rec.id)) c.arriveById.set(rec.id, { person, rec });
   }
 
-  for (const { r: row, at } of sortedByAt(r.events ?? [])) {
+  for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
     // Old `share` rows (the removed privacy toggles) and other unknown types are ignored.
@@ -297,7 +337,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
       // A fix from きろく: any day of an open week (history-and-editing.md §4.1).
       if (!editableAt(date, at)) return;
     } else if (date > today || date < addDays(today, -LIMITS.checkinBackDays) || isLockedAt(s, weekKeyOf(date), at)) return;
-    if (!targetsFor(person, weekKeyOf(date)).habits.includes(habit)) return;
+    if (!habitsFor(person, weekKeyOf(date)).includes(habit)) return;
     s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
   },
   confirm({ s, workoutById, arriveById }, person, at, d) {

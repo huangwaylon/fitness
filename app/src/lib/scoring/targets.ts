@@ -26,6 +26,14 @@ export function targetsFor(person: PersonId, weekKey: WeekKey): PersonTargets {
   return { ...t, habits: [...t.habits] as [string, string, string] };
 }
 
+/** The week's three habits, without the copy (hot in `reduce`: one call per check-in). */
+export function habitsFor(person: PersonId, weekKey: WeekKey): readonly string[] {
+  const k = `${person}|${weekKey}`;
+  let t = cache.get(k);
+  if (!t) cache.set(k, (t = computeTargets(person, weekKey)));
+  return t.habits;
+}
+
 function computeTargets(person: PersonId, weekKey: WeekKey): PersonTargets {
   const wk = weekKeyOf(weekKey);
   const sorted = seasonsByStart();
