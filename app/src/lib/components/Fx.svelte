@@ -94,9 +94,8 @@
       <ellipse cx="3.4" cy="9" rx="1.2" ry="2" fill="#fff" opacity=".8" />
     </svg>
   {:else if kind === 'zzz'}
-    {#each [12, 15, 18] as s, i (i)}
-      <span class="p z" style:font-size="calc({s}px * var(--k))" style:animation-delay="{i * 600}ms">z</span>
-    {/each}
+    <!-- one looping element per sleeper (v5 §6 idle budget) -->
+    <span class="p z" style:font-size="calc(15px * var(--k))">zZ</span>
   {:else if kind === 'confetti'}
     {#each pieces as p, i (i)}
       <span class="p c" class:round={p.round} style:background={p.c} style:--dx="{p.dx}px" style:--up="{p.up}px"

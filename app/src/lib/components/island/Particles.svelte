@@ -1,7 +1,7 @@
 <script lang="ts">
   // Seasonal particles (style guide §S.9), transform/opacity only, ONE animation each (the side-to-side
-  // flutter is folded into the fall keyframes; P5: the scene + particles stay ≤ 24 running animations): cherry-blossom-week petals,
-  // autumn maple leaves, winter snow (+ one big flake every 45 s), all official art; summer nights get
+  // flutter is folded into the fall keyframes; v5 §6: ≤ 3 particles in the idle budget): cherry-blossom
+  // petals, autumn maple leaves (2, 3 in festival week), winter snow (3), all official art; summer nights get
   // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size
   // container, so the fall distance is in cqh of the whole scene.
   import OfficialArt from '../OfficialArt.svelte';
@@ -24,7 +24,7 @@
   const kind = $derived(
     foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
   );
-  const count = $derived(kind === 'petal' || kind === 'maple-leaf' ? (festival ? 6 : 5) : kind === 'snowflake' ? 3 : 0);
+  const count = $derived(kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);
   const items = $derived.by(() => {
     const r = rng(season.length * 97 + count);
     const [d0, d1] = kind === 'snowflake' ? [12, 18] : kind === 'maple-leaf' ? [10, 15] : [9, 14];
@@ -40,7 +40,7 @@
       };
     });
   });
-  const FIREFLIES = [[60, 200], [170, 230], [268, 222], [330, 170], [104, 132]];
+  const FIREFLIES = [[60, 200], [268, 222], [104, 132]];
 </script>
 
 {#if mode === 'fall' && kind}
@@ -50,9 +50,6 @@
         <OfficialArt key={seasonArt(kind)} size="{p.size.toFixed(1)}px" eager />
       </span>
     {/each}
-    {#if kind === 'snowflake'}
-      <span class="p big"><OfficialArt key={seasonArt('snowflake-large')} size="22px" /></span>
-    {/if}
   </div>
 {:else if mode === 'fireflies' && season === 'summer' && tod === 'night'}
   {#each FIREFLIES as [x, y], i (i)}
@@ -70,11 +67,6 @@
     60% { transform: translate(var(--sx), 62cqh) rotate(calc(var(--rot) * .6)); }
     80% { transform: translate(calc(var(--sx) * -1), 86cqh) rotate(calc(var(--rot) * .8)); }
     100% { transform: translate(0, 110cqh) rotate(var(--rot)); }
-  }
-  .big { left: 0; top: 20%; animation: drift-big 45s linear infinite; animation-delay: -10s; }
-  @keyframes drift-big {
-    0% { transform: translate(-30px, 0); opacity: 1; } 44% { transform: translate(calc(100cqw + 30px), 30cqh); opacity: 1; }
-    44.1%, 100% { transform: translate(-30px, 0); opacity: 0; }
   }
   .ff {
     position: absolute; z-index: 70; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;

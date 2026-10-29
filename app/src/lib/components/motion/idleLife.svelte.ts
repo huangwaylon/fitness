@@ -1,6 +1,6 @@
-// Idle life (style guide §M.7, A6): one scheduler per live scene. Every 5–9 s one actor does one small
-// thing from its pool (look around, wiggle, hum, hop, stroll, peek into the jar, daydream, tree shake,
-// chat, dance, stretch; しずえ swaps pose / wiggles / hops), mostly with a visible mark or glyph. In the
+// Idle life (style guide §M.7, v5 §6): one scheduler per live scene. Every 9–15 s one actor does one
+// small background thing from its pool (look around, wiggle, hop, stroll, peek into the jar, tree shake,
+// chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab
 // is hidden, a sheet is open, or under reduced motion; slows after 3 min without input and stops after
 // 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and
@@ -8,7 +8,6 @@
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
 import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
 import { now, reducedMotion } from './clock.ts';
-import type { EmoteIcon } from '../art.ts';
 
 export interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
@@ -147,49 +146,39 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     lastAt[`${id}:${choice.action}`] = t;
     const me = actors[id];
     me.busyUntil = t + 2_400;
-    const emote = (e: EmoteIcon) => setEmote(id, e);
     switch (choice.action) {
       case 'look':
-        setMotion(id, 'turn');
-        if (rnd() < 0.6) later(id, 700, () => emote(pick(['mark-question', 'curiosity'] as const)));
-        return;
+        return setMotion(id, 'turn');
       case 'wiggle':
-        setMotion(id, 'wiggle');
-        return emote(pick(['mark-note', 'mark-heart'] as const));
+        return setMotion(id, 'wiggle');
       case 'hum':
-        setMotion(id, 'hum');
-        return addFx(id, 'notes');
+        return setMotion(id, 'hum');
       case 'hop':
-        return applyStep(id, { actor: id, motion: 'hop', emote: pick(['mark-note', 'mark-heart', 'mark-sparkle', 'glee'] as const) });
+        return setMotion(id, 'hop');
       case 'stroll':
-        return stroll(id, 40, () => (rnd() < 0.5 ? emote('daydreaming') : setMotion(id, 'wiggle')));
+        return stroll(id, 40, () => setMotion(id, 'wiggle'));
       case 'peek':
-        // walk to the jar, peer in, react, walk back
-        return stroll(id, PEEK_DX, () => {
-          setMotion(id, 'nod');
-          emote(pick(['inspiration', 'mark-heart', 'mark-sparkle', 'surprise'] as const));
-        });
+        // walk to the jar, peer in (a nod), walk back
+        return stroll(id, PEEK_DX, () => setMotion(id, 'nod'));
       case 'daydream':
-        return emote(pick(['daydreaming', 'thought', 'inspiration'] as const));
+        return setMotion(id, 'turn');
       case 'treeshake':
-        ctx.treeShake(id);
-        if (rnd() < 0.5) later(id, 500, () => emote(pick(['surprise', 'mark-sparkle'] as const)));
-        return;
+        return ctx.treeShake(id);
       case 'stretch':
-        return applyStep(id, { actor: id, motion: 'stretch', emote: 'mark-sparkle' });
+        return setMotion(id, 'stretch');
       case 'chat': {
         lastAt[`${other}:chat`] = t;
         actors[other].busyUntil = t + 3_200;
         me.busyUntil = t + 3_200;
-        applyStep(id, { actor: id, face: 'other', emote: pick(['thought', 'mark-note'] as const) });
-        later(other, 900, () => applyStep(other, { actor: other, face: 'other', motion: 'laugh', emote: pick(['glee', 'mark-heart'] as const) }));
+        applyStep(id, { actor: id, face: 'other', motion: 'nod' });
+        later(other, 900, () => applyStep(other, { actor: other, face: 'other', motion: 'laugh' }));
         later(id, 3_000, () => (actors[id].face = 'home'));
         later(other, 3_000, () => (actors[other].face = 'home'));
         return;
       }
       case 'dance':
         actors[other].busyUntil = t + 2_000;
-        for (const a of [id, other] as const) applyStep(a, { actor: a, motion: 'dance', emote: 'glee', fx: 'notes' });
+        for (const a of [id, other] as const) setMotion(a, 'dance');
         return;
     }
   }

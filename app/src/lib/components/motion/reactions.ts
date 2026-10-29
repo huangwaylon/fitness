@@ -116,24 +116,23 @@ export interface IdleEntry {
   pair?: boolean;
 }
 
-/** A6: weighted toward actions that show a mark or glyph, so idle life reads at a glance. */
+/** v5 §6: idle life stays in the background. Small body motions only (no emote bubbles, no notes:
+ *  emotes are for events), mostly the quiet ones. */
 export const IDLE_POOL: IdleEntry[] = [
-  { action: 'look', weight: 12 },
-  { action: 'wiggle', weight: 10 },
-  { action: 'hum', weight: 12 },
-  { action: 'hop', weight: 12, day: true },
-  { action: 'stroll', weight: 7, day: true, every: 60_000 },
-  { action: 'peek', weight: 8, day: true, every: 90_000 },
-  { action: 'daydream', weight: 12 },
-  { action: 'treeshake', weight: 7, day: true },
-  { action: 'chat', weight: 12, every: 45_000, pair: true },
-  { action: 'dance', weight: 5, pair: true },
-  { action: 'stretch', weight: 8, hours: [5, 10] }
+  { action: 'look', weight: 14 },
+  { action: 'wiggle', weight: 8 },
+  { action: 'hop', weight: 6, day: true },
+  { action: 'stroll', weight: 6, day: true, every: 90_000 },
+  { action: 'peek', weight: 6, day: true, every: 120_000 },
+  { action: 'treeshake', weight: 5, day: true, every: 60_000 },
+  { action: 'chat', weight: 8, every: 60_000, pair: true },
+  { action: 'dance', weight: 3, pair: true },
+  { action: 'stretch', weight: 6, hours: [5, 10] }
 ];
 
-/** Idle cadence (ms): 5–9 s while someone is around, 20–30 s after 3 min without input. */
-export const IDLE_GAP: [number, number] = [5_000, 9_000];
-export const IDLE_GAP_SLOW: [number, number] = [20_000, 30_000];
+/** Idle cadence (ms): 9–15 s while someone is around, 25–40 s after 3 min without input. */
+export const IDLE_GAP: [number, number] = [9_000, 15_000];
+export const IDLE_GAP_SLOW: [number, number] = [25_000, 40_000];
 
 /** しずえ's idle moves (every 20–30 s at most). */
 export const HOST_IDLE = ['swap', 'wiggle', 'hop'] as const;

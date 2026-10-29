@@ -1,26 +1,21 @@
 <script lang="ts">
-  // Back row + beach props (style guide §S.5–S.7, §S.10): cedar (all year), the hedge of the
-  // season, Resident Services (night: lit windows), fences (winter: log), mailbox, bench (autumn /
-  // winter evenings: bonfire with a warm glow), rock, the islet palm, the two front palms, shells by
-  // day / glowing star fragments by night, seasonal ground items and Toy Day presents. All official
+  // Back row (v5 §7, decluttered): cedar (all year), four bushes of the season, Resident Services
+  // (night: lit windows), a bench (autumn / winter evenings: a bonfire with a steady glow), the
+  // islet palm, the two front palms and Toy Day presents. No fences, rock, mailbox, shells, star fragments or
+  // ground litter (mushrooms, acorns, cones, petals). All official
   // art, positioned in stage units with feet on "base". No wrapper element: every prop joins the
   // stage's stacking context with its own z-index, so palms can sit between the jar and villagers.
   import OfficialArt from '../OfficialArt.svelte';
   import type { Season } from '#lib/client/theme.svelte.ts';
-  import type { Foliage } from '#lib/client/season.ts';
-  import { EXTRAS, TREE, props as sceneProps, u, type Tod } from './scene.ts';
-  import { seasonArt } from '../art.ts';
+  import { TREE, props as sceneProps, u, type Tod } from './scene.ts';
 
   interface Props {
     season: Season;
-    /** Fallen petals on the grass only while the cherry blossoms are out. */
-    foliage?: Foliage;
     tod: Tod;
     month: number;
     toyDay?: boolean;
   }
-  let { season, foliage = 'green', tod, month, toyDay = false }: Props = $props();
-  const extras = $derived(EXTRAS[season].filter(([item]) => item !== 'petal' || foliage === 'blossom'));
+  let { season, tod, month, toyDay = false }: Props = $props();
   const list = $derived(sceneProps(season, tod, month));
   const night = $derived(tod === 'night');
 </script>
@@ -35,12 +30,6 @@
   </span>
 {/each}
 
-{#each extras as [item, x, base, h, rot], i (i)}
-  <span class="prop extra" style:left={u(x)} style:top={u(base)} style:z-index="15" style:--rot="{rot}deg">
-    <OfficialArt key={seasonArt(item)} size={u(h)} />
-  </span>
-{/each}
-
 {#if toyDay}
   {#each [TREE.x.A + 26, TREE.x.B - 26] as x (x)}
     <span class="prop" style:left={u(x)} style:top={u(TREE.base + 4)} style:z-index="31"><OfficialArt key="deco/present" size={u(18)} /></span>
@@ -50,21 +39,14 @@
 <style>
   .prop { position: absolute; width: max-content; transform: translate(-50%, -100%); line-height: 0; pointer-events: none; }
   .prop.flip :global(.official) { transform: scaleX(-1); }
-  .extra { transform: translate(-50%, -100%) rotate(var(--rot)); }
-  /* star fragments glow steadily (only the bonfire flickers: P5 budget) */
-  .glow :global(.official) { filter: drop-shadow(0 0 6px #FFF3A0) drop-shadow(0 0 2px #FFF8CC); }
   .fireglow {
     position: absolute; left: 50%; top: 60%; width: 400%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 196, 107, .4), rgba(255, 196, 107, 0) 65%);
-    animation: if-glow 1.8s var(--ease-idle) infinite alternate;
+    background: radial-gradient(circle, rgba(255, 196, 107, .35), rgba(255, 196, 107, 0) 65%);
   }
   /* Resident Services windows at night (two warm rounded rects) */
   .win {
-    position: absolute; width: 12%; height: 15%; border-radius: 3px; background: #FFE38A; box-shadow: 0 0 8px #FFD45A;
+    position: absolute; width: 12%; height: 15%; border-radius: 3px; background: #FFE38A; 
     top: 56%;
   }
   .w1 { left: 22%; } .w2 { right: 22%; }
-  @media (prefers-reduced-motion: reduce) {
-    .fireglow { animation: none; }
-  }
 </style>

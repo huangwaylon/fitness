@@ -1,7 +1,7 @@
 <script lang="ts">
-  // Sky (style guide §S.3–S.4, §S.11): gradient bleeding under the status bar, the sun (high by day,
-  // low at dawn / dusk) or the moon + 12 stars (4 twinkle), drifting clouds, the balloon present and
-  // event fireworks. The visible band (below the safe area) is a size container named `sky`.
+  // Sky (v5 §5): a 2-stop gradient bleeding under the status bar, a flat sun (high by day, low at
+  // dawn / dusk) or a flat moon + 10 stars (2 twinkle), two drifting clouds, the balloon present and
+  // event fireworks. No halos. The visible band (below the safe area) is a size container named `sky`.
   import type { Snippet } from 'svelte';
   import Clouds from './Clouds.svelte';
   import type { Tod } from './scene.ts';
@@ -15,9 +15,9 @@
   let { tod, fireworks = false, children }: Props = $props();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
-  // 4 twinkling + 8 still stars (P5: ≤ 24 infinite animations in the scene)
+  // 2 twinkling + 8 still stars (v5 §6: idle budget ≤ 10)
   const STARS = [
-    [8, 18], [17, 52], [26, 30], [34, 70], [43, 14], [52, 46], [60, 26], [67, 64], [75, 40], [88, 58], [93, 20], [5, 78]
+    [8, 18], [17, 52], [26, 30], [34, 70], [43, 14], [52, 46], [60, 26], [67, 64], [88, 58], [5, 78]
   ];
 </script>
 
@@ -25,22 +25,20 @@
   <div class="band">
     {#if night}
       {#each STARS as [x, y], i (i)}
-        <svg class="star" class:still={i % 3 !== 0} viewBox="0 0 24 24" style:left="{x}%" style:top="{y}%" style:width="{6 + (i % 3) * 2}px"
+        <svg class="star" class:still={i !== 2 && i !== 7} viewBox="0 0 24 24" style:left="{x}%" style:top="{y}%" style:width="{6 + (i % 3) * 2}px"
           style:animation-duration="{2.4 + (i % 5) * 0.4}s" style:animation-delay="{-i * 0.37}s">
           <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
         </svg>
       {/each}
-      <svg class="moon" viewBox="0 0 60 60">
-        <circle cx="30" cy="30" r="30" class="halo" />
+      <svg class="moon" viewBox="12 12 36 36">
         <path d="M34 12 A18 18 0 1 0 48 40 A14 14 0 1 1 34 12 Z" class="disc" />
       </svg>
     {:else}
-      <svg class="sun" class:low viewBox="0 0 68 68">
-        <circle cx="34" cy="34" r="34" class="halo" />
+      <svg class="sun" class:low viewBox="12 12 44 44">
         <circle cx="34" cy="34" r="22" class="disc" />
       </svg>
     {/if}
-    <Clouds {night} />
+    <Clouds />
     {#if fireworks}
       <!-- one burst element (§S.10: 1 burst every 6 s; P5 budget) that moves and changes colour each time -->
       <span class="burst">
@@ -57,12 +55,11 @@
     background: linear-gradient(180deg, var(--sky-top), var(--sky-bottom));
   }
   .band { position: absolute; left: 0; right: 0; top: var(--safe-top); bottom: 8px; container: sky / size; }
-  .sun, .moon { position: absolute; right: 18%; top: 18px; width: 68px; height: 68px; translate: 50% 0; }
-  .moon { width: 60px; height: 60px; }
+  .sun, .moon { position: absolute; right: 20%; top: 112px; width: 44px; height: 44px; translate: 50% 0; }
+  .moon { width: 40px; height: 40px; }
+  @container sky (max-height: 160px) { .sun, .moon { top: auto; bottom: 30%; width: 32px; height: 32px; } }
   .sun.low { top: auto; bottom: 22%; }
-  .sun .halo { fill: var(--sun-disc); opacity: .35; }
   .sun .disc { fill: var(--sun-disc); }
-  .moon .halo { fill: var(--moon); opacity: .3; }
   .moon .disc { fill: var(--moon); }
   .star { position: absolute; height: auto; fill: #FFF6D6; animation: if-twinkle 3s var(--ease-idle) infinite; }
   .star.still { animation: none; opacity: .75; }

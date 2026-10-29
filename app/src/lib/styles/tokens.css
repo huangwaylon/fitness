@@ -116,48 +116,52 @@
    ====================================================================================== */
 :root {
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
-  --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#D9962A; --jar-leaf:#7BC67E;
+  --jar-glass:#DDF2FB; --jar-glass-lip:#BFDCEA; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf:#6ED07A;
   --firefly:#F3FF9E; --firefly-glow:#E8F59A;
   --dur-walk:1600ms; /* = WALK_MS in motion/director.svelte.ts */
 }
+/* v5 (docs/design/v5-direction.md §5): the NH map look. Flat fills, no strokes; depth = one lip
+   (12% darker bottom edge) + a ground ellipse. The sea is the map's mint with small ▲ marks, the
+   shore is flat sand with a 4u foam line, the grass texture stays under 5% contrast. */
 .if-scene {
-  --foam:#FFFFFF; --cloud:#FFFFFF; --cloud-shade:#DCE6FF; --cloud-op:1; --tod-tint:transparent;
-  --moon:#FFF3C4; --sh-scale:1;
+  --foam:#F4FFF8; --cloud:#FFFFFF; --cloud-lip:#E3ECFA; --cloud-op:1; --tod-tint:transparent;
+  --moon:#FFF3C4; --sh-scale:1; --sh-ground:rgba(40,60,40,.18);
   /* spring (default) */
-  --grass:#9BE36E; --grass-2:#8BD660; --grass-edge:#6FBF50;
-  --cliff:#C9A26B; --cliff-dark:#A98250; --path:#EBCF92; --path-edge:#D3AF6D;
-  --sea-far:#A6ECF7; --sea:#63D6EC; --sea-deep:#33B9DF; --beach:#FBEABB; --beach-wet:#EED69A;
-  --sky-top:#57B8F7; --sky-bottom:#CDEEFF; --sun-disc:#FFE68A; --sh-ground:rgba(46,100,40,.22);
+  --grass:#9BE070; --grass-2:#94DA69; --grass-lip:#7FC25C;
+  --cliff:#C9A26B; --path:#EDD39A;
+  --sea:#7BD7C1; --sea-mark:#71C6B1; --horizon:#A6E6D6; --beach:#FBEABB; --beach-lip:#E9D49E;
+  --sky-top:#57B8F7; --sky-bottom:#CDEEFF; --sun-disc:#FFE68A;
+  --plate:#FFF9E3; --plate-lip:#E0C48A; --plate-ink:#4A3A2C;
 }
 .if-scene[data-season="summer"] {
-  --grass:#7DDA55; --grass-2:#6ECC48; --grass-edge:#55B340;
-  --sea-far:#9CEBF8; --sea:#4FD2EE; --sea-deep:#22B0E0; --beach:#FDEAB0; --beach-wet:#F0D592;
+  --grass:#80D958; --grass-2:#7AD252; --grass-lip:#66BA45;
   --sky-top:#3FA9F5; --sky-bottom:#BDE8FF; --sun-disc:#FFE066;
 }
 .if-scene[data-season="autumn"] {
-  --grass:#CAD764; --grass-2:#BAC955; --grass-edge:#9DAE45;
-  --cliff:#C49A62; --cliff-dark:#A07A4A; --path:#E4C185; --path-edge:#CCA463;
-  --sea-far:#A9E3F0; --sea:#5CC8E2; --sea-deep:#3AAED6; --beach:#F5E2B0; --beach-wet:#E6CD92;
-  --sky-top:#69B8F0; --sky-bottom:#C4E8FF; --sun-disc:#FFD27A; --sh-ground:rgba(90,80,30,.22);
+  --grass:#C8D666; --grass-2:#C1CF5F; --grass-lip:#A9B850;
+  --cliff:#C49A62; --path:#E6C68C;
+  --sky-top:#69B8F0; --sky-bottom:#C4E8FF; --sun-disc:#FFD27A;
 }
 .if-scene[data-season="winter"] {
-  --grass:#FAFCFF; --grass-2:#E8F0FB; --grass-edge:#C7D9EE;
-  --cliff:#B8C6D8; --cliff-dark:#97A8BF; --path:#E9E4DA; --path-edge:#D5CFC2;
-  --sea-far:#BCE3F0; --sea:#6BC2E0; --sea-deep:#4AA6D0; --beach:#EFEBE0; --beach-wet:#DCD6C6;
-  --sky-top:#8EC6F0; --sky-bottom:#EEF6FF; --sun-disc:#FFF1C2; --sh-ground:rgba(80,100,140,.18);
-  --cloud-shade:#E2E8F5;
+  --grass:#F7FAFF; --grass-2:#EEF3FB; --grass-lip:#D3DEEC;
+  --cliff:#B8C6D8; --path:#E9E4DA; --beach:#EFEBE0; --beach-lip:#DAD3C2;
+  --sky-top:#8EC6F0; --sky-bottom:#EEF6FF; --sun-disc:#FFF1C2;
+  --cloud-lip:#E2E8F5;
 }
 .if-scene[data-tod="dawn"] {
-  --sky-top:#FFC6A8; --sky-bottom:#CDEBFF; --tod-tint:rgba(255,170,140,.12); --cloud:#FFF6F0; --cloud-shade:#FFD9C7;
+  --sky-top:#FFC6A8; --sky-bottom:#CDEBFF; --tod-tint:rgba(255,170,140,.1); --cloud:#FFF6F0; --cloud-lip:#FFDCCB;
+  --sea:#8FD8C8; --sea-mark:#84C7B8; --horizon:#C2EBDF;
 }
 .if-scene[data-tod="dusk"] {
-  --sky-top:#FF9E7A; --sky-bottom:#FFE2A8; --tod-tint:rgba(255,140,90,.14); --cloud:#FFF0E0; --cloud-shade:#FFB9A0;
+  --sky-top:#FF9E7A; --sky-bottom:#FFE2A8; --tod-tint:rgba(255,140,90,.12); --cloud:#FFF0E0; --cloud-lip:#FFC4AC;
   --sun-disc:#FFB35C; --sh-scale:1.25;
+  --sea:#86C9B9; --sea-mark:#7BB9AA; --horizon:#F2D9B8;
 }
 .if-scene[data-tod="night"] {
-  --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(64,78,160,.26); --cloud:#9AA6E0; --cloud-shade:#7F8BCB;
-  --cloud-op:.5; --foam:rgba(255,255,255,.75);
-  --sea-far:#6F86CC; --sea:#4D6FBE; --sea-deep:#3F5CA8; --moon-glint:rgba(255,243,196,.75);
+  --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(48,60,130,.22); --cloud:#9AA6E0; --cloud-lip:#8692D0;
+  --cloud-op:.5; --foam:#9CC3DE;
+  --sea:#3F6F9C; --sea-mark:#5585B3; --horizon:#5E80B8;
+  --plate:#FFF6E0;
 }
 /* Pause every scene animation while the tab is hidden (§S.13). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }

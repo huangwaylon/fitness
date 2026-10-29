@@ -56,7 +56,7 @@
   .bubble {
     position: relative; display: grid; place-items: center; flex: none;
     width: var(--w); height: var(--w); border-radius: 50%;
-    background: var(--c-bubble, #FFFCEB); border: 2px solid var(--c-pill-edge, #EADBB8); box-shadow: 0 3px 0 rgba(74, 58, 44, .12);
+    background: #FFF9E3; box-shadow: 0 3px 0 #E0C48A; /* v5: no stroke, one lip */
     transform-origin: 30% 110%;
     animation: if-bubble var(--dur-emote, 2200ms) var(--ease-bounce) both;
   }
@@ -73,8 +73,8 @@
   /* the tail: a small rounded triangle under the bubble, toward the speaker */
   .bubble::after {
     content: ''; position: absolute; bottom: -7px; left: 26%; width: 11px; height: 11px;
-    background: inherit; border: inherit; border-top: 0; border-left: 0; border-radius: 0 0 4px 0;
-    transform: rotate(45deg) skew(8deg, 8deg); box-shadow: 2px 2px 0 rgba(74, 58, 44, .06);
+    background: inherit; border-radius: 0 0 4px 0;
+    transform: rotate(45deg) skew(8deg, 8deg); box-shadow: 2px 2px 0 #E0C48A;
   }
   .bubble.right::after { left: auto; right: 26%; }
   .bubble.none::after { display: none; }

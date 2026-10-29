@@ -1,9 +1,9 @@
 <script lang="ts">
   // One person's orchard (style guide §S.8, A5): three small fruit trees, each the official hardwood of
   // the season bearing three of ONE fruit as in NH (peach at the back, pear outside, apple inside), at
-  // that fruit's ripeness stage (bud / small / nearly / ripe + one glint per orchard), and the coconut
-  // in the crown of the beach palm beside them (coconuts only grow on palms). Only the back tree sways
-  // (§S.13 budget). One canopy button covers the orchard: a tap shakes the tree under the finger, drops
+  // that fruit's ripeness stage (bud / small / nearly / ripe), and the coconut in the crown of the
+  // beach palm beside them (coconuts only grow on palms). The trees stand still (v5 §6 idle budget:
+  // no sway, no ripe glint). One canopy button covers the orchard: a tap shakes the tree under the finger, drops
   // two seasonal leaves and shows the detail bubble (all 4 + %); the palm crown does the same.
   // `shakeN` (bumped by idle life) shakes a tree without the bubble; `celebrate` pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
@@ -25,13 +25,11 @@
     foliage: Foliage;
     /** The beach palm that carries this person's coconut. */
     palm: { x: number; base: number; h: number; flip: boolean };
-    /** Sway phase offset (s). */
-    delay?: number;
     shakeN?: number;
     celebrate?: { fruit: FruitKey; n: number } | null;
     ontap?: () => void;
   }
-  let { person, trees, foliage, palm, delay = 0, shakeN = 0, celebrate = null, ontap }: Props = $props();
+  let { person, trees, foliage, palm, shakeN = 0, celebrate = null, ontap }: Props = $props();
 
   let open = $state(false);
   let taps = $state(0);
@@ -50,8 +48,6 @@
   const label = $derived(
     `${person.villagerName}: ` + FRUITS.map((f) => t('fruit.pct', { label: t(`fruit.${f}`), pct: pct(f) })).join('、')
   );
-  // One glint per orchard (§S.13): on the first ripe fruit, back to front.
-  const glintFruit = $derived(trees.find((tr) => pct(tr.fruit) >= 100)?.fruit ?? null);
   // The canopy button: the box around the three crowns (down to the front trees' lower canopy).
   const box = $derived.by(() => {
     const l = Math.min(...trees.map((tr) => tr.x - w(tr) / 2));
@@ -123,19 +119,19 @@
 
 {#each trees as tr, i (tr.fruit)}
   {@const fw = w(tr) * FRUIT_W}
-  <div class="tree" class:sway={tr.back} bind:this={treeEls[i]} style:left={u(tr.x)} style:top={u(tr.base)} style:width={u(w(tr))}
-    style:height={u(tr.h)} style:z-index={tr.back ? 29 : 31} style:--delay="{delay}s"
+  <div class="tree" bind:this={treeEls[i]} style:left={u(tr.x)} style:top={u(tr.base)} style:width={u(w(tr))}
+    style:height={u(tr.h)} style:z-index={tr.back ? 29 : 31}
     onanimationend={(e) => e.animationName === 'if-shake' && treeEls[i]?.classList.remove('shaking')}>
     <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(tr.h)} eager /></span>
     {#each FRUIT_POS as [fx, fy], k (k)}
       <span class="fruit" style:left="{fx}%" style:top="{fy}%" style:width={u(fw)}>
-        {@render fruit(tr.fruit, fw, k === 0 && glintFruit === tr.fruit, k === 2)}
+        {@render fruit(tr.fruit, fw, k === 2)}
       </span>
     {/each}
   </div>
 {/each}
 <span class="fruit coco" style:left={u(coco.x)} style:top={u(coco.y)} style:width={u(COCONUT_U)}>
-  {@render fruit('coconut', COCONUT_U, glintFruit === null && pct('coconut') >= 100, true)}
+  {@render fruit('coconut', COCONUT_U, true)}
 </span>
 <button type="button" class="canopy" style:left={u(box.l)} style:top={u(box.top)} style:width={u(box.r - box.l)}
   style:height={u(box.bottom - box.top)} aria-label={label} aria-expanded={open} onclick={(e) => tap(treeAt(e))}></button>
@@ -143,7 +139,7 @@
   aria-label="{person.villagerName}: {t('fruit.pct', { label: t('fruit.coconut'), pct: pct('coconut') })}" aria-expanded={open}
   tabindex="-1" onclick={() => tap(trees.indexOf(backTree))}></button>
 
-{#snippet fruit(f: FruitKey, size: number, glint: boolean, fx: boolean)}
+{#snippet fruit(f: FruitKey, size: number, fx: boolean)}
   {@const st = ripeness(pct(f))}
   {#key st}
     <span class="f {st}">
@@ -152,7 +148,6 @@
       </OfficialArt>
     </span>
   {/key}
-  {#if st === 'ripe' && glint}<svg class="glint" viewBox="0 0 24 24" aria-hidden="true" style:animation-delay="{(FRUITS.indexOf(f) * 0.9 + delay).toFixed(1)}s"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>{/if}
   {#if fx && celebrate?.fruit === f}
     {#key celebrate.n}<span class="fxa"><Fx kind="sparkles" spread={u(40)} /></span>{/key}
   {/if}
@@ -161,7 +156,7 @@
 {#each leaves as l (l.n)}
   <span class="leaf" style:left={u(l.x)} style:top={u(l.y)}>
     {#if leafKey}<OfficialArt key={leafKey} size="12px" />
-    {:else}<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2 14 Q2 3 14 2 Q13 13 2 14 Z" fill="#6ED07A" stroke="#3E8E3A" stroke-width="1" /></svg>{/if}
+    {:else}<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2 14 Q2 3 14 2 Q13 13 2 14 Z" fill="#6ED07A" /></svg>{/if}
   </span>
 {/each}
 
@@ -177,7 +172,6 @@
 
 <style>
   .tree { position: absolute; transform-origin: 50% 100%; translate: -50% -100%; pointer-events: none; }
-  .tree.sway { animation: if-sway 5s var(--ease-idle) infinite; animation-delay: var(--delay); }
   .tree:global(.shaking) { animation: if-shake 480ms ease-in-out 1; }
   .oak { position: absolute; inset: 0; display: flex; justify-content: center; line-height: 0; }
   .fruit { position: absolute; aspect-ratio: 1; translate: -50% -50%; line-height: 0; }
@@ -190,11 +184,6 @@
   .f.small { scale: .75; opacity: .8; }
   .f.small :global(.official) { filter: saturate(.7) drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1px #fff); }
   .f.nearly { scale: .9; }
-  .glint {
-    position: absolute; right: -8%; top: -8%; width: 40%; fill: #fff; filter: drop-shadow(0 0 2px #FFF6C9);
-    animation: glint 4s ease-in-out infinite; transform: scale(0);
-  }
-  @keyframes glint { 0%, 85%, 100% { transform: scale(0); opacity: 0; } 92.5% { transform: scale(1); opacity: 1; } }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .canopy {
     position: absolute; z-index: 32; appearance: none; border: 0; background: none; padding: 0;
@@ -210,19 +199,18 @@
   }
   .detail {
     position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: repeat(2, auto); gap: 4px 10px;
-    background: var(--c-bubble, #FFFCEB); border: 2px solid var(--c-pill-edge, #EADBB8); border-radius: 16px; padding: 7px 12px;
-    box-shadow: 0 3px 0 rgba(74, 58, 44, .12); color: var(--c-ink); pointer-events: none;
+    background: var(--plate, #FFF9E3); border-radius: 16px; padding: 7px 12px;
+    box-shadow: 0 4px 0 var(--plate-lip, #E0C48A); color: var(--plate-ink, #4A3A2C); pointer-events: none;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
   }
   .detail::after {
     content: ''; position: absolute; left: 50%; bottom: -7px; width: 10px; height: 10px; margin-left: -5px;
-    background: inherit; border: inherit; border-top: 0; border-left: 0; transform: rotate(45deg);
+    background: inherit; transform: rotate(45deg);
   }
   .row { display: inline-flex; align-items: center; gap: 4px; }
   .row b { font: 600 15px/1 var(--font-num); }
   @media (prefers-reduced-motion: reduce) {
-    .tree, .tree:global(.shaking), .glint, .leaf { animation: none; }
-    .glint { transform: scale(.8); opacity: .9; }
+    .tree, .tree:global(.shaking), .leaf { animation: none; }
     .f, .detail { animation: none; }
   }
 </style>
