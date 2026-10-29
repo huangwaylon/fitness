@@ -4,7 +4,9 @@
 //
 // The art is Nintendo's, used for a personal, non-commercial app: see docs/decisions/0018-official-art-public-site.md for where it is published.
 // Output: static/art/<category>/<id>.webp (+ static/art/manifest.json), downscaled to ≤ the size the UI needs.
-// Idempotent: files already on disk are skipped. Requires `cwebp` (brew install webp).
+// Idempotent: files already on disk are skipped (a file on disk but missing from the manifest, e.g. after an
+// interrupted run, is adopted: its size is read from the webp header). The manifest is saved after every file and
+// failed requests are retried, so a flaky connection only costs the file in flight. Requires `cwebp` (brew install webp).
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -132,10 +134,25 @@ interface Manifest {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function get(url: string): Promise<Response> {
-  const res = await fetch(url, { headers: { 'user-agent': UA } });
-  if (!res.ok) throw new Error(`${res.status} ${url}`);
-  return res;
+async function get(url: string, tries = 4): Promise<Response> {
+  for (let i = 1; ; i++) {
+    try {
+      const res = await fetch(url, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(120_000) });
+      if (res.ok) return res;
+      if (res.status < 500 && res.status !== 429) throw Object.assign(new Error(`${res.status} ${url}`), { final: true });
+      if (i >= tries) throw new Error(`${res.status} ${url}`);
+    } catch (e) {
+      if (i >= tries || (e as { final?: boolean }).final) throw e;
+    }
+    await sleep(2000 * i);
+  }
+}
+
+/** Canvas size of a cwebp output (VP8X header: 24-bit little-endian width-1 / height-1), or null. */
+function webpSize(file: string): [number, number] | null {
+  const b = readFileSync(file).subarray(0, 30);
+  if (b.toString('latin1', 12, 16) !== 'VP8X') return null;
+  return [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
 }
 
 /** Resolve file titles → original URL + size, 40 titles per API call. */
@@ -211,10 +228,24 @@ async function main() {
   mkdirSync(tmp, { recursive: true });
   const missing: string[] = [];
 
+  const save = () => {
+    manifest.files = Object.fromEntries(Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b)));
+    writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
+  };
+  mkdirSync(OUT, { recursive: true });
+
   for (const [key, [max, ...titles]] of todo) {
     const title = titles.find((t) => infos.has(t));
     if (!title) {
       missing.push(`${key} (${titles.join(', ')})`);
+      continue;
+    }
+    const onDisk = join(OUT, `${key}.webp`);
+    const size = !force && !only.some((o) => key.startsWith(o)) && existsSync(onDisk) ? webpSize(onDisk) : null;
+    if (size) {
+      manifest.files[key] = { path: `${key}.webp`, w: size[0], h: size[1], source: `https://nookipedia.com/wiki/File:${title}` };
+      console.log(`  = ${key}  ${size[0]}×${size[1]}  (on disk)`);
+      save();
       continue;
     }
     const info = infos.get(title)!;
@@ -229,14 +260,13 @@ async function main() {
     execFileSync('cwebp', ['-quiet', '-q', '86', '-alpha_q', '100', '-m', '6', ...cropArgs, '-resize', String(w), String(h), src, '-o', dest]);
     manifest.files[key] = { path: rel, w, h, source: `https://nookipedia.com/wiki/File:${title}` };
     console.log(`  ✓ ${key}  ${w}×${h}  ← ${title}`);
+    save();
     await sleep(DELAY_MS);
   }
   rmSync(tmp, { recursive: true, force: true });
 
   manifest.version += todo.length - missing.length > 0 ? 1 : 0;
-  manifest.files = Object.fromEntries(Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b)));
-  mkdirSync(OUT, { recursive: true });
-  writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
+  save();
   console.log(`manifest: ${Object.keys(manifest.files).length} files (v${manifest.version})`);
   if (missing.length) console.log(`missing (no candidate title found):\n  ${missing.join('\n  ')}`);
 }
