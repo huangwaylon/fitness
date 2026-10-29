@@ -7,14 +7,17 @@ Three pieces, no server of our own:
 
 Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.md).
 
-## 1. One-time setup
-1. **Sheet + script + keys + deploy:** follow [google-setup.md](google-setup.md) §1–5.
+## 1. One-time setup (the canonical order; the other docs link here)
+1. **Sheet, script, keys, deploy:** [google-setup.md](google-setup.md) §1–5, ending with the `whoami` curl.
 2. **Point the Pages build at it:** `gh variable set GAS_URL --body 'https://script.google.com/macros/s/…/exec'`,
    then re-run the *Deploy UI to GitHub Pages* workflow (or push). Until `GAS_URL` is set, the site shows
    「まだ設定されていません / Not set up yet」 with a link to the demo.
-3. **Migrate the Mac data** (§5), then **switch the Shortcuts** (§4).
+3. **Shortcut on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §5 (gym
+   Arrive/Leave), §6 (the optional 84-day baseline). From here on the Mac receives nothing.
 4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
-   **Add to Home Screen**, open it from the icon and paste that person's key (or open `…/fitness/#key=<key>` once).
+   **Add to Home Screen** *first*, open it from the icon, and paste that person's key ([google-setup.md §7](google-setup.md#7-pairing-the-phones)).
+5. **Migrate the Mac data:** §5 below, **before the first payout, Sun 2026-11-08 19:30 JST**.
+6. **Day 8 or later:** run the `whoami` curl again ([google-setup.md §9](google-setup.md#9-does-it-need-the-shared-finances-cloud-project-or-a-published-consent-screen)).
 
 ## 2. Deploying the UI
 Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `npm ci`, `npm run build` with
@@ -27,8 +30,8 @@ Backend code changes (`app/gas/**`, the parser): google-setup.md §11 (`npm run 
 the existing deployment**, never a new deployment).
 
 ## 3. Keys
-- Rotate (lost phone, leak, any doubt): google-setup.md §10. Then paste the new key into that person's app (open
-  `…/#key=<new key>`) and their Shortcuts.
+- Rotate (lost phone, leak, any doubt): google-setup.md §10. The old key gets `unauthorized`, so that person's app
+  opens the pairing screen: paste the new key there, and into their Shortcuts.
 - Keys live only in Script Properties, the phones' app storage and the Shortcuts. Never in the repo or a URL that
   gets shared (the `#key=` fragment isn't sent to any server, but don't post the link).
 
@@ -38,15 +41,13 @@ the existing deployment**, never a new deployment).
 - Gym Arrive/Leave: same doc, §5.
 
 ## 5. Migrating from the Mac (once)
-1. Stop the Mac server (`node build` on port 3100 behind Tailscale Funnel) so nothing arrives after the export.
-2. `cd app && npm run export:sheet` (plain Node ≥ 24: `node:sqlite`, read-only) writes TSVs to `app/data/export/`.
-3. Paste them into the tabs: google-setup.md §8.
-4. Open the app and compare the jar and this week's scores with what the Mac showed. They should match (verified on
-   a copy of the DB on 2026-10-29). Export **before the first payout (Sun 2026-11-08 19:30 JST)** if you can: the
-   DB keeps only each day's latest value and its last upload time, so for weeks already paid on the Mac a late
-   re-send can make the recomputed amount lower than what the Mac paid.
-5. After a week of the phones working against the sheet: `tailscale funnel reset`, and delete `app/build/`,
-   `app/data/` (keep a copy of `island.db` somewhere private) and `app/node_modules/` (then `npm ci`).
+1. Export and paste: [google-setup.md §8](google-setup.md#8-migrate-the-mac-data-once) (`npm run export:sheet`, then paste the TSVs).
+2. Open the app and compare the jar and this week's scores with what the Mac showed. They should match (verified on
+   a copy of the DB on 2026-10-29). Do it **before the first payout (Sun 2026-11-08 19:30 JST)**: the DB keeps only
+   each day's latest value and its last upload time, so for weeks already paid on the Mac a late re-send can make
+   the recomputed amount lower than what the Mac paid.
+3. After a week of the phones working against the sheet: stop the Mac server, `tailscale funnel reset`, and delete
+   `app/build/`, `app/data/` (keep a copy of `island.db` somewhere private) and `app/node_modules/` (then `npm ci`).
 
 ## 6. Backups
 The sheet is the only copy of check-ins, answers and purse events. Google keeps version history (File → Version
@@ -54,11 +55,9 @@ history). For an off-Google copy: File → Download → `.xlsx` once a month. He
 phones (shortcut-health-sync.md §6).
 
 ## 7. Official art
-The villager, Isabelle, fruit and NookPhone images are official *Animal Crossing: New Horizons* art (Nookipedia) in
-`app/static/art/`, for this private two-person app only. Refresh: edit `SPECS` in `app/scripts/fetch-assets.ts`,
-`npm run assets:fetch` (needs `cwebp`). The UI falls back to our own vectors if a file is missing. **Note:** the
-repo is currently public; make it private (and move the static site to a host that serves private repos) if the art
-shouldn't be published.
+Official *Animal Crossing: New Horizons* art (Nookipedia) in `app/static/art/`; the decision, the public-repo
+trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-site.md). Refresh: edit `SPECS` in
+`app/scripts/fetch-assets.ts`, `npm run assets:fetch` (needs `cwebp`).
 
 ## 8. Troubleshooting
 | Symptom | Check |
@@ -68,5 +67,5 @@ shouldn't be published.
 | `{"ok":false,"error":"unauthorized"}` | Wrong or rotated key: re-paste it (app) / fix the `key` field (Shortcut) |
 | `busy` | Another write held the lock for 10 s; the app retries by itself, the Shortcut runs again next time |
 | `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
-| Numbers didn't move | The `uploads` tab shows each Shortcut run (status, size). Metrics only ever go up |
+| Numbers didn't move | The `uploads` tab shows each Shortcut run (status, size). Synced metrics only go up (a lower re-send is ignored); a きろく edit can lower a day in an open week |
 | Changes made offline | They stay queued on the phone and are sent when it's back online (the sync pill shows it) |

@@ -1,10 +1,13 @@
 # Google setup: the Island Fund sheet and its Apps Script web app
 
 One-time setup for ADR 0015. Result: a spreadsheet *Island Fund* plus a script bound to it, deployed as a web app
-that both phones and the Shortcut talk to. About 20 minutes. Contract: `docs/design/sheets-architecture.md`.
+that both phones and the Shortcut talk to. About 20 minutes. Contract: [sheets-architecture.md](../design/sheets-architecture.md).
 
 Use the **same Google account as the shared-finances app** (ADR 0015). Sign in to it in its own browser profile:
 Google's consoles quietly act as the wrong account when several are signed in.
+
+**Order** (the full path is [runbook §1](runbook.md#1-one-time-setup-the-canonical-order-the-other-docs-link-here)): §1–5 here → `GAS_URL` →
+[shortcut-health-sync.md](shortcut-health-sync.md) (§6 below is the short version) → §7 pairing → §8 migration (before Sun 2026-11-08 19:30 JST) → §9 check on day 8.
 
 ## 1. Create the spreadsheet
 
@@ -98,20 +101,24 @@ Limits: 1 MB per request (an 84-day raw-sample baseline can go over: send it in 
 
 ## 7. Pairing the phones
 
-Each person opens the app once and pastes their key (or opens `…/#key=<key>` once). `whoami` confirms who it is.
+On each iPhone, **Add to Home Screen first** (Safari → Share → Add to Home Screen), open the app from the icon, and paste
+that person's key. `whoami` confirms who it is. A `…/#key=<key>` link only works when opened inside the installed
+app: iOS keeps a separate storage for the Home Screen app, so a key saved in Safari isn't seen there.
 
 ## 8. Migrate the Mac data (once)
 
-1. Stop the Mac server so nothing arrives after the export.
-2. `cd app && npm run export:sheet` (plain Node ≥ 24, built-in `node:sqlite`) reads `data/island.db` **read-only**
+The Shortcut moved to the sheet in §6, so the Mac receives nothing new: export now.
+
+1. `cd app && npm run export:sheet` (plain Node ≥ 24, built-in `node:sqlite`) reads `data/island.db` **read-only**
    (or `DATABASE_PATH=…`) and writes header-less TSVs to `app/data/export/` (gitignored): `metrics.tsv`,
    `workouts.tsv`, `presence.tsv`, `events.tsv`. It prints the row counts and the column order. Ledger entries
    aren't exported (the app recomputes payouts); it warns if there were manual `adjust` entries.
-3. For each file with rows: open it in a text editor, select all, copy. In the sheet, click the first empty cell in
+2. For each file with rows: open it in a text editor, select all, copy. In the sheet, click the first empty cell in
    column A of the matching tab (A2 on a fresh tab), and paste with **⌘⇧V** (values only). The text columns are
    preformatted as plain text, so dates stay text. The script also copes if Sheets turned some into dates anyway.
-4. Rows already sent by the Shortcut to the sheet are fine: metrics are read as "highest value per day" and workouts
+3. Rows already sent by the Shortcut to the sheet are fine: metrics are read as "highest value per day" and workouts
    by id (workout ids are the same SHA-256 keys the Mac used), so overlaps change nothing.
+4. Compare the jar with what the Mac showed, then retire the Mac: [runbook §5](runbook.md#5-migrating-from-the-mac-once).
 
 ## 9. Does it need the shared-finances Cloud project or a published consent screen?
 
