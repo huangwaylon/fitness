@@ -60,13 +60,25 @@ export function hedgePair(season: Season, month: number): [BushId, BushId] {
   }
 }
 
-/** Round 6: one tidy hedge along the back edge, eight bushes at an even pitch (no building, no path). */
-export const HEDGE_X = Array.from({ length: 8 }, (_, i) => 56 + i * 40);
+/** Round 6: one tidy hedge along the back edge, eight bushes at an even pitch (no building, no path),
+ *  inside the plateau's rounded back corners. */
+export const HEDGE_X = Array.from({ length: 8 }, (_, i) => 64 + i * 37.5);
 export const HEDGE_BASE = 84;
+
+/** Round 7 (environment-style.md, "Pocket Camp diorama"): the island is an organic rounded plateau with
+ *  sea on both sides. Grass top surface x 44–346, y 50–316 (rounded corners: rt at the back, rb at the
+ *  front), a cliff 12u tall at the front tapering to 6u at the sides, and a sand crescent around it
+ *  (x 30–360, down to y 352) with a wet band, two foam lines and a turquoise shallow ring. */
+export const PLATEAU = { x0: 44, y0: 50, x1: 346, y1: 316, rt: 60, rb: 26 } as const;
+export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as const;
 /** The plateau's top edge (grass), in u. */
-export const PLATEAU_TOP = 50;
-/** The plateau's front edge (grass), in u: a shallow beach strip below it. */
-export const PLATEAU_BOTTOM = 318;
+export const PLATEAU_TOP = PLATEAU.y0;
+/** The plateau's front edge (grass), in u: the cliff and the beach lie below it. */
+export const PLATEAU_BOTTOM = PLATEAU.y1;
+/** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the stage's front beach (below y 360 − TUCK_U) tucks under
+ *  the top of the fixed chrome slot, so the shore runs down to the dialogue instead of an empty sea band. */
+export const HORIZON_U = 8;
+export const TUCK_U = 34;
 
 /** Flowers (§S.7): two kinds per side, alternating. NH flowers keep blooming under snow (A13), so
  *  winter keeps red roses and pansies, with snow caps, on snow mounds. */
@@ -76,10 +88,11 @@ export const BEDS: Record<Season, [FlowerId, FlowerId, FlowerId, FlowerId]> = {
   autumn: ['pink-cosmos', 'white-cosmos', 'purple-mums', 'orange-pansies'],
   winter: ['red-roses', 'orange-pansies', 'orange-pansies', 'red-roses']
 };
-/** Round 6: one long front row along the plateau's front edge, 8 a side at a 20u pitch, framing the island. */
+/** Round 6/7: one front row along the flat part of the plateau's front edge, 7 a side at an 18u pitch,
+ *  framing the island (the rounded front corners stay clear). */
 export const BED_X = {
-  left: Array.from({ length: 8 }, (_, i) => 44 + i * 20),
-  right: Array.from({ length: 8 }, (_, i) => 206 + i * 20)
+  left: Array.from({ length: 7 }, (_, i) => 70 + i * 18),
+  right: Array.from({ length: 7 }, (_, i) => 212 + i * 18)
 };
 export const BED_ROWS = [320];
 
@@ -118,4 +131,52 @@ export function rng(seed: number): () => number {
     s = (s * 1664525 + 1013904223) >>> 0;
     return s / 4294967296;
   };
+}
+
+type Pt = [number, number];
+interface RRect { x0: number; y0: number; x1: number; y1: number; rt: number; rb: number }
+
+/** Points (and outward normals) evenly spaced along a rounded rectangle grown by `d`, with a soft wave of
+ *  `amp` u along the normal (`cycles` waves around the outline). The same parameter t on every offset keeps
+ *  the wet band, foam and shallows parallel to the sand edge. */
+export function outline(r: RRect, d = 0, amp = 0, cycles = 0, phase = 0, n = 120): Pt[] {
+  const x0 = r.x0 - d, y0 = r.y0 - d, x1 = r.x1 + d, y1 = r.y1 + d, rt = r.rt + d, rb = r.rb + d;
+  const q = Math.PI / 2;
+  // segments: [length, (s) => [x, y, nx, ny]]
+  const arc = (cx: number, cy: number, rad: number, a0: number) =>
+    [rad * q, (s: number) => { const a = a0 + s / rad; return [cx + rad * Math.cos(a), cy + rad * Math.sin(a), Math.cos(a), Math.sin(a)]; }] as const;
+  const line = (ax: number, ay: number, bx: number, by: number, nx: number, ny: number) => {
+    const len = Math.hypot(bx - ax, by - ay);
+    return [len, (s: number) => [ax + ((bx - ax) * s) / len, ay + ((by - ay) * s) / len, nx, ny]] as const;
+  };
+  const segs = [
+    line(x0 + rt, y0, x1 - rt, y0, 0, -1), arc(x1 - rt, y0 + rt, rt, -q),
+    line(x1, y0 + rt, x1, y1 - rb, 1, 0), arc(x1 - rb, y1 - rb, rb, 0),
+    line(x1 - rb, y1, x0 + rb, y1, 0, 1), arc(x0 + rb, y1 - rb, rb, q),
+    line(x0, y1 - rb, x0, y0 + rt, -1, 0), arc(x0 + rt, y0 + rt, rt, 2 * q)
+  ];
+  const total = segs.reduce((a, [l]) => a + l, 0);
+  const pts: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    let s = (i / n) * total;
+    let k = 0;
+    while (k < segs.length - 1 && s > segs[k][0]) s -= segs[k++][0];
+    const [x, y, nx, ny] = segs[k][1](s);
+    const w = amp ? amp * Math.sin((i / n) * cycles * 2 * Math.PI + phase) : 0;
+    pts.push([x + nx * w, y + ny * w]);
+  }
+  return pts;
+}
+
+/** A smooth closed path through the points (Catmull-Rom → cubic Béziers). */
+export function smooth(pts: Pt[], closed = true): string {
+  const n = pts.length;
+  const at = (i: number) => (closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))]);
+  const f = (v: number) => v.toFixed(1);
+  let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 0; i < (closed ? n : n - 1); i++) {
+    const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
+    d += `C${f(p1[0] + (p2[0] - p0[0]) / 6)} ${f(p1[1] + (p2[1] - p0[1]) / 6)} ${f(p2[0] - (p3[0] - p1[0]) / 6)} ${f(p2[1] - (p3[1] - p1[1]) / 6)} ${f(p2[0])} ${f(p2[1])}`;
+  }
+  return closed ? d + 'Z' : d;
 }

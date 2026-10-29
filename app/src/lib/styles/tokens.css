@@ -23,8 +23,8 @@
   --hud: var(--c-ink);         /* the corner clock over the sky */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
-  /* --sea-flat (the map sea under 島's chrome = the scene's sea) lives in the ONE time-of-day sea table
-     in the Builder A block below */
+  /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
+     Builder A block below */
 
   /* ---------- type: 12 · 15 body · 18 talk/button · 24 title/score · 44 hero ---------- */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
@@ -68,7 +68,7 @@
 }
 
 /* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
-:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; }
+:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --hud:#FFF6E0; } /* the clock over the dusk sky top #5B6FC4 */
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#45559A; --lip:#2E3A72;
   --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;
@@ -120,51 +120,68 @@
   /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar), v5 §5 */
   --sh-ground: rgba(40, 60, 40, .18);
 }
-/* The ONE time-of-day sea table (v5 §5): the scene's sea (island/Sea.svelte) and the chrome under 島
-   (+layout) both read --sea-flat. Keyed on <html data-tod> for the chrome and on the scene's own
-   data-tod, so a gallery scene shows its forced time of day. */
-:root, .if-scene { --sea-flat: var(--c-mint); --sea-mark:#71C6B1; --horizon:#A6E6D6; }
-:root[data-tod="dawn"], .if-scene[data-tod="dawn"] { --sea-flat:#8FD8C8; --sea-mark:#84C7B8; --horizon:#C2EBDF; }
-:root[data-tod="dusk"], .if-scene[data-tod="dusk"] { --sea-flat:#86C9B9; --sea-mark:#7BB9AA; --horizon:#F2D9B8; }
-:root[data-tod="night"], .if-scene[data-tod="night"] { --sea-flat:#3F6F9C; --sea-mark:#5585B3; --horizon:#5E80B8; }
-/* v5 (docs/design/v5-direction.md §5): the NH map look. Flat fills, no strokes; depth = one lip
-   (12% darker bottom edge) + a ground ellipse. The sea is the map's mint with small ▲ marks, the
-   shore is flat sand with a 4u foam line, the grass texture stays under 5% contrast. */
+/* Round 7 (docs/design/environment-style.md, "Pocket Camp diorama"): the scene is painted like the official
+   renders. Light from the upper left; every surface = one base + one gentle gradient + one soft lower shade +
+   sparse flecks; no strokes or lips on scenery; soft radial contact shadows in the colour of the surface.
+   The sea is NH blue with a turquoise shallow ring; time of day = ONE multiply tint over land and sea
+   (IslandScene .tint), so there are no per-time sea tables. Season comes only from the palette tables. */
+
+/* The chrome under 島 (+layout .page[data-page=island]) = the scene's open sea #3D8FE2 seen through the same
+   tint (multiply), so the UI below the island continues the sea seamlessly at every time of day. */
+:root { --sea-flat:#3D8FE2; }
+:root[data-tod="dawn"] { --sea-flat:#3D81C1; }
+:root[data-tod="dusk"] { --sea-flat:#3D78A3; }
+:root[data-tod="night"] { --sea-flat:#255CC5; }
+
+/* the horizon and the stage top in px, resolved on the stage against the scene (IslandScene .stage) */
+@property --if-hy { syntax: '<length>'; inherits: true; initial-value: 0px; }
+@property --if-st { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
 .if-scene {
-  --foam:#F4FFF8; --cloud:#FFFFFF; --cloud-lip:#E3ECFA; --cloud-op:1; --tod-tint:transparent;
-  --moon:#FFF3C4; --sh-scale:1;
-  /* spring (default) */
-  --grass:#9BE070; --grass-2:#94DA69; --grass-lip:#7FC25C;
-  --cliff:#C9A26B; --path:#EDD39A;
-  --beach:#FBEABB; --beach-lip:#E9D49E;
-  --sky-top:#57B8F7; --sky-bottom:#CDEEFF; --sun-disc:#FFE68A;
+  /* sea */
+  --sea-haze:#8EDDF5; --sea-mid:#4C9DE8; --sea-open:#3D8FE2; --shallow:#5ED8E8; --foam:#FFFFFF; --glint:#FFFFFF;
+  /* sky (day; spring) · sun · moon · clouds */
+  --sky-top:#4AA3F6; --sky-mid:#79C9FC; --sky-hz:#C6EEFF;
+  --sun-core:#FFFEF2; --sun-ring:#FFE989; --moon:#FFF4C8; --moon-glow:rgba(255,244,200,.35);
+  --cloud-top:#FFFFFF; --cloud-mid:#E8F2FC; --cloud-under:#D2E3F5; --cloud-op:1;
+  /* ground (spring) */
+  --grass:#7CC95A; --grass-hi:#9BD970; --fleck-hi:#A8E07A; --fleck-lo:#5EAE47; --grass-shade:#3F8F33; --overhang:#5FA847;
+  --cliff-top:#DDA472; --cliff-bottom:#B97A50; --strata:#C88B5D;
+  --sand-hi:#FCE7AE; --sand:#F4D184; --sand-wet:#E2B66E; --sand-shade:#D6AE68; --plaza-hi:#FBE7B4; --plaza:#EFD08E;
+  /* contact shadows: on grass / on sand (snow in winter); dusk stretches them to the right */
+  --sh-c:rgba(34,74,28,.32); --sh-sand:rgba(140,98,40,.28); --sh-scale:1;
+  --tod-tint:transparent;
   --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
 }
 .if-scene[data-season="summer"] {
-  --grass:#80D958; --grass-2:#7AD252; --grass-lip:#66BA45;
-  --sky-top:#3FA9F5; --sky-bottom:#BDE8FF; --sun-disc:#FFE066;
+  --grass:#5DBE4A; --grass-hi:#7CCF5E; --fleck-hi:#8ED96C; --fleck-lo:#46A23A; --grass-shade:#2F7F2A; --overhang:#4CA03E;
+  --sky-top:#2F92F0;
 }
 .if-scene[data-season="autumn"] {
-  --grass:#C8D666; --grass-2:#C1CF5F; --grass-lip:#A9B850;
-  --cliff:#C49A62; --path:#E6C68C;
-  --sky-top:#69B8F0; --sky-bottom:#C4E8FF; --sun-disc:#FFD27A;
+  --grass:#A8C457; --grass-hi:#C2D46E; --fleck-hi:#D9C26A; --fleck-lo:#8AA845; --grass-shade:#6F8A35; --overhang:#90AA48;
+  --sky-hz:#E8F2EE;
 }
 .if-scene[data-season="winter"] {
-  --grass:#F7FAFF; --grass-2:#EEF3FB; --grass-lip:#D3DEEC;
-  --cliff:#B8C6D8; --path:#E9E4DA; --beach:#EFEBE0; --beach-lip:#DAD3C2;
-  --sky-top:#8EC6F0; --sky-bottom:#EEF6FF; --sun-disc:#FFF1C2;
-  --cloud-lip:#E2E8F5;
+  --grass:#F5F8FF; --grass-hi:#FFFFFF; --grass-shade:#B9C8E6; --overhang:#D5E0F2;
+  --sand-hi:#F6F0E2; --sand:#EEE6D4; --sand-wet:#D2C7B0; --sand-shade:#C9BEA6; --plaza-hi:#FAF8F3; --plaza:#E8E2D6;
+  --sh-c:rgba(80,110,160,.25); --sh-sand:rgba(80,110,160,.25);
+  --sky-top:#8EC2EE; --sky-mid:#BFE0F8; --sky-hz:#EEF7FF;
 }
+/* time of day (after the seasons, so it wins the sky): the sky table, warm sun, cloud undersides, the tint */
 .if-scene[data-tod="dawn"] {
-  --sky-top:#FFC6A8; --sky-bottom:#CDEBFF; --tod-tint:rgba(255,170,140,.1); --cloud:#FFF6F0; --cloud-lip:#FFDCCB;
+  --sky-top:#7FA8E8; --sky-mid:#F6C3B4; --sky-hz:#FFE6CC;
+  --sun-core:#FFF3D6; --sun-ring:#FFB36B; --cloud-mid:#FFEEE6; --cloud-under:#FFE0D2;
+  --tod-tint:#FFE6DA;
 }
 .if-scene[data-tod="dusk"] {
-  --sky-top:#FF9E7A; --sky-bottom:#FFE2A8; --tod-tint:rgba(255,140,90,.12); --cloud:#FFF0E0; --cloud-lip:#FFC4AC;
-  --sun-disc:#FFB35C; --sh-scale:1.25;
+  --sky-top:#5B6FC4; --sky-mid:#F59A86; --sky-hz:#FFD39A;
+  --sun-core:#FFF3D6; --sun-ring:#FFB36B; --cloud-mid:#FFE4D6; --cloud-under:#FFC9B0;
+  --tod-tint:#FFD7B8; --sh-scale:1.25;
 }
 .if-scene[data-tod="night"] {
-  --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(48,60,130,.22); --cloud:#9AA6E0; --cloud-lip:#8692D0;
-  --cloud-op:.5; --foam:#9CC3DE;
+  --sky-top:#1F2C66; --sky-mid:#34478F; --sky-hz:#5A6CB4;
+  --cloud-top:#C3CBF0; --cloud-mid:#A3AEE2; --cloud-under:#7F8CC8; --cloud-op:.6;
+  --tod-tint:#9AA4DE;
   --plate:#FFF6E0;
 }
 /* Pause every scene animation while the tab is hidden (§S.13). */

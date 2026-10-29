@@ -186,6 +186,12 @@
   /* fruit items lie on the ground (z above the trunk, below the villagers) */
   .fruit { position: absolute; aspect-ratio: 1; translate: -50% -50%; line-height: 0; pointer-events: none; }
   .f { display: block; transform-origin: 50% 100%; }
+  /* round 7: a soft radial contact shadow under each item (0.45 of its size, +6% right and down) */
+  .fruit::before {
+    content: ''; position: absolute; z-index: -1; left: 11%; width: 90%; bottom: -8%; height: 26%; border-radius: 50%;
+    background: radial-gradient(closest-side, var(--sh-c), transparent); pointer-events: none;
+  }
+  .fruit.ghost::before { opacity: .4; }
   /* nothing earned yet: one faded, smaller item where it will fall */
   .fruit.ghost .f { scale: .7; opacity: .4; }
   .fruit.ghost :global(.official) { filter: saturate(0); }
