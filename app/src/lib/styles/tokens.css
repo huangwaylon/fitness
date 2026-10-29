@@ -20,7 +20,7 @@
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-cream); --surface: var(--c-paper); --lip: var(--c-lip);
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
-  --hud: var(--c-ink);         /* the corner clock over the sky */
+  --hud: #33261B;              /* the corner clock over the sky: deeper ink, ≥ 4.5:1 on every day sky top (round 7 F12) */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
@@ -68,7 +68,7 @@
 }
 
 /* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
-:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --hud:#FFF6E0; } /* the clock over the dusk sky top #5B6FC4 */
+:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --hud:#FFFFFF; } /* the clock over the dusk sky top #5B6FC4 (4.65:1) */
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#45559A; --lip:#2E3A72;
   --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;

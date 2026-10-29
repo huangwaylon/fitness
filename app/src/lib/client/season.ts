@@ -79,9 +79,12 @@ export function previewParams(search: string): Pick<ThemeInput, 'theme' | 'seaso
   };
 }
 
-/** Season sky tops (= the scene tokens in tokens.css), for <meta name="theme-color">. */
-const SKY_TOP: Record<Season, string> = { spring: '#57B8F7', summer: '#3FA9F5', autumn: '#69B8F0', winter: '#8EC6F0' };
-const TOD_TOP: Partial<Record<TimeOfDay, string>> = { dawn: '#FFC6A8', dusk: '#FF9E7A', night: '#3A4886' };
+/**
+ * The sky table's top stop (= `--sky-top` of `.if-scene` in tokens.css, season then time of day; season.test.ts
+ * checks they agree), for <meta name="theme-color">.
+ */
+export const SKY_TOP: Record<Season, string> = { spring: '#4AA3F6', summer: '#2F92F0', autumn: '#4AA3F6', winter: '#8EC2EE' };
+export const TOD_TOP: Partial<Record<TimeOfDay, string>> = { dawn: '#7FA8E8', dusk: '#5B6FC4', night: '#1F2C66' };
 
 /** The browser chrome colour: the top of the sky (v5 §5). */
 export function themeColor(s: Pick<ThemeState, 'tod' | 'season'>): string {

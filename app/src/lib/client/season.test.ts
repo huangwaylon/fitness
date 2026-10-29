@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { deriveTheme, foliageFor, previewParams, seasonFor, themeColor, todFor } from './season.ts';
+import { readFileSync } from 'node:fs';
+import { deriveTheme, foliageFor, previewParams, seasonFor, SKY_TOP, themeColor, TOD_TOP, todFor } from './season.ts';
 
 const at = (s: string) => new Date(s); // local time
 
@@ -50,11 +51,17 @@ describe('time of day follows the clock', () => {
   });
 
   it('theme-color = the top of the sky', () => {
-    expect(themeColor({ tod: 'night', season: 'summer' })).toBe('#3A4886');
-    expect(themeColor({ tod: 'dusk', season: 'summer' })).toBe('#FF9E7A');
-    expect(themeColor({ tod: 'dawn', season: 'winter' })).toBe('#FFC6A8');
-    expect(themeColor({ tod: 'day', season: 'autumn' })).toBe('#69B8F0');
-    expect(themeColor({ tod: 'day', season: 'spring' })).toBe('#57B8F7');
+    expect(themeColor({ tod: 'night', season: 'summer' })).toBe('#1F2C66');
+    expect(themeColor({ tod: 'dusk', season: 'summer' })).toBe('#5B6FC4');
+    expect(themeColor({ tod: 'dawn', season: 'winter' })).toBe('#7FA8E8');
+    expect(themeColor({ tod: 'day', season: 'summer' })).toBe('#2F92F0');
+  });
+  it('matches the sky table in tokens.css (round 7 F13)', () => {
+    const css = readFileSync(new URL('../styles/tokens.css', import.meta.url), 'utf8');
+    const top = (sel: string) => new RegExp(`${sel.replace(/[[\]]/g, '\\$&')}\\s*\\{[^}]*--sky-top:\\s*(#[0-9A-Fa-f]{6})`).exec(css)?.[1]?.toUpperCase();
+    const base = top('.if-scene');
+    for (const s of ['spring', 'summer', 'autumn', 'winter'] as const) expect(SKY_TOP[s], s).toBe(top(`.if-scene[data-season="${s}"]`) ?? base);
+    for (const t of ['dawn', 'dusk', 'night'] as const) expect(TOD_TOP[t], t).toBe(top(`.if-scene[data-tod="${t}"]`));
   });
 });
 
