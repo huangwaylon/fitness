@@ -1,6 +1,6 @@
 {
   "extends": "$app/tsconfig",
-  "include": ["src", "scripts", "gas", "*"],
+  "include": ["src", "scripts", "gas", "e2e", "*"],
   "exclude": ["src/service-worker"],
   "compilerOptions": {
     "strict": true,

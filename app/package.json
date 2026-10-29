@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
+    "e2e": "playwright test",
     "prepare": "svelte-kit sync || true",
     "assets:fetch": "node scripts/fetch-assets.ts",
     "fonts:subset": "node scripts/font-subsets.ts",
@@ -16,6 +17,7 @@
     "bench": "node scripts/bench-model.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/kit": "^3.1.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
