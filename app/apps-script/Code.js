@@ -55,6 +55,31 @@ var IslandFund = (() => {
     return ymd(new Date(parseInstant(iso) + ZONE_OFFSET_MS));
   }
 
+  // src/lib/model/labels.ts
+  var WORKOUT_LABELS_JA = {
+    "Traditional Strength Training": "筋力トレーニング",
+    "Functional Strength Training": "機能的な筋力トレーニング",
+    "Core Training": "コアトレーニング",
+    Pilates: "ピラティス",
+    Yoga: "ヨガ",
+    "High Intensity Interval Training": "高強度インターバルトレーニング",
+    "Mixed Cardio": "ミックスカーディオ",
+    "Cross Training": "クロストレーニング",
+    Walking: "ウォーキング",
+    "Outdoor Walk": "屋外ウォーキング",
+    "Indoor Walk": "室内ウォーキング",
+    Hiking: "ハイキング",
+    Running: "ランニング",
+    "Outdoor Run": "屋外ランニング",
+    "Indoor Run": "室内ランニング",
+    Cycling: "サイクリング",
+    Swimming: "水泳",
+    Dance: "ダンス",
+    Elliptical: "エリプティカル",
+    Rowing: "ローイング"
+  };
+  var WORKOUT_TYPES = Object.keys(WORKOUT_LABELS_JA);
+
   // src/lib/ingest/parse.ts
   var ShapeError = class extends Error {
   };
@@ -114,31 +139,9 @@ var IslandFund = (() => {
     return toIsoDate(s);
   }
   var ALIASES = {
-    // Strength
+    ...Object.fromEntries(Object.entries(WORKOUT_LABELS_JA).map(([en, ja]) => [ja, en])),
     "伝統的な筋力トレーニング": "Traditional Strength Training",
-    "筋力トレーニング": "Traditional Strength Training",
-    "機能的な筋力トレーニング": "Functional Strength Training",
-    "コアトレーニング": "Core Training",
-    "ピラティス": "Pilates",
-    "ヨガ": "Yoga",
-    "高強度インターバルトレーニング": "High Intensity Interval Training",
-    "HIIT": "High Intensity Interval Training",
-    "ミックスカーディオ": "Mixed Cardio",
-    "クロストレーニング": "Cross Training",
-    // Walking / hiking (kept for readable labels)
-    "ウォーキング": "Walking",
-    "屋外ウォーキング": "Outdoor Walk",
-    "室内ウォーキング": "Indoor Walk",
-    "ハイキング": "Hiking",
-    // Common others (kept for readable labels)
-    "ランニング": "Running",
-    "屋外ランニング": "Outdoor Run",
-    "室内ランニング": "Indoor Run",
-    "サイクリング": "Cycling",
-    "水泳": "Swimming",
-    "ダンス": "Dance",
-    "エリプティカル": "Elliptical",
-    "ローイング": "Rowing"
+    HIIT: "High Intensity Interval Training"
   };
   function canonicalWorkoutType(name) {
     var _a, _b;
@@ -411,31 +414,6 @@ var IslandFund = (() => {
     }
     return { metrics, workouts, skipped, unknownTypes };
   }
-
-  // src/lib/model/labels.ts
-  var JA = {
-    "Traditional Strength Training": "筋力トレーニング",
-    "Functional Strength Training": "機能的な筋力トレーニング",
-    "Core Training": "コアトレーニング",
-    Pilates: "ピラティス",
-    Yoga: "ヨガ",
-    "High Intensity Interval Training": "高強度インターバルトレーニング",
-    "Mixed Cardio": "ミックスカーディオ",
-    "Cross Training": "クロストレーニング",
-    Walking: "ウォーキング",
-    "Outdoor Walk": "屋外ウォーキング",
-    "Indoor Walk": "室内ウォーキング",
-    Hiking: "ハイキング",
-    Running: "ランニング",
-    "Outdoor Run": "屋外ランニング",
-    "Indoor Run": "室内ランニング",
-    Cycling: "サイクリング",
-    Swimming: "水泳",
-    Dance: "ダンス",
-    Elliptical: "エリプティカル",
-    Rowing: "ローイング"
-  };
-  var WORKOUT_TYPES = Object.keys(JA);
 
   // src/lib/ingest/sheet-api.ts
   var TABS = {
