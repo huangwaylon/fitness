@@ -21,7 +21,7 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 export const EVENT_TYPES = [
-  'checkin', 'confirm', 'spend', 'approve', 'transfer', 'harvest', 'highfive', 'pref', 'share',
+  'checkin', 'confirm', 'spend', 'approve', 'transfer', 'harvest', 'highfive', 'pref',
   // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
   'metric_set', 'workout_edit', 'workout_add', 'spend_void', 'transfer_undo'
 ] as const;

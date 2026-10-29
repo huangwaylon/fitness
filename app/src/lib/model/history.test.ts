@@ -320,3 +320,70 @@ describe('history views', () => {
     expect(dayDetail(s, DAYS[0], THU_AFTER)).toMatchObject({ open: false, locked: true });
   });
 });
+
+describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
+  const LOCK = ms('2026-11-25', '04:00');
+  const add = (at: string, date: string, min: number, id = `m:add-${++n}`) => ev(at, 'A', 'workout_add', { id, date, type: 'Pilates', durationMin: min });
+
+  it('a hand-added workout counts toward 活動 as max(Watch, steps, manual), never summed, within the daily cap', () => {
+    const base = goodWeek(); // 30 Watch minutes a day, 9000 steps (goal well below: steps also give minutes)
+    const s0 = reduce(base);
+    const d0 = dayDetail(s0, DAYS[0], WED_MID).people.A.minutes.value;
+    // A shorter manual workout than the day's minutes changes nothing (no double counting).
+    const small = withRows(base, { events: [add(jst(DAYS[2], '23:00'), DAYS[0], Math.max(10, d0 - 5))] });
+    expect(scoreAt(small, 'A', LIVE).categories.peach.actual).toBe(scoreAt(base, 'A', LIVE).categories.peach.actual);
+    // A longer one replaces the day's minutes, capped like any day.
+    const big = withRows(base, { events: [add(jst(DAYS[2], '23:00'), DAYS[0], d0 + 20)] });
+    const raised = scoreAt(big, 'A', LIVE).categories.peach.actual - scoreAt(base, 'A', LIVE).categories.peach.actual;
+    expect(raised).toBeGreaterThan(0);
+    expect(raised).toBeLessThanOrEqual(20);
+    const dd = dayDetail(reduce(big), DAYS[0], WED_MID).people.A.minutes;
+    expect(dd).toMatchObject({ value: d0 + 20, source: 'manual' });
+    expect(weekDetail(reduce(big), WK, WED_MID).people.A.days[0]).toMatchObject({ minutesSource: 'manual', editedFields: ['workout'] });
+  });
+
+  it('two manual workouts on a day add up with each other (but still only against the larger source)', () => {
+    const rows: SnapshotRows = { metrics: [], workouts: [], presence: [], events: [add(jst(DAYS[1], '20:00'), DAYS[1], 25), add(jst(DAYS[1], '21:00'), DAYS[1], 20)] };
+    expect(dayDetail(reduce(rows), DAYS[1], WED_MID).people.A.minutes).toMatchObject({ value: 45, source: 'manual' });
+    expect(scoreAt(rows, 'A', LIVE).categories.peach.actual).toBe(45);
+  });
+
+  it('an excluded manual workout stops counting', () => {
+    const id = 'm:x1';
+    const rows: SnapshotRows = { metrics: [], workouts: [], presence: [], events: [add(jst(DAYS[1], '20:00'), DAYS[1], 40, id), ev(jst(DAYS[1], '21:00'), 'A', 'workout_edit', { id, excluded: true })] };
+    expect(scoreAt(rows, 'A', LIVE).categories.peach.actual).toBe(0);
+  });
+
+  it('an edit exactly at the lock is refused; one millisecond before counts', () => {
+    const set = (at: number) => ['', 'A', `e${++n}`, 'metric_set', JSON.stringify({ date: DAYS[0], metric: 'steps', value: 1234 })] as EventRow;
+    const at = (t: number) => { const r = set(t); r[0] = new Date(t).toISOString(); return r; };
+    expect(metricAsOf(reduce(withRows(goodWeek(), { events: [at(LOCK)] })), 'A', DAYS[0], 'steps', LIVE)).toBe(9000);
+    expect(metricAsOf(reduce(withRows(goodWeek(), { events: [at(LOCK - 1)] })), 'A', DAYS[0], 'steps', LIVE)).toBe(1234);
+    const fix = (t: number) => ev(new Date(t).toISOString(), 'A', 'checkin', { date: DAYS[6], habit: HABITS.A[0], done: false, edit: true });
+    expect(reduce(withRows(goodWeek(), { events: [fix(LOCK)] })).checkins.A.filter((c) => c.edit)).toEqual([]);
+    expect(reduce(withRows(goodWeek(), { events: [fix(LOCK - 1)] })).checkins.A.filter((c) => c.edit)).toHaveLength(1);
+  });
+
+  it('at 00:00 JST Monday, Sunday is still editable (last week) and Monday has just begun', () => {
+    const MON0 = ms('2026-11-23', '00:00');
+    const set = (date: string) => ev(new Date(MON0).toISOString(), 'A', 'metric_set', { date, metric: 'steps', value: 4321 });
+    const s = reduce(withRows(goodWeek(), { events: [set(DAYS[6]), set('2026-11-23')] }));
+    expect(metricAsOf(s, 'A', DAYS[6], 'steps', LIVE)).toBe(4321);
+    expect(metricAsOf(s, 'A', '2026-11-23', 'steps', LIVE)).toBe(4321);
+    // One millisecond earlier it is still Sunday: Monday is in the future and refused.
+    const early = ev(new Date(MON0 - 1).toISOString(), 'A', 'metric_set', { date: '2026-11-23', metric: 'steps', value: 99 });
+    expect(metricAsOf(reduce(withRows(goodWeek(), { events: [early] })), 'A', '2026-11-23', 'steps', LIVE)).toBeNull();
+  });
+
+  it('a metric_set that changes nothing is not in the change log (L8), and the log is memoised per state (L5)', () => {
+    const rows = withRows(goodWeek(), {
+      events: [
+        ev(jst(DAYS[2], '23:00'), 'A', 'metric_set', { date: DAYS[0], metric: 'steps', value: 7000 }),
+        ev(jst(DAYS[2], '23:05'), 'A', 'metric_set', { date: DAYS[0], metric: 'steps', value: 7000 })
+      ]
+    });
+    const s = reduce(rows);
+    expect(editLog(s).filter((e) => e.field === 'steps')).toHaveLength(1);
+    expect(editLog(s)).toBe(editLog(s));
+  });
+});

@@ -7,6 +7,7 @@
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
 import { looseDate, parseShortcut } from '../src/lib/ingest/parse.ts';
+import { WORKOUT_TYPES } from '../src/lib/model/labels.ts';
 import { EVENT_TYPES, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, NUMERIC_COLUMNS, TABS, type ApiError, type Person, type SnapshotRows, type TabName } from '../src/lib/ingest/sheet-api.ts';
 
 export const MAX_BODY_CHARS = 1_000_000;
@@ -289,7 +290,7 @@ function validEditData(type: string, d: Rec): boolean {
         (d.excluded === undefined || typeof d.excluded === 'boolean');
     case 'workout_add':
       return typeof d.id === 'string' && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === 'string' && DATE_RE.test(d.date) &&
-        typeof d.type === 'string' && d.type.length > 0 && d.type.length <= 60 &&
+        typeof d.type === 'string' && WORKOUT_TYPES.includes(d.type) && // the model drops any other type (round 7 L7)
         isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');
     case 'spend_void':

@@ -109,6 +109,18 @@ describe('scoreWeek: totals', () => {
 });
 
 describe('scoreWeek: peach', () => {
+  it('a day counts max(Watch, steps over goal, hand-added workouts): never a sum, still capped (ADR 0011)', () => {
+    const d = weekDays(WK);
+    const manual = (date: string, min: number): Workout => ({ ...workout(date, 'Pilates', min), manual: true });
+    const peach = (w: Workout[], ex: (number | null)[] = [30], st: (number | null)[] = []) =>
+      scoreWeek(input({ days: days(WK, ex, st), workouts: w })).categories.peach.actual;
+    expect(peach([manual(d[0], 20)])).toBe(30); // Watch 30 wins
+    expect(peach([manual(d[0], 45)])).toBe(45); // manual wins, Watch not added
+    expect(peach([manual(d[0], 25), manual(d[0], 25)])).toBe(50); // manual workouts of a day add up
+    expect(peach([manual(d[0], 45)], [30], [7500 + 5000])).toBe(50); // steps 50 min win
+    expect(peach([manual(d[0], 200)])).toBe(67.5); // the daily cap
+    expect(peach([workout(d[0], 'Pilates', 45)])).toBe(30); // a Watch workout is already in its minutes
+  });
   it('daily cap = min(90, max(60, ½ weekly target))', () => {
     const big = [200, 0, 0, 0, 0, 0, 0];
     expect(scoreWeek(input({ days: days(WK, big, []) })).categories.peach.actual).toBe(67.5); // A 135 → 67.5

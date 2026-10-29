@@ -3,7 +3,7 @@ import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
 import {
   applySnapshot, backoffMs, configure, enqueue, flush, holdEvent, nextRetryAt, unqueue, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
 } from './gas.ts';
-import { composeView } from './view.ts';
+import { composeModel, composeView, missesLock } from './view.ts';
 import { emptyRows, mergeRows, maxAt } from '#lib/model/snapshot.ts';
 
 class Mem implements KV {
@@ -170,6 +170,42 @@ describe('write queue', () => {
     expect(calls.map((c) => c.id)).toEqual([held.id]);
     expect(holdEvent(held.id, t + 9000)).toBe(false); // already sent
   });
+  it('a later event on the same subject never passes a held one; other subjects still go first (round 7 M2)', async () => {
+    const t = 1_000_000;
+    const fix = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true, edit: true }, t, 5000);
+    const island = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: false }, t + 1);
+    const other = enqueue('checkin', { date: '2026-11-02', habit: 'g', done: true }, t + 2);
+    expect(nextRetryAt(t + 2)).toBe(t + 2); // `other` is due; the blocked island tap is not
+    await flush(() => t + 2);
+    expect(calls.map((c) => c.id)).toEqual([other.id]);
+    expect(nextRetryAt(t + 3)).toBe(t + 5000); // wakes when the held fix goes, not every 250 ms
+    await flush(() => t + 5000);
+    expect(calls.map((c) => c.id)).toEqual([other.id, fix.id, island.id]); // the screen's order
+  });
+  it('undoing the held event lets the blocked one go', async () => {
+    const t = 1_000_000;
+    const fix = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5 }, t, 5000);
+    const later = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 6 }, t + 1);
+    expect(unqueue(fix.id)).toBe(true);
+    await flush(() => t + 2);
+    expect(calls.map((c) => c.id)).toEqual([later.id]);
+  });
+  it('an edit that would reach the server after its lock is dropped unsent and reported (round 7 M1)', async () => {
+    const t = 1_000_000;
+    const late = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5 }, t, 0, t + 10_000);
+    const fine = enqueue('highfive', {}, t);
+    const r = await flush(() => t + 10_000, (ev, now) => missesLock(ev, now, 0));
+    expect(r.expired.map((e) => e.id)).toEqual([late.id]);
+    expect(calls.map((c) => c.id)).toEqual([fine.id]);
+    expect(queued()).toEqual([]);
+  });
+  it('missesLock judges by the eventual send time (held → nextAt) on the server clock', () => {
+    const lockAt = 100_000;
+    expect(missesLock({ nextAt: 90_000, lockAt }, 80_000, 0)).toBe(false);
+    expect(missesLock({ nextAt: 100_000, lockAt }, 80_000, 0)).toBe(true); // held until the lock: refused there
+    expect(missesLock({ nextAt: 90_000, lockAt }, 80_000, 15_000)).toBe(true); // the server clock is ahead
+    expect(missesLock({ nextAt: 0 }, 1e12, 0)).toBe(false); // not an edit
+  });
   it('a second flush while one is running shares it', async () => {
     enqueue('highfive', {});
     const [x, y] = await Promise.all([flush(), flush()]);
@@ -254,6 +290,18 @@ describe('optimistic view', () => {
     // Once the server has the event (same id), the queued copy is ignored.
     const acked = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-04T12:00:01.000Z', 'A', 'q3', 'pref', '{"key":"locale","value":"en"}']] }) };
     expect(composeView(acked, q, now).locale).toBe('en');
+  });
+  it('an unsent edit that would land after the lock is not shown; live events ignore a stray `person` (round 7 M1, L2)', () => {
+    const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST: the week of 11-02 locks Wed 11-11 04:00
+    const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
+    const lockAt = Date.parse('2026-11-10T19:00:00.000Z');
+    const tick = (id: string, nextAt: number, extra = {}) => ({ id, type: 'checkin' as const, data: { date: '2026-11-04', habit: 'teishoku_lunch', done: true, edit: true }, queuedAt: now, tries: 0, nextAt, lockAt, ...extra });
+    expect(composeView(cache, [tick('ok', now + 5000)], now).people.A.habits?.ticksByDate).toEqual({ '2026-11-04': ['teishoku_lunch'] });
+    expect(composeView(cache, [tick('late', lockAt)], now).people.A.habits?.ticksByDate).toEqual({});
+    // Already acked (not in the pending set): shown whatever its nextAt, the server judged it.
+    expect(composeModel(cache, [tick('acked', lockAt)], now, new Set()).state.checkins.A).toHaveLength(1);
+    // A crafted `person` on a live queued event is ignored: it is always me.
+    expect(composeModel(cache, [tick('p', now, { person: 'B' })], now).state.checkins.B).toEqual([]);
   });
   it('the same event listed twice is applied once (r2 N2)', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');

@@ -412,6 +412,31 @@ var IslandFund = (() => {
     return { metrics, workouts, skipped, unknownTypes };
   }
 
+  // src/lib/model/labels.ts
+  var JA = {
+    "Traditional Strength Training": "筋力トレーニング",
+    "Functional Strength Training": "機能的な筋力トレーニング",
+    "Core Training": "コアトレーニング",
+    Pilates: "ピラティス",
+    Yoga: "ヨガ",
+    "High Intensity Interval Training": "高強度インターバルトレーニング",
+    "Mixed Cardio": "ミックスカーディオ",
+    "Cross Training": "クロストレーニング",
+    Walking: "ウォーキング",
+    "Outdoor Walk": "屋外ウォーキング",
+    "Indoor Walk": "室内ウォーキング",
+    Hiking: "ハイキング",
+    Running: "ランニング",
+    "Outdoor Run": "屋外ランニング",
+    "Indoor Run": "室内ランニング",
+    Cycling: "サイクリング",
+    Swimming: "水泳",
+    Dance: "ダンス",
+    Elliptical: "エリプティカル",
+    Rowing: "ローイング"
+  };
+  var WORKOUT_TYPES = Object.keys(JA);
+
   // src/lib/ingest/sheet-api.ts
   var TABS = {
     metrics: ["at", "person", "date", "metric", "value"],
@@ -436,7 +461,6 @@ var IslandFund = (() => {
     "harvest",
     "highfive",
     "pref",
-    "share",
     // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
     "metric_set",
     "workout_edit",
@@ -694,7 +718,8 @@ var IslandFund = (() => {
       case "workout_edit":
         return isId(d.id) && (d.strength !== void 0 || d.excluded !== void 0) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean") && (d.excluded === void 0 || typeof d.excluded === "boolean");
       case "workout_add":
-        return typeof d.id === "string" && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === "string" && DATE_RE.test(d.date) && typeof d.type === "string" && d.type.length > 0 && d.type.length <= 60 && isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean");
+        return typeof d.id === "string" && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === "string" && DATE_RE.test(d.date) && typeof d.type === "string" && WORKOUT_TYPES.includes(d.type) && // the model drops any other type (round 7 L7)
+        isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean");
       case "spend_void":
         return typeof d.spendId === "string" && isId(d.spendId) || typeof d.spendId === "number" && Number.isFinite(d.spendId);
       case "transfer_undo":

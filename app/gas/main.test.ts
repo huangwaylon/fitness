@@ -253,6 +253,8 @@ describe('edit events (history-and-editing.md §4.1)', () => {
       { type: 'workout_add', data: { id: 'w-no-prefix', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 601 } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 0 } },
+      { type: 'workout_add', data: { id: 'm:2', date: '2026-10-28', type: 'Underwater Basket Weaving', durationMin: 30 } }, // L7
+      { type: 'share', data: { key: 'steps', value: false } }, // L3: no longer an event type
       { type: 'spend_void', data: {} },
       { type: 'transfer_undo', data: { month: '2026-13' } }
     ];
