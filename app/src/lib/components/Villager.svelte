@@ -12,7 +12,7 @@
   import Emote from './Emote.svelte';
   import Fx from './Fx.svelte';
   import Silhouette from './Silhouette.svelte';
-  import type { EmoteIcon } from './art.ts';
+  import { villagerEmote, type EmoteIcon } from './art.ts';
   import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
   import { resolveLook } from '#lib/villagers/roster.ts';
   import { villagerArt } from '#lib/client/assets.ts';
@@ -57,11 +57,14 @@
 
   // Which way each render looks (as drawn), so "face in" turns toward the middle of the island.
   const LOOKS_RIGHT = new Set(['goldie', 'bunnie', 'judy', 'molly', 'dom']);
+  // Asymmetric designs never mirror (Raymond's heterochromia would swap sides): they lean in instead.
+  const NO_MIRROR = new Set(['raymond']);
 
-  const EXPR: Record<Expression, EmoteIcon | null> = { happy: null, cheer: 'joy', sleepy: 'sleepy', surprised: 'surprise', proud: 'pride' };
-  const LEGACY: Record<EmoteKind, EmoteIcon> = { note: 'joy', bang: 'surprise', zz: 'sleepy', sparkle: 'pleased', heart: 'love' };
+  // Villagers show floating NH marks / colour glyphs, never the player's cat faces (A1, villagerEmote).
+  const EXPR: Record<Expression, EmoteIcon | null> = { happy: null, cheer: 'glee', sleepy: 'mark-zzz', surprised: 'surprise', proud: 'mark-sparkle' };
+  const LEGACY: Record<EmoteKind, EmoteIcon> = { note: 'mark-note', bang: 'surprise', zz: 'mark-zzz', sparkle: 'mark-sparkle', heart: 'love' };
   const propEmote = $derived<EmoteIcon | null>(
-    emote === false ? null : emote === true ? (EXPR[expression] ?? 'happiness') : ((LEGACY as Record<string, EmoteIcon>)[emote] ?? (emote as EmoteIcon))
+    emote === false ? null : emote === true ? (EXPR[expression] ?? 'mark-note') : ((LEGACY as Record<string, EmoteIcon>)[emote] ?? (emote as EmoteIcon))
   );
   const propMotion = $derived<Motion | null>(
     !animate ? null : expression === 'cheer' ? 'hop' : expression === 'surprised' ? 'surprise' : expression === 'proud' ? 'proud' : null
@@ -70,13 +73,15 @@
   const st = $derived(actor ? actors[actor] : null);
   const motion = $derived(st ? st.motion : propMotion);
   const motionN = $derived(st ? st.motionN : 0);
-  const shownEmote = $derived(st ? st.emote : propEmote);
+  const rawEmote = $derived(st ? st.emote : propEmote);
+  const shownEmote = $derived(rawEmote ? villagerEmote(rawEmote) : null);
   const emoteN = $derived(st ? st.emoteN : 0);
   const asleep = $derived(st ? st.asleep : expression === 'sleepy');
   const walking = $derived(st?.walking ?? false);
   const inward = $derived(st?.face === 'in');
+  const lean = $derived(inward && NO_MIRROR.has(look.id));
   const facing = $derived.by(() => {
-    if (!inward) return 1;
+    if (!inward || NO_MIRROR.has(look.id)) return 1;
     const wantRight = side === 'left';
     return wantRight === LOOKS_RIGHT.has(look.id) ? 1 : -1;
   });
@@ -96,9 +101,10 @@
   const dir = $derived<1 | -1>(side === 'left' ? -1 : 1);
 </script>
 
-<span class="villager" class:head={headOnly} class:right={side === 'right'} style:--h={h} style:--facing={facing} aria-hidden="true">
+<span class="villager" class:head={headOnly} class:right={side === 'right'} style:--h={h} style:--facing={facing}
+  style:--in={side === 'left' ? 1 : -1} aria-hidden="true">
   {#if shadow && !headOnly}<span class="shadow" data-act={animate ? motion : null}></span>{/if}
-  <span class="face" class:turning={motion === 'turn' && animate}>
+  <span class="face" class:turning={motion === 'turn' && animate} class:lean>
     <span bind:this={bodyEl} class="body" class:bob={animate && !headOnly && !asleep && !walking} class:sleep={animate && asleep && !headOnly}
       class:walk={animate && walking}>
       <OfficialArt {key} size={h} {eager}>
@@ -110,7 +116,7 @@
     <span class="emote">
       {#key emoteN}
         <Emote id={shownEmote} size={headOnly ? 'max(22px, calc(var(--h) * .5))' : emoteSize} hold={st ? st.emoteHold : expression === 'sleepy'}
-          animate={animate} tail={side === 'left' ? 'right' : 'left'} />
+          animate={animate} tail={side === 'left' ? 'right' : 'left'} bare />
       {/key}
     </span>
   {/if}
@@ -123,7 +129,9 @@
 
 <style>
   .villager { position: relative; display: inline-block; flex: none; line-height: 0; vertical-align: bottom; }
-  .face { display: block; transform: scaleX(var(--facing, 1)); transition: transform 160ms var(--ease-soft); }
+  /* facing flips squash through scaleX(0) over 200ms; .lean tilts toward the middle instead */
+  .face { display: block; transform-origin: 50% 100%; transform: scaleX(var(--facing, 1)); transition: transform 200ms var(--ease-soft); }
+  .face.lean { transform: translateX(calc(var(--in) * 4%)) rotate(calc(var(--in) * 6deg)); }
   .body { display: block; transform-origin: 50% 100%; }
   .body.bob { animation: if-bob var(--dur-bob, 2400ms) var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
   .body.sleep { animation: if-breath-slow 4000ms var(--ease-idle) infinite; }

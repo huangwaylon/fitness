@@ -30,13 +30,18 @@
 <!-- distant islet sand (its palm is an HTML overlay) -->
 <ellipse cx="345" cy="15" rx="27" ry="6" fill="var(--beach)" />
 <ellipse cx="345" cy="15" rx="27" ry="6" fill="none" stroke="var(--foam)" stroke-width="1.6" opacity=".6" />
+{#if night}
+  <!-- moon glint: short warm streaks on the water under the moon (static) -->
+  <g class="moonglint">
+    <rect x="300" y="3" width="26" height="2.4" rx="1.2" /><rect x="306" y="9" width="18" height="2" rx="1" />
+    <rect x="296" y="15" width="30" height="2.2" rx="1.1" /><rect x="304" y="22" width="14" height="1.8" rx=".9" />
+  </g>
+{/if}
+<!-- three wave bands, each one animated group (P5 budget) -->
 <g class="waves">
-  <path d={waveCrest(-14, 12, 9, 6)} transform="translate(0 0)" />
-  <path d={waveCrest(150, 12, 8, 6)} />
-  <path d={waveCrest(-4, 28, 9, 6)} style="animation-delay:-1.3s" />
-  <path d={waveCrest(196, 28, 9, 6)} style="animation-delay:-1.3s" />
-  <path d={waveCrest(-10, 354, 8, 6)} style="animation-delay:-2.6s" />
-  <path d={waveCrest(296, 354, 8, 6)} style="animation-delay:-2.6s" />
+  <g><path d={waveCrest(-14, 12, 9, 6)} /><path d={waveCrest(150, 12, 8, 6)} /></g>
+  <g style="animation-delay:-1.3s"><path d={waveCrest(-4, 28, 9, 6)} /><path d={waveCrest(196, 28, 9, 6)} /></g>
+  <g style="animation-delay:-2.6s"><path d={waveCrest(-10, 354, 8, 6)} /><path d={waveCrest(296, 354, 8, 6)} /></g>
 </g>
 <g class="sparkles" class:night>
   {#each shown as [x, y, s], i (i)}
@@ -45,17 +50,16 @@
 </g>
 
 <style>
-  .waves path {
-    fill: none; stroke: var(--foam); stroke-width: 2.4; stroke-linecap: round; opacity: .7;
-    animation: if-wave 4s var(--ease-idle) infinite alternate;
-  }
+  .waves path { fill: none; stroke: var(--foam); stroke-width: 2.4; stroke-linecap: round; opacity: .7; }
+  .waves g { animation: if-wave 4s var(--ease-idle) infinite alternate; }
   .sparkles path {
     fill: #fff; transform-box: fill-box; transform-origin: center;
     animation: if-twinkle 2.8s var(--ease-idle) infinite;
   }
   .sparkles.night path { fill: #FFF3C4; }
+  .moonglint rect { fill: var(--moon-glint, #FFF3C4); }
   @media (prefers-reduced-motion: reduce) {
-    .waves path { animation: none; }
+    .waves g { animation: none; }
     .sparkles path { animation: none; opacity: 0; }
   }
 </style>

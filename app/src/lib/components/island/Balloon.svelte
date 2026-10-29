@@ -2,6 +2,7 @@
   // Balloon present (style guide §S.10): ours (a balloon + string) carrying the official present,
   // drifting left → right across the sky in 26 s, bobbing ±6px. Tap (48×56 target) → pop: a confetti
   // burst and the present drops behind the hedge. No text. The parent mounts it when one is due.
+  import { onDestroy } from 'svelte';
   import OfficialArt from '../OfficialArt.svelte';
   import Fx from '../Fx.svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -22,8 +23,10 @@
     const p = el.offsetParent?.getBoundingClientRect();
     at = { x: r.left - (p?.left ?? 0) + r.width / 2, y: r.top - (p?.top ?? 0) + 14 };
     popped = true;
-    setTimeout(() => ondone?.(), 1700);
+    doneTimer = setTimeout(() => ondone?.(), 1700);
   }
+  let doneTimer: ReturnType<typeof setTimeout> | null = null;
+  onDestroy(() => doneTimer && clearTimeout(doneTimer));
 </script>
 
 {#if !popped}

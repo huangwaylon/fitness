@@ -49,7 +49,7 @@
 
 {#if winter}
   <g class="snowglint">
-    {#each SNOW as [x, y], i (i)}<path d={star4(x, y, 7)} style="animation-delay:{-(i * 0.31).toFixed(2)}s" />{/each}
+    {#each SNOW as [x, y], i (i)}<path d={star4(x, y, 7)} class:still={i % 3 !== 0} style="animation-delay:{-(i * 0.31).toFixed(2)}s" />{/each}
   </g>
 {:else}
   {#each TUFTS as [x, y], i (i)}
@@ -85,6 +85,7 @@
   .strata { fill: none; stroke: var(--cliff-dark); stroke-width: 1.5; }
   .tuft { fill: none; stroke: var(--grass-edge); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .snowglint path { fill: #fff; opacity: .7; transform-box: fill-box; transform-origin: center; animation: if-twinkle 2.8s var(--ease-idle) infinite; }
+  .snowglint path.still { animation: none; opacity: .45; }
   .path .edge { fill: var(--path-edge); stroke: var(--path-edge); stroke-width: 4; stroke-linejoin: round; }
   .path .fill { fill: var(--path); }
   .sh { fill: var(--sh-ground); transform-box: fill-box; transform-origin: center; transform: scaleX(var(--sh-scale, 1)); }

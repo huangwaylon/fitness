@@ -41,48 +41,51 @@ export interface Reaction {
   ms: number;
 }
 
-/** §M.5 villager reactions (+ the matching しずえ beat where §M.6 has one). */
+/** §M.5 villager reactions (+ the matching しずえ beat where §M.6 has one). Villagers get floating marks
+ *  (`mark-*`, ours) and the official colour glyphs (love, surprise, glee, inspiration, curiosity,
+ *  thought, daydreaming), never the player's cat faces (A1; Villager also maps any stray one).
+ *  しずえ keeps the accent-heavy cat faces (joy, laughter, pride, flourish, shocked, sleepy). */
 export const REACTIONS: Record<ReactionId, Reaction> = {
   R1: { name: 'first open', ms: 2200, steps: [
-    { actor: 'mine', motion: 'wiggle', emote: 'greetings' },
-    { actor: 'partner', at: 400, motion: 'wiggle', emote: 'greetings' },
-    { actor: 'host', at: 200, motion: 'hop', emote: 'greetings', pose: 'wave' }
+    { actor: 'mine', motion: 'wiggle', emote: 'mark-note' },
+    { actor: 'partner', at: 400, motion: 'wiggle', emote: 'glee' },
+    { actor: 'host', at: 200, motion: 'hop', emote: 'joy', pose: 'wave' }
   ] },
   R2: { name: 'check-in saved', ms: 2200, steps: [
-    { actor: 'mine', motion: 'hop2', emote: 'joy', fx: 'notes' },
+    { actor: 'mine', motion: 'hop2', emote: 'mark-heart', fx: 'notes' },
     { actor: 'mine', at: 120, fx: 'sparkles' },
     { actor: 'host', at: 300, motion: 'hop', emote: 'joy', fx: 'notes', pose: 'wave' }
   ] },
   R3: { name: 'partner data', ms: 2600, steps: [
     { actor: 'partner', motion: 'surprise', emote: 'surprise' },
-    { actor: 'partner', at: 900, motion: 'hop', emote: 'happiness' },
+    { actor: 'partner', at: 900, motion: 'hop', emote: 'mark-note' },
     { actor: 'mine', at: 600, motion: 'nod' }
   ] },
   R4: { name: 'high-five sent', ms: 2200, steps: [
-    { actor: 'mine', motion: 'hop', emote: 'encouraging', fx: 'sparkles', face: 'other' },
+    { actor: 'mine', motion: 'hop', emote: 'mark-sparkle', fx: 'sparkles', face: 'other' },
     { actor: 'mine', at: 1600, face: 'home' }
   ] },
   R5: { name: 'high-five received', ms: 2400, steps: [{ actor: 'mine', motion: 'hop2', emote: 'love', fx: 'hearts' }] },
-  R6: { name: 'fruit ripe', ms: 2200, steps: [{ actor: 'mine', motion: 'proud', emote: 'pride', fx: 'sparkles' }] },
-  R7: { name: 'fruit stage up', ms: 2200, steps: [{ actor: 'mine', motion: 'nod', emote: 'pleased' }] },
-  R8: { name: 'all ripe', ms: 2400, steps: [{ actor: 'mine', motion: 'dance', emote: 'delight', fx: 'confetti' }] },
-  R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', emote: 'greetings' }] },
-  R10: { name: 'tap partner', ms: 2200, steps: [{ actor: 'partner', motion: 'squish', emote: 'happiness' }] },
+  R6: { name: 'fruit ripe', ms: 2200, steps: [{ actor: 'mine', motion: 'proud', emote: 'mark-sparkle', fx: 'sparkles' }] },
+  R7: { name: 'fruit stage up', ms: 2200, steps: [{ actor: 'mine', motion: 'nod', emote: 'inspiration' }] },
+  R8: { name: 'all ripe', ms: 2400, steps: [{ actor: 'mine', motion: 'dance', emote: 'glee', fx: 'confetti' }] },
+  R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', emote: 'mark-note' }] },
+  R10: { name: 'tap partner', ms: 2200, steps: [{ actor: 'partner', motion: 'squish', emote: 'mark-heart' }] },
   R11: { name: 'morning stretch', ms: 2200, steps: [
-    { actor: 'mine', motion: 'stretch', emote: 'pose-stretch' },
-    { actor: 'partner', at: 500, motion: 'stretch', emote: 'pose-stretch' }
+    { actor: 'mine', motion: 'stretch', emote: 'mark-sparkle' },
+    { actor: 'partner', at: 500, motion: 'stretch', emote: 'mark-note' }
   ] },
   R12: { name: 'evening nudge', ms: 2400, steps: [
     { actor: 'partner', motion: 'turn', face: 'other' },
-    { actor: 'partner', at: 1400, motion: 'nod', emote: 'encouraging' },
+    { actor: 'partner', at: 1400, motion: 'nod', emote: 'mark-bang' },
     { actor: 'partner', at: 2300, face: 'home' }
   ] },
-  R13: { name: 'fall asleep', ms: 2200, steps: [{ actor: 'both', emote: 'dozing', fx: 'zzz' }] },
-  R14: { name: 'woken up', ms: 2200, steps: [{ actor: 'mine', motion: 'surprise', emote: 'shocked', fx: 'sweat' }] },
+  R13: { name: 'fall asleep', ms: 2200, steps: [{ actor: 'both', emote: 'mark-zzz', fx: 'zzz' }] },
+  R14: { name: 'woken up', ms: 2200, steps: [{ actor: 'mine', motion: 'surprise', emote: 'surprise', fx: 'sweat' }] },
   R15: { name: 'low week', ms: 2200, steps: [{ actor: 'mine', motion: 'shy', emote: 'thought' }] },
   R16: { name: 'dance together', ms: 1600, steps: [{ actor: 'both', motion: 'dance', emote: 'glee', fx: 'notes' }] },
   R17: { name: 'sync problem', ms: 2200, steps: [
-    { actor: 'mine', motion: 'shy', emote: 'sheepishness', fx: 'sweat' },
+    { actor: 'mine', motion: 'shy', emote: 'mark-sweat' },
     { actor: 'host', at: 200, motion: 'headshake', emote: 'sheepishness', fx: 'sweat', pose: 'bow' }
   ] },
   R18: { name: 'jar tapped', ms: 1200, steps: [
@@ -91,19 +94,19 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
   ] },
   R19: { name: 'harvest', ms: 2400, steps: [
     { actor: 'both', motion: 'dance', emote: 'pose-viva', fx: 'confetti' },
-    { actor: 'both', at: 1600, emote: 'joy' },
-    { actor: 'host', at: 300, motion: 'bow', emote: 'happiness', fx: 'sparkles', pose: 'bow' }
+    { actor: 'both', at: 1600, emote: 'glee' },
+    { actor: 'host', at: 300, motion: 'bow', emote: 'pride', fx: 'sparkles', pose: 'bow' }
   ] }
 };
 
 /** Idle-life actions (§M.7). */
 export type IdleAction =
-  | 'look' | 'wiggle' | 'hum' | 'hop' | 'stroll' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch' | 'doze';
+  | 'look' | 'wiggle' | 'hum' | 'hop' | 'stroll' | 'peek' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch' | 'doze';
 
 export interface IdleEntry {
   action: IdleAction;
   weight: number;
-  /** Day only (06–19, not asleep). */
+  /** Day only: skipped in the evening (tod night, 19–22, before the villagers fall asleep). */
   day?: boolean;
   /** Hours [from, to) the action is allowed in. */
   hours?: [number, number];
@@ -113,23 +116,29 @@ export interface IdleEntry {
   pair?: boolean;
 }
 
+/** A6: weighted toward actions that show a mark or glyph, so idle life reads at a glance. */
 export const IDLE_POOL: IdleEntry[] = [
-  { action: 'look', weight: 20, day: true },
-  { action: 'wiggle', weight: 15, day: true },
-  { action: 'hum', weight: 12, day: true },
-  { action: 'hop', weight: 10, day: true },
-  { action: 'stroll', weight: 10, day: true, every: 60_000 },
-  { action: 'daydream', weight: 10 },
+  { action: 'look', weight: 12 },
+  { action: 'wiggle', weight: 10 },
+  { action: 'hum', weight: 12 },
+  { action: 'hop', weight: 12, day: true },
+  { action: 'stroll', weight: 7, day: true, every: 60_000 },
+  { action: 'peek', weight: 8, day: true, every: 90_000 },
+  { action: 'daydream', weight: 12 },
   { action: 'treeshake', weight: 7, day: true },
-  { action: 'chat', weight: 8, day: true, every: 90_000, pair: true },
+  { action: 'chat', weight: 12, every: 45_000, pair: true },
   { action: 'dance', weight: 5, pair: true },
   { action: 'stretch', weight: 8, hours: [5, 10] }
 ];
 
+/** Idle cadence (ms): 5–9 s while someone is around, 20–30 s after 3 min without input. */
+export const IDLE_GAP: [number, number] = [5_000, 9_000];
+export const IDLE_GAP_SLOW: [number, number] = [20_000, 30_000];
+
 /** しずえ's idle moves (every 20–30 s at most). */
 export const HOST_IDLE = ['swap', 'wiggle', 'hop'] as const;
 /** Random emote when しずえ is tapped with nothing left to read. */
-export const HOST_TAP: EmoteIcon[] = ['joy', 'laughter', 'happiness', 'flourish'];
+export const HOST_TAP: EmoteIcon[] = ['joy', 'laughter', 'pride', 'flourish'];
 
 /** Isolated so tests / the gallery can list them. */
 export const REACTION_IDS = Object.keys(REACTIONS) as ReactionId[];
