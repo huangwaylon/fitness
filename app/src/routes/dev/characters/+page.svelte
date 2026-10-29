@@ -1,8 +1,7 @@
 <script lang="ts">
-  // Dev art gallery (style guide v3 §10): every official art key, the villager roster, しずえ poses,
+  // Dev art gallery (style guide v4 §W, C18, C20): every official art key, the villager roster, しずえ poses,
   // the fallback silhouette, money marks, fruit ripeness stages, emotes, and the island in every
   // season × day/night. Guarded by +page.ts (dev only).
-  import { onMount } from 'svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import Villager from '#lib/components/Villager.svelte';
   import Host from '#lib/components/Host.svelte';
@@ -11,6 +10,12 @@
   import LeafCoin from '#lib/components/LeafCoin.svelte';
   import FruitRing from '#lib/components/FruitRing.svelte';
   import IslandScene from '#lib/components/IslandScene.svelte';
+  import Fx from '#lib/components/Fx.svelte';
+  import { REACTIONS as ICONS, POSES as POSE_IDS } from '#lib/components/art.ts';
+  import { REACTIONS, REACTION_IDS } from '#lib/components/motion/reactions.ts';
+  import { emit } from '#lib/components/motion/bus.svelte.ts';
+  import { hostTap } from '#lib/components/motion/director.svelte.ts';
+  import type { FxKind } from '#lib/components/Fx.svelte';
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';
   import { art, artKeys, phoneArt, type PhoneApp } from '#lib/client/assets.ts';
   import { FRUITS } from '#lib/config/rules.ts';
@@ -23,37 +28,17 @@
   const GLYPH: Record<PhoneApp, string> = {
     help: 'app-help', villager: 'app-villager', lang: 'app-lang', bell: 'app-bell', sync: 'app-sync', share: 'app-lock'
   };
-  const SCENES = (['spring', 'summer', 'autumn', 'winter'] as const).flatMap((s) => [
-    { s, n: false },
-    { s, n: true }
-  ]);
-
-  // The scene palette lives on :root[data-season][data-theme] (tokens.css), so to show all eight
-  // side by side we briefly apply each combination, snapshot every custom property those rules
-  // set, and replay the snapshot as inline variables on that scene's wrapper.
-  let sceneVars = $state<string[]>([]);
-  onMount(() => {
-    const names = new Set<string>();
-    for (const sheet of Array.from(document.styleSheets)) {
-      let rules: CSSRuleList;
-      try { rules = sheet.cssRules; } catch { continue; }
-      for (const r of Array.from(rules)) {
-        if (r instanceof CSSStyleRule && /:root\[data-(season|theme|tod)/.test(r.selectorText)) {
-          for (const n of Array.from(r.style)) if (n.startsWith('--')) names.add(n);
-        }
-      }
-    }
-    const root = document.documentElement;
-    const saved = { ...root.dataset };
-    sceneVars = SCENES.map(({ s, n }) => {
-      root.dataset.season = s;
-      root.dataset.theme = n ? 'night' : 'day';
-      root.dataset.tod = n ? 'night' : 'day';
-      const cs = getComputedStyle(root);
-      return [...names].map((k) => `${k}:${cs.getPropertyValue(k)}`).join(';');
-    });
-    Object.assign(root.dataset, saved);
-  });
+  const SCENES = [
+    ...(['spring', 'summer', 'autumn', 'winter'] as const).flatMap((s) => [
+      { s, tod: 'day' as const },
+      { s, tod: 'night' as const }
+    ]),
+    { s: 'spring' as const, tod: 'dawn' as const },
+    { s: 'autumn' as const, tod: 'dusk' as const }
+  ];
+  const FX: FxKind[] = ['sparkles', 'hearts', 'notes', 'sweat', 'zzz', 'confetti', 'puff', 'glint'];
+  let fxPlay = $state<{ k: FxKind; n: number } | null>(null);
+  let fxN = 0;
 
   let replay = $state(0);
 </script>
@@ -61,6 +46,35 @@
 <main class="gal">
   <h1>Art gallery</h1>
   <p class="cap">{KEYS.length} official files · tap a villager to replay its hop</p>
+
+  <section>
+    <h2>Live island · reactions (§M.5) · events</h2>
+    <p class="cap">Season / time: <code>?season=</code> <code>&amp;theme=night</code> · events: <code>?date=2026-04-03T10:00</code> (cherry), <code>2026-08-02T20:00</code> (fireworks), <code>2026-11-20T15:00</code> (maple), <code>2026-12-24T12:00</code> (Toy Day), <code>2026-12-31T23:00</code> (NYE), <code>T23:30</code> (naps)</p>
+    <div class="live">
+      {#if week.view}<div class="livescene"><IslandScene view={week.view} /></div>{/if}
+      <div class="host"><Host size={96} /></div>
+    </div>
+    <div class="row btns">
+      {#each REACTION_IDS as r (r)}
+        <button type="button" class="chip" onclick={() => emit('dev:react', r)}>{r} {REACTIONS[r].name}</button>
+      {/each}
+      <button type="button" class="chip" onclick={() => emit('dev:balloon')}>balloon</button>
+      <button type="button" class="chip" onclick={() => emit('dev:fireworks')}>fireworks</button>
+      <button type="button" class="chip" onclick={hostTap}>tap しずえ</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reaction icons (emote bubble) · fx</h2>
+    <div class="row">
+      {#each ICONS as id (id)}<figure><Emote {id} hold size={44} /><figcaption>{id}</figcaption></figure>{/each}
+      {#each POSE_IDS as id (id)}<figure><Emote id="pose-{id}" hold size={44} /><figcaption>pose-{id}</figcaption></figure>{/each}
+    </div>
+    <div class="row btns">
+      {#each FX as k (k)}<button type="button" class="chip" onclick={() => (fxPlay = { k, n: ++fxN })}>{k}</button>{/each}
+      <span class="fxstage">{#if fxPlay}{#key fxPlay.n}<Fx kind={fxPlay.k} spread="60px" />{/key}{/if}</span>
+    </div>
+  </section>
 
   <section>
     <h2>Villager roster</h2>
@@ -142,13 +156,13 @@
   {/each}
 
   <section>
-    <h2>Island · season × day / night</h2>
+    <h2>Island · season × time of day</h2>
     <div class="scenes">
       {#if week.view}
-        {#each SCENES as sc, i (sc.s + sc.n)}
+        {#each SCENES as sc (sc.s + sc.tod)}
           <figure>
-            <div class="sc" style={sceneVars[i] ?? ''}><IslandScene view={week.view} season={sc.s} night={sc.n} /></div>
-            <figcaption>{sc.s} · {sc.n ? 'night' : 'day'}</figcaption>
+            <div class="sc"><IslandScene view={week.view} season={sc.s} tod={sc.tod} live={false} /></div>
+            <figcaption>{sc.s} · {sc.tod}</figcaption>
           </figure>
         {/each}
       {/if}
@@ -176,8 +190,14 @@
   .amt { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 700; font-size: 1.25rem; }
   .plain { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; }
   .scenes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .live { display: flex; gap: 8px; align-items: flex-end; }
+  .livescene { width: 393px; max-width: 100%; --scene-h: 520px; border-radius: 14px; overflow: hidden; }
+  .btns { gap: 6px; }
+  .chip { min-height: 44px; padding: 0 12px; border-radius: 999px; border: 2px solid var(--edge); background: var(--surface); color: var(--text); font: 700 12px var(--font-ui); }
+  .fxstage { position: relative; display: inline-block; width: 120px; height: 120px; }
+  .fxstage :global(.fx) { left: 60px; top: 70px; }
   .sc { width: 176px; aspect-ratio: 390 / 540; border: 2px solid var(--edge); border-radius: 14px; overflow: hidden; background: var(--bg); }
   /* Render at phone width, then zoom down, so the min tap sizes don't distort the thumbnail. */
-  .sc > :global(*) { width: 390px; zoom: .441; }
+  .sc > :global(*) { width: 390px; --scene-h: 540px; zoom: .441; }
   .scenes figure { align-content: start; }
 </style>
