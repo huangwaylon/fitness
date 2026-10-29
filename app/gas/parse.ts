@@ -9,9 +9,9 @@
 //   - days form:   {"days": [{"date": "2026-10-28", "steps": 8123, "exerciseMin": 34}]}
 //   - workouts:    {"workouts": {"types": […], "starts": […], "ends": […], "avgHrs": […]}} or an array of objects
 // Every list may be a JSON array or newline-joined text (Shortcuts' Dictionary fields typed as Text).
-import { toLocalDate } from '../scoring/dates.ts';
-import { WORKOUT_LABELS_JA } from '../model/labels.ts';
-import { DATE_RE, isRec, type MetricKey } from './sheet-api.ts';
+import { toLocalDate } from '../src/lib/time/dates.ts';
+import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
+import { DATE_RE, isRec, type MetricKey } from '../src/lib/contract/api.ts';
 
 export interface ParsedMetric { date: string; metric: MetricKey; value: number }
 export interface ParsedWorkout {

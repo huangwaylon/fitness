@@ -1,6 +1,6 @@
 // Calendar helpers. Asia/Tokyo is UTC+9 with no DST, so a fixed offset is exact.
 import type { LocalDate, WeekKey } from '#lib/types.ts';
-import { DATE_RE } from '../ingest/sheet-api.ts';
+import { DATE_RE } from '../contract/api.ts';
 
 const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SEASONS } from '#lib/config/rules.ts';
 import type { CheckinTick, DayMetrics, PersonTargets, Visit, WeekInput, Workout } from '#lib/types.ts';
-import { weekDays } from '#lib/scoring/dates.ts';
+import { weekDays } from '#lib/time/dates.ts';
 import { ratioMilli, scoreWeek } from '#lib/scoring/score.ts';
 import { targetsFor } from '#lib/scoring/targets.ts';
 

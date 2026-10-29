@@ -1,7 +1,7 @@
 // Date and time formatting, one place for each shape (round 8). Dates are `YYYY-MM-DD` strings (calendar days, read
 // in UTC so they never shift); stamps (sync, workouts, edits) are shown in Tokyo time.
 import { i18n, t, type Locale } from './index.ts';
-import { addDays, dateMs } from '#lib/scoring/dates.ts';
+import { addDays, dateMs } from '#lib/time/dates.ts';
 
 /** ISO weekday of a `YYYY-MM-DD`: 1 = Monday … 7 = Sunday. */
 export const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;

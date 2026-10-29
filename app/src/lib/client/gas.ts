@@ -2,7 +2,7 @@
 // persisted in localStorage (replayed with backoff until acked), and the snapshot cache with incremental `since` merges.
 // Plain TS (no Svelte) so it is unit-testable; storage and fetch are injectable.
 import type { PersonId } from '#lib/types.ts';
-import type { EventReply, EventType, SnapshotReply, SnapshotRows, WhoamiReply } from '#lib/ingest/sheet-api.ts';
+import type { EventReply, EventType, SnapshotReply, SnapshotRows, WhoamiReply } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import type { DemoCalendar } from '#lib/model/state.ts';
 

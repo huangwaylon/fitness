@@ -7,7 +7,7 @@ import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { dev } from '$app/env';
 import type { WeekView } from '#lib/types.ts';
-import type { EventType } from '#lib/ingest/sheet-api.ts';
+import type { EventType } from '#lib/contract/api.ts';
 import { GAS_CONFIGURED, enqueue, flush, getKey, holdEvent, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
 import { composeModel, missesLock, notInCache, type ComposedModel } from './view.ts';
 import type { PersonId } from '#lib/types.ts';

@@ -4,13 +4,13 @@ import type { LocalDate, PersonId, WeekKey } from '#lib/types.ts';
 import { CALIBRATION_WEEKS, CUTOFFS, LIMITS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, targetsFor, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
-import { parseInstant } from '#lib/scoring/dates.ts';
+import { parseInstant } from '#lib/time/dates.ts';
 import { seasonsByStart } from '#lib/scoring/targets.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
   DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, type EventType, type SnapshotRows
-} from '#lib/ingest/sheet-api.ts';
-import { WORKOUT_TYPES } from './labels.ts';
+} from '#lib/contract/api.ts';
+import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
 
 export const PEOPLE_IDS: PersonId[] = ['A', 'B'];
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');

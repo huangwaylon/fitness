@@ -1,7 +1,7 @@
 // History and editing (docs/design/history-and-editing.md §4–5): edits are new behaviour on top of the golden model.
 // Own data only (the sender is the subject), open weeks only (this week, and last week until Wednesday 04:00 JST).
 import { describe, expect, it } from 'vitest';
-import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/ingest/sheet-api.ts';
+import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/scoring/index.ts';
 import { reduce } from './state.ts';

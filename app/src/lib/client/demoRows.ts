@@ -3,7 +3,7 @@
 // Season 1 starts after the demo's weeks, so the demo moves the model's calendar (setDemoCalendar): its first paid
 // week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
 import type { PersonId, WeekKey } from '#lib/types.ts';
-import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/ingest/sheet-api.ts';
+import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
 import { prevMonth } from '#lib/model/week.ts';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, inMonthDayRange, nowInZone, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/scoring/dates.ts';
+import { addDays, inMonthDayRange, nowInZone, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 
 describe('toLocalDate', () => {
   it('flips to the next Tokyo day at 15:00 UTC', () => {

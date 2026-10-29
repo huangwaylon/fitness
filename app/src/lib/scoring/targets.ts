@@ -1,6 +1,6 @@
 import { HOLIDAY, RULES, SEASONS, type RuleVersion, type Season } from '#lib/config/rules.ts';
 import type { PersonId, PersonTargets, WeekKey } from '#lib/types.ts';
-import { inMonthDayRange, weekDays, weekKeyOf } from '#lib/scoring/dates.ts';
+import { inMonthDayRange, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 
 /** Round to 3 decimals so factors like 85 × 0.7 give 59.5, not 59.49999999999999. Scoring works in milli-units. */
 const roundMilli = (x: number): number => Math.round(x * 1000) / 1000;

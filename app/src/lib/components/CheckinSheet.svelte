@@ -8,7 +8,7 @@
   import { checkin } from '#lib/client/actions.ts';
   import { has, t } from '#lib/i18n/index.ts';
   import { HOLIDAY } from '#lib/config/rules.ts';
-  import { addDays, inMonthDayRange } from '#lib/scoring/dates.ts';
+  import { addDays, inMonthDayRange } from '#lib/time/dates.ts';
   import { formatDate } from '#lib/i18n/format.ts';
 
   let { open = $bindable(), onclose }: { open: boolean; onclose?: () => void } = $props();

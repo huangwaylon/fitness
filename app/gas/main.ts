@@ -6,15 +6,15 @@
 //
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
-import { looseDate, parseShortcut } from '../src/lib/ingest/parse.ts';
-import { parseInstant } from '../src/lib/scoring/dates.ts';
-import { WORKOUT_TYPES } from '../src/lib/model/labels.ts';
+import { looseDate, parseShortcut } from './parse.ts';
+import { parseInstant } from '../src/lib/time/dates.ts';
+import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import {
   DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, NUMERIC_COLUMNS, TABS,
   type ApiError, type EventReply, type Fail, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows, type TabName,
   type WhoamiReply
-} from '../src/lib/ingest/sheet-api.ts';
+} from '../src/lib/contract/api.ts';
 
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
@@ -22,7 +22,7 @@ const LOCK_WAIT_MS = 10_000;
 const MIN_KEY_CHARS = 32;
 const MAX_EVENT_DATA_CHARS = 20_000;
 
-/** Every reply is one of the client contract's shapes (sheet-api.ts), so the server is compile-checked against it. */
+/** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
 type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply;
 type Rec = Record<string, unknown>;
 
