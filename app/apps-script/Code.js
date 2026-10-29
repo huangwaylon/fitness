@@ -74,6 +74,10 @@ var IslandFund = (() => {
   var ZONE_OFFSET_MS = 9 * 60 * 60 * 1e3;
   var DAY_MS = 24 * 60 * 60 * 1e3;
   function parseInstant(ts) {
+    if (ts.length === 24 && ts.charCodeAt(23) === 90 && ts.charCodeAt(10) === 84) {
+      const ms2 = Date.parse(ts);
+      if (!Number.isNaN(ms2)) return ms2;
+    }
     let s = ts.trim();
     const compact = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)\s*([+-])(\d{2}):?(\d{2})$/.exec(s);
     if (compact) {
@@ -93,8 +97,15 @@ var IslandFund = (() => {
     const day = String(d.getUTCDate()).padStart(2, "0");
     return `${y}-${m}-${day}`;
   }
+  var LOCAL_DAY = /* @__PURE__ */ new Map();
+  function localDateOfMs(ms) {
+    const day = Math.floor((ms + ZONE_OFFSET_MS) / DAY_MS);
+    let d = LOCAL_DAY.get(day);
+    if (d === void 0) LOCAL_DAY.set(day, d = ymd(new Date(day * DAY_MS)));
+    return d;
+  }
   function toLocalDate(iso) {
-    return ymd(new Date(parseInstant(iso) + ZONE_OFFSET_MS));
+    return localDateOfMs(parseInstant(iso));
   }
 
   // src/lib/contract/labels.ts
@@ -470,7 +481,7 @@ var IslandFund = (() => {
   }
 
   // gas/main.ts
-  var BUILD = true ? "a9e48ec37bf4" : "dev";
+  var BUILD = true ? "fa09de030835" : "dev";
   var MAX_BODY_CHARS = 1e6;
   var RATE_PER_MINUTE = 120;
   var LOCK_WAIT_MS = 1e4;

@@ -15,7 +15,7 @@ import { workoutLabel } from '#lib/contract/labels.ts';
 import type { MetricKey } from '#lib/contract/api.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  allWorkouts, finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, latestTimed, partnerOf, provisionalMs, reduce, type PresenceRec,
+  allWorkouts, finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, latestTimed, partnerOf, provisionalMs, reduce, rowsUpTo, type PresenceRec,
   type State
 } from './state.ts';
 
@@ -141,6 +141,22 @@ export interface SettledWeek { weekKey: WeekKey; provisional: Buckets; final: Bu
 
 /** Per State: each week's payout as of its two cutoffs. They depend only on rows stamped by then, never on `now`. */
 const snapshots = new WeakMap<State, Map<WeekKey, { provisional?: Buckets; final?: Buckets }>>();
+/**
+ * Across States (round 8 P5): a cutoff's payout keyed by week, cutoff and the number of rows stamped by then, valid
+ * for one `rev`. Rows are append-only with increasing `at` while `rev` holds, so the count pins the exact rows.
+ */
+const pastPayouts = { rev: '', byKey: new Map<string, Buckets>() };
+function payoutAtCutoff(s: State, wk: WeekKey, t: number): Buckets {
+  if (s.rev === null) return buckets(payoutAsOf(s, wk, t).payout);
+  if (pastPayouts.rev !== s.rev) {
+    pastPayouts.byKey.clear();
+    pastPayouts.rev = s.rev;
+  }
+  const key = `${wk}|${t}|${rowsUpTo(s, t)}`;
+  let b = pastPayouts.byKey.get(key);
+  if (!b) pastPayouts.byKey.set(key, (b = Object.freeze(buckets(payoutAsOf(s, wk, t).payout))));
+  return b;
+}
 
 /** A paid week whose Sunday 19:30 has passed at `now`, with its two payout snapshots; null otherwise. */
 export function settleWeek(s: State, wk: WeekKey, now: number): SettledWeek | null {
@@ -149,9 +165,9 @@ export function settleWeek(s: State, wk: WeekKey, now: number): SettledWeek | nu
   if (!byWeek) snapshots.set(s, (byWeek = new Map()));
   let x = byWeek.get(wk);
   if (!x) byWeek.set(wk, (x = {}));
-  x.provisional ??= buckets(payoutAsOf(s, wk, provisionalMs(wk)).payout);
+  x.provisional ??= payoutAtCutoff(s, wk, provisionalMs(wk));
   if (finalMs(wk) > now) return { weekKey: wk, provisional: x.provisional, final: null };
-  x.final ??= buckets(payoutAsOf(s, wk, finalMs(wk)).payout);
+  x.final ??= payoutAtCutoff(s, wk, finalMs(wk));
   return { weekKey: wk, provisional: x.provisional, final: x.final };
 }
 
