@@ -50,12 +50,10 @@ const SPECS: Record<string, Spec> = {
   // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
   'phone/rescue': [92, 'NookPhone_Rescue_Service_NH_Icon.png'],
   'phone/miles': [92, 'NookPhone_Nook_Miles_NH_Icon.png'],
-  'phone/designer': [92, 'NookPhone_Island_Designer_NH_Icon.png'],
   'phone/glyph-help': [96, 'Menu_Island_Life_101_NH_Icon.png'],
   'phone/glyph-chat': [96, 'Menu_Chat_Log_NH_Icon.png'],
   'phone/glyph-friends': [96, 'Menu_Best_Friends_List_NH_Icon.png'],
   'phone/glyph-resident': [96, 'Menu_Call_Resident_NH_Icon.png'],
-  'phone/glyph-camera': [96, 'Menu_Camera_NH_Icon.png'],
   'phone/glyph-map': [96, 'Menu_Map_NH_Icon.png'],
   'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
   // v4 trees: the hardwood (oak) in its four seasonal looks carries the fruit; cedar + palm frame the island.

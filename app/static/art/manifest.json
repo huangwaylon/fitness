@@ -295,23 +295,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
     },
-    "phone/designer": {
-      "path": "phone/designer.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_Island_Designer_NH_Icon.png"
-    },
     "phone/diy": {
       "path": "phone/diy.webp",
       "w": 92,
       "h": 92,
       "source": "https://nookipedia.com/wiki/File:NookPhone_DIY_NH_Icon.png"
-    },
-    "phone/glyph-camera": {
-      "path": "phone/glyph-camera.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Menu_Camera_NH_Icon.png"
     },
     "phone/glyph-chat": {
       "path": "phone/glyph-chat.webp",
