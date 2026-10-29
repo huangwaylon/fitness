@@ -40,7 +40,7 @@
   .bubble {
     position: relative; display: grid; place-items: center; flex: none;
     width: var(--w); height: var(--w); border-radius: 50%;
-    background: #FFF9E3; box-shadow: 0 3px 0 #E0C48A; /* v5: no stroke, one lip */
+    background: var(--c-cream); box-shadow: 0 3px 0 var(--c-lip); /* v5: no stroke, one lip */
     transform-origin: 30% 110%;
     animation: if-bubble var(--dur-emote, 2200ms) var(--ease-bounce) both;
   }
