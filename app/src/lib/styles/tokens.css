@@ -26,10 +26,15 @@
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
      Builder A block below */
 
-  /* ---------- type: 12 · 15 body · 18 talk/button · 24 title/score · 44 hero ---------- */
+  /* ---------- type: 11 axes · 13 small · 15 body · 18 talk/button · 22-26 title/score · 36-44 hero ----------
+     Round 10 T1: --fs-s is the floor for content text (13px); --fs-xs (11px) only for chart axes and table
+     headers. No literal 11px / 12px in components. --fs-input: every input / textarea / select (iOS zooms
+     the page on focus below 16px; enforced by lib/inputs.test.ts). */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
   --font-num: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif; /* numbers only */
-  --fs-s:.75rem; --fs-body:.9375rem; --fs-talk:1.125rem; --fs-title:1.5rem; --fs-hero:2.75rem;
+  --fs-xs:.6875rem; --fs-s:.8125rem; --fs-body:.9375rem; --fs-talk:1.125rem;
+  --fs-title: clamp(1.375rem, 6.4vw, 1.625rem); --fs-hero: clamp(2.25rem, 11vw, 2.75rem);
+  --fs-input: max(16px, 1rem);
   --lh:1.45;
 
   /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/phone · 30% tiles ---------- */
@@ -57,9 +62,29 @@
   --col: 480px;
   --side: 18px;       /* page side padding (14 at 320) */
   --gap: 12px;        /* stack gap (8 compact) */
-  --cta-h: 56px;      /* the one action (48 compact) */
   --talk-lines: 2;    /* dialogue box lines (1 compact) */
-  --tile: 64px; --tile-gap: 18px;  /* しまフォン grid */
+  /* Round 10 T2: the one tap-target floor. min-height (and min-width for icon-only controls) on anything
+     tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
+  --hit: 44px;
+
+  /* ---------- viewport heights (round 10, ios-scroll-audit L3) ----------
+     --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, phone,
+     sheet max-height). --vh-page: 100svh, the min-height of a page the document scrolls (stable while
+     Safari's toolbars collapse). --vh1: 1dvh for clamps. Each falls back to vh before Safari 15.4 (the
+     @supports block below), so a height never resolves to an invalid dvh. Never add --kb to these: iOS
+     does not resize the layout viewport for the keyboard; --kb is only padding / sticky bottom. */
+  --vh-fill: 100vh; --vh-page: 100vh; --vh1: 1vh;
+
+  /* ---------- fluid scale (round 10 T4): clamps instead of breakpoint steps ---------- */
+  --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
+  --tile: clamp(52px, 18vw, 80px); --tile-gap: clamp(12px, 4.5vw, 22px);  /* しまフォン grid */
+  --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* 旅の壺 hero jar */
+  --key-h: clamp(46px, calc(7 * var(--vh1)), 64px);    /* NumberPad keys */
+
+  /* ---------- surfaces (round 10 T3) ----------
+     A control's fill must differ from its container. --surface (paper) is the sheet / phone shell; controls
+     and cards on it use --fill-on-surface (cream); a control on the page colour uses --fill-on-bg. */
+  --fill-on-surface: var(--c-cream); --fill-on-bg: var(--c-paper);
 
   /* ---------- the ground ellipse under villagers / props (v5 §5 depth rule; also read outside .if-scene) ---------- */
   --sh-ground: rgba(40, 60, 40, .18);
@@ -70,18 +95,23 @@
 /* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
 :root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --hud:#FFFFFF; } /* the clock over the dusk sky top #5B6FC4 (4.65:1) */
 :root[data-tod="night"] {
-  --bg:#3A4886; --surface:#45559A; --lip:#2E3A72;
+  --bg:#3A4886; --surface:#45559A; --lip:#2E3A72; --fill-on-surface:#3A4886; --fill-on-bg:#45559A;
   --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;
   --scrim: rgba(30, 36, 80, .45);
   color-scheme: dark;
 }
 
-/* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ---------- */
+@supports (height: 100dvh) {
+  :root { --vh-fill: 100dvh; --vh-page: 100svh; --vh1: 1dvh; }
+}
+
+/* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ----------
+   (--cta-h / --tile / --tile-gap are fluid clamps now: no steps here) */
 @media (max-height: 700px), (max-width: 359px) {
-  :root { --gap: 8px; --cta-h: 48px; --talk-lines: 1; --fs-talk: 1rem; --tile: 56px; --tile-gap: 14px; }
+  :root { --gap: 8px; --talk-lines: 1; --fs-talk: 1rem; }
 }
 @media (max-width: 339px) {
-  :root { --side: 14px; --tile: 52px; --tile-gap: 12px; }
+  :root { --side: 14px; }
 }
 
 /* ---------- reduced motion = static ---------- */
