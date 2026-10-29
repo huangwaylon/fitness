@@ -15,7 +15,7 @@ export interface DayMetrics {
 }
 
 export interface Workout {
-  extId: string;
+  id: string;
   date: LocalDate;
   /** Canonical (English) workout name, e.g. "Traditional Strength Training", "Yoga", "Outdoor Walk". */
   type: string;
@@ -26,7 +26,7 @@ export interface Workout {
   /** The one-tap "included strength?" answer for HIIT/yoga; null = not asked/answered. */
   includesStrength: boolean | null;
   /** A きろく edit (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
-  strengthOverride?: boolean | null;
+  strengthOverride?: boolean;
   /** Added by hand in きろく (Watch forgotten): its minutes count toward the day's active minutes (ADR 0011). */
   manual?: boolean;
 }
@@ -46,7 +46,7 @@ export interface Visit {
 
 export interface CheckinTick {
   date: LocalDate;
-  habitKey: string;
+  habit: string;
 }
 
 export interface PersonTargets {
@@ -134,7 +134,7 @@ export interface PersonWeekView {
 
 export interface PendingConfirmation {
   kind: 'visit' | 'workout';
-  /** arrive event id (visit) or workout extId. */
+  /** Visit id (`<place>@<arrive ISO>`) or workout id. */
   id: string;
   date: LocalDate;
   label: string;

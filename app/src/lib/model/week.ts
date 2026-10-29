@@ -33,10 +33,10 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
   const out: Workout[] = [];
   for (const w of [...s.workouts[person], ...s.manualWorkouts[person]]) {
     if (w.at > t || w.date < dates.from || w.date > dates.to) continue;
-    const key = `${person}|${w.extId}`;
+    const key = `${person}|${w.id}`;
     if (latestAt(s.workoutExcluded.get(key), t) === true) continue;
     const wo: Workout = {
-      extId: w.extId, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr,
+      id: w.id, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr,
       includesStrength: latestAt(s.workoutConfirms.get(key), t) ?? null
     };
     if (w.manual) wo.manual = true;
@@ -80,7 +80,7 @@ function ticksAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): M
     if (c.date < dates.from || c.date > dates.to) continue;
     const k = `${c.date}|${c.habit}`;
     if (c.done) {
-      if (!on.has(k)) on.set(k, { date: c.date, habitKey: c.habit });
+      if (!on.has(k)) on.set(k, { date: c.date, habit: c.habit });
     } else on.delete(k);
   }
   return on;
@@ -318,8 +318,8 @@ function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): 
     habits: { keys: targetsFor(person, wk).habits, ticksByDate: {} }
   };
   const ticks = [...ticksAsOf(s, person, LIVE, { from: addDays(wk, -2), to: addDays(wk, 6) }).values()]
-    .sort((x, y) => x.date.localeCompare(y.date) || x.habitKey.localeCompare(y.habitKey));
-  for (const c of ticks) (view.habits.ticksByDate[c.date] ??= []).push(c.habitKey);
+    .sort((x, y) => x.date.localeCompare(y.date) || x.habit.localeCompare(y.habit));
+  for (const c of ticks) (view.habits.ticksByDate[c.date] ??= []).push(c.habit);
   return view;
 }
 
@@ -341,7 +341,7 @@ function pendingConfirmations(s: State, person: PersonId, cur: WeekKey, act: Act
     }
     for (const w of workouts) {
       if ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === null && w.strengthOverride === undefined && w.durationMin >= STRENGTH.minWorkoutMin) {
-        out.push({ kind: 'workout', id: w.extId, date: w.date, label: workoutLabel(w.type, locale) });
+        out.push({ kind: 'workout', id: w.id, date: w.date, label: workoutLabel(w.type, locale) });
       }
     }
   }

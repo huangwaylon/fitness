@@ -1,26 +1,31 @@
-// The rules as data (PROPOSAL §3, ADRs 0008, 0009, 0011, 0014). Edit here, then `npm run recompute -- --dry-run`.
-import type { FruitKey, PersonId, PersonTargets } from '#lib/types.ts';
+// The rules as data (PROPOSAL §3, ADRs 0008, 0009, 0011, 0014).
+//
+// Everything is computed on read from the raw rows, so a value here applies to every week that uses it, paid or not.
+// To change what a week pays, never edit a version (or a season's targets) whose weeks have paid: append a RULES
+// version (or a SEASONS entry) with a later `from`. rules.test.ts pins the paid versions.
+import type { FruitKey, PersonId, PersonTargets, WeekKey } from '#lib/types.ts';
 
 /** The four fruit categories, in display order. */
 export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
 
-export const MONEY = {
-  yenPerFruit: 50,
-  teamYenPerFruit: 20,
-  purseYen: 1000,
-  purseMinScore: 60,
-  purseNeedsBothAtYen: 5000,
-  monthlyAutoTransferHintYen: 45000,
-  paydayDayOfMonth: 25
-} as const;
+/** What a week pays and how many points each fruit is worth. The model picks the version by week (`rulesFor`). */
+export interface RuleVersion {
+  /** First week (a Monday WeekKey) it applies to. Versions are in ascending `from`; weeks before the first use it. */
+  from: WeekKey;
+  money: { yenPerFruit: number; teamYenPerFruit: number; purseYen: number; purseMinScore: number };
+  points: { peachActive: number; peachRest: number; coconut: number; apple: number; pear: number };
+}
 
-export const POINTS = {
-  peachActive: 30,
-  peachRest: 5,
-  coconut: 25,
-  apple: 15,
-  pear: 25
-} as const;
+export const RULES: readonly RuleVersion[] = [
+  {
+    from: '2026-11-02',
+    money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
+    points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
+  }
+];
+
+/** Money rules that price no week: the both-OK threshold applies when a spend is made; payday is a calendar cue. */
+export const MONEY = { purseNeedsBothAtYen: 5000, paydayDayOfMonth: 25 } as const;
 
 export const STRENGTH = {
   autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
@@ -87,7 +92,29 @@ export const RUNGS = [
   { key: 'europe', yen: 700000 }
 ] as const;
 
-export const JOBS = {
-  provisional: { weekday: 0, hour: 19, minute: 30 }, // Sunday 19:30 JST
-  final: { weekday: 3, hour: 4, minute: 0 } // Wednesday 04:00 JST
+/** A week's two payout cutoffs (JST): Sunday 19:30 (harvest opens, first payout) and the Wednesday 04:00 after (lock, top-up). */
+export const CUTOFFS = {
+  provisional: { hour: 19, minute: 30 },
+  final: { hour: 4, minute: 0 }
+} as const;
+
+/** Per-day caps of the counted amounts (scoring and きろく). */
+export const DAILY = {
+  /** 🍐 Pear: distinct habit ticks counted per day. */
+  maxTicks: 3,
+  /** きろく stamps: a day counts as active (●) from this many counted minutes, or on a step-goal day. */
+  activeDayMin: 20
+} as const;
+
+/** Read-time checks on event rows: an event outside them is ignored (the server would have refused it). */
+export const LIMITS = {
+  /** A check-in without `edit` may fill in today and the two days before (the 48 h window). */
+  checkinBackDays: 2,
+  /** Shortcuts sometimes fire twice: a repeat of the same presence event this close is dropped. */
+  presenceDuplicateMs: 120_000,
+  /** A presence `event_at` further than this from the server `at` is ignored. */
+  presenceSkewMs: 48 * 3600_000,
+  spendLabelMaxChars: 60,
+  spendMaxYen: 1_000_000,
+  villagerNameMaxChars: 20
 } as const;

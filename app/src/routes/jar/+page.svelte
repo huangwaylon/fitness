@@ -15,7 +15,7 @@
   import { openKiroku } from '#lib/client/ui.svelte.ts';
   import { spendPurse, approveSpend, transferDone, UNDO_MS } from '#lib/client/actions.ts';
   import { tick } from 'svelte';
-  import { MONEY, SEASONS } from '#lib/config/rules.ts';
+  import { MONEY, RULES, SEASONS } from '#lib/config/rules.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { dateMs } from '#lib/scoring/dates.ts';
   import { moneyLog } from '#lib/model/history.ts';
@@ -32,6 +32,7 @@
   ] as const;
 
   const view = $derived(week.view);
+  const pay = RULES[RULES.length - 1].money; // the current rates
   const jar = $derived(view?.jar ?? null);
 
   let ladderOpen = $state(false);
@@ -55,14 +56,14 @@
     if (jar.weeks) return jar.weeks;
     const start = dateMs(SEASONS[0].from) - 14 * 86400000; // incl. 2 calibration weeks
     const since = Math.floor((dateMs(view.weekKey) - start) / (7 * 86400000));
-    const floor = Math.ceil(Math.max(jar.layers.A / MONEY.yenPerFruit / 100, jar.layers.B / MONEY.yenPerFruit / 100, jar.layers.team / MONEY.teamYenPerFruit / 100));
+    const floor = Math.ceil(Math.max(jar.layers.A / pay.yenPerFruit / 100, jar.layers.B / pay.yenPerFruit / 100, jar.layers.team / pay.teamYenPerFruit / 100));
     return Math.max(1, since, floor);
   });
 
   const layers = $derived.by(() => {
     if (!jar || !view) return [];
-    const personMax = weeks * MONEY.yenPerFruit * 100;
-    const teamMax = weeks * MONEY.teamYenPerFruit * 100;
+    const personMax = weeks * pay.yenPerFruit * 100;
+    const teamMax = weeks * pay.teamYenPerFruit * 100;
     const row = (who: 'A' | 'B') => ({
       key: who,
       name: view.people[who].villagerName,

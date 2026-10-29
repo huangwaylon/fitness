@@ -12,13 +12,13 @@ const B: PersonTargets = { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoa
 
 let n = 0;
 function workout(date: string, type: string, durationMin: number, avgHr: number | null = null, includesStrength: boolean | null = null): Workout {
-  return { extId: `w${n++}`, date, type, startAt: `${date}T07:00:00+09:00`, endAt: `${date}T08:00:00+09:00`, durationMin, avgHr, includesStrength };
+  return { id: `w${n++}`, date, type, startAt: `${date}T07:00:00+09:00`, endAt: `${date}T08:00:00+09:00`, durationMin, avgHr, includesStrength };
 }
 function visit(date: string, dwellMin: number, autoStrength: boolean, confirmed: boolean | null = null): Visit {
   return { placeKey: autoStrength ? 'pt' : 'gym', date, arriveAt: `${date}T07:00:00+09:00`, leaveAt: `${date}T08:00:00+09:00`, dwellMin, autoStrength, confirmed };
 }
 function ticks(date: string, keys: string[]): CheckinTick[] {
-  return keys.map((habitKey) => ({ date, habitKey }));
+  return keys.map((habit) => ({ date, habit }));
 }
 function days(weekKey: string, exercise: (number | null)[], steps: (number | null)[]): DayMetrics[] {
   return weekDays(weekKey).map((date, i) => ({ date, exerciseMin: exercise[i] ?? null, steps: steps[i] ?? null }));

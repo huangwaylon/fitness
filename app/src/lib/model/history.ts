@@ -1,7 +1,7 @@
 // きろく (history-and-editing.md): every recorded week, day and yen, for both people, computed on read from the same
 // state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { FruitKey, LocalDate, PersonId, WeekKey, WeekScore } from '#lib/types.ts';
-import { FRUITS, STRENGTH } from '#lib/config/rules.ts';
+import { DAILY, FRUITS, STRENGTH } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import {
   addDays, isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
@@ -13,8 +13,6 @@ import {
 } from './week.ts';
 
 const LIVE = Infinity;
-/** A day counts as active (●) from this many counted minutes, or on a step-goal day. */
-export const ACTIVE_DAY_MIN = 20;
 
 export type Stamp = 'strength' | 'active' | 'none' | 'future';
 /** Where a day's counted minutes come from: the Watch, a きろく edit of them, the steps, or workouts added by hand. */
@@ -111,7 +109,7 @@ function stampsFor(s: State, person: PersonId, wk: WeekKey, c: WeekCalc, today: 
     if (strength.has(date)) return 'strength';
     const steps = metricAsOf(s, person, date, 'steps', c.t);
     const { value } = dayMinutes(s, person, date, c.t, steps, manual.get(date) ?? 0);
-    return (steps !== null && steps >= goal) || value >= ACTIVE_DAY_MIN ? 'active' : 'none';
+    return (steps !== null && steps >= goal) || value >= DAILY.activeDayMin ? 'active' : 'none';
   });
 }
 
@@ -230,7 +228,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
           minutes: m.value,
           minutesSource: m.source,
           strength: strength.has(d.date),
-          ticks: Math.min(3, new Set(input.checkins.filter((x) => x.date === d.date).map((x) => x.habitKey)).size),
+          ticks: Math.min(DAILY.maxTicks, new Set(input.checkins.filter((x) => x.date === d.date).map((x) => x.habit)).size),
           edited: fields.length > 0,
           editedFields: fields
         };
@@ -302,15 +300,15 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const steps = metricAsOf(s, p, date, 'steps', t);
     const m = dayMinutes(s, p, date, t, steps, manualAsOf(c.act[p]).get(date) ?? 0);
     const strengthDays = new Set(c.scores[p].strengthDays);
-    const counted = new Map(c.act[p].workouts.map((w) => [w.extId, w]));
+    const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
     const workouts = [...s.workouts[p], ...s.manualWorkouts[p]]
       .filter((w) => w.date === date && w.at <= t)
       .sort((x, y) => x.startAt.localeCompare(y.startAt))
       .map((w): DayWorkout => {
-        const key = `${p}|${w.extId}`;
-        const live = counted.get(w.extId);
+        const key = `${p}|${w.id}`;
+        const live = counted.get(w.id);
         return {
-          id: w.extId, type: w.type, startAt: w.startAt, durationMin: w.durationMin,
+          id: w.id, type: w.type, startAt: w.startAt, durationMin: w.durationMin,
           strength: !!live && isStrengthWorkout(live), override: latestAt(s.workoutStrength.get(key), t) ?? null,
           excluded: !live, manual: !!w.manual, eligible: w.durationMin >= STRENGTH.minWorkoutMin
         };
@@ -326,7 +324,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
       minutes: { ...m, edited: mine.some((e) => e.field === 'exercise_min') },
       workouts,
       visits,
-      habits: { keys: targetsFor(p, wk).habits, done: input.checkins.filter((x) => x.date === date).map((x) => x.habitKey) }
+      habits: { keys: targetsFor(p, wk).habits, done: input.checkins.filter((x) => x.date === date).map((x) => x.habit) }
     };
   };
   return {
@@ -368,13 +366,13 @@ function buildEditLog(s: State): EditLog[] {
     for (const w of s.manualWorkouts[p]) out.push({ at: w.at, by: p, date: w.date, field: 'workout_add', subject: w.type, before: null, after: w.durationMin });
   }
   const byId = new Map<string, { date: LocalDate; type: string; at: number }>();
-  for (const p of PEOPLE_IDS) for (const w of [...s.workouts[p], ...s.manualWorkouts[p]]) byId.set(`${p}|${w.extId}`, w);
+  for (const p of PEOPLE_IDS) for (const w of [...s.workouts[p], ...s.manualWorkouts[p]]) byId.set(`${p}|${w.id}`, w);
   for (const e of s.workoutEdits) {
     const w = byId.get(`${e.person}|${e.id}`);
     if (!w) continue;
     if (e.at === w.at) continue; // the strength choice made with a workout_add is part of the add
     const counts = (t: number) => {
-      const wo = workoutsAsOf(s, e.person, t, { from: w.date, to: w.date }).find((x) => x.extId === e.id);
+      const wo = workoutsAsOf(s, e.person, t, { from: w.date, to: w.date }).find((x) => x.id === e.id);
       return !!wo && isStrengthWorkout(wo);
     };
     if (e.excluded !== undefined) {

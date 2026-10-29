@@ -1,12 +1,15 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
-import type { FruitKey, LocalDate, PersonId, WeekKey } from '#lib/types.ts';
-import { CALIBRATION_WEEKS, FRUITS, JOBS, SEASONS } from '#lib/config/rules.ts';
+import type { LocalDate, PersonId, WeekKey } from '#lib/types.ts';
+import { CALIBRATION_WEEKS, CUTOFFS, LIMITS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, targetsFor, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { parseInstant } from '#lib/scoring/dates.ts';
-import type { Snapshot, SnapshotRows } from './snapshot.ts';
-import { DATE_RE, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE } from '#lib/ingest/sheet-api.ts';
+import { seasonsByStart } from '#lib/scoring/targets.ts';
+import type { Snapshot } from './snapshot.ts';
+import {
+  DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, type EventType, type SnapshotRows
+} from '#lib/ingest/sheet-api.ts';
 import { WORKOUT_TYPES } from './labels.ts';
 
 export const PEOPLE_IDS: PersonId[] = ['A', 'B'];
@@ -19,9 +22,9 @@ export function jstMs(date: LocalDate, hour: number, minute: number): number {
   return Date.parse(`${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+09:00`);
 }
 /** Sunday 19:30 JST of the week: the harvest opens and the first payout is taken. */
-export const provisionalMs = (wk: WeekKey): number => jstMs(addDays(wk, 6), JOBS.provisional.hour, JOBS.provisional.minute);
+export const provisionalMs = (wk: WeekKey): number => jstMs(addDays(wk, 6), CUTOFFS.provisional.hour, CUTOFFS.provisional.minute);
 /** Wednesday 04:00 JST after the week: late data can still raise the payout up to here, then the week locks. */
-export const finalMs = (wk: WeekKey): number => jstMs(addDays(wk, 9), JOBS.final.hour, JOBS.final.minute);
+export const finalMs = (wk: WeekKey): number => jstMs(addDays(wk, 9), CUTOFFS.final.hour, CUTOFFS.final.minute);
 
 /**
  * The demo (`?demo`, lib/client/demoRows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
@@ -36,7 +39,7 @@ export const isCalibrationWeek = (s: Cal, wk: WeekKey): boolean => !s.calendar &
 
 /** First paid week of the season calendar: the first full Mon–Sun week of season 1. */
 const SEASON_FIRST_WEEK: WeekKey = (() => {
-  const from = [...SEASONS].sort((a, b) => a.from.localeCompare(b.from))[0].from;
+  const from = seasonsByStart()[0].from;
   const wk = weekKeyOf(from);
   return wk < from ? addDays(wk, 7) : wk;
 })();
@@ -62,7 +65,7 @@ export interface Timed<T> { at: number; v: T }
 
 export interface WorkoutRec {
   at: number;
-  extId: string;
+  id: string;
   date: LocalDate;
   type: string;
   startAt: string;
@@ -128,9 +131,6 @@ export interface State {
   /** The demo's calendar; null for real data. */
   calendar: DemoCalendar | null;
 }
-
-const PRESENCE_DUP_MS = 120_000;
-const PRESENCE_WINDOW_MS = 48 * 3600_000;
 
 /** Sheets may hand dates back as full ISO instants; normalise to a Tokyo `YYYY-MM-DD`. */
 function normDate(v: unknown): LocalDate | null {
@@ -207,6 +207,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     lastSync: { A: null, B: null },
     calendar
   };
+  const c: Ctx = { s, workoutById: new Map(), arriveById: new Map() };
   const lastSyncMs: Record<PersonId, number> = { A: -Infinity, B: -Infinity };
   const synced = (p: PersonId, at: number, iso: string) => {
     if (at > lastSyncMs[p]) {
@@ -224,161 +225,38 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     synced(person, at, String(iso));
   }
 
-  const workoutById = new Map<string, WorkoutRec>();
   for (const { r: row, at } of sortedByAt(r.workouts ?? [])) {
     const [iso, person, id, d, type, start, end, dur, hr] = row;
     const date = normDate(d);
     const durationMin = num(dur);
     const key = `${person}|${id}`;
-    if (!id || !date || durationMin === null || workoutById.has(key)) continue;
-    const w: WorkoutRec = { at, extId: String(id), date, type: String(type), startAt: String(start), endAt: String(end), durationMin, avgHr: num(hr) };
-    workoutById.set(key, w);
+    if (!id || !date || durationMin === null || c.workoutById.has(key)) continue;
+    const w: WorkoutRec = { at, id: String(id), date, type: String(type), startAt: String(start), endAt: String(end), durationMin, avgHr: num(hr) };
+    c.workoutById.set(key, w);
     s.workouts[person].push(w);
     synced(person, at, String(iso));
   }
 
-  const presenceById = new Map<string, { person: PersonId; rec: PresenceRec }>();
   let n = 0;
   for (const { r: row, at } of sortedByAt(r.presence ?? [])) {
     const [, person, placeKey, event, eventAtRaw] = row;
     const place = PLACES.find((p) => p.key === placeKey);
     if (!place || place.person !== person || (event !== 'arrive' && event !== 'leave')) continue;
     const eventMs = ms(eventAtRaw) ?? at;
-    if (Math.abs(eventMs - at) > PRESENCE_WINDOW_MS) continue;
-    // Shortcuts sometimes fire twice: a repeat of the same event within 2 minutes is dropped.
+    if (Math.abs(eventMs - at) > LIMITS.presenceSkewMs) continue;
     const list = s.presence[person];
-    if (list.some((e) => e.placeKey === placeKey && e.event === event && Math.abs(e.eventMs - eventMs) <= PRESENCE_DUP_MS)) continue;
+    if (list.some((e) => e.placeKey === placeKey && e.event === event && Math.abs(e.eventMs - eventMs) <= LIMITS.presenceDuplicateMs)) continue;
     const eventAt = new Date(eventMs).toISOString();
     const rec: PresenceRec = { n: ++n, id: `${placeKey}@${eventAt}`, at, placeKey, event, eventAt, eventMs, date: toLocalDate(eventAt) };
     list.push(rec);
-    if (event === 'arrive' && !presenceById.has(rec.id)) presenceById.set(rec.id, { person, rec });
+    if (event === 'arrive' && !c.arriveById.has(rec.id)) c.arriveById.set(rec.id, { person, rec });
   }
 
   for (const { r: row, at } of sortedByAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    if (!d) continue;
-    switch (type) {
-      case 'checkin': {
-        const date = normDate(d.date);
-        const habit = typeof d.habit === 'string' ? d.habit : null;
-        if (!date || !habit || typeof d.done !== 'boolean') break;
-        const today = localDateAt(at);
-        if (d.edit === true) {
-          // A fix from きろく: any day of an open week (history-and-editing.md §4.1).
-          if (!editableAt(date, at)) break;
-        } else {
-          if (date > today || date < addDays(today, -2)) break; // 48 h fill-in window
-          if (isLockedAt(s, weekKeyOf(date), at)) break;
-        }
-        if (!targetsFor(person, weekKeyOf(date)).habits.includes(habit)) break;
-        s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
-        break;
-      }
-      case 'confirm': {
-        if (typeof d.yes !== 'boolean' || typeof d.id !== 'string') break;
-        if (d.kind === 'workout') {
-          const w = workoutById.get(`${person}|${d.id}`);
-          if (!w || w.at > at || isLockedAt(s, weekKeyOf(w.date), at)) break;
-          push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
-        } else if (d.kind === 'visit') {
-          const p = presenceById.get(d.id);
-          if (!p || p.person !== person || p.rec.at > at || isLockedAt(s, weekKeyOf(p.rec.date), at)) break;
-          push(s.visitConfirms, d.id, { at, v: d.yes });
-        }
-        break;
-      }
-      case 'spend': {
-        const label = typeof d.label === 'string' ? d.label.trim() : '';
-        const amountYen = d.amountYen;
-        if (d.spendId === undefined || d.spendId === null || !label || label.length > 60) break;
-        if (typeof amountYen !== 'number' || !Number.isInteger(amountYen) || amountYen <= 0 || amountYen > 1_000_000) break;
-        const spendId = String(d.spendId);
-        if (s.spends.some((x) => x.spendId === spendId)) break;
-        s.spends.push({ at, person, spendId, rawId: typeof d.spendId === 'number' ? d.spendId : spendId, label, amountYen });
-        break;
-      }
-      case 'approve':
-        if (d.spendId !== undefined && d.spendId !== null) s.approves.push({ at, person, spendId: String(d.spendId) });
-        break;
-      case 'transfer':
-        if (typeof d.month === 'string' && MONTH_RE.test(d.month) && d.month < localDateAt(at).slice(0, 7)) {
-          s.transfers.push({ at, month: d.month });
-        }
-        break;
-      // ---- edits (history-and-editing.md §4): the subject is always the sender, so the partner's data is
-      // unreachable; activity edits only count while the day's week is open (§4.3).
-      case 'metric_set': {
-        const date = normDate(d.date);
-        const metric = d.metric;
-        if (!date || !isMetricKey(metric)) break;
-        if (typeof d.value !== 'number' || !Number.isInteger(d.value) || d.value < 0 || d.value > METRIC_BOUNDS[metric]) break;
-        if (!editableAt(date, at)) break;
-        push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value });
-        break;
-      }
-      case 'workout_edit': {
-        if (typeof d.id !== 'string') break;
-        const key = `${person}|${d.id}`;
-        const w = workoutById.get(key);
-        if (!w || w.at > at || !editableAt(w.date, at)) break;
-        const strength = d.strength === null || typeof d.strength === 'boolean' ? d.strength : undefined;
-        const excluded = typeof d.excluded === 'boolean' ? d.excluded : undefined;
-        if (strength === undefined && excluded === undefined) break;
-        const rec: WorkoutEditRec = { at, person, id: d.id };
-        if (strength !== undefined) rec.strength = strength;
-        if (excluded !== undefined) rec.excluded = excluded;
-        s.workoutEdits.push(rec);
-        break;
-      }
-      case 'workout_add': {
-        const date = normDate(d.date);
-        const id = typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) ? d.id : null;
-        const dur = d.durationMin;
-        if (!id || !date || typeof d.type !== 'string' || !WORKOUT_TYPES.includes(d.type)) break;
-        if (typeof dur !== 'number' || !Number.isInteger(dur) || dur < MANUAL_WORKOUT_MIN.min || dur > MANUAL_WORKOUT_MIN.max) break;
-        const key = `${person}|${id}`;
-        if (workoutById.has(key) || !editableAt(date, at)) break;
-        // No clock time is asked for: it sits at noon (Tokyo) so it never overlaps a gym visit by accident.
-        const startAt = `${date}T12:00:00+09:00`;
-        const endAt = new Date(Date.parse(startAt) + dur * 60_000).toISOString();
-        const w: WorkoutRec = { at, extId: id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true };
-        workoutById.set(key, w);
-        s.manualWorkouts[person].push(w);
-        if (d.strength === null || typeof d.strength === 'boolean') s.workoutEdits.push({ at, person, id, strength: d.strength });
-        break;
-      }
-      case 'spend_void': {
-        if (d.spendId === undefined || d.spendId === null) break;
-        const spendId = String(d.spendId);
-        const sp = s.spends.find((x) => x.spendId === spendId);
-        // The spender only (§4.2), once, after the spend.
-        if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) break;
-        s.spendVoids.push({ at, person, spendId });
-        break;
-      }
-      case 'transfer_undo':
-        if (typeof d.month === 'string' && MONTH_RE.test(d.month)) s.transferUndos.push({ at, person, month: d.month });
-        break;
-      case 'harvest': {
-        const week = normDate(d.week);
-        if (week) s.harvests.push({ at, person, week });
-        break;
-      }
-      case 'highfive':
-        s.highfives.push({ at, person });
-        break;
-      case 'pref': {
-        const p = s.prefs[person];
-        if (d.key === 'locale' && (d.value === 'ja' || d.value === 'en')) p.locale = d.value;
-        else if (d.key === 'villagerName' && typeof d.value === 'string') {
-          const v = d.value.trim();
-          if (v.length >= 1 && v.length <= 20) p.villagerName = v;
-        } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(d.value)) p.villager = d.value;
-        break;
-      }
-      // Old `share` rows (the removed privacy toggles) are ignored: both players see all data.
-    }
+    // Old `share` rows (the removed privacy toggles) and other unknown types are ignored.
+    if (d && (EVENT_TYPES as readonly string[]).includes(type)) ON_EVENT[type](c, person, at, d);
   }
   // The per-workout lookups are indexes of workoutEdits (one source; round 7 L6).
   for (const e of s.workoutEdits) {
@@ -388,6 +266,129 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   }
   return s;
 }
+
+// ---------- events ----------
+
+interface Ctx {
+  s: State;
+  /** Ingested and manual workouts by `person|id`. */
+  workoutById: Map<string, WorkoutRec>;
+  /** Arrive events by visit id. */
+  arriveById: Map<string, { person: PersonId; rec: PresenceRec }>;
+}
+type Data = Record<string, unknown>;
+type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
+
+const isStrengthChoice = (v: unknown): v is boolean | null => v === null || typeof v === 'boolean';
+const hasId = (v: unknown): boolean => v !== undefined && v !== null;
+
+/**
+ * One handler per event type: each accepts (indexes) the event or ignores it. The edits (history-and-editing.md §4)
+ * always have the sender as subject, so the partner's data is unreachable; activity edits only count while the day's
+ * week is open (§4.3).
+ */
+const ON_EVENT: Record<EventType, OnEvent> = {
+  checkin({ s }, person, at, d) {
+    const date = normDate(d.date);
+    const habit = typeof d.habit === 'string' ? d.habit : null;
+    if (!date || !habit || typeof d.done !== 'boolean') return;
+    const today = localDateAt(at);
+    if (d.edit === true) {
+      // A fix from きろく: any day of an open week (history-and-editing.md §4.1).
+      if (!editableAt(date, at)) return;
+    } else if (date > today || date < addDays(today, -LIMITS.checkinBackDays) || isLockedAt(s, weekKeyOf(date), at)) return;
+    if (!targetsFor(person, weekKeyOf(date)).habits.includes(habit)) return;
+    s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
+  },
+  confirm({ s, workoutById, arriveById }, person, at, d) {
+    if (typeof d.yes !== 'boolean' || typeof d.id !== 'string') return;
+    if (d.kind === 'workout') {
+      const w = workoutById.get(`${person}|${d.id}`);
+      if (!w || w.at > at || isLockedAt(s, weekKeyOf(w.date), at)) return;
+      push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
+    } else if (d.kind === 'visit') {
+      const p = arriveById.get(d.id);
+      if (!p || p.person !== person || p.rec.at > at || isLockedAt(s, weekKeyOf(p.rec.date), at)) return;
+      push(s.visitConfirms, d.id, { at, v: d.yes });
+    }
+  },
+  spend({ s }, person, at, d) {
+    const label = typeof d.label === 'string' ? d.label.trim() : '';
+    const amountYen = d.amountYen;
+    if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;
+    if (typeof amountYen !== 'number' || !Number.isInteger(amountYen) || amountYen <= 0 || amountYen > LIMITS.spendMaxYen) return;
+    const spendId = String(d.spendId);
+    if (s.spends.some((x) => x.spendId === spendId)) return;
+    s.spends.push({ at, person, spendId, rawId: typeof d.spendId === 'number' ? d.spendId : spendId, label, amountYen });
+  },
+  approve({ s }, person, at, d) {
+    if (hasId(d.spendId)) s.approves.push({ at, person, spendId: String(d.spendId) });
+  },
+  transfer({ s }, _person, at, d) {
+    if (typeof d.month === 'string' && MONTH_RE.test(d.month) && d.month < localDateAt(at).slice(0, 7)) s.transfers.push({ at, month: d.month });
+  },
+  metric_set({ s }, person, at, d) {
+    const date = normDate(d.date);
+    const metric = d.metric;
+    if (!date || !isMetricKey(metric)) return;
+    if (typeof d.value !== 'number' || !Number.isInteger(d.value) || d.value < 0 || d.value > METRIC_BOUNDS[metric]) return;
+    if (editableAt(date, at)) push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value });
+  },
+  workout_edit({ s, workoutById }, person, at, d) {
+    if (typeof d.id !== 'string') return;
+    const w = workoutById.get(`${person}|${d.id}`);
+    if (!w || w.at > at || !editableAt(w.date, at)) return;
+    const strength = isStrengthChoice(d.strength) ? d.strength : undefined;
+    const excluded = typeof d.excluded === 'boolean' ? d.excluded : undefined;
+    if (strength === undefined && excluded === undefined) return;
+    const rec: WorkoutEditRec = { at, person, id: d.id };
+    if (strength !== undefined) rec.strength = strength;
+    if (excluded !== undefined) rec.excluded = excluded;
+    s.workoutEdits.push(rec);
+  },
+  workout_add({ s, workoutById }, person, at, d) {
+    const date = normDate(d.date);
+    const id = typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) ? d.id : null;
+    const dur = d.durationMin;
+    if (!id || !date || typeof d.type !== 'string' || !WORKOUT_TYPES.includes(d.type)) return;
+    if (typeof dur !== 'number' || !Number.isInteger(dur) || dur < MANUAL_WORKOUT_MIN.min || dur > MANUAL_WORKOUT_MIN.max) return;
+    const key = `${person}|${id}`;
+    if (workoutById.has(key) || !editableAt(date, at)) return;
+    // No clock time is asked for: it sits at noon (Tokyo) so it never overlaps a gym visit by accident.
+    const startAt = `${date}T12:00:00+09:00`;
+    const endAt = new Date(Date.parse(startAt) + dur * 60_000).toISOString();
+    const w: WorkoutRec = { at, id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true };
+    workoutById.set(key, w);
+    s.manualWorkouts[person].push(w);
+    if (isStrengthChoice(d.strength)) s.workoutEdits.push({ at, person, id, strength: d.strength });
+  },
+  spend_void({ s }, person, at, d) {
+    if (!hasId(d.spendId)) return;
+    const spendId = String(d.spendId);
+    const sp = s.spends.find((x) => x.spendId === spendId);
+    // The spender only (§4.2), once, after the spend.
+    if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
+    s.spendVoids.push({ at, person, spendId });
+  },
+  transfer_undo({ s }, person, at, d) {
+    if (typeof d.month === 'string' && MONTH_RE.test(d.month)) s.transferUndos.push({ at, person, month: d.month });
+  },
+  harvest({ s }, person, at, d) {
+    const week = normDate(d.week);
+    if (week) s.harvests.push({ at, person, week });
+  },
+  highfive({ s }, person, at) {
+    s.highfives.push({ at, person });
+  },
+  pref({ s }, person, _at, d) {
+    const p = s.prefs[person];
+    if (d.key === 'locale' && (d.value === 'ja' || d.value === 'en')) p.locale = d.value;
+    else if (d.key === 'villagerName' && typeof d.value === 'string') {
+      const v = d.value.trim();
+      if (v.length >= 1 && v.length <= LIMITS.villagerNameMaxChars) p.villagerName = v;
+    } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(d.value)) p.villager = d.value;
+  }
+};
 
 /** Latest entry with `at ≤ t`, or undefined. Lists are in ascending `at`. */
 export function latestAt<T>(list: Timed<T>[] | undefined, t: number): T | undefined {

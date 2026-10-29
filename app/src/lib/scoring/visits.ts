@@ -2,7 +2,7 @@ import { STRENGTH } from '#lib/config/rules.ts';
 import type { Visit } from '#lib/types.ts';
 import { parseInstant, toLocalDate } from '#lib/scoring/dates.ts';
 
-export interface PresenceRow { id: number; placeKey: string; event: 'arrive' | 'leave'; at: string }
+export interface PresenceEvent { id: number; placeKey: string; event: 'arrive' | 'leave'; at: string }
 export interface PlaceRow { key: string; autoStrength: boolean }
 
 /**
@@ -11,12 +11,12 @@ export interface PlaceRow { key: string; autoStrength: boolean }
  * leave replaces the first (a stale arrive with a lost leave must not inflate dwell). Unmatched leaves are dropped.
  */
 export function deriveVisits(
-  events: PresenceRow[],
+  events: PresenceEvent[],
   places: PlaceRow[],
   confirmations: Map<number, boolean>
 ): (Visit & { arriveEventId: number })[] {
   const auto = new Map(places.map((p) => [p.key, p.autoStrength]));
-  const byPlace = new Map<string, (PresenceRow & { ms: number })[]>();
+  const byPlace = new Map<string, (PresenceEvent & { ms: number })[]>();
   for (const e of events) {
     if (!byPlace.has(e.placeKey)) byPlace.set(e.placeKey, []);
     byPlace.get(e.placeKey)!.push({ ...e, ms: parseInstant(e.at) });
@@ -25,7 +25,7 @@ export function deriveVisits(
   const out: (Visit & { arriveEventId: number; ms: number })[] = [];
   for (const [placeKey, list] of byPlace) {
     list.sort((x, y) => x.ms - y.ms || x.id - y.id);
-    let open: (PresenceRow & { ms: number }) | null = null;
+    let open: (PresenceEvent & { ms: number }) | null = null;
     for (const e of list) {
       if (e.event === 'arrive') {
         open = e;
