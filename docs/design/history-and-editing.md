@@ -8,7 +8,7 @@ UX designer + data architect, 2026-10-29. User: "see all recorded data over time
 
 | Scope | Data | Source |
 |---|---|---|
-| Person × day | steps; exercise minutes (Watch, or step-derived when larger); workouts (type, minutes, strength ✓/✗); gym visits (dwell, confirmed); 3 eating check-ins | `metrics`, `workouts`, `presence`, `checkin`/`confirm` events |
+| Person × day | steps; active minutes = max(Watch, step-derived, hand-added workouts); workouts (type, minutes, strength ✓/✗); gym visits (dwell, confirmed); 3 eating check-ins | `metrics`, `workouts`, `presence`, `checkin`/`confirm` events |
 | Person × week | score, 4 fruits (actual/target), strength days, rest days | `scoreWeek` |
 | Week | yen per layer (A, B, team, purses), harvest, locked | `settledWeeks`, `paidAt` |
 | Money | jar over time, spends (done/waiting/refused/voided), transfers ✓ | `replayPurse` |
@@ -90,7 +90,7 @@ UX designer + data architect, 2026-10-29. User: "see all recorded data over time
 └─────────────────────────────┘
 ```
 
-**3.5 お金.** A jar-total step line on top (no axes, rung labels only). Then months: weekly yen lines, `振替 ¥28,900 ✓/未` (tap → `取り消す`), spends with status (my own → `取り消す`).
+**3.5 お金.** A jar-total step line on top (no axes, rung labels only). Then months: weekly yen lines, `振替 ¥28,900 ✓/未` (tap → `✓をはずす`), spends with status (my own → `なかったことに`, asked first; badge `取り消し済み`). The banner's undo is always `もとに戻す`.
 
 ## 4. Editing model
 
@@ -99,7 +99,7 @@ UX designer + data architect, 2026-10-29. User: "see all recorded data over time
 |---|---|---|
 | `metric_set` | `{date, metric:'steps'\|'exercise_min', value}` | Overrides the day's value, **including lowering it** |
 | `workout_edit` | `{id, strength?: boolean\|null, excluded?: boolean}` | Overrides strength counting (any type; `null` = automatic) and/or removes the workout from scoring |
-| `workout_add` | `{id:'m:<uuid>', date, type, durationMin}` | A manual workout (Watch forgotten), editable later with `workout_edit` |
+| `workout_add` | `{id:'m:<uuid>', date, type, durationMin}` | A manual workout (Watch forgotten), editable later with `workout_edit`. Its minutes count toward 活動: the day counts **max(Watch, step-derived, sum of hand-added minutes)**, never a sum of sources, under the daily cap (user decision 2026-10-29; ADR 0011). `type` must be a known workout type (GAS refuses others) |
 | `checkin` | existing, plus `edit:true` | `edit:true` widens the 48 h window to any day ≤ today in an unlocked week |
 | `confirm` | existing (visits) | Already "latest wins" |
 | `spend_void` | `{spendId}` | Voids a spend (a waiting one is cancelled) |
@@ -118,8 +118,10 @@ Activity edits count only if `!isLockedAt(weekKeyOf(date), at)`: this week, and 
 
 `spend_void`/`transfer_undo` are allowed any time; they never change a week's pay.
 
+**Held edits and the lock (round 7 M1/M2).** An edit is held 5 s for もとに戻す, but the server stamps the send time, so the client judges it by when it will be sent: きろく's controls close 65 s before the lock; a hold never runs past lock − 60 s (and a hovered banner holds at most 2 min); within 5 s of the lock an edit is refused at once. A queued edit that would reach the server after its lock (e.g. offline) is not shown, is dropped unsent, and しずえ says so; an acked edit stamped after the lock gets the same message. A later event on the same subject (habit-day, workout, metric, spend, month) never overtakes a held one, so the server keeps the on-screen order.
+
 ### 4.4 Audit trail
-The model derives `EditLog { at, by, date, field, before, after }` (`before` = value as of `at − 1`). Refused edits are not shown. The sheet stays the raw audit.
+The model derives `EditLog { at, by, date, field, before, after }` (`before` = value as of `at − 1`). Refused and no-op edits are not shown. The sheet stays the raw audit.
 
 ## 5. Backend and model task list
 
