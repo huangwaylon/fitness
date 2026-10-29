@@ -13,7 +13,8 @@
     "assets:fetch": "node scripts/fetch-assets.ts",
     "fonts:subset": "node scripts/font-subsets.ts",
     "gas:build": "node gas/build.ts",
-    "export:sheet": "node scripts/export-to-sheet.ts"
+    "export:sheet": "node scripts/export-to-sheet.ts",
+    "bench": "node scripts/bench-model.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^4.0.0",

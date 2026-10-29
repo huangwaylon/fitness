@@ -8,7 +8,7 @@ import {
 } from '#lib/scoring/index.ts';
 import { editableAt, finalMs, firstWeek, isLockedAt, latestAt, localDateAt, PEOPLE_IDS, type State, type Timed } from './state.ts';
 import {
-  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, paidAt, replayPurse, settledWeeks, transferDoneAt, weekInput, workoutsAsOf,
+  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, paidAt, replayHarvests, replayPurse, settledWeeks, transferDoneAt, weekInput, workoutsAsOf,
   type Activity, type Buckets, type SettledWeek, type SpendLog
 } from './week.ts';
 
@@ -130,10 +130,7 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
   const today = localDateAt(now);
   const cur = weekKeyOf(today);
   const settled = new Map(settledWeeks(s, now).map((w) => [w.weekKey, w]));
-  const harvested = new Set<WeekKey>();
-  const taps = new Map<WeekKey, Set<PersonId>>();
-  for (const h of s.harvests) if (h.at <= now) (taps.get(h.week) ?? taps.set(h.week, new Set()).get(h.week)!).add(h.person);
-  for (const [wk, set] of taps) if (set.size === 2) harvested.add(wk);
+  const harvested = new Set([...replayHarvests(s, now)].filter(([, by]) => by.size === 2).map(([wk]) => wk));
   const out: HistoryWeek[] = [];
   const start = firstWeek(s) < cur ? firstWeek(s) : cur;
   for (let wk = cur; wk >= start; wk = addDays(wk, -7)) {
