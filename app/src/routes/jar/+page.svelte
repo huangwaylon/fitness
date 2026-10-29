@@ -152,7 +152,7 @@
       <button type="button" class="payday" onclick={markPayday} bind:this={paydayBtn}>
         <span class="pico" aria-hidden="true"><OfficialArt key="money/bells" size={28} /></span>
         <span class="ptxt">{t('jar.payday.todo', { yen: formatYen(jar.transfer.amountYen) })}</span>
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev" /></svg>
       </button>
     {/if}
 
@@ -168,7 +168,7 @@
         {:else}
           <span class="body"><b>{t('jar.allReached')}</b></span>
         {/if}
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev" /></svg>
       </button>
 
       <div class="card purse">
@@ -197,7 +197,7 @@
 
       {#if recent.length}
         <button type="button" class="card recent" onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
-          <span class="rh"><small>{t('kiroku.recent')}</small><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+          <span class="rh"><small>{t('kiroku.recent')}</small><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev" /></svg></span>
           {#each recent as r (r.key)}
             <span class="rr" class:off={r.off}><span class="rl">{r.label}</span><b class="money">{r.yen < 0 ? '−' : '+'}{formatYen(Math.abs(r.yen))}</b></span>
           {/each}

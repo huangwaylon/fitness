@@ -57,6 +57,9 @@
 
     <symbol id="i-island" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 Q12 15 21 20"/><path d="M12 18 Q11 12 13 7"/><path d="M13 7 Q8 4 4 7 M13 7 Q18 3 21 7 M13 7 Q11 3 8 3 M13 7 Q16 9 17 12"/></g></symbol>
     <symbol id="i-jar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="3" rx="1.2"/><path d="M8 6 Q5 8 5 12 V18 Q5 21 8 21 H16 Q19 21 19 18 V12 Q19 8 16 6"/><circle cx="12" cy="15" r="2.6"/></g></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-bowl" viewBox="0 0 48 48"><path d="M6 22 H42 Q41 38 24 40 Q7 38 6 22Z" fill="#FFF1DE" stroke="#4A3A2C" stroke-width="2.6" stroke-linejoin="round"/><path d="M14 22 Q14 12 22 14 Q20 20 18 22" fill="#7BC67E" stroke="#4A3A2C" stroke-width="2.2" stroke-linejoin="round"/><path d="M22 22 Q26 10 34 13 Q32 20 28 22" fill="#BFE5B9" stroke="#4A3A2C" stroke-width="2.2" stroke-linejoin="round"/><circle cx="34" cy="19" r="4" fill="#FF8A7A" stroke="#4A3A2C" stroke-width="2"/><path d="M14 30 Q24 34 34 30" stroke="#E9D8B4" stroke-width="2.4" fill="none" stroke-linecap="round"/></symbol>
 

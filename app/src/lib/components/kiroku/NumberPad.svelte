@@ -67,9 +67,12 @@
   /* The keys sit at the bottom of the phone, in the thumb zone, with the value right above them (round 7 F10): the
      pad fills the phone screen below its title bar (status + title ≈ 100px, the phone's padding ≈ 40px). */
   .atm {
-    display: grid; align-content: end; gap: 16px; outline: none;
+    display: grid; align-content: end; gap: 16px;
     min-height: calc(100dvh - var(--safe-top) - 12px - var(--pad-bottom) - 150px);
   }
+  /* The pad takes the typed digits (it is focused on open): with keyboard focus, its screen shows the ring (WCAG 2.4.7). */
+  .atm:focus { outline: none; }
+  .atm:focus-visible .screen { outline: 3px solid var(--focus); outline-offset: 3px; }
   .screen { display: grid; gap: 4px; padding: 14px 16px 16px; }
   .top { display: flex; align-items: baseline; gap: 10px; font-size: var(--fs-body); }
   .sub { color: var(--text-soft); font-size: var(--fs-body); }
