@@ -1,74 +1,74 @@
-# Runbook: running Island Fund on the home Mac
+# Runbook: Island Fund without the Mac (ADR 0015)
 
-One Mac, Tailscale only on the Mac (ADR 0010), the app in Docker on `127.0.0.1:3000`, public HTTPS via Tailscale Funnel. Items marked [U] still need checking on real devices.
+Three pieces, no server of our own:
+- **The data:** the Google Sheet *Island Fund* (append-only rows).
+- **The backend:** the Apps Script bound to it, deployed as a web app (`/exec` URL, two per-person keys).
+- **The app:** a static PWA on GitHub Pages. It computes scores and yen in the browser from the sheet's rows.
 
-## 1. One-time Mac setup
-1. **Power:** connect the Mac to a UPS, then run:
-   `sudo pmset -a autorestart 1 sleep 0 disksleep 0` (restarts after a power cut and never sleeps).
-   Turn on FileVault. Set Docker Desktop to start at login.
-2. **Tailscale (Mac only):** install it and log in. In the admin console:
-   - Enable **MagicDNS** and **HTTPS certificates**.
-   - Rename the machine to **`island`**. Do this **before pairing anything**. Renaming later means re-pairing both phones and re-subscribing push.
-   - **Disable key expiry** for this machine.
-3. **App:**
-   ```sh
-   cd app && cp .env.example .env
-   npx tsx scripts/vapid.ts >> .env        # then delete the duplicate empty VAPID_* lines
-   docker compose up -d --build
-   ```
-4. **Funnel:** run `tailscale funnel --bg 3000`. The first run may ask you to allow Funnel in the tailnet policy. Check it with `tailscale funnel status`.
-   The URL is `https://island.<tailnet>.ts.net`. Only `/ingest/*`, `/api/*` and the PWA are served, and there are no admin endpoints.
+Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.md).
 
-Upgrade: `git pull && docker compose up -d --build`. Migrations run automatically on boot.
+## 1. One-time setup
+1. **Sheet + script + keys + deploy:** follow [google-setup.md](google-setup.md) §1–5.
+2. **Point the Pages build at it:** `gh variable set GAS_URL --body 'https://script.google.com/macros/s/…/exec'`,
+   then re-run the *Deploy UI to GitHub Pages* workflow (or push). Until `GAS_URL` is set, the site shows
+   「まだ設定されていません / Not set up yet」 with a link to the demo.
+3. **Migrate the Mac data** (§5), then **switch the Shortcuts** (§4).
+4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
+   **Add to Home Screen**, open it from the icon and paste that person's key (or open `…/fitness/#key=<key>` once).
+5. **Reminders** (no web push): in Shortcuts → Automation, add *Time of Day* automations that show a notification:
+   check-in at 20:00 daily, harvest on Sunday at 19:30.
 
-## 1b. The UI on GitHub Pages
-The UI is deployed automatically to https://huangwaylon.github.io/fitness/ by `.github/workflows/pages.yml` on every push to main ([ADR 0013](../decisions/0013-ui-on-github-pages.md)). It calls the Mac's API at the repo variable `API_BASE`.
-- Start the Mac server with `CORS_ORIGINS=https://huangwaylon.github.io` (plus `PORT=3100` here, since 3000 is taken).
-- Changing the Funnel hostname: `gh variable set API_BASE --body https://<new>.ts.net`, then re-run the workflow.
+## 2. Deploying the UI
+Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `npm ci`, `npm run build` with
+`VITE_GAS_URL=${{ vars.GAS_URL }}`, upload `app/build-pages/`. Locally: `cd app && npm run build` (output
+`build-pages/`), `npx vite preview` to try it, `npm run dev` for development (without `VITE_GAS_URL` in `.env` it
+runs on demo data). The site has a strict CSP (a `<meta>` tag): it can only talk to itself and the Apps Script
+origins.
 
-## 1c. Official art (Nintendo's, personal use)
-The villagers, Isabelle, fruit, money and NookPhone images are official *Animal Crossing: New Horizons* art from Nookipedia, kept in the repo under `app/static/art/` (58 downscaled `.webp` files, ~580 KB, plus `manifest.json`) and shipped with both builds. It's Nintendo's art, used for this private two-person app only: **keep the repo private** and don't reuse the files elsewhere.
-- Refresh / add: edit the `SPECS` list in `app/scripts/fetch-assets.ts`, then `cd app && npm run assets:fetch` (skips files already on disk; `--force` re-downloads everything; needs `cwebp`: `brew install webp`). It prints any title it couldn't find. Commit `app/static/art/`.
-- The UI renders art through `<OfficialArt>` (`$lib/components/OfficialArt.svelte`) and falls back to our own fan-art vectors if a file is missing or fails to load, so deleting `static/art/` degrades gracefully.
+Backend code changes (`app/gas/**`, the parser): google-setup.md §11 (`npm run gas:build`, paste, **new version on
+the existing deployment**, never a new deployment).
 
-## 2. Pairing the phones (PWA)
-Open **https://huangwaylon.github.io/fitness/** in Safari → Share → Add to Home Screen, then pair inside the installed app.
-1. On each iPhone, open the URL in Safari, choose **Share → Add to Home Screen**, then open the app **from the Home Screen icon**. The installed app has its own cookie jar.
-2. On the Mac, run `docker compose exec island node scripts/pair.ts A` (or `B`). This prints a 6-digit code that works once, for 10 minutes, with 10 attempts. The URL is public, so a stranger can burn a code with wrong guesses; if pairing says the code is invalid or busy, wait a few minutes and run it again.
-3. Type the code into the installed app. The app sets a session cookie for about a year.
-4. In the app, tap **Enable reminders** to turn on web push.
+## 3. Keys
+- Rotate (lost phone, leak, any doubt): google-setup.md §10. Then paste the new key into that person's app (open
+  `…/#key=<new key>`) and their Shortcuts.
+- Keys live only in Script Properties, the phones' app storage and the Shortcuts. Never in the repo or a URL that
+  gets shared (the `#key=` fragment isn't sent to any server, but don't post the link).
 
-Devices: `docker compose exec island node scripts/devices.ts` lists them. Add `revoke <id>` to revoke a lost phone or a leaked token.
+## 4. Shortcuts
+- Health sync: [shortcut-health-sync.md](shortcut-health-sync.md) (URL → `/exec`, body gets `key` + `action:"ingest"`,
+  no `Authorization` header).
+- Gym Arrive/Leave: same doc, §5.
 
-## 3. Health data from the phones (iOS Shortcuts)
-Follow [shortcut-health-sync.md](shortcut-health-sync.md). A built-in Shortcut sends steps, exercise minutes and workouts to `/ingest/shortcut/A` (or `/B`) when you open an everyday app, at most hourly. No third-party app is needed. Token: `docker compose exec island node scripts/token.ts A shortcut "A iPhone"`; the same token works for the gym Shortcuts below.
+## 5. Migrating from the Mac (once)
+1. Stop the Mac server (`node build` on port 3100 behind Tailscale Funnel) so nothing arrives after the export.
+2. `cd app && npm run export:sheet` (plain Node ≥ 24: `node:sqlite`, read-only) writes TSVs to `app/data/export/`.
+3. Paste them into the tabs: google-setup.md §8.
+4. Open the app and compare the jar and this week's scores with what the Mac showed. They should match (verified on
+   a copy of the DB on 2026-10-29). Export **before the first payout (Sun 2026-11-08 19:30 JST)** if you can: the
+   DB keeps only each day's latest value and its last upload time, so for weeks already paid on the Mac a late
+   re-send can make the recomputed amount lower than what the Mac paid.
+5. After a week of the phones working against the sheet: `tailscale funnel reset`, and delete `app/build/`,
+   `app/data/` (keep a copy of `island.db` somewhere private) and `app/node_modules/` (then `npm ci`).
 
-## 4. Gym Arrive/Leave Shortcuts (per phone)
-Token: the phone's Shortcuts token from §3 (or a separate one: `node scripts/token.ts A shortcut "A gym"`). Place keys come from `PLACES` in `.env`; the defaults are `anytime` (A), and `pt_studio` and `anytime_b` (B).
-In **Shortcuts → Automation**, create a **new Arrive automation** at the gym address. Choose **Run Immediately** and allow it to run while locked. Add the action **Get Contents of URL**:
-- URL `https://island.<tailnet>.ts.net/api/presence`, Method **POST**
-- Headers: `Authorization` = `Bearer isl_…`
-- Request Body **JSON**: `place` = `anytime`, `event` = `arrive`
+## 6. Backups
+The sheet is the only copy of check-ins, answers and purse events. Google keeps version history (File → Version
+history). For an off-Google copy: File → Download → `.xlsx` once a month. Health numbers can be re-sent from the
+phones (shortcut-health-sync.md §6).
 
-Duplicate it as a **Leave** automation with `event` = `leave`. If adding the header is awkward, put `token` = `isl_…` in the JSON body instead [U].
-After a visit of 30 minutes or more with no Watch strength workout, the app shows 「筋トレとして記録する？」 as a card on the Island page (in-app only, no push).
+## 7. Official art
+The villager, Isabelle, fruit and NookPhone images are official *Animal Crossing: New Horizons* art (Nookipedia) in
+`app/static/art/`, for this private two-person app only. Refresh: edit `SPECS` in `app/scripts/fetch-assets.ts`,
+`npm run assets:fetch` (needs `cwebp`). The UI falls back to our own vectors if a file is missing. **Note:** the
+repo is currently public; make it private (and move the static site to a host that serves private repos) if the art
+shouldn't be published.
 
-## 5. Schedules (JST, in-process, idempotent)
-- **Sun 19:30:** provisional pay (`earn:*` ledger entries). The harvest overlay opens.
-- **Wed 04:00:** final pass. It writes top-ups only, then locks the week.
-- **20:00:** check-in reminder (skipped if already checked in, and on 正月 days). **25th, 12:00:** payday reminder.
-- Missed runs (Mac off) catch up on the next boot. To preview what the current rules would pay: `node scripts/recompute.ts --dry-run`.
-
-## 6. Backups (the ledger can't be recreated)
-- Every night, `scripts/backup.sh` makes a `sqlite3 .backup` snapshot, checks it with an integrity check, then runs `restic backup` to a bucket **outside Kantō**, encrypted on the client side. Run it from launchd or cron on the Mac host, with `RESTIC_REPOSITORY`, `RESTIC_PASSWORD_FILE` and the bucket credentials set. Keep the restic password somewhere off the Mac as well, such as a password manager.
-- **Monthly restore drill:** `scripts/restore-drill.sh` restores the latest snapshot to a temp folder, runs an integrity check and prints the ledger totals. Compare the totals with the Jar screen.
-- Health metrics can be re-sent from the phones (run the baseline Shortcut from shortcut-health-sync.md §5). Check-ins, presence (and visit answers) and the ledger exist only in the DB.
-
-## 7. Troubleshooting
+## 8. Troubleshooting
 | Symptom | Check |
 |---|---|
-| Shortcut gets 401 | Token revoked or mistyped; the URL person must match the token's person (403 `person_mismatch`) |
-| Shortcut gets 413 | The body is over 20 MB: shorten the date range |
-| PWA asks to pair again | Cookie lost (reinstalled app); run `pair.ts` again |
-| No pushes | `VAPID_*` set? Reminders enabled inside the installed app? Only one push per day by design |
-| Logs | `docker compose logs -f island`. Payload bodies are never logged |
+| Site says 「まだ設定されていません」 | `GAS_URL` repo variable missing; set it and re-run the workflow |
+| App says it can't reach the island | `whoami` curl (google-setup.md §5). HTML instead of JSON → authorization lapsed (google-setup.md §9) |
+| `{"ok":false,"error":"unauthorized"}` | Wrong or rotated key: re-paste it (app) / fix the `key` field (Shortcut) |
+| `busy` | Another write held the lock for 10 s; the app retries by itself, the Shortcut runs again next time |
+| `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
+| Numbers didn't move | The `uploads` tab shows each Shortcut run (status, size). Metrics only ever go up |
+| Changes made offline | They stay queued on the phone and are sent when it's back online (the sync pill shows it) |

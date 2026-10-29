@@ -1,5 +1,5 @@
 # 0013 — UI on GitHub Pages; API stays on the Mac
-**Status:** Accepted (user input, 2026-10-28). Amends 0005/0010 (hosting): the Mac now serves only the API (it can still serve the UI too).
+**Status:** Partly superseded by 0015: the UI stays on GitHub Pages; the API is the Apps Script web app, not the Mac. Was: accepted (user input, 2026-10-28), amending 0005/0010.
 
 **User input:** "let's host the UI on github pages."
 

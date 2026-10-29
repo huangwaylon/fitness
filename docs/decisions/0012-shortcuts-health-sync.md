@@ -1,5 +1,5 @@
 # 0012 — Health data via iOS Shortcuts; Health Auto Export dropped
-**Status:** Accepted (user input, 2026-10-28). Supersedes 0001 (HAE for the MVP).
+**Status:** Accepted (user input, 2026-10-28). Supersedes 0001 (HAE for the MVP). Endpoint and auth superseded by 0015 (POST to the Apps Script `/exec` URL with `key` + `action:"ingest"` in the body).
 
 **User input:** "I don't need HAE, drop that approach." No third-party app on the phones, nothing manual.
 

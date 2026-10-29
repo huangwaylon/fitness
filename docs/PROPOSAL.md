@@ -19,7 +19,7 @@ v1.0 (USD, more game systems) is in git history. v2.0 added Japan, yen, gyms and
 | **Effort** | **0 s** for activity and gym visits (automatic; no Watch at night, so sleep isn't scored). **≤ 10 s/day** for an evening 3-tap eating check-in. **~1 min on Sunday** for the harvest ceremony. |
 | **Money** | **One currency: yen. No fixed goal: save as much as you can.** 1 fruit = **¥50**; up to 100 fruit/person/week. A realistic 85/week each ≈ **¥530,000/year**, and a perfect 100 = ¥624,000. Treat Purse **up to ¥104,000/year**. The jar shows the *next* trip it could buy. |
 | **Team + accountability** | Each week: **your fruit × ¥50 + your partner's fruit × ¥50 + a team bonus of ¥20 × the *lower* score** (≈ 17%). Each partner's fruit is visible to the other. |
-| **App** | Super simple: **2 pages + the しまフォン launcher + a Sunday overlay**, big numbers, little text. **Japanese UI**, switchable to English per person. Self-hosted on your Mac; on the phones it's just a home-screen web app (**no VPN app**), with a native companion for widgets later. |
+| **App** | Super simple: **2 pages + the しまフォン launcher + a Sunday overlay**, big numbers, little text. **Japanese UI**, switchable to English per person. Runs on a Google Sheet + Apps Script with the UI on GitHub Pages (no server of our own); on the phones it's just a home-screen web app (**no VPN app**), with a native companion for widgets later. |
 | **Year** | 52 weeks in 4 seasons (Nov–Jan · Feb–Apr · May–Jul · Aug–Oct) on the Japanese calendar. |
 
 ---
@@ -154,34 +154,32 @@ Detail: [style-guide.md](design/style-guide.md), [ac-research.md](design/ac-rese
 
 ## 5. Architecture
 
-Detail: ADRs [0010](decisions/0010-no-vpn-on-phones-tailscale-funnel.md), [0012](decisions/0012-shortcuts-health-sync.md), [0013](decisions/0013-ui-on-github-pages.md), [0001](decisions/0001-health-data-ingestion.md), [0005](decisions/0005-client-and-hosting.md); [runbook](ops/runbook.md); [no-Mac options](research/no-mac/README.md).
+Detail: ADR [0015](decisions/0015-google-sheet-backend.md) (supersedes the hosting parts of 0005/0010/0012/0013), [sheets contract](design/sheets-architecture.md), [Google setup](ops/google-setup.md), [runbook](ops/runbook.md), [ADR 0012](decisions/0012-shortcuts-health-sync.md) (Shortcuts).
 
 ```
  iPhone A / iPhone B
  ├─ Apple Watch → Apple Health ─► Shortcuts health sync (auto POST) ┐
- ├─ Shortcuts: arrive/leave gym (runs locked, no prompt) ───────────┤  public HTTPS (Tailscale Funnel)
- └─ PWA (ja/en) ◄── web push ───────────────────────────────────────┤  nothing installed on phones
-                                                                    ▼
-                                         Home Mac (Tailscale only here, UPS, auto-restart)
-                                         SvelteKit + SQLite · Asia/Tokyo jobs
-                                         ingest → daily metrics → weekly score → ¥ ledger
-                                         encrypted off-site backup (outside Kantō)
+ ├─ Shortcuts: arrive/leave gym (runs locked, no prompt) ───────────┤  POST {key, action, …}
+ ├─ Shortcuts: 20:00 / Sun 19:30 reminders (local, no push)         │
+ └─ PWA (ja/en, GitHub Pages) ◄── snapshot rows / events ───────────┤
+      computes scores + ¥ in the browser                            ▼
+                                     Apps Script web app (bound, spreadsheets.currentonly)
+                                     Google Sheet "Island Fund": append-only rows
 ```
 
 | Area | Choice |
 |---|---|
 | Health data | **iOS Shortcuts** (built in, ¥0): an App-trigger automation reads Health samples and POSTs them when the phone is in use, at most hourly ([ADR 0012](decisions/0012-shortcuts-health-sync.md)). v1 option: native SwiftUI companion (HealthKit background), $99/yr dev program. |
-| Gym visits | **Shortcuts Arrive/Leave automation** per gym (Anytime branch for A; the PT studio for B), allowed to run while locked → `POST /api/presence`. A visit ≥ 30 min with no Watch workout → push 「筋トレとして記録する?」 → one tap. Fallbacks: an evening chip, then a Sunday "anything we missed?" row. (Anytime Fitness Japan has no API; the Wallet-pass trigger gets tested in Phase 0.) |
-| Server | SvelteKit (node) + SQLite + Drizzle in Docker. Rules in a TypeScript config + a `recompute --dry-run` CLI (no admin UI in the MVP). |
-| Network | **Tailscale Funnel on the Mac only**: a public `https://<mac>.<tailnet>.ts.net` URL. ¥0, no domain, no port forwarding (Japanese fibre is often MAP-E / DS-Lite anyway), and TLS terminates on the Mac. **Nothing to install on the phones.** Runner-up: Cloudflare Tunnel (~$10/yr domain). Rejected: ngrok (free warning page breaks the PWA; $10/month to remove) and GitHub Pages + Sheets (public site, no request headers, no push, health data in Google). |
-| Auth | **One-time 6-digit pairing code** entered in the installed PWA → long-lived HttpOnly signed cookie per device. **Per-device revocable bearer tokens** for the Shortcuts. Rate limiting and lockout. No admin endpoints exposed. |
-| Money | Integer-yen ledger, append-only, with idempotency keys (`earn`, `topup`) and buckets `jar` and `purse`. No bank APIs; there's a payday "moved ✓". |
+| Gym visits | **Shortcuts Arrive/Leave automation** per gym, allowed to run while locked → `action: "presence"`. A visit ≥ 30 min with no Watch workout → the app asks 「筋トレとして記録する?」 → one tap. |
+| Data + backend | A **Google Sheet** (one tab per row type, append-only) and the **Apps Script bound to it**, deployed as a web app. It is the only reader and writer, never hands out Google tokens, and answers `ingest`, `presence`, `event`, `snapshot`, `whoami`. ¥0. |
+| Compute | **Compute-on-read in the browser**: the PWA turns the rows into scores, yen, harvest and jar with the pure scoring code. Each week pays max(as of Sun 19:30, as of Wed 04:00) using the script's timestamps, so there is no ledger and no scheduler. Paints instantly from a local snapshot; writes are optimistic and queued. |
+| UI hosting | Static SPA on **GitHub Pages** (¥0), strict CSP (only our origin and Apps Script). |
+| Auth | Two per-person keys (Script Properties) sent in the request body; rotate by editing a property. The phone pastes its key once. |
+| Money | Integer yen, recomputed from rows: `jar` and `purse`, treat spends ≥ ¥5,000 need the partner's OK. No bank APIs; there's a payday "moved ✓". |
 | i18n | `ja.json` / `en.json` message catalogs from day one. `¥128,000` with a half-width ¥ sign. Dates as `10月28日(水)`. |
-| Resilience | UPS + auto-restart; Litestream/restic client-side-encrypted to a bucket outside Kantō; monthly restore drill. A Mac mini rather than a Pi, because of summer heat. |
+| Resilience | Nothing of ours to keep running. Google's version history plus a monthly `.xlsx` download. |
 
-**MVP API (core endpoints):** `POST /ingest/shortcut/:person` · `POST /api/presence` · `GET /api/week` · `POST /api/checkin` · `POST /api/confirm` · `POST /api/harvest/confirm` · `POST /api/purse/spend` · `POST /api/transfer/done` · `POST /api/push/subscribe`.
-
-**Privacy:** the partner sees fruit and % only. Raw numbers are opt-in. Eating answers are never shared. All of this is enforced server-side. No third-party analytics and no cloud AI on health data.
+**Privacy:** the partner sees fruit and % only. Raw numbers are opt-in. Eating answers are never shared. Both people's rows sit in one private sheet owned by the shared account; the app applies the privacy rules when it builds the view. No third-party analytics and no cloud AI on health data.
 
 ---
 
@@ -189,8 +187,8 @@ Detail: ADRs [0010](decisions/0010-no-vpn-on-phones-tailscale-funnel.md), [0012]
 
 | Phase | Effort | Scope | Done when |
 |---|---|---|---|
-| **0 · Spike** | 1 evening | Tailscale Funnel on the Mac + pairing; Shortcuts health sync (bearer token, App trigger); gym Arrive/Leave Shortcuts; test the Wallet-pass trigger at Anytime; save real payloads | Data from both phones and one gym visit land on the server |
-| **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay → ¥ ledger; 2 pages + しまフォン in ja/en; check-in; web push; backups | 2 weeks hands-off, ≤ 1 missed day per person |
+| **0 · Spike** | 1 evening | Sheet + Apps Script deployed, keys pasted; Shortcuts health sync (App trigger); gym Arrive/Leave Shortcuts; test the Wallet-pass trigger at Anytime | Data from both phones and one gym visit land in the sheet |
+| **1 · MVP** | ~3 weekends | Ingest → 4-fruit weekly score → Sunday overlay → ¥ ledger; 2 pages + しまフォン in ja/en; check-in; Shortcuts reminders | 2 weeks hands-off, ≤ 1 missed day per person |
 | *Calibration* | 2 weeks | Flat participation pay; baselines measured; B's targets agreed with her trainer | Season 1 starts |
 | **2 · v1** | ~4–6 weekends | Season re-tune and recap, pause weeks, partner-invite idea, quiet island upgrades, **native companion** (HealthKit sync, widget with a check-in button, Watch complication) | Widget used daily |
 | **3 · Later** | seasonal | One seasonal event per season, milestone shelf, year-end recap | Still opened weekly in month 12 |
@@ -208,16 +206,16 @@ Detail: ADRs [0010](decisions/0010-no-vpn-on-phones-tailscale-funnel.md), [0012]
 | Overtraining / injury | Caps, easy weeks, paid rest days, pain rule, trainer-led programming for B |
 | Disordered eating | Habits not calories, no meal grading, private answers, guilt-free treats, banned-words list |
 | Resentment between partners | Own baselines, team part at the lower score, no leaderboard, ○ not ✗ |
-| Power cut / earthquake | UPS, auto-restart, off-region encrypted backups, data re-sendable from the phones |
+| Google account / script problems | Keys only reach Island data; authorization-lapse check (google-setup §9); version history + monthly `.xlsx`; health data re-sendable from the phones |
 
 ---
 
 ## 8. Still open (defaults are assumed, so building can start)
 
-*Answered so far:* no fixed destination (save as much as possible) · Tokyo · always-on Mac ✓ · no Watch at night · no health conditions · no sweet drinks / coffee / alcohol · B = personal trainer, A = Anytime · Japanese UI · no VPN on the phones.
+*Answered so far:* no fixed destination (save as much as possible) · Tokyo · Google Sheet backend, no Mac (ADR 0015) · no Watch at night · no health conditions · no sweet drinks / coffee / alcohol · B = personal trainer, A = Anytime · Japanese UI · no VPN on the phones.
 
 1. **Rate:** is a maximum of ≈ ¥624,000/yr savings + ¥104,000/yr treats comfortable? (One setting: ¥50/fruit.)
 2. **Gyms:** which Anytime branch, and where is B's PT studio? OK to use location for gym detection? How many PT sessions a week? Would the trainer like a monthly summary?
-3. **Costs:** ¥0 now (Shortcuts); $99/yr (Apple Developer) only if we build the v1 native companion?
+3. **Costs:** ¥0 now (Shortcuts, Google Sheet + Apps Script, GitHub Pages; no Mac needed); $99/yr (Apple Developer) only if we build the v1 native companion?
 4. **Villagers:** animal, colour and name for each of you.
 5. **Trips:** any planned for 正月 / GW / Obon (these become paused or easy weeks)?

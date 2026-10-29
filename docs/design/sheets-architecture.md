@@ -46,12 +46,12 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
   - `gas.ts`: post helper with a timeout and retry. Writes go through a queue persisted in `localStorage` and replayed until acked. Snapshot merge and cache in `localStorage`.
   - `week.svelte.ts` and `actions.ts`: rewired to the model and queue; same UI-facing functions where possible.
 - Pairing: paste your key (or open `…/#key=…` once). `whoami` confirms the person, and the key is stored in `localStorage`.
-- Removed in the final phase: `app/src/lib/server/**`, `app/src/routes/api/**`, `app/src/routes/ingest/**`, `hooks.server.ts`, drizzle, `scripts/{pair,token,devices,recompute,vapid,backup*,restore*}`, Docker, adapter-node, better-sqlite3, web push.
+- Removed (done 2026-10-29): `app/src/lib/server/**`, `app/src/routes/api/**`, `app/src/routes/ingest/**`, `hooks.server.ts`, drizzle, `scripts/{pair,token,devices,recompute,vapid,backup*,restore*}`, Docker, adapter-node, better-sqlite3, web push.
 
 ## 4. Testing
 - The parser: unit tests (ported from the shortcut-ingest tests).
 - The GAS backend: vitest with an in-memory fake of `SpreadsheetApp`/`PropertiesService`/`LockService`/`CacheService`/`ContentService`. It covers auth, never-throws, append-only + higher-only metrics, dedupe, snapshot `since`, rate limit and body cap.
-- The model: **differential tests against the current server** (`getWeekView`, `settleWeek`, `computePayout`) on shared fixtures and on the real DB export, before the server is deleted. Then the fixtures stay as golden files.
+- The model: was differential-tested against the old server (`getWeekView`, settlement, payout) on a 10-week timeline and on the real DB; those server outputs are now frozen golden fixtures (`app/src/lib/model/fixtures/`, `golden.test.ts`).
 - The client: queue/retry/merge unit tests.
 
 ## 5. Shortcut (the user's)
