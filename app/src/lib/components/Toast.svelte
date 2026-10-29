@@ -3,8 +3,7 @@
   // ToastHost renders it inside the open sheet's <dialog> when there is one: a popover outside a modal dialog is
   // inert (round 7 F1). Slides down below the status row, holds (the store decides how long), slides up: the store
   // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro (round 7 F2).
-  // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones, the Miles
-  // ticket for milestones). Right: one official reaction icon. Tap or swipe up to dismiss.
+  // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
   import type { PersonId } from '#lib/types.ts';
   import Host from './Host.svelte';
   import Villager from './Villager.svelte';
@@ -15,12 +14,8 @@
     text: string;
     /** A partner event: show that person's villager icon. */
     person?: PersonId;
-    /** Milestone banner: the Nook Miles icon instead of しずえ. */
-    miles?: boolean;
     /** Official reaction icon on the right (`reactions/<id>`). */
     reaction?: string;
-    /** Another banner is up: sit one row lower. */
-    second?: boolean;
     /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */
     action?: { label: string; run: () => void };
     /** Hover / touch / focus on the banner holds it; leaving lets it time out again (WCAG 2.2.1). */
@@ -30,7 +25,7 @@
     /** Sliding out (the store drops it right after). */
     leaving?: boolean;
   }
-  let { text, person, miles = false, reaction, second = false, action, onhold, ondismiss, leaving = false }: Props = $props();
+  let { text, person, reaction, action, onhold, ondismiss, leaving = false }: Props = $props();
 
   let gone = $state(false);
   let startY = 0;
@@ -67,14 +62,13 @@
 </script>
 
 {#if !gone}
-  <div bind:this={el} class="banner" class:second class:undo={!!action} class:leaving role="status" popover="manual" use:topLayer
+  <div bind:this={el} class="banner" class:undo={!!action} class:leaving role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
     <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe down still dismisses. -->
     <button type="button" class="hit" aria-label={t('common.close')} onclick={() => !action && dismiss()}
       onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
       {#if person}<Villager {person} size={36} head animate={false} eager />
-      {:else if miles}<OfficialArt key="money/miles" size={34} eager />
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
     <span class="txt">{text}</span>
@@ -93,7 +87,6 @@
     animation: in 320ms var(--ease-bounce) both;
   }
   .banner:popover-open { inset: auto 0; top: calc(var(--safe-top) + 56px); }
-  .banner.second, .banner.second:popover-open { top: calc(var(--safe-top) + 116px); }
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; border-radius: inherit; }
   .pebble {
     width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; overflow: hidden;

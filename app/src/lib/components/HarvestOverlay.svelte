@@ -17,7 +17,7 @@
   import Jar from './island/Jar.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import { confirmHarvest } from '#lib/client/actions.ts';
-  import { fruitArt } from '#lib/client/assets.ts';
+  import { fruitArt } from '#lib/art.ts';
   import { ripeness } from './FruitRing.svelte';
   import { t, formatYen } from '#lib/i18n/index.ts';
 

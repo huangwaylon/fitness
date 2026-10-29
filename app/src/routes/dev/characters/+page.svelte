@@ -11,23 +11,18 @@
   import FruitRing from '#lib/components/FruitRing.svelte';
   import IslandScene from '#lib/components/IslandScene.svelte';
   import Fx from '#lib/components/Fx.svelte';
-  import { REACTIONS as ICONS, POSES as POSE_IDS, MARKS, COLOUR_GLYPHS } from '#lib/components/art.ts';
+  import { REACTIONS as ICONS, MARKS, COLOUR_GLYPHS, art, artKeys } from '#lib/art.ts';
   import { REACTIONS, REACTION_IDS } from '#lib/components/motion/reactions.ts';
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import { hostTap } from '#lib/components/motion/director.svelte.ts';
   import type { FxKind } from '#lib/components/Fx.svelte';
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';
-  import { art, artKeys, phoneArt, type PhoneApp } from '#lib/client/assets.ts';
   import { FRUITS } from '#lib/config/rules.ts';
   import { week } from '#lib/client/week.svelte.ts';
 
   const KEYS = artKeys();
   const GROUPS = [...new Set(KEYS.map((k) => k.split('/')[0]))];
   const POSES = ['wave', 'stand', 'bow'] as const;
-  const APPS: PhoneApp[] = ['help', 'villager', 'lang', 'sync'];
-  const GLYPH: Record<PhoneApp, string> = {
-    help: 'app-help', villager: 'app-villager', lang: 'app-lang', sync: 'app-sync'
-  };
   const SCENES = [
     ...(['spring', 'summer', 'autumn', 'winter'] as const).flatMap((s) => [
       { s, tod: 'day' as const },
@@ -75,7 +70,7 @@
     <h2>Reaction icons (しずえ's bubble) · fx</h2>
     <div class="row">
       {#each ICONS as id (id)}<figure><Emote {id} hold size={44} /><figcaption>{id}</figcaption></figure>{/each}
-      {#each POSE_IDS as id (id)}<figure><Emote id="pose-{id}" hold size={44} /><figcaption>pose-{id}</figcaption></figure>{/each}
+      <figure><Emote id="pose-viva" hold size={44} /><figcaption>pose-viva</figcaption></figure>
     </div>
     <div class="row btns">
       {#each FX as k (k)}<button type="button" class="chip" onclick={() => (fxPlay = { k, n: ++fxN })}>{k}</button>{/each}
@@ -131,22 +126,6 @@
     </div>
   </section>
 
-  <section>
-    <h2>しまフォン apps</h2>
-    <div class="row">
-      {#each APPS as a (a)}
-        <figure>
-          <span class="tile">
-            <OfficialArt key={phoneArt(a)} size={56}>
-              {#snippet fallback()}<svg viewBox="0 0 24 24"><use href="#{GLYPH[a]}" /></svg>{/snippet}
-            </OfficialArt>
-          </span>
-          <figcaption>{a}</figcaption>
-        </figure>
-      {/each}
-    </div>
-  </section>
-
   {#each GROUPS as g (g)}
     <section>
       <h2>{g}/</h2>
@@ -192,8 +171,6 @@
   figcaption { font-size: var(--fs-s); color: var(--text-soft); text-align: center; }
   code { font-size: .7rem; }
   .cell { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 14px; background: var(--grass); }
-  .tile { width: 56px; height: 56px; border-radius: 30%; display: grid; place-items: center; overflow: hidden; background: var(--c-mint); }
-  .tile svg { width: 30px; height: 30px; color: var(--c-ink); }
   .amt { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 700; font-size: 1.25rem; }
   .plain { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; }
   .scenes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }

@@ -8,7 +8,7 @@
   // Renders with a padded canvas (assets.ts BOX) are cropped to the figure, so sizes are comparable.
   // The box is reserved from the manifest aspect ratio: no layout shift while loading.
   import type { Snippet } from 'svelte';
-  import { art, artUrl } from '#lib/client/assets.ts';
+  import { art, artUrl } from '#lib/art.ts';
 
   interface Props {
     key: string | null | undefined;

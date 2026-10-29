@@ -15,7 +15,7 @@
   // ripe (full colour + sparkle).
   import type { FruitKey, FruitView } from '#lib/types.ts';
   import OfficialArt from './OfficialArt.svelte';
-  import { fruitArt } from '#lib/client/assets.ts';
+  import { fruitArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {

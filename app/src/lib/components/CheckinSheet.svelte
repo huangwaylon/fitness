@@ -3,7 +3,7 @@
   // 正月: eating isn't scored, so it's "off".
   import Sheet from './Sheet.svelte';
   import OfficialArt from './OfficialArt.svelte';
-  import { fruitArt } from '#lib/client/assets.ts';
+  import { fruitArt } from '#lib/art.ts';
   import { week } from '#lib/client/week.svelte.ts';
   import { checkin } from '#lib/client/actions.ts';
   import { t, formatDate } from '#lib/i18n/index.ts';

@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -73,95 +73,11 @@
       "h": 205,
       "source": "https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png"
     },
-    "deco/bonfire": {
-      "path": "deco/bonfire.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Bonfire_NH_Icon.png"
-    },
-    "deco/conch": {
-      "path": "deco/conch.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Conch_NH_Inv_Icon.png"
-    },
-    "deco/cowrie": {
-      "path": "deco/cowrie.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Cowrie_NH_Inv_Icon.png"
-    },
-    "deco/fence-log": {
-      "path": "deco/fence-log.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Log_Fence_NH_Icon.png"
-    },
-    "deco/fence-wood": {
-      "path": "deco/fence-wood.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Simple_Wooden_Fence_NH_Icon.png"
-    },
-    "deco/log-bench": {
-      "path": "deco/log-bench.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Log_Bench_NH_Icon.png"
-    },
-    "deco/mailbox": {
-      "path": "deco/mailbox.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Wooden_Mailbox_NH_Icon.png"
-    },
-    "deco/party-popper": {
-      "path": "deco/party-popper.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Party_Popper_NH_Inv_Icon.png"
-    },
     "deco/present": {
       "path": "deco/present.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Present_NH_Inv_Icon.png"
-    },
-    "deco/resident-services": {
-      "path": "deco/resident-services.webp",
-      "w": 256,
-      "h": 205,
-      "source": "https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png"
-    },
-    "deco/rock": {
-      "path": "deco/rock.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mossy_Garden_Rock_NH_Icon.png"
-    },
-    "deco/sand-dollar": {
-      "path": "deco/sand-dollar.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Sand_Dollar_NH_Inv_Icon.png"
-    },
-    "deco/star-fragment": {
-      "path": "deco/star-fragment.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Star_Fragment_NH_Inv_Icon.png"
-    },
-    "deco/star-fragment-large": {
-      "path": "deco/star-fragment-large.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Large_Star_Fragment_NH_Inv_Icon.png"
-    },
-    "deco/stone": {
-      "path": "deco/stone.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stone_NH_Inv_Icon.png"
     },
     "flowers/orange-pansies": {
       "path": "flowers/orange-pansies.webp",
@@ -259,12 +175,6 @@
       "h": 512,
       "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH.png"
     },
-    "map/islet": {
-      "path": "map/islet.webp",
-      "w": 548,
-      "h": 448,
-      "source": "https://nookipedia.com/wiki/File:NH_Map_Islet.png"
-    },
     "money/bells": {
       "path": "money/bells.webp",
       "w": 128,
@@ -277,23 +187,11 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Leaf_NH_Icon.png"
     },
-    "money/miles": {
-      "path": "money/miles.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
-    },
     "money/miles-ticket": {
       "path": "money/miles-ticket.webp",
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Nook_Miles_Ticket_NH_Inv_Icon.png"
-    },
-    "phone/diy": {
-      "path": "phone/diy.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_DIY_NH_Icon.png"
     },
     "phone/glyph-chat": {
       "path": "phone/glyph-chat.webp",
@@ -301,35 +199,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Menu_Chat_Log_NH_Icon.png"
     },
-    "phone/glyph-friends": {
-      "path": "phone/glyph-friends.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Menu_Best_Friends_List_NH_Icon.png"
-    },
     "phone/glyph-help": {
       "path": "phone/glyph-help.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Menu_Island_Life_101_NH_Icon.png"
-    },
-    "phone/glyph-map": {
-      "path": "phone/glyph-map.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Menu_Map_NH_Icon.png"
-    },
-    "phone/glyph-resident": {
-      "path": "phone/glyph-resident.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Menu_Call_Resident_NH_Icon.png"
-    },
-    "phone/island-designer": {
-      "path": "phone/island-designer.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_Island_Designer_NH_Icon.png"
     },
     "phone/miles": {
       "path": "phone/miles.webp",
@@ -463,65 +337,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Emotion_Pleased_NH_Icon.png"
     },
-    "reactions/pose-confetti": {
-      "path": "reactions/pose-confetti.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Confetti_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-double-wave": {
-      "path": "reactions/pose-double-wave.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Double_Wave_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-excited": {
-      "path": "reactions/pose-excited.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Excited_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-flex": {
-      "path": "reactions/pose-flex.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Flex_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-jump": {
-      "path": "reactions/pose-jump.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Jump_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-lets-go": {
-      "path": "reactions/pose-lets-go.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Let's_Go_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-stretch": {
-      "path": "reactions/pose-stretch.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stretch_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-ta-da": {
-      "path": "reactions/pose-ta-da.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ta-da_NH_Reaction_Icon.png"
-    },
     "reactions/pose-viva": {
       "path": "reactions/pose-viva.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Viva_NH_Reaction_Icon.png"
-    },
-    "reactions/pose-work-out": {
-      "path": "reactions/pose-work-out.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Work_Out_NH_Reaction_Icon.png"
     },
     "reactions/pride": {
       "path": "reactions/pride.webp",
@@ -565,23 +385,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Emotion_Worry_NH_Icon.png"
     },
-    "season/acorn": {
-      "path": "season/acorn.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Acorn_NH_Inv_Icon.png"
-    },
     "season/maple-leaf": {
       "path": "season/maple-leaf.webp",
       "w": 64,
       "h": 64,
       "source": "https://nookipedia.com/wiki/File:Maple_Leaf_NH_Inv_Icon.png"
-    },
-    "season/mushroom": {
-      "path": "season/mushroom.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Mushroom_NH_Inv_Icon.png"
     },
     "season/petal": {
       "path": "season/petal.webp",
@@ -589,41 +397,11 @@
       "h": 64,
       "source": "https://nookipedia.com/wiki/File:Cherry-Blossom_Petal_NH_Inv_Icon.png"
     },
-    "season/pine-cone": {
-      "path": "season/pine-cone.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Pine_Cone_NH_Inv_Icon.png"
-    },
     "season/snowflake": {
       "path": "season/snowflake.webp",
       "w": 64,
       "h": 64,
       "source": "https://nookipedia.com/wiki/File:Snowflake_NH_Inv_Icon.png"
-    },
-    "season/snowflake-large": {
-      "path": "season/snowflake-large.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Large_Snowflake_NH_Inv_Icon.png"
-    },
-    "trees/apple-icon": {
-      "path": "trees/apple-icon.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Apple_Tree_NH_Icon.png"
-    },
-    "trees/cedar": {
-      "path": "trees/cedar.webp",
-      "w": 197,
-      "h": 384,
-      "source": "https://nookipedia.com/wiki/File:Cedar_Tree_NH.png"
-    },
-    "trees/coconut-icon": {
-      "path": "trees/coconut-icon.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Coconut_Tree_NH_Icon.png"
     },
     "trees/oak-fall": {
       "path": "trees/oak-fall.webp",
@@ -648,30 +426,6 @@
       "w": 329,
       "h": 409,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH_Winter.png"
-    },
-    "trees/palm": {
-      "path": "trees/palm.webp",
-      "w": 320,
-      "h": 302,
-      "source": "https://nookipedia.com/wiki/File:Palm_Tree_NH.png"
-    },
-    "trees/palm-sm": {
-      "path": "trees/palm-sm.webp",
-      "w": 128,
-      "h": 121,
-      "source": "https://nookipedia.com/wiki/File:Palm_Tree_NH.png"
-    },
-    "trees/peach-icon": {
-      "path": "trees/peach-icon.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Peach_Tree_NH_Icon.png"
-    },
-    "trees/pear-icon": {
-      "path": "trees/pear-icon.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pear_Tree_NH_Icon.png"
     },
     "villagers/bob": {
       "path": "villagers/bob.webp",

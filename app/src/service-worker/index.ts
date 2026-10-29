@@ -10,8 +10,9 @@ const CACHE = `island-shell-${version}`;
 const FONTS = 'island-fonts-v1';
 const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
 
-// Precache built JS/CSS + static files. Font subsets (Japanese = many files) are cached on first use instead.
-const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter((p) => !isFont(p));
+// Precache built JS/CSS + static files. Font subsets (Japanese = many files) are cached on first use instead; the art
+// manifest is bundled into the JS (lib/art.ts), so its file is never fetched.
+const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter((p) => !isFont(p) && !p.endsWith('/art/manifest.json'));
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

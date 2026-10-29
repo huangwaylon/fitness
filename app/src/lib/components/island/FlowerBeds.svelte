@@ -6,7 +6,7 @@
   import OfficialArt from '../OfficialArt.svelte';
   import type { Season } from '#lib/client/theme.svelte.ts';
   import { BEDS, BED_ROWS, BED_X, FLOWER_SCALE, FLOWER_U, u } from './scene.ts';
-  import { flowerArt } from '../art.ts';
+  import { flowerArt } from '#lib/art.ts';
 
   let { season }: { season: Season } = $props();
   const bed = $derived(BEDS[season]);

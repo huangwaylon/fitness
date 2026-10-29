@@ -3,7 +3,7 @@
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../Avatar.svelte';
   import OfficialArt from '../OfficialArt.svelte';
-  import { fruitArt } from '#lib/client/assets.ts';
+  import { fruitArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { view }: { view: WeekView } = $props();

@@ -18,7 +18,7 @@
   import Silhouette from './Silhouette.svelte';
   import Emote from './Emote.svelte';
   import Fx from './Fx.svelte';
-  import { artUrl, hostArt, type HostPose } from '#lib/client/assets.ts';
+  import { artUrl, hostArt, type HostPose } from '#lib/art.ts';
   import { theme } from '#lib/client/theme.svelte.ts';
   import { actors, claimHost, hostOwner, removeFx } from './motion/director.svelte.ts';
   import { now } from './motion/clock.ts';

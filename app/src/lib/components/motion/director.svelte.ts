@@ -2,7 +2,7 @@
 // components render from (Villager / Host read it; nothing here touches the DOM). Reactions and idle
 // life call `play()`; every motion starts and ends at `transform: none` (the CSS keyframes do that),
 // and a new step on an actor preempts whatever it was doing.
-import type { EmoteIcon } from '../art.ts';
+import type { EmoteIcon } from '#lib/art.ts';
 import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
 import { reducedMotion } from './clock.ts';
 
