@@ -55,7 +55,7 @@ describe('villager roster', () => {
     expect(isRosterId('anchovy')).toBe(true);
     expect(isRosterId('toString')).toBe(false);
     expect(resolveLook({ villager: 'anchovy' }).nameJa).toBe('アンチョビ');
-    expect(resolveLook({ villager: 'nobody', person: 'B' }).id).toBe('raymond');
+    expect(resolveLook({ villager: 'nobody', person: 'B' }).id).toBe('anchovy');
     expect(resolveLook({ villager: null }).id).toBe('goldie');
   });
 

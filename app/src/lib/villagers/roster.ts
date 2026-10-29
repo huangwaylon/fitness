@@ -126,8 +126,8 @@ export const ROSTER_IDS: RosterId[] = ROWS.map((r) => r[0]).sort(
     SPECIES_ORDER.indexOf(ROSTER[a].species) - SPECIES_ORDER.indexOf(ROSTER[b].species) || ROSTER[a].nameEn.localeCompare(ROSTER[b].nameEn)
 );
 
-/** Defaults until the users pick: A = Goldie (dog), B = Raymond (cat). */
-const DEFAULT_VILLAGER: Record<'A' | 'B', RosterId> = { A: 'goldie', B: 'raymond' };
+/** Defaults until the users pick: A = Goldie (dog), B = Anchovy (bird). */
+const DEFAULT_VILLAGER: Record<'A' | 'B', RosterId> = { A: 'goldie', B: 'anchovy' };
 
 export function isRosterId(s: unknown): s is RosterId {
   return typeof s === 'string' && Object.hasOwn(ROSTER, s);
