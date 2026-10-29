@@ -1,4 +1,4 @@
-// Shared contracts between scoring, server and UI. Keep this file dependency-free.
+// Shared contracts between scoring, the model, the Apps Script (type-only) and the UI. Keep this file dependency-free.
 
 export type PersonId = 'A' | 'B';
 /** Local calendar date in the person's zone (Asia/Tokyo), `YYYY-MM-DD`. */

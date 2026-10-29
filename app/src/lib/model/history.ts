@@ -353,10 +353,15 @@ function buildEditLog(s: State): EditLog[] {
         if (before !== after) out.push({ at: e.at, by: p, date, field, before, after });
       }
     }
+    const ticks = new Map<string, State['checkins'][PersonId]>();
     for (const c of s.checkins[p]) {
-      if (!c.edit) continue;
-      const before = s.checkins[p].filter((x) => x.at < c.at && x.date === c.date && x.habit === c.habit).at(-1)?.done ?? false;
-      if (before !== c.done) out.push({ at: c.at, by: p, date: c.date, field: 'checkin', subject: c.habit, before, after: c.done });
+      const k = `${c.date}|${c.habit}`;
+      const earlier = ticks.get(k) ?? ticks.set(k, []).get(k)!;
+      if (c.edit) {
+        const before = earlier.findLast((x) => x.at < c.at)?.done ?? false;
+        if (before !== c.done) out.push({ at: c.at, by: p, date: c.date, field: 'checkin', subject: c.habit, before, after: c.done });
+      }
+      earlier.push(c);
     }
     for (const w of s.manualWorkouts[p]) out.push({ at: w.at, by: p, date: w.date, field: 'workout_add', subject: w.type, before: null, after: w.durationMin });
   }
