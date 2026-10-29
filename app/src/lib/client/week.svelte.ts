@@ -8,8 +8,7 @@ import { dev } from '$app/env';
 import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import type { EventType } from '#lib/ingest/sheet-api.ts';
 import { GAS_CONFIGURED, enqueue, flush, getKey, holdEvent, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
-import { composeModel, notInCache, type ComposedModel } from './view.ts';
-import { demoCache } from './demoRows.ts';
+import { composeModel, missesLock, notInCache, type ComposedModel } from './view.ts';
 import type { PersonId } from '#lib/types.ts';
 import { buildWeekView, payoutAsOf } from '#lib/model/week.ts';
 import { addDays } from '#lib/scoring/index.ts';
@@ -22,8 +21,12 @@ const DEMO_EVENTS = 'island.demo.events';
 const REFRESH_FLOOR_MS = 30_000;
 /** After acked writes, re-read the server so its timestamps replace the optimistic ones. */
 const RECONCILE_MS = 1500;
-/** A banner held open (hover/focus) keeps its action unsent for at most this long. */
-const HOLD_MAX_MS = 10 * 60_000;
+/** A banner held open (hover/focus) keeps its action unsent for at most this long (then both end; round 7 M1). */
+export const HOLD_MAX_MS = 2 * 60_000;
+/** A held edit goes out at least this long before its week's lock (server clock), so it lands in time (M1). */
+export const LOCK_MARGIN_MS = 60_000;
+/** Closer than this to the lock an edit can't be trusted to land: refused at once, with a message. */
+const LOCK_LATE_MS = 5_000;
 
 export interface SendResult<T = unknown> {
   ok: boolean;
@@ -31,8 +34,8 @@ export interface SendResult<T = unknown> {
   data: T | null;
   /** Only with `holdMs`: take the action back while it is still held (returns false once it was sent). */
   undo?: () => boolean;
-  /** Only with `holdMs`: keep holding it (`null`: until called again) or send it `ms` from now. */
-  hold?: (ms: number | null) => void;
+  /** Only with `holdMs`: keep holding it (`null`: as long as allowed) or send it `ms` from now; returns the ms granted. */
+  hold?: (ms: number | null) => number;
 }
 
 export interface Toast {
@@ -44,9 +47,14 @@ export interface Toast {
   reaction?: string;
   /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
   code?: 'save-failed';
-  /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step. */
-  hold?: (ms: number | null) => void;
+  /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step (returns the ms granted). */
+  hold?: (ms: number | null) => number;
+  /** Sliding out; dropped right after (round 7 F2: never left to a transition). */
+  leaving?: boolean;
 }
+
+/** The banner's slide-out before it is dropped. */
+const TOAST_OUT_MS = 240;
 
 class WeekStore {
   view = $state<WeekView | null>(null);
@@ -112,7 +120,8 @@ class WeekStore {
   #recompute(): void {
     if (!this.#cache) return;
     if (!this.demo) this.#sent = notInCache(this.#cache, this.#sent);
-    const m = composeModel(this.#cache, this.demo ? this.#demoEvents : [...this.#sent, ...queued()], Date.now());
+    const q = this.demo ? [] : queued();
+    const m = composeModel(this.#cache, this.demo ? this.#demoEvents : [...this.#sent, ...q], Date.now(), new Set(q.map((e) => e.id)));
     const v = buildWeekView(m.state, m.me, m.now);
     if (this.demo === 'harvest' && !v.harvest) v.harvest = this.#demoHarvest(m, v);
     this.model = m;
@@ -156,6 +165,9 @@ class WeekStore {
   async refresh(opts: { background?: boolean } = {}): Promise<void> {
     if (this.demo) {
       if (!this.#cache) {
+        // Loaded only in the demo, so live users never download the generator (round 7 L1).
+        const { demoCache } = await import('./demoRows.ts');
+        if (this.#cache) return this.refresh(); // a concurrent call got there first
         this.#cache = demoCache(Date.now(), this.#demoMe);
         this.#demoEvents = this.#loadDemoEvents();
         addEventListener('storage', (e) => {
@@ -195,6 +207,7 @@ class WeekStore {
     if (seq !== this.#refreshSeq) return; // a newer refresh owns the view (and `syncing`)
     this.syncing = false;
     if (r.ok) {
+      this.#noteRefused(r.cache);
       this.#cache = r.cache;
       this.offline = false;
       this.lastSync = new Date();
@@ -227,8 +240,20 @@ class WeekStore {
    * `holdMs`: an undo window. The change shows at once but is not sent before then; `undo()` takes back only this
    * event, not others made in the window (review r2 N4).
    */
-  send<T = unknown>(type: EventType, data: Record<string, unknown>, opts: { holdMs?: number } = {}): Promise<SendResult<T>> {
-    const held = (opts.holdMs ?? 0) > 0;
+  send<T = unknown>(type: EventType, data: Record<string, unknown>, opts: { holdMs?: number; lockAt?: number } = {}): Promise<SendResult<T>> {
+    let holdMs = opts.holdMs ?? 0;
+    const lockAt = opts.lockAt;
+    if (lockAt !== undefined && !this.demo) {
+      // An edit of a week that locks: it must reach the server before the lock (round 7 M1). Too close → refused
+      // now; close → its undo window shrinks (to none) so it is sent in time.
+      const left = lockAt - (this.#cache?.skewMs ?? 0) - Date.now();
+      if (left < LOCK_LATE_MS) {
+        this.showToast(t('kiroku.lockedNow'), 4000, { reaction: 'sheepishness' });
+        return Promise.resolve({ ok: false, status: 409, data: null });
+      }
+      holdMs = Math.max(0, Math.min(holdMs, left - LOCK_MARGIN_MS));
+    }
+    const held = holdMs > 0;
     if (this.demo) {
       const now = Date.now();
       const ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#demoEvents.length}`, type, data, queuedAt: now, tries: 0, nextAt: now, person: this.#demoMe };
@@ -244,9 +269,9 @@ class WeekStore {
         this.#recompute();
         return true;
       };
-      return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo, hold: () => {} } : {}) });
+      return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo, hold: (ms: number | null) => ms ?? HOLD_MAX_MS } : {}) });
     }
-    const ev = enqueue(type, data, Date.now(), opts.holdMs ?? 0);
+    const ev = enqueue(type, data, Date.now(), holdMs, lockAt);
     this.#recompute();
     void this.#flush(true);
     const undo = () => {
@@ -254,9 +279,15 @@ class WeekStore {
       if (ok) this.#recompute();
       return ok;
     };
+    /** Hold it (capped at HOLD_MAX_MS, and so that it still lands before its lock); returns the ms granted. */
     const hold = (ms: number | null) => {
-      if (!holdEvent(ev.id, ms === null ? Date.now() + HOLD_MAX_MS : Date.now() + ms)) return;
-      if (ms !== null) this.#scheduleRetry();
+      const now = Date.now();
+      let until = now + (ms ?? HOLD_MAX_MS);
+      if (lockAt !== undefined) until = Math.min(until, lockAt - (this.#cache?.skewMs ?? 0) - LOCK_MARGIN_MS);
+      until = Math.max(now, until);
+      if (!holdEvent(ev.id, until)) return 0;
+      this.#scheduleRetry();
+      return until - now;
     };
     return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo, hold } : {}) });
   }
@@ -264,7 +295,12 @@ class WeekStore {
   async #flush(reconcile: boolean): Promise<void> {
     if (this.#retryTimer) clearTimeout(this.#retryTimer);
     this.#retryTimer = null;
-    const r = await flush();
+    const skew = this.#cache?.skewMs ?? 0;
+    const r = await flush(Date.now, (ev, t) => missesLock(ev, t, skew));
+    if (r.expired.length) {
+      this.showToast(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
+      this.#recompute();
+    }
     // Only events the server acked stay on screen until the snapshot has them. An event that left the
     // queue because it was undone mid-flush must not come back (review r2 N1).
     const known = new Set(this.#sent.map((e) => e.id));
@@ -283,6 +319,17 @@ class WeekStore {
       this.#reconcileTimer = setTimeout(() => void this.refresh(), RECONCILE_MS);
     }
     if (r.remaining > 0) this.#scheduleRetry();
+  }
+
+  /**
+   * After a fetch: an acked edit whose server row is stamped at or after its lock was refused by the model. Say so
+   * (it disappears from the screen with this refresh) instead of letting it vanish silently (round 7 M1).
+   */
+  #noteRefused(cache: SnapshotCache): void {
+    const late = this.#sent.filter((e) => e.lockAt !== undefined);
+    if (!late.length) return;
+    const atOf = new Map(cache.rows.events.map((r) => [String(r[2]), Date.parse(String(r[0]))]));
+    if (late.some((e) => (atOf.get(e.id) ?? -Infinity) >= e.lockAt!)) this.showToast(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
   }
 
   /** Wake the queue when its next event is due (a backoff, or the end of an undo window). */
@@ -307,7 +354,17 @@ class WeekStore {
   #armToast(toast: Toast, ms: number): void {
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastEndsAt = Date.now() + ms;
-    this.#toastTimer = setTimeout(() => this.toast?.id === toast.id && (this.toast = null), ms);
+    this.#toastTimer = setTimeout(() => this.#endToast(toast.id), ms);
+  }
+
+  /** Slide the banner out, then drop it (its undo window is over, so its held action goes out). */
+  #endToast(id: number): void {
+    if (this.toast?.id !== id) return;
+    this.toast.leaving = true;
+    this.#toastPaused = false;
+    this.#toastTimer = setTimeout(() => {
+      if (this.toast?.id === id) this.toast = null;
+    }, TOAST_OUT_MS);
   }
 
   /**
@@ -315,11 +372,14 @@ class WeekStore {
    * as the person is on it. With an undo it also holds back the send (the undo window is the banner's life).
    */
   pauseToast(): void {
-    if (!this.toast || this.#toastPaused) return;
+    const toast = this.toast;
+    if (!toast || toast.leaving || this.#toastPaused) return;
     this.#toastPaused = true;
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastTimer = null;
-    this.toast.hold?.(null);
+    // With an undo the hold is capped (HOLD_MAX_MS, and before the week's lock): the banner ends when its send does.
+    const granted = toast.hold?.(null);
+    if (granted !== undefined) this.#toastTimer = setTimeout(() => this.#endToast(toast.id), granted);
   }
 
   /** Resume after hover/focus leaves: at least 2 s more, so it never vanishes the moment you look away. */
@@ -328,8 +388,8 @@ class WeekStore {
     if (!toast || !this.#toastPaused) return;
     this.#toastPaused = false;
     const ms = Math.max(2000, this.#toastEndsAt - Date.now());
-    toast.hold?.(ms);
-    this.#armToast(toast, ms);
+    const granted = toast.hold?.(ms);
+    this.#armToast(toast, granted === undefined ? ms : Math.min(ms, granted));
   }
 
   dismissToast(): void {

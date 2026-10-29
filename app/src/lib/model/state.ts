@@ -25,26 +25,27 @@ export const finalMs = (wk: WeekKey): number => jstMs(addDays(wk, 9), JOBS.final
 
 /**
  * The demo (`?demo`, lib/client/demoRows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
- * week and no calibration weeks. Never set outside the demo (and never in tests of the real rules).
+ * week and no calibration weeks. It travels with the state (`reduce(rows, calendar)`), never as a module global
+ * (round 7 L2); live state always has `calendar: null`.
  */
-let demoCalendar: { firstWeek: WeekKey } | null = null;
-export function setDemoCalendar(c: { firstWeek: WeekKey } | null): void {
-  demoCalendar = c;
-}
+export interface DemoCalendar { firstWeek: WeekKey }
+type Cal = Pick<State, 'calendar'>;
 
 /** Weeks paid at the flat calibration rate. */
-export const isCalibrationWeek = (wk: WeekKey): boolean => !demoCalendar && CALIBRATION_WEEKS.includes(wk);
+export const isCalibrationWeek = (s: Cal, wk: WeekKey): boolean => !s.calendar && CALIBRATION_WEEKS.includes(wk);
 
-/** First paid week: the first full Mon–Sun week of season 1. */
-export function firstWeek(): WeekKey {
-  if (demoCalendar) return demoCalendar.firstWeek;
+/** First paid week of the season calendar: the first full Mon–Sun week of season 1. */
+export function seasonFirstWeek(): WeekKey {
   const from = [...SEASONS].sort((a, b) => a.from.localeCompare(b.from))[0].from;
   const wk = weekKeyOf(from);
   return wk < from ? addDays(wk, 7) : wk;
 }
 
+/** First paid week (the demo's own one in the demo). */
+export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? seasonFirstWeek();
+
 /** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first paid week never lock. */
-export const isLockedAt = (wk: WeekKey, t: number): boolean => wk >= firstWeek() && t >= finalMs(wk);
+export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
 
 export const localDateAt = (ms: number): LocalDate => toLocalDate(new Date(ms).toISOString());
 
@@ -106,8 +107,9 @@ export interface State {
   transfers: { at: number; month: string }[];
   /** Accepted `metric_set` per person, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
-  /** Accepted `workout_edit`s (ascending `at`); `strength`/`excluded` per workout key `person|id`. */
+  /** Accepted `workout_edit`s (and a `workout_add`'s strength choice), ascending `at`. */
   workoutEdits: WorkoutEditRec[];
+  /** Indexes of `workoutEdits` per workout key `person|id`. */
   workoutStrength: Map<string, Timed<boolean | null>[]>;
   workoutExcluded: Map<string, Timed<boolean>[]>;
   /** Accepted `workout_add`s, in `workouts`' shape (`manual: true`). */
@@ -121,6 +123,8 @@ export interface State {
   prefs: Record<PersonId, Prefs>;
   /** Newest metrics/workouts row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
+  /** The demo's calendar; null for real data. */
+  calendar: DemoCalendar | null;
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -177,7 +181,7 @@ const push = <K, V>(m: Map<K, V[]>, k: K, v: V) => {
 };
 
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
-export function reduce(rows: SnapshotRows | Snapshot): State {
+export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | null = null): State {
   const r = 'rows' in rows ? rows.rows : rows;
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
@@ -199,7 +203,8 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
     harvests: [],
     highfives: [],
     prefs: { A: {}, B: {} },
-    lastSync: { A: null, B: null }
+    lastSync: { A: null, B: null },
+    calendar
   };
   const lastSyncMs: Record<PersonId, number> = { A: -Infinity, B: -Infinity };
   const synced = (p: PersonId, at: number, iso: string) => {
@@ -260,10 +265,10 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         const today = localDateAt(at);
         if (d.edit === true) {
           // A fix from きろく: any day of an open week (history-and-editing.md §4.1).
-          if (!editableAt(date, at) || isLockedAt(weekKeyOf(date), at)) break;
+          if (!editableAt(date, at)) break;
         } else {
           if (date > today || date < addDays(today, -2)) break; // 48 h fill-in window
-          if (isLockedAt(weekKeyOf(date), at)) break;
+          if (isLockedAt(s, weekKeyOf(date), at)) break;
         }
         if (!targetsFor(person, weekKeyOf(date)).habits.includes(habit)) break;
         s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
@@ -273,11 +278,11 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         if (typeof d.yes !== 'boolean' || typeof d.id !== 'string') break;
         if (d.kind === 'workout') {
           const w = workoutById.get(`${person}|${d.id}`);
-          if (!w || w.at > at || isLockedAt(weekKeyOf(w.date), at)) break;
+          if (!w || w.at > at || isLockedAt(s, weekKeyOf(w.date), at)) break;
           push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
         } else if (d.kind === 'visit') {
           const p = presenceById.get(d.id);
-          if (!p || p.person !== person || p.rec.at > at || isLockedAt(weekKeyOf(toLocalDate(p.rec.eventAt)), at)) break;
+          if (!p || p.person !== person || p.rec.at > at || isLockedAt(s, weekKeyOf(toLocalDate(p.rec.eventAt)), at)) break;
           push(s.visitConfirms, d.id, { at, v: d.yes });
         }
         break;
@@ -320,14 +325,8 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         const excluded = typeof d.excluded === 'boolean' ? d.excluded : undefined;
         if (strength === undefined && excluded === undefined) break;
         const rec: WorkoutEditRec = { at, person, id: d.id };
-        if (strength !== undefined) {
-          rec.strength = strength;
-          push(s.workoutStrength, key, { at, v: strength });
-        }
-        if (excluded !== undefined) {
-          rec.excluded = excluded;
-          push(s.workoutExcluded, key, { at, v: excluded });
-        }
+        if (strength !== undefined) rec.strength = strength;
+        if (excluded !== undefined) rec.excluded = excluded;
         s.workoutEdits.push(rec);
         break;
       }
@@ -345,10 +344,7 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
         const w: WorkoutRec = { at, extId: id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true };
         workoutById.set(key, w);
         s.manualWorkouts[person].push(w);
-        if (d.strength === null || typeof d.strength === 'boolean') {
-          push(s.workoutStrength, key, { at, v: d.strength });
-          s.workoutEdits.push({ at, person, id, strength: d.strength });
-        }
+        if (d.strength === null || typeof d.strength === 'boolean') s.workoutEdits.push({ at, person, id, strength: d.strength });
         break;
       }
       case 'spend_void': {
@@ -382,6 +378,12 @@ export function reduce(rows: SnapshotRows | Snapshot): State {
       }
       // Old `share` rows (the removed privacy toggles) are ignored: both players see all data.
     }
+  }
+  // The per-workout lookups are indexes of workoutEdits (one source; round 7 L6).
+  for (const e of s.workoutEdits) {
+    const key = `${e.person}|${e.id}`;
+    if (e.strength !== undefined) push(s.workoutStrength, key, { at: e.at, v: e.strength });
+    if (e.excluded !== undefined) push(s.workoutExcluded, key, { at: e.at, v: e.excluded });
   }
   return s;
 }

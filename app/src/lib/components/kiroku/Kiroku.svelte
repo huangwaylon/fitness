@@ -6,13 +6,14 @@
   // きろく (records) NookPhone app (history-and-editing.md): からだ | お金 pills, week cards → week → day → edit,
   // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first.
   // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
-  // queue (held 5 s with 取り消す) and recompute the island's ribbon and ≈¥ at once.
+  // queue (held 5 s with もとに戻す) and recompute the island's ribbon and ≈¥ at once. Loaded on first open
+  // (ShimaPhone imports it dynamically, round 7 L1).
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { dayDetail, historyWeeks, moneyLog, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/ingest/sheet-api.ts';
   import { week } from '#lib/client/week.svelte.ts';
-  import { addWorkout, editWorkout, fixCheckin, setMetric, undoTransfer, voidSpend, UNDO_MS } from '#lib/client/actions.ts';
+  import { addWorkout, editWorkout, fixCheckin, setMetric, undoTransfer, voidSpend, EDIT_CUTOFF_MS, UNDO_MS } from '#lib/client/actions.ts';
   import type { SendResult } from '#lib/client/week.svelte.ts';
   import ChoiceList from '../ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
@@ -21,14 +22,15 @@
   import MoneyLog from './MoneyLog.svelte';
   import NumberPad from './NumberPad.svelte';
   import { dayTitle, typeLabel } from './fmt.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { t, formatYen } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'week'; wk: string }
     | { k: 'day'; date: string }
     | { k: 'metric'; date: string; metric: 'steps' | 'exercise_min' }
     | { k: 'workout'; date: string; id: string }
-    | { k: 'add'; date: string };
+    | { k: 'add'; date: string }
+    | { k: 'void'; id: string | number; label: string; yen: number; refund: boolean };
 
   let { entry = null }: { entry?: KirokuEntry | null } = $props();
   let tab = $state<'body' | 'money'>('body');
@@ -43,6 +45,14 @@
   const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
   const top = $derived(stack.at(-1) ?? null);
+  // One computation per screen and model (not per use; round 7 L5).
+  const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
+  const money = $derived(m && !top && tab === 'money' ? moneyLog(m.state, m.now) : null);
+  const wkDetail = $derived(m && top?.k === 'week' ? { d: weekDetail(m.state, top.wk, m.now), edits: weekEdits(m.state, top.wk) } : null);
+  const dayDate = $derived(top && 'date' in top ? top.date : null);
+  const day = $derived(m && dayDate ? dayDetail(m.state, dayDate, m.now) : null);
+  /** Edit controls close a little before the lock, so an edit made now still lands in time (M1). */
+  const canEdit = $derived(!!day && !!m && day.open && !day.future && m.now < day.lockAt - EDIT_CUTOFF_MS);
 
   // Apply an entry (ribbon → this week, jar total → お金) each time one arrives.
   $effect(() => {
@@ -66,7 +76,16 @@
     return true;
   }
 
+  /** After けってい: focus back on the ✎ that opened the edit (round 7 F4), else on the phone. */
+  async function refocus(key: string) {
+    await tick();
+    const el = root?.querySelector<HTMLElement>(`[data-focus="${CSS.escape(key)}"]`);
+    if (el) el.focus();
+    else root?.closest('dialog')?.focus();
+  }
+
   function undoToast(text: string, r: SendResult) {
+    if (!r.ok) return; // refused (the week closed): the store already said so
     const undo = r.undo;
     week.showToast(text, UNDO_MS, {
       reaction: 'pleased',
@@ -77,16 +96,23 @@
 
   async function saveMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
     back();
+    void refocus(metric);
     undoToast(t('kiroku.saved', { field: t(`kiroku.field.${metric}`) }), await setMetric(date, metric, value));
   }
-  async function workoutChange(id: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
+  async function workoutChange(id: string, date: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
     back();
-    undoToast(t('kiroku.savedWorkout', { label }), await editWorkout(id, change));
+    void refocus(`w:${id}`);
+    undoToast(t('kiroku.savedWorkout', { label }), await editWorkout(id, date, change));
   }
   async function tickFix(date: string, habit: string, done: boolean) {
     undoToast(t('kiroku.saved', { field: t(`habit.${habit}`) }), await fixCheckin(date, habit, done));
   }
+  /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
+  function askVoid(id: string | number, label: string, yen: number, refund: boolean) {
+    void go({ k: 'void', id, label, yen, refund });
+  }
   async function voidIt(id: string | number, label: string) {
+    back();
     undoToast(t('kiroku.spendVoided', { label }), await voidSpend(id));
   }
   async function undoIt(month: string) {
@@ -100,6 +126,7 @@
     const type = addType!;
     addType = null;
     back();
+    void refocus('add');
     undoToast(t('kiroku.added', { label: typeLabel(type) }), await addWorkout(date, type, min));
   }
 </script>
@@ -112,28 +139,39 @@
           <button type="button" role="tab" class="pill" aria-selected={tab === id} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
         {/each}
       </div>
-      {#if tab === 'body'}
-        <WeekList weeks={historyWeeks(m.state, m.now)} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
-      {:else}
-        <MoneyLog log={moneyLog(m.state, m.now)} {me} {villagers} onvoid={voidIt} onundo={undoIt} />
+      {#if weeks}
+        <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
+      {:else if money}
+        <MoneyLog log={money} {me} {villagers} onvoid={askVoid} onundo={undoIt} />
       {/if}
-    {:else if top.k === 'week'}
-      <WeekDetail d={weekDetail(m.state, top.wk, m.now)} edits={weekEdits(m.state, top.wk)} {order} {names} {villagers} now={m.now}
+    {:else if top.k === 'week' && wkDetail}
+      <WeekDetail d={wkDetail.d} edits={wkDetail.edits} {order} {names} {villagers} now={m.now}
         onday={(date) => go({ k: 'day', date })} />
-    {:else if top.k === 'day'}
+    {:else if top.k === 'day' && day}
       {@const date = top.date}
-      <DayDetail d={dayDetail(m.state, date, m.now)} {me} {partner} {names} {villagers} now={m.now}
+      <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}
         onmetric={(metric) => go({ k: 'metric', date, metric })} onworkout={(id) => go({ k: 'workout', date, id })}
         onadd={() => { addType = null; go({ k: 'add', date }); }} ontick={(h, done) => tickFix(date, h, done)} />
-    {:else if top.k === 'metric'}
+    {:else if top.k === 'void'}
       {@const s = top}
-      {@const d = dayDetail(m.state, s.date, m.now).people[me]}
+      <section class="card ask">
+        <p>{t(s.refund ? 'kiroku.voidAskDone' : 'kiroku.voidAsk', { label: s.label, yen: formatYen(s.yen) })}</p>
+      </section>
+      <div class="wchoices">
+        <ChoiceList choices={[
+          { label: t('kiroku.voidYes'), run: () => voidIt(s.id, s.label) },
+          { label: t('kiroku.cancel'), run: back }
+        ]} />
+      </div>
+    {:else if top.k === 'metric' && day}
+      {@const s = top}
+      {@const d = day.people[me]}
       <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={dayTitle(s.date)} max={METRIC_BOUNDS[s.metric]}
         old={s.metric === 'steps' ? d.steps.value : d.minutes.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
         onok={(v) => saveMetric(s.date, s.metric, v)} oncancel={back} />
-    {:else if top.k === 'workout'}
+    {:else if top.k === 'workout' && day}
       {@const s = top}
-      {@const w = dayDetail(m.state, s.date, m.now).people[me].workouts.find((x) => x.id === s.id)}
+      {@const w = day.people[me].workouts.find((x) => x.id === s.id)}
       {#if w}
         {@const label = typeLabel(w.type)}
         <section class="card wcard">
@@ -142,11 +180,11 @@
         </section>
         <div class="wchoices">
           <ChoiceList choices={[
-            ...(w.excluded ? [{ label: t('kiroku.include'), run: () => workoutChange(s.id, label, { excluded: false }) }] : [
-              ...(w.eligible && !w.strength ? [{ label: t('kiroku.count'), run: () => workoutChange(s.id, label, { strength: true }) }] : []),
-              ...(w.strength ? [{ label: t('kiroku.nocount'), run: () => workoutChange(s.id, label, { strength: false }) }] : []),
-              ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.id, label, { strength: null }) }] : []),
-              { label: t('kiroku.exclude'), run: () => workoutChange(s.id, label, { excluded: true }) }
+            ...(w.excluded ? [{ label: t('kiroku.include'), run: () => workoutChange(s.id, s.date, label, { excluded: false }) }] : [
+              ...(w.eligible && !w.strength ? [{ label: t('kiroku.count'), run: () => workoutChange(s.id, s.date, label, { strength: true }) }] : []),
+              ...(w.strength ? [{ label: t('kiroku.nocount'), run: () => workoutChange(s.id, s.date, label, { strength: false }) }] : []),
+              ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.id, s.date, label, { strength: null }) }] : []),
+              { label: t('kiroku.exclude'), run: () => workoutChange(s.id, s.date, label, { excluded: true }) }
             ]),
             { label: t('kiroku.cancel'), run: back }
           ]} />
@@ -156,6 +194,7 @@
       {@const s = top}
       {#if !addType}
         <h3 class="addh">{t('kiroku.addWorkout')} <span class="money">{dayTitle(s.date)}</span></h3>
+        <p class="note">{t('kiroku.addNote')}</p>
         <div class="types" role="group" aria-label={t('kiroku.pickType')}>
           {#each ADD_TYPES as ty (ty)}
             <button type="button" class="type" onclick={() => (addType = ty)}>{typeLabel(ty)}</button>
@@ -185,6 +224,9 @@
   .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
   .addh { margin: 0 2px; font-size: var(--fs-talk); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .addh .money { font-size: var(--fs-body); color: var(--text-soft); }
+  .note { margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .ask { padding: 16px; }
+  .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; word-break: auto-phrase; }
   .types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .type {
     appearance: none; border: 0; cursor: pointer; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);

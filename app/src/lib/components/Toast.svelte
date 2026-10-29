@@ -1,6 +1,8 @@
 <script lang="ts">
-  // NookPhone-style notification banner (v5: a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover) so it sits
-  // above an open sheet. Slides down below the status row, holds (the store decides how long), slides up.
+  // NookPhone-style notification banner (v5: a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover).
+  // ToastHost renders it inside the open sheet's <dialog> when there is one: a popover outside a modal dialog is
+  // inert (round 7 F1). Slides down below the status row, holds (the store decides how long), slides up: the store
+  // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro (round 7 F2).
   // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones, the Miles
   // ticket for milestones). Right: one official reaction icon. Tap or swipe up to dismiss.
   import type { PersonId } from '#lib/types.ts';
@@ -25,8 +27,10 @@
     onhold?: (on: boolean) => void;
     /** The person dismissed it (tap or swipe). */
     ondismiss?: () => void;
+    /** Sliding out (the store drops it right after). */
+    leaving?: boolean;
   }
-  let { text, person, miles = false, reaction, second = false, action, onhold, ondismiss }: Props = $props();
+  let { text, person, miles = false, reaction, second = false, action, onhold, ondismiss, leaving = false }: Props = $props();
 
   let gone = $state(false);
   let startY = 0;
@@ -37,15 +41,21 @@
     } catch {
       /* no popover support: stays a fixed element */
     }
+    return {
+      destroy() {
+        try {
+          if (node.matches(':popover-open')) node.hidePopover();
+        } catch {
+          /* already gone */
+        }
+      }
+    };
   }
 
-  /** Slide back out (up; an undo banner down) when the store drops the banner (or on dismiss). */
-  function up(_: Element) {
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return { duration: reduced ? 120 : 220, css: (t: number) => (reduced ? `opacity:${t}` : `transform:translateY(${(1 - t) * (action ? 120 : -120)}%);opacity:${t}`) };
-  }
-
+  let el: HTMLElement | undefined = $state();
   function dismiss() {
+    // Focus was on the banner (取り消す): keep it inside the sheet it lives in, not on <body>.
+    if (el?.contains(document.activeElement)) el.closest('dialog')?.focus();
     gone = true;
     ondismiss?.();
   }
@@ -57,7 +67,7 @@
 </script>
 
 {#if !gone}
-  <div class="banner" class:second class:undo={!!action} role="status" out:up|global popover="manual" use:topLayer
+  <div bind:this={el} class="banner" class:second class:undo={!!action} class:leaving role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
     <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe down still dismisses. -->
     <button type="button" class="hit" aria-label={t('common.close')} onclick={() => !action && dismiss()}
@@ -103,9 +113,15 @@
     font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .act:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
+  .banner.leaving { pointer-events: none; animation: out 220ms var(--ease-soft) both; }
+  .banner.undo.leaving { animation-name: down-out; }
+  @keyframes out { to { transform: translateY(-120%); opacity: 0; } }
+  @keyframes down-out { to { transform: translateY(120%); opacity: 0; } }
   @keyframes in { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .banner { animation: fade 120ms both; }
+    .banner.leaving, .banner.undo.leaving { animation: fade-out 120ms both; }
     @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fade-out { to { opacity: 0; } }
   }
 </style>

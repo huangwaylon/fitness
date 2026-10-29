@@ -5,7 +5,7 @@
 import type { PersonId, WeekKey } from '#lib/types.ts';
 import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/ingest/sheet-api.ts';
 import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
-import { finalMs, jstMs, provisionalMs, setDemoCalendar } from '#lib/model/state.ts';
+import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
 import { prevMonth } from '#lib/model/week.ts';
 import type { SnapshotCache } from './gas.ts';
 
@@ -143,13 +143,12 @@ export function demoRows(now: number): SnapshotRows {
   return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(presence), events: byAt(events) };
 }
 
-/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`), with the model's calendar moved to the demo's weeks. */
+/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`), carrying the demo's calendar for the model. */
 export function demoCache(now: number, me: PersonId = 'A'): SnapshotCache {
-  setDemoCalendar({ firstWeek: demoFirstWeek(now) });
   const rows = demoRows(now);
   let since: string | null = null;
   for (const tab of [rows.metrics, rows.workouts, rows.presence, rows.events] as (readonly unknown[])[][]) {
     for (const r of tab) if (since === null || String(r[0]) > since) since = String(r[0]);
   }
-  return { v: 1, me, rows, since, skewMs: 0, fetchedAt: now };
+  return { v: 1, me, rows, since, skewMs: 0, fetchedAt: now, demo: { firstWeek: demoFirstWeek(now) } };
 }

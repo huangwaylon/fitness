@@ -1,6 +1,7 @@
 <script lang="ts">
   // 3.3 Day detail: two stacked cards (me, then the partner, read-only). ✎ only on mine and only while the week is
-  // open; へんこう履歴 at the bottom. Check-ins toggle in place (a fix, `edit:true`).
+  // open (`editable`: Kiroku closes it a minute before the lock); へんこう履歴 at the bottom. Check-ins toggle in place
+  // (a fix, `edit:true`). Read-only cards get the 見るだけ badge and flat, lipless chips (round 7 F5).
   import type { PersonId } from '#lib/types.ts';
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
   import Avatar from '../Avatar.svelte';
@@ -11,6 +12,8 @@
 
   interface Props {
     d: DayDetail;
+    /** My card's controls are live. */
+    editable: boolean;
     me: PersonId;
     partner: PersonId;
     names: Record<PersonId, string>;
@@ -21,8 +24,7 @@
     onadd: () => void;
     ontick: (habit: string, done: boolean) => void;
   }
-  let { d, me, partner, names, villagers, now, onmetric, onworkout, onadd, ontick }: Props = $props();
-  const editable = $derived(d.open && !d.future);
+  let { d, editable, me, partner, names, villagers, now, onmetric, onworkout, onadd, ontick }: Props = $props();
 </script>
 
 <header class="sub">
@@ -34,24 +36,24 @@
 
 {#snippet person(p: PersonId, x: DayPerson, mine: boolean)}
   {@const can = mine && editable}
-  <section class="card pc" class:ro={!mine}>
+  <section class="card pc" class:ro={!can}>
     <div class="who">
       <Avatar person={p} villager={villagers[p]} size={34} />
       <b class="nm">{names[p]}{#if mine}<small> · {t('kiroku.me')}</small>{/if}</b>
-      {#if !mine}<span class="tag">{t('kiroku.readOnly')}</span>{/if}
+      {#if !can}<span class="tag">{#if mine}<Glyph kind="lock" size={12} />{/if}{t('kiroku.readOnly')}</span>{/if}
     </div>
     <div class="row">
       <span class="k">{t('kiroku.steps')}</span>
       <span class="v money">{num(x.steps.value)}</span>
       {#if x.steps.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
-      {#if can}<button type="button" class="pen" aria-label="{t('kiroku.steps')} ✎" onclick={() => onmetric('steps')}><Glyph kind="pen" size={18} /></button>{/if}
+      {#if can}<button type="button" class="pen" data-focus="steps" aria-label="{t('kiroku.steps')} ✎" onclick={() => onmetric('steps')}><Glyph kind="pen" size={18} /></button>{/if}
     </div>
     <div class="row">
       <span class="k">{t('kiroku.minutes')}</span>
       <span class="v money">{t('kiroku.min', { n: x.minutes.value })}</span>
       {#if x.minutes.source}<span class="src">({t(`kiroku.src.${x.minutes.source}`)})</span>{/if}
       {#if x.minutes.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
-      {#if can}<button type="button" class="pen" aria-label="{t('kiroku.minutes')} ✎" onclick={() => onmetric('exercise_min')}><Glyph kind="pen" size={18} /></button>{/if}
+      {#if can}<button type="button" class="pen" data-focus="exercise_min" aria-label="{t('kiroku.minutes')} ✎" onclick={() => onmetric('exercise_min')}><Glyph kind="pen" size={18} /></button>{/if}
     </div>
     {#each x.workouts as w (w.id)}
       <div class="row wo" class:out={w.excluded}>
@@ -59,7 +61,7 @@
         <span class="v small"><span class="money">{w.manual ? '' : timeOf(w.startAt) + ' '}{t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
           {#if w.manual}<em>{t('kiroku.manual')}</em>{/if}</span>
-        {#if can}<button type="button" class="pen" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
+        {#if can}<button type="button" class="pen" data-focus="w:{w.id}" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
       </div>
     {/each}
     {#each x.visits as v (v.id)}
@@ -78,7 +80,7 @@
         {/if}
       {/each}
     </div>
-    {#if can}<button type="button" class="add" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
+    {#if can}<button type="button" class="add" data-focus="add" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
   </section>
 {/snippet}
 
@@ -97,7 +99,7 @@
   .who { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
   .nm { flex: 1; font-size: var(--fs-body); }
   .nm small { color: var(--text-soft); font-size: var(--fs-s); }
-  .tag { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); background: color-mix(in srgb, var(--lip) 45%, transparent); padding: 3px 8px; border-radius: var(--r-chip); }
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); background: color-mix(in srgb, var(--lip) 45%, transparent); padding: 3px 8px; border-radius: var(--r-chip); }
   .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
   .row + .row, .who + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
@@ -121,7 +123,11 @@
     background: color-mix(in srgb, var(--lip) 35%, transparent);
   }
   button.tick { cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
+  button.tick:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
   .tick.on { background: var(--c-mint); color: var(--c-ink); }
+  /* Read-only chips: flat, no lip, a quieter fill; nothing about them says "tap me". */
+  span.tick { background: transparent; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lip) 55%, transparent); cursor: default; }
+  span.tick.on { background: color-mix(in srgb, var(--c-mint) 35%, transparent); box-shadow: none; }
   .tick svg { width: 14px; height: 14px; }
   .add {
     appearance: none; border: 0; cursor: pointer; margin-top: 6px; min-height: 44px; border-radius: var(--r-btn);

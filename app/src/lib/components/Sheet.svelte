@@ -1,11 +1,18 @@
+<script module lang="ts">
+  let seq = 0;
+</script>
+
 <script lang="ts">
   // Bottom sheet on a native <dialog> (focus trap + Esc for free), opening from the thumb. One skin (v5 §4):
   // the chrome surface (cream; navy at night), radius 32, a lip, a tilted nameplate `title`, one CTA in `footer`.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. variant="phone": the しまフォン launcher (NookPhone screen,
   // rounded all round, full height minus the status bar).
-  import type { Snippet } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
+  import { ui } from '#lib/client/ui.svelte.ts';
+  import { week } from '#lib/client/week.svelte.ts';
+  import ToastHost from './ToastHost.svelte';
 
   interface Props {
     open: boolean;
@@ -20,6 +27,15 @@
   let { open = $bindable(), label, title, variant = 'paper', onclose, children, footer }: Props = $props();
   let dlg: HTMLDialogElement | undefined = $state();
   let kb = $state(0);
+  const id = ++seq;
+  /** The topmost open sheet hosts the banner (round 7 F1). */
+  const hosts = $derived(open && ui.sheets.at(-1) === id);
+
+  $effect(() => {
+    if (!open) return;
+    untrack(() => (ui.sheets = [...ui.sheets.filter((x) => x !== id), id]));
+    return () => untrack(() => (ui.sheets = ui.sheets.filter((x) => x !== id)));
+  });
 
   $effect(() => {
     if (!dlg) return;
@@ -62,9 +78,10 @@
   }
 </script>
 
-<dialog bind:this={dlg} class={variant} tabindex="-1" aria-label={label} style:--kb="{kb}px"
+<dialog bind:this={dlg} class={variant} class:toasting={hosts && !!week.toast?.action} tabindex="-1" aria-label={label} style:--kb="{kb}px"
   onclose={closed} onclick={backdrop} onfocusin={focusin}>
   {#if open}
+    {#if hosts}<ToastHost />{/if}
     <div class="inner">
       <button type="button" class="grabber" aria-label={t('common.close')} onclick={() => dlg?.close()}></button>
       {#if title}<h2 class="title"><span class="plate">{title}</span></h2>{/if}
@@ -108,6 +125,8 @@
     background: var(--bg); border-radius: var(--r-sheet); box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-float);
   }
   dialog.phone .inner { padding: 6px 18px 22px; }
+  /* An undo banner is up: the last row can scroll clear of it. */
+  dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   @media (max-width: 339px) { dialog.phone .inner { padding: 6px 12px 18px; } }
   @keyframes up {
     0% { transform: translateY(100%); }

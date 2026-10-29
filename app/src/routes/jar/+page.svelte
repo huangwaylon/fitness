@@ -80,7 +80,7 @@
    * A banner with 取り消す for the undo window. It names what was done (round 5 N5), and hovering, touching or
    * focusing it holds both the banner and the send (N7).
    */
-  function undoToast(text: string, reaction: string, r: { undo?: () => boolean; hold?: (ms: number | null) => void }, after?: () => void) {
+  function undoToast(text: string, reaction: string, r: { undo?: () => boolean; hold?: (ms: number | null) => number }, after?: () => void) {
     const undo = r.undo;
     week.showToast(text, UNDO_MS, {
       reaction,
