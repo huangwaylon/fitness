@@ -358,6 +358,14 @@
     .cards { gap: 16px; }
     .hero-wrap { margin-bottom: 22px; }
   }
+  /* 320×568 (N7): the payday row must clear the dock without scrolling, so tighten the stack a little. */
+  @media (max-height: 600px) {
+    .hero-wrap { padding-top: calc(var(--safe-top) + 54px); margin-bottom: 18px; }
+    .cards { gap: 12px; }
+    .next { min-height: 64px; padding-block: 10px; }
+    .purse .ct { font-size: var(--fs-body-lg); margin-bottom: 6px; }
+    .payday { min-height: 48px; }
+  }
   @media (max-width: 339px) {
     .jar-screen { --jar-h: 84px; }
     .totals :global(.total) { font-size: 2rem; }

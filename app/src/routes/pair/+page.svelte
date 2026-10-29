@@ -95,7 +95,8 @@
       }}
       aria-describedby="pair-msg"
     />
-    <p id="pair-msg" class="msg" role="status">{msg}</p>
+    <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button (N8). -->
+    <p id="pair-msg" class="msg" class:info={!msg} role="status">{msg || (code && !ready ? t('pair.keyHint') : '')}</p>
     <div class="go"><button type="submit" class="btn" disabled={!ready || busy}>{t('pair.go')}</button></div>
   </form>
   <p class="hint" class:strong={!standalone}>{t('pair.hint')}</p>
@@ -111,7 +112,8 @@
   .lang { position: absolute; top: calc(var(--safe-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px; }
   .lang svg { width: 18px; height: 18px; }
   .port { width: 220px; margin: 0 auto; filter: drop-shadow(0 6px 0 rgba(74, 58, 44, .1)); }
-  .pair :global(.talk) { height: calc(var(--pair-host) + 4px); }
+  /* しずえ's only instruction here: always room for 2 lines, also on compact screens (N4 / C33). */
+  .pair :global(.talk) { --talk-lines: 2; min-height: calc(var(--pair-host) + 4px); }
   form { display: grid; gap: 8px; padding: 14px 16px 10px; }
   .lbl { font-weight: 900; font-size: var(--fs-h2); text-align: center; }
   .code {
@@ -120,6 +122,7 @@
   }
   .code::placeholder { color: var(--c-ink-soft); opacity: .5; }
   .msg { min-height: 1.4em; margin: 0; color: var(--c-coral-ink); font-weight: 700; text-align: center; }
+  .msg.info { color: var(--c-ink-talk); font-size: var(--fs-caption); }
   /* The button rides above the keyboard. */
   .go { position: sticky; bottom: calc(var(--safe-bottom) + 8px); transform: translateY(calc(-1 * var(--kb))); }
   .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-caption); }

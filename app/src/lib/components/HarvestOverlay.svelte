@@ -3,6 +3,7 @@
   // Person rows: villager icon, the four official fruit (ripeness), island-evaluation stars, amount in a Bells
   // pill. The jar total sits in the Miles-style navy pill. Confetti in the §M.4 colours (none under reduced motion).
   // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
+  // By day it has the scene's bright sky; at night a soft periwinkle (A14). Villagers cheer with their marks (N1).
   // Rows show name + the four fruits + yen, not a scoreboard (U3, U12); しずえ keeps one outfit (U5).
   // Round 5: no ★ vs ★ per person, only the team's stars (U7); the purse is one line under the total (U6); after
   // 壺に入れる a short end card fills the jar and counts its total up before going back to 島 (U5).
@@ -213,7 +214,7 @@
     --hv-top: var(--sky-top, #57B8F7); --hv-bottom: #FFF6D8; --hv-chip: rgba(255, 255, 255, .7); --hv-dot: rgba(74, 58, 44, .25);
     color: var(--text);
     background:
-      radial-gradient(circle at 82% 9%, var(--sun-disc, #FFE68A) 0 34px, color-mix(in srgb, var(--sun-disc, #FFE68A) 35%, transparent) 35px 58px, transparent 59px),
+      radial-gradient(circle at 86% 10%, var(--sun-disc, #FFE68A) 0 30px, rgba(255, 255, 255, .45) 31px 46px, transparent 47px),
       linear-gradient(180deg, var(--hv-top) 0%, var(--sky-bottom, #CDEEFF) 50%, var(--hv-bottom) 100%);
     background-attachment: fixed;
     animation: fade var(--dur-base) var(--ease-soft);

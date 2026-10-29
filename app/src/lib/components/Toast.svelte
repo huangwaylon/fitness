@@ -39,10 +39,10 @@
     }
   }
 
-  /** Slide back up when the store drops the banner (or on dismiss). */
+  /** Slide back out (up; an undo banner down) when the store drops the banner (or on dismiss). */
   function up(_: Element) {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return { duration: reduced ? 120 : 220, css: (t: number) => (reduced ? `opacity:${t}` : `transform:translateY(${(t - 1) * 120}%);opacity:${t}`) };
+    return { duration: reduced ? 120 : 220, css: (t: number) => (reduced ? `opacity:${t}` : `transform:translateY(${(1 - t) * (action ? 120 : -120)}%);opacity:${t}`) };
   }
 
   function dismiss() {
@@ -57,11 +57,11 @@
 </script>
 
 {#if !gone}
-  <div class="banner" class:second role="status" out:up|global popover="manual" use:topLayer
+  <div class="banner" class:second class:undo={!!action} role="status" out:up|global popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
-    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe up still dismisses. -->
+    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe down still dismisses. -->
     <button type="button" class="hit" aria-label={t('common.close')} onclick={() => !action && dismiss()}
-      onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => e.clientY - startY < -12 && dismiss()}></button>
+      onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
       {#if person}<Villager {person} size={36} head animate={false} eager />
       {:else if miles}<OfficialArt key="money/miles" size={34} eager />
@@ -90,6 +90,11 @@
     background: var(--c-yuzu-soft);
   }
   .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* An undo banner (N5): low, just above the dock in the thumb zone, so it never covers the Jar's total, and its
+     text (what was done: 「映画 ¥4,000 使いました！」) may take two lines next to the button. */
+  .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--dock-h) + var(--dock-bottom) + 12px); height: 56px; animation-name: up-in; }
+  .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-caption); line-height: 1.25; word-break: auto-phrase; }
+  @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
   /* Undo: above the dismiss layer, a 44px-tall pill on the right. */
   .act {
