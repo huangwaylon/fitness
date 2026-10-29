@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
     paths: ['app/**', '.github/workflows/pages.yml']
+  # Pull requests (Dependabot's included) get the same check + vitest + build, without the deploy.
+  pull_request:
+    paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -14,7 +17,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.ref) || 'pages' }}
   cancel-in-progress: true
 
 jobs:
@@ -39,12 +42,14 @@ jobs:
         env:
           VITE_GAS_URL: ${{ vars.GAS_URL }}
           BASE_PATH: /${{ github.event.repository.name }}
-      - uses: actions/upload-pages-artifact@v3
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: app/build-pages
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

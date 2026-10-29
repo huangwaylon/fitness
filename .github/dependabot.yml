@@ -1,0 +1,18 @@
+# Weekly dependency PRs (round 9): the toolchain is bleeding-edge (Kit 3, Vite 8, TS 6, Vitest 5). Each PR runs
+# pages.yml's check + vitest + build (no deploy); merge only green ones.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /app
+    schedule:
+      interval: weekly
+    groups:
+      toolchain:
+        patterns: ['@sveltejs/*', 'svelte', 'svelte-check', 'vite', 'vitest', 'typescript', 'esbuild', '@types/node']
+      fonts:
+        patterns: ['@fontsource/*']
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

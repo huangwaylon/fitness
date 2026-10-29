@@ -1,0 +1,35 @@
+# Daily backend monitor (round 9): a keyless {"action":"health"} POST to the Apps Script /exec URL (repo variable
+# GAS_URL). JSON {ok:true} means up and authorized; an HTML page means the deployment's authorization lapsed
+# (google-setup.md §9) and this run fails, so GitHub emails the repo owner. A `build` that differs from the
+# committed apps-script/Code.js means main has backend changes that were never redeployed (a warning only).
+name: Backend health
+
+on:
+  schedule:
+    - cron: '17 21 * * *' # 06:17 JST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    if: vars.GAS_URL != ''
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: app/apps-script/Code.js
+          sparse-checkout-cone-mode: false
+      - name: POST health to /exec
+        env:
+          GAS_URL: ${{ vars.GAS_URL }}
+        run: |
+          body=$(curl -sSL --max-time 60 -H 'Content-Type: text/plain' --data '{"action":"health"}' "$GAS_URL")
+          echo "$body" | head -c 300; echo
+          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::/exec did not answer JSON ok (authorization lapsed? google-setup.md §9)"; exit 1; }
+          live=$(echo "$body" | jq -r '.build // ""')
+          repo=$(grep -oE 'var BUILD = true \? "[0-9a-f]+"' app/apps-script/Code.js | grep -oE '[0-9a-f]{12}' || true)
+          if [ -n "$repo" ] && [ "$live" != "$repo" ]; then
+            echo "::warning::/exec runs build $live but main's apps-script/Code.js is $repo: redeploy (runbook)"
+          fi
