@@ -4,7 +4,7 @@
   // Sky: gradient, sun / moon + stars, drifting clouds, balloon present, event fireworks.
   // Stage: sea + waves + sparkles, beach + shells, cliff, NH checker grass, the T path, the back row
   // (cedar, seasonal hedge, Resident Services, fences, mailbox, bench / bonfire, rock), the two
-  // official seasonal oaks carrying our fruit, the jar, flower beds, front palms, the villagers on
+  // orchards (three official fruit trees each + the palm's coconut), the jar, flower beds, front palms, the villagers on
   // their motion rig, particles, the time-of-day tint, and the score pills above it.
   // Height: `--scene-h` from the parent, else clamp(300px, 100dvh − var(--chrome-below, 282px), 600px).
   // Reactions: listens to the motion bus (emit('checkin-saved') etc.) and diffs `view` (partner data,
@@ -14,6 +14,7 @@
   import { FRUITS } from '#lib/config/rules.ts';
   import { ripeness } from '../FruitRing.svelte';
   import Villager from '../Villager.svelte';
+  import Fx from '../Fx.svelte';
   import OfficialArt from '../OfficialArt.svelte';
   import type { EmoteKind, Expression } from '#lib/villagers/species.ts';
   import { fruitArt } from '#lib/client/assets.ts';
@@ -29,7 +30,7 @@
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
   import Balloon from './Balloon.svelte';
-  import { JAR, PALM, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
+  import { JAR, ORCHARD, PALM, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { actors, applyStep, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
   import { startIdleLife } from '../motion/idleLife.svelte.ts';
   import { on } from '../motion/bus.svelte.ts';
@@ -87,10 +88,34 @@
   });
   const TAG: Record<PersonId, string> = { A: 'var(--tag-apricot, #FFCFB0)', B: 'var(--tag-plum, #D9C6F5)' };
 
-  // Jar fill: share of the top rung (a little visible as soon as there is anything in it).
+  // Jar (U5). `view.jar.totalYen` already counts an open harvest, but its yen are "in the jar" only
+  // once I tap 壺に入れる: until then the island shows the total without this week's jar share. When
+  // the harvest closes, the jar waits until the overlay is gone, then the coins rise (CSS transition)
+  // with sparkles and a "+¥" pop.
+  const harvestYen = $derived.by(() => {
+    const h = view.harvest;
+    if (!h || h.confirmedBy.includes(view.me)) return 0;
+    return h.payout.A.fruitYen + h.payout.B.fruitYen + h.payout.teamYen;
+  });
+  const targetYen = $derived(Math.max(0, view.jar.totalYen - harvestYen));
+  // svelte-ignore state_referenced_locally
+  let jarYen = $state(targetYen);
+  let jarGain = $state<{ yen: number; n: number } | null>(null);
+  $effect(() => {
+    const target = targetYen;
+    if (covered || target === untrack(() => jarYen)) return;
+    const t = setTimeout(() => {
+      const gain = target - jarYen;
+      jarYen = target;
+      if (gain > 0 && live && !reducedMotion()) jarGain = { yen: gain, n: (jarGain?.n ?? 0) + 1 };
+    }, untrack(() => jarYen) < target && live ? 450 : 0);
+    return () => clearTimeout(t);
+  });
+  // Fill: share of the top rung (a little visible as soon as there is anything in it). The coin stack is
+  // drawn full and slid down by (1 − fill), so a change animates.
   const topYen = $derived(Math.max(1, ...view.jar.rungs.map((r) => r.yen), view.jar.nextRung?.yen ?? 0));
-  const fill = $derived(view.jar.totalYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(view.jar.totalYen / topYen))));
-  const coinTop = $derived(66 - fill * 44);
+  const fill = $derived(jarYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(jarYen / topYen))));
+  const COIN_FULL = 22;
   const partnerFruit = $derived(
     FRUITS.reduce((a, f) => (sides.partner.person.fruits[f].pct > sides.partner.person.fruits[a].pct ? f : a), FRUITS[0])
   );
@@ -289,13 +314,13 @@
   <div class="stage">
     <svg class="ground" viewBox="0 0 390 360" preserveAspectRatio="none" aria-hidden="true">
       <Sea {uid} {night} />
-      <Ground {uid} {season} />
+      <Ground {uid} {season} {night} />
     </svg>
 
     <BackRow {season} {foliage} {tod} {month} toyDay={ev.toyDay} />
 
     {#each ['A', 'B'] as const as pid (pid)}
-      <FruitTree person={view.people[pid]} x={TREE.x[pid]} {foliage} palm={PALM[pid]} delay={pid === 'B' ? -2.1 : 0} shakeN={shakeN[pid]}
+      <FruitTree person={view.people[pid]} trees={ORCHARD[pid]} {foliage} palm={PALM[pid]} delay={pid === 'B' ? -2.1 : 0} shakeN={shakeN[pid]}
         celebrate={celebrate[pid]} ontap={() => onfruit?.(pid)} />
     {/each}
 
@@ -304,14 +329,14 @@
       <defs><clipPath id="{uid}-jarbody"><path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" /></clipPath></defs>
       <path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" class="glass" />
       <g clip-path="url(#{uid}-jarbody)">
-        {#if fill > 0}
-          <rect x="0" y={coinTop + 3} width="54" height="70" class="coinfill" />
-          {#each Array.from({ length: Math.ceil((66 - coinTop) / 6) + 1 }) as _, row (row)}
+        <g class="coins" style:transform="translateY({((1 - fill) * 44 + (fill > 0 ? 0 : 8)).toFixed(2)}px)">
+          <rect x="0" y={COIN_FULL + 3} width="54" height="70" class="coinfill" />
+          {#each Array.from({ length: 9 }) as _, row (row)}
             {#each [0, 1, 2, 3] as col (col)}
-              <ellipse cx={8 + col * 13 + (row % 2) * 6} cy={coinTop + 3 + row * 6} rx="6.4" ry="2.8" class="coin" />
+              <ellipse cx={8 + col * 13 + (row % 2) * 6} cy={COIN_FULL + 3 + row * 6} rx="6.4" ry="2.8" class="coin" />
             {/each}
           {/each}
-        {/if}
+        </g>
       </g>
       <path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" class="glass-line" />
       <path d="M10 30 Q8.6 38 10 46" class="glint" />
@@ -320,7 +345,16 @@
       <path d="M27 9 Q29 2 36 2.6 Q33 9 27 9 Z" class="jarleaf" />
     </svg>
     <button type="button" class="jartap" style:left={u(JAR.x)} style:top={u(JAR.base)}
-      aria-label={t('island.jar', { yen: formatYen(view.jar.totalYen) })} onclick={tapJar}></button>
+      aria-label={t('island.jar', { yen: formatYen(jarYen) })} onclick={tapJar}></button>
+    {#if jarGain}
+      {#key jarGain.n}
+        <span class="jargain" style:left={u(JAR.x)} style:top={u(JAR.base - 70)} aria-hidden="true"
+          onanimationend={(e) => e.animationName.endsWith('gain-rise') && (jarGain = null)}>
+          <span class="fxa"><Fx kind="sparkles" spread={u(46)} /></span>
+          <b class="money">+{formatYen(jarGain.yen)}</b>
+        </span>
+      {/key}
+    {/if}
 
     <FlowerBeds {season} />
 
@@ -354,7 +388,7 @@
         </div>
       {:else}
         <div class="pill theirs" style:left={u(s.x)} style:top={u(VILLAGER.foot + 6)} style:--tag={TAG[s.person.person]} aria-hidden="true">
-          <span class="tag">{s.person.villagerName}</span><span class="dot"></span>
+          <span class="tag">{s.person.villagerName}</span><span class="dot">{Array.from(s.person.villagerName)[0] ?? ''}</span>
           <span class="pf {ripeness(s.person.fruits[partnerFruit].pct)}"><OfficialArt key={fruitArt(partnerFruit)} size="22px" eager /></span>
         </div>
       {/if}
@@ -383,6 +417,21 @@
   .coinfill { fill: var(--jar-coin); }
   .jarleaf { fill: var(--jar-leaf); stroke: var(--c-ink); stroke-width: 1.6; stroke-linejoin: round; }
   .glass-line { fill: none; stroke: #4A3A2C; stroke-width: 2.6; stroke-linejoin: round; }
+  .coins { transition: transform 1.4s var(--ease-soft, cubic-bezier(.3, 1.3, .5, 1)); }
+  .jargain {
+    position: absolute; z-index: 92; translate: -50% -100%; pointer-events: none; white-space: nowrap;
+    animation: gain-rise 2.2s ease-out both;
+  }
+  .jargain b {
+    display: block; padding: 2px 10px; border-radius: 999px; font: 700 15px/1.3 var(--font-num);
+    background: var(--c-bubble, #FFFCEB); color: var(--c-ink); border: 2px solid var(--c-pill-edge, #EADBB8);
+  }
+  .jargain .fxa { position: absolute; left: 50%; top: 100%; width: 0; height: 0; }
+  @keyframes gain-rise {
+    0% { opacity: 0; transform: translateY(8px) scale(.8); } 15% { opacity: 1; transform: none; }
+    80% { opacity: 1; transform: translateY(-6px); } 100% { opacity: 0; transform: translateY(-10px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .coins { transition: none; } }
   .coin { fill: var(--jar-coin); stroke: var(--jar-coin-rim); stroke-width: 1.2; }
   .glint { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .85; }
   .lid { fill: var(--c-yuzu); stroke: var(--c-ink); stroke-width: 2.4; }
@@ -419,7 +468,11 @@
     box-shadow: 0 3px 0 rgba(74, 58, 44, .14);
   }
   .pill .tag { background: var(--tag); border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 700; line-height: 1.1; }
-  .pill .dot { display: none; width: 10px; height: 10px; border-radius: 50%; background: var(--tag); margin-left: 4px; }
+  /* tiny screens: the name's first letter in the tag colour (「ま」), not a blank dot (r2 N6) */
+  .pill .dot {
+    display: none; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--tag);
+    font-size: 11px; font-weight: 700; line-height: 1;
+  }
   .pill b { font-family: var(--font-num); font-weight: 700; font-size: var(--fs-h2, 1.25rem); line-height: 1; }
   .pill small { font-size: 11px; font-weight: 600; color: var(--c-ink-talk); margin-left: -3px; align-self: flex-end; padding-bottom: 2px; }
   /* U2: "which one is me?" — a leaf chip on my own pill, kept at every size */
@@ -436,6 +489,6 @@
   }
   @media (max-width: 339px) {
     .pill .tag { display: none; }
-    .pill .dot { display: block; }
+    .pill .dot { display: grid; }
   }
 </style>

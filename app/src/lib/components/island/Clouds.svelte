@@ -3,6 +3,9 @@
   // gradient underside (no hard band, no pill base) and a faint 1.04× halo copy behind. C1 is 1.4×
   // (A8). C1 / C2 / C3 drift at 140 / 100 / 75 s; C2 needs ≥ 70px of sky, C3 ≥ 120px (container query
   // on the sky band). Night: C1 + C2 only, at half opacity.
+  // C8: clouds drift across the whole width, so they keep a lane below the status row (date pill and
+  // phone button, ≈ 54px under the band top): top = max(54px, the cloud's %). In short skies (≤ 120px,
+  // compact / tiny) C1 shrinks and C2 needs ≥ 100px; a cloud's foot may tuck behind the far sea.
   interface Props {
     night?: boolean;
   }
@@ -19,7 +22,7 @@
 
 {#each night ? CLOUDS.slice(0, 2) : CLOUDS as c (c.id)}
   {@const k = c.k ?? 1}
-  <svg class="cloud {c.id}" viewBox="-4 -4 {c.w + 8} {c.h + 8}" style:width="{c.w * k}px" style:top="{c.top}%"
+  <svg class="cloud {c.id}" viewBox="-4 -4 {c.w + 8} {c.h + 8}" style:width="{c.w * k}px" style:--top="{c.top}%"
     style:--op={c.op} style:animation-duration="{c.dur}s" style:animation-delay="{-c.delay * c.dur}s" aria-hidden="true">
     <defs>
       <linearGradient id="{uid}-{c.id}-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={c.h}>
@@ -38,13 +41,14 @@
 
 <style>
   .cloud {
-    position: absolute; left: 0; height: auto; overflow: visible; opacity: calc(var(--op) * var(--cloud-op, 1));
+    position: absolute; left: 0; top: max(var(--cloud-lane, 54px), var(--top)); height: auto; overflow: visible;
+    opacity: calc(var(--op) * var(--cloud-op, 1));
     animation: drift 140s linear infinite; will-change: transform;
   }
   .halo { fill: var(--cloud); opacity: .35; }
   @keyframes drift { from { transform: translateX(-110%); } to { transform: translateX(calc(100cqw + 10%)); } }
-  @container sky (max-height: 70px) { .c2 { display: none; } }
-  @container sky (max-height: 120px) { .c3 { display: none; } }
+  @container sky (max-height: 120px) { .c3 { display: none; } .c1 { width: 120px !important; } }
+  @container sky (max-height: 100px) { .c2 { display: none; } }
   @media (prefers-reduced-motion: reduce) {
     .cloud { animation-play-state: paused; }
   }

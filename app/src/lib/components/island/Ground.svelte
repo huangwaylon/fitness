@@ -6,13 +6,15 @@
   // T-shaped path from the beach to Resident Services and across between the villagers, pebbles,
   // ground shadows for the trees and the jar, and winter snow mounds where the flower beds sleep.
   import type { Season } from '#lib/client/theme.svelte.ts';
-  import { BED_ROWS, BED_X, JAR, TREE, star4, wobblyRect } from './scene.ts';
+  import { BED_ROWS, BED_X, JAR, ORCHARD, star4, wobblyRect } from './scene.ts';
 
   interface Props {
     uid: string;
     season: Season;
+    /** Snow glints rest at night (P5 budget). */
+    night?: boolean;
   }
-  let { uid, season }: Props = $props();
+  let { uid, season, night = false }: Props = $props();
   const winter = $derived(season === 'winter');
 
   const PLATEAU = wobblyRect(12, 40, 366, 258, 44, 3, 7);
@@ -49,7 +51,7 @@
 
 {#if winter}
   <g class="snowglint">
-    {#each SNOW as [x, y], i (i)}<path d={star4(x, y, 7)} class:still={i % 3 !== 0} style="animation-delay:{-(i * 0.31).toFixed(2)}s" />{/each}
+    {#each SNOW as [x, y], i (i)}<path d={star4(x, y, 7)} class:still={night || i % 5 !== 0} style="animation-delay:{-(i * 0.31).toFixed(2)}s" />{/each}
   </g>
 {:else}
   {#each TUFTS as [x, y], i (i)}
@@ -65,8 +67,9 @@
 </g>
 
 <!-- ground shadows (dusk: long) -->
-<ellipse cx={TREE.x.A} cy={TREE.base + 2} rx="46" ry="9" class="sh" />
-<ellipse cx={TREE.x.B} cy={TREE.base + 2} rx="46" ry="9" class="sh" />
+{#each [...ORCHARD.A, ...ORCHARD.B] as tr, i (i)}
+  <ellipse cx={tr.x} cy={tr.base + 1} rx={tr.h * 0.27} ry={tr.h * 0.055} class="sh" />
+{/each}
 <ellipse cx={JAR.x} cy={JAR.base} rx="28" ry="5" class="sh" />
 
 {#if winter}

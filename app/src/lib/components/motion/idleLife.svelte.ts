@@ -37,7 +37,7 @@ function pickWeighted<T extends { weight: number }>(items: T[], rnd: () => numbe
 }
 
 /** Start the scheduler; returns stop(). */
-export function startIdleLife(ctx: IdleContext): () => void {
+export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => number } {
   const rnd = ctx.random ?? Math.random;
   const rand = (a: number, b: number) => a + rnd() * (b - a);
   const pick = <T>(xs: readonly T[]): T => xs[Math.floor(rnd() * xs.length)];
@@ -51,10 +51,15 @@ export function startIdleLife(ctx: IdleContext): () => void {
 
   /** A follow-up beat on an actor, cancelled by stop() (and by any reaction that preempts the actor). */
   function later(id: ActorId, ms: number, fn: () => void) {
-    const c = directorLater(id, ms, () => {
-      owned.delete(c);
-      if (!stopped) fn();
-    });
+    const c = directorLater(
+      id,
+      ms,
+      () => {
+        owned.delete(c);
+        if (!stopped) fn();
+      },
+      () => owned.delete(c) // a reaction preempted the actor (director cancel): forget it (N8)
+    );
     owned.add(c);
   }
 
@@ -194,7 +199,7 @@ export function startIdleLife(ctx: IdleContext): () => void {
   document.addEventListener('visibilitychange', onVis);
   schedule(rand(2_500, 4_500));
 
-  return () => {
+  const stop = () => {
     stopped = true;
     if (timer) clearTimeout(timer);
     timer = null;
@@ -203,4 +208,6 @@ export function startIdleLife(ctx: IdleContext): () => void {
     removeEventListener('pointerdown', wakeUp);
     document.removeEventListener('visibilitychange', onVis);
   };
+  /** Pending idle-owned follow-ups (tests). */
+  return Object.assign(stop, { owned: () => owned.size });
 }

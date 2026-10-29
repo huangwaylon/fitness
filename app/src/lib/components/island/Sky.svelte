@@ -1,6 +1,6 @@
 <script lang="ts">
   // Sky (style guide §S.3–S.4, §S.11): gradient bleeding under the status bar, the sun (high by day,
-  // low at dawn / dusk) or the moon + 12 stars (6 twinkle), drifting clouds, the balloon present and
+  // low at dawn / dusk) or the moon + 12 stars (4 twinkle), drifting clouds, the balloon present and
   // event fireworks. The visible band (below the safe area) is a size container named `sky`.
   import type { Snippet } from 'svelte';
   import Clouds from './Clouds.svelte';
@@ -15,7 +15,7 @@
   let { tod, fireworks = false, children }: Props = $props();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
-  // 6 twinkling + 6 still stars (P5: ≤ 24 infinite animations in the scene)
+  // 4 twinkling + 8 still stars (P5: ≤ 24 infinite animations in the scene)
   const STARS = [
     [8, 18], [17, 52], [26, 30], [34, 70], [43, 14], [52, 46], [60, 26], [67, 64], [75, 40], [88, 58], [93, 20], [5, 78]
   ];
@@ -30,7 +30,7 @@
   <div class="band">
     {#if night}
       {#each STARS as [x, y], i (i)}
-        <svg class="star" class:still={i % 2 === 1} viewBox="0 0 24 24" style:left="{x}%" style:top="{y}%" style:width="{6 + (i % 3) * 2}px"
+        <svg class="star" class:still={i % 3 !== 0} viewBox="0 0 24 24" style:left="{x}%" style:top="{y}%" style:width="{6 + (i % 3) * 2}px"
           style:animation-duration="{2.4 + (i % 5) * 0.4}s" style:animation-delay="{-i * 0.37}s">
           <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
         </svg>

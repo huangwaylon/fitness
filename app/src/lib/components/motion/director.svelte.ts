@@ -37,17 +37,20 @@ export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partn
 
 export const EMOTE_MS = 2200;
 let fxN = 0;
-const timers: Record<ActorId, Set<ReturnType<typeof setTimeout>>> = { mine: new Set(), partner: new Set(), host: new Set() };
+/** Pending timers per actor → an optional "dropped" hook, called when cancel() / resetAll() drops it. */
+type Dropped = (() => void) | undefined;
+const timers: Record<ActorId, Map<ReturnType<typeof setTimeout>, Dropped>> = { mine: new Map(), partner: new Map(), host: new Map() };
 /** Last time any event reaction ran (idle life waits 3 s after one). */
 export const lastEvent = { at: 0 };
 
-/** Run `fn` on an actor after `ms`; `cancel(id)` / `resetAll()` drop it. Returns its own canceller. */
-export function later(id: ActorId, ms: number, fn: () => void): () => void {
+/** Run `fn` on an actor after `ms`; `cancel(id)` / `resetAll()` drop it (then `dropped` runs, so an
+ *  owner can forget its canceller). Returns its own canceller. */
+export function later(id: ActorId, ms: number, fn: () => void, dropped?: () => void): () => void {
   const t = setTimeout(() => {
     timers[id].delete(t);
     fn();
   }, ms);
-  timers[id].add(t);
+  timers[id].set(t, dropped);
   return () => {
     clearTimeout(t);
     timers[id].delete(t);
@@ -91,8 +94,12 @@ export function claimHost(): { id: number; release: () => void } {
 
 /** Cancel everything pending on an actor and snap it back to rest (keeps sleep). */
 export function cancel(id: ActorId) {
-  for (const t of timers[id]) clearTimeout(t);
+  const drops = [...timers[id]];
   timers[id].clear();
+  for (const [t, dropped] of drops) {
+    clearTimeout(t);
+    dropped?.();
+  }
   const a = actors[id];
   a.motion = null;
   a.walking = false;

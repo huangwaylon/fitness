@@ -3,7 +3,7 @@
 <script lang="ts">
   // Sea (style guide §S.5), inside the stage <svg viewBox="0 0 390 360">: the back sea fades from
   // --sea-far at the horizon, deep blue shows at the front corners, three scalloped wave bands slide,
-  // six sparkles twinkle (three warm ones at night), and the distant islet's sand sits at the top right.
+  // four sparkles twinkle (two warm ones at night), and the distant islet's sand sits at the top right.
   import { star4, waveCrest } from './scene.ts';
 
   interface Props {
@@ -12,9 +12,8 @@
   }
   let { uid, night = false }: Props = $props();
 
-  const SPARKLES = [
-    [34, 10, 8], [118, 30, 7], [236, 8, 9], [290, 32, 6], [20, 346, 7], [372, 352, 8]
-  ];
+  // 4 by day, 2 at night (P5 budget, §S.13)
+  const SPARKLES = [[34, 10, 8], [236, 8, 9], [118, 30, 7], [372, 352, 8]];
   const shown = $derived(night ? SPARKLES.filter((_, i) => i % 2 === 0) : SPARKLES);
 </script>
 

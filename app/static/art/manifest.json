@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 7,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -247,12 +247,6 @@
       "h": 320,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Transparent.png"
     },
-    "host/isabelle-bow": {
-      "path": "host/isabelle-bow.webp",
-      "w": 512,
-      "h": 512,
-      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model_2.png"
-    },
     "host/isabelle-icon": {
       "path": "host/isabelle-icon.webp",
       "w": 128,
@@ -267,9 +261,9 @@
     },
     "host/isabelle-winter": {
       "path": "host/isabelle-winter.webp",
-      "w": 160,
-      "h": 229,
-      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Winter.png"
+      "w": 512,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Model_2.png"
     },
     "host/tom-nook": {
       "path": "host/tom-nook.webp",
@@ -339,8 +333,8 @@
     },
     "phone/nookphone": {
       "path": "phone/nookphone.webp",
-      "w": 512,
-      "h": 444,
+      "w": 208,
+      "h": 180,
       "source": "https://nookipedia.com/wiki/File:NookPhone_NH_Model.png"
     },
     "phone/passport": {
@@ -621,26 +615,26 @@
     },
     "trees/oak-fall": {
       "path": "trees/oak-fall.webp",
-      "w": 309,
-      "h": 384,
+      "w": 329,
+      "h": 409,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH_Fall.png"
     },
     "trees/oak-spring": {
       "path": "trees/oak-spring.webp",
-      "w": 309,
-      "h": 384,
+      "w": 329,
+      "h": 409,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH_Spring.png"
     },
     "trees/oak-summer": {
       "path": "trees/oak-summer.webp",
-      "w": 305,
-      "h": 384,
+      "w": 509,
+      "h": 640,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH.png"
     },
     "trees/oak-winter": {
       "path": "trees/oak-winter.webp",
-      "w": 309,
-      "h": 384,
+      "w": 329,
+      "h": 409,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH_Winter.png"
     },
     "trees/palm": {

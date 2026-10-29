@@ -11,17 +11,36 @@ export const u = (n: number): string => `${((n * 100) / STAGE_W).toFixed(3)}cqw`
 
 export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
-/** Fruit trees (§S.8): official oak of the season, base y 238, 150u tall. */
-export const TREE = { h: 150, base: 238, x: { A: 84, B: 306 } as const, w: 121 };
-/** Fruit on the oak (% of tree width / height, centre point), 27u each. Coconuts grow only on palms
- *  (A5), so each person's coconut hangs in the crown of the beach palm beside their oak. */
-export const FRUIT_POS = {
-  peach: [28, 30],
-  pear: [72, 27],
-  apple: [50, 50]
-} as const;
-export const OAK_FRUITS = ['peach', 'pear', 'apple'] as const;
-export const FRUIT_U = 27;
+/** Orchards (§S.8, A5). In NH every fruit tree is the hardwood of the season bearing three of ONE
+ *  fruit, and coconuts grow only on palms. So each person's orchard is three small fruit trees (peach
+ *  at the back, pear on the outside, apple on the inside, next to the path) and the beach palm beside
+ *  it carries the coconut. `x` = the villager / orchard centre; `base` = the front trees' trunk line. */
+export const TREE = { base: 248, x: { A: 84, B: 306 } as const };
+export type OrchardFruit = 'peach' | 'pear' | 'apple';
+export interface OrchardTree {
+  fruit: OrchardFruit;
+  x: number;
+  base: number;
+  /** Height in u (width = h × OAK_AR). */
+  h: number;
+  /** The back tree sways (one idle animation per orchard, §S.13); the front two stand still. */
+  back?: boolean;
+}
+/** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
+export const OAK_AR = 329 / 409;
+const ORCHARD_A: OrchardTree[] = [
+  { fruit: 'peach', x: 84, base: 196, h: 100, back: true },
+  { fruit: 'pear', x: 38, base: 246, h: 82 },
+  { fruit: 'apple', x: 132, base: 248, h: 82 }
+];
+/** Back to front (paint order). Person B's orchard mirrors A's around the path. */
+export const ORCHARD: Record<'A' | 'B', OrchardTree[]> = {
+  A: ORCHARD_A,
+  B: ORCHARD_A.map((t) => ({ ...t, x: STAGE_W - t.x }))
+};
+/** Three fruit on each tree (% of the tree box, centre point), as NH hangs them; each 30% of the tree width. */
+export const FRUIT_POS: [number, number][] = [[27, 31], [73, 28], [50, 50]];
+export const FRUIT_W = 0.3;
 
 /** The two front palms (§S.6), one beside each oak: [x, base, height u, mirrored]. */
 export const PALM = {
@@ -121,7 +140,8 @@ export function props(season: Season, tod: Tod, month: number): Prop[] {
   } else {
     list.push(
       { key: 'deco/sand-dollar', h: 14, x: 112, base: 332, z: 12 },
-      { key: 'deco/cowrie', h: 13, x: 268, base: 338, z: 12 },
+      // a second sand dollar, not the cowrie: one art file fewer at first paint (≤ 30, §S.13)
+      { key: 'deco/sand-dollar', h: 12, x: 268, base: 338, z: 12, flip: true },
       { key: 'deco/conch', h: 15, x: 214, base: 346, z: 12 }
     );
   }
