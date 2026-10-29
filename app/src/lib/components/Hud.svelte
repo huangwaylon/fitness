@@ -6,6 +6,7 @@
   import HelpButton from './HelpButton.svelte';
   import SyncPill from './SyncPill.svelte';
   import { now, reducedMotion } from './motion/clock.ts';
+  import { openKiroku } from '#lib/client/ui.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -67,9 +68,11 @@
 </div>
 <div class="ribbon-wrap">
   {#key beat}
-    <p class="ribbon" class:beat={beat > 0} role="status" aria-label={t('hud.score', { score })}>
+    <!-- Tap → きろく, this week (history-and-editing.md §2). -->
+    <button type="button" class="ribbon" class:beat={beat > 0} aria-label={t('hud.score', { score })}
+      onclick={() => { openKiroku({ tab: 'body', week: 'current' }); phoneOpen = true; }}>
       <span class="wk" aria-hidden="true">{t('hud.week')}</span><b class="money" aria-hidden="true">{shown}<small>/100</small></b>
-    </p>
+    </button>
   {/key}
 </div>
 
@@ -90,6 +93,7 @@
   }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
+    appearance: none; border: 0; cursor: pointer; font: inherit; pointer-events: auto;
     position: relative; margin: 0; height: 36px; padding: 0 22px; display: flex; align-items: center; gap: 10px;
     background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip);
   }

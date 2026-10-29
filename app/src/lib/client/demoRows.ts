@@ -143,13 +143,13 @@ export function demoRows(now: number): SnapshotRows {
   return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(presence), events: byAt(events) };
 }
 
-/** A snapshot cache for the demo store (me = A), with the model's calendar moved to the demo's weeks. */
-export function demoCache(now: number): SnapshotCache {
+/** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`), with the model's calendar moved to the demo's weeks. */
+export function demoCache(now: number, me: PersonId = 'A'): SnapshotCache {
   setDemoCalendar({ firstWeek: demoFirstWeek(now) });
   const rows = demoRows(now);
   let since: string | null = null;
   for (const tab of [rows.metrics, rows.workouts, rows.presence, rows.events] as (readonly unknown[])[][]) {
     for (const r of tab) if (since === null || String(r[0]) > since) since = String(r[0]);
   }
-  return { v: 1, me: 'A', rows, since, skewMs: 0, fetchedAt: now };
+  return { v: 1, me, rows, since, skewMs: 0, fetchedAt: now };
 }

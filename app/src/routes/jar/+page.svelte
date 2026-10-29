@@ -12,6 +12,7 @@
   import Jar from '#lib/components/island/Jar.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
+  import { openKiroku } from '#lib/client/ui.svelte.ts';
   import { spendPurse, approveSpend, transferDone, UNDO_MS } from '#lib/client/actions.ts';
   import { tick } from 'svelte';
   import { MONEY, SEASONS } from '#lib/config/rules.ts';
@@ -31,6 +32,8 @@
   const jar = $derived(view?.jar ?? null);
 
   let ladderOpen = $state(false);
+  /** The しまフォン; the total opens it on きろく → お金 (history-and-editing.md §2). */
+  let phoneOpen = $state(false);
   let purseOpen = $state(false);
   let picked = $state<(typeof TREATS)[number] | null>(null);
   const cheapest = TREATS.reduce((a, b) => (b.yen < a.yen ? b : a));
@@ -116,13 +119,16 @@
   <main class="jar-screen">
     <div class="top">
       <a class="back" href={resolve('/')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5 L8 12 L16 19 Z" /></svg>{t('jar.back')}</a>
-      <HelpButton />
+      <HelpButton bind:open={phoneOpen} />
     </div>
     <h1 class="sr-only">{t('jar.title')}</h1>
 
     <div class="hero">
       <span class="bigjar"><Jar fill={jarFill} width="calc(var(--jar-h) * 54 / 68)" name="jar" /></span>
-      <Yen yen={jar.totalYen} class="hero-num total" />
+      <button type="button" class="totalbtn" aria-label="{t('kiroku.jar')} {formatYen(jar.totalYen)}: {t('phone.app.kiroku')}"
+        onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
+        <Yen yen={jar.totalYen} class="hero-num total" />
+      </button>
       <span class="wk">{t('jar.week', { yen: formatYen(jar.thisWeekEstimateYen) })}</span>
     </div>
 
@@ -240,6 +246,8 @@
   .back:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
 
   .hero { display: grid; justify-items: center; gap: 6px; padding: 4px 0 20px; color: var(--text); }
+  .totalbtn { appearance: none; border: 0; background: none; padding: 0 8px; color: inherit; cursor: pointer; border-radius: var(--r-btn); }
+  .totalbtn:active { transform: scale(.97); }
   .bigjar { display: block; line-height: 0; margin-bottom: 6px; }
   .hero :global(.total) { font-size: min(var(--fs-hero), 12vw); }
   .wk { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }

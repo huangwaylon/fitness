@@ -1,0 +1,131 @@
+<script lang="ts">
+  // 3.3 Day detail: two stacked cards (me, then the partner, read-only). ✎ only on mine and only while the week is
+  // open; へんこう履歴 at the bottom. Check-ins toggle in place (a fix, `edit:true`).
+  import type { PersonId } from '#lib/types.ts';
+  import type { DayDetail, DayPerson } from '#lib/model/history.ts';
+  import Avatar from '../Avatar.svelte';
+  import Glyph from './Glyph.svelte';
+  import ChangeLog from './ChangeLog.svelte';
+  import { dayTitle, leftLabel, num, timeOf, typeLabel } from './fmt.ts';
+  import { t } from '#lib/i18n/index.ts';
+
+  interface Props {
+    d: DayDetail;
+    me: PersonId;
+    partner: PersonId;
+    names: Record<PersonId, string>;
+    villagers: Record<PersonId, string | null>;
+    now: number;
+    onmetric: (metric: 'steps' | 'exercise_min') => void;
+    onworkout: (id: string) => void;
+    onadd: () => void;
+    ontick: (habit: string, done: boolean) => void;
+  }
+  let { d, me, partner, names, villagers, now, onmetric, onworkout, onadd, ontick }: Props = $props();
+  const editable = $derived(d.open && !d.future);
+</script>
+
+<header class="sub">
+  <h3>{dayTitle(d.date)}</h3>
+  <span class="state" class:locked={!d.open}>
+    {#if d.open}<Glyph kind="pen" size={14} />{leftLabel(d.lockAt, now)}{:else}<Glyph kind="lock" size={14} />{t('kiroku.locked')}{/if}
+  </span>
+</header>
+
+{#snippet person(p: PersonId, x: DayPerson, mine: boolean)}
+  {@const can = mine && editable}
+  <section class="card pc" class:ro={!mine}>
+    <div class="who">
+      <Avatar person={p} villager={villagers[p]} size={34} />
+      <b class="nm">{names[p]}{#if mine}<small> · {t('kiroku.me')}</small>{/if}</b>
+      {#if !mine}<span class="tag">{t('kiroku.readOnly')}</span>{/if}
+    </div>
+    <div class="row">
+      <span class="k">{t('kiroku.steps')}</span>
+      <span class="v money">{num(x.steps.value)}</span>
+      {#if x.steps.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
+      {#if can}<button type="button" class="pen" aria-label="{t('kiroku.steps')} ✎" onclick={() => onmetric('steps')}><Glyph kind="pen" size={18} /></button>{/if}
+    </div>
+    <div class="row">
+      <span class="k">{t('kiroku.minutes')}</span>
+      <span class="v money">{t('kiroku.min', { n: x.minutes.value })}</span>
+      {#if x.minutes.source}<span class="src">({t(`kiroku.src.${x.minutes.source}`)})</span>{/if}
+      {#if x.minutes.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
+      {#if can}<button type="button" class="pen" aria-label="{t('kiroku.minutes')} ✎" onclick={() => onmetric('exercise_min')}><Glyph kind="pen" size={18} /></button>{/if}
+    </div>
+    {#each x.workouts as w (w.id)}
+      <div class="row wo" class:out={w.excluded}>
+        <span class="k">{typeLabel(w.type)}</span>
+        <span class="v small"><span class="money">{w.manual ? '' : timeOf(w.startAt) + ' '}{t('kiroku.min', { n: w.durationMin })}</span>
+          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
+          {#if w.manual}<em>{t('kiroku.manual')}</em>{/if}</span>
+        {#if can}<button type="button" class="pen" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
+      </div>
+    {/each}
+    {#each x.visits as v (v.id)}
+      <div class="row wo">
+        <span class="k">{v.place}</span>
+        <span class="v small"><span class="money">{timeOf(v.arriveAt)} {t('kiroku.min', { n: v.dwellMin })}</span>{#if v.counted}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}</span>
+      </div>
+    {/each}
+    <div class="ticks" role="group" aria-label={t('kiroku.checkins')}>
+      {#each x.habits.keys as h (h)}
+        {@const on = x.habits.done.includes(h)}
+        {#if can}
+          <button type="button" class="tick" class:on aria-pressed={on} onclick={() => ontick(h, !on)}>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</button>
+        {:else}
+          <span class="tick" class:on>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</span>
+        {/if}
+      {/each}
+    </div>
+    {#if can}<button type="button" class="add" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
+  </section>
+{/snippet}
+
+{@render person(me, d.people[me], true)}
+{@render person(partner, d.people[partner], false)}
+
+<ChangeLog edits={d.edits} {villagers} />
+
+<style>
+  .sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 12px; flex-wrap: wrap; }
+  .sub h3 { margin: 0; font-size: var(--fs-talk); }
+  .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
+  .state.locked { color: var(--text-soft); }
+  .pc { display: grid; gap: 4px; padding: 12px 14px; margin-bottom: 14px; }
+  .pc.ro { background: color-mix(in srgb, var(--bg) 70%, var(--surface)); }
+  .who { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .nm { flex: 1; font-size: var(--fs-body); }
+  .nm small { color: var(--text-soft); font-size: var(--fs-s); }
+  .tag { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); background: color-mix(in srgb, var(--lip) 45%, transparent); padding: 3px 8px; border-radius: var(--r-chip); }
+  .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+  .row + .row, .who + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
+  .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
+  .wo .k { font-size: var(--fs-s); }
+  .v { font-size: var(--fs-talk); white-space: nowrap; }
+  .v.small { font-size: var(--fs-s); display: flex; align-items: center; gap: 6px; white-space: normal; flex-wrap: wrap; justify-content: flex-end; }
+  .v.small .money { font-size: var(--fs-s); }
+  .out .k, .out .money { color: var(--text-soft); text-decoration: line-through; }
+  em { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
+  em.ok { background: var(--c-yuzu); color: var(--c-ink); }
+  .src { font-size: var(--fs-s); color: var(--text-soft); font-weight: 700; }
+  .pen {
+    appearance: none; border: 0; cursor: pointer; width: 44px; height: 36px; border-radius: var(--r-btn); flex: none;
+    display: grid; place-items: center; background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+  }
+  .pen:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
+  .ticks { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 4px; }
+  .tick {
+    appearance: none; border: 0; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); min-height: 36px; padding: 0 10px;
+    display: inline-flex; align-items: center; gap: 4px; border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--lip) 35%, transparent);
+  }
+  button.tick { cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
+  .tick.on { background: var(--c-mint); color: var(--c-ink); }
+  .tick svg { width: 14px; height: 14px; }
+  .add {
+    appearance: none; border: 0; cursor: pointer; margin-top: 6px; min-height: 44px; border-radius: var(--r-btn);
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-cream));
+    box-shadow: 0 var(--lip-h) 0 color-mix(in srgb, var(--c-leaf-lip) 60%, var(--c-lip));
+  }
+</style>

@@ -1,6 +1,7 @@
 // Client-side week store. Paints at once from the cached snapshot + queued (unsent) events, computing the WeekView in
 // the browser (lib/model), then syncs in the background: flush the write queue, fetch rows `since` the last seen
-// server time, recompute. `?demo` (or dev without VITE_GAS_URL) uses fixtures.
+// server time, recompute. `?demo` (or dev without VITE_GAS_URL) runs the model on generated rows (demoRows.ts);
+// `?demo&as=B` plays うめ. The demo's taps are kept in localStorage for the day, shared by both players' tabs.
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { dev } from '$app/env';
@@ -9,11 +10,13 @@ import type { EventType } from '#lib/ingest/sheet-api.ts';
 import { GAS_CONFIGURED, enqueue, flush, getKey, holdEvent, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
 import { composeModel, notInCache, type ComposedModel } from './view.ts';
 import { demoCache } from './demoRows.ts';
+import type { PersonId } from '#lib/types.ts';
 import { buildWeekView, payoutAsOf } from '#lib/model/week.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
 
 type DemoMode = false | 'plain' | 'harvest';
+const DEMO_EVENTS = 'island.demo.events';
 
 /** Background refreshes (app becoming visible) at most this often. */
 const REFRESH_FLOOR_MS = 30_000;
@@ -61,6 +64,8 @@ class WeekStore {
   #demoEvents: QueuedEvent[] = [];
   /** Demo `?demo=harvest`: the harvest overlay over last week, until I drop it in. */
   #demoHarvested = false;
+  /** Demo: which player this tab is (`?demo&as=B`). */
+  #demoMe: PersonId = 'A';
   /**
    * Events the server acked but the cache hasn't fetched back yet. They stay in the view until the reconcile
    * refresh brings their rows; otherwise any recompute in between (the next tap) would undo them on screen.
@@ -80,6 +85,7 @@ class WeekStore {
     if (p.has('demo')) {
       const mode: DemoMode = p.get('demo') === 'harvest' ? 'harvest' : 'plain';
       sessionStorage.setItem('demo', mode);
+      sessionStorage.setItem('demo-as', p.get('as') === 'B' ? 'B' : 'A');
       this.demo = mode;
       this.view = null;
     } else {
@@ -92,6 +98,7 @@ class WeekStore {
     }
     // A build without the Apps Script URL (the Pages site before GAS_URL is set): a friendly screen, not errors.
     if (!this.demo && !GAS_CONFIGURED) this.status = 'unconfigured';
+    if (this.demo) this.#demoMe = sessionStorage.getItem('demo-as') === 'B' ? 'B' : 'A';
   }
 
   get me(): PersonWeekView | null {
@@ -113,6 +120,24 @@ class WeekStore {
     setLocale(v.locale);
   }
 
+  /** The demo's taps of today (both players), oldest first. */
+  #loadDemoEvents(): QueuedEvent[] {
+    try {
+      const raw = JSON.parse(localStorage.getItem(DEMO_EVENTS) ?? 'null') as { day: string; events: QueuedEvent[] } | null;
+      return raw && raw.day === new Date().toDateString() ? raw.events : [];
+    } catch {
+      return [];
+    }
+  }
+
+  #saveDemoEvents(): void {
+    try {
+      localStorage.setItem(DEMO_EVENTS, JSON.stringify({ day: new Date().toDateString(), events: this.#demoEvents }));
+    } catch {
+      /* private mode: the demo still works in memory */
+    }
+  }
+
   /** `?demo=harvest` shows last week's harvest whatever the day (the model opens it only from Sunday 19:30). */
   #demoHarvest(m: ComposedModel, v: WeekView): WeekView['harvest'] {
     const wk = addDays(v.weekKey, -7);
@@ -130,7 +155,15 @@ class WeekStore {
   /** Paint from cache, then flush queued writes and fetch new rows. `background` refreshes respect a 30 s floor. */
   async refresh(opts: { background?: boolean } = {}): Promise<void> {
     if (this.demo) {
-      if (!this.#cache) this.#cache = demoCache(Date.now());
+      if (!this.#cache) {
+        this.#cache = demoCache(Date.now(), this.#demoMe);
+        this.#demoEvents = this.#loadDemoEvents();
+        addEventListener('storage', (e) => {
+          if (e.key !== DEMO_EVENTS) return;
+          this.#demoEvents = this.#loadDemoEvents();
+          this.#recompute();
+        });
+      }
       this.#recompute();
       this.#start();
       this.status = 'ready';
@@ -198,14 +231,16 @@ class WeekStore {
     const held = (opts.holdMs ?? 0) > 0;
     if (this.demo) {
       const now = Date.now();
-      const ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#demoEvents.length}`, type, data, queuedAt: now, tries: 0, nextAt: now };
+      const ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#demoEvents.length}`, type, data, queuedAt: now, tries: 0, nextAt: now, person: this.#demoMe };
       this.#demoEvents.push(ev);
+      this.#saveDemoEvents();
       if (type === 'harvest') this.#demoHarvested = true;
       this.#recompute();
       const undo = () => {
         const i = this.#demoEvents.indexOf(ev);
         if (i < 0) return false;
         this.#demoEvents.splice(i, 1);
+        this.#saveDemoEvents();
         this.#recompute();
         return true;
       };

@@ -131,6 +131,8 @@ export interface QueuedEvent {
   tries: number;
   /** Earliest next attempt (ms). */
   nextAt: number;
+  /** Demo only: the sender when it isn't `me` (the demo's two players share one event list across tabs). */
+  person?: PersonId;
 }
 
 export function newId(): string {
