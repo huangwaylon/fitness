@@ -84,9 +84,9 @@
   .sub { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 2px; }
   .sub h3 { margin: 0; font-size: var(--fs-talk); }
   .yen { font-size: var(--fs-title); white-space: nowrap; }
-  .state { display: flex; align-items: center; gap: 6px; margin: 4px 2px 12px; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
+  .state { display: flex; align-items: center; gap: 6px; margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
   .state.locked { color: var(--text-soft); }
-  .people { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px; margin-bottom: 14px; }
+  .people { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px; }
   .col { display: grid; gap: 7px; min-width: 0; }
   .who { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .nm { flex: 1; min-width: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -94,9 +94,9 @@
   .bar { display: flex; align-items: center; gap: 5px; }
   .track { flex: 1; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--lip) 55%, transparent); overflow: hidden; min-width: 20px; }
   .fill { display: block; height: 100%; background: var(--c-leaf); border-radius: 4px; transition: width var(--dur-slow) var(--ease-soft); }
-  .num { font-size: var(--fs-s); white-space: nowrap; color: var(--text-soft); }
+  .num { font-size: var(--fs-s); white-space: nowrap; color: var(--text-soft); min-width: 3.4em; text-align: right; }
 
-  .days { padding: 4px 6px; display: grid; margin-bottom: 12px; }
+  .days { padding: 4px 6px; display: grid; }
   .day {
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; width: 100%;
     display: grid; grid-template-columns: 22px 1fr 1fr; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px;
@@ -116,7 +116,7 @@
   .tk i.on { background: var(--c-mint-lip); }
   .ed { position: absolute; right: -2px; top: -6px; }
   .dim { color: var(--text-soft); }
-  .split { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 4px 18px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .split { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 4px 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .split b { color: var(--text); font-size: var(--fs-s); }
   /* 320: steps, minutes and ★ stay; the ticks move to the day. */
   @media (max-width: 374px) {

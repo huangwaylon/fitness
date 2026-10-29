@@ -86,7 +86,7 @@
   .key:active { transform: translateY(3px) scale(1.04, .94); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
   .choose { flex: 1; min-width: 120px; display: flex; justify-content: flex-end; }
   .choose.off :global(.choice:first-child) { opacity: .5; }
-  @media (max-width: 374px) {
+  @media (max-width: 389px) {
     .keys { grid-template-columns: repeat(3, 1fr); width: 100%; }
     .key { height: 48px; }
     .choose { width: 100%; }

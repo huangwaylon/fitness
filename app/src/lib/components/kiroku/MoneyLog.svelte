@@ -84,7 +84,7 @@
 {/each}
 
 <style>
-  .jar { position: relative; display: grid; gap: 8px; padding: 14px 16px; margin-bottom: 18px; }
+  .jar { position: relative; display: grid; gap: 8px; padding: 14px 16px; margin-bottom: 6px; }
   .tot, .purse { display: flex; align-items: baseline; justify-content: space-between; font-weight: 700; color: var(--text-soft); font-size: var(--fs-body); }
   .tot b { font-size: var(--fs-title); color: var(--text); }
   .purse b { font-size: var(--fs-talk); color: var(--text); }
@@ -94,7 +94,7 @@
   .rung { stroke: color-mix(in srgb, var(--lip) 80%, transparent); stroke-width: 1.5; stroke-dasharray: 4 4; }
   .rl { position: absolute; left: 16px; right: 16px; top: 52px; height: 84px; pointer-events: none; }
   .rl span { position: absolute; right: 0; transform: translateY(-110%); font-size: 11px; font-weight: 700; color: var(--text-soft); }
-  .month { margin-bottom: 18px; }
+  .month { margin-bottom: 6px; }
   h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 4px 8px; font-size: var(--fs-body); }
   h4 b { font-size: var(--fs-talk); }
   .rows { list-style: none; margin: 0; padding: 4px 14px; display: grid; }
@@ -114,5 +114,5 @@
     font: 700 var(--fs-s)/1 var(--font-ui); background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip);
   }
   .mini:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
-  @media (max-width: 359px) { .sp .yen { display: none; } .rows { padding: 4px 10px; } }
+  @media (max-width: 359px) { .sp :global(.av) { display: none; } .rows { padding: 4px 10px; } }
 </style>

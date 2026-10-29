@@ -88,11 +88,11 @@
 <ChangeLog edits={d.edits} {villagers} />
 
 <style>
-  .sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 12px; flex-wrap: wrap; }
+  .sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px; flex-wrap: wrap; }
   .sub h3 { margin: 0; font-size: var(--fs-talk); }
   .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
   .state.locked { color: var(--text-soft); }
-  .pc { display: grid; gap: 4px; padding: 12px 14px; margin-bottom: 14px; }
+  .pc { display: grid; gap: 4px; padding: 12px 14px; }
   .pc.ro { background: color-mix(in srgb, var(--bg) 70%, var(--surface)); }
   .who { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
   .nm { flex: 1; font-size: var(--fs-body); }
