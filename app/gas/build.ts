@@ -50,7 +50,7 @@ function build(id: string): string {
     charset: 'utf8',
     legalComments: 'none',
     tsconfigRaw: {}, // the app tsconfig extends SvelteKit's generated one, irrelevant here
-    banner: { js: BANNER },
+    banner: { js: `${BANNER}\n// build: ${id}` },
     footer: { js: FOOTER },
     define: { __BUILD__: JSON.stringify(id) }
   });
