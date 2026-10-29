@@ -41,6 +41,7 @@ export function hostLine(key: string, params?: Params): string {
   if (!has(full)) return t('host.default');
   const p = { ...params };
   if (typeof p.rung === 'string') p.rung = t(`rung.${p.rung}`);
+  if (typeof p.activity === 'string') p.activity = t(`fruit.${p.activity}`);
   if (typeof p.fruit === 'string') p.fruit = t(`fruit.${p.fruit}.name`);
   if (typeof p.yen === 'number') p.yen = formatYen(p.yen);
   return t(p.n === 1 && has(`${full}.one`) ? `${full}.one` : full, p);

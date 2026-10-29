@@ -142,10 +142,19 @@ export function newId(): string {
 export const queued = (): QueuedEvent[] => read<QueuedEvent[]>(KEYS.queue) ?? [];
 const saveQueue = (q: QueuedEvent[]) => write(KEYS.queue, q);
 
-export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now()): QueuedEvent {
-  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now };
+/** `holdMs`: not sent before then (an undo window); it still shows in the optimistic view at once. */
+export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0): QueuedEvent {
+  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs };
   saveQueue([...queued(), ev]);
   return ev;
+}
+
+/** Undo: drop a queued event that has not been sent yet. False if it already went out. */
+export function unqueue(id: string): boolean {
+  const q = queued();
+  if (!q.some((x) => x.id === id) || flushingId === id) return false;
+  saveQueue(q.filter((x) => x.id !== id));
+  return true;
 }
 
 /** 1 s, 2 s, 4 s … capped at 5 min, ±20 % jitter. */
@@ -157,6 +166,8 @@ export function backoffMs(tries: number, rand = Math.random): number {
 export interface FlushResult { sent: number; dropped: QueuedEvent[]; remaining: number; error?: GasError }
 
 let flushing: Promise<FlushResult> | null = null;
+/** The event currently in flight (it can't be undone any more). */
+let flushingId: string | null = null;
 
 /**
  * Send queued events in order until one fails. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
@@ -173,7 +184,9 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       const q = queued();
       const ev = q[0];
       if (!ev || ev.nextAt > now()) break;
+      flushingId = ev.id;
       const r = await post<Extract<EventReply, { ok: true }>>('event', { id: ev.id, type: ev.type, data: ev.data });
+      flushingId = null;
       const cur = queued();
       if (r.ok) {
         sent++;

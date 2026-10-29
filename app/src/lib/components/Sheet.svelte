@@ -43,7 +43,9 @@
 
   function focusin(e: FocusEvent) {
     const el = e.target as HTMLElement;
-    if (el.matches('input, textarea, select')) setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+    if (!el.matches('input, textarea, select')) return;
+    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior }), 300);
   }
 
   /** The native close event (Esc, backdrop, grabber, or `open = false`). */
@@ -79,12 +81,15 @@
   dialog:focus { outline: none; }
   dialog[open] { animation: up var(--dur-pop) var(--ease-soft); }
   dialog::backdrop { background: rgba(51, 65, 122, .4); }
-  .inner { padding: 4px calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px) calc(var(--side) + var(--safe-left)); }
-  dialog:has(.foot) .inner { padding-bottom: 8px; }
+  /* U14: the content can scroll above the keyboard too (the footer is lifted by --kb). */
+  .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }
+  dialog:has(.foot) .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
+  /* U12: a 44px-tall hit area around the 40×5 handle. */
   .grabber {
-    display: block; width: 88px; height: 24px; margin: 0 auto 4px; border: 0; padding: 0; cursor: pointer;
+    display: block; width: 88px; height: 44px; margin: 0 auto -6px; border: 0; padding: 0; cursor: pointer;
     background: linear-gradient(var(--stitch), var(--stitch)) center / 40px 5px no-repeat; border-radius: 12px;
   }
+  .grabber:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
   .foot {
     position: sticky; bottom: 0; z-index: 2; transform: translateY(calc(-1 * var(--kb)));
     padding: 10px calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 12px) calc(var(--side) + var(--safe-left));

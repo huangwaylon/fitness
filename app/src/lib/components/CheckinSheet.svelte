@@ -133,6 +133,9 @@
   .off svg { width: 40px; height: 40px; }
   .off p { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
 
+  /* U10: the title never breaks mid-word (「チェッ / ク」) on 320. */
+  .title { white-space: nowrap; }
+  @media (max-width: 359px) { .title { font-size: 1.125rem; } .head { gap: 8px; } }
   @media (max-height: 700px), (max-width: 359px) {
     .head { min-height: 48px; margin-bottom: 16px; }
     .head :global(.av) { --s: 40px !important; }

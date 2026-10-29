@@ -23,3 +23,10 @@ export function composeView(cache: SnapshotCache, queue: QueuedEvent[], clientNo
   const rows = extra.length ? { ...cache.rows, events: [...cache.rows.events, ...extra] } : cache.rows;
   return buildWeekView({ me: cache.me, now: new Date(now).toISOString(), rows }, cache.me, now);
 }
+
+/** The events from `list` whose rows the cache doesn't have yet (acked events drop out once fetched back). */
+export function notInCache<E extends { id: string }>(cache: SnapshotCache, list: E[]): E[] {
+  if (!list.length) return list;
+  const known = new Set(cache.rows.events.map((r) => String(r[2])));
+  return list.filter((e) => !known.has(e.id));
+}

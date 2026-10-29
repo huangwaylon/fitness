@@ -3,7 +3,7 @@
   // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
   // Apps: help, villager (+ name), language, reminders (iOS Shortcuts), sync, sharing.
-  import { onMount } from 'svelte';
+  import { onMount, tick as nextTick } from 'svelte';
   import type { FruitKey } from '#lib/types.ts';
   import Sheet from './Sheet.svelte';
   import Avatar from './Avatar.svelte';
@@ -52,6 +52,14 @@
     return () => clearInterval(id);
   });
 
+  /** U15: もどる puts focus back on the app tile it came from. */
+  async function back() {
+    const from = app;
+    app = null;
+    await nextTick();
+    document.querySelector<HTMLElement>(`.app[data-app="${from}"]`)?.focus();
+  }
+
   $effect(() => {
     if (open) {
       tick();
@@ -73,17 +81,21 @@
 
   <div class="titlebar">
     {#if app}
-      <button type="button" class="back icon-btn" aria-label={t('common.back')} onclick={() => (app = null)}>
+      <button type="button" class="back icon-btn" aria-label={t('common.back')} onclick={back}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </button>
     {/if}
     <h2>{title}</h2>
+    <!-- U12: a visible 44px close on the phone, not only the grabber -->
+    <button type="button" class="close icon-btn" aria-label={t('common.close')} onclick={() => (open = false)}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+    </button>
   </div>
 
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
-        <button type="button" class="app" style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
+        <button type="button" class="app" data-app={a.id} style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
           <span class="tile" class:full={!!a.tile} style:--fill={a.fill ?? 'var(--c-sky)'}>
             <OfficialArt key={a.tile ?? a.glyph} size={a.tile ? '100%' : '69%'} eager>
               {#snippet fallback()}<span class="fb"></span>{/snippet}
@@ -174,7 +186,7 @@
             {@const on = view.visibility?.[m] ?? false}
             <button type="button" class="row" role="switch" aria-checked={on} onclick={() => setVisibility(m, !on)}>
               <OfficialArt key={fruitArt(m)} size={32} />
-              <span class="rl">{t('fruit.' + m)}</span>
+              <span class="rl">{t('share.' + m)}</span>
               <span class="switch" aria-hidden="true"></span>
             </button>
           {/each}
@@ -193,6 +205,9 @@
   .titlebar h2 { font-size: var(--fs-h2); font-weight: 900; text-align: center; }
   .back { position: absolute; left: 0; top: 2px; }
   .back svg { width: 22px; height: 22px; }
+  .close { position: absolute; right: 0; top: 2px; }
+  .close svg { width: 20px; height: 20px; }
+  .titlebar h2 { padding: 0 48px; }
 
   .grid {
     display: grid; grid-template-columns: repeat(3, minmax(var(--tile), 1fr)); justify-items: center;
