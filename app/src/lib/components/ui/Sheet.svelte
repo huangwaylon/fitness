@@ -105,7 +105,7 @@
   dialog.phone {
     width: calc(100% - 16px); max-width: calc(var(--col) - 16px); margin-bottom: var(--pad-bottom);
     height: calc(100dvh - var(--safe-top) - 12px - var(--pad-bottom)); max-height: none;
-    background: var(--bg); border-radius: var(--r-sheet); box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-float);
+    background: var(--surface); border-radius: var(--r-sheet); box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-float);
   }
   dialog.phone .inner { padding: 6px 18px 22px; }
   /* An undo banner is up: the last row can scroll clear of it. */
