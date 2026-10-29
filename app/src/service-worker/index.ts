@@ -2,11 +2,11 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
+import { SHELL, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
 
-const SHELL = 'island-shell-';
 const CACHE = `${SHELL}${version}`;
 const FONTS = 'island-fonts-v1';
 /** A slow network (one bar, a captive portal) must not hang the launch: after this the cached shell opens. */
@@ -47,9 +47,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      const keys = await caches.keys();
-      const previous = keys.filter((k) => k.startsWith(SHELL) && k !== CACHE).at(-1);
-      for (const key of keys) if (key !== CACHE && key !== FONTS && key !== VILLAGERS && key !== previous) await caches.delete(key);
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS])) await caches.delete(key);
       await self.clients.claim();
     })()
   );
