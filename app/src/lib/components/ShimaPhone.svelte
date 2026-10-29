@@ -93,6 +93,7 @@
         </button>
       {/each}
     </div>
+    <span class="mark" aria-hidden="true"><LeafCoin kind="leaf" size={96} /></span>
   {:else}
     <div class="page">
       {#if app === 'help' && view}
@@ -211,6 +212,8 @@
   .fb { width: 50%; height: 50%; border-radius: 30%; background: rgba(255, 255, 255, .6); }
   .app:active .tile { transform: translateY(2px) scale(1.08, .9); transition-duration: var(--dur-tap); }
   .lbl { font: 700 12px/1.1 var(--font-ui); white-space: nowrap; }
+  /* NookPhone home screen: the leaf, faint, low on the empty screen. */
+  .mark { display: flex; justify-content: center; margin-top: max(24px, 12dvh); opacity: .14; filter: grayscale(.2); }
 
   .page { display: grid; gap: 14px; animation: slide var(--dur-base) var(--ease-soft); }
   @keyframes slide { from { opacity: 0; transform: translateX(40%); } to { opacity: 1; transform: none; } }

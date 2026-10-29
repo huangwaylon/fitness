@@ -51,7 +51,7 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 
 /* ---------- Nook Miles+ card (§T.4): pastel fill, darker border, scallop texture. Set --card. ---------- */
 .miles {
-  --card: var(--card-butter); --text: var(--c-ink); --text-soft: var(--c-ink-soft);
+  --card: var(--card-butter); --text: var(--c-ink); --text-soft: var(--c-ink-soft); --track: rgba(255, 255, 255, .75); --edge: color-mix(in srgb, var(--card) 80%, #000 20%);
   position: relative; border-radius: 18px; padding: 14px 16px; color: var(--c-ink);
   background: var(--pat-scallop), var(--card); border: var(--bw) solid color-mix(in srgb, var(--card) 88%, #000 12%);
   box-shadow: 0 4px 0 color-mix(in srgb, var(--card) 78%, #000 22%);
