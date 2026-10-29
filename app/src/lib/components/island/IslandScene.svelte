@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The island (style guide v4 §S, v5 §3, round 6 layout, round 7 "Pocket Camp diorama" environment:
-  // docs/design/environment-style.md). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
+  // The island (design.md §S, §1.1, round 6 layout, round 7 "Pocket Camp diorama" environment:
+  // docs/design/design.md §S.3). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
   // (390 × 360 units) anchored to the bottom, painted like the official renders (light from the upper left,
   // soft gradients and contact shadows, no strokes or lips on scenery).
   //   <IslandScene {view} onme onpartner onjar paused />

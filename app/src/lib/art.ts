@@ -1,5 +1,5 @@
 // Official New Horizons art (static/art/, fetched by `npm run assets:fetch`; see docs/ops/runbook.md) and the key
-// helpers for every art group (style guide §A). The manifest is bundled at build time (without its `source` credits,
+// helpers for every art group (design.md §A). The manifest is bundled at build time (without its `source` credits,
 // stripped by vite.config.ts), so keys, sizes and aspect ratios are known synchronously: no fetch, no auth. Render
 // through <OfficialArt key>, which falls back to our fan-art when a file is missing.
 import { asset } from '$app/paths';

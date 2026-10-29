@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-  // Cute overlay effects (style guide v4 §M.4), all ours (SVG/CSS): sparkles, hearts, music notes, a
+  // Cute overlay effects (design.md §M.4), all ours (SVG/CSS): sparkles, hearts, music notes, a
   // sweat drop, zzz, confetti, dust puffs and a glint. A 0×0 anchor: the parent positions it (head
   // top centre for most, the feet for puffs, the temple for sweat). Removes itself via `ondone`.
   //   <Fx kind="hearts" ondone={() => …} />

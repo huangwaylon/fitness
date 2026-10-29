@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Emote bubble (style guide v4 §M.3): a cream circle holding an official NH reaction icon.
+  // Emote bubble (design.md §M.3): a cream circle holding an official NH reaction icon.
   //   <Emote id="joy" />                 pops in, holds, fades (2.2 s); `hold` keeps it up
   //   <Emote id="sleepy" hold size={36} />
   // `tail` = which side the little tail points from ('left' | 'right' | 'none').

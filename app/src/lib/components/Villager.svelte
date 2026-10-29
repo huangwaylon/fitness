@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A villager (style guide v4 §M.1): the official NH render on a small CSS rig, with the generic
+  // A villager (design.md §M.1): the official NH render on a small CSS rig, with the generic
   // silhouette as the fallback if the image is missing.
   //   <Villager villager="raymond" size={88} />            full body, `size` = figure height
   //   <Villager person="B" size={44} head />               head icon; villager from that person's prefs

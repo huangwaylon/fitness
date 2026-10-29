@@ -1,4 +1,4 @@
-// The motion and reaction catalogues (style guide §M.2, §M.5, §M.6, §M.7) as data.
+// The motion and reaction catalogues (design.md §M.2, §M.5, §M.6, §M.7) as data.
 // A "step" is one motion + one emote + optional fx on one actor; reactions are short step lists.
 import type { EmoteIcon } from '#lib/art.ts';
 
