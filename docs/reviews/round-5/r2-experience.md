@@ -1,7 +1,7 @@
 # Round 5 · R2 · Experience + NH art (lead UX)
 
 2026-10-29 · `b572caa` · `?demo`, `?demo=harvest`, `?date=` (04-05 10:00, 11-20 21:00, 10-29 23:30, 01-10 12:00), `/pair`, `/nope`, `/dev/characters` · 393×852×3, 375×667×2, 320×568×2 · OS dark, reduced motion · shots `.shots/r5/r2-*`.
-**Idle runs:** 128 s / 169 s / 205 s at 393 / 375 / 320 with **0 errors**. 20–25 actions per 2 min, roughly every 5–9 s, 12 kinds: wiggle, hop, hum, turn, stroll, chat (nod + laugh), daydream, thought, surprise, curiosity, glee, inspiration. It reads as alive. (The Vite dev server full-reloaded twice during the session because of other agents' builds. That is not an app bug.)
+**Idle runs:** 128 s / 169 s / 205 s at 393 / 375 / 320 with **0 errors**. 20–25 actions per 2 min, roughly every 5–9 s, 12 kinds: wiggle, hop, hum, turn, stroll, chat (nod + laugh), daydream, thought, surprise, curiosity, glee, inspiration.
 **Tasks run end to end:** check-in, 筋トレ はい/いいえ, partner sheet + high-five, launcher (villager, language, privacy), Jar next trip, purse spend + undo, payday + undo, harvest to the end card, pair, error page.
 
 ## 1. Round-1 verification
@@ -91,4 +91,4 @@
 | N11 | Nice | The focus ring is browser blue (payday row) | all | `r2-393-payday` | `:focus-visible` outline in `--leaf` |
 
 ## 4. Sign-off
-**Approve with changes.** The core loop now lands (know it's me → act → see the fruit move), the island is lively and NH-true, and nothing crashed. Fix N1–N4, A14 and A11 before calling v4 done. Fold the spec drift (C5, C16, C21, C24, C37) into style guide v4.1.
+**Approve with changes.** The core loop now lands (know it's me → act → see the fruit move), the island is lively and NH-true, and nothing crashed. Fix N1–N4, A14 and A11 before calling v4 done. Fold spec drift into v4.1.
