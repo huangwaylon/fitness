@@ -84,3 +84,22 @@ describe('idle life cleanup (P2)', () => {
     resetAll();
   });
 });
+
+describe('event queue (v5 §6)', () => {
+  it('plays events one at a time; touch feedback never waits', async () => {
+    const { react, queuedEvents, actors, resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    react('R2'); // check-in saved: 2200 ms
+    react('R3'); // partner data arrives meanwhile: queued
+    react('R3'); // duplicate: dropped
+    expect(queuedEvents()).toEqual(['R3']);
+    const n = actors.partner.motionN;
+    react('R10'); // tapping the partner plays now
+    expect(actors.partner.motionN).toBe(n + 1);
+    await vi.advanceTimersByTimeAsync(2_700);
+    expect(queuedEvents()).toEqual([]);
+    expect(actors.partner.emote).toBe('surprise'); // R3 started after R2 + the gap
+    resetAll();
+    expect(queuedEvents()).toEqual([]);
+  });
+});

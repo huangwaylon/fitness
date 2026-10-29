@@ -1,60 +1,41 @@
 <script lang="ts">
-  // NH cumulus clouds (style guide §S.4, A10), ours: tall round lobes on a soft elliptical base, a
-  // gradient underside (no hard band, no pill base) and a faint 1.04× halo copy behind. C1 is 1.4×
-  // (A8). C1 / C2 / C3 drift at 140 / 100 / 75 s; C2 needs ≥ 70px of sky, C3 ≥ 120px (container query
-  // on the sky band). Night: C1 + C2 only, at half opacity.
-  // C8: clouds drift across the whole width, so they keep a lane below the status row (date pill and
-  // phone button, ≈ 54px under the band top): top = max(54px, the cloud's %). In short skies (band ≤ 160px,
-  // i.e. ≤ ~120px above the horizon: compact / tiny) C1 and C2 shrink to small far-off clouds sitting
-  // on the horizon (feet tucked 5px behind the sea) and C3 hides.
-  interface Props {
-    night?: boolean;
-  }
-  let { night = false }: Props = $props();
-  const uid = $props.id();
-
-  // [width, height, top % of the visible sky, duration s, opacity, delay fraction, circles]
+  // Two flat NH clouds (v5 §5): round lobes on an elliptical base in one flat fill, with a 3u lip
+  // (the same shape, darker, offset down). C1 / C2 drift at 140 / 100 s. Clouds keep a lane under the
+  // HUD (clock, NookPhone and the score ribbon, ≈ 96px under the band top): top = max(lane, the
+  // cloud's %). In short skies (band ≤ 160px) both shrink to small far-off clouds on the horizon.
+  // Night: half opacity.
   const CLOUDS: { id: string; w: number; h: number; top: number; dur: number; op: number; delay: number; k?: number; circles: number[][] }[] = [
-    { id: 'c1', w: 150, h: 52, top: 20, dur: 140, op: 0.97, delay: 0.3, k: 1.4, circles: [[30, 32, 17], [62, 22, 22], [98, 25, 19], [126, 34, 13]] },
-    { id: 'c2', w: 108, h: 38, top: 46, dur: 100, op: 0.93, delay: 0.62, circles: [[24, 24, 13], [50, 15, 15], [76, 20, 13], [93, 27, 9]] },
-    { id: 'c3', w: 72, h: 27, top: 72, dur: 75, op: 0.9, delay: 0.15, circles: [[18, 17, 9], [35, 11, 11], [53, 16, 8]] }
+    { id: 'c1', w: 150, h: 52, top: 30, dur: 140, op: 0.97, delay: 0.3, k: 1.2, circles: [[30, 32, 17], [62, 22, 22], [98, 25, 19], [126, 34, 13]] },
+    { id: 'c2', w: 108, h: 38, top: 58, dur: 100, op: 0.93, delay: 0.62, circles: [[24, 24, 13], [50, 15, 15], [76, 20, 13], [93, 27, 9]] }
   ];
 </script>
 
-{#each night ? CLOUDS.slice(0, 2) : CLOUDS as c (c.id)}
+{#each CLOUDS as c (c.id)}
   {@const k = c.k ?? 1}
-  <svg class="cloud {c.id}" viewBox="-4 -4 {c.w + 8} {c.h + 8}" style:width="{c.w * k}px" style:--top="{c.top}%"
+  <svg class="cloud {c.id}" viewBox="-4 -4 {c.w + 8} {c.h + 11}" style:width="{c.w * k}px" style:--top="{c.top}%"
     style:--op={c.op} style:animation-duration="{c.dur}s" style:animation-delay="{-c.delay * c.dur}s" aria-hidden="true">
-    <defs>
-      <linearGradient id="{uid}-{c.id}-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={c.h}>
-        <stop offset=".45" stop-color="var(--cloud)" /><stop offset="1" stop-color="var(--cloud-shade)" />
-      </linearGradient>
-      <g id="{uid}-{c.id}-s">
-        <!-- soft rounded base (an ellipse, never a pill) under tall lobes (~60% of the height) -->
+    {#each [3, 0] as dy (dy)}
+      <g class:lip={dy > 0} transform="translate(0 {dy})">
         <ellipse cx={c.w / 2} cy={c.h * 0.74} rx={c.w / 2} ry={c.h * 0.26} />
         {#each c.circles as [x, y, r], i (i)}<circle cx={x} cy={y} {r} />{/each}
       </g>
-    </defs>
-    <use href="#{uid}-{c.id}-s" class="halo" transform="translate({c.w / 2} {c.h}) scale(1.04) translate({-c.w / 2} {-c.h})" />
-    <use href="#{uid}-{c.id}-s" fill="url(#{uid}-{c.id}-g)" />
+    {/each}
   </svg>
 {/each}
 
 <style>
   .cloud {
-    position: absolute; left: 0; top: max(var(--cloud-lane, 54px), var(--top)); height: auto; overflow: visible;
-    opacity: calc(var(--op) * var(--cloud-op, 1));
+    position: absolute; left: 0; top: max(var(--cloud-lane, 100px), var(--top)); height: auto; overflow: visible;
+    opacity: calc(var(--op) * var(--cloud-op, 1)); fill: var(--cloud);
     animation: drift 140s linear infinite; will-change: transform;
   }
-  .halo { fill: var(--cloud); opacity: .35; }
+  .lip { fill: var(--cloud-lip); }
   @keyframes drift { from { transform: translateX(-110%); } to { transform: translateX(calc(100cqw + 10%)); } }
-  /* short skies (compact / tiny): two small far-off clouds resting on the horizon, under the status row */
-  /* (the sea is drawn 40u above the stage top, so the horizon sits 40u above the band's bottom) */
+  /* short skies: two small far-off clouds resting on the horizon (40u above the band's bottom) */
   @container sky (max-height: 160px) {
     .cloud { top: auto; bottom: calc(var(--stage-w, 100cqw) * 40 / 390 - 5px); }
-    .c1 { width: 72px !important; }
-    .c2 { width: 56px !important; }
-    .c3 { display: none; }
+    .c1 { width: 64px !important; }
+    .c2 { width: 48px !important; }
   }
   @media (prefers-reduced-motion: reduce) {
     .cloud { animation-play-state: paused; }

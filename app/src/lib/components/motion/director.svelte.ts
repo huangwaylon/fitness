@@ -163,10 +163,45 @@ export function applyStep(id: ActorId, s: Step) {
   if (s.fx) addFx(id, s.fx);
 }
 
-/** Play a catalogue reaction (§M.5): preempts idle life on every actor it touches. `swap` plays the
- *  'mine' part on the partner (e.g. the partner's fruit ripened). */
+// v5 §6: events play one at a time. A reaction that arrives while another event is still playing
+// waits in a short queue (≤ 3, no duplicates) and starts 400 ms after the current one ends. Direct
+// touch feedback (tapping a villager or the jar, waking a sleeper) never waits.
+const IMMEDIATE = new Set<ReactionId>(['R9', 'R10', 'R14', 'R18']);
+const EVENT_GAP_MS = 400;
+const queue: { rid: ReactionId; swap: boolean }[] = [];
+let eventUntil = 0;
+let drainTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Queued events (tests / the gallery). */
+export function queuedEvents(): ReactionId[] {
+  return queue.map((q) => q.rid);
+}
+
+function drainLater() {
+  if (drainTimer) return;
+  drainTimer = setTimeout(() => {
+    drainTimer = null;
+    const next = queue.shift();
+    if (next) play(next.rid, next.swap);
+    if (queue.length) drainLater();
+  }, Math.max(0, eventUntil - Date.now()));
+}
+
+/** Play a catalogue reaction (§M.5), or queue it behind the event that is playing. Preempts idle life
+ *  on every actor it touches. `swap` plays the 'mine' part on the partner (e.g. the partner's fruit
+ *  ripened). */
 export function react(rid: ReactionId, swap = false) {
+  if (!IMMEDIATE.has(rid) && Date.now() < eventUntil) {
+    if (queue.length < 3 && !queue.some((q) => q.rid === rid && q.swap === swap)) queue.push({ rid, swap });
+    drainLater();
+    return;
+  }
+  play(rid, swap);
+}
+
+function play(rid: ReactionId, swap: boolean) {
   const r = REACTIONS[rid];
+  if (!IMMEDIATE.has(rid)) eventUntil = Date.now() + r.ms + EVENT_GAP_MS;
   const who = (a: Step['actor']): ActorId[] =>
     a === 'both' ? ['mine', 'partner'] : swap && a === 'mine' ? ['partner'] : swap && a === 'partner' ? ['mine'] : [a];
   const ids = new Set<ActorId>();
@@ -247,6 +282,10 @@ export function wake(id: 'mine' | 'partner') {
 
 /** Reset everything (scene unmount). */
 export function resetAll() {
+  queue.length = 0;
+  if (drainTimer) clearTimeout(drainTimer);
+  drainTimer = null;
+  eventUntil = 0;
   for (const id of ['mine', 'partner', 'host'] as const) {
     const present = actors[id].present;
     cancel(id);
