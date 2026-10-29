@@ -120,7 +120,7 @@
     </div>
 
     <div class="bottom">
-      <Bubble text={hostLine} host={step === 'tally' ? 'wave' : 'bow'} />
+      <Bubble text={hostLine} host={step === 'tally' ? 'wave' : 'bow'} size={56} />
 
       {#if step === 'tally'}
         <section class="card tally" aria-live="polite">
@@ -212,7 +212,7 @@
     appearance: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: var(--r-btn);
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
   }
-  .bottom { display: grid; gap: var(--gap); }
+  .bottom { display: grid; gap: var(--gap); --talk-lines: 2; }
   .bottom :global(.talk) { margin-bottom: -4px; }
 
   .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
