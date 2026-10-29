@@ -2,7 +2,7 @@
   // Villager marks (A1, ours): the bright floating symbols NH villagers show over their heads instead
   // of the player's cat-face icons. Bold colour, a white outline so they read on sky and grass alike.
   //   <Mark id="note" />   ♪♫ · bang ! · question ? · sweat 💦 · heart ♥ · sparkle ✦ · zzz
-  import type { MarkId } from './art.ts';
+  import type { MarkId } from '#lib/art.ts';
 
   let { id }: { id: MarkId } = $props();
   const NOTE1 = 'M9 3 L20 1 V15.5 A3.5 3 0 1 1 17.5 12.6 V5.4 L11.5 6.6 V18 A3.5 3 0 1 1 9 15.1 Z';

@@ -1,6 +1,6 @@
 // The motion and reaction catalogues (style guide §M.2, §M.5, §M.6, §M.7) as data.
 // A "step" is one motion + one emote + optional fx on one actor; reactions are short step lists.
-import type { EmoteIcon } from '../art.ts';
+import type { EmoteIcon } from '#lib/art.ts';
 
 /** CSS keyframe primitives (tokens.css Builder A block), prefix `if-`. */
 export type Motion =

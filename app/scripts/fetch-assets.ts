@@ -51,32 +51,20 @@ const SPECS: Record<string, Spec> = {
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
   // NookPhone (しまフォン launcher).
   'phone/nookphone': [208, 'NookPhone_NH_Model.png'], // drawn 30px tall (35 wide) → 2× at 3x DPR
-  'phone/diy': [92, 'NookPhone_DIY_NH_Icon.png'],
   'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png'],
   // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
   'phone/rescue': [92, 'NookPhone_Rescue_Service_NH_Icon.png'],
   'phone/miles': [92, 'NookPhone_Nook_Miles_NH_Icon.png'],
   'phone/glyph-help': [96, 'Menu_Island_Life_101_NH_Icon.png'],
   'phone/glyph-chat': [96, 'Menu_Chat_Log_NH_Icon.png'],
-  'phone/glyph-friends': [96, 'Menu_Best_Friends_List_NH_Icon.png'],
-  'phone/glyph-resident': [96, 'Menu_Call_Resident_NH_Icon.png'],
-  'phone/glyph-map': [96, 'Menu_Map_NH_Icon.png'],
-  'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
   // v4 trees: the hardwood in its four seasonal looks is the NH fruit tree (each bears one fruit kind);
-  // cedar + palm frame the island. A11: the seasonal sources are only 329×409, so they ship at full
+  // A11: the seasonal sources are only 329×409, so they ship at full
   // resolution (never upscaled: the orchard draws them ≤ 104u ≈ 315 device px); summer has a big
   // source and ships at 2× the drawn size.
   'trees/oak-spring': [409, 'Oak_Tree_NH_Spring.png'],
   'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
   'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
   'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
-  'trees/cedar': [384, 'Cedar_Tree_NH.png'],
-  'trees/palm': [320, 'Palm_Tree_NH.png'],
-  'trees/palm-sm': [128, 'Palm_Tree_NH.png'], // the distant islet (26u): a small decode
-  'trees/apple-icon': [96, 'Apple_Tree_NH_Icon.png'],
-  'trees/peach-icon': [96, 'Peach_Tree_NH_Icon.png'],
-  'trees/pear-icon': [96, 'Pear_Tree_NH_Icon.png'],
-  'trees/coconut-icon': [96, 'Coconut_Tree_NH_Icon.png'],
   // Scale pass (docs/design/scale-and-ground.md): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
   // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
   'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
@@ -91,36 +79,15 @@ const SPECS: Record<string, Spec> = {
   'bushes/pink-camellia': [128, 'Pink-Camellia_Bush_NH_Icon.png'],
   'bushes/red-camellia': [128, 'Red-Camellia_Bush_NH_Icon.png'],
   // v4 island decorations.
-  'deco/fence-wood': [96, 'Simple_Wooden_Fence_NH_Icon.png'],
-  'deco/fence-log': [96, 'Log_Fence_NH_Icon.png'],
-  'deco/log-bench': [96, 'Log_Bench_NH_Icon.png'],
-  'deco/mailbox': [96, 'Wooden_Mailbox_NH_Icon.png'],
-  'deco/bonfire': [96, 'Bonfire_NH_Icon.png'],
-  'deco/rock': [96, 'Mossy_Garden_Rock_NH_Icon.png'],
-  'deco/stone': [96, 'Stone_NH_Inv_Icon.png'],
-  'deco/resident-services': [256, 'Resident_Services_NH_Map_Icon.png'],
   'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
-  'deco/sand-dollar': [64, 'Sand_Dollar_NH_Inv_Icon.png'],
-  'deco/cowrie': [64, 'Cowrie_NH_Inv_Icon.png'],
-  'deco/conch': [64, 'Conch_NH_Inv_Icon.png'],
-  'deco/star-fragment': [96, 'Star_Fragment_NH_Inv_Icon.png'],
-  'deco/star-fragment-large': [96, 'Large_Star_Fragment_NH_Inv_Icon.png'],
-  'deco/party-popper': [96, 'Party_Popper_NH_Inv_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // v5 (docs/design/v5-direction.md): game-derived replacements for hand-drawn chrome.
-  // The NH map is the reference for the flat sea/shore style; the islet render is that style's sample.
-  'map/islet': [548, 'NH_Map_Islet.png'],
   'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'], // ごほうび財布 (reward wallet)
-  'phone/island-designer': [92, 'NookPhone_Island_Designer_NH_Icon.png'], // しまフォン settings tile
   'money/miles-ticket': [128, 'Nook_Miles_Ticket_NH_Inv_Icon.png'], // the trip goal (次は 沖縄)
-  // v4 seasonal particles + seasonal ground items.
+  // v4 seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
-  'season/snowflake-large': [96, 'Large_Snowflake_NH_Inv_Icon.png'],
-  'season/acorn': [64, 'Acorn_NH_Inv_Icon.png'],
-  'season/pine-cone': [64, 'Pine_Cone_NH_Inv_Icon.png'],
-  'season/mushroom': [64, 'Mushroom_NH_Inv_Icon.png'],
 };
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design/scale-and-ground.md). */
@@ -133,12 +100,8 @@ const EMOTIONS = [
   'Flourish', 'Bashfulness', 'Sheepishness', 'Worry', 'Confident', 'Shocked'
 ];
 for (const e of EMOTIONS) SPECS[`reactions/${e.toLowerCase()}`] = [96, `Emotion_${e}_NH_Icon.png`];
-// Pose-style reactions (player silhouettes) for the harvest / cheer moments.
-const POSES: Record<string, string> = {
-  excited: 'Excited', confetti: 'Confetti', viva: 'Viva', 'lets-go': "Let's_Go", 'ta-da': 'Ta-da',
-  'double-wave': 'Double_Wave', jump: 'Jump', 'work-out': 'Work_Out', stretch: 'Stretch', flex: 'Flex'
-};
-for (const [id, t] of Object.entries(POSES)) SPECS[`reactions/pose-${id}`] = [96, `${t}_NH_Reaction_Icon.png`];
+// The pose-style reaction (a player silhouette) of the both-of-us dance (motion/reactions.ts).
+SPECS['reactions/pose-viva'] = [96, 'Viva_NH_Reaction_Icon.png'];
 for (const name of ROSTER) {
   const id = name.toLowerCase();
   // Prefer the large transparent renders; `<Name>_NH.png` (the infobox image) is the safe last resort.

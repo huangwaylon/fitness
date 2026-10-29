@@ -10,7 +10,7 @@
   import Host from './Host.svelte';
   import { hostTap } from './motion/director.svelte.ts';
   import { reducedMotion } from './motion/clock.ts';
-  import type { HostPose } from '#lib/client/assets.ts';
+  import type { HostPose } from '#lib/art.ts';
 
   interface Props {
     /** One line, or several pages (tap to step through). */

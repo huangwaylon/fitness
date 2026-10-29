@@ -15,8 +15,8 @@
   import { FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../OfficialArt.svelte';
   import Fx from '../Fx.svelte';
-    import { fruitArt } from '#lib/client/assets.ts';
-  import { seasonArt, treeArt } from '../art.ts';
+    import { fruitArt } from '#lib/art.ts';
+  import { seasonArt, treeArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
   import { FRUIT_SPOTS, FRUIT_U, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
 

@@ -7,7 +7,7 @@
   import OfficialArt from '../OfficialArt.svelte';
   import type { Season } from '#lib/client/theme.svelte.ts';
   import type { Foliage } from '#lib/client/season.ts';
-  import { seasonArt } from '../art.ts';
+  import { seasonArt } from '#lib/art.ts';
   import { rng, u, type Tod } from './scene.ts';
 
   interface Props {

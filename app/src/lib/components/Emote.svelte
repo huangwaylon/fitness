@@ -9,7 +9,7 @@
   import EmoteArt from '#lib/villagers/EmoteArt.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import Mark from './Mark.svelte';
-  import { isMark, reactionArt, type EmoteIcon, type MarkId } from './art.ts';
+  import { isMark, reactionArt, type EmoteIcon, type MarkId } from '#lib/art.ts';
   import type { EmoteKind } from '#lib/villagers/species.ts';
 
   interface Props {
