@@ -387,3 +387,35 @@ describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
     expect(editLog(s)).toBe(editLog(s));
   });
 });
+
+describe('harvest taps (one acceptance rule for the island and きろく)', () => {
+  const SUN = DAYS[6];
+  const harvest = (at: string, person: PersonId, week = WK) => ev(at, person, 'harvest', { week });
+  const view = (rows: SnapshotRows, me: PersonId, t: number) => buildWeekView({ me, now: new Date(t).toISOString(), rows }, me, t);
+  const harvested = (rows: SnapshotRows, t: number) => historyWeeks(reduce(rows), t).find((w) => w.weekKey === WK)!.harvested;
+  const AFTER = ms(SUN, '21:00');
+
+  it('both taps after Sunday 19:30 harvest the week, in both views', () => {
+    const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A'), harvest(jst(SUN, '20:00'), 'B')] });
+    expect(view(rows, 'A', AFTER).harvest).toBeNull();
+    expect(harvested(rows, AFTER)).toBe(true);
+  });
+
+  it('one tap: the island waits for the partner and きろく is not harvested', () => {
+    const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A')] });
+    expect(view(rows, 'B', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['A'] });
+    expect(harvested(rows, AFTER)).toBe(false);
+  });
+
+  it('a tap before the harvest opened does not count anywhere (it used to show 収穫済 in きろく)', () => {
+    const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '18:00'), 'A'), harvest(jst(SUN, '20:00'), 'B')] });
+    expect(view(rows, 'A', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['B'] });
+    expect(harvested(rows, AFTER)).toBe(false);
+  });
+
+  it('a tap for a week that is not the open one is ignored', () => {
+    const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A', '2026-11-09'), harvest(jst(SUN, '20:00'), 'B')] });
+    expect(view(rows, 'A', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['B'] });
+    expect(harvested(rows, AFTER)).toBe(false);
+  });
+});

@@ -240,8 +240,11 @@ function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>
   return null;
 }
 
-/** Accepted harvest taps: only for the week that was open at the time of the tap. */
-function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
+/**
+ * Accepted harvest taps: only for the week that was open at the time of the tap. The one rule for both the island
+ * (`buildWeekView`) and きろく (`historyWeeks`), so a stale or early tap never shows 収穫済 while the island still asks.
+ */
+export function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
   const confirms = new Map<WeekKey, Set<PersonId>>();
   for (const h of s.harvests) {
     if (h.at > now) break;
