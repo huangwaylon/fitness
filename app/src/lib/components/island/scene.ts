@@ -84,7 +84,7 @@ export function props(season: Season, tod: Tod, month: number): Prop[] {
   const [b1, b2] = hedgePair(season, month);
   const list: Prop[] = [
     winter
-      ? { key: 'trees/oak-winter', h: 96, x: 40, base: 150, z: 21, eager: true }
+      ? { key: 'trees/oak-winter', h: 84, x: 34, base: 150, z: 21, eager: true }
       : { key: 'trees/cedar', h: 118, x: 40, base: 150, z: 21, eager: true },
     ...HEDGE_X.map((x, i) => ({ key: `bushes/${i % 2 ? b2 : b1}`, h: 30, x, base: 82, z: 20, flip: i % 3 === 1 })),
     { key: 'deco/resident-services', h: 66, x: 195, base: 106, z: 20, eager: true },
