@@ -3,7 +3,7 @@
 //   paid(week, bucket) = max(payout as of Sunday 19:30 JST, payout as of Wednesday 04:00 JST)
 // where "as of T" only uses rows the server stamped at ≤ T. That is exactly the old earn + top-up ledger.
 import type {
-  CheckinTick, DayMetrics, FruitKey, FruitView, HarvestView, JarView, LocalDate, PendingConfirmation, PersonId,
+  CategoryResult, CheckinTick, DayMetrics, FruitKey, FruitView, HarvestView, JarView, LocalDate, PendingConfirmation, PersonId,
   PersonWeekView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
 } from '#lib/types.ts';
 import { FRUITS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
@@ -12,9 +12,11 @@ import {
   addDays, deriveVisits, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
 } from '#lib/scoring/index.ts';
 import { workoutLabel } from './labels.ts';
+import type { MetricKey } from '#lib/ingest/sheet-api.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, type PresenceRec, type State, type Timed
+  allWorkouts, finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, latestTimed, partnerOf, provisionalMs, reduce, type PresenceRec,
+  type State
 } from './state.ts';
 
 const LIVE = Infinity;
@@ -31,7 +33,7 @@ export const weekDates = (wk: WeekKey): Dates => ({ from: wk, to: addDays(wk, 6)
 /** Ingested + manual workouts as of T, without the ones excluded from scoring, with their strength override. */
 export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Workout[] {
   const out: Workout[] = [];
-  for (const w of [...s.workouts[person], ...s.manualWorkouts[person]]) {
+  for (const w of allWorkouts(s, person)) {
     if (w.at > t || w.date < dates.from || w.date > dates.to) continue;
     const key = `${person}|${w.id}`;
     if (latestAt(s.workoutExcluded.get(key), t) === true) continue;
@@ -91,10 +93,8 @@ function ticksAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): M
  * is the latest value (and robust to a hand-edited sheet). A `metric_set` S (the latest with at ≤ T) overrides it, even
  * lower, but a later and higher sync still wins: max(S, ingest rows with S.at < at ≤ T).
  */
-export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 'steps' | 'exercise_min', t: number): number | null {
-  const sets = s.metricSets[person].get(`${date}|${metric}`);
-  let set: Timed<number> | undefined;
-  if (sets) for (let i = sets.length - 1; i >= 0; i--) if (sets[i].at <= t) { set = sets[i]; break; }
+export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: MetricKey, t: number): number | null {
+  const set = latestTimed(s.metricSets[person].get(`${date}|${metric}`), t);
   let best: number | null = set ? set.v : null;
   const after = set ? set.at : -Infinity;
   for (const r of s.metrics[person].get(`${date}|${metric}`) ?? []) if (r.at <= t && r.at > after && (best === null || r.v > best)) best = r.v;
@@ -169,7 +169,11 @@ export function paidAt(w: SettledWeek, t: number): Buckets {
   return maxBuckets(w.provisional, w.final);
 }
 
-export const jarSum = (b: Buckets) => b.A + b.B + b.team;
+export const jarSum = (b: Buckets): number => b.A + b.B + b.team;
+export const purseSum = (b: Buckets): number => b.purseA + b.purseB;
+const addBuckets = (x: Buckets, y: Buckets): Buckets => ({
+  A: x.A + y.A, B: x.B + y.B, team: x.team + y.team, purseA: x.purseA + y.purseA, purseB: x.purseB + y.purseB
+});
 
 export type SpendStatus = 'done' | 'waiting' | 'refused' | 'voided';
 
@@ -200,7 +204,7 @@ export interface PurseState {
  * partner's OK, and the spender's void refunds a paid spend or cancels a waiting one (refusals stay refusals).
  */
 export function replayPurse(s: State, weeks: SettledWeek[], now: number): PurseState {
-  const earnedAt = (t: number) => weeks.reduce((sum, w) => { const b = paidAt(w, t); return sum + b.purseA + b.purseB; }, 0);
+  const earnedAt = (t: number) => weeks.reduce((sum, w) => sum + purseSum(paidAt(w, t)), 0);
   type Live = { rec: State['spends'][number]; log: SpendLog };
   const spends = new Map<string, Live>();
   const log: SpendLog[] = [];
@@ -289,20 +293,17 @@ export function prevMonth(date: LocalDate): string {
   return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
 }
 
-/** Jar yen attributed to a calendar month (by the week's Sunday, i.e. harvest day). */
-export function monthEarnings(weeks: SettledWeek[], month: string, now: number): number {
-  const first = `${month}-01`;
-  const nextFirst = `${addDays(first, 31).slice(0, 7)}-01`;
-  const lo = addDays(first, -6);
-  const hi = addDays(nextFirst, -6);
-  return weeks.filter((w) => w.weekKey >= lo && w.weekKey < hi).reduce((sum, w) => sum + jarSum(paidAt(w, now)), 0);
-}
+/** The calendar month a week's jar yen belongs to: its Sunday's (harvest day). */
+export const monthOfWeek = (wk: WeekKey): string => addDays(wk, 6).slice(0, 7);
 
 // ---------- view ----------
 
+/** A fruit's fill, 0–100 of its maximum. */
+export const pctOf = (c: CategoryResult): number => (c.maxMilli > 0 ? Math.floor((c.milli * 100) / c.maxMilli) : 0);
+
 function fruitView(score: WeekScore, key: FruitKey): FruitView {
   const c = score.categories[key];
-  return { milli: c.milli, maxMilli: c.maxMilli, pct: c.maxMilli > 0 ? Math.floor((c.milli * 100) / c.maxMilli) : 0, actual: c.actual, target: c.target };
+  return { milli: c.milli, maxMilli: c.maxMilli, pct: pctOf(c), actual: c.actual, target: c.target };
 }
 
 /** One person's card. Both players see everything (no privacy filter): raw numbers and eating check-ins. */
@@ -381,42 +382,8 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const current = payoutAsOf(s, weekKey, LIVE, act);
   const scores: Record<PersonId, WeekScore> = { A: current.a, B: current.b };
   const locale = s.prefs[me].locale ?? 'ja';
-
-  const weeks = settledWeeks(s, now);
-  const paid = weeks.map((w) => ({ w, b: paidAt(w, now) }));
-  const layers = paid.reduce((acc, { b }) => ({ A: acc.A + b.A, B: acc.B + b.B, team: acc.team + b.team }), { A: 0, B: 0, team: 0 });
-  const earnedPurse = paid.reduce((sum, { b }) => sum + b.purseA + b.purseB, 0);
-  const purse = replayPurse(s, weeks, now);
-  const totalYen = layers.A + layers.B + layers.team;
-  const month = prevMonth(today);
-  const amountYen = monthEarnings(weeks, month, now);
-  const done = transferDoneAt(s, month, now).done;
-  const jar: JarView = {
-    totalYen,
-    layers,
-    purseYen: earnedPurse - purse.spentYen,
-    thisWeekEstimateYen: current.payout.A.fruitYen + current.payout.B.fruitYen + current.payout.teamYen,
-    nextRung: nextRung(totalYen),
-    rungs: RUNGS.map((r) => ({ key: r.key, yen: r.yen, reached: totalYen >= r.yen })),
-    transfer: amountYen > 0 || done ? { month, amountYen, done } : null,
-    pendingSpends: purse.pending,
-    weeks: weeks.length
-  };
-
-  const confirms = replayHarvests(s, now);
-  const hwk = harvestWeekAt(s, now, confirms);
-  let harvest: HarvestView | null = null;
-  if (hwk) {
-    const payout = hwk === weekKey ? current.payout : payoutAsOf(s, hwk, LIVE, act).payout;
-    const before = paid.filter(({ w }) => w.weekKey < hwk).reduce((sum, { b }) => sum + jarSum(b), 0);
-    const after = paid.filter(({ w }) => w.weekKey <= hwk).reduce((sum, { b }) => sum + jarSum(b), 0);
-    harvest = {
-      weekKey: hwk,
-      payout,
-      rungsReached: RUNGS.filter((r) => before < r.yen && after >= r.yen).map((r) => r.key),
-      confirmedBy: [...(confirms.get(hwk) ?? [])].sort()
-    };
-  }
+  const paid = settledWeeks(s, now).map((w) => ({ w, b: paidAt(w, now) }));
+  const livePayout = (wk: WeekKey) => (wk === weekKey ? current.payout : payoutAsOf(s, wk, LIVE, act).payout);
 
   const startOfToday = jstMs(today, 0, 0);
   const base: Omit<WeekView, 'juniper'> = {
@@ -429,10 +396,48 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
       [me]: personView(s, me, weekKey, scores[me]),
       [partner]: personView(s, partner, weekKey, scores[partner])
     } as Record<PersonId, PersonWeekView>,
-    jar,
-    harvest,
+    jar: jarView(s, paid, current.payout, today, now),
+    harvest: harvestView(s, paid, livePayout, now),
     pending: pendingConfirmations(s, me, weekKey, act[me], locale, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
   return { ...base, juniper: hostLine(base, z.hour, Number(today.slice(8, 10))) };
+}
+
+type Paid = { w: SettledWeek; b: Buckets }[];
+
+/** The jar, purse and payday cue at `now`, from what each week has paid so far. */
+function jarView(s: State, paid: Paid, current: WeekPayout, today: LocalDate, now: number): JarView {
+  const sum = paid.reduce((acc, { b }) => addBuckets(acc, b), ZERO);
+  const totalYen = jarSum(sum);
+  const purse = replayPurse(s, paid.map(({ w }) => w), now);
+  const month = prevMonth(today);
+  const amountYen = paid.filter(({ w }) => monthOfWeek(w.weekKey) === month).reduce((acc, { b }) => acc + jarSum(b), 0);
+  const done = transferDoneAt(s, month, now).done;
+  return {
+    totalYen,
+    layers: { A: sum.A, B: sum.B, team: sum.team },
+    purseYen: purseSum(sum) - purse.spentYen,
+    thisWeekEstimateYen: current.A.fruitYen + current.B.fruitYen + current.teamYen,
+    nextRung: nextRung(totalYen),
+    rungs: RUNGS.map((r) => ({ key: r.key, yen: r.yen, reached: totalYen >= r.yen })),
+    transfer: amountYen > 0 || done ? { month, amountYen, done } : null,
+    pendingSpends: purse.pending,
+    weeks: paid.length
+  };
+}
+
+/** The open harvest at `now` (Sunday 19:30 until both tapped), with the rungs it reaches. */
+function harvestView(s: State, paid: Paid, livePayout: (wk: WeekKey) => WeekPayout, now: number): HarvestView | null {
+  const confirms = replayHarvests(s, now);
+  const wk = harvestWeekAt(s, now, confirms);
+  if (!wk) return null;
+  const before = paid.filter(({ w }) => w.weekKey < wk).reduce((acc, { b }) => acc + jarSum(b), 0);
+  const after = paid.filter(({ w }) => w.weekKey <= wk).reduce((acc, { b }) => acc + jarSum(b), 0);
+  return {
+    weekKey: wk,
+    payout: livePayout(wk),
+    rungsReached: RUNGS.filter((r) => before < r.yen && after >= r.yen).map((r) => r.key),
+    confirmedBy: [...(confirms.get(wk) ?? [])].sort()
+  };
 }

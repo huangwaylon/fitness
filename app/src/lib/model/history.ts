@@ -6,9 +6,9 @@ import { PLACES } from '#lib/config/places.ts';
 import {
   addDays, isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
 } from '#lib/scoring/index.ts';
-import { editableAt, finalMs, firstWeek, isLockedAt, latestAt, localDateAt, PEOPLE_IDS, type State, type Timed } from './state.ts';
+import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, type State } from './state.ts';
 import {
-  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, paidAt, replayHarvests, replayPurse, settledWeeks, settleWeek, transferDoneAt, weekDates, weekInput, workoutsAsOf,
+  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, monthOfWeek, paidAt, pctOf, purseSum, replayHarvests, replayPurse, settledWeeks, settleWeek, transferDoneAt, weekDates, weekInput, workoutsAsOf,
   type Activity, type Buckets, type SettledWeek, type SpendLog
 } from './week.ts';
 
@@ -51,9 +51,6 @@ export interface HistoryWeek {
 /** Open weeks show live numbers; a closed week shows what it had at its lock (late syncs after it never paid). */
 const timeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
 
-/** The week is open for edits at `now` (this week, and last week until Wednesday 04:00). */
-export const weekOpen = (wk: WeekKey, now: number): boolean => editableAt(wk, now);
-
 interface WeekCalc { t: number; scores: Record<PersonId, WeekScore>; act: Record<PersonId, Activity> }
 
 function calc(s: State, wk: WeekKey, now: number): WeekCalc {
@@ -75,7 +72,7 @@ export interface DayMinutes {
  * The one minutes rule for きろく (same as scoreWeek): the largest of the three sources. The Watch value reads as an
  * edit when the latest `metric_set` (at ≤ t) is what metricAsOf returns, i.e. no later ingest row beat it (round 7 L4).
  */
-export function dayMinutes(s: State, p: PersonId, date: LocalDate, t: number, steps: number | null, manualMin: number): DayMinutes {
+function dayMinutes(s: State, p: PersonId, date: LocalDate, t: number, steps: number | null, manualMin: number): DayMinutes {
   const watch = metricAsOf(s, p, date, 'exercise_min', t);
   const src = minuteSourcesMilli(steps, watch, manualMin, targetsFor(p, weekKeyOf(date)).stepGoal);
   const best = Math.max(src.watch, src.steps, src.manual);
@@ -90,9 +87,7 @@ export function dayMinutes(s: State, p: PersonId, date: LocalDate, t: number, st
 
 function watchIsEdit(s: State, p: PersonId, date: LocalDate, t: number): boolean {
   const key = `${date}|exercise_min`;
-  const sets = s.metricSets[p].get(key);
-  let set: Timed<number> | undefined;
-  if (sets) for (let i = sets.length - 1; i >= 0; i--) if (sets[i].at <= t) { set = sets[i]; break; }
+  const set = latestTimed(s.metricSets[p].get(key), t);
   if (!set) return false;
   return !(s.metrics[p].get(key) ?? []).some((r) => r.at > set.at && r.at <= t && r.v > set.v);
 }
@@ -141,7 +136,7 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
       yen: y.yen,
       estimate: y.estimate,
       locked: isLockedAt(s, wk, now),
-      open: weekOpen(wk, now),
+      open: editableAt(wk, now), // this week, and last week until Wednesday 04:00
       harvested: harvested.has(wk),
       people: {
         A: { score: c.scores.A.score, stamps: stampsFor(s, 'A', wk, c, today) },
@@ -216,7 +211,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
       score: score.score,
       fruits: Object.fromEntries(FRUITS.map((k) => {
         const cat = score.categories[k];
-        return [k, { actual: cat.actual, target: cat.target, pct: cat.maxMilli > 0 ? Math.floor((cat.milli * 100) / cat.maxMilli) : 0 }];
+        return [k, { actual: cat.actual, target: cat.target, pct: pctOf(cat) }];
       })) as WeekDetailPerson['fruits'],
       days: input.days.map((d) => {
         const m = dayMinutes(s, p, d.date, c.t, d.steps, manual.get(d.date) ?? 0);
@@ -240,7 +235,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
     current: wk === weekKeyOf(today),
     settled: !!settled,
     locked: isLockedAt(s, wk, now),
-    open: weekOpen(wk, now),
+    open: editableAt(wk, now),
     lockAt: finalMs(wk),
     yen: y.yen,
     estimate: y.estimate,
@@ -301,7 +296,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const m = dayMinutes(s, p, date, t, steps, manualAsOf(c.act[p]).get(date) ?? 0);
     const strengthDays = new Set(c.scores[p].strengthDays);
     const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
-    const workouts = [...s.workouts[p], ...s.manualWorkouts[p]]
+    const workouts = allWorkouts(s, p)
       .filter((w) => w.date === date && w.at <= t)
       .sort((x, y) => x.startAt.localeCompare(y.startAt))
       .map((w): DayWorkout => {
@@ -366,7 +361,7 @@ function buildEditLog(s: State): EditLog[] {
     for (const w of s.manualWorkouts[p]) out.push({ at: w.at, by: p, date: w.date, field: 'workout_add', subject: w.type, before: null, after: w.durationMin });
   }
   const byId = new Map<string, { date: LocalDate; type: string; at: number }>();
-  for (const p of PEOPLE_IDS) for (const w of [...s.workouts[p], ...s.manualWorkouts[p]]) byId.set(`${p}|${w.id}`, w);
+  for (const p of PEOPLE_IDS) for (const w of allWorkouts(s, p)) byId.set(`${p}|${w.id}`, w);
   for (const e of s.workoutEdits) {
     const w = byId.get(`${e.person}|${e.id}`);
     if (!w) continue;
@@ -412,8 +407,6 @@ export interface MoneyLog {
   months: MoneyMonth[];
 }
 
-const monthOfWeek = (wk: WeekKey): string => addDays(wk, 6).slice(0, 7);
-
 export function moneyLog(s: State, now: number): MoneyLog {
   const weeks = settledWeeks(s, now);
   const purse = replayPurse(s, weeks, now);
@@ -430,7 +423,7 @@ export function moneyLog(s: State, now: number): MoneyLog {
   for (const w of weeks) {
     const b = paidAt(w, now);
     total += jarSum(b);
-    earnedPurse += b.purseA + b.purseB;
+    earnedPurse += purseSum(b);
     steps.push({ weekKey: w.weekKey, totalYen: total });
     const m = monthOf(monthOfWeek(w.weekKey));
     m.weeks.unshift({ weekKey: w.weekKey, yen: jarSum(b) });
