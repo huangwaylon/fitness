@@ -16,7 +16,7 @@ const LIVE = Infinity;
 
 export type Stamp = 'strength' | 'active' | 'none' | 'future';
 /** Where a day's counted minutes come from: the Watch, a きろく edit of them, the steps, or workouts added by hand. */
-export type MinutesSource = 'watch' | 'edit' | 'steps' | 'manual';
+type MinutesSource = 'watch' | 'edit' | 'steps' | 'manual';
 
 /** One accepted edit, derived from the event rows (§4.4). `before` is the value as of `at − 1`. */
 export interface EditLog {
@@ -30,7 +30,7 @@ export interface EditLog {
   after: number | boolean | null;
 }
 
-export interface HistoryPerson { score: number; stamps: Stamp[] }
+interface HistoryPerson { score: number; stamps: Stamp[] }
 
 export interface HistoryWeek {
   weekKey: WeekKey;
@@ -60,7 +60,7 @@ function calc(s: State, wk: WeekKey, now: number): WeekCalc {
   return { t, scores, act };
 }
 
-export interface DayMinutes {
+interface DayMinutes {
   /** Counted minutes (before the daily cap): max(Watch, step-derived, manual workouts), never a sum (ADR 0011). */
   value: number;
   /** The Watch value (or its edit). */
@@ -150,9 +150,9 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
 // ---------- week detail ----------
 
 /** What an accepted edit changed, for the ✎ next to that number in the week table. */
-export type EditedField = 'steps' | 'minutes' | 'workout' | 'ticks';
+type EditedField = 'steps' | 'minutes' | 'workout' | 'ticks';
 
-export interface DayRow {
+interface DayRow {
   date: LocalDate;
   future: boolean;
   steps: number | null;
@@ -170,7 +170,7 @@ const FIELD_OF: Record<EditLog['field'], EditedField> = {
   steps: 'steps', exercise_min: 'minutes', workout_strength: 'workout', workout_excluded: 'workout', workout_add: 'workout', checkin: 'ticks'
 };
 
-export interface WeekDetailPerson {
+interface WeekDetailPerson {
   score: number;
   fruits: Record<FruitKey, { actual: number; target: number; pct: number }>;
   days: DayRow[];
@@ -246,7 +246,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
 
 // ---------- day detail ----------
 
-export interface DayWorkout {
+interface DayWorkout {
   id: string;
   type: string;
   startAt: string;
@@ -261,7 +261,7 @@ export interface DayWorkout {
   eligible: boolean;
 }
 
-export interface DayVisit { id: string; place: string; arriveAt: string; dwellMin: number; counted: boolean }
+interface DayVisit { id: string; place: string; arriveAt: string; dwellMin: number; counted: boolean }
 
 export interface DayPerson {
   steps: { value: number | null; edited: boolean };
@@ -393,7 +393,7 @@ export const weekEdits = (s: State, wk: WeekKey): EditLog[] => editLog(s).filter
 
 // ---------- money ----------
 
-export interface MoneyMonth {
+interface MoneyMonth {
   month: string;
   /** Jar yen of the month's weeks (by their Sunday), paid so far. */
   earnedYen: number;

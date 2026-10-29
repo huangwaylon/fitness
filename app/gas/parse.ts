@@ -15,8 +15,8 @@ import { toLocalDate } from '../src/lib/time/dates.ts';
 import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
 import { DATE_RE, isRec, type MetricKey } from '../src/lib/contract/api.ts';
 
-export interface ParsedMetric { date: string; metric: MetricKey; value: number }
-export interface ParsedWorkout {
+interface ParsedMetric { date: string; metric: MetricKey; value: number }
+interface ParsedWorkout {
   /** `workoutKey(type, start)`: stable across re-sends and phone-language switches. */
   id: string;
   date: string;

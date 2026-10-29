@@ -22,7 +22,6 @@ var IslandFund = (() => {
   // gas/main.ts
   var main_exports = {};
   __export(main_exports, {
-    BUILD: () => BUILD,
     KEY_CACHE_SECONDS: () => KEY_CACHE_SECONDS,
     MAX_BODY_CHARS: () => MAX_BODY_CHARS,
     RATE_PER_MINUTE: () => RATE_PER_MINUTE,
@@ -481,7 +480,7 @@ var IslandFund = (() => {
   }
 
   // gas/main.ts
-  var BUILD = true ? "fa09de030835" : "dev";
+  var BUILD = true ? "6334ab10c7aa" : "dev";
   var MAX_BODY_CHARS = 1e6;
   var RATE_PER_MINUTE = 120;
   var LOCK_WAIT_MS = 1e4;

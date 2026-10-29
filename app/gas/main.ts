@@ -18,7 +18,7 @@ import {
 
 /** Set by `npm run gas:build` (a hash of the bundle); `dev` when main.ts runs unbundled (tests). */
 declare const __BUILD__: string | undefined;
-export const BUILD: string = typeof __BUILD__ === 'string' ? __BUILD__ : 'dev';
+const BUILD: string = typeof __BUILD__ === 'string' ? __BUILD__ : 'dev';
 
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
