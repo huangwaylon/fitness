@@ -11,7 +11,7 @@
   import { untrack, type Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { toasts } from '#lib/client/toast.svelte.ts';
   import ToastHost from './ToastHost.svelte';
 
   interface Props {
@@ -83,7 +83,7 @@
   }
 </script>
 
-<dialog bind:this={dlg} class={variant} class:toasting={hosts && !!week.toast?.action} tabindex="-1" aria-label={label} style:--kb="{kb}px"
+<dialog bind:this={dlg} class={variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label} style:--kb="{kb}px"
   onclose={closed} onclick={backdrop} onfocusin={focusin}>
   {#if open}
     {#if hosts}<ToastHost />{/if}

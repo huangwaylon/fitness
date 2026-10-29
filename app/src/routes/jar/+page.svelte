@@ -13,7 +13,7 @@
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { openKiroku } from '#lib/client/ui.svelte.ts';
-  import { spendPurse, approveSpend, transferDone, UNDO_MS } from '#lib/client/actions.ts';
+  import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/client/actions.ts';
   import { tick } from 'svelte';
   import { MONEY, RULES, SEASONS } from '#lib/config/rules.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
@@ -89,25 +89,14 @@
   let paydayDone = $state<HTMLElement | undefined>();
   let paydayBtn = $state<HTMLElement | undefined>();
 
-  /**
-   * A banner with 取り消す for the undo window. It names what was done (round 5 N5), and hovering, touching or
-   * focusing it holds both the banner and the send (N7).
-   */
-  function undoToast(text: string, reaction: string, r: { undo?: () => boolean; hold?: (ms: number | null) => number }, after?: () => void) {
-    const undo = r.undo;
-    week.showToast(text, UNDO_MS, {
-      reaction,
-      hold: r.hold,
-      ...(undo ? { action: { label: t('common.undo'), run: () => { if (undo()) after?.(); } } } : {})
-    });
-  }
-
   async function markPayday() {
     if (!jar?.transfer) return;
     const r = await transferDone(jar.transfer.month);
-    undoToast(t('jar.paydayNotedYen', { yen: formatYen(jar.transfer.amountYen) }), 'pleased', r, async () => {
-      await tick();
-      paydayBtn?.focus();
+    undoBanner(t('jar.paydayNotedYen', { yen: formatYen(jar.transfer.amountYen) }), r, {
+      after: async () => {
+        await tick();
+        paydayBtn?.focus();
+      }
     });
     await tick();
     paydayDone?.focus(); // U15: focus stays on the row (now ✓), not <body>
@@ -123,7 +112,7 @@
       purseOpen = false;
       picked = null;
       const pending = r.data?.status ? r.data.status === 'pending' : needsBoth;
-      undoToast(t(pending ? 'purse.asked' : 'purse.spent', { label, yen }), pending ? 'thought' : 'joy', r);
+      undoBanner(t(pending ? 'purse.asked' : 'purse.spent', { label, yen }), r, { reaction: pending ? 'thought' : 'joy' });
     }
   }
 </script>

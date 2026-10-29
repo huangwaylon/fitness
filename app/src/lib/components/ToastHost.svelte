@@ -1,11 +1,12 @@
 <script lang="ts">
-  // The store's banner (week.toast). Rendered once: by the layout when no sheet is open, else inside the topmost open
+  // The one banner (toasts.current, client/toast.svelte.ts). Rendered once: by the layout when no sheet is open, else inside the topmost open
   // sheet's <dialog> (Sheet.svelte), so its 取り消す stays tappable while a modal is up (round 7 F1).
   import Toast from './Toast.svelte';
-  import { week } from '#lib/client/week.svelte.ts';
+  import { toasts } from '#lib/client/toast.svelte.ts';
 </script>
 
-{#if week.toast}
-  {#key week.toast.id}<Toast text={week.toast.text} reaction={week.toast.reaction ?? 'happiness'} action={week.toast.action} leaving={week.toast.leaving}
-    onhold={(on) => (on ? week.pauseToast() : week.resumeToast())} ondismiss={() => week.dismissToast()} />{/key}
+{#if toasts.current}
+  {@const c = toasts.current}
+  {#key c.id}<Toast text={c.text} person={c.person} reaction={c.reaction ?? 'happiness'} action={c.action} leaving={c.leaving}
+    onhold={(on) => (on ? toasts.pause() : toasts.resume())} ondismiss={() => toasts.dismiss()} />{/key}
 {/if}

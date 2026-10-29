@@ -3,8 +3,9 @@
 // so a tap moves the fruit, the score and the jar the same way everywhere.
 import { MONEY } from '#lib/config/rules.ts';
 import { week, type SendResult } from './week.svelte.ts';
+import { toasts } from './toast.svelte.ts';
 import { newId } from './gas.ts';
-import { setLocale, type Locale } from '#lib/i18n/index.ts';
+import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 
@@ -12,6 +13,21 @@ import { weekKeyOf } from '#lib/scoring/index.ts';
 export const UNDO_MS = 5000;
 /** きろく's edit controls close this long before a week's lock: an edit made then still lands in time (round 7 M1). */
 export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
+
+/**
+ * The banner for an edit held UNDO_MS: it names what was done (round 5 N5) and carries もとに戻す; hovering, touching
+ * or focusing it holds both the banner and the send (N7). `after` runs once an undo took the edit back. A refused
+ * edit (the week closed) shows nothing here: the store already said so.
+ */
+export function undoBanner(text: string, r: SendResult, opts: { reaction?: string; after?: () => void } = {}): void {
+  if (!r.ok) return;
+  const undo = r.undo;
+  toasts.show(text, UNDO_MS, {
+    reaction: opts.reaction ?? 'pleased',
+    hold: r.hold,
+    ...(undo ? { action: { label: t('common.undo'), run: () => undo() && opts.after?.() } } : {})
+  });
+}
 
 /** Server-clock lock of the week a day belongs to (an edit stamped at or after it is refused). */
 const lockOf = (date: string): number => finalMs(weekKeyOf(date));
