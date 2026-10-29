@@ -56,7 +56,7 @@
   .bubble {
     position: relative; display: grid; place-items: center; flex: none;
     width: var(--w); height: var(--w); border-radius: 50%;
-    background: var(--c-bubble, #FFFCEB); border: 2px solid #EADBB8; box-shadow: 0 3px 0 rgba(74, 58, 44, .12);
+    background: var(--c-bubble, #FFFCEB); border: 2px solid var(--c-pill-edge, #EADBB8); box-shadow: 0 3px 0 rgba(74, 58, 44, .12);
     transform-origin: 30% 110%;
     animation: if-bubble var(--dur-emote, 2200ms) var(--ease-bounce) both;
   }

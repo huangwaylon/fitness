@@ -305,7 +305,7 @@
       <path d="M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z" class="glass" />
       <g clip-path="url(#{uid}-jarbody)">
         {#if fill > 0}
-          <rect x="0" y={coinTop + 3} width="54" height="70" fill="#F7C548" />
+          <rect x="0" y={coinTop + 3} width="54" height="70" class="coinfill" />
           {#each Array.from({ length: Math.ceil((66 - coinTop) / 6) + 1 }) as _, row (row)}
             {#each [0, 1, 2, 3] as col (col)}
               <ellipse cx={8 + col * 13 + (row % 2) * 6} cy={coinTop + 3 + row * 6} rx="6.4" ry="2.8" class="coin" />
@@ -317,7 +317,7 @@
       <path d="M10 30 Q8.6 38 10 46" class="glint" />
       <rect x="11" y="9" width="32" height="11" rx="4" class="lid" />
       <path d="M14 12.5 H40" class="lidline" />
-      <path d="M27 9 Q29 2 36 2.6 Q33 9 27 9 Z" fill="#7BC67E" stroke="#4A3A2C" stroke-width="1.6" stroke-linejoin="round" />
+      <path d="M27 9 Q29 2 36 2.6 Q33 9 27 9 Z" class="jarleaf" />
     </svg>
     <button type="button" class="jartap" style:left={u(JAR.x)} style:top={u(JAR.base)}
       aria-label={t('island.jar', { yen: formatYen(view.jar.totalYen) })} onclick={tapJar}></button>
@@ -379,12 +379,14 @@
   .ground { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
 
   .jar { position: absolute; z-index: 40; translate: -50% -97%; height: auto; overflow: visible; pointer-events: none; }
-  .glass { fill: #DDF2FB; fill-opacity: .8; }
+  .glass { fill: var(--jar-glass); fill-opacity: .8; }
+  .coinfill { fill: var(--jar-coin); }
+  .jarleaf { fill: var(--jar-leaf); stroke: var(--c-ink); stroke-width: 1.6; stroke-linejoin: round; }
   .glass-line { fill: none; stroke: #4A3A2C; stroke-width: 2.6; stroke-linejoin: round; }
-  .coin { fill: #F7C548; stroke: #D9962A; stroke-width: 1.2; }
+  .coin { fill: var(--jar-coin); stroke: var(--jar-coin-rim); stroke-width: 1.2; }
   .glint { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; opacity: .85; }
-  .lid { fill: #FFD84D; stroke: #4A3A2C; stroke-width: 2.4; }
-  .lidline { stroke: #E6B22E; stroke-width: 1.6; stroke-linecap: round; }
+  .lid { fill: var(--c-yuzu); stroke: var(--c-ink); stroke-width: 2.4; }
+  .lidline { stroke: var(--c-yuzu-lip); stroke-width: 1.6; stroke-linecap: round; }
   .jartap {
     position: absolute; z-index: 43; translate: -50% -90%; width: max(64px, 17cqw); height: max(64px, 19cqw);
     appearance: none; background: transparent; border: 0; border-radius: 30%; cursor: pointer; -webkit-tap-highlight-color: transparent;
@@ -392,7 +394,7 @@
 
   .actor {
     position: absolute; width: 0; height: 0;
-    transform: translateX(calc(var(--walk, 0) * 100cqw / 390)); transition: transform 1600ms linear; will-change: transform;
+    transform: translateX(calc(var(--walk, 0) * 100cqw / 390)); transition: transform var(--dur-walk) linear; will-change: transform;
   }
   .vil {
     position: absolute; left: 0; bottom: 0; translate: -50% 2px; width: max-content;
@@ -413,7 +415,7 @@
     position: absolute; z-index: 90; translate: -50% 0;
     display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
     padding: 3px 10px 3px 3px; border-radius: 999px;
-    background: var(--c-bubble, #FFFCEB); color: var(--c-ink); border: 2px solid #EADBB8;
+    background: var(--c-bubble, #FFFCEB); color: var(--c-ink); border: 2px solid var(--c-pill-edge, #EADBB8);
     box-shadow: 0 3px 0 rgba(74, 58, 44, .14);
   }
   .pill .tag { background: var(--tag); border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 700; line-height: 1.1; }

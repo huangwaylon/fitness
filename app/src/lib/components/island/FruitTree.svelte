@@ -171,7 +171,7 @@
   }
   .detail {
     position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: repeat(2, auto); gap: 4px 10px;
-    background: var(--c-bubble, #FFFCEB); border: 2px solid #EADBB8; border-radius: 16px; padding: 7px 12px;
+    background: var(--c-bubble, #FFFCEB); border: 2px solid var(--c-pill-edge, #EADBB8); border-radius: 16px; padding: 7px 12px;
     box-shadow: 0 3px 0 rgba(74, 58, 44, .12); color: var(--c-ink); pointer-events: none;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
   }

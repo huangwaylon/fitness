@@ -185,6 +185,9 @@
    ====================================================================================== */
 :root {
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
+  --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#D9962A; --jar-leaf:#7BC67E;
+  --firefly:#F3FF9E; --firefly-glow:#E8F59A;
+  --dur-walk:1600ms; /* = WALK_MS in motion/director.svelte.ts */
 }
 .if-scene {
   --foam:#FFFFFF; --cloud:#FFFFFF; --cloud-shade:#DCE6FF; --cloud-op:1; --tod-tint:transparent;
