@@ -106,24 +106,34 @@ input, textarea, select { font-size: 16px; font-family: var(--font-ui); }
 @keyframes twinkle { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
 @keyframes glint { 0%,70%,100% { opacity: 0; } 80% { opacity: 1; } }
 
-/* ---------- 島 ⇄ 旅の壺 (client/jarTransition.ts): a 360 ms eased zoom about the island's jar ----------
-   in: the island swells into the jar while the Jar page grows out of it; out: the reverse (the Jar page
-   shrinks back into the jar on top). --vt-x / --vt-y = the jar's centre. Reduced motion: a 160 ms crossfade. */
+/* ---------- 島 ⇄ 旅の壺 (client/jarTransition.ts) ----------
+   The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).
+   Around it the pages crossfade with a slight push about the jar (--vt-x / --vt-y): in 320ms, back 280ms,
+   cubic-bezier(.4,0,.2,1); the Jar page's blocks rise 16px with a 40ms stagger. Reduced motion: 150ms fade. */
 :root[data-vt="in"]::view-transition-old(root), :root[data-vt="in"]::view-transition-new(root),
 :root[data-vt="out"]::view-transition-old(root), :root[data-vt="out"]::view-transition-new(root) {
   transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); mix-blend-mode: normal;
-  animation-duration: 360ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); animation-fill-mode: both;
+  animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); animation-fill-mode: both;
 }
-:root[data-vt="in"]::view-transition-old(root) { animation-name: vt-swell; }
-:root[data-vt="in"]::view-transition-new(root) { animation-name: vt-grow; }
-:root[data-vt="out"]::view-transition-old(root) { animation-name: vt-shrink; z-index: 1; }
-:root[data-vt="out"]::view-transition-new(root) { animation-name: vt-settle; }
-:root[data-vt="fade"]::view-transition-group(root) { animation-duration: 160ms; }
-@keyframes vt-swell { to { transform: scale(2.2); opacity: 0; } }
-@keyframes vt-grow { from { transform: scale(.18); opacity: 0; border-radius: 40px; } 40% { opacity: 1; } to { transform: none; } }
-@keyframes vt-shrink { 60% { opacity: 1; } to { transform: scale(.18); opacity: 0; } }
-@keyframes vt-settle { from { transform: scale(2.2); opacity: .2; } to { transform: none; opacity: 1; } }
-/* No View Transitions (older iOS): the arriving page plays the same zoom as an entrance. */
-:root[data-enter] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); animation: vt-grow 360ms cubic-bezier(.4, 0, .2, 1) both; }
-:root[data-enter="out"] .page > main { animation-name: vt-settle; }
-@media (prefers-reduced-motion: reduce) { :root[data-enter] .page > main { animation: none; } }
+:root[data-vt="out"]::view-transition-old(root), :root[data-vt="out"]::view-transition-new(root) { animation-duration: 280ms; }
+:root[data-vt="in"]::view-transition-old(root) { animation-name: vt-push-out; }
+:root[data-vt="in"]::view-transition-new(root) { animation-name: vt-fade-in; }
+:root[data-vt="out"]::view-transition-old(root) { animation-name: vt-fade-out; z-index: 1; }
+:root[data-vt="out"]::view-transition-new(root) { animation-name: vt-pull-in; }
+:root[data-vt="fade"]::view-transition-group(root) { animation-duration: 150ms; }
+@keyframes vt-push-out { to { transform: scale(1.12); opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-pull-in { from { transform: scale(1.12); opacity: 0; } }
+@keyframes vt-rise { from { transform: translateY(16px); opacity: 0; } }
+/* The Jar page's blocks rise in after the jar (live inside the new snapshot, or as the fallback entrance). */
+:root:is([data-vt="in"], [data-enter="in"]) .jar-screen > :not(.top, .hero) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) both; }
+:root:is([data-vt="in"], [data-enter="in"]) .jar-screen > :nth-child(n + 4) { animation-delay: 40ms; }
+:root:is([data-vt="in"], [data-enter="in"]) .jar-screen .cards > :nth-child(2) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) 80ms both; }
+/* No View Transitions (older iOS): the arriving page zooms out of / back into the jar as a plain entrance. */
+:root[data-enter="in"] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); animation: vt-grow 320ms cubic-bezier(.4, 0, .2, 1) both; }
+:root[data-enter="out"] .page > main { animation: vt-fade-in 280ms cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes vt-grow { from { transform: scale(.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-enter] .page > main, :root[data-vt] .jar-screen * { animation: none !important; }
+}
