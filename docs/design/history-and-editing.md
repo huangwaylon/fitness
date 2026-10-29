@@ -1,5 +1,7 @@
 # History and editing: きろく (records) app
 
+> **Decided by the user (2026-10-29):** edit permissions = **own data only**; paid weeks = **open weeks only** (locked weeks are view-only).
+
 UX designer + data architect, 2026-10-29. User: "see all recorded data over time and allow editing as needed." Bound by ADR 0015 (append-only, compute-on-read), ADR 0016 (all visible, no alerts), v5 (no tab bar, NookPhone apps).
 
 ## 1. What is recorded and shown
