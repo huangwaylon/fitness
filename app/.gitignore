@@ -4,3 +4,4 @@ build/
 data/
 .env
 build-pages/
+apps-script/.clasp.json
