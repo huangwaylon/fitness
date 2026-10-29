@@ -38,6 +38,13 @@ describe('villager roster', () => {
     }
   });
 
+  it('spans every species, every personality and both genders', () => {
+    const all = Object.values(ROSTER);
+    expect(new Set(all.map((v) => v.species))).toEqual(new Set(Object.keys(SPECIES)));
+    expect(new Set(all.map((v) => v.personality))).toEqual(new Set(Object.keys(PERSONALITIES)));
+    expect(new Set(all.map((v) => v.gender))).toEqual(new Set(['m', 'f']));
+  });
+
   it('names are unique in both languages', () => {
     const all = Object.values(ROSTER);
     expect(new Set(all.map((v) => v.nameJa)).size).toBe(all.length);
