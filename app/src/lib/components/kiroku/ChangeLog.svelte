@@ -20,7 +20,7 @@
         <li>
           <span class="when money">{stampOf(e.at)}</span>
           <Avatar person={e.by} villager={villagers[e.by]} size={22} />
-          <span class="what">{#if withDate}<small>{dayTitle(e.date)}</small>{/if}{x.field} <s>{x.before}</s> → <b>{x.after}</b></span>
+          <span class="what">{#if withDate}<small>{dayTitle(e.date)}</small>{/if}{x.field} {#if e.before !== null}<s>{x.before}</s> → {/if}<b>{x.after}</b></span>
         </li>
       {/each}
     </ul>

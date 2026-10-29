@@ -155,7 +155,8 @@
     {:else if top.k === 'void'}
       {@const s = top}
       <section class="card ask">
-        <p>{t(s.refund ? 'kiroku.voidAskDone' : 'kiroku.voidAsk', { label: s.label, yen: formatYen(s.yen) })}</p>
+        <p>{t('kiroku.voidAsk', { label: s.label, yen: formatYen(s.yen) })}</p>
+        {#if s.refund}<small>{t('kiroku.voidRefund')}</small>{/if}
       </section>
       <div class="wchoices">
         <ChoiceList choices={[
@@ -225,7 +226,8 @@
   .addh { margin: 0 2px; font-size: var(--fs-talk); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .addh .money { font-size: var(--fs-body); color: var(--text-soft); }
   .note { margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .ask { padding: 16px; }
+  .ask { padding: 16px; display: grid; gap: 6px; }
+  .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
   .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; word-break: auto-phrase; }
   .types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .type {
