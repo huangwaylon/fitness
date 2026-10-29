@@ -3,6 +3,7 @@
   // fruit at their ripeness stage (bud / small / nearly / ripe + glint). Sways gently; a tap on the
   // canopy shakes it, drops two seasonal leaves and shows the fruit detail bubble (icons + %).
   // `shakeN` (bumped by idle life) shakes it without the bubble; `celebrate` pops + sparkles a fruit.
+  import { untrack } from 'svelte';
   import type { FruitKey, PersonWeekView } from '#lib/types.ts';
   import type { Season } from '#lib/client/theme.svelte.ts';
   import { FRUITS } from '#lib/config/rules.ts';
@@ -48,8 +49,10 @@
     setTimeout(() => (leaves = leaves.filter((n) => n !== a && n !== b)), 2000);
   }
 
+  // React to `shakeN` only: shake() reads and writes `leaves`, which must not become a dependency
+  // (that re-runs the effect until Svelte throws effect_update_depth_exceeded).
   $effect(() => {
-    if (shakeN > 0) shake();
+    if (shakeN > 0) untrack(shake);
   });
 
   function tap() {
