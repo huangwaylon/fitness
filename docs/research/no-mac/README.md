@@ -1,5 +1,7 @@
 # Getting rid of the Mac: summary and recommendation (lead)
 
+> Decided: [ADR 0015](../../decisions/0015-google-sheet-backend.md) (Google Sheet + Apps Script). Notifications: dropped by [ADR 0016](../../decisions/0016-no-privacy-no-alerts.md).
+
 Round 1 (2026-10-28): [Google Apps Script + Sheets](google-apps-script.md) · [Cloudflare Workers + D1](cloudflare-workers.md) · [other free options](other-options.md) · [minimal backend / compute-on-read](minimal-backend.md).
 Round 2 (2026-10-29): [client-direct BaaS: Supabase, Firebase](round2-baas.md) · [serverless hosts + private-repo UI hosting](round2-hosts.md) · [no-code stores, glue and push](round2-glue-and-push.md).
 
