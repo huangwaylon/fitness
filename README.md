@@ -15,9 +15,9 @@ iOS Shortcuts (health sync, gym Arrive/Leave) and the PWA (check-ins, harvest, p
 | `app/` | SvelteKit 3 static PWA (ja/en). `npm run build` → `build-pages/` for GitHub Pages; needs `VITE_GAS_URL` (see `.env.example`) |
 | `app/src/lib/model/` | Compute-on-read: sheet rows → WeekView (scores, ¥, harvest, jar); golden fixtures frozen from the old server |
 | `app/src/lib/config/rules.ts` | The rules as data, versioned by week ([ADR 0017](docs/decisions/0017-round-4-rule-changes-and-rule-versions.md)) |
-| `app/src/lib/scoring/` | Pure scoring: dates, targets, visits, score, payout |
+| `app/src/lib/scoring/` | Pure scoring: targets, visits, score, payout (calendar helpers are in `app/src/lib/time/`) |
 | `app/src/lib/client/` | Apps Script client (`gas.ts`: keys, write queue, snapshot cache), stores, actions |
-| `app/src/lib/ingest/` | Dependency-free Shortcut body parser (bundled into Apps Script) and the sheet contract types |
+| `app/src/lib/contract/` | Dependency-free sheet/API contract types and workout labels (bundled into Apps Script); the Shortcut parser is `app/gas/parse.ts` |
 | `app/gas/` → `app/apps-script/` | Apps Script source (TS) and its bundled `Code.js` (`npm run gas:build`) |
 | `app/scripts/` | `fetch-assets` (official art), `bench-model` (`npm run bench`: a year of rows through the model), `export-to-sheet` (one-time Mac DB → sheet migration; deleted after it) |
 | `docs/PROPOSAL.md` | The product description (v2.2) |

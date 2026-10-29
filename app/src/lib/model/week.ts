@@ -11,8 +11,8 @@ import { PLACES } from '#lib/config/places.ts';
 import {
   addDays, deriveVisits, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
 } from '#lib/scoring/index.ts';
-import { workoutLabel } from './labels.ts';
-import type { MetricKey } from '#lib/ingest/sheet-api.ts';
+import { workoutLabel } from '#lib/contract/labels.ts';
+import type { MetricKey } from '#lib/contract/api.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
   allWorkouts, finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, latestTimed, partnerOf, provisionalMs, reduce, type PresenceRec,

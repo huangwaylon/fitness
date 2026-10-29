@@ -4,7 +4,7 @@ import { RULES, SEASONS, type RuleVersion, type Season } from './rules.ts';
 import { rulesFor, targetsFor, weekKeyOf } from '#lib/scoring/index.ts';
 import { reduce } from '#lib/model/state.ts';
 import { settledWeeks } from '#lib/model/week.ts';
-import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
+import type { SnapshotRows } from '#lib/contract/api.ts';
 import rowsJson from '#lib/model/fixtures/timeline-rows.json' with { type: 'json' };
 
 const ROWS = rowsJson as unknown as SnapshotRows;

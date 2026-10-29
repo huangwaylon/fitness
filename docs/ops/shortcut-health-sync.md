@@ -26,7 +26,7 @@ in the body. Request Body **JSON** (Apps Script reads the raw text, so **Text** 
 
 - `dates`/`steps`/`exercise_minutes` are parallel lists (one line per Health sample, or JSON arrays); values on the
   same day are added up. Dates may be ISO, `2026/10/28 7:05` or Shortcuts' default format. `workouts` is optional.
-- Other accepted shapes (series `{"steps":{"values","starts"}}`, `{"days":[…]}`): see `app/src/lib/ingest/parse.ts`.
+- Other accepted shapes (series `{"steps":{"values","starts"}}`, `{"days":[…]}`): see `app/gas/parse.ts`.
 - A day's numbers from the Shortcut only ever go up, so a partial first day can't overwrite a full one, and re-sending is harmless. (A きろく edit can still lower a day in an open week.)
 - Reply: `{"ok":true,"metrics":4,"workouts":1}` (rows actually added), plus `skipped` / `unknownTypes` when relevant.
   Errors: `{"ok":false,"error":"unauthorized"|"bad_request"|"too_large"|"busy"|"unavailable"}`.
@@ -83,6 +83,6 @@ Duplicate the Shortcut, change step 4 to **− 84 days** and run it once. Over 1
 | HTML instead of JSON | The script's authorization lapsed: google-setup.md §9 |
 | `bad_request` | The body isn't JSON, or `action` is missing/misspelled |
 | `skipped` in the reply | Some dates or numbers didn't parse; the `uploads` tab notes how many |
-| `unknownTypes: [...]` | A workout name we don't map yet: add it to `WORKOUT_LABELS_JA` in `app/src/lib/model/labels.ts` (the parser inverts it), then google-setup.md §11 |
+| `unknownTypes: [...]` | A workout name we don't map yet: add it to `WORKOUT_LABELS_JA` in `app/src/lib/contract/labels.ts` (the parser inverts it), then google-setup.md §11 |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash a banner] |
 | Nothing arrives | Settings → Health → Data Access → Shortcuts permissions |

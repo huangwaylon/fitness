@@ -1,6 +1,6 @@
 // Small formatters shared by the きろく screens (the day title, numbers, the change-log line); dates: i18n/format.ts.
 import type { EditLog } from '#lib/model/history.ts';
-import { workoutLabel } from '#lib/model/labels.ts';
+import { workoutLabel } from '#lib/contract/labels.ts';
 import { i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 

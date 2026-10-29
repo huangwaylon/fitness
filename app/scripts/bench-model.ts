@@ -7,7 +7,7 @@ import { historyWeeks, moneyLog, weekDetail } from '#lib/model/history.ts';
 import { reduce, type State } from '#lib/model/state.ts';
 import { SEASONS } from '#lib/config/rules.ts';
 import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
-import type { EventRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/ingest/sheet-api.ts';
+import type { EventRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import golden from '../src/lib/model/fixtures/timeline-rows.json' with { type: 'json' };
 
 const FIRST = '2026-11-02';

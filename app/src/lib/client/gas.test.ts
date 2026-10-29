@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { SnapshotRows } from '#lib/ingest/sheet-api.ts';
+import type { SnapshotRows } from '#lib/contract/api.ts';
 import {
   applySnapshot, backoffMs, configure, enqueue, flush, holdEvent, nextRetryAt, unqueue, getKey, keyFromHash, loadCache, post, queued, refreshSnapshot, setKey, type KV
 } from './gas.ts';

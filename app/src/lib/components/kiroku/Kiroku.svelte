@@ -11,7 +11,7 @@
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { dayDetail, historyWeeks, moneyLog, weekDetail, weekEdits } from '#lib/model/history.ts';
-  import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/ingest/sheet-api.ts';
+  import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/client/week.svelte.ts';
   import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoTransfer, voidSpend, EDIT_CUTOFF_MS } from '#lib/client/actions.ts';
   import ChoiceList from '../ChoiceList.svelte';

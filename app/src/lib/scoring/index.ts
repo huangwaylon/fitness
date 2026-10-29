@@ -1,5 +1,5 @@
 // Public API of the scoring module: pure functions, no I/O. Implementation split across sibling files.
-export { addDays, nowInZone, toLocalDate, weekDays, weekKeyOf } from '#lib/scoring/dates.ts';
+export { addDays, nowInZone, toLocalDate, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 export { rulesFor, targetsFor } from '#lib/scoring/targets.ts';
 export { isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, scoreWeek } from '#lib/scoring/score.ts';
 export { nextRung, payoutWeek } from '#lib/scoring/payout.ts';

@@ -17,7 +17,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { TABS } from '#lib/ingest/sheet-api.ts';
+import { TABS } from '#lib/contract/api.ts';
 
 const dbPath = process.env.DATABASE_PATH ?? './data/island.db';
 const outDir = resolve(process.env.EXPORT_DIR ?? './data/export');

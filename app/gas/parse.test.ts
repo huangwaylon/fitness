@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { canonicalWorkoutType, looseDate, looseNumber, parseShortcut, sha256Hex, ShapeError, workoutKey } from '#lib/ingest/parse.ts';
+import { canonicalWorkoutType, looseDate, looseNumber, parseShortcut, sha256Hex, ShapeError, workoutKey } from './parse.ts';
 
 const byDate = (ms: { date: string; metric: string; value: number }[]) =>
   [...ms].sort((a, b) => (a.date + a.metric).localeCompare(b.date + b.metric));

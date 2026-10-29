@@ -2,7 +2,7 @@
 // layers themselves and the last money moves. Pure functions of the view / reduced model.
 import type { PersonId, WeekView } from '#lib/types.ts';
 import { RULES, SEASONS } from '#lib/config/rules.ts';
-import { dateMs } from '#lib/scoring/dates.ts';
+import { dateMs } from '#lib/time/dates.ts';
 import { moneyLog } from '#lib/model/history.ts';
 import { provisionalMs } from '#lib/model/state.ts';
 import type { ComposedModel } from './view.ts';

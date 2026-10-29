@@ -1,6 +1,6 @@
 import { STRENGTH } from '#lib/config/rules.ts';
 import type { Visit } from '#lib/types.ts';
-import { parseInstant, toLocalDate } from '#lib/scoring/dates.ts';
+import { parseInstant, toLocalDate } from '#lib/time/dates.ts';
 
 export interface PresenceEvent { id: number; placeKey: string; event: 'arrive' | 'leave'; at: string }
 export interface PlaceRow { key: string; autoStrength: boolean }

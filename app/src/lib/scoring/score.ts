@@ -1,7 +1,7 @@
 // Weekly score: four fruits, integer milli-fruit per category, score = floor(sum / 1000) (ADR 0009, 0011, 0014).
 import { CALIBRATION, DAILY, HOLIDAY, PEACH_DAILY_CAP, REST, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { CategoryResult, FruitKey, LocalDate, Visit, WeekInput, WeekScore, Workout } from '#lib/types.ts';
-import { inMonthDayRange, weekDays } from '#lib/scoring/dates.ts';
+import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
 
 /** Convert a (possibly fractional) count to integer milli-units. Targets are pre-rounded to 3 dp by targetsFor. */

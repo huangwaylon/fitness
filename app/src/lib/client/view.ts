@@ -1,6 +1,6 @@
 // Cached snapshot + still-queued events → WeekView (optimistic: a tap shows at once, before the server acks it).
 import type { WeekView } from '#lib/types.ts';
-import type { EventRow } from '#lib/ingest/sheet-api.ts';
+import type { EventRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { reduce, type State } from '#lib/model/state.ts';
