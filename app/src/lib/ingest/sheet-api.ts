@@ -20,10 +20,19 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
   uploads: ['bytes']
 };
 
-export const EVENT_TYPES = ['checkin', 'confirm', 'spend', 'approve', 'transfer', 'harvest', 'highfive', 'pref', 'share'] as const;
+export const EVENT_TYPES = [
+  'checkin', 'confirm', 'spend', 'approve', 'transfer', 'harvest', 'highfive', 'pref', 'share',
+  // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
+  'metric_set', 'workout_edit', 'workout_add', 'spend_void', 'transfer_undo'
+] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 export type Person = 'A' | 'B';
+
+/** `metric_set` bounds (inclusive, integers). The Apps Script refuses anything else with `bad_request`. */
+export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440 } as const;
+/** `workout_add` minutes (inclusive, integer). */
+export const MANUAL_WORKOUT_MIN = { min: 1, max: 600 } as const;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: Person, date: string, metric: 'steps' | 'exercise_min', value: number];

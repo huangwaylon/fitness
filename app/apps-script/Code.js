@@ -427,7 +427,25 @@ var IslandFund = (() => {
     events: [],
     uploads: ["bytes"]
   };
-  var EVENT_TYPES = ["checkin", "confirm", "spend", "approve", "transfer", "harvest", "highfive", "pref", "share"];
+  var EVENT_TYPES = [
+    "checkin",
+    "confirm",
+    "spend",
+    "approve",
+    "transfer",
+    "harvest",
+    "highfive",
+    "pref",
+    "share",
+    // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
+    "metric_set",
+    "workout_edit",
+    "workout_add",
+    "spend_void",
+    "transfer_undo"
+  ];
+  var METRIC_BOUNDS = { steps: 1e5, exercise_min: 1440 };
+  var MANUAL_WORKOUT_MIN = { min: 1, max: 600 };
 
   // gas/main.ts
   var MAX_BODY_CHARS = 1e6;
@@ -653,6 +671,7 @@ var IslandFund = (() => {
     if (!isRec2(data)) return fail("bad_request");
     const json = JSON.stringify(data);
     if (json.length > MAX_EVENT_DATA_CHARS) return fail("too_large");
+    if (!validEditData(body.type, data)) return fail("bad_request");
     const type = body.type;
     return withLock(() => {
       const sh = tab("events");
@@ -664,6 +683,25 @@ var IslandFund = (() => {
       appendRows(sh, "events", [[nextAt(), me, id, type, json]]);
       return { ok: true };
     });
+  }
+  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+  var isInt = (v, lo, hi) => typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi;
+  var isId = (v) => typeof v === "string" && v.length > 0 && v.length <= 128;
+  function validEditData(type, d) {
+    switch (type) {
+      case "metric_set":
+        return typeof d.date === "string" && DATE_RE.test(d.date) && (d.metric === "steps" || d.metric === "exercise_min") && isInt(d.value, 0, METRIC_BOUNDS[d.metric]);
+      case "workout_edit":
+        return isId(d.id) && (d.strength !== void 0 || d.excluded !== void 0) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean") && (d.excluded === void 0 || typeof d.excluded === "boolean");
+      case "workout_add":
+        return typeof d.id === "string" && /^m:[\w-]{1,100}$/.test(d.id) && typeof d.date === "string" && DATE_RE.test(d.date) && typeof d.type === "string" && d.type.length > 0 && d.type.length <= 60 && isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) && (d.strength === void 0 || d.strength === null || typeof d.strength === "boolean");
+      case "spend_void":
+        return typeof d.spendId === "string" && isId(d.spendId) || typeof d.spendId === "number" && Number.isFinite(d.spendId);
+      case "transfer_undo":
+        return typeof d.month === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(d.month);
+      default:
+        return true;
+    }
   }
   function snapshot(me, body) {
     if (body.since !== void 0 && body.since !== null && typeof body.since !== "string") return fail("bad_request");

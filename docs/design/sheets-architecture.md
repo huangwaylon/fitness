@@ -19,7 +19,17 @@ Event `type`s and `data`:
 - `spend {spendId, label, amountYen}` and `approve {spendId}`
 - `transfer {month}` · `harvest {week}` · `highfive {}`
 - `pref {key, value}` (keys: `locale`, `villagerName`, `villager`)
-- `share {metric, on}`
+- `share {metric, on}`: no longer sent; old rows are ignored (ADR 0016).
+
+Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:
+- `metric_set {date, metric:'steps'|'exercise_min', value}`: overrides the day's value, also lower. The script refuses a non-integer or out-of-range `value` (steps 0–100,000; minutes 0–1,440) or a bad date/metric with `bad_request`. Read rule: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows; else max(S.value, ingest rows with S.at < at ≤ T).
+- `workout_edit {id, strength?: true|false|null, excluded?: boolean}`: strength override for any type (`null` = automatic), or out of scoring.
+- `workout_add {id:'m:<id>', date, type, durationMin 1–600, strength?}`: a manual workout (a known canonical type).
+- `checkin {…, edit:true}`: a fix for any day ≤ today of an open week (instead of the 48 h window).
+- `spend_void {spendId}`: the spender only; refunds a paid spend or cancels a waiting one (a refused spend stays refused).
+- `transfer_undo {month}`: either person; the latest of `transfer`/`transfer_undo` for the month wins.
+
+Weekly yen already paid never change: a raise before the lock becomes the Wednesday top-up, a lowering keeps Sunday's payout.
 
 The rules (targets, money, seasons) stay in `app/src/lib/config/rules.ts`. No config tab.
 
@@ -51,6 +61,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 ## 4. Testing
 - The parser: unit tests (ported from the shortcut-ingest tests).
 - The GAS backend: vitest with an in-memory fake of `SpreadsheetApp`/`PropertiesService`/`LockService`/`CacheService`/`ContentService`. It covers auth, never-throws, append-only + higher-only metrics, dedupe, snapshot `since`, rate limit and body cap.
+- The model's edits: `model/history.test.ts` (lowering, later higher syncs, lock, top-up, own data only, workouts, check-in fixes, voids, transfer undo, the change log, the history views).
 - The model: was differential-tested against the old server (`getWeekView`, settlement, payout) on a 10-week timeline and on the real DB; those server outputs are now frozen golden fixtures (`app/src/lib/model/fixtures/`, `golden.test.ts`).
 - The client: queue/retry/merge unit tests.
 
