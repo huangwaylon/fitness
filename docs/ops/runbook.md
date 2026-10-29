@@ -23,8 +23,8 @@ Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `
 `VITE_GAS_URL=${{ vars.GAS_URL }}`, upload `app/build-pages/`. Locally: `cd app && npm run build` (output
 `build-pages/`), `npx vite preview` to try it, `npm run dev` for development (without `VITE_GAS_URL` in `.env` it
 runs on demo data). The site has a strict CSP (a `<meta>` tag): it can only talk to itself and the Apps Script
-origins. Before a model change: `npx vitest run`, `npm run check`, `npm run bench` (a year of rows; the week-52
-view should stay a few ms) and `npx knip` (`app/knip.json`).
+origins. Before a model change: `npx vitest run`, `npm run check`, `npm run bench` (hourly-sync rows at years 1 and 3;
+year 3 compacted with a `rev` should stay ≤ 15 ms for reduce + view) and `npx knip` (`app/knip.json`).
 
 Backend code changes (`app/gas/**`, the parser): google-setup.md §11 (`npm run gas:build`, paste, **new version on
 the existing deployment**, never a new deployment).
@@ -41,12 +41,70 @@ the existing deployment**, never a new deployment).
 - Gym Arrive/Leave: same doc, §5.
 
 ## 5. Monitoring and the deployed version
-Health check: the `whoami` curl (google-setup.md §5). JSON means healthy; HTML means the authorization lapsed (§9 there).
+**The probe** (no key, costs no Properties read, takes no lock, touches no sheet):
+
+```sh
+curl -sSL "$GAS_URL" -H 'Content-Type: text/plain;charset=utf-8' --data '{"action":"health"}'
+# → {"ok":true,"build":"754d228827a3"}
+```
+
+| Reply | Meaning |
+|---|---|
+| `{"ok":true,"build":B}`, B = the repo's build | Healthy, running the committed code |
+| `{"ok":true,"build":B}`, B ≠ the repo's build | `Code.js` changed but wasn't redeployed (google-setup.md §11) |
+| HTML (a Google sign-in or *Authorization is required* page) | The script's authorization lapsed: google-setup.md §9 |
+| Anything else, or a timeout | Apps Script is down or the URL is wrong |
+
+**The repo's build** is line 3 of the committed `app/apps-script/Code.js`: `// build: <12 hex>`
+(`sed -n 's#^// build: ##p' app/apps-script/Code.js`). `npm run gas:build` prints it, `bundle.test.ts` pins it, and
+`whoami` returns it too (`{ok, me, build}`, for the app's sync screen). It is the first 12 hex characters of SHA-256
+over the bundle, so any code change changes it.
+
+**The monitor** (CI, WS3): a scheduled GitHub workflow runs the probe against the `GAS_URL` repo variable (a few times
+a day) and fails, so GitHub e-mails the owner, unless the reply is JSON with `ok:true` and `build` equal to the repo's
+build. A health probe is not a secret: the URL isn't one either (google-setup.md §4).
+
+**Redeploying** is always google-setup.md §11 (new *version* on the existing deployment, never a new deployment),
+then the probe must show the new build.
 
 ## 6. Backups
-The sheet is the only copy of check-ins, answers and purse events. Google keeps version history (File → Version
-history). For an off-Google copy: File → Download → `.xlsx` once a month. Health numbers can be re-sent from the
-phones (shortcut-health-sync.md §6).
+The sheet is the only copy of check-ins, answers and purse events (health numbers can be re-sent from the phones,
+shortcut-health-sync.md §6). Google keeps version history (File → Version history), which protects against bad edits
+but not against losing the file or the account. So, in addition:
+
+**Weekly copy (set up once, ~5 min).** A separate *standalone* script, so the web app keeps its
+current-sheet-only scope:
+1. [script.google.com](https://script.google.com) → **New project**, name it *Island Fund backup*.
+2. Paste:
+   ```js
+   const SHEET_ID = '…';            // from the sheet's URL: /spreadsheets/d/<SHEET_ID>/edit
+   const FOLDER_NAME = 'Island Fund backups';
+   const KEEP = 12;                 // weekly copies to keep (~3 months)
+
+   function backup() {
+     const it = DriveApp.getFoldersByName(FOLDER_NAME);
+     const folder = it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
+     const stamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+     DriveApp.getFileById(SHEET_ID).makeCopy(`Island Fund ${stamp}`, folder);
+     const files = [];
+     for (const f = folder.getFiles(); f.hasNext();) files.push(f.next());
+     files.sort((a, b) => b.getDateCreated() - a.getDateCreated()).slice(KEEP).forEach((f) => f.setTrashed(true));
+   }
+   ```
+3. Select `backup` → **Run** once and allow Drive access (this script's own consent; the web app is unaffected).
+   A copy appears in *Island Fund backups*.
+4. **Triggers** (clock icon) → **Add trigger** → `backup`, *Time-driven*, *Week timer*, Monday, 4–5 am.
+   Google e-mails the owner when a run fails.
+
+**Off-Google copy:** File → Download → `.xlsx` once a month (or download the newest weekly copy), kept in the shared
+password manager's file storage or another private place.
+
+**Restore:** open the copy (or a version from Version history), check it, then either copy its rows back into the
+live tabs (values only, ⌘⇧V), or make the copy the live sheet: open it → Extensions → Apps Script (a copy carries the
+bound script; paste the current `Code.js` if in doubt), check `KEY_A`/`KEY_B` in Script Properties (google-setup.md
+§3), deploy, and update `GAS_URL` (§1 step 2) and both Shortcuts: a different sheet means a new `/exec` URL.
+Either way run `resync` in the script editor afterwards, so both phones drop their caches and refetch everything
+(sheets-architecture.md §2.1).
 
 ## 7. Official art
 Official *Animal Crossing: New Horizons* art (Nookipedia) in `app/static/art/`; the decision, the public-repo
@@ -57,7 +115,8 @@ trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-
 | Symptom | Check |
 |---|---|
 | Site says 「まだ設定されていません」 | `GAS_URL` repo variable missing; set it and re-run the workflow |
-| App says it can't reach the island | `whoami` curl (google-setup.md §5). HTML instead of JSON → authorization lapsed (google-setup.md §9) |
+| App says it can't reach the island | The §5 probe. HTML instead of JSON → authorization lapsed (google-setup.md §9) |
+| A row fixed or deleted by hand doesn't show on a phone | Run `resync` in the script editor (sheets-architecture.md §2.1); the phone refetches on its next sync |
 | `{"ok":false,"error":"unauthorized"}` | Wrong or rotated key: re-paste it (app) / fix the `key` field (Shortcut) |
 | `busy` | Another write held the lock for 10 s; the app retries by itself, the Shortcut runs again next time |
 | `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
