@@ -10,7 +10,7 @@
 - **Transport:** `POST` with `Content-Type: text/plain` (a simple request, no CORS preflight). Apps Script answers through its 302 to `script.googleusercontent.com`, with `Access-Control-Allow-Origin: *` (verified in research).
 - **Scoring moves into the app (compute-on-read).** The sheet holds raw rows only. The PWA computes scores, yen, harvest and jar with the existing pure scoring code. Each week pays **max(value as of Sunday 19:30 JST, value as of Wednesday 04:00 JST)**, using the **server timestamps** the script writes on every row. That reproduces the old earn + top-up ledger with no ledger and no scheduler.
 - **Speed:** the app paints instantly from a local snapshot and refreshes in the background (incremental: rows since the last server timestamp seen). Taps are optimistic, writes queue and retry, and 1–4 s Apps Script latency is never on the critical path.
-- **Notifications:** no web push. iOS Shortcuts "Time of Day" automations show local reminders (check-in 20:00, harvest Sunday 19:30).
+- **Notifications:** none (ADR 0016).
 - **UI hosting:** unchanged for now (GitHub Pages, static SPA). If the repo goes private, the static build moves to another free static host.
 - **Removed:** the Node server, SQLite/drizzle, Funnel, the scheduler, pairing codes, web push, the Docker setup.
 

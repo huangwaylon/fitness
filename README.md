@@ -21,7 +21,7 @@ iOS Shortcuts (health sync, gym Arrive/Leave) and the PWA POST `{key, action, �
 | `app/scripts/` | `fetch-assets` (official art), `export-to-sheet` (one-time Mac DB → sheet migration) |
 | `docs/PROPOSAL.md` | The cohesive proposal (v2.1) |
 | `docs/profiles.md` | Participant profiles, gyms, eating patterns |
-| `docs/decisions/` | Decision records 0001–0015 (latest: 0015 Google Sheet backend, no Mac) |
+| `docs/decisions/` | Decision records 0001–0016 (latest: 0015 Google Sheet backend, no Mac) |
 | `docs/design/` | Sheets architecture contract, style guide v3, Animal Crossing research |
 | `docs/ops/` | Runbook, Google setup, the Shortcuts health-sync guide |
 | `docs/research/no-mac/` | The research behind ADR 0015 |

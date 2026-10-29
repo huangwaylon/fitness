@@ -15,8 +15,6 @@ Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.m
 3. **Migrate the Mac data** (§5), then **switch the Shortcuts** (§4).
 4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
    **Add to Home Screen**, open it from the icon and paste that person's key (or open `…/fitness/#key=<key>` once).
-5. **Reminders** (no web push): in Shortcuts → Automation, add *Time of Day* automations that show a notification:
-   check-in at 20:00 daily, harvest on Sunday at 19:30.
 
 ## 2. Deploying the UI
 Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `npm ci`, `npm run build` with
