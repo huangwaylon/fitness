@@ -1,10 +1,11 @@
 <script lang="ts">
   // 日曜の収穫 (Sunday harvest overlay, v5 §4, ≤ 60 s): tally → rung reached (optional) → 壺に入れる → end card.
-  // The island stays visible behind a 30% tint; しずえ's dialogue box, one card (rows: villager icon, the four
+  // The island stays visible behind a light cool tint; しずえ's dialogue box, one card (rows: villager icon, the four
   // official fruit by ripeness, + ¥) and the CTA sit at the bottom, in the thumb zone. The jar total is the one
   // big number. A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   // Round 5: only the team's stars (U7); the purse is one line under the total (U6); after 壺に入れる the end card
-  // fills the jar and counts its total up before going back to 島 (U5).
+  // fills the jar (the one jar drawing) and counts its total up before going back to 島 (U5). No confetti (not in
+  // the games): the end card plays an item-get beat (the jar pops, a sparkle).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
   import { FRUITS, RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
@@ -13,6 +14,7 @@
   import { reducedMotion } from './motion/clock.ts';
   import Yen from './Yen.svelte';
   import Bubble from './Bubble.svelte';
+  import Jar from './island/Jar.svelte';
   import OfficialArt from './OfficialArt.svelte';
   import { confirmHarvest } from '#lib/client/actions.ts';
   import { fruitArt } from '#lib/client/assets.ts';
@@ -41,7 +43,7 @@
 
   let step = $state<'tally' | 'rung' | 'done'>('tally');
   let busy = $state(false);
-  /** Live (review P10): the count-up and confetti follow the setting even if it changes while open. */
+  /** Live (review P10): the count-up follows the setting even if it changes while open. */
   const reduced = $derived(reducedMotion());
 
   /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
@@ -97,21 +99,10 @@
   /** Island-evaluation stars (§T.5): ceil(score / 20), 0–5; shown only as the pair's total (★ out of 10). */
   const stars = (score: number) => Math.max(0, Math.min(5, Math.ceil(score / 20)));
   const teamStars = $derived(stars(p.A.score) + stars(p.B.score));
-  // Confetti (§M.4 colours): 36 pieces, CSS only; skipped under reduced motion.
-  const COLOURS = ['var(--c-yuzu)', 'var(--c-leaf)', 'var(--c-mint)', 'var(--c-coral)', 'var(--c-cream)'];
-  // F4: ≤ 1.2 s, and behind the dialogue box and the card (both opaque), so it never covers the numbers.
-  const CONFETTI = Array.from({ length: 24 }, (_, i) => ({
-    x: (i * 37) % 100, c: COLOURS[i % 5], d: (i % 8) * 0.04, r: (i * 53) % 360, round: i % 3 === 0, dur: 0.9 + (i % 4) * 0.1
-  }));
 </script>
 
 <dialog class="overlay" aria-label={t('harvest.title')} tabindex="-1" use:modal
   oncancel={(e) => { e.preventDefault(); if (step === 'done') ondone?.(); else onlater(); }}>
-  {#key step}
-    {#if !reduced}<div class="confetti" aria-hidden="true">
-      {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.4 : step === 'done' ? 0.9 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
-    </div>{/if}
-  {/key}
 
   <div class="col">
     <div class="head">
@@ -167,17 +158,7 @@
         <button type="button" class="btn" disabled={busy} onclick={drop}>{t('harvest.drop')}</button>
       {:else if step === 'done'}
         <section class="card done" role="status">
-          <svg class="djar" viewBox="0 0 200 240" aria-hidden="true">
-            <defs><clipPath id="hv-jar"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" /></clipPath></defs>
-            <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="#DDF2FB" fill-opacity=".85" />
-            <g clip-path="url(#hv-jar)">
-              <rect class="coins new" x="0" y="30" width="200" height="202" fill="var(--c-yuzu)" opacity=".6" style:--f={filled ? fillOf(after) : oldFill} />
-              <rect class="coins" x="0" y="30" width="200" height="202" fill="var(--c-yuzu)" style:--f={oldFill} />
-            </g>
-            <rect x="56" y="8" width="88" height="26" rx="9" fill="var(--c-yuzu)" />
-            <rect x="56" y="26" width="88" height="8" rx="4" fill="var(--c-yuzu-lip)" />
-            <path d="M46 100 Q42 130 46 160" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".7" fill="none" />
-          </svg>
+          <span class="djar"><span class="get" aria-hidden="true"><Emote id="mark-sparkle" bare hold size={28} /></span><Jar fill={oldFill} band={filled ? fillOf(after) : oldFill} width="80px" /></span>
           <b class="dhead">{t('harvest.done', { yen: formatYen(jarTotal) })}</b>
           <span class="hero-num">{formatYen(shown)}</span>
           {#if !partnerDone}<span class="mini">{t('harvest.waiting', { name: view.people[partner].villagerName })}</span>{/if}
@@ -218,18 +199,6 @@
   .bottom { display: grid; gap: var(--gap); --talk-lines: 2; }
   .bottom :global(.talk) { margin-bottom: -4px; }
 
-  .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-  .confetti i {
-    position: absolute; top: -16px; width: 6px; height: 10px; border-radius: 2px; opacity: 0;
-    animation: drop 1.2s cubic-bezier(.3, .6, .5, 1) both;
-  }
-  .confetti i.round { width: 6px; height: 6px; border-radius: 50%; }
-  @keyframes drop {
-    0% { opacity: 1; transform: translateY(0) rotate(0); }
-    85% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(70vh) rotate(calc(var(--r) + 360deg)); }
-  }
-
   .tally { display: grid; padding: 8px 16px 14px; }
   /* Rows grow in one by one, so the card grows with them (no empty height while revealing). */
   .trow { display: flex; align-items: center; gap: 10px; overflow: hidden; animation: rowGrow .5s var(--ease-soft) both; }
@@ -252,11 +221,10 @@
   .mini { font-weight: 700; font-size: var(--fs-body); color: var(--text-soft); }
 
   .done, .rung { display: grid; justify-items: center; gap: 6px; text-align: center; }
-  .djar { width: 96px; height: 116px; display: block; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
-  .coins { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--f)); }
-  .coins.new { transition: transform 1.4s var(--ease-soft) .4s; }
+  /* NH's item-get beat instead of confetti: the jar pops up with a sparkle over it. */
+  .djar { position: relative; display: block; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .get { position: absolute; right: -18px; top: -10px; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) .3s both; }
   .dhead, .rname { font-size: var(--fs-title); }
-  @media (prefers-reduced-motion: reduce) { .coins { transition: none; } }
   @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
   .hero { position: relative; width: min(220px, 64vw); padding-bottom: 6px; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
@@ -271,5 +239,4 @@
     .hero { width: min(160px, 50vw); }
   }
   @media (max-width: 339px) { .overlay { --fr: 20px; } }
-  @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
 </style>

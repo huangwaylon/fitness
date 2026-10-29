@@ -9,6 +9,7 @@
   import Rope from '#lib/components/Rope.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import Yen from '#lib/components/Yen.svelte';
+  import Jar from '#lib/components/island/Jar.svelte';
   import HelpButton from '#lib/components/HelpButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { spendPurse, approveSpend, transferDone, UNDO_MS } from '#lib/client/actions.ts';
@@ -35,11 +36,11 @@
   const cheapest = TREATS.reduce((a, b) => (b.yen < a.yen ? b : a));
   const canSpend = $derived(!!jar && jar.purseYen >= cheapest.yen);
 
-  // The big jar fills toward the next trip (one combined total; per-person layers are one tap deeper, M8).
-  const fillH = $derived.by(() => {
+  // The hero jar = the island's jar (one drawing, the same fill rule), so the route change morphs one into the other.
+  const jarFill = $derived.by(() => {
     if (!jar) return 0;
-    const ratio = jar.nextRung ? jar.totalYen / jar.nextRung.yen : 1;
-    return 18 + Math.max(0, Math.min(1, ratio)) * 128; // y 214 → 86: glass always shows above the coins
+    const top = Math.max(1, ...jar.rungs.map((r) => r.yen), jar.nextRung?.yen ?? 0);
+    return jar.totalYen <= 0 ? 0 : Math.min(1, Math.max(0.12, Math.sqrt(jar.totalYen / top)));
   });
 
   /** Weeks paid so far, for "against your own max" mini-jars. Server may send jar.weeks. */
@@ -120,18 +121,7 @@
     <h1 class="sr-only">{t('jar.title')}</h1>
 
     <div class="hero">
-      <svg class="bigjar" viewBox="0 0 200 240" aria-hidden="true">
-        <defs><clipPath id="bj"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" /></clipPath></defs>
-        <ellipse cx="100" cy="236" rx="78" ry="6" fill="rgba(40, 60, 40, .18)" />
-        <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" class="glass" />
-        <g clip-path="url(#bj)">
-          <rect x="0" y={232 - fillH} width="200" height={fillH + 8} fill="var(--c-yuzu)" />
-          <rect x="0" y={232 - fillH} width="200" height="8" fill="var(--c-yuzu-lip)" opacity=".5" />
-        </g>
-        <rect x="56" y="8" width="88" height="26" rx="9" fill="var(--c-yuzu)" />
-        <rect x="56" y="26" width="88" height="8" rx="4" fill="var(--c-yuzu-lip)" />
-        <path d="M46 100 Q42 130 46 160" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".7" fill="none" />
-      </svg>
+      <span class="bigjar"><Jar fill={jarFill} width="calc(var(--jar-h) * 54 / 68)" name="jar" /></span>
       <Yen yen={jar.totalYen} class="hero-num total" />
       <span class="wk">{t('jar.week', { yen: formatYen(jar.thisWeekEstimateYen) })}</span>
     </div>
@@ -250,8 +240,7 @@
   .back:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
 
   .hero { display: grid; justify-items: center; gap: 6px; padding: 4px 0 20px; color: var(--text); }
-  .bigjar { height: var(--jar-h); width: calc(var(--jar-h) * 200 / 240); display: block; margin-bottom: 6px; }
-  .glass { fill: #DDF2FB; fill-opacity: .85; }
+  .bigjar { display: block; line-height: 0; margin-bottom: 6px; }
   .hero :global(.total) { font-size: min(var(--fs-hero), 12vw); }
   .wk { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
 

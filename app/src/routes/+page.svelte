@@ -163,22 +163,26 @@
 {/if}
 
 <style>
-  /* v5 §3 + round 6 F1 (band table): the chrome under the scene is ONE fixed slot, tall enough for しずえ's box
-     (--talk-lines lines + nameplate) over the action (or the box + the choice list in one row), on the flat map
-     sea. Its height is a constant per viewport, so the scene (100dvh − --chrome-below, stage bottom-anchored)
-     never moves when she speaks or goes quiet. ≈ 176 at 393×852, 150 at 375×667, 142 at 320×568. */
+  /* v5 §3 + round 6 F1 (band table): the scene takes the whole page (stage bottom-anchored over
+     --island-bottom = the chrome band, horizon capped by the scene), and the chrome is ONE fixed slot over
+     the patterned sea at the bottom: しずえ's box (--talk-lines lines + nameplate) over the action, or the box
+     + the choice list in one row. Its height is a constant per viewport, so nothing moves when she speaks or
+     goes quiet. ≈ 180 at 393×852, 138 at 375×667 and 320×568. */
   .island {
     --talk-h: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px + 14px + var(--lip-h));
     --chrome-below: calc(var(--talk-h) + 8px + var(--cta-h) + var(--lip-h) + var(--gap) + var(--pad-bottom));
-    --scene-h: max(300px, calc(100dvh - var(--chrome-below)));
+    --island-bottom: var(--chrome-below);
+    --scene-h: 100dvh;
     position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
-    display: flex; flex-direction: column;
   }
-  .top { position: relative; height: var(--scene-h); flex: none; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+  .top { position: absolute; inset: 0; overflow: hidden; }
   .below {
-    height: var(--chrome-below); flex: none; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+    position: absolute; z-index: 9; left: 0; right: 0; bottom: 0;
+    height: var(--chrome-below); display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
     padding: var(--gap) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + var(--lip-h)) calc(var(--side) + var(--safe-left));
+    pointer-events: none;
   }
+  .below > * { pointer-events: auto; }
   /* Under the harvest only the island shows through the tint: no HUD, no dialogue, no action. */
   .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below { visibility: hidden; }
   .news { display: grid; }
