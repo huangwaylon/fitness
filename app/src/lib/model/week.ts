@@ -23,7 +23,7 @@ const LIVE = Infinity;
 
 // ---------- inputs as of T ----------
 
-export type VisitRec = Visit & { id: string };
+type VisitRec = Visit & { id: string };
 
 /** An inclusive date window; the default is all time. Every per-week caller passes its week (perf: weeks × rows). */
 export interface Dates { from: LocalDate; to: LocalDate }
@@ -191,7 +191,7 @@ const addBuckets = (x: Buckets, y: Buckets): Buckets => ({
   A: x.A + y.A, B: x.B + y.B, team: x.team + y.team, purseA: x.purseA + y.purseA, purseB: x.purseB + y.purseB
 });
 
-export type SpendStatus = 'done' | 'waiting' | 'refused' | 'voided';
+type SpendStatus = 'done' | 'waiting' | 'refused' | 'voided';
 
 export interface SpendLog {
   spendId: string;

@@ -100,14 +100,14 @@ export interface PresenceRec {
 }
 
 /** `edit`: a fix from きろく (`edit:true`), allowed for any open day; it shows in the change log. */
-export interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean; edit?: true }
+interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean; edit?: true }
 /** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
-export interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
+interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
 /** `spendId` is the dedupe key; `rawId` is the id as the client sent it (number or string), echoed back for `approve`. */
-export interface SpendRec { at: number; person: PersonId; spendId: string; rawId: number | string; label: string; amountYen: number }
-export interface ApproveRec { at: number; person: PersonId; spendId: string }
+interface SpendRec { at: number; person: PersonId; spendId: string; rawId: number | string; label: string; amountYen: number }
+interface ApproveRec { at: number; person: PersonId; spendId: string }
 
-export interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
+interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
 
 export interface State {
   metrics: Record<PersonId, Map<string, Timed<number>[]>>;
