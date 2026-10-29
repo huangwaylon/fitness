@@ -1,4 +1,4 @@
-/* Island Fund design tokens v2 (docs/design/style-guide.md).
+/* Island Fund design tokens v4 (docs/design/style-guide.md).
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte
    BEFORE styles/theme.css (which holds element styles and utility classes only).
 
@@ -12,49 +12,51 @@
              11 reduced motion  12 shared keyframes (prefixed if-). */
 
 :root {
-  /* ---------- 1. palette ---------- */
+  /* ---------- 1. palette (v4: brighter, sunnier; style guide §1.1) ---------- */
   /* paper & ink */
-  --c-cream:#FFF8E7;        /* app background */
-  --c-bubble:#FFFBEA;       /* speech bubble fill (warm off-white, never pure white) */
-  --c-paper:#FDF1D6;        /* cards */
-  --c-paper-2:#F6E6C1;      /* card lip / pressed paper */
-  --paper-edge:#EAD9B5;     /* paper card border */
-  --sand-deep:#D4BC8E;      /* paper card lip */
-  --bark:#8A5A3B;           /* jar sign border */
-  --c-stitch:#DCC79B;       /* dashed stitching inside cards */
+  --c-cream:#FFF9E3;        /* app background */
+  --c-bubble:#FFFCEB;       /* speech bubble, emote bubble, banner (warm off-white, never pure white) */
+  --c-paper:#FFF3D6;        /* cards */
+  --c-paper-2:#F8E5BA;      /* card lip / pressed paper */
+  --paper-edge:#EED9A8;     /* paper card border */
+  --sand-deep:#E0C48A;      /* paper card lip */
+  --c-stitch:#E5CC94;       /* dashed stitching inside cards */
   --c-ink:#4A3A2C;          /* text, outlines (never pure black) */
-  --c-ink-talk:#6A5641;     /* bubble text (the game-like brown-grey; 6.7:1 on bubble) */
+  --c-ink-talk:#6A5641;     /* bubble text (6.7:1 on bubble) */
   --c-ink-soft:#6B5544;
-  --c-ink-faint:#7A6553;
-  /* accents */
-  --c-leaf:#7BC67E;  --c-leaf-lip:#5FA862;  --c-leaf-soft:#BFE5B9; --c-leaf-ink:#2E6B38;
-  --c-yuzu:#FFD66B;  --c-yuzu-lip:#E3B23C;  --c-yuzu-soft:#FFF0BF;
-  --c-coral:#FF9B87; --c-coral-lip:#E07F6B; --c-coral-soft:#FFD9CF; --c-coral-ink:#B04A3B;
-  --c-sky:#8FD3F4; --c-sky-soft:#DDF2FB;
-  --c-moon:#F6E7B0;  --c-moon-lip:#C9B676;
-  --c-amber:#F5A623;        /* the ▼ "next" arrow, small highlights */
-  --c-coin:#F7C548; --c-coin-rim:#D9962A; --c-coin-shine:#FFF1B8; /* leaf-coin */
-
-  /* night chrome */
-  --night-sky:#1F2A44; --night-sky-2:#2B3A5C; --night-card:#33456B; --night-edge:#4A5E8A;
-  --night-ink:#F7EEDB; --night-ink-soft:#B9C3DA; --firefly:#E8F59A;
+  /* accents (fill / lip / soft / ink) */
+  --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C;  --c-leaf-soft:#C8F0C4; --c-leaf-ink:#2E6B38;
+  --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;  --c-yuzu-soft:#FFF2B8;
+  --c-coral:#FF8F7A; --c-coral-lip:#E5735F; --c-coral-soft:#FFDCD3; --c-coral-ink:#B04A3B;
+  --c-sky:#6FCFF6;   --c-sky-lip:#3FB0E3;   --c-sky-soft:#D8F3FF;   --c-sky-ink:#23688F;
+  --c-moon:#FFE9A8;  --c-moon-lip:#D9BE6A;  /* night primary button */
+  --c-amber:#F5A623;        /* the ▼ "next" arrow */
+  --bark:#8A5A3B; --firefly:#E8F59A; /* scene (Builder A) */
+  --c-coin:#FFCB45; --c-coin-rim:#E0992A; --c-coin-shine:#FFF1B8; /* vector jar coins */
+  /* NH accents (§T) */
+  --c-nook-teal:#3FC1B0; --miles-navy:#3B4A8F; --miles-bg:#C9D2FA;
+  --card-pink:#FFD9D9; --card-teal:#C6EFE9; --card-butter:#FCEDAA; --card-lime:#DFF3AA; --card-lilac:#E4D9FB;
+  --bells-fill:#FFF6D6; --bells-edge:#EAD29A; --bells-lip:#E3C77E;
+  --star-on:#FFD84D; --star-off:#FFF3C4; --star-edge:#C99A2E;
+  --diy-paper:#F6EEDA; --diy-grid:rgba(110,160,200,.14);
   /* people (A apricot, B plum) and fruit-ring colours (var(--f-{fruit})) */
-  --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-berry:#F28BA8;
+  --p-plum:#B79CE0; --p-apricot:#FFB38A; --p-berry:#FF7FA8;
   --f-peach:#FFB38A; --f-coconut:#9C6B45; --f-apple:#FF8A7A; --f-pear:#C9DE6E;
-  /* しまフォン app tiles (squircle fills; glyphs are --c-ink) */
-  --app-island:#5CC9B0; --app-jar:#F7D44C; --app-help:#B98AE8;
-  --app-villager:#F09A5B; --app-lang:#7FA8F5; --app-bell:#C8DC5A; --app-sync:#A88462; --app-share:#7CCFD6;
-  /* name-tag colours (speech bubbles) */
-  --tag-host:#FFD66B; --tag-plum:#D9C6F5; --tag-apricot:#FFCFB0;
+  /* しまフォン tiles (§T.1) */
+  --app-island:#4FD1B5; --app-jar:#FFD84D;
+  --app-help:#FFF0B8; --app-lang:#8EB6FF; --app-bell:#FFE27A; --app-share:#FFD1D1;
+  /* name-tag colours (speech bubbles, nameplates) */
+  --tag-host:#FFD84D; --tag-plum:#E2D2FA; --tag-apricot:#FFD6BC;
 
   /* semantic (swapped at night, section 10) */
   --bg: var(--c-cream); --surface: var(--c-paper); --edge: var(--paper-edge);
-  --text: var(--c-ink); --text-soft: var(--c-ink-soft); --text-faint: var(--c-ink-faint);
+  --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --focus:#2F86B8;
-  --ring-track:#EADFC8; --bubble: var(--c-bubble); --lip: var(--sand-deep);
+  --ring-track:#F1E3C2; --bubble: var(--c-bubble); --lip: var(--sand-deep);
   --stitch: var(--c-stitch);
-  --phone-bg:#F7F1DE; --phone-edge:#E3D6B4;
-  --toast-bg: var(--c-bubble);
+  --phone-bg:#FFF7DF; --phone-edge:#EBDDB4;
+  --page-jar: var(--miles-bg);
+  --track: var(--c-paper-2);
 
   /* ---------- 3. scene (default = spring day; overridden by data-season / data-theme) ---------- */
   --grass:#8DD16A; --grass-2:#80C55E; --grass-edge:#5EA448;
@@ -64,54 +66,64 @@
   --sky-top:#9FDCF7; --sky-bottom:#E4F6FD; --sun-disc:#FFE59A;
   --scene-dim: 0;           /* 0..1, multiply overlay strength for dusk/night art */
 
-  /* ---------- 4. type ---------- */
+  /* ---------- 4. type (§2, §T.6) ---------- */
   /* Zen Maru Gothic carries kana/kanji + Latin text; Fredoka carries numbers and ¥ */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
   --font-num: "Fredoka", "Zen Maru Gothic", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
-
-  --fw-body:500; --fw-bold:700; --fw-black:700; --fw-num:600;
+  --fw-body:500; --fw-bold:700; --fw-black:900; --fw-num:600;
   --fs-hero:2.75rem; --fs-h1:1.75rem; --fs-h2:1.25rem; --fs-talk:1.0625rem; --fs-body-lg:1.0625rem;
   --fs-body:.9375rem; --fs-caption:.8125rem; --fs-tag:.8125rem; --fs-micro:.6875rem;
- --lh-talk:1.5; --lh-body:1.45;
+  --lh-talk:1.5; --lh-body:1.45;
 
   /* ---------- 5. shape ---------- */
- --r-sm:14px; --r-card:22px; --r-lg:28px; --r-phone:44px; --r-pill:999px;
-  --r-squircle:30%;  /* app-tile icons */
+  --r-sm:14px; --r-card:22px; --r-lg:28px; --r-phone:44px; --r-pill:999px;
+  --r-squircle:30%;  /* app tiles */
   --r-blob:46% 54% 52% 48% / 55% 45% 55% 45%;
   --r-bubble:34px 46px 38px 42px / 40px 34px 46px 40px; /* slightly wobbly speech bubble */
-  --bw:2px;          /* standard border width */
-  --stitch-gap:7px;  /* inset of dashed stitching from card edge */
+  --bw:2px;
+  --stitch-gap:7px;
 
   /* ---------- 6. elevation (warm, never grey-black) ---------- */
   --sh-lip:0 4px 0 var(--sand-deep);
   --sh-lip-pressed:0 1px 0 var(--sand-deep);
-  --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.45);  /* top highlight on chunky buttons */
-  --sh-soft:0 6px 18px rgba(138,90,59,.14);
-  --sh-float:0 14px 34px rgba(74,58,44,.22);
+  --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.5);
+  --sh-soft:0 6px 18px rgba(138,90,59,.12);
+  --sh-float:0 14px 34px rgba(74,58,44,.2);
   --sh-inset:inset 0 2px 0 rgba(74,58,44,.10);
-  --sh-glow:0 0 0 6px rgba(255,214,107,.45);
-  --sh-ground: rgba(46,80,40,.22);  /* ellipse shadow under villagers/trees */
+  --sh-glow:0 0 0 6px rgba(255,216,77,.45);
+  --sh-ground: rgba(46,100,40,.22);
 
-  /* ---------- 7. patterns (use as `background: var(--pat-…), var(--bg)`) ---------- */
-  --pat-dots: radial-gradient(circle, rgba(138,90,59,.07) 2px, transparent 2.6px) 0 0 / 18px 18px;
-  --pat-stripes: repeating-linear-gradient(135deg, rgba(212,188,142,.18) 0 12px, transparent 12px 24px);
-  --pat-stripes-fill: repeating-linear-gradient(135deg, rgba(255,255,255,.28) 0 8px, transparent 8px 16px);
+  /* ---------- 7. patterns (≤ 7% opacity; `background: var(--pat-…), var(--bg)`) ---------- */
+  --pat-dots: radial-gradient(circle, rgba(214,160,70,.12) 2px, transparent 2.6px) 0 0 / 18px 18px;
+  --pat-stripes-fill: repeating-linear-gradient(135deg, rgba(255,255,255,.32) 0 8px, transparent 8px 16px);
+  --pat-scallop: radial-gradient(circle at 50% 0, rgba(255,255,255,.35) 6px, transparent 6.5px) 0 0 / 16px 10px;
+  --pat-grid: linear-gradient(var(--diy-grid) 1px, transparent 1px) 0 0 / 16px 16px, linear-gradient(90deg, var(--diy-grid) 1px, transparent 1px) 0 0 / 16px 16px;
 
   /* ---------- 8. motion ---------- */
-  --ease-bounce:cubic-bezier(.34,1.56,.64,1);   /* pop / release overshoot */
-  --ease-soft:cubic-bezier(.25,.8,.25,1);       /* sheets, fades */
-  --ease-squash:cubic-bezier(.3,0,.5,1);        /* press-down, anticipation */
-  --ease-idle:cubic-bezier(.45,0,.55,1);        /* looping bob/sway (sine-like) */
+  --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+  --ease-soft:cubic-bezier(.25,.8,.25,1);
+  --ease-squash:cubic-bezier(.3,0,.5,1);
+  --ease-idle:cubic-bezier(.45,0,.55,1);
   --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms;
   --dur-slow:600ms; --dur-emote:2200ms;
 
-  /* ---------- 9. platform ---------- */
+  /* ---------- 9. platform + small-screen layout (§R; compact / tiny overrides below) ---------- */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --tabbar-h: 72px;   /* しまフォン dock */
+  --kb: 0px;              /* on-screen keyboard height (Sheet / pair set it from visualViewport) */
   --col: 480px;
+  --side: 18px;           /* page side padding (14 tiny) */
+  --gap: 12px;            /* island stack gaps (10 compact, 8 tiny) */
+  --dock-h: 72px; --dock-tile: 48px; --dock-fs: var(--fs-body-lg);
+  --dock-bottom: max(var(--safe-bottom), 8px); /* §R.1 table: home indicator 34 / 8 */
+  --tabbar-h: var(--dock-h);
+  --host-h: 84px;         /* しずえ beside the bubble on 島 */
+  --bubble-min: 64px;     /* speech bubble box (46 compact, 42 tiny) */
+  --talk-lines: 2;
+  --cta-h: 56px;
+  --tile: 64px; --tile-gap: 18px;  /* しまフォン grid */
   --sp-2:8px; --sp-3:12px; --sp-5:20px; --sp-8:32px;
 
   color-scheme: light;
@@ -147,18 +159,19 @@
 :root[data-season="summer"][data-tod="day"] { --sky-top:#6FCBF5; --sky-bottom:#C9EEFC; }
 :root[data-season="autumn"][data-tod="day"] { --sky-top:#A7D5EE; --sky-bottom:#F3E9D2; }
 
-/* ---------- 10. night (UI chrome + scene) ---------- */
+/* ---------- 10. night (§1.2: soft periwinkle, friendly; UI chrome + scene) ---------- */
 :root[data-theme="night"] {
-  --bg: var(--night-sky); --surface: var(--night-card); --edge: var(--night-edge);
-  --text: var(--night-ink); --text-soft: var(--night-ink-soft); --text-faint: var(--night-ink-soft);
-  --ring-track:#24314F; --bubble:#F7EEDB; --lip:#18213A; --stitch:#5A6F9C;
-  --phone-bg:#2B3A5C; --phone-edge:#4A5E8A; --toast-bg:#F7EEDB;
-  --sh-lip: 0 4px 0 #18213A; --sh-lip-pressed: 0 1px 0 #18213A;
-  --sh-soft: 0 6px 18px rgba(0,0,0,.35); --sh-float: 0 14px 34px rgba(0,0,0,.4);
-  --sh-inset: inset 0 2px 0 rgba(0,0,0,.25); --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.25);
-  --sh-ground: rgba(10,16,32,.35);
-  --pat-dots: radial-gradient(circle, rgba(246,231,176,.06) 2px, transparent 2.6px) 0 0 / 18px 18px;
-  --pat-stripes: repeating-linear-gradient(135deg, rgba(74,94,138,.25) 0 12px, transparent 12px 24px);
+  --bg:#33417A; --surface:#45559A; --edge:#6070B4;
+  --text:#FFF6E0; --text-soft:#D2D9F5;
+  --ring-track:#3A4886; --bubble:#FFF6E0; --lip:#26306A; --stitch:#6E7EC0;
+  --phone-bg:#3D4C8C; --phone-edge:#6070B4; --track:#2E3A72;
+  --page-jar:#5262A8;
+  --focus:#FFF3C4;
+  --sh-lip: 0 4px 0 #26306A; --sh-lip-pressed: 0 1px 0 #26306A;
+  --sh-soft: 0 6px 18px rgba(20,24,60,.3); --sh-float: 0 14px 34px rgba(20,24,60,.38);
+  --sh-inset: inset 0 2px 0 rgba(20,24,60,.25); --sh-btn-hi: inset 0 2px 0 rgba(255,255,255,.35);
+  --sh-ground: rgba(20,26,70,.3);
+  --pat-dots: radial-gradient(circle, rgba(255,243,196,.07) 2px, transparent 2.6px) 0 0 / 18px 18px;
   /* scene */
   --sky-top:#16203A; --sky-bottom:#2B3A5C; --sun-disc:var(--c-moon); --scene-dim:.35;
   --grass:#3E6B52; --grass-2:#376049; --grass-edge:#2A4B3A;
@@ -169,6 +182,22 @@
 :root[data-theme="night"][data-season="summer"] { --grass:#2F5E45; --grass-2:#2A563F; --tree-leaf:#264E3A; --tree-leaf-2:#1F4231; }
 :root[data-theme="night"][data-season="autumn"] { --grass:#5B6040; --grass-2:#535838; --tree-leaf:#7A5236; --tree-leaf-2:#66432C; --season-accent:#B8613E; }
 :root[data-theme="night"][data-season="winter"] { --grass:#8C9DB8; --grass-2:#7F91AE; --grass-edge:#62759A; --tree-leaf:#2E5A48; --tree-leaf-2:#264C3D; --sky-top:#1B2742; }
+
+/* ---------- 10b. small screens (§R): compact = SE height or < 360 wide; tiny = 320 phones ---------- */
+@media (max-height: 700px), (max-width: 359px) {
+  :root {
+    --gap: 10px; --host-h: 64px; --bubble-min: 46px; --talk-lines: 1; --fs-talk: .9375rem; --cta-h: 52px;
+    --dock-h: 60px; --dock-tile: 40px; --dock-fs: var(--fs-body);
+    --tile: 56px; --tile-gap: 14px;
+  }
+}
+@media (max-width: 339px) {
+  :root {
+    --side: 14px; --gap: 8px; --host-h: 56px; --bubble-min: 42px;
+    --dock-h: 56px; --dock-tile: 38px; --dock-fs: var(--fs-micro);
+    --tile: 52px; --tile-gap: 12px;
+  }
+}
 
 /* ---------- 11. reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -201,5 +230,134 @@
   85% { opacity: 1; transform: translateY(-4px); }
   100% { opacity: 0; transform: translateY(-10px); }
 }
+/* Miles stamp landing on a completed rung (§T.4) */
+@keyframes if-stamp { 0% { transform: rotate(-8deg) scale(1.6); opacity: 0; } 70% { transform: rotate(-8deg) scale(.95); opacity: 1; } 100% { transform: rotate(-8deg) scale(1); opacity: 1; } }
 /* letter reveal: each glyph */
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+/* ======================================================================================
+   Builder A: scene + fx + keyframes (style guide v4 §1.3, §S.11, §M.2, §M.4).
+   Scene tokens live on the scene element itself (.if-scene[data-season][data-tod], set by
+   island/IslandScene.svelte), so a scene renders the same whatever <html> says and the dev
+   gallery can show every season × time of day side by side.
+   ====================================================================================== */
+:root {
+  --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
+}
+.if-scene {
+  --foam:#FFFFFF; --cloud:#FFFFFF; --cloud-shade:#DCE6FF; --cloud-op:1; --tod-tint:transparent;
+  --moon:#FFF3C4; --sh-scale:1;
+  /* spring (default) */
+  --grass:#9BE36E; --grass-2:#8BD660; --grass-edge:#6FBF50;
+  --cliff:#C9A26B; --cliff-dark:#A98250; --path:#EBCF92; --path-edge:#D3AF6D;
+  --sea-far:#A6ECF7; --sea:#63D6EC; --sea-deep:#33B9DF; --beach:#FBEABB; --beach-wet:#EED69A;
+  --sky-top:#57B8F7; --sky-bottom:#CDEEFF; --sun-disc:#FFE68A; --sh-ground:rgba(46,100,40,.22);
+}
+.if-scene[data-season="summer"] {
+  --grass:#7DDA55; --grass-2:#6ECC48; --grass-edge:#55B340;
+  --sea-far:#9CEBF8; --sea:#4FD2EE; --sea-deep:#22B0E0; --beach:#FDEAB0; --beach-wet:#F0D592;
+  --sky-top:#3FA9F5; --sky-bottom:#BDE8FF; --sun-disc:#FFE066;
+}
+.if-scene[data-season="autumn"] {
+  --grass:#CAD764; --grass-2:#BAC955; --grass-edge:#9DAE45;
+  --cliff:#C49A62; --cliff-dark:#A07A4A; --path:#E4C185; --path-edge:#CCA463;
+  --sea-far:#A9E3F0; --sea:#5CC8E2; --sea-deep:#3AAED6; --beach:#F5E2B0; --beach-wet:#E6CD92;
+  --sky-top:#69B8F0; --sky-bottom:#F8EDD3; --sun-disc:#FFD27A; --sh-ground:rgba(90,80,30,.22);
+}
+.if-scene[data-season="winter"] {
+  --grass:#FAFCFF; --grass-2:#E8F0FB; --grass-edge:#C7D9EE;
+  --cliff:#B8C6D8; --cliff-dark:#97A8BF; --path:#E9E4DA; --path-edge:#D5CFC2;
+  --sea-far:#BCE3F0; --sea:#6BC2E0; --sea-deep:#4AA6D0; --beach:#EFEBE0; --beach-wet:#DCD6C6;
+  --sky-top:#8EC6F0; --sky-bottom:#EEF6FF; --sun-disc:#FFF1C2; --sh-ground:rgba(80,100,140,.18);
+  --cloud-shade:#E2E8F5;
+}
+.if-scene[data-tod="dawn"] {
+  --sky-top:#FFC6A8; --sky-bottom:#CDEBFF; --tod-tint:rgba(255,170,140,.12); --cloud:#FFF6F0; --cloud-shade:#FFD9C7;
+}
+.if-scene[data-tod="dusk"] {
+  --sky-top:#FF9E7A; --sky-bottom:#FFE2A8; --tod-tint:rgba(255,140,90,.14); --cloud:#FFF0E0; --cloud-shade:#FFB9A0;
+  --sun-disc:#FFB35C; --sh-scale:1.25;
+}
+.if-scene[data-tod="night"] {
+  --sky-top:#3A4886; --sky-bottom:#7584CC; --tod-tint:rgba(64,78,160,.26); --cloud:#9AA6E0; --cloud-shade:#7F8BCB;
+  --cloud-op:.5; --foam:rgba(255,255,255,.75);
+}
+/* Pause every scene animation while the tab is hidden (§S.13). */
+.if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
+
+/* §M.2 motion primitives: all on `.body` (transform-origin 50% 100%) unless noted; every one starts
+   and ends at `transform: none`, so the idle loop resumes without a jump. */
+@keyframes if-bob { 0%,100% { transform: none; } 50% { transform: translateY(-2%) scale(.985,1.015); } }
+@keyframes if-bob-soft { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
+@keyframes if-breath-slow { 0%,100% { transform: none; } 50% { transform: translateY(1%) rotate(5deg) scale(1.01,.99); } }
+@keyframes if-squish { 0%,100% { transform: none; } 40% { transform: scale(1.08,.9); } }
+@keyframes if-hop {
+  0%,100% { transform: none; } 15% { transform: scale(1.1,.9); } 40% { transform: translateY(-16%) scale(.92,1.08); }
+  65% { transform: translateY(0) scale(1.08,.92); } 82% { transform: scale(.97,1.03); }
+}
+@keyframes if-hop-small {
+  0%,100% { transform: none; } 15% { transform: scale(1.06,.94); } 40% { transform: translateY(-8%) scale(.96,1.04); }
+  65% { transform: translateY(0) scale(1.04,.96); }
+}
+@keyframes if-hop2 {
+  0%,100% { transform: none; } 8% { transform: scale(1.1,.9); } 25% { transform: translateY(-16%) scale(.92,1.08); }
+  45% { transform: scale(1.08,.92); } 65% { transform: translateY(-10%) scale(.95,1.05); } 85% { transform: scale(1.05,.95); }
+}
+@keyframes if-wiggle {
+  0%,100% { transform: none; } 16.6% { transform: rotate(-7deg); } 33.3% { transform: rotate(7deg); }
+  50% { transform: rotate(-5deg); } 66.6% { transform: rotate(5deg); } 83.3% { transform: rotate(-2deg); }
+}
+/* on .face: flip to the other side, look, flip back (respects the current facing) */
+@keyframes if-turn {
+  0%,100% { transform: scaleX(var(--facing,1)); } 12%,80% { transform: scaleX(calc(var(--facing,1) * -1)); }
+  92% { transform: scaleX(var(--facing,1)); }
+}
+@keyframes if-turn-dip {
+  0%,6%,18%,86%,98%,100% { transform: none; } 12%,92% { transform: scale(1.04,.96); }
+}
+@keyframes if-nod {
+  0%,50%,100% { transform: none; } 25% { transform: translateY(3%) scaleY(.97); } 75% { transform: translateY(2%) scaleY(.97); }
+}
+@keyframes if-laugh {
+  0%,100% { transform: none; } 16% { transform: translateY(-4%); } 33% { transform: scale(1.02,.98); }
+  50% { transform: translateY(-4%); } 66% { transform: scale(1.02,.98); } 83% { transform: translateY(-3%); }
+}
+@keyframes if-surprise {
+  0%,100% { transform: none; } 18% { transform: scale(1.12,.88); } 45% { transform: translateY(-10%) scale(.94,1.08); }
+  72% { transform: translateY(0) scale(1.04,.96); }
+}
+@keyframes if-shy { 0%,100% { transform: none; } 25%,75% { transform: rotate(-6deg) scale(.97); } }
+@keyframes if-stretch { 0%,100% { transform: none; } 30%,70% { transform: scale(.95,1.09); } 85% { transform: scale(1.04,.96); } }
+@keyframes if-proud { 0%,100% { transform: none; } 30%,75% { transform: translateY(-2%) scale(1.05,.97); } }
+@keyframes if-dance {
+  0%,100% { transform: none; }
+  12.5%,62.5% { transform: translate(-4%,-5%) rotate(-8deg); }
+  25%,75% { transform: translate(-4%,0) rotate(-8deg) scale(1.04,.96); }
+  37.5%,87.5% { transform: translate(4%,-5%) rotate(8deg); }
+  50% { transform: translate(4%,0) rotate(8deg) scale(1.04,.96); }
+}
+@keyframes if-walkbounce {
+  0%,50%,100% { transform: none; } 25% { transform: translateY(-4%) rotate(2deg); } 75% { transform: translateY(-4%) rotate(-2deg); }
+}
+/* trees: origin at the trunk base */
+@keyframes if-shake {
+  0%,100% { transform: none; } 20% { transform: rotate(3deg); } 40% { transform: rotate(-3deg); }
+  60% { transform: rotate(2deg); } 80% { transform: rotate(-1deg); }
+}
+@keyframes if-sway { 0%,100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+@keyframes if-bow { 0%,100% { transform: none; } 35%,65% { transform: translateY(3%) scale(1.02,.98); } }
+@keyframes if-talk { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
+@keyframes if-headshake {
+  0%,100% { transform: none; } 25% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } 75% { transform: rotate(-3deg); }
+}
+@keyframes if-pop { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: none; opacity: 1; } }
+/* emote bubble: pop 360ms, hold, shrink + fade 200ms (= --dur-emote 2200ms) */
+@keyframes if-bubble {
+  0% { transform: scale(0); opacity: 0; } 10% { transform: scale(1.15); opacity: 1; } 16.4% { transform: none; }
+  90.9% { transform: none; opacity: 1; } 100% { transform: scale(.8); opacity: 0; }
+}
+@keyframes if-fade-hold { 0% { opacity: 0; } 5.5%, 94.5% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
+@keyframes if-glow { from { opacity: .65; } to { opacity: 1; } }
+@keyframes if-wave { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
+@keyframes if-shore { from { transform: scaleY(1); opacity: .75; } to { transform: scaleY(1.05); opacity: 1; } }

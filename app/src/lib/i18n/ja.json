@@ -18,7 +18,7 @@
   "state.error": "島にうまくつながりませんでした",
   "state.retry": "もう一度",
   "state.notSetUp": "まだ設定されていません",
-  "state.notSetUpHint": "島のサーバー（Apps Script）がまだつながっていません。設定が終わるまで、デモで遊べます。",
+  "state.notSetUpHint": "サーバーの設定がまだです。デモで遊べます。",
   "state.tryDemo": "デモを見る",
   "state.saveFailed": "あとでもう一度お願いします",
   "fruit.peach": "活動",
@@ -102,8 +102,6 @@
   "pair.go": "つなぐ",
   "pair.wrong": "キーをもう一度見てね",
   "pair.wait": "少し待ってからどうぞ",
-  "help.island": "果物ひとつで50円です。相手の村人をタップすると、今週のようすを見てハイタッチできます。",
-  "help.jar": "毎週日曜、ふたりの果物とチームぶんが壺に入ります。",
   "help.share": "相手に見えるのは果物と%だけ。食事の答えはシェアされません。",
   "host.name": "しずえ",
   "host.default": "いい島ですね！",
@@ -123,7 +121,6 @@
   "phone.app.bell": "お知らせ",
   "phone.app.sync": "同期",
   "phone.app.share": "見せる範囲",
-  "phone.remindersHint": "お知らせはiPhoneのショートカット（オートメーション）から届きます：チェック 20:00、収穫 日曜 19:30",
   "phone.syncNow": "いま同期",
   "island.checkedIn": "チェック済み",
   "island.highfiveGot": "{name}さんからハイタッチ！",
@@ -143,5 +140,11 @@
   "pending.ask": "{label}は筋トレでしたか？",
   "purse.need": "あと{yen}で{label}",
   "purse.short": "あと{yen}",
-  "checkin.yesterdayOpen": "昨日はまだ"
+  "checkin.yesterdayOpen": "昨日はまだ",
+  "host.nook": "たぬきち",
+  "help.row.checkin": "自分の村人 → 今夜のチェック",
+  "help.row.fruit": "果物ひとつ ¥50",
+  "help.row.partner": "相手の村人 → ハイタッチ",
+  "help.row.harvest": "日曜に 壺へ",
+  "phone.remindHow": "iPhoneのショートカットから届きます"
 }
