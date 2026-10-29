@@ -5,7 +5,8 @@
   import { NOOKPHONE } from '#lib/client/assets.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let open = $state(false);
+  /** Bindable so the island page can pause the scene while the phone is open. */
+  let { open = $bindable(false) }: { open?: boolean } = $props();
 </script>
 
 <button type="button" class="icon-btn phone-btn" aria-label={t('phone.open')} onclick={() => (open = true)}>

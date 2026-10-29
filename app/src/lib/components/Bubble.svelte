@@ -8,6 +8,7 @@
   import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import Host from './Host.svelte';
+  import { hostTap } from './motion/director.svelte.ts';
   import type { HostPose } from '#lib/client/assets.ts';
 
   interface Props {
@@ -86,15 +87,15 @@
       if (!more) onfinish?.();
     } else if (more) {
       pageIdx += 1;
-    }
+    } else hostTap();
   }
 </script>
 
 <div class="talk">
   {#if host}
-    <span class="spk" style:--h={h}>
-      <Host pose={host} size={h} eager />
-    </span>
+    <button type="button" class="spk" style:--h={h} aria-label={t('host.name')} onclick={tap}>
+      <Host pose={host} size={h} talking={typing} eager />
+    </button>
   {/if}
   <div class="bubble" class:tail={!!host} class:grow={!!actions}>
     <span class="who" style:--tag={tag}>{name ?? t('host.name')}</span>
@@ -164,7 +165,10 @@
     clip-path: polygon(0 0, 100% 0, 50% 100%); border-radius: 3px; animation: if-nudge 700ms var(--ease-idle) infinite;
   }
   /* しずえ: feet on the bubble's baseline (Host floats gently by itself). */
-  .spk { flex: none; display: grid; justify-items: center; height: var(--h); align-items: end; margin-bottom: 4px; }
+  .spk {
+    flex: none; display: grid; justify-items: center; align-items: end; height: var(--h); min-width: 56px; margin-bottom: 4px;
+    appearance: none; border: 0; padding: 0; background: none; cursor: pointer; border-radius: 18px;
+  }
   @media (prefers-reduced-motion: reduce) {
     .bubble, .who, .next { animation: none; }
   }
