@@ -175,7 +175,7 @@ export interface WeekView {
   /** Present from Sunday 19:30 until both tapped 「壺に入れる」. */
   harvest: HarvestView | null;
   pending: PendingConfirmation[];
-  /** i18n key for the host しずえ's one line, plus params (`juniper.*`: the API name predates the Host rename). */
-  juniper: { key: string; params?: Record<string, string | number> };
+  /** i18n key (`host.*`) for the host しずえ's one line, plus params. */
+  host: { key: string; params?: Record<string, string | number> };
   highFivesToday: number;
 }
