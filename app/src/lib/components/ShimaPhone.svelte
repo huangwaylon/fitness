@@ -2,9 +2,8 @@
   // しまフォン launcher (v5 §4): a NookPhone-screen sheet with a status row (time · leaf · デモ in demo),
   // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
-  // Apps: help, villager (+ name), language, reminders (iOS Shortcuts), sync, sharing.
+  // Apps: help, villager (+ name), language, sync. (No privacy settings: both players see everything; no alerts.)
   import { onMount, tick as nextTick } from 'svelte';
-  import type { FruitKey } from '#lib/types.ts';
   import Sheet from './Sheet.svelte';
   import Avatar from './Avatar.svelte';
   import Villager from './Villager.svelte';
@@ -13,11 +12,11 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { now } from './motion/clock.ts';
   import { fruitArt } from '#lib/client/assets.ts';
-  import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
+  import { setLanguage, setVillagerName, setVillager } from '#lib/client/actions.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
   import { t, i18n, formatSyncTime } from '#lib/i18n/index.ts';
 
-  type AppId = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
+  type AppId = 'help' | 'villager' | 'lang' | 'sync';
   let { open = $bindable() }: { open: boolean } = $props();
 
   // `tile`: a full official NookPhone tile. Otherwise `glyph` (official) sits on our `fill`.
@@ -25,13 +24,8 @@
     { id: 'help', glyph: 'phone/glyph-help', fill: 'var(--c-yuzu)' },
     { id: 'villager', tile: 'phone/passport' },
     { id: 'lang', glyph: 'phone/glyph-chat', fill: 'var(--c-mint)' },
-    { id: 'bell', glyph: 'phone/glyph-resident', fill: 'var(--c-leaf)' },
-    { id: 'sync', tile: 'phone/rescue' },
-    // settings (who sees which numbers) = the official Island Designer tile
-    { id: 'share', tile: 'phone/island-designer' }
+    { id: 'sync', tile: 'phone/rescue' }
   ];
-  /** Raw numbers that can be shared. Eating answers are never shared. */
-  const SHAREABLE: FruitKey[] = ['peach', 'coconut', 'apple'];
 
   let app = $state<AppId | null>(null);
   let clock = $state('');
@@ -154,19 +148,6 @@
             </button>
           {/each}
         </div>
-      {:else if app === 'bell'}
-        <!-- No web push (ADR 0015): reminders are iOS Shortcuts automations. -->
-        <div class="rows">
-          <div class="row static">
-            <span class="ri"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-bowl" /></svg></span>
-            <span class="rl">{t('island.checkin')}</span><span class="money when">20:00</span>
-          </div>
-          <div class="row static">
-            <span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg></span>
-            <span class="rl">{t('harvest.title')}</span><span class="money when">{t('weekday.7')} 19:30</span>
-          </div>
-          <p class="cap">{t('phone.remindHow')}</p>
-        </div>
       {:else if app === 'sync' && view}
         <div class="rows">
           {#each [view.people[view.me], view.people[view.partner]] as p (p.person)}
@@ -179,18 +160,6 @@
           <button type="button" class="btn" disabled={week.syncing} onclick={() => week.refresh()}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sync" /></svg>{week.syncing ? t('sync.syncing') : t('phone.syncNow')}
           </button>
-        </div>
-      {:else if app === 'share' && view}
-        <div class="rows">
-          <p class="cap">{t('help.share')}</p>
-          {#each SHAREABLE as m (m)}
-            {@const on = view.visibility?.[m] ?? false}
-            <button type="button" class="row" role="switch" aria-checked={on} onclick={() => setVisibility(m, !on)}>
-              <OfficialArt key={fruitArt(m)} size={32} />
-              <span class="rl">{t('share.' + m)}</span>
-              <span class="switch" aria-hidden="true"></span>
-            </button>
-          {/each}
         </div>
       {/if}
     </div>
@@ -271,11 +240,8 @@
   }
   .row:not(.static):active { transform: translateY(2px); box-shadow: 0 1px 0 var(--lip); }
   .row.static { cursor: default; }
-  .ri { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: var(--r-tile); background: var(--c-yuzu); color: var(--c-ink); }
-  .ri svg { width: 28px; height: 28px; }
   .rl { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); word-break: auto-phrase; text-wrap: balance; line-height: 1.3; }
   .when { font-size: var(--fs-body); color: var(--text-soft); white-space: nowrap; }
   .radio { width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--lip) 60%, transparent); flex: none; }
   .row[aria-checked='true'] .radio { background: radial-gradient(circle, var(--c-cream) 0 5px, var(--c-leaf) 6px); }
-  .cap { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-align: center; text-wrap: balance; }
 </style>

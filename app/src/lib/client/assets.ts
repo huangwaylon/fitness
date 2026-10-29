@@ -70,7 +70,7 @@ export function fruitArt(fruit: FruitKey): string {
 
 /** しまフォン launcher app → official NookPhone icon (a full squircle tile), only where the icon's meaning
  *  matches (U10): help = DIY recipes (how-to), villager = passport. The rest use our own tiles. */
-export type PhoneApp = 'help' | 'villager' | 'lang' | 'bell' | 'sync' | 'share';
+export type PhoneApp = 'help' | 'villager' | 'lang' | 'sync';
 const PHONE: Partial<Record<PhoneApp, string>> = { help: 'phone/diy', villager: 'phone/passport' };
 export function phoneArt(app: PhoneApp): string | null {
   return PHONE[app] ?? null;

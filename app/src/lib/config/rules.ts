@@ -52,8 +52,8 @@ export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
 export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' }, easy: { from: '12-25', to: '01-01', factor: 0.7 } } as const;
 
 export const PEOPLE: Record<PersonId, { age: number; villager: string }> = {
-  A: { age: 29, villager: 'Bean' },
-  B: { age: 26, villager: 'Mochi' }
+  A: { age: 29, villager: 'ウェイ' },
+  B: { age: 26, villager: 'うめ' }
 };
 
 export interface Season {
@@ -89,6 +89,5 @@ export const RUNGS = [
 
 export const JOBS = {
   provisional: { weekday: 0, hour: 19, minute: 30 }, // Sunday 19:30 JST
-  final: { weekday: 3, hour: 4, minute: 0 }, // Wednesday 04:00 JST
-  checkinReminder: { hour: 20, minute: 0 }
+  final: { weekday: 3, hour: 4, minute: 0 } // Wednesday 04:00 JST
 } as const;

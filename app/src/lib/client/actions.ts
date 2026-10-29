@@ -102,12 +102,6 @@ export function setVillagerName(name: string) {
   });
 }
 
-export function setVisibility(metric: string, shareRaw: boolean) {
-  return week.send('share', { metric, on: shareRaw }, (v) => {
-    v.visibility = { ...(v.visibility ?? {}), [metric]: shareRaw };
-  });
-}
-
 /** Villager from the roster (しまフォン → 村人), e.g. 'goldie' (lib/villagers/roster.ts). */
 export function setVillager(villager: string) {
   return week.send('pref', { key: 'villager', value: villager }, (v) => {

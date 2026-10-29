@@ -104,16 +104,16 @@ export interface WeekPayout {
   teamYen: number;
 }
 
-// ---- View model computed in the browser by lib/model (snapshot → UI). Partner fields are privacy-filtered. ----
+// ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
 
 export interface FruitView {
   milli: number;
   maxMilli: number;
   /** 0–100, of this category's max. */
   pct: number;
-  /** Raw counted amount and target: always for me; for the partner only if they opted in (visibility_pref). */
-  actual?: number;
-  target?: number;
+  /** Raw counted amount and target. */
+  actual: number;
+  target: number;
 }
 
 export interface PersonWeekView {
@@ -124,8 +124,8 @@ export interface PersonWeekView {
   score: number;
   fruits: Record<FruitKey, FruitView>;
   lastSyncAt: string | null;
-  /** Only present for `me`: eating answers are never shared. */
-  habits?: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
+  /** Eating check-ins (the three habit keys and the ticks by date). */
+  habits: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
 }
 
 export interface PendingConfirmation {
@@ -174,6 +174,4 @@ export interface WeekView {
   /** i18n key for the host しずえ's one line, plus params (`juniper.*`: the API name predates the Host rename). */
   juniper: { key: string; params?: Record<string, string | number> };
   highFivesToday: number;
-  /** My raw-number sharing prefs, by fruit key. */
-  visibility: Partial<Record<FruitKey, boolean>>;
 }

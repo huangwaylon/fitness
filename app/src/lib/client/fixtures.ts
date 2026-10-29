@@ -1,19 +1,13 @@
 // Realistic sample WeekView for `?demo` and for dev without VITE_GAS_URL.
-// Cast: もち (B, cat, PT) is "me", まめ (A, dog, Anytime) is the partner.
+// Cast: ウェイ (A, dog, Anytime) is "me" (the user is A), うめ (B, cat, PT) is the partner.
 import type { FruitKey, FruitView, HarvestView, WeekView } from '#lib/types.ts';
 import { RUNGS } from '#lib/config/rules.ts';
 
 const MAX: Record<FruitKey, number> = { peach: 35000, coconut: 25000, apple: 15000, pear: 25000 };
 
-function fruit(key: FruitKey, actual: number, target: number, share = true): FruitView {
+function fruit(key: FruitKey, actual: number, target: number): FruitView {
   const ratio = Math.min(1, actual / target);
-  const milli = Math.round(MAX[key] * ratio);
-  const v: FruitView = { milli, maxMilli: MAX[key], pct: Math.round(ratio * 100) };
-  if (share) {
-    v.actual = actual;
-    v.target = target;
-  }
-  return v;
+  return { milli: Math.round(MAX[key] * ratio), maxMilli: MAX[key], pct: Math.round(ratio * 100), actual, target };
 }
 
 function score(f: Record<FruitKey, FruitView>): number {
@@ -21,18 +15,17 @@ function score(f: Record<FruitKey, FruitView>): number {
 }
 
 export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
-  const bFruits = {
-    peach: fruit('peach', 40, 85),
+  const aFruits = {
+    peach: fruit('peach', 64, 135),
     coconut: fruit('coconut', 1, 2),
     apple: fruit('apple', 2, 5),
     pear: fruit('pear', 5, 15)
   };
-  // Partner: privacy-filtered by the server — only peach raw numbers were opted in.
-  const aFruits = {
-    peach: fruit('peach', 77, 135),
-    coconut: fruit('coconut', 2, 2, false),
-    apple: fruit('apple', 1, 5, false),
-    pear: { ...fruit('pear', 6, 15, false) }
+  const bFruits = {
+    peach: fruit('peach', 49, 85),
+    coconut: fruit('coconut', 2, 2),
+    apple: fruit('apple', 1, 5),
+    pear: fruit('pear', 6, 15)
   };
   const total = 146200;
   const harvest: HarvestView = {
@@ -47,30 +40,34 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
     confirmedBy: []
   };
   return {
-    me: 'B',
-    partner: 'A',
+    me: 'A',
+    partner: 'B',
     locale: 'ja',
     weekKey: '2026-10-26',
     today: '2026-10-28',
     people: {
       A: {
         person: 'A',
-        villagerName: 'まめ',
+        villagerName: 'ウェイ',
         score: score(aFruits),
         fruits: aFruits,
         lastSyncAt: '2026-10-28T13:58:00+09:00',
-        villager: null
+        villager: null,
+        habits: {
+          keys: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'],
+          ticksByDate: { '2026-10-27': ['teishoku_lunch', 'veg_two_meals'], '2026-10-28': ['teishoku_lunch'] }
+        }
       },
       B: {
         person: 'B',
-        villagerName: 'もち',
+        villagerName: 'うめ',
         score: score(bFruits),
         fruits: bFruits,
         lastSyncAt: '2026-10-28T14:05:00+09:00',
         villager: null,
         habits: {
           keys: ['eat_lunch', 'snack_swap', 'veg_two_meals'],
-          ticksByDate: { '2026-10-27': ['eat_lunch', 'veg_two_meals'], '2026-10-28': ['eat_lunch'] }
+          ticksByDate: { '2026-10-27': ['eat_lunch', 'snack_swap', 'veg_two_meals'], '2026-10-28': ['eat_lunch', 'veg_two_meals'] }
         }
       }
     },
@@ -88,7 +85,6 @@ export function sampleWeek(opts: { harvest?: boolean } = {}): WeekView {
     harvest: opts.harvest ? harvest : null,
     pending: [{ kind: 'workout', id: 'w-yoga-1027', date: '2026-10-27', label: 'ヨガ 45分' }],
     juniper: { key: 'juniper.default' },
-    highFivesToday: 1,
-    visibility: {}
+    highFivesToday: 1
   };
 }

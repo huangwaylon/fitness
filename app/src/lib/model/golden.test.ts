@@ -1,5 +1,5 @@
 // Golden test: the compute-on-read model must keep reproducing what the old Mac server returned (WeekView incl. the
-// earn + top-up ledger, purse, harvest, pending questions and privacy filtering) on a 10-week timeline.
+// earn + top-up ledger, purse, harvest and pending questions) on a 10-week timeline.
 //
 // The fixtures were frozen from the differential harness (server vs model, all views identical) before the server
 // was deleted (ADR 0015):
@@ -13,6 +13,11 @@
 //
 // Intentional model/server differences were already normalised in the goldens: lastSyncAt is the newest appending
 // metrics/workouts row; a pending visit's id is `<place>@<arrive ISO>`; a purse spend's id is the client's spendId.
+//
+// Regenerated from the model on 2026-10-29 for two user decisions, each checked to be the only difference first:
+// (1) no privacy: the partner card now carries raw actual/target for every fruit and their eating check-ins
+// (`habits`), and WeekView.visibility is gone (old `share` rows are ignored); (2) the default names are
+// ウェイ (A) and うめ (B) instead of Bean / Mochi. Everything else is still the frozen server's output.
 //
 // If a change to the rules is intended, regenerate the goldens from the model and review the diff of
 // timeline-views.json (see git history for the original harness, commit bc39eba).
