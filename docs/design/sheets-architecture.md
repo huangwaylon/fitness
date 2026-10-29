@@ -19,7 +19,7 @@ Event `type`s and `data`:
 - `spend {spendId, label, amountYen}` and `approve {spendId}`
 - `transfer {month}` · `harvest {week}` · `highfive {}`
 - `pref {key, value}` (keys: `locale`, `villagerName`, `villager`)
-- `share {metric, on}`: no longer sent; old rows are ignored (ADR 0016).
+- `share {metric, on}`: refused by the script (`bad_request`); old rows are ignored (ADR 0016).
 
 Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:
 - `metric_set {date, metric:'steps'|'exercise_min', value}`: overrides the day's value, also lower. The script refuses a non-integer or out-of-range `value` (steps 0–100,000; minutes 0–1,440) or a bad date/metric with `bad_request`. Read rule: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows; else max(S.value, ingest rows with S.at < at ≤ T).
@@ -38,7 +38,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 
 | `action` | Request | Reply |
 |---|---|---|
-| `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `workouts` (types/starts/ends/avgHrs lists) | `{ok, metrics, workouts}`: rows actually appended |
+| `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `workouts` (types/starts/ends/avgHrs lists) | `{ok, metrics, workouts, skipped?, unknownTypes?}`: rows actually appended, plus unparsed entries and unmapped workout names when there are any |
 | `presence` | `place, event, at?` | `{ok}` |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
 | `snapshot` | `since?` (ISO, the max `at` the client has seen) | `{ok, me, now, rows:{metrics, workouts, presence, events}}` (rows with `at > since`; both people) |
@@ -49,13 +49,13 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 - `snapshot` without `since` returns everything: ~a few thousand rows a year, compact arrays (`rows.metrics = [[at, person, date, metric, value], …]`).
 
 ## 3. Code layout
-- `app/src/lib/ingest/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. A port of `server/ingest/shortcut.ts` + `workout-names.ts`, without zod, so it runs in Apps Script and the browser.
+- `app/src/lib/ingest/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. A port of `server/ingest/shortcut.ts` + `workout-names.ts`, without zod, so it runs in Apps Script (the browser never parses Shortcut bodies).
 - `app/gas/`: Apps Script source in TS (`main.ts`: `doPost`, sheet helpers), bundled with the parser by **esbuild** into `apps-script/Code.js` (one global script, no imports) via `npm run gas:build`. `apps-script/appsscript.json` sets scope `spreadsheets.currentonly`, the web app, and timezone `Asia/Tokyo`. `clasp` is optional (`.clasp.json` not committed).
 - `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (and jar, harvest, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. It replaces `server/week.ts` and `server/ledger.ts` semantics, including the max(Sunday 19:30, Wednesday 04:00) payout rule and purse/transfer math.
 - `app/src/lib/client/`:
   - `gas.ts`: post helper with a timeout and retry. Writes go through a queue persisted in `localStorage` and replayed until acked. Snapshot merge and cache in `localStorage`.
   - `week.svelte.ts` and `actions.ts`: rewired to the model and queue; same UI-facing functions where possible.
-- Pairing: paste your key (or open `…/#key=…` once). `whoami` confirms the person, and the key is stored in `localStorage`.
+- Pairing: paste your key in the installed app. A `#key=` link only works when opened inside the installed PWA (iOS storage is per app). `whoami` confirms the person, and the key is stored in `localStorage`.
 - Removed (done 2026-10-29): `app/src/lib/server/**`, `app/src/routes/api/**`, `app/src/routes/ingest/**`, `hooks.server.ts`, drizzle, `scripts/{pair,token,devices,recompute,vapid,backup*,restore*}`, Docker, adapter-node, better-sqlite3, web push.
 
 ## 4. Testing

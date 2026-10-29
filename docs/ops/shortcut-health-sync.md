@@ -5,7 +5,7 @@ app) **every time you open an app you use daily** (e.g. LINE), at most once an h
 
 **Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening
 an app means the phone is unlocked. Background: [ADR 0012](../decisions/0012-shortcuts-health-sync.md); endpoint:
-[ADR 0015](../decisions/0015-google-sheet-backend.md).
+[ADR 0015](../decisions/0015-google-sheet-backend.md). This is step 3 of the setup order in [runbook §1](runbook.md#1-one-time-setup-the-canonical-order-the-other-docs-link-here).
 
 **[U]** = unverified on a real phone (exact action names on iOS 27, whether runs are silent).
 
@@ -27,7 +27,7 @@ in the body. Request Body **JSON** (Apps Script reads the raw text, so **Text** 
 - `dates`/`steps`/`exercise_minutes` are parallel lists (one line per Health sample, or JSON arrays); values on the
   same day are added up. Dates may be ISO, `2026/10/28 7:05` or Shortcuts' default format. `workouts` is optional.
 - Other accepted shapes (series `{"steps":{"values","starts"}}`, `{"days":[…]}`): see `app/src/lib/ingest/parse.ts`.
-- A day's numbers only ever go up, so a partial first day can't overwrite a full one, and re-sending is harmless.
+- A day's numbers from the Shortcut only ever go up, so a partial first day can't overwrite a full one, and re-sending is harmless. (A きろく edit can still lower a day in an open week.)
 - Reply: `{"ok":true,"metrics":4,"workouts":1}` (rows actually added), plus `skipped` / `unknownTypes` when relevant.
   Errors: `{"ok":false,"error":"unauthorized"|"bad_request"|"too_large"|"busy"|"unavailable"}`.
 - Limits: 1 MB per request, 120 requests per key per minute. Every run leaves an audit row in the `uploads` tab.
@@ -71,7 +71,7 @@ URL, **POST**, Request Body **JSON**:
 
 Duplicate it as a **Leave** automation with `"event": "leave"`. Place keys (`app/src/lib/config/places.ts`):
 `anytime` (A), `pt_studio` and `anytime_b` (B). An optional `"at"` (ISO time) back-dates the event. After a visit of
-30 minutes or more with no Watch strength workout, the app asks 「筋トレとして記録する？」 on the Island page.
+30 minutes or more with no Watch strength workout, the app asks 「…は筋トレでしたか？」 on 島.
 
 ## 6. One-time baseline (optional)
 Duplicate the Shortcut, change step 4 to **− 84 days** and run it once. Over 1 MB? Run it in chunks of a few weeks.
@@ -83,6 +83,6 @@ Duplicate the Shortcut, change step 4 to **− 84 days** and run it once. Over 1
 | HTML instead of JSON | The script's authorization lapsed: google-setup.md §9 |
 | `bad_request` | The body isn't JSON, or `action` is missing/misspelled |
 | `skipped` in the reply | Some dates or numbers didn't parse; the `uploads` tab notes how many |
-| `unknownTypes: [...]` | A workout name we don't map yet: add it in `app/src/lib/ingest/parse.ts`, then google-setup.md §11 |
+| `unknownTypes: [...]` | A workout name we don't map yet: add it to `WORKOUT_LABELS_JA` in `app/src/lib/model/labels.ts` (the parser inverts it), then google-setup.md §11 |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash a banner] |
 | Nothing arrives | Settings → Health → Data Access → Shortcuts permissions |
