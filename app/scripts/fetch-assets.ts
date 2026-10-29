@@ -99,6 +99,12 @@ const SPECS: Record<string, Spec> = {
   'deco/star-fragment-large': [96, 'Large_Star_Fragment_NH_Inv_Icon.png'],
   'deco/party-popper': [96, 'Party_Popper_NH_Inv_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
+  // v5 (docs/design/v5-direction.md): game-derived replacements for hand-drawn chrome.
+  // The NH map is the reference for the flat sea/shore style; the islet render is that style's sample.
+  'map/islet': [548, 'NH_Map_Islet.png'],
+  'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'], // ごほうび財布 (reward wallet)
+  'phone/island-designer': [92, 'NookPhone_Island_Designer_NH_Icon.png'], // しまフォン settings tile
+  'money/miles-ticket': [128, 'Nook_Miles_Ticket_NH_Inv_Icon.png'], // the trip goal (次は 沖縄)
   // v4 seasonal particles + seasonal ground items.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],

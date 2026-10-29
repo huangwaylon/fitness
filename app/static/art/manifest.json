@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -271,6 +271,12 @@
       "h": 512,
       "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH.png"
     },
+    "map/islet": {
+      "path": "map/islet.webp",
+      "w": 548,
+      "h": 448,
+      "source": "https://nookipedia.com/wiki/File:NH_Map_Islet.png"
+    },
     "money/bells": {
       "path": "money/bells.webp",
       "w": 128,
@@ -288,6 +294,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
+    },
+    "money/miles-ticket": {
+      "path": "money/miles-ticket.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Nook_Miles_Ticket_NH_Inv_Icon.png"
     },
     "phone/diy": {
       "path": "phone/diy.webp",
@@ -325,11 +337,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Menu_Call_Resident_NH_Icon.png"
     },
+    "phone/island-designer": {
+      "path": "phone/island-designer.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Island_Designer_NH_Icon.png"
+    },
     "phone/miles": {
       "path": "phone/miles.webp",
       "w": 92,
       "h": 92,
       "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Miles_NH_Icon.png"
+    },
+    "phone/nook-shopping": {
+      "path": "phone/nook-shopping.webp",
+      "w": 92,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Shopping_NH_Icon.png"
     },
     "phone/nookphone": {
       "path": "phone/nookphone.webp",
