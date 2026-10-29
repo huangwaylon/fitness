@@ -179,20 +179,20 @@
 
 <style>
   .gal { padding: 16px 12px 140px; max-width: 100%; }
-  h1 { font-size: var(--fs-h1); font-weight: 700; margin: 0; }
+  h1 { font-size: var(--fs-title); font-weight: 700; margin: 0; }
   h2 { font-size: var(--fs-h2); font-weight: 700; margin: 26px 0 8px; }
-  .cap { color: var(--text-soft); font-size: var(--fs-caption); margin: 4px 0 0; }
-  section { border-bottom: 2px dashed var(--stitch); padding-bottom: 12px; }
+  .cap { color: var(--text-soft); font-size: var(--fs-s); margin: 4px 0 0; }
+  section { border-bottom: 2px dashed var(--lip); padding-bottom: 12px; }
   .row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 14px 0 6px; }
-  .row.tree { background: var(--tree-leaf); border-radius: var(--r-card); padding: 10px; }
+  .row.tree { background: var(--c-leaf); border-radius: var(--r-card); padding: 10px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
   .grid.roster { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   figure { margin: 0; display: grid; justify-items: center; align-content: end; gap: 4px; }
   figure .row { padding: 0; gap: 6px; align-items: flex-end; }
-  figcaption { font-size: var(--fs-micro); color: var(--text-soft); text-align: center; }
+  figcaption { font-size: var(--fs-s); color: var(--text-soft); text-align: center; }
   code { font-size: .7rem; }
   .cell { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 14px; background: var(--grass); }
-  .tile { width: 56px; height: 56px; border-radius: 30%; display: grid; place-items: center; overflow: hidden; background: var(--app-lang); }
+  .tile { width: 56px; height: 56px; border-radius: 30%; display: grid; place-items: center; overflow: hidden; background: var(--c-mint); }
   .tile svg { width: 30px; height: 30px; color: var(--c-ink); }
   .amt { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-num); font-weight: 700; font-size: 1.25rem; }
   .plain { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; }
@@ -200,10 +200,10 @@
   .live { display: flex; gap: 8px; align-items: flex-end; }
   .livescene { width: 393px; max-width: 100%; --scene-h: 520px; border-radius: 14px; overflow: hidden; }
   .btns { gap: 6px; }
-  .chip { min-height: 44px; padding: 0 12px; border-radius: 999px; border: 2px solid var(--edge); background: var(--surface); color: var(--text); font: 700 12px var(--font-ui); }
+  .chip { min-height: 44px; padding: 0 12px; border-radius: 999px; border: 2px solid var(--lip); background: var(--surface); color: var(--text); font: 700 12px var(--font-ui); }
   .fxstage { position: relative; display: inline-block; width: 120px; height: 120px; }
   .fxstage :global(.fx) { left: 60px; top: 70px; }
-  .sc { width: 176px; aspect-ratio: 390 / 540; border: 2px solid var(--edge); border-radius: 14px; overflow: hidden; background: var(--bg); }
+  .sc { width: 176px; aspect-ratio: 390 / 540; border: 2px solid var(--lip); border-radius: 14px; overflow: hidden; background: var(--bg); }
   /* Render at phone width, then zoom down, so the min tap sizes don't distort the thumbnail. */
   .sc > :global(*) { width: 390px; --scene-h: 540px; zoom: .441; }
   .scenes figure { align-content: start; }

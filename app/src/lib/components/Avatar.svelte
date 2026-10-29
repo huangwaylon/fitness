@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A person's round villager head (official icon, silhouette fallback) on a pebble in their tag colour (§A).
+  // A person's round villager head (official icon, silhouette fallback) on a round chip (yuzu A, mint B).
   import type { PersonId } from '#lib/types.ts';
   import Villager from './Villager.svelte';
 
@@ -13,13 +13,13 @@
   const icon = $derived(Math.round(size * 0.86));
 </script>
 
-<span class="av" style:--s="{size}px" style:--tag={person === 'A' ? 'var(--tag-apricot)' : 'var(--tag-plum)'}>
+<span class="av" style:--s="{size}px" style:--tag={person === 'A' ? 'var(--c-yuzu)' : 'var(--c-mint)'}>
   <Villager {person} villager={villager ?? undefined} size={icon} head />
 </span>
 
 <style>
   .av {
     width: var(--s); height: var(--s); flex: none; display: grid; place-items: center; overflow: hidden;
-    border-radius: var(--r-blob); background: color-mix(in srgb, var(--tag) 55%, var(--surface));
+    border-radius: 50%; background: color-mix(in srgb, var(--tag) 55%, var(--c-cream));
   }
 </style>

@@ -1,12 +1,10 @@
 <script lang="ts">
-  // 日曜の収穫 (Sunday harvest overlay v4 §R.6, §T.5, ≤ 60 s): tally → rung reached (optional) → 壺に入れる.
-  // Person rows: villager icon, the four official fruit (ripeness), island-evaluation stars, amount in a Bells
-  // pill. The jar total sits in the Miles-style navy pill. Confetti in the §M.4 colours (none under reduced motion).
-  // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
-  // By day it has the scene's bright sky; at night a soft periwinkle (A14). Villagers cheer with their marks (N1).
-  // Rows show name + the four fruits + yen, not a scoreboard (U3, U12); しずえ keeps one outfit (U5).
-  // Round 5: no ★ vs ★ per person, only the team's stars (U7); the purse is one line under the total (U6); after
-  // 壺に入れる a short end card fills the jar and counts its total up before going back to 島 (U5).
+  // 日曜の収穫 (Sunday harvest overlay, v5 §4, ≤ 60 s): tally → rung reached (optional) → 壺に入れる → end card.
+  // The island stays visible behind a 30% tint; しずえ's dialogue box, one card (rows: villager icon, the four
+  // official fruit by ripeness, + ¥) and the CTA sit at the bottom, in the thumb zone. The jar total is the one
+  // big number. A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
+  // Round 5: only the team's stars (U7); the purse is one line under the total (U6); after 壺に入れる the end card
+  // fills the jar and counts its total up before going back to 島 (U5).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
   import { FRUITS, RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
@@ -100,9 +98,9 @@
   const stars = (score: number) => Math.max(0, Math.min(5, Math.ceil(score / 20)));
   const teamStars = $derived(stars(p.A.score) + stars(p.B.score));
   // Confetti (§M.4 colours): 36 pieces, CSS only; skipped under reduced motion.
-  const COLOURS = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
-  const CONFETTI = Array.from({ length: 36 }, (_, i) => ({
-    x: (i * 37) % 100, c: COLOURS[i % 6], d: (i % 12) * 0.12, r: (i * 53) % 360, round: i % 3 === 0, dur: 2.4 + (i % 5) * 0.3
+  const COLOURS = ['var(--c-yuzu)', 'var(--c-leaf)', 'var(--c-mint)', 'var(--c-coral)', 'var(--c-cream)'];
+  const CONFETTI = Array.from({ length: 24 }, (_, i) => ({
+    x: (i * 37) % 100, c: COLOURS[i % 5], d: (i % 12) * 0.12, r: (i * 53) % 360, round: i % 3 === 0, dur: 2.4 + (i % 5) * 0.3
   }));
 </script>
 
@@ -116,131 +114,107 @@
 
   <div class="col">
     <div class="head">
-      <span class="pill title"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.title')}</span>
+      <span class="plate">{t('harvest.title')}</span>
       <span class="steps" aria-hidden="true">{#each steps as s (s)}<i class:on={s === step}></i>{/each}</span>
-      {#if step !== 'done'}<button type="button" class="pill later" onclick={onlater}>{t('common.later')}</button>{:else}<span></span>{/if}
+      {#if step !== 'done'}<button type="button" class="later" onclick={onlater}>{t('common.later')}</button>{:else}<span class="later-sp"></span>{/if}
     </div>
 
-    <Bubble text={hostLine} host={step === 'tally' ? 'wave' : 'bow'} />
+    <div class="bottom">
+      <Bubble text={hostLine} host={step === 'tally' ? 'wave' : 'bow'} />
 
-    {#if step === 'tally'}
-      <section class="tally miles" style:--card="var(--card-butter)" aria-live="polite">
-        {#each people as who, i (who)}
-          {@const pv = view.people[who]}
-          <div class="trow" style="animation-delay:{0.3 + i * 0.7}s">
-            <Avatar person={who} villager={pv.villager} size={40} />
-            <span class="who">
-              <b class="nm">{pv.villagerName}</b>
-              <span class="frs" aria-hidden="true">
-                {#each FRUITS as f (f)}<span class="fr {sameWeek ? ripeness(pv.fruits[f].pct) : ''}"><OfficialArt key={fruitArt(f)} size="var(--fr)" /></span>{/each}
+      {#if step === 'tally'}
+        <section class="card tally" aria-live="polite">
+          {#each people as who, i (who)}
+            {@const pv = view.people[who]}
+            <div class="trow" style="animation-delay:{0.3 + i * 0.6}s">
+              <Avatar person={who} villager={pv.villager} size={40} />
+              <span class="who">
+                <b class="nm">{pv.villagerName}</b>
+                <span class="frs" aria-hidden="true">
+                  {#each FRUITS as f (f)}<span class="fr {sameWeek ? ripeness(pv.fruits[f].pct) : ''}"><OfficialArt key={fruitArt(f)} size="var(--fr)" /></span>{/each}
+                </span>
               </span>
+              <b class="plus money">+{formatYen(p[who].fruitYen)}</b>
+            </div>
+          {/each}
+          <div class="trow" style="animation-delay:1.5s">
+            <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" /></svg></span>
+            <span class="who"><b class="nm">{t('harvest.team')}</b>
+              <span class="stars" role="img" aria-label="{t('harvest.teamStars')} ★{teamStars}/10"><span aria-hidden="true">★ {teamStars}/10</span></span>
             </span>
-            <Yen yen={p[who].fruitYen} sign="+" pill />
+            <b class="plus money">+{formatYen(p.teamYen)}</b>
           </div>
-        {/each}
-        <div class="trow" style="animation-delay:1.7s">
-          <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart" /></svg></span>
-          <span class="who"><b class="nm">{t('harvest.team')}</b>
-            <span class="stars" role="img" aria-label="{t('harvest.teamStars')} ★{teamStars}/10">
-              <span aria-hidden="true">{t('harvest.teamStars')}</span>
-              <svg viewBox="0 0 24 24" class="on" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" /></svg>
-              <b class="money" aria-hidden="true">{teamStars}</b>
-            </span>
-          </span>
-          <Yen yen={p.teamYen} sign="+" pill />
-        </div>
-      </section>
-
-      <div class="total">
-        <span class="lbl">{t('harvest.jar')} <span class="prov">{t('harvest.provisional')}</span></span>
-        <span class="navy money"><OfficialArt key="money/bells" size="1em" />{formatYen(jarTotal)}</span>
-        {#if purseTotal > 0}
-          <span class="mini"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-purse" /></svg>{t('harvest.purse')} <b class="money">+{formatYen(purseTotal)}</b></span>
-        {/if}
-      </div>
-
-      <div class="cta">
-        {#if rung}<button type="button" class="btn yuzu" onclick={() => (step = 'rung')}>{t('common.next')}</button>{:else}<button type="button" class="btn yuzu" disabled={busy} onclick={drop}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.drop')}
-        </button>{/if}
-      </div>
-    {:else if step === 'rung' && rung}
-      <div class="rung">
-        <div class="hero">
-          <span class="port"><OfficialArt key="deco/airport" width="100%" /></span>
-          <span class="v v1"><span class="re"><Emote id="mark-sparkle" bare hold size={34} /></span><Villager person={me} size={72} expression="cheer" /></span>
-          <span class="v v2"><span class="re"><Emote id="mark-heart" bare hold size={34} /></span><Villager person={partner} size={72} expression="cheer" /></span>
-        </div>
-        <div class="rname">{t('rung.' + rung.key)}</div>
-        <span class="navy money"><OfficialArt key="money/bells" size="1em" />{formatYen(rung.yen)}</span>
-        {#if nextRung}<div class="rnext">{t('harvest.nextRung', { place: t('rung.' + nextRung.key), yen: formatYen(nextRung.yen) })}</div>{/if}
-      </div>
-      <div class="cta">
-        <button type="button" class="btn yuzu" disabled={busy} onclick={drop}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-jar" /></svg>{t('harvest.drop')}
-        </button>
-      </div>
-    {:else if step === 'done'}
-      <div class="done" role="status">
-        <svg class="djar" viewBox="0 0 200 240" aria-hidden="true">
-          <defs><clipPath id="hv-jar"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" /></clipPath></defs>
-          <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="var(--c-sky-soft)" fill-opacity=".9" />
-          <g clip-path="url(#hv-jar)">
-            <rect class="coins new" x="0" y="30" width="200" height="202" fill="var(--c-coin-shine)" style:--f={filled ? fillOf(after) : oldFill} />
-            <rect class="coins" x="0" y="30" width="200" height="202" fill="var(--c-coin)" style:--f={oldFill} />
-          </g>
-          <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="none" stroke="var(--c-ink)" stroke-width="5" stroke-linejoin="round" />
-          <rect x="56" y="8" width="88" height="26" rx="9" fill="var(--c-yuzu)" stroke="var(--c-ink)" stroke-width="5" />
-          <path d="M44 100 Q40 130 44 160" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75" />
-        </svg>
-        <p class="dhead">{t('harvest.done', { yen: formatYen(jarTotal) })}</p>
-        <span class="navy money"><OfficialArt key="money/bells" size="1em" />{formatYen(shown)}</span>
-        {#if !partnerDone}<p class="dnext">{t('harvest.waiting', { name: view.people[partner].villagerName })}</p>{/if}
-      </div>
-      <div class="cta">
-        <button type="button" class="btn yuzu" onclick={() => ondone?.()}>{t('harvest.home')}</button>
-      </div>
-    {/if}
+          <div class="total">
+            <span class="lbl">{t('harvest.jar')} <small>{t('harvest.provisional')}</small></span>
+            <Yen yen={jarTotal} class="hero-num" />
+            {#if purseTotal > 0}<span class="mini">{t('harvest.purse')} <b class="money">+{formatYen(purseTotal)}</b></span>{/if}
+          </div>
+        </section>
+        {#if rung}<button type="button" class="btn" onclick={() => (step = 'rung')}>{t('common.next')}</button>
+        {:else}<button type="button" class="btn" disabled={busy} onclick={drop}>{t('harvest.drop')}</button>{/if}
+      {:else if step === 'rung' && rung}
+        <section class="card rung">
+          <div class="hero">
+            <span class="port"><OfficialArt key="deco/airport" width="100%" /></span>
+            <span class="v v1"><span class="re"><Emote id="mark-sparkle" bare hold size={30} /></span><Villager person={me} size={64} expression="cheer" /></span>
+            <span class="v v2"><span class="re"><Emote id="mark-heart" bare hold size={30} /></span><Villager person={partner} size={64} expression="cheer" /></span>
+          </div>
+          <b class="rname">{t('rung.' + rung.key)}</b>
+          <span class="hero-num">{formatYen(rung.yen)}</span>
+          {#if nextRung}<span class="mini">{t('harvest.nextRung', { place: t('rung.' + nextRung.key), yen: formatYen(nextRung.yen) })}</span>{/if}
+        </section>
+        <button type="button" class="btn" disabled={busy} onclick={drop}>{t('harvest.drop')}</button>
+      {:else if step === 'done'}
+        <section class="card done" role="status">
+          <svg class="djar" viewBox="0 0 200 240" aria-hidden="true">
+            <defs><clipPath id="hv-jar"><path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" /></clipPath></defs>
+            <path d="M64 30 Q24 48 24 96 V200 Q24 232 56 232 H144 Q176 232 176 200 V96 Q176 48 136 30 Z" fill="#DDF2FB" fill-opacity=".85" />
+            <g clip-path="url(#hv-jar)">
+              <rect class="coins new" x="0" y="30" width="200" height="202" fill="var(--c-yuzu)" opacity=".6" style:--f={filled ? fillOf(after) : oldFill} />
+              <rect class="coins" x="0" y="30" width="200" height="202" fill="var(--c-yuzu)" style:--f={oldFill} />
+            </g>
+            <rect x="56" y="8" width="88" height="26" rx="9" fill="var(--c-yuzu)" />
+            <rect x="56" y="26" width="88" height="8" rx="4" fill="var(--c-yuzu-lip)" />
+            <path d="M46 100 Q42 130 46 160" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".7" fill="none" />
+          </svg>
+          <b class="dhead">{t('harvest.done', { yen: formatYen(jarTotal) })}</b>
+          <span class="hero-num">{formatYen(shown)}</span>
+          {#if !partnerDone}<span class="mini">{t('harvest.waiting', { name: view.people[partner].villagerName })}</span>{/if}
+        </section>
+        <button type="button" class="btn" onclick={() => ondone?.()}>{t('harvest.home')}</button>
+      {/if}
+    </div>
   </div>
 </dialog>
 
 <style>
-  /* The scene's sky (A14): a bright, sunny sky by day (the clock's dawn/day/dusk sky tokens, ink text), a soft
-     periwinkle with a few stars at night. */
+  /* The island stays visible behind a 30% tint (v5 §4). */
   .overlay {
     position: fixed; inset: 0; z-index: 60; overflow: auto; overscroll-behavior: contain;
     width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    --text: var(--c-ink); --text-soft: var(--c-ink-talk); --fr: 24px;
-    --hv-top: var(--sky-top, #57B8F7); --hv-bottom: #FFF6D8; --hv-chip: rgba(255, 255, 255, .7); --hv-dot: rgba(74, 58, 44, .25);
-    color: var(--text);
-    background:
-      radial-gradient(circle at 86% 10%, var(--sun-disc, #FFE68A) 0 30px, rgba(255, 255, 255, .45) 31px 46px, transparent 47px),
-      linear-gradient(180deg, var(--hv-top) 0%, var(--sky-bottom, #CDEEFF) 50%, var(--hv-bottom) 100%);
-    background-attachment: fixed;
+    --fr: 24px; background: rgba(74, 58, 44, .3); color: var(--text);
     animation: fade var(--dur-base) var(--ease-soft);
   }
-  :global(:root[data-tod='night']) .overlay {
-    --text: #FFF6E0; --text-soft: #E2E6FA;
-    --hv-top: #4E5CA4; --hv-bottom: #7D8BD0; --hv-chip: rgba(255, 255, 255, .18); --hv-dot: rgba(255, 255, 255, .45);
-    background:
-      radial-gradient(circle, rgba(255, 255, 255, .7) 1.2px, transparent 1.8px) 11px 23px / 61px 53px,
-      radial-gradient(circle, rgba(255, 243, 196, .6) 1px, transparent 1.6px) 29px 7px / 43px 71px,
-      linear-gradient(180deg, var(--hv-top) 0%, #6574BE 55%, var(--hv-bottom) 100%);
-    background-attachment: fixed;
-  }
+  :global(:root[data-tod='night']) .overlay { background: rgba(30, 36, 80, .3); }
   .overlay:focus { outline: none; }
   .overlay::backdrop { background: transparent; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   .col {
-    position: relative; max-width: 420px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 14px;
-    padding: calc(var(--safe-top) + 16px) calc(16px + var(--safe-right)) 0 calc(16px + var(--safe-left));
+    position: relative; max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
+    padding: calc(var(--safe-top) + 12px) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
   }
   .head { display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 8px; }
-  .title svg { width: 18px; height: 18px; }
   .steps { display: flex; gap: 6px; }
-  .steps i { width: 8px; height: 8px; border-radius: 50%; background: var(--hv-dot); transition: all var(--dur-base) var(--ease-bounce); }
-  .steps i.on { width: 22px; border-radius: 4px; background: var(--c-moon); }
-  .later { cursor: pointer; min-height: 44px; padding: 0 16px; }
+  .steps i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 249, 227, .6); transition: all var(--dur-base) var(--ease-bounce); }
+  .steps i.on { width: 22px; border-radius: 4px; background: var(--c-yuzu); }
+  .later, .later-sp { min-width: 80px; }
+  .later {
+    appearance: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: var(--r-btn);
+    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
+  }
+  .bottom { display: grid; gap: var(--gap); }
+  .bottom :global(.talk) { margin-bottom: -4px; }
+
   .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
   .confetti i {
     position: absolute; top: -16px; width: 6px; height: 10px; border-radius: 2px; opacity: 0;
@@ -253,80 +227,46 @@
     100% { opacity: 0; transform: translateY(105vh) rotate(calc(var(--r) + 540deg)); }
   }
 
-  .tally { padding: 4px 14px; }
+  .tally { display: grid; padding: 8px 16px 14px; }
   /* Rows grow in one by one, so the card grows with them (no empty height while revealing). */
-  .trow {
-    display: flex; align-items: center; gap: 10px; border-bottom: 2px dashed rgba(201, 154, 46, .35); overflow: hidden;
-    animation: rowGrow .5s var(--ease-soft) both;
-  }
-  .trow:last-child { border-bottom: 0; }
-  @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 110px; opacity: 1; padding-block: 8px; } }
+  .trow { display: flex; align-items: center; gap: 10px; overflow: hidden; animation: rowGrow .5s var(--ease-soft) both; }
+  @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 110px; opacity: 1; padding-block: 6px; } }
   .who { flex: 1; min-width: 0; display: grid; gap: 3px; }
-  .nm { font-weight: 700; font-size: var(--fs-body-lg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .team + .who .nm { white-space: normal; line-height: 1.2; word-break: auto-phrase; }
+  .nm { font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .frs { display: flex; gap: 3px; }
   .fr { display: block; flex: none; line-height: 0; }
   .fr.bud { opacity: .55; filter: saturate(.3); }
   .fr.small { opacity: .8; filter: saturate(.7); }
-  .stars { display: flex; align-items: center; gap: 3px; font-size: var(--fs-caption); font-weight: 700; color: var(--c-ink-soft); }
-  .stars svg { width: 18px; height: 18px; fill: var(--star-off); stroke: var(--star-edge); stroke-width: 1.5; stroke-linejoin: round; animation: if-pop var(--dur-pop) var(--ease-bounce) 2s both; }
-  .stars svg.on { fill: var(--star-on); }
-  .stars b { font-size: 1rem; color: var(--c-ink); }
-  .av { width: 40px; height: 40px; flex: none; border-radius: var(--r-blob); background: var(--card-pink); display: grid; place-items: center; }
-  .av.team svg { width: 24px; height: 24px; color: var(--p-berry); }
-  .trow :global(.bells) { flex: none; }
+  .stars { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
+  .av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-cream)); display: grid; place-items: center; }
+  .av.team svg { width: 24px; height: 24px; fill: var(--c-yuzu-lip); }
+  .plus { font-size: var(--fs-talk); flex: none; }
 
-  .total { display: grid; justify-items: center; gap: 8px; animation: rowIn .6s var(--ease-soft) 2.4s both; }
-  .lbl { font-weight: 700; }
-  .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--text); background: var(--hv-chip); border-radius: var(--r-pill); padding: 2px 9px; vertical-align: middle; }
-  /* Miles-style navy pill: one number per screen (§T.5). */
-  .navy {
-    display: inline-flex; align-items: center; gap: .3em; padding: 10px 24px 10px 16px; border-radius: var(--r-pill);
-    background: var(--miles-navy); color: #fff; border: 3px solid rgba(255, 243, 196, .85); font: 700 var(--fs-hero)/1 var(--font-num);
-    box-shadow: 0 5px 0 #26306A, inset 0 2px 0 rgba(255, 255, 255, .2); animation: if-pop var(--dur-pop) var(--ease-bounce) 2.6s both;
-  }
-  .rung .navy { animation-delay: .3s; }
-  /* The purse: one quiet line under the total (U6: no extra card under the sticky button at 320). */
-  .mini { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; animation: rowIn .6s var(--ease-soft) 3s both; }
-  .mini svg { width: 24px; height: 24px; }
-  .mini b { font-size: 1.05rem; }
+  .total { display: grid; justify-items: center; gap: 4px; padding-top: 10px; margin-top: 6px; box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 50%, transparent); animation: rowIn .6s var(--ease-soft) 2.1s both; }
+  .lbl { font-weight: 700; color: var(--text-soft); }
+  .lbl small { font-size: var(--fs-s); }
+  .total :global(.hero-num) { animation: if-pop var(--dur-pop) var(--ease-bounce) 2.3s both; }
+  .mini { font-weight: 700; font-size: var(--fs-body); color: var(--text-soft); }
 
-  .done { display: grid; justify-items: center; gap: 10px; text-align: center; padding-top: 6px; }
-  .djar { width: 120px; height: 144px; display: block; overflow: visible; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .done, .rung { display: grid; justify-items: center; gap: 6px; text-align: center; }
+  .djar { width: 96px; height: 116px; display: block; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .coins { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(var(--f)); }
-  .coins.new { stroke: var(--c-coin-rim); stroke-width: 3; transition: transform 1.4s var(--ease-soft) .4s; }
-  .dhead { margin: 4px 0 0; font: 900 1.5rem/1.2 var(--font-ui); }
-  .dnext { margin: 0; font-weight: 700; color: var(--text-soft); }
+  .coins.new { transition: transform 1.4s var(--ease-soft) .4s; }
+  .dhead, .rname { font-size: var(--fs-title); }
   @media (prefers-reduced-motion: reduce) { .coins { transition: none; } }
   @keyframes rowIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-  .cta {
-    position: sticky; bottom: 0; margin-top: auto; z-index: 4;
-    padding: 12px 0 calc(var(--safe-bottom) + 16px);
-    background: linear-gradient(transparent, var(--hv-bottom) 40%);
-  }
-
-  .rung { text-align: center; display: grid; justify-items: center; gap: 6px; }
-  .hero { position: relative; width: min(240px, 70vw); padding-bottom: 8px; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
-  .port { display: block; opacity: .95; }
+  .hero { position: relative; width: min(220px, 64vw); padding-bottom: 6px; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .port { display: block; }
   .v { position: absolute; bottom: 0; display: grid; justify-items: center; }
-  .v1 { left: -6%; }
-  .v2 { right: -6%; }
+  .v1 { left: -8%; }
+  .v2 { right: -8%; }
   .re { line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) .5s both; }
-  .rname { font: 900 2.2rem/1.1 var(--font-ui); margin-top: 6px; }
-  .rnext { font-weight: 700; margin-top: 6px; }
 
   @media (max-height: 700px), (max-width: 359px) {
-    .navy { font-size: 2.25rem; }
-    .col { gap: 10px; }
+    .bottom :global(.hero-num) { font-size: 2.25rem; }
+    .hero { width: min(160px, 50vw); }
   }
-  @media (max-width: 339px) {
-    .overlay { --fr: 20px; }
-    .navy { font-size: 2rem; padding: 8px 20px 8px 14px; }
-    .total { gap: 6px; }
-    .trow { gap: 8px; }
-    .trow :global(.bells) { font-size: .95rem; padding-right: 10px; }
-  }
-  @media (max-height: 600px) { .hero { width: min(180px, 60vw); } }
+  @media (max-width: 339px) { .overlay { --fr: 20px; } }
   @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // NookPhone-style notification banner (style guide v4 §T.3). Lives in the top layer (popover) so it sits
+  // NookPhone-style notification banner (v5: a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover) so it sits
   // above an open sheet. Slides down below the status row, holds (the store decides how long), slides up.
   // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones, the Miles
   // ticket for milestones). Right: one official reaction icon. Tap or swipe up to dismiss.
@@ -78,7 +78,7 @@
     position: fixed; inset: auto 0; margin: 0 auto; z-index: 90; overflow: hidden;
     top: calc(var(--safe-top) + 56px); height: 52px; width: min(100% - 24px, 420px);
     display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; border-radius: var(--r-pill);
-    background: var(--c-bubble); color: var(--c-ink-talk); border: 2px solid var(--c-pill-edge); box-shadow: 0 4px 0 rgba(74, 58, 44, .12), var(--sh-float);
+    background: var(--c-cream); color: var(--c-ink); border: 0; box-shadow: 0 4px 0 var(--c-lip), var(--sh-float);
     font: 700 var(--fs-body)/1.2 var(--font-ui);
     animation: in 320ms var(--ease-bounce) both;
   }
@@ -86,23 +86,23 @@
   .banner.second, .banner.second:popover-open { top: calc(var(--safe-top) + 116px); }
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; border-radius: inherit; }
   .pebble {
-    width: 40px; height: 40px; flex: none; border-radius: var(--r-blob); display: grid; place-items: center; overflow: hidden;
-    background: var(--c-yuzu-soft);
+    width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
+    background: color-mix(in srgb, var(--c-yuzu) 40%, var(--c-cream));
   }
   .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* An undo banner (N5): low, just above the dock in the thumb zone, so it never covers the Jar's total, and its
-     text (what was done: 「映画 ¥4,000 使いました！」) may take two lines next to the button. */
-  .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--dock-h) + var(--dock-bottom) + 12px); height: 56px; animation-name: up-in; }
-  .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-caption); line-height: 1.25; word-break: auto-phrase; }
+  /* An undo banner (N5): low, in the thumb zone, so it never covers the Jar's total; its text (what was done:
+     「映画 ¥4,000 使いました！」) may take two lines next to the button. */
+  .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
+  .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; word-break: auto-phrase; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
-  /* Undo: above the dismiss layer, a 44px-tall pill on the right. */
+  /* Undo: above the dismiss layer, a 44px-tall button on the right. */
   .act {
     position: relative; z-index: 2; flex: none; appearance: none; cursor: pointer; min-height: 44px; margin-right: -6px; padding: 0 14px;
-    border-radius: var(--r-pill); border: 2px solid var(--c-leaf-lip); background: var(--c-leaf-soft); color: var(--c-leaf-ink);
-    font: 700 var(--fs-caption)/1 var(--font-ui);
+    border-radius: var(--r-pill); border: 0; background: var(--c-leaf); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-leaf-lip);
+    font: 700 var(--fs-body)/1 var(--font-ui);
   }
-  .act:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .act:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
   @keyframes in { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .banner { animation: fade 120ms both; }

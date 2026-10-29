@@ -1,5 +1,5 @@
 <script lang="ts">
-  /** Striped progress bar (style guide v4 §3: --pat-stripes-fill, animated; stopped under reduced motion). */
+  /** Flat progress bar (v5 §5): leaf on a soft lip-coloured track, no stripes, no outline. */
   interface Props {
     pct: number;
     height?: number;
@@ -20,11 +20,9 @@
 ><i style:width="{w}%"></i></span>
 
 <style>
-  .rope { display: block; border-radius: var(--r-pill); background: var(--track); box-shadow: var(--sh-inset); overflow: hidden; border: var(--bw) solid var(--edge); }
+  .rope { display: block; border-radius: var(--r-pill); background: color-mix(in srgb, var(--lip) 55%, transparent); overflow: hidden; }
   i {
-    display: block; height: 100%; border-radius: var(--r-pill); min-width: 8px;
-    background: var(--pat-stripes-fill), var(--c-leaf); box-shadow: inset 0 -3px 0 var(--c-leaf-lip);
-    animation: stripes 1s linear infinite;
+    display: block; height: 100%; border-radius: var(--r-pill); min-width: 8px; background: var(--c-leaf);
     transition: width var(--dur-slow) var(--ease-soft);
   }
 </style>
