@@ -144,7 +144,7 @@
     --scene-h: clamp(300px, calc(100dvh - var(--chrome-below)), 600px);
     position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
   }
-  .top { position: relative; height: var(--scene-h); overflow: hidden; background: var(--sky-top); display: flex; flex-direction: column; justify-content: flex-end; container-type: inline-size; }
+  .top { position: relative; height: var(--scene-h); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; container-type: inline-size; }
   .below {
     display: grid; gap: var(--gap); padding: var(--gap) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }

@@ -154,7 +154,7 @@
     background:
       radial-gradient(circle, rgba(255, 255, 255, .7) 1.2px, transparent 1.8px) 11px 23px / 61px 53px,
       radial-gradient(circle, rgba(255, 243, 196, .6) 1px, transparent 1.6px) 29px 7px / 43px 71px,
-      linear-gradient(180deg, #3A4886 0%, #5565B0 55%, #7584CC 100%);
+      linear-gradient(180deg, #3A4886 0%, #4F5FAA 55%, #5A69B4 100%);
     background-attachment: fixed;
     animation: fade var(--dur-base) var(--ease-soft);
   }
@@ -225,7 +225,7 @@
   .cta {
     position: sticky; bottom: 0; margin-top: auto; z-index: 4;
     padding: 12px 0 calc(var(--safe-bottom) + 16px);
-    background: linear-gradient(transparent, #7584CC 40%);
+    background: linear-gradient(transparent, #5A69B4 40%);
   }
 
   .rung { text-align: center; display: grid; justify-items: center; gap: 6px; }
