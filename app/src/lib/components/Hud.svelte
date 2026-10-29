@@ -45,7 +45,7 @@
       shown = to;
       return;
     }
-    beat += 1;
+    untrack(() => (beat += 1));
     const t0 = performance.now();
     let raf = 0;
     const step = (ms: number) => {

@@ -226,7 +226,7 @@
       {/each}
     </div>
     {#snippet footer()}
-      <button type="button" class="btn" disabled={!picked} onclick={spend}>{t('purse.go')}{#if picked}&nbsp;<span class="money">{formatYen(picked.yen)}</span>{/if}</button>
+      <button type="button" class="btn" disabled={!picked} onclick={spend}>{t('purse.go')}{#if picked}<span class="money">{formatYen(picked.yen)}</span>{/if}</button>
     {/snippet}
   </Sheet>
 {/if}

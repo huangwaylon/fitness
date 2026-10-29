@@ -130,7 +130,7 @@
 </script>
 
 {#if view && me}
-  <main class="island" style:--below="{belowH}px">
+  <main class="island" class:covered={ui.overlay} style:--below="{belowH}px">
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         paused={checkinOpen || partnerOpen || phoneOpen} />
@@ -175,6 +175,8 @@
     padding: var(--gap) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
   }
   .below > .btn { margin-bottom: 4px; }
+  /* Under the harvest only the island shows through the tint: no HUD, no dialogue, no action. */
+  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below { visibility: hidden; }
   .news { display: grid; }
   /* A question: the dialogue box and the choices stacked on its right share one row (the action's slot). */
   .news.ask { grid-template-columns: 1fr auto; gap: 10px; align-items: end; padding-bottom: 4px; --talk-lines: 2; }
