@@ -33,8 +33,8 @@
 {#if night}
   <!-- moon glint: short warm streaks on the water under the moon (static) -->
   <g class="moonglint">
-    <rect x="300" y="3" width="26" height="2.4" rx="1.2" /><rect x="306" y="9" width="18" height="2" rx="1" />
-    <rect x="296" y="15" width="30" height="2.2" rx="1.1" /><rect x="304" y="22" width="14" height="1.8" rx=".9" />
+    <rect x="309" y="-34" width="18" height="1.8" rx=".9" /><rect x="303" y="-27" width="28" height="2.2" rx="1.1" />
+    <rect x="307" y="-19" width="20" height="2" rx="1" /><rect x="299" y="-10" width="34" height="2.4" rx="1.2" />
   </g>
 {/if}
 <!-- three wave bands, each one animated group (P5 budget) -->

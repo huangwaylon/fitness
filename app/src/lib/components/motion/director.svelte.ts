@@ -179,27 +179,32 @@ export function react(rid: ReactionId, swap = false) {
   }
 }
 
+/** Walk leg length (= --dur-walk in tokens.css), the wait at the far end, and the puff cadence. */
+export const WALK_MS = 1600;
+const WALK_WAIT_MS = 1200;
+const PUFF_MS = 640;
+
 /** A walk (stroll): out `dx` stage units, wait, and back (§M.2 Walking). */
 export function stroll(id: 'mine' | 'partner', dx: number, onWait?: () => void) {
   const a = actors[id];
   if (reducedMotion()) return;
-  a.busyUntil = Date.now() + 1600 * 2 + 1200 + 200;
+  a.busyUntil = Date.now() + WALK_MS * 2 + WALK_WAIT_MS + 200;
   a.face = 'in';
   a.walking = true;
   a.walkX = dx;
   const puff = () => addFx(id, 'puff');
-  for (let t = 300; t < 1600; t += 640) later(id, t, puff);
-  later(id, 1600, () => {
+  for (let t = 300; t < WALK_MS; t += PUFF_MS) later(id, t, puff);
+  later(id, WALK_MS, () => {
     a.walking = false;
     onWait?.();
   });
-  later(id, 2800, () => {
+  later(id, WALK_MS + WALK_WAIT_MS, () => {
     a.face = 'home';
     a.walking = true;
     a.walkX = 0;
-    for (let t = 300; t < 1600; t += 640) later(id, t, puff);
+    for (let t = 300; t < WALK_MS; t += PUFF_MS) later(id, t, puff);
   });
-  later(id, 4400, () => (a.walking = false));
+  later(id, WALK_MS * 2 + WALK_WAIT_MS, () => (a.walking = false));
 }
 
 /** Night naps (R13): asleep = slow breath + a zzz loop (reduced motion: a held zzz mark). */
