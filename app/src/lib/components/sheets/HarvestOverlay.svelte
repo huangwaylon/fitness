@@ -181,7 +181,7 @@
   }
   .head { display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 8px; }
   .steps { display: flex; gap: 6px; }
-  .steps i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 249, 227, .6); transition: all var(--dur-base) var(--ease-bounce); }
+  .steps i { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--c-cream) 60%, transparent); transition: all var(--dur-base) var(--ease-bounce); }
   .steps i.on { width: 22px; border-radius: 4px; background: var(--c-yuzu); }
   .later, .later-sp { min-width: 80px; }
   .later {
