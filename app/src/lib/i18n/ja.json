@@ -120,6 +120,8 @@
   "partner.highfive": "ハイタッチ",
   "partner.today": "きょうの食事",
   "phone.name.label": "名前",
+  "phone.villager.search": "名前・種族でさがす",
+  "phone.villager.none": "見つかりませんでした",
   "partner.never": "まだ同期していません",
   "host.grew": "{activity}の{fruit}が育ちましたよ！",
   "pending.ask": "{label}は筋トレでしたか？",

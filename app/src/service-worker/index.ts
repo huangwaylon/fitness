@@ -12,10 +12,18 @@ const FONTS = 'island-fonts-v1';
 /** A slow network (one bar, a captive portal) must not hang the launch: after this the cached shell opens. */
 const NAV_TIMEOUT_MS = 3000;
 const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
+// Villager art (roster engineer): ~80 villagers × render + icon is too much to download at install. Only the two
+// default villagers are precached; every other render/icon is cached on first use, in a cache that outlives builds
+// (bump the suffix if villager art is re-fetched under the same paths).
+const VILLAGERS = 'island-villagers-v1';
+const isVillagerArt = (p: string) => p.includes('/art/villagers/');
+const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|raymond)(-icon)?\.webp$/; // lib/villagers/roster.ts DEFAULT_VILLAGER
 
 // Precache built JS/CSS + static files. Font subsets (Japanese = many files) are cached on first use instead; the art
-// manifest is bundled into the JS (lib/art.ts), so its file is never fetched.
-const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter((p) => !isFont(p) && !p.endsWith('/art/manifest.json'));
+// manifest is bundled into the JS (lib/art.ts), so its file is never fetched. Villager art: see VILLAGERS.
+const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(
+  (p) => !isFont(p) && !p.endsWith('/art/manifest.json') && (!isVillagerArt(p) || PRECACHED_VILLAGERS.test(p))
+);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -41,7 +49,7 @@ self.addEventListener('activate', (event) => {
     (async () => {
       const keys = await caches.keys();
       const previous = keys.filter((k) => k.startsWith(SHELL) && k !== CACHE).at(-1);
-      for (const key of keys) if (key !== CACHE && key !== FONTS && key !== previous) await caches.delete(key);
+      for (const key of keys) if (key !== CACHE && key !== FONTS && key !== VILLAGERS && key !== previous) await caches.delete(key);
       await self.clients.claim();
     })()
   );
@@ -79,10 +87,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (isFont(url.pathname)) {
+  if (isFont(url.pathname) || isVillagerArt(url.pathname)) {
+    const runtime = isFont(url.pathname) ? FONTS : VILLAGERS;
     event.respondWith(
       (async () => {
-        const cache = await caches.open(FONTS);
+        const precached = await caches.open(CACHE).then((c) => c.match(req));
+        if (precached) return precached;
+        const cache = await caches.open(runtime);
         const hit = await cache.match(req);
         if (hit) return hit;
         const res = await fetch(req);
