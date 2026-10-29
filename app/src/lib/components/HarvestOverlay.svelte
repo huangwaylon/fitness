@@ -10,6 +10,8 @@
   import { FRUITS, RUNGS } from '#lib/config/rules.ts';
   import Villager from './Villager.svelte';
   import Avatar from './Avatar.svelte';
+  import Emote from './Emote.svelte';
+  import { reducedMotion } from './motion/clock.ts';
   import Yen from './Yen.svelte';
   import Bubble from './Bubble.svelte';
   import OfficialArt from './OfficialArt.svelte';
@@ -40,7 +42,8 @@
 
   let step = $state<'tally' | 'rung' | 'done'>('tally');
   let busy = $state(false);
-  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /** Live (review P10): the count-up and confetti follow the setting even if it changes while open. */
+  const reduced = $derived(reducedMotion());
 
   /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
   const after = $derived(view.jar.totalYen);
@@ -65,7 +68,8 @@
     const frame = (now: number) => {
       const k = Math.min(1, (now - t0) / DUR);
       shown = Math.round(before + (after - before) * (1 - (1 - k) ** 3));
-      if (k < 1 && step === 'done') requestAnimationFrame(frame);
+      if (reduced) shown = after;
+      else if (k < 1 && step === 'done') requestAnimationFrame(frame);
     };
     setTimeout(() => requestAnimationFrame(frame), 500);
   }
@@ -104,9 +108,9 @@
 <dialog class="overlay" aria-label={t('harvest.title')} tabindex="-1" use:modal
   oncancel={(e) => { e.preventDefault(); if (step === 'done') ondone?.(); else onlater(); }}>
   {#key step}
-    <div class="confetti" aria-hidden="true">
+    {#if !reduced}<div class="confetti" aria-hidden="true">
       {#each CONFETTI as c, i (i)}<i class:round={c.round} style="left:{c.x}%;background:{c.c};animation-delay:{(step === 'tally' ? 2.6 : step === 'done' ? 0.9 : 0.2) + c.d}s;animation-duration:{c.dur}s;--r:{c.r}deg"></i>{/each}
-    </div>
+    </div>{/if}
   {/key}
 
   <div class="col">
@@ -163,8 +167,8 @@
       <div class="rung">
         <div class="hero">
           <span class="port"><OfficialArt key="deco/airport" width="100%" /></span>
-          <span class="v v1"><span class="re"><OfficialArt key="reactions/pose-viva" size={34} /></span><Villager person={me} size={72} expression="cheer" /></span>
-          <span class="v v2"><span class="re"><OfficialArt key="reactions/joy" size={34} /></span><Villager person={partner} size={72} expression="cheer" /></span>
+          <span class="v v1"><span class="re"><Emote id="mark-sparkle" bare hold size={34} /></span><Villager person={me} size={72} expression="cheer" /></span>
+          <span class="v v2"><span class="re"><Emote id="mark-heart" bare hold size={34} /></span><Villager person={partner} size={72} expression="cheer" /></span>
         </div>
         <div class="rname">{t('rung.' + rung.key)}</div>
         <span class="navy money"><OfficialArt key="money/bells" size="1em" />{formatYen(rung.yen)}</span>
@@ -200,18 +204,28 @@
 </dialog>
 
 <style>
-  /* Night sky (§R.6, §1.2 periwinkle): always night colours, whatever the clock says. */
+  /* The scene's sky (A14): a bright, sunny sky by day (the clock's dawn/day/dusk sky tokens, ink text), a soft
+     periwinkle with a few stars at night. */
   .overlay {
     position: fixed; inset: 0; z-index: 60; overflow: auto; overscroll-behavior: contain;
     width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    --text: #FFF6E0; --text-soft: #D2D9F5; --fr: 24px;
+    --text: var(--c-ink); --text-soft: var(--c-ink-talk); --fr: 24px;
+    --hv-top: var(--sky-top, #57B8F7); --hv-bottom: #FFF6D8; --hv-chip: rgba(255, 255, 255, .7); --hv-dot: rgba(74, 58, 44, .25);
     color: var(--text);
+    background:
+      radial-gradient(circle at 82% 9%, var(--sun-disc, #FFE68A) 0 34px, color-mix(in srgb, var(--sun-disc, #FFE68A) 35%, transparent) 35px 58px, transparent 59px),
+      linear-gradient(180deg, var(--hv-top) 0%, var(--sky-bottom, #CDEEFF) 50%, var(--hv-bottom) 100%);
+    background-attachment: fixed;
+    animation: fade var(--dur-base) var(--ease-soft);
+  }
+  :global(:root[data-tod='night']) .overlay {
+    --text: #FFF6E0; --text-soft: #E2E6FA;
+    --hv-top: #4E5CA4; --hv-bottom: #7D8BD0; --hv-chip: rgba(255, 255, 255, .18); --hv-dot: rgba(255, 255, 255, .45);
     background:
       radial-gradient(circle, rgba(255, 255, 255, .7) 1.2px, transparent 1.8px) 11px 23px / 61px 53px,
       radial-gradient(circle, rgba(255, 243, 196, .6) 1px, transparent 1.6px) 29px 7px / 43px 71px,
-      linear-gradient(180deg, #3A4886 0%, #4F5FAA 55%, #5A69B4 100%);
+      linear-gradient(180deg, var(--hv-top) 0%, #6574BE 55%, var(--hv-bottom) 100%);
     background-attachment: fixed;
-    animation: fade var(--dur-base) var(--ease-soft);
   }
   .overlay:focus { outline: none; }
   .overlay::backdrop { background: transparent; }
@@ -223,7 +237,7 @@
   .head { display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 8px; }
   .title svg { width: 18px; height: 18px; }
   .steps { display: flex; gap: 6px; }
-  .steps i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .4); transition: all var(--dur-base) var(--ease-bounce); }
+  .steps i { width: 8px; height: 8px; border-radius: 50%; background: var(--hv-dot); transition: all var(--dur-base) var(--ease-bounce); }
   .steps i.on { width: 22px; border-radius: 4px; background: var(--c-moon); }
   .later { cursor: pointer; min-height: 44px; padding: 0 16px; }
   .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
@@ -263,7 +277,7 @@
 
   .total { display: grid; justify-items: center; gap: 8px; animation: rowIn .6s var(--ease-soft) 2.4s both; }
   .lbl { font-weight: 700; }
-  .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--text); background: rgba(255, 255, 255, .16); border-radius: var(--r-pill); padding: 2px 9px; vertical-align: middle; }
+  .prov { display: inline-flex; font: 700 var(--fs-micro) var(--font-ui); color: var(--text); background: var(--hv-chip); border-radius: var(--r-pill); padding: 2px 9px; vertical-align: middle; }
   /* Miles-style navy pill: one number per screen (§T.5). */
   .navy {
     display: inline-flex; align-items: center; gap: .3em; padding: 10px 24px 10px 16px; border-radius: var(--r-pill);
@@ -288,7 +302,7 @@
   .cta {
     position: sticky; bottom: 0; margin-top: auto; z-index: 4;
     padding: 12px 0 calc(var(--safe-bottom) + 16px);
-    background: linear-gradient(transparent, #5A69B4 40%);
+    background: linear-gradient(transparent, var(--hv-bottom) 40%);
   }
 
   .rung { text-align: center; display: grid; justify-items: center; gap: 6px; }

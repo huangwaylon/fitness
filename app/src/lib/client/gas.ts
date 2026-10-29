@@ -157,6 +157,15 @@ export function unqueue(id: string): boolean {
   return true;
 }
 
+/** Move a still-held event's send time (the undo banner was paused or resumed). False once it was tried or sent. */
+export function holdEvent(id: string, until: number): boolean {
+  const q = queued();
+  const ev = q.find((x) => x.id === id);
+  if (!ev || ev.tries > 0 || flushingId === id) return false;
+  saveQueue(q.map((x) => (x.id === id ? { ...x, nextAt: until } : x)));
+  return true;
+}
+
 /** 1 s, 2 s, 4 s … capped at 5 min, ±20 % jitter. */
 export function backoffMs(tries: number, rand = Math.random): number {
   const base = Math.min(300_000, 1000 * 2 ** Math.max(0, tries - 1));
@@ -170,8 +179,12 @@ let flushing: Promise<FlushResult> | null = null;
 /** The event currently in flight (it can't be undone any more). */
 let flushingId: string | null = null;
 
+/** Still inside its undo window (never tried yet, not due): later events may pass it (review r2 N3). */
+const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.nextAt > now;
+
 /**
- * Send queued events in order until one fails. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
+ * Send queued events in order until one fails. Events still in their undo window are skipped, not waited for
+ * (a held payday must not delay a check-in behind it by 5 s); everything else keeps queue order. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
  * `too_large` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
  * so order is preserved) with a backoff. `unauthorized` stops the flush.
  */
@@ -182,10 +195,13 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
     const acked: QueuedEvent[] = [];
     const dropped: QueuedEvent[] = [];
     let error: GasError | undefined;
+    const tried = new Set<string>();
     for (;;) {
-      const q = queued();
-      const ev = q[0];
-      if (!ev || ev.nextAt > now()) break;
+      const t = now();
+      // The first event not yet tried in this flush that isn't held; a due-later (backed-off) one blocks the rest.
+      const ev = queued().find((x) => !tried.has(x.id) && !isHeld(x, t));
+      if (!ev || ev.nextAt > t) break;
+      tried.add(ev.id);
       flushingId = ev.id;
       const r = await post<Extract<EventReply, { ok: true }>>('event', { id: ev.id, type: ev.type, data: ev.data });
       flushingId = null;
@@ -217,8 +233,15 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
   return p;
 }
 
-/** When the head of the queue may be retried (ms), or null if the queue is empty. */
-export const nextRetryAt = (): number | null => queued()[0]?.nextAt ?? null;
+/** When the flush can next make progress (ms): the earliest held event or the first blocking one; null if empty. */
+export function nextRetryAt(now = Date.now()): number | null {
+  let best: number | null = null;
+  for (const ev of queued()) {
+    best = best === null ? ev.nextAt : Math.min(best, ev.nextAt);
+    if (!isHeld(ev, now)) break; // a backed-off or due event: nothing after it goes first
+  }
+  return best;
+}
 
 // ---------- snapshot cache ----------
 
@@ -251,8 +274,23 @@ export function applySnapshot(prev: SnapshotCache | null, reply: { me: PersonId;
   };
 }
 
-/** Fetch rows since the last seen `at` (everything on first run), merge and persist. */
-export async function refreshSnapshot(clientNow: () => number = Date.now): Promise<GasResult<{ cache: SnapshotCache }>> {
+let fetching: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
+
+/**
+ * Fetch rows since the last seen `at` (everything on first run), merge and persist. Overlapping callers share the
+ * request in flight, so two replies never merge from the same stale cache (review r2 N2).
+ */
+export function refreshSnapshot(clientNow: () => number = Date.now): Promise<GasResult<{ cache: SnapshotCache }>> {
+  if (fetching) return fetching;
+  const p = fetchSnapshot(clientNow);
+  fetching = p;
+  void p.then(() => {
+    if (fetching === p) fetching = null;
+  });
+  return p;
+}
+
+async function fetchSnapshot(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
   const prev = loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;

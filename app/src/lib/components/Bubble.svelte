@@ -9,6 +9,7 @@
   import { t } from '#lib/i18n/index.ts';
   import Host from './Host.svelte';
   import { hostTap } from './motion/director.svelte.ts';
+  import { reducedMotion } from './motion/clock.ts';
   import type { HostPose } from '#lib/client/assets.ts';
 
   interface Props {
@@ -39,7 +40,8 @@
 
   const TYPE_MS = 33;
   const PAUSE_MS = 180;
-  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /** Live: turning reduced motion on mid-line finishes the line at once (review P10). */
+  const reduced = $derived(reducedMotion());
 
   /** Glyphs with their reveal delay (ms). */
   const glyphs = $derived.by(() => {

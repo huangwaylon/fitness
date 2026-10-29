@@ -3,6 +3,7 @@
   // ONE primary action (今夜のチェック) in the thumb zone. A pending 「筋トレでしたか？」 is asked in しずえ's
   // bubble and two chips take the button's slot (same height, no jump). After today's check-in the button
   // goes quiet. Tap my villager → check-in sheet; the partner → partner sheet.
+  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import type { FruitKey } from '#lib/types.ts';
@@ -38,6 +39,20 @@
   const allChecked = $derived(ticksToday >= habitCount);
   /** しずえ says what an answer just did (U3), for a few seconds; then her usual line again. */
   let said = $state<{ text: string; id: number } | null>(null);
+
+  /** Every timeout this page starts, cleared when it unmounts (review P11). */
+  const timers = new Set<ReturnType<typeof setTimeout>>();
+  function later(fn: () => void, ms: number): void {
+    const id = setTimeout(() => {
+      timers.delete(id);
+      fn();
+    }, ms);
+    timers.add(id);
+  }
+  onDestroy(() => {
+    for (const id of timers) clearTimeout(id);
+    timers.clear();
+  });
   const grew = $derived(me && before ? (FRUITS.find((f) => me.fruits[f].pct > before![f]) ?? null) : null);
 
   /** U8: the unripe fruit closest to ripe, as "{fruit}, {n} more {unit}". Needs my raw numbers. */
@@ -70,7 +85,7 @@
     confirmPending(pending.kind, pending.id, yes);
     const msg = { text: yes ? t('pending.counted', { activity: t('fruit.coconut') }) : t('pending.skipped'), id: Date.now() };
     said = msg;
-    setTimeout(() => said?.id === msg.id && (said = null), 5000);
+    later(() => said?.id === msg.id && (said = null), 5000);
     if (yes) emit('checkin-saved');
   }
 
@@ -92,9 +107,9 @@
     emit('highfive-sent');
   }
 
-  // A failed save (the store's toast) → my villager looks sheepish (R17).
+  // A failed save (the store's toast, by its code, not its wording: review P9) → my villager looks sheepish (R17).
   $effect(() => {
-    if (week.toast?.text === t('state.saveFailed')) emit('sync-error');
+    if (week.toast?.code === 'save-failed') emit('sync-error');
   });
 
   // M5: tell me when my partner sent a high-five today (once per new one, per device), but not over
@@ -106,10 +121,10 @@
     const seen = Number(localStorage.getItem(k) ?? 0);
     if (v.highFivesToday > seen) {
       localStorage.setItem(k, String(v.highFivesToday));
-      setTimeout(() => {
+      later(() => {
         const toast = { text: t('island.highfiveGot', { name: v.people[v.partner].villagerName }), id: Date.now() };
         fiveToast = toast;
-        setTimeout(() => fiveToast === toast && (fiveToast = null), 3200);
+        later(() => fiveToast === toast && (fiveToast = null), 3200);
       }, 700);
     }
   });

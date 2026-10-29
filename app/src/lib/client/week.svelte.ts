@@ -6,7 +6,7 @@ import { resolve } from '$app/paths';
 import { dev } from '$app/env';
 import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import type { EventType } from '#lib/ingest/sheet-api.ts';
-import { GAS_CONFIGURED, enqueue, flush, getKey, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
+import { GAS_CONFIGURED, enqueue, flush, getKey, holdEvent, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, unqueue, type QueuedEvent, type SnapshotCache } from './gas.ts';
 import { composeView, notInCache } from './view.ts';
 import { sampleWeek } from './fixtures.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
@@ -17,6 +17,8 @@ type DemoMode = false | 'plain' | 'harvest';
 const REFRESH_FLOOR_MS = 30_000;
 /** After acked writes, re-read the server so its timestamps replace the optimistic ones. */
 const RECONCILE_MS = 1500;
+/** A banner held open (hover/focus) keeps its action unsent for at most this long. */
+const HOLD_MAX_MS = 10 * 60_000;
 
 export interface SendResult<T = unknown> {
   ok: boolean;
@@ -24,6 +26,8 @@ export interface SendResult<T = unknown> {
   data: T | null;
   /** Only with `holdMs`: take the action back while it is still held (returns false once it was sent). */
   undo?: () => boolean;
+  /** Only with `holdMs`: keep holding it (`null`: until called again) or send it `ms` from now. */
+  hold?: (ms: number | null) => void;
 }
 
 export interface Toast {
@@ -33,6 +37,10 @@ export interface Toast {
   action?: { label: string; run: () => void };
   /** Official reaction icon on the banner (`reactions/<id>`). */
   reaction?: string;
+  /** What happened, for code that reacts to a banner (never match on the translated text; review P9). */
+  code?: 'save-failed';
+  /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step. */
+  hold?: (ms: number | null) => void;
 }
 
 class WeekStore {
@@ -163,20 +171,21 @@ class WeekStore {
    * Queue an event and show it at once (the model applies it like the server will). In demo mode `optimistic` edits
    * the fixture view instead. Never fails for network reasons: the queue retries until the server acks.
    * `holdMs`: an undo window. The change shows at once but is not sent before then; `undo()` takes it back.
+   * `revert` (demo): the inverse of `optimistic`, so an undo takes back only this action, not others made in the
+   * window (review r2 N4).
    */
-  send<T = unknown>(type: EventType, data: Record<string, unknown>, optimistic?: (v: WeekView) => void, opts: { holdMs?: number } = {}): Promise<SendResult<T>> {
+  send<T = unknown>(type: EventType, data: Record<string, unknown>, optimistic?: (v: WeekView) => void, opts: { holdMs?: number; revert?: (v: WeekView) => void } = {}): Promise<SendResult<T>> {
     const held = (opts.holdMs ?? 0) > 0;
     if (this.demo) {
-      const before = held && this.view ? $state.snapshot(this.view) : null;
       if (optimistic && this.view) optimistic(this.view);
       let undone = false;
       const undo = () => {
-        if (undone || !before) return false;
+        if (undone || !opts.revert || !this.view) return false;
         undone = true;
-        this.view = before as WeekView;
+        opts.revert(this.view);
         return true;
       };
-      return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo } : {}) });
+      return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo, hold: () => {} } : {}) });
     }
     const ev = enqueue(type, data, Date.now(), opts.holdMs ?? 0);
     this.#recompute();
@@ -186,7 +195,11 @@ class WeekStore {
       if (ok) this.#recompute();
       return ok;
     };
-    return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo } : {}) });
+    const hold = (ms: number | null) => {
+      if (!holdEvent(ev.id, ms === null ? Date.now() + HOLD_MAX_MS : Date.now() + ms)) return;
+      if (ms !== null) this.#scheduleRetry();
+    };
+    return Promise.resolve({ ok: true, status: 200, data: null, ...(held ? { undo, hold } : {}) });
   }
 
   async #flush(reconcile: boolean): Promise<void> {
@@ -198,7 +211,7 @@ class WeekStore {
     const known = new Set(this.#sent.map((e) => e.id));
     this.#sent.push(...r.acked.filter((e) => !known.has(e.id)));
     if (r.dropped.length) {
-      this.showToast(t('state.saveFailed'));
+      this.showToast(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#recompute();
     }
     if (r.error === 'unauthorized') {
@@ -210,21 +223,60 @@ class WeekStore {
       if (this.#reconcileTimer) clearTimeout(this.#reconcileTimer);
       this.#reconcileTimer = setTimeout(() => void this.refresh(), RECONCILE_MS);
     }
-    const next = nextRetryAt();
-    if (next !== null && r.remaining > 0) {
-      this.#retryTimer = setTimeout(() => void this.#flush(true), Math.max(1000, next - Date.now()));
-    }
+    if (r.remaining > 0) this.#scheduleRetry();
   }
 
-  showToast(text: string, ms = 2600, opts: Pick<Toast, 'action' | 'reaction'> = {}): void {
-    if (this.#toastTimer) clearTimeout(this.#toastTimer);
+  /** Wake the queue when its next event is due (a backoff, or the end of an undo window). */
+  #scheduleRetry(): void {
+    if (this.#retryTimer) clearTimeout(this.#retryTimer);
+    this.#retryTimer = null;
+    const next = nextRetryAt();
+    if (next === null) return;
+    this.#retryTimer = setTimeout(() => void this.#flush(true), Math.max(250, next - Date.now()));
+  }
+
+  showToast(text: string, ms = 2600, opts: Pick<Toast, 'action' | 'reaction' | 'code' | 'hold'> = {}): void {
+    if (this.#toastPaused) this.toast?.hold?.(0); // its banner is gone, so its undo is too: send it
     const toast: Toast = { text, id: Date.now(), ...opts };
     this.toast = toast;
+    this.#toastPaused = false;
+    this.#armToast(toast, ms);
+  }
+
+  #toastPaused = false;
+  #toastEndsAt = 0;
+  #armToast(toast: Toast, ms: number): void {
+    if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    this.#toastEndsAt = Date.now() + ms;
     this.#toastTimer = setTimeout(() => this.toast?.id === toast.id && (this.toast = null), ms);
+  }
+
+  /**
+   * Hold the banner while it is hovered or focused (WCAG 2.2.1, review r2 N7): its undo stays available as long
+   * as the person is on it. With an undo it also holds back the send (the undo window is the banner's life).
+   */
+  pauseToast(): void {
+    if (!this.toast || this.#toastPaused) return;
+    this.#toastPaused = true;
+    if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    this.#toastTimer = null;
+    this.toast.hold?.(null);
+  }
+
+  /** Resume after hover/focus leaves: at least 2 s more, so it never vanishes the moment you look away. */
+  resumeToast(): void {
+    const toast = this.toast;
+    if (!toast || !this.#toastPaused) return;
+    this.#toastPaused = false;
+    const ms = Math.max(2000, this.#toastEndsAt - Date.now());
+    toast.hold?.(ms);
+    this.#armToast(toast, ms);
   }
 
   dismissToast(): void {
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    if (this.#toastPaused) this.toast?.hold?.(0); // dismissed while held: it's accepted, send it now
+    this.#toastPaused = false;
     this.toast = null;
   }
 }

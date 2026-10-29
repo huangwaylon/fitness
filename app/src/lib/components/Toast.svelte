@@ -21,8 +21,12 @@
     second?: boolean;
     /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */
     action?: { label: string; run: () => void };
+    /** Hover / touch / focus on the banner holds it; leaving lets it time out again (WCAG 2.2.1). */
+    onhold?: (on: boolean) => void;
+    /** The person dismissed it (tap or swipe). */
+    ondismiss?: () => void;
   }
-  let { text, person, miles = false, reaction, second = false, action }: Props = $props();
+  let { text, person, miles = false, reaction, second = false, action, onhold, ondismiss }: Props = $props();
 
   let gone = $state(false);
   let startY = 0;
@@ -43,12 +47,20 @@
 
   function dismiss() {
     gone = true;
+    ondismiss?.();
+  }
+  const hold = (on: boolean) => () => onhold?.(on);
+  /** Focus leaving the banner altogether (not moving between its two buttons). */
+  function blur(e: FocusEvent) {
+    if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null)) onhold?.(false);
   }
 </script>
 
 {#if !gone}
-  <div class="banner" class:second role="status" out:up|global popover="manual" use:topLayer>
-    <button type="button" class="hit" aria-label={t('common.close')} onclick={dismiss}
+  <div class="banner" class:second role="status" out:up|global popover="manual" use:topLayer
+    onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
+    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a swipe up still dismisses. -->
+    <button type="button" class="hit" aria-label={t('common.close')} onclick={() => !action && dismiss()}
       onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => e.clientY - startY < -12 && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
       {#if person}<Villager {person} size={36} head animate={false} eager />

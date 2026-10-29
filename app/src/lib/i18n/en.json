@@ -167,5 +167,9 @@
   "error.title": "That didn't open",
   "error.hint": "Please try again.",
   "error.home": "Back to island",
-  "error.notFound": "We couldn't find that page"
+  "error.notFound": "We couldn't find that page",
+  "purse.spent": "{label} {yen} spent. Enjoy!",
+  "purse.asked": "{label} {yen}: waiting for an OK",
+  "jar.paydayNotedYen": "{yen} noted as saved",
+  "pair.keyHint": "Keys are 16+ letters and digits"
 }

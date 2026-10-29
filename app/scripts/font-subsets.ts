@@ -2,13 +2,13 @@
 // 250 @font-face rules, ~200 KB of render-blocking CSS). Keeps every slice that holds a character used anywhere
 // in src/ (catalogs, place / workout / villager names) plus all kana, Latin and full-width forms, woff2 only.
 // Kanji typed by a user outside these slices fall back to the system rounded font.
-// Usage (from app/): npm run fonts:subset   → src/lib/styles/fonts.css (commit it). font-subsets.test.ts checks
-// that every catalog character is still covered, so re-run this after adding copy with new kanji.
+// Usage (from app/): npm run fonts:subset   → src/lib/styles/fonts.css (commit it). src/lib/styles/fonts.test.ts checks
+// that every character in src/ is still covered, so re-run this after adding copy with new kanji.
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const APP = join(import.meta.dirname, '..');
-const PKG = join(APP, 'node_modules', '@fontsource', 'zen-maru-gothic');
+export const PKG = join(APP, 'node_modules', '@fontsource', 'zen-maru-gothic');
 const OUT = join(APP, 'src', 'lib', 'styles', 'fonts.css');
 const WEIGHTS = [500, 700];
 
@@ -31,8 +31,8 @@ export function parseRanges(range: string): [number, number][] {
 
 export const covers = (ranges: [number, number][], cp: number) => ranges.some(([a, b]) => cp >= a && cp <= b);
 
-/** Code points that must render in Zen Maru Gothic. */
-function wanted(): Set<number> {
+/** Code points that must render in Zen Maru Gothic (also used by fonts.test.ts). */
+export function wanted(): Set<number> {
   const cps = new Set<number>();
   for (const f of walk(join(APP, 'src'))) {
     // Code and copy only: comments are full of kanji nobody sees.
