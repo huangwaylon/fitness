@@ -11,6 +11,7 @@
   import OfficialArt from './OfficialArt.svelte';
   import LeafCoin from './LeafCoin.svelte';
   import { week } from '#lib/client/week.svelte.ts';
+  import { now } from './motion/clock.ts';
   import { fruitArt } from '#lib/client/assets.ts';
   import { setLanguage, setVillagerName, setVillager, setVisibility } from '#lib/client/actions.ts';
   import { ROSTER, ROSTER_IDS, resolveLook } from '#lib/villagers/roster.ts';
@@ -44,7 +45,7 @@
   const vName = (id: string) => (i18n.locale === 'ja' ? ROSTER[id as keyof typeof ROSTER].nameJa : ROSTER[id as keyof typeof ROSTER].nameEn);
 
   function tick() {
-    clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+    clock = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now());
   }
 
   onMount(() => {

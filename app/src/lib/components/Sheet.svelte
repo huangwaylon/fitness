@@ -83,6 +83,8 @@
     overflow: auto; overscroll-behavior: contain;
   }
   dialog:focus { outline: none; }
+  /* Cards inside a sheet sit on the page colour, so the one card skin still reads against the sheet. */
+  dialog :global(.card) { background: var(--bg); }
   dialog[open] { animation: up var(--dur-pop) var(--ease-soft); }
   dialog::backdrop { background: var(--scrim); }
   /* U14: the content can scroll above the keyboard too (the footer is lifted by --kb). */
