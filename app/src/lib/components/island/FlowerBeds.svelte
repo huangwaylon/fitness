@@ -1,35 +1,33 @@
 <script lang="ts">
-  // Flower rows (round 6): one long, evenly spaced front row on each side of the jar (6 × 22u pitch,
-  // 20u tall), two kinds of the season alternating, so they frame the island without clutter. They sit
-  // just in front of the villagers' feet (z above the villagers). Winter: roses and pansies on snow
-  // mounds (drawn in Ground.svelte), each with a little snow cap.
+  // Flower beds (scale pass, docs/design/scale-and-ground.md): two tidy 2 × 2 beds mirrored about the jar,
+  // one flower per tile on the NH grid (columns ±2/±3, the beds' back row and the front row), the back row
+  // one species and the front row another. FLOWER_U tall (≈ 0.45 × a villager). Contact shadows are drawn
+  // in Ground.svelte. Winter: roses and pansies, each with a little snow cap.
   import OfficialArt from '../OfficialArt.svelte';
   import type { Season } from '#lib/client/theme.svelte.ts';
-  import { BEDS, BED_ROWS, BED_X, u } from './scene.ts';
+  import { BEDS, BED_ROWS, BED_X, FLOWER_SCALE, FLOWER_U, u } from './scene.ts';
   import { flowerArt } from '../art.ts';
 
   let { season }: { season: Season } = $props();
-  const beds = $derived(BEDS[season]);
+  const bed = $derived(BEDS[season]);
+  const xs = [...BED_X.left, ...BED_X.right];
 </script>
 
-{#each [0, 1] as side (side)}
-  {@const xs = side ? BED_X.right : BED_X.left}
-  {#each BED_ROWS as y (y)}
-    {#each xs as x, i (x)}
-      <!-- mirrored order, so the two outer ends match -->
-      {@const k = side ? (xs.length - 1 - i) % 2 : i % 2}
-      <span class="fl" style:left={u(x)} style:top={u(y)}>
-        <OfficialArt key={flowerArt(beds[side * 2 + k])} size={u(20)} />
-        {#if season === 'winter'}<span class="cap"></span>{/if}
-      </span>
-    {/each}
+{#each BED_ROWS as y, r (y)}
+  {@const id = r ? bed.front : bed.back}
+  {#each xs as x (x)}
+    <span class="fl" style:left={u(x)} style:top={u(y)} style:z-index={r ? 53 : 49}>
+      <OfficialArt key={flowerArt(id)} size={u(FLOWER_U * (FLOWER_SCALE[id] ?? 1))} />
+      {#if season === 'winter'}<span class="cap"></span>{/if}
+    </span>
   {/each}
 {/each}
 
 <style>
   .cap {
-    position: absolute; left: 22%; right: 22%; top: 6%; height: 22%; border-radius: 50% 50% 40% 40%;
+    position: absolute; left: 24%; right: 24%; top: 4%; height: 16%; border-radius: 50% 50% 40% 40%;
     background: #fff; box-shadow: 0 1px 0 #DDE7F3;
   }
-  .fl { position: absolute; z-index: 53; width: max-content; transform: translate(-50%, -90%); line-height: 0; pointer-events: none; }
+  /* feet on the row line: the trimmed art's stem ends at its bottom edge */
+  .fl { position: absolute; width: max-content; transform: translate(-50%, -96%); line-height: 0; pointer-events: none; }
 </style>

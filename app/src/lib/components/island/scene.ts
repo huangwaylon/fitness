@@ -11,29 +11,42 @@ export const u = (n: number): string => `${((n * 100) / STAGE_W).toFixed(3)}cqw`
 
 export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
-/** One tree per person (round 6): a plain official hardwood of the season at the back left / right (in
- *  AC a tree bears one kind of fruit, so this one bears none). The week's fruit lies on the ground in front
- *  of its trunk, the way NH drops fruit around a shaken tree. `x` = trunk centre; `base` = trunk bottom. */
-export const TREE = { base: 176, h: 128, x: { A: 92, B: 298 } as const };
+/** The NH tile grid (scale pass, docs/design/scale-and-ground.md). One tile = TILE u wide; a tile row is
+ *  ROW u deep on screen (NH's camera foreshortens ground depth to ≈ 0.7 of the width). Columns are centred on
+ *  the jar: col(k) = 195 + k·TILE, k = −3…3 (7 tiles across the plateau). Every size is a multiple of the
+ *  villager height VILLAGER.h ≈ 1.8 tiles, measured against in-game screenshots (`.refs/scale/`). */
+export const TILE = 44;
+export const ROW = 31;
+export const col = (k: number): number => 195 + k * TILE;
+/** Row bases (y of the feet / trunk bottom): back hedge, trees + jar, the flower beds' back and front rows
+ *  (the villagers stand on the front row). */
+export const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
+
+/** One tree per person (round 6): a plain official hardwood of the season (in AC a tree bears one kind of
+ *  fruit, so this one bears none), trunk on column ±2. NH hardwood ≈ 1.5 × a villager tall, canopy ≈ 2.2
+ *  tiles wide. The week's fruit lies on the ground in front of its trunk, the way NH drops fruit around a
+ *  shaken tree. `x` = trunk centre; `base` = trunk bottom. */
+export const TREE = { base: ROWS.trees, h: 120, x: { A: col(-2), B: col(2) } as const };
 /** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
 export const OAK_AR = 329 / 409;
 /** Ground fruit (game-designer round 6): per fruit kind 0–3 items = thirds of that kind's target, in a
- *  fixed arc in front of the trunk, 🍑 🥥 🍎 🍐 left to right (FRUITS order). [dx, dy] from the trunk base. */
-export const FRUIT_SPOTS: [number, number][] = [[-40, 6], [-13, 13], [13, 13], [40, 6]];
+ *  fixed arc in front of the trunk, 🍑 🥥 🍎 🍐 left to right (FRUITS order). [dx, dy] from the trunk base.
+ *  NH puts one dropped item per tile; 4 kinds × 3 items can't, so they sit at half-tile pitch (compromise). */
+export const FRUIT_SPOTS: [number, number][] = [[-37, 6], [-12, 12], [12, 12], [37, 6]];
 /** Where the 1st / 2nd / 3rd item of one kind lies, around its spot (a little NH drop pile). */
 export const PILE: [number, number][] = [[0, -3], [-6, 4], [6, 4]];
-/** Ground item size in u (≈ 22px at 393, NH ground-item scale). */
-export const FRUIT_U = 18;
+/** Ground item size in u: NH dropped fruit ≈ 0.3 × a villager (≈ half a tile). */
+export const FRUIT_U = 24;
 /** Items earned for a fruit kind: thirds of the target (0–3). */
 export const fruitCount = (pct: number): number => Math.max(0, Math.min(3, Math.floor((pct * 3) / 100 + 1e-9)));
 
-/** Villagers (§S.8): feet at y 306, 94u tall, on the inside of their trees, flanking the jar (their heads
- *  stay below the ground fruit and the jar's base). */
-export const VILLAGER = { foot: 306, h: 94, x: { A: 148, B: 242 } as const };
+/** Villagers (the scale's reference): 80u tall (≈ 1.8 tiles), on columns ±1 of the front row, flanking the
+ *  jar; their heads stay below the ground fruit. */
+export const VILLAGER = { foot: ROWS.front, h: 80, x: { A: col(-1), B: col(1) } as const };
 
-/** Jar (§S.6, round 6): the plaza centrepiece, ~50% down the island (its plate clears the villagers' heads at 320) on a round sand patch; 56u wide
- *  (70u tall ≈ 75px at 393). */
-export const JAR = { x: 195, base: 186, w: 56 };
+/** Jar (§S.6): the plaza centrepiece on column 0 of the tree row, on a round sand patch; 52u wide (≈ 1.2
+ *  tiles, 65u ≈ 0.8 villager tall: a little over one-tile furniture so the coins and the plate stay legible). */
+export const JAR = { x: col(0), base: ROWS.trees, w: 52 };
 
 export interface Prop {
   key: string;
@@ -49,21 +62,23 @@ export interface Prop {
   cls?: string;
 }
 
-/** Hedge bush pair of the season (alternating). Summer: hydrangea in June, hibiscus Jul–Aug. */
-export function hedgePair(season: Season, month: number): [BushId, BushId] {
-  switch (season) {
-    // (bushes/green is a potted sapling icon, so plain holly stands in as the green bush)
-    case 'spring': return ['pink-azalea', 'holly'];
-    case 'summer': return [month === 6 ? 'blue-hydrangea' : 'red-hibiscus', 'holly'];
-    case 'autumn': return ['orange-tea-olive', 'holly'];
-    case 'winter': return ['holly', 'pink-camellia'];
-  }
+/** The hedge's species of the month (NH flowering seasons, northern hemisphere): one species per hedge,
+ *  its two colours alternating (how NH players plant a tidy hedge). Spring azaleas, June hydrangeas,
+ *  Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly, Jan–Mar camellias. */
+export function hedgePair(_season: Season, month: number): [BushId, BushId] {
+  if (month >= 4 && month <= 5) return ['pink-azalea', 'white-azalea'];
+  if (month === 6) return ['blue-hydrangea', 'pink-hydrangea'];
+  if (month >= 7 && month <= 8) return ['red-hibiscus', 'yellow-hibiscus'];
+  if (month >= 9 && month <= 10) return ['orange-tea-olive', 'yellow-tea-olive'];
+  if (month >= 11) return ['holly', 'holly'];
+  return ['pink-camellia', 'red-camellia'];
 }
 
-/** Round 6: one tidy hedge along the back edge, eight bushes at an even pitch (no building, no path),
- *  inside the plateau's rounded back corners. */
-export const HEDGE_X = Array.from({ length: 8 }, (_, i) => 64 + i * 37.5);
-export const HEDGE_BASE = 84;
+/** The back hedge: one bush per tile on columns −3…3 (NH hedges are one bush per tile; neighbours touch).
+ *  A bush is ≈ 0.6 × a villager tall (BUSH_U, the trimmed figure). */
+export const HEDGE_X = [-3, -2, -1, 0, 1, 2, 3].map(col);
+export const HEDGE_BASE = ROWS.hedge;
+export const BUSH_U = 48;
 
 /** Round 7 (environment-style.md, "Pocket Camp diorama"): the island is an organic rounded plateau with
  *  sea on both sides. Grass top surface x 44–346, y 50–316 (rounded corners: rt at the back, rb at the
@@ -80,26 +95,27 @@ export const PLATEAU_BOTTOM = PLATEAU.y1;
 export const HORIZON_U = 8;
 export const TUCK_U = 34;
 
-/** Flowers (§S.7): two kinds per side, alternating. NH flowers keep blooming under snow (A13), so
- *  winter keeps red roses and pansies, with snow caps, on snow mounds. */
-export const BEDS: Record<Season, [FlowerId, FlowerId, FlowerId, FlowerId]> = {
-  spring: ['pink-tulips', 'yellow-tulips', 'blue-hyacinths', 'white-windflowers'],
-  summer: ['red-roses', 'yellow-roses', 'pink-lilies', 'lily-of-the-valley'],
-  autumn: ['pink-cosmos', 'white-cosmos', 'purple-mums', 'orange-pansies'],
-  winter: ['red-roses', 'orange-pansies', 'orange-pansies', 'red-roses']
+/** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the jar, on columns ±2/±3 of the
+ *  front two rows (the villagers stand on columns ±1; column 0 stays open for their strolls). One flower per
+ *  tile, the back row one species and the front row another, as NH players plan a bed. NH flowers keep
+ *  blooming under snow, so winter keeps roses and pansies, on snow mounds. A flower ≈ 0.45 × a villager. */
+export const BEDS: Record<Season, { back: FlowerId; front: FlowerId }> = {
+  spring: { back: 'red-tulips', front: 'yellow-tulips' },
+  summer: { back: 'red-roses', front: 'white-roses' },
+  autumn: { back: 'pink-cosmos', front: 'purple-mums' },
+  winter: { back: 'red-roses', front: 'orange-pansies' }
 };
-/** Round 6/7: one front row along the flat part of the plateau's front edge, 7 a side at an 18u pitch,
- *  framing the island (the rounded front corners stay clear). */
-export const BED_X = {
-  left: Array.from({ length: 7 }, (_, i) => 70 + i * 18),
-  right: Array.from({ length: 7 }, (_, i) => 212 + i * 18)
-};
-export const BED_ROWS = [320];
+export const FLOWER_U = 32;
+/** Per-species height (pansies and mums grow low). */
+export const FLOWER_SCALE: Partial<Record<FlowerId, number>> = { 'orange-pansies': 0.8, 'purple-mums': 0.92 };
+export const BED_COLS = [-3, -2, 2, 3];
+export const BED_X = { left: [col(-3), col(-2)], right: [col(2), col(3)] };
+export const BED_ROWS = [ROWS.bedBack, ROWS.front];
 
 /** Back row (round 6: the hedge only; no building, bench, cedar or path). */
 export function props(season: Season, month: number): Prop[] {
   const [b1, b2] = hedgePair(season, month);
-  return HEDGE_X.map((x, i) => ({ key: `bushes/${Math.min(i, 7 - i) % 2 ? b2 : b1}`, h: 28, x, base: HEDGE_BASE, z: 20 }));
+  return HEDGE_X.map((x, i) => ({ key: `bushes/${i % 2 ? b2 : b1}`, h: BUSH_U, x, base: HEDGE_BASE, z: 20 }));
 }
 
 /** Japan-date events (§S.10). */
