@@ -187,6 +187,12 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Leaf_NH_Icon.png"
     },
+    "money/miles": {
+      "path": "money/miles.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
+    },
     "money/miles-ticket": {
       "path": "money/miles-ticket.webp",
       "w": 128,
