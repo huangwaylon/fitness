@@ -1,8 +1,9 @@
 <script lang="ts">
   import { asset, resolve } from '$app/paths';
   import { routeOf } from '#lib/client/paths.ts';
-  import '@fontsource/fredoka/600.css';
-  import '@fontsource/fredoka/700.css';
+  // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks; round 8).
+  import '@fontsource/fredoka/latin-600.css';
+  import '@fontsource/fredoka/latin-700.css';
   // Zen Maru Gothic trimmed to the slices the app uses (round 5 P6; scripts/font-subsets.ts).
   import '#lib/styles/fonts.css';
   import '#lib/styles/tokens.css';
@@ -15,7 +16,6 @@
   import Host from '#lib/components/Host.svelte';
   import ToastHost from '#lib/components/ToastHost.svelte';
   import OfficialArt from '#lib/components/OfficialArt.svelte';
-  import HarvestOverlay from '#lib/components/HarvestOverlay.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/client/ui.svelte.ts';
   import { startTheme } from '#lib/client/theme.svelte.ts';
@@ -36,9 +36,10 @@
     !onPair && !!week.view && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
   );
   // Pages hold their toasts while the harvest is up (U6).
-  $effect(() => {
-    ui.overlay = showHarvest;
-  });
+  ui.provideOverlay(() => showHarvest);
+  /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route (round 8). */
+  let harvestMod: Promise<typeof import('#lib/components/HarvestOverlay.svelte')> | null = null;
+  const loadHarvest = () => (harvestMod ??= import('#lib/components/HarvestOverlay.svelte'));
 
   // 島 ⇄ 旅の壺: a zoom into the jar and back out of it.
   jarTransition();
@@ -100,8 +101,10 @@
 </div>
 
 {#if showHarvest && week.view && harvest}
-  <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)}
-    onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
+  {#await loadHarvest() then { default: HarvestOverlay }}
+    <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)}
+      onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
+  {/await}
 {/if}
 
 <!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert (round 7 F1). -->

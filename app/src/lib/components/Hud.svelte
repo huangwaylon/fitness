@@ -5,7 +5,7 @@
   import { tick, untrack } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import HelpButton from './HelpButton.svelte';
+  import PhoneButton from './PhoneButton.svelte';
   import SyncPill from './SyncPill.svelte';
   import { minuteNow } from './motion/clock.ts';
   import { clockTime, weekdayOf } from '#lib/i18n/format.ts';
@@ -50,7 +50,7 @@
     <span class="clock money" aria-hidden="true">{time}<small>{date}</small></span>
     <SyncPill />
   </div>
-  <HelpButton bind:open={phoneOpen} />
+  <PhoneButton bind:open={phoneOpen} />
 </div>
 <div class="ribbon-wrap">
   <!-- Tap → きろく, this week (history-and-editing.md §2). -->

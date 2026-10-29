@@ -10,7 +10,7 @@
   import OfficialArt from '#lib/components/OfficialArt.svelte';
   import Yen from '#lib/components/Yen.svelte';
   import Jar, { jarFill } from '#lib/components/island/Jar.svelte';
-  import HelpButton from '#lib/components/HelpButton.svelte';
+  import PhoneButton from '#lib/components/PhoneButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
   import { openKiroku } from '#lib/client/ui.svelte.ts';
   import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/client/actions.ts';
@@ -121,7 +121,7 @@
   <main class="jar-screen">
     <div class="top">
       <a class="back" href={resolve('/')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5 L8 12 L16 19 Z" /></svg>{t('jar.back')}</a>
-      <HelpButton bind:open={phoneOpen} />
+      <PhoneButton bind:open={phoneOpen} />
     </div>
     <h1 class="sr-only">{t('jar.title')}</h1>
 
