@@ -6,8 +6,11 @@ import { version } from '$app/env';
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
 
-const CACHE = `island-shell-${version}`;
+const SHELL = 'island-shell-';
+const CACHE = `${SHELL}${version}`;
 const FONTS = 'island-fonts-v1';
+/** A slow network (one bar, a captive portal) must not hang the launch: after this the cached shell opens. */
+const NAV_TIMEOUT_MS = 3000;
 const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
 
 // Precache built JS/CSS + static files. Font subsets (Japanese = many files) are cached on first use instead; the art
@@ -30,14 +33,24 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// Keep one previous shell generation: a page still running the old build (claimed below) loads its lazy chunks
+// (きろく, the harvest) from it instead of a 404, until it reloads into the new build (ui-state/reload.ts).
+// caches.keys() lists caches in creation order, so the newest older shell is the last one before ours.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of await caches.keys()) if (key !== CACHE && key !== FONTS) await caches.delete(key);
+      const keys = await caches.keys();
+      const previous = keys.filter((k) => k.startsWith(SHELL) && k !== CACHE).at(-1);
+      for (const key of keys) if (key !== CACHE && key !== FONTS && key !== previous) await caches.delete(key);
       await self.clients.claim();
     })()
   );
 });
+
+/** Ours first (a static file may change under the same path), then the previous generation's. */
+async function cached(req: Request | string): Promise<Response | undefined> {
+  return (await (await caches.open(CACHE)).match(req)) ?? (await caches.match(req));
+}
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
@@ -45,17 +58,22 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // the Apps Script backend: always live
 
+  // Network first (a fresh shell points at the current chunks), the cached shell when offline or after 3 s; the
+  // network response still refreshes the cache when it lands late.
   if (req.mode === 'navigate') {
+    const net = fetch(req).then(async (res) => {
+      if (res.ok) await (await caches.open(CACHE)).put(SCOPE, res.clone());
+      return res;
+    });
+    event.waitUntil(net.then(() => {}, () => {}));
     event.respondWith(
       (async () => {
-        const cache = await caches.open(CACHE);
-        try {
-          const res = await fetch(req);
-          if (res.ok) await cache.put(SCOPE, res.clone());
-          return res;
-        } catch {
-          return (await cache.match(SCOPE)) ?? Response.error();
-        }
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const late = new Promise<null>((r) => (timer = setTimeout(r, NAV_TIMEOUT_MS, null)));
+        const first = await Promise.race([net.catch(() => null), late]);
+        clearTimeout(timer);
+        if (first) return first;
+        return (await cached(SCOPE)) ?? net.catch(() => Response.error());
       })()
     );
     return;
@@ -75,12 +93,5 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      const hit = await cache.match(req);
-      if (hit) return hit;
-      return fetch(req);
-    })()
-  );
+  event.respondWith((async () => (await cached(req)) ?? fetch(req))());
 });

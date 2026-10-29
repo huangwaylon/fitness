@@ -1,6 +1,21 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { execSync } from 'node:child_process';
+
+/** The app version (shown in しまフォン → あそびかた, names the SW cache, and in _app/version.json for Kit's update
+ *  check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
+function appVersion(): string {
+  let sha = process.env.GITHUB_SHA?.slice(0, 7);
+  if (!sha) {
+    try {
+      sha = execSync('git rev-parse --short=7 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    } catch {
+      sha = 'local';
+    }
+  }
+  return `${new Date().toISOString().slice(0, 10)}.${sha}`;
+}
 
 /** The art manifest is bundled into the main chunk (lib/art.ts): ship only the keys, paths and sizes, not the
  *  `source` credit URLs (they stay in static/art/manifest.json for the runbook). */
@@ -22,6 +37,7 @@ export default defineConfig({
     slimArtManifest,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
+      version: { name: appVersion() },
       paths: { base: (process.env.BASE_PATH ?? '/fitness') as `/${string}` },
       // Static hosting has no headers: SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its
       // inline bootstrap script to script-src. Only the Apps Script origins (the /exec URL and its 302 target) are

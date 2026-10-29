@@ -15,7 +15,8 @@
   import { week } from '#lib/client/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { minuteNow } from '../../time/clock.ts';
+  import { lazy } from '#lib/ui-state/reload.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
   import { clockTime } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -34,8 +35,7 @@
 
   let app = $state<AppId | null>(null);
   /** きろく is loaded the first time it opens, so the island doesn't pay for it up front (round 7 L1). */
-  let kirokuMod: Promise<typeof import('../kiroku/Kiroku.svelte')> | null = null;
-  const loadKiroku = () => (kirokuMod ??= import('../kiroku/Kiroku.svelte'));
+  const loadKiroku = lazy(() => import('../kiroku/Kiroku.svelte'));
   let kiroku: { back: () => boolean } | undefined = $state();
   let entry = $state<KirokuEntry | null>(null);
 

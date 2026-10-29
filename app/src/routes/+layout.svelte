@@ -10,7 +10,7 @@
   import '#lib/styles/theme.css';
   import { onMount, type Snippet } from 'svelte';
   import type { HarvestView } from '#lib/types.ts';
-  import { page } from '$app/state';
+  import { page, updated } from '$app/state';
   import Sprites from '#lib/components/ui/Sprites.svelte';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Host from '#lib/components/characters/Host.svelte';
@@ -20,6 +20,7 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { startTheme } from '#lib/ui-state/theme.svelte.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
+  import { lazy, safeReload } from '#lib/ui-state/reload.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -38,8 +39,13 @@
   // Pages hold their toasts while the harvest is up (U6).
   ui.provideOverlay(() => showHarvest);
   /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route (round 8). */
-  let harvestMod: Promise<typeof import('#lib/components/sheets/HarvestOverlay.svelte')> | null = null;
-  const loadHarvest = () => (harvestMod ??= import('#lib/components/sheets/HarvestOverlay.svelte'));
+  const loadHarvest = lazy(() => import('#lib/components/sheets/HarvestOverlay.svelte'));
+
+  // A new deploy (Kit checks _app/version.json when the app comes back to the front): reload into it once nothing
+  // is open, so a resident PWA never keeps running an old build against new chunks.
+  $effect(() => {
+    if (updated.current && !onPair && !showHarvest && !ui.sheets.length) safeReload();
+  });
 
   // 島 ⇄ 旅の壺: a zoom into the jar and back out of it.
   jarTransition();
@@ -52,9 +58,13 @@
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
+    // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once.
+    const onStale = () => safeReload();
+    window.addEventListener('vite:preloadError', onStale);
     return () => {
       stopTheme();
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('vite:preloadError', onStale);
     };
   });
 </script>
