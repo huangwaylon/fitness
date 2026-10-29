@@ -79,7 +79,7 @@ WebP with alpha, already downscaled; never upscale past the manifest height. `<O
 | Bushes | azalea, hydrangea, hibiscus, tea olive (two colours each), camellia (two), holly | Back hedge (§S.3) |
 | Flowers | red/yellow tulips, red/white roses, pink cosmos, purple mums, orange pansies | Flower beds (§S.3) |
 | Season | `season/petal · maple-leaf · snowflake` | Particles |
-| Reactions | the 24 NH reaction-wheel icons + `pose-viva` | しずえ's bubble, harvest, toasts |
+| Reactions | 22 NH reaction-wheel icons (`reactions/<id>`) + `pose-viva` | しずえ's bubble, harvest, toasts |
 | Money | `money/bells`, `leaf`, `miles`, `miles-ticket` | Amounts, payday, trip card |
 | Phone | `phone/nookphone`, full tiles `miles · passport · rescue · nook-shopping`, glyphs `glyph-help · glyph-chat` | NookPhone (§1.3) |
 | Deco | `deco/airport`, `deco/present` | Pair hero, balloon present |
