@@ -104,7 +104,7 @@ export interface WeekPayout {
   teamYen: number;
 }
 
-// ---- View model returned by GET /api/week (server → UI). Partner fields are already privacy-filtered. ----
+// ---- View model computed in the browser by lib/model (snapshot → UI). Partner fields are privacy-filtered. ----
 
 export interface FruitView {
   milli: number;

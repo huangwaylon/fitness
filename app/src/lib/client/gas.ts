@@ -22,6 +22,9 @@ let kv: KV | null = typeof window !== 'undefined' ? window.localStorage : null;
 let fetcher: typeof fetch = (...a) => fetch(...a);
 let url = GAS_URL;
 
+/** False when the build had no VITE_GAS_URL: the app shows its "not set up yet" screen (demo still works). */
+export const GAS_CONFIGURED = GAS_URL.trim() !== '';
+
 /** Tests: swap storage, fetch and the endpoint. */
 export function configure(o: { storage?: KV; fetch?: typeof fetch; url?: string }): void {
   if (o.storage) kv = o.storage;

@@ -6,7 +6,7 @@ import { resolve } from '$app/paths';
 import { dev } from '$app/env';
 import type { PersonWeekView, WeekView } from '#lib/types.ts';
 import type { EventType } from '#lib/ingest/sheet-api.ts';
-import { enqueue, flush, getKey, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, type SnapshotCache } from './gas.ts';
+import { GAS_CONFIGURED, enqueue, flush, getKey, keyFromHash, loadCache, nextRetryAt, queued, refreshSnapshot, type SnapshotCache } from './gas.ts';
 import { composeView } from './view.ts';
 import { sampleWeek } from './fixtures.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
@@ -26,7 +26,7 @@ export interface SendResult<T = unknown> {
 
 class WeekStore {
   view = $state<WeekView | null>(null);
-  status = $state<'loading' | 'ready' | 'error'>('loading');
+  status = $state<'loading' | 'ready' | 'error' | 'unconfigured'>('loading');
   syncing = $state(false);
   offline = $state(false);
   lastSync = $state<Date | null>(null);
@@ -58,6 +58,8 @@ class WeekStore {
       console.info('[island] VITE_GAS_URL not set in dev — using fixtures');
       this.demo = 'plain';
     }
+    // A build without the Apps Script URL (the Pages site before GAS_URL is set): a friendly screen, not errors.
+    if (!this.demo && !GAS_CONFIGURED) this.status = 'unconfigured';
   }
 
   get me(): PersonWeekView | null {
@@ -90,6 +92,7 @@ class WeekStore {
       setLocale(this.view.locale);
       return;
     }
+    if (this.status === 'unconfigured') return;
     if (!getKey() || keyFromHash(location.hash)) {
       // Not paired yet, or opened from a `#key=…` link: the pair page takes it from here (and keeps the hash).
       this.status = 'ready';

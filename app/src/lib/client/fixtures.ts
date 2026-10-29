@@ -1,4 +1,4 @@
-// Realistic sample WeekView for `?demo` and for dev when /api/week isn't up yet.
+// Realistic sample WeekView for `?demo` and for dev without VITE_GAS_URL.
 // Cast: もち (B, cat, PT) is "me", まめ (A, dog, Anytime) is the partner.
 import type { FruitKey, FruitView, HarvestView, WeekView } from '#lib/types.ts';
 import { RUNGS } from '#lib/config/rules.ts';

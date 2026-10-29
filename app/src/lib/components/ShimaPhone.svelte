@@ -146,7 +146,7 @@
     <div class="panel center">
       <span class="tile big" style:--fill="var(--app-bell)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#app-bell" /></svg></span>
       <!-- No web push (ADR 0015): reminders are iOS Shortcuts automations. -->
-      <p class="state">{t('phone.pushHint')}</p>
+      <p class="state">{t('phone.remindersHint')}</p>
     </div>
   {:else if app === 'sync' && view}
     <div class="panel rows">

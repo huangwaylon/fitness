@@ -1,17 +1,30 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import adapterNode from '@sveltejs/adapter-node';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig } from 'vitest/config';
 
-// BUILD_TARGET=pages → static SPA for GitHub Pages (the backend is the Apps Script web app: set VITE_GAS_URL).
-// Default → the old Node server for the Mac (removed in the final ADR 0015 phase).
-const pages = process.env.BUILD_TARGET === 'pages';
-
+// A static SPA (GitHub Pages). The backend is the Apps Script web app (ADR 0015): its /exec URL is VITE_GAS_URL.
+// Output goes to build-pages/ (app/build/ is the old Mac server's output; leave it alone until it's retired).
 export default defineConfig({
   plugins: [
     sveltekit({
-      adapter: pages ? adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }) : adapterNode(),
-      paths: { base: pages ? ((process.env.BASE_PATH ?? '/fitness') as `/${string}`) : '' }
+      adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
+      paths: { base: (process.env.BASE_PATH ?? '/fitness') as `/${string}` },
+      // Static hosting has no headers: SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its
+      // inline bootstrap script to script-src. Only the Apps Script origins (the /exec URL and its 302 target) are
+      // reachable besides our own.
+      csp: {
+        mode: 'hash',
+        directives: {
+          'default-src': ['self'],
+          'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com'],
+          'img-src': ['self', 'data:'],
+          'style-src': ['self', 'unsafe-inline'],
+          'script-src': ['self'],
+          'object-src': ['none'],
+          'base-uri': ['self'],
+          'form-action': ['none']
+        }
+      }
     })
   ],
   // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS.

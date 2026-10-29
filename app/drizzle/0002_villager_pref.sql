@@ -1,1 +1,0 @@
-ALTER TABLE `person_pref` ADD `villager` text;
