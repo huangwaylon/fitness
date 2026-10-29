@@ -42,6 +42,36 @@ describe('parse: workoutKey', () => {
     const server = `w:${createHash('sha256').update(`Traditional Strength Training|${minute}`).digest('hex').slice(0, 24)}`;
     expect(workoutKey('伝統的な筋力トレーニング', '2026-11-02T08:30:10+09:00')).toBe(server);
   });
+
+  // Pinned before the name tables were merged (round 8): every alias keeps its canonical name and id.
+  it.each([
+    ['伝統的な筋力トレーニング', 'Traditional Strength Training', 'w:8ffdf3351f556125b9a5c057'],
+    ['筋力トレーニング', 'Traditional Strength Training', 'w:8ffdf3351f556125b9a5c057'],
+    ['機能的な筋力トレーニング', 'Functional Strength Training', 'w:23e01791179957e69307895d'],
+    ['コアトレーニング', 'Core Training', 'w:311046d3f686ec136c89e943'],
+    ['ピラティス', 'Pilates', 'w:fec8b6ac8125ef0f7af27bb5'],
+    ['ヨガ', 'Yoga', 'w:8fa64fe652f984aa2ed2c3d8'],
+    ['高強度インターバルトレーニング', 'High Intensity Interval Training', 'w:e509860e77edd5555f3e91d8'],
+    ['HIIT', 'High Intensity Interval Training', 'w:e509860e77edd5555f3e91d8'],
+    ['ミックスカーディオ', 'Mixed Cardio', 'w:794d983389f48a438b391d62'],
+    ['クロストレーニング', 'Cross Training', 'w:1ceda21009a71ec89aaa28ed'],
+    ['ウォーキング', 'Walking', 'w:eff997f3e53b3e0937beef2e'],
+    ['屋外ウォーキング', 'Outdoor Walk', 'w:841810fa334039e00ac614e6'],
+    ['室内ウォーキング', 'Indoor Walk', 'w:f8461cb1d054ca5858585f10'],
+    ['ハイキング', 'Hiking', 'w:2238b42cacc274ca572a51c9'],
+    ['ランニング', 'Running', 'w:f8819bdd79c855d470ecdea2'],
+    ['屋外ランニング', 'Outdoor Run', 'w:b10bb35eff39ca838481c4df'],
+    ['室内ランニング', 'Indoor Run', 'w:2b713c689a6cc3d8a64d773d'],
+    ['サイクリング', 'Cycling', 'w:10d2c06fbe1e3477e5cd4570'],
+    ['水泳', 'Swimming', 'w:31194cfbc6716fdf949525e3'],
+    ['ダンス', 'Dance', 'w:d4aff47fc027120c4608dc9c'],
+    ['エリプティカル', 'Elliptical', 'w:5b1270cf260be7ab8f3439b8'],
+    ['ローイング', 'Rowing', 'w:88fd19c957ab2f0cb0b67070']
+  ])('%s → %s → %s', (ja, en, id) => {
+    expect(canonicalWorkoutType(ja)).toBe(en);
+    expect(workoutKey(ja, '2026-11-02T07:00:00+09:00')).toBe(id);
+    expect(workoutKey(en, '2026-11-02T07:00:00+09:00')).toBe(id);
+  });
 });
 
 describe('parse: shapes', () => {
