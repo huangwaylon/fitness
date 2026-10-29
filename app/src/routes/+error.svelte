@@ -3,8 +3,8 @@
   // "500 Internal Error", with safe areas, and two ways back: the island and the demo.
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
-  import OfficialArt from '#lib/components/OfficialArt.svelte';
-  import Host from '#lib/components/Host.svelte';
+  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
+  import Host from '#lib/components/characters/Host.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   const notFound = $derived(page.status === 404);

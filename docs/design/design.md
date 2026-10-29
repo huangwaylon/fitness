@@ -44,7 +44,7 @@ bottom   [しずえ box, 2 lines (1 compact)] [はい][いいえ]     only with 
 
 `◀ 島へ` pill + the NookPhone, then the hero: the jar + **¥146,200** (44) + `今週 ≈ ¥5,860`. Then two cream **Nook Miles+ cards in one skin**: the trip (`money/miles-ticket`, 次は 沖縄, a bar, `あと ¥3,800`; tap = the ladder) and ごほうび財布 (`phone/nook-shopping`, 使う; quiet until the purse can pay for the cheapest treat). Payday is a quiet cream banner with the bells icon. 使う and payday ✓ show at once but wait 5 s with もとに戻す before they are sent. No しずえ.
 
-**島 ⇄ 旅の壺:** the jar squashes (R18), then the island jar morphs into the hero jar (View Transitions, `view-transition-name: jar`, 320 ms in / 280 ms back); without View Transitions, the same zoom as a CSS entrance; under reduced motion, a short crossfade (`client/jarTransition.ts`).
+**島 ⇄ 旅の壺:** the jar squashes (R18), then the island jar morphs into the hero jar (View Transitions, `view-transition-name: jar`, 320 ms in / 280 ms back); without View Transitions, the same zoom as a CSS entrance; under reduced motion, a short crossfade (`ui-state/jarTransition.ts`).
 
 ### 1.3 しまフォン NookPhone (`ShimaPhone.svelte`)
 
@@ -223,7 +223,7 @@ Loops, hops, walks and dances off; emotes fade in over 120 ms and hold; fx colla
 
 ### T.7 Time of day sets the theme
 
-`data-tod` on `<html>` comes **only from the clock** (dawn 05–07, day 07–16, dusk 16–19, night 19–05; `client/season.ts`); `prefers-color-scheme` is ignored. Previews: `?theme=night|day`, `?season=`.
+`data-tod` on `<html>` comes **only from the clock** (dawn 05–07, day 07–16, dusk 16–19, night 19–05; `ui-state/season.ts`); `prefers-color-scheme` is ignored. Previews: `?theme=night|day`, `?season=`.
 
 | tod | Chrome | Lip | HUD text | `theme-color` |
 |---|---|---|---|---|

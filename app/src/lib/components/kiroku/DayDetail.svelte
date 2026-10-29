@@ -4,7 +4,7 @@
   // (a fix, `edit:true`). Read-only cards get the 見るだけ badge and flat, lipless chips (round 7 F5).
   import type { PersonId } from '#lib/types.ts';
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
-  import Avatar from '../Avatar.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
   import { dayTitle, leftLabel, num, typeLabel } from './fmt.ts';

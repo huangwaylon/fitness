@@ -5,12 +5,12 @@
   import { resolve } from '$app/paths';
   import { week } from '#lib/client/week.svelte.ts';
   import { keyFromHash, setKey, whoami } from '#lib/client/gas.ts';
-  import { isStandalone } from '#lib/client/standalone.ts';
+  import { isStandalone } from '#lib/ui-state/standalone.ts';
   import { onMount } from 'svelte';
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';
-  import Bubble from '#lib/components/Bubble.svelte';
-  import OfficialArt from '#lib/components/OfficialArt.svelte';
-  import { keyboardInset } from '#lib/components/keyboardInset.ts';
+  import Bubble from '#lib/components/ui/Bubble.svelte';
+  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
+  import { keyboardInset } from '#lib/components/ui/keyboardInset.ts';
 
   let code = $state('');
   let busy = $state(false);

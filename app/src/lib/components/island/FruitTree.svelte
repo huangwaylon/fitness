@@ -11,10 +11,10 @@
   // `shakeN` (bumped by idle life) shakes the tree without the bubble; `celebrate` pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { FruitKey, PersonWeekView } from '#lib/types.ts';
-  import type { Foliage } from '#lib/client/season.ts';
+  import type { Foliage } from '#lib/ui-state/season.ts';
   import { FRUITS } from '#lib/config/rules.ts';
-  import OfficialArt from '../OfficialArt.svelte';
-  import Fx from '../Fx.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import Fx from '../characters/Fx.svelte';
     import { fruitArt } from '#lib/art.ts';
   import { seasonArt, treeArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';

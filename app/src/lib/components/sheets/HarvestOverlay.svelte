@@ -8,15 +8,15 @@
   // the games): the end card plays an item-get beat (the jar pops, a sparkle).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
   import { FRUITS, RUNGS } from '#lib/config/rules.ts';
-  import Villager from './Villager.svelte';
-  import Avatar from './Avatar.svelte';
-  import Emote from './Emote.svelte';
+  import Villager from '../characters/Villager.svelte';
+  import Avatar from '../characters/Avatar.svelte';
+  import Emote from '../characters/Emote.svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import Yen from './Yen.svelte';
-  import Bubble from './Bubble.svelte';
-  import Jar, { jarFill } from './island/Jar.svelte';
-  import OfficialArt from './OfficialArt.svelte';
+  import Yen from '../ui/Yen.svelte';
+  import Bubble from '../ui/Bubble.svelte';
+  import Jar, { jarFill } from '../island/Jar.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { confirmHarvest } from '#lib/client/actions.ts';
   import { fruitArt } from '#lib/art.ts';
   import { ripeness } from './ripeness.ts';

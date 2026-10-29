@@ -14,7 +14,7 @@
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/client/week.svelte.ts';
   import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoTransfer, voidSpend, EDIT_CUTOFF_MS } from '#lib/client/actions.ts';
-  import ChoiceList from '../ChoiceList.svelte';
+  import ChoiceList from '../ui/ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
   import WeekDetail from './WeekDetail.svelte';
   import DayDetail from './DayDetail.svelte';

@@ -3,7 +3,7 @@
 // so a tap moves the fruit, the score and the jar the same way everywhere.
 import { MONEY } from '#lib/config/rules.ts';
 import { week, type SendResult } from './week.svelte.ts';
-import { toasts } from './toast.svelte.ts';
+import { toasts } from '../ui-state/toast.svelte.ts';
 import { newId } from './gas.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs } from '#lib/model/state.ts';

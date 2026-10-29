@@ -14,8 +14,8 @@ import type { PersonId } from '#lib/types.ts';
 import { buildWeekView, payoutAsOf } from '#lib/model/week.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import { setLocale, t } from '#lib/i18n/index.ts';
-import { minuteNow } from '#lib/components/motion/clock.ts';
-import { toasts } from './toast.svelte.ts';
+import { minuteNow } from '#lib/time/clock.ts';
+import { toasts } from '../ui-state/toast.svelte.ts';
 
 type DemoMode = false | 'plain' | 'harvest';
 const DEMO_EVENTS = 'island.demo.events';

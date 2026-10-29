@@ -4,7 +4,7 @@
   import type { PersonId } from '#lib/types.ts';
   import type { MoneyLog } from '#lib/model/history.ts';
   import { RUNGS } from '#lib/config/rules.ts';
-  import Avatar from '../Avatar.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   
   import { t, formatYen } from '#lib/i18n/index.ts';
   import { weekRange } from '#lib/i18n/format.ts';

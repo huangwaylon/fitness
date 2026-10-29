@@ -15,7 +15,7 @@
   //   hedge bush and every flower (docs/design/design.md §S.2).
   // Colours: the season tables in tokens.css (Builder A block). The time of day is ONE multiply tint over
   // land and sea (IslandScene .tint), so nothing here is keyed on tod (except the dusk shadow stretch).
-  import type { Season } from '#lib/client/theme.svelte.ts';
+  import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, JAR, PLATEAU, ROW, SAND, TILE, TREE, outline, rng, smooth } from './scene.ts';
 
   interface Props {

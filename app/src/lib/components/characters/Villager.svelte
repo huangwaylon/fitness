@@ -17,8 +17,8 @@
   import { resolveLook } from '#lib/villagers/roster.ts';
   import { villagerArt } from '#lib/art.ts';
   import { week } from '#lib/client/week.svelte.ts';
-  import { actors, removeFx } from './motion/director.svelte.ts';
-  import type { ActorId, Motion } from './motion/reactions.ts';
+  import { actors, removeFx } from '../motion/director.svelte.ts';
+  import type { ActorId, Motion } from '../motion/reactions.ts';
 
   interface Props {
     person?: PersonId;

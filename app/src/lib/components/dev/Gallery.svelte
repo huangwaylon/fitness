@@ -2,20 +2,20 @@
   // Dev art gallery (design.md §A): every official art key, the villager roster, しずえ poses,
   // the fallback silhouette, money marks, fruit ripeness stages, emotes, and the island in every
   // season × day/night. Loaded by routes/dev/characters only in `vite dev`, so the production build drops it.
-  import OfficialArt from '#lib/components/OfficialArt.svelte';
-  import Villager from '#lib/components/Villager.svelte';
-  import Host from '#lib/components/Host.svelte';
-  import Silhouette from '#lib/components/Silhouette.svelte';
-  import Emote from '#lib/components/Emote.svelte';
-  import LeafCoin from '#lib/components/LeafCoin.svelte';
-  import FruitRing from '#lib/components/FruitRing.svelte';
+  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
+  import Villager from '#lib/components/characters/Villager.svelte';
+  import Host from '#lib/components/characters/Host.svelte';
+  import Silhouette from '#lib/components/characters/Silhouette.svelte';
+  import Emote from '#lib/components/characters/Emote.svelte';
+  import LeafCoin from '#lib/components/ui/LeafCoin.svelte';
+  import FruitRing from '#lib/components/sheets/FruitRing.svelte';
   import IslandScene from '#lib/components/island/IslandScene.svelte';
-  import Fx from '#lib/components/Fx.svelte';
+  import Fx from '#lib/components/characters/Fx.svelte';
   import { REACTIONS as ICONS, MARKS, COLOUR_GLYPHS, art, artKeys } from '#lib/art.ts';
   import { REACTIONS, REACTION_IDS } from '#lib/components/motion/reactions.ts';
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import { hostTap } from '#lib/components/motion/director.svelte.ts';
-  import type { FxKind } from '#lib/components/Fx.svelte';
+  import type { FxKind } from '#lib/components/characters/Fx.svelte';
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';
   import { FRUITS } from '#lib/config/rules.ts';
   import { week } from '#lib/client/week.svelte.ts';

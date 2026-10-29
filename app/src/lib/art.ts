@@ -5,7 +5,7 @@
 import { asset } from '$app/paths';
 import manifest from '../../static/art/manifest.json';
 import type { FruitKey } from '#lib/types.ts';
-import type { Foliage } from '#lib/client/season.ts';
+import type { Foliage } from '#lib/ui-state/season.ts';
 
 export interface ArtEntry {
   path: string;
@@ -115,7 +115,7 @@ export function reactionArt(id: EmoteIcon): string {
   return `reactions/${id}`;
 }
 
-/** The hardwood (oak) by foliage (client/season.ts): cherry blossom (Apr 1–10 only), green, red-orange, snow. */
+/** The hardwood (oak) by foliage (ui-state/season.ts): cherry blossom (Apr 1–10 only), green, red-orange, snow. */
 const OAK: Record<Foliage, string> = { blossom: 'oak-spring', green: 'oak-summer', fall: 'oak-fall', snow: 'oak-winter' };
 export function treeArt(f: Foliage): string {
   return `trees/${OAK[f]}`;

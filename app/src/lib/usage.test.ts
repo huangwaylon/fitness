@@ -13,7 +13,7 @@ import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
-const UI_DIRS = ['lib/components', 'lib/client', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts'];
+const UI_DIRS = ['lib/components', 'lib/client', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts'];
 
 function files(p: string): string[] {
   try {
@@ -54,7 +54,7 @@ describe('i18n catalogs', () => {
 });
 
 describe('sprite symbols (Sprites.svelte)', () => {
-  const sprites = readFileSync(join(LIB, 'components/Sprites.svelte'), 'utf8');
+  const sprites = readFileSync(join(LIB, 'components/ui/Sprites.svelte'), 'utf8');
   const ids = [...sprites.matchAll(/<symbol id="([\w-]+)"/g)].map((m) => m[1]);
   const rest = sources.filter((s) => !s.f.endsWith('Sprites.svelte')).map((s) => s.text).join('\n');
   const refs = [...rest.matchAll(/href="#([\w-]+)"/g)].map((m) => m[1]);

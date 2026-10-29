@@ -1,6 +1,6 @@
 <script lang="ts">
   import { asset, resolve } from '$app/paths';
-  import { routeOf } from '#lib/client/paths.ts';
+  import { routeOf } from '#lib/ui-state/paths.ts';
   // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks; round 8).
   import '@fontsource/fredoka/latin-600.css';
   import '@fontsource/fredoka/latin-700.css';
@@ -11,15 +11,15 @@
   import { onMount, type Snippet } from 'svelte';
   import type { HarvestView } from '#lib/types.ts';
   import { page } from '$app/state';
-  import Sprites from '#lib/components/Sprites.svelte';
-  import Bubble from '#lib/components/Bubble.svelte';
-  import Host from '#lib/components/Host.svelte';
-  import ToastHost from '#lib/components/ToastHost.svelte';
-  import OfficialArt from '#lib/components/OfficialArt.svelte';
+  import Sprites from '#lib/components/ui/Sprites.svelte';
+  import Bubble from '#lib/components/ui/Bubble.svelte';
+  import Host from '#lib/components/characters/Host.svelte';
+  import ToastHost from '#lib/components/ui/ToastHost.svelte';
+  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { ui } from '#lib/client/ui.svelte.ts';
-  import { startTheme } from '#lib/client/theme.svelte.ts';
-  import { jarTransition } from '#lib/client/jarTransition.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { startTheme } from '#lib/ui-state/theme.svelte.ts';
+  import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -38,8 +38,8 @@
   // Pages hold their toasts while the harvest is up (U6).
   ui.provideOverlay(() => showHarvest);
   /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route (round 8). */
-  let harvestMod: Promise<typeof import('#lib/components/HarvestOverlay.svelte')> | null = null;
-  const loadHarvest = () => (harvestMod ??= import('#lib/components/HarvestOverlay.svelte'));
+  let harvestMod: Promise<typeof import('#lib/components/sheets/HarvestOverlay.svelte')> | null = null;
+  const loadHarvest = () => (harvestMod ??= import('#lib/components/sheets/HarvestOverlay.svelte'));
 
   // 島 ⇄ 旅の壺: a zoom into the jar and back out of it.
   jarTransition();

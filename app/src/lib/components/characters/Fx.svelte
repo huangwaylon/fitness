@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { FxKind } from './motion/reactions.ts';
+  import type { FxKind } from '../motion/reactions.ts';
   export type { FxKind };
   /** How long each effect lives (ms); zzz loops until removed. */
   export const FX_MS: Record<FxKind, number> = {
@@ -17,7 +17,7 @@
   // Transform/opacity only, pointer-events none, aria-hidden. Reduced motion: one static icon that
   // fades in and out (notes/hearts/sparkles), nothing for the rest.
   import { onMount } from 'svelte';
-  import { reducedMotion } from './motion/clock.ts';
+  import { reducedMotion } from '../../time/clock.ts';
 
   interface Props {
     kind: FxKind;

@@ -16,7 +16,7 @@
   //   <Jar fill={0.6} width="132px" />            fill 0–1 of the glass (the coins slide, 1.4 s, eased)
   //   <Jar fill={old} band={after} width="96px" /> band: a lighter "this harvest" layer up to `band`
   // The art is 54 × 68 (height = width × 68 / 54). Set `name` to give it a view-transition-name, so a
-  // route change can morph the island jar into the 旅の壺 hero jar (client/jarTransition.ts + tokens.css).
+  // route change can morph the island jar into the 旅の壺 hero jar (ui-state/jarTransition.ts + tokens.css).
   interface Props {
     /** 0–1: how full the glass is (0 = empty; a little shows as soon as there is anything). */
     fill: number;

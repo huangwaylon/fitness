@@ -10,8 +10,8 @@
   // rounded all round, full height minus the status bar).
   import { untrack, type Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { ui } from '#lib/client/ui.svelte.ts';
-  import { toasts } from '#lib/client/toast.svelte.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ToastHost from './ToastHost.svelte';
   import { keyboardInset } from './keyboardInset.ts';
 

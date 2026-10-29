@@ -3,8 +3,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configure, queued, setKey, type KV } from './gas.ts';
 import { week, HOLD_MAX_MS, LOCK_MARGIN_MS } from './week.svelte.ts';
-import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS } from './toast.svelte.ts';
-import { toasts } from './toast.svelte.ts';
+import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS } from '../ui-state/toast.svelte.ts';
+import { toasts } from '../ui-state/toast.svelte.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 

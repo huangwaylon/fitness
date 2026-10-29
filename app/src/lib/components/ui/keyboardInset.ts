@@ -2,7 +2,7 @@
 // (innerHeight − visualViewport.height − offsetTop) so a sticky action can ride above it, and scrolls a focused
 // field to the centre once the keyboard is up. Used by Sheet and the pair page (round 8: one copy).
 import type { Attachment } from 'svelte/attachments';
-import { reducedMotion } from './motion/clock.ts';
+import { reducedMotion } from '../../time/clock.ts';
 
 export const keyboardInset: Attachment<HTMLElement> = (node) => {
   const vv = window.visualViewport;

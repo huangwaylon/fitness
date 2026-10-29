@@ -4,7 +4,7 @@
 
    One system: 12 colours, 5 radii (+ pill for the ribbon / plate / choices), 5 type sizes, weights 500/700,
    no outlines, one depth rule (a 4px lip; --sh-float only on floating layers).
-   Time of day re-tints the chrome from <html data-tod> (lib/client/theme.svelte.ts); the phone's dark mode is
+   Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
    ignored. Game objects (ribbon, plate, dialogue box, choices) stay cream / yellow at every time of day.
    Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
 
@@ -255,7 +255,7 @@
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
 
 /* Jar ⇄ 旅の壺 shared element (round 6): the island jar carries view-transition-name: jar (<Jar name="jar">);
-   when the 旅の壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (client/jarTransition.ts,
+   when the 旅の壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (ui-state/jarTransition.ts,
    data-vt in / out / fade). In: 320ms, back: 280ms, both cubic-bezier(.4,0,.2,1). */
 ::view-transition-group(jar) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 ::view-transition-old(jar), ::view-transition-new(jar) { animation-duration: 320ms; height: 100%; }

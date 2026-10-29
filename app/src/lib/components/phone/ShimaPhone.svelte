@@ -4,18 +4,18 @@
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
   // Apps: help, villager (+ name), language, sync. (No privacy settings: both players see everything; no alerts.)
   import { tick as nextTick, untrack } from 'svelte';
-  import Sheet from './Sheet.svelte';
-  import OfficialArt from './OfficialArt.svelte';
-  import LeafCoin from './LeafCoin.svelte';
-  import HelpApp from './phone/HelpApp.svelte';
-  import VillagerApp from './phone/VillagerApp.svelte';
-  import LangApp from './phone/LangApp.svelte';
-  import SyncApp from './phone/SyncApp.svelte';
-  import type { KirokuEntry } from './kiroku/Kiroku.svelte';
+  import Sheet from '../ui/Sheet.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import LeafCoin from '../ui/LeafCoin.svelte';
+  import HelpApp from './HelpApp.svelte';
+  import VillagerApp from './VillagerApp.svelte';
+  import LangApp from './LangApp.svelte';
+  import SyncApp from './SyncApp.svelte';
+  import type { KirokuEntry } from '../kiroku/Kiroku.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { ui } from '#lib/client/ui.svelte.ts';
-  import { toasts } from '#lib/client/toast.svelte.ts';
-  import { minuteNow } from './motion/clock.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { minuteNow } from '../../time/clock.ts';
   import { clockTime } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -34,8 +34,8 @@
 
   let app = $state<AppId | null>(null);
   /** きろく is loaded the first time it opens, so the island doesn't pay for it up front (round 7 L1). */
-  let kirokuMod: Promise<typeof import('./kiroku/Kiroku.svelte')> | null = null;
-  const loadKiroku = () => (kirokuMod ??= import('./kiroku/Kiroku.svelte'));
+  let kirokuMod: Promise<typeof import('../kiroku/Kiroku.svelte')> | null = null;
+  const loadKiroku = () => (kirokuMod ??= import('../kiroku/Kiroku.svelte'));
   let kiroku: { back: () => boolean } | undefined = $state();
   let entry = $state<KirokuEntry | null>(null);
 

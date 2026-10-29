@@ -5,11 +5,11 @@
   import { tick, untrack } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import PhoneButton from './PhoneButton.svelte';
-  import SyncPill from './SyncPill.svelte';
-  import { minuteNow } from './motion/clock.ts';
+  import PhoneButton from '../ui/PhoneButton.svelte';
+  import SyncPill from '../ui/SyncPill.svelte';
+  import { minuteNow } from '../../time/clock.ts';
   import { clockTime, weekdayOf } from '#lib/i18n/format.ts';
-  import { openKiroku } from '#lib/client/ui.svelte.ts';
+  import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {

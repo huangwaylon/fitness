@@ -4,9 +4,9 @@
   // petals, autumn maple leaves (2, 3 in festival week), winter snow (3), all official art; summer nights get
   // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size
   // container, so the fall distance is in cqh of the whole scene.
-  import OfficialArt from '../OfficialArt.svelte';
-  import type { Season } from '#lib/client/theme.svelte.ts';
-  import type { Foliage } from '#lib/client/season.ts';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import type { Season } from '#lib/ui-state/theme.svelte.ts';
+  import type { Foliage } from '#lib/ui-state/season.ts';
   import { seasonArt } from '#lib/art.ts';
   import { rng, u, type Tod } from './scene.ts';
 

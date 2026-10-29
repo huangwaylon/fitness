@@ -1,8 +1,8 @@
 <script lang="ts">
   // しまフォン → あそびかた: the four things to know, one card each.
   import type { WeekView } from '#lib/types.ts';
-  import Avatar from '../Avatar.svelte';
-  import OfficialArt from '../OfficialArt.svelte';
+  import Avatar from '../characters/Avatar.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 

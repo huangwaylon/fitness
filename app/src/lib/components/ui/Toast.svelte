@@ -5,9 +5,9 @@
   // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro (round 7 F2).
   // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
   import type { PersonId } from '#lib/types.ts';
-  import Host from './Host.svelte';
-  import Villager from './Villager.svelte';
-  import OfficialArt from './OfficialArt.svelte';
+  import Host from '../characters/Host.svelte';
+  import Villager from '../characters/Villager.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {

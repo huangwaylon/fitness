@@ -1,8 +1,8 @@
 <script lang="ts">
-  // The one banner (toasts.current, client/toast.svelte.ts). Rendered once: by the layout when no sheet is open, else inside the topmost open
+  // The one banner (toasts.current, ui-state/toast.svelte.ts). Rendered once: by the layout when no sheet is open, else inside the topmost open
   // sheet's <dialog> (Sheet.svelte), so its 取り消す stays tappable while a modal is up (round 7 F1).
   import Toast from './Toast.svelte';
-  import { toasts } from '#lib/client/toast.svelte.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
 </script>
 
 {#if toasts.current}

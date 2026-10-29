@@ -5,19 +5,19 @@
   // 使う stays quiet until the purse can pay for the cheapest treat (U4). Payday ✓ and 使う！ show at once but
   // wait 5 s with もとに戻す on the banner before they are sent (U9).
   import { resolve } from '$app/paths';
-  import Sheet from '#lib/components/Sheet.svelte';
-  import Rope from '#lib/components/Rope.svelte';
-  import OfficialArt from '#lib/components/OfficialArt.svelte';
-  import Yen from '#lib/components/Yen.svelte';
+  import Sheet from '#lib/components/ui/Sheet.svelte';
+  import Rope from '#lib/components/ui/Rope.svelte';
+  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
+  import Yen from '#lib/components/ui/Yen.svelte';
   import Jar, { jarFill } from '#lib/components/island/Jar.svelte';
-  import PhoneButton from '#lib/components/PhoneButton.svelte';
+  import PhoneButton from '#lib/components/ui/PhoneButton.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { openKiroku } from '#lib/client/ui.svelte.ts';
+  import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
   import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/client/actions.ts';
   import { tick } from 'svelte';
   import { MONEY } from '#lib/config/rules.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
-  import { CHEAPEST_TREAT as cheapest, TREATS, jarLayers, recentMoves, type Treat } from '#lib/client/jarScreen.ts';
+  import { CHEAPEST_TREAT as cheapest, TREATS, jarLayers, recentMoves, type Treat } from '#lib/ui-state/jarScreen.ts';
 
   const view = $derived(week.view);
   const jar = $derived(view?.jar ?? null);

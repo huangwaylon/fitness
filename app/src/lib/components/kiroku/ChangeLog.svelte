@@ -2,7 +2,7 @@
   // へんこう履歴: every accepted edit (both people), newest first: when, who, what, before → after.
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog } from '#lib/model/history.ts';
-  import Avatar from '../Avatar.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   import { dayTitle, editText } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
   import { stampOf } from '#lib/i18n/format.ts';

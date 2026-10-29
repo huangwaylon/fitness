@@ -32,11 +32,11 @@
   // Life (islandLife.svelte.ts): the motion bus (emit('checkin-saved') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
-  import Villager from '../Villager.svelte';
+  import Villager from '../characters/Villager.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { theme, type Season } from '#lib/client/theme.svelte.ts';
-  import { defaultFoliage, type Foliage } from '#lib/client/season.ts';
-  import { ui } from '#lib/client/ui.svelte.ts';
+  import { theme, type Season } from '#lib/ui-state/theme.svelte.ts';
+  import { defaultFoliage, type Foliage } from '#lib/ui-state/season.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
   import Sky from './Sky.svelte';
   import Sea from './Sea.svelte';
   import JarSpot from './JarSpot.svelte';
@@ -49,7 +49,7 @@
   import { IslandLife } from './islandLife.svelte.ts';
   import { TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { actors } from '../motion/director.svelte.ts';
-  import { minuteNow } from '../motion/clock.ts';
+  import { minuteNow } from '../../time/clock.ts';
 
   interface Props {
     view: WeekView;

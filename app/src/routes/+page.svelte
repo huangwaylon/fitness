@@ -10,14 +10,14 @@
   import { FRUITS } from '#lib/config/rules.ts';
   import IslandScene from '#lib/components/island/IslandScene.svelte';
   import { emit } from '#lib/components/motion/bus.svelte.ts';
-  import Bubble from '#lib/components/Bubble.svelte';
-  import CheckinSheet from '#lib/components/CheckinSheet.svelte';
-  import ChoiceList from '#lib/components/ChoiceList.svelte';
-  import Hud from '#lib/components/Hud.svelte';
-  import PartnerSheet from '#lib/components/PartnerSheet.svelte';
+  import Bubble from '#lib/components/ui/Bubble.svelte';
+  import CheckinSheet from '#lib/components/sheets/CheckinSheet.svelte';
+  import ChoiceList from '#lib/components/ui/ChoiceList.svelte';
+  import Hud from '#lib/components/island/Hud.svelte';
+  import PartnerSheet from '#lib/components/sheets/PartnerSheet.svelte';
   import { week } from '#lib/client/week.svelte.ts';
-  import { ui } from '#lib/client/ui.svelte.ts';
-  import { toasts } from '#lib/client/toast.svelte.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { highFive, confirmPending } from '#lib/client/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
 
