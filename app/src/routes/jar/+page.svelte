@@ -15,73 +15,26 @@
   import { openKiroku } from '#lib/client/ui.svelte.ts';
   import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/client/actions.ts';
   import { tick } from 'svelte';
-  import { MONEY, RULES, SEASONS } from '#lib/config/rules.ts';
+  import { MONEY } from '#lib/config/rules.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
-  import { dateMs } from '#lib/scoring/dates.ts';
-  import { moneyLog } from '#lib/model/history.ts';
-  import { provisionalMs } from '#lib/model/state.ts';
-  import { addDays } from '#lib/scoring/index.ts';
-
-  const TREATS = [
-    { key: 'cafe', yen: 2000, icon: 'i-cafe', vb: '0 0 48 48' },
-    { key: 'movie', yen: 4000, icon: 'i-film', vb: '0 0 40 40' },
-    { key: 'onsen', yen: 5000, icon: 'i-onsen', vb: '0 0 48 48' },
-    { key: 'karaoke', yen: 3000, icon: 'i-mic', vb: '0 0 48 48' },
-    { key: 'hike', yen: 4500, icon: 'i-hike', vb: '0 0 48 48' },
-    { key: 'yakiniku', yen: 10000, icon: 'i-yakiniku', vb: '0 0 48 48' }
-  ] as const;
+  import { CHEAPEST_TREAT as cheapest, TREATS, jarLayers, recentMoves, type Treat } from '#lib/client/jarScreen.ts';
 
   const view = $derived(week.view);
-  const pay = RULES[RULES.length - 1].money; // the current rates
   const jar = $derived(view?.jar ?? null);
 
   let ladderOpen = $state(false);
   /** The しまフォン; the total opens it on きろく → お金 (history-and-editing.md §2). */
   let phoneOpen = $state(false);
   let purseOpen = $state(false);
-  let picked = $state<(typeof TREATS)[number] | null>(null);
-  const cheapest = TREATS.reduce((a, b) => (b.yen < a.yen ? b : a));
+  let picked = $state<Treat | null>(null);
   const canSpend = $derived(!!jar && jar.purseYen >= cheapest.yen);
 
   // The hero jar = the island's jar (one drawing, the same fill rule), so the route change morphs one into the other.
   const fill = $derived(jar ? jarFill(jar.totalYen, jar) : 0);
 
-  /** Weeks paid so far, for "against your own max" mini-jars. Server may send jar.weeks. */
-  const weeks = $derived.by(() => {
-    if (!jar || !view) return 1;
-    if (jar.weeks) return jar.weeks;
-    const start = dateMs(SEASONS[0].from) - 14 * 86400000; // incl. 2 calibration weeks
-    const since = Math.floor((dateMs(view.weekKey) - start) / (7 * 86400000));
-    const floor = Math.ceil(Math.max(jar.layers.A / pay.yenPerFruit / 100, jar.layers.B / pay.yenPerFruit / 100, jar.layers.team / pay.teamYenPerFruit / 100));
-    return Math.max(1, since, floor);
-  });
-
-  const layers = $derived.by(() => {
-    if (!jar || !view) return [];
-    const personMax = weeks * pay.yenPerFruit * 100;
-    const teamMax = weeks * pay.teamYenPerFruit * 100;
-    const row = (who: 'A' | 'B') => ({
-      key: who,
-      name: view.people[who].villagerName,
-      yen: jar.layers[who],
-      ratio: jar.layers[who] / personMax,
-      color: who === 'A' ? 'var(--c-yuzu)' : 'var(--c-mint)'
-    });
-    return [row(view.me), row(view.partner), { key: 'team', name: t('jar.teamShort'), yen: jar.layers.team, ratio: jar.layers.team / teamMax, color: 'var(--c-leaf)' }];
-  });
-
-  /** The bottom of the screen: the last three money moves (paid weeks, treats), tap → きろく お金 (round 7 F11). */
-  const recent = $derived.by(() => {
-    const m = week.model;
-    if (!m) return [];
-    const log = moneyLog(m.state, m.now);
-    const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
-    const rows = [
-      ...log.months.flatMap((mo) => mo.weeks.map((w) => ({ key: `w${w.weekKey}`, at: provisionalMs(w.weekKey), label: t('kiroku.range', { a: md(w.weekKey), b: md(addDays(w.weekKey, 6)) }), yen: w.yen, by: null as 'A' | 'B' | null, off: false }))),
-      ...log.months.flatMap((mo) => mo.spends.map((sp) => ({ key: `s${sp.spendId}`, at: sp.at, label: sp.label, yen: -sp.amountYen, by: sp.by, off: sp.status === 'voided' || sp.status === 'refused' })))
-    ];
-    return rows.sort((a, b) => b.at - a.at).slice(0, 3);
-  });
+  const layers = $derived(view ? jarLayers(view) : []);
+  /** The bottom of the screen: the last three money moves, tap → きろく お金 (round 7 F11). */
+  const recent = $derived(week.model ? recentMoves(week.model) : []);
 
   const nextPct = $derived(jar?.nextRung ? (jar.totalYen / jar.nextRung.yen) * 100 : 100);
   const nextUnreachedKey = $derived(jar?.rungs.find((r) => !r.reached)?.key ?? null);
