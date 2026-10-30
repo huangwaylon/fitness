@@ -1,7 +1,8 @@
 <script lang="ts">
   // 島's HUD (v5 §3), NH island-view light: the corner clock (plain text, no pill) with the sync chip under it
-  // only when sync is not ok, the score ribbon (a copy of the NH map's yellow title banner: the screen's one
-  // focal point) and the bare NookPhone. After a check-in the ribbon counts up (the focus beat).
+  // only when sync is not ok, today's ベル ribbon (a copy of the NH map's yellow title banner: the screen's one
+  // focal point, 「きょう +620 ベル」 for both of us, ADR 0019) and the bare NookPhone. When ベル arrive the ribbon
+  // counts up (the focus beat). Tap → きろく お金 (the ベル ledger).
   import { tick, untrack } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -10,17 +11,17 @@
   import { minuteNow } from '../../time/clock.ts';
   import { clockTime, weekdayOf } from '#lib/i18n/format.ts';
   import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
-    /** My score this week, 0–100. */
-    score: number;
+    /** Today's ベル so far, both people. */
+    bells: number;
     /** `YYYY-MM-DD` (the view's today, so the demo shows its fixed date). */
     today: string;
     /** Bindable: the launcher is open (the page pauses the scene). */
     phoneOpen?: boolean;
   }
-  let { score, today, phoneOpen = $bindable(false) }: Props = $props();
+  let { bells, today, phoneOpen = $bindable(false) }: Props = $props();
 
   // Clock: device time (or ?date=), at each new minute.
   const time = $derived(clockTime(minuteNow()));
@@ -28,11 +29,11 @@
 
   // Count-up on a rise (instant under reduced motion, on a fall and on first paint), with a beat. The ribbon is never
   // remounted for it, so a focused ribbon keeps its focus (round 8).
-  const shown = new Tween(untrack(() => score), { duration: 900, easing: cubicOut });
+  const shown = new Tween(untrack(() => bells), { duration: 900, easing: cubicOut });
   let beat = $state(false);
   let ribbon: HTMLButtonElement | undefined = $state();
   $effect(() => {
-    const to = score;
+    const to = bells;
     const rise = to > untrack(() => shown.target) && !prefersReducedMotion.current;
     shown.set(to, { duration: rise ? 900 : 0 });
     if (rise) void replayBeat();
@@ -53,10 +54,10 @@
   <PhoneButton bind:open={phoneOpen} />
 </div>
 <div class="ribbon-wrap">
-  <!-- Tap → きろく, this week (history-and-editing.md §2). -->
-  <button type="button" class="ribbon" class:beat bind:this={ribbon} aria-label={t('hud.score', { score })} onanimationend={() => (beat = false)}
-    onclick={() => { openKiroku({ tab: 'body', week: 'current' }); phoneOpen = true; }}>
-    <span class="wk" aria-hidden="true">{t('hud.week')}</span><b class="money" aria-hidden="true">{Math.round(shown.current)}<small>/100</small></b>
+  <!-- Tap → きろく お金, the ベル ledger (history-and-editing.md §2). -->
+  <button type="button" class="ribbon" class:beat bind:this={ribbon} aria-label={t('hud.today', { bells: formatBells(bells) })} onanimationend={() => (beat = false)}
+    onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
+    <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('pots.unit')}</small></b>
   </button>
 </div>
 
@@ -92,8 +93,8 @@
   .ribbon::after { right: -16px; clip-path: polygon(0 0, 100% 0, 62% 50%, 100% 100%, 0 100%); }
   .wk { font: 700 clamp(.9375rem, calc(1.9 * var(--vh1)), 1.125rem)/1 var(--font-ui); }
   .ribbon b { font-size: clamp(1.5rem, calc(3.4 * var(--vh1)), 1.875rem); }
-  .ribbon small { font-size: .6em; margin-left: 1px; }
+  .ribbon small { font: 700 .6em/1 var(--font-ui); margin-left: .3em; }
   .beat { animation: beat 900ms var(--ease-bounce); }
   @keyframes beat { 0%, 100% { transform: none; } 30% { transform: scale(1.12); } }
-  @media (max-width: 339px) { .wk { display: none; } }
+  
 </style>

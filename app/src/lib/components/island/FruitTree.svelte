@@ -1,13 +1,13 @@
 <script lang="ts">
   // One person's tree (round 6, faithful to AC): a plain official hardwood of the season (an AC tree
-  // bears one kind of fruit, so this one bears none), with the week's fruit lying on the ground in front
-  // of the trunk, the way NH drops fruit around a shaken tree: per kind 0–3 items = thirds of that kind's
-  // target (scene.ts fruitCount), 🍑 🥥 🍎 🍐 left to right. A kind with nothing yet shows one faded item
+  // bears one kind of fruit, so this one bears none), with today's fruit lying on the ground in front
+  // of the trunk, the way NH drops fruit around a shaken tree: per kind 0–3 items = thirds of today's goal (the
+  // same for both of us, ADR 0019 §2; scene.ts fruitCount), 🍑 🥥 🍎 🍐 left to right. A kind with nothing yet shows one faded item
   // where it will fall. When a kind earns an item (a check-in), the tree shakes (±4°, 3 swings, 500ms)
   // and the new item drops in with a bounce; all three = a sparkle. Narrow stages (< 360px) show one item
   // per kind, sized by its count. The tree stands still otherwise (v5 §6 idle budget).
-  // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, shows the detail bubble with
-  // all four %) and the fruit row (≥ 44px tall, same bubble with the nearest fruit highlighted).
+  // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, shows the detail bubble: per fruit
+  // today's amount / the goal and the ベル it earned) and the fruit row (≥ 44px tall, same bubble with the nearest fruit highlighted).
   // `shakeN` (bumped by idle life) shakes the tree without the bubble; `celebrate` pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { FruitKey, PersonWeekView } from '#lib/types.ts';
@@ -17,7 +17,8 @@
   import Fx from '../characters/Fx.svelte';
     import { fruitArt } from '#lib/art.ts';
   import { seasonArt, treeArt } from '#lib/art.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
+  import { todayPct } from './progress.ts';
   import { FRUIT_SPOTS, FRUIT_U, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
 
   interface Props {
@@ -46,9 +47,16 @@
   let leafN = 0;
   let treeEl: HTMLElement | null = $state(null);
 
-  const pct = (f: FruitKey) => Math.max(0, Math.min(100, Math.round(person.fruits[f].pct)));
+  const pct = (f: FruitKey) => Math.round(todayPct(person.fruits[f]));
+  /** 「30/45分」「6,200/8,000歩」「✓」「2/3」: today against the daily goal. */
+  const amount = (f: FruitKey) => {
+    const x = person.fruits[f];
+    if (f === 'coconut') return x.todayMet ? '✓' : '0/1';
+    return t(`tree.${f}`, { a: formatNum(x.todayActual), g: formatNum(x.todayGoal) });
+  };
   const label = $derived(
-    `${person.villagerName}: ` + FRUITS.map((f) => t('fruit.pct', { label: t(`fruit.${f}`), pct: pct(f) })).join('、')
+    `${person.villagerName}: ` +
+      FRUITS.map((f) => `${t(`fruit.${f}`)} ${amount(f)} ${formatBells(person.today.parts[f], { signed: true })}`).join('、')
   );
   const spots = $derived(FRUITS.map((f, i) => ({ f, n: fruitCount(pct(f)), x: x + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
   const rowL = $derived(Math.min(...spots.map((s) => s.x)) - FRUIT_U);
@@ -176,7 +184,8 @@
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <b class="money">{pct(f)}%</b>
+          <span class="amt money" class:met={pct(f) >= 100}>{amount(f)}</span>
+          <b class="money">{formatBells(person.today.parts[f], { signed: true })}</b>
         </span>
       {/each}
     </div>
@@ -226,9 +235,9 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: a 2 × 2 grid of rows (icon · label · %), fixed columns so text and icons never overlap */
+  /* NH-style popup: one row per fruit (icon · label · today/goal · ベル), in shared columns (subgrid) so the numbers line up */
   .detail {
-    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: repeat(2, auto); gap: 4px 8px;
+    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto; gap: 4px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 8px 10px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink); pointer-events: none;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
@@ -238,15 +247,17 @@
     background: inherit; transform: rotate(45deg);
   }
   .row {
-    display: grid; grid-template-columns: 20px auto 3.2em; align-items: center; gap: 6px;
-    padding: 2px 6px; border-radius: var(--r-chip); line-height: 1;
+    grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; column-gap: 8px;
+    padding: 3px 6px; border-radius: var(--r-chip); line-height: 1;
   }
   .row.on { background: var(--c-yuzu); }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
-  /* narrow stages: one column (≈ 160px), so the popup fits over its own tree (sizing #10) */
-  @container (max-width: 359px) { .detail { grid-template-columns: auto; } }
+  .amt { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; color: var(--c-ink-soft); }
+  .amt.met { color: var(--c-leaf-lip); }
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
+  /* narrow stages: the label goes (the fruit says which), so the popup fits over its own tree (sizing #10) */
+  @container (max-width: 359px) { .detail { grid-template-columns: 20px auto auto; } .lbl { display: none; } }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }
     .f:global(.drop), .detail { animation: none; }

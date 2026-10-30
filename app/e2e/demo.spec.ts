@@ -15,12 +15,15 @@ async function answerPending(page: Page) {
   await expect(checkin).toBeVisible();
 }
 
-test('tap: a check-in grows the week score', async ({ page }) => {
+/** `きょう 620 ベル` → 620. */
+const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '').match(/(\d+)\s*ベル/)![1]);
+
+test('tap: a check-in adds today’s ベル', async ({ page }) => {
   await page.goto('?demo');
-  const score = page.getByRole('button', { name: /^今週 \d+\/100$/ });
-  await expect(score).toBeVisible();
+  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+ ベル$/ });
+  await expect(ribbon).toBeVisible();
   await answerPending(page);
-  const before = Number((await score.getAttribute('aria-label'))!.match(/(\d+)\/100/)![1]);
+  const before = bellsOf(await ribbon.getAttribute('aria-label'));
   await page.locator('.below > .btn').click();
   const switches = sheet(page).getByRole('switch');
   await expect(switches.first()).toBeVisible();
@@ -32,30 +35,44 @@ test('tap: a check-in grows the week score', async ({ page }) => {
   await sheet(page).getByRole('button', { name: '保存' }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(async () => {
-    const after = Number((await score.getAttribute('aria-label'))!.match(/(\d+)\/100/)![1]);
-    expect(after).toBeGreaterThan(before);
+    expect(bellsOf(await ribbon.getAttribute('aria-label'))).toBe(before + 100);
   }).toPass();
+  // the coins land in the jar: its plate counts up to the pots' new total
+  const jar = page.locator('.if-scene .jar');
+  await expect(async () => {
+    expect(bellsOf(await jar.locator('.jar-plate').innerText())).toBe(bellsOf(await jar.getAttribute('aria-label')));
+  }).toPass({ timeout: 8000 });
 });
 
-test('undo: a purse spend comes back with もとに戻す', async ({ page }) => {
+test('buy: a treat comes back with もとに戻す', async ({ page }) => {
   await page.goto('jar?demo');
-  const purse = page.locator('.purse');
-  const yen = async () => (await purse.locator('.purse-yen').innerText()).replace(/\D/g, '');
-  const before = await yen();
-  await purse.getByRole('button', { name: '使う' }).click();
-  await sheet(page).locator('button.item:not([disabled])').first().click();
-  await sheet(page).getByRole('button', { name: /^使う！/ }).click();
-  await expect.poll(yen).not.toBe(before);
+  const pot = page.locator('[data-pot=treat]');
+  const balance = async () => (await pot.locator('.balance').innerText()).replace(/\D/g, '');
+  const before = await balance();
+  await pot.locator('button.item:not([disabled])').first().click();
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect.poll(balance).not.toBe(before);
   await page.getByRole('button', { name: 'もとに戻す' }).click();
-  await expect.poll(yen).toBe(before);
+  await expect.poll(balance).toBe(before);
 });
 
-test('harvest: dropping the week into the jar', async ({ page }) => {
+test('menu: adding a treat to the shared menu', async ({ page }) => {
+  await page.goto('jar?demo');
+  const pot = page.locator('[data-pot=treat]');
+  await pot.getByRole('button', { name: /へんしゅう/ }).click();
+  await sheet(page).getByRole('button', { name: /おやつを追加/ }).click();
+  await sheet(page).locator('input.lbl').last().fill('たいやき');
+  await sheet(page).locator('input.num').last().fill('250');
+  await sheet(page).getByRole('button', { name: '保存' }).click();
+  await expect(pot.getByRole('button', { name: /^たいやき 250 ベル/ })).toBeVisible();
+});
+
+test('harvest: the bonus lands in the pots', async ({ page }) => {
   await page.goto('?demo=harvest');
-  await page.getByRole('button', { name: '壺に入れる！' }).click();
-  await expect(page.getByText(/入れました！/)).toBeVisible();
+  await page.getByRole('button', { name: '受け取る！' }).click();
+  await expect(page.getByText(/壺に入りました！/)).toBeVisible();
   await page.getByRole('button', { name: '島へもどる' }).click();
-  await expect(page.getByRole('button', { name: '壺に入れる！' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '受け取る！' })).toHaveCount(0);
 });
 
 test('きろく: editing a day’s steps', async ({ page }) => {

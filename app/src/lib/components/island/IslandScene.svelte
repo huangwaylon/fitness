@@ -8,8 +8,8 @@
   // balloon present, event fireworks. Stage: the sea (Sea.svelte: one layer from the horizon to below the
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
   // wet band, foam, shallows, terracotta cliff, NH grass with flecks), one hedge along the back, one plain
-  // seasonal oak per person with the week's fruit on the ground at its base (FruitTree), the jar + its ¥
-  // nameplate in the middle (the scene's only label and the doorway to 旅の壺), a front row of flowers, the
+  // seasonal oak per person with the week's fruit on the ground at its base (FruitTree), the jar + its ベル
+  // nameplate in the middle (the scene's only label and the doorway to ふたりの壺), a front row of flowers, the
   // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
   // The HUD (clock, NookPhone, score ribbon) is Builder B's: it overlays the sky; clouds keep below it
@@ -33,7 +33,7 @@
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import Villager from '../characters/Villager.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatBells, t } from '#lib/i18n/index.ts';
   import { theme, type Season } from '#lib/ui-state/theme.svelte.ts';
   import { defaultFoliage, type Foliage } from '#lib/ui-state/season.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -130,7 +130,7 @@
         style:--walk={live ? (s.side === 'left' ? 1 : -1) * a.walkX : 0} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}>
         <button type="button" class="vil" disabled={!live}
           aria-label={id === 'mine'
-            ? t('island.score', { name: s.person.villagerName, score: s.person.score })
+            ? t('island.me', { name: s.person.villagerName, bells: formatBells(s.person.today.bells) })
             : t('island.highfive', { name: s.person.villagerName })}
           onclick={() => life.tapVillager(id, id === 'mine' ? onme : onpartner)}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager

@@ -45,6 +45,17 @@ export function hostLine(key: string, params?: Params): string {
   return t(full, p);
 }
 
+/** `1,234 ベル` / `1,234 Bells` (play money, ADR 0019). `signed`: `+620 ベル` (a gain; a loss is always `−`). */
+export function formatBells(amount: number, opts: { signed?: boolean; locale?: Locale } = {}): string {
+  const n = Math.round(amount);
+  const digits = new Intl.NumberFormat('en-US').format(Math.abs(n));
+  const sign = n < 0 ? '−' : opts.signed && n > 0 ? '+' : '';
+  return t('bells.amount', { n: sign + digits }, opts.locale);
+}
+
+/** Just the digits with separators: `1,234` (when the unit is drawn apart, e.g. a big total). */
+export const formatNum = (n: number): string => new Intl.NumberFormat('en-US').format(Math.round(n));
+
 /** `¥128,000` with a half-width yen sign (Intl ja-JP yields full-width ￥). */
 export function formatYen(amount: number): string {
   const s = new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(

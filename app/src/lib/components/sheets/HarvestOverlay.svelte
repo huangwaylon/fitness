@@ -1,26 +1,26 @@
 <script lang="ts">
-  // 日曜の収穫 (Sunday harvest overlay, v5 §4, ≤ 60 s): tally → rung reached (optional) → 壺に入れる → end card.
-  // The island stays visible behind a light cool tint; しずえ's dialogue box, one card (rows: villager icon, the four
-  // official fruit by ripeness, + ¥) and the CTA sit at the bottom, in the thumb zone. The jar total is the one
-  // big number. A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
-  // Round 5: only the team's stars (U7); the purse is one line under the total (U6); after 壺に入れる the end card
-  // fills the jar (the one jar drawing) and counts its total up before going back to 島 (U5). No confetti (not in
-  // the games): the end card plays an item-get beat (the jar pops, a sparkle).
-  import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
-  import { FRUITS, RUNGS } from '#lib/config/rules.ts';
-  import Villager from '../characters/Villager.svelte';
+  // 日曜の収穫 (Sunday harvest overlay, ADR 0019 §4, ≤ 60 s): the week's recap → the bonus lands in the pots.
+  // The island stays visible behind a light cool tint; しずえ's dialogue box, one card and the CTA sit at the bottom,
+  // in the thumb zone. Recap: per person the four badges (lit = met, +500 each) and their bonus, then ふたりボーナス
+  // (+1,000 when both have all four) and the week's bonus as the one big number. 「受け取る」 is a ceremony (the
+  // bonus counts either way): it records that I saw it, then the end card drops the bonus into the two pots, split
+  // おやつ 30% / 旅 70%: coins fall into each and its balance counts up. No confetti (not in the games): an item-get beat.
+  // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
+  import type { FruitKey, HarvestView, PersonId, PotKey, WeekView } from '#lib/types.ts';
+  import { FRUITS } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Emote from '../characters/Emote.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import Yen from '../ui/Yen.svelte';
+  import Bells from '../ui/Bells.svelte';
   import Bubble from '../ui/Bubble.svelte';
-  import Jar, { jarFill } from '../island/Jar.svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  import BadgeRow from '../pots/BadgeRow.svelte';
+  import { potShare } from '../pots/flow.ts';
   import { confirmHarvest } from '#lib/store/actions.ts';
-  import { fruitArt } from '#lib/art.ts';
-  import { ripeness } from './ripeness.ts';
-  import { t, formatYen } from '#lib/i18n/index.ts';
+  import { bellsLedger } from '#lib/model/history.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { lockScroll } from '../ui/scrollLock.ts';
 
   interface Props {
@@ -36,41 +36,36 @@
 
   const me = $derived(view.me);
   const partner = $derived(view.partner);
-  const p = $derived(harvest.payout);
-  const jarTotal = $derived(p.A.fruitYen + p.B.fruitYen + p.teamYen);
-  const purseTotal = $derived(p.A.purseYen + p.B.purseYen);
-  const rungKey = $derived(harvest.rungsReached.at(-1) ?? null);
-  const rung = $derived(rungKey ? RUNGS.find((r) => r.key === rungKey) ?? null : null);
-  const nextRung = $derived(rung ? RUNGS.find((r) => r.yen > rung.yen) ?? null : null);
+  const people: PersonId[] = $derived([me, partner]);
+  const b = $derived(harvest.bonus);
+  const bonusTotal = $derived(b.A + b.B + b.duo);
 
-  let step = $state<'tally' | 'rung' | 'done'>('tally');
-
-  /** End card: the jar total counts up from before this harvest to after it, and the jar fills. */
-  const after = $derived(view.jar.totalYen);
-  const before = $derived(Math.max(0, after - jarTotal));
-  /** The jar's one fill rule (Jar.svelte); this harvest is a lighter band on top, ≥ 10% of the glass tall. */
-  const newFill = $derived(jarFill(after, view.jar));
-  const oldFill = $derived(Math.max(0, Math.min(jarFill(before, view.jar), newFill - 0.1)));
-  const shown = new Tween(0, { duration: 1400, easing: cubicOut });
-  let filled = $state(false);
-  const partnerDone = $derived(harvest.confirmedBy.includes(partner));
-
-  /** The end card: the band fills and the total counts up (at once under reduced motion, live: review P10). */
-  function countUp() {
-    shown.set(before, { duration: 0 });
-    if (prefersReducedMotion.current) {
-      shown.set(after, { duration: 0 });
-      filled = true;
-      return;
-    }
-    requestAnimationFrame(() => (filled = true));
-    shown.set(after, { delay: 500 });
-  }
-  $effect(() => {
-    if (prefersReducedMotion.current && step === 'done') shown.set(after, { duration: 0 });
+  /** Each person's badges for the harvested week (from the ledger; this week's view when the ledger has none yet). */
+  const badges = $derived.by((): Record<PersonId, Record<FruitKey, boolean>> => {
+    const m = week.model;
+    const row = m ? bellsLedger(m.state, m.now).bonuses.find((x) => x.weekKey === harvest.weekKey) : null;
+    if (row) return row.badges;
+    const of = (p: PersonId) => Object.fromEntries(FRUITS.map((f) => [f, view.people[p].fruits[f].badge])) as Record<FruitKey, boolean>;
+    return { A: of('A'), B: of('B') };
   });
 
-  function drop() {
+  let step = $state<'tally' | 'done'>('tally');
+
+  /** End card: each pot counts up from before the bonus to now (at once under reduced motion). */
+  const pots: PotKey[] = ['treat', 'trip'];
+  const share = (p: PotKey) => potShare(p, bonusTotal);
+  const shown = { treat: new Tween(0, { duration: 1400, easing: cubicOut }), trip: new Tween(0, { duration: 1400, easing: cubicOut }) };
+  const partnerDone = $derived(harvest.confirmedBy.includes(partner));
+
+  function countUp() {
+    for (const p of pots) {
+      const after = view.pots[p].balance;
+      shown[p].set(Math.max(0, after - share(p)), { duration: 0 });
+      shown[p].set(after, prefersReducedMotion.current ? { duration: 0 } : { delay: 700 });
+    }
+  }
+
+  function receive() {
     onkeep?.();
     const r = confirmHarvest();
     if (r.ok) {
@@ -79,21 +74,14 @@
     }
   }
 
-  const people: PersonId[] = $derived([me, partner]);
-  /** The fruits' ripeness, when the view is still the harvested week (Sunday evening); else plain icons. */
-  const sameWeek = $derived(view.weekKey === harvest.weekKey);
-
   function modal(node: HTMLDialogElement) {
     if (!node.open) node.showModal?.();
     node.focus();
     // the island behind stays put while the overlay is up (round 10 H2)
     return { destroy: lockScroll() };
   }
-  const steps = $derived<('tally' | 'rung' | 'done')[]>(rung ? ['tally', 'rung', 'done'] : ['tally', 'done']);
-  const hostLine = $derived(step === 'tally' ? t('harvest.hello') : step === 'rung' ? t('harvest.rungReached') : t('harvest.doneHost'));
-  /** Island-evaluation stars (§T.5): ceil(score / 20), 0–5; shown only as the pair's total (★ out of 10). */
-  const stars = (score: number) => Math.max(0, Math.min(5, Math.ceil(score / 20)));
-  const teamStars = $derived(stars(p.A.score) + stars(p.B.score));
+  const hostLine = $derived(step === 'tally' ? t('harvest.hello') : t('harvest.doneHost'));
+  const allFour = (p: PersonId) => FRUITS.every((f) => badges[p][f]);
 </script>
 
 <dialog class="overlay" aria-label={t('harvest.title')} tabindex="-1" use:modal
@@ -102,7 +90,7 @@
   <div class="col">
     <div class="head">
       <span class="plate">{t('harvest.title')}</span>
-      <span class="steps" aria-hidden="true">{#each steps as s (s)}<i class:on={s === step}></i>{/each}</span>
+      <span class="steps" aria-hidden="true">{#each ['tally', 'done'] as s (s)}<i class:on={s === step}></i>{/each}</span>
       {#if step !== 'done'}<button type="button" class="later" onclick={onlater}>{t('common.later')}</button>{:else}<span class="later-sp"></span>{/if}
     </div>
 
@@ -117,45 +105,42 @@
               <Avatar person={who} villager={pv.villager} size={40} />
               <span class="who">
                 <b class="nm">{pv.villagerName}</b>
-                <span class="frs" aria-hidden="true">
-                  {#each FRUITS as f (f)}<span class="fr {sameWeek ? ripeness(pv.fruits[f].pct) : ''}"><OfficialArt key={fruitArt(f)} size="var(--fr)" /></span>{/each}
-                </span>
+                <BadgeRow badges={badges[who]} size="var(--fr)" stagger={0.5 + i * 0.6} />
               </span>
-              <b class="plus money">+{formatYen(p[who].fruitYen)}</b>
+              <b class="plus money">{formatBells(b[who], { signed: true })}</b>
             </div>
           {/each}
-          <div class="trow" style="animation-delay:1.5s">
-            <span class="av team"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z" /></svg></span>
+          <div class="trow duo" class:got={b.duo > 0} style="animation-delay:1.5s">
+            <span class="av"><OfficialArt key="money/miles" size={30} /></span>
             <span class="who"><b class="nm">{t('harvest.team')}</b>
-              <span class="stars" role="img" aria-label="{t('harvest.teamStars')} ★{teamStars}/10"><span aria-hidden="true">★ {teamStars}/10</span></span>
+              <small class="hint">{b.duo > 0 ? t('harvest.duoGot') : t('harvest.duoHint', { n: people.filter((p) => !allFour(p)).length })}</small>
             </span>
-            <b class="plus money">+{formatYen(p.teamYen)}</b>
+            <b class="plus money">{b.duo > 0 ? formatBells(b.duo, { signed: true }) : '—'}</b>
           </div>
           <div class="total">
-            <span class="lbl">{t('harvest.jar')} <small>{t('harvest.provisional')}</small></span>
-            <Yen yen={jarTotal} class="hero-num" />
-            {#if purseTotal > 0}<span class="mini">{t('harvest.purse')} <b class="money">+{formatYen(purseTotal)}</b></span>{/if}
+            <span class="lbl">{t('harvest.bonus')}</span>
+            <Bells bells={bonusTotal} signed class="hero-num" />
+            <span class="mini">{t('harvest.weekTotal', { bells: formatBells(harvest.totalBells) })}</span>
           </div>
         </section>
-        {#if rung}<button type="button" class="btn" onclick={() => (step = 'rung')}>{t('common.next')}</button>
-        {:else}<button type="button" class="btn" onclick={drop}>{t('harvest.drop')}</button>{/if}
-      {:else if step === 'rung' && rung}
-        <section class="card rung">
-          <div class="hero">
-            <span class="port"><OfficialArt key="deco/airport" width="100%" /></span>
-            <span class="v v1"><span class="re"><Emote id="mark-sparkle" bare hold size={30} /></span><Villager person={me} size={64} expression="cheer" /></span>
-            <span class="v v2"><span class="re"><Emote id="mark-heart" bare hold size={30} /></span><Villager person={partner} size={64} expression="cheer" /></span>
-          </div>
-          <b class="rname">{t('rung.' + rung.key)}</b>
-          <span class="hero-num">{formatYen(rung.yen)}</span>
-          {#if nextRung}<span class="mini">{t('harvest.nextRung', { place: t('rung.' + nextRung.key), yen: formatYen(nextRung.yen) })}</span>{/if}
-        </section>
-        <button type="button" class="btn" onclick={drop}>{t('harvest.drop')}</button>
-      {:else if step === 'done'}
+        <button type="button" class="btn" onclick={receive}>{t('harvest.receive')}</button>
+      {:else}
         <section class="card done" role="status">
-          <span class="djar"><span class="get" aria-hidden="true"><Emote id="mark-sparkle" bare hold size={28} /></span><Jar fill={oldFill} band={filled ? newFill : oldFill} width="80px" /></span>
-          <b class="dhead">{t('harvest.done', { yen: formatYen(jarTotal) })}</b>
-          <span class="hero-num">{formatYen(Math.round(shown.current))}</span>
+          <b class="dhead">{t('harvest.done', { bells: formatBells(bonusTotal) })}</b>
+          <div class="pots">
+            {#each pots as p, i (p)}
+              <div class="pot" style:--d="{0.25 + i * 0.25}s">
+                <span class="drop" aria-hidden="true">
+                  {#each [0, 1, 2] as k (k)}<i style:animation-delay="calc(var(--d) + {k * 0.12}s)"></i>{/each}
+                </span>
+                <span class="pic"><OfficialArt key={p === 'treat' ? 'phone/nook-shopping' : 'money/miles-ticket'} size={44} />
+                  {#if i === 1}<span class="get"><Emote id="mark-sparkle" bare hold size={24} /></span>{/if}</span>
+                <small>{t(`pots.${p}.title`)}</small>
+                <b class="add money">{formatBells(share(p), { signed: true })}</b>
+                <span class="bal money">{formatNum(shown[p].current)}<small>{t('pots.unit')}</small></span>
+              </div>
+            {/each}
+          </div>
           {#if !partnerDone}<span class="mini">{t('harvest.waiting', { name: view.people[partner].villagerName })}</span>{/if}
         </section>
         <button type="button" class="btn" onclick={() => ondone?.()}>{t('harvest.home')}</button>
@@ -170,7 +155,7 @@
   .overlay {
     position: fixed; inset: 0; z-index: 60; overflow: hidden auto; overscroll-behavior: contain;
     width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
-    --fr: clamp(20px, 6.4vw, 30px); color: var(--text);
+    --fr: clamp(18px, 5.4vw, 26px); color: var(--text);
     background: linear-gradient(to bottom, rgba(58, 72, 134, 0) 22%, rgba(58, 72, 134, .18) 48%);
     animation: fade var(--dur-base) var(--ease-soft);
   }
@@ -198,39 +183,40 @@
   /* Rows grow in one by one, so the card grows with them (no empty height while revealing). */
   .trow { display: flex; align-items: center; gap: 10px; overflow: hidden; animation: rowGrow .5s var(--ease-soft) both; }
   @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 110px; opacity: 1; padding-block: 6px; } }
-  .who { flex: 1; min-width: 0; display: grid; gap: 3px; }
-  .nm { font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .frs { display: flex; gap: 3px; }
-  .fr { display: block; flex: none; line-height: 0; }
-  .fr.bud { opacity: .55; filter: saturate(.3); }
-  .fr.small { opacity: .8; filter: saturate(.7); }
-  .stars { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
-  .av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-cream)); display: grid; place-items: center; }
-  .av.team svg { width: 24px; height: 24px; fill: var(--c-yuzu-lip); }
+  .who { flex: 1; min-width: 0; display: grid; gap: 4px; justify-items: start; }
+  .nm { font-size: var(--fs-body); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hint { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-cream)); display: grid; place-items: center; line-height: 0; }
+  .duo:not(.got) .av { filter: saturate(.2); opacity: .7; }
   .plus { font-size: var(--fs-talk); flex: none; }
+  .duo:not(.got) .plus { color: var(--text-soft); }
 
   .total { display: grid; justify-items: center; gap: 4px; padding-top: 10px; margin-top: 6px; box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 50%, transparent); overflow: hidden; animation: totalGrow .6s var(--ease-soft) 2.1s both; }
   /* Like the rows, the total takes no room until it arrives, so the card is always sized to what it shows (round 7 F11). */
   @keyframes totalGrow { from { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; } to { max-height: 220px; opacity: 1; padding-top: 10px; margin-top: 6px; } }
   .lbl { font-weight: 700; color: var(--text-soft); }
-  .lbl small { font-size: var(--fs-s); }
   .total :global(.hero-num) { animation: if-pop var(--dur-pop) var(--ease-bounce) 2.3s both; }
-  .mini { font-weight: 700; font-size: var(--fs-body); color: var(--text-soft); }
+  .mini { font-weight: 700; font-size: var(--fs-s); color: var(--text-soft); }
 
-  .done, .rung { display: grid; justify-items: center; gap: 6px; text-align: center; }
-  /* NH's item-get beat instead of confetti: the jar pops up with a sparkle over it. */
-  .djar { position: relative; display: block; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
-  .get { position: absolute; right: -18px; top: -10px; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) .3s both; }
-  .dhead, .rname { font-size: var(--fs-title); }
-
-  .hero { position: relative; width: min(220px, 64vw); padding-bottom: 6px; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
-  .port { display: block; }
-  .v { position: absolute; bottom: 0; display: grid; justify-items: center; }
-  .v1 { left: -8%; }
-  .v2 { right: -8%; }
-  .re { line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) .5s both; }
-
-  @media (max-height: 700px), (max-width: 359px) {
-    .hero { width: min(160px, 50vw); }
+  .done { display: grid; justify-items: center; gap: 10px; text-align: center; }
+  .dhead { font-size: var(--fs-title); line-height: 1.25; }
+  .pots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
+  .pot { position: relative; display: grid; justify-items: center; gap: 2px; padding: 26px 6px 12px; border-radius: var(--r-btn); background: var(--fill-on-surface); min-width: 0; }
+  .pot small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .pic { position: relative; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) var(--d) both; }
+  .get { position: absolute; right: -16px; top: -10px; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) 1s both; }
+  .add { font-size: var(--fs-talk); color: var(--c-leaf-lip); }
+  :global(:root[data-tod='night']) .add { color: var(--c-leaf); }
+  .bal { font-size: var(--fs-body); }
+  .bal small { font: 700 .75em/1 var(--font-ui); margin-left: .25em; color: var(--text-soft); }
+  /* three coins fall into each pot, one after another (the bonus landing) */
+  .drop { position: absolute; left: 50%; top: 0; width: 0; height: 0; }
+  .drop i {
+    position: absolute; left: -8px; top: -6px; width: 16px; height: 16px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 35%, #fff6c4 0 18%, var(--jar-coin) 20% 62%, var(--jar-coin-rim) 64%);
+    animation: coin-drop 700ms cubic-bezier(.5, 0, .8, .4) both;
   }
+  .drop i:nth-child(2) { left: -16px; } .drop i:nth-child(3) { left: 0; }
+  @keyframes coin-drop { 0% { transform: translateY(-40px) scale(.7); opacity: 0; } 20% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(34px) scale(.6); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .drop { display: none; } }
 </style>
