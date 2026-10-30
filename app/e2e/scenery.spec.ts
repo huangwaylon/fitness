@@ -35,7 +35,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   const jar = page.locator('.if-scene .jar');
   const bells = await ribbon.getAttribute('aria-label');
-  const pot = await jar.getAttribute('aria-label');
+  const jarLabel = await jar.getAttribute('aria-label');
   const url = page.url();
 
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
@@ -55,7 +55,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
   expect(page.url()).toBe(url);
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
-  await expect(jar).toHaveAttribute('aria-label', pot!);
+  await expect(jar).toHaveAttribute('aria-label', jarLabel!);
 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
   await page.locator('button.canopy').first().click();
@@ -74,7 +74,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 
-  // the jar is still the doorway to ふたりの壺
+  // the jar is still the doorway to ごほうび
   await jar.click();
   await expect(page).toHaveURL(/\/jar/);
 });

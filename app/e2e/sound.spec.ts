@@ -143,7 +143,15 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   async function step(screen: string, name: string, act: () => Promise<unknown>, want?: string[]) {
     await take();
     await act();
-    await page.waitForTimeout(260);
+    // wait for the tap's own cue (no fixed sleep); a tap that should be silent gets a short settle
+    if (want?.length) {
+      await expect.poll(() => page.evaluate((n) => (window as unknown as { __cues: string[] }).__cues.slice(0, n), want.length), { timeout: 3000 }).toEqual(want);
+    } else await page.waitForTimeout(260);
+    // and for a sheet that is sliding in or out to settle, so the next tap lands where its button ends up
+    await page.waitForFunction(() => document.getAnimations().every((a) => {
+      const el = (a.effect as KeyframeEffect | null)?.target as Element | null;
+      return !el?.closest('dialog') || a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity;
+    }));
     const got = await take();
     log.push([screen, name, got.join(' + ') || '(silent)']);
     if (!want) return;
@@ -158,7 +166,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
   await page.waitForTimeout(1500); // the opening beats
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
-  await step('島', 'tree canopy again (closes)', () => page.locator('button.canopy').first().tap(), ['tick']);
+  await step('島', 'the tree popup (closes)', () => page.locator('.detail').tap(), ['tick']);
   await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
   await expect(dlg).toHaveCount(1);
   await step('なかま', '✕', () => dlg.locator('.navbar .close').tap(), ['back']);
@@ -231,29 +239,29 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 
-  // ふたりの壺
+  // ごほうび
   await step('島', 'jar', () => page.locator('.if-scene .jar').tap(), ['jar-tap']);
   await expect(page.locator('.jar-screen')).toBeVisible();
   await page.waitForTimeout(600);
-  const pot = page.locator('.treats');
-  const cant = pot.locator('button.item[aria-disabled="true"]');
-  if (await cant.count()) await step('壺', 'a treat it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
-  await step('壺', 'a treat', () => pot.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
-  await step('壺', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
-  await step('壺', 'とりけす', () => undo.tap(), ['undo']);
+  const treats = page.locator('.treats');
+  const cant = treats.locator('button.item[aria-disabled="true"]');
+  if (await cant.count()) await step('ごほうび', 'a treat it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
+  await step('ごほうび', 'a treat', () => treats.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
+  await step('ごほうび', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
+  await step('ごほうび', 'とりけす', () => undo.tap(), ['undo']);
   await page.waitForTimeout(400);
-  await step('壺', 'a treat, then やめる', () => pot.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
-  await step('壺', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
+  await step('ごほうび', 'a treat, then やめる', () => treats.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
+  await step('ごほうび', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
-  await step('壺', '✎ メニューを かえる', () => btn('メニューを かえる', pot).tap(), ['open']);
+  await step('ごほうび', '✎ メニューを かえる', () => btn('メニューを かえる', treats).tap(), ['open']);
   await step('へんしゅう', 'save, nothing changed (aria-disabled)', () => btn('保存', dlg).tap({ force: true }), ['boop']);
   await step('へんしゅう', '＋ add', () => btn(/ふやす/, dlg).tap(), ['open']);
   await step('へんしゅう', 'name field', () => dlg.locator('input.lbl').last().tap(), []);
   await step('へんしゅう', '× remove', () => dlg.locator('button.rm').last().tap(), ['remove']);
   await step('へんしゅう', 'やめる', () => btn('やめる', dlg).tap(), ['back']);
   await expect(dlg).toHaveCount(0);
-  await step('壺', '◀ 島へ', () => page.locator('a.back').tap(), ['back']);
+  await step('ごほうび', '◀ 島へ', () => page.locator('a.back').tap(), ['back']);
   await expect(page.locator('.if-scene')).toBeVisible();
 
   if (process.env.WALK_LOG) {

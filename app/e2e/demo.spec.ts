@@ -13,16 +13,16 @@ const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '')
 
 test('buy: a treat comes back with とりけす', async ({ page }) => {
   await page.goto('jar?demo');
-  const pot = page.locator('.treats');
+  const treats = page.locator('.treats');
   const balance = async () => (await page.locator('.hero .total').innerText()).replace(/\D/g, '');
   const before = await balance();
-  await pot.locator('button.item:not([aria-disabled="true"])').first().click();
+  await treats.locator('button.item:not([aria-disabled="true"])').first().click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect.poll(balance).not.toBe(before);
   await page.getByRole('button', { name: 'とりけす' }).click();
   await expect.poll(balance).toBe(before);
   // やめる closes the confirm without spending
-  await pot.locator('button.item:not([aria-disabled="true"])').first().click();
+  await treats.locator('button.item:not([aria-disabled="true"])').first().click();
   await sheet(page).getByRole('button', { name: 'やめる' }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect.poll(balance).toBe(before);
@@ -68,13 +68,13 @@ test('wallet (ADR 0022): one balance (the island plate’s), one list of five tr
 
 test('menu: adding a treat to the shared list (ADR 0022)', async ({ page }) => {
   await page.goto('jar?demo');
-  const pot = page.locator('.treats');
-  await pot.getByRole('button', { name: 'メニューを かえる' }).click();
+  const treats = page.locator('.treats');
+  await treats.getByRole('button', { name: 'メニューを かえる' }).click();
   await sheet(page).getByRole('button', { name: /ふやす/ }).click();
   await sheet(page).locator('input.lbl').last().fill('たいやき');
   await sheet(page).locator('input.num').last().fill('250');
   await sheet(page).getByRole('button', { name: '保存' }).click();
-  await expect(pot.getByRole('button', { name: /^たいやき 250\sベル/ })).toBeVisible();
+  await expect(treats.getByRole('button', { name: /^たいやき 250\sベル/ })).toBeVisible();
 });
 
 test('harvest: five badges per person, the together bonus, and the bonus lands in the wallet', async ({ page }) => {
@@ -242,6 +242,19 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await canopies.nth(0).click();
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
+});
+
+test('a tap on an open tree popup closes it and reaches nothing under it (the jar, the other tree)', async ({ page }) => {
+  await page.goto('?demo');
+  await islandReady(page);
+  await page.locator('button.canopy').first().click();
+  const popup = page.locator('.detail');
+  await expect(popup).toHaveCount(1);
+  const box = (await popup.boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(popup).toHaveCount(0);
+  await expect(page).not.toHaveURL(/\/jar/);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
 test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
