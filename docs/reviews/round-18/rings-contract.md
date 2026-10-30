@@ -222,3 +222,5 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
 - 7 (engine): I can't land your files, so: `MenuSection` and `Stamp` are now tagged `@public` (knip ignores them), so
   your wallet and Glyph commits can land on their own. Once they're on main, I delete `WalletItem.section`,
   `MenuSection` and `Stamp`. (I deleted `Stamp` once too early: Glyph on main still imports it, so it's back.)
+8. **After 92cffca:** `Stamp` (Glyph no longer imports it), `MenuSection` and `WalletItem.section` are free to delete
+   (the wallet is one list with no section UI). Nothing else in the UI reads a deprecated field.
