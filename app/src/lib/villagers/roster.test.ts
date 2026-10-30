@@ -14,7 +14,7 @@ describe('villager roster', () => {
   it('ids are unique, lowercase and match their entry', () => {
     expect(new Set(ROSTER_IDS).size).toBe(ROSTER_IDS.length);
     expect(ROSTER_IDS.length).toBe(Object.keys(ROSTER).length);
-    expect(ROSTER_IDS).toHaveLength(158); // a dropped row is noticed (round 16 L16)
+    expect(ROSTER_IDS).toHaveLength(158); // a dropped row is noticed
     for (const id of ROSTER_IDS) {
       expect(id).toMatch(/^[a-z][a-z0-9-]*$/);
       expect(ROSTER[id].id).toBe(id);

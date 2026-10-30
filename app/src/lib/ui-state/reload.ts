@@ -1,4 +1,4 @@
-// Stale-build recovery (round 9): after a deploy, a PWA left resident still runs the old build. Its lazy chunks
+// Stale-build recovery: after a deploy, a PWA left resident still runs the old build. Its lazy chunks
 // (きろく, the harvest) can 404, and a remembered rejected import() would fail forever. A failed chunk load forgets
 // the import and reloads once into the new build; a detected new version reloads when nothing is open.
 // The send queue and the key live in storage, so a reload loses nothing but an open sheet.

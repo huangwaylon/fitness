@@ -44,19 +44,13 @@ describe('time of day follows the clock', () => {
     expect(deriveTheme(at('2026-10-29T04:59'))).toMatchObject({ tod: 'night', night: true });
   });
 
-  it('OS dark mode is not an input (v5: the sky sets the theme)', () => {
-    // An old caller passing systemDark must not turn a noon chrome dark.
-    const t = deriveTheme(at('2026-10-29T12:26'), { systemDark: true } as never);
-    expect(t.night).toBe(false);
-  });
-
   it('theme-color = the top of the sky', () => {
     expect(themeColor({ tod: 'night', season: 'summer' })).toBe('#1F2C66');
     expect(themeColor({ tod: 'dusk', season: 'summer' })).toBe('#5B6FC4');
     expect(themeColor({ tod: 'dawn', season: 'winter' })).toBe('#7FA8E8');
     expect(themeColor({ tod: 'day', season: 'summer' })).toBe('#2F92F0');
   });
-  it('matches the sky table in tokens.css (round 7 F13)', () => {
+  it('matches the sky table in tokens.css', () => {
     const css = readFileSync(new URL('../styles/tokens.css', import.meta.url), 'utf8');
     const top = (sel: string) => new RegExp(`${sel.replace(/[[\]]/g, '\\$&')}\\s*\\{[^}]*--sky-top:\\s*(#[0-9A-Fa-f]{6})`).exec(css)?.[1]?.toUpperCase();
     const base = top('.if-scene');

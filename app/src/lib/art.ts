@@ -7,7 +7,7 @@ import manifest from '../../static/art/manifest.json';
 import type { RingFruit } from '#lib/types.ts';
 import type { Foliage } from '#lib/ui-state/season.ts';
 
-export interface ArtEntry {
+interface ArtEntry {
   path: string;
   w: number;
   h: number;
@@ -58,8 +58,8 @@ const HOST: Record<HostPose, string> = {
   icon: 'host/isabelle-icon'
 };
 /** Isabelle: 'wave' (cheerful, default), 'stand' (calm), 'bow' (sorry / thanks), 'winter', 'icon'.
- *  NH has no official bow render, so 'bow' is the stand render (same outfit) and <Host> adds a CSS bow
- *  (N2). 'winter' is the full-body cardigan model on the same canvas as 'stand' (N3). */
+ *  NH has no official bow render, so 'bow' is the stand render (same outfit) and <Host> adds a CSS bow.
+ *  'winter' is the full-body cardigan model on the same canvas as 'stand'. */
 export function hostArt(pose: HostPose = 'wave'): string {
   return HOST[pose];
 }
@@ -96,7 +96,7 @@ export type EmoteIcon = ReactionId | 'pose-viva' | `mark-${MarkId}`;
 /** Official reaction glyphs that are pure colour symbols (no grey cat face): fine on villagers. */
 export const COLOUR_GLYPHS: readonly ReactionId[] = ['love', 'surprise', 'glee', 'inspiration', 'curiosity', 'thought', 'daydreaming'];
 
-/** NH villagers never show the player's cat-face icons (A1): map any cat face to the floating
+/** NH villagers never show the player's cat-face icons: map any cat face to the floating
  *  symbol a villager would show. Colour glyphs, poses and marks pass through. */
 const FOR_VILLAGER: Partial<Record<ReactionId, EmoteIcon>> = {
   joy: 'glee', delight: 'glee', laughter: 'glee', happiness: 'mark-note', greetings: 'mark-note', pleased: 'mark-note',

@@ -5,7 +5,7 @@
 // Selection: prefs `villager` (roster id) → per-person default. Unknown ids fall back to the default.
 import { SPECIES, type Personality, type Species } from './species.ts';
 
-export interface Look {
+interface Look {
   id: RosterId;
   nameJa: string;
   nameEn: string;
@@ -102,7 +102,7 @@ const ROWS = [
   ['aurora', 'オーロラ', 'Aurora', 'penguin', 'normal', 'f', '#FFFFFF'],
   ['agnes', 'アグネス', 'Agnes', 'pig', 'sisterly', 'f', '#515151'],
   ['bangle', 'ルーズ', 'Bangle', 'tiger', 'peppy', 'f', '#7A2500'],
-  // Round 2 (79 more, spread over every species and personality).
+  // 79 more, spread over every species and personality.
   ['roswell', 'ピロンコン', 'Roswell', 'alligator', 'smug', 'm', '#4C3317'],
   ['alfonso', 'アルベルト', 'Alfonso', 'alligator', 'lazy', 'm', '#E8B010'],
   ['zoe', 'ビーフン', 'Zoe', 'anteater', 'normal', 'f', '#00D1BD'],

@@ -1,5 +1,5 @@
 // The one banner (NookPhone notification): its text, icon, optional undo, and its life. ToastHost renders `toasts.current`
-// (in the layout, or inside the topmost open sheet: round 7 F1). Split out of the week store (round 8).
+// (in the layout, or inside the topmost open sheet).
 import type { PersonId } from '#lib/types.ts';
 
 export interface Toast {
@@ -15,11 +15,11 @@ export interface Toast {
   code?: 'save-failed';
   /** The banner was paused (`null`) or resumed with `ms` left: keep the action's undo window in step (returns the ms granted). */
   hold?: (ms: number | null) => number;
-  /** Sliding out; dropped right after (round 7 F2: never left to a transition). */
+  /** Sliding out; dropped right after (never left to a transition). */
   leaving?: boolean;
 }
 
-export type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'code' | 'hold'>;
+type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'code' | 'hold'>;
 
 /** The banner's slide-out before it is dropped. */
 export const TOAST_OUT_MS = 240;
@@ -59,7 +59,7 @@ export class Toasts {
   }
 
   /**
-   * Hold the banner while it is hovered or focused (WCAG 2.2.1, review r2 N7): its undo stays available as long
+   * Hold the banner while it is hovered or focused (WCAG 2.2.1): its undo stays available as long
    * as the person is on it. With an undo it also holds back the send (the undo window is the banner's life).
    */
   pause(): void {

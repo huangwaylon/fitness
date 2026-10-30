@@ -1,7 +1,7 @@
 // Tiny shared UI state (not data): whether a full-screen overlay (the Sunday harvest) is open, so pages hold their
-// own toasts until it closes (U6); a pending きろく entry for the しまフォン; and the open sheets, newest last (the
-// banner renders inside the topmost one, round 7 F1).
-export type PhoneEntry = { tab: 'body' | 'money'; week?: string };
+// own toasts until it closes; a pending きろく entry for the しまフォン; and the open sheets, newest last (the
+// banner renders inside the topmost one).
+type PhoneEntry = { tab: 'body' | 'money'; week?: string };
 
 class Ui {
   phoneEntry = $state<PhoneEntry | null>(null);

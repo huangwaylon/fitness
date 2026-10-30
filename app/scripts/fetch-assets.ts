@@ -90,7 +90,7 @@ const SPECS: Record<string, Spec> = {
   // v4 island decorations.
   'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
-  // v5 (docs/design/design.md): game-derived replacements for hand-drawn chrome.
+  // Game-derived replacements for hand-drawn chrome.
   'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'], // ごほうび財布 (reward wallet)
   // v4 seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
