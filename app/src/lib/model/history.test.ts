@@ -343,19 +343,35 @@ describe('harvest taps (one acceptance rule for the island and きろく)', () =
 
 describe('presence rows (read-time rules in reduce)', () => {
   const pres = (at: string, person: PersonId, place: string, event: 'arrive' | 'leave', eventAt = at): PresenceRow => [at, person, place, event, eventAt];
-  const kept = (presence: PresenceRow[], p: PersonId = 'A') => reduce({ metrics: [], workouts: [], presence, events: [] }).presence[p].map((e) => `${e.event}@${e.eventAt}`);
+  const kept = (presence: PresenceRow[], p: PersonId = 'A') => reduce({ metrics: [], workouts: [], presence, events: [] }).presence[p].map((e) => `arrive@${e.eventAt}`);
   const T = jst(DAYS[1], '18:00');
 
-  it('a repeat of the same event within 2 minutes is dropped; later than that it counts', () => {
+  it('a repeat arrive within 2 minutes is dropped, later than that it counts; leave rows are ignored', () => {
     expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:02'), 'A', 'anytime', 'arrive')])).toEqual([`arrive@${new Date(T).toISOString()}`]);
     expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:03'), 'A', 'anytime', 'arrive')])).toHaveLength(2);
-    // A different event (leave) is never a duplicate of an arrive.
-    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:01'), 'A', 'anytime', 'leave')])).toHaveLength(2);
+    // A leave row (old Shortcuts) is ignored.
+    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:40'), 'A', 'anytime', 'leave')])).toHaveLength(1);
+    expect(kept([pres(T, 'A', 'anytime', 'leave')])).toEqual([]);
   });
 
   it('an event_at more than 48 h from the server `at` is ignored; within it, event_at is the time used', () => {
     expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '18:01'))])).toEqual([]);
     expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '17:59'))])).toEqual([`arrive@${new Date(jst(DAYS[3], '17:59')).toISOString()}`]);
+  });
+
+  it('an arrival is a strength day: no leave, no minimum stay, no question; twice a day is still one day', () => {
+    const rows = withRows(goodWeek(), { presence: [
+      pres(jst(DAYS[0], '19:00'), 'A', 'anytime', 'arrive'), pres(jst(DAYS[0], '20:30'), 'A', 'anytime', 'arrive'),
+      pres(jst(DAYS[2], '07:00'), 'B', 'pt_studio', 'arrive'), pres(jst(DAYS[2], '08:00'), 'B', 'pt_studio', 'leave')
+    ] });
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[1], DAYS[3]]);
+    expect(strengthDates(rows, 'B')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
+    const s = reduce(rows);
+    expect(dayDetail(s, DAYS[0], WED_MID).people.A.visits).toEqual([
+      { id: `anytime@${jst(DAYS[0], '19:00')}`, place: 'エニタイム', arriveAt: jst(DAYS[0], '19:00') },
+      { id: `anytime@${jst(DAYS[0], '20:30')}`, place: 'エニタイム', arriveAt: jst(DAYS[0], '20:30') }
+    ]);
+    expect(buildWeekView(s, 'A', WED_MID).pending).toEqual([]);
   });
 
   it("an unknown place, or another person's place, is ignored", () => {

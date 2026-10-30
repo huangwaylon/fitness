@@ -34,7 +34,7 @@ every list a **Text** field. The parser accepts this and nothing else (`app/gas/
   きろく, **never earns ベル** (ADR 0020).
 - **`calories`** and any other field: ignored.
 - **`workouts`** (optional, not sent yet): `{"types": "…", "starts": "…", "ends": "…", "avgHrs": "…"}`, each Text
-  with one line per workout (start/end in the same date text). Without it, strength days come from gym visits (§5) and
+  with one line per workout (start/end in the same date text). Without it, strength days come from gym arrivals (§5) and
   workouts added in きろく.
 - A list whose line count differs from `dates` is **dropped** and named in `warnings`; the rest is saved. An
   unreadable line is skipped and counted in `skipped`.
@@ -76,7 +76,7 @@ gets the link. Before sharing: Shortcut settings (ⓘ) → **Setup** → **Impor
 **Copy iCloud Link** → send it to B. Importing asks B for B's key. Put your own key back afterwards. B then adds the
 automation from §3. If a link with a key in it was ever shared, rotate that key (google-setup.md §10).
 
-## 5. Gym Arrive/Leave (per phone)
+## 5. Gym Arrive (per phone: one automation per gym)
 Shortcuts → Automation → **+** → **Arrive** → search the gym, shrink the radius to ~100–150 m → **Run Immediately**,
 **Notify When Run** off → **Get Contents of URL**: the `/exec` URL, **POST**, Request Body **JSON**, each field **Text**:
 
@@ -84,11 +84,12 @@ Shortcuts → Automation → **+** → **Arrive** → search the gym, shrink the
 { "key": "<your key>", "action": "presence", "place": "anytime", "event": "arrive" }
 ```
 
-Duplicate it as a **Leave** automation at the same place with `"event": "leave"`. Place keys
-(`app/src/lib/config/places.ts`): `anytime` (A), `anytime_b` and `pt_studio` (B). An optional `"at"` (ISO 8601 with
-offset) back-dates the event. All three places are **auto-strength** (user decision 2026-10-30): an arrive→leave visit
-of 30 minutes or more is a strength day with no question. A visit with no leave has no length and doesn't count (add
-the workout in きろく). iOS can fire a few minutes late; a normal session still clears 30 minutes.
+That's all: **no Leave automation** (user decision 2026-10-30). An arrive at a known place is a strength day for that
+person on that (Tokyo) date, with no question and no minimum stay; arriving twice in a day is still one strength day.
+Place keys (`app/src/lib/config/places.ts`): `anytime` (A), `anytime_b` and `pt_studio` (B), so うめ sets up two
+automations (one per place) and ウェイ one. Optional: add a `"at"` field, **Current Date** → **Format Date** (ISO 8601,
+with time), so a late or retried run keeps the real arrival time. A repeat arrive within 2 minutes is dropped. Existing
+Leave automations can stay or be deleted: the server still accepts `"event": "leave"` and the app ignores it.
 
 ## 6. One-time baseline (optional)
 Duplicate the Shortcut, change the range in steps 2, 4 and 5 to the last **84 days** and run it once.

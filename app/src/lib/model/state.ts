@@ -76,14 +76,12 @@ export interface WorkoutRec {
   manual?: true;
 }
 
-export interface PresenceRec {
-  /** Numeric id for deriveVisits (row order). */
-  n: number;
-  /** Stable visit id, used by `confirm {kind:'visit'}`: `<place>@<event_at ISO>`. */
+/** A gym arrival (`leave` rows are ignored since 2026-10-30: any arrival is a strength day). */
+interface PresenceRec {
+  /** Stable visit id: `<place>@<event_at ISO>`. */
   id: string;
   at: number;
   placeKey: string;
-  event: 'arrive' | 'leave';
   eventAt: string;
   eventMs: number;
   /** Tokyo date of `eventAt`. */
@@ -105,7 +103,6 @@ export interface State {
   workouts: Record<PersonId, WorkoutRec[]>;
   workoutConfirms: Map<string, Timed<boolean>[]>;
   presence: Record<PersonId, PresenceRec[]>;
-  visitConfirms: Map<string, Timed<boolean>[]>;
   checkins: Record<PersonId, CheckinRec[]>;
   /** ベル spends (`pot` + `bells`), in server order. */
   bellSpends: BellSpendRec[];
@@ -219,7 +216,6 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     workouts: { A: [], B: [] },
     workoutConfirms: new Map(),
     presence: { A: [], B: [] },
-    visitConfirms: new Map(),
     checkins: { A: [], B: [] },
     bellSpends: [],
     menus: { treat: [], trip: [] },
@@ -244,7 +240,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     s.ats.push(out.map((x) => x.at));
     return out;
   };
-  const c: Ctx = { s, workoutById: new Map(), arriveById: new Map() };
+  const c: Ctx = { s, workoutById: new Map() };
   const lastSyncMs: Record<PersonId, number> = { A: -Infinity, B: -Infinity };
   const synced = (p: PersonId, at: number, iso: string) => {
     if (at > lastSyncMs[p]) {
@@ -278,19 +274,17 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     synced(person, at, String(iso));
   }
 
-  let n = 0;
+  // Arrivals only: a `leave` row (old Shortcuts) is ignored.
   for (const { r: row, at } of byAt(r.presence ?? [])) {
     const [, person, placeKey, event, eventAtRaw] = row;
     const place = PLACES.find((p) => p.key === placeKey);
-    if (!place || place.person !== person || (event !== 'arrive' && event !== 'leave')) continue;
+    if (!place || place.person !== person || event !== 'arrive') continue;
     const eventMs = ms(eventAtRaw) ?? at;
     if (Math.abs(eventMs - at) > LIMITS.presenceSkewMs) continue;
     const list = s.presence[person];
-    if (list.some((e) => e.placeKey === placeKey && e.event === event && Math.abs(e.eventMs - eventMs) <= LIMITS.presenceDuplicateMs)) continue;
+    if (list.some((e) => e.placeKey === placeKey && Math.abs(e.eventMs - eventMs) <= LIMITS.presenceDuplicateMs)) continue;
     const eventAt = new Date(eventMs).toISOString();
-    const rec: PresenceRec = { n: ++n, id: `${placeKey}@${eventAt}`, at, placeKey, event, eventAt, eventMs, date: toLocalDate(eventAt) };
-    list.push(rec);
-    if (event === 'arrive' && !c.arriveById.has(rec.id)) c.arriveById.set(rec.id, { person, rec });
+    list.push({ id: `${placeKey}@${eventAt}`, at, placeKey, eventAt, eventMs, date: toLocalDate(eventAt) });
   }
 
   for (const { r: row, at } of byAt(r.events ?? [])) {
@@ -315,8 +309,6 @@ interface Ctx {
   s: State;
   /** Ingested and manual workouts by `person|id`. */
   workoutById: Map<string, WorkoutRec>;
-  /** Arrive events by visit id. */
-  arriveById: Map<string, { person: PersonId; rec: PresenceRec }>;
 }
 type Data = Record<string, unknown>;
 type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
@@ -373,17 +365,12 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (!habitsFor(person, weekKeyOf(date)).includes(habit)) return;
     s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
   },
-  confirm({ s, workoutById, arriveById }, person, at, d) {
-    if (typeof d.yes !== 'boolean' || typeof d.id !== 'string') return;
-    if (d.kind === 'workout') {
-      const w = workoutById.get(`${person}|${d.id}`);
-      if (!w || w.at > at || isLockedAt(s, weekKeyOf(w.date), at)) return;
-      push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
-    } else if (d.kind === 'visit') {
-      const p = arriveById.get(d.id);
-      if (!p || p.person !== person || p.rec.at > at || isLockedAt(s, weekKeyOf(p.rec.date), at)) return;
-      push(s.visitConfirms, d.id, { at, v: d.yes });
-    }
+  // Workouts only: an old `{kind:'visit'}` answer is ignored (every gym arrival counts since 2026-10-30).
+  confirm({ s, workoutById }, person, at, d) {
+    if (typeof d.yes !== 'boolean' || typeof d.id !== 'string' || d.kind !== 'workout') return;
+    const w = workoutById.get(`${person}|${d.id}`);
+    if (!w || w.at > at || isLockedAt(s, weekKeyOf(w.date), at)) return;
+    push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
   },
   spend({ s }, person, at, d) {
     const label = typeof d.label === 'string' ? d.label.trim() : '';

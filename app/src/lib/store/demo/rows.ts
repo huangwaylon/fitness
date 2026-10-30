@@ -50,12 +50,10 @@ function demoRows(now: number): SnapshotRows {
     const start = at(date, h, m);
     workouts.push([iso(sync), p, `${type}@${iso(start)}`, date, type, iso(start), iso(start + min * 60_000), min, hr]);
   };
-  const visit = (p: PersonId, place: string, date: string, h: number, m: number, min: number) => {
+  // A gym arrival (the one Shortcut automation): a strength day, however long the stay.
+  const arrive = (p: PersonId, place: string, date: string, h: number, m: number) => {
     const a = at(date, h, m);
-    const l = a + min * 60_000;
-    if (l + 60_000 >= now) return null;
-    presence.push([iso(a + 30_000), p, place, 'arrive', iso(a)], [iso(l + 30_000), p, place, 'leave', iso(l)]);
-    return `${place}@${iso(a)}`;
+    if (a + 30_000 < now) presence.push([iso(a + 30_000), p, place, 'arrive', iso(a)]);
   };
 
   for (let d = first; d <= today; d = addDays(d, 1)) {
@@ -78,21 +76,18 @@ function demoRows(now: number): SnapshotRows {
       const tickAt = at(d, 21, 10 + Math.floor(r() * 30));
       for (const h of HABITS[p]) if (r() < (p === 'A' ? 0.68 : 0.78)) ev(tickAt, p, 'checkin', { date: d, habit: h, done: true });
     }
-    // ウェイ: strength at the gym Mon/Thu (a Watch workout + an エニタイム visit), a run some Saturdays.
+    // ウェイ: strength at the gym Mon/Thu (a Watch workout + an エニタイム arrival), a run some Saturdays.
     const ra = rng(`A-w|${d}`);
     if ((dow === 1 || dow === 4) && ra() < 0.7) {
       wo(night, 'A', d, 'Traditional Strength Training', 19, 15, 45 + Math.floor(ra() * 20), 118);
-      visit('A', 'anytime', d, 19, 5, 70);
+      arrive('A', 'anytime', d, 19, 5);
     }
     if (dow === 6 && ra() < 0.6) wo(night, 'A', d, 'Outdoor Run', 8, 10, 28 + Math.floor(ra() * 15), 152);
-    if (dow === 3 && ra() < 0.3) {
-      // A visit without a Watch workout, answered 「筋トレでした」.
-      const id = visit('A', 'anytime', d, 20, 0, 50);
-      if (id) ev(at(d, 21, 5), 'A', 'confirm', { kind: 'visit', id, yes: true });
-    }
-    // うめ: PT studio on Fridays (auto strength), Pilates on Tuesdays, yoga on Sundays.
+    // Watch forgotten: the エニタイム arrival alone makes it a strength day.
+    if (dow === 3 && ra() < 0.3) arrive('A', 'anytime', d, 20, 0);
+    // うめ: PT studio on Fridays (an arrival, no Watch workout), Pilates on Tuesdays, yoga on Sundays.
     const rb = rng(`B-w|${d}`);
-    if (dow === 5 && rb() < 0.75) visit('B', 'pt_studio', d, 18, 30, 60);
+    if (dow === 5 && rb() < 0.75) arrive('B', 'pt_studio', d, 18, 30);
     if (dow === 2 && rb() < 0.8) wo(night, 'B', d, 'Pilates', 7, 0, 40, 104);
     if (dow === 7 && rb() < 0.7) {
       wo(night, 'B', d, 'Yoga', 9, 30, 45, 96);

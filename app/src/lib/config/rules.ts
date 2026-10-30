@@ -65,10 +65,7 @@ export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
 export const STRENGTH = {
   autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
   askTypes: ['Core Training', 'High Intensity Interval Training', 'Yoga', 'Mixed Cardio', 'Cross Training'],
-  minWorkoutMin: 15,
-  minVisitMin: 30,
-  /** Confirmed (non-auto) gym visits paid per week. */
-  maxConfirmedVisitsPerWeek: 3
+  minWorkoutMin: 15
 } as const;
 
 /**
@@ -130,7 +127,7 @@ export const DAILY = {
 export const LIMITS = {
   /** A check-in without `edit` may fill in today and the two days before (the 48 h window). */
   checkinBackDays: 2,
-  /** Shortcuts sometimes fire twice: a repeat of the same presence event this close is dropped. */
+  /** Shortcuts sometimes fire twice: a repeat arrive at the same place this close is dropped. */
   presenceDuplicateMs: 120_000,
   /** A presence `event_at` further than this from the server `at` is ignored. */
   presenceSkewMs: 48 * 3600_000,

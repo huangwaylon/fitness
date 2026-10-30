@@ -31,17 +31,11 @@ export interface Workout {
   manual?: boolean;
 }
 
-/** An arrive→leave pair derived from presence events. */
+/** A gym arrival (a presence `arrive` at a known place): a strength day on its Tokyo date (2026-10-30). */
 export interface Visit {
   placeKey: string;
   date: LocalDate;
   arriveAt: string;
-  leaveAt: string;
-  dwellMin: number;
-  /** Place counts as strength without confirmation (B's PT studio). */
-  autoStrength: boolean;
-  /** Person tapped 「筋トレとして記録する」; null = not answered. */
-  confirmed: boolean | null;
 }
 
 export interface CheckinTick {
@@ -145,8 +139,8 @@ export interface PersonWeekView {
 }
 
 export interface PendingConfirmation {
-  kind: 'visit' | 'workout';
-  /** Visit id (`<place>@<arrive ISO>`) or workout id. */
+  /** Only ask-type workouts are asked about (gym arrivals always count, 2026-10-30). */
+  kind: 'workout';
   id: string;
   date: LocalDate;
   label: string;

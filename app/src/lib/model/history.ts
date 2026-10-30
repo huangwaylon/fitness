@@ -271,7 +271,8 @@ interface DayWorkout {
   eligible: boolean;
 }
 
-interface DayVisit { id: string; place: string; arriveAt: string; dwellMin: number; counted: boolean }
+/** A gym arrival: always a strength day. */
+interface DayVisit { id: string; place: string; arriveAt: string }
 
 export interface DayPerson {
   /** The day's ベル and its parts per fruit. */
@@ -308,7 +309,6 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const t = c.t;
     const steps = metricAsOf(s, p, date, 'steps', t);
     const m = dayMinutes(s, p, date, t, steps, manualAsOf(c.act[p]).get(date) ?? 0);
-    const strong = strengthDays(c, p);
     const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
     const workouts = allWorkouts(s, p)
       .filter((w) => w.date === date && w.at <= t)
@@ -323,8 +323,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
         };
       });
     const visits = c.act[p].visits.filter((v) => v.date === date).map((v): DayVisit => ({
-      id: v.id, place: places.get(v.placeKey) ?? v.placeKey, arriveAt: v.arriveAt, dwellMin: v.dwellMin,
-      counted: strong.has(date) && v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true)
+      id: v.id, place: places.get(v.placeKey) ?? v.placeKey, arriveAt: v.arriveAt
     }));
     const input = earnInput(s, p, wk, t, c.act[p]);
     const mine = log.filter((e) => e.by === p);
