@@ -78,7 +78,8 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
   reached; none for 🥥), and **one** nudge line sits under the rows, 「あと 8分で +45」, for the tapped fruit or else the
   fruit nearest its next step (`nextAt`, `nextGain`); v1 weeks show neither. The popup always opens **upwards**, tail
   down at its tree; where the sky is short it is pushed down over the canopy (never flipped; tighter rows on short
-  screens), staying inside the screen and under the ribbon. The popup is the one home of per-fruit detail.
+  screens), staying inside the screen and under the ribbon. The popup is the one home of per-fruit detail; a tap on it
+  closes it.
 - **Layout:** the island (hedge top 32u to beach foam 356u) is **centred in the visible ocean**, from the horizon to
   the phone's top (`--island-bottom`). The horizon is the island's own (24u above the hedge) unless that makes the sky
   taller than 27% of the screen; then it stops there and the island sits lower in open sea. Its size is the width fit,
@@ -88,7 +89,8 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
 - **しずえ** shows only with news (the harvest), in a box floating just above the phone, so nothing in the scene moves.
 - **Taps:** the partner → their card; my villager → a hop; a tree → the popup; the jar → ごほうび; the ribbon → きろく
   ベル; the phone → しまフォン; scenery → small flourishes ([scene-interactions.md](scene-interactions.md)). All are real
-  buttons with `aria-label`, ≥ 44px (villagers and jar ≥ 64px). Focus order: heading, ribbon, phone, scene.
+  buttons with `aria-label`, ≥ 44px (villagers and jar ≥ 64px). Focus / VoiceOver order = the visual order: heading,
+  ribbon, scene, phone. An open tree popup takes the taps that land on it (they close it), so nothing drawn under it fires.
 
 ### 1.2 ごほうび the wallet (`routes/jar/+page.svelte`, ADR 0022)
 
@@ -104,7 +106,8 @@ under reduced motion; `ui-state/jarTransition.ts`).
 ### 1.3 しまフォン NookPhone (`phone/ShimaPhone.svelte`)
 
 A NookPhone-screen sheet: the title bar and a 3-column grid of squircle tiles (no status row: no clock, no leaf); in
-the demo a small yuzu デモ chip sits under the grid. Every tile is the same squircle: its fill, the round-13 edge (2px
+the demo a small yuzu デモ chip sits under the grid. Its ✕ and ‹ sit 18px from the phone's top and side, as on a paper sheet, and
+rows fade out under its title bar. Every tile is the same squircle: its fill, the round-13 edge (2px
 outline + 4px lip in a darker shade of the fill, drawn by `::after` so the art can't cover it) and the art inside; the
 three official full tiles (きろく, 村人, つうしん) sit on their own background colour (`#8B97EB`, `#76D787`,
 `#FD5967`) so their baked-in corners vanish. Each app slides in from the right inside the phone.
@@ -366,6 +369,8 @@ jar transition is a crossfade; dialogue text appears at once. Season and time of
   move it.
 - **Banner** (`ui/Toast.svelte`): NookPhone-style, at the top under the safe area (the とりけす undo banner at the
   bottom), in the top layer; a 36px icon, one line, a reaction icon or one action (とりけす). Tap or swipe up to dismiss; one at a time.
+- **Rows with an edged object** (✎, とりけす) are `--row-obj` tall (44 + the 4px lip + 6): 3px clear above the button
+  and under its lip; `.pen-btn` lifts by half its lip so button + lip sit centred.
 - **Buttons:** four tiers, ink text (≥ 5.6:1), radius 16, a squash on press. Every tappable thing has an **edge** (2px
   outline + 4px lip in one colour, ≥ 3:1 on the panel); static cards only the soft lip, so "brown edge = tappable".
   Primary = leaf; secondary = white-cream `--ctl`; selected = yuzu `--ctl-sel`; disabled = sunk `--ctl-off`, no edge.
@@ -376,6 +381,14 @@ jar transition is a crossfade; dialogue text appears at once. Season and time of
   no ring (text fields excepted), so a tap → ‹ back leaves no stray outline. Focus restore for keyboard and VoiceOver
   (‹ back, きろく edits, sheets) is unchanged, and Tab brings the ring back.
 - **Fonts:** Zen Maru Gothic (UI, 500/700, subset in `fonts.css`, `npm run fonts:subset`) + Fredoka (numbers, 600/700).
+- **Japanese line breaks:** `word-break: keep-all` on `html[lang=ja] body`: a line breaks only at the copy's spaces
+  (分かち書き) or after 、。！, never inside a word, the same on iPhone Safari and in Chrome (no `auto-phrase`, which
+  WebKit ignores). Long copy keeps its spaces.
+- **Stacking:** one `--z-*` scale in `tokens.css`: the stage < the HUD (ribbon, sync chip) < the dock (しまフォン,
+  しずえ's box); inside the stage trees < canopy taps < ground fruit < the fruit-row tap < villagers (mine in front) <
+  the time-of-day tint < the jar + plate < scenery flourishes < coins < "+N" < the tree popup. Modal `<dialog>`s (sheets,
+  the phone, the harvest) are in the top layer; the banner is a popover above an open sheet, and a sheet's footer rises
+  above the undo banner while it shows.
 
 ### Tokens (`styles/tokens.css`)
 
