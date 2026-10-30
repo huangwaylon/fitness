@@ -12,65 +12,105 @@ Section letters (§0, §E, §A, §S, §M, §T, §R) match the references in code
 
 ## 0. Simplicity budget (overrides everything)
 
-- **No tab bar.** Two places: 島 and ふたりの壺, plus the しまフォン (NookPhone) for everything else, the harvest overlay and sheets.
-- **One focal point per screen** (島: today's ベル; ふたりの壺: the two pots) and **one primary action**, in the thumb zone.
-- ≤ 40 Japanese characters of non-numeric text per screen. ≤ 3 cards per screen, ≤ 5 rows per card. One しずえ line (≤ 16 characters), and only when she has news.
+- **No tab bar.** Two places: 島 and ごほうび (the wallet), plus the しまフォン (NookPhone) for everything else, the harvest
+  overlay and sheets.
+- **One focal point per screen** (島: today's ベル; ごほうび: the wallet's balance) and **one obvious control**, in the
+  thumb zone (島: the NookPhone).
+- **Zero required taps a day** (ADR 0021): the Watch, the Shortcut and the gym Arrive automation fill the trees. No
+  check-ins, no daily questions.
+- **One home per datum** (round 17 IA §3.1): a number is shown in full in one place; anywhere else it is a doorway
+  (the plate, the ribbon), never a repeat.
+- ≤ 40 Japanese characters of non-numeric text per screen. ≤ 3 cards per screen, ≤ 5 rows per card. One しずえ line
+  (≤ 16 characters), and only when she has news.
 - **Decoration and motion never add words.** Reactions and effects stand in for text, never beside it.
-- Still removed (do not re-add): Sunday promises, のんびりデー / cozy days, the ふたり tab, the blocker question, privacy settings, notifications.
+- Still removed (do not re-add): check-ins and habits, daily questions, the two pots and trip bars, Sunday promises,
+  のんびりデー / cozy days, the ふたり tab, privacy settings, notifications, the sheet grabber.
 
 ## 1. Screens
 
-### 1.1 島 Island (`routes/+page.svelte`, `Hud.svelte`)
+### 1.1 島 Island (`routes/+page.svelte`, `Hud.svelte`, round 18 layout)
 
 ```
-top+8    12:40 10/28(水)                    [NookPhone]     corner clock, plain text (date kept at 320)
-         オフライン · タップで再接続                          sync chip, only when sync is not ok
-top+56            ═══ きょう +620 ベル ═══                     today's ベル ribbon (both of us)
+safe+16           ═══ きょう +620 ベル ═══          today's ベル ribbon, centred (the one focal point)
+                    オフライン · タップで つなぐ       sync chip, centred under it, only when sync is not ok
          sky ── horizon ── sea
-         island: hedge · my tree · jar + ベル plate · partner's tree · flower beds
+         island: hedge · my tree + 5 fruit · jar + plate · partner's tree + 5 fruit · flower beds
          me (left)                                partner (right)
-bottom   [しずえ box, 2 lines (1 compact)] [はい][いいえ]     only with news
-         [ 今夜のチェック ]  56 (48 compact)
+         [しずえ box, over the front beach]           only with news (the harvest)
+bottom             (📱)  しまフォン                   the NookPhone: 56px phone on an 84px disc, centred
 ```
 
-- **Today's ベル ribbon:** a copy of the NH map's yellow title banner (yuzu, ribbon tails), Fredoka 24: 「きょう +620 ベル」 for both of us. The one focal point. It counts up when ベル arrive (a sync, a check-in). Tap = きろく お金 (the ベル ledger).
-- **Jar + plate:** a cream nameplate with both pots' ベル together, the scene's only label. New ベル fly in as coins from the fruit that earned them. Tap the jar → ふたりの壺.
-- **One action:** 今夜のチェック, full width, leaf green. A pending question (「筋トレでしたか？」, only for ask-type workouts like yoga or HIIT; gym arrivals always count) puts NH's choice list in the same slot.
-- **しずえ** shows only for news: a pending question, harvest ready, "grew", or the answer she just took. Her box lives in one fixed slot under the scene (`--chrome-below`, over the sea), so the island never moves when she speaks.
-- **Sync errors are not しずえ's.** Offline or a failed refresh is the chip under the clock (tap = retry, `同期中…` while it runs). A failed save gets one banner and my villager's sheepish R17.
-- **Taps:** my villager → check-in sheet; the partner → partner sheet; a tree canopy or its fruit row → the fruit detail bubble; the jar → ふたりの壺; しずえ → finish the line / next / a hop. All are real `<button>`s with `aria-label`, ≥ 44px (villagers and jar ≥ 64px), ≥ 8px apart; the scene `svg` is `aria-hidden`. Decoration is never tappable.
+- **Today's ベル ribbon:** a copy of the NH map's yellow title banner, 「きょう +620 ベル」 for both of us, centred under
+  the notch / Dynamic Island (`--safe-top` + 16px). It counts up when ベル arrive. Tap = きろく ベル (the ledger).
+- **Jar + plate:** the wallet's balance as a bare number on a cream plate (the jar says what it counts), the scene's only
+  label. New ベル fly in as coins from the fruit that earned them. Tap the jar → ごほうび.
+- **Trees:** one per person; today's five ring fruit lie on the ground in front of each (0–3 per kind = thirds of the
+  goal, 🍑 🍐 🍒 🍎 🥥, leaning away from the jar). Tap → the popup: whose tree (nameplate), per fruit today / goal,
+  today's ベル and the week's badge pips (✓ once met). The popup is the one home of per-fruit detail.
+- **The NookPhone** is the island's one control, bottom centre in the thumb zone (≥ 56px, a 「しまフォン」 plate under it):
+  the hub for きろく, あそびかた and the settings. No flanking buttons: the wallet's doorway is the jar and the ledger's is
+  the ribbon, so a さいふ or きろく button would repeat a doorway.
+- **しずえ** shows only for news (the harvest). Her box floats over the front beach just above the phone, so nothing in
+  the scene moves when she speaks.
+- **Taps:** the partner → their villager card; my villager → a hop; a tree canopy or its fruit row → the popup; the jar →
+  ごほうび; the ribbon → きろく ベル; the phone → しまフォン. Focus / VoiceOver order: the sr-only heading, the ribbon, the
+  phone, then the scene. All are real buttons with `aria-label`, ≥ 44px (villagers and jar ≥ 64px).
 
-### 1.2 ふたりの壺 the two pots (`routes/jar/+page.svelte`, ADR 0019 §5)
+### 1.2 ごほうび the wallet (`routes/jar/+page.svelte`, ADR 0022)
 
-`◀ 島へ` pill + the NookPhone, then a small hero: the island's jar and ふたりの きょう (today's ベル, both of us) with
-今週. Then two cream pot cards in one skin (`PotCard`): **おやつの壺** (balance, today / this week flowing in, the menu as
-buy buttons) and **旅の壺** (balance, the flow, trip types with a bar toward each and あと N ベル). Each pot's today /
-week is the model's own split (`pots.treat/trip.today/week`), never re-split in the UI. ✎ へんしゅう edits a pot's menu
-(shared by both). 買う！ / 行く！ asks first, then shows at once and waits 5 s with もとに戻す before it is sent; a pot that
-can't cover it says ベルが足りませんでした. The last card lists the last few ベル moves (tap → きろく お金). No しずえ.
+The page's title bar (‹ 島へ top-left, ごほうび centred), a hero (the island's jar over 「ふたりのベル」 and the balance: the
+plate's number), then **one simple list** of big buy tiles (NH item art, the name, the price in ベル). An item the wallet
+can't cover yet is sunk and says あと N ベル (a tap boops). ✎ changes the list (add / rename / reprice / remove, shared by
+both). 買う！ asks first (with やめる beside it), then shows at once and waits 5 s with とりけす before it is sent. No
+today / week figures and no history here (they live in きろく ベル). No しずえ.
 
-**島 ⇄ ふたりの壺:** the jar squashes (R18), then the island jar morphs into the hero jar (View Transitions, `view-transition-name: jar`, 320 ms in / 280 ms back); without View Transitions, the same zoom as a CSS entrance; under reduced motion, a short crossfade (`ui-state/jarTransition.ts`).
+**島 ⇄ ごほうび:** the jar squashes (R18), then the island jar morphs into the hero jar (View Transitions,
+`view-transition-name: jar`, 320 ms in / 280 ms back); under reduced motion, a short crossfade (`ui-state/jarTransition.ts`).
 
 ### 1.3 しまフォン NookPhone (`ShimaPhone.svelte`)
 
-A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, and a 3-column grid of squircle tiles. Each app (`components/phone/*`) slides in from the right inside the phone with a ‹ back (focus returns to its tile).
+A NookPhone-screen sheet: status row (time · leaf · デモ in demo), the title bar, and a 3-column grid of squircle tiles.
+Each app (`components/phone/*`) slides in from the right inside the phone.
 
 | App | Tile | What |
 |---|---|---|
-| きろく | `phone/miles` (full tile) | History and editing: からだ / お金 (the ベル ledger), week → day → edit ([history-and-editing.md](history-and-editing.md)). Lazy-loaded on first open |
-| 使い方 | `phone/glyph-help` on yuzu | The four things to know, one card each |
-| 村人 | `phone/passport` (full tile) | Pick my villager from the roster (79 villagers; one search field, ja or en: name, species or personality), and its name |
-| 言語 | `phone/glyph-chat` on mint | 日本語 / English |
-| 同期 | `phone/rescue` (full tile) | When each of us last synced, いま同期 |
+| きろく | `phone/miles` (full tile) | からだ (weight, 目標: Move goal + weight goal, weeks of badges) / ベル (the passbook), week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
+| あそびかた | `phone/glyph-help` on yuzu | For a 10-year-old: no taps needed, the five fruits and their goals, badges, the wallet, the one-line setup |
+| 村人 | `phone/passport` (full tile) | Pick my villager from the roster (158 villagers; one search field), and my よびな |
+| ことば | `phone/glyph-chat` on mint | 日本語 / English |
+| つうしん | `phone/rescue` (full tile) | When each of us last updated, いま つうしん |
 | サウンド | our note glyph on leaf | ミュージック / 効果音 / おしゃべり ON/OFF (all off by default) and 音量 ([sound.md](sound.md) §10) |
 
 ### 1.4 Sheets, harvest, pairing
 
-- **One sheet skin** (`Sheet.svelte`, a native `<dialog>`): the chrome surface (tan paper with white-cream cards; navy at night), radius 32, a lip, a tilted yuzu nameplate title, one CTA in a sticky footer lifted above the keyboard.
-- **今夜のチェック** (`CheckinSheet.svelte`): my three habits for today (or yesterday, 48 h fill-in) as big toggles; each tap saves at once. 正月: eating is off.
-- **Partner sheet:** their head icon, name, four fruit rings with real numbers (no /100 score), today's eating check-ins, and one action: ハイタッチ (R4 plays behind once it closes).
-- **日曜の収穫** (`HarvestOverlay.svelte`, ≤ 60 s): a modal `<dialog>` (Esc = あとで). Steps: the week's recap → 受け取る (a ceremony: the bonus counts either way) → end card. The island stays visible behind a cool tint (`rgba(58,72,134,.18)` below the sky; `rgba(30,36,80,.16)` at night). しずえ's box, one card (rows: villager icon, the four badges lit when met, + 500 ベル each; then ふたりボーナス) and the CTA sit at the bottom. The week's bonus is the one big number. The end card drops it into the two pots and counts each balance up (an item-get beat). No confetti over the numbers.
-- **Pair / not set up** (`routes/pair`): `deco/airport` hero (hidden under 600px tall), しずえ + one line, paste the key (or `#key=` inside the installed PWA). Not set up: Tom Nook + the link to `?demo`.
+- **One sheet skin** (`Sheet.svelte`, a native `<dialog>`): the chrome surface (tan paper with white-cream cards; navy at
+  night), radius 32, a lip, the one title bar (below), one CTA in a sticky footer lifted above the keyboard.
+- **Partner card** (`PartnerSheet.svelte`): their name (title bar), face, one line they say about their day (from their
+  rings), when their data last arrived, and one action: ハイタッチ. Their numbers live on their tree.
+- **日曜の収穫** (`HarvestOverlay.svelte`, ≤ 60 s): a modal `<dialog>` (✕ / Esc = あとで). The week's recap (per person
+  the five badges under 「バッジ」, their bonus, ふたりボーナス, the week's bonus as the one big number) → 受け取る (a
+  ceremony: the bonus counts either way) → the end card: coins fall into the jar, a +N pops and fades, the wallet's
+  balance counts up. No confetti.
+- **Pair / not set up** (`routes/pair`): `deco/airport` hero (hidden under 600px tall), しずえ + one line, paste the key.
+
+## N. Navigation (round 18, one model everywhere)
+
+| Where | Top-left | Centre | Top-right |
+|---|---|---|---|
+| A sheet (partner card, buy, menu editor) | — | the title | ✕ とじる |
+| The しまフォン home | — | しまフォン | ✕ |
+| A phone app, and every level inside it (きろく week → day → fix) | ‹ もどる (one level up) | the app's title | ✕ (closes the phone from any level) |
+| A full page (ごほうび) | ‹ 島へ (a pill with where it goes) | the page's title | — |
+| The harvest | — | (the steps) | ✕ = あとで |
+
+- **The rule:** ✕ closes the whole sheet from any level and always sits top-right; ‹ goes up one level and appears only
+  when there is a level to go back to. They never swap places and the title never moves. Backdrop tap and Esc also close
+  a sheet. Nothing advertises swipe-down (no grabber).
+- **Components:** `ui/NavBar.svelte` (the title bar) and `ui/NavButton.svelte` (the round cream 44px ‹ / ✕, the
+  round-13 object tier, `data-sfx="back"`; the phone passes `self` for its own tunes). Sheet, ShimaPhone, Kiroku (via
+  the phone), the wallet page and the harvest use them; `ui/nav.test.ts` fails on a modal without them or on a grabber.
+- **Motion:** one style. A sheet rises in 240 ms (ease-out, no overshoot); a pushed level slides in from the right in
+  240 ms. Reduced motion: no slide.
 
 ## E. Economy (ADR 0019, what earns: ADR 0021; values in `config/rules.ts`, engine in `scoring/bells.ts` + `model/bells.ts`)
 
@@ -251,8 +291,7 @@ Loops, hops, walks and dances off; emotes fade in over 120 ms and hold; fx colla
 
 - **Dialogue box** (`Bubble.svelte`): wobbly cream box (cream at every time of day), a tilted yuzu nameplate that pops in after it, letter reveal at 33 ms/char (tap to finish), amber ▼ only when another page follows. It holds `--talk-lines` lines (2; 1 compact) and never grows. しずえ stands on its left, feet on its baseline. The real text is in an `aria-live` node.
 - **Choice list** (`ChoiceList.svelte`): white-cream pills with the brown edge, stacked at the right; the answer under the yuzu ▶ cursor turns yellow (NH's highlight, with a cream halo so it holds 3:1 on the sea). The cursor starts on はい and follows hover, focus and ↑/↓.
-- **Banner** (`Toast.svelte`): NookPhone-style, below the status row, in the top layer (inside the open sheet's `<dialog>` when there is one). A 36px icon on a pebble (the partner's villager for partner events, しずえ otherwise), one line ≤ 16 characters, one reaction icon or an action (もとに戻す). Tap or swipe up to dismiss; one at a time.
-- **Pot card:** one cream skin for おやつ and 旅.
+- **Banner** (`Toast.svelte`): NookPhone-style, below the status row, in the top layer (inside the open sheet's `<dialog>` when there is one). A 36px icon on a pebble (the partner's villager for partner events, しずえ otherwise), one line ≤ 16 characters, one reaction icon or an action (とりけす). Tap or swipe up to dismiss; one at a time.
 - **Buttons** (round 13, `docs/reviews/round-13/button-contrast.md`): four tiers, ink text (≥ 5.6:1), radius 16, a squash on press. Every tappable thing has an **edge** (a 2px outline + the 4px lip in one colour, ≥ 3:1 on the panel); static cards have only the soft lip, so "brown edge = tappable". Primary = leaf + `--c-leaf-edge`; secondary = white-cream `--ctl` + `--edge`; selected = yuzu `--ctl-sel` (keeps the edge); disabled = sunk `--ctl-off`, soft text, no edge or lip.
 - **Fonts:** Zen Maru Gothic (UI, 500/700, subset in `fonts.css`) + Fredoka (numbers only, 600/700). Rounded and close to NH's type; no Nintendo fonts.
 
