@@ -1,12 +1,12 @@
 # Island Fund: design
 
-What the client builds now: the screens, the island scene, motion, chrome, tokens and small screens. Tokens: `app/src/lib/styles/tokens.css` (+ element styles in `theme.css`). Art: `app/static/art/` (`manifest.json`, fetched by `app/scripts/fetch-assets.ts`). Decisions: official art [ADR 0018](../decisions/0018-official-art-public-site.md), Japanese-first UI [0007](../decisions/0007-japanese-first-ui.md), simplicity [0014](../decisions/0014-simplify-no-promises-no-cozy.md), no privacy settings or alerts [0016](../decisions/0016-no-privacy-no-alerts.md). Research: [ac-research.md](ac-research.md). History editing: [history-and-editing.md](history-and-editing.md). Older versions are in git (style guide v4.1, v5 direction, environment style, scale and ground; deleted in round 8).
+What the client builds now: the screens, the island scene, motion, chrome, tokens and small screens. Tokens: `app/src/lib/styles/tokens.css` (+ element styles in `theme.css`). Art: `app/static/art/` (`manifest.json`, fetched by `app/scripts/fetch-assets.ts`). Decisions: official art [ADR 0018](../decisions/0018-official-art-public-site.md), Japanese-first UI [0007](../decisions/0007-japanese-first-ui.md), simplicity [0014](../decisions/0014-simplify-no-promises-no-cozy.md), no privacy settings or alerts [0016](../decisions/0016-no-privacy-no-alerts.md). Research: [ac-research.md](ac-research.md). Sound: [sound.md](sound.md). History editing: [history-and-editing.md](history-and-editing.md). Older versions are in git (style guide v4.1, v5 direction, environment style, scale and ground; deleted in round 8).
 
 Section letters (§0, §E, §A, §S, §M, §T, §R) match the references in code comments.
 
 **Direction.** It reads as *あつまれ どうぶつの森* at a glance: official NH renders (villagers, しずえ, trees, fruit, NookPhone tiles) standing on a **Pocket Camp–style diorama** that we paint in SVG/CSS to match them. NH's 2D UI patterns (dialogue box, choice list, map ribbon, NookPhone, Nook Miles+ cards) are the chrome. Bright and calm; night is soft periwinkle, never black.
 
-**IP rule.** Official art only from `static/art/` through `<OfficialArt key alt size>`, with a fallback (our vector or `Silhouette`) so a missing file never breaks a screen. On-screen names follow the Japanese game: しずえ, しまフォン, ベル (play money, ADR 0019: amounts are `1,234 ベル` / `1,234 Bells`; no ¥ anywhere). No Nintendo fonts or sounds. The repo and site are public for now (ADR 0018).
+**IP rule.** Official art only from `static/art/` through `<OfficialArt key alt size>`, with a fallback (our vector or `Silhouette`) so a missing file never breaks a screen. On-screen names follow the Japanese game: しずえ, しまフォン, ベル (play money, ADR 0019: amounts are `1,234 ベル` / `1,234 Bells`; no ¥ anywhere). No Nintendo fonts or sound effects; the hourly music and opening theme are the user's own files, committed by the user's decision ([sound.md](sound.md) §9.2). The repo and site are public for now (ADR 0018).
 
 ---
 
@@ -62,6 +62,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 | 村人 | `phone/passport` (full tile) | Pick my villager from the roster (79 villagers; one search field, ja or en: name, species or personality), and its name |
 | 言語 | `phone/glyph-chat` on mint | 日本語 / English |
 | 同期 | `phone/rescue` (full tile) | When each of us last synced, いま同期 |
+| サウンド | our note glyph on leaf | ミュージック / 効果音 / おしゃべり ON/OFF (all off by default) and 音量 ([sound.md](sound.md) §10) |
 
 ### 1.4 Sheets, harvest, pairing
 
