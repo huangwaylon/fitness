@@ -64,11 +64,8 @@ export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }
 
-/**
- * Replace the shared menu, one list (either of us; the latest edit wins). `{ok:false}` if the list is invalid. Items are
- * stored as `{id, label, bells}` (a `section` is dropped).
- */
-export function saveMenu(items: Pick<WalletItem, 'id' | 'label' | 'bells'>[]): SendResult {
+/** Replace the shared menu, one list (either of us; the latest edit wins). `{ok:false}` if the list is invalid. */
+export function saveMenu(items: WalletItem[]): SendResult {
   const clean = parseMenu(items.map((x) => ({ id: x.id, label: x.label, bells: Math.round(x.bells) })));
   if (!clean) return { ok: false };
   return week.send('pref', { key: 'menu', value: JSON.stringify(clean) });

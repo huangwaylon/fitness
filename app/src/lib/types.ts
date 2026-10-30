@@ -41,19 +41,11 @@ export interface Visit {
 
 // ---- ベル economy (ADR 0019) ----
 
-/** @public @deprecated The menu has no sections any more (one list, lead 2026-10-30). See WalletItem.section. */
-export type MenuSection = 'daily' | 'trip';
-
 /** A shared menu entry (ADR 0022: one list), editable in the app (`pref` menu): either person can buy it from the wallet. */
 export interface WalletItem {
   id: string;
   label: string;
   bells: number;
-  /**
-   * @deprecated Not stored (the menu is one list): the view fills it ('trip' for the `trip` item, else 'daily') only
-   * until the wallet screen stops reading it; `saveMenu` drops it.
-   */
-  section: MenuSection;
 }
 
 /** The shared wallet (ADR 0022): every ベル earned, minus the accepted buys. */

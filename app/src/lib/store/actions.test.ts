@@ -50,7 +50,7 @@ describe('wallet actions', () => {
 
   it('saveMenu sends the whole menu as one `menu` pref (one list, no sections), refuses an invalid one', () => {
     expect(saveMenu([{ id: 'a b', label: 'x', bells: 1 }])).toEqual({ ok: false });
-    expect(saveMenu([{ id: 'camp', label: ' キャンプ ', bells: 29999.6, section: 'trip' } as never]).ok).toBe(true);
+    expect(saveMenu([{ id: 'camp', label: ' キャンプ ', bells: 29999.6 }]).ok).toBe(true);
     const [e] = queued();
     expect(e.type).toBe('pref');
     expect(e.data).toEqual({ key: 'menu', value: JSON.stringify([{ id: 'camp', label: 'キャンプ', bells: 30000 }]) });

@@ -102,7 +102,7 @@ export interface State {
   /** Buys from the wallet, in server order. */
   bellSpends: BellSpendRec[];
   /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
-  menu: Timed<MenuEntry[]>[];
+  menu: Timed<WalletItem[]>[];
   /** Accepted activity `metric_set` (steps, minutes) per person, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
   /**
@@ -310,14 +310,11 @@ type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
 const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
 const MENU_ID_RE = /^[\w-]+$/;
 
-/** A stored menu item: one list, no sections (ADR 0022). */
-export type MenuEntry = Pick<WalletItem, 'id' | 'label' | 'bells'>;
-
 /**
  * A `pref` menu value (ADR 0022): a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
  * LIMITS.menuMaxItems (other keys are ignored). Anything invalid ignores the whole pref (the previous menu stays).
  */
-export function parseMenu(v: unknown): MenuEntry[] | null {
+export function parseMenu(v: unknown): WalletItem[] | null {
   let list = v;
   if (typeof v === 'string') {
     try {
@@ -327,7 +324,7 @@ export function parseMenu(v: unknown): MenuEntry[] | null {
     }
   }
   if (!Array.isArray(list) || list.length > LIMITS.menuMaxItems) return null;
-  const out: MenuEntry[] = [];
+  const out: WalletItem[] = [];
   const ids = new Set<string>();
   for (const x of list) {
     if (!x || typeof x !== 'object') return null;
