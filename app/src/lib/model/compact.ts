@@ -1,4 +1,4 @@
-// Cache compaction for `metrics` rows (round 9): with hourly syncs a day collects ~20 rows per person and metric,
+// Cache compaction for `metrics` rows (round 9): with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
 // but once its week has locked (Wednesday 04:00) the model only ever reads that day's value at a few fixed times.
 // Keeping the row that answers each of those times leaves the views unchanged and drops ~90% of the rows.
 //

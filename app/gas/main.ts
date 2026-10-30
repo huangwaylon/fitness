@@ -369,7 +369,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   }
   // Rows about a day are only ever written from that day on (Health has no future), so every earlier row for the
   // body's days (or its workouts' days) is after the day before its earliest one: a tail. One day of slack covers a
-  // phone in a zone ahead of Tokyo. The hourly 31-day body reads ~a month of rows, not the whole tab.
+  // phone in a zone ahead of Tokyo. Each Shortcut run's 31-day body reads ~a month of rows, not the whole tab.
   const days = [...parsed.metrics, ...parsed.workouts].map((x) => x.date).sort();
   const from = days.length ? new Date(Date.parse(`${days[0]}T00:00:00+09:00`) - DAY_MS).toISOString() : '';
   return withLock((): IngestReply => {

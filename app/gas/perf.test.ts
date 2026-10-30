@@ -1,5 +1,5 @@
-// The hot paths at year-3 volume (round 13): the hourly Shortcut ingest (31 days × steps, minutes, weight) and a
-// client poll (`snapshot` with `since`) against an uncompacted sheet of three years of hourly syncs (`bench-rows.ts`:
+// The hot paths at year-3 volume (round 13): a Shortcut run's ingest (31 days × steps, minutes, weight) and a
+// client poll (`snapshot` with `since`) against an uncompacted sheet of three years of frequent (≈ hourly) Shortcut runs (`bench-rows.ts`:
 // ~53k metrics rows). The sheet is the fake, so time is only indicative; what is asserted is how many cells each
 // request reads, which is what costs time in Apps Script (a `getValues` is ~linear in cells).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -48,7 +48,7 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('year-3 volume', () => {
-  it('the hourly ingest (31 days × 3 metrics) and a since-poll read only the tail of the sheet', () => {
+  it('a Shortcut run (31 days × 3 metrics) and a since-poll read only the tail of the sheet', () => {
     const metricRows = gas.sheets.get('metrics')!.data().length;
     const today = Date.now();
     const days = Array.from({ length: 31 }, (_, i) => new Date(today - (30 - i) * 86400_000 + 9 * 3600_000));
@@ -77,7 +77,7 @@ describe('year-3 volume', () => {
       `ingest: ${ingest.cells} cells, ${ingest.ms} ms; re-send: ${resend.cells} cells, ${resend.ms} ms`,
       `snapshot since: ${poll.cells} cells, ${poll.ms} ms; full: ${full.cells} cells, ${full.ms} ms`
     ].join('\n'));
-    // The hourly paths read a month of rows at most, not three years.
+    // The hot paths read a month of rows at most, not three years.
     expect(ingest.cells).toBeLessThan(25_000);
     expect(poll.cells).toBeLessThan(10_000);
   });
