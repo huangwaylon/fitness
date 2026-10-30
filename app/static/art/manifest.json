@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -579,9 +579,9 @@
     },
     "villagers/audie": {
       "path": "villagers/audie.webp",
-      "w": 100,
-      "h": 142,
-      "source": "https://nookipedia.com/wiki/File:Audie_NH_1.png"
+      "w": 264,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Audie_NH_Model.png"
     },
     "villagers/audie-icon": {
       "path": "villagers/audie-icon.webp",
@@ -2019,9 +2019,9 @@
     },
     "villagers/rosie": {
       "path": "villagers/rosie.webp",
-      "w": 130,
-      "h": 262,
-      "source": "https://nookipedia.com/wiki/File:Rosie_NH_Transparent.png"
+      "w": 245,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rosie_NH_Model.png"
     },
     "villagers/rosie-icon": {
       "path": "villagers/rosie-icon.webp",
@@ -2055,9 +2055,9 @@
     },
     "villagers/sasha": {
       "path": "villagers/sasha.webp",
-      "w": 138,
-      "h": 232,
-      "source": "https://nookipedia.com/wiki/File:Sasha_NH.png"
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sasha_NH_Model.png"
     },
     "villagers/sasha-icon": {
       "path": "villagers/sasha-icon.webp",
@@ -2091,9 +2091,9 @@
     },
     "villagers/shino": {
       "path": "villagers/shino.webp",
-      "w": 152,
-      "h": 221,
-      "source": "https://nookipedia.com/wiki/File:Shino_NH.png"
+      "w": 307,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Shino_NH_Model.png"
     },
     "villagers/shino-icon": {
       "path": "villagers/shino-icon.webp",
