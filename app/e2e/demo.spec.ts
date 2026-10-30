@@ -3,73 +3,20 @@ import { expect, test, type Page } from '@playwright/test';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
 
-/** The demo usually opens on しずえ's 「…は筋トレでしたか？」 (one or more): answer them until the check-in shows. */
+/** The demo usually opens on しずえ's 「…は筋トレでしたか？」 (one or more): answer them until she's quiet. */
 async function answerPending(page: Page) {
-  const checkin = page.locator('.below > .btn');
+  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
   const yes = page.getByRole('button', { name: 'はい', exact: true });
-  await expect(checkin.or(yes).first()).toBeVisible();
-  for (let i = 0; i < 5 && !(await checkin.isVisible()); i++) {
-    if (await yes.isVisible()) await yes.click();
+  await page.waitForTimeout(300);
+  for (let i = 0; i < 5 && (await yes.isVisible()); i++) {
+    await yes.click();
     await page.waitForTimeout(300);
   }
-  await expect(checkin).toBeVisible();
+  await expect(yes).toHaveCount(0);
 }
 
 /** `きょう 620 ベル` → 620. */
 const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '').match(/(\d+)\s*ベル/)![1]);
-
-test('tap: a check-in adds today’s ベル', async ({ page }) => {
-  await page.goto('?demo');
-  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-  await expect(ribbon).toBeVisible();
-  await answerPending(page);
-  const before = bellsOf(await ribbon.getAttribute('aria-label'));
-  await page.locator('.below > .btn').click();
-  const switches = sheet(page).getByRole('switch');
-  await expect(switches.first()).toBeVisible();
-  const i = (await switches.evaluateAll((els) => els.map((e) => e.getAttribute('aria-checked')))).indexOf('false');
-  expect(i).toBeGreaterThanOrEqual(0);
-  const habit = switches.nth(i);
-  await habit.click();
-  await expect(habit).toHaveAttribute('aria-checked', 'true');
-  await sheet(page).getByRole('button', { name: '保存' }).click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await expect(async () => {
-    expect(bellsOf(await ribbon.getAttribute('aria-label'))).toBe(before + 100);
-  }).toPass();
-  // the coins land in the jar: its plate counts up to the pots' new total
-  const jar = page.locator('.if-scene .jar');
-  await expect(async () => {
-    expect(bellsOf(await jar.locator('.jar-plate').innerText())).toBe(bellsOf(await jar.getAttribute('aria-label')));
-  }).toPass({ timeout: 8000 });
-});
-
-test('check-in: ぜんぶできた ticks every open habit', async ({ page }) => {
-  await page.goto('?demo');
-  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-  await answerPending(page);
-  await page.locator('.below > .btn').click();
-  const switches = sheet(page).getByRole('switch');
-  await expect(switches.first()).toBeVisible();
-  const all = sheet(page).getByRole('button', { name: 'ぜんぶできた！' });
-  // at least one habit open (the demo's day may already have them all)
-  if (await all.isDisabled().catch(() => true)) {
-    await switches.first().click();
-    await expect(switches.first()).toHaveAttribute('aria-checked', 'false');
-  }
-  await expect(all).toBeEnabled();
-  const states = await switches.evaluateAll((els) => els.map((e) => e.getAttribute('aria-checked')));
-  const open = states.filter((x) => x === 'false').length;
-  expect(open).toBeGreaterThan(0);
-  const before = bellsOf(await ribbon.getAttribute('aria-label'));
-  await all.click();
-  for (let i = 0; i < states.length; i++) await expect(switches.nth(i)).toHaveAttribute('aria-checked', 'true');
-  await expect(sheet(page).getByRole('button', { name: 'ぜんぶそろいました' })).toBeDisabled();
-  await sheet(page).getByRole('button', { name: '保存' }).click();
-  await expect(async () => {
-    expect(bellsOf(await ribbon.getAttribute('aria-label'))).toBe(before + 100 * open);
-  }).toPass();
-});
 
 test('buy: a treat comes back with もとに戻す', async ({ page }) => {
   await page.goto('jar?demo');

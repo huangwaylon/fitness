@@ -127,7 +127,7 @@ export class IslandLife {
     const ctx = this.#ctx;
     const offs = [
       on('open', () => once('open') && react('R1')),
-      on('checkin-saved', () => react('R2')),
+      on('cheer', () => react('R2')),
       on('highfive-sent', () => react('R4')),
       on('highfive-received', () => react('R5')),
       on('sync-error', () => react('R17')),
@@ -152,12 +152,12 @@ export class IslandLife {
     const { hour: h, weekday: wd } = jst(d);
     const view = ctx.view();
     const me = view.people[view.me];
-    const checkedIn = (me.habits?.ticksByDate[view.today] ?? []).length > 0;
     const beats: ReactionId[] = [];
     if (!asleepHour(d)) {
       if (once('open')) beats.push('R1');
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
-      if (h >= 18 && h < 22 && !checkedIn && once('evening')) beats.push('R12');
+      // evening: my partner turns to me while my day is still under half (ADR 0021: a nudge to move, not to check in)
+      if (h >= 18 && h < 22 && dayScore(me) < 50 && once('evening')) beats.push('R12');
       if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');
     }
     // the director's event queue plays them one at a time

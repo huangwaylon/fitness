@@ -1,8 +1,8 @@
 <script lang="ts">
   // 3.3 Day detail: two stacked cards (me, then the partner, read-only), each opening with the day's ベル and what each
   // fruit earned. ✎ only on mine and only while the week is
-  // open (`editable`: Kiroku closes it a minute before the lock); へんこう履歴 at the bottom. Check-ins toggle in place
-  // (a fix, `edit:true`). Read-only cards get the 見るだけ badge and flat, lipless chips (round 7 F5).
+  // open (`editable`: Kiroku closes it a minute before the lock); へんこう履歴 at the bottom. Read-only cards get the
+  // 見るだけ badge (round 7 F5).
   import type { PersonId } from '#lib/types.ts';
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -28,9 +28,8 @@
     onmetric: (metric: 'steps' | 'exercise_min') => void;
     onworkout: (id: string) => void;
     onadd: () => void;
-    ontick: (habit: string, done: boolean) => void;
   }
-  let { d, editable, me, partner, names, villagers, now, onmetric, onworkout, onadd, ontick }: Props = $props();
+  let { d, editable, me, partner, names, villagers, now, onmetric, onworkout, onadd }: Props = $props();
 </script>
 
 <header class="sub">
@@ -84,16 +83,6 @@
         <span class="v small"><span class="money">{timeOf(v.arriveAt)}</span><em class="ok">{t('kiroku.strengthYes')}</em></span>
       </div>
     {/each}
-    <div class="ticks" role="group" aria-label={t('kiroku.checkins')}>
-      {#each x.habits.keys as h (h)}
-        {@const on = x.habits.done.includes(h)}
-        {#if can}
-          <button type="button" class="tick" class:on aria-pressed={on} data-sfx={on ? 'toggle-off' : 'toggle-on'} onclick={() => ontick(h, !on)}>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</button>
-        {:else}
-          <span class="tick" class:on>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</span>
-        {/if}
-      {/each}
-    </div>
     {#if can}<button type="button" class="add" data-focus="add" data-sfx="page" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
   </section>
 {/snippet}
@@ -143,22 +132,6 @@
     display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
   }
   .pen:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .ticks { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 4px; }
-  .tick {
-    appearance: none; border: 0; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); min-height: 36px; padding: 0 10px;
-    display: inline-flex; align-items: center; gap: 4px; border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--lip) 35%, transparent);
-  }
-  /* 36px chips, a 44px hit area (sizing #8) */
-  button.tick { position: relative; cursor: pointer; background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge), 0 3px 0 var(--edge); }
-  button.tick::after { content: ''; position: absolute; inset: -4px 0; }
-  button.tick:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  button.tick.on { background: var(--c-mint); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge); }
-  .tick.on { background: var(--c-mint); color: var(--c-ink); }
-  /* Read-only chips: flat, no lip, a quieter fill; nothing about them says "tap me". */
-  span.tick { background: transparent; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lip) 55%, transparent); cursor: default; }
-  span.tick.on { background: color-mix(in srgb, var(--c-mint) 35%, transparent); box-shadow: none; }
-  .tick svg { width: 14px; height: 14px; }
   .add {
     appearance: none; border: 0; cursor: pointer; margin-top: 6px; min-height: 44px; border-radius: var(--r-btn);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));

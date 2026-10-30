@@ -30,7 +30,7 @@ export interface Step {
   /** しずえ pose for the duration (wave / stand / bow). */
   pose?: 'wave' | 'stand' | 'bow';
   /** The sound under this step (sound/cues.ts; docs/design/sound.md §5). Only events and taps sound: the startup
-   *  beats, idle life, naps, the dance and R2 (its check-in already confirmed, the coins are its reward) stay silent
+   *  beats, idle life, naps, the dance and R2 (an answer already confirmed, the coins are its reward) stay silent
    *  (round 14 review). */
   cue?: Cue;
 }
@@ -56,7 +56,7 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
     { actor: 'partner', at: 400, motion: 'wiggle', emote: 'glee' },
     { actor: 'host', at: 200, motion: 'hop', emote: 'joy', pose: 'wave', cue: 'announce' }
   ] },
-  R2: { name: 'check-in saved', ms: 2200, steps: [
+  R2: { name: 'cheer', ms: 2200, steps: [
     { actor: 'mine', motion: 'hop2', emote: 'mark-heart', fx: 'notes' },
     { actor: 'mine', at: 120, fx: 'sparkles' },
     { actor: 'host', at: 300, motion: 'hop', emote: 'joy', fx: 'notes', pose: 'wave' }

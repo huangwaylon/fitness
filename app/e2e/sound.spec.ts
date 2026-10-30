@@ -156,31 +156,17 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
 
   // 島
   const yes = btn('はい');
-  const cta = page.locator('.below > .btn');
-  await expect(cta.or(yes).first()).toBeVisible();
-  for (let i = 0; i < 5 && !(await cta.isVisible()); i++) {
-    if (await yes.isVisible()) await step('島', 'しずえ: はい (choice)', () => yes.tap(), ['choice-pick']);
+  await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
+  await page.waitForTimeout(300);
+  for (let i = 0; i < 5 && (await yes.isVisible()); i++) {
+    await step('島', 'しずえ: はい (choice)', () => yes.tap(), ['choice-pick']);
     await page.waitForTimeout(300);
   }
   await page.waitForTimeout(1500); // the opening beats
-  await step('島', 'check-in CTA', () => cta.tap(), ['open']);
-  await step('チェックイン', '昨日', () => btn('昨日', dlg).or(btn(/^昨日 ·/, dlg)).first().tap(), ['tick']);
-  await step('チェックイン', '昨日 again (already shown)', () => btn('昨日', dlg).or(btn(/^昨日 ·/, dlg)).first().tap(), []);
-  await step('チェックイン', '今日', () => btn('今日', dlg).tap(), ['tick']);
-  const sw = dlg.getByRole('switch').first();
-  const on = (await sw.getAttribute('aria-checked')) === 'true';
-  await step('チェックイン', `habit switch ${on ? 'off' : 'on'}`, () => sw.tap(), [on ? 'toggle-off' : 'checkin-saved']);
-  await step('チェックイン', `habit switch ${on ? 'on' : 'off'}`, () => sw.tap(), [on ? 'checkin-saved' : 'toggle-off']);
-  await step('チェックイン', 'ぜんぶできた！', () => btn('ぜんぶできた！', dlg).tap(), ['checkin-saved']);
-  await step('チェックイン', 'ぜんぶそろいました (aria-disabled)', () => btn('ぜんぶそろいました', dlg).tap({ force: true }), ['boop']);
-  await step('チェックイン', '保存', () => btn('保存', dlg).tap(), ['confirm']);
-  await expect(dlg).toHaveCount(0);
-  await page.waitForTimeout(400);
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
   await step('島', 'tree canopy again (closes)', () => page.locator('button.canopy').first().tap(), ['tick']);
   await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
   await expect(dlg).toHaveCount(1);
-  await step('なかま', 'fruit ring', () => dlg.locator('button.fr').nth(1).tap(), ['tick']);
   await step('なかま', 'grabber', () => dlg.locator('.grabber').tap(), ['back']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);

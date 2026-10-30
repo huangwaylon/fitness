@@ -1,6 +1,6 @@
 <script lang="ts">
   // Dev art gallery (design.md §A): every official art key, the villager roster, しずえ poses,
-  // the fallback silhouette, money marks, fruit ripeness stages, emotes, and the island in every
+  // the fallback silhouette, money marks, emotes, and the island in every
   // season × day/night. Loaded by routes/dev/characters only in `vite dev`, so the production build drops it.
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import Villager from '#lib/components/characters/Villager.svelte';
@@ -8,7 +8,6 @@
   import Silhouette from '#lib/components/characters/Silhouette.svelte';
   import Emote from '#lib/components/characters/Emote.svelte';
   import LeafCoin from '#lib/components/ui/LeafCoin.svelte';
-  import FruitRing from '#lib/components/sheets/FruitRing.svelte';
   import IslandScene from '#lib/components/island/IslandScene.svelte';
   import Fx from '#lib/components/characters/Fx.svelte';
   import { REACTIONS as ICONS, MARKS, COLOUR_GLYPHS, art, artKeys } from '#lib/art.ts';
@@ -17,7 +16,6 @@
   import { hostTap } from '#lib/components/motion/director.svelte.ts';
   import type { FxKind } from '#lib/components/characters/Fx.svelte';
   import { ROSTER, ROSTER_IDS } from '#lib/villagers/roster.ts';
-  import { FRUITS } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
 
   const KEYS = artKeys();
@@ -112,13 +110,7 @@
   </section>
 
   <section>
-    <h2>Fruit ripeness · money</h2>
-    <div class="row">
-      {#each FRUITS as f, i (f)}<FruitRing fruit={f} pct={[10, 40, 75, 100][i]} label={f} showPct />{/each}
-    </div>
-    <div class="row tree">
-      {#each [10, 40, 75, 100] as pct (pct)}<FruitRing fruit="apple" {pct} label="apple" onTree size="46px" />{/each}
-    </div>
+    <h2>Money</h2>
     <div class="row">
       <span class="amt"><LeafCoin size="1.1em" />146,200 ベル</span>
       <LeafCoin kind="leaf" size={32} />
@@ -162,7 +154,6 @@
   .cap { color: var(--text-soft); font-size: var(--fs-s); margin: 4px 0 0; }
   section { border-bottom: 2px dashed var(--lip); padding-bottom: 12px; }
   .row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; padding: 14px 0 6px; }
-  .row.tree { background: var(--c-leaf); border-radius: var(--r-card); padding: 10px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
   .grid.roster { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   figure { margin: 0; display: grid; justify-items: center; align-content: end; gap: 4px; }

@@ -2,16 +2,16 @@
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
 import { expect, test, type Page } from '@playwright/test';
 
-/** The demo usually opens on しずえ's question: answer it until the check-in shows. */
+/** The demo usually opens on しずえ's question: answer it until she's quiet. */
 async function answerPending(page: Page) {
-  const checkin = page.locator('.below > .btn');
+  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
   const yes = page.getByRole('button', { name: 'はい', exact: true });
-  await expect(checkin.or(yes).first()).toBeVisible();
-  for (let i = 0; i < 5 && !(await checkin.isVisible()); i++) {
-    if (await yes.isVisible()) await yes.click();
+  await page.waitForTimeout(300);
+  for (let i = 0; i < 5 && (await yes.isVisible()); i++) {
+    await yes.click();
     await page.waitForTimeout(300);
   }
-  await expect(checkin).toBeVisible();
+  await expect(yes).toHaveCount(0);
 }
 
 /** Stage units (390 × 360, scene.ts) → page px. */
