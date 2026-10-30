@@ -15,6 +15,23 @@ by eye. The script and shots are in `/tmp/r17-ia/` (`walk.mjs`, `shots/`); they 
 The demo numbers below come from those shots (Fri 10/30, before → after tonight's check-in): today 140 → 440 ベル, pots
 7,364 + 57,456 = 64,820, this week 5,090.
 
+> **Addendum: ADR 0021 landed while this review was being written** (Activity Rings + steps + gym, five fruits with 🍒
+> added, no manual check-ins). The walk was done on the build before it. What changes here:
+> - §4.4 and rank 10 (the check-in sheet) fall away.
+> - The habit ticks drop out of the matrix: island button, partner sheet, week dots, day chips.
+> - The tree popup becomes five rows.
+> - Three things get *stronger*:
+>   1. **The partner sheet loses its habit list.** That leaves avatar, name, sync time, rings and ハイタッチ, and the
+>      rings are exactly the partner's tree popup (§4.3: make it a villager card, or remove the partner popup).
+>   2. **The island's one action slot is empty.** Don't fill it with a number. Candidates are the NH-style ハイタッチ
+>      (it moves from the partner sheet) or nothing, letting しずえ's box take the slot.
+>   3. **One word per ring.** Use Apple's ja terms: 🍑 **エクササイズ**, 🍐 **ムーブ**, 🍒 **スタンド**, 🍎 歩数,
+>      🥥 ジム (en Exercise / Move / Stand / Steps / Gym). This replaces the 運動 / Exercise row of §5.1; never mix
+>      them with 活動 / 運動 / 食事.
+> - The Move goal (per person, editable) needs a home. It belongs in きろく からだ, next to the weight goal: one
+>   「目標」 place for both, not a new app.
+> - The week pips in §4.2 suit the ring fruits even better (5 of 7 days closed).
+
 ---
 
 ## 0. Verdict in one paragraph
