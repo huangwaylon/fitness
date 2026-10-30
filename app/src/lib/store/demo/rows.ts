@@ -3,7 +3,7 @@
 // The economy starts 2026-10-26, so the demo moves the model's calendar (`DemoCalendar`, carried by the state): its
 // first week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
 import type { PersonId, WeekKey } from '#lib/types.ts';
-import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
+import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
@@ -38,7 +38,7 @@ function demoRows(now: number): SnapshotRows {
   const first = demoFirstWeek(now);
   const metrics: MetricRow[] = [];
   const workouts: WorkoutRow[] = [];
-  const presence: PresenceRow[] = [];
+  const presence: GymRow[] = [];
   const events: EventRow[] = [];
   let n = 0;
   const ev = (t: number, p: PersonId, type: EventRow[3], data: object) => {
@@ -49,10 +49,11 @@ function demoRows(now: number): SnapshotRows {
     const start = at(date, h, m);
     workouts.push([iso(sync), p, `${type}@${iso(start)}`, date, type, iso(start), iso(start + min * 60_000), min, hr]);
   };
-  // A gym arrival (the one Shortcut automation): a strength day, however long the stay.
-  const arrive = (p: PersonId, place: string, date: string, h: number, m: number) => {
+  // A gym arrival (the Arrive automation's `gym` action): a strength day, however long the stay. `label` is the
+  // optional `place` text ('' = ジム).
+  const arrive = (p: PersonId, label: string, date: string, h: number, m: number) => {
     const a = at(date, h, m);
-    if (a + 30_000 < now) presence.push([iso(a + 30_000), p, place, 'arrive', iso(a)]);
+    if (a + 30_000 < now) presence.push([iso(a + 30_000), p, label, iso(a)]);
   };
 
   for (let d = first; d <= today; d = addDays(d, 1)) {
@@ -82,14 +83,14 @@ function demoRows(now: number): SnapshotRows {
     const ra = rng(`A-w|${d}`);
     if ((dow === 1 || dow === 4) && ra() < 0.7) {
       wo(night, 'A', d, 'Traditional Strength Training', 19, 15, 45 + Math.floor(ra() * 20), 118);
-      arrive('A', 'anytime', d, 19, 5);
+      arrive('A', 'エニタイム', d, 19, 5);
     }
     if (dow === 6 && ra() < 0.6) wo(night, 'A', d, 'Outdoor Run', 8, 10, 28 + Math.floor(ra() * 15), 152);
     // Watch forgotten: the エニタイム arrival alone makes it a strength day.
-    if (dow === 3 && ra() < 0.3) arrive('A', 'anytime', d, 20, 0);
+    if (dow === 3 && ra() < 0.3) arrive('A', '', d, 20, 0);
     // うめ: PT studio on Fridays (an arrival, no Watch workout), Pilates on Tuesdays, yoga on Sundays.
     const rb = rng(`B-w|${d}`);
-    if (dow === 5 && rb() < 0.75) arrive('B', 'pt_studio', d, 18, 30);
+    if (dow === 5 && rb() < 0.75) arrive('B', 'PTスタジオ', d, 18, 30);
     if (dow === 2 && rb() < 0.8) wo(night, 'B', d, 'Pilates', 7, 0, 40, 104);
     // Yoga isn't a strength type (no questions are asked): うめ marks a power-yoga Sunday as strength in きろく now and then.
     if (dow === 7 && rb() < 0.7) {

@@ -18,7 +18,7 @@ it). Gym visits are now one Arrive automation (an arrival counts, no duration).
    | 🍐 pear | **Move ring**: active energy, kcal | **per person, editable in the app** (default ウェイ 600, うめ 400) | Shortcut `calories` (active energy) |
    | 🍒 cherry (new) | **Stand**: stand minutes (Health "Stand Time") | **180 min** (same for both) | Shortcut `stand_minutes` (new field) |
    | 🍎 apple | **Steps** | 8,000 (same for both) | Shortcut `steps` |
-   | 🥥 coconut | **Gym** (strength) | an arrival at a gym, or a Watch strength workout | presence `arrive` / workouts |
+   | 🥥 coconut | **Gym** (strength) | an arrival at a gym, or a Watch strength workout | `gym` arrivals / workouts |
 
 2. **No manual check-ins.** The three eating habits, the check-in sheet and 「ぜんぶできた！」 are removed; old
    `checkin` rows are ignored. Steps no longer turn into minutes (the Exercise ring already counts brisk walking).
@@ -60,3 +60,13 @@ core, mixed cardio, cross training) is removed with `WeekView.pending`. Only the
 
 +400 per badge, ふたりボーナス +200 per badge both met. On target: (5 × 180 × 3 + 4 × 200 + 3 × 400) = 4,700 daily +
 2,000 badges each, + 1,000 duo = **14,400 ベル a week** for both (was 14,250). Max 1,140 a day per person.
+
+## Amendment 2026-10-30: the gym arrival is `{key, action:"gym"}`
+**User decision:** the Arrive automation sends the minimum, `{"key": "<KEY_A or KEY_B>", "action": "gym"}`, plus two
+optional fields: `place` (free text ≤ 40, only a label shown in きろく, default ジム) and `at` (the true arrival time, an
+ISO 8601 instant with offset; ignored when more than 48 h from the server time, as before). The key is the person: any
+arrival is that person's 🥥 day on its Tokyo date, several in a day are one day, and a repeat within 2 minutes is
+dropped whatever its label. There is no place list (`config/places.ts` is deleted), no `event` field, and no place
+validation; the `presence` action is removed outright (`bad_request`, no compatibility path). The sheet tab keeps its
+name `presence` (no sheet change) with simpler columns `[at, person, label, arrived_at]`; it was empty, and a tab with
+the old header is relabelled by its first row. One Code.js redeploy; shortcut-health-sync.md §5 has the steps.

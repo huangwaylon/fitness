@@ -10,6 +10,8 @@
 // rows of past designs (checkin, confirm, share, approve, transfer, yen spends, presence leave) were then deleted, as
 // the one-off cleanup of 2026-10-30 did to the sheet: every view and digest stayed the same. ADR 0022 (one wallet): the b1–b9 buys
 // lost their pot (the trip ones now buy a special meal and a room upgrade) and the menu edit became a `menu` pref.
+// The `gym` action (2026-10-30, ADR 0021): presence rows became [at, person, label, arrived_at] (place keys → their
+// names as labels); regenerated, every view and digest stayed the same (no WeekView shows a label).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,

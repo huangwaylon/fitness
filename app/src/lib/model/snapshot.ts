@@ -16,7 +16,7 @@ export const emptyRows = (): SnapshotRows => ({ metrics: [], workouts: [], prese
 const KEYS: { [K in keyof SnapshotRows]: (r: SnapshotRows[K][number]) => string } = {
   metrics: (r) => `${r[1]}|${r[2]}|${r[3]}|${Number(r[4])}`,
   workouts: (r) => `${r[1]}|${r[2]}`,
-  presence: (r) => `${r[0]}|${r[1]}|${r[2]}|${r[3]}|${r[4]}`,
+  presence: (r) => `${r[0]}|${r[1]}|${r[2]}|${r[3]}`,
   events: (r) => String(r[2])
 };
 

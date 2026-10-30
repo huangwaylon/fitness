@@ -30,9 +30,10 @@ export interface Workout {
   manual?: boolean;
 }
 
-/** A gym arrival (a presence `arrive` at a known place): a strength day on its Tokyo date (2026-10-30). */
+/** A gym arrival (the `gym` action): a strength day on its Tokyo date, whatever its label (ADR 0021). */
 export interface Visit {
-  placeKey: string;
+  /** Free text from the automation, shown in きろく only ('' = ジム). */
+  label: string;
   date: LocalDate;
   arriveAt: string;
 }

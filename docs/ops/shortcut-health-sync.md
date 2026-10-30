@@ -88,19 +88,36 @@ gets the link. Before sharing: Shortcut settings (ⓘ) → **Setup** → **Impor
 automation from §3. If a link with a key in it was ever shared, rotate that key (google-setup.md §10).
 
 ## 5. Gym Arrive (per phone: one automation per gym)
-Shortcuts → Automation → **+** → **Arrive** → search the gym, shrink the radius to ~100–150 m → **Run Immediately**,
-**Notify When Run** off → **Get Contents of URL**: the `/exec` URL, **POST**, Request Body **JSON**, each field **Text**:
+An arrival at a gym is a 🥥 strength day for the person whose key sent it, on that (Tokyo) date: no question, no
+minimum stay, no Leave automation. Arriving twice in a day (or at two gyms) is still one strength day. Build this once
+per gym, on each phone (the automations are identical apart from the location and the optional label):
 
-```json
-{ "key": "<your key>", "action": "presence", "place": "anytime", "event": "arrive" }
-```
+1. Shortcuts → **Automation** → **+** → **Arrive**.
+2. **Location** → **Choose** → search the gym → shrink the radius to **100–150 m** → **Done**.
+3. Choose **Run Immediately** and turn **Notify When Run** off [U: labels vary by iOS version] → **Next** → **New Blank
+   Automation**.
+4. Add **Get Contents of URL**: the `/exec` URL; ▸ **Method** **POST**; **Headers** none; **Request Body** **JSON**,
+   with these fields, each typed **Text**:
 
-That's all: **no Leave automation** (user decision 2026-10-30). An arrive at a known place is a strength day for that
-person on that (Tokyo) date, with no question and no minimum stay; arriving twice in a day is still one strength day.
-Place keys (`app/src/lib/config/places.ts`): `anytime` (A), `anytime_b` and `pt_studio` (B), so うめ sets up two
-automations (one per place) and ウェイ one. Optional: add a `"at"` field, **Current Date** → **Format Date** (ISO 8601,
-with time), so a late or retried run keeps the real arrival time. A repeat arrive within 2 minutes is dropped. **Delete any old
-Leave automation:** the server now refuses `"event": "leave"` (`bad_request`).
+   ```json
+   { "key": "<your key>", "action": "gym" }
+   ```
+
+   That is the whole request. Two optional fields:
+   - `"place"`: any text up to 40 characters (e.g. `エニタイム`), only a label shown in きろく; without it きろく shows
+     ジム. It never changes what counts.
+   - `"at"`: the true arrival time, so a late or retried run keeps it: add **Current Date** above **Get Contents of URL**,
+     then **Format Date** (Date Format **ISO 8601**, **Include Time** on) and use its result as the `at` value. It must
+     be an ISO 8601 instant with an offset (`2026-10-30T18:05:00+09:00`); one more than 48 h from the server time is
+     ignored.
+5. **Done**. Test it with the ▶ button of the **Get Contents of URL** action (in the automation's editor): the reply is
+   `{"ok":true}`. That records a **real gym day** for today, so test on a day you go to the gym anyway (or delete the
+   row from the sheet's `presence` tab afterwards, then run `resync`).
+
+**Location permission:** Arrive automations need Location Services on for Shortcuts (Settings → Privacy & Security →
+Location Services → **Shortcuts** → **While Using the App** or **Always**, with **Precise Location** on) [U: iOS asks on
+the first Arrive automation]. If an arrival never fires, check this first. A repeat arrival within 2 minutes is
+dropped. The server refuses the old `"action": "presence"` (`bad_request`): replace any old automation with this one.
 
 ## 6. One-time baseline (optional)
 Duplicate the Shortcut, change the range in steps 2, 4 and 5 to the last **84 days** and run it once.
@@ -117,3 +134,4 @@ Duplicate the Shortcut, change the range in steps 2, 4 and 5 to the last **84 da
 | A weight about 2.2× too high | Health's weight unit is pounds: set it to kg |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash a banner] |
 | Nothing arrives | Settings → Health → Data Access → Shortcuts permissions |
+| No gym day after arriving | Location permission (§5); the Arrive radius too small for the gym's GPS fix; `bad_request` = an old `presence` body or a `place` over 40 characters |

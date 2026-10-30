@@ -6,7 +6,8 @@ import type { PersonId } from '../types.ts';
 export const TABS = {
   metrics: ['at', 'person', 'date', 'metric', 'value'],
   workouts: ['at', 'person', 'id', 'date', 'type', 'start', 'end', 'duration_min', 'avg_hr'],
-  presence: ['at', 'person', 'place', 'event', 'event_at'],
+  /** Gym arrivals (the `gym` action, GymRow); the tab keeps its old name so the sheet needs no change. */
+  presence: ['at', 'person', 'label', 'arrived_at'],
   events: ['at', 'person', 'id', 'type', 'data'],
   uploads: ['at', 'person', 'status', 'bytes', 'error']
 } as const;
@@ -83,19 +84,24 @@ export const MANUAL_WORKOUT_MIN = { min: 1, max: 600 } as const;
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
 export type WorkoutRow = [at: string, person: PersonId, id: string, date: string, type: string, start: string, end: string, durationMin: number, avgHr: number | null];
-/** A gym arrival (the only presence event: an arrival is a strength day). */
-export type PresenceRow = [at: string, person: PersonId, place: string, event: 'arrive', eventAt: string];
+/**
+ * A gym arrival (`gym` action, ADR 0021): a strength day for its person on the Tokyo date of `arrivedAt`. `label` is
+ * free text shown in きろく only ('' = ジム); `arrivedAt` is the body's `at`, or `at` when it sent none.
+ */
+export type GymRow = [at: string, person: PersonId, label: string, arrivedAt: string];
 /** `data` is the JSON text exactly as stored in the cell. */
 export type EventRow = [at: string, person: PersonId, id: string, type: EventType, data: string];
 
-export interface SnapshotRows { metrics: MetricRow[]; workouts: WorkoutRow[]; presence: PresenceRow[]; events: EventRow[] }
+export interface SnapshotRows { metrics: MetricRow[]; workouts: WorkoutRow[]; presence: GymRow[]; events: EventRow[] }
 
 export type ApiError = 'unauthorized' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
 /** `warnings`: daily-form lists that were dropped (length mismatch) while the rest was saved. */
 export type IngestReply = { ok: true; metrics: number; workouts: number; skipped?: number; unknownTypes?: string[]; warnings?: string[] } | Fail;
-export type PresenceReply = { ok: true } | Fail;
+export type GymReply = { ok: true } | Fail;
+/** A `gym` label: trimmed, at most this many characters. */
+export const GYM_LABEL_MAX_CHARS = 40;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**
  * `rev` is the data revision (sheets-architecture.md §2.1): when it differs from the one the client cached with, rows

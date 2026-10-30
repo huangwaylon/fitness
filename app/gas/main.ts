@@ -12,8 +12,8 @@ import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
 import {
-  DATE_RE, EVENT_TYPES, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
-  type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
+  DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
+  type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type GymReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
 
@@ -37,7 +37,7 @@ const TAIL_CHUNK = 256;
 const DAY_MS = 86400_000;
 
 /** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
-type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
+type Reply = IngestReply | GymReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
 type Rec = Record<string, unknown>;
 
 const fail = (error: ApiError, detail?: string): Fail => (detail ? { ok: false, error, detail } : { ok: false, error });
@@ -74,7 +74,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
 
   switch (body.action) {
     case 'ingest': return ingest(me, body, typeof post?.length === 'number' ? post.length : text.length);
-    case 'presence': return presence(me, body);
+    case 'gym': return gym(me, body);
     case 'event': return event(me, body);
     case 'snapshot': return snapshot(me, body);
     case 'uploads': return uploads(me);
@@ -287,6 +287,9 @@ function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
   const cols = TABS[name];
   const last = sh.getLastRow();
   noteRows(name, last);
+  // A tab's first data row (re)writes its header as TABS has it, so a tab left empty under an older schema (presence
+  // was 5 columns until 2026-10-30) is relabelled; the extra '' clears one stale column of a wider old header.
+  if (last <= 1) sh.getRange(1, 1, 1, cols.length + 1).setValues([[...cols, '']]);
   const start = Math.max(last, 1) + 1;
   const need = start + rows.length - 1 - sh.getMaxRows();
   if (need > 0) sh.insertRowsAfter(sh.getMaxRows(), need);
@@ -364,7 +367,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const msg = (err instanceof Error ? err.message : String(err)).slice(0, 300);
     // Audit the failure (best effort: a busy lock just skips the row).
     try {
-      withLock((): PresenceReply => { appendRows(tab('uploads'), 'uploads', [auditRow(nextAt(), me, 'error', bytes, msg, body)]); return { ok: true }; });
+      withLock((): GymReply => { appendRows(tab('uploads'), 'uploads', [auditRow(nextAt(), me, 'error', bytes, msg, body)]); return { ok: true }; });
     } catch { /* the reply matters more than the audit row */ }
     return fail('bad_request', msg);
   }
@@ -426,21 +429,24 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   });
 }
 
-function presence(me: PersonId, body: Rec): PresenceReply {
-  const place = typeof body.place === 'string' ? body.place.trim() : '';
-  if (!place || place.length > 100) return fail('bad_request');
-  if (body.event !== 'arrive') return fail('bad_request'); // an arrival is the only gym event (2026-10-30)
-  let eventAt: string | null = null;
+/**
+ * A gym arrival from the iOS Arrive automation: `{key, action:'gym', place?, at?}` (ADR 0021). The key is the person;
+ * `place` is only a label for きろく; `at` is the true arrival time (the model ignores one too far from the server `at`).
+ */
+function gym(me: PersonId, body: Rec): GymReply {
+  if (body.place !== undefined && body.place !== null && typeof body.place !== 'string') return fail('bad_request');
+  const label = typeof body.place === 'string' ? body.place.trim() : '';
+  if (label.length > GYM_LABEL_MAX_CHARS) return fail('bad_request');
+  let arrivedAt: string | null = null;
   if (body.at !== undefined && body.at !== null && body.at !== '') {
-    // An ISO 8601 instant with its offset (the gym automation's Current Date, formatted ISO 8601).
+    // An ISO 8601 instant with its offset (the automation's Current Date, formatted ISO 8601).
     const ms = typeof body.at === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(body.at) ? Date.parse(body.at) : NaN;
     if (Number.isNaN(ms)) return fail('bad_request');
-    eventAt = new Date(ms).toISOString();
+    arrivedAt = new Date(ms).toISOString();
   }
-  const ev = body.event;
-  return withLock((): PresenceReply => {
+  return withLock((): GymReply => {
     const at = nextAt();
-    appendRows(tab('presence'), 'presence', [[at, me, place, ev, eventAt ?? at]]);
+    appendRows(tab('presence'), 'presence', [[at, me, label, arrivedAt ?? at]]);
     return { ok: true };
   });
 }
@@ -540,7 +546,7 @@ function snapshot(me: PersonId, body: Rec): SnapshotReply {
       workouts: pick('workouts', (r, at) => [
         at, text(r[1]), text(r[2]), text(r[3], 'date'), text(r[4]), text(r[5], 'at'), text(r[6], 'at'), num(r[7]) ?? 0, num(r[8])
       ]),
-      presence: pick('presence', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4], 'at')]),
+      presence: pick('presence', (r, at) => [at, text(r[1]), text(r[2]), text(r[3], 'at')]),
       events: pick('events', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
     } as SnapshotRows;
     return { ok: true, me, now: new Date().toISOString(), rev: current().rev, rows };
