@@ -210,3 +210,22 @@ describe('splitPots: 20% おやつ / 80% 旅 on totals', () => {
     }
   });
 });
+
+describe('ADR 0019 amendment: the headline number', () => {
+  it('a minimum on-target week is 14,250 ベル for the two of them', () => {
+    // Each person exactly at every badge line and no more: 45 min on 5 days, 8,000 steps on 4, strength on 3, 15 ticks
+    // (5 days × 3). Daily 5×225 + 4×200 + 3×400 + 15×100 = 4,625; badges 4 × 500 = 2,000; ふたりボーナス 4 × 250.
+    const onTarget = (person: 'A' | 'B') => earnWeek(input({
+      person,
+      days: days(WK, [45, 45, 45, 45, 45], [8000, 8000, 8000, 8000]),
+      workouts: D.slice(0, 3).map((x) => workout(x, 'Traditional Strength Training', 40)),
+      checkins: D.slice(0, 5).flatMap((x) => ticks(x))
+    }));
+    const a = onTarget('A'), b = onTarget('B');
+    expect(a.daily).toBe(4625);
+    expect(a.bonus).toBe(2000);
+    expect(a.allBadges).toBe(true);
+    expect(duoBonus(a, b)).toBe(1000);
+    expect(a.daily + a.bonus + b.daily + b.bonus + duoBonus(a, b)).toBe(14_250);
+  });
+});

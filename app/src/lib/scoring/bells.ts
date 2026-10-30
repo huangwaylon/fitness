@@ -123,7 +123,7 @@ export const zeroParts = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pe
  * One person's ベル for a week (ADR 0019 §2–4), at the week's rule version. Per day:
  * - 🍑 perMinute × counted minutes, up to goals.activeMin. Minutes = max(Watch, (steps − goal) / 100, manual).
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
- * - 🥥 strengthDay on a strength day (max 1/day; confirmed gym visits max 2/week).
+ * - 🥥 strengthDay on a strength day (max 1/day; confirmed gym visits max `STRENGTH.maxConfirmedVisitsPerWeek`/week).
  * - 🍐 perTick per distinct habit tick (max DAILY.maxTicks/day), none on 正月 pear-off days.
  * Badges: 🍑 activeDays days at the goal, 🍎 stepDays step days, 🥥 strengthDays, 🍐 `ticks` ticks (prorated over
  * pear-off days: ceil(ticks × days / 7)).
