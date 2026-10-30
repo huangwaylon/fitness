@@ -1,5 +1,6 @@
 <script lang="ts">
-  // しまフォン → 通信: when each of us last synced, いま同期, and ぜんぶ読みなおす (drop the cache, fetch everything).
+  // しまフォン → 通信: when each of us last synced, and いま同期. (No "reload everything": a hand edit of the sheet changes
+  // `rev`, and the next sync refetches everything by itself, sheets-architecture.md §2.1.)
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -20,7 +21,6 @@
   <button type="button" class="btn" disabled={week.syncing} onclick={() => week.refresh()}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sync" /></svg>{week.syncing ? t('sync.syncing') : t('phone.syncNow')}
   </button>
-  <button type="button" class="btn small" disabled={week.syncing} onclick={() => week.resync()}>{t('phone.resync')}</button>
 </div>
 
 <style>

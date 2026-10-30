@@ -64,7 +64,7 @@ export class LiveBackend implements Backend {
     });
   }
 
-  async refresh(opts: { background?: boolean; full?: boolean }): Promise<void> {
+  async refresh(opts: { background?: boolean }): Promise<void> {
     const h = this.#host;
     if (!getKey() || keyFromHash(location.hash)) {
       // Not paired yet, or opened from a `#key=…` link: the pair page takes it from here (and keeps the hash).
@@ -87,7 +87,7 @@ export class LiveBackend implements Backend {
     const seq = ++this.#refreshSeq;
     h.syncing = true;
     await this.#flush(false);
-    const r = await refreshSnapshot(Date.now, { full: opts.full });
+    const r = await refreshSnapshot();
     if (seq !== this.#refreshSeq) return; // a newer refresh owns the view (and `syncing`)
     h.syncing = false;
     if (r.ok) {
