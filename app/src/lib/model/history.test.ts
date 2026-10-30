@@ -1,7 +1,7 @@
 // History and editing (docs/design/history-and-editing.md §4–5): edits on top of the ベル model.
 // Own data only (the sender is the subject), open weeks only (this week, and last week until Wednesday 04:00 JST).
 import { describe, expect, it } from 'vitest';
-import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
+import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/scoring/index.ts';
 import { reduce } from './state.ts';
@@ -330,39 +330,37 @@ describe('harvest taps (one acceptance rule for the island and きろく)', () =
   });
 });
 
-describe('presence rows (read-time rules in reduce)', () => {
-  const pres = (at: string, person: PersonId, place: string, event: 'arrive', eventAt = at): PresenceRow => [at, person, place, event, eventAt];
-  const kept = (presence: PresenceRow[], p: PersonId = 'A') => reduce({ metrics: [], workouts: [], presence, events: [] }).presence[p].map((e) => `arrive@${e.eventAt}`);
+describe('gym rows (read-time rules in reduce)', () => {
+  const gym = (at: string, person: PersonId, label = '', arrivedAt = at): GymRow => [at, person, label, arrivedAt];
+  const kept = (presence: GymRow[], p: PersonId = 'A') => reduce({ metrics: [], workouts: [], presence, events: [] }).gym[p].map((e) => `arrive@${e.arrivedAt}`);
   const T = jst(DAYS[1], '18:00');
 
-  it('a repeat arrive within 2 minutes is dropped, later than that it counts', () => {
-    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:02'), 'A', 'anytime', 'arrive')])).toEqual([`arrive@${new Date(T).toISOString()}`]);
-    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:03'), 'A', 'anytime', 'arrive')])).toHaveLength(2);
+  it('a repeat arrival within 2 minutes is dropped (even with another label), later than that it counts', () => {
+    expect(kept([gym(T, 'A', 'エニタイム'), gym(jst(DAYS[1], '18:02'), 'A', 'ジム2')])).toEqual([`arrive@${new Date(T).toISOString()}`]);
+    expect(kept([gym(T, 'A'), gym(jst(DAYS[1], '18:03'), 'A')])).toHaveLength(2);
   });
 
-  it('an event_at more than 48 h from the server `at` is ignored; within it, event_at is the time used', () => {
-    expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '18:01'))])).toEqual([]);
-    expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '17:59'))])).toEqual([`arrive@${new Date(jst(DAYS[3], '17:59')).toISOString()}`]);
+  it('an arrived_at more than 48 h from the server `at` is ignored; within it, arrived_at is the time used', () => {
+    expect(kept([gym(T, 'A', '', jst(DAYS[3], '18:01'))])).toEqual([]);
+    expect(kept([gym(T, 'A', '', jst(DAYS[3], '17:59'))])).toEqual([`arrive@${new Date(jst(DAYS[3], '17:59')).toISOString()}`]);
   });
 
-  it('an arrival is a strength day: no minimum stay, no question; twice a day is still one day', () => {
+  it('an arrival is a strength day whatever its label: no minimum stay, no question; twice a day is still one day', () => {
     const rows = withRows(goodWeek(), { presence: [
-      pres(jst(DAYS[0], '19:00'), 'A', 'anytime', 'arrive'), pres(jst(DAYS[0], '20:30'), 'A', 'anytime', 'arrive'),
-      pres(jst(DAYS[2], '07:00'), 'B', 'pt_studio', 'arrive')
+      gym(jst(DAYS[0], '19:00'), 'A', 'エニタイム'), gym(jst(DAYS[0], '20:30'), 'A'),
+      gym(jst(DAYS[2], '07:00'), 'B', 'どこでも')
     ] });
     expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[1], DAYS[3]]);
     expect(strengthDates(rows, 'B')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
     const s = reduce(rows);
     expect(dayDetail(s, DAYS[0], WED_MID).people.A.visits).toEqual([
-      { id: `anytime@${jst(DAYS[0], '19:00')}`, place: 'エニタイム', arriveAt: jst(DAYS[0], '19:00') },
-      { id: `anytime@${jst(DAYS[0], '20:30')}`, place: 'エニタイム', arriveAt: jst(DAYS[0], '20:30') }
+      { id: jst(DAYS[0], '19:00'), label: 'エニタイム', arriveAt: jst(DAYS[0], '19:00') },
+      { id: jst(DAYS[0], '20:30'), label: '', arriveAt: jst(DAYS[0], '20:30') }
     ]);
   });
 
-  it("an unknown place, or another person's place, is ignored", () => {
-    expect(kept([pres(T, 'A', 'nowhere', 'arrive')])).toEqual([]);
-    expect(kept([pres(T, 'A', 'pt_studio', 'arrive')])).toEqual([]);
-    expect(kept([pres(T, 'A', 'pt_studio', 'arrive')], 'B')).toEqual([]);
-    expect(kept([pres(T, 'B', 'pt_studio', 'arrive')], 'B')).toHaveLength(1);
+  it("each row counts for its own person only (the key that sent it)", () => {
+    expect(kept([gym(T, 'B', 'エニタイム')])).toEqual([]);
+    expect(kept([gym(T, 'B', 'エニタイム')], 'B')).toHaveLength(1);
   });
 });

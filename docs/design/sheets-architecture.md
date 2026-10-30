@@ -9,7 +9,7 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 |---|---|---|
 | `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`move_kcal`\|`stand_min`\|`weight`), `value` | `ingest`. Steps, exercise minutes, Move kcal and Stand minutes (ADR 0021; daily totals): **only when the value is higher** than the highest so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020): **whenever it differs** from the last row for (person, date) |
 | `workouts` | `at`, `person`, `id`, `date`, `type`, `start`, `end`, `duration_min`, `avg_hr` | `ingest`, only for unseen `id` (`workoutKey(type, start)`) |
-| `presence` | `at`, `person`, `place`, `event` (`arrive`), `event_at` | `presence`. An arrival at a known place of that person is a strength day on its Tokyo date (2026-10-30). The script refuses any other event (`leave` included) |
+| `presence` | `at`, `person`, `label`, `arrived_at` | `gym` (ADR 0021, 2026-10-30): one row per gym arrival; a strength day for `person` on the Tokyo date of `arrived_at`, whatever the `label` (free text ≤ 40, `''` = ジム in きろく; it never changes what counts). `arrived_at` = the request's `at`, else the row's `at`. The tab keeps its name; a tab left empty under the old 5-column header (`place`, `event`, `event_at`) is relabelled by its first row |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON) | `event` (client-generated `id`; a duplicate `id` is ignored, so retries are safe) |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest` (audit only: no payload stored) |
 
@@ -53,7 +53,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 |---|---|---|
 | `ingest` | The Shortcut's one format (shortcut-health-sync.md §1): Text lists, one line per day: `dates`, `steps`, `exercise_minutes`, `calories` (active kcal → `move_kcal`), `stand_minutes` (→ `stand_min`), `weight` (kg, 0 = none), each optional; optional `workouts` (types/starts/ends/avgHrs, one line per workout); other fields ignored; a value above the `metric_set` bounds is skipped with a warning | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows actually appended, plus unreadable lines, unmapped workout names and dropped lists (a list whose line count differs from `dates` is dropped, the rest saved). The `uploads` tab logs each body's shape |
 | `uploads` | (key only) | `{ok, rows: [{at, status, bytes, notes}]}`: the caller's last 20 ingest audit rows, newest first |
-| `presence` | `place, event, at?` | `{ok}` |
+| `gym` | `place?` (text ≤ 40, trimmed; a label only), `at?` (ISO 8601 instant with offset: the true arrival time) | `{ok}`. The key is the person. `presence` (the old action) is `bad_request` |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
 | `snapshot` | `since?` (ISO, the max `at` the client has seen) | `{ok, me, now, rev, rows:{metrics, workouts, presence, events}}` (rows with `at > since`; both people; `rev`: §2.1) |
 | `whoami` | — | `{ok, me, build}` (used when pairing; `build` = the deployed code's hash) |

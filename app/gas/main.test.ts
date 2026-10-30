@@ -139,9 +139,11 @@ describe('never throws', () => {
   });
 
   it('bad action fields are bad_request', () => {
-    expect(a('presence', { place: '', event: 'arrive' }).error).toBe('bad_request');
-    expect(a('presence', { place: 'gym', event: 'dance' }).error).toBe('bad_request');
-    expect(a('presence', { place: 'gym', event: 'arrive', at: 'whenever' }).error).toBe('bad_request');
+    expect(a('presence', { place: 'gym', event: 'arrive' }).error).toBe('bad_request'); // the old action is gone
+    expect(a('gym', { place: 'x'.repeat(41) }).error).toBe('bad_request');
+    expect(a('gym', { place: 5 }).error).toBe('bad_request');
+    expect(a('gym', { at: 'whenever' }).error).toBe('bad_request');
+    expect(a('gym', { at: '2026-10-29T11:05:00' }).error).toBe('bad_request'); // no offset
     expect(a('event', { id: 'e1', type: 'nope', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: '', type: 'highfive', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: 'e1', type: 'highfive', data: [1] }).error).toBe('bad_request');
@@ -298,16 +300,26 @@ describe('ingest', () => {
   });
 });
 
-describe('presence and events', () => {
-  it('presence rows carry the event time, defaulting to now; an arrival is the only event (leave is refused)', () => {
-    expect(a('presence', { place: 'gym', event: 'arrive', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: true });
+describe('gym and events', () => {
+  it('gym rows: the trimmed label (any text up to 40 chars, empty is fine) and the arrival time, defaulting to now', () => {
+    expect(a('gym', { place: '  エニタイム  ', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: true });
     tick();
-    expect(b('presence', { place: 'studio', event: 'arrive' })).toEqual({ ok: true });
-    expect(b('presence', { place: 'studio', event: 'leave' })).toEqual({ ok: false, error: 'bad_request' });
+    expect(b('gym')).toEqual({ ok: true });
+    tick();
+    expect(b('gym', { place: 'x'.repeat(40), at: '2026-10-29T03:00:00.5Z' })).toEqual({ ok: true });
     expect(data('presence')).toEqual([
-      ['2026-10-29T03:00:00.000Z', 'A', 'gym', 'arrive', '2026-10-29T02:05:00.000Z'],
-      ['2026-10-29T03:00:01.000Z', 'B', 'studio', 'arrive', '2026-10-29T03:00:01.000Z']
+      ['2026-10-29T03:00:00.000Z', 'A', 'エニタイム', '2026-10-29T02:05:00.000Z'],
+      ['2026-10-29T03:00:01.000Z', 'B', '', '2026-10-29T03:00:01.000Z'],
+      ['2026-10-29T03:00:02.000Z', 'B', 'x'.repeat(40), '2026-10-29T03:00:00.500Z']
     ]);
+  });
+
+  it('an empty tab with the old 5-column header is relabelled on its first row', () => {
+    a('whoami');
+    gas.sheets.get('presence')!.rows[0] = ['at', 'person', 'place', 'event', 'event_at'];
+    a('gym');
+    expect(gas.sheets.get('presence')!.rows[0]).toEqual(['at', 'person', 'label', 'arrived_at', '']);
+    expect(data('presence')).toHaveLength(1);
   });
 
   it('events: a duplicate id is acknowledged and ignored, so retries are safe', () => {
@@ -446,7 +458,7 @@ describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);
     tick();
-    b('presence', { place: 'studio', event: 'arrive', at: '2026-10-29T12:00:00+09:00' });
+    b('gym', { place: 'studio', at: '2026-10-29T12:00:00+09:00' });
     tick();
     a('event', { id: 'e1', type: 'highfive', data: {} });
     a('ingest', { workouts: { types: 'Yoga', starts: 'Oct 29, 2026 at 7:00 AM', ends: 'Oct 29, 2026 at 7:30 AM' } });
@@ -455,7 +467,7 @@ describe('snapshot', () => {
     expect(full).toMatchObject({ ok: true, me: 'B', now: expect.any(String) });
     expect(full.rows.metrics).toHaveLength(6);
     expect(full.rows.metrics[0]).toEqual(['2026-10-29T03:00:00.000Z', 'A', '2026-09-28', 'steps', 855]);
-    expect(full.rows.presence).toEqual([['2026-10-29T03:00:01.000Z', 'B', 'studio', 'arrive', '2026-10-29T03:00:00.000Z']]);
+    expect(full.rows.presence).toEqual([['2026-10-29T03:00:01.000Z', 'B', 'studio', '2026-10-29T03:00:00.000Z']]);
     expect(full.rows.events).toEqual([[expect.any(String), 'A', 'e1', 'highfive', '{}']]);
     expect(full.rows.workouts[0].slice(1, 9)).toEqual(['A', expect.stringMatching(/^w:[0-9a-f]{16}$/), '2026-10-29', 'Yoga', '2026-10-29T07:00:00+09:00', '2026-10-29T07:30:00+09:00', 30, null]);
     expect(full.rows).not.toHaveProperty('uploads');
@@ -503,7 +515,7 @@ describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => 
     expect(r0).toMatch(/^[0-9a-z]+$/);
     a('ingest', REAL);
     b('event', { id: 'e1', type: 'highfive' });
-    b('presence', { place: 'gym', event: 'arrive' });
+    b('gym');
     a('ingest', { workouts: { types: 'Yoga', starts: 'Oct 29, 2026 at 7:00 AM', ends: 'Oct 29, 2026 at 7:30 AM' } });
     expect(rev()).toBe(r0);
   });

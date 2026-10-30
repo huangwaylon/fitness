@@ -2,7 +2,6 @@
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { STRENGTH } from '#lib/config/rules.ts';
-import { PLACES } from '#lib/config/places.ts';
 import { addDays, exerciseMilli, isStrengthWorkout, manualMinutesByDay, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
 import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
@@ -270,7 +269,8 @@ interface DayWorkout {
 }
 
 /** A gym arrival: always a strength day. */
-interface DayVisit { id: string; place: string; arriveAt: string }
+/** A gym arrival: `label` '' shows as ジム. */
+interface DayVisit { id: string; label: string; arriveAt: string }
 
 export interface DayPerson {
   /** The day's ベル, per ring fruit. */
@@ -306,7 +306,6 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const wk = weekKeyOf(date);
   const c = calc(s, wk, now);
   const wb = c.wb;
-  const places = new Map(PLACES.map((p) => [p.key, p.name]));
   const log = editLog(s).filter((e) => e.date === date);
   const person = (p: PersonId): DayPerson => {
     const t = c.t;
@@ -326,7 +325,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
         };
       });
     const visits = c.act[p].visits.filter((v) => v.date === date).map((v): DayVisit => ({
-      id: v.id, place: places.get(v.placeKey) ?? v.placeKey, arriveAt: v.arriveAt
+      id: v.id, label: v.label, arriveAt: v.arriveAt
     }));
     const mine = log.filter((e) => e.by === p);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };

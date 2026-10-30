@@ -2,13 +2,12 @@
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
-import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { localDateOfMs } from '#lib/time/dates.ts';
 import { parseInstant } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  DATE_RE, EVENT_TYPES, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
+  DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
   type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
@@ -75,15 +74,16 @@ export interface WorkoutRec {
   manual?: true;
 }
 
-/** A gym arrival: a strength day on its Tokyo date. */
-interface PresenceRec {
-  /** Stable visit id: `<place>@<event_at ISO>`. */
+/** A gym arrival: a strength day on its Tokyo date, whatever its label. */
+interface GymRec {
+  /** Stable visit id: the arrival instant (ISO). */
   id: string;
   at: number;
-  placeKey: string;
-  eventAt: string;
-  eventMs: number;
-  /** Tokyo date of `eventAt`. */
+  /** Shown in きろく only ('' = ジム). */
+  label: string;
+  arrivedAt: string;
+  arrivedMs: number;
+  /** Tokyo date of `arrivedAt`. */
   date: LocalDate;
 }
 
@@ -98,7 +98,7 @@ interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string
 export interface State {
   metrics: Record<PersonId, Map<string, Timed<number>[]>>;
   workouts: Record<PersonId, WorkoutRec[]>;
-  presence: Record<PersonId, PresenceRec[]>;
+  gym: Record<PersonId, GymRec[]>;
   /** Buys from the wallet, in server order. */
   bellSpends: BellSpendRec[];
   /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
@@ -211,7 +211,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     workouts: { A: [], B: [] },
-    presence: { A: [], B: [] },
+    gym: { A: [], B: [] },
     bellSpends: [],
     menu: [],
     metricSets: { A: new Map(), B: new Map() },
@@ -271,15 +271,14 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   }
 
   for (const { r: row, at } of byAt(r.presence ?? [])) {
-    const [, person, placeKey, event, eventAtRaw] = row;
-    const place = PLACES.find((p) => p.key === placeKey);
-    if (!place || place.person !== person || event !== 'arrive') continue;
-    const eventMs = ms(eventAtRaw) ?? at;
-    if (Math.abs(eventMs - at) > LIMITS.presenceSkewMs) continue;
-    const list = s.presence[person];
-    if (list.some((e) => e.placeKey === placeKey && Math.abs(e.eventMs - eventMs) <= LIMITS.presenceDuplicateMs)) continue;
-    const eventAt = new Date(eventMs).toISOString();
-    list.push({ id: `${placeKey}@${eventAt}`, at, placeKey, eventAt, eventMs, date: toLocalDate(eventAt) });
+    const [, person, label, arrivedRaw] = row;
+    if (person !== 'A' && person !== 'B') continue;
+    const list = s.gym[person];
+    const arrivedMs = ms(arrivedRaw) ?? at;
+    if (Math.abs(arrivedMs - at) > LIMITS.gymSkewMs) continue;
+    if (list.some((e) => Math.abs(e.arrivedMs - arrivedMs) <= LIMITS.gymDuplicateMs)) continue;
+    const arrivedAt = new Date(arrivedMs).toISOString();
+    list.push({ id: arrivedAt, at, label: String(label ?? '').trim().slice(0, GYM_LABEL_MAX_CHARS), arrivedAt, arrivedMs, date: toLocalDate(arrivedAt) });
   }
 
   for (const { r: row, at } of byAt(r.events ?? [])) {

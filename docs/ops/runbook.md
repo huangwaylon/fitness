@@ -13,7 +13,7 @@ Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.m
    then re-run the *Deploy UI to GitHub Pages* workflow (or push). Until `GAS_URL` is set, the site shows
    「まだ設定されていません / Not set up yet」 with a link to the demo.
 3. **Shortcut on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §5 (gym
-   Arrive/Leave), §6 (the optional 84-day baseline).
+   Arrive), §6 (the optional 84-day baseline).
 4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
    **Add to Home Screen** *first*, open it from the icon, and paste that person's key ([google-setup.md §7](google-setup.md#7-pairing-the-phones)).
 5. **Day 8 or later:** run the `whoami` curl again ([google-setup.md §9](google-setup.md#9-does-it-need-the-shared-finances-cloud-project-or-a-published-consent-screen)).
@@ -38,7 +38,7 @@ the existing deployment**, never a new deployment).
 ## 4. Shortcuts
 - Health sync: [shortcut-health-sync.md](shortcut-health-sync.md) (URL → `/exec`, body gets `key` + `action:"ingest"`,
   no `Authorization` header).
-- Gym Arrive/Leave: same doc, §5.
+- Gym Arrive (`action:"gym"`): same doc, §5.
 
 ## 5. Monitoring and the deployed version
 **The probe** (no key, costs no Properties read, takes no lock, touches no sheet):

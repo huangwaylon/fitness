@@ -85,7 +85,7 @@
     {/each}
     {#each x.visits as v (v.id)}
       <div class="row wo">
-        <span class="k">{v.place}</span>
+        <span class="k">{v.label || t('kiroku.gym')}</span>
         <span class="v small"><span class="money">{timeOf(v.arriveAt)}</span><em class="ok">{t('kiroku.strengthYes')}</em></span>
       </div>
     {/each}

@@ -93,10 +93,10 @@ export const CUTOFFS = {
 
 /** Read-time checks on event rows: an event outside them is ignored (the server would have refused it). */
 export const LIMITS = {
-  /** Shortcuts sometimes fire twice: a repeat arrive at the same place this close is dropped. */
-  presenceDuplicateMs: 120_000,
-  /** A presence `event_at` further than this from the server `at` is ignored. */
-  presenceSkewMs: 48 * 3600_000,
+  /** Automations sometimes fire twice: a person's repeat gym arrival this close is dropped (whatever its label). */
+  gymDuplicateMs: 120_000,
+  /** A gym row whose `arrived_at` is further than this from the server `at` is ignored. */
+  gymSkewMs: 48 * 3600_000,
   spendLabelMaxChars: 60,
   /** A spend or a menu price: a positive integer up to this. */
   bellsMax: 10_000_000,

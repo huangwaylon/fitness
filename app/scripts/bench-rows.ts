@@ -3,7 +3,7 @@
 // which rise every hour: ~53 metric rows per person-day).
 // Deterministic (seeded), so runs compare.
 import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
-import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
+import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
 export const FIRST_DAY = '2026-11-02';
@@ -16,7 +16,7 @@ export function syntheticRows(days: number): SnapshotRows {
   const rand = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
   const metrics: MetricRow[] = [];
   const workouts: WorkoutRow[] = [];
-  const presence: PresenceRow[] = [];
+  const presence: GymRow[] = [];
   const events: EventRow[] = [];
   let ms = 0;
   // Strictly increasing server `at`s, like LAST_AT.
@@ -49,8 +49,8 @@ export function syntheticRows(days: number): SnapshotRows {
           ex[p] = Math.min(exTotal[p], ex[p] + 5 + Math.floor(rand() * 20));
           metrics.push([at(date, hm(h, m)), p, date, 'exercise_min', ex[p]]);
         }
-        const place = p === 'A' ? 'anytime' : 'pt_studio';
-        if (gym[p] && h === 18) presence.push([at(date, hm(18, 0)), p, place, 'arrive', jst(date, '18:00')]);
+        const label = p === 'A' ? 'エニタイム' : 'PTスタジオ';
+        if (gym[p] && h === 18) presence.push([at(date, hm(18, 0)), p, label, jst(date, '18:00')]);
         if (gym[p] && h === 19) {
           workouts.push([at(date, hm(h, m)), p, `w:${p}${d}`, date, 'Traditional Strength Training', jst(date, '18:05'), jst(date, '18:55'), 50, 118]);
         }

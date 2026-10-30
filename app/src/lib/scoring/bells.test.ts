@@ -13,7 +13,7 @@ let n = 0;
 const workout = (date: string, type: string, durationMin: number, extra: Partial<Workout> = {}): Workout => ({
   id: `w${n++}`, date, type, startAt: `${date}T07:00:00+09:00`, endAt: `${date}T08:00:00+09:00`, durationMin, avgHr: null, ...extra
 });
-const visit = (date: string, time = '07:00'): Visit => ({ placeKey: 'anytime', date, arriveAt: `${date}T${time}:00+09:00` });
+const visit = (date: string, time = '07:00'): Visit => ({ label: '', date, arriveAt: `${date}T${time}:00+09:00` });
 type Cols = Partial<Record<'ex' | 'st' | 'kcal' | 'stand', (number | null)[]>> & { goal?: number | number[] };
 /** A week of metrics, column by column (missing = null); the Move goal per day (default 600). */
 const days = (wk: string, c: Cols = {}): EarnDay[] =>

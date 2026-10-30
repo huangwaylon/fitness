@@ -1,7 +1,7 @@
 // reduce: one block per event type, accepted vs ignored (the read-time rules that replace the old server's refusals).
 import { describe, expect, it } from 'vitest';
 import { reduce } from './state.ts';
-import type { EventRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
+import type { EventRow, GymRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
 const WK = '2026-11-09'; // a paid week: open until Wed 2026-11-18 04:00 JST
@@ -26,16 +26,17 @@ describe('reduce: rows', () => {
     expect(s.lastSync).toEqual({ A: at(WK), B: null });
   });
 
-  it('workouts: the first row per id wins; presence: own places only, no duplicates, no skewed event_at', () => {
-    const p = (when: string, person: PersonId, place: string, event: string, eventAt = when) => [when, person, place, event, eventAt] as PresenceRow;
+  it('workouts: the first row per id wins; gym: any label, no duplicates (whatever the label), no skewed arrived_at', () => {
+    const g = (when: string, person: string, label: string, arrivedAt = when) => [when, person, label, arrivedAt] as GymRow;
     const s = reduce(rows([], {
       workouts: [workout('A', 'w1', WK), workout('A', 'w1', WK, at(WK, '21:00'))],
-      presence: [p(at(WK, '18:00'), 'A', 'anytime', 'arrive'), p(at(WK, '18:01'), 'A', 'anytime', 'arrive'),
-        p(at(WK, '18:00'), 'A', 'pt_studio', 'arrive'), p(at(WK, '19:00'), 'A', 'anytime', 'leave')]
+      presence: [g(at(WK, '18:00'), 'A', 'エニタイム'), g(at(WK, '18:01'), 'A', 'エニタイム'), g(at(WK, '18:00'), 'A', 'どこか'),
+        g(at(WK, '19:00'), 'B', ''), g(at(WK, '19:30'), 'C', 'gym'), g(at(WK, '20:00'), 'B', 'x', at('2026-11-12', '20:01'))]
     }));
     expect(s.workouts.A.map((w) => w.at)).toEqual([at(WK, '20:00')].map(Date.parse));
-    // Arrivals only: a row with another event (a hand edit) is malformed and skipped.
-    expect(s.presence.A.map((e) => `${e.placeKey}@${e.eventAt}`)).toEqual([`anytime@${new Date(at(WK, '18:00')).toISOString()}`]);
+    expect(s.gym.A.map((e) => `${e.label}@${e.arrivedAt}`)).toEqual([`エニタイム@${new Date(at(WK, '18:00')).toISOString()}`]);
+    // An empty label is fine; an unknown person (a hand edit) and an arrival 48 h+ off its server `at` are skipped.
+    expect(s.gym.B.map((e) => `${e.label}@${e.arrivedAt}`)).toEqual([`@${new Date(at(WK, '19:00')).toISOString()}`]);
   });
 });
 

@@ -32,10 +32,10 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
 
 /** Gym arrivals as of T whose date falls in `dates`, in time order (each one is a strength day). */
 function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
-  return s.presence[person]
+  return s.gym[person]
     .filter((e) => e.at <= t && e.date >= dates.from && e.date <= dates.to)
-    .sort((x, y) => x.eventMs - y.eventMs)
-    .map((e) => ({ id: e.id, placeKey: e.placeKey, date: e.date, arriveAt: e.eventAt }));
+    .sort((x, y) => x.arrivedMs - y.arrivedMs)
+    .map((e) => ({ id: e.id, label: e.label, date: e.date, arriveAt: e.arrivedAt }));
 }
 
 /**
