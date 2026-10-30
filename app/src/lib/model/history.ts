@@ -33,8 +33,6 @@ const dayOf = (e: WeekEarning, date: LocalDate): { bells: number; rings: RingBel
   return { bells: d?.bells ?? 0, rings };
 };
 
-/** @public @deprecated `HistoryPerson.stamps` is gone; kept only until Glyph on main stops importing the type. */
-export type Stamp = 'strength' | 'active' | 'none' | 'future';
 /** Where a day's counted exercise minutes come from: the Watch, a きろく edit of them, or workouts added by hand. */
 type MinutesSource = 'watch' | 'edit' | 'manual';
 

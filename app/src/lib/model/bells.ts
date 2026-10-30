@@ -95,14 +95,9 @@ export const dailyUpTo = (e: WeekEarning, today: LocalDate): number => e.days.re
 
 // ---------- the wallet and spends (ADR 0022) ----------
 
-/**
- * The shared menu, one list: the latest valid `pref` menu by either person, else the defaults in the viewer's language.
- * (`section` is the deprecated fill-in, WalletItem.section.)
- */
+/** The shared menu, one list: the latest valid `pref` menu by either person, else the defaults in the viewer's language. */
 export function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
-  const items = latestAt(s.menu, Infinity) ?? DEFAULT_MENU.map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
-  // Key order id, section, label, bells: the wallet screen on main compares menus as JSON text.
-  return items.map((x) => ({ id: x.id, section: x.id === 'trip' ? 'trip' : 'daily', label: x.label, bells: x.bells }));
+  return latestAt(s.menu, Infinity)?.map((x) => ({ ...x })) ?? DEFAULT_MENU.map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
 }
 
 /** An accepted buy (a buy the wallet couldn't cover is ignored and never listed). */

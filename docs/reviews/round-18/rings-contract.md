@@ -137,7 +137,7 @@ One shared wallet replaces the two pots: every ベル (daily + the Sunday bonus)
 **one list, no sections**.
 
 ```ts
-interface WalletItem { id: string; label: string; bells: number; /** @deprecated */ section: MenuSection }
+interface WalletItem { id: string; label: string; bells: number }
 interface WalletView { balance: number; earned: number; spent: number; today: number; week: number }
 
 WeekView.wallet: WalletView               // the island plate's number and the top of the wallet screen
@@ -154,8 +154,6 @@ newMenuItemId(): string                   // unchanged
 // rules: DEFAULT_MENU (ids for the item art): snack 1,200 · cafe 2,500 · dinner 6,000 · want 8,000 · trip 12,000
 ```
 
-`WalletItem.section` and `MenuSection` are deprecated: not stored, the view fills `'trip'` for the `trip` item and
-`'daily'` otherwise, only so the wallet screen on main keeps compiling. Tell me when it no longer reads them and they go.
 
 ## What the UI must stop reading before phase 3 (grep `components/` and `routes/`)
 
@@ -166,8 +164,8 @@ DayPerson: use `exerciseMin` / `exercise` / `gym`), `EditLog.field === 'checkin'
 `r.badges.strengthDays`, `r.badges.ticks`, `.pending`, `confirmPending`, `PendingConfirmation`, and the i18n keys
 `habit.*`, `pending.*`, `kiroku.src.steps`, `kiroku.field.checkin`; and the two pots: `.pots`, `.menus`, `PotKey`,
 `PotBalance`, `MenuItem`, `LedgerSpend.pot`, `BellsLedger.pots`, `buyTreat`, `buyTrip`, `setMenu`, `splitPots`.
-**All of the above are deleted** (engine, after b241724 / 0d2a5c5; request 4). Still left: `WalletItem.section`,
-`MenuSection` (request 5).
+**All of the above are deleted** (engine, after b241724 / 0d2a5c5; request 4). `WalletItem.section`, `MenuSection` and `Stamp` went last
+(request 7): **nothing deprecated is left.**
 
 ## Requests from UI
 
@@ -224,3 +222,4 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
   `MenuSection` and `Stamp`. (I deleted `Stamp` once too early: Glyph on main still imports it, so it's back.)
 8. **After 92cffca:** `Stamp` (Glyph no longer imports it), `MenuSection` and `WalletItem.section` are free to delete
    (the wallet is one list with no section UI). Nothing else in the UI reads a deprecated field.
+- 7: done: `WalletItem.section`, `MenuSection` and `Stamp` are deleted. No deprecated field or alias is left.

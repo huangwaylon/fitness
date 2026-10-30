@@ -49,7 +49,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     });
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    expect(view.menu.filter((x) => x.section === 'daily').map((x) => x.id)).toContain('taiyaki');
+    expect(view.menu.map((x) => x.id)).toContain('taiyaki');
     expect(view.wallet).toMatchObject(ledger.wallet);
     expect(view.wallet.balance).toBeGreaterThan(0);
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today);

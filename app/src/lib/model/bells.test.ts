@@ -245,7 +245,7 @@ describe('the menu: one list, shared and editable; the latest pref by either per
   const pref = (at: string, p: PersonId, key: string, value: unknown) => ev(at, p, 'pref', { key, value });
   const menu = (events: EventRow[], locale: 'ja' | 'en' = 'ja') => {
     const rows = rowsOf({ events: locale === 'en' ? [pref(jst(D[0], '08:00'), 'A', 'locale', 'en'), ...events] : events });
-    return buildWeekView(reduce(rows), 'A', ms(D[1], '12:00')).menu.map(({ id, label, bells }) => ({ id, label, bells }));
+    return buildWeekView(reduce(rows), 'A', ms(D[1], '12:00')).menu;
   };
 
   it('five grouped defaults, in the viewer’s language', () => {
