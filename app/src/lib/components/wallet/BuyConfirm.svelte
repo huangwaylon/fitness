@@ -2,7 +2,9 @@
   // Ask before spending (ADR 0022): the item's picture, name and price, and the wallet before → after. やめる beside the
   // one CTA (買う！), as NH pairs every purchase (round 16 #7); the page spends it and shows the banner with とりけす.
   // The price is the one being paid now: an escalating food treat's price this week, with 「こんしゅう 2かいめ」.
-  //   <BuyConfirm bind:item balance={3120} onconfirm={(item) => …} />
+  // `item` is the live menu item, so a price that steps up while the sheet is open (a sync: the partner bought the same
+  // おやつ) shows here before 買う！ charges it.
+  //   <BuyConfirm {item} balance={3120} onconfirm={(item) => …} onclose={() => …} />
   import Sheet from '../ui/Sheet.svelte';
   import Bells from '../ui/Bells.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -16,8 +18,9 @@
     item: MenuItemView | null;
     balance: number;
     onconfirm: (item: MenuItemView) => void;
+    onclose: () => void;
   }
-  let { item = $bindable(), balance, onconfirm }: Props = $props();
+  let { item, balance, onconfirm, onclose }: Props = $props();
   let open = $state(false);
   /** Kept while the sheet slides away, so its content doesn't vanish first. */
   let shown = $state<MenuItemView | null>(null);
@@ -29,7 +32,7 @@
   });
 </script>
 
-<Sheet bind:open label={t('wallet.title')} title={t('wallet.title')} onclose={() => (item = null)}>
+<Sheet bind:open label={t('wallet.title')} title={t('wallet.title')} {onclose}>
   {#if shown}
     <div class="ask">
       <span class="ic"><OfficialArt key={itemArt(shown.id)} size="64px" /></span>

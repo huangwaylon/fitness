@@ -25,12 +25,14 @@
   const balance = $derived(view?.wallet.balance ?? 0);
   const menu = $derived(view?.menu ?? []);
 
-  let askItem = $state<MenuItemView | null>(null);
+  /** The item being asked about, by id: the sheet always shows (and buys at) its current price. */
+  let askId = $state<string | null>(null);
+  const askItem = $derived(askId ? (menu.find((i) => i.id === askId) ?? null) : null);
   let editOpen = $state(false);
 
   function buy(item: MenuItemView) {
     const r = buyItem(item.id);
-    askItem = null;
+    askId = null;
     if (!r.ok) {
       cue('boop');
       toasts.show(t('wallet.short'), 2400, { reaction: 'worry' });
@@ -58,12 +60,12 @@
       <Bells bells={balance} class="total" />
     </div>
 
-    <MenuShelf items={menu} {balance} onbuy={(item) => (askItem = item)} onedit={() => (editOpen = true)} />
+    <MenuShelf items={menu} {balance} onbuy={(item) => (askId = item.id)} onedit={() => (editOpen = true)} />
     <!-- the treat guide (user, round 19): a gentle line, no cap; the full version is in あそびかた -->
     <p class="hint">{t('wallet.hint')}</p>
   </main>
 
-  <BuyConfirm bind:item={askItem} {balance} onconfirm={buy} />
+  <BuyConfirm item={askItem} {balance} onconfirm={buy} onclose={() => (askId = null)} />
   <MenuEditor bind:open={editOpen} items={menu} onsave={save} />
 {/if}
 
