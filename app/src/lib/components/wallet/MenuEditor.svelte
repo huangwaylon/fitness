@@ -1,23 +1,20 @@
 <script lang="ts">
-  // One section of the shared menu (ADR 0022: 🍦 まいにちのごほうび or ✈️ 旅のごほうび) in a sheet. Each row: the name and
-  // the price in ベル (16px inputs: iOS never zooms), and × to remove; ＋ adds a row to this section; 保存 hands the
-  // cleaned section back (empty names and prices out of range are dropped; the page saves the whole menu as the shared
-  // `pref`). やめる / closing the sheet drops the draft.
-  //   <MenuEditor bind:open section="daily" items={dailyItems} onsave={(items) => …} />
+  // The treats list's editor (ADR 0022: one list) in a sheet. Each row: the name and the price in ベル (16px inputs:
+  // iOS never zooms), and × to remove; ＋ adds a row; 保存 hands the cleaned list back (empty names and prices out of
+  // range are dropped; the page saves it as the shared `pref`). やめる / closing the sheet drops the draft.
+  //   <MenuEditor bind:open items={menu} onsave={(items) => …} />
   import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
-  import type { MenuSection, WalletItem } from '#lib/types.ts';
-  import { cleanMenu, MENU_LIMITS } from './shapes.ts';
+  import { cleanMenu, MENU_LIMITS, type Treat } from './shapes.ts';
   import { newMenuItemId } from '#lib/store/actions.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
     open: boolean;
-    section: MenuSection;
-    items: WalletItem[];
-    onsave: (items: WalletItem[]) => void;
+    items: Treat[];
+    onsave: (items: Treat[]) => void;
   }
-  let { open = $bindable(), section, items, onsave }: Props = $props();
+  let { open = $bindable(), items, onsave }: Props = $props();
 
   type Row = { id: string; label: string; bells: string };
   let rows = $state<Row[]>([]);
@@ -31,10 +28,10 @@
     });
   });
 
-  const cleaned = $derived(cleanMenu(section, rows));
+  const cleaned = $derived(cleanMenu(rows));
   /** A row that would be dropped on save (a name without a price or the other way round) is flagged. */
-  const bad = (r: Row) => (r.label.trim() !== '' || r.bells !== '') && !cleanMenu(section, [r]).length;
-  const shape = (xs: WalletItem[]) => JSON.stringify(xs.map((x) => [x.id, x.label, x.bells]));
+  const bad = (r: Row) => (r.label.trim() !== '' || r.bells !== '') && !cleanMenu([r]).length;
+  const shape = (xs: Treat[]) => JSON.stringify(xs.map((x) => [x.id, x.label, x.bells]));
   const changed = $derived(shape(cleaned) !== shape(items));
   const full = $derived(rows.length >= MENU_LIMITS.items);
 
@@ -59,7 +56,7 @@
   }
 </script>
 
-<Sheet bind:open label={t(`menu.${section}.title`)} title={t(`menu.${section}.title`)}>
+<Sheet bind:open label={t('menu.edit')} title={t('menu.edit')}>
   <p class="hint">{t('menu.editHint')}</p>
   <ul class="rows" bind:this={list}>
     {#each rows as r, i (r.id)}

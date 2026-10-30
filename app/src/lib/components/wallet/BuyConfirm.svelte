@@ -5,7 +5,7 @@
   import Sheet from '../ui/Sheet.svelte';
   import Bells from '../ui/Bells.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { itemArt, sectionIcon } from './icons.ts';
+  import { itemArt } from './icons.ts';
   import type { WalletItem } from '#lib/types.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
 
@@ -27,12 +27,10 @@
   });
 </script>
 
-<Sheet bind:open label={shown ? t(`menu.${shown.section}.title`) : ''} title={shown ? t(`menu.${shown.section}.title`) : undefined} onclose={() => (item = null)}>
+<Sheet bind:open label={t('wallet.title')} title={t('wallet.title')} onclose={() => (item = null)}>
   {#if shown}
-    {@const art = itemArt(shown.id)}
     <div class="ask">
-      {#if art}<span class="ic"><OfficialArt key={art} size="64px" /></span>
-      {:else}<svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><use href="#{sectionIcon(shown.section)}" /></svg>{/if}
+      <span class="ic"><OfficialArt key={itemArt(shown.id)} size="64px" /></span>
       <b class="nm">{shown.label}</b>
       <Bells bells={shown.bells} class="price" />
       <p class="after">

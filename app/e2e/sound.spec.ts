@@ -241,7 +241,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('島', 'jar', () => page.locator('.if-scene .jar').tap(), ['jar-tap']);
   await expect(page.locator('.jar-screen')).toBeVisible();
   await page.waitForTimeout(600);
-  const pot = page.locator('[data-section=daily]');
+  const pot = page.locator('.treats');
   const cant = pot.locator('button.item[aria-disabled="true"]');
   if (await cant.count()) await step('壺', 'a treat it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
   await step('壺', 'a treat', () => pot.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
@@ -252,7 +252,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('壺', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
-  await step('壺', '✎ メニューをかえる', () => btn(/を かえる/, pot).tap(), ['open']);
+  await step('壺', '✎ メニューを かえる', () => btn('メニューを かえる', pot).tap(), ['open']);
   await step('へんしゅう', 'save, nothing changed (aria-disabled)', () => btn('保存', dlg).tap({ force: true }), ['boop']);
   await step('へんしゅう', '＋ add', () => btn(/ふやす/, dlg).tap(), ['open']);
   await step('へんしゅう', 'name field', () => dlg.locator('input.lbl').last().tap(), []);
