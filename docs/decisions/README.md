@@ -23,3 +23,4 @@ Numbered `NNNN-title.md`. Superseded decisions stay, marked as such; the newest 
 | [0017](0017-round-4-rule-changes-and-rule-versions.md) | Step-derived minutes, 4 step days, calibration weeks, gym visits; rules versioned by week | Amended | 0019 (§2–4, calibration) |
 | [0018](0018-official-art-public-site.md) | Official NH art; public repo and site for now | Accepted | |
 | [0019](0019-bells-daily-earning-two-pots.md) | Play money (ベル) earned daily; same goals for both; two shared pots (おやつ / 旅) | Accepted; amended 2026-10-30 (tuning) | |
+| [0020](0020-weight-trend-never-rewarded.md) | Body-weight trend in きろく; weight never earns ベル | Accepted | |
