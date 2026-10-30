@@ -25,7 +25,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
       expect(w.people.A.bells).toBeGreaterThan(2000);
       expect(w.people.B.bells).toBeGreaterThan(2000);
     }
-    expect(past.some((w) => Object.values(w.people.A.badges).some(Boolean))).toBe(true);
+    expect(past.some((w) => Object.values(w.people.A.ringBadges).some(Boolean))).toBe(true);
     const by = new Set(editLog(s).map((e) => e.by));
     expect([...by].sort()).toEqual(['A', 'B']);
     if (process.env.DEMO_DEBUG) console.log(iso, weeks.map((w) => `${w.weekKey} ${w.people.A.bells}/${w.people.B.bells} = ${w.bells}`));
@@ -49,7 +49,6 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     });
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    expect(view.pending).toEqual([]); // no daily questions
     expect(view.menu.filter((x) => x.section === 'daily').map((x) => x.id)).toContain('taiyaki');
     expect(view.wallet).toMatchObject(ledger.wallet);
     expect(view.wallet.balance).toBeGreaterThan(0);

@@ -87,7 +87,6 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
-    expect(all.every((v) => v.pending.length === 0)).toBe(true);
     expect(all.some((v) => v.wallet.spent > 0)).toBe(true);
     expect(all.some((v) => v.menu.some((x) => x.id === 'taiyaki'))).toBe(true);
     const end = bellsLedger(reduce(ROWS), END);

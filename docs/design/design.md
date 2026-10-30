@@ -95,16 +95,15 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
   was 14,250). The daily ベル (9,400) are 65% of it, so a week short of badges still pays most of its work. Pinned in
   `scoring/bells.test.ts`.
 - **One shared wallet** (ADR 0022): every ベル earned (daily and the Sunday bonus) goes into it; no split. One shared,
-  editable menu (`pref` `menu`, latest wins, items `{id, section: 'daily'|'trip', label, bells}`); either person buys
+  editable menu, **one list, no sections** (`pref` `menu`, latest wins, items `{id, label, bells}`); either person buys
   (`spend {spendId, item, label, bells}`), the buyer can undo (`spend_void`); no approvals; a buy counts only if the
   wallet covered it at its time, so the balance never goes negative. Trips themselves are paid outside the game.
-- **Default menu and its maths** (`DEFAULT_MENU`). 🍦 まいにちのごほうび: おやつ・スナック 1,000 · アイス 1,200 ·
-  コンビニスイーツ 1,500 · デザート・パフェ 2,500 · カフェデート 2,500 · 外ごはん 6,000 · ほしいもの 8,000.
-  ✈️ 旅のごほうび: おみやげ予算 8,000 · 温泉オプション 10,000 · 特別なごはん 12,000 · スパ・マッサージ 15,000 ·
-  お部屋アップグレード 20,000. On target (14,400 a week): 2–3 sweets or snacks (≈ 2.5 × 1,250 ≈ 3,100) + a coffee date
-  (2,500) + dinner out every two weeks (6,000 / 2 = 3,000) ≈ 8,600 a week of everyday treats, leaving ≈ 5,800 a week
-  to save: a special meal on a trip after ~2 weeks, a spa after ~2.5, a room upgrade after ~3.5, or ほしいもの after
-  ~1.5. A typical (not on-target) week of ~10,000 still pays the sweets and the coffee date with ~4,000 to save.
+- **Default menu and its maths** (`DEFAULT_MENU`, five grouped items, lead 2026-10-30): 🍦 おやつ (chips, snacks, ice
+  cream, konbini sweets) 1,200 · 🍰 カフェ・デザート (coffee date, parfait, cake) 2,500 · 🍽️ 外ごはん 6,000 ·
+  🛍️ ほしいもの 8,000 · ✈️ 旅のごほうび (souvenirs, a special meal, a spa or an upgrade on a trip) 12,000. On target
+  (14,400 a week): 2–3 おやつ (2.5 × 1,200 = 3,000) + one café date (2,500) + eating out every two weeks (6,000 / 2 =
+  3,000) = 8,500 a week, leaving ≈ 5,900 a week: a ほしいもの every ~1.5 weeks or a 旅のごほうび every ~2, or both
+  in about 3.5 weeks. A typical week of ~10,000 still pays the おやつ and the café date with ~4,500 to save.
 - **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Buys never lock.
 - **Starts** in the week of Mon 2026-10-26. ADR 0021 and 0022 (2026-10-30) were applied in place (play money, the
   economy's first week); `cleanupLegacyData` (runbook §9) deletes the two pots' spends and menus so the wallet starts

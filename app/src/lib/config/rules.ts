@@ -3,10 +3,7 @@
 // Everything is computed on read from the raw rows, so a value here applies to every week that uses it. To change
 // what a week earns, never edit a version whose weeks have earned: append a RULES version with a later `from`.
 // rules.test.ts pins the versions in use.
-import type { FruitKey, MenuSection, PersonId, RingFruit, WeekKey } from '#lib/types.ts';
-
-/** @deprecated ADR 0019's four fruits (🍐 = eating habits). Use RING_FRUITS. */
-export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
+import type { PersonId, RingFruit, WeekKey } from '#lib/types.ts';
 
 /** The five ring fruits (ADR 0021), in display order: Exercise, Move, Stand, steps, gym. */
 export const RING_FRUITS = ['peach', 'pear', 'cherry', 'apple', 'coconut'] as const satisfies readonly RingFruit[];
@@ -17,24 +14,20 @@ export interface RuleVersion {
   from: WeekKey;
   /**
    * The same daily goals for both people (the Move goal is per person: `pref` moveGoal, PEOPLE[p].moveGoal).
-   * ADR 0021: exerciseMin (🍑), standMin (🍒), steps (🍎). `activeMin` is @deprecated (ADR 0019).
+   * ADR 0021: exerciseMin (🍑), standMin (🍒), steps (🍎).
    */
-  goals: { activeMin: number; steps: number; exerciseMin: number; standMin: number };
+  goals: { exerciseMin: number; standMin: number; steps: number };
   /**
    * ベル per day (ADR 0021): perExerciseMin per counted minute up to goals.exerciseMin (🍑); moveAtGoal at the Move
    * goal, proportional below it (🍐); perStandMin per stand minute up to goals.standMin (🍒); stepDay (🍎); gymDay
-   * (🥥). `perMinute`, `strengthDay`, `perTick` are @deprecated (ADR 0019).
+   * (🥥).
    */
-  bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number; perExerciseMin: number; moveAtGoal: number; perStandMin: number; gymDay: number };
+  bells: { perExerciseMin: number; moveAtGoal: number; perStandMin: number; stepDay: number; gymDay: number };
   /**
    * Weekly badges (+`bells` each) and the ふたりボーナス (+`duoPerBadge` for each badge both people met). ADR 0021
-   * thresholds: exerciseDays, moveDays, standDays, stepDays, gymDays. `activeDays`, `strengthDays`, `ticks` are
-   * @deprecated (ADR 0019).
+   * thresholds: exerciseDays, moveDays, standDays, stepDays, gymDays.
    */
-  badges: {
-    activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duoPerBadge: number;
-    exerciseDays: number; moveDays: number; standDays: number; gymDays: number;
-  };
+  badges: { exerciseDays: number; moveDays: number; standDays: number; stepDays: number; gymDays: number; bells: number; duoPerBadge: number };
 }
 
 export const RULES: readonly RuleVersion[] = [
@@ -44,12 +37,9 @@ export const RULES: readonly RuleVersion[] = [
     // badge for both, minimum days) a person earns 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 + 3 × 400 🥥 =
     // 4,700 daily + 5 × 400 badges = 6,700; both + 5 × 200 ふたりボーナス = 14,400 ベル a week (design.md §E).
     from: '2026-10-26',
-    goals: { activeMin: 60, steps: 8000, exerciseMin: 60, standMin: 180 },
-    bells: { perMinute: 3, stepDay: 200, strengthDay: 400, perTick: 0, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
-    badges: {
-      activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 0, bells: 400, duoPerBadge: 200,
-      exerciseDays: 5, moveDays: 5, standDays: 5, gymDays: 3
-    }
+    goals: { exerciseMin: 60, standMin: 180, steps: 8000 },
+    bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 },
+    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 400, duoPerBadge: 200 }
   }
 ];
 
@@ -57,26 +47,19 @@ export const RULES: readonly RuleVersion[] = [
 export const ECONOMY_START: WeekKey = RULES[0].from;
 
 /** A default menu entry; the label follows the viewer's language until the menu is edited (then it is the typed label). */
-export interface DefaultMenuItem { id: string; section: MenuSection; bells: number; label: { ja: string; en: string } }
+export interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }
 
 /**
- * The shared menu before anyone edits it (ADR 0022): one wallet, two sections. Priced against the on-target week of
- * 14,400 ベル for both (design.md §E): 2–3 sweets or snacks (≈ 3,100) + a coffee date (2,500) + half a dinner out
- * (3,000) ≈ 8,600 a week, leaving ≈ 5,800 a week to save: a special trip meal in ~2 weeks, a room upgrade in ~3–4.
+ * The shared menu before anyone edits it (ADR 0022, one list, five grouped items; lead 2026-10-30). Priced against
+ * the on-target week of 14,400 ベル for both (design.md §E): 2–3 おやつ (≈ 3,000) + a café date (2,500) + eating out
+ * every two weeks (3,000) ≈ 8,500 a week, leaving ≈ 5,900 to save: a ほしいもの in ~1.5 weeks or a 旅のごほうび in ~2.
  */
 export const DEFAULT_MENU: readonly DefaultMenuItem[] = [
-  { id: 'snack', section: 'daily', bells: 1000, label: { ja: 'おやつ・スナック', en: 'Snack or chips' } },
-  { id: 'ice', section: 'daily', bells: 1200, label: { ja: 'アイス', en: 'Ice cream' } },
-  { id: 'konbini', section: 'daily', bells: 1500, label: { ja: 'コンビニスイーツ', en: 'Konbini sweet' } },
-  { id: 'dessert', section: 'daily', bells: 2500, label: { ja: 'デザート・パフェ', en: 'Dessert or parfait' } },
-  { id: 'cafe', section: 'daily', bells: 2500, label: { ja: 'カフェデート', en: 'Coffee date' } },
-  { id: 'dinner', section: 'daily', bells: 6000, label: { ja: '外ごはん', en: 'Dinner out' } },
-  { id: 'want', section: 'daily', bells: 8000, label: { ja: 'ほしいもの', en: 'Something we want' } },
-  { id: 'souvenir', section: 'trip', bells: 8000, label: { ja: 'おみやげ予算', en: 'Souvenir budget' } },
-  { id: 'onsen', section: 'trip', bells: 10000, label: { ja: '温泉オプション', en: 'Onsen extra' } },
-  { id: 'meal', section: 'trip', bells: 12000, label: { ja: '特別なごはん', en: 'Special meal' } },
-  { id: 'spa', section: 'trip', bells: 15000, label: { ja: 'スパ・マッサージ', en: 'Spa or massage' } },
-  { id: 'upgrade', section: 'trip', bells: 20000, label: { ja: 'お部屋アップグレード', en: 'Room upgrade' } }
+  { id: 'snack', bells: 1200, label: { ja: 'おやつ', en: 'Snack' } },
+  { id: 'cafe', bells: 2500, label: { ja: 'カフェ・デザート', en: 'Café & dessert' } },
+  { id: 'dinner', bells: 6000, label: { ja: '外ごはん', en: 'Eating out' } },
+  { id: 'want', bells: 8000, label: { ja: 'ほしいもの', en: 'Something we want' } },
+  { id: 'trip', bells: 12000, label: { ja: '旅のごほうび', en: 'Trip treat' } }
 ];
 
 export const STRENGTH = {
@@ -106,14 +89,6 @@ export const MOVE_GOAL = { min: 100, max: 2000 } as const;
 export const CUTOFFS = {
   provisional: { hour: 19, minute: 30 },
   final: { hour: 4, minute: 0 }
-} as const;
-
-/** Per-day amounts of きろく. */
-export const DAILY = {
-  /** @deprecated ADR 0019's habit ticks per day (no economy effect since ADR 0021). */
-  maxTicks: 3,
-  /** きろく stamps: a day counts as active (●) from this many counted exercise minutes, or on a step-goal day. */
-  activeDayMin: 20
 } as const;
 
 /** Read-time checks on event rows: an event outside them is ignored (the server would have refused it). */

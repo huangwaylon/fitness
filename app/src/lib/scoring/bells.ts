@@ -2,7 +2,7 @@
 // metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
 // week as of a time and decides which weeks count (the economy's first week, locks).
 import { RING_FRUITS, STRENGTH, TSUYU } from '#lib/config/rules.ts';
-import type { LocalDate, PersonId, PotKey, RingBells, RingFruit, Visit, WeekKey, Workout } from '#lib/types.ts';
+import type { LocalDate, PersonId, RingBells, RingFruit, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
 
@@ -171,11 +171,3 @@ export function earnWeek(input: EarnInput): WeekEarning {
 /** The ふたりボーナス: +badges.duoPerBadge for each badge both people met (one miss never costs it all). */
 export const duoBonus = (a: WeekEarning, b: WeekEarning): number =>
   RING_FRUITS.filter((f) => a.badges[f] && b.badges[f]).length * rulesFor(a.weekKey).badges.duoPerBadge;
-
-/**
- * @public @deprecated ADR 0022 has one wallet: everything goes to it (`treat` = the wallet, `trip` = 0). Kept only until
- * the UI stops importing it.
- */
-export function splitPots(total: number): Record<PotKey, number> {
-  return { treat: total, trip: 0 };
-}

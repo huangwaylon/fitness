@@ -1,6 +1,6 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
-import type { LocalDate, MenuSection, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
+import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
@@ -102,7 +102,7 @@ export interface State {
   /** Buys from the wallet, in server order. */
   bellSpends: BellSpendRec[];
   /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
-  menu: Timed<WalletItem[]>[];
+  menu: Timed<MenuEntry[]>[];
   /** Accepted activity `metric_set` (steps, minutes) per person, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
   /**
@@ -310,13 +310,14 @@ type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
 const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
 const MENU_ID_RE = /^[\w-]+$/;
 
-const isSection = (v: unknown): v is MenuSection => v === 'daily' || v === 'trip';
+/** A stored menu item: one list, no sections (ADR 0022). */
+export type MenuEntry = Pick<WalletItem, 'id' | 'label' | 'bells'>;
 
 /**
- * A `pref` menu value (ADR 0022): a JSON array (or the array itself) of `{id, section, label, bells}` with unique ids,
- * at most LIMITS.menuMaxItems. Anything invalid ignores the whole pref (the previous menu stays).
+ * A `pref` menu value (ADR 0022): a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
+ * LIMITS.menuMaxItems (other keys are ignored). Anything invalid ignores the whole pref (the previous menu stays).
  */
-export function parseMenu(v: unknown): WalletItem[] | null {
+export function parseMenu(v: unknown): MenuEntry[] | null {
   let list = v;
   if (typeof v === 'string') {
     try {
@@ -326,16 +327,16 @@ export function parseMenu(v: unknown): WalletItem[] | null {
     }
   }
   if (!Array.isArray(list) || list.length > LIMITS.menuMaxItems) return null;
-  const out: WalletItem[] = [];
+  const out: MenuEntry[] = [];
   const ids = new Set<string>();
   for (const x of list) {
     if (!x || typeof x !== 'object') return null;
-    const { id, section, label, bells } = x as Record<string, unknown>;
+    const { id, label, bells } = x as Record<string, unknown>;
     const l = typeof label === 'string' ? label.trim() : '';
     if (typeof id !== 'string' || id.length > LIMITS.menuIdMaxChars || !MENU_ID_RE.test(id) || ids.has(id)) return null;
-    if (!isSection(section) || !l || l.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return null;
+    if (!l || l.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return null;
     ids.add(id);
-    out.push({ id, section, label: l, bells });
+    out.push({ id, label: l, bells });
   }
   return out;
 }

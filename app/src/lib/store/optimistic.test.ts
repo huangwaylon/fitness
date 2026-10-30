@@ -44,7 +44,6 @@ describe('live optimistic view', () => {
 
   it('marking the yoga workout as strength in きろく counts a gym day and raises the week’s ベル at once', () => {
     const before = composeView(cache, [], NOW);
-    expect(before.pending).toEqual([]);
     const after = composeView(cache, [ev('c1', 'workout_edit', { id: 'yoga-1', strength: true })], NOW);
     expect(after.people.A.rings.coconut.weekDays).toBe(before.people.A.rings.coconut.weekDays + 1);
     expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 400);

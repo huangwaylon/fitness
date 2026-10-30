@@ -133,33 +133,29 @@ The model emits only `host.harvest_ready`, `host.harvest_waiting`, `host.default
 
 ## The wallet and the menu (ADR 0022, lead 2026-10-30)
 
-One shared wallet replaces the two pots: every ベル (daily + the Sunday bonus) goes into it, no split.
+One shared wallet replaces the two pots: every ベル (daily + the Sunday bonus) goes into it, no split. The menu is
+**one list, no sections**.
 
 ```ts
-type MenuSection = 'daily' | 'trip';        // 🍦 まいにちのごほうび · ✈️ 旅のごほうび
-interface WalletItem { id: string; section: MenuSection; label: string; bells: number }
+interface WalletItem { id: string; label: string; bells: number; /** @deprecated */ section: MenuSection }
 interface WalletView { balance: number; earned: number; spent: number; today: number; week: number }
 
 WeekView.wallet: WalletView               // the island plate's number and the top of the wallet screen
-WeekView.menu: WalletItem[]               // both sections, in menu order (daily first in the defaults)
+WeekView.menu: WalletItem[]               // one list, in order
 BellsLedger.wallet: { balance, earned, spent }
-LedgerSpend: { spendId, at, by, item, label, bells, voided, voidedAt }   // `pot` is deprecated (from the item's section)
+LedgerSpend: { spendId, at, by, item, label, bells, voided, voidedAt }
 
 // actions (#lib/store/actions.ts)
 buy(itemId: string): SendResult           // {ok:false} if unknown or the wallet can't cover it; undo banner as before
 undoSpend(spendId: string): SendResult    // unchanged
-saveMenu(items: WalletItem[]): SendResult // the whole menu, both sections; {ok:false} if invalid
+saveMenu(items: { id, label, bells }[]): SendResult   // the whole list; a `section` is dropped; {ok:false} if invalid
 newMenuItemId(): string                   // unchanged
 
-// rules (#lib/config/rules.ts)
-DEFAULT_MENU: { id, section, bells, label: { ja, en } }[]   // prices and maths: design.md §E
+// rules: DEFAULT_MENU (ids for the item art): snack 1,200 · cafe 2,500 · dinner 6,000 · want 8,000 · trip 12,000
 ```
 
-Deprecated until the UI moves (then deleted): `WeekView.pots` (treat **and** trip are both the wallet, so every item
-stays buyable), `WeekView.menus` (the menu split by section: treat = daily), `PotKey`, `PotBalance`, `MenuItem`,
-`BellsLedger.pots`, `LedgerSpend.pot`, `buyTreat` / `buyTrip` (= `buy`), `setMenu(pot, items)` (replaces one section),
-`splitPots` (returns `{treat: total, trip: 0}`). Gone already: `POTS`, `DEFAULT_MENUS`, `treatMenu` / `tripMenu`. i18n:
-the UI owns the section titles (e.g. `menu.daily` / `menu.trip`); default item labels come from `DEFAULT_MENU`.
+`WalletItem.section` and `MenuSection` are deprecated: not stored, the view fills `'trip'` for the `trip` item and
+`'daily'` otherwise, only so the wallet screen on main keeps compiling. Tell me when it no longer reads them and they go.
 
 ## What the UI must stop reading before phase 3 (grep `components/` and `routes/`)
 
@@ -170,6 +166,8 @@ DayPerson: use `exerciseMin` / `exercise` / `gym`), `EditLog.field === 'checkin'
 `r.badges.strengthDays`, `r.badges.ticks`, `.pending`, `confirmPending`, `PendingConfirmation`, and the i18n keys
 `habit.*`, `pending.*`, `kiroku.src.steps`, `kiroku.field.checkin`; and the two pots: `.pots`, `.menus`, `PotKey`,
 `PotBalance`, `MenuItem`, `LedgerSpend.pot`, `BellsLedger.pots`, `buyTreat`, `buyTrip`, `setMenu`, `splitPots`.
+**All of the above are deleted** (engine, after b241724 / 0d2a5c5; request 4). Still left: `WalletItem.section`,
+`MenuSection` (request 5).
 
 ## Requests from UI
 
@@ -209,3 +207,7 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
    `perMinute`, `strengthDay`, `perTick`, `activeDays`, `strengthDays`, `ticks`).
 5. **The wallet as one list (lead):** I'm rendering `menu` as one list and the editor has no section picker; send me
    the five default ids when `section` goes so the item art (`components/wallet/icons.ts`) matches them.
+- 4 (engine, 2026-10-30): done, all of them, in one commit (incl. `Stamp` with `stamps`, `DAILY`, the deprecated
+  `RuleVersion` keys, `minutesSource`).
+- 5: the menu is one list; default ids `snack`, `cafe`, `dinner`, `want`, `trip`. `section` is still filled (deprecated)
+  until the wallet screen stops reading it.

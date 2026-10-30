@@ -38,12 +38,9 @@ describe('RULES', () => {
     // edit with an unused first entry. From here on, append a version instead.
     expect(RULES[0]).toEqual({
       from: '2026-10-26',
-      goals: { activeMin: 60, steps: 8000, exerciseMin: 60, standMin: 180 },
-      bells: { perMinute: 3, stepDay: 200, strengthDay: 400, perTick: 0, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
-      badges: {
-        activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 0, bells: 400, duoPerBadge: 200,
-        exerciseDays: 5, moveDays: 5, standDays: 5, gymDays: 3
-      }
+      goals: { exerciseMin: 60, standMin: 180, steps: 8000 },
+      bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 },
+      badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 400, duoPerBadge: 200 }
     });
   });
 
