@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost, INGEST_TAIL_ROWS, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
+import { doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -144,6 +144,7 @@ describe('never throws', () => {
     expect(a('event', { id: 'e1', type: 'highfive', data: [1] }).error).toBe('bad_request');
     expect(a('event', { id: 'e1', type: 'pref', data: { value: 'x'.repeat(30_000) } }).error).toBe('too_large');
     expect(a('snapshot', { since: 5 }).error).toBe('bad_request');
+    expect(a('snapshot', { since: 'yesterday' }).error).toBe('bad_request'); // would compare as text and hide every row
   });
 });
 
@@ -230,18 +231,21 @@ describe('ingest', () => {
     expect(data('uploads').at(-1)!.slice(2)).toEqual(['ok', expect.any(Number), expect.stringMatching(/^exercise_minutes: 1 lines but 2 dates; exercise_minutes not saved \| /)]);
   });
 
-  it(`recent dates read only the last ${INGEST_TAIL_ROWS} metrics rows; older dates read the whole tab`, () => {
+  it('reads only the metrics rows written since the day before the body\'s earliest date (a tail), in doubling chunks', () => {
     a('whoami');
     const sh = gas.sheets.get('metrics')!;
-    sh.maxRows = INGEST_TAIL_ROWS + 100;
+    sh.maxRows = 5000;
     sh.rows.push(['2026-09-01T00:00:00.000Z', 'A', '2026-09-01', 'steps', 7000]);
-    for (let i = 0; i < INGEST_TAIL_ROWS; i++) sh.rows.push(['2026-10-28T00:00:00.000Z', 'B', '2026-10-28', 'steps', i]);
+    for (let i = 0; i < 3000; i++) sh.rows.push(['2026-09-02T00:00:00.000Z', 'B', '2026-09-02', 'steps', i]);
+    for (let i = 0; i < 300; i++) sh.rows.push(['2026-10-28T00:00:00.000Z', 'B', '2026-10-28', 'steps', i]);
     const reads: number[] = [];
     const getRange = sh.getRange.bind(sh);
-    sh.getRange = (row: number, col: number, n?: number, c?: number) => { if (col === 1 && (c ?? 1) === 5) reads.push(n ?? 1); return getRange(row, col, n, c); };
+    sh.getRange = (row: number, col: number, n?: number, c?: number) => { if ((n ?? 1) > 1) reads.push(n!); return getRange(row, col, n, c); };
     expect(a('ingest', { dates: 'Oct 28, 2026', steps: '10' })).toMatchObject({ metrics: 1 });
-    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '6000' })).toMatchObject({ metrics: 0 }); // still higher-only
-    expect(reads.filter((n) => n > 1)).toEqual([INGEST_TAIL_ROWS, INGEST_TAIL_ROWS + 2]); // (1-row ranges are the appends)
+    expect(reads).toEqual([256, 512]); // the 512-row chunk starts before Oct 27: done
+    reads.length = 0;
+    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '6000' })).toMatchObject({ metrics: 0 }); // reaches the Sep 1 row: still higher-only
+    expect(reads.reduce((x, y) => x + y)).toBe(3302);
   });
 
   it('uploads: the caller reads their own audit rows, newest first, with the body shape', () => {
@@ -252,6 +256,15 @@ describe('ingest', () => {
     expect(r.rows.map((x) => x.status)).toEqual(['partial', 'ok']);
     expect(r.rows[1].notes).toMatch(/dates:text\[2\] "Sep 28, 2026 at 7:11 AM"; steps:text\[2\]/);
     expect((b('uploads', {}) as { rows: unknown[] }).rows).toEqual([]);
+  });
+
+  it('uploads reads back from the end until it has 20 of the caller\'s rows', () => {
+    a('whoami');
+    const sh = gas.sheets.get('uploads')!;
+    for (let i = 0; i < 300; i++) sh.rows.push([`2026-10-01T00:00:00.${String(i).padStart(3, '0')}Z`, 'A', 'ok', 1, `a${i}`]);
+    for (let i = 0; i < 600; i++) sh.rows.push(['2026-10-02T00:00:00.000Z', 'B', 'ok', 1, 'b']);
+    const r = a('uploads') as { rows: { notes: string }[] };
+    expect(r.rows.map((x) => x.notes)).toEqual(Array.from({ length: 20 }, (_, i) => `a${299 - i}`));
   });
 
   it('partial uploads say how many lines were skipped', () => {
@@ -468,6 +481,20 @@ describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => 
     resync();
     expect(rev()).not.toBe(r1);
     expect(() => onEdit(undefined)).not.toThrow();
+  });
+
+  it('a request that fails after appending still records its rows, so they are not taken for a hand edit', () => {
+    a('whoami');
+    const r0 = rev();
+    const up = gas.sheets.get('uploads')!;
+    const getRange = up.getRange.bind(up);
+    up.getRange = () => { throw new Error('Service Spreadsheets timed out'); };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(a('ingest', REAL)).toEqual({ ok: false, error: 'unavailable' });
+    up.getRange = getRange;
+    expect(data('metrics')).toHaveLength(4); // written before the failure
+    expect(rev()).toBe(r0);
+    expect(gas.props.get('LAST_AT')).toBe(data('metrics')[0][0]);
   });
 
   it('a concurrent onEdit bump is not overwritten by a locked request', () => {

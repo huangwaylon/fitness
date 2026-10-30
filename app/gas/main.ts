@@ -11,7 +11,7 @@ import { parseInstant } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import {
-  DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, MONTH_RE, NUMERIC_COLUMNS, TABS, validMetricValue,
+  DATE_RE, EVENT_TYPES, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, MONTH_RE, NUMERIC_COLUMNS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -31,13 +31,9 @@ export const KEY_CACHE_SECONDS = 300;
 /** Tabs whose rows the client caches; a hand change to any of them bumps `REV`. */
 const SYNCED_TABS = ['metrics', 'workouts', 'presence', 'events'] as const satisfies readonly TabName[];
 const MAX_EVENT_DATA_CHARS = 20_000;
-/**
- * `ingest` reads only this many trailing `metrics` rows for its higher-only check when every date in the body is
- * recent (≤ RECENT_DAYS old): hourly syncs append ~40 rows a day, so the tail covers months, and the hourly Shortcut
- * (yesterday and today) never needs the whole tab under the lock. Older dates (the baseline) read everything.
- */
-export const INGEST_TAIL_ROWS = 5000;
-const RECENT_DAYS = 14;
+/** `readTail` reads a tab backwards in chunks of this many rows, doubling each time. */
+const TAIL_CHUNK = 256;
+const DAY_MS = 86400_000;
 
 /** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
 type Reply = IngestReply | PresenceReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
@@ -148,11 +144,16 @@ function withLock<R extends Reply>(fn: () => R): R | Fail {
     state = loadState();
     const r = fn();
     SpreadsheetApp.flush();
-    saveState(state);
     return r;
   } finally {
-    state = null;
-    lock.releaseLock();
+    // Saved even when `fn` threw after an append: the rows it wrote keep their `at` below LAST_AT and their tab's
+    // last row in ROWS, so the next request doesn't mistake them for a hand edit (a needless full resync).
+    try {
+      if (state) saveState(state);
+    } finally {
+      state = null;
+      lock.releaseLock();
+    }
   }
 }
 
@@ -251,14 +252,34 @@ function tab(name: TabName): GAS.Sheet {
   return sh;
 }
 
-/** The tab's data rows; with `tail`, only the last `tail` of them. */
-function readRows(sh: GAS.Sheet, name: TabName, tail = Infinity): unknown[][] {
+/** The tab's data rows. */
+function readRows(sh: GAS.Sheet, name: TabName): unknown[][] {
+  return readTail(sh, name, () => false);
+}
+
+/**
+ * The tab's last rows, read backwards in doubling chunks (256, 512, …) until `enough(chunk)` says the chunk just read
+ * (the oldest so far) reaches back far enough; returned in sheet order. The app only appends, with strictly increasing
+ * `at`, so "every row after `at` X" is a tail: a chunk whose first row is at or before X ends the read
+ * (`reachesBack`). A hand-pasted row out of order bumps REV (`noteRows`, `onEdit`), and the client then refetches
+ * everything, so a tail read never has to cope with one.
+ */
+function readTail(sh: GAS.Sheet, name: TabName, enough: (chunk: unknown[][]) => boolean): unknown[][] {
   const last = sh.getLastRow();
   noteRows(name, last);
-  if (last < 2) return [];
-  const first = Math.max(2, last - tail + 1);
-  return sh.getRange(first, 1, last - first + 1, TABS[name].length).getValues();
+  const chunks: unknown[][][] = [];
+  for (let end = last, n = TAIL_CHUNK; end >= 2; n *= 2) {
+    const first = Math.max(2, end - n + 1);
+    const chunk = sh.getRange(first, 1, end - first + 1, TABS[name].length).getValues();
+    chunks.unshift(chunk);
+    end = first - 1;
+    if (enough(chunk)) break;
+  }
+  return chunks.length === 1 ? chunks[0] : ([] as unknown[][]).concat(...chunks);
 }
+
+/** `readTail`'s stop: the chunk starts at or before `at` (an ISO instant), so it holds every row after `at`. */
+const reachesBack = (at: string) => (chunk: unknown[][]): boolean => instant(chunk[0][0]) <= at;
 
 function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
   if (rows.length === 0) return;
@@ -315,17 +336,24 @@ function bodyShape(body: Rec): string {
   return parts.join('; ').slice(0, 2000);
 }
 
+const UPLOADS_SHOWN = 20;
+
 /** The caller's last 20 ingest audit rows, newest first (runbook §5: what did the Shortcut send?). */
 function uploads(me: PersonId): UploadsReply {
   return withLock((): UploadsReply => {
-    const rows = readRows(tab('uploads'), 'uploads')
+    let mine = 0;
+    const rows = readTail(tab('uploads'), 'uploads', (chunk) => (mine += chunk.filter((r) => text(r[1]) === me).length) >= UPLOADS_SHOWN)
       .filter((r) => text(r[1]) === me)
-      .slice(-20)
+      .slice(-UPLOADS_SHOWN)
       .reverse()
       .map((r) => ({ at: instant(r[0]), status: text(r[2]), bytes: num(r[3]) ?? 0, notes: text(r[4]) }));
     return { ok: true, rows };
   });
 }
+
+/** An `uploads` audit row: the body's shape, never the body itself. */
+const auditRow = (at: string, me: PersonId, status: string, bytes: number, notes: string, body: Rec): unknown[] =>
+  [at, me, status, bytes, `${notes.slice(0, 300)} | ${bodyShape(body)}`];
 
 function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   let parsed: ReturnType<typeof parseShortcut>;
@@ -335,29 +363,34 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const msg = (err instanceof Error ? err.message : String(err)).slice(0, 300);
     // Audit the failure (best effort: a busy lock just skips the row).
     try {
-      withLock((): PresenceReply => { appendRows(tab('uploads'), 'uploads', [[nextAt(), me, 'error', bytes, `${msg} | ${bodyShape(body)}`]]); return { ok: true }; });
+      withLock((): PresenceReply => { appendRows(tab('uploads'), 'uploads', [auditRow(nextAt(), me, 'error', bytes, msg, body)]); return { ok: true }; });
     } catch { /* the reply matters more than the audit row */ }
     return fail('bad_request', msg);
   }
+  // Rows about a day are only ever written from that day on (Health has no future), so every earlier row for the
+  // body's days (or its workouts' days) is after the day before its earliest one: a tail. One day of slack covers a
+  // phone in a zone ahead of Tokyo. The hourly 31-day body reads ~a month of rows, not the whole tab.
+  const days = [...parsed.metrics, ...parsed.workouts].map((x) => x.date).sort();
+  const from = days.length ? new Date(Date.parse(`${days[0]}T00:00:00+09:00`) - DAY_MS).toISOString() : '';
   return withLock((): IngestReply => {
     const at = nextAt();
     const mSheet = tab('metrics');
     const latest = new Map<string, number>();
-    const recent = new Date(Date.now() + 9 * 3600_000 - RECENT_DAYS * 86400_000).toISOString().slice(0, 10);
-    const tail = parsed.metrics.every((m) => m.date >= recent) ? INGEST_TAIL_ROWS : Infinity;
     // Steps and minutes: the highest row so far, and only a higher value is appended (a day only goes up).
     // Weight (ADR 0020): the LAST row so far, and any different value is appended (a weight goes down too).
-    for (const r of readRows(mSheet, 'metrics', tail)) {
-      const k = `${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`;
-      const v = num(r[4]);
-      if (v === null) continue;
-      if (text(r[3]) === 'weight' || v > (latest.get(k) ?? -Infinity)) latest.set(k, v);
+    if (parsed.metrics.length) {
+      for (const r of readTail(mSheet, 'metrics', reachesBack(from))) {
+        const k = `${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`;
+        const v = num(r[4]);
+        if (v === null) continue;
+        if (!isActivityMetric(r[3]) || v > (latest.get(k) ?? -Infinity)) latest.set(k, v);
+      }
     }
     const newMetrics: unknown[][] = [];
     for (const m of parsed.metrics) {
       const k = `${me}|${m.date}|${m.metric}`;
       const cur = latest.get(k);
-      if (cur === undefined || (m.metric === 'weight' ? m.value !== cur : m.value > cur)) {
+      if (cur === undefined || (isActivityMetric(m.metric) ? m.value > cur : m.value !== cur)) {
         newMetrics.push([at, me, m.date, m.metric, m.value]);
         latest.set(k, m.value);
       }
@@ -365,7 +398,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
 
     const wSheet = tab('workouts');
     const seen = new Set<string>();
-    if (parsed.workouts.length) for (const r of readRows(wSheet, 'workouts')) seen.add(`${text(r[1])}|${text(r[2])}`);
+    if (parsed.workouts.length) for (const r of readTail(wSheet, 'workouts', reachesBack(from))) seen.add(`${text(r[1])}|${text(r[2])}`);
     const newWorkouts: unknown[][] = [];
     for (const w of parsed.workouts) {
       const k = `${me}|${w.id}`;
@@ -381,7 +414,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
       parsed.skipped ? `${parsed.skipped} items skipped` : '',
       parsed.unknownTypes.length ? `unknown workout types: ${parsed.unknownTypes.join(', ')}` : ''
     ].filter(Boolean).join('; ');
-    appendRows(tab('uploads'), 'uploads', [[at, me, parsed.skipped ? 'partial' : 'ok', bytes, `${notes.slice(0, 300)} | ${bodyShape(body)}`]]);
+    appendRows(tab('uploads'), 'uploads', [auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body)]);
 
     return {
       ok: true, metrics: newMetrics.length, workouts: newWorkouts.length,
@@ -469,6 +502,8 @@ function validEditData(type: string, d: Rec): boolean {
  * hand-pasted `at` (a Date cell, no milliseconds, another offset or none: Tokyo); unreadable text is kept as is.
  */
 function instant(v: unknown): string {
+  // Fast path: the script's own `at` (`2026-11-02T07:15:00.000Z`), nearly every cell a snapshot reads.
+  if (typeof v === 'string' && v.length === 24 && v.charCodeAt(23) === 90 && v.charCodeAt(10) === 84) return v;
   const s = text(v, 'at');
   try {
     return new Date(parseInstant(s)).toISOString();
@@ -478,11 +513,20 @@ function instant(v: unknown): string {
 }
 
 function snapshot(me: PersonId, body: Rec): SnapshotReply {
-  if (body.since !== undefined && body.since !== null && typeof body.since !== 'string') return fail('bad_request');
-  const since = typeof body.since === 'string' && body.since ? instant(body.since) : '';
+  let since = '';
+  if (typeof body.since === 'string' && body.since) {
+    // An unreadable `since` would compare as text and silently hide rows: refuse it.
+    try {
+      since = new Date(parseInstant(body.since)).toISOString();
+    } catch {
+      return fail('bad_request');
+    }
+  } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
   return withLock((): SnapshotReply => {
+    // With `since`, only the tail after it is read (a poll reads a few hundred rows, not years of them).
     const pick = (name: TabName, row: (r: unknown[], at: string) => unknown[]) =>
-      readRows(tab(name), name).map((r) => [r, instant(r[0])] as const).filter(([, at]) => at > since).map(([r, at]) => row(r, at));
+      (since ? readTail(tab(name), name, reachesBack(since)) : readRows(tab(name), name))
+        .map((r) => [r, instant(r[0])] as const).filter(([, at]) => at > since).map(([r, at]) => row(r, at));
     const rows = {
       metrics: pick('metrics', (r, at) => [at, text(r[1]), text(r[2], 'date'), text(r[3]), num(r[4]) ?? 0]),
       workouts: pick('workouts', (r, at) => [
