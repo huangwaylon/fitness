@@ -1,12 +1,13 @@
-// History and editing (docs/design/history-and-editing.md §4–5): edits are new behaviour on top of the golden model.
+// History and editing (docs/design/history-and-editing.md §4–5): edits on top of the ベル model.
 // Own data only (the sender is the subject), open weeks only (this week, and last week until Wednesday 04:00 JST).
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/scoring/index.ts';
 import { reduce } from './state.ts';
-import { buildWeekView, metricAsOf, paidAt, payoutAsOf, settledWeeks, replayPurse } from './week.ts';
-import { dayDetail, editLog, historyWeeks, moneyLog, weekDetail } from './history.ts';
+import { buildWeekView, metricAsOf } from './week.ts';
+import { weekBells } from './bells.ts';
+import { bellsLedger, dayDetail, editLog, historyWeeks, weekDetail } from './history.ts';
 
 // A week of the economy: Sunday 19:30 = 11-22, the lock = Wednesday 11-25 04:00 JST.
 const WK = '2026-11-16';
@@ -22,7 +23,7 @@ const workout = (at: string, person: PersonId, id: string, date: string, type: s
 
 const HABITS: Record<PersonId, string[]> = { A: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], B: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] };
 
-/** A good week for both (score ≥ 60, so each earns a ¥1,000 purse): steps, minutes, two Pilates days, all ticks. */
+/** A good week for both: steps, minutes, two Pilates days, all ticks. */
 function goodWeek(): SnapshotRows {
   const rows: SnapshotRows = { metrics: [], workouts: [], presence: [], events: [] };
   for (const p of ['A', 'B'] as PersonId[]) {
@@ -44,22 +45,25 @@ const withRows = (base: SnapshotRows, add: Partial<SnapshotRows>): SnapshotRows 
   events: [...base.events, ...(add.events ?? [])]
 });
 
-const scoreAt = (rows: SnapshotRows, p: PersonId, t: number) => payoutAsOf(reduce(rows), WK, t)[p === 'A' ? 'a' : 'b'];
 const LIVE = Infinity;
 const WED_MID = ms(DAYS[2], '23:30'); // mid-week, open
-const MON_AFTER = ms('2026-11-23', '12:00'); // after Sunday's payout, before the lock
+const MON_AFTER = ms('2026-11-23', '12:00'); // after Sunday's harvest, before the lock
 const THU_AFTER = ms('2026-11-26', '12:00'); // locked
+/** A person's earnings of WK at `now` (live while the week is open: every row counts, also later-dated ones). */
+const earnAt = (rows: SnapshotRows, p: PersonId, now = WED_MID) => weekBells(reduce(rows), WK, now)[p];
+const strengthDates = (rows: SnapshotRows, p: PersonId) => earnAt(rows, p).days.filter((d) => d.strength).map((d) => d.date);
+const minutesOf = (rows: SnapshotRows, p: PersonId) => earnAt(rows, p).days.reduce((n, d) => n + d.minutes, 0);
 
 describe('metric_set', () => {
-  it('lowering lowers the live score', () => {
+  it('lowering lowers the live earnings', () => {
     const base = goodWeek();
-    const before = scoreAt(base, 'A', LIVE);
+    const before = earnAt(base, 'A');
     const rows = withRows(base, { events: [ev(jst(DAYS[2], '23:00'), 'A', 'metric_set', { date: DAYS[0], metric: 'steps', value: 3000 })] });
     const s = reduce(rows);
     expect(metricAsOf(s, 'A', DAYS[0], 'steps', WED_MID)).toBe(3000);
-    expect(scoreAt(rows, 'A', LIVE).categories.apple.actual).toBe(before.categories.apple.actual - 1);
+    expect(earnAt(rows, 'A').fruits.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
     const view = buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows }, 'A', WED_MID);
-    expect(view.people.A.fruits.apple.actual).toBe(before.categories.apple.actual - 1);
+    expect(view.people.A.fruits.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
   });
 
   it('a later, higher sync beats a metric_set; a lower one does not', () => {
@@ -82,32 +86,28 @@ describe('metric_set', () => {
     expect(metricAsOf(reduce(rows), 'A', DAYS[0], 'exercise_min', WED_MID)).toBe(55);
   });
 
-  it('an edit after the lock is ignored and the yen never change', () => {
+  it('an edit after the lock is ignored and the ベル never change', () => {
     const base = goodWeek();
     const rows = withRows(base, { events: [ev(new Date(THU_AFTER).toISOString(), 'A', 'metric_set', { date: DAYS[0], metric: 'steps', value: 30000 })] });
     const s = reduce(rows);
     expect(s.metricSets.A.size).toBe(0);
-    expect(settledWeeks(s, THU_AFTER + 1000)).toEqual(settledWeeks(reduce(base), THU_AFTER + 1000));
+    expect(bellsLedger(s, THU_AFTER + 1000)).toEqual(bellsLedger(reduce(base), THU_AFTER + 1000));
     expect(editLog(s)).toEqual([]);
   });
 
-  it('a raise before the lock tops the week up at Wednesday 04:00', () => {
-    // A thin week for A (no Watch minutes) so a raise has room to pay more.
+  it('a raise before the lock counts, also after the lock', () => {
+    // A thin week for A (no Watch minutes) so a raise has room to earn more.
     const base = goodWeek();
     base.metrics = base.metrics.map((r) => (r[1] === 'A' && r[3] === 'exercise_min' ? [r[0], r[1], r[2], r[3], 0] : r));
     const rows = withRows(base, { events: [ev(new Date(MON_AFTER).toISOString(), 'A', 'metric_set', { date: DAYS[0], metric: 'exercise_min', value: 60 })] });
-    const w = settledWeeks(reduce(rows), THU_AFTER).find((x) => x.weekKey === WK)!;
-    const sunday = paidAt(w, MON_AFTER);
-    const final = paidAt(w, THU_AFTER);
-    expect(final.A).toBeGreaterThan(sunday.A);
+    expect(earnAt(rows, 'A', THU_AFTER).daily).toBeGreaterThan(earnAt(base, 'A', THU_AFTER).daily);
   });
 
-  it('lowering after Sunday keeps the Sunday payout (paid yen never go down)', () => {
+  it('lowering after Sunday, before the lock, lowers the week (no keep-the-max any more)', () => {
     const base = goodWeek();
     const lowered = withRows(base, { events: DAYS.map((d) => ev(new Date(MON_AFTER).toISOString(), 'A', 'metric_set', { date: d, metric: 'steps', value: 0 })) });
-    const w = settledWeeks(reduce(lowered), THU_AFTER).find((x) => x.weekKey === WK)!;
-    expect(paidAt(w, THU_AFTER)).toEqual(paidAt(w, MON_AFTER));
-    expect(paidAt(w, MON_AFTER)).toEqual(paidAt(settledWeeks(reduce(base), THU_AFTER).find((x) => x.weekKey === WK)!, MON_AFTER));
+    expect(earnAt(lowered, 'A', THU_AFTER).daily).toBeLessThan(earnAt(base, 'A', THU_AFTER).daily);
+    expect(earnAt(lowered, 'A', THU_AFTER).fruits.apple.weekDays).toBe(0);
   });
 
   it("the partner can't touch my data: the sender is always the subject", () => {
@@ -122,7 +122,7 @@ describe('metric_set', () => {
     expect(metricAsOf(s, 'A', DAYS[0], 'steps', WED_MID)).toBe(9000);
     expect(metricAsOf(s, 'B', DAYS[0], 'steps', WED_MID)).toBe(100);
     expect(s.workoutEdits).toEqual([]);
-    expect(scoreAt(rows, 'A', LIVE)).toEqual(scoreAt(base, 'A', LIVE));
+    expect(earnAt(rows, 'A')).toEqual(earnAt(base, 'A'));
   });
 
   it('refuses future days and out-of-range values', () => {
@@ -140,9 +140,9 @@ describe('metric_set', () => {
 describe('workouts', () => {
   it('strength:false on Pilates drops the strength day; null puts it back', () => {
     const off = withRows(goodWeek(), { events: [ev(jst(DAYS[2], '09:00'), 'A', 'workout_edit', { id: 'A-pil-1', strength: false })] });
-    expect(scoreAt(off, 'A', LIVE).strengthDays).toEqual([DAYS[3]]);
+    expect(strengthDates(off, 'A')).toEqual([DAYS[3]]);
     const back = withRows(off, { events: [ev(jst(DAYS[2], '09:10'), 'A', 'workout_edit', { id: 'A-pil-1', strength: null })] });
-    expect(scoreAt(back, 'A', LIVE).strengthDays).toEqual([DAYS[1], DAYS[3]]);
+    expect(strengthDates(back, 'A')).toEqual([DAYS[1], DAYS[3]]);
   });
 
   it('strength:true counts any type (and the ask question goes away)', () => {
@@ -150,20 +150,18 @@ describe('workouts', () => {
     const v0 = buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows: base }, 'A', WED_MID);
     expect(v0.pending.map((p) => p.id)).toContain('A-yoga');
     const rows = withRows(base, { events: [ev(jst(DAYS[2], '21:00'), 'A', 'workout_edit', { id: 'A-yoga', strength: true })] });
-    expect(scoreAt(rows, 'A', LIVE).strengthDays).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
     const v1 = buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows }, 'A', WED_MID);
     expect(v1.pending.map((p) => p.id)).not.toContain('A-yoga');
   });
 
-  it('excluded removes the workout from scoring (strength day and busy day), and can be undone', () => {
+  it('excluded removes the workout from the earnings (its strength day), and can be undone', () => {
     const rows = withRows(goodWeek(), { events: [ev(jst(DAYS[4], '09:00'), 'A', 'workout_edit', { id: 'A-pil-2', excluded: true })] });
-    const sc = scoreAt(rows, 'A', LIVE);
-    expect(sc.strengthDays).toEqual([DAYS[1]]);
-    expect(sc.restDays).toBe(scoreAt(goodWeek(), 'A', LIVE).restDays + 1);
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[1]]);
     const day = dayDetail(reduce(rows), DAYS[3], ms(DAYS[4], '10:00'));
     expect(day.people.A.workouts).toMatchObject([{ id: 'A-pil-2', excluded: true, strength: false }]);
     const back = withRows(rows, { events: [ev(jst(DAYS[4], '09:30'), 'A', 'workout_edit', { id: 'A-pil-2', excluded: false })] });
-    expect(scoreAt(back, 'A', LIVE).strengthDays).toEqual([DAYS[1], DAYS[3]]);
+    expect(strengthDates(back, 'A')).toEqual([DAYS[1], DAYS[3]]);
   });
 
   it('workout_add counts (a manual Pilates is a strength day); unknown types, bad minutes and locked days are refused', () => {
@@ -177,7 +175,7 @@ describe('workouts', () => {
     });
     const s = reduce(rows);
     expect(s.manualWorkouts.A.map((w) => w.id)).toEqual(['m:1']);
-    expect(scoreAt(rows, 'A', LIVE).strengthDays).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
     expect(dayDetail(s, DAYS[2], WED_MID).people.A.workouts).toMatchObject([{ id: 'm:1', manual: true, strength: true }]);
   });
 });
@@ -191,8 +189,7 @@ describe('check-ins', () => {
         ev(at, 'A', 'checkin', { date: DAYS[1], habit: 'no_sweets', done: false })
       ]
     });
-    const sc = scoreAt(rows, 'A', LIVE);
-    expect(sc.categories.pear.actual).toBe(20);
+    expect(earnAt(rows, 'A').fruits.pear.weekDays).toBe(20);
     const log = editLog(reduce(rows));
     expect(log).toMatchObject([{ by: 'A', date: DAYS[0], field: 'checkin', subject: 'no_sweets', before: true, after: false }]);
   });
@@ -200,80 +197,6 @@ describe('check-ins', () => {
   it('edit:true on a locked week is refused', () => {
     const rows = withRows(goodWeek(), { events: [ev(new Date(THU_AFTER).toISOString(), 'A', 'checkin', { date: DAYS[0], habit: 'no_sweets', done: false, edit: true })] });
     expect(reduce(rows).checkins.A.filter((c) => c.edit)).toEqual([]);
-  });
-});
-
-describe('money', () => {
-  // Week 1 pays ¥1,000 per purse on Sunday 19:30; spends follow in week 2.
-  const T1 = jst('2026-11-24', '10:00');
-  const base = () => withRows(goodWeek(), {
-    events: [
-      ev(T1, 'A', 'spend', { spendId: 's-cafe', label: 'カフェ', amountYen: 800 }),
-      ev(T1, 'A', 'spend', { spendId: 's-big', label: '焼肉', amountYen: 5000 }), // refused: purse is ¥2,000
-      ev(T1, 'B', 'spend', { spendId: 's-b', label: '映画', amountYen: 1000 })
-    ]
-  });
-
-  it('spend_void refunds a paid spend; a refused spend stays refused; only the spender can void', () => {
-    const now = ms('2026-11-24', '12:00');
-    const rows = withRows(base(), {
-      events: [
-        ev(jst('2026-11-24', '10:05'), 'A', 'spend_void', { spendId: 's-cafe' }),
-        ev(jst('2026-11-24', '10:05'), 'A', 'spend_void', { spendId: 's-big' }),
-        ev(jst('2026-11-24', '10:06'), 'A', 'spend_void', { spendId: 's-b' }) // not mine
-      ]
-    });
-    const s = reduce(rows);
-    const purse = replayPurse(s, settledWeeks(s, now), now);
-    expect(purse.spentYen).toBe(1000);
-    expect(Object.fromEntries(purse.log.map((l) => [l.spendId, l.status]))).toEqual({ 's-cafe': 'voided', 's-big': 'refused', 's-b': 'done' });
-    expect(purse.log.find((l) => l.spendId === 's-cafe')!.refunded).toBe(true);
-    const view = buildWeekView({ me: 'A', now: new Date(now).toISOString(), rows }, 'A', now);
-    expect(view.jar.purseYen).toBe(1000);
-  });
-
-  it('spend_void cancels a waiting (≥ ¥5,000) spend and a later OK does nothing', () => {
-    // Three good weeks (¥6,000 in the purses), so a ¥5,000 ask is accepted and waits for the partner.
-    const weeks = [WK, '2026-11-23', '2026-11-30'];
-    const rows: SnapshotRows = { metrics: [], workouts: [], presence: [], events: [] };
-    for (const wk of weeks) {
-      for (const p of ['A', 'B'] as PersonId[]) {
-        for (const d of weekDays(wk)) {
-          const at = jst(d, '22:00');
-          rows.metrics.push(metric(at, p, d, 'steps', 9000), metric(at, p, d, 'exercise_min', 30));
-          for (const h of HABITS[p]) rows.events.push(ev(at, p, 'checkin', { date: d, habit: h, done: true }));
-        }
-        const d1 = weekDays(wk)[1];
-        const d3 = weekDays(wk)[3];
-        rows.workouts.push(workout(jst(d1, '22:00'), p, `${p}-${d1}`, d1, 'Pilates', 40), workout(jst(d3, '22:00'), p, `${p}-${d3}`, d3, 'Pilates', 40));
-      }
-    }
-    const at = '2026-12-08';
-    rows.events.push(
-      ev(jst(at, '10:00'), 'A', 'spend', { spendId: 'big', label: '温泉', amountYen: 5000 }),
-      ev(jst(at, '10:01'), 'A', 'spend_void', { spendId: 'big' }),
-      ev(jst(at, '10:02'), 'B', 'approve', { spendId: 'big' })
-    );
-    const now = ms(at, '12:00');
-    const s = reduce(rows);
-    const purse = replayPurse(s, settledWeeks(s, now), now);
-    expect(purse.log).toMatchObject([{ spendId: 'big', status: 'voided', refunded: false }]);
-    expect(purse.pending).toEqual([]);
-    expect(purse.spentYen).toBe(0);
-  });
-
-  it('transfer_undo un-ticks a transfer; a new transfer ticks it again (latest wins); weekly yen never change', () => {
-    const now = ms('2026-12-02', '12:00');
-    const tr = ev(jst('2026-12-01', '10:00'), 'A', 'transfer', { month: '2026-11' });
-    const undo = ev(jst('2026-12-01', '10:01'), 'B', 'transfer_undo', { month: '2026-11' });
-    const again = ev(jst('2026-12-01', '10:02'), 'A', 'transfer', { month: '2026-11' });
-    const v = (events: EventRow[]) => buildWeekView({ me: 'A', now: new Date(now).toISOString(), rows: withRows(goodWeek(), { events }) }, 'A', now);
-    expect(v([tr]).jar.transfer?.done).toBe(true);
-    expect(v([tr, undo]).jar.transfer?.done).toBe(false);
-    expect(v([tr, undo, again]).jar.transfer?.done).toBe(true);
-    expect(v([tr, undo]).jar.totalYen).toBe(v([]).jar.totalYen);
-    const log = moneyLog(reduce(withRows(goodWeek(), { events: [tr, undo] })), now);
-    expect(log.months[0]).toMatchObject({ month: '2026-11', transfer: { done: false } });
   });
 });
 
@@ -293,7 +216,7 @@ describe('history views', () => {
   });
 
   it('week list: newest first from the economy’s first week, both people, 7 stamps, locked and open flags', () => {
-    const now = ms('2026-11-24', '12:00'); // Tuesday of the next week: WK is settled but still open
+    const now = ms('2026-11-24', '12:00'); // Tuesday of the next week: WK's harvest opened, still open for edits
     const weeks = historyWeeks(reduce(rows), now);
     expect(weeks.map((w) => w.weekKey)).toEqual(['2026-11-23', '2026-11-16', '2026-11-09', '2026-11-02', '2026-10-26']); // the economy starts 2026-10-26
     const w = weeks[1];
@@ -301,7 +224,7 @@ describe('history views', () => {
     expect(w.people.A.stamps).toEqual(['active', 'strength', 'active', 'strength', 'active', 'active', 'active']);
     expect(weeks[0].people.A.stamps.slice(2)).toEqual(['future', 'future', 'future', 'future', 'future']);
     const locked = historyWeeks(reduce(rows), THU_AFTER)[1];
-    expect(locked).toMatchObject({ weekKey: WK, locked: true, open: false, estimate: false });
+    expect(locked).toMatchObject({ weekKey: WK, locked: true, open: false });
   });
 
   it('week detail and day detail show both people, the source of minutes and the change log', () => {
@@ -325,18 +248,16 @@ describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
   const LOCK = ms('2026-11-25', '04:00');
   const add = (at: string, date: string, min: number, id = `m:add-${++n}`) => ev(at, 'A', 'workout_add', { id, date, type: 'Pilates', durationMin: min });
 
-  it('a hand-added workout counts toward 活動 as max(Watch, steps, manual), never summed, within the daily cap', () => {
+  it('a hand-added workout counts toward 活動 as max(Watch, steps, manual), never summed', () => {
     const base = goodWeek(); // 30 Watch minutes a day, 9000 steps (goal well below: steps also give minutes)
     const s0 = reduce(base);
     const d0 = dayDetail(s0, DAYS[0], WED_MID).people.A.minutes.value;
     // A shorter manual workout than the day's minutes changes nothing (no double counting).
     const small = withRows(base, { events: [add(jst(DAYS[2], '23:00'), DAYS[0], Math.max(10, d0 - 5))] });
-    expect(scoreAt(small, 'A', LIVE).categories.peach.actual).toBe(scoreAt(base, 'A', LIVE).categories.peach.actual);
-    // A longer one replaces the day's minutes, capped like any day.
+    expect(minutesOf(small, 'A')).toBe(minutesOf(base, 'A'));
+    // A longer one replaces the day's minutes (the ベル still cap at 45 minutes).
     const big = withRows(base, { events: [add(jst(DAYS[2], '23:00'), DAYS[0], d0 + 20)] });
-    const raised = scoreAt(big, 'A', LIVE).categories.peach.actual - scoreAt(base, 'A', LIVE).categories.peach.actual;
-    expect(raised).toBeGreaterThan(0);
-    expect(raised).toBeLessThanOrEqual(20);
+    expect(minutesOf(big, 'A') - minutesOf(base, 'A')).toBe(20);
     const dd = dayDetail(reduce(big), DAYS[0], WED_MID).people.A.minutes;
     expect(dd).toMatchObject({ value: d0 + 20, source: 'manual' });
     expect(weekDetail(reduce(big), WK, WED_MID).people.A.days[0]).toMatchObject({ minutesSource: 'manual', editedFields: ['workout'] });
@@ -345,13 +266,13 @@ describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
   it('two manual workouts on a day add up with each other (but still only against the larger source)', () => {
     const rows: SnapshotRows = { metrics: [], workouts: [], presence: [], events: [add(jst(DAYS[1], '20:00'), DAYS[1], 25), add(jst(DAYS[1], '21:00'), DAYS[1], 20)] };
     expect(dayDetail(reduce(rows), DAYS[1], WED_MID).people.A.minutes).toMatchObject({ value: 45, source: 'manual' });
-    expect(scoreAt(rows, 'A', LIVE).categories.peach.actual).toBe(45);
+    expect(minutesOf(rows, 'A')).toBe(45);
   });
 
   it('an excluded manual workout stops counting', () => {
     const id = 'm:x1';
     const rows: SnapshotRows = { metrics: [], workouts: [], presence: [], events: [add(jst(DAYS[1], '20:00'), DAYS[1], 40, id), ev(jst(DAYS[1], '21:00'), 'A', 'workout_edit', { id, excluded: true })] };
-    expect(scoreAt(rows, 'A', LIVE).categories.peach.actual).toBe(0);
+    expect(minutesOf(rows, 'A')).toBe(0);
   });
 
   it('an edit exactly at the lock is refused; one millisecond before counts', () => {

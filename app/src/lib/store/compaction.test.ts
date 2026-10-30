@@ -1,11 +1,11 @@
 // The cache as the app really builds it (round 9 §2 item 2): incremental `since` replies merged and compacted by
 // applySnapshot, composed with `rev` and the previous model reused (the store's path), must show exactly what the
-// full uncompacted rows show, at every poll through cutoffs and locks.
+// full uncompacted rows show, at every poll through harvests and locks.
 import { describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import { reduce } from '#lib/model/state.ts';
 import { buildWeekView } from '#lib/model/week.ts';
-import { historyWeeks, moneyLog } from '#lib/model/history.ts';
+import { bellsLedger, historyWeeks } from '#lib/model/history.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import { applySnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
@@ -17,13 +17,13 @@ const between = (rows: SnapshotRows, from: number, to: number): SnapshotRows => 
   return { metrics: f(rows.metrics), workouts: f(rows.workouts), presence: f(rows.presence), events: f(rows.events) };
 };
 const shown = (m: Pick<ComposedModel, 'state' | 'now'>) => JSON.stringify({
-  a: buildWeekView(m.state, 'A', m.now), b: buildWeekView(m.state, 'B', m.now), history: historyWeeks(m.state, m.now), money: moneyLog(m.state, m.now)
+  a: buildWeekView(m.state, 'A', m.now), b: buildWeekView(m.state, 'B', m.now), history: historyWeeks(m.state, m.now), ledger: bellsLedger(m.state, m.now)
 });
 
 describe('compacted cache through applySnapshot', () => {
   const all = syntheticRows(70);
   const at = (day: number, time: string) => Date.parse(jst(addDays(FIRST_DAY, day), time));
-  // Polls: twice a day, plus either side of two Sunday payouts and two Wednesday locks.
+  // Polls: twice a day, plus either side of two Sunday harvests and two Wednesday locks.
   const polls = [
     ...Array.from({ length: 69 }, (_, d) => [at(d, '08:10'), at(d, '21:40')]).flat(),
     at(41, '19:29'), at(41, '19:31'), at(44, '03:59'), at(44, '04:01'), at(55, '19:31'), at(58, '04:05')
@@ -55,18 +55,18 @@ describe('compacted cache through applySnapshot', () => {
     const newest = [all.metrics, all.workouts, all.presence, all.events].flat().map(atOf).filter((x) => x <= t).reduce((x, y) => Math.max(x, y));
     expect(Date.parse(c.since!)).toBe(newest);
     expect(c.rowsAt).toBe(t);
-    // A poll that drops nothing keeps rowsAt (the model's payout reuse stays valid).
+    // A poll that drops nothing keeps rowsAt (the model's reuse of locked weeks stays valid).
     const next = applySnapshot(c, { me: 'A', now: new Date(t + 60_000).toISOString(), rev: 'r1', rows: {} }, t + 60_000);
     expect(next.rowsAt).toBe(t);
   });
 
-  it('passes rev to the model, except while a queued row is stamped before the latest cutoff (an old offline tap)', () => {
-    const t = at(41, '19:40'); // Sunday, 10 minutes after the payout
+  it('passes rev to the model, except while a queued row is stamped before the latest lock (an old offline tap)', () => {
+    const t = at(44, '04:10'); // Wednesday, 10 minutes after the lock
     const c = applySnapshot(null, { me: 'A', now: new Date(t - 3 * 3600_000).toISOString(), rev: 'r1', rows: between(all, 0, t - 3 * 3600_000) }, t - 3 * 3600_000);
     const tap = (queuedAt: number) => ({ id: `q${queuedAt}`, type: 'highfive' as const, data: {}, queuedAt, tries: 0, nextAt: queuedAt });
     expect(composeModel(c, [], t).from?.rev).toBe(`r1@${c.rowsAt}`);
     expect(composeModel(c, [tap(t - 60_000)], t).from?.rev).toBe(`r1@${c.rowsAt}`);
-    expect(composeModel(c, [tap(at(41, '19:00'))], t).from?.rev).toBeNull();
+    expect(composeModel(c, [tap(at(44, '03:00'))], t).from?.rev).toBeNull();
     expect(composeModel({ ...c, rev: undefined }, [], t).from?.rev).toBeNull();
   });
 });

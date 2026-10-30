@@ -1,7 +1,6 @@
 // One function per user action. Each records an event through the store's backend (live: the write queue,
 // lib/sync/queue.ts; demo: kept in memory, demo/backend.ts) and the store recomputes the view with it at once through
-// the model, so a tap moves the fruit, the score and the jar the same way everywhere. Results are synchronous.
-import { MONEY } from '#lib/config/rules.ts';
+// the model, so a tap moves the fruit, today's ベル and the pots the same way everywhere. Results are synchronous.
 import { week } from './week.svelte.ts';
 import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -11,7 +10,7 @@ import { finalMs, parseMenu } from '#lib/model/state.ts';
 import type { MenuItem, PotKey } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 
-/** Payday, 使う！ and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
+/** 買う！, its もとに戻す and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
 const UNDO_MS = 5000;
 /** きろく's edit controls close this long before a week's lock: an edit made then still lands in time (round 7 M1). */
 export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
@@ -53,13 +52,6 @@ export function confirmHarvest(): SendResult {
   return week.send('harvest', { week: wk });
 }
 
-/** `pending`: it waits for the other's OK (≥ ¥5,000, or asked for). */
-export function spendPurse(label: string, amountYen: number, needsBoth: boolean): SendResult & { pending: boolean } {
-  const pending = needsBoth || amountYen >= MONEY.purseNeedsBothAtYen;
-  if ((week.view?.jar.purseYen ?? 0) < amountYen) return { ok: false, pending }; // insufficient purse
-  return { ...week.send('spend', { spendId: newId(), label, amountYen }, { holdMs: UNDO_MS }), pending };
-}
-
 // ---- ベル pots (ADR 0019 §5): buy from the shared menus, undo, edit the menus. No approvals.
 
 /**
@@ -91,17 +83,8 @@ export function setMenu(pot: PotKey, items: MenuItem[]): SendResult {
 /** A fresh id for a new menu item. */
 export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
 
-/** @deprecated The both-OK approval is gone (ADR 0019); `approve` events are ignored. */
-export function approveSpend(id: number | string) {
-  return week.send('approve', { spendId: id });
-}
-
-export function transferDone(month: string) {
-  return week.send('transfer', { month }, { holdMs: UNDO_MS });
-}
-
 // ---- きろく edits (history-and-editing.md §4): always my own data, open weeks only (the model refuses the rest).
-// Each shows at once and waits UNDO_MS with もとに戻す on the banner, like payday and 使う！, unless that would miss
+// Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless that would miss
 // the week's lock (the store shortens or refuses it, round 7 M1).
 
 export function setMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
@@ -121,16 +104,6 @@ export function addWorkout(date: string, type: string, durationMin: number) {
 /** A fix of any day's check-in in an open week (the 48 h window doesn't apply). */
 export function fixCheckin(date: string, habitKey: string, done: boolean) {
   return week.send('checkin', { date, habit: habitKey, done, edit: true }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
-}
-
-/** Only the spender's void counts (a paid spend goes back to the purse, a waiting one is cancelled). */
-export function voidSpend(spendId: number | string) {
-  return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
-}
-
-/** Un-tick a month's transfer ✓ (either of us). */
-export function undoTransfer(month: string) {
-  return week.send('transfer_undo', { month }, { holdMs: UNDO_MS });
 }
 
 export function setLanguage(locale: Locale) {

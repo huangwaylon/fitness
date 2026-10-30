@@ -1,19 +1,14 @@
-// きろく (history-and-editing.md): every recorded week, day and yen, for both people, computed on read from the same
-// state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
-import type { FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, WeekKey, WeekScore } from '#lib/types.ts';
-import { DAILY, FRUITS, STRENGTH } from '#lib/config/rules.ts';
+// きろく (history-and-editing.md): every recorded week and day, with its ベル, for both people, computed on read from the
+// same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
+import type { FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, WeekKey } from '#lib/types.ts';
+import { DAILY, STRENGTH } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
-import {
-  addDays, isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
-} from '#lib/scoring/index.ts';
+import { addDays, habitsFor, isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
 import type { WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, weekBells, type WeekBells } from './bells.ts';
-import {
-  activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, monthOfWeek, paidAt, pctOf, purseSum, replayHarvests, replayPurse, settledWeeks, settleWeek, transferDoneAt, weekDates, weekInput, workoutsAsOf,
-  type Activity, type Buckets, type SettledWeek, type SpendLog
-} from './week.ts';
+import { dailyUpTo, earnInput, earnTimeOf, weekBells, type WeekBells } from './bells.ts';
+import { activityAsOf, metricAsOf, replayHarvests, weekDates, workoutsAsOf, type Activity } from './week.ts';
 
 const LIVE = Infinity;
 
@@ -51,19 +46,14 @@ interface HistoryPerson {
   /** The person's ベル of the week: daily earnings + their badge bonus once it landed. */
   bells: number;
   badges: Record<FruitKey, boolean>;
-  /** Old weekly score; removed once the UI has moved over. */
-  score: number;
   stamps: Stamp[];
 }
 
 export interface HistoryWeek {
   weekKey: WeekKey;
   current: boolean;
-  /** Sunday 19:30 has passed: the week paid (at least its first payout). */
+  /** Sunday 19:30 has passed: the harvest opened and the weekly bonus landed. */
   settled: boolean;
-  /** Jar yen of the week: paid, or the live estimate (`estimate`) while it can still change. */
-  yen: number;
-  estimate: boolean;
   locked: boolean;
   /** Edits for this week count right now. */
   open: boolean;
@@ -74,17 +64,20 @@ export interface HistoryWeek {
   people: Record<PersonId, HistoryPerson>;
 }
 
-/** Open weeks show live numbers; a closed week shows what it had at its lock (late syncs after it never paid). */
-const timeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
-
-interface WeekCalc { t: number; scores: Record<PersonId, WeekScore>; act: Record<PersonId, Activity> }
+/**
+ * A week as きろく reads it: open weeks show live numbers; a closed week shows what it had at its lock (late syncs after
+ * it never count). `wb`: the week's earnings (its days' strength, ticks and ベル).
+ */
+interface WeekCalc { t: number; act: Record<PersonId, Activity>; wb: WeekBells }
 
 function calc(s: State, wk: WeekKey, now: number): WeekCalc {
-  const t = timeOf(wk, now);
+  const t = earnTimeOf(wk, now);
   const act = { A: activityAsOf(s, 'A', t, weekDates(wk)), B: activityAsOf(s, 'B', t, weekDates(wk)) };
-  const scores = { A: scoreWeek(weekInput(s, 'A', wk, t, act.A)), B: scoreWeek(weekInput(s, 'B', wk, t, act.B)) };
-  return { t, scores, act };
+  return { t, act, wb: weekBells(s, wk, now, t === LIVE ? act : undefined) };
 }
+
+/** The person's strength days of the week (as the earnings count them). */
+const strengthDays = (c: WeekCalc, p: PersonId): Set<LocalDate> => new Set(c.wb[p].days.filter((d) => d.strength).map((d) => d.date));
 
 interface DayMinutes {
   /** Counted minutes (before the daily cap): max(Watch, step-derived, manual workouts), never a sum (ADR 0011). */
@@ -95,7 +88,7 @@ interface DayMinutes {
 }
 
 /**
- * The one minutes rule for きろく (same as scoreWeek): the largest of the three sources. The Watch value reads as an
+ * The one minutes rule for きろく (same as earnWeek): the largest of the three sources. The Watch value reads as an
  * edit when the latest `metric_set` (at ≤ t) is what metricAsOf returns, i.e. no later ingest row beat it (round 7 L4).
  */
 function dayMinutes(s: State, p: PersonId, date: LocalDate, t: number, steps: number | null, manualMin: number): DayMinutes {
@@ -123,7 +116,7 @@ const manualAsOf = (act: Activity): Map<LocalDate, number> => manualMinutesByDay
 
 function stampsFor(s: State, person: PersonId, wk: WeekKey, c: WeekCalc, today: LocalDate): Stamp[] {
   const goal = rulesFor(wk).goals.steps;
-  const strength = new Set(c.scores[person].strengthDays);
+  const strength = strengthDays(c, person);
   const manual = manualAsOf(c.act[person]);
   return weekDays(wk).map((date) => {
     if (date > today) return 'future';
@@ -134,41 +127,27 @@ function stampsFor(s: State, person: PersonId, wk: WeekKey, c: WeekCalc, today: 
   });
 }
 
-function weekYen(wk: WeekKey, now: number, settled: SettledWeek | undefined, c: WeekCalc): { yen: number; estimate: boolean; breakdown: Buckets } {
-  const live = buckets(payoutWeek(c.scores.A, c.scores.B));
-  if (!settled) return { yen: jarSum(live), estimate: true, breakdown: live };
-  const paid = paidAt(settled, now);
-  if (now >= finalMs(wk)) return { yen: jarSum(paid), estimate: false, breakdown: paid };
-  // Paid on Sunday, still open: a late raise tops it up on Wednesday 04:00 (never down).
-  const projected = maxBuckets(paid, live);
-  return { yen: jarSum(projected), estimate: jarSum(projected) > jarSum(paid), breakdown: projected };
-}
-
-/** Every week from the first paid week (or this week, before the season starts) to this week, newest first. */
+/** Every week from the economy's first week (or this week, before it starts) to this week, newest first. */
 export function historyWeeks(s: State, now: number): HistoryWeek[] {
   const today = localDateAt(now);
   const cur = weekKeyOf(today);
-  const settled = new Map(settledWeeks(s, now).map((w) => [w.weekKey, w]));
   const harvested = new Set([...replayHarvests(s, now)].filter(([, by]) => by.size === 2).map(([wk]) => wk));
   const out: HistoryWeek[] = [];
   const start = firstWeek(s) < cur ? firstWeek(s) : cur;
   for (let wk = cur; wk >= start; wk = addDays(wk, -7)) {
     const c = calc(s, wk, now);
-    const y = weekYen(wk, now, settled.get(wk), c);
-    const b = weekBellsView(weekBells(s, wk, now, c.t === LIVE ? c.act : undefined), today, now);
+    const b = weekBellsView(c.wb, today, now);
     out.push({
       weekKey: wk,
       current: wk === cur,
-      settled: settled.has(wk),
-      yen: y.yen,
-      estimate: y.estimate,
+      settled: wk >= firstWeek(s) && provisionalMs(wk) <= now,
       locked: isLockedAt(s, wk, now),
       open: editableAt(wk, now), // this week, and last week until Wednesday 04:00
       harvested: harvested.has(wk),
       bells: b.bells,
       people: {
-        A: { bells: b.A.daily + b.A.bonus, badges: b.A.badges, score: c.scores.A.score, stamps: stampsFor(s, 'A', wk, c, today) },
-        B: { bells: b.B.daily + b.B.bonus, badges: b.B.badges, score: c.scores.B.score, stamps: stampsFor(s, 'B', wk, c, today) }
+        A: { bells: b.A.daily + b.A.bonus, badges: b.A.badges, stamps: stampsFor(s, 'A', wk, c, today) },
+        B: { bells: b.B.daily + b.B.bonus, badges: b.B.badges, stamps: stampsFor(s, 'B', wk, c, today) }
       }
     });
   }
@@ -207,8 +186,6 @@ interface WeekDetailPerson {
   /** The badge bonus (+500 each; 0 until it lands on Sunday 19:30). */
   bonus: number;
   badges: Record<FruitKey, boolean>;
-  score: number;
-  fruits: Record<FruitKey, { actual: number; target: number; pct: number }>;
   days: DayRow[];
 }
 
@@ -223,9 +200,6 @@ export interface WeekDetail {
   /** The week's ベル (both people, incl. the bonus once it landed) and the bonus itself. */
   bells: number;
   bonus: HarvestBonus;
-  yen: number;
-  estimate: boolean;
-  breakdown: Buckets;
   people: Record<PersonId, WeekDetailPerson>;
 }
 
@@ -238,25 +212,17 @@ function editedFields(s: State, person: PersonId): Map<LocalDate, Set<EditedFiel
 export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const today = localDateAt(now);
   const c = calc(s, wk, now);
-  const settled = settleWeek(s, wk, now) ?? undefined;
-  const y = weekYen(wk, now, settled, c);
-  const wb = weekBells(s, wk, now, c.t === LIVE ? c.act : undefined);
+  const wb = c.wb;
   const b = weekBellsView(wb, today, now);
   const person = (p: PersonId): WeekDetailPerson => {
-    const score = c.scores[p];
-    const input = weekInput(s, p, wk, c.t, c.act[p]);
+    const input = earnInput(s, p, wk, c.t, c.act[p]);
     const edited = editedFields(s, p);
     const manual = manualAsOf(c.act[p]);
-    const strength = new Set(score.strengthDays);
+    const strength = strengthDays(c, p);
     return {
       dailyBells: b[p].daily,
       bonus: b[p].bonus,
       badges: b[p].badges,
-      score: score.score,
-      fruits: Object.fromEntries(FRUITS.map((k) => {
-        const cat = score.categories[k];
-        return [k, { actual: cat.actual, target: cat.target, pct: pctOf(cat) }];
-      })) as WeekDetailPerson['fruits'],
       days: input.days.map((d) => {
         const m = dayMinutes(s, p, d.date, c.t, d.steps, manual.get(d.date) ?? 0);
         const fields = [...(edited.get(d.date) ?? [])];
@@ -278,15 +244,12 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   return {
     weekKey: wk,
     current: wk === weekKeyOf(today),
-    settled: !!settled,
+    settled: wk >= firstWeek(s) && provisionalMs(wk) <= now,
     locked: isLockedAt(s, wk, now),
     open: editableAt(wk, now),
     lockAt: finalMs(wk),
     bells: b.bells,
     bonus: b.bonus,
-    yen: y.yen,
-    estimate: y.estimate,
-    breakdown: y.breakdown,
     people: { A: person('A'), B: person('B') }
   };
 }
@@ -338,14 +301,14 @@ export interface DayDetail {
 export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const wk = weekKeyOf(date);
   const c = calc(s, wk, now);
-  const wb = weekBells(s, wk, now, c.t === LIVE ? c.act : undefined);
+  const wb = c.wb;
   const places = new Map(PLACES.map((p) => [p.key, p.name]));
   const log = editLog(s).filter((e) => e.date === date);
   const person = (p: PersonId): DayPerson => {
     const t = c.t;
     const steps = metricAsOf(s, p, date, 'steps', t);
     const m = dayMinutes(s, p, date, t, steps, manualAsOf(c.act[p]).get(date) ?? 0);
-    const strengthDays = new Set(c.scores[p].strengthDays);
+    const strong = strengthDays(c, p);
     const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
     const workouts = allWorkouts(s, p)
       .filter((w) => w.date === date && w.at <= t)
@@ -361,9 +324,9 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
       });
     const visits = c.act[p].visits.filter((v) => v.date === date).map((v): DayVisit => ({
       id: v.id, place: places.get(v.placeKey) ?? v.placeKey, arriveAt: v.arriveAt, dwellMin: v.dwellMin,
-      counted: strengthDays.has(date) && v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true)
+      counted: strong.has(date) && v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true)
     }));
-    const input = weekInput(s, p, wk, t, c.act[p]);
+    const input = earnInput(s, p, wk, t, c.act[p]);
     const mine = log.filter((e) => e.by === p);
     return {
       ...(date <= localDateAt(now) ? dayOf(wb[p], date) : dayOf(wb[p], '')),
@@ -371,7 +334,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
       minutes: { ...m, edited: mine.some((e) => e.field === 'exercise_min') },
       workouts,
       visits,
-      habits: { keys: targetsFor(p, wk).habits, done: input.checkins.filter((x) => x.date === date).map((x) => x.habit) }
+      habits: { keys: [...habitsFor(p, wk)] as [string, string, string], done: input.checkins.filter((x) => x.date === date).map((x) => x.habit) }
     };
   };
   return {
@@ -442,63 +405,6 @@ function buildEditLog(s: State): EditLog[] {
 
 /** The accepted edits of one week (both people), newest first. */
 export const weekEdits = (s: State, wk: WeekKey): EditLog[] => editLog(s).filter((e) => weekKeyOf(e.date) === wk).reverse();
-
-// ---------- money ----------
-
-interface MoneyMonth {
-  month: string;
-  /** Jar yen of the month's weeks (by their Sunday), paid so far. */
-  earnedYen: number;
-  weeks: { weekKey: WeekKey; yen: number }[];
-  /** The bank transfer of the month (from the next month on): ✓ or not yet. */
-  transfer: { amountYen: number; done: boolean; at: number | null } | null;
-  spends: SpendLog[];
-}
-
-export interface MoneyLog {
-  totalYen: number;
-  purseYen: number;
-  /** The jar after each paid week, oldest first (the step line). */
-  steps: { weekKey: WeekKey; totalYen: number }[];
-  /** Newest first. */
-  months: MoneyMonth[];
-}
-
-export function moneyLog(s: State, now: number): MoneyLog {
-  const weeks = settledWeeks(s, now);
-  const purse = replayPurse(s, weeks, now);
-  const curMonth = localDateAt(now).slice(0, 7);
-  let total = 0;
-  let earnedPurse = 0;
-  const steps: MoneyLog['steps'] = [];
-  const months = new Map<string, MoneyMonth>();
-  const monthOf = (m: string): MoneyMonth => {
-    let x = months.get(m);
-    if (!x) months.set(m, (x = { month: m, earnedYen: 0, weeks: [], transfer: null, spends: [] }));
-    return x;
-  };
-  for (const w of weeks) {
-    const b = paidAt(w, now);
-    total += jarSum(b);
-    earnedPurse += purseSum(b);
-    steps.push({ weekKey: w.weekKey, totalYen: total });
-    const m = monthOf(monthOfWeek(w.weekKey));
-    m.weeks.unshift({ weekKey: w.weekKey, yen: jarSum(b) });
-    m.earnedYen += jarSum(b);
-  }
-  for (const sp of purse.log) monthOf(localDateAt(sp.at).slice(0, 7)).spends.unshift(sp);
-  for (const m of months.values()) {
-    if (m.month >= curMonth) continue;
-    const t = transferDoneAt(s, m.month, now);
-    if (m.earnedYen > 0 || t.done) m.transfer = { amountYen: m.earnedYen, done: t.done, at: t.at };
-  }
-  return {
-    totalYen: total,
-    purseYen: earnedPurse - purse.spentYen,
-    steps,
-    months: [...months.values()].sort((x, y) => y.month.localeCompare(x.month))
-  };
-}
 
 // ---------- ベル ledger (ADR 0019): model/bells.ts ----------
 

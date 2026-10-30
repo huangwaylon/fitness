@@ -1,43 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { SEASONS } from '#lib/config/rules.ts';
-import { isEasyWeek, targetsFor } from '#lib/scoring/targets.ts';
+import { HABITS, RULES, type HabitsVersion } from '#lib/config/rules.ts';
+import { habitsFor, rulesFor } from '#lib/scoring/targets.ts';
 
-const s1 = SEASONS.find((s) => s.key === 's1')!;
+describe('habitsFor', () => {
+  it('both people share the same three habits (ADR 0019 amendment)', () => {
+    expect(habitsFor('A', '2026-11-02')).toEqual(['protein_each_meal', 'no_sweets', 'veg_two_meals']);
+    expect(habitsFor('B', '2026-11-02')).toEqual(habitsFor('A', '2026-11-02'));
+  });
+  it('accepts any date in the week; a week before the first version uses the first', () => {
+    expect(habitsFor('A', '2026-11-05')).toBe(HABITS[0].people.A.habits);
+    expect(habitsFor('B', '2026-08-31')).toBe(HABITS[0].people.B.habits); // the demo's calendar
+  });
+  it('a later version applies from its week only', () => {
+    const v2: HabitsVersion = { from: '2027-03-01', people: { A: { habits: ['a', 'b', 'c'] }, B: HABITS[0].people.B } };
+    (HABITS as HabitsVersion[]).push(v2);
+    try {
+      expect(habitsFor('A', '2027-02-28')).toBe(HABITS[0].people.A.habits); // Sunday of the week before
+      expect(habitsFor('A', '2027-03-03')).toEqual(['a', 'b', 'c']);
+      expect(habitsFor('B', '2027-03-03')).toBe(HABITS[0].people.B.habits);
+    } finally {
+      (HABITS as HabitsVersion[]).pop();
+    }
+  });
+});
 
-describe('targetsFor', () => {
-  it('returns season targets for a normal week', () => {
-    expect(targetsFor('A', '2026-11-02')).toEqual(s1.targets.A);
-    expect(targetsFor('B', '2026-11-02')).toEqual(s1.targets.B);
-  });
-  it('accepts any date in the week and returns a copy', () => {
-    const t = targetsFor('A', '2026-11-05');
-    expect(t).toEqual(s1.targets.A);
-    t.habits[0] = 'x';
-    expect(s1.targets.A.habits[0]).not.toBe('x');
-  });
-  it('falls back to the first season before any season starts', () => {
-    expect(targetsFor('B', '2026-10-26')).toEqual(s1.targets.B);
-  });
-  it('applies ×0.7 in easy weeks without float drift', () => {
-    const b = targetsFor('B', '2026-12-21');
-    expect(b.activeMinPerWeek).toBe(59.5);
-    expect(b.strengthDaysPerWeek).toBe(1.4);
-    expect(b.stepDaysPerWeek).toBe(2.8); // 4 × 0.7
-    expect(b.stepGoal).toBe(s1.targets.B.stepGoal);
-    expect(b.pearTicksPerWeek).toBe(s1.targets.B.pearTicksPerWeek);
-    expect(targetsFor('A', '2026-12-28').activeMinPerWeek).toBe(94.5);
-  });
-  it('identifies the two easy weeks around 正月 (year wrap)', () => {
-    expect(isEasyWeek('2026-12-14')).toBe(false); // Dec 14–20
-    expect(isEasyWeek('2026-12-21')).toBe(true); // touches Dec 25
-    expect(isEasyWeek('2026-12-28')).toBe(true); // Dec 28–Jan 3
-    expect(isEasyWeek('2027-01-04')).toBe(false);
-    expect(isEasyWeek('2027-12-20')).toBe(true); // Dec 20–26, 2027
-    expect(isEasyWeek('2027-12-13')).toBe(false); // Dec 13–19
-    expect(isEasyWeek('2027-12-27')).toBe(true); // Dec 27–Jan 2
-    expect(isEasyWeek('2028-01-03')).toBe(false); // Jan 3–9, 2028: always exactly two easy weeks
-    expect(isEasyWeek('2028-12-18')).toBe(false); // Dec 18–24, 2028
-    expect(isEasyWeek('2028-12-25')).toBe(true);
-    expect(isEasyWeek('2029-01-01')).toBe(true); // Jan 1–7, 2029
+describe('rulesFor', () => {
+  it('the first version before any applies', () => {
+    expect(rulesFor('2026-08-31')).toBe(RULES[0]);
+    expect(rulesFor('2026-10-26')).toBe(RULES[0]);
   });
 });

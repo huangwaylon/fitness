@@ -10,7 +10,7 @@ import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, isRec, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { parseInstant } from '#lib/time/dates.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
-import { finalMs, provisionalMs } from './state.ts';
+import { finalMs } from './state.ts';
 
 const instant = (v: unknown): number | null => {
   try {
@@ -41,8 +41,9 @@ function editTimes(rows: SnapshotRows): Map<string, number[]> {
 
 /**
  * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read: per
- * (person, date, metric), the best row at or before the Sunday 19:30 payout, the Wednesday 04:00 lock, each
- * `metric_set` of that day (and just before it), and overall (late syncs, `lastSync`). Rows of open weeks, rows the
+ * (person, date, metric), the best row at or before the Wednesday 04:00 lock (the week's earnings are fixed there),
+ * each `metric_set` of that day (and just before it, for the change log), and overall (late syncs, `lastSync`).
+ * Nothing reads a locked week at its Sunday 19:30 any more (the yen payout taken then is gone, ADR 0019). Rows of open weeks, rows the
  * model would skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
  * when nothing was dropped.
  */
@@ -66,7 +67,7 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
   for (const n of Object.values(newest)) if (n) keep.add(n.i);
   for (const [k, list] of groups) {
     const wk = weekKeyOf(String(list[0].row[2]));
-    for (const t of [provisionalMs(wk), finalMs(wk), Infinity, ...(edits.get(k) ?? [])]) {
+    for (const t of [finalMs(wk), Infinity, ...(edits.get(k) ?? [])]) {
       let best: { v: number; at: number; i: number } | null = null;
       for (const { row, at, i } of list) {
         const v = Number(row[4]);

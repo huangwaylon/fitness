@@ -73,34 +73,36 @@ describe('reduce: events', () => {
     expect([...s.visitConfirms.keys()]).toEqual([`anytime@${at(WK, '18:00')}`]);
   });
 
-  it('spend, approve and spend_void: valid amounts, first id wins, only the spender voids, once', () => {
+  it('spend and spend_void: ベル spends only, first id wins, only the spender voids, once', () => {
+    const bell = (spendId: unknown, extra: object = {}) => ({ spendId, pot: 'treat', item: 'cake', label: ' ケーキ ', bells: 800, ...extra });
     const s = reduce(rows([
-      ev(at(WK), 'B', 'spend', { spendId: 7, label: ' ケーキ ', amountYen: 800 }),
-      ev(at(WK), 'B', 'spend', { spendId: 7, label: 'dup', amountYen: 1 }),
-      ev(at(WK), 'B', 'spend', { spendId: 'x', label: '', amountYen: 1 }),
-      ev(at(WK), 'B', 'spend', { spendId: 'y', label: 'a', amountYen: 1.5 }),
-      ev(at(WK), 'B', 'spend', { spendId: 'z', label: 'a', amountYen: 1_000_001 }),
-      ev(at(WK), 'A', 'approve', { spendId: 7 }),
-      ev(at(WK), 'A', 'approve', {}),
+      ev(at(WK), 'B', 'spend', bell(7)),
+      ev(at(WK), 'B', 'spend', bell(7, { label: 'dup', bells: 1 })),
+      ev(at(WK), 'B', 'spend', bell('x', { label: '' })),
+      ev(at(WK), 'B', 'spend', bell('y', { bells: 1.5 })),
+      ev(at(WK), 'B', 'spend', bell('z', { bells: 10_000_001 })),
+      ev(at(WK), 'B', 'spend', bell('p', { pot: 'jar' })),
+      ev(at(WK), 'B', 'spend', { spendId: 'yen', label: 'ケーキ', amountYen: 800 }), // the old yen economy: ignored
       ev(at(WK, '13:00'), 'A', 'spend_void', { spendId: 7 }), // not the spender
+      ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 'yen' }), // not a ベル spend
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 7 }),
       ev(at(WK, '14:00'), 'B', 'spend_void', { spendId: 7 }) // twice
     ]));
-    expect(s.spends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', rawId: 7, label: 'ケーキ', amountYen: 800 }]);
-    expect(s.approves.map((a) => a.spendId)).toEqual(['7']);
+    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', pot: 'treat', item: 'cake', label: 'ケーキ', bells: 800 }]);
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['B', Date.parse(at(WK, '13:00'))]]);
   });
 
-  it('transfer: a past month only; transfer_undo: any well-formed month, either person', () => {
-    const s = reduce(rows([
+  it('the old economy’s approve, transfer and transfer_undo rows are read and ignored', () => {
+    const old = [
+      ev(at('2026-12-02'), 'A', 'approve', { spendId: 7 }),
       ev(at('2026-12-02'), 'A', 'transfer', { month: '2026-11' }),
-      ev(at('2026-12-02'), 'A', 'transfer', { month: '2026-12' }),
-      ev(at('2026-12-02'), 'A', 'transfer', { month: '2026-13' }),
-      ev(at('2026-12-03'), 'B', 'transfer_undo', { month: '2026-11' }),
-      ev(at('2026-12-03'), 'B', 'transfer_undo', { month: 'Nov' })
-    ]));
-    expect(s.transfers.map((t) => t.month)).toEqual(['2026-11']);
-    expect(s.transferUndos.map((t) => [t.person, t.month])).toEqual([['B', '2026-11']]);
+      ev(at('2026-12-03'), 'B', 'transfer_undo', { month: '2026-11' })
+    ];
+    const tick = ev(at('2026-12-03'), 'B', 'highfive', {});
+    const a = reduce(rows([...old, tick]));
+    const b = reduce(rows([tick]));
+    expect(a.highfives).toHaveLength(1);
+    expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
   });
 
   it('metric_set: integer within bounds, a day that has happened, in an open week', () => {

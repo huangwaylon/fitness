@@ -1,7 +1,7 @@
 // Cached snapshot + still-queued events → the reduced state (optimistic: a tap shows at once, before the server acks it).
 import type { EventRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { finalMs, provisionalMs, reduce, type State } from '#lib/model/state.ts';
+import { finalMs, reduce, type State } from '#lib/model/state.ts';
 import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
@@ -22,21 +22,21 @@ export interface ComposedModel {
 export const missesLock = (ev: Pick<QueuedEvent, 'lockAt' | 'nextAt'>, clientNow: number, skewMs: number): boolean =>
   ev.lockAt !== undefined && Math.max(ev.nextAt, clientNow) + skewMs >= ev.lockAt;
 
-/** The latest payout cutoff (Sunday 19:30 or Wednesday 04:00) at or before `now`. */
-function lastCutoff(now: number): number {
-  const cur = weekKeyOf(nowInZone(new Date(now)).date);
-  const prev = addDays(cur, -7);
-  return Math.max(...[provisionalMs(cur), finalMs(prev), provisionalMs(prev)].filter((t) => t <= now));
+/** The latest week lock (a Wednesday 04:00) at or before `now`: locked weeks' earnings are what `rev` reuses. */
+function lastLock(now: number): number {
+  const prev = addDays(weekKeyOf(nowInZone(new Date(now)).date), -7);
+  const t = finalMs(prev);
+  return t <= now ? t : finalMs(addDays(prev, -7));
 }
 
 /**
  * Queued events become rows stamped just after the newest server row (in queue order) on the server's clock, so
- * read-time rules (48 h check-in window, purse balance, harvest week) judge them as the server will.
+ * read-time rules (48 h check-in window, pot balances, harvest week) judge them as the server will.
  * `pending`: the still-unsent part of `queue` (only those can miss their lock; acked ones already landed).
  * `prev`: the last result; its state is reused when the rows and the queued rows are the same (reduce is the
- * expensive part: round 9 §2 item 11). Live rows pass their `rev` so payouts of past cutoffs are reused across
- * States, unless a queued row is stamped before the latest cutoff (an old offline tap): the server will stamp it
- * later, so it must not pin a past payout.
+ * expensive part: round 9 §2 item 11). Live rows pass their `rev` so locked weeks' earnings are reused across
+ * States, unless a queued row is stamped before the latest lock (an old offline tap): the server will stamp it
+ * later, so it must not pin a locked week.
  */
 export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, pending?: Set<string>, prev?: ComposedModel | null): ComposedModel {
   const known = new Set(cache.rows.events.map((r) => String(r[2])));
@@ -53,7 +53,7 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
     extra.push([new Date(at).toISOString(), (cache.demo && ev.person) || cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
-  const rev = cache.demo || !cache.rev || (extra.length && Date.parse(extra[0][0]) <= lastCutoff(now)) ? null : `${cache.rev}@${cache.rowsAt ?? 0}`;
+  const rev = cache.demo || !cache.rev || (extra.length && Date.parse(extra[0][0]) <= lastLock(now)) ? null : `${cache.rev}@${cache.rowsAt ?? 0}`;
   const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), rev };
   const p = prev?.from;
   if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.rev === from.rev && prev.me === cache.me) {

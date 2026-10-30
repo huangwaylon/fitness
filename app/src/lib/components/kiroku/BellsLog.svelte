@@ -69,7 +69,7 @@
         <li class="bonus">
           <span class="bi" aria-hidden="true"><OfficialArt key="money/miles" size={24} /></span>
           <span class="lbl">{t('pots.recent.bonus')}
-            <small class="meta">{#each order as p (p)}<span>{names[p]} {formatBells(b.bonus[p], { signed: true })}</span>{/each}{#if b.bonus.duo}<span>{t('harvest.team')} {formatBells(b.bonus.duo, { signed: true })}</span>{/if}</small>
+            <small class="meta">{#each order as p (p)}<span>{names[p]} {formatBells(b.bonus[p], { signed: true })}</span>{/each}{#if b.bonus.duo}<span>{t('harvest.duo')} {formatBells(b.bonus.duo, { signed: true })}</span>{/if}</small>
           </span>
           <b class="money plus">{formatBells(b.bells, { signed: true })}</b>
         </li>

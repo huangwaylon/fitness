@@ -1,8 +1,8 @@
-// The rules as data (PROPOSAL §3, ADRs 0008, 0009, 0011, 0014).
+// The rules as data (ADR 0019 and its 2026-10-30 amendment; strength and tsuyu from ADRs 0009, 0011, 0017).
 //
-// Everything is computed on read from the raw rows, so a value here applies to every week that uses it, paid or not.
-// To change what a week pays, never edit a version (or a season's targets) whose weeks have paid: append a RULES
-// version (or a SEASONS entry) with a later `from`. rules.test.ts pins the paid versions.
+// Everything is computed on read from the raw rows, so a value here applies to every week that uses it. To change
+// what a week earns, never edit a version (or a HABITS entry) whose weeks have earned: append a RULES version (or a
+// HABITS entry) with a later `from`. rules.test.ts pins the versions in use.
 import type { FruitKey, PersonId, PersonTargets, PotKey, WeekKey } from '#lib/types.ts';
 
 /** The four fruit categories, in display order. */
@@ -18,10 +18,6 @@ export interface RuleVersion {
   bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number };
   /** Weekly badges (+`bells` each) and the ふたりボーナス (`duo`, both people with all four). */
   badges: { activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duo: number };
-  /** @deprecated Old yen economy (ADR 0008), read only by the old view fields; removed once the UI has moved over. */
-  money: { yenPerFruit: number; teamYenPerFruit: number; purseYen: number; purseMinScore: number };
-  /** @deprecated Old fruit points (score /100). */
-  points: { peachActive: number; peachRest: number; coconut: number; apple: number; pear: number };
 }
 
 export const RULES: readonly RuleVersion[] = [
@@ -30,9 +26,7 @@ export const RULES: readonly RuleVersion[] = [
     from: '2026-10-26',
     goals: { activeMin: 45, steps: 8000 },
     bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
-    badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duo: 1000 },
-    money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
-    points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
+    badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duo: 1000 }
   }
 ];
 
@@ -68,9 +62,6 @@ export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
   ]
 };
 
-/** Money rules that price no week: the both-OK threshold applies when a spend is made; payday is a calendar cue. */
-export const MONEY = { purseNeedsBothAtYen: 5000, paydayDayOfMonth: 25 } as const;
-
 export const STRENGTH = {
   autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
   askTypes: ['Core Training', 'High Intensity Interval Training', 'Yoga', 'Mixed Cardio', 'Cross Training'],
@@ -80,59 +71,48 @@ export const STRENGTH = {
   maxConfirmedVisitsPerWeek: 2
 } as const;
 
-/** Daily active-minute cap: min(maxMin, max(minMin, ½ × weekly target)) (ADR 0002 round 2). */
-export const PEACH_DAILY_CAP = { minMin: 60, maxMin: 90 } as const;
-
 /**
  * No Watch? Steps above the step goal count as active minutes at a moderate pace (round 4 review W1).
  * A day's minutes = max(Watch exercise minutes, (steps − stepGoal) / stepsPerMin), so nothing counts twice.
  */
 export const STEP_MINUTES = { stepsPerMin: 100 } as const;
 
-/** Rest day: a day with Health data, no strength day, no workout ≥ longWorkoutMin, none ≥ hardWorkoutMin at ≥ hardHrFraction of 220 − age. */
-export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77, longWorkoutMin: 45 } as const;
-
 /** Tokyo tsuyu: ≥ 30 active minutes also counts as a step day. */
 export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
 
-/** 正月: Pear not scored; easy weeks use targets × factor (ADR 0011). */
-export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' }, easy: { from: '12-25', to: '01-01', factor: 0.7 } } as const;
+/** 正月: Dec 29–Jan 3 earn no 🍐, and the 🍐 badge is prorated to the other days of the week. */
+export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' } } as const;
 
-export const PEOPLE: Record<PersonId, { age: number; villager: string }> = {
-  A: { age: 29, villager: 'ウェイ' },
-  B: { age: 26, villager: 'うめ' }
+/** The default villager names (until changed in しまフォン → 村人). */
+export const PEOPLE: Record<PersonId, { villager: string }> = {
+  A: { villager: 'ウェイ' },
+  B: { villager: 'うめ' }
 };
 
-export interface Season {
-  key: 's1' | 's2' | 's3' | 's4';
-  from: string; // inclusive LocalDate
-  targets: Record<PersonId, PersonTargets>;
+/** A habits version: from week `from` (a Monday WeekKey) on, each person's three 🍐 habits. */
+export interface HabitsVersion {
+  from: WeekKey;
+  people: Record<PersonId, PersonTargets>;
 }
 
-// The habits per person (🍐). The other targets only feed the old score /100 (removed with the old view fields).
-export const SEASONS: Season[] = [
+/**
+ * The eating habits (🍐), versioned by week like RULES: ascending `from`; weeks before the first use it. Labels in
+ * the i18n catalogs (`habit.<key>`). Both people share the same three since the 2026-10-30 amendment.
+ */
+export const HABITS: readonly HabitsVersion[] = [
   {
-    key: 's1',
-    from: '2026-11-01',
-    targets: {
-      A: { activeMinPerWeek: 135, strengthDaysPerWeek: 2, stepGoal: 7500, stepDaysPerWeek: 4, habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], pearTicksPerWeek: 15 },
-      B: { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoal: 6250, stepDaysPerWeek: 4, habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], pearTicksPerWeek: 15 }
+    from: '2026-10-26',
+    people: {
+      A: { habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] },
+      B: { habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] }
     }
   }
 ];
 
-
-/** Trip ladder for the Jar (editable). Labels in i18n as `rung.<key>`. */
-export const RUNGS = [
-  { key: 'onsen_day', yen: 30000 },
-  { key: 'hakone', yen: 80000 },
-  { key: 'okinawa', yen: 150000 },
-  { key: 'taiwan', yen: 300000 },
-  { key: 'hawaii', yen: 500000 },
-  { key: 'europe', yen: 700000 }
-] as const;
-
-/** A week's two payout cutoffs (JST): Sunday 19:30 (harvest opens, first payout) and the Wednesday 04:00 after (lock, top-up). */
+/**
+ * A week's two times (JST): Sunday 19:30 (the harvest opens and the weekly bonus lands) and the Wednesday 04:00
+ * after (the week locks: its earnings are final).
+ */
 export const CUTOFFS = {
   provisional: { hour: 19, minute: 30 },
   final: { hour: 4, minute: 0 }
@@ -155,7 +135,6 @@ export const LIMITS = {
   /** A presence `event_at` further than this from the server `at` is ignored. */
   presenceSkewMs: 48 * 3600_000,
   spendLabelMaxChars: 60,
-  spendMaxYen: 1_000_000,
   /** A spend or a menu price: a positive integer up to this. */
   bellsMax: 10_000_000,
   /** Items per menu (`pref` treatMenu / tripMenu); a longer list is ignored. */

@@ -1,38 +1,28 @@
-// Golden test: the compute-on-read model must keep reproducing what the old Mac server returned (WeekView incl. the
-// earn + top-up ledger, purse, harvest and pending questions) on a 10-week timeline.
+// Golden test: the WeekView of the ベル economy (ADR 0019) on a 10-week timeline of real-shaped rows, so any change to
+// what the island, the pots or the harvest show is a reviewed diff.
 //
-// The fixtures were frozen from the differential harness (server vs model, all views identical) before the server
-// was deleted (ADR 0015):
-// - fixtures/timeline-rows.json: the sheet rows of the timeline (both people, every row stamped with its server `at`).
-//   The view at instant t is built from the rows with `at <= t`.
-// - fixtures/timeline-views.json: the server's full WeekView for A and B at 50 key instants (Sunday 19:29/19:31,
-//   Monday 00:01, Wednesday 03:59/04:01 JST, every week): readable diffs when something changes.
-// - fixtures/timeline-digests.json: a sha256 (16 hex) of the canonical JSON of the server's WeekView for A and B at
-//   every checkpoint (every 3 h + the key instants, 660 instants): catches a change anywhere else.
-// - fixtures/server-facts.json: the server's workout labels, the no-claw-back week, and ledger counts.
+// History: the fixtures were first frozen from the old Mac server (ADR 0015) and pinned the yen engine. On 2026-10-30
+// the yen engine was removed (ADR 0019 §6) and the views were regenerated from the model: the diff only dropped the
+// old fields (score, jar, fruit milli/pct, harvest payout/rungs), added harvest.badges and the pots' today/week flow.
+// ベル spends, voids and a menu edit were appended to the rows (ids b1–b9) so the pots are exercised too.
+// - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
+//   instant t is built from the rows with `at <= t`.
+// - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,
+//   Wednesday 03:59/04:01 JST, every week): readable diffs when something changes.
+// - fixtures/timeline-digests.json: a sha256 (16 hex) of the canonical JSON of the WeekView for A and B at every
+//   checkpoint (every 3 h + the key instants, 660 instants): catches a change anywhere else.
+// - fixtures/server-facts.json: the old server's workout labels and a week that late data lowered before its lock.
 //
-// Intentional model/server differences were already normalised in the goldens: lastSyncAt is the newest appending
-// metrics/workouts row; a pending visit's id is `<place>@<arrive ISO>`; a purse spend's id is the client's spendId.
-//
-// Regenerated from the model on 2026-10-29 for two user decisions, each checked to be the only difference first:
-// (1) no privacy: the partner card now carries raw actual/target for every fruit and their eating check-ins
-// (`habits`), and WeekView.visibility is gone (old `share` rows are ignored); (2) the default names are
-// ウェイ (A) and うめ (B) instead of Bean / Mochi. Round 8 renamed WeekView.juniper → host and its keys juniper.* →
-// host.* (regenerated after checking every view and digest matched with the old name restored). Everything else is
-// still the frozen server's output.
-//
-// Regenerated on 2026-10-30 for the ADR 0019 amendment, after checking the diff touched only: 🥥 400 ベル and a 3-day
-// badge, the 20 / 80 pot split, the new default menus, and the habit keys (the rows' old keys were renamed one to one:
-// A teishoku_lunch / low_salt_day, B eat_lunch / snack_swap → protein_each_meal / no_sweets; old-economy fields unchanged).
-//
-// If a change to the rules is intended, regenerate the goldens from the model and review the diff of
-// timeline-views.json: `GOLDEN_UPDATE=1 npx vitest run src/lib/model/golden.test.ts` (keeps the same instants).
+// If a change to the rules is intended, regenerate the goldens and review the diff of timeline-views.json:
+// `GOLDEN_UPDATE=1 npx vitest run src/lib/model/golden.test.ts` (keeps the same instants).
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import type { PersonId, WeekView } from '#lib/types.ts';
-import { buildWeekView, paidAt, settledWeeks } from './week.ts';
-import { reduce } from './state.ts';
+import { DEFAULT_MENUS } from '#lib/config/rules.ts';
+import { buildWeekView } from './week.ts';
+import { bellsLedger, weekBells } from './bells.ts';
+import { provisionalMs, reduce } from './state.ts';
 import { WORKOUT_TYPES, workoutLabel } from '#lib/contract/labels.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import rowsJson from './fixtures/timeline-rows.json' with { type: 'json' };
@@ -44,6 +34,7 @@ const ROWS = rowsJson as unknown as SnapshotRows;
 const VIEWS = viewsJson as unknown as Record<string, Record<PersonId, WeekView>>;
 const DIGESTS = digestsJson as Record<string, Record<PersonId, string>>;
 const PEOPLE: PersonId[] = ['A', 'B'];
+const END = Date.parse('2027-01-12T15:00:00Z');
 
 /** JSON with object keys sorted (arrays keep their order), so the digest doesn't depend on key order. */
 const canon = (v: unknown): string =>
@@ -77,27 +68,30 @@ if (process.env.GOLDEN_UPDATE) {
   Object.assign(DIGESTS, newDigests);
 }
 
-describe('golden: model vs the frozen server views on a 10-week timeline', () => {
+describe('golden: the WeekView on a 10-week timeline', () => {
   it('the fixtures exercise the interesting paths', () => {
     const all = Object.values(VIEWS).flatMap((v) => PEOPLE.map((p) => v[p]));
     expect(Object.keys(DIGESTS).length).toBe(660);
     expect(Object.keys(VIEWS).length).toBe(50);
-    expect(all.some((v) => v.harvest)).toBe(true);
-    expect(all.some((v) => v.jar.pendingSpends.length)).toBe(true);
+    // Badges but never all four for both (the ふたりボーナス is covered by bells.test.ts).
+    expect(all.some((v) => v.harvest && v.harvest.bonus.A > 0 && v.harvest.bonus.B > 0)).toBe(true);
+    expect(all.some((v) => v.harvest?.bonus.A === 0 && v.harvest.bonus.B === 0)).toBe(true);
     expect(all.some((v) => v.pending.length)).toBe(true);
-    expect(all.some((v) => v.jar.transfer)).toBe(true);
-    expect(facts.ledger.topups).toBeGreaterThan(0);
-    expect(facts.ledger.spends).toBeGreaterThan(1);
+    expect(all.some((v) => v.pots.treat.spent > 0 && v.pots.trip.spent > 0)).toBe(true);
+    expect(all.some((v) => v.menus.treat.some((x) => x.id === 'taiyaki'))).toBe(true);
+    const end = bellsLedger(reduce(ROWS), END);
+    expect(end.spends.map((x) => [x.spendId, x.voided])).toEqual([['bs-taiyaki', false], ['bs-daytrip', false], ['bs-ice', false], ['bs-cafe', true]]);
+    expect(DEFAULT_MENUS.treat.some((x) => x.id === 'taiyaki')).toBe(false);
   });
 
-  it('matches the full server WeekView at every key instant, for both people', () => {
+  it('matches the full WeekView at every key instant, for both people', () => {
     for (const [t, byPerson] of Object.entries(VIEWS)) {
       const v = views(t);
       for (const me of PEOPLE) expect(v[me], `${t} ${me}`).toStrictEqual(byPerson[me]);
     }
   });
 
-  it('matches the server WeekView digest at every checkpoint, for both people', () => {
+  it('matches the WeekView digest at every checkpoint, for both people', () => {
     const mismatches: string[] = [];
     for (const [t, byPerson] of Object.entries(DIGESTS)) {
       const v = views(t);
@@ -106,13 +100,32 @@ describe('golden: model vs the frozen server views on a 10-week timeline', () =>
     expect(mismatches.slice(0, 10), `${mismatches.length} views differ`).toEqual([]);
   }, 120_000);
 
-  it('the jar keeps the max when late data lowers a week (no claw-back)', () => {
-    const { week, at, paidB } = facts.clawback;
+  it('the island, the pots and きろく agree at every key instant', () => {
+    for (const t of Object.keys(VIEWS)) {
+      const tMs = Date.parse(t);
+      const s = reduce(rowsAt(tMs));
+      const l = bellsLedger(s, tMs);
+      const earned = l.days.reduce((n, d) => n + d.bells, 0) + l.bonuses.reduce((n, b) => n + b.bells, 0);
+      expect(l.earned, t).toBe(earned);
+      for (const me of PEOPLE) {
+        const v = buildWeekView(s, me, tMs);
+        for (const pot of ['treat', 'trip'] as const) expect(v.pots[pot], `${t} ${pot}`).toMatchObject(l.pots[pot]);
+        expect(v.pots.treat.earned + v.pots.trip.earned).toBe(l.earned);
+        expect(v.pots.treat.today + v.pots.trip.today).toBe(v.pots.todayBells);
+        expect(v.pots.treat.week + v.pots.trip.week).toBe(v.pots.weekBells);
+        const h = v.harvest;
+        if (h && provisionalMs(h.weekKey) <= tMs) expect(h.badges, `${t} badges`).toEqual(l.bonuses.find((b) => b.weekKey === h.weekKey)!.badges);
+      }
+    }
+  });
+
+  it('late data before the lock lowers a week; after the lock the week is fixed', () => {
+    const { week, at } = facts.lateLower;
     const t = Date.parse(at);
-    const w = settledWeeks(reduce(rowsAt(t)), t).find((x) => x.weekKey === week)!;
-    expect(w.final!.B).toBeLessThan(w.provisional.B);
-    expect(paidAt(w, t).B).toBe(w.provisional.B);
-    expect(paidAt(w, t).B).toBe(paidB);
+    const atHarvest = weekBells(reduce(rowsAt(provisionalMs(week) + 60_000)), week, provisionalMs(week) + 60_000);
+    const atLock = weekBells(reduce(rowsAt(t)), week, t);
+    expect(atLock.B.daily).toBeLessThan(atHarvest.B.daily);
+    expect(weekBells(reduce(ROWS), week, END)).toEqual(atLock);
   });
 });
 

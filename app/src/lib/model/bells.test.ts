@@ -57,8 +57,8 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.A.weekBells).toBe(3 * 1125); // only days up to today count, even with later-dated rows
     expect(v.pots.todayBells).toBe(2250);
     expect(v.pots.weekBells).toBe(6 * 1125);
-    expect(v.pots.treat).toEqual({ earned: 6 * 1125 * 0.2, spent: 0, balance: 6 * 1125 * 0.2 });
-    expect(v.pots.trip.earned).toBe(6 * 1125 - v.pots.treat.earned);
+    expect(v.pots.treat).toEqual({ earned: 1350, spent: 0, balance: 1350, today: 450, week: 1350 }); // 20% of 6 × 1,125
+    expect(v.pots.trip).toMatchObject({ earned: 6 * 1125 - 1350, today: 2250 - 450, week: 6 * 1125 - 1350 });
     expect(v.people.A.fruits.peach).toMatchObject({ todayActual: 60, todayGoal: 45, todayMet: true, weekDays: 7, weekGoalDays: 5, badge: true, weekBells: 3 * 225 });
     expect(v.people.A.fruits.apple).toMatchObject({ todayActual: 9000, todayGoal: 8000, todayMet: true, weekBells: 600 });
     expect(v.people.A.fruits.coconut).toMatchObject({ todayActual: 1, todayGoal: 1, todayMet: true, weekDays: 7, weekGoalDays: 3 });
@@ -71,7 +71,17 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.B.today).toEqual({ bells: 100, parts: { peach: 100, apple: 0, coconut: 0, pear: 0 } });
     expect(v.people.B.fruits.apple).toMatchObject({ todayActual: 5000, todayMet: false, weekDays: 0, badge: false });
     expect(v.people.A.today.bells).toBe(0);
-    expect(v.pots.trip).toEqual({ earned: 80, spent: 0, balance: 80 });
+    expect(v.pots.trip).toEqual({ earned: 80, spent: 0, balance: 80, today: 80, week: 80 });
+    expect(v.pots.treat).toMatchObject({ earned: 20, today: 20, week: 20 });
+  });
+
+  it('per-pot flow: each pot’s share of today and this week, split on totals, so it never drifts from the balances', () => {
+    // Monday 205 ベル (A: 41 min), Tuesday 15 (B: 3 min): 220 splits 44 / 176, Monday's 205 alone 41 / 164.
+    const r = rowsOf({ metrics: [metric(jst(D[0], '22:00'), 'A', D[0], 'exercise_min', 41), metric(jst(D[1], '09:00'), 'B', D[1], 'exercise_min', 3)] });
+    const v = buildWeekView(reduce(r), 'A', ms(D[1], '12:00'));
+    expect(v.pots).toMatchObject({ todayBells: 15, weekBells: 220 });
+    expect(v.pots.treat).toMatchObject({ earned: 44, today: 3, week: 44 }); // floor(220 × 0.2) − floor(205 × 0.2) = 44 − 41
+    expect(v.pots.trip).toMatchObject({ earned: 176, today: 12, week: 176 });
   });
 
   it('days before the economy’s first week (2026-10-26) never earn', () => {
@@ -92,6 +102,8 @@ describe('the weekly bonus lands at the Sunday 19:30 harvest', () => {
     expect(after.harvest).toMatchObject({ weekKey: WK, bonus: { A: 2000, B: 2000, duo: 1000 }, totalBells: 14 * 1125 + 5000, confirmedBy: [] });
     expect(after.pots.weekBells).toBe(14 * 1125 + 5000);
     expect(after.pots.treat.earned + after.pots.trip.earned).toBe(14 * 1125 + 5000);
+    expect(after.pots.treat.week + after.pots.trip.week).toBe(after.pots.weekBells);
+    expect(after.pots.treat.today + after.pots.trip.today).toBe(after.pots.todayBells);
     expect(after.host).toMatchObject({ key: 'host.harvest_ready', params: { bells: 14 * 1125 + 5000 } });
   });
 

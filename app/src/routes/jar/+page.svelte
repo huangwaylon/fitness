@@ -14,7 +14,7 @@
   import MenuEditor from '#lib/components/pots/MenuEditor.svelte';
   import Bells from '#lib/components/ui/Bells.svelte';
   import type { MenuItem, PotKey } from '#lib/types.ts';
-  import { potFill, potShare } from '#lib/components/pots/flow.ts';
+  import { potFill } from '#lib/components/pots/flow.ts';
   import { recentMoves } from '#lib/components/pots/recent.ts';
   import { bellsLedger } from '#lib/model/history.ts';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -84,11 +84,11 @@
     </div>
 
     <div class="cards">
-      <PotCard pot="treat" balance={pots.treat.balance} today={potShare('treat', pots.todayBells)} week={potShare('treat', pots.weekBells)}
+      <PotCard pot="treat" balance={pots.treat.balance} today={pots.treat.today} week={pots.treat.week}
         onedit={() => edit('treat')}>
         <TreatShelf items={menus.treat} balance={pots.treat.balance} onbuy={(item) => ask('treat', item)} />
       </PotCard>
-      <PotCard pot="trip" balance={pots.trip.balance} today={potShare('trip', pots.todayBells)} week={potShare('trip', pots.weekBells)}
+      <PotCard pot="trip" balance={pots.trip.balance} today={pots.trip.today} week={pots.trip.week}
         onedit={() => edit('trip')}>
         <TripList items={menus.trip} balance={pots.trip.balance} onbuy={(item) => ask('trip', item)} />
       </PotCard>

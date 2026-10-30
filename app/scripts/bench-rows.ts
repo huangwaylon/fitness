@@ -1,7 +1,7 @@
 // Realistic synthetic sheet rows for `npm run bench` and model/compact.test.ts: both people, the Shortcut syncing
 // every waking hour (round 9 review: ~21 metric rows per person-day, ~53k rows and ~3.7 MB of JSON by year 3).
 // Deterministic (seeded), so runs compare.
-import { addDays, targetsFor, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, habitsFor, weekKeyOf } from '#lib/scoring/index.ts';
 import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
@@ -28,7 +28,7 @@ export function syntheticRows(days: number): SnapshotRows {
   for (let d = 0; d < days; d++) {
     const date = addDays(FIRST_DAY, d);
     const wk = weekKeyOf(date);
-    const habits = { A: targetsFor('A', wk).habits, B: targetsFor('B', wk).habits };
+    const habits = { A: habitsFor('A', wk), B: habitsFor('B', wk) };
     const total = { A: 4000 + Math.floor(rand() * 9000), B: 3000 + Math.floor(rand() * 8000) };
     const exTotal = { A: Math.floor(rand() * 70), B: Math.floor(rand() * 50) };
     const gym = { A: d % 2 === 0, B: d % 7 === 1 || d % 7 === 4 };
@@ -64,8 +64,7 @@ export function syntheticRows(days: number): SnapshotRows {
       events.push([at(date, '20:01'), 'A', `hf:${d}`, 'highfive', '{}']);
     }
     if (d % 30 === 10) {
-      events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, label: 'ケーキ', amountYen: 800 })]);
-      events.push([at(date, '22:40'), 'A', `a:${d}`, 'approve', JSON.stringify({ spendId: `s${d}` })]);
+      events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, pot: 'treat', item: 'cafe', label: 'カフェデート', bells: 2000 })]);
     }
     if (d % 30 === 20) {
       events.push([at(date, '22:50'), 'A', `ms:${d}`, 'metric_set', JSON.stringify({ date: addDays(date, -1), metric: 'steps', value: 3000 })]);
