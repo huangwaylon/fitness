@@ -72,10 +72,13 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0);
 
-  // my villager opens 今夜のチェック
-  await page.locator('.if-scene button.vil').first().click();
+  // the partner opens their villager card (mine only hops: nothing to fill in, ADR 0021)
+  await page.locator('.if-scene button.vil').nth(1).click();
   await expect(page.locator('dialog[open]')).toHaveCount(1);
   await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await page.locator('.if-scene button.vil').first().click();
+  await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 
   // the jar is still the doorway to ふたりの壺
