@@ -13,6 +13,8 @@ import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
+/** Code outside the UI that hands i18n keys to it (the model's host line, labels, …). */
+const EMITTER_DIRS = ['lib/model', 'lib/scoring', 'lib/config', 'lib/contract', 'lib/time'];
 const UI_DIRS = ['lib/components', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts'];
 
 function files(p: string): string[] {
@@ -45,6 +47,15 @@ describe('i18n catalogs', () => {
       k.startsWith('host.') ? !usedBy(k, false) && !hostLines.has(k.slice(5)) : !usedBy(k)
     );
     expect(unused).toEqual([]);
+  });
+  it('have every key the model and the rules emit (round 16 M5: the model picked host lines the catalogs lacked)', () => {
+    const namespaces = new Set(Object.keys(ja).map((k) => k.split('.')[0]));
+    const emitted = EMITTER_DIRS.flatMap((d) => files(join(SRC, d)))
+      .filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f))
+      .flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/'([a-z]+\.[a-z_][\w.]*)'/g)].map((m) => m[1]))
+      .filter((k) => namespaces.has(k.split('.')[0]) && !/\.(ts|js|json|svelte)$/.test(k));
+    expect(emitted.length).toBeGreaterThan(0);
+    expect([...new Set(emitted)].filter((k) => !(k in ja) || !(k in en))).toEqual([]);
   });
   it('have every key the UI names literally', () => {
     const keys = new Set(Object.keys(ja));
