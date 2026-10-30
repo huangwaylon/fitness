@@ -1,5 +1,5 @@
 # 0019 — Play money (ベル), earned daily, in two shared pots
-**Status:** Accepted (user decision 2026-10-30). Supersedes the money and scoring parts of [0003](0003-economy.md),
+**Status:** **Partly superseded:** what earns (the four fruits, 🍐 eating habits) by [0021](0021-activity-rings-no-check-ins.md); the two pots, their menus and trip prices by [0022](0022-one-wallet-small-luxuries.md) (one wallet). Still true: ベル play money earned daily, the same goals for both, the weekly badge bonus and ふたりボーナス at the Sunday 19:30 harvest, the Wednesday 04:00 lock. Was: accepted (user decision 2026-10-30). Supersedes the money and scoring parts of [0003](0003-economy.md),
 [0006](0006-yen-single-currency-and-accountability.md), [0008](0008-open-ended-savings-per-fruit-rate.md),
 [0011](0011-mvp-rule-defaults.md) and [0017](0017-round-4-rule-changes-and-rule-versions.md) (§2–4, calibration).
 Keeps the four fruits as the four activities, rule versioning by week (0017 §7), the Wednesday 04:00 lock and きろく
@@ -142,7 +142,7 @@ habit keys simply stop counting. Menus that were already edited in the app (`pre
 changed.
 
 ## Amendment 2 — 2026-10-30, after the goals review
-The goals review ([round 12](../reviews/round-12/goals-review.md)) found ウェイ's real recent weeks earn ~21% of on
+The goals review (round 12, [reviews index](../reviews/README.md)) found ウェイ's real recent weeks earn ~21% of on
 target, and flagged rule gaps. The user kept the on-target goals (no phased ramp) and chose:
 
 | | Was | Now |

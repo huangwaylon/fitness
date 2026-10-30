@@ -1,7 +1,7 @@
 # 0021 — Activity Rings, steps and the gym; no manual check-ins
 **Status:** Accepted (user decision 2026-10-30). Amends [0019](0019-bells-daily-earning-two-pots.md) (what earns ベル)
 and supersedes its 🍐 eating habits, [0011](0011-mvp-rule-defaults.md) and [0017](0017-round-4-rule-changes-and-rule-versions.md)
-§1 (step-derived minutes). Keeps the two pots, the menus, the Sunday harvest, the ふたりボーナス, きろく, rule versioning
+§1 (step-derived minutes). Kept the two pots (since replaced by one wallet, [0022](0022-one-wallet-small-luxuries.md)), the menus, the Sunday harvest, the ふたりボーナス, きろく, rule versioning
 and the weight trend ([0020](0020-weight-trend-never-rewarded.md), never rewarded).
 
 **Context.** The user wants as little manual work as possible. Both wear an Apple Watch, and its Activity Rings
@@ -46,7 +46,7 @@ it). Gym visits are now one Arrive automation (an arrival counts, no duration).
 core, mixed cardio, cross training) is removed with `WeekView.pending`. Only the auto strength types
 (`STRENGTH.autoTypes`: Traditional / Functional Strength Training, Pilates, ≥ 15 min) or a きろく mark
 (`workout_edit {strength}`) make a workout a 🥥 day; any other type counts only when marked in きろく. Old `confirm` rows
-(and `checkin` rows) stay in the sheet and are ignored; the script still accepts both, so an old client's queue never jams.
+(and `checkin` rows) stay in the sheet and are ignored; the script still accepts both, so an old client's queue never jams. *(No longer true: `EVENT_TYPES` in `app/src/lib/contract/api.ts` now refuses `checkin` and `confirm` with `bad_request`.)*
 
 **Values** (`RULES[0]`, edited in place: play money, the economy's first week; `rules.test.ts`):
 

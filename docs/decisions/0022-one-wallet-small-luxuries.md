@@ -43,4 +43,4 @@ two weeks (3,000) ≈ 8,500, leaving ≈ 5,900 a week: a ほしいもの every ~
 
 **Data:** `pref` `menu` (one list); `spend {spendId, item, label, bells}` (a `pot` is refused); `treatMenu` / `tripMenu`,
 `POTS` and the split are gone. Applied in place to the economy's first week; `cleanupLegacyData` deletes every old
-spend, spend_void and pot menu so the wallet starts from earnings.
+spend, spend_void and pot menu so the wallet starts from earnings. *(It ran on the real sheet on 2026-10-30 and was then removed from the script.)*
