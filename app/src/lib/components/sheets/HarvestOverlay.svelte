@@ -180,7 +180,7 @@
   @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 110px; opacity: 1; padding-block: 6px; } }
   .who { flex: 1; min-width: 0; display: grid; gap: 4px; justify-items: start; }
   .nm { font-size: var(--fs-body); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hint { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .hint { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); word-break: auto-phrase; text-wrap: balance; }
   .av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-cream)); display: grid; place-items: center; line-height: 0; }
   .duo:not(.got) .av { filter: saturate(.2); opacity: .7; }
   .plus { font-size: var(--fs-talk); flex: none; }
