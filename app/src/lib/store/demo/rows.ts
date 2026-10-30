@@ -121,28 +121,27 @@ function demoRows(now: number): SnapshotRows {
   // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
   ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 
-  // The wallet (ADR 0022): everyday treats most weeks, a dinner out, a trip treat saved up for, one buy taken back by its
+  // The wallet (ADR 0022): treats most weeks, a dinner out, a trip treat saved up for, one buy taken back by its
   // buyer, and a menu edit.
   const buy = (t: number, p: PersonId, spendId: string, item: string, label: string, bells: number) =>
     ev(t, p, 'spend', { spendId, item, label, bells });
-  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'ice', 'アイス', 1200);
-  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'cafe', 'カフェデート', 2500);
-  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-snack-void', 'snack', 'おやつ・スナック', 1000);
+  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'snack', 'おやつ', 1200);
+  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'cafe', 'カフェ・デザート', 2500);
+  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-snack-void', 'snack', 'おやつ', 1200);
   ev(at(addDays(w(4), 2), 19, 34), 'A', 'spend_void', { spendId: 'demo-snack-void' });
-  // うめ adds たいやき to まいにちのごほうび.
+  // うめ adds たいやき to the menu.
   ev(at(addDays(w(4), 3), 21, 0), 'B', 'pref', {
     key: 'menu',
     value: JSON.stringify([
-      ...DEFAULT_MENU.filter((x) => x.section === 'daily').map((x) => ({ id: x.id, section: x.section, label: x.label.ja, bells: x.bells })),
-      { id: 'taiyaki', section: 'daily', label: 'たいやき', bells: 800 },
-      ...DEFAULT_MENU.filter((x) => x.section === 'trip').map((x) => ({ id: x.id, section: x.section, label: x.label.ja, bells: x.bells }))
+      ...DEFAULT_MENU.map((x) => ({ id: x.id, label: x.label.ja, bells: x.bells })),
+      { id: 'taiyaki', label: 'たいやき', bells: 800 }
     ])
   });
   buy(at(addDays(w(3), 5), 16, 0), 'B', 'demo-taiyaki', 'taiyaki', 'たいやき', 800);
   buy(at(addDays(w(3), 6), 19, 0), 'A', 'demo-dinner', 'dinner', '外ごはん', 6000);
-  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-meal', 'meal', '特別なごはん', 12000);
-  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'cafe', 'カフェデート', 2500);
-  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'snack', 'おやつ・スナック', 1000);
+  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-meal', 'trip', '旅のごほうび', 12000);
+  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'cafe', 'カフェ・デザート', 2500);
+  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'snack', 'おやつ', 1200);
 
   // Body weight (ADR 0020): 12 weeks of morning weigh-ins, gently down with day-to-day water noise, a few days
   // skipped, synced after breakfast; and a goal each. Weight never earns, so none of this moves a ベル.

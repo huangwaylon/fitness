@@ -23,8 +23,8 @@ Exactly these types (`EVENT_TYPES`); the script refuses anything else, and every
 - `harvest {week}` (「受け取る」: a ceremony only, the bonus counts either way) · `highfive {}`
 - `pref {key, value}` (`PREF_KEYS`; any other key is refused. Keys: `locale`, `villagerName`, `villager`, `goalWeight` (the sender's goal in kg, 20–300 with
   one decimal, or `null` to clear; ADR 0020), `moveGoal` (the sender's daily Move goal, an integer 100–2,000 kcal; ADR
-  0021: it applies from the Tokyo date of its `at` on, never to earlier days; anything else is ignored), and the shared `menu` (ADR 0022):
-  `value` is a JSON array of `{id, section: 'daily'|'trip', label, bells}` (≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000);
+  0021: it applies from the Tokyo date of its `at` on, never to earlier days; anything else is ignored), and the shared `menu` (ADR 0022, one list):
+  `value` is a JSON array of `{id, label, bells}` (≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000);
   the latest valid one by either person wins; an invalid one is ignored as a whole)
 
 Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:

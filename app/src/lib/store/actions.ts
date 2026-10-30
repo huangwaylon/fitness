@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs, parseMenu } from '#lib/model/state.ts';
-import type { MenuItem, PotKey, WalletItem } from '#lib/types.ts';
+import type { WalletItem } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
 import { MOVE_GOAL } from '#lib/config/rules.ts';
@@ -40,14 +40,6 @@ export function highFive() {
   return week.send('highfive', {});
 }
 
-/**
- * @public @deprecated No daily questions (2026-10-30): `view.pending` is always empty and `confirm` is no longer an
- * event type, so this does nothing. Deleted as soon as the island stops importing it (rings-contract.md, request 1).
- */
-export function confirmPending(_kind: 'workout', _id: string, _yes: boolean): SendResult {
-  return { ok: false };
-}
-
 export function confirmHarvest(): SendResult {
   const wk = week.view?.harvest?.weekKey;
   if (!wk) return { ok: false };
@@ -67,30 +59,19 @@ export function buy(itemId: string): SendResult {
   return week.send('spend', { spendId: newId(), item: item.id, label: item.label, bells: item.bells }, { holdMs: UNDO_MS });
 }
 
-/** @public @deprecated ADR 0022: one wallet. Use `buy`. */
-export const buyTreat = (itemId: string): SendResult => buy(itemId);
-/** @public @deprecated ADR 0022: one wallet. Use `buy`. */
-export const buyTrip = (itemId: string): SendResult => buy(itemId);
-
 /** Take a buy back (the buyer only; the model ignores anyone else's `spend_void`). */
 export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }
 
-/** Replace the shared menu, both sections (either of us; the latest edit wins). `{ok:false}` if the list is invalid. */
-export function saveMenu(items: WalletItem[]): SendResult {
-  const clean = parseMenu(items.map((x) => ({ id: x.id, section: x.section, label: x.label, bells: Math.round(x.bells) })));
+/**
+ * Replace the shared menu, one list (either of us; the latest edit wins). `{ok:false}` if the list is invalid. Items are
+ * stored as `{id, label, bells}` (a `section` is dropped).
+ */
+export function saveMenu(items: Pick<WalletItem, 'id' | 'label' | 'bells'>[]): SendResult {
+  const clean = parseMenu(items.map((x) => ({ id: x.id, label: x.label, bells: Math.round(x.bells) })));
   if (!clean) return { ok: false };
   return week.send('pref', { key: 'menu', value: JSON.stringify(clean) });
-}
-
-/**
- * @public @deprecated ADR 0022: one menu. Replaces one section (treat = daily) of the current menu. Use `saveMenu`.
- */
-export function setMenu(pot: PotKey, items: MenuItem[]): SendResult {
-  const section = pot === 'treat' ? 'daily' : 'trip';
-  const rest = (week.view?.menu ?? []).filter((x) => x.section !== section);
-  return saveMenu([...(section === 'daily' ? [] : rest), ...items.map((x) => ({ ...x, section })), ...(section === 'daily' ? rest : [])] as WalletItem[]);
 }
 
 /** A fresh id for a new menu item. */

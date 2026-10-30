@@ -62,7 +62,7 @@ describe('metric_set', () => {
     expect(metricAsOf(s, 'A', DAYS[0], 'steps', WED_MID)).toBe(3000);
     expect(earnAt(rows, 'A').fruits.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
     const view = buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows }, 'A', WED_MID);
-    expect(view.people.A.fruits.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
+    expect(view.people.A.rings.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
   });
 
   it('a later, higher sync beats a metric_set; a lower one does not', () => {
@@ -146,7 +146,6 @@ describe('workouts', () => {
 
   it('no daily questions: a yoga workout counts only when marked as strength in きろく', () => {
     const base = withRows(goodWeek(), { workouts: [workout(jst(DAYS[2], '20:00'), 'A', 'A-yoga', DAYS[2], 'Yoga', 30)] });
-    expect(buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows: base }, 'A', WED_MID).pending).toEqual([]);
     expect(strengthDates(base, 'A')).toEqual([DAYS[1], DAYS[3]]);
     const rows = withRows(base, { events: [ev(jst(DAYS[2], '21:00'), 'A', 'workout_edit', { id: 'A-yoga', strength: true })] });
     expect(strengthDates(rows, 'A')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
@@ -209,14 +208,13 @@ describe('history views', () => {
     expect(weekDetail(reduce(goodWeek()), WK, WED_MID).people.A.days[1].rings).toMatchObject({ pear: 150, cherry: 150 }); // 500 / 600 × 180
   });
 
-  it('week list: newest first from the economy’s first week, both people, 7 stamps, locked and open flags', () => {
+  it('week list: newest first from the economy’s first week, both people, locked and open flags', () => {
     const now = ms('2026-11-24', '12:00'); // Tuesday of the next week: WK's harvest opened, still open for edits
     const weeks = historyWeeks(reduce(rows), now);
     expect(weeks.map((w) => w.weekKey)).toEqual(['2026-11-23', '2026-11-16', '2026-11-09', '2026-11-02', '2026-10-26']); // the economy starts 2026-10-26
     const w = weeks[1];
     expect(w).toMatchObject({ settled: true, locked: false, open: true, current: false });
-    expect(w.people.A.stamps).toEqual(['active', 'strength', 'active', 'strength', 'active', 'active', 'active']);
-    expect(weeks[0].people.A.stamps.slice(2)).toEqual(['future', 'future', 'future', 'future', 'future']);
+    expect(w.people.A.ringWeek).toMatchObject({ coconut: { days: 2, goal: 3 }, apple: { days: 6, goal: 4 } });
     const locked = historyWeeks(reduce(rows), THU_AFTER)[1];
     expect(locked).toMatchObject({ weekKey: WK, locked: true, open: false });
   });
@@ -225,13 +223,12 @@ describe('history views', () => {
     const s = reduce(rows);
     const wd = weekDetail(s, WK, WED_MID);
     expect(wd.open).toBe(true);
-    expect(wd.people.A.days[0]).toMatchObject({ steps: 7000, edited: true, exerciseMin: 30, minutes: 30, minutesSource: 'watch' });
-    expect(wd.people.B.days[0]).toMatchObject({ exerciseMin: 45, minutesSource: 'edit', edited: true });
+    expect(wd.people.A.days[0]).toMatchObject({ steps: 7000, edited: true, exerciseMin: 30 });
+    expect(wd.people.B.days[0]).toMatchObject({ exerciseMin: 45, edited: true, editedFields: ['minutes'] });
     expect(wd.people.A.days[4].future).toBe(true);
     const dd = dayDetail(s, DAYS[0], WED_MID);
     expect(dd.people.A.steps).toEqual({ value: 7000, edited: true });
     expect(dd.people.B.exercise).toMatchObject({ value: 45, source: 'edit', edited: true });
-    expect(dd.people.B.minutes).toEqual(dd.people.B.exercise); // deprecated alias
     expect(dd.edits.map((e) => e.by)).toEqual(['B', 'A']);
     expect(dd.people.A.workouts).toEqual([]);
     expect(dayDetail(s, DAYS[1], WED_MID).people.A.workouts).toMatchObject([{ id: 'A-pil-1', type: 'Pilates', strength: true, excluded: false }]);
@@ -255,7 +252,7 @@ describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
     expect(minutesOf(big, 'A') - minutesOf(base, 'A')).toBe(20);
     const dd = dayDetail(reduce(big), DAYS[0], WED_MID).people.A.exercise;
     expect(dd).toMatchObject({ value: d0 + 20, source: 'manual' });
-    expect(weekDetail(reduce(big), WK, WED_MID).people.A.days[0]).toMatchObject({ minutesSource: 'manual', editedFields: ['workout'] });
+    expect(weekDetail(reduce(big), WK, WED_MID).people.A.days[0]).toMatchObject({ exerciseMin: d0 + 20, editedFields: ['workout'] });
   });
 
   it('two manual workouts on a day add up with each other (but still only against the larger source)', () => {
@@ -360,7 +357,6 @@ describe('presence rows (read-time rules in reduce)', () => {
       { id: `anytime@${jst(DAYS[0], '19:00')}`, place: 'エニタイム', arriveAt: jst(DAYS[0], '19:00') },
       { id: `anytime@${jst(DAYS[0], '20:30')}`, place: 'エニタイム', arriveAt: jst(DAYS[0], '20:30') }
     ]);
-    expect(buildWeekView(s, 'A', WED_MID).pending).toEqual([]);
   });
 
   it("an unknown place, or another person's place, is ignored", () => {

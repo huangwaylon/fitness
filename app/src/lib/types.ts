@@ -7,11 +7,6 @@ export type LocalDate = string;
 export type WeekKey = string;
 
 /**
- * @deprecated The four fruits of ADR 0019 (🍐 = eating habits). Use `RingFruit` (ADR 0021); removed once the UI has moved.
- */
-export type FruitKey = 'peach' | 'coconut' | 'apple' | 'pear';
-
-/**
  * The five fruits of ADR 0021, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
  * 🍒 cherry = Stand minutes, 🍎 apple = steps, 🥥 coconut = gym (an arrival or a Watch strength workout).
  */
@@ -46,18 +41,19 @@ export interface Visit {
 
 // ---- ベル economy (ADR 0019) ----
 
-/** @deprecated ADR 0019's two pots (ADR 0022: one wallet). Aliases until the UI has moved: see PotsView. */
-export type PotKey = 'treat' | 'trip';
-
-/** The menu's two sections (ADR 0022): 🍦 まいにちのごほうび (everyday) and ✈️ 旅のごほうび (on a trip). */
+/** @deprecated The menu has no sections any more (one list, lead 2026-10-30). See WalletItem.section. */
 export type MenuSection = 'daily' | 'trip';
 
-/** A shared menu entry (ADR 0022), editable in the app (`pref` menu): either person can buy it from the wallet. */
+/** A shared menu entry (ADR 0022: one list), editable in the app (`pref` menu): either person can buy it from the wallet. */
 export interface WalletItem {
   id: string;
-  section: MenuSection;
   label: string;
   bells: number;
+  /**
+   * @deprecated Not stored (the menu is one list): the view fills it ('trip' for the `trip` item, else 'daily') only
+   * until the wallet screen stops reading it; `saveMenu` drops it.
+   */
+  section: MenuSection;
 }
 
 /** The shared wallet (ADR 0022): every ベル earned, minus the accepted buys. */
@@ -74,51 +70,12 @@ export interface WalletView {
   week: number;
 }
 
-/** A shared menu entry (おやつ item or 旅 trip type), editable in the app (`pref` treatMenu / tripMenu). */
-/** @deprecated A pot menu entry (ADR 0019). Use WalletItem. */
-export interface MenuItem {
-  id: string;
-  label: string;
-  bells: number;
-}
-
-/** @deprecated ベル per ADR 0019 fruit (🍐 here = Move ベル since ADR 0021, 🍒 missing). Use `RingBells`. */
-export type FruitBells = Record<FruitKey, number>;
-
 /** One person's earnings of one day. */
 export interface DayBells {
   date: LocalDate;
   bells: number;
   /** Per ring fruit (ADR 0021); sums to `bells`. */
   rings: RingBells;
-  /** @deprecated See FruitBells. */
-  parts: FruitBells;
-}
-
-/** @deprecated The wallet's totals under the pots' name (ADR 0022). Read WalletView. */
-export interface PotBalance {
-  balance: number;
-  earned: number;
-  spent: number;
-}
-
-/** @deprecated See PotsView. */
-interface PotFlow extends PotBalance {
-  today: number;
-  week: number;
-}
-
-/**
- * @deprecated ADR 0022 has one wallet. Until the UI has moved: `treat` and `trip` are BOTH the wallet (so every item
- * stays buyable), `todayBells` / `weekBells` = wallet.today / week. Read `WeekView.wallet`.
- */
-interface PotsView {
-  treat: PotFlow;
-  trip: PotFlow;
-  /** Both people, today so far. */
-  todayBells: number;
-  /** Both people, this week so far, incl. the weekly bonus once it landed (Sunday 19:30). */
-  weekBells: number;
 }
 
 /** The Sunday harvest's weekly bonus: +badges.bells per badge each, +badges.duoPerBadge per badge both met (ふたりボーナス). */
@@ -126,26 +83,6 @@ export interface HarvestBonus {
   A: number;
   B: number;
   duo: number;
-}
-
-/**
- * @deprecated ADR 0019's fruit progress, filled from the ring numbers since ADR 0021 (🍑🍎🥥 as the rings; 🍐 = Move,
- * in kcal). Read `RingProgress`.
- */
-export interface FruitProgress {
-  /** Today's counted amount: minutes (🍑), steps (🍎), 1/0 strength day (🥥), ticks (🍐). */
-  todayActual: number;
-  /** Today's daily goal in the same unit: 45, 8,000, 1, 3. */
-  todayGoal: number;
-  /** Today's goal is met (🍎 also by the tsuyu rule; 🍐 at 3 ticks). */
-  todayMet: boolean;
-  /** Progress toward the weekly badge: days meeting the daily goal (🍑🍎🥥), or ticks (🍐). */
-  weekDays: number;
-  /** The badge threshold in the same unit: 5 days, 4 days, 3 days, 15 ticks (🍐 fewer over 正月). */
-  weekGoalDays: number;
-  badge: boolean;
-  /** This fruit's daily ベル this week (the badge's +500 is in the harvest bonus, not here). */
-  weekBells: number;
 }
 
 /** A ring fruit's progress today and this week (ADR 0021). Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps, 🥥 1/0. */
@@ -172,27 +109,15 @@ export interface PersonWeekView {
   villagerName: string;
   /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
   villager: string | null;
-  /**
-   * Today's earnings so far. `rings`: per ring fruit (ADR 0021; sums to `bells`). `parts` is @deprecated (FruitBells).
-   */
-  today: { bells: number; parts: FruitBells; rings: RingBells };
+  /** Today's earnings so far, per ring fruit (ADR 0021; `rings` sums to `bells`). */
+  today: { bells: number; rings: RingBells };
   /** This week's daily earnings so far (without the weekly bonus). */
   weekBells: number;
-  /** @deprecated ADR 0019's four fruits (see FruitProgress). Read `rings`. */
-  fruits: Record<FruitKey, FruitProgress>;
   /** The five ring fruits (ADR 0021). */
   rings: Record<RingFruit, RingProgress>;
   /** The person's Move goal in force today, kcal (`pref` moveGoal; default ウェイ 600, うめ 400). */
   moveGoal: number;
   lastSyncAt: string | null;
-}
-
-/** @deprecated No daily questions (2026-10-30): `WeekView.pending` is always empty. */
-interface PendingConfirmation {
-  kind: 'workout';
-  id: string;
-  date: LocalDate;
-  label: string;
 }
 
 export interface HarvestView {
@@ -201,8 +126,6 @@ export interface HarvestView {
   bonus: HarvestBonus;
   /** The week's total ベル, both people: daily earnings + the bonus. */
   totalBells: number;
-  /** @deprecated ADR 0019's four badges (🍐 = the Move badge since ADR 0021). Read `ringBadges`. */
-  badges: Record<PersonId, Record<FruitKey, boolean>>;
   /** The week's five badges per person (ADR 0021; lit = met, +bonus each). */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
   /** Who tapped 「受け取る」 (a ceremony only). */
@@ -218,16 +141,10 @@ export interface WeekView {
   people: Record<PersonId, PersonWeekView>;
   /** The shared wallet (ADR 0022). */
   wallet: WalletView;
-  /** The shared menu, both sections in order (latest `pref` menu by either person, else the defaults). */
+  /** The shared menu, one list (latest `pref` menu by either person, else the defaults). */
   menu: WalletItem[];
-  /** @deprecated See PotsView. */
-  pots: PotsView;
-  /** @deprecated The menu split by section (treat = daily, trip = trip). Read `menu`. */
-  menus: Record<PotKey, MenuItem[]>;
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;
-  /** @deprecated Always empty (no daily questions, 2026-10-30). */
-  pending: PendingConfirmation[];
   /** i18n key (`host.*`) for the host しずえ's one line, plus params. */
   host: { key: string; params?: Record<string, string | number> };
   highFivesToday: number;

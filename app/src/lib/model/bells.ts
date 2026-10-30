@@ -3,7 +3,7 @@
 // shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
 import type {
-  DayBells, FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, RingBells, RingFruit, WalletItem, WalletView, WeekKey
+  DayBells, HarvestBonus, LocalDate, PersonId, RingFruit, WalletItem, WalletView, WeekKey
 } from '#lib/types.ts';
 import { DEFAULT_MENU } from '#lib/config/rules.ts';
 import { addDays, earnWeek, duoBonus, weekDays, weekKeyOf, type EarnInput, type WeekEarning } from '#lib/scoring/index.ts';
@@ -34,10 +34,6 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Acti
     visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v)
   };
 }
-
-/** @deprecated fields (ADR 0019's four fruits) filled from the ring numbers until the UI has moved: 🍐 = Move. */
-export const legacyParts = (r: RingBells): FruitBells => ({ peach: r.peach, coconut: r.coconut, apple: r.apple, pear: r.pear });
-export const legacyBadges = (b: Record<RingFruit, boolean>): Record<FruitKey, boolean> => ({ peach: b.peach, coconut: b.coconut, apple: b.apple, pear: b.pear });
 
 /** Both people's earnings of a week, as of `t` (earnTimeOf). */
 export interface WeekBells {
@@ -99,10 +95,14 @@ export const dailyUpTo = (e: WeekEarning, today: LocalDate): number => e.days.re
 
 // ---------- the wallet and spends (ADR 0022) ----------
 
-/** The shared menu: the latest valid `pref` menu by either person, else the defaults in the viewer's language. */
+/**
+ * The shared menu, one list: the latest valid `pref` menu by either person, else the defaults in the viewer's language.
+ * (`section` is the deprecated fill-in, WalletItem.section.)
+ */
 export function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
-  return latestAt(s.menu, Infinity)?.map((x) => ({ ...x })) ??
-    DEFAULT_MENU.map((x) => ({ id: x.id, section: x.section, label: x.label[locale], bells: x.bells }));
+  const items = latestAt(s.menu, Infinity) ?? DEFAULT_MENU.map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
+  // Key order id, section, label, bells: the wallet screen on main compares menus as JSON text.
+  return items.map((x) => ({ id: x.id, section: x.id === 'trip' ? 'trip' : 'daily', label: x.label, bells: x.bells }));
 }
 
 /** An accepted buy (a buy the wallet couldn't cover is ignored and never listed). */
@@ -116,8 +116,6 @@ export interface LedgerSpend {
   bells: number;
   voided: boolean;
   voidedAt: number | null;
-  /** @deprecated From the item's section in the current menu (trip → 'trip', else 'treat'). Read `item`. */
-  pot: PotKey;
 }
 
 /** The wallet's totals (WalletView without the today / week flow). */
@@ -168,7 +166,6 @@ export function walletAt(s: State, now: number): WalletState {
   };
   const earned = days.reduce((n, x) => n + x.bells, 0) + bonuses.reduce((n, x) => n + x.bells, 0);
 
-  const tripIds = new Set(menuAt(s, 'ja').filter((x) => x.section === 'trip').map((x) => x.id));
   let spent = 0;
   const accepted = new Map<string, LedgerSpend>();
   const spends: LedgerSpend[] = [];
@@ -183,8 +180,7 @@ export function walletAt(s: State, now: number): WalletState {
       if (earnedBy(sp.at) - spent < sp.bells) continue; // the wallet couldn't cover it: ignored
       spent += sp.bells;
       const entry: LedgerSpend = {
-        spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, label: sp.label, bells: sp.bells, voided: false, voidedAt: null,
-        pot: tripIds.has(sp.item) ? 'trip' : 'treat'
+        spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, label: sp.label, bells: sp.bells, voided: false, voidedAt: null
       };
       accepted.set(sp.spendId, entry);
       spends.push(entry);
@@ -222,15 +218,11 @@ export interface LedgerBonus {
   bells: number;
   /** The week's five badges per person (ADR 0021). */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
-  /** @deprecated ADR 0019's four (🍐 = Move). Read `ringBadges`. */
-  badges: Record<PersonId, Record<FruitKey, boolean>>;
   locked: boolean;
 }
 
 export interface BellsLedger {
   wallet: WalletBalance;
-  /** @deprecated Both = the wallet (see PotsView). */
-  pots: Record<PotKey, PotBalance>;
   /** Everything earned so far, both people (= wallet.earned). */
   earned: number;
   /** Newest first, from the economy's first day to today. */
@@ -252,19 +244,18 @@ export function bellsLedger(s: State, now: number): BellsLedger {
     for (let i = 0; i < 7; i++) {
       const [a, b] = [w.A.days[i], w.B.days[i]];
       if (a.date > today) break;
-      const day = (d: typeof a): DayBells => ({ date: d.date, bells: d.bells, rings: { ...d.rings }, parts: legacyParts(d.rings) });
+      const day = (d: typeof a): DayBells => ({ date: d.date, bells: d.bells, rings: { ...d.rings } });
       days.push({ date: a.date, weekKey: w.weekKey, bells: a.bells + b.bells, people: { A: day(a), B: day(b) }, locked });
     }
     if (provisionalMs(w.weekKey) <= now) {
       bonuses.push({
         weekKey: w.weekKey, at: provisionalMs(w.weekKey), bonus: { ...w.bonus }, bells: w.bonusBells,
-        ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } }, badges: { A: legacyBadges(w.A.badges), B: legacyBadges(w.B.badges) }, locked
+        ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } }, locked
       });
     }
   }
   return {
     wallet: { ...p.wallet },
-    pots: { treat: { ...p.wallet }, trip: { ...p.wallet } },
     earned: p.wallet.earned,
     days: days.reverse(),
     bonuses: bonuses.reverse(),

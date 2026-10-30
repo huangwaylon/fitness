@@ -1,13 +1,12 @@
 // Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the wallet, the harvest). The
 // ベル economy itself (earnings, the wallet, buys, the menu, the ledger) lives in bells.ts; golden.test.ts pins the views.
 import type {
-  FruitKey, FruitProgress, HarvestView, LocalDate, MenuItem, PersonId, PersonWeekView, PotKey, RingFruit, RingProgress, WalletItem,
-  WalletView, WeekKey, WeekView
+  HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, WalletView, WeekKey, WeekView
 } from '#lib/types.ts';
-import { FRUITS, PEOPLE, RING_FRUITS } from '#lib/config/rules.ts';
+import { PEOPLE, RING_FRUITS } from '#lib/config/rules.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
 import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, legacyBadges, legacyParts, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
+import { dailyUpTo, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
 import type { Snapshot } from './snapshot.ts';
 import { firstWeek, jstMs, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
@@ -64,22 +63,12 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
   };
 }
 
-/** @deprecated `fruits` (ADR 0019's four) from the ring progress: 🍐 = Move. */
-const legacyFruit = (p: RingProgress): FruitProgress => ({
-  todayActual: p.today, todayGoal: p.goal, todayMet: p.met, weekDays: p.weekDays, weekGoalDays: p.weekGoalDays, badge: p.badge, weekBells: p.weekBells
-});
-
-/** @deprecated `menus`: the menu split by section (treat = daily), without the section. */
-function legacyMenus(menu: WalletItem[]): Record<PotKey, MenuItem[]> {
-  const pick = (section: WalletItem['section']) => menu.filter((x) => x.section === section).map(({ id, label, bells }) => ({ id, label, bells }));
-  return { treat: pick('daily'), trip: pick('trip') };
-}
 
 /** A person's earnings of `today` (zeros outside the week or before the economy). */
 function todayOf(e: WeekEarning | undefined, today: LocalDate): PersonWeekView['today'] {
   const d = e?.days.find((x) => x.date === today);
   const rings = d ? { ...d.rings } : zeroRings();
-  return { bells: d?.bells ?? 0, rings, parts: legacyParts(rings) };
+  return { bells: d?.bells ?? 0, rings };
 }
 
 /** One person's card. Both players see everything (no privacy filter). */
@@ -93,7 +82,6 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
     villager: pref.villager ?? null,
     today: todayOf(e, today),
     weekBells: dailyUpTo(e, today),
-    fruits: Object.fromEntries(FRUITS.map((k: FruitKey) => [k, legacyFruit(rings[k])])) as PersonWeekView['fruits'],
     rings,
     moveGoal,
     lastSyncAt: s.lastSync[person]
@@ -141,10 +129,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     } as Record<PersonId, PersonWeekView>,
     wallet,
     menu,
-    pots: { treat: { ...wallet }, trip: { ...wallet }, todayBells: wallet.today, weekBells: wallet.week },
-    menus: legacyMenus(menu),
     harvest: harvestView(s, now, act),
-    pending: [],
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
   return { ...base, host: hostLine(base) };
@@ -164,7 +149,6 @@ export function harvestOf(w: WeekBells, confirmedBy: PersonId[]): HarvestView {
     weekKey: w.weekKey,
     bonus: { ...w.bonus },
     totalBells: w.A.daily + w.B.daily + w.bonusBells,
-    badges: { A: legacyBadges(w.A.badges), B: legacyBadges(w.B.badges) },
     ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } },
     confirmedBy
   };
