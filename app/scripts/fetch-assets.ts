@@ -109,7 +109,7 @@ for (const e of EMOTIONS) SPECS[`reactions/${e.toLowerCase()}`] = [96, `Emotion_
 SPECS['reactions/pose-viva'] = [96, 'Viva_NH_Reaction_Icon.png'];
 // Every roster villager (src/lib/villagers/roster.ts): a full-body render + the round head icon.
 // The 2.0 villagers' `<Name>_NH.png` is a small (~230 px) promo crop with the feet cut off: use the full-body model.
-const MODEL_FIRST = new Set(['roswell', 'zoe', 'ace', 'frett', 'quinn', 'marlo', 'faith', 'petri', 'cephalobot', 'rio', 'chabwick', 'azalea']);
+const MODEL_FIRST = new Set(['roswell', 'zoe', 'ace', 'frett', 'quinn', 'marlo', 'faith', 'petri', 'cephalobot', 'rio', 'chabwick', 'azalea', 'sasha', 'shino', 'audie', 'rosie']);
 for (const { id, nameEn } of Object.values(ROSTER)) {
   const name = nameEn.replace(/ /g, '_'); // file titles use underscores ('Agent S' → Agent_S_NH.png)
   // Prefer the large transparent renders; `<Name>_NH.png` (the infobox image) is the safe fallback, and the 3D
