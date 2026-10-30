@@ -4,8 +4,7 @@
   // card. Drawn in pixels at the measured width so the dots stay round at 320–430. Hover / touch on the full chart
   // shows the day under the finger (date, weight, trend).
   import type { WeightPoint } from '#lib/model/weight.ts';
-  import { daysBetween } from '#lib/model/weight.ts';
-  import { addDays } from '#lib/time/dates.ts';
+  import { addDays, daysBetween } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatDate } from '#lib/i18n/format.ts';
   import { kgText } from './fmt.ts';

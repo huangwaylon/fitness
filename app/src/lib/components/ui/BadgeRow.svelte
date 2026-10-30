@@ -19,7 +19,7 @@
   }
   let { badges, size = '28px', stagger = null, progress = null }: Props = $props();
   const label = $derived(
-    RING_FRUITS.map((f) => `${t(`fruit.${f}`)} ${badges[f] ? '✓' : progress ? `${progress[f].days}/${progress[f].goal}` : '—'}`).join('、')
+    RING_FRUITS.map((f) => `${t(`fruit.${f}`)} ${badges[f] ? '✓' : progress ? `${Math.min(progress[f].days, progress[f].goal)}/${progress[f].goal}` : '—'}`).join('、')
   );
 </script>
 
@@ -46,6 +46,8 @@
   .b:not(.on) :global(.official), .b:not(.on) > :global(svg) { opacity: .4; filter: saturate(0); }
   /* round 16 #16: an unearned badge stays visible on the night navy */
   :global(:root[data-tod='night']) .b:not(.on) :global(.official) { opacity: .6; }
+  /* round 21: and its disc reads as a disc, not a dark hole in the navy card (r19 left this) */
+  :global(:root[data-tod='night']) .b:not(.on) { background: color-mix(in srgb, var(--text) 14%, transparent); }
   .b.on { background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-cream)); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .ok {
     position: absolute; right: -3px; bottom: -3px; width: calc(var(--b) * .5); height: calc(var(--b) * .5); min-width: 14px; min-height: 14px; padding: 2px;

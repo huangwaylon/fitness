@@ -40,7 +40,6 @@ export interface WeightTrend {
 }
 
 /** Re-exported for WeightChart.svelte, which imports it from here. */
-export { daysBetween };
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
 /** A day's weight as of T: the latest ingested row or edit stamped at or before T. */

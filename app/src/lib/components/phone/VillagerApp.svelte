@@ -40,6 +40,8 @@
   function saveName() {
     if (name.trim() && name.trim() !== me.villagerName) setVillagerName(name);
   }
+  // Closing the phone (✕, Esc) while the field is focused may not blur it first: save on the way out too.
+  $effect(() => () => untrack(saveName));
 </script>
 
 <div class="preview">
