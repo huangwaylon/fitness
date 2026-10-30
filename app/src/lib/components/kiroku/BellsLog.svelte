@@ -5,7 +5,7 @@
   // live). A week shows 🔒 once it locked (its days are final); a day can still change until then.
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerBonus, LedgerDay, LedgerSpend } from '#lib/model/history.ts';
-  import { weekKeyOf } from '#lib/time/dates.ts';
+  import { localDateAt, weekKeyOf } from '#lib/time/dates.ts';
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Bells from '../ui/Bells.svelte';
@@ -25,7 +25,6 @@
   }
   let { ledger, me, order, names, villagers, onvoid, onday }: Props = $props();
 
-  const tokyoDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo' });
   interface Week { weekKey: WeekKey; days: LedgerDay[]; bonus: LedgerBonus | null; spends: LedgerSpend[]; bells: number; locked: boolean }
   const weeks = $derived.by((): Week[] => {
     const m = new Map<WeekKey, Week>();
@@ -41,7 +40,7 @@
       w.bonus = b;
       w.bells += b.bells;
     }
-    for (const s of ledger.spends) get(weekKeyOf(tokyoDate.format(new Date(s.at)))).spends.push(s);
+    for (const s of ledger.spends) get(weekKeyOf(localDateAt(s.at))).spends.push(s);
     return [...m.values()].sort((a, b) => b.weekKey.localeCompare(a.weekKey));
   });
 </script>

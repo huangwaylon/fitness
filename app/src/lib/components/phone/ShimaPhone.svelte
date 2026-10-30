@@ -116,7 +116,7 @@
   {:else}
     <div class="page">
       {#if app === 'kiroku'}
-        {#await loadKiroku() then { default: Kiroku }}<Kiroku bind:this={kiroku} {entry} />{/await}
+        {#await loadKiroku() then { default: Kiroku }}<Kiroku bind:this={kiroku} {entry} />{:catch}<p class="fail" role="status">{t('state.error')}</p>{/await}
       {:else if app === 'help' && view}
         <HelpApp {view} />
       {:else if app === 'villager' && view}
@@ -136,6 +136,7 @@
 <style>
   /* demo mode: a small yuzu chip under the home grid */
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
+  .fail { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
   .titlebar { flex: none; position: relative; z-index: 1; margin-bottom: 8px; }
   /* the paper sheet's fade under the title bar (round 21): rows scrolling up fade out instead of being cut at a hard edge;
      at the top it covers only the 14px gap above the first row */

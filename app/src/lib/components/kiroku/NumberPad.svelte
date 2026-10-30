@@ -11,14 +11,16 @@
     sub: string;
     old: number | null;
     max: number;
+    /** The smallest value けってい accepts (a manual workout: 1 minute). */
+    min?: number;
     unit?: string;
     onok: (value: number) => void;
     oncancel: () => void;
   }
-  let { label, sub, old, max, unit = '', onok, oncancel }: Props = $props();
+  let { label, sub, old, max, min = 0, unit = '', onok, oncancel }: Props = $props();
   let digits = $state('');
   const value = $derived(digits === '' ? null : Number(digits));
-  const valid = $derived(value !== null && value <= max && value !== old);
+  const valid = $derived(value !== null && value >= min && value <= max && value !== old);
 
   /** A key, tapped or typed: NH's soft keyboard click (⌫ and C a little lower). */
   function press(k: string) {

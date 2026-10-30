@@ -72,7 +72,7 @@
   /** Edit controls close a little before the lock, so an edit made now still lands in time (M1). */
   const canEdit = $derived(!!day && !!m && day.open && !day.future && m.now < day.lockAt - EDIT_CUTOFF_MS);
 
-  // Apply an entry (ribbon → this week, jar total → お金) each time one arrives.
+  // Apply an entry (ribbon → this week, jar total → the ベル tab) each time one arrives.
   $effect(() => {
     const e = entry;
     if (!e) return;
@@ -258,8 +258,8 @@
           {/each}
         </div>
       {:else}
-        <NumberPad label={typeLabel(addType)} sub={dayTitle(s.date)} old={null} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
-          onok={(v) => v >= MANUAL_WORKOUT_MIN.min && saveAdd(s.date, v)} oncancel={() => (addType = null)} />
+        <NumberPad label={typeLabel(addType)} sub={dayTitle(s.date)} old={null} min={MANUAL_WORKOUT_MIN.min} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
+          onok={(v) => saveAdd(s.date, v)} oncancel={() => (addType = null)} />
       {/if}
     {/if}
   {/if}

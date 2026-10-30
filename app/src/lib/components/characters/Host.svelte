@@ -7,7 +7,7 @@
   //   <Host pose="bow" size={72} talking />   explicit pose, bouncing while text types
   //   <Host head size={44} />                 round head icon (static)
   // A full-body Host with `animate` claims the director's しずえ, so island idle life and reactions
-  // (check-in saved, sync error, harvest…) can reach her. Only the most recently mounted live Host is
+  // (a sync, a sync error, the harvest) can reach her. Only the most recently mounted live Host is
   // driven (e.g. the harvest overlay's over the island's); the others just float. Call `hostTap()`
   // from motion/director when she is tapped with nothing left to read.
   // Winter (snow season): the full-body cardigan replaces every pose. Night 22–05: slow breathing.
