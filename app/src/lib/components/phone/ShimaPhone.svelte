@@ -1,8 +1,7 @@
 <script lang="ts">
-  // しまフォン launcher (v5 §4): a NookPhone-screen sheet with a status row (time · leaf · デモ in demo),
-  // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
+  // しまフォン launcher (v5 §4): a NookPhone-screen sheet: the title bar and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
-  // The status row and title bar stay put; only `.phone-body` (home grid or the app) scrolls (round 10).
+  // The title bar stays put; only `.phone-body` (home grid or the app) scrolls (round 10).
   // Apps: help, villager (+ name), language, sync, sound. (No privacy settings: both players see everything; no alerts.)
   // Sounds (docs/design/sound.md §5): the phone opens and closes with its own little tune, an app opens with a pop,
   // ‹ back is the cancel tone.
@@ -10,7 +9,6 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import LeafCoin from '../ui/LeafCoin.svelte';
   import HelpApp from './HelpApp.svelte';
   import VillagerApp from './VillagerApp.svelte';
   import LangApp from './LangApp.svelte';
@@ -21,22 +19,20 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { lazy } from '#lib/ui-state/reload.ts';
-  import { minuteNow } from '#lib/time/clock.ts';
-  import { clockTime } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   type AppId = 'kiroku' | 'help' | 'villager' | 'lang' | 'sync' | 'sound';
   let { open = $bindable() }: { open: boolean } = $props();
 
-  // `tile`: a full official NookPhone tile. Otherwise `glyph` (official) sits on our `fill`.
+  // `tile`: a full official NookPhone tile (`fill` = its own background). Otherwise `glyph` (official) sits on our `fill`.
   const APPS: { id: AppId; tile?: string; glyph?: string; fill?: string }[] = [
     // NH's Nook Miles app is the "what you did" log with stamp cards: きろく sits on its tile, first.
-    { id: 'kiroku', tile: 'phone/miles' },
+    { id: 'kiroku', tile: 'phone/miles', fill: '#8B97EB' },
     { id: 'help', glyph: 'phone/glyph-help', fill: 'var(--c-yuzu)' },
-    { id: 'villager', tile: 'phone/passport' },
+    { id: 'villager', tile: 'phone/passport', fill: '#76D787' },
     { id: 'lang', glyph: 'phone/glyph-chat', fill: 'var(--c-mint)' },
-    { id: 'sync', tile: 'phone/rescue' },
+    { id: 'sync', tile: 'phone/rescue', fill: '#FD5967' },
     // NH has no sound settings on its phone (only the console's volume): our own note glyph on a leaf tile
     { id: 'sound', glyph: 'i-note', fill: 'var(--c-leaf)' }
   ];
@@ -49,8 +45,6 @@
 
   const view = $derived(week.view);
   const title = $derived(app ? t(`phone.app.${app}`) : t('phone.name'));
-
-  const clock = $derived(clockTime(minuteNow()));
 
   /** U15: もどる puts focus back on the app tile it came from. */
   async function back() {
@@ -97,12 +91,6 @@
 </script>
 
 <Sheet bind:open label={t('phone.name')} variant="phone" onclose={closed}>
-  <div class="status" aria-hidden="true">
-    <span class="money">{clock}</span>
-    <LeafCoin kind="leaf" size={16} />
-    <span class="demo-wrap">{#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}</span>
-  </div>
-
   <!-- the one title bar: ‹ back to the previous level (an app → home, a きろく level → the one above), ✕ closes the phone -->
   <div class="titlebar"><NavBar {title} onback={app ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
@@ -115,7 +103,7 @@
             {#if a.glyph?.startsWith('i-')}
               <svg class="own" viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>
             {:else}
-              <OfficialArt key={a.tile ?? a.glyph} size={a.tile ? '100%' : '69%'} eager>
+              <OfficialArt key={a.tile ?? a.glyph} size={a.tile ? 'calc(var(--tile) * 1.04)' : 'calc(var(--tile) * .69)'} eager>
                 {#snippet fallback()}<span class="fb"></span>{/snippet}
               </OfficialArt>
             {/if}
@@ -124,6 +112,7 @@
         </button>
       {/each}
     </div>
+    {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
   {:else}
     <div class="page">
       {#if app === 'kiroku'}
@@ -145,13 +134,9 @@
 </Sheet>
 
 <style>
-  .status {
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: -4px 4px 8px;
-    font: 700 var(--fs-body)/1 var(--font-num); color: var(--text);
-  }
-  .demo-wrap { justify-self: end; }
-  .demo { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
-  .status, .titlebar { flex: none; }
+  /* demo mode: a small yuzu chip under the home grid */
+  .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
+  .titlebar { flex: none; }
   .titlebar { margin-bottom: 8px; }
 
   /* Home: six tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
@@ -165,13 +150,17 @@
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 8px;
     min-width: var(--tile); animation: if-pop var(--dur-pop) var(--ease-bounce) both; border-radius: var(--r-btn); color: var(--text);
   }
+  /* Every tile is the same squircle (round 19, user): its fill, the round-13 edge (2px outline + 4px lip in a darker
+     shade of the fill) and the glyph inside. The official full tiles (きろく, 村人, つうしん) are drawn a touch larger
+     than the squircle on their own background colour, so their baked-in rounded edges are cropped away. */
   .tile {
-    width: var(--tile); height: var(--tile); border-radius: var(--r-tile); background: var(--fill); display: grid; place-items: center; overflow: hidden;
-    box-shadow: 0 4px 0 color-mix(in srgb, var(--fill) 85%, #000 15%);
+    --tile-edge: color-mix(in srgb, var(--fill) 68%, #4A3A2C);
+    position: relative; width: var(--tile); height: var(--tile); border-radius: var(--r-tile); background: var(--fill);
+    display: grid; place-items: center; overflow: hidden; box-shadow: 0 var(--lip-h) 0 var(--tile-edge);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
-  /* Official full tiles bring their own squircle and colour. */
-  .tile.full { background: none; box-shadow: none; filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .2)); }
+  .tile::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 2px var(--tile-edge); pointer-events: none; }
+  .tile.full :global(.official) { max-width: none; flex: none; }
   .fb { width: 50%; height: 50%; border-radius: 30%; background: rgba(255, 255, 255, .6); }
   /* our own glyph (the sound tile): white like NH's app glyphs, with a soft drop */
   .own { width: 62%; height: 62%; color: #fff; filter: drop-shadow(0 2px 0 rgba(47, 138, 63, .45)); }
