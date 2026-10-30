@@ -8,7 +8,7 @@ updates:
       interval: weekly
     groups:
       toolchain:
-        patterns: ['@sveltejs/*', 'svelte', 'svelte-check', 'vite', 'vitest', 'typescript', 'esbuild', '@types/node', '@playwright/test']
+        patterns: ['@sveltejs/*', 'svelte', 'svelte-check', 'vite', 'vitest', 'typescript', 'esbuild', '@types/node', '@playwright/test', 'knip']
       fonts:
         patterns: ['@fontsource/*']
     open-pull-requests-limit: 5

@@ -11,14 +11,14 @@ on:
     paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
+# Least privilege: the build job (which runs dependency code: vite plugins, svelte-check, Playwright) can only read;
+# only the deploy job can publish.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.ref) || 'pages' }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }} # never cancel a deploy halfway
 
 jobs:
   build:
@@ -27,8 +27,10 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
@@ -36,6 +38,7 @@ jobs:
       - run: npm ci --ignore-scripts
       # Red main never deploys: type-check (`check` runs svelte-kit sync first) and the unit tests (golden fixtures included) gate the build.
       - run: npm run check
+      - run: npm run knip
       - run: npx vitest run
       - run: npm run build
         env:
@@ -47,7 +50,7 @@ jobs:
         env:
           BASE_PATH: /${{ github.event.repository.name }}
       - if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: app/build-pages
 
@@ -55,9 +58,12 @@ jobs:
     needs: build
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
