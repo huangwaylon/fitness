@@ -222,7 +222,7 @@
       {@const s = top}
       {@const d = day.people[me]}
       <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={dayTitle(s.date)} max={METRIC_BOUNDS[s.metric]}
-        old={s.metric === 'steps' ? d.steps.value : d.minutes.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
+        old={s.metric === 'steps' ? d.steps.value : d.exercise.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
         onok={(v) => saveMetric(s.date, s.metric, v)} oncancel={back} />
     {:else if top.k === 'workout' && day}
       {@const s = top}

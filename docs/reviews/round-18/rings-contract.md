@@ -195,3 +195,17 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
 - Also (lead, "no code for past designs"): the server now refuses `checkin`, `confirm`, presence `leave`, yen-shaped
   `spend`s and `pref` keys outside `PREF_KEYS` (`#lib/contract/api.ts`); `cleanupLegacyData` (runbook §9) deletes their
   old rows from the sheet.
+
+**UI, after b241724 (the ADR 0021/0022 UI commit is on main):**
+4. **Free to delete now** (nothing in `components/`, `routes/` or `i18n/` reads them): `confirmPending`,
+   `WeekView.pending`, `PendingConfirmation`; `PersonWeekView.fruits` and `today.parts`, `FruitProgress`, `FruitBells`,
+   `FruitKey`, `FRUITS`; `HarvestView.badges`, `LedgerBonus.badges`, `HistoryPerson.badges` and `.stamps` (with the
+   `Stamp` type; the next UI commit drops Glyph's last import of it, so please delete `Stamp` in the same commit as
+   `stamps` or tell me and I'll land mine first), `WeekDetailPerson.badges`; `DayRow.minutes`, `.minutesSource`,
+   `.strength`, `.ticks`, `.parts`; `DayPerson.minutes` (after my next commit: one last read in Kiroku's keypad),
+   `.parts`; `EditLog.field 'checkin'` and `EditedField 'ticks'`; `WeekView.pots`, `.menus`, `PotsView`, `PotFlow`,
+   `PotBalance`, `PotKey`, `MenuItem`, `LedgerSpend.pot`, `BellsLedger.pots`; `buyTreat`, `buyTrip`, `setMenu`;
+   `DAILY.activeDayMin` / `maxTicks` if nothing else uses them; the deprecated `RuleVersion` keys (`activeMin`,
+   `perMinute`, `strengthDay`, `perTick`, `activeDays`, `strengthDays`, `ticks`).
+5. **The wallet as one list (lead):** I'm rendering `menu` as one list and the editor has no section picker; send me
+   the five default ids when `section` goes so the item art (`components/wallet/icons.ts`) matches them.
