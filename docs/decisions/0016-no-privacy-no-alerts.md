@@ -1,5 +1,5 @@
 # 0016 — No privacy rules; no alerts
-**Status:** Accepted (user decision, 2026-10-29). Supersedes the visibility parts of 0004 and PROPOSAL §5 "Privacy", and the notification parts of 0005, 0011 and 0015.
+**Status:** Accepted (user decision, 2026-10-29). Supersedes the visibility parts of 0004 and the original proposal's §5 "Privacy" (in git history), and the notification parts of 0005, 0011 and 0015.
 
 **User input:** "Get rid of the concept of privacy: all data should be shown to all players." "No alerts are needed, remove and simplify."
 

@@ -1,5 +1,5 @@
 # 0017 — Rule changes for life without the Watch; rules versioned by week
-**Status:** Accepted (round 4 fitness/nutrition review, user decision 2026-10-29 on manual minutes; versioning round 8). Amends [0009](0009-no-sleep-four-fruits.md) and [0014](0014-simplify-no-promises-no-cozy.md) (step days) and [0011](0011-mvp-rule-defaults.md) (active minutes). §2–4 and calibration superseded by [0019](0019-bells-daily-earning-two-pots.md) (rule versioning by week stays). Values: `app/src/lib/config/rules.ts`.
+**Status:** Accepted (round 4 fitness/nutrition review, user decision 2026-10-29 on manual minutes; versioning round 8). Amends [0009](0009-no-sleep-four-fruits.md) and [0014](0014-simplify-no-promises-no-cozy.md) (step days) and [0011](0011-mvp-rule-defaults.md) (active minutes). **Partly superseded:** §1 (step-derived minutes) by [0021](0021-activity-rings-no-check-ins.md), §2–4 and calibration by [0019](0019-bells-daily-earning-two-pots.md). Rule versioning by week stands (`RULES` in rules.ts). Values: `app/src/lib/config/rules.ts`.
 
 **Context.** A scored his own 4 weeks of iPhone-only data (steps on 31/31 days, median 7,579; exercise minutes on only 3 days). Without these changes his best week was 70 fruit, 45 with no gym visit, and the Treat Purse needs 60. Real scores were 30, 17, 14, 14 (Pear excluded).
 
