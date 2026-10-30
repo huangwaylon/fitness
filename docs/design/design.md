@@ -138,24 +138,39 @@ Values in `config/rules.ts` (`RULES`, versioned by week), the earning rule in `s
 **ベル per person per day**, recomputed from the rows (so they move whenever data arrives), five automatic metrics,
 one fruit each. A week is priced by its own rule version (`rulesFor(weekKey)`; the island, the tree popups, あそびかた,
 きろく and the harvest read the version of the week in view). The values below are **v2, from Mon 2026-11-02** ("push
-exercise + strength", ADR 0021 amendment); v1 (the week of 10-26 only) paid 🍑 3/min, 🍒 to 180 min, 🥥 400 and +400 a
-badge:
+exercise + strength" and "v2 milestone curve", ADR 0021 amendments); v1 (the week of 10-26 only) paid 🍑 3/min, 🍒 1/min
+to 180 min, 🍐 floor(180 × min(kcal, goal) / goal), 🍎 200 all or nothing, 🥥 400 and +400 a badge:
 
 | Fruit | Metric (Shortcut field → stored metric) | Daily goal | ベル a day |
 |---|---|---|---|
-| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | 4 per minute (max 240) |
-| 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person, `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | floor(180 × min(kcal, goal) / goal) |
-| 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 120 min | 1 per minute (max 120) |
-| 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min) | 200 |
+| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | milestones 25 / 70 / 130 / **240** |
+| 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person, `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | milestones 19 / 53 / 98 / **180** |
+| 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 120 min | milestones 13 / 35 / 65 / **120** |
+| 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min, the full 200) | milestones 20 / 60 / 110 / **200** |
 | 🥥 coconut | Gym: any gym arrival, or a strength workout (Traditional / Functional Strength Training, Pilates, ≥ 15 min; any other type only when marked in きろく) | a gym day | 500 |
 
+- **Milestones** (v2, `RULES[1].curve`): 🍑🍐🍒🍎 pay at 25 / 50 / 75 / 100% of the day's goal, each step worth more
+  than the last and the biggest at the goal; below 25% nothing, above the goal the max. One shared share table, 25 / 70
+  / 130 / 240 of the max (≈ 0.104 / 0.292 / 0.542 / 1), rounded to whole ベル; 🍎 pays the user-approved 20 / 60 / 110 /
+  200 instead of the shares' 21 / 58 / 108. 🥥 stays one event.
+
+  | % of goal | 25% | 50% | 75% | 100% |
+  |---|---|---|---|---|
+  | 🍑 Exercise (60 min) | 15 min → 25 | 30 → 70 | 45 → 130 | 60 → 240 |
+  | 🍐 Move (own goal, e.g. 600 kcal) | 150 → 19 | 300 → 53 | 450 → 98 | 600 → 180 |
+  | 🍒 Stand (120 min) | 30 min → 13 | 60 → 35 | 90 → 65 | 120 → 120 |
+  | 🍎 Steps (8,000) | 2,000 → 20 | 4,000 → 60 | 6,000 → 110 | 8,000 → 200 |
+
+  The view exposes today's step and the next one per fruit (`RingProgress.milestone`, `nextAt`, `nextBells`,
+  `nextGain`: `docs/reviews/round-19/milestones-contract.md`).
 - Max 1,240 a day (v1: 1,140). The Move goal in force on a day is the last one set on or before that Tokyo date: a change never
   re-prices earlier days.
-- **Weekly bonus** at the Sunday 19:30 harvest: +340 per badge (v1: +400; 🍑 / 🍐 / 🍒 goal met on ≥ 5 days, 🍎 ≥ 4, 🥥 ≥ 3) and
+- **Weekly bonus** at the Sunday 19:30 harvest: +340 per badge (v1: +400; 🍑 / 🍐 / 🍒 goal met (100%) on ≥ 5 days, 🍎 ≥ 4, 🥥 ≥ 3) and
   the ふたりボーナス, +200 for each badge both people met.
 - **On target** (every badge for both, minimum days), v2: per person 5 × 240 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 +
   3 × 500 🥥 = 5,000 daily + 5 × 340 badges = 6,700; both (13,400) + 5 × 200 duo = **14,400 ベル a week**, the same as
-  v1 (4,700 daily + 2,000 badges), so the menu prices still fit. The badge amount absorbed the extra 300 daily: 2 × 5 ×
+  v1 (4,700 daily + 2,000 badges), so the menu prices still fit. Goal days pay the max on the curve too, so the
+  milestones change only partial days. The badge amount absorbed the extra 300 daily: 2 × 5 ×
   b + 5 × 200 = 14,400 − 10,000 gives b = 340 with the duo unchanged. Per-person shares: 🥥 1,840 (27%), 🍑 1,540
   (23%), 🍐 1,240, 🍎 1,140, 🍒 940. The daily part is 69% of the week (v1 65%), so a week short of badges still pays most of
   its work.

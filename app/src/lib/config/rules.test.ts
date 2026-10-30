@@ -42,12 +42,14 @@ describe('RULES', () => {
       bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 },
       badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 400, duoPerBadge: 200 }
     });
-    // v2 "push exercise + strength" (ADR 0021 amendment), appended on 2026-10-30 for the next Monday.
+    // v2 "push exercise + strength" (ADR 0021 amendment), appended on 2026-10-30 for the next Monday; its milestone
+    // curve ("v2 milestone curve") was added the same day, before any v2 week had earned.
     expect(RULES[1]).toEqual({
       from: '2026-11-02',
       goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
       bells: { perExerciseMin: 4, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 500 },
-      badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 }
+      badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 },
+      curve: { at: [0.25, 0.5, 0.75, 1], pay: [25, 70, 130, 240], bells: { apple: [20, 60, 110, 200] } }
     });
     expect(RULES).toHaveLength(2);
   });

@@ -96,3 +96,30 @@ literal (esbuild kept it for `ECONOMY_START = RULES[0].from`); `ECONOMY_START` i
 `RULES` and a rule version never changes Code.js again. That one regeneration removes dead code only (new build hash;
 a redeploy is optional and changes nothing the server does).
 
+## Amendment 2026-10-30: v2 milestone curve
+**User decision:** daily earnings follow a milestone curve, neither all or nothing nor linear. Part of v2
+(`RULES[1].curve`, from Mon 2026-11-02), added before any v2 week had earned, so `RULES[1]` was completed in place
+(`rules.test.ts` pins it); v1 weeks keep their linear pay and the goldens before 11-02 are byte-identical.
+
+- 🍑 Exercise, 🍐 Move, 🍒 Stand and 🍎 Steps pay at **25 / 50 / 75 / 100%** of the day's goal, each step worth more than
+  the last, the biggest jump at the goal. Below 25% pays 0; above 100% stays at the max.
+- One shared table: `at: [0.25, 0.5, 0.75, 1]`, `pay: [25, 70, 130, 240]` (shares of the max, ≈ 0.104 / 0.292 / 0.542 / 1),
+  ベル = round(max × share). Steps override it with the user-approved `[20, 60, 110, 200]` (the shares would give
+  21 / 58 / 108). `pay` is whole numbers so `rules.ts` stays free of arithmetic and the Apps Script bundle still drops
+  `RULES` (Code.js unchanged).
+
+| | 25% | 50% | 75% | 100% (max) |
+|---|---|---|---|---|
+| 🍑 Exercise, goal 60 min | 15 min → 25 | 30 → 70 | 45 → 130 | 60 → 240 |
+| 🍐 Move, own goal (600 / 400 kcal) | 150 / 100 → 19 | 300 / 200 → 53 | 450 / 300 → 98 | 600 / 400 → 180 |
+| 🍒 Stand, goal 120 min | 30 min → 13 | 60 → 35 | 90 → 65 | 120 → 120 |
+| 🍎 Steps, goal 8,000 | 2,000 → 20 | 4,000 → 60 | 6,000 → 110 | 8,000 → 200 |
+
+- Amounts compare as before: Exercise counted minutes (max(Watch, きろく)), Move kcal against the goal in force that day
+  (a goal of 450 steps at 112.5 / 225 / 337.5 / 450), Stand whole minutes, Steps; a tsuyu day (≥ 30 exercise min) is
+  still a full step day.
+- 🥥 Gym stays one event, 500 a gym day. Badges (+340, thresholds 5 / 5 / 5 / 4 / 3) still count days at the goal (100%).
+- The maxima are unchanged, so the on-target week is still **14,400**; only partial days pay differently (a 75% day pays
+  98–130 instead of 135–180, a 50% steps day 60 instead of 0).
+- The view gives each curve fruit today's step and the next (`milestone`, `nextAt`, `nextBells`, `nextGain` on
+  `RingProgress`; `docs/reviews/round-19/milestones-contract.md`).

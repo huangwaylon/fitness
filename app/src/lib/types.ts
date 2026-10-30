@@ -95,6 +95,17 @@ export interface RingProgress {
   badge: boolean;
   /** This fruit's daily ベル this week up to today (the badge bonus is in the harvest bonus, not here). */
   weekBells: number;
+  /**
+   * The milestone curve (docs/reviews/round-19/milestones-contract.md). Present only for 🍑🍐🍒🍎 in a week with a curve
+   * (v2, from 2026-11-02); absent for 🥥 and in v1 weeks. `milestone`: steps reached today, 0–4 (4 = the goal met).
+   */
+  milestone?: number;
+  /** The next milestone's amount, in `today`/`goal` units (minutes, kcal rounded up, steps); null once the goal is met. */
+  nextAt?: number | null;
+  /** This fruit's ベル today once `nextAt` is reached (a total, like `todayBells`); null once the goal is met. */
+  nextBells?: number | null;
+  /** What reaching `nextAt` adds: nextBells − todayBells (「あと 8分で +45」); null once the goal is met. */
+  nextGain?: number | null;
 }
 
 export interface PersonWeekView {

@@ -1,6 +1,6 @@
 // ベル earned per person per day and weekly badges (ADR 0019, what earns: ADR 0021): five automatic metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
 // week as of a time and decides which weeks count (the economy's first week, locks).
-import { RING_FRUITS, rulesFor, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { RING_FRUITS, rulesFor, STRENGTH, TSUYU, type CurveFruit, type RuleVersion } from '#lib/config/rules.ts';
 import type { LocalDate, PersonId, RingBells, RingFruit, GymArrival, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 
@@ -35,6 +35,31 @@ const toMilli = (x: number): number => Math.round(x * 1000);
 export const exerciseMilli = (watchMin: number | null, manualMin: number): number => Math.max(0, toMilli(watchMin ?? 0), toMilli(manualMin));
 
 const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
+
+// ---------- the milestone curve (v2) ----------
+
+/** A fruit's ベル at the day's goal: its daily max. */
+const fruitMax = (r: RuleVersion, f: CurveFruit): number =>
+  f === 'peach' ? r.goals.exerciseMin * r.bells.perExerciseMin
+  : f === 'pear' ? r.bells.moveAtGoal
+  : f === 'cherry' ? r.goals.standMin * r.bells.perStandMin
+  : r.bells.stepDay;
+
+/**
+ * A fruit's ベル at each milestone of the week's curve, e.g. 🍑 v2 [25, 70, 130, 240]; null when the week has no curve
+ * (v1: linear).
+ */
+export function milestoneBells(weekKey: WeekKey, f: CurveFruit): readonly number[] | null {
+  const r = rulesFor(weekKey);
+  if (!r.curve) return null;
+  const max = fruitMax(r, f);
+  const { pay } = r.curve;
+  return r.curve.bells?.[f] ?? pay.map((x) => Math.round((max * x) / pay[pay.length - 1]));
+}
+
+/** Milestones reached (0..at.length): how many steps of the goal `amount` has met. */
+const milestoneOf = (at: readonly number[], amount: number, goal: number): number =>
+  goal > 0 ? at.filter((x) => amount >= x * goal).length : 0;
 
 // ---------- earnings ----------
 
@@ -75,6 +100,8 @@ interface DayEarning {
   gym: boolean;
   /** The daily goal met, per fruit (🍎 also by the tsuyu rule). */
   met: Record<RingFruit, boolean>;
+  /** Milestones reached per curve fruit (0–4; the goal met is the last, 🍎's tsuyu day too); null in a week without a curve (v1). */
+  milestone: Record<CurveFruit, number> | null;
 }
 
 interface FruitWeek {
@@ -99,6 +126,8 @@ export interface WeekEarning {
   bonus: number;
 }
 
+const CURVE_FRUITS = ['peach', 'pear', 'cherry', 'apple'] as const satisfies readonly CurveFruit[];
+
 export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple: 0, coconut: 0 });
 
 /**
@@ -108,6 +137,7 @@ export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple
  * - 🍒 perStandMin × whole stand minutes, up to goals.standMin.
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
  * - 🥥 gymDay on a gym day (max 1/day): a strength workout or any gym arrival.
+ * With a milestone curve (v2) 🍑🍐🍒🍎 instead pay `milestoneBells` at the last milestone reached (0 below the first).
  * Badges (+badges.bells each): days at the goal ≥ exerciseDays / moveDays / standDays / stepDays / gymDays.
  */
 export function earnWeek(input: EarnInput): WeekEarning {
@@ -144,9 +174,20 @@ export function earnWeek(input: EarnInput): WeekEarning {
       apple: met.apple ? r.bells.stepDay : 0,
       coconut: met.coconut ? r.bells.gymDay : 0
     };
+    let milestone: DayEarning['milestone'] = null;
+    if (r.curve) {
+      const at = r.curve.at;
+      milestone = {
+        peach: milestoneOf(at, ex, exGoalMilli),
+        pear: milestoneOf(at, kcal, moveGoal),
+        cherry: milestoneOf(at, stand, r.goals.standMin),
+        apple: met.apple ? at.length : milestoneOf(at, steps ?? 0, r.goals.steps)
+      };
+      for (const f of CURVE_FRUITS) rings[f] = milestone[f] > 0 ? milestoneBells(input.weekKey, f)![milestone[f] - 1] : 0;
+    }
     return {
       date, bells: RING_FRUITS.reduce((n, f) => n + rings[f], 0), rings,
-      exerciseMin: Math.floor(ex / 1000), moveKcal, moveGoal, standMin, steps, gym: met.coconut, met
+      exerciseMin: Math.floor(ex / 1000), moveKcal, moveGoal, standMin, steps, gym: met.coconut, met, milestone
     };
   });
 
