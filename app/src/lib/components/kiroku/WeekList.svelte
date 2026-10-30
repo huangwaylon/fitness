@@ -51,7 +51,7 @@
   .empty { text-align: center; color: var(--text-soft); font-weight: 700; }
   .wk {
     appearance: none; border: 0; width: 100%; text-align: left; font: inherit; cursor: pointer;
-    display: grid; gap: 8px; padding: 12px 14px 12px; box-shadow: var(--sh-ctl); --bd: clamp(18px, 5.6vw, 24px);
+    display: grid; gap: 8px; padding: 12px 14px 12px; box-shadow: var(--sh-ctl); --bd: clamp(18px, 6vw, 26px);
   }
   .wk:active { transform: translateY(3px); box-shadow: var(--sh-ctl-press); }
   /* this week: the edge plus a yuzu inner ring */
@@ -63,5 +63,7 @@
   .hv { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
   .hv svg { width: 14px; height: 14px; }
   .who { display: flex; align-items: center; gap: 12px; }
+  /* the five badges spread over the card (round 21: they bunched on the left, ~120px empty on the right at 390) */
+  .who :global(.badges) { flex: 1; max-width: 240px; justify-content: space-between; }
   @media (max-width: 359px) { .wk { padding: 10px 12px; } .who { gap: 8px; } }
 </style>

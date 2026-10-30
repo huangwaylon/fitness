@@ -100,7 +100,8 @@
 
 <style>
   .sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px; flex-wrap: wrap; }
-  .sub h3 { margin: 0; font-size: var(--fs-talk); }
+  /* the date in the numbers' Fredoka, like the week title (round 21: it was the thin UI face) */
+  .sub h3 { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-num); }
   .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .state.locked { color: var(--text-soft); }
   .pc { display: grid; gap: 4px; padding: 12px 14px; }
@@ -116,6 +117,7 @@
   .earn b { font-size: var(--fs-talk); }
   /* one row per fruit: icon · word · value (green when met) · its ベル · ✎ */
   .fr { gap: 6px; }
+  .fr:has(.pen-btn, .pen-sp) { min-height: var(--row-obj); }
   .ic { width: 22px; flex: none; line-height: 0; }
   .fr .k { font-size: var(--fs-s); }
   .fr .v { font-size: var(--fs-body); color: var(--text-soft); }
