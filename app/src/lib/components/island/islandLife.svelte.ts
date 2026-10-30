@@ -187,6 +187,9 @@ export class IslandLife {
         } else balloonTry(30_000);
       }, ms);
     balloonTry(45_000);
+    // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
+    const q = new URLSearchParams(location.search);
+    if (q.has('balloon') && (import.meta.env.DEV || q.has('demo'))) this.later(() => (this.balloon = true), 400);
 
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);
