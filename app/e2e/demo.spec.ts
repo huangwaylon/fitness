@@ -144,7 +144,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await expect(popups).toHaveCount(0);
 });
 
-test('サウンド: all off by default; toggles persist on this phone; ミュージック starts the opening theme', async ({ page }) => {
+test('サウンド: all off by default; toggles persist on this phone; ミュージック: the opening, then the hour', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   const audio: string[] = [];
@@ -159,9 +159,12 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');
   await row('ミュージック').click();
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
-  await expect(sheet(page).getByText(/いまは\d+時の曲/)).toBeVisible();
+  // the opening theme plays while the phone is up (NH's title screen); closing the phone hands over to the hour
+  await expect(sheet(page).getByText('いまはオープニングテーマ')).toBeVisible();
   await expect.poll(() => audio).toContain('/fitness/audio/music/opening.m4a');
   await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
+  await sheet(page).locator('.titlebar .close').click();
+  await expect.poll(() => audio.some((p) => /\/audio\/music\/hour-\d\d\.m4a$/.test(p))).toBe(true);
   await page.reload();
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
   await sheet(page).getByRole('button', { name: 'サウンド' }).click();

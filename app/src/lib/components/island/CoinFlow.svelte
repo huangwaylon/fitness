@@ -17,7 +17,7 @@
   //   <CoinFlow flights={[{ id: 1, from: [120, 180], bells: 150, delay: 0 }]} to={[195, 140]} onland={(id) => …} />
   import { u } from '../island/scene.ts';
   import { formatBells } from '#lib/i18n/index.ts';
-  import { cue } from '#lib/sound/cues.ts';
+  import { coinStep, cue } from '#lib/sound/cues.ts';
 
   interface Props {
     flights: Flight[];
@@ -32,7 +32,7 @@
   const FLY = 720;
 </script>
 
-{#each flights as f (f.id)}
+{#each flights as f, i (f.id)}
   <span class="pop" style:left={u(f.from[0])} style:top={u(f.from[1] - 10)} style:animation-delay="{f.delay}ms" aria-hidden="true">
     <b class="money">{formatBells(f.bells, { signed: true })}</b>
   </span>
@@ -44,8 +44,9 @@
       style:animation-delay="{f.delay + 380 + k * STEP}ms" style:animation-duration="{FLY}ms"
       onanimationend={(e) => {
         if (!e.animationName.endsWith('cf-x')) return; // (the coin's own fall and spin bubble up here too)
-        // each coin clinks into the jar, a step higher than the one before (NH's bells counting in)
-        cue('coin-land', { step: k * 2 });
+        // each coin clinks into the jar, one step up a pentatonic run across the whole batch; only a flight's last coin
+        // at full level
+        cue('coin-land', { step: coinStep(i * COINS + k), gain: k === COINS - 1 ? 1 : 0.6 });
         if (k === COINS - 1) onland(f.id);
       }}>
       <span class="cy" style:animation-delay="{f.delay + 380 + k * STEP}ms" style:animation-duration="{FLY}ms">

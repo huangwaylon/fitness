@@ -64,7 +64,8 @@
     if (r.ok) {
       step = 'done';
       countUp();
-      // the item-get fanfare (it ducks the music); the coins then clink into the pots under its last note
+      // the item-get fanfare (it ducks the music); the coins fall into the pots silently under it: NH's item-get
+      // plays alone (round 14 review R3)
       cue('harvest-receive');
     }
   }
@@ -136,8 +137,7 @@
             {#each pots as p, i (p)}
               <div class="pot" style:--d="{0.25 + i * 0.25}s">
                 <span class="drop" aria-hidden="true">
-                  {#each [0, 1, 2] as k (k)}<i style:animation-delay="calc(var(--d) + {k * 0.12}s)"
-                    onanimationend={() => cue('coin-land', { step: i * 2 + k * 2 })}></i>{/each}
+                  {#each [0, 1, 2] as k (k)}<i style:animation-delay="calc(var(--d) + {k * 0.12}s)"></i>{/each}
                 </span>
                 <span class="pic"><OfficialArt key={p === 'treat' ? 'phone/nook-shopping' : 'money/miles-ticket'} size={44} />
                   {#if i === 1}<span class="get"><Emote id="mark-sparkle" bare hold size={24} /></span>{/if}</span>
