@@ -5,12 +5,17 @@
 // Each OST rip plays its loop about twice and fades out. For each hour: find the loop period (the lag at which the
 // track repeats itself longest, from a spectral self-similarity scan, then sample-exact by cross-correlation), cut one
 // period from a point where both passes are identical (so `<audio loop>` wraps without a seam), and record where in
-// that file the loop begins musically (manifest `start`: playback starts there). Output: AAC-LC 64 kbps stereo
-// 44.1 kHz .m4a with +faststart, and the `music.sunny` / `opening` entries of static/audio/manifest.json.
+// that file the loop begins musically (manifest `start`: playback starts there). The file is that period plus a copy
+// of its first TAIL seconds (manifest `end` = where the period ends): the engine's two decks hand over inside the copy,
+// where both hold the same samples, instead of relying on `<audio loop>` (WebKit seeks to 0 at the end, which can
+// drop out). Then each file's loudness is measured and its `gain` written (see trackGain). Output: AAC-LC 64 kbps
+// stereo 44.1 kHz .m4a with +faststart, and the `music.sunny` / `opening` entries of static/audio/manifest.json.
+//   node scripts/music.ts --gains    only re-measure the committed files and rewrite their `gain`
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { LEVELS } from '../src/lib/sound/mix.ts';
 
 const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
 const OUT = join(import.meta.dirname, '../static/audio/music');
@@ -19,6 +24,12 @@ const SR = 44100;
 /** Analysis rate and frame (≈ 93 ms hop). */
 const ASR = 11025, FRAME = 2048, HOP = 1024, BANDS = 32;
 const XFADE = Math.round(0.25 * SR);
+/** The copy of the period's start after its end (s): room for the engine to line the incoming deck up. */
+const TAIL = 3;
+/** Loudness: every track to −16 LUFS integrated (EBU R128), unless that would put its true peak, after the gain and
+ *  the music bus (LEVELS.music) at full volume, over −1 dBTP. Gains stay within −12…+6 dB. */
+const TARGET_LUFS = -16, CEILING_DBTP = -1;
+const BUS_DB = 20 * Math.log10(LEVELS.music);
 
 function decode(file: string, rate: number, channels: number): Float32Array {
   const buf = execFileSync(FFMPEG, ['-v', 'error', '-i', file, '-vn', '-ac', String(channels), '-ar', String(rate), '-f', 'f32le', '-'], { maxBuffer: 1 << 30 });
@@ -156,13 +167,51 @@ function encode(pcm: Float32Array, out: string): void {
   if (r.status !== 0) throw new Error(`ffmpeg failed for ${out}`);
 }
 
+/** Integrated loudness (LUFS) and true peak (dBTP) of a file, from ffmpeg's loudnorm analysis pass. */
+function loudness(file: string): { i: number; tp: number } {
+  const r = spawnSync(FFMPEG, ['-hide_banner', '-nostats', '-i', file, '-af', 'loudnorm=print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
+  const json = r.stderr.slice(r.stderr.lastIndexOf('{'), r.stderr.lastIndexOf('}') + 1);
+  const m = JSON.parse(json) as { input_i: string; input_tp: string };
+  return { i: Number(m.input_i), tp: Number(m.input_tp) };
+}
+
+/** The gain (dB, 0.1 steps) that brings a track to the target, held under the true-peak ceiling. */
+function trackGain({ i, tp }: { i: number; tp: number }): number {
+  const g = Math.min(TARGET_LUFS - i, CEILING_DBTP - BUS_DB - tp);
+  return Math.round(Math.min(6, Math.max(-12, g)) * 10) / 10;
+}
+
+type Entry = { file: string; start: number; end?: number; gain?: number };
+
+/** Measure every music file in the manifest and write its `gain`. */
+function writeGains(man: { opening?: string | Entry | null; music?: Record<string, Record<string, Entry>> }): void {
+  const entries: [string, Entry][] = Object.entries(man.music ?? {}).flatMap(([w, hours]) => Object.entries(hours).map(([h, e]) => [`${w}/${h}`, e] as [string, Entry]));
+  if (man.opening) {
+    const o: Entry = typeof man.opening === 'string' ? { file: man.opening, start: 0 } : man.opening;
+    man.opening = o;
+    entries.unshift(['opening', o]);
+  }
+  for (const [name, e] of entries) {
+    const l = loudness(join(OUT, '..', e.file));
+    e.gain = trackGain(l);
+    console.log(`${name.padEnd(9)} ${l.i.toFixed(1)} LUFS  ${l.tp >= 0 ? '+' : ''}${l.tp.toFixed(1)} dBTP  → gain ${e.gain >= 0 ? '+' : ''}${e.gain.toFixed(1)} dB` +
+      `  (${(l.i + e.gain).toFixed(1)} LUFS)`);
+  }
+}
+
 function main(): void {
   const [src, ...flags] = process.argv.slice(2);
-  if (!src) throw new Error('usage: node scripts/music.ts <source dir> [--dry]');
+  if (src === '--gains') {
+    const man = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+    writeGains(man);
+    writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
+    return;
+  }
+  if (!src) throw new Error('usage: node scripts/music.ts <source dir> [--dry] | --gains');
   const dry = flags.includes('--dry');
   mkdirSync(OUT, { recursive: true });
   const files = readdirSync(src).filter((f) => f.endsWith('.mp3')).sort();
-  const hours: Record<string, { file: string; start: number }> = {};
+  const hours: Record<string, Entry> = {};
   let opening = false;
   for (const file of files) {
     const path = join(src, file);
@@ -198,7 +247,8 @@ function main(): void {
     }
     if (corr < 0.98) console.warn(`  ! ${file}: best loop match only ${corr.toFixed(4)}`);
     const st = decode(path, SR, 2);
-    const pcm = new Float32Array(period * 2);
+    const tail = TAIL * SR;
+    const pcm = new Float32Array((period + tail) * 2);
     for (let i = 0; i < period; i++) {
       const j = i - (period - XFADE);
       // equal-power blend of the tail into the audio just before the cut's first sample (a safety net: with an exact
@@ -207,12 +257,14 @@ function main(): void {
       const k = Math.cos((Math.PI / 2) * (j >= 0 ? j / XFADE : 0));
       for (let c = 0; c < 2; c++) pcm[i * 2 + c] = k * st[(cut + i) * 2 + c] + (w ? w * st[(cut + i - period) * 2 + c] : 0);
     }
+    // the copy of the period's start: the same samples the loop wraps to
+    pcm.copyWithin(period * 2, 0, tail * 2);
     // Where to start playing in the file: the loop's musical start, as heard on the second pass.
     const start = (musical + period - cut) / SR;
     const name = `hour-${String(hour).padStart(2, '0')}.m4a`;
     if (!dry) encode(pcm, join(OUT, name));
     const kb = dry ? 0 : Math.round(statSync(join(OUT, name)).size / 1024);
-    hours[String(hour).padStart(2, '0')] = { file: `music/${name}`, start: Math.round(start * 1000) / 1000 };
+    hours[String(hour).padStart(2, '0')] = { file: `music/${name}`, start: Math.round(start * 1000) / 1000, end: Math.round((period / SR) * 1e6) / 1e6 };
     console.log(`${name}  ${file}  ${(mono.length / SR).toFixed(1)}s → period ${(period / SR).toFixed(3)}s cut at ${(cut / SR).toFixed(2)}s ` +
       `(match ${corr.toFixed(4)}), plays from ${start.toFixed(2)}s` + (dry ? '' : `  ${kb} KB`));
   }
@@ -220,7 +272,8 @@ function main(): void {
   // static/audio/manifest.json: the sunny hours and the opening (the rest of the file is kept as is)
   const man = JSON.parse(readFileSync(MANIFEST, 'utf8'));
   man.music = { ...man.music, sunny: hours };
-  if (opening) man.opening = 'music/opening.m4a';
+  if (opening) man.opening = { file: 'music/opening.m4a', start: 0 };
+  writeGains(man);
   writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
 }
 

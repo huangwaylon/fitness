@@ -105,7 +105,33 @@ const RECIPES: Record<SoundId, Ev[]> = {
   surprise: [{ kind: 'tone', f: 500, to: 1250, glide: 0.09, t: 0, d: 0.14, g: 0.9, wave: 'tri' }, mallet(C7, 0.08, 0.18, 0.4)],
   heart: [{ ...mallet(C6, 0, 0.2, 0.7), wave: 'tri' }, { ...mallet(G6, 0.08, 0.32, 0.8), wave: 'tri', vib: [6, 12] }],
   sparkle: [bell(G6, 0, 0.25, 0.5), bell(C7, 0.05, 0.3, 0.45), bell(E7, 0.1, 0.35, 0.4)],
-  oops: [{ kind: 'tone', f: 700, to: 420, glide: 0.22, t: 0, d: 0.3, g: 0.9, wave: 'tri', vib: [9, 40] }]
+  oops: [{ kind: 'tone', f: 700, to: 420, glide: 0.22, t: 0, d: 0.3, g: 0.9, wave: 'tri', vib: [9, 40] }],
+  // scenery: a soft swish through flowers, an airy cloud "pof", a shooting star's rising "shiing", a water plop, and
+  // footsteps in sand (gritty), grass (soft) and snow (a squeaky crunch), and a rubbery balloon boing
+  swish: [
+    { kind: 'noise', t: 0, d: 0.22, g: 1, lo: 2200, hi: 8000, shape: 'swell' },
+    { kind: 'noise', t: 0.01, d: 0.18, g: 0.3, lo: 500, hi: 2000, shape: 'swell' }
+  ],
+  puff: [
+    { kind: 'noise', t: 0, d: 0.2, g: 1, lo: 150, hi: 1100, shape: 'swell' },
+    { kind: 'tone', f: 240, to: 150, glide: 0.12, t: 0, d: 0.14, g: 0.35, attack: 0.01 }
+  ],
+  twinkle: [
+    { kind: 'tone', f: hz(G6), to: hz(C8), glide: 0.38, t: 0, d: 0.62, g: 0.5, attack: 0.01, vib: [7, 15], partials: [[2.76, 0.2, 0.4]] },
+    bell(E7, 0.08, 0.3, 0.3), bell(G7, 0.2, 0.3, 0.3), bell(C8, 0.34, 0.4, 0.3),
+    { kind: 'noise', t: 0.05, d: 0.5, g: 0.08, lo: 7000, hi: 12000, shape: 'swell' }
+  ],
+  splash: [
+    { kind: 'tone', f: 320, to: 980, glide: 0.04, t: 0, d: 0.07, g: 0.9, attack: 0.001 },
+    { kind: 'noise', t: 0.015, d: 0.28, g: 0.7, lo: 900, hi: 7000, shape: 'decay', grains: 90 }
+  ],
+  'step-sand': [{ kind: 'noise', t: 0, d: 0.1, g: 1, lo: 500, hi: 3500, shape: 'decay', grains: 400 }],
+  'step-grass': [{ kind: 'noise', t: 0, d: 0.13, g: 1, lo: 1400, hi: 6500, shape: 'swell', grains: 140 }],
+  'step-snow': [
+    { kind: 'noise', t: 0, d: 0.15, g: 1, lo: 1200, hi: 5000, shape: 'decay', grains: 500 },
+    { kind: 'tone', f: 1900, to: 1500, glide: 0.06, t: 0.01, d: 0.07, g: 0.15, wave: 'tri' }
+  ],
+  squeak: [{ kind: 'tone', f: 330, to: 760, glide: 0.07, t: 0, d: 0.24, g: 1, wave: 'tri', attack: 0.004, vib: [16, 55], partials: [[2, 0.25, 0.6]] }]
 };
 
 /** Small seeded PRNG (mulberry32): the noise of a placeholder is the same on every render. */

@@ -3,6 +3,8 @@
 // the sky (sun, moon, clouds) moves and resizes, so the component hit-tests those against their live boxes instead.
 // No points, no state: a scenery tap only plays a ≤ 1 s flourish.
 import type { FlowerId } from '#lib/art.ts';
+import { cue } from '#lib/sound/cues.ts';
+import type { SceneSfx } from '#lib/sound/ids.ts';
 import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, SAND } from './scene.ts';
 
 export type SceneHit =
@@ -64,16 +66,8 @@ export const PETAL: Record<FlowerId, string> = {
   'orange-pansies': '#FF9C3A'
 };
 
-/** The sounds a scenery tap asks for (the wanted ids and their mapping: scene-interactions.md §Sound). */
-export type SceneSfx =
-  | 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shooting-star'
-  | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly';
-
-/**
- * The one hook between scenery taps and the sound engine. A no-op until src/lib/sound/ lands on main: then this
- * becomes `cue(SCENE_CUES[kind])` (or a play(id) with the gain / pitch in the doc's table). Callers fire it at the
- * moment of the tap, so a delay (if any) belongs in the cue.
- */
+/** The one hook between scenery taps and the sound engine: the `scene-<kind>` cue (sound/cues.ts, all world cues,
+ *  so they're quiet under a sheet). Callers fire it at the moment of the tap, so a delay (if any) belongs in the cue. */
 export function sceneSfx(kind: SceneSfx): void {
-  void kind;
+  cue(`scene-${kind}`);
 }

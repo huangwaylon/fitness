@@ -22,7 +22,7 @@ const ALLOW: Record<string, string[]> = {
   'ui-state': [...DOMAIN, 'i18n'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
-  sound: ['types', 'time', 'sync'],
+  sound: ['types', 'time', 'sync', 'i18n'],
   components: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound']
 };
 

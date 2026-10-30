@@ -283,6 +283,6 @@
   "sound.volume": "Volume",
   "sound.nowPlaying": "♪ Now playing: the {hour}:00 tune",
   "sound.noMusic": "No music files yet: the tunes play once they are added.",
-  "sound.silentNote": "What's on here plays even in silent mode.",
+  "sound.silentNote": "Music plays even in silent mode (and pauses other apps' music). With music off, sound effects and voices follow the silent switch.",
   "sound.opening": "♪ Now playing: the opening theme"
 }

@@ -10,8 +10,8 @@ import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 
 export interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
-  /** The opening theme (a one-shot). */
-  opening: string | null;
+  /** The opening theme (a one-shot; `start` 0). */
+  opening: MusicTrack | null;
   music: MusicFiles;
   ambient: Partial<Record<AmbientId, string>>;
 }
@@ -19,6 +19,20 @@ export interface AudioManifest {
 const HOURS = new Set(Array.from({ length: 24 }, (_, h) => hourKey(h)));
 const str = (v: unknown): v is string => typeof v === 'string' && v.length > 0;
 const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {});
+
+const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+/** A bare path plays from 0; `{ file, start, end?, gain? }` from `start` s (see MusicTrack). A bad `end` (not after
+ *  `start`) falls back to `<audio loop>`; a bad `gain` to 0 dB. */
+function track(v: unknown): MusicTrack | null {
+  const t = str(v) ? { file: v } : obj(v);
+  if (!str(t.file)) return null;
+  const start = num(t.start) && t.start >= 0 ? t.start : 0;
+  const out: MusicTrack = { file: t.file, start };
+  if (num(t.end) && t.end > start) out.end = t.end;
+  if (num(t.gain)) out.gain = t.gain;
+  return out;
+}
 
 /** Keep the well-formed entries; `problems` lists what was dropped. */
 export function parseManifest(json: unknown): { manifest: AudioManifest; problems: string[] } {
@@ -37,10 +51,8 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
     }
     const out: Partial<Record<string, MusicTrack>> = {};
     for (const [h, v] of Object.entries(obj(hours))) {
-      // a bare path plays from 0; { file, start } from `start` s
-      const t = str(v) ? { file: v, start: 0 } : obj(v);
-      const start = typeof t.start === 'number' && t.start >= 0 ? t.start : 0;
-      if (HOURS.has(h) && str(t.file)) out[h] = { file: t.file, start };
+      const t = track(v);
+      if (HOURS.has(h) && t) out[h] = t;
       else problems.push(`music.${w}.${h}`);
     }
     music[w as Weather] = out;
@@ -50,8 +62,9 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
     if (AMBIENT_IDS.includes(k as AmbientId) && str(v)) ambient[k as AmbientId] = v;
     else problems.push(`ambient.${k}`);
   }
-  if (root.opening !== undefined && root.opening !== null && !str(root.opening)) problems.push('opening');
-  return { manifest: { sfx, opening: str(root.opening) ? root.opening : null, music, ambient }, problems };
+  const opening = root.opening === undefined || root.opening === null ? null : track(root.opening);
+  if (!opening && root.opening !== undefined && root.opening !== null) problems.push('opening');
+  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient }, problems };
 }
 
 export const AUDIO = parseManifest(raw).manifest;

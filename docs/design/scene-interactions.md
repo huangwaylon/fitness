@@ -70,10 +70,10 @@ any of it count for anything.
 
 ## Sound
 
-The sound engine (`src/lib/sound/`, with `cue(id)` in `cues.ts` and the catalogue in `ids.ts`) was not on main when
-this landed, so scenery taps call one hook: `sceneSfx(kind)` in `island/sceneTaps.ts`, a no-op for now. To wire it,
-replace its body with a lookup into `cues.ts` (add the cues below to `Cue` / `CUES`). The ids marked *new* need a
-sound in `ids.ts` (a synth placeholder, or a file in `static/audio/manifest.json`).
+Scenery taps call one hook, `sceneSfx(kind)` in `island/sceneTaps.ts`, which plays the `scene-<kind>` cue
+(`sound/cues.ts`, all world cues; round 16). The ids marked *new* have synth placeholders in `sound/synth.ts` (a file
+in `static/audio/manifest.json` replaces one). Audio also unlocks on `pointerdown`, so the very first tap is heard.
+The table is the mapping as built (sound.md §5).
 
 | `sceneSfx(kind)` | Wanted cue → sound | Notes |
 |---|---|---|

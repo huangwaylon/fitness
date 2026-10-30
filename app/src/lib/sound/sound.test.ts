@@ -56,7 +56,7 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       ...Object.values(AUDIO.sfx),
       ...Object.values(AUDIO.ambient),
       ...Object.values(AUDIO.music).flatMap((h) => Object.values(h ?? {}).map((t) => t!.file)),
-      ...(AUDIO.opening ? [AUDIO.opening] : [])
+      ...(AUDIO.opening ? [AUDIO.opening.file] : [])
     ] as string[];
     const missing = paths.filter((p) => !existsSync(join(STATIC, p)));
     expect(missing).toEqual([]);
@@ -64,24 +64,48 @@ describe('audio manifest (static/audio/manifest.json)', () => {
     for (const s of sizes) expect(s).toBeLessThan(1024 * 1024);
     expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(20 * 1024 * 1024);
   });
-  it('has all 24 sunny hours, each with a loop start, plus the opening', () => {
+  it('has all 24 sunny hours, each with a loop start, a period end and a loudness gain, plus the opening', () => {
     const sunny = AUDIO.music.sunny ?? {};
     expect(Object.keys(sunny).sort()).toEqual(Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')));
-    for (const t of Object.values(sunny)) expect(t!.start).toBeGreaterThanOrEqual(0);
+    for (const t of Object.values(sunny)) {
+      expect(t!.start).toBeGreaterThanOrEqual(0);
+      expect(t!.end).toBeGreaterThan(t!.start);
+      // normalised to about −16 LUFS: no track is cut or boosted by more than the script's limits
+      expect(t!.gain).toBeGreaterThanOrEqual(-12);
+      expect(t!.gain).toBeLessThanOrEqual(6);
+    }
     expect(hasMusic()).toBe(true);
-    expect(AUDIO.opening).toBe('music/opening.m4a');
+    expect(AUDIO.opening).toMatchObject({ file: 'music/opening.m4a', start: 0 });
+    expect(AUDIO.opening!.gain).toBeLessThan(0); // the loudest file: turned down
   });
   it('drops what it cannot use and says so', () => {
     const { manifest, problems } = parseManifest({
       sfx: { coin: 'sfx/coin.m4a', nope: 'x.m4a', pop: 3 },
-      music: { sunny: { '07': 'music/a.m4a', '24': 'music/b.m4a', '08': { file: 'music/c.m4a', start: 12.5 } }, fog: {} },
+      music: {
+        sunny: {
+          '07': 'music/a.m4a',
+          '24': 'music/b.m4a',
+          '08': { file: 'music/c.m4a', start: 12.5 },
+          '09': { file: 'music/d.m4a', start: 3, end: 60, gain: -2.5 },
+          '10': { file: 'music/e.m4a', start: 30, end: 20, gain: 'loud' }
+        },
+        fog: {}
+      },
       ambient: { waves: 'ambient/waves.m4a', traffic: 'x' },
       opening: 4
     });
     expect(manifest).toEqual({
       sfx: { coin: 'sfx/coin.m4a' },
       opening: null,
-      music: { sunny: { '07': { file: 'music/a.m4a', start: 0 }, '08': { file: 'music/c.m4a', start: 12.5 } } },
+      music: {
+        sunny: {
+          '07': { file: 'music/a.m4a', start: 0 },
+          '08': { file: 'music/c.m4a', start: 12.5 },
+          '09': { file: 'music/d.m4a', start: 3, end: 60, gain: -2.5 },
+          // an end before the start falls back to <audio loop>; a gain that isn't a number to 0 dB
+          '10': { file: 'music/e.m4a', start: 30 }
+        }
+      },
       ambient: { waves: 'ambient/waves.m4a' }
     });
     expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening']);
@@ -143,5 +167,12 @@ describe('dialogue blips', () => {
   it('a long line goes quiet after the cap', () => {
     expect(blipPlan(line('あ'.repeat(500))).times).toHaveLength(MAX_BLIPS);
     expect(blipPlan([])).toEqual({ times: [], rates: [] });
+  });
+});
+
+describe('the opening in the manifest', () => {
+  it('a bare path or an entry with a gain; it always plays from 0', () => {
+    expect(parseManifest({ opening: 'music/o.m4a' }).manifest.opening).toEqual({ file: 'music/o.m4a', start: 0 });
+    expect(parseManifest({ opening: { file: 'music/o.m4a', start: 9, gain: -5.3 } }).manifest.opening).toEqual({ file: 'music/o.m4a', start: 0, gain: -5.3 });
   });
 });

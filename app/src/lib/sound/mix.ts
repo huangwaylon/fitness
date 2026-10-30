@@ -2,6 +2,10 @@
 // pitch jitter and the music duck under a jingle.
 import { SOUNDS, type SoundId } from './ids.ts';
 
+/** Bus levels at full volume (engine.ts). NH's BGM is gentle and sits well under the effects; blips are quiet.
+ *  scripts/music.ts reads `music` for the tracks' true-peak ceiling. */
+export const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9, voice: 0.4 } as const;
+
 /** At most this many effects and blips sound at once (NH stays sparse: one or two things at a time). */
 export const MAX_VOICES = 6;
 
@@ -21,7 +25,10 @@ export type Admit = { ok: false } | { ok: true; key: number; stop: number[] };
 export class VoiceLimiter {
   #voices: Voice[] = [];
   #n = 0;
-  constructor(readonly limit = MAX_VOICES) {}
+  readonly limit: number;
+  constructor(limit = MAX_VOICES) {
+    this.limit = limit; // a plain field: scripts/music.ts imports this file under Node's type stripping
+  }
 
   admit(id: SoundId, now: number, duration: number, at = now): Admit {
     this.#voices = this.#voices.filter((v) => v.until > now);
