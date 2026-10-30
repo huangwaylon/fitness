@@ -24,7 +24,3 @@ export function todayAmount(fruit: FruitKey, f: FruitProgress): string {
   return t(`tree.${fruit}`, { a: formatNum(f.todayActual), g: formatNum(f.todayGoal) });
 }
 
-/** The fruit's line for a screen reader or a tip: today and this week's badge progress. */
-export function fruitDetail(fruit: FruitKey, f: FruitProgress): string {
-  return t(`fruit.${fruit}.detail`, { a: formatNum(f.todayActual), g: formatNum(f.todayGoal), d: f.weekDays, w: f.weekGoalDays });
-}
