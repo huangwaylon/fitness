@@ -15,7 +15,7 @@ export function syntheticRows(days: number): SnapshotRows {
   const rand = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
   const metrics: MetricRow[] = [];
   const workouts: WorkoutRow[] = [];
-  const presence: GymRow[] = [];
+  const arrivals: GymRow[] = [];
   const events: EventRow[] = [];
   let ms = 0;
   // Strictly increasing server `at`s, like LAST_AT.
@@ -49,7 +49,7 @@ export function syntheticRows(days: number): SnapshotRows {
           metrics.push([at(date, hm(h, m)), p, date, 'exercise_min', ex[p]]);
         }
         const label = p === 'A' ? 'エニタイム' : 'PTスタジオ';
-        if (gym[p] && h === 18) presence.push([at(date, hm(18, 0)), p, label, jst(date, '18:00')]);
+        if (gym[p] && h === 18) arrivals.push([at(date, hm(18, 0)), p, label, jst(date, '18:00')]);
         if (gym[p] && h === 19) {
           workouts.push([at(date, hm(h, m)), p, `w:${p}${d}`, date, 'Traditional Strength Training', jst(date, '18:05'), jst(date, '18:55'), 50, 118]);
         }
@@ -68,5 +68,5 @@ export function syntheticRows(days: number): SnapshotRows {
       events.push([at(date, '22:50'), 'A', `ms:${d}`, 'metric_set', JSON.stringify({ date: addDays(date, -1), metric: 'steps', value: 3000 })]);
     }
   }
-  return { metrics, workouts, presence, events };
+  return { metrics, workouts, presence: arrivals, events };
 }

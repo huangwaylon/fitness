@@ -130,8 +130,7 @@ export class LiveBackend implements Backend {
 
   /**
    * Queue an event; the store shows it at once. Never fails for network reasons: the queue retries until the
-   * server acks. `holdMs`: an undo window; `undo()` takes back only this event, not others made in the window
-   *.
+   * server acks. `holdMs`: an undo window; `undo()` takes back only this event, not others made in the window.
    */
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult {
     let holdMs = opts.holdMs ?? 0;

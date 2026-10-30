@@ -33,7 +33,7 @@ function demoRows(now: number): SnapshotRows {
   const first = demoFirstWeek(now);
   const metrics: MetricRow[] = [];
   const workouts: WorkoutRow[] = [];
-  const presence: GymRow[] = [];
+  const arrivals: GymRow[] = [];
   const events: EventRow[] = [];
   let n = 0;
   const ev = (t: number, p: PersonId, type: EventRow[3], data: object) => {
@@ -48,7 +48,7 @@ function demoRows(now: number): SnapshotRows {
   // optional `place` text ('' = ジム).
   const arrive = (p: PersonId, label: string, date: string, h: number, m: number) => {
     const a = at(date, h, m);
-    if (a + 30_000 < now) presence.push([iso(a + 30_000), p, label, iso(a)]);
+    if (a + 30_000 < now) arrivals.push([iso(a + 30_000), p, label, iso(a)]);
   };
 
   for (let d = first; d <= today; d = addDays(d, 1)) {
@@ -151,7 +151,7 @@ function demoRows(now: number): SnapshotRows {
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
-  return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(presence), events: byAt(events) };
+  return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(arrivals), events: byAt(events) };
 }
 
 /** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`), carrying the demo's calendar for the model. */

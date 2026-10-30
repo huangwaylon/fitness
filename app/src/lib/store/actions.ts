@@ -127,9 +127,12 @@ export function setLanguage(locale: Locale) {
   return week.send('pref', { key: 'locale', value: locale });
 }
 
-export function setVillagerName(name: string) {
-  const villagerName = name.trim().slice(0, 12);
-  if (!villagerName) return null;
+/** A villager name as typed in 村人 (the field holds VILLAGER_NAME_CHARS; the model accepts up to LIMITS'). */
+const VILLAGER_NAME_CHARS = 12;
+
+export function setVillagerName(name: string): SendResult {
+  const villagerName = name.trim().slice(0, VILLAGER_NAME_CHARS);
+  if (!villagerName) return { ok: false };
   return week.send('pref', { key: 'villagerName', value: villagerName });
 }
 
