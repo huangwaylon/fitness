@@ -162,7 +162,7 @@ export interface PersonWeekView {
 }
 
 /** @deprecated No daily questions (2026-10-30): `WeekView.pending` is always empty. */
-export interface PendingConfirmation {
+interface PendingConfirmation {
   kind: 'workout';
   id: string;
   date: LocalDate;
