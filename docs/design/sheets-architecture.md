@@ -7,16 +7,16 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 
 | Tab | Columns | Written by |
 |---|---|---|
-| `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`weight`), `value` | `ingest`. Steps and minutes: **only when the value is higher** than the highest so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020): **whenever it differs** from the last row for (person, date) |
+| `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`move_kcal`\|`stand_min`\|`weight`), `value` | `ingest`. Steps, exercise minutes, Move kcal and Stand minutes (ADR 0021; daily totals): **only when the value is higher** than the highest so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020): **whenever it differs** from the last row for (person, date) |
 | `workouts` | `at`, `person`, `id`, `date`, `type`, `start`, `end`, `duration_min`, `avg_hr` | `ingest`, only for unseen `id` (`workoutKey(type, start)`) |
 | `presence` | `at`, `person`, `place`, `event` (`arrive`\|`leave`), `event_at` | `presence`. The model reads only `arrive` at a known place of that person: a strength day on its Tokyo date (2026-10-30). `leave` rows (old Shortcuts) are ignored |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON) | `event` (client-generated `id`; a duplicate `id` is ignored, so retries are safe) |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest` (audit only: no payload stored) |
 
 Event `type`s and `data`:
-- `checkin {date, habit, done}`: the latest per (person, date, habit) wins.
-- `confirm {kind:'workout', id, yes}`: an ask-type workout (HIIT, yoga, …) included strength. Old `{kind:'visit'}` rows
-  are ignored (gym arrivals always count since 2026-10-30).
+- `checkin {date, habit, done}` and `confirm {kind, id, yes}`: still accepted (an old client's queued event never
+  jams) but **ignored by the model** since ADR 0021: no eating check-ins, and no daily questions (a non-strength
+  workout type counts as strength only when marked in きろく with `workout_edit {strength:true}`).
 - `spend {spendId, pot:'treat'|'trip', item, label, bells}` (ADR 0019): a buy from a shared pot. The model ignores
   it unless `pot` is valid, `bells` an integer 1–10,000,000, `label` 1–60 characters and `item` a string ≤ 40, and
   (on read) unless the pot covered it at its `at`. Old yen `spend {spendId, label, amountYen}` rows (no `pot`) are
@@ -25,17 +25,17 @@ Event `type`s and `data`:
   script refuses them like any unknown type, and the model ignores the old rows that remain (ADR 0019 §6).
 - `harvest {week}` (「受け取る」: a ceremony only, the bonus counts either way) · `highfive {}`
 - `pref {key, value}` (keys: `locale`, `villagerName`, `villager`, `goalWeight` (the sender's goal in kg, 20–300 with
-  one decimal, or `null` to clear; ADR 0020), and the shared menus `treatMenu` / `tripMenu`:
+  one decimal, or `null` to clear; ADR 0020), `moveGoal` (the sender's daily Move goal, an integer 100–2,000 kcal; ADR
+  0021: it applies from the Tokyo date of its `at` on, never to earlier days; anything else is ignored), and the shared menus `treatMenu` / `tripMenu`:
   `value` is a JSON array of `{id, label, bells}` (≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000);
   the latest valid one by either person wins; an invalid one is ignored as a whole)
 - `share {metric, on}`: refused by the script (`bad_request`); old rows are ignored (ADR 0016).
 
 Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:
-- `metric_set {date, metric:'steps'|'exercise_min', value}`: overrides the day's value, also lower. The script refuses a non-integer or out-of-range `value` (steps 0–100,000; minutes 0–1,440) or a bad date/metric with `bad_request`. Read rule: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows; else max(S.value, ingest rows with S.at < at ≤ T).
+- `metric_set {date, metric:'steps'|'exercise_min'|'move_kcal'|'stand_min', value}`: overrides the day's value, also lower. The script refuses a non-integer or out-of-range `value` (steps 0–100,000; minutes 0–1,440; kcal 0–10,000; stand minutes 0–1,440) or a bad date/metric with `bad_request`. Read rule: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows; else max(S.value, ingest rows with S.at < at ≤ T).
 - `metric_set {date, metric:'weight', value}` (ADR 0020; **redeploy `Code.js`**): a weight in kg, 20–300 with at most one decimal (decimals for weight only; the script refuses anything else). No week lock (weight earns nothing): any date up to the event's own day. Read rule: the day's weight is the **latest** of its `weight` ingest rows and weight `metric_set`s with `at ≤ T` (not the max).
 - `workout_edit {id, strength?: true|false|null, excluded?: boolean}`: strength override for any type (`null` = automatic), or out of scoring.
 - `workout_add {id:'m:<id>', date, type, durationMin 1–600, strength?}`: a manual workout (a known canonical type).
-- `checkin {…, edit:true}`: a fix for any day ≤ today of an open week (instead of the 48 h window).
 - `spend_void {spendId}`: the buyer only, once, after the spend; it gives the ベル back to the pot. Spends are never
   locked.
 
@@ -55,7 +55,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 
 | `action` | Request | Reply |
 |---|---|---|
-| `ingest` | The Shortcut's one format (shortcut-health-sync.md §1): Text lists, one line per day: `dates`, `steps`, `exercise_minutes`, `weight` (kg, 0 = none), optional `workouts` (types/starts/ends/avgHrs, one line per workout); other fields ignored | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows actually appended, plus unreadable lines, unmapped workout names and dropped lists (a list whose line count differs from `dates` is dropped, the rest saved). The `uploads` tab logs each body's shape |
+| `ingest` | The Shortcut's one format (shortcut-health-sync.md §1): Text lists, one line per day: `dates`, `steps`, `exercise_minutes`, `calories` (active kcal → `move_kcal`), `stand_minutes` (→ `stand_min`), `weight` (kg, 0 = none), each optional; optional `workouts` (types/starts/ends/avgHrs, one line per workout); other fields ignored; a value above the `metric_set` bounds is skipped with a warning | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows actually appended, plus unreadable lines, unmapped workout names and dropped lists (a list whose line count differs from `dates` is dropped, the rest saved). The `uploads` tab logs each body's shape |
 | `uploads` | (key only) | `{ok, rows: [{at, status, bytes, notes}]}`: the caller's last 20 ingest audit rows, newest first |
 | `presence` | `place, event, at?` | `{ok}` |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
@@ -91,7 +91,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 ## 3. Code layout
 - `app/gas/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. Ported from the retired server's Shortcut ingest (without zod), so it runs in Apps Script (the browser never parses Shortcut bodies).
 - `app/gas/`: Apps Script source in TS (`main.ts`: `doPost`, sheet helpers), bundled with the parser by **esbuild** into `apps-script/Code.js` (one global script, no imports) via `npm run gas:build`. `apps-script/appsscript.json` sets scope `spreadsheets.currentonly`, the web app, and timezone `Asia/Tokyo`. `clasp` is optional (`.clasp.json` not committed).
-- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (people with today's ベル and fruit progress, the pots, the menus, harvest with the weekly bonus, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. `state.ts` validates and indexes rows; `inputs.ts` reads one person's rows as of a time; `bells.ts` is the economy (per-week earnings cached per State and, for locked weeks, per `rev`; pots; spends; the きろく ledger `bellsLedger`); `history.ts` the きろく views; `weight.ts` the weight trend (ADR 0020: a day's weight, the gap-aware 10% EWMA, week change, since start, pace, goal projection; nothing in the economy imports it). `scoring/bells.ts` is the pure earning rule (`earnWeek`, `duoBonus`, `splitPots`); `scoring/targets.ts` picks a week's rule version and habits (`rulesFor`, `habitsFor`). `week.ts` builds the WeekView (incl. the harvest's badges and each pot's today / week flow).
+- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (people with today's ベル and the five fruits' progress, the Move goal in force, the pots, the menus, harvest with the weekly bonus, host line), reusing `scoring/` and `config/rules.ts`. `state.ts` validates and indexes rows; `inputs.ts` reads one person's rows as of a time; `bells.ts` is the economy (per-week earnings cached per State and, for locked weeks, per `rev`; pots; spends; the きろく ledger `bellsLedger`); `history.ts` the きろく views; `weight.ts` the weight trend (ADR 0020: a day's weight, the gap-aware 10% EWMA, week change, since start, pace, goal projection; nothing in the economy imports it). `scoring/bells.ts` is the pure earning rule (`earnWeek`, `duoBonus`, `splitPots`); `scoring/targets.ts` picks a week's rule version (`rulesFor`); `state.ts` `moveGoalOn` the Move goal in force on a day. `week.ts` builds the WeekView (incl. the harvest's badges and each pot's today / week flow).
 - `app/src/lib/sync/` (round 9):
   - `storage.ts`: every Web Storage key in one registry. Live keys are `island.*`; the demo's are `island-demo.*`, so it can never touch the live key, queue or cache. Failed writes (quota, private mode) are reported, and the store shows a banner once per kind.
   - `transport.ts`: the POST helper (timeout, error taxonomy) and `whoami`. `pairing.ts`: the key, `#key=` links, and switching person (drops the cache and queue).

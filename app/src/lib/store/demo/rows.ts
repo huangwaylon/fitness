@@ -26,7 +26,6 @@ function rng(seed: string): () => number {
 
 const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
-const HABITS: Record<PersonId, string[]> = { A: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], B: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] };
 
 function demoFirstWeek(now: number): WeekKey {
   return addDays(weekKeyOf(nowInZone(new Date(now)).date), -7 * DEMO_WEEKS_BACK);
@@ -66,9 +65,9 @@ function demoRows(now: number): SnapshotRows {
     for (const p of ['A', 'B'] as PersonId[]) {
       const r = rng(`${p}|${d}`);
       const lazy = r() < 0.3;
-      // Around the shared goals (45 min, 8,000 steps: ADR 0019), a lazy day now and then.
+      // Around the goals (ADR 0021: 60 exercise min, 8,000 steps), a lazy day now and then.
       const steps = Math.round(((p === 'A' ? 9000 : 8600) + (r() - 0.5) * (p === 'A' ? 6000 : 5000) - (lazy ? 3500 : 0)) * partial);
-      const mins = Math.round(((p === 'A' ? 44 : 40) + (r() - 0.5) * 36 - (lazy ? 22 : 0)) * partial);
+      const mins = Math.round(((p === 'A' ? 62 : 56) + (r() - 0.5) * 44 - (lazy ? 28 : 0)) * partial);
       // Move (active kcal) around each default goal (ウェイ 600, うめ 400) and Stand minutes around 180 (ADR 0021).
       const kcal = Math.round(((p === 'A' ? 610 : 420) + (r() - 0.5) * (p === 'A' ? 360 : 260) - (lazy ? 200 : 0)) * partial);
       const stand = Math.round((190 + (r() - 0.5) * 120 - (lazy ? 60 : 0)) * partial);
@@ -78,9 +77,6 @@ function demoRows(now: number): SnapshotRows {
           [iso(syncAt), p, d, 'move_kcal', Math.max(30, kcal)], [iso(syncAt), p, d, 'stand_min', Math.max(5, stand)]
         );
       }
-      // Eating check-ins, ticked in the evening.
-      const tickAt = at(d, 21, 10 + Math.floor(r() * 30));
-      for (const h of HABITS[p]) if (r() < (p === 'A' ? 0.68 : 0.78)) ev(tickAt, p, 'checkin', { date: d, habit: h, done: true });
     }
     // ウェイ: strength at the gym Mon/Thu (a Watch workout + an エニタイム arrival), a run some Saturdays.
     const ra = rng(`A-w|${d}`);
@@ -95,15 +91,12 @@ function demoRows(now: number): SnapshotRows {
     const rb = rng(`B-w|${d}`);
     if (dow === 5 && rb() < 0.75) arrive('B', 'pt_studio', d, 18, 30);
     if (dow === 2 && rb() < 0.8) wo(night, 'B', d, 'Pilates', 7, 0, 40, 104);
+    // Yoga isn't a strength type (no questions are asked): うめ marks a power-yoga Sunday as strength in きろく now and then.
     if (dow === 7 && rb() < 0.7) {
       wo(night, 'B', d, 'Yoga', 9, 30, 45, 96);
-      ev(at(d, 22, 40), 'B', 'confirm', { kind: 'workout', id: `Yoga@${iso(at(d, 9, 30))}`, yes: rb() < 0.5 });
+      if (rb() < 0.5 && at(d, 22, 40) < finalMs(weekKeyOf(d))) ev(at(d, 22, 40), 'B', 'workout_edit', { id: `Yoga@${iso(at(d, 9, 30))}`, strength: true });
     }
   }
-
-  // This week: a yoga session of mine still waiting for 「筋トレでしたか？」 (the island's question).
-  const yogaDay = today > cur ? addDays(today, -1) : today;
-  wo(Math.min(at(yogaDay, 8, 20), now - 60_000), 'A', yogaDay, 'Yoga', 7, 15, 45, 101);
 
   // Harvests: both drop the week into the jar on Sunday evening.
   for (let wk = first; provisionalMs(wk) <= now; wk = addDays(wk, 7)) {
@@ -124,8 +117,8 @@ function demoRows(now: number): SnapshotRows {
   edit(at(addDays(w(2), 3), 22, 50), 'A', 'metric_set', { date: addDays(w(2), 2), metric: 'steps', value: 6400 }, addDays(w(2), 2));
   // うめ: a manual Pilates (3 weeks ago), counted as strength.
   edit(at(addDays(w(3), 4), 20, 12), 'B', 'workout_add', { id: 'm:demo-pilates', date: addDays(w(3), 3), type: 'Pilates', durationMin: 35, strength: true }, addDays(w(3), 3));
-  // ウェイ: a missed check-in ticked later (this week, if Monday is past).
-  if (today > cur) edit(at(today, 7, 40), 'A', 'checkin', { date: cur, habit: 'no_sweets', done: true, edit: true }, cur);
+  // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
+  ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 
   // The pots (ADR 0019): treats most weeks, a day trip, one treat taken back by its buyer, and a menu edit.
   const buy = (t: number, p: PersonId, spendId: string, pot: 'treat' | 'trip', item: string, label: string, bells: number) =>

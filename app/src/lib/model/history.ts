@@ -1,13 +1,12 @@
 // きろく (history-and-editing.md): every recorded week and day, with its ベル, for both people, computed on read from the
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
-import type { FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, WeekKey } from '#lib/types.ts';
+import type { FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { DAILY, STRENGTH } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
-import { addDays, habitsFor, isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, exerciseMilli, isStrengthWorkout, manualMinutesByDay, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
-import { rulesFor } from '#lib/scoring/targets.ts';
-import type { WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, earnInput, earnTimeOf, weekBells, type WeekBells } from './bells.ts';
+import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
+import { dailyUpTo, earnTimeOf, legacyBadges, legacyParts, weekBells, type WeekBells } from './bells.ts';
 import { activityAsOf, metricAsOf, replayHarvests, weekDates, workoutsAsOf, type Activity } from './week.ts';
 
 const LIVE = Infinity;
@@ -16,27 +15,29 @@ const LIVE = Infinity;
 function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
   const landed = provisionalMs(w.weekKey) <= now;
   const bonus: HarvestBonus = landed ? { ...w.bonus } : { A: 0, B: 0, duo: 0 };
-  const person = (e: WeekEarning) => ({ daily: dailyUpTo(e, today), bonus: bonus[e.person], badges: { ...e.badges } });
+  const person = (e: WeekEarning) => ({ daily: dailyUpTo(e, today), bonus: bonus[e.person], ringBadges: { ...e.badges }, badges: legacyBadges(e.badges) });
   const A = person(w.A);
   const B = person(w.B);
   return { bonus, A, B, bells: A.daily + A.bonus + B.daily + B.bonus + bonus.duo };
 }
-const dayOf = (e: WeekEarning, date: LocalDate): { bells: number; parts: FruitBells } => {
+const dayOf = (e: WeekEarning, date: LocalDate): { bells: number; rings: RingBells; parts: FruitBells } => {
   const d = e.days.find((x) => x.date === date);
-  return d ? { bells: d.bells, parts: { ...d.parts } } : { bells: 0, parts: { peach: 0, coconut: 0, apple: 0, pear: 0 } };
+  const rings = d ? { ...d.rings } : zeroRings();
+  return { bells: d?.bells ?? 0, rings, parts: legacyParts(rings) };
 };
 
 export type Stamp = 'strength' | 'active' | 'none' | 'future';
-/** Where a day's counted minutes come from: the Watch, a きろく edit of them, the steps, or workouts added by hand. */
-type MinutesSource = 'watch' | 'edit' | 'steps' | 'manual';
+/** Where a day's counted exercise minutes come from: the Watch, a きろく edit of them, or workouts added by hand. */
+type MinutesSource = 'watch' | 'edit' | 'manual';
 
 /** One accepted edit, derived from the event rows (§4.4). `before` is the value as of `at − 1`. */
 export interface EditLog {
   at: number;
   by: PersonId;
   date: LocalDate;
-  field: 'steps' | 'exercise_min' | 'workout_strength' | 'workout_excluded' | 'workout_add' | 'checkin';
-  /** Workout type (workout_*) or habit key (checkin). */
+  /** `checkin` is @deprecated: never emitted since ADR 0021 (kept until the UI stops comparing with it). */
+  field: 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min' | 'workout_strength' | 'workout_excluded' | 'workout_add' | 'checkin';
+  /** Workout type (workout_*). */
   subject?: string;
   before: number | boolean | null;
   after: number | boolean | null;
@@ -45,6 +46,9 @@ export interface EditLog {
 interface HistoryPerson {
   /** The person's ベル of the week: daily earnings + their badge bonus once it landed. */
   bells: number;
+  /** The five badges (ADR 0021). */
+  ringBadges: Record<RingFruit, boolean>;
+  /** @deprecated ADR 0019's four (🍐 = Move). */
   badges: Record<FruitKey, boolean>;
   stamps: Stamp[];
 }
@@ -66,7 +70,7 @@ export interface HistoryWeek {
 
 /**
  * A week as きろく reads it: open weeks show live numbers; a closed week shows what it had at its lock (late syncs after
- * it never count). `wb`: the week's earnings (its days' strength, ticks and ベル).
+ * it never count). `wb`: the week's earnings (its days' metrics, gym days and ベル).
  */
 interface WeekCalc { t: number; act: Record<PersonId, Activity>; wb: WeekBells }
 
@@ -76,11 +80,8 @@ function calc(s: State, wk: WeekKey, now: number): WeekCalc {
   return { t, act, wb: weekBells(s, wk, now, t === LIVE ? act : undefined) };
 }
 
-/** The person's strength days of the week (as the earnings count them). */
-const strengthDays = (c: WeekCalc, p: PersonId): Set<LocalDate> => new Set(c.wb[p].days.filter((d) => d.strength).map((d) => d.date));
-
-interface DayMinutes {
-  /** Counted minutes (before the daily cap): max(Watch, step-derived, manual workouts), never a sum (ADR 0011). */
+interface DayExercise {
+  /** Counted minutes (before the daily cap): max(Watch, workouts added in きろく), never a sum (ADR 0011). */
   value: number;
   /** The Watch value (or its edit). */
   watch: number | null;
@@ -88,24 +89,20 @@ interface DayMinutes {
 }
 
 /**
- * The one minutes rule for きろく (same as earnWeek): the largest of the three sources. The Watch value reads as an
- * edit when the latest `metric_set` (at ≤ t) is what metricAsOf returns, i.e. no later ingest row beat it (round 7 L4).
+ * The one exercise rule for きろく (same as earnWeek). The Watch value reads as an edit when the latest `metric_set`
+ * (at ≤ t) is what metricAsOf returns, i.e. no later ingest row beat it (round 7 L4).
  */
-function dayMinutes(s: State, p: PersonId, date: LocalDate, t: number, steps: number | null, manualMin: number): DayMinutes {
+function dayExercise(s: State, p: PersonId, date: LocalDate, t: number, manualMin: number): DayExercise {
   const watch = metricAsOf(s, p, date, 'exercise_min', t);
-  const src = minuteSourcesMilli(steps, watch, manualMin, rulesFor(weekKeyOf(date)).goals.steps);
-  const best = Math.max(src.watch, src.steps, src.manual);
-  const value = Math.floor(best / 1000);
-  if (steps === null && watch === null && manualMin === 0) return { value, watch, source: null };
-  let source: MinutesSource;
-  if (best > 0 && best === src.manual && src.manual > src.watch) source = 'manual';
-  else if (best > 0 && best === src.steps && src.steps > src.watch) source = 'steps';
-  else source = watchIsEdit(s, p, date, t) ? 'edit' : 'watch';
+  const value = Math.floor(exerciseMilli(watch, manualMin) / 1000);
+  if (watch === null && manualMin === 0) return { value, watch, source: null };
+  const source: MinutesSource = manualMin > (watch ?? 0) ? 'manual' : watchIsEdit(s, p, date, 'exercise_min', t) ? 'edit' : 'watch';
   return { value, watch, source };
 }
 
-function watchIsEdit(s: State, p: PersonId, date: LocalDate, t: number): boolean {
-  const key = `${date}|exercise_min`;
+/** The day's value of `metric` is a きろく edit (no later, higher ingest row beat it). */
+function watchIsEdit(s: State, p: PersonId, date: LocalDate, metric: 'exercise_min' | 'move_kcal' | 'stand_min', t: number): boolean {
+  const key = `${date}|${metric}`;
   const set = latestTimed(s.metricSets[p].get(key), t);
   if (!set) return false;
   return !(s.metrics[p].get(key) ?? []).some((r) => r.at > set.at && r.at <= t && r.v > set.v);
@@ -114,16 +111,12 @@ function watchIsEdit(s: State, p: PersonId, date: LocalDate, t: number): boolean
 /** Manual workout minutes per day for a person as of t (excluded ones don't count). */
 const manualAsOf = (act: Activity): Map<LocalDate, number> => manualMinutesByDay(act.workouts);
 
-function stampsFor(s: State, person: PersonId, wk: WeekKey, c: WeekCalc, today: LocalDate): Stamp[] {
-  const goal = rulesFor(wk).goals.steps;
-  const strength = strengthDays(c, person);
-  const manual = manualAsOf(c.act[person]);
-  return weekDays(wk).map((date) => {
-    if (date > today) return 'future';
-    if (strength.has(date)) return 'strength';
-    const steps = metricAsOf(s, person, date, 'steps', c.t);
-    const { value } = dayMinutes(s, person, date, c.t, steps, manual.get(date) ?? 0);
-    return (steps !== null && steps >= goal) || value >= DAILY.activeDayMin ? 'active' : 'none';
+/** ● stamps: a gym day; else active from DAILY.activeDayMin counted exercise minutes or on a step day. */
+function stampsFor(e: WeekEarning, today: LocalDate): Stamp[] {
+  return e.days.map((d) => {
+    if (d.date > today) return 'future';
+    if (d.gym) return 'strength';
+    return d.met.apple || d.exerciseMin >= DAILY.activeDayMin ? 'active' : 'none';
   });
 }
 
@@ -146,8 +139,8 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
       harvested: harvested.has(wk),
       bells: b.bells,
       people: {
-        A: { bells: b.A.daily + b.A.bonus, badges: b.A.badges, stamps: stampsFor(s, 'A', wk, c, today) },
-        B: { bells: b.B.daily + b.B.bonus, badges: b.B.badges, stamps: stampsFor(s, 'B', wk, c, today) }
+        A: { bells: b.A.daily + b.A.bonus, ringBadges: b.A.ringBadges, badges: b.A.badges, stamps: stampsFor(c.wb.A, today) },
+        B: { bells: b.B.daily + b.B.bonus, ringBadges: b.B.ringBadges, badges: b.B.badges, stamps: stampsFor(c.wb.B, today) }
       }
     });
   }
@@ -156,20 +149,35 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
 
 // ---------- week detail ----------
 
-/** What an accepted edit changed, for the ✎ next to that number in the week table. */
-type EditedField = 'steps' | 'minutes' | 'workout' | 'ticks';
+/** What an accepted edit changed, for the ✎ next to that number in the week table. `ticks` is @deprecated (never set). */
+type EditedField = 'steps' | 'minutes' | 'move' | 'stand' | 'workout' | 'ticks';
 
 interface DayRow {
   date: LocalDate;
   future: boolean;
   steps: number | null;
-  /** Counted minutes (max of Watch, step-derived and manual workouts). */
-  minutes: number;
-  minutesSource: MinutesSource | null;
-  strength: boolean;
-  ticks: number;
-  /** The day's ベル and its parts per fruit. */
+  /** Counted exercise minutes: max(Watch, workouts added in きろく). */
+  exerciseMin: number;
+  /** Move, active kcal, and the goal in force that day. */
+  moveKcal: number | null;
+  moveGoal: number;
+  standMin: number | null;
+  /** A gym day (a strength workout or an arrival). */
+  gym: boolean;
+  /** The daily goal met, per fruit. */
+  met: Record<RingFruit, boolean>;
+  /** The day's ベル, per ring fruit. */
   bells: number;
+  rings: RingBells;
+  /** @deprecated = exerciseMin. */
+  minutes: number;
+  /** Where the exercise minutes come from (the Watch, a きろく edit, or workouts added by hand). */
+  minutesSource: MinutesSource | null;
+  /** @deprecated = gym. */
+  strength: boolean;
+  /** @deprecated Always 0 (no check-ins). */
+  ticks: number;
+  /** @deprecated See FruitBells. */
   parts: FruitBells;
   /** An accepted edit touched this person's day. */
   edited: boolean;
@@ -177,14 +185,18 @@ interface DayRow {
 }
 
 const FIELD_OF: Record<EditLog['field'], EditedField> = {
-  steps: 'steps', exercise_min: 'minutes', workout_strength: 'workout', workout_excluded: 'workout', workout_add: 'workout', checkin: 'ticks'
+  steps: 'steps', exercise_min: 'minutes', move_kcal: 'move', stand_min: 'stand',
+  workout_strength: 'workout', workout_excluded: 'workout', workout_add: 'workout', checkin: 'ticks'
 };
 
 interface WeekDetailPerson {
   /** Daily earnings of the week (without the bonus). */
   dailyBells: number;
-  /** The badge bonus (+500 each; 0 until it lands on Sunday 19:30). */
+  /** The badge bonus (+badges.bells each; 0 until it lands on Sunday 19:30). */
   bonus: number;
+  /** The five badges (ADR 0021). */
+  ringBadges: Record<RingFruit, boolean>;
+  /** @deprecated ADR 0019's four (🍐 = Move). */
   badges: Record<FruitKey, boolean>;
   days: DayRow[];
 }
@@ -215,25 +227,30 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const wb = c.wb;
   const b = weekBellsView(wb, today, now);
   const person = (p: PersonId): WeekDetailPerson => {
-    const input = earnInput(s, p, wk, c.t, c.act[p]);
     const edited = editedFields(s, p);
     const manual = manualAsOf(c.act[p]);
-    const strength = strengthDays(c, p);
     return {
       dailyBells: b[p].daily,
       bonus: b[p].bonus,
+      ringBadges: b[p].ringBadges,
       badges: b[p].badges,
-      days: input.days.map((d) => {
-        const m = dayMinutes(s, p, d.date, c.t, d.steps, manual.get(d.date) ?? 0);
+      days: wb[p].days.map((d) => {
+        const m = dayExercise(s, p, d.date, c.t, manual.get(d.date) ?? 0);
         const fields = [...(edited.get(d.date) ?? [])];
         return {
           date: d.date,
           future: d.date > today,
           steps: d.steps,
-          minutes: m.value,
+          exerciseMin: d.exerciseMin,
+          moveKcal: d.moveKcal,
+          moveGoal: d.moveGoal,
+          standMin: d.standMin,
+          gym: d.gym,
+          met: { ...d.met },
+          minutes: d.exerciseMin,
           minutesSource: m.source,
-          strength: strength.has(d.date),
-          ticks: Math.min(DAILY.maxTicks, new Set(input.checkins.filter((x) => x.date === d.date).map((x) => x.habit)).size),
+          strength: d.gym,
+          ticks: 0,
           ...(d.date <= today ? dayOf(wb[p], d.date) : dayOf(wb[p], '')),
           edited: fields.length > 0,
           editedFields: fields
@@ -275,15 +292,24 @@ interface DayWorkout {
 interface DayVisit { id: string; place: string; arriveAt: string }
 
 export interface DayPerson {
-  /** The day's ベル and its parts per fruit. */
+  /** The day's ベル, per ring fruit. */
   bells: number;
-  parts: FruitBells;
+  rings: RingBells;
+  /** The daily goal met, per fruit. */
+  met: Record<RingFruit, boolean>;
   steps: { value: number | null; edited: boolean };
-  /** Counted minutes, the Watch value and where the counted number comes from. */
-  minutes: { value: number; watch: number | null; source: MinutesSource | null; edited: boolean };
+  /** Counted exercise minutes, the Watch value and where the counted number comes from. */
+  exercise: { value: number; watch: number | null; source: MinutesSource | null; edited: boolean };
+  /** Move: active kcal and the goal in force that day. */
+  move: { value: number | null; goal: number; edited: boolean };
+  /** Stand minutes. */
+  stand: { value: number | null; edited: boolean };
   workouts: DayWorkout[];
   visits: DayVisit[];
-  habits: { keys: [string, string, string]; done: string[] };
+  /** @deprecated = exercise. */
+  minutes: { value: number; watch: number | null; source: MinutesSource | null; edited: boolean };
+  /** @deprecated See FruitBells. */
+  parts: FruitBells;
 }
 
 export interface DayDetail {
@@ -307,8 +333,8 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const log = editLog(s).filter((e) => e.date === date);
   const person = (p: PersonId): DayPerson => {
     const t = c.t;
-    const steps = metricAsOf(s, p, date, 'steps', t);
-    const m = dayMinutes(s, p, date, t, steps, manualAsOf(c.act[p]).get(date) ?? 0);
+    const m = dayExercise(s, p, date, t, manualAsOf(c.act[p]).get(date) ?? 0);
+    const d = wb[p].days.find((x) => x.date === date);
     const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
     const workouts = allWorkouts(s, p)
       .filter((w) => w.date === date && w.at <= t)
@@ -325,15 +351,18 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const visits = c.act[p].visits.filter((v) => v.date === date).map((v): DayVisit => ({
       id: v.id, place: places.get(v.placeKey) ?? v.placeKey, arriveAt: v.arriveAt
     }));
-    const input = earnInput(s, p, wk, t, c.act[p]);
     const mine = log.filter((e) => e.by === p);
+    const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
       ...(date <= localDateAt(now) ? dayOf(wb[p], date) : dayOf(wb[p], '')),
-      steps: { value: steps, edited: mine.some((e) => e.field === 'steps') },
-      minutes: { ...m, edited: mine.some((e) => e.field === 'exercise_min') },
+      met: d ? { ...d.met } : { peach: false, pear: false, cherry: false, apple: false, coconut: false },
+      steps: { value: metricAsOf(s, p, date, 'steps', t), edited: mine.some((e) => e.field === 'steps') },
+      exercise,
+      move: { value: metricAsOf(s, p, date, 'move_kcal', t), goal: d?.moveGoal ?? 0, edited: mine.some((e) => e.field === 'move_kcal') },
+      stand: { value: metricAsOf(s, p, date, 'stand_min', t), edited: mine.some((e) => e.field === 'stand_min') },
       workouts,
       visits,
-      habits: { keys: [...habitsFor(p, wk)] as [string, string, string], done: input.checkins.filter((x) => x.date === date).map((x) => x.habit) }
+      minutes: exercise
     };
   };
   return {
@@ -360,22 +389,12 @@ function buildEditLog(s: State): EditLog[] {
   const out: EditLog[] = [];
   for (const p of PEOPLE_IDS) {
     for (const [key, list] of s.metricSets[p]) {
-      const [date, field] = key.split('|') as [LocalDate, 'steps' | 'exercise_min'];
+      const [date, field] = key.split('|') as [LocalDate, 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min'];
       for (const e of list) {
         const before = metricAsOf(s, p, date, field, e.at - 1);
         const after = metricAsOf(s, p, date, field, e.at);
         if (before !== after) out.push({ at: e.at, by: p, date, field, before, after });
       }
-    }
-    const ticks = new Map<string, State['checkins'][PersonId]>();
-    for (const c of s.checkins[p]) {
-      const k = `${c.date}|${c.habit}`;
-      const earlier = ticks.get(k) ?? ticks.set(k, []).get(k)!;
-      if (c.edit) {
-        const before = earlier.findLast((x) => x.at < c.at)?.done ?? false;
-        if (before !== c.done) out.push({ at: c.at, by: p, date: c.date, field: 'checkin', subject: c.habit, before, after: c.done });
-      }
-      earlier.push(c);
     }
     for (const w of s.manualWorkouts[p]) out.push({ at: w.at, by: p, date: w.date, field: 'workout_add', subject: w.type, before: null, after: w.durationMin });
   }

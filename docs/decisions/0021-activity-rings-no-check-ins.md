@@ -40,3 +40,23 @@ it). Gym visits are now one Arrive automation (an arrival counts, no duration).
 - Stand 180 min needs the Watch worn most of the day; Exercise 60 min is double Apple's default (the badge needs 5 of 7 days and
   every minute pays on its own).
 - The backend parser and contract gain `stand_minutes` (and a stored metric for Move kcal): one Code.js redeploy.
+
+## Amendment 2026-10-30: no daily questions, and the values
+**No daily questions** (user decision): the app asks nothing. 「…は筋トレでしたか？」 for ask-type workouts (HIIT, yoga,
+core, mixed cardio, cross training) is removed with `WeekView.pending`. Only the auto strength types
+(`STRENGTH.autoTypes`: Traditional / Functional Strength Training, Pilates, ≥ 15 min) or a きろく mark
+(`workout_edit {strength}`) make a workout a 🥥 day; any other type counts only when marked in きろく. Old `confirm` rows
+(and `checkin` rows) stay in the sheet and are ignored; the script still accepts both, so an old client's queue never jams.
+
+**Values** (`RULES[0]`, edited in place: play money, the economy's first week; `rules.test.ts`):
+
+| | Daily goal | ベル a day | Badge |
+|---|---|---|---|
+| 🍑 Exercise | 60 min | 3 per minute (max 180) | ≥ 5 days |
+| 🍐 Move | per person (`pref` moveGoal, 100–2,000; default 600 / 400) | floor(180 × min(kcal, goal) / goal) | ≥ 5 days |
+| 🍒 Stand | 180 min | 1 per minute (max 180) | ≥ 5 days |
+| 🍎 Steps | 8,000 | 200 | ≥ 4 days |
+| 🥥 Gym | a gym day | 400 | ≥ 3 days |
+
++400 per badge, ふたりボーナス +200 per badge both met. On target: (5 × 180 × 3 + 4 × 200 + 3 × 400) = 4,700 daily +
+2,000 badges each, + 1,000 duo = **14,400 ベル a week** for both (was 14,250). Max 1,140 a day per person.

@@ -1,67 +1,86 @@
-// ベル earned per person per day, weekly badges and the pot split (ADR 0019). Pure; the model feeds it the rows of a
+// ベル earned per person per day, weekly badges and the pot split (ADR 0019, what earns from ADR 0021): five automatic
+// metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
 // week as of a time and decides which weeks count (the economy's first week, locks).
-import { DAILY, FRUITS, HOLIDAY, POTS, STEP_MINUTES, TSUYU } from '#lib/config/rules.ts';
-import type { CheckinTick, DayBells, DayMetrics, FruitBells, FruitKey, LocalDate, PersonId, PotKey, Visit, WeekKey, Workout } from '#lib/types.ts';
+import { POTS, RING_FRUITS, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import type { LocalDate, PersonId, PotKey, RingBells, RingFruit, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
-import { gymDaysOf, manualMinutesByDay } from '#lib/scoring/rings.ts';
 
 // ---------- a day's raw facts (also read by きろく) ----------
 
-/** Convert a (possibly fractional) count to integer milli-units. */
+/**
+ * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
+ * type. No question is ever asked (2026-10-30): other types count only when marked in きろく.
+ */
+export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'strengthOverride'>): boolean =>
+  w.durationMin >= STRENGTH.minWorkoutMin &&
+  (typeof w.strengthOverride === 'boolean' ? w.strengthOverride : (STRENGTH.autoTypes as readonly string[]).includes(w.type));
+
+/** Gym days of a week (max one per date): strength workouts and gym arrivals. */
+function gymDaysOf(workouts: readonly Workout[], visits: readonly Visit[]): Set<LocalDate> {
+  const set = new Set<LocalDate>();
+  for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
+  for (const v of visits) set.add(v.date);
+  return set;
+}
+
+/** Minutes of the workouts added by hand, per day. */
+export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin' | 'manual'>[]): Map<LocalDate, number> {
+  const out = new Map<LocalDate, number>();
+  for (const w of workouts) if (w.manual) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
+  return out;
+}
+
 const toMilli = (x: number): number => Math.round(x * 1000);
 
-/** Strength days of a week (max one per date): strength workouts and gym arrivals. Pass one week's workouts and visits. */
-const strengthDaysOf = gymDaysOf;
+/** A day's counted exercise milli-minutes: max(Watch, workouts added in きろく), never a sum (ADR 0011, 0021 §2). */
+export const exerciseMilli = (watchMin: number | null, manualMin: number): number => Math.max(0, toMilli(watchMin ?? 0), toMilli(manualMin));
 
-/** The three minute sources of a day, in milli-minutes (uncapped); the day counts the largest, never a sum. */
-export function minuteSourcesMilli(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): { watch: number; steps: number; manual: number } {
-  return {
-    watch: toMilli(exerciseMin ?? 0),
-    steps: steps === null ? 0 : Math.floor(Math.max(0, steps - stepGoal) * 1000 / STEP_MINUTES.stepsPerMin),
-    manual: toMilli(manualMin)
-  };
-}
-
-/** A day's active milli-minutes: max(Watch, (steps − goal) / 100, manual workouts). */
-function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
-  const m = minuteSourcesMilli(steps, exerciseMin, manualMin, stepGoal);
-  return Math.max(0, m.watch, m.steps, m.manual);
-}
-
-const isPearOff = (d: LocalDate): boolean => inMonthDayRange(d, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to);
 const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
 
 // ---------- earnings ----------
+
+/** One day's raw metrics (null = no row) and the person's Move goal in force that day. */
+export interface EarnDay {
+  date: LocalDate;
+  steps: number | null;
+  /** Watch exercise minutes. */
+  exerciseMin: number | null;
+  /** Move: active energy, kcal. */
+  moveKcal: number | null;
+  /** Health Stand Time, minutes. */
+  standMin: number | null;
+  /** kcal (`pref` moveGoal in force that day, else PEOPLE[p].moveGoal). */
+  moveGoal: number;
+}
 
 /** One person's week as of some time: the inputs `earnWeek` needs (dates outside the week are ignored). */
 export interface EarnInput {
   person: PersonId;
   weekKey: WeekKey;
-  /** The person's three eating habits that week; other ticks don't count. */
-  habits: readonly string[];
-  days: DayMetrics[];
+  days: EarnDay[];
   workouts: Workout[];
   visits: Visit[];
-  checkins: CheckinTick[];
 }
 
 /** A day's earnings with the facts behind them. */
-interface DayEarning extends DayBells {
-  /** Counted active minutes, floored, before the daily cap (max of the three sources). */
-  minutes: number;
+interface DayEarning {
+  date: LocalDate;
+  bells: number;
+  rings: RingBells;
+  /** Counted exercise minutes, floored, before the daily cap. */
+  exerciseMin: number;
+  moveKcal: number | null;
+  moveGoal: number;
+  standMin: number | null;
   steps: number | null;
-  /** 🍑 reached the daily goal (45 min). */
-  activeMet: boolean;
-  /** 🍎 reached 8,000 steps, or (tsuyu) 30 active minutes. */
-  stepMet: boolean;
-  strength: boolean;
-  /** Distinct habit ticks counted (max 3; 0 on 正月 pear-off days). */
-  ticks: number;
+  gym: boolean;
+  /** The daily goal met, per fruit (🍎 also by the tsuyu rule). */
+  met: Record<RingFruit, boolean>;
 }
 
 interface FruitWeek {
-  /** Progress toward the badge: days meeting the daily goal (🍑🍎🥥) or ticks (🍐). */
+  /** Days meeting the daily goal. */
   weekDays: number;
   weekGoalDays: number;
   badge: boolean;
@@ -76,85 +95,82 @@ export interface WeekEarning {
   days: DayEarning[];
   /** Sum of the daily earnings. */
   daily: number;
-  fruits: Record<FruitKey, FruitWeek>;
-  badges: Record<FruitKey, boolean>;
+  fruits: Record<RingFruit, FruitWeek>;
+  badges: Record<RingFruit, boolean>;
   /** +badges.bells per badge met. */
   bonus: number;
-  allBadges: boolean;
 }
 
-const FRUIT_KEYS: readonly FruitKey[] = FRUITS;
-export const zeroParts = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
+export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple: 0, coconut: 0 });
 
 /**
- * One person's ベル for a week (ADR 0019 §2–4), at the week's rule version. Per day:
- * - 🍑 perMinute × counted minutes, up to goals.activeMin. Minutes = max(Watch, (steps − goal) / 100, manual).
+ * One person's ベル for a week (ADR 0021 §3–4), at the week's rule version. Per day:
+ * - 🍑 perExerciseMin × counted minutes, up to goals.exerciseMin. Minutes = max(Watch, workouts added in きろく).
+ * - 🍐 floor(moveAtGoal × min(kcal, goal) / goal), the goal being the person's Move goal in force that day.
+ * - 🍒 perStandMin × whole stand minutes, up to goals.standMin.
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
- * - 🥥 strengthDay on a strength day (max 1/day): a strength workout or any gym arrival.
- * - 🍐 perTick per distinct habit tick (max DAILY.maxTicks/day), none on 正月 pear-off days.
- * Badges: 🍑 activeDays days at the goal, 🍎 stepDays step days, 🥥 strengthDays, 🍐 `ticks` ticks (prorated over
- * pear-off days: ceil(ticks × days / 7)).
+ * - 🥥 gymDay on a gym day (max 1/day): a strength workout or any gym arrival.
+ * Badges (+badges.bells each): days at the goal ≥ exerciseDays / moveDays / standDays / stepDays / gymDays.
  */
 export function earnWeek(input: EarnInput): WeekEarning {
   const r = rulesFor(input.weekKey);
   const week = weekDays(input.weekKey);
   const inWeek = new Set(week);
-  const dayRows = new Map<LocalDate, DayMetrics>();
-  for (const d of input.days) if (inWeek.has(d.date) && !dayRows.has(d.date)) dayRows.set(d.date, d);
+  const rows = new Map<LocalDate, EarnDay>();
+  for (const d of input.days) if (inWeek.has(d.date) && !rows.has(d.date)) rows.set(d.date, d);
   const workouts = input.workouts.filter((w) => inWeek.has(w.date));
-  const strength = strengthDaysOf(workouts, input.visits.filter((v) => inWeek.has(v.date)));
+  const gym = gymDaysOf(workouts, input.visits.filter((v) => inWeek.has(v.date)));
   const manual = manualMinutesByDay(workouts);
-  const habits = new Set(input.habits);
-  const ticksByDay = new Map<LocalDate, Set<string>>();
-  for (const c of input.checkins) {
-    if (!inWeek.has(c.date) || isPearOff(c.date) || !habits.has(c.habit)) continue;
-    (ticksByDay.get(c.date) ?? ticksByDay.set(c.date, new Set()).get(c.date)!).add(c.habit);
-  }
+  const exGoalMilli = r.goals.exerciseMin * 1000;
 
-  const goalMilli = r.goals.activeMin * 1000;
   const days = week.map((date): DayEarning => {
-    const m = dayRows.get(date);
+    const m = rows.get(date);
     const steps = m?.steps ?? null;
-    const activeMilli = activeMilliOfDay(steps, m?.exerciseMin ?? null, manual.get(date) ?? 0, r.goals.steps);
-    const stepMet = (steps !== null && steps >= r.goals.steps) || (isTsuyu(date) && activeMilli >= TSUYU.exerciseMin * 1000);
-    const isStrength = strength.has(date);
-    const ticks = Math.min(DAILY.maxTicks, ticksByDay.get(date)?.size ?? 0);
-    const parts: FruitBells = {
-      peach: Math.floor(Math.min(activeMilli, goalMilli) / 1000) * r.bells.perMinute,
-      coconut: isStrength ? r.bells.strengthDay : 0,
-      apple: stepMet ? r.bells.stepDay : 0,
-      pear: ticks * r.bells.perTick
+    const moveKcal = m?.moveKcal ?? null;
+    const standMin = m?.standMin ?? null;
+    const moveGoal = m?.moveGoal ?? 0;
+    const ex = exerciseMilli(m?.exerciseMin ?? null, manual.get(date) ?? 0);
+    const kcal = Math.max(0, moveKcal ?? 0);
+    const stand = Math.max(0, Math.floor(standMin ?? 0));
+    const met: Record<RingFruit, boolean> = {
+      peach: ex >= exGoalMilli,
+      pear: moveGoal > 0 && kcal >= moveGoal,
+      cherry: stand >= r.goals.standMin,
+      apple: (steps !== null && steps >= r.goals.steps) || (isTsuyu(date) && ex >= TSUYU.exerciseMin * 1000),
+      coconut: gym.has(date)
+    };
+    const rings: RingBells = {
+      peach: Math.floor(Math.min(ex, exGoalMilli) / 1000) * r.bells.perExerciseMin,
+      pear: moveGoal > 0 ? Math.floor((r.bells.moveAtGoal * Math.min(kcal, moveGoal)) / moveGoal) : 0,
+      cherry: Math.min(stand, r.goals.standMin) * r.bells.perStandMin,
+      apple: met.apple ? r.bells.stepDay : 0,
+      coconut: met.coconut ? r.bells.gymDay : 0
     };
     return {
-      date, bells: parts.peach + parts.coconut + parts.apple + parts.pear, parts,
-      minutes: Math.floor(activeMilli / 1000), steps, activeMet: activeMilli >= goalMilli, stepMet, strength: isStrength, ticks
+      date, bells: RING_FRUITS.reduce((n, f) => n + rings[f], 0), rings,
+      exerciseMin: Math.floor(ex / 1000), moveKcal, moveGoal, standMin, steps, gym: met.coconut, met
     };
   });
 
-  const pearDays = week.filter((d) => !isPearOff(d)).length;
-  const progress: Record<FruitKey, [number, number]> = {
-    peach: [days.filter((d) => d.activeMet).length, r.badges.activeDays],
-    apple: [days.filter((d) => d.stepMet).length, r.badges.stepDays],
-    coconut: [days.filter((d) => d.strength).length, r.badges.strengthDays],
-    pear: [days.reduce((n, d) => n + d.ticks, 0), Math.ceil((r.badges.ticks * pearDays) / 7)]
+  const need: Record<RingFruit, number> = {
+    peach: r.badges.exerciseDays, pear: r.badges.moveDays, cherry: r.badges.standDays, apple: r.badges.stepDays, coconut: r.badges.gymDays
   };
-  const fruits = {} as Record<FruitKey, FruitWeek>;
-  const badges = {} as Record<FruitKey, boolean>;
-  for (const f of FRUIT_KEYS) {
-    const [have, need] = progress[f];
-    badges[f] = have >= need;
-    fruits[f] = { weekDays: have, weekGoalDays: need, badge: badges[f], weekBells: days.reduce((n, d) => n + d.parts[f], 0) };
+  const fruits = {} as Record<RingFruit, FruitWeek>;
+  const badges = {} as Record<RingFruit, boolean>;
+  for (const f of RING_FRUITS) {
+    const have = days.filter((d) => d.met[f]).length;
+    badges[f] = have >= need[f];
+    fruits[f] = { weekDays: have, weekGoalDays: need[f], badge: badges[f], weekBells: days.reduce((n, d) => n + d.rings[f], 0) };
   }
-  const count = FRUIT_KEYS.filter((f) => badges[f]).length;
   return {
     person: input.person, weekKey: input.weekKey, days, daily: days.reduce((n, d) => n + d.bells, 0),
-    fruits, badges, bonus: count * r.badges.bells, allBadges: count === FRUIT_KEYS.length
+    fruits, badges, bonus: RING_FRUITS.filter((f) => badges[f]).length * r.badges.bells
   };
 }
 
-/** The ふたりボーナス: +badges.duoPerBadge for each badge both people met (user 2026-10-30: one miss never costs it all). */
+/** The ふたりボーナス: +badges.duoPerBadge for each badge both people met (one miss never costs it all). */
 export const duoBonus = (a: WeekEarning, b: WeekEarning): number =>
-  FRUIT_KEYS.filter((f) => a.badges[f] && b.badges[f]).length * rulesFor(a.weekKey).badges.duoPerBadge;
+  RING_FRUITS.filter((f) => a.badges[f] && b.badges[f]).length * rulesFor(a.weekKey).badges.duoPerBadge;
 
 /** Split an all-time total into the two pots (on totals, so nothing is lost to rounding). */
 export function splitPots(total: number): Record<PotKey, number> {

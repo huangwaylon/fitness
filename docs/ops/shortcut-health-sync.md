@@ -1,6 +1,6 @@
 # Health sync with iOS Shortcuts
 
-Sends steps, exercise minutes, workouts and body weight from each iPhone to the Island Fund sheet (through the Apps Script web
+Sends steps, exercise minutes, Move (active energy), stand minutes, workouts and body weight from each iPhone to the Island Fund sheet (through the Apps Script web
 app) **every time you open an app you use daily** (e.g. LINE), at most once an hour. Set it up once per phone.
 
 **Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening
@@ -21,8 +21,9 @@ every list a **Text** field. The parser accepts this and nothing else (`app/gas/
   "dates": "Sep 30, 2026 at 8:59 AM\nOct 1, 2026 at 7:12 AM\n…",
   "steps": "8564\n13786\n…",
   "exercise_minutes": "22\n0\n…",
-  "weight": "0\n68.4\n…",
-  "calories": "249.26\n310.5\n…"
+  "calories": "249.26\n310.5\n…",
+  "stand_minutes": "58\n142\n…",
+  "weight": "0\n68.4\n…"
 }
 ```
 
@@ -32,16 +33,21 @@ every list a **Text** field. The parser accepts this and nothing else (`app/gas/
   double-counted). Plain digits.
 - **`weight`**: that day's Body Mass in **kg**, `0` = no weigh-in. Outside 20–300 kg is skipped. Shown as a trend in
   きろく, **never earns ベル** (ADR 0020).
-- **`calories`** and any other field: ignored.
+- **`calories`**: that day's **active energy** in kcal (the Move ring; the log shows ≈ 250 kcal days, not ≈ 2,000
+  total). Stored as the metric `move_kcal` (rounded) and earns 🍐 against your Move goal (ADR 0021). Above 10,000 is
+  skipped with a warning.
+- **`stand_minutes`** (new, ADR 0021): that day's Health **Stand Time** in minutes (Shortcuts doesn't expose the ring's
+  Stand *Hours*). Stored as `stand_min`; earns 🍒, goal 180 min. Above 1,440 is skipped with a warning.
+- Every daily list is optional (an older Shortcut without `stand_minutes` still works). Any other field: ignored.
 - **`workouts`** (optional, not sent yet): `{"types": "…", "starts": "…", "ends": "…", "avgHrs": "…"}`, each Text
   with one line per workout (start/end in the same date text). Without it, strength days come from gym arrivals (§5) and
   workouts added in きろく.
 - A list whose line count differs from `dates` is **dropped** and named in `warnings`; the rest is saved. An
   unreadable line is skipped and counted in `skipped`.
-- A day's steps and minutes only ever go up, so re-sending is harmless and a partial day never overwrites a full one
+- A day's steps, minutes, kcal and stand minutes only ever go up, so re-sending is harmless and a partial day never overwrites a full one
   (a きろく edit can still lower a day in an open week). A day's weight is its latest value: a new row is saved whenever
   it changes.
-- Reply: `{"ok":true,"metrics":4,"workouts":0}` (rows actually added), plus `skipped` / `unknownTypes` / `warnings`.
+- Reply: `{"ok":true,"metrics":8,"workouts":0}` (rows actually added), plus `skipped` / `unknownTypes` / `warnings`.
   Errors: `{"ok":false,"error":"unauthorized"|"bad_request"|"too_large"|"busy"|"unavailable"}`.
 - **Log:** every run leaves a row in the `uploads` tab with the warnings and the body's **shape** (each field's type,
   line count and first line; never the key). Read your last 20 with `{"key": "…", "action": "uploads"}` (runbook §5):
@@ -57,11 +63,16 @@ Shortcuts → **+** → name it **しまの同期** (Island Sync) [U: action nam
 | 2 | **Find Health Samples** | Type **Steps** (歩数), Start Date in the last **31 days**, **Group by Day** → `Steps` |
 | 3 | **Get Details** on `Steps` | **Start Date** → `Dates`; **Value** → `StepValues` |
 | 4 | **Find Health Samples** | Type **Exercise Minutes** (エクササイズ時間), same range, **Group by Day** → **Value** → `ExValues` |
-| 5 | **Find Health Samples** | Type **Body Mass** (体重), same range, **Group by Day** → **Value** → `WeightValues` (days without a weigh-in come through as 0) |
-| 6 | **Get Contents of URL** | the `/exec` URL; **POST**; Request Body **JSON**, fields added directly, each type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `exercise_minutes` = ExValues, `weight` = WeightValues |
+| 5 | **Find Health Samples** | Type **Active Energy** (アクティブエネルギー), same range, **Group by Day**, **Fill Missing** → **Value** → `CalValues` |
+| 6 | **Find Health Samples** | Type **Stand Time** (スタンド時間), same range (last month), **Group by Day**, **Fill Missing** → **Value** → `StandValues` (minutes) |
+| 7 | **Find Health Samples** | Type **Body Mass** (体重), same range, **Group by Day** → **Value** → `WeightValues` (days without a weigh-in come through as 0) |
+| 8 | **Get Contents of URL** | the `/exec` URL; **POST**; Request Body **JSON**, fields added directly, each type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues |
 
-All lists must come from the same 31-day, grouped-by-day range so they line up with `dates`. Keep Health's weight unit
-in **kg**. Allow Health read access for Steps, Exercise Minutes and Body Mass when asked.
+All lists must come from the same 31-day, grouped-by-day range (with **Fill Missing**, so a day with no samples is a 0
+line, not a missing one) so they line up with `dates`; a list of a different length is dropped with a warning. Keep
+Health's weight unit in **kg** and energy in **kcal**. Allow Health read access for Steps, Exercise Minutes, Active
+Energy, Stand Time and Body Mass when asked. **Adding `stand_minutes`** to an existing Shortcut: add step 6 and the
+`stand_minutes` field, tap ▶, then check `{"action":"uploads"}` shows `stand_minutes:text[31]` and no warning.
 
 **Test:** tap ▶. The result should be `{"ok":true,…}` with no `warnings`.
 

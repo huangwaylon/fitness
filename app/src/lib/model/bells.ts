@@ -2,11 +2,10 @@
 // fixed at the lock), what has landed in the two pots by `now`, the spends replayed against them, and the きろく
 // ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
-import type { DayBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, WeekKey } from '#lib/types.ts';
-import { addDays, earnWeek, duoBonus, earnRingWeek, splitPots, weekDays, weekKeyOf, type EarnInput, type RingInput, type RingWeek, type WeekEarning } from '#lib/scoring/index.ts';
-import { habitsFor } from '#lib/scoring/targets.ts';
+import type { DayBells, FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
+import { addDays, earnWeek, duoBonus, splitPots, weekDays, weekKeyOf, type EarnInput, type WeekEarning } from '#lib/scoring/index.ts';
 import { finalMs, firstWeek, isLockedAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
-import { activityAsOf, metricAsOf, ticksAsOf, weekDates, type Activity } from './inputs.ts';
+import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
 
@@ -14,22 +13,7 @@ const LIVE = Infinity;
 export const earnTimeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
 
 /** One person's week as of t, for `earnWeek`. `act`: their activity as of t covering the week (else derived). */
-export function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): EarnInput {
-  const dates = weekDays(wk);
-  const inWeek = (d: LocalDate) => d >= dates[0] && d <= dates[6];
-  return {
-    person,
-    weekKey: wk,
-    habits: habitsFor(person, wk),
-    days: dates.map((date) => ({ date, steps: metricAsOf(s, person, date, 'steps', t), exerciseMin: metricAsOf(s, person, date, 'exercise_min', t) })),
-    workouts: act.workouts.filter((w) => inWeek(w.date)),
-    visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v),
-    checkins: [...ticksAsOf(s, person, t, weekDates(wk)).values()]
-  };
-}
-
-/** One person's week as of t, for `earnRingWeek` (ADR 0021). `act`: their activity as of t covering the week (else derived). */
-function ringInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): RingInput {
+function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): EarnInput {
   const dates = weekDays(wk);
   const inWeek = (d: LocalDate) => d >= dates[0] && d <= dates[6];
   return {
@@ -48,6 +32,10 @@ function ringInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Acti
   };
 }
 
+/** @deprecated fields (ADR 0019's four fruits) filled from the ring numbers until the UI has moved: 🍐 = Move. */
+export const legacyParts = (r: RingBells): FruitBells => ({ peach: r.peach, coconut: r.coconut, apple: r.apple, pear: r.pear });
+export const legacyBadges = (b: Record<RingFruit, boolean>): Record<FruitKey, boolean> => ({ peach: b.peach, coconut: b.coconut, apple: b.apple, pear: b.pear });
+
 /** Both people's earnings of a week, as of `t` (earnTimeOf). */
 export interface WeekBells {
   weekKey: WeekKey;
@@ -58,16 +46,13 @@ export interface WeekBells {
   bonus: HarvestBonus;
   /** bonus.A + bonus.B + bonus.duo. */
   bonusBells: number;
-  /** ADR 0021's five-fruit earnings of each person (transition: not yet what the pots count). */
-  rings: Record<PersonId, RingWeek>;
 }
 
 function computeWeekBells(s: State, wk: WeekKey, t: number, act?: Partial<Record<PersonId, Activity>>): WeekBells {
   const A = earnWeek(earnInput(s, 'A', wk, t, act?.A));
   const B = earnWeek(earnInput(s, 'B', wk, t, act?.B));
   const bonus = { A: A.bonus, B: B.bonus, duo: duoBonus(A, B) };
-  const rings = { A: earnRingWeek(ringInput(s, 'A', wk, t, act?.A)), B: earnRingWeek(ringInput(s, 'B', wk, t, act?.B)) };
-  return { weekKey: wk, t, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo, rings };
+  return { weekKey: wk, t, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo };
 }
 
 const perState = new WeakMap<State, Map<string, WeekBells>>();
@@ -222,6 +207,9 @@ export interface LedgerBonus {
   bonus: HarvestBonus;
   /** bonus.A + bonus.B + bonus.duo. */
   bells: number;
+  /** The week's five badges per person (ADR 0021). */
+  ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
+  /** @deprecated ADR 0019's four (🍐 = Move). Read `ringBadges`. */
   badges: Record<PersonId, Record<FruitKey, boolean>>;
   locked: boolean;
 }
@@ -249,13 +237,13 @@ export function bellsLedger(s: State, now: number): BellsLedger {
     for (let i = 0; i < 7; i++) {
       const [a, b] = [w.A.days[i], w.B.days[i]];
       if (a.date > today) break;
-      const day = (d: typeof a): DayBells => ({ date: d.date, bells: d.bells, parts: { ...d.parts } });
+      const day = (d: typeof a): DayBells => ({ date: d.date, bells: d.bells, rings: { ...d.rings }, parts: legacyParts(d.rings) });
       days.push({ date: a.date, weekKey: w.weekKey, bells: a.bells + b.bells, people: { A: day(a), B: day(b) }, locked });
     }
     if (provisionalMs(w.weekKey) <= now) {
       bonuses.push({
         weekKey: w.weekKey, at: provisionalMs(w.weekKey), bonus: { ...w.bonus }, bells: w.bonusBells,
-        badges: { A: { ...w.A.badges }, B: { ...w.B.badges } }, locked
+        ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } }, badges: { A: legacyBadges(w.A.badges), B: legacyBadges(w.B.badges) }, locked
       });
     }
   }

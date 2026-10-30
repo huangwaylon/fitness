@@ -4,7 +4,10 @@
 // History: the fixtures were first frozen from the old Mac server (ADR 0015) and pinned the yen engine. On 2026-10-30
 // the yen engine was removed (ADR 0019 §6) and the views were regenerated from the model: the diff only dropped the
 // old fields (score, jar, fruit milli/pct, harvest payout/rungs), added harvest.badges and the pots' today/week flow.
-// ベル spends, voids and a menu edit were appended to the rows (ids b1–b9) so the pots are exercised too.
+// ベル spends, voids and a menu edit were appended to the rows (ids b1–b9) so the pots are exercised too. ADR 0021
+// (2026-10-30): a move_kcal and a stand_min row were added next to every steps row (6% of the steps in kcal, steps / 45
+// stand minutes, so they only go up like the steps), plus Move goals (g1–g3) and late Move/Stand fixes (g4, g5); the
+// old checkin and confirm rows stay and are ignored.
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,
@@ -73,10 +76,16 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     const all = Object.values(VIEWS).flatMap((v) => PEOPLE.map((p) => v[p]));
     expect(Object.keys(DIGESTS).length).toBe(660);
     expect(Object.keys(VIEWS).length).toBe(50);
-    // Badges but never all four for both (the ふたりボーナス is covered by bells.test.ts).
+    // Badges but never all five for both (the ふたりボーナス is covered by bells.test.ts).
     expect(all.some((v) => v.harvest && v.harvest.bonus.A > 0 && v.harvest.bonus.B > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.bonus.A === 0 && v.harvest.bonus.B === 0)).toBe(true);
-    expect(all.some((v) => v.pending.length)).toBe(true);
+    // ADR 0021: Move and Stand earn (rows derived from the steps, appended g1–g5: two Move goals and late Move/Stand fixes),
+    // old check-in and confirm rows are ignored, and nothing is ever asked.
+    expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
+    expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
+    expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
+    expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
+    expect(all.every((v) => v.pending.length === 0)).toBe(true);
     expect(all.some((v) => v.pots.treat.spent > 0 && v.pots.trip.spent > 0)).toBe(true);
     expect(all.some((v) => v.menus.treat.some((x) => x.id === 'taiyaki'))).toBe(true);
     const end = bellsLedger(reduce(ROWS), END);
@@ -114,7 +123,7 @@ describe('golden: the WeekView on a 10-week timeline', () => {
         expect(v.pots.treat.today + v.pots.trip.today).toBe(v.pots.todayBells);
         expect(v.pots.treat.week + v.pots.trip.week).toBe(v.pots.weekBells);
         const h = v.harvest;
-        if (h && provisionalMs(h.weekKey) <= tMs) expect(h.badges, `${t} badges`).toEqual(l.bonuses.find((b) => b.weekKey === h.weekKey)!.badges);
+        if (h && provisionalMs(h.weekKey) <= tMs) expect(h.ringBadges, `${t} badges`).toEqual(l.bonuses.find((b) => b.weekKey === h.weekKey)!.ringBadges);
       }
     }
   });

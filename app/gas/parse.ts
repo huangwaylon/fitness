@@ -5,11 +5,13 @@
 //     "dates": "Sep 30, 2026 at 8:59 AM\n…",   one line per day (Shortcuts' date text; only the calendar day is used)
 //     "steps": "8564\n…",                       that day's total
 //     "exercise_minutes": "22\n…",              that day's total
+//     "calories": "251.3\n…",                   that day's active energy in kcal (the Move ring) → metric move_kcal
+//     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min (ADR 0021)
 //     "weight": "0\n68.4\n…",                   that day's Body Mass in kg; 0 = no weigh-in
 //     "workouts": { "types": "…", "starts": "…", "ends": "…", "avgHrs": "…" }   optional, one line per workout }
 //
-// Other fields (e.g. "calories") are ignored. A list whose length differs from `dates` is dropped with a warning and
-// the rest is kept. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
+// Other fields are ignored. Every daily field is optional. A list whose length differs from `dates` is dropped with a
+// warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000, stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
 import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
 import { isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
@@ -101,6 +103,8 @@ const amount = (s: string): number | null => (/^\d+(\.\d+)?$/.test(s) ? Number(s
 const COLUMNS = [
   { field: 'steps', metric: 'steps' },
   { field: 'exercise_minutes', metric: 'exercise_min' },
+  { field: 'calories', metric: 'move_kcal' },
+  { field: 'stand_minutes', metric: 'stand_min' },
   { field: 'weight', metric: 'weight' }
 ] as const;
 
@@ -167,6 +171,6 @@ export function parseShortcut(body: unknown): ParsedBody {
     }
   }
 
-  if (!sent.length && body.workouts === undefined) throw new ShapeError('nothing to save: send dates with steps, exercise_minutes or weight');
+  if (!sent.length && body.workouts === undefined) throw new ShapeError('nothing to save: send dates with steps, exercise_minutes, calories, stand_minutes or weight');
   return { metrics, workouts, skipped, unknownTypes, warnings };
 }

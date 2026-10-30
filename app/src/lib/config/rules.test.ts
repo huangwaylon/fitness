@@ -1,7 +1,7 @@
 // Rule versions: compute-on-read re-prices every week a value applies to, so versions in use must never change.
 import { describe, expect, it } from 'vitest';
-import { HABITS, RULES, type HabitsVersion, type RuleVersion } from './rules.ts';
-import { habitsFor, rulesFor, weekKeyOf } from '#lib/scoring/index.ts';
+import { RULES, type RuleVersion } from './rules.ts';
+import { rulesFor, weekKeyOf } from '#lib/scoring/index.ts';
 import { reduce } from '#lib/model/state.ts';
 import { economyWeeks, weekBells } from '#lib/model/bells.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
@@ -31,21 +31,20 @@ const earnings = () => {
 
 describe('RULES', () => {
   it('the versions in use are pinned: append a new version instead of editing one', () => {
-    // RULES[0] was edited in place once, on 2026-10-30 (ADR 0019 amendment: strength 400 ベル, 3-day badge): nothing
-    // had paid yet (ベル are play money and the economy started that week), so there was no paid week to protect.
-    // A second in-place edit the same day (goals review round 12: duo per shared badge) was equally safe. From here
-    // on, append a version instead.
+    // RULES[0] was edited in place, all in the economy's first week (ベル are play money; nothing had paid):
+    // 2026-10-30 ADR 0019 amendment (strength 400 ベル, 3-day badge), the same day's goals review (duo per shared
+    // badge), and ADR 0021 (five automatic fruits, no check-ins; the 14,400 on-target week). A new version from the
+    // current week would have replaced RULES[0] for every week that has ever earned anyway, so it would be the same
+    // edit with an unused first entry. From here on, append a version instead.
     expect(RULES[0]).toEqual({
       from: '2026-10-26',
-      goals: { activeMin: 45, steps: 8000, exerciseMin: 60, standMin: 180 },
-      bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
+      goals: { activeMin: 60, steps: 8000, exerciseMin: 60, standMin: 180 },
+      bells: { perMinute: 3, stepDay: 200, strengthDay: 400, perTick: 0, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
       badges: {
-        activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250,
+        activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 0, bells: 400, duoPerBadge: 200,
         exerciseDays: 5, moveDays: 5, standDays: 5, gymDays: 3
       }
     });
-    const habits = ['protein_each_meal', 'no_sweets', 'veg_two_meals'];
-    expect(HABITS[0]).toEqual({ from: '2026-10-26', people: { A: { habits }, B: { habits } } });
   });
 
   it('versions start on Mondays, in ascending order; a week takes the latest that has started', () => {
@@ -54,7 +53,7 @@ describe('RULES', () => {
       if (i > 0) expect(v.from > RULES[i - 1].from).toBe(true);
     }
     expect(rulesFor('2026-10-26')).toBe(RULES[0]); // before the first version (the demo calendar)
-    const v2: RuleVersion = { ...RULES[0], from: '2026-12-07', bells: { ...RULES[0].bells, perTick: 120 } };
+    const v2: RuleVersion = { ...RULES[0], from: '2026-12-07', bells: { ...RULES[0].bells, perStandMin: 2 } };
     withAppended(RULES, v2, () => {
       expect(rulesFor('2026-11-30')).toBe(RULES[0]);
       expect(rulesFor('2026-12-07')).toBe(v2);
@@ -67,7 +66,7 @@ describe('RULES', () => {
     const v2: RuleVersion = {
       ...RULES[0],
       from: '2026-12-07',
-      bells: { ...RULES[0].bells, perMinute: 10, stepDay: 300, strengthDay: 500, perTick: 150 },
+      bells: { ...RULES[0].bells, perExerciseMin: 5, stepDay: 300, gymDay: 500 },
       badges: { ...RULES[0].badges, bells: 800 }
     };
     withAppended(RULES, v2, () => {
@@ -76,15 +75,6 @@ describe('RULES', () => {
       const early = (ws: typeof before) => ws.filter((w) => w.weekKey < v2.from);
       expect(early(after)).toEqual(early(before));
       expect(after.filter((w) => w.weekKey >= v2.from)).not.toEqual(before.filter((w) => w.weekKey >= v2.from));
-    });
-  });
-
-  it('habits change the same way: a HABITS entry with a later `from`, never an edit in place', () => {
-    const later: HabitsVersion = { from: '2027-03-01', people: { A: { habits: ['a', 'b', 'c'] }, B: HABITS[0].people.B } };
-    const old = habitsFor('A', '2026-11-16');
-    withAppended(HABITS, later, () => {
-      expect(habitsFor('A', '2026-11-16')).toEqual(old);
-      expect(habitsFor('A', '2027-03-08')).toEqual(['a', 'b', 'c']);
     });
   });
 });

@@ -6,16 +6,22 @@ Model and engine owner: the senior engineer. Readers: the UI engineer (`componen
 **The one rule of the transition:** 🍐 changes meaning (food → Move). Every new field has a **new name**
 (`rings`, `ringBadges`, `RingFruit`, `RING_FRUITS`, `moveGoal`). Old names (`fruits`, `parts`, `badges`, `FruitKey`,
 `FRUITS`, `habits`, `ticks`, `minutes*`) are `@deprecated` and keep compiling until the UI has stopped reading them;
-then they are deleted (phase 3). **Never read 🍐 from an old field**: in phase 2 the old `parts.pear` becomes Move
-ベル only so the old code still type-checks, and the old `fruits.pear` / `habits` / `ticks` go to zero.
+then they are deleted (phase 3). **Never read 🍐 from an old field**: since phase 2 the old fields are filled from the
+ring numbers only so the old code still type-checks (`parts.pear`, `fruits.pear`, `badges.pear` = Move; no 🍒), and
+`ticks` is 0.
+
+**No daily questions (lead, 2026-10-30):** `WeekView.pending` is always `[]` and is deleted in phase 3, with
+`PendingConfirmation` and `confirmPending`. Remove しずえ's 「…は筋トレでしたか？」 and the はい / いいえ choice list (and the
+`pending.*` i18n keys). Ask types (HIIT, yoga, …) count as 🥥 only when marked as strength in きろく (`editWorkout(id,
+date, {strength: true})`, unchanged).
 
 ## Phases
 
 | Phase | What lands | UI impact |
 |---|---|---|
-| 1 (now) | Types and fields below on the **WeekView** (`rings`, `moveGoal`, `today.rings`, `harvest.ringBadges`), `RING_FRUITS`, the new `RuleVersion` keys, `MOVE_GOAL`, `PEOPLE[p].moveGoal`, the action `setMoveGoal`, demo Move/Stand rows. The pots still count ADR 0019 (the `rings` ベル are a preview). | Start reading the new fields. |
-| 2 | The engine: the pots, harvest, ledger and きろく count ADR 0021. The きろく/ledger fields below (marked **P2**). Check-ins earn nothing (old `checkin` rows ignored); the demo has no check-ins. | Numbers change; old fields go stale. |
-| 3 | Delete the deprecated types/fields, `HABITS`, `HOLIDAY`, `STEP_MINUTES`, `DAILY.maxTicks`, `checkin`/`fixCheckin` actions, check-in state. `FruitKey` becomes an alias of `RingFruit`. | Must not read any of them by then (grep list at the end). |
+| 1 (done) | Types and fields below on the **WeekView** (`rings`, `moveGoal`, `today.rings`, `harvest.ringBadges`), `RING_FRUITS`, the new `RuleVersion` keys, `MOVE_GOAL`, `PEOPLE[p].moveGoal`, the action `setMoveGoal`, demo Move/Stand rows. The pots still count ADR 0019 (the `rings` ベル are a preview). | Start reading the new fields. |
+| 2 (done) | The engine: the pots, harvest, ledger and きろく count ADR 0021. The きろく/ledger fields below (marked **P2**). Check-ins and `confirm` earn nothing; `pending` is `[]`; the demo has no check-ins or questions. Already deleted (nothing in the UI read them): `HABITS`, `habitsFor`, `HOLIDAY`, `STEP_MINUTES`, `STRENGTH.askTypes`, `LIMITS.checkinBackDays`, `PersonWeekView.habits`, `DayPerson.habits`, `Workout.includesStrength`, `CheckinTick`, `PersonTargets`, `DayMetrics`, the `checkin` / `fixCheckin` actions, the check-in state. | Numbers change; old fields are aliases of the ring numbers. |
+| 3 | Delete the remaining deprecated fields (list at the end). `FruitKey` becomes an alias of `RingFruit`. | Must not read any of them by then. |
 
 ## Types (`#lib/types.ts`)
 
@@ -68,11 +74,12 @@ interface DayRow {
   met: Record<RingFruit, boolean>;
   steps: number | null;
   exerciseMin: number;           // counted: max(Watch, workouts added); no step-derived minutes any more
+  minutesSource: 'watch' | 'edit' | 'manual' | null;   // of exerciseMin ('steps' is gone)
   moveKcal: number | null;
   moveGoal: number;              // the goal in force that day
   standMin: number | null;
   gym: boolean;
-  // DEPRECATED: minutes (= exerciseMin), minutesSource, strength (= gym), ticks (0), parts
+  // DEPRECATED: minutes (= exerciseMin), strength (= gym), ticks (0), parts
 }
 type EditedField = 'steps' | 'minutes' | 'move' | 'stand' | 'workout' | 'ticks';  // + 'move', 'stand'
 
@@ -102,7 +109,7 @@ RuleVersion (read RULES[RULES.length - 1] for the help text):
   goals:  { exerciseMin: 60, standMin: 180, steps: 8000 }           // Move goal: per person
   bells:  { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 }
   badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells, duoPerBadge }
-  // phase 1: bells/duoPerBadge are still 500/250; phase 2: 400/200
+  // bells 400, duoPerBadge 200 (phase 2)
   // DEPRECATED: goals.activeMin, bells.perMinute/strengthDay/perTick, badges.activeDays/strengthDays/ticks
 ```
 
@@ -117,7 +124,7 @@ setMoveGoal(kcal: number): SendResult
 // earlier days (the model reads the last moveGoal made on or before each day). Shown at once (optimistic).
 ```
 
-Phase 3 removes `checkin` and `fixCheckin`. `setMetric` stays `'steps' | 'exercise_min'` (Move/Stand edits are
+`checkin` and `fixCheckin` are gone (phase 2); `confirmPending` goes in phase 3. `setMetric` stays `'steps' | 'exercise_min'` (Move/Stand edits are
 accepted by the model and the server if the UI ever wants them: `metric_set {metric:'move_kcal' | 'stand_min'}`).
 
 ## Host lines
@@ -127,7 +134,8 @@ The model emits only `host.harvest_ready`, `host.harvest_waiting`, `host.default
 ## What the UI must stop reading before phase 3 (grep `components/` and `routes/`)
 
 `FRUITS`, `FruitKey`, `FruitProgress`, `FruitBells` (except via `RingBells`), `.fruits`, `.parts`, `.badges` (on
-harvest / ledger / history; use `ringBadges`), `.habits`, `ticksByDate`, `.ticks`, `minutesSource`, `.minutes`
-(DayRow / DayPerson: use `exerciseMin` / `exercise`), `checkin(`, `fixCheckin(`, `HOLIDAY`, `DAILY.maxTicks`,
+harvest / ledger / history; use `ringBadges`), `.ticks`, `.minutes` and `.strength` (DayRow /
+DayPerson: use `exerciseMin` / `exercise` / `gym`), `EditLog.field === 'checkin'`, `EditedField 'ticks'`, `DAILY.maxTicks`,
 `r.goals.activeMin`, `r.bells.perMinute`, `r.bells.strengthDay`, `r.bells.perTick`, `r.badges.activeDays`,
-`r.badges.strengthDays`, `r.badges.ticks`, `habit.*` / `checkin.*` i18n keys.
+`r.badges.strengthDays`, `r.badges.ticks`, `.pending`, `confirmPending`, `PendingConfirmation`, and the i18n keys
+`habit.*`, `pending.*`, `kiroku.src.steps`, `kiroku.field.checkin`.
