@@ -2,11 +2,11 @@
 
 What the client builds now: the screens, the island scene, motion, chrome, tokens and small screens. Tokens: `app/src/lib/styles/tokens.css` (+ element styles in `theme.css`). Art: `app/static/art/` (`manifest.json`, fetched by `app/scripts/fetch-assets.ts`). Decisions: official art [ADR 0018](../decisions/0018-official-art-public-site.md), Japanese-first UI [0007](../decisions/0007-japanese-first-ui.md), simplicity [0014](../decisions/0014-simplify-no-promises-no-cozy.md), no privacy settings or alerts [0016](../decisions/0016-no-privacy-no-alerts.md). Research: [ac-research.md](ac-research.md). History editing: [history-and-editing.md](history-and-editing.md). Older versions are in git (style guide v4.1, v5 direction, environment style, scale and ground; deleted in round 8).
 
-Section letters (§0, §A, §S, §M, §T, §R) match the references in code comments.
+Section letters (§0, §E, §A, §S, §M, §T, §R) match the references in code comments.
 
 **Direction.** It reads as *あつまれ どうぶつの森* at a glance: official NH renders (villagers, しずえ, trees, fruit, NookPhone tiles) standing on a **Pocket Camp–style diorama** that we paint in SVG/CSS to match them. NH's 2D UI patterns (dialogue box, choice list, map ribbon, NookPhone, Nook Miles+ cards) are the chrome. Bright and calm; night is soft periwinkle, never black.
 
-**IP rule.** Official art only from `static/art/` through `<OfficialArt key alt size>`, with a fallback (our vector or `Silhouette`) so a missing file never breaks a screen. On-screen names follow the Japanese game: しずえ, しまフォン, ベル (icon only; amounts stay ¥). No Nintendo fonts or sounds. The repo and site are public for now (ADR 0018).
+**IP rule.** Official art only from `static/art/` through `<OfficialArt key alt size>`, with a fallback (our vector or `Silhouette`) so a missing file never breaks a screen. On-screen names follow the Japanese game: しずえ, しまフォン, ベル (play money, ADR 0019: amounts are `1,234 ベル` / `1,234 Bells`; no ¥ anywhere). No Nintendo fonts or sounds. The repo and site are public for now (ADR 0018).
 
 ---
 
@@ -65,6 +65,23 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 - **Partner sheet:** their head icon, name, four fruit rings with real numbers (no /100 score), today's eating check-ins, and one action: ハイタッチ (R4 plays behind once it closes).
 - **日曜の収穫** (`HarvestOverlay.svelte`, ≤ 60 s): a modal `<dialog>` (Esc = あとで). Steps: tally → rung reached (if any) → 壺に入れる → end card. The island stays visible behind a cool tint (`rgba(58,72,134,.18)` below the sky; `rgba(30,36,80,.16)` at night). しずえ's box, one card (rows: villager icon, the four fruit by ripeness, + ¥) and the CTA sit at the bottom. The jar total is the one big number; the purse is one line under it. The end card fills the jar and counts the total up (an item-get beat: the jar pops, a sparkle). No confetti over the numbers.
 - **Pair / not set up** (`routes/pair`): `deco/airport` hero (hidden under 600px tall), しずえ + one line, paste the key (or `#key=` inside the installed PWA). Not set up: Tom Nook + the link to `?demo`.
+
+## E. Economy (ADR 0019; values in `config/rules.ts`, engine in `scoring/bells.ts` + `model/bells.ts`)
+
+- **ベル, play money**, earned per person per day from the rows (so they move whenever data arrives): 🍑 5 per counted
+  minute up to 45 (minutes = max(Watch, (steps − 8,000)/100, manual workouts)), 🍎 200 at 8,000 steps (tsuyu: also at
+  30 minutes), 🥥 300 on a strength day, 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,025 a day.
+  The same goals for both people.
+- **Weekly bonus at the Sunday 19:30 harvest:** +500 per badge (🍑 5 days at 45 min, 🍎 4 step days, 🥥 2 strength
+  days, 🍐 15 ticks, prorated over 正月), +1,000 ふたりボーナス when both have all four. 「受け取る」 is a ceremony.
+- **Two shared pots:** everything earned splits おやつ 30% / 旅 70% (on totals). Shared, editable menus (`pref`
+  `treatMenu` / `tripMenu`, latest wins); a buy is a `spend`, undone by the buyer's `spend_void`; no approvals; a
+  balance never goes negative.
+- **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Spends never lock.
+- **Starts** in the week of Mon 2026-10-26. Gone: the score /100, yen, the team layer, the purse, transfers, rungs,
+  calibration, per-person targets, the rest-day bonus.
+- **View model:** `WeekView.people[p].today`, `fruits[f]` progress, `pots`, `menus`, `harvest.bonus/totalBells`;
+  きろく: `bellsLedger()`. Exact types: [round-11/engine-contract.md](../reviews/round-11/engine-contract.md).
 
 ## A. Official art map
 

@@ -121,5 +121,15 @@ export function newMenuItemId(): string;
   integer 1–10,000,000. An empty list is valid.
 - Default menu ids: おやつ `snack` `ice` `cafe` `dinner`; 旅 `daytrip` `onsen` `weekend` `abroad`.
 - Amounts are integers. Format `1,234 ベル` / `1,234 Bells`.
-- Old view fields (`score`, `jar`, `harvest.payout`, `rungsReached`, `FruitView`) stay populated until the UI has
-  moved over, then they are removed.
+- Only days up to today count anywhere (a future-dated row never earns early). `todayActual` for 🍑 is the counted
+  minutes uncapped (e.g. 60 of 45); the ベル cap at 45.
+- `pots` and `bellsLedger().pots` are the same numbers. `pots.weekBells` and `HistoryWeek.bells` include the weekly
+  bonus only once it landed (Sunday 19:30); `harvest.totalBells` always includes it.
+- The harvest opens Sunday 19:30 for the week (or last week while not both tapped), as before; a tap changes no money.
+- A spend the pot couldn't cover when it was made is ignored and doesn't appear in `bellsLedger().spends`.
+  `buyTreat`/`buyTrip` already refuse it on the phone (`{ok:false}`), so show a gentle "not enough" instead.
+- `host`: `host.harvest_ready` carries `{bells, score}`; `host.default` carries `{bells}` (today's, mine); the
+  `host.payday` and `host.next_rung` lines are no longer emitted. No new host keys.
+- Status (phase 2, 2026-10-30): every field above is computed for real. Old view fields (`score`, `jar`,
+  `harvest.payout`, `rungsReached`, the `FruitView` part of `fruits[f]`, `HistoryWeek.yen`/`estimate`, `moneyLog`)
+  stay populated until the UI has moved over, then they are removed.
