@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { GymArrival, PersonId, Workout } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { RULES } from '#lib/config/rules.ts';
-import { duoBonus, earnWeek, type EarnDay, type EarnInput } from './bells.ts';
+import { duoBonus, earnWeek, milestoneBells, type EarnDay, type EarnInput } from './bells.ts';
 
 /** A v1 week (RULES[0]); the v2 rules from 2026-11-02 have their own block below. */
 const WK = '2026-10-26';
@@ -257,22 +257,16 @@ describe('RULES v2 from 2026-11-02 (push exercise + strength)', () => {
     expect(sun(WK2, 0)).toMatchObject({ peach: 240, cherry: 120, coconut: 500 }); // Mon 11-02
   });
 
-  it('per-fruit caps: 🍑 4/min to 240, 🍐 180, 🍒 1/min to 120, 🍎 200, 🥥 500; a perfect day is 1,240', () => {
-    const peach = (ex: number) => day({ ex: [ex] }).rings.peach;
-    expect([peach(1), peach(59.9), peach(60), peach(200)]).toEqual([4, 236, 240, 240]);
+  it('per-fruit maxima: 🍑 240, 🍐 180, 🍒 120, 🍎 200, 🥥 500; a perfect day is 1,240', () => {
     expect(day({ ex: [59] }).met.peach).toBe(false);
     expect(day({ ex: [60] }).met.peach).toBe(true);
-    const cherry = (st: number) => day({ stand: [st] }).rings.cherry;
-    expect([cherry(58), cherry(119.9), cherry(120), cherry(1440)]).toEqual([58, 119, 120, 120]);
     expect(day({ stand: [119] }).met.cherry).toBe(false);
     expect(day({ stand: [120] }).met.cherry).toBe(true);
-    const pear = (kcal: number, goal: number) => day({ kcal: [kcal], goal }).rings.pear;
-    expect([pear(300, 600), pear(600, 600), pear(2500, 600), pear(400, 400)]).toEqual([90, 180, 180, 180]); // the Move goal stays per person
-    expect([day({ st: [7999] }).rings.apple, day({ st: [8000] }).rings.apple, day({ st: [30000] }).rings.apple]).toEqual([0, 200, 200]);
     expect(day({}, { arrivals: [arrival(D2[0]), arrival(D2[0], '19:00')] }).rings.coconut).toBe(500);
     const p = earnWeek(perfect(WK2)).days[0];
     expect(p.rings).toEqual({ peach: 240, pear: 180, cherry: 120, apple: 200, coconut: 500 });
     expect(p.bells).toBe(1240);
+    expect(p.milestone).toEqual({ peach: 4, pear: 4, cherry: 4, apple: 4 });
   });
 
   it('badges keep their thresholds (5 · 5 · 5 · 4 · 3) at +340 each; the ふたりボーナス stays +200 a shared badge', () => {
@@ -300,5 +294,88 @@ describe('RULES v2 from 2026-11-02 (push exercise + strength)', () => {
     expect(a.bonus).toBe(1700);
     expect(duoBonus(a, b)).toBe(1000);
     expect(a.daily + a.bonus + b.daily + b.bonus + duoBonus(a, b)).toBe(14_400);
+  });
+});
+
+describe('v2 milestone curve from 2026-11-02 (25 / 50 / 75 / 100% of the goal)', () => {
+  const WK2 = '2026-11-02';
+  const D2 = weekDays(WK2);
+  const day = (c: Cols, p: Partial<EarnInput> = {}) => earnWeek(input({ weekKey: WK2, days: days(WK2, c), ...p })).days[0];
+  const peach = (ex: number) => day({ ex: [ex] }).rings.peach;
+  const apple = (st: number) => day({ st: [st] }).rings.apple;
+  const cherry = (st: number) => day({ stand: [st] }).rings.cherry;
+  const pear = (kcal: number, goal: number) => day({ kcal: [kcal], goal }).rings.pear;
+
+  it('the tables: one shared share table, 🍎 the user-approved steps; v1 weeks have none', () => {
+    expect(milestoneBells(WK2, 'peach')).toEqual([25, 70, 130, 240]);
+    expect(milestoneBells(WK2, 'pear')).toEqual([19, 53, 98, 180]);
+    expect(milestoneBells(WK2, 'cherry')).toEqual([13, 35, 65, 120]);
+    expect(milestoneBells(WK2, 'apple')).toEqual([20, 60, 110, 200]);
+    for (const f of ['peach', 'pear', 'cherry', 'apple'] as const) {
+      const b = milestoneBells(WK2, f)!;
+      const steps = b.map((x, i) => x - (i ? b[i - 1] : 0));
+      for (let i = 1; i < steps.length; i++) expect(steps[i], `${f} step ${i}`).toBeGreaterThan(steps[i - 1]); // each step worth more
+    }
+    expect(milestoneBells('2026-10-26', 'peach')).toBeNull();
+  });
+
+  it('🍑 Exercise (goal 60): 15 → 25, 30 → 70, 45 → 130, 60 → 240, just below / at / above each step', () => {
+    expect([0, 14, 14.99, 15, 15.5, 29.99, 30, 31, 44.99, 45, 46, 59.99, 60, 61, 200].map(peach))
+      .toEqual([0, 0, 0, 25, 25, 25, 70, 70, 70, 130, 130, 130, 240, 240, 240]);
+    expect([14, 15, 30, 45, 60].map((x) => day({ ex: [x] }).milestone!.peach)).toEqual([0, 1, 2, 3, 4]);
+    // Workouts added in きろく count as before: max(Watch, manual).
+    expect(day({ ex: [10] }, { workouts: [workout(D2[0], 'Walk', 31, { manual: true })] }).rings.peach).toBe(70);
+  });
+
+  it('🍎 Steps (goal 8,000): 2k → 20, 4k → 60, 6k → 110, 8k → 200, just below / at / above each step', () => {
+    expect([0, 1999, 2000, 2001, 3999, 4000, 4001, 5999, 6000, 6001, 7999, 8000, 8001, 30000].map(apple))
+      .toEqual([0, 0, 20, 20, 20, 60, 60, 60, 110, 110, 110, 200, 200, 200]);
+    expect(day({}).milestone!.apple).toBe(0); // no row
+  });
+
+  it('🍒 Stand (goal 120, whole minutes): 30 → 13, 60 → 35, 90 → 65, 120 → 120', () => {
+    expect([0, 29, 29.9, 30, 31, 59, 60, 61, 89, 90, 91, 119, 119.9, 120, 121, 1440].map(cherry))
+      .toEqual([0, 0, 0, 13, 13, 13, 35, 35, 35, 65, 65, 65, 65, 120, 120, 120]);
+  });
+
+  it('🍐 Move: the steps are shares of each person’s own goal (19 / 53 / 98 / 180)', () => {
+    expect([0, 149, 150, 151, 299, 300, 301, 449, 450, 451, 599, 600, 601, 2500].map((k) => pear(k, 600)))
+      .toEqual([0, 0, 19, 19, 19, 53, 53, 53, 98, 98, 98, 180, 180, 180]);
+    expect([99, 100, 199, 200, 299, 300, 399, 400].map((k) => pear(k, 400))).toEqual([0, 19, 19, 53, 53, 98, 98, 180]);
+    // A goal that doesn't divide by 4: 450 → steps at 112.5 / 225 / 337.5 / 450 kcal.
+    expect([112, 112.5, 113, 224, 225, 337, 337.5, 449, 450].map((k) => pear(k, 450))).toEqual([0, 19, 19, 19, 53, 53, 98, 98, 180]);
+    expect(pear(300, 1000)).toBe(19); // 30% of a big goal
+    expect(pear(500, 0)).toBe(0); // no goal, no pear
+  });
+
+  it('🥥 stays one event: 500 on a gym day, nothing on a curve', () => {
+    const d = day({}, { arrivals: [arrival(D2[0])] });
+    expect(d.rings.coconut).toBe(500);
+    expect(d.milestone).not.toHaveProperty('coconut');
+  });
+
+  it('tsuyu: 30 exercise minutes still make a full step day (milestone 4); steps alone climb the curve', () => {
+    const TW = '2027-06-07';
+    const tday = (c: Cols) => earnWeek(input({ weekKey: TW, days: days(TW, c) })).days[0];
+    expect(tday({ ex: [30], st: [1000] })).toMatchObject({ rings: { apple: 200, peach: 70 }, milestone: { apple: 4 }, met: { apple: true } });
+    expect(tday({ ex: [29], st: [3000] }).rings.apple).toBe(20);
+  });
+
+  it('badges still count days at the goal (100%); 75% days pay but never count', () => {
+    const e = earnWeek(input({ weekKey: WK2, days: days(WK2, { st: all(7999), ex: all(59), stand: all(119), kcal: all(599) }) }));
+    expect(e.badges).toEqual({ peach: false, pear: false, cherry: false, apple: false, coconut: false });
+    expect(e.fruits.apple).toMatchObject({ weekDays: 0, weekBells: 7 * 110 });
+    expect(e.daily).toBe(7 * (130 + 98 + 65 + 110));
+    expect(e.bonus).toBe(0);
+  });
+
+  it('v1 vs v2 by week: the same partial day pays linearly on Sun 11-01 and on the curve on Mon 11-02', () => {
+    const c = { ex: all(40), st: all(5000), stand: all(100), kcal: all(450) };
+    const v1 = earnWeek(input({ weekKey: '2026-10-26', days: days('2026-10-26', c) })).days[6];
+    const v2 = earnWeek(input({ weekKey: WK2, days: days(WK2, c) })).days[0];
+    expect(v1.rings).toEqual({ peach: 120, pear: 135, cherry: 100, apple: 0, coconut: 0 }); // 3/min, 450/600 × 180, 1/min, all or nothing
+    expect(v1.milestone).toBeNull();
+    expect(v2.rings).toEqual({ peach: 70, pear: 98, cherry: 65, apple: 60, coconut: 0 });
+    expect(v2.milestone).toEqual({ peach: 2, pear: 3, cherry: 3, apple: 2 });
   });
 });

@@ -5,6 +5,9 @@
 // rules.test.ts pins the versions in use.
 import type { PersonId, RingFruit, WeekKey } from '#lib/types.ts';
 
+/** The fruits that can pay on a milestone curve (🥥 is one event a day). */
+export type CurveFruit = Exclude<RingFruit, 'coconut'>;
+
 /** The five ring fruits (ADR 0021), in display order: Exercise, Move, Stand, steps, gym. */
 export const RING_FRUITS = ['peach', 'pear', 'cherry', 'apple', 'coconut'] as const satisfies readonly RingFruit[];
 
@@ -28,6 +31,14 @@ export interface RuleVersion {
    * thresholds: exerciseDays, moveDays, standDays, stepDays, gymDays.
    */
   badges: { exerciseDays: number; moveDays: number; standDays: number; stepDays: number; gymDays: number; bells: number; duoPerBadge: number };
+  /**
+   * The milestone curve (v2, ADR 0021 amendment "v2 milestone curve"). Without it (v1) 🍑🍐🍒 pay linearly and 🍎 all
+   * or nothing, as `bells` says. With it 🍑🍐🍒🍎 pay in steps: reaching `at[i]` of the day's goal pays
+   * round(max × pay[i] / pay[last]) ベル, max being the fruit's ベル at the goal (as `bells` gives it); below at[0] 0,
+   * above the goal the max. `pay` is shares in whole numbers (no arithmetic here, so the Apps Script bundle can still
+   * drop RULES); `bells[f]` replaces a fruit's computed steps exactly. `at` ascends to 1, `pay` ascends.
+   */
+  curve?: { at: readonly number[]; pay: readonly number[]; bells?: Partial<Record<CurveFruit, readonly number[]>> };
 }
 
 /**
@@ -55,7 +66,12 @@ export const RULES: readonly RuleVersion[] = [
     from: '2026-11-02',
     goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
     bells: { perExerciseMin: 4, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 500 },
-    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 }
+    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 },
+    // The milestone curve (user, 2026-10-30): 25 / 50 / 75 / 100% of the goal pay 25 / 70 / 130 / 240 of 🍑's 240,
+    // each step more than the last and the biggest at the goal. 🍐 and 🍒 take the same shares (19 / 53 / 98 / 180 and
+    // 13 / 35 / 65 / 120); 🍎 pays the user-approved 20 / 60 / 110 / 200 (the shares would give 21 / 58 / 108). The
+    // maxima are unchanged, so the on-target week is still 14,400.
+    curve: { at: [0.25, 0.5, 0.75, 1], pay: [25, 70, 130, 240], bells: { apple: [20, 60, 110, 200] } }
   }
 ];
 

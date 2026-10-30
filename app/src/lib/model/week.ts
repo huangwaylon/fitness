@@ -5,7 +5,7 @@ import type {
 } from '#lib/types.ts';
 import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
 
-import type { WeekEarning } from '#lib/scoring/bells.ts';
+import { milestoneBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, dayBells, LIVE, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
@@ -53,10 +53,22 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
     coconut: [d?.gym ? 1 : 0, 1]
   };
   const f = e.fruits[key];
-  return {
+  const view: RingProgress = {
     today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false, todayBells: d?.rings[key] ?? 0,
     weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge,
     weekBells: e.days.reduce((n, x) => (x.date <= today ? n + x.rings[key] : n), 0)
+  };
+  // The milestone fields only exist in a week with a curve, so v1 views stay as they were.
+  const pay = key === 'coconut' ? null : milestoneBells(e.weekKey, key);
+  if (!pay || !r.curve || key === 'coconut') return view;
+  const milestone = d?.milestone?.[key] ?? 0;
+  const next = milestone < pay.length ? milestone : null;
+  return {
+    ...view,
+    milestone,
+    nextAt: next === null ? null : Math.ceil(r.curve.at[next] * view.goal),
+    nextBells: next === null ? null : pay[next],
+    nextGain: next === null ? null : pay[next] - view.todayBells
   };
 }
 

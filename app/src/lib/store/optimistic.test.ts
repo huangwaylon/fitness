@@ -51,10 +51,11 @@ describe('live optimistic view', () => {
 
   it('a new Move goal re-prices today’s 🍐 at once', () => {
     const before = composeView(cache, [], NOW);
-    expect(before.people.A.rings.pear).toMatchObject({ today: 450, goal: 600, todayBells: 135 });
+    expect(before.people.A.rings.pear).toMatchObject({ today: 450, goal: 600, todayBells: 98, milestone: 3, nextAt: 600, nextGain: 82 }); // v2 milestones: 75%
     const after = composeView(cache, [ev('g1', 'pref', { key: 'moveGoal', value: 450 })], NOW);
     expect(after.people.A.rings.pear).toMatchObject({ goal: 450, met: true, todayBells: 180 });
-    expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 45);
+    expect(after.people.A.rings.pear).toMatchObject({ milestone: 4, nextAt: null, nextBells: null });
+    expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 82);
   });
 
   it('keeps an acked event in the view until the server rows bring it back', async () => {
