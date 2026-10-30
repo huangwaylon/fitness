@@ -65,7 +65,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 
 ### 1.4 Sheets, harvest, pairing
 
-- **One sheet skin** (`Sheet.svelte`, a native `<dialog>`): the chrome surface (cream; navy at night), radius 32, a lip, a tilted yuzu nameplate title, one CTA in a sticky footer lifted above the keyboard.
+- **One sheet skin** (`Sheet.svelte`, a native `<dialog>`): the chrome surface (tan paper with white-cream cards; navy at night), radius 32, a lip, a tilted yuzu nameplate title, one CTA in a sticky footer lifted above the keyboard.
 - **今夜のチェック** (`CheckinSheet.svelte`): my three habits for today (or yesterday, 48 h fill-in) as big toggles; each tap saves at once. 正月: eating is off.
 - **Partner sheet:** their head icon, name, four fruit rings with real numbers (no /100 score), today's eating check-ins, and one action: ハイタッチ (R4 plays behind once it closes).
 - **日曜の収穫** (`HarvestOverlay.svelte`, ≤ 60 s): a modal `<dialog>` (Esc = あとで). Steps: the week's recap → 受け取る (a ceremony: the bonus counts either way) → end card. The island stays visible behind a cool tint (`rgba(58,72,134,.18)` below the sky; `rgba(30,36,80,.16)` at night). しずえ's box, one card (rows: villager icon, the four badges lit when met, + 500 ベル each; then ふたりボーナス) and the CTA sit at the bottom. The week's bonus is the one big number. The end card drops it into the two pots and counts each balance up (an item-get beat). No confetti over the numbers.
@@ -226,21 +226,23 @@ Loops, hops, walks and dances off; emotes fade in over 120 ms and hold; fx colla
 ## T. Chrome (NH 2D UI)
 
 - **Dialogue box** (`Bubble.svelte`): wobbly cream box (cream at every time of day), a tilted yuzu nameplate that pops in after it, letter reveal at 33 ms/char (tap to finish), amber ▼ only when another page follows. It holds `--talk-lines` lines (2; 1 compact) and never grows. しずえ stands on its left, feet on its baseline. The real text is in an `aria-live` node.
-- **Choice list** (`ChoiceList.svelte`): cream pills stacked at the right; a yuzu ▶ cursor starts on はい and follows hover, focus and ↑/↓.
+- **Choice list** (`ChoiceList.svelte`): white-cream pills with the brown edge, stacked at the right; the answer under the yuzu ▶ cursor turns yellow (NH's highlight, with a cream halo so it holds 3:1 on the sea). The cursor starts on はい and follows hover, focus and ↑/↓.
 - **Banner** (`Toast.svelte`): NookPhone-style, below the status row, in the top layer (inside the open sheet's `<dialog>` when there is one). A 36px icon on a pebble (the partner's villager for partner events, しずえ otherwise), one line ≤ 16 characters, one reaction icon or an action (もとに戻す). Tap or swipe up to dismiss; one at a time.
 - **Pot card:** one cream skin for おやつ and 旅.
-- **Buttons:** a light fill with ink text (≥ 5:1), radius 16, a 4px lip, a squash on press.
+- **Buttons** (round 13, `docs/reviews/round-13/button-contrast.md`): four tiers, ink text (≥ 5.6:1), radius 16, a squash on press. Every tappable thing has an **edge** (a 2px outline + the 4px lip in one colour, ≥ 3:1 on the panel); static cards have only the soft lip, so "brown edge = tappable". Primary = leaf + `--c-leaf-edge`; secondary = white-cream `--ctl` + `--edge`; selected = yuzu `--ctl-sel` (keeps the edge); disabled = sunk `--ctl-off`, soft text, no edge or lip.
 - **Fonts:** Zen Maru Gothic (UI, 500/700, subset in `fonts.css`) + Fredoka (numbers only, 600/700). Rounded and close to NH's type; no Nintendo fonts.
 
 ## Tokens (`tokens.css`)
 
-**Palette (12):** ink `#4A3A2C` / `#6B5544` · cream `#FFF9E3` · paper `#FFF3D6` · lip `#E0C48A` · leaf `#6ED07A` / `#4FB35C` (the action) · yuzu `#FFD84D` / `#E6B22E` (the focus: ribbon, nameplates) · map mint `#7BD7C1` / `#63B4B5` · coral `#FF8F7A` (errors only). Components use the semantic tokens (`--bg --surface --lip --text --text-soft --hud --focus --scrim`). Scene and fx colours are separate (`.if-scene` block, `--fx-*`, `--jar-*`).
+**Palette (15):** ink `#4A3A2C` / `#6B5544` · cream `#FFF9E3` · paper `#F5E4BC` (NH's tan panel, round 13) · card `#FFFCF2` (white-cream card / button) · lip `#E0C48A` · edge `#937047` (the brown outline + lip of a tappable cream thing: ≥ 3.4:1 on paper, cream, card and yuzu) · leaf `#6ED07A` / `#4FB35C` / edge `#2F8A3F` (the action) · yuzu `#FFD84D` / `#E6B22E` (the focus and the selected state) · map mint `#7BD7C1` / `#63B4B5` · coral `#FF8F7A` (errors only). Components use the semantic tokens (`--bg --surface --card --lip --text --text-soft --hud --focus --scrim`). Scene and fx colours are separate (`.if-scene` block, `--fx-*`, `--jar-*`).
+
+**Surfaces and button tiers (round 13):** the panel (`--bg` = `--surface`: tan by day, `#3A4886` at night) is a step darker than what sits on it (`--card`: white-cream / `#4858A0`). Controls: `--ctl` (fill), `--ctl-sel` (yuzu), `--ctl-off` (sunk), `--edge` (`#937047` / night `#B9C3F0`), with `--sh-ctl` / `--sh-ctl-press` (= `inset 0 0 0 2px var(--edge), 0 4px 0 var(--edge)`). Fixed-cream game objects (sheet close, keypad, back pill, choices, check-in rows) use `--sh-obj` (always brown). A themed control's text is `var(--text)`, never `--c-ink` (ink on navy was 1.27:1). `--fill-on-surface` / `--fill-on-bg` now alias `--ctl`.
 
 **Type:** `12` · `15` body · `18` talk/button · `24` title/ribbon · `44` hero. Weights 500/700. `palt`, `tabular-nums` in lists.
 
 **Radius:** `8` chips · `16` buttons · `24` cards/dialogue · `32` sheets/phone · `30%` tiles · pill only for the ribbon, the plate and the choices.
 
-**Depth:** no strokes. Chrome = one 4px lip (`--lip-h`, `--sh-lip`). `--sh-float` only on floating layers (the banner). Things on the ground get a contact shadow (§S.3).
+**Depth:** chrome = one 4px lip (`--lip-h`, `--sh-lip`); the only strokes are the edges of tappable things (`--sh-ctl` / `--sh-obj`). `--sh-float` only on floating layers (the banner). Things on the ground get a contact shadow (§S.3).
 
 **Motion:** `--ease-bounce`, `--ease-soft`, `--ease-squash`, `--ease-idle`; `--dur-tap` 90 · `quick` 140 · `base` 260 · `pop` 360 · `slow` 600 · `emote` 2200 (reduced motion: 0 / 120 ms, emote 1600).
 
@@ -250,11 +252,11 @@ Loops, hops, walks and dances off; emotes fade in over 120 ms and hold; fx colla
 
 | tod | Chrome | Lip | HUD text | `theme-color` |
 |---|---|---|---|---|
-| dawn, day | cream / ink | `#E0C48A` | `#33261B` | sky top |
-| dusk | `#FFF1DC` / ink | `#E8B98A` | white | sky top |
-| night | `#3A4886`, surface `#45559A` / `#FFF6E0` | `#2E3A72` | `#FFF6E0` | `#3A4886` |
+| dawn, day | paper `#F5E4BC`, cards `#FFFCF2` / ink, edge `#937047` | `#E0C48A` | `#33261B` | sky top |
+| dusk | `#F6DFC0`, cards `#FFFCF2` / ink, edge `#937047` | `#E8B98A` | white | sky top |
+| night | `#3A4886` (page and sheets), cards `#4858A0` / `#FFF6E0`, edge `#B9C3F0` | `#2E3A72` | `#FFF6E0` | `#3A4886` |
 
-The ribbon, plate, dialogue box and choices are game objects and stay cream/yellow at every time of day.
+The ribbon, plate, dialogue box and choices are game objects and stay cream/yellow at every time of day (their edge stays brown).
 
 ## R. Small screens
 
