@@ -14,6 +14,3 @@ export function lockScroll(): () => void {
     if (--held === 0) document.documentElement.classList.remove('sheet-open');
   };
 }
-
-/** `{@attach scrollLock}`: held while the element is mounted. */
-export const scrollLock = (_node: Element) => lockScroll();

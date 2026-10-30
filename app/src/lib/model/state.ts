@@ -9,7 +9,7 @@ import { parseInstant } from '#lib/time/dates.ts';
 import { habitsFor } from '#lib/scoring/targets.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, type EventType, type SnapshotRows
+  DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
 
@@ -22,7 +22,6 @@ export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
 export function jstMs(date: LocalDate, hour: number, minute: number): number {
   return Date.parse(`${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+09:00`);
 }
-/** Sunday 19:30 JST of the week: the harvest opens and the first payout is taken. */
 const cutoffMemo = (fn: (wk: WeekKey) => number) => {
   const memo = new Map<WeekKey, number>();
   return (wk: WeekKey): number => {
@@ -31,13 +30,14 @@ const cutoffMemo = (fn: (wk: WeekKey) => number) => {
     return t;
   };
 };
+/** Sunday 19:30 JST of the week: the harvest opens and the weekly bonus lands. */
 export const provisionalMs = cutoffMemo((wk) => jstMs(addDays(wk, 6), CUTOFFS.provisional.hour, CUTOFFS.provisional.minute));
-/** Wednesday 04:00 JST after the week: late data can still raise the payout up to here, then the week locks. */
+/** Wednesday 04:00 JST after the week: late data and edits still count up to here, then the week locks. */
 export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.hour, CUTOFFS.final.minute));
 
 /**
- * The demo (`?demo`, lib/store/demo/rows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
- * week. It travels with the state (`reduce(rows, calendar)`), never as a module global
+ * The demo (`?demo`, lib/store/demo/rows.ts) shows weeks before the economy starts, so it moves the calendar: its own
+ * first earning week. It travels with the state (`reduce(rows, calendar)`), never as a module global
  * (round 7 L2); live state always has `calendar: null`.
  */
 export interface DemoCalendar { firstWeek: WeekKey }
@@ -53,7 +53,7 @@ export const localDateAt = localDateOfMs;
 
 /**
  * Open for edits at t (history-and-editing.md §4.3): the day has happened, and its week has not reached its
- * Wednesday 04:00 lock. Unlike `isLockedAt` this also closes weeks before the first paid week, so edits never reach
+ * Wednesday 04:00 lock. Unlike `isLockedAt` this also closes weeks before the first earning week, so edits never reach
  * more than ~9.5 days back.
  */
 export const editableAt = (date: LocalDate, t: number): boolean => date <= localDateAt(t) && t < finalMs(weekKeyOf(date));
@@ -93,11 +93,8 @@ export interface PresenceRec {
 interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean; edit?: true }
 /** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
 interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
-/** `spendId` is the dedupe key; `rawId` is the id as the client sent it (number or string), echoed back for `approve`. */
-interface SpendRec { at: number; person: PersonId; spendId: string; rawId: number | string; label: string; amountYen: number }
-interface ApproveRec { at: number; person: PersonId; spendId: string }
 /** A ベル spend (ADR 0019 §9): `{spendId, pot, item, label, bells}`. */
-export interface BellSpendRec { at: number; person: PersonId; spendId: string; pot: PotKey; item: string; label: string; bells: number }
+interface BellSpendRec { at: number; person: PersonId; spendId: string; pot: PotKey; item: string; label: string; bells: number }
 
 interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
 
@@ -108,14 +105,10 @@ export interface State {
   presence: Record<PersonId, PresenceRec[]>;
   visitConfirms: Map<string, Timed<boolean>[]>;
   checkins: Record<PersonId, CheckinRec[]>;
-  /** Old yen spends (`amountYen`); ignored by the ベル economy. */
-  spends: SpendRec[];
   /** ベル spends (`pot` + `bells`), in server order. */
   bellSpends: BellSpendRec[];
   /** The shared menus (`pref` treatMenu / tripMenu by either person), ascending `at`: the latest wins. */
   menus: Record<PotKey, Timed<MenuItem[]>[]>;
-  approves: ApproveRec[];
-  transfers: { at: number; month: string }[];
   /** Accepted `metric_set` per person, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
   /** Accepted `workout_edit`s (and a `workout_add`'s strength choice), ascending `at`. */
@@ -127,8 +120,6 @@ export interface State {
   manualWorkouts: Record<PersonId, WorkoutRec[]>;
   /** Accepted `spend_void`s (by the spender, after the spend). */
   spendVoids: { at: number; person: PersonId; spendId: string }[];
-  /** Accepted `transfer_undo`s (either person). */
-  transferUndos: { at: number; person: PersonId; month: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
@@ -138,7 +129,7 @@ export interface State {
   calendar: DemoCalendar | null;
   /**
    * The sheet's data revision (`snapshot.rev`, sheets-architecture.md §2.1) the rows were cached under, or null. With
-   * it, payouts of past cutoffs are reused across States (`settleWeek`), since rows stamped before a past time never
+   * it, locked weeks' earnings are reused across States (`weekBells`), since rows stamped before a past time never
    * change while `rev` stays the same.
    */
   rev: string | null;
@@ -146,7 +137,7 @@ export interface State {
   ats: number[][];
 }
 
-/** How many rows are stamped at or before t: with `rev`, identifies the rows a cutoff's payout depends on. */
+/** How many rows are stamped at or before t: with `rev`, identifies the rows a locked week's earnings depend on. */
 export function rowsUpTo(s: Pick<State, 'ats'>, t: number): number {
   let n = 0;
   for (const list of s.ats) {
@@ -221,18 +212,14 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     presence: { A: [], B: [] },
     visitConfirms: new Map(),
     checkins: { A: [], B: [] },
-    spends: [],
     bellSpends: [],
     menus: { treat: [], trip: [] },
-    approves: [],
-    transfers: [],
     metricSets: { A: new Map(), B: new Map() },
     workoutEdits: [],
     workoutStrength: new Map(),
     workoutExcluded: new Map(),
     manualWorkouts: { A: [], B: [] },
     spendVoids: [],
-    transferUndos: [],
     harvests: [],
     highfives: [],
     prefs: { A: {}, B: {} },
@@ -294,7 +281,8 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    // Old `share` rows (the removed privacy toggles) and other unknown types are ignored.
+    // Old `share` rows (the removed privacy toggles) and other unknown types are ignored; so are the old economy's
+    // `approve`, `transfer` and `transfer_undo` (still event types: their rows exist).
     if (d && (EVENT_TYPES as readonly string[]).includes(type)) ON_EVENT[type](c, person, at, d);
   }
   // The per-workout lookups are indexes of workoutEdits (one source; round 7 L6).
@@ -357,6 +345,9 @@ const hasId = (v: unknown): boolean => v !== undefined && v !== null;
  * always have the sender as subject, so the partner's data is unreachable; activity edits only count while the day's
  * week is open (§4.3).
  */
+/** The old yen economy's events (ADR 0019 §6): their rows exist in the sheet and are ignored. */
+const ignored: OnEvent = () => {};
+
 const ON_EVENT: Record<EventType, OnEvent> = {
   checkin({ s }, person, at, d) {
     const date = normDate(d.date);
@@ -385,28 +376,17 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   spend({ s }, person, at, d) {
     const label = typeof d.label === 'string' ? d.label.trim() : '';
     if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;
-    if (d.pot !== undefined || d.bells !== undefined) {
-      // A ベル spend (ADR 0019 §9). Validity only; whether the pot could afford it is decided on read (week.ts).
-      const bells = d.bells;
-      if ((d.pot !== 'treat' && d.pot !== 'trip') || !isBells(bells)) return;
-      if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;
-      const spendId = String(d.spendId);
-      if (s.bellSpends.some((x) => x.spendId === spendId)) return;
-      s.bellSpends.push({ at, person, spendId, pot: d.pot, item: d.item, label, bells });
-      return;
-    }
-    const amountYen = d.amountYen;
-    if (typeof amountYen !== 'number' || !Number.isInteger(amountYen) || amountYen <= 0 || amountYen > LIMITS.spendMaxYen) return;
+    // A ベル spend (ADR 0019 §9); an old yen spend (`amountYen`, no `pot`) is ignored. Validity only: whether the pot
+    // could afford it is decided on read (bells.ts).
+    const bells = d.bells;
+    if ((d.pot !== 'treat' && d.pot !== 'trip') || !isBells(bells)) return;
+    if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;
     const spendId = String(d.spendId);
-    if (s.spends.some((x) => x.spendId === spendId)) return;
-    s.spends.push({ at, person, spendId, rawId: typeof d.spendId === 'number' ? d.spendId : spendId, label, amountYen });
+    if (s.bellSpends.some((x) => x.spendId === spendId)) return;
+    s.bellSpends.push({ at, person, spendId, pot: d.pot, item: d.item, label, bells });
   },
-  approve({ s }, person, at, d) {
-    if (hasId(d.spendId)) s.approves.push({ at, person, spendId: String(d.spendId) });
-  },
-  transfer({ s }, _person, at, d) {
-    if (typeof d.month === 'string' && MONTH_RE.test(d.month) && d.month < localDateAt(at).slice(0, 7)) s.transfers.push({ at, month: d.month });
-  },
+  approve: ignored,
+  transfer: ignored,
   metric_set({ s }, person, at, d) {
     const date = normDate(d.date);
     const metric = d.metric;
@@ -445,14 +425,12 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   spend_void({ s }, person, at, d) {
     if (!hasId(d.spendId)) return;
     const spendId = String(d.spendId);
-    const sp = s.bellSpends.find((x) => x.spendId === spendId) ?? s.spends.find((x) => x.spendId === spendId);
+    const sp = s.bellSpends.find((x) => x.spendId === spendId);
     // The spender only (§4.2), once, after the spend.
     if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
   },
-  transfer_undo({ s }, person, at, d) {
-    if (typeof d.month === 'string' && MONTH_RE.test(d.month)) s.transferUndos.push({ at, person, month: d.month });
-  },
+  transfer_undo: ignored,
   harvest({ s }, person, at, d) {
     const week = normDate(d.week);
     if (week) s.harvests.push({ at, person, week });

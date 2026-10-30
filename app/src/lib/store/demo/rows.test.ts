@@ -38,7 +38,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const view = buildWeekView(m.state, m.me, m.now);
     expect(view.pending.some((p) => p.kind === 'workout')).toBe(true);
     expect(view.menus.treat.map((x) => x.id)).toContain('parfait');
-    expect(view.pots.treat).toEqual(ledger.pots.treat);
+    expect(view.pots.treat).toMatchObject(ledger.pots.treat);
     expect(view.pots.trip.spent).toBe(12000);
     expect(view.pots.treat.balance).toBeGreaterThan(0);
     expect(view.pots.trip.balance).toBeGreaterThan(0);

@@ -42,20 +42,20 @@ beforeEach(() => {
 describe('live optimistic view', () => {
   const cache = applySnapshot(null, { me: 'A', now: new Date(NOW).toISOString(), rows: rows() }, NOW);
 
-  it('はい on a pending yoga workout counts a strength day and raises the score at once', () => {
+  it('はい on a pending yoga workout counts a strength day and raises the week’s ベル at once', () => {
     const before = composeView(cache, [], NOW);
     expect(before.pending.map((p) => p.id)).toEqual(['yoga-1']);
     const after = composeView(cache, [ev('c1', 'confirm', { kind: 'workout', id: 'yoga-1', yes: true })], NOW);
     expect(after.pending).toEqual([]);
-    expect(after.people.A.fruits.coconut.actual).toBe((before.people.A.fruits.coconut.actual ?? 0) + 1);
-    expect(after.people.A.score).toBeGreaterThan(before.people.A.score);
+    expect(after.people.A.fruits.coconut.weekDays).toBe(before.people.A.fruits.coconut.weekDays + 1);
+    expect(after.people.A.weekBells).toBeGreaterThan(before.people.A.weekBells);
   });
 
-  it('a habit tick grows the pear and the score at once', () => {
+  it('a habit tick grows the pear and today’s ベル at once', () => {
     const before = composeView(cache, [], NOW);
     const after = composeView(cache, [ev('t1', 'checkin', { date: '2026-11-18', habit: 'protein_each_meal', done: true })], NOW);
-    expect(after.people.A.fruits.pear.milli).toBeGreaterThan(before.people.A.fruits.pear.milli);
-    expect(after.people.A.score).toBeGreaterThanOrEqual(before.people.A.score);
+    expect(after.people.A.fruits.pear.weekDays).toBe(before.people.A.fruits.pear.weekDays + 1);
+    expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 100);
   });
 
   it('keeps an acked event in the view until the server rows bring it back', async () => {
@@ -72,11 +72,11 @@ describe('live optimistic view', () => {
   });
 
   it('holds an undoable event: it shows at once, is not sent in the window, and undo drops it', async () => {
-    const held = enqueue('transfer', { month: '2026-10' }, NOW, 5000);
+    const held = enqueue('spend_void', { spendId: 's1' }, NOW, 5000);
     expect((await flush(() => NOW)).sent).toBe(0);
     expect(unqueue(held.id)).toBe(true);
     expect(queued()).toEqual([]);
-    const later = enqueue('transfer', { month: '2026-10' }, NOW, 5000);
+    const later = enqueue('spend_void', { spendId: 's1' }, NOW, 5000);
     expect((await flush(() => NOW + 5000)).sent).toBe(1);
     expect(unqueue(later.id)).toBe(false);
   });

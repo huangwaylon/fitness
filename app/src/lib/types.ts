@@ -49,62 +49,10 @@ export interface CheckinTick {
   habit: string;
 }
 
+/** A person's targets beyond the shared daily goals (RuleVersion.goals): their three eating habits. */
 export interface PersonTargets {
-  activeMinPerWeek: number;
-  strengthDaysPerWeek: number;
-  stepGoal: number;
-  stepDaysPerWeek: number;
   /** Exactly three habit keys; labels live in the i18n catalogs (`habit.<key>`). */
   habits: [string, string, string];
-  pearTicksPerWeek: number;
-}
-
-export interface WeekInput {
-  person: PersonId;
-  weekKey: WeekKey;
-  age: number;
-  targets: PersonTargets;
-  /** One entry per day Mon..Sun; missing data = nulls. */
-  days: DayMetrics[];
-  workouts: Workout[];
-  visits: Visit[];
-  checkins: CheckinTick[];
-}
-
-export interface CategoryResult {
-  key: FruitKey;
-  /** Earned points × 1000 (integer). */
-  milli: number;
-  maxMilli: number;
-  /** Counted amount (minutes, days or ticks) after caps. */
-  actual: number;
-  /** Target in the same unit (fractional in 正月 easy weeks; Pear is prorated over 正月 pear-off days). */
-  target: number;
-}
-
-export interface WeekScore {
-  person: PersonId;
-  weekKey: WeekKey;
-  /** Integer 0–100: floor(sum of category milli / 1000). */
-  score: number;
-  categories: Record<FruitKey, CategoryResult>;
-  restDays: number;
-  strengthDays: LocalDate[];
-  /** Days with any Health data. */
-  dataDays: number;
-}
-
-export interface PersonPayout {
-  score: number;
-  fruitYen: number;
-  purseYen: number;
-}
-
-export interface WeekPayout {
-  weekKey: WeekKey;
-  A: PersonPayout;
-  B: PersonPayout;
-  teamYen: number;
 }
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
@@ -140,9 +88,17 @@ export interface PotBalance {
   spent: number;
 }
 
+/** A pot's balance plus what flowed into it today and this week (its share of the pair's earnings, as split on totals). */
+export interface PotFlow extends PotBalance {
+  /** This pot's share of today's earnings: share(earned) − share(earned − todayBells), so treat + trip = todayBells. */
+  today: number;
+  /** The same for this week's earnings (incl. the bonus once it landed): treat + trip = weekBells. */
+  week: number;
+}
+
 export interface PotsView {
-  treat: PotBalance;
-  trip: PotBalance;
+  treat: PotFlow;
+  trip: PotFlow;
   /** Both people, today so far. */
   todayBells: number;
   /** Both people, this week so far, incl. the weekly bonus once it landed (Sunday 19:30). */
@@ -166,22 +122,11 @@ export interface FruitProgress {
   todayMet: boolean;
   /** Progress toward the weekly badge: days meeting the daily goal (🍑🍎🥥), or ticks (🍐). */
   weekDays: number;
-  /** The badge threshold in the same unit: 5 days, 4 days, 2 days, 15 ticks (🍐 fewer over 正月). */
+  /** The badge threshold in the same unit: 5 days, 4 days, 3 days, 15 ticks (🍐 fewer over 正月). */
   weekGoalDays: number;
   badge: boolean;
   /** This fruit's daily ベル this week (the badge's +500 is in the harvest bonus, not here). */
   weekBells: number;
-}
-
-/** Old (score /100) fill of a fruit; removed once the UI has moved over. */
-export interface FruitView {
-  milli: number;
-  maxMilli: number;
-  /** 0–100, of this category's max. */
-  pct: number;
-  /** Raw counted amount and target. */
-  actual: number;
-  target: number;
 }
 
 export interface PersonWeekView {
@@ -193,9 +138,7 @@ export interface PersonWeekView {
   today: { bells: number; parts: FruitBells };
   /** This week's daily earnings so far (without the weekly bonus). */
   weekBells: number;
-  /** Old weekly score /100; removed once the UI has moved over. */
-  score: number;
-  fruits: Record<FruitKey, FruitView & FruitProgress>;
+  fruits: Record<FruitKey, FruitProgress>;
   lastSyncAt: string | null;
   /** Eating check-ins (the three habit keys and the ticks by date). */
   habits: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
@@ -209,32 +152,15 @@ export interface PendingConfirmation {
   label: string;
 }
 
-export interface JarView {
-  totalYen: number;
-  layers: { A: number; B: number; team: number };
-  purseYen: number;
-  /** Provisional yen for the current week if it settled now (quiet "≈ ¥ this week"). */
-  thisWeekEstimateYen: number;
-  nextRung: { key: string; yen: number; remainingYen: number } | null;
-  rungs: { key: string; yen: number; reached: boolean }[];
-  /** Payday cue: last month's earnings and whether "moved ✓" was tapped. */
-  transfer: { month: string; amountYen: number; done: boolean } | null;
-  /** Treat spends ≥ the both-OK threshold waiting for the partner's approval. */
-  pendingSpends: { id: number | string; label: string; amountYen: number; by: PersonId }[];
-  /** Weeks paid so far: each layer's own maximum is weeks × its weekly max (not a leaderboard). */
-  weeks: number;
-}
-
 export interface HarvestView {
   weekKey: WeekKey;
   /** The week's weekly bonus (ADR 0019); it counts whether or not 「受け取る」 is tapped. */
   bonus: HarvestBonus;
   /** The week's total ベル, both people: daily earnings + the bonus. */
   totalBells: number;
-  /** Old yen payout; removed once the UI has moved over. */
-  payout: WeekPayout;
-  /** Rung keys newly reached by this harvest. */
-  rungsReached: string[];
+  /** The week's badges per person (lit = met, +bonus each). */
+  badges: Record<PersonId, Record<FruitKey, boolean>>;
+  /** Who tapped 「受け取る」 (a ceremony only). */
   confirmedBy: PersonId[];
 }
 
@@ -249,9 +175,7 @@ export interface WeekView {
   pots: PotsView;
   /** The shared menus: おやつ items and 旅 trip types (latest `pref` by either person, else the defaults). */
   menus: Record<PotKey, MenuItem[]>;
-  /** Old jar/purse/transfer; removed once the UI has moved over. */
-  jar: JarView;
-  /** Present from Sunday 19:30 until both tapped 「壺に入れる」. */
+  /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;
   pending: PendingConfirmation[];
   /** i18n key (`host.*`) for the host しずえ's one line, plus params. */

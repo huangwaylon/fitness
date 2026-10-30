@@ -1,12 +1,12 @@
-// The rows of one person as of a time T (only rows the server stamped at or before T): the inputs of the old score
-// and of the ベル earnings. Shared by the WeekView (week.ts), the ベル economy (bells.ts) and きろく (history.ts).
+// The rows of one person as of a time T (only rows the server stamped at or before T): the inputs of the ベル
+// earnings. Shared by the WeekView (week.ts), the ベル economy (bells.ts) and きろく (history.ts).
 import type { CheckinTick, LocalDate, PersonId, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, deriveVisits } from '#lib/scoring/index.ts';
 import type { MetricKey } from '#lib/contract/api.ts';
 import { allWorkouts, latestAt, latestTimed, type PresenceRec, type State } from './state.ts';
 
-export type VisitRec = Visit & { id: string };
+type VisitRec = Visit & { id: string };
 
 /** An inclusive date window; the default is all time. Every per-week caller passes its week (perf: weeks × rows). */
 export interface Dates { from: LocalDate; to: LocalDate }
@@ -36,7 +36,7 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
  * Gym visits as of T whose arrive falls in `dates`. Exact with a window: events before it can only pair into visits
  * dated before it, and after it only the first event per place can still close an arrive inside it.
  */
-export function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
+function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
   const firstAfter = new Map<string, PresenceRec>();
   const events = s.presence[person].filter((e) => {
     if (e.at > t || e.date < dates.from) return false;

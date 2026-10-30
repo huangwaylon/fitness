@@ -5,10 +5,10 @@ import type { CheckinTick, DayBells, DayMetrics, FruitBells, FruitKey, LocalDate
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
 
-// ---------- a day's raw facts (shared with the old score) ----------
+// ---------- a day's raw facts (also read by きろく) ----------
 
 /** Convert a (possibly fractional) count to integer milli-units. */
-export const toMilli = (x: number): number => Math.round(x * 1000);
+const toMilli = (x: number): number => Math.round(x * 1000);
 
 /**
  * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
@@ -21,14 +21,14 @@ export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'inc
     : (STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
       ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
 
-export const isStrengthVisit = (v: Visit): boolean =>
+const isStrengthVisit = (v: Visit): boolean =>
   v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true);
 
 /**
  * Strength days of a week (max one per date): strength workouts, auto-strength places, and confirmed (non-auto) gym
  * visits, at most STRENGTH.maxConfirmedVisitsPerWeek of those (earliest first). Pass one week's workouts and visits.
  */
-export function strengthDaysOf(workouts: readonly Workout[], visits: readonly Visit[]): Set<LocalDate> {
+function strengthDaysOf(workouts: readonly Workout[], visits: readonly Visit[]): Set<LocalDate> {
   const set = new Set<LocalDate>();
   for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
   let confirmed = 0;
@@ -57,13 +57,13 @@ export function minuteSourcesMilli(steps: number | null, exerciseMin: number | n
 }
 
 /** A day's active milli-minutes: max(Watch, (steps − goal) / 100, manual workouts). */
-export function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
+function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
   const m = minuteSourcesMilli(steps, exerciseMin, manualMin, stepGoal);
   return Math.max(0, m.watch, m.steps, m.manual);
 }
 
-export const isPearOff = (d: LocalDate): boolean => inMonthDayRange(d, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to);
-export const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
+const isPearOff = (d: LocalDate): boolean => inMonthDayRange(d, HOLIDAY.pearOff.from, HOLIDAY.pearOff.to);
+const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
 
 // ---------- earnings ----------
 
@@ -80,7 +80,7 @@ export interface EarnInput {
 }
 
 /** A day's earnings with the facts behind them. */
-export interface DayEarning extends DayBells {
+interface DayEarning extends DayBells {
   /** Counted active minutes, floored, before the daily cap (max of the three sources). */
   minutes: number;
   steps: number | null;
@@ -93,7 +93,7 @@ export interface DayEarning extends DayBells {
   ticks: number;
 }
 
-export interface FruitWeek {
+interface FruitWeek {
   /** Progress toward the badge: days meeting the daily goal (🍑🍎🥥) or ticks (🍐). */
   weekDays: number;
   weekGoalDays: number;

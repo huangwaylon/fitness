@@ -6,7 +6,7 @@
   // bonus counts either way): it records that I saw it, then the end card drops the bonus into the two pots, split
   // おやつ / 旅 by POTS.treatPercent: coins fall into each and its balance counts up. No confetti (not in the games): an item-get beat.
   // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
-  import type { FruitKey, HarvestView, PersonId, PotKey, WeekView } from '#lib/types.ts';
+  import type { HarvestView, PersonId, PotKey, WeekView } from '#lib/types.ts';
   import { FRUITS } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Emote from '../characters/Emote.svelte';
@@ -18,8 +18,6 @@
   import BadgeRow from '../pots/BadgeRow.svelte';
   import { potShare } from '../pots/flow.ts';
   import { confirmHarvest } from '#lib/store/actions.ts';
-  import { bellsLedger } from '#lib/model/history.ts';
-  import { week } from '#lib/store/week.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { lockScroll } from '../ui/scrollLock.ts';
 
@@ -40,14 +38,8 @@
   const b = $derived(harvest.bonus);
   const bonusTotal = $derived(b.A + b.B + b.duo);
 
-  /** Each person's badges for the harvested week (from the ledger; this week's view when the ledger has none yet). */
-  const badges = $derived.by((): Record<PersonId, Record<FruitKey, boolean>> => {
-    const m = week.model;
-    const row = m ? bellsLedger(m.state, m.now).bonuses.find((x) => x.weekKey === harvest.weekKey) : null;
-    if (row) return row.badges;
-    const of = (p: PersonId) => Object.fromEntries(FRUITS.map((f) => [f, view.people[p].fruits[f].badge])) as Record<FruitKey, boolean>;
-    return { A: of('A'), B: of('B') };
-  });
+  /** Each person's badges for the harvested week. */
+  const badges = $derived(harvest.badges);
 
   let step = $state<'tally' | 'done'>('tally');
 
@@ -112,7 +104,7 @@
           {/each}
           <div class="trow duo" class:got={b.duo > 0} style="animation-delay:1.5s">
             <span class="av"><OfficialArt key="money/miles" size={30} /></span>
-            <span class="who"><b class="nm">{t('harvest.team')}</b>
+            <span class="who"><b class="nm">{t('harvest.duo')}</b>
               <small class="hint">{b.duo > 0 ? t('harvest.duoGot') : t('harvest.duoHint', { n: people.filter((p) => !allFour(p)).length })}</small>
             </span>
             <b class="plus money">{b.duo > 0 ? formatBells(b.duo, { signed: true }) : '—'}</b>

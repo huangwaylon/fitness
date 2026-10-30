@@ -27,7 +27,7 @@
 
 <header class="sub">
   <h3>{d.current ? t('kiroku.thisWeek') + ' ' : ''}<span class="money">{weekRange(d.weekKey)}</span></h3>
-  <span class="yen money">{formatBells(d.bells)}</span>
+  <span class="total money">{formatBells(d.bells)}</span>
 </header>
 <p class="state" class:locked={!d.open}>
   {#if d.open}<Glyph kind="pen" size={14} />{leftLabel(d.lockAt, now)}{:else}<Glyph kind="lock" size={14} />{t('kiroku.lockedNote')}{/if}
@@ -82,7 +82,7 @@
   {#each order as p (p)}
     <span>{names[p]} <b class="money">{formatBells(d.people[p].dailyBells)}</b>{#if d.people[p].bonus} + <b class="money">{formatBells(d.people[p].bonus)}</b>{/if}</span>
   {/each}
-  {#if d.bonus.duo}<span>{t('harvest.team')} <b class="money">{formatBells(d.bonus.duo)}</b></span>{/if}
+  {#if d.bonus.duo}<span>{t('harvest.duo')} <b class="money">{formatBells(d.bonus.duo)}</b></span>{/if}
 </p>
 
 <ChangeLog {edits} {villagers} withDate />
@@ -90,7 +90,7 @@
 <style>
   .sub { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 2px; }
   .sub h3 { margin: 0; font-size: var(--fs-talk); }
-  .yen { font-size: var(--fs-title); white-space: nowrap; }
+  .total { font-size: var(--fs-title); white-space: nowrap; }
   .state { display: flex; align-items: center; gap: 6px; margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
   .state.locked { color: var(--text-soft); }
   .people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 14px; }

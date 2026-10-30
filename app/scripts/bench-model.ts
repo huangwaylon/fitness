@@ -4,7 +4,7 @@
 // Acceptance (round 9): year 3, compacted, reduce + buildWeekView ≤ 15 ms on a laptop.
 import { performance } from 'node:perf_hooks';
 import { buildWeekView } from '#lib/model/week.ts';
-import { bellsLedger, historyWeeks, moneyLog, weekDetail } from '#lib/model/history.ts';
+import { bellsLedger, historyWeeks, weekDetail } from '#lib/model/history.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { reduce, type State } from '#lib/model/state.ts';
 import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
@@ -39,7 +39,7 @@ for (const [name, rows, now] of cases) {
   console.log(`${name}: ${count(rows)} rows (${rows.metrics.length} metrics), ${mb(rows)} MB of JSON`);
   time('reduce', () => reduce(rows));
   time('reduce + buildWeekView', () => buildWeekView(reduce(rows), 'A', now));
-  // What the app pays per poll or tick once the snapshot carries `rev`: past cutoffs' payouts are reused.
+  // What the app pays per poll or tick once the snapshot carries `rev`: locked weeks' earnings are reused.
   time('… with a rev', () => buildWeekView(reduce(rows, null, 'bench'), 'A', now));
   const wk = weekKeyOf(new Date(now + 9 * 3600_000).toISOString().slice(0, 10));
   // A fresh State per call (like the app after each poll), so per-State caches only help within one State.
@@ -47,7 +47,6 @@ for (const [name, rows, now] of cases) {
   for (const [label, fn] of [
     ['buildWeekView', (st) => buildWeekView(st, 'A', now)],
     ['historyWeeks', (st) => historyWeeks(st, now)],
-    ['moneyLog', (st) => moneyLog(st, now)],
     ['bellsLedger', (st) => bellsLedger(st, now)],
     ['weekDetail', (st) => weekDetail(st, addDays(wk, -7), now)]
   ] as [string, (st: State) => unknown][]) {
