@@ -133,3 +133,19 @@ export function newMenuItemId(): string;
 - Status (phase 2, 2026-10-30): every field above is computed for real. Old view fields (`score`, `jar`,
   `harvest.payout`, `rungsReached`, the `FruitView` part of `fruits[f]`, `HistoryWeek.yen`/`estimate`, `moneyLog`)
   stay populated until the UI has moved over, then they are removed.
+
+## Requests from UI
+Status 2026-10-30, after UI commits f3ebc4e…0fdc486 (island, ふたりの壺, harvest, きろく, あそびかた, partner sheet).
+
+1. **Old fields can go.** The UI no longer reads any of: `PersonWeekView.score`, `WeekView.jar` (`JarView`),
+   `HarvestView.payout` / `rungsReached`, the `FruitView` part of `fruits[f]` (`milli`, `maxMilli`, `pct`, `actual`,
+   `target`), `HistoryWeek.yen` / `estimate` / `people[p].score`, `WeekDetail.yen` / `estimate` / `breakdown` /
+   `people[p].score` / `people[p].fruits`, `moneyLog`, `RUNGS`, `MONEY`, and the actions `spendPurse`, `approveSpend`,
+   `transferDone`, `undoTransfer`, `voidSpend`. Actions still used: `confirmHarvest`, `buyTreat`, `buyTrip`,
+   `undoSpend`, `setMenu`, `newMenuItemId`, `undoBanner` and the check-in / きろく / pref ones.
+2. **`HarvestView.badges: Record<PersonId, Record<FruitKey, boolean>>`** (the harvested week's badges). Meanwhile the
+   overlay finds them in `bellsLedger().bonuses` by `weekKey`, falling back to this week's `fruits[f].badge`.
+   Nice to have: it saves the overlay a ledger computation.
+3. **Optional: per-pot flow** `PotsView.treat.today/week`, `trip.today/week`. Meanwhile the pots screen shows
+   `potShare(pot, todayBells)` with `POTS.treatPercent` (floor on the amount itself, so it can differ by 1 ベル
+   from the pot's all-time split).
