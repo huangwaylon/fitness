@@ -102,7 +102,7 @@
   .yen { font-size: var(--fs-title); white-space: nowrap; }
   .state { display: flex; align-items: center; gap: 6px; margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
   .state.locked { color: var(--text-soft); }
-  .people { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px; }
+  .people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 14px; }
   .col { display: grid; gap: 7px; min-width: 0; }
   .who { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .nm { flex: 1; min-width: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -112,10 +112,12 @@
   .fill { display: block; height: 100%; background: var(--c-leaf); border-radius: 4px; transition: width var(--dur-slow) var(--ease-soft); }
   .num { font-size: var(--fs-s); white-space: nowrap; color: var(--text-soft); min-width: 3.4em; text-align: right; }
 
-  .days { padding: 4px 6px; display: grid; }
+  /* the weekday column: one kanji (水), or three Latin letters (Wed, sizing #11) */
+  .days { padding: 4px 6px; display: grid; --wd-w: 22px; }
+  .days:lang(en) { --wd-w: 2.1rem; }
   .day {
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; width: 100%;
-    display: grid; grid-template-columns: 22px 1fr 1fr; align-items: center; gap: 6px; min-height: 44px; padding: 0 6px;
+    display: grid; grid-template-columns: var(--wd-w) minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 6px; min-height: 44px; padding: 0 6px;
     text-align: left;
   }
   .day + .day { border-top: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
@@ -124,13 +126,14 @@
   .wd { font-weight: 700; font-size: var(--fs-body); }
   .half { display: flex; align-items: center; gap: 5px; min-width: 0; position: relative; font-size: var(--fs-s); padding-right: 10px; }
   .half.right { padding-left: 8px; box-shadow: -2px 0 0 color-mix(in srgb, var(--lip) 45%, transparent); }
-  .head { display: grid; grid-template-columns: 22px 1fr 1fr; gap: 2px 6px; padding: 6px 6px 4px; border-bottom: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
-  .hd { font-size: 11px; font-weight: 700; color: var(--text-soft); white-space: nowrap; }
+  .head { display: grid; grid-template-columns: var(--wd-w) minmax(0, 1fr) minmax(0, 1fr); gap: 2px 6px; padding: 6px 6px 4px; border-bottom: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
+  .hd { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; }
   .who2 { display: block; font-weight: 700; font-size: var(--fs-s); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hd .st, .hd .mn { font-size: 11px; color: var(--text-soft); }
+  .hd .st, .hd .mn { font-size: var(--fs-xs); color: var(--text-soft); }
   .tk.lbl { justify-content: center; }
-  .st { width: 3.4em; text-align: right; font-size: var(--fs-s); position: relative; }
-  .mn { width: 3.3em; text-align: right; font-size: var(--fs-s); color: var(--text-soft); position: relative; }
+  .st { width: 3.4em; text-align: right; font-size: var(--fs-s); position: relative; white-space: nowrap; }
+  /* 「22 min」 stays on one line (en) */
+  .mn { min-width: 3.3em; text-align: right; white-space: nowrap; font-size: var(--fs-s); color: var(--text-soft); position: relative; }
   .star { width: 14px; display: grid; position: relative; }
   .tk { display: flex; gap: 2px; width: 22px; position: relative; }
   .tk i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--lip) 70%, transparent); }
@@ -145,6 +148,5 @@
   @media (max-width: 374px) {
     .tk { display: none; }
     .people { gap: 10px; padding: 12px 10px; }
-    .num { font-size: 11px; }
   }
 </style>

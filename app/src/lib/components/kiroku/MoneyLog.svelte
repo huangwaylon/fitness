@@ -95,7 +95,11 @@
   .step { fill: none; stroke: var(--c-yuzu-lip); stroke-width: 3; stroke-linejoin: round; }
   .rung { stroke: color-mix(in srgb, var(--lip) 80%, transparent); stroke-width: 1.5; stroke-dasharray: 4 4; }
   .rl { position: absolute; left: 16px; right: 16px; top: 52px; height: 84px; pointer-events: none; }
-  .rl span { position: absolute; right: 0; transform: translateY(-110%); font-size: 11px; font-weight: 700; color: var(--text-soft); }
+  /* rung labels: chart-axis size on a paper chip, so the step line never crosses the words (sizing #14) */
+  .rl span {
+    position: absolute; right: 0; transform: translateY(-110%); font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft);
+    padding: 0 4px; border-radius: 4px; background: color-mix(in srgb, var(--bg) 85%, transparent);
+  }
   .month { margin-bottom: 6px; }
   h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 4px 8px; font-size: var(--fs-body); }
   h4 b { font-size: var(--fs-talk); }
@@ -107,12 +111,12 @@
   .rows b { font-size: var(--fs-body); }
   .yen { font-size: var(--fs-body); white-space: nowrap; }
   .void .lbl, .void .yen { color: var(--text-soft); text-decoration: line-through; }
-  .chip { display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border-radius: var(--r-chip); font-size: 11px; white-space: nowrap; background: color-mix(in srgb, var(--lip) 45%, transparent); }
+  .chip { display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border-radius: var(--r-chip); font-size: var(--fs-s); white-space: nowrap; background: color-mix(in srgb, var(--lip) 45%, transparent); }
   .chip svg { width: 12px; height: 12px; }
   .chip.ok, .chip.done { background: var(--c-leaf); color: var(--c-ink); }
   .chip.waiting { background: var(--c-yuzu); color: var(--c-ink); }
   .mini {
-    appearance: none; border: 0; cursor: pointer; min-height: 36px; padding: 0 10px; border-radius: var(--r-btn); flex: none;
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: var(--hit); padding: 0 10px; border-radius: var(--r-btn); flex: none;
     font: 700 var(--fs-s)/1 var(--font-ui); background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip);
   }
   .mini:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }

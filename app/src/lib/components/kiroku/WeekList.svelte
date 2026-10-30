@@ -77,7 +77,7 @@
   .stamps { flex: 1; display: flex; justify-content: space-between; max-width: 220px; }
   .wdrow { margin: -2px 0 -6px; }
   .avsp { width: 30px; flex: none; }
-  .wdl { width: 18px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-soft); }
+  .wdl { width: 18px; text-align: center; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
   @media (max-width: 359px) {
     .wdl { width: 14px; }
     .stamps :global(svg) { width: 14px; height: 14px; }

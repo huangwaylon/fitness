@@ -7,6 +7,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
+  import TypeName from './TypeName.svelte';
   import { dayTitle, leftLabel, num, typeLabel } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
   import { timeOf } from '#lib/i18n/format.ts';
@@ -58,7 +59,7 @@
     </div>
     {#each x.workouts as w (w.id)}
       <div class="row wo" class:out={w.excluded}>
-        <span class="k">{typeLabel(w.type)}</span>
+        <span class="k"><TypeName type={w.type} /></span>
         <span class="v small"><span class="money">{w.manual ? '' : timeOf(w.startAt) + ' '}{t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
           {#if w.manual}<em>{t('kiroku.manual')}</em>{/if}</span>
@@ -104,16 +105,20 @@
   .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
   .row + .row, .who + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
-  .wo .k { font-size: var(--fs-s); }
+  /* a workout / visit row: the label keeps the body size and takes its own line when the time and chips do not fit
+     beside it (sizing #13); the value and ✎ then sit right-aligned under it */
+  .wo { flex-wrap: wrap; row-gap: 2px; padding: 6px 0; }
+  .wo .k { flex: 1 0 9em; }
+  .wo .v.small { margin-left: auto; }
   .v { font-size: var(--fs-talk); white-space: nowrap; }
   .v.small { font-size: var(--fs-s); display: flex; align-items: center; gap: 6px; white-space: normal; flex-wrap: wrap; justify-content: flex-end; }
   .v.small .money { font-size: var(--fs-s); }
   .out .k, .out .money { color: var(--text-soft); text-decoration: line-through; }
-  em { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
+  em { font-style: normal; font-size: var(--fs-s); white-space: nowrap; font-weight: 700; padding: 2px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
   em.ok { background: var(--c-yuzu); color: var(--c-ink); }
   .src { font-size: var(--fs-s); color: var(--text-soft); font-weight: 700; }
   .pen {
-    appearance: none; border: 0; cursor: pointer; width: 44px; height: 36px; border-radius: var(--r-btn); flex: none;
+    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
     display: grid; place-items: center; background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
   }
   .pen:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
@@ -123,7 +128,9 @@
     display: inline-flex; align-items: center; gap: 4px; border-radius: var(--r-pill);
     background: color-mix(in srgb, var(--lip) 35%, transparent);
   }
-  button.tick { cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
+  /* 36px chips, a 44px hit area (sizing #8) */
+  button.tick { position: relative; cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
+  button.tick::after { content: ''; position: absolute; inset: -4px 0; }
   button.tick:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
   .tick.on { background: var(--c-mint); color: var(--c-ink); }
   /* Read-only chips: flat, no lip, a quieter fill; nothing about them says "tap me". */

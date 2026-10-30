@@ -9,6 +9,16 @@ export const dayTitle = (d: string) => t('kiroku.dayTitle', { m: Number(d.slice(
 export const num = (n: number | null) => (n === null ? '–' : n.toLocaleString('en-US'));
 export const typeLabel = (type: string) => workoutLabel(type, i18n.locale);
 
+/** The word joints of a Japanese workout label (筋力|トレーニング, 高強度|インターバル|トレーニング). */
+const JA_JOINTS = /(筋力|トレーニング|インターバル|ウォーキング|ランニング|カーディオ)/;
+/** A workout label in the pieces it may break between (T7): iPhone Safari has no `word-break: auto-phrase`, so
+ *  Japanese would otherwise break inside a word (筋力トレーニ / ング). `spaced`: the pieces are English words. */
+export function typeParts(type: string): { parts: string[]; spaced: boolean } {
+  const label = typeLabel(type);
+  if (i18n.locale !== 'ja') return { parts: label.split(' '), spaced: true };
+  return { parts: label.split(JA_JOINTS).filter(Boolean), spaced: false };
+}
+
 /** Lock countdown for an open week: days (or hours on the last day). */
 export function leftLabel(lockAt: number, now: number): string {
   const h = Math.max(0, Math.ceil((lockAt - now) / 3600_000));
