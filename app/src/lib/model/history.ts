@@ -1,6 +1,6 @@
 // きろく (history-and-editing.md): every recorded week, day and yen, for both people, computed on read from the same
 // state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
-import type { FruitKey, LocalDate, PersonId, WeekKey, WeekScore } from '#lib/types.ts';
+import type { DayBells, FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, WeekKey, WeekScore } from '#lib/types.ts';
 import { DAILY, FRUITS, STRENGTH } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import {
@@ -13,6 +13,9 @@ import {
 } from './week.ts';
 
 const LIVE = Infinity;
+
+const noParts = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
+const noBadges = (): Record<FruitKey, boolean> => ({ peach: false, coconut: false, apple: false, pear: false });
 
 export type Stamp = 'strength' | 'active' | 'none' | 'future';
 /** Where a day's counted minutes come from: the Watch, a きろく edit of them, the steps, or workouts added by hand. */
@@ -30,7 +33,14 @@ export interface EditLog {
   after: number | boolean | null;
 }
 
-interface HistoryPerson { score: number; stamps: Stamp[] }
+interface HistoryPerson {
+  /** The person's ベル of the week: daily earnings + their badge bonus once it landed. */
+  bells: number;
+  badges: Record<FruitKey, boolean>;
+  /** Old weekly score; removed once the UI has moved over. */
+  score: number;
+  stamps: Stamp[];
+}
 
 export interface HistoryWeek {
   weekKey: WeekKey;
@@ -45,6 +55,8 @@ export interface HistoryWeek {
   open: boolean;
   /** Both tapped 壺に入れる. */
   harvested: boolean;
+  /** The week's ベル, both people: daily earnings + the weekly bonus once it landed (Sunday 19:30). */
+  bells: number;
   people: Record<PersonId, HistoryPerson>;
 }
 
@@ -138,9 +150,10 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
       locked: isLockedAt(s, wk, now),
       open: editableAt(wk, now), // this week, and last week until Wednesday 04:00
       harvested: harvested.has(wk),
+      bells: 0,
       people: {
-        A: { score: c.scores.A.score, stamps: stampsFor(s, 'A', wk, c, today) },
-        B: { score: c.scores.B.score, stamps: stampsFor(s, 'B', wk, c, today) }
+        A: { bells: 0, badges: noBadges(), score: c.scores.A.score, stamps: stampsFor(s, 'A', wk, c, today) },
+        B: { bells: 0, badges: noBadges(), score: c.scores.B.score, stamps: stampsFor(s, 'B', wk, c, today) }
       }
     });
   }
@@ -161,6 +174,9 @@ interface DayRow {
   minutesSource: MinutesSource | null;
   strength: boolean;
   ticks: number;
+  /** The day's ベル and its parts per fruit. */
+  bells: number;
+  parts: FruitBells;
   /** An accepted edit touched this person's day. */
   edited: boolean;
   editedFields: EditedField[];
@@ -171,6 +187,11 @@ const FIELD_OF: Record<EditLog['field'], EditedField> = {
 };
 
 interface WeekDetailPerson {
+  /** Daily earnings of the week (without the bonus). */
+  dailyBells: number;
+  /** The badge bonus (+500 each; 0 until it lands on Sunday 19:30). */
+  bonus: number;
+  badges: Record<FruitKey, boolean>;
   score: number;
   fruits: Record<FruitKey, { actual: number; target: number; pct: number }>;
   days: DayRow[];
@@ -184,6 +205,9 @@ export interface WeekDetail {
   open: boolean;
   /** Epoch ms of the lock (Wednesday 04:00 JST after the week). */
   lockAt: number;
+  /** The week's ベル (both people, incl. the bonus once it landed) and the bonus itself. */
+  bells: number;
+  bonus: HarvestBonus;
   yen: number;
   estimate: boolean;
   breakdown: Buckets;
@@ -208,6 +232,9 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
     const manual = manualAsOf(c.act[p]);
     const strength = new Set(score.strengthDays);
     return {
+      dailyBells: 0,
+      bonus: 0,
+      badges: noBadges(),
       score: score.score,
       fruits: Object.fromEntries(FRUITS.map((k) => {
         const cat = score.categories[k];
@@ -224,6 +251,8 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
           minutesSource: m.source,
           strength: strength.has(d.date),
           ticks: Math.min(DAILY.maxTicks, new Set(input.checkins.filter((x) => x.date === d.date).map((x) => x.habit)).size),
+          bells: 0,
+          parts: noParts(),
           edited: fields.length > 0,
           editedFields: fields
         };
@@ -237,6 +266,8 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
     locked: isLockedAt(s, wk, now),
     open: editableAt(wk, now),
     lockAt: finalMs(wk),
+    bells: 0,
+    bonus: { A: 0, B: 0, duo: 0 },
     yen: y.yen,
     estimate: y.estimate,
     breakdown: y.breakdown,
@@ -264,6 +295,9 @@ interface DayWorkout {
 interface DayVisit { id: string; place: string; arriveAt: string; dwellMin: number; counted: boolean }
 
 export interface DayPerson {
+  /** The day's ベル and its parts per fruit. */
+  bells: number;
+  parts: FruitBells;
   steps: { value: number | null; edited: boolean };
   /** Counted minutes, the Watch value and where the counted number comes from. */
   minutes: { value: number; watch: number | null; source: MinutesSource | null; edited: boolean };
@@ -315,6 +349,8 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const input = weekInput(s, p, wk, t, c.act[p]);
     const mine = log.filter((e) => e.by === p);
     return {
+      bells: 0,
+      parts: noParts(),
       steps: { value: steps, edited: mine.some((e) => e.field === 'steps') },
       minutes: { ...m, edited: mine.some((e) => e.field === 'exercise_min') },
       workouts,
@@ -446,4 +482,59 @@ export function moneyLog(s: State, now: number): MoneyLog {
     steps,
     months: [...months.values()].sort((x, y) => y.month.localeCompare(x.month))
   };
+}
+
+// ---------- ベル ledger (ADR 0019) ----------
+
+/** One day of the ledger: both people's earnings. `locked`: its week locked, so the numbers are final. */
+export interface LedgerDay {
+  date: LocalDate;
+  weekKey: WeekKey;
+  /** Both people. */
+  bells: number;
+  people: Record<PersonId, DayBells>;
+  locked: boolean;
+}
+
+/** A week's bonus row: it lands at the Sunday 19:30 harvest (`at`). */
+export interface LedgerBonus {
+  weekKey: WeekKey;
+  at: number;
+  bonus: HarvestBonus;
+  /** bonus.A + bonus.B + bonus.duo. */
+  bells: number;
+  badges: Record<PersonId, Record<FruitKey, boolean>>;
+  locked: boolean;
+}
+
+/** An accepted spend (a spend the pot couldn't afford is ignored and never listed). */
+export interface LedgerSpend {
+  spendId: string;
+  at: number;
+  by: PersonId;
+  pot: PotKey;
+  /** The menu item id it was bought from. */
+  item: string;
+  label: string;
+  bells: number;
+  voided: boolean;
+  voidedAt: number | null;
+}
+
+export interface BellsLedger {
+  pots: Record<PotKey, PotBalance>;
+  /** Everything earned so far, both people (= treat.earned + trip.earned). */
+  earned: number;
+  /** Newest first, from the economy's first day to today. */
+  days: LedgerDay[];
+  /** Newest first, weeks whose harvest has opened. */
+  bonuses: LedgerBonus[];
+  /** Newest first. */
+  spends: LedgerSpend[];
+}
+
+/** The きろく ledger at `now`: every day's earnings, the weekly bonuses and the spends. */
+export function bellsLedger(_s: State, _now: number): BellsLedger {
+  const zero = (): PotBalance => ({ balance: 0, earned: 0, spent: 0 });
+  return { pots: { treat: zero(), trip: zero() }, earned: 0, days: [], bonuses: [], spends: [] };
 }

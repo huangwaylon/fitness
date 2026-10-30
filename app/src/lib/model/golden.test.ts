@@ -22,9 +22,10 @@
 // still the frozen server's output.
 //
 // If a change to the rules is intended, regenerate the goldens from the model and review the diff of
-// timeline-views.json (see git history for the original harness, commit bc39eba).
+// timeline-views.json: `GOLDEN_UPDATE=1 npx vitest run src/lib/model/golden.test.ts` (keeps the same instants).
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
 import type { PersonId, WeekView } from '#lib/types.ts';
 import { buildWeekView, paidAt, settledWeeks } from './week.ts';
 import { reduce } from './state.ts';
@@ -59,6 +60,18 @@ const views = (t: string): Record<PersonId, WeekView> => {
   const s = reduce(rowsAt(tMs));
   return { A: buildWeekView(s, 'A', tMs), B: buildWeekView(s, 'B', tMs) };
 };
+
+if (process.env.GOLDEN_UPDATE) {
+  const dir = new URL('./fixtures/', import.meta.url);
+  const regen = <T>(keys: string[], f: (v: WeekView) => T) =>
+    Object.fromEntries(keys.map((t) => { const v = views(t); return [t, { A: f(v.A), B: f(v.B) }]; }));
+  const newViews = regen(Object.keys(VIEWS), (v) => v);
+  const newDigests = regen(Object.keys(DIGESTS), digest);
+  writeFileSync(new URL('timeline-views.json', dir), JSON.stringify(newViews));
+  writeFileSync(new URL('timeline-digests.json', dir), JSON.stringify(newDigests));
+  Object.assign(VIEWS, JSON.parse(JSON.stringify(newViews)));
+  Object.assign(DIGESTS, newDigests);
+}
 
 describe('golden: model vs the frozen server views on a 10-week timeline', () => {
   it('the fixtures exercise the interesting paths', () => {

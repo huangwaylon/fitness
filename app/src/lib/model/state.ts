@@ -1,6 +1,6 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
-import type { LocalDate, PersonId, WeekKey } from '#lib/types.ts';
+import type { LocalDate, MenuItem, PersonId, PotKey, WeekKey } from '#lib/types.ts';
 import { CALIBRATION_WEEKS, CUTOFFS, LIMITS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
@@ -106,6 +106,8 @@ interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: 
 /** `spendId` is the dedupe key; `rawId` is the id as the client sent it (number or string), echoed back for `approve`. */
 interface SpendRec { at: number; person: PersonId; spendId: string; rawId: number | string; label: string; amountYen: number }
 interface ApproveRec { at: number; person: PersonId; spendId: string }
+/** A ベル spend (ADR 0019 §9): `{spendId, pot, item, label, bells}`. */
+export interface BellSpendRec { at: number; person: PersonId; spendId: string; pot: PotKey; item: string; label: string; bells: number }
 
 interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
 
@@ -116,7 +118,12 @@ export interface State {
   presence: Record<PersonId, PresenceRec[]>;
   visitConfirms: Map<string, Timed<boolean>[]>;
   checkins: Record<PersonId, CheckinRec[]>;
+  /** Old yen spends (`amountYen`); ignored by the ベル economy. */
   spends: SpendRec[];
+  /** ベル spends (`pot` + `bells`), in server order. */
+  bellSpends: BellSpendRec[];
+  /** The shared menus (`pref` treatMenu / tripMenu by either person), ascending `at`: the latest wins. */
+  menus: Record<PotKey, Timed<MenuItem[]>[]>;
   approves: ApproveRec[];
   transfers: { at: number; month: string }[];
   /** Accepted `metric_set` per person, keyed `date|metric`, ascending `at`. */
@@ -225,6 +232,8 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     visitConfirms: new Map(),
     checkins: { A: [], B: [] },
     spends: [],
+    bellSpends: [],
+    menus: { treat: [], trip: [] },
     approves: [],
     transfers: [],
     metricSets: { A: new Map(), B: new Map() },
@@ -319,6 +328,37 @@ interface Ctx {
 type Data = Record<string, unknown>;
 type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
 
+const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
+const MENU_ID_RE = /^[\w-]+$/;
+
+/**
+ * A menu pref's value: a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
+ * LIMITS.menuMaxItems. Anything invalid ignores the whole pref (the previous menu stays).
+ */
+export function parseMenu(v: unknown): MenuItem[] | null {
+  let list = v;
+  if (typeof v === 'string') {
+    try {
+      list = JSON.parse(v);
+    } catch {
+      return null;
+    }
+  }
+  if (!Array.isArray(list) || list.length > LIMITS.menuMaxItems) return null;
+  const out: MenuItem[] = [];
+  const ids = new Set<string>();
+  for (const x of list) {
+    if (!x || typeof x !== 'object') return null;
+    const { id, label, bells } = x as Record<string, unknown>;
+    const l = typeof label === 'string' ? label.trim() : '';
+    if (typeof id !== 'string' || id.length > LIMITS.menuIdMaxChars || !MENU_ID_RE.test(id) || ids.has(id)) return null;
+    if (!l || l.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return null;
+    ids.add(id);
+    out.push({ id, label: l, bells });
+  }
+  return out;
+}
+
 const isStrengthChoice = (v: unknown): v is boolean | null => v === null || typeof v === 'boolean';
 const hasId = (v: unknown): boolean => v !== undefined && v !== null;
 
@@ -354,8 +394,18 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   },
   spend({ s }, person, at, d) {
     const label = typeof d.label === 'string' ? d.label.trim() : '';
-    const amountYen = d.amountYen;
     if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;
+    if (d.pot !== undefined || d.bells !== undefined) {
+      // A ベル spend (ADR 0019 §9). Validity only; whether the pot could afford it is decided on read (week.ts).
+      const bells = d.bells;
+      if ((d.pot !== 'treat' && d.pot !== 'trip') || !isBells(bells)) return;
+      if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;
+      const spendId = String(d.spendId);
+      if (s.bellSpends.some((x) => x.spendId === spendId)) return;
+      s.bellSpends.push({ at, person, spendId, pot: d.pot, item: d.item, label, bells });
+      return;
+    }
+    const amountYen = d.amountYen;
     if (typeof amountYen !== 'number' || !Number.isInteger(amountYen) || amountYen <= 0 || amountYen > LIMITS.spendMaxYen) return;
     const spendId = String(d.spendId);
     if (s.spends.some((x) => x.spendId === spendId)) return;
@@ -405,7 +455,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   spend_void({ s }, person, at, d) {
     if (!hasId(d.spendId)) return;
     const spendId = String(d.spendId);
-    const sp = s.spends.find((x) => x.spendId === spendId);
+    const sp = s.bellSpends.find((x) => x.spendId === spendId) ?? s.spends.find((x) => x.spendId === spendId);
     // The spender only (§4.2), once, after the spend.
     if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
@@ -420,7 +470,12 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   highfive({ s }, person, at) {
     s.highfives.push({ at, person });
   },
-  pref({ s }, person, _at, d) {
+  pref({ s }, person, at, d) {
+    if (d.key === 'treatMenu' || d.key === 'tripMenu') {
+      const items = parseMenu(d.value);
+      if (items) s.menus[d.key === 'treatMenu' ? 'treat' : 'trip'].push({ at, v: items });
+      return;
+    }
     const p = s.prefs[person];
     if (d.key === 'locale' && (d.value === 'ja' || d.value === 'en')) p.locale = d.value;
     else if (d.key === 'villagerName' && typeof d.value === 'string') {
