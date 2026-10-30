@@ -69,6 +69,22 @@ export function needsUnlock(s: { state: string | null; music: boolean; decksRead
   return s.state !== 'running' || (s.music && (!s.decksReady || s.frontStalled));
 }
 
+/** The gestures the app listens to (document, capture). On a touch screen a tap is pointerdown → pointerup →
+ *  touchend, and **click only on an element with a click handler** (iOS fires no click on plain scenery): so no
+ *  part of the unlock may depend on the click. pointerdown isn't a user activation on a touch screen; pointerup
+ *  (touch) and touchend are (HTML's activation-triggering events), and so are click and keydown. */
+export type Gesture = 'pointerdown' | 'pointerup' | 'touchend' | 'click' | 'keydown';
+
+/** What a gesture does: nothing; `context` (create / resume the AudioContext only, so a sound fired on pointerdown
+ *  can be scheduled); or `full`: the context, the decks unlocked inside the gesture, and a current track that isn't
+ *  playing started inside it too. Every activation that finds anything still waiting does the full unlock, so the
+ *  first tap anywhere starts the music, and a play() the browser refused is retried by the very next tap. */
+export function gestureAction(g: Gesture, s: Parameters<typeof needsUnlock>[0]): 'none' | 'context' | 'full' {
+  if (!needsUnlock(s)) return 'none';
+  if (g === 'pointerdown') return s.state === 'running' ? 'none' : 'context';
+  return 'full';
+}
+
 /** With only 効果音 / おしゃべり on, the context is suspended after this long without a sound (an open context keeps
  *  the audio hardware awake), and the next cue resumes it. */
 export const IDLE_SUSPEND_MS = 10_000;

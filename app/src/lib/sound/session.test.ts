@@ -8,10 +8,12 @@ import {
   SESSION_RELEASE_MS,
   SessionSwitch,
   canSound,
+  gestureAction,
   needsFadeIn,
   needsUnlock,
   sessionType,
   wrapTarget,
+  type Gesture,
   type SessionType
 } from './session.ts';
 import { trackLevel } from './hourly.ts';
@@ -108,6 +110,67 @@ describe('when a tap must unlock (round 16 M1)', () => {
   });
   it('with music off, the decks do not matter', () => {
     expect(needsUnlock({ ...ok, music: false, decksReady: false, frontStalled: true })).toBe(false);
+  });
+});
+
+// A tap's gestures, run through gestureAction against a small model of the browser (user report, round 16: "the
+// music doesn't start until I tap something with a sound"). `activations`: the gestures the browser lets start media.
+// A full unlock inside one starts the track (the deck plays inside the tap); outside one, play() is refused and the
+// track waits, stalled, for the next tap. The music must start on the first tap whatever it lands on.
+describe('the first tap anywhere starts the music', () => {
+  type Model = { ctx: string | null; decksReady: boolean; key: boolean; playing: boolean };
+  const IOS: Gesture[] = ['pointerup', 'touchend', 'click', 'keydown'];
+  function run(taps: Gesture[][], activations: Gesture[] = IOS, m: Model = { ctx: null, decksReady: false, key: false, playing: false }) {
+    const log: string[] = [];
+    for (const tap of taps)
+      for (const g of tap) {
+        const act = gestureAction(g, { state: m.ctx, music: true, decksReady: m.decksReady, frontStalled: m.key && !m.playing });
+        log.push(`${g}:${act}`);
+        if (act === 'none') continue;
+        const ok = activations.includes(g);
+        if (act === 'context') {
+          m.ctx ??= 'suspended';
+          continue;
+        }
+        m.ctx = ok ? 'running' : (m.ctx ?? 'suspended');
+        m.key = true; // syncMusic picks the hour's track
+        if (ok) Object.assign(m, { decksReady: true, playing: true });
+      }
+    return { m, log };
+  }
+  const SCENERY: Gesture[] = ['pointerdown', 'pointerup', 'touchend']; // iOS fires no click on plain scenery
+  const BUTTON: Gesture[] = [...SCENERY, 'click']; // a button with no sound of its own
+
+  it('a tap on empty scenery (no click at all)', () => {
+    const { m, log } = run([SCENERY]);
+    expect(m.playing).toBe(true);
+    expect(log.slice(0, 2)).toEqual(['pointerdown:context', 'pointerup:full']);
+  });
+  it('even if the browser honours only touchend (pointerup refused): touchend retries in the same tap', () => {
+    expect(run([SCENERY], ['touchend']).m.playing).toBe(true);
+  });
+  it('a scroll first (its touchend is no activation), then a tap: the tap starts it', () => {
+    const scroll: Gesture[] = ['pointerdown', 'touchend'];
+    const first = run([scroll], ['pointerup']);
+    expect(first.m.playing).toBe(false);
+    expect(run([SCENERY], ['pointerup'], first.m).m.playing).toBe(true);
+  });
+  it('a tap on a button with no sound', () => {
+    const { m, log } = run([BUTTON]);
+    expect(m.playing).toBe(true);
+    expect(log.at(-1)).toBe('click:none'); // already playing: the click does nothing more
+  });
+  it('keyboard only', () => {
+    expect(run([['keydown']]).m.playing).toBe(true);
+  });
+  it('a play() refused outside the tap (the file arrived late) is retried by the next tap of any kind', () => {
+    const m: Model = { ctx: 'running', decksReady: true, key: true, playing: false };
+    expect(run([SCENERY], IOS, m).log).toEqual(['pointerdown:none', 'pointerup:full', 'touchend:none']);
+    expect(m.playing).toBe(true);
+  });
+  it('once playing, taps do nothing', () => {
+    const m: Model = { ctx: 'running', decksReady: true, key: true, playing: true };
+    expect(run([BUTTON], IOS, m).log.every((l) => l.endsWith(':none'))).toBe(true);
   });
 });
 
