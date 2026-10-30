@@ -115,7 +115,7 @@
 
     {#each ['A', 'B'] as const as pid (pid)}
       <FruitTree person={view.people[pid]} x={TREE.x[slot(pid)]} {foliage} shakeN={life.shakeN[pid]}
-        celebrate={life.celebrate[pid]} />
+        celebrate={life.celebrate[pid]} {covered} />
     {/each}
 
     <!-- the jar + its plate (JarSpot): one button, the doorway to 旅の壺 -->
@@ -148,7 +148,8 @@
 <style>
   .scene {
     --scene-h-auto: clamp(300px, calc(100dvh - var(--chrome-below, 282px)), 600px);
-    --emote-size: 44px;
+    /* emotes are game objects: 44u on the stage (resolved where used, against the stage), 36–56px (T5) */
+    --emote-size: clamp(36px, calc(44 * 100cqw / 390), 56px);
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: hidden;
     container-type: inline-size; isolation: isolate;
     /* F1/F2 layout (see the contract at the top of the script) */
@@ -157,14 +158,19 @@
     --cap: var(--sky-cap, calc(var(--safe-top) + min(180px, 21dvh)));
     /* the stage fills the band from the sky cap to the chrome (+ the 34u tuck of the front beach under it),
        at most as wide as keeps the sand (u 30–360) 5px inside each screen edge, never under the column width */
-    --stage-w: max(min(100cqw, 480px), min(calc((var(--sh) - var(--ib) - var(--cap) - 12px) * 390 / 326), calc((100cqw - 10px) * 390 / 330), 560px));
+    --fit-w: calc((100cqw - 10px) * 390 / 330);
+    --stage-w: max(min(100cqw, 480px), min(calc((var(--sh) - var(--ib) - var(--cap) - 12px) * 390 / 326), var(--fit-w), 560px));
     --stage-h: calc(var(--stage-w) * 360 / 390);
     --tuck: calc(var(--stage-w) * 34 / 390);
     --stage-top: calc(var(--sh) - var(--ib) + var(--tuck) - var(--stage-h));
-    --horizon-y: max(40px, calc(var(--stage-top) + var(--stage-w) * 8 / 390));
+    /* the sky never takes more than --sky-max of the scene: on a tall phone the horizon rises and the spare height is
+       open sea behind the island (with its glints), so the island stays the focal point (sizing #6) */
+    --horizon-y: max(40px, min(calc(var(--stage-top) + var(--stage-w) * 8 / 390), calc(var(--sh) * var(--sky-max, .27))));
     --sky-h: var(--horizon-y);
   }
-  @media (max-height: 700px), (max-width: 359px) { .scene { --emote-size: 36px; } }
+  /* tall phones (390 × 844, 430 × 932): the stage may grow until the grass is 12px inside each edge (the beach and the
+     shallows run off the sides), instead of leaving the extra height to an empty sky */
+  @media (max-aspect-ratio: 1/2) { .scene { --fit-w: calc((100cqw - 24px) * 390 / 302); } }
   .stage {
     position: absolute; bottom: calc(var(--ib) - var(--tuck)); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
     container-type: inline-size; z-index: 1;

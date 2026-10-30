@@ -106,9 +106,11 @@
     display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: var(--r-pill);
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 4px 0 var(--plate-lip); white-space: nowrap;
     transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft); font-variant-numeric: tabular-nums;
+    /* a game object on the stage: sized in stage units (14u), 13–16px (sizing #6, T5) */
+    font-size: clamp(13px, calc(14 * 100cqw / 390), 16px);
   }
-  .jar-plate b { font: 700 12px/1.25 var(--font-num); letter-spacing: .02em; }
-  .go { width: 15px; height: 15px; flex: none; }
+  .jar-plate b { font: 700 1em/1.25 var(--font-num); letter-spacing: .02em; }
+  .go { width: 1.2em; height: 1.2em; flex: none; }
   .go circle { fill: var(--c-leaf-lip); }
   .go path { fill: var(--c-cream); }
   .jargain {

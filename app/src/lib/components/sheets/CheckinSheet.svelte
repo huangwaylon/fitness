@@ -94,7 +94,7 @@
   .date { font-size: var(--fs-talk); color: var(--text-soft); }
   .days { display: flex; gap: 2px; padding: 3px; border-radius: var(--r-btn); background: color-mix(in srgb, var(--lip) 45%, transparent); flex: none; }
   .day {
-    appearance: none; cursor: pointer; min-width: 56px; min-height: 40px; padding: 0 10px; border-radius: 13px; border: 0;
+    appearance: none; cursor: pointer; min-width: 56px; min-height: var(--hit); padding: 0 10px; border-radius: 14px; border: 0;
     display: grid; place-items: center; font-weight: 700; font-size: var(--fs-body); position: relative;
     background: transparent; color: var(--text-soft); transition: background var(--dur-quick);
   }

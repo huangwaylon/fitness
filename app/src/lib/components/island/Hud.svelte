@@ -75,20 +75,24 @@
     position: absolute; z-index: 7; left: 0; right: 0; top: calc(var(--safe-top) + 56px);
     display: flex; justify-content: center; pointer-events: none;
   }
+  /* the sync chip (under the clock, ≤ 74px with its lip) pushes the ribbon down, so it never hides the score (sizing #2) */
+  .hud:has(:global(.chip)) ~ .ribbon-wrap { top: calc(var(--safe-top) + 84px); }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
     appearance: none; border: 0; cursor: pointer; font: inherit; pointer-events: auto;
-    position: relative; margin: 0; height: 36px; padding: 0 22px; display: flex; align-items: center; gap: 10px;
+    /* ≥ 44px tall (the tap target) and growing with the screen's height, like the scene (sizing #6, #8) */
+    position: relative; margin: 0; height: clamp(44px, calc(5 * var(--vh1)), 50px); padding: 0 clamp(22px, 6vw, 28px);
+    display: flex; align-items: center; gap: 10px;
     background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip);
   }
   .ribbon::before, .ribbon::after {
-    content: ''; position: absolute; z-index: -1; top: 9px; width: 24px; height: 30px; background: var(--c-yuzu-lip);
+    content: ''; position: absolute; z-index: -1; top: 25%; width: 24px; height: 83%; background: var(--c-yuzu-lip);
   }
   .ribbon::before { left: -16px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 38% 50%); }
   .ribbon::after { right: -16px; clip-path: polygon(0 0, 100% 0, 62% 50%, 100% 100%, 0 100%); }
-  .wk { font: 700 var(--fs-body)/1 var(--font-ui); }
-  .ribbon b { font-size: var(--fs-title); }
-  .ribbon small { font-size: var(--fs-body); margin-left: 1px; }
+  .wk { font: 700 clamp(.9375rem, calc(1.9 * var(--vh1)), 1.125rem)/1 var(--font-ui); }
+  .ribbon b { font-size: clamp(1.5rem, calc(3.4 * var(--vh1)), 1.875rem); }
+  .ribbon small { font-size: .6em; margin-left: 1px; }
   .beat { animation: beat 900ms var(--ease-bounce); }
   @keyframes beat { 0%, 100% { transform: none; } 30% { transform: scale(1.12); } }
   @media (max-width: 339px) { .wk { display: none; } }
