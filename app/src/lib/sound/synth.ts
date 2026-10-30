@@ -4,6 +4,7 @@
 // are plain arpeggios and the announcement chime is the generic Japanese PA ピンポンパンポン (F-A-C-F).
 // A file in static/audio/manifest.json replaces the placeholder of its id.
 import type { SoundId } from './ids.ts';
+import { mulberry32 } from '#lib/random.ts';
 
 type Wave = 'sine' | 'tri' | 'sq';
 
@@ -168,18 +169,6 @@ const RECIPES: Record<SoundId, Ev[]> = {
   squeak: [{ kind: 'tone', f: 330, to: 760, glide: 0.07, t: 0, d: 0.24, g: 1, wave: 'tri', attack: 0.004, vib: [16, 55], partials: [[2, 0.25, 0.6]] }]
 };
 
-/** Small seeded PRNG (mulberry32): the noise of a placeholder is the same on every render. */
-export function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 const seedOf = (s: string) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
 
 const wave = (w: Wave, ph: number) => {
@@ -240,7 +229,7 @@ export const durationOf = (id: SoundId): number => Math.max(...RECIPES[id].map((
 /** The placeholder of `id` as mono samples at `sr`, peaking at 0.8, with a 5 ms fade at the end (no click). */
 export function render(id: SoundId, sr: number): Float32Array {
   const out = new Float32Array(Math.ceil(durationOf(id) * sr));
-  const rand = rng(seedOf(id));
+  const rand = mulberry32(seedOf(id));
   for (const e of RECIPES[id]) {
     if (e.kind === 'tone') addTone(out, sr, e);
     else addNoise(out, sr, e, rand);

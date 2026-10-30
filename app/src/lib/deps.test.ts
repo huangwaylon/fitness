@@ -10,6 +10,7 @@ const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 
 const ALLOW: Record<string, string[]> = {
   types: [],
+  random: [],
   contract: ['types'],
   time: ['types', 'contract'],
   config: ['types'],
@@ -17,13 +18,13 @@ const ALLOW: Record<string, string[]> = {
   model: DOMAIN,
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN],
-  store: [...DOMAIN, 'sync', 'i18n', 'ui-state'],
+  store: [...DOMAIN, 'sync', 'i18n', 'ui-state', 'random'],
   // store → ui-state (toasts), never back: ui-state importing store would close a cycle
   'ui-state': [...DOMAIN, 'i18n'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
-  sound: ['types', 'time', 'sync', 'i18n'],
-  components: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound']
+  sound: ['types', 'time', 'sync', 'i18n', 'random'],
+  components: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'random']
 };
 
 function files(dir: string): string[] {
