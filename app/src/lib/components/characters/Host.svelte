@@ -21,7 +21,7 @@
   import { artUrl, hostArt, type HostPose } from '#lib/art.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { actors, claimHost, hostOwner, removeFx } from '../motion/director.svelte.ts';
-  import { jst } from '#lib/time/clock.ts';
+  import { jst, minuteNow } from '#lib/time/clock.ts';
 
   interface Props {
     pose?: Exclude<HostPose, 'icon' | 'winter'>;
@@ -46,9 +46,9 @@
   const resolve = (p: HostPose): HostPose => (head ? 'icon' : theme.season === 'winter' ? 'winter' : p);
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
   // asleep-ish by the scene clock (the island naps 22–05), not by the chrome palette
+  // (minuteNow, not theme.tod: the time of day only changes at 05:00 and 19:00, so 22:00 was missed: round 16 M4)
   const night = $derived.by(() => {
-    void theme.tod; // re-check when the minute clock ticks
-    const hr = jst().hour;
+    const hr = jst(minuteNow()).hour;
     return hr >= 22 || hr < 5;
   });
 
