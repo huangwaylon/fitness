@@ -36,7 +36,8 @@ const centre = (page: Page, sel: string) =>
   });
 
 test('scenery taps play a flourish and change nothing; trees, villagers and the jar still work', async ({ page }) => {
-  await page.goto('?demo');
+  // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
+  await page.goto('?demo&date=2026-11-04T12:00');
   await answerPending(page);
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   const jar = page.locator('.if-scene .jar');
@@ -80,4 +81,33 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // the jar is still the doorway to ふたりの壺
   await jar.click();
   await expect(page).toHaveURL(/\/jar/);
+});
+
+test('night sky: the moon twinkles and sends a shooting star; a tap in the open sky lights a star', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T22:00');
+  await answerPending(page);
+  await expect(page.locator('.if-scene[data-tod="night"]')).toHaveCount(1);
+  const moon = await centre(page, '.if-scene .orb');
+  await page.mouse.click(moon.x, moon.y);
+  await expect(page.locator('[data-fx="moon"]')).toHaveCount(1);
+  await expect(page.locator('[data-fx="shoot"]').first()).toBeAttached();
+  await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
+  // the open sky, away from the moon and the clouds: a star twinkles where the finger was
+  const sky = await page.locator('.if-scene .stage').evaluate((st) => {
+    const r = st.getBoundingClientRect();
+    const o = document.querySelector('.if-scene .orb')!.getBoundingClientRect();
+    const clouds = [...document.querySelectorAll('.if-scene .cloud')].map((c) => c.getBoundingClientRect());
+    const top = Math.max(r.top - 40, document.querySelector('.if-scene')!.getBoundingClientRect().top + 60);
+    for (let y = top; y < r.top + 20; y += 8)
+      for (let x = r.left + 30; x < r.right - 30; x += 12) {
+        const clear = (b: DOMRect) => Math.abs(x - (b.left + b.width / 2)) > Math.max(44, b.width) / 2 + 10 || Math.abs(y - (b.top + b.height / 2)) > Math.max(44, b.height) / 2 + 10;
+        const hit = document.elementFromPoint(x, y);
+        if (clear(o) && clouds.every(clear) && hit && !hit.closest('button, a, [role="button"], [tabindex]')) return { x, y };
+      }
+    return null;
+  });
+  expect(sky, 'an open patch of night sky').not.toBeNull();
+  await page.mouse.click(sky!.x, sky!.y);
+  await expect(page.locator('[data-fx="star"]')).toHaveCount(1);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
