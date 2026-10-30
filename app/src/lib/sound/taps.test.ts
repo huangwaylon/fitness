@@ -15,13 +15,12 @@ const SKIP = [/\/dev\//];
 const SELF: Record<string, string> = {
   'lib/components/ui/PhoneButton.svelte': 'opens the phone: ShimaPhone plays phone-open',
   'lib/components/island/Hud.svelte': 'the ribbon opens the phone into きろく: phone-open',
-  'routes/jar/+page.svelte': 'the recent card opens the phone into きろく: phone-open',
   'lib/components/ui/Bubble.svelte': 'finishing a line is silent (the blips stop, as Ⓐ skips text in NH); then しずえ hops: host-tap',
   'lib/components/ui/Sheet.svelte': 'backdrop / Esc / grabber: back on a paper sheet, phone-close on the phone (ShimaPhone)',
   'lib/components/phone/ShimaPhone.svelte': 'phone-app, back, phone-close',
   'lib/components/phone/SoundApp.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
-  'lib/components/pots/BuyConfirm.svelte': '買う！/ 行く！ → purchase (routes/jar buy), or the boop if the pot fell short',
+  'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (routes/jar buy), or the boop if the wallet fell short',
   'lib/components/kiroku/NumberPad.svelte': 'each key → key / key-fn (typed digits too)',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap (R9 / R10) or emote-surprise (woken)',
   'lib/components/island/JarSpot.svelte': 'the jar → jar-tap (R18)',
@@ -33,8 +32,8 @@ const SELF: Record<string, string> = {
 const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
-  'lib/components/kiroku/WeightInput.svelte': 'the weight field: the system keyboard clicks',
-  'lib/components/pots/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
+  'lib/components/kiroku/ValueInput.svelte': 'the weight / Move goal field: the system keyboard clicks',
+  'lib/components/wallet/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
   'lib/components/phone/VillagerApp.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/phone/LangApp.svelte': 'the language already chosen does nothing',
   'lib/components/kiroku/Kiroku.svelte': 'the tab already shown does nothing'

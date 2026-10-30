@@ -1,7 +1,9 @@
 // Small formatters shared by the きろく screens (the day title, numbers, the change-log line); dates: i18n/format.ts.
+import type { RingFruit } from '#lib/types.ts';
 import type { EditLog } from '#lib/model/history.ts';
 import { workoutLabel } from '#lib/contract/labels.ts';
 import { isWeightKg } from '#lib/contract/api.ts';
+import { MOVE_GOAL, RULES } from '#lib/config/rules.ts';
 import { i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 
@@ -28,17 +30,22 @@ export function leftLabel(lockAt: number, now: number): string {
 
 /** One change-log line: field, before → after. */
 export function editText(e: EditLog): { field: string; before: string; after: string } {
-  const subject = e.field === 'checkin' ? t(`habit.${e.subject}`) : e.subject ? typeLabel(e.subject) : '';
-  const field = t(`kiroku.field.${e.field}`, { subject });
+  const field = t(`kiroku.field.${e.field}`, { subject: e.subject ? typeLabel(e.subject) : '' });
   const v = (x: number | boolean | null): string => {
     if (x === null) return '–';
-    if (typeof x === 'number') return e.field === 'steps' ? num(x) : t('kiroku.min', { n: x });
+    if (typeof x === 'number') return e.field === 'steps' ? num(x) : e.field === 'move_kcal' ? t('kiroku.kcal', { n: num(x) }) : t('kiroku.min', { n: x });
     if (e.field === 'workout_strength') return t(x ? 'kiroku.val.yes' : 'kiroku.val.no');
-    if (e.field === 'workout_excluded') return t(x ? 'kiroku.val.out' : 'kiroku.val.in');
-    return t(x ? 'kiroku.val.done' : 'kiroku.val.undone');
+    return t(x ? 'kiroku.val.out' : 'kiroku.val.in');
   };
   return { field, before: v(e.before), after: v(e.after) };
 }
+
+/** Days needed for each weekly badge (the latest rules: 5 · 5 · 5 · 4 · 3). */
+export function badgeGoals(): Record<RingFruit, number> {
+  const b = RULES[RULES.length - 1].badges;
+  return { peach: b.exerciseDays, pear: b.moveDays, cherry: b.standDays, apple: b.stepDays, coconut: b.gymDays };
+}
+
 
 /** A weight: `68.4 kg`. */
 export const kgText = (kg: number): string => t('weight.kg', { kg: kg.toFixed(1) });
@@ -60,6 +67,14 @@ export function parseKgInput(text: string): number | null {
   if (!/^\d{1,3}(\.\d+)?$/.test(s)) return null;
   const kg = Math.round(Number(s) * 10) / 10;
   return isWeightKg(kg) ? kg : null;
+}
+
+/** What was typed as a Move goal → whole kcal, or null: `600`, `1,200`, full-width `６００`, a trailing `kcal`. */
+export function parseKcalInput(text: string): number | null {
+  const s = text.trim().replace(/[０-９，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/\s*kcal$/i, '').replace(/,/g, '');
+  if (!/^\d{1,4}$/.test(s)) return null;
+  const n = Number(s);
+  return n >= MOVE_GOAL.min && n <= MOVE_GOAL.max ? n : null;
 }
 
 /** A month, for a projected goal date: `2027年3月` / `Mar 2027`. */

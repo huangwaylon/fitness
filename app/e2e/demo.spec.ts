@@ -18,33 +18,55 @@ async function answerPending(page: Page) {
 /** `きょう 620 ベル` → 620. */
 const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '').match(/(\d+)\s*ベル/)![1]);
 
-test('buy: a treat comes back with もとに戻す', async ({ page }) => {
+test('buy: a treat comes back with とりけす', async ({ page }) => {
   await page.goto('jar?demo');
-  const pot = page.locator('[data-pot=treat]');
-  const balance = async () => (await pot.locator('.balance').innerText()).replace(/\D/g, '');
+  const pot = page.locator('[data-section=daily]');
+  const balance = async () => (await page.locator('.hero .total').innerText()).replace(/\D/g, '');
   const before = await balance();
   await pot.locator('button.item:not([aria-disabled="true"])').first().click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect.poll(balance).not.toBe(before);
-  await page.getByRole('button', { name: 'もとに戻す' }).click();
+  await page.getByRole('button', { name: 'とりけす' }).click();
+  await expect.poll(balance).toBe(before);
+  // やめる closes the confirm without spending
+  await pot.locator('button.item:not([aria-disabled="true"])').first().click();
+  await sheet(page).getByRole('button', { name: 'やめる' }).click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect.poll(balance).toBe(before);
 });
 
-test('menu: adding a treat to the shared menu', async ({ page }) => {
+test('wallet (ADR 0022): one balance (the island plate’s), two menu sections, no pots or trip bars', async ({ page }) => {
+  await page.goto('?demo');
+  const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
+  await page.locator('.if-scene .jar').click();
+  await expect(page.locator('.jar-screen')).toBeVisible();
+  await expect(page.locator('.hero .total')).toContainText(plate.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+  await expect(page.getByRole('heading', { name: 'まいにちのごほうび' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '旅のごほうび' })).toBeVisible();
+  await expect(page.locator('[data-section=trip] button.item').first()).toBeVisible();
+  await expect(page.locator('[data-pot], .rope')).toHaveCount(0);
+});
+
+test('menu: adding an everyday treat to the shared menu (ADR 0022)', async ({ page }) => {
   await page.goto('jar?demo');
-  const pot = page.locator('[data-pot=treat]');
-  await pot.getByRole('button', { name: /へんしゅう/ }).click();
-  await sheet(page).getByRole('button', { name: /おやつを追加/ }).click();
+  const pot = page.locator('[data-section=daily]');
+  await pot.getByRole('button', { name: /まいにちのごほうびを かえる/ }).click();
+  await sheet(page).getByRole('button', { name: /ふやす/ }).click();
   await sheet(page).locator('input.lbl').last().fill('たいやき');
   await sheet(page).locator('input.num').last().fill('250');
   await sheet(page).getByRole('button', { name: '保存' }).click();
   await expect(pot.getByRole('button', { name: /^たいやき 250\sベル/ })).toBeVisible();
 });
 
-test('harvest: the bonus lands in the pots', async ({ page }) => {
+test('harvest: five badges per person, the together bonus, and the bonus lands in the wallet', async ({ page }) => {
   await page.goto('?demo=harvest');
+  const tally = page.locator('.overlay .tally');
+  await expect(tally.getByText('バッジ', { exact: true })).toBeVisible();
+  await expect(tally.locator('.trow:not(.duo) .badges')).toHaveCount(2);
+  for (const row of await tally.locator('.trow:not(.duo) .badges').all()) await expect(row.locator('.b')).toHaveCount(5);
+  await expect(tally.locator('.duo')).toContainText('ふたりボーナス');
   await page.getByRole('button', { name: '受け取る！' }).click();
-  await expect(page.getByText(/壺に入りました！/)).toBeVisible();
+  await expect(page.getByText('おさいふに 入りました！')).toBeVisible();
   await page.getByRole('button', { name: '島へもどる' }).click();
   await expect(page.getByRole('button', { name: '受け取る！' })).toHaveCount(0);
 });
@@ -54,14 +76,16 @@ test('きろく: editing a day’s steps', async ({ page }) => {
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
   await page.locator('.app[data-app=kiroku]').click();
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
-  await sheet(page).getByRole('button', { name: /^月/ }).click();
+  await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
+  // the day: the five ring fruits, each with its value and ベル
+  await expect(sheet(page).locator('.pc').first().locator('.row.fr')).toHaveCount(5);
   await sheet(page).getByRole('button', { name: /^歩数/ }).click();
   const pad = sheet(page);
   await pad.getByRole('button', { name: 'クリア' }).click();
   for (const k of '12345') await pad.getByRole('button', { name: k, exact: true }).click();
   await pad.getByRole('button', { name: 'けってい' }).click();
   await expect(sheet(page).getByText('12,345', { exact: true }).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'もとに戻す' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
 });
 
 test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', async ({ page }) => {
@@ -85,13 +109,74 @@ test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', asyn
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('体重を記録しました')).toBeVisible();
   await expect(sheet(page).locator('.recent tbody tr').first()).toContainText('66.4');
-  await sheet(page).getByRole('button', { name: /目標を(決める|変える)/ }).click();
+  // the goal is set in きろく's 目標 card (one place for both goals) and drawn on the weight screen
+  await sheet(page).locator('.titlebar .back').click();
+  await sheet(page).getByRole('button', { name: '体重 ✎' }).click();
   await sheet(page).getByRole('textbox').fill('65');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(sheet(page).locator('.goals')).toContainText('65.0 kg');
+  await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
   await expect(sheet(page).getByText('目標 65.0 kg')).toBeVisible();
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
+});
+
+test('tree popup: the five ring fruits, today against the goal, today’s ベル and the week’s pips (ADR 0021)', async ({ page }) => {
+  await page.goto('?demo');
+  await answerPending(page);
+  await page.locator('button.canopy').nth(0).click();
+  const pop = page.locator('.detail');
+  await expect(pop.locator('.plate')).toHaveText('ウェイ');
+  const rows = pop.locator('.row:not(.hd)');
+  await expect(rows).toHaveCount(5);
+  await expect(rows.locator('.lbl')).toHaveText(['エクササイズ', 'ムーブ', 'スタンド', '歩数', 'ジム']);
+  await expect(rows.nth(0).locator('.amt')).toHaveText(/^[\d,]+\/60分$/);
+  await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
+  await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/180分$/);
+  await expect(rows.nth(3).locator('.amt')).toHaveText(/^[\d,]+\/8,000歩$/);
+  // week pips: 5 · 5 · 5 · 4 · 3 (or a ✓ once the badge is met)
+  const counts = await rows.evaluateAll((els) => els.map((e) => e.querySelector('.pips.badge') ? -1 : e.querySelectorAll('.pips i').length));
+  expect(counts.map((n, i) => (n === -1 ? [5, 5, 5, 4, 3][i] : n))).toEqual([5, 5, 5, 4, 3]);
+  // ground fruit: five kinds under each tree
+  await expect(page.locator('.fruit.k0')).toHaveCount(10);
+});
+
+test('partner: a villager card (their line, when their data came, ハイタッチ), no numbers', async ({ page }) => {
+  await page.goto('?demo');
+  await answerPending(page);
+  await page.waitForTimeout(1500); // the opening beats (villagers are disabled until then)
+  await page.locator('.if-scene button.vil').nth(1).click();
+  const card = sheet(page);
+  await expect(card.getByRole('heading', { name: 'うめ' })).toBeVisible();
+  await expect(card.locator('.say')).not.toBeEmpty();
+  await expect(card.getByText(/に とどいた|まだ とどいていません/)).toBeVisible();
+  await expect(card.getByText(/ベル/)).toHaveCount(0);
+  await card.getByRole('button', { name: /ハイタッチ/ }).click();
+  await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
+});
+
+test('きろく: the Move goal (ADR 0021), mine only, a numeric field ≥ 16px, 100–2,000 kcal, from today on', async ({ page }) => {
+  await page.goto('?demo');
+  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  await page.locator('.app[data-app=kiroku]').click();
+  const goals = sheet(page).locator('.goals');
+  await expect(goals).toContainText('600 kcal');
+  await goals.getByRole('button', { name: /^ムーブ（1日） ✎/ }).click();
+  const input = sheet(page).getByRole('textbox');
+  await expect(input).toHaveAttribute('inputmode', 'numeric');
+  expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
+  await input.fill('50');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await input.fill('450');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(page.getByText('ムーブの目標を かえました')).toBeVisible();
+  await expect(goals).toContainText('450 kcal');
+  // today's tree popup reads the new goal
+  await page.keyboard.press('Escape');
+  await page.locator('button.canopy').nth(0).click();
+  await expect(page.locator('.detail .row:not(.hd)').nth(1).locator('.amt')).toHaveText(/\/450kcal$/);
 });
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {

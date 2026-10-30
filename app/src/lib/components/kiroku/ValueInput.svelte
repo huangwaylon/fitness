@@ -1,44 +1,52 @@
 <script lang="ts">
-  // Type a weight (ADR 0020): a decimal field (inputmode="decimal", 16px+ so iOS doesn't zoom), the old value grey,
-  // then NH's choice list ▶ けってい / (目標をなくす) / やめる. Accepts 68.4, 68,4 and full-width digits; 20–300 kg.
+  // Type a number for きろく: a weight (ADR 0020: decimal, 20–300 kg) or the Move goal (ADR 0021: whole kcal, 100–2,000).
+  // A 16px+ field (iOS doesn't zoom) with the right keypad (`inputmode`), the old value grey, then NH's choice list
+  // ▶ けってい / (目標をなくす) / やめる. `parse` turns the text into a value or null (shown as the hint in coral).
   import ChoiceList from '../ui/ChoiceList.svelte';
-  import { kgText, parseKgInput } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
     label: string;
     sub: string;
+    /** The value now, shown grey (null = none yet). */
     old: number | null;
-    onok: (kg: number) => void;
+    /** The field's unit and keypad: kg (decimal) or kcal (numeric). */
+    unit: 'kg' | 'kcal';
+    parse: (text: string) => number | null;
+    /** The allowed range, in words. */
+    hint: string;
+    onok: (v: number) => void;
     oncancel: () => void;
     /** An extra choice under けってい (目標をなくす). */
     extra?: { label: string; run: () => void } | null;
   }
-  let { label, sub, old, onok, oncancel, extra = null }: Props = $props();
+  let { label, sub, old, unit, parse, hint, onok, oncancel, extra = null }: Props = $props();
   let text = $state('');
   let tried = $state(false);
-  const kg = $derived(parseKgInput(text));
-  const bad = $derived(tried && kg === null);
+  const v = $derived(parse(text));
+  const bad = $derived(tried && v === null);
+  const oldText = $derived(old === null ? null : unit === 'kg' ? old.toFixed(1) : String(old));
   let input: HTMLInputElement | undefined = $state();
   $effect(() => input?.focus());
 
   function ok() {
     tried = true;
-    if (kg !== null) onok(kg);
+    if (v !== null) onok(v);
   }
 </script>
 
 <form class="wi" onsubmit={(e) => { e.preventDefault(); ok(); }}>
   <div class="screen card">
-    <label class="top" for="wi-kg"><b>{label}</b><span class="sub money">{sub}</span>{#if old !== null}<span class="old money">({kgText(old)})</span>{/if}</label>
+    <label class="top" for="wi-v"><b>{label}</b>{#if sub}<span class="sub money">{sub}</span>{/if}{#if oldText !== null}<span class="old money">({oldText} {unit})</span>{/if}</label>
     <div class="field">
-      <input id="wi-kg" data-sfx="none" bind:this={input} bind:value={text} type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done"
-        placeholder={old !== null ? old.toFixed(1) : '00.0'} aria-invalid={bad} aria-describedby="wi-hint" maxlength="6" size="6" />
-      <span class="unit" aria-hidden="true">kg</span>
+      <input id="wi-v" data-sfx="none" bind:this={input} bind:value={text} type="text" inputmode={unit === 'kg' ? 'decimal' : 'numeric'}
+        autocomplete="off" enterkeyhint="done" placeholder={oldText ?? (unit === 'kg' ? '00.0' : '000')} aria-invalid={bad}
+        aria-describedby="wi-hint" maxlength="6" size="6" />
+      <span class="unit" aria-hidden="true">{unit}</span>
     </div>
-    <p id="wi-hint" class="hint" class:bad>{t('weight.range')}</p>
+    <p id="wi-hint" class="hint" class:bad>{hint}</p>
   </div>
-  <div class="choose" class:off={kg === null}>
+  <div class="choose" class:off={v === null}>
     <ChoiceList choices={[
       { label: t('kiroku.ok'), run: ok },
       ...(extra ? [extra] : []),

@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
-import { FRUITS } from '#lib/config/rules.ts';
+import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 
 const LIB = import.meta.dirname;
@@ -76,7 +76,7 @@ describe('sprite symbols (Sprites.svelte)', () => {
     expect([...refs, ...named].filter((r) => !ids.includes(r))).toEqual([]);
   });
   it('every symbol is used', () => {
-    const used = (id: string) => refs.includes(id) || named.has(id) || (fruitFallback && FRUITS.some((f) => id === `f-${f}`));
+    const used = (id: string) => refs.includes(id) || named.has(id) || (fruitFallback && RING_FRUITS.some((f) => id === `f-${f}`));
     expect(ids.filter((id) => !used(id))).toEqual([]);
   });
 });
@@ -85,7 +85,7 @@ describe('official art (static/art/manifest.json)', () => {
   const keys = artKeys();
   /** Keys built by the helpers in lib/art.ts from a fixed list. */
   const built = new Set([
-    ...FRUITS.map((f) => `fruit/${f}`),
+    ...RING_FRUITS.map((f) => `fruit/${f}`),
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`)
   ]);

@@ -1,7 +1,7 @@
 <script lang="ts">
   // One person's weight (ADR 0020): the trend in kg, this week's change, the change since the first weigh-in and the
   // weekly pace; the 12-week chart (dots = weigh-ins, line = trend, dashes = goal); the goal and, at the current pace, a
-  // month it may be reached. Mine: 体重を記録 and 目標. The recent weigh-ins double as the chart's table view (and, on
+  // month it may be reached. Mine: 体重を記録 (the goal is set in きろく's 目標 card). The recent weigh-ins double as the chart's table view (and, on
   // mine, each row fixes that day). Supportive wording only: no red, no "bad week".
   import type { PersonId } from '#lib/types.ts';
   import type { WeightTrend } from '#lib/model/weight.ts';
@@ -20,9 +20,8 @@
     mine: boolean;
     today: string;
     onlog: (date: string) => void;
-    ongoal: () => void;
   }
-  let { w, person, name, villager, mine, today, onlog, ongoal }: Props = $props();
+  let { w, person, name, villager, mine, today, onlog }: Props = $props();
   const recent = $derived(w.points.slice(-7).reverse());
 </script>
 
@@ -65,7 +64,6 @@
 {#if mine}
   <div class="acts">
     <button type="button" class="btn small" data-focus="weight-log" data-sfx="page" onclick={() => onlog(today)}>{t('weight.log')}</button>
-    <button type="button" class="btn small paper" data-focus="weight-goal" data-sfx="page" onclick={ongoal}>{w.goal === null ? t('weight.setGoal') : t('weight.editGoal')}</button>
   </div>
 {/if}
 

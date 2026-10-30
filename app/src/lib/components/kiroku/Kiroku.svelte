@@ -10,10 +10,11 @@
   // (ShimaPhone imports it dynamically, round 7 L1).
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
+  import { MOVE_GOAL } from '#lib/config/rules.ts';
   import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, editWorkout, setGoalWeight, setMetric, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { addWorkout, editWorkout, setGoalWeight, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import { weightOn, weightTrend } from '#lib/model/weight.ts';
   import { localDateAt } from '#lib/model/state.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -24,11 +25,12 @@
   import BellsLog from './BellsLog.svelte';
   import WeightCard from './WeightCard.svelte';
   import WeightDetail from './WeightDetail.svelte';
-  import WeightInput from './WeightInput.svelte';
+  import ValueInput from './ValueInput.svelte';
+  import GoalCard from './GoalCard.svelte';
   import NumberPad from './NumberPad.svelte';
   import TypeName from './TypeName.svelte';
-  import { dayTitle, typeLabel } from './fmt.ts';
-  import { t, formatBells } from '#lib/i18n/index.ts';
+  import { dayTitle, parseKcalInput, parseKgInput, typeLabel } from './fmt.ts';
+  import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'week'; wk: string }
@@ -39,7 +41,8 @@
     | { k: 'void'; id: string; label: string; bells: number }
     | { k: 'weight'; p: PersonId }
     | { k: 'weightIn'; date: string }
-    | { k: 'goal' };
+    | { k: 'goal' }
+    | { k: 'moveGoal' };
 
   let { entry = null }: { entry?: KirokuEntry | null } = $props();
   let tab = $state<'body' | 'money'>('body');
@@ -143,6 +146,11 @@
     void refocus('weight-goal');
     if (setGoalWeight(kg).ok) toasts.show(t(kg === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
   }
+  function saveMoveGoal(kcal: number) {
+    back();
+    void refocus('move-goal');
+    if (setMoveGoal(kcal).ok) toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' });
+  }
 
   // Add a workout: pick a type, then the minutes on the keypad.
   const ADD_TYPES = ['Traditional Strength Training', 'Pilates', 'Yoga', 'Outdoor Walk', 'Outdoor Run', 'Cycling', 'Swimming', 'Dance', 'High Intensity Interval Training'];
@@ -167,14 +175,16 @@
       </div>
       {#if weeks && trends}
         <WeightCard {trends} {order} {names} {villagers} {today} onopen={(p) => go({ k: 'weight', p })} />
+        <GoalCard {me} villager={villagers[me]} moveGoal={view.people[me].moveGoal} goalWeight={m.state.prefs[me].goalWeight ?? null}
+          onmove={() => go({ k: 'moveGoal' })} onweight={() => go({ k: 'goal' })} />
       {/if}
       {#if weeks}
         <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
       {:else if money}
-        <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} />
+        <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
     {:else if top.k === 'week' && wkDetail}
-      <WeekDetail d={wkDetail.d} edits={wkDetail.edits} {order} {names} {villagers} now={m.now}
+      <WeekDetail d={wkDetail.d} edits={wkDetail.edits} {order} {names} {villagers}
         onday={(date) => go({ k: 'day', date })} />
     {:else if top.k === 'day' && day}
       {@const date = top.date}
@@ -184,15 +194,18 @@
     {:else if top.k === 'weight' && trends}
       {@const p = top.p}
       <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today}
-        onlog={(date) => go({ k: 'weightIn', date })} ongoal={() => go({ k: 'goal' })} />
+        onlog={(date) => go({ k: 'weightIn', date })} />
     {:else if top.k === 'weightIn'}
       {@const s = top}
-      <WeightInput label={t('kiroku.field.weight')} sub={dayTitle(s.date)} old={weightOn(m.state, me, s.date, m.now)}
-        onok={(kg) => saveWeight(s.date, kg)} oncancel={back} />
+      <ValueInput label={t('kiroku.field.weight')} sub={dayTitle(s.date)} old={weightOn(m.state, me, s.date, m.now)} unit="kg"
+        parse={parseKgInput} hint={t('weight.range')} onok={(kg) => saveWeight(s.date, kg)} oncancel={back} />
     {:else if top.k === 'goal'}
       {@const goal = m.state.prefs[me].goalWeight ?? null}
-      <WeightInput label={t('weight.goalWeight')} sub="" old={goal} onok={(kg) => saveGoal(kg)} oncancel={back}
-        extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(null) }} />
+      <ValueInput label={t('weight.goalWeight')} sub="" old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
+        onok={(kg) => saveGoal(kg)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(null) }} />
+    {:else if top.k === 'moveGoal'}
+      <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[me].moveGoal} unit="kcal" parse={parseKcalInput}
+        hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={saveMoveGoal} oncancel={back} />
     {:else if top.k === 'void'}
       {@const s = top}
       <section class="card ask">
