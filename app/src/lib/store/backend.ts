@@ -48,4 +48,6 @@ export interface Backend {
   reset(): void;
   /** A last touch to the view (the demo's `?demo=harvest`). */
   decorate?(m: ComposedModel, v: WeekView): void;
+  /** The model's clock (ms). Default the device's; the demo follows the scene clock, so `?date=` moves its calendar. */
+  now?(): number;
 }

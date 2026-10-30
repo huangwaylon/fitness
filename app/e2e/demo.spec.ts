@@ -141,9 +141,7 @@ test('tree popup: the five ring fruits, today against the goal, today’s ベル
 });
 
 test('tree popup, v2 milestones (from 11-02): four pips per ring fruit, none for the gym, one 「あと…で +N」 nudge', async ({ page }) => {
-  await page.clock.install({ time: new Date('2026-11-03T12:10:00+09:00') });
-  await page.clock.resume();
-  await page.goto('?demo');
+  await page.goto('?demo&date=2026-11-03T12:10'); // ?date= moves the demo's calendar too (no pinned clock)
   await islandReady(page);
   await page.locator('button.canopy').nth(0).click();
   const rows = page.locator('.detail .row:not(.hd)');
