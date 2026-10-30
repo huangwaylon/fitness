@@ -119,3 +119,27 @@ test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', asyn
   await page.keyboard.press('Escape');
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
+
+test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
+  await page.goto('?demo');
+  await answerPending(page);
+  const canopies = page.locator('button.canopy');
+  const popups = page.locator('.detail');
+  await canopies.nth(0).click();
+  await expect(popups).toHaveCount(1);
+  await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'true');
+  await page.waitForTimeout(3200); // no auto-close (it used to close after 2.6 s)
+  await expect(popups).toHaveCount(1);
+  await canopies.nth(1).click(); // the other tree: it moves there
+  await expect(popups).toHaveCount(1);
+  await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'false');
+  await expect(canopies.nth(1)).toHaveAttribute('aria-expanded', 'true');
+  await canopies.nth(1).click(); // the same tree: it closes
+  await expect(popups).toHaveCount(0);
+  await canopies.nth(0).click();
+  await page.mouse.click(20, 300); // the sky: it closes
+  await expect(popups).toHaveCount(0);
+  await canopies.nth(0).click();
+  await page.keyboard.press('Escape');
+  await expect(popups).toHaveCount(0);
+});

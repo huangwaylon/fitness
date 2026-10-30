@@ -6,8 +6,9 @@
   // where it will fall. When a kind earns an item (a check-in), the tree shakes (±4°, 3 swings, 500ms)
   // and the new item drops in with a bounce; all three = a sparkle. Narrow stages (< 360px) show one item
   // per kind, sized by its count. The tree stands still otherwise (v5 §6 idle budget).
-  // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, shows the detail bubble: per fruit
-  // today's amount / the goal and the ベル it earned) and the fruit row (≥ 44px tall, same bubble with the nearest fruit highlighted).
+  // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the detail bubble: per fruit
+  // today's amount / the goal and the ベル it earned) and the fruit row (≥ 44px tall, same bubble with the nearest fruit
+  // highlighted). The bubble stays until this tree is tapped again, the other tree is tapped, or a tap lands elsewhere.
   // `shakeN` (bumped by idle life) shakes the tree without the bubble; `celebrate` pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { FruitKey, PersonWeekView } from '#lib/types.ts';
@@ -28,19 +29,19 @@
     foliage: Foliage;
     shakeN?: number;
     celebrate?: { fruit: FruitKey; n: number } | null;
-    /** A sheet or the harvest covers the scene: the popup closes (it never shows behind a sheet). */
-    covered?: boolean;
+    /** This tree's detail popup is the open one (the scene keeps at most one; it closes it when covered or tapped away). */
+    open?: boolean;
+    /** A tap on this tree: open its popup (true) or close it (false). */
+    ontoggle?: (open: boolean) => void;
   }
-  let { person, x, foliage, shakeN = 0, celebrate = null, covered = false }: Props = $props();
+  let { person, x, foliage, shakeN = 0, celebrate = null, open = false, ontoggle }: Props = $props();
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
-  let open = $state(false);
+  const detailId = $props.id();
   let picked = $state<FruitKey | null>(null);
   let taps = $state(0);
-  let timer: ReturnType<typeof setTimeout> | null = null;
   const leafTimers = new Set<ReturnType<typeof setTimeout>>();
   onDestroy(() => {
-    if (timer) clearTimeout(timer);
     for (const t of leafTimers) clearTimeout(t);
   });
   let leaves = $state<{ n: number; x: number; y: number }[]>([]);
@@ -95,17 +96,13 @@
     if (shakeN > 0) untrack(shake);
   });
 
-  $effect(() => {
-    if (covered) open = false;
-  });
-
+  /** A tap on the canopy or the fruit row: closes this tree's popup if it's open, else shakes (canopy) and opens it. */
   function tap(f: FruitKey | null) {
+    if (open) return ontoggle?.(false);
     if (!f) shake();
     picked = f;
     taps++;
-    open = true;
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => (open = false), 2600);
+    ontoggle?.(true);
   }
 
   /** The fruit nearest the tap along the row (keyboard: none highlighted). */
@@ -145,7 +142,7 @@
   <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} eager /></span>
 </div>
 <button type="button" class="canopy" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
-  style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} onclick={() => tap(null)}></button>
+  style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} onclick={() => tap(null)}></button>
 
 {#each spots as s (s.f)}
   {#each PILE.slice(0, Math.max(1, s.n)) as [px, py], k (k)}
@@ -163,7 +160,7 @@
   {/each}
 {/each}
 <button type="button" class="row-btn" style:left={u(rowL)} style:top={u(BASE + 8)} style:width={u(rowR - rowL)}
-  aria-label={label} aria-expanded={open} tabindex="-1" onclick={(e) => tap(fruitAt(e))}></button>
+  aria-label={label} aria-expanded={open} aria-controls={detailId} tabindex="-1" onclick={(e) => tap(fruitAt(e))}></button>
 
 {#each leaves as l (l.n)}
   <span class="leaf" style:left={u(l.x)} style:top={u(l.y)}>
@@ -174,7 +171,7 @@
 
 {#if open}
   {#key taps}
-    <div class="detail" role="status" style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
+    <div class="detail" id={detailId} role="status" style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
       {#each FRUITS as f (f)}
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
