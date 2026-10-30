@@ -93,12 +93,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 }
 
 /* ---------- round icon button (sheet close / back): a cream object with the brown edge ---------- */
-.icon-btn {
-  appearance: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; padding: 0; border: 0;
-  background: var(--c-card); display: grid; place-items: center; color: var(--c-ink);
-  box-shadow: var(--sh-obj); transition: transform var(--dur-base) var(--ease-bounce);
-}
-.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
 
 /* ---------- 島 ⇄ ふたりの壺 (ui-state/jarTransition.ts) ----------
    The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).

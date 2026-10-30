@@ -34,7 +34,8 @@
   const cleaned = $derived(cleanMenu(section, rows));
   /** A row that would be dropped on save (a name without a price or the other way round) is flagged. */
   const bad = (r: Row) => (r.label.trim() !== '' || r.bells !== '') && !cleanMenu(section, [r]).length;
-  const changed = $derived(JSON.stringify(cleaned) !== JSON.stringify(items));
+  const shape = (xs: WalletItem[]) => JSON.stringify(xs.map((x) => [x.id, x.label, x.bells]));
+  const changed = $derived(shape(cleaned) !== shape(items));
   const full = $derived(rows.length >= MENU_LIMITS.items);
 
   async function add() {

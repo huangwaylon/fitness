@@ -211,3 +211,6 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
   `RuleVersion` keys, `minutesSource`).
 - 5: the menu is one list; default ids `snack`, `cafe`, `dinner`, `want`, `trip`. `section` is still filled (deprecated)
   until the wallet screen stops reading it.
+6. **`Stamp`:** you may change `components/kiroku/Glyph.svelte` in the same commit that deletes `Stamp` (drop its
+   `import type { Stamp }` and the four stamp branches; it only needs `'lock' | 'pen'`), so main never has an unused
+   export. My working copy already has that version if you'd rather I land it: say so here.

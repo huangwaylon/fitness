@@ -1,12 +1,11 @@
 <script lang="ts">
-  // 島's HUD (v5 §3), NH island-view light: no clock (user 2026-10-30), the sync chip in the corner only when sync
-  // is not ok, today's ベル ribbon (a copy of the NH map's yellow title banner: the screen's one
-  // focal point, 「きょう +620 ベル」 for both of us, ADR 0019) and the bare NookPhone. When ベル arrive the ribbon
-  // counts up (the focus beat). Tap → きろく お金 (the ベル ledger).
+  // 島's HUD (v5 §3), NH island-view light and symmetric (round 18: the NookPhone moved to the bottom centre): today's
+  // ベル ribbon centred under the notch / Dynamic Island (a copy of the NH map's yellow title banner: the screen's one
+  // focal point, 「きょう +620 ベル」 for both of us) and, only when sync is not ok, the sync chip centred under it.
+  // When ベル arrive the ribbon counts up (the focus beat). Tap → きろく ベル (the ledger).
   import { tick, untrack } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import PhoneButton from '../ui/PhoneButton.svelte';
   import SyncPill from '../ui/SyncPill.svelte';
   import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
@@ -14,7 +13,7 @@
   interface Props {
     /** Today's ベル so far, both people. */
     bells: number;
-    /** Bindable: the launcher is open (the page pauses the scene). */
+    /** Bindable: the phone is open (the ribbon opens it into きろく). */
     phoneOpen?: boolean;
   }
   let { bells, phoneOpen = $bindable(false) }: Props = $props();
@@ -38,35 +37,23 @@
   }
 </script>
 
-<div class="hud">
-  <div class="corner">
-    <SyncPill />
-  </div>
-  <PhoneButton bind:open={phoneOpen} />
-</div>
 <div class="ribbon-wrap">
   <!-- Tap → きろく お金, the ベル ledger (history-and-editing.md §2). -->
   <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })} onanimationend={() => (beat = false)}
     onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
     <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('bells.unit')}</small></b>
   </button>
+  <SyncPill />
 </div>
 
 <style>
-  .hud {
-    position: absolute; z-index: 8; left: 0; right: 0; top: calc(var(--safe-top) + 8px); height: 44px;
-    padding: 0 calc(var(--side) - 6px + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
-    display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none;
-  }
-  .hud > :global(*) { pointer-events: auto; }
-  .corner { display: grid; justify-items: start; gap: 6px; padding-top: 8px; }
-
+  /* centred on the column (left/right 0 inside the centred .island), 16px under the safe area (the notch / Dynamic
+     Island); the chip, when shown, sits centred 12px under the ribbon */
   .ribbon-wrap {
-    position: absolute; z-index: 7; left: 0; right: 0; top: calc(var(--safe-top) + 56px);
-    display: flex; justify-content: center; pointer-events: none;
+    position: absolute; z-index: 7; left: 0; right: 0; top: calc(var(--safe-top) + 16px);
+    display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none;
   }
-  /* the sync chip (in the corner, ≤ 74px with its lip) pushes the ribbon down, so it never hides today's ベル (sizing #2) */
-  .hud:has(:global(.chip)) ~ .ribbon-wrap { top: calc(var(--safe-top) + 84px); }
+  .ribbon-wrap > :global(*) { pointer-events: auto; }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
     appearance: none; border: 0; cursor: pointer; font: inherit; pointer-events: auto;

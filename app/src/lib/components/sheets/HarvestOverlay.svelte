@@ -16,6 +16,7 @@
   import { cubicOut } from 'svelte/easing';
   import Bells from '../ui/Bells.svelte';
   import Bubble from '../ui/Bubble.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import BadgeRow from '../ui/BadgeRow.svelte';
   import Jar from '../island/Jar.svelte';
   import { walletFill } from '../wallet/fill.ts';
@@ -93,7 +94,7 @@
     <div class="head">
       <span class="plate">{t('harvest.title')}</span>
       <span class="steps" aria-hidden="true">{#each ['tally', 'done'] as s (s)}<i class:on={s === step}></i>{/each}</span>
-      {#if step !== 'done'}<button type="button" class="later" data-sfx="back" onclick={onlater}>{t('common.later')}</button>{:else}<span class="later-sp"></span>{/if}
+      {#if step !== 'done'}<NavButton kind="close" label={t('common.later')} onclick={onlater} />{:else}<span class="later-sp"></span>{/if}
     </div>
 
     <div class="bottom">
@@ -168,11 +169,7 @@
   .steps { display: flex; gap: 6px; }
   .steps i { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--c-cream) 60%, transparent); transition: all var(--dur-base) var(--ease-bounce); }
   .steps i.on { width: 22px; border-radius: 4px; background: var(--c-yuzu); }
-  .later, .later-sp { min-width: 80px; }
-  .later {
-    appearance: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: var(--r-btn);
-    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); font: 700 var(--fs-body)/1 var(--font-ui);
-  }
+  .later-sp { width: var(--hit); }
   .bottom { display: grid; gap: var(--gap); --talk-lines: 2; }
   .bottom :global(.talk) { margin-bottom: -4px; }
 

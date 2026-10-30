@@ -1,13 +1,13 @@
 <script lang="ts">
   // ごほうび, the shared wallet (ADR 0022, round 17 IA §4.5: Nook's Cranny, about spending only; the route keeps its
-  // /jar path): `◀ 島へ` + the NookPhone, a hero (the island's jar, so the route change still morphs one into the
+  // /jar path): the page's title bar (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island's jar, so the route change still morphs one into the
   // other, over the wallet's balance: the number on the island's plate), then the one menu in its two sections
   // (🍦 まいにちのごほうび, ✈️ 旅のごほうび) as buy tiles. A quiet ✎ changes a section (shared by both). Buying asks first,
   // then shows at once and waits 5 s with とりけす on the banner before it is sent. History lives in きろく ベル.
   // No しずえ here.
   import { resolve } from '$app/paths';
   import Jar from '#lib/components/island/Jar.svelte';
-  import PhoneButton from '#lib/components/ui/PhoneButton.svelte';
+  import NavButton from '#lib/components/ui/NavButton.svelte';
   import MenuShelf from '#lib/components/wallet/MenuShelf.svelte';
   import BuyConfirm from '#lib/components/wallet/BuyConfirm.svelte';
   import MenuEditor from '#lib/components/wallet/MenuEditor.svelte';
@@ -26,7 +26,6 @@
   const menu = $derived(view?.menu ?? []);
   const inSection = (s: MenuSection) => menu.filter((x) => x.section === s);
 
-  let phoneOpen = $state(false);
   let askItem = $state<WalletItem | null>(null);
   let editing = $state<MenuSection | null>(null);
   let editOpen = $state(false);
@@ -56,10 +55,10 @@
 {#if view}
   <main class="jar-screen" class:undoing={!!toasts.current?.action}>
     <div class="top">
-      <a class="back" href={resolve('/')} data-sfx="back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5 L8 12 L16 19 Z" /></svg>{t('jar.back')}</a>
-      <PhoneButton bind:open={phoneOpen} />
+      <NavButton kind="back" href={resolve('/')} text={t('jar.back')} />
+      <h1>{t('wallet.title')}</h1>
+      <span class="sp"></span>
     </div>
-    <h1 class="sr-only">{t('wallet.title')}</h1>
 
     <div class="hero">
       <span class="bigjar"><Jar fill={walletFill(balance)} width="calc(var(--jar-h) * 54 / 68)" name="jar" /></span>
@@ -86,17 +85,11 @@
     max-width: var(--col); margin: 0 auto; min-height: var(--vh-page);
     padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + 16px) calc(var(--side) + var(--safe-left));
   }
-  .top { display: flex; justify-content: space-between; align-items: center; height: 52px; margin-right: -6px; }
-  /* NH's back pill. */
-  .back {
-    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px 0 12px; border-radius: var(--r-btn);
-    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); text-decoration: none;
-    font: 700 var(--fs-body)/1 var(--font-ui);
-  }
+  /* the title bar: ‹ 島へ | the title, centred on the page | an equal spacer */
+  .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 52px; gap: 8px; }
+  .top h1 { margin: 0; font-size: var(--fs-title); text-align: center; white-space: nowrap; }
   /* the undo banner (56px, 16px over the bottom) never covers the last card (sizing #18) */
   .jar-screen.undoing { padding-bottom: calc(var(--pad-bottom) + 88px); }
-  .back svg { width: 16px; height: 16px; fill: var(--c-yuzu-lip); }
-  .back:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
 
   /* the hero: the island's jar over the wallet's balance (the plate's number, one per screen) */
   .hero { display: grid; justify-items: center; gap: 2px; padding: 2px 0 16px; color: var(--text); --jar-h: clamp(68px, calc(11 * var(--vh1)), 112px); }

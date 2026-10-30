@@ -8,6 +8,7 @@
   // ‹ back is the cancel tone.
   import { tick as nextTick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
+  import NavBar from '../ui/NavBar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import LeafCoin from '../ui/LeafCoin.svelte';
   import HelpApp from './HelpApp.svelte';
@@ -102,18 +103,8 @@
     <span class="demo-wrap">{#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}</span>
   </div>
 
-  <div class="titlebar">
-    {#if app}
-      <button type="button" class="back icon-btn" aria-label={t('common.back')} data-sfx="self" onclick={back}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-back" /></svg>
-      </button>
-    {/if}
-    <h2>{title}</h2>
-    <!-- U12: a visible 44px close on the phone, not only the grabber -->
-    <button type="button" class="close icon-btn" aria-label={t('common.close')} data-sfx="self" onclick={() => (open = false)}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close" /></svg>
-    </button>
-  </div>
+  <!-- the one title bar: ‹ back to the previous level (an app → home, a きろく level → the one above), ✕ closes the phone -->
+  <div class="titlebar"><NavBar {title} onback={app ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
   <div class="phone-body">
   {#if !app}
@@ -161,13 +152,7 @@
   .demo-wrap { justify-self: end; }
   .demo { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .status, .titlebar { flex: none; }
-  .titlebar { position: relative; display: flex; justify-content: center; align-items: center; min-height: 48px; margin-bottom: 8px; }
-  .titlebar h2 { font-size: var(--fs-title); text-align: center; }
-  .back { position: absolute; left: 0; top: 2px; }
-  .back svg { width: 22px; height: 22px; }
-  .close { position: absolute; right: 0; top: 2px; }
-  .close svg { width: 20px; height: 20px; }
-  .titlebar h2 { padding: 0 48px; }
+  .titlebar { margin-bottom: 8px; }
 
   /* Home: six tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
      the top third of an empty screen); the row gap grows with the phone's height. */
@@ -203,8 +188,10 @@
   .phone-body > * { flex: none; }
   .phone-body > .page:has(:global(.atm)) { flex: 1 0 auto; }
   .phone-body > .page:has(:global(.atm)) > :global(*) { flex: 1 0 auto; }
-  .page { display: flex; flex-direction: column; gap: 14px; animation: slide var(--dur-base) var(--ease-soft); }
-  @keyframes slide { from { opacity: 0; transform: translateX(40%); } to { opacity: 1; transform: none; } }
+  /* the one push motion (design.md "Navigation"): the new level slides in from the right in 240ms */
+  .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }
+  @keyframes slide { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
 
   /* Rows shared by the ことば and 通信 apps. */
   .page :global(.prows) { display: grid; gap: 10px; }
