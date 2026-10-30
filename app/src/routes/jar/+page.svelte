@@ -50,6 +50,10 @@
     const pot = asking.pot;
     const r = pot === 'treat' ? buyTreat(item.id) : buyTrip(item.id);
     askItem = null;
+    if (!r.ok) {
+      toasts.show(t('pots.short'), 2400, { reaction: 'worry' });
+      return;
+    }
     undoBanner(t(`pots.${pot}.bought`, { label: item.label, bells: formatBells(item.bells) }), r, { reaction: 'joy' });
   }
   function edit(pot: PotKey) {

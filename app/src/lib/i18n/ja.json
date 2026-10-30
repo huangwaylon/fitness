@@ -242,5 +242,6 @@
   "help.island.partner": "相手の村人 → ようすを見る・ハイタッチ",
   "help.island.tree": "木 → きょうの進み具合",
   "help.island.jar": "壺 → ふたりの壺",
-  "help.island.kiroku": "しまフォン → きろく：記録を直せます（水曜4時まで）"
+  "help.island.kiroku": "しまフォン → きろく：記録を直せます（水曜4時まで）",
+  "pots.short": "ベルが足りませんでした"
 }
