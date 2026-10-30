@@ -248,5 +248,11 @@
   "menu.saved": "メニューを 保存しました",
   "help.wallet.title": "ごほうび",
   "help.wallet.body": "ベルは ぜんぶ ふたりの おさいふへ。島のつぼを タップして、おやつや カフェ、旅の ごほうびを「買う！」。",
+  "help.treats": "食べものの ごほうびは、ふたりで 週3回くらいが めやす。のこりの ベルは ほしいものや 旅のごほうびに ためよう！",
+  "help.protein.title": "たんぱく質の ヒント",
+  "help.protein.body": "1日に 体重1kgあたり 1.6 g くらいが めやすだよ。アプリでは はからない、ただの ヒント！",
+  "help.protein.person": "{name} 約{g} g",
+  "help.protein.sep": "・",
+  "wallet.hint": "食べものは 週3回くらいが めやす。あとは ためよう！",
   "menu.title": "ごほうびメニュー"
 }

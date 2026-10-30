@@ -248,5 +248,11 @@
   "menu.saved": "Menu saved",
   "help.wallet.title": "Treats",
   "help.wallet.body": "Every Bell goes into one wallet you share. Tap the jar on the island to buy a snack, a café treat or a trip treat.",
+  "help.treats": "About 3 food treats a week for the two of you is a good guide. Save the rest of your Bells for a wish-list item or a trip treat!",
+  "help.protein.title": "Protein tip",
+  "help.protein.body": "About 1.6 g per kg of body weight a day is a good guide. The app doesn't track it: it's just a tip!",
+  "help.protein.person": "{name} ~{g} g",
+  "help.protein.sep": " · ",
+  "wallet.hint": "About 3 food treats a week; save the rest!",
   "menu.title": "Treats"
 }
