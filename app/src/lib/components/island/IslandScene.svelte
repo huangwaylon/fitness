@@ -14,21 +14,17 @@
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
   // The HUD (sync chip, today's ベル ribbon, NookPhone) overlays the sky; clouds keep below it
   // (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
-  // Layout contract (F1/F2, for the page):
+  // Layout contract (round 19, for the page): the island is CENTRED between the HUD and the bottom chrome.
   //   --scene-h       the scene's height (give it the whole page, e.g. 100dvh, and keep it stable);
-  //                   fallback clamp(300px, 100dvh − var(--chrome-below, 282px), 600px).
-  //   --island-bottom the band under the stage kept for the bottom chrome (dialogue + action), from the
-  //                   scene's bottom edge. Keep it STABLE (the tallest chrome state), so the island never
-  //                   moves when the dialogue shows or hides; the chrome overlays the sea there. Default 0.
-  //                   Round 7: the stage's front beach (its last TUCK_U = 34u: sand, foam, shallows, nothing
-  //                   you tap) tucks under the top of that band, so the shore meets the dialogue instead of an
-  //                   empty sea band. The flowers and the villagers' feet stay above it.
-  //   --sky-cap       the least sky height used to size the stage (default safe-top + min(180px, 21dvh)).
-  // The stage fills the band from the sky cap to the chrome (+ the tuck), never wider than keeps the sand
-  // ≥ 5px inside each screen edge (sea on both sides at 393 / 375 / 320), never narrower than the column.
-  // The horizon sits at stage y HORIZON_U (a short open-sea strip behind the island), so on a tall phone the
-  // spare height goes to the sky (sun + clouds), never to an empty sea band. Read back --horizon-y /
-  // --stage-top (set on .if-scene) to place overlays.
+  //                   fallback clamp(300px, 100dvh − var(--island-bottom), 600px).
+  //   --hud-bottom    the bottom edge of the top chrome (the ribbon), from the scene's top. Default 0.
+  //   --island-bottom the top edge of the bottom chrome (the phone), from the scene's bottom. Default 0.
+  // The island (ISLE_TOP..ISLE_BOTTOM u: the hedge's top to the beach's foam) is centred in the band between them,
+  // at most as tall as leaves ISLE_PAD px above and below it, at most as wide as keeps the sand (u 30–360) 5px
+  // inside each screen edge (12px of grass on tall phones), so on a short screen it scales down instead of
+  // running under the phone. The horizon sits at stage y HORIZON_U (a short open-sea strip behind the island); the
+  // sea runs on under the island and behind the bottom chrome. Read back --horizon-y / --stage-top (set on
+  // .if-scene) to place overlays.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
@@ -182,24 +178,22 @@
 
 <style>
   .scene {
-    --scene-h-auto: clamp(300px, calc(100dvh - var(--chrome-below, 282px)), 600px);
+    --scene-h-auto: clamp(300px, calc(100dvh - var(--island-bottom, 0px)), 600px);
     /* emotes are game objects: 44u on the stage (resolved where used, against the stage), 36–56px (T5) */
     --emote-size: clamp(36px, calc(44 * 100cqw / 390), 56px);
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: hidden;
     container-type: inline-size; isolation: isolate;
-    /* F1/F2 layout (see the contract at the top of the script) */
+    /* the layout (see the contract at the top of the script). The island's box in stage units: the hedge's top
+       (32u) to the beach's foam (356u), centred on 194u (scene.ts ISLE). */
     --sh: var(--scene-h, var(--scene-h-auto));
     --ib: var(--island-bottom, 0px);
-    --cap: var(--sky-cap, calc(var(--safe-top) + min(180px, 21dvh)));
-    /* the stage fills the band from the sky cap to the chrome (+ the 34u tuck of the front beach under it),
-       at most as wide as keeps the sand (u 30–360) 5px inside each screen edge, never under the column width */
+    --hb: var(--hud-bottom, 0px);
+    --band: calc(var(--sh) - var(--ib) - var(--hb));
     --fit-w: calc((100cqw - 10px) * 390 / 330);
-    --stage-w: max(min(100cqw, 480px), min(calc((var(--sh) - var(--ib) - var(--cap) - 12px) * 390 / 326), var(--fit-w), 560px));
+    --stage-w: min(calc((var(--band) - 2 * var(--isle-pad, 12px)) * 390 / 324), var(--fit-w), 560px);
     --stage-h: calc(var(--stage-w) * 360 / 390);
-    --tuck: calc(var(--stage-w) * 34 / 390);
-    --stage-top: calc(var(--sh) - var(--ib) + var(--tuck) - var(--stage-h));
-    /* the sky never takes more than --sky-max of the scene: on a tall phone the horizon rises and the spare height is
-       open sea behind the island (with its glints), so the island stays the focal point (sizing #6) */
+    --stage-top: calc(var(--hb) + var(--band) / 2 - var(--stage-w) * 194 / 390);
+    /* the sky never takes more than --sky-max of the scene (sizing #6) */
     --horizon-y: max(40px, min(calc(var(--stage-top) + var(--stage-w) * 8 / 390), calc(var(--sh) * var(--sky-max, .27))));
     --sky-h: var(--horizon-y);
   }
@@ -207,7 +201,7 @@
      shallows run off the sides), instead of leaving the extra height to an empty sky */
   @media (max-aspect-ratio: 1/2) { .scene { --fit-w: calc((100cqw - 24px) * 390 / 302); } }
   .stage {
-    position: absolute; bottom: calc(var(--ib) - var(--tuck)); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
+    position: absolute; top: var(--stage-top); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
     container-type: inline-size; z-index: 1;
     /* registered <length>s (tokens.css): resolved here against the scene, so the stage's children (whose cqw
        is the stage) read the horizon and the stage top in px */

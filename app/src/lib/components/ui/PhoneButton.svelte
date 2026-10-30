@@ -1,6 +1,6 @@
 <script lang="ts">
   // The NookPhone button: the bare official NookPhone. `big` (島, round 18): the island's one control, bottom centre in
-  // the thumb zone, the phone 56px tall in a 72 × 84 hit area with 「しまフォン」 under it. Otherwise 40px in a 52px area.
+  // the thumb zone, the phone 56px tall on a 68px disc (84 × --phone-h hit area) with 「しまフォン」 under it. Otherwise 40px in a 52px area.
   // Opens the launcher (the phone is the hub: きろく, あそびかた, …).
   import ShimaPhone from '../phone/ShimaPhone.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -36,7 +36,8 @@
   .phone-btn:active .art { transform: scale(1.1, .9); transition-duration: var(--dur-tap); }
   .phone-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* the island's control: a cream disc under the phone (a game object, always light), the name on a plate below */
-  .big { width: 84px; height: auto; min-height: 84px; gap: 2px; align-content: center; }
+  /* --phone-h (tokens.css): the disc, the gap and the plate; the island page reserves exactly this */
+  .big { width: 84px; height: var(--phone-h); gap: 2px; align-content: start; }
   .big .art {
     width: 68px; height: 68px; border-radius: 50%; background: var(--c-cream); box-shadow: var(--sh-obj);
   }

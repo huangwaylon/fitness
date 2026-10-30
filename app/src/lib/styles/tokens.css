@@ -74,6 +74,7 @@
   /* Round 10 T2: the one tap-target floor. min-height (and min-width for icon-only controls) on anything
      tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
   --hit: 44px;
+  --phone-h: 92px;    /* the island's NookPhone button: 68px disc + 2px + the 「しまフォン」 plate + its lip */
 
   /* ---------- viewport heights (round 10, ios-scroll-audit L3) ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, phone,

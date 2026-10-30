@@ -99,13 +99,14 @@
 {/if}
 
 <style>
-  /* v5 §3 + round 6 F1 (band table): the scene takes the whole page (stage bottom-anchored over
-     --island-bottom = the chrome band, horizon capped by the scene), and the chrome is ONE fixed slot over
-     the patterned sea at the bottom: the NookPhone (84px) centred over the home indicator. Its height is a constant,
-     so nothing moves when しずえ speaks (her box floats above it). */
+  /* Round 19 (user): the island is centred between the ribbon (top) and the NookPhone (bottom), never under either.
+     The phone sits in ONE fixed slot over the sea at the bottom (its height is a constant, so nothing moves when
+     しずえ speaks: her box floats above it); IslandScene centres the island in the band between --hud-bottom (the
+     ribbon's lip, Hud.svelte) and --island-bottom (the phone's top). */
   .island {
-    --chrome-below: calc(84px + 2 * var(--gap) + var(--pad-bottom));
-    --island-bottom: var(--chrome-below);
+    --chrome-below: calc(var(--phone-h) + 2 * var(--gap) + var(--pad-bottom));
+    --hud-bottom: calc(var(--safe-top) + 16px + var(--hit) + var(--lip-h));
+    --island-bottom: calc(var(--chrome-below) - var(--gap));
     --scene-h: var(--vh-fill);
     position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden;
   }
