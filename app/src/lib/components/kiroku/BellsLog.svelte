@@ -5,7 +5,7 @@
   // live). A week shows 🔒 once it locked (its days are final); a day can still change until then.
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerBonus, LedgerDay, LedgerSpend } from '#lib/model/history.ts';
-  import { weekKeyOf } from '#lib/scoring/index.ts';
+  import { weekKeyOf } from '#lib/time/dates.ts';
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Bells from '../ui/Bells.svelte';

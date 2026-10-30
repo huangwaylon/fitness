@@ -16,7 +16,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { addWorkout, editWorkout, setGoalWeight, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import { weightOn, weightTrend } from '#lib/model/weight.ts';
-  import { localDateAt } from '#lib/model/state.ts';
+  import { localDateAt } from '#lib/time/dates.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
