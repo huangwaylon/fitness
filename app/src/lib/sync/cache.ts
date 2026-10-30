@@ -19,8 +19,8 @@ export interface SnapshotCache {
   /** The server's data revision these rows were fetched under (absent: cached before revisions existed). */
   rev?: string;
   /**
-   * Client time the row set last lost rows (compaction, or a full fetch). With `rev` it keys the model's payouts of
-   * past cutoffs (`reduce(…, rev)` counts rows up to a cutoff, which only holds while rows are only added).
+   * Client time the row set last lost rows (compaction, or a full fetch). With `rev` it keys the earnings of
+   * locked weeks (`model/bells.ts` lockedWeeks; `reduce(…, rev)` counts rows up to a cutoff, which only holds while rows are only added).
    */
   rowsAt?: number;
   /** Server clock − client clock at the last fetch (ms). */

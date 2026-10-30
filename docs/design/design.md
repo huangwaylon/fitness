@@ -85,7 +85,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
   balance never goes negative.
 - **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Spends never lock.
 - **Starts** in the week of Mon 2026-10-26. Tuned 2026-10-30 (ADR 0019 amendment): sweets are dear
-  (おやつ 1,500–5,000) and a year on target pays 2 × abroad, 6 × weekend, 1–2 × onsen. Gone: the score /100, yen, the team layer, the purse, transfers, rungs,
+  (おやつ 800–5,000) and a year on target pays 2 × abroad, 6 × weekend, 1–2 × onsen. Gone: the score /100, yen, the team layer, the purse, transfers, rungs,
   calibration, per-person targets, the rest-day bonus.
 - **View model:** `WeekView.people[p].today`, `fruits[f]` progress, `pots` (balances + each pot's today / week flow), `menus`, `harvest.bonus/totalBells/badges`;
   きろく: `bellsLedger()`. Exact types: [round-11/engine-contract.md](../reviews/round-11/engine-contract.md).

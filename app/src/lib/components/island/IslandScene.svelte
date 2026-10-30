@@ -8,11 +8,11 @@
   // balloon present, event fireworks. Stage: the sea (Sea.svelte: one layer from the horizon to below the
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
   // wet band, foam, shallows, terracotta cliff, NH grass with flecks), one hedge along the back, one plain
-  // seasonal oak per person with the week's fruit on the ground at its base (FruitTree), the jar + its ベル
+  // seasonal oak per person with today's fruit on the ground at its base (FruitTree), the jar + its ベル
   // nameplate in the middle (the scene's only label and the doorway to ふたりの壺), a front row of flowers, the
   // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
-  // The HUD (clock, NookPhone, score ribbon) is Builder B's: it overlays the sky; clouds keep below it
+  // The HUD (sync chip, today's ベル ribbon, NookPhone) overlays the sky; clouds keep below it
   // (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
   // Layout contract (F1/F2, for the page):
   //   --scene-h       the scene's height (give it the whole page, e.g. 100dvh, and keep it stable);

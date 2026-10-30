@@ -47,7 +47,7 @@ function editTimes(rows: SnapshotRows): Map<string, number[]> {
  * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read: per
  * (person, date, metric), the best row at or before the Wednesday 04:00 lock (the week's earnings are fixed there),
  * each `metric_set` of that day (and just before it, for the change log), and overall (late syncs, `lastSync`).
- * Nothing reads a locked week at its Sunday 19:30 any more (the yen payout taken then is gone, ADR 0019). Rows of open weeks, rows the
+ * Nothing reads a locked week at its Sunday 19:30 any more. Rows of open weeks, rows the
  * model would skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
  * when nothing was dropped.
  */

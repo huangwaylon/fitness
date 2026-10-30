@@ -83,7 +83,7 @@
     app = id;
   }
 
-  // A shortcut (score ribbon, jar total) opens straight into きろく.
+  // A shortcut (today's ベル ribbon, jar total) opens straight into きろく.
   $effect(() => {
     const e = ui.phoneEntry;
     if (!open || !e) return;

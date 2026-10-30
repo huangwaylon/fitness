@@ -65,7 +65,7 @@
     position: absolute; z-index: 7; left: 0; right: 0; top: calc(var(--safe-top) + 56px);
     display: flex; justify-content: center; pointer-events: none;
   }
-  /* the sync chip (in the corner, ≤ 74px with its lip) pushes the ribbon down, so it never hides the score (sizing #2) */
+  /* the sync chip (in the corner, ≤ 74px with its lip) pushes the ribbon down, so it never hides today's ベル (sizing #2) */
   .hud:has(:global(.chip)) ~ .ribbon-wrap { top: calc(var(--safe-top) + 84px); }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {

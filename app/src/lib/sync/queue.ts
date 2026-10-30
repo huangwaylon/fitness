@@ -161,7 +161,7 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
 
 /**
  * Send queued events in order until one fails. Events still in their undo window are skipped, not waited for
- * (a held payday must not delay a check-in behind it by 5 s), except by later events on the same subject (M2);
+ * (a held spend must not delay a check-in behind it by 5 s), except by later events on the same subject (M2);
  * everything else keeps queue order. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
  * `too_large` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
  * so order is preserved) with a backoff. `unauthorized` stops the flush. `expired(ev, t)`: an edit that can no

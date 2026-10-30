@@ -90,7 +90,7 @@
     animation: in 320ms var(--ease-bounce) both;
   }
   .banner:popover-open { inset: auto 0; top: calc(var(--safe-top) + 56px); }
-  /* 島: below the score ribbon, so a banner never covers the focal point (sizing #17). */
+  /* 島: below today's ベル ribbon, so a banner never covers the focal point (sizing #17). */
   :global(:root:has(.island)) .banner:not(.undo) { top: calc(var(--safe-top) + 112px); }
   /* the sync chip pushes the ribbon down 40px (Hud.svelte), so the banner follows */
   :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--safe-top) + 152px); }
@@ -104,7 +104,7 @@
   }
   .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* An undo banner (N5): low, in the thumb zone, so it never covers the Jar's total; its text (what was done:
-     「映画 ¥4,000 使いました！」) may take two lines next to the button. */
+     「アイス 1,000 ベル つかいました！」) may take two lines next to the button. */
   .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
   .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; word-break: auto-phrase; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }

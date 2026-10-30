@@ -48,7 +48,7 @@ function computeWeekBells(s: State, wk: WeekKey, t: number, act?: Partial<Record
 }
 
 const perState = new WeakMap<State, Map<string, WeekBells>>();
-/** Locked weeks across States (like week.ts' past payouts): keyed by week and the rows stamped by its lock, per `rev`. */
+/** Locked weeks across States: keyed by week and the rows stamped by its lock, per `rev`. */
 const lockedWeeks = { rev: '', byKey: new Map<string, WeekBells>() };
 
 /**
