@@ -1,5 +1,5 @@
-# Weekly dependency PRs (round 9): the toolchain is bleeding-edge (Kit 3, Vite 8, TS 6, Vitest 5). Each PR runs
-# pages.yml's check + vitest + build (no deploy); merge only green ones.
+# Weekly dependency PRs: the toolchain is bleeding-edge (Kit 3, Vite 8, TS 6, Vitest 5). Each PR runs
+# pages.yml's check, knip, vitest, build and e2e (no deploy); merge only green ones.
 version: 2
 updates:
   - package-ecosystem: npm
