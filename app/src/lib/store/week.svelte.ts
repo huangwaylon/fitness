@@ -97,14 +97,6 @@ class WeekStore implements Host {
     await b.refresh(opts);
   }
 
-  /** Drop the cached rows and fetch everything again (しまフォン → 通信; round 9 §2 item 4). */
-  async resync(): Promise<void> {
-    if (this.status === 'unconfigured') return;
-    const b = await this.#getBackend();
-    this.#start();
-    await b.refresh({ full: true });
-  }
-
   /** Forget the cached state (after pairing as someone else). */
   reset(): void {
     this.#backend?.reset();

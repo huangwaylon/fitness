@@ -184,12 +184,12 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
 let fetching: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
 
 /**
- * Fetch rows since the last seen `at` (everything on first run, or with `full`), merge and persist. Overlapping
+ * Fetch rows since the last seen `at` (everything on first run, or after a hand edit changed `rev`), merge and persist. Overlapping
  * callers share the request in flight, so two replies never merge from the same stale cache (review r2 N2).
  */
-export function refreshSnapshot(clientNow: () => number = Date.now, opts: { full?: boolean } = {}): Promise<GasResult<{ cache: SnapshotCache }>> {
+export function refreshSnapshot(clientNow: () => number = Date.now): Promise<GasResult<{ cache: SnapshotCache }>> {
   if (fetching) return fetching;
-  const p = fetchSnapshot(clientNow, !!opts.full);
+  const p = fetchSnapshot(clientNow);
   fetching = p;
   void p.then(() => {
     if (fetching === p) fetching = null;
@@ -197,8 +197,8 @@ export function refreshSnapshot(clientNow: () => number = Date.now, opts: { full
   return p;
 }
 
-async function fetchSnapshot(clientNow: () => number, full: boolean): Promise<GasResult<{ cache: SnapshotCache }>> {
-  const prev = full ? null : await loadCache();
+async function fetchSnapshot(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
+  const prev = await loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;
   let r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', since ? { since } : {});

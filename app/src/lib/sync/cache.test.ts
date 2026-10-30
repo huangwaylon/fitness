@@ -142,19 +142,10 @@ describe('resync (rev, sheets-architecture.md §2.1)', () => {
     expect(calls.map((c) => c.since)).toEqual(['2026-11-02T01:00:00.000Z', undefined, '2026-11-02T01:00:00.000Z']);
   });
 
-  it('a manual resync fetches everything; the unsent queue is kept', async () => {
-    await refreshSnapshot();
-    enqueue('highfive', {});
-    const r = await refreshSnapshot(Date.now, { full: true });
-    expect(calls.at(-1)?.since).toBeUndefined();
-    expect(r.ok).toBe(true);
-    expect(queued()).toHaveLength(1);
-  });
-
-  it('a failed full fetch keeps the old cache', async () => {
+  it('a failed fetch keeps the old cache', async () => {
     await refreshSnapshot();
     reply = () => ({ ok: false, error: 'busy' });
-    expect((await refreshSnapshot(Date.now, { full: true })).ok).toBe(false);
+    expect((await refreshSnapshot()).ok).toBe(false);
     expect((await loadCache())?.rows).toEqual(rows());
   });
 });
