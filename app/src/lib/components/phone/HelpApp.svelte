@@ -53,7 +53,7 @@
         <li><OfficialArt key={fruitArt(b.f)} size={20} /><span class="money">{t(`help.bonus.${b.key}`, { n: b.n })}</span></li>
       {/each}
     </ul>
-    <p class="note">{t('help.bonus.duo', { bells: formatBells(r.badges.duo) })}</p>
+    <p class="note">{t('help.bonus.duo', { bells: formatBells(r.badges.duoPerBadge) })}</p>
   </section>
 
   <section class="card">
