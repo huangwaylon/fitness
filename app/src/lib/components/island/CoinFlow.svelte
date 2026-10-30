@@ -59,7 +59,7 @@
 <style>
   /* above the time-of-day tint (z 80) and the jar (z 81), under the fruit popup (z 95) */
   .cx {
-    position: absolute; z-index: 90; width: 0; height: 0; pointer-events: none;
+    position: absolute; z-index: var(--z-coin); width: 0; height: 0; pointer-events: none;
     animation-name: cf-x; animation-timing-function: linear; animation-fill-mode: both;
   }
   .cy {
@@ -82,7 +82,7 @@
   @keyframes cf-spin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.25); } }
   /* "+150" over the fruit that earned it: pops, floats up a little, fades */
   .pop {
-    position: absolute; z-index: 91; translate: -50% -100%; pointer-events: none; white-space: nowrap;
+    position: absolute; z-index: var(--z-coin-gain); translate: -50% -100%; pointer-events: none; white-space: nowrap;
     animation: cf-pop 1500ms var(--ease-soft) both;
   }
   .pop b {

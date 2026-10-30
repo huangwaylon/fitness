@@ -44,7 +44,7 @@
   /** しずえ's news, or null (then she stays away and the island is HUD-light). */
   const news = $derived.by((): string | null => {
     if (!view) return null;
-    // After my 壺に入れる (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
+    // After my 受け取る！ (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
     if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
     const key = view.host.key.replace(/^host\./, '');
     if (key === 'harvest_ready') return hostLine(key, view.host.params);
@@ -81,18 +81,19 @@
 {#if view && me}
   <main class="island" class:covered={ui.overlay}>
     <h1 class="sr-only">{t('app.name')}</h1>
-    <!-- DOM order = focus / VoiceOver order (round 16 #10): the heading, today's ベル, the phone (and しずえ), then the
-         scene. All of them are absolutely placed, so the order costs no layout. -->
+    <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the scene (trees, villagers,
+         the jar), then the phone (and しずえ's box) at the bottom. All are absolutely placed, so the order costs no layout;
+         the stacking comes from the --z-* scale (tokens.css). -->
     <Hud bells={view.wallet.today} bind:phoneOpen />
+    <div class="top">
+      <IslandScene {view} onpartner={() => (partnerOpen = true)} onjar={() => goto(resolve('/jar'))}
+        paused={partnerOpen || phoneOpen} />
+    </div>
     <!-- The bottom band (a constant height): the NookPhone, centred. しずえ's box, when she has news, floats just above
          it over the front beach, so nothing in the scene moves when she speaks. -->
     <div class="below">
       {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}
       <PhoneButton bind:open={phoneOpen} />
-    </div>
-    <div class="top">
-      <IslandScene {view} onpartner={() => (partnerOpen = true)} onjar={() => goto(resolve('/jar'))}
-        paused={partnerOpen || phoneOpen} />
     </div>
   </main>
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
@@ -112,7 +113,7 @@
   }
   .top { position: absolute; inset: 0; overflow: hidden; }
   .below {
-    position: absolute; z-index: 9; left: 0; right: 0; bottom: 0;
+    position: absolute; z-index: var(--z-dock); left: 0; right: 0; bottom: 0;
     height: var(--chrome-below); display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
     padding: var(--gap) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + var(--gap)) calc(var(--side) + var(--safe-left));
     pointer-events: none;

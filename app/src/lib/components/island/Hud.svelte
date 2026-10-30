@@ -38,7 +38,7 @@
 </script>
 
 <div class="ribbon-wrap">
-  <!-- Tap → きろく お金, the ベル ledger (history-and-editing.md §2). -->
+  <!-- Tap → きろく ベル, the ledger (history-and-editing.md §2). -->
   <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })} onanimationend={() => (beat = false)}
     onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
     <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('bells.unit')}</small></b>
@@ -50,7 +50,7 @@
   /* centred on the column (left/right 0 inside the centred .island), 16px under the safe area (the notch / Dynamic
      Island); the chip, when shown, sits centred 12px under the ribbon */
   .ribbon-wrap {
-    position: absolute; z-index: 7; left: 0; right: 0; top: calc(var(--safe-top) + 16px);
+    position: absolute; z-index: var(--z-hud); left: 0; right: 0; top: calc(var(--safe-top) + 16px);
     display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none;
   }
   .ribbon-wrap > :global(*) { pointer-events: auto; }

@@ -151,7 +151,7 @@
   /* The island stays visible (v5 §4) under a cool tint (F3) that fades in below the sky: by day a light
      periwinkle over the sea and island only, so the clouds stay white and the sun yellow; softer at night. */
   .overlay {
-    position: fixed; inset: 0; z-index: 60; overflow: hidden auto; overscroll-behavior: contain;
+    position: fixed; inset: 0; z-index: var(--z-harvest); overflow: hidden auto; overscroll-behavior: contain;
     width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
     --fr: clamp(18px, 5.4vw, 26px); color: var(--text);
     background: linear-gradient(to bottom, rgba(58, 72, 134, 0) 22%, rgba(58, 72, 134, .18) 48%);

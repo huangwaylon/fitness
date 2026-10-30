@@ -135,6 +135,8 @@
   }
   /* An undo banner is up: the last row can scroll clear of it. */
   dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
+  /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
+  dialog.toasting .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
   dialog.phone.toasting .inner { padding-bottom: 0; }
   dialog.phone.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
   @media (max-width: 339px) { dialog.phone .inner { padding: 14px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); } }
