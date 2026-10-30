@@ -50,7 +50,7 @@
     if (updated.current && !onPair && !showHarvest && !ui.sheets.length) safeReload();
   });
 
-  // 島 ⇄ ふたりの壺: a zoom into the jar and back out of it.
+  // 島 ⇄ ごほうび: a zoom into the jar and back out of it.
   jarTransition();
 
   onMount(() => {
