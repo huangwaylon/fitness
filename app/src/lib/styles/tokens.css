@@ -31,6 +31,7 @@
   --hud: #33261B;              /* the corner clock over the sky: deeper ink, ≥ 4.5:1 on every day sky top (round 7 F12) */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
+  --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
      Builder A block below */
 
@@ -120,7 +121,7 @@
   --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
   --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
   --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0; --leaf-text:#9EE6A6;
-  --scrim: rgba(30, 36, 80, .45);
+  --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
   color-scheme: dark;
 }
 

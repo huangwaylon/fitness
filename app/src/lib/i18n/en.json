@@ -219,7 +219,7 @@
   "help.fruit.title": "The five fruits",
   "help.fruit.max": "Up to {bells} a day. They appear on the island as your data arrives.",
   "help.goal.min": "{n} min a day",
-  "help.goal.kcal": "{n} kcal a day (change it in Records)",
+  "help.goal.kcal": "{n} kcal a day",
   "help.goal.steps": "{n} steps a day",
   "help.goal.gym": "Arrive at the gym",
   "help.pay.perMin": "{b} per min",
