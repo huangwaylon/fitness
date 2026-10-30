@@ -27,11 +27,10 @@
     dir?: 1 | -1;
     /** Confetti pieces (default 16; harvest 36). */
     count?: number;
-    /** Scale every size (1 = the §M.4 sizes). */
-    scale?: number;
+
     ondone?: () => void;
   }
-  let { kind, spread = '60px', dir = 1, count = 16, scale = 1, ondone }: Props = $props();
+  let { kind, spread = '60px', dir = 1, count = 16, ondone }: Props = $props();
 
   const reduced = $derived(reducedMotion());
   const CONFETTI = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
@@ -61,10 +60,10 @@
   const NOTE2 = 'M10 2 L13 2 L13 15 A4 3.4 0 1 1 10 12 Z M13 2 C16 4 19 5 18 10 C17 7 15 6.5 13 6.5 Z';
 </script>
 
-<span class="fx {kind}" class:reduced style:--spread={spread} style:--dir={dir} style:--k={scale} aria-hidden="true">
+<span class="fx {kind}" class:reduced style:--spread={spread} style:--dir={dir} aria-hidden="true">
   {#if reduced}
     {#if kind === 'notes' || kind === 'hearts' || kind === 'sparkles' || kind === 'confetti'}
-      <svg class="still" viewBox="0 0 24 24" style:width="calc(16px * var(--k))">
+      <svg class="still" viewBox="0 0 24 24" style:width="16px">
         {#if kind === 'hearts'}<path d={HEART} fill="var(--fx-heart)" />
         {:else if kind === 'notes'}<path d={NOTE1} fill="var(--fx-note-1)" />
         {:else}<path d={STAR} fill="var(--fx-spark)" />{/if}
@@ -72,30 +71,30 @@
     {/if}
   {:else if kind === 'sparkles'}
     {#each [-0.5, -0.18, 0.18, 0.5] as x, i (i)}
-      <svg class="p" viewBox="0 0 24 24" style:--x={x} style:--y={Math.abs(x) * 0.8} style:width="calc({[10, 14, 12, 8][i]}px * var(--k))" style:animation-delay="{i * 90}ms">
+      <svg class="p" viewBox="0 0 24 24" style:--x={x} style:--y={Math.abs(x) * 0.8} style:width="{[10, 14, 12, 8][i]}px" style:animation-delay="{i * 90}ms">
         <path d={STAR} fill="var(--fx-spark)" /><circle cx="12" cy="12" r="3" fill="#fff" />
       </svg>
     {/each}
   {:else if kind === 'hearts'}
     {#each [-0.25, 0.1, 0.35] as x, i (i)}
-      <svg class="p" viewBox="0 0 24 24" style:--x={x} style:width="calc({[14, 16, 12][i]}px * var(--k))" style:animation-delay="{i * 150}ms">
+      <svg class="p" viewBox="0 0 24 24" style:--x={x} style:width="{[14, 16, 12][i]}px" style:animation-delay="{i * 150}ms">
         <path d={HEART} fill="var(--fx-heart)" /><ellipse cx="7" cy="7" rx="2.6" ry="1.8" fill="#fff" opacity=".4" />
       </svg>
     {/each}
   {:else if kind === 'notes'}
     {#each [0, 1, 2] as i (i)}
-      <svg class="p" viewBox="0 0 24 24" style:--i={i} style:width="calc(14px * var(--k))" style:animation-delay="{i * 220}ms">
+      <svg class="p" viewBox="0 0 24 24" style:--i={i} style:width="14px" style:animation-delay="{i * 220}ms">
         <path d={i % 2 ? NOTE2 : NOTE1} fill={i % 2 ? 'var(--fx-note-2)' : 'var(--fx-note-1)'} />
       </svg>
     {/each}
   {:else if kind === 'sweat'}
-    <svg class="p" viewBox="0 0 10 14" style:width="calc(10px * var(--k))">
+    <svg class="p" viewBox="0 0 10 14" style:width="10px">
       <path d="M5 0 C7 4 10 7 10 9.5 A5 4.5 0 0 1 0 9.5 C0 7 3 4 5 0 Z" fill="var(--fx-sweat)" />
       <ellipse cx="3.4" cy="9" rx="1.2" ry="2" fill="#fff" opacity=".8" />
     </svg>
   {:else if kind === 'zzz'}
     <!-- one looping element per sleeper (v5 §6 idle budget) -->
-    <span class="p z" style:font-size="calc(15px * var(--k))">zZ</span>
+    <span class="p z" style:font-size="15px">zZ</span>
   {:else if kind === 'confetti'}
     {#each pieces as p, i (i)}
       <span class="p c" class:round={p.round} style:background={p.c} style:--dx="{p.dx}px" style:--up="{p.up}px"
@@ -106,7 +105,7 @@
       <span class="p puff" style:--i={i} style:--s="{[10, 7][i]}px" style:animation-delay="{i * 80}ms"></span>
     {/each}
   {:else if kind === 'glint'}
-    <svg class="p" viewBox="0 0 24 24" style:width="calc(10px * var(--k))"><path d={STAR} fill="#fff" /></svg>
+    <svg class="p" viewBox="0 0 24 24" style:width="10px"><path d={STAR} fill="#fff" /></svg>
   {/if}
 </span>
 

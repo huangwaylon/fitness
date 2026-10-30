@@ -130,7 +130,7 @@
       {:else}
         <section class="card done" role="status">
           <b class="dhead">{t('harvest.done')}</b>
-          <div class="pot" style:--d="0.3s">
+          <div class="purse" style:--d="0.3s">
             <span class="drop" aria-hidden="true">
               {#each [0, 1, 2] as k (k)}<i style:animation-delay="calc(var(--d) + {k * 0.12}s)"></i>{/each}
             </span>
@@ -195,7 +195,7 @@
 
   .done { display: grid; justify-items: center; gap: 10px; text-align: center; }
   .dhead { margin-top: -4px; font-size: var(--fs-talk); line-height: 1.3; }
-  .pot { position: relative; display: grid; justify-items: center; gap: 2px; padding: 26px 6px 12px; width: 100%; border-radius: var(--r-btn); background: var(--fill-on-surface); }
+  .purse { position: relative; display: grid; justify-items: center; gap: 2px; padding: 26px 6px 12px; width: 100%; border-radius: var(--r-btn); background: var(--fill-on-surface); }
   .pic { position: relative; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) var(--d) both; }
   .get { position: absolute; right: -16px; top: -10px; line-height: 0; animation: if-pop var(--dur-pop) var(--ease-bounce) 1s both; }
   /* the +N pops in over the jar as its coins land, then fades: the balance below is the one resting number */

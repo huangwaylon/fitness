@@ -88,7 +88,7 @@
          it over the front beach, so nothing in the scene moves when she speaks. -->
     <div class="below">
       {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}
-      <PhoneButton bind:open={phoneOpen} big />
+      <PhoneButton bind:open={phoneOpen} />
     </div>
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onjar={() => goto(resolve('/jar'))}

@@ -2,16 +2,9 @@
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
 import { expect, test, type Page } from '@playwright/test';
 
-/** The demo usually opens on しずえ's question: answer it until she's quiet. */
-async function answerPending(page: Page) {
+/** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
+async function islandReady(page: Page) {
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
-  const yes = page.getByRole('button', { name: 'はい', exact: true });
-  await page.waitForTimeout(300);
-  for (let i = 0; i < 5 && (await yes.isVisible()); i++) {
-    await yes.click();
-    await page.waitForTimeout(300);
-  }
-  await expect(yes).toHaveCount(0);
 }
 
 /** Stage units (390 × 360, scene.ts) → page px. */
@@ -38,7 +31,7 @@ const centre = (page: Page, sel: string) =>
 test('scenery taps play a flourish and change nothing; trees, villagers and the jar still work', async ({ page }) => {
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
   await page.goto('?demo&date=2026-11-04T12:00');
-  await answerPending(page);
+  await islandReady(page);
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   const jar = page.locator('.if-scene .jar');
   const bells = await ribbon.getAttribute('aria-label');
@@ -88,7 +81,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
 
 test('night sky: the moon twinkles and sends a shooting star; a tap in the open sky lights a star', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T22:00');
-  await answerPending(page);
+  await islandReady(page);
   await expect(page.locator('.if-scene[data-tod="night"]')).toHaveCount(1);
   const moon = await centre(page, '.if-scene .orb');
   await page.mouse.click(moon.x, moon.y);
