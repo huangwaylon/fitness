@@ -4,7 +4,8 @@
   // the protein tip and the one-line setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
+  import { RING_FRUITS, rulesFor, type CurveFruit } from '#lib/config/rules.ts';
+  import { milestoneBells } from '#lib/scoring/bells.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { dayMax } from '../island/progress.ts';
@@ -31,6 +32,17 @@
     : f === 'apple' ? formatBells(r.bells.stepDay)
     : formatBells(r.bells.gymDay);
 
+  /** v2 (from 2026-11-02): 🍑🍐🍒🍎 pay in four steps of the goal (docs/reviews/round-19/milestones-contract.md):
+   *  each step's amount and the fruit's ベル for the day once it's reached. Null in a v1 week (linear pay). */
+  const stepsOf = (f: RingFruit): { at: string; bells: string }[] | null => {
+    if (f === 'coconut' || !r.curve) return null;
+    const bells = milestoneBells(view.weekKey, f as CurveFruit);
+    if (!bells) return null;
+    const goalOf = { peach: r.goals.exerciseMin, pear: moveGoal, cherry: r.goals.standMin, apple: r.goals.steps }[f];
+    return r.curve.at.map((x, k) => ({ at: t('help.step', { n: formatNum(Math.ceil(x * goalOf)), u: t(`kiroku.unit.${f}`) }), bells: formatNum(bells[k]) }));
+  };
+  const curved = $derived(RING_FRUITS.some((f) => stepsOf(f)));
+
   /** The protein tip (user, round 19; not tracked): 1.6 g per kg a day, per person from their goal weight (else their
    *  weight trend), rounded to 5 g; just the rule when neither is known. */
   const protein = $derived.by((): string => {
@@ -51,12 +63,20 @@
 
   <section class="card">
     <h3><span class="hi"><OfficialArt key={fruitArt('cherry')} size={30} /></span>{t('help.fruit.title')}</h3>
+    {#if curved}<p>{t('help.steps')}</p>{/if}
     <ul class="fruits">
       {#each RING_FRUITS as f (f)}
+        {@const steps = stepsOf(f)}
         <li>
           <OfficialArt key={fruitArt(f)} size={26} />
           <span class="nm"><b>{t(`fruit.${f}`)}</b><small>{goal(f)}</small></span>
-          <span class="pay money">{pays(f)}</span>
+          {#if !steps}<span class="pay money">{pays(f)}</span>{/if}
+          {#if steps}
+            <!-- the four steps: the amount, then the day's ベル once it's reached (the last step pays the most) -->
+            <span class="steps" role="list">
+              {#each steps as st, k (k)}<span class="st" role="listitem"><small>{st.at}</small><b class="money">{st.bells}</b></span>{/each}
+            </span>
+          {/if}
         </li>
       {/each}
     </ul>
@@ -109,6 +129,12 @@
   .nm b { font-size: var(--fs-body); }
   .nm small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .pay { flex: none; font-size: var(--fs-s); text-align: right; }
+  .fruits li:has(.steps) { flex-wrap: wrap; padding: 6px 0 8px; row-gap: 4px; }
+  .steps { flex: 1 0 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-left: 36px; }
+  .st { display: grid; justify-items: center; gap: 1px; padding: 4px 2px; border-radius: var(--r-chip); background: var(--hl); }
+  .st small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
+  .st b { font-size: var(--fs-s); }
+  .st:last-child { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
   .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .chips li { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--r-pill); background: var(--hl); }
   .chips .money { font-size: var(--fs-s); }
