@@ -83,7 +83,7 @@
         {#if can}<button type="button" class="pen-btn" data-sfx="page" data-focus="w:{w.id}" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
       </div>
     {/each}
-    {#each x.visits as v (v.id)}
+    {#each x.arrivals as v (v.id)}
       <div class="row wo">
         <span class="k">{v.label || t('kiroku.gym')}</span>
         <span class="v small"><span class="money">{timeOf(v.arriveAt)}</span><em class="ok">{t('kiroku.gymYes')}</em></span>

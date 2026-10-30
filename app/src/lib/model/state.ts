@@ -15,9 +15,6 @@ export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
 
 // ---------- time ----------
 
-/** Re-exported for きろく (Kiroku.svelte imports it from here). */
-export { localDateAt };
-
 const cutoffMemo = (fn: (wk: WeekKey) => number) => {
   const memo = new Map<WeekKey, number>();
   return (wk: WeekKey): number => {

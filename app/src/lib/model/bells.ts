@@ -6,9 +6,9 @@ import type {
   DayBells, HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WalletItem, WalletView, WeekKey
 } from '#lib/types.ts';
 import { DEFAULT_MENU } from '#lib/config/rules.ts';
-import { addDays, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
-import { finalMs, firstWeek, isLockedAt, latestAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
+import { finalMs, firstWeek, isLockedAt, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
 import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
 /** `t` for an open week: every row counts. */
