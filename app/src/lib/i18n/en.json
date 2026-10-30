@@ -41,6 +41,8 @@
   "island.jar": "Our pots {bells}",
   "island.highfive": "{name}'s week",
   "island.highfiveSent": "High-five sent to {name}!",
+  "checkin.allDone": "All done!",
+  "checkin.allDoneDone": "All three done",
   "checkin.today": "Today",
   "checkin.yesterday": "Yesterday",
   "weekday.1": "Mon",
