@@ -94,7 +94,8 @@
   .days:lang(en) { --wd-w: 2.1rem; }
   .row { display: grid; grid-template-columns: var(--cols); align-items: center; gap: 4px; min-width: 0; }
   .head { grid-template-columns: var(--wd-w) var(--cols); padding: 6px 6px 4px; border-bottom: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
-  .hc { display: grid; justify-items: end; gap: 1px; line-height: 0; }
+  /* every header icon on one line, units under them (round 21: the unit-less 🥥 sat 7.5px lower, centred) */
+  .hc { display: grid; justify-items: end; align-self: start; gap: 1px; line-height: 0; }
   .hc:last-child { justify-items: center; }
   .hc small { font-size: var(--fs-xs); line-height: 1.1; color: var(--text-soft); font-weight: 700; }
   .day {

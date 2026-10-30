@@ -110,17 +110,17 @@
   .ldot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-mint-lip); opacity: .75; }
   .lline { width: 16px; height: 2px; border-radius: 2px; background: var(--text); }
   .lgoal { width: 16px; border-top: 2px dashed var(--c-yuzu-lip); }
-  .proj { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); word-break: auto-phrase; }
+  .proj { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .proj b { margin-right: 6px; white-space: nowrap; }
   .acts { display: flex; gap: 10px; flex-wrap: wrap; }
   .acts .btn { flex: 1 1 8em; margin: 0; }
-  .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); word-break: auto-phrase; }
+  .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .recent { padding: 12px 14px; display: grid; gap: 6px; }
   .recent h4 { margin: 0; font-size: var(--fs-body); }
   table { width: 100%; border-collapse: collapse; font-size: var(--fs-body); }
   th { font-size: var(--fs-xs); color: var(--text-soft); text-align: right; font-weight: 700; padding: 2px 4px; }
   th:first-child, td:first-child { text-align: left; }
-  td { text-align: right; padding: 2px 4px; height: var(--hit); border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  td { text-align: right; padding: 2px 4px; height: var(--row-obj); border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   td.soft { color: var(--text-soft); }
   td.pc { width: var(--hit); padding: 0; }
 </style>

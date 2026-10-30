@@ -92,7 +92,8 @@
     font: 700 var(--fs-title)/1 var(--font-num); display: grid; place-items: center;
     transition: transform var(--dur-base) var(--ease-bounce);
   }
-  .key.fn { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); font: 700 var(--fs-body)/1 var(--font-ui); }
+  /* C in the keys' own bold Fredoka (round 21: a thin 15px UI-font C beside the 24px digits) */
+  .key.fn { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); font: 700 var(--fs-talk)/1 var(--font-num); }
   .key svg { width: 24px; height: 24px; }
   .key:active { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
   .choose { display: flex; }

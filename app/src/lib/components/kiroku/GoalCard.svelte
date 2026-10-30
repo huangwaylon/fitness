@@ -40,7 +40,7 @@
 <style>
   .goals { display: grid; gap: 2px; padding: 12px 14px 8px; }
   h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: var(--fs-body); font-weight: 700; }
-  .row { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+  .row { display: flex; align-items: center; gap: 8px; min-height: var(--row-obj); }
   .row + .row { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   .ic { width: 24px; height: 24px; flex: none; display: grid; place-items: center; line-height: 0; color: var(--text-soft); }
   .ic svg { width: 22px; height: 22px; }

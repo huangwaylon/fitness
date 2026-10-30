@@ -136,7 +136,8 @@
   .dbtn:active { background: var(--hl); }
   .dt { width: 5.4em; flex: none; font: 700 var(--fs-body)/1.2 var(--font-num); }
   .pp { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; }
-  .pv { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); color: var(--text-soft); }
+  /* a fixed slot per person, so the second avatar lines up from day to day (round 21: it wandered 0–20px with the digits) */
+  .pv { display: inline-flex; align-items: center; gap: 4px; min-width: 4.6em; font-size: var(--fs-s); color: var(--text-soft); }
   .pv .money { font-size: var(--fs-s); }
   .dbtn b { font-size: var(--fs-body); white-space: nowrap; }
   .zero .dbtn { color: var(--text-soft); }

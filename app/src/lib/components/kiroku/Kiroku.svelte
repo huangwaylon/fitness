@@ -269,6 +269,10 @@
 
 <style>
   .kiroku { padding-bottom: 8px; }
+  /* the keypad fills the phone so its keys sit at the bottom, in the thumb zone (ShimaPhone stretches this root; round 21:
+     the chain stopped here and the keys hung under the title with ~230px empty below them) */
+  .kiroku:has(:global(.atm)) { display: flex; flex-direction: column; }
+  .kiroku:has(:global(.atm)) > .lvl { flex: 1 0 auto; }
   /* each level slides in like a phone app (design.md "Navigation": one push motion, 240ms) */
   .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
@@ -291,13 +295,12 @@
   .note { margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .ask { padding: 16px; display: grid; gap: 6px; }
   .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
-  .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; word-break: auto-phrase; }
+  .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; }
   /* minmax(0, 1fr): the longest label (高強度インターバルトレーニング) must not set a column's minimum (sizing #3, scroll M1) */
   .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .type {
     appearance: none; border: 0; cursor: pointer; min-width: 0; overflow-wrap: anywhere; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);
     font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-    word-break: auto-phrase;
   }
   .type:active { transform: translateY(3px); box-shadow: var(--sh-ctl-press); }
 </style>
