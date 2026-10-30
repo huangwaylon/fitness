@@ -36,6 +36,6 @@
   li { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); font-weight: 700; }
   .when { flex: none; width: 6.4em; font-size: var(--fs-s); color: var(--text-soft); }
   .what { flex: 1; min-width: 0; line-height: 1.35; }
-  .what small { display: block; font-size: 11px; color: var(--text-soft); }
+  .what small { display: block; font-size: var(--fs-s); color: var(--text-soft); }
   s { color: var(--text-soft); text-decoration-thickness: 1.5px; }
 </style>

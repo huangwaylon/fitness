@@ -20,6 +20,7 @@
   import DayDetail from './DayDetail.svelte';
   import MoneyLog from './MoneyLog.svelte';
   import NumberPad from './NumberPad.svelte';
+  import TypeName from './TypeName.svelte';
   import { dayTitle, typeLabel } from './fmt.ts';
   import { t, formatYen } from '#lib/i18n/index.ts';
 
@@ -35,6 +36,8 @@
   let tab = $state<'body' | 'money'>('body');
   let stack = $state<Screen[]>([]);
   let root: HTMLElement | undefined = $state();
+  /** The scroll position of each level under the open one (parallel to `stack`), restored on ◀ (scroll audit L1). */
+  let saved: number[] = [];
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -60,18 +63,33 @@
     untrack(() => {
       tab = e.tab;
       stack = e.week ? [{ k: 'week', wk: e.week === 'current' ? (view?.weekKey ?? '') : e.week }] : [];
+      saved = stack.map(() => 0);
     });
   });
 
+  /** The element that scrolls きろく: the nearest scrolling ancestor (the phone's app body or the dialog itself). */
+  function scroller(): HTMLElement | null {
+    for (let el = root?.parentElement; el; el = el.parentElement) {
+      const o = getComputedStyle(el).overflowY;
+      if (o === 'auto' || o === 'scroll') return el;
+      if (el.tagName === 'DIALOG') return el;
+    }
+    return null;
+  }
   async function go(s: Screen) {
+    const sc = scroller();
+    saved = [...saved.slice(0, stack.length), sc?.scrollTop ?? 0];
     stack = [...stack, s];
     await tick();
-    root?.closest('dialog')?.scrollTo({ top: 0 });
+    sc?.scrollTo({ top: 0 });
   }
-  /** ◀: one level up. False at the top (the phone goes back to its home screen). */
+  /** ◀: one level up, back where that list was scrolled to. False at the top (the phone goes back to its home screen). */
   export function back(): boolean {
     if (!stack.length) return false;
     stack = stack.slice(0, -1);
+    const y = saved[stack.length] ?? 0;
+    saved = saved.slice(0, stack.length);
+    void tick().then(() => scroller()?.scrollTo({ top: y }));
     return true;
   }
 
@@ -166,7 +184,7 @@
       {#if w}
         {@const label = typeLabel(w.type)}
         <section class="card wcard">
-          <b>{label}</b><span class="money">{dayTitle(s.date)} · {t('kiroku.min', { n: w.durationMin })}</span>
+          <b><TypeName type={w.type} /></b><span class="money">{dayTitle(s.date)} · {t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
         </section>
         <div class="wchoices">
@@ -184,11 +202,11 @@
     {:else if top.k === 'add'}
       {@const s = top}
       {#if !addType}
-        <h3 class="addh">{t('kiroku.addWorkout')} <span class="money">{dayTitle(s.date)}</span></h3>
+        <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{dayTitle(s.date)}</span></h3>
         <p class="note">{t('kiroku.addNote')}</p>
         <div class="types" role="group" aria-label={t('kiroku.pickType')}>
           {#each ADD_TYPES as ty (ty)}
-            <button type="button" class="type" onclick={() => (addType = ty)}>{typeLabel(ty)}</button>
+            <button type="button" class="type" onclick={() => (addType = ty)}><TypeName type={ty} /></button>
           {/each}
         </div>
       {:else}
@@ -203,7 +221,7 @@
   .kiroku { display: grid; gap: 12px; padding-bottom: 8px; }
   .pills { display: flex; gap: 8px; justify-content: center; margin: -4px 0 4px; }
   .pill {
-    appearance: none; border: 0; cursor: pointer; min-height: 40px; min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); background: color-mix(in srgb, var(--lip) 40%, transparent);
   }
   .pill[aria-pressed='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); }
@@ -214,14 +232,16 @@
   em.ok { background: var(--c-yuzu); color: var(--c-ink); }
   .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
   .addh { margin: 0 2px; font-size: var(--fs-talk); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .addh .nw { white-space: nowrap; }
   .addh .money { font-size: var(--fs-body); color: var(--text-soft); }
   .note { margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .ask { padding: 16px; display: grid; gap: 6px; }
   .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
   .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; word-break: auto-phrase; }
-  .types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  /* minmax(0, 1fr): the longest label (高強度インターバルトレーニング) must not set a column's minimum (sizing #3, scroll M1) */
+  .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .type {
-    appearance: none; border: 0; cursor: pointer; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);
+    appearance: none; border: 0; cursor: pointer; min-width: 0; overflow-wrap: anywhere; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);
     font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--c-ink); background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     word-break: auto-phrase;
   }
