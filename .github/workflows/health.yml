@@ -1,4 +1,4 @@
-# Backend monitor (round 9; docs/ops/runbook.md §5): a keyless {"action":"health"} POST to the Apps Script /exec URL
+# Backend monitor (docs/ops/runbook.md §5): a keyless {"action":"health"} POST to the Apps Script /exec URL
 # (repo variable GAS_URL). It fails, so GitHub e-mails the owner, unless the reply is JSON with ok:true and a `build`
 # equal to the committed Code.js's (line 3, `// build: <12 hex>`). HTML = the authorization lapsed (google-setup.md
 # §9); another build = Code.js changed but was not redeployed (google-setup.md §11).

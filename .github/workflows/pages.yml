@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
     paths: ['app/**', '.github/workflows/pages.yml']
-  # Pull requests (Dependabot's included) get the same check + vitest + build, without the deploy.
+  # Pull requests (Dependabot's included) get the same checks, without the deploy.
   pull_request:
     paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
         env:
           VITE_GAS_URL: ${{ vars.GAS_URL }}
           BASE_PATH: /${{ github.event.repository.name }}
-      # The demo smoke test (tap, undo, harvest, きろく edit) against the build just made, before it deploys.
+      # The Playwright smoke tests (demo, scenery, sound) against the build just made, before it deploys.
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
         env:
