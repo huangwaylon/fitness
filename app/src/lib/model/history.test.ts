@@ -355,8 +355,8 @@ describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
   });
 
   it('an edit exactly at the lock is refused; one millisecond before counts', () => {
-    const set = (at: number) => ['', 'A', `e${++n}`, 'metric_set', JSON.stringify({ date: DAYS[0], metric: 'steps', value: 1234 })] as EventRow;
-    const at = (t: number) => { const r = set(t); r[0] = new Date(t).toISOString(); return r; };
+    const set = () => ['', 'A', `e${++n}`, 'metric_set', JSON.stringify({ date: DAYS[0], metric: 'steps', value: 1234 })] as EventRow;
+    const at = (t: number) => { const r = set(); r[0] = new Date(t).toISOString(); return r; };
     expect(metricAsOf(reduce(withRows(goodWeek(), { events: [at(LOCK)] })), 'A', DAYS[0], 'steps', LIVE)).toBe(9000);
     expect(metricAsOf(reduce(withRows(goodWeek(), { events: [at(LOCK - 1)] })), 'A', DAYS[0], 'steps', LIVE)).toBe(1234);
     const fix = (t: number) => ev(new Date(t).toISOString(), 'A', 'checkin', { date: DAYS[6], habit: HABITS.A[0], done: false, edit: true });

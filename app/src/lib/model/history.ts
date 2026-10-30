@@ -108,7 +108,7 @@ function stampsFor(s: State, person: PersonId, wk: WeekKey, c: WeekCalc, today: 
   });
 }
 
-function weekYen(s: State, wk: WeekKey, now: number, settled: SettledWeek | undefined, c: WeekCalc): { yen: number; estimate: boolean; breakdown: Buckets } {
+function weekYen(wk: WeekKey, now: number, settled: SettledWeek | undefined, c: WeekCalc): { yen: number; estimate: boolean; breakdown: Buckets } {
   const live = buckets(payoutWeek(c.scores.A, c.scores.B));
   if (!settled) return { yen: jarSum(live), estimate: true, breakdown: live };
   const paid = paidAt(settled, now);
@@ -128,7 +128,7 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
   const start = firstWeek(s) < cur ? firstWeek(s) : cur;
   for (let wk = cur; wk >= start; wk = addDays(wk, -7)) {
     const c = calc(s, wk, now);
-    const y = weekYen(s, wk, now, settled.get(wk), c);
+    const y = weekYen(wk, now, settled.get(wk), c);
     out.push({
       weekKey: wk,
       current: wk === cur,
@@ -200,7 +200,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const today = localDateAt(now);
   const c = calc(s, wk, now);
   const settled = settleWeek(s, wk, now) ?? undefined;
-  const y = weekYen(s, wk, now, settled, c);
+  const y = weekYen(wk, now, settled, c);
   const person = (p: PersonId): WeekDetailPerson => {
     const score = c.scores[p];
     const input = weekInput(s, p, wk, c.t, c.act[p]);
