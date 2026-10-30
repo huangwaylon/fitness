@@ -1,7 +1,7 @@
 # Review rounds
 
 Team reviews of the app, newest last. Their findings were applied (or decided against) in the code, the design docs
-and the ADRs, so only round 19 is kept here. The full reports of rounds 7–18 are in git history: list them with
+and the ADRs, so only rounds 19 and 21 are kept here. The full reports of rounds 7–18 are in git history: list them with
 `git ls-tree -r --name-only b34746e docs/reviews` and read one with `git show b34746e:docs/reviews/round-N/<file>.md`.
 Rounds 1–6 (role memos) and the no-Mac backend research behind ADR 0015 (`docs/archive/no-mac/`) are at the same commit
 or earlier.
@@ -21,3 +21,4 @@ or earlier.
 | 17 | 2026-10-30 | Information architecture and content | Navigation and copy simplified |
 | 18 | 2026-10-30 | Rings contract (ADR 0021) and wallet UI cleanup (ADR 0022) | Model contract for rings; UI moved to rings and one wallet |
 | 19 | 2026-10-30 | Goals and economy against real data | [round-19/](round-19/) (report only; proposals not yet decided) |
+| 21 | 2026-10-31 | Final UI polish (measured walk: centring, rhythm, overlaps, stacking, ja line breaks) and a code review | [round-21/](round-21/): Japanese keep-all breaks, `--z-*` scale, tap-safe popup and footers, the buy sheet's live price, the harvest load fallback |
