@@ -14,6 +14,8 @@ import { PREFETCH_MS, WEATHERS, msToNextHour, trackAt, type Weather } from './ho
 import { ambientFor } from './ambient.ts';
 import { localKV } from '#lib/sync/storage.ts';
 import { jst, now } from '#lib/time/clock.ts';
+import { t } from '#lib/i18n/index.ts';
+import { asset } from '$app/paths';
 
 export const sound = $state<{ settings: SoundSettings; weather: Weather; playing: 'opening' | 'hour' | null }>({
   settings: { ...DEFAULT_SOUND },
@@ -41,20 +43,30 @@ function eng(): Engine {
       opening = false;
       syncMusic();
     };
+    // the context came back by itself (after a call or Siri): bring the music back without waiting for a tap
+    engine.onrunning = () => engine?.track && syncMusic();
     // the opening is title music: it plays clear under the phone that started it (round 14 review R5)
   }
   return engine;
 }
 
-/** Inside a user gesture: start audio (or wake it after iOS suspended it) if any setting wants it. */
-function unlock(): void {
+const musicOn = (s: SoundSettings): boolean => s.music && hasMusic();
+const anyOn = (s: SoundSettings): boolean => s.music || s.sfx || s.voice;
+
+/** Inside a user gesture: start audio (or wake it after iOS suspended it, or restart a track something outside
+ *  paused) if any setting wants it. A scenery tap sounds on pointerdown, which on a touch screen isn't a user
+ *  activation: it only gets the context going (so that tap's sound is scheduled), and the pointerup unlocks the rest. */
+function unlock(ev?: Event): void {
   const s = sound.settings;
   if (typeof window === 'undefined' || silent(s)) return;
   const e = eng();
-  const music = s.music && hasMusic();
+  const music = musicOn(s);
   if (!e.needsUnlock(music)) return;
-  e.unlock(music);
+  const activation = ev?.type !== 'pointerdown';
+  if (!activation && e.ctx?.state === 'running') return; // only the decks wait: that's the pointerup's job
+  e.unlock(music, activation);
   apply();
+  if (!activation) return;
   if (Date.now() - announceAt < ANNOUNCE_WAIT_MS) void e.whenReady().then(() => play('chime'));
   announceAt = 0;
 }
@@ -62,9 +74,18 @@ function unlock(): void {
 function apply(): void {
   const e = engine;
   if (!e?.ctx) return;
-  e.setLevels(sound.settings);
-  if (silent(sound.settings)) e.sleep();
-  else syncMusic();
+  const s = sound.settings;
+  e.setSession(musicOn(s));
+  e.setLevels(s);
+  if (!anyOn(s)) e.sleep();
+  else if (s.volume <= 0) {
+    e.hush(); // muted, not off: the track keeps its place (round 16 L4)
+    const ms = mediaSession();
+    if (ms?.metadata) ms.playbackState = 'paused';
+  } else {
+    e.resume();
+    syncMusic();
+  }
 }
 
 /** The music and ambience that should sound now: the opening while it plays, else the Tokyo hour's track. */
@@ -72,25 +93,75 @@ function syncMusic(): void {
   const e = engine;
   if (!e?.ctx || document.hidden) return;
   const s = sound.settings;
-  if (!s.music || silent(s)) {
+  if (!s.music || !anyOn(s)) {
     opening = false;
     sound.playing = null;
     e.stopMusic();
     void e.setAmbient([]);
+    nowPlaying(null);
     return;
   }
+  if (s.volume <= 0) return; // muted: everything holds where it is
   e.muffle(coveredBy() && !opening);
   const d = now();
+  const { hour, month } = jst(d);
   if (opening && AUDIO.opening) {
     sound.playing = 'opening';
-    void e.setTrack('opening', { file: AUDIO.opening, start: 0 }, false);
+    void e.setTrack('opening', AUDIO.opening, false);
+    nowPlaying(t('sound.opening'));
   } else {
-    const t = trackAt(d, sound.weather, AUDIO.music);
-    sound.playing = t ? 'hour' : null;
-    void e.setTrack(t?.key ?? null, t);
+    const tr = trackAt(d, sound.weather, AUDIO.music);
+    sound.playing = tr ? 'hour' : null;
+    void e.setTrack(tr?.key ?? null, tr);
+    nowPlaying(tr ? t('sound.nowPlaying', { hour }) : null);
   }
-  const { hour, month } = jst(d);
   void e.setAmbient(ambientFor(hour, month, sound.weather).filter((l) => AUDIO.ambient[l.id]));
+}
+
+const mediaSession = (): MediaSession | null => (typeof navigator !== 'undefined' && 'mediaSession' in navigator ? navigator.mediaSession : null);
+
+/** The Media Session (the lock screen's and Control Center's Now Playing tile). Under the 'playback' session iOS may
+ *  show one for the music deck. Its ▶ and ⏸ are ours (round 16 H1): ▶ only resumes while the app is in front (never
+ *  music from a pocket), ⏸ holds the track until the next tap in the app. The tile is named after the tune with the
+ *  app's icon, so it isn't a bare URL; no seeking or skipping. */
+function initMediaSession(): void {
+  const ms = mediaSession();
+  if (!ms) return;
+  const handle = (a: MediaSessionAction, f: MediaSessionActionHandler | null) => {
+    try {
+      ms.setActionHandler(a, f);
+    } catch {
+      /* this action isn't supported */
+    }
+  };
+  handle('play', () => {
+    if (document.hidden || !engine?.ctx || silent(sound.settings)) return void (ms.playbackState = 'paused');
+    engine.resume();
+    syncMusic();
+  });
+  const hold = () => {
+    engine?.holdMusic();
+    ms.playbackState = 'paused';
+  };
+  handle('pause', hold);
+  handle('stop', hold);
+  for (const a of ['seekbackward', 'seekforward', 'seekto', 'previoustrack', 'nexttrack'] as const) handle(a, null);
+}
+
+/** What the Now Playing tile says (null: no music). */
+function nowPlaying(title: string | null): void {
+  const ms = mediaSession();
+  if (!ms) return;
+  if (!title) {
+    ms.metadata = null;
+    ms.playbackState = 'none';
+    return;
+  }
+  const name = title.replace(/^♪\s*/, '');
+  if (ms.metadata?.title !== name && typeof MediaMetadata === 'function') {
+    ms.metadata = new MediaMetadata({ title: name, artist: t('app.name'), artwork: [{ src: asset('icons/icon-512.png'), sizes: '512x512', type: 'image/png' }] });
+  }
+  ms.playbackState = document.hidden ? 'paused' : 'playing';
 }
 
 /** Timers for the next top of the hour: fetch its track a minute early, change on the hour. */
@@ -151,16 +222,28 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   sound.settings = loadSound(localKV());
   const w = new URLSearchParams(location.search).get('weather') as Weather | null;
   if (w && WEATHERS.includes(w)) sound.weather = w;
-  const gestures = ['pointerup', 'touchend', 'click', 'keydown'] as const;
+  const gestures = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'] as const;
   for (const g of gestures) document.addEventListener(g, unlock, { capture: true, passive: true });
+  initMediaSession();
+  // the renderer is pure and small: fetch it ahead of the first tap when a setting is on (nothing loads while off)
+  if (!silent(sound.settings)) setTimeout(() => !silent(sound.settings) && eng().warm(), 2000);
+  const onHide = () => {
+    engine?.pause();
+    const ms = mediaSession();
+    if (ms && ms.playbackState !== 'none') ms.playbackState = 'paused';
+  };
   const onVisible = () => {
-    if (document.hidden) return engine?.pause();
+    if (document.hidden) return onHide();
     if (!engine?.ctx || silent(sound.settings)) return;
     engine.resume();
     syncMusic();
     armClock();
   };
+  // pagehide / pageshow: a bfcache restore, or a pagehide without a visibilitychange first (a fast reload)
+  const onPageShow = (e: PageTransitionEvent) => e.persisted && onVisible();
   document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('pagehide', onHide);
+  window.addEventListener('pageshow', onPageShow);
   const stopEffects = $effect.root(() => {
     // Under a sheet the music goes muffled. The opening theme is NH's title screen: closing the phone it started in
     // is "pressing A", and the island's hour takes over with the usual crossfade.
@@ -185,6 +268,8 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   return () => {
     for (const g of gestures) document.removeEventListener(g, unlock, { capture: true });
     document.removeEventListener('visibilitychange', onVisible);
+    window.removeEventListener('pagehide', onHide);
+    window.removeEventListener('pageshow', onPageShow);
     stopEffects();
     clock.forEach(clearTimeout);
     engine?.pause();

@@ -9,11 +9,19 @@ export const WEATHERS: readonly Weather[] = ['sunny', 'rain', 'snow'];
 /** `7` → `'07'`: the file key of an hour (static/audio/manifest.json `music.<weather>.<HH>`). */
 export const hourKey = (hour: number): string => String(hour).padStart(2, '0');
 
-/** One hour's track: a seamless loop (`<audio loop>`), played from `start` s (where the loop begins musically). */
+/** One hour's track: a seamless loop, played from `start` s (where the loop begins musically). With `end`, the file
+ *  is one loop period (0 → `end` s) plus a copy of its first seconds, and the engine hands over between its two decks
+ *  inside that copy (session.ts WRAP); without it, `<audio loop>` wraps. `gain`: dB that brings it to the common
+ *  loudness (scripts/music.ts measures it). */
 export interface MusicTrack {
   file: string;
   start: number;
+  end?: number;
+  gain?: number;
 }
+
+/** A track's `gain` (dB) as a linear deck level, clamped to −24…+12 dB (a typo in the manifest can't blast). */
+export const trackLevel = (db: number | undefined): number => (typeof db === 'number' && Number.isFinite(db) ? 10 ** (Math.min(12, Math.max(-24, db)) / 20) : 1);
 export type MusicFiles = Partial<Record<Weather, Partial<Record<string, MusicTrack>>>>;
 
 /** The file for this hour and weather: the weather's arrangement, else the sunny one of the same hour (NH has all

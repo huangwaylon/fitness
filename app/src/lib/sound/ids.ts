@@ -15,7 +15,14 @@ export type SoundId =
   // jingles (duck the music, one at a time)
   | 'fanfare' | 'miles' | 'chime'
   // villager reactions (the sound under an emote bubble)
-  | 'pop' | 'surprise' | 'heart' | 'sparkle' | 'oops';
+  | 'pop' | 'surprise' | 'heart' | 'sparkle' | 'oops'
+  // scenery taps (docs/design/scene-interactions.md §Sound): quiet, jittered, two at most
+  | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow' | 'squeak';
+
+/** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
+export type SceneSfx =
+  | 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shooting-star'
+  | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly';
 
 export interface SoundDef {
   bus: 'sfx' | 'voice';
@@ -50,8 +57,17 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   pop: { bus: 'sfx', gain: 0.45, jitter: 60, max: 2 },
   surprise: { bus: 'sfx', gain: 0.5, jitter: 40, max: 1 },
   heart: { bus: 'sfx', gain: 0.5, jitter: 30, max: 1 },
-  sparkle: { bus: 'sfx', gain: 0.45, jitter: 30, max: 1 },
-  oops: { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 }
+  sparkle: { bus: 'sfx', gain: 0.45, jitter: 30, max: 2 },
+  oops: { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 },
+  swish: { bus: 'sfx', gain: 0.35, jitter: 80, max: 2 },
+  puff: { bus: 'sfx', gain: 0.4, jitter: 60, max: 2 },
+  // NH's shooting-star "shiing": not a jingle (it must not duck the music)
+  twinkle: { bus: 'sfx', gain: 0.4, jitter: 30, max: 2 },
+  splash: { bus: 'sfx', gain: 0.45, jitter: 70, max: 2 },
+  'step-sand': { bus: 'sfx', gain: 0.4, jitter: 90, max: 2 },
+  'step-grass': { bus: 'sfx', gain: 0.35, jitter: 90, max: 2 },
+  'step-snow': { bus: 'sfx', gain: 0.4, jitter: 90, max: 2 },
+  squeak: { bus: 'sfx', gain: 0.4, jitter: 50, max: 2 }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

@@ -1,6 +1,6 @@
 // The Web Audio engine (docs/design/sound.md §6, §11). Browser only; the pure rules it follows live in mix.ts,
-// hourly.ts and ambient.ts (tested there). One AudioContext, created inside the first tap after a sound setting is
-// on (iOS only starts audio from a gesture), never while everything is off.
+// hourly.ts, ambient.ts and session.ts (tested there). One AudioContext, created inside the first tap after a sound
+// setting is on (iOS only starts audio from a gesture), never while everything is off.
 //
 //   effects  AudioBufferSource → gain ─┬→ sfx bus ──┐
 //   blips    AudioBufferSource → gain ─┴→ voice bus ┼→ master (音量) → speakers
@@ -9,24 +9,34 @@
 //
 // Music streams from two <audio> elements routed into the graph (decoding a whole 1–2 minute track would cost
 // 20–40 MB of PCM on a phone); their levels are gain nodes, because iOS ignores HTMLMediaElement.volume. Each hour is
-// one seamless loop period (scripts/music.ts), so `loop` wraps without a seam. Effects are small decoded buffers.
-import { SOUNDS, type Bus, type SoundId } from './ids.ts';
-import { DUCK, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
-import { crossfadePlan, type MusicTrack } from './hourly.ts';
+// one loop period plus a copy of its first seconds (scripts/music.ts): the two decks hand over inside that copy, so
+// the loop never relies on `<audio loop>`'s seek at the end. Effects are small decoded buffers.
+import { SOUNDS, SOUND_IDS, type Bus, type SoundId } from './ids.ts';
+import { DUCK, LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
+import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
+import { IdleTimer, QUEUED_DROP_MS, SessionSwitch, WRAP, canSound, needsFadeIn, needsUnlock, wrapTarget } from './session.ts';
 import type { AmbientId } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
 
-/** Bus levels at full volume. NH's BGM is gentle and sits well under the effects; blips are quiet. */
-const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9, voice: 0.4 } as const;
 /** The music when muffled (a sheet or the phone is up: NH muffles its BGM under the phone and menus). */
 const MUFFLE_HZ = 900;
+/** A sound asked for while the renderer is still loading plays if it arrives within this long (the first tap). */
+const LATE_MS = 400;
 
 interface Deck {
   el: HTMLAudioElement;
   gain: GainNode;
-  /** What it holds (an hour's key, 'opening') and since when it is the one meant to sound. */
+  /** What it holds (an hour's key, 'opening') while it is the one meant to sound. */
   key: string | null;
+  /** Its full level: the track's loudness gain (manifest `gain`, dB) as a factor. */
+  level: number;
+  /** Where the loop period ends in the file (s) when the file carries a copy of its start for the hand-off. */
+  end: number | null;
+  /** Chosen and fading in, its play() not called yet: paused, but not stalled. */
+  starting: boolean;
+  /** The audio-clock time its current fade-in is complete. */
+  fadeEnd: number;
 }
 
 type AudioSessionNav = Navigator & { audioSession?: { type: string } };
@@ -46,19 +56,44 @@ function silentWav(): Blob {
   return new Blob([b], { type: 'audio/wav' });
 }
 
+/** Where `navigator.audioSession` exists (WebKit), set its type; elsewhere nothing to do. */
+function applySession(type: string): void {
+  try {
+    const nav = navigator as AudioSessionNav;
+    if (nav.audioSession) nav.audioSession.type = type;
+  } catch {
+    /* not supported */
+  }
+}
+
+/** Run `f` when the main thread is idle (Safari has no requestIdleCallback: a short timeout instead). */
+function whenIdle(f: () => void, ms = 60): void {
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(() => f(), { timeout: 2000 });
+  else setTimeout(f, ms);
+}
+
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+const clock = () => performance.now();
+
 export class Engine {
   ctx: AudioContext | null = null;
   #master!: GainNode;
   #bus!: Record<Bus | 'ambient', GainNode>;
   #duck!: GainNode;
   #muffle!: BiquadFilterNode;
+  #levels: SoundSettings | null = null;
   #synth: Synth | null = null;
   #synthLoad: Promise<void> | null = null;
+  #prerendering = false;
   #buffers = new Map<SoundId, AudioBuffer>();
   #files: Promise<void> | null = null;
   #limiter = new VoiceLimiter();
   #live = new Map<number, AudioBufferSourceNode>();
+  /** Audio-clock time the last line of blips ends. */
+  #blipsUntil = 0;
   #decks: Deck[] = [];
+  #decksReady = false;
+  #silentUrl: string | null = null;
   #front = 0;
   #token = 0;
   /** Music files as blob URLs (path → URL), the current and the prefetched next one only. */
@@ -66,24 +101,28 @@ export class Engine {
   #ambient = new Map<AmbientId, { src: AudioBufferSourceNode; gain: GainNode }>();
   #ambientBuffers = new Map<AmbientId, Promise<AudioBuffer | null>>();
   #ambientToken = 0;
-  #resuming = false;
+  /** When the last resume() was asked for (performance.now()): a tap's own cue may sound while it settles. */
+  #resumeAt = -Infinity;
+  #session = new SessionSwitch(applySession);
+  #idle = new IdleTimer(() => this.#onIdle());
+  /** Suspended by the idle timer (not by the background or an interruption): the next cue may wake it. */
+  #asleep = false;
+  #sleepTimer: ReturnType<typeof setTimeout> | undefined;
+  #wrapTimer: ReturnType<typeof setTimeout> | undefined;
+  #wrapToken = 0;
+  #wrapping = false;
   /** Called when a one-shot track (the opening) ends. */
   onended: ((key: string) => void) | null = null;
+  /** Called when the context starts running again (after an interruption, or iOS resuming it on its own). */
+  onrunning: (() => void) | null = null;
 
   /** The context, created on first use (inside a tap on iOS). Null where Web Audio is missing. */
-  #ensure(): AudioContext | null {
+  #ensure(music: boolean): AudioContext | null {
     if (this.ctx) return this.ctx;
     const AC = window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
     if (!AC) return null;
-    // iOS 17+ (Audio Session API): 'playback' plays through the Ring/Silent switch (user 2026-10-30: the in-app
-    // switches are the control, so what's turned on is heard even in silent mode). The cost: it pauses the user's own
-    // music while ours plays, like any media app. Music pauses when the app is hidden, so it never plays from a pocket.
-    try {
-      const nav = navigator as AudioSessionNav;
-      if (nav.audioSession) nav.audioSession.type = 'playback';
-    } catch {
-      /* not supported */
-    }
+    // Before the context exists: WebKit takes the session type when audio first starts (session.ts).
+    this.#session.want(music, true);
     const ctx = new AC({ latencyHint: 'interactive' });
     const g = () => ctx.createGain();
     this.#master = g();
@@ -99,59 +138,133 @@ export class Engine {
     this.#bus.voice.connect(this.#master);
     this.#bus.ambient.connect(this.#duck);
     this.#duck.connect(this.#muffle).connect(this.#bus.music).connect(this.#master);
+    ctx.addEventListener('statechange', () => {
+      if (ctx.state === 'running') this.onrunning?.();
+    });
     this.ctx = ctx;
     return ctx;
   }
 
-  /** Waiting for a tap: the context is not running yet, or music wants its decks unlocked. */
+  /** 'playback' while ミュージック is on (plays in silent mode), else 'ambient' (session.ts). */
+  setSession(music: boolean): void {
+    if (this.ctx) this.#session.want(music);
+  }
+
+  /** Waiting for a tap (session.ts needsUnlock). */
   needsUnlock(music: boolean): boolean {
-    return !this.ctx || this.ctx.state !== 'running' || (music && !this.#decks.length);
+    const f = this.#decks[this.#front];
+    return needsUnlock({
+      state: this.ctx?.state ?? null,
+      music,
+      decksReady: this.#decksReady,
+      frontStalled: !!f?.key && f.el.paused && !f.starting
+    });
   }
 
-  /** Call synchronously inside a user gesture (pointerup / touchend / click / keydown). */
-  unlock(music: boolean): void {
-    const ctx = this.#ensure();
+  /** Call synchronously inside a user gesture (pointerup / touchend / click / keydown). `activation: false` (a
+   *  pointerdown, which isn't a user activation on a touch screen) only creates and resumes the context, so the tap's
+   *  own sound (fired on pointerdown) can be scheduled; the decks wait for the pointerup. */
+  unlock(music: boolean, activation = true): void {
+    const ctx = this.#ensure(music);
     if (!ctx) return;
-    if (ctx.state !== 'running') {
-      this.#resuming = true;
-      ctx.resume().then(
-        () => (this.#resuming = false),
-        () => (this.#resuming = false)
-      );
+    clearTimeout(this.#sleepTimer);
+    if (ctx.state !== 'running') this.#wake(ctx);
+    if (activation) {
+      // older iOS: a buffer started inside the tap opens the output
+      const src = ctx.createBufferSource();
+      src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      src.connect(ctx.destination);
+      src.start();
+      if (music) this.#unlockDecks(ctx);
     }
-    // older iOS: a buffer started inside the tap opens the output
-    const src = ctx.createBufferSource();
-    src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
-    src.connect(ctx.destination);
-    src.start();
-    if (music) this.#unlockDecks(ctx);
-    // the placeholder renderer and the effect files load after the tap (sounds asked for meanwhile are skipped)
-    this.#synthLoad ??= import('./synth.ts').then((m) => void (this.#synth = m));
+    void this.#loadSynth();
+    this.#prerender();
     this.#loadFiles();
+    this.#idle.poke();
   }
 
-  /** Resolves once effects can sound (the placeholder renderer has loaded after the first unlock). */
+  #wake(ctx: AudioContext): void {
+    this.#asleep = false;
+    this.#resumeAt = clock();
+    void ctx.resume().catch(() => {});
+  }
+
+  /** Load the placeholder renderer ahead of the first tap (it's pure: no context). Called when a setting is on. */
+  warm(): void {
+    void this.#loadSynth();
+  }
+
+  /** Resolves once effects can sound (the placeholder renderer has loaded). Never rejects. */
   whenReady(): Promise<void> {
     return this.#synthLoad ?? Promise.resolve();
   }
 
+  /** The renderer chunk. A stale build's chunk 404s after a deploy: the failure is forgotten, so the next cue or tap
+   *  tries again (sound isn't worth reloading the page for; the app's own lazy chunks do that, ui-state/reload.ts). */
+  #loadSynth(): Promise<void> {
+    return (this.#synthLoad ??= import('./synth.ts').then(
+      (m) => {
+        this.#synth = m;
+        this.#prerender();
+      },
+      () => {
+        this.#synthLoad = null;
+      }
+    ));
+  }
+
+  /** Render the placeholders ahead of their first cue, one per idle slot, jingles first, only for the kinds that are
+   *  on (the fanfare and the chime take 25–35 ms each on a Mac, 2–3× that on a phone: never at the cue). */
+  #prerender(): void {
+    if (this.#prerendering || !this.ctx || !this.#synth) return;
+    this.#prerendering = true;
+    const first: SoundId[] = ['chime', 'fanfare', 'heart', 'miles'];
+    const order = [...first, ...SOUND_IDS.filter((id) => !first.includes(id))];
+    const step = () => {
+      const ctx = this.ctx;
+      const s = this.#levels;
+      const id = order.find((i) => !this.#buffers.has(i) && (!s || (SOUNDS[i].bus === 'voice' ? s.voice : s.sfx)));
+      if (!ctx || !id || document.hidden) return void (this.#prerendering = false);
+      order.splice(order.indexOf(id), 1);
+      this.#buffer(ctx, id);
+      whenIdle(step);
+    };
+    whenIdle(step, 300);
+  }
+
   /** iOS lets an <audio> element play later only if it played once inside a tap: two decks, a silent clip each. */
   #unlockDecks(ctx: AudioContext): void {
-    if (this.#decks.length) return;
-    const silent = URL.createObjectURL(silentWav());
-    for (let i = 0; i < 2; i++) {
-      const el = new Audio();
-      el.preload = 'auto';
-      el.setAttribute('playsinline', '');
-      el.disableRemotePlayback = true;
-      const gain = ctx.createGain();
-      gain.gain.value = 0;
-      ctx.createMediaElementSource(el).connect(gain).connect(this.#duck);
-      el.src = silent;
-      el.play().then(() => el.pause(), () => {});
-      const deck: Deck = { el, gain, key: null };
-      el.addEventListener('ended', () => deck.key && !el.loop && this.onended?.(deck.key));
-      this.#decks.push(deck);
+    if (!this.#decks.length) {
+      for (let i = 0; i < 2; i++) {
+        const el = new Audio();
+        el.preload = 'auto';
+        el.setAttribute('playsinline', '');
+        el.disableRemotePlayback = true;
+        const gain = ctx.createGain();
+        gain.gain.value = 0;
+        ctx.createMediaElementSource(el).connect(gain).connect(this.#duck);
+        const deck: Deck = { el, gain, key: null, level: 1, end: null, starting: false, fadeEnd: 0 };
+        el.addEventListener('ended', () => this.#ended(deck));
+        // Never in the background: the lock screen, Control Center or headphones may play the element while the page
+        // is hidden (it's the Now Playing item under the 'playback' session). Keep it paused there.
+        el.addEventListener('play', () => document.hidden && el.pause());
+        // a jump in the playing deck (a seek from outside) re-times the loop hand-off
+        el.addEventListener('seeked', () => this.#decks[this.#front] === deck && !this.#wrapping && this.#armWrap());
+        this.#decks.push(deck);
+      }
+    }
+    if (this.#decksReady) return;
+    this.#silentUrl ??= URL.createObjectURL(silentWav());
+    for (const d of this.#decks) {
+      // a deck that already holds a track plays it (at gain 0: the fade-in follows); the others a silent clip
+      if (!d.key) d.el.src = this.#silentUrl;
+      d.el.play().then(
+        () => {
+          this.#decksReady = true;
+          if (!d.key) d.el.pause();
+        },
+        () => {}
+      );
     }
   }
 
@@ -190,17 +303,32 @@ export class Engine {
     return b ?? null;
   }
 
-  /** Sounds only while running (or resuming inside the tap that unlocked it): nothing queues up while locked or in
-   *  the background to burst out later. */
+  /** The context a cue may use now, or null. Running, or resuming inside the tap that unlocked it (session.ts
+   *  canSound): nothing queues up while locked, interrupted or in the background to burst out later. A context the
+   *  idle timer put to sleep is woken by the cue itself. */
   #ready(): AudioContext | null {
     const ctx = this.ctx;
-    return ctx && (ctx.state === 'running' || this.#resuming) ? ctx : null;
+    if (!ctx) return null;
+    if (this.#asleep && ctx.state === 'suspended' && !document.hidden) this.#wake(ctx);
+    return canSound(ctx.state, clock() - this.#resumeAt) ? ctx : null;
   }
 
-  play(id: SoundId, o: { gain?: number; rate?: number; delay?: number } = {}): void {
+  /** A cue scheduled on a context that isn't running yet is cancelled if it still isn't running shortly after. */
+  #dropIfStuck(ctx: AudioContext, cancel: () => void): void {
+    if (ctx.state === 'running') return;
+    setTimeout(() => ctx.state !== 'running' && cancel(), QUEUED_DROP_MS);
+  }
+
+  play(id: SoundId, o: { gain?: number; rate?: number; delay?: number } = {}, late = false): void {
     const ctx = this.#ready();
-    const buf = ctx && this.#buffer(ctx, id);
-    if (!ctx || !buf) return;
+    if (!ctx) return;
+    const buf = this.#buffer(ctx, id);
+    if (!buf) {
+      // the renderer is still loading (the first tap): play when it arrives, if that's soon
+      const t0 = clock();
+      if (!late) void this.#loadSynth().then(() => clock() - t0 < LATE_MS && this.play(id, o, true));
+      return;
+    }
     const def = SOUNDS[id];
     const rate = (o.rate ?? 1) * jitterRate(def.jitter);
     const at = ctx.currentTime + Math.max(0, o.delay ?? 0);
@@ -222,6 +350,8 @@ export class Engine {
     src.start(at);
     this.#live.set(r.key, src);
     if (def.jingle) this.#duckUnder(at, at + dur);
+    this.#dropIfStuck(ctx, () => this.#stop(r.key));
+    this.#idle.poke();
   }
 
   #stop(key: number): void {
@@ -231,6 +361,7 @@ export class Engine {
       /* already ended */
     }
     this.#live.delete(key);
+    this.#limiter.release(key);
   }
 
   /** A line of dialogue: one blip per entry (s from now, playback rate). They never overlap, so they skip the
@@ -251,8 +382,9 @@ export class Engine {
       s.start(t0 + t);
       return s;
     });
+    this.#blipsUntil = Math.max(this.#blipsUntil, t0 + times[times.length - 1] + buf.duration);
     srcs[srcs.length - 1].onended = () => out.disconnect();
-    return () => {
+    const cancel = () => {
       const now = ctx.currentTime;
       out.gain.setTargetAtTime(0, now, 0.01);
       for (const s of srcs) {
@@ -263,6 +395,18 @@ export class Engine {
         }
       }
     };
+    this.#dropIfStuck(ctx, cancel);
+    this.#idle.poke();
+    return cancel;
+  }
+
+  /** IDLE_SUSPEND_MS without a sound and no music meant to play: let the hardware sleep (the next cue wakes it). */
+  #onIdle(): void {
+    const ctx = this.ctx;
+    if (!ctx || ctx.state !== 'running' || this.track || document.hidden) return;
+    if (this.#live.size || ctx.currentTime < this.#blipsUntil) return this.#idle.poke();
+    this.#asleep = true;
+    void ctx.suspend().catch(() => {});
   }
 
   /** The music dips under a jingle and comes back after it. */
@@ -280,12 +424,15 @@ export class Engine {
     this.#muffle.frequency.setTargetAtTime(on ? MUFFLE_HZ : 20000, this.ctx.currentTime, 0.12);
   }
 
-  /** Bus levels from the settings (音量 on a squared curve, so the slider feels even). */
+  /** Bus levels from the settings (音量 on a squared curve, so the slider feels even). The first time they are set at
+   *  once, so the unlocking tap's own sound isn't swallowed by a ramp from 0. */
   setLevels(s: SoundSettings): void {
     const ctx = this.ctx;
     if (!ctx) return;
+    const first = !this.#levels;
+    this.#levels = { ...s };
     const at = ctx.currentTime;
-    const set = (p: AudioParam, v: number) => p.setTargetAtTime(v, at, 0.05);
+    const set = (p: AudioParam, v: number) => (first ? p.setValueAtTime(v, at) : p.setTargetAtTime(v, at, 0.05));
     set(this.#master.gain, s.volume * s.volume);
     set(this.#bus.music.gain, s.music ? LEVELS.music : 0);
     set(this.#bus.ambient.gain, s.music ? LEVELS.ambient : 0);
@@ -293,7 +440,7 @@ export class Engine {
     set(this.#bus.voice.gain, s.voice ? LEVELS.voice : 0);
   }
 
-  /** A music file as a blob URL. The whole file (0.4–0.8 MB) is fetched through the service worker's audio cache
+  /** A music file as a blob URL. The whole file (0.4–0.9 MB) is fetched through the service worker's audio cache
    *  and played from memory: the element never sends Range requests the worker would have to answer, and an hour
    *  heard once plays offline. Only the current and the prefetched next file are kept. */
   #blob(path: string): Promise<string | null> {
@@ -323,17 +470,20 @@ export class Engine {
   }
 
   /** Play `track` under `key` (an hour like 'sunny/07', or 'opening'), crossfading from the one playing
-   *  (hourly.ts crossfadePlan). The same key again resumes it in place with a short fade-in. Looping tracks wrap
-   *  seamlessly; a one-shot calls `onended`. Null = fade out to silence. */
+   *  (hourly.ts crossfadePlan). The same key again fades it back in where it is if it isn't audibly up (paused, or
+   *  played by iOS at gain 0 while hidden). Looping tracks wrap seamlessly; a one-shot calls `onended`. Null = fade
+   *  out to silence. */
   async setTrack(key: string | null, track: MusicTrack | null, loop = true, prefetched: string[] = []): Promise<void> {
     const ctx = this.ctx;
     if (!ctx || !this.#decks.length) return;
     const cur = this.#decks[this.#front];
     if (key && cur.key === key) {
-      if (cur.el.paused) this.#fadeIn(cur, crossfadePlan(ctx.currentTime, false));
+      const fading = cur.starting || ctx.currentTime < cur.fadeEnd;
+      if (!fading && needsFadeIn(cur.el.paused, cur.gain.gain.value, cur.level)) this.#fadeIn(cur, crossfadePlan(ctx.currentTime, false));
       return;
     }
     const token = ++this.#token;
+    this.#cancelWrap();
     const playing = !!cur.key && !cur.el.paused;
     const plan = crossfadePlan(ctx.currentTime, playing);
     this.#fadeOut(cur, plan.outFrom, plan.outTo);
@@ -344,9 +494,12 @@ export class Engine {
     this.#front = 1 - this.#front;
     const next = this.#decks[this.#front];
     next.key = key;
-    next.el.loop = loop;
+    next.level = trackLevel(track.gain);
+    next.end = loop && track.end ? track.end : null;
+    next.el.loop = loop && next.end === null;
+    next.starting = true;
     next.el.src = url;
-    // seek once the element knows the file (start = where the loop begins musically)
+    // seek once the element knows the file (start = where the loop begins musically); an undecodable file goes on
     await new Promise<void>((done) => {
       const go = () => {
         try {
@@ -357,10 +510,13 @@ export class Engine {
         done();
       };
       if (next.el.readyState >= 1) go();
-      else next.el.addEventListener('loadedmetadata', go, { once: true });
+      else {
+        next.el.addEventListener('loadedmetadata', go, { once: true });
+        next.el.addEventListener('error', () => done(), { once: true });
+      }
       next.el.load();
     });
-    if (token !== this.#token) return;
+    if (token !== this.#token) return void (next.starting = false);
     const lead = Math.max(0, plan.inFrom - ctx.currentTime);
     this.#fadeIn(next, { inFrom: ctx.currentTime + lead, inTo: ctx.currentTime + lead + (plan.inTo - plan.inFrom) });
   }
@@ -370,9 +526,16 @@ export class Engine {
     const g = d.gain.gain;
     g.cancelScheduledValues(0);
     g.setValueAtTime(0, Math.max(ctx.currentTime, p.inFrom));
-    g.linearRampToValueAtTime(1, p.inTo);
-    const key = d.key;
-    setTimeout(() => d.key === key && d.el.play().catch(() => {}), Math.max(0, (p.inFrom - ctx.currentTime) * 1000));
+    g.linearRampToValueAtTime(d.level, p.inTo);
+    d.fadeEnd = p.inTo;
+    d.starting = true;
+    const key = d.key, token = this.#token;
+    // a pause(), a newer change or the page hiding meanwhile cancels the start (no music from the background)
+    setTimeout(() => {
+      d.starting = false;
+      if (token !== this.#token || d.key !== key || document.hidden) return;
+      d.el.play().then(() => this.#armWrap(), () => {});
+    }, Math.max(0, (p.inFrom - ctx.currentTime) * 1000));
   }
 
   #fadeOut(d: Deck, from: number, to: number): void {
@@ -383,9 +546,131 @@ export class Engine {
     g.linearRampToValueAtTime(0, Math.max(from + 0.05, to));
     const key = d.key;
     d.key = null; // no longer the one meant to sound (a return to its key starts it afresh)
+    d.starting = false;
+    d.fadeEnd = 0;
     setTimeout(() => {
       if (d.key === null || d.key === key) d.el.pause();
     }, (to - (this.ctx?.currentTime ?? 0)) * 1000 + 80);
+  }
+
+  /** A deck reached the end of its file: a one-shot (the opening) is over; a hand-off track whose hand-off didn't
+   *  happen (timers held up) carries on from the musically same point, with a short gap rather than silence. */
+  #ended(d: Deck): void {
+    if (!d.key) return;
+    if (d.end !== null) {
+      try {
+        d.el.currentTime = Math.max(0, d.el.duration - d.end);
+      } catch {
+        /* from 0 */
+      }
+      if (!document.hidden) d.el.play().then(() => this.#armWrap(), () => {});
+    } else if (!d.el.loop) this.onended?.(d.key);
+  }
+
+  /** The loop hand-off (session.ts WRAP). A few seconds before the period ends the idle deck loads the same file;
+   *  once the playing deck is inside the copied tail, the idle one starts at the matching point, is lined up by its
+   *  reported position, and takes over with a short crossfade. */
+  #armWrap(): void {
+    clearTimeout(this.#wrapTimer);
+    const ctx = this.ctx;
+    const a = this.#decks[this.#front];
+    if (!ctx || !a?.key || a.end === null || a.el.paused || this.#wrapping) return;
+    const end = a.end;
+    const toEnd = end - a.el.currentTime;
+    if (toEnd > WRAP.prep + 0.5) {
+      // re-read the position closer to the end (corrects any drift between the timer and the element)
+      this.#wrapTimer = setTimeout(() => this.#armWrap(), (toEnd - WRAP.prep) * 1000);
+      return;
+    }
+    const b = this.#decks[1 - this.#front];
+    if (b.key) {
+      this.#wrapTimer = setTimeout(() => this.#armWrap(), 500); // an hour's fade-out still on it
+      return;
+    }
+    void this.#handOff(a, b, end);
+  }
+
+  async #handOff(a: Deck, b: Deck, end: number): Promise<void> {
+    const ctx = this.ctx!;
+    const token = this.#token, wrap = ++this.#wrapToken, key = a.key;
+    const stale = () =>
+      token !== this.#token || wrap !== this.#wrapToken || a.key !== key || this.#decks[this.#front] !== a || document.hidden;
+    this.#wrapping = true;
+    b.gain.gain.cancelScheduledValues(0);
+    b.gain.gain.value = 0;
+    b.el.loop = false;
+    if (b.el.src !== a.el.src) {
+      b.el.src = a.el.src;
+      await new Promise<void>((done) => {
+        b.el.addEventListener('loadedmetadata', () => done(), { once: true });
+        b.el.addEventListener('error', () => done(), { once: true });
+        b.el.load();
+      });
+    }
+    const tail = (Number.isFinite(b.el.duration) ? b.el.duration : a.el.duration) - end;
+    if (stale() || !(tail > 1)) return void (this.#wrapping = false);
+    // wait until the playing deck is inside the copy
+    const toTail = end + WRAP.into - a.el.currentTime;
+    if (toTail > 0) await wait(toTail * 1000);
+    if (stale()) return this.#cancelWrap();
+    let lag = 0.03; // the incoming deck's start-up delay, learnt on each try
+    let target = wrapTarget(a.el.currentTime, end, tail - 1);
+    if (target === null) {
+      // not in the copy after all (the deck was moved meanwhile): try again from its new place; past it, the
+      // end-of-file fallback carries on
+      const early = a.el.currentTime < end;
+      this.#cancelWrap();
+      if (early) this.#armWrap();
+      return;
+    }
+    b.el.currentTime = target + lag;
+    try {
+      await b.el.play();
+    } catch {
+      return this.#cancelWrap();
+    }
+    for (let i = 0; i < WRAP.tries; i++) {
+      await wait(50);
+      if (stale()) return this.#cancelWrap();
+      target = wrapTarget(a.el.currentTime, end, tail - 0.4);
+      if (target === null) break;
+      const off = target - b.el.currentTime;
+      if (Math.abs(off) <= WRAP.tolerance) break;
+      lag += off;
+      b.el.currentTime = target + lag;
+      await new Promise<void>((done) => {
+        b.el.addEventListener('seeked', () => done(), { once: true });
+        setTimeout(done, 250);
+      });
+    }
+    if (stale()) return this.#cancelWrap();
+    const now = ctx.currentTime;
+    const ga = a.gain.gain, gb = b.gain.gain;
+    gb.cancelScheduledValues(0);
+    gb.setValueAtTime(0, now);
+    gb.linearRampToValueAtTime(a.level, now + WRAP.fade);
+    ga.cancelScheduledValues(0);
+    ga.setValueAtTime(ga.value, now);
+    ga.linearRampToValueAtTime(0, now + WRAP.fade);
+    Object.assign(b, { key, level: a.level, end, starting: false, fadeEnd: now + WRAP.fade });
+    Object.assign(a, { key: null, starting: false, fadeEnd: 0 });
+    this.#front = this.#decks.indexOf(b);
+    this.#wrapping = false;
+    setTimeout(() => a.key === null && a.el.pause(), WRAP.fade * 1000 + 80);
+    this.#armWrap();
+  }
+
+  /** Stop a hand-off in progress: the idle deck it was readying goes quiet again. */
+  #cancelWrap(): void {
+    clearTimeout(this.#wrapTimer);
+    ++this.#wrapToken;
+    const b = this.#decks[1 - this.#front];
+    if (this.#wrapping && b && !b.key) {
+      b.gain.gain.cancelScheduledValues(0);
+      b.gain.gain.value = 0;
+      b.el.pause();
+    }
+    this.#wrapping = false;
   }
 
   /** The key of the track meant to be sounding (null: none). */
@@ -395,9 +680,28 @@ export class Engine {
 
   stopMusic(): void {
     ++this.#token;
+    this.#cancelWrap();
     const ctx = this.ctx;
     const cur = this.#decks[this.#front];
     if (ctx && cur?.key) this.#fadeOut(cur, ctx.currentTime, ctx.currentTime + 0.6);
+    this.#idle.poke();
+  }
+
+  /** Paused from outside (the lock screen's or Control Center's ⏸, via the Media Session): fade out and pause, but
+   *  keep the track and its place. The next tap in the app brings it back (needsUnlock: a stalled front deck). */
+  holdMusic(): void {
+    const ctx = this.ctx;
+    const cur = this.#decks[this.#front];
+    if (!ctx || !cur?.key) return;
+    const token = ++this.#token;
+    this.#cancelWrap();
+    const g = cur.gain.gain;
+    g.cancelScheduledValues(0);
+    g.setValueAtTime(g.value, ctx.currentTime);
+    g.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+    cur.fadeEnd = 0;
+    const key = cur.key;
+    setTimeout(() => token === this.#token && cur.key === key && cur.el.pause(), 380);
   }
 
   /** The ambience layers to sound now (only ids with a file): new ones fade in, gone ones fade out. Loops are decoded
@@ -441,24 +745,42 @@ export class Engine {
     const ctx = this.ctx;
     if (!ctx) return;
     ++this.#token;
+    this.#cancelWrap();
+    this.#idle.cancel();
+    clearTimeout(this.#sleepTimer);
     for (const d of this.#decks) {
       d.gain.gain.cancelScheduledValues(0);
       d.gain.gain.value = 0;
+      d.fadeEnd = 0;
+      d.starting = false;
       d.el.pause();
     }
     void this.setAmbient([]);
+    this.#asleep = false;
     void ctx.suspend().catch(() => {});
   }
 
-  /** Back in front (iOS may refuse until the next tap; the gesture listener unlocks it then). */
+  /** Back in front, or a setting changed (iOS may refuse outside a tap; the gesture listener unlocks it then). */
   resume(): void {
-    void this.ctx?.resume().catch(() => {});
+    const ctx = this.ctx;
+    if (!ctx) return;
+    clearTimeout(this.#sleepTimer);
+    if (ctx.state !== 'running') this.#wake(ctx);
+    this.#idle.poke();
+  }
+
+  /** 音量 at 0 with a kind on: muted, not off. The master is already at 0 (setLevels); after a moment the decks pause
+   *  where they are and the context sleeps, so turning the volume up again resumes the same track in place. */
+  hush(): void {
+    clearTimeout(this.#sleepTimer);
+    this.#sleepTimer = setTimeout(() => this.pause(), 800);
   }
 
   /** Everything off: no music, no ambience, a suspended context. */
   sleep(): void {
     this.stopMusic();
     void this.setAmbient([]);
-    setTimeout(() => void this.ctx?.suspend().catch(() => {}), 800);
+    clearTimeout(this.#sleepTimer);
+    this.#sleepTimer = setTimeout(() => void this.ctx?.suspend().catch(() => {}), 800);
   }
 }

@@ -2,7 +2,7 @@
 // director call cue('…') at the moment; what it sounds like (and how loud, how late) is decided here, so the mix can
 // be tuned without touching a component. Villager reactions name their cue in the reaction catalogue
 // (motion/reactions.ts `cue`), and the director plays it with the step.
-import type { SoundId } from './ids.ts';
+import type { SceneSfx, SoundId } from './ids.ts';
 import { semitones } from './mix.ts';
 import { covered, play } from './sound.svelte.ts';
 
@@ -16,7 +16,9 @@ export type Cue =
   // the しまフォン
   | 'phone-open' | 'phone-close' | 'phone-app' | 'back'
   // money and the harvest
-  | 'buy' | 'badge-met' | 'harvest-receive';
+  | 'buy' | 'badge-met' | 'harvest-receive'
+  // scenery taps (island/sceneTaps.ts sceneSfx)
+  | `scene-${SceneSfx}`;
 
 interface CueDef {
   sound: SoundId;
@@ -27,6 +29,8 @@ interface CueDef {
   gain?: number;
   /** Seconds after the call (to land on an animation's beat). */
   delay?: number;
+  /** Semitones up (down if negative) from the sound's own pitch. */
+  step?: number;
 }
 
 export const CUES: Record<Cue, CueDef> = {
@@ -54,7 +58,22 @@ export const CUES: Record<Cue, CueDef> = {
   back: { sound: 'cancel' },
   buy: { sound: 'purchase' },
   'badge-met': { sound: 'miles' },
-  'harvest-receive': { sound: 'fanfare' }
+  'harvest-receive': { sound: 'fanfare' },
+  // scenery (scene-interactions.md §Sound): quiet world sounds, muted under a sheet like the rest of the island
+  'scene-bush': { sound: 'rustle', gain: 0.7, world: true },
+  'scene-flower': { sound: 'swish', world: true },
+  'scene-butterfly': { sound: 'sparkle', gain: 0.3, step: 7, world: true },
+  'scene-cloud': { sound: 'puff', world: true },
+  'scene-sun': { sound: 'sparkle', gain: 0.5, world: true },
+  'scene-moon': { sound: 'sparkle', gain: 0.4, step: -3, world: true },
+  'scene-star': { sound: 'sparkle', gain: 0.3, step: 12, world: true },
+  'scene-shooting-star': { sound: 'twinkle', world: true },
+  'scene-splash': { sound: 'splash', world: true },
+  'scene-fish': { sound: 'splash', gain: 0.6, step: -4, world: true },
+  'scene-sand': { sound: 'step-sand', world: true },
+  'scene-grass': { sound: 'step-grass', world: true },
+  'scene-snow': { sound: 'step-snow', world: true },
+  'scene-balloon': { sound: 'squeak', world: true }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the
@@ -66,5 +85,6 @@ export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n),
 export function cue(c: Cue, o: { step?: number; gain?: number; delay?: number } = {}): void {
   const d = CUES[c];
   if (d.world && covered()) return;
-  play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: (d.delay ?? 0) + (o.delay ?? 0), rate: o.step ? semitones(o.step) : undefined });
+  const step = (d.step ?? 0) + (o.step ?? 0);
+  play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: (d.delay ?? 0) + (o.delay ?? 0), rate: step ? semitones(step) : undefined });
 }
