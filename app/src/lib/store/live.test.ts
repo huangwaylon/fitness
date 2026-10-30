@@ -52,3 +52,25 @@ describe('LiveBackend storage problems', () => {
     expect(toasts.current).toBeNull();
   });
 });
+
+describe('LiveBackend sync recovery (round 16 H2)', () => {
+  it('a malformed reply stops the spinner, and the next refresh fetches again', async () => {
+    configureStorage({ local: new Mem() });
+    setKey('ab'.repeat(32), 'A');
+    let body: unknown = { ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z' }; // no rows
+    let calls = 0;
+    configureTransport({ url: 'https://script.example/exec', fetch: (async () => (calls++, new Response(JSON.stringify(body)))) as typeof fetch });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const h = host();
+    const b = new LiveBackend(h);
+    await b.refresh({});
+    expect(h.syncing).toBe(false);
+    expect(h.status).toBe('error');
+    body = { ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: { metrics: [], workouts: [], presence: [], events: [] } };
+    await b.refresh({});
+    expect(calls).toBe(2);
+    expect(h.syncing).toBe(false);
+    expect(h.status).toBe('ready');
+    warn.mockRestore();
+  });
+});

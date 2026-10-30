@@ -191,13 +191,24 @@ export function refreshSnapshot(clientNow: () => number = Date.now): Promise<Gas
   if (fetching) return fetching;
   const p = fetchSnapshot(clientNow);
   fetching = p;
-  void p.then(() => {
+  // cleared however it settles: a rejected request must not be handed to every later caller (round 16 H2)
+  void p.finally(() => {
     if (fetching === p) fetching = null;
-  });
+  }).catch(() => {});
   return p;
 }
 
 async function fetchSnapshot(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
+  try {
+    return await fetchAndMerge(clientNow);
+  } catch (e) {
+    // a malformed reply (mergeRows throws) or a storage failure: report it as a failed sync, never a stuck one
+    console.warn('snapshot refresh failed', e);
+    return { ok: false, error: 'unavailable', detail: String(e) };
+  }
+}
+
+async function fetchAndMerge(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
   const prev = await loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;

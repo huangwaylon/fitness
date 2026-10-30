@@ -148,6 +148,29 @@ describe('resync (rev, sheets-architecture.md §2.1)', () => {
     expect((await refreshSnapshot()).ok).toBe(false);
     expect((await loadCache())?.rows).toEqual(rows());
   });
+
+  it('refreshSnapshot recovers after a malformed ok reply (round 16 H2)', async () => {
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z' }); // no rows: mergeRows throws
+    const warn = console.warn;
+    console.warn = () => {};
+    try {
+      const r = await refreshSnapshot();
+      expect(r.ok).toBe(false);
+    } finally {
+      console.warn = warn;
+    }
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: rows() });
+    const r = await refreshSnapshot();
+    expect(calls).toHaveLength(2); // a new request, not the failed one handed back
+    expect(r.ok && r.cache.rows).toEqual(rows());
+  });
+
+  it('a flush that throws does not wedge later flushes (round 16 H2)', async () => {
+    const ev = enqueue('highfive', {});
+    await expect(flush(Date.now, () => { throw new Error('boom'); })).rejects.toThrow('boom');
+    const r = await flush();
+    expect(r.acked.map((e) => e.id)).toEqual([ev.id]);
+  });
 });
 
 describe('a full localStorage', () => {
