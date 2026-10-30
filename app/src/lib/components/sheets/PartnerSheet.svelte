@@ -49,7 +49,7 @@
         <li class:on={ticked.has(k)}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t(`habit.${k}`)}</li>
       {/each}
     </ul>
-    <button type="button" class="btn yuzu" onclick={five}>
+    <button type="button" class="btn yuzu" data-sfx="confirm" onclick={five}>
       <OfficialArt key="reactions/encouraging" size={30} />{t('partner.highfive')}
     </button>
   {/if}

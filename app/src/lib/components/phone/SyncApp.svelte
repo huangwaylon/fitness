@@ -18,7 +18,7 @@
       <span class="money when">{formatSyncTime(p.lastSyncAt, view.today)}</span>
     </div>
   {/each}
-  <button type="button" class="btn" disabled={week.syncing} onclick={() => week.refresh()}>
+  <button type="button" class="btn" aria-disabled={week.syncing} data-sfx="sync" onclick={() => week.refresh()}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sync" /></svg>{week.syncing ? t('sync.syncing') : t('phone.syncNow')}
   </button>
 </div>

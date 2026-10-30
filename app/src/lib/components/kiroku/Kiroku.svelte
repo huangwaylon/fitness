@@ -165,7 +165,7 @@
       <!-- A segmented switch (toggle buttons), not tabs: there is no tab panel to move to. -->
       <div class="pills" role="group" aria-label={t('phone.app.kiroku')}>
         {#each ['body', 'money'] as const as id (id)}
-          <button type="button" class="pill" aria-pressed={tab === id} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
+          <button type="button" class="pill" aria-pressed={tab === id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
         {/each}
       </div>
       {#if weeks && trends}
@@ -205,7 +205,7 @@
       <div class="wchoices">
         <ChoiceList choices={[
           { label: t('kiroku.voidYes'), run: () => voidIt(s.id, s.label) },
-          { label: t('kiroku.cancel'), run: back }
+          { label: t('kiroku.cancel'), run: back, cancel: true }
         ]} />
       </div>
     {:else if top.k === 'metric' && day}
@@ -231,7 +231,7 @@
               ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.id, s.date, label, { strength: null }) }] : []),
               { label: t('kiroku.exclude'), run: () => workoutChange(s.id, s.date, label, { excluded: true }) }
             ]),
-            { label: t('kiroku.cancel'), run: back }
+            { label: t('kiroku.cancel'), run: back, cancel: true }
           ]} />
         </div>
       {/if}
@@ -242,7 +242,7 @@
         <p class="note">{t('kiroku.addNote')}</p>
         <div class="types" role="group" aria-label={t('kiroku.pickType')}>
           {#each ADD_TYPES as ty (ty)}
-            <button type="button" class="type" onclick={() => (addType = ty)}><TypeName type={ty} /></button>
+            <button type="button" class="type" data-sfx="page" onclick={() => (addType = ty)}><TypeName type={ty} /></button>
           {/each}
         </div>
       {:else}

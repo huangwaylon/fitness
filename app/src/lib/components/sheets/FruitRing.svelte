@@ -58,6 +58,7 @@
     style:--c={stage === 'ripe' ? 'var(--c-yuzu)' : 'var(--c-leaf)'}
     aria-label={label}
     aria-expanded={onpick ? picked : open}
+    data-sfx="tick"
     onclick={toggle}
   >
     <span class="fruit">

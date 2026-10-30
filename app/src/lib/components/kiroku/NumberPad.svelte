@@ -4,6 +4,7 @@
   import ChoiceList from '../ui/ChoiceList.svelte';
   import { num } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
     label: string;
@@ -19,7 +20,9 @@
   const value = $derived(digits === '' ? null : Number(digits));
   const valid = $derived(value !== null && value <= max && value !== old);
 
+  /** A key, tapped or typed: NH's soft keyboard click (⌫ and C a little lower). */
   function press(k: string) {
+    cue(k === 'del' || k === 'C' ? 'key-fn' : 'key');
     if (k === 'del') digits = digits.slice(0, -1);
     else if (k === 'C') digits = '';
     else if (digits.length < String(max).length) digits = digits === '0' ? k : digits + k;
@@ -27,8 +30,8 @@
   function keydown(e: KeyboardEvent) {
     if (/^\d$/.test(e.key)) press(e.key);
     else if (e.key === 'Backspace') press('del');
-    else if (e.key === 'Escape') { e.preventDefault(); oncancel(); }
-    else if (e.key === 'Enter' && valid && value !== null) onok(value);
+    else if (e.key === 'Escape') { e.preventDefault(); cue('back'); oncancel(); }
+    else if (e.key === 'Enter' && valid && value !== null) { cue('choice-pick'); onok(value); }
     else return;
     e.preventDefault();
   }
@@ -48,7 +51,7 @@
   <div class="row">
     <div class="keys">
       {#each KEYS as k (k)}
-        <button type="button" class="key" class:fn={k === 'del' || k === 'C'} onclick={() => press(k)}
+        <button type="button" class="key" class:fn={k === 'del' || k === 'C'} data-sfx="self" onclick={() => press(k)}
           aria-label={k === 'del' ? t('kiroku.del') : k === 'C' ? t('kiroku.clear') : k}>
           {#if k === 'del'}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 H20 V19 H9 L3 12Z M12 9 L17 15 M17 9 L12 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" /></svg>{:else}{k}{/if}
         </button>
@@ -56,8 +59,8 @@
     </div>
     <div class="choose" class:off={!valid}>
       <ChoiceList choices={[
-        { label: t('kiroku.ok'), run: () => valid && value !== null && onok(value) },
-        { label: t('kiroku.cancel'), run: oncancel }
+        { label: t('kiroku.ok'), run: () => valid && value !== null && onok(value), disabled: !valid },
+        { label: t('kiroku.cancel'), run: oncancel, cancel: true }
       ]} />
     </div>
   </div>

@@ -23,6 +23,7 @@
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
+  import { startTaps } from '#lib/sound/taps.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -66,7 +67,10 @@
     const stopViewport = startViewport();
     // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the phone or the harvest.
     const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
+    // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
+    const stopTaps = startTaps();
     return () => {
+      stopTaps();
       stopSound();
       stopViewport();
       stopTheme();
@@ -95,7 +99,7 @@
       {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
     </OfficialArt></span>
     <h1><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><small lang="en">{t('state.notSetUp', undefined, 'en')}</small></h1>
-    <a class="btn" href={resolve('/') + '?demo'} data-sveltekit-reload>{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
+    <a class="btn" href={resolve('/') + '?demo'} data-sveltekit-reload data-sfx="confirm">{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
   </main>
 {:else if onPair}
   {@render children()}
@@ -105,7 +109,7 @@
       {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
     </OfficialArt></span>
     <Bubble text={t('state.error')} host={false} name={t('host.nook')} />
-    <button type="button" class="btn" onclick={() => week.refresh()}>{t('state.retry')}</button>
+    <button type="button" class="btn" data-sfx="sync" onclick={() => week.refresh()}>{t('state.retry')}</button>
   </main>
 {:else if !week.view}
   <main class="state" aria-busy="true">

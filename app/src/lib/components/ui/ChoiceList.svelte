@@ -1,11 +1,12 @@
 <script lang="ts">
   // NH's choice list (v5 §3, F8): cream bubbles stacked at the right, in the one-action slot. Like the game, the
   // first option starts under a yuzu ▶ cursor (the default answer); hover, focus or ↑/↓ moves the cursor (with NH's
-  // little cursor tick), and picking one plays the confirm.
+  // little cursor tick), and picking one plays the confirm (Ⓑ for a `cancel` choice; the "can't" boop for a
+  // `disabled` one, which does nothing: taps.ts).
   import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
-    choices: { label: string; run: () => void }[];
+    choices: { label: string; run: () => void; cancel?: boolean; disabled?: boolean }[];
   }
   let { choices }: Props = $props();
   let sel = $state(0);
@@ -30,11 +31,9 @@
 <div class="choices" role="group">
   {#each choices as c, i (c.label)}
     <button type="button" class="choice" class:sel={i === sel} style:animation-delay="{i * 60}ms" bind:this={btns[i]}
+      data-sfx={c.cancel ? 'back' : 'choice-pick'} aria-disabled={c.disabled || undefined}
       onpointerenter={(e) => (e.pointerType === 'mouse' ? select(i) : (sel = i))} onfocus={() => select(i)} onkeydown={(e) => key(e, i)}
-      onclick={() => {
-        cue('choice-pick');
-        c.run();
-      }}>
+      onclick={c.run}>
       <span class="cur" aria-hidden="true"></span>{c.label}
     </button>
   {/each}

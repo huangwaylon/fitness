@@ -67,7 +67,7 @@
     <!-- With an undo, a tap only holds the banner (so it can be read and undone); a vertical swipe scrolls the page. Then
          this layer is pointer-only (no "close" that does nothing for a screen reader or the keyboard): 取り消す is the
          one control, and the banner ends by itself. -->
-    <button type="button" class="hit" aria-label={action ? undefined : t('common.close')} aria-hidden={action ? true : undefined}
+    <button type="button" class="hit" data-sfx={action ? 'none' : 'back'} aria-label={action ? undefined : t('common.close')} aria-hidden={action ? true : undefined}
       tabindex={action ? -1 : undefined} onclick={() => !action && dismiss()}
       onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
@@ -75,7 +75,7 @@
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
     <span class="txt">{text}</span>
-    {#if action}<button type="button" class="act" onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
+    {#if action}<button type="button" class="act" data-sfx="undo" onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
     {:else if reaction}<span class="re" aria-hidden="true"><OfficialArt key="reactions/{reaction}" size={28} eager /></span>{/if}
   </div>
 {/if}

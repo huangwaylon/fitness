@@ -32,7 +32,7 @@
   <div class="screen card">
     <label class="top" for="wi-kg"><b>{label}</b><span class="sub money">{sub}</span>{#if old !== null}<span class="old money">({kgText(old)})</span>{/if}</label>
     <div class="field">
-      <input id="wi-kg" bind:this={input} bind:value={text} type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done"
+      <input id="wi-kg" data-sfx="none" bind:this={input} bind:value={text} type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done"
         placeholder={old !== null ? old.toFixed(1) : '00.0'} aria-invalid={bad} aria-describedby="wi-hint" maxlength="6" size="6" />
       <span class="unit" aria-hidden="true">kg</span>
     </div>
@@ -42,7 +42,7 @@
     <ChoiceList choices={[
       { label: t('kiroku.ok'), run: ok },
       ...(extra ? [extra] : []),
-      { label: t('kiroku.cancel'), run: oncancel }
+      { label: t('kiroku.cancel'), run: oncancel, cancel: true }
     ]} />
   </div>
 </form>

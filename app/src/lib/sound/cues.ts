@@ -2,6 +2,7 @@
 // director call cue('…') at the moment; what it sounds like (and how loud, how late) is decided here, so the mix can
 // be tuned without touching a component. Villager reactions name their cue in the reaction catalogue
 // (motion/reactions.ts `cue`), and the director plays it with the step.
+import { untrack } from 'svelte';
 import type { SceneSfx, SoundId } from './ids.ts';
 import { semitones } from './mix.ts';
 import { covered, play } from './sound.svelte.ts';
@@ -11,8 +12,10 @@ export type Cue =
   | 'tree-shake' | 'fruit-land' | 'coin-land' | 'bells-arrive' | 'jar-tap'
   // villagers and しずえ (reaction steps)
   | 'villager-tap' | 'host-tap' | 'emote-surprise' | 'emote-love' | 'emote-joy' | 'emote-idea' | 'trouble' | 'announce'
-  // check-in, choices, toggles
-  | 'checkin-saved' | 'choice-move' | 'choice-pick' | 'toggle'
+  // check-in, choices
+  | 'checkin-saved' | 'choice-move' | 'choice-pick'
+  // taps (sound.md §13; most are named by a control's data-sfx, taps.ts)
+  | 'tick' | 'open' | 'confirm' | 'toggle-on' | 'toggle-off' | 'key' | 'key-fn' | 'page' | 'boop' | 'sync' | 'remove' | 'undo'
   // the しまフォン
   | 'phone-open' | 'phone-close' | 'phone-app' | 'back'
   // money and the harvest
@@ -51,7 +54,19 @@ export const CUES: Record<Cue, CueDef> = {
   'checkin-saved': { sound: 'confirm' },
   'choice-move': { sound: 'cursor' },
   'choice-pick': { sound: 'confirm' },
-  toggle: { sound: 'cursor' },
+  // taps (sound.md §13): all UI, so they sound under a sheet too
+  tick: { sound: 'cursor', gain: 0.8 },
+  open: { sound: 'select' },
+  confirm: { sound: 'confirm' },
+  'toggle-on': { sound: 'toggle-on' },
+  'toggle-off': { sound: 'toggle-off' },
+  key: { sound: 'key' },
+  'key-fn': { sound: 'key', step: -5 },
+  page: { sound: 'page' },
+  boop: { sound: 'boop' },
+  sync: { sound: 'whoosh' },
+  remove: { sound: 'poof' },
+  undo: { sound: 'undo' },
   'phone-open': { sound: 'phone-open' },
   'phone-close': { sound: 'phone-close' },
   'phone-app': { sound: 'phone-app' },
@@ -81,10 +96,18 @@ export const CUES: Record<Cue, CueDef> = {
 const COIN_RUN = [0, 2, 4, 7, 9, 12, 14, 16, 19] as const;
 export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n), COIN_RUN.length - 1)];
 
+/** Test hook (e2e/sound.spec.ts): an array on `window.__cues` collects every cue that passes the world/UI rule. */
+type CueLog = { __cues?: Cue[] };
+
 /** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level; `delay`: extra seconds. */
 export function cue(c: Cue, o: { step?: number; gain?: number; delay?: number } = {}): void {
-  const d = CUES[c];
-  if (d.world && covered()) return;
-  const step = (d.step ?? 0) + (o.step ?? 0);
-  play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: (d.delay ?? 0) + (o.delay ?? 0), rate: step ? semitones(step) : undefined });
+  // untracked: a cue fired from an {@attach} or an $effect must not make it depend on the sheets or the sound
+  // settings (FruitTree's drop-in re-ran, re-dropping and re-thudding its newest fruit, every time a sheet closed)
+  untrack(() => {
+    const d = CUES[c];
+    if (d.world && covered()) return;
+    (globalThis as CueLog).__cues?.push(c);
+    const step = (d.step ?? 0) + (o.step ?? 0);
+    play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: (d.delay ?? 0) + (o.delay ?? 0), rate: step ? semitones(step) : undefined });
+  });
 }

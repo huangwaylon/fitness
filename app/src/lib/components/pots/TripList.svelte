@@ -25,7 +25,7 @@
             <span class="left money">{t('pots.left', { bells: formatBells(item.bells - balance) })}</span>
           {/if}
         </span>
-        {#if ok}<button type="button" class="btn small go" onclick={() => onbuy(item)} aria-label="{item.label} {formatBells(item.bells)}: {t('pots.trip.go')}">{t('pots.trip.go')}</button>{/if}
+        {#if ok}<button type="button" class="btn small go" data-sfx="open" onclick={() => onbuy(item)} aria-label="{item.label} {formatBells(item.bells)}: {t('pots.trip.go')}">{t('pots.trip.go')}</button>{/if}
       </li>
     {/each}
   </ul>

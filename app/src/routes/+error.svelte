@@ -21,11 +21,11 @@
   {#if !notFound}
     <p><span lang="ja">{t('error.hint', undefined, 'ja')}</span> <span lang="en">{t('error.hint', undefined, 'en')}</span></p>
   {/if}
-  <a class="btn" href={resolve('/')} data-sveltekit-reload>
+  <a class="btn" href={resolve('/')} data-sveltekit-reload data-sfx="confirm">
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-island" /></svg>
     <span class="two"><span lang="ja">{t('error.home', undefined, 'ja')}</span><small lang="en">{t('error.home', undefined, 'en')}</small></span>
   </a>
-  <a class="demo" href={resolve('/') + '?demo'} data-sveltekit-reload>{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
+  <a class="demo" href={resolve('/') + '?demo'} data-sveltekit-reload data-sfx="confirm">{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
 </main>
 
 <style>

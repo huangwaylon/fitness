@@ -137,12 +137,15 @@
     if (live && !reducedMotion()) {
       react('R18');
       later(() => onjar?.(), 90);
-    } else onjar?.();
+    } else {
+      cue('jar-tap'); // R18 carries it otherwise
+      onjar?.();
+    }
   }
 </script>
 
 <button type="button" class="jar" class:pressed style:left={u(JAR.x)} style:top={u(JAR.base - JAR_H)} disabled={!live}
-  aria-label={t('island.jar', { bells: formatBells(target) })} onclick={tap}
+  aria-label={t('island.jar', { bells: formatBells(target) })} data-sfx="self" onclick={tap}
   onpointerdown={() => live && (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
   <span class="squash" bind:this={squashEl} onanimationend={() => squashEl?.classList.remove('catch')}><Jar {fill} width={u(JAR.w)} name={live ? 'jar' : undefined} /></span>
   <span class="jar-plate"><b class="money">{formatBells(plate.current)}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>

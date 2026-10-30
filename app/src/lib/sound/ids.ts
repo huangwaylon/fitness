@@ -8,6 +8,8 @@ export type Bus = 'music' | 'sfx' | 'voice';
 export type SoundId =
   // UI (NookPhone and menus)
   | 'cursor' | 'confirm' | 'cancel' | 'phone-open' | 'phone-close' | 'phone-app'
+  // UI taps (sound.md §13): a soft select, the switch pair, keypad keys, a page, the "can't" boop, sync, remove, undo
+  | 'select' | 'toggle-on' | 'toggle-off' | 'key' | 'page' | 'boop' | 'whoosh' | 'poof' | 'undo'
   // dialogue text blips (NH: Animalese; しずえ has her own higher voice)
   | 'blip-host' | 'blip-villager'
   // island actions and money
@@ -44,6 +46,16 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   'phone-open': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1 },
   'phone-close': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 },
   'phone-app': { bus: 'sfx', gain: 0.5, jitter: 30, max: 1 },
+  // taps (§13): heard dozens of times a day, so under the confirm; the keypad the softest of all
+  select: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },
+  'toggle-on': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
+  'toggle-off': { bus: 'sfx', gain: 0.36, jitter: 0, max: 1 },
+  key: { bus: 'sfx', gain: 0.26, jitter: 45, max: 2 },
+  page: { bus: 'sfx', gain: 0.24, jitter: 60, max: 1 },
+  boop: { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
+  whoosh: { bus: 'sfx', gain: 0.38, jitter: 30, max: 1 },
+  poof: { bus: 'sfx', gain: 0.42, jitter: 40, max: 1 },
+  undo: { bus: 'sfx', gain: 0.45, jitter: 0, max: 1 },
   'blip-host': { bus: 'voice', gain: 0.5, jitter: 0, max: 2 },
   'blip-villager': { bus: 'voice', gain: 0.5, jitter: 0, max: 2 },
   rustle: { bus: 'sfx', gain: 0.6, jitter: 80, max: 2 },

@@ -30,7 +30,7 @@
     <span class="art"><OfficialArt key={art} size={40} eager /></span>
     <h2 id="{hid}-h">{t(`pots.${pot}.title`)}</h2>
     {#if onedit}
-      <button type="button" class="edit" onclick={onedit} aria-label={t('pots.edit', { pot: t(`pots.${pot}.title`) })}>
+      <button type="button" class="edit" data-sfx="open" onclick={onedit} aria-label={t('pots.edit', { pot: t(`pots.${pot}.title`) })}>
         <Glyph kind="pen" size={18} /><span class="el">{t('pots.editShort')}</span>
       </button>
     {/if}

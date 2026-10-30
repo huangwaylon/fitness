@@ -59,7 +59,7 @@
   </div>
   {#each d.people[order[0]].days as row, i (row.date)}
     {@const other = d.people[order[1]].days[i]}
-    <button type="button" class="day" disabled={row.future} onclick={() => onday(row.date)}>
+    <button type="button" class="day" aria-disabled={row.future} data-sfx="page" onclick={() => onday(row.date)}>
       <span class="wd">{weekdayOf(row.date)}</span>
       {#each [row, other] as r, j (j)}
         <span class="half" class:right={j === 1}>
@@ -110,8 +110,8 @@
     text-align: left;
   }
   .day + .day { border-top: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
-  .day:active:not(:disabled) { background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
-  .day:disabled { cursor: default; }
+  .day:active:not([aria-disabled='true']) { background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
+  .day[aria-disabled='true'] { cursor: default; }
   .wd { font-weight: 700; font-size: var(--fs-body); }
   .half { display: flex; align-items: center; gap: 5px; min-width: 0; position: relative; font-size: var(--fs-s); padding-right: 10px; }
   .half.right { padding-left: 8px; box-shadow: -2px 0 0 color-mix(in srgb, var(--lip) 45%, transparent); }

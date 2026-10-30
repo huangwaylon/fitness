@@ -52,6 +52,7 @@
     const r = pot === 'treat' ? buyTreat(item.id) : buyTrip(item.id);
     askItem = null;
     if (!r.ok) {
+      cue('boop');
       toasts.show(t('pots.short'), 2400, { reaction: 'worry' });
       return;
     }
@@ -71,7 +72,7 @@
 {#if view && pots && menus}
   <main class="jar-screen" class:undoing={!!toasts.current?.action}>
     <div class="top">
-      <a class="back" href={resolve('/')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5 L8 12 L16 19 Z" /></svg>{t('jar.back')}</a>
+      <a class="back" href={resolve('/')} data-sfx="back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5 L8 12 L16 19 Z" /></svg>{t('jar.back')}</a>
       <PhoneButton bind:open={phoneOpen} />
     </div>
     <h1 class="sr-only">{t('pots.title')}</h1>
@@ -96,7 +97,7 @@
       </PotCard>
 
       {#if recent.length}
-        <button type="button" class="card recent" onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
+        <button type="button" class="card recent" data-sfx="self" onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
           <span class="rh"><small>{t('kiroku.recent')}</small><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chev" /></svg></span>
           {#each recent as r (r.key)}
             <span class="rr" class:off={r.off}><span class="rl">{moveLabel(r)}</span><b class="money">{formatBells(r.bells, { signed: true })}</b></span>

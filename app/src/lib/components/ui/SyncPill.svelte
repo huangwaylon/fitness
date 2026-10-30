@@ -11,7 +11,7 @@
 
 {#if week.offline}
   <button type="button" class="chip" aria-label={week.syncing ? t('sync.syncing') : t('sync.retryLabel', { time })}
-    disabled={week.syncing} onclick={() => week.refresh()}>
+    aria-disabled={week.syncing} data-sfx="sync" onclick={() => week.refresh()}>
     <svg viewBox="0 0 24 24" class:spin={week.syncing} aria-hidden="true"><use href="#i-sync" /></svg>
     <span aria-hidden="true">{week.syncing ? t('sync.syncing') : t('sync.offline')}</span>
   </button>
@@ -27,7 +27,7 @@
   /* A 44px tap target around the 32px chip. */
   .chip::after { content: ''; position: absolute; inset: -6px -4px; }
   .chip:active { transform: translateY(3px); box-shadow: var(--sh-obj-press); }
-  .chip:disabled { cursor: default; }
+  .chip[aria-disabled='true'] { cursor: default; }
   svg { width: 14px; height: 14px; color: var(--c-coral); flex: none; }
   .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }

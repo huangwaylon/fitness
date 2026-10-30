@@ -40,7 +40,7 @@
     </div>
   {/if}
   {#snippet footer()}
-    <button type="button" class="btn" disabled={!shown || shown.bells > balance} onclick={() => shown && onconfirm(shown)}>
+    <button type="button" class="btn" aria-disabled={!shown || shown.bells > balance} data-sfx="self" onclick={() => shown && onconfirm(shown)}>
       {t(`pots.${pot}.buy`)}
     </button>
   {/snippet}

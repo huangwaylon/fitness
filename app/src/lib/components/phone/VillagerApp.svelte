@@ -43,14 +43,14 @@
   {/key}
   <label class="namefield">
     <span>{t('phone.name.label')}</span>
-    <input class="name" type="text" maxlength="12" bind:value={name} onblur={saveName}
+    <input class="name" type="text" maxlength="12" data-sfx="none" bind:value={name} onblur={saveName}
       onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
   </label>
 </div>
 <label class="search">
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.6" /><path d="M15.5 15.5 20 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></svg>
   <span class="sr-only">{t('phone.villager.search')}</span>
-  <input type="search" bind:value={query} placeholder={t('phone.villager.search')} enterkeyhint="search" autocomplete="off" spellcheck="false"
+  <input type="search" data-sfx="none" bind:value={query} placeholder={t('phone.villager.search')} enterkeyhint="search" autocomplete="off" spellcheck="false"
     onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} />
 </label>
 <div class="scroll">
@@ -58,7 +58,7 @@
     <div class="roster" role="radiogroup" aria-label={t('phone.app.villager')} {@attach roving}>
       {#each shown as id (id)}
         <button type="button" class="rv" role="radio" aria-checked={current === id} tabindex={tabStop === id ? 0 : -1} aria-label={vName(id)}
-          title={vName(id)} onclick={() => current !== id && setVillager(id)}>
+          title={vName(id)} data-sfx={current === id ? 'none' : 'tick'} onclick={() => current !== id && setVillager(id)}>
           <Avatar person={view.me} villager={id} size={64} />
           {#if current === id}<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}
         </button>

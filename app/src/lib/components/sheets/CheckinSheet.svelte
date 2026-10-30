@@ -44,8 +44,8 @@
       popTimer = setTimeout(() => (pop = null), 900);
     }
     checkin(date, key, done);
-    // each tap saves at once: ticking one on is the check-in (the confirm), off just a tick
-    cue(done ? 'checkin-saved' : 'toggle');
+    // each tap saves at once: ticking one on is the check-in (the confirm), off the switch's off notes
+    cue(done ? 'checkin-saved' : 'toggle-off');
   }
 
   const habitKeys = $derived(me?.habits?.keys ?? []);
@@ -70,9 +70,9 @@
       <div class="days" role="group" aria-label={t('island.checkin')}>
         <button type="button" class="day" class:fillable={yesterdayFillable} aria-pressed={which === 'yesterday'}
           aria-label={yesterdayFillable ? `${t('checkin.yesterday')} · ${t('checkin.yesterdayOpen')}` : undefined}
-          onclick={() => (which = 'yesterday')}>{t('checkin.yesterday')}</button>
+          data-sfx={which === 'yesterday' ? 'none' : 'tick'} onclick={() => (which = 'yesterday')}>{t('checkin.yesterday')}</button>
         <button type="button" class="day" aria-pressed={which === 'today'}
-          onclick={() => (which = 'today')}>{t('checkin.today')}</button>
+          data-sfx={which === 'today' ? 'none' : 'tick'} onclick={() => (which = 'today')}>{t('checkin.today')}</button>
       </div>
     </div>
 
@@ -82,14 +82,14 @@
         <p>{t('checkin.newYearOff')}</p>
       </div>
     {:else}
-      <button type="button" class="btn yuzu all" disabled={allDone} onclick={tickAll}>
+      <button type="button" class="btn yuzu all" aria-disabled={allDone} data-sfx="self" onclick={tickAll}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{allDone ? t('checkin.allDoneDone') : t('checkin.allDone')}
       </button>
       <div class="habits">
         {#each me.habits?.keys ?? [] as key (key)}
           {@const on = ticks.includes(key)}
           {@const ic = ICONS[key] ?? ICONS.veg_two_meals}
-          <button type="button" class="habit" class:on role="switch" aria-checked={on} onclick={() => toggle(key)}>
+          <button type="button" class="habit" class:on role="switch" aria-checked={on} data-sfx="self" onclick={() => toggle(key)}>
             <span class="ic"><svg viewBox={ic.vb} aria-hidden="true"><use href="#{ic.id}" /></svg></span>
             <span class="txt">{t(`habit.${key}`)}{#if has(`habit.${key}.hint`)}<small>{t(`habit.${key}.hint`)}</small>{/if}</span>
             <span class="tick" aria-hidden="true">
@@ -102,7 +102,7 @@
     {/if}
   {/if}
   {#snippet footer()}
-    <button type="button" class="btn" onclick={() => (open = false)}>{t('common.save')}</button>
+    <button type="button" class="btn" data-sfx="confirm" onclick={() => (open = false)}>{t('common.save')}</button>
   {/snippet}
 </Sheet>
 
@@ -119,7 +119,7 @@
   .day.fillable::after { content: ''; position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-mint-lip); }
 
   .all { margin-bottom: 14px; }
-  .all:disabled { --fill: var(--ctl-off); }
+  .all[aria-disabled='true'] { --fill: var(--ctl-off); }
   .habits { display: grid; gap: 12px; }
   .habit {
     appearance: none; border: 0; cursor: pointer; text-align: left; position: relative; width: 100%; font: inherit;

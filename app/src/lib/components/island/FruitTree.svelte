@@ -102,8 +102,12 @@
 
   /** A tap on the canopy or the fruit row: closes this tree's popup if it's open, else shakes (canopy) and opens it. */
   function tap(f: FruitKey | null) {
-    if (open) return ontoggle?.(false);
+    if (open) {
+      cue('tick');
+      return ontoggle?.(false);
+    }
     if (!f) shake(true);
+    else cue('tick'); // the fruit row: no shake, just its popup
     picked = f;
     taps++;
     ontoggle?.(true);
@@ -146,7 +150,7 @@
   <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} eager /></span>
 </div>
 <button type="button" class="canopy" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
-  style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} onclick={() => tap(null)}></button>
+  style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} data-sfx="self" onclick={() => tap(null)}></button>
 
 {#each spots as s (s.f)}
   {#each PILE.slice(0, Math.max(1, s.n)) as [px, py], k (k)}
@@ -164,7 +168,7 @@
   {/each}
 {/each}
 <button type="button" class="row-btn" style:left={u(rowL)} style:top={u(BASE + 8)} style:width={u(rowR - rowL)}
-  aria-label={label} aria-expanded={open} aria-controls={detailId} tabindex="-1" onclick={(e) => tap(fruitAt(e))}></button>
+  aria-label={label} aria-expanded={open} aria-controls={detailId} tabindex="-1" data-sfx="self" onclick={(e) => tap(fruitAt(e))}></button>
 
 {#each leaves as l (l.n)}
   <span class="leaf" style:left={u(l.x)} style:top={u(l.y)}>

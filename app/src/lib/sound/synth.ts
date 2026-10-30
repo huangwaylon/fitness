@@ -44,7 +44,7 @@ type Ev = Tone | Noise;
 
 /** MIDI note → Hz (69 = A4 440). */
 const hz = (m: number) => 440 * 2 ** ((m - 69) / 12);
-const C5 = 72, E5 = 76, F5 = 77, G5 = 79, A5 = 81, C6 = 84, D6 = 86, E6 = 88, F6 = 89, G6 = 91, B6 = 95, C7 = 96, E7 = 100, G7 = 103, A7 = 105, C8 = 108;
+const C5 = 72, E5 = 76, F5 = 77, G5 = 79, A5 = 81, C6 = 84, D6 = 86, E6 = 88, F6 = 89, G6 = 91, A6 = 93, B6 = 95, C7 = 96, E7 = 100, G7 = 103, A7 = 105, C8 = 108;
 
 const mallet = (m: number, t: number, d: number, g: number): Tone => ({
   kind: 'tone', f: hz(m), t, d, g, attack: 0.002, partials: [[4, 0.22, 0.25], [2, 0.08, 0.5]]
@@ -65,6 +65,40 @@ const RECIPES: Record<SoundId, Ev[]> = {
   'phone-open': [mallet(C6, 0, 0.2, 0.7), mallet(E6, 0.05, 0.2, 0.7), mallet(G6, 0.1, 0.2, 0.75), mallet(C7, 0.15, 0.36, 0.85)],
   'phone-close': [mallet(G6, 0, 0.15, 0.75), mallet(C6, 0.06, 0.26, 0.8)],
   'phone-app': [{ kind: 'tone', f: 600, to: 1300, glide: 0.05, t: 0, d: 0.09, g: 0.8, attack: 0.001 }, mallet(C7, 0.045, 0.2, 0.35)],
+  // taps (sound.md §13). select: one soft woody "pok" (lighter than the confirm's two notes)
+  select: [{ ...mallet(A6, 0, 0.11, 0.9), wave: 'tri' }],
+  // a switch: two quick notes up (on) / down (off), the off one rounder
+  'toggle-on': [mallet(C6, 0, 0.07, 0.7), mallet(G6, 0.045, 0.12, 0.9)],
+  'toggle-off': [{ ...mallet(G6, 0, 0.07, 0.75), wave: 'tri' }, { ...mallet(C6, 0.045, 0.12, 0.8), wave: 'tri' }],
+  // a keypad key: a tiny "tok" (NH's text-entry keyboard), barely there
+  key: [
+    { kind: 'tone', f: 1700, to: 1250, glide: 0.02, t: 0, d: 0.035, g: 0.7, wave: 'tri', attack: 0.001 },
+    { kind: 'noise', t: 0, d: 0.012, g: 0.25, lo: 2500, hi: 9000, shape: 'decay' }
+  ],
+  // a page turned: a paper flick
+  page: [
+    { kind: 'noise', t: 0, d: 0.15, g: 1, lo: 1800, hi: 9000, shape: 'swell' },
+    { kind: 'noise', t: 0.1, d: 0.05, g: 0.45, lo: 600, hi: 3500, shape: 'decay' }
+  ],
+  // "can't": a low, soft two-step down (NH when you can't afford something), never harsh
+  boop: [
+    { kind: 'tone', f: 330, to: 300, glide: 0.08, t: 0, d: 0.1, g: 0.8, wave: 'tri', attack: 0.004, partials: [[2, 0.25, 0.6]] },
+    { kind: 'tone', f: 247, to: 220, glide: 0.1, t: 0.1, d: 0.16, g: 0.8, wave: 'tri', attack: 0.004, partials: [[2, 0.25, 0.6]] }
+  ],
+  // sync: an airy rising whoosh with a soft bell at the top
+  whoosh: [
+    { kind: 'noise', t: 0, d: 0.34, g: 1, lo: 400, hi: 2600, shape: 'swell' },
+    { kind: 'noise', t: 0.08, d: 0.28, g: 0.5, lo: 2400, hi: 9000, shape: 'swell' },
+    { kind: 'tone', f: 420, to: 1250, glide: 0.3, t: 0.02, d: 0.3, g: 0.12, attack: 0.03 },
+    bell(G7, 0.3, 0.25, 0.12)
+  ],
+  // remove: a soft "poof" of smoke
+  poof: [
+    { kind: 'noise', t: 0, d: 0.22, g: 1, lo: 250, hi: 1800, shape: 'swell' },
+    { kind: 'tone', f: 560, to: 190, glide: 0.15, t: 0, d: 0.17, g: 0.35, wave: 'tri', attack: 0.004 }
+  ],
+  // undo: the app-open blip played backwards (a glide down), then a low note
+  undo: [{ kind: 'tone', f: 1300, to: 600, glide: 0.06, t: 0, d: 0.1, g: 0.8, attack: 0.001 }, mallet(E6, 0.06, 0.18, 0.35)],
   // a voiced syllable: a short gliding tone with a couple of harmonics (pitch per character comes from the rate)
   'blip-host': [{ kind: 'tone', f: 560, to: 505, glide: 0.05, t: 0, d: 0.055, g: 0.9, wave: 'tri', attack: 0.004, partials: [[2, 0.35, 0.8], [3, 0.15, 0.6]] }],
   'blip-villager': [{ kind: 'tone', f: 300, to: 270, glide: 0.05, t: 0, d: 0.06, g: 0.7, wave: 'sq', attack: 0.004, partials: [[2, 0.3, 0.8]] }],

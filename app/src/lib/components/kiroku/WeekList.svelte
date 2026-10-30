@@ -25,7 +25,7 @@
 <ul class="list">
   {#each weeks as w, i (w.weekKey)}
     <li style:animation-delay="{Math.min(i, 6) * 40}ms">
-      <button type="button" class="card wk" class:cur={w.current} onclick={() => onopen(w.weekKey)}
+      <button type="button" class="card wk" class:cur={w.current} data-sfx="page" onclick={() => onopen(w.weekKey)}
         aria-label="{w.current ? t('kiroku.thisWeek') : t('kiroku.weekOf', { range: weekRange(w.weekKey) })} {formatBells(w.bells)}{w.locked ? ' ' + t('kiroku.locked') : ''}{w.harvested ? ' ' + t('kiroku.harvested') : ''}">
         <span class="head">
           <span class="when">{#if w.current}<b>{t('kiroku.thisWeek')}</b>{/if}<span class="range">{weekRange(w.weekKey)}</span></span>

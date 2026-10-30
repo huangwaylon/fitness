@@ -76,7 +76,7 @@ test('buy: a treat comes back with もとに戻す', async ({ page }) => {
   const pot = page.locator('[data-pot=treat]');
   const balance = async () => (await pot.locator('.balance').innerText()).replace(/\D/g, '');
   const before = await balance();
-  await pot.locator('button.item:not([disabled])').first().click();
+  await pot.locator('button.item:not([aria-disabled="true"])').first().click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect.poll(balance).not.toBe(before);
   await page.getByRole('button', { name: 'もとに戻す' }).click();

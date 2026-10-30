@@ -67,7 +67,7 @@
       // the item-get fanfare (it ducks the music); the coins fall into the pots silently under it: NH's item-get
       // plays alone (round 14 review R3)
       cue('harvest-receive');
-    }
+    } else cue('boop');
   }
 
   // Sounds (docs/design/sound.md §5): the badges reveal one by one (BadgeRow stagger 0.5 s + 0.6 s per person +
@@ -90,13 +90,13 @@
 </script>
 
 <dialog class="overlay" aria-label={t('harvest.title')} tabindex="-1" use:modal
-  oncancel={(e) => { e.preventDefault(); if (step === 'done') ondone?.(); else onlater(); }}>
+  oncancel={(e) => { e.preventDefault(); cue('back'); if (step === 'done') ondone?.(); else onlater(); }}>
 
   <div class="col">
     <div class="head">
       <span class="plate">{t('harvest.title')}</span>
       <span class="steps" aria-hidden="true">{#each ['tally', 'done'] as s (s)}<i class:on={s === step}></i>{/each}</span>
-      {#if step !== 'done'}<button type="button" class="later" onclick={onlater}>{t('common.later')}</button>{:else}<span class="later-sp"></span>{/if}
+      {#if step !== 'done'}<button type="button" class="later" data-sfx="back" onclick={onlater}>{t('common.later')}</button>{:else}<span class="later-sp"></span>{/if}
     </div>
 
     <div class="bottom">
@@ -128,7 +128,7 @@
             <span class="mini">{t('harvest.weekTotal', { bells: formatBells(harvest.totalBells) })}</span>
           </div>
         </section>
-        <button type="button" class="btn" onclick={receive}>{t('harvest.receive')}</button>
+        <button type="button" class="btn" data-sfx="self" onclick={receive}>{t('harvest.receive')}</button>
       {:else}
         <section class="card done" role="status">
           <span class="dnum"><Bells bells={bonusTotal} signed /></span>
@@ -149,7 +149,7 @@
           </div>
           {#if !partnerDone}<span class="mini">{t('harvest.waiting', { name: view.people[partner].villagerName })}</span>{/if}
         </section>
-        <button type="button" class="btn" onclick={() => ondone?.()}>{t('harvest.home')}</button>
+        <button type="button" class="btn" data-sfx="confirm" onclick={() => ondone?.()}>{t('harvest.home')}</button>
       {/if}
     </div>
   </div>

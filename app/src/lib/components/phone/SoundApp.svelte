@@ -17,9 +17,9 @@
 
 <div class="prows">
   {#each ROWS as k (k)}
-    <button type="button" class="prow" role="switch" aria-checked={s[k]} onclick={() => {
-      // 効果音 previews itself (a confirm when it turns on); the others tick
-      if (k !== 'sfx') cue('toggle');
+    <button type="button" class="prow" role="switch" aria-checked={s[k]} data-sfx="self" onclick={() => {
+      // the switch's on / off notes; 効果音 previews itself instead (a confirm as it turns on, and off it is silent)
+      if (k !== 'sfx') cue(s[k] ? 'toggle-off' : 'toggle-on');
       setSound({ [k]: !s[k] });
     }}>
       <span class="prl">{t(`sound.${k}`)}<small>{t(`sound.${k}.hint`)}</small></span>
@@ -30,8 +30,8 @@
   <!-- nothing to turn up while all three are off: the disabled tier (round 13: sunk, no edge) -->
   <label class="prow vol" class:off>
     <span class="prl">{t('sound.volume')}</span>
-    <input type="range" min="0" max="10" step="1" value={volume} disabled={off} style:--v="{volume * 10}%"
-      oninput={(e) => setSound({ volume: Number(e.currentTarget.value) / 10 })} onchange={() => cue('choice-pick')} />
+    <input type="range" min="0" max="10" step="1" value={volume} disabled={off} data-sfx="self" style:--v="{volume * 10}%"
+      oninput={(e) => setSound({ volume: Number(e.currentTarget.value) / 10 })} onchange={() => cue('tick')} />
   </label>
 
   <p class="note">
