@@ -20,6 +20,7 @@
   import { confirmHarvest } from '#lib/store/actions.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { lockScroll } from '../ui/scrollLock.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
     view: WeekView;
@@ -63,8 +64,19 @@
     if (r.ok) {
       step = 'done';
       countUp();
+      // the item-get fanfare (it ducks the music); the coins then clink into the pots under its last note
+      cue('harvest-receive');
     }
   }
+
+  // Sounds (docs/design/sound.md §5): the badges reveal one by one (BadgeRow stagger 0.5 s + 0.6 s per person +
+  // 0.15 s per fruit); once the last one is up, NH's Nook Miles achievement jingle if any badge was met.
+  const anyBadge = $derived(people.some((p) => FRUITS.some((f) => badges[p][f])));
+  $effect(() => {
+    if (step !== 'tally' || !anyBadge) return;
+    const id = setTimeout(() => cue('badge-met'), (0.5 + 0.6 + 4 * 0.15 + 0.1) * 1000);
+    return () => clearTimeout(id);
+  });
 
   function modal(node: HTMLDialogElement) {
     if (!node.open) node.showModal?.();
@@ -124,7 +136,8 @@
             {#each pots as p, i (p)}
               <div class="pot" style:--d="{0.25 + i * 0.25}s">
                 <span class="drop" aria-hidden="true">
-                  {#each [0, 1, 2] as k (k)}<i style:animation-delay="calc(var(--d) + {k * 0.12}s)"></i>{/each}
+                  {#each [0, 1, 2] as k (k)}<i style:animation-delay="calc(var(--d) + {k * 0.12}s)"
+                    onanimationend={() => cue('coin-land', { step: i * 2 + k * 2 })}></i>{/each}
                 </span>
                 <span class="pic"><OfficialArt key={p === 'treat' ? 'phone/nook-shopping' : 'money/miles-ticket'} size={44} />
                   {#if i === 1}<span class="get"><Emote id="mark-sparkle" bare hold size={24} /></span>{/if}</span>

@@ -9,3 +9,31 @@ export function staleCaches(keys: readonly string[], current: string, keep: read
   const previous = keys.filter((k) => k.startsWith(SHELL) && k !== current).at(-1);
   return keys.filter((k) => k !== current && k !== previous && !keep.includes(k));
 }
+
+/** The audio runtime cache (docs/design/sound.md §11): music files are 0.4–0.8 MB each, so only the most recently
+ *  played few stay on the phone. */
+export const AUDIO_CACHE = 'island-audio-v1';
+const MUSIC_KEEP = 3;
+export const isAudio = (path: string): boolean => path.includes('/audio/');
+export const isMusic = (path: string): boolean => path.includes('/audio/music/');
+
+/** Least recently used first out: `keys` in use order (oldest first: a hit is re-put at the end); which to delete so
+ *  at most `keep` music files remain. Effects and ambience (small) are never evicted. */
+export function lruEvict(keys: readonly string[], keep = MUSIC_KEEP): string[] {
+  const music = keys.filter((k) => isMusic(new URL(k, 'https://x/').pathname));
+  return music.slice(0, Math.max(0, music.length - keep));
+}
+
+const FONT = /\.(woff2?|ttf)$/;
+/** The two default villagers' art is precached (lib/villagers/roster.ts DEFAULT_VILLAGER); the rest is cached on use. */
+const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
+
+/** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
+ *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
+ *  the bundled art and audio manifests, every villager but the defaults (cached on first use), all audio
+ *  (AUDIO_CACHE, on first play) and macOS litter. */
+export function precachable(path: string): boolean {
+  const p = path.startsWith('/') ? path : `/${path}`;
+  if (FONT.test(p) || isAudio(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  return !p.includes('/art/villagers/') || PRECACHED_VILLAGERS.test(p);
+}

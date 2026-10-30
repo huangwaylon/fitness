@@ -270,5 +270,17 @@
   "weight.open": "{name}'s weight trend",
   "weight.fix": "Fix the weight of {date}",
   "weight.weekShort": "{d} this week",
-  "kiroku.field.weight": "Weight"
+  "kiroku.field.weight": "Weight",
+  "phone.app.sound": "Sound",
+  "sound.music": "Music",
+  "sound.music.hint": "A tune for every hour",
+  "sound.sfx": "Sound effects",
+  "sound.sfx.hint": "Taps, coins and jingles",
+  "sound.voice": "Voices",
+  "sound.voice.hint": "Isabelle and friends talking",
+  "sound.volume": "Volume",
+  "sound.nowPlaying": "♪ Now playing: the {hour}:00 tune",
+  "sound.noMusic": "No music files yet: the tunes play once they are added.",
+  "sound.silentNote": "Nothing plays while the iPhone is in silent mode.",
+  "sound.opening": "♪ Now playing: the opening theme"
 }

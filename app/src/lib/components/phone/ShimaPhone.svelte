@@ -3,7 +3,9 @@
   // the title and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
   // The status row and title bar stay put; only `.phone-body` (home grid or the app) scrolls (round 10).
-  // Apps: help, villager (+ name), language, sync. (No privacy settings: both players see everything; no alerts.)
+  // Apps: help, villager (+ name), language, sync, sound. (No privacy settings: both players see everything; no alerts.)
+  // Sounds (docs/design/sound.md §5): the phone opens and closes with its own little tune, an app opens with a pop,
+  // ‹ back is the cancel tone.
   import { tick as nextTick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -12,6 +14,7 @@
   import VillagerApp from './VillagerApp.svelte';
   import LangApp from './LangApp.svelte';
   import SyncApp from './SyncApp.svelte';
+  import SoundApp from './SoundApp.svelte';
   import type { KirokuEntry } from '../kiroku/Kiroku.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -20,8 +23,9 @@
   import { minuteNow } from '#lib/time/clock.ts';
   import { clockTime } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
-  type AppId = 'kiroku' | 'help' | 'villager' | 'lang' | 'sync';
+  type AppId = 'kiroku' | 'help' | 'villager' | 'lang' | 'sync' | 'sound';
   let { open = $bindable() }: { open: boolean } = $props();
 
   // `tile`: a full official NookPhone tile. Otherwise `glyph` (official) sits on our `fill`.
@@ -31,7 +35,9 @@
     { id: 'help', glyph: 'phone/glyph-help', fill: 'var(--c-yuzu)' },
     { id: 'villager', tile: 'phone/passport' },
     { id: 'lang', glyph: 'phone/glyph-chat', fill: 'var(--c-mint)' },
-    { id: 'sync', tile: 'phone/rescue' }
+    { id: 'sync', tile: 'phone/rescue' },
+    // NH has no sound settings on its phone (only the console's volume): our own note glyph on a leaf tile
+    { id: 'sound', glyph: 'i-note', fill: 'var(--c-leaf)' }
   ];
 
   let app = $state<AppId | null>(null);
@@ -47,6 +53,7 @@
 
   /** U15: もどる puts focus back on the app tile it came from. */
   async function back() {
+    cue('back');
     if (app === 'kiroku' && kiroku?.back()) return;
     const from = app;
     app = null;
@@ -59,6 +66,21 @@
     if (toasts.current) toasts.dismiss();
     app = null;
     entry = null;
+  }
+
+  // The phone's open and close tunes (not on the first render).
+  let wasOpen = untrack(() => open);
+  $effect(() => {
+    const o = open;
+    if (o === wasOpen) return;
+    wasOpen = o;
+    cue(o ? 'phone-open' : 'phone-close');
+  });
+
+  /** Open an app (a pop, as NH's app icons do). */
+  function launch(id: AppId) {
+    cue('phone-app');
+    app = id;
   }
 
   // A shortcut (score ribbon, jar total) opens straight into きろく.
@@ -97,11 +119,15 @@
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
-        <button type="button" class="app" data-app={a.id} style:animation-delay="{i * 40}ms" onclick={() => (app = a.id)}>
+        <button type="button" class="app" data-app={a.id} style:animation-delay="{i * 40}ms" onclick={() => launch(a.id)}>
           <span class="tile" class:full={!!a.tile} style:--fill={a.fill ?? 'var(--c-mint)'}>
-            <OfficialArt key={a.tile ?? a.glyph} size={a.tile ? '100%' : '69%'} eager>
-              {#snippet fallback()}<span class="fb"></span>{/snippet}
-            </OfficialArt>
+            {#if a.glyph?.startsWith('i-')}
+              <svg class="own" viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>
+            {:else}
+              <OfficialArt key={a.tile ?? a.glyph} size={a.tile ? '100%' : '69%'} eager>
+                {#snippet fallback()}<span class="fb"></span>{/snippet}
+              </OfficialArt>
+            {/if}
           </span>
           <span class="lbl">{t(`phone.app.${a.id}`)}</span>
         </button>
@@ -119,6 +145,8 @@
         <LangApp />
       {:else if app === 'sync' && view}
         <SyncApp {view} />
+      {:else if app === 'sound'}
+        <SoundApp />
       {/if}
     </div>
   {/if}
@@ -141,7 +169,7 @@
   .close svg { width: 20px; height: 20px; }
   .titlebar h2 { padding: 0 48px; }
 
-  /* Home: five tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
+  /* Home: six tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
      the top third of an empty screen); the row gap grows with the phone's height. */
   .grid {
     display: grid; grid-template-columns: repeat(3, minmax(var(--tile), 1fr)); justify-items: center;
@@ -160,6 +188,8 @@
   /* Official full tiles bring their own squircle and colour. */
   .tile.full { background: none; box-shadow: none; filter: drop-shadow(0 4px 0 rgba(74, 58, 44, .2)); }
   .fb { width: 50%; height: 50%; border-radius: 30%; background: rgba(255, 255, 255, .6); }
+  /* our own glyph (the sound tile): white like NH's app glyphs, with a soft drop */
+  .own { width: 62%; height: 62%; color: #fff; filter: drop-shadow(0 2px 0 rgba(47, 138, 63, .45)); }
   .app:active .tile { transform: translateY(2px) scale(1.08, .9); transition-duration: var(--dur-tap); }
   .lbl { font: 700 clamp(var(--fs-s), calc(var(--tile) / 5.5), var(--fs-body))/1.1 var(--font-ui); white-space: nowrap; }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { staleCaches } from './caches.ts';
+import { AUDIO_CACHE, isAudio, isMusic, lruEvict, precachable, staleCaches } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -15,5 +15,42 @@ describe('service worker cache generations', () => {
 
   it('drops caches from older schemes', () => {
     expect(staleCaches(['island-fonts-v0', 'island-shell-1', 'island-shell-2'], 'island-shell-2', keep)).toEqual(['island-fonts-v0']);
+  });
+});
+
+describe('audio cache (LRU for music)', () => {
+  const m = (h: string) => `https://x.example/fitness/audio/music/hour-${h}.m4a`;
+  const fx = 'https://x.example/fitness/audio/sfx/coin.m4a';
+
+  it('keeps the 3 most recently used music files, oldest out first', () => {
+    expect(lruEvict([m('07'), fx, m('08'), m('09'), m('10'), m('11')])).toEqual([m('07'), m('08')]);
+  });
+
+  it('never evicts effects, and nothing under the limit', () => {
+    expect(lruEvict([fx, m('07'), m('08')])).toEqual([]);
+  });
+
+  it('tells audio and music paths apart', () => {
+    expect([isAudio('/fitness/audio/sfx/coin.m4a'), isMusic('/fitness/audio/sfx/coin.m4a'), isMusic('/fitness/audio/music/opening.m4a')]).toEqual([true, false, true]);
+    expect(isAudio('/fitness/art/fruit/peach.webp')).toBe(false);
+  });
+
+  it('the audio cache survives a new build', () => {
+    expect(staleCaches([AUDIO_CACHE, 'island-shell-1', 'island-shell-2'], 'island-shell-2', [AUDIO_CACHE])).toEqual([]);
+  });
+});
+
+describe('precache', () => {
+  it('keeps the shell, the default villagers and the scene art', () => {
+    for (const p of ['_app/immutable/entry/app.js', 'art/fruit/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
+      expect(precachable(p)).toBe(true);
+    }
+  });
+  it('leaves out audio, fonts, other villagers, the bundled manifests and .DS_Store (paths come without a leading slash)', () => {
+    for (const p of ['audio/music/hour-07.m4a', 'audio/music/opening.m4a', 'audio/manifest.json', 'audio/sfx/coin.m4a',
+      '_app/immutable/assets/zen-maru-gothic-54-500-normal.woff2', 'art/villagers/raymond.webp', 'art/manifest.json', 'icons/.DS_Store']) {
+      expect(precachable(p)).toBe(false);
+    }
+    expect(precachable('/fitness/audio/music/hour-07.m4a')).toBe(false);
   });
 });

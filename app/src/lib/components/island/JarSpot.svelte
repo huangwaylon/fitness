@@ -18,6 +18,7 @@
   import { reducedMotion } from '../../time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
   import { FRUIT_SPOTS, JAR, TREE, u } from './scene.ts';
 
   interface Props {
@@ -87,6 +88,8 @@
       const flying = Math.min(to - jarBells, fresh.reduce((a, f) => a + f.bells, 0));
       const rest = to - jarBells - flying;
       flights = [...flights, ...fresh];
+      // the first "+N" pops: the bells jingle once for the batch (each coin then clinks as it lands, CoinFlow)
+      if (fresh.length) cue('bells-arrive');
       if (rest > 0) {
         later(() => {
           jarBells += rest;

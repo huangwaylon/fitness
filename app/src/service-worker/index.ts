@@ -2,7 +2,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { SHELL, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, SHELL, isAudio, isMusic, lruEvict, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -17,13 +17,12 @@ const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
 // (bump the suffix if villager art is re-fetched under the same paths).
 const VILLAGERS = 'island-villagers-v1';
 const isVillagerArt = (p: string) => p.includes('/art/villagers/');
-const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/; // lib/villagers/roster.ts DEFAULT_VILLAGER
 
-// Precache built JS/CSS + static files. Font subsets (Japanese = many files) are cached on first use instead; the art
-// manifest is bundled into the JS (lib/art.ts), so its file is never fetched. Villager art: see VILLAGERS.
-const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(
-  (p) => !isFont(p) && !p.endsWith('/art/manifest.json') && (!isVillagerArt(p) || PRECACHED_VILLAGERS.test(p))
-);
+// Precache built JS/CSS + static files (caches.ts precachable): font subsets (Japanese = many files) are cached on
+// first use instead; the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
+// their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
+// never precached: AUDIO_CACHE.
+const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -47,7 +46,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS])) await caches.delete(key);
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE])) await caches.delete(key);
       await self.clients.claim();
     })()
   );
@@ -80,6 +79,31 @@ self.addEventListener('fetch', (event) => {
         clearTimeout(timer);
         if (first) return first;
         return (await cached(SCOPE)) ?? net.catch(() => Response.error());
+      })()
+    );
+    return;
+  }
+
+  // Audio: cache first, fetched whole by the sound engine (it plays music from a blob, so no Range requests reach
+  // here; one that does goes to the network). A hit is re-put to mark it recently used; only MUSIC_KEEP music files
+  // are kept (least recently used out).
+  if (isAudio(url.pathname)) {
+    if (req.headers.has('range')) return;
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(AUDIO_CACHE);
+        const hit = await cache.match(req);
+        if (hit && !isMusic(url.pathname)) return hit;
+        const res = hit ?? (await fetch(req));
+        if (res.ok && res.status === 200) {
+          const put = (async () => {
+            if (hit) await cache.delete(req);
+            await cache.put(req, res.clone());
+            for (const old of lruEvict((await cache.keys()).map((k) => k.url))) await cache.delete(old);
+          })();
+          event.waitUntil(put.catch(() => {}));
+        }
+        return res;
       })()
     );
     return;

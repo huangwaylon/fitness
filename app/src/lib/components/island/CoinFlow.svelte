@@ -17,6 +17,7 @@
   //   <CoinFlow flights={[{ id: 1, from: [120, 180], bells: 150, delay: 0 }]} to={[195, 140]} onland={(id) => …} />
   import { u } from '../island/scene.ts';
   import { formatBells } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
     flights: Flight[];
@@ -41,7 +42,12 @@
       style:--dx={u(to[0] - f.from[0])} style:--dy={u(to[1] - f.from[1])}
       style:--hop={u(Math.max(26, (f.from[1] - to[1]) * 0.5 + 26))}
       style:animation-delay="{f.delay + 380 + k * STEP}ms" style:animation-duration="{FLY}ms"
-      onanimationend={() => k === COINS - 1 && onland(f.id)}>
+      onanimationend={(e) => {
+        if (!e.animationName.endsWith('cf-x')) return; // (the coin's own fall and spin bubble up here too)
+        // each coin clinks into the jar, a step higher than the one before (NH's bells counting in)
+        cue('coin-land', { step: k * 2 });
+        if (k === COINS - 1) onland(f.id);
+      }}>
       <span class="cy" style:animation-delay="{f.delay + 380 + k * STEP}ms" style:animation-duration="{FLY}ms">
         <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8.6" class="rim" /><circle cx="10" cy="10" r="6.4" class="face" /><path d="M6.6 7.4 Q8 5.4 10.6 5.2" class="shine" /></svg>
       </span>

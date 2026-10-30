@@ -21,7 +21,8 @@ const ALLOW: Record<string, string[]> = {
   'ui-state': [...DOMAIN, 'store', 'i18n'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
-  components: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers']
+  sound: ['types', 'time', 'sync'],
+  components: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound']
 };
 
 function files(dir: string): string[] {
@@ -59,9 +60,12 @@ describe('src/lib folder boundaries', () => {
   });
 
   it('imports only what its folder allows', () => {
-    // art.ts bundles static/art/manifest.json (outside src/lib): the one allowed reach outside.
+    // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib):
+    // the only allowed reaches outside.
+    const outside = (e: { from: string; to: string }) =>
+      (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && e.to.endsWith('static/audio/manifest.json'));
     const bad = edges
-      .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !(e.from === 'art' && e.to.endsWith('static/art/manifest.json')))
+      .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);
     expect(bad).toEqual([]);
   });

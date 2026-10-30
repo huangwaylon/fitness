@@ -10,6 +10,7 @@
   import { HOLIDAY } from '#lib/config/rules.ts';
   import { addDays, inMonthDayRange } from '#lib/time/dates.ts';
   import { formatDate } from '#lib/i18n/format.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   let { open = $bindable(), onclose }: { open: boolean; onclose?: () => void } = $props();
 
@@ -42,6 +43,8 @@
       popTimer = setTimeout(() => (pop = null), 900);
     }
     checkin(date, key, done);
+    // each tap saves at once: ticking one on is the check-in (the confirm), off just a tick
+    cue(done ? 'checkin-saved' : 'toggle');
   }
 
 </script>

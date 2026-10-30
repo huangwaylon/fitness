@@ -23,6 +23,7 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { buyTreat, buyTrip, setMenu, undoBanner } from '#lib/store/actions.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   const view = $derived(week.view);
   const pots = $derived(view?.pots ?? null);
@@ -54,6 +55,7 @@
       toasts.show(t('pots.short'), 2400, { reaction: 'worry' });
       return;
     }
+    cue('buy');
     undoBanner(t(`pots.${pot}.bought`, { label: item.label, bells: formatBells(item.bells) }), r, { reaction: 'joy' });
   }
   function edit(pot: PotKey) {

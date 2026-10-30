@@ -143,3 +143,31 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
 });
+
+test('サウンド: all off by default; toggles persist on this phone; ミュージック starts the opening theme', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  const audio: string[] = [];
+  page.on('request', (r) => r.url().includes('/audio/') && audio.push(new URL(r.url()).pathname));
+  await page.goto('?demo');
+  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  await sheet(page).getByRole('button', { name: 'サウンド' }).click();
+  const row = (name: string) => sheet(page).getByRole('switch', { name: new RegExp(`^${name}`) });
+  for (const n of ['ミュージック', '効果音', 'おしゃべり']) await expect(row(n)).toHaveAttribute('aria-checked', 'false');
+  expect(audio).toEqual([]); // nothing is fetched while everything is off
+  await row('効果音').click();
+  await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');
+  await row('ミュージック').click();
+  await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
+  await expect(sheet(page).getByText(/いまは\d+時の曲/)).toBeVisible();
+  await expect.poll(() => audio).toContain('/fitness/audio/music/opening.m4a');
+  await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
+  await page.reload();
+  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  await sheet(page).getByRole('button', { name: 'サウンド' }).click();
+  await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');
+  await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
+  await expect(row('おしゃべり')).toHaveAttribute('aria-checked', 'false');
+  await expect(sheet(page).getByRole('slider', { name: '音量' })).toHaveValue('4');
+  expect(errors).toEqual([]);
+});
