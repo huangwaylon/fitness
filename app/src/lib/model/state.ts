@@ -407,7 +407,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     else if (d.key === 'villagerName' && typeof d.value === 'string') {
       const v = d.value.trim();
       if (v.length >= 1 && v.length <= LIMITS.villagerNameMaxChars) p.villagerName = v;
-    } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(d.value)) p.villager = d.value;
+    } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(d.value)) p.villager = d.value;
     else if (d.key === 'goalWeight') {
       // A goal in kg, or null / '' to clear it; anything else is ignored (the previous goal stays).
       if (d.value === null || d.value === '') delete p.goalWeight;

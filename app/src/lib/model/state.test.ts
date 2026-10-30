@@ -1,6 +1,7 @@
 // reduce: one block per event type, accepted vs ignored (the read-time rules that replace the old server's refusals).
 import { describe, expect, it } from 'vitest';
 import { reduce } from './state.ts';
+import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import type { EventRow, GymRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
@@ -149,6 +150,13 @@ describe('reduce: events', () => {
     expect(s.harvests.map((h) => h.week)).toEqual([WK]);
     expect(s.highfives.map((h) => h.person)).toEqual(['B']);
     expect(s.prefs).toEqual({ A: { locale: 'en', villagerName: 'ウェイ' }, B: { villager: 'ume' } });
+  });
+
+  it('every roster id can be picked, hyphenated ones too (kk-slider, tom-nook, agent-s)', () => {
+    for (const id of ROSTER_IDS) {
+      const s = reduce(rows([ev(at(WK), 'A', 'pref', { key: 'villager', value: id })]));
+      expect(s.prefs.A?.villager).toBe(id);
+    }
   });
 
   it('unknown types and unreadable data are ignored; events apply in at order', () => {
