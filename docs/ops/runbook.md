@@ -3,7 +3,7 @@
 Three pieces, no server of our own:
 - **The data:** the Google Sheet *Island Fund* (append-only rows).
 - **The backend:** the Apps Script bound to it, deployed as a web app (`/exec` URL, two per-person keys).
-- **The app:** a static PWA on GitHub Pages. It computes scores and yen in the browser from the sheet's rows.
+- **The app:** a static PWA on GitHub Pages. It computes the ベル and the two pots in the browser from the sheet's rows (ADR 0019).
 
 Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.md).
 
@@ -68,7 +68,7 @@ build. A health probe is not a secret: the URL isn't one either (google-setup.md
 then the probe must show the new build.
 
 ## 6. Backups
-The sheet is the only copy of check-ins, answers and purse events (health numbers can be re-sent from the phones,
+The sheet is the only copy of check-ins, answers, buys from the pots and menu edits (health numbers can be re-sent from the phones,
 shortcut-health-sync.md §6). Google keeps version history (File → Version history), which protects against bad edits
 but not against losing the file or the account. So, in addition:
 

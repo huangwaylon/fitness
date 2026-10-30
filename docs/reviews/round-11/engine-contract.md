@@ -17,13 +17,16 @@ export interface DayBells { date: LocalDate; bells: number; parts: FruitBells }
 
 export interface PotBalance {
   balance: number; // earned − spent, never negative (a spend above the balance is ignored on read)
-  earned: number;  // this pot's share of everything earned so far (30% / 70%, on totals)
+  earned: number;  // this pot's share of everything earned so far (POTS.treatPercent% / the rest, on totals)
   spent: number;   // accepted, not voided spends from this pot
 }
 
+/** A pot's balance and what flowed in: share(earned) − share(earned − todayBells / weekBells), so treat + trip add up. */
+export interface PotFlow extends PotBalance { today: number; week: number }
+
 export interface PotsView {
-  treat: PotBalance;
-  trip: PotBalance;
+  treat: PotFlow;
+  trip: PotFlow;
   todayBells: number; // both people, today so far
   weekBells: number;  // both people, this week so far, incl. the weekly bonus once it landed (Sunday 19:30)
 }
@@ -37,7 +40,7 @@ export interface FruitProgress {
   todayGoal: number;    // 45, 8,000, 1, 3
   todayMet: boolean;    // 🍎 also by the tsuyu rule (≥ 30 active minutes, Jun 1–Jul 20)
   weekDays: number;     // progress toward the badge: days meeting the daily goal (🍑🍎🥥), ticks (🍐)
-  weekGoalDays: number; // 5 days, 4 days, 2 days, 15 ticks (🍐 prorated over 正月 pear-off days)
+  weekGoalDays: number; // 5 days, 4 days, 3 days, 15 ticks (🍐 prorated over 正月 pear-off days)
   badge: boolean;
   weekBells: number;    // this fruit's daily ベル this week (the badge's +500 is in the harvest bonus)
 }
@@ -48,19 +51,17 @@ export interface PersonWeekView {
   villager: string | null;
   today: { bells: number; parts: FruitBells }; // today's earnings so far
   weekBells: number;                            // this week's daily earnings (without the bonus)
-  fruits: Record<FruitKey, FruitView & FruitProgress>; // FruitView = the OLD fields (milli, pct, …), going away
+  fruits: Record<FruitKey, FruitProgress>;
   lastSyncAt: string | null;
   habits: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
-  score: number; // OLD, going away
 }
 
 export interface HarvestView {
   weekKey: WeekKey;
   bonus: HarvestBonus;
   totalBells: number;     // the week's total, both people: daily earnings + bonus
+  badges: Record<PersonId, Record<FruitKey, boolean>>; // the harvested week's badges
   confirmedBy: PersonId[]; // 「受け取る」 is a ceremony only: the bonus counts either way
-  payout: WeekPayout;      // OLD, going away
-  rungsReached: string[];  // OLD, going away
 }
 
 export interface WeekView {
@@ -72,7 +73,6 @@ export interface WeekView {
   pending: PendingConfirmation[];
   host: { key: string; params?: Record<string, string | number> };
   highFivesToday: number;
-  jar: JarView; // OLD, going away
 }
 
 // ---- app/src/lib/model/history.ts (きろく) ----
@@ -119,7 +119,8 @@ export function newMenuItemId(): string;
 ## Rules the UI can rely on
 - Menu validation (`parseMenu`): ≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60 chars after trim, bells an
   integer 1–10,000,000. An empty list is valid.
-- Default menu ids: おやつ `snack` `ice` `cafe` `dinner`; 旅 `daytrip` `onsen` `weekend` `abroad`.
+- Default menu ids: おやつ `snack` `ice` `cafe` `dessert` `dinner`; 旅 `daytrip` `weekend` `onsen` `abroad` (prices: ADR 0019
+  amendment 2026-10-30).
 - Amounts are integers. Format `1,234 ベル` / `1,234 Bells`.
 - Only days up to today count anywhere (a future-dated row never earns early). `todayActual` for 🍑 is the counted
   minutes uncapped (e.g. 60 of 45); the ベル cap at 45.
@@ -128,14 +129,18 @@ export function newMenuItemId(): string;
 - The harvest opens Sunday 19:30 for the week (or last week while not both tapped), as before; a tap changes no money.
 - A spend the pot couldn't cover when it was made is ignored and doesn't appear in `bellsLedger().spends`.
   `buyTreat`/`buyTrip` already refuse it on the phone (`{ok:false}`), so show a gentle "not enough" instead.
-- `host`: `host.harvest_ready` carries `{bells, score}`; `host.default` carries `{bells}` (today's, mine); the
+- `host`: `host.harvest_ready` carries `{bells}`; `host.default` carries `{bells}` (today's, mine); the
   `host.payday` and `host.next_rung` lines are no longer emitted. No new host keys.
-- Status (phase 2, 2026-10-30): every field above is computed for real. Old view fields (`score`, `jar`,
-  `harvest.payout`, `rungsReached`, the `FruitView` part of `fruits[f]`, `HistoryWeek.yen`/`estimate`, `moneyLog`)
-  stay populated until the UI has moved over, then they are removed.
+- Status (2026-10-30, cleanup): every field above is computed for real. The old yen economy is gone from the
+  model, the types and the actions (`score`, `jar`, `harvest.payout` / `rungsReached`, the `FruitView` fields,
+  `HistoryWeek.yen` / `estimate` / `people[p].score`, `WeekDetail.yen` / `estimate` / `breakdown` / `people[p].score` /
+  `fruits`, `moneyLog`, `spendPurse` / `approveSpend` / `transferDone` / `undoTransfer` / `voidSpend`). Old `approve`,
+  `transfer`, `transfer_undo` and yen `spend` rows are read and ignored.
 
 ## Requests from UI
 Status 2026-10-30, after UI commits f3ebc4e…0fdc486 (island, ふたりの壺, harvest, きろく, あそびかた, partner sheet).
+**All three done (2026-10-30, engine cleanup):** the old fields are removed; `HarvestView.badges` exists and the
+overlay reads it; `PotsView.treat/trip.today/week` exist and the pots screen shows them (no re-split in the UI).
 
 1. **Old fields can go.** The UI no longer reads any of: `PersonWeekView.score`, `WeekView.jar` (`JarView`),
    `HarvestView.payout` / `rungsReached`, the `FruitView` part of `fruits[f]` (`milli`, `maxMilli`, `pct`, `actual`,

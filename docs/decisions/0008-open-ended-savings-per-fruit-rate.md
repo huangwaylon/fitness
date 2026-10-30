@@ -1,5 +1,5 @@
 # 0008 — Open-ended savings: 1 fruit = ¥50
-**Status:** Accepted (round 4; user input). Supersedes the 85-threshold, shortfall bank and fixed-goal parts of 0003 and 0006.
+**Status:** **Superseded by [0019](0019-bells-daily-earning-two-pots.md)** (ベル per day instead of ¥50 per fruit, 2026-10-30). Accepted round 4 (user input). Supersedes the 85-threshold, shortfall bank and fixed-goal parts of 0003 and 0006.
 
 **User input:** "No particular destination, maybe just saving up as much as possible… use [¥520,000] as an estimate to scale the amount earned with each action."
 

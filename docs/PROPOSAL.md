@@ -2,6 +2,12 @@
 
 *A cozy two-player island where healthy habits, measured automatically by iPhone and Apple Watch, grow fruit, and every Sunday that fruit puts real yen into savings for trips you earn together.*
 
+> **Superseded money and scoring (2026-10-30):** [ADR 0019](decisions/0019-bells-daily-earning-two-pots.md) and its
+> amendment replace the yen, the weekly score /100, the jar, the Treat Purse, the team bonus, per-person targets,
+> calibration and the habits below with ベル (play money) earned daily on the same goals for both, a weekly badge bonus,
+> and two shared pots (おやつ / 旅). Sections 2–3 are kept as the history of v2.2; the four fruits, the gyms, the
+> check-in and きろく still hold.
+
 From the team (lead, software engineer, UI/UX designer, nutritionist, fitness coach, motivational coach).
 Detail: [`decisions/`](decisions/README.md) 0001–0018 · [`design/design.md`](design/design.md) · [`profiles.md`](profiles.md). The role memos and review rounds 1–6 are in git history.
 v1.0 (USD, more game systems) and v2.0 (Japan, yen, gyms) are in git history. v2.1 (round 4): ¥50/fruit, four fruits, no VPN. **v2.2** (round 8): the app as built: Google Sheet backend, step-derived minutes and 4 step days, official NH art, きろく, no privacy rules and no alerts.
