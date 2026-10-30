@@ -26,11 +26,14 @@ body {
   font-family: var(--font-ui); font-weight: 500; color: var(--text); background: var(--bg);
   font-size: var(--fs-body); line-height: var(--lh); font-feature-settings: "palt";
   -webkit-font-smoothing: antialiased;
-  /* T7: WebKit ignores word-break: auto-phrase, so long words / katakana may break instead of overflowing */
+  /* T7: WebKit has no word-break: auto-phrase; a word too long for its line still breaks instead of overflowing */
   overflow-wrap: break-word; line-break: strict;
   transition: background-color var(--dur-base) var(--ease-soft), color var(--dur-base);
 }
 html[lang="ja"] * { letter-spacing: 0 !important; }
+/* Round 21: Japanese lines break only where the copy has a space (the kids-style 分かち書き) or after 、。！, never inside
+   a word (ごほう / び, がんばろ / う), the same on iPhone Safari and in Chrome (keep-all is WebKit-safe; auto-phrase is not) */
+html[lang="ja"] body { word-break: keep-all; }
 h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
 button { font: inherit; color: inherit; }
 button, [role="button"], [role="switch"], a {
@@ -98,6 +101,8 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .pen-btn {
   appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
   display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
+  /* the lip hangs 4px under the box: lift it by half, so the button and its lip sit centred in the row (round 21) */
+  margin-bottom: var(--lip-h);
 }
 .pen-btn:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
 

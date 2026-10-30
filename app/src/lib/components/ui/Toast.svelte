@@ -106,7 +106,7 @@
   /* An undo banner (N5): low, in the thumb zone, so it never covers the Jar's total; its text (what was done:
      「アイス 1,000 ベル つかいました！」) may take two lines next to the button. */
   .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
-  .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; word-break: auto-phrase; }
+  .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
   /* Undo: above the dismiss layer, a 44px-tall button on the right. */

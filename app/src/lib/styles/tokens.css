@@ -75,6 +75,8 @@
   /* Round 10 T2: the one tap-target floor. min-height (and min-width for icon-only controls) on anything
      tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
   --hit: 44px;
+  /* round 21: a list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
+  --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
   --phone-h: 92px;    /* the island's NookPhone button: 68px disc + 2px + the 「しまフォン」 plate + its lip */
 
   /* ---------- viewport heights (round 10, ios-scroll-audit L3) ----------
