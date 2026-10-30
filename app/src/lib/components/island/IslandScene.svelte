@@ -9,7 +9,7 @@
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
   // wet band, foam, shallows, terracotta cliff, NH grass with flecks), one hedge along the back, one plain
   // seasonal oak per person with today's fruit on the ground at its base (FruitTree), the jar + its ベル
-  // nameplate in the middle (the scene's only label and the doorway to ふたりの壺), a front row of flowers, the
+  // nameplate in the middle (the scene's only label and the doorway to the wallet (ごほうび)), a front row of flowers, the
   // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
   // The HUD (sync chip, today's ベル ribbon, NookPhone) overlays the sky; clouds keep below it
@@ -58,7 +58,7 @@
     onme?: () => void;
     /** Partner villager tapped (open the partner sheet). */
     onpartner?: () => void;
-    /** Jar tapped (go to ふたりの壺), after a short look-at-the-jar beat. */
+    /** Jar tapped (go to ごほうび), after a short look-at-the-jar beat. */
     onjar?: () => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
@@ -149,7 +149,7 @@
         celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)} />
     {/each}
 
-    <!-- the jar + its plate (JarSpot): one button, the doorway to ふたりの壺 -->
+    <!-- the jar + its plate (JarSpot): one button, the doorway to the wallet (ごほうび) -->
     <JarSpot {view} {live} {covered} {onjar} later={life.later} />
 
     <FlowerBeds {season} />

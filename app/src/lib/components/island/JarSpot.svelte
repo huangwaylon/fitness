@@ -3,7 +3,7 @@
   // drawing). The plate shows the shared wallet (ADR 0022). When new ベル arrive (a sync), they fly
   // in (CoinFlow): for each person and fruit that earned more than this phone last showed (SCENE.bellsSeen, per day),
   // a "+N" pops over that fruit under its tree and three coins hop into the jar; the plate counts up as they land and
-  // the jar squashes. Anything else that raises the pots (the Sunday bonus) rises with a "+N" pop over the jar.
+  // the jar squashes. Anything else that raises the wallet (the Sunday bonus) rises with a "+N" pop over the jar.
   // It all waits while a sheet or the harvest covers the scene. Reduced motion: no flight, the plate just changes.
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
@@ -27,7 +27,7 @@
     live: boolean;
     /** A sheet or the harvest covers the scene: hold the coins until it is gone. */
     covered: boolean;
-    /** Tapped (go to ふたりの壺), after a short look-at-the-jar beat. */
+    /** Tapped (go to ごほうび), after a short look-at-the-jar beat. */
     onjar?: () => void;
     /** The scene's timer (cleared with the scene). */
     later: (fn: () => void, ms: number) => void;
@@ -75,7 +75,7 @@
     return out;
   }
 
-  // Each change of the pots (or of today's ring ベル) once nothing covers the scene: fly what's new, show the rest.
+  // Each change of the wallet (or of today's ring ベル) once nothing covers the scene: fly what's new, show the rest.
   $effect(() => {
     const to = target;
     void view.people.A.today.rings;
@@ -101,7 +101,7 @@
         }, 450);
       }
       if (!fresh.length) return;
-      // the plate never ends below the pots: whatever didn't land in 4 s is added anyway
+      // the plate never ends below the wallet: whatever didn't land in 4 s is added anyway
       later(() => {
         if (flights.length) {
           flights = [];
@@ -135,7 +135,7 @@
 
   /** Tap: squash (pointer down, 80ms), spring back, the villagers glance at the jar (R18) during the morph
    *  and, 90ms later (no dead wait), the route changes: the page zooms about the jar (ui-state/jarTransition.ts)
-   *  and this jar morphs into the ふたりの壺 hero jar (<Jar name="jar">). */
+   *  and this jar morphs into the ごほうび hero jar (<Jar name="jar">). */
   function tap() {
     pressed = false;
     if (live && !reducedMotion()) {
@@ -181,7 +181,7 @@
   .squash:global(.catch) { animation: catch 260ms var(--ease-bounce); }
   @keyframes catch { 0%, 100% { transform: none; } 40% { transform: scale(1.06, .94); } }
   .jar.pressed .jar-plate { transform: translateY(2px); box-shadow: 0 1px 0 var(--plate-lip); }
-  /* the pots' nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot; just the
+  /* the wallet's nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot; just the
      number (the jar above says what it counts, the label says ベル), so the five-fruit rows fit beside it (ADR 0021) */
   .jar-plate {
     display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: var(--r-pill);

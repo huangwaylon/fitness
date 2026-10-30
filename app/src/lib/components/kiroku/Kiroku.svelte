@@ -6,7 +6,7 @@
   // きろく (records) NookPhone app (history-and-editing.md): からだ | ベル pills, week cards → week → day → edit,
   // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first.
   // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
-  // queue (held 5 s with もとに戻す) and recompute the island's ベル ribbon and the pots at once. Loaded on first open
+  // queue (held 5 s with とりけす) and recompute the island's ベル ribbon and the wallet at once. Loaded on first open
   // (ShimaPhone imports it dynamically, round 7 L1).
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';

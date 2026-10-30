@@ -1,11 +1,11 @@
 <script lang="ts">
-  // The jar (v5 §5, F6): ONE drawing for the island and the ふたりの壺 hero.
+  // The jar (v5 §5, F6): ONE drawing for the island and the ごほうび hero.
   // Glass #DDF2FB (round 7: lit from the upper left, a white streak there and a soft #BFDCEA shade toward the
   // lower right, over the coins too), a stack of coins up to the fill line, a yuzu lid with a leaf; no ink.
   //   <Jar fill={0.6} width="132px" />            fill 0–1 of the glass (wallet/fill.ts walletFill) (the coins slide, 1.4 s, eased)
   //   <Jar fill={old} band={after} width="96px" /> band: a lighter "this harvest" layer up to `band`
   // The art is 54 × 68 (height = width × 68 / 54). Set `name` to give it a view-transition-name, so a
-  // route change can morph the island jar into the ふたりの壺 hero jar (ui-state/jarTransition.ts + tokens.css).
+  // route change can morph the island jar into the ごほうび hero jar (ui-state/jarTransition.ts + tokens.css).
   interface Props {
     /** 0–1: how full the glass is (0 = empty; a little shows as soon as there is anything). */
     fill: number;
