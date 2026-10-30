@@ -49,11 +49,13 @@
 <style>
   .head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
   .who { flex: 1; min-width: 0; display: grid; gap: 6px; }
-  .sync { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  /* flush with the bubble's left edge (round 21: 6px left of it) */
+  .sync { margin-left: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* their line: a small cream speech bubble with its tail toward the face */
   .say {
     position: relative; justify-self: start; margin: 2px 0 2px 6px; padding: 7px 12px; border-radius: var(--r-chip);
     background: var(--c-cream); color: var(--c-ink); font: 700 var(--fs-body)/1.35 var(--font-ui); box-shadow: 0 3px 0 var(--c-lip);
+    text-wrap: balance;
   }
   .say::before {
     content: ''; position: absolute; left: -6px; top: 50%; margin-top: -6px; border: 6px solid transparent; border-left: 0;

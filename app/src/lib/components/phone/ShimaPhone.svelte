@@ -136,8 +136,13 @@
 <style>
   /* demo mode: a small yuzu chip under the home grid */
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
-  .titlebar { flex: none; }
-  .titlebar { margin-bottom: 8px; }
+  .titlebar { flex: none; position: relative; z-index: 1; margin-bottom: 8px; }
+  /* the paper sheet's fade under the title bar (round 21): rows scrolling up fade out instead of being cut at a hard edge;
+     at the top it covers only the 14px gap above the first row */
+  .titlebar::after {
+    content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
+    background: linear-gradient(var(--surface), transparent);
+  }
 
   /* Home: six tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
      the top third of an empty screen); the row gap grows with the phone's height. */
@@ -195,5 +200,5 @@
   /* the chosen row: NH's yellow highlight */
   .page :global(.prow[aria-checked='true']) { background: var(--ctl-sel); color: var(--c-ink); }
   .page :global(.prow.static) { cursor: default; }
-  .page :global(.prl) { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); word-break: auto-phrase; text-wrap: balance; line-height: 1.3; }
+  .page :global(.prl) { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); text-wrap: balance; line-height: 1.3; }
 </style>

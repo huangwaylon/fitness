@@ -100,16 +100,28 @@
   }
   .search svg { width: 20px; height: 20px; flex: none; opacity: .55; }
   .search input { flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: inherit; font: 700 var(--fs-input) var(--font-ui); outline: none; }
+  /* the clear ✕ in ink, not the browser's blue (round 21) */
+  .search input::-webkit-search-cancel-button {
+    -webkit-appearance: none; appearance: none; width: 18px; height: 18px; cursor: pointer; background: var(--c-ink-soft);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6 6 18' stroke='%23000' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6 6 18' stroke='%23000' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
   .search input::placeholder { color: color-mix(in srgb, var(--c-ink) 45%, transparent); }
   .search:focus-within { box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip), 0 0 0 3px var(--focus); }
   .scroll { margin: 0 -4px; padding: 6px 4px; }
   .none { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
   .grp { margin: 6px 4px 8px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .grp:not(:first-child) { margin-top: 14px; }
-  .roster { display: grid; grid-template-columns: repeat(5, 64px); justify-content: space-between; row-gap: 12px; padding: 4px 4px 8px; }
-  @media (max-width: 374px) {
+  /* round 21: the heads are sized so the column gaps match the 12px row gap (at 375 five 64px heads overlapped by 5px;
+     at 390 they sat 2.5px apart): five 56px heads up to 419px wide, five 64px from 420, four 56px under 360 */
+  .roster { display: grid; grid-template-columns: repeat(5, 56px); justify-content: space-between; row-gap: 12px; padding: 4px 4px 8px; }
+  .rv :global(.av) { --s: 56px !important; }
+  @media (min-width: 420px) {
+    .roster { grid-template-columns: repeat(5, 64px); }
+    .rv :global(.av) { --s: 64px !important; }
+  }
+  @media (max-width: 359px) {
     .roster { grid-template-columns: repeat(4, 56px); }
-    .rv :global(.av) { --s: 56px !important; }
   }
   .rv {
     appearance: none; cursor: pointer; border: 0; padding: 0; background: none; border-radius: 50%; position: relative;
