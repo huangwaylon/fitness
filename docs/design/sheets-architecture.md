@@ -7,7 +7,7 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 
 | Tab | Columns | Written by |
 |---|---|---|
-| `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`), `value` | `ingest`, **only when the value is higher** than the latest for (person, date, metric) |
+| `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`weight`), `value` | `ingest`. Steps and minutes: **only when the value is higher** than the highest so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020): **whenever it differs** from the last row for (person, date) |
 | `workouts` | `at`, `person`, `id`, `date`, `type`, `start`, `end`, `duration_min`, `avg_hr` | `ingest`, only for unseen `id` (`workoutKey(type, start)`) |
 | `presence` | `at`, `person`, `place`, `event` (`arrive`\|`leave`), `event_at` | `presence` |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON) | `event` (client-generated `id`; a duplicate `id` is ignored, so retries are safe) |
@@ -23,13 +23,15 @@ Event `type`s and `data`:
 - `approve {spendId}`, `transfer {month}`, `transfer_undo {month}`: the old yen economy's; no longer sent. They stay
   valid event types (the script still accepts them and old rows exist) and the model ignores them (ADR 0019 §6).
 - `harvest {week}` (「受け取る」: a ceremony only, the bonus counts either way) · `highfive {}`
-- `pref {key, value}` (keys: `locale`, `villagerName`, `villager`, and the shared menus `treatMenu` / `tripMenu`:
+- `pref {key, value}` (keys: `locale`, `villagerName`, `villager`, `goalWeight` (the sender's goal in kg, 20–300 with
+  one decimal, or `null` to clear; ADR 0020), and the shared menus `treatMenu` / `tripMenu`:
   `value` is a JSON array of `{id, label, bells}` (≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000);
   the latest valid one by either person wins; an invalid one is ignored as a whole)
 - `share {metric, on}`: refused by the script (`bad_request`); old rows are ignored (ADR 0016).
 
 Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:
 - `metric_set {date, metric:'steps'|'exercise_min', value}`: overrides the day's value, also lower. The script refuses a non-integer or out-of-range `value` (steps 0–100,000; minutes 0–1,440) or a bad date/metric with `bad_request`. Read rule: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows; else max(S.value, ingest rows with S.at < at ≤ T).
+- `metric_set {date, metric:'weight', value}` (ADR 0020; **redeploy `Code.js`**): a weight in kg, 20–300 with at most one decimal (decimals for weight only; the script refuses anything else). No week lock (weight earns nothing): any date up to the event's own day. Read rule: the day's weight is the **latest** of its `weight` ingest rows and weight `metric_set`s with `at ≤ T` (not the max).
 - `workout_edit {id, strength?: true|false|null, excluded?: boolean}`: strength override for any type (`null` = automatic), or out of scoring.
 - `workout_add {id:'m:<id>', date, type, durationMin 1–600, strength?}`: a manual workout (a known canonical type).
 - `checkin {…, edit:true}`: a fix for any day ≤ today of an open week (instead of the 48 h window).
@@ -52,7 +54,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 
 | `action` | Request | Reply |
 |---|---|---|
-| `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `exercise_dates` (exercise samples' own dates), `steps_sources`/`exercise_sources` (per-sample source: totals per source, the larger wins), `workouts` (types/starts/ends/avgHrs lists) | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows actually appended, plus unparsed entries, unmapped workout names and dropped lists (a list whose length differs from its dates is dropped, the rest saved) |
+| `ingest` | `dates, steps, exercise_minutes` (newline lists or arrays; the user's Shortcut format), optional `exercise_dates` (exercise samples' own dates), `steps_sources`/`exercise_sources` (per-sample source: totals per source, the larger wins), `workouts` (types/starts/ends/avgHrs lists), `weight_dates`/`weights`/`weight_sources` (Body Mass samples: a day's weight = its **first** sample; kg, "68.4 kg", "68,4", marked lb; 20–300 kg; ADR 0020) | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows actually appended, plus unparsed entries, unmapped workout names and dropped lists (a list whose length differs from its dates is dropped, the rest saved) |
 | `presence` | `place, event, at?` | `{ok}` |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
 | `snapshot` | `since?` (ISO, the max `at` the client has seen) | `{ok, me, now, rev, rows:{metrics, workouts, presence, events}}` (rows with `at > since`; both people; `rev`: §2.1) |
@@ -60,7 +62,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 | `health` | **no `key`** | `{ok:true, build}`: up, authorized, and running `build` (no Properties read, no lock, no sheet). The monitor's probe (runbook §5) |
 
 - Person = whichever of `KEY_A`/`KEY_B` matches, compared in constant time. A key that isn't 32–128 hex characters is `unauthorized` before anything is read. The keys are cached in `CacheService` for 5 minutes, so a rotated key keeps working for up to 5 minutes. The rate limit is a per-key-per-minute counter in `CacheService`.
-- `ingest`'s higher-only check reads only the last 5,000 `metrics` rows when every date in the body is at most 14 days old (the hourly Shortcut); a body with older dates (the baseline) reads the whole tab.
+- `ingest`'s higher-only check (for weight: the changed-only check against the last row) reads only the last 5,000 `metrics` rows when every date in the body is at most 14 days old (the hourly Shortcut); a body with older dates (the baseline) reads the whole tab.
 - Writes (and `snapshot`) take `LockService.getScriptLock()` (wait ≤ 10 s, else `busy`). Each locked request reads Script Properties once (`getProperties`) and writes them at most once (`LAST_AT`, `ROWS`, `REV`).
 - `snapshot` without `since` returns everything, as compact arrays (`rows.metrics = [[at, person, date, metric, value], …]`). With hourly syncs that is ~18k rows a year (3.7 MB of JSON by year 3, `npm run bench`).
 
@@ -75,7 +77,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 **Client side (WS2):** store `rev` with the snapshot cache. When a reply's `rev` differs from the stored one, discard the reply's rows and the whole cache (keep the unsent write queue), fetch a full `snapshot` without `since`, and store the new `rev`. A cache with no stored `rev` (from before this change) resyncs once the same way. A manual *resync* button in the app does the same full fetch. Derived caches (finalized weeks, round 8 P5) are keyed by `rev`.
 
 **Model helpers for the client (WS1, `app/src/lib/model/`):**
-- `compactRows(rows, now)` (`compact.ts`): drops the metrics rows of locked weeks that the model can no longer read (keeps, per person/date/metric, the best row at the Wednesday lock, each `metric_set` (and just before it) and overall; the Sunday 19:30 row went with the yen payout). Every view is unchanged (`compact.test.ts`); it cuts metrics ~90%. Run it on the cache after each merge. It relies on ingest rows only going up, which a hand edit can break; that bumps `rev`, and the full refetch replaces the cache.
+- `compactRows(rows, now)` (`compact.ts`): drops the metrics rows of locked weeks that the model can no longer read (keeps, per person/date/metric, the best row at the Wednesday lock, each `metric_set` (and just before it) and overall; the Sunday 19:30 row went with the yen payout). Every view is unchanged (`compact.test.ts`); it cuts metrics ~90%. Run it on the cache after each merge. `weight` rows are the exception: per (person, date) only the newest one is kept, since a weight's latest row is its value. It relies on ingest rows only going up, which a hand edit can break; that bumps `rev`, and the full refetch replaces the cache.
 - `reduce(rows, calendar, rev)`: pass the cached `rev` (live data only) and the earnings of locked weeks are reused across States (round 8 P5), so a poll or minute tick no longer recomputes every past week. `npm run bench`, year 3 with hourly syncs, compacted: reduce + `buildWeekView` ≈ 8 ms with `rev`, ≈ 16 ms without (≈ 30 ms before the yen engine was removed; measured on a laptop, 2026-10-30).
 
 `whoami.build` / `health.build`: the first 12 hex characters of SHA-256 over the bundle (`buildHash()` in `app/gas/build.ts`; `dev` when `main.ts` runs unbundled). `bundle.test.ts` checks that `Code.js` carries it.
@@ -83,7 +85,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 ## 3. Code layout
 - `app/gas/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. Ported from the retired server's Shortcut ingest (without zod), so it runs in Apps Script (the browser never parses Shortcut bodies).
 - `app/gas/`: Apps Script source in TS (`main.ts`: `doPost`, sheet helpers), bundled with the parser by **esbuild** into `apps-script/Code.js` (one global script, no imports) via `npm run gas:build`. `apps-script/appsscript.json` sets scope `spreadsheets.currentonly`, the web app, and timezone `Asia/Tokyo`. `clasp` is optional (`.clasp.json` not committed).
-- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (people with today's ベル and fruit progress, the pots, the menus, harvest with the weekly bonus, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. `state.ts` validates and indexes rows; `inputs.ts` reads one person's rows as of a time; `bells.ts` is the economy (per-week earnings cached per State and, for locked weeks, per `rev`; pots; spends; the きろく ledger `bellsLedger`); `history.ts` the きろく views. `scoring/bells.ts` is the pure earning rule (`earnWeek`, `duoBonus`, `splitPots`); `scoring/targets.ts` picks a week's rule version and habits (`rulesFor`, `habitsFor`). `week.ts` builds the WeekView (incl. the harvest's badges and each pot's today / week flow).
+- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (people with today's ベル and fruit progress, the pots, the menus, harvest with the weekly bonus, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. `state.ts` validates and indexes rows; `inputs.ts` reads one person's rows as of a time; `bells.ts` is the economy (per-week earnings cached per State and, for locked weeks, per `rev`; pots; spends; the きろく ledger `bellsLedger`); `history.ts` the きろく views; `weight.ts` the weight trend (ADR 0020: a day's weight, the gap-aware 10% EWMA, week change, since start, pace, goal projection; nothing in the economy imports it). `scoring/bells.ts` is the pure earning rule (`earnWeek`, `duoBonus`, `splitPots`); `scoring/targets.ts` picks a week's rule version and habits (`rulesFor`, `habitsFor`). `week.ts` builds the WeekView (incl. the harvest's badges and each pot's today / week flow).
 - `app/src/lib/sync/` (round 9):
   - `storage.ts`: every Web Storage key in one registry. Live keys are `island.*`; the demo's are `island-demo.*`, so it can never touch the live key, queue or cache. Failed writes (quota, private mode) are reported, and the store shows a banner once per kind.
   - `transport.ts`: the POST helper (timeout, error taxonomy) and `whoami`. `pairing.ts`: the key, `#key=` links, and switching person (drops the cache and queue).
@@ -98,8 +100,9 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 - The GAS backend: vitest with an in-memory fake of `SpreadsheetApp`/`PropertiesService`/`LockService`/`CacheService`/`ContentService`. It covers auth, never-throws, append-only + higher-only metrics, dedupe, snapshot `since`, rate limit and body cap.
 - The model's edits: `model/history.test.ts` (lowering, later higher syncs, the lock, own data only, workouts, check-in fixes, the change log, the history views).
 - The ベル economy: `scoring/bells.test.ts` (the daily table, the max of the minute sources, caps, tsuyu, 正月, badges, the ふたりボーナス, the 20/80 split) and `model/bells.test.ts` (earnings landing as they happen, the bonus at Sunday 19:30, locks, spends that the pot can't cover, voids, menus last-writer-wins, the ledger).
+- The weight trend: `gas/parse.test.ts` (units, first sample of the day, mismatches), `gas/main.test.ts` (changed-only weight rows, `metric_set` weight bounds) and `model/weight.test.ts` (latest-row reads, edits, the EWMA, pace and projection, `compactRows`, and that weight never changes any earnings).
 - The model: golden fixtures (`app/src/lib/model/fixtures/`, `golden.test.ts`): the full WeekView at 50 key instants and digests at 660 checkpoints of a 10-week timeline, plus invariants (the pots, the ledger and the harvest agree). First frozen from the old server; regenerated on purpose with `GOLDEN_UPDATE=1` when a rule changes (2026-10-30: the ベル economy, its tuning and the removal of the yen engine).
 - The client: queue/retry/merge unit tests.
 
 ## 5. Shortcut (the user's)
-URL → the `/exec` URL. Body: add `"key": "<KEY_A>"` and `"action": "ingest"` to the existing dictionary (`dates`, `steps`, `exercise_minutes`). Drop the `Authorization` header. Request body type stays JSON (sent as text/plain: Shortcuts' "Text" body with the JSON string, or "JSON" works too because Apps Script reads `postData.contents`).
+URL → the `/exec` URL. Body: add `"key": "<KEY_A>"` and `"action": "ingest"` to the existing dictionary (`dates`, `steps`, `exercise_minutes`), plus optionally `weight_dates`/`weights`/`weight_sources` (shortcut-health-sync.md §2). Drop the `Authorization` header. Request body type stays JSON (sent as text/plain: Shortcuts' "Text" body with the JSON string, or "JSON" works too because Apps Script reads `postData.contents`).

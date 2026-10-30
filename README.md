@@ -23,7 +23,7 @@ iOS Shortcuts (health sync, gym Arrive/Leave) and the PWA (check-ins, harvest, b
 | `app/scripts/` | `fetch-assets` (`npm run assets:fetch`: official art), `font-subsets` (`npm run fonts:subset`: trims Zen Maru Gothic), `bench-model` (`npm run bench`: a year of rows through the model) |
 | `docs/PROPOSAL.md` | The product description (v2.2) |
 | `docs/profiles.md` | Participant profiles, gyms, eating patterns |
-| `docs/decisions/` | Decision records 0001–0019, with an [index](docs/decisions/README.md) |
+| `docs/decisions/` | Decision records 0001–0020, with an [index](docs/decisions/README.md) |
 | `docs/design/` | [design.md](docs/design/design.md) (the design spec), the sheets contract, the きろく spec, Animal Crossing research |
 | `docs/ops/` | Runbook, Google setup, the Shortcuts health-sync guide |
 | `docs/archive/no-mac/` | The research behind ADR 0015 (historical) |
