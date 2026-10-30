@@ -16,7 +16,7 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 Event `type`s and `data`:
 Exactly these types (`EVENT_TYPES`); the script refuses anything else, and every shape below, with `bad_request`
 (ADR 0021: no check-ins and no daily questions, so `checkin` and `confirm` are gone like the yen economy's `approve` /
-`transfer`, the privacy `share` and the yen `spend {amountYen}`; `cleanupLegacyData`, runbook §9, deleted their rows):
+`transfer`, the privacy `share` and the yen `spend {amountYen}`; a one-off cleanup deleted their rows on 2026-10-30):
 - `spend {spendId, item, label, bells}` (ADR 0022): a buy from the shared wallet: `bells` an integer 1–10,000,000,
   `label` 1–60 characters, `item` a string ≤ 40, no `pot` (the two pots' shape is refused). The model counts it only if
   the wallet covered it at its `at`.

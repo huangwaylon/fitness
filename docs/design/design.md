@@ -146,7 +146,7 @@ Each app (`components/phone/*`) slides in from the right inside the phone.
   in about 3.5 weeks. A typical week of ~10,000 still pays the おやつ and the café date with ~4,500 to save.
 - **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Buys never lock.
 - **Starts** in the week of Mon 2026-10-26. ADR 0021 and 0022 (2026-10-30) were applied in place (play money, the
-  economy's first week); `cleanupLegacyData` (runbook §9) deletes the two pots' spends and menus so the wallet starts
+  economy's first week); a one-off cleanup (2026-10-30) deleted the two pots' spends and menus so the wallet starts
   from earnings. Gone: the score /100, yen, the team layer, the purse, transfers, rungs, calibration, the rest-day
   bonus, the eating habits, step-derived minutes, 「筋トレでしたか？」, the two pots and trip prices.
 - **View model:** `WeekView.people[p].today.rings`, `rings[f]` progress, `moveGoal`, `wallet {balance, earned, spent,

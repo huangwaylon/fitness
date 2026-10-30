@@ -8,7 +8,7 @@
 // (2026-10-30): a move_kcal and a stand_min row were added next to every steps row (6% of the steps in kcal, steps / 45
 // stand minutes, so they only go up like the steps), plus Move goals (g1–g3) and late Move/Stand fixes (g4, g5). The
 // rows of past designs (checkin, confirm, share, approve, transfer, yen spends, presence leave) were then deleted, as
-// `cleanupLegacyData` does to the sheet: every view and digest stayed the same. ADR 0022 (one wallet): the b1–b9 buys
+// the one-off cleanup of 2026-10-30 did to the sheet: every view and digest stayed the same. ADR 0022 (one wallet): the b1–b9 buys
 // lost their pot (the trip ones now buy a special meal and a room upgrade) and the menu edit became a `menu` pref.
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.

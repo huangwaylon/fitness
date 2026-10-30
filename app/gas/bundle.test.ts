@@ -13,9 +13,8 @@ describe('apps-script/Code.js', () => {
     expect(code).toBe(bundle());
   });
 
-  it('has a top-level doPost, onEdit, resync and the one-off cleanupLegacyData, and no doGet, imports or exports', () => {
+  it('has a top-level doPost, onEdit and resync, and no doGet, imports or exports', () => {
     expect(code).toMatch(/^function doPost\(e\) \{$/m);
-    expect(code).toMatch(/^function cleanupLegacyData\(\) \{$/m);
     expect(code).toMatch(/^function onEdit\(e\) \{$/m);
     expect(code).toMatch(/^function resync\(\) \{$/m);
     expect(code).not.toMatch(/function doGet/);
@@ -36,8 +35,7 @@ describe('apps-script/Code.js', () => {
 
   it('runs in a bare V8 context with the fakes: ingest, dedupe, snapshot, garbage', () => {
     const gas = makeGas();
-    const logged: string[] = [];
-    const ctx = vm.createContext({ ...gas.globals, console: { ...console, log: (m: string) => logged.push(m) } });
+    const ctx = vm.createContext({ ...gas.globals, console });
     vm.runInContext(code, ctx, { filename: 'Code.js' });
     const call = (body: unknown) =>
       JSON.parse(ctx.doPost({ postData: { contents: typeof body === 'string' ? body : JSON.stringify(body) } }).text);
@@ -59,7 +57,5 @@ describe('apps-script/Code.js', () => {
     expect(call({ key, action: 'snapshot' }).rev).toEqual(expect.any(String));
     expect(() => ctx.onEdit(undefined)).not.toThrow();
     expect(typeof ctx.resync).toBe('function');
-    expect(ctx.cleanupLegacyData()).toMatchObject({ metrics: { before: 4, after: 4 }, events: { before: 0, after: 0 }, rev: expect.any(String) });
-    expect(logged[0]).toMatch(/^cleanupLegacyData: /);
   });
 });
