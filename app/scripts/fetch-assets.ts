@@ -116,8 +116,19 @@ SPECS['reactions/pose-viva'] = [96, 'Viva_NH_Reaction_Icon.png'];
 // Every roster villager (src/lib/villagers/roster.ts): a full-body render + the round head icon.
 // The 2.0 villagers' `<Name>_NH.png` is a small (~230 px) promo crop with the feet cut off: use the full-body model.
 const MODEL_FIRST = new Set(['roswell', 'zoe', 'ace', 'frett', 'quinn', 'marlo', 'faith', 'petri', 'cephalobot', 'rio', 'chabwick', 'azalea', 'sasha', 'shino', 'audie', 'rosie']);
-for (const { id, nameEn } of Object.values(ROSTER)) {
+// Special characters (たぬきち, しずえ…): `<Name>_NH.png` is their posed NH artwork (K.K.'s guitar, Blathers' book),
+// but some are tiny (Sable's is 122 px) or sit on white (Label's): those use the 3D model; Kapp'n's large render is
+// `_NH_2`. Their head icon is `<Name>_NH_Character_Icon.png`; K.K. has none, his flat head icon is the Question one.
+const SPECIAL_MODEL_FIRST = new Set(['sable', 'label', 'kicks', 'saharah', 'gulliver']);
+for (const { id, nameEn, special } of Object.values(ROSTER)) {
   const name = nameEn.replace(/ /g, '_'); // file titles use underscores ('Agent S' → Agent_S_NH.png)
+  if (special) {
+    const model = SPECIAL_MODEL_FIRST.has(id) ? [`${name}_NH_Model.png`] : [];
+    const extra = id === 'kappn' ? [`${name}_NH_2.png`] : [];
+    SPECS[`villagers/${id}`] = [512, ...model, ...extra, `${name}_NH_Transparent.png`, `${name}_NH.png`, `${name}_NH_Model.png`];
+    SPECS[`villagers/${id}-icon`] = [128, `${name}_NH_Character_Icon.png`, `${name}_NH_Question_Icon.png`];
+    continue;
+  }
   // Prefer the large transparent renders; `<Name>_NH.png` (the infobox image) is the safe fallback, and the 3D
   // model render (padded, trimmed below) the last resort (Chai has no NH artwork, only `Chai_NH_Model.png`).
   const extra = id === 'hamlet' ? ['Hamlet_NH_2.png'] : []; // Hamlet's _1 doesn't exist; _2 is the big front render
