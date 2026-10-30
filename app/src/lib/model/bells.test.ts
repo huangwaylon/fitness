@@ -53,7 +53,12 @@ describe('daily earnings land as they happen', () => {
   it('today’s ベル show on the person, the fruits and the pots', () => {
     const now = ms(D[2], '23:00'); // Wednesday night
     const v = buildWeekView(reduce(perfectWeek()), 'A', now);
-    expect(v.people.A.today).toEqual({ bells: 1125, parts: { peach: 225, apple: 200, coconut: 400, pear: 300 } });
+    expect(v.people.A.today).toMatchObject({ bells: 1125, parts: { peach: 225, apple: 200, coconut: 400, pear: 300 } });
+    // ADR 0021 preview (not what the pots count yet): 60 min × 3, no Move/Stand rows, steps, gym.
+    expect(v.people.A.today.rings).toEqual({ peach: 180, pear: 0, cherry: 0, apple: 200, coconut: 400 });
+    expect(v.people.A.rings.peach).toEqual({ today: 60, goal: 60, met: true, todayBells: 180, weekDays: 7, weekGoalDays: 5, badge: true, weekBells: 3 * 180 });
+    expect(v.people.A.rings.pear).toMatchObject({ today: 0, goal: 600, met: false, weekGoalDays: 5 });
+    expect(v.people.A.moveGoal).toBe(600);
     expect(v.people.A.weekBells).toBe(3 * 1125); // only days up to today count, even with later-dated rows
     expect(v.pots.todayBells).toBe(2250);
     expect(v.pots.weekBells).toBe(6 * 1125);
@@ -68,7 +73,7 @@ describe('daily earnings land as they happen', () => {
   it('a partial day: progress below the goals', () => {
     const r = rowsOf({ metrics: [metric(jst(D[0], '12:00'), 'B', D[0], 'steps', 5000), metric(jst(D[0], '12:00'), 'B', D[0], 'exercise_min', 20)] });
     const v = buildWeekView(reduce(r), 'A', ms(D[0], '13:00'));
-    expect(v.people.B.today).toEqual({ bells: 100, parts: { peach: 100, apple: 0, coconut: 0, pear: 0 } });
+    expect(v.people.B.today).toMatchObject({ bells: 100, parts: { peach: 100, apple: 0, coconut: 0, pear: 0 } });
     expect(v.people.B.fruits.apple).toMatchObject({ todayActual: 5000, todayMet: false, weekDays: 0, badge: false });
     expect(v.people.A.today.bells).toBe(0);
     expect(v.pots.trip).toEqual({ earned: 80, spent: 0, balance: 80, today: 80, week: 80 });

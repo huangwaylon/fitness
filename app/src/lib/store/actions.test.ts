@@ -6,7 +6,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { buyTreat, buyTrip, setMenu, undoSpend } from './actions.ts';
+import { buyTreat, buyTrip, setMenu, setMoveGoal, undoSpend } from './actions.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 
@@ -55,5 +55,12 @@ describe('pot actions', () => {
     const [e] = queued();
     expect(e.type).toBe('pref');
     expect(e.data).toEqual({ key: 'tripMenu', value: JSON.stringify([{ id: 'camp', label: 'キャンプ', bells: 30000 }]) });
+  });
+
+  it('setMoveGoal sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', () => {
+    for (const bad of [99, 2001, NaN, Infinity]) expect(setMoveGoal(bad)).toEqual({ ok: false });
+    expect(queued()).toEqual([]);
+    expect(setMoveGoal(549.6).ok).toBe(true);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { key: 'moveGoal', value: 550 }]]);
   });
 });

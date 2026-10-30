@@ -1,16 +1,18 @@
 // Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the pots, the harvest). The
 // ベル economy itself (earnings, pots, spends, the ledger) lives in bells.ts; golden.test.ts pins the views.
 import type {
-  FruitKey, FruitProgress, HarvestView, LocalDate, MenuItem, PendingConfirmation, PersonId, PersonWeekView, PotFlow, PotKey, PotsView, WeekKey, WeekView
+  FruitKey, FruitProgress, HarvestView, LocalDate, MenuItem, PendingConfirmation, PersonId, PersonWeekView, PotFlow, PotKey, PotsView, RingFruit,
+  RingProgress, WeekKey, WeekView
 } from '#lib/types.ts';
-import { DAILY, DEFAULT_MENUS, FRUITS, PEOPLE, STRENGTH } from '#lib/config/rules.ts';
+import { DAILY, DEFAULT_MENUS, FRUITS, PEOPLE, RING_FRUITS, STRENGTH } from '#lib/config/rules.ts';
 import { habitsFor, rulesFor } from '#lib/scoring/targets.ts';
 import { splitPots, zeroParts, type WeekEarning } from '#lib/scoring/bells.ts';
+import { zeroRings, type RingWeek } from '#lib/scoring/rings.ts';
 import { dailyUpTo, potsAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
 import { workoutLabel } from '#lib/contract/labels.ts';
 import type { Snapshot } from './snapshot.ts';
-import { firstWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, type State } from './state.ts';
+import { firstWeek, isLockedAt, jstMs, latestAt, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
 import { activityAsOf, ticksAsOf, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
@@ -60,6 +62,25 @@ function fruitView(e: WeekEarning, key: FruitKey, today: LocalDate): FruitProgre
   return { todayActual, todayGoal, todayMet, weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge, weekBells };
 }
 
+/** A ring fruit's progress today and this week (its ベル count days up to today, like `fruitView`). */
+function ringView(e: RingWeek, key: RingFruit, today: LocalDate, moveGoal: number): RingProgress {
+  const r = rulesFor(e.weekKey);
+  const d = e.days.find((x) => x.date === today);
+  const amount: Record<RingFruit, [today: number, goal: number]> = {
+    peach: [d?.exerciseMin ?? 0, r.goals.exerciseMin],
+    pear: [d?.moveKcal ?? 0, d?.moveGoal ?? moveGoal],
+    cherry: [d?.standMin ?? 0, r.goals.standMin],
+    apple: [d?.steps ?? 0, r.goals.steps],
+    coconut: [d?.gym ? 1 : 0, 1]
+  };
+  const f = e.fruits[key];
+  return {
+    today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false, todayBells: d?.rings[key] ?? 0,
+    weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge,
+    weekBells: e.days.reduce((n, x) => (x.date <= today ? n + x.rings[key] : n), 0)
+  };
+}
+
 /** The shared menus: the latest valid `pref` by either person, else the defaults in the viewer's language. */
 function menusAt(s: State, locale: 'ja' | 'en'): Record<PotKey, MenuItem[]> {
   const pick = (pot: PotKey): MenuItem[] =>
@@ -68,21 +89,26 @@ function menusAt(s: State, locale: 'ja' | 'en'): Record<PotKey, MenuItem[]> {
 }
 
 /** A person's earnings of `today` (zeros outside the week or before the economy). */
-function todayOf(e: WeekEarning | undefined, today: LocalDate): PersonWeekView['today'] {
+function todayOf(e: WeekEarning | undefined, today: LocalDate, rw?: RingWeek): PersonWeekView['today'] {
   const d = e?.days.find((x) => x.date === today);
-  return d ? { bells: d.bells, parts: { ...d.parts } } : { bells: 0, parts: zeroParts() };
+  const rd = rw?.days.find((x) => x.date === today);
+  const rings = rd ? { ...rd.rings } : zeroRings();
+  return d ? { bells: d.bells, parts: { ...d.parts }, rings } : { bells: 0, parts: zeroParts(), rings };
 }
 
 /** One person's card. Both players see everything (no privacy filter): raw numbers and eating check-ins. */
-function personView(s: State, person: PersonId, wk: WeekKey, e: WeekEarning, today: LocalDate): PersonWeekView {
+function personView(s: State, person: PersonId, wk: WeekKey, e: WeekEarning, rw: RingWeek, today: LocalDate): PersonWeekView {
   const pref = s.prefs[person];
+  const moveGoal = moveGoalOn(s, person, today);
   const view: PersonWeekView = {
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
-    today: todayOf(e, today),
+    today: todayOf(e, today, rw),
     weekBells: dailyUpTo(e, today),
     fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(e, k, today)])) as PersonWeekView['fruits'],
+    rings: Object.fromEntries(RING_FRUITS.map((k) => [k, ringView(rw, k, today, moveGoal)])) as PersonWeekView['rings'],
+    moveGoal,
     lastSyncAt: s.lastSync[person],
     habits: { keys: [...habitsFor(person, wk)] as [string, string, string], ticksByDate: {} }
   };
@@ -143,8 +169,8 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     weekKey,
     today,
     people: {
-      [me]: personView(s, me, weekKey, earning[me], today),
-      [partner]: personView(s, partner, weekKey, earning[partner], today)
+      [me]: personView(s, me, weekKey, earning[me], earning.rings[me], today),
+      [partner]: personView(s, partner, weekKey, earning[partner], earning.rings[partner], today)
     } as Record<PersonId, PersonWeekView>,
     pots: potsView(s, earning, today, now),
     menus: menusAt(s, locale),
@@ -176,6 +202,7 @@ export function harvestOf(w: WeekBells, confirmedBy: PersonId[]): HarvestView {
     bonus: { ...w.bonus },
     totalBells: w.A.daily + w.B.daily + w.bonusBells,
     badges: { A: { ...w.A.badges }, B: { ...w.B.badges } },
+    ringBadges: { A: { ...w.rings.A.badges }, B: { ...w.rings.B.badges } },
     confirmedBy
   };
 }

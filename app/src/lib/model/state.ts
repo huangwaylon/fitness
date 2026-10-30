@@ -1,7 +1,7 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
 import type { LocalDate, MenuItem, PersonId, PotKey, WeekKey } from '#lib/types.ts';
-import { CUTOFFS, ECONOMY_START, LIMITS } from '#lib/config/rules.ts';
+import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { localDateOfMs } from '#lib/time/dates.ts';
@@ -129,6 +129,8 @@ export interface State {
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
+  /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (ADR 0021 §5; `moveGoalOn` picks the one in force). */
+  moveGoals: Record<PersonId, Timed<number>[]>;
   /** Newest metrics/workouts row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
   /** The demo's calendar; null for real data. */
@@ -230,6 +232,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     harvests: [],
     highfives: [],
     prefs: { A: {}, B: {} },
+    moveGoals: { A: [], B: [] },
     lastSync: { A: null, B: null },
     calendar,
     rev: calendar ? null : rev,
@@ -445,6 +448,12 @@ const ON_EVENT: Record<EventType, OnEvent> = {
       if (items) s.menus[d.key === 'treatMenu' ? 'treat' : 'trip'].push({ at, v: items });
       return;
     }
+    if (d.key === 'moveGoal') {
+      // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
+      const v = d.value;
+      if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v });
+      return;
+    }
     const p = s.prefs[person];
     if (d.key === 'locale' && (d.value === 'ja' || d.value === 'en')) p.locale = d.value;
     else if (d.key === 'villagerName' && typeof d.value === 'string') {
@@ -458,6 +467,16 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     }
   }
 };
+
+/**
+ * A person's Move goal on `date` (ADR 0021 §5): the latest `pref` moveGoal made on or before that Tokyo date (and
+ * stamped by t), else PEOPLE[p].moveGoal. A change applies from the day it's made, never to earlier days.
+ */
+export function moveGoalOn(s: Pick<State, 'moveGoals'>, person: PersonId, date: LocalDate, t = Infinity): number {
+  const list = s.moveGoals[person];
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t && localDateAt(list[i].at) <= date) return list[i].v;
+  return PEOPLE[person].moveGoal;
+}
 
 /** Latest entry with `at ≤ t`, or undefined. Lists are in ascending `at`. */
 export function latestTimed<T>(list: Timed<T>[] | undefined, t: number): Timed<T> | undefined {

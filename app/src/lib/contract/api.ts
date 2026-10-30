@@ -33,14 +33,18 @@ export const EVENT_TYPES = [
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
-/** The activity metrics: they earn ベル, and a day's value from the Shortcut only ever goes up (the max of its rows). */
-export type ActivityMetric = 'steps' | 'exercise_min';
+/**
+ * The activity metrics: they earn ベル, and a day's value from the Shortcut only ever goes up (the max of its rows).
+ * `move_kcal`: the Move ring's active energy (the Shortcut's `calories`); `stand_min`: Health Stand Time in minutes
+ * (the Shortcut's `stand_minutes`), ADR 0021.
+ */
+export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min';
 /**
  * `weight`: body weight in kg with one decimal (ADR 0020). A trend only: it never earns ベル, and a day's value is the
  * latest row for it (not the max), since a weight goes down as well as up.
  */
 export type MetricKey = ActivityMetric | 'weight';
-export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min';
+export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
 export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) || v === 'weight';
 
 /** A local date `YYYY-MM-DD`. */
@@ -51,7 +55,7 @@ export const MANUAL_ID_RE = /^m:[\w-]{1,100}$/;
 export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** `metric_set` upper bounds (inclusive). The Apps Script refuses anything else with `bad_request`. */
-export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, weight: 300 } as const;
+export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440, weight: 300 } as const;
 /** A plausible body weight in kg (inclusive): ingest skips anything else, `metric_set` and `goalWeight` are refused. */
 export const WEIGHT_KG = { min: 20, max: 300 } as const;
 
@@ -63,7 +67,7 @@ export const isWeightKg = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v >= WEIGHT_KG.min && v <= WEIGHT_KG.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
 
 /**
- * A `metric_set` value: an integer 0–METRIC_BOUNDS for steps and minutes; a weight (`isWeightKg`, decimals allowed)
+ * A `metric_set` value: an integer 0–METRIC_BOUNDS for steps, minutes and kcal; a weight (`isWeightKg`, decimals allowed)
  * for `weight`. Shared by the Apps Script (refuses) and the model (ignores).
  */
 export function validMetricValue(metric: MetricKey, v: unknown): v is number {

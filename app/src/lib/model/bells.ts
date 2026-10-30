@@ -3,9 +3,9 @@
 // ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
 import type { DayBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, WeekKey } from '#lib/types.ts';
-import { addDays, earnWeek, duoBonus, splitPots, weekDays, weekKeyOf, type EarnInput, type WeekEarning } from '#lib/scoring/index.ts';
+import { addDays, earnWeek, duoBonus, earnRingWeek, splitPots, weekDays, weekKeyOf, type EarnInput, type RingInput, type RingWeek, type WeekEarning } from '#lib/scoring/index.ts';
 import { habitsFor } from '#lib/scoring/targets.ts';
-import { finalMs, firstWeek, isLockedAt, localDateAt, provisionalMs, rowsUpTo, type State } from './state.ts';
+import { finalMs, firstWeek, isLockedAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
 import { activityAsOf, metricAsOf, ticksAsOf, weekDates, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
@@ -28,6 +28,26 @@ export function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, ac
   };
 }
 
+/** One person's week as of t, for `earnRingWeek` (ADR 0021). `act`: their activity as of t covering the week (else derived). */
+function ringInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): RingInput {
+  const dates = weekDays(wk);
+  const inWeek = (d: LocalDate) => d >= dates[0] && d <= dates[6];
+  return {
+    person,
+    weekKey: wk,
+    days: dates.map((date) => ({
+      date,
+      steps: metricAsOf(s, person, date, 'steps', t),
+      exerciseMin: metricAsOf(s, person, date, 'exercise_min', t),
+      moveKcal: metricAsOf(s, person, date, 'move_kcal', t),
+      standMin: metricAsOf(s, person, date, 'stand_min', t),
+      moveGoal: moveGoalOn(s, person, date, t)
+    })),
+    workouts: act.workouts.filter((w) => inWeek(w.date)),
+    visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v)
+  };
+}
+
 /** Both people's earnings of a week, as of `t` (earnTimeOf). */
 export interface WeekBells {
   weekKey: WeekKey;
@@ -38,13 +58,16 @@ export interface WeekBells {
   bonus: HarvestBonus;
   /** bonus.A + bonus.B + bonus.duo. */
   bonusBells: number;
+  /** ADR 0021's five-fruit earnings of each person (transition: not yet what the pots count). */
+  rings: Record<PersonId, RingWeek>;
 }
 
 function computeWeekBells(s: State, wk: WeekKey, t: number, act?: Partial<Record<PersonId, Activity>>): WeekBells {
   const A = earnWeek(earnInput(s, 'A', wk, t, act?.A));
   const B = earnWeek(earnInput(s, 'B', wk, t, act?.B));
   const bonus = { A: A.bonus, B: B.bonus, duo: duoBonus(A, B) };
-  return { weekKey: wk, t, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo };
+  const rings = { A: earnRingWeek(ringInput(s, 'A', wk, t, act?.A)), B: earnRingWeek(ringInput(s, 'B', wk, t, act?.B)) };
+  return { weekKey: wk, t, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo, rings };
 }
 
 const perState = new WeakMap<State, Map<string, WeekBells>>();
