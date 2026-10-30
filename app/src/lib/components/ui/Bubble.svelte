@@ -8,13 +8,14 @@
   import { talk } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import Host from '../characters/Host.svelte';
+  import { hostIsNook } from '../characters/hostWho.ts';
   import { hostTap } from '../motion/director.svelte.ts';
   import { reducedMotion } from '#lib/time/clock.ts';
   import type { HostPose } from '#lib/art.ts';
 
   interface Props {
     text: string;
-    /** Name on the tag; defaults to しずえ. */
+    /** Name on the tag; defaults to the host (しずえ, or たぬきち). */
     name?: string;
     /** しずえ's pose ('wave' cheer, 'stand' calm, 'bow' thanks/sorry), or false for no host (no tail). */
     host?: Exclude<HostPose, 'icon' | 'winter'> | false;
@@ -23,6 +24,8 @@
   }
   let { text, name, host = 'wave', size = 72 }: Props = $props();
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
+  /** しずえ, or たぬきち when a player is しずえ (hostWho.ts). */
+  const hostName = $derived(t(hostIsNook() ? 'host.nook' : 'host.name'));
 
   let typing = $state(true);
 
@@ -72,12 +75,12 @@
 
 <div class="talk">
   {#if host}
-    <button type="button" class="spk" style:--h={h} aria-label={t('host.name')} data-sfx="self" onclick={tap}>
+    <button type="button" class="spk" style:--h={h} aria-label={hostName} data-sfx="self" onclick={tap}>
       <Host pose={host} size={h} talking={typing} eager />
     </button>
   {/if}
   <div class="bubble" class:tail={!!host}>
-    <span class="who">{name ?? t('host.name')}</span>
+    <span class="who">{name ?? hostName}</span>
     <button type="button" class="tap" data-sfx="self" onclick={tap}>
       <span class="sr-only" aria-live="polite">{text}</span>
       <span class="txt" aria-hidden="true">

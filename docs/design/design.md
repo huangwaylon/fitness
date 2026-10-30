@@ -108,7 +108,7 @@ three official full tiles (きろく, 村人, つうしん) sit on their own bac
 |---|---|---|
 | きろく | `phone/miles` | からだ (weight trend, 目標: Move goal + weight goal, weeks of badges) and ベル (the passbook); week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
 | あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals (v2: 「ベルは 4つの だんかいで ふえるよ…」 and per fruit a 4-cell step table, amount over ベル, the goal step ringed), badges, the wallet with the treat guide (「食べものの ごほうびは、ふたりで 週3回くらいが めやす…」, no cap), a 「たんぱく質の ヒント」 card (1.6 g per kg a day, per person from the goal weight else the trend, rounded to 5 g; not tracked), the setup |
-| 村人 | `phone/passport` | My villager from the roster (158, one search field) and my よびな |
+| 村人 | `phone/passport` | My villager from the roster (one search field): 23 special characters first (とくべつ: たぬきち, しずえ, とたけけ…), then 158 villagers by species; and my よびな. If either of us picks しずえ, たぬきち hosts (nameplate, banner icon) |
 | ことば | `phone/glyph-chat` | 日本語 / English |
 | つうしん | `phone/rescue` | When each of us last synced, いま つうしん |
 | サウンド | our note glyph | ミュージック / 効果音 / おしゃべり (all off by default) and 音量 ([sound.md](sound.md) §10) |

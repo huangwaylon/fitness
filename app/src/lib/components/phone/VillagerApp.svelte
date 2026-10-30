@@ -3,6 +3,8 @@
   // the store recomputes `view` on every tick, sync and tap, and must never overwrite what is being typed (round 8).
   // Picker: a search field (name / species / personality, ja or en: villagers/search.ts) over the icon grid, which
   // flows in the phone's one scroller (round 10 M2: no scroller inside the scroller); icons load lazily as they scroll in. The chosen villager stays in the tab order even when filtered out of view.
+  // Two groups in one radiogroup: とくべつ (たぬきち, しずえ…) first, then the villagers by species; a heading only shows
+  // over a group the search left non-empty.
   import { untrack } from 'svelte';
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -11,7 +13,7 @@
   import { setVillagerName, setVillager } from '#lib/store/actions.ts';
   import { ROSTER, resolveLook, type RosterId } from '#lib/villagers/roster.ts';
   import { searchVillagers } from '#lib/villagers/search.ts';
-  import { PERSONALITIES, SPECIES } from '#lib/villagers/species.ts';
+  import { PERSONALITIES, SPECIAL, SPECIES } from '#lib/villagers/species.ts';
   import { t, i18n } from '#lib/i18n/index.ts';
 
   let { view }: { view: WeekView } = $props();
@@ -21,10 +23,17 @@
   const current = $derived(resolveLook({ villager: me.villager, person: view.me }).id);
   const lang = $derived(i18n.locale === 'ja' ? 0 : 1);
   const vName = (id: RosterId) => (lang === 0 ? ROSTER[id].nameJa : ROSTER[id].nameEn);
-  const vKind = (id: RosterId) => `${SPECIES[ROSTER[id].species][lang]} · ${PERSONALITIES[ROSTER[id].personality][lang]}`;
+  const vKind = (id: RosterId) => {
+    const { species, personality } = ROSTER[id];
+    return species && personality ? `${SPECIES[species][lang]} · ${PERSONALITIES[personality][lang]}` : SPECIAL[lang];
+  };
   let name = $state(untrack(() => me.villagerName));
   let query = $state('');
   const shown = $derived(searchVillagers(query));
+  const groups = $derived([
+    { label: SPECIAL[lang], ids: shown.filter((id) => ROSTER[id].special) },
+    { label: t('phone.villager.villagers'), ids: shown.filter((id) => !ROSTER[id].special) }
+  ].filter((g) => g.ids.length));
   /** The radio in the tab order: the chosen one if it is shown, else the first shown. */
   const tabStop = $derived(shown.includes(current) ? current : shown[0]);
 
@@ -55,13 +64,18 @@
 </label>
 <div class="scroll">
   {#if shown.length}
-    <div class="roster" role="radiogroup" aria-label={t('phone.app.villager')} {@attach roving}>
-      {#each shown as id (id)}
-        <button type="button" class="rv" role="radio" aria-checked={current === id} tabindex={tabStop === id ? 0 : -1} aria-label={vName(id)}
-          title={vName(id)} data-sfx={current === id ? 'none' : 'tick'} onclick={() => current !== id && setVillager(id)}>
-          <Avatar person={view.me} villager={id} size={64} />
-          {#if current === id}<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}
-        </button>
+    <div role="radiogroup" aria-label={t('phone.app.villager')} {@attach roving}>
+      {#each groups as g (g.label)}
+        <h3 class="grp">{g.label}</h3>
+        <div class="roster">
+          {#each g.ids as id (id)}
+            <button type="button" class="rv" role="radio" aria-checked={current === id} tabindex={tabStop === id ? 0 : -1} aria-label={vName(id)}
+              title={vName(id)} data-sfx={current === id ? 'none' : 'tick'} onclick={() => current !== id && setVillager(id)}>
+              <Avatar person={view.me} villager={id} size={64} />
+              {#if current === id}<svg class="ck" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}
+            </button>
+          {/each}
+        </div>
       {/each}
     </div>
   {:else}
@@ -90,6 +104,8 @@
   .search:focus-within { box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip), 0 0 0 3px var(--focus); }
   .scroll { margin: 0 -4px; padding: 6px 4px; }
   .none { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
+  .grp { margin: 6px 4px 8px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .grp:not(:first-child) { margin-top: 14px; }
   .roster { display: grid; grid-template-columns: repeat(5, 64px); justify-content: space-between; row-gap: 12px; padding: 4px 4px 8px; }
   @media (max-width: 374px) {
     .roster { grid-template-columns: repeat(4, 56px); }

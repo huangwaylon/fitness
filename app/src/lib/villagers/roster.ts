@@ -1,6 +1,7 @@
 // Villager roster: the villagers we ship official NH art for (static/art/villagers/<id>.webp + <id>-icon.webp,
-// fetched by scripts/fetch-assets.ts from this list). Names follow the Japanese game; species, personality and
-// gender come from each villager's Nookipedia infobox. `colour` (the infobox title colour) only tints the generic
+// fetched by scripts/fetch-assets.ts from this list), and the special characters (たぬきち, しずえ, とたけけ…: no species
+// or personality in the game, `special: true`), shown first in the picker. Names follow the Japanese game; species,
+// personality and gender come from each villager's Nookipedia infobox. `colour` (the infobox title colour) only tints the generic
 // silhouette (Silhouette.svelte) that shows if an image is missing.
 // Selection: prefs `villager` (roster id) → per-person default. Unknown ids fall back to the default.
 import { SPECIES, type Personality, type Species } from './species.ts';
@@ -9,8 +10,10 @@ interface Look {
   id: RosterId;
   nameJa: string;
   nameEn: string;
-  species: Species;
-  personality: Personality;
+  /** A special character (not a villager): `species` and `personality` are null. */
+  special: boolean;
+  species: Species | null;
+  personality: Personality | null;
   gender: 'm' | 'f';
   /** Silhouette tint (the infobox title colour), only seen if an image is missing. */
   colour: string;
@@ -184,28 +187,66 @@ const ROWS = [
   ['skye', 'リリィ', 'Skye', 'wolf', 'normal', 'f', '#3FD8E0']
 ] as const satisfies readonly Row[];
 
-export type RosterId = (typeof ROWS)[number][0];
+type SpecialRow = readonly [id: string, nameJa: string, nameEn: string, gender: 'm' | 'f', colour: string];
+
+/** The special characters (Nookipedia `Infobox Special`: name, ja-name, gender, titlecolor), in picker order.
+ *  Not here: Timmy and Tommy (NH has only a render of the two together and no head icons). */
+const SPECIAL_ROWS = [
+  ['tom-nook', 'たぬきち', 'Tom Nook', 'm', '#DE8735'],
+  ['isabelle', 'しずえ', 'Isabelle', 'f', '#FFF98F'],
+  ['kk-slider', 'とたけけ', 'K.K. Slider', 'm', '#FFFFFF'],
+  ['blathers', 'フータ', 'Blathers', 'm', '#7D593C'],
+  ['celeste', 'フーコ', 'Celeste', 'f', '#81280A'],
+  ['mabel', 'きぬよ', 'Mabel', 'f', '#3C4C78'],
+  ['sable', 'あさみ', 'Sable', 'f', '#895452'],
+  ['label', 'ことの', 'Label', 'f', '#7F5174'],
+  ['kicks', 'シャンク', 'Kicks', 'm', '#2A4869'],
+  ['brewster', 'マスター', 'Brewster', 'm', '#689A8B'],
+  ['harvey', 'パニエル', 'Harvey', 'm', '#EBC83C'],
+  ['daisy-mae', 'ウリ', 'Daisy Mae', 'f', '#FF9B43'],
+  ['redd', 'つねきち', 'Redd', 'm', '#EBB020'],
+  ['flick', 'レックス', 'Flick', 'm', '#25251A'],
+  ['cj', 'ジャスティン', 'C.J.', 'm', '#A99D6E'],
+  ['saharah', 'ローラン', 'Saharah', 'f', '#FCBB3A'],
+  ['leif', 'レイジ', 'Leif', 'm', '#C0AB72'],
+  ['gulliver', 'ジョニー', 'Gulliver', 'm', '#0073FF'],
+  ['kappn', 'かっぺい', "Kapp'n", 'm', '#7DCC00'],
+  ['wisp', 'ゆうたろう', 'Wisp', 'm', '#E3ECF5'],
+  ['pascal', 'ラコスケ', 'Pascal', 'm', '#F44957'],
+  ['orville', 'モーリー', 'Orville', 'm', '#FFDF50'],
+  ['wilbur', 'ロドリー', 'Wilbur', 'm', '#FFDF50']
+] as const satisfies readonly SpecialRow[];
+
+export type RosterId = (typeof ROWS)[number][0] | (typeof SPECIAL_ROWS)[number][0];
 
 // Checked by eye against the renders (a contact sheet of static/art/villagers); update when adding villagers.
-const LOOKS_RIGHT: ReadonlySet<RosterId> = new Set<RosterId>(['goldie', 'bunnie', 'judy', 'molly', 'dom']);
+// Special characters: Orville's beak points right; K.K.'s guitar (it would turn left-handed), the DAL text on
+// Orville's mug and Wilbur's badge, Kapp'n's shirt logo and Gulliver's sailor uniform never mirror.
+const LOOKS_RIGHT: ReadonlySet<RosterId> = new Set<RosterId>(['goldie', 'bunnie', 'judy', 'molly', 'dom', 'orville']);
 const NO_MIRROR: ReadonlySet<RosterId> = new Set<RosterId>([
   'raymond', 'sasha', 'stitches', 'lucky', 'agent-s', 'kid-cat', 'rocket', 'tad', 'octavian',
-  'coach', 'tank', 'chabwick', 'curt', 'axel', 'marcie'
+  'coach', 'tank', 'chabwick', 'curt', 'axel', 'marcie', 'kk-slider', 'orville', 'wilbur', 'kappn', 'gulliver'
 ]);
 
-export const ROSTER = Object.fromEntries(
-  ROWS.map(([id, nameJa, nameEn, species, personality, gender, colour]) => [
-    id,
-    { id, nameJa, nameEn, species, personality, gender, colour, looksRight: LOOKS_RIGHT.has(id), noMirror: NO_MIRROR.has(id) }
-  ])
-) as Record<RosterId, Look>;
+const look = (id: RosterId, rest: Omit<Look, 'id' | 'looksRight' | 'noMirror'>): [RosterId, Look] =>
+  [id, { id, ...rest, looksRight: LOOKS_RIGHT.has(id), noMirror: NO_MIRROR.has(id) }];
 
-const SPECIES_ORDER = Object.keys(SPECIES);
-/** Every id, by species (SPECIES order) then English name: the picker grid's order. */
-export const ROSTER_IDS: RosterId[] = ROWS.map((r) => r[0]).sort(
-  (a, b) =>
-    SPECIES_ORDER.indexOf(ROSTER[a].species) - SPECIES_ORDER.indexOf(ROSTER[b].species) || ROSTER[a].nameEn.localeCompare(ROSTER[b].nameEn)
-);
+export const ROSTER = Object.fromEntries([
+  ...SPECIAL_ROWS.map(([id, nameJa, nameEn, gender, colour]) =>
+    look(id, { nameJa, nameEn, special: true, species: null, personality: null, gender, colour })),
+  ...ROWS.map(([id, nameJa, nameEn, species, personality, gender, colour]) =>
+    look(id, { nameJa, nameEn, special: false, species, personality, gender, colour }))
+]) as Record<RosterId, Look>;
+
+const SPECIES_ORDER: (Species | null)[] = Object.keys(SPECIES) as Species[];
+/** The special characters (curated order), then every villager by species (SPECIES order) and English name: the
+ *  picker grid's order. */
+export const ROSTER_IDS: RosterId[] = [
+  ...SPECIAL_ROWS.map((r) => r[0]),
+  ...ROWS.map((r) => r[0]).sort(
+    (a, b) => SPECIES_ORDER.indexOf(ROSTER[a].species) - SPECIES_ORDER.indexOf(ROSTER[b].species) || ROSTER[a].nameEn.localeCompare(ROSTER[b].nameEn)
+  )
+];
 
 /** Defaults until the users pick: A = Goldie (dog), B = Anchovy (bird). */
 const DEFAULT_VILLAGER: Record<'A' | 'B', RosterId> = { A: 'goldie', B: 'anchovy' };
@@ -218,4 +259,9 @@ export function isRosterId(s: unknown): s is RosterId {
 export function resolveLook(opts: { villager?: string | null; person?: 'A' | 'B' }): Look {
   if (isRosterId(opts.villager)) return ROSTER[opts.villager];
   return ROSTER[DEFAULT_VILLAGER[opts.person ?? 'A']];
+}
+
+/** The island host: しずえ, or たぬきち once a player picked しずえ as their villager (never two Isabelles on screen). */
+export function hostOf(picks: readonly (string | null | undefined)[]): 'isabelle' | 'tom-nook' {
+  return picks.includes('isabelle') ? 'tom-nook' : 'isabelle';
 }

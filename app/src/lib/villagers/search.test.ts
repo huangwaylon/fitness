@@ -28,6 +28,15 @@ describe('villager search', () => {
     expect(searchVillagers('ネコ ぼんやり')).toContain('bob');
   });
 
+  it('finds special characters by name and by 「とくべつ」 / special', () => {
+    expect(searchVillagers('たぬきち')).toEqual(['tom-nook']);
+    expect(searchVillagers('k.k.')).toEqual(['kk-slider']);
+    const special = searchVillagers('とくべつ');
+    expect(special).toHaveLength(23);
+    expect(searchVillagers('Special')).toEqual(special);
+    expect(special.every((id) => ROSTER[id].special)).toBe(true);
+  });
+
   it('no match → empty', () => {
     expect(searchVillagers('zzzz')).toEqual([]);
   });

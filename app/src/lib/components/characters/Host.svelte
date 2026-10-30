@@ -11,6 +11,7 @@
   // driven (e.g. the harvest overlay's over the island's); the others just float. Call `hostTap()`
   // from motion/director when she is tapped with nothing left to read.
   // Winter (snow season): the full-body cardigan replaces every pose. Night 22–05: slow breathing.
+  // If a player picked しずえ as their villager, たぬきち hosts instead (hostWho.ts): his one render for every pose.
   // 'bow' (N2): NH has no bow render, so it shows the stand render (same outfit) and plays a CSS bow
   // each time the pose becomes 'bow'.
   import { onMount, untrack } from 'svelte';
@@ -22,6 +23,7 @@
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { actors, claimHost, hostOwner, removeFx } from '../motion/director.svelte.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
+  import { hostIsNook } from './hostWho.ts';
 
   interface Props {
     pose?: Exclude<HostPose, 'icon' | 'winter'>;
@@ -45,6 +47,7 @@
   const wanted = $derived<Exclude<HostPose, 'icon' | 'winter'>>((driven && st.pose) || pose);
   const resolve = (p: HostPose): HostPose => (head ? 'icon' : theme.season === 'winter' ? 'winter' : p);
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
+  const nook = $derived(hostIsNook());
   // asleep-ish by the scene clock (the island naps 22–05), not by the chrome palette
   // (minuteNow, not theme.tod: the time of day only changes at 05:00 and 19:00, so 22:00 was missed: round 16 M4)
   const night = $derived.by(() => {
@@ -69,7 +72,7 @@
       shown = next;
       t = setTimeout(() => (prev = null), 180);
     };
-    const url = artUrl(hostArt(next));
+    const url = artUrl(hostArt(next, untrack(() => nook)));
     if (!url || typeof Image === 'undefined') swap();
     else {
       const img = new Image();
@@ -115,11 +118,11 @@
 <span class="host" style:--h={h} aria-hidden="true">
   <span bind:this={bodyEl} class="body" class:float={live && !talking && !night} class:talk={live && talking} class:sleep={live && night && !talking}>
     {#if prev}
-      <span class="layer out"><OfficialArt key={hostArt(prev)} size={h} /></span>
+      <span class="layer out"><OfficialArt key={hostArt(prev, nook)} size={h} /></span>
     {/if}
     {#key shown}
       <span class="layer" class:in={!!prev}>
-        <OfficialArt key={hostArt(shown)} size={h} {eager}>
+        <OfficialArt key={hostArt(shown, nook)} size={h} {eager}>
           {#snippet fallback()}<Silhouette height={h} {head} />{/snippet}
         </OfficialArt>
       </span>

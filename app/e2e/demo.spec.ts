@@ -316,3 +316,20 @@ test('focus ring: none on a しまフォン tile after tap → ‹ back; the key
   await expect(page.locator('html')).toHaveAttribute('data-input', 'keyboard');
   expect(await ring()).not.toBe('none');
 });
+
+test('村人: とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
+  await page.goto('?demo');
+  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  await page.locator('.app[data-app=villager]').click();
+  const dlg = sheet(page);
+  await expect(dlg.locator('.grp')).toHaveText(['とくべつ', 'むらびと']);
+  await expect(dlg.getByRole('radio').first()).toHaveAccessibleName('たぬきち');
+  await dlg.getByRole('searchbox').fill('とたけけ');
+  await expect(dlg.locator('.grp')).toHaveText(['とくべつ']);
+  await expect(dlg.getByRole('radio')).toHaveCount(1);
+  await dlg.getByRole('searchbox').fill('しずえ');
+  await dlg.getByRole('radio', { name: 'しずえ' }).click();
+  await expect(dlg.locator('.vk')).toHaveText('とくべつ');
+  await page.goto('?demo=harvest');
+  await expect(page.locator('.bubble .who').first()).toHaveText('たぬきち');
+});
