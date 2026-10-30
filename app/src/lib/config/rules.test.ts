@@ -42,6 +42,22 @@ describe('RULES', () => {
       bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 },
       badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 400, duoPerBadge: 200 }
     });
+    // v2 "push exercise + strength" (ADR 0021 amendment), appended on 2026-10-30 for the next Monday.
+    expect(RULES[1]).toEqual({
+      from: '2026-11-02',
+      goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
+      bells: { perExerciseMin: 4, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 500 },
+      badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 }
+    });
+    expect(RULES).toHaveLength(2);
+  });
+
+  it('v2 starts on Monday 2026-11-02: the week before is v1', () => {
+    expect(rulesFor('2026-10-26')).toBe(RULES[0]);
+    expect(rulesFor('2026-11-02')).toBe(RULES[1]);
+    expect(rulesFor('2027-06-07')).toBe(RULES[1]);
+    expect(weekKeyOf('2026-11-01')).toBe('2026-10-26'); // Sunday 11-01 belongs to the v1 week
+    expect(weekKeyOf('2026-11-02')).toBe('2026-11-02');
   });
 
   it('versions start on Mondays, in ascending order; a week takes the latest that has started', () => {
@@ -50,28 +66,30 @@ describe('RULES', () => {
       if (i > 0) expect(v.from > RULES[i - 1].from).toBe(true);
     }
     expect(rulesFor('2026-08-31')).toBe(RULES[0]); // before the first version (the demo calendar)
-    const v2: RuleVersion = { ...RULES[0], from: '2026-12-07', bells: { ...RULES[0].bells, perStandMin: 2 } };
-    withAppended(RULES, v2, () => {
-      expect(rulesFor('2026-11-30')).toBe(RULES[0]);
-      expect(rulesFor('2026-12-07')).toBe(v2);
-      expect(rulesFor('2027-06-07')).toBe(v2);
+    const last = RULES[RULES.length - 1];
+    const next: RuleVersion = { ...last, from: '2026-12-07', bells: { ...last.bells, perStandMin: 2 } };
+    withAppended(RULES, next, () => {
+      expect(rulesFor('2026-11-30')).toBe(last);
+      expect(rulesFor('2026-12-07')).toBe(next);
+      expect(rulesFor('2027-06-07')).toBe(next);
     });
   });
 
   it('a new version re-prices only the weeks from its `from`, never an earlier week', () => {
     const before = earnings();
-    const v2: RuleVersion = {
-      ...RULES[0],
+    const last = RULES[RULES.length - 1];
+    const next: RuleVersion = {
+      ...last,
       from: '2026-12-07',
-      bells: { ...RULES[0].bells, perExerciseMin: 5, stepDay: 300, gymDay: 500 },
-      badges: { ...RULES[0].badges, bells: 800 }
+      bells: { ...last.bells, perExerciseMin: 5, stepDay: 300, gymDay: 600 },
+      badges: { ...last.badges, bells: 800 }
     };
-    withAppended(RULES, v2, () => {
+    withAppended(RULES, next, () => {
       const after = earnings();
       expect(after.map((w) => w.weekKey)).toEqual(before.map((w) => w.weekKey));
-      const early = (ws: typeof before) => ws.filter((w) => w.weekKey < v2.from);
+      const early = (ws: typeof before) => ws.filter((w) => w.weekKey < next.from);
       expect(early(after)).toEqual(early(before));
-      expect(after.filter((w) => w.weekKey >= v2.from)).not.toEqual(before.filter((w) => w.weekKey >= v2.from));
+      expect(after.filter((w) => w.weekKey >= next.from)).not.toEqual(before.filter((w) => w.weekKey >= next.from));
     });
   });
 });

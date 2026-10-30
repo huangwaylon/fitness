@@ -120,7 +120,7 @@ export class IslandLife {
       }
       if (stagedUp.length) return react('R7', swap);
     }
-    if (dayScore(v.people[v.partner]) > dayScore(p.people[v.partner])) react('R3');
+    if (dayScore(v.people[v.partner], v.weekKey) > dayScore(p.people[v.partner], p.weekKey)) react('R3');
   }
 
   #start(): () => void {
@@ -156,7 +156,7 @@ export class IslandLife {
       if (once('open')) beats.push('R1');
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
       // evening: my partner turns to me while my day is still under half (ADR 0021: a nudge to move, not to check in)
-      if (h >= 18 && h < 22 && dayScore(me) < 50 && once('evening')) beats.push('R12');
+      if (h >= 18 && h < 22 && dayScore(me, view.weekKey) < 50 && once('evening')) beats.push('R12');
       if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');
     }
     // the director's event queue plays them one at a time
@@ -166,7 +166,7 @@ export class IslandLife {
       paused: () => ctx.covered() || this.hidden,
       asleep: () => actors.mine.asleep && actors.partner.asleep,
       night: ctx.night,
-      scores: () => [dayScore(ctx.view().people.A), dayScore(ctx.view().people.B)],
+      scores: () => { const v = ctx.view(); return [dayScore(v.people.A, v.weekKey), dayScore(v.people.B, v.weekKey)]; },
       treeShake: (id) => {
         const v = ctx.view();
         this.shakeN[id === 'mine' ? v.me : v.partner]++;

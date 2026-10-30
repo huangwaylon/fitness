@@ -30,16 +30,32 @@ export interface RuleVersion {
   badges: { exerciseDays: number; moveDays: number; standDays: number; stepDays: number; gymDays: number; bells: number; duoPerBadge: number };
 }
 
+/**
+ * First week that earns ベル (ADR 0019 §7), RULES[0].from. A literal, not `RULES[0].from`, so the Apps Script bundle
+ * (which imports LIMITS from here) tree-shakes RULES away and a new rule version never changes Code.js.
+ */
+export const ECONOMY_START: WeekKey = '2026-10-26';
+
 export const RULES: readonly RuleVersion[] = [
   {
     // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns. What earns is
     // ADR 0021 (edited in place on 2026-10-30, in the economy's first week: see rules.test.ts). On target (every
     // badge for both, minimum days) a person earns 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 + 3 × 400 🥥 =
     // 4,700 daily + 5 × 400 badges = 6,700; both + 5 × 200 ふたりボーナス = 14,400 ベル a week (design.md §E).
-    from: '2026-10-26',
+    from: ECONOMY_START,
     goals: { exerciseMin: 60, standMin: 180, steps: 8000 },
     bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 },
     badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 400, duoPerBadge: 200 }
+  },
+  {
+    // v2 "push exercise + strength" (user, 2026-10-30; ADR 0021 amendment, round-19 goals review): Exercise stays at
+    // 60 min but pays 4 a minute (the biggest daily earner), the gym 500, Stand 120 min (1 a minute). On target a
+    // person earns 5 × 240 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 + 3 × 500 🥥 = 5,000 daily + 5 × 340 badges =
+    // 6,700; both + 5 × 200 ふたりボーナス = 14,400 ベル a week, as in v1, so the menu prices still fit (design.md §E).
+    from: '2026-11-02',
+    goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
+    bells: { perExerciseMin: 4, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 500 },
+    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 }
   }
 ];
 
@@ -49,8 +65,6 @@ export function rulesFor(weekKey: WeekKey): RuleVersion {
   return RULES[0];
 }
 
-/** First week that earns ベル (ADR 0019 §7). */
-export const ECONOMY_START: WeekKey = RULES[0].from;
 
 /** A default menu entry; the label follows the viewer's language until the menu is edited (then it is the typed label). */
 interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }

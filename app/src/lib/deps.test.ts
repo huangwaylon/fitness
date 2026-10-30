@@ -107,7 +107,7 @@ describe('ADR 0020: weight is never rewarded', () => {
     const weight = join(LIB, 'model/weight.ts');
     expect(existsSync(weight)).toBe(true);
     const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
-    expect(roots.length).toBeGreaterThan(2);
+    expect(roots.length).toBeGreaterThanOrEqual(2); // model/bells.ts + scoring/bells.ts
     expect(roots.filter((r) => reachable(r).has(weight)).map((r) => relative(LIB, r))).toEqual([]);
     // the check can see an import of weight.ts (Kiroku reaches it)
     expect(reachable(join(LIB, 'components/kiroku/Kiroku.svelte')).has(weight)).toBe(true);

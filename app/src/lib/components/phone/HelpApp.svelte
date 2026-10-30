@@ -4,7 +4,7 @@
   // setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, RULES } from '#lib/config/rules.ts';
+  import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { dayMax } from '../island/progress.ts';
@@ -12,8 +12,8 @@
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   let { view }: { view: WeekView } = $props();
-  const r = RULES[RULES.length - 1];
-  const days = badgeGoals();
+  const r = $derived(rulesFor(view.weekKey));
+  const days = $derived(badgeGoals(view.weekKey));
   const moveGoal = $derived(view.people[view.me].moveGoal);
   /** Each fruit: its daily goal and what it pays. */
   const goal = (f: RingFruit): string =>
@@ -47,7 +47,7 @@
         </li>
       {/each}
     </ul>
-    <p class="note">{t('help.fruit.max', { bells: formatBells(dayMax()) })}</p>
+    <p class="note">{t('help.fruit.max', { bells: formatBells(dayMax(view.weekKey)) })}</p>
   </section>
 
   <section class="card">

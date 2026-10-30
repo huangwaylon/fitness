@@ -8,7 +8,7 @@
   // fades, and the balance counts up (the one resting number). No confetti (not in the games): an item-get beat.
   // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, RULES } from '#lib/config/rules.ts';
+  import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Emote from '../characters/Emote.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -117,7 +117,7 @@
           <div class="trow duo" class:got={b.duo > 0} style="animation-delay:1.5s">
             <span class="av"><OfficialArt key="money/miles" size={30} /></span>
             <span class="who"><b class="nm">{t('harvest.duo')}</b>
-              <small class="hint">{t('harvest.duoHint', { bells: formatBells(RULES[RULES.length - 1].badges.duoPerBadge) })}</small>
+              <small class="hint">{t('harvest.duoHint', { bells: formatBells(rulesFor(harvest.weekKey).badges.duoPerBadge) })}</small>
             </span>
             <b class="plus money">{b.duo > 0 ? formatBells(b.duo, { signed: true }) : '—'}</b>
           </div>
