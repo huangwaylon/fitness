@@ -51,7 +51,7 @@ export const FADE_IN = 0.8;
 /** The next hour's file is fetched this long before the change, so the crossfade never waits on the network. */
 export const PREFETCH_MS = 60_000;
 
-export interface FadePlan {
+interface FadePlan {
   /** The playing track: full at `outFrom`, silent at `outTo`. */
   outFrom: number;
   outTo: number;

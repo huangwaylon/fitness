@@ -6,7 +6,7 @@
  *  user asked for the music to play in silent mode); 'ambient' mixes with their audio and follows the switch. */
 export type SessionType = 'playback' | 'ambient';
 
-/** Only ミュージック takes the 'playback' session (round 16, option A): effects and voices alone are 'ambient'. */
+/** Only ミュージック takes the 'playback' session (the user's choice): effects and voices alone are 'ambient'. */
 export const sessionType = (music: boolean): SessionType => (music ? 'playback' : 'ambient');
 
 /** Leaving 'playback' waits until the music's fade-out (0.6 s) is over, so the category never changes under audio

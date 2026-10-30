@@ -46,7 +46,7 @@ function eng(): Engine {
     };
     // the context came back by itself (after a call or Siri): bring the music back without waiting for a tap
     engine.onrunning = () => engine?.track && syncMusic();
-    // the opening is title music: it plays clear under the phone that started it (round 14 review R5)
+    // the opening is title music: it plays clear under the phone that started it
   }
   return engine;
 }
@@ -82,7 +82,7 @@ function apply(): void {
   e.setLevels(s);
   if (!anyOn(s)) e.sleep();
   else if (s.volume <= 0) {
-    e.hush(); // muted, not off: the track keeps its place (round 16 L4)
+    e.hush(); // muted, not off: the track keeps its place
     const ms = mediaSession();
     if (ms?.metadata) ms.playbackState = 'paused';
   } else {
@@ -124,7 +124,7 @@ function syncMusic(): void {
 const mediaSession = (): MediaSession | null => (typeof navigator !== 'undefined' && 'mediaSession' in navigator ? navigator.mediaSession : null);
 
 /** The Media Session (the lock screen's and Control Center's Now Playing tile). Under the 'playback' session iOS may
- *  show one for the music deck. Its ▶ and ⏸ are ours (round 16 H1): ▶ only resumes while the app is in front (never
+ *  show one for the music deck. Its ▶ and ⏸ are ours: ▶ only resumes while the app is in front (never
  *  music from a pocket), ⏸ holds the track until the next tap in the app. The tile is named after the tune with the
  *  app's icon, so it isn't a bare URL; no seeking or skipping. */
 function initMediaSession(): void {

@@ -9,7 +9,7 @@ export const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9, voice: 0.4 } as con
 /** At most this many effects and blips sound at once (NH stays sparse: one or two things at a time). */
 export const MAX_VOICES = 6;
 
-export interface Voice {
+interface Voice {
   key: number;
   id: SoundId;
   /** Start and end, in seconds on the audio clock. */
@@ -17,7 +17,7 @@ export interface Voice {
   until: number;
 }
 
-export type Admit = { ok: false } | { ok: true; key: number; stop: number[] };
+type Admit = { ok: false } | { ok: true; key: number; stop: number[] };
 
 /** Who may sound now. Per id: at most `max` (the oldest of that id is stopped). A jingle while another jingle plays is
  *  dropped (a second fanfare on top of the first is noise). Over the total: the oldest non-jingle voice is stopped;

@@ -8,7 +8,7 @@ import { isSoundId, type SoundId } from './ids.ts';
 import { WEATHERS, hourKey, type MusicFiles, type MusicTrack, type Weather } from './hourly.ts';
 import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 
-export interface AudioManifest {
+interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
   /** The opening theme (a one-shot; `start` 0). */
   opening: MusicTrack | null;

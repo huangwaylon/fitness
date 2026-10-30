@@ -93,7 +93,7 @@ describe('the catalogue and the cue table', () => {
   });
   it('island sounds wait while the scene is covered; UI sounds never do', () => {
     for (const c of ['tree-shake', 'fruit-land', 'coin-land', 'bells-arrive', 'emote-joy', 'announce'] as const) expect(CUES[c].world).toBe(true);
-    for (const c of ['phone-open', 'checkin-saved', 'choice-pick', 'buy', 'badge-met', 'harvest-receive', 'back'] as const) expect(CUES[c].world).toBeUndefined();
+    for (const c of ['phone-open', 'choice-pick', 'buy', 'badge-met', 'harvest-receive', 'back'] as const) expect(CUES[c].world).toBeUndefined();
   });
   it('a coin run climbs one pentatonic step per coin across the batch, then holds the top', () => {
     expect([0, 1, 2, 3, 4].map(coinStep)).toEqual([0, 2, 4, 7, 9]);

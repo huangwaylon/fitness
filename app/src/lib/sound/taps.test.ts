@@ -21,10 +21,10 @@ const SELF: Record<string, string> = {
   'lib/components/phone/ShimaPhone.svelte': 'phone-app, back, phone-close',
   'lib/components/phone/SoundApp.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
-  'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (routes/jar buy), or the boop if the wallet fell short',
+  'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/kiroku/NumberPad.svelte': 'each key → key / key-fn (typed digits too)',
-  'lib/components/island/IslandScene.svelte': 'a villager → villager-tap (R9 / R10) or emote-surprise (woken)',
-  'lib/components/island/JarSpot.svelte': 'the jar → jar-tap (R18)',
+  'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
+  'lib/components/island/JarSpot.svelte': 'the jar → jar-tap',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/Balloon.svelte': 'scene-balloon'
 };
@@ -97,7 +97,7 @@ const VALID = new Set<string>([...TAP_SFX, 'self', 'none']);
 
 describe('every tap has a sound (sound.md §13)', () => {
   it('finds the app\'s tappables', () => {
-    expect(taps.length).toBeGreaterThan(45); // round 18 removed the check-in, pot and recent-card controls
+    expect(taps.length).toBeGreaterThan(45);
   });
   it('every tappable names its sound in data-sfx', () => {
     const missing = taps.filter((t) => !t.sfx.length).map((t) => `${t.file}:${t.line} ${t.tag}`);
