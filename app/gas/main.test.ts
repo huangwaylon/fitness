@@ -323,9 +323,9 @@ describe('presence and events', () => {
 
   it('spend, pref and harvest shapes are checked; types and shapes of past designs are refused', () => {
     const ok = [
-      { type: 'spend', data: { spendId: 's1', pot: 'treat', item: 'ice', label: 'アイス', bells: 1000 } },
-      { type: 'spend', data: { spendId: 7, pot: 'trip', item: 'daytrip', label: '日帰り', bells: 10000 } },
-      ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'treatMenu', 'tripMenu'].map((key) => ({ type: 'pref', data: { key, value: null } })),
+      { type: 'spend', data: { spendId: 's1', item: 'ice', label: 'アイス', bells: 1000 } },
+      { type: 'spend', data: { spendId: 7, item: 'spa', label: 'スパ', bells: 15000 } },
+      ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'].map((key) => ({ type: 'pref', data: { key, value: null } })),
       { type: 'harvest', data: { week: '2026-10-26' } }
     ];
     ok.forEach((e, i) => expect(a('event', { id: `ok${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
@@ -333,11 +333,13 @@ describe('presence and events', () => {
       { type: 'checkin', data: { date: '2026-10-29', habit: 'veg', done: true } },
       { type: 'confirm', data: { kind: 'workout', id: 'w1', yes: true } },
       { type: 'spend', data: { spendId: 'y1', label: 'カフェ', amountYen: 2000 } }, // the yen economy's spend
-      { type: 'spend', data: { spendId: 's2', pot: 'jar', item: 'ice', label: 'アイス', bells: 1 } },
-      { type: 'spend', data: { spendId: 's3', pot: 'treat', item: 'ice', label: 'アイス', bells: 1.5 } },
-      { type: 'spend', data: { spendId: 's4', pot: 'treat', item: 'ice', label: '  ', bells: 1 } },
-      { type: 'spend', data: { spendId: 's5', pot: 'treat', label: 'アイス', bells: 1 } },
-      { type: 'spend', data: { spendId: 's6', pot: 'treat', item: 'ice', label: 'アイス', bells: 10_000_001 } },
+      { type: 'spend', data: { spendId: 's2', pot: 'treat', item: 'ice', label: 'アイス', bells: 1 } }, // the two pots' spend
+      { type: 'spend', data: { spendId: 's3', item: 'ice', label: 'アイス', bells: 1.5 } },
+      { type: 'spend', data: { spendId: 's4', item: 'ice', label: '  ', bells: 1 } },
+      { type: 'spend', data: { spendId: 's5', label: 'アイス', bells: 1 } },
+      { type: 'spend', data: { spendId: 's6', item: 'ice', label: 'アイス', bells: 10_000_001 } },
+      { type: 'pref', data: { key: 'treatMenu', value: '[]' } },
+      { type: 'pref', data: { key: 'tripMenu', value: '[]' } },
       { type: 'pref', data: { key: 'share', value: true } },
       { type: 'pref', data: { key: 'locale' } },
       { type: 'harvest', data: { week: 'soon' } }
@@ -598,7 +600,9 @@ describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)',
     tick();
     a('event', { id: 'hf', type: 'highfive' });
     tick();
-    a('event', { id: 'buy', type: 'spend', data: { spendId: 's1', pot: 'treat', item: 'ice', label: 'アイス', bells: 1 } });
+    a('event', { id: 'buy', type: 'spend', data: { spendId: 's1', item: 'ice', label: 'アイス', bells: 1 } });
+    tick();
+    a('event', { id: 'undo', type: 'spend_void', data: { spendId: 's1' } });
     tick();
     a('event', { id: 'goal', type: 'pref', data: { key: 'moveGoal', value: 500 } });
     const t = at('2026-11-04T06:00:00Z');
@@ -611,6 +615,8 @@ describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)',
       ev('old5', 'transfer_undo', { month: '2026-10' }),
       ev('old6', 'spend', { spendId: 7, label: 'Dinner', amountYen: 5000 }),
       ev('old7', 'pref', { key: 'share', value: true }),
+      ev('old10', 'pref', { key: 'treatMenu', value: '[]' }),
+      ev('old11', 'spend', { spendId: 'p1', pot: 'trip', item: 'daytrip', label: '日帰り', bells: 10000 }),
       ev('old8', 'share', { metric: 'steps', on: true }),
       [t, 'B', 'old9', 'highfive', '{oops']
     );
@@ -628,14 +634,15 @@ describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)',
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     const out = cleanupLegacyData();
     expect(out).toEqual({
-      events: { before: 13, after: 4 }, presence: { before: 2, after: 1 }, metrics: { before: 15, after: 7 }, uploads: { before: 63, after: 50 },
+      events: { before: 16, after: 3 }, presence: { before: 2, after: 1 }, metrics: { before: 15, after: 7 }, uploads: { before: 63, after: 50 },
       rev: expect.any(String)
     });
     expect(log).toHaveBeenCalledWith(`cleanupLegacyData: ${JSON.stringify(out)}`);
     log.mockRestore();
     expect(out.rev).not.toBe(rev);
     expect(gas.props.get('REV')).toBe(out.rev);
-    expect(data('events').map((r) => r[3])).toEqual(['metric_set', 'highfive', 'spend', 'pref']);
+    // Every buy and its undo go too (the wallet starts clean from earnings, ADR 0022).
+    expect(data('events').map((r) => r[3])).toEqual(['metric_set', 'highfive', 'pref']);
     expect(data('presence').map((r) => r[3])).toEqual(['arrive']);
     // Per person/date/metric: the highest row (with its own `at`), the highest just before and at the metric_set; the
     // latest weight. Lower syncs and unknown or unreadable rows go.
@@ -648,7 +655,7 @@ describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)',
     ]);
     expect(data('uploads').at(-1)![4]).toBe('run 59');
     expect(gas.sheets.get('events')!.rows[0]).toEqual(['at', 'person', 'id', 'type', 'data']); // the header stays
-    expect(JSON.parse(gas.props.get('ROWS')!)).toMatchObject({ events: 5, presence: 2, metrics: 8 });
+    expect(JSON.parse(gas.props.get('ROWS')!)).toMatchObject({ events: 4, presence: 2, metrics: 8 });
     // Every view is the same as before (the model ignored those rows anyway).
     const after = b('snapshot');
     const now = Date.parse('2026-11-04T12:00:00Z');
@@ -657,7 +664,7 @@ describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)',
     // The bookkeeping is consistent: the next write appends after the kept rows without another REV bump.
     tick();
     expect(a('event', { id: 'hf2', type: 'highfive' })).toEqual({ ok: true });
-    expect(data('events')).toHaveLength(5);
+    expect(data('events')).toHaveLength(4);
     expect(gas.props.get('REV')).toBe(out.rev);
   });
 
@@ -666,7 +673,7 @@ describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)',
     vi.spyOn(console, 'log').mockImplementation(() => {});
     cleanupLegacyData();
     const again = cleanupLegacyData();
-    expect(again).toMatchObject({ events: { before: 4, after: 4 }, presence: { before: 1, after: 1 }, metrics: { before: 7, after: 7 }, uploads: { before: 50, after: 50 } });
+    expect(again).toMatchObject({ events: { before: 3, after: 3 }, presence: { before: 1, after: 1 }, metrics: { before: 7, after: 7 }, uploads: { before: 50, after: 50 } });
     gas.state.lockAvailable = false;
     expect(() => cleanupLegacyData()).toThrow(/busy/);
     vi.restoreAllMocks();

@@ -6,6 +6,7 @@ import type { PersonId, WeekKey } from '#lib/types.ts';
 import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
+import { DEFAULT_MENU } from '#lib/config/rules.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 
 const DEMO_WEEKS_BACK = 8;
@@ -120,25 +121,28 @@ function demoRows(now: number): SnapshotRows {
   // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
   ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 
-  // The pots (ADR 0019): treats most weeks, a day trip, one treat taken back by its buyer, and a menu edit.
-  const buy = (t: number, p: PersonId, spendId: string, pot: 'treat' | 'trip', item: string, label: string, bells: number) =>
-    ev(t, p, 'spend', { spendId, pot, item, label, bells });
-  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'treat', 'ice', 'アイス', 2000);
-  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'treat', 'cafe', 'カフェデート', 2000);
-  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-snack-void', 'treat', 'snack', 'おやつ', 1500);
+  // The wallet (ADR 0022): everyday treats most weeks, a dinner out, a trip treat saved up for, one buy taken back by its
+  // buyer, and a menu edit.
+  const buy = (t: number, p: PersonId, spendId: string, item: string, label: string, bells: number) =>
+    ev(t, p, 'spend', { spendId, item, label, bells });
+  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'ice', 'アイス', 1200);
+  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'cafe', 'カフェデート', 2500);
+  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-snack-void', 'snack', 'おやつ・スナック', 1000);
   ev(at(addDays(w(4), 2), 19, 34), 'A', 'spend_void', { spendId: 'demo-snack-void' });
-  // うめ adds パフェ to the treats menu.
+  // うめ adds たいやき to まいにちのごほうび.
   ev(at(addDays(w(4), 3), 21, 0), 'B', 'pref', {
-    key: 'treatMenu',
+    key: 'menu',
     value: JSON.stringify([
-      { id: 'snack', label: 'おやつ', bells: 1500 }, { id: 'ice', label: 'アイス', bells: 2000 }, { id: 'cafe', label: 'カフェデート', bells: 2000 },
-      { id: 'parfait', label: 'パフェ', bells: 2500 }, { id: 'dessert', label: 'デザート・パフェ', bells: 3000 }, { id: 'dinner', label: '外ごはん', bells: 5000 }
+      ...DEFAULT_MENU.filter((x) => x.section === 'daily').map((x) => ({ id: x.id, section: x.section, label: x.label.ja, bells: x.bells })),
+      { id: 'taiyaki', section: 'daily', label: 'たいやき', bells: 800 },
+      ...DEFAULT_MENU.filter((x) => x.section === 'trip').map((x) => ({ id: x.id, section: x.section, label: x.label.ja, bells: x.bells }))
     ])
   });
-  buy(at(addDays(w(3), 5), 16, 0), 'B', 'demo-parfait', 'treat', 'parfait', 'パフェ', 2500);
-  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-daytrip', 'trip', 'daytrip', '日帰り', 12000);
-  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'treat', 'cafe', 'カフェデート', 2000);
-  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'treat', 'snack', 'おやつ', 1500);
+  buy(at(addDays(w(3), 5), 16, 0), 'B', 'demo-taiyaki', 'taiyaki', 'たいやき', 800);
+  buy(at(addDays(w(3), 6), 19, 0), 'A', 'demo-dinner', 'dinner', '外ごはん', 6000);
+  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-meal', 'meal', '特別なごはん', 12000);
+  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'cafe', 'カフェデート', 2500);
+  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'snack', 'おやつ・スナック', 1000);
 
   // Body weight (ADR 0020): 12 weeks of morning weigh-ins, gently down with day-to-day water noise, a few days
   // skipped, synced after breakfast; and a goal each. Weight never earns, so none of this moves a ベル.

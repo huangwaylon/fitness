@@ -3,7 +3,7 @@
 // Everything is computed on read from the raw rows, so a value here applies to every week that uses it. To change
 // what a week earns, never edit a version whose weeks have earned: append a RULES version with a later `from`.
 // rules.test.ts pins the versions in use.
-import type { FruitKey, PersonId, PotKey, RingFruit, WeekKey } from '#lib/types.ts';
+import type { FruitKey, MenuSection, PersonId, RingFruit, WeekKey } from '#lib/types.ts';
 
 /** @deprecated ADR 0019's four fruits (🍐 = eating habits). Use RING_FRUITS. */
 export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
@@ -53,42 +53,32 @@ export const RULES: readonly RuleVersion[] = [
   }
 ];
 
-/**
- * The two shared pots (ADR 0019 §5): every earning splits おやつ `treatPercent`% / 旅 the rest, computed on all-time
- * totals (treats = floor(total × treatPercent / 100), trips = total − treats). Not versioned by week: a change
- * re-splits everything earned so far.
- */
-export const POTS = { treatPercent: 20 } as const;
-
 /** First week that earns ベル (ADR 0019 §7). */
 export const ECONOMY_START: WeekKey = RULES[0].from;
 
 /** A default menu entry; the label follows the viewer's language until the menu is edited (then it is the typed label). */
-export interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }
-
-/** The shared menus before anyone edits them (ADR 0019 §5). */
-export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
-  treat: [
-    // Sweets are dear but reachable (wedding goal; goals review round 12, user 2026-10-30): on target ~2,900 おやつ ベル a week.
-    { id: 'snack', bells: 800, label: { ja: 'おやつ', en: 'Snack' } },
-    { id: 'ice', bells: 1000, label: { ja: 'アイス', en: 'Ice cream' } },
-    { id: 'cafe', bells: 2000, label: { ja: 'カフェデート', en: 'Café date' } },
-    { id: 'dessert', bells: 2000, label: { ja: 'デザート・パフェ', en: 'Dessert' } },
-    { id: 'dinner', bells: 5000, label: { ja: '外ごはん', en: 'Dinner out' } }
-  ],
-  trip: [
-    // ~80% of a year on target (~600,000 旅 ベル) pays 2 × abroad + 6 × weekend + 1–2 × onsen, leaving room for off weeks (round 12).
-    { id: 'daytrip', bells: 10000, label: { ja: '日帰り', en: 'Day trip' } },
-    { id: 'weekend', bells: 28000, label: { ja: '週末旅行', en: 'Weekend trip' } },
-    { id: 'onsen', bells: 36000, label: { ja: '温泉', en: 'Onsen' } },
-    { id: 'abroad', bells: 130000, label: { ja: '海外旅行', en: 'Travel abroad' } }
-  ]
-};
+export interface DefaultMenuItem { id: string; section: MenuSection; bells: number; label: { ja: string; en: string } }
 
 /**
- * 🥥 strength workouts (no daily questions, 2026-10-30): these types of at least `minWorkoutMin` count; any other type
- * counts only when marked as strength in きろく (`workout_edit {strength}`), and a mark can also take one of these out.
+ * The shared menu before anyone edits it (ADR 0022): one wallet, two sections. Priced against the on-target week of
+ * 14,400 ベル for both (design.md §E): 2–3 sweets or snacks (≈ 3,100) + a coffee date (2,500) + half a dinner out
+ * (3,000) ≈ 8,600 a week, leaving ≈ 5,800 a week to save: a special trip meal in ~2 weeks, a room upgrade in ~3–4.
  */
+export const DEFAULT_MENU: readonly DefaultMenuItem[] = [
+  { id: 'snack', section: 'daily', bells: 1000, label: { ja: 'おやつ・スナック', en: 'Snack or chips' } },
+  { id: 'ice', section: 'daily', bells: 1200, label: { ja: 'アイス', en: 'Ice cream' } },
+  { id: 'konbini', section: 'daily', bells: 1500, label: { ja: 'コンビニスイーツ', en: 'Konbini sweet' } },
+  { id: 'dessert', section: 'daily', bells: 2500, label: { ja: 'デザート・パフェ', en: 'Dessert or parfait' } },
+  { id: 'cafe', section: 'daily', bells: 2500, label: { ja: 'カフェデート', en: 'Coffee date' } },
+  { id: 'dinner', section: 'daily', bells: 6000, label: { ja: '外ごはん', en: 'Dinner out' } },
+  { id: 'want', section: 'daily', bells: 8000, label: { ja: 'ほしいもの', en: 'Something we want' } },
+  { id: 'souvenir', section: 'trip', bells: 8000, label: { ja: 'おみやげ予算', en: 'Souvenir budget' } },
+  { id: 'onsen', section: 'trip', bells: 10000, label: { ja: '温泉オプション', en: 'Onsen extra' } },
+  { id: 'meal', section: 'trip', bells: 12000, label: { ja: '特別なごはん', en: 'Special meal' } },
+  { id: 'spa', section: 'trip', bells: 15000, label: { ja: 'スパ・マッサージ', en: 'Spa or massage' } },
+  { id: 'upgrade', section: 'trip', bells: 20000, label: { ja: 'お部屋アップグレード', en: 'Room upgrade' } }
+];
+
 export const STRENGTH = {
   autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
   minWorkoutMin: 15
@@ -135,7 +125,7 @@ export const LIMITS = {
   spendLabelMaxChars: 60,
   /** A spend or a menu price: a positive integer up to this. */
   bellsMax: 10_000_000,
-  /** Items per menu (`pref` treatMenu / tripMenu); a longer list is ignored. */
+  /** Items in the menu (`pref` menu, both sections); a longer list is ignored. */
   menuMaxItems: 30,
   /** A menu item id / a spend's `item`: word characters and dashes. */
   menuIdMaxChars: 40,

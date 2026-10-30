@@ -46,10 +46,36 @@ export interface Visit {
 
 // ---- ベル economy (ADR 0019) ----
 
-/** The two shared pots: おやつ (treats) and 旅 (trips). */
+/** @deprecated ADR 0019's two pots (ADR 0022: one wallet). Aliases until the UI has moved: see PotsView. */
 export type PotKey = 'treat' | 'trip';
 
+/** The menu's two sections (ADR 0022): 🍦 まいにちのごほうび (everyday) and ✈️ 旅のごほうび (on a trip). */
+export type MenuSection = 'daily' | 'trip';
+
+/** A shared menu entry (ADR 0022), editable in the app (`pref` menu): either person can buy it from the wallet. */
+export interface WalletItem {
+  id: string;
+  section: MenuSection;
+  label: string;
+  bells: number;
+}
+
+/** The shared wallet (ADR 0022): every ベル earned, minus the accepted buys. */
+export interface WalletView {
+  /** earned − spent (never negative: a buy above the balance is ignored on read). */
+  balance: number;
+  /** Everything earned so far, both people (daily + the Sunday bonuses that landed). */
+  earned: number;
+  /** Sum of the accepted, not voided buys. */
+  spent: number;
+  /** Both people, today so far. */
+  today: number;
+  /** Both people, this week so far, incl. the weekly bonus once it landed (Sunday 19:30). */
+  week: number;
+}
+
 /** A shared menu entry (おやつ item or 旅 trip type), editable in the app (`pref` treatMenu / tripMenu). */
+/** @deprecated A pot menu entry (ADR 0019). Use WalletItem. */
 export interface MenuItem {
   id: string;
   label: string;
@@ -69,24 +95,24 @@ export interface DayBells {
   parts: FruitBells;
 }
 
+/** @deprecated The wallet's totals under the pots' name (ADR 0022). Read WalletView. */
 export interface PotBalance {
-  /** earned − spent (never negative: a spend above the balance is ignored on read). */
   balance: number;
-  /** This pot's share of everything earned so far (POTS.treatPercent% to おやつ, the rest to 旅, on totals). */
   earned: number;
-  /** Sum of the accepted, not voided spends from this pot. */
   spent: number;
 }
 
-/** A pot's balance plus what flowed into it today and this week (its share of the pair's earnings, as split on totals). */
-export interface PotFlow extends PotBalance {
-  /** This pot's share of today's earnings: share(earned) − share(earned − todayBells), so treat + trip = todayBells. */
+/** @deprecated See PotsView. */
+interface PotFlow extends PotBalance {
   today: number;
-  /** The same for this week's earnings (incl. the bonus once it landed): treat + trip = weekBells. */
   week: number;
 }
 
-export interface PotsView {
+/**
+ * @deprecated ADR 0022 has one wallet. Until the UI has moved: `treat` and `trip` are BOTH the wallet (so every item
+ * stays buyable), `todayBells` / `weekBells` = wallet.today / week. Read `WeekView.wallet`.
+ */
+interface PotsView {
   treat: PotFlow;
   trip: PotFlow;
   /** Both people, today so far. */
@@ -190,9 +216,13 @@ export interface WeekView {
   weekKey: WeekKey;
   today: LocalDate;
   people: Record<PersonId, PersonWeekView>;
-  /** The two shared pots (ADR 0019). */
+  /** The shared wallet (ADR 0022). */
+  wallet: WalletView;
+  /** The shared menu, both sections in order (latest `pref` menu by either person, else the defaults). */
+  menu: WalletItem[];
+  /** @deprecated See PotsView. */
   pots: PotsView;
-  /** The shared menus: おやつ items and 旅 trip types (latest `pref` by either person, else the defaults). */
+  /** @deprecated The menu split by section (treat = daily, trip = trip). Read `menu`. */
   menus: Record<PotKey, MenuItem[]>;
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;

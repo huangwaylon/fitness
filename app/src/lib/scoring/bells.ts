@@ -1,7 +1,7 @@
-// ベル earned per person per day, weekly badges and the pot split (ADR 0019, what earns from ADR 0021): five automatic
+// ベル earned per person per day and weekly badges (ADR 0019, what earns from ADR 0021; one wallet: ADR 0022): five automatic
 // metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
 // week as of a time and decides which weeks count (the economy's first week, locks).
-import { POTS, RING_FRUITS, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { RING_FRUITS, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { LocalDate, PersonId, PotKey, RingBells, RingFruit, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
@@ -172,8 +172,10 @@ export function earnWeek(input: EarnInput): WeekEarning {
 export const duoBonus = (a: WeekEarning, b: WeekEarning): number =>
   RING_FRUITS.filter((f) => a.badges[f] && b.badges[f]).length * rulesFor(a.weekKey).badges.duoPerBadge;
 
-/** Split an all-time total into the two pots (on totals, so nothing is lost to rounding). */
+/**
+ * @public @deprecated ADR 0022 has one wallet: everything goes to it (`treat` = the wallet, `trip` = 0). Kept only until
+ * the UI stops importing it.
+ */
 export function splitPots(total: number): Record<PotKey, number> {
-  const treat = Math.floor((total * POTS.treatPercent) / 100);
-  return { treat, trip: total - treat };
+  return { treat: total, trip: 0 };
 }

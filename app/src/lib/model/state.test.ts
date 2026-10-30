@@ -64,22 +64,22 @@ describe('reduce: events', () => {
     expect(s.prefs).toEqual({ A: {}, B: {} });
   });
 
-  it('spend and spend_void: ベル spends only, first id wins, only the spender voids, once', () => {
-    const bell = (spendId: unknown, extra: object = {}) => ({ spendId, pot: 'treat', item: 'cake', label: ' ケーキ ', bells: 800, ...extra });
+  it('spend and spend_void: wallet buys only (no pot), first id wins, only the spender voids, once', () => {
+    const bell = (spendId: unknown, extra: object = {}) => ({ spendId, item: 'cake', label: ' ケーキ ', bells: 800, ...extra });
     const s = reduce(rows([
       ev(at(WK), 'B', 'spend', bell(7)),
       ev(at(WK), 'B', 'spend', bell(7, { label: 'dup', bells: 1 })),
       ev(at(WK), 'B', 'spend', bell('x', { label: '' })),
       ev(at(WK), 'B', 'spend', bell('y', { bells: 1.5 })),
       ev(at(WK), 'B', 'spend', bell('z', { bells: 10_000_001 })),
-      ev(at(WK), 'B', 'spend', bell('p', { pot: 'jar' })),
-      ev(at(WK), 'B', 'spend', { spendId: 'nopot', label: 'ケーキ', bells: 800 }), // no pot
+      ev(at(WK), 'B', 'spend', bell('p', { pot: 'treat' })), // the two pots' shape
+      ev(at(WK), 'B', 'spend', { spendId: 'nopot', label: 'ケーキ', bells: 800 }), // no item
       ev(at(WK, '13:00'), 'A', 'spend_void', { spendId: 7 }), // not the spender
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 'nopot' }), // not an accepted spend
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 7 }),
       ev(at(WK, '14:00'), 'B', 'spend_void', { spendId: 7 }) // twice
     ]));
-    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', pot: 'treat', item: 'cake', label: 'ケーキ', bells: 800 }]);
+    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'cake', label: 'ケーキ', bells: 800 }]);
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['B', Date.parse(at(WK, '13:00'))]]);
   });
 

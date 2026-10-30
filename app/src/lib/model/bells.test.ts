@@ -1,5 +1,5 @@
-// ADR 0019 on read (what earns: ADR 0021): earnings land in the two pots as they happen, the weekly bonus at the
-// Sunday harvest, spends replay against the pots (never below zero), voids, the shared menus, locks, the Move goal in
+// ADR 0019 on read (what earns: ADR 0021; one wallet: ADR 0022): earnings land in the wallet as they happen, the
+// weekly bonus at the Sunday harvest, buys replay against it (never below zero), voids, the shared menus, locks, the Move goal in
 // force per day and the きろく ledger.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/scoring/index.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
-import { bellsLedger, potsAt, weekBells } from './bells.ts';
+import { bellsLedger, walletAt, weekBells } from './bells.ts';
 import { dayDetail, historyWeeks, weekDetail } from './history.ts';
 
 const WK = '2026-11-16'; // Sunday 19:30 = 11-22 10:30Z; lock = Wednesday 11-25 04:00 JST
@@ -42,8 +42,9 @@ function perfectWeek(people: PersonId[] = ['A', 'B']): SnapshotRows {
   }
   return r;
 }
-const spend = (at: string, p: PersonId, spendId: string, pot: 'treat' | 'trip', bells: number, label = 'アイス', item = 'ice') =>
-  ev(at, p, 'spend', { spendId, pot, item, label, bells });
+const spend = (at: string, p: PersonId, spendId: string, bells: number, label = 'アイス', item = 'ice') =>
+  ev(at, p, 'spend', { spendId, item, label, bells });
+const potsAt = walletAt;
 
 const SUN_BEFORE = ms(D[6], '19:29');
 const SUN_AFTER = ms(D[6], '19:31');
@@ -51,7 +52,7 @@ const MON_AFTER = ms('2026-11-23', '12:00');
 const LOCKED = ms('2026-11-26', '12:00');
 
 describe('daily earnings land as they happen', () => {
-  it('today’s ベル show on the person, the fruits and the pots', () => {
+  it('today’s ベル show on the person, the fruits and the wallet', () => {
     const now = ms(D[2], '23:00'); // Wednesday night
     const v = buildWeekView(reduce(perfectWeek()), 'A', now);
     expect(v.people.A.today).toEqual({
@@ -59,10 +60,9 @@ describe('daily earnings land as they happen', () => {
       parts: { peach: 180, coconut: 400, apple: 200, pear: 180 } // deprecated: 🍐 = Move
     });
     expect(v.people.A.weekBells).toBe(3 * 1140); // only days up to today count, even with later-dated rows
-    expect(v.pots.todayBells).toBe(2280);
-    expect(v.pots.weekBells).toBe(6 * 1140);
-    expect(v.pots.treat).toEqual({ earned: 1368, spent: 0, balance: 1368, today: 456, week: 1368 }); // 20% of 6 × 1,140
-    expect(v.pots.trip).toMatchObject({ earned: 6 * 1140 - 1368, today: 2280 - 456, week: 6 * 1140 - 1368 });
+    expect(v.wallet).toEqual({ earned: 6 * 1140, spent: 0, balance: 6 * 1140, today: 2280, week: 6 * 1140 }); // no split
+    // Deprecated aliases: both pots are the wallet.
+    expect(v.pots).toEqual({ treat: v.wallet, trip: v.wallet, todayBells: 2280, weekBells: 6 * 1140 });
     const rings = v.people.A.rings;
     expect(rings.peach).toEqual({ today: 60, goal: 60, met: true, todayBells: 180, weekDays: 7, weekGoalDays: 5, badge: true, weekBells: 3 * 180 });
     expect(rings.pear).toEqual({ today: 700, goal: 600, met: true, todayBells: 180, weekDays: 7, weekGoalDays: 5, badge: true, weekBells: 3 * 180 });
@@ -85,23 +85,20 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.B.rings.apple).toMatchObject({ today: 5000, met: false, weekDays: 0, badge: false });
     expect(v.people.B.rings.peach).toMatchObject({ today: 20, goal: 60, met: false, todayBells: 60 });
     expect(v.people.A.today.bells).toBe(0);
-    expect(v.pots.trip).toEqual({ earned: 48, spent: 0, balance: 48, today: 48, week: 48 });
-    expect(v.pots.treat).toMatchObject({ earned: 12, today: 12, week: 12 });
+    expect(v.wallet).toEqual({ earned: 60, spent: 0, balance: 60, today: 60, week: 60 });
   });
 
-  it('per-pot flow: each pot’s share of today and this week, split on totals, so it never drifts from the balances', () => {
-    // Monday 123 ベル (A: 41 min), Tuesday 9 (B: 3 min): 132 splits 26 / 106, Monday's 123 alone 24 / 99.
+  it('the wallet’s today and week flows: today’s and this week’s earnings of both people', () => {
+    // Monday 123 ベル (A: 41 min), Tuesday 9 (B: 3 min).
     const r = rowsOf({ metrics: [metric(jst(D[0], '22:00'), 'A', D[0], 'exercise_min', 41), metric(jst(D[1], '09:00'), 'B', D[1], 'exercise_min', 3)] });
     const v = buildWeekView(reduce(r), 'A', ms(D[1], '12:00'));
-    expect(v.pots).toMatchObject({ todayBells: 9, weekBells: 132 });
-    expect(v.pots.treat).toMatchObject({ earned: 26, today: 2, week: 26 }); // floor(132 × 0.2) − floor(123 × 0.2) = 26 − 24
-    expect(v.pots.trip).toMatchObject({ earned: 106, today: 7, week: 106 });
+    expect(v.wallet).toEqual({ earned: 132, spent: 0, balance: 132, today: 9, week: 132 });
   });
 
   it('days before the economy’s first week (2026-10-26) never earn', () => {
     const r = rowsOf({ metrics: [metric(jst('2026-10-25', '22:00'), 'A', '2026-10-25', 'steps', 20000), metric(jst('2026-10-26', '22:00'), 'A', '2026-10-26', 'steps', 8000)] });
     const p = potsAt(reduce(r), ms('2026-10-27', '12:00'));
-    expect(p.earned).toBe(200);
+    expect(p.wallet.earned).toBe(200);
     expect(p.weeks.map((w) => w.weekKey)).toEqual(['2026-10-26']);
   });
 });
@@ -111,16 +108,13 @@ describe('the weekly bonus lands at the Sunday 19:30 harvest', () => {
     const s = reduce(perfectWeek());
     const before = buildWeekView(s, 'A', SUN_BEFORE);
     expect(before.harvest?.weekKey).toBe('2026-11-09'); // last week's (empty) harvest, never tapped
-    expect(before.pots.weekBells).toBe(14 * 1140);
+    expect(before.wallet.week).toBe(14 * 1140);
     const after = buildWeekView(s, 'A', SUN_AFTER);
     expect(after.harvest).toMatchObject({ weekKey: WK, bonus: { A: 2000, B: 2000, duo: 1000 }, totalBells: 14 * 1140 + 5000, confirmedBy: [] });
     const five = { peach: true, pear: true, cherry: true, apple: true, coconut: true };
     expect(after.harvest!.ringBadges).toEqual({ A: five, B: five });
     expect(after.harvest!.badges.A).toEqual({ peach: true, coconut: true, apple: true, pear: true }); // deprecated
-    expect(after.pots.weekBells).toBe(14 * 1140 + 5000);
-    expect(after.pots.treat.earned + after.pots.trip.earned).toBe(14 * 1140 + 5000);
-    expect(after.pots.treat.week + after.pots.trip.week).toBe(after.pots.weekBells);
-    expect(after.pots.treat.today + after.pots.trip.today).toBe(after.pots.todayBells);
+    expect(after.wallet).toMatchObject({ week: 14 * 1140 + 5000, earned: 14 * 1140 + 5000, balance: 14 * 1140 + 5000 });
     expect(after.host).toMatchObject({ key: 'host.harvest_ready', params: { bells: 14 * 1140 + 5000 } });
   });
 
@@ -139,7 +133,7 @@ describe('the weekly bonus lands at the Sunday 19:30 harvest', () => {
     const a = buildWeekView(reduce(r), 'A', now);
     const b = buildWeekView(reduce(tapped), 'A', now);
     expect(b.harvest).toBeNull();
-    expect(b.pots).toEqual(a.pots);
+    expect(b.wallet).toEqual(a.wallet);
   });
 });
 
@@ -149,15 +143,15 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
 
   it('a late sync before the lock counts, also after the lock', () => {
     const r = late(jst('2026-11-24', '10:00')); // Tuesday after the week: still open
-    expect(potsAt(reduce(base), MON_AFTER).earned).toBe(0);
-    expect(potsAt(reduce(r), MON_AFTER).earned).toBe(200); // the step day (steps no longer turn into minutes)
-    expect(potsAt(reduce(r), LOCKED).earned).toBe(200);
+    expect(potsAt(reduce(base), MON_AFTER).wallet.earned).toBe(0);
+    expect(potsAt(reduce(r), MON_AFTER).wallet.earned).toBe(200); // the step day (steps no longer turn into minutes)
+    expect(potsAt(reduce(r), LOCKED).wallet.earned).toBe(200);
   });
 
   it('a sync stamped after the lock never changes the week (one stamped exactly at it still counts)', () => {
-    expect(potsAt(reduce(late(jst('2026-11-25', '04:00'))), LOCKED).earned).toBe(200);
+    expect(potsAt(reduce(late(jst('2026-11-25', '04:00'))), LOCKED).wallet.earned).toBe(200);
     const r = late(new Date(ms('2026-11-25', '04:00') + 1).toISOString());
-    expect(potsAt(reduce(r), LOCKED).earned).toBe(0);
+    expect(potsAt(reduce(r), LOCKED).wallet.earned).toBe(0);
     expect(weekBells(reduce(r), WK, LOCKED).A.days[0].steps).toBe(5000);
     expect(historyWeeks(reduce(r), LOCKED).find((w) => w.weekKey === WK)!.bells).toBe(0);
   });
@@ -179,144 +173,144 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
   });
 });
 
-describe('spends: the pot must cover it, the buyer can undo it', () => {
-  // A perfect week for both: 14 × 1,140 + 5,000 = 20,960 → おやつ 4,192 / 旅 16,768 by Monday.
+describe('buys: the wallet must cover them, the buyer can undo them (ADR 0022)', () => {
+  // A perfect week for both: 14 × 1,140 + 5,000 = 20,960 in the wallet by Monday.
   const r = perfectWeek();
   const MON = '2026-11-23';
 
-  it('a spend takes from its pot; the other pot is untouched', () => {
-    const s = reduce(plus(r, { events: [spend(jst(MON, '10:00'), 'A', 's1', 'treat', 1500, 'カフェデート', 'cafe')] }));
-    const p = potsAt(s, MON_AFTER).pots;
-    expect(p.treat).toEqual({ earned: 4192, spent: 1500, balance: 2692 });
-    expect(p.trip).toEqual({ earned: 16768, spent: 0, balance: 16768 });
+  it('a buy takes from the one wallet, whatever the item’s section', () => {
+    const s = reduce(plus(r, { events: [spend(jst(MON, '10:00'), 'A', 's1', 2500, 'カフェデート', 'cafe'), spend(jst(MON, '10:01'), 'B', 's2', 15000, 'スパ', 'spa')] }));
+    const p = potsAt(s, MON_AFTER);
+    expect(p.wallet).toEqual({ earned: 20960, spent: 17500, balance: 3460 });
+    expect(p.spends.map((x) => [x.spendId, x.pot])).toEqual([['s1', 'treat'], ['s2', 'trip']]); // deprecated: the item's section
   });
 
-  it('a spend above the balance is ignored on read, never shown, and the balance never goes negative', () => {
+  it('a buy above the balance is ignored on read, never shown, and the balance never goes negative', () => {
     const s = reduce(plus(r, { events: [
-      spend(jst(MON, '10:00'), 'A', 'big', 'treat', 4193), // 1 more than the pot
-      spend(jst(MON, '10:01'), 'B', 'ok', 'treat', 4192),
-      spend(jst(MON, '10:02'), 'A', 'more', 'treat', 1) // the pot is empty now
+      spend(jst(MON, '10:00'), 'A', 'big', 20961), // 1 more than the wallet
+      spend(jst(MON, '10:01'), 'B', 'ok', 20960),
+      spend(jst(MON, '10:02'), 'A', 'more', 1) // the wallet is empty now
     ] }));
     const p = potsAt(s, MON_AFTER);
-    expect(p.pots.treat).toEqual({ earned: 4192, spent: 4192, balance: 0 });
+    expect(p.wallet).toEqual({ earned: 20960, spent: 20960, balance: 0 });
     expect(p.spends.map((x) => x.spendId)).toEqual(['ok']);
   });
 
-  it('a spend is judged at its own time: earnings that came later don’t rescue it', () => {
-    const early = spend(jst(D[0], '23:00'), 'A', 'early', 'trip', 2000); // Monday: 2 × 1,140 → trip 1,824
+  it('a buy is judged at its own time: earnings that came later don’t rescue it', () => {
+    const early = spend(jst(D[0], '23:00'), 'A', 'early', 2281); // Monday: 2 × 1,140
     const s = reduce(plus(r, { events: [early] }));
     expect(potsAt(s, MON_AFTER).spends).toEqual([]);
-    expect(potsAt(s, MON_AFTER).pots.trip.spent).toBe(0);
-    const ok = spend(jst(D[0], '23:00'), 'A', 'ok', 'trip', 1824);
-    expect(potsAt(reduce(plus(r, { events: [ok] })), MON_AFTER).pots.trip.spent).toBe(1824);
+    const ok = spend(jst(D[0], '23:00'), 'A', 'ok', 2280);
+    expect(potsAt(reduce(plus(r, { events: [ok] })), MON_AFTER).wallet.spent).toBe(2280);
   });
 
   it('the buyer’s spend_void gives it back; the partner’s, an early or a second one, is ignored', () => {
-    const buy = spend(jst(MON, '10:00'), 'A', 's1', 'treat', 500);
-    const pot = (events: EventRow[]) => potsAt(reduce(plus(r, { events: [buy, ...events] })), MON_AFTER);
-    expect(pot([]).pots.treat.balance).toBe(3692);
-    const voided = pot([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' })]);
-    expect(voided.pots.treat).toEqual({ earned: 4192, spent: 0, balance: 4192 });
+    const buy = spend(jst(MON, '10:00'), 'A', 's1', 500);
+    const wallet = (events: EventRow[]) => potsAt(reduce(plus(r, { events: [buy, ...events] })), MON_AFTER);
+    expect(wallet([]).wallet.balance).toBe(20460);
+    const voided = wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' })]);
+    expect(voided.wallet).toEqual({ earned: 20960, spent: 0, balance: 20960 });
     expect(voided.spends[0]).toMatchObject({ spendId: 's1', voided: true, voidedAt: ms(MON, '10:05') });
-    expect(pot([ev(jst(MON, '10:05'), 'B', 'spend_void', { spendId: 's1' })]).pots.treat.spent).toBe(500);
-    expect(pot([ev(jst(MON, '09:59'), 'A', 'spend_void', { spendId: 's1' })]).pots.treat.spent).toBe(500);
-    expect(pot([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 'nope' })]).pots.treat.spent).toBe(500);
+    expect(wallet([ev(jst(MON, '10:05'), 'B', 'spend_void', { spendId: 's1' })]).wallet.spent).toBe(500);
+    expect(wallet([ev(jst(MON, '09:59'), 'A', 'spend_void', { spendId: 's1' })]).wallet.spent).toBe(500);
+    expect(wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 'nope' })]).wallet.spent).toBe(500);
   });
 
-  it('a void frees the pot for later spends, in server order', () => {
+  it('a void frees the wallet for later buys, in server order', () => {
     const s = reduce(plus(r, { events: [
-      spend(jst(MON, '10:00'), 'A', 'a', 'treat', 4000),
-      spend(jst(MON, '10:01'), 'B', 'b', 'treat', 4000), // refused: only 192 left
+      spend(jst(MON, '10:00'), 'A', 'a', 20000),
+      spend(jst(MON, '10:01'), 'B', 'b', 20000), // refused: only 960 left
       ev(jst(MON, '10:02'), 'A', 'spend_void', { spendId: 'a' }),
-      spend(jst(MON, '10:03'), 'B', 'c', 'treat', 4000)
+      spend(jst(MON, '10:03'), 'B', 'c', 20000)
     ] }));
     const p = potsAt(s, MON_AFTER);
     expect(p.spends.map((x) => [x.spendId, x.voided])).toEqual([['a', true], ['c', false]]);
-    expect(p.pots.treat.balance).toBe(192);
+    expect(p.wallet.balance).toBe(960);
   });
 
-  it('spends are never locked: a void long after still counts', () => {
+  it('buys are never locked: a void long after still counts', () => {
     const later = '2026-12-10';
-    const s = reduce(plus(r, { events: [spend(jst(MON, '10:00'), 'A', 's1', 'trip', 13000), ev(jst(later, '10:00'), 'A', 'spend_void', { spendId: 's1' })] }));
-    expect(potsAt(s, ms(later, '12:00')).pots.trip.spent).toBe(0);
+    const s = reduce(plus(r, { events: [spend(jst(MON, '10:00'), 'A', 's1', 13000), ev(jst(later, '10:00'), 'A', 'spend_void', { spendId: 's1' })] }));
+    expect(potsAt(s, ms(later, '12:00')).wallet.spent).toBe(0);
   });
 
-  it('old yen spends, approvals and malformed ベル spends are ignored', () => {
+  it('malformed buys and the two pots’ spends (with a pot) are ignored', () => {
     const at = jst(MON, '10:00');
     const s = reduce(plus(r, { events: [
-      ev(at, 'A', 'spend', { spendId: 'y1', label: 'カフェ', amountYen: 2000 }),
-      ev(at, 'B', 'approve' as EventRow[3], { spendId: 'y1' }), // a removed type: its rows are ignored
-      ev(at, 'A', 'spend', { spendId: 'x1', pot: 'jar', item: 'ice', label: 'アイス', bells: 500 }),
-      ev(at, 'A', 'spend', { spendId: 'x2', pot: 'treat', item: 'ice', label: 'アイス', bells: 1.5 }),
-      ev(at, 'A', 'spend', { spendId: 'x3', pot: 'treat', item: 'ice', label: 'アイス', bells: -5 }),
-      ev(at, 'A', 'spend', { spendId: 'x4', pot: 'treat', item: 'ice', label: 'x'.repeat(61), bells: 5 }),
-      ev(at, 'A', 'spend', { spendId: 'x5', pot: 'treat', label: 'アイス', bells: 5 }),
-      ev(at, 'A', 'spend', { spendId: 'x6', pot: 'treat', item: 'ice', label: 'アイス', bells: 10_000_001 }),
-      ev(at, 'A', 'spend', { spendId: 'ok', pot: 'treat', item: 'ice', label: 'アイス', bells: 5 }),
-      ev(at, 'A', 'spend', { spendId: 'ok', pot: 'treat', item: 'ice', label: 'アイス', bells: 5 }) // duplicate id
+      ev(at, 'A', 'spend', { spendId: 'p1', pot: 'treat', item: 'ice', label: 'アイス', bells: 500 }),
+      ev(at, 'A', 'spend', { spendId: 'x2', item: 'ice', label: 'アイス', bells: 1.5 }),
+      ev(at, 'A', 'spend', { spendId: 'x3', item: 'ice', label: 'アイス', bells: -5 }),
+      ev(at, 'A', 'spend', { spendId: 'x4', item: 'ice', label: 'x'.repeat(61), bells: 5 }),
+      ev(at, 'A', 'spend', { spendId: 'x5', label: 'アイス', bells: 5 }),
+      ev(at, 'A', 'spend', { spendId: 'x6', item: 'ice', label: 'アイス', bells: 10_000_001 }),
+      ev(at, 'A', 'spend', { spendId: 'ok', item: 'ice', label: 'アイス', bells: 5 }),
+      ev(at, 'A', 'spend', { spendId: 'ok', item: 'ice', label: 'アイス', bells: 5 }) // duplicate id
     ] }));
     const p = potsAt(s, MON_AFTER);
     expect(p.spends.map((x) => x.spendId)).toEqual(['ok']);
-    expect(p.pots.treat.spent).toBe(5);
+    expect(p.wallet.spent).toBe(5);
   });
 });
 
-describe('menus: shared, editable, the latest pref by either person wins', () => {
+describe('the menu: one list, two sections, shared and editable; the latest pref by either person wins', () => {
   const pref = (at: string, p: PersonId, key: string, value: unknown) => ev(at, p, 'pref', { key, value });
-  const menus = (events: EventRow[], locale: 'ja' | 'en' = 'ja') => {
+  const view = (events: EventRow[], locale: 'ja' | 'en' = 'ja') => {
     const rows = rowsOf({ events: locale === 'en' ? [pref(jst(D[0], '08:00'), 'A', 'locale', 'en'), ...events] : events });
-    return buildWeekView(reduce(rows), 'A', ms(D[1], '12:00')).menus;
+    return buildWeekView(reduce(rows), 'A', ms(D[1], '12:00'));
   };
+  const menu = (events: EventRow[], locale: 'ja' | 'en' = 'ja') => view(events, locale).menu;
 
-  it('defaults, in the viewer’s language', () => {
-    expect(menus([]).treat).toEqual([
-      { id: 'snack', label: 'おやつ', bells: 800 }, { id: 'ice', label: 'アイス', bells: 1000 },
-      { id: 'cafe', label: 'カフェデート', bells: 2000 }, { id: 'dessert', label: 'デザート・パフェ', bells: 2000 },
-      { id: 'dinner', label: '外ごはん', bells: 5000 }
+  it('defaults, in the viewer’s language: まいにちのごほうび then 旅のごほうび', () => {
+    expect(menu([]).map((x) => [x.section, x.id, x.bells])).toEqual([
+      ['daily', 'snack', 1000], ['daily', 'ice', 1200], ['daily', 'konbini', 1500], ['daily', 'dessert', 2500], ['daily', 'cafe', 2500],
+      ['daily', 'dinner', 6000], ['daily', 'want', 8000],
+      ['trip', 'souvenir', 8000], ['trip', 'onsen', 10000], ['trip', 'meal', 12000], ['trip', 'spa', 15000], ['trip', 'upgrade', 20000]
     ]);
-    expect(menus([]).trip.map((x) => [x.id, x.bells])).toEqual([['daytrip', 10000], ['weekend', 28000], ['onsen', 36000], ['abroad', 130000]]);
-    expect(menus([], 'en').trip[0]).toEqual({ id: 'daytrip', label: 'Day trip', bells: 10000 });
+    expect(menu([])[4]).toEqual({ id: 'cafe', section: 'daily', label: 'カフェデート', bells: 2500 });
+    expect(menu([], 'en')[11]).toEqual({ id: 'upgrade', section: 'trip', label: 'Room upgrade', bells: 20000 });
+    // Deprecated `menus`: split by section, without it.
+    expect(view([]).menus.trip[0]).toEqual({ id: 'souvenir', label: 'おみやげ予算', bells: 8000 });
+    expect(view([]).menus.treat).toHaveLength(7);
   });
 
-  it('last writer wins across both people, per menu', () => {
-    const a = [{ id: 'ice', label: 'アイス', bells: 600 }];
-    const b = [{ id: 'parfait', label: 'パフェ', bells: 800 }];
-    expect(menus([pref(jst(D[0], '09:00'), 'A', 'treatMenu', JSON.stringify(a)), pref(jst(D[0], '10:00'), 'B', 'treatMenu', JSON.stringify(b))]).treat).toEqual(b);
-    expect(menus([pref(jst(D[0], '10:00'), 'B', 'treatMenu', JSON.stringify(b)), pref(jst(D[0], '11:00'), 'A', 'treatMenu', JSON.stringify(a))]).treat).toEqual(a);
-    const m = menus([pref(jst(D[0], '10:00'), 'B', 'tripMenu', JSON.stringify([{ id: 'camp', label: 'キャンプ', bells: 30000 }]))]);
-    expect(m.trip).toEqual([{ id: 'camp', label: 'キャンプ', bells: 30000 }]);
-    expect(m.treat[0].id).toBe('snack'); // the other menu keeps its defaults
+  it('last writer wins across both people', () => {
+    const a = [{ id: 'ice', section: 'daily', label: 'アイス', bells: 600 }];
+    const b = [{ id: 'parfait', section: 'daily', label: 'パフェ', bells: 800 }, { id: 'camp', section: 'trip', label: 'キャンプ', bells: 9000 }];
+    expect(menu([pref(jst(D[0], '09:00'), 'A', 'menu', JSON.stringify(a)), pref(jst(D[0], '10:00'), 'B', 'menu', JSON.stringify(b))])).toEqual(b);
+    expect(menu([pref(jst(D[0], '10:00'), 'B', 'menu', JSON.stringify(b)), pref(jst(D[0], '11:00'), 'A', 'menu', JSON.stringify(a))])).toEqual(a);
   });
 
   it('accepts the array itself or its JSON; an empty menu is valid; labels are trimmed', () => {
-    expect(menus([pref(jst(D[0], '09:00'), 'A', 'treatMenu', [{ id: 'a', label: ' 飴 ', bells: 50 }])]).treat).toEqual([{ id: 'a', label: '飴', bells: 50 }]);
-    expect(menus([pref(jst(D[0], '09:00'), 'A', 'treatMenu', '[]')]).treat).toEqual([]);
+    expect(menu([pref(jst(D[0], '09:00'), 'A', 'menu', [{ id: 'a', section: 'trip', label: ' 飴 ', bells: 50 }])])).toEqual([{ id: 'a', section: 'trip', label: '飴', bells: 50 }]);
+    expect(menu([pref(jst(D[0], '09:00'), 'A', 'menu', '[]')])).toEqual([]);
   });
 
-  it('an invalid menu is ignored as a whole (the previous one stays)', () => {
-    const good = pref(jst(D[0], '09:00'), 'A', 'treatMenu', JSON.stringify([{ id: 'a', label: '飴', bells: 50 }]));
-    const bad = (value: unknown) => menus([good, pref(jst(D[0], '10:00'), 'B', 'treatMenu', value)]).treat;
-    const item = { id: 'b', label: 'ケーキ', bells: 700 };
+  it('an invalid menu is ignored as a whole (the previous one stays); the two pots’ menus are ignored', () => {
+    const good = pref(jst(D[0], '09:00'), 'A', 'menu', JSON.stringify([{ id: 'a', section: 'daily', label: '飴', bells: 50 }]));
+    const bad = (value: unknown, key = 'menu') => menu([good, pref(jst(D[0], '10:00'), 'B', key, value)]);
+    const item = { id: 'b', section: 'daily', label: 'ケーキ', bells: 700 };
     for (const v of [
       'not json', '{}', JSON.stringify([{ ...item, bells: 0 }]), JSON.stringify([{ ...item, bells: 2.5 }]),
       JSON.stringify([{ ...item, label: '  ' }]), JSON.stringify([{ ...item, id: 'has space' }]), JSON.stringify([item, item]),
+      JSON.stringify([{ ...item, section: 'treat' }]), JSON.stringify([{ id: 'b', label: 'ケーキ', bells: 700 }]),
       JSON.stringify(Array.from({ length: 31 }, (_, i) => ({ ...item, id: `i${i}` }))), JSON.stringify([{ ...item, bells: 10_000_001 }])
-    ]) expect(bad(v), v.slice(0, 40)).toEqual([{ id: 'a', label: '飴', bells: 50 }]);
+    ]) expect(bad(v), v.slice(0, 40)).toEqual([{ id: 'a', section: 'daily', label: '飴', bells: 50 }]);
+    expect(bad(JSON.stringify([item]), 'treatMenu')).toEqual([{ id: 'a', section: 'daily', label: '飴', bells: 50 }]);
   });
 });
 
 describe('the きろく ledger and history fields', () => {
   const r = plus(perfectWeek(), { events: [
-    spend(jst('2026-11-23', '10:00'), 'A', 's1', 'treat', 500),
-    spend(jst('2026-11-23', '11:00'), 'B', 's2', 'trip', 16600, '日帰り', 'daytrip'),
+    spend(jst('2026-11-23', '10:00'), 'A', 's1', 500),
+    spend(jst('2026-11-23', '11:00'), 'B', 's2', 15000, 'スパ', 'spa'),
     ev(jst('2026-11-23', '11:05'), 'B', 'spend_void', { spendId: 's2' })
   ] });
 
   it('per-day rows for both people, bonus rows and spends, newest first', () => {
     const l = bellsLedger(reduce(r), MON_AFTER);
     expect(l.earned).toBe(20960);
-    expect(l.pots.treat).toEqual({ earned: 4192, spent: 500, balance: 3692 });
-    expect(l.pots.trip).toEqual({ earned: 16768, spent: 0, balance: 16768 });
+    expect(l.wallet).toEqual({ earned: 20960, spent: 500, balance: 20460 });
+    expect(l.pots).toEqual({ treat: l.wallet, trip: l.wallet }); // deprecated
     expect(l.days[0]).toMatchObject({ date: '2026-11-23', weekKey: '2026-11-23', bells: 0, locked: false });
     const sun = l.days.find((d) => d.date === D[6])!;
     expect(sun).toMatchObject({ weekKey: WK, bells: 2280, locked: false, people: { A: { date: D[6], bells: 1140 }, B: { bells: 1140 } } });
@@ -327,8 +321,8 @@ describe('the きろく ledger and history fields', () => {
     expect(l.bonuses[0]).toMatchObject({
       at: SUN_BEFORE + 60_000, bonus: { A: 2000, B: 2000, duo: 1000 }, ringBadges: { A: { cherry: true }, B: { pear: true } }, badges: { A: { pear: true } }
     });
-    expect(l.spends.map((x) => [x.spendId, x.by, x.pot, x.label, x.bells, x.voided])).toEqual([
-      ['s2', 'B', 'trip', '日帰り', 16600, true], ['s1', 'A', 'treat', 'アイス', 500, false]
+    expect(l.spends.map((x) => [x.spendId, x.by, x.item, x.label, x.bells, x.voided])).toEqual([
+      ['s2', 'B', 'spa', 'スパ', 15000, true], ['s1', 'A', 'ice', 'アイス', 500, false]
     ]);
     expect(bellsLedger(reduce(r), LOCKED).days.find((d) => d.date === D[0])!.locked).toBe(true);
   });

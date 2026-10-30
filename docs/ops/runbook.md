@@ -3,7 +3,7 @@
 Three pieces, no server of our own:
 - **The data:** the Google Sheet *Island Fund* (append-only rows).
 - **The backend:** the Apps Script bound to it, deployed as a web app (`/exec` URL, two per-person keys).
-- **The app:** a static PWA on GitHub Pages. It computes the ベル and the two pots in the browser from the sheet's rows (ADR 0019).
+- **The app:** a static PWA on GitHub Pages. It computes the ベル and the shared wallet in the browser from the sheet's rows (ADR 0019, 0022).
 
 Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.md).
 
@@ -68,7 +68,7 @@ build. A health probe is not a secret: the URL isn't one either (google-setup.md
 then the probe must show the new build.
 
 ## 6. Backups
-The sheet is the only copy of buys from the pots, menu edits, goals and きろく edits (health numbers can be re-sent from the phones,
+The sheet is the only copy of buys from the wallet, menu edits, goals and きろく edits (health numbers can be re-sent from the phones,
 shortcut-health-sync.md §6). Google keeps version history (File → Version history), which protects against bad edits
 but not against losing the file or the account. So, in addition:
 
@@ -125,8 +125,9 @@ trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-
 
 ## 9. One-off cleanup after ADR 0021 (run once, then remove)
 ADR 0021 left rows of past designs in the sheet: check-ins, 「筋トレでしたか？」 answers (`confirm`), the yen economy's
-`approve` / `transfer` / `transfer_undo` and yen `spend`s, unused `pref`s (e.g. `share`), presence `leave` rows, and
-every lower metrics re-send. The app no longer reads or accepts any of them. `cleanupLegacyData` deletes them in one go
+`approve` / `transfer` / `transfer_undo`, unused `pref`s (e.g. `share`, the two pots' `treatMenu` / `tripMenu`), every
+`spend` and `spend_void` (ADR 0022: the wallet starts clean from earnings), presence `leave` rows, and every lower
+metrics re-send. The app no longer reads or accepts any of them. `cleanupLegacyData` deletes them in one go
 (user decision 2026-10-30: we're still developing).
 
 1. **Back up first:** open the sheet → **File → Make a copy** (name it e.g. *Island Fund before cleanup*).
@@ -136,8 +137,9 @@ every lower metrics re-send. The app no longer reads or accepts any of them. `cl
    **Run**. Authorise if asked (the same current-sheet-only scope as the web app).
 4. Read the log (**Execution log** opens below): `cleanupLegacyData: {"events":{"before":…,"after":…},"presence":…,
    "metrics":…,"uploads":…,"rev":"…"}`. Under the script lock it:
-   - **events**: keeps only rows the script would accept today (`spend` with a pot, `harvest`, `highfive`, `pref` with
-     a key the app reads, `metric_set`, `workout_edit`, `workout_add`, `spend_void`);
+   - **events**: keeps only rows the script would accept today (`harvest`, `highfive`, `pref` with a key the app reads,
+     `metric_set`, `workout_edit`, `workout_add`) and deletes **every** `spend` and `spend_void`, so run it right after
+     deploying, before anyone buys from the new wallet;
    - **presence**: keeps `arrive` rows;
    - **metrics**: per person, date and metric keeps the rows the app reads (the highest value, the highest at the
      week's Wednesday lock and around each `metric_set`; for weight the latest row), each with its original `at`;
@@ -145,7 +147,7 @@ every lower metrics re-send. The app no longer reads or accepts any of them. `cl
    - bumps `REV` (both phones drop their caches and refetch everything on their next sync) and records the new row
      counts, so the next write isn't taken for a hand edit.
    Running it twice is harmless (the second run only bumps `REV`). `busy` = a phone was writing: run it again.
-5. Open the app on both phones: the numbers are the same as before (only rows the app ignored are gone).
+5. Open the app on both phones: the earnings are the same as before; the wallet holds everything earned (no buys yet).
 6. **Afterwards remove it** from the code: the `cleanupLegacyData` section at the end of `app/gas/main.ts`, its footer
    function in `app/gas/build.ts`, its tests (`gas/main.test.ts`, `gas/bundle.test.ts`) and this section; then
    `npm run gas:build` and redeploy.

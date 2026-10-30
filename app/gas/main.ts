@@ -473,14 +473,14 @@ const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'num
 const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
 /**
- * Shape checks per event type. Only the shape: who may edit what, which weeks are still open, whether a pot covers a
+ * Shape checks per event type. Only the shape: who may edit what, which weeks are still open, whether the wallet covers a
  * spend and the full menu/value rules stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
  */
 function validEventData(type: string, d: Rec): boolean {
   switch (type) {
     case 'spend':
-      // A ベル buy from a shared pot (ADR 0019 §9).
-      return (isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId))) && (d.pot === 'treat' || d.pot === 'trip') &&
+      // A buy from the shared wallet (ADR 0022): no pot.
+      return (isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId))) && d.pot === undefined &&
         isInt(d.bells, 1, LIMITS.bellsMax) && typeof d.item === 'string' && d.item.length <= LIMITS.menuIdMaxChars &&
         typeof d.label === 'string' && d.label.trim().length > 0 && d.label.trim().length <= LIMITS.spendLabelMaxChars;
     case 'pref':
@@ -560,10 +560,13 @@ type Cleanup = Record<'events' | 'presence' | 'metrics' | 'uploads', { before: n
 const lockMsOf = (date: string): number =>
   Date.parse(`${addDays(weekKeyOf(date), 9)}T${String(CUTOFFS.final.hour).padStart(2, '0')}:${String(CUTOFFS.final.minute).padStart(2, '0')}:00+09:00`);
 
-/** An events row the server would accept today (EVENT_TYPES and validEventData). */
+/**
+ * An events row the server would accept today (EVENT_TYPES and validEventData), except buys and their voids: every one
+ * in the sheet predates the wallet (ADR 0022: nothing real was at stake), so the wallet starts clean from earnings.
+ */
 function keepEvent(r: unknown[]): boolean {
   const type = text(r[3]);
-  if (!(EVENT_TYPES as readonly string[]).includes(type)) return false;
+  if (!(EVENT_TYPES as readonly string[]).includes(type) || type === 'spend' || type === 'spend_void') return false;
   let d: unknown;
   try {
     d = JSON.parse(text(r[4]) || '{}');
@@ -635,8 +638,9 @@ function rewriteTab(name: TabName, rows: unknown[][], kept: unknown[][]): { befo
 
 /**
  * Run ONCE from the Apps Script editor (runbook §9), never a web action: under the script lock, delete the rows of
- * past designs (events of removed types or shapes: checkin, confirm, approve, transfer, yen spends, unused prefs;
- * presence `leave`), compact `metrics` to the rows the model reads, keep the last 50 `uploads`, and bump REV so both
+ * past designs (events of removed types or shapes: checkin, confirm, approve, transfer, unused prefs such as the two-pot
+ * treatMenu / tripMenu; every spend and spend_void, from the two pots; presence `leave`), compact `metrics` to the
+ * rows the model reads, keep the last 50 `uploads`, and bump REV so both
  * phones refetch everything. Logs and returns rows before/after per tab.
  */
 export function cleanupLegacyData(): Cleanup {

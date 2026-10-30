@@ -46,9 +46,9 @@ export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) |
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg, ADR 0020) and `moveGoal` (kcal, ADR 0021), and the shared menus `treatMenu` / `tripMenu`.
+ * `goalWeight` (kg, ADR 0020) and `moveGoal` (kcal, ADR 0021), and the shared `menu` (ADR 0022).
  */
-export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'treatMenu', 'tripMenu'] as const;
+export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'] as const;
 
 /** A local date `YYYY-MM-DD`. */
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;

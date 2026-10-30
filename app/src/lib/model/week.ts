@@ -1,15 +1,16 @@
-// Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the pots, the harvest). The
-// ベル economy itself (earnings, pots, spends, the ledger) lives in bells.ts; golden.test.ts pins the views.
+// Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the wallet, the harvest). The
+// ベル economy itself (earnings, the wallet, buys, the menu, the ledger) lives in bells.ts; golden.test.ts pins the views.
 import type {
-  FruitKey, FruitProgress, HarvestView, LocalDate, MenuItem, PersonId, PersonWeekView, PotFlow, PotKey, PotsView, RingFruit, RingProgress, WeekKey, WeekView
+  FruitKey, FruitProgress, HarvestView, LocalDate, MenuItem, PersonId, PersonWeekView, PotKey, RingFruit, RingProgress, WalletItem,
+  WalletView, WeekKey, WeekView
 } from '#lib/types.ts';
-import { DEFAULT_MENUS, FRUITS, PEOPLE, RING_FRUITS } from '#lib/config/rules.ts';
+import { FRUITS, PEOPLE, RING_FRUITS } from '#lib/config/rules.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
-import { splitPots, zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, legacyBadges, legacyParts, potsAt, weekBells, type WeekBells } from './bells.ts';
+import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
+import { dailyUpTo, legacyBadges, legacyParts, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
 import type { Snapshot } from './snapshot.ts';
-import { firstWeek, jstMs, latestAt, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
+import { firstWeek, jstMs, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
 import { activityAsOf, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
@@ -68,11 +69,10 @@ const legacyFruit = (p: RingProgress): FruitProgress => ({
   todayActual: p.today, todayGoal: p.goal, todayMet: p.met, weekDays: p.weekDays, weekGoalDays: p.weekGoalDays, badge: p.badge, weekBells: p.weekBells
 });
 
-/** The shared menus: the latest valid `pref` by either person, else the defaults in the viewer's language. */
-function menusAt(s: State, locale: 'ja' | 'en'): Record<PotKey, MenuItem[]> {
-  const pick = (pot: PotKey): MenuItem[] =>
-    latestAt(s.menus[pot], LIVE)?.map((x) => ({ ...x })) ?? DEFAULT_MENUS[pot].map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
-  return { treat: pick('treat'), trip: pick('trip') };
+/** @deprecated `menus`: the menu split by section (treat = daily), without the section. */
+function legacyMenus(menu: WalletItem[]): Record<PotKey, MenuItem[]> {
+  const pick = (section: WalletItem['section']) => menu.filter((x) => x.section === section).map(({ id, label, bells }) => ({ id, label, bells }));
+  return { treat: pick('daily'), trip: pick('trip') };
 }
 
 /** A person's earnings of `today` (zeros outside the week or before the economy). */
@@ -127,6 +127,8 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
 
   const startOfToday = jstMs(today, 0, 0);
   const earning = weekBells(s, weekKey, now, act);
+  const wallet = walletView(s, earning, today, now);
+  const menu = menuAt(s, locale);
   const base: Omit<WeekView, 'host'> = {
     me,
     partner,
@@ -137,8 +139,10 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
       [me]: personView(s, me, earning[me], today),
       [partner]: personView(s, partner, earning[partner], today)
     } as Record<PersonId, PersonWeekView>,
-    pots: potsView(s, earning, today, now),
-    menus: menusAt(s, locale),
+    wallet,
+    menu,
+    pots: { treat: { ...wallet }, trip: { ...wallet }, todayBells: wallet.today, weekBells: wallet.week },
+    menus: legacyMenus(menu),
     harvest: harvestView(s, now, act),
     pending: [],
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
@@ -146,18 +150,12 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   return { ...base, host: hostLine(base) };
 }
 
-/**
- * The pots at `now`, and what both people earned today and this week (the bonus once it landed). Each pot's
- * today / week flow is its share of the all-time total minus its share without that part, so the two pots' flows add
- * up exactly to todayBells / weekBells and never disagree with the balances by a rounding ベル.
- */
-function potsView(s: State, cur: WeekBells, today: LocalDate, now: number): PotsView {
-  const { pots, earned } = potsAt(s, now);
+/** The wallet at `now`, and what both people earned today and this week (the bonus once it landed). */
+function walletView(s: State, cur: WeekBells, today: LocalDate, now: number): WalletView {
+  const { wallet } = walletAt(s, now);
   const todayBells = todayOf(cur.A, today).bells + todayOf(cur.B, today).bells;
   const weekBells = dailyUpTo(cur.A, today) + dailyUpTo(cur.B, today) + (provisionalMs(cur.weekKey) <= now ? cur.bonusBells : 0);
-  const [all, beforeToday, beforeWeek] = [splitPots(earned), splitPots(earned - todayBells), splitPots(earned - weekBells)];
-  const flow = (k: PotKey): PotFlow => ({ ...pots[k], today: all[k] - beforeToday[k], week: all[k] - beforeWeek[k] });
-  return { treat: flow('treat'), trip: flow('trip'), todayBells, weekBells };
+  return { ...wallet, today: todayBells, week: weekBells };
 }
 
 /** A week's harvest card: its bonus, total and badges (also the demo's `?demo=harvest`). */
