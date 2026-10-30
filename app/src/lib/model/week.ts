@@ -118,16 +118,11 @@ function pendingConfirmations(s: State, person: PersonId, cur: WeekKey, act: Act
   return out.sort((x, y) => x.date.localeCompare(y.date));
 }
 
-function hostLine(v: Omit<WeekView, 'host'>, hour: number): WeekView['host'] {
-  const me = v.people[v.me];
-  const todayTicks = me.habits?.ticksByDate[v.today]?.length ?? 0;
+/** しずえ's line: only the keys the island shows (round 16 M5: every key emitted here exists in ja and en; usage.test.ts). */
+function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
   if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { bells: v.harvest.totalBells } };
   if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
-  if (v.pending.length > 0) return { key: 'host.pending_confirm', params: { label: v.pending[0].label } };
-  if (todayTicks > 0 && hour >= 17) return { key: 'host.checkin_done' };
-  if (hour >= 18) return { key: 'host.evening' };
-  if (hour < 11) return { key: 'host.morning', params: { name: me.villagerName } };
-  return { key: 'host.default', params: { bells: me.today.bells } };
+  return { key: 'host.default' };
 }
 
 const toMs = (t: Date | string | number): number => (t instanceof Date ? t.getTime() : typeof t === 'number' ? t : Date.parse(t));
@@ -166,7 +161,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     pending: pendingConfirmations(s, me, weekKey, act[me], locale, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
-  return { ...base, host: hostLine(base, z.hour) };
+  return { ...base, host: hostLine(base) };
 }
 
 /**
