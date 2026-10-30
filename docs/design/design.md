@@ -35,7 +35,7 @@ bottom   [しずえ box, 2 lines (1 compact)] [はい][いいえ]     only with 
 
 - **Today's ベル ribbon:** a copy of the NH map's yellow title banner (yuzu, ribbon tails), Fredoka 24: 「きょう +620 ベル」 for both of us. The one focal point. It counts up when ベル arrive (a sync, a check-in). Tap = きろく お金 (the ベル ledger).
 - **Jar + plate:** a cream nameplate with both pots' ベル together, the scene's only label. New ベル fly in as coins from the fruit that earned them. Tap the jar → ふたりの壺.
-- **One action:** 今夜のチェック, full width, leaf green. A pending question (「筋トレでしたか？」) puts NH's choice list in the same slot.
+- **One action:** 今夜のチェック, full width, leaf green. A pending question (「筋トレでしたか？」, only for ask-type workouts like yoga or HIIT; gym arrivals always count) puts NH's choice list in the same slot.
 - **しずえ** shows only for news: a pending question, harvest ready, "grew", or the answer she just took. Her box lives in one fixed slot under the scene (`--chrome-below`, over the sea), so the island never moves when she speaks.
 - **Sync errors are not しずえ's.** Offline or a failed refresh is the chip under the clock (tap = retry, `同期中…` while it runs). A failed save gets one banner and my villager's sheepish R17.
 - **Taps:** my villager → check-in sheet; the partner → partner sheet; a tree canopy or its fruit row → the fruit detail bubble; the jar → ふたりの壺; しずえ → finish the line / next / a hop. All are real `<button>`s with `aria-label`, ≥ 44px (villagers and jar ≥ 64px), ≥ 8px apart; the scene `svg` is `aria-hidden`. Decoration is never tappable.
@@ -76,7 +76,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 
 - **ベル, play money**, earned per person per day from the rows (so they move whenever data arrives): 🍑 5 per counted
   minute up to 45 (minutes = max(Watch, (steps − 8,000)/100, manual workouts)), 🍎 200 at 8,000 steps (tsuyu: also at
-  30 minutes), 🥥 400 on a strength day, 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,125 a day.
+  30 minutes), 🥥 400 on a strength day (a strength workout, or any gym arrival: one Arrive Shortcut, no minimum stay), 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,125 a day.
   The same goals and the same habits for both people (毎食たんぱく質 · 甘いものは壺から · 野菜 2食).
 - **Weekly bonus at the Sunday 19:30 harvest:** +500 per badge (🍑 5 days at 45 min, 🍎 4 step days, 🥥 3 strength
   days, 🍐 15 ticks, prorated over 正月), ふたりボーナス +250 for each badge both people meet. 「受け取る」 is a ceremony.

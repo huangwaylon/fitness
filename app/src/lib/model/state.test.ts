@@ -31,10 +31,11 @@ describe('reduce: rows', () => {
     const s = reduce(rows([], {
       workouts: [workout('A', 'w1', WK), workout('A', 'w1', WK, at(WK, '21:00'))],
       presence: [p(at(WK, '18:00'), 'A', 'anytime', 'arrive'), p(at(WK, '18:01'), 'A', 'anytime', 'arrive'),
-        p(at(WK, '18:00'), 'A', 'pt_studio', 'arrive'), p(at(WK, '19:00'), 'A', 'anytime', 'leave', at('2026-11-01'))]
+        p(at(WK, '18:00'), 'A', 'pt_studio', 'arrive'), p(at(WK, '19:00'), 'A', 'anytime', 'leave')]
     }));
     expect(s.workouts.A.map((w) => w.at)).toEqual([at(WK, '20:00')].map(Date.parse));
-    expect(s.presence.A.map((e) => `${e.placeKey}:${e.event}`)).toEqual(['anytime:arrive']);
+    // Arrivals only: the leave row (old Shortcuts) is ignored.
+    expect(s.presence.A.map((e) => `${e.placeKey}@${e.eventAt}`)).toEqual([`anytime@${new Date(at(WK, '18:00')).toISOString()}`]);
   });
 });
 
@@ -56,21 +57,21 @@ describe('reduce: events', () => {
     ]);
   });
 
-  it('confirm: own workout or visit, after it arrived, before its week locks', () => {
+  it('confirm: own workout, after it arrived, before its week locks; an old visit answer is ignored', () => {
     const s = reduce(rows([
       ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'workout', id: 'w1', yes: true }),
       ev(at(WK, '21:00'), 'B', 'confirm', { kind: 'workout', id: 'w1', yes: true }), // not B's
       ev(at(WK, '19:00'), 'A', 'confirm', { kind: 'workout', id: 'w2', yes: true }), // before the row arrived
       ev(LOCKED, 'A', 'confirm', { kind: 'workout', id: 'w2', yes: false }), // locked
       ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'visit', id: `anytime@${at(WK, '18:00')}`, yes: true }),
-      ev(at(WK, '21:00'), 'B', 'confirm', { kind: 'visit', id: `anytime@${at(WK, '18:00')}`, yes: true }),
       ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'workout', id: 'w1', yes: 'y' })
     ], {
       workouts: [workout('A', 'w1', WK), workout('A', 'w2', WK)],
       presence: [[at(WK, '18:00'), 'A', 'anytime', 'arrive', at(WK, '18:00')]]
     }));
     expect([...s.workoutConfirms.keys()]).toEqual(['A|w1']);
-    expect([...s.visitConfirms.keys()]).toEqual([`anytime@${at(WK, '18:00')}`]);
+    expect([...s.workoutConfirms.values()].flat()).toHaveLength(1);
+    expect(s.presence.A).toHaveLength(1);
   });
 
   it('spend and spend_void: ベル spends only, first id wins, only the spender voids, once', () => {

@@ -21,22 +21,11 @@ export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'inc
     : (STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
       ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
 
-const isStrengthVisit = (v: Visit): boolean =>
-  v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true);
-
-/**
- * Strength days of a week (max one per date): strength workouts, auto-strength places, and confirmed (non-auto) gym
- * visits, at most STRENGTH.maxConfirmedVisitsPerWeek of those (earliest first). Pass one week's workouts and visits.
- */
+/** Strength days of a week (max one per date): strength workouts and gym arrivals. Pass one week's workouts and visits. */
 function strengthDaysOf(workouts: readonly Workout[], visits: readonly Visit[]): Set<LocalDate> {
   const set = new Set<LocalDate>();
   for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
-  let confirmed = 0;
-  for (const v of [...visits].sort((x, y) => x.date.localeCompare(y.date))) {
-    if (!isStrengthVisit(v) || set.has(v.date)) continue;
-    if (!v.autoStrength && confirmed++ >= STRENGTH.maxConfirmedVisitsPerWeek) continue;
-    set.add(v.date);
-  }
+  for (const v of visits) set.add(v.date);
   return set;
 }
 
@@ -123,7 +112,7 @@ export const zeroParts = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pe
  * One person's ベル for a week (ADR 0019 §2–4), at the week's rule version. Per day:
  * - 🍑 perMinute × counted minutes, up to goals.activeMin. Minutes = max(Watch, (steps − goal) / 100, manual).
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
- * - 🥥 strengthDay on a strength day (max 1/day; confirmed gym visits max `STRENGTH.maxConfirmedVisitsPerWeek`/week).
+ * - 🥥 strengthDay on a strength day (max 1/day): a strength workout or any gym arrival.
  * - 🍐 perTick per distinct habit tick (max DAILY.maxTicks/day), none on 正月 pear-off days.
  * Badges: 🍑 activeDays days at the goal, 🍎 stepDays step days, 🥥 strengthDays, 🍐 `ticks` ticks (prorated over
  * pear-off days: ceil(ticks × days / 7)).

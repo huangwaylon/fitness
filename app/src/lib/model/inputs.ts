@@ -1,10 +1,9 @@
 // The rows of one person as of a time T (only rows the server stamped at or before T): the inputs of the ベル
 // earnings. Shared by the WeekView (week.ts), the ベル economy (bells.ts) and きろく (history.ts).
 import type { CheckinTick, LocalDate, PersonId, Visit, WeekKey, Workout } from '#lib/types.ts';
-import { PLACES } from '#lib/config/places.ts';
-import { addDays, deriveVisits } from '#lib/scoring/index.ts';
+import { addDays } from '#lib/scoring/index.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
-import { allWorkouts, latestAt, latestTimed, type PresenceRec, type State } from './state.ts';
+import { allWorkouts, latestAt, latestTimed, type State } from './state.ts';
 
 type VisitRec = Visit & { id: string };
 
@@ -32,29 +31,12 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
   return out;
 }
 
-/**
- * Gym visits as of T whose arrive falls in `dates`. Exact with a window: events before it can only pair into visits
- * dated before it, and after it only the first event per place can still close an arrive inside it.
- */
+/** Gym arrivals as of T whose date falls in `dates`, in time order (each one is a strength day). */
 function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
-  const firstAfter = new Map<string, PresenceRec>();
-  const events = s.presence[person].filter((e) => {
-    if (e.at > t || e.date < dates.from) return false;
-    if (e.date <= dates.to) return true;
-    const f = firstAfter.get(e.placeKey);
-    if (!f || e.eventMs < f.eventMs || (e.eventMs === f.eventMs && e.n < f.n)) firstAfter.set(e.placeKey, e);
-    return false;
-  });
-  events.push(...firstAfter.values());
-  const idOf = new Map(events.map((e) => [e.n, e.id]));
-  const confirmations = new Map<number, boolean>();
-  for (const e of events) {
-    const c = e.event === 'arrive' ? latestAt(s.visitConfirms.get(e.id), t) : undefined;
-    if (c !== undefined) confirmations.set(e.n, c);
-  }
-  const places = PLACES.filter((p) => p.person === person).map((p) => ({ key: p.key, autoStrength: p.autoStrength }));
-  return deriveVisits(events.map((e) => ({ id: e.n, placeKey: e.placeKey, event: e.event, at: e.eventAt })), places, confirmations)
-    .map(({ arriveEventId, ...v }) => ({ ...v, id: idOf.get(arriveEventId)! }));
+  return s.presence[person]
+    .filter((e) => e.at <= t && e.date >= dates.from && e.date <= dates.to)
+    .sort((x, y) => x.eventMs - y.eventMs)
+    .map((e) => ({ id: e.id, placeKey: e.placeKey, date: e.date, arriveAt: e.eventAt }));
 }
 
 /** Current ticks as of T, keyed `date|habit`, in the order the tick was (last) set. */

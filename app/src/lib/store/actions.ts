@@ -43,7 +43,7 @@ export function highFive() {
   return week.send('highfive', {});
 }
 
-export function confirmPending(kind: 'visit' | 'workout', id: string, yes: boolean) {
+export function confirmPending(kind: 'workout', id: string, yes: boolean) {
   return week.send('confirm', { kind, id, yes });
 }
 

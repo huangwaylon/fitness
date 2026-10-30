@@ -9,13 +9,14 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 |---|---|---|
 | `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`weight`), `value` | `ingest`. Steps and minutes: **only when the value is higher** than the highest so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020): **whenever it differs** from the last row for (person, date) |
 | `workouts` | `at`, `person`, `id`, `date`, `type`, `start`, `end`, `duration_min`, `avg_hr` | `ingest`, only for unseen `id` (`workoutKey(type, start)`) |
-| `presence` | `at`, `person`, `place`, `event` (`arrive`\|`leave`), `event_at` | `presence` |
+| `presence` | `at`, `person`, `place`, `event` (`arrive`\|`leave`), `event_at` | `presence`. The model reads only `arrive` at a known place of that person: a strength day on its Tokyo date (2026-10-30). `leave` rows (old Shortcuts) are ignored |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON) | `event` (client-generated `id`; a duplicate `id` is ignored, so retries are safe) |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest` (audit only: no payload stored) |
 
 Event `type`s and `data`:
 - `checkin {date, habit, done}`: the latest per (person, date, habit) wins.
-- `confirm {kind:'visit'|'workout', id, yes}`
+- `confirm {kind:'workout', id, yes}`: an ask-type workout (HIIT, yoga, …) included strength. Old `{kind:'visit'}` rows
+  are ignored (gym arrivals always count since 2026-10-30).
 - `spend {spendId, pot:'treat'|'trip', item, label, bells}` (ADR 0019): a buy from a shared pot. The model ignores
   it unless `pot` is valid, `bells` an integer 1–10,000,000, `label` 1–60 characters and `item` a string ≤ 40, and
   (on read) unless the pot covered it at its `at`. Old yen `spend {spendId, label, amountYen}` rows (no `pot`) are

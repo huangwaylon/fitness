@@ -13,9 +13,7 @@ let n = 0;
 const workout = (date: string, type: string, durationMin: number, extra: Partial<Workout> = {}): Workout => ({
   id: `w${n++}`, date, type, startAt: `${date}T07:00:00+09:00`, endAt: `${date}T08:00:00+09:00`, durationMin, avgHr: null, includesStrength: null, ...extra
 });
-const visit = (date: string, autoStrength: boolean, confirmed: boolean | null = null, dwellMin = 60): Visit => ({
-  placeKey: autoStrength ? 'pt' : 'gym', date, arriveAt: `${date}T07:00:00+09:00`, leaveAt: `${date}T08:00:00+09:00`, dwellMin, autoStrength, confirmed
-});
+const visit = (date: string, time = '07:00'): Visit => ({ placeKey: 'anytime', date, arriveAt: `${date}T${time}:00+09:00` });
 const ticks = (date: string, keys: string[] = HABITS): CheckinTick[] => keys.map((habit) => ({ date, habit }));
 const days = (wk: string, ex: (number | null)[], st: (number | null)[]): DayMetrics[] =>
   weekDays(wk).map((date, i) => ({ date, exerciseMin: ex[i] ?? null, steps: st[i] ?? null }));
@@ -97,20 +95,19 @@ describe('earnWeek: the daily table (ADR 0019 §3)', () => {
     const coconut = (w: Workout[], v: Visit[] = []) => day0({ workouts: w, visits: v }).parts.coconut;
     expect(coconut([workout(D[0], 'Pilates', 15)])).toBe(400);
     expect(coconut([workout(D[0], 'Pilates', 14)])).toBe(0);
-    expect(coconut([workout(D[0], 'Pilates', 30), workout(D[0], 'Traditional Strength Training', 30)], [visit(D[0], true)])).toBe(400);
+    expect(coconut([workout(D[0], 'Pilates', 30), workout(D[0], 'Traditional Strength Training', 30)], [visit(D[0])])).toBe(400);
     expect(coconut([workout(D[0], 'Yoga', 30)])).toBe(0); // ask type, unanswered
     expect(coconut([workout(D[0], 'Yoga', 30, { includesStrength: true })])).toBe(400);
     expect(coconut([workout(D[0], 'Running', 30, { strengthOverride: true })])).toBe(400); // きろく override
     expect(coconut([workout(D[0], 'Pilates', 30, { strengthOverride: false })])).toBe(0);
-    expect(coconut([], [visit(D[0], true)])).toBe(400); // PT studio
-    expect(coconut([], [visit(D[0], false, null)])).toBe(0); // unconfirmed gym visit
-    expect(coconut([], [visit(D[0], false, true, 29)])).toBe(0); // too short
+    expect(coconut([], [visit(D[0])])).toBe(400); // a gym arrival alone, however short the stay
+    expect(coconut([], [visit(D[0]), visit(D[0], '19:00')])).toBe(400); // two arrivals: still one strength day
   });
 
-  it('🥥 confirmed gym visits count on at most 3 days a week (auto places and workouts are not limited)', () => {
-    const e = earnWeek(input({ visits: D.slice(0, 4).map((d) => visit(d, false, true)), workouts: [workout(D[5], 'Pilates', 30)] }));
-    expect(e.days.map((d) => d.strength)).toEqual([true, true, true, false, false, true, false]);
-    expect(e.fruits.coconut.weekBells).toBe(1600);
+  it('🥥 every gym arrival day counts, with no weekly limit', () => {
+    const e = earnWeek(input({ visits: D.slice(0, 5).map((d) => visit(d)), workouts: [workout(D[5], 'Pilates', 30)] }));
+    expect(e.days.map((d) => d.strength)).toEqual([true, true, true, true, true, true, false]);
+    expect(e.fruits.coconut.weekBells).toBe(2400);
   });
 
   it('🍐 100 per distinct tick of my 3 habits, max 3 a day', () => {

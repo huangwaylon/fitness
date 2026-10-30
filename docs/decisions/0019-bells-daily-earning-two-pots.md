@@ -155,3 +155,17 @@ target, and flagged rule gaps. The user kept the on-target goals (no phased ramp
 
 Not adopted (user decision): phases/seasons, a cap on paid strength days, 30-minute minimum sessions, strength
 minutes counting as active minutes, pass weeks, the comeback bonus. Applied in place to `RULES[0]` (nothing paid).
+
+## Amendment 3 — 2026-10-30, gym arrivals
+User decision: "As long as they go, it counts." Each phone runs one Shortcut, **Arrive** at the gym
+(`presence {place, event:'arrive', at?}`; [shortcut-health-sync.md §5](../ops/shortcut-health-sync.md)).
+
+| | Was | Now |
+|---|---|---|
+| Gym visit | arrive→leave pair of 30+ minutes (`STRENGTH.minVisitMin`); auto places counted, others asked 「…は筋トレでしたか？」 and paid at most 3 a week | **any arrive at a known place is a strength day** for that person and date: no leave, no dwell, no question, no weekly cap. Several arrivals a day = one strength day |
+| Places | `PlaceConfig.autoStrength` | every place counts (the field, `minVisitMin`, `maxConfirmedVisitsPerWeek`, `Visit.confirmed/autoStrength/leaveAt/dwellMin` and the `'visit'` pending kind are gone) |
+
+Unchanged: ask-type workouts still get 「筋トレでしたか？」 (`confirm {kind:'workout'}`). The server still accepts
+`leave`; the model ignores `leave` rows and old `confirm {kind:'visit'}` events. 0017 §6's busy day is now
+any gym arrival. Applied in place to `RULES[0]` (play money): past weeks re-read with the new rule, so a visit shorter
+than 30 minutes now counts.

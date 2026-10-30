@@ -4,7 +4,8 @@ import { composeModel } from '../view.ts';
 import { demoCache } from './rows.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { reduce } from '#lib/model/state.ts';
-import { bellsLedger, editLog, historyWeeks } from '#lib/model/history.ts';
+import { bellsLedger, dayDetail, editLog, historyWeeks } from '#lib/model/history.ts';
+import { addDays } from '#lib/scoring/index.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);
@@ -30,13 +31,23 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     if (process.env.DEMO_DEBUG) console.log(iso, weeks.map((w) => `${w.weekKey} ${w.people.A.bells}/${w.people.B.bells} = ${w.bells}`));
   });
 
+  it('has strength days made by a gym arrival alone (no Watch workout)', () => {
+    const settled = historyWeeks(s, now).filter((w) => w.settled);
+    const days = settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now)));
+    const byArrival = days.filter((d) => {
+      const b = d.people.B;
+      return b.visits.length > 0 && !b.workouts.some((w) => w.strength) && b.parts.coconut > 0;
+    });
+    expect(byArrival.length).toBeGreaterThan(0);
+  });
+
   it('the spends were all accepted (one voided), the menu was edited, the island asks about the yoga', () => {
     const ledger = bellsLedger(s, now);
     const spends = Object.fromEntries(ledger.spends.map((x) => [x.spendId, x.voided]));
     expect(spends).toMatchObject({ 'demo-ice-1': false, 'demo-cafe-1': false, 'demo-snack-void': true, 'demo-parfait': false, 'demo-daytrip': false, 'demo-cafe-2': false });
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    expect(view.pending.some((p) => p.kind === 'workout')).toBe(true);
+    expect(view.pending.length).toBeGreaterThan(0);
     expect(view.menus.treat.map((x) => x.id)).toContain('parfait');
     expect(view.pots.treat).toMatchObject(ledger.pots.treat);
     expect(view.pots.trip.spent).toBe(12000);
