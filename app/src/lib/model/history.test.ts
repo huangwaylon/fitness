@@ -292,10 +292,10 @@ describe('history views', () => {
     ]);
   });
 
-  it('week list: newest first from the first paid week, both people, 7 stamps, locked and open flags', () => {
+  it('week list: newest first from the economy’s first week, both people, 7 stamps, locked and open flags', () => {
     const now = ms('2026-11-24', '12:00'); // Tuesday of the next week: WK is settled but still open
     const weeks = historyWeeks(reduce(rows), now);
-    expect(weeks.map((w) => w.weekKey)).toEqual(['2026-11-23', '2026-11-16', '2026-11-09', '2026-11-02']);
+    expect(weeks.map((w) => w.weekKey)).toEqual(['2026-11-23', '2026-11-16', '2026-11-09', '2026-11-02', '2026-10-26']); // the economy starts 2026-10-26
     const w = weeks[1];
     expect(w).toMatchObject({ settled: true, locked: false, open: true, current: false });
     expect(w.people.A.stamps).toEqual(['active', 'strength', 'active', 'strength', 'active', 'active', 'active']);

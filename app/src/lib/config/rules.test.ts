@@ -27,7 +27,6 @@ describe('RULES', () => {
       goals: { activeMin: 45, steps: 8000 },
       bells: { perMinute: 5, stepDay: 200, strengthDay: 300, perTick: 100 },
       badges: { activeDays: 5, stepDays: 4, strengthDays: 2, ticks: 15, bells: 500, duo: 1000 },
-      treatPercent: 30,
       money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
       points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
     });

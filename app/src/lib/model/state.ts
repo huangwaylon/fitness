@@ -1,12 +1,12 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
 import type { LocalDate, MenuItem, PersonId, PotKey, WeekKey } from '#lib/types.ts';
-import { CALIBRATION_WEEKS, CUTOFFS, LIMITS } from '#lib/config/rules.ts';
+import { CALIBRATION_WEEKS, CUTOFFS, ECONOMY_START, LIMITS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { localDateOfMs } from '#lib/time/dates.ts';
 import { parseInstant } from '#lib/time/dates.ts';
-import { habitsFor, seasonsByStart } from '#lib/scoring/targets.ts';
+import { habitsFor } from '#lib/scoring/targets.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
   DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, type EventType, type SnapshotRows
@@ -46,17 +46,10 @@ type Cal = Pick<State, 'calendar'>;
 /** Weeks paid at the flat calibration rate. */
 export const isCalibrationWeek = (s: Cal, wk: WeekKey): boolean => !s.calendar && CALIBRATION_WEEKS.includes(wk);
 
-/** First paid week of the season calendar: the first full Mon–Sun week of season 1. */
-const SEASON_FIRST_WEEK: WeekKey = (() => {
-  const from = seasonsByStart()[0].from;
-  const wk = weekKeyOf(from);
-  return wk < from ? addDays(wk, 7) : wk;
-})();
+/** First week of the economy (ADR 0019 §7: Mon 2026-10-26), or the demo's own one. */
+export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_START;
 
-/** First paid week (the demo's own one in the demo). */
-export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? SEASON_FIRST_WEEK;
-
-/** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first paid week never lock. */
+/** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first week never lock. */
 export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
 
 export const localDateAt = localDateOfMs;

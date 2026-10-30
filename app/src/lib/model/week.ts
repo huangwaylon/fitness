@@ -2,111 +2,29 @@
 // + the settlement scheduler (deleted; golden.test.ts pins the behaviour):
 //   paid(week, bucket) = max(payout as of Sunday 19:30 JST, payout as of Wednesday 04:00 JST)
 // where "as of T" only uses rows the server stamped at ≤ T. That is exactly the old earn + top-up ledger.
+// The ベル economy (ADR 0019) lives in bells.ts; the old yen ledger below stays until the UI has moved over.
 import type {
-  CategoryResult, CheckinTick, DayMetrics, FruitKey, FruitProgress, FruitView, HarvestView, JarView, LocalDate, MenuItem, PendingConfirmation, PersonId,
-  PersonWeekView, PotKey, PotsView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
+  CategoryResult, DayMetrics, FruitKey, FruitProgress, FruitView, HarvestView, JarView, LocalDate, MenuItem, PendingConfirmation, PersonId,
+  PersonWeekView, PotKey, PotsView, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView
 } from '#lib/types.ts';
 import { DAILY, DEFAULT_MENUS, FRUITS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
+import { zeroParts, type WeekEarning } from '#lib/scoring/bells.ts';
+import { dailyUpTo, potsAt, weekBells, type WeekBells } from './bells.ts';
 import { PLACES } from '#lib/config/places.ts';
 import {
-  addDays, deriveVisits, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
+  addDays, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
 } from '#lib/scoring/index.ts';
 import { workoutLabel } from '#lib/contract/labels.ts';
-import type { MetricKey } from '#lib/contract/api.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  allWorkouts, finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, latestTimed, partnerOf, provisionalMs, reduce, rowsUpTo, type PresenceRec,
-  type State
+  finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, rowsUpTo, type State
 } from './state.ts';
+import { activityAsOf, metricAsOf, ticksAsOf, weekDates, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
 
-// ---------- inputs as of T ----------
-
-type VisitRec = Visit & { id: string };
-
-/** An inclusive date window; the default is all time. Every per-week caller passes its week (perf: weeks × rows). */
-export interface Dates { from: LocalDate; to: LocalDate }
-const ALL: Dates = { from: '0000-00-00', to: '9999-99-99' };
-export const weekDates = (wk: WeekKey): Dates => ({ from: wk, to: addDays(wk, 6) });
-
-/** Ingested + manual workouts as of T, without the ones excluded from scoring, with their strength override. */
-export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Workout[] {
-  const out: Workout[] = [];
-  for (const w of allWorkouts(s, person)) {
-    if (w.at > t || w.date < dates.from || w.date > dates.to) continue;
-    const key = `${person}|${w.id}`;
-    if (latestAt(s.workoutExcluded.get(key), t) === true) continue;
-    const wo: Workout = {
-      id: w.id, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr,
-      includesStrength: latestAt(s.workoutConfirms.get(key), t) ?? null
-    };
-    if (w.manual) wo.manual = true;
-    const override = latestAt(s.workoutStrength.get(key), t);
-    if (override !== undefined && override !== null) wo.strengthOverride = override;
-    out.push(wo);
-  }
-  return out;
-}
-
-/**
- * Gym visits as of T whose arrive falls in `dates`. Exact with a window: events before it can only pair into visits
- * dated before it, and after it only the first event per place can still close an arrive inside it.
- */
-function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
-  const firstAfter = new Map<string, PresenceRec>();
-  const events = s.presence[person].filter((e) => {
-    if (e.at > t || e.date < dates.from) return false;
-    if (e.date <= dates.to) return true;
-    const f = firstAfter.get(e.placeKey);
-    if (!f || e.eventMs < f.eventMs || (e.eventMs === f.eventMs && e.n < f.n)) firstAfter.set(e.placeKey, e);
-    return false;
-  });
-  events.push(...firstAfter.values());
-  const idOf = new Map(events.map((e) => [e.n, e.id]));
-  const confirmations = new Map<number, boolean>();
-  for (const e of events) {
-    const c = e.event === 'arrive' ? latestAt(s.visitConfirms.get(e.id), t) : undefined;
-    if (c !== undefined) confirmations.set(e.n, c);
-  }
-  const places = PLACES.filter((p) => p.person === person).map((p) => ({ key: p.key, autoStrength: p.autoStrength }));
-  return deriveVisits(events.map((e) => ({ id: e.n, placeKey: e.placeKey, event: e.event, at: e.eventAt })), places, confirmations)
-    .map(({ arriveEventId, ...v }) => ({ ...v, id: idOf.get(arriveEventId)! }));
-}
-
-/** Current ticks as of T, keyed `date|habit`, in the order the tick was (last) set. */
-function ticksAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Map<string, CheckinTick> {
-  const on = new Map<string, CheckinTick>();
-  for (const c of s.checkins[person]) {
-    if (c.at > t) break;
-    if (c.date < dates.from || c.date > dates.to) continue;
-    const k = `${c.date}|${c.habit}`;
-    if (c.done) {
-      if (!on.has(k)) on.set(k, { date: c.date, habit: c.habit });
-    } else on.delete(k);
-  }
-  return on;
-}
-
-/**
- * A day's metric as of T (history-and-editing.md §4.1). Ingest rows are append-only and higher-only, so their max ≤ T
- * is the latest value (and robust to a hand-edited sheet). A `metric_set` S (the latest with at ≤ T) overrides it, even
- * lower, but a later and higher sync still wins: max(S, ingest rows with S.at < at ≤ T).
- */
-export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: MetricKey, t: number): number | null {
-  const set = latestTimed(s.metricSets[person].get(`${date}|${metric}`), t);
-  let best: number | null = set ? set.v : null;
-  const after = set ? set.at : -Infinity;
-  for (const r of s.metrics[person].get(`${date}|${metric}`) ?? []) if (r.at <= t && r.at > after && (best === null || r.v > best)) best = r.v;
-  return best;
-}
-
-export interface Activity { workouts: Workout[]; visits: VisitRec[] }
-
-export function activityAsOf(s: State, person: PersonId, t: number, dates: Dates): Activity {
-  return { workouts: workoutsAsOf(s, person, t, dates), visits: visitsAsOf(s, person, t, dates) };
-}
+export { activityAsOf, metricAsOf, ticksAsOf, weekDates, workoutsAsOf, type Activity, type Dates } from './inputs.ts';
 
 export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): WeekInput {
   const dates = weekDays(wk);
@@ -318,13 +236,21 @@ export const monthOfWeek = (wk: WeekKey): string => addDays(wk, 6).slice(0, 7);
 /** A fruit's fill, 0–100 of its maximum. */
 export const pctOf = (c: CategoryResult): number => (c.maxMilli > 0 ? Math.floor((c.milli * 100) / c.maxMilli) : 0);
 
-function fruitView(score: WeekScore, key: FruitKey): FruitView & FruitProgress {
+function fruitView(score: WeekScore, e: WeekEarning, key: FruitKey, today: LocalDate): FruitView & FruitProgress {
   const c = score.categories[key];
-  const r = rulesFor(score.weekKey);
-  const todayGoal = { peach: r.goals.activeMin, apple: r.goals.steps, coconut: 1, pear: DAILY.maxTicks }[key];
-  const weekGoalDays = { peach: r.badges.activeDays, apple: r.badges.stepDays, coconut: r.badges.strengthDays, pear: r.badges.ticks }[key];
+  const r = rulesFor(e.weekKey);
+  const d = e.days.find((x) => x.date === today);
+  const f = e.fruits[key];
+  const progress: Record<FruitKey, [actual: number, goal: number, met: boolean]> = {
+    peach: [d?.minutes ?? 0, r.goals.activeMin, d?.activeMet ?? false],
+    apple: [d?.steps ?? 0, r.goals.steps, d?.stepMet ?? false],
+    coconut: [d?.strength ? 1 : 0, 1, d?.strength ?? false],
+    pear: [d?.ticks ?? 0, DAILY.maxTicks, (d?.ticks ?? 0) >= DAILY.maxTicks]
+  };
+  const [todayActual, todayGoal, todayMet] = progress[key];
+  const weekBells = e.days.reduce((n, x) => (x.date <= today ? n + x.parts[key] : n), 0);
   return {
-    todayActual: 0, todayGoal, todayMet: false, weekDays: 0, weekGoalDays, badge: false, weekBells: 0,
+    todayActual, todayGoal, todayMet, weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge, weekBells,
     milli: c.milli, maxMilli: c.maxMilli, pct: pctOf(c), actual: c.actual, target: c.target
   };
 }
@@ -336,19 +262,23 @@ export function menusAt(s: State, locale: 'ja' | 'en', t: number = LIVE): Record
   return { treat: pick('treat'), trip: pick('trip') };
 }
 
-const zeroParts = (): Record<FruitKey, number> => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
+/** A person's earnings of `today` (zeros outside the week or before the economy). */
+function todayOf(e: WeekEarning | undefined, today: LocalDate): PersonWeekView['today'] {
+  const d = e?.days.find((x) => x.date === today);
+  return d ? { bells: d.bells, parts: { ...d.parts } } : { bells: 0, parts: zeroParts() };
+}
 
 /** One person's card. Both players see everything (no privacy filter): raw numbers and eating check-ins. */
-function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): PersonWeekView {
+function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore, e: WeekEarning, today: LocalDate): PersonWeekView {
   const pref = s.prefs[person];
   const view: PersonWeekView = {
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
-    today: { bells: 0, parts: zeroParts() },
-    weekBells: 0,
+    today: todayOf(e, today),
+    weekBells: dailyUpTo(e, today),
     score: score.score,
-    fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k)])) as PersonWeekView['fruits'],
+    fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, e, k, today)])) as PersonWeekView['fruits'],
     lastSyncAt: s.lastSync[person],
     habits: { keys: targetsFor(person, wk).habits, ticksByDate: {} }
   };
@@ -383,18 +313,16 @@ function pendingConfirmations(s: State, person: PersonId, cur: WeekKey, act: Act
   return out.sort((x, y) => x.date.localeCompare(y.date));
 }
 
-function hostLine(v: Omit<WeekView, 'host'>, hour: number, dayOfMonth: number): WeekView['host'] {
+function hostLine(v: Omit<WeekView, 'host'>, hour: number): WeekView['host'] {
   const me = v.people[v.me];
   const todayTicks = me.habits?.ticksByDate[v.today]?.length ?? 0;
-  if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { score: me.score } };
+  if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { bells: v.harvest.totalBells, score: me.score } };
   if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
-  if (dayOfMonth === MONEY.paydayDayOfMonth && v.jar.transfer && !v.jar.transfer.done) return { key: 'host.payday', params: { yen: v.jar.transfer.amountYen } };
   if (v.pending.length > 0) return { key: 'host.pending_confirm', params: { label: v.pending[0].label } };
   if (todayTicks > 0 && hour >= 17) return { key: 'host.checkin_done' };
   if (hour >= 18) return { key: 'host.evening' };
   if (hour < 11) return { key: 'host.morning', params: { name: me.villagerName } };
-  if (v.jar.nextRung) return { key: 'host.next_rung', params: { rung: v.jar.nextRung.key, yen: v.jar.nextRung.remainingYen } };
-  return { key: 'host.default', params: { score: me.score } };
+  return { key: 'host.default', params: { bells: me.today.bells } };
 }
 
 const toMs = (t: Date | string | number): number => (t instanceof Date ? t.getTime() : typeof t === 'number' ? t : Date.parse(t));
@@ -420,6 +348,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const livePayout = (wk: WeekKey) => (wk === weekKey ? current.payout : payoutAsOf(s, wk, LIVE, act).payout);
 
   const startOfToday = jstMs(today, 0, 0);
+  const earning = weekBells(s, weekKey, now, act);
   const base: Omit<WeekView, 'host'> = {
     me,
     partner,
@@ -427,23 +356,31 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     weekKey,
     today,
     people: {
-      [me]: personView(s, me, weekKey, scores[me]),
-      [partner]: personView(s, partner, weekKey, scores[partner])
+      [me]: personView(s, me, weekKey, scores[me], earning[me], today),
+      [partner]: personView(s, partner, weekKey, scores[partner], earning[partner], today)
     } as Record<PersonId, PersonWeekView>,
-    pots: potsView(),
+    pots: potsView(s, earning, today, now),
     menus: menusAt(s, locale),
     jar: jarView(s, paid, current.payout, today, now),
-    harvest: harvestView(s, paid, livePayout, now),
+    harvest: harvestView(s, paid, livePayout, now, act),
     pending: pendingConfirmations(s, me, weekKey, act[me], locale, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
-  return { ...base, host: hostLine(base, z.hour, Number(today.slice(8, 10))) };
+  return { ...base, host: hostLine(base, z.hour) };
 }
 
 type Paid = { w: SettledWeek; b: Buckets }[];
 
-function potsView(): PotsView {
-  return { treat: { balance: 0, earned: 0, spent: 0 }, trip: { balance: 0, earned: 0, spent: 0 }, todayBells: 0, weekBells: 0 };
+/** The pots at `now`, and what both people earned today and this week (the bonus once it landed). */
+function potsView(s: State, cur: WeekBells, today: LocalDate, now: number): PotsView {
+  const { pots } = potsAt(s, now);
+  const daily = dailyUpTo(cur.A, today) + dailyUpTo(cur.B, today);
+  return {
+    treat: { ...pots.treat },
+    trip: { ...pots.trip },
+    todayBells: todayOf(cur.A, today).bells + todayOf(cur.B, today).bells,
+    weekBells: daily + (provisionalMs(cur.weekKey) <= now ? cur.bonusBells : 0)
+  };
 }
 
 /** The jar, purse and payday cue at `now`, from what each week has paid so far. */
@@ -468,16 +405,17 @@ function jarView(s: State, paid: Paid, current: WeekPayout, today: LocalDate, no
 }
 
 /** The open harvest at `now` (Sunday 19:30 until both tapped), with the rungs it reaches. */
-function harvestView(s: State, paid: Paid, livePayout: (wk: WeekKey) => WeekPayout, now: number): HarvestView | null {
+function harvestView(s: State, paid: Paid, livePayout: (wk: WeekKey) => WeekPayout, now: number, act: Record<PersonId, Activity>): HarvestView | null {
   const confirms = replayHarvests(s, now);
   const wk = harvestWeekAt(s, now, confirms);
   if (!wk) return null;
+  const e = weekBells(s, wk, now, act);
   const before = paid.filter(({ w }) => w.weekKey < wk).reduce((acc, { b }) => acc + jarSum(b), 0);
   const after = paid.filter(({ w }) => w.weekKey <= wk).reduce((acc, { b }) => acc + jarSum(b), 0);
   return {
     weekKey: wk,
-    bonus: { A: 0, B: 0, duo: 0 },
-    totalBells: 0,
+    bonus: { ...e.bonus },
+    totalBells: e.A.daily + e.B.daily + e.bonusBells,
     payout: livePayout(wk),
     rungsReached: RUNGS.filter((r) => before < r.yen && after >= r.yen).map((r) => r.key),
     confirmedBy: [...(confirms.get(wk) ?? [])].sort()
