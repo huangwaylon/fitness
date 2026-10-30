@@ -1,6 +1,6 @@
 <script lang="ts">
-  // 島's HUD (v5 §3), NH island-view light: the corner clock (plain text, no pill) with the sync chip under it
-  // only when sync is not ok, today's ベル ribbon (a copy of the NH map's yellow title banner: the screen's one
+  // 島's HUD (v5 §3), NH island-view light: no clock (user 2026-10-30), the sync chip in the corner only when sync
+  // is not ok, today's ベル ribbon (a copy of the NH map's yellow title banner: the screen's one
   // focal point, 「きょう +620 ベル」 for both of us, ADR 0019) and the bare NookPhone. When ベル arrive the ribbon
   // counts up (the focus beat). Tap → きろく お金 (the ベル ledger).
   import { tick, untrack } from 'svelte';
@@ -8,24 +8,16 @@
   import { cubicOut } from 'svelte/easing';
   import PhoneButton from '../ui/PhoneButton.svelte';
   import SyncPill from '../ui/SyncPill.svelte';
-  import { minuteNow } from '../../time/clock.ts';
-  import { clockTime, weekdayOf } from '#lib/i18n/format.ts';
   import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
     /** Today's ベル so far, both people. */
     bells: number;
-    /** `YYYY-MM-DD` (the view's today, so the demo shows its fixed date). */
-    today: string;
     /** Bindable: the launcher is open (the page pauses the scene). */
     phoneOpen?: boolean;
   }
-  let { bells, today, phoneOpen = $bindable(false) }: Props = $props();
-
-  // Clock: device time (or ?date=), at each new minute.
-  const time = $derived(clockTime(minuteNow()));
-  const date = $derived(t('hud.date', { m: Number(today.slice(5, 7)), d: Number(today.slice(8, 10)), w: weekdayOf(today) }));
+  let { bells, phoneOpen = $bindable(false) }: Props = $props();
 
   // Count-up on a rise (instant under reduced motion, on a fall and on first paint), with a beat. The ribbon is never
   // remounted for it, so a focused ribbon keeps its focus (round 8).
@@ -48,7 +40,6 @@
 
 <div class="hud">
   <div class="corner">
-    <span class="clock money" aria-hidden="true">{time}<small>{date}</small></span>
     <SyncPill />
   </div>
   <PhoneButton bind:open={phoneOpen} />
@@ -69,14 +60,12 @@
   }
   .hud > :global(*) { pointer-events: auto; }
   .corner { display: grid; justify-items: start; gap: 6px; padding-top: 8px; }
-  .clock { display: flex; align-items: baseline; gap: 8px; color: var(--hud); font-size: var(--fs-talk); }
-  .clock small { font-size: var(--fs-body); }
 
   .ribbon-wrap {
     position: absolute; z-index: 7; left: 0; right: 0; top: calc(var(--safe-top) + 56px);
     display: flex; justify-content: center; pointer-events: none;
   }
-  /* the sync chip (under the clock, ≤ 74px with its lip) pushes the ribbon down, so it never hides the score (sizing #2) */
+  /* the sync chip (in the corner, ≤ 74px with its lip) pushes the ribbon down, so it never hides the score (sizing #2) */
   .hud:has(:global(.chip)) ~ .ribbon-wrap { top: calc(var(--safe-top) + 84px); }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
