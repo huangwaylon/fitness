@@ -1,8 +1,7 @@
 // Realistic synthetic sheet rows for `npm run bench` and model/compact.test.ts: both people, the Shortcut syncing
-// every waking hour (round 9 review: ~21 metric rows per person-day; since ADR 0021 also Move kcal and Stand minutes,
-// which rise every hour: ~53 metric rows per person-day).
+// every waking hour.
 // Deterministic (seeded), so runs compare.
-import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
@@ -62,7 +61,7 @@ export function syntheticRows(days: number): SnapshotRows {
       events.push([at(date, '20:01'), 'A', `hf:${d}`, 'highfive', '{}']);
     }
     if (d % 30 === 10) {
-      events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, pot: 'treat', item: 'cafe', label: 'カフェデート', bells: 2000 })]);
+      events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, item: 'cafe', label: 'カフェデート', bells: 2000 })]);
     }
     if (d % 90 === 5) events.push([at(date, '21:30'), 'B', `mg:${d}`, 'pref', JSON.stringify({ key: 'moveGoal', value: 400 + (d % 180 === 5 ? 50 : 0) })]);
     if (d % 30 === 20) {

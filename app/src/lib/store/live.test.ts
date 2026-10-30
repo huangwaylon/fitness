@@ -1,4 +1,4 @@
-// The live backend says so when the phone can't keep data (round 9 §2 item 2), once per kind and session.
+// The live backend says so when the phone can't keep data, once per kind and session.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -56,7 +56,7 @@ describe('LiveBackend storage problems', () => {
   });
 });
 
-describe('LiveBackend sync recovery (round 16 H2)', () => {
+describe('LiveBackend sync recovery', () => {
   it('a malformed reply stops the spinner, and the next refresh fetches again', async () => {
     configureStorage({ local: new Mem() });
     setKey('ab'.repeat(32), 'A');

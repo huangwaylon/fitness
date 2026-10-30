@@ -1,4 +1,4 @@
-// Every i18n key, sprite symbol and art file the UI uses exists, and none is left unused (round 8). Usage is read
+// Every i18n key, sprite symbol and art file the UI uses exists, and none is left unused. Usage is read
 // from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
 // the static prefix of a dynamic key (`habit.${k}`, 'rung.' + key). The host's lines (`host.<line>`) are picked by
 // name: `hostLine('grew')` or `key === 'payday'`.
@@ -48,7 +48,7 @@ describe('i18n catalogs', () => {
     );
     expect(unused).toEqual([]);
   });
-  it('have every key the model and the rules emit (round 16 M5: the model picked host lines the catalogs lacked)', () => {
+  it('have every key the model and the rules emit', () => {
     const namespaces = new Set(Object.keys(ja).map((k) => k.split('.')[0]));
     const emitted = EMITTER_DIRS.flatMap((d) => files(join(SRC, d)))
       .filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f))

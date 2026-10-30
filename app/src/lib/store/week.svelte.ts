@@ -53,7 +53,7 @@ class WeekStore implements Host {
     if (this.demo) this.#demoMe = ss?.getItem(DEMO.as) === 'B' ? 'B' : 'A';
   }
 
-  /** The backend for this tab (the demo's is loaded only in the demo, so live users never download it: round 7 L1). */
+  /** The backend for this tab (the demo's is loaded only in the demo, so live users never download it). */
   #getBackend(): Backend | Promise<Backend> {
     if (this.#backend) return this.#backend;
     const demo = this.demo;

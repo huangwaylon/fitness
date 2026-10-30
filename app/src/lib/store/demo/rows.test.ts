@@ -5,7 +5,7 @@ import { demoCache } from './rows.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { reduce } from '#lib/model/state.ts';
 import { bellsLedger, dayDetail, editLog, historyWeeks } from '#lib/model/history.ts';
-import { addDays } from '#lib/scoring/index.ts';
+import { addDays } from '#lib/time/dates.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);

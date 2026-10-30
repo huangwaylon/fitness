@@ -87,7 +87,7 @@ describe('post', () => {
     expect(keyFromHash(`#key=${KEY.toUpperCase()}`)).toBe(KEY);
     expect(keyFromHash('#other=1&key=' + KEY)).toBe(KEY);
     expect(keyFromHash('#key=short')).toBeNull();
-    expect(keyFromHash('#key=' + 'a'.repeat(31))).toBeNull(); // the server refuses under 32 (round 16 L15)
+    expect(keyFromHash('#key=' + 'a'.repeat(31))).toBeNull(); // the server refuses under 32
     expect(keyFromHash('#key=' + 'a'.repeat(32))).toBe('a'.repeat(32));
     expect(keyFromHash('')).toBeNull();
   });
@@ -107,7 +107,7 @@ describe('write queue', () => {
     expect(typeof calls[0].id).toBe('string');
     expect(queued()).toEqual([]);
   });
-  it('reports only acked events: one undone while an earlier event is in flight is not acked (r2 N1)', async () => {
+  it('reports only acked events: one undone while an earlier event is in flight is not acked', async () => {
     const first = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 });
     const second = enqueue('highfive', {});
     handler = (body) => {
@@ -148,7 +148,7 @@ describe('write queue', () => {
     expect(r).toMatchObject({ sent: 0, remaining: 1, error: 'unauthorized' });
     expect(queued()[0]).toMatchObject({ type: 'highfive', tries: 0 });
   });
-  it('a held (undo-window) event does not block later events; it still goes once due (r2 N3)', async () => {
+  it('a held (undo-window) event does not block later events; it still goes once due', async () => {
     const t = 1_000_000;
     const held = enqueue('spend_void', { spendId: 's1' }, t, 5000);
     const tick = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t);
@@ -177,7 +177,7 @@ describe('write queue', () => {
     expect(calls.map((c) => c.type)).toEqual(['highfive', 'metric_set']);
     expect(calls[0].id).toBe(a.id);
   });
-  it('holdEvent keeps a held event back while its banner is held, and releases it (r2 N7)', async () => {
+  it('holdEvent keeps a held event back while its banner is held, and releases it', async () => {
     const t = 1_000_000;
     const held = enqueue('spend', { spendId: 's', label: 'x', pot: 'treat', item: 'ice', bells: 2000 }, t, 5000);
     expect(holdEvent(held.id, t + 60_000)).toBe(true);
@@ -188,7 +188,7 @@ describe('write queue', () => {
     expect(calls.map((c) => c.id)).toEqual([held.id]);
     expect(holdEvent(held.id, t + 9000)).toBe(false); // already sent
   });
-  it('a later event on the same subject never passes a held one; other subjects still go first (round 7 M2)', async () => {
+  it('a later event on the same subject never passes a held one; other subjects still go first', async () => {
     const t = 1_000_000;
     const fix = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t, 5000);
     const island = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 6000 }, t + 1);
@@ -208,7 +208,7 @@ describe('write queue', () => {
     await flush(() => t + 2);
     expect(calls.map((c) => c.id)).toEqual([later.id]);
   });
-  it('an edit that would reach the server after its lock is dropped unsent and reported (round 7 M1)', async () => {
+  it('an edit that would reach the server after its lock is dropped unsent and reported', async () => {
     const t = 1_000_000;
     const late = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5 }, t, 0, t + 10_000);
     const fine = enqueue('highfive', {}, t);
@@ -277,7 +277,7 @@ describe('snapshot cache', () => {
     expect(second.ok && second.cache.rows.metrics).toHaveLength(2);
     expect((await loadCache())?.since).toBe('2026-11-02T04:00:00.000Z');
   });
-  it('overlapping refreshes share one request, so neither merges from a stale cache (r2 N2)', async () => {
+  it('overlapping refreshes share one request, so neither merges from a stale cache', async () => {
     handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() });
     const [x, y] = await Promise.all([refreshSnapshot(), refreshSnapshot()]);
     expect(x).toBe(y);
@@ -310,7 +310,7 @@ describe('optimistic view', () => {
     const acked = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-04T12:00:01.000Z', 'A', 'q3', 'pref', '{"key":"locale","value":"en"}']] }) };
     expect(composeView(acked, q, now).locale).toBe('en');
   });
-  it('an unsent edit that would land after the lock is not shown; live events ignore a stray `person` (round 7 M1, L2)', () => {
+  it('an unsent edit that would land after the lock is not shown; live events ignore a stray `person`', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST: the week of 11-02 locks Wed 11-11 04:00
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
     const lockAt = Date.parse('2026-11-10T19:00:00.000Z');
@@ -322,7 +322,7 @@ describe('optimistic view', () => {
     // A crafted `person` on a live queued event is ignored: it is always me.
     expect(composeModel(cache, [set('p', now, { person: 'B' })], now).state.metricSets.B.size).toBe(0);
   });
-  it('the same event listed twice is applied once (r2 N2)', () => {
+  it('the same event listed twice is applied once', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
     const ev = (id: string, value: number) => ({ id, type: 'pref' as const, data: { key: 'moveGoal', value }, queuedAt: now, tries: 0, nextAt: now });

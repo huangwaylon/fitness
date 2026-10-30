@@ -2,11 +2,13 @@
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { STRENGTH } from '#lib/config/rules.ts';
-import { addDays, exerciseMilli, isStrengthWorkout, manualMinutesByDay, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { exerciseMilli, isStrengthWorkout, manualMinutesByDay } from '#lib/scoring/bells.ts';
 import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
 import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, earnTimeOf, weekBells, type WeekBells } from './bells.ts';
-import { activityAsOf, metricAsOf, replayHarvests, weekDates, workoutsAsOf, type Activity } from './week.ts';
+import { replayHarvests } from './week.ts';
+import { activityAsOf, metricAsOf, weekDates, workoutsAsOf, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
 
@@ -64,7 +66,7 @@ export interface HistoryWeek {
   locked: boolean;
   /** Edits for this week count right now. */
   open: boolean;
-  /** Both tapped 壺に入れる. */
+  /** Both tapped 受け取る. */
   harvested: boolean;
   /** The week's ベル, both people: daily earnings + the weekly bonus once it landed (Sunday 19:30). */
   bells: number;
@@ -84,7 +86,7 @@ function calc(s: State, wk: WeekKey, now: number): WeekCalc {
 }
 
 interface DayExercise {
-  /** Counted minutes (before the daily cap): max(Watch, workouts added in きろく), never a sum (ADR 0011). */
+  /** Counted minutes (before the daily cap): max(Watch, workouts added in きろく), never a sum. */
   value: number;
   /** The Watch value (or its edit). */
   watch: number | null;
@@ -93,7 +95,7 @@ interface DayExercise {
 
 /**
  * The one exercise rule for きろく (same as earnWeek). The Watch value reads as an edit when the latest `metric_set`
- * (at ≤ t) is what metricAsOf returns, i.e. no later ingest row beat it (round 7 L4).
+ * (at ≤ t) is what metricAsOf returns, i.e. no later ingest row beat it.
  */
 function dayExercise(s: State, p: PersonId, date: LocalDate, t: number, manualMin: number): DayExercise {
   const watch = metricAsOf(s, p, date, 'exercise_min', t);
@@ -268,9 +270,8 @@ interface DayWorkout {
   eligible: boolean;
 }
 
-/** A gym arrival: always a strength day. */
-/** A gym arrival: `label` '' shows as ジム. */
-interface DayVisit { id: string; label: string; arriveAt: string }
+/** A gym arrival (always a strength day): `label` '' shows as ジム. */
+interface DayArrival { id: string; label: string; arriveAt: string }
 
 export interface DayPerson {
   /** The day's ベル, per ring fruit. */
@@ -286,7 +287,8 @@ export interface DayPerson {
   /** Stand minutes. */
   stand: { value: number | null; edited: boolean };
   workouts: DayWorkout[];
-  visits: DayVisit[];
+  /** Gym arrivals (the field keeps its old name for DayDetail.svelte). */
+  visits: DayArrival[];
 }
 
 export interface DayDetail {
@@ -324,9 +326,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
           excluded: !live, manual: !!w.manual, eligible: w.durationMin >= STRENGTH.minWorkoutMin
         };
       });
-    const visits = c.act[p].visits.filter((v) => v.date === date).map((v): DayVisit => ({
-      id: v.id, label: v.label, arriveAt: v.arriveAt
-    }));
+    const visits = c.act[p].arrivals.filter((a) => a.date === date).map(({ id, label, arriveAt }): DayArrival => ({ id, label, arriveAt }));
     const mine = log.filter((e) => e.by === p);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
@@ -352,7 +352,7 @@ const logs = new WeakMap<State, EditLog[]>();
 
 /**
  * Every accepted edit in server order (the sheet stays the raw audit; refused edits and no-op edits never show).
- * Memoised per State (a State is never mutated; round 7 L5).
+ * Memoised per State (a State is never mutated).
  */
 export function editLog(s: State): EditLog[] {
   let out = logs.get(s);

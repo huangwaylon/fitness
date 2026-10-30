@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { addDays, weekDays } from '#lib/scoring/index.ts';
+import { addDays, weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger } from './bells.ts';

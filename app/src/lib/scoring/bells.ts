@@ -1,26 +1,24 @@
-// ベル earned per person per day and weekly badges (ADR 0019, what earns from ADR 0021; one wallet: ADR 0022): five automatic
-// metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
+// ベル earned per person per day and weekly badges (ADR 0019, what earns: ADR 0021): five automatic metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
 // week as of a time and decides which weeks count (the economy's first week, locks).
-import { RING_FRUITS, STRENGTH, TSUYU } from '#lib/config/rules.ts';
-import type { LocalDate, PersonId, RingBells, RingFruit, Visit, WeekKey, Workout } from '#lib/types.ts';
+import { RING_FRUITS, rulesFor, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import type { LocalDate, PersonId, RingBells, RingFruit, GymArrival, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
-import { rulesFor } from '#lib/scoring/targets.ts';
 
 // ---------- a day's raw facts (also read by きろく) ----------
 
 /**
  * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
- * type. No question is ever asked (2026-10-30): other types count only when marked in きろく.
+ * type. Other types count only when marked in きろく.
  */
 export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'strengthOverride'>): boolean =>
   w.durationMin >= STRENGTH.minWorkoutMin &&
   (typeof w.strengthOverride === 'boolean' ? w.strengthOverride : (STRENGTH.autoTypes as readonly string[]).includes(w.type));
 
 /** Gym days of a week (max one per date): strength workouts and gym arrivals. */
-function gymDaysOf(workouts: readonly Workout[], visits: readonly Visit[]): Set<LocalDate> {
+function gymDaysOf(workouts: readonly Workout[], arrivals: readonly GymArrival[]): Set<LocalDate> {
   const set = new Set<LocalDate>();
   for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
-  for (const v of visits) set.add(v.date);
+  for (const a of arrivals) set.add(a.date);
   return set;
 }
 
@@ -33,7 +31,7 @@ export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'du
 
 const toMilli = (x: number): number => Math.round(x * 1000);
 
-/** A day's counted exercise milli-minutes: max(Watch, workouts added in きろく), never a sum (ADR 0011, 0021 §2). */
+/** A day's counted exercise milli-minutes: max(Watch, workouts added in きろく), never a sum (ADR 0021 §2). */
 export const exerciseMilli = (watchMin: number | null, manualMin: number): number => Math.max(0, toMilli(watchMin ?? 0), toMilli(manualMin));
 
 const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
@@ -60,7 +58,7 @@ export interface EarnInput {
   weekKey: WeekKey;
   days: EarnDay[];
   workouts: Workout[];
-  visits: Visit[];
+  arrivals: GymArrival[];
 }
 
 /** A day's earnings with the facts behind them. */
@@ -119,7 +117,7 @@ export function earnWeek(input: EarnInput): WeekEarning {
   const rows = new Map<LocalDate, EarnDay>();
   for (const d of input.days) if (inWeek.has(d.date) && !rows.has(d.date)) rows.set(d.date, d);
   const workouts = input.workouts.filter((w) => inWeek.has(w.date));
-  const gym = gymDaysOf(workouts, input.visits.filter((v) => inWeek.has(v.date)));
+  const gym = gymDaysOf(workouts, input.arrivals.filter((a) => inWeek.has(a.date)));
   const manual = manualMinutesByDay(workouts);
   const exGoalMilli = r.goals.exerciseMin * 1000;
 

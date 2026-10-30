@@ -43,6 +43,12 @@ export const RULES: readonly RuleVersion[] = [
   }
 ];
 
+/** The rule version of a week: the latest with `from` ≤ the week, or the first before any applies. */
+export function rulesFor(weekKey: WeekKey): RuleVersion {
+  for (let i = RULES.length - 1; i > 0; i--) if (RULES[i].from <= weekKey) return RULES[i];
+  return RULES[0];
+}
+
 /** First week that earns ベル (ADR 0019 §7). */
 export const ECONOMY_START: WeekKey = RULES[0].from;
 

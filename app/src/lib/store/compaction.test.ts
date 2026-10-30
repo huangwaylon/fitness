@@ -1,4 +1,4 @@
-// The cache as the app really builds it (round 9 §2 item 2): incremental `since` replies merged and compacted by
+// The cache as the app really builds it: incremental `since` replies merged and compacted by
 // applySnapshot, composed with `rev` and the previous model reused (the store's path), must show exactly what the
 // full uncompacted rows show, at every poll through harvests and locks.
 import { describe, expect, it } from 'vitest';
@@ -6,7 +6,7 @@ import type { SnapshotRows } from '#lib/contract/api.ts';
 import { reduce } from '#lib/model/state.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { bellsLedger, historyWeeks } from '#lib/model/history.ts';
-import { addDays } from '#lib/scoring/index.ts';
+import { addDays } from '#lib/time/dates.ts';
 import { applySnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
 import { composeModel, type ComposedModel } from './view.ts';

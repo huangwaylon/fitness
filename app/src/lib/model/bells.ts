@@ -6,7 +6,8 @@ import type {
   DayBells, HarvestBonus, LocalDate, PersonId, RingFruit, WalletItem, WalletView, WeekKey
 } from '#lib/types.ts';
 import { DEFAULT_MENU } from '#lib/config/rules.ts';
-import { addDays, earnWeek, duoBonus, weekDays, weekKeyOf, type EarnInput, type WeekEarning } from '#lib/scoring/index.ts';
+import { addDays, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { earnWeek, duoBonus, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, isLockedAt, latestAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
 import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
@@ -31,7 +32,7 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Acti
       moveGoal: moveGoalOn(s, person, date, t)
     })),
     workouts: act.workouts.filter((w) => inWeek(w.date)),
-    visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v)
+    arrivals: act.arrivals.filter((a) => inWeek(a.date))
   };
 }
 

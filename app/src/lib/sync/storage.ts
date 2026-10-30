@@ -1,7 +1,6 @@
-// Every key the app keeps in Web Storage, in one registry (round 9 §2 item 15), and guarded access to it.
+// Every key the app keeps in Web Storage, in one registry, and guarded access to it.
 // Live data lives under `island.*`. The demo lives under `island-demo.*` (localStorage and sessionStorage), so it
-// can never read or overwrite a live key, queue or cache (round 9 §2 item 14). The snapshot cache itself is in
-// IndexedDB (cache.ts); `island.snapshot` is only read once, to migrate it.
+// can never read or overwrite a live key, queue or cache. The snapshot cache itself is in IndexedDB (cache.ts).
 import type { PersonId } from '#lib/types.ts';
 
 export interface KV {
@@ -15,9 +14,7 @@ export const LIVE = {
   me: 'island.me',
   queue: 'island.queue',
   /** Events the server acked whose rows the snapshot cache hasn't fetched back yet (queue.ts `ackedEvents()`). */
-  acked: 'island.acked',
-  /** The pre-IndexedDB snapshot cache (round 9): migrated once, then removed. */
-  legacyCache: 'island.snapshot'
+  acked: 'island.acked'
 } as const;
 
 export const DEMO = {
@@ -26,9 +23,7 @@ export const DEMO = {
   /** sessionStorage: `plain` | `harvest`, sticky for the tab once `?demo` was opened. */
   mode: 'island-demo.mode',
   /** sessionStorage: which player this tab is (`?demo&as=B`). */
-  as: 'island-demo.as',
-  /** Before round 9 the demo's taps sat next to the live keys. */
-  legacyEvents: 'island.demo.events'
+  as: 'island-demo.as'
 } as const;
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
@@ -46,7 +41,7 @@ export const SCENE = {
   /** localStorage `hf-seen:<day>` = how many of the partner's high-fives that day were already announced. */
   highFivesSeen: (day: string) => `hf-seen:${day}`,
   /** localStorage `bells-seen` = `{ date, parts: { A, B } }`: today's ベル per person and fruit already shown flying into
-   *  the jar, so only new earnings fly in (round 11). */
+   *  the wallet, so only new earnings fly in. */
   bellsSeen: 'bells-seen'
 } as const;
 

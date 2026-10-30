@@ -1,11 +1,9 @@
 // The rows of one person as of a time T (only rows the server stamped at or before T): the inputs of the ベル
 // earnings. Shared by the WeekView (week.ts), the ベル economy (bells.ts) and きろく (history.ts).
-import type { LocalDate, PersonId, Visit, WeekKey, Workout } from '#lib/types.ts';
-import { addDays } from '#lib/scoring/index.ts';
+import type { GymArrival, LocalDate, PersonId, WeekKey, Workout } from '#lib/types.ts';
+import { addDays } from '#lib/time/dates.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
 import { allWorkouts, latestAt, latestTimed, type State } from './state.ts';
-
-type VisitRec = Visit & { id: string };
 
 /** An inclusive date window; the default is all time. Every per-week caller passes its week (perf: weeks × rows). */
 export interface Dates { from: LocalDate; to: LocalDate }
@@ -31,7 +29,7 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
 }
 
 /** Gym arrivals as of T whose date falls in `dates`, in time order (each one is a strength day). */
-function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): VisitRec[] {
+function arrivalsAsOf(s: State, person: PersonId, t: number, dates: Dates): GymArrival[] {
   return s.gym[person]
     .filter((e) => e.at <= t && e.date >= dates.from && e.date <= dates.to)
     .sort((x, y) => x.arrivedMs - y.arrivedMs)
@@ -51,9 +49,9 @@ export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 
   return best;
 }
 
-export interface Activity { workouts: Workout[]; visits: VisitRec[] }
+export interface Activity { workouts: Workout[]; arrivals: GymArrival[] }
 
 export function activityAsOf(s: State, person: PersonId, t: number, dates: Dates): Activity {
-  return { workouts: workoutsAsOf(s, person, t, dates), visits: visitsAsOf(s, person, t, dates) };
+  return { workouts: workoutsAsOf(s, person, t, dates), arrivals: arrivalsAsOf(s, person, t, dates) };
 }
 

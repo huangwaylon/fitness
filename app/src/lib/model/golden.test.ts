@@ -1,24 +1,15 @@
 // Golden test: the WeekView of the ベル economy (ADR 0019) on a 10-week timeline of real-shaped rows, so any change to
 // what the island, the wallet or the harvest show is a reviewed diff.
 //
-// History: the fixtures were first frozen from the old Mac server (ADR 0015) and pinned the yen engine. On 2026-10-30
-// the yen engine was removed (ADR 0019 §6) and the views were regenerated from the model: the diff only dropped the
-// old fields (score, jar, fruit milli/pct, harvest payout/rungs), added harvest.badges and the pots' today/week flow.
-// ベル spends, voids and a menu edit were appended to the rows (ids b1–b9) so the pots are exercised too. ADR 0021
-// (2026-10-30): a move_kcal and a stand_min row were added next to every steps row (6% of the steps in kcal, steps / 45
-// stand minutes, so they only go up like the steps), plus Move goals (g1–g3) and late Move/Stand fixes (g4, g5). The
-// rows of past designs (checkin, confirm, share, approve, transfer, yen spends, presence leave) were then deleted, as
-// the one-off cleanup of 2026-10-30 did to the sheet: every view and digest stayed the same. ADR 0022 (one wallet): the b1–b9 buys
-// lost their pot (the trip ones now buy a special meal and a room upgrade) and the menu edit became a `menu` pref.
-// The `gym` action (2026-10-30, ADR 0021): presence rows became [at, person, label, arrived_at] (place keys → their
-// names as labels); regenerated, every view and digest stayed the same (no WeekView shows a label).
+// The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
+// fixes, wallet buys, a void, a menu edit and gym arrivals. Regenerating them for a past design change left every view
+// and digest the same; the history is in git and the ADRs.
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,
 //   Wednesday 03:59/04:01 JST, every week): readable diffs when something changes.
 // - fixtures/timeline-digests.json: a sha256 (16 hex) of the canonical JSON of the WeekView for A and B at every
 //   checkpoint (every 3 h + the key instants, 660 instants): catches a change anywhere else.
-// - fixtures/server-facts.json: the old server's workout labels and a week that late data lowered before its lock.
 //
 // If a change to the rules is intended, regenerate the goldens and review the diff of timeline-views.json:
 // `GOLDEN_UPDATE=1 npx vitest run src/lib/model/golden.test.ts` (keeps the same instants).
@@ -30,12 +21,10 @@ import { DEFAULT_MENU } from '#lib/config/rules.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, weekBells } from './bells.ts';
 import { provisionalMs, reduce } from './state.ts';
-import { WORKOUT_TYPES, workoutLabel } from '#lib/contract/labels.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import rowsJson from './fixtures/timeline-rows.json' with { type: 'json' };
 import viewsJson from './fixtures/timeline-views.json' with { type: 'json' };
 import digestsJson from './fixtures/timeline-digests.json' with { type: 'json' };
-import facts from './fixtures/server-facts.json' with { type: 'json' };
 
 const ROWS = rowsJson as unknown as SnapshotRows;
 const VIEWS = viewsJson as unknown as Record<string, Record<PersonId, WeekView>>;
@@ -83,8 +72,7 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     // Badges but never all five for both (the ふたりボーナス is covered by bells.test.ts).
     expect(all.some((v) => v.harvest && v.harvest.bonus.A > 0 && v.harvest.bonus.B > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.bonus.A === 0 && v.harvest.bonus.B === 0)).toBe(true);
-    // ADR 0021: Move and Stand earn (rows derived from the steps, appended g1–g5: two Move goals and late Move/Stand fixes),
-    // old check-in and confirm rows are ignored, and nothing is ever asked.
+    // ADR 0021: Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
@@ -130,8 +118,8 @@ describe('golden: the WeekView on a 10-week timeline', () => {
   });
 
   it('late data before the lock lowers a week; after the lock the week is fixed', () => {
-    const { week, at } = facts.lateLower;
-    const t = Date.parse(at);
+    const week = '2026-11-16';
+    const t = Date.parse('2026-11-24T19:01:00.000Z'); // Wednesday 04:01 JST
     const atHarvest = weekBells(reduce(rowsAt(provisionalMs(week) + 60_000)), week, provisionalMs(week) + 60_000);
     const atLock = weekBells(reduce(rowsAt(t)), week, t);
     expect(atLock.B.daily).toBeLessThan(atHarvest.B.daily);
@@ -139,9 +127,3 @@ describe('golden: the WeekView on a 10-week timeline', () => {
   });
 });
 
-describe('labels', () => {
-  it('match the server workout labels', () => {
-    const labels = facts.labels as Record<string, { ja: string; en: string }>;
-    for (const ty of [...WORKOUT_TYPES, 'Unknown Thing']) for (const l of ['ja', 'en'] as const) expect(workoutLabel(ty, l)).toBe(labels[ty][l]);
-  });
-});

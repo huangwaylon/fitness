@@ -1,4 +1,4 @@
-// The week store's undo/lock logic (round 7 M1, round 8 tests) and the banner controller: fake timers, a memory
+// The week store's undo/lock logic and the banner controller: fake timers, a memory
 // queue, a backend that never answers (nothing held is sent during a test).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
@@ -31,7 +31,7 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-describe('week.send with a lock (M1)', () => {
+describe('week.send with a lock', () => {
   it('refuses an edit closer than 5 s to its lock, with a banner', async () => {
     const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 4000 });
     expect(r).toEqual({ ok: false });

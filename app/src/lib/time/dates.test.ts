@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, inMonthDayRange, nowInZone, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, daysBetween, inMonthDayRange, jstMs, localDateAt, parseInstant, toLocalDate, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 
 describe('toLocalDate', () => {
   it('flips to the next Tokyo day at 15:00 UTC', () => {
@@ -41,9 +41,11 @@ describe('week helpers', () => {
     expect(addDays('2027-02-28', 1)).toBe('2027-03-01');
     expect(addDays('2027-01-01', -1)).toBe('2026-12-31');
   });
-  it('nowInZone reports Tokyo wall clock', () => {
-    expect(nowInZone(new Date('2026-11-08T10:30:00Z'))).toEqual({ date: '2026-11-08', weekday: 0, hour: 19, minute: 30 });
-    expect(nowInZone(new Date('2026-11-10T19:00:00Z'))).toEqual({ date: '2026-11-11', weekday: 3, hour: 4, minute: 0 });
+  it('localDateAt, jstMs and daysBetween use Tokyo wall clock', () => {
+    expect(localDateAt(Date.parse('2026-11-08T10:30:00Z'))).toBe('2026-11-08');
+    expect(localDateAt(Date.parse('2026-11-10T19:00:00Z'))).toBe('2026-11-11');
+    expect(new Date(jstMs('2026-11-08', 19, 30)).toISOString()).toBe('2026-11-08T10:30:00.000Z');
+    expect(daysBetween('2026-12-30', '2027-01-02')).toBe(3);
   });
   it('inMonthDayRange wraps the year', () => {
     expect(inMonthDayRange('2026-12-29', '12-29', '01-03')).toBe(true);

@@ -4,7 +4,7 @@ import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, dayDetail, editLog, historyWeeks, weekDetail } from './history.ts';
 import { mergeRows } from './snapshot.ts';
-import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
 

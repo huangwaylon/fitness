@@ -1,13 +1,13 @@
-// The snapshot cache (round 9 §2 items 2 and 4): the rows the model reads, kept in IndexedDB (no 5 MB localStorage
-// ceiling, no stringify of megabytes per refresh) and merged incrementally with `since` replies. A changed data
-// revision (`rev`: rows were edited in the sheet) drops it and fetches everything. The pre-round-9 cache in
-// localStorage is migrated once. When IndexedDB is unavailable the cache lives in memory for the session (reported).
+// The snapshot cache: the rows the model reads, kept in IndexedDB (no 5 MB localStorage ceiling, no stringify of
+// megabytes per refresh) and merged incrementally with `since` replies. A changed data revision (`rev`: rows were
+// edited in the sheet) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
+// session (reported).
 import type { PersonId } from '#lib/types.ts';
 import type { SnapshotReply, SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import type { DemoCalendar } from '#lib/model/state.ts';
-import { LIVE, getStoredMe, localKV, readJson, remove, reportStorageProblem, storeMe } from './storage.ts';
+import { getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type GasResult } from './transport.ts';
 
 export interface SnapshotCache {
@@ -16,7 +16,7 @@ export interface SnapshotCache {
   rows: SnapshotRows;
   /** Max server `at` seen: the next `since`. */
   since: string | null;
-  /** The server's data revision these rows were fetched under (absent: cached before revisions existed). */
+  /** The server's data revision these rows were fetched under. */
   rev?: string;
   /**
    * Client time the row set last lost rows (compaction, or a full fetch). With `rev` it keys the earnings of
@@ -100,7 +100,7 @@ const valid = (c: unknown): c is SnapshotCache => {
   return !!x && x.v === 1 && !!x.rows && Array.isArray(x.rows.events) && Array.isArray(x.rows.metrics);
 };
 
-/** The cached snapshot (from IndexedDB once per session; the localStorage cache of older builds moves over once). */
+/** The cached snapshot (from IndexedDB once per session). */
 export function loadCache(): Promise<SnapshotCache | null> {
   if (mem !== undefined) return Promise.resolve(mem);
   loading ??= (async () => {
@@ -109,14 +109,7 @@ export function loadCache(): Promise<SnapshotCache | null> {
       const got: unknown = await tx('readonly', (s) => s.get(KEY));
       if (valid(got)) c = got;
     } catch {
-      // No IndexedDB (or it failed): fall through to the legacy cache, kept in memory.
-    }
-    const legacy = readJson<unknown>(localKV(), LIVE.legacyCache);
-    if (!c && valid(legacy)) {
-      c = legacy;
-      if (await put(c)) remove(localKV(), LIVE.legacyCache);
-    } else if (legacy !== null && c) {
-      remove(localKV(), LIVE.legacyCache); // migrated by an earlier tab
+      // No IndexedDB (or it failed): start empty, kept in memory.
     }
     if (mem === undefined) mem = c; // a save or clear while loading wins
     return mem;
@@ -148,7 +141,6 @@ export const cacheWritten = (): Promise<void> => writes.then(() => undefined);
 /** Forget the cache (pairing as someone else, or a resync). */
 export function clearCache(): Promise<void> {
   mem = null;
-  remove(localKV(), LIVE.legacyCache);
   const p = writes.then(async () => {
     try {
       await tx('readwrite', (s) => s.delete(KEY));
@@ -165,7 +157,7 @@ type Reply = { me: PersonId; now: string; rev?: string; rows: Partial<SnapshotRo
 /**
  * Merge a snapshot reply into the cache (pure; exported for tests). `prev` null: the reply is everything. Metrics of
  * locked weeks are compacted to the rows the model still reads (model/compact.ts: ~90% fewer at year 3, views
- * identical: round 9 §2 item 2).
+ * identical).
  */
 export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNow: number): SnapshotCache {
   const same = prev && prev.me === reply.me ? prev : null;
@@ -185,13 +177,13 @@ let fetching: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
 
 /**
  * Fetch rows since the last seen `at` (everything on first run, or after a hand edit changed `rev`), merge and persist. Overlapping
- * callers share the request in flight, so two replies never merge from the same stale cache (review r2 N2).
+ * callers share the request in flight, so two replies never merge from the same stale cache.
  */
 export function refreshSnapshot(clientNow: () => number = Date.now): Promise<GasResult<{ cache: SnapshotCache }>> {
   if (fetching) return fetching;
   const p = fetchSnapshot(clientNow);
   fetching = p;
-  // cleared however it settles: a rejected request must not be handed to every later caller (round 16 H2)
+  // cleared however it settles: a rejected request must not be handed to every later caller
   void p.finally(() => {
     if (fetching === p) fetching = null;
   }).catch(() => {});

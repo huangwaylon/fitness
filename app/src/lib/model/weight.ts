@@ -9,7 +9,8 @@
 //   first weigh-in.
 import type { LocalDate, PersonId } from '#lib/types.ts';
 import { WEIGHT } from '#lib/config/rules.ts';
-import { addDays } from '#lib/scoring/index.ts';
+import { addDays, daysBetween } from '#lib/time/dates.ts';
+import { roundKg as round1 } from '#lib/contract/api.ts';
 import { latestTimed, localDateAt, type State } from './state.ts';
 
 export interface WeighIn { date: LocalDate; kg: number }
@@ -38,9 +39,8 @@ export interface WeightTrend {
   projection: WeightProjection | null;
 }
 
-const DAY = 86_400_000;
-export const daysBetween = (a: LocalDate, b: LocalDate): number => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY);
-const round1 = (v: number) => Math.round(v * 10) / 10;
+/** Re-exported for WeightChart.svelte, which imports it from here. */
+export { daysBetween };
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
 /** A day's weight as of T: the latest ingested row or edit stamped at or before T. */

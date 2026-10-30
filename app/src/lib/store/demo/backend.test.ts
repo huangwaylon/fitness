@@ -1,4 +1,4 @@
-// The demo can't leak into live (round 9 §2 item 14): its taps live under `island-demo.*`, it never reads or writes
+// The demo can't leak into live: its taps live under `island-demo.*`, it never reads or writes
 // the live key, queue or cache, and nothing it does is sent.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE, DEMO, configureStorage, type KV } from '#lib/sync/storage.ts';
@@ -47,12 +47,10 @@ describe('demo isolation', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('drops the pre-round-9 demo key, and reads only today’s taps', async () => {
-    kv.m.set(DEMO.legacyEvents, '{"day":"x","events":[]}');
+  it('reads only today’s taps', async () => {
     kv.m.set(DEMO.events, JSON.stringify({ day: 'Mon Jan 01 2001', events: [{ id: 'old', type: 'highfive', data: {} }] }));
     const b = new DemoBackend(host(), 'plain', 'B');
     await b.refresh();
-    expect(kv.m.has(DEMO.legacyEvents)).toBe(false);
     expect(b.events().list).toEqual([]);
     expect(b.cache()?.me).toBe('B');
     expect(b.cache()?.demo).toBeTruthy(); // the demo calendar travels with its rows, never as a global

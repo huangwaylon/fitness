@@ -1,11 +1,11 @@
 // `?demo`: believable sheet rows for both people (ウェイ = A = me, うめ = B), generated around the real clock and fed
-// through the same model as the live app, so the island, the Jar and きろく agree and every edit really recomputes.
+// through the same model as the live app, so the island, the wallet and きろく agree and every edit really recomputes.
 // The economy starts 2026-10-26, so the demo moves the model's calendar (`DemoCalendar`, carried by the state): its
 // first week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
 import type { PersonId, WeekKey } from '#lib/types.ts';
 import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
-import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
-import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
+import { addDays, jstMs, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { finalMs, provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 
 const DEMO_WEEKS_BACK = 8;
@@ -28,12 +28,12 @@ const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
 
 function demoFirstWeek(now: number): WeekKey {
-  return addDays(weekKeyOf(nowInZone(new Date(now)).date), -7 * DEMO_WEEKS_BACK);
+  return addDays(weekKeyOf(localDateAt(now)), -7 * DEMO_WEEKS_BACK);
 }
 
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
 function demoRows(now: number): SnapshotRows {
-  const today = nowInZone(new Date(now)).date;
+  const today = localDateAt(now);
   const cur = weekKeyOf(today);
   const first = demoFirstWeek(now);
   const metrics: MetricRow[] = [];
@@ -99,7 +99,7 @@ function demoRows(now: number): SnapshotRows {
     }
   }
 
-  // Harvests: both drop the week into the jar on Sunday evening.
+  // Harvests: both tap 受け取る on Sunday evening.
   for (let wk = first; provisionalMs(wk) <= now; wk = addDays(wk, 7)) {
     const p0 = provisionalMs(wk);
     ev(Math.max(p0 + 1000, Math.min(p0 + 25 * 60_000, now - 2000)), 'B', 'harvest', { week: wk });

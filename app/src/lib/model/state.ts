@@ -1,10 +1,8 @@
-// Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
-// rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
+// Snapshot rows → validated, indexed state. Who may edit what, which weeks are open and what the wallet covers are
+// read-time rules here (an invalid event is ignored, not refused), so the sheet stays a dumb append-only log.
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
-import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
-import { localDateOfMs } from '#lib/time/dates.ts';
-import { parseInstant } from '#lib/time/dates.ts';
+import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
   DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
@@ -17,10 +15,9 @@ export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
 
 // ---------- time ----------
 
-/** Epoch ms of a JST wall-clock time (Tokyo has no DST). */
-export function jstMs(date: LocalDate, hour: number, minute: number): number {
-  return Date.parse(`${date}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+09:00`);
-}
+/** Re-exported for きろく (Kiroku.svelte imports it from here). */
+export { localDateAt };
+
 const cutoffMemo = (fn: (wk: WeekKey) => number) => {
   const memo = new Map<WeekKey, number>();
   return (wk: WeekKey): number => {
@@ -36,8 +33,8 @@ export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.ho
 
 /**
  * The demo (`?demo`, lib/store/demo/rows.ts) shows weeks before the economy starts, so it moves the calendar: its own
- * first earning week. It travels with the state (`reduce(rows, calendar)`), never as a module global
- * (round 7 L2); live state always has `calendar: null`.
+ * first earning week. It travels with the state (`reduce(rows, calendar)`), never as a module global; live state
+ * always has `calendar: null`.
  */
 export interface DemoCalendar { firstWeek: WeekKey }
 type Cal = Pick<State, 'calendar'>;
@@ -45,10 +42,8 @@ type Cal = Pick<State, 'calendar'>;
 /** First week of the economy (ADR 0019 §7: Mon 2026-10-26), or the demo's own one. */
 export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_START;
 
-/** A week locks (no more check-ins/answers for it) at its Wednesday 04:00; weeks before the first week never lock. */
+/** A week locks (its earnings are final) at its Wednesday 04:00; weeks before the first week never lock. */
 export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
-
-export const localDateAt = localDateOfMs;
 
 /**
  * Open for edits at t (history-and-editing.md §4.3): the day has happened, and its week has not reached its
@@ -76,7 +71,7 @@ export interface WorkoutRec {
 
 /** A gym arrival: a strength day on its Tokyo date, whatever its label. */
 interface GymRec {
-  /** Stable visit id: the arrival instant (ISO). */
+  /** Stable id: the arrival instant (ISO). */
   id: string;
   at: number;
   /** Shown in きろく only ('' = ジム). */
@@ -168,16 +163,6 @@ function normDate(v: unknown): LocalDate | null {
   }
 }
 
-function ms(v: unknown): number | null {
-  const s = String(v ?? '').trim();
-  if (!s) return null;
-  try {
-    return parseInstant(s);
-  } catch {
-    return null;
-  }
-}
-
 const isPerson = (p: unknown): p is PersonId => p === 'A' || p === 'B';
 const num = (v: unknown): number | null => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
 
@@ -194,7 +179,7 @@ function parseData(d: unknown): Record<string, unknown> | null {
 
 function sortedByAt<T extends readonly unknown[]>(rows: T[]): { r: T; at: number }[] {
   return rows
-    .map((r, i) => ({ r, at: ms(r[0]), i }))
+    .map((r, i) => ({ r, at: instantOrNull(r[0]), i }))
     .filter((x): x is { r: T; at: number; i: number } => x.at !== null && isPerson(x.r[1]))
     .sort((x, y) => x.at - y.at || x.i - y.i);
 }
@@ -272,9 +257,8 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
 
   for (const { r: row, at } of byAt(r.presence ?? [])) {
     const [, person, label, arrivedRaw] = row;
-    if (person !== 'A' && person !== 'B') continue;
     const list = s.gym[person];
-    const arrivedMs = ms(arrivedRaw) ?? at;
+    const arrivedMs = instantOrNull(arrivedRaw) ?? at;
     if (Math.abs(arrivedMs - at) > LIMITS.gymSkewMs) continue;
     if (list.some((e) => Math.abs(e.arrivedMs - arrivedMs) <= LIMITS.gymDuplicateMs)) continue;
     const arrivedAt = new Date(arrivedMs).toISOString();
@@ -287,7 +271,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     // A type the server wouldn't accept (a hand edit of the sheet) is ignored.
     if (d && (EVENT_TYPES as readonly string[]).includes(type)) ON_EVENT[type](c, person, at, d);
   }
-  // The per-workout lookups are indexes of workoutEdits (one source; round 7 L6).
+  // The per-workout lookups are indexes of workoutEdits (one source).
   for (const e of s.workoutEdits) {
     const key = `${e.person}|${e.id}`;
     if (e.strength !== undefined) push(s.workoutStrength, key, { at: e.at, v: e.strength });
@@ -338,7 +322,7 @@ export function parseMenu(v: unknown): WalletItem[] | null {
 }
 
 const isStrengthChoice = (v: unknown): v is boolean | null => v === null || typeof v === 'boolean';
-const hasId = (v: unknown): boolean => v !== undefined && v !== null;
+const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
 /**
  * One handler per event type: each accepts (indexes) the event or ignores it. The edits (history-and-editing.md §4)
@@ -347,13 +331,11 @@ const hasId = (v: unknown): boolean => v !== undefined && v !== null;
  */
 const ON_EVENT: Record<EventType, OnEvent> = {
   spend({ s }, person, at, d) {
-    const label = typeof d.label === 'string' ? d.label.trim() : '';
-    if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;
     // A buy from the wallet (ADR 0022). Validity only: whether the wallet covered it is decided on read (bells.ts).
-    const bells = d.bells;
-    if (d.pot !== undefined || !isBells(bells)) return;
+    const label = typeof d.label === 'string' ? d.label.trim() : '';
+    const { spendId, bells } = d;
+    if (!isId(spendId) || !label || label.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return;
     if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;
-    const spendId = String(d.spendId);
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
     s.bellSpends.push({ at, person, spendId, item: d.item, label, bells });
   },
@@ -389,7 +371,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (typeof dur !== 'number' || !Number.isInteger(dur) || dur < MANUAL_WORKOUT_MIN.min || dur > MANUAL_WORKOUT_MIN.max) return;
     const key = `${person}|${id}`;
     if (workoutById.has(key) || !editableAt(date, at)) return;
-    // No clock time is asked for: it sits at noon (Tokyo) so it never overlaps a gym visit by accident.
+    // No clock time is asked for: it sits at noon (Tokyo).
     const startAt = `${date}T12:00:00+09:00`;
     const endAt = new Date(Date.parse(startAt) + dur * 60_000).toISOString();
     const w: WorkoutRec = { at, id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true };
@@ -398,8 +380,8 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (isStrengthChoice(d.strength)) s.workoutEdits.push({ at, person, id, strength: d.strength });
   },
   spend_void({ s }, person, at, d) {
-    if (!hasId(d.spendId)) return;
-    const spendId = String(d.spendId);
+    const spendId = d.spendId;
+    if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
     // The spender only (§4.2), once, after the spend.
     if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;

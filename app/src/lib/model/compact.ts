@@ -1,4 +1,4 @@
-// Cache compaction for `metrics` rows (round 9): with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
+// Cache compaction for `metrics` rows: with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
 // but once its week has locked (Wednesday 04:00) the model only ever reads that day's value at a few fixed times.
 // Keeping the row that answers each of those times leaves the views unchanged and drops ~90% of the rows.
 //
@@ -12,17 +12,8 @@
 // newest `weight` row is kept, never "the largest".
 import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, isRec, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
-import { parseInstant } from '#lib/time/dates.ts';
-import { weekKeyOf } from '#lib/scoring/index.ts';
+import { instantOrNull as instant, weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs } from './state.ts';
-
-const instant = (v: unknown): number | null => {
-  try {
-    return parseInstant(String(v ?? ''));
-  } catch {
-    return null;
-  }
-};
 
 /** `metric_set` times per `person|date|metric` (accepted or not: a superset of what the model reads is harmless). */
 function editTimes(rows: SnapshotRows): Map<string, number[]> {
