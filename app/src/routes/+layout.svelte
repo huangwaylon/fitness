@@ -44,6 +44,14 @@
   ui.provideOverlay(() => showHarvest);
   /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route (round 8). */
   const loadHarvest = lazy(() => import('#lib/components/sheets/HarvestOverlay.svelte'));
+  let Harvest = $state<typeof import('#lib/components/sheets/HarvestOverlay.svelte').default | null>(null);
+  // Loaded in script, so the page goes inert only once the overlay can show; a failed load (and no reload) leaves the
+  // island usable and treats it as あとで, instead of an inert page with nothing on it.
+  $effect(() => {
+    if (!showHarvest || Harvest) return;
+    const wk = harvest?.weekKey ?? null;
+    loadHarvest().then((m) => (Harvest = m.default), () => (laterFor = wk));
+  });
 
   // A new deploy (Kit checks _app/version.json when the app comes back to the front): reload into it once nothing
   // is open, so a resident PWA never keeps running an old build against new chunks.
@@ -96,7 +104,7 @@
 <Sprites />
 
 <!-- U9: the harvest is a real modal, so everything behind it is inert. -->
-<div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest}>
+<div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
 {#if week.status === 'unconfigured'}
   <main class="state">
     <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
@@ -125,11 +133,9 @@
 {/if}
 </div>
 
-{#if showHarvest && week.view && harvest}
-  {#await loadHarvest() then { default: HarvestOverlay }}
-    <HarvestOverlay view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)}
-      onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
-  {/await}
+{#if showHarvest && week.view && harvest && Harvest}
+  <Harvest view={week.view} {harvest} onlater={() => (laterFor = harvest.weekKey)}
+    onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
 {/if}
 
 <!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert (round 7 F1). -->
