@@ -13,12 +13,18 @@
   import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { addWorkout, editWorkout, fixCheckin, setGoalWeight, setMetric, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { weightOn, weightTrend } from '#lib/model/weight.ts';
+  import { localDateAt } from '#lib/model/state.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
   import WeekDetail from './WeekDetail.svelte';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
+  import WeightCard from './WeightCard.svelte';
+  import WeightDetail from './WeightDetail.svelte';
+  import WeightInput from './WeightInput.svelte';
   import NumberPad from './NumberPad.svelte';
   import TypeName from './TypeName.svelte';
   import { dayTitle, typeLabel } from './fmt.ts';
@@ -30,7 +36,10 @@
     | { k: 'metric'; date: string; metric: 'steps' | 'exercise_min' }
     | { k: 'workout'; date: string; id: string }
     | { k: 'add'; date: string }
-    | { k: 'void'; id: string; label: string; bells: number };
+    | { k: 'void'; id: string; label: string; bells: number }
+    | { k: 'weight'; p: PersonId }
+    | { k: 'weightIn'; date: string }
+    | { k: 'goal' };
 
   let { entry = null }: { entry?: KirokuEntry | null } = $props();
   let tab = $state<'body' | 'money'>('body');
@@ -51,7 +60,11 @@
   const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
   const money = $derived(m && !top && tab === 'money' ? bellsLedger(m.state, m.now) : null);
   const wkDetail = $derived(m && top?.k === 'week' ? { d: weekDetail(m.state, top.wk, m.now), edits: weekEdits(m.state, top.wk) } : null);
-  const dayDate = $derived(top && 'date' in top ? top.date : null);
+  const today = $derived(m ? localDateAt(m.now) : '');
+  // The weight trend (ADR 0020): both people on the からだ list, one on its own screen.
+  const trends = $derived(m && ((!top && tab === 'body') || top?.k === 'weight')
+    ? { A: weightTrend(m.state, 'A', m.now), B: weightTrend(m.state, 'B', m.now) } : null);
+  const dayDate = $derived(top && 'date' in top && top.k !== 'weightIn' ? top.date : null);
   const day = $derived(m && dayDate ? dayDetail(m.state, dayDate, m.now) : null);
   /** Edit controls close a little before the lock, so an edit made now still lands in time (M1). */
   const canEdit = $derived(!!day && !!m && day.open && !day.future && m.now < day.lockAt - EDIT_CUTOFF_MS);
@@ -123,6 +136,17 @@
     undoToast(t('kiroku.spendVoided', { label }), undoSpend(id));
   }
 
+  function saveWeight(date: string, kg: number) {
+    back();
+    void refocus(date === today ? 'weight-log' : `wfix:${date}`);
+    undoToast(t('weight.saved'), setWeight(date, kg));
+  }
+  function saveGoal(kg: number | null) {
+    back();
+    void refocus('weight-goal');
+    if (setGoalWeight(kg).ok) toasts.show(t(kg === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
+  }
+
   // Add a workout: pick a type, then the minutes on the keypad.
   const ADD_TYPES = ['Traditional Strength Training', 'Pilates', 'Yoga', 'Outdoor Walk', 'Outdoor Run', 'Cycling', 'Swimming', 'Dance', 'High Intensity Interval Training'];
   let addType = $state<string | null>(null);
@@ -144,6 +168,9 @@
           <button type="button" class="pill" aria-pressed={tab === id} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
         {/each}
       </div>
+      {#if weeks && trends}
+        <WeightCard {trends} {order} {names} {villagers} {today} onopen={(p) => go({ k: 'weight', p })} />
+      {/if}
       {#if weeks}
         <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
       {:else if money}
@@ -157,6 +184,18 @@
       <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}
         onmetric={(metric) => go({ k: 'metric', date, metric })} onworkout={(id) => go({ k: 'workout', date, id })}
         onadd={() => { addType = null; go({ k: 'add', date }); }} ontick={(h, done) => tickFix(date, h, done)} />
+    {:else if top.k === 'weight' && trends}
+      {@const p = top.p}
+      <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today}
+        onlog={(date) => go({ k: 'weightIn', date })} ongoal={() => go({ k: 'goal' })} />
+    {:else if top.k === 'weightIn'}
+      {@const s = top}
+      <WeightInput label={t('kiroku.field.weight')} sub={dayTitle(s.date)} old={weightOn(m.state, me, s.date, m.now)}
+        onok={(kg) => saveWeight(s.date, kg)} oncancel={back} />
+    {:else if top.k === 'goal'}
+      {@const goal = m.state.prefs[me].goalWeight ?? null}
+      <WeightInput label={t('weight.goalWeight')} sub="" old={goal} onok={(kg) => saveGoal(kg)} oncancel={back}
+        extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(null) }} />
     {:else if top.k === 'void'}
       {@const s = top}
       <section class="card ask">
