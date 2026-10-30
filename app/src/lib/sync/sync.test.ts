@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import type { SnapshotRows } from '#lib/contract/api.ts';
-import { configureStorage, getKey, type KV } from './storage.ts';
+import { configureStorage, getKey, getStoredMe, type KV } from './storage.ts';
 import { configureTransport, post } from './transport.ts';
 import { backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, unqueue } from './queue.ts';
 import { applySnapshot, configureCache, loadCache, refreshSnapshot } from './cache.ts';
@@ -289,6 +289,29 @@ describe('snapshot cache', () => {
     const prev = applySnapshot(null, { me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
     const next = applySnapshot(prev, { me: 'B', now: '2026-11-02T02:00:00.000Z', rows: emptyRows() }, 0);
     expect(next.rows.metrics).toEqual([]);
+  });
+  it('a `since` page answered for someone else is refetched whole, never kept as their history', async () => {
+    handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() });
+    await refreshSnapshot();
+    const rowsB: SnapshotRows = { ...emptyRows(), metrics: [['2026-11-01T01:00:00.000Z', 'B', '2026-11-01', 'steps', 4000]] };
+    // the key now answers for B (keys swapped in the script's properties) while this phone still says A
+    handler = (b) => ({ ok: true, me: 'B', now: '2026-11-02T03:00:00.000Z', rows: b.since ? emptyRows() : rowsB });
+    const r = await refreshSnapshot();
+    expect(calls.map((c) => c.since ?? null)).toEqual([null, '2026-11-02T01:00:00.000Z', null]);
+    expect(r.ok && r.cache.me).toBe('B');
+    expect(r.ok && r.cache.rows.metrics).toEqual(rowsB.metrics);
+  });
+  it('pairing again while a fetch is in flight discards its reply: no old rows or `me` come back', async () => {
+    let pairMidway = () => {};
+    handler = () => {
+      pairMidway();
+      return { ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() };
+    };
+    pairMidway = () => setKey('cd'.repeat(32), 'B');
+    const r = await refreshSnapshot();
+    expect(r.ok).toBe(false);
+    expect(getStoredMe()).toBe('B');
+    expect(await loadCache()).toBeNull();
   });
 });
 
