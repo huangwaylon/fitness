@@ -1,6 +1,7 @@
 /* Island Fund base styles v5: element defaults + the few shared building blocks (v5 §5).
    All custom properties (tokens) live in lib/styles/tokens.css, which is imported first.
-   No outlines anywhere: depth is the 4px lip (--sh-lip) and --sh-float on floating layers only. */
+   Depth is the 4px lip (--sh-lip) and --sh-float on floating layers only. Round 13: tappable things add an edge
+   (a 2px outline + the lip in one >= 3:1 colour: --sh-ctl / --sh-obj, tokens.css "button tiers"). */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -50,9 +51,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .money { font-family: var(--font-num); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
 .hero-num { font: 700 var(--fs-hero)/1.05 var(--font-num); font-variant-numeric: tabular-nums; }
 
-/* ---------- the one card skin: a cream Nook Miles+ card with a lip ---------- */
+/* ---------- the one card skin: a white-cream Nook Miles+ card with a soft lip, on the tan panel ---------- */
 .card {
-  position: relative; background: var(--surface); color: var(--text); border-radius: var(--r-card);
+  position: relative; background: var(--card); color: var(--text); border-radius: var(--r-card);
   box-shadow: var(--sh-lip); padding: 16px;
 }
 
@@ -63,38 +64,40 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); transform: rotate(-3deg);
 }
 
-/* ---------- chunky button: radius 16, a lip, squash on press ---------- */
+/* ---------- chunky button: radius 16, an edge (2px outline + lip, >= 3:1), squash on press ----------
+   Primary = leaf (the default), .yuzu = the selected / celebratory yellow, .paper = secondary cream. */
 .btn {
-  --fill: var(--c-leaf); --lip-c: var(--c-leaf-lip);
+  --fill: var(--c-leaf); --lip-c: var(--c-leaf-edge);
   appearance: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; min-height: var(--cta-h); border-radius: var(--r-btn); padding: 0 24px; margin-bottom: 4px;
   font: 700 var(--fs-talk) var(--font-ui); color: var(--c-ink); text-decoration: none;
-  background: var(--fill); box-shadow: 0 var(--lip-h) 0 var(--lip-c);
+  background: var(--fill); box-shadow: inset 0 0 0 2px var(--lip-c), 0 var(--lip-h) 0 var(--lip-c);
   transform-origin: 50% 100%;
   transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce), background-color var(--dur-quick);
   user-select: none; -webkit-user-select: none;
 }
 .btn:active:not(:disabled) {
-  transform: translateY(3px) scale(1.03, .95); box-shadow: 0 1px 0 var(--lip-c);
+  transform: translateY(3px) scale(1.03, .95); box-shadow: inset 0 0 0 2px var(--lip-c), 0 1px 0 var(--lip-c);
   transition-duration: var(--dur-tap); transition-timing-function: var(--ease-squash);
 }
-.btn:disabled { opacity: .55; cursor: default; box-shadow: none; transform: translateY(4px); }
+/* disabled: sunk into the panel (no edge, no lip), soft text: clearly not the action */
+.btn:disabled { --fill: var(--ctl-off); color: var(--text-soft); cursor: default; box-shadow: none; transform: translateY(4px); }
 .btn svg, .btn .ic { width: 24px; height: 24px; flex: none; }
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
-.btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
-.btn.paper { --fill: var(--c-cream); --lip-c: var(--c-lip); }
+.btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-edge); }
+.btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
 }
 
-/* ---------- round icon button (sheet close / back): cream, a lip ---------- */
+/* ---------- round icon button (sheet close / back): a cream object with the brown edge ---------- */
 .icon-btn {
   appearance: none; cursor: pointer; width: 44px; height: 44px; border-radius: 50%; padding: 0; border: 0;
-  background: var(--c-cream); display: grid; place-items: center; color: var(--c-ink);
-  box-shadow: 0 var(--lip-h) 0 var(--c-lip); transition: transform var(--dur-base) var(--ease-bounce);
+  background: var(--c-card); display: grid; place-items: center; color: var(--c-ink);
+  box-shadow: var(--sh-obj); transition: transform var(--dur-base) var(--ease-bounce);
 }
-.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
+.icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
 
 /* ---------- 島 ⇄ ふたりの壺 (ui-state/jarTransition.ts) ----------
    The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).

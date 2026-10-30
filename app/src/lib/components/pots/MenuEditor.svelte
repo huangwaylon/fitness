@@ -102,8 +102,8 @@
   .f { position: relative; display: block; min-width: 0; }
   input {
     width: 100%; min-height: var(--hit); padding: 0 10px; border-radius: var(--r-chip); border: 0; box-sizing: border-box;
-    font-size: var(--fs-input); font-weight: 700; color: var(--c-ink); background: var(--c-cream);
-    box-shadow: inset 0 0 0 2px var(--c-lip);
+    font-size: var(--fs-input); font-weight: 700; color: var(--c-ink); background: var(--c-card);
+    box-shadow: inset 0 0 0 2px var(--c-edge);
   }
   input:focus { outline: none; box-shadow: inset 0 0 0 3px var(--c-yuzu-lip); }
   input.num { font-family: var(--font-num); text-align: right; padding-right: 2.6em; font-variant-numeric: tabular-nums; }
@@ -116,9 +116,10 @@
   .rm:active { background: color-mix(in srgb, var(--c-coral) 25%, transparent); }
   .add {
     appearance: none; border: 0; cursor: pointer; width: 100%; margin-top: 12px; min-height: var(--hit); border-radius: var(--r-btn);
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-cream));
-    box-shadow: 0 var(--lip-h) 0 color-mix(in srgb, var(--c-leaf-lip) 60%, var(--c-lip));
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));
+    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
   }
-  .add:disabled { opacity: .5; cursor: default; }
+  .add:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
+  .add:disabled { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
   .acts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 </style>

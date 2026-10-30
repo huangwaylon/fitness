@@ -78,16 +78,16 @@
   .namefield span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .name {
     width: 100%; min-height: 52px; border-radius: var(--r-btn); border: 0;
-    background: var(--c-cream); color: var(--c-ink); padding: 0 14px; font-weight: 700; box-shadow: inset 0 3px 0 var(--c-lip);
+    background: var(--c-card); color: var(--c-ink); padding: 0 14px; font-weight: 700; box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
   }
   .search {
     display: flex; align-items: center; gap: 8px; margin: 12px 0 10px; min-height: 48px; padding: 0 14px;
-    border-radius: 999px; background: var(--c-cream); color: var(--c-ink); box-shadow: inset 0 3px 0 var(--c-lip);
+    border-radius: 999px; background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
   }
   .search svg { width: 20px; height: 20px; flex: none; opacity: .55; }
   .search input { flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: inherit; font: 700 var(--fs-input) var(--font-ui); outline: none; }
   .search input::placeholder { color: color-mix(in srgb, var(--c-ink) 45%, transparent); }
-  .search:focus-within { box-shadow: inset 0 3px 0 var(--c-lip), 0 0 0 3px var(--c-leaf); }
+  .search:focus-within { box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip), 0 0 0 3px var(--focus); }
   .scroll { margin: 0 -4px; padding: 6px 4px; }
   .none { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
   .roster { display: grid; grid-template-columns: repeat(5, 64px); justify-content: space-between; row-gap: 12px; padding: 4px 4px 8px; }
@@ -100,7 +100,7 @@
     box-shadow: 0 0 0 3px transparent; transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-quick);
   }
   .rv:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
-  .rv[aria-checked='true'] { box-shadow: 0 0 0 4px var(--c-leaf); }
+  .rv[aria-checked='true'] { box-shadow: 0 0 0 4px var(--c-leaf-edge); }
   .ck {
     position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; padding: 3px; border-radius: 50%;
     background: var(--c-leaf); color: var(--c-ink);

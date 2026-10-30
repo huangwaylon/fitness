@@ -2,23 +2,28 @@
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
-   One system: 12 colours, 5 radii (+ pill for the ribbon / plate / choices), 5 type sizes, weights 500/700,
-   no outlines, one depth rule (a 4px lip; --sh-float only on floating layers).
+   One system: 15 colours, 5 radii (+ pill for the ribbon / plate / choices), 5 type sizes, weights 500/700,
+   outlines only on tappable things (round 13 --sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
    Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
    ignored. Game objects (ribbon, plate, dialogue box, choices) stay cream / yellow at every time of day.
    Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
 
 :root {
-  /* ---------- palette (12) ---------- */
+  /* ---------- palette (15) ---------- */
   --c-ink:#4A3A2C;   --c-ink-soft:#6B5544;              /* text (never black) */
-  --c-cream:#FFF9E3; --c-paper:#FFF3D6; --c-lip:#E0C48A; /* surfaces + the lip under them */
-  --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C;               /* the action */
+  --c-cream:#FFF9E3; --c-paper:#F5E4BC; --c-lip:#E0C48A; /* surfaces + the lip under them. Round 13: paper is
+                                                           NH's tan list panel, a step darker than the cards */
+  --c-card:#FFFCF2;                                      /* round 13: the white-cream card / button on a panel */
+  --c-edge:#937047;                                      /* round 13: the brown outline + lip of a tappable cream thing
+                                                           (>= 3:1 on paper, cream, card and yuzu) */
+  --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C; --c-leaf-edge:#2F8A3F; /* the action; -edge = its outline + lip (>= 3:1) */
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
   --c-mint:#7BD7C1;  --c-mint-lip:#63B4B5;               /* NH map mint (tiles, bars track) */
   --c-coral:#FF8F7A;                                     /* errors only */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
-  --bg: var(--c-cream); --surface: var(--c-paper); --lip: var(--c-lip);
+  --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
+  --card: var(--c-card);       /* round 13: cards on the page / in sheets (one step lighter than the panel) */
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --hud: #33261B;              /* the corner clock over the sky: deeper ink, ≥ 4.5:1 on every day sky top (round 7 F12) */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
@@ -82,10 +87,22 @@
   --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ふたりの壺 hero jar */
   --key-h: clamp(46px, calc(7 * var(--vh1)), 64px);    /* NumberPad keys */
 
-  /* ---------- surfaces (round 10 T3) ----------
-     A control's fill must differ from its container. --surface (paper) is the sheet / phone shell; controls
-     and cards on it use --fill-on-surface (cream); a control on the page colour uses --fill-on-bg. */
-  --fill-on-surface: var(--c-cream); --fill-on-bg: var(--c-paper);
+  /* ---------- surfaces (round 10 T3) + button tiers (round 13, docs/reviews/round-13/button-contrast.md) ----------
+     The panel (--bg / --surface: NH's tan) is a step darker than what sits on it (--card: white-cream).
+     Anything tappable also carries an EDGE: a 2px outline + the 4px lip in one colour that is >= 3:1 against
+     the panel (WCAG 1.4.11), like Pocket Camp's outlined cream buttons. Static cards keep the soft --lip only,
+     so "has a brown edge" = "you can tap it".
+       primary   .btn            leaf fill, ink text, --c-leaf-edge outline + lip
+       secondary --ctl + --sh-ctl white-cream (night: a lighter navy), --edge outline + lip
+       selected  --ctl-sel       NH yellow (yuzu) fill, ink text, keeps the edge
+       disabled  --ctl-off       a sunk tan (night: navy), soft text, no edge, no lip
+     Fixed-cream game objects (sheet close, keypad, back pill) use --sh-obj: always brown, every time of day. */
+  --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EAD7AC; --edge: var(--c-edge);
+  --sh-ctl: inset 0 0 0 2px var(--edge), 0 var(--lip-h) 0 var(--edge);
+  --sh-ctl-press: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge);
+  --sh-obj: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge);
+  --sh-obj-press: inset 0 0 0 2px var(--c-edge), 0 1px 0 var(--c-edge);
+  --fill-on-surface: var(--ctl); --fill-on-bg: var(--ctl);
 
   /* ---------- the ground ellipse under villagers / props (v5 §5 depth rule; also read outside .if-scene) ---------- */
   --sh-ground: rgba(40, 60, 40, .18);
@@ -94,9 +111,10 @@
 }
 
 /* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
-:root[data-tod="dusk"] { --bg:#FFF1DC; --lip:#E8B98A; --hud:#FFFFFF; } /* the clock over the dusk sky top #5B6FC4 (4.65:1) */
+:root[data-tod="dusk"] { --bg:#F6DFC0; --surface:#F6DFC0; --lip:#E8B98A; --hud:#FFFFFF; } /* the clock over the dusk sky top #5B6FC4 (4.65:1) */
 :root[data-tod="night"] {
-  --bg:#3A4886; --surface:#45559A; --lip:#2E3A72; --fill-on-surface:#3A4886; --fill-on-bg:#45559A;
+  --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
+  --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
   --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;
   --scrim: rgba(30, 36, 80, .45);
   color-scheme: dark;

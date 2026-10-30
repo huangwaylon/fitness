@@ -135,9 +135,9 @@
   .void .amt, .void .lbl > :first-child { text-decoration: line-through; }
   .mini {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: var(--hit); padding: 0 10px; border-radius: var(--r-btn); flex: none;
-    font: 700 var(--fs-s)/1 var(--font-ui); background: var(--fill-on-surface); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip); white-space: nowrap; margin-left: auto;
+    font: 700 var(--fs-s)/1 var(--font-ui); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); white-space: nowrap; margin-left: auto;
   }
-  .mini:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
+  .mini:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* a day: the date and the pair's total, then one line per person: villager, the fruit that earned, their total */
   .day { flex-direction: column; align-items: stretch !important; gap: 2px !important; padding: 8px 0; }
   .dh { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--fs-body); }

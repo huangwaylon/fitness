@@ -167,7 +167,7 @@
   .later, .later-sp { min-width: 80px; }
   .later {
     appearance: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: var(--r-btn);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .bottom { display: grid; gap: var(--gap); --talk-lines: 2; }
   .bottom :global(.talk) { margin-bottom: -4px; }

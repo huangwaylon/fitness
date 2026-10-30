@@ -61,10 +61,11 @@
   .empty { text-align: center; color: var(--text-soft); font-weight: 700; }
   .wk {
     appearance: none; border: 0; width: 100%; text-align: left; font: inherit; cursor: pointer;
-    display: grid; gap: 8px; padding: 12px 14px 12px;
+    display: grid; gap: 8px; padding: 12px 14px 12px; box-shadow: var(--sh-ctl);
   }
-  .wk:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lip); }
-  .wk.cur { box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip), inset 0 0 0 3px var(--c-yuzu); }
+  .wk:active { transform: translateY(3px); box-shadow: var(--sh-ctl-press); }
+  /* this week: the edge plus a yuzu inner ring */
+  .wk.cur { box-shadow: inset 0 0 0 2px var(--edge), inset 0 0 0 6px var(--c-yuzu), 0 var(--lip-h) 0 var(--edge); }
   .head { display: flex; align-items: center; gap: 8px; min-height: 24px; }
   .when { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: var(--fs-body); }
   .when b { font-size: var(--fs-body); }

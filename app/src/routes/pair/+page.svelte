@@ -101,8 +101,8 @@
   }
   .lang {
     position: absolute; top: calc(var(--safe-top) + 8px); right: calc(var(--side) + var(--safe-right)); cursor: pointer; min-height: 44px; padding: 0 14px;
-    display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: var(--r-btn); background: var(--c-cream); color: var(--c-ink);
-    box-shadow: 0 var(--lip-h) 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
+    display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: var(--r-btn); background: var(--c-card); color: var(--c-ink);
+    box-shadow: var(--sh-obj); font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .lang svg { width: 18px; height: 18px; }
   .port { width: 220px; margin: 0 auto; }
@@ -112,7 +112,7 @@
   .lbl { font-weight: 700; font-size: var(--fs-talk); text-align: center; }
   .code {
     width: 100%; min-height: 56px; text-align: center; font-size: max(var(--fs-input), 1.1rem) !important; letter-spacing: .02em !important;
-    border-radius: var(--r-btn); border: 0; background: var(--c-cream); color: var(--c-ink); box-shadow: inset 0 3px 0 var(--c-lip);
+    border-radius: var(--r-btn); border: 0; background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
   }
   .code::placeholder { color: var(--c-ink-soft); opacity: .5; }
   .msg { min-height: 1.4em; margin: 0; font-weight: 700; text-align: center; }

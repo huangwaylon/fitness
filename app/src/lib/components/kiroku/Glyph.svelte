@@ -29,5 +29,5 @@
   .none { stroke: color-mix(in srgb, var(--lip) 80%, transparent); }
   .future { fill: color-mix(in srgb, var(--text-soft) 45%, transparent); }
   .lock { fill: var(--text-soft); stroke: var(--text-soft); }
-  .pen { fill: var(--c-ink-soft); }
+  .pen { fill: currentColor; } /* round 13: follows the text, so it reads at night too */
 </style>
