@@ -16,9 +16,16 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 Event `type`s and `data`:
 - `checkin {date, habit, done}`: the latest per (person, date, habit) wins.
 - `confirm {kind:'visit'|'workout', id, yes}`
-- `spend {spendId, label, amountYen}` and `approve {spendId}`
-- `transfer {month}` · `harvest {week}` · `highfive {}`
-- `pref {key, value}` (keys: `locale`, `villagerName`, `villager`)
+- `spend {spendId, pot:'treat'|'trip', item, label, bells}` (ADR 0019): a buy from a shared pot. The model ignores
+  it unless `pot` is valid, `bells` an integer 1–10,000,000, `label` 1–60 characters and `item` a string ≤ 40, and
+  (on read) unless the pot covered it at its `at`. Old `spend {spendId, label, amountYen}` rows are ignored by the
+  ベル economy (read only by the old yen fields until they are removed).
+- `approve {spendId}`, `transfer {month}`, `transfer_undo {month}`: no longer sent; old rows are ignored by the ベル
+  economy (ADR 0019 §6).
+- `harvest {week}` (「受け取る」: a ceremony only, the bonus counts either way) · `highfive {}`
+- `pref {key, value}` (keys: `locale`, `villagerName`, `villager`, and the shared menus `treatMenu` / `tripMenu`:
+  `value` is a JSON array of `{id, label, bells}` (≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000);
+  the latest valid one by either person wins; an invalid one is ignored as a whole)
 - `share {metric, on}`: refused by the script (`bad_request`); old rows are ignored (ADR 0016).
 
 Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:
@@ -26,12 +33,19 @@ Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29
 - `workout_edit {id, strength?: true|false|null, excluded?: boolean}`: strength override for any type (`null` = automatic), or out of scoring.
 - `workout_add {id:'m:<id>', date, type, durationMin 1–600, strength?}`: a manual workout (a known canonical type).
 - `checkin {…, edit:true}`: a fix for any day ≤ today of an open week (instead of the 48 h window).
-- `spend_void {spendId}`: the spender only; refunds a paid spend or cancels a waiting one (a refused spend stays refused).
-- `transfer_undo {month}`: either person; the latest of `transfer`/`transfer_undo` for the month wins.
+- `spend_void {spendId}`: the buyer only, once, after the spend; it gives the ベル back to the pot. Spends are never
+  locked.
 
-Weekly yen already paid never change: a raise before the lock becomes the Wednesday top-up, a lowering keeps Sunday's payout.
+**ベル on read (ADR 0019, `model/bells.ts`).** A day's earnings are recomputed from the rows, so they change with late
+syncs and edits until the week locks (Wednesday 04:00 JST after its Sunday); after that they are fixed at the lock
+(rows stamped later never count). Up and down: there is no top-up or "keep the max" any more. A day's ベル land in the
+pots that day, the weekly bonus at Sunday 19:30. Pots: おやつ = floor(total × 30%), 旅 = the rest, on all-time
+totals; each balance = its share − its accepted, not voided spends. Spends and voids replay in server order; a spend
+whose pot didn't cover it at its `at` (earned by then − spent so far) is ignored, so no balance goes negative.
 
-The rules (targets, money, seasons) stay in `app/src/lib/config/rules.ts`. No config tab.
+The rules (goals, ベル rates, badges, the pot split, default menus) stay in `app/src/lib/config/rules.ts`. No config
+tab; the menus' prices are edited in the app (`pref`). **No backend change** for ADR 0019: `Code.js` stays a dumb log
+(`spend` and `pref` only get the generic ≤ 20,000-character data check).
 
 ## 2. Web app API: `POST <exec url>`, body = JSON text, `Content-Type: text/plain`
 Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or `{ok:false, error}`, where `error ∈ unauthorized | bad_request | too_large | busy | unavailable`. `doPost` never throws: an uncaught error would return Google's HTML page. There is **no `doGet`**. Body cap: 1 MB.
@@ -62,14 +76,14 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 
 **Model helpers for the client (WS1, `app/src/lib/model/`):**
 - `compactRows(rows, now)` (`compact.ts`): drops the metrics rows of locked weeks that the model can no longer read (keeps, per person/date/metric, the best row at the Sunday 19:30 payout, the Wednesday lock, each `metric_set` and overall). Every view is unchanged (`compact.test.ts`); it cuts metrics ~90%. Run it on the cache after each merge. It relies on ingest rows only going up, which a hand edit can break; that bumps `rev`, and the full refetch replaces the cache.
-- `reduce(rows, calendar, rev)`: pass the cached `rev` (live data only) and the payouts of past cutoffs are reused across States (round 8 P5), so a poll or minute tick no longer recomputes every past week. `npm run bench`, year 3 with hourly syncs, compacted: reduce + `buildWeekView` ≈ 8 ms with `rev`, ≈ 21 ms without (measured on a laptop).
+- `reduce(rows, calendar, rev)`: pass the cached `rev` (live data only) and the earnings of locked weeks (and the old payouts of past cutoffs) are reused across States (round 8 P5), so a poll or minute tick no longer recomputes every past week. `npm run bench`, year 3 with hourly syncs, compacted: reduce + `buildWeekView` ≈ 8 ms with `rev`, ≈ 30 ms without while the old yen ledger still runs beside the ベル economy (measured on a laptop, round 11).
 
 `whoami.build` / `health.build`: the first 12 hex characters of SHA-256 over the bundle (`buildHash()` in `app/gas/build.ts`; `dev` when `main.ts` runs unbundled). `bundle.test.ts` checks that `Code.js` carries it.
 
 ## 3. Code layout
 - `app/gas/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. Ported from the retired server's Shortcut ingest (without zod), so it runs in Apps Script (the browser never parses Shortcut bodies).
 - `app/gas/`: Apps Script source in TS (`main.ts`: `doPost`, sheet helpers), bundled with the parser by **esbuild** into `apps-script/Code.js` (one global script, no imports) via `npm run gas:build`. `apps-script/appsscript.json` sets scope `spreadsheets.currentonly`, the web app, and timezone `Asia/Tokyo`. `clasp` is optional (`.clasp.json` not committed).
-- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (and jar, harvest, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. It keeps the retired server's week and ledger semantics, including the max(Sunday 19:30, Wednesday 04:00) payout rule and purse/transfer math.
+- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (people with today's ベル and fruit progress, the pots, the menus, harvest with the weekly bonus, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. `state.ts` validates and indexes rows; `inputs.ts` reads one person's rows as of a time; `bells.ts` is the economy (per-week earnings cached per State and, for locked weeks, per `rev`; pots; spends; the きろく ledger `bellsLedger`); `history.ts` the きろく views. `scoring/bells.ts` is the pure earning rule (`earnWeek`, `duoBonus`, `splitPots`). The old yen ledger (`week.ts`: jar, purse, transfer) still runs for the old view fields until the UI has moved over.
 - `app/src/lib/sync/` (round 9):
   - `storage.ts`: every Web Storage key in one registry. Live keys are `island.*`; the demo's are `island-demo.*`, so it can never touch the live key, queue or cache. Failed writes (quota, private mode) are reported, and the store shows a banner once per kind.
   - `transport.ts`: the POST helper (timeout, error taxonomy) and `whoami`. `pairing.ts`: the key, `#key=` links, and switching person (drops the cache and queue).
@@ -83,7 +97,8 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 - The parser: unit tests (ported from the shortcut-ingest tests).
 - The GAS backend: vitest with an in-memory fake of `SpreadsheetApp`/`PropertiesService`/`LockService`/`CacheService`/`ContentService`. It covers auth, never-throws, append-only + higher-only metrics, dedupe, snapshot `since`, rate limit and body cap.
 - The model's edits: `model/history.test.ts` (lowering, later higher syncs, lock, top-up, own data only, workouts, check-in fixes, voids, transfer undo, the change log, the history views).
-- The model: was differential-tested against the old server (`getWeekView`, settlement, payout) on a 10-week timeline and on the real DB; those server outputs are now frozen golden fixtures (`app/src/lib/model/fixtures/`, `golden.test.ts`).
+- The ベル economy: `scoring/bells.test.ts` (the daily table, the max of the minute sources, caps, tsuyu, 正月, badges, the ふたりボーナス, the 30/70 split) and `model/bells.test.ts` (earnings landing as they happen, the bonus at Sunday 19:30, locks, spends that the pot can't cover, voids, menus last-writer-wins, the ledger).
+- The model: was differential-tested against the old server (`getWeekView`, settlement, payout) on a 10-week timeline and on the real DB; those server outputs are frozen golden fixtures (`app/src/lib/model/fixtures/`, `golden.test.ts`), regenerated on purpose with `GOLDEN_UPDATE=1` when a rule changes (round 11: the ベル economy).
 - The client: queue/retry/merge unit tests.
 
 ## 5. Shortcut (the user's)
