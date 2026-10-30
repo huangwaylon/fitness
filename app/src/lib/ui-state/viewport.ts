@@ -4,10 +4,7 @@
 // publish the *screen* height as `--doc-height` (tokens.css feeds it into --vh-fill / --vh-page). It depends only on
 // the screen size and the window width, so it can't feed back into layout. Same approach as the user's epub reader
 // (Tsuzuri, src/services/viewport.ts); assumes app.html's `viewport-fit=cover` + `black-translucent`.
-
-function isStandalone(): boolean {
-  return (navigator as Navigator & { standalone?: boolean }).standalone === true || matchMedia('(display-mode: standalone)').matches;
-}
+import { isStandalone } from './standalone.ts';
 
 /**
  * The screen height when standalone and the window spans a full screen side (not Split View / Stage Manager).

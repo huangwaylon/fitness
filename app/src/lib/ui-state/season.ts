@@ -5,7 +5,7 @@
 //   foliage (the oaks): cherry blossom only Apr 1–10, green leaves Feb 25 – Oct 15 otherwise,
 //     red-orange fall leaves Oct 16 – Dec 10 (maple week Nov 16–25 is the peak), snow Dec 11 – Feb 24.
 //   time of day: always the clock, never OS dark mode: dawn 05–07, day 07–16, dusk 16–19, night 19–05.
-//     It drives both the scene sky and the chrome (v5 §5: the sky sets the theme; prefers-color-scheme is ignored).
+//     It drives both the scene sky and the chrome (prefers-color-scheme is ignored).
 import { jst } from '#lib/time/clock.ts';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
@@ -91,7 +91,7 @@ export function previewParams(search: string): Pick<ThemeInput, 'theme' | 'seaso
 export const SKY_TOP: Record<Season, string> = { spring: '#4AA3F6', summer: '#2F92F0', autumn: '#4AA3F6', winter: '#8EC2EE' };
 export const TOD_TOP: Partial<Record<TimeOfDay, string>> = { dawn: '#7FA8E8', dusk: '#5B6FC4', night: '#1F2C66' };
 
-/** The browser chrome colour: the top of the sky (v5 §5). */
+/** The browser chrome colour: the top of the sky. */
 export function themeColor(s: Pick<ThemeState, 'tod' | 'season'>): string {
   return TOD_TOP[s.tod] ?? SKY_TOP[s.season];
 }

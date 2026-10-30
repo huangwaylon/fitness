@@ -1,6 +1,6 @@
-// Trim Zen Maru Gothic to the unicode-range slices the app can show (round 5 P6: the full @fontsource CSS was
+// Trim Zen Maru Gothic to the unicode-range slices the app can show (the full @fontsource CSS is
 // 250 @font-face rules, ~200 KB of render-blocking CSS). Keeps every slice that holds a character used anywhere
-// in src/ (catalogs, place / workout / villager names) plus all kana, Latin and full-width forms, woff2 only.
+// in src/ (catalogs, workout / villager names) plus all kana, Latin and full-width forms, woff2 only.
 // Kanji typed by a user outside these slices fall back to the system rounded font.
 // Usage (from app/): npm run fonts:subset   → src/lib/styles/fonts.css (commit it). src/lib/styles/fonts.test.ts checks
 // that every character in src/ is still covered, so re-run this after adding copy with new kanji.

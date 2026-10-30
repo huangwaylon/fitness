@@ -1,4 +1,4 @@
-// The service worker's cache generations (round 9), pure so it can be tested without a worker.
+// The service worker's cache generations, pure so it can be tested without a worker.
 
 export const SHELL = 'island-shell-';
 

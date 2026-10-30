@@ -1,14 +1,14 @@
 // Theme on <html>: data-tod (dawn | day | dusk | night, from the clock), data-theme (night iff tod is night),
-// data-season and data-foliage. Time of day alone drives the chrome (v5 §5): the phone's dark mode is ignored.
+// data-season and data-foliage. Time of day alone drives the chrome: the phone's dark mode is ignored.
 // Rules: ui-state/season.ts. `?theme=night|day`, `?season=…` and `?date=` (time/clock.ts) preview for this load
 // only; they are never persisted, so a later plain load is back to the real date and time.
 import { untrack } from 'svelte';
 import { minuteNow, now } from '#lib/time/clock.ts';
-import { deriveTheme, previewParams, themeColor, type Foliage, type Season, type ThemeInput, type TimeOfDay } from './season.ts';
+import { deriveTheme, previewParams, themeColor, type Season, type ThemeInput, type ThemeState } from './season.ts';
 
-export type { Foliage, Season, TimeOfDay };
+export type { Season };
 
-export const theme = $state<{ night: boolean; season: Season; tod: TimeOfDay; foliage: Foliage }>({
+export const theme = $state<ThemeState>({
   night: false,
   season: 'spring',
   tod: 'day',
