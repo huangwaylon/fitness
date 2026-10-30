@@ -24,7 +24,8 @@ export function lruEvict(keys: readonly string[], keep = MUSIC_KEEP): string[] {
   return music.slice(0, Math.max(0, music.length - keep));
 }
 
-const FONT = /\.(woff2?|ttf)$/;
+export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
+export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
 /** The two default villagers' art is precached (lib/villagers/roster.ts DEFAULT_VILLAGER); the rest is cached on use. */
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
@@ -34,6 +35,6 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (AUDIO_CACHE, on first play) and macOS litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (FONT.test(p) || isAudio(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
-  return !p.includes('/art/villagers/') || PRECACHED_VILLAGERS.test(p);
+  if (isFont(p) || isAudio(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
