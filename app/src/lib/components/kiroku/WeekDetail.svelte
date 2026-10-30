@@ -104,7 +104,7 @@
   }
   .day .wd { grid-row: span 2; }
   .day + .day { border-top: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
-  .day:active:not([aria-disabled='true']) { background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
+  .day:active:not([aria-disabled='true']) { background: var(--hl); }
   .day[aria-disabled='true'] { cursor: default; }
   .wd { font-weight: 700; font-size: var(--fs-body); }
   .av { line-height: 0; }

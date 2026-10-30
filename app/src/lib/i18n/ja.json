@@ -219,7 +219,7 @@
   "help.fruit.title": "5つの くだもの",
   "help.fruit.max": "1日 最大 {bells}。データが とどくたびに 島で ふえるよ。",
   "help.goal.min": "1日 {n}分",
-  "help.goal.kcal": "1日 {n} kcal（きろくで かえられる）",
+  "help.goal.kcal": "1日 {n} kcal",
   "help.goal.steps": "1日 {n}歩",
   "help.goal.gym": "ジムに 着いたら",
   "help.pay.perMin": "1分 {b} ベル",

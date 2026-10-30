@@ -133,7 +133,7 @@
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: left;
     display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 4px 0;
   }
-  .dbtn:active { background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
+  .dbtn:active { background: var(--hl); }
   .dt { width: 5.4em; flex: none; font: 700 var(--fs-body)/1.2 var(--font-num); }
   .pp { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; }
   .pv { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); color: var(--text-soft); }

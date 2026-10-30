@@ -110,7 +110,7 @@
   .nm small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .pay { flex: none; font-size: var(--fs-s); text-align: right; }
   .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .chips li { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
+  .chips li { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--r-pill); background: var(--hl); }
   .chips .money { font-size: var(--fs-s); }
   .ver { margin: 16px 0 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
 </style>

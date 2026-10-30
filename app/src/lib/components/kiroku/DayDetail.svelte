@@ -112,7 +112,7 @@
   .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
   /* the day's ベル: a yuzu-tinted strip with the one total */
   .earn { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 10px; margin-bottom: 2px; border-radius: var(--r-chip);
-    background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); font-size: var(--fs-s); font-weight: 700; }
+    background: var(--hl); font-size: var(--fs-s); font-weight: 700; }
   .earn b { font-size: var(--fs-talk); }
   /* one row per fruit: icon · word · value (green when met) · its ベル · ✎ */
   .fr { gap: 6px; }
