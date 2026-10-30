@@ -44,6 +44,9 @@
     if (timer) clearTimeout(timer);
     if (open) timer = setTimeout(() => (open = false), 2600);
   }
+  $effect(() => () => {
+    if (timer) clearTimeout(timer);
+  });
 </script>
 
 <span class="wrap" class:tree={onTree} style:--size={size}>
