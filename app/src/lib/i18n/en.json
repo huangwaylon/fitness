@@ -242,5 +242,6 @@
   "help.island.partner": "Your partner → see their day, high-five",
   "help.island.tree": "A tree → today's progress",
   "help.island.jar": "The jar → our pots",
-  "help.island.kiroku": "Island Phone → Records: fix your data (until Wednesday 4:00)"
+  "help.island.kiroku": "Island Phone → Records: fix your data (until Wednesday 4:00)",
+  "pots.short": "Not quite enough Bells yet"
 }

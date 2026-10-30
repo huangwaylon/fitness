@@ -1,12 +1,10 @@
 // The pots' small display rules (ADR 0019 §5): a pot's share of an amount and how full the island's jar looks.
 import type { PotKey } from '#lib/types.ts';
-
-/** The おやつ pot's share in percent (rules.ts POTS.treatPercent; display only: the model splits the real balances). */
-const TREAT_PERCENT = 30;
+import { POTS } from '#lib/config/rules.ts';
 
 /** This pot's share of `total` bells, split the way the pots are (on totals, so the two shares add up). */
 export function potShare(pot: PotKey, total: number): number {
-  const treat = Math.floor((total * TREAT_PERCENT) / 100);
+  const treat = Math.floor((total * POTS.treatPercent) / 100);
   return pot === 'treat' ? treat : total - treat;
 }
 
