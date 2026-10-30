@@ -20,7 +20,7 @@ const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '')
 
 test('tap: a check-in adds today’s ベル', async ({ page }) => {
   await page.goto('?demo');
-  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+ ベル$/ });
+  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
   await answerPending(page);
   const before = bellsOf(await ribbon.getAttribute('aria-label'));
@@ -64,7 +64,7 @@ test('menu: adding a treat to the shared menu', async ({ page }) => {
   await sheet(page).locator('input.lbl').last().fill('たいやき');
   await sheet(page).locator('input.num').last().fill('250');
   await sheet(page).getByRole('button', { name: '保存' }).click();
-  await expect(pot.getByRole('button', { name: /^たいやき 250 ベル/ })).toBeVisible();
+  await expect(pot.getByRole('button', { name: /^たいやき 250\sベル/ })).toBeVisible();
 });
 
 test('harvest: the bonus lands in the pots', async ({ page }) => {

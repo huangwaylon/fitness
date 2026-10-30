@@ -1,5 +1,6 @@
 // Today's progress of one fruit toward the daily goal both people share (ADR 0019 §2), as the island draws it.
-import type { FruitProgress, PersonWeekView } from '#lib/types.ts';
+import type { FruitKey, FruitProgress, PersonWeekView } from '#lib/types.ts';
+import { formatNum, t } from '#lib/i18n/index.ts';
 import { RULES } from '#lib/config/rules.ts';
 
 /** 0–100: today's share of the daily goal (met = 100, also when met by the tsuyu rule). */
@@ -16,3 +17,14 @@ export function dayMax(): number {
 
 /** 0–100: how much of a full day this person has earned today (idle life's "doing well" weight). */
 export const dayScore = (p: PersonWeekView): number => Math.min(100, Math.round((p.today.bells * 100) / dayMax()));
+
+/** 「30/45分」「6,200/8,000歩」「✓」「2/3」: today against the daily goal. */
+export function todayAmount(fruit: FruitKey, f: FruitProgress): string {
+  if (fruit === 'coconut') return f.todayMet ? '✓' : '0/1';
+  return t(`tree.${fruit}`, { a: formatNum(f.todayActual), g: formatNum(f.todayGoal) });
+}
+
+/** The fruit's line for a screen reader or a tip: today and this week's badge progress. */
+export function fruitDetail(fruit: FruitKey, f: FruitProgress): string {
+  return t(`fruit.${fruit}.detail`, { a: formatNum(f.todayActual), g: formatNum(f.todayGoal), d: f.weekDays, w: f.weekGoalDays });
+}

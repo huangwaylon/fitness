@@ -17,8 +17,8 @@
   import Fx from '../characters/Fx.svelte';
     import { fruitArt } from '#lib/art.ts';
   import { seasonArt, treeArt } from '#lib/art.ts';
-  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
-  import { todayPct } from './progress.ts';
+  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { todayAmount, todayPct } from './progress.ts';
   import { FRUIT_SPOTS, FRUIT_U, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
 
   interface Props {
@@ -48,12 +48,7 @@
   let treeEl: HTMLElement | null = $state(null);
 
   const pct = (f: FruitKey) => Math.round(todayPct(person.fruits[f]));
-  /** 「30/45分」「6,200/8,000歩」「✓」「2/3」: today against the daily goal. */
-  const amount = (f: FruitKey) => {
-    const x = person.fruits[f];
-    if (f === 'coconut') return x.todayMet ? '✓' : '0/1';
-    return t(`tree.${f}`, { a: formatNum(x.todayActual), g: formatNum(x.todayGoal) });
-  };
+  const amount = (f: FruitKey) => todayAmount(f, person.fruits[f]);
   const label = $derived(
     `${person.villagerName}: ` +
       FRUITS.map((f) => `${t(`fruit.${f}`)} ${amount(f)} ${formatBells(person.today.parts[f], { signed: true })}`).join('、')
