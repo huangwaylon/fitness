@@ -1,5 +1,5 @@
 # 0005 — Client delivery and hosting
-**Status:** Accepted (round 1). Network section superseded by 0010; hosting superseded by [0015](0015-google-sheet-backend.md) (Google Sheet + Apps Script, UI on GitHub Pages, no Mac); web push and notifications dropped by [0016](0016-no-privacy-no-alerts.md).
+**Status:** Partly superseded by ADR 0010, 0012, 0015 and 0016; only the installable mobile-first PWA client stands. Was: accepted (round 1). Network section superseded by 0010; hosting superseded by [0015](0015-google-sheet-backend.md) (Google Sheet + Apps Script, UI on GitHub Pages, no Mac); web push and notifications dropped by [0016](0016-no-privacy-no-alerts.md); Shortcuts ingestion adopted by [0012](0012-shortcuts-health-sync.md).
 
 **Decision.**
 - **Server:** SvelteKit (adapter-node) + SQLite (WAL) + Drizzle in Docker on an always-on home machine (Mac mini or Raspberry Pi 5; a $5 VPS is the fallback). Backups via Litestream to encrypted object storage, plus a monthly restore drill.

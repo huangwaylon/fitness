@@ -147,7 +147,7 @@ Detail: [design.md](design/design.md) (the current design spec), [history-and-ed
 | ✅ **Check-in sheet** | My three habits for today, or yesterday (48 h fill-in), as big toggles; each tap saves. Off over 正月. |
 
 **Look:** official New Horizons renders (villagers, しずえ, trees, fruit, NookPhone tiles) on a Pocket Camp–style diorama: a gradient sky, sea and grass at NH tile scale, with the time-of-day and season theme of the games. Zen Maru Gothic (Japanese) and Fredoka/Nunito (numbers), SIL OFL. WCAG AA contrast, reduce-motion support, works down to 320 px.
-**Cast:** each person picks a villager from the 10-villager roster; they are named **ウェイ (A)** and **うめ (B)**. The host is **しずえ** (Isabelle).
+**Cast:** each person picks a villager from the roster (79 villagers; until then A is Goldie and B is Anchovy); they are named **ウェイ (A)** and **うめ (B)**. The host is **しずえ** (Isabelle).
 **Later (native companion, v1):** home/lock-screen widget (jar + this week's fruit + a check-in button) and a Watch complication.
 
 ---

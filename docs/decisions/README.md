@@ -4,11 +4,11 @@ Numbered `NNNN-title.md`. Superseded decisions stay, marked as such; the newest 
 
 | # | Decision | Status | Superseded / amended by |
 |---|---|---|---|
-| [0001](0001-health-data-ingestion.md) | Health Auto Export for Health data | Superseded | 0012 |
+| [0001](0001-health-data-ingestion.md) | Health Auto Export for Health data | Superseded | 0012, 0015 |
 | [0002](0002-one-scoring-model.md) | One weekly score: 100 fruit per person | Amended | 0009 (four fruits), 0017 |
 | [0003](0003-economy.md) | Economy: fruit, jar, tickets | Mostly superseded | 0006 (yen), 0008 (open-ended), 0015 (no ledger) |
-| [0004](0004-check-in-and-privacy.md) | Evening eating check-in; partner visibility | Partly superseded | 0016 (visibility) |
-| [0005](0005-client-and-hosting.md) | PWA client and hosting | Partly superseded | 0010, 0015 (hosting), 0016 (push) |
+| [0004](0004-check-in-and-privacy.md) | Evening eating check-in; partner visibility | Partly superseded | 0016 (visibility, push) |
+| [0005](0005-client-and-hosting.md) | PWA client and hosting | Partly superseded | 0010, 0012 (Shortcuts ingest), 0015 (hosting), 0016 (push) |
 | [0006](0006-yen-single-currency-and-accountability.md) | Yen only; team + individual accountability | Partly superseded | 0008, 0014 (promise) |
 | [0007](0007-japanese-first-ui.md) | Japanese-first UI, switchable to English | Accepted | |
 | [0008](0008-open-ended-savings-per-fruit-rate.md) | Open-ended savings: 1 fruit = ¥50 | Accepted | |

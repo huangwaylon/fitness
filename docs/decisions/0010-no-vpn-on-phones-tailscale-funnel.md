@@ -1,5 +1,5 @@
 # 0010 — No VPN on the phones: Tailscale Funnel on the Mac only
-**Status:** Superseded by 0015 (no Mac, no Funnel: the Apps Script web app is the public endpoint). Was: accepted (round 4; user input). Superseded the network parts of 0005 and the Tailscale-on-iPhone setup in 0001.
+**Status:** Superseded by ADR 0015 (no Mac, no Funnel: the Apps Script web app is the public endpoint). Was: accepted (round 4; user input). Superseded the network parts of 0005 and the Tailscale-on-iPhone setup in 0001.
 
 **User input:** avoid Tailscale or any VPN running on the phones; something simpler, e.g. ngrok or GitHub Pages + a spreadsheet.
 Detail: the round 4 software-engineer memo (git history) and the [runbook](../ops/runbook.md).
