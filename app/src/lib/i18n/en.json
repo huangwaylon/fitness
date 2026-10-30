@@ -283,6 +283,6 @@
   "sound.volume": "Volume",
   "sound.nowPlaying": "♪ Now playing: the {hour}:00 tune",
   "sound.noMusic": "No music files yet: the tunes play once they are added.",
-  "sound.silentNote": "Nothing plays while the iPhone is in silent mode.",
+  "sound.silentNote": "What's on here plays even in silent mode.",
   "sound.opening": "♪ Now playing: the opening theme"
 }

@@ -283,6 +283,6 @@
   "sound.volume": "音量",
   "sound.nowPlaying": "♪ いまは{hour}時の曲",
   "sound.noMusic": "BGMの曲はまだ入っていません。ファイルが入ると流れます。",
-  "sound.silentNote": "iPhoneが消音モードのときは音が出ません。",
+  "sound.silentNote": "消音モードでも、ここでオンにした音は鳴ります。",
   "sound.opening": "♪ いまはオープニングテーマ"
 }

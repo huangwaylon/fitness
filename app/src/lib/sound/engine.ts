@@ -75,11 +75,12 @@ export class Engine {
     if (this.ctx) return this.ctx;
     const AC = window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
     if (!AC) return null;
-    // iOS 17+ (Audio Session API): 'ambient' obeys the Ring/Silent switch and mixes with the user's own music or
-    // podcast instead of stopping it, like a game; and an ambient app never takes the lock screen's Now Playing.
+    // iOS 17+ (Audio Session API): 'playback' plays through the Ring/Silent switch (user 2026-10-30: the in-app
+    // switches are the control, so what's turned on is heard even in silent mode). The cost: it pauses the user's own
+    // music while ours plays, like any media app. Music pauses when the app is hidden, so it never plays from a pocket.
     try {
       const nav = navigator as AudioSessionNav;
-      if (nav.audioSession) nav.audioSession.type = 'ambient';
+      if (nav.audioSession) nav.audioSession.type = 'playback';
     } catch {
       /* not supported */
     }
