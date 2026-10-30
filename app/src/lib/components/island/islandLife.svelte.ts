@@ -4,7 +4,6 @@
 import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
-import { ripeness } from '../sheets/ripeness.ts';
 import { dayScore, todayPct } from './progress.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
@@ -26,6 +25,8 @@ interface Ctx {
   day: () => boolean;
 }
 
+/** Four ripeness stages of a fruit's day (a stage-up is R7): < 25% · < 60% · < 100% · the goal. */
+const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);
 const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
 
 /** True the first time `key` is seen today on this device. */
@@ -111,7 +112,7 @@ export class IslandLife {
       const a = p.people[pid].rings, b = v.people[pid].rings;
       const ripeNow = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100);
       const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
-      const stagedUp = RING_FRUITS.filter((f) => ripeness(todayPct(b[f])) !== ripeness(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
+      const stagedUp = RING_FRUITS.filter((f) => stage(todayPct(b[f])) !== stage(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
       const swap = who === 'partner';
       if (newlyRipe.length && ripeNow.length === RING_FRUITS.length) return react('R8', swap);
       if (newlyRipe.length) {

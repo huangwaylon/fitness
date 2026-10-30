@@ -70,7 +70,7 @@
         {#if f === 'peach' && x.exercise.source && x.exercise.source !== 'watch'}<span class="src">({t(`kiroku.src.${x.exercise.source}`)})</span>{/if}
         {#if edited(x, f)}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
         <b class="money b" class:zero={!x.rings[f]}>{x.rings[f] ? `+${formatNum(x.rings[f])}` : '—'}</b>
-        {#if can && edit}<button type="button" class="pen" data-sfx="page" data-focus={edit} aria-label="{t(`fruit.${f}`)} ✎" onclick={() => onmetric(edit)}><Glyph kind="pen" size={18} /></button>
+        {#if can && edit}<button type="button" class="pen-btn" data-sfx="page" data-focus={edit} aria-label="{t(`fruit.${f}`)} ✎" onclick={() => onmetric(edit)}><Glyph kind="pen" size={18} /></button>
         {:else if can}<span class="pen-sp"></span>{/if}
       </div>
     {/each}
@@ -80,16 +80,16 @@
         <span class="v small"><span class="money">{w.manual ? '' : timeOf(w.startAt) + ' '}{t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
           {#if w.manual}<em>{t('kiroku.manual')}</em>{/if}</span>
-        {#if can}<button type="button" class="pen" data-sfx="page" data-focus="w:{w.id}" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
+        {#if can}<button type="button" class="pen-btn" data-sfx="page" data-focus="w:{w.id}" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
       </div>
     {/each}
     {#each x.visits as v (v.id)}
       <div class="row wo">
         <span class="k">{v.label || t('kiroku.gym')}</span>
-        <span class="v small"><span class="money">{timeOf(v.arriveAt)}</span><em class="ok">{t('kiroku.strengthYes')}</em></span>
+        <span class="v small"><span class="money">{timeOf(v.arriveAt)}</span><em class="ok">{t('kiroku.gymYes')}</em></span>
       </div>
     {/each}
-    {#if can}<button type="button" class="add" data-focus="add" data-sfx="page" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
+    {#if can}<button type="button" class="add-btn" data-focus="add" data-sfx="page" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
   </section>
 {/snippet}
 
@@ -137,15 +137,5 @@
   em { font-style: normal; font-size: var(--fs-s); white-space: nowrap; font-weight: 700; padding: 2px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
   em.ok { background: var(--c-yuzu); color: var(--c-ink); }
   .src { font-size: var(--fs-s); color: var(--text-soft); font-weight: 700; }
-  .pen {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
-    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-  }
-  .pen:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .add {
-    appearance: none; border: 0; cursor: pointer; margin-top: 6px; min-height: 44px; border-radius: var(--r-btn);
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));
-    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
-  }
-  .add:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
+  .add-btn { margin-top: 6px; }
 </style>

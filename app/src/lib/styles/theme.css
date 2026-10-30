@@ -68,7 +68,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 }
 
 /* ---------- chunky button: radius 16, an edge (2px outline + lip, >= 3:1), squash on press ----------
-   Primary = leaf (the default), .yuzu = the selected / celebratory yellow, .paper = secondary cream. */
+   Primary = leaf (the default), .paper = secondary cream. */
 .btn {
   --fill: var(--c-leaf); --lip-c: var(--c-leaf-edge);
   appearance: none; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -89,15 +89,28 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn svg, .btn .ic { width: 24px; height: 24px; flex: none; }
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
-.btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-edge); }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 @media (prefers-reduced-motion: reduce) {
   .btn:active:not(:disabled, [aria-disabled='true']) { transform: none; filter: brightness(.95); }
 }
 
-/* ---------- round icon button (sheet close / back): a cream object with the brown edge ---------- */
+/* ---------- ✎ (きろく): a 44px cream object with the brown edge, the pencil in ink ---------- */
+.pen-btn {
+  appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
+  display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
+}
+.pen-btn:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
 
-/* ---------- 島 ⇄ ふたりの壺 (ui-state/jarTransition.ts) ----------
+/* ---------- ＋ add a row (a workout, a treat): a leaf-tinted secondary with the leaf edge ---------- */
+.add-btn {
+  appearance: none; border: 0; cursor: pointer; width: 100%; min-height: var(--hit); border-radius: var(--r-btn);
+  font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));
+  box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
+}
+.add-btn:active:not([aria-disabled='true']) { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
+.add-btn[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
+
+/* ---------- 島 ⇄ ごほうび (ui-state/jarTransition.ts) ----------
    The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).
    Around it the pages crossfade with a slight push about the jar (--vt-x / --vt-y): in 320ms, back 280ms,
    cubic-bezier(.4,0,.2,1); the Jar page's blocks rise 16px with a 40ms stagger. Reduced motion: 150ms fade. */
@@ -120,7 +133,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* The Jar page's blocks rise in after the jar (live inside the new snapshot, or as the fallback entrance). */
 :root:is([data-vt="in"], [data-enter="in"]) .jar-screen > :not(.top, .hero) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) both; }
 :root:is([data-vt="in"], [data-enter="in"]) .jar-screen > :nth-child(n + 4) { animation-delay: 40ms; }
-:root:is([data-vt="in"], [data-enter="in"]) .jar-screen .cards > :nth-child(2) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) 80ms both; }
 /* No View Transitions (older iOS): the arriving page zooms out of / back into the jar as a plain entrance. */
 :root[data-enter="in"] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); animation: vt-grow 320ms cubic-bezier(.4, 0, .2, 1) both; }
 :root[data-enter="out"] .page > main { animation: vt-fade-in 280ms cubic-bezier(.4, 0, .2, 1) both; }
