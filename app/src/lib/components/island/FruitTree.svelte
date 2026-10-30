@@ -52,15 +52,23 @@
 
   const ring = (f: RingFruit) => person.rings[f];
   const amount = (f: RingFruit) => todayAmount(f, ring(f));
-  /** The week's pips: one per badge day, filled up to the days met so far. */
-  const pips = (f: RingFruit) => Array.from({ length: ring(f).weekGoalDays }, (_, i) => i < ring(f).weekDays);
+  /** The one nudge (v2 milestones, docs/reviews/round-19/milestones-contract.md): 「あと 8分で +45」 for the tapped fruit,
+   *  else for the fruit nearest its next step (by share of the goal). None in a v1 week or once every step is reached. */
+  const next = $derived.by((): { f: RingFruit; text: string } | null => {
+    const open = RING_FRUITS.filter((f) => ring(f).nextAt != null && ring(f).nextGain != null);
+    if (!open.length) return null;
+    const gap = (f: RingFruit) => (ring(f).nextAt! - ring(f).today) / (ring(f).goal || 1);
+    const f = picked && open.includes(picked) ? picked : open.reduce((a, b) => (gap(b) < gap(a) ? b : a));
+    const r = ring(f);
+    return { f, text: t(`tree.next.${f}`, { n: formatNum(Math.max(1, Math.ceil(r.nextAt! - r.today))), b: formatNum(r.nextGain!) }) };
+  });
   const label = $derived(
     `${person.villagerName}: ` +
       RING_FRUITS.map((f) => {
         const r = ring(f);
         const bells = r.todayBells > 0 ? formatBells(r.todayBells, { signed: true }) : '';
         return `${t(`fruit.${f}`)} ${amount(f)} ${bells} ${t('tree.week', { d: Math.min(r.weekDays, r.weekGoalDays), w: r.weekGoalDays })}${r.badge ? ' ✓' : ''}`;
-      }).join('、')
+      }).join('、') + (next ? `。${next.text}` : '')
   );
   /** The fruit row leans away from the jar (left tree left, right tree right). */
   const lean = $derived(x < JAR.x ? -FRUIT_LEAN : FRUIT_LEAN);
@@ -201,17 +209,21 @@
   {#key taps}
     <div class="detail" id={detailId} role="status" style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
       <span class="plate">{person.villagerName}</span>
-      <span class="row hd" aria-hidden="true"><span></span><span class="lbl"></span><span>{t('tree.today')}</span><span>{t('bells.unit')}</span><span>{t('tree.thisWeek')}</span></span>
+      <span class="row hd" aria-hidden="true"><span></span><span class="lbl"></span><span>{t('tree.today')}</span><span></span><span>{t('bells.unit')}</span><span>{t('tree.thisWeek')}</span></span>
       {#each RING_FRUITS as f (f)}
         {@const r = ring(f)}
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
           <span class="amt money" class:met={r.met}>{amount(f)}</span>
+          <!-- today's milestones (v2): four pips filling up toward the goal -->
+          <span class="steps">{#if r.milestone !== undefined}{#each [1, 2, 3, 4] as k (k)}<i class:on={k <= r.milestone}></i>{/each}{/if}</span>
           <b class="money" class:zero={!r.todayBells}>{r.todayBells > 0 ? `+${formatNum(r.todayBells)}` : '—'}</b>
-          <span class="pips" class:badge={r.badge}>{#if r.badge}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{#each pips(f) as on, i (i)}<i class:on></i>{/each}{/if}</span>
+          <!-- the week toward the badge: days met / days needed, a ✓ disc once it's earned -->
+          <span class="wk money" class:badge={r.badge}>{#if r.badge}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{Math.min(r.weekDays, r.weekGoalDays)}/{r.weekGoalDays}{/if}</span>
         </span>
       {/each}
+      {#if next}<span class="next"><OfficialArt key={fruitArt(next.f)} size="16px" eager />{next.text}</span>{/if}
     </div>
   {/key}
 {/if}
@@ -264,7 +276,7 @@
   /* NH-style popup: a nameplate, a faint column head, then one row per fruit (icon · word · today/goal · ベル · the
      week's pips), in shared columns (subgrid) so the numbers line up */
   .detail {
-    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto auto; gap: 3px 0;
+    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto auto auto; gap: 3px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink); pointer-events: none;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
@@ -295,14 +307,21 @@
   .amt.met { color: var(--c-leaf-text); }
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
   .row b.zero { color: var(--c-ink-soft); font-weight: 500; }
-  /* the week toward the badge: one pip per day needed, filled per day met; a ✓ disc once the badge is met */
-  .pips { display: flex; gap: 2px; align-items: center; min-width: 38px; }
-  .pips i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--plate-ink) 22%, transparent); }
-  .pips i.on { background: var(--c-leaf-edge); }
-  .pips.badge svg { width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
+  /* today's milestones: four small pips (yuzu = reached), one per 25% of the goal */
+  .steps { display: flex; gap: 2px; align-items: center; }
+  .steps i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--plate-ink) 22%, transparent); }
+  .steps i.on { background: var(--c-yuzu-lip); }
+  /* the week toward the badge: 「2/5」 days, or a ✓ disc once the badge is earned */
+  .wk { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); min-width: 22px; text-align: left; }
+  .wk.badge svg { width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
+  /* the one nudge: what the next step pays */
+  .next {
+    grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
+    border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
+  }
   /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree (sizing #10) */
-  @container (max-width: 359px) {
-    .detail { grid-template-columns: 20px auto auto auto; }
+  @container (max-width: 400px) {
+    .detail { grid-template-columns: 20px auto auto auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
   }

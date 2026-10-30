@@ -115,7 +115,9 @@ test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', asyn
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the five ring fruits, today against the goal, today’s ベル and the week’s pips (ADR 0021)', async ({ page }) => {
+test('tree popup: the five ring fruits, today against the goal, today’s ベル and the week toward each badge (ADR 0021)', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
+  await page.clock.resume();
   await page.goto('?demo');
   await islandReady(page);
   await page.locator('button.canopy').nth(0).click();
@@ -128,11 +130,28 @@ test('tree popup: the five ring fruits, today against the goal, today’s ベル
   await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
   await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/180分$/);
   await expect(rows.nth(3).locator('.amt')).toHaveText(/^[\d,]+\/8,000歩$/);
-  // week pips: 5 · 5 · 5 · 4 · 3 (or a ✓ once the badge is met)
-  const counts = await rows.evaluateAll((els) => els.map((e) => e.querySelector('.pips.badge') ? -1 : e.querySelectorAll('.pips i').length));
-  expect(counts.map((n, i) => (n === -1 ? [5, 5, 5, 4, 3][i] : n))).toEqual([5, 5, 5, 4, 3]);
+  // the week: days met / 5 · 5 · 5 · 4 · 3 (or a ✓ once the badge is met)
+  const weeks = await rows.evaluateAll((els) => els.map((e) => (e.querySelector('.wk.badge') ? 'ok' : e.querySelector('.wk')!.textContent!.trim())));
+  weeks.forEach((w, i) => expect(w === 'ok' || w.endsWith(`/${[5, 5, 5, 4, 3][i]}`), `${i}: ${w}`).toBe(true));
+  // a v1 week has no milestone pips and no nudge
+  await expect(pop.locator('.steps i')).toHaveCount(0);
+  await expect(pop.locator('.next')).toHaveCount(0);
   // ground fruit: five kinds under each tree
   await expect(page.locator('.fruit.k0')).toHaveCount(10);
+});
+
+test('tree popup, v2 milestones (from 11-02): four pips per ring fruit, none for the gym, one 「あと…で +N」 nudge', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-03T12:10:00+09:00') });
+  await page.clock.resume();
+  await page.goto('?demo');
+  await islandReady(page);
+  await page.locator('button.canopy').nth(0).click();
+  const rows = page.locator('.detail .row:not(.hd)');
+  await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/120分$/);
+  const pips = await rows.evaluateAll((els) => els.map((e) => e.querySelectorAll('.steps i').length));
+  expect(pips).toEqual([4, 4, 4, 4, 0]);
+  const next = page.locator('.detail .next');
+  if (await next.count()) await expect(next).toHaveText(/^あと [\d,]+ ?(分|kcal|歩)で \+[\d,]+$/);
 });
 
 test('partner: a villager card (their line, when their data came, ハイタッチ), no numbers', async ({ page }) => {
