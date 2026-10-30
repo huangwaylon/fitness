@@ -21,12 +21,12 @@
   .chip {
     appearance: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
     min-height: 32px; padding: 0 12px 0 9px; border-radius: var(--r-chip);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); font: 700 var(--fs-s)/1 var(--font-ui);
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); font: 700 var(--fs-s)/1 var(--font-ui);
     position: relative;
   }
   /* A 44px tap target around the 32px chip. */
   .chip::after { content: ''; position: absolute; inset: -6px -4px; }
-  .chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--c-lip); }
+  .chip:active { transform: translateY(3px); box-shadow: var(--sh-obj-press); }
   .chip:disabled { cursor: default; }
   svg { width: 14px; height: 14px; color: var(--c-coral); flex: none; }
   .spin { animation: spin 1s linear infinite; }

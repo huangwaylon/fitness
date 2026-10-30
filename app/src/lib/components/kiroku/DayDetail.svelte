@@ -140,9 +140,9 @@
   .src { font-size: var(--fs-s); color: var(--text-soft); font-weight: 700; }
   .pen {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
-    display: grid; place-items: center; background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
   }
-  .pen:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
+  .pen:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .ticks { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 4px; }
   .tick {
     appearance: none; border: 0; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); min-height: 36px; padding: 0 10px;
@@ -150,9 +150,10 @@
     background: color-mix(in srgb, var(--lip) 35%, transparent);
   }
   /* 36px chips, a 44px hit area (sizing #8) */
-  button.tick { position: relative; cursor: pointer; box-shadow: 0 3px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
+  button.tick { position: relative; cursor: pointer; background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge), 0 3px 0 var(--edge); }
   button.tick::after { content: ''; position: absolute; inset: -4px 0; }
-  button.tick:active { transform: translateY(2px); box-shadow: 0 1px 0 color-mix(in srgb, var(--lip) 80%, transparent); }
+  button.tick:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  button.tick.on { background: var(--c-mint); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge); }
   .tick.on { background: var(--c-mint); color: var(--c-ink); }
   /* Read-only chips: flat, no lip, a quieter fill; nothing about them says "tap me". */
   span.tick { background: transparent; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lip) 55%, transparent); cursor: default; }
@@ -160,7 +161,8 @@
   .tick svg { width: 14px; height: 14px; }
   .add {
     appearance: none; border: 0; cursor: pointer; margin-top: 6px; min-height: 44px; border-radius: var(--r-btn);
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-cream));
-    box-shadow: 0 var(--lip-h) 0 color-mix(in srgb, var(--c-leaf-lip) 60%, var(--c-lip));
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));
+    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
   }
+  .add:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
 </style>

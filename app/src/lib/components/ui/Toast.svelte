@@ -85,7 +85,7 @@
     position: fixed; inset: auto 0; margin: 0 auto; z-index: 90; overflow: hidden;
     top: calc(var(--safe-top) + 56px); height: 52px; width: min(100% - 24px, 420px);
     display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; border-radius: var(--r-pill);
-    background: var(--c-cream); color: var(--c-ink); border: 0; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
+    background: var(--c-card); color: var(--c-ink); border: 0; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
     font: 700 var(--fs-body)/1.2 var(--font-ui);
     animation: in 320ms var(--ease-bounce) both;
   }
@@ -112,7 +112,7 @@
   /* Undo: above the dismiss layer, a 44px-tall button on the right. */
   .act {
     position: relative; z-index: 2; flex: none; appearance: none; cursor: pointer; min-height: 44px; margin-right: -6px; padding: 0 14px;
-    border-radius: var(--r-pill); border: 0; background: var(--c-leaf); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-leaf-lip);
+    border-radius: var(--r-pill); border: 0; background: var(--c-leaf); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
     font: 700 var(--fs-body)/1 var(--font-ui);
   }
   .act:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }

@@ -85,13 +85,13 @@
   .keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .key {
     appearance: none; border: 0; cursor: pointer; height: var(--key-h); border-radius: var(--r-btn);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
     font: 700 var(--fs-title)/1 var(--font-num); display: grid; place-items: center;
     transition: transform var(--dur-base) var(--ease-bounce);
   }
-  .key.fn { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-cream)); font: 700 var(--fs-body)/1 var(--font-ui); }
+  .key.fn { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); font: 700 var(--fs-body)/1 var(--font-ui); }
   .key svg { width: 24px; height: 24px; }
-  .key:active { transform: translateY(3px) scale(1.04, .94); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
+  .key:active { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
   .choose { display: flex; }
   .choose :global(.choices) { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; }
   .choose.off :global(.choice:first-child) { opacity: .5; }

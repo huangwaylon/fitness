@@ -119,13 +119,13 @@
   /* NH's back pill. */
   .back {
     display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px 0 12px; border-radius: var(--r-btn);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); text-decoration: none;
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); text-decoration: none;
     font: 700 var(--fs-body)/1 var(--font-ui);
   }
   /* the undo banner (56px, 16px over the bottom) never covers the last card (sizing #18) */
   .jar-screen.undoing { padding-bottom: calc(var(--pad-bottom) + 88px); }
   .back svg { width: 16px; height: 16px; fill: var(--c-yuzu-lip); }
-  .back:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
+  .back:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
 
   /* the hero: the island's jar (smaller than before: the pots are the screen's cards) beside today's flow */
   .hero { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 2px 0 16px; color: var(--text); --jar-h: clamp(68px, calc(11 * var(--vh1)), 112px); }
@@ -137,8 +137,8 @@
   .wk b { font-size: var(--fs-s); color: var(--text); }
 
   .cards { display: grid; gap: 16px; }
-  .recent { appearance: none; border: 0; cursor: pointer; width: 100%; font: inherit; color: inherit; text-align: left; display: grid; gap: 2px; padding: 10px 16px; }
-  .recent:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lip); }
+  .recent { appearance: none; border: 0; cursor: pointer; width: 100%; font: inherit; color: inherit; text-align: left; display: grid; gap: 2px; padding: 10px 16px; box-shadow: var(--sh-ctl); }
+  .recent:active { transform: translateY(3px); box-shadow: var(--sh-ctl-press); }
   .rh { display: flex; justify-content: space-between; align-items: center; }
   .rh small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
   .chev { width: 18px; height: 18px; color: var(--text-soft); }

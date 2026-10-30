@@ -90,35 +90,36 @@
 <style>
   .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
   .date { font-size: var(--fs-talk); color: var(--text-soft); }
-  .days { display: flex; gap: 2px; padding: 3px; border-radius: var(--r-btn); background: color-mix(in srgb, var(--lip) 45%, transparent); flex: none; }
+  .days { display: flex; gap: 2px; padding: 3px; border-radius: var(--r-btn); background: color-mix(in srgb, var(--lip) 45%, transparent); box-shadow: inset 0 0 0 2px var(--edge); flex: none; }
   .day {
     appearance: none; cursor: pointer; min-width: 56px; min-height: var(--hit); padding: 0 10px; border-radius: 14px; border: 0;
     display: grid; place-items: center; font-weight: 700; font-size: var(--fs-body); position: relative;
     background: transparent; color: var(--text-soft); transition: background var(--dur-quick);
   }
-  .day[aria-pressed='true'] { background: var(--c-cream); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-lip); }
+  .day[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge); }
   .day.fillable::after { content: ''; position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-mint-lip); }
 
   .habits { display: grid; gap: 12px; }
   .habit {
     appearance: none; border: 0; cursor: pointer; text-align: left; position: relative; width: 100%; font: inherit;
     display: flex; align-items: center; gap: 12px; min-height: 68px; padding: 10px 14px; border-radius: var(--r-card);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
     transition: transform var(--dur-base) var(--ease-bounce), background var(--dur-base);
     user-select: none; -webkit-user-select: none;
   }
-  .habit:active { transform: translateY(3px) scale(1.02, .96); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
-  .habit.on { background: var(--c-leaf); box-shadow: 0 var(--lip-h) 0 var(--c-leaf-lip); }
+  .habit:active { transform: translateY(3px) scale(1.02, .96); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
+  .habit.on { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
+  .habit.on:active { box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
   .ic { width: 44px; height: 44px; flex: none; display: grid; place-items: center; }
   .ic svg { width: 40px; height: 40px; }
   .txt { flex: 1; min-width: 0; line-height: 1.25; text-wrap: pretty; word-break: auto-phrase; font-weight: 700; font-size: var(--fs-talk); }
   .txt small { display: block; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); margin-top: 2px; }
   .tick {
     position: relative; width: 36px; height: 36px; flex: none; border-radius: 50%; display: grid; place-items: center;
-    background: color-mix(in srgb, var(--c-lip) 45%, transparent);
+    background: var(--c-paper); box-shadow: inset 0 0 0 2px var(--c-edge);
   }
-  .habit.on .tick { background: var(--c-cream); animation: if-pop var(--dur-pop) var(--ease-bounce); }
-  .tick svg { width: 22px; height: 22px; color: var(--c-leaf-lip); }
+  .habit.on .tick { background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); animation: if-pop var(--dur-pop) var(--ease-bounce); }
+  .tick svg { width: 22px; height: 22px; color: var(--c-leaf-edge); }
   .plus { position: absolute; left: 6px; top: -6px; line-height: 0; animation: rise .9s var(--ease-soft) forwards; pointer-events: none; }
   @keyframes rise { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; transform: translateY(-10px) scale(1); } 100% { transform: translateY(-56px) scale(1.1); opacity: 0; } }
 

@@ -56,10 +56,10 @@
   .field { display: flex; align-items: baseline; gap: 8px; }
   input {
     flex: 1; min-width: 0; width: 100%; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); text-align: right;
-    font: 700 max(var(--fs-input), var(--fs-hero))/1.1 var(--font-num); color: var(--c-ink); background: var(--fill-on-surface);
-    box-shadow: inset 0 0 0 2px var(--lip); font-variant-numeric: tabular-nums;
+    font: 700 max(var(--fs-input), var(--fs-hero))/1.1 var(--font-num); color: var(--text); background: var(--ctl);
+    box-shadow: inset 0 0 0 2px var(--edge); font-variant-numeric: tabular-nums;
   }
-  input::placeholder { color: color-mix(in srgb, var(--c-ink-soft) 45%, transparent); }
+  input::placeholder { color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
   input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
   .unit { font: 700 var(--fs-talk)/1 var(--font-num); color: var(--text-soft); }

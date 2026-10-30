@@ -17,6 +17,6 @@
 </div>
 
 <style>
-  .radio { width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--lip) 60%, transparent); flex: none; }
-  .prow[aria-checked='true'] .radio { background: radial-gradient(circle, var(--c-cream) 0 5px, var(--c-leaf) 6px); }
+  .radio { width: 26px; height: 26px; border-radius: 50%; background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge); flex: none; }
+  .prow[aria-checked='true'] .radio { background: radial-gradient(circle, var(--c-card) 0 5px, var(--c-leaf-edge) 6px); box-shadow: none; }
 </style>

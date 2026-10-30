@@ -258,9 +258,9 @@
   .pills { display: flex; gap: 8px; justify-content: center; margin: -4px 0 4px; }
   .pill {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); background: color-mix(in srgb, var(--lip) 40%, transparent);
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  .pill[aria-pressed='true'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); }
+  .pill[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   .wcard { display: grid; gap: 6px; justify-items: start; }
   .wcard b { font-size: var(--fs-talk); }
   .wcard .money { font-size: var(--fs-body); color: var(--text-soft); }
@@ -278,8 +278,8 @@
   .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .type {
     appearance: none; border: 0; cursor: pointer; min-width: 0; overflow-wrap: anywhere; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);
-    font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--c-ink); background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
     word-break: auto-phrase;
   }
-  .type:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--c-lip); }
+  .type:active { transform: translateY(3px); box-shadow: var(--sh-ctl-press); }
 </style>

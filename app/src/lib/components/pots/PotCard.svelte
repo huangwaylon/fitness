@@ -53,9 +53,9 @@
   .edit {
     appearance: none; border: 0; cursor: pointer; flex: none; min-height: var(--hit); min-width: var(--hit); padding: 0 12px;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--r-btn);
-    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink); background: var(--fill-on-surface); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  .edit:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
+  .edit:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .bal { line-height: 1; }
   /* the card's one big number: 36–44px, never wider than the card at 320 */
   .bal :global(.balance) { font-size: clamp(1.875rem, 10vw, var(--fs-hero)); }

@@ -180,10 +180,14 @@
   .page :global(.prows) { display: grid; gap: 10px; }
   .page :global(.prow) {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px;
-    border-radius: var(--r-card); border: 0; background: var(--fill-on-surface); color: var(--text);
-    box-shadow: var(--sh-lip); text-align: left; width: 100%; font: inherit;
+    border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text);
+    box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
   }
-  .page :global(.prow:not(.static):active) { transform: translateY(2px); box-shadow: 0 1px 0 var(--lip); }
+  .page :global(.prow:not(.static):active) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  /* a static row is information, not a control: the soft card lip, no edge */
+  .page :global(.prow.static) { box-shadow: var(--sh-lip); background: var(--card); }
+  /* the chosen row: NH's yellow highlight */
+  .page :global(.prow[aria-checked='true']) { background: var(--ctl-sel); color: var(--c-ink); }
   .page :global(.prow.static) { cursor: default; }
   .page :global(.prl) { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); word-break: auto-phrase; text-wrap: balance; line-height: 1.3; }
 </style>
