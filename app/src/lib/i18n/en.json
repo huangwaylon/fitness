@@ -221,7 +221,7 @@
   "help.goal.kcal": "{n} kcal a day (change it in Records)",
   "help.goal.steps": "{n} steps a day",
   "help.goal.gym": "Arrive at the gym",
-  "help.pay.perMin": "{b} Bells a min",
+  "help.pay.perMin": "{b} per min",
   "help.pay.atGoal": "{b} at the goal",
   "help.badge.title": "Badges (Sunday bonus)",
   "help.badge.body": "Hit a goal on enough days in a week and you get its badge: {bells} each, collected at the Sunday evening harvest.",
@@ -236,9 +236,7 @@
   "wallet.buy": "Buy it!",
   "wallet.bought": "Bought {label}! −{bells}",
   "wallet.short": "Not quite enough Bells yet…",
-  "menu.daily.title": "Everyday treats",
-  "menu.trip.title": "Trip treats",
-  "menu.edit": "Change {section}",
+  "menu.edit": "Change the list",
   "menu.editHint": "Shared by you both. Set the prices in Bells.",
   "menu.empty": "Nothing here yet.",
   "menu.left": "{bells} to go",
@@ -248,5 +246,6 @@
   "menu.add": "Add one",
   "menu.saved": "Menu saved",
   "help.wallet.title": "Treats",
-  "help.wallet.body": "Every Bell goes into one wallet you share. Tap the jar on the island to buy a snack, a coffee date or a trip treat."
+  "help.wallet.body": "Every Bell goes into one wallet you share. Tap the jar on the island to buy a snack, a café treat or a trip treat.",
+  "menu.title": "Treats"
 }

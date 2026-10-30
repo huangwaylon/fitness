@@ -20,7 +20,7 @@ const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '')
 
 test('buy: a treat comes back with とりけす', async ({ page }) => {
   await page.goto('jar?demo');
-  const pot = page.locator('[data-section=daily]');
+  const pot = page.locator('.treats');
   const balance = async () => (await page.locator('.hero .total').innerText()).replace(/\D/g, '');
   const before = await balance();
   await pot.locator('button.item:not([aria-disabled="true"])').first().click();
@@ -35,22 +35,22 @@ test('buy: a treat comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
-test('wallet (ADR 0022): one balance (the island plate’s), two menu sections, no pots or trip bars', async ({ page }) => {
+test('wallet (ADR 0022): one balance (the island plate’s), one list of five treats, no sections, pots or bars', async ({ page }) => {
   await page.goto('?demo');
   const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
   await page.locator('.if-scene .jar').click();
   await expect(page.locator('.jar-screen')).toBeVisible();
   await expect(page.locator('.hero .total')).toContainText(plate.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-  await expect(page.getByRole('heading', { name: 'まいにちのごほうび' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '旅のごほうび' })).toBeVisible();
-  await expect(page.locator('[data-section=trip] button.item').first()).toBeVisible();
-  await expect(page.locator('[data-pot], .rope')).toHaveCount(0);
+  // the demo's list: the five defaults (and whatever the demo couple added after them)
+  const names = await page.locator('.treats .nm').allInnerTexts();
+  expect(names.slice(0, 5)).toEqual(['おやつ', 'カフェ・デザート', '外ごはん', 'ほしいもの', '旅のごほうび']);
+  await expect(page.locator('[data-pot], [data-section], .rope')).toHaveCount(0);
 });
 
-test('menu: adding an everyday treat to the shared menu (ADR 0022)', async ({ page }) => {
+test('menu: adding a treat to the shared list (ADR 0022)', async ({ page }) => {
   await page.goto('jar?demo');
-  const pot = page.locator('[data-section=daily]');
-  await pot.getByRole('button', { name: /まいにちのごほうびを かえる/ }).click();
+  const pot = page.locator('.treats');
+  await pot.getByRole('button', { name: 'メニューを かえる' }).click();
   await sheet(page).getByRole('button', { name: /ふやす/ }).click();
   await sheet(page).locator('input.lbl').last().fill('たいやき');
   await sheet(page).locator('input.num').last().fill('250');
@@ -245,12 +245,12 @@ test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-
   // the wallet: ‹ 島へ top-left; the buy confirm and the editor have ✕
   await page.locator('.if-scene .jar').click();
   await expect(page.locator('.jar-screen a.back')).toBeVisible();
-  await page.locator('[data-section=daily] button.item:not([aria-disabled="true"])').first().click();
+  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
   close = sheet(page).locator('.navbar .close');
   await expect(close).toBeVisible();
   await close.click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await page.locator('[data-section=daily] .edit').click();
+  await page.locator('.treats .edit').click();
   await sheet(page).locator('.navbar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.locator('.jar-screen a.back').click();

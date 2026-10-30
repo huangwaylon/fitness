@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 19,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -187,41 +187,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Coffee_Cup_NH_Icon.png"
     },
-    "items/dessert": {
-      "path": "items/dessert.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pancakes_NH_Icon.png"
-    },
     "items/dinner": {
       "path": "items/dinner.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Pizza_Margherita_NH_Icon.png"
-    },
-    "items/ice": {
-      "path": "items/ice.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Soft-Serve_Lamp_NH_Icon.png"
-    },
-    "items/konbini": {
-      "path": "items/konbini.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cherry_Tart_NH_Icon.png"
-    },
-    "items/meal": {
-      "path": "items/meal.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Gratin_NH_Icon.png"
-    },
-    "items/onsen": {
-      "path": "items/onsen.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cypress_Bathtub_NH_Icon.png"
     },
     "items/snack": {
       "path": "items/snack.webp",
@@ -229,23 +199,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Cookies_NH_Icon.png"
     },
-    "items/souvenir": {
-      "path": "items/souvenir.webp",
+    "items/trip": {
+      "path": "items/trip.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Gift_NH_Icon.png"
-    },
-    "items/spa": {
-      "path": "items/spa.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Facial_Mask_NH_Icon.png"
-    },
-    "items/upgrade": {
-      "path": "items/upgrade.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Antique_Bed_NH_Icon.png"
+      "source": "https://nookipedia.com/wiki/File:Nook_Miles_Ticket_NH_Inv_Icon.png"
     },
     "items/want": {
       "path": "items/want.webp",

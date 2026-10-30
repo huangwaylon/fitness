@@ -1,8 +1,8 @@
 <script lang="ts">
   // ごほうび, the shared wallet (ADR 0022, round 17 IA §4.5: Nook's Cranny, about spending only; the route keeps its
   // /jar path): the page's title bar (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island's jar, so the route change still morphs one into the
-  // other, over the wallet's balance: the number on the island's plate), then the one menu in its two sections
-  // (🍦 まいにちのごほうび, ✈️ 旅のごほうび) as buy tiles. A quiet ✎ changes a section (shared by both). Buying asks first,
+  // other, over the wallet's balance: the number on the island's plate), then one simple list of big buy tiles (the
+  // five defaults: おやつ, カフェ・デザート, 外ごはん, ほしいもの, 旅のごほうび). A quiet ✎ changes the list (shared by both). Buying asks first,
   // then shows at once and waits 5 s with とりけす on the banner before it is sent. History lives in きろく ベル.
   // No しずえ here.
   import { resolve } from '$app/paths';
@@ -12,7 +12,8 @@
   import BuyConfirm from '#lib/components/wallet/BuyConfirm.svelte';
   import MenuEditor from '#lib/components/wallet/MenuEditor.svelte';
   import Bells from '#lib/components/ui/Bells.svelte';
-  import type { MenuSection, WalletItem } from '#lib/types.ts';
+  import type { WalletItem } from '#lib/types.ts';
+  import type { Treat } from '#lib/components/wallet/shapes.ts';
   import { walletFill } from '#lib/components/wallet/fill.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -20,14 +21,11 @@
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
-  const SECTIONS: MenuSection[] = ['daily', 'trip'];
   const view = $derived(week.view);
   const balance = $derived(view?.wallet.balance ?? 0);
   const menu = $derived(view?.menu ?? []);
-  const inSection = (s: MenuSection) => menu.filter((x) => x.section === s);
 
   let askItem = $state<WalletItem | null>(null);
-  let editing = $state<MenuSection | null>(null);
   let editOpen = $state(false);
 
   function buy(item: WalletItem) {
@@ -41,14 +39,8 @@
     cue('buy');
     undoBanner(t('wallet.bought', { label: item.label, bells: formatBells(item.bells) }), r, { reaction: 'joy' });
   }
-  function edit(s: MenuSection) {
-    editing = s;
-    editOpen = true;
-  }
-  /** One section changed: the whole menu is saved, the other section as it was (in section order). */
-  function save(s: MenuSection, items: WalletItem[]) {
-    const next = SECTIONS.flatMap((k) => (k === s ? items : inSection(k)));
-    if (saveMenu(next).ok) toasts.show(t('menu.saved'), 1800, { reaction: 'pleased' });
+  function save(items: Treat[]) {
+    if (saveMenu(items).ok) toasts.show(t('menu.saved'), 1800, { reaction: 'pleased' });
   }
 </script>
 
@@ -66,18 +58,11 @@
       <Bells bells={balance} class="total" />
     </div>
 
-    <div class="cards">
-      {#each SECTIONS as s (s)}
-        <MenuShelf section={s} items={inSection(s)} {balance} onbuy={(item) => (askItem = item)} onedit={() => edit(s)} />
-      {/each}
-    </div>
+    <MenuShelf items={menu} {balance} onbuy={(item) => (askItem = item)} onedit={() => (editOpen = true)} />
   </main>
 
   <BuyConfirm bind:item={askItem} {balance} onconfirm={buy} />
-  {#if editing}
-    {@const s = editing}
-    <MenuEditor bind:open={editOpen} section={s} items={inSection(s)} onsave={(items) => save(s, items)} />
-  {/if}
+  <MenuEditor bind:open={editOpen} items={menu} onsave={save} />
 {/if}
 
 <style>
@@ -88,6 +73,7 @@
   /* the title bar: ‹ 島へ | the title, centred on the page | an equal spacer */
   .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 52px; gap: 8px; }
   .top h1 { margin: 0; font-size: var(--fs-title); text-align: center; white-space: nowrap; }
+  .top > :global(.nav) { justify-self: start; }
   /* the undo banner (56px, 16px over the bottom) never covers the last card (sizing #18) */
   .jar-screen.undoing { padding-bottom: calc(var(--pad-bottom) + 88px); }
 
@@ -97,9 +83,7 @@
   .cap { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .hero :global(.total) { font-size: var(--fs-title); }
 
-  .cards { display: grid; gap: 16px; }
   @media (max-height: 700px), (max-width: 359px) {
     .hero { padding-bottom: 10px; }
-    .cards { gap: 12px; }
   }
 </style>

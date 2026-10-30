@@ -236,9 +236,7 @@
   "wallet.buy": "買う！",
   "wallet.bought": "{label}を 買いました！ −{bells}",
   "wallet.short": "ベルが ちょっと たりないみたい…",
-  "menu.daily.title": "まいにちのごほうび",
-  "menu.trip.title": "旅のごほうび",
-  "menu.edit": "{section}を かえる",
+  "menu.edit": "メニューを かえる",
   "menu.editHint": "ふたりの メニューです。値段は ベルで きめてね",
   "menu.empty": "まだ ありません",
   "menu.left": "あと {bells}",
@@ -248,5 +246,6 @@
   "menu.add": "ふやす",
   "menu.saved": "メニューを 保存しました",
   "help.wallet.title": "ごほうび",
-  "help.wallet.body": "ベルは ぜんぶ ふたりの おさいふへ。島のつぼを タップして、おやつや カフェ、旅の ごほうびを「買う！」。"
+  "help.wallet.body": "ベルは ぜんぶ ふたりの おさいふへ。島のつぼを タップして、おやつや カフェ、旅の ごほうびを「買う！」。",
+  "menu.title": "ごほうびメニュー"
 }
