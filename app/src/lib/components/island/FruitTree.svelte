@@ -314,6 +314,8 @@
     .detail { grid-template-columns: 20px auto auto auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
+    /* the longest value (2,384/8,000歩) ran into its fruit (1px); keep a clear gap (round 21) */
+    .amt { padding-left: 4px; }
   }
   /* short screens: tighter rows, so the popup covers less of the canopy when the sky is short (keepInside) */
   @media (max-height: 700px) {

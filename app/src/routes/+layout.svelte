@@ -139,6 +139,8 @@
   .page { min-height: var(--vh-page); background: var(--bg); }
   /* 島: the island floats in the flat map sea, which runs on under the dialogue box and the action. */
   .page[data-page='island'] { background: var(--sea-flat); }
+  /* not set up / error: on the tan panel, not the sea (round 21: the soft ink line was 2.1:1 on the sea blue) */
+  .page[data-page='island']:has(> .state:not([aria-busy])) { background: var(--bg); }
   /* Not set up / error / loading: one figure, one line, one action. */
   .state {
     --nook-h: 120px;
@@ -148,7 +150,7 @@
   }
   .state :global(.talk) { width: 100%; }
   .nook { line-height: 0; }
-  .state h1 { display: grid; gap: 4px; text-wrap: balance; word-break: auto-phrase; }
+  .state h1 { display: grid; gap: 4px; text-wrap: balance; }
   .state h1 small { font-size: var(--fs-body); color: var(--text-soft); }
   .state p { margin: 0; font-size: var(--fs-talk); font-weight: 700; color: var(--text-soft); }
   .bob { display: block; transform-origin: 50% 100%; animation: if-hop 1.1s var(--ease-idle) infinite; }
