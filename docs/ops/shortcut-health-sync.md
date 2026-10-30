@@ -76,17 +76,19 @@ gets the link. Before sharing: Shortcut settings (ⓘ) → **Setup** → **Impor
 **Copy iCloud Link** → send it to B. Importing asks B for B's key. Put your own key back afterwards. B then adds the
 automation from §3. If a link with a key in it was ever shared, rotate that key (google-setup.md §10).
 
-## 5. Gym Arrive/Leave (optional, per phone)
-Shortcuts → Automation → **Arrive** at the gym address → **Run Immediately** → **Get Contents of URL**: the `/exec`
-URL, **POST**, Request Body **JSON**:
+## 5. Gym Arrive/Leave (per phone)
+Shortcuts → Automation → **+** → **Arrive** → search the gym, shrink the radius to ~100–150 m → **Run Immediately**,
+**Notify When Run** off → **Get Contents of URL**: the `/exec` URL, **POST**, Request Body **JSON**, each field **Text**:
 
 ```json
 { "key": "<your key>", "action": "presence", "place": "anytime", "event": "arrive" }
 ```
 
-Duplicate it as a **Leave** automation with `"event": "leave"`. Place keys (`app/src/lib/config/places.ts`):
-`anytime` (A), `pt_studio` and `anytime_b` (B). An optional `"at"` (ISO time) back-dates the event. After a visit of
-30 minutes or more with no Watch strength workout, the app asks 「…は筋トレでしたか？」 on 島.
+Duplicate it as a **Leave** automation at the same place with `"event": "leave"`. Place keys
+(`app/src/lib/config/places.ts`): `anytime` (A), `anytime_b` and `pt_studio` (B). An optional `"at"` (ISO 8601 with
+offset) back-dates the event. All three places are **auto-strength** (user decision 2026-10-30): an arrive→leave visit
+of 30 minutes or more is a strength day with no question. A visit with no leave has no length and doesn't count (add
+the workout in きろく). iOS can fire a few minutes late; a normal session still clears 30 minutes.
 
 ## 6. One-time baseline (optional)
 Duplicate the Shortcut, change the range in steps 2, 4 and 5 to the last **84 days** and run it once.
