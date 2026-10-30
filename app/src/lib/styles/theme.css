@@ -37,6 +37,9 @@ button, [role="button"], [role="switch"], a {
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: var(--r-chip); }
+/* after a touch, a programmatic focus (‹ back, an edit saved, a sheet opened) shows no ring (ui/modality.ts) */
+html[data-input='pointer'] :focus-visible:not(input, textarea, select),
+html[data-input='pointer'] :focus-visible .screen { outline: none !important; }
 /* H1: iOS zooms on focus below 16px. A scoped `font:` shorthand beats this, so components use --fs-input
    (lib/inputs.test.ts fails on any input / textarea / select rule below 16px). */
 input, textarea, select { font-size: var(--fs-input); font-family: var(--font-ui); }
