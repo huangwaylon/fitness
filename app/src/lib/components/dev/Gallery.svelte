@@ -114,10 +114,10 @@
   <section>
     <h2>Fruit ripeness · money</h2>
     <div class="row">
-      {#each FRUITS as f, i (f)}<FruitRing fruit={f} view={{ milli: 0, maxMilli: 0, pct: [10, 40, 75, 100][i], actual: 0, target: 0 }} showPct />{/each}
+      {#each FRUITS as f, i (f)}<FruitRing fruit={f} pct={[10, 40, 75, 100][i]} label={f} showPct />{/each}
     </div>
     <div class="row tree">
-      {#each [10, 40, 75, 100] as pct (pct)}<FruitRing fruit="apple" view={{ milli: 0, maxMilli: 0, pct, actual: 0, target: 0 }} onTree size="46px" />{/each}
+      {#each [10, 40, 75, 100] as pct (pct)}<FruitRing fruit="apple" {pct} label="apple" onTree size="46px" />{/each}
     </div>
     <div class="row">
       <span class="amt"><LeafCoin size="1.1em" />146,200 ベル</span>

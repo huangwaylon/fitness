@@ -1,19 +1,22 @@
 <script lang="ts">
-  // One fruit's weekly progress (design.md §A): the official inventory icon.
+  // One fruit's progress (design.md §A): the official inventory icon. `pct` (0–100) and the tip's `label` come from
+  // the caller (the partner sheet: today against the daily goal, and the week's badge progress).
   //   ring (default): our conic progress ring with the fruit in the centre.
   //   onTree: the fruit hangs on an island tree (no ring). Tap either → the detail chip
   //           (a cream bubble; on a tree it sits above the whole canopy, U13).
   // The fruit shows its ripeness stage: bud (grey, 0.55) · small (desaturated, 0.75) · nearly (0.9) ·
   // ripe (full colour + sparkle).
-  import type { FruitKey, FruitView } from '#lib/types.ts';
+  import type { FruitKey } from '#lib/types.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { ripeness } from './ripeness.ts';
-  import { t } from '#lib/i18n/index.ts';
 
   interface Props {
     fruit: FruitKey;
-    view: FruitView;
+    /** 0–100. */
+    pct: number;
+    /** The tip (and the button's name). */
+    label: string;
     /** CSS size of the tap target, e.g. '56px' or '11.8cqw' (min 44px). */
     size?: string;
     /** Show the % under the ring. */
@@ -21,22 +24,22 @@
     /** Hanging on an island tree. */
     onTree?: boolean;
     eager?: boolean;
+    /** Tapped: the caller shows the detail itself (no tip; e.g. a caption under a row of rings that the tip would overflow). */
+    onpick?: () => void;
+    /** This ring's detail is the one shown by the caller. */
+    picked?: boolean;
   }
-  let { fruit, view, size = '56px', showPct = false, onTree = false, eager = false }: Props = $props();
+  let { fruit, pct: rawPct, label, size = '56px', showPct = false, onTree = false, eager = false, onpick, picked = false }: Props = $props();
 
   let open = $state(false);
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  const pct = $derived(Math.max(0, Math.min(100, Math.round(view.pct))));
+  const pct = $derived(Math.max(0, Math.min(100, Math.round(rawPct))));
   const stage = $derived(ripeness(pct));
-  const label = $derived(t(`fruit.${fruit}.detail`, { actual: fmt(view.actual), target: fmt(view.target) }));
-
-  function fmt(n: number): string {
-    return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
-  }
 
   function toggle(e: Event) {
     e.stopPropagation();
+    if (onpick) return onpick();
     open = !open;
     if (timer) clearTimeout(timer);
     if (open) timer = setTimeout(() => (open = false), 2600);
@@ -51,7 +54,7 @@
     style:--p={pct}
     style:--c={stage === 'ripe' ? 'var(--c-yuzu)' : 'var(--c-leaf)'}
     aria-label={label}
-    aria-expanded={open}
+    aria-expanded={onpick ? picked : open}
     onclick={toggle}
   >
     <span class="fruit">
@@ -86,6 +89,7 @@
   .bud .fruit { transform: scale(.55); opacity: .55; filter: saturate(.3); }
   .small .fruit { transform: scale(.75); opacity: .8; filter: saturate(.7); }
   .nearly .fruit { transform: scale(.9); }
+  .fr[aria-expanded='true'] { outline: 3px solid var(--c-yuzu-lip); outline-offset: 2px; }
   .fr.ripe { box-shadow: 0 0 0 3px var(--c-yuzu); }
   .fr.ripe::after {
     content: ''; position: absolute; top: -4px; right: -2px; width: 14px; height: 14px; background: var(--c-yuzu);
