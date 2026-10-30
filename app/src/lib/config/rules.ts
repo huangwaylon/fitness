@@ -89,8 +89,6 @@ export const STEP_MINUTES = { stepsPerMin: 100 } as const;
 /** Rest day: a day with Health data, no strength day, no workout ≥ longWorkoutMin, none ≥ hardWorkoutMin at ≥ hardHrFraction of 220 − age. */
 export const REST = { hardWorkoutMin: 20, hardHrFraction: 0.77, longWorkoutMin: 45 } as const;
 
-export const CALIBRATION = { flatScore: 60, minDataDays: 6 } as const;
-
 /** Tokyo tsuyu: ≥ 30 active minutes also counts as a step day. */
 export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
 
@@ -108,7 +106,7 @@ export interface Season {
   targets: Record<PersonId, PersonTargets>;
 }
 
-// Placeholders until calibration (PROPOSAL §2.3). B's strength target is agreed with her trainer.
+// The habits per person (🍐). The other targets only feed the old score /100 (removed with the old view fields).
 export const SEASONS: Season[] = [
   {
     key: 's1',
@@ -120,8 +118,6 @@ export const SEASONS: Season[] = [
   }
 ];
 
-/** Weeks (WeekKey) paid at the flat calibration rate. Set when Phase 1 goes live. */
-export const CALIBRATION_WEEKS: string[] = ['2026-11-02', '2026-11-09'];
 
 /** Trip ladder for the Jar (editable). Labels in i18n as `rung.<key>`. */
 export const RUNGS = [

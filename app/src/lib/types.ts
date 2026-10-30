@@ -69,7 +69,6 @@ export interface WeekInput {
   workouts: Workout[];
   visits: Visit[];
   checkins: CheckinTick[];
-  calibration: boolean;
 }
 
 export interface CategoryResult {
@@ -91,7 +90,7 @@ export interface WeekScore {
   categories: Record<FruitKey, CategoryResult>;
   restDays: number;
   strengthDays: LocalDate[];
-  /** Days with any Health data (used for calibration pay and sync status). */
+  /** Days with any Health data. */
   dataDays: number;
 }
 

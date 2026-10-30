@@ -18,7 +18,7 @@ import {
 import { workoutLabel } from '#lib/contract/labels.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  finalMs, firstWeek, isCalibrationWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, rowsUpTo, type State
+  finalMs, firstWeek, isLockedAt, jstMs, latestAt, partnerOf, provisionalMs, reduce, rowsUpTo, type State
 } from './state.ts';
 import { activityAsOf, metricAsOf, ticksAsOf, weekDates, type Activity } from './inputs.ts';
 
@@ -36,8 +36,7 @@ export function weekInput(s: State, person: PersonId, wk: WeekKey, t: number, ac
     person, weekKey: wk, age: PEOPLE[person].age, targets: targetsFor(person, wk), days,
     workouts: act.workouts.filter((w) => inWeek(w.date)),
     visits: act.visits.filter((v) => inWeek(v.date)).map(({ id: _id, ...v }) => v),
-    checkins: [...ticksAsOf(s, person, t, weekDates(wk)).values()],
-    calibration: isCalibrationWeek(s, wk)
+    checkins: [...ticksAsOf(s, person, t, weekDates(wk)).values()]
   };
 }
 

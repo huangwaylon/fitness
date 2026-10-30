@@ -5,6 +5,7 @@ import type { EventType } from '#lib/contract/api.ts';
 import type { PersonId, WeekView } from '#lib/types.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import { payoutAsOf } from '#lib/model/week.ts';
+import { weekBells } from '#lib/model/bells.ts';
 import { DEMO, localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
@@ -80,7 +81,10 @@ export class DemoBackend implements Backend {
     if (this.#mode !== 'harvest' || v.harvest) return;
     const wk = addDays(v.weekKey, -7);
     const payout = payoutAsOf(m.state, wk, Infinity).payout;
-    v.harvest = { weekKey: wk, bonus: { A: 0, B: 0, duo: 0 }, totalBells: 0, payout, rungsReached: [], confirmedBy: this.#harvested ? [v.me] : [] };
+    const e = weekBells(m.state, wk, m.now);
+    v.harvest = {
+      weekKey: wk, bonus: { ...e.bonus }, totalBells: e.A.daily + e.B.daily + e.bonusBells, payout, rungsReached: [], confirmedBy: this.#harvested ? [v.me] : []
+    };
   }
 
   /** The demo's taps of today (both players), oldest first. */

@@ -27,7 +27,7 @@ function input(p: Partial<WeekInput> & { targets?: PersonTargets } = {}): WeekIn
   const weekKey = p.weekKey ?? WK;
   return {
     person: 'A', weekKey, age: 29, targets: A,
-    days: days(weekKey, [], []), workouts: [], visits: [], checkins: [], calibration: false,
+    days: days(weekKey, [], []), workouts: [], visits: [], checkins: [],
     ...p
   };
 }
@@ -269,25 +269,6 @@ describe('scoreWeek: 正月 holiday', () => {
     expect(s.categories.peach.target).toBe(59.5);
     // Dec 21–27: no pear-off days
     expect(s.categories.pear.target).toBe(15);
-  });
-});
-
-describe('scoreWeek: calibration', () => {
-  it('pays the flat score with ≥ 6 data days, still filling categories', () => {
-    const s = scoreWeek(input({ calibration: true, days: days(WK, [0, 0, 0, null, 0, 0, null], [null, null, null, 100, 0, 0, null]) }));
-    expect(s.dataDays).toBe(6);
-    expect(s.score).toBe(60);
-    expect(s.categories.peach.milli).toBe(5000);
-  });
-  it('pays 0 with fewer data days, even for a perfect-looking week', () => {
-    const p = perfect();
-    const s = scoreWeek({ ...p, calibration: true, days: p.days.map((x, i) => (i < 2 ? { ...x, steps: null, exerciseMin: null } : x)) });
-    expect(s.dataDays).toBe(5);
-    expect(s.score).toBe(0);
-    expect(s.categories.pear.milli).toBe(25000);
-  });
-  it('calibration pays 60 even when the computed score is higher', () => {
-    expect(scoreWeek({ ...perfect(), calibration: true }).score).toBe(60);
   });
 });
 
