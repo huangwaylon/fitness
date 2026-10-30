@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 16,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -126,12 +126,6 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Apple_NH_Inv_Icon.png"
-    },
-    "fruit/cherry": {
-      "path": "fruit/cherry.webp",
-      "w": 128,
-      "h": 128,
-      "source": "https://nookipedia.com/wiki/File:Cherry_NH_Inv_Icon.png"
     },
     "fruit/coconut": {
       "path": "fruit/coconut.webp",
