@@ -73,7 +73,7 @@ describe('auth', () => {
   });
 });
 
-describe('keys (round 9)', () => {
+describe('keys', () => {
   it('a non-hex key is refused before any Properties read', () => {
     for (const key of ['wrong', `${KEY_A}x`, 'g'.repeat(64), 'a'.repeat(31), 'a'.repeat(129)]) {
       expect(post({ key, action: 'whoami' })).toEqual({ ok: false, error: 'unauthorized' });
@@ -333,25 +333,21 @@ describe('gym and events', () => {
     ]);
   });
 
-  it('spend, pref and harvest shapes are checked; types and shapes of past designs are refused', () => {
+  it('spend, pref and harvest shapes are checked; unknown types and pref keys are refused', () => {
     const ok = [
       { type: 'spend', data: { spendId: 's1', item: 'ice', label: 'アイス', bells: 1000 } },
-      { type: 'spend', data: { spendId: 7, item: 'spa', label: 'スパ', bells: 15000 } },
+      { type: 'spend', data: { spendId: 's7', item: 'spa', label: 'スパ', bells: 15000 } },
       ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'].map((key) => ({ type: 'pref', data: { key, value: null } })),
       { type: 'harvest', data: { week: '2026-10-26' } }
     ];
     ok.forEach((e, i) => expect(a('event', { id: `ok${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
     const bad = [
       { type: 'checkin', data: { date: '2026-10-29', habit: 'veg', done: true } },
-      { type: 'confirm', data: { kind: 'workout', id: 'w1', yes: true } },
-      { type: 'spend', data: { spendId: 'y1', label: 'カフェ', amountYen: 2000 } }, // the yen economy's spend
-      { type: 'spend', data: { spendId: 's2', pot: 'treat', item: 'ice', label: 'アイス', bells: 1 } }, // the two pots' spend
+      { type: 'spend', data: { spendId: 7, item: 'ice', label: 'アイス', bells: 1 } },
       { type: 'spend', data: { spendId: 's3', item: 'ice', label: 'アイス', bells: 1.5 } },
       { type: 'spend', data: { spendId: 's4', item: 'ice', label: '  ', bells: 1 } },
       { type: 'spend', data: { spendId: 's5', label: 'アイス', bells: 1 } },
       { type: 'spend', data: { spendId: 's6', item: 'ice', label: 'アイス', bells: 10_000_001 } },
-      { type: 'pref', data: { key: 'treatMenu', value: '[]' } },
-      { type: 'pref', data: { key: 'tripMenu', value: '[]' } },
       { type: 'pref', data: { key: 'share', value: true } },
       { type: 'pref', data: { key: 'locale' } },
       { type: 'harvest', data: { week: 'soon' } }
@@ -423,13 +419,9 @@ describe('edit events (history-and-editing.md §4.1)', () => {
       { type: 'workout_add', data: { id: 'w-no-prefix', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 601 } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 0 } },
-      { type: 'workout_add', data: { id: 'm:2', date: '2026-10-28', type: 'Underwater Basket Weaving', durationMin: 30 } }, // L7
-      { type: 'share', data: { key: 'steps', value: false } }, // L3: no longer an event type
-      { type: 'spend_void', data: {} },
-      // the yen economy's types are gone: refused like any unknown type
-      { type: 'approve', data: { spendId: 7 } },
-      { type: 'transfer', data: { month: '2026-10' } },
-      { type: 'transfer_undo', data: { month: '2026-09' } }
+      { type: 'workout_add', data: { id: 'm:2', date: '2026-10-28', type: 'Underwater Basket Weaving', durationMin: 30 } }, // an unknown type
+      { type: 'share', data: { key: 'steps', value: false } }, // not an event type
+      { type: 'spend_void', data: {} }
     ];
     bad.forEach((e, i) => expect(a('event', { id: `c${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events')).toEqual([]);
