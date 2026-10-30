@@ -200,6 +200,19 @@ describe('write queue', () => {
     await flush(() => t + 5000);
     expect(calls.map((c) => c.id)).toEqual([other.id, fix.id, island.id]); // the screen's order
   });
+  it('an edit of a held workout_add, or a void of a held spend, waits for it (else the server would refuse it)', async () => {
+    const t = 1_000_000;
+    const add = enqueue('workout_add', { id: 'm:x', date: '2026-11-02', type: 'Yoga', durationMin: 30 }, t, 5000);
+    const edit = enqueue('workout_edit', { id: 'm:x', strength: true }, t + 1);
+    const buy = enqueue('spend', { spendId: 's1', item: 'snack', label: 'おやつ', bells: 1200 }, t + 2, 5000);
+    const back = enqueue('spend_void', { spendId: 's1' }, t + 3);
+    await flush(() => t + 4);
+    expect(calls).toEqual([]);
+    await flush(() => t + 5000);
+    expect(calls.map((c) => c.id)).toEqual([add.id, edit.id]);
+    await flush(() => t + 5002);
+    expect(calls.map((c) => c.id)).toEqual([add.id, edit.id, buy.id, back.id]);
+  });
   it('undoing the held event lets the blocked one go', async () => {
     const t = 1_000_000;
     const fix = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5 }, t, 5000);
