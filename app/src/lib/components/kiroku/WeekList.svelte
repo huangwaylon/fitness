@@ -1,12 +1,12 @@
 <script lang="ts">
-  // 3.1 Week list: newest first, one cream Nook Miles+ card per week. Each card: the week (今週 or dates), its yen
-  // (≈ while it can still change), 収穫✓ / 🔒, and per person the villager, the score and 7 day stamps.
+  // 3.1 Week list: newest first, one cream Nook Miles+ card per week. Each card: the week (今週 or dates), its ベル
+  // (both, incl. the Sunday bonus once it landed), 収穫✓ / 🔒, and per person the villager, their ベル and 7 day stamps.
   import type { PersonId } from '#lib/types.ts';
   import type { HistoryWeek } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Glyph from './Glyph.svelte';
   
-  import { t, formatYen } from '#lib/i18n/index.ts';
+  import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
   import { weekRange } from '#lib/i18n/format.ts';
 
   interface Props {
@@ -26,10 +26,10 @@
   {#each weeks as w, i (w.weekKey)}
     <li style:animation-delay="{Math.min(i, 6) * 40}ms">
       <button type="button" class="card wk" class:cur={w.current} onclick={() => onopen(w.weekKey)}
-        aria-label="{w.current ? t('kiroku.thisWeek') : t('kiroku.weekOf', { range: weekRange(w.weekKey) })} {formatYen(w.yen)}{w.locked ? ' ' + t('kiroku.locked') : ''}{w.harvested ? ' ' + t('kiroku.harvested') : ''}">
+        aria-label="{w.current ? t('kiroku.thisWeek') : t('kiroku.weekOf', { range: weekRange(w.weekKey) })} {formatBells(w.bells)}{w.locked ? ' ' + t('kiroku.locked') : ''}{w.harvested ? ' ' + t('kiroku.harvested') : ''}">
         <span class="head">
           <span class="when">{#if w.current}<b>{t('kiroku.thisWeek')}</b>{/if}<span class="range">{weekRange(w.weekKey)}</span></span>
-          <span class="yen money">{w.estimate ? '≈' : ''}{formatYen(w.yen)}</span>
+          <span class="yen money">{formatBells(w.bells)}</span>
           {#if w.locked}<Glyph kind="lock" size={16} label={t('kiroku.locked')} />{/if}
           {#if w.harvested}<span class="hv" title={t('kiroku.harvested')}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg></span>{/if}
         </span>
@@ -43,8 +43,8 @@
         {#each order as p (p)}
           <span class="who">
             <Avatar person={p} villager={villagers[p]} size={30} />
-            <span class="sr-only">{names[p]}</span>
-            <span class="score money">{w.people[p].score}</span>
+            <span class="sr-only">{names[p]} {formatBells(w.people[p].bells)}</span>
+            <span class="score money" aria-hidden="true">{formatNum(w.people[p].bells)}</span>
             <span class="stamps">
               {#each w.people[p].stamps as s, d (d)}<Glyph kind={s} size={18} />{/each}
             </span>
@@ -73,7 +73,7 @@
   .hv { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
   .hv svg { width: 14px; height: 14px; }
   .who { display: flex; align-items: center; gap: 10px; }
-  .score { width: 2.2em; font-size: var(--fs-title); text-align: right; }
+  .score { width: 3.6em; flex: none; font-size: var(--fs-talk); text-align: right; }
   .stamps { flex: 1; display: flex; justify-content: space-between; max-width: 220px; }
   .wdrow { margin: -2px 0 -6px; }
   .avsp { width: 30px; flex: none; }
@@ -81,7 +81,7 @@
   @media (max-width: 359px) {
     .wdl { width: 14px; }
     .stamps :global(svg) { width: 14px; height: 14px; }
-    .score { font-size: var(--fs-talk); width: 1.9em; }
+    .score { font-size: var(--fs-body); width: 3.4em; }
     .wk { padding: 10px 12px; }
   }
 </style>

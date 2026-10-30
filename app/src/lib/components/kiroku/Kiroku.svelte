@@ -3,26 +3,26 @@
 </script>
 
 <script lang="ts">
-  // きろく (records) NookPhone app (history-and-editing.md): からだ | お金 pills, week cards → week → day → edit,
+  // きろく (records) NookPhone app (history-and-editing.md): からだ | ベル pills, week cards → week → day → edit,
   // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first.
   // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
-  // queue (held 5 s with もとに戻す) and recompute the island's ribbon and ≈¥ at once. Loaded on first open
+  // queue (held 5 s with もとに戻す) and recompute the island's ベル ribbon and the pots at once. Loaded on first open
   // (ShimaPhone imports it dynamically, round 7 L1).
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
-  import { dayDetail, historyWeeks, moneyLog, weekDetail, weekEdits } from '#lib/model/history.ts';
+  import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoTransfer, voidSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { addWorkout, editWorkout, fixCheckin, setMetric, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
   import WeekList from './WeekList.svelte';
   import WeekDetail from './WeekDetail.svelte';
   import DayDetail from './DayDetail.svelte';
-  import MoneyLog from './MoneyLog.svelte';
+  import BellsLog from './BellsLog.svelte';
   import NumberPad from './NumberPad.svelte';
   import TypeName from './TypeName.svelte';
   import { dayTitle, typeLabel } from './fmt.ts';
-  import { t, formatYen } from '#lib/i18n/index.ts';
+  import { t, formatBells } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'week'; wk: string }
@@ -30,7 +30,7 @@
     | { k: 'metric'; date: string; metric: 'steps' | 'exercise_min' }
     | { k: 'workout'; date: string; id: string }
     | { k: 'add'; date: string }
-    | { k: 'void'; id: string | number; label: string; yen: number; refund: boolean };
+    | { k: 'void'; id: string; label: string; bells: number };
 
   let { entry = null }: { entry?: KirokuEntry | null } = $props();
   let tab = $state<'body' | 'money'>('body');
@@ -49,7 +49,7 @@
   const top = $derived(stack.at(-1) ?? null);
   // One computation per screen and model (not per use; round 7 L5).
   const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
-  const money = $derived(m && !top && tab === 'money' ? moneyLog(m.state, m.now) : null);
+  const money = $derived(m && !top && tab === 'money' ? bellsLedger(m.state, m.now) : null);
   const wkDetail = $derived(m && top?.k === 'week' ? { d: weekDetail(m.state, top.wk, m.now), edits: weekEdits(m.state, top.wk) } : null);
   const dayDate = $derived(top && 'date' in top ? top.date : null);
   const day = $derived(m && dayDate ? dayDetail(m.state, dayDate, m.now) : null);
@@ -115,15 +115,12 @@
     undoToast(t('kiroku.saved', { field: t(`habit.${habit}`) }), fixCheckin(date, habit, done));
   }
   /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
-  function askVoid(id: string | number, label: string, yen: number, refund: boolean) {
-    void go({ k: 'void', id, label, yen, refund });
+  function askVoid(id: string, label: string, bells: number) {
+    void go({ k: 'void', id, label, bells });
   }
-  function voidIt(id: string | number, label: string) {
+  function voidIt(id: string, label: string) {
     back();
-    undoToast(t('kiroku.spendVoided', { label }), voidSpend(id));
-  }
-  function undoIt(month: string) {
-    undoToast(t('kiroku.transferUndone', { month: t('kiroku.monthLabel', { y: month.slice(0, 4), m: Number(month.slice(5, 7)) }) }), undoTransfer(month));
+    undoToast(t('kiroku.spendVoided', { label }), undoSpend(id));
   }
 
   // Add a workout: pick a type, then the minutes on the keypad.
@@ -150,7 +147,7 @@
       {#if weeks}
         <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
       {:else if money}
-        <MoneyLog log={money} {me} {villagers} onvoid={askVoid} onundo={undoIt} />
+        <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} />
       {/if}
     {:else if top.k === 'week' && wkDetail}
       <WeekDetail d={wkDetail.d} edits={wkDetail.edits} {order} {names} {villagers} now={m.now}
@@ -163,8 +160,8 @@
     {:else if top.k === 'void'}
       {@const s = top}
       <section class="card ask">
-        <p>{t('kiroku.voidAsk', { label: s.label, yen: formatYen(s.yen) })}</p>
-        {#if s.refund}<small>{t('kiroku.voidRefund')}</small>{/if}
+        <p>{t('kiroku.voidAsk', { label: s.label, bells: formatBells(s.bells) })}</p>
+        <small>{t('kiroku.voidRefund')}</small>
       </section>
       <div class="wchoices">
         <ChoiceList choices={[

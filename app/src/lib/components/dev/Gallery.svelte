@@ -120,7 +120,7 @@
       {#each [10, 40, 75, 100] as pct (pct)}<FruitRing fruit="apple" view={{ milli: 0, maxMilli: 0, pct, actual: 0, target: 0 }} onTree size="46px" />{/each}
     </div>
     <div class="row">
-      <span class="amt"><LeafCoin size="1.1em" />¥146,200</span>
+      <span class="amt"><LeafCoin size="1.1em" />146,200 ベル</span>
       <LeafCoin kind="leaf" size={32} />
     </div>
   </section>
