@@ -63,6 +63,17 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
   return { state: reduce(rows, cache.demo ?? null, rev), me: cache.me, now, from };
 }
 
+/**
+ * A fetch that completed this long after an ack would have brought the event's row back (a request times out after
+ * 20 s, twice for a resync): an acked event still missing then was removed from the sheet by hand, so stop showing it.
+ */
+export const ACKED_MAX_UNSEEN_MS = 5 * 60_000;
+
+/** The acked events still to show: not in the cache yet, and not given up on (see ACKED_MAX_UNSEEN_MS). */
+export function pendingAcked<E extends { id: string; ackedAt?: number }>(cache: SnapshotCache, list: E[]): E[] {
+  return notInCache(cache, list).filter((e) => e.ackedAt === undefined || cache.fetchedAt < e.ackedAt + ACKED_MAX_UNSEEN_MS);
+}
+
 /** The events from `list` whose rows the cache doesn't have yet (acked events drop out once fetched back). */
 export function notInCache<E extends { id: string }>(cache: SnapshotCache, list: E[]): E[] {
   if (!list.length) return list;
