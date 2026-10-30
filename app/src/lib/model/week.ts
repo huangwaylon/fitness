@@ -3,10 +3,11 @@
 //   paid(week, bucket) = max(payout as of Sunday 19:30 JST, payout as of Wednesday 04:00 JST)
 // where "as of T" only uses rows the server stamped at ≤ T. That is exactly the old earn + top-up ledger.
 import type {
-  CategoryResult, CheckinTick, DayMetrics, FruitKey, FruitView, HarvestView, JarView, LocalDate, PendingConfirmation, PersonId,
-  PersonWeekView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
+  CategoryResult, CheckinTick, DayMetrics, FruitKey, FruitProgress, FruitView, HarvestView, JarView, LocalDate, MenuItem, PendingConfirmation, PersonId,
+  PersonWeekView, PotKey, PotsView, Visit, WeekInput, WeekKey, WeekPayout, WeekScore, WeekView, Workout
 } from '#lib/types.ts';
-import { FRUITS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
+import { DAILY, DEFAULT_MENUS, FRUITS, MONEY, PEOPLE, RUNGS, STRENGTH } from '#lib/config/rules.ts';
+import { rulesFor } from '#lib/scoring/targets.ts';
 import { PLACES } from '#lib/config/places.ts';
 import {
   addDays, deriveVisits, isStrengthWorkout, nextRung, nowInZone, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
@@ -317,10 +318,25 @@ export const monthOfWeek = (wk: WeekKey): string => addDays(wk, 6).slice(0, 7);
 /** A fruit's fill, 0–100 of its maximum. */
 export const pctOf = (c: CategoryResult): number => (c.maxMilli > 0 ? Math.floor((c.milli * 100) / c.maxMilli) : 0);
 
-function fruitView(score: WeekScore, key: FruitKey): FruitView {
+function fruitView(score: WeekScore, key: FruitKey): FruitView & FruitProgress {
   const c = score.categories[key];
-  return { milli: c.milli, maxMilli: c.maxMilli, pct: pctOf(c), actual: c.actual, target: c.target };
+  const r = rulesFor(score.weekKey);
+  const todayGoal = { peach: r.goals.activeMin, apple: r.goals.steps, coconut: 1, pear: DAILY.maxTicks }[key];
+  const weekGoalDays = { peach: r.badges.activeDays, apple: r.badges.stepDays, coconut: r.badges.strengthDays, pear: r.badges.ticks }[key];
+  return {
+    todayActual: 0, todayGoal, todayMet: false, weekDays: 0, weekGoalDays, badge: false, weekBells: 0,
+    milli: c.milli, maxMilli: c.maxMilli, pct: pctOf(c), actual: c.actual, target: c.target
+  };
 }
+
+/** The shared menus at t: the latest valid `pref` by either person, else the defaults in the viewer's language. */
+export function menusAt(s: State, locale: 'ja' | 'en', t: number = LIVE): Record<PotKey, MenuItem[]> {
+  const pick = (pot: PotKey): MenuItem[] =>
+    latestAt(s.menus[pot], t)?.map((x) => ({ ...x })) ?? DEFAULT_MENUS[pot].map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
+  return { treat: pick('treat'), trip: pick('trip') };
+}
+
+const zeroParts = (): Record<FruitKey, number> => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
 
 /** One person's card. Both players see everything (no privacy filter): raw numbers and eating check-ins. */
 function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): PersonWeekView {
@@ -329,8 +345,10 @@ function personView(s: State, person: PersonId, wk: WeekKey, score: WeekScore): 
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
+    today: { bells: 0, parts: zeroParts() },
+    weekBells: 0,
     score: score.score,
-    fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k)])) as Record<FruitKey, FruitView>,
+    fruits: Object.fromEntries(FRUITS.map((k) => [k, fruitView(score, k)])) as PersonWeekView['fruits'],
     lastSyncAt: s.lastSync[person],
     habits: { keys: targetsFor(person, wk).habits, ticksByDate: {} }
   };
@@ -412,6 +430,8 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
       [me]: personView(s, me, weekKey, scores[me]),
       [partner]: personView(s, partner, weekKey, scores[partner])
     } as Record<PersonId, PersonWeekView>,
+    pots: potsView(),
+    menus: menusAt(s, locale),
     jar: jarView(s, paid, current.payout, today, now),
     harvest: harvestView(s, paid, livePayout, now),
     pending: pendingConfirmations(s, me, weekKey, act[me], locale, now),
@@ -421,6 +441,10 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
 }
 
 type Paid = { w: SettledWeek; b: Buckets }[];
+
+function potsView(): PotsView {
+  return { treat: { balance: 0, earned: 0, spent: 0 }, trip: { balance: 0, earned: 0, spent: 0 }, todayBells: 0, weekBells: 0 };
+}
 
 /** The jar, purse and payday cue at `now`, from what each week has paid so far. */
 function jarView(s: State, paid: Paid, current: WeekPayout, today: LocalDate, now: number): JarView {
@@ -452,6 +476,8 @@ function harvestView(s: State, paid: Paid, livePayout: (wk: WeekKey) => WeekPayo
   const after = paid.filter(({ w }) => w.weekKey <= wk).reduce((acc, { b }) => acc + jarSum(b), 0);
   return {
     weekKey: wk,
+    bonus: { A: 0, B: 0, duo: 0 },
+    totalBells: 0,
     payout: livePayout(wk),
     rungsReached: RUNGS.filter((r) => before < r.yen && after >= r.yen).map((r) => r.key),
     confirmedBy: [...(confirms.get(wk) ?? [])].sort()

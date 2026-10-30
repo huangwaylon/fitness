@@ -23,7 +23,11 @@ function withAppended<T>(list: readonly T[], extra: T, fn: () => void): void {
 describe('RULES', () => {
   it('the paid versions are pinned: append a new version instead of editing one', () => {
     expect(RULES[0]).toEqual({
-      from: '2026-11-02',
+      from: '2026-10-26',
+      goals: { activeMin: 45, steps: 8000 },
+      bells: { perMinute: 5, stepDay: 200, strengthDay: 300, perTick: 100 },
+      badges: { activeDays: 5, stepDays: 4, strengthDays: 2, ticks: 15, bells: 500, duo: 1000 },
+      treatPercent: 30,
       money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
       points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
     });
@@ -46,6 +50,7 @@ describe('RULES', () => {
   it('a new version re-prices only the weeks from its `from`, never a week paid before it', () => {
     const before = settledWeeks(reduce(ROWS), END);
     const v2: RuleVersion = {
+      ...RULES[0],
       from: '2026-12-07',
       money: { yenPerFruit: 100, teamYenPerFruit: 40, purseYen: 2000, purseMinScore: 60 },
       points: { peachActive: 40, peachRest: 5, coconut: 20, apple: 15, pear: 20 }

@@ -80,7 +80,7 @@ export class DemoBackend implements Backend {
     if (this.#mode !== 'harvest' || v.harvest) return;
     const wk = addDays(v.weekKey, -7);
     const payout = payoutAsOf(m.state, wk, Infinity).payout;
-    v.harvest = { weekKey: wk, payout, rungsReached: [], confirmedBy: this.#harvested ? [v.me] : [] };
+    v.harvest = { weekKey: wk, bonus: { A: 0, B: 0, duo: 0 }, totalBells: 0, payout, rungsReached: [], confirmedBy: this.#harvested ? [v.me] : [] };
   }
 
   /** The demo's taps of today (both players), oldest first. */

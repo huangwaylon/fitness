@@ -7,7 +7,8 @@ import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import { finalMs } from '#lib/model/state.ts';
+import { finalMs, parseMenu } from '#lib/model/state.ts';
+import type { MenuItem, PotKey } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 
 /** Payday, 使う！ and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
@@ -59,6 +60,38 @@ export function spendPurse(label: string, amountYen: number, needsBoth: boolean)
   return { ...week.send('spend', { spendId: newId(), label, amountYen }, { holdMs: UNDO_MS }), pending };
 }
 
+// ---- ベル pots (ADR 0019 §5): buy from the shared menus, undo, edit the menus. No approvals.
+
+/**
+ * Buy a menu item from its pot: shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is unknown
+ * or the pot can't afford it (the model would ignore the spend anyway).
+ */
+function buy(pot: PotKey, itemId: string): SendResult {
+  const v = week.view;
+  const item = v?.menus[pot].find((x) => x.id === itemId);
+  if (!v || !item || v.pots[pot].balance < item.bells) return { ok: false };
+  return week.send('spend', { spendId: newId(), pot, item: item.id, label: item.label, bells: item.bells }, { holdMs: UNDO_MS });
+}
+
+export const buyTreat = (itemId: string): SendResult => buy('treat', itemId);
+export const buyTrip = (itemId: string): SendResult => buy('trip', itemId);
+
+/** Take a spend back (the buyer only; the model ignores anyone else's `spend_void`). */
+export function undoSpend(spendId: string): SendResult {
+  return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
+}
+
+/** Replace a shared menu (either of us; the latest edit wins). `{ok:false}` if the list is invalid (ids, labels, prices). */
+export function setMenu(pot: PotKey, items: MenuItem[]): SendResult {
+  const clean = parseMenu(items.map((x) => ({ id: x.id, label: x.label, bells: Math.round(x.bells) })));
+  if (!clean) return { ok: false };
+  return week.send('pref', { key: pot === 'treat' ? 'treatMenu' : 'tripMenu', value: JSON.stringify(clean) });
+}
+
+/** A fresh id for a new menu item. */
+export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
+
+/** @deprecated The both-OK approval is gone (ADR 0019); `approve` events are ignored. */
 export function approveSpend(id: number | string) {
   return week.send('approve', { spendId: id });
 }

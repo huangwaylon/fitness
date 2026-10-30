@@ -3,26 +3,63 @@
 // Everything is computed on read from the raw rows, so a value here applies to every week that uses it, paid or not.
 // To change what a week pays, never edit a version (or a season's targets) whose weeks have paid: append a RULES
 // version (or a SEASONS entry) with a later `from`. rules.test.ts pins the paid versions.
-import type { FruitKey, PersonId, PersonTargets, WeekKey } from '#lib/types.ts';
+import type { FruitKey, PersonId, PersonTargets, PotKey, WeekKey } from '#lib/types.ts';
 
 /** The four fruit categories, in display order. */
 export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
 
-/** What a week pays and how many points each fruit is worth. The model picks the version by week (`rulesFor`). */
+/** What a week earns (ADR 0019). The model picks the version by week (`rulesFor`). */
 export interface RuleVersion {
   /** First week (a Monday WeekKey) it applies to. Versions are in ascending `from`; weeks before the first use it. */
   from: WeekKey;
+  /** The same daily goals for both people. */
+  goals: { activeMin: number; steps: number };
+  /** ベル per day: per counted minute (up to goals.activeMin), on a step-goal day, on a strength day, per habit tick. */
+  bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number };
+  /** Weekly badges (+`bells` each) and the ふたりボーナス (`duo`, both people with all four). */
+  badges: { activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duo: number };
+  /** Share of every earning that goes to the おやつ pot, in percent (on totals; the rest goes to 旅). */
+  treatPercent: number;
+  /** @deprecated Old yen economy (ADR 0008), read only by the old view fields; removed once the UI has moved over. */
   money: { yenPerFruit: number; teamYenPerFruit: number; purseYen: number; purseMinScore: number };
+  /** @deprecated Old fruit points (score /100). */
   points: { peachActive: number; peachRest: number; coconut: number; apple: number; pear: number };
 }
 
 export const RULES: readonly RuleVersion[] = [
   {
-    from: '2026-11-02',
+    // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns.
+    from: '2026-10-26',
+    goals: { activeMin: 45, steps: 8000 },
+    bells: { perMinute: 5, stepDay: 200, strengthDay: 300, perTick: 100 },
+    badges: { activeDays: 5, stepDays: 4, strengthDays: 2, ticks: 15, bells: 500, duo: 1000 },
+    treatPercent: 30,
     money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
     points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
   }
 ];
+
+/** First week that earns ベル (ADR 0019 §7). */
+export const ECONOMY_START: WeekKey = RULES[0].from;
+
+/** A default menu entry; the label follows the viewer's language until the menu is edited (then it is the typed label). */
+export interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }
+
+/** The shared menus before anyone edits them (ADR 0019 §5). */
+export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
+  treat: [
+    { id: 'snack', bells: 300, label: { ja: 'おやつ', en: 'Snack' } },
+    { id: 'ice', bells: 500, label: { ja: 'アイス', en: 'Ice cream' } },
+    { id: 'cafe', bells: 1500, label: { ja: 'カフェデート', en: 'Café date' } },
+    { id: 'dinner', bells: 5000, label: { ja: '外ごはん', en: 'Dinner out' } }
+  ],
+  trip: [
+    { id: 'daytrip', bells: 20000, label: { ja: '日帰り', en: 'Day trip' } },
+    { id: 'onsen', bells: 50000, label: { ja: '温泉', en: 'Onsen' } },
+    { id: 'weekend', bells: 100000, label: { ja: '週末旅行', en: 'Weekend trip' } },
+    { id: 'abroad', bells: 400000, label: { ja: '海外旅行', en: 'Travel abroad' } }
+  ]
+};
 
 /** Money rules that price no week: the both-OK threshold applies when a spend is made; payday is a calendar cue. */
 export const MONEY = { purseNeedsBothAtYen: 5000, paydayDayOfMonth: 25 } as const;
@@ -116,5 +153,11 @@ export const LIMITS = {
   presenceSkewMs: 48 * 3600_000,
   spendLabelMaxChars: 60,
   spendMaxYen: 1_000_000,
+  /** A spend or a menu price: a positive integer up to this. */
+  bellsMax: 10_000_000,
+  /** Items per menu (`pref` treatMenu / tripMenu); a longer list is ignored. */
+  menuMaxItems: 30,
+  /** A menu item id / a spend's `item`: word characters and dashes. */
+  menuIdMaxChars: 40,
   villagerNameMaxChars: 20
 } as const;
