@@ -9,7 +9,8 @@ import { parseInstant } from '#lib/time/dates.ts';
 import { habitsFor } from '#lib/scoring/targets.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  DATE_RE, EVENT_TYPES, isMetricKey, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, type EventType, type SnapshotRows
+  DATE_RE, EVENT_TYPES, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
+  type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
 
@@ -96,7 +97,8 @@ interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: 
 /** A ベル spend (ADR 0019 §9): `{spendId, pot, item, label, bells}`. */
 interface BellSpendRec { at: number; person: PersonId; spendId: string; pot: PotKey; item: string; label: string; bells: number }
 
-interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string }
+/** `goalWeight`: the person's optional goal in kg (ADR 0020), shown on the weight chart; never earns. */
+interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number }
 
 export interface State {
   metrics: Record<PersonId, Map<string, Timed<number>[]>>;
@@ -109,8 +111,15 @@ export interface State {
   bellSpends: BellSpendRec[];
   /** The shared menus (`pref` treatMenu / tripMenu by either person), ascending `at`: the latest wins. */
   menus: Record<PotKey, Timed<MenuItem[]>[]>;
-  /** Accepted `metric_set` per person, keyed `date|metric`, ascending `at`. */
+  /** Accepted activity `metric_set` (steps, minutes) per person, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
+  /**
+   * Body weight (ADR 0020), kept apart from the activity metrics so the economy can't read it: ingested `weight` rows
+   * and accepted `metric_set {metric:'weight'}` per person, keyed by date, ascending `at`. A day's weight is the latest
+   * of the two (`model/weight.ts`).
+   */
+  weights: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
+  weightSets: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
   /** Accepted `workout_edit`s (and a `workout_add`'s strength choice), ascending `at`. */
   workoutEdits: WorkoutEditRec[];
   /** Indexes of `workoutEdits` per workout key `person|id`. */
@@ -215,6 +224,8 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     bellSpends: [],
     menus: { treat: [], trip: [] },
     metricSets: { A: new Map(), B: new Map() },
+    weights: { A: new Map(), B: new Map() },
+    weightSets: { A: new Map(), B: new Map() },
     workoutEdits: [],
     workoutStrength: new Map(),
     workoutExcluded: new Map(),
@@ -246,8 +257,12 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     const [iso, person, d, metric, v] = row;
     const date = normDate(d);
     const value = num(v);
-    if (!date || !isMetricKey(metric) || value === null) continue;
-    push(s.metrics[person], `${date}|${metric}`, { at, v: value });
+    if (!date || value === null) continue;
+    if (metric === 'weight') {
+      if (value < WEIGHT_KG.min || value > WEIGHT_KG.max) continue;
+      push(s.weights[person], date, { at, v: roundKg(value) });
+    } else if (isActivityMetric(metric)) push(s.metrics[person], `${date}|${metric}`, { at, v: value });
+    else continue;
     synced(person, at, String(iso));
   }
 
@@ -390,8 +405,13 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   metric_set({ s }, person, at, d) {
     const date = normDate(d.date);
     const metric = d.metric;
-    if (!date || !isMetricKey(metric)) return;
-    if (typeof d.value !== 'number' || !Number.isInteger(d.value) || d.value < 0 || d.value > METRIC_BOUNDS[metric]) return;
+    if (!date) return;
+    if (metric === 'weight') {
+      // A weight (ADR 0020) earns nothing, so no week lock: any day up to today, one decimal, 20–300 kg.
+      if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value });
+      return;
+    }
+    if (!isActivityMetric(metric) || !validMetricValue(metric, d.value)) return;
     if (editableAt(date, at)) push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value });
   },
   workout_edit({ s, workoutById }, person, at, d) {
@@ -450,6 +470,11 @@ const ON_EVENT: Record<EventType, OnEvent> = {
       const v = d.value.trim();
       if (v.length >= 1 && v.length <= LIMITS.villagerNameMaxChars) p.villagerName = v;
     } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(d.value)) p.villager = d.value;
+    else if (d.key === 'goalWeight') {
+      // A goal in kg, or null / '' to clear it; anything else is ignored (the previous goal stays).
+      if (d.value === null || d.value === '') delete p.goalWeight;
+      else if (isWeightKg(d.value)) p.goalWeight = d.value;
+    }
   }
 };
 

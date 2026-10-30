@@ -3,7 +3,7 @@
 import type { CheckinTick, LocalDate, PersonId, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, deriveVisits } from '#lib/scoring/index.ts';
-import type { MetricKey } from '#lib/contract/api.ts';
+import type { ActivityMetric } from '#lib/contract/api.ts';
 import { allWorkouts, latestAt, latestTimed, type PresenceRec, type State } from './state.ts';
 
 type VisitRec = Visit & { id: string };
@@ -76,7 +76,7 @@ export function ticksAsOf(s: State, person: PersonId, t: number, dates: Dates = 
  * is the latest value (and robust to a hand-edited sheet). A `metric_set` S (the latest with at ≤ T) overrides it, even
  * lower, but a later and higher sync still wins: max(S, ingest rows with S.at < at ≤ T).
  */
-export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: MetricKey, t: number): number | null {
+export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: ActivityMetric, t: number): number | null {
   const set = latestTimed(s.metricSets[person].get(`${date}|${metric}`), t);
   let best: number | null = set ? set.v : null;
   const after = set ? set.at : -Infinity;
