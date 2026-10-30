@@ -76,11 +76,14 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
   a nameplate, per fruit today / goal, today's ベル and the week as a small 「2/5」 (days met / needed; a ✓ disc once
   the badge is met). In a v2 week (from 2026-11-02) each ring fruit also shows today's **4 milestone pips** (yuzu =
   reached; none for 🥥), and **one** nudge line sits under the rows, 「あと 8分で +45」, for the tapped fruit or else the
-  fruit nearest its next step (`nextAt`, `nextGain`); v1 weeks show neither. A popup that can't fit above its canopy
-  hangs **under the fruit row** (tail up; tighter rows on short screens). The popup is the one home of per-fruit detail.
-- **Layout:** the island (hedge top 32u to beach foam 356u) is **centred** in the band between the ribbon's lip
-  (`--hud-bottom`) and the phone's top (`--island-bottom`), with 12px above and below; its size is the smaller of that
-  band and the width fit, so a short screen scales it down. It never runs under the ribbon or the phone.
+  fruit nearest its next step (`nextAt`, `nextGain`); v1 weeks show neither. The popup always opens **upwards**, tail
+  down at its tree; where the sky is short it is pushed down over the canopy (never flipped; tighter rows on short
+  screens), staying inside the screen and under the ribbon. The popup is the one home of per-fruit detail.
+- **Layout:** the island (hedge top 32u to beach foam 356u) is **centred in the visible ocean**, from the horizon to
+  the phone's top (`--island-bottom`). The horizon is the island's own (24u above the hedge) unless that makes the sky
+  taller than 27% of the screen; then it stops there and the island sits lower in open sea. Its size is the width fit,
+  at most what keeps its horizon 12px under the ribbon's lip (`--hud-bottom`). It never runs under the ribbon or the
+  phone (≥ 22px to the phone at 320×568, ≈ 44px at 393×852).
 - **The NookPhone** is the island's one control (bottom centre, ≥ 56px): the hub for きろく, あそびかた and settings.
 - **しずえ** shows only with news (the harvest), in a box floating just above the phone, so nothing in the scene moves.
 - **Taps:** the partner → their card; my villager → a hop; a tree → the popup; the jar → ごほうび; the ribbon → きろく
@@ -229,8 +232,9 @@ Ours (no usable official art): sky, sun, moon, clouds, sea, ground, cliff, the j
 `IslandScene` = an elastic sky over a fixed-aspect **stage of 390 × 360 units (u)**, with one NH-blue sea from the
 horizon down under the island and behind the bottom chrome. The page gives the scene `--scene-h` (the full height),
 `--hud-bottom` (the ribbon's lip) and `--island-bottom` (the phone's top, `--chrome-below` − `--gap`); the island
-(32u–356u) is centred in the band between them, sized min(band − 2 × 12px, width fit: the sand 5px inside each edge, the
-grass 12px inside on tall phones; ≤ 560px). No front-beach tuck: nothing of the island sits under the chrome. The HUD
+(32u–356u) is centred between the horizon and `--island-bottom`. The horizon = min(`--island-bottom`'s y − 372u, 27% of
+the scene) (≥ 40px), the stage top = (horizon + that y) / 2 − 194u; the stage is sized min(width fit: the sand 5px inside
+each edge, the grass 12px inside on tall phones; (that y − `--hud-bottom` − 12px) × 390 / 372; ≤ 560px). No front-beach tuck: nothing of the island sits under the chrome. The HUD
 overlays the sky. Back to front: sky (sun/moon, stars, clouds, balloon, fireworks) · sea · ground · hedge · trees + ground fruit · jar + plate · flower beds · villagers · particles · one multiply tint.
 
 **Painting rule.** Light from the upper left. Every surface = one base fill + one gentle gradient + one soft lower
@@ -398,9 +402,10 @@ The ribbon, plate, dialogue box and choices are game objects and stay cream/yell
   `inputs.test.ts`), targets ≥ 44px and 8px apart, `overscroll-behavior: none`; sheets scroll internally. The keyboard
   inset `--kb` comes from `visualViewport`.
 - **島:** the phone has one fixed slot, `--phone-h` 92px (`--chrome-below` = `--phone-h` + 2 × `--gap` +
-  `--pad-bottom`); the scene keeps its full height, the chrome sits on the sea, and the island is centred between the
-  ribbon's lip (`--hud-bottom`) and the phone's top (`--island-bottom`) with a 12px pad, at the smaller of that band and
-  the width fit, so short screens scale it down (§S.1). At 320×568 it spans 110–414px with ≈ 46px to the phone.
+  `--pad-bottom`); the scene keeps its full height, the chrome sits on the sea, and the island is centred in the
+  visible ocean, the horizon down to the phone's top (`--island-bottom`), its horizon kept under the ribbon's lip
+  (`--hud-bottom`), at the width fit, so short screens scale it down (§S.1). At 320×568 it spans 133–437px (horizon 111)
+  with ≈ 23px to the phone; at 393×852, 274–670px (horizon 230) with ≈ 44px.
 - **Sheets:** `max-height: calc(100dvh − safe-top − 24px)`; NookPhone labels ≤ 5 Japanese / 10 Latin characters,
   never ellipsized. The harvest: a `max-width: 420px` column, CTA sticky at the bottom.
 - **Check** at 393×852, 375×667 and 320×568, at day, dusk, night and winter.

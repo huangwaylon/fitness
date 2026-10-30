@@ -91,7 +91,7 @@ export const BUSH_U = 48;
 export const PLATEAU = { x0: 44, y0: 50, x1: 346, y1: 316, rt: 60, rb: 26 } as const;
 export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as const;
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the island
- *  (the hedge's top 32u to the beach's foam 356u) is centred between the ribbon and the phone. */
+ *  (the hedge's top 32u to the beach's foam 356u) is centred in the visible ocean, the horizon down to the phone. */
 export const HORIZON_U = 8;
 
 /** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the jar, on columns ±2/±3 of the

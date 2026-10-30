@@ -123,6 +123,11 @@ test('tree popup: the five ring fruits, today against the goal, today’s ベル
   await page.locator('button.canopy').nth(0).click();
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
+  // it opens upwards (round 20): above its tree's trunk, under the ribbon
+  await page.waitForTimeout(400);
+  const [p, c, r] = await Promise.all([pop, page.locator('button.canopy').nth(0), page.locator('.ribbon')].map((l) => l.boundingBox()));
+  expect(p!.y + p!.height).toBeLessThan(c!.y + c!.height);
+  expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   const rows = pop.locator('.row:not(.hd)');
   await expect(rows).toHaveCount(5);
   await expect(rows.locator('.lbl')).toHaveText(['エクササイズ', 'ムーブ', 'スタンド', '歩数', 'ジム']);

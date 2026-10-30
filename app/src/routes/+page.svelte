@@ -99,10 +99,10 @@
 {/if}
 
 <style>
-  /* Round 19 (user): the island is centred between the ribbon (top) and the NookPhone (bottom), never under either.
-     The phone sits in ONE fixed slot over the sea at the bottom (its height is a constant, so nothing moves when
-     しずえ speaks: her box floats above it); IslandScene centres the island in the band between --hud-bottom (the
-     ribbon's lip, Hud.svelte) and --island-bottom (the phone's top). */
+  /* Round 20 (user): the island is centred in the visible ocean (the horizon down to the NookPhone), never under the
+     ribbon or the phone. The phone sits in ONE fixed slot over the sea at the bottom (its height is a constant, so
+     nothing moves when しずえ speaks: her box floats above it); IslandScene centres the island between the horizon
+     and --island-bottom (the phone's top), and keeps the horizon under --hud-bottom (the ribbon's lip, Hud.svelte). */
   .island {
     --chrome-below: calc(var(--phone-h) + 2 * var(--gap) + var(--pad-bottom));
     --hud-bottom: calc(var(--safe-top) + 16px + var(--hit) + var(--lip-h));
