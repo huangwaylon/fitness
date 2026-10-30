@@ -146,6 +146,26 @@ function demoRows(now: number): SnapshotRows {
   buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'treat', 'cafe', 'カフェデート', 2000);
   if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'treat', 'snack', 'おやつ', 1500);
 
+  // Body weight (ADR 0020): 12 weeks of morning weigh-ins, gently down with day-to-day water noise, a few days
+  // skipped, synced after breakfast; and a goal each. Weight never earns, so none of this moves a ベル.
+  const WEIGHT_DEMO: Record<PersonId, { start: number; perWeek: number; noise: number; skip: number; goal: number }> = {
+    A: { start: 72.6, perWeek: -0.35, noise: 0.9, skip: 0.15, goal: 68 },
+    B: { start: 58.4, perWeek: -0.2, noise: 0.7, skip: 0.25, goal: 55.5 }
+  };
+  const wStart = addDays(cur, -7 * 12);
+  for (let d = wStart, i = 0; d <= today; d = addDays(d, 1), i++) {
+    for (const p of ['A', 'B'] as PersonId[]) {
+      const c = WEIGHT_DEMO[p];
+      const r = rng(`${p}|weight|${d}`);
+      if (r() < c.skip) continue;
+      const kg = c.start + (c.perWeek * i) / 7 + (r() + r() + r() - 1.5) * c.noise;
+      const syncAt = at(d, 8, 10 + Math.floor(r() * 30));
+      if (syncAt < now) metrics.push([iso(syncAt), p, d, 'weight', Math.round(kg * 10) / 10]);
+    }
+  }
+  ev(at(wStart, 21, 0), 'A', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.A.goal });
+  ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
+
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(presence), events: byAt(events) };
 }

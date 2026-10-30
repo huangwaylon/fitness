@@ -9,6 +9,7 @@ import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs, parseMenu } from '#lib/model/state.ts';
 import type { MenuItem, PotKey } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
+import { isWeightKg, roundKg } from '#lib/contract/api.ts';
 
 /** 買う！, its もとに戻す and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
 const UNDO_MS = 5000;
@@ -89,6 +90,24 @@ export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(
 
 export function setMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
   return week.send('metric_set', { date, metric, value: Math.round(value) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+}
+
+/**
+ * A day's body weight from きろく (ADR 0020): kg, one decimal. Weight earns nothing, so no week lock applies (any day up
+ * to today); it still waits UNDO_MS with もとに戻す. `{ok:false}` for a value outside 20–300 kg.
+ */
+export function setWeight(date: string, kg: number): SendResult {
+  const value = roundKg(kg);
+  if (!isWeightKg(value)) return { ok: false };
+  return week.send('metric_set', { date, metric: 'weight', value }, { holdMs: UNDO_MS });
+}
+
+/** My goal weight in kg (one decimal), or null to clear it. Both of us see it; it never earns. */
+export function setGoalWeight(kg: number | null): SendResult {
+  if (kg === null) return week.send('pref', { key: 'goalWeight', value: null });
+  const value = roundKg(kg);
+  if (!isWeightKg(value)) return { ok: false };
+  return week.send('pref', { key: 'goalWeight', value });
 }
 
 /** `strength`: count as strength (true), not (false) or automatic (null); `excluded`: out of scoring. `date`: the workout's day. */
