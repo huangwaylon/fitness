@@ -95,7 +95,7 @@
   </section>
 
   <section class="card">
-    <h3><span class="hi"><OfficialArt key="phone/nook-shopping" size={30} /></span>{t('help.wallet.title')}</h3>
+    <h3><span class="hi"><OfficialArt key="phone/nook-shopping" size={26} /></span>{t('help.wallet.title')}</h3>
     <p>{t('help.wallet.body')}</p>
     <p class="note">{t('help.treats')}</p>
     <p class="note">{t('help.escalate')}</p>
@@ -120,7 +120,7 @@
   h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: var(--fs-talk); line-height: 1.25; }
   .hi { width: 40px; height: 40px; display: grid; place-items: center; flex: none; line-height: 0; color: var(--text-soft); }
   .hi svg { width: 28px; height: 28px; }
-  p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: 1.5; word-break: auto-phrase; }
+  p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: 1.5; }
   .note { font-size: var(--fs-s); color: var(--text-soft); }
   .fruits { list-style: none; margin: 0; padding: 0; display: grid; }
   .fruits li { display: flex; align-items: center; gap: 10px; min-height: 48px; }
@@ -136,6 +136,8 @@
   .st small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .st b { font-size: var(--fs-s); }
   .st:last-child { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
+  /* night: the soft lilac was 3.5:1 on the cream-tinted cell (round 21) */
+  :global(:root[data-tod='night']) .st small { color: var(--text); }
   .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .chips li { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--r-pill); background: var(--hl); }
   .chips .money { font-size: var(--fs-s); }

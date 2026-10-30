@@ -130,13 +130,14 @@
   dialog.phone[open] { display: flex; }
   dialog.phone .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
-    padding: 6px calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left));
+    /* 14px over the title bar, as on a paper sheet: ✕ and ‹ sit 18px from the phone's top and its side (round 21: 10 / 18) */
+    padding: 14px calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left));
   }
   /* An undo banner is up: the last row can scroll clear of it. */
   dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   dialog.phone.toasting .inner { padding-bottom: 0; }
   dialog.phone.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
-  @media (max-width: 339px) { dialog.phone .inner { padding: 6px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); } }
+  @media (max-width: 339px) { dialog.phone .inner { padding: 14px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
   @media (prefers-reduced-motion: reduce) {
     dialog[open] { animation: none; }
