@@ -6,6 +6,7 @@
   import { hasMusic } from '#lib/sound/manifest.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   const ROWS = ['music', 'sfx', 'voice'] as const;
   const s = $derived(sound.settings);
@@ -16,7 +17,11 @@
 
 <div class="prows">
   {#each ROWS as k (k)}
-    <button type="button" class="prow" role="switch" aria-checked={s[k]} onclick={() => setSound({ [k]: !s[k] })}>
+    <button type="button" class="prow" role="switch" aria-checked={s[k]} onclick={() => {
+      // 効果音 previews itself (a confirm when it turns on); the others tick
+      if (k !== 'sfx') cue('toggle');
+      setSound({ [k]: !s[k] });
+    }}>
       <span class="prl">{t(`sound.${k}`)}<small>{t(`sound.${k}.hint`)}</small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
@@ -26,7 +31,7 @@
   <label class="prow vol" class:off>
     <span class="prl">{t('sound.volume')}</span>
     <input type="range" min="0" max="10" step="1" value={volume} disabled={off} style:--v="{volume * 10}%"
-      oninput={(e) => setSound({ volume: Number(e.currentTarget.value) / 10 })} />
+      oninput={(e) => setSound({ volume: Number(e.currentTarget.value) / 10 })} onchange={() => cue('choice-pick')} />
   </label>
 
   <p class="note">

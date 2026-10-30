@@ -4,7 +4,7 @@
 // (motion/reactions.ts `cue`), and the director plays it with the step.
 import type { SoundId } from './ids.ts';
 import { semitones } from './mix.ts';
-import { play } from './sound.svelte.ts';
+import { covered, play } from './sound.svelte.ts';
 
 export type Cue =
   // the island
@@ -20,6 +20,9 @@ export type Cue =
 
 interface CueDef {
   sound: SoundId;
+  /** A sound of the island itself: silent while a sheet, the phone or the harvest covers the scene (NH's world goes
+   *  quiet under its menus; round 14 review R1). UI cues always play. */
+  world?: boolean;
   /** Level on top of the sound's own (1 = as defined in ids.ts). */
   gain?: number;
   /** Seconds after the call (to land on an animation's beat). */
@@ -27,20 +30,20 @@ interface CueDef {
 }
 
 export const CUES: Record<Cue, CueDef> = {
-  'tree-shake': { sound: 'rustle' },
+  'tree-shake': { sound: 'rustle', world: true },
   // fruit-drop keyframes: the item hits the ground at 55% of 520 ms
-  'fruit-land': { sound: 'thud', delay: 0.29 },
-  'coin-land': { sound: 'coin' },
-  'bells-arrive': { sound: 'bells' },
+  'fruit-land': { sound: 'thud', delay: 0.29, world: true },
+  'coin-land': { sound: 'coin', world: true },
+  'bells-arrive': { sound: 'bells', world: true },
   'jar-tap': { sound: 'pop', gain: 0.6 },
   'villager-tap': { sound: 'pop' },
   'host-tap': { sound: 'pop', gain: 0.8 },
-  'emote-surprise': { sound: 'surprise' },
-  'emote-love': { sound: 'heart' },
-  'emote-joy': { sound: 'sparkle' },
-  'emote-idea': { sound: 'pop', gain: 0.8 },
-  trouble: { sound: 'oops' },
-  announce: { sound: 'chime' },
+  'emote-surprise': { sound: 'surprise', world: true },
+  'emote-love': { sound: 'heart', world: true },
+  'emote-joy': { sound: 'sparkle', world: true },
+  'emote-idea': { sound: 'pop', gain: 0.8, world: true },
+  trouble: { sound: 'oops', world: true },
+  announce: { sound: 'chime', world: true },
   'checkin-saved': { sound: 'confirm' },
   'choice-move': { sound: 'cursor' },
   'choice-pick': { sound: 'confirm' },
@@ -54,8 +57,14 @@ export const CUES: Record<Cue, CueDef> = {
   'harvest-receive': { sound: 'fanfare' }
 };
 
-/** Play a moment's sound. `step`: semitones up (a run of coins climbs); `delay`: extra seconds. */
-export function cue(c: Cue, o: { step?: number; delay?: number } = {}): void {
+/** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the
+ *  top: one rising gesture instead of the same three notes again and again (round 14 review R2). */
+const COIN_RUN = [0, 2, 4, 7, 9, 12, 14, 16, 19] as const;
+export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n), COIN_RUN.length - 1)];
+
+/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level; `delay`: extra seconds. */
+export function cue(c: Cue, o: { step?: number; gain?: number; delay?: number } = {}): void {
   const d = CUES[c];
-  play(d.sound, { gain: d.gain, delay: (d.delay ?? 0) + (o.delay ?? 0), rate: o.step ? semitones(o.step) : undefined });
+  if (d.world && covered()) return;
+  play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: (d.delay ?? 0) + (o.delay ?? 0), rate: o.step ? semitones(o.step) : undefined });
 }

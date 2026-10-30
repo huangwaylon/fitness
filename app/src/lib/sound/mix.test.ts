@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_VOICES, VoiceLimiter, duckPlan, jitterRate, semitones } from './mix.ts';
 import { SOUNDS, SOUND_IDS, isSoundId } from './ids.ts';
-import { CUES } from './cues.ts';
+import { CUES, coinStep } from './cues.ts';
 import { REACTIONS } from '../components/motion/reactions.ts';
 
 describe('voice limit', () => {
@@ -88,7 +88,16 @@ describe('the catalogue and the cue table', () => {
     for (const id of SOUND_IDS.filter((i) => SOUNDS[i].jingle)) expect(SOUNDS[id].bus).toBe('sfx');
   });
   it('only events and taps sound: the startup beats, naps and the dance are silent', () => {
-    for (const rid of ['R11', 'R12', 'R13', 'R15', 'R16', 'R19'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(false);
-    for (const rid of ['R2', 'R9', 'R10', 'R17'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(true);
+    for (const rid of ['R2', 'R11', 'R12', 'R13', 'R15', 'R16', 'R19'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(false);
+    for (const rid of ['R9', 'R10', 'R17'] as const) expect(REACTIONS[rid].steps.some((s) => s.cue)).toBe(true);
+  });
+  it('island sounds wait while the scene is covered; UI sounds never do', () => {
+    for (const c of ['tree-shake', 'fruit-land', 'coin-land', 'bells-arrive', 'emote-joy', 'announce'] as const) expect(CUES[c].world).toBe(true);
+    for (const c of ['phone-open', 'checkin-saved', 'choice-pick', 'buy', 'badge-met', 'harvest-receive', 'back'] as const) expect(CUES[c].world).toBeUndefined();
+  });
+  it('a coin run climbs one pentatonic step per coin across the batch, then holds the top', () => {
+    expect([0, 1, 2, 3, 4].map(coinStep)).toEqual([0, 2, 4, 7, 9]);
+    expect(coinStep(23)).toBe(19);
+    expect(coinStep(-1)).toBe(0);
   });
 });

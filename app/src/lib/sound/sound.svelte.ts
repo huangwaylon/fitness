@@ -26,6 +26,8 @@ let engine: Engine | null = null;
 /** The opening theme is playing (or about to): the hourly track waits for it to end. */
 let opening = false;
 let clock: ReturnType<typeof setTimeout>[] = [];
+/** A sheet, the phone or the harvest covers the scene (from the layout). */
+let coveredBy: () => boolean = () => false;
 /** しずえ's daily announcement fires as the island opens, before any tap can unlock audio: it waits this long for the
  *  first tap (NH plays it as you step outside), then lapses. */
 const ANNOUNCE_WAIT_MS = 15_000;
@@ -39,6 +41,7 @@ function eng(): Engine {
       opening = false;
       syncMusic();
     };
+    // the opening is title music: it plays clear under the phone that started it (round 14 review R5)
   }
   return engine;
 }
@@ -76,6 +79,7 @@ function syncMusic(): void {
     void e.setAmbient([]);
     return;
   }
+  e.muffle(coveredBy() && !opening);
   const d = now();
   if (opening && AUDIO.opening) {
     sound.playing = 'opening';
@@ -121,6 +125,9 @@ export function setSound(patch: Partial<SoundSettings>): void {
   if (next.voice && !prev.voice) void e.whenReady().then(() => talk([...'こんにちは'].map((ch, i) => ({ ch, at: i * 66 })), 'host'));
 }
 
+/** The scene is covered (world cues wait; cues.ts). */
+export const covered = (): boolean => coveredBy();
+
 /** Play an effect or blip if its setting is on (cues.ts is the usual way in). */
 export function play(id: SoundId, o?: { gain?: number; rate?: number; delay?: number }): void {
   const s = sound.settings;
@@ -140,6 +147,7 @@ export function talk(glyphs: readonly Glyph[], voice: 'host' | 'villager'): () =
 /** Once, in the root layout. `muffled`: a sheet, the phone or the harvest is up (the music goes soft and dull under
  *  it, as under NH's menus). `?weather=rain|snow` previews a weather for this load. Returns the cleanup. */
 export function startSound(o: { muffled: () => boolean }): () => void {
+  coveredBy = o.muffled;
   sound.settings = loadSound(localKV());
   const w = new URLSearchParams(location.search).get('weather') as Weather | null;
   if (w && WEATHERS.includes(w)) sound.weather = w;
@@ -154,9 +162,19 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   };
   document.addEventListener('visibilitychange', onVisible);
   const stopEffects = $effect.root(() => {
+    // Under a sheet the music goes muffled. The opening theme is NH's title screen: closing the phone it started in
+    // is "pressing A", and the island's hour takes over with the usual crossfade.
+    let was = false;
     $effect(() => {
       const m = o.muffled();
-      untrack(() => engine?.muffle(m));
+      untrack(() => {
+        if (was && !m && opening) {
+          opening = false;
+          syncMusic();
+        }
+        was = m;
+        engine?.muffle(m && !opening);
+      });
     });
     $effect(() => {
       void sound.weather;
