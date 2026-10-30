@@ -22,12 +22,14 @@ const tick = (ms = 1000) => vi.setSystemTime(Date.now() + ms);
 const data = (tab: string) => gas.sheets.get(tab)?.data() ?? [];
 
 // The user's real Shortcut body (sheets-architecture.md §5): the old dictionary plus key + action.
+// The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories are ignored.
 const REAL = {
-  dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM\nSep 29, 2026 at 8:00 PM',
-  steps: '855\n9106\n100',
-  exercise_minutes: '0\n23\n7',
-  calories: '0\n248.2\n10'
+  dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM',
+  steps: '855\n9106',
+  exercise_minutes: '0\n23',
+  calories: '0\n248.2'
 };
+const day = (date: string, steps: number, ex: number) => ({ dates: date, steps: String(steps), exercise_minutes: String(ex) });
 
 describe('auth', () => {
   it('rejects a missing, wrong, short or non-string key with the same reply', () => {
@@ -146,14 +148,14 @@ describe('never throws', () => {
 });
 
 describe('ingest', () => {
-  it("the user's real payload: rows appended with server time, audit row, nothing stored twice", () => {
+  it("the Shortcut's body: rows appended with server time, audit row with the body's shape, nothing stored twice", () => {
     expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 4, workouts: 0 });
     const at = '2026-10-29T03:00:00.000Z';
     expect(data('metrics')).toEqual([
-      [at, 'A', '2026-09-28', 'steps', 855], [at, 'A', '2026-09-29', 'steps', 9206],
-      [at, 'A', '2026-09-28', 'exercise_min', 0], [at, 'A', '2026-09-29', 'exercise_min', 30]
+      [at, 'A', '2026-09-28', 'steps', 855], [at, 'A', '2026-09-29', 'steps', 9106],
+      [at, 'A', '2026-09-28', 'exercise_min', 0], [at, 'A', '2026-09-29', 'exercise_min', 23]
     ]);
-    expect(data('uploads')).toEqual([[at, 'A', 'ok', JSON.stringify({ key: KEY_A, action: 'ingest', ...REAL }).length, expect.stringMatching(/^ \| action:text\[1\] "ingest"; /)]]);
+    expect(data('uploads')).toEqual([[at, 'A', 'ok', JSON.stringify({ key: KEY_A, action: 'ingest', ...REAL }).length, ' | action:text[1] "ingest"; dates:text[2] "Sep 28, 2026 at 7:11 AM"; steps:text[2] "855"; exercise_minutes:text[2] "0"; calories:text[2] "0"']]);
     expect(String(data('uploads')[0][4])).not.toContain(KEY_A); // the shape never logs the key
     tick();
     expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 0, workouts: 0 });
@@ -161,18 +163,19 @@ describe('ingest', () => {
     expect(data('uploads')).toHaveLength(2);
   });
 
-  it('appends only higher values; lower ones never overwrite (append-only)', () => {
-    a('ingest', { days: [{ date: '2026-10-27', steps: 9000, exerciseMin: 40 }] });
+  it('appends only higher steps and minutes; lower ones never overwrite (append-only)', () => {
+    a('ingest', day('Oct 27, 2026', 9000, 40));
     tick();
-    expect(a('ingest', { days: [{ date: '2026-10-27', steps: 1200, exerciseMin: 5 }] })).toMatchObject({ metrics: 0 });
+    expect(a('ingest', day('Oct 27, 2026', 1200, 5))).toMatchObject({ metrics: 0 });
     tick();
-    expect(a('ingest', { days: [{ date: '2026-10-27', steps: 9500, exerciseMin: 40 }] })).toMatchObject({ metrics: 1 });
+    expect(a('ingest', day('Oct 27, 2026', 9500, 40))).toMatchObject({ metrics: 1 });
     expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['steps', 9000], ['exercise_min', 40], ['steps', 9500]]);
   });
 
-  it('weight: any changed value is appended (a weight goes down too); the same value never twice', () => {
-    const wb = (kg: string) => ({ weight_dates: ['2026-10-27T07:00:00+09:00'], weights: [kg] });
-    expect(a('ingest', wb('68.4 kg'))).toMatchObject({ metrics: 1 });
+  it('weight: any changed value is appended (a weight goes down too); the same value never twice; 0 is no weigh-in', () => {
+    const wb = (kg: string) => ({ dates: 'Oct 27, 2026 at 7:00 AM', weight: kg });
+    expect(a('ingest', wb('0'))).toMatchObject({ metrics: 0 });
+    expect(a('ingest', wb('68.4'))).toMatchObject({ metrics: 1 });
     tick();
     expect(a('ingest', wb('68.4'))).toMatchObject({ metrics: 0 });
     tick();
@@ -182,11 +185,6 @@ describe('ingest', () => {
     expect(data('metrics').map((r) => [r[2], r[3], r[4]])).toEqual([
       ['2026-10-27', 'weight', 68.4], ['2026-10-27', 'weight', 68.1], ['2026-10-27', 'weight', 68.4]
     ]);
-  });
-
-  it('a body without weight lists behaves as before (no weight rows)', () => {
-    a('ingest', REAL);
-    expect(data('metrics').some((r) => r[3] === 'weight')).toBe(false);
   });
 
   it('dates stay text in the sheet (cells are plain-text formatted)', () => {
@@ -200,38 +198,36 @@ describe('ingest', () => {
     expect(data('metrics').filter((r) => r[1] === 'B')).toHaveLength(4);
   });
 
-  it('workouts are deduped by id, also across language and time zone', () => {
-    const body = {
+  it('workouts are deduped by id, also across phone languages', () => {
+    const body = (types: string) => ({
       workouts: {
-        types: ['伝統的な筋力トレーニング', 'カバディ'],
-        starts: ['2026-11-02T08:30:10+09:00', '2026-11-03T18:00:00+09:00'],
-        ends: ['2026-11-02T09:22:10+09:00', '2026-11-03T18:30:00+09:00'],
-        avgHrs: ['118', '']
+        types,
+        starts: 'Nov 2, 2026 at 8:30 AM\nNov 3, 2026 at 6:00 PM',
+        ends: 'Nov 2, 2026 at 9:22 AM\nNov 3, 2026 at 6:30 PM',
+        avgHrs: '118\n0'
       }
-    };
-    expect(a('ingest', body)).toEqual({ ok: true, metrics: 0, workouts: 2, unknownTypes: ['カバディ'] });
+    });
+    expect(a('ingest', body('伝統的な筋力トレーニング\nカバディ'))).toEqual({ ok: true, metrics: 0, workouts: 2, unknownTypes: ['カバディ'] });
     const [w] = data('workouts');
-    expect(w.slice(1)).toEqual(['A', w[2], '2026-11-02', 'Traditional Strength Training', '2026-11-02T08:30:10+09:00', '2026-11-02T09:22:10+09:00', 52, 118]);
-    expect(data('workouts')[1][8]).toBe('');
+    expect(w.slice(1)).toEqual(['A', w[2], '2026-11-02', 'Traditional Strength Training', '2026-11-02T08:30:00+09:00', '2026-11-02T09:22:00+09:00', 52, 118]);
     tick();
-    expect(a('ingest', { workouts: [{ type: 'Traditional Strength Training', start: '2026-11-01 23:30:40 +0000', end: '2026-11-02 00:22:10 +0000' }] }))
-      .toMatchObject({ workouts: 0 });
+    expect(a('ingest', body('Traditional Strength Training\nカバディ'))).toMatchObject({ workouts: 0 });
     expect(data('workouts')).toHaveLength(2);
     expect(String(data('uploads').at(0)![4]).split(' | ')[0]).toBe('unknown workout types: カバディ');
   });
 
   it('a bad shape is bad_request with a hint, and audited as an error', () => {
-    const r = a('ingest', { steps: '12\n3' });
+    const r = a('ingest', { dates: 'Oct 27, 2026', steps: 12 });
     expect(r).toMatchObject({ ok: false, error: 'bad_request' });
-    expect(r.detail).toMatch(/steps has values but no start dates/);
+    expect(r.detail).toMatch(/steps: expected Text/);
     expect(data('uploads')[0].slice(1, 3)).toEqual(['A', 'error']);
     expect(data('metrics')).toEqual([]);
   });
 
-  it('a mismatched exercise list is reported in the reply and the audit row, and the steps are saved', () => {
-    const r = a('ingest', { dates: '2026-10-27\n2026-10-28', steps: '100\n200', exercise_minutes: '1' });
-    expect(r).toEqual({ ok: true, metrics: 2, workouts: 0, skipped: 1, warnings: ['exercise: 1 values but 2 dates; exercise not saved'] });
-    expect(data('uploads').at(-1)!.slice(2)).toEqual(['partial', expect.any(Number), expect.stringMatching(/^exercise: 1 values but 2 dates; exercise not saved; 1 items skipped \| /)]);
+  it('a mismatched list is reported in the reply and the audit row, and the other lists are saved', () => {
+    const r = a('ingest', { dates: 'Oct 27, 2026\nOct 28, 2026', steps: '100\n200', exercise_minutes: '1' });
+    expect(r).toEqual({ ok: true, metrics: 2, workouts: 0, warnings: ['exercise_minutes: 1 lines but 2 dates; exercise_minutes not saved'] });
+    expect(data('uploads').at(-1)!.slice(2)).toEqual(['ok', expect.any(Number), expect.stringMatching(/^exercise_minutes: 1 lines but 2 dates; exercise_minutes not saved \| /)]);
   });
 
   it(`recent dates read only the last ${INGEST_TAIL_ROWS} metrics rows; older dates read the whole tab`, () => {
@@ -243,8 +239,8 @@ describe('ingest', () => {
     const reads: number[] = [];
     const getRange = sh.getRange.bind(sh);
     sh.getRange = (row: number, col: number, n?: number, c?: number) => { if (col === 1 && (c ?? 1) === 5) reads.push(n ?? 1); return getRange(row, col, n, c); };
-    expect(a('ingest', { days: [{ date: '2026-10-28', steps: 10 }] })).toMatchObject({ metrics: 1 });
-    expect(a('ingest', { days: [{ date: '2026-09-01', steps: 6000 }] })).toMatchObject({ metrics: 0 }); // still higher-only
+    expect(a('ingest', { dates: 'Oct 28, 2026', steps: '10' })).toMatchObject({ metrics: 1 });
+    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '6000' })).toMatchObject({ metrics: 0 }); // still higher-only
     expect(reads.filter((n) => n > 1)).toEqual([INGEST_TAIL_ROWS, INGEST_TAIL_ROWS + 2]); // (1-row ranges are the appends)
   });
 
@@ -254,25 +250,25 @@ describe('ingest', () => {
     a('ingest', { dates: 'x', steps: '1' });
     const r = a('uploads', {}) as { ok: true; rows: { status: string; notes: string }[] };
     expect(r.rows.map((x) => x.status)).toEqual(['partial', 'ok']);
-    expect(r.rows[1].notes).toMatch(/action:text\[1\] "ingest"; dates:/);
+    expect(r.rows[1].notes).toMatch(/dates:text\[2\] "Sep 28, 2026 at 7:11 AM"; steps:text\[2\]/);
     expect((b('uploads', {}) as { rows: unknown[] }).rows).toEqual([]);
   });
 
-  it('partial uploads say how many items were skipped', () => {
-    expect(a('ingest', { steps: { values: [1, 'x'], starts: ['2026-10-28', '2026-10-28'] } })).toEqual({ ok: true, metrics: 1, workouts: 0, skipped: 1 });
+  it('partial uploads say how many lines were skipped', () => {
+    expect(a('ingest', { dates: 'Oct 28, 2026\nOct 29, 2026', steps: '1\nx' })).toEqual({ ok: true, metrics: 1, workouts: 0, skipped: 1 });
     expect(data('uploads')[0].slice(2)).toEqual(['partial', expect.any(Number), expect.stringMatching(/^1 items skipped \| /)]);
   });
 
   it('grows the sheet past its initial 1000 rows', () => {
-    const days = Array.from({ length: 700 }, (_, i) => ({ date: new Date(Date.UTC(2024, 0, 1 + i)).toISOString().slice(0, 10), steps: 1000, exerciseMin: 10 }));
-    expect(a('ingest', { days })).toMatchObject({ ok: true, metrics: 1400 });
+    const dates = Array.from({ length: 700 }, (_, i) => new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }));
+    expect(a('ingest', { dates: dates.join('\n'), steps: dates.map(() => '1000').join('\n'), exercise_minutes: dates.map(() => '10').join('\n') })).toMatchObject({ ok: true, metrics: 1400 });
     expect(data('metrics')).toHaveLength(1400);
   });
 });
 
 describe('presence and events', () => {
   it('presence rows carry the event time, defaulting to now', () => {
-    expect(a('presence', { place: 'gym', event: 'arrive', at: '2026-10-29 11:05' })).toEqual({ ok: true });
+    expect(a('presence', { place: 'gym', event: 'arrive', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: true });
     tick();
     expect(b('presence', { place: 'studio', event: 'leave' })).toEqual({ ok: true });
     expect(data('presence')).toEqual([
@@ -390,7 +386,7 @@ describe('snapshot', () => {
     b('presence', { place: 'studio', event: 'arrive', at: '2026-10-29T12:00:00+09:00' });
     tick();
     a('event', { id: 'e1', type: 'highfive', data: {} });
-    a('ingest', { workouts: [{ type: 'Yoga', start: '2026-10-29T07:00:00+09:00', end: '2026-10-29T07:30:00+09:00' }] });
+    a('ingest', { workouts: { types: 'Yoga', starts: 'Oct 29, 2026 at 7:00 AM', ends: 'Oct 29, 2026 at 7:30 AM' } });
 
     const full = b('snapshot');
     expect(full).toMatchObject({ ok: true, me: 'B', now: expect.any(String) });
@@ -398,7 +394,7 @@ describe('snapshot', () => {
     expect(full.rows.metrics[0]).toEqual(['2026-10-29T03:00:00.000Z', 'A', '2026-09-28', 'steps', 855]);
     expect(full.rows.presence).toEqual([['2026-10-29T03:00:01.000Z', 'B', 'studio', 'arrive', '2026-10-29T03:00:00.000Z']]);
     expect(full.rows.events).toEqual([[expect.any(String), 'A', 'e1', 'highfive', '{}']]);
-    expect(full.rows.workouts[0].slice(1, 9)).toEqual(['A', expect.stringMatching(/^w:[0-9a-f]{24}$/), '2026-10-29', 'Yoga', '2026-10-29T07:00:00+09:00', '2026-10-29T07:30:00+09:00', 30, null]);
+    expect(full.rows.workouts[0].slice(1, 9)).toEqual(['A', expect.stringMatching(/^w:[0-9a-f]{16}$/), '2026-10-29', 'Yoga', '2026-10-29T07:00:00+09:00', '2026-10-29T07:30:00+09:00', 30, null]);
     expect(full.rows).not.toHaveProperty('uploads');
 
     const since = full.rows.presence[0][0];
@@ -423,7 +419,7 @@ describe('snapshot', () => {
     sh.rows.push([new Date('2026-09-01T00:00:00.000Z'), 'A', new Date('2026-09-01T00:00:00+09:00'), 'steps', '7000']);
     expect(a('snapshot').rows.metrics).toEqual([['2026-09-01T00:00:00.000Z', 'A', '2026-09-01', 'steps', 7000]]);
     // …and the higher-only index reads them too.
-    expect(a('ingest', { days: [{ date: '2026-09-01', steps: 6000 }] })).toMatchObject({ metrics: 0 });
+    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '6000' })).toMatchObject({ metrics: 0 });
   });
 
   it('a hand-pasted `at` without milliseconds or UTC is normalised, so `since` compares it correctly', () => {
@@ -445,7 +441,7 @@ describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => 
     a('ingest', REAL);
     b('event', { id: 'e1', type: 'highfive' });
     b('presence', { place: 'gym', event: 'arrive' });
-    a('ingest', { workouts: [{ type: 'Yoga', start: '2026-10-29T07:00:00+09:00', end: '2026-10-29T07:30:00+09:00' }] });
+    a('ingest', { workouts: { types: 'Yoga', starts: 'Oct 29, 2026 at 7:00 AM', ends: 'Oct 29, 2026 at 7:30 AM' } });
     expect(rev()).toBe(r0);
   });
 

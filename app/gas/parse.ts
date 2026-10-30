@@ -1,21 +1,17 @@
-// Pure, dependency-free parser of the iOS Shortcuts health body (ADR 0015, sheets-architecture.md §3). It runs in
-// the Apps Script web app (bundled by esbuild into apps-script/Code.js) and in Node tests.
-// So: no zod, no Node APIs, no `crypto`, no TextEncoder, no Intl; only plain ES2019.
+// Parser of the iOS Shortcut's health body (ADR 0015, docs/ops/shortcut-health-sync.md §1). One format, the one the
+// Shortcut sends (read from the `uploads` log, 2026-10-30): daily totals as newline-joined Text, one line per day.
 //
-// It is a port of the legacy server's Shortcut parser (deleted; ADR 0015). Accepted shapes:
-//   - daily form:  {"dates": "Sep 28, 2026 at 7:11 AM\n…", "steps": "855\n…", "exercise_minutes": "0\n…"}, optionally
-//                  with "exercise_dates" (exercise samples' own dates) and "steps_sources" / "exercise_sources"
-//                  (each sample's source device, so iPhone and Watch samples aren't summed)
-//   - series form: {"steps": {"values": […], "starts": […], "sources": […]}, "exercise": {…}}
-//   - simple form: {"date": "2026-10-28", "steps": "12\n3\n27"}
-//   - days form:   {"days": [{"date": "2026-10-28", "steps": 8123, "exerciseMin": 34}]}
-//   - workouts:    {"workouts": {"types": […], "starts": […], "ends": […], "avgHrs": […]}} or an array of objects
-//   - weight:      {"weight_dates": […], "weights": ["68.4 kg", …], "weight_sources"?: […]} (Health "Body Mass"; ADR 0020).
-//                  A day's weight is its FIRST sample (the morning weigh-in), not a sum or a max.
-// Every list may be a JSON array or newline-joined text (Shortcuts' Dictionary fields typed as Text).
-import { toLocalDate } from '../src/lib/time/dates.ts';
+//   { "key": "…", "action": "ingest",
+//     "dates": "Sep 30, 2026 at 8:59 AM\n…",   one line per day (Shortcuts' date text; only the calendar day is used)
+//     "steps": "8564\n…",                       that day's total
+//     "exercise_minutes": "22\n…",              that day's total
+//     "weight": "0\n68.4\n…",                   that day's Body Mass in kg; 0 = no weigh-in
+//     "workouts": { "types": "…", "starts": "…", "ends": "…", "avgHrs": "…" }   optional, one line per workout }
+//
+// Other fields (e.g. "calories") are ignored. A list whose length differs from `dates` is dropped with a warning and
+// the rest is kept. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
 import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
-import { DATE_RE, isRec, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
+import { isRec, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedWorkout {
@@ -31,409 +27,139 @@ interface ParsedWorkout {
 export interface ParsedBody {
   metrics: ParsedMetric[];
   workouts: ParsedWorkout[];
-  /** Items dropped because a value or date was unreadable. */
+  /** Lines dropped because a value or date was unreadable. */
   skipped: number;
-  /** Non-ASCII workout names with no alias yet (worth adding to ALIASES). */
+  /** Non-ASCII workout names with no alias yet (worth adding to WORKOUT_LABELS_JA). */
   unknownTypes: string[];
-  /** Daily-form lists that were dropped (and why), while the rest of the body was kept. */
+  /** Lists that were dropped (and why), while the rest of the body was kept. */
   warnings: string[];
 }
 
 /** Thrown for a body with the wrong shape; the message says what to fix in the Shortcut. */
 export class ShapeError extends Error {}
 
-// ---------------------------------------------------------------- numbers and dates
-
-/** "8,123", "8123 歩", 8123 → 8123; null if there's no number. */
-export function looseNumber(v: unknown): number | null {
-  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-  if (typeof v !== 'string') return null;
-  const m = v.replace(/[,，\s]/g, '').match(/-?\d+(\.\d+)?/);
-  return m ? Number(m[0]) : null;
-}
-
-const POUND_KG = 0.45359237;
-
-/**
- * A body weight → kg with one decimal: 68.4, "68.4", "68.4 kg", "68,4 kg" (decimal comma), "150.8 lb" (pounds only
- * when marked lb/lbs/pound(s)/ポンド; an unmarked number is kg). Null if unreadable or outside WEIGHT_KG (20–300 kg).
- */
-export function looseWeightKg(v: unknown): number | null {
-  let n: number;
-  let lb = false;
-  if (typeof v === 'number') n = v;
-  else if (typeof v === 'string') {
-    const m = v.trim().replace(/[\u00a0\u202f]/g, ' ').toLowerCase()
-      .match(/^(\d{1,3}(?:[.,]\d+)?)\s*(kg|kgs|kilograms?|キロ|キログラム|lb|lbs|pounds?|ポンド)?$/);
-    if (!m) return null;
-    n = Number(m[1].replace(',', '.'));
-    lb = m[2] !== undefined && /^(lb|lbs|pounds?|ポンド)$/.test(m[2]);
-  } else return null;
-  if (!Number.isFinite(n)) return null;
-  const kg = roundKg(lb ? n * POUND_KG : n);
-  return kg >= WEIGHT_KG.min && kg <= WEIGHT_KG.max ? kg : null;
-}
+// ---------------------------------------------------------------- dates
 
 const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 const pad = (n: number | string) => String(n).padStart(2, '0');
 
-const EN_TIME = String.raw`(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$`;
-const EN_MONTH_FIRST = new RegExp(String.raw`^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})` + EN_TIME);
-const EN_DAY_FIRST = new RegExp(String.raw`^(\d{1,2}) ([A-Za-z]{3})[a-z]* (\d{4})` + EN_TIME);
-
-/** Shortcuts' default date text (when no Format Date step is used): English or Japanese locale. */
-function shortcutsDefaultDate(v: string): string | null {
-  const hm = (h: string, m: string, sec: string | undefined, ap: string | undefined) => {
-    let hour = Number(h);
-    const a = ap ? ap.toLowerCase() : undefined;
-    if (a === 'pm' || a === '午後') hour = hour % 12 + 12;
-    if (a === 'am' || a === '午前') hour = hour % 12;
-    return `${pad(hour)}:${m}:${sec ?? '00'}`;
-  };
-  // "Oct 28, 2026 at 8:10 AM" / "October 28, 2026 at 8:10:05 PM" / "Oct 28, 2026", and "28 Oct 2026 at 08:10"
-  const english = (re: RegExp, mon: number, day: number): string | null => {
-    const m = v.match(re);
-    if (!m || !MONTHS[m[mon].toLowerCase()]) return null;
-    const t = m[4] ? hm(m[4], m[5], m[6], m[7]) : '00:00:00';
-    return `${m[3]}-${pad(MONTHS[m[mon].toLowerCase()])}-${pad(m[day])}T${t}+09:00`;
-  };
-  const en = english(EN_MONTH_FIRST, 1, 2) ?? english(EN_DAY_FIRST, 2, 1);
-  if (en) return en;
-  // "2026年10月28日 8:10" / "2026年10月28日 午後8:10"
-  const m = v.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
-  if (m) {
-    const t = m[5] ? hm(m[5], m[6], m[7], m[4]) : '00:00:00';
-    return `${m[1]}-${pad(m[2])}-${pad(m[3])}T${t}+09:00`;
-  }
-  return null;
-}
-
-/** `2026-11-02 07:00:00 +0900`, ISO 8601, or a bare date → ISO 8601 with offset (no offset → Tokyo); null if unparseable. */
-function toIsoDate(s: string): string | null {
-  const m = s.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2})?)(?:\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?$/);
-  if (m) {
-    const time = m[2].length === 5 ? `${m[2]}:00` : m[2];
-    let off = m[3] ?? '+09:00';
-    if (off !== 'Z' && !off.includes(':')) off = `${off.slice(0, 3)}:${off.slice(3)}`;
-    const iso = `${m[1]}T${time}${off}`;
-    return Number.isNaN(Date.parse(iso)) ? null : iso;
-  }
-  if (DATE_RE.test(s.trim())) return `${s.trim()}T00:00:00+09:00`;
-  return null;
-}
-
-/** ISO 8601, `2026-10-28 07:05:00 +0900`, `2026/10/28 7:05`, or Shortcuts' default text (no offset → Tokyo). */
-export function looseDate(v: unknown): string | null {
-  if (typeof v !== 'string') return null;
-  const native = shortcutsDefaultDate(v.trim().replace(/\u202f|\u00a0/g, ' '));
-  if (native) return native;
-  // "2026/10/30 午後0:58" (Japanese locale with slashes): fold 午前/午後 into a 24-hour time first.
-  const ja = v.trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})\s*(午前|午後)\s*(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  if (ja) {
-    const hour = (Number(ja[5]) % 12) + (ja[4] === '午後' ? 12 : 0);
-    return toIsoDate(`${ja[1]}-${pad(ja[2])}-${pad(ja[3])} ${pad(hour)}:${ja[6]}:${ja[7] ?? '00'}`);
-  }
-  let s = v.trim().replace(/\//g, '-');
-  s = s.replace(/^(\d{4})-(\d{1,2})-(\d{1,2})/, (_, y, mo, d) => `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`);
-  s = s.replace(/([ T])(\d):/, '$10$2:');
-  return toIsoDate(s);
+/**
+ * Shortcuts' date text in the phone's language and zone (Tokyo), English or Japanese:
+ * "Sep 30, 2026 at 8:59 AM", "2026/09/30 8:59", "2026年9月30日 午後8:59". Returns the calendar day and the time.
+ */
+export function shortcutDate(v: string): { day: string; time: string } | null {
+  const s = v.trim().replace(/[  ]/g, ' ');
+  const en = s.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
+  const ja = s.match(/^(\d{4})[/年](\d{1,2})[/月](\d{1,2})日?(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  let y: string, mo: number, d: string, h: string | undefined, mi: string | undefined, sec: string | undefined, ap: string | undefined;
+  if (en && MONTHS[en[1].toLowerCase()]) [y, mo, d, h, mi, sec, ap] = [en[3], MONTHS[en[1].toLowerCase()], en[2], en[4], en[5], en[6], en[7]?.toLowerCase()];
+  else if (ja) [y, mo, d, ap, h, mi, sec] = [ja[1], Number(ja[2]), ja[3], ja[4], ja[5], ja[6], ja[7]];
+  else return null;
+  let hour = Number(h ?? 0);
+  if (ap === 'pm' || ap === '午後') hour = (hour % 12) + 12;
+  if (ap === 'am' || ap === '午前') hour %= 12;
+  const day = `${y}-${pad(mo)}-${pad(d)}`;
+  const time = `${pad(hour)}:${mi ?? '00'}:${sec ?? '00'}`;
+  // A real calendar day (no Feb 30) and a real time.
+  if (new Date(Date.UTC(Number(y), mo - 1, Number(d))).toISOString().slice(0, 10) !== day || hour > 23 || Number(mi ?? 0) > 59) return null;
+  return { day, time };
 }
 
 // ---------------------------------------------------------------- workout names and ids
 
-/**
- * Japanese (and alternate English) display names → canonical English names: the inverse of the UI labels, plus two
- * names Health also uses. Unknown names pass through. `workoutKey` ids depend on this (pinned in parse.test.ts).
- */
+/** Japanese display names → canonical English names (the inverse of the UI labels), plus one more Health uses. */
 const ALIASES: Record<string, string> = {
   ...Object.fromEntries(Object.entries(WORKOUT_LABELS_JA).map(([en, ja]) => [ja, en])),
-  '伝統的な筋力トレーニング': 'Traditional Strength Training',
-  HIIT: 'High Intensity Interval Training'
+  '伝統的な筋力トレーニング': 'Traditional Strength Training'
 };
+const canonicalWorkoutType = (name: string): string => ALIASES[name] ?? name;
 
-export function canonicalWorkoutType(name: string): string {
-  const n = name.trim().replace(/\s+/g, ' ');
-  return ALIASES[n] ?? ALIASES[n.replace(/\s*[（(].*[)）]\s*$/, '')] ?? n;
+/** FNV-1a (32-bit) of a string, as 8 hex chars. */
+function fnv1a(s: string, seed: number): string {
+  let h = seed;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(16).padStart(8, '0');
 }
 
-/** True if we have no mapping for a non-ASCII name. */
-function isUnknownLocalisedType(name: string): boolean {
-  return /[^\x00-\x7F]/.test(name) && canonicalWorkoutType(name) === name.trim().replace(/\s+/g, ' ');
+/** Stable workout id: `w:` + 64 bits of FNV-1a over `<canonical type>|<start minute>` (start is Tokyo ISO). */
+export function workoutKey(type: string, start: string): string {
+  const k = `${canonicalWorkoutType(type)}|${start.slice(0, 16)}`;
+  return `w:${fnv1a(k, 0x811c9dc5)}${fnv1a(k, 0x01000193)}`;
 }
 
-/**
- * Stable workout id: `w:` + the first 24 hex chars of SHA-256(`<canonical type>|<start minute, UTC ISO>`).
- *
- * Why SHA-256 in plain JS rather than FNV: it is byte-for-byte the id the legacy server computed with node:crypto
- * (before ADR 0015), so migrated workouts and their `confirm` events keep their ids, and 96 bits
- * makes collisions a non-issue. It only needs to be deterministic, and this runs identically in Apps Script V8,
- * browsers and Node (no crypto API, no TextEncoder).
- */
-export function workoutKey(type: string, startIso: string): string {
-  const minute = new Date(Math.floor(Date.parse(startIso) / 60000) * 60000).toISOString();
-  return `w:${sha256Hex(`${canonicalWorkoutType(type)}|${minute}`).slice(0, 24)}`;
+// ---------------------------------------------------------------- body
+
+/** A Text field → its lines ('' = no lines). */
+function lines(v: unknown, field: string): string[] {
+  if (typeof v !== 'string') throw new ShapeError(`${field}: expected Text (one line per item)`);
+  return v === '' ? [] : v.split('\n').map((l) => l.trim());
 }
 
-function utf8(s: string): number[] {
-  const out: number[] = [];
-  for (let i = 0; i < s.length; i++) {
-    let c = s.charCodeAt(i);
-    if (c >= 0xd800 && c < 0xdc00 && i + 1 < s.length) {
-      const d = s.charCodeAt(i + 1);
-      if (d >= 0xdc00 && d < 0xe000) { c = 0x10000 + ((c - 0xd800) << 10) + (d - 0xdc00); i++; }
-    }
-    if (c < 0x80) out.push(c);
-    else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 63));
-    else if (c < 0x10000) out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
-    else out.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 63), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63));
-  }
-  return out;
-}
+/** A non-negative number written as plain digits ("8564", "22", "68.4"); null otherwise. */
+const amount = (s: string): number | null => (/^\d+(\.\d+)?$/.test(s) ? Number(s) : null);
 
-const K = [
-  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01,
-  0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
-  0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
-  0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08,
-  0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-  0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-];
-
-/** SHA-256 of a string's UTF-8 bytes, lowercase hex (FIPS 180-4). */
-export function sha256Hex(s: string): string {
-  const bytes = utf8(s);
-  const bitLen = bytes.length * 8;
-  bytes.push(0x80);
-  while (bytes.length % 64 !== 56) bytes.push(0);
-  // 64-bit big-endian length; inputs here are far below 2^32 bits.
-  bytes.push(0, 0, 0, 0, (bitLen >>> 24) & 255, (bitLen >>> 16) & 255, (bitLen >>> 8) & 255, bitLen & 255);
-  const h = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
-  const w = new Array<number>(64);
-  const rotr = (x: number, n: number) => (x >>> n) | (x << (32 - n));
-  for (let off = 0; off < bytes.length; off += 64) {
-    for (let i = 0; i < 16; i++) {
-      const j = off + i * 4;
-      w[i] = (bytes[j] << 24) | (bytes[j + 1] << 16) | (bytes[j + 2] << 8) | bytes[j + 3];
-    }
-    for (let i = 16; i < 64; i++) {
-      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
-      const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
-      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
-    }
-    let [a, b, c, d, e, f, g, hh] = h;
-    for (let i = 0; i < 64; i++) {
-      const t1 = (hh + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
-      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
-      hh = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
-    }
-    h[0] = (h[0] + a) | 0; h[1] = (h[1] + b) | 0; h[2] = (h[2] + c) | 0; h[3] = (h[3] + d) | 0;
-    h[4] = (h[4] + e) | 0; h[5] = (h[5] + f) | 0; h[6] = (h[6] + g) | 0; h[7] = (h[7] + hh) | 0;
-  }
-  return h.map((x) => (x >>> 0).toString(16).padStart(8, '0')).join('');
-}
-
-// ---------------------------------------------------------------- body shapes
-
-const SHAPE_HINT = 'steps must be {"values": [...], "starts": [...], "sources": [...]} with one start date per value';
-
-type Rec = Record<string, unknown>;
-
-/** Shortcuts turns a list into newline-joined text when a Dictionary field is typed as Text: accept both. */
-const splitLines = (v: unknown): unknown => (typeof v === 'string' ? (v.trim() === '' ? [] : v.split(/\r?\n/)) : v);
-
-/** A list field: array, newline text, or missing (→ []). Anything else is a shape error. */
-function list(v: unknown, path: string): unknown[] {
-  if (v === undefined || v === null) return [];
-  const l = splitLines(v);
-  if (!Array.isArray(l)) throw new ShapeError(`unexpected shape: ${path}: expected a list`);
-  return l;
-}
-
-interface Series { values: unknown[]; starts: unknown[]; sources?: unknown[] }
-
-function series(v: unknown, path: string): Series | undefined {
-  if (v === undefined) return undefined;
-  if (!isRec(v)) throw new ShapeError(`unexpected shape: ${path}: expected an object`);
-  return {
-    values: list(v.values, `${path}.values`),
-    starts: list(v.starts, `${path}.starts`),
-    sources: v.sources === undefined ? undefined : list(v.sources, `${path}.sources`)
-  };
-}
-
-/**
- * Per-day total of raw samples. The Watch and the iPhone both record steps, so summing everything double-counts;
- * Health merges them, but Shortcuts returns raw samples. Approximation: total per source, then take the larger.
- */
-function dailyTotals(s: Series, onSkip: () => void): Map<string, number> {
-  const bySource = new Map<string, number>();
-  if (s.values.length > 0 && s.starts.length !== s.values.length) {
-    throw new ShapeError(`got ${s.values.length} values but ${s.starts.length} start dates: ${SHAPE_HINT}`);
-  }
-  for (let i = 0; i < s.values.length; i++) {
-    const v = looseNumber(s.values[i]);
-    const iso = looseDate(s.starts[i]);
-    if (v === null || !iso) { onSkip(); continue; }
-    const k = `${toLocalDate(iso)}|${String(s.sources?.[i] ?? '')}`;
-    bySource.set(k, (bySource.get(k) ?? 0) + v);
-  }
-  const out = new Map<string, number>();
-  for (const [k, v] of bySource) {
-    const date = k.slice(0, 10);
-    out.set(date, Math.max(out.get(date) ?? 0, v));
-  }
-  return out;
-}
-
-/**
- * A day's weight from raw Body Mass samples: the FIRST sample of the (Tokyo) day by its start time, whatever its
- * source. A morning weigh-in is the most comparable from day to day; a later one (after food and water) is ignored.
- */
-function firstWeightOfDay(values: unknown[], dates: unknown[], onSkip: () => void): Map<string, number> {
-  const best = new Map<string, { ms: number; kg: number }>();
-  for (let i = 0; i < values.length; i++) {
-    const kg = looseWeightKg(values[i]);
-    const iso = looseDate(dates[i]);
-    if (kg === null || !iso) { onSkip(); continue; }
-    const ms = Date.parse(iso);
-    const date = toLocalDate(iso);
-    const cur = best.get(date);
-    if (!cur || ms < cur.ms) best.set(date, { ms, kg });
-  }
-  return new Map([...best].map(([d, x]) => [d, x.kg]));
-}
+const COLUMNS = [
+  { field: 'steps', metric: 'steps' },
+  { field: 'exercise_minutes', metric: 'exercise_min' },
+  { field: 'weight', metric: 'weight' }
+] as const;
 
 /** Parse a Shortcut body (already JSON-parsed). Throws ShapeError when nothing usable or the shape is wrong. */
-export function parseShortcut(raw: unknown): ParsedBody {
-  if (!isRec(raw)) throw new ShapeError('unexpected shape: body: expected an object');
-  const r: Rec = { ...raw };
-  // Accept the obvious spellings for exercise minutes.
-  if (r.exercise === undefined) {
-    const alias = ['exercise_minutes', 'exerciseMinutes', 'exercise_min', 'exerciseMin'].find((k) => r[k] !== undefined);
-    if (alias) r.exercise = r[alias];
-  }
-  // Simple form: {"date": "2026-10-28", "steps": "12\n3\n…"}: every value belongs to that one day.
-  const day = typeof r.date === 'string' ? looseDate(r.date) : null;
-  if (day) {
-    for (const k of ['steps', 'exercise']) {
-      if (typeof r[k] === 'string' || Array.isArray(r[k])) {
-        const values = splitLines(r[k]) as unknown[];
-        r[k] = { values, starts: values.map(() => day) };
-      }
-    }
-  }
-  // Daily form: {"dates": [...], "steps": [...], "exercise"?: [...]}, parallel lists. Same-date values are added,
-  // per source when `<metric>_sources` is given (the larger source wins, as in the series form). Exercise samples
-  // may carry their own `exercise_dates`. A list whose length doesn't match its dates is dropped with a warning
-  // instead of refusing the whole body, so a bad exercise list never costs the steps.
+export function parseShortcut(body: unknown): ParsedBody {
+  if (!isRec(body)) throw new ShapeError('body: expected a JSON object');
   const warnings: string[] = [];
-  let dropped = 0;
-  // Field names typed by hand in Shortcuts drift ("Weight Dates", "weight-dates"): also match case- and separator-blind.
-  const norm = (k: string) => k.toLowerCase().replace(/[\s_-]+/g, '');
-  const loose = new Map(Object.keys(r).map((k) => [norm(k), r[k]]));
-  const pick = (...names: string[]) => names.map((n) => r[n] ?? loose.get(norm(n))).find((v) => v !== undefined);
-  const exDates = pick('exercise_dates', 'exerciseDates');
-  if (r.dates !== undefined || exDates !== undefined) {
-    for (const k of ['steps', 'exercise'] as const) {
-      const dates = splitLines(k === 'exercise' && exDates !== undefined ? exDates : r.dates);
-      const values = splitLines(r[k]);
-      if (!Array.isArray(dates) || !Array.isArray(values)) continue;
-      const src = k === 'steps' ? pick('steps_sources', 'stepsSources') : pick('exercise_sources', 'exerciseSources');
-      const sources = src === undefined ? undefined : list(src, `${k}_sources`);
-      const datesName = k === 'exercise' && exDates !== undefined ? 'exercise_dates' : 'dates';
-      if (values.length !== dates.length || (sources && sources.length !== values.length)) {
-        warnings.push(`${k}: ${values.length} values but ${dates.length} ${datesName}${sources ? ` and ${sources.length} sources` : ''}; ${k} not saved`);
-        dropped += values.length;
-        delete r[k];
-        continue;
-      }
-      r[k] = { values, starts: dates, ...(sources ? { sources } : {}) };
-    }
-  }
-  // Weight: its own parallel lists (Body Mass is a separate Health query, so it always has its own dates).
-  let weight: { values: unknown[]; dates: unknown[] } | undefined;
-  const wValues = pick('weights', 'weight');
-  if (wValues !== undefined) {
-    // A Shortcut field typed Number sends one bare number. weight_sources is accepted but unused (a day's weight is its
-    // first sample whatever the source), so a missing or short sources list never drops the weight.
-    const values = typeof wValues === 'number' ? [wValues] : list(wValues, 'weights');
-    const dates = list(pick('weight_dates', 'weightDates'), 'weight_dates');
-    if (values.length !== dates.length) {
-      warnings.push(`weight: ${values.length} values but ${dates.length} weight_dates; weight not saved`);
-      dropped += values.length;
-    } else if (values.length) weight = { values, dates };
-  }
-  for (const k of ['steps', 'exercise']) {
-    const v = r[k];
-    if (typeof v === 'string' || Array.isArray(v)) {
-      throw new ShapeError(`${k} has values but no start dates: add "date": "YYYY-MM-DD" for one day, or ${SHAPE_HINT.replace('steps', k)}`);
-    }
-  }
-  const steps = series(r.steps, 'steps');
-  const exercise = series(r.exercise, 'exercise');
-  if (r.days !== undefined && !Array.isArray(r.days)) throw new ShapeError('unexpected shape: days: expected a list');
-  const days = r.days as unknown[] | undefined;
-  const w = r.workouts;
-  if (w !== undefined && !Array.isArray(w) && !isRec(w)) throw new ShapeError('unexpected shape: workouts: expected a list or an object');
-  if (!steps && !exercise && !days && w === undefined && !weight) {
-    throw new ShapeError(warnings.length ? warnings.join('; ') : 'no steps, exercise, days, workouts or weights');
-  }
-
-  let skipped = dropped;
-  const skip = () => void skipped++;
+  let skipped = 0;
   const metrics: ParsedMetric[] = [];
-  const round = (v: number) => Math.round(v * 100) / 100;
-  for (const [key, s] of [['steps', steps], ['exercise_min', exercise]] as const) {
-    if (!s) continue;
-    for (const [date, v] of dailyTotals(s, skip)) metrics.push({ date, metric: key, value: round(v) });
-  }
-  if (weight) {
-    const days = firstWeightOfDay(weight.values, weight.dates, skip);
-    for (const [date, kg] of days) metrics.push({ date, metric: 'weight', value: kg });
-    // Say what was unreadable, so a Shortcut set-up problem shows in the reply (one sample is enough to diagnose).
-    if (days.size === 0) warnings.push(`weight: could not read ${JSON.stringify(String(weight.values[0]).slice(0, 40))} at ${JSON.stringify(String(weight.dates[0]).slice(0, 40))}`);
-  } else if (wValues === undefined) {
-    const near = Object.keys(r).filter((k) => /weight|体重|body|mass/i.test(k));
-    if (near.length) warnings.push(`weight: fields not recognised (${near.join(', ').slice(0, 80)}); expected weights + weight_dates`);
-  }
-  for (const d of days ?? []) {
-    const date = isRec(d) ? looseDate(d.date) : null;
-    if (!isRec(d) || !date) { skip(); continue; }
-    const localDate = toLocalDate(date);
-    const st = looseNumber(d.steps);
-    const ex = looseNumber(d.exerciseMin);
-    if (st !== null) metrics.push({ date: localDate, metric: 'steps', value: round(st) });
-    if (ex !== null) metrics.push({ date: localDate, metric: 'exercise_min', value: round(ex) });
-    if (d.weight !== undefined) {
-      const kg = looseWeightKg(d.weight);
-      if (kg === null) skip();
-      else metrics.push({ date: localDate, metric: 'weight', value: kg });
-    }
-  }
+  const days = body.dates === undefined ? [] : lines(body.dates, 'dates').map(shortcutDate);
+  const sent = COLUMNS.filter(({ field }) => body[field] !== undefined);
 
-  let items: { type: unknown; start: unknown; end: unknown; avgHr?: unknown }[] = [];
-  if (Array.isArray(w)) {
-    items = w.map((x) => (isRec(x) ? { type: x.type, start: x.start, end: x.end, avgHr: x.avgHr } : { type: null, start: null, end: null }));
-  } else if (isRec(w)) {
-    const starts = list(w.starts, 'workouts.starts');
-    const ends = list(w.ends, 'workouts.ends');
-    const hrs = list(w.avgHrs, 'workouts.avgHrs');
-    items = list(w.types, 'workouts.types').map((type, i) => ({ type, start: starts[i], end: ends[i], avgHr: hrs[i] }));
-  }
-  const workouts: ParsedWorkout[] = [];
-  const unknownTypes: string[] = [];
-  for (const it of items) {
-    const start = looseDate(it.start);
-    const end = looseDate(it.end);
-    if (typeof it.type !== 'string' || it.type.trim() === '' || !start || !end || Date.parse(end) < Date.parse(start)) { skip(); continue; }
-    if (isUnknownLocalisedType(it.type) && !unknownTypes.includes(it.type.trim())) unknownTypes.push(it.type.trim());
-    const type = canonicalWorkoutType(it.type);
-    workouts.push({
-      id: workoutKey(type, start), date: toLocalDate(start), type, start, end,
-      durationMin: Math.round(((Date.parse(end) - Date.parse(start)) / 60000) * 10) / 10,
-      avgHr: looseNumber(it.avgHr)
+  for (const { field, metric } of sent) {
+    const values = lines(body[field], field);
+    if (values.length !== days.length) {
+      warnings.push(`${field}: ${values.length} lines but ${days.length} dates; ${field} not saved`);
+      continue;
+    }
+    values.forEach((raw, i) => {
+      const day = days[i];
+      const n = amount(raw);
+      if (!day || n === null) { skipped++; return; }
+      if (metric !== 'weight') { metrics.push({ date: day.day, metric, value: Math.round(n) }); return; }
+      if (n === 0) return; // no weigh-in that day
+      const kg = roundKg(n);
+      if (kg < WEIGHT_KG.min || kg > WEIGHT_KG.max) { skipped++; return; }
+      metrics.push({ date: day.day, metric, value: kg });
     });
   }
+
+  const workouts: ParsedWorkout[] = [];
+  const unknownTypes: string[] = [];
+  if (body.workouts !== undefined) {
+    const w = body.workouts;
+    if (!isRec(w)) throw new ShapeError('workouts: expected {"types", "starts", "ends", "avgHrs"}');
+    const types = lines(w.types, 'workouts.types');
+    const starts = lines(w.starts, 'workouts.starts');
+    const ends = lines(w.ends, 'workouts.ends');
+    const hrs = w.avgHrs === undefined ? [] : lines(w.avgHrs, 'workouts.avgHrs');
+    if (starts.length !== types.length || ends.length !== types.length || (hrs.length > 0 && hrs.length !== types.length)) {
+      warnings.push(`workouts: ${types.length} types, ${starts.length} starts, ${ends.length} ends, ${hrs.length} avgHrs; workouts not saved`);
+    } else {
+      types.forEach((name, i) => {
+        const s = shortcutDate(starts[i]);
+        const e = shortcutDate(ends[i]);
+        const start = s && `${s.day}T${s.time}+09:00`;
+        const end = e && `${e.day}T${e.time}+09:00`;
+        if (!name || !s || !start || !end || Date.parse(end) < Date.parse(start)) { skipped++; return; }
+        const type = canonicalWorkoutType(name);
+        if (/[^\x00-\x7F]/.test(type) && !unknownTypes.includes(type)) unknownTypes.push(type);
+        workouts.push({
+          id: workoutKey(type, start), date: s.day, type, start, end,
+          durationMin: Math.round(((Date.parse(end) - Date.parse(start)) / 60000) * 10) / 10,
+          avgHr: hrs.length ? amount(hrs[i]) : null
+        });
+      });
+    }
+  }
+
+  if (!sent.length && body.workouts === undefined) throw new ShapeError('nothing to save: send dates with steps, exercise_minutes or weight');
   return { metrics, workouts, skipped, unknownTypes, warnings };
 }

@@ -120,5 +120,5 @@ trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-
 | `{"ok":false,"error":"unauthorized"}` | Wrong or rotated key: re-paste it (app) / fix the `key` field (Shortcut) |
 | `busy` | Another write held the lock for 10 s; the app retries by itself, the Shortcut runs again next time |
 | `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
-| Numbers didn't move | The `uploads` tab shows each Shortcut run (status, size). Synced metrics only go up (a lower re-send is ignored); a きろく edit can lower a day in an open week |
+| Numbers didn't move | The `uploads` tab (or `{"key":"…","action":"uploads"}`) shows each Shortcut run: status, warnings and the body's shape (each field's type, line count and first line). Synced metrics only go up (a lower re-send is ignored); a きろく edit can lower a day in an open week |
 | Changes made offline | They stay queued on the phone and are sent when it's back online (the sync pill shows it) |
