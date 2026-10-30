@@ -63,8 +63,8 @@ safe+16           ═══ きょう +620 ベル ═══          today's ベ
          sky ── horizon ── sea
          island: hedge · my tree + fruit · jar + plate · partner's tree + fruit · flower beds
          me (left)                                partner (right)
-         [しずえ box, over the front beach]           only with news (the harvest)
-bottom             (📱)  しまフォン                   the NookPhone: 56px phone on an 84px disc
+         [しずえ box, just above the phone]           only with news (the harvest)
+bottom             (📱)  しまフォン                   the NookPhone: 56px phone on a 68px disc + plate
 ```
 
 - **Ribbon:** the NH map's yellow title banner, 「きょう +620 ベル」 for both of us, under the notch (`--safe-top` +
@@ -73,10 +73,16 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
   earned them. Tap → ごほうび.
 - **Trees:** one per person; today's five ring fruit lie on the ground in front (per kind 0–3 items = thirds of the
   daily goal, 🍑 🍐 🍒 🍎 🥥; a kind with nothing yet shows one faint item). Tap the canopy or the fruit row → the popup:
-  a nameplate, per fruit today / goal, today's ベル and the week's badge pips (✓ once met). The popup is the one home of
-  per-fruit detail.
+  a nameplate, per fruit today / goal, today's ベル and the week as a small 「2/5」 (days met / needed; a ✓ disc once
+  the badge is met). In a v2 week (from 2026-11-02) each ring fruit also shows today's **4 milestone pips** (yuzu =
+  reached; none for 🥥), and **one** nudge line sits under the rows, 「あと 8分で +45」, for the tapped fruit or else the
+  fruit nearest its next step (`nextAt`, `nextGain`); v1 weeks show neither. A popup that can't fit above its canopy
+  hangs **under the fruit row** (tail up; tighter rows on short screens). The popup is the one home of per-fruit detail.
+- **Layout:** the island (hedge top 32u to beach foam 356u) is **centred** in the band between the ribbon's lip
+  (`--hud-bottom`) and the phone's top (`--island-bottom`), with 12px above and below; its size is the smaller of that
+  band and the width fit, so a short screen scales it down. It never runs under the ribbon or the phone.
 - **The NookPhone** is the island's one control (bottom centre, ≥ 56px): the hub for きろく, あそびかた and settings.
-- **しずえ** shows only with news (the harvest), in a box over the front beach, so nothing in the scene moves.
+- **しずえ** shows only with news (the harvest), in a box floating just above the phone, so nothing in the scene moves.
 - **Taps:** the partner → their card; my villager → a hop; a tree → the popup; the jar → ごほうび; the ribbon → きろく
   ベル; the phone → しまフォン; scenery → small flourishes ([scene-interactions.md](scene-interactions.md)). All are real
   buttons with `aria-label`, ≥ 44px (villagers and jar ≥ 64px). Focus order: heading, ribbon, phone, scene.
@@ -85,19 +91,23 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
 
 Title bar (‹ 島へ, ごほうび), a hero (the jar over 「ふたりのベル」 and the balance), then **one list** of big buy tiles (item
 art, name, price). An item the wallet can't cover yet is sunk and says あと N ベル (a tap boops). ✎ edits the list (add /
-rename / reprice / remove, shared by both). 買う！ asks first, then shows at once and waits 5 s with とりけす before it is
+rename / reprice / remove, shared by both). Under the list, one quiet line: 「食べものは 週3回くらいが めやす。あとは
+ためよう！」 (a guide, no cap). 買う！ asks first, then shows at once and waits 5 s with とりけす before it is
 sent. No history here (it lives in きろく ベル). The island jar morphs into the hero jar (View Transitions; a crossfade
 under reduced motion; `ui-state/jarTransition.ts`).
 
 ### 1.3 しまフォン NookPhone (`phone/ShimaPhone.svelte`)
 
-A NookPhone-screen sheet: status row (time · leaf · デモ in the demo), the title bar, and a 3-column grid of squircle
-tiles. Each app slides in from the right inside the phone.
+A NookPhone-screen sheet: the title bar and a 3-column grid of squircle tiles (no status row: no clock, no leaf); in
+the demo a small yuzu デモ chip sits under the grid. Every tile is the same squircle: its fill, the round-13 edge (2px
+outline + 4px lip in a darker shade of the fill, drawn by `::after` so the art can't cover it) and the art inside; the
+three official full tiles (きろく, 村人, つうしん) sit on their own background colour (`#8B97EB`, `#76D787`,
+`#FD5967`) so their baked-in corners vanish. Each app slides in from the right inside the phone.
 
 | App | Tile | What |
 |---|---|---|
 | きろく | `phone/miles` | からだ (weight trend, 目標: Move goal + weight goal, weeks of badges) and ベル (the passbook); week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
-| あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals, badges, the wallet, the setup |
+| あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals (v2: 「ベルは 4つの だんかいで ふえるよ…」 and per fruit a 4-cell step table, amount over ベル, the goal step ringed), badges, the wallet with the treat guide (「食べものの ごほうびは、ふたりで 週3回くらいが めやす…」, no cap), a 「たんぱく質の ヒント」 card (1.6 g per kg a day, per person from the goal weight else the trend, rounded to 5 g; not tracked), the setup |
 | 村人 | `phone/passport` | My villager from the roster (158, one search field) and my よびな |
 | ことば | `phone/glyph-chat` | 日本語 / English |
 | つうしん | `phone/rescue` | When each of us last synced, いま つうしん |
@@ -106,7 +116,8 @@ tiles. Each app slides in from the right inside the phone.
 ### 1.4 Sheets, harvest, pairing
 
 - **One sheet skin** (`ui/Sheet.svelte`, a native `<dialog>`): tan paper with white-cream cards (navy at night),
-  radius 32, a lip, the title bar, one CTA in a sticky footer lifted above the keyboard.
+  radius 32, a lip, a sticky title bar (fading into the content, so ✕ never scrolls away), one CTA in a sticky footer
+  lifted above the keyboard.
 - **Partner card** (`sheets/PartnerSheet.svelte`): name, face, one line about their day (from their rings), when their
   data last arrived, and ハイタッチ.
 - **日曜の収穫** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both tapped. The week's recap (per person the
@@ -126,8 +137,8 @@ tiles. Each app slides in from the right inside the phone.
 | The harvest | — | (the steps) | ✕ = あとで |
 
 ✕ closes the whole sheet from any level and always sits top-right; ‹ goes up one level and appears only when there is
-one. Backdrop tap and Esc also close a sheet; nothing advertises swipe-down. `ui/NavBar.svelte` + `ui/NavButton.svelte`
-(44px); `ui/nav.test.ts` fails on a modal without them. Motion: a sheet rises in 240 ms (ease-out), a pushed level
+one. The title bar is sticky (with a fade), so ✕ and ‹ stay in reach while a sheet scrolls. Backdrop tap and Esc also
+close a sheet; nothing advertises swipe-down. `ui/NavBar.svelte` + `ui/NavButton.svelte` (44px); `ui/nav.test.ts` fails on a modal without them. Motion: a sheet rises in 240 ms (ease-out), a pushed level
 slides in from the right in 240 ms; reduced motion: no slide.
 
 ## E. Economy (ADR 0019, 0021, 0022)
@@ -215,11 +226,12 @@ Ours (no usable official art): sky, sun, moon, clouds, sea, ground, cliff, the j
 
 ### S.1 Structure
 
-`IslandScene` = an elastic sky over a fixed-aspect **stage of 390 × 360 units (u)**, anchored to the bottom, with one
-NH-blue sea from the horizon down under the island and behind the bottom chrome. The page gives the scene
-`--scene-h: 100dvh` and `--island-bottom = --chrome-below`; the stage's front beach (its last 34u) tucks under the
-chrome. The HUD overlays the sky. Back to front: sky (sun/moon, stars, clouds, balloon, fireworks) · sea · ground ·
-hedge · trees + ground fruit · jar + plate · flower beds · villagers · particles · one multiply tint.
+`IslandScene` = an elastic sky over a fixed-aspect **stage of 390 × 360 units (u)**, with one NH-blue sea from the
+horizon down under the island and behind the bottom chrome. The page gives the scene `--scene-h` (the full height),
+`--hud-bottom` (the ribbon's lip) and `--island-bottom` (the phone's top, `--chrome-below` − `--gap`); the island
+(32u–356u) is centred in the band between them, sized min(band − 2 × 12px, width fit: the sand 5px inside each edge, the
+grass 12px inside on tall phones; ≤ 560px). No front-beach tuck: nothing of the island sits under the chrome. The HUD
+overlays the sky. Back to front: sky (sun/moon, stars, clouds, balloon, fireworks) · sea · ground · hedge · trees + ground fruit · jar + plate · flower beds · villagers · particles · one multiply tint.
 
 **Painting rule.** Light from the upper left. Every surface = one base fill + one gentle gradient + one soft lower
 shade + sparse flecks. **No strokes and no lips on scenery** (the lip is a chrome idiom). Contact shadows are soft and
@@ -335,12 +347,17 @@ jar transition is a crossfade; dialogue text appears at once. Season and time of
   `aria-live` node.
 - **Choice list** (`ui/ChoiceList.svelte`): white-cream pills with the brown edge, the yuzu ▶ cursor, ↑/↓ and hover
   move it.
-- **Banner** (`ui/Toast.svelte`): NookPhone-style, below the status row, in the top layer; a 36px icon, one line, a
-  reaction icon or one action (とりけす). Tap or swipe up to dismiss; one at a time.
+- **Banner** (`ui/Toast.svelte`): NookPhone-style, at the top under the safe area (the とりけす undo banner at the
+  bottom), in the top layer; a 36px icon, one line, a reaction icon or one action (とりけす). Tap or swipe up to dismiss; one at a time.
 - **Buttons:** four tiers, ink text (≥ 5.6:1), radius 16, a squash on press. Every tappable thing has an **edge** (2px
   outline + 4px lip in one colour, ≥ 3:1 on the panel); static cards only the soft lip, so "brown edge = tappable".
   Primary = leaf; secondary = white-cream `--ctl`; selected = yuzu `--ctl-sel`; disabled = sunk `--ctl-off`, no edge.
-  A control that can't act now uses `aria-disabled` (it boops: [sound.md](sound.md) §13).
+  A control that can't act now uses `aria-disabled` (it boops: [sound.md](sound.md) §13). Shared objects in
+  `theme.css`: `.pen-btn` (every ✎: an edged cream game object, `--sh-obj`) and `.add-btn` (＋ add a row: leaf-tinted,
+  leaf edge).
+- **Focus:** `ui/modality.ts` keeps `<html data-input="pointer|keyboard">`; after a pointer input `:focus-visible` draws
+  no ring (text fields excepted), so a tap → ‹ back leaves no stray outline. Focus restore for keyboard and VoiceOver
+  (‹ back, きろく edits, sheets) is unchanged, and Tab brings the ring back.
 - **Fonts:** Zen Maru Gothic (UI, 500/700, subset in `fonts.css`, `npm run fonts:subset`) + Fredoka (numbers, 600/700).
 
 ### Tokens (`styles/tokens.css`)
@@ -348,7 +365,9 @@ jar transition is a crossfade; dialogue text appears at once. Season and time of
 - **Palette:** ink `#4A3A2C` / `#6B5544` · cream `#FFF9E3` · paper `#F5E4BC` · card `#FFFCF2` · lip `#E0C48A` · edge
   `#937047` · leaf `#6ED07A` / `#4FB35C` / edge `#2F8A3F` · yuzu `#FFD84D` / `#E6B22E` · mint `#7BD7C1` / `#63B4B5` ·
   coral `#FF8F7A` (errors only). Components use semantic tokens (`--bg --surface --card --lip --text --text-soft --hud
-  --focus --scrim`); scene colours live in the `.if-scene` block, `--fx-*`, `--jar-*`.
+  --focus --scrim --hl`); `--hl` is the highlight (yuzu 30% by day, cream 14% at night, since yuzu over navy turns
+  grey), used by the day's ベル strip, pressed rows and the help chips; scene colours live in the `.if-scene` block,
+  `--fx-*`, `--jar-*`.
 - **Surfaces:** the panel (`--bg`: tan by day, `#3A4886` at night) is a step darker than its cards (`--card`). Controls
   `--ctl`, `--ctl-sel`, `--ctl-off`, `--edge`, with `--sh-ctl`; fixed-cream game objects (sheet close, keypad, back
   pill, choices) use `--sh-obj` (always brown). Themed text is `var(--text)`, never `--c-ink`.
@@ -359,7 +378,9 @@ jar transition is a crossfade; dialogue text appears at once. Season and time of
 ### T.7 Time of day sets the theme
 
 `data-tod` on `<html>` comes **only from the Tokyo clock** (dawn 05–07, day 07–16, dusk 16–19, night 19–05;
-`ui-state/season.ts`); `prefers-color-scheme` is ignored. Previews: `?theme=night|day`, `?season=`, `?date=`.
+`ui-state/season.ts`); `prefers-color-scheme` is ignored. Previews: `?theme=night|day`, `?season=`, `?date=` (in
+the demo `?date=` moves the demo's calendar too: the demo backend runs on the scene clock, `Backend.now()`, so
+`?demo&date=2026-11-03T12:10` previews a v2 week).
 
 | tod | Chrome | Lip | HUD text | `theme-color` |
 |---|---|---|---|---|
@@ -376,8 +397,10 @@ The ribbon, plate, dialogue box and choices are game objects and stay cream/yell
 - **Global:** side padding 18, `100dvh`, no horizontal scroll at 320, text ≥ 11px, inputs ≥ 16px (no iOS zoom;
   `inputs.test.ts`), targets ≥ 44px and 8px apart, `overscroll-behavior: none`; sheets scroll internally. The keyboard
   inset `--kb` comes from `visualViewport`.
-- **島:** `--chrome-below` is one constant per viewport (≈ 180px at 393×852, ≈ 138px at 375×667 and 320×568); the scene
-  keeps its full height and the chrome sits on the sea.
+- **島:** the phone has one fixed slot, `--phone-h` 92px (`--chrome-below` = `--phone-h` + 2 × `--gap` +
+  `--pad-bottom`); the scene keeps its full height, the chrome sits on the sea, and the island is centred between the
+  ribbon's lip (`--hud-bottom`) and the phone's top (`--island-bottom`) with a 12px pad, at the smaller of that band and
+  the width fit, so short screens scale it down (§S.1). At 320×568 it spans 110–414px with ≈ 46px to the phone.
 - **Sheets:** `max-height: calc(100dvh − safe-top − 24px)`; NookPhone labels ≤ 5 Japanese / 10 Latin characters,
   never ellipsized. The harvest: a `max-width: 420px` column, CTA sticky at the bottom.
 - **Check** at 393×852, 375×667 and 320×568, at day, dusk, night and winter.
