@@ -1,5 +1,6 @@
 <script lang="ts">
-  // 3.3 Day detail: two stacked cards (me, then the partner, read-only). ✎ only on mine and only while the week is
+  // 3.3 Day detail: two stacked cards (me, then the partner, read-only), each opening with the day's ベル and what each
+  // fruit earned. ✎ only on mine and only while the week is
   // open (`editable`: Kiroku closes it a minute before the lock); へんこう履歴 at the bottom. Check-ins toggle in place
   // (a fix, `edit:true`). Read-only cards get the 見るだけ badge and flat, lipless chips (round 7 F5).
   import type { PersonId } from '#lib/types.ts';
@@ -8,8 +9,11 @@
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
   import TypeName from './TypeName.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { FRUITS } from '#lib/config/rules.ts';
+  import { fruitArt } from '#lib/art.ts';
   import { dayTitle, leftLabel, num, typeLabel } from './fmt.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { timeOf } from '#lib/i18n/format.ts';
 
   interface Props {
@@ -43,6 +47,14 @@
       <Avatar person={p} villager={villagers[p]} size={34} />
       <b class="nm">{names[p]}{#if mine}<small> · {t('kiroku.me')}</small>{/if}</b>
       {#if !can}<span class="tag">{#if mine}<Glyph kind="lock" size={12} />{/if}{t('kiroku.readOnly')}</span>{/if}
+    </div>
+    <div class="earn" aria-label="{t('kiroku.dayBells')} {formatBells(x.bells)}">
+      <span class="eh"><span>{t('kiroku.dayBells')}</span><b class="money">{formatBells(x.bells, { signed: true })}</b></span>
+      <span class="eparts">
+        {#each FRUITS as f (f)}
+          <span class="ep" class:zero={!x.parts[f]}><OfficialArt key={fruitArt(f)} size={18} /><span class="sr-only">{t(`fruit.${f}`)}</span><span class="money">{x.parts[f] > 0 ? '+' : ''}{formatNum(x.parts[f])}</span></span>
+        {/each}
+      </span>
     </div>
     <div class="row">
       <span class="k">{t('kiroku.steps')}</span>
@@ -103,7 +115,16 @@
   .nm small { color: var(--text-soft); font-size: var(--fs-s); }
   .tag { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); background: color-mix(in srgb, var(--lip) 45%, transparent); padding: 3px 8px; border-radius: var(--r-chip); }
   .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-  .row + .row, .who + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
+  /* the day's ベル: a yuzu-tinted strip, the four fruit's shares in one row (two at 320) */
+  .earn { display: grid; gap: 6px; padding: 8px 10px; margin-bottom: 4px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
+  .eh { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--fs-s); font-weight: 700; }
+  .eh b { font-size: var(--fs-talk); }
+  .eparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .ep { display: inline-flex; align-items: center; gap: 3px; min-width: 0; white-space: nowrap; }
+  .ep .money { font-size: var(--fs-s); overflow: hidden; text-overflow: ellipsis; }
+  .ep.zero { opacity: .5; }
+  @media (max-width: 374px) { .eparts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .row + .row, .earn + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
   /* a workout / visit row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
      (sizing #13: at 12px beside them it wrapped to 3 lines) */

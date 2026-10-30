@@ -1,4 +1,4 @@
-// Tiny homegrown i18n: two flat catalogs, `{param}` interpolation, yen formatting (dates and times: format.ts).
+// Tiny homegrown i18n: two flat catalogs, `{param}` interpolation, ベル formatting (dates and times: format.ts).
 import ja from './ja.json';
 import en from './en.json';
 import { i18n, setLocale, type Locale } from './state.svelte.ts';
@@ -31,17 +31,16 @@ export function t(key: string, params?: Params, locale: Locale = i18n.locale): s
 }
 
 /**
- * しずえ's (the host's) line. The model picks the key (`host.*`); bare keys work too. Unknown keys fall back to `host.default`. `{rung}` / `{fruit}` ids and `{yen}` amounts
+ * しずえ's (the host's) line. The model picks the key (`host.*`); bare keys work too. Unknown keys fall back to `host.default`. `{fruit}` / `{activity}` ids and `{bells}` amounts
  * are formatted.
  */
 export function hostLine(key: string, params?: Params): string {
   const full = `host.${key.replace(/^host\./, '')}`;
   if (!has(full)) return t('host.default');
   const p = { ...params };
-  if (typeof p.rung === 'string') p.rung = t(`rung.${p.rung}`);
   if (typeof p.activity === 'string') p.activity = t(`fruit.${p.activity}`);
   if (typeof p.fruit === 'string') p.fruit = t(`fruit.${p.fruit}.name`);
-  if (typeof p.yen === 'number') p.yen = formatYen(p.yen);
+  if (typeof p.bells === 'number') p.bells = formatBells(p.bells);
   return t(full, p);
 }
 
@@ -56,10 +55,3 @@ export function formatBells(amount: number, opts: { signed?: boolean; locale?: L
 /** Just the digits with separators: `1,234` (when the unit is drawn apart, e.g. a big total). */
 export const formatNum = (n: number): string => new Intl.NumberFormat('en-US').format(Math.round(n));
 
-/** `¥128,000` with a half-width yen sign (Intl ja-JP yields full-width ￥). */
-export function formatYen(amount: number): string {
-  const s = new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(
-    Math.round(amount)
-  );
-  return s.replace(/￥/g, '¥');
-}

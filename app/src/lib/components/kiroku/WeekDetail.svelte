@@ -1,16 +1,14 @@
 <script lang="ts">
-  // 3.2 Week detail: yen (≈ while it can change) and 🔒 or 「あと2日 修正できます」; me left, partner right: score
-  // and 4 flat fruit bars (actual/target); a 7-row day table (tap → the day); the yen split; the week's change log.
+  // 3.2 Week detail: the week's ベル and 🔒 or 「あと2日 修正できます」; me left, partner right: their ベル and the four
+  // badges; a 7-row day table (tap → the day); where the ベル came from (daily, bonus); the week's change log.
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog, WeekDetail } from '#lib/model/history.ts';
-  import { FRUITS } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  import BadgeRow from '../pots/BadgeRow.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
-  import { fruitArt } from '#lib/art.ts';
   import { leftLabel, num } from './fmt.ts';
-  import { t, formatYen } from '#lib/i18n/index.ts';
+  import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
   import { weekRange, weekdayOf } from '#lib/i18n/format.ts';
 
   interface Props {
@@ -23,15 +21,13 @@
     onday: (date: string) => void;
   }
   let { d, edits, order, names, villagers, now, onday }: Props = $props();
-  const fmtActual = (k: string, x: number) => (k === 'peach' ? Math.round(x) : Number.isInteger(x) ? x : x.toFixed(1));
-  const purse = $derived(d.breakdown.purseA + d.breakdown.purseB);
 </script>
 
 {#snippet pen(on: boolean)}{#if on}<span class="ed"><Glyph kind="pen" size={10} label={t('kiroku.edited')} /></span>{/if}{/snippet}
 
 <header class="sub">
   <h3>{d.current ? t('kiroku.thisWeek') + ' ' : ''}<span class="money">{weekRange(d.weekKey)}</span></h3>
-  <span class="yen money">{d.estimate ? '≈' : ''}{formatYen(d.yen)}</span>
+  <span class="yen money">{formatBells(d.bells)}</span>
 </header>
 <p class="state" class:locked={!d.open}>
   {#if d.open}<Glyph kind="pen" size={14} />{leftLabel(d.lockAt, now)}{:else}<Glyph kind="lock" size={14} />{t('kiroku.lockedNote')}{/if}
@@ -41,14 +37,9 @@
   {#each order as p (p)}
     {@const pp = d.people[p]}
     <div class="col">
-      <div class="who"><Avatar person={p} villager={villagers[p]} size={32} /><span class="nm">{names[p]}</span><b class="money sc">{pp.score}</b></div>
-      {#each FRUITS as k (k)}
-        <div class="bar" title={t(`fruit.${k}`)}>
-          <OfficialArt key={fruitArt(k)} size={18} /><span class="sr-only">{t(`fruit.${k}`)}</span>
-          <span class="track"><span class="fill" style:width="{pp.fruits[k].pct}%"></span></span>
-          <span class="num money">{fmtActual(k, pp.fruits[k].actual)}/{fmtActual(k, pp.fruits[k].target)}</span>
-        </div>
-      {/each}
+      <div class="who"><Avatar person={p} villager={villagers[p]} size={32} /><span class="nm">{names[p]}</span></div>
+      <b class="money sc">{formatNum(pp.dailyBells + pp.bonus)}<small>{t('pots.unit')}</small></b>
+      <BadgeRow badges={pp.badges} size="var(--bd)" />
     </div>
   {/each}
 </section>
@@ -85,13 +76,13 @@
   {/each}
 </section>
 
-<!-- 内訳 adds up to the week's jar yen; the purse share is paid on top, on its own line (round 7 F9). -->
+<!-- 内訳 adds up to the week's ベル: each person's days and badges, and the ふたりボーナス (round 7 F9). -->
 <p class="split">
   <span>{t('kiroku.breakdown')}</span>
-  <span>{names[order[0]]} <b class="money">{formatYen(d.breakdown[order[0]])}</b></span>
-  <span>{names[order[1]]} <b class="money">{formatYen(d.breakdown[order[1]])}</b></span>
-  <span>{t('kiroku.team')} <b class="money">{formatYen(d.breakdown.team)}</b></span>
-  {#if purse > 0}<span class="apart">{t('kiroku.purseApart', { yen: formatYen(purse) })}</span>{/if}
+  {#each order as p (p)}
+    <span>{names[p]} <b class="money">{formatBells(d.people[p].dailyBells)}</b>{#if d.people[p].bonus} + <b class="money">{formatBells(d.people[p].bonus)}</b>{/if}</span>
+  {/each}
+  {#if d.bonus.duo}<span>{t('harvest.team')} <b class="money">{formatBells(d.bonus.duo)}</b></span>{/if}
 </p>
 
 <ChangeLog {edits} {villagers} withDate />
@@ -103,14 +94,12 @@
   .state { display: flex; align-items: center; gap: 6px; margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
   .state.locked { color: var(--text-soft); }
   .people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 14px; }
-  .col { display: grid; gap: 7px; min-width: 0; }
+  .col { display: grid; gap: 7px; min-width: 0; justify-items: start; --bd: clamp(16px, 4.6vw, 22px); }
   .who { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .nm { flex: 1; min-width: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .who { width: 100%; }
   .sc { font-size: var(--fs-title); }
-  .bar { display: flex; align-items: center; gap: 5px; }
-  .track { flex: 1; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--lip) 55%, transparent); overflow: hidden; min-width: 20px; }
-  .fill { display: block; height: 100%; background: var(--c-leaf); border-radius: 4px; transition: width var(--dur-slow) var(--ease-soft); }
-  .num { font-size: var(--fs-s); white-space: nowrap; color: var(--text-soft); min-width: 3.4em; text-align: right; }
+  .sc small { font: 700 .6em/1 var(--font-ui); margin-left: .25em; }
 
   /* the weekday column: one kanji (水), or three Latin letters (Wed, sizing #11) */
   .days { padding: 4px 6px; display: grid; --wd-w: 22px; }
@@ -143,7 +132,6 @@
   .dim { color: var(--text-soft); }
   .split { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 4px 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .split b { color: var(--text); font-size: var(--fs-s); }
-  .apart { flex-basis: 100%; font-weight: 700; }
   /* 320: steps, minutes and ★ stay; the ticks move to the day. */
   @media (max-width: 374px) {
     .tk { display: none; }
