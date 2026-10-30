@@ -2,9 +2,9 @@
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { STRENGTH } from '#lib/config/rules.ts';
-import { addDays, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { exerciseMilli, isStrengthWorkout, manualMinutesByDay } from '#lib/scoring/bells.ts';
-import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
+import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
 import type { WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, dayBells, earnTimeOf, LIVE, weekBells, type WeekBells } from './bells.ts';
 import { replayHarvests } from './week.ts';
@@ -275,8 +275,8 @@ export interface DayPerson {
   /** Stand minutes. */
   stand: { value: number | null; edited: boolean };
   workouts: DayWorkout[];
-  /** Gym arrivals (the field keeps its old name for DayDetail.svelte). */
-  visits: DayArrival[];
+  /** Gym arrivals that day. */
+  arrivals: DayArrival[];
 }
 
 export interface DayDetail {
@@ -314,7 +314,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
           excluded: !live, manual: !!w.manual, eligible: w.durationMin >= STRENGTH.minWorkoutMin
         };
       });
-    const visits = c.act[p].arrivals.filter((a) => a.date === date).map(({ id, label, arriveAt }): DayArrival => ({ id, label, arriveAt }));
+    const arrivals = c.act[p].arrivals.filter((a) => a.date === date).map(({ id, label, arriveAt }): DayArrival => ({ id, label, arriveAt }));
     const mine = log.filter((e) => e.by === p);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
@@ -325,7 +325,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
       move: { value: metricAsOf(s, p, date, 'move_kcal', t), goal: d?.moveGoal ?? 0, edited: mine.some((e) => e.field === 'move_kcal') },
       stand: { value: metricAsOf(s, p, date, 'stand_min', t), edited: mine.some((e) => e.field === 'stand_min') },
       workouts,
-      visits
+      arrivals
     };
   };
   return {

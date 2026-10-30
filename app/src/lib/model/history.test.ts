@@ -354,7 +354,7 @@ describe('gym rows (read-time rules in reduce)', () => {
     expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[1], DAYS[3]]);
     expect(strengthDates(rows, 'B')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
     const s = reduce(rows);
-    expect(dayDetail(s, DAYS[0], WED_MID).people.A.visits).toEqual([
+    expect(dayDetail(s, DAYS[0], WED_MID).people.A.arrivals).toEqual([
       { id: jst(DAYS[0], '19:00'), label: 'エニタイム', arriveAt: jst(DAYS[0], '19:00') },
       { id: jst(DAYS[0], '20:30'), label: '', arriveAt: jst(DAYS[0], '20:30') }
     ]);

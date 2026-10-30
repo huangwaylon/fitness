@@ -9,9 +9,9 @@
 //   first weigh-in.
 import type { LocalDate, PersonId } from '#lib/types.ts';
 import { WEIGHT } from '#lib/config/rules.ts';
-import { addDays, daysBetween } from '#lib/time/dates.ts';
+import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import { roundKg as round1 } from '#lib/contract/api.ts';
-import { latestTimed, localDateAt, type State } from './state.ts';
+import { latestTimed, type State } from './state.ts';
 
 interface WeighIn { date: LocalDate; kg: number }
 export interface WeightPoint extends WeighIn { trend: number }
