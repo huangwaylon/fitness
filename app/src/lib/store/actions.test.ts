@@ -1,4 +1,4 @@
-// The pot actions (ADR 0019): buy from the shared menus (only what the pot covers), undo, edit a menu.
+// The wallet actions (ADR 0022): buy from the shared menu (only what the wallet covers), undo, edit the menu.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -6,7 +6,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { buyTreat, buyTrip, setMenu, setMoveGoal, undoSpend } from './actions.ts';
+import { buy, buyTrip, saveMenu, setMenu, setMoveGoal, undoSpend } from './actions.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 
@@ -17,9 +17,9 @@ class Mem implements KV {
   removeItem(k: string) { this.m.delete(k); }
 }
 
-const view = (treat: number, trip: number) => ({
-  pots: { treat: { balance: treat, earned: treat, spent: 0 }, trip: { balance: trip, earned: trip, spent: 0 }, todayBells: 0, weekBells: 0 },
-  menus: { treat: [{ id: 'ice', label: 'アイス', bells: 500 }], trip: [{ id: 'onsen', label: '温泉', bells: 50000 }] }
+const view = (balance: number) => ({
+  wallet: { balance, earned: balance, spent: 0, today: 0, week: 0 },
+  menu: [{ id: 'ice', section: 'daily', label: 'アイス', bells: 500 }, { id: 'spa', section: 'trip', label: 'スパ', bells: 15000 }]
 }) as unknown as WeekView;
 
 beforeEach(() => {
@@ -29,19 +29,18 @@ beforeEach(() => {
   setKey('ab'.repeat(32), 'A');
 });
 
-describe('pot actions', () => {
-  it('buy sends {spendId, pot, item, label, bells} only when the pot covers the price', () => {
-    week.view = view(499, 50000);
-    expect(buyTreat('ice')).toEqual({ ok: false });
-    expect(buyTreat('nope')).toEqual({ ok: false });
+describe('wallet actions', () => {
+  it('buy sends {spendId, item, label, bells} (no pot) only when the wallet covers the price, for either section', () => {
+    week.view = view(499);
+    expect(buy('ice')).toEqual({ ok: false });
+    expect(buy('nope')).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    week.view = view(500, 49999);
-    expect(buyTreat('ice').ok).toBe(true);
-    expect(buyTrip('onsen')).toEqual({ ok: false });
+    week.view = view(14999);
+    expect(buy('ice').ok).toBe(true);
+    expect(buyTrip('spa')).toEqual({ ok: false }); // the deprecated alias buys from the same wallet
     const [e] = queued();
     expect(e.type).toBe('spend');
-    expect(e.data).toMatchObject({ pot: 'treat', item: 'ice', label: 'アイス', bells: 500 });
-    expect(typeof e.data.spendId).toBe('string');
+    expect(e.data).toEqual({ spendId: expect.any(String), item: 'ice', label: 'アイス', bells: 500 });
   });
 
   it('undoSpend sends spend_void', () => {
@@ -49,12 +48,20 @@ describe('pot actions', () => {
     expect(queued().map((e) => [e.type, e.data])).toEqual([['spend_void', { spendId: 's1' }]]);
   });
 
-  it('setMenu sends a valid menu as JSON, refuses an invalid one', () => {
-    expect(setMenu('trip', [{ id: 'a b', label: 'x', bells: 1 }])).toEqual({ ok: false });
-    expect(setMenu('trip', [{ id: 'camp', label: ' キャンプ ', bells: 29999.6 }]).ok).toBe(true);
+  it('saveMenu sends the whole menu as one `menu` pref, refuses an invalid one', () => {
+    expect(saveMenu([{ id: 'a b', section: 'daily', label: 'x', bells: 1 }])).toEqual({ ok: false });
+    expect(saveMenu([{ id: 'camp', section: 'trip', label: ' キャンプ ', bells: 29999.6 }]).ok).toBe(true);
     const [e] = queued();
     expect(e.type).toBe('pref');
-    expect(e.data).toEqual({ key: 'tripMenu', value: JSON.stringify([{ id: 'camp', label: 'キャンプ', bells: 30000 }]) });
+    expect(e.data).toEqual({ key: 'menu', value: JSON.stringify([{ id: 'camp', section: 'trip', label: 'キャンプ', bells: 30000 }]) });
+  });
+
+  it('setMenu (deprecated) replaces one section of the current menu', () => {
+    week.view = view(0);
+    expect(setMenu('treat', [{ id: 'taiyaki', label: 'たいやき', bells: 800 }]).ok).toBe(true);
+    expect(JSON.parse(String(queued()[0].data.value))).toEqual([
+      { id: 'taiyaki', section: 'daily', label: 'たいやき', bells: 800 }, { id: 'spa', section: 'trip', label: 'スパ', bells: 15000 }
+    ]);
   });
 
   it('setMoveGoal sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', () => {

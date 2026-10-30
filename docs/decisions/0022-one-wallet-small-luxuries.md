@@ -25,3 +25,12 @@ That also suits the weight-loss goal: a sweet bought with ベル is an earned ye
 ## Consequences
 - Simpler for everyone: one number, one list.
 - Trip prices and the trip progress bars are gone; trip-time treats are just menu items saved up for.
+
+## Note 2026-10-30: the default prices (engine)
+`DEFAULT_MENU` in `rules.ts`. 🍦 まいにちのごほうび: snack 1,000 · ice cream 1,200 · konbini sweet 1,500 · dessert 2,500 ·
+coffee date 2,500 · dinner out 6,000 · something we want 8,000. ✈️ 旅のごほうび: souvenir budget 8,000 · onsen extra
+10,000 · special meal 12,000 · spa 15,000 · room upgrade 20,000. At the on-target 14,400 a week: ≈ 3,100 for 2–3
+sweets + 2,500 coffee date + 3,000 (dinner out every two weeks) ≈ 8,600, leaving ≈ 5,800 a week, so a trip treat
+takes ~1.5–3.5 weeks of saving. Data: `pref` `menu` (items `{id, section, label, bells}`), `spend {spendId, item,
+label, bells}` (a `pot` is refused); `treatMenu` / `tripMenu`, `POTS` and the split are gone. Applied in place to the
+economy's first week; `cleanupLegacyData` deletes every old spend, spend_void and pot menu.

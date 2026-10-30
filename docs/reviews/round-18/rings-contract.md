@@ -131,6 +131,36 @@ accepted by the model and the server if the UI ever wants them: `metric_set {met
 
 The model emits only `host.harvest_ready`, `host.harvest_waiting`, `host.default` (unchanged). No new keys.
 
+## The wallet and the menu (ADR 0022, lead 2026-10-30)
+
+One shared wallet replaces the two pots: every ベル (daily + the Sunday bonus) goes into it, no split.
+
+```ts
+type MenuSection = 'daily' | 'trip';        // 🍦 まいにちのごほうび · ✈️ 旅のごほうび
+interface WalletItem { id: string; section: MenuSection; label: string; bells: number }
+interface WalletView { balance: number; earned: number; spent: number; today: number; week: number }
+
+WeekView.wallet: WalletView               // the island plate's number and the top of the wallet screen
+WeekView.menu: WalletItem[]               // both sections, in menu order (daily first in the defaults)
+BellsLedger.wallet: { balance, earned, spent }
+LedgerSpend: { spendId, at, by, item, label, bells, voided, voidedAt }   // `pot` is deprecated (from the item's section)
+
+// actions (#lib/store/actions.ts)
+buy(itemId: string): SendResult           // {ok:false} if unknown or the wallet can't cover it; undo banner as before
+undoSpend(spendId: string): SendResult    // unchanged
+saveMenu(items: WalletItem[]): SendResult // the whole menu, both sections; {ok:false} if invalid
+newMenuItemId(): string                   // unchanged
+
+// rules (#lib/config/rules.ts)
+DEFAULT_MENU: { id, section, bells, label: { ja, en } }[]   // prices and maths: design.md §E
+```
+
+Deprecated until the UI moves (then deleted): `WeekView.pots` (treat **and** trip are both the wallet, so every item
+stays buyable), `WeekView.menus` (the menu split by section: treat = daily), `PotKey`, `PotBalance`, `MenuItem`,
+`BellsLedger.pots`, `LedgerSpend.pot`, `buyTreat` / `buyTrip` (= `buy`), `setMenu(pot, items)` (replaces one section),
+`splitPots` (returns `{treat: total, trip: 0}`). Gone already: `POTS`, `DEFAULT_MENUS`, `treatMenu` / `tripMenu`. i18n:
+the UI owns the section titles (e.g. `menu.daily` / `menu.trip`); default item labels come from `DEFAULT_MENU`.
+
 ## What the UI must stop reading before phase 3 (grep `components/` and `routes/`)
 
 `FRUITS`, `FruitKey`, `FruitProgress`, `FruitBells` (except via `RingBells`), `.fruits`, `.parts`, `.badges` (on
@@ -138,7 +168,8 @@ harvest / ledger / history; use `ringBadges`), `.ticks`, `.minutes` and `.streng
 DayPerson: use `exerciseMin` / `exercise` / `gym`), `EditLog.field === 'checkin'`, `EditedField 'ticks'`, `DAILY.maxTicks`,
 `r.goals.activeMin`, `r.bells.perMinute`, `r.bells.strengthDay`, `r.bells.perTick`, `r.badges.activeDays`,
 `r.badges.strengthDays`, `r.badges.ticks`, `.pending`, `confirmPending`, `PendingConfirmation`, and the i18n keys
-`habit.*`, `pending.*`, `kiroku.src.steps`, `kiroku.field.checkin`.
+`habit.*`, `pending.*`, `kiroku.src.steps`, `kiroku.field.checkin`; and the two pots: `.pots`, `.menus`, `PotKey`,
+`PotBalance`, `MenuItem`, `LedgerSpend.pot`, `BellsLedger.pots`, `buyTreat`, `buyTrip`, `setMenu`, `splitPots`.
 
 ## Requests from UI
 

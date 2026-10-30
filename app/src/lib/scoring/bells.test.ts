@@ -1,10 +1,10 @@
 // ADR 0021: ベル per day for the five fruits (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym), weekly badges, the
-// ふたりボーナス and the pot split (ADR 0019).
+// ふたりボーナス (ADR 0019).
 import { describe, expect, it } from 'vitest';
 import type { PersonId, Visit, Workout } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
-import { POTS, RULES } from '#lib/config/rules.ts';
-import { duoBonus, earnWeek, splitPots, type EarnDay, type EarnInput } from './bells.ts';
+import { RULES } from '#lib/config/rules.ts';
+import { duoBonus, earnWeek, type EarnDay, type EarnInput } from './bells.ts';
 
 const WK = '2026-11-02';
 const D = weekDays(WK);
@@ -219,22 +219,6 @@ describe('earnWeek: weekly badges (ADR 0021 §4)', () => {
       expect(duoBonus(earnWeek(perfect('2027-01-04')), earnWeek(perfect('2027-01-04', 'B')))).toBe(2500);
     } finally {
       (RULES as unknown[]).pop();
-    }
-  });
-});
-
-describe('splitPots: 20% おやつ / 80% 旅 on totals', () => {
-  it('treats = floor(total × 0.2), trips = the rest: nothing lost to rounding', () => {
-    expect(splitPots(0)).toEqual({ treat: 0, trip: 0 });
-    expect(splitPots(1)).toEqual({ treat: 0, trip: 1 });
-    expect(splitPots(4)).toEqual({ treat: 0, trip: 4 });
-    expect(splitPots(5)).toEqual({ treat: 1, trip: 4 });
-    expect(splitPots(10)).toEqual({ treat: 2, trip: 8 });
-    expect(splitPots(1140)).toEqual({ treat: 228, trip: 912 });
-    for (const t of [7, 99, 12345, 9_999_999]) {
-      const s = splitPots(t);
-      expect(s.treat + s.trip).toBe(t);
-      expect(s.treat).toBe(Math.floor((t * POTS.treatPercent) / 100));
     }
   });
 });

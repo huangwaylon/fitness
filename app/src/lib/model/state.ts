@@ -1,6 +1,6 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
-import type { LocalDate, MenuItem, PersonId, PotKey, WeekKey } from '#lib/types.ts';
+import type { LocalDate, MenuSection, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
@@ -89,8 +89,8 @@ interface PresenceRec {
 
 /** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
 interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
-/** A ベル spend (ADR 0019 §9): `{spendId, pot, item, label, bells}`. */
-interface BellSpendRec { at: number; person: PersonId; spendId: string; pot: PotKey; item: string; label: string; bells: number }
+/** A buy from the wallet (ADR 0022): `{spendId, item, label, bells}`. */
+interface BellSpendRec { at: number; person: PersonId; spendId: string; item: string; label: string; bells: number }
 
 /** `goalWeight`: the person's optional goal in kg (ADR 0020), shown on the weight chart; never earns. */
 interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number }
@@ -99,10 +99,10 @@ export interface State {
   metrics: Record<PersonId, Map<string, Timed<number>[]>>;
   workouts: Record<PersonId, WorkoutRec[]>;
   presence: Record<PersonId, PresenceRec[]>;
-  /** ベル spends (`pot` + `bells`), in server order. */
+  /** Buys from the wallet, in server order. */
   bellSpends: BellSpendRec[];
-  /** The shared menus (`pref` treatMenu / tripMenu by either person), ascending `at`: the latest wins. */
-  menus: Record<PotKey, Timed<MenuItem[]>[]>;
+  /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
+  menu: Timed<WalletItem[]>[];
   /** Accepted activity `metric_set` (steps, minutes) per person, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
   /**
@@ -213,7 +213,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     workouts: { A: [], B: [] },
     presence: { A: [], B: [] },
     bellSpends: [],
-    menus: { treat: [], trip: [] },
+    menu: [],
     metricSets: { A: new Map(), B: new Map() },
     weights: { A: new Map(), B: new Map() },
     weightSets: { A: new Map(), B: new Map() },
@@ -310,11 +310,13 @@ type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
 const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
 const MENU_ID_RE = /^[\w-]+$/;
 
+const isSection = (v: unknown): v is MenuSection => v === 'daily' || v === 'trip';
+
 /**
- * A menu pref's value: a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
- * LIMITS.menuMaxItems. Anything invalid ignores the whole pref (the previous menu stays).
+ * A `pref` menu value (ADR 0022): a JSON array (or the array itself) of `{id, section, label, bells}` with unique ids,
+ * at most LIMITS.menuMaxItems. Anything invalid ignores the whole pref (the previous menu stays).
  */
-export function parseMenu(v: unknown): MenuItem[] | null {
+export function parseMenu(v: unknown): WalletItem[] | null {
   let list = v;
   if (typeof v === 'string') {
     try {
@@ -324,16 +326,16 @@ export function parseMenu(v: unknown): MenuItem[] | null {
     }
   }
   if (!Array.isArray(list) || list.length > LIMITS.menuMaxItems) return null;
-  const out: MenuItem[] = [];
+  const out: WalletItem[] = [];
   const ids = new Set<string>();
   for (const x of list) {
     if (!x || typeof x !== 'object') return null;
-    const { id, label, bells } = x as Record<string, unknown>;
+    const { id, section, label, bells } = x as Record<string, unknown>;
     const l = typeof label === 'string' ? label.trim() : '';
     if (typeof id !== 'string' || id.length > LIMITS.menuIdMaxChars || !MENU_ID_RE.test(id) || ids.has(id)) return null;
-    if (!l || l.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return null;
+    if (!isSection(section) || !l || l.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return null;
     ids.add(id);
-    out.push({ id, label: l, bells });
+    out.push({ id, section, label: l, bells });
   }
   return out;
 }
@@ -350,13 +352,13 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   spend({ s }, person, at, d) {
     const label = typeof d.label === 'string' ? d.label.trim() : '';
     if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;
-    // A ベル spend (ADR 0019 §9). Validity only: whether the pot could afford it is decided on read (bells.ts).
+    // A buy from the wallet (ADR 0022). Validity only: whether the wallet covered it is decided on read (bells.ts).
     const bells = d.bells;
-    if ((d.pot !== 'treat' && d.pot !== 'trip') || !isBells(bells)) return;
+    if (d.pot !== undefined || !isBells(bells)) return;
     if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;
     const spendId = String(d.spendId);
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
-    s.bellSpends.push({ at, person, spendId, pot: d.pot, item: d.item, label, bells });
+    s.bellSpends.push({ at, person, spendId, item: d.item, label, bells });
   },
   metric_set({ s }, person, at, d) {
     const date = normDate(d.date);
@@ -414,9 +416,9 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     s.highfives.push({ at, person });
   },
   pref({ s }, person, at, d) {
-    if (d.key === 'treatMenu' || d.key === 'tripMenu') {
+    if (d.key === 'menu') {
       const items = parseMenu(d.value);
-      if (items) s.menus[d.key === 'treatMenu' ? 'treat' : 'trip'].push({ at, v: items });
+      if (items) s.menu.push({ at, v: items });
       return;
     }
     if (d.key === 'moveGoal') {

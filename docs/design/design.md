@@ -92,20 +92,27 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
   🥥 ≥ 3 gym days), ふたりボーナス +200 for each badge both people meet (max 1,000). 「受け取る」 is a ceremony.
 - **On target** (every badge for both, minimum days): per person 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 +
   3 × 400 🥥 = 4,700 daily + 5 × 400 = 2,000 badges = 6,700; both + 5 × 200 duo = **14,400 ベル a week** (ADR 0019's
-  was 14,250), ≈ 749,000 a year: 旅 80% ≈ 599,000 (2 × abroad + 6 × weekend + 1–2 × onsen ≈ 470,000–506,000 still fits
-  with room for off weeks), おやつ 20% ≈ 2,880 a week. The daily ベル (9,400) are 65% of it, so a week short of badges
-  still pays most of its work. Pinned in `scoring/bells.test.ts`.
-- **Two shared pots:** everything earned splits おやつ 20% / 旅 80% (`POTS.treatPercent`, on totals). Shared, editable menus (`pref`
-  `treatMenu` / `tripMenu`, latest wins); a buy is a `spend`, undone by the buyer's `spend_void`; no approvals; a
-  balance never goes negative.
-- **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Spends never lock.
-- **Starts** in the week of Mon 2026-10-26. Tuned 2026-10-30 (ADR 0019 amendment): sweets are dear
-  (おやつ 800–5,000) and a year on target pays 2 × abroad, 6 × weekend, 1–2 × onsen. ADR 0021 (the same day) was applied
-  in place to `RULES[0]` (play money, the economy's first week). Gone: the score /100, yen, the team layer, the purse,
-  transfers, rungs, calibration, the rest-day bonus, the eating habits, step-derived minutes, 「筋トレでしたか？」.
-- **View model:** `WeekView.people[p].today.rings`, `rings[f]` progress, `moveGoal`, `pots` (balances + each pot's
-  today / week flow), `menus`, `harvest.bonus/totalBells/ringBadges`; きろく: `bellsLedger()`, `weekDetail()`,
-  `dayDetail()`. Exact types: [round-18/rings-contract.md](../reviews/round-18/rings-contract.md).
+  was 14,250). The daily ベル (9,400) are 65% of it, so a week short of badges still pays most of its work. Pinned in
+  `scoring/bells.test.ts`.
+- **One shared wallet** (ADR 0022): every ベル earned (daily and the Sunday bonus) goes into it; no split. One shared,
+  editable menu (`pref` `menu`, latest wins, items `{id, section: 'daily'|'trip', label, bells}`); either person buys
+  (`spend {spendId, item, label, bells}`), the buyer can undo (`spend_void`); no approvals; a buy counts only if the
+  wallet covered it at its time, so the balance never goes negative. Trips themselves are paid outside the game.
+- **Default menu and its maths** (`DEFAULT_MENU`). 🍦 まいにちのごほうび: おやつ・スナック 1,000 · アイス 1,200 ·
+  コンビニスイーツ 1,500 · デザート・パフェ 2,500 · カフェデート 2,500 · 外ごはん 6,000 · ほしいもの 8,000.
+  ✈️ 旅のごほうび: おみやげ予算 8,000 · 温泉オプション 10,000 · 特別なごはん 12,000 · スパ・マッサージ 15,000 ·
+  お部屋アップグレード 20,000. On target (14,400 a week): 2–3 sweets or snacks (≈ 2.5 × 1,250 ≈ 3,100) + a coffee date
+  (2,500) + dinner out every two weeks (6,000 / 2 = 3,000) ≈ 8,600 a week of everyday treats, leaving ≈ 5,800 a week
+  to save: a special meal on a trip after ~2 weeks, a spa after ~2.5, a room upgrade after ~3.5, or ほしいもの after
+  ~1.5. A typical (not on-target) week of ~10,000 still pays the sweets and the coffee date with ~4,000 to save.
+- **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Buys never lock.
+- **Starts** in the week of Mon 2026-10-26. ADR 0021 and 0022 (2026-10-30) were applied in place (play money, the
+  economy's first week); `cleanupLegacyData` (runbook §9) deletes the two pots' spends and menus so the wallet starts
+  from earnings. Gone: the score /100, yen, the team layer, the purse, transfers, rungs, calibration, the rest-day
+  bonus, the eating habits, step-derived minutes, 「筋トレでしたか？」, the two pots and trip prices.
+- **View model:** `WeekView.people[p].today.rings`, `rings[f]` progress, `moveGoal`, `wallet {balance, earned, spent,
+  today, week}`, `menu` (both sections), `harvest.bonus/totalBells/ringBadges`; きろく: `bellsLedger()` (`wallet`,
+  days, bonuses, buys), `weekDetail()`, `dayDetail()`. Exact types: [round-18/rings-contract.md](../reviews/round-18/rings-contract.md).
 
 ## A. Official art map
 

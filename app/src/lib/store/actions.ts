@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs, parseMenu } from '#lib/model/state.ts';
-import type { MenuItem, PotKey } from '#lib/types.ts';
+import type { MenuItem, PotKey, WalletItem } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
 import { MOVE_GOAL } from '#lib/config/rules.ts';
@@ -54,32 +54,43 @@ export function confirmHarvest(): SendResult {
   return week.send('harvest', { week: wk });
 }
 
-// ---- ベル pots (ADR 0019 §5): buy from the shared menus, undo, edit the menus. No approvals.
+// ---- The wallet (ADR 0022): buy from the shared menu, undo, edit the menu. No approvals.
 
 /**
- * Buy a menu item from its pot: shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is unknown
- * or the pot can't afford it (the model would ignore the spend anyway).
+ * Buy a menu item from the wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is unknown
+ * or the wallet can't cover it (the model would ignore the buy anyway).
  */
-function buy(pot: PotKey, itemId: string): SendResult {
+export function buy(itemId: string): SendResult {
   const v = week.view;
-  const item = v?.menus[pot].find((x) => x.id === itemId);
-  if (!v || !item || v.pots[pot].balance < item.bells) return { ok: false };
-  return week.send('spend', { spendId: newId(), pot, item: item.id, label: item.label, bells: item.bells }, { holdMs: UNDO_MS });
+  const item = v?.menu.find((x) => x.id === itemId);
+  if (!v || !item || v.wallet.balance < item.bells) return { ok: false };
+  return week.send('spend', { spendId: newId(), item: item.id, label: item.label, bells: item.bells }, { holdMs: UNDO_MS });
 }
 
-export const buyTreat = (itemId: string): SendResult => buy('treat', itemId);
-export const buyTrip = (itemId: string): SendResult => buy('trip', itemId);
+/** @public @deprecated ADR 0022: one wallet. Use `buy`. */
+export const buyTreat = (itemId: string): SendResult => buy(itemId);
+/** @public @deprecated ADR 0022: one wallet. Use `buy`. */
+export const buyTrip = (itemId: string): SendResult => buy(itemId);
 
-/** Take a spend back (the buyer only; the model ignores anyone else's `spend_void`). */
+/** Take a buy back (the buyer only; the model ignores anyone else's `spend_void`). */
 export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }
 
-/** Replace a shared menu (either of us; the latest edit wins). `{ok:false}` if the list is invalid (ids, labels, prices). */
-export function setMenu(pot: PotKey, items: MenuItem[]): SendResult {
-  const clean = parseMenu(items.map((x) => ({ id: x.id, label: x.label, bells: Math.round(x.bells) })));
+/** Replace the shared menu, both sections (either of us; the latest edit wins). `{ok:false}` if the list is invalid. */
+export function saveMenu(items: WalletItem[]): SendResult {
+  const clean = parseMenu(items.map((x) => ({ id: x.id, section: x.section, label: x.label, bells: Math.round(x.bells) })));
   if (!clean) return { ok: false };
-  return week.send('pref', { key: pot === 'treat' ? 'treatMenu' : 'tripMenu', value: JSON.stringify(clean) });
+  return week.send('pref', { key: 'menu', value: JSON.stringify(clean) });
+}
+
+/**
+ * @public @deprecated ADR 0022: one menu. Replaces one section (treat = daily) of the current menu. Use `saveMenu`.
+ */
+export function setMenu(pot: PotKey, items: MenuItem[]): SendResult {
+  const section = pot === 'treat' ? 'daily' : 'trip';
+  const rest = (week.view?.menu ?? []).filter((x) => x.section !== section);
+  return saveMenu([...(section === 'daily' ? [] : rest), ...items.map((x) => ({ ...x, section })), ...(section === 'daily' ? rest : [])] as WalletItem[]);
 }
 
 /** A fresh id for a new menu item. */

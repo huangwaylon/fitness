@@ -1,10 +1,13 @@
-// The ベル economy on read (ADR 0019): each week's earnings (live until the week locks on its Wednesday 04:00, then
-// fixed at the lock), what has landed in the two pots by `now`, the spends replayed against them, and the きろく
-// ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
+// The ベル economy on read (ADR 0019, one wallet: ADR 0022): each week's earnings (live until the week locks on its
+// Wednesday 04:00, then fixed at the lock), what has landed in the wallet by `now`, the buys replayed against it, the
+// shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
-import type { DayBells, FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
-import { addDays, earnWeek, duoBonus, splitPots, weekDays, weekKeyOf, type EarnInput, type WeekEarning } from '#lib/scoring/index.ts';
-import { finalMs, firstWeek, isLockedAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
+import type {
+  DayBells, FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, RingBells, RingFruit, WalletItem, WalletView, WeekKey
+} from '#lib/types.ts';
+import { DEFAULT_MENU } from '#lib/config/rules.ts';
+import { addDays, earnWeek, duoBonus, weekDays, weekKeyOf, type EarnInput, type WeekEarning } from '#lib/scoring/index.ts';
+import { finalMs, firstWeek, isLockedAt, latestAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
 import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
@@ -94,41 +97,49 @@ export function economyWeeks(s: State, now: number): WeekKey[] {
 /** A person's daily ベル of a week, counting only days up to `today` (a future-dated row never earns early). */
 export const dailyUpTo = (e: WeekEarning, today: LocalDate): number => e.days.reduce((n, d) => (d.date <= today ? n + d.bells : n), 0);
 
-// ---------- pots and spends ----------
+// ---------- the wallet and spends (ADR 0022) ----------
 
-/** An accepted spend (a spend the pot couldn't afford is ignored and never listed). */
+/** The shared menu: the latest valid `pref` menu by either person, else the defaults in the viewer's language. */
+export function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
+  return latestAt(s.menu, Infinity)?.map((x) => ({ ...x })) ??
+    DEFAULT_MENU.map((x) => ({ id: x.id, section: x.section, label: x.label[locale], bells: x.bells }));
+}
+
+/** An accepted buy (a buy the wallet couldn't cover is ignored and never listed). */
 export interface LedgerSpend {
   spendId: string;
   at: number;
   by: PersonId;
-  pot: PotKey;
   /** The menu item id it was bought from. */
   item: string;
   label: string;
   bells: number;
   voided: boolean;
   voidedAt: number | null;
+  /** @deprecated From the item's section in the current menu (trip → 'trip', else 'treat'). Read `item`. */
+  pot: PotKey;
 }
 
-export interface PotsState {
-  pots: Record<PotKey, PotBalance>;
-  /** Everything earned so far, both people. */
-  earned: number;
+/** The wallet's totals (WalletView without the today / week flow). */
+type WalletBalance = Pick<WalletView, 'balance' | 'earned' | 'spent'>;
+
+interface WalletState {
+  wallet: WalletBalance;
   /** The economy's weeks up to now, oldest first. */
   weeks: WeekBells[];
-  /** Accepted spends in server order. */
+  /** Accepted buys in server order. */
   spends: LedgerSpend[];
 }
 
-const potsMemo = new WeakMap<State, { now: number; v: PotsState }>();
+const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
 
 /**
- * The pots at `now`. Earnings land as they happen: a day's ベル (its current value) count from that day, a week's
- * bonus from its Sunday 19:30. Spends and voids replay in server order; a spend counts only if its pot covered it
- * then (earned by its time − spent so far), so a balance never goes negative, and the buyer's void gives it back.
+ * The wallet at `now`. Earnings land as they happen: a day's ベル (its current value) count from that day, a week's
+ * bonus from its Sunday 19:30. Buys and voids replay in server order; a buy counts only if the wallet covered it then
+ * (earned by its time − spent so far), so the balance never goes negative, and the buyer's void gives it back.
  */
-export function potsAt(s: State, now: number): PotsState {
-  const memo = potsMemo.get(s);
+export function walletAt(s: State, now: number): WalletState {
+  const memo = walletMemo.get(s);
   if (memo && memo.now === now) return memo.v;
   const today = localDateAt(now);
   const weeks = economyWeeks(s, now).map((wk) => weekBells(s, wk, now));
@@ -157,7 +168,8 @@ export function potsAt(s: State, now: number): PotsState {
   };
   const earned = days.reduce((n, x) => n + x.bells, 0) + bonuses.reduce((n, x) => n + x.bells, 0);
 
-  const spent: Record<PotKey, number> = { treat: 0, trip: 0 };
+  const tripIds = new Set(menuAt(s, 'ja').filter((x) => x.section === 'trip').map((x) => x.id));
+  let spent = 0;
   const accepted = new Map<string, LedgerSpend>();
   const spends: LedgerSpend[] = [];
   const voids = s.spendVoids.filter((v) => s.bellSpends.some((x) => x.spendId === v.spendId));
@@ -168,23 +180,24 @@ export function potsAt(s: State, now: number): PotsState {
   for (const o of ops) {
     if (o.spend) {
       const sp = o.spend;
-      if (splitPots(earnedBy(sp.at))[sp.pot] - spent[sp.pot] < sp.bells) continue; // the pot couldn't cover it: ignored
-      spent[sp.pot] += sp.bells;
-      const entry: LedgerSpend = { spendId: sp.spendId, at: sp.at, by: sp.person, pot: sp.pot, item: sp.item, label: sp.label, bells: sp.bells, voided: false, voidedAt: null };
+      if (earnedBy(sp.at) - spent < sp.bells) continue; // the wallet couldn't cover it: ignored
+      spent += sp.bells;
+      const entry: LedgerSpend = {
+        spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, label: sp.label, bells: sp.bells, voided: false, voidedAt: null,
+        pot: tripIds.has(sp.item) ? 'trip' : 'treat'
+      };
       accepted.set(sp.spendId, entry);
       spends.push(entry);
     } else if (o.void) {
       const entry = accepted.get(o.void.spendId);
       if (!entry || entry.voided) continue;
-      spent[entry.pot] -= entry.bells;
+      spent -= entry.bells;
       entry.voided = true;
       entry.voidedAt = o.void.at;
     }
   }
-  const split = splitPots(earned);
-  const pot = (k: PotKey): PotBalance => ({ balance: split[k] - spent[k], earned: split[k], spent: spent[k] });
-  const v: PotsState = { pots: { treat: pot('treat'), trip: pot('trip') }, earned, weeks, spends };
-  potsMemo.set(s, { now, v });
+  const v: WalletState = { wallet: { balance: earned - spent, earned, spent }, weeks, spends };
+  walletMemo.set(s, { now, v });
   return v;
 }
 
@@ -215,8 +228,10 @@ export interface LedgerBonus {
 }
 
 export interface BellsLedger {
+  wallet: WalletBalance;
+  /** @deprecated Both = the wallet (see PotsView). */
   pots: Record<PotKey, PotBalance>;
-  /** Everything earned so far, both people (= treat.earned + trip.earned). */
+  /** Everything earned so far, both people (= wallet.earned). */
   earned: number;
   /** Newest first, from the economy's first day to today. */
   days: LedgerDay[];
@@ -228,7 +243,7 @@ export interface BellsLedger {
 
 /** The きろく ledger at `now`: every day's earnings, the weekly bonuses and the spends. */
 export function bellsLedger(s: State, now: number): BellsLedger {
-  const p = potsAt(s, now);
+  const p = walletAt(s, now);
   const today = localDateAt(now);
   const days: LedgerDay[] = [];
   const bonuses: LedgerBonus[] = [];
@@ -248,8 +263,9 @@ export function bellsLedger(s: State, now: number): BellsLedger {
     }
   }
   return {
-    pots: { treat: { ...p.pots.treat }, trip: { ...p.pots.trip } },
-    earned: p.earned,
+    wallet: { ...p.wallet },
+    pots: { treat: { ...p.wallet }, trip: { ...p.wallet } },
+    earned: p.wallet.earned,
     days: days.reverse(),
     bonuses: bonuses.reverse(),
     spends: p.spends.map((x) => ({ ...x })).reverse()
