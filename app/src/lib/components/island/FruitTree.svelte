@@ -143,9 +143,8 @@
   }
 
   /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD (its measured bottom + room for the
-   *  nameplate), measured from its layout box (offsetLeft/Top ignore the pop-in transform). The tail stays on the tree.
-   *  When it can't fit above the canopy (a short screen, round 19), it hangs under the fruit row instead (tail up), so
-   *  it never hides the tree it describes; if that doesn't fit either, it is pushed down under the HUD. */
+   *  nameplate), measured from its layout box (offsetLeft/Top ignore the pop-in transform). It always opens upwards,
+   *  its tail on the tree (round 20, user); where the sky is short it is pushed down over the canopy, never flipped. */
   function keepInside(el: HTMLElement) {
     const scene = el.closest('.scene');
     const stage = el.offsetParent as HTMLElement | null;
@@ -158,15 +157,8 @@
     else if (left + w > sc.right - 8) dx = sc.right - 8 - (left + w);
     const hud = document.querySelector('.ribbon-wrap');
     const floor = hud ? hud.getBoundingClientRect().bottom + 16 : sc.top + 88;
-    let dy = Math.max(0, floor - top);
-    const rowBottom = st.top + ((BASE + 26) * st.width) / 390;
-    const phone = document.querySelector('.phone-btn');
-    const limit = (phone ? phone.getBoundingClientRect().top : sc.bottom) - 8;
-    const below = dy > 0 && rowBottom + 12 + h <= limit;
-    if (below) dy = rowBottom + 12 - top;
-    el.classList.toggle('below', below);
     el.style.marginLeft = `${dx}px`;
-    el.style.marginTop = `${dy}px`;
+    el.style.marginTop = `${Math.max(0, floor - top)}px`;
     el.style.setProperty('--tail', `${-dx}px`);
   }
 
@@ -285,8 +277,6 @@
     content: ''; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -5px; width: 10px; height: 10px; margin-left: -5px;
     background: inherit; transform: rotate(45deg);
   }
-  .detail:global(.below) { transform-origin: 50% 0; }
-  .detail:global(.below)::after { bottom: auto; top: -5px; }
   /* whose tree (round 16 #15): NH's tilted yuzu nameplate on the bubble's top edge */
   .plate {
     position: absolute; left: 10px; top: 0; translate: 0 -55%; rotate: -3deg; padding: 3px 10px; border-radius: var(--r-pill);
@@ -325,10 +315,15 @@
     .lbl { display: none; }
     .row { column-gap: 10px; }
   }
-  /* short screens: tighter rows, so the popup fits under the fruit row (keepInside) */
+  /* short screens: tighter rows, so the popup covers less of the canopy when the sky is short (keepInside) */
   @media (max-height: 700px) {
     .detail { gap: 0; padding: 14px 8px 6px; }
     .row { padding-block: 2px; }
+  }
+  @media (max-height: 600px) {
+    .detail { padding: 13px 6px 4px; }
+    .row { padding-block: 1px; }
+    .next { margin-top: 2px; padding-top: 3px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }
