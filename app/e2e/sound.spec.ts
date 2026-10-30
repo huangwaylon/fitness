@@ -193,7 +193,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('きろく', 'week card', () => btn(/^今週/, dlg).tap(), ['page']);
   const future = dlg.locator('button.day[aria-disabled="true"]');
   if (await future.count()) await step('きろく', 'a future day (aria-disabled)', () => future.first().tap({ force: true }), ['boop']);
-  await step('きろく', 'day', () => btn(/^月/, dlg).tap(), ['page']);
+  await step('きろく', 'day', () => btn(/\(月\)$/, dlg).tap(), ['page']);
   await step('きろく', '✎ steps', () => btn(/^歩数/, dlg).tap(), ['page']);
   const pad = dlg.locator('.atm');
   await step('きろく', 'keypad 1', () => btn('1', pad).tap(), ['key']);
@@ -205,10 +205,13 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('きろく', '✎ steps again', () => btn(/^歩数/, dlg).tap(), ['page']);
   for (const k of '4321') await btn(k, pad).tap();
   await step('きろく', 'けってい', () => btn('けってい', dlg).tap(), ['choice-pick']);
-  const undo = btn('もとに戻す');
-  await step('きろく', 'もとに戻す (banner)', () => undo.tap(), ['undo']);
+  const undo = btn('とりけす');
+  await step('きろく', 'とりけす (banner)', () => undo.tap(), ['undo']);
   await step('きろく', 'back (‹) to the week', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', 'back (‹) to the list', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('きろく', '✎ Move goal', () => btn(/^ムーブ（1日） ✎/, dlg).tap(), ['page']);
+  await step('きろく', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
+  await step('きろく', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
   await step('きろく', 'back (‹) to home', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('しまフォン', 'あそびかた tile', () => page.locator('.app[data-app=help]').tap(), ['phone-app']);
   await step('しまフォン', 'back', () => dlg.locator('.titlebar .back').tap(), ['back']);
@@ -238,25 +241,24 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('島', 'jar', () => page.locator('.if-scene .jar').tap(), ['jar-tap']);
   await expect(page.locator('.jar-screen')).toBeVisible();
   await page.waitForTimeout(600);
-  const pot = page.locator('[data-pot=treat]');
+  const pot = page.locator('[data-section=daily]');
   const cant = pot.locator('button.item[aria-disabled="true"]');
   if (await cant.count()) await step('壺', 'a treat it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
   await step('壺', 'a treat', () => pot.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
   await step('壺', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
-  await step('壺', 'もとに戻す', () => undo.tap(), ['undo']);
+  await step('壺', 'とりけす', () => undo.tap(), ['undo']);
   await page.waitForTimeout(400);
-  await step('壺', '✎ へんしゅう', () => btn(/へんしゅう/, pot).tap(), ['open']);
+  await step('壺', 'a treat, then やめる', () => pot.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
+  await step('壺', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+  await step('壺', '✎ メニューをかえる', () => btn(/を かえる/, pot).tap(), ['open']);
   await step('へんしゅう', 'save, nothing changed (aria-disabled)', () => btn('保存', dlg).tap({ force: true }), ['boop']);
-  await step('へんしゅう', '＋ add', () => btn(/おやつを追加/, dlg).tap(), ['open']);
+  await step('へんしゅう', '＋ add', () => btn(/ふやす/, dlg).tap(), ['open']);
   await step('へんしゅう', 'name field', () => dlg.locator('input.lbl').last().tap(), []);
   await step('へんしゅう', '× remove', () => dlg.locator('button.rm').last().tap(), ['remove']);
   await step('へんしゅう', 'やめる', () => btn('やめる', dlg).tap(), ['back']);
   await expect(dlg).toHaveCount(0);
-  const trip = page.locator('[data-pot=trip] .go');
-  if (await trip.count()) {
-    await step('壺', '行く！', () => trip.first().tap(), ['open']);
-    await step('壺', 'backdrop', () => page.touchscreen.tap(10, 20), ['back']);
-  }
   await step('壺', '◀ 島へ', () => page.locator('a.back').tap(), ['back']);
   await expect(page.locator('.if-scene')).toBeVisible();
 

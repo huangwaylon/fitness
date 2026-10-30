@@ -1,23 +1,23 @@
 <script lang="ts">
-  // A shared menu's editor (ADR 0019 §5): the おやつ menu or the 旅 trip types, in a sheet. Each row: the name and the
-  // price in ベル (16px inputs: iOS never zooms), and × to remove; ＋ adds a row; 保存 hands the cleaned list back
-  // (empty names and prices out of range are dropped; the parent saves it as the shared `pref`). やめる / closing
-  // the sheet drops the draft.
-  //   <MenuEditor bind:open pot="treat" items={menu} onsave={(items) => …} />
+  // One section of the shared menu (ADR 0022: 🍦 まいにちのごほうび or ✈️ 旅のごほうび) in a sheet. Each row: the name and
+  // the price in ベル (16px inputs: iOS never zooms), and × to remove; ＋ adds a row to this section; 保存 hands the
+  // cleaned section back (empty names and prices out of range are dropped; the page saves the whole menu as the shared
+  // `pref`). やめる / closing the sheet drops the draft.
+  //   <MenuEditor bind:open section="daily" items={dailyItems} onsave={(items) => …} />
   import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
-  import type { MenuItem, PotKey } from '#lib/types.ts';
+  import type { MenuSection, WalletItem } from '#lib/types.ts';
   import { cleanMenu, MENU_LIMITS } from './shapes.ts';
   import { newMenuItemId } from '#lib/store/actions.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
     open: boolean;
-    pot: PotKey;
-    items: MenuItem[];
-    onsave: (items: MenuItem[]) => void;
+    section: MenuSection;
+    items: WalletItem[];
+    onsave: (items: WalletItem[]) => void;
   }
-  let { open = $bindable(), pot, items, onsave }: Props = $props();
+  let { open = $bindable(), section, items, onsave }: Props = $props();
 
   type Row = { id: string; label: string; bells: string };
   let rows = $state<Row[]>([]);
@@ -31,9 +31,9 @@
     });
   });
 
-  const cleaned = $derived(cleanMenu(rows));
+  const cleaned = $derived(cleanMenu(section, rows));
   /** A row that would be dropped on save (a name without a price or the other way round) is flagged. */
-  const bad = (r: Row) => (r.label.trim() !== '' || r.bells !== '') && !cleanMenu([r]).length;
+  const bad = (r: Row) => (r.label.trim() !== '' || r.bells !== '') && !cleanMenu(section, [r]).length;
   const changed = $derived(JSON.stringify(cleaned) !== JSON.stringify(items));
   const full = $derived(rows.length >= MENU_LIMITS.items);
 
@@ -58,29 +58,29 @@
   }
 </script>
 
-<Sheet bind:open label={t(`pots.${pot}.editTitle`)} title={t(`pots.${pot}.editTitle`)}>
-  <p class="hint">{t(`pots.${pot}.editHint`)}</p>
+<Sheet bind:open label={t(`menu.${section}.title`)} title={t(`menu.${section}.title`)}>
+  <p class="hint">{t('menu.editHint')}</p>
   <ul class="rows" bind:this={list}>
     {#each rows as r, i (r.id)}
       <li class="card row" class:bad={bad(r)}>
         <label class="f name">
-          <span class="sr-only">{t('pots.field.name')}</span>
-          <input class="lbl" type="text" data-sfx="none" bind:value={r.label} maxlength={MENU_LIMITS.label} placeholder={t('pots.field.name')}
+          <span class="sr-only">{t('menu.field.name')}</span>
+          <input class="lbl" type="text" data-sfx="none" bind:value={r.label} maxlength={MENU_LIMITS.label} placeholder={t('menu.field.name')}
             enterkeyhint="next" autocomplete="off" />
         </label>
         <label class="f price">
-          <span class="sr-only">{t('pots.field.price')}</span>
+          <span class="sr-only">{t('menu.field.price')}</span>
           <input class="num" type="text" data-sfx="none" inputmode="numeric" pattern="[0-9]*" value={r.bells} oninput={(e) => digits(e, r)}
             placeholder="0" enterkeyhint="done" autocomplete="off" />
-          <span class="unit" aria-hidden="true">{t('pots.unit')}</span>
+          <span class="unit" aria-hidden="true">{t('bells.unit')}</span>
         </label>
-        <button type="button" class="rm" data-sfx="remove" aria-label={t('pots.remove', { label: r.label || t('pots.field.name') })} onclick={() => remove(i)}>
+        <button type="button" class="rm" data-sfx="remove" aria-label={t('menu.remove', { label: r.label || t('menu.field.name') })} onclick={() => remove(i)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close" /></svg>
         </button>
       </li>
     {/each}
   </ul>
-  <button type="button" class="add" data-sfx="open" onclick={add} aria-disabled={full}>＋ {t(`pots.${pot}.add`)}</button>
+  <button type="button" class="add" data-sfx="open" onclick={add} aria-disabled={full}>＋ {t('menu.add')}</button>
   {#snippet footer()}
     <div class="acts">
       <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('kiroku.cancel')}</button>

@@ -17,6 +17,8 @@
   --c-edge:#937047;                                      /* round 13: the brown outline + lip of a tappable cream thing
                                                            (>= 3:1 on paper, cream, card and yuzu) */
   --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C; --c-leaf-edge:#2F8A3F; /* the action; -edge = its outline + lip (>= 3:1) */
+  --c-leaf-text:#256E33;                                 /* round 16 #4: green TEXT on a light fill (4.98:1 on paper,
+                                                           ~5.8:1 on a card); -lip is never a text colour */
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
   --c-mint:#7BD7C1;  --c-mint-lip:#63B4B5;               /* NH map mint (tiles, bars track) */
   --c-coral:#FF8F7A;                                     /* errors only */
@@ -25,6 +27,7 @@
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
   --card: var(--c-card);       /* round 13: cards on the page / in sheets (one step lighter than the panel) */
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
+  --leaf-text: var(--c-leaf-text); /* green text on the themed panel / card (night: a light green, 5.8:1 on navy) */
   --hud: #33261B;              /* the corner clock over the sky: deeper ink, ≥ 4.5:1 on every day sky top (round 7 F12) */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
@@ -115,7 +118,7 @@
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
   --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
-  --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0;
+  --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0; --leaf-text:#9EE6A6;
   --scrim: rgba(30, 36, 80, .45);
   color-scheme: dark;
 }

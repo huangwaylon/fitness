@@ -1,16 +1,18 @@
 <script lang="ts">
-  // 3.3 Day detail: two stacked cards (me, then the partner, read-only), each opening with the day's ベル and what each
-  // fruit earned. ✎ only on mine and only while the week is
+  // 3.3 Day detail (round 17 IA §3.1: the home of a day's ベル per fruit, its raw data and its edits): two stacked cards
+  // (me, then the partner, read-only), each opening with the day's ベル, then one row per ring fruit: the day's value
+  // (green when the goal was met) and the ベル it earned; then the workouts and gym arrivals. ✎ only on mine (steps and
+  // exercise minutes; a workout added by hand counts toward 🍑) and only while the week is
   // open (`editable`: Kiroku closes it a minute before the lock); へんこう履歴 at the bottom. Read-only cards get the
   // 見るだけ badge (round 7 F5).
-  import type { PersonId } from '#lib/types.ts';
+  import type { PersonId, RingFruit } from '#lib/types.ts';
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
   import TypeName from './TypeName.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { FRUITS } from '#lib/config/rules.ts';
+  import { RING_FRUITS } from '#lib/config/rules.ts';
   import { fruitArt } from '#lib/art.ts';
   import { dayTitle, leftLabel, num, typeLabel } from './fmt.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
@@ -30,6 +32,17 @@
     onadd: () => void;
   }
   let { d, editable, me, partner, names, villagers, now, onmetric, onworkout, onadd }: Props = $props();
+
+  /** A fruit's value that day: 45分 · 420/600 kcal · 93分 · 6,210 · ✓ (a gym day). */
+  function value(x: DayPerson, f: RingFruit): string {
+    if (f === 'peach') return t('kiroku.min', { n: x.exercise.value });
+    if (f === 'pear') return x.move.value === null ? '–' : t('kiroku.kcalOf', { n: num(x.move.value), g: num(x.move.goal) });
+    if (f === 'cherry') return x.stand.value === null ? '–' : t('kiroku.min', { n: x.stand.value });
+    if (f === 'apple') return num(x.steps.value);
+    return x.met.coconut ? '✓' : '–';
+  }
+  const edited = (x: DayPerson, f: RingFruit): boolean =>
+    f === 'peach' ? x.exercise.edited : f === 'pear' ? x.move.edited : f === 'cherry' ? x.stand.edited : f === 'apple' ? x.steps.edited : false;
 </script>
 
 <header class="sub">
@@ -47,27 +60,20 @@
       <b class="nm">{names[p]}{#if mine}<small> · {t('kiroku.me')}</small>{/if}</b>
       {#if !can}<span class="tag">{#if mine}<Glyph kind="lock" size={12} />{/if}{t('kiroku.readOnly')}</span>{/if}
     </div>
-    <div class="earn" aria-label="{t('kiroku.dayBells')} {formatBells(x.bells)}">
-      <span class="eh"><span>{t('kiroku.dayBells')}</span><b class="money">{formatBells(x.bells, { signed: true })}</b></span>
-      <span class="eparts">
-        {#each FRUITS as f (f)}
-          <span class="ep" class:zero={!x.parts[f]}><OfficialArt key={fruitArt(f)} size={18} /><span class="sr-only">{t(`fruit.${f}`)}</span><span class="money">{x.parts[f] > 0 ? '+' : ''}{formatNum(x.parts[f])}</span></span>
-        {/each}
-      </span>
-    </div>
-    <div class="row">
-      <span class="k">{t('kiroku.steps')}</span>
-      <span class="v money">{num(x.steps.value)}</span>
-      {#if x.steps.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
-      {#if can}<button type="button" class="pen" data-sfx="page" data-focus="steps" aria-label="{t('kiroku.steps')} ✎" onclick={() => onmetric('steps')}><Glyph kind="pen" size={18} /></button>{/if}
-    </div>
-    <div class="row">
-      <span class="k">{t('kiroku.minutes')}</span>
-      <span class="v money">{t('kiroku.min', { n: x.minutes.value })}</span>
-      {#if x.minutes.source}<span class="src">({t(`kiroku.src.${x.minutes.source}`)})</span>{/if}
-      {#if x.minutes.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
-      {#if can}<button type="button" class="pen" data-sfx="page" data-focus="exercise_min" aria-label="{t('kiroku.minutes')} ✎" onclick={() => onmetric('exercise_min')}><Glyph kind="pen" size={18} /></button>{/if}
-    </div>
+    <div class="earn"><span>{t('kiroku.dayBells')}</span><b class="money">{formatBells(x.bells, { signed: true })}</b></div>
+    {#each RING_FRUITS as f (f)}
+      {@const edit = f === 'apple' ? 'steps' : f === 'peach' ? 'exercise_min' : null}
+      <div class="row fr">
+        <span class="ic"><OfficialArt key={fruitArt(f)} size={22} /></span>
+        <span class="k">{t(`fruit.${f}`)}</span>
+        <span class="v money" class:met={x.met[f]}>{value(x, f)}</span>
+        {#if f === 'peach' && x.exercise.source && x.exercise.source !== 'watch'}<span class="src">({t(`kiroku.src.${x.exercise.source}`)})</span>{/if}
+        {#if edited(x, f)}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
+        <b class="money b" class:zero={!x.rings[f]}>{x.rings[f] ? `+${formatNum(x.rings[f])}` : '—'}</b>
+        {#if can && edit}<button type="button" class="pen" data-sfx="page" data-focus={edit} aria-label="{t(`fruit.${f}`)} ✎" onclick={() => onmetric(edit)}><Glyph kind="pen" size={18} /></button>
+        {:else if can}<span class="pen-sp"></span>{/if}
+      </div>
+    {/each}
     {#each x.workouts as w (w.id)}
       <div class="row wo" class:out={w.excluded}>
         <span class="k"><TypeName type={w.type} /></span>
@@ -95,7 +101,7 @@
 <style>
   .sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px; flex-wrap: wrap; }
   .sub h3 { margin: 0; font-size: var(--fs-talk); }
-  .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
+  .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .state.locked { color: var(--text-soft); }
   .pc { display: grid; gap: 4px; padding: 12px 14px; }
   .pc.ro { background: color-mix(in srgb, var(--fill-on-surface) 70%, var(--surface)); }
@@ -104,15 +110,19 @@
   .nm small { color: var(--text-soft); font-size: var(--fs-s); }
   .tag { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); background: color-mix(in srgb, var(--lip) 45%, transparent); padding: 3px 8px; border-radius: var(--r-chip); }
   .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-  /* the day's ベル: a yuzu-tinted strip, the four fruit's shares in one row (two at 320) */
-  .earn { display: grid; gap: 6px; padding: 8px 10px; margin-bottom: 4px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
-  .eh { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--fs-s); font-weight: 700; }
-  .eh b { font-size: var(--fs-talk); }
-  .eparts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
-  .ep { display: inline-flex; align-items: center; gap: 3px; min-width: 0; white-space: nowrap; }
-  .ep .money { font-size: var(--fs-s); overflow: hidden; text-overflow: ellipsis; }
-  .ep.zero { opacity: .5; }
-  @media (max-width: 374px) { .eparts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* the day's ベル: a yuzu-tinted strip with the one total */
+  .earn { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 10px; margin-bottom: 2px; border-radius: var(--r-chip);
+    background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); font-size: var(--fs-s); font-weight: 700; }
+  .earn b { font-size: var(--fs-talk); }
+  /* one row per fruit: icon · word · value (green when met) · its ベル · ✎ */
+  .fr { gap: 6px; }
+  .ic { width: 22px; flex: none; line-height: 0; }
+  .fr .k { font-size: var(--fs-s); }
+  .fr .v { font-size: var(--fs-body); color: var(--text-soft); }
+  .fr .v.met { color: var(--leaf-text); }
+  .b { min-width: 3.2em; text-align: right; font-size: var(--fs-s); }
+  .b.zero { color: var(--text-soft); font-weight: 500; }
+  .pen-sp { width: var(--hit); flex: none; }
   .row + .row, .earn + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
   /* a workout / visit row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it

@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The island's jar + its ベル nameplate: one button (≥ 64px), the doorway to ふたりの壺 (v5 §5; Jar.svelte is the one jar
-  // drawing). The plate shows both pots together (おやつ + 旅). When new ベル arrive (a sync, a check-in), they fly
+  // The island's jar + its ベル nameplate: one button (≥ 64px), the doorway to the wallet (ごほうび) (v5 §5; Jar.svelte is the one jar
+  // drawing). The plate shows the shared wallet (ADR 0022). When new ベル arrive (a sync), they fly
   // in (CoinFlow): for each person and fruit that earned more than this phone last showed (SCENE.bellsSeen, per day),
   // a "+N" pops over that fruit under its tree and three coins hop into the jar; the plate counts up as they land and
   // the jar squashes. Anything else that raises the pots (the Sunday bonus) rises with a "+N" pop over the jar.
@@ -8,18 +8,18 @@
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import type { FruitBells, PersonId, WeekView } from '#lib/types.ts';
-  import { FRUITS } from '#lib/config/rules.ts';
+  import type { PersonId, RingBells, WeekView } from '#lib/types.ts';
+  import { RING_FRUITS } from '#lib/config/rules.ts';
   import Fx from '../characters/Fx.svelte';
   import Jar from './Jar.svelte';
   import CoinFlow, { type Flight } from './CoinFlow.svelte';
-  import { potFill } from '../pots/flow.ts';
+  import { walletFill } from '../wallet/fill.ts';
   import { react } from '../motion/director.svelte.ts';
   import { reducedMotion } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
-  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { FRUIT_SPOTS, JAR, TREE, u } from './scene.ts';
+  import { FRUIT_LEAN, FRUIT_SPOTS, JAR, TREE, u } from './scene.ts';
 
   interface Props {
     view: WeekView;
@@ -37,10 +37,10 @@
   /** Jar art: JAR.w wide (viewBox 54 × 68); the button's top sits that far above the base. */
   const JAR_H = (JAR.w * 68) / 54;
   const MOUTH: [number, number] = [JAR.x, JAR.base - JAR_H + 10];
-  /** At most this many flights at once (one per person × fruit is 8). */
-  const MAX_FLIGHTS = 8;
+  /** At most this many flights at once (one per person × fruit is 10). */
+  const MAX_FLIGHTS = 10;
 
-  const target = $derived(view.pots.treat.balance + view.pots.trip.balance);
+  const target = $derived(view.wallet.balance);
   // svelte-ignore state_referenced_locally
   let jarBells = $state(target);
   let flights = $state<Flight[]>([]);
@@ -48,20 +48,24 @@
   let squashEl: HTMLElement | undefined = $state();
   let flightN = 0;
 
-  type Seen = { date: string; parts: Record<PersonId, FruitBells> };
-  const zero = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
-  const slotX = (p: PersonId) => TREE.x[p === view.me ? 'A' : 'B'];
+  type Seen = { date: string; parts: Record<PersonId, Partial<RingBells>> };
+  const zero = (): Partial<RingBells> => ({});
+  /** Where a person's fruit row is (the tree's trunk, leaning away from the jar like FruitTree's row). */
+  const slotX = (p: PersonId) => {
+    const x = TREE.x[p === view.me ? 'A' : 'B'];
+    return x + (x < JAR.x ? -FRUIT_LEAN : FRUIT_LEAN);
+  };
 
   /** New earnings since this phone last showed them → flights (and the seen marks move up to now). */
   function newFlights(): Flight[] {
     const kv = localKV();
     const seen = readJson<Seen>(kv, SCENE.bellsSeen);
     const base = seen && seen.date === view.today ? seen.parts : { A: zero(), B: zero() };
-    const now: Record<PersonId, FruitBells> = { A: { ...view.people.A.today.parts }, B: { ...view.people.B.today.parts } };
+    const now: Record<PersonId, RingBells> = { A: { ...view.people.A.today.rings }, B: { ...view.people.B.today.rings } };
     writeJson(kv, SCENE.bellsSeen, { date: view.today, parts: now } satisfies Seen);
     const out: Flight[] = [];
     for (const p of [view.me, view.partner]) {
-      FRUITS.forEach((f, i) => {
+      RING_FRUITS.forEach((f, i) => {
         const d = now[p][f] - (base[p]?.[f] ?? 0);
         if (d > 0 && out.length < MAX_FLIGHTS) {
           out.push({ id: ++flightN, from: [slotX(p) + FRUIT_SPOTS[i][0], TREE.base + FRUIT_SPOTS[i][1]], bells: d, delay: out.length * 320 });
@@ -71,11 +75,11 @@
     return out;
   }
 
-  // Each change of the pots (or of today's parts) once nothing covers the scene: fly what's new, show the rest.
+  // Each change of the pots (or of today's ring ベル) once nothing covers the scene: fly what's new, show the rest.
   $effect(() => {
     const to = target;
-    void view.people.A.today.parts;
-    void view.people.B.today.parts;
+    void view.people.A.today.rings;
+    void view.people.B.today.rings;
     if (covered) return;
     untrack(() => {
       const motion = live && !reducedMotion();
@@ -120,7 +124,7 @@
   }
 
   // The coin stack is drawn full and slid down by (1 − fill), so a change animates.
-  const fill = $derived(potFill(jarBells));
+  const fill = $derived(walletFill(jarBells));
   // svelte-ignore state_referenced_locally
   const plate = new Tween(jarBells, { duration: 900, easing: cubicOut });
   $effect(() => {
@@ -148,7 +152,7 @@
   aria-label={t('island.jar', { bells: formatBells(target) })} data-sfx="self" onclick={tap}
   onpointerdown={() => live && (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
   <span class="squash" bind:this={squashEl} onanimationend={() => squashEl?.classList.remove('catch')}><Jar {fill} width={u(JAR.w)} name={live ? 'jar' : undefined} /></span>
-  <span class="jar-plate"><b class="money">{formatBells(plate.current)}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>
+  <span class="jar-plate"><b class="money">{formatNum(plate.current)}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>
 </button>
 {#if flights.length}<CoinFlow {flights} to={MOUTH} onland={land} />{/if}
 {#if gain}
@@ -177,7 +181,8 @@
   .squash:global(.catch) { animation: catch 260ms var(--ease-bounce); }
   @keyframes catch { 0%, 100% { transform: none; } 40% { transform: scale(1.06, .94); } }
   .jar.pressed .jar-plate { transform: translateY(2px); box-shadow: 0 1px 0 var(--plate-lip); }
-  /* the ベル nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot */
+  /* the pots' nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot; just the
+     number (the jar above says what it counts, the label says ベル), so the five-fruit rows fit beside it (ADR 0021) */
   .jar-plate {
     display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: var(--r-pill);
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 4px 0 var(--plate-lip); white-space: nowrap;

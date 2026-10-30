@@ -31,15 +31,13 @@ export function t(key: string, params?: Params, locale: Locale = i18n.locale): s
 }
 
 /**
- * しずえ's (the host's) line. The model picks the key (`host.*`); bare keys work too. Unknown keys fall back to `host.default`. `{fruit}` / `{activity}` ids and `{bells}` amounts
- * are formatted.
+ * しずえ's (the host's) line. The model picks the key (`host.*`); bare keys work too. Unknown keys fall back to
+ * `host.default`. `{bells}` amounts are formatted.
  */
 export function hostLine(key: string, params?: Params): string {
   const full = `host.${key.replace(/^host\./, '')}`;
   if (!has(full)) return t('host.default');
   const p = { ...params };
-  if (typeof p.activity === 'string') p.activity = t(`fruit.${p.activity}`);
-  if (typeof p.fruit === 'string') p.fruit = t(`fruit.${p.fruit}.name`);
   if (typeof p.bells === 'number') p.bells = formatBells(p.bells);
   return t(full, p);
 }

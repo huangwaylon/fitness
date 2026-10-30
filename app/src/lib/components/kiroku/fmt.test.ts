@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '#lib/i18n/state.svelte.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
-import { kgDelta, kgText, parseKgInput, typeLabel, typeParts } from './fmt.ts';
+import { badgeGoals, kgDelta, kgText, parseKcalInput, parseKgInput, typeLabel, typeParts } from './fmt.ts';
 
 afterEach(() => setLocale('ja'));
 
@@ -37,5 +37,20 @@ describe('weight text', () => {
     expect(parseKgInput('68.45kg')).toBe(68.5);
     expect(parseKgInput('72')).toBe(72);
     for (const s of ['', '19', '301', 'abc', '68..4', '-70', '1e2']) expect(parseKgInput(s)).toBeNull();
+  });
+});
+
+describe('Move goal input (ADR 0021)', () => {
+  it('reads whole kcal in the pref bounds', () => {
+    expect(parseKcalInput('600')).toBe(600);
+    expect(parseKcalInput(' 1,200 kcal')).toBe(1200);
+    expect(parseKcalInput('６００')).toBe(600);
+    for (const s of ['', '99', '2001', '600.5', 'abc', '-400']) expect(parseKcalInput(s)).toBeNull();
+  });
+});
+
+describe('badge thresholds', () => {
+  it('are the latest rules: 5 · 5 · 5 · 4 · 3 days', () => {
+    expect(badgeGoals()).toEqual({ peach: 5, pear: 5, cherry: 5, apple: 4, coconut: 3 });
   });
 });

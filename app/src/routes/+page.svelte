@@ -2,23 +2,21 @@
   // 島 Island (v5 §3, ADR 0021): the scene full bleed under a light HUD (NookPhone, today's ベル ribbon = the one
   // focal point). No action button: the day needs zero taps (the Watch and the Shortcut fill the trees), and
   // ハイタッチ lives with the partner's villager (tap them → their villager card), as talking to a villager does in NH.
-  // The band under the scene is しずえ's: her dialogue box shows only when she has news (a pending question, the
-  // harvest, an answer just given); a pending 「筋トレでしたか？」 puts NH's choice list beside it. Tap the jar →
-  // ふたりの壺; a tree → its popup; the partner → their card; my villager → a hop.
+  // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
+  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → their card; my villager → a hop.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import IslandScene from '#lib/components/island/IslandScene.svelte';
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
-  import ChoiceList from '#lib/components/ui/ChoiceList.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
   import PartnerSheet from '#lib/components/sheets/PartnerSheet.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { localKV, readJson, SCENE, writeRaw } from '#lib/sync/storage.ts';
-  import { highFive, confirmPending } from '#lib/store/actions.ts';
+  import { highFive } from '#lib/store/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
 
   let partnerOpen = $state(false);
@@ -26,9 +24,6 @@
 
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
-  const pending = $derived(view?.pending[0] ?? null);
-  /** しずえ says what an answer just did (U3), for a few seconds; then her usual line again. */
-  let said = $state<{ text: string; id: number } | null>(null);
 
   /** Every timeout this page starts, cleared when it unmounts (review P11). */
   const timers = new Set<ReturnType<typeof setTimeout>>();
@@ -47,8 +42,6 @@
   /** しずえ's news, or null (then she stays away and the island is HUD-light). */
   const news = $derived.by((): string | null => {
     if (!view) return null;
-    if (pending) return t('pending.ask', { label: pending.label });
-    if (said) return said.text;
     // After my 壺に入れる (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
     if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
     const key = view.host.key.replace(/^host\./, '');
@@ -56,21 +49,11 @@
     return null;
   });
 
-  // はい counts it at once (the store recomputes the fruit); しずえ says so and my villager hops.
-  function answer(yes: boolean) {
-    if (!pending) return;
-    confirmPending(pending.kind, pending.id, yes);
-    const msg = { text: yes ? t('pending.counted', { activity: t('fruit.coconut') }) : t('pending.skipped'), id: Date.now() };
-    said = msg;
-    later(() => said?.id === msg.id && (said = null), 4000);
-    if (yes) emit('cheer');
-  }
-
   // The partner sheet has closed by now, so R4 plays in the scene behind it.
   function sendHighFive() {
     if (!view) return;
     highFive();
-    toasts.show(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { reaction: 'encouraging' });
+    toasts.show(t('island.highfiveSent', { name: view.people[view.partner].villagerName }), 1800, { person: view.partner, reaction: 'encouraging' });
     emit('highfive-sent');
   }
 
@@ -95,23 +78,19 @@
 
 {#if view && me}
   <main class="island" class:covered={ui.overlay}>
+    <h1 class="sr-only">{t('app.name')}</h1>
+    <!-- DOM order = focus / VoiceOver order (round 16 #10): the HUD (today's ベル first), しずえ, then the scene.
+         All three are absolutely placed, so nothing moves. -->
     <div class="top">
+      <Hud bells={view.wallet.today} bind:phoneOpen />
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onjar={() => goto(resolve('/jar'))}
         paused={partnerOpen || phoneOpen} />
-      <Hud bells={view.pots.todayBells} bind:phoneOpen />
     </div>
 
-    <!-- F1: one fixed slot under the scene (round 6 band table): しずえ's box when she has news; a question puts the
-         box and NH's choice list in one row. The slot never changes height. -->
-    <div class="below" class:ask={!!pending}>
-      {#if news}
-        <div class="news">
-          <Bubble text={news} host={false} />
-          {#if pending}
-            <ChoiceList choices={[{ label: t('common.yes'), run: () => answer(true) }, { label: t('common.no'), run: () => answer(false) }]} />
-          {/if}
-        </div>
-      {/if}
+    <!-- F1: one fixed slot under the scene (round 6 band table): しずえ's box when she has news. The slot never
+         changes height. -->
+    <div class="below">
+      {#if news}<Bubble text={news} host={false} />{/if}
     </div>
   </main>
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
@@ -120,8 +99,7 @@
 <style>
   /* v5 §3 + round 6 F1 (band table): the scene takes the whole page (stage bottom-anchored over
      --island-bottom = the chrome band, horizon capped by the scene), and the chrome is ONE fixed slot over
-     the patterned sea at the bottom: しずえ's box (--talk-lines lines + nameplate), or the box + the choice list in
-     one row. Its height is a constant per viewport, so nothing moves when she speaks or goes quiet. No action
+     the patterned sea at the bottom: しずえ's box (--talk-lines lines + nameplate). Its height is a constant per viewport, so nothing moves when she speaks or goes quiet. No action
      button since ADR 0021, so the island gets its height back. */
   .island {
     --talk-h: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px + 14px + var(--lip-h));
@@ -137,11 +115,8 @@
     padding: var(--gap) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + var(--lip-h)) calc(var(--side) + var(--safe-left));
     pointer-events: none;
   }
-  .below > * { pointer-events: auto; }
+  .below > :global(*) { pointer-events: auto; }
   /* Under the harvest only the island shows through the tint: no HUD, no dialogue, no action. */
-  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered .below { visibility: hidden; }
-  .news { display: grid; }
-  .news :global(.bubble) { margin-bottom: 0; }
-  /* A question: the box and the choices stacked on its right share one row (the action's slot is theirs). */
-  .ask .news { grid-template-columns: 1fr auto; gap: 10px; align-items: end; --talk-lines: 2; }
+  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered :global(.jar-plate), .covered .below { visibility: hidden; }
+  .below :global(.bubble) { margin-bottom: 0; }
 </style>

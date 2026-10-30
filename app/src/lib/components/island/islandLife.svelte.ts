@@ -2,8 +2,8 @@
 // beats, naps at night, the motion bus, idle life, the balloon present and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
 import { onMount, untrack } from 'svelte';
-import type { FruitKey, PersonId, WeekView } from '#lib/types.ts';
-import { FRUITS } from '#lib/config/rules.ts';
+import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
+import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ripeness } from '../sheets/ripeness.ts';
 import { dayScore, todayPct } from './progress.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
@@ -55,7 +55,7 @@ export class IslandLife {
   /** Bumped to shake a person's tree (idle life). */
   shakeN = $state<Record<PersonId, number>>({ A: 0, B: 0 });
   /** A fruit just ripened on a person's tree. */
-  celebrate = $state<Record<PersonId, { fruit: FruitKey; n: number } | null>>({ A: null, B: null });
+  celebrate = $state<Record<PersonId, { fruit: RingFruit; n: number } | null>>({ A: null, B: null });
   #celebrateN = 0;
   #pending = new Set<ReturnType<typeof setTimeout>>();
   #ctx: Ctx;
@@ -108,26 +108,25 @@ export class IslandLife {
     if (v.highFivesToday > p.highFivesToday) return this.later(() => react('R5'), 700);
     for (const who of ['mine', 'partner'] as const) {
       const pid = who === 'mine' ? v.me : v.partner;
-      const a = p.people[pid].fruits, b = v.people[pid].fruits;
-      const ripeNow = FRUITS.filter((f) => todayPct(b[f]) >= 100);
-      const newlyRipe = FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
-      const stagedUp = FRUITS.filter((f) => ripeness(todayPct(b[f])) !== ripeness(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
+      const a = p.people[pid].rings, b = v.people[pid].rings;
+      const ripeNow = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100);
+      const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
+      const stagedUp = RING_FRUITS.filter((f) => ripeness(todayPct(b[f])) !== ripeness(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
       const swap = who === 'partner';
-      if (newlyRipe.length && ripeNow.length === 4) return react('R8', swap);
+      if (newlyRipe.length && ripeNow.length === RING_FRUITS.length) return react('R8', swap);
       if (newlyRipe.length) {
         this.celebrate[pid] = { fruit: newlyRipe[0], n: ++this.#celebrateN };
         return react('R6', swap);
       }
       if (stagedUp.length) return react('R7', swap);
     }
-    if (v.people[v.partner].today.bells > p.people[v.partner].today.bells) react('R3');
+    if (dayScore(v.people[v.partner]) > dayScore(p.people[v.partner])) react('R3');
   }
 
   #start(): () => void {
     const ctx = this.#ctx;
     const offs = [
       on('open', () => once('open') && react('R1')),
-      on('cheer', () => react('R2')),
       on('highfive-sent', () => react('R4')),
       on('highfive-received', () => react('R5')),
       on('sync-error', () => react('R17')),

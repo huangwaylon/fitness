@@ -4,7 +4,7 @@
 // through <OfficialArt key>, which falls back to our fan-art when a file is missing.
 import { asset } from '$app/paths';
 import manifest from '../../static/art/manifest.json';
-import type { FruitKey } from '#lib/types.ts';
+import type { RingFruit } from '#lib/types.ts';
 import type { Foliage } from '#lib/ui-state/season.ts';
 
 export interface ArtEntry {
@@ -64,8 +64,8 @@ export function hostArt(pose: HostPose = 'wave'): string {
   return HOST[pose];
 }
 
-/** One of the four fruit-ring fruits → inventory icon key. */
-export function fruitArt(fruit: FruitKey): string {
+/** One of the five ring fruits (ADR 0021) → inventory icon key. */
+export function fruitArt(fruit: RingFruit): string {
   return `fruit/${fruit}`;
 }
 

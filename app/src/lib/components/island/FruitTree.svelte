@@ -1,25 +1,27 @@
 <script lang="ts">
-  // One person's tree (round 6, faithful to AC): a plain official hardwood of the season (an AC tree
-  // bears one kind of fruit, so this one bears none), with today's fruit lying on the ground in front
-  // of the trunk, the way NH drops fruit around a shaken tree: per kind 0–3 items = thirds of today's goal (the
-  // same for both of us, ADR 0019 §2; scene.ts fruitCount), 🍑 🥥 🍎 🍐 left to right. A kind with nothing yet shows one faded item
-  // where it will fall. When a kind earns an item (a check-in), the tree shakes (±4°, 3 swings, 500ms)
-  // and the new item drops in with a bounce; all three = a sparkle. Narrow stages (< 360px) show one item
-  // per kind, sized by its count. The tree stands still otherwise (v5 §6 idle budget).
-  // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the detail bubble: per fruit
-  // today's amount / the goal and the ベル it earned) and the fruit row (≥ 44px tall, same bubble with the nearest fruit
-  // highlighted). The bubble stays until this tree is tapped again, the other tree is tapped, or a tap lands elsewhere.
-  // `shakeN` (bumped by idle life) shakes the tree without the bubble; `celebrate` pops + sparkles a fruit.
+  // One person's tree (round 6, faithful to AC; ADR 0021): a plain official hardwood of the season (an AC tree bears one
+  // kind of fruit, so this one bears none), with today's fruit lying on the ground in front of the trunk, the way NH
+  // drops fruit around a shaken tree: per ring fruit 0–3 items = thirds of today's goal (scene.ts fruitCount),
+  // 🍑 🍐 🍒 🍎 🥥 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
+  // kind earns an item (new data from the Watch), the tree shakes (±4°, 3 swings, 500ms) and the new item drops in with
+  // a bounce. Narrow stages (< 360px) show one item per kind, sized by its count. The tree stands still otherwise
+  // (v5 §6 idle budget).
+  // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
+  // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail
+  // (round 17 IA §3.1): a nameplate (whose tree), then per fruit today / goal, today's ベル and the week's badge pips
+  // (●●●○○ = 3 of 5 days; ✓ once the badge is met). It stays until this tree is tapped again, the other tree is
+  // tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
+  // pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
-  import type { FruitKey, PersonWeekView } from '#lib/types.ts';
+  import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
-  import { FRUITS } from '#lib/config/rules.ts';
+  import { RING_FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
-  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { todayAmount, todayPct } from './progress.ts';
-  import { FRUIT_SPOTS, FRUIT_U, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
+  import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
@@ -28,7 +30,7 @@
     x: number;
     foliage: Foliage;
     shakeN?: number;
-    celebrate?: { fruit: FruitKey; n: number } | null;
+    celebrate?: { fruit: RingFruit; n: number } | null;
     /** This tree's detail popup is the open one (the scene keeps at most one; it closes it when covered or tapped away). */
     open?: boolean;
     /** A tap on this tree: open its popup (true) or close it (false). */
@@ -38,7 +40,7 @@
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
   const detailId = $props.id();
-  let picked = $state<FruitKey | null>(null);
+  let picked = $state<RingFruit | null>(null);
   let taps = $state(0);
   const leafTimers = new Set<ReturnType<typeof setTimeout>>();
   onDestroy(() => {
@@ -48,13 +50,21 @@
   let leafN = 0;
   let treeEl: HTMLElement | null = $state(null);
 
-  const pct = (f: FruitKey) => Math.round(todayPct(person.fruits[f]));
-  const amount = (f: FruitKey) => todayAmount(f, person.fruits[f]);
+  const ring = (f: RingFruit) => person.rings[f];
+  const amount = (f: RingFruit) => todayAmount(f, ring(f));
+  /** The week's pips: one per badge day, filled up to the days met so far. */
+  const pips = (f: RingFruit) => Array.from({ length: ring(f).weekGoalDays }, (_, i) => i < ring(f).weekDays);
   const label = $derived(
     `${person.villagerName}: ` +
-      FRUITS.map((f) => `${t(`fruit.${f}`)} ${amount(f)} ${formatBells(person.today.parts[f], { signed: true })}`).join('、')
+      RING_FRUITS.map((f) => {
+        const r = ring(f);
+        const bells = r.todayBells > 0 ? formatBells(r.todayBells, { signed: true }) : '';
+        return `${t(`fruit.${f}`)} ${amount(f)} ${bells} ${t('tree.week', { d: Math.min(r.weekDays, r.weekGoalDays), w: r.weekGoalDays })}${r.badge ? ' ✓' : ''}`;
+      }).join('、')
   );
-  const spots = $derived(FRUITS.map((f, i) => ({ f, n: fruitCount(todayPct(person.fruits[f])), x: x + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
+  /** The fruit row leans away from the jar (left tree left, right tree right). */
+  const lean = $derived(x < JAR.x ? -FRUIT_LEAN : FRUIT_LEAN);
+  const spots = $derived(RING_FRUITS.map((f, i) => ({ f, n: fruitCount(todayPct(ring(f))), x: x + lean + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
   const rowL = $derived(Math.min(...spots.map((s) => s.x)) - FRUIT_U);
   const rowR = $derived(Math.max(...spots.map((s) => s.x)) + FRUIT_U);
 
@@ -101,7 +111,7 @@
   });
 
   /** A tap on the canopy or the fruit row: closes this tree's popup if it's open, else shakes (canopy) and opens it. */
-  function tap(f: FruitKey | null) {
+  function tap(f: RingFruit | null) {
     if (open) {
       cue('tick');
       return ontoggle?.(false);
@@ -114,7 +124,7 @@
   }
 
   /** The fruit nearest the tap along the row (keyboard: none highlighted). */
-  function fruitAt(e: MouseEvent): FruitKey | null {
+  function fruitAt(e: MouseEvent): RingFruit | null {
     const btn = e.currentTarget as HTMLElement;
     if (!e.detail || !btn) return null;
     const r = btn.getBoundingClientRect();
@@ -124,7 +134,7 @@
     return best.f;
   }
 
-  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD and its 44px ribbon (≈ 112px), measured from
+  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD and its 44px ribbon (≈ 112px, + the nameplate), measured from
    *  its layout box (offsetLeft/Top ignore the pop-in transform). The tail stays on the tree. */
   function keepInside(el: HTMLElement) {
     const scene = el.closest('.scene');
@@ -136,7 +146,7 @@
     let dx = 0;
     if (left < sc.left + 8) dx = sc.left + 8 - left;
     else if (left + w > sc.right - 8) dx = sc.right - 8 - (left + w);
-    const dy = Math.max(0, sc.top + 112 - top);
+    const dy = Math.max(0, sc.top + 128 - top);
     el.style.marginLeft = `${dx}px`;
     el.style.marginTop = `${dy}px`;
     el.style.setProperty('--tail', `${-dx}px`);
@@ -180,12 +190,16 @@
 {#if open}
   {#key taps}
     <div class="detail" id={detailId} role="status" style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
-      {#each FRUITS as f (f)}
+      <span class="plate">{person.villagerName}</span>
+      <span class="row hd" aria-hidden="true"><span></span><span class="lbl"></span><span>{t('tree.today')}</span><span>{t('bells.unit')}</span><span>{t('tree.thisWeek')}</span></span>
+      {#each RING_FRUITS as f (f)}
+        {@const r = ring(f)}
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={pct(f) >= 100}>{amount(f)}</span>
-          <b class="money">{formatBells(person.today.parts[f], { signed: true })}</b>
+          <span class="amt money" class:met={r.met}>{amount(f)}</span>
+          <b class="money" class:zero={!r.todayBells}>{r.todayBells > 0 ? `+${formatNum(r.todayBells)}` : '—'}</b>
+          <span class="pips" class:badge={r.badge}>{#if r.badge}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{#each pips(f) as on, i (i)}<i class:on></i>{/each}{/if}</span>
         </span>
       {/each}
     </div>
@@ -204,10 +218,11 @@
     content: ''; position: absolute; z-index: -1; left: 11%; width: 90%; bottom: -8%; height: 26%; border-radius: 50%;
     background: radial-gradient(closest-side, var(--sh-c), transparent); pointer-events: none;
   }
-  .fruit.ghost::before { opacity: .4; }
-  /* nothing earned yet: one faded, smaller item where it will fall */
-  .fruit.ghost .f { scale: .7; opacity: .4; }
-  .fruit.ghost :global(.official) { filter: saturate(0); }
+  .fruit.ghost::before { display: none; }
+  /* nothing earned yet: a small flat silhouette where it will fall, like NH's catalogue "not yet" (round 16 #19: a
+     faded copy read as grey pebbles) */
+  .fruit.ghost .f { scale: .7; opacity: .2; }
+  .fruit.ghost :global(.official) { filter: brightness(0); }
   /* a newly earned item falls from the canopy and bounces (250ms after the shake starts) */
   .f:global(.drop) { animation: fruit-drop 520ms cubic-bezier(.3, 0, .5, 1) both; }
   @keyframes fruit-drop {
@@ -215,11 +230,12 @@
     55% { transform: translateY(0) scale(1.12, .86); } 72% { transform: translateY(-30%) scale(.96, 1.04); }
     86% { transform: translateY(0) scale(1.04, .96); } 100% { transform: none; }
   }
-  /* narrow stages: one item per kind, sized by its count (readable at 320) */
+  /* narrow stages: one item per kind, sized by its count (readable at 320; five kinds at 22u pitch leave room for
+     ×1.25 at most) */
   @container (max-width: 359px) {
     .fruit.k1, .fruit.k2 { display: none; }
-    .fruit.ghost .f { scale: 1; }
-    .fruit.n1 .f { scale: 1.15; } .fruit.n2 .f { scale: 1.3; } .fruit.n3 .f { scale: 1.5; }
+    .fruit.ghost .f { scale: .85; }
+    .fruit.n1 .f { scale: 1; } .fruit.n2 .f { scale: 1.12; } .fruit.n3 .f { scale: 1.25; }
   }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .canopy, .row-btn {
@@ -235,10 +251,11 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: one row per fruit (icon · label · today/goal · ベル), in shared columns (subgrid) so the numbers line up */
+  /* NH-style popup: a nameplate, a faint column head, then one row per fruit (icon · word · today/goal · ベル · the
+     week's pips), in shared columns (subgrid) so the numbers line up */
   .detail {
-    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto; gap: 4px 0;
-    background: var(--plate); border-radius: var(--r-btn); padding: 8px 10px; white-space: nowrap;
+    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto auto; gap: 3px 0;
+    background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink); pointer-events: none;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
   }
@@ -246,18 +263,37 @@
     content: ''; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -5px; width: 10px; height: 10px; margin-left: -5px;
     background: inherit; transform: rotate(45deg);
   }
+  /* whose tree (round 16 #15): NH's tilted yuzu nameplate on the bubble's top edge */
+  .plate {
+    position: absolute; left: 10px; top: 0; translate: 0 -55%; rotate: -3deg; padding: 3px 10px; border-radius: var(--r-pill);
+    background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); box-shadow: 0 2px 0 var(--c-yuzu-lip);
+    max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis;
+  }
   .row {
     grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; column-gap: 8px;
     padding: 3px 6px; border-radius: var(--r-chip); line-height: 1;
   }
+  .row.hd { padding-block: 0 1px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  .row.hd > :nth-child(n + 3) { text-align: right; }
+  .row.hd > :last-child { text-align: left; }
   .row.on { background: var(--c-yuzu); }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
   .amt { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; color: var(--c-ink-soft); }
-  .amt.met { color: var(--c-leaf-lip); }
+  .amt.met { color: var(--c-leaf-text); }
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
-  /* narrow stages: the label goes (the fruit says which), so the popup fits over its own tree (sizing #10) */
-  @container (max-width: 359px) { .detail { grid-template-columns: 20px auto auto; } .lbl { display: none; } }
+  .row b.zero { color: var(--c-ink-soft); font-weight: 500; }
+  /* the week toward the badge: one pip per day needed, filled per day met; a ✓ disc once the badge is met */
+  .pips { display: flex; gap: 2px; align-items: center; min-width: 38px; }
+  .pips i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--plate-ink) 22%, transparent); }
+  .pips i.on { background: var(--c-leaf-edge); }
+  .pips.badge svg { width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
+  /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree (sizing #10) */
+  @container (max-width: 359px) {
+    .detail { grid-template-columns: 20px auto auto auto; }
+    .lbl { display: none; }
+    .row { column-gap: 10px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }
     .f:global(.drop), .detail { animation: none; }

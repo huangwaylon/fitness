@@ -40,6 +40,19 @@ const SPECS: Record<string, Spec> = {
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],
   'fruit/pear': [128, 'Pear_NH_Inv_Icon.png'],
   'fruit/cherry': [128, 'Cherry_NH_Inv_Icon.png'],
+  // The wallet's default menu (ADR 0022): NH item art where a fitting item exists (the rest keep our sprites).
+  'items/snack': [96, 'Cookies_NH_Icon.png'],
+  'items/ice': [96, 'Soft-Serve_Lamp_NH_Icon.png'],
+  'items/konbini': [96, 'Cherry_Tart_NH_Icon.png'],
+  'items/dessert': [96, 'Pancakes_NH_Icon.png'],
+  'items/cafe': [96, 'Coffee_Cup_NH_Icon.png'],
+  'items/dinner': [96, 'Pizza_Margherita_NH_Icon.png'],
+  'items/want': [96, 'Present_NH_Inv_Icon.png'],
+  'items/souvenir': [96, 'Gift_NH_Icon.png'],
+  'items/onsen': [96, 'Cypress_Bathtub_NH_Icon.png'],
+  'items/meal': [96, 'Gratin_NH_Icon.png'],
+  'items/spa': [96, 'Facial_Mask_NH_Icon.png'],
+  'items/upgrade': [96, 'Antique_Bed_NH_Icon.png'],
   // Island flower beds (scale pass): the NH inventory art of each planted flower, trimmed to the figure (TRIM).
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
   'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],
@@ -86,7 +99,6 @@ const SPECS: Record<string, Spec> = {
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // v5 (docs/design/design.md): game-derived replacements for hand-drawn chrome.
   'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'], // ごほうび財布 (reward wallet)
-  'money/miles-ticket': [128, 'Nook_Miles_Ticket_NH_Inv_Icon.png'], // the trip goal (次は 沖縄)
   // v4 seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
