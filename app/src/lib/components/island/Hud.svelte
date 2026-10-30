@@ -46,7 +46,7 @@
 </div>
 <div class="ribbon-wrap">
   <!-- Tap → きろく お金, the ベル ledger (history-and-editing.md §2). -->
-  <button type="button" class="ribbon" class:beat bind:this={ribbon} aria-label={t('hud.today', { bells: formatBells(bells) })} onanimationend={() => (beat = false)}
+  <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })} onanimationend={() => (beat = false)}
     onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
     <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('pots.unit')}</small></b>
   </button>

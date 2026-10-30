@@ -10,7 +10,7 @@
 <div class="prows" role="radiogroup" aria-label={t('phone.app.lang')} {@attach roving}>
   {#each LANGS as l (l.id)}
     {@const on = i18n.locale === l.id}
-    <button type="button" class="prow" role="radio" lang={l.id} aria-checked={on} tabindex={on ? 0 : -1} onclick={() => !on && setLanguage(l.id)}>
+    <button type="button" class="prow" role="radio" lang={l.id} aria-checked={on} tabindex={on ? 0 : -1} data-sfx={on ? 'none' : 'tick'} onclick={() => !on && setLanguage(l.id)}>
       <span class="prl">{l.label}</span><span class="radio" aria-hidden="true"></span>
     </button>
   {/each}

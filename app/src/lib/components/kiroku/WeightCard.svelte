@@ -25,7 +25,7 @@
   <h3 id="weight-h">{t('weight.title')}</h3>
   {#each order as p (p)}
     {@const w = trends[p]}
-    <button type="button" class="row" onclick={() => onopen(p)} aria-label="{t('weight.open', { name: names[p] })}{w.latest ? ` ${kgText(w.latest.trend)} ${t('weight.weekShort', { d: kgDelta(w.weekChange) })}` : ''}">
+    <button type="button" class="row" data-sfx="page" onclick={() => onopen(p)} aria-label="{t('weight.open', { name: names[p] })}{w.latest ? ` ${kgText(w.latest.trend)} ${t('weight.weekShort', { d: kgDelta(w.weekChange) })}` : ''}">
       <Avatar person={p} villager={villagers[p]} size={30} />
       {#if w.latest}
         <span class="nums" aria-hidden="true">

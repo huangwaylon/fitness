@@ -60,14 +60,14 @@
       <span class="k">{t('kiroku.steps')}</span>
       <span class="v money">{num(x.steps.value)}</span>
       {#if x.steps.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
-      {#if can}<button type="button" class="pen" data-focus="steps" aria-label="{t('kiroku.steps')} ✎" onclick={() => onmetric('steps')}><Glyph kind="pen" size={18} /></button>{/if}
+      {#if can}<button type="button" class="pen" data-sfx="page" data-focus="steps" aria-label="{t('kiroku.steps')} ✎" onclick={() => onmetric('steps')}><Glyph kind="pen" size={18} /></button>{/if}
     </div>
     <div class="row">
       <span class="k">{t('kiroku.minutes')}</span>
       <span class="v money">{t('kiroku.min', { n: x.minutes.value })}</span>
       {#if x.minutes.source}<span class="src">({t(`kiroku.src.${x.minutes.source}`)})</span>{/if}
       {#if x.minutes.edited}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
-      {#if can}<button type="button" class="pen" data-focus="exercise_min" aria-label="{t('kiroku.minutes')} ✎" onclick={() => onmetric('exercise_min')}><Glyph kind="pen" size={18} /></button>{/if}
+      {#if can}<button type="button" class="pen" data-sfx="page" data-focus="exercise_min" aria-label="{t('kiroku.minutes')} ✎" onclick={() => onmetric('exercise_min')}><Glyph kind="pen" size={18} /></button>{/if}
     </div>
     {#each x.workouts as w (w.id)}
       <div class="row wo" class:out={w.excluded}>
@@ -75,7 +75,7 @@
         <span class="v small"><span class="money">{w.manual ? '' : timeOf(w.startAt) + ' '}{t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
           {#if w.manual}<em>{t('kiroku.manual')}</em>{/if}</span>
-        {#if can}<button type="button" class="pen" data-focus="w:{w.id}" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
+        {#if can}<button type="button" class="pen" data-sfx="page" data-focus="w:{w.id}" aria-label="{typeLabel(w.type)} ✎" onclick={() => onworkout(w.id)}><Glyph kind="pen" size={18} /></button>{/if}
       </div>
     {/each}
     {#each x.visits as v (v.id)}
@@ -88,13 +88,13 @@
       {#each x.habits.keys as h (h)}
         {@const on = x.habits.done.includes(h)}
         {#if can}
-          <button type="button" class="tick" class:on aria-pressed={on} onclick={() => ontick(h, !on)}>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</button>
+          <button type="button" class="tick" class:on aria-pressed={on} data-sfx={on ? 'toggle-off' : 'toggle-on'} onclick={() => ontick(h, !on)}>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</button>
         {:else}
           <span class="tick" class:on>{#if on}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{t(`habit.${h}`)}</span>
         {/if}
       {/each}
     </div>
-    {#if can}<button type="button" class="add" data-focus="add" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
+    {#if can}<button type="button" class="add" data-focus="add" data-sfx="page" onclick={onadd}>＋ {t('kiroku.addWorkout')}</button>{/if}
   </section>
 {/snippet}
 

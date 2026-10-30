@@ -64,8 +64,8 @@
 
 {#if mine}
   <div class="acts">
-    <button type="button" class="btn small" data-focus="weight-log" onclick={() => onlog(today)}>{t('weight.log')}</button>
-    <button type="button" class="btn small paper" data-focus="weight-goal" onclick={ongoal}>{w.goal === null ? t('weight.setGoal') : t('weight.editGoal')}</button>
+    <button type="button" class="btn small" data-focus="weight-log" data-sfx="page" onclick={() => onlog(today)}>{t('weight.log')}</button>
+    <button type="button" class="btn small paper" data-focus="weight-goal" data-sfx="page" onclick={ongoal}>{w.goal === null ? t('weight.setGoal') : t('weight.editGoal')}</button>
   </div>
 {/if}
 
@@ -83,7 +83,7 @@
             <td class="money">{p.kg.toFixed(1)}</td>
             <td class="money soft">{p.trend.toFixed(1)}</td>
             {#if mine}
-              <td class="pc"><button type="button" class="pen" data-focus="wfix:{p.date}" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
+              <td class="pc"><button type="button" class="pen" data-focus="wfix:{p.date}" data-sfx="page" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
             {/if}
           </tr>
         {/each}

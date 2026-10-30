@@ -62,7 +62,7 @@
      bottom padding so it can scroll, and on focus the whole form (field + つなぐ) scrolls to just above the keyboard
      (data-kb-scroll). Round 10 H3: no transform and no sticky lift, which moved the button over the art or the field. -->
 <main class="pair" {@attach keyboardInset}>
-  <button type="button" class="lang" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
+  <button type="button" class="lang" data-sfx="tick" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe" /></svg>{i18n.locale === 'ja' ? 'English' : '日本語'}
   </button>
 
@@ -84,10 +84,11 @@
       value={code}
       oninput={onInput}
       aria-describedby="pair-msg"
+      data-sfx="none"
     />
     <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button (N8). -->
     <p id="pair-msg" class="msg" class:info={!msg} role="status">{msg || (code && !ready ? t('pair.keyHint') : '')}</p>
-    <button type="submit" class="btn" disabled={!ready || busy}>{t('pair.go')}</button>
+    <button type="submit" class="btn" aria-disabled={!ready} disabled={busy} data-sfx="confirm">{t('pair.go')}</button>
   </form>
   <p class="hint" class:strong={!standalone}>{t('pair.hint')}</p>
 </main>

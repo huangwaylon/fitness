@@ -1,6 +1,6 @@
 <script lang="ts">
   // おやつ's menu as buy buttons (ADR 0019 §5): two columns of item tiles (picture, name, price). An item the pot
-  // can't pay for yet is disabled and says how much is missing. Tap → `onbuy` (the page asks first).
+  // can't pay for yet is aria-disabled (a tap boops, as NH's shop does) and says how much is missing. Tap → `onbuy` (the page asks first).
   import type { MenuItem } from '#lib/types.ts';
   import { itemIcon } from './icons.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
@@ -12,7 +12,7 @@
   <div class="shelf">
     {#each items as item (item.id)}
       {@const short = item.bells - balance}
-      <button type="button" class="item" disabled={short > 0} onclick={() => onbuy(item)}
+      <button type="button" class="item" aria-disabled={short > 0} data-sfx="open" onclick={() => onbuy(item)}
         aria-label="{item.label} {formatBells(item.bells)}{short > 0 ? ' ' + t('pots.left', { bells: formatBells(short) }) : ''}">
         <svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><use href="#{itemIcon('treat', item.id)}" /></svg>
         <b class="nm">{item.label}</b>
@@ -33,9 +33,9 @@
     border-radius: var(--r-btn); background: var(--ctl); box-shadow: var(--sh-ctl);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
-  .item:active:not(:disabled) { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-ctl-press); transition-duration: var(--dur-tap); }
-  .item:disabled { cursor: default; box-shadow: none; background: var(--ctl-off); color: var(--text-soft); transform: translateY(4px); }
-  .item:disabled .ic { opacity: .45; filter: saturate(.3); }
+  .item:active:not([aria-disabled='true']) { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-ctl-press); transition-duration: var(--dur-tap); }
+  .item[aria-disabled='true'] { cursor: default; box-shadow: none; background: var(--ctl-off); color: var(--text-soft); transform: translateY(4px); }
+  .item[aria-disabled='true'] .ic { opacity: .45; filter: saturate(.3); }
   .ic { width: 34px; height: 34px; margin-bottom: 2px; }
   .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.2; overflow-wrap: anywhere; word-break: auto-phrase; }
   .pr { font-size: var(--fs-body); }

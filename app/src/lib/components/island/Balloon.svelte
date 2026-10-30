@@ -48,7 +48,7 @@
 
 <div class="fly" class:rtl={!ltr} bind:this={fly} style:--alt={alt}
   onanimationend={(e) => e.target === fly && ondone?.()}>
-  <button type="button" class="balloon" aria-label={t('island.balloon')} onclick={tap}>
+  <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} onclick={tap}>
     <span class="bob">
       <span class="rig" class:wobble onanimationend={(e) => e.animationName.includes('wobble') && (wobble = false)}>
         <span class="hang">

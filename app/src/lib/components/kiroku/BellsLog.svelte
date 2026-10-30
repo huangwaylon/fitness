@@ -80,7 +80,7 @@
           <span class="lbl"><span>{s.label}</span><small class="meta"><span>{potOf(s.pot)}</span><span>{stampOf(s.at)}</span>{#if s.voided}<span>{t('kiroku.spend.voided')}</span>{/if}</small></span>
           <span class="money amt">{formatBells(-s.bells)}</span>
           {#if s.by === me && !s.voided}
-            <button type="button" class="mini" onclick={() => onvoid(s.spendId, s.label, s.bells)}>{t('kiroku.voidSpend')}</button>
+            <button type="button" class="mini" data-sfx="page" onclick={() => onvoid(s.spendId, s.label, s.bells)}>{t('kiroku.voidSpend')}</button>
           {/if}
         </li>
       {/each}

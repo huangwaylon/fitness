@@ -17,6 +17,7 @@
   import ToastHost from './ToastHost.svelte';
   import { keyboardInset } from './keyboardInset.ts';
   import { lockScroll } from './scrollLock.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
     open: boolean;
@@ -63,17 +64,25 @@
     onclose?.();
   }
 
+  /** Dismissed by hand (the backdrop, Esc, the grabber): Ⓑ. The phone plays its own put-away tune (ShimaPhone), and a
+   *  sheet closed by its own button (保存, 買う！) sounds that button instead. */
+  function dismissed() {
+    if (variant !== 'phone') cue('back');
+  }
+
   function backdrop(e: MouseEvent) {
-    if (e.target === dlg) dlg?.close();
+    if (e.target !== dlg) return;
+    dismissed();
+    dlg?.close();
   }
 </script>
 
 <dialog bind:this={dlg} class={variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
-  onclose={closed} onclick={backdrop} {@attach open && keyboardInset}>
+  onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && keyboardInset}>
   {#if open}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      <button type="button" class="grabber" aria-label={t('common.close')} onclick={() => dlg?.close()}></button>
+      <button type="button" class="grabber" aria-label={t('common.close')} data-sfx={variant === 'phone' ? 'self' : 'back'} onclick={() => dlg?.close()}></button>
       {#if title}<h2 class="title"><span class="plate">{title}</span></h2>{/if}
       {@render children()}
     </div>

@@ -76,19 +76,20 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce), background-color var(--dur-quick);
   user-select: none; -webkit-user-select: none;
 }
-.btn:active:not(:disabled) {
+.btn:active:not(:disabled, [aria-disabled='true']) {
   transform: translateY(3px) scale(1.03, .95); box-shadow: inset 0 0 0 2px var(--lip-c), 0 1px 0 var(--lip-c);
   transition-duration: var(--dur-tap); transition-timing-function: var(--ease-squash);
 }
-/* disabled: sunk into the panel (no edge, no lip), soft text: clearly not the action */
-.btn:disabled { --fill: var(--ctl-off); color: var(--text-soft); cursor: default; box-shadow: none; transform: translateY(4px); }
+/* disabled: sunk into the panel (no edge, no lip), soft text: clearly not the action. aria-disabled is the same look: a
+   control that still takes the tap, to answer it with the "can't" boop (sound/taps.ts) */
+.btn:is(:disabled, [aria-disabled='true']) { --fill: var(--ctl-off); color: var(--text-soft); cursor: default; box-shadow: none; transform: translateY(4px); }
 .btn svg, .btn .ic { width: 24px; height: 24px; flex: none; }
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-edge); }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 @media (prefers-reduced-motion: reduce) {
-  .btn:active:not(:disabled) { transform: none; filter: brightness(.95); }
+  .btn:active:not(:disabled, [aria-disabled='true']) { transform: none; filter: brightness(.95); }
 }
 
 /* ---------- round icon button (sheet close / back): a cream object with the brown edge ---------- */

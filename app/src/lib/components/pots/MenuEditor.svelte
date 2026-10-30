@@ -65,26 +65,26 @@
       <li class="card row" class:bad={bad(r)}>
         <label class="f name">
           <span class="sr-only">{t('pots.field.name')}</span>
-          <input class="lbl" type="text" bind:value={r.label} maxlength={MENU_LIMITS.label} placeholder={t('pots.field.name')}
+          <input class="lbl" type="text" data-sfx="none" bind:value={r.label} maxlength={MENU_LIMITS.label} placeholder={t('pots.field.name')}
             enterkeyhint="next" autocomplete="off" />
         </label>
         <label class="f price">
           <span class="sr-only">{t('pots.field.price')}</span>
-          <input class="num" type="text" inputmode="numeric" pattern="[0-9]*" value={r.bells} oninput={(e) => digits(e, r)}
+          <input class="num" type="text" data-sfx="none" inputmode="numeric" pattern="[0-9]*" value={r.bells} oninput={(e) => digits(e, r)}
             placeholder="0" enterkeyhint="done" autocomplete="off" />
           <span class="unit" aria-hidden="true">{t('pots.unit')}</span>
         </label>
-        <button type="button" class="rm" aria-label={t('pots.remove', { label: r.label || t('pots.field.name') })} onclick={() => remove(i)}>
+        <button type="button" class="rm" data-sfx="remove" aria-label={t('pots.remove', { label: r.label || t('pots.field.name') })} onclick={() => remove(i)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close" /></svg>
         </button>
       </li>
     {/each}
   </ul>
-  <button type="button" class="add" onclick={add} disabled={full}>＋ {t(`pots.${pot}.add`)}</button>
+  <button type="button" class="add" data-sfx="open" onclick={add} aria-disabled={full}>＋ {t(`pots.${pot}.add`)}</button>
   {#snippet footer()}
     <div class="acts">
-      <button type="button" class="btn paper" onclick={() => (open = false)}>{t('kiroku.cancel')}</button>
-      <button type="button" class="btn" onclick={save} disabled={!changed}>{t('common.save')}</button>
+      <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('kiroku.cancel')}</button>
+      <button type="button" class="btn" data-sfx="confirm" onclick={save} aria-disabled={!changed}>{t('common.save')}</button>
     </div>
   {/snippet}
 </Sheet>
@@ -119,7 +119,7 @@
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));
     box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
   }
-  .add:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
-  .add:disabled { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
+  .add:active:not([aria-disabled='true']) { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
+  .add[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
   .acts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 </style>

@@ -142,7 +142,7 @@
         </div>
       {/if}
       {#if !pending}
-        <button type="button" class="btn" class:paper={allChecked} onclick={openCheckin}>
+        <button type="button" class="btn" class:paper={allChecked} data-sfx="open" onclick={openCheckin}>
           {#if allChecked}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{t('island.checkedIn')}
           {:else if checkedIn}{t('island.checkinLeft', { n: habitCount - ticksToday })}
           {:else}{t('island.checkin')}{/if}

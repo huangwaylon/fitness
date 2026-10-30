@@ -121,3 +121,161 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
   expect(p.contexts).toBe(0);
   expect(p.plays).toEqual([]);
 });
+
+/**
+ * The tap walk (sound.md §13 "Every tap", the log): 効果音 on, every screen, each tap's cues read from the cue
+ * function's test hook (`window.__cues`). Each step expects exactly its cue: one sound per tap, never two.
+ * `WALK_LOG=path` writes the log as a markdown table.
+ */
+/** The island's own sounds (world cues and reactions), which may follow a tap that closes a sheet. */
+const ISLAND = /^(fruit-land|coin-land|bells-arrive|tree-shake|emote-|announce|trouble|villager-tap|host-tap|jar-tap)/;
+
+test('the tap walk: each tap plays its one cue', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.addInitScript(() => {
+    localStorage.setItem('island.sound', JSON.stringify({ music: false, sfx: true, voice: false, volume: 0.8 }));
+    (window as unknown as { __cues: string[] }).__cues = [];
+  });
+  await page.goto('?demo&date=2026-11-04T12:00');
+  const dlg = page.locator('dialog[open]');
+  const log: [string, string, string][] = [];
+  const take = () => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.splice(0));
+  async function step(screen: string, name: string, act: () => Promise<unknown>, want?: string[]) {
+    await take();
+    await act();
+    await page.waitForTimeout(260);
+    const got = await take();
+    log.push([screen, name, got.join(' + ') || '(silent)']);
+    if (!want) return;
+    // the tap's own cue, once; anything after it is the island answering (fruit landing, coins, an emote), never a
+    // second UI sound
+    expect(got.slice(0, want.length), `${screen} · ${name}`).toEqual(want);
+    expect(got.slice(want.length).filter((c) => !ISLAND.test(c)), `${screen} · ${name}: extra`).toEqual([]);
+  }
+  const btn = (name: string | RegExp, scope = page.locator('body')) => scope.getByRole('button', { name, exact: typeof name === 'string' });
+
+  // 島
+  const yes = btn('はい');
+  const cta = page.locator('.below > .btn');
+  await expect(cta.or(yes).first()).toBeVisible();
+  for (let i = 0; i < 5 && !(await cta.isVisible()); i++) {
+    if (await yes.isVisible()) await step('島', 'しずえ: はい (choice)', () => yes.tap(), ['choice-pick']);
+    await page.waitForTimeout(300);
+  }
+  await page.waitForTimeout(1500); // the opening beats
+  await step('島', 'check-in CTA', () => cta.tap(), ['open']);
+  await step('チェックイン', '昨日', () => btn('昨日', dlg).or(btn(/^昨日 ·/, dlg)).first().tap(), ['tick']);
+  await step('チェックイン', '昨日 again (already shown)', () => btn('昨日', dlg).or(btn(/^昨日 ·/, dlg)).first().tap(), []);
+  await step('チェックイン', '今日', () => btn('今日', dlg).tap(), ['tick']);
+  const sw = dlg.getByRole('switch').first();
+  const on = (await sw.getAttribute('aria-checked')) === 'true';
+  await step('チェックイン', `habit switch ${on ? 'off' : 'on'}`, () => sw.tap(), [on ? 'toggle-off' : 'checkin-saved']);
+  await step('チェックイン', `habit switch ${on ? 'on' : 'off'}`, () => sw.tap(), [on ? 'checkin-saved' : 'toggle-off']);
+  await step('チェックイン', 'ぜんぶできた！', () => btn('ぜんぶできた！', dlg).tap(), ['checkin-saved']);
+  await step('チェックイン', 'ぜんぶそろいました (aria-disabled)', () => btn('ぜんぶそろいました', dlg).tap({ force: true }), ['boop']);
+  await step('チェックイン', '保存', () => btn('保存', dlg).tap(), ['confirm']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+  await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
+  await step('島', 'tree canopy again (closes)', () => page.locator('button.canopy').first().tap(), ['tick']);
+  await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
+  await expect(dlg).toHaveCount(1);
+  await step('なかま', 'fruit ring', () => dlg.locator('button.fr').nth(1).tap(), ['tick']);
+  await step('なかま', 'grabber', () => dlg.locator('.grabber').tap(), ['back']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+  await page.locator('.if-scene button.vil').nth(1).tap();
+  await expect(dlg).toHaveCount(1);
+  await page.waitForTimeout(300);
+  await step('なかま', 'Esc', () => page.keyboard.press('Escape'), ['back']);
+  await page.waitForTimeout(400);
+  await page.locator('.if-scene button.vil').nth(1).tap();
+  await expect(dlg).toHaveCount(1);
+  await step('なかま', 'ハイタッチ', () => btn(/ハイタッチ/, dlg).tap());
+  await page.waitForTimeout(2000);
+
+  // しまフォン
+  const phone = btn('しまフォンを開く');
+  await step('しまフォン', 'NookPhone button', () => phone.tap(), ['phone-open']);
+  await step('しまフォン', 'きろく tile', () => page.locator('.app[data-app=kiroku]').tap(), ['phone-app']);
+  await expect(dlg.locator('.pill').first()).toBeVisible();
+  await step('きろく', 'ベル tab', () => dlg.locator('.pill').nth(1).tap(), ['tick']);
+  await step('きろく', 'ベル tab again', () => dlg.locator('.pill').nth(1).tap(), []);
+  await step('きろく', 'からだ tab', () => dlg.locator('.pill').nth(0).tap(), ['tick']);
+  await step('きろく', 'weight card', () => btn(/の体重のながれ/, dlg).first().tap(), ['page']);
+  await step('きろく', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('きろく', 'week card', () => btn(/^今週/, dlg).tap(), ['page']);
+  const future = dlg.locator('button.day[aria-disabled="true"]');
+  if (await future.count()) await step('きろく', 'a future day (aria-disabled)', () => future.first().tap({ force: true }), ['boop']);
+  await step('きろく', 'day', () => btn(/^月/, dlg).tap(), ['page']);
+  await step('きろく', '✎ steps', () => btn(/^歩数/, dlg).tap(), ['page']);
+  const pad = dlg.locator('.atm');
+  await step('きろく', 'keypad 1', () => btn('1', pad).tap(), ['key']);
+  await step('きろく', 'keypad ⌫', () => btn('ひとつ消す', pad).or(pad.locator('.key.fn').first()).first().tap(), ['key-fn']);
+  await step('きろく', 'keypad 2', () => btn('2', pad).tap(), ['key']);
+  await step('きろく', 'keypad C', () => pad.locator('.key.fn').nth(1).tap(), ['key-fn']);
+  await step('きろく', 'けってい with nothing typed (aria-disabled)', () => btn('けってい', dlg).tap({ force: true }), ['boop']);
+  await step('きろく', 'やめる (choice)', () => btn('やめる', dlg).tap(), ['back']);
+  await step('きろく', '✎ steps again', () => btn(/^歩数/, dlg).tap(), ['page']);
+  for (const k of '4321') await btn(k, pad).tap();
+  await step('きろく', 'けってい', () => btn('けってい', dlg).tap(), ['choice-pick']);
+  const undo = btn('もとに戻す');
+  await step('きろく', 'もとに戻す (banner)', () => undo.tap(), ['undo']);
+  await step('きろく', 'back (‹) to the week', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('きろく', 'back (‹) to the list', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('きろく', 'back (‹) to home', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('しまフォン', 'あそびかた tile', () => page.locator('.app[data-app=help]').tap(), ['phone-app']);
+  await step('しまフォン', 'back', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('しまフォン', '通信 tile', () => page.locator('.app[data-app=sync]').tap(), ['phone-app']);
+  await step('通信', 'いま同期', () => dlg.locator('.btn').tap(), ['sync']);
+  await step('通信', 'いま同期 while syncing (aria-disabled)', () => dlg.locator('.btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
+  await dlg.locator('.titlebar .back').tap();
+  await step('しまフォン', 'ことば tile', () => page.locator('.app[data-app=lang]').tap(), ['phone-app']);
+  await step('ことば', '日本語 (already chosen)', () => dlg.getByRole('radio', { name: '日本語' }).tap(), []);
+  await dlg.locator('.titlebar .back').tap();
+  await step('しまフォン', 'じゅうにん tile', () => page.locator('.app[data-app=villager]').tap(), ['phone-app']);
+  await step('じゅうにん', 'search field', () => dlg.getByRole('searchbox').tap(), []);
+  await step('じゅうにん', 'pick a villager', () => dlg.locator('.rv[aria-checked="false"]').first().tap(), ['tick']);
+  await dlg.locator('.titlebar .back').tap();
+  await step('しまフォン', 'サウンド tile', () => page.locator('.app[data-app=sound]').tap(), ['phone-app']);
+  await step('サウンド', 'おしゃべり on', () => dlg.getByRole('switch', { name: /^おしゃべり/ }).tap(), ['toggle-on']);
+  await step('サウンド', 'おしゃべり off', () => dlg.getByRole('switch', { name: /^おしゃべり/ }).tap(), ['toggle-off']);
+  await step('サウンド', '音量 slider (change)', () => dlg.locator('input[type=range]').fill('6'), ['tick']);
+  await step('しまフォン', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
+  await expect(dlg).toHaveCount(0);
+  await step('島', 'ribbon (→ きろく ベル)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['phone-open']);
+  await step('しまフォン', 'grabber', () => dlg.locator('.grabber').tap(), ['phone-close']);
+  await expect(dlg).toHaveCount(0);
+  await page.waitForTimeout(400);
+
+  // ふたりの壺
+  await step('島', 'jar', () => page.locator('.if-scene .jar').tap(), ['jar-tap']);
+  await expect(page.locator('.jar-screen')).toBeVisible();
+  await page.waitForTimeout(600);
+  const pot = page.locator('[data-pot=treat]');
+  const cant = pot.locator('button.item[aria-disabled="true"]');
+  if (await cant.count()) await step('壺', 'a treat it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
+  await step('壺', 'a treat', () => pot.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
+  await step('壺', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
+  await step('壺', 'もとに戻す', () => undo.tap(), ['undo']);
+  await page.waitForTimeout(400);
+  await step('壺', '✎ へんしゅう', () => btn(/へんしゅう/, pot).tap(), ['open']);
+  await step('へんしゅう', 'save, nothing changed (aria-disabled)', () => btn('保存', dlg).tap({ force: true }), ['boop']);
+  await step('へんしゅう', '＋ add', () => btn(/おやつを追加/, dlg).tap(), ['open']);
+  await step('へんしゅう', 'name field', () => dlg.locator('input.lbl').last().tap(), []);
+  await step('へんしゅう', '× remove', () => dlg.locator('button.rm').last().tap(), ['remove']);
+  await step('へんしゅう', 'やめる', () => btn('やめる', dlg).tap(), ['back']);
+  await expect(dlg).toHaveCount(0);
+  const trip = page.locator('[data-pot=trip] .go');
+  if (await trip.count()) {
+    await step('壺', '行く！', () => trip.first().tap(), ['open']);
+    await step('壺', 'backdrop', () => page.touchscreen.tap(10, 20), ['back']);
+  }
+  await step('壺', '◀ 島へ', () => page.locator('a.back').tap(), ['back']);
+  await expect(page.locator('.if-scene')).toBeVisible();
+
+  if (process.env.WALK_LOG) {
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(process.env.WALK_LOG, ['| Screen | Tap | Cue(s) |', '|---|---|---|', ...log.map((r) => `| ${r.join(' | ')} |`)].join('\n') + '\n');
+  }
+});

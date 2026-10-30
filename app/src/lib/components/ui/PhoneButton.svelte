@@ -9,7 +9,7 @@
   let { open = $bindable(false) }: { open?: boolean } = $props();
 </script>
 
-<button type="button" class="phone-btn" aria-label={t('phone.open')} onclick={() => (open = true)}>
+<button type="button" class="phone-btn" data-sfx="self" aria-label={t('phone.open')} onclick={() => (open = true)}>
   <OfficialArt key={NOOKPHONE} size={40} eager>
     {#snippet fallback()}
       <svg viewBox="0 0 24 24" aria-hidden="true">

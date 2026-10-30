@@ -104,13 +104,13 @@
 
   <div class="titlebar">
     {#if app}
-      <button type="button" class="back icon-btn" aria-label={t('common.back')} onclick={back}>
+      <button type="button" class="back icon-btn" aria-label={t('common.back')} data-sfx="self" onclick={back}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-back" /></svg>
       </button>
     {/if}
     <h2>{title}</h2>
     <!-- U12: a visible 44px close on the phone, not only the grabber -->
-    <button type="button" class="close icon-btn" aria-label={t('common.close')} onclick={() => (open = false)}>
+    <button type="button" class="close icon-btn" aria-label={t('common.close')} data-sfx="self" onclick={() => (open = false)}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close" /></svg>
     </button>
   </div>
@@ -119,7 +119,7 @@
   {#if !app}
     <div class="grid">
       {#each APPS as a, i (a.id)}
-        <button type="button" class="app" data-app={a.id} style:animation-delay="{i * 40}ms" onclick={() => launch(a.id)}>
+        <button type="button" class="app" data-app={a.id} data-sfx="self" style:animation-delay="{i * 40}ms" onclick={() => launch(a.id)}>
           <span class="tile" class:full={!!a.tile} style:--fill={a.fill ?? 'var(--c-mint)'}>
             {#if a.glyph?.startsWith('i-')}
               <svg class="own" viewBox="0 0 24 24" aria-hidden="true"><use href="#{a.glyph}" /></svg>

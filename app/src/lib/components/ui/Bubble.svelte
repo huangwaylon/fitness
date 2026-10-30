@@ -72,13 +72,13 @@
 
 <div class="talk">
   {#if host}
-    <button type="button" class="spk" style:--h={h} aria-label={t('host.name')} onclick={tap}>
+    <button type="button" class="spk" style:--h={h} aria-label={t('host.name')} data-sfx="self" onclick={tap}>
       <Host pose={host} size={h} talking={typing} eager />
     </button>
   {/if}
   <div class="bubble" class:tail={!!host}>
     <span class="who">{name ?? t('host.name')}</span>
-    <button type="button" class="tap" onclick={tap}>
+    <button type="button" class="tap" data-sfx="self" onclick={tap}>
       <span class="sr-only" aria-live="polite">{text}</span>
       <span class="txt" aria-hidden="true">
         <span class="live">

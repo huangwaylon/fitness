@@ -159,7 +159,7 @@
       {@const a = actors[id]}
       <div class="actor" style:left={u(s.x)} style:top={u(VILLAGER.foot)} style:z-index={id === 'mine' ? 52 : 51}
         style:--walk={live ? (s.side === 'left' ? 1 : -1) * a.walkX : 0} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}>
-        <button type="button" class="vil" disabled={!live}
+        <button type="button" class="vil" disabled={!live} data-sfx="self"
           aria-label={id === 'mine'
             ? t('island.me', { name: s.person.villagerName, bells: formatBells(s.person.today.bells) })
             : t('island.highfive', { name: s.person.villagerName })}
