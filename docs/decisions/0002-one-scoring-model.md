@@ -1,5 +1,5 @@
 # 0002 — One weekly scoring model: 100 fruit per person, five fruits
-**Status:** Accepted (round 1). Resolves conflicts C1 and C4. **Amended by [0009](0009-no-sleep-four-fruits.md)** (four fruits, no sleep) and [0017](0017-round-4-rule-changes-and-rule-versions.md) (step-derived minutes).
+**Status:** **Superseded by [0019](0019-bells-daily-earning-two-pots.md)** (no weekly score /100: ベル per day, 2026-10-30). Accepted round 1. Resolves conflicts C1 and C4. **Amended by [0009](0009-no-sleep-four-fruits.md)** (four fruits, no sleep) and [0017](0017-round-4-rule-changes-and-rule-versions.md) (step-derived minutes).
 
 **Context.** Fitness capped at 100/wk, nutrition at 100/wk, and the motivation memo targeted 105 Miles/wk. The fruit metaphor had no slot for strength.
 All five reviewers converged on one 100-point weekly card per person.

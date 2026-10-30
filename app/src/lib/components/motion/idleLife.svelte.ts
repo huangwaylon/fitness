@@ -16,7 +16,7 @@ export interface IdleContext {
   asleep: () => boolean;
   /** Evening (tod night but still awake): no day-only actions (P8). */
   night?: () => boolean;
-  /** Both weekly scores, for the dance-together weight. */
+  /** Both people's day scores (today's ベル as % of a full day, progress.ts dayScore), for the dance-together weight. */
   scores: () => [number, number];
   /** Shake that actor's own tree (+ a falling leaf). */
   treeShake: (id: 'mine' | 'partner') => void;
