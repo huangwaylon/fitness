@@ -167,7 +167,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('島', 'tree canopy again (closes)', () => page.locator('button.canopy').first().tap(), ['tick']);
   await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
   await expect(dlg).toHaveCount(1);
-  await step('なかま', 'grabber', () => dlg.locator('.grabber').tap(), ['back']);
+  await step('なかま', '✕', () => dlg.locator('.navbar .close').tap(), ['back']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
   await page.locator('.if-scene button.vil').nth(1).tap();
@@ -233,7 +233,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('しまフォン', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
   await expect(dlg).toHaveCount(0);
   await step('島', 'ribbon (→ きろく ベル)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['phone-open']);
-  await step('しまフォン', 'grabber', () => dlg.locator('.grabber').tap(), ['phone-close']);
+  await step('しまフォン', '✕', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 

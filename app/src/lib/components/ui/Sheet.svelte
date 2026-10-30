@@ -4,17 +4,18 @@
 
 <script lang="ts">
   // Bottom sheet on a native <dialog> (focus trap + Esc for free), opening from the thumb. One skin (v5 §4):
-  // the chrome surface (cream; navy at night), radius 32, a lip, a tilted nameplate `title`, one CTA in `footer`.
+  // the chrome surface (cream; navy at night), radius 32, a lip, the one title bar (NavBar: the title centred, ✕
+  // top-right; nothing advertises swipe-down, user 2026-10-30), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock, round 10 H2).
   // variant="phone": the しまフォン launcher (NookPhone screen, rounded all round, full height minus the status bar).
   // The phone itself does not scroll: it is a flex column, and the app puts its scrolling body in a
   // `.phone-body` child (round 10 architecture: fixed status row + title bar, one scroller).
   import { untrack, type Snippet } from 'svelte';
-  import { t } from '#lib/i18n/index.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ToastHost from './ToastHost.svelte';
+  import NavBar from './NavBar.svelte';
   import { keyboardInset } from './keyboardInset.ts';
   import { lockScroll } from './scrollLock.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -22,7 +23,7 @@
   interface Props {
     open: boolean;
     label: string;
-    /** Nameplate title (the yuzu tag). */
+    /** The title bar's title (centred). */
     title?: string;
     variant?: 'paper' | 'phone';
     onclose?: () => void;
@@ -58,14 +59,14 @@
     } else if (!open && dlg.open) dlg.close();
   });
 
-  /** The native close event (Esc, backdrop, grabber, or `open = false`). */
+  /** The native close event (Esc, backdrop, ✕, or `open = false`). */
   function closed() {
     open = false;
     onclose?.();
   }
 
-  /** Dismissed by hand (the backdrop, Esc, the grabber): Ⓑ. The phone plays its own put-away tune (ShimaPhone), and a
-   *  sheet closed by its own button (保存, 買う！) sounds that button instead. */
+  /** Dismissed by hand (the backdrop, Esc): Ⓑ (✕ sounds it through its data-sfx). The phone plays its own put-away
+   *  tune (ShimaPhone), and a sheet closed by its own button (保存, 買う！) sounds that button instead. */
   function dismissed() {
     if (variant !== 'phone') cue('back');
   }
@@ -82,8 +83,7 @@
   {#if open}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      <button type="button" class="grabber" aria-label={t('common.close')} data-sfx={variant === 'phone' ? 'self' : 'back'} onclick={() => dlg?.close()}></button>
-      {#if title}<h2 class="title"><span class="plate">{title}</span></h2>{/if}
+      {#if variant !== 'phone'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}
@@ -100,18 +100,14 @@
     overflow: hidden auto; overscroll-behavior: contain;
   }
   dialog:focus { outline: none; }
-  dialog[open] { animation: up var(--dur-pop) var(--ease-soft); }
+  /* the one sheet motion (design.md "Navigation"): up in 240ms, ease-out, no overshoot */
+  dialog[open] { animation: up 240ms cubic-bezier(.2, .8, .2, 1); }
   dialog::backdrop { background: var(--scrim); }
   /* U14: the content can scroll above the keyboard too (the footer is lifted by --kb). */
   .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }
   dialog:has(.foot) .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
-  /* U12: a --hit tall area around the 40×5 handle (the title margin gives back the extra 8px). */
-  .grabber {
-    display: block; position: relative; z-index: 1; width: 88px; height: var(--hit); margin: 0 auto -8px; border: 0; padding: 0; cursor: pointer;
-    background: linear-gradient(var(--lip), var(--lip)) center / 40px 5px no-repeat; border-radius: var(--r-chip);
-  }
-  .grabber:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
-  .title { display: flex; justify-content: center; margin: 2px 0 18px; }
+  /* the title bar: 14px from the sheet's top edge, the content 10px under it */
+  .bar { padding-top: 14px; margin-bottom: 10px; }
   .foot {
     /* `bottom`, not a transform: it can never lift the row above a short sheet's top (round 10 H3) */
     position: sticky; bottom: var(--kb, 0px); z-index: 2;
@@ -137,11 +133,7 @@
   dialog.phone.toasting .inner { padding-bottom: 0; }
   dialog.phone.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
   @media (max-width: 339px) { dialog.phone .inner { padding: 6px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); } }
-  @keyframes up {
-    0% { transform: translateY(100%); }
-    70% { transform: translateY(-1.5%); }
-    100% { transform: none; }
-  }
+  @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
   @media (prefers-reduced-motion: reduce) {
     dialog[open] { animation: none; }
   }

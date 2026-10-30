@@ -148,7 +148,7 @@ test('partner: a villager card (their line, when their data came, ハイタッ�
   await page.waitForTimeout(1500); // the opening beats (villagers are disabled until then)
   await page.locator('.if-scene button.vil').nth(1).click();
   const card = sheet(page);
-  await expect(card.getByRole('heading', { name: 'うめ' })).toBeVisible();
+  await expect(card.getByRole('heading', { name: 'うめ' })).toBeVisible(); // the title bar
   await expect(card.locator('.say')).not.toBeEmpty();
   await expect(card.getByText(/に とどいた|まだ とどいていません/)).toBeVisible();
   await expect(card.getByText(/ベル/)).toHaveCount(0);
@@ -201,6 +201,60 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await canopies.nth(0).click();
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
+});
+
+test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
+  await page.goto('?demo');
+  await answerPending(page);
+  await page.waitForTimeout(1500);
+  const box = async (sel: ReturnType<Page['locator']>) => (await sel.boundingBox())!;
+  const vw = page.viewportSize()!.width;
+  await expect(page.locator('.grabber')).toHaveCount(0);
+  // the partner's card: ✕ top-right
+  await page.locator('.if-scene button.vil').nth(1).click();
+  let close = sheet(page).locator('.navbar .close');
+  await expect(close).toBeVisible();
+  let b = await box(close);
+  expect(b.width).toBeGreaterThanOrEqual(44);
+  expect(b.x + b.width).toBeGreaterThan(vw - 40);
+  await close.click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  // the phone: ✕ on the home screen, ‹ + ✕ in every app, ‹ goes back a level
+  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  const bar = sheet(page).locator('.titlebar');
+  await expect(bar.locator('.close')).toBeVisible();
+  await expect(bar.locator('.back')).toHaveCount(0);
+  for (const app of ['kiroku', 'help', 'villager', 'lang', 'sync', 'sound']) {
+    await page.locator(`.app[data-app=${app}]`).click();
+    await expect(bar.locator('.back')).toBeVisible();
+    b = await box(bar.locator('.back'));
+    expect(b.width).toBeGreaterThanOrEqual(44);
+    await bar.locator('.back').click();
+    await expect(page.locator(`.app[data-app=${app}]`)).toBeVisible();
+  }
+  // きろく: week → day, then ‹ ‹ back to the list
+  await page.locator('.app[data-app=kiroku]').click();
+  await sheet(page).getByRole('button', { name: /^今週/ }).click();
+  await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
+  await bar.locator('.back').click();
+  await expect(sheet(page).locator('.days')).toBeVisible();
+  await bar.locator('.back').click();
+  await expect(sheet(page).locator('.pills')).toBeVisible();
+  await bar.locator('.close').click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  // the wallet: ‹ 島へ top-left; the buy confirm and the editor have ✕
+  await page.locator('.if-scene .jar').click();
+  await expect(page.locator('.jar-screen a.back')).toBeVisible();
+  await page.locator('[data-section=daily] button.item:not([aria-disabled="true"])').first().click();
+  close = sheet(page).locator('.navbar .close');
+  await expect(close).toBeVisible();
+  await close.click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await page.locator('[data-section=daily] .edit').click();
+  await sheet(page).locator('.navbar .close').click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await page.locator('.jar-screen a.back').click();
+  await expect(page.locator('.if-scene')).toBeVisible();
 });
 
 test('サウンド: all off by default; toggles persist on this phone; ミュージック: the opening, then the hour', async ({ page }) => {

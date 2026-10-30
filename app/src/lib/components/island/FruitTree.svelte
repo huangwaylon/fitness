@@ -134,7 +134,7 @@
     return best.f;
   }
 
-  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD and its 44px ribbon (≈ 112px, + the nameplate), measured from
+  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD and its 44px ribbon (≈ 64px, + the nameplate), measured from
    *  its layout box (offsetLeft/Top ignore the pop-in transform). The tail stays on the tree. */
   function keepInside(el: HTMLElement) {
     const scene = el.closest('.scene');
@@ -146,7 +146,10 @@
     let dx = 0;
     if (left < sc.left + 8) dx = sc.left + 8 - left;
     else if (left + w > sc.right - 8) dx = sc.right - 8 - (left + w);
-    const dy = Math.max(0, sc.top + 128 - top);
+    // under the HUD (the ribbon, the chip): its measured bottom + room for the nameplate, whatever the safe area
+    const hud = document.querySelector('.ribbon-wrap');
+    const floor = hud ? hud.getBoundingClientRect().bottom + 16 : sc.top + 88;
+    const dy = Math.max(0, floor - top);
     el.style.marginLeft = `${dx}px`;
     el.style.marginTop = `${dy}px`;
     el.style.setProperty('--tail', `${-dx}px`);

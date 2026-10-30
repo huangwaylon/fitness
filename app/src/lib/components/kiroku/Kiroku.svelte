@@ -165,6 +165,8 @@
 </script>
 
 <div class="kiroku" bind:this={root}>
+  {#key stack.length}
+  <div class="lvl">
   {#if m && view}
     {#if !top}
       <!-- A segmented switch (toggle buttons), not tabs: there is no tab panel to move to. -->
@@ -261,10 +263,16 @@
       {/if}
     {/if}
   {/if}
+  </div>
+  {/key}
 </div>
 
 <style>
-  .kiroku { display: grid; gap: 12px; padding-bottom: 8px; }
+  .kiroku { padding-bottom: 8px; }
+  /* each level slides in like a phone app (design.md "Navigation": one push motion, 240ms) */
+  .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .lvl { animation: none; } }
   .pills { display: flex; gap: 8px; justify-content: center; margin: -4px 0 4px; }
   .pill {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);

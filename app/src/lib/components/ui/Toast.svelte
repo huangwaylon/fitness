@@ -91,9 +91,9 @@
   }
   .banner:popover-open { inset: auto 0; top: calc(var(--safe-top) + 56px); }
   /* 島: below today's ベル ribbon, so a banner never covers the focal point (sizing #17). */
-  :global(:root:has(.island)) .banner:not(.undo) { top: calc(var(--safe-top) + 112px); }
-  /* the sync chip pushes the ribbon down 40px (Hud.svelte), so the banner follows */
-  :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--safe-top) + 152px); }
+  :global(:root:has(.island)) .banner:not(.undo) { top: calc(var(--safe-top) + 76px); }
+  /* the sync chip sits under the ribbon (Hud.svelte), so the banner goes under it */
+  :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--safe-top) + 120px); }
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; border-radius: inherit; }
   /* The undo banner sits over the scrolling ふたりの壺 page and the phone: a vertical swipe that starts on it scrolls
      what is under it (round 10 L2). It ends by itself; the swipe-down dismiss stays best effort. */

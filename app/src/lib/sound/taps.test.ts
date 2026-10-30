@@ -16,7 +16,8 @@ const SELF: Record<string, string> = {
   'lib/components/ui/PhoneButton.svelte': 'opens the phone: ShimaPhone plays phone-open',
   'lib/components/island/Hud.svelte': 'the ribbon opens the phone into きろく: phone-open',
   'lib/components/ui/Bubble.svelte': 'finishing a line is silent (the blips stop, as Ⓐ skips text in NH); then しずえ hops: host-tap',
-  'lib/components/ui/Sheet.svelte': 'backdrop / Esc / grabber: back on a paper sheet, phone-close on the phone (ShimaPhone)',
+  'lib/components/ui/NavButton.svelte': 'the phone passes self: its ‹ plays back and its ✕ the phone-close tune (ShimaPhone)',
+  'lib/components/ui/Sheet.svelte': 'backdrop / Esc: back on a paper sheet, phone-close on the phone (ShimaPhone)',
   'lib/components/phone/ShimaPhone.svelte': 'phone-app, back, phone-close',
   'lib/components/phone/SoundApp.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
@@ -96,7 +97,7 @@ const VALID = new Set<string>([...TAP_SFX, 'self', 'none']);
 
 describe('every tap has a sound (sound.md §13)', () => {
   it('finds the app\'s tappables', () => {
-    expect(taps.length).toBeGreaterThan(60);
+    expect(taps.length).toBeGreaterThan(45); // round 18 removed the check-in, pot and recent-card controls
   });
   it('every tappable names its sound in data-sfx', () => {
     const missing = taps.filter((t) => !t.sfx.length).map((t) => `${t.file}:${t.line} ${t.tag}`);
