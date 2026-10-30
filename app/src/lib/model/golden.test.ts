@@ -3,7 +3,8 @@
 //
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
 // fixes, wallet buys, a void, a menu edit and gym arrivals. Regenerating them for a past design change left every view
-// and digest the same; the history is in git and the ADRs.
+// and digest the same; the history is in git and the ADRs. The 外ごはん and カフェ buys carry the default menu prices
+// since escalating food treats (ADR 0022 amendment): a buy of an escalating item must pay its price that week.
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,

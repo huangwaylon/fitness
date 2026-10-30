@@ -3,9 +3,9 @@
 // shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
 import type {
-  DayBells, HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WalletItem, WalletView, WeekKey
+  DayBells, HarvestBonus, LocalDate, MenuItemView, PersonId, RingBells, RingFruit, WalletItem, WalletView, WeekKey
 } from '#lib/types.ts';
-import { DEFAULT_MENU } from '#lib/config/rules.ts';
+import { DEFAULT_MENU, ESCALATING_ITEMS, ESCALATION } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, isLockedAt, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
@@ -104,9 +104,36 @@ export const dailyUpTo = (e: WeekEarning, today: LocalDate): number => e.days.re
 // ---------- the wallet and spends (ADR 0022) ----------
 
 /** The shared menu, one list: the latest valid `pref` menu by either person, else the defaults in the viewer's language. */
-export function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
+function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
   return latestAt(s.menu, Infinity)?.map((x) => ({ ...x })) ?? DEFAULT_MENU.map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
 }
+
+/** An item's menu price as of server time t (the latest `pref` menu stamped by then, else the defaults); undefined if not on it. */
+function basePriceAt(s: State, item: string, t: number): number | undefined {
+  return (latestAt(s.menu, t) ?? DEFAULT_MENU).find((x) => x.id === item)?.bells;
+}
+
+/** Whether a menu item id's price rises with each repeat in a week (ESCALATING_ITEMS: keyed by id, so a rename keeps it). */
+const escalates = (item: string): boolean => ESCALATING_ITEMS.includes(item);
+
+/**
+ * The price of an escalating item's buy after n earlier ones this week: base × 1.5^n (ESCALATION), for n ≥ 1 rounded
+ * to the nearest 50 ベル with an exact half rounding down, and never below the base. Exact integer maths (BigInt), so
+ * 1,200 → 1,800 → 2,700 → 4,050 and 2,500 → 3,750 → 5,600 (5,625: a half, down) on every engine.
+ */
+export function treatPrice(base: number, n: number): number {
+  if (n <= 0) return base;
+  const { num, den, roundTo } = ESCALATION;
+  const top = BigInt(base) * BigInt(num) ** BigInt(n);
+  const bottom = BigInt(den) ** BigInt(n) * BigInt(roundTo);
+  const q = top / bottom;
+  const steps = 2n * (top % bottom) > bottom ? q + 1n : q; // > : a remainder of exactly half rounds down
+  return Math.max(base, Number(steps) * roundTo);
+}
+
+/** Where the escalation counts buys: one item id in one Tokyo week. */
+const countKey = (item: string, t: number): string => `${weekKeyOf(localDateAt(t))}|${item}`;
+const ENFORCE_FROM = Date.parse(ESCALATION.enforceFrom);
 
 /** An accepted buy (a buy the wallet couldn't cover is ignored and never listed). */
 export interface LedgerSpend {
@@ -130,6 +157,8 @@ interface WalletState {
   weeks: WeekBells[];
   /** Accepted buys in server order. */
   spends: LedgerSpend[];
+  /** Accepted, not voided buys per item id in the week of `now`, both people. */
+  boughtThisWeek: Map<string, number>;
 }
 
 const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
@@ -138,6 +167,10 @@ const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
  * The wallet at `now`. Earnings land as they happen: a day's ベル (its current value) count from that day, a week's
  * bonus from its Sunday 19:30. Buys and voids replay in server order; a buy counts only if the wallet covered it then
  * (earned by its time − spent so far), so the balance never goes negative, and the buyer's void gives it back.
+ * An escalating item's buy (from ESCALATION.enforceFrom) must also carry its price at its place in that order:
+ * treatPrice(the menu price then, the accepted and not yet voided buys of that id earlier in its week). Two phones
+ * buying at once both send the same price; the server's first is accepted, the second no longer matches and is ignored.
+ * A void frees its buy for the buys after it (the next price steps back down); buys before it never change.
  */
 export function walletAt(s: State, now: number): WalletState {
   const memo = walletMemo.get(s);
@@ -171,6 +204,7 @@ export function walletAt(s: State, now: number): WalletState {
 
   let spent = 0;
   const accepted = new Map<string, LedgerSpend>();
+  const counts = new Map<string, number>();
   const spends: LedgerSpend[] = [];
   const voids = s.spendVoids.filter((v) => s.bellSpends.some((x) => x.spendId === v.spendId));
   const ops = [
@@ -180,7 +214,14 @@ export function walletAt(s: State, now: number): WalletState {
   for (const o of ops) {
     if (o.spend) {
       const sp = o.spend;
+      const key = countKey(sp.item, sp.at);
+      const n = counts.get(key) ?? 0;
+      if (escalates(sp.item) && sp.at >= ENFORCE_FROM) {
+        const base = basePriceAt(s, sp.item, sp.at);
+        if (base === undefined || sp.bells !== treatPrice(base, n)) continue; // not this week's price: ignored
+      }
       if (earnedBy(sp.at) - spent < sp.bells) continue; // the wallet couldn't cover it: ignored
+      counts.set(key, n + 1);
       spent += sp.bells;
       const entry: LedgerSpend = {
         spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, label: sp.label, bells: sp.bells, voided: false, voidedAt: null
@@ -191,13 +232,31 @@ export function walletAt(s: State, now: number): WalletState {
       const entry = accepted.get(o.void.spendId);
       if (!entry || entry.voided) continue;
       spent -= entry.bells;
+      const key = countKey(entry.item, entry.at);
+      counts.set(key, (counts.get(key) ?? 1) - 1);
       entry.voided = true;
       entry.voidedAt = o.void.at;
     }
   }
-  const v: WalletState = { wallet: { balance: earned - spent, earned, spent }, weeks, spends };
+  const cur = `${weekKeyOf(today)}|`;
+  const boughtThisWeek = new Map<string, number>();
+  for (const [k, c] of counts) if (k.startsWith(cur) && c > 0) boughtThisWeek.set(k.slice(cur.length), c);
+  const v: WalletState = { wallet: { balance: earned - spent, earned, spent }, weeks, spends, boughtThisWeek };
   walletMemo.set(s, { now, v });
   return v;
+}
+
+/**
+ * The menu as the wallet shows it at `now`: each item's base, this week's buys of it (both people) and the price of the
+ * next buy (treatPrice for an escalating item, else the base).
+ */
+export function menuView(s: State, locale: 'ja' | 'en', now: number): MenuItemView[] {
+  const { boughtThisWeek } = walletAt(s, now);
+  return menuAt(s, locale).map((x) => {
+    const bought = boughtThisWeek.get(x.id) ?? 0;
+    const esc = escalates(x.id);
+    return { ...x, basePrice: x.bells, price: esc ? treatPrice(x.bells, bought) : x.bells, boughtThisWeek: bought, escalates: esc };
+  });
 }
 
 // ---------- the きろく ledger ----------

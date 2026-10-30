@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
-import { bellsLedger, walletAt, weekBells } from './bells.ts';
+import { bellsLedger, treatPrice, walletAt, weekBells } from './bells.ts';
 import { dayDetail, historyWeeks, weekDetail } from './history.ts';
 
 const WK = '2026-11-16'; // a v2 week (RULES from 2026-11-02). Sunday 19:30 = 11-22 10:30Z; lock = Wednesday 11-25 04:00 JST
@@ -247,7 +247,7 @@ describe('the menu: one list, shared and editable; the latest pref by either per
   const pref = (at: string, p: PersonId, key: string, value: unknown) => ev(at, p, 'pref', { key, value });
   const menu = (events: EventRow[], locale: 'ja' | 'en' = 'ja') => {
     const rows = rowsOf({ events: locale === 'en' ? [pref(jst(D[0], '08:00'), 'A', 'locale', 'en'), ...events] : events });
-    return buildWeekView(reduce(rows), 'A', ms(D[1], '12:00')).menu;
+    return buildWeekView(reduce(rows), 'A', ms(D[1], '12:00')).menu.map(({ id, label, bells }) => ({ id, label, bells }));
   };
 
   it('five grouped defaults, in the viewer’s language', () => {
@@ -280,6 +280,124 @@ describe('the menu: one list, shared and editable; the latest pref by either per
       JSON.stringify(Array.from({ length: 31 }, (_, i) => ({ ...item, id: `i${i}` }))), JSON.stringify([{ ...item, bells: 10_000_001 }])
     ]) expect(bad(v), v.slice(0, 40)).toEqual([{ id: 'a', label: '飴', bells: 50 }]);
     expect(bad(JSON.stringify([item]), 'treatMenu')).toEqual([{ id: 'a', label: '飴', bells: 50 }]);
+  });
+});
+
+describe('escalating food treats: ×1.5 per repeat of an item in a Tokyo week, both people (ADR 0022 amendment)', () => {
+  // A perfect v2 week for both (WK): 21,760 in the wallet from Monday 2026-11-23; buys in the week of 11-23 (Mon–Sun).
+  const r = perfectWeek();
+  const MON = '2026-11-23';
+  const snack = (at: string, p: PersonId, id: string, bells: number, label = 'おやつ') => spend(at, p, id, bells, label, 'snack');
+  const state = (events: EventRow[]) => reduce(plus(r, { events }));
+  const accepted = (events: EventRow[], now = MON_AFTER + 86_400_000 * 6) =>
+    walletAt(state(events), now).spends.filter((x) => !x.voided).map((x) => [x.spendId, x.bells]);
+  const item = (events: EventRow[], id: string, now = ms('2026-11-25', '12:00')) => buildWeekView(state(events), 'A', now).menu.find((x) => x.id === id)!;
+
+  it('treatPrice: base × 1.5^n, rounded to the nearest 50 (an exact half rounds down), never below the base; n = 0 is the base', () => {
+    const seq = (base: number) => [0, 1, 2, 3, 4].map((n) => treatPrice(base, n));
+    expect(seq(1200)).toEqual([1200, 1800, 2700, 4050, 6050]); // 6,075: a half, down
+    expect(seq(2500)).toEqual([2500, 3750, 5600, 8450, 12650]); // 5,625 → 5,600 (half, down); 8,437.5 → 8,450; 12,656.25 → 12,650
+    expect(seq(6000)).toEqual([6000, 9000, 13500, 20250, 30350]); // 30,375: a half, down
+    expect(treatPrice(1250, 1)).toBe(1850); // 1,875: a half, down
+    expect(treatPrice(1234, 0)).toBe(1234); // the base exactly, even off the 50s
+    expect(treatPrice(1234, 1)).toBe(1850); // 1,851
+    expect(treatPrice(1290, 1)).toBe(1950); // 1,935: past the half, up
+    expect(treatPrice(10, 1)).toBe(10); // 15 would round to 0: never below the base
+    expect(treatPrice(10_000_000, 80)).toBeGreaterThan(10_000_000); // exact BigInt maths, no overflow: unbuyable
+  });
+
+  it('the defaults: おやつ・カフェ・外ごはん escalate, ほしいもの and 旅のごほうび are flat; each carries its base, price and count', () => {
+    const v = buildWeekView(state([]), 'A', MON_AFTER).menu;
+    expect(v.map((x) => [x.id, x.escalates, x.basePrice, x.price, x.boughtThisWeek])).toEqual([
+      ['snack', true, 1200, 1200, 0], ['cafe', true, 2500, 2500, 0], ['dinner', true, 6000, 6000, 0],
+      ['want', false, 8000, 8000, 0], ['trip', false, 12000, 12000, 0]
+    ]);
+  });
+
+  it('both people count together, in server order: 1,200 → 1,800 → 2,700 → 4,050', () => {
+    const ev3 = [snack(jst(MON, '10:00'), 'A', 's1', 1200), snack(jst(MON, '11:00'), 'B', 's2', 1800), snack(jst(MON, '12:00'), 'A', 's3', 2700)];
+    expect(accepted(ev3)).toEqual([['s1', 1200], ['s2', 1800], ['s3', 2700]]);
+    expect(item(ev3, 'snack')).toMatchObject({ bells: 1200, basePrice: 1200, price: 4050, boughtThisWeek: 3, escalates: true });
+    expect(item(ev3, 'cafe')).toMatchObject({ price: 2500, boughtThisWeek: 0 }); // per item id
+  });
+
+  it('two phones buying at once: the server’s first is accepted, the second (same price) no longer matches and is ignored', () => {
+    const evs = [snack(jst(MON, '10:00'), 'A', 'a', 1200), snack(new Date(ms(MON, '10:00') + 1000).toISOString(), 'B', 'b', 1200)];
+    expect(accepted(evs)).toEqual([['a', 1200]]);
+    expect(walletAt(state(evs), MON_AFTER).spends.map((x) => x.spendId)).toEqual(['a']); // never listed
+    expect(item(evs, 'snack')).toMatchObject({ price: 1800, boughtThisWeek: 1 });
+  });
+
+  it('a week resets on Monday 00:00 JST', () => {
+    const SUN = '2026-11-29';
+    const evs = [snack(jst(SUN, '23:00'), 'A', 's1', 1200), snack(jst(SUN, '23:59'), 'B', 's2', 1800), snack(jst('2026-11-30', '00:00'), 'A', 's3', 1200)];
+    expect(accepted(evs)).toEqual([['s1', 1200], ['s2', 1800], ['s3', 1200]]);
+    expect(item(evs.slice(0, 2), 'snack', ms(SUN, '23:59') + 30_000)).toMatchObject({ price: 2700, boughtThisWeek: 2 });
+    expect(item(evs.slice(0, 2), 'snack', ms('2026-11-30', '00:00'))).toMatchObject({ price: 1200, boughtThisWeek: 0 });
+    expect(item(evs, 'snack', ms('2026-11-30', '12:00'))).toMatchObject({ price: 1800, boughtThisWeek: 1 });
+  });
+
+  it('a void frees its buy: the price steps back down; buys before the void keep their price, buys after it recompute', () => {
+    const buys = [snack(jst(MON, '10:00'), 'A', 's1', 1200), snack(jst(MON, '11:00'), 'B', 's2', 1800)];
+    expect(item(buys, 'snack')).toMatchObject({ price: 2700, boughtThisWeek: 2 });
+    const undone = [...buys, ev(jst(MON, '11:05'), 'B', 'spend_void', { spendId: 's2' })];
+    expect(item(undone, 'snack')).toMatchObject({ price: 1800, boughtThisWeek: 1 });
+    // A void of the first: the second (1,800) stays; the next costs 1,800 again.
+    const first = [...buys, ev(jst(MON, '11:10'), 'A', 'spend_void', { spendId: 's1' }), snack(jst(MON, '12:00'), 'A', 's3', 1800)];
+    expect(accepted(first)).toEqual([['s2', 1800], ['s3', 1800]]);
+    expect(item(first, 'snack')).toMatchObject({ price: 2700, boughtThisWeek: 2 });
+    // The partner's void is ignored: no step down.
+    expect(item([...buys, ev(jst(MON, '11:05'), 'A', 'spend_void', { spendId: 's2' })], 'snack')).toMatchObject({ price: 2700 });
+  });
+
+  it('a spend at the wrong price, or one the wallet can’t cover, is ignored and doesn’t count', () => {
+    expect(accepted([snack(jst(MON, '10:00'), 'A', 'low', 1000), snack(jst(MON, '10:01'), 'A', 'high', 1800)])).toEqual([]);
+    expect(accepted([snack(jst(MON, '10:00'), 'A', 's1', 1200), snack(jst(MON, '10:01'), 'A', 'stale', 1200)])).toEqual([['s1', 1200]]);
+    // 21,760 − 20,000 − 1,200 = 560 left: the 1,800 おやつ isn't covered, so the next is still 1,800.
+    const poor = [spend(jst(MON, '09:00'), 'A', 'big', 20000, '���しいもの', 'want'), snack(jst(MON, '10:00'), 'A', 's1', 1200), snack(jst(MON, '10:01'), 'B', 's2', 1800)];
+    expect(accepted(poor)).toEqual([['big', 20000], ['s1', 1200]]);
+    expect(item(poor, 'snack')).toMatchObject({ price: 1800, boughtThisWeek: 1 });
+    // An escalating id that isn't on the menu at the time (removed) has no price: ignored.
+    const removed = ev(jst(MON, '08:00'), 'A', 'pref', { key: 'menu', value: JSON.stringify([{ id: 'want', label: 'ほしいもの', bells: 8000 }]) });
+    expect(accepted([removed, snack(jst(MON, '10:00'), 'A', 's1', 1200)])).toEqual([]);
+  });
+
+  it('flat and user-added items never escalate, but are counted', () => {
+    const custom = ev(jst(MON, '08:00'), 'A', 'pref', { key: 'menu', value: JSON.stringify([
+      { id: 'want', label: 'ほしいもの', bells: 3000 }, { id: 'taiyaki', label: 'たいやき', bells: 800 }
+    ]) });
+    const evs = [
+      custom,
+      spend(jst(MON, '10:00'), 'A', 'w1', 3000, 'ほしいもの', 'want'), spend(jst(MON, '10:01'), 'B', 'w2', 3000, 'ほしいもの', 'want'),
+      spend(jst(MON, '10:02'), 'A', 't1', 800, 'たいやき', 'taiyaki'), spend(jst(MON, '10:03'), 'B', 't2', 800, 'たいやき', 'taiyaki')
+    ];
+    expect(accepted(evs)).toEqual([['w1', 3000], ['w2', 3000], ['t1', 800], ['t2', 800]]);
+    expect(item(evs, 'want')).toMatchObject({ price: 3000, boughtThisWeek: 2, escalates: false });
+    expect(item(evs, 'taiyaki')).toMatchObject({ price: 800, boughtThisWeek: 2, escalates: false });
+  });
+
+  it('a renamed or repriced escalating item keeps escalating (by id), from the menu price at each buy', () => {
+    const rename = (at: string, bells: number) =>
+      ev(at, 'B', 'pref', { key: 'menu', value: JSON.stringify([{ id: 'snack', label: 'アイス', bells }]) });
+    const evs = [rename(jst(MON, '08:00'), 1000), snack(jst(MON, '10:00'), 'A', 's1', 1000, 'アイス'), snack(jst(MON, '11:00'), 'B', 's2', 1500, 'アイス')];
+    expect(accepted(evs)).toEqual([['s1', 1000], ['s2', 1500]]);
+    expect(item(evs, 'snack')).toMatchObject({ label: 'アイス', basePrice: 1000, price: 2250, boughtThisWeek: 2, escalates: true });
+    // Repriced mid-week: the next buy is the new base × 1.5² (2,000 × 2.25 = 4,500).
+    expect(item([...evs, rename(jst(MON, '12:00'), 2000)], 'snack')).toMatchObject({ basePrice: 2000, price: 4500 });
+  });
+
+  it('before ESCALATION.enforceFrom (2026-10-31 00:00 JST) any price is accepted, and those buys still count', () => {
+    const days = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29']; // 4 × 2 × 740 = 5,920 (v1, no gym)
+    const metrics = days.flatMap((d) => (['A', 'B'] as PersonId[]).flatMap((p) => [
+      metric(jst(d, '22:00'), p, d, 'steps', 9000), metric(jst(d, '22:00'), p, d, 'exercise_min', 60),
+      metric(jst(d, '22:00'), p, d, 'move_kcal', 700), metric(jst(d, '22:00'), p, d, 'stand_min', 200)
+    ]));
+    const evs = [
+      snack(jst('2026-10-29', '10:00'), 'A', 'old1', 1200), snack(jst('2026-10-29', '11:00'), 'B', 'old2', 1200), // the old flat price
+      snack(jst('2026-10-31', '10:00'), 'A', 'stale', 1200), snack(jst('2026-10-31', '10:01'), 'A', 'new', 2700)
+    ];
+    const s = reduce(rowsOf({ metrics, events: evs }));
+    expect(walletAt(s, ms('2026-10-31', '12:00')).spends.map((x) => [x.spendId, x.bells])).toEqual([['old1', 1200], ['old2', 1200], ['new', 2700]]);
   });
 });
 

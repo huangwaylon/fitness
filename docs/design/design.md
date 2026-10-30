@@ -93,7 +93,9 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
 ### 1.2 ごほうび the wallet (`routes/jar/+page.svelte`, ADR 0022)
 
 Title bar (‹ 島へ, ごほうび), a hero (the jar over 「ふたりのベル」 and the balance), then **one list** of big buy tiles (item
-art, name, price). An item the wallet can't cover yet is sunk and says あと N ベル (a tap boops). ✎ edits the list (add /
+art, name, price: the price of the next buy). An escalating food treat already bought this week shows its base struck
+through before the price and a small yuzu pill, 「こんしゅう 2かいめ」 / "2nd this week" (`MenuShelf.svelte`); the confirm
+shows the price being paid with the same count. An item the wallet can't cover yet is sunk and says あと N ベル (a tap boops). ✎ edits the list (add /
 rename / reprice / remove, shared by both). Under the list, one quiet line: 「食べものは 週3回くらいが めやす。あとは
 ためよう！」 (a guide, no cap). 買う！ asks first, then shows at once and waits 5 s with とりけす before it is
 sent. No history here (it lives in きろく ベル). The island jar morphs into the hero jar (View Transitions; a crossfade
@@ -110,7 +112,7 @@ three official full tiles (きろく, 村人, つうしん) sit on their own bac
 | App | Tile | What |
 |---|---|---|
 | きろく | `phone/miles` | からだ (weight trend, 目標: Move goal + weight goal, weeks of badges) and ベル (the passbook); week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
-| あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals (v2: 「ベルは 4つの だんかいで ふえるよ…」 and per fruit a 4-cell step table, amount over ベル, the goal step ringed), badges, the wallet with the treat guide (「食べものの ごほうびは、ふたりで 週3回くらいが めやす…」, no cap), a 「たんぱく質の ヒント」 card (1.6 g per kg a day, per person from the goal weight else the trend, rounded to 5 g; not tracked), the setup |
+| あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals (v2: 「ベルは 4つの だんかいで ふえるよ…」 and per fruit a 4-cell step table, amount over ベル, the goal step ringed), badges, the wallet with the treat guide (「食べものの ごほうびは、ふたりで 週3回くらいが めやす…」, no cap) and the escalation line (「おやつ・カフェ・外ごはんは、おなじ週に 買うたびに ちょっとずつ 高くなるよ（1.5ばい）。月曜日に もとの 値段に もどります！」), a 「たんぱく質の ヒント」 card (1.6 g per kg a day, per person from the goal weight else the trend, rounded to 5 g; not tracked), the setup |
 | 村人 | `phone/passport` | My villager from the roster (one search field): 23 special characters first (とくべつ: たぬきち, しずえ, とたけけ…), then 158 villagers by species; and my よびな. If either of us picks しずえ, たぬきち hosts (nameplate, banner icon) |
 | ことば | `phone/glyph-chat` | 日本語 / English |
 | つうしん | `phone/rescue` | When each of us last synced, いま つうしん |
@@ -192,6 +194,16 @@ to 180 min, 🍐 floor(180 × min(kcal, goal) / goal), 🍎 200 all or nothing, 
   editable menu, one list (`pref` menu, latest wins, items `{id, label, bells}`). Either person buys
   (`spend`), the buyer can undo (`spend_void`), no approvals. Buys replay in server order and a buy counts only if the
   wallet covered it at its time, so the balance never goes negative. Trips themselves are paid outside the game.
+- **Escalating food treats** (ADR 0022 amendment; `ESCALATING_ITEMS`, `ESCALATION` in `rules.ts`, `treatPrice` in
+  `model/bells.ts`): おやつ, カフェ・デザート and 外ごはん (by id: a rename or reprice keeps it) cost base × 1.5^n, n = the
+  accepted, not voided buys of that id earlier in the same Tokyo week (Mon 00:00 – Sun 24:00 JST), by either person.
+  n ≥ 1 rounds to the nearest 50 ベル, an exact half down, never below the base: おやつ 1,200 → 1,800 → 2,700 → 4,050;
+  カフェ 2,500 → 3,750 → 5,600; 外ごはん 6,000 → 9,000 → 13,500. The base is the menu price at the buy's server time.
+  The buy sends the current price; on read, an escalating buy whose `bells` isn't its price at its place in server
+  order (or that the wallet can't cover) is ignored and doesn't count, so of two phones buying at once the server's
+  first wins. A void frees its buy for the buys after it (the price steps back down); earlier buys never change.
+  Enforced from 2026-10-31 00:00 JST (`enforceFrom`); earlier buys are accepted at any price but still count. ほしいもの,
+  旅のごほうび and added items stay flat. No backend change (the server stores `bells` as before).
 - **Default menu** (`DEFAULT_MENU`): おやつ 1,200 · カフェ・デザート 2,500 · 外ごはん 6,000 · ほしいもの 8,000 ·
   旅のごほうび 12,000. On target: 2–3 おやつ (≈ 3,000) + a café date (2,500) + eating out every two weeks (3,000) ≈
   8,500 a week, leaving ≈ 5,900: a ほしいもの every ~1.5 weeks or a 旅のごほうび every ~2.
@@ -200,7 +212,8 @@ to 180 min, 🍐 floor(180 × min(kcal, goal) / goal), 🍎 200 all or nothing, 
 - **Weight** (ADR 0020) is a trend only, shown in きろく; it never earns (`deps.test.ts` checks the economy never imports
   `model/weight.ts`).
 - **View model** (`types.ts`): `WeekView.people[p]` (today's ベル per fruit, ring progress, Move goal), `wallet
-  {balance, earned, spent, today, week}`, `menu`, `harvest`; きろく reads `model/history.ts` (`historyWeeks`,
+  {balance, earned, spent, today, week}`, `menu` (`MenuItemView`: `{id, label, bells}` plus `price` for the next buy,
+  `basePrice`, `boughtThisWeek`, `escalates`), `harvest`; きろく reads `model/history.ts` (`historyWeeks`,
   `weekDetail`, `dayDetail`, `bellsLedger`, `editLog`) and `model/weight.ts`.
 
 ## A. Official art map

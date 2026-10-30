@@ -6,7 +6,7 @@ import type {
 import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
 
 import { milestoneBells, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, dayBells, LIVE, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
+import { dailyUpTo, dayBells, LIVE, menuView, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
@@ -116,7 +116,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const startOfToday = jstMs(today, 0, 0);
   const earning = weekBells(s, weekKey, now, act);
   const wallet = walletView(s, earning, today, now);
-  const menu = menuAt(s, locale);
+  const menu = menuView(s, locale, now);
   const base: Omit<WeekView, 'host'> = {
     me,
     partner,

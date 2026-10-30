@@ -98,6 +98,7 @@
     <h3><span class="hi"><OfficialArt key="phone/nook-shopping" size={30} /></span>{t('help.wallet.title')}</h3>
     <p>{t('help.wallet.body')}</p>
     <p class="note">{t('help.treats')}</p>
+    <p class="note">{t('help.escalate')}</p>
   </section>
 
   <section class="card">

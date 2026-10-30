@@ -44,3 +44,26 @@ two weeks (3,000) ≈ 8,500, leaving ≈ 5,900 a week: a ほしいもの every ~
 **Data:** `pref` `menu` (one list); `spend {spendId, item, label, bells}` (a `pot` is refused); `treatMenu` / `tripMenu`,
 `POTS` and the split are gone. Applied in place to the economy's first week; `cleanupLegacyData` deletes every old
 spend, spend_void and pot menu so the wallet starts from earnings. *(It ran on the real sheet on 2026-10-30 and was then removed from the script.)*
+
+## Amendment 2026-10-30: escalating food treats, ×1.5 per repeat within a week, food only (user decision)
+A second おやつ in the same week should feel like a bigger yes than the first. The food treats escalate:
+`ESCALATING_ITEMS` in `rules.ts` = `snack` (おやつ), `cafe` (カフェ・デザート), `dinner` (外ごはん), keyed by item id so a
+renamed or repriced item keeps escalating. ほしいもの, 旅のごほうび and any added item stay flat.
+
+- **Price:** base × 1.5^n, n = the accepted, not voided buys of that id earlier in the same Tokyo week (Mon 00:00 to
+  Sun 24:00 JST, the economy's week key), by either person (one wallet). For n ≥ 1 it is rounded to the nearest
+  50 ベル, an exact half rounding **down**, and never below the base; n = 0 is the base exactly. おやつ 1,200 → 1,800 →
+  2,700 → 4,050; カフェ 2,500 → 3,750 → 5,600 (5,625, a half, down); 外ごはん 6,000 → 9,000 → 13,500. The base is the
+  menu price at the buy's server time. It resets on Monday.
+- **Authority: the model, in server order.** The buy action sends the current price. On read, an escalating buy whose
+  `bells` isn't its price at its place in server order, or that the wallet can't cover, is ignored (never listed, never
+  counted), like the existing "never negative" rule. Two phones buying at once both send the same price: the server's
+  first is accepted, the second no longer matches and is ignored. An escalating id that isn't on the menu at the time
+  has no price and is ignored.
+- **Undo:** a `spend_void` frees its buy for the buys after it, so the next price steps back down; buys before the
+  void keep their price (nothing already accepted is ever dropped).
+- **Rollout:** enforced for buys stamped from 2026-10-31 00:00 JST (`ESCALATION.enforceFrom`); earlier buys are
+  accepted at any price (as before) and still count towards n.
+- **Data:** none new. The server stores `spend {spendId, item, label, bells}` as before; `Code.js` is unchanged. The
+  view's menu items carry `price`, `basePrice`, `boughtThisWeek` and `escalates`.
+

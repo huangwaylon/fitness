@@ -28,6 +28,32 @@ test('buy: a treat comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
+test('escalating treats: おやつ twice this week costs more each time; とりけす steps it back down', async ({ page }) => {
+  await page.goto('jar?demo&date=2026-11-02T10:00'); // a Monday morning: no おやつ bought yet this week
+  const snack = page.locator('.treats button[data-item="snack"]');
+  const price = () => snack.locator('.pr').getAttribute('data-price');
+  await expect.poll(price).toBe('1200');
+  await expect(snack.locator('.nth')).toHaveCount(0);
+  await snack.click();
+  await expect(sheet(page).locator('.price')).toContainText('1,200');
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect.poll(price).toBe('1800');
+  await expect(snack.locator('.nth')).toHaveText('こんしゅう 2かいめ');
+  await expect(snack.locator('.was')).toHaveText('1,200');
+  await snack.click();
+  await expect(sheet(page).locator('.price')).toContainText('1,800');
+  await expect(sheet(page).locator('.nth')).toContainText('こんしゅう 2かいめ');
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect(page.getByText(/おやつを 買いました！ −1,800\sベル/)).toBeVisible();
+  await expect.poll(price).toBe('2700');
+  await expect(snack.locator('.nth')).toHaveText('こんしゅう 3かいめ');
+  await page.getByRole('button', { name: 'とりけす' }).click();
+  await expect.poll(price).toBe('1800');
+  await expect(snack.locator('.nth')).toHaveText('こんしゅう 2かいめ');
+  // ほしいもの stays flat
+  await expect(page.locator('.treats button[data-item="want"] .pr')).toHaveAttribute('data-price', '8000');
+});
+
 test('wallet (ADR 0022): one balance (the island plate’s), one list of five treats, no sections, pots or bars', async ({ page }) => {
   await page.goto('?demo');
   const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
