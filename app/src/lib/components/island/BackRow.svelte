@@ -4,6 +4,7 @@
   // (≈ 0.6 × a villager); contact shadows in Ground.svelte. Plus Toy Day presents. No building, bench, cedar, path, palms or islet: nothing
   // you can't tap competes with the two trees, the jar and the villagers. All official art, positioned in
   // stage units with feet on "base". No wrapper element: every prop joins the stage's stacking context.
+  // A tap rustles a bush (SceneTaps.svelte finds it by data-bush; the art itself stays pointer-events: none).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { TREE, props as sceneProps, u } from './scene.ts';
@@ -18,7 +19,7 @@
 </script>
 
 {#each list as p, i (p.key + i)}
-  <span class="prop" class:flip={p.flip} class:snow={season === 'winter' && p.key.startsWith('bushes/')} style:left={u(p.x)} style:top={u(p.base)} style:z-index={p.z}>
+  <span class="prop" data-bush={i} class:flip={p.flip} class:snow={season === 'winter' && p.key.startsWith('bushes/')} style:left={u(p.x)} style:top={u(p.base)} style:z-index={p.z}>
     <OfficialArt key={p.key} size={u(p.h)} eager={p.eager} />
   </span>
 {/each}

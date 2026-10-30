@@ -10,6 +10,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { reducedMotion } from '#lib/time/clock.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { sceneSfx } from './sceneTaps.ts';
 
   interface Props {
     ondone?: () => void;
@@ -35,6 +36,10 @@
 
   let fly = $state<HTMLElement | null>(null);
   let wobble = $state(false);
+  function tap() {
+    wobble = true;
+    sceneSfx('balloon');
+  }
 
   onMount(() => {
     if (reducedMotion()) ondone?.();
@@ -43,7 +48,7 @@
 
 <div class="fly" class:rtl={!ltr} bind:this={fly} style:--alt={alt}
   onanimationend={(e) => e.target === fly && ondone?.()}>
-  <button type="button" class="balloon" aria-label={t('island.balloon')} onclick={() => (wobble = true)}>
+  <button type="button" class="balloon" aria-label={t('island.balloon')} onclick={tap}>
     <span class="bob">
       <span class="rig" class:wobble onanimationend={(e) => e.animationName.includes('wobble') && (wobble = false)}>
         <span class="hang">
@@ -128,11 +133,12 @@
   .gift :global(.official) { filter: drop-shadow(0 .02em .02em rgba(90, 60, 30, .25)); }
   .spark { transform-origin: 30px 9.5px; animation: spark 1.6s ease-in-out infinite alternate; }
   @keyframes spark { from { opacity: .2; transform: scale(.6); } to { opacity: 1; transform: none; } }
-  /* a tap: a soft rubbery wobble, nothing more */
+  /* a tap: a soft rubbery wobble and a little hop up on the string (it bobs back down), nothing more */
   .rig.wobble { animation: wobble .7s cubic-bezier(.3, 1.4, .5, 1), lean 5.2s cubic-bezier(.37, 0, .63, 1) .7s infinite; }
   @keyframes wobble {
-    0% { transform: none; } 25% { transform: rotate(-9deg) scale(1.06, .95); } 50% { transform: rotate(7deg) scale(.97, 1.03); }
-    75% { transform: rotate(-3deg); } 100% { transform: rotate(-4deg); }
+    0% { transform: none; } 25% { transform: translateY(-.16em) rotate(-9deg) scale(1.06, .95); }
+    50% { transform: translateY(-.1em) rotate(7deg) scale(.97, 1.03); }
+    75% { transform: translateY(.03em) rotate(-3deg); } 100% { transform: rotate(-4deg); }
   }
   /* time of day: dim and cool at night (like the clouds), warm at dawn / dusk */
   :global(.if-scene[data-tod='night']) .fly { filter: brightness(.76) saturate(.78) contrast(.95); }
