@@ -175,7 +175,7 @@
 {#each spots as s (s.f)}
   {#each PILE.slice(0, Math.max(1, s.n)) as [px, py], k (k)}
     <span class="fruit k{k} n{s.n}" class:ghost={s.n === 0} style:left={u(s.x + px)} style:top={u(s.y + py)} style:width={u(FRUIT_U)}
-      style:z-index={33 + (py > 0 ? 1 : 0)}>
+      style:z-index={py > 0 ? 'calc(var(--z-fruit) + 1)' : 'var(--z-fruit)'}>
       <span class="f" {@attach dropIn}>
         <OfficialArt key={fruitArt(s.f)} size={u(FRUIT_U)} eager>
           {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{s.f}" /></svg>{/snippet}
@@ -199,7 +199,8 @@
 
 {#if open}
   {#key taps}
-    <div class="detail" id={detailId} role="status" style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="detail" id={detailId} role="status" onpointerdown={() => cue('tick')} style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
       <span class="plate">{person.villagerName}</span>
       <span class="row hd" aria-hidden="true"><span></span><span class="lbl"></span><span>{t('tree.today')}</span><span></span><span>{t('bells.unit')}</span><span>{t('tree.thisWeek')}</span></span>
       {#each RING_FRUITS as f (f)}
@@ -221,7 +222,7 @@
 {/if}
 
 <style>
-  .tree { position: absolute; z-index: 30; transform-origin: 50% 100%; translate: -50% -100%; pointer-events: none; }
+  .tree { position: absolute; z-index: var(--z-tree); transform-origin: 50% 100%; translate: -50% -100%; pointer-events: none; }
   .tree:global(.shaking) { animation: if-shake 500ms ease-in-out 1; }
   .oak { position: absolute; inset: 0; display: flex; justify-content: center; line-height: 0; }
   /* fruit items lie on the ground (z above the trunk, below the villagers) */
@@ -253,13 +254,13 @@
   }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .canopy, .row-btn {
-    position: absolute; z-index: 32; appearance: none; border: 0; background: none; padding: 0;
+    position: absolute; z-index: var(--z-canopy); appearance: none; border: 0; background: none; padding: 0;
     cursor: pointer; border-radius: 45%; -webkit-tap-highlight-color: transparent;
   }
   /* the fruit row: ≥ 44px tall around the items, above the villagers' heads (z 51/52 start lower) */
-  .row-btn { z-index: 34; translate: 0 -50%; height: max(44px, calc(30 * 100cqw / 390)); border-radius: 22px; }
+  .row-btn { z-index: var(--z-fruit-row); translate: 0 -50%; height: max(44px, calc(30 * 100cqw / 390)); border-radius: 22px; }
   .canopy:focus-visible, .row-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
-  .leaf { position: absolute; z-index: 70; line-height: 0; pointer-events: none; animation: leaf 1800ms ease-in both; }
+  .leaf { position: absolute; z-index: var(--z-leaf); line-height: 0; pointer-events: none; animation: leaf 1800ms ease-in both; }
   @keyframes leaf {
     0% { transform: translate(0, 0) rotate(0); opacity: 0; } 10% { opacity: 1; }
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
@@ -268,9 +269,12 @@
   /* NH-style popup: a nameplate, a faint column head, then one row per fruit (icon · word · today/goal · ベル · the
      week's pips), in shared columns (subgrid) so the numbers line up */
   .detail {
-    position: absolute; z-index: 95; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto auto auto; gap: 3px 0;
+    position: absolute; z-index: var(--z-popup); translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto auto auto; gap: 3px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
-    box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink); pointer-events: none;
+    box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
+    /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches the jar or
+       the other tree drawn under it (at 320 it covers the jar's lid) */
+    pointer-events: auto; cursor: default;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
   }
   .detail::after {

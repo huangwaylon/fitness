@@ -151,7 +151,7 @@
     {#each ['mine', 'partner'] as const as id (id)}
       {@const s = sides[id]}
       {@const a = actors[id]}
-      <div class="actor" style:left={u(s.x)} style:top={u(VILLAGER.foot)} style:z-index={id === 'mine' ? 52 : 51}
+      <div class="actor" style:left={u(s.x)} style:top={u(VILLAGER.foot)} style:z-index={id === 'mine' ? 'var(--z-villager-mine)' : 'var(--z-villager)'}
         style:--walk={live ? (s.side === 'left' ? 1 : -1) * a.walkX : 0} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}>
         <button type="button" class="vil" disabled={!live} data-sfx="self"
           aria-label={id === 'mine'
@@ -204,7 +204,7 @@
   @media (max-aspect-ratio: 1/2) { .scene { --fit-w: calc((100cqw - 24px) * 390 / 302); } }
   .stage {
     position: absolute; top: var(--stage-top); left: 50%; translate: -50% 0; width: var(--stage-w); aspect-ratio: 390 / 360;
-    container-type: inline-size; z-index: 1;
+    container-type: inline-size; z-index: var(--z-stage);
     /* registered <length>s (tokens.css): resolved here against the scene, so the stage's children (whose cqw
        is the stage) read the horizon and the stage top in px */
     --if-st: var(--stage-top); --if-hy: var(--horizon-y);
@@ -228,7 +228,7 @@
      scene's bottom edge and out to both screen edges (the sky has its own table; the jar z 81, fireflies z 82
      and the stars stay above it). Day: none. */
   .tint {
-    position: absolute; z-index: 80; background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
+    position: absolute; z-index: var(--z-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
     top: calc(var(--if-hy) - var(--if-st)); bottom: -100vh; left: -100vw; right: -100vw;
   }
   /* villager contact shadow (round 7): radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk:
@@ -239,7 +239,7 @@
     translate: calc(var(--h) * .036) calc(var(--h) * .007); transform-origin: 30% 50%;
   }
   /* falling leaves pass behind the villagers (z 51/52), never across their faces */
-  .fall { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--sh) - var(--ib)); z-index: 50; pointer-events: none; }
+  .fall { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--sh) - var(--ib)); z-index: var(--z-fall); pointer-events: none; }
   .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }
 
 </style>

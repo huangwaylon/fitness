@@ -77,7 +77,18 @@
   --hit: 44px;
   /* round 21: a list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
-  --phone-h: 92px;    /* the island's NookPhone button: 68px disc + 2px + the 「しまフォン」 plate + its lip */
+  --phone-h: 92px;
+
+  /* ---------- stacking: one z scale (round 21) ----------
+     The page: the scene's stage < the HUD (ribbon, sync chip) < the dock (しまフォン, しずえ's box). Modal <dialog>s
+     (sheets, the phone, the harvest) live in the top layer above every z-index; the banner is a popover shown after
+     them, so it sits above an open sheet (--z-toast is its fallback without popover support).
+     Inside the stage (its own stacking context): trees < canopy taps < ground fruit < the fruit-row tap < falling leaves
+     < villagers (mine in front) < tree-shake leaves < the time-of-day tint < the jar + plate < scenery flourishes
+     < flying coins < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
+  --z-stage: 1; --z-hud: 7; --z-dock: 9; --z-harvest: 60; --z-toast: 90;
+  --z-tree: 30; --z-canopy: 32; --z-fruit: 33; --z-fruit-row: 34; --z-fall: 50; --z-villager: 51; --z-villager-mine: 52;
+  --z-leaf: 70; --z-tint: 80; --z-jar: 81; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-gain: 92; --z-popup: 95;    /* the island's NookPhone button: 68px disc + 2px + the 「しまフォン」 plate + its lip */
 
   /* ---------- viewport heights (round 10, ios-scroll-audit L3) ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, phone,

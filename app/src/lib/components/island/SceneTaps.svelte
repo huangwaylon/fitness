@@ -286,7 +286,7 @@
 <style>
   /* inside the stage, over the time-of-day tint (z 80) with the fireflies (z 82), so the sky's sparkles and a firefly
      glow; at night the ground's flourishes are dimmed instead (the tint would only grey them) */
-  .taps { position: absolute; inset: 0; z-index: 82; pointer-events: none; --su: calc(100cqw / 390); }
+  .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   :global(.if-scene[data-tod='night']) :is(.bush, .splash, .sand, .grass, .flower .petal, .flower .spark) { opacity: .55; }
   :global(.if-scene[data-tod='dusk']) :is(.bush, .splash, .sand, .grass, .flower .petal) { opacity: .85; }
   .fx { position: absolute; width: 0; height: 0; }

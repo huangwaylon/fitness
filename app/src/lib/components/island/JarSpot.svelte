@@ -96,7 +96,8 @@
       if (fresh.length) cue('bells-arrive');
       if (rest > 0) {
         later(() => {
-          jarBells += rest;
+          // two wallet changes within 450 ms each add their rest: never past the wallet as it is now
+          jarBells = Math.min(target, jarBells + rest);
           gain = { bells: rest, n: (gain?.n ?? 0) + 1 };
         }, 450);
       }
@@ -169,7 +170,7 @@
   /* jar + plate: one button (≥ 64px), anchored at the jar's base; the plate hangs just below it */
   .jar {
     /* above the time-of-day tint: the jar and its plate stay game-object bright (v5 §5) */
-    position: absolute; z-index: 81; translate: -50% 0; display: flex; flex-direction: column; align-items: center;
+    position: absolute; z-index: var(--z-jar); translate: -50% 0; display: flex; flex-direction: column; align-items: center;
     min-width: 64px; min-height: 64px; padding: 0 6px; margin: 0; appearance: none; background: none; border: 0;
     border-radius: 24px; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
@@ -195,7 +196,7 @@
   .go circle { fill: var(--c-leaf-lip); }
   .go path { fill: var(--c-cream); }
   .jargain {
-    position: absolute; z-index: 92; translate: -50% -100%; pointer-events: none; white-space: nowrap;
+    position: absolute; z-index: var(--z-gain); translate: -50% -100%; pointer-events: none; white-space: nowrap;
     animation: gain-rise 2.4s var(--ease-soft) both; will-change: transform, opacity;
   }
   .jargain b {
