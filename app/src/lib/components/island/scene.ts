@@ -25,12 +25,12 @@ const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
 
 /** One tree per person (round 6): a plain official hardwood of the season (in AC a tree bears one kind of
  *  fruit, so this one bears none), trunk on column ±2. NH hardwood ≈ 1.5 × a villager tall, canopy ≈ 2.2
- *  tiles wide. The week's fruit lies on the ground in front of its trunk, the way NH drops fruit around a
+ *  tiles wide. Today's fruit lies on the ground in front of its trunk, the way NH drops fruit around a
  *  shaken tree. `x` = trunk centre; `base` = trunk bottom. */
 export const TREE = { base: ROWS.trees, h: 120, x: { A: col(-2), B: col(2) } as const };
 /** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
 export const OAK_AR = 329 / 409;
-/** Ground fruit (game-designer round 6): per fruit kind 0–3 items = thirds of that kind's target, in a
+/** Ground fruit (game-designer round 6): per fruit kind 0–3 items = thirds of today's goal (todayPct), in a
  *  fixed arc in front of the trunk, 🍑 🥥 🍎 🍐 left to right (FRUITS order). [dx, dy] from the trunk base.
  *  NH puts one dropped item per tile; 4 kinds × 3 items can't, so they sit at half-tile pitch (compromise). */
 export const FRUIT_SPOTS: [number, number][] = [[-37, 6], [-12, 12], [12, 12], [37, 6]];
@@ -38,7 +38,7 @@ export const FRUIT_SPOTS: [number, number][] = [[-37, 6], [-12, 12], [12, 12], [
 export const PILE: [number, number][] = [[0, -3], [-6, 4], [6, 4]];
 /** Ground item size in u: NH dropped fruit ≈ 0.3 × a villager (≈ half a tile). */
 export const FRUIT_U = 24;
-/** Items earned for a fruit kind: thirds of the target (0–3). */
+/** Items earned for a fruit kind: thirds of today's goal (0–3). */
 export const fruitCount = (pct: number): number => Math.max(0, Math.min(3, Math.floor((pct * 3) / 100 + 1e-9)));
 
 /** Villagers (the scale's reference): 80u tall (≈ 1.8 tiles), on columns ±1 of the front row, flanking the

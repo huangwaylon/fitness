@@ -19,7 +19,7 @@ class Ui {
 
 export const ui = new Ui();
 
-/** Open the しまフォン straight into きろく (score ribbon → this week, jar total → お金). */
+/** Open the しまフォン straight into きろく (today's ベル ribbon → this week, jar total → お金). */
 export function openKiroku(entry: PhoneEntry): void {
   ui.phoneEntry = entry;
 }

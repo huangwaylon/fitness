@@ -72,7 +72,7 @@ export function fruitArt(fruit: FruitKey): string {
 /** The NookPhone itself (launcher button). */
 export const NOOKPHONE = 'phone/nookphone';
 
-/** Money UI: 'bells' (Bells bag, = yen) or 'leaf'. */
+/** Money UI: 'bells' (the Bells bag) or 'leaf'. */
 export function moneyArt(kind: 'bells' | 'leaf'): string {
   return kind === 'bells' ? 'money/bells' : 'money/leaf';
 }
