@@ -62,7 +62,7 @@ const isStrengthVisit = (v: Visit): boolean =>
 /**
  * Score one person's week.
  *
- * Judgement calls (documented for the server/UI):
+ * Judgement calls (documented for the model and UI):
  * - A rest day is a day with Health data and no strength day, no long workout and no hard workout. A week with no
  *   data has no rest days, so it scores 0. There is no excused-day mechanism: a sick week simply scores lower.
  * - Targets are weekly and never prorated, except Pear over 正月 pear-off days.

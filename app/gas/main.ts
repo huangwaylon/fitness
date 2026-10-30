@@ -29,7 +29,8 @@ const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 /** How long the keys stay in CacheService. A rotated key keeps working for at most this long (google-setup.md §10). */
 export const KEY_CACHE_SECONDS = 300;
 /** Tabs whose rows the client caches; a hand change to any of them bumps `REV`. */
-const SYNCED_TABS = ['metrics', 'workouts', 'presence', 'events'] as const satisfies readonly TabName[];const MAX_EVENT_DATA_CHARS = 20_000;
+const SYNCED_TABS = ['metrics', 'workouts', 'presence', 'events'] as const satisfies readonly TabName[];
+const MAX_EVENT_DATA_CHARS = 20_000;
 /**
  * `ingest` reads only this many trailing `metrics` rows for its higher-only check when every date in the body is
  * recent (≤ RECENT_DAYS old): hourly syncs append ~40 rows a day, so the tail covers months, and the hourly Shortcut
