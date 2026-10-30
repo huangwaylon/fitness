@@ -30,7 +30,7 @@ beforeEach(() => {
 });
 
 describe('wallet actions', () => {
-  it('buy sends {spendId, item, label, bells} (no pot) only when the wallet covers the price', () => {
+  it('buy sends {spendId, item, label, bells} only when the wallet covers the price', () => {
     week.view = view(499);
     expect(buy('ice')).toEqual({ ok: false });
     expect(buy('nope')).toEqual({ ok: false });

@@ -23,7 +23,7 @@ tab is **append-only**; the app never updates or deletes a row.
 Exactly the types in `EVENT_TYPES`; the script refuses any other type or shape with `bad_request` (only shapes: who may
 edit what, open weeks and wallet cover are read-time rules in the model). `data` ≤ 20,000 characters.
 
-- `spend {spendId, item, label, bells}` (ADR 0022): a buy from the shared wallet; `bells` an integer 1–10,000,000,
+- `spend {spendId, item, label, bells}` (ADR 0022): a buy from the shared wallet; `spendId` a string (1–128), `bells` an integer 1–10,000,000,
   `label` 1–60 characters, `item` ≤ 40. The model counts it only if the wallet covered it at its `at`.
 - `spend_void {spendId}`: the buyer only, once, after the spend; the ベル go back. Buys never lock.
 - `harvest {week}` (受け取る: a ceremony; the bonus counts either way) · `highfive {}`.
