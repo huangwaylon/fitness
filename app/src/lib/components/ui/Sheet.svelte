@@ -106,8 +106,12 @@
   /* U14: the content can scroll above the keyboard too (the footer is lifted by --kb). */
   .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }
   dialog:has(.foot) .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
-  /* the title bar: 14px from the sheet's top edge, the content 10px under it */
-  .bar { padding-top: 14px; margin-bottom: 10px; }
+  /* the title bar: 14px from the sheet's top edge, the content 10px under it; it stays put while a long sheet scrolls,
+     so ✕ is always in reach (round 19: the menu editor scrolled it away) */
+  .bar {
+    position: sticky; top: 0; z-index: 3; padding: 14px 0 8px; margin-bottom: 2px;
+    background: linear-gradient(var(--surface) 85%, transparent);
+  }
   .foot {
     /* `bottom`, not a transform: it can never lift the row above a short sheet's top (round 10 H3) */
     position: sticky; bottom: var(--kb, 0px); z-index: 2;

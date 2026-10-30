@@ -11,7 +11,8 @@
   import Bells from '../ui/Bells.svelte';
   import Glyph from './Glyph.svelte';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
-  import { formatDate, stampOf, weekRange } from '#lib/i18n/format.ts';
+  import { stampOf, weekRange } from '#lib/i18n/format.ts';
+  import { dayTitle } from './fmt.ts';
 
   interface Props {
     ledger: BellsLedger;
@@ -83,7 +84,7 @@
       {#each w.days as d (d.date)}
         <li class="day" class:zero={d.bells === 0}>
           <button type="button" class="dbtn" data-sfx="page" onclick={() => onday(d.date)}>
-            <span class="dt">{formatDate(d.date)}</span>
+            <span class="dt">{dayTitle(d.date)}</span>
             <span class="pp">
               {#each order as p (p)}
                 <span class="pv"><Avatar person={p} villager={villagers[p]} size={20} /><span class="sr-only">{names[p]}</span><span class="money">{formatNum(d.people[p].bells)}</span></span>
@@ -107,9 +108,9 @@
   h4 b { margin-left: auto; font-size: var(--fs-talk); color: var(--text); }
   .rows { list-style: none; margin: 0; padding: 4px 14px; display: grid; }
   .rows li { display: flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; }
-  /* a spend: the label block, the amount, then なかったことに (wraps under them on a narrow phone) */
+  /* a spend: the label block, the amount, then とりけす (wraps under them on a narrow phone) */
   .sp { flex-wrap: wrap; align-content: flex-start; row-gap: 4px; padding: 4px 0 8px; }
-  .sp .lbl { flex: 1 1 9em; }
+  .sp .lbl { flex: 1 1 6em; }
   .rows li + li { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .lbl { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: var(--fs-body); padding: 6px 0; }
   .lbl small { font-size: var(--fs-s); color: var(--text-soft); }
@@ -133,7 +134,7 @@
     display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 4px 0;
   }
   .dbtn:active { background: color-mix(in srgb, var(--c-yuzu) 30%, transparent); }
-  .dt { width: 6.2em; flex: none; font-size: var(--fs-body); }
+  .dt { width: 5.4em; flex: none; font: 700 var(--fs-body)/1.2 var(--font-num); }
   .pp { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; }
   .pv { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-s); color: var(--text-soft); }
   .pv .money { font-size: var(--fs-s); }
