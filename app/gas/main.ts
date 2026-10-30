@@ -287,8 +287,8 @@ function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
   const cols = TABS[name];
   const last = sh.getLastRow();
   noteRows(name, last);
-  // A tab's first data row (re)writes its header as TABS has it, so a tab left empty under an older schema (presence
-  // was 5 columns until 2026-10-30) is relabelled; the extra '' clears one stale column of a wider old header.
+  // A tab's first data row (re)writes its header as TABS has it, so an empty tab with an older header is relabelled
+  // (the extra '' clears one stale column of a wider old header).
   if (last <= 1) sh.getRange(1, 1, 1, cols.length + 1).setValues([[...cols, '']]);
   const start = Math.max(last, 1) + 1;
   const need = start + rows.length - 1 - sh.getMaxRows();
@@ -484,9 +484,7 @@ const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v
 function validEventData(type: string, d: Rec): boolean {
   switch (type) {
     case 'spend':
-      // A buy from the shared wallet (ADR 0022): no pot.
-      return (isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId))) && d.pot === undefined &&
-        isInt(d.bells, 1, LIMITS.bellsMax) && typeof d.item === 'string' && d.item.length <= LIMITS.menuIdMaxChars &&
+      return isId(d.spendId) && isInt(d.bells, 1, LIMITS.bellsMax) && typeof d.item === 'string' && d.item.length <= LIMITS.menuIdMaxChars &&
         typeof d.label === 'string' && d.label.trim().length > 0 && d.label.trim().length <= LIMITS.spendLabelMaxChars;
     case 'pref':
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined;
@@ -501,11 +499,11 @@ function validEventData(type: string, d: Rec): boolean {
         (d.excluded === undefined || typeof d.excluded === 'boolean');
     case 'workout_add':
       return typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) && typeof d.date === 'string' && DATE_RE.test(d.date) &&
-        typeof d.type === 'string' && WORKOUT_TYPES.includes(d.type) && // the model drops any other type (round 7 L7)
+        typeof d.type === 'string' && WORKOUT_TYPES.includes(d.type) &&
         isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');
     case 'spend_void':
-      return isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId));
+      return isId(d.spendId);
     default:
       return true;
   }

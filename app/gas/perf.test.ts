@@ -1,4 +1,4 @@
-// The hot paths at year-3 volume (round 13): a Shortcut run's ingest (31 days × steps, minutes, weight) and a
+// The hot paths at year-3 volume: a Shortcut run's ingest (31 days × steps, minutes, weight) and a
 // client poll (`snapshot` with `since`) against an uncompacted sheet of three years of frequent (≈ hourly) Shortcut runs (`bench-rows.ts`:
 // ~53k metrics rows). The sheet is the fake, so time is only indicative; what is asserted is how many cells each
 // request reads, which is what costs time in Apps Script (a `getValues` is ~linear in cells).
