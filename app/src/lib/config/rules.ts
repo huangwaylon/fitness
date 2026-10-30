@@ -3,30 +3,50 @@
 // Everything is computed on read from the raw rows, so a value here applies to every week that uses it. To change
 // what a week earns, never edit a version (or a HABITS entry) whose weeks have earned: append a RULES version (or a
 // HABITS entry) with a later `from`. rules.test.ts pins the versions in use.
-import type { FruitKey, PersonId, PersonTargets, PotKey, WeekKey } from '#lib/types.ts';
+import type { FruitKey, PersonId, PersonTargets, PotKey, RingFruit, WeekKey } from '#lib/types.ts';
 
-/** The four fruit categories, in display order. */
+/** @deprecated ADR 0019's four fruits (🍐 = eating habits). Use RING_FRUITS. */
 export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
+
+/** The five ring fruits (ADR 0021), in display order: Exercise, Move, Stand, steps, gym. */
+export const RING_FRUITS = ['peach', 'pear', 'cherry', 'apple', 'coconut'] as const satisfies readonly RingFruit[];
 
 /** What a week earns (ADR 0019). The model picks the version by week (`rulesFor`). */
 export interface RuleVersion {
   /** First week (a Monday WeekKey) it applies to. Versions are in ascending `from`; weeks before the first use it. */
   from: WeekKey;
-  /** The same daily goals for both people. */
-  goals: { activeMin: number; steps: number };
-  /** ベル per day: per counted minute (up to goals.activeMin), on a step-goal day, on a strength day, per habit tick. */
-  bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number };
-  /** Weekly badges (+`bells` each) and the ふたりボーナス (+`duoPerBadge` for each badge both people met). */
-  badges: { activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duoPerBadge: number };
+  /**
+   * The same daily goals for both people (the Move goal is per person: `pref` moveGoal, PEOPLE[p].moveGoal).
+   * ADR 0021: exerciseMin (🍑), standMin (🍒), steps (🍎). `activeMin` is @deprecated (ADR 0019).
+   */
+  goals: { activeMin: number; steps: number; exerciseMin: number; standMin: number };
+  /**
+   * ベル per day (ADR 0021): perExerciseMin per counted minute up to goals.exerciseMin (🍑); moveAtGoal at the Move
+   * goal, proportional below it (🍐); perStandMin per stand minute up to goals.standMin (🍒); stepDay (🍎); gymDay
+   * (🥥). `perMinute`, `strengthDay`, `perTick` are @deprecated (ADR 0019).
+   */
+  bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number; perExerciseMin: number; moveAtGoal: number; perStandMin: number; gymDay: number };
+  /**
+   * Weekly badges (+`bells` each) and the ふたりボーナス (+`duoPerBadge` for each badge both people met). ADR 0021
+   * thresholds: exerciseDays, moveDays, standDays, stepDays, gymDays. `activeDays`, `strengthDays`, `ticks` are
+   * @deprecated (ADR 0019).
+   */
+  badges: {
+    activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duoPerBadge: number;
+    exerciseDays: number; moveDays: number; standDays: number; gymDays: number;
+  };
 }
 
 export const RULES: readonly RuleVersion[] = [
   {
     // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns.
     from: '2026-10-26',
-    goals: { activeMin: 45, steps: 8000 },
-    bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
-    badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250 }
+    goals: { activeMin: 45, steps: 8000, exerciseMin: 60, standMin: 180 },
+    bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
+    badges: {
+      activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250,
+      exerciseDays: 5, moveDays: 5, standDays: 5, gymDays: 3
+    }
   }
 ];
 
@@ -80,11 +100,17 @@ export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
 /** 正月: Dec 29–Jan 3 earn no 🍐, and the 🍐 badge is prorated to the other days of the week. */
 export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' } } as const;
 
-/** The default villager names (until changed in しまフォン → 村人). */
-export const PEOPLE: Record<PersonId, { villager: string }> = {
-  A: { villager: 'ウェイ' },
-  B: { villager: 'うめ' }
+/**
+ * The default villager names (until changed in しまフォン → 村人) and Move goals in kcal (until set with `pref`
+ * moveGoal, ADR 0021 §5).
+ */
+export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number }> = {
+  A: { villager: 'ウェイ', moveGoal: 600 },
+  B: { villager: 'うめ', moveGoal: 400 }
 };
+
+/** A `pref` moveGoal: an integer kcal in this range (inclusive); anything else is ignored (the previous goal stays). */
+export const MOVE_GOAL = { min: 100, max: 2000 } as const;
 
 /** A habits version: from week `from` (a Monday WeekKey) on, each person's three 🍐 habits. */
 export interface HabitsVersion {

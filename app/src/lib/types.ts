@@ -6,7 +6,19 @@ export type LocalDate = string;
 /** Monday of the Mon–Sun week, `YYYY-MM-DD`. */
 export type WeekKey = string;
 
+/**
+ * @deprecated The four fruits of ADR 0019 (🍐 = eating habits). Use `RingFruit` (ADR 0021); removed once the UI has moved.
+ */
 export type FruitKey = 'peach' | 'coconut' | 'apple' | 'pear';
+
+/**
+ * The five fruits of ADR 0021, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
+ * 🍒 cherry = Stand minutes, 🍎 apple = steps, 🥥 coconut = gym (an arrival or a Watch strength workout).
+ */
+export type RingFruit = 'peach' | 'pear' | 'cherry' | 'apple' | 'coconut';
+
+/** ベル per ring fruit. */
+export type RingBells = Record<RingFruit, number>;
 
 export interface DayMetrics {
   date: LocalDate;
@@ -123,18 +135,45 @@ export interface FruitProgress {
   weekBells: number;
 }
 
+/** A ring fruit's progress today and this week (ADR 0021). Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps, 🥥 1/0. */
+export interface RingProgress {
+  /** Today's counted amount (🍑 max(Watch, workouts added in きろく); 🥥 1 on a gym day). */
+  today: number;
+  /** Today's daily goal: 60, the person's Move goal in force today, 180, 8,000, 1. */
+  goal: number;
+  /** Today's goal is met (🍎 also by the tsuyu rule). */
+  met: boolean;
+  /** Today's ベル of this fruit. */
+  todayBells: number;
+  /** Days this week meeting the daily goal. */
+  weekDays: number;
+  /** The badge threshold: 5 days (🍑🍐🍒), 4 (🍎), 3 (🥥). */
+  weekGoalDays: number;
+  badge: boolean;
+  /** This fruit's daily ベル this week up to today (the badge bonus is in the harvest bonus, not here). */
+  weekBells: number;
+}
+
 export interface PersonWeekView {
   person: PersonId;
   villagerName: string;
   /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
   villager: string | null;
-  /** Today's earnings so far (ADR 0019). */
-  today: { bells: number; parts: FruitBells };
+  /**
+   * Today's earnings so far. `rings`: per ring fruit (ADR 0021; sums to `bells`). `parts` is @deprecated (ADR 0019's
+   * four fruits; 🍐 there is NOT Move during the transition).
+   */
+  today: { bells: number; parts: FruitBells; rings: RingBells };
   /** This week's daily earnings so far (without the weekly bonus). */
   weekBells: number;
+  /** @deprecated ADR 0019's four fruits (🍐 = eating habits). Read `rings`. */
   fruits: Record<FruitKey, FruitProgress>;
+  /** The five ring fruits (ADR 0021). */
+  rings: Record<RingFruit, RingProgress>;
+  /** The person's Move goal in force today, kcal (`pref` moveGoal; default ウェイ 600, うめ 400). */
+  moveGoal: number;
   lastSyncAt: string | null;
-  /** Eating check-ins (the three habit keys and the ticks by date). */
+  /** @deprecated Eating check-ins (removed by ADR 0021). */
   habits: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
 }
 
@@ -152,8 +191,10 @@ export interface HarvestView {
   bonus: HarvestBonus;
   /** The week's total ベル, both people: daily earnings + the bonus. */
   totalBells: number;
-  /** The week's badges per person (lit = met, +bonus each). */
+  /** @deprecated ADR 0019's four badges. Read `ringBadges`. */
   badges: Record<PersonId, Record<FruitKey, boolean>>;
+  /** The week's five badges per person (ADR 0021; lit = met, +bonus each). */
+  ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
   /** Who tapped 「受け取る」 (a ceremony only). */
   confirmedBy: PersonId[];
 }

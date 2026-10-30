@@ -69,8 +69,14 @@ function demoRows(now: number): SnapshotRows {
       // Around the shared goals (45 min, 8,000 steps: ADR 0019), a lazy day now and then.
       const steps = Math.round(((p === 'A' ? 9000 : 8600) + (r() - 0.5) * (p === 'A' ? 6000 : 5000) - (lazy ? 3500 : 0)) * partial);
       const mins = Math.round(((p === 'A' ? 44 : 40) + (r() - 0.5) * 36 - (lazy ? 22 : 0)) * partial);
+      // Move (active kcal) around each default goal (ウェイ 600, うめ 400) and Stand minutes around 180 (ADR 0021).
+      const kcal = Math.round(((p === 'A' ? 610 : 420) + (r() - 0.5) * (p === 'A' ? 360 : 260) - (lazy ? 200 : 0)) * partial);
+      const stand = Math.round((190 + (r() - 0.5) * 120 - (lazy ? 60 : 0)) * partial);
       if (syncAt > at(d, 6) && syncAt < now) {
-        metrics.push([iso(syncAt), p, d, 'steps', Math.max(300, steps)], [iso(syncAt), p, d, 'exercise_min', Math.max(0, mins)]);
+        metrics.push(
+          [iso(syncAt), p, d, 'steps', Math.max(300, steps)], [iso(syncAt), p, d, 'exercise_min', Math.max(0, mins)],
+          [iso(syncAt), p, d, 'move_kcal', Math.max(30, kcal)], [iso(syncAt), p, d, 'stand_min', Math.max(5, stand)]
+        );
       }
       // Eating check-ins, ticked in the evening.
       const tickAt = at(d, 21, 10 + Math.floor(r() * 30));

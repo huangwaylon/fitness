@@ -1,40 +1,18 @@
 // ベル earned per person per day, weekly badges and the pot split (ADR 0019). Pure; the model feeds it the rows of a
 // week as of a time and decides which weeks count (the economy's first week, locks).
-import { DAILY, FRUITS, HOLIDAY, POTS, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { DAILY, FRUITS, HOLIDAY, POTS, STEP_MINUTES, TSUYU } from '#lib/config/rules.ts';
 import type { CheckinTick, DayBells, DayMetrics, FruitBells, FruitKey, LocalDate, PersonId, PotKey, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
+import { gymDaysOf, manualMinutesByDay } from '#lib/scoring/rings.ts';
 
 // ---------- a day's raw facts (also read by きろく) ----------
 
 /** Convert a (possibly fractional) count to integer milli-units. */
 const toMilli = (x: number): number => Math.round(x * 1000);
 
-/**
- * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
- * type, or an ask type answered "yes".
- */
-export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'includesStrength' | 'strengthOverride'>): boolean =>
-  w.durationMin >= STRENGTH.minWorkoutMin &&
-  (typeof w.strengthOverride === 'boolean'
-    ? w.strengthOverride
-    : (STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
-      ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
-
 /** Strength days of a week (max one per date): strength workouts and gym arrivals. Pass one week's workouts and visits. */
-function strengthDaysOf(workouts: readonly Workout[], visits: readonly Visit[]): Set<LocalDate> {
-  const set = new Set<LocalDate>();
-  for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
-  for (const v of visits) set.add(v.date);
-  return set;
-}
-
-/** Minutes of the workouts added by hand, per day. */
-export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin' | 'manual'>[]): Map<LocalDate, number> {
-  const out = new Map<LocalDate, number>();
-  for (const w of workouts) if (w.manual) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
-  return out;
-}
+const strengthDaysOf = gymDaysOf;
 
 /** The three minute sources of a day, in milli-minutes (uncapped); the day counts the largest, never a sum. */
 export function minuteSourcesMilli(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): { watch: number; steps: number; manual: number } {

@@ -10,6 +10,7 @@ import { finalMs, parseMenu } from '#lib/model/state.ts';
 import type { MenuItem, PotKey } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/scoring/index.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
+import { MOVE_GOAL } from '#lib/config/rules.ts';
 
 /** 買う！, its もとに戻す and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
 const UNDO_MS = 5000;
@@ -108,6 +109,16 @@ export function setGoalWeight(kg: number | null): SendResult {
   const value = roundKg(kg);
   if (!isWeightKg(value)) return { ok: false };
   return week.send('pref', { key: 'goalWeight', value });
+}
+
+/**
+ * My daily Move goal in kcal (ADR 0021 §5): an integer within MOVE_GOAL (100–2,000), rounded. It applies from today
+ * on, never to earlier days. `{ok:false}` for a value outside the bounds.
+ */
+export function setMoveGoal(kcal: number): SendResult {
+  const value = Math.round(kcal);
+  if (!Number.isFinite(value) || value < MOVE_GOAL.min || value > MOVE_GOAL.max) return { ok: false };
+  return week.send('pref', { key: 'moveGoal', value });
 }
 
 /** `strength`: count as strength (true), not (false) or automatic (null); `excluded`: out of scoring. `date`: the workout's day. */

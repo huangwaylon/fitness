@@ -37,9 +37,12 @@ describe('RULES', () => {
     // on, append a version instead.
     expect(RULES[0]).toEqual({
       from: '2026-10-26',
-      goals: { activeMin: 45, steps: 8000 },
-      bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
-      badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250 }
+      goals: { activeMin: 45, steps: 8000, exerciseMin: 60, standMin: 180 },
+      bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
+      badges: {
+        activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250,
+        exerciseDays: 5, moveDays: 5, standDays: 5, gymDays: 3
+      }
     });
     const habits = ['protein_each_meal', 'no_sweets', 'veg_two_meals'];
     expect(HABITS[0]).toEqual({ from: '2026-10-26', people: { A: { habits }, B: { habits } } });
@@ -64,7 +67,7 @@ describe('RULES', () => {
     const v2: RuleVersion = {
       ...RULES[0],
       from: '2026-12-07',
-      bells: { perMinute: 10, stepDay: 300, strengthDay: 500, perTick: 150 },
+      bells: { ...RULES[0].bells, perMinute: 10, stepDay: 300, strengthDay: 500, perTick: 150 },
       badges: { ...RULES[0].badges, bells: 800 }
     };
     withAppended(RULES, v2, () => {
