@@ -120,8 +120,11 @@
   color-scheme: dark;
 }
 
-@supports (height: 100dvh) {
-  :root { --vh-fill: 100dvh; --vh-page: 100svh; --vh1: 1dvh; }
+/* A cold iOS Home Screen launch under-reports dvh/svh by the status bar, leaving a beige band at the bottom:
+   ui-state/viewport.ts publishes the screen height as --doc-height in a full-screen standalone window. */
+:root { --vh-fill: var(--doc-height, 100dvh); --vh-page: var(--doc-height, 100svh); --vh1: calc(var(--doc-height, 100dvh) / 100); }
+@supports not (height: 100dvh) {
+  :root { --vh-fill: var(--doc-height, 100vh); --vh-page: var(--doc-height, 100vh); --vh1: calc(var(--doc-height, 100vh) / 100); }
 }
 
 /* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ----------

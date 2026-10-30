@@ -19,6 +19,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { startTheme } from '#lib/ui-state/theme.svelte.ts';
+  import { startViewport } from '#lib/ui-state/viewport.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -61,7 +62,9 @@
     // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once.
     const onStale = () => safeReload();
     window.addEventListener('vite:preloadError', onStale);
+    const stopViewport = startViewport();
     return () => {
+      stopViewport();
       stopTheme();
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('vite:preloadError', onStale);
