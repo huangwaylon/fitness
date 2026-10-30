@@ -41,15 +41,15 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(byArrival.length).toBeGreaterThan(0);
   });
 
-  it('the spends were all accepted (one voided), the menu was edited, the island asks nothing', () => {
+  it('the buys were all accepted (one voided); the menu is the default one', () => {
     const ledger = bellsLedger(s, now);
     const spends = Object.fromEntries(ledger.spends.map((x) => [x.spendId, x.voided]));
     expect(spends).toMatchObject({
-      'demo-ice-1': false, 'demo-cafe-1': false, 'demo-snack-void': true, 'demo-taiyaki': false, 'demo-dinner': false, 'demo-meal': false, 'demo-cafe-2': false
+      'demo-ice-1': false, 'demo-cafe-1': false, 'demo-snack-void': true, 'demo-snack-2': false, 'demo-dinner': false, 'demo-meal': false, 'demo-cafe-2': false
     });
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    expect(view.menu.map((x) => x.id)).toContain('taiyaki');
+    expect(view.menu.map((x) => x.id)).toEqual(['snack', 'cafe', 'dinner', 'want', 'trip']); // the defaults, nothing custom
     expect(view.wallet).toMatchObject(ledger.wallet);
     expect(view.wallet.balance).toBeGreaterThan(0);
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today);
