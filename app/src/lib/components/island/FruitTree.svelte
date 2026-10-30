@@ -53,7 +53,7 @@
     `${person.villagerName}: ` +
       FRUITS.map((f) => `${t(`fruit.${f}`)} ${amount(f)} ${formatBells(person.today.parts[f], { signed: true })}`).join('、')
   );
-  const spots = $derived(FRUITS.map((f, i) => ({ f, n: fruitCount(pct(f)), x: x + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
+  const spots = $derived(FRUITS.map((f, i) => ({ f, n: fruitCount(todayPct(person.fruits[f])), x: x + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
   const rowL = $derived(Math.min(...spots.map((s) => s.x)) - FRUIT_U);
   const rowR = $derived(Math.max(...spots.map((s) => s.x)) + FRUIT_U);
 
