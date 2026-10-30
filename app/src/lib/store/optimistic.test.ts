@@ -20,8 +20,8 @@ class Mem implements KV {
 
 const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
 const rows = (): SnapshotRows => ({
-  metrics: [['2026-11-17T12:00:00.000Z', 'A', '2026-11-17', 'steps', 6000]],
-  // A 45-minute yoga session: an ask-type workout, so it waits for 「筋トレでしたか？」.
+  metrics: [['2026-11-17T12:00:00.000Z', 'A', '2026-11-17', 'steps', 6000], ['2026-11-18T11:00:00.000Z', 'A', '2026-11-18', 'move_kcal', 450]],
+  // A 45-minute yoga session: not a strength type, so it counts only when marked in きろく (no questions).
   workouts: [['2026-11-17T12:00:00.000Z', 'A', 'yoga-1', '2026-11-17', 'Yoga', '2026-11-17T19:00:00+09:00', '2026-11-17T19:45:00+09:00', 45, 110]],
   presence: [],
   events: []
@@ -42,32 +42,32 @@ beforeEach(() => {
 describe('live optimistic view', () => {
   const cache = applySnapshot(null, { me: 'A', now: new Date(NOW).toISOString(), rows: rows() }, NOW);
 
-  it('はい on a pending yoga workout counts a strength day and raises the week’s ベル at once', () => {
+  it('marking the yoga workout as strength in きろく counts a gym day and raises the week’s ベル at once', () => {
     const before = composeView(cache, [], NOW);
-    expect(before.pending.map((p) => p.id)).toEqual(['yoga-1']);
-    const after = composeView(cache, [ev('c1', 'confirm', { kind: 'workout', id: 'yoga-1', yes: true })], NOW);
-    expect(after.pending).toEqual([]);
-    expect(after.people.A.fruits.coconut.weekDays).toBe(before.people.A.fruits.coconut.weekDays + 1);
-    expect(after.people.A.weekBells).toBeGreaterThan(before.people.A.weekBells);
+    expect(before.pending).toEqual([]);
+    const after = composeView(cache, [ev('c1', 'workout_edit', { id: 'yoga-1', strength: true })], NOW);
+    expect(after.people.A.rings.coconut.weekDays).toBe(before.people.A.rings.coconut.weekDays + 1);
+    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 400);
   });
 
-  it('a habit tick grows the pear and today’s ベル at once', () => {
+  it('a new Move goal re-prices today’s 🍐 at once', () => {
     const before = composeView(cache, [], NOW);
-    const after = composeView(cache, [ev('t1', 'checkin', { date: '2026-11-18', habit: 'protein_each_meal', done: true })], NOW);
-    expect(after.people.A.fruits.pear.weekDays).toBe(before.people.A.fruits.pear.weekDays + 1);
-    expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 100);
+    expect(before.people.A.rings.pear).toMatchObject({ today: 450, goal: 600, todayBells: 135 });
+    const after = composeView(cache, [ev('g1', 'pref', { key: 'moveGoal', value: 450 })], NOW);
+    expect(after.people.A.rings.pear).toMatchObject({ goal: 450, met: true, todayBells: 180 });
+    expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 45);
   });
 
   it('keeps an acked event in the view until the server rows bring it back', async () => {
-    enqueue('checkin', { date: '2026-11-18', habit: 'protein_each_meal', done: true }, NOW);
+    enqueue('pref', { key: 'moveGoal', value: 450 }, NOW);
     const sent = queued();
     const r = await flush(() => NOW);
     expect(r.sent).toBe(1);
     expect(queued()).toEqual([]);
-    // Before the fix the store composed only `queued()` here, so the tick vanished until the reconcile fetch.
+    // Before the fix the store composed only `queued()` here, so the change vanished until the reconcile fetch.
     const pending = notInCache(cache, sent);
-    expect(composeView(cache, [...pending, ...queued()], NOW).people.A.habits?.ticksByDate['2026-11-18']).toEqual(['protein_each_meal']);
-    const fetched = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-18T12:00:01.000Z', 'A', sent[0].id, 'checkin', JSON.stringify(sent[0].data)]] }) };
+    expect(composeView(cache, [...pending, ...queued()], NOW).people.A.moveGoal).toBe(450);
+    const fetched = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-18T12:00:01.000Z', 'A', sent[0].id, 'pref', JSON.stringify(sent[0].data)]] }) };
     expect(notInCache(fetched, sent)).toEqual([]);
   });
 

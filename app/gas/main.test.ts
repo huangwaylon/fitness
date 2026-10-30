@@ -22,7 +22,7 @@ const tick = (ms = 1000) => vi.setSystemTime(Date.now() + ms);
 const data = (tab: string) => gas.sheets.get(tab)?.data() ?? [];
 
 // The user's real Shortcut body (sheets-architecture.md §5): the old dictionary plus key + action.
-// The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories are ignored.
+// The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories = Move kcal (ADR 0021).
 const REAL = {
   dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM',
   steps: '855\n9106',
@@ -150,17 +150,18 @@ describe('never throws', () => {
 
 describe('ingest', () => {
   it("the Shortcut's body: rows appended with server time, audit row with the body's shape, nothing stored twice", () => {
-    expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 4, workouts: 0 });
+    expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 6, workouts: 0 });
     const at = '2026-10-29T03:00:00.000Z';
     expect(data('metrics')).toEqual([
       [at, 'A', '2026-09-28', 'steps', 855], [at, 'A', '2026-09-29', 'steps', 9106],
-      [at, 'A', '2026-09-28', 'exercise_min', 0], [at, 'A', '2026-09-29', 'exercise_min', 23]
+      [at, 'A', '2026-09-28', 'exercise_min', 0], [at, 'A', '2026-09-29', 'exercise_min', 23],
+      [at, 'A', '2026-09-28', 'move_kcal', 0], [at, 'A', '2026-09-29', 'move_kcal', 248]
     ]);
     expect(data('uploads')).toEqual([[at, 'A', 'ok', JSON.stringify({ key: KEY_A, action: 'ingest', ...REAL }).length, ' | action:text[1] "ingest"; dates:text[2] "Sep 28, 2026 at 7:11 AM"; steps:text[2] "855"; exercise_minutes:text[2] "0"; calories:text[2] "0"']]);
     expect(String(data('uploads')[0][4])).not.toContain(KEY_A); // the shape never logs the key
     tick();
     expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 0, workouts: 0 });
-    expect(data('metrics')).toHaveLength(4);
+    expect(data('metrics')).toHaveLength(6);
     expect(data('uploads')).toHaveLength(2);
   });
 
@@ -171,6 +172,21 @@ describe('ingest', () => {
     tick();
     expect(a('ingest', day('Oct 27, 2026', 9500, 40))).toMatchObject({ metrics: 1 });
     expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['steps', 9000], ['exercise_min', 40], ['steps', 9500]]);
+  });
+
+  it('Move kcal and Stand minutes (ADR 0021) are daily totals, appended only when higher, like steps', () => {
+    const ms = (kcal: string, stand: string) => ({ dates: 'Oct 27, 2026', calories: kcal, stand_minutes: stand });
+    expect(a('ingest', ms('250.4', '58'))).toMatchObject({ metrics: 2 });
+    tick();
+    expect(a('ingest', ms('120', '30'))).toMatchObject({ metrics: 0 });
+    tick();
+    expect(a('ingest', ms('480', '58'))).toMatchObject({ metrics: 1 });
+    tick();
+    expect(a('ingest', ms('12000', '1500'))).toMatchObject({ metrics: 0, skipped: 2 }); // above 10,000 kcal / 1,440 min
+    expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['move_kcal', 250], ['stand_min', 58], ['move_kcal', 480]]);
+    const audit = data('uploads').at(-1)!;
+    expect(audit[2]).toBe('partial');
+    expect(String(audit[4])).toContain('calories: 12000 on 2026-10-27 is above 10000; skipped');
   });
 
   it('weight: any changed value is appended (a weight goes down too); the same value never twice; 0 is no weigh-in', () => {
@@ -195,8 +211,8 @@ describe('ingest', () => {
 
   it('people are independent', () => {
     a('ingest', REAL);
-    expect(b('ingest', REAL)).toMatchObject({ metrics: 4 });
-    expect(data('metrics').filter((r) => r[1] === 'B')).toHaveLength(4);
+    expect(b('ingest', REAL)).toMatchObject({ metrics: 6 });
+    expect(data('metrics').filter((r) => r[1] === 'B')).toHaveLength(6);
   });
 
   it('workouts are deduped by id, also across phone languages', () => {
@@ -336,6 +352,8 @@ describe('edit events (history-and-editing.md §4.1)', () => {
       { date: '2026-10-28', metric: 'steps', value: '9800' },
       { date: '2026-10-28', metric: 'exercise_min', value: 1441 },
       { date: '2026-10-28', metric: 'calories', value: 10 },
+      { date: '2026-10-28', metric: 'move_kcal', value: 10_001 },
+      { date: '2026-10-28', metric: 'stand_min', value: 1441 },
       { date: '10/28', metric: 'steps', value: 10 },
       { metric: 'steps', value: 10 }
     ];
@@ -405,7 +423,7 @@ describe('snapshot', () => {
 
     const full = b('snapshot');
     expect(full).toMatchObject({ ok: true, me: 'B', now: expect.any(String) });
-    expect(full.rows.metrics).toHaveLength(4);
+    expect(full.rows.metrics).toHaveLength(6);
     expect(full.rows.metrics[0]).toEqual(['2026-10-29T03:00:00.000Z', 'A', '2026-09-28', 'steps', 855]);
     expect(full.rows.presence).toEqual([['2026-10-29T03:00:01.000Z', 'B', 'studio', 'arrive', '2026-10-29T03:00:00.000Z']]);
     expect(full.rows.events).toEqual([[expect.any(String), 'A', 'e1', 'highfive', '{}']]);
@@ -494,7 +512,7 @@ describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => 
     vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(a('ingest', REAL)).toEqual({ ok: false, error: 'unavailable' });
     up.getRange = getRange;
-    expect(data('metrics')).toHaveLength(4); // written before the failure
+    expect(data('metrics')).toHaveLength(6); // written before the failure
     expect(rev()).toBe(r0);
     expect(gas.props.get('LAST_AT')).toBe(data('metrics')[0][0]);
   });
@@ -525,7 +543,7 @@ describe('limits', () => {
     expect(a('snapshot')).toEqual({ ok: false, error: 'busy' });
     expect(data('metrics')).toEqual([]);
     gas.state.lockAvailable = true;
-    expect(a('ingest', REAL)).toMatchObject({ ok: true, metrics: 4 });
+    expect(a('ingest', REAL)).toMatchObject({ ok: true, metrics: 6 });
     expect(gas.state.lockHeld).toBe(false);
   });
 

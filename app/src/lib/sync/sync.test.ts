@@ -293,17 +293,18 @@ describe('snapshot cache', () => {
 });
 
 describe('optimistic view', () => {
-  it('shows queued events at once, judged like the server will (48 h window, server clock)', () => {
+  it('shows queued events at once, judged like the server will (open weeks, server clock)', () => {
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, Date.parse('2026-11-04T12:00:00.000Z'));
     const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST
-    expect(composeView(cache, [], now).people.A.habits?.ticksByDate).toEqual({});
+    expect(composeView(cache, [], now).people.A.rings.apple.today).toBe(0);
     const q = [
-      { id: 'q1', type: 'checkin' as const, data: { date: '2026-11-04', habit: 'protein_each_meal', done: true }, queuedAt: now, tries: 0, nextAt: now },
-      { id: 'q2', type: 'checkin' as const, data: { date: '2026-11-01', habit: 'protein_each_meal', done: true }, queuedAt: now, tries: 0, nextAt: now }, // > 48 h
+      { id: 'q1', type: 'metric_set' as const, data: { date: '2026-11-04', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt: now },
+      { id: 'q2', type: 'metric_set' as const, data: { date: '2026-10-27', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt: now }, // locked week
       { id: 'q3', type: 'pref' as const, data: { key: 'locale', value: 'ja' }, queuedAt: now, tries: 0, nextAt: now }
     ];
     const v = composeView(cache, q, now);
-    expect(v.people.A.habits?.ticksByDate).toEqual({ '2026-11-04': ['protein_each_meal'] });
+    expect(v.people.A.rings.apple).toMatchObject({ today: 9000, met: true });
+    expect([...composeModel(cache, q, now).state.metricSets.A.keys()]).toEqual(['2026-11-04|steps']);
     expect(v.locale).toBe('ja');
     // Once the server has the event (same id), the queued copy is ignored.
     const acked = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-04T12:00:01.000Z', 'A', 'q3', 'pref', '{"key":"locale","value":"en"}']] }) };
@@ -313,20 +314,19 @@ describe('optimistic view', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST: the week of 11-02 locks Wed 11-11 04:00
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
     const lockAt = Date.parse('2026-11-10T19:00:00.000Z');
-    const tick = (id: string, nextAt: number, extra = {}) => ({ id, type: 'checkin' as const, data: { date: '2026-11-04', habit: 'protein_each_meal', done: true, edit: true }, queuedAt: now, tries: 0, nextAt, lockAt, ...extra });
-    expect(composeView(cache, [tick('ok', now + 5000)], now).people.A.habits?.ticksByDate).toEqual({ '2026-11-04': ['protein_each_meal'] });
-    expect(composeView(cache, [tick('late', lockAt)], now).people.A.habits?.ticksByDate).toEqual({});
+    const set = (id: string, nextAt: number, extra = {}) => ({ id, type: 'metric_set' as const, data: { date: '2026-11-04', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt, lockAt, ...extra });
+    expect(composeView(cache, [set('ok', now + 5000)], now).people.A.rings.apple.today).toBe(9000);
+    expect(composeView(cache, [set('late', lockAt)], now).people.A.rings.apple.today).toBe(0);
     // Already acked (not in the pending set): shown whatever its nextAt, the server judged it.
-    expect(composeModel(cache, [tick('acked', lockAt)], now, new Set()).state.checkins.A).toHaveLength(1);
+    expect(composeModel(cache, [set('acked', lockAt)], now, new Set()).state.metricSets.A.size).toBe(1);
     // A crafted `person` on a live queued event is ignored: it is always me.
-    expect(composeModel(cache, [tick('p', now, { person: 'B' })], now).state.checkins.B).toEqual([]);
+    expect(composeModel(cache, [set('p', now, { person: 'B' })], now).state.metricSets.B.size).toBe(0);
   });
   it('the same event listed twice is applied once (r2 N2)', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
-    const ev = (id: string, done: boolean) => ({ id, type: 'checkin' as const, data: { date: '2026-11-04', habit: 'protein_each_meal', done }, queuedAt: now, tries: 0, nextAt: now });
-    // tick, untick, then the tick again as a duplicate (acked copy + queued copy): still unticked.
-    const v = composeView(cache, [ev('on', true), ev('off', false), ev('on', true)], now);
-    expect(v.people.A.habits?.ticksByDate['2026-11-04'] ?? []).toEqual([]);
+    const ev = (id: string, value: number) => ({ id, type: 'pref' as const, data: { key: 'moveGoal', value }, queuedAt: now, tries: 0, nextAt: now });
+    // 500, then 700, then the 500 again as a duplicate (acked copy + queued copy): still 700.
+    expect(composeView(cache, [ev('a', 500), ev('b', 700), ev('a', 500)], now).people.A.moveGoal).toBe(700);
   });
 });

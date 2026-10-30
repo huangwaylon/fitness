@@ -1,7 +1,8 @@
 // Realistic synthetic sheet rows for `npm run bench` and model/compact.test.ts: both people, the Shortcut syncing
-// every waking hour (round 9 review: ~21 metric rows per person-day, ~53k rows and ~3.7 MB of JSON by year 3).
+// every waking hour (round 9 review: ~21 metric rows per person-day; since ADR 0021 also Move kcal and Stand minutes,
+// which rise every hour: ~53 metric rows per person-day).
 // Deterministic (seeded), so runs compare.
-import { addDays, habitsFor, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
 import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
@@ -28,12 +29,13 @@ export function syntheticRows(days: number): SnapshotRows {
   for (let d = 0; d < days; d++) {
     const date = addDays(FIRST_DAY, d);
     const wk = weekKeyOf(date);
-    const habits = { A: habitsFor('A', wk), B: habitsFor('B', wk) };
     const total = { A: 4000 + Math.floor(rand() * 9000), B: 3000 + Math.floor(rand() * 8000) };
     const exTotal = { A: Math.floor(rand() * 70), B: Math.floor(rand() * 50) };
     const gym = { A: d % 2 === 0, B: d % 7 === 1 || d % 7 === 4 };
     const steps = { A: 0, B: 0 };
     const ex = { A: 0, B: 0 };
+    const kcalTotal = { A: 350 + Math.floor(rand() * 450), B: 250 + Math.floor(rand() * 300) };
+    const standTotal = { A: 100 + Math.floor(rand() * 160), B: 120 + Math.floor(rand() * 140) };
     for (let h = 7; h <= 22; h++) {
       for (const p of people) {
         const m = (p === 'A' ? 5 : 35) + Math.floor(rand() * 10);
@@ -41,6 +43,8 @@ export function syntheticRows(days: number): SnapshotRows {
         if (h === 7 && last[p] && rand() < 0.7) metrics.push([at(date, hm(h, m)), p, last[p]!.date, 'steps', last[p]!.steps + 50 + Math.floor(rand() * 400)]);
         steps[p] = Math.round((total[p] * (h - 6)) / 16);
         metrics.push([at(date, hm(h, m)), p, date, 'steps', steps[p]]);
+        metrics.push([at(date, hm(h, m)), p, date, 'move_kcal', Math.round((kcalTotal[p] * (h - 6)) / 16)]);
+        metrics.push([at(date, hm(h, m)), p, date, 'stand_min', Math.round((standTotal[p] * (h - 6)) / 16)]);
         if (rand() < 0.3 && ex[p] < exTotal[p]) {
           ex[p] = Math.min(exTotal[p], ex[p] + 5 + Math.floor(rand() * 20));
           metrics.push([at(date, hm(h, m)), p, date, 'exercise_min', ex[p]]);
@@ -50,11 +54,6 @@ export function syntheticRows(days: number): SnapshotRows {
         if (gym[p] && h === 19) {
           presence.push([at(date, hm(19, 0)), p, place, 'leave', jst(date, '19:00')]);
           workouts.push([at(date, hm(h, m)), p, `w:${p}${d}`, date, 'Traditional Strength Training', jst(date, '18:05'), jst(date, '18:55'), 50, 118]);
-        }
-        if (h === 21) {
-          habits[p].forEach((habit, i) => {
-            if (rand() < 0.85) events.push([at(date, hm(21, 10 + i)), p, `c:${p}${d}${i}`, 'checkin', JSON.stringify({ date, habit, done: true })]);
-          });
         }
       }
     }
@@ -66,6 +65,7 @@ export function syntheticRows(days: number): SnapshotRows {
     if (d % 30 === 10) {
       events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, pot: 'treat', item: 'cafe', label: 'カフェデート', bells: 2000 })]);
     }
+    if (d % 90 === 5) events.push([at(date, '21:30'), 'B', `mg:${d}`, 'pref', JSON.stringify({ key: 'moveGoal', value: 400 + (d % 180 === 5 ? 50 : 0) })]);
     if (d % 30 === 20) {
       events.push([at(date, '22:50'), 'A', `ms:${d}`, 'metric_set', JSON.stringify({ date: addDays(date, -1), metric: 'steps', value: 3000 })]);
     }

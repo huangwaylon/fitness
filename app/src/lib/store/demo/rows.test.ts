@@ -36,23 +36,33 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const days = settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now)));
     const byArrival = days.filter((d) => {
       const b = d.people.B;
-      return b.visits.length > 0 && !b.workouts.some((w) => w.strength) && b.parts.coconut > 0;
+      return b.visits.length > 0 && !b.workouts.some((w) => w.strength) && b.rings.coconut > 0;
     });
     expect(byArrival.length).toBeGreaterThan(0);
   });
 
-  it('the spends were all accepted (one voided), the menu was edited, the island asks about the yoga', () => {
+  it('the spends were all accepted (one voided), the menu was edited, the island asks nothing', () => {
     const ledger = bellsLedger(s, now);
     const spends = Object.fromEntries(ledger.spends.map((x) => [x.spendId, x.voided]));
     expect(spends).toMatchObject({ 'demo-ice-1': false, 'demo-cafe-1': false, 'demo-snack-void': true, 'demo-parfait': false, 'demo-daytrip': false, 'demo-cafe-2': false });
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    expect(view.pending.length).toBeGreaterThan(0);
+    expect(view.pending).toEqual([]); // no daily questions
     expect(view.menus.treat.map((x) => x.id)).toContain('parfait');
     expect(view.pots.treat).toMatchObject(ledger.pots.treat);
     expect(view.pots.trip.spent).toBe(12000);
     expect(view.pots.treat.balance).toBeGreaterThan(0);
     expect(view.pots.trip.balance).toBeGreaterThan(0);
     if (process.env.DEMO_DEBUG) console.log(iso, view.pots, view.people.A.today);
+  });
+
+  it('ADR 0021 rows: Move and Stand every day, no check-ins or questions; うめ’s Move goal applies from its day', () => {
+    expect(cache.rows.events.filter((e) => e[3] === 'checkin' || e[3] === 'confirm')).toEqual([]);
+    const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
+    expect([...metrics].sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'weight']);
+    const settled = historyWeeks(s, now).filter((w) => w.settled);
+    expect(settled.some((w) => Object.values(w.people.B.ringBadges).some(Boolean))).toBe(true);
+    const goals = new Set(settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now).people.B.move.goal)));
+    expect([...goals].sort()).toEqual([400, 450]);
   });
 });

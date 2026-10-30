@@ -40,38 +40,41 @@ describe('reduce: rows', () => {
 });
 
 describe('reduce: events', () => {
-  it('checkin: own habits, today and two days back, not after the lock; edits any day of an open week', () => {
-    const tue = '2026-11-10';
-    const s = reduce(rows([
-      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'protein_each_meal', done: true }),
-      ev(at(tue), 'A', 'checkin', { date: '2026-11-08', habit: 'protein_each_meal', done: true }), // 2 days back: ok
-      ev(at(tue), 'A', 'checkin', { date: '2026-11-07', habit: 'protein_each_meal', done: true }), // 3 days back
-      ev(at(tue), 'A', 'checkin', { date: '2026-11-11', habit: 'protein_each_meal', done: true }), // tomorrow
-      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'not_a_habit', done: true }), // not a habit
-      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'protein_each_meal', done: 'yes' }),
-      ev(at('2026-11-16'), 'A', 'checkin', { date: '2026-11-14', habit: 'veg_two_meals', done: true, edit: true }), // open week
-      ev(at('2026-11-21'), 'A', 'checkin', { date: '2026-11-14', habit: 'veg_two_meals', done: false, edit: true }) // locked
-    ]));
-    expect(s.checkins.A.map((c) => `${c.date}:${c.habit}:${c.edit ?? false}`)).toEqual([
-      `${tue}:protein_each_meal:false`, '2026-11-08:protein_each_meal:false', '2026-11-14:veg_two_meals:true'
-    ]);
+  it('checkin and confirm rows (ADR 0021: no check-ins, no daily questions) are read and ignored, not a crash', () => {
+    const old = [
+      ev(at('2026-11-10'), 'A', 'checkin', { date: '2026-11-10', habit: 'protein_each_meal', done: true }),
+      ev(at('2026-11-10'), 'A', 'checkin', { date: '2026-11-10', habit: 'no_sweets', done: true, edit: true }),
+      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'workout', id: 'w1', yes: true }),
+      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'visit', id: `anytime@${at(WK, '18:00')}`, yes: true })
+    ];
+    const more = { workouts: [workout('A', 'w1', WK)] };
+    const a = reduce(rows(old, more));
+    const b = reduce(rows([], more));
+    expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
   });
 
-  it('confirm: own workout, after it arrived, before its week locks; an old visit answer is ignored', () => {
+  it('move_kcal and stand_min rows are activity metrics (ADR 0021); metric_set accepts them within bounds', () => {
     const s = reduce(rows([
-      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'workout', id: 'w1', yes: true }),
-      ev(at(WK, '21:00'), 'B', 'confirm', { kind: 'workout', id: 'w1', yes: true }), // not B's
-      ev(at(WK, '19:00'), 'A', 'confirm', { kind: 'workout', id: 'w2', yes: true }), // before the row arrived
-      ev(LOCKED, 'A', 'confirm', { kind: 'workout', id: 'w2', yes: false }), // locked
-      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'visit', id: `anytime@${at(WK, '18:00')}`, yes: true }),
-      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'workout', id: 'w1', yes: 'y' })
-    ], {
-      workouts: [workout('A', 'w1', WK), workout('A', 'w2', WK)],
-      presence: [[at(WK, '18:00'), 'A', 'anytime', 'arrive', at(WK, '18:00')]]
-    }));
-    expect([...s.workoutConfirms.keys()]).toEqual(['A|w1']);
-    expect([...s.workoutConfirms.values()].flat()).toHaveLength(1);
-    expect(s.presence.A).toHaveLength(1);
+      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 450 }),
+      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 10_001 }),
+      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'stand_min', value: 1_440 }),
+      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'stand_min', value: 1_441 })
+    ], { metrics: [[at(WK, '22:00'), 'B', WK, 'move_kcal', 512.5], [at(WK, '22:00'), 'B', WK, 'stand_min', 58]] }));
+    expect([...s.metrics.B.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|move_kcal`, [512.5]], [`${WK}|stand_min`, [58]]]);
+    expect([...s.metricSets.A.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|move_kcal`, [450]], [`${WK}|stand_min`, [1440]]]);
+  });
+
+  it('pref moveGoal: an integer kcal in 100–2,000 per person, in at order; anything else is ignored', () => {
+    const goal = (when: string, person: PersonId, value: unknown) => ev(when, person, 'pref', { key: 'moveGoal', value });
+    const s = reduce(rows([
+      goal(at(WK, '09:00'), 'A', 700),
+      goal(at(WK, '10:00'), 'A', 99), goal(at(WK, '10:00'), 'A', 2001), goal(at(WK, '10:00'), 'A', 550.5),
+      goal(at(WK, '10:00'), 'A', '500'), goal(at(WK, '10:00'), 'A', null),
+      goal(at(WK, '11:00'), 'A', 100), goal(at(WK, '12:00'), 'B', 2000)
+    ]));
+    expect(s.moveGoals.A.map((x) => x.v)).toEqual([700, 100]);
+    expect(s.moveGoals.B.map((x) => x.v)).toEqual([2000]);
+    expect(s.prefs).toEqual({ A: {}, B: {} });
   });
 
   it('spend and spend_void: ベル spends only, first id wins, only the spender voids, once', () => {

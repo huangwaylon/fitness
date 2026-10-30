@@ -72,23 +72,40 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 - **日曜の収穫** (`HarvestOverlay.svelte`, ≤ 60 s): a modal `<dialog>` (Esc = あとで). Steps: the week's recap → 受け取る (a ceremony: the bonus counts either way) → end card. The island stays visible behind a cool tint (`rgba(58,72,134,.18)` below the sky; `rgba(30,36,80,.16)` at night). しずえ's box, one card (rows: villager icon, the four badges lit when met, + 500 ベル each; then ふたりボーナス) and the CTA sit at the bottom. The week's bonus is the one big number. The end card drops it into the two pots and counts each balance up (an item-get beat). No confetti over the numbers.
 - **Pair / not set up** (`routes/pair`): `deco/airport` hero (hidden under 600px tall), しずえ + one line, paste the key (or `#key=` inside the installed PWA). Not set up: Tom Nook + the link to `?demo`.
 
-## E. Economy (ADR 0019; values in `config/rules.ts`, engine in `scoring/bells.ts` + `model/bells.ts`)
+## E. Economy (ADR 0019, what earns: ADR 0021; values in `config/rules.ts`, engine in `scoring/bells.ts` + `model/bells.ts`)
 
-- **ベル, play money**, earned per person per day from the rows (so they move whenever data arrives): 🍑 5 per counted
-  minute up to 45 (minutes = max(Watch, (steps − 8,000)/100, manual workouts)), 🍎 200 at 8,000 steps (tsuyu: also at
-  30 minutes), 🥥 400 on a strength day (a strength workout, or any gym arrival: one Arrive Shortcut, no minimum stay), 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,125 a day.
-  The same goals and the same habits for both people (毎食たんぱく質 · 甘いものは壺から · 野菜 2食).
-- **Weekly bonus at the Sunday 19:30 harvest:** +500 per badge (🍑 5 days at 45 min, 🍎 4 step days, 🥥 3 strength
-  days, 🍐 15 ticks, prorated over 正月), ふたりボーナス +250 for each badge both people meet. 「受け取る」 is a ceremony.
+- **ベル, play money**, earned per person per day from the rows (so they move whenever data arrives), five automatic
+  metrics, one fruit each, **no manual check-ins and no daily questions**:
+
+  | Fruit | Metric (Shortcut field → stored metric) | Daily goal | ベル a day |
+  |---|---|---|---|
+  | 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | 3 per minute up to 60 (max 180) |
+  | 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person: `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | floor(180 × min(kcal, goal) / goal) (max 180) |
+  | 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 180 min | 1 per minute up to 180 (max 180) |
+  | 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min) | 200 |
+  | 🥥 coconut | Gym: any arrival at a known place, or a strength workout (Traditional / Functional Strength, Pilates ≥ 15 min; another type only when marked in きろく) | a gym day | 400 |
+
+  Max **1,140** a day. The Move goal in force on a day is the last moveGoal set on or before that day (Tokyo date): a
+  change applies from the day it's made, never to earlier days. Steps no longer turn into minutes; old `checkin` and
+  `confirm` rows are ignored.
+- **Weekly bonus at the Sunday 19:30 harvest:** +400 per badge (🍑 / 🍐 / 🍒 goal met on ≥ 5 days, 🍎 ≥ 4 step days,
+  🥥 ≥ 3 gym days), ふたりボーナス +200 for each badge both people meet (max 1,000). 「受け取る」 is a ceremony.
+- **On target** (every badge for both, minimum days): per person 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 +
+  3 × 400 🥥 = 4,700 daily + 5 × 400 = 2,000 badges = 6,700; both + 5 × 200 duo = **14,400 ベル a week** (ADR 0019's
+  was 14,250), ≈ 749,000 a year: 旅 80% ≈ 599,000 (2 × abroad + 6 × weekend + 1–2 × onsen ≈ 470,000–506,000 still fits
+  with room for off weeks), おやつ 20% ≈ 2,880 a week. The daily ベル (9,400) are 65% of it, so a week short of badges
+  still pays most of its work. Pinned in `scoring/bells.test.ts`.
 - **Two shared pots:** everything earned splits おやつ 20% / 旅 80% (`POTS.treatPercent`, on totals). Shared, editable menus (`pref`
   `treatMenu` / `tripMenu`, latest wins); a buy is a `spend`, undone by the buyer's `spend_void`; no approvals; a
   balance never goes negative.
 - **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Spends never lock.
 - **Starts** in the week of Mon 2026-10-26. Tuned 2026-10-30 (ADR 0019 amendment): sweets are dear
-  (おやつ 800–5,000) and a year on target pays 2 × abroad, 6 × weekend, 1–2 × onsen. Gone: the score /100, yen, the team layer, the purse, transfers, rungs,
-  calibration, per-person targets, the rest-day bonus.
-- **View model:** `WeekView.people[p].today`, `fruits[f]` progress, `pots` (balances + each pot's today / week flow), `menus`, `harvest.bonus/totalBells/badges`;
-  きろく: `bellsLedger()`. Exact types: [round-11/engine-contract.md](../reviews/round-11/engine-contract.md).
+  (おやつ 800–5,000) and a year on target pays 2 × abroad, 6 × weekend, 1–2 × onsen. ADR 0021 (the same day) was applied
+  in place to `RULES[0]` (play money, the economy's first week). Gone: the score /100, yen, the team layer, the purse,
+  transfers, rungs, calibration, the rest-day bonus, the eating habits, step-derived minutes, 「筋トレでしたか？」.
+- **View model:** `WeekView.people[p].today.rings`, `rings[f]` progress, `moveGoal`, `pots` (balances + each pot's
+  today / week flow), `menus`, `harvest.bonus/totalBells/ringBadges`; きろく: `bellsLedger()`, `weekDetail()`,
+  `dayDetail()`. Exact types: [round-18/rings-contract.md](../reviews/round-18/rings-contract.md).
 
 ## A. Official art map
 

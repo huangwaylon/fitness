@@ -80,7 +80,7 @@ describe('LiveBackend sync recovery (round 16 H2)', () => {
 
 describe('LiveBackend cold open after an ack (no flash of the old state)', () => {
   const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
-  const TICK = { date: '2026-11-18', habit: 'protein_each_meal', done: true };
+  const GOAL = { key: 'moveGoal', value: 450 };
   type Row = [string, string, string, string, string];
   let idb: IDBFactory;
   let serverEvents: Row[];
@@ -91,9 +91,9 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
   const release = () => hung.splice(0).forEach((f) => f());
 
   const reply = () => ({ ok: true, me: 'A', now: new Date(NOW).toISOString(), rev: 'r1', rows: { metrics: [], workouts: [], presence: [], events: serverEvents } });
-  const ticks = (b: LiveBackend) => {
+  const goal = (b: LiveBackend) => {
     const m = composeModel(b.cache()!, b.events().list, NOW);
-    return buildWeekView(m.state, m.me, m.now).people.A.habits?.ticksByDate['2026-11-18'] ?? [];
+    return buildWeekView(m.state, m.me, m.now).people.A.moveGoal;
   };
   /** A new page load: same localStorage and IndexedDB, nothing in memory; resolves once it painted from the cache. */
   const coldOpen = async () => {
@@ -141,8 +141,8 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
     vi.useRealTimers();
   });
 
-  it('a tick acked just before closing shows on the next open with no fetch, and a later snapshot does not double it', async () => {
-    const ev = enqueue('checkin', TICK, NOW);
+  it('an event acked just before closing shows on the next open with no fetch, and a later snapshot takes over', async () => {
+    const ev = enqueue('pref', GOAL, NOW);
     expect((await flush(() => NOW)).acked.map((e) => e.id)).toEqual([ev.id]);
     expect(queued()).toEqual([]);
     expect(ackedEvents().map((e) => e.id)).toEqual([ev.id]);
@@ -151,27 +151,27 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
     const before = snapshots;
     const { b } = await coldOpen();
     expect(snapshots - before).toBeLessThanOrEqual(1); // the background refresh may start, but nothing waited for it
-    expect(ticks(b)).toEqual(['protein_each_meal']);
+    expect(goal(b)).toBe(450);
     expect(b.events().unsent.size).toBe(0);
 
-    // the next snapshot brings the server row: the provisional copy goes, and the tick counts once
+    // the next snapshot brings the server row: the provisional copy goes, and the server row counts
     hang = false;
     release();
     const { b: c } = await coldOpen();
     await c.refresh({});
-    expect(ticks(c)).toEqual(['protein_each_meal']);
+    expect(goal(c)).toBe(450);
     expect(c.events().list).toEqual([]);
     expect(ackedEvents()).toEqual([]);
   });
 
-  it('an unacked tick survives a reload too (still queued)', async () => {
+  it('an unacked event survives a reload too (still queued)', async () => {
     hang = true;
     configureTransport({ url: 'https://script.example/exec', fetch: (async () => new Response('{"ok":false,"error":"busy"}')) as typeof fetch });
-    const ev = enqueue('checkin', TICK, NOW);
+    const ev = enqueue('pref', GOAL, NOW);
     await flush(() => NOW);
     const { b } = await coldOpen();
     expect(b.events().unsent.has(ev.id)).toBe(true);
-    expect(ticks(b)).toEqual(['protein_each_meal']);
+    expect(goal(b)).toBe(450);
   });
 
   it('an acked event a much later fetch still lacks (deleted in the sheet) stops showing', () => {

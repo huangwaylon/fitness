@@ -6,7 +6,6 @@ import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { localDateOfMs } from '#lib/time/dates.ts';
 import { parseInstant } from '#lib/time/dates.ts';
-import { habitsFor } from '#lib/scoring/targets.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
   DATE_RE, EVENT_TYPES, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
@@ -88,8 +87,6 @@ interface PresenceRec {
   date: LocalDate;
 }
 
-/** `edit`: a fix from きろく (`edit:true`), allowed for any open day; it shows in the change log. */
-interface CheckinRec { at: number; date: LocalDate; habit: string; done: boolean; edit?: true }
 /** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
 interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
 /** A ベル spend (ADR 0019 §9): `{spendId, pot, item, label, bells}`. */
@@ -101,9 +98,7 @@ interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string
 export interface State {
   metrics: Record<PersonId, Map<string, Timed<number>[]>>;
   workouts: Record<PersonId, WorkoutRec[]>;
-  workoutConfirms: Map<string, Timed<boolean>[]>;
   presence: Record<PersonId, PresenceRec[]>;
-  checkins: Record<PersonId, CheckinRec[]>;
   /** ベル spends (`pot` + `bells`), in server order. */
   bellSpends: BellSpendRec[];
   /** The shared menus (`pref` treatMenu / tripMenu by either person), ascending `at`: the latest wins. */
@@ -216,9 +211,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     workouts: { A: [], B: [] },
-    workoutConfirms: new Map(),
     presence: { A: [], B: [] },
-    checkins: { A: [], B: [] },
     bellSpends: [],
     menus: { treat: [], trip: [] },
     metricSets: { A: new Map(), B: new Map() },
@@ -356,25 +349,10 @@ const hasId = (v: unknown): boolean => v !== undefined && v !== null;
  * week is open (§4.3).
  */
 const ON_EVENT: Record<EventType, OnEvent> = {
-  checkin({ s }, person, at, d) {
-    const date = normDate(d.date);
-    const habit = typeof d.habit === 'string' ? d.habit : null;
-    if (!date || !habit || typeof d.done !== 'boolean') return;
-    const today = localDateAt(at);
-    if (d.edit === true) {
-      // A fix from きろく: any day of an open week (history-and-editing.md §4.1).
-      if (!editableAt(date, at)) return;
-    } else if (date > today || date < addDays(today, -LIMITS.checkinBackDays) || isLockedAt(s, weekKeyOf(date), at)) return;
-    if (!habitsFor(person, weekKeyOf(date)).includes(habit)) return;
-    s.checkins[person].push(d.edit === true ? { at, date, habit, done: d.done, edit: true } : { at, date, habit, done: d.done });
-  },
-  // Workouts only: an old `{kind:'visit'}` answer is ignored (every gym arrival counts since 2026-10-30).
-  confirm({ s, workoutById }, person, at, d) {
-    if (typeof d.yes !== 'boolean' || typeof d.id !== 'string' || d.kind !== 'workout') return;
-    const w = workoutById.get(`${person}|${d.id}`);
-    if (!w || w.at > at || isLockedAt(s, weekKeyOf(w.date), at)) return;
-    push(s.workoutConfirms, `${person}|${d.id}`, { at, v: d.yes });
-  },
+  // ADR 0021: no check-ins and no daily questions. Old `checkin` rows (the eating habits) and `confirm` rows (「筋トレでしたか？」)
+  // stay in the sheet and are ignored.
+  checkin() {},
+  confirm() {},
   spend({ s }, person, at, d) {
     const label = typeof d.label === 'string' ? d.label.trim() : '';
     if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;

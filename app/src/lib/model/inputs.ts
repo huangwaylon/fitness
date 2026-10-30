@@ -1,6 +1,6 @@
 // The rows of one person as of a time T (only rows the server stamped at or before T): the inputs of the ベル
 // earnings. Shared by the WeekView (week.ts), the ベル economy (bells.ts) and きろく (history.ts).
-import type { CheckinTick, LocalDate, PersonId, Visit, WeekKey, Workout } from '#lib/types.ts';
+import type { LocalDate, PersonId, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { addDays } from '#lib/scoring/index.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
 import { allWorkouts, latestAt, latestTimed, type State } from './state.ts';
@@ -12,7 +12,7 @@ export interface Dates { from: LocalDate; to: LocalDate }
 const ALL: Dates = { from: '0000-00-00', to: '9999-99-99' };
 export const weekDates = (wk: WeekKey): Dates => ({ from: wk, to: addDays(wk, 6) });
 
-/** Ingested + manual workouts as of T, without the ones excluded from scoring, with their strength override. */
+/** Ingested + manual workouts as of T, without the ones excluded from scoring, with their きろく strength mark. */
 export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Workout[] {
   const out: Workout[] = [];
   for (const w of allWorkouts(s, person)) {
@@ -20,8 +20,7 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
     const key = `${person}|${w.id}`;
     if (latestAt(s.workoutExcluded.get(key), t) === true) continue;
     const wo: Workout = {
-      id: w.id, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr,
-      includesStrength: latestAt(s.workoutConfirms.get(key), t) ?? null
+      id: w.id, date: w.date, type: w.type, startAt: w.startAt, endAt: w.endAt, durationMin: w.durationMin, avgHr: w.avgHr
     };
     if (w.manual) wo.manual = true;
     const override = latestAt(s.workoutStrength.get(key), t);
@@ -37,20 +36,6 @@ function visitsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): 
     .filter((e) => e.at <= t && e.date >= dates.from && e.date <= dates.to)
     .sort((x, y) => x.eventMs - y.eventMs)
     .map((e) => ({ id: e.id, placeKey: e.placeKey, date: e.date, arriveAt: e.eventAt }));
-}
-
-/** Current ticks as of T, keyed `date|habit`, in the order the tick was (last) set. */
-export function ticksAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Map<string, CheckinTick> {
-  const on = new Map<string, CheckinTick>();
-  for (const c of s.checkins[person]) {
-    if (c.at > t) break;
-    if (c.date < dates.from || c.date > dates.to) continue;
-    const k = `${c.date}|${c.habit}`;
-    if (c.done) {
-      if (!on.has(k)) on.set(k, { date: c.date, habit: c.habit });
-    } else on.delete(k);
-  }
-  return on;
 }
 
 /**

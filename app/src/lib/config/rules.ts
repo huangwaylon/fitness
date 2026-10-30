@@ -1,9 +1,9 @@
-// The rules as data (ADR 0019 and its 2026-10-30 amendment; strength and tsuyu from ADRs 0009, 0011, 0017).
+// The rules as data (ADR 0019 and its amendments; what earns from ADR 0021; tsuyu from ADRs 0011, 0017).
 //
 // Everything is computed on read from the raw rows, so a value here applies to every week that uses it. To change
-// what a week earns, never edit a version (or a HABITS entry) whose weeks have earned: append a RULES version (or a
-// HABITS entry) with a later `from`. rules.test.ts pins the versions in use.
-import type { FruitKey, PersonId, PersonTargets, PotKey, RingFruit, WeekKey } from '#lib/types.ts';
+// what a week earns, never edit a version whose weeks have earned: append a RULES version with a later `from`.
+// rules.test.ts pins the versions in use.
+import type { FruitKey, PersonId, PotKey, RingFruit, WeekKey } from '#lib/types.ts';
 
 /** @deprecated ADR 0019's four fruits (🍐 = eating habits). Use RING_FRUITS. */
 export const FRUITS = ['peach', 'coconut', 'apple', 'pear'] as const satisfies readonly FruitKey[];
@@ -39,12 +39,15 @@ export interface RuleVersion {
 
 export const RULES: readonly RuleVersion[] = [
   {
-    // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns.
+    // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns. What earns is
+    // ADR 0021 (edited in place on 2026-10-30, in the economy's first week: see rules.test.ts). On target (every
+    // badge for both, minimum days) a person earns 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 + 3 × 400 🥥 =
+    // 4,700 daily + 5 × 400 badges = 6,700; both + 5 × 200 ふたりボーナス = 14,400 ベル a week (design.md §E).
     from: '2026-10-26',
-    goals: { activeMin: 45, steps: 8000, exerciseMin: 60, standMin: 180 },
-    bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
+    goals: { activeMin: 60, steps: 8000, exerciseMin: 60, standMin: 180 },
+    bells: { perMinute: 3, stepDay: 200, strengthDay: 400, perTick: 0, perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, gymDay: 400 },
     badges: {
-      activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250,
+      activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 0, bells: 400, duoPerBadge: 200,
       exerciseDays: 5, moveDays: 5, standDays: 5, gymDays: 3
     }
   }
@@ -82,23 +85,17 @@ export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
   ]
 };
 
+/**
+ * 🥥 strength workouts (no daily questions, 2026-10-30): these types of at least `minWorkoutMin` count; any other type
+ * counts only when marked as strength in きろく (`workout_edit {strength}`), and a mark can also take one of these out.
+ */
 export const STRENGTH = {
   autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
-  askTypes: ['Core Training', 'High Intensity Interval Training', 'Yoga', 'Mixed Cardio', 'Cross Training'],
   minWorkoutMin: 15
 } as const;
 
-/**
- * No Watch? Steps above the step goal count as active minutes at a moderate pace (round 4 review W1).
- * A day's minutes = max(Watch exercise minutes, (steps − stepGoal) / stepsPerMin), so nothing counts twice.
- */
-export const STEP_MINUTES = { stepsPerMin: 100 } as const;
-
-/** Tokyo tsuyu: ≥ 30 active minutes also counts as a step day. */
+/** Tokyo tsuyu: ≥ 30 counted exercise minutes also counts as a step day. */
 export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
-
-/** 正月: Dec 29–Jan 3 earn no 🍐, and the 🍐 badge is prorated to the other days of the week. */
-export const HOLIDAY = { pearOff: { from: '12-29', to: '01-03' } } as const;
 
 /**
  * The default villager names (until changed in しまフォン → 村人) and Move goals in kcal (until set with `pref`
@@ -112,26 +109,6 @@ export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number }> = 
 /** A `pref` moveGoal: an integer kcal in this range (inclusive); anything else is ignored (the previous goal stays). */
 export const MOVE_GOAL = { min: 100, max: 2000 } as const;
 
-/** A habits version: from week `from` (a Monday WeekKey) on, each person's three 🍐 habits. */
-export interface HabitsVersion {
-  from: WeekKey;
-  people: Record<PersonId, PersonTargets>;
-}
-
-/**
- * The eating habits (🍐), versioned by week like RULES: ascending `from`; weeks before the first use it. Labels in
- * the i18n catalogs (`habit.<key>`). Both people share the same three since the 2026-10-30 amendment.
- */
-export const HABITS: readonly HabitsVersion[] = [
-  {
-    from: '2026-10-26',
-    people: {
-      A: { habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] },
-      B: { habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] }
-    }
-  }
-];
-
 /**
  * A week's two times (JST): Sunday 19:30 (the harvest opens and the weekly bonus lands) and the Wednesday 04:00
  * after (the week locks: its earnings are final).
@@ -141,18 +118,16 @@ export const CUTOFFS = {
   final: { hour: 4, minute: 0 }
 } as const;
 
-/** Per-day caps of the counted amounts (scoring and きろく). */
+/** Per-day amounts of きろく. */
 export const DAILY = {
-  /** 🍐 Pear: distinct habit ticks counted per day. */
+  /** @deprecated ADR 0019's habit ticks per day (no economy effect since ADR 0021). */
   maxTicks: 3,
-  /** きろく stamps: a day counts as active (●) from this many counted minutes, or on a step-goal day. */
+  /** きろく stamps: a day counts as active (●) from this many counted exercise minutes, or on a step-goal day. */
   activeDayMin: 20
 } as const;
 
 /** Read-time checks on event rows: an event outside them is ignored (the server would have refused it). */
 export const LIMITS = {
-  /** A check-in without `edit` may fill in today and the two days before (the 48 h window). */
-  checkinBackDays: 2,
   /** Shortcuts sometimes fire twice: a repeat arrive at the same place this close is dropped. */
   presenceDuplicateMs: 120_000,
   /** A presence `event_at` further than this from the server `at` is ignored. */

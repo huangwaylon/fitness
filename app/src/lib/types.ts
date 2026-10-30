@@ -20,12 +20,6 @@ export type RingFruit = 'peach' | 'pear' | 'cherry' | 'apple' | 'coconut';
 /** ベル per ring fruit. */
 export type RingBells = Record<RingFruit, number>;
 
-export interface DayMetrics {
-  date: LocalDate;
-  steps: number | null;
-  exerciseMin: number | null;
-}
-
 export interface Workout {
   id: string;
   date: LocalDate;
@@ -35,9 +29,7 @@ export interface Workout {
   endAt: string;
   durationMin: number;
   avgHr: number | null;
-  /** The one-tap "included strength?" answer for HIIT/yoga; null = not asked/answered. */
-  includesStrength: boolean | null;
-  /** A きろく edit (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
+  /** A きろく mark (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
   strengthOverride?: boolean;
   /** Added by hand in きろく (Watch forgotten): its minutes count toward the day's active minutes (ADR 0011). */
   manual?: boolean;
@@ -48,17 +40,6 @@ export interface Visit {
   placeKey: string;
   date: LocalDate;
   arriveAt: string;
-}
-
-export interface CheckinTick {
-  date: LocalDate;
-  habit: string;
-}
-
-/** A person's targets beyond the shared daily goals (RuleVersion.goals): their three eating habits. */
-export interface PersonTargets {
-  /** Exactly three habit keys; labels live in the i18n catalogs (`habit.<key>`). */
-  habits: [string, string, string];
 }
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
@@ -75,13 +56,16 @@ export interface MenuItem {
   bells: number;
 }
 
-/** ベル per fruit. */
+/** @deprecated ベル per ADR 0019 fruit (🍐 here = Move ベル since ADR 0021, 🍒 missing). Use `RingBells`. */
 export type FruitBells = Record<FruitKey, number>;
 
 /** One person's earnings of one day. */
 export interface DayBells {
   date: LocalDate;
   bells: number;
+  /** Per ring fruit (ADR 0021); sums to `bells`. */
+  rings: RingBells;
+  /** @deprecated See FruitBells. */
   parts: FruitBells;
 }
 
@@ -111,14 +95,17 @@ export interface PotsView {
   weekBells: number;
 }
 
-/** The Sunday harvest's weekly bonus: +500 per badge each, +1,000 ふたりボーナス when both have all four. */
+/** The Sunday harvest's weekly bonus: +badges.bells per badge each, +badges.duoPerBadge per badge both met (ふたりボーナス). */
 export interface HarvestBonus {
   A: number;
   B: number;
   duo: number;
 }
 
-/** A fruit's progress today and this week (ADR 0019). */
+/**
+ * @deprecated ADR 0019's fruit progress, filled from the ring numbers since ADR 0021 (🍑🍎🥥 as the rings; 🍐 = Move,
+ * in kcal). Read `RingProgress`.
+ */
 export interface FruitProgress {
   /** Today's counted amount: minutes (🍑), steps (🍎), 1/0 strength day (🥥), ticks (🍐). */
   todayActual: number;
@@ -160,25 +147,22 @@ export interface PersonWeekView {
   /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
   villager: string | null;
   /**
-   * Today's earnings so far. `rings`: per ring fruit (ADR 0021; sums to `bells`). `parts` is @deprecated (ADR 0019's
-   * four fruits; 🍐 there is NOT Move during the transition).
+   * Today's earnings so far. `rings`: per ring fruit (ADR 0021; sums to `bells`). `parts` is @deprecated (FruitBells).
    */
   today: { bells: number; parts: FruitBells; rings: RingBells };
   /** This week's daily earnings so far (without the weekly bonus). */
   weekBells: number;
-  /** @deprecated ADR 0019's four fruits (🍐 = eating habits). Read `rings`. */
+  /** @deprecated ADR 0019's four fruits (see FruitProgress). Read `rings`. */
   fruits: Record<FruitKey, FruitProgress>;
   /** The five ring fruits (ADR 0021). */
   rings: Record<RingFruit, RingProgress>;
   /** The person's Move goal in force today, kcal (`pref` moveGoal; default ウェイ 600, うめ 400). */
   moveGoal: number;
   lastSyncAt: string | null;
-  /** @deprecated Eating check-ins (removed by ADR 0021). */
-  habits: { keys: [string, string, string]; ticksByDate: Record<LocalDate, string[]> };
 }
 
+/** @deprecated No daily questions (2026-10-30): `WeekView.pending` is always empty. */
 export interface PendingConfirmation {
-  /** Only ask-type workouts are asked about (gym arrivals always count, 2026-10-30). */
   kind: 'workout';
   id: string;
   date: LocalDate;
@@ -191,7 +175,7 @@ export interface HarvestView {
   bonus: HarvestBonus;
   /** The week's total ベル, both people: daily earnings + the bonus. */
   totalBells: number;
-  /** @deprecated ADR 0019's four badges. Read `ringBadges`. */
+  /** @deprecated ADR 0019's four badges (🍐 = the Move badge since ADR 0021). Read `ringBadges`. */
   badges: Record<PersonId, Record<FruitKey, boolean>>;
   /** The week's five badges per person (ADR 0021; lit = met, +bonus each). */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
@@ -212,6 +196,7 @@ export interface WeekView {
   menus: Record<PotKey, MenuItem[]>;
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;
+  /** @deprecated Always empty (no daily questions, 2026-10-30). */
   pending: PendingConfirmation[];
   /** i18n key (`host.*`) for the host しずえ's one line, plus params. */
   host: { key: string; params?: Record<string, string | number> };

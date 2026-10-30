@@ -23,8 +23,10 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 /**
- * The event types the server accepts and the model reads. The sheet also holds rows of removed types (the privacy
- * toggles' `share`, the yen economy's `approve`, `transfer`, `transfer_undo`): the model ignores any type not listed.
+ * The event types the server accepts. The sheet also holds rows of removed types (the privacy toggles' `share`, the
+ * yen economy's `approve`, `transfer`, `transfer_undo`): the model ignores any type not listed. `checkin` (the eating
+ * habits) and `confirm` (「筋トレでしたか？」) are still accepted, so an old client's queued event never jams, but the
+ * model ignores them since ADR 0021 (no manual check-ins, no daily questions).
  */
 export const EVENT_TYPES = [
   'checkin', 'confirm', 'spend', 'harvest', 'highfive', 'pref',

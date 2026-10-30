@@ -8,6 +8,7 @@ const BODY = {
   steps: '4963\n23836\n1658',
   exercise_minutes: '0\n58\n6',
   calories: '120.5\n249.2640000000001\n30',
+  stand_minutes: '12\n58\n4',
   weight: '0\n0\n68.4'
 };
 
@@ -32,7 +33,7 @@ describe('shortcutDate: Shortcuts date text, English or Japanese', () => {
 });
 
 describe('parseShortcut: the official body', () => {
-  it('one row per day per metric; weight 0 = no weigh-in; calories ignored', () => {
+  it('one row per day per metric; calories → move_kcal and stand_minutes → stand_min (rounded); weight 0 = no weigh-in', () => {
     const r = parseShortcut(BODY);
     expect(r.metrics).toEqual([
       { date: '2026-10-28', metric: 'steps', value: 4963 },
@@ -41,6 +42,12 @@ describe('parseShortcut: the official body', () => {
       { date: '2026-10-28', metric: 'exercise_min', value: 0 },
       { date: '2026-10-29', metric: 'exercise_min', value: 58 },
       { date: '2026-10-30', metric: 'exercise_min', value: 6 },
+      { date: '2026-10-28', metric: 'move_kcal', value: 121 },
+      { date: '2026-10-29', metric: 'move_kcal', value: 249 },
+      { date: '2026-10-30', metric: 'move_kcal', value: 30 },
+      { date: '2026-10-28', metric: 'stand_min', value: 12 },
+      { date: '2026-10-29', metric: 'stand_min', value: 58 },
+      { date: '2026-10-30', metric: 'stand_min', value: 4 },
       { date: '2026-10-30', metric: 'weight', value: 68.4 }
     ]);
     expect(r).toMatchObject({ workouts: [], skipped: 0, warnings: [], unknownTypes: [] });
@@ -50,7 +57,27 @@ describe('parseShortcut: the official body', () => {
     const r = parseShortcut({ ...BODY, weight: '68.4' });
     expect(r.warnings).toEqual(['weight: 1 lines but 3 dates; weight not saved']);
     expect(r.metrics.filter((m) => m.metric === 'weight')).toEqual([]);
-    expect(r.metrics).toHaveLength(6);
+    expect(r.metrics).toHaveLength(12);
+  });
+
+  it('calories or stand_minutes with a different length are dropped with a warning; an older body without them still works', () => {
+    const r = parseShortcut({ ...BODY, calories: '120\n249', stand_minutes: '1\n2\n3\n4' });
+    expect(r.warnings).toEqual(['calories: 2 lines but 3 dates; calories not saved', 'stand_minutes: 4 lines but 3 dates; stand_minutes not saved']);
+    expect(r.metrics.filter((m) => m.metric === 'move_kcal' || m.metric === 'stand_min')).toEqual([]);
+    expect(r.metrics).toHaveLength(7);
+    const { calories: _c, stand_minutes: _s, ...old } = BODY;
+    expect(parseShortcut(old).metrics.map((m) => m.metric)).not.toContain('move_kcal');
+    expect(parseShortcut({ dates: 'Oct 28, 2026', stand_minutes: '30' }).metrics).toEqual([{ date: '2026-10-28', metric: 'stand_min', value: 30 }]);
+  });
+
+  it('kcal above 10,000 and stand minutes above 1,440 are skipped with a warning', () => {
+    const r = parseShortcut({ dates: 'Oct 28, 2026\nOct 29, 2026', calories: '10000.4\n10000.6', stand_minutes: '1440\n1441' });
+    expect(r.metrics).toEqual([
+      { date: '2026-10-28', metric: 'move_kcal', value: 10000 },
+      { date: '2026-10-28', metric: 'stand_min', value: 1440 }
+    ]);
+    expect(r.skipped).toBe(2);
+    expect(r.warnings).toEqual(['calories: 10001 on 2026-10-29 is above 10000; skipped', 'stand_minutes: 1441 on 2026-10-29 is above 1440; skipped']);
   });
 
   it('an unreadable value or date skips that line only; weight outside 20–300 kg is skipped', () => {
