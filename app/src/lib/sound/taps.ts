@@ -1,7 +1,7 @@
 // Every tap's sound (docs/design/sound.md §13 "Every tap"), from one delegated listener instead of a cue() in each
 // handler. A control names its sound in `data-sfx`:
 //   <button data-sfx="open">     a cue from TAP_SFX, played on the click: a commit, so never on a scroll or a drag
-//   data-sfx="self"              the handler plays the outcome's own cue (buy → purchase, a habit → checkin-saved,
+//   data-sfx="self"              the handler plays the outcome's own cue (buy → purchase,
 //                                the phone's open tune), so the tap adds nothing: no double sounds
 //   data-sfx="none"              deliberately silent (a text field: the system keyboard has its own clicks)
 // A control that can't act right now carries aria-disabled="true" instead of `disabled` (it stays focusable and

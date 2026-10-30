@@ -12,8 +12,8 @@ export type Cue =
   | 'tree-shake' | 'fruit-land' | 'coin-land' | 'bells-arrive' | 'jar-tap'
   // villagers and しずえ (reaction steps)
   | 'villager-tap' | 'host-tap' | 'emote-surprise' | 'emote-love' | 'emote-joy' | 'emote-idea' | 'trouble' | 'announce'
-  // check-in, choices
-  | 'checkin-saved' | 'choice-move' | 'choice-pick'
+  // choices
+  | 'choice-move' | 'choice-pick'
   // taps (sound.md §13; most are named by a control's data-sfx, taps.ts)
   | 'tick' | 'open' | 'confirm' | 'toggle-on' | 'toggle-off' | 'key' | 'key-fn' | 'page' | 'boop' | 'sync' | 'remove' | 'undo'
   // the しまフォン
@@ -26,7 +26,7 @@ export type Cue =
 interface CueDef {
   sound: SoundId;
   /** A sound of the island itself: silent while a sheet, the phone or the harvest covers the scene (NH's world goes
-   *  quiet under its menus; round 14 review R1). UI cues always play. */
+   *  quiet under its menus). UI cues always play. */
   world?: boolean;
   /** Level on top of the sound's own (1 = as defined in ids.ts). */
   gain?: number;
@@ -51,7 +51,6 @@ export const CUES: Record<Cue, CueDef> = {
   'emote-idea': { sound: 'pop', gain: 0.8, world: true },
   trouble: { sound: 'oops', world: true },
   announce: { sound: 'chime', world: true },
-  'checkin-saved': { sound: 'confirm' },
   'choice-move': { sound: 'cursor' },
   'choice-pick': { sound: 'confirm' },
   // taps (sound.md §13): all UI, so they sound under a sheet too
@@ -92,7 +91,7 @@ export const CUES: Record<Cue, CueDef> = {
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the
- *  top: one rising gesture instead of the same three notes again and again (round 14 review R2). */
+ *  top: one rising gesture instead of the same three notes again and again. */
 const COIN_RUN = [0, 2, 4, 7, 9, 12, 14, 16, 19] as const;
 export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n), COIN_RUN.length - 1)];
 

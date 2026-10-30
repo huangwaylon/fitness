@@ -21,7 +21,7 @@ import { trackLevel } from './hourly.ts';
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-describe('audio session type (round 16 H2, option A)', () => {
+describe('audio session type', () => {
   it("'playback' only while ミュージック is on; effects and voices alone are 'ambient'", () => {
     expect(sessionType(true)).toBe('playback');
     expect(sessionType(false)).toBe('ambient');
@@ -76,7 +76,7 @@ describe('audio session type (round 16 H2, option A)', () => {
   });
 });
 
-describe('when a cue may sound (round 16 M2)', () => {
+describe('when a cue may sound', () => {
   it('always while running', () => {
     expect(canSound('running', Infinity)).toBe(true);
   });
@@ -92,7 +92,7 @@ describe('when a cue may sound (round 16 M2)', () => {
   });
 });
 
-describe('when a tap must unlock (round 16 M1)', () => {
+describe('when a tap must unlock', () => {
   const ok = { state: 'running', music: true, decksReady: true, frontStalled: false };
   it('not when running with unlocked decks and the track playing', () => {
     expect(needsUnlock(ok)).toBe(false);
@@ -113,7 +113,7 @@ describe('when a tap must unlock (round 16 M1)', () => {
   });
 });
 
-// A tap's gestures, run through gestureAction against a small model of the browser (user report, round 16: "the
+// A tap's gestures, run through gestureAction against a small model of the browser (user report: "the
 // music doesn't start until I tap something with a sound"). `activations`: the gestures the browser lets start media.
 // A full unlock inside one starts the track (the deck plays inside the tap); outside one, play() is refused and the
 // track waits, stalled, for the next tap. The music must start on the first tap whatever it lands on.
@@ -174,7 +174,7 @@ describe('the first tap anywhere starts the music', () => {
   });
 });
 
-describe('fade back in (round 16 H1)', () => {
+describe('fade back in', () => {
   it('a paused deck, or one playing at under half its level (played by iOS while hidden, gain still 0)', () => {
     expect(needsFadeIn(true, 1, 1)).toBe(true);
     expect(needsFadeIn(false, 0, 1)).toBe(true);
@@ -184,7 +184,7 @@ describe('fade back in (round 16 H1)', () => {
   });
 });
 
-describe('idle suspend (round 16 M3)', () => {
+describe('idle suspend', () => {
   it('fires IDLE_SUSPEND_MS after the last sound, and every sound restarts it', () => {
     const idle = vi.fn();
     const t = new IdleTimer(idle);
@@ -220,7 +220,7 @@ describe('loop hand-off position', () => {
   });
 });
 
-describe('loudness gain (round 16 M5)', () => {
+describe('loudness gain', () => {
   it('dB → a linear deck level; none = 1', () => {
     expect(trackLevel(undefined)).toBe(1);
     expect(trackLevel(0)).toBe(1);

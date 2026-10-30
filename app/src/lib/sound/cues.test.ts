@@ -1,4 +1,4 @@
-// The cue table (sound.md §5): scenery taps are wired, quiet world sounds (round 16 code review H3).
+// The cue table (sound.md §5): scenery taps are wired, quiet world sounds.
 import { describe, expect, it } from 'vitest';
 import { CUES } from './cues.ts';
 import { SOUNDS, type SceneSfx } from './ids.ts';

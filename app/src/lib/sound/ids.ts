@@ -26,7 +26,7 @@ export type SceneSfx =
   | 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shooting-star'
   | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly';
 
-export interface SoundDef {
+interface SoundDef {
   bus: 'sfx' | 'voice';
   /** Level on its bus, 0–1 (the placeholder renders all peak at the same level; this is the mix). */
   gain: number;
