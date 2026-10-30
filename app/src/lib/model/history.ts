@@ -3,13 +3,11 @@
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { STRENGTH } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
-import { exerciseMilli, isStrengthWorkout, manualMinutesByDay } from '#lib/scoring/bells.ts';
+import { exerciseMilli, isStrengthWorkout, manualMinutesByDay, zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
 import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
-import type { WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, dayBells, earnTimeOf, LIVE, weekBells, type WeekBells } from './bells.ts';
 import { replayHarvests } from './week.ts';
 import { activityAsOf, metricAsOf, weekDates, workoutsAsOf, type Activity } from './inputs.ts';
-
 
 /** A week's ベル at `now`: daily earnings up to today, and the bonus once it landed (Sunday 19:30). */
 function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
@@ -22,6 +20,9 @@ function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
   const B = person(w.B);
   return { bonus, A, B, bells: A.daily + A.bonus + B.daily + B.bonus + bonus.duo };
 }
+/** A future day's ベル: nothing yet, whatever rows are dated to it. */
+const NO_BELLS = () => ({ bells: 0, rings: zeroRings() });
+
 /** Badge progress per fruit: days at the goal this week, and the threshold of the week's rule version. */
 type RingWeek = Record<RingFruit, { days: number; goal: number }>;
 const ringWeekOf = (e: WeekEarning): RingWeek =>
@@ -221,7 +222,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
           standMin: d.standMin,
           gym: d.gym,
           met: { ...d.met },
-          ...(d.date <= today ? dayBells(wb[p], d.date) : dayBells(wb[p], '')),
+          ...(d.date <= today ? dayBells(wb[p], d.date) : NO_BELLS()),
           edited: fields.length > 0,
           editedFields: fields
         };
@@ -318,7 +319,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const mine = log.filter((e) => e.by === p);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
-      ...(date <= localDateAt(now) ? dayBells(wb[p], date) : dayBells(wb[p], '')),
+      ...(date <= localDateAt(now) ? dayBells(wb[p], date) : NO_BELLS()),
       met: d ? { ...d.met } : { peach: false, pear: false, cherry: false, apple: false, coconut: false },
       steps: { value: metricAsOf(s, p, date, 'steps', t), edited: mine.some((e) => e.field === 'steps') },
       exercise,

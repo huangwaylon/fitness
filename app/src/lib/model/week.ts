@@ -4,14 +4,12 @@ import type {
   HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, WalletView, WeekKey, WeekView
 } from '#lib/types.ts';
 import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
-
 import { milestoneBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, dayBells, LIVE, menuView, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
 import { activityAsOf, type Activity } from './inputs.ts';
-
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
@@ -59,8 +57,9 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
     weekBells: e.days.reduce((n, x) => (x.date <= today ? n + x.rings[key] : n), 0)
   };
   // The milestone fields only exist in a week with a curve, so v1 views stay as they were.
-  const pay = key === 'coconut' ? null : milestoneBells(e.weekKey, key);
-  if (!pay || !r.curve || key === 'coconut') return view;
+  if (key === 'coconut' || !r.curve) return view;
+  const pay = milestoneBells(e.weekKey, key);
+  if (!pay) return view;
   const milestone = d?.milestone?.[key] ?? 0;
   const next = milestone < pay.length ? milestone : null;
   return {
