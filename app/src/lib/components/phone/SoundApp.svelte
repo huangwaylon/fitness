@@ -85,5 +85,5 @@
   }
   input[type='range']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-pill); }
 
-  .note { margin: 4px 6px 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; color: var(--text-soft); word-break: auto-phrase; }
+  .note { margin: 4px 6px 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; color: var(--text-soft); }
 </style>

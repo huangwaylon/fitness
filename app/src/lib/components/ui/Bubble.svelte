@@ -106,7 +106,7 @@
     background: var(--c-cream); color: var(--c-ink); border-radius: 24px 30px 26px 28px / 28px 24px 30px 26px;
     padding: 10px 18px; box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     font-size: var(--fs-talk); font-weight: 700; line-height: 1.5;
-    text-wrap: pretty; word-break: auto-phrase;
+    text-wrap: pretty;
     /* Fixed box: --talk-lines lines of text (2; 1 compact), so the layout never jumps between lines. */
     min-height: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px);
     display: flex; flex-direction: column; justify-content: center;

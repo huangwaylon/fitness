@@ -85,7 +85,7 @@
   .cap { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .hero :global(.total) { font-size: var(--fs-title); }
 
-  .hint { margin: 14px 0 0; text-align: center; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); word-break: auto-phrase; text-wrap: balance; }
+  .hint { margin: 14px 0 0; text-align: center; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-wrap: balance; }
 
   @media (max-height: 700px), (max-width: 359px) {
     .hero { padding-bottom: 10px; }

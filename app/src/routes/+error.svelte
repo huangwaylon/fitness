@@ -36,7 +36,7 @@
     padding: calc(var(--safe-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--pad-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
   }
   .nook { line-height: 0; }
-  h1 { margin: 0; display: grid; gap: 4px; font-size: var(--fs-title); text-wrap: balance; word-break: auto-phrase; }
+  h1 { margin: 0; display: grid; gap: 4px; font-size: var(--fs-title); text-wrap: balance; }
   h1 [lang='en'] { font-size: .85em; color: var(--text-soft); }
   p { margin: 0; font-weight: 700; color: var(--text-soft); text-wrap: balance; }
   .btn { width: 100%; text-decoration: none; }

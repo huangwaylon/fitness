@@ -26,5 +26,5 @@
   .navbar { display: grid; grid-template-columns: var(--hit) minmax(0, 1fr) var(--hit); align-items: center; gap: 8px; min-height: 52px; }
   .side { display: flex; width: var(--hit); }
   .end { justify-content: flex-end; }
-  .ttl { margin: 0; text-align: center; font-size: var(--fs-title); line-height: 1.2; overflow-wrap: anywhere; word-break: auto-phrase; }
+  .ttl { margin: 0; text-align: center; font-size: var(--fs-title); line-height: 1.2; overflow-wrap: anywhere; }
 </style>
