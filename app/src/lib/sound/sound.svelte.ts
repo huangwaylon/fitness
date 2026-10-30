@@ -7,6 +7,7 @@
 import { untrack } from 'svelte';
 import { SOUNDS, type SoundId } from './ids.ts';
 import { Engine } from './engine.ts';
+import type { Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { blipPlan, type Glyph } from './dialogue.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
@@ -54,16 +55,18 @@ const musicOn = (s: SoundSettings): boolean => s.music && hasMusic();
 const anyOn = (s: SoundSettings): boolean => s.music || s.sfx || s.voice;
 
 /** Inside a user gesture: start audio (or wake it after iOS suspended it, or restart a track something outside
- *  paused) if any setting wants it. A scenery tap sounds on pointerdown, which on a touch screen isn't a user
- *  activation: it only gets the context going (so that tap's sound is scheduled), and the pointerup unlocks the rest. */
+ *  paused or the browser refused to start) if any setting wants it (session.ts gestureAction). Any tap does it, on
+ *  a control or on plain scenery: a scenery tap sounds on pointerdown, which on a touch screen isn't a user
+ *  activation, so it only gets the context going (that tap's sound is scheduled), and the pointerup or touchend
+ *  unlocks the rest. Never waits for a click (iOS fires none on plain scenery). */
 function unlock(ev?: Event): void {
   const s = sound.settings;
   if (typeof window === 'undefined' || silent(s)) return;
   const e = eng();
   const music = musicOn(s);
-  if (!e.needsUnlock(music)) return;
-  const activation = ev?.type !== 'pointerdown';
-  if (!activation && e.ctx?.state === 'running') return; // only the decks wait: that's the pointerup's job
+  const act = e.gesture((ev?.type ?? 'click') as Gesture, music);
+  if (act === 'none') return; // nothing waits, or only the decks: that's the pointerup's / touchend's job
+  const activation = act === 'full';
   e.unlock(music, activation);
   apply();
   if (!activation) return;
@@ -164,6 +167,16 @@ function nowPlaying(title: string | null): void {
   ms.playbackState = document.hidden ? 'paused' : 'playing';
 }
 
+/** Ahead of the first tap (needs no context): the renderer, and the hour's track when ミュージック is on. */
+function prefetchFirst(): void {
+  const s = sound.settings;
+  if (silent(s)) return;
+  const e = eng();
+  e.warm();
+  const tr = musicOn(s) && !e.ctx ? trackAt(now(), sound.weather, AUDIO.music) : null;
+  if (tr) e.prefetch(tr.file);
+}
+
 /** Timers for the next top of the hour: fetch its track a minute early, change on the hour. */
 function armClock(): void {
   clock.forEach(clearTimeout);
@@ -225,8 +238,9 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   const gestures = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'] as const;
   for (const g of gestures) document.addEventListener(g, unlock, { capture: true, passive: true });
   initMediaSession();
-  // the renderer is pure and small: fetch it ahead of the first tap when a setting is on (nothing loads while off)
-  if (!silent(sound.settings)) setTimeout(() => !silent(sound.settings) && eng().warm(), 2000);
+  // the renderer is pure and small: fetch it ahead of the first tap when a setting is on (nothing loads while off);
+  // with ミュージック on, the hour's file too, so the first tap anywhere starts it inside that tap (no fetch to wait for)
+  if (!silent(sound.settings)) setTimeout(prefetchFirst, 1000);
   const onHide = () => {
     engine?.pause();
     const ms = mediaSession();

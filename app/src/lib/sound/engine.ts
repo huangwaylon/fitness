@@ -15,7 +15,7 @@ import { SOUNDS, SOUND_IDS, type Bus, type SoundId } from './ids.ts';
 import { DUCK, LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
 import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
-import { IdleTimer, QUEUED_DROP_MS, SessionSwitch, WRAP, canSound, needsFadeIn, needsUnlock, wrapTarget } from './session.ts';
+import { IdleTimer, QUEUED_DROP_MS, SessionSwitch, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
 import type { AmbientId } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
 
@@ -98,6 +98,8 @@ export class Engine {
   #token = 0;
   /** Music files as blob URLs (path → URL), the current and the prefetched next one only. */
   #blobs = new Map<string, Promise<string | null>>();
+  /** The same, resolved (path → URL): a file already here starts inside the tap that asks for it (setTrack). */
+  #urls = new Map<string, string>();
   #ambient = new Map<AmbientId, { src: AudioBufferSourceNode; gain: GainNode }>();
   #ambientBuffers = new Map<AmbientId, Promise<AudioBuffer | null>>();
   #ambientToken = 0;
@@ -150,15 +152,19 @@ export class Engine {
     if (this.ctx) this.#session.want(music);
   }
 
+  #unlockState(music: boolean) {
+    const f = this.#decks[this.#front];
+    return { state: this.ctx?.state ?? null, music, decksReady: this.#decksReady, frontStalled: !!f?.key && f.el.paused && !f.starting };
+  }
+
   /** Waiting for a tap (session.ts needsUnlock). */
   needsUnlock(music: boolean): boolean {
-    const f = this.#decks[this.#front];
-    return needsUnlock({
-      state: this.ctx?.state ?? null,
-      music,
-      decksReady: this.#decksReady,
-      frontStalled: !!f?.key && f.el.paused && !f.starting
-    });
+    return needsUnlock(this.#unlockState(music));
+  }
+
+  /** What this gesture should do (session.ts gestureAction). */
+  gesture(g: Gesture, music: boolean): 'none' | 'context' | 'full' {
+    return gestureAction(g, this.#unlockState(music));
   }
 
   /** Call synchronously inside a user gesture (pointerup / touchend / click / keydown). `activation: false` (a
@@ -175,7 +181,14 @@ export class Engine {
       src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
       src.connect(ctx.destination);
       src.start();
-      if (music) this.#unlockDecks(ctx);
+      if (music) {
+        this.#unlockDecks(ctx);
+        // a track that should be playing but isn't (the browser refused a play() outside a gesture, or something
+        // outside paused it): play() it here, inside the tap, at gain 0; the fade-in that follows (apply →
+        // syncMusic → setTrack) brings it up
+        const f = this.#decks[this.#front];
+        if (f.key && f.el.paused) f.el.play().catch(() => {});
+      }
     }
     void this.#loadSynth();
     this.#prerender();
@@ -449,13 +462,17 @@ export class Engine {
       p = fetch(audioUrl(path))
         .then(async (r) => (r.ok ? URL.createObjectURL(await r.blob()) : null))
         .catch(() => null);
-      p.then((url) => url === null && this.#blobs.delete(path));
+      p.then((url) => {
+        if (url === null) this.#blobs.delete(path);
+        else if (this.#blobs.get(path) === p) this.#urls.set(path, url);
+      });
       this.#blobs.set(path, p);
     }
     return p;
   }
 
-  /** Fetch a file now so a later change starts at once (the next hour, a minute before it). */
+  /** Fetch a file now so a later change starts at once (the next hour a minute before it; the current hour at
+   *  launch when ミュージック is on, so the first tap can start it inside the tap). Needs no context. */
   prefetch(path: string): void {
     void this.#blob(path);
   }
@@ -465,6 +482,7 @@ export class Engine {
     for (const [path, p] of this.#blobs) {
       if (keep.includes(path)) continue;
       this.#blobs.delete(path);
+      this.#urls.delete(path);
       void p.then((url) => url && URL.revokeObjectURL(url));
     }
   }
@@ -488,7 +506,10 @@ export class Engine {
     const plan = crossfadePlan(ctx.currentTime, playing);
     this.#fadeOut(cur, plan.outFrom, plan.outTo);
     if (!key || !track) return;
-    const url = await this.#blob(track.file);
+    // Already fetched (prefetched at launch, or heard this session): no await, so when this runs inside a tap the
+    // deck's play() below is inside it too, and iOS can't refuse it. Otherwise wait for the file; the deck was
+    // unlocked by its silent clip in the first tap, and a refused play() is retried by the next tap.
+    const url = this.#urls.get(track.file) ?? (await this.#blob(track.file));
     if (!url || token !== this.#token) return; // offline and never heard: silence until the next change
     this.#trimBlobs([track.file, ...prefetched]);
     this.#front = 1 - this.#front;
@@ -498,7 +519,10 @@ export class Engine {
     next.end = loop && track.end ? track.end : null;
     next.el.loop = loop && next.end === null;
     next.starting = true;
+    next.gain.gain.cancelScheduledValues(0);
+    next.gain.gain.value = 0;
     next.el.src = url;
+    next.el.play().catch(() => {}); // at gain 0: the seek and the fade-in follow
     // seek once the element knows the file (start = where the loop begins musically); an undecodable file goes on
     await new Promise<void>((done) => {
       const go = () => {
@@ -514,7 +538,6 @@ export class Engine {
         next.el.addEventListener('loadedmetadata', go, { once: true });
         next.el.addEventListener('error', () => done(), { once: true });
       }
-      next.el.load();
     });
     if (token !== this.#token) return void (next.starting = false);
     const lead = Math.max(0, plan.inFrom - ctx.currentTime);
