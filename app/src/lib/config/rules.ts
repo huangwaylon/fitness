@@ -53,7 +53,7 @@ export function rulesFor(weekKey: WeekKey): RuleVersion {
 export const ECONOMY_START: WeekKey = RULES[0].from;
 
 /** A default menu entry; the label follows the viewer's language until the menu is edited (then it is the typed label). */
-export interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }
+interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }
 
 /**
  * The shared menu before anyone edits it (ADR 0022, one list, five grouped items; lead 2026-10-30). Priced against

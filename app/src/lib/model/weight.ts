@@ -13,10 +13,10 @@ import { addDays, daysBetween } from '#lib/time/dates.ts';
 import { roundKg as round1 } from '#lib/contract/api.ts';
 import { latestTimed, localDateAt, type State } from './state.ts';
 
-export interface WeighIn { date: LocalDate; kg: number }
+interface WeighIn { date: LocalDate; kg: number }
 export interface WeightPoint extends WeighIn { trend: number }
 
-export type WeightProjection =
+type WeightProjection =
   | { kind: 'reached' }
   /** The trend reaches the goal around `date` at the current pace. */
   | { kind: 'date'; date: LocalDate }

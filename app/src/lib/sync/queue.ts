@@ -111,7 +111,7 @@ export function backoffMs(tries: number, rand = Math.random): number {
  * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo).
  * `expired`: edits dropped unsent because their week locked while they waited (offline).
  */
-export interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; expired: QueuedEvent[]; remaining: number; error?: GasError }
+interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; expired: QueuedEvent[]; remaining: number; error?: GasError }
 
 let flushing: Promise<FlushResult> | null = null;
 /** The event currently in flight (it can't be undone any more). */

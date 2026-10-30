@@ -54,7 +54,7 @@ export function reducedMotion(): boolean {
 }
 
 /** Tokyo wall-clock fields of an instant (month 1–12, weekday 0 = Sunday). */
-export interface Jst {
+interface Jst {
   year: number;
   month: number;
   day: number;

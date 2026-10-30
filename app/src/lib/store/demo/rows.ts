@@ -7,6 +7,7 @@ import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib
 import { addDays, jstMs, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs, provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
+import { maxAt } from '#lib/model/snapshot.ts';
 
 const DEMO_WEEKS_BACK = 8;
 
@@ -162,9 +163,5 @@ function demoRows(now: number): SnapshotRows {
 /** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`), carrying the demo's calendar for the model. */
 export function demoCache(now: number, me: PersonId = 'A'): SnapshotCache {
   const rows = demoRows(now);
-  let since: string | null = null;
-  for (const tab of [rows.metrics, rows.workouts, rows.presence, rows.events] as (readonly unknown[])[][]) {
-    for (const r of tab) if (since === null || String(r[0]) > since) since = String(r[0]);
-  }
-  return { v: 1, me, rows, since, skewMs: 0, fetchedAt: now, demo: { firstWeek: demoFirstWeek(now) } };
+  return { v: 1, me, rows, since: maxAt(rows), skewMs: 0, fetchedAt: now, demo: { firstWeek: demoFirstWeek(now) } };
 }
