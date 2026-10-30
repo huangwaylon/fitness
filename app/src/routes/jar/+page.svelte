@@ -12,6 +12,7 @@
   import Jar, { jarFill } from '#lib/components/island/Jar.svelte';
   import PhoneButton from '#lib/components/ui/PhoneButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
   import { spendPurse, approveSpend, transferDone, undoBanner } from '#lib/store/actions.ts';
   import { tick } from 'svelte';
@@ -70,7 +71,7 @@
 </script>
 
 {#if view && jar}
-  <main class="jar-screen">
+  <main class="jar-screen" class:undoing={!!toasts.current?.action}>
     <div class="top">
       <a class="back" href={resolve('/')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5 L8 12 L16 19 Z" /></svg>{t('jar.back')}</a>
       <PhoneButton bind:open={phoneOpen} />
@@ -194,8 +195,7 @@
 
 <style>
   .jar-screen {
-    --jar-h: 132px;
-    max-width: var(--col); margin: 0 auto; min-height: 100dvh;
+    max-width: var(--col); margin: 0 auto; min-height: var(--vh-page);
     padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + 16px) calc(var(--side) + var(--safe-left));
   }
   .top { display: flex; justify-content: space-between; align-items: center; height: 52px; margin-right: -6px; }
@@ -205,6 +205,8 @@
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); text-decoration: none;
     font: 700 var(--fs-body)/1 var(--font-ui);
   }
+  /* the undo banner (56px, 16px over the bottom) never covers the last card or its 使う (sizing #18) */
+  .jar-screen.undoing { padding-bottom: calc(var(--pad-bottom) + 88px); }
   .back svg { width: 16px; height: 16px; fill: var(--c-yuzu-lip); }
   .back:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
 
@@ -212,7 +214,7 @@
   .totalbtn { appearance: none; border: 0; background: none; padding: 0 8px; color: inherit; cursor: pointer; border-radius: var(--r-btn); }
   .totalbtn:active { transform: scale(.97); }
   .bigjar { display: block; line-height: 0; margin-bottom: 6px; }
-  .hero :global(.total) { font-size: min(var(--fs-hero), 12vw); }
+  .hero :global(.total) { font-size: var(--fs-hero); }
   .wk { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
 
   /* Payday (F7): a quiet cream NH banner with a small bells icon, well under the total (body text, no button fill). */
@@ -238,7 +240,9 @@
   .row b, .body > b { font-size: var(--fs-title); }
   .left { font-size: var(--fs-body); color: var(--text-soft); }
   .chev { width: 24px; height: 24px; flex: none; color: var(--text-soft); }
-  .purse :global(.purse-yen) { font-size: var(--fs-title); }
+  /* the bell bag never shrinks; the ¥ scales down at 320 instead (sizing #5) */
+  .purse :global(.purse-yen) { font-size: clamp(1.25rem, 6.5vw, var(--fs-title)); }
+  .purse :global(.bag) { flex: none; }
   .purse .btn { flex: none; min-width: 96px; margin-bottom: 4px; }
   .need { flex: none; max-width: 9em; text-align: right; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); word-break: auto-phrase; }
   .spend { min-height: 64px; }
@@ -263,14 +267,14 @@
   .ln { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-talk); display: grid; gap: 6px; }
   .ladder .money { font-size: var(--fs-body); }
   .ladder li.done { color: var(--text-soft); }
-  .layers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .layers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
   .layer { display: grid; justify-items: center; gap: 4px; text-align: center; min-width: 0; }
   .minijar { display: block; width: 32px; height: 38px; }
   .layer .ln { font-size: var(--fs-s); color: var(--text-soft); max-width: 100%; overflow-wrap: anywhere; }
   .layer b { font-size: var(--fs-body); }
 
-  .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-bottom: 8px; }
-  @media (max-width: 339px) { .shelf { grid-template-columns: repeat(2, 1fr); } }
+  .shelf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-bottom: 8px; }
+  @media (max-width: 339px) { .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .item {
     appearance: none; border: 0; cursor: pointer; padding: 12px 6px 10px; text-align: center; min-height: 112px; font: inherit;
     flex-direction: column; justify-content: center; gap: 2px; transition: transform var(--dur-base) var(--ease-bounce);
@@ -284,13 +288,8 @@
   .both { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; color: var(--c-coral); }
 
   @media (max-height: 700px), (max-width: 359px) {
-    .jar-screen { --jar-h: 96px; }
     .hero { padding-bottom: 14px; }
     .cards { gap: 12px; }
     .card { min-height: 72px; padding: 12px 14px; }
-  }
-  @media (max-width: 339px) {
-    .jar-screen { --jar-h: 84px; }
-    .hero :global(.total) { font-size: 2.25rem; }
   }
 </style>

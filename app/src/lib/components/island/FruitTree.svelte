@@ -27,8 +27,10 @@
     foliage: Foliage;
     shakeN?: number;
     celebrate?: { fruit: FruitKey; n: number } | null;
+    /** A sheet or the harvest covers the scene: the popup closes (it never shows behind a sheet). */
+    covered?: boolean;
   }
-  let { person, x, foliage, shakeN = 0, celebrate = null }: Props = $props();
+  let { person, x, foliage, shakeN = 0, celebrate = null, covered = false }: Props = $props();
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
   let open = $state(false);
@@ -90,6 +92,10 @@
     if (shakeN > 0) untrack(shake);
   });
 
+  $effect(() => {
+    if (covered) open = false;
+  });
+
   function tap(f: FruitKey | null) {
     if (!f) shake();
     picked = f;
@@ -110,7 +116,7 @@
     return best.f;
   }
 
-  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD (≈ 100px), measured from
+  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD and its 44px ribbon (≈ 112px), measured from
    *  its layout box (offsetLeft/Top ignore the pop-in transform). The tail stays on the tree. */
   function keepInside(el: HTMLElement) {
     const scene = el.closest('.scene');
@@ -122,7 +128,7 @@
     let dx = 0;
     if (left < sc.left + 8) dx = sc.left + 8 - left;
     else if (left + w > sc.right - 8) dx = sc.right - 8 - (left + w);
-    const dy = Math.max(0, sc.top + 100 - top);
+    const dy = Math.max(0, sc.top + 112 - top);
     el.style.marginLeft = `${dx}px`;
     el.style.marginTop = `${dy}px`;
     el.style.setProperty('--tail', `${-dx}px`);
@@ -238,6 +244,8 @@
   .row.on { background: var(--c-yuzu); }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
+  /* narrow stages: one column (≈ 160px), so the popup fits over its own tree (sizing #10) */
+  @container (max-width: 359px) { .detail { grid-template-columns: auto; } }
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }

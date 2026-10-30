@@ -162,15 +162,15 @@
      goes quiet. ≈ 180 at 393×852, 138 at 375×667 and 320×568. */
   .island {
     --talk-h: calc(var(--talk-lines) * var(--fs-talk) * 1.5 + 20px + 14px + var(--lip-h));
-    --chrome-below: calc(var(--talk-h) + 8px + var(--cta-h) + var(--lip-h) + var(--gap) + var(--pad-bottom));
+    --chrome-below: calc(var(--talk-h) + 12px + var(--cta-h) + var(--lip-h) + var(--gap) + var(--pad-bottom));
     --island-bottom: var(--chrome-below);
-    --scene-h: 100dvh;
-    position: relative; max-width: var(--col); margin: 0 auto; height: 100dvh; overflow: hidden;
+    --scene-h: var(--vh-fill);
+    position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden;
   }
   .top { position: absolute; inset: 0; overflow: hidden; }
   .below {
     position: absolute; z-index: 9; left: 0; right: 0; bottom: 0;
-    height: var(--chrome-below); display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+    height: var(--chrome-below); display: flex; flex-direction: column; justify-content: flex-end; gap: 12px;
     padding: var(--gap) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + var(--lip-h)) calc(var(--side) + var(--safe-left));
     pointer-events: none;
   }
