@@ -27,13 +27,13 @@
     <span class="ic"><OfficialArt key={fruitArt('pear')} size={22} /></span>
     <span class="k">{t('goal.move')}</span>
     <b class="v money">{t('kiroku.kcal', { n: formatNum(moveGoal) })}</b>
-    <button type="button" class="pen" data-sfx="page" data-focus="move-goal" aria-label="{t('goal.move')} ✎" onclick={onmove}><Glyph kind="pen" size={18} /></button>
+    <button type="button" class="pen-btn" data-sfx="page" data-focus="move-goal" aria-label="{t('goal.move')} ✎" onclick={onmove}><Glyph kind="pen" size={18} /></button>
   </div>
   <div class="row">
     <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-scale" /></svg></span>
     <span class="k">{t('goal.weight')}</span>
     <b class="v money" class:none={goalWeight === null}>{goalWeight === null ? t('goal.notSet') : kgText(goalWeight)}</b>
-    <button type="button" class="pen" data-sfx="page" data-focus="weight-goal" aria-label="{t('goal.weight')} ✎" onclick={onweight}><Glyph kind="pen" size={18} /></button>
+    <button type="button" class="pen-btn" data-sfx="page" data-focus="weight-goal" aria-label="{t('goal.weight')} ✎" onclick={onweight}><Glyph kind="pen" size={18} /></button>
   </div>
 </section>
 
@@ -47,9 +47,4 @@
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
   .v { font-size: var(--fs-talk); white-space: nowrap; }
   .v.none { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
-  .pen {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
-    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-  }
-  .pen:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
 </style>

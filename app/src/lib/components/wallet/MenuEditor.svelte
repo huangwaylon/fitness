@@ -78,7 +78,7 @@
       </li>
     {/each}
   </ul>
-  <button type="button" class="add" data-sfx="open" onclick={add} aria-disabled={full}>＋ {t('menu.add')}</button>
+  <button type="button" class="add-btn" data-sfx="open" onclick={add} aria-disabled={full}>＋ {t('menu.add')}</button>
   {#snippet footer()}
     <div class="acts">
       <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('kiroku.cancel')}</button>
@@ -112,12 +112,6 @@
   }
   .rm svg { width: 18px; height: 18px; }
   .rm:active { background: color-mix(in srgb, var(--c-coral) 25%, transparent); }
-  .add {
-    appearance: none; border: 0; cursor: pointer; width: 100%; margin-top: 12px; min-height: var(--hit); border-radius: var(--r-btn);
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: color-mix(in srgb, var(--c-leaf) 35%, var(--c-card));
-    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
-  }
-  .add:active:not([aria-disabled='true']) { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
-  .add[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
+  .add-btn { margin-top: 12px; }
   .acts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 </style>

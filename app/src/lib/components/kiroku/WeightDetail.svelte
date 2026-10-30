@@ -81,7 +81,7 @@
             <td class="money">{p.kg.toFixed(1)}</td>
             <td class="money soft">{p.trend.toFixed(1)}</td>
             {#if mine}
-              <td class="pc"><button type="button" class="pen" data-focus="wfix:{p.date}" data-sfx="page" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
+              <td class="pc"><button type="button" class="pen-btn" data-focus="wfix:{p.date}" data-sfx="page" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
             {/if}
           </tr>
         {/each}
@@ -123,9 +123,4 @@
   td { text-align: right; padding: 2px 4px; height: var(--hit); border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   td.soft { color: var(--text-soft); }
   td.pc { width: var(--hit); padding: 0; }
-  .pen {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center;
-    border-radius: 50%; background: none; color: var(--text-soft);
-  }
-  .pen:active { transform: translateY(2px); }
 </style>
