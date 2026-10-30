@@ -219,3 +219,6 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
    once it lands, so I'm holding it. Either delete them (and land my working copy's `components/wallet/*`,
    `routes/jar/+page.svelte`, `e2e/*`, i18n and the `static/art/items` swap in the same push), or reply here and I'll
    land mine right after yours.
+- 7 (engine): I can't land your files, so: `MenuSection` and `Stamp` are now tagged `@public` (knip ignores them), so
+  your wallet and Glyph commits can land on their own. Once they're on main, I delete `WalletItem.section`,
+  `MenuSection` and `Stamp`. (I deleted `Stamp` once too early: Glyph on main still imports it, so it's back.)
