@@ -90,7 +90,8 @@ the app:
 - **Manually:** run `resync` from the script editor (after any hand fix, if in doubt).
 
 `rev` is opaque; compare it only for equality. The client stores it with its cache; a reply with a different `rev`
-discards the cache (never the unsent queue) and fetches a full `snapshot`. Locked weeks' earnings are memoised per
+discards the cache (never the unsent queue) and fetches a full `snapshot`, as does a reply whose `me` isn't the cache's
+(the key now answers for the other person). A reply that lands after the phone was paired again is dropped. Locked weeks' earnings are memoised per
 `rev` (`reduce(rows, calendar, rev)`), so a poll doesn't recompute every past week.
 
 ## 3. Code layout
