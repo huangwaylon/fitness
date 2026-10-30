@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Island Fund app icon, concept C "leaf badge": a big leaf with a winged running sneaker and a Bell coin.
+       Full bleed; key art inside the central 80% safe zone. Palette: cream/yuzu, leaf green, coral, white, ink. -->
+  <defs>
+    <radialGradient id="glow" cx=".5" cy=".48" r=".64">
+      <stop offset="0" stop-color="#FFF6C4"/>
+      <stop offset=".5" stop-color="#FFF9E3"/>
+      <stop offset="1" stop-color="#FFE38A"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <g transform="translate(512 512) scale(1.07) translate(-512 -512)">
+
+  <!-- the leaf: plump, tip to the upper right, stem to the lower left -->
+  <g transform="translate(512 512) rotate(42)" stroke="#4A3A2C" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M0 300 Q6 352 -18 392" fill="none" stroke-width="34"/>
+    <path d="M0 -370 C330 -250 330 190 0 320 C-330 190 -330 -250 0 -370 Z" fill="#6ED07A" stroke-width="28"/>
+    <path d="M0 -300 Q14 0 0 270" fill="none" stroke="#4FB35C" stroke-width="20"/>
+    <!-- soft highlight -->
+    <path d="M-60 -290 C-170 -220 -220 -110 -214 -10" fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="30"/>
+  </g>
+
+  <!-- the sneaker, mid-stride -->
+  <g transform="translate(540 540) rotate(-12) scale(.9)" stroke="#4A3A2C" stroke-linejoin="round" stroke-linecap="round">
+    <!-- motion puffs -->
+    <g fill="#FFFFFF" stroke-width="18">
+      <circle cx="-300" cy="104" r="38"/>
+      <circle cx="-372" cy="56" r="25"/>
+    </g>
+    <!-- wing at the heel -->
+    <g fill="#FFFFFF" stroke-width="20">
+      <ellipse cx="-224" cy="-128" rx="78" ry="30" transform="rotate(-38 -224 -128)"/>
+      <ellipse cx="-238" cy="-74" rx="80" ry="30" transform="rotate(-18 -238 -74)"/>
+      <ellipse cx="-226" cy="-22" rx="66" ry="28" transform="rotate(2 -226 -22)"/>
+    </g>
+    <!-- upper -->
+    <path d="M-176 70 L-180 -40 Q-178 -96 -126 -92 Q-98 -66 -66 -70 L-34 -108 Q-12 -126 10 -104 L64 -46 Q132 -14 178 10 Q214 32 208 70 Z" fill="#FF8F7A" stroke-width="24"/>
+    <!-- side stripe -->
+    <path d="M-120 30 Q-30 -10 60 30" fill="none" stroke="#FFFFFF" stroke-width="22"/>
+    <!-- laces -->
+    <path d="M-36 -74 L-4 -90 M-8 -44 L28 -62 M24 -16 L60 -34" fill="none" stroke="#FFFFFF" stroke-width="16"/>
+    <!-- sole -->
+    <rect x="-200" y="58" width="428" height="70" rx="35" fill="#FFFFFF" stroke-width="24"/>
+  </g>
+
+  <!-- the Bell coin -->
+  <g transform="translate(728 720) scale(1.1)" stroke="#4A3A2C" stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="0" cy="12" r="100" fill="#E6B22E" stroke-width="24"/>
+    <circle cx="0" cy="0" r="100" fill="#FFD84D" stroke-width="24"/>
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#E6B22E" stroke-width="14"/>
+    <path d="M-36 -62 Q-64 -44 -70 -10" fill="none" stroke="#FFFFFF" stroke-width="18"/>
+    <!-- leaf mark -->
+    <path d="M-28 28 Q-28 -34 32 -36 Q32 24 -28 28 Z" fill="#6ED07A" stroke-width="12"/>
+  </g>
+
+  <!-- two little hearts (the couple) -->
+  <g fill="#FF8F7A" stroke="#4A3A2C" stroke-width="16" stroke-linejoin="round">
+    <path d="M250 214 c-22 -40 -84 -27 -71 24 c9 31 44 51 71 69 c27 -18 62 -38 71 -69 c13 -51 -49 -64 -71 -24 Z"/>
+    <path d="M352 166 c-15 -28 -58 -19 -49 17 c6 21 30 35 49 48 c19 -13 43 -27 49 -48 c9 -36 -34 -45 -49 -17 Z"/>
+  </g>
+  </g>
+</svg>
