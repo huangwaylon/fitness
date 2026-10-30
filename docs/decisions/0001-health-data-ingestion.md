@@ -1,5 +1,5 @@
 # 0001 — Health data ingestion: Health Auto Export now, native companion later
-**Status:** Superseded by 0012 (Shortcuts health sync; HAE dropped).
+**Status:** Superseded by ADR 0012 (Shortcuts health sync; HAE dropped) and, for the server and network, ADR 0015.
 
 **Context.** The PWA can't read HealthKit. The requirement is zero manual import/export.
 Shortcuts automations fail while the phone is locked. Free Apple provisioning expires every 7 days.

@@ -1,5 +1,5 @@
 # 0004 — Eating check-in cadence and partner visibility
-**Status:** Accepted (round 1). Resolves C3 and C7. Visibility rules superseded by 0016 (all data shown to both).
+**Status:** Partly superseded by ADR 0016: visibility (all data is shown to both) and the 8 pm push (no alerts). The evening check-in itself stands. Was: accepted (round 1), resolving C3 and C7.
 
 **Check-in.** One **evening card** (push at ~8 pm, or from a widget or Watch button) with **3 habit toggles** for the season, e.g. *veggies at 2+ meals*, *no sugary drinks*, *home-cooked dinner*. It takes one tap per habit, ≤ 10 s total. Missed days can be filled in up to 48 h later, and a partner can co-log ("we both cooked").
 There's a neutral "treat today 🍰" chip that never costs fruit. No per-meal Healthy/Balanced/Treat grading, and no food → money link at the meal level.

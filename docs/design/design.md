@@ -54,7 +54,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 |---|---|---|
 | きろく | `phone/miles` (full tile) | History and editing: からだ / お金, week → day → edit ([history-and-editing.md](history-and-editing.md)). Lazy-loaded on first open |
 | 使い方 | `phone/glyph-help` on yuzu | The four things to know, one card each |
-| 村人 | `phone/passport` (full tile) | Pick my villager from the 10-villager roster, and its name |
+| 村人 | `phone/passport` (full tile) | Pick my villager from the roster (79 villagers; one search field, ja or en: name, species or personality), and its name |
 | 言語 | `phone/glyph-chat` on mint | 日本語 / English |
 | 同期 | `phone/rescue` (full tile) | When each of us last synced, いま同期 |
 
@@ -72,7 +72,7 @@ WebP with alpha, already downscaled; never upscale past the manifest height. `<O
 
 | Group | Keys (`static/art/<key>.webp`) | Where |
 |---|---|---|
-| Villagers | `villagers/<id>` (full body), `villagers/<id>-icon`; roster: goldie, raymond, bob, bunnie, judy, stitches, hamlet, molly, lily, dom | Scene, avatars, sheets |
+| Villagers | `villagers/<id>` (full body), `villagers/<id>-icon`; roster: `lib/villagers/roster.ts` (79 ids; defaults A = goldie, B = anchovy; the service worker precaches the two defaults) | Scene, avatars, sheets |
 | Host | `host/isabelle` (wave), `-stand`, `-winter` (cardigan, same canvas as `-stand`), `-icon`, `host/tom-nook` | Dialogue box, toasts, not-set-up |
 | Fruit | `fruit/peach · coconut · apple · pear` | Ground fruit, rings, harvest rows |
 | Trees | `trees/oak-spring` (blossom) · `oak-summer` · `oak-fall` · `oak-winter` | One hardwood per person |

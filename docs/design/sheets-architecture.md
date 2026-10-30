@@ -62,14 +62,14 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 
 **Model helpers for the client (WS1, `app/src/lib/model/`):**
 - `compactRows(rows, now)` (`compact.ts`): drops the metrics rows of locked weeks that the model can no longer read (keeps, per person/date/metric, the best row at the Sunday 19:30 payout, the Wednesday lock, each `metric_set` and overall). Every view is unchanged (`compact.test.ts`); it cuts metrics ~90%. Run it on the cache after each merge. It relies on ingest rows only going up, which a hand edit can break; that bumps `rev`, and the full refetch replaces the cache.
-- `reduce(rows, calendar, rev)`: pass the cached `rev` (live data only) and the payouts of past cutoffs are reused across States (round 8 P5), so a poll or minute tick no longer recomputes every past week. `npm run bench`, year 3 with hourly syncs, compacted: reduce + `buildWeekView` ≈ 8 ms with `rev`, ≈ 21 ms without (Mac).
+- `reduce(rows, calendar, rev)`: pass the cached `rev` (live data only) and the payouts of past cutoffs are reused across States (round 8 P5), so a poll or minute tick no longer recomputes every past week. `npm run bench`, year 3 with hourly syncs, compacted: reduce + `buildWeekView` ≈ 8 ms with `rev`, ≈ 21 ms without (measured on a laptop).
 
 `whoami.build` / `health.build`: the first 12 hex characters of SHA-256 over the bundle (`buildHash()` in `app/gas/build.ts`; `dev` when `main.ts` runs unbundled). `bundle.test.ts` checks that `Code.js` carries it.
 
 ## 3. Code layout
-- `app/gas/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. A port of `server/ingest/shortcut.ts` + `workout-names.ts`, without zod, so it runs in Apps Script (the browser never parses Shortcut bodies).
+- `app/gas/parse.ts`: **pure, dependency-free** parser of the Shortcut body → `{metrics:[{date,metric,value}], workouts:[…], skipped}`. Ported from the retired server's Shortcut ingest (without zod), so it runs in Apps Script (the browser never parses Shortcut bodies).
 - `app/gas/`: Apps Script source in TS (`main.ts`: `doPost`, sheet helpers), bundled with the parser by **esbuild** into `apps-script/Code.js` (one global script, no imports) via `npm run gas:build`. `apps-script/appsscript.json` sets scope `spreadsheets.currentonly`, the web app, and timezone `Asia/Tokyo`. `clasp` is optional (`.clasp.json` not committed).
-- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (and jar, harvest, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. It replaces `server/week.ts` and `server/ledger.ts` semantics, including the max(Sunday 19:30, Wednesday 04:00) payout rule and purse/transfer math.
+- `app/src/lib/model/`: **pure compute-on-read**. `snapshot → WeekView` (and jar, harvest, pending confirmations, host line), reusing `scoring/` and `config/rules.ts`. It keeps the retired server's week and ledger semantics, including the max(Sunday 19:30, Wednesday 04:00) payout rule and purse/transfer math.
 - `app/src/lib/sync/` (round 9):
   - `storage.ts`: every Web Storage key in one registry. Live keys are `island.*`; the demo's are `island-demo.*`, so it can never touch the live key, queue or cache. Failed writes (quota, private mode) are reported, and the store shows a banner once per kind.
   - `transport.ts`: the POST helper (timeout, error taxonomy) and `whoami`. `pairing.ts`: the key, `#key=` links, and switching person (drops the cache and queue).

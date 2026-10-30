@@ -20,14 +20,14 @@ iOS Shortcuts (health sync, gym Arrive/Leave) and the PWA (check-ins, harvest, p
 | `app/src/lib/store/` | The week store, user actions, cache + queue → model, and its two backends (live, `demo/`) |
 | `app/src/lib/contract/` | Dependency-free sheet/API contract types and workout labels (bundled into Apps Script); the Shortcut parser is `app/gas/parse.ts` |
 | `app/gas/` → `app/apps-script/` | Apps Script source (TS) and its bundled `Code.js` (`npm run gas:build`) |
-| `app/scripts/` | `fetch-assets` (official art), `bench-model` (`npm run bench`: a year of rows through the model) |
+| `app/scripts/` | `fetch-assets` (`npm run assets:fetch`: official art), `font-subsets` (`npm run fonts:subset`: trims Zen Maru Gothic), `bench-model` (`npm run bench`: a year of rows through the model) |
 | `docs/PROPOSAL.md` | The product description (v2.2) |
 | `docs/profiles.md` | Participant profiles, gyms, eating patterns |
 | `docs/decisions/` | Decision records 0001–0018, with an [index](docs/decisions/README.md) |
 | `docs/design/` | [design.md](docs/design/design.md) (the design spec), the sheets contract, the きろく spec, Animal Crossing research |
 | `docs/ops/` | Runbook, Google setup, the Shortcuts health-sync guide |
 | `docs/archive/no-mac/` | The research behind ADR 0015 (historical) |
-| `docs/reviews/round-7/`, `round-8/` | Latest reviews. Keep only the latest round or two; earlier rounds are in git history |
+| `docs/reviews/round-7/` … `round-10/` | Review rounds (historical records) |
 
 ## Status
 Design complete (v2.2). MVP built on the Sheet backend, with きろく history and editing. **Next:** the one-time setup in [runbook §1](docs/ops/runbook.md#1-one-time-setup-the-canonical-order-the-other-docs-link-here) (sheet and script → `GAS_URL` → Shortcuts → pairing → day-8 check), then the calibration weeks of Nov 2 and Nov 9.
