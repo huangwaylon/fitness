@@ -24,6 +24,7 @@
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
+  import { startModality } from '#lib/components/ui/modality.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -69,7 +70,10 @@
     const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
     // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
     const stopTaps = startTaps();
+    // no focus ring after a touch (focus is still restored for keyboard and VoiceOver users)
+    const stopModality = startModality();
     return () => {
+      stopModality();
       stopTaps();
       stopSound();
       stopViewport();

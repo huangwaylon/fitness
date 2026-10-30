@@ -287,3 +287,22 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await expect(sheet(page).getByRole('slider', { name: '音量' })).toHaveValue('4');
   expect(errors).toEqual([]);
 });
+
+test('focus ring: none on a しまフォン tile after tap → ‹ back; the keyboard still shows it', async ({ page }) => {
+  await page.goto('?demo');
+  await page.getByRole('button', { name: 'しまフォンを開く' }).tap();
+  const tile = sheet(page).locator('.app[data-app=help]');
+  await tile.tap();
+  await sheet(page).locator('.titlebar .back').tap();
+  await expect(tile).toBeFocused();
+  // WebKit shows :focus-visible on a programmatic focus after a touch; the pointer modality hides it (ui/modality.ts)
+  await expect(page.locator('html')).toHaveAttribute('data-input', 'pointer');
+  const ring = () => tile.evaluate((el) => getComputedStyle(el).outlineStyle);
+  expect(await ring()).toBe('none');
+  // keyboard: Tab onto the next tile and back: the ring shows
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(tile).toBeFocused();
+  await expect(page.locator('html')).toHaveAttribute('data-input', 'keyboard');
+  expect(await ring()).not.toBe('none');
+});
