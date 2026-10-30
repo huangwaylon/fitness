@@ -10,10 +10,12 @@
 //   - simple form: {"date": "2026-10-28", "steps": "12\n3\n27"}
 //   - days form:   {"days": [{"date": "2026-10-28", "steps": 8123, "exerciseMin": 34}]}
 //   - workouts:    {"workouts": {"types": […], "starts": […], "ends": […], "avgHrs": […]}} or an array of objects
+//   - weight:      {"weight_dates": […], "weights": ["68.4 kg", …], "weight_sources"?: […]} (Health "Body Mass"; ADR 0020).
+//                  A day's weight is its FIRST sample (the morning weigh-in), not a sum or a max.
 // Every list may be a JSON array or newline-joined text (Shortcuts' Dictionary fields typed as Text).
 import { toLocalDate } from '../src/lib/time/dates.ts';
 import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
-import { DATE_RE, isRec, type MetricKey } from '../src/lib/contract/api.ts';
+import { DATE_RE, isRec, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedWorkout {
@@ -48,6 +50,28 @@ export function looseNumber(v: unknown): number | null {
   if (typeof v !== 'string') return null;
   const m = v.replace(/[,，\s]/g, '').match(/-?\d+(\.\d+)?/);
   return m ? Number(m[0]) : null;
+}
+
+const POUND_KG = 0.45359237;
+
+/**
+ * A body weight → kg with one decimal: 68.4, "68.4", "68.4 kg", "68,4 kg" (decimal comma), "150.8 lb" (pounds only
+ * when marked lb/lbs/pound(s)/ポンド; an unmarked number is kg). Null if unreadable or outside WEIGHT_KG (20–300 kg).
+ */
+export function looseWeightKg(v: unknown): number | null {
+  let n: number;
+  let lb = false;
+  if (typeof v === 'number') n = v;
+  else if (typeof v === 'string') {
+    const m = v.trim().replace(/[\u00a0\u202f]/g, ' ').toLowerCase()
+      .match(/^(\d{1,3}(?:[.,]\d+)?)\s*(kg|kgs|kilograms?|キロ|キログラム|lb|lbs|pounds?|ポンド)?$/);
+    if (!m) return null;
+    n = Number(m[1].replace(',', '.'));
+    lb = m[2] !== undefined && /^(lb|lbs|pounds?|ポンド)$/.test(m[2]);
+  } else return null;
+  if (!Number.isFinite(n)) return null;
+  const kg = roundKg(lb ? n * POUND_KG : n);
+  return kg >= WEIGHT_KG.min && kg <= WEIGHT_KG.max ? kg : null;
 }
 
 const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
@@ -256,6 +280,24 @@ function dailyTotals(s: Series, onSkip: () => void): Map<string, number> {
   return out;
 }
 
+/**
+ * A day's weight from raw Body Mass samples: the FIRST sample of the (Tokyo) day by its start time, whatever its
+ * source. A morning weigh-in is the most comparable from day to day; a later one (after food and water) is ignored.
+ */
+function firstWeightOfDay(values: unknown[], dates: unknown[], onSkip: () => void): Map<string, number> {
+  const best = new Map<string, { ms: number; kg: number }>();
+  for (let i = 0; i < values.length; i++) {
+    const kg = looseWeightKg(values[i]);
+    const iso = looseDate(dates[i]);
+    if (kg === null || !iso) { onSkip(); continue; }
+    const ms = Date.parse(iso);
+    const date = toLocalDate(iso);
+    const cur = best.get(date);
+    if (!cur || ms < cur.ms) best.set(date, { ms, kg });
+  }
+  return new Map([...best].map(([d, x]) => [d, x.kg]));
+}
+
 /** Parse a Shortcut body (already JSON-parsed). Throws ShapeError when nothing usable or the shape is wrong. */
 export function parseShortcut(raw: unknown): ParsedBody {
   if (!isRec(raw)) throw new ShapeError('unexpected shape: body: expected an object');
@@ -300,6 +342,19 @@ export function parseShortcut(raw: unknown): ParsedBody {
       r[k] = { values, starts: dates, ...(sources ? { sources } : {}) };
     }
   }
+  // Weight: its own parallel lists (Body Mass is a separate Health query, so it always has its own dates).
+  let weight: { values: unknown[]; dates: unknown[] } | undefined;
+  const wValues = pick('weights', 'weight');
+  if (wValues !== undefined) {
+    const values = list(wValues, 'weights');
+    const dates = list(pick('weight_dates', 'weightDates'), 'weight_dates');
+    const src = pick('weight_sources', 'weightSources');
+    const sources = src === undefined ? undefined : list(src, 'weight_sources');
+    if (values.length !== dates.length || (sources && sources.length !== values.length)) {
+      warnings.push(`weight: ${values.length} values but ${dates.length} weight_dates${sources ? ` and ${sources.length} sources` : ''}; weight not saved`);
+      dropped += values.length;
+    } else if (values.length) weight = { values, dates };
+  }
   for (const k of ['steps', 'exercise']) {
     const v = r[k];
     if (typeof v === 'string' || Array.isArray(v)) {
@@ -312,7 +367,9 @@ export function parseShortcut(raw: unknown): ParsedBody {
   const days = r.days as unknown[] | undefined;
   const w = r.workouts;
   if (w !== undefined && !Array.isArray(w) && !isRec(w)) throw new ShapeError('unexpected shape: workouts: expected a list or an object');
-  if (!steps && !exercise && !days && w === undefined) throw new ShapeError(warnings.length ? warnings.join('; ') : 'no steps, exercise, days or workouts');
+  if (!steps && !exercise && !days && w === undefined && !weight) {
+    throw new ShapeError(warnings.length ? warnings.join('; ') : 'no steps, exercise, days, workouts or weights');
+  }
 
   let skipped = dropped;
   const skip = () => void skipped++;
@@ -322,6 +379,7 @@ export function parseShortcut(raw: unknown): ParsedBody {
     if (!s) continue;
     for (const [date, v] of dailyTotals(s, skip)) metrics.push({ date, metric: key, value: round(v) });
   }
+  if (weight) for (const [date, kg] of firstWeightOfDay(weight.values, weight.dates, skip)) metrics.push({ date, metric: 'weight', value: kg });
   for (const d of days ?? []) {
     const date = isRec(d) ? looseDate(d.date) : null;
     if (!isRec(d) || !date) { skip(); continue; }
@@ -330,6 +388,11 @@ export function parseShortcut(raw: unknown): ParsedBody {
     const ex = looseNumber(d.exerciseMin);
     if (st !== null) metrics.push({ date: localDate, metric: 'steps', value: round(st) });
     if (ex !== null) metrics.push({ date: localDate, metric: 'exercise_min', value: round(ex) });
+    if (d.weight !== undefined) {
+      const kg = looseWeightKg(d.weight);
+      if (kg === null) skip();
+      else metrics.push({ date: localDate, metric: 'weight', value: kg });
+    }
   }
 
   let items: { type: unknown; start: unknown; end: unknown; avgHr?: unknown }[] = [];

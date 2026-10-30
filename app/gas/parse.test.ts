@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { canonicalWorkoutType, looseDate, looseNumber, parseShortcut, sha256Hex, ShapeError, workoutKey } from './parse.ts';
+import { canonicalWorkoutType, looseDate, looseNumber, looseWeightKg, parseShortcut, sha256Hex, ShapeError, workoutKey } from './parse.ts';
 
 const byDate = (ms: { date: string; metric: string; value: number }[]) =>
   [...ms].sort((a, b) => (a.date + a.metric).localeCompare(b.date + b.metric));
@@ -197,12 +197,81 @@ describe('parse: shapes', () => {
   });
 
   it('explains what is missing', () => {
-    expect(() => parseShortcut({ hello: 1 })).toThrow(/no steps, exercise, days or workouts/);
+    expect(() => parseShortcut({ hello: 1 })).toThrow(/no steps, exercise, days, workouts or weights/);
     expect(() => parseShortcut({ steps: '12\n3\n27', calories: '' })).toThrow(/steps has values but no start dates/);
     expect(() => parseShortcut({ steps: { values: '1\n2', starts: '2026-10-28T08:00:00+09:00' } })).toThrow(/got 2 values but 1 start dates/);
     expect(() => parseShortcut({ steps: { values: 5 } })).toThrow(/steps.values: expected a list/);
     expect(() => parseShortcut({ workouts: 3 })).toThrow(ShapeError);
     expect(() => parseShortcut(null)).toThrow(ShapeError);
     expect(() => parseShortcut([1])).toThrow(ShapeError);
+  });
+});
+
+describe('parse: body weight (ADR 0020)', () => {
+  it('reads kg, units text, a decimal comma and marked pounds', () => {
+    expect(looseWeightKg('68.4')).toBe(68.4);
+    expect(looseWeightKg(68.44)).toBe(68.4);
+    expect(looseWeightKg('68.4 kg')).toBe(68.4);
+    expect(looseWeightKg('68.4kg')).toBe(68.4);
+    expect(looseWeightKg('68,4 kg')).toBe(68.4);
+    expect(looseWeightKg('72 キロ')).toBe(72);
+    expect(looseWeightKg('150.8 lb')).toBe(68.4);
+    expect(looseWeightKg('151 lbs')).toBe(68.5);
+    expect(looseWeightKg('150.8')).toBe(150.8); // unmarked is kg, never guessed as pounds
+  });
+
+  it('refuses implausible or unreadable weights', () => {
+    for (const v of ['19.9', '301', 0, -70, '68.4 st', 'heavy', '', null, NaN, '1,234']) expect(looseWeightKg(v)).toBeNull();
+    expect(looseWeightKg('20')).toBe(20);
+    expect(looseWeightKg(300)).toBe(300);
+  });
+
+  it('a day’s weight is its first sample (the morning weigh-in), not the max or the sum', () => {
+    const r = parseShortcut({
+      weight_dates: ['Oct 28, 2026 at 9:30 PM', 'Oct 28, 2026 at 7:05 AM', 'Oct 28, 2026 at 7:06 AM', 'Oct 29, 2026 at 6:50 AM'],
+      weights: ['69.3 kg', '68.4 kg', '68.6 kg', '68.2'],
+      weight_sources: ['Health', 'Withings', 'Withings', 'Withings']
+    });
+    expect(r.metrics).toEqual([{ date: '2026-10-28', metric: 'weight', value: 68.4 }, { date: '2026-10-29', metric: 'weight', value: 68.2 }]);
+    expect(r.warnings).toEqual([]);
+    expect(r.skipped).toBe(0);
+  });
+
+  it('uses the Tokyo day of each sample', () => {
+    // 22:30 UTC on the 27th is 07:30 on the 28th in Tokyo
+    const r = parseShortcut({ weight_dates: '2026-10-27 22:30:00 +0000\n2026-10-28 20:00:00 +0900', weights: '68.1\n69.0' });
+    expect(r.metrics).toEqual([{ date: '2026-10-28', metric: 'weight', value: 68.1 }]);
+  });
+
+  it('skips unreadable samples and keeps the rest', () => {
+    const r = parseShortcut({ weight_dates: ['2026-10-28T07:00:00+09:00', 'soon', '2026-10-29T07:00:00+09:00'], weights: ['500', '68', '68.0'] });
+    expect(r.metrics).toEqual([{ date: '2026-10-29', metric: 'weight', value: 68 }]);
+    expect(r.skipped).toBe(2);
+  });
+
+  it('a length mismatch drops only the weights, with a warning', () => {
+    const r = parseShortcut({
+      dates: ['2026-10-28T08:00:00+09:00'], steps: ['9000'],
+      weight_dates: ['2026-10-28T07:00:00+09:00'], weights: ['68.4', '68.5']
+    });
+    expect(r.metrics).toEqual([{ date: '2026-10-28', metric: 'steps', value: 9000 }]);
+    expect(r.warnings).toEqual(['weight: 2 values but 1 weight_dates; weight not saved']);
+    const s = parseShortcut({ dates: ['2026-10-28T08:00:00+09:00'], steps: ['9000'], weight_dates: ['2026-10-28T07:00:00+09:00'], weights: ['68.4'], weight_sources: [] });
+    expect(s.warnings[0]).toMatch(/1 weight_dates and 0 sources/);
+    expect(() => parseShortcut({ weights: ['68.4'] })).toThrow(/weight: 1 values but 0 weight_dates/);
+  });
+
+  it('a body with only weights is fine; a body without them is unchanged', () => {
+    expect(parseShortcut({ weight_dates: ['2026-10-28T07:00:00+09:00'], weights: ['68.4'] }).metrics).toEqual([{ date: '2026-10-28', metric: 'weight', value: 68.4 }]);
+    expect(parseShortcut({ weight_dates: '', weights: '', dates: ['2026-10-28T08:00:00+09:00'], steps: ['10'] }).metrics)
+      .toEqual([{ date: '2026-10-28', metric: 'steps', value: 10 }]);
+    const r = parseShortcut({ dates: ['2026-10-28T08:00:00+09:00'], steps: ['10'] });
+    expect(r.metrics.some((m) => m.metric === 'weight')).toBe(false);
+  });
+
+  it('days form: an optional weight per day', () => {
+    const r = parseShortcut({ days: [{ date: '2026-10-28', steps: 8000, weight: '68.4 kg' }, { date: '2026-10-29', weight: 'x' }] });
+    expect(byDate(r.metrics)).toEqual([{ date: '2026-10-28', metric: 'steps', value: 8000 }, { date: '2026-10-28', metric: 'weight', value: 68.4 }]);
+    expect(r.skipped).toBe(1);
   });
 });
