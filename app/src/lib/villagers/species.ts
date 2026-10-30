@@ -43,6 +43,10 @@ export const SPECIES = {
 } as const satisfies Record<string, readonly [string, string]>;
 export type Species = keyof typeof SPECIES;
 
+/** The special characters' group (たぬきち, しずえ…: no species or personality) → [ja, en]: the picker's first group,
+ *  their kind line, and a search word. */
+export const SPECIAL = ['とくべつ', 'Special'] as const;
+
 /** The eight NH personalities (ja = the in-game seikaku). */
 export const PERSONALITIES = {
   lazy: ['ぼんやり', 'Lazy'],

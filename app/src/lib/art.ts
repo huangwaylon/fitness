@@ -59,8 +59,11 @@ const HOST: Record<HostPose, string> = {
 };
 /** Isabelle: 'wave' (cheerful, default), 'stand' (calm), 'bow' (sorry / thanks), 'winter', 'icon'.
  *  NH has no official bow render, so 'bow' is the stand render (same outfit) and <Host> adds a CSS bow.
- *  'winter' is the full-body cardigan model on the same canvas as 'stand'. */
-export function hostArt(pose: HostPose = 'wave'): string {
+ *  'winter' is the full-body cardigan model on the same canvas as 'stand'.
+ *  `nook`: Tom Nook stands in (a player picked Isabelle): his one render for every pose (the precached `host/` copy,
+ *  also the error page's), his roster head icon. */
+export function hostArt(pose: HostPose = 'wave', nook = false): string {
+  if (nook) return pose === 'icon' ? 'villagers/tom-nook-icon' : 'host/tom-nook';
   return HOST[pose];
 }
 
