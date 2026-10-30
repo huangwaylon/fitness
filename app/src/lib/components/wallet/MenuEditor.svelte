@@ -88,7 +88,7 @@
 </Sheet>
 
 <style>
-  .hint { margin: -6px 2px 12px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .hint { margin: 0 2px 12px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
   /* the name and × on top, the price under the name (room for 7 digits + the unit at 320); minmax(0, …) so a long
      name never widens the sheet */

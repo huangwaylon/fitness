@@ -46,15 +46,17 @@
   .shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .item {
     appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--text); min-width: 0; min-height: 124px;
-    display: grid; justify-items: center; align-content: center; gap: 2px; padding: 12px 8px; text-align: center;
+    display: grid; justify-items: center; align-content: start; gap: 2px; padding: 12px 8px; text-align: center;
     border-radius: var(--r-card); background: var(--ctl); box-shadow: var(--sh-ctl);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
   .item:active:not([aria-disabled='true']) { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-ctl-press); transition-duration: var(--dur-tap); }
   .item[aria-disabled='true'] { cursor: default; box-shadow: none; background: var(--ctl-off); color: var(--text-soft); transform: translateY(4px); }
   .item[aria-disabled='true'] .ic { opacity: .5; filter: saturate(.3); }
+  /* top-anchored (round 21): a tile beside one with the 2かいめ pill keeps its art, name and price level with it (they sat
+     10px lower, centred); without a pill both tiles are as tall as their content, so nothing changes */
   .ic { width: 60px; height: 60px; margin-bottom: 2px; display: grid; place-items: center; line-height: 0; }
-  .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.25; overflow-wrap: anywhere; word-break: auto-phrase; }
+  .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.25; overflow-wrap: anywhere; }
   .pr { font-size: var(--fs-talk); }
   .short { font-size: var(--fs-s); font-weight: 700; }
   /* an escalating treat bought this week: the base struck through before the price, and a friendly count under it */

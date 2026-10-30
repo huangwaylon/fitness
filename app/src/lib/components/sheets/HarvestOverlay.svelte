@@ -165,7 +165,10 @@
     position: relative; z-index: 1; max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
     padding: calc(var(--safe-top) + 12px) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
   }
-  .head { display: flex; justify-content: space-between; align-items: center; min-height: 44px; gap: 8px; }
+  /* the plate | the step dots, centred on the screen | ✕ (round 21: the dots sat 27–30px right of centre) */
+  .head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px; gap: 8px; }
+  .head > :global(:first-child) { justify-self: start; }
+  .head > :global(:last-child) { justify-self: end; }
   .steps { display: flex; gap: 6px; }
   .steps i { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--c-cream) 60%, transparent); transition: all var(--dur-base) var(--ease-bounce); }
   .steps i.on { width: 22px; border-radius: 4px; background: var(--c-yuzu); }
@@ -180,7 +183,7 @@
   @keyframes rowGrow { from { max-height: 0; opacity: 0; padding-block: 0; } to { max-height: 110px; opacity: 1; padding-block: 6px; } }
   .who { flex: 1; min-width: 0; display: grid; gap: 4px; justify-items: start; }
   .nm { font-size: var(--fs-body); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hint { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); word-break: auto-phrase; text-wrap: balance; }
+  .hint { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-wrap: balance; }
   .av { width: 40px; height: 40px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-cream)); display: grid; place-items: center; line-height: 0; }
   .duo:not(.got) .av { filter: saturate(.2); opacity: .7; }
   .plus { font-size: var(--fs-talk); flex: none; }
