@@ -1,6 +1,6 @@
 # Island Fund: sound
 
-How the app sounds, after *あつまれ どうぶつの森* (New Horizons, NH), and how it is built (`app/src/lib/sound/`). Round 14 (sound designer, audio engineer, game-feel reviewer); the review is [round-14/sound-review.md](../reviews/round-14/sound-review.md). Section numbers (§1–§11) match the references in code comments.
+How the app sounds, after *あつまれ どうぶつの森* (New Horizons, NH), and how it is built (`app/src/lib/sound/`). Round 14 (sound designer, audio engineer, game-feel reviewer); the review is [round-14/sound-review.md](../reviews/round-14/sound-review.md). Section numbers (§1–§13) match the references in code comments.
 
 **Standing decisions.** Sound is **OFF by default** (all three kinds) and kept per phone. Japanese-first labels. Nothing sounds without a reason the user can see: idle life is silent. **IP:** the hourly music and the opening theme are the user's own files, committed by the user's decision (§9.2). Every sound effect is an original procedural placeholder (§8). No downloaded game effects are in the repo, and the manifest is ready for files when the user decides where they come from.
 
@@ -58,7 +58,7 @@ The layers loop as decoded buffers (short mono files, gapless). Each one starts 
 
 Everything is short (≤ 0.5 s), soft-attacked and pitched: mallets and bells, not clicks.
 
-**Here.** `phone-open` (C–E–G–C mallet arpeggio), `phone-close` (G–C), `phone-app` (a gliding pop plus a bell), `cursor` (a 45 ms tick), `confirm` (E→B, up a fifth), `cancel` (D→G, down a fourth, triangle). The しまフォン plays them on open, close, app and ‹ back. NH's choice list plays the tick when its cursor moves (keyboard, or a mouse hover) and the confirm when an answer is picked.
+**Here.** `phone-open` (C–E–G–C mallet arpeggio), `phone-close` (G–C), `phone-app` (a gliding pop plus a bell), `cursor` (a 45 ms tick), `confirm` (E→B, up a fifth), `cancel` (D→G, down a fourth, triangle). The しまフォン plays them on open, close, app and ‹ back. NH's choice list plays the tick when its cursor moves (keyboard, or a mouse hover) and the confirm when an answer is picked. Every other control names its sound on the element (`data-sfx`): a select for opening, a paper flick for きろく's levels, Ⓑ for cancel and dismiss, a switch pair, soft keypad clicks, a sync whoosh, a poof, an undo blip and a "can't" boop (§13).
 
 ## 4. Dialogue blips
 
@@ -100,7 +100,8 @@ Everything is short (≤ 0.5 s), soft-attacked and pitched: mallets and bells, n
 | Open an app / ‹ back | `ShimaPhone` | app select / Ⓑ | `phone-app` / `back` → `cancel` | gliding pop and bell / down a fourth |
 | しずえ and others talking | `Bubble` | Animalese | `blip-host` / `blip-villager` (おしゃべり) | §4 |
 | Check-in saved (a habit ticked on) | `CheckinSheet` | Ⓐ confirm | `checkin-saved` → `confirm` | "pi-pon", E6→B6 |
-| A habit ticked off, a settings row | `CheckinSheet`, `SoundApp` | cursor tick | `toggle` → `cursor` | 45 ms tick |
+| A habit ticked off, a サウンド switch | `CheckinSheet`, `SoundApp` | a switch on / off | `toggle-on` / `toggle-off` | two quick notes up / down (§13) |
+| Every other tap (tabs, cards, keys, cancel, sync, remove, undo, "can't") | `data-sfx` on the control, `taps.ts` | NH's menu sounds | §13 | §13 |
 | Choice cursor moves / picked | `ChoiceList` | cursor / confirm | `choice-move` / `choice-pick` | tick / pi-pon |
 | Tap a villager (R9, R10) | reactions | emote pop | `villager-tap` → `pop` | 420→950 Hz pop |
 | Partner's data arrives (R3), woken up (R14) | reactions, `wake()` | "!" surprise sting | `emote-surprise` → `surprise` | an upward boing and a bell |
@@ -130,6 +131,7 @@ Everything is short (≤ 0.5 s), soft-attacked and pitched: mallets and bells, n
 | `synth.ts` | Pure: the placeholder renders (lazy-loaded after the first unlock) |
 | `manifest.ts` | `static/audio/manifest.json` parsed and validated (bundled; the readme is stripped in `vite.config.ts`) |
 | `settings.ts` | Settings, defaults, sanitising, persistence |
+| `taps.ts` | Every tap's sound: one delegated click listener reads the control's `data-sfx`; `aria-disabled` controls boop (§13) |
 
 ```
 effects  AudioBufferSource → gain ─┬→ sfx bus ──┐
@@ -142,14 +144,14 @@ ambience loop sources → ambient ──┴→ duck → muffle (low-pass 900 Hz 
 - **Pitch variation like NH:** every play detunes at random within the sound's `jitter` (rustle ±80 cents, pop and thud ±60, coin ±25, UI and jingles 0).
 - **Nothing is queued while locked, interrupted or in the background:** a sound asked for before the unlock, while hidden or while the context is interrupted is dropped (except the daily chime, §5). The tap that resumes the context may schedule its own sound for **250 ms** (`RESUME_WINDOW_MS`), and anything scheduled in that window is stopped if the context still isn't running 300 ms later (in WebKit a `resume()` during a call or Siri stays pending until it ends). So nothing bursts out later.
 - **Idle suspend.** With only 効果音 / おしゃべり on, the context is suspended **10 s after the last sound** (`IDLE_SUSPEND_MS`; an open context keeps the audio hardware awake). The next tap resumes it as usual; a cue without a tap (the partner's bells, a director emote, the idle shooting star) resumes it itself, and is dropped if iOS refuses. Never while music plays.
-- **Wired in one place:** villager reactions carry a `cue` per step in the catalogue (`reactions.ts`), played by the director (`applyStep` / `play`: once per step, never for an absent しずえ). The remaining moments call `cue()` where they happen. There are no ad-hoc `play()` calls in components.
+- **Wired in one place:** villager reactions carry a `cue` per step in the catalogue (`reactions.ts`), played by the director (`applyStep` / `play`: once per step, never for an absent しずえ). Taps name their sound on the control (`data-sfx`, §13), and one listener plays it. The remaining moments (outcomes: a purchase, a check-in, the fanfare) call `cue()` where they happen. There are no ad-hoc `play()` calls in components. `cue()` runs untracked, so a cue fired from an `{@attach}` or an `$effect` never makes it depend on the sheets or the settings.
 - `prefers-reduced-motion` does not mute sound: sound is separate, and the settings decide.
 
 ## 7. Mix rules
 
 - **At most 6 voices** at once (`MAX_VOICES`). Per id: rustle, thud, pop, sparkle, blips and the scenery sounds 2; coin 3; everything else 1. A new one stops the oldest of its id. Over the total, the oldest non-jingle voice stops.
 - **Jingles** (`fanfare`, `miles`, `chime`) never overlap: a jingle while another plays is dropped. The **music ducks to 25%** under a jingle (0.12 s down, back over 0.8 s after it ends; `duckPlan`).
-- **Levels** (bus × sound): music 0.30, ambience 0.28, effects 0.90, blips 0.40. Sounds: UI ticks 0.35, confirm 0.55, island actions 0.6–0.7, coins 0.4 (a flight's first two coins at 60%), jingles 0.55–0.75. Nothing above 0.8 (tested). Master 音量 is squared (an even-feeling slider), default 0.8.
+- **Levels** (bus × sound): music 0.30, ambience 0.28, effects 0.90, blips 0.40. Sounds: keypad 0.26, UI ticks 0.35, the tap sounds 0.24–0.45 (§13), confirm 0.55, island actions 0.6–0.7, coins 0.4 (a flight's first two coins at 60%), jingles 0.55–0.75. Nothing above 0.8 (tested). Master 音量 is squared (an even-feeling slider), default 0.8.
 - **Coins:** a batch climbs one major-pentatonic run (0, 2, 4, 7, 9, 12, 14, 16, 19 semitones), one note per coin across every flight, then holds the top. It reads as one rising gesture.
 - **Muffle:** a low-pass at 900 Hz on the music and ambience while a sheet, the phone or the harvest is up (not during the opening theme).
 
@@ -246,3 +248,190 @@ Settings are kept in localStorage under `DEVICE.sound` = `island.sound` (`sync/s
 - **K.K. Slider for the Sunday harvest** ("K.K. style"): NH's Saturday-night concert would fit the weekly harvest. It needs a file and a user decision, and the item-get fanfare stands in.
 - **Footsteps by ground type:** no player avatar walks, and the villagers stroll at diorama distance (silent by design).
 - **Not heard on a real iPhone yet.** The unlock, the silent switch, the session switching, background behaviour, the Media Session and the loop hand-off were verified in Chrome (Playwright, an instrumented AudioContext and `<audio>` decks). They need a pass on the user's iPhone (round 16 sound review, "Test on the real iPhone").
+
+## 13. Every tap
+
+User report (2026-10-30): "We are missing sound effects for various menu buttons. Anything tappable should have a corresponding sound effect that makes sense." Before this pass, 19 of the app's 71 tappable elements made a sound; the menus, きろく, the pots and the sheets' own buttons were silent.
+
+**The rule.** Every tappable element names its sound on the element, in **`data-sfx`**, and one delegated listener plays it (`sound/taps.ts`, started in the root layout after `startSound`):
+
+```svelte
+<button data-sfx="open" onclick={…}>           <!-- a tap cue, played on the click -->
+<button data-sfx="self" onclick={buy}>          <!-- the handler plays the outcome's own cue (buy → purchase) -->
+<input data-sfx="none">                         <!-- deliberately silent (a text field: the system keyboard clicks) -->
+<button aria-disabled={short > 0} data-sfx="open"> <!-- can't right now: swallowed, and the "can't" boop -->
+```
+
+- **On the click, so on commit only.** A click never follows a scroll or a drag, so nothing sounds on scroll or drag. The listener is on the document in the capture phase, after the unlock listener (so the tap that starts audio also sounds).
+- **No double sounds.** A control whose action has an outcome sound says `self`, and the outcome plays alone: buy → `purchase`, a habit → `checkin-saved`, 受け取る！ → the fanfare, the phone's buttons → its own tunes, an island villager → its reaction. A tap that closes a sheet sounds the tap (保存 → confirm), and the sheet adds nothing; a sheet dismissed by hand (the backdrop, Esc, the grabber) is Ⓑ, played by `Sheet`.
+- **"Can't" (NH's boop when you can't afford something).** A control that can't act now uses `aria-disabled="true"` instead of `disabled`. It stays focusable and announced as unavailable, looks the same (`theme.css` styles both alike), and still gets the tap: the listener swallows the click before the page sees it (`preventDefault` and `stopPropagation` in the capture phase, so no handler, no form submit, no link) and plays `boop`. A real `disabled` (no boop) is kept only where silence is right: the villagers and the jar during the opening beats, the volume slider while every sound is off, and つなぐ while the key is being checked.
+- **UI cues always play.** Every tap cue is a UI cue, so it sounds under a sheet too. World cues still go quiet under sheets, and the voice limit (6, per-id caps) still applies.
+- **Enforced** by `taps.test.ts`: it scans every `.svelte` file in `components/` and `routes/` (dev/ excepted) for `<button>`, `<a href>`, `<input>`, `<select>`, `<textarea>`, `role="button|switch|tab|radio|checkbox|…"` and `onclick=`, and fails on any without a `data-sfx`, on an unknown value, on a `self` or `none` without a reason in its table, and on a real `disabled` outside its allow-list. `e2e/sound.spec.ts` walks the screens and checks each tap's cue (the log below).
+
+**The sounds** (new ids are procedural placeholders in `synth.ts` with manifest ids, so a file in `static/audio/manifest.json` replaces any of them; levels are the game-feel pass, loudest 50 ms RMS × level):
+
+| Cue | Sound id | NH model | Placeholder | Level (≈ dB) | Used for |
+|---|---|---|---|---|---|
+| `tick` | `cursor` × 0.8 | the cursor moving | 45 ms tick | −27.6 | tabs, 今日/昨日, radios, a fruit ring, the volume slider (on change), a tree popup |
+| `open` | **`select`** | selecting an item with Ⓐ | one soft triangle mallet (A6) | −22.5 | opening something: the check-in, a treat, 行く！, ✎ へんしゅう, ＋ add a row |
+| `page` | **`page`** | (the Nook Miles log's pages) | a paper flick | −22.9 | going deeper in きろく: a week, a day, the weight card, ✎ (each pencil), ＋ workout, a type, なかったことに |
+| `confirm` | `confirm` | Ⓐ "pi-pon" | E6 → B6 | −15.5 | primary actions: 保存, ハイタッチ, 島へもどる, the demo / home links, つなぐ |
+| `choice-pick` | `confirm` | Ⓐ on a choice | | −15.5 | NH's choice list (けってい, はい) |
+| `back` | `cancel` | Ⓑ | D6 → G5 | −18.1 | ‹ back, やめる (button or choice), あとで, a dismissed sheet or banner, ◀ 島へ |
+| `toggle-on` / `toggle-off` | **`toggle-on`** / **`toggle-off`** | a switch | C6 → G6 / G6 → C6 (rounder) | −20.6 / −22.5 | サウンド switches, a check-in fixed in きろく; a habit off in チェックイン |
+| `key` / `key-fn` | **`key`** (⌫ and C 5 semitones lower) | the text-entry keyboard | a 35 ms "tok" | −31.4 | the ATM keypad, tapped or typed: the softest sound in the app |
+| `sync` | **`whoosh`** | (the rescue service's call) | an airy rising whoosh and a bell | −19.5 | いま同期, the sync pill, もう一度 (retry) |
+| `remove` | **`poof`** | an item vanishing in a puff | a low airy swell and a falling note | −19.7 | × a menu row |
+| `undo` | **`undo`** | (the app-open blip reversed) | 1300 → 600 Hz glide and a low note | −19.9 | もとに戻す on any banner |
+| `boop` | **`boop`** | can't afford / can't do | two soft low notes down (330 → 247 Hz) | −20.0 | any `aria-disabled` control: a treat it can't afford, 買う！ when short, ぜんぶそろいました, 保存 with nothing changed, ＋ when the menu is full, a future day, いま同期 while syncing, けってい with nothing typed, つなぐ before the key is whole; a failed purchase or harvest |
+| (kept) | `purchase`, `phone-*`, `checkin-saved`, `harvest-receive`, the island cues | | | | outcomes (`self`) |
+
+**Game feel** (daily use). The keypad is 9 dB under a tab tick and 16 dB under a confirm; the paper flick (`page`), the most frequent sound in きろく, sits under the select; every tap sound is under 0.6 s except the whoosh. Taps that change nothing are silent (the tab, day, language or villager already chosen; a banner with 取り消す, where a tap only holds it). The choice list still ticks when its cursor moves by mouse or keyboard (NH's cursor), not on touch.
+
+**Deliberately silent.** Text fields (the key, the weight, menu names and prices, the villager's name and search): the system keyboard has its own clicks. Scrubbing the weight chart (a drag). Finishing しずえ's line with a tap (the blips stop, as Ⓐ skips text in NH; the next tap is her hop, `host-tap`). The villagers and the jar during the opening beats (`disabled`: the scene is still arriving). Swiping a banner away (a drag). Scenery taps keep their own world sounds (§5), and plain scenery has no control.
+
+**Inventory** (71 tappable elements in 30 files; `taps.test.ts` keeps it complete). "Before" is the sound before this pass.
+
+| File:line | Element | What it does | Before | Now (`data-sfx`) |
+|---|---|---|---|---|
+| island/Hud.svelte:49 | today's ベル ribbon | opens きろく ベル in the phone | phone-open | `self` (phone-open) |
+| ui/PhoneButton.svelte:12 | NookPhone button | opens the phone | phone-open | `self` (phone-open) |
+| ui/SyncPill.svelte:13 | sync pill | sync now | none | `sync`; boop while syncing |
+| island/JarSpot.svelte:147 | the jar | to ふたりの壺 | jar-tap (R18), none with reduced motion | `self` (jar-tap, also with reduced motion) |
+| island/IslandScene.svelte:162 | a villager (×2) | mine → check-in, partner → partner sheet | villager-tap / surprise | `self` (same) |
+| island/FruitTree.svelte:152 | tree canopy (×2) | shake, popup; again closes | rustle; closing silent | `self` (tree-shake; closing → tick) |
+| island/FruitTree.svelte:170 | fruit row (×2) | the popup at a fruit | none | `self` (tick) |
+| island/Balloon.svelte:51 | balloon | wobble | squeak | `self` (scene-balloon) |
+| ui/Bubble.svelte:75, :81 | しずえ / the box | finish the line, then her hop | host-tap | `self` (finish silent, then host-tap) |
+| ui/ChoiceList.svelte:33 | a choice (はい, けってい, やめる…) | answer | confirm | `choice-pick`, a `cancel` choice `back`, a `disabled` one boops |
+| routes/+page.svelte:145 | check-in CTA | opens チェックイン | none | `open` |
+| sheets/CheckinSheet.svelte:71, :74 | 昨日 / 今日 | switch day | none | `tick` (none when already shown) |
+| sheets/CheckinSheet.svelte:85 | ぜんぶできた！ | tick all | confirm | `self` (checkin-saved); `aria-disabled` when all done → boop |
+| sheets/CheckinSheet.svelte:92 | a habit switch | check in / out | confirm / tick | `self` (checkin-saved / toggle-off) |
+| sheets/CheckinSheet.svelte:105 | 保存 | close | none | `confirm` |
+| sheets/FruitRing.svelte:53 | a fruit ring (partner sheet) | show its detail | none | `tick` |
+| sheets/PartnerSheet.svelte:52 | ハイタッチ | send a high-five, close | none (R4's sparkle muted under the sheet) | `confirm` |
+| sheets/HarvestOverlay.svelte:99 | あとで | later | none | `back` (and Esc) |
+| sheets/HarvestOverlay.svelte:131 | 受け取る！ | confirm the harvest | fanfare | `self` (fanfare; boop if it fails) |
+| sheets/HarvestOverlay.svelte:152 | 島へもどる | close | none | `confirm` |
+| ui/Sheet.svelte:80 | backdrop / Esc | dismiss | none | `self` (back; the phone: phone-close) |
+| ui/Sheet.svelte:85 | grabber | dismiss | none (phone: phone-close) | `back` (phone: `self`) |
+| ui/Toast.svelte:70 | the banner | dismiss (with 取り消す: hold) | none | `back` (`none` with 取り消す) |
+| ui/Toast.svelte:78 | もとに戻す / 取り消す | undo | none | `undo` |
+| routes/jar/+page.svelte:75 | ◀ 島へ | back to the island | none | `back` |
+| routes/jar/+page.svelte:100 | recent moves card | きろく ベル | phone-open | `self` (phone-open) |
+| pots/TreatShelf.svelte:15 | a treat | ask to buy | none (unaffordable: `disabled`, no tap) | `open`; `aria-disabled` when short → boop |
+| pots/TripList.svelte:28 | 行く！ | ask to go | none | `open` |
+| pots/BuyConfirm.svelte:43 | 買う！ / 行く！ | spend | purchase | `self` (purchase; boop when short) |
+| pots/PotCard.svelte:33 | ✎ へんしゅう | menu editor | none | `open` |
+| pots/MenuEditor.svelte:68, :73 | name, price | type | none | `none` |
+| pots/MenuEditor.svelte:77 | × | remove a row | none | `remove` |
+| pots/MenuEditor.svelte:83 | ＋ add | a new row | none | `open`; `aria-disabled` when full → boop |
+| pots/MenuEditor.svelte:86 | やめる | cancel | none | `back` |
+| pots/MenuEditor.svelte:87 | 保存 | save the menu | none | `confirm`; `aria-disabled` when unchanged → boop |
+| phone/ShimaPhone.svelte:107 | ‹ back | up a level / home | cancel | `self` (back) |
+| phone/ShimaPhone.svelte:113 | × close | put the phone away | phone-close | `self` (phone-close) |
+| phone/ShimaPhone.svelte:122 | an app tile (×6) | open the app | phone-app | `self` (phone-app) |
+| kiroku/Kiroku.svelte:168 | からだ / ベル | switch list | none | `tick` (none when shown) |
+| kiroku/WeightCard.svelte:28 | a weight row (×2) | weight screen | none | `page` |
+| kiroku/WeekList.svelte:28 | a week card | the week | none | `page` |
+| kiroku/WeekDetail.svelte:62 | a day | the day | none (future: `disabled`) | `page`; future `aria-disabled` → boop |
+| kiroku/DayDetail.svelte:63, :70, :78 | ✎ steps / minutes / a workout | edit | none | `page` |
+| kiroku/DayDetail.svelte:91 | a check-in chip | fix a check-in | none | `toggle-on` / `toggle-off` |
+| kiroku/DayDetail.svelte:97 | ＋ workout | add one | none | `page` |
+| kiroku/Kiroku.svelte:245 | a workout type | to the keypad | none | `page` |
+| kiroku/NumberPad.svelte:54 | keypad keys (×12) | type | none | `self` (key / key-fn; typed digits too) |
+| kiroku/WeightDetail.svelte:67, :68, :86 | 体重を記録, 目標, ✎ a day | the weight entry | none | `page` |
+| kiroku/WeightInput.svelte:35 | the weight field | type | none | `none` |
+| kiroku/BellsLog.svelte:83 | なかったことに | ask to void a spend | none | `page` |
+| phone/SyncApp.svelte:21 | いま同期 | sync now | none | `sync`; boop while syncing |
+| phone/LangApp.svelte:13 | 日本語 / English | language | none | `tick` (none when chosen) |
+| phone/VillagerApp.svelte:46, :53 | name, search | type | none | `none` |
+| phone/VillagerApp.svelte:60 | a villager (×158) | choose | none | `tick` (none when chosen) |
+| phone/SoundApp.svelte:20 | ミュージック / 効果音 / おしゃべり | switch | tick (効果音: its confirm preview) | `self` (toggle-on / toggle-off; 効果音 previews) |
+| phone/SoundApp.svelte:33 | 音量 slider | volume | confirm on change | `self` (tick on change, none while dragged) |
+| routes/+layout.svelte:102 | デモを見る | the demo | none | `confirm` |
+| routes/+layout.svelte:112 | もう一度 (retry) | sync again | none | `sync` |
+| routes/+error.svelte:24, :28 | 島へもどる / デモを見る | reload home / the demo | none | `confirm` |
+| routes/pair/+page.svelte:65 | English / 日本語 | language | none | `tick` |
+| routes/pair/+page.svelte:75 | the key field | type | none | `none` |
+| routes/pair/+page.svelte:91 | つなぐ | pair | none | `confirm`; `aria-disabled` until the key is whole → boop |
+
+Also not elements: the NumberPad's keyboard (digits → key, ⌫ → key-fn, Esc → back, Enter → choice-pick), Esc on the harvest (back), scenery taps (§5).
+
+**The walk** (`e2e/sound.spec.ts`, installed Chrome, iPhone 13 profile, 効果音 on, `?demo`; each tap's cues from the cue function's test hook, `window.__cues`; island sounds after a sheet closes, such as coins landing, are the island answering and are listed after the tap's own cue):
+
+| Screen | Tap | Cue(s) |
+|---|---|---|
+| 島 | しずえ: はい (choice) | choice-pick |
+| 島 | check-in CTA | open |
+| チェックイン | 昨日 | tick |
+| チェックイン | 昨日 again (already shown) | (silent) |
+| チェックイン | 今日 | tick |
+| チェックイン | habit switch on | checkin-saved |
+| チェックイン | habit switch off | toggle-off |
+| チェックイン | ぜんぶできた！ | checkin-saved |
+| チェックイン | ぜんぶそろいました (aria-disabled) | boop |
+| チェックイン | 保存 | confirm + emote-idea |
+| 島 | tree canopy | tree-shake |
+| 島 | tree canopy again (closes) | tick + coin-land + coin-land |
+| 島 | partner villager | villager-tap + coin-land |
+| なかま | fruit ring | tick |
+| なかま | grabber | back |
+| なかま | Esc | back |
+| なかま | ハイタッチ | confirm |
+| しまフォン | NookPhone button | phone-open |
+| しまフォン | きろく tile | phone-app |
+| きろく | ベル tab | tick |
+| きろく | ベル tab again | (silent) |
+| きろく | からだ tab | tick |
+| きろく | weight card | page |
+| きろく | back (‹) | back |
+| きろく | week card | page |
+| きろく | a future day (aria-disabled) | boop |
+| きろく | day | page |
+| きろく | ✎ steps | page |
+| きろく | keypad 1 | key |
+| きろく | keypad ⌫ | key-fn |
+| きろく | keypad 2 | key |
+| きろく | keypad C | key-fn |
+| きろく | けってい with nothing typed (aria-disabled) | boop |
+| きろく | やめる (choice) | back |
+| きろく | ✎ steps again | page |
+| きろく | けってい | choice-pick |
+| きろく | もとに戻す (banner) | undo |
+| きろく | back (‹) to the week | back |
+| きろく | back (‹) to the list | back |
+| きろく | back (‹) to home | back |
+| しまフォン | あそびかた tile | phone-app |
+| しまフォン | back | back |
+| しまフォン | 通信 tile | phone-app |
+| 通信 | いま同期 | sync |
+| 通信 | いま同期 while syncing (aria-disabled) | (silent) |
+| しまフォン | ことば tile | phone-app |
+| ことば | 日本語 (already chosen) | (silent) |
+| しまフォン | じゅうにん tile | phone-app |
+| じゅうにん | search field | (silent) |
+| じゅうにん | pick a villager | tick |
+| しまフォン | サウンド tile | phone-app |
+| サウンド | おしゃべり on | toggle-on |
+| サウンド | おしゃべり off | toggle-off |
+| サウンド | 音量 slider (change) | tick |
+| しまフォン | close (×) | phone-close |
+| 島 | ribbon (→ きろく ベル) | phone-open |
+| しまフォン | grabber | phone-close |
+| 島 | jar | jar-tap |
+| 壺 | a treat | open |
+| 壺 | 買う！ | buy |
+| 壺 | もとに戻す | undo |
+| 壺 | ✎ へんしゅう | open |
+| へんしゅう | save, nothing changed (aria-disabled) | boop |
+| へんしゅう | ＋ add | open |
+| へんしゅう | name field | (silent) |
+| へんしゅう | × remove | remove |
+| へんしゅう | やめる | back |
+| 壺 | 行く！ | open |
+| 壺 | backdrop | back |
+| 壺 | ◀ 島へ | back |
+
+Not reached by the demo data: a treat it can't afford (the demo's pot covers every treat) and いま同期 while syncing (the demo syncs at once). Both use the same `aria-disabled` path as the boops above. **Sound off:** the same kinds of taps create no `AudioContext` and play no media element (checked in the same file).
