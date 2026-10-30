@@ -1,96 +1,57 @@
 # Scene interactions: tapping the scenery
 
-Status: implemented (round 15). Code: `app/src/lib/components/island/SceneTaps.svelte` (the flourishes),
-`sceneTaps.ts` (the hit test and the sound hook), plus `data-bush` / `data-flower` hooks in `BackRow.svelte` /
-`FlowerBeds.svelte` and a hop added to the balloon's wobble. E2E check: `app/e2e/scenery.spec.ts`.
+Code: `app/src/lib/components/island/SceneTaps.svelte` (the flourishes), `sceneTaps.ts` (the hit test and the sound
+hook), `data-bush` / `data-flower` hooks in `BackRow.svelte` / `FlowerBeds.svelte`, and the balloon's hop
+(`Balloon.svelte`). E2E: `app/e2e/scenery.spec.ts`.
 
-## Why
-
-In New Horizons and Pocket Camp nothing on the island is dead scenery. Brush past a hedge and it rustles. Walk
-through flowers and they wiggle. Running kicks up little dust puffs and leaves footprints in sand and snow. The sea
-has fish shadows. On a clear night you might see a shooting star. Up to now our island only answered taps on the
-things that *do* something (the trees, the fruit, the jar, the villagers, the balloon). Everything else ignored the
-finger. This round makes the rest of the island answer a tap too, in the same soft, toy-like way, without making
-any of it count for anything.
+**Why.** In New Horizons and Pocket Camp nothing on the island is dead scenery: hedges rustle, flowers wiggle, running
+leaves footprints, fish shadows swim, shooting stars cross the night. Here every part of the island answers a tap in
+the same soft, toy-like way, without counting for anything.
 
 ## Rules (for every scenery tap)
 
-- **Short and subtle.** ≤ 1 s (a butterfly or shooting star is 0.85 to 1.05 s). It should feel like brushing past
-  something, not like a reward.
-- **No points and no state.** It never touches ベル, never opens a sheet, never navigates and never writes anything.
-  Rare surprises (a butterfly, a fish shadow, a shooting star) are only something to look at. There are no drops.
-- **Cheap.** One `pointerdown` listener on the scene. It uses transforms and opacity only. The shakes are one-shot
-  Web Animations on the art's own element (`rotate` / `scale`, which add on top of the art's CSS `transform`).
-  There are at most 4 flourishes at once, with at most 6 nodes each, and each is removed after ≤ 1.1 s. When idle
-  nothing runs except the night's shooting-star timer. No layout reads happen except the stage / orb / cloud boxes,
-  once per tap.
-- **Buttons come first.** Anything inside a control is ignored: the canopies and fruit rows, the jar, the villagers,
-  the balloon, and the HUD (which lives outside the scene). The art keeps `pointer-events: none`, so no new hit
-  boxes cover a button. A tap that closes a tree's popup only closes it.
-- **Respects the scene state.** Nothing spawns while `data-covered` (a sheet is open) or `data-paused` (the page is
-  hidden), or in non-live gallery thumbnails.
-- **Reduced motion.** Every tap gives just a soft glow fade at the tap point (450 ms, opacity only). Nothing shakes
-  and there is no idle shooting star.
-- **Accessibility.** Purely decorative, so it is pointer-only, inside an `aria-hidden` layer, and adds no focus stops
-  or labels. Bushes and flowers have tile-sized tap cells (≈ 44u ≈ 44px at 390). Sky hit boxes are padded to ≥ 44px.
-- **Night.** The layer sits over the time-of-day tint (so sparkles and fireflies glow). The ground's flourishes are
-  dimmed to 55% at night (85% at dusk) to match the tinted island.
+- **Short and subtle:** ≤ 1 s; it should feel like brushing past something, not a reward.
+- **No points and no state:** it never touches ベル, opens a sheet, navigates or writes anything. Rare surprises (a
+  butterfly, a fish shadow, a shooting star) are only something to look at.
+- **Cheap:** one `pointerdown` listener on the scene; transforms and opacity only (shakes are one-shot Web Animations on
+  the art's own element). At most 4 flourishes at once, ≤ 6 nodes each, removed after ≤ 1.1 s. When idle nothing runs
+  except the night's shooting-star timer.
+- **Buttons come first:** taps inside a control (trees, fruit rows, jar, villagers, balloon, the HUD) are ignored; the
+  art keeps `pointer-events: none`. A tap that closes a tree's popup only closes it.
+- **Scene state:** nothing spawns while `data-covered` (a sheet is open) or `data-paused` (hidden), or in gallery
+  thumbnails.
+- **Reduced motion:** every tap gives only a soft glow at the tap point (450 ms, opacity); no shakes, no idle shooting
+  star.
+- **Accessibility:** decorative, pointer-only, in an `aria-hidden` layer, no focus stops. Bushes and flowers have
+  tile-sized cells (≈ 44px); sky hit boxes are padded to ≥ 44px.
+- **Night:** the layer sits over the time-of-day tint (sparkles and fireflies glow); ground flourishes are dimmed to
+  55% at night, 85% at dusk.
 
-## Element → tap response → game reference
+## Element → response
 
-| Element | Tap response (implemented) | NH / Pocket Camp reference |
+| Element | Tap response | NH / Pocket Camp reference |
 |---|---|---|
-| **Hedge bush** (official bush art) | The bush rustles: a 0.52 s squash-and-jiggle pivoting on its foot. Three leaves pop off the top and flutter down to either side. Seasonal: **cherry petals** in spring (official `season/petal`), green leaves in summer, **maple leaves** in autumn (official `season/maple-leaf`), **snow clumps** in winter. | NH shrubs (azalea, hydrangea, hibiscus, tea olive, holly, camellia) shake and shed a few leaves or petals when you run into them. Trees drop seasonal leaves and blossoms when shaken. In winter, shaking a tree drops snow. |
-| **Flower** (official flower art) | The flower wiggles on its stem (0.62 s, squash then ±9°). Two petals in the species' colour drift down, and a little ✦ sparkle pops at the bloom. **Rare (1 in 8, day, not winter): a common butterfly** (white with a yellow edge) flutters up off the bloom and away. **Summer nights (1 in 2): a firefly** rises out of the bed, blinking. | NH flowers wiggle when you walk through them. Butterflies spawn around flowers by day (common butterfly, yellow butterfly), and fireflies come out on summer nights. |
-| **Sea** (around and behind the island) | Two foreshortened ripple rings and three droplets where you tapped (0.8 s). **Rare (1 in 10): a fish shadow** surfaces and slips away (1.05 s). | NH: casting into the water makes a ring and splash, and fish shadows swim the sea. Pocket Camp's fishing spots ripple. |
-| **Sand** (the beach) | Two little footprints that fade, plus a puff of sand dust. | NH: running on the beach leaves footprints and kicks up dust puffs. |
-| **Grass** | A small puff of dust. **Winter: a snow puff plus two footprints in the snow.** | NH: running leaves white dust puffs. Snow keeps footprints. |
-| **Cloud** | The cloud squishes like a marshmallow (0.62 s, scale only, on top of its drift), and three soft wisps break off the tapped edge and dissolve. | Not interactive in the games. This is a Pocket Camp-style "toy" response in NH's soft cloud style. |
-| **Sun** | The sun pops (scale bounce). A halo ring, a turning four-point glint and two lens flecks streak down-right (the light comes from the upper left). | NH's sun has a lens glare when you tilt the camera up. |
-| **Moon** (night) | The moon bobs, a star twinkles by it, and a **shooting star** streaks down-left across the upper sky. | NH: on clear nights shooting stars cross the sky (you wish on them with A, and Celeste visits on meteor-shower nights). |
-| **Night sky** | A star twinkles where you tapped. 1 in 4 times, a shooting star follows. | As above. NH's sky has twinkling stars. |
-| **Idle, clear night** | A shooting star crosses on its own every 45 to 120 s (not while covered or hidden, and never with reduced motion). | NH's meteor showers. |
-| **Balloon present** | Kept the rubbery wobble, plus a little **hop up on its string** that bobs back down. Still no pop and no present. | NH: you shoot balloons down with a slingshot. Here, to keep it pointless (no points), a tap only nudges it. |
+| Hedge bush | A 0.52 s squash-and-jiggle on its foot; three leaves pop off and flutter down: petals in spring, green leaves in summer, maple leaves in autumn, snow clumps in winter | Shrubs shake and shed leaves or petals; winter trees drop snow |
+| Flower | Wiggles on its stem (0.62 s); two petals drift down, a ✦ pops. 1 in 8 (day, not winter): a common butterfly flutters off. Summer nights (1 in 2): a firefly rises | Flowers wiggle when walked through; butterflies by day, fireflies on summer nights |
+| Sea | Two ripple rings and three droplets (0.8 s); 1 in 10: a fish shadow surfaces and slips away | Casting ripples, fish shadows |
+| Sand | Two fading footprints and a dust puff | Footprints and dust on the beach |
+| Grass | A dust puff; in winter a snow puff and two footprints | Running dust; snow keeps footprints |
+| Cloud | Squishes like a marshmallow (scale only, on top of its drift); three wisps break off | A Pocket Camp–style toy response |
+| Sun | A scale bounce, a halo ring, a turning glint and two lens flecks down-right | NH's sun glare |
+| Moon (night) | Bobs, a star twinkles, a shooting star streaks down-left | Shooting stars on clear nights |
+| Night sky | A star twinkles at the tap; 1 in 4, a shooting star follows | Twinkling stars |
+| Idle, clear night | A shooting star every 45–120 s (not covered, hidden or under reduced motion) | Meteor showers |
+| Balloon present | A rubbery wobble and a hop up its string; no pop, no present | Balloons (shot down in NH; here only nudged) |
 
-## Left as ideas (not built)
-
-- **Message bottle** bobbing in at the shore (NH's daily bottle). Charming, but it implies a message or DIY to
-  collect, and it needs a shore-path animation longer than 1 s. It would be best as a rare idle event with no tap.
-- **Star fragments on the beach** the morning after a shooting star (NH). That needs state across days, which these
-  taps must not have.
-- **Wishing:** tap during a shooting star to make a wish ("☆ ねがいごと…" bubble). It would be cute, but it is a
-  game mechanic with feedback that implies an outcome.
-- **Seagull / Gulliver** washed up on the beach. Too big a character for a tap flourish.
-- **Rain / snow weather taps** (puddle ripples on the ground). We don't have weather yet. The sound engine's
-  `Weather` could drive it later.
-- **Bugs on the trees** (cicadas in summer, NH's tree bugs). The trees are buttons, so their taps already belong to
-  the tree.
-- **Wet sand darkening** under the footprints at the waterline, and **wave foam** chasing the tap on the shore.
-  Both are nice, but the foam is drawn in the ground SVG, so it would cost more.
+Not built, by choice: message bottles and star fragments (they imply something to collect or state across days),
+wishing on a shooting star (implies an outcome), bugs on the trees (the trees are buttons), weather taps (no weather
+source yet).
 
 ## Sound
 
-Scenery taps call one hook, `sceneSfx(kind)` in `island/sceneTaps.ts`, which plays the `scene-<kind>` cue
-(`sound/cues.ts`, all world cues; round 16). The ids marked *new* have synth placeholders in `sound/synth.ts` (a file
-in `static/audio/manifest.json` replaces one). Audio also unlocks on `pointerdown`, so the very first tap is heard.
-The table is the mapping as built (sound.md §5).
-
-| `sceneSfx(kind)` | Wanted cue → sound | Notes |
-|---|---|---|
-| `bush` | `scene-bush` → `rustle` (gain ≈ .7) | the same leafy rustle as `tree-shake`, lighter |
-| `flower` | `scene-flower` → **new `swish`** (or `rustle`, gain .35, +5 st) | a soft grass swish |
-| `butterfly` | `scene-butterfly` → `sparkle` (gain .3, +7 st) | fired together with `flower` |
-| `cloud` | `scene-cloud` → **new `puff`** (a soft airy "pof"), or `pop` at gain .4 and −5 st | |
-| `sun` | `scene-sun` → `sparkle` (gain .5) | |
-| `moon` | `scene-moon` → `sparkle` (gain .4, −3 st) | |
-| `star` | `scene-star` → `sparkle` (gain .3, +12 st) | a tiny high tink |
-| `shooting-star` | `scene-shooting-star` → **new `twinkle`** (NH's shooting-star "shiing", a rising glissando, ≈ .6 s) | also fires for the idle shooting star. Not a jingle: it must not duck the music |
-| `splash` | `scene-splash` → **new `splash`** (a water plop) | |
-| `fish` | `scene-fish` → `splash` (softer, −4 st) | the fish variant of a splash |
-| `sand` | `scene-sand` → **new `step-sand`** (a soft footstep crunch) | |
-| `grass` | `scene-grass` → **new `step-grass`** | |
-| `snow` | `scene-snow` → **new `step-snow`** (a squeaky snow crunch) | winter grass |
-| `balloon` | `scene-balloon` → **new `squeak`** (a rubbery boing), or `pop` at gain .5 and +7 st | |
-
-All of these should be `sfx` bus, low gain (≤ .5) and with pitch jitter (NH never repeats an effect at the exact
-same pitch), with `max: 2` so rapid taps don't stack.
+Scenery taps call `sceneSfx(kind)` (`island/sceneTaps.ts`), which plays the `scene-<kind>` cue from `sound/cues.ts`:
+quiet world cues (silent under a sheet), low gain, pitch-jittered, two at once at most. Bush → `rustle`, flower →
+`swish`, butterfly / sun / moon / star → `sparkle` at different pitches, cloud → `puff`, shooting star → `twinkle` (not
+a jingle: it doesn't duck the music), sea / fish → `splash`, sand / grass / snow → `step-sand` / `step-grass` /
+`step-snow`, balloon → `squeak`. All are synth placeholders ([sound.md](sound.md) §8); a file in
+`static/audio/manifest.json` replaces any of them. Audio also unlocks on `pointerdown`, so the first tap is heard.
