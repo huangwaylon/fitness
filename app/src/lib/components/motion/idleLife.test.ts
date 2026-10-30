@@ -103,3 +103,26 @@ describe('event queue (v5 §6)', () => {
     expect(queuedEvents()).toEqual([]);
   });
 });
+
+describe('idle life while the page is hidden (round 16 M11)', () => {
+  it('stops its timer on hide (no polling) and wakes on show', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    const doc = document as unknown as { hidden: boolean; addEventListener: ReturnType<typeof vi.fn> };
+    let ticks = 0;
+    const stop = startIdleLife({ paused: () => (ticks++, false), asleep: () => false, scores: () => [0, 0], treeShake: () => {} });
+    const onVis = doc.addEventListener.mock.calls.find((c) => c[0] === 'visibilitychange')![1] as () => void;
+    doc.hidden = true;
+    onVis();
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(600_000);
+    expect(ticks).toBe(0);
+    doc.hidden = false;
+    onVis();
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(ticks).toBeGreaterThan(0);
+    stop();
+  });
+});

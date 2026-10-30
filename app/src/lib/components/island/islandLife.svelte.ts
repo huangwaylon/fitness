@@ -49,7 +49,7 @@ function safeGet(kv: KV | null, k: string): string | null {
 
 export class IslandLife {
   /** The page is hidden (the scene pauses its animations). */
-  hidden = $state(false);
+  hidden = $state(typeof document !== 'undefined' && document.hidden); // a scene mounted in a hidden tab starts paused
   balloon = $state(false);
   devFireworks = $state(false);
   /** Bumped to shake a person's tree (idle life). */

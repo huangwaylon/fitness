@@ -82,7 +82,8 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
   function tick() {
     timer = null;
     if (stopped) return;
-    if (document.hidden || ctx.paused() || reducedMotion()) return schedule(2_000);
+    if (document.hidden) return; // asleep until the page shows again (onVis), no polling while hidden
+    if (ctx.paused() || reducedMotion()) return schedule(2_000);
     if (Date.now() - lastEvent.at < 3_000) return schedule(3_000);
     if (ctx.asleep()) {
       doze();
@@ -183,7 +184,11 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     }
   }
 
-  const onVis = () => (document.hidden ? undefined : wakeUp());
+  const onVis = () => {
+    if (!document.hidden) return wakeUp();
+    if (timer) clearTimeout(timer);
+    timer = null;
+  };
   addEventListener('pointerdown', wakeUp, { passive: true });
   document.addEventListener('visibilitychange', onVis);
   schedule(rand(2_500, 4_500));
