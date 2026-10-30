@@ -343,6 +343,8 @@ describe('the きろく ledger and history fields', () => {
     const d = weekDetail(s, WK, MON_AFTER);
     expect(d).toMatchObject({ bells: 20960, bonus: { A: 2000, B: 2000, duo: 1000 } });
     expect(d.people.B).toMatchObject({ dailyBells: 7980, bonus: 2000, ringBadges: five });
+    expect(d.people.A.ringWeek).toEqual({ peach: { days: 7, goal: 5 }, pear: { days: 7, goal: 5 }, cherry: { days: 7, goal: 5 }, apple: { days: 7, goal: 4 }, coconut: { days: 7, goal: 3 } });
+    expect(w.people.B.ringWeek).toEqual(d.people.B.ringWeek);
     expect(d.people.A.days[0]).toMatchObject({
       bells: 1140, rings: { peach: 180, pear: 180, cherry: 180, apple: 200, coconut: 400 }, parts: { peach: 180, apple: 200, coconut: 400, pear: 180 },
       exerciseMin: 60, moveKcal: 700, moveGoal: 600, standMin: 200, steps: 9000, gym: true, met: five, ticks: 0
@@ -384,10 +386,5 @@ describe('the Move goal in force (ADR 0021 §5): per person, from the day it is 
   it('a change after the week never re-prices it; one partner’s goal never moves the other’s', () => {
     const r = plus(kcal, { events: [goal(jst('2026-11-23', '08:00'), 'A', 400), goal(jst(D[0], '08:00'), 'B', 1000)] });
     expect(pears(r, MON_AFTER)).toEqual(D.map(() => [135, 600]));
-  });
-
-  it('old check-in rows earn nothing: the pots are the same with or without them', () => {
-    const ticks = D.flatMap((d) => ['protein_each_meal', 'no_sweets', 'veg_two_meals'].map((habit) => ev(jst(d, '21:00'), 'A', 'checkin', { date: d, habit, done: true })));
-    expect(potsAt(reduce(plus(perfectWeek(), { events: ticks })), MON_AFTER).earned).toBe(potsAt(reduce(perfectWeek()), MON_AFTER).earned);
   });
 });

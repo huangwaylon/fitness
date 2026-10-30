@@ -144,11 +144,8 @@ describe('workouts', () => {
     expect(strengthDates(back, 'A')).toEqual([DAYS[1], DAYS[3]]);
   });
 
-  it('no daily questions: a yoga workout counts only when marked as strength in きろく; an old confirm is ignored', () => {
-    const base = withRows(goodWeek(), {
-      workouts: [workout(jst(DAYS[2], '20:00'), 'A', 'A-yoga', DAYS[2], 'Yoga', 30)],
-      events: [ev(jst(DAYS[2], '20:30'), 'A', 'confirm', { kind: 'workout', id: 'A-yoga', yes: true })]
-    });
+  it('no daily questions: a yoga workout counts only when marked as strength in きろく', () => {
+    const base = withRows(goodWeek(), { workouts: [workout(jst(DAYS[2], '20:00'), 'A', 'A-yoga', DAYS[2], 'Yoga', 30)] });
     expect(buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows: base }, 'A', WED_MID).pending).toEqual([]);
     expect(strengthDates(base, 'A')).toEqual([DAYS[1], DAYS[3]]);
     const rows = withRows(base, { events: [ev(jst(DAYS[2], '21:00'), 'A', 'workout_edit', { id: 'A-yoga', strength: true })] });
@@ -178,21 +175,6 @@ describe('workouts', () => {
     expect(s.manualWorkouts.A.map((w) => w.id)).toEqual(['m:1']);
     expect(strengthDates(rows, 'A')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);
     expect(dayDetail(s, DAYS[2], WED_MID).people.A.workouts).toMatchObject([{ id: 'm:1', manual: true, strength: true }]);
-  });
-});
-
-describe('old check-ins (ADR 0021)', () => {
-  it('ticks and きろく fixes of the eating habits earn nothing and never show in the change log', () => {
-    const at = jst(DAYS[6], '20:00');
-    const rows = withRows(goodWeek(), {
-      events: [
-        ev(at, 'A', 'checkin', { date: DAYS[0], habit: 'no_sweets', done: true }),
-        ev(at, 'A', 'checkin', { date: DAYS[1], habit: 'no_sweets', done: false, edit: true })
-      ]
-    });
-    expect(earnAt(rows, 'A')).toEqual(earnAt(goodWeek(), 'A'));
-    expect(editLog(reduce(rows))).toEqual([]);
-    expect(weekDetail(reduce(rows), WK, WED_MID).people.A.days.map((d) => d.ticks)).toEqual([0, 0, 0, 0, 0, 0, 0]);
   });
 });
 
@@ -352,16 +334,13 @@ describe('harvest taps (one acceptance rule for the island and きろく)', () =
 });
 
 describe('presence rows (read-time rules in reduce)', () => {
-  const pres = (at: string, person: PersonId, place: string, event: 'arrive' | 'leave', eventAt = at): PresenceRow => [at, person, place, event, eventAt];
+  const pres = (at: string, person: PersonId, place: string, event: 'arrive', eventAt = at): PresenceRow => [at, person, place, event, eventAt];
   const kept = (presence: PresenceRow[], p: PersonId = 'A') => reduce({ metrics: [], workouts: [], presence, events: [] }).presence[p].map((e) => `arrive@${e.eventAt}`);
   const T = jst(DAYS[1], '18:00');
 
-  it('a repeat arrive within 2 minutes is dropped, later than that it counts; leave rows are ignored', () => {
+  it('a repeat arrive within 2 minutes is dropped, later than that it counts', () => {
     expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:02'), 'A', 'anytime', 'arrive')])).toEqual([`arrive@${new Date(T).toISOString()}`]);
     expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:03'), 'A', 'anytime', 'arrive')])).toHaveLength(2);
-    // A leave row (old Shortcuts) is ignored.
-    expect(kept([pres(T, 'A', 'anytime', 'arrive'), pres(jst(DAYS[1], '18:40'), 'A', 'anytime', 'leave')])).toHaveLength(1);
-    expect(kept([pres(T, 'A', 'anytime', 'leave')])).toEqual([]);
   });
 
   it('an event_at more than 48 h from the server `at` is ignored; within it, event_at is the time used', () => {
@@ -369,10 +348,10 @@ describe('presence rows (read-time rules in reduce)', () => {
     expect(kept([pres(T, 'A', 'anytime', 'arrive', jst(DAYS[3], '17:59'))])).toEqual([`arrive@${new Date(jst(DAYS[3], '17:59')).toISOString()}`]);
   });
 
-  it('an arrival is a strength day: no leave, no minimum stay, no question; twice a day is still one day', () => {
+  it('an arrival is a strength day: no minimum stay, no question; twice a day is still one day', () => {
     const rows = withRows(goodWeek(), { presence: [
       pres(jst(DAYS[0], '19:00'), 'A', 'anytime', 'arrive'), pres(jst(DAYS[0], '20:30'), 'A', 'anytime', 'arrive'),
-      pres(jst(DAYS[2], '07:00'), 'B', 'pt_studio', 'arrive'), pres(jst(DAYS[2], '08:00'), 'B', 'pt_studio', 'leave')
+      pres(jst(DAYS[2], '07:00'), 'B', 'pt_studio', 'arrive')
     ] });
     expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[1], DAYS[3]]);
     expect(strengthDates(rows, 'B')).toEqual([DAYS[1], DAYS[2], DAYS[3]]);

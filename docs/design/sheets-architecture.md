@@ -9,27 +9,22 @@ All timestamps are ISO 8601 UTC strings written by the script (`at`). Dates are 
 |---|---|---|
 | `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`move_kcal`\|`stand_min`\|`weight`), `value` | `ingest`. Steps, exercise minutes, Move kcal and Stand minutes (ADR 0021; daily totals): **only when the value is higher** than the highest so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020): **whenever it differs** from the last row for (person, date) |
 | `workouts` | `at`, `person`, `id`, `date`, `type`, `start`, `end`, `duration_min`, `avg_hr` | `ingest`, only for unseen `id` (`workoutKey(type, start)`) |
-| `presence` | `at`, `person`, `place`, `event` (`arrive`\|`leave`), `event_at` | `presence`. The model reads only `arrive` at a known place of that person: a strength day on its Tokyo date (2026-10-30). `leave` rows (old Shortcuts) are ignored |
+| `presence` | `at`, `person`, `place`, `event` (`arrive`), `event_at` | `presence`. An arrival at a known place of that person is a strength day on its Tokyo date (2026-10-30). The script refuses any other event (`leave` included) |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON) | `event` (client-generated `id`; a duplicate `id` is ignored, so retries are safe) |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest` (audit only: no payload stored) |
 
 Event `type`s and `data`:
-- `checkin {date, habit, done}` and `confirm {kind, id, yes}`: still accepted (an old client's queued event never
-  jams) but **ignored by the model** since ADR 0021: no eating check-ins, and no daily questions (a non-strength
-  workout type counts as strength only when marked in きろく with `workout_edit {strength:true}`).
-- `spend {spendId, pot:'treat'|'trip', item, label, bells}` (ADR 0019): a buy from a shared pot. The model ignores
-  it unless `pot` is valid, `bells` an integer 1–10,000,000, `label` 1–60 characters and `item` a string ≤ 40, and
-  (on read) unless the pot covered it at its `at`. Old yen `spend {spendId, label, amountYen}` rows (no `pot`) are
-  ignored.
-- `approve {spendId}`, `transfer {month}`, `transfer_undo {month}`: the old yen economy's. Removed in round 16: the
-  script refuses them like any unknown type, and the model ignores the old rows that remain (ADR 0019 §6).
+Exactly these types (`EVENT_TYPES`); the script refuses anything else, and every shape below, with `bad_request`
+(ADR 0021: no check-ins and no daily questions, so `checkin` and `confirm` are gone like the yen economy's `approve` /
+`transfer`, the privacy `share` and the yen `spend {amountYen}`; `cleanupLegacyData`, runbook §9, deleted their rows):
+- `spend {spendId, pot:'treat'|'trip', item, label, bells}` (ADR 0019): a buy from a shared pot: `bells` an integer
+  1–10,000,000, `label` 1–60 characters, `item` a string ≤ 40. The model counts it only if the pot covered it at its `at`.
 - `harvest {week}` (「受け取る」: a ceremony only, the bonus counts either way) · `highfive {}`
-- `pref {key, value}` (keys: `locale`, `villagerName`, `villager`, `goalWeight` (the sender's goal in kg, 20–300 with
+- `pref {key, value}` (`PREF_KEYS`; any other key is refused. Keys: `locale`, `villagerName`, `villager`, `goalWeight` (the sender's goal in kg, 20–300 with
   one decimal, or `null` to clear; ADR 0020), `moveGoal` (the sender's daily Move goal, an integer 100–2,000 kcal; ADR
   0021: it applies from the Tokyo date of its `at` on, never to earlier days; anything else is ignored), and the shared menus `treatMenu` / `tripMenu`:
   `value` is a JSON array of `{id, label, bells}` (≤ 30 items, unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000);
   the latest valid one by either person wins; an invalid one is ignored as a whole)
-- `share {metric, on}`: refused by the script (`bad_request`); old rows are ignored (ADR 0016).
 
 Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29, **redeploy `Code.js`**). The subject is always the sender (`person`): there is no person field, so nobody can edit the partner's record. Activity edits count only while the day's week is open (this week, and last week until Wednesday 04:00 JST); the model ignores the rest, so the sheet stays a dumb log:
 - `metric_set {date, metric:'steps'|'exercise_min'|'move_kcal'|'stand_min', value}`: overrides the day's value, also lower. The script refuses a non-integer or out-of-range `value` (steps 0–100,000; minutes 0–1,440; kcal 0–10,000; stand minutes 0–1,440) or a bad date/metric with `bad_request`. Read rule: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows; else max(S.value, ingest rows with S.at < at ≤ T).

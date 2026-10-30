@@ -27,32 +27,19 @@ describe('reduce: rows', () => {
   });
 
   it('workouts: the first row per id wins; presence: own places only, no duplicates, no skewed event_at', () => {
-    const p = (when: string, person: PersonId, place: string, event: 'arrive' | 'leave', eventAt = when): PresenceRow => [when, person, place, event, eventAt];
+    const p = (when: string, person: PersonId, place: string, event: string, eventAt = when) => [when, person, place, event, eventAt] as PresenceRow;
     const s = reduce(rows([], {
       workouts: [workout('A', 'w1', WK), workout('A', 'w1', WK, at(WK, '21:00'))],
       presence: [p(at(WK, '18:00'), 'A', 'anytime', 'arrive'), p(at(WK, '18:01'), 'A', 'anytime', 'arrive'),
         p(at(WK, '18:00'), 'A', 'pt_studio', 'arrive'), p(at(WK, '19:00'), 'A', 'anytime', 'leave')]
     }));
     expect(s.workouts.A.map((w) => w.at)).toEqual([at(WK, '20:00')].map(Date.parse));
-    // Arrivals only: the leave row (old Shortcuts) is ignored.
+    // Arrivals only: a row with another event (a hand edit) is malformed and skipped.
     expect(s.presence.A.map((e) => `${e.placeKey}@${e.eventAt}`)).toEqual([`anytime@${new Date(at(WK, '18:00')).toISOString()}`]);
   });
 });
 
 describe('reduce: events', () => {
-  it('checkin and confirm rows (ADR 0021: no check-ins, no daily questions) are read and ignored, not a crash', () => {
-    const old = [
-      ev(at('2026-11-10'), 'A', 'checkin', { date: '2026-11-10', habit: 'protein_each_meal', done: true }),
-      ev(at('2026-11-10'), 'A', 'checkin', { date: '2026-11-10', habit: 'no_sweets', done: true, edit: true }),
-      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'workout', id: 'w1', yes: true }),
-      ev(at(WK, '21:00'), 'A', 'confirm', { kind: 'visit', id: `anytime@${at(WK, '18:00')}`, yes: true })
-    ];
-    const more = { workouts: [workout('A', 'w1', WK)] };
-    const a = reduce(rows(old, more));
-    const b = reduce(rows([], more));
-    expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
-  });
-
   it('move_kcal and stand_min rows are activity metrics (ADR 0021); metric_set accepts them within bounds', () => {
     const s = reduce(rows([
       ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 450 }),
@@ -86,9 +73,9 @@ describe('reduce: events', () => {
       ev(at(WK), 'B', 'spend', bell('y', { bells: 1.5 })),
       ev(at(WK), 'B', 'spend', bell('z', { bells: 10_000_001 })),
       ev(at(WK), 'B', 'spend', bell('p', { pot: 'jar' })),
-      ev(at(WK), 'B', 'spend', { spendId: 'yen', label: 'ケーキ', amountYen: 800 }), // the old yen economy: ignored
+      ev(at(WK), 'B', 'spend', { spendId: 'nopot', label: 'ケーキ', bells: 800 }), // no pot
       ev(at(WK, '13:00'), 'A', 'spend_void', { spendId: 7 }), // not the spender
-      ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 'yen' }), // not a ベル spend
+      ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 'nopot' }), // not an accepted spend
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 7 }),
       ev(at(WK, '14:00'), 'B', 'spend_void', { spendId: 7 }) // twice
     ]));
@@ -96,14 +83,10 @@ describe('reduce: events', () => {
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['B', Date.parse(at(WK, '13:00'))]]);
   });
 
-  it('rows of the removed approve, transfer and transfer_undo types are read and ignored, not a crash', () => {
-    const old = [
-      ev(at('2026-12-02'), 'A', 'approve', { spendId: 7 }),
-      ev(at('2026-12-02'), 'A', 'transfer', { month: '2026-11' }),
-      ev(at('2026-12-03'), 'B', 'transfer_undo', { month: '2026-11' })
-    ];
+  it('a row of a type the server refuses (a hand edit of the sheet) is ignored, not a crash', () => {
+    const odd = [ev(at('2026-12-02'), 'A', 'nonsense', { x: 1 }), ev(at('2026-12-02'), 'B', 'spend', { spendId: 'y', label: 'x', amount: 5 })];
     const tick = ev(at('2026-12-03'), 'B', 'highfive', {});
-    const a = reduce(rows([...old, tick]));
+    const a = reduce(rows([...odd, tick]));
     const b = reduce(rows([tick]));
     expect(a.highfives).toHaveLength(1);
     expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
@@ -167,11 +150,11 @@ describe('reduce: events', () => {
     expect(s.prefs).toEqual({ A: { locale: 'en', villagerName: 'ウェイ' }, B: { villager: 'ume' } });
   });
 
-  it('unknown types (old share rows) and unreadable data are ignored; events apply in at order', () => {
+  it('unknown types and unreadable data are ignored; events apply in at order', () => {
     const s = reduce(rows([
       ev(at(WK, '13:00'), 'A', 'pref', { key: 'locale', value: 'ja' }),
       ev(at(WK, '12:00'), 'A', 'pref', { key: 'locale', value: 'en' }),
-      ev(at(WK), 'A', 'share', { metric: 'steps', on: true }),
+      ev(at(WK), 'A', 'nonsense', { metric: 'steps', on: true }),
       ev(at(WK), 'A', 'highfive', '{oops')
     ]));
     expect(s.prefs.A.locale).toBe('ja');

@@ -52,7 +52,6 @@ export function syntheticRows(days: number): SnapshotRows {
         const place = p === 'A' ? 'anytime' : 'pt_studio';
         if (gym[p] && h === 18) presence.push([at(date, hm(18, 0)), p, place, 'arrive', jst(date, '18:00')]);
         if (gym[p] && h === 19) {
-          presence.push([at(date, hm(19, 0)), p, place, 'leave', jst(date, '19:00')]);
           workouts.push([at(date, hm(h, m)), p, `w:${p}${d}`, date, 'Traditional Strength Training', jst(date, '18:05'), jst(date, '18:55'), 50, 118]);
         }
       }

@@ -153,3 +153,14 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
 3. **Week badge progress per person** in `weekDetail()` and `historyWeeks()`: `ringWeek: Record<RingFruit, { days:
    number; goal: number }>` (days met so far / the badge threshold of that week's rule version). Until then the UI
    counts `days[].met` and reads the latest `RULES` thresholds.
+
+**Engine replies** (2026-10-30):
+- 1: `confirmPending` is now a `@public` no-op (knip ignores `@public` exports, so your commit can land whether or not
+  it still imports it; HEAD's island still does, so deleting it outright would break main). `confirm` is no longer an
+  event type at all (the server refuses it). Once your island commit is on main, `confirmPending`, `WeekView.pending`
+  and `PendingConfirmation` go in my next commit.
+- 3: done. `historyWeeks()[i].people[p].ringWeek` and `weekDetail().people[p].ringWeek`:
+  `Record<RingFruit, { days: number; goal: number }>` (days at the goal this week / that week's threshold).
+- Also (lead, "no code for past designs"): the server now refuses `checkin`, `confirm`, presence `leave`, yen-shaped
+  `spend`s and `pref` keys outside `PREF_KEYS` (`#lib/contract/api.ts`); `cleanupLegacyData` (runbook §9) deletes their
+  old rows from the sheet.

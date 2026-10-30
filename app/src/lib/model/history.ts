@@ -15,11 +15,18 @@ const LIVE = Infinity;
 function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
   const landed = provisionalMs(w.weekKey) <= now;
   const bonus: HarvestBonus = landed ? { ...w.bonus } : { A: 0, B: 0, duo: 0 };
-  const person = (e: WeekEarning) => ({ daily: dailyUpTo(e, today), bonus: bonus[e.person], ringBadges: { ...e.badges }, badges: legacyBadges(e.badges) });
+  const person = (e: WeekEarning) => ({
+    daily: dailyUpTo(e, today), bonus: bonus[e.person], ringBadges: { ...e.badges }, ringWeek: ringWeekOf(e), badges: legacyBadges(e.badges)
+  });
   const A = person(w.A);
   const B = person(w.B);
   return { bonus, A, B, bells: A.daily + A.bonus + B.daily + B.bonus + bonus.duo };
 }
+/** Badge progress per fruit: days at the goal this week, and the threshold of the week's rule version. */
+type RingWeek = Record<RingFruit, { days: number; goal: number }>;
+const ringWeekOf = (e: WeekEarning): RingWeek =>
+  Object.fromEntries(Object.entries(e.fruits).map(([f, x]) => [f, { days: x.weekDays, goal: x.weekGoalDays }])) as RingWeek;
+
 const dayOf = (e: WeekEarning, date: LocalDate): { bells: number; rings: RingBells; parts: FruitBells } => {
   const d = e.days.find((x) => x.date === date);
   const rings = d ? { ...d.rings } : zeroRings();
@@ -48,6 +55,8 @@ interface HistoryPerson {
   bells: number;
   /** The five badges (ADR 0021). */
   ringBadges: Record<RingFruit, boolean>;
+  /** Badge progress per fruit (days at the goal / the threshold). */
+  ringWeek: RingWeek;
   /** @deprecated ADR 0019's four (🍐 = Move). */
   badges: Record<FruitKey, boolean>;
   stamps: Stamp[];
@@ -139,8 +148,8 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
       harvested: harvested.has(wk),
       bells: b.bells,
       people: {
-        A: { bells: b.A.daily + b.A.bonus, ringBadges: b.A.ringBadges, badges: b.A.badges, stamps: stampsFor(c.wb.A, today) },
-        B: { bells: b.B.daily + b.B.bonus, ringBadges: b.B.ringBadges, badges: b.B.badges, stamps: stampsFor(c.wb.B, today) }
+        A: { bells: b.A.daily + b.A.bonus, ringBadges: b.A.ringBadges, ringWeek: b.A.ringWeek, badges: b.A.badges, stamps: stampsFor(c.wb.A, today) },
+        B: { bells: b.B.daily + b.B.bonus, ringBadges: b.B.ringBadges, ringWeek: b.B.ringWeek, badges: b.B.badges, stamps: stampsFor(c.wb.B, today) }
       }
     });
   }
@@ -196,6 +205,8 @@ interface WeekDetailPerson {
   bonus: number;
   /** The five badges (ADR 0021). */
   ringBadges: Record<RingFruit, boolean>;
+  /** Badge progress per fruit (days at the goal / the threshold). */
+  ringWeek: RingWeek;
   /** @deprecated ADR 0019's four (🍐 = Move). */
   badges: Record<FruitKey, boolean>;
   days: DayRow[];
@@ -233,6 +244,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
       dailyBells: b[p].daily,
       bonus: b[p].bonus,
       ringBadges: b[p].ringBadges,
+      ringWeek: b[p].ringWeek,
       badges: b[p].badges,
       days: wb[p].days.map((d) => {
         const m = dayExercise(s, p, d.date, c.t, manual.get(d.date) ?? 0);
