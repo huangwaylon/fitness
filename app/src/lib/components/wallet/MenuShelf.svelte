@@ -24,7 +24,7 @@
         {@const short = item.bells - balance}
         <button type="button" class="item" aria-disabled={short > 0} data-sfx="open" data-item={item.id} onclick={() => onbuy(item)}
           aria-label="{item.label} {formatBells(item.bells)}{short > 0 ? ' ' + t('menu.left', { bells: formatBells(short) }) : ''}">
-          <span class="ic"><OfficialArt key={itemArt(item.id)} size="48px" /></span>
+          <span class="ic"><OfficialArt key={itemArt(item.id)} size="60px" /></span>
           <b class="nm">{item.label}</b>
           <span class="pr money">{formatBells(item.bells)}</span>
           {#if short > 0}<span class="short">{t('menu.left', { bells: formatBells(short) })}</span>{/if}
@@ -49,7 +49,7 @@
   .item:active:not([aria-disabled='true']) { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-ctl-press); transition-duration: var(--dur-tap); }
   .item[aria-disabled='true'] { cursor: default; box-shadow: none; background: var(--ctl-off); color: var(--text-soft); transform: translateY(4px); }
   .item[aria-disabled='true'] .ic { opacity: .5; filter: saturate(.3); }
-  .ic { width: 48px; height: 48px; margin-bottom: 4px; display: grid; place-items: center; line-height: 0; }
+  .ic { width: 60px; height: 60px; margin-bottom: 2px; display: grid; place-items: center; line-height: 0; }
   .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.25; overflow-wrap: anywhere; word-break: auto-phrase; }
   .pr { font-size: var(--fs-talk); }
   .short { font-size: var(--fs-s); font-weight: 700; }

@@ -1,7 +1,7 @@
 <script lang="ts">
   // しまフォン → あそびかた (ADR 0021), written for a 10-year-old: no taps needed, the five fruits and their daily goals
-  // (what each pays), the weekly badges and the together bonus, the one shared wallet (ADR 0022), and the one-line
-  // setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
+  // (what each pays), the weekly badges and the together bonus, the one shared wallet (ADR 0022) with the treat guide,
+  // the protein tip and the one-line setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
   import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
@@ -10,6 +10,8 @@
   import { dayMax } from '../island/progress.ts';
   import { badgeGoals } from '../kiroku/fmt.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { weightTrend } from '#lib/model/weight.ts';
 
   let { view }: { view: WeekView } = $props();
   const r = $derived(rulesFor(view.weekKey));
@@ -28,6 +30,17 @@
     : f === 'cherry' ? t('help.pay.perMin', { b: r.bells.perStandMin })
     : f === 'apple' ? formatBells(r.bells.stepDay)
     : formatBells(r.bells.gymDay);
+
+  /** The protein tip (user, round 19; not tracked): 1.6 g per kg a day, per person from their goal weight (else their
+   *  weight trend), rounded to 5 g; just the rule when neither is known. */
+  const protein = $derived.by((): string => {
+    const m = week.model;
+    if (!m) return '';
+    return [view.me, view.partner].flatMap((p) => {
+      const kg = m.state.prefs[p].goalWeight ?? weightTrend(m.state, p, m.now).latest?.trend ?? null;
+      return kg ? [t('help.protein.person', { name: view.people[p].villagerName, g: Math.round((kg * 1.6) / 5) * 5 })] : [];
+    }).join(t('help.protein.sep'));
+  });
 </script>
 
 <div class="howto">
@@ -64,6 +77,13 @@
   <section class="card">
     <h3><span class="hi"><OfficialArt key="phone/nook-shopping" size={30} /></span>{t('help.wallet.title')}</h3>
     <p>{t('help.wallet.body')}</p>
+    <p class="note">{t('help.treats')}</p>
+  </section>
+
+  <section class="card">
+    <h3><span class="hi"><OfficialArt key={fruitArt('coconut')} size={28} /></span>{t('help.protein.title')}</h3>
+    <p>{t('help.protein.body')}</p>
+    {#if protein}<p class="note">{protein}</p>{/if}
   </section>
 
   <section class="card">

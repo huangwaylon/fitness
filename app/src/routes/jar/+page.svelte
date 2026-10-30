@@ -59,6 +59,8 @@
     </div>
 
     <MenuShelf items={menu} {balance} onbuy={(item) => (askItem = item)} onedit={() => (editOpen = true)} />
+    <!-- the treat guide (user, round 19): a gentle line, no cap; the full version is in あそびかた -->
+    <p class="hint">{t('wallet.hint')}</p>
   </main>
 
   <BuyConfirm bind:item={askItem} {balance} onconfirm={buy} />
@@ -82,6 +84,8 @@
   .bigjar { display: block; line-height: 0; margin-bottom: 4px; }
   .cap { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .hero :global(.total) { font-size: var(--fs-title); }
+
+  .hint { margin: 14px 0 0; text-align: center; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); word-break: auto-phrase; text-wrap: balance; }
 
   @media (max-height: 700px), (max-width: 359px) {
     .hero { padding-bottom: 10px; }
