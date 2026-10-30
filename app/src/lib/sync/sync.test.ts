@@ -95,20 +95,20 @@ describe('post', () => {
 
 describe('write queue', () => {
   it('persists events and sends them in order until acked (duplicates count as acked)', async () => {
-    enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true });
+    enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 });
     enqueue('highfive', {});
     expect(queued()).toHaveLength(2);
     let n = 0;
     handler = () => (++n === 2 ? { ok: true, duplicate: true } : { ok: true });
     const r = await flush();
     expect(r).toMatchObject({ sent: 2, remaining: 0 });
-    expect(calls.map((c) => c.type)).toEqual(['checkin', 'highfive']);
-    expect(calls[0]).toMatchObject({ action: 'event', key: KEY, data: { date: '2026-11-02', habit: 'h', done: true } });
+    expect(calls.map((c) => c.type)).toEqual(['metric_set', 'highfive']);
+    expect(calls[0]).toMatchObject({ action: 'event', key: KEY, data: { date: '2026-11-02', metric: 'steps', value: 5000 } });
     expect(typeof calls[0].id).toBe('string');
     expect(queued()).toEqual([]);
   });
   it('reports only acked events: one undone while an earlier event is in flight is not acked (r2 N1)', async () => {
-    const first = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true });
+    const first = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 });
     const second = enqueue('highfive', {});
     handler = (body) => {
       // While the first event is on the wire, the user taps 取り消す on the second.
@@ -139,7 +139,7 @@ describe('write queue', () => {
     expect(calls[0].id).toBe(a.id); // same client id on retry: the server dedupes
   });
   it('drops events the server can never accept, and stops on unauthorized', async () => {
-    enqueue('spend', { spendId: 'x', label: '', amountYen: 0 });
+    enqueue('spend', { spendId: 'x', label: '', pot: 'treat', item: 'ice', bells: 0 });
     enqueue('highfive', {});
     let n = 0;
     handler = () => (++n === 1 ? { ok: false, error: 'bad_request' } : { ok: false, error: 'unauthorized' });
@@ -151,8 +151,8 @@ describe('write queue', () => {
   it('a held (undo-window) event does not block later events; it still goes once due (r2 N3)', async () => {
     const t = 1_000_000;
     const held = enqueue('spend_void', { spendId: 's1' }, t, 5000);
-    const tick = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true }, t);
-    expect(nextRetryAt(t)).toBe(t); // the check-in is due now, not in 5 s
+    const tick = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t);
+    expect(nextRetryAt(t)).toBe(t); // the edit is due now, not in 5 s
     let r = await flush(() => t);
     expect(r.acked.map((e) => e.id)).toEqual([tick.id]);
     expect(queued().map((e) => e.id)).toEqual([held.id]);
@@ -167,19 +167,19 @@ describe('write queue', () => {
     const a = enqueue('highfive', {}, t);
     await flush(() => t);
     const retryAt = queued()[0].nextAt;
-    enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true }, t);
+    enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t);
     handler = () => ({ ok: true });
     calls = [];
     await flush(() => t + 1);
     expect(calls).toHaveLength(0);
     expect(nextRetryAt(t + 1)).toBe(retryAt);
     await flush(() => retryAt);
-    expect(calls.map((c) => c.type)).toEqual(['highfive', 'checkin']);
+    expect(calls.map((c) => c.type)).toEqual(['highfive', 'metric_set']);
     expect(calls[0].id).toBe(a.id);
   });
   it('holdEvent keeps a held event back while its banner is held, and releases it (r2 N7)', async () => {
     const t = 1_000_000;
-    const held = enqueue('spend', { spendId: 's', label: 'x', amountYen: 2000 }, t, 5000);
+    const held = enqueue('spend', { spendId: 's', label: 'x', pot: 'treat', item: 'ice', bells: 2000 }, t, 5000);
     expect(holdEvent(held.id, t + 60_000)).toBe(true);
     await flush(() => t + 5000);
     expect(calls).toHaveLength(0);
@@ -190,10 +190,10 @@ describe('write queue', () => {
   });
   it('a later event on the same subject never passes a held one; other subjects still go first (round 7 M2)', async () => {
     const t = 1_000_000;
-    const fix = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true, edit: true }, t, 5000);
-    const island = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: false }, t + 1);
-    const other = enqueue('checkin', { date: '2026-11-02', habit: 'g', done: true }, t + 2);
-    expect(nextRetryAt(t + 2)).toBe(t + 2); // `other` is due; the blocked island tap is not
+    const fix = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t, 5000);
+    const island = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 6000 }, t + 1);
+    const other = enqueue('metric_set', { date: '2026-11-02', metric: 'exercise_min', value: 30 }, t + 2);
+    expect(nextRetryAt(t + 2)).toBe(t + 2); // `other` is due; the blocked later edit is not
     await flush(() => t + 2);
     expect(calls.map((c) => c.id)).toEqual([other.id]);
     expect(nextRetryAt(t + 3)).toBe(t + 5000); // wakes when the held fix goes, not every 250 ms

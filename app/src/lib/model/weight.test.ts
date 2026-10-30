@@ -168,7 +168,6 @@ describe('weight never earns (ADR 0020)', () => {
       for (const d of D) {
         const at = jst(d, '22:00');
         r.metrics.push([at, p, d, 'steps', 9000], [at, p, d, 'exercise_min', 50]);
-        r.events.push(ev(at, p, 'checkin', { date: d, habit: 'protein_each_meal', done: true }));
       }
     }
     return r;

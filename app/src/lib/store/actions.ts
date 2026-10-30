@@ -40,9 +40,12 @@ export function highFive() {
   return week.send('highfive', {});
 }
 
-/** @deprecated No daily questions (2026-10-30): `view.pending` is always empty and the model ignores `confirm`. */
-export function confirmPending(kind: 'workout', id: string, yes: boolean) {
-  return week.send('confirm', { kind, id, yes });
+/**
+ * @public @deprecated No daily questions (2026-10-30): `view.pending` is always empty and `confirm` is no longer an
+ * event type, so this does nothing. Deleted as soon as the island stops importing it (rings-contract.md, request 1).
+ */
+export function confirmPending(_kind: 'workout', _id: string, _yes: boolean): SendResult {
+  return { ok: false };
 }
 
 export function confirmHarvest(): SendResult {

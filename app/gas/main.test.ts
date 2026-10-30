@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
+import { cleanupLegacyData, doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
+import { buildWeekView } from '../src/lib/model/week.ts';
+import { historyWeeks } from '../src/lib/model/history.ts';
+import { reduce } from '../src/lib/model/state.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -296,25 +299,51 @@ describe('ingest', () => {
 });
 
 describe('presence and events', () => {
-  it('presence rows carry the event time, defaulting to now', () => {
+  it('presence rows carry the event time, defaulting to now; an arrival is the only event (leave is refused)', () => {
     expect(a('presence', { place: 'gym', event: 'arrive', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: true });
     tick();
-    expect(b('presence', { place: 'studio', event: 'leave' })).toEqual({ ok: true });
+    expect(b('presence', { place: 'studio', event: 'arrive' })).toEqual({ ok: true });
+    expect(b('presence', { place: 'studio', event: 'leave' })).toEqual({ ok: false, error: 'bad_request' });
     expect(data('presence')).toEqual([
       ['2026-10-29T03:00:00.000Z', 'A', 'gym', 'arrive', '2026-10-29T02:05:00.000Z'],
-      ['2026-10-29T03:00:01.000Z', 'B', 'studio', 'leave', '2026-10-29T03:00:01.000Z']
+      ['2026-10-29T03:00:01.000Z', 'B', 'studio', 'arrive', '2026-10-29T03:00:01.000Z']
     ]);
   });
 
   it('events: a duplicate id is acknowledged and ignored, so retries are safe', () => {
-    const ev = { id: 'A-1730170000-1', type: 'checkin', data: { date: '2026-10-29', habit: 'veg', done: true } };
+    const ev = { id: 'A-1730170000-1', type: 'pref', data: { key: 'moveGoal', value: 500 } };
     expect(a('event', ev)).toEqual({ ok: true });
     expect(a('event', ev)).toEqual({ ok: true, duplicate: true });
     expect(b('event', { ...ev, id: 'B-1' })).toEqual({ ok: true });
     expect(a('event', { id: 'A-2', type: 'highfive' })).toEqual({ ok: true });
     expect(data('events').map((r) => [r[1], r[2], r[3], r[4]])).toEqual([
-      ['A', 'A-1730170000-1', 'checkin', JSON.stringify(ev.data)], ['B', 'B-1', 'checkin', JSON.stringify(ev.data)], ['A', 'A-2', 'highfive', '{}']
+      ['A', 'A-1730170000-1', 'pref', JSON.stringify(ev.data)], ['B', 'B-1', 'pref', JSON.stringify(ev.data)], ['A', 'A-2', 'highfive', '{}']
     ]);
+  });
+
+  it('spend, pref and harvest shapes are checked; types and shapes of past designs are refused', () => {
+    const ok = [
+      { type: 'spend', data: { spendId: 's1', pot: 'treat', item: 'ice', label: 'アイス', bells: 1000 } },
+      { type: 'spend', data: { spendId: 7, pot: 'trip', item: 'daytrip', label: '日帰り', bells: 10000 } },
+      ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'treatMenu', 'tripMenu'].map((key) => ({ type: 'pref', data: { key, value: null } })),
+      { type: 'harvest', data: { week: '2026-10-26' } }
+    ];
+    ok.forEach((e, i) => expect(a('event', { id: `ok${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
+    const bad = [
+      { type: 'checkin', data: { date: '2026-10-29', habit: 'veg', done: true } },
+      { type: 'confirm', data: { kind: 'workout', id: 'w1', yes: true } },
+      { type: 'spend', data: { spendId: 'y1', label: 'カフェ', amountYen: 2000 } }, // the yen economy's spend
+      { type: 'spend', data: { spendId: 's2', pot: 'jar', item: 'ice', label: 'アイス', bells: 1 } },
+      { type: 'spend', data: { spendId: 's3', pot: 'treat', item: 'ice', label: 'アイス', bells: 1.5 } },
+      { type: 'spend', data: { spendId: 's4', pot: 'treat', item: 'ice', label: '  ', bells: 1 } },
+      { type: 'spend', data: { spendId: 's5', pot: 'treat', label: 'アイス', bells: 1 } },
+      { type: 'spend', data: { spendId: 's6', pot: 'treat', item: 'ice', label: 'アイス', bells: 10_000_001 } },
+      { type: 'pref', data: { key: 'share', value: true } },
+      { type: 'pref', data: { key: 'locale' } },
+      { type: 'harvest', data: { week: 'soon' } }
+    ];
+    bad.forEach((e, i) => expect(a('event', { id: `bad${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
+    expect(data('events')).toHaveLength(ok.length);
   });
 });
 
@@ -325,8 +354,7 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     { type: 'workout_edit', data: { id: 'Yoga@2026-10-28T09:00:00.000Z', strength: false } },
     { type: 'workout_edit', data: { id: 'w1', strength: null, excluded: true } },
     { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
-    { type: 'spend_void', data: { spendId: 'sp-1' } },
-    { type: 'checkin', data: { date: '2026-10-26', habit: 'veg_two_meals', done: true, edit: true } }
+    { type: 'spend_void', data: { spendId: 'sp-1' } }
   ];
 
   it('each new type appends with the server `at`, the sender as person and the data as JSON', () => {
@@ -384,7 +412,7 @@ describe('edit events (history-and-editing.md §4.1)', () => {
       { type: 'workout_add', data: { id: 'm:2', date: '2026-10-28', type: 'Underwater Basket Weaving', durationMin: 30 } }, // L7
       { type: 'share', data: { key: 'steps', value: false } }, // L3: no longer an event type
       { type: 'spend_void', data: {} },
-      // the yen economy's types are gone: refused like any unknown type (old rows are still read and ignored)
+      // the yen economy's types are gone: refused like any unknown type
       { type: 'approve', data: { spendId: 7 } },
       { type: 'transfer', data: { month: '2026-10' } },
       { type: 'transfer_undo', data: { month: '2026-09' } }
@@ -550,5 +578,97 @@ describe('limits', () => {
   it('replies are JSON-typed', () => {
     const out = doPost({ postData: { contents: JSON.stringify({ key: KEY_A, action: 'whoami' }) } }) as unknown as { mime: string };
     expect(out.mime).toBe('application/json');
+  });
+});
+
+describe('cleanupLegacyData (one-off after ADR 0021; remove with the function)', () => {
+  const at = (iso: string) => new Date(iso).toISOString();
+  /** Rows of past designs, written straight into the tabs as an old deployment left them. */
+  function seed() {
+    vi.setSystemTime(new Date('2026-11-04T03:00:00.000Z'));
+    a('ingest', { dates: 'Nov 2, 2026\nNov 3, 2026', steps: '5000\n4000', exercise_minutes: '20\n10', calories: '300\n200' });
+    tick(3600_000);
+    a('ingest', { dates: 'Nov 2, 2026\nNov 3, 2026', steps: '9000\n8200', exercise_minutes: '45\n10', calories: '640\n250', weight: '68.4\n0' });
+    tick(3600_000);
+    a('ingest', { dates: 'Nov 2, 2026', weight: '68.1' });
+    tick();
+    a('event', { id: 'set1', type: 'metric_set', data: { date: '2026-11-02', metric: 'steps', value: 7000 } });
+    tick();
+    a('presence', { place: 'anytime', event: 'arrive', at: '2026-11-03T19:00:00+09:00' });
+    tick();
+    a('event', { id: 'hf', type: 'highfive' });
+    tick();
+    a('event', { id: 'buy', type: 'spend', data: { spendId: 's1', pot: 'treat', item: 'ice', label: 'アイス', bells: 1 } });
+    tick();
+    a('event', { id: 'goal', type: 'pref', data: { key: 'moveGoal', value: 500 } });
+    const t = at('2026-11-04T06:00:00Z');
+    const ev = (id: string, type: string, d: object) => [t, 'A', id, type, JSON.stringify(d)];
+    gas.sheets.get('events')!.rows.push(
+      ev('old1', 'checkin', { date: '2026-11-02', habit: 'veg', done: true }),
+      ev('old2', 'confirm', { kind: 'workout', id: 'w1', yes: true }),
+      ev('old3', 'approve', { spendId: 7 }),
+      ev('old4', 'transfer', { month: '2026-10' }),
+      ev('old5', 'transfer_undo', { month: '2026-10' }),
+      ev('old6', 'spend', { spendId: 7, label: 'Dinner', amountYen: 5000 }),
+      ev('old7', 'pref', { key: 'share', value: true }),
+      ev('old8', 'share', { metric: 'steps', on: true }),
+      [t, 'B', 'old9', 'highfive', '{oops']
+    );
+    gas.sheets.get('presence')!.rows.push([t, 'A', 'anytime', 'leave', t]);
+    const early = at('2026-11-04T03:30:00Z'); // junk older than the last sync (the snapshot reads 'n/a' as 0)
+    gas.sheets.get('metrics')!.rows.push([early, 'A', '2026-11-02', 'floors', 3], [early, 'A', '2026-11-02', 'steps', 'n/a']);
+    const up = gas.sheets.get('uploads')!;
+    for (let i = 0; i < 60; i++) up.rows.push([t, 'A', 'ok', 100 + i, `run ${i}`]);
+  }
+
+  it('deletes the rows of past designs, compacts metrics to what the model reads, keeps 50 uploads, bumps REV', () => {
+    seed();
+    const before = b('snapshot');
+    const rev = gas.props.get('REV');
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = cleanupLegacyData();
+    expect(out).toEqual({
+      events: { before: 13, after: 4 }, presence: { before: 2, after: 1 }, metrics: { before: 15, after: 7 }, uploads: { before: 63, after: 50 },
+      rev: expect.any(String)
+    });
+    expect(log).toHaveBeenCalledWith(`cleanupLegacyData: ${JSON.stringify(out)}`);
+    log.mockRestore();
+    expect(out.rev).not.toBe(rev);
+    expect(gas.props.get('REV')).toBe(out.rev);
+    expect(data('events').map((r) => r[3])).toEqual(['metric_set', 'highfive', 'spend', 'pref']);
+    expect(data('presence').map((r) => r[3])).toEqual(['arrive']);
+    // Per person/date/metric: the highest row (with its own `at`), the highest just before and at the metric_set; the
+    // latest weight. Lower syncs and unknown or unreadable rows go.
+    const T1 = '2026-11-04T03:00:00.000Z', T2 = '2026-11-04T04:00:00.000Z', T3 = '2026-11-04T05:00:00.000Z';
+    expect(data('metrics')).toEqual([
+      [T1, 'A', '2026-11-03', 'exercise_min', 10], // the first sync was already that day's highest
+      [T2, 'A', '2026-11-02', 'steps', 9000], [T2, 'A', '2026-11-03', 'steps', 8200], [T2, 'A', '2026-11-02', 'exercise_min', 45],
+      [T2, 'A', '2026-11-02', 'move_kcal', 640], [T2, 'A', '2026-11-03', 'move_kcal', 250],
+      [T3, 'A', '2026-11-02', 'weight', 68.1]
+    ]);
+    expect(data('uploads').at(-1)![4]).toBe('run 59');
+    expect(gas.sheets.get('events')!.rows[0]).toEqual(['at', 'person', 'id', 'type', 'data']); // the header stays
+    expect(JSON.parse(gas.props.get('ROWS')!)).toMatchObject({ events: 5, presence: 2, metrics: 8 });
+    // Every view is the same as before (the model ignored those rows anyway).
+    const after = b('snapshot');
+    const now = Date.parse('2026-11-04T12:00:00Z');
+    for (const me of ['A', 'B'] as const) expect(buildWeekView(reduce(after.rows), me, now)).toEqual(buildWeekView(reduce(before.rows), me, now));
+    expect(historyWeeks(reduce(after.rows), now)).toEqual(historyWeeks(reduce(before.rows), now));
+    // The bookkeeping is consistent: the next write appends after the kept rows without another REV bump.
+    tick();
+    expect(a('event', { id: 'hf2', type: 'highfive' })).toEqual({ ok: true });
+    expect(data('events')).toHaveLength(5);
+    expect(gas.props.get('REV')).toBe(out.rev);
+  });
+
+  it('a second run changes nothing but REV; busy when the lock is held', () => {
+    seed();
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    cleanupLegacyData();
+    const again = cleanupLegacyData();
+    expect(again).toMatchObject({ events: { before: 4, after: 4 }, presence: { before: 1, after: 1 }, metrics: { before: 7, after: 7 }, uploads: { before: 50, after: 50 } });
+    gas.state.lockAvailable = false;
+    expect(() => cleanupLegacyData()).toThrow(/busy/);
+    vi.restoreAllMocks();
   });
 });

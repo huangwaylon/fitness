@@ -10,8 +10,10 @@ import { parseShortcut } from './parse.ts';
 import { parseInstant } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
+import { CUTOFFS, LIMITS } from '../src/lib/config/rules.ts';
+import { addDays, weekKeyOf } from '../src/lib/time/dates.ts';
 import {
-  DATE_RE, EVENT_TYPES, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, TABS, validMetricValue,
+  DATE_RE, EVENT_TYPES, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -428,7 +430,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
 function presence(me: PersonId, body: Rec): PresenceReply {
   const place = typeof body.place === 'string' ? body.place.trim() : '';
   if (!place || place.length > 100) return fail('bad_request');
-  if (body.event !== 'arrive' && body.event !== 'leave') return fail('bad_request');
+  if (body.event !== 'arrive') return fail('bad_request'); // an arrival is the only gym event (2026-10-30)
   let eventAt: string | null = null;
   if (body.at !== undefined && body.at !== null && body.at !== '') {
     // An ISO 8601 instant with its offset (the gym automation's Current Date, formatted ISO 8601).
@@ -452,7 +454,7 @@ function event(me: PersonId, body: Rec): EventReply {
   if (!isRec(data)) return fail('bad_request');
   const json = JSON.stringify(data);
   if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
-  if (!validEditData(body.type, data)) return fail('bad_request');
+  if (!validEventData(body.type, data)) return fail('bad_request');
   const type = body.type;
   return withLock((): EventReply => {
     const sh = tab('events');
@@ -471,11 +473,20 @@ const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'num
 const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
 /**
- * Shape checks for the edit events (history-and-editing.md §4.1). Only the shape: who may edit what and which weeks
- * are still open stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
+ * Shape checks per event type. Only the shape: who may edit what, which weeks are still open, whether a pot covers a
+ * spend and the full menu/value rules stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
  */
-function validEditData(type: string, d: Rec): boolean {
+function validEventData(type: string, d: Rec): boolean {
   switch (type) {
+    case 'spend':
+      // A ベル buy from a shared pot (ADR 0019 §9).
+      return (isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId))) && (d.pot === 'treat' || d.pot === 'trip') &&
+        isInt(d.bells, 1, LIMITS.bellsMax) && typeof d.item === 'string' && d.item.length <= LIMITS.menuIdMaxChars &&
+        typeof d.label === 'string' && d.label.trim().length > 0 && d.label.trim().length <= LIMITS.spendLabelMaxChars;
+    case 'pref':
+      return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined;
+    case 'harvest':
+      return typeof d.week === 'string' && DATE_RE.test(d.week);
     case 'metric_set':
       // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal (ADR 0020).
       return typeof d.date === 'string' && DATE_RE.test(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
@@ -535,4 +546,130 @@ function snapshot(me: PersonId, body: Rec): SnapshotReply {
     } as SnapshotRows;
     return { ok: true, me, now: new Date().toISOString(), rev: current().rev, rows };
   });
+}
+
+// ---------------------------------------------------------------- ONE-OFF: cleanupLegacyData (ADR 0021)
+// REMOVE (with its FOOTER entry in build.ts and its test) once it has run on the real sheet (runbook §9). It is the
+// only code that still knows the shapes of past designs, since its job is to delete them: it keeps exactly the rows
+// the server would accept today and the metrics rows the model can still read.
+
+const UPLOADS_KEPT = 50;
+type Cleanup = Record<'events' | 'presence' | 'metrics' | 'uploads', { before: number; after: number }> & { rev: string };
+
+/** Wednesday 04:00 JST after the date's week: the time a locked week's earnings are read at (model/state.ts finalMs). */
+const lockMsOf = (date: string): number =>
+  Date.parse(`${addDays(weekKeyOf(date), 9)}T${String(CUTOFFS.final.hour).padStart(2, '0')}:${String(CUTOFFS.final.minute).padStart(2, '0')}:00+09:00`);
+
+/** An events row the server would accept today (EVENT_TYPES and validEventData). */
+function keepEvent(r: unknown[]): boolean {
+  const type = text(r[3]);
+  if (!(EVENT_TYPES as readonly string[]).includes(type)) return false;
+  let d: unknown;
+  try {
+    d = JSON.parse(text(r[4]) || '{}');
+  } catch {
+    return false;
+  }
+  return isRec(d) && validEventData(type, d);
+}
+
+/**
+ * The metrics rows the model reads: per person, date and activity metric the highest row overall, the highest at the
+ * week's lock and the highest just before and at each `metric_set` of that day (so no view changes, as in
+ * model/compact.ts); per person and date the latest `weight` row. Unknown metrics and unreadable rows go.
+ */
+function keepMetrics(rows: unknown[][], events: unknown[][]): unknown[][] {
+  const sets = new Map<string, number[]>();
+  for (const e of events) {
+    if (text(e[3]) !== 'metric_set') continue;
+    try {
+      const d = JSON.parse(text(e[4]));
+      const t = Date.parse(instant(e[0]));
+      const k = `${text(e[1])}|${d.date}|${d.metric}`;
+      (sets.get(k) ?? sets.set(k, []).get(k)!).push(t - 1, t);
+    } catch { /* not readable: no extra row kept for it */ }
+  }
+  const groups = new Map<string, { i: number; at: number; v: number }[]>();
+  rows.forEach((r, i) => {
+    const at = Date.parse(instant(r[0]));
+    const v = num(r[4]);
+    const date = text(r[2], 'date');
+    if (!isMetricKey(r[3]) || v === null || Number.isNaN(at) || !DATE_RE.test(date) || (text(r[1]) !== 'A' && text(r[1]) !== 'B')) return;
+    const k = `${text(r[1])}|${date}|${r[3]}`;
+    (groups.get(k) ?? groups.set(k, []).get(k)!).push({ i, at, v });
+  });
+  const keep = new Set<number>();
+  for (const [k, list] of groups) {
+    const [, date, metric] = k.split('|');
+    if (metric === 'weight') {
+      keep.add(list.reduce((a, b) => (b.at >= a.at ? b : a)).i);
+      continue;
+    }
+    for (const t of [Infinity, lockMsOf(date), ...(sets.get(k) ?? [])]) {
+      let best: { i: number; at: number; v: number } | null = null;
+      for (const x of list) if (x.at <= t && (!best || x.v > best.v || (x.v === best.v && x.at > best.at))) best = x;
+      if (best) keep.add(best.i);
+    }
+  }
+  return rows.filter((_, i) => keep.has(i));
+}
+
+/** Rewrite a tab's data rows with `kept` (header, column formats and each row's `at` kept) in one batched write. */
+function rewriteTab(name: TabName, rows: unknown[][], kept: unknown[][]): { before: number; after: number } {
+  if (kept.length !== rows.length) {
+    const sh = tab(name);
+    const cols = TABS[name];
+    sh.getRange(2, 1, rows.length, cols.length).clearContent();
+    if (kept.length) {
+      const formats = cols.map((c) => (NUMERIC_COLUMNS[name].includes(c) ? '0.##' : '@'));
+      sh.getRange(2, 1, kept.length, cols.length).setNumberFormats(kept.map(() => formats)).setValues(kept);
+    }
+    if ((SYNCED_TABS as readonly string[]).includes(name)) {
+      const st = current();
+      st.rows[name] = kept.length + 1;
+      st.dirty = true;
+    }
+  }
+  return { before: rows.length, after: kept.length };
+}
+
+/**
+ * Run ONCE from the Apps Script editor (runbook §9), never a web action: under the script lock, delete the rows of
+ * past designs (events of removed types or shapes: checkin, confirm, approve, transfer, yen spends, unused prefs;
+ * presence `leave`), compact `metrics` to the rows the model reads, keep the last 50 `uploads`, and bump REV so both
+ * phones refetch everything. Logs and returns rows before/after per tab.
+ */
+export function cleanupLegacyData(): Cleanup {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(LOCK_WAIT_MS)) throw new Error('busy: the script lock is held, run it again in a minute');
+  try {
+    state = loadState();
+    const read = (name: TabName) => readRows(tab(name), name);
+    const events = read('events');
+    const keptEvents = events.filter(keepEvent);
+    const presence = read('presence');
+    const metrics = read('metrics');
+    const uploadsRows = read('uploads');
+    const summary = {
+      events: rewriteTab('events', events, keptEvents),
+      presence: rewriteTab('presence', presence, presence.filter((r) => text(r[3]) === 'arrive')),
+      metrics: rewriteTab('metrics', metrics, keepMetrics(metrics, keptEvents)),
+      uploads: rewriteTab('uploads', uploadsRows, uploadsRows.slice(-UPLOADS_KEPT))
+    };
+    const st = current();
+    st.rev = newRev();
+    st.revChanged = true;
+    st.dirty = true;
+    SpreadsheetApp.flush();
+    const out: Cleanup = { ...summary, rev: st.rev };
+    console.log(`cleanupLegacyData: ${JSON.stringify(out)}`);
+    return out;
+  } finally {
+    try {
+      if (state) saveState(state);
+    } finally {
+      state = null;
+      lock.releaseLock();
+    }
+  }
 }

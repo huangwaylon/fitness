@@ -99,8 +99,8 @@ That's all: **no Leave automation** (user decision 2026-10-30). An arrive at a k
 person on that (Tokyo) date, with no question and no minimum stay; arriving twice in a day is still one strength day.
 Place keys (`app/src/lib/config/places.ts`): `anytime` (A), `anytime_b` and `pt_studio` (B), so うめ sets up two
 automations (one per place) and ウェイ one. Optional: add a `"at"` field, **Current Date** → **Format Date** (ISO 8601,
-with time), so a late or retried run keeps the real arrival time. A repeat arrive within 2 minutes is dropped. Existing
-Leave automations can stay or be deleted: the server still accepts `"event": "leave"` and the app ignores it.
+with time), so a late or retried run keeps the real arrival time. A repeat arrive within 2 minutes is dropped. **Delete any old
+Leave automation:** the server now refuses `"event": "leave"` (`bad_request`).
 
 ## 6. One-time baseline (optional)
 Duplicate the Shortcut, change the range in steps 2, 4 and 5 to the last **84 days** and run it once.

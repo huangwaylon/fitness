@@ -8,6 +8,7 @@ declare namespace GAS {
     setNumberFormats(formats: string[][]): Range;
     setNumberFormat(format: string): Range;
     setFontWeight(weight: string): Range;
+    clearContent(): Range;
     getSheet(): Sheet;
   }
   interface Sheet {

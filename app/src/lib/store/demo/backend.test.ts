@@ -35,7 +35,7 @@ describe('demo isolation', () => {
     const b = new DemoBackend(h, 'plain', 'A');
     await b.refresh();
     expect(h.status).toBe('ready');
-    const r = b.send('checkin', { date: '2026-11-02', habit: 'h', done: true }, { holdMs: 5000 });
+    const r = b.send('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, { holdMs: 5000 });
     expect(r.ok).toBe(true);
     expect(b.events().list).toHaveLength(1);
     expect(b.events().list.some((e) => e.id === live.id)).toBe(false); // the live queue is not the demo's

@@ -75,7 +75,7 @@ export interface WorkoutRec {
   manual?: true;
 }
 
-/** A gym arrival (`leave` rows are ignored since 2026-10-30: any arrival is a strength day). */
+/** A gym arrival: a strength day on its Tokyo date. */
 interface PresenceRec {
   /** Stable visit id: `<place>@<event_at ISO>`. */
   id: string;
@@ -270,7 +270,6 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     synced(person, at, String(iso));
   }
 
-  // Arrivals only: a `leave` row (old Shortcuts) is ignored.
   for (const { r: row, at } of byAt(r.presence ?? [])) {
     const [, person, placeKey, event, eventAtRaw] = row;
     const place = PLACES.find((p) => p.key === placeKey);
@@ -286,8 +285,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    // Rows of removed types (the privacy toggles' `share`; the yen economy's `approve`, `transfer`, `transfer_undo`)
-    // and any other unknown type are ignored: their rows stay in the sheet.
+    // A type the server wouldn't accept (a hand edit of the sheet) is ignored.
     if (d && (EVENT_TYPES as readonly string[]).includes(type)) ON_EVENT[type](c, person, at, d);
   }
   // The per-workout lookups are indexes of workoutEdits (one source; round 7 L6).
@@ -349,15 +347,10 @@ const hasId = (v: unknown): boolean => v !== undefined && v !== null;
  * week is open (§4.3).
  */
 const ON_EVENT: Record<EventType, OnEvent> = {
-  // ADR 0021: no check-ins and no daily questions. Old `checkin` rows (the eating habits) and `confirm` rows (「筋トレでしたか？」)
-  // stay in the sheet and are ignored.
-  checkin() {},
-  confirm() {},
   spend({ s }, person, at, d) {
     const label = typeof d.label === 'string' ? d.label.trim() : '';
     if (!hasId(d.spendId) || !label || label.length > LIMITS.spendLabelMaxChars) return;
-    // A ベル spend (ADR 0019 §9); an old yen spend (`amountYen`, no `pot`) is ignored. Validity only: whether the pot
-    // could afford it is decided on read (bells.ts).
+    // A ベル spend (ADR 0019 §9). Validity only: whether the pot could afford it is decided on read (bells.ts).
     const bells = d.bells;
     if ((d.pot !== 'treat' && d.pot !== 'trip') || !isBells(bells)) return;
     if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;

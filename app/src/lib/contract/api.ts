@@ -22,14 +22,9 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
   uploads: ['bytes']
 };
 
-/**
- * The event types the server accepts. The sheet also holds rows of removed types (the privacy toggles' `share`, the
- * yen economy's `approve`, `transfer`, `transfer_undo`): the model ignores any type not listed. `checkin` (the eating
- * habits) and `confirm` (「筋トレでしたか？」) are still accepted, so an old client's queued event never jams, but the
- * model ignores them since ADR 0021 (no manual check-ins, no daily questions).
- */
+/** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
 export const EVENT_TYPES = [
-  'checkin', 'confirm', 'spend', 'harvest', 'highfive', 'pref',
+  'spend', 'harvest', 'highfive', 'pref',
   // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
   'metric_set', 'workout_edit', 'workout_add', 'spend_void'
 ] as const;
@@ -48,6 +43,12 @@ export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min
 export type MetricKey = ActivityMetric | 'weight';
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
 export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) || v === 'weight';
+
+/**
+ * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
+ * `goalWeight` (kg, ADR 0020) and `moveGoal` (kcal, ADR 0021), and the shared menus `treatMenu` / `tripMenu`.
+ */
+export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'treatMenu', 'tripMenu'] as const;
 
 /** A local date `YYYY-MM-DD`. */
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -82,7 +83,8 @@ export const MANUAL_WORKOUT_MIN = { min: 1, max: 600 } as const;
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
 export type WorkoutRow = [at: string, person: PersonId, id: string, date: string, type: string, start: string, end: string, durationMin: number, avgHr: number | null];
-export type PresenceRow = [at: string, person: PersonId, place: string, event: 'arrive' | 'leave', eventAt: string];
+/** A gym arrival (the only presence event: an arrival is a strength day). */
+export type PresenceRow = [at: string, person: PersonId, place: string, event: 'arrive', eventAt: string];
 /** `data` is the JSON text exactly as stored in the cell. */
 export type EventRow = [at: string, person: PersonId, id: string, type: EventType, data: string];
 

@@ -68,7 +68,7 @@ build. A health probe is not a secret: the URL isn't one either (google-setup.md
 then the probe must show the new build.
 
 ## 6. Backups
-The sheet is the only copy of check-ins, answers, buys from the pots and menu edits (health numbers can be re-sent from the phones,
+The sheet is the only copy of buys from the pots, menu edits, goals and きろく edits (health numbers can be re-sent from the phones,
 shortcut-health-sync.md §6). Google keeps version history (File → Version history), which protects against bad edits
 but not against losing the file or the account. So, in addition:
 
@@ -122,3 +122,30 @@ trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-
 | `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
 | Numbers didn't move | The `uploads` tab (or `{"key":"…","action":"uploads"}`) shows each Shortcut run: status, warnings and the body's shape (each field's type, line count and first line). Synced metrics only go up (a lower re-send is ignored); a きろく edit can lower a day in an open week |
 | Changes made offline | They stay queued on the phone and are sent when it's back online (the sync pill shows it) |
+
+## 9. One-off cleanup after ADR 0021 (run once, then remove)
+ADR 0021 left rows of past designs in the sheet: check-ins, 「筋トレでしたか？」 answers (`confirm`), the yen economy's
+`approve` / `transfer` / `transfer_undo` and yen `spend`s, unused `pref`s (e.g. `share`), presence `leave` rows, and
+every lower metrics re-send. The app no longer reads or accepts any of them. `cleanupLegacyData` deletes them in one go
+(user decision 2026-10-30: we're still developing).
+
+1. **Back up first:** open the sheet → **File → Make a copy** (name it e.g. *Island Fund before cleanup*).
+2. Make sure the deployed web app runs the build with `cleanupLegacyData` (the build in the commit that added it, or
+   later): paste `app/apps-script/Code.js` into the editor and deploy (google-setup.md §11) if not.
+3. In the sheet: **Extensions → Apps Script**. In the toolbar's function dropdown pick **`cleanupLegacyData`** →
+   **Run**. Authorise if asked (the same current-sheet-only scope as the web app).
+4. Read the log (**Execution log** opens below): `cleanupLegacyData: {"events":{"before":…,"after":…},"presence":…,
+   "metrics":…,"uploads":…,"rev":"…"}`. Under the script lock it:
+   - **events**: keeps only rows the script would accept today (`spend` with a pot, `harvest`, `highfive`, `pref` with
+     a key the app reads, `metric_set`, `workout_edit`, `workout_add`, `spend_void`);
+   - **presence**: keeps `arrive` rows;
+   - **metrics**: per person, date and metric keeps the rows the app reads (the highest value, the highest at the
+     week's Wednesday lock and around each `metric_set`; for weight the latest row), each with its original `at`;
+   - **uploads**: keeps the last 50;
+   - bumps `REV` (both phones drop their caches and refetch everything on their next sync) and records the new row
+     counts, so the next write isn't taken for a hand edit.
+   Running it twice is harmless (the second run only bumps `REV`). `busy` = a phone was writing: run it again.
+5. Open the app on both phones: the numbers are the same as before (only rows the app ignored are gone).
+6. **Afterwards remove it** from the code: the `cleanupLegacyData` section at the end of `app/gas/main.ts`, its footer
+   function in `app/gas/build.ts`, its tests (`gas/main.test.ts`, `gas/bundle.test.ts`) and this section; then
+   `npm run gas:build` and redeploy.

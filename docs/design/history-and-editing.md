@@ -11,7 +11,7 @@ UX designer + data architect, 2026-10-29. User: "see all recorded data over time
 
 | Scope | Data | Source |
 |---|---|---|
-| Person × day | steps; active minutes = max(Watch, step-derived, hand-added workouts); workouts (type, minutes, strength ✓/✗); gym visits (dwell, confirmed); 3 eating check-ins | `metrics`, `workouts`, `presence`, `checkin`/`confirm` events |
+| Person × day | steps; exercise minutes = max(Watch, hand-added workouts); Move kcal and its goal; stand minutes; workouts (type, minutes, strength ✓/✗); gym arrivals (ADR 0021) | `metrics`, `workouts`, `presence`, `metric_set`/`workout_*` events |
 | Person × day | ベル per fruit | `earnWeek` (`weekBells`) |
 | Person × week | ベル (daily + badge bonus), the four badges, strength days | `historyWeeks`, `weekDetail` |
 | Week | ベル (both, incl. the bonus once it landed), harvest, locked | `historyWeeks` |
@@ -101,8 +101,6 @@ UX designer + data architect, 2026-10-29. User: "see all recorded data over time
 | `metric_set` | `{date, metric:'steps'\|'exercise_min', value}` | Overrides the day's value, **including lowering it** |
 | `workout_edit` | `{id, strength?: boolean\|null, excluded?: boolean}` | Overrides strength counting (any type; `null` = automatic) and/or removes the workout from scoring |
 | `workout_add` | `{id:'m:<uuid>', date, type, durationMin}` | A manual workout (Watch forgotten), editable later with `workout_edit`. Its minutes count toward 活動: the day counts **max(Watch, step-derived, sum of hand-added minutes)**, never a sum of sources, ([ADR 0017](../decisions/0017-round-4-rule-changes-and-rule-versions.md)). `type` must be a known workout type (GAS refuses others) |
-| `checkin` | existing, plus `edit:true` | `edit:true` widens the 48 h window to any day ≤ today in an unlocked week |
-| `confirm` | existing (visits) | Already "latest wins" |
 | `spend_void` | `{spendId}` | Takes a ベル spend back (the buyer only) |
 | `transfer_undo` | `{month}` | Old yen economy: ignored since ADR 0019, no longer accepted since round 16 (old rows are ignored) |
 

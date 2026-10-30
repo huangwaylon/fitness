@@ -121,17 +121,14 @@ let flushingId: string | null = null;
 const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.nextAt > now;
 
 /**
- * What an event changes, for ordering: a later event on the same thing (a habit tick of the same day, the same
- * workout, metric or spend) never passes a held one, so the server keeps the order the screen showed
+ * What an event changes, for ordering: a later event on the same thing (the same workout, day's metric or spend) never passes a held one, so the server keeps the order the screen showed
  * (round 7 M2). Null: nothing else touches it.
  */
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
   const d = ev.data;
   switch (ev.type) {
-    case 'checkin': return `checkin|${String(d.date)}|${String(d.habit)}`;
     case 'metric_set': return `metric|${String(d.date)}|${String(d.metric)}`;
     case 'workout_edit': return `workout|${String(d.id)}`;
-    case 'confirm': return `${d.kind === 'workout' ? 'workout' : 'visit'}|${String(d.id)}`;
     case 'spend_void': return `spend|${String(d.spendId)}`;
     default: return null;
   }
