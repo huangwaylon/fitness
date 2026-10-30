@@ -1,340 +1,361 @@
 # Island Fund: design
 
-What the client builds now: the screens, the island scene, motion, chrome, tokens and small screens. Tokens: `app/src/lib/styles/tokens.css` (+ element styles in `theme.css`). Art: `app/static/art/` (`manifest.json`, fetched by `app/scripts/fetch-assets.ts`). Decisions: official art [ADR 0018](../decisions/0018-official-art-public-site.md), Japanese-first UI [0007](../decisions/0007-japanese-first-ui.md), simplicity [0014](../decisions/0014-simplify-no-promises-no-cozy.md), no privacy settings or alerts [0016](../decisions/0016-no-privacy-no-alerts.md). Research: [ac-research.md](ac-research.md). Sound: [sound.md](sound.md). History editing: [history-and-editing.md](history-and-editing.md). Older versions are in git (style guide v4.1, v5 direction, environment style, scale and ground; deleted in round 8).
+What the app is and how the client is built: the product, the economy, the screens, the island scene, motion, chrome
+and tokens. Section letters (§0, §1, §N, §E, §A, §S, §M, §T, §R) match the references in code comments.
 
-Section letters (§0, §E, §A, §S, §M, §T, §R) match the references in code comments.
+Related: the backend contract [sheets-architecture.md](sheets-architecture.md), きろく [history-and-editing.md](history-and-editing.md),
+[sound.md](sound.md), [scene-interactions.md](scene-interactions.md), the decisions in [`../decisions/`](../decisions/README.md).
 
-**Direction.** It reads as *あつまれ どうぶつの森* at a glance: official NH renders (villagers, しずえ, trees, fruit, NookPhone tiles) standing on a **Pocket Camp–style diorama** that we paint in SVG/CSS to match them. NH's 2D UI patterns (dialogue box, choice list, map ribbon, NookPhone, Nook Miles+ cards) are the chrome. Bright and calm; night is soft periwinkle, never black.
+## Product
 
-**IP rule.** Official art only from `static/art/` through `<OfficialArt key alt size>`, with a fallback (our vector or `Silhouette`) so a missing file never breaks a screen. On-screen names follow the Japanese game: しずえ, しまフォン, ベル (play money, ADR 0019: amounts are `1,234 ベル` / `1,234 Bells`; no ¥ anywhere). No Nintendo fonts or sound effects; the hourly music and opening theme are the user's own files, committed by the user's decision ([sound.md](sound.md) §9.2). The repo and site are public for now (ADR 0018).
+A two-player Animal Crossing–style island for a couple in Tokyo (ウェイ = A, うめ = B), both with an iPhone and an
+Apple Watch. Their activity, measured automatically, grows fruit and earns **ベル** (play money) into one shared
+wallet, which they spend on small treats they agreed on together. Japanese-first, switchable to English per person
+(ADR 0007). Both see all data; there are no privacy settings and no notifications (ADR 0016).
 
----
+- **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
+  body weight) to a Google Apps Script web app several times a day; an Arrive automation posts a gym arrival
+  (ADR 0015, 0021; [shortcut-health-sync.md](../ops/shortcut-health-sync.md)).
+- **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes everything on the phone.
+
+**Architecture.** The Google Sheet is an append-only log (`metrics`, `workouts`, `presence` = gym arrivals,
+`events`, `uploads`). `app/gas/` (bundled to `app/apps-script/Code.js`) is the only reader and writer: it validates
+shapes and appends, nothing more. The client keeps the rows in IndexedDB, merges incremental `snapshot` replies and
+derives every number on read in `app/src/lib/model/` (pure functions over the rows), so a rule change re-prices
+history consistently and the sheet stays a dumb log. User actions are `event` rows sent through a persisted queue with
+optimistic display. Module map: `contract/` (sheet and API shapes shared with the script) · `config/rules.ts` (the
+rules as data) · `scoring/` (the earning rule) · `model/` (state, economy, きろく, weight trend) · `sync/` (storage,
+transport, queue, cache) · `store/` (the week store, actions, live and demo backends) · `ui-state/` · `sound/` ·
+`components/` and `routes/` (the UI). `deps.test.ts` enforces the import direction.
+
+**IP rule.** Official NH art only from `static/art/` through `<OfficialArt key alt size>`, with a fallback (our vector
+or `Silhouette`) so a missing file never breaks a screen (ADR 0018; the repo and site are public for now). On-screen
+names follow the Japanese game: しずえ, しまフォン, ベル (`1,234 ベル` / `1,234 Bells`). No Nintendo fonts; sound
+effects are our own placeholders; the hourly music is the user's own files ([sound.md](sound.md) §9.2).
+
+**Direction.** It reads as *あつまれ どうぶつの森* at a glance: official renders (villagers, しずえ, trees, fruit,
+NookPhone tiles) on a **Pocket Camp–style diorama** painted in SVG/CSS to match them, with NH's 2D UI patterns
+(dialogue box, choice list, map ribbon, NookPhone, Nook Miles+ cards) as the chrome. Bright and calm; night is soft
+periwinkle, never black.
 
 ## 0. Simplicity budget (overrides everything)
 
-- **No tab bar.** Two places: 島 and ごほうび (the wallet), plus the しまフォン (NookPhone) for everything else, the harvest
-  overlay and sheets.
-- **One focal point per screen** (島: today's ベル; ごほうび: the wallet's balance) and **one obvious control**, in the
-  thumb zone (島: the NookPhone).
-- **Zero required taps a day** (ADR 0021): the Watch, the Shortcut and the gym Arrive automation fill the trees. No
+- **No tab bar.** Two places, 島 and ごほうび (the wallet), plus the しまフォン for everything else, the harvest overlay
+  and sheets.
+- **One focal point per screen** (島: today's ベル; ごほうび: the balance) and **one obvious control** in the thumb zone
+  (島: the NookPhone).
+- **Zero required taps a day** (ADR 0021): the Watch, the Shortcut and the Arrive automation fill the trees. No
   check-ins, no daily questions.
-- **One home per datum** (round 17 IA §3.1): a number is shown in full in one place; anywhere else it is a doorway
-  (the plate, the ribbon), never a repeat.
-- ≤ 40 Japanese characters of non-numeric text per screen. ≤ 3 cards per screen, ≤ 5 rows per card. One しずえ line
-  (≤ 16 characters), and only when she has news.
-- **Decoration and motion never add words.** Reactions and effects stand in for text, never beside it.
-- Still removed (do not re-add): check-ins and habits, daily questions, the two pots and trip bars, Sunday promises,
-  のんびりデー / cozy days, the ふたり tab, privacy settings, notifications, the sheet grabber.
+- **One home per datum:** a number is shown in full in one place; anywhere else it is a doorway (the plate, the
+  ribbon), never a repeat.
+- ≤ 40 Japanese characters of non-numeric text per screen, ≤ 3 cards per screen, ≤ 5 rows per card, one しずえ line
+  (≤ 16 characters) and only when she has news. Decoration and motion never add words.
+- Do not re-add: check-ins or habits, daily questions, pots or trip bars, Sunday promises, cozy days, a ふたり tab,
+  privacy settings, notifications, a sheet grabber.
 
 ## 1. Screens
 
-### 1.1 島 Island (`routes/+page.svelte`, `Hud.svelte`, round 18 layout)
+### 1.1 島 Island (`routes/+page.svelte`, `island/Hud.svelte`, `island/IslandScene.svelte`)
 
 ```
-safe+16           ═══ きょう +620 ベル ═══          today's ベル ribbon, centred (the one focal point)
-                    オフライン · タップで つなぐ       sync chip, centred under it, only when sync is not ok
+safe+16           ═══ きょう +620 ベル ═══          today's ベル ribbon (the one focal point)
+                    オフライン · タップで つなぐ       sync chip, only when sync is not ok
          sky ── horizon ── sea
-         island: hedge · my tree + 5 fruit · jar + plate · partner's tree + 5 fruit · flower beds
+         island: hedge · my tree + fruit · jar + plate · partner's tree + fruit · flower beds
          me (left)                                partner (right)
          [しずえ box, over the front beach]           only with news (the harvest)
-bottom             (📱)  しまフォン                   the NookPhone: 56px phone on an 84px disc, centred
+bottom             (📱)  しまフォン                   the NookPhone: 56px phone on an 84px disc
 ```
 
-- **Today's ベル ribbon:** a copy of the NH map's yellow title banner, 「きょう +620 ベル」 for both of us, centred under
-  the notch / Dynamic Island (`--safe-top` + 16px). It counts up when ベル arrive. Tap = きろく ベル (the ledger).
-- **Jar + plate:** the wallet's balance as a bare number on a cream plate (the jar says what it counts), the scene's only
-  label. New ベル fly in as coins from the fruit that earned them. Tap the jar → ごほうび.
-- **Trees:** one per person; today's five ring fruit lie on the ground in front of each (0–3 per kind = thirds of the
-  goal, 🍑 🍐 🍒 🍎 🥥, leaning away from the jar). Tap → the popup: whose tree (nameplate), per fruit today / goal,
-  today's ベル and the week's badge pips (✓ once met). The popup is the one home of per-fruit detail.
-- **The NookPhone** is the island's one control, bottom centre in the thumb zone (≥ 56px, a 「しまフォン」 plate under it):
-  the hub for きろく, あそびかた and the settings. No flanking buttons: the wallet's doorway is the jar and the ledger's is
-  the ribbon, so a さいふ or きろく button would repeat a doorway.
-- **しずえ** shows only for news (the harvest). Her box floats over the front beach just above the phone, so nothing in
-  the scene moves when she speaks.
-- **Taps:** the partner → their villager card; my villager → a hop; a tree canopy or its fruit row → the popup; the jar →
-  ごほうび; the ribbon → きろく ベル; the phone → しまフォン. Focus / VoiceOver order: the sr-only heading, the ribbon, the
-  phone, then the scene. All are real buttons with `aria-label`, ≥ 44px (villagers and jar ≥ 64px).
+- **Ribbon:** the NH map's yellow title banner, 「きょう +620 ベル」 for both of us, under the notch (`--safe-top` +
+  16px). It counts up when ベル arrive. Tap → きろく ベル.
+- **Jar + plate:** the wallet's balance as a bare number on a cream plate. New ベル fly in as coins from the fruit that
+  earned them. Tap → ごほうび.
+- **Trees:** one per person; today's five ring fruit lie on the ground in front (per kind 0–3 items = thirds of the
+  daily goal, 🍑 🍐 🍒 🍎 🥥; a kind with nothing yet shows one faint item). Tap the canopy or the fruit row → the popup:
+  a nameplate, per fruit today / goal, today's ベル and the week's badge pips (✓ once met). The popup is the one home of
+  per-fruit detail.
+- **The NookPhone** is the island's one control (bottom centre, ≥ 56px): the hub for きろく, あそびかた and settings.
+- **しずえ** shows only with news (the harvest), in a box over the front beach, so nothing in the scene moves.
+- **Taps:** the partner → their card; my villager → a hop; a tree → the popup; the jar → ごほうび; the ribbon → きろく
+  ベル; the phone → しまフォン; scenery → small flourishes ([scene-interactions.md](scene-interactions.md)). All are real
+  buttons with `aria-label`, ≥ 44px (villagers and jar ≥ 64px). Focus order: heading, ribbon, phone, scene.
 
 ### 1.2 ごほうび the wallet (`routes/jar/+page.svelte`, ADR 0022)
 
-The page's title bar (‹ 島へ top-left, ごほうび centred), a hero (the island's jar over 「ふたりのベル」 and the balance: the
-plate's number), then **one simple list** of big buy tiles (NH item art, the name, the price in ベル). An item the wallet
-can't cover yet is sunk and says あと N ベル (a tap boops). ✎ changes the list (add / rename / reprice / remove, shared by
-both). 買う！ asks first (with やめる beside it), then shows at once and waits 5 s with とりけす before it is sent. No
-today / week figures and no history here (they live in きろく ベル). No しずえ.
+Title bar (‹ 島へ, ごほうび), a hero (the jar over 「ふたりのベル」 and the balance), then **one list** of big buy tiles (item
+art, name, price). An item the wallet can't cover yet is sunk and says あと N ベル (a tap boops). ✎ edits the list (add /
+rename / reprice / remove, shared by both). 買う！ asks first, then shows at once and waits 5 s with とりけす before it is
+sent. No history here (it lives in きろく ベル). The island jar morphs into the hero jar (View Transitions; a crossfade
+under reduced motion; `ui-state/jarTransition.ts`).
 
-**島 ⇄ ごほうび:** the jar squashes (R18), then the island jar morphs into the hero jar (View Transitions,
-`view-transition-name: jar`, 320 ms in / 280 ms back); under reduced motion, a short crossfade (`ui-state/jarTransition.ts`).
+### 1.3 しまフォン NookPhone (`phone/ShimaPhone.svelte`)
 
-### 1.3 しまフォン NookPhone (`ShimaPhone.svelte`)
-
-A NookPhone-screen sheet: status row (time · leaf · デモ in demo), the title bar, and a 3-column grid of squircle tiles.
-Each app (`components/phone/*`) slides in from the right inside the phone.
+A NookPhone-screen sheet: status row (time · leaf · デモ in the demo), the title bar, and a 3-column grid of squircle
+tiles. Each app slides in from the right inside the phone.
 
 | App | Tile | What |
 |---|---|---|
-| きろく | `phone/miles` (full tile) | からだ (weight, 目標: Move goal + weight goal, weeks of badges) / ベル (the passbook), week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
-| あそびかた | `phone/glyph-help` on yuzu | For a 10-year-old: no taps needed, the five fruits and their goals, badges, the wallet, the one-line setup |
-| 村人 | `phone/passport` (full tile) | Pick my villager from the roster (158 villagers; one search field), and my よびな |
-| ことば | `phone/glyph-chat` on mint | 日本語 / English |
-| つうしん | `phone/rescue` (full tile) | When each of us last updated, いま つうしん |
-| サウンド | our note glyph on leaf | ミュージック / 効果音 / おしゃべり ON/OFF (all off by default) and 音量 ([sound.md](sound.md) §10) |
+| きろく | `phone/miles` | からだ (weight trend, 目標: Move goal + weight goal, weeks of badges) and ベル (the passbook); week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
+| あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals, badges, the wallet, the setup |
+| 村人 | `phone/passport` | My villager from the roster (158, one search field) and my よびな |
+| ことば | `phone/glyph-chat` | 日本語 / English |
+| つうしん | `phone/rescue` | When each of us last synced, いま つうしん |
+| サウンド | our note glyph | ミュージック / 効果音 / おしゃべり (all off by default) and 音量 ([sound.md](sound.md) §10) |
 
 ### 1.4 Sheets, harvest, pairing
 
-- **One sheet skin** (`Sheet.svelte`, a native `<dialog>`): the chrome surface (tan paper with white-cream cards; navy at
-  night), radius 32, a lip, the one title bar (below), one CTA in a sticky footer lifted above the keyboard.
-- **Partner card** (`PartnerSheet.svelte`): their name (title bar), face, one line they say about their day (from their
-  rings), when their data last arrived, and one action: ハイタッチ. Their numbers live on their tree.
-- **日曜の収穫** (`HarvestOverlay.svelte`, ≤ 60 s): a modal `<dialog>` (✕ / Esc = あとで). The week's recap (per person
-  the five badges under 「バッジ」, their bonus, ふたりボーナス, the week's bonus as the one big number) → 受け取る (a
-  ceremony: the bonus counts either way) → the end card: coins fall into the jar, a +N pops and fades, the wallet's
-  balance counts up. No confetti.
-- **Pair / not set up** (`routes/pair`): `deco/airport` hero (hidden under 600px tall), しずえ + one line, paste the key.
+- **One sheet skin** (`ui/Sheet.svelte`, a native `<dialog>`): tan paper with white-cream cards (navy at night),
+  radius 32, a lip, the title bar, one CTA in a sticky footer lifted above the keyboard.
+- **Partner card** (`sheets/PartnerSheet.svelte`): name, face, one line about their day (from their rings), when their
+  data last arrived, and ハイタッチ.
+- **日曜の収穫** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both tapped. The week's recap (per person the
+  five badges and bonus, the ふたりボーナス, the week's bonus as the big number) → 受け取る (a ceremony: the bonus counts
+  either way) → coins fall into the jar and the balance counts up. ✕ / Esc = あとで.
+- **Pair** (`routes/pair`): `deco/airport` hero, しずえ and one line, paste the key (or open a `#key=` link in the
+  installed app).
 
-## N. Navigation (round 18, one model everywhere)
+## N. Navigation
 
 | Where | Top-left | Centre | Top-right |
 |---|---|---|---|
-| A sheet (partner card, buy, menu editor) | — | the title | ✕ とじる |
+| A sheet (partner card, buy, menu editor) | — | title | ✕ |
 | The しまフォン home | — | しまフォン | ✕ |
-| A phone app, and every level inside it (きろく week → day → fix) | ‹ もどる (one level up) | the app's title | ✕ (closes the phone from any level) |
-| A full page (ごほうび) | ‹ 島へ (a pill with where it goes) | the page's title | — |
+| A phone app, any level inside (きろく week → day → fix) | ‹ (one level up) | the app's title | ✕ (closes the phone) |
+| A full page (ごほうび) | ‹ 島へ | title | — |
 | The harvest | — | (the steps) | ✕ = あとで |
 
-- **The rule:** ✕ closes the whole sheet from any level and always sits top-right; ‹ goes up one level and appears only
-  when there is a level to go back to. They never swap places and the title never moves. Backdrop tap and Esc also close
-  a sheet. Nothing advertises swipe-down (no grabber).
-- **Components:** `ui/NavBar.svelte` (the title bar) and `ui/NavButton.svelte` (the round cream 44px ‹ / ✕, the
-  round-13 object tier, `data-sfx="back"`; the phone passes `self` for its own tunes). Sheet, ShimaPhone, Kiroku (via
-  the phone), the wallet page and the harvest use them; `ui/nav.test.ts` fails on a modal without them or on a grabber.
-- **Motion:** one style. A sheet rises in 240 ms (ease-out, no overshoot); a pushed level slides in from the right in
-  240 ms. Reduced motion: no slide.
+✕ closes the whole sheet from any level and always sits top-right; ‹ goes up one level and appears only when there is
+one. Backdrop tap and Esc also close a sheet; nothing advertises swipe-down. `ui/NavBar.svelte` + `ui/NavButton.svelte`
+(44px); `ui/nav.test.ts` fails on a modal without them. Motion: a sheet rises in 240 ms (ease-out), a pushed level
+slides in from the right in 240 ms; reduced motion: no slide.
 
-## E. Economy (ADR 0019, what earns: ADR 0021; values in `config/rules.ts`, engine in `scoring/bells.ts` + `model/bells.ts`)
+## E. Economy (ADR 0019, 0021, 0022)
 
-- **ベル, play money**, earned per person per day from the rows (so they move whenever data arrives), five automatic
-  metrics, one fruit each, **no manual check-ins and no daily questions**:
+Values in `config/rules.ts` (`RULES`, versioned by week), the earning rule in `scoring/bells.ts`, the economy on read in
+`model/bells.ts`. Pinned by `scoring/bells.test.ts`, `config/rules.test.ts` and the golden fixtures.
 
-  | Fruit | Metric (Shortcut field → stored metric) | Daily goal | ベル a day |
-  |---|---|---|---|
-  | 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | 3 per minute up to 60 (max 180) |
-  | 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person: `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | floor(180 × min(kcal, goal) / goal) (max 180) |
-  | 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 180 min | 1 per minute up to 180 (max 180) |
-  | 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min) | 200 |
-  | 🥥 coconut | Gym: any arrival at a known place, or a strength workout (Traditional / Functional Strength, Pilates ≥ 15 min; another type only when marked in きろく) | a gym day | 400 |
+**ベル per person per day**, recomputed from the rows (so they move whenever data arrives), five automatic metrics,
+one fruit each:
 
-  Max **1,140** a day. The Move goal in force on a day is the last moveGoal set on or before that day (Tokyo date): a
-  change applies from the day it's made, never to earlier days. Steps no longer turn into minutes; old `checkin` and
-  `confirm` rows are ignored.
-- **Weekly bonus at the Sunday 19:30 harvest:** +400 per badge (🍑 / 🍐 / 🍒 goal met on ≥ 5 days, 🍎 ≥ 4 step days,
-  🥥 ≥ 3 gym days), ふたりボーナス +200 for each badge both people meet (max 1,000). 「受け取る」 is a ceremony.
-- **On target** (every badge for both, minimum days): per person 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 +
-  3 × 400 🥥 = 4,700 daily + 5 × 400 = 2,000 badges = 6,700; both + 5 × 200 duo = **14,400 ベル a week** (ADR 0019's
-  was 14,250). The daily ベル (9,400) are 65% of it, so a week short of badges still pays most of its work. Pinned in
-  `scoring/bells.test.ts`.
-- **One shared wallet** (ADR 0022): every ベル earned (daily and the Sunday bonus) goes into it; no split. One shared,
-  editable menu, **one list, no sections** (`pref` `menu`, latest wins, items `{id, label, bells}`); either person buys
-  (`spend {spendId, item, label, bells}`), the buyer can undo (`spend_void`); no approvals; a buy counts only if the
+| Fruit | Metric (Shortcut field → stored metric) | Daily goal | ベル a day |
+|---|---|---|---|
+| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | 3 per minute (max 180) |
+| 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person, `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | floor(180 × min(kcal, goal) / goal) |
+| 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 180 min | 1 per minute (max 180) |
+| 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min) | 200 |
+| 🥥 coconut | Gym: any gym arrival, or a strength workout (Traditional / Functional Strength Training, Pilates, ≥ 15 min; any other type only when marked in きろく) | a gym day | 400 |
+
+- Max 1,140 a day. The Move goal in force on a day is the last one set on or before that Tokyo date: a change never
+  re-prices earlier days.
+- **Weekly bonus** at the Sunday 19:30 harvest: +400 per badge (🍑 / 🍐 / 🍒 goal met on ≥ 5 days, 🍎 ≥ 4, 🥥 ≥ 3) and
+  the ふたりボーナス, +200 for each badge both people met.
+- **On target** (every badge for both, minimum days): per person 4,700 daily + 2,000 badges = 6,700; both + 1,000 duo =
+  **14,400 ベル a week**. The daily part is 65% of it, so a week short of badges still pays most of its work.
+- **One shared wallet:** every ベル earned (daily as it happens, the bonus at Sunday 19:30) goes into it. One shared,
+  editable menu, one list (`pref` menu, latest wins, items `{id, label, bells}`). Either person buys
+  (`spend`), the buyer can undo (`spend_void`), no approvals. Buys replay in server order and a buy counts only if the
   wallet covered it at its time, so the balance never goes negative. Trips themselves are paid outside the game.
-- **Default menu and its maths** (`DEFAULT_MENU`, five grouped items, lead 2026-10-30): 🍦 おやつ (chips, snacks, ice
-  cream, konbini sweets) 1,200 · 🍰 カフェ・デザート (coffee date, parfait, cake) 2,500 · 🍽️ 外ごはん 6,000 ·
-  🛍️ ほしいもの 8,000 · ✈️ 旅のごほうび (souvenirs, a special meal, a spa or an upgrade on a trip) 12,000. On target
-  (14,400 a week): 2–3 おやつ (2.5 × 1,200 = 3,000) + one café date (2,500) + eating out every two weeks (6,000 / 2 =
-  3,000) = 8,500 a week, leaving ≈ 5,900 a week: a ほしいもの every ~1.5 weeks or a 旅のごほうび every ~2, or both
-  in about 3.5 weeks. A typical week of ~10,000 still pays the おやつ and the café date with ~4,500 to save.
-- **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Buys never lock.
-- **Starts** in the week of Mon 2026-10-26. ADR 0021 and 0022 (2026-10-30) were applied in place (play money, the
-  economy's first week); a one-off cleanup (2026-10-30) deleted the two pots' spends and menus so the wallet starts
-  from earnings. Gone: the score /100, yen, the team layer, the purse, transfers, rungs, calibration, the rest-day
-  bonus, the eating habits, step-derived minutes, 「筋トレでしたか？」, the two pots and trip prices.
-- **View model:** `WeekView.people[p].today.rings`, `rings[f]` progress, `moveGoal`, `wallet {balance, earned, spent,
-  today, week}`, `menu` (both sections), `harvest.bonus/totalBells/ringBadges`; きろく: `bellsLedger()` (`wallet`,
-  days, bonuses, buys), `weekDetail()`, `dayDetail()`. Exact types: [round-18/rings-contract.md](../reviews/round-18/rings-contract.md).
+- **Default menu** (`DEFAULT_MENU`): おやつ 1,200 · カフェ・デザート 2,500 · 外ごはん 6,000 · ほしいもの 8,000 ·
+  旅のごほうび 12,000. On target: 2–3 おやつ (≈ 3,000) + a café date (2,500) + eating out every two weeks (3,000) ≈
+  8,500 a week, leaving ≈ 5,900: a ほしいもの every ~1.5 weeks or a 旅のごほうび every ~2.
+- **Locks:** a week's earnings change with late syncs and edits until its Wednesday 04:00 lock, then they are fixed at
+  the lock. Buys never lock. The economy starts in the week of Mon 2026-10-26.
+- **Weight** (ADR 0020) is a trend only, shown in きろく; it never earns (`deps.test.ts` checks the economy never imports
+  `model/weight.ts`).
+- **View model** (`types.ts`): `WeekView.people[p]` (today's ベル per fruit, ring progress, Move goal), `wallet
+  {balance, earned, spent, today, week}`, `menu`, `harvest`; きろく reads `model/history.ts` (`historyWeeks`,
+  `weekDetail`, `dayDetail`, `bellsLedger`, `editLog`) and `model/weight.ts`.
 
 ## A. Official art map
 
-WebP with alpha, already downscaled; never upscale past the manifest height. `<OfficialArt key alt size>`, `size` = rendered height; `alt=""` when decorative or labelled. Key helpers and the manifest (bundled at build time, without its source credits): `lib/art.ts`.
+WebP with alpha, already downscaled; never upscale past the manifest height. `size` = rendered height; `alt=""` when
+decorative. Helpers and the manifest (bundled at build time): `lib/art.ts`; files fetched by `scripts/fetch-assets.ts`.
 
 | Group | Keys (`static/art/<key>.webp`) | Where |
 |---|---|---|
-| Villagers | `villagers/<id>` (full body), `villagers/<id>-icon`; roster: `lib/villagers/roster.ts` (79 ids; defaults A = goldie, B = anchovy; the service worker precaches the two defaults) | Scene, avatars, sheets |
-| Host | `host/isabelle` (wave), `-stand`, `-winter` (cardigan, same canvas as `-stand`), `-icon`, `host/tom-nook` | Dialogue box, toasts, not-set-up |
-| Fruit | `fruit/peach · coconut · apple · pear` | Ground fruit, rings, harvest rows |
+| Villagers | `villagers/<id>`, `villagers/<id>-icon`; roster `lib/villagers/roster.ts` (158; defaults A = goldie, B = anchovy, precached by the service worker; the rest cached on first use) | Scene, avatars, sheets |
+| Host | `host/isabelle` (wave), `-stand`, `-winter`, `-icon`, `host/tom-nook` | Dialogue box, toasts, not-set-up |
+| Fruit | `fruit/peach · pear · cherry · apple · coconut` | Ground fruit, popups, harvest |
 | Trees | `trees/oak-spring` (blossom) · `oak-summer` · `oak-fall` · `oak-winter` | One hardwood per person |
 | Bushes | azalea, hydrangea, hibiscus, tea olive (two colours each), camellia (two), holly | Back hedge (§S.3) |
 | Flowers | red/yellow tulips, red/white roses, pink cosmos, purple mums, orange pansies | Flower beds (§S.3) |
 | Season | `season/petal · maple-leaf · snowflake` | Particles |
-| Reactions | 22 NH reaction-wheel icons (`reactions/<id>`) + `pose-viva` | しずえ's bubble, harvest, toasts |
-| Money | `money/bells`, `leaf`, `miles`, `miles-ticket` | Amounts, the bonus, the trip pot |
-| Phone | `phone/nookphone`, full tiles `miles · passport · rescue · nook-shopping`, glyphs `glyph-help · glyph-chat` | NookPhone (§1.3) |
+| Reactions | NH reaction-wheel icons (`reactions/<id>`) + `pose-viva` | しずえ's bubble, harvest, toasts |
+| Money | `money/bells`, `leaf`, `miles` | Amounts, the bonus |
+| Phone | `phone/nookphone`, tiles `miles · passport · rescue · nook-shopping`, glyphs `glyph-help · glyph-chat` | NookPhone (§1.3) |
 | Deco | `deco/airport`, `deco/present` | Pair hero, balloon present |
 
-Ours (no usable official art): sky, sun, moon, clouds, sea, ground, cliff, the jar, sparkles, hearts, notes, sweat, zzz, confetti, villager marks (`Mark.svelte`) and the UI sprites (`Sprites.svelte`). There are no official runtime textures: Nookipedia's ground, sea and sky images are screenshots with UI baked in.
+Ours (no usable official art): sky, sun, moon, clouds, sea, ground, cliff, the jar, effects, villager marks
+(`Mark.svelte`) and the UI sprites (`Sprites.svelte`).
 
 ## S. Island scene (`lib/components/island/*`)
 
 ### S.1 Structure
 
-`IslandScene` = an elastic sky over a fixed-aspect **stage of 390 × 360 units (u)**, anchored to the bottom, with one NH-blue sea running from the horizon down under the island and behind the bottom chrome. The page gives the scene `--scene-h: 100dvh` and `--island-bottom = --chrome-below` (the tallest chrome state, kept stable); the stage's front beach (its last `TUCK_U` = 34u: sand, foam, nothing tappable) tucks under the top of that slot so the shore meets the dialogue. The HUD overlays the sky; clouds keep below it (`--cloud-lane`). Back to front: sky (sun/moon, stars, clouds, balloon, fireworks) · sea · ground · hedge · trees + ground fruit · jar + plate · flower beds · villagers · particles · one multiply tint (the jar, stars and fireflies stay above it).
+`IslandScene` = an elastic sky over a fixed-aspect **stage of 390 × 360 units (u)**, anchored to the bottom, with one
+NH-blue sea from the horizon down under the island and behind the bottom chrome. The page gives the scene
+`--scene-h: 100dvh` and `--island-bottom = --chrome-below`; the stage's front beach (its last 34u) tucks under the
+chrome. The HUD overlays the sky. Back to front: sky (sun/moon, stars, clouds, balloon, fireworks) · sea · ground ·
+hedge · trees + ground fruit · jar + plate · flower beds · villagers · particles · one multiply tint.
 
-**Painting rule ("Pocket Camp diorama").** Light from the upper left. Every ground, water and sky surface = one base fill + one gentle gradient (lighter toward the upper left and the distance) + one soft lower shade + sparse flecks. **No strokes and no offset lips on scenery** (the lip is a chrome idiom). Contact shadows are soft and radial in the colour of the surface. Gradients use `userSpaceOnUse` over each element's box.
+**Painting rule.** Light from the upper left. Every surface = one base fill + one gentle gradient + one soft lower
+shade + sparse flecks. **No strokes and no lips on scenery** (the lip is a chrome idiom). Contact shadows are soft and
+radial in the surface's colour.
 
 ### S.2 NH tile scale (`scene.ts`)
 
-- **1 tile = 44u** wide; **1 row = 31u** deep (NH's camera foreshortens depth to ≈ 0.7). Columns centred on the jar: `col(k) = 195 + 44k`, k = −3…3.
-- Row bases: hedge 80 · trees + jar 173 · bed back 266 · front 297. Orthographic: depth comes from rows and z-order, not shrinking.
+- **1 tile = 44u** wide, **1 row = 31u** deep (NH's ≈ 0.7 foreshortening). Columns centred on the jar:
+  `col(k) = 195 + 44k`, k = −3…3. Row bases: hedge 80 · trees + jar 173 · bed back 266 · front 297. Depth comes from
+  rows and z-order, not shrinking.
 
-| Element | Size | Place | px at 393 / 320 |
-|---|---|---|---|
-| Villager (the reference, ≈ 1.8 tiles) | 80u | cols ±1, front row | 93 / 74 |
-| Hardwood (≈ 1.5 villagers) | 120u | cols ±2 (x 107 / 283), tree row | 139 / 110 |
-| Bush (1 per tile) | 48u | cols −3…3, hedge row | 56 / 44 |
-| Flower (0.4 villager) | 32u (pansies 0.8×, mums 0.92×) | cols ±2/±3, bed rows | 37 / 29 |
-| Ground fruit (≈ 0.3 villager) | 24u | half-tile pitch at the trunk | 28 / 25 |
-| Jar (≈ 1.2 tiles, legible coins and plate) | 52 × 65u | col 0, tree row, on a sand plaza | 60 / 48 wide |
+| Element | Size | Place |
+|---|---|---|
+| Villager (the reference) | 80u | cols ±1, front row |
+| Hardwood | 120u | cols ±2, tree row |
+| Bush | 48u | cols −3…3, hedge row |
+| Flower | 32u (pansies 0.8×, mums 0.92×) | cols ±2/±3, bed rows |
+| Ground fruit | 24u | half-tile pitch at the trunk |
+| Jar | 52 × 65u | col 0, tree row, on a sand plaza |
 
 ### S.3 Environment
 
-**Framing.** An organic rounded plateau (grass x 44–346u, y 50–316u) with a sand crescent around it (x 30–360u, down to y 352u), so sea shows on both sides at every width. Horizon at stage y 8u: a narrow open-sea strip behind the island.
-
-**Sky** (`Sky.svelte`): a 3-stop gradient (top · mid at 55% · horizon) bleeding under the status bar.
-
-| Time of day | Top | Mid | Horizon |
-|---|---|---|---|
-| Day | #4AA3F6 | #79C9FC | #C6EEFF |
-| Dawn 05–07 | #7FA8E8 | #F6C3B4 | #FFE6CC |
-| Dusk 16–19 | #5B6FC4 | #F59A86 | #FFD39A |
-| Night 19–05 | #1F2C66 | #34478F | #5A6CB4 |
-
-Season shifts (day only): summer top #2F92F0; autumn horizon #E8F2EE; winter #8EC2EE / #BFE0F8 / #EEF7FF.
-
-- **Sun:** upper left (left 18%, 58% down the band; dawn/dusk 22% above the horizon), one radial glow: #FFFEF2 core, #FFE989 ring (dawn/dusk #FFF3D6 / #FFB36B). Drawn above the clouds.
-- **Moon:** same place, crescent #FFF4C8 with a soft glow; 10 stars, 2 twinkle.
-- **Clouds** (`Clouds.svelte`): two, round lobes on an elliptical base, one vertical gradient (white to 55%, #E8F2FC, #D2E3F5 underside; dawn/dusk/night undersides tinted; night at 0.6). 140 / 100 s drift. 120 / 86px at 393, 100 / 72 compact, 64 / 48 at 320. Lanes keep them off the sun; short skies rest them at the horizon.
-
-**Sea** (`Sea.svelte`): one layer, a 4u haze #8EDDF5, then #4C9DE8, then open **#3D8FE2**. White 6 × 1.5u glints at 40% (≈ 2% coverage, denser near the horizon); their slow drift is the one sea animation. The chrome under 島 is the same open sea through the same tint (`--sea-flat`: day #3D8FE2, dawn #3D81C1, dusk #3D78A3, night #255CC5).
-
-**Ground** (`Ground.svelte`), back to front: a turquoise shallow ring #5ED8E8 fading outward · a second foam line 7u out at 45% · a 2.5u foam line on the beach edge · a 5u wet band #E2B66E · the sand crescent (radial #FCE7AE → **#F4D184**) · a soft shade at the cliff foot · the terracotta cliff (12u at the front, 6u at the sides; #DDA472 → **#B97A50**, two faint strata) · a 3u grass overhang with a soft shade on the cliff top · the grass · the plaza under the jar · contact shadows.
-
-| Season | Grass | Highlight | Fleck light | Fleck dark |
-|---|---|---|---|---|
-| Spring (Feb 25–May 31) | #7CC95A | #9BD970 | #A8E07A | #5EAE47 |
-| Summer (Jun 1–Sep 15) | #5DBE4A | #7CCF5E | #8ED96C | #46A23A |
-| Autumn (Sep 16–Dec 10) | #A8C457 | #C2D46E | #D9C26A | #8AA845 |
-| Winter (Dec 11–Feb 24) | #F5F8FF | #FFFFFF | snow dimples | shade #B9C8E6 |
-
-Grass: a radial highlight at (30%, 25%), broad blurred tonal patches, and NH leaf triangles ≈ 0.2 tile, squashed to 0.7 depth, on a seeded jittered tile grid (≈ 2.4 cells per tile, 62% filled, two opacities per tone; no repeat). Winter: snow dimples, scalloped snow over the cliff edge, sand #EEE6D4.
-
-**Contact shadows:** radial, fading to 0, offset slightly right and down. On grass `rgba(34,74,28,.32)`, on sand `rgba(140,98,40,.28)`, on snow `rgba(80,110,160,.25)`. Dusk stretches them ×1.25 to the right.
-
-**Hedge** (`BackRow.svelte`): one species per month in two alternating colours, one bush per tile: Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly, Jan–Mar camellia. Snow on top in winter. No buildings, benches, paths, palms or shells.
-
-**Flower beds** (`FlowerBeds.svelte`): two 2 × 2 beds mirrored about the jar (col 0 stays open for strolls). Spring red / yellow tulips · summer red / white roses · autumn pink cosmos / purple mums · winter red roses / orange pansies with snow caps.
-
-**Trees and fruit** (`FruitTree.svelte`): one plain seasonal oak per person (blossom Apr 1–10, green, fall leaves Oct 16–Dec 10, snow). The week's fruit lies on the ground in front of the trunk, 🍑 🥥 🍎 🍐 left to right: per kind 0–3 items = thirds of that kind's target; a kind with nothing yet shows one faded item. A new item makes the tree shake (±4°, 3 swings, 500 ms) and drops in with a bounce. Under 360px wide: one item per kind, sized by its count.
-
-**Jar** (`Jar.svelte`, one drawing for the island and the ふたりの壺 hero): glass #DDF2FB with an upper-left white streak and a lower-right shade, a coin stack up to the fill line, a yuzu lid with a leaf, no outline.
-
-**Time of day = one multiply tint** over land and sea: dawn #FFE6DA, dusk #FFD7B8, night #9AA4DE. Season comes only from the palette tables.
+- **Framing:** a rounded grass plateau (x 44–346u, y 50–316u) inside a sand crescent, sea on both sides at every
+  width; horizon at stage y 8u.
+- **Sky** (`Sky.svelte`): a 3-stop gradient; day #4AA3F6 / #79C9FC / #C6EEFF, dawn 05–07 #7FA8E8 / #F6C3B4 / #FFE6CC,
+  dusk 16–19 #5B6FC4 / #F59A86 / #FFD39A, night 19–05 #1F2C66 / #34478F / #5A6CB4; day-only season shifts (summer
+  top #2F92F0, autumn horizon #E8F2EE, winter #8EC2EE / #BFE0F8 / #EEF7FF). `season.test.ts` checks the table against
+  `tokens.css`. Sun or crescent moon upper left; 10 stars at night; two drifting clouds (`Clouds.svelte`).
+- **Sea** (`Sea.svelte`): haze #8EDDF5 → #4C9DE8 → open #3D8FE2 with sparse drifting glints (the one sea animation).
+- **Ground** (`Ground.svelte`): shallow ring, foam lines, wet band, sand (#F4D184), terracotta cliff, grass. Grass by
+  season: spring #7CC95A (Feb 25–May 31), summer #5DBE4A (Jun 1–Sep 15), autumn #A8C457 (Sep 16–Dec 10), winter snow
+  #F5F8FF (Dec 11–Feb 24), with seeded leaf flecks.
+- **Hedge** (`BackRow.svelte`): one species per month, two colours, one bush per tile (Apr–May azalea, Jun hydrangea,
+  Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly, Jan–Mar camellia); snow on top in winter.
+- **Flower beds** (`FlowerBeds.svelte`): two 2 × 2 beds mirrored about the jar, flowers by season.
+- **Trees and fruit** (`FruitTree.svelte`): one seasonal oak per person (blossom Apr 1–10, fall leaves Oct 16–Dec 10,
+  snow in winter). A newly earned fruit item shakes the tree (±4°, 500 ms) and drops in with a bounce. Under 360px wide:
+  one item per kind, sized by its count.
+- **Jar** (`Jar.svelte`, shared with the wallet's hero): glass with a streak and shade, a coin stack, a yuzu lid.
+- **Time of day = one multiply tint** over land and sea (dawn #FFE6DA, dusk #FFD7B8, night #9AA4DE).
 
 ### S.4 Particles and events
 
-≤ 3 particles, one animation each (official art): petals while the blossoms are out, maple leaves once the oaks turn (more in maple week), snow in winter; summer nights get our fireflies. Japan-date events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, fireworks on August Sundays after 19:00 and New Year's Eve, Toy Day presents Dec 24, plus the balloon present (ours + `deco/present`; tap = pop).
+≤ 3 particles (official art): petals while the blossoms are out, maple leaves in autumn, snow in winter, our fireflies
+on summer nights. Japan-date events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, fireworks on August
+Sundays after 19:00 and New Year's Eve, Toy Day presents Dec 24, and the balloon present.
 
 ### S.5 Performance
 
-- Animate only `transform` and `opacity`. CSS keyframes only; JS schedules idle life and events, no rAF loop.
-- **Pause** everything when the tab is hidden (`data-paused` on `.if-scene`); a sheet or the overlay also pauses particles and idle life.
-- Trees, fruit, particles and villagers load `eager`, everything else lazy. Target: 60 fps on an iPhone SE 2 in Safari, no long task > 50 ms from the scene after load.
+Animate only `transform` and `opacity`; CSS keyframes; JS schedules idle life and events, no rAF loop. Everything
+pauses while the tab is hidden (`data-paused`); a sheet also pauses particles and idle life (`data-covered`). Target:
+60 fps on an iPhone SE 2.
 
 ## M. Motion and expression
 
 ### M.1 Rig (`Villager.svelte`, `Host.svelte`)
 
-`.actor` (position; `--walk-x` while strolling) › `.face` (`scaleX` = facing; `if-turn`) › `.body` (origin at the feet; idle loop or one motion) › `<OfficialArt>`. The emote and fx are siblings of `.face`, so they never squash or mirror. Squash and stretch conserve volume and stay ≤ 14%. Every motion starts and ends at `transform: none`, so a new one preempts cleanly. The stage director (`motion/director.svelte.ts`) holds one state per actor (mine, partner, しずえ).
+`.actor` (position) › `.face` (`scaleX` = facing) › `.body` (origin at the feet; idle loop or one motion) ›
+`<OfficialArt>`. The emote and fx are siblings of `.face`, so they never squash or mirror. Squash and stretch stay
+≤ 14%; every motion starts and ends at `transform: none`. The director (`motion/director.svelte.ts`) holds one state per
+actor (mine, partner, しずえ).
 
 ### M.2 Motion primitives (`tokens.css`, prefix `if-`)
 
-`squish` 220 · `hop` 600 · `hop2` 900 · `wiggle` 700 · `turn` 1400 (a lean toward the middle and back, no mirror flip) · `nod` 520 · `laugh` 620 · `surprise` 420 · `shy` 1000 · `stretch` 1400 · `proud` 900 · `dance` 1600 · `shake` 480 (trees) · `bow` 1100 (しずえ; there is no official bow render, so the `-stand` render dips) · `headshake` 600 · `talk` (while her line types) · `bob` (idle) · `breath-slow` (asleep). Durations live in `MOTION_MS` (`reactions.ts`) and must match the keyframes. Strolls walk ≤ 40u toward the jar and back (`--dur-walk` 1600 ms), never crossing it.
+`squish` 220 · `hop` 600 · `hop2` 900 · `wiggle` 700 · `turn` 1400 · `nod` 520 · `laugh` 620 · `surprise` 420 · `shy`
+1000 · `stretch` 1400 · `proud` 900 · `dance` 1600 · `shake` 480 (trees) · `bow` 1100 (しずえ) · `headshake` 600 · `hum`
+2400 · `talk`, `bob`, `breath-slow` (loops). Durations live in `MOTION_MS` (`motion/reactions.ts`) and must match the
+keyframes. Strolls walk ≤ 40u toward the jar and back.
 
 ### M.3 Emotes and marks
 
-- **Villagers never show the player's cat-face reaction icons.** They get our floating marks (`Mark.svelte`: ♪ ! ? 💦 ♥ ✦ zz) or the official colour glyphs (love, surprise, glee, inspiration, curiosity, thought, daydreaming), with no bubble.
-- **しずえ** gets the cream emote bubble (`Emote.svelte`) with the official icons, at the top right of her render.
-- Pop 360 ms, hold, out 200 ms (`--dur-emote` 2200 ms). One per actor; a new one replaces the old.
+Villagers never show the player's cat-face reaction icons: they get our floating marks (`Mark.svelte`: ♪ ! ? 💦 ♥ ✦ zz)
+or the official colour glyphs, with no bubble. しずえ gets the cream bubble (`Emote.svelte`) with the official icons.
+Pop 360 ms, hold, out 200 ms; one per actor.
 
 ### M.4 Effects (`Fx.svelte`, ours)
 
-sparkles 700 ms · hearts 1200 · notes 1100 · sweat 900 · zzz (loops while asleep) · confetti 1600 · puff 500 · glint 600. Colours `--fx-*`. `pointer-events: none`, `aria-hidden`, removed on end.
+sparkles 700 ms · hearts 1200 · notes 1100 · sweat 900 · zzz (loops while asleep) · confetti 1600 · puff 500 · glint
+600. `pointer-events: none`, `aria-hidden`, removed on end.
 
-### M.5 Reactions (`REACTIONS` in `reactions.ts`)
+### M.5 Reactions (`REACTIONS` in `motion/reactions.ts`)
 
-Events preempt idle life. R1 first open of the day · R2 check-in saved · R3 the partner's new data · R4 high-five sent · R5 high-five received · R6 a fruit ripe · R7 a fruit stage up · R8 all four ripe · R9/R10 tap mine / partner · R11 morning stretch · R12 evening nudge (I haven't checked in) · R13 fall asleep (22–05) · R14 woken up · R15 low week (Thu–Sat under 1,000 ベル; thought, never sad) · R16 dance together (both ≥ 80% of a full day's ベル) · R17 sync problem · R18 jar tapped (both turn to the jar) · R19 harvest. Diff events (R3, R6–R8) come from comparing the previous and next `view` and never fire on first render or a cache restore. Pages call `emit('open' | 'checkin-saved' | 'highfive-sent' | 'highfive-received' | 'sync-error')` (`motion/bus.svelte.ts`).
+Events preempt idle life. Triggered now: R1 first open of the day · R3 the partner's day grew · R4 / R5 high-five sent /
+received · R6 a fruit's daily goal met · R7 a fruit grew a stage · R8 all five goals met · R9 / R10 tap mine / partner · R11
+morning stretch (05–09) · R12 evening nudge (18–22, my day under half) · R13 fall asleep (22–05) · R14 woken up · R15
+low week (Thu–Sat under 1,000 ベル; thoughtful, never sad) · R16 dance together (idle) · R17 sync problem · R18 jar
+tapped · R19 harvest. R2 (cheer) is only in the dev gallery. Diff reactions come from comparing the previous and next
+`view` and never fire on first render. Pages call `emit('highfive-sent' | 'sync-error' | …)` (`motion/bus.svelte.ts`).
 
 ### M.6 しずえ
 
-Outfit: aloha shirt outside winter, the cardigan (`-winter`) in snow season; never mixed. Poses: wave (cheer), stand (calm), bow (thanks / sorry). She talks (`if-talk`) while her line types, hops for greetings and check-ins, bows for the harvest, head-shakes for errors, and breathes slowly at night. Pose swaps crossfade over 160 ms after `img.decode()`.
+Aloha shirt outside winter, the cardigan (`-winter`) in snow season. Poses: wave, stand, bow. She talks while her line
+types, hops for greetings, bows for the harvest, head-shakes for errors, breathes slowly at night. Pose swaps crossfade
+over 160 ms after `img.decode()`.
 
 ### M.7 Idle life (`motion/idleLife.svelte.ts`)
 
-One scheduler per live scene, in the background: every **9–15 s** one actor does one small thing (look, wiggle, hop, stroll, peek into the jar, tree shake, chat, dance together, morning stretch); しずえ swaps pose, wiggles or hops at most every 20–30 s. **No emotes or fx in idle life:** those mark events. Evening (19–22): only the quiet ones. Asleep (22–05): the villagers only doze. After 3 min without input the gap is 25–40 s; after 10 min it stops until the next touch. It pauses while hidden, under a sheet or overlay, and under reduced motion.
-
-**Idle budget ≤ 10 running animations:** breathing ×2, しずえ, clouds, sea glints, ≤ 3 particles, ≤ 2 twinkles. Events play one at a time.
+One scheduler per live scene: every **9–15 s** one actor does one small thing (look, wiggle, hop, stroll, peek into the
+jar, tree shake, chat, dance together, morning stretch); しずえ at most every 20–30 s. **No emotes or fx in idle life**
+(those mark events). Evening: only the quiet ones; asleep (22–05): the villagers doze. After 3 min without input the
+gap is 25–40 s; after 10 min it stops until the next touch. Paused while hidden, covered or under reduced motion.
+Budget ≤ 10 running animations.
 
 ### M.8 Reduced motion
 
-Loops, hops, walks and dances off; emotes fade in over 120 ms and hold; fx collapse to one static icon; pose swaps are instant; the jar transition is a crossfade; the dialogue text appears at once. The scene still shows season and time of day.
+Loops, hops, walks and dances off; emotes fade in and hold; fx collapse to one static icon; pose swaps are instant; the
+jar transition is a crossfade; dialogue text appears at once. Season and time of day still show.
 
 ## T. Chrome (NH 2D UI)
 
-- **Dialogue box** (`Bubble.svelte`): wobbly cream box (cream at every time of day), a tilted yuzu nameplate that pops in after it, letter reveal at 33 ms/char (tap to finish), amber ▼ only when another page follows. It holds `--talk-lines` lines (2; 1 compact) and never grows. しずえ stands on its left, feet on its baseline. The real text is in an `aria-live` node.
-- **Choice list** (`ChoiceList.svelte`): white-cream pills with the brown edge, stacked at the right; the answer under the yuzu ▶ cursor turns yellow (NH's highlight, with a cream halo so it holds 3:1 on the sea). The cursor starts on はい and follows hover, focus and ↑/↓.
-- **Banner** (`Toast.svelte`): NookPhone-style, below the status row, in the top layer (inside the open sheet's `<dialog>` when there is one). A 36px icon on a pebble (the partner's villager for partner events, しずえ otherwise), one line ≤ 16 characters, one reaction icon or an action (とりけす). Tap or swipe up to dismiss; one at a time.
-- **Buttons** (round 13, `docs/reviews/round-13/button-contrast.md`): four tiers, ink text (≥ 5.6:1), radius 16, a squash on press. Every tappable thing has an **edge** (a 2px outline + the 4px lip in one colour, ≥ 3:1 on the panel); static cards have only the soft lip, so "brown edge = tappable". Primary = leaf + `--c-leaf-edge`; secondary = white-cream `--ctl` + `--edge`; selected = yuzu `--ctl-sel` (keeps the edge); disabled = sunk `--ctl-off`, soft text, no edge or lip.
-- **Fonts:** Zen Maru Gothic (UI, 500/700, subset in `fonts.css`) + Fredoka (numbers only, 600/700). Rounded and close to NH's type; no Nintendo fonts.
+- **Dialogue box** (`ui/Bubble.svelte`): wobbly cream box, a tilted yuzu nameplate, letter reveal at 33 ms/char (tap to
+  finish), amber ▼ only when another page follows; `--talk-lines` lines (2; 1 compact); text mirrored in an
+  `aria-live` node.
+- **Choice list** (`ui/ChoiceList.svelte`): white-cream pills with the brown edge, the yuzu ▶ cursor, ↑/↓ and hover
+  move it.
+- **Banner** (`ui/Toast.svelte`): NookPhone-style, below the status row, in the top layer; a 36px icon, one line, a
+  reaction icon or one action (とりけす). Tap or swipe up to dismiss; one at a time.
+- **Buttons:** four tiers, ink text (≥ 5.6:1), radius 16, a squash on press. Every tappable thing has an **edge** (2px
+  outline + 4px lip in one colour, ≥ 3:1 on the panel); static cards only the soft lip, so "brown edge = tappable".
+  Primary = leaf; secondary = white-cream `--ctl`; selected = yuzu `--ctl-sel`; disabled = sunk `--ctl-off`, no edge.
+  A control that can't act now uses `aria-disabled` (it boops: [sound.md](sound.md) §13).
+- **Fonts:** Zen Maru Gothic (UI, 500/700, subset in `fonts.css`, `npm run fonts:subset`) + Fredoka (numbers, 600/700).
 
-## Tokens (`tokens.css`)
+### Tokens (`styles/tokens.css`)
 
-**Palette (15):** ink `#4A3A2C` / `#6B5544` · cream `#FFF9E3` · paper `#F5E4BC` (NH's tan panel, round 13) · card `#FFFCF2` (white-cream card / button) · lip `#E0C48A` · edge `#937047` (the brown outline + lip of a tappable cream thing: ≥ 3.4:1 on paper, cream, card and yuzu) · leaf `#6ED07A` / `#4FB35C` / edge `#2F8A3F` (the action) · yuzu `#FFD84D` / `#E6B22E` (the focus and the selected state) · map mint `#7BD7C1` / `#63B4B5` · coral `#FF8F7A` (errors only). Components use the semantic tokens (`--bg --surface --card --lip --text --text-soft --hud --focus --scrim`). Scene and fx colours are separate (`.if-scene` block, `--fx-*`, `--jar-*`).
-
-**Surfaces and button tiers (round 13):** the panel (`--bg` = `--surface`: tan by day, `#3A4886` at night) is a step darker than what sits on it (`--card`: white-cream / `#4858A0`). Controls: `--ctl` (fill), `--ctl-sel` (yuzu), `--ctl-off` (sunk), `--edge` (`#937047` / night `#B9C3F0`), with `--sh-ctl` / `--sh-ctl-press` (= `inset 0 0 0 2px var(--edge), 0 4px 0 var(--edge)`). Fixed-cream game objects (sheet close, keypad, back pill, choices, check-in rows) use `--sh-obj` (always brown). A themed control's text is `var(--text)`, never `--c-ink` (ink on navy was 1.27:1). `--fill-on-surface` / `--fill-on-bg` now alias `--ctl`.
-
-**Type:** `12` · `15` body · `18` talk/button · `24` title/ribbon · `44` hero. Weights 500/700. `palt`, `tabular-nums` in lists.
-
-**Radius:** `8` chips · `16` buttons · `24` cards/dialogue · `32` sheets/phone · `30%` tiles · pill only for the ribbon, the plate and the choices.
-
-**Depth:** chrome = one 4px lip (`--lip-h`, `--sh-lip`); the only strokes are the edges of tappable things (`--sh-ctl` / `--sh-obj`). `--sh-float` only on floating layers (the banner). Things on the ground get a contact shadow (§S.3).
-
-**Motion:** `--ease-bounce`, `--ease-soft`, `--ease-squash`, `--ease-idle`; `--dur-tap` 90 · `quick` 140 · `base` 260 · `pop` 360 · `slow` 600 · `emote` 2200 (reduced motion: 0 / 120 ms, emote 1600).
+- **Palette:** ink `#4A3A2C` / `#6B5544` · cream `#FFF9E3` · paper `#F5E4BC` · card `#FFFCF2` · lip `#E0C48A` · edge
+  `#937047` · leaf `#6ED07A` / `#4FB35C` / edge `#2F8A3F` · yuzu `#FFD84D` / `#E6B22E` · mint `#7BD7C1` / `#63B4B5` ·
+  coral `#FF8F7A` (errors only). Components use semantic tokens (`--bg --surface --card --lip --text --text-soft --hud
+  --focus --scrim`); scene colours live in the `.if-scene` block, `--fx-*`, `--jar-*`.
+- **Surfaces:** the panel (`--bg`: tan by day, `#3A4886` at night) is a step darker than its cards (`--card`). Controls
+  `--ctl`, `--ctl-sel`, `--ctl-off`, `--edge`, with `--sh-ctl`; fixed-cream game objects (sheet close, keypad, back
+  pill, choices) use `--sh-obj` (always brown). Themed text is `var(--text)`, never `--c-ink`.
+- **Type:** 12 · 15 body · 18 talk/button · 24 title/ribbon · 44 hero. **Radius:** 8 chips · 16 buttons · 24
+  cards/dialogue · 32 sheets/phone · 30% tiles. **Motion:** `--dur-tap` 90 · `quick` 140 · `base` 260 · `pop` 360 ·
+  `slow` 600 · `emote` 2200 (reduced motion: 0 / 120 ms).
 
 ### T.7 Time of day sets the theme
 
-`data-tod` on `<html>` comes **only from the clock** (dawn 05–07, day 07–16, dusk 16–19, night 19–05; `ui-state/season.ts`); `prefers-color-scheme` is ignored. Previews: `?theme=night|day`, `?season=`.
+`data-tod` on `<html>` comes **only from the Tokyo clock** (dawn 05–07, day 07–16, dusk 16–19, night 19–05;
+`ui-state/season.ts`); `prefers-color-scheme` is ignored. Previews: `?theme=night|day`, `?season=`, `?date=`.
 
 | tod | Chrome | Lip | HUD text | `theme-color` |
 |---|---|---|---|---|
-| dawn, day | paper `#F5E4BC`, cards `#FFFCF2` / ink, edge `#937047` | `#E0C48A` | `#33261B` | sky top |
-| dusk | `#F6DFC0`, cards `#FFFCF2` / ink, edge `#937047` | `#E8B98A` | white | sky top |
-| night | `#3A4886` (page and sheets), cards `#4858A0` / `#FFF6E0`, edge `#B9C3F0` | `#2E3A72` | `#FFF6E0` | `#3A4886` |
+| dawn, day | paper `#F5E4BC`, cards `#FFFCF2`, edge `#937047` | `#E0C48A` | `#33261B` | sky top |
+| dusk | `#F6DFC0`, cards `#FFFCF2`, edge `#937047` | `#E8B98A` | white | sky top |
+| night | `#3A4886`, cards `#4858A0` / `#FFF6E0`, edge `#B9C3F0` | `#2E3A72` | `#FFF6E0` | `#3A4886` |
 
-The ribbon, plate, dialogue box and choices are game objects and stay cream/yellow at every time of day (their edge stays brown).
+The ribbon, plate, dialogue box and choices are game objects and stay cream/yellow at every time of day.
 
 ## R. Small screens
 
-- **Breakpoints:** compact = `(max-height: 700px) or (max-width: 359px)`; tiny = `(max-width: 339px)`. Portrait only; wider screens centre a `--col: 480px` column with the sky full-bleed.
-- **Compact:** gap 8, action 48, 1 dialogue line, talk 16px, NookPhone tiles 56 / gap 14. **Tiny:** side padding 14, tiles 52 / 12, the ribbon drops `今週`.
-- **Global:** side padding 18, `100dvh` (never `100vh`), no horizontal scroll at 320, text ≥ 11px, inputs ≥ 16px (no iOS zoom), targets ≥ 44px and 8px apart, `overscroll-behavior: none`; sheets scroll internally. The keyboard inset `--kb` comes from `visualViewport`; sticky footers lift by it and focused inputs scroll to the centre.
-- **島:** `--chrome-below` = dialogue (`--talk-lines`) + 8 + action + lip + gap + safe bottom: one constant per viewport (≈ 180px at 393×852, ≈ 138px at 375×667 and 320×568). The scene keeps its full height; the chrome sits on the sea.
-- **Scene per viewport:**
-
-| Viewport | Horizon | Stage (1u) | Plateau on screen |
-|---|---|---|---|
-| 393×852 | 179px | 479px (1.23px) | 6–387px |
-| 375×667 | 140px | 375px (0.96px) | 38–336px |
-| 320×568 | 109px | 320px (0.82px) | 33–287px |
-
-- **Sheets:** `max-height: calc(100dvh − safe-top − 24px)`; check-in rows ≥ 56 (52 compact), labels may wrap to 2 lines at 320 but targets never shrink below 44. The NookPhone sheet is full height minus the status bar; labels ≤ 5 Japanese / 10 Latin characters, never ellipsized; the 村人 roster wraps.
-- **Harvest:** fixed, padded by the safe areas; a `max-width: 420px` column; the CTA sticky at the bottom.
-- **Check:** 393×852, 375×667 and 320×568, at day, dusk, night and winter.
+- **Breakpoints:** compact = `(max-height: 700px) or (max-width: 359px)`; tiny = `(max-width: 339px)`. Portrait only;
+  wider screens centre a `--col: 480px` column with the sky full-bleed.
+- **Global:** side padding 18, `100dvh`, no horizontal scroll at 320, text ≥ 11px, inputs ≥ 16px (no iOS zoom;
+  `inputs.test.ts`), targets ≥ 44px and 8px apart, `overscroll-behavior: none`; sheets scroll internally. The keyboard
+  inset `--kb` comes from `visualViewport`.
+- **島:** `--chrome-below` is one constant per viewport (≈ 180px at 393×852, ≈ 138px at 375×667 and 320×568); the scene
+  keeps its full height and the chrome sits on the sea.
+- **Sheets:** `max-height: calc(100dvh − safe-top − 24px)`; NookPhone labels ≤ 5 Japanese / 10 Latin characters,
+  never ellipsized. The harvest: a `max-width: 420px` column, CTA sticky at the bottom.
+- **Check** at 393×852, 375×667 and 320×568, at day, dusk, night and winter.
