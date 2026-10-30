@@ -104,7 +104,7 @@ UX designer + data architect, 2026-10-29. User: "see all recorded data over time
 | `checkin` | existing, plus `edit:true` | `edit:true` widens the 48 h window to any day ≤ today in an unlocked week |
 | `confirm` | existing (visits) | Already "latest wins" |
 | `spend_void` | `{spendId}` | Takes a ベル spend back (the buyer only) |
-| `transfer_undo` | `{month}` | Old yen economy: ignored since ADR 0019 |
+| `transfer_undo` | `{month}` | Old yen economy: ignored since ADR 0019, no longer accepted since round 16 (old rows are ignored) |
 
 **Latest edit wins, by server `at`.** Metric as of T: S = latest `metric_set` with `at ≤ T`; none → max of ingest rows (today); else `max(S.value, ingest rows with S.at < at ≤ T)`. A later, higher sync still wins (more walking); a stale re-send can't revive a wrong value (GAS appends only above the sheet max).
 

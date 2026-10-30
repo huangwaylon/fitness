@@ -20,8 +20,8 @@ Event `type`s and `data`:
   it unless `pot` is valid, `bells` an integer 1–10,000,000, `label` 1–60 characters and `item` a string ≤ 40, and
   (on read) unless the pot covered it at its `at`. Old yen `spend {spendId, label, amountYen}` rows (no `pot`) are
   ignored.
-- `approve {spendId}`, `transfer {month}`, `transfer_undo {month}`: the old yen economy's; no longer sent. They stay
-  valid event types (the script still accepts them and old rows exist) and the model ignores them (ADR 0019 §6).
+- `approve {spendId}`, `transfer {month}`, `transfer_undo {month}`: the old yen economy's. Removed in round 16: the
+  script refuses them like any unknown type, and the model ignores the old rows that remain (ADR 0019 §6).
 - `harvest {week}` (「受け取る」: a ceremony only, the bonus counts either way) · `highfive {}`
 - `pref {key, value}` (keys: `locale`, `villagerName`, `villager`, `goalWeight` (the sender's goal in kg, 20–300 with
   one decimal, or `null` to clear; ADR 0020), and the shared menus `treatMenu` / `tripMenu`:
