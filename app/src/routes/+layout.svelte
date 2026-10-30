@@ -22,6 +22,7 @@
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
+  import { startSound } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -63,7 +64,10 @@
     const onStale = () => safeReload();
     window.addEventListener('vite:preloadError', onStale);
     const stopViewport = startViewport();
+    // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the phone or the harvest.
+    const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
     return () => {
+      stopSound();
       stopViewport();
       stopTheme();
       document.removeEventListener('visibilitychange', onVisible);

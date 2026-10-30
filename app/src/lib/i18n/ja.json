@@ -270,5 +270,17 @@
   "weight.open": "{name}の体重のながれ",
   "weight.fix": "{date}の体重を修正",
   "weight.weekShort": "今週 {d}",
-  "kiroku.field.weight": "体重"
+  "kiroku.field.weight": "体重",
+  "phone.app.sound": "サウンド",
+  "sound.music": "ミュージック",
+  "sound.music.hint": "1時間ごとに変わるBGM",
+  "sound.sfx": "効果音",
+  "sound.sfx.hint": "タップ・コイン・ジングル",
+  "sound.voice": "おしゃべり",
+  "sound.voice.hint": "しずえたちのセリフの声",
+  "sound.volume": "音量",
+  "sound.nowPlaying": "♪ いまは{hour}時の曲",
+  "sound.noMusic": "BGMの曲はまだ入っていません。ファイルが入ると流れます。",
+  "sound.silentNote": "iPhoneが消音モードのときは音が出ません。",
+  "sound.opening": "♪ いまはオープニングテーマ"
 }

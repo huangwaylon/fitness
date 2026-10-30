@@ -29,6 +29,12 @@ export const DEMO = {
   legacyEvents: 'island.demo.events'
 } as const;
 
+/** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
+export const DEVICE = {
+  /** localStorage: `{ music, sfx, voice, volume }` (lib/sound/settings.ts; all off by default). */
+  sound: 'island.sound'
+} as const;
+
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
 export const SCENE = {
   /** localStorage `if-<beat>` = the Tokyo day a startup beat (open, morning, evening, lowweek) last played. */

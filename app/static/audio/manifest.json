@@ -1,0 +1,108 @@
+{
+  "_readme": "Audio files for the app (docs/design/sound.md §9). Paths are relative to static/audio/. Add a file and its entry here; no code change. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts): AAC .m4a, mono 44.1 kHz ~64 kbps, under 3 s. music.<sunny|rain|snow>.<00-23> = the Tokyo hour's track, { file, start }: one seamless loop period (start = the second where the loop begins musically; playback starts there). Written by `npm run audio:music -- <dir>` (scripts/music.ts) from the user's own files: AAC-LC stereo 64 kbps. opening = the opening theme (one-shot). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (sound.md §9.2). Do not commit downloaded effects.",
+  "sfx": {},
+  "opening": "music/opening.m4a",
+  "music": {
+    "sunny": {
+      "10": {
+        "file": "music/hour-10.m4a",
+        "start": 60.623
+      },
+      "11": {
+        "file": "music/hour-11.m4a",
+        "start": 70.758
+      },
+      "12": {
+        "file": "music/hour-12.m4a",
+        "start": 56.514
+      },
+      "13": {
+        "file": "music/hour-13.m4a",
+        "start": 47.385
+      },
+      "14": {
+        "file": "music/hour-14.m4a",
+        "start": 75.163
+      },
+      "15": {
+        "file": "music/hour-15.m4a",
+        "start": 48.024
+      },
+      "16": {
+        "file": "music/hour-16.m4a",
+        "start": 30.526
+      },
+      "17": {
+        "file": "music/hour-17.m4a",
+        "start": 89.804
+      },
+      "18": {
+        "file": "music/hour-18.m4a",
+        "start": 41.475
+      },
+      "19": {
+        "file": "music/hour-19.m4a",
+        "start": 91.054
+      },
+      "20": {
+        "file": "music/hour-20.m4a",
+        "start": 43.794
+      },
+      "21": {
+        "file": "music/hour-21.m4a",
+        "start": 43.495
+      },
+      "22": {
+        "file": "music/hour-22.m4a",
+        "start": 57.932
+      },
+      "23": {
+        "file": "music/hour-23.m4a",
+        "start": 63.395
+      },
+      "00": {
+        "file": "music/hour-00.m4a",
+        "start": 57.245
+      },
+      "01": {
+        "file": "music/hour-01.m4a",
+        "start": 75.444
+      },
+      "02": {
+        "file": "music/hour-02.m4a",
+        "start": 93.71
+      },
+      "03": {
+        "file": "music/hour-03.m4a",
+        "start": 41.885
+      },
+      "04": {
+        "file": "music/hour-04.m4a",
+        "start": 42.124
+      },
+      "05": {
+        "file": "music/hour-05.m4a",
+        "start": 80
+      },
+      "06": {
+        "file": "music/hour-06.m4a",
+        "start": 52.754
+      },
+      "07": {
+        "file": "music/hour-07.m4a",
+        "start": 66.188
+      },
+      "08": {
+        "file": "music/hour-08.m4a",
+        "start": 61.806
+      },
+      "09": {
+        "file": "music/hour-09.m4a",
+        "start": 50.183
+      }
+    },
+    "rain": {},
+    "snow": {}
+  },
+  "ambient": {}
+}

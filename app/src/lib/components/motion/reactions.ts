@@ -1,6 +1,7 @@
 // The motion and reaction catalogues (design.md §M.2, §M.5, §M.6, §M.7) as data.
 // A "step" is one motion + one emote + optional fx on one actor; reactions are short step lists.
 import type { EmoteIcon } from '#lib/art.ts';
+import type { Cue } from '#lib/sound/cues.ts';
 
 /** CSS keyframe primitives (tokens.css Builder A block), prefix `if-`. */
 export type Motion =
@@ -28,6 +29,9 @@ export interface Step {
   face?: 'other' | 'jar' | 'home';
   /** しずえ pose for the duration (wave / stand / bow). */
   pose?: 'wave' | 'stand' | 'bow';
+  /** The sound under this step (sound/cues.ts; docs/design/sound.md §5). Only events and taps sound: the startup
+   *  beats, idle life, naps and the dance stay silent (round 14 review). */
+  cue?: Cue;
 }
 
 export type ReactionId =
@@ -49,28 +53,28 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
   R1: { name: 'first open', ms: 2200, steps: [
     { actor: 'mine', motion: 'wiggle', emote: 'mark-note' },
     { actor: 'partner', at: 400, motion: 'wiggle', emote: 'glee' },
-    { actor: 'host', at: 200, motion: 'hop', emote: 'joy', pose: 'wave' }
+    { actor: 'host', at: 200, motion: 'hop', emote: 'joy', pose: 'wave', cue: 'announce' }
   ] },
   R2: { name: 'check-in saved', ms: 2200, steps: [
     { actor: 'mine', motion: 'hop2', emote: 'mark-heart', fx: 'notes' },
-    { actor: 'mine', at: 120, fx: 'sparkles' },
+    { actor: 'mine', at: 120, fx: 'sparkles', cue: 'emote-love' },
     { actor: 'host', at: 300, motion: 'hop', emote: 'joy', fx: 'notes', pose: 'wave' }
   ] },
   R3: { name: 'partner data', ms: 2600, steps: [
-    { actor: 'partner', motion: 'surprise', emote: 'surprise' },
+    { actor: 'partner', motion: 'surprise', emote: 'surprise', cue: 'emote-surprise' },
     { actor: 'partner', at: 900, motion: 'hop', emote: 'mark-note' },
     { actor: 'mine', at: 600, motion: 'nod' }
   ] },
   R4: { name: 'high-five sent', ms: 2200, steps: [
-    { actor: 'mine', motion: 'hop', emote: 'mark-sparkle', fx: 'sparkles', face: 'other' },
+    { actor: 'mine', motion: 'hop', emote: 'mark-sparkle', fx: 'sparkles', face: 'other', cue: 'emote-joy' },
     { actor: 'mine', at: 1600, face: 'home' }
   ] },
-  R5: { name: 'high-five received', ms: 2400, steps: [{ actor: 'mine', motion: 'hop2', emote: 'love', fx: 'hearts' }] },
-  R6: { name: 'fruit ripe', ms: 2200, steps: [{ actor: 'mine', motion: 'proud', emote: 'mark-sparkle', fx: 'sparkles' }] },
-  R7: { name: 'fruit stage up', ms: 2200, steps: [{ actor: 'mine', motion: 'nod', emote: 'inspiration' }] },
-  R8: { name: 'all ripe', ms: 2400, steps: [{ actor: 'mine', motion: 'dance', emote: 'glee', fx: 'confetti' }] },
-  R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', emote: 'mark-note' }] },
-  R10: { name: 'tap partner', ms: 2200, steps: [{ actor: 'partner', motion: 'squish', emote: 'mark-heart' }] },
+  R5: { name: 'high-five received', ms: 2400, steps: [{ actor: 'mine', motion: 'hop2', emote: 'love', fx: 'hearts', cue: 'emote-love' }] },
+  R6: { name: 'fruit ripe', ms: 2200, steps: [{ actor: 'mine', motion: 'proud', emote: 'mark-sparkle', fx: 'sparkles', cue: 'emote-joy' }] },
+  R7: { name: 'fruit stage up', ms: 2200, steps: [{ actor: 'mine', motion: 'nod', emote: 'inspiration', cue: 'emote-idea' }] },
+  R8: { name: 'all ripe', ms: 2400, steps: [{ actor: 'mine', motion: 'dance', emote: 'glee', fx: 'confetti', cue: 'emote-joy' }] },
+  R9: { name: 'tap mine', ms: 2200, steps: [{ actor: 'mine', motion: 'squish', emote: 'mark-note', cue: 'villager-tap' }] },
+  R10: { name: 'tap partner', ms: 2200, steps: [{ actor: 'partner', motion: 'squish', emote: 'mark-heart', cue: 'villager-tap' }] },
   R11: { name: 'morning stretch', ms: 2200, steps: [
     { actor: 'mine', motion: 'stretch', emote: 'mark-sparkle' },
     { actor: 'partner', at: 500, motion: 'stretch', emote: 'mark-note' }
@@ -81,15 +85,15 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
     { actor: 'partner', at: 2300, face: 'home' }
   ] },
   R13: { name: 'fall asleep', ms: 2200, steps: [{ actor: 'both', emote: 'mark-zzz', fx: 'zzz' }] },
-  R14: { name: 'woken up', ms: 2200, steps: [{ actor: 'mine', motion: 'surprise', emote: 'surprise', fx: 'sweat' }] },
+  R14: { name: 'woken up', ms: 2200, steps: [{ actor: 'mine', motion: 'surprise', emote: 'surprise', fx: 'sweat', cue: 'emote-surprise' }] },
   R15: { name: 'low week', ms: 2200, steps: [{ actor: 'mine', motion: 'shy', emote: 'thought' }] },
   R16: { name: 'dance together', ms: 1600, steps: [{ actor: 'both', motion: 'dance', emote: 'glee', fx: 'notes' }] },
   R17: { name: 'sync problem', ms: 2200, steps: [
-    { actor: 'mine', motion: 'shy', emote: 'mark-sweat' },
+    { actor: 'mine', motion: 'shy', emote: 'mark-sweat', cue: 'trouble' },
     { actor: 'host', at: 200, motion: 'headshake', emote: 'sheepishness', fx: 'sweat', pose: 'bow' }
   ] },
   R18: { name: 'jar tapped', ms: 1200, steps: [
-    { actor: 'both', motion: 'turn', face: 'jar', emote: 'curiosity' },
+    { actor: 'both', motion: 'turn', face: 'jar', emote: 'curiosity', cue: 'jar-tap' },
     { actor: 'both', at: 1200, face: 'home' }
   ] },
   R19: { name: 'harvest', ms: 2400, steps: [

@@ -5,6 +5,7 @@
 import type { EmoteIcon } from '#lib/art.ts';
 import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
 import { reducedMotion } from '../../time/clock.ts';
+import { cue } from '#lib/sound/cues.ts';
 
 export interface ActorState {
   motion: Motion | null;
@@ -214,10 +215,15 @@ function play(rid: ReactionId, swap: boolean) {
   }
   lastEvent.at = Date.now();
   for (const s of r.steps) {
-    for (const id of who(s.actor)) {
-      if (s.at) later(id, s.at, () => applyStep(id, s));
-      else applyStep(id, s);
-    }
+    who(s.actor).forEach((id, i) => {
+      // a step's sound plays once (a 'both' step moves two actors), and not for an absent しずえ
+      const run = () => {
+        applyStep(id, s);
+        if (s.cue && i === 0 && (id !== 'host' || actors.host.present)) cue(s.cue);
+      };
+      if (s.at) later(id, s.at, run);
+      else run();
+    });
   }
 }
 
@@ -277,6 +283,7 @@ export function wake(id: 'mine' | 'partner') {
   setMotion(id, 'surprise');
   setEmote(id, 'shocked');
   addFx(id, 'sweat');
+  cue('emote-surprise');
   later(id, 10_000, () => setAsleep(id, true));
 }
 
@@ -300,4 +307,5 @@ export function hostTap() {
   actors.host.busyUntil = Date.now() + EMOTE_MS;
   setMotion('host', 'hop');
   setEmote('host', HOST_TAP[Math.floor(Math.random() * HOST_TAP.length)]);
+  cue('host-tap');
 }

@@ -30,11 +30,25 @@ const slimArtManifest: Plugin = {
   }
 };
 
+/** The audio manifest (lib/sound/manifest.ts) ships without its `_readme`: only paths and loop starts reach the JS.
+ *  The audio itself is never imported: it is served from static/audio/ and fetched on demand. */
+const slimAudioManifest: Plugin = {
+  name: 'slim-audio-manifest',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!id.split('?')[0].endsWith('/static/audio/manifest.json')) return;
+    const { _readme, ...rest } = JSON.parse(code) as Record<string, unknown>;
+    void _readme;
+    return { code: JSON.stringify(rest), map: null };
+  }
+};
+
 // A static SPA (GitHub Pages). The backend is the Apps Script web app (ADR 0015): its /exec URL is VITE_GAS_URL.
 // Output goes to build-pages/.
 export default defineConfig({
   plugins: [
     slimArtManifest,
+    slimAudioManifest,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
@@ -48,6 +62,8 @@ export default defineConfig({
           'default-src': ['self'],
           'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com'],
           'img-src': ['self', 'data:'],
+          // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
+          'media-src': ['self', 'blob:'],
           'style-src': ['self', 'unsafe-inline'],
           'script-src': ['self'],
           'object-src': ['none'],

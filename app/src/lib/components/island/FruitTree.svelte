@@ -21,6 +21,7 @@
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { todayAmount, todayPct } from './progress.ts';
   import { FRUIT_SPOTS, FRUIT_U, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
+  import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -65,19 +66,23 @@
     const key = spots.map((s) => s.n).join();
     untrack(() => {
       const before = prevN.split(',').map(Number);
-      if (ready && spots.some((s, i) => s.n > (before[i] ?? 0))) shake();
+      if (ready && spots.some((s, i) => s.n > (before[i] ?? 0))) shake(true);
       prevN = key;
       ready = true;
     });
   });
-  /** {@attach}: items that mount after the first render fall in from the canopy. */
+  /** {@attach}: items that mount after the first render fall in from the canopy (and thud as they land). */
   const dropIn = (el: HTMLElement) => {
-    if (ready) el.classList.add('drop');
+    if (!ready) return;
+    el.classList.add('drop');
+    cue('fruit-land');
   };
 
-  function shake() {
+  /** `sound`: a tap or a real event rustles; idle life's shake stays silent (round 14 review). */
+  function shake(sound = false) {
     const el = treeEl;
     if (!el) return;
+    if (sound) cue('tree-shake');
     el.classList.remove('shaking');
     void el.offsetWidth;
     el.classList.add('shaking');
@@ -93,13 +98,13 @@
 
   // React to `shakeN` only (shake() reads and writes `leaves`, which must not become a dependency).
   $effect(() => {
-    if (shakeN > 0) untrack(shake);
+    if (shakeN > 0) untrack(() => shake());
   });
 
   /** A tap on the canopy or the fruit row: closes this tree's popup if it's open, else shakes (canopy) and opens it. */
   function tap(f: FruitKey | null) {
     if (open) return ontoggle?.(false);
-    if (!f) shake();
+    if (!f) shake(true);
     picked = f;
     taps++;
     ontoggle?.(true);
