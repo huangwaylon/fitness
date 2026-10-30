@@ -1,19 +1,24 @@
 <script lang="ts">
-  // The island's jar + its ¥ nameplate: one button (≥ 64px), the doorway to 旅の壺 (v5 §5; Jar.svelte is the one jar
-  // drawing). `view.jar.totalYen` already counts an open harvest, but its yen are "in the jar" only once I tap
-  // 壺に入れる: until then the island shows the total without this week's jar share. When the harvest closes, the jar
-  // waits until the overlay is gone, then the coins rise (CSS transition) with sparkles and a "+¥" pop, and the plate
-  // counts up in step.
+  // The island's jar + its ベル nameplate: one button (≥ 64px), the doorway to ふたりの壺 (v5 §5; Jar.svelte is the one jar
+  // drawing). The plate shows both pots together (おやつ + 旅). When new ベル arrive (a sync, a check-in), they fly
+  // in (CoinFlow): for each person and fruit that earned more than this phone last showed (SCENE.bellsSeen, per day),
+  // a "+N" pops over that fruit under its tree and three coins hop into the jar; the plate counts up as they land and
+  // the jar squashes. Anything else that raises the pots (the Sunday bonus) rises with a "+N" pop over the jar.
+  // It all waits while a sheet or the harvest covers the scene. Reduced motion: no flight, the plate just changes.
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import type { WeekView } from '#lib/types.ts';
+  import type { FruitBells, PersonId, WeekView } from '#lib/types.ts';
+  import { FRUITS } from '#lib/config/rules.ts';
   import Fx from '../characters/Fx.svelte';
-  import Jar, { jarFill } from './Jar.svelte';
+  import Jar from './Jar.svelte';
+  import CoinFlow, { type Flight } from './CoinFlow.svelte';
+  import { potFill } from '../pots/flow.ts';
   import { react } from '../motion/director.svelte.ts';
   import { reducedMotion } from '../../time/clock.ts';
-  import { t, formatYen } from '#lib/i18n/index.ts';
-  import { JAR, u } from './scene.ts';
+  import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { FRUIT_SPOTS, JAR, TREE, u } from './scene.ts';
 
   interface Props {
     view: WeekView;
@@ -21,7 +26,7 @@
     live: boolean;
     /** A sheet or the harvest covers the scene: hold the coins until it is gone. */
     covered: boolean;
-    /** Tapped (go to 旅の壺), after a short look-at-the-jar beat. */
+    /** Tapped (go to ふたりの壺), after a short look-at-the-jar beat. */
     onjar?: () => void;
     /** The scene's timer (cleared with the scene). */
     later: (fn: () => void, ms: number) => void;
@@ -30,39 +35,100 @@
 
   /** Jar art: JAR.w wide (viewBox 54 × 68); the button's top sits that far above the base. */
   const JAR_H = (JAR.w * 68) / 54;
+  const MOUTH: [number, number] = [JAR.x, JAR.base - JAR_H + 10];
+  /** At most this many flights at once (one per person × fruit is 8). */
+  const MAX_FLIGHTS = 8;
 
-  const harvestYen = $derived.by(() => {
-    const h = view.harvest;
-    if (!h || h.confirmedBy.includes(view.me)) return 0;
-    return h.payout.A.fruitYen + h.payout.B.fruitYen + h.payout.teamYen;
-  });
-  const targetYen = $derived(Math.max(0, view.jar.totalYen - harvestYen));
+  const target = $derived(view.pots.treat.balance + view.pots.trip.balance);
   // svelte-ignore state_referenced_locally
-  let jarYen = $state(targetYen);
-  let gain = $state<{ yen: number; n: number } | null>(null);
+  let jarBells = $state(target);
+  let flights = $state<Flight[]>([]);
+  let gain = $state<{ bells: number; n: number } | null>(null);
+  let squashEl: HTMLElement | undefined = $state();
+  let flightN = 0;
+
+  type Seen = { date: string; parts: Record<PersonId, FruitBells> };
+  const zero = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
+  const slotX = (p: PersonId) => TREE.x[p === view.me ? 'A' : 'B'];
+
+  /** New earnings since this phone last showed them → flights (and the seen marks move up to now). */
+  function newFlights(): Flight[] {
+    const kv = localKV();
+    const seen = readJson<Seen>(kv, SCENE.bellsSeen);
+    const base = seen && seen.date === view.today ? seen.parts : { A: zero(), B: zero() };
+    const now: Record<PersonId, FruitBells> = { A: { ...view.people.A.today.parts }, B: { ...view.people.B.today.parts } };
+    writeJson(kv, SCENE.bellsSeen, { date: view.today, parts: now } satisfies Seen);
+    const out: Flight[] = [];
+    for (const p of [view.me, view.partner]) {
+      FRUITS.forEach((f, i) => {
+        const d = now[p][f] - (base[p]?.[f] ?? 0);
+        if (d > 0 && out.length < MAX_FLIGHTS) {
+          out.push({ id: ++flightN, from: [slotX(p) + FRUIT_SPOTS[i][0], TREE.base + FRUIT_SPOTS[i][1]], bells: d, delay: out.length * 320 });
+        }
+      });
+    }
+    return out;
+  }
+
+  // Each change of the pots (or of today's parts) once nothing covers the scene: fly what's new, show the rest.
   $effect(() => {
-    const target = targetYen;
-    if (covered || target === untrack(() => jarYen)) return;
-    const timer = setTimeout(() => {
-      const g = target - jarYen;
-      jarYen = target;
-      if (g > 0 && live && !reducedMotion()) gain = { yen: g, n: (gain?.n ?? 0) + 1 };
-    }, untrack(() => jarYen) < target && live ? 450 : 0);
-    return () => clearTimeout(timer);
+    const to = target;
+    void view.people.A.today.parts;
+    void view.people.B.today.parts;
+    if (covered) return;
+    untrack(() => {
+      const motion = live && !reducedMotion();
+      const fresh = live ? newFlights() : [];
+      if (!motion || to <= jarBells) {
+        jarBells = to;
+        flights = [];
+        return;
+      }
+      const flying = Math.min(to - jarBells, fresh.reduce((a, f) => a + f.bells, 0));
+      const rest = to - jarBells - flying;
+      flights = [...flights, ...fresh];
+      if (rest > 0) {
+        later(() => {
+          jarBells += rest;
+          gain = { bells: rest, n: (gain?.n ?? 0) + 1 };
+        }, 450);
+      }
+      if (!fresh.length) return;
+      // the plate never ends below the pots: whatever didn't land in 4 s is added anyway
+      later(() => {
+        if (flights.length) {
+          flights = [];
+          jarBells = target;
+        }
+      }, 4000 + fresh.length * 320);
+    });
   });
+
+  function land(id: number) {
+    const f = flights.find((x) => x.id === id);
+    if (!f) return;
+    flights = flights.filter((x) => x.id !== id);
+    jarBells = flights.length ? Math.min(target, jarBells + f.bells) : target;
+    const el = squashEl;
+    if (!el) return;
+    el.classList.remove('catch');
+    void el.offsetWidth; // restart the catch squash
+    el.classList.add('catch');
+  }
+
   // The coin stack is drawn full and slid down by (1 − fill), so a change animates.
-  const fill = $derived(jarFill(jarYen, view.jar));
+  const fill = $derived(potFill(jarBells));
   // svelte-ignore state_referenced_locally
-  const plateYen = new Tween(jarYen, { duration: 1200, easing: cubicOut });
+  const plate = new Tween(jarBells, { duration: 900, easing: cubicOut });
   $effect(() => {
-    plateYen.set(jarYen, { duration: live && !reducedMotion() ? 1200 : 0 });
+    plate.set(jarBells, { duration: live && !reducedMotion() ? 900 : 0 });
   });
   /** Press squash on the jar (pointer down), released with a springy overshoot. */
   let pressed = $state(false);
 
   /** Tap: squash (pointer down, 80ms), spring back, the villagers glance at the jar (R18) during the morph
    *  and, 90ms later (no dead wait), the route changes: the page zooms about the jar (ui-state/jarTransition.ts)
-   *  and this jar morphs into the 旅の壺 hero jar when that one is <Jar name="jar">. */
+   *  and this jar morphs into the ふたりの壺 hero jar (<Jar name="jar">). */
   function tap() {
     pressed = false;
     if (live && !reducedMotion()) {
@@ -73,17 +139,18 @@
 </script>
 
 <button type="button" class="jar" class:pressed style:left={u(JAR.x)} style:top={u(JAR.base - JAR_H)} disabled={!live}
-  aria-label={t('island.jar', { yen: formatYen(jarYen) })} onclick={tap}
+  aria-label={t('island.jar', { bells: formatBells(target) })} onclick={tap}
   onpointerdown={() => live && (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
-  <span class="squash"><Jar {fill} width={u(JAR.w)} name={live ? 'jar' : undefined} /></span>
-  <span class="jar-plate"><b class="money">{formatYen(Math.round(plateYen.current))}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>
+  <span class="squash" bind:this={squashEl} onanimationend={() => squashEl?.classList.remove('catch')}><Jar {fill} width={u(JAR.w)} name={live ? 'jar' : undefined} /></span>
+  <span class="jar-plate"><b class="money">{formatBells(plate.current)}</b><svg class="go" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" /><path d="M6.4 4.6 L11 8 L6.4 11.4 Z" /></svg></span>
 </button>
+{#if flights.length}<CoinFlow {flights} to={MOUTH} onland={land} />{/if}
 {#if gain}
   {#key gain.n}
     <span class="jargain" style:left={u(JAR.x)} style:top={u(JAR.base - JAR_H - 4)} aria-hidden="true"
       onanimationend={(e) => e.animationName.endsWith('gain-rise') && (gain = null)}>
       <span class="fxa"><Fx kind="sparkles" spread={u(46)} /></span>
-      <b class="money">+{formatYen(gain.yen)}</b>
+      <b class="money">{formatBells(gain.bells, { signed: true })}</b>
     </span>
   {/key}
 {/if}
@@ -100,8 +167,11 @@
   /* press squash from the base, released with a springy overshoot (mobile-game feel) */
   .squash { display: block; transform-origin: 50% 100%; transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1); }
   .jar.pressed .squash { transform: scale(.92); transition: transform 80ms var(--ease-squash); }
+  /* a coin lands: a small catch squash */
+  .squash:global(.catch) { animation: catch 260ms var(--ease-bounce); }
+  @keyframes catch { 0%, 100% { transform: none; } 40% { transform: scale(1.06, .94); } }
   .jar.pressed .jar-plate { transform: translateY(2px); box-shadow: 0 1px 0 var(--plate-lip); }
-  /* the ¥ nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot */
+  /* the ベル nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot */
   .jar-plate {
     display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: var(--r-pill);
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 4px 0 var(--plate-lip); white-space: nowrap;
@@ -126,7 +196,7 @@
     0% { opacity: 0; transform: translateY(10px) scale(.6); } 14% { opacity: 1; transform: translateY(0) scale(1.08); }
     22% { transform: scale(1); } 78% { opacity: 1; transform: translateY(-8px); } 100% { opacity: 0; transform: translateY(-14px); }
   }
-  @media (prefers-reduced-motion: reduce) { .squash, .jar-plate { transition: none; } .jar.pressed .squash { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .squash, .jar-plate { transition: none; } .jar.pressed .squash, .squash:global(.catch) { transform: none; animation: none; } }
 
   .jar:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 </style>

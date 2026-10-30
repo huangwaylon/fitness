@@ -1,8 +1,8 @@
 <script lang="ts">
-  // 島 Island (v5 §3): the scene full bleed under a light HUD (clock, NookPhone, the score ribbon = the one
+  // 島 Island (v5 §3): the scene full bleed under a light HUD (clock, NookPhone, today's ベル ribbon = the one
   // focal point) and ONE action (今夜のチェック) in the thumb zone. しずえ's dialogue box shows only when she
-  // has news (a pending question, harvest, payday, "grew", an answer just given); a pending 「筋トレでしたか？」
-  // puts NH's choice list in the action's slot. Tap the jar → 旅の壺; my villager → check-in; the partner → sheet.
+  // has news (a pending question, harvest, "grew", an answer just given); a pending 「筋トレでしたか？」
+  // puts NH's choice list in the action's slot. Tap the jar → ふたりの壺; my villager → check-in; the partner → sheet.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -25,7 +25,7 @@
   let checkinOpen = $state(false);
   let partnerOpen = $state(false);
   let phoneOpen = $state(false);
-  /** My fruit % when the check-in sheet opened, to name the fruit that actually grew (U7). */
+  /** My ベル per fruit today when the check-in sheet opened, to name the fruit that actually grew (U7). */
   let before = $state<Record<FruitKey, number> | null>(null);
 
   const view = $derived(week.view);
@@ -52,7 +52,7 @@
     for (const id of timers) clearTimeout(id);
     timers.clear();
   });
-  const grew = $derived(me && before ? (FRUITS.find((f) => me.fruits[f].pct > before![f]) ?? null) : null);
+  const grew = $derived(me && before ? (FRUITS.find((f) => me.today.parts[f] > before![f]) ?? null) : null);
 
   /** "Grew" is news for a few seconds after the check-in sheet closes. */
   let grewNews = $state<FruitKey | null>(null);
@@ -65,7 +65,7 @@
     // After my 壺に入れる (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
     if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
     const key = view.host.key.replace(/^host\./, '');
-    if (key === 'harvest_ready' || key === 'payday') return hostLine(key, view.host.params);
+    if (key === 'harvest_ready') return hostLine(key, view.host.params);
     if (grewNews) return hostLine('grew', { fruit: grewNews, activity: grewNews });
     return null;
   });
@@ -81,7 +81,7 @@
   }
 
   function openCheckin() {
-    if (me) before = Object.fromEntries(FRUITS.map((f) => [f, me.fruits[f].pct])) as Record<FruitKey, number>;
+    if (me) before = Object.fromEntries(FRUITS.map((f) => [f, me.today.parts[f]])) as Record<FruitKey, number>;
     checkinOpen = true;
   }
 
@@ -127,7 +127,7 @@
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         paused={checkinOpen || partnerOpen || phoneOpen} />
-      <Hud score={me.score} today={view.today} bind:phoneOpen />
+      <Hud bells={view.pots.todayBells} today={view.today} bind:phoneOpen />
     </div>
 
     <!-- F1: one fixed slot under the scene (round 6 band table): しずえ's box on top when she has news, the action

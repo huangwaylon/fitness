@@ -36,7 +36,10 @@ export const SCENE = {
   /** sessionStorage: balloons shown this session (at most 3). */
   balloons: 'if-balloon',
   /** localStorage `hf-seen:<day>` = how many of the partner's high-fives that day were already announced. */
-  highFivesSeen: (day: string) => `hf-seen:${day}`
+  highFivesSeen: (day: string) => `hf-seen:${day}`,
+  /** localStorage `bells-seen` = `{ date, parts: { A, B } }`: today's ベル per person and fruit already shown flying into
+   *  the jar, so only new earnings fly in (round 11). */
+  bellsSeen: 'bells-seen'
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */

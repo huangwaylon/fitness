@@ -5,12 +5,16 @@ import { onMount, untrack } from 'svelte';
 import type { FruitKey, PersonId, WeekView } from '#lib/types.ts';
 import { FRUITS } from '#lib/config/rules.ts';
 import { ripeness } from '../sheets/ripeness.ts';
+import { dayScore, todayPct } from './progress.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
 import { localKV, SCENE, sessionKV, writeRaw, type KV } from '#lib/sync/storage.ts';
+
+/** Thursday–Saturday under this many ベル this week: the low-week encouragement beat (R15). */
+const LOW_WEEK_BELLS = 1000;
 
 interface Ctx {
   view: () => WeekView;
@@ -105,9 +109,9 @@ export class IslandLife {
     for (const who of ['mine', 'partner'] as const) {
       const pid = who === 'mine' ? v.me : v.partner;
       const a = p.people[pid].fruits, b = v.people[pid].fruits;
-      const ripeNow = FRUITS.filter((f) => b[f].pct >= 100);
-      const newlyRipe = FRUITS.filter((f) => b[f].pct >= 100 && a[f].pct < 100);
-      const stagedUp = FRUITS.filter((f) => ripeness(b[f].pct) !== ripeness(a[f].pct) && b[f].pct > a[f].pct);
+      const ripeNow = FRUITS.filter((f) => todayPct(b[f]) >= 100);
+      const newlyRipe = FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
+      const stagedUp = FRUITS.filter((f) => ripeness(todayPct(b[f])) !== ripeness(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
       const swap = who === 'partner';
       if (newlyRipe.length && ripeNow.length === 4) return react('R8', swap);
       if (newlyRipe.length) {
@@ -116,7 +120,7 @@ export class IslandLife {
       }
       if (stagedUp.length) return react('R7', swap);
     }
-    if (v.people[v.partner].score > p.people[v.partner].score) react('R3');
+    if (v.people[v.partner].today.bells > p.people[v.partner].today.bells) react('R3');
   }
 
   #start(): () => void {
@@ -154,7 +158,7 @@ export class IslandLife {
       if (once('open')) beats.push('R1');
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
       if (h >= 18 && h < 22 && !checkedIn && once('evening')) beats.push('R12');
-      if (wd >= 4 && wd <= 6 && me.score < 30 && once('lowweek')) beats.push('R15');
+      if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');
     }
     // the director's event queue plays them one at a time
     this.later(() => beats.forEach((r) => react(r)), 700);
@@ -163,7 +167,7 @@ export class IslandLife {
       paused: () => ctx.covered() || this.hidden,
       asleep: () => actors.mine.asleep && actors.partner.asleep,
       night: ctx.night,
-      scores: () => [ctx.view().people.A.score, ctx.view().people.B.score],
+      scores: () => [dayScore(ctx.view().people.A), dayScore(ctx.view().people.B)],
       treeShake: (id) => {
         const v = ctx.view();
         this.shakeN[id === 'mine' ? v.me : v.partner]++;
