@@ -49,14 +49,16 @@ export function confirmHarvest(): SendResult {
 // ---- The wallet (ADR 0022): buy from the shared menu, undo, edit the menu. No approvals.
 
 /**
- * Buy a menu item from the wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is unknown
- * or the wallet can't cover it (the model would ignore the buy anyway).
+ * Buy a menu item from the wallet at its current price (an escalating food treat's price this week, `MenuItemView.price`):
+ * shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is unknown or the wallet can't cover it (the
+ * model would ignore the buy anyway). `bells`: what was charged.
  */
-export function buy(itemId: string): SendResult {
+export function buy(itemId: string): SendResult & { bells?: number } {
   const v = week.view;
   const item = v?.menu.find((x) => x.id === itemId);
-  if (!v || !item || v.wallet.balance < item.bells) return { ok: false };
-  return week.send('spend', { spendId: newId(), item: item.id, label: item.label, bells: item.bells }, { holdMs: UNDO_MS });
+  if (!v || !item || v.wallet.balance < item.price) return { ok: false };
+  const r = week.send('spend', { spendId: newId(), item: item.id, label: item.label, bells: item.price }, { holdMs: UNDO_MS });
+  return { ...r, bells: item.price };
 }
 
 /** Take a buy back (the buyer only; the model ignores anyone else's `spend_void`). */

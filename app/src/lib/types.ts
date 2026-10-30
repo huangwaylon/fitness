@@ -49,6 +49,20 @@ export interface WalletItem {
   bells: number;
 }
 
+/**
+ * A menu entry as the wallet shows it (ADR 0022 amendment "escalating food treats"). `bells` / `basePrice`: the menu's
+ * price; `price`: what the next buy costs now (the base, or for an escalating item the base × 1.5 per accepted, not
+ * voided buy of that id this week by either person, model/bells.ts `treatPrice`).
+ */
+export interface MenuItemView extends WalletItem {
+  price: number;
+  basePrice: number;
+  /** Accepted, not voided buys of this id in the current Tokyo week, both people. */
+  boughtThisWeek: number;
+  /** In ESCALATING_ITEMS (rules.ts): おやつ, カフェ・デザート, 外ごはん by default. */
+  escalates: boolean;
+}
+
 /** The shared wallet (ADR 0022): every ベル earned, minus the accepted buys. */
 export interface WalletView {
   /** earned − spent (never negative: a buy above the balance is ignored on read). */
@@ -145,8 +159,8 @@ export interface WeekView {
   people: Record<PersonId, PersonWeekView>;
   /** The shared wallet (ADR 0022). */
   wallet: WalletView;
-  /** The shared menu, one list (latest `pref` menu by either person, else the defaults). */
-  menu: WalletItem[];
+  /** The shared menu, one list (latest `pref` menu by either person, else the defaults), with this week's prices. */
+  menu: MenuItemView[];
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;
   /** i18n key (`host.*`) for the host しずえ's one line, plus params. */

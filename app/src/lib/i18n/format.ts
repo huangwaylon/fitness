@@ -42,3 +42,8 @@ export function formatSyncTime(iso: string | Date | null, today?: string, locale
   if (!today || day === today) return timeOf(dt);
   return `${formatDate(day, locale)} ${timeOf(dt)}`;
 }
+
+const ordinal = new Intl.PluralRules('en-US', { type: 'ordinal' });
+const ORD_SUFFIX: Partial<Record<Intl.LDMLPluralRule, string>> = { one: 'st', two: 'nd', few: 'rd' };
+/** An escalating treat's count this week: 「こんしゅう 2かいめ」 / "2nd this week". */
+export const nthThisWeek = (n: number): string => t('menu.nth', { n, ord: `${n}${ORD_SUFFIX[ordinal.select(n)] ?? 'th'}` });

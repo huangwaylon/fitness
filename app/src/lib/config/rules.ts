@@ -98,6 +98,24 @@ export const DEFAULT_MENU: readonly DefaultMenuItem[] = [
   { id: 'trip', bells: 12000, label: { ja: '旅のごほうび', en: 'Trip treat' } }
 ];
 
+/**
+ * Escalating food treats (ADR 0022 amendment "escalating food treats", user 2026-10-30): the menu item ids whose price
+ * rises with each repeat in the same Tokyo week (Mon 00:00 to Sun 24:00 JST, the economy's week key), by either person.
+ * Keyed by id, so a renamed or repriced item keeps escalating; every other item (ほしいもの, 旅のごほうび, anything
+ * added) stays flat.
+ */
+export const ESCALATING_ITEMS: readonly string[] = ['snack', 'cafe', 'dinner'];
+
+/**
+ * How an escalating item's price rises (model/bells.ts `treatPrice`): base × (num/den)^n, n = the earlier accepted,
+ * not voided buys of that id this week; for n ≥ 1 rounded to the nearest `roundTo` ベル, an exact half rounding DOWN
+ * (2,500 × 1.5² = 5,625 → 5,600), and never below the base. n = 0 is the base exactly.
+ * `enforceFrom`: a spend stamped from then on whose `bells` isn't the price at its place in server order is ignored on
+ * read; earlier spends keep the old rule (any price is accepted) but still count towards n. Set just after this rule
+ * shipped, so no buy made before it is dropped.
+ */
+export const ESCALATION = { num: 3, den: 2, roundTo: 50, enforceFrom: '2026-10-31T00:00:00+09:00' } as const;
+
 export const STRENGTH = {
   autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
   minWorkoutMin: 15

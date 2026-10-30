@@ -1,17 +1,19 @@
 <script lang="ts">
   // The treats (ADR 0022: one simple list): big buy tiles in two columns (the item's NH art, its name, the price in ベル).
+  // An escalating food treat already bought this week shows its price now, the base struck through and 「こんしゅう 2かいめ」.
   // A treat the wallet can't pay for yet is aria-disabled (a tap boops, as NH's shop does) and says how much is missing.
   // Tap → `onbuy` (the page asks first). Under the tiles, a quiet ✎ to change the list.
-  import type { WalletItem } from '#lib/types.ts';
+  import type { MenuItemView } from '#lib/types.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Glyph from '../kiroku/Glyph.svelte';
   import { itemArt } from './icons.ts';
-  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
+  import { nthThisWeek } from '#lib/i18n/format.ts';
 
   interface Props {
-    items: WalletItem[];
+    items: MenuItemView[];
     balance: number;
-    onbuy: (item: WalletItem) => void;
+    onbuy: (item: MenuItemView) => void;
     onedit: () => void;
   }
   let { items, balance, onbuy, onedit }: Props = $props();
@@ -21,12 +23,14 @@
   {#if items.length}
     <div class="shelf">
       {#each items as item (item.id)}
-        {@const short = item.bells - balance}
+        {@const short = item.price - balance}
+        {@const nth = item.escalates && item.boughtThisWeek > 0 ? item.boughtThisWeek + 1 : 0}
         <button type="button" class="item" aria-disabled={short > 0} data-sfx="open" data-item={item.id} onclick={() => onbuy(item)}
-          aria-label="{item.label} {formatBells(item.bells)}{short > 0 ? ' ' + t('menu.left', { bells: formatBells(short) }) : ''}">
+          aria-label="{item.label} {formatBells(item.price)}{nth ? ' ' + nthThisWeek(nth) : ''}{short > 0 ? ' ' + t('menu.left', { bells: formatBells(short) }) : ''}">
           <span class="ic"><OfficialArt key={itemArt(item.id)} size="60px" /></span>
           <b class="nm">{item.label}</b>
-          <span class="pr money">{formatBells(item.bells)}</span>
+          <span class="pr money" data-price={item.price}>{#if nth}<s class="was">{formatNum(item.basePrice)}</s>{/if}{formatBells(item.price)}</span>
+          {#if nth}<span class="nth">{nthThisWeek(nth)}</span>{/if}
           {#if short > 0}<span class="short">{t('menu.left', { bells: formatBells(short) })}</span>{/if}
         </button>
       {/each}
@@ -53,6 +57,9 @@
   .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.25; overflow-wrap: anywhere; word-break: auto-phrase; }
   .pr { font-size: var(--fs-talk); }
   .short { font-size: var(--fs-s); font-weight: 700; }
+  /* an escalating treat bought this week: the base struck through before the price, and a friendly count under it */
+  .was { margin-right: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-decoration-thickness: 2px; }
+  .nth { max-width: 100%; white-space: nowrap; letter-spacing: 0; padding: 1px 8px; border-radius: var(--r-pill); font-size: var(--fs-s); font-weight: 700; color: var(--text); background: var(--hl); }
   .empty { margin: 0; text-align: center; font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
   /* ✎: a quiet secondary pill under the list (changing the list is rare) */
   .edit {

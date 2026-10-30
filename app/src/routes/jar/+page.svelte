@@ -12,7 +12,7 @@
   import BuyConfirm from '#lib/components/wallet/BuyConfirm.svelte';
   import MenuEditor from '#lib/components/wallet/MenuEditor.svelte';
   import Bells from '#lib/components/ui/Bells.svelte';
-  import type { WalletItem } from '#lib/types.ts';
+  import type { MenuItemView } from '#lib/types.ts';
   import type { Treat } from '#lib/components/wallet/shapes.ts';
   import { walletFill } from '#lib/components/wallet/fill.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -25,10 +25,10 @@
   const balance = $derived(view?.wallet.balance ?? 0);
   const menu = $derived(view?.menu ?? []);
 
-  let askItem = $state<WalletItem | null>(null);
+  let askItem = $state<MenuItemView | null>(null);
   let editOpen = $state(false);
 
-  function buy(item: WalletItem) {
+  function buy(item: MenuItemView) {
     const r = buyItem(item.id);
     askItem = null;
     if (!r.ok) {
@@ -37,7 +37,7 @@
       return;
     }
     cue('buy');
-    undoBanner(t('wallet.bought', { label: item.label, bells: formatBells(item.bells) }), r, { reaction: 'joy' });
+    undoBanner(t('wallet.bought', { label: item.label, bells: formatBells(r.bells ?? item.price) }), r, { reaction: 'joy' });
   }
   function save(items: Treat[]) {
     if (saveMenu(items).ok) toasts.show(t('menu.saved'), 1800, { reaction: 'pleased' });

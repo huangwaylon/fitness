@@ -19,7 +19,11 @@ class Mem implements KV {
 
 const view = (balance: number) => ({
   wallet: { balance, earned: balance, spent: 0, today: 0, week: 0 },
-  menu: [{ id: 'ice', label: 'アイス', bells: 500 }, { id: 'trip', label: '旅のごほうび', bells: 12000 }]
+  menu: [
+    { id: 'ice', label: 'アイス', bells: 500, basePrice: 500, price: 500, boughtThisWeek: 0, escalates: false },
+    { id: 'trip', label: '旅のごほうび', bells: 12000, basePrice: 12000, price: 12000, boughtThisWeek: 0, escalates: false },
+    { id: 'snack', label: 'おやつ', bells: 1200, basePrice: 1200, price: 2700, boughtThisWeek: 2, escalates: true }
+  ]
 }) as unknown as WeekView;
 
 beforeEach(() => {
@@ -41,6 +45,14 @@ describe('wallet actions', () => {
     const [e] = queued();
     expect(e.type).toBe('spend');
     expect(e.data).toEqual({ spendId: expect.any(String), item: 'ice', label: 'アイス', bells: 500 });
+  });
+
+  it('buy sends an escalating treat’s current price (this week’s), not its base, and checks the wallet against it', () => {
+    week.view = view(2699);
+    expect(buy('snack')).toEqual({ ok: false });
+    week.view = view(2700);
+    expect(buy('snack')).toMatchObject({ ok: true, bells: 2700 });
+    expect(queued()[0].data).toEqual({ spendId: expect.any(String), item: 'snack', label: 'おやつ', bells: 2700 });
   });
 
   it('undoSpend sends spend_void', () => {
