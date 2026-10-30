@@ -80,8 +80,8 @@
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
     appearance: none; border: 0; cursor: pointer; font: inherit; pointer-events: auto;
-    /* ≥ 44px tall (the tap target) and growing with the screen's height, like the scene (sizing #6, #8) */
-    position: relative; margin: 0; height: clamp(44px, calc(5 * var(--vh1)), 50px); padding: 0 clamp(22px, 6vw, 28px);
+    /* 44px tall (the tap target, sizing #8); its type and padding grow with the screen (sizing #6) */
+    position: relative; margin: 0; height: var(--hit); padding: 0 clamp(22px, 6vw, 28px);
     display: flex; align-items: center; gap: 10px;
     background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip);
   }

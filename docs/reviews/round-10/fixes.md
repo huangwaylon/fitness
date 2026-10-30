@@ -55,3 +55,35 @@ Skipped / not mine:
 - `dialog.phone .inner` safe-left/right (safe areas): added.
 - S-L1 (Kiroku scroll restore) is engineer B's; Kiroku already finds the nearest scrolling ancestor, so it works with `.phone-body`.
 - #20 (image resolution) is an asset fetch, not CSS.
+
+## Engineer B: 島, きろく, sheets, 旅の壺 (island/*, kiroku/* but NumberPad, sheets/* but HarvestOverlay, routes/+page, routes/jar)
+
+Verified in Chrome (Playwright, `channel: 'chrome'`, isMobile/hasTouch, DPR 3) at 320x568, 375x667, 390x844, 430x932 in ja and en;
+every changed screen screenshotted and inspected. `scrollWidth − innerWidth` = 0 and dialog `scrollWidth = clientWidth` in every capture.
+
+| ID | Fix | Before → after (measured) |
+|---|---|---|
+| #2 | `Hud`: `.hud:has(.chip) ~ .ribbon-wrap { top: safe-top + 84px }`: the chip (≤ 74px with its lip) pushes the ribbon down. | overlap 98–101 × 14–16px → 0, 10px apart (ribbon y 56 → 84 while the chip shows) |
+| #3, S-M1 | `Kiroku .types` `repeat(2, minmax(0, 1fr))`, `.type { min-width: 0; overflow-wrap: anywhere }`. | dialog 413/359 (375), 413/374 (390) → 359/359, 374/374; columns 245 + 140 → 135 + 135 (320), 164 + 164 (390) |
+| #6 | Scene: on tall phones (`max-aspect-ratio: 1/2`) the stage may grow until the grass is 12px inside the edges (beach and shallows run off the sides), and the sky is capped at 27% of the scene (`--sky-max`): the spare height is open sea behind the island. Ribbon: `height: var(--hit)`, type `clamp(1.5rem, 3.4·vh1, 1.875rem)`, `.wk` `clamp(15px, 1.9·vh1, 18px)`, padding `clamp(22px, 6vw, 28px)`. Plate in stage units `clamp(13px, 14u, 16px)`. Emotes `clamp(36px, 44u, 56px)` (T5; the compact override is gone). Choices: done in ChoiceList by A. | horizon 347 → 252 (430x932: sky 37% → 27%), 298 → 228 (390x844: 35% → 27%); 320 / 375 unchanged (24% / 26%). Ribbon 140x36 → 165x44 (430), 98x36 → 99x44 (320). Plate ¥ 12px → 13 / 15 / 16px (320 / 390 / 430) |
+| #8 | Ribbon h 36 → 44; check-in 今日 / 昨日 56x40 → 56x44; きろく pills 104x40 → 104x44; DayDetail ✎ 44x36 → 44x44; MoneyLog なかったことに / Void h 36 → 44 (min-width 44: en 43 → 45); meal chips keep 36 visual with an `::after` hit area of 44. | |
+| #10 | Fruit popup: one column on narrow stages (`@container (max-width: 359px)`), kept under the 44px ribbon (112px), closes when a sheet / the harvest covers the scene (`FruitTree covered`). | 320: 270x68 at x 9–279 → 151x124 over its own tree; labels 12 → 13px |
+| #11 | WeekDetail weekday column `var(--wd-w)`: 22px for 1 kanji, `2.1rem` for `:lang(en)`; grids `minmax(0, 1fr)` (T6); 「22 min」 `nowrap` (it wrapped to two lines once the cells went 12 → 13px). | 「Wed」 column 22 → 34px; no spill into the steps cell |
+| #12 | PartnerSheet: the 2-column rule is gone; ≤ 359: ring `--ring: 60px`, `gap: 10px 2px; padding: 12px 4px`. | 320: 2×2, 200px tall → one row, 101px |
+| #13, T7 | DayDetail workout / visit row: label on its own line at body size, time + chips + ✎ right-aligned under it. New `kiroku/TypeName.svelte` + `fmt.ts typeParts` (+ test): Japanese workout labels break only at word joints (筋力 / トレーニング, 高強度 / インターバル / トレーニング; `nowrap` pieces with `<wbr>`), used by the type grid, the day rows and the workout card. 「ワークアウトを追加」 heading kept on one line. | label 12 → 15px; en 3 lines → 1; ja 「筋力トレーニ / ング」 → 「筋力 / トレーニング」 at worst |
+| #14 | MoneyLog rung labels `--fs-xs` on a `--fill-on-surface` chip, so the step line never crosses the words. | |
+| #15 | 島 `.below` gap 8 → 12 and `--chrome-below` +4 (slot height constant). | box → CTA 4px visual → 8px visual |
+| #16 (part) | 旅の壺: the 132 / 96 / 84 `--jar-h` overrides deleted (fluid token); hero total `var(--fs-hero)` (the 339px override is gone). | hero jar 84 / 96 / 132 / 132 → 91 / 107 / 135 / 149px |
+| #5 (part) | `.purse .purse-yen` `clamp(1.25rem, 6.5vw, --fs-title)`, `.purse .bag { flex: none }` (with A's Yen fix). | 320 bag 24px, no overlap with ¥ |
+| #18 (part) | `.jar-screen.undoing { padding-bottom: pad-bottom + 88px }` while an undo banner is up. | 320, scrolled to the end: last card bottom 543 under the banner (488) → 472 |
+| T6 | `minmax(0, 1fr)`: jar `.layers`, `.shelf`; PartnerSheet `.fruits`; WeekDetail `.people`, `.day`, `.head`. | |
+| Census | 11px literals → `--fs-xs` (week table `.hd`, WeekList weekday row, chart rungs) or `--fs-s` (DayDetail chips, MoneyLog chips, ChangeLog date, WeekDetail `.num` at ≤ 374); 12px plate → stage clamp. Everything else rose with `--fs-s` = 13px. | remaining < 13px in my screens: only `--fs-xs` headers / rung labels |
+| T3 | DayDetail read-only card and the rung chip use `--fill-on-surface`. Game-object controls (✎, types, chips) stay `--c-cream`. | |
+| S-L1 | Kiroku stores `scrollTop` per stack level in `go()` and restores it after `tick()` in `back()`; it scrolls the nearest scrolling ancestor (A's `.phone-body`, or the dialog). | list at 300, open a week, ◀ → 300 (was 0) |
+| S-L3 | `.island` `height: var(--vh-fill)` (+ `--scene-h`); /jar `min-height: var(--vh-page)`. | |
+
+Skipped / left:
+- #16 "≤ 3 cards" on 旅の壺: a content / design decision (payday banner + trip + purse + recent), not a sizing fix. At 320 the recent card still starts below the fold (y 512); the page scrolls normally.
+- T7 elsewhere in my files (check-in habit names, the void question, payday text): left on the T7 base (`line-break: strict`) plus `auto-phrase` for Chromium; only workout labels and the add-workout heading got explicit joints. Re-check on a real iPhone.
+- #17 (A's Toast): the top banner sits at `safe-top + 100px`; the ribbon (44px at `safe-top + 56`) ends at 100 + its 4px lip, and at 140 + 4 while the sync chip shows. Suggest `safe-top + 112px` (or 152 with `:has(.hud .chip)`).
+- Meal chips (`.tick`) and the sync chip still measure 36 / 32px tall as boxes; both have a 44px `::after` hit area.
