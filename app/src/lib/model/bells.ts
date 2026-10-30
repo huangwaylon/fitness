@@ -3,15 +3,16 @@
 // shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
 import type {
-  DayBells, HarvestBonus, LocalDate, PersonId, RingFruit, WalletItem, WalletView, WeekKey
+  DayBells, HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WalletItem, WalletView, WeekKey
 } from '#lib/types.ts';
 import { DEFAULT_MENU } from '#lib/config/rules.ts';
 import { addDays, weekDays, weekKeyOf } from '#lib/time/dates.ts';
-import { earnWeek, duoBonus, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
+import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, isLockedAt, latestAt, localDateAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
 import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
-const LIVE = Infinity;
+/** `t` for an open week: every row counts. */
+export const LIVE = Infinity;
 
 /** A week's earnings are live until its lock, then fixed at the lock (a late sync or edit after it never counts). */
 export const earnTimeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
@@ -89,6 +90,12 @@ export function economyWeeks(s: State, now: number): WeekKey[] {
   const out: WeekKey[] = [];
   for (let wk = firstWeek(s); wk <= cur; wk = addDays(wk, 7)) out.push(wk);
   return out;
+}
+
+/** A person's earnings of one day (zeros for a date outside the week). */
+export function dayBells(e: WeekEarning | undefined, date: LocalDate): { bells: number; rings: RingBells } {
+  const d = e?.days.find((x) => x.date === date);
+  return { bells: d?.bells ?? 0, rings: d ? { ...d.rings } : zeroRings() };
 }
 
 /** A person's daily ベル of a week, counting only days up to `today` (a future-dated row never earns early). */

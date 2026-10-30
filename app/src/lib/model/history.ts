@@ -2,15 +2,14 @@
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { STRENGTH } from '#lib/config/rules.ts';
-import { addDays, weekDays, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import { exerciseMilli, isStrengthWorkout, manualMinutesByDay } from '#lib/scoring/bells.ts';
 import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
-import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, earnTimeOf, weekBells, type WeekBells } from './bells.ts';
+import type { WeekEarning } from '#lib/scoring/bells.ts';
+import { dailyUpTo, dayBells, earnTimeOf, LIVE, weekBells, type WeekBells } from './bells.ts';
 import { replayHarvests } from './week.ts';
 import { activityAsOf, metricAsOf, weekDates, workoutsAsOf, type Activity } from './inputs.ts';
 
-const LIVE = Infinity;
 
 /** A week's ベル at `now`: daily earnings up to today, and the bonus once it landed (Sunday 19:30). */
 function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
@@ -27,12 +26,6 @@ function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
 type RingWeek = Record<RingFruit, { days: number; goal: number }>;
 const ringWeekOf = (e: WeekEarning): RingWeek =>
   Object.fromEntries(Object.entries(e.fruits).map(([f, x]) => [f, { days: x.weekDays, goal: x.weekGoalDays }])) as RingWeek;
-
-const dayOf = (e: WeekEarning, date: LocalDate): { bells: number; rings: RingBells } => {
-  const d = e.days.find((x) => x.date === date);
-  const rings = d ? { ...d.rings } : zeroRings();
-  return { bells: d?.bells ?? 0, rings };
-};
 
 /** Where a day's counted exercise minutes come from: the Watch, a きろく edit of them, or workouts added by hand. */
 type MinutesSource = 'watch' | 'edit' | 'manual';
@@ -112,9 +105,6 @@ function watchIsEdit(s: State, p: PersonId, date: LocalDate, metric: 'exercise_m
   if (!set) return false;
   return !(s.metrics[p].get(key) ?? []).some((r) => r.at > set.at && r.at <= t && r.v > set.v);
 }
-
-/** Manual workout minutes per day for a person as of t (excluded ones don't count). */
-const manualAsOf = (act: Activity): Map<LocalDate, number> => manualMinutesByDay(act.workouts);
 
 /** Every week from the economy's first week (or this week, before it starts) to this week, newest first. */
 export function historyWeeks(s: State, now: number): HistoryWeek[] {
@@ -214,14 +204,12 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const b = weekBellsView(wb, today, now);
   const person = (p: PersonId): WeekDetailPerson => {
     const edited = editedFields(s, p);
-    const manual = manualAsOf(c.act[p]);
     return {
       dailyBells: b[p].daily,
       bonus: b[p].bonus,
       ringBadges: b[p].ringBadges,
       ringWeek: b[p].ringWeek,
       days: wb[p].days.map((d) => {
-        const m = dayExercise(s, p, d.date, c.t, manual.get(d.date) ?? 0);
         const fields = [...(edited.get(d.date) ?? [])];
         return {
           date: d.date,
@@ -233,7 +221,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
           standMin: d.standMin,
           gym: d.gym,
           met: { ...d.met },
-          ...(d.date <= today ? dayOf(wb[p], d.date) : dayOf(wb[p], '')),
+          ...(d.date <= today ? dayBells(wb[p], d.date) : dayBells(wb[p], '')),
           edited: fields.length > 0,
           editedFields: fields
         };
@@ -311,7 +299,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const log = editLog(s).filter((e) => e.date === date);
   const person = (p: PersonId): DayPerson => {
     const t = c.t;
-    const m = dayExercise(s, p, date, t, manualAsOf(c.act[p]).get(date) ?? 0);
+    const m = dayExercise(s, p, date, t, manualMinutesByDay(c.act[p].workouts).get(date) ?? 0);
     const d = wb[p].days.find((x) => x.date === date);
     const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
     const workouts = allWorkouts(s, p)
@@ -330,7 +318,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const mine = log.filter((e) => e.by === p);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
-      ...(date <= localDateAt(now) ? dayOf(wb[p], date) : dayOf(wb[p], '')),
+      ...(date <= localDateAt(now) ? dayBells(wb[p], date) : dayBells(wb[p], '')),
       met: d ? { ...d.met } : { peach: false, pear: false, cherry: false, apple: false, coconut: false },
       steps: { value: metricAsOf(s, p, date, 'steps', t), edited: mine.some((e) => e.field === 'steps') },
       exercise,

@@ -5,13 +5,12 @@ import { addDays } from '#lib/time/dates.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
 import { allWorkouts, latestAt, latestTimed, type State } from './state.ts';
 
-/** An inclusive date window; the default is all time. Every per-week caller passes its week (perf: weeks × rows). */
+/** An inclusive date window (every caller passes one: perf is weeks × rows). */
 export interface Dates { from: LocalDate; to: LocalDate }
-const ALL: Dates = { from: '0000-00-00', to: '9999-99-99' };
 export const weekDates = (wk: WeekKey): Dates => ({ from: wk, to: addDays(wk, 6) });
 
 /** Ingested + manual workouts as of T, without the ones excluded from scoring, with their きろく strength mark. */
-export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates = ALL): Workout[] {
+export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates): Workout[] {
   const out: Workout[] = [];
   for (const w of allWorkouts(s, person)) {
     if (w.at > t || w.date < dates.from || w.date > dates.to) continue;

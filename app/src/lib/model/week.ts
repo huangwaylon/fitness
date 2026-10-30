@@ -5,14 +5,13 @@ import type {
 } from '#lib/types.ts';
 import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
 
-import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
+import type { WeekEarning } from '#lib/scoring/bells.ts';
+import { dailyUpTo, dayBells, LIVE, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
 import { activityAsOf, type Activity } from './inputs.ts';
 
-const LIVE = Infinity;
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
@@ -61,13 +60,6 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
   };
 }
 
-/** A person's earnings of `today` (zeros outside the week or before the economy). */
-function todayOf(e: WeekEarning | undefined, today: LocalDate): PersonWeekView['today'] {
-  const d = e?.days.find((x) => x.date === today);
-  const rings = d ? { ...d.rings } : zeroRings();
-  return { bells: d?.bells ?? 0, rings };
-}
-
 /** One person's card. Both players see everything (no privacy filter). */
 function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate): PersonWeekView {
   const pref = s.prefs[person];
@@ -77,7 +69,7 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
-    today: todayOf(e, today),
+    today: dayBells(e, today),
     weekBells: dailyUpTo(e, today),
     rings,
     moveGoal,
@@ -134,7 +126,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
 /** The wallet at `now`, and what both people earned today and this week (the bonus once it landed). */
 function walletView(s: State, cur: WeekBells, today: LocalDate, now: number): WalletView {
   const { wallet } = walletAt(s, now);
-  const todayBells = todayOf(cur.A, today).bells + todayOf(cur.B, today).bells;
+  const todayBells = dayBells(cur.A, today).bells + dayBells(cur.B, today).bells;
   const weekBells = dailyUpTo(cur.A, today) + dailyUpTo(cur.B, today) + (provisionalMs(cur.weekKey) <= now ? cur.bonusBells : 0);
   return { ...wallet, today: todayBells, week: weekBells };
 }

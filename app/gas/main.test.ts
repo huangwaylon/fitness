@@ -1,8 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
-import { buildWeekView } from '../src/lib/model/week.ts';
-import { historyWeeks } from '../src/lib/model/history.ts';
-import { reduce } from '../src/lib/model/state.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
