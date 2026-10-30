@@ -9,7 +9,7 @@
   import { t } from '#lib/i18n/index.ts';
   import Host from '../characters/Host.svelte';
   import { hostTap } from '../motion/director.svelte.ts';
-  import { reducedMotion } from '../../time/clock.ts';
+  import { reducedMotion } from '#lib/time/clock.ts';
   import type { HostPose } from '#lib/art.ts';
 
   interface Props {

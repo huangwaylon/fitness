@@ -1,6 +1,6 @@
 // ベル earned per person per day, weekly badges and the pot split (ADR 0019). Pure; the model feeds it the rows of a
 // week as of a time and decides which weeks count (the economy's first week, locks).
-import { DAILY, HOLIDAY, POTS, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { DAILY, FRUITS, HOLIDAY, POTS, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { CheckinTick, DayBells, DayMetrics, FruitBells, FruitKey, LocalDate, PersonId, PotKey, Visit, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
@@ -116,7 +116,7 @@ export interface WeekEarning {
   allBadges: boolean;
 }
 
-const FRUIT_KEYS: readonly FruitKey[] = ['peach', 'coconut', 'apple', 'pear'];
+const FRUIT_KEYS: readonly FruitKey[] = FRUITS;
 export const zeroParts = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
 
 /**

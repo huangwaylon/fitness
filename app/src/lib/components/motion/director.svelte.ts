@@ -4,7 +4,7 @@
 // and a new step on an actor preempts whatever it was doing.
 import type { EmoteIcon } from '#lib/art.ts';
 import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
-import { reducedMotion } from '../../time/clock.ts';
+import { reducedMotion } from '#lib/time/clock.ts';
 import { cue } from '#lib/sound/cues.ts';
 
 export interface ActorState {

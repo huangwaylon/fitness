@@ -16,8 +16,7 @@
   import { FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
-    import { fruitArt } from '#lib/art.ts';
-  import { seasonArt, treeArt } from '#lib/art.ts';
+  import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { todayAmount, todayPct } from './progress.ts';
   import { FRUIT_SPOTS, FRUIT_U, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
