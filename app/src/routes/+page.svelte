@@ -127,7 +127,7 @@
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onme={openCheckin} onjar={() => goto(resolve('/jar'))}
         paused={checkinOpen || partnerOpen || phoneOpen} />
-      <Hud bells={view.pots.todayBells} today={view.today} bind:phoneOpen />
+      <Hud bells={view.pots.todayBells} bind:phoneOpen />
     </div>
 
     <!-- F1: one fixed slot under the scene (round 6 band table): しずえ's box on top when she has news, the action
