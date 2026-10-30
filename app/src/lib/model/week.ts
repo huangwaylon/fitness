@@ -3,22 +3,20 @@
 import type {
   HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, WalletView, WeekKey, WeekView
 } from '#lib/types.ts';
-import { PEOPLE, RING_FRUITS } from '#lib/config/rules.ts';
-import { rulesFor } from '#lib/scoring/targets.ts';
+import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
+
 import { zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, menuAt, walletAt, weekBells, type WeekBells } from './bells.ts';
-import { addDays, nowInZone, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
-import { firstWeek, jstMs, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
+import { firstWeek, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
 import { activityAsOf, type Activity } from './inputs.ts';
 
 const LIVE = Infinity;
 
-export { activityAsOf, metricAsOf, weekDates, workoutsAsOf, type Activity } from './inputs.ts';
-
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
-  const cur = weekKeyOf(nowInZone(new Date(t)).date);
+  const cur = weekKeyOf(localDateAt(t));
   for (const wk of [cur, addDays(cur, -7)]) {
     if (t < provisionalMs(wk) || wk < firstWeek(s)) continue;
     return (confirms.get(wk)?.size ?? 0) < 2 ? wk : null;
@@ -63,7 +61,6 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
   };
 }
 
-
 /** A person's earnings of `today` (zeros outside the week or before the economy). */
 function todayOf(e: WeekEarning | undefined, today: LocalDate): PersonWeekView['today'] {
   const d = e?.days.find((x) => x.date === today);
@@ -88,7 +85,7 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
   };
 }
 
-/** しずえ's line: only the keys the island shows (round 16 M5: every key emitted here exists in ja and en; usage.test.ts). */
+/** しずえ's line (usage.test.ts checks every key emitted here exists in ja and en). */
 function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
   if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { bells: v.harvest.totalBells } };
   if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
@@ -104,11 +101,10 @@ const toMs = (t: Date | string | number): number => (t instanceof Date ? t.getTi
 export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Date | string | number): WeekView {
   const s = 'rows' in input ? reduce(input) : input;
   const now = toMs(nowArg);
-  const z = nowInZone(new Date(now));
-  const today = z.date;
+  const today = localDateAt(now);
   const weekKey = weekKeyOf(today);
   const partner = partnerOf(me);
-  // This week and last (the pending questions and the harvest week).
+  // This week and last (the harvest week).
   const dates = { from: addDays(weekKey, -7), to: addDays(weekKey, 6) };
   const act = { A: activityAsOf(s, 'A', LIVE, dates), B: activityAsOf(s, 'B', LIVE, dates) };
   const locale = s.prefs[me].locale ?? 'ja';

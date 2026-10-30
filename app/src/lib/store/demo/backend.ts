@@ -3,10 +3,10 @@
 // shared by both players' tabs; it never touches the live key, queue or cache. Loaded only in the demo.
 import type { EventType } from '#lib/contract/api.ts';
 import type { PersonId, WeekView } from '#lib/types.ts';
-import { addDays } from '#lib/scoring/index.ts';
+import { addDays } from '#lib/time/dates.ts';
 import { harvestOf } from '#lib/model/week.ts';
 import { weekBells } from '#lib/model/bells.ts';
-import { DEMO, localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
+import { DEMO, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from '../backend.ts';
@@ -42,7 +42,6 @@ export class DemoBackend implements Backend {
   async refresh(): Promise<void> {
     if (!this.#cache) {
       this.#cache = demoCache(Date.now(), this.#me);
-      remove(localKV(), DEMO.legacyEvents);
       this.#events = this.#load();
       globalThis.window?.addEventListener('storage', (e) => {
         if (e.key !== DEMO.events) return;

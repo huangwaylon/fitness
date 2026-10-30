@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { weekDays } from '#lib/scoring/index.ts';
+import { weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, walletAt, weekBells } from './bells.ts';
@@ -223,10 +223,10 @@ describe('buys: the wallet must cover them, the buyer can undo them (ADR 0022)',
     expect(potsAt(s, ms(later, '12:00')).wallet.spent).toBe(0);
   });
 
-  it('malformed buys and the two pots’ spends (with a pot) are ignored', () => {
+  it('malformed buys are ignored', () => {
     const at = jst(MON, '10:00');
     const s = reduce(plus(r, { events: [
-      ev(at, 'A', 'spend', { spendId: 'p1', pot: 'treat', item: 'ice', label: 'アイス', bells: 500 }),
+      ev(at, 'A', 'spend', { spendId: 7, item: 'ice', label: 'アイス', bells: 500 }),
       ev(at, 'A', 'spend', { spendId: 'x2', item: 'ice', label: 'アイス', bells: 1.5 }),
       ev(at, 'A', 'spend', { spendId: 'x3', item: 'ice', label: 'アイス', bells: -5 }),
       ev(at, 'A', 'spend', { spendId: 'x4', item: 'ice', label: 'x'.repeat(61), bells: 5 }),

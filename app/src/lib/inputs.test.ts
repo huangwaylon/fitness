@@ -1,4 +1,4 @@
-// Round 10 (ios-scroll-audit H1): iOS Safari zooms the page when an input under 16px is focused, and leaves it zoomed.
+// iOS Safari zooms the page when an input under 16px is focused, and leaves it zoomed.
 // The global guard (styles/theme.css `input, textarea, select { font-size: var(--fs-input) }`) loses to any scoped
 // `font:` shorthand, so every component rule that styles a form field (by element, or by a class the markup puts on
 // one) must resolve its font size to 16px or more. Sizes resolve through the type tokens in styles/tokens.css;

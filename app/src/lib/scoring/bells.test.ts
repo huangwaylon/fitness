@@ -1,7 +1,7 @@
 // ADR 0021: ベル per day for the five fruits (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym), weekly badges, the
 // ふたりボーナス (ADR 0019).
 import { describe, expect, it } from 'vitest';
-import type { PersonId, Visit, Workout } from '#lib/types.ts';
+import type { GymArrival, PersonId, Workout } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { duoBonus, earnWeek, type EarnDay, type EarnInput } from './bells.ts';
@@ -13,7 +13,7 @@ let n = 0;
 const workout = (date: string, type: string, durationMin: number, extra: Partial<Workout> = {}): Workout => ({
   id: `w${n++}`, date, type, startAt: `${date}T07:00:00+09:00`, endAt: `${date}T08:00:00+09:00`, durationMin, avgHr: null, ...extra
 });
-const visit = (date: string, time = '07:00'): Visit => ({ label: '', date, arriveAt: `${date}T${time}:00+09:00` });
+const arrival = (date: string, time = '07:00'): GymArrival => ({ id: `${date}T${time}`, label: '', date, arriveAt: `${date}T${time}:00+09:00` });
 type Cols = Partial<Record<'ex' | 'st' | 'kcal' | 'stand', (number | null)[]>> & { goal?: number | number[] };
 /** A week of metrics, column by column (missing = null); the Move goal per day (default 600). */
 const days = (wk: string, c: Cols = {}): EarnDay[] =>
@@ -24,7 +24,7 @@ const days = (wk: string, c: Cols = {}): EarnDay[] =>
 
 function input(p: Partial<EarnInput> = {}): EarnInput {
   const weekKey = p.weekKey ?? WK;
-  return { person: 'A', weekKey, days: days(weekKey), workouts: [], visits: [], ...p };
+  return { person: 'A', weekKey, days: days(weekKey), workouts: [], arrivals: [], ...p };
 }
 const day0 = (c: Cols, p: Partial<EarnInput> = {}) => earnWeek(input({ days: days(WK, c), ...p })).days[0];
 const all = (v: number) => Array(7).fill(v);
@@ -129,13 +129,13 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
   });
 
   it('🥥 400 on a gym day (an arrival or a strength workout), at most once a day', () => {
-    const coconut = (w: Workout[], v: Visit[] = []) => day0({}, { workouts: w, visits: v }).rings.coconut;
+    const coconut = (w: Workout[], a: GymArrival[] = []) => day0({}, { workouts: w, arrivals: a }).rings.coconut;
     expect(coconut([workout(D[0], 'Pilates', 15)])).toBe(400);
     expect(coconut([workout(D[0], 'Pilates', 14)])).toBe(0);
     expect(coconut([workout(D[0], 'Functional Strength Training', 30)])).toBe(400);
-    expect(coconut([workout(D[0], 'Pilates', 30), workout(D[0], 'Traditional Strength Training', 30)], [visit(D[0])])).toBe(400);
-    expect(coconut([], [visit(D[0])])).toBe(400); // a gym arrival alone, however short the stay
-    expect(coconut([], [visit(D[0]), visit(D[0], '19:00')])).toBe(400); // two arrivals: still one gym day
+    expect(coconut([workout(D[0], 'Pilates', 30), workout(D[0], 'Traditional Strength Training', 30)], [arrival(D[0])])).toBe(400);
+    expect(coconut([], [arrival(D[0])])).toBe(400); // a gym arrival alone, however short the stay
+    expect(coconut([], [arrival(D[0]), arrival(D[0], '19:00')])).toBe(400); // two arrivals: still one gym day
   });
 
   it('🥥 no daily questions: other types (HIIT, yoga, core…) count only when marked as strength in きろく', () => {
@@ -149,7 +149,7 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
   });
 
   it('🥥 every gym arrival day counts, with no weekly limit', () => {
-    const e = earnWeek(input({ visits: D.slice(0, 5).map((d) => visit(d)), workouts: [workout(D[5], 'Pilates', 30)] }));
+    const e = earnWeek(input({ arrivals: D.slice(0, 5).map((d) => arrival(d)), workouts: [workout(D[5], 'Pilates', 30)] }));
     expect(e.days.map((d) => d.gym)).toEqual([true, true, true, true, true, true, false]);
     expect(e.fruits.coconut.weekBells).toBe(2400);
   });
@@ -159,7 +159,7 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
     const e = earnWeek(input({
       days: [row(D[0], 8000, 0), row(D[0], 100, 600), row('2026-11-09', 9000, 600)],
       workouts: [workout('2026-11-01', 'Pilates', 30)],
-      visits: [visit('2026-11-09')]
+      arrivals: [arrival('2026-11-09')]
     }));
     expect(e.days[0].rings.apple).toBe(200);
     expect(e.days[0].rings.pear).toBe(0);
@@ -231,7 +231,7 @@ describe('ADR 0021: the headline number', () => {
     const onTarget = (person: PersonId, goal: number) => earnWeek(input({
       person,
       days: days(WK, { ex: [60, 60, 60, 60, 60], kcal: Array(5).fill(goal), stand: [180, 180, 180, 180, 180], st: [8000, 8000, 8000, 8000], goal }),
-      visits: D.slice(0, 3).map((x) => visit(x))
+      arrivals: D.slice(0, 3).map((x) => arrival(x))
     }));
     const a = onTarget('A', 600), b = onTarget('B', 400);
     expect(a.daily).toBe(4700);

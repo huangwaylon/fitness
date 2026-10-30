@@ -1,5 +1,5 @@
-// The IndexedDB snapshot cache (round 9): the one-time migration from localStorage, revisions (resync), storage
-// failures that stay visible, and a queue that survives a full localStorage.
+// The IndexedDB snapshot cache: revisions (resync), storage failures that stay visible, and a queue that survives a
+// full localStorage.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import type { SnapshotRows } from '#lib/contract/api.ts';
@@ -61,30 +61,13 @@ beforeEach(() => {
 afterEach(() => onStorageProblem(null));
 
 describe('IndexedDB cache', () => {
-  it('survives a reload, without touching localStorage', async () => {
+  it('survives a reload', async () => {
     const r = await refreshSnapshot();
     expect(r.ok).toBe(true);
     await reload();
     const c = await loadCache();
     expect(c?.rows).toEqual(rows());
     expect(c?.rev).toBe('r1');
-    expect(kv.m.has(LIVE.legacyCache)).toBe(false);
-  });
-
-  it('migrates the localStorage cache of older builds once, then removes it', async () => {
-    const legacy = applySnapshot(null, { me: 'A', now: '2026-11-02T05:00:00.000Z', rows: rows(3) }, 0);
-    kv.m.set(LIVE.legacyCache, JSON.stringify(legacy));
-    await reload();
-    expect((await loadCache())?.rows).toEqual(legacy.rows);
-    expect(kv.m.has(LIVE.legacyCache)).toBe(false);
-    await reload();
-    expect((await loadCache())?.rows.metrics).toHaveLength(3); // now from IndexedDB
-  });
-
-  it('ignores a corrupt legacy cache', async () => {
-    kv.m.set(LIVE.legacyCache, '{"v":1,"rows":');
-    await reload();
-    expect(await loadCache()).toBeNull();
   });
 
   it('pairing as the other person drops the stored cache', async () => {
@@ -134,14 +117,6 @@ describe('resync (rev, sheets-architecture.md §2.1)', () => {
     expect((await loadCache())?.rev).toBe('r2');
   });
 
-  it('a cache from before revisions resyncs once', async () => {
-    kv.m.set(LIVE.legacyCache, JSON.stringify(applySnapshot(null, { me: 'A', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 0)));
-    await reload();
-    await refreshSnapshot();
-    await refreshSnapshot();
-    expect(calls.map((c) => c.since)).toEqual(['2026-11-02T01:00:00.000Z', undefined, '2026-11-02T01:00:00.000Z']);
-  });
-
   it('a failed fetch keeps the old cache', async () => {
     await refreshSnapshot();
     reply = () => ({ ok: false, error: 'busy' });
@@ -149,7 +124,7 @@ describe('resync (rev, sheets-architecture.md §2.1)', () => {
     expect((await loadCache())?.rows).toEqual(rows());
   });
 
-  it('refreshSnapshot recovers after a malformed ok reply (round 16 H2)', async () => {
+  it('refreshSnapshot recovers after a malformed ok reply ', async () => {
     reply = () => ({ ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z' }); // no rows: mergeRows throws
     const warn = console.warn;
     console.warn = () => {};
@@ -165,7 +140,7 @@ describe('resync (rev, sheets-architecture.md §2.1)', () => {
     expect(r.ok && r.cache.rows).toEqual(rows());
   });
 
-  it('a flush that throws does not wedge later flushes (round 16 H2)', async () => {
+  it('a flush that throws does not wedge later flushes ', async () => {
     const ev = enqueue('highfive', {});
     await expect(flush(Date.now, () => { throw new Error('boom'); })).rejects.toThrow('boom');
     const r = await flush();

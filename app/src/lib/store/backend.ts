@@ -1,4 +1,4 @@
-// The week store's data source (round 9 §2 item 14): the live Apps Script sync or the demo. The store only composes
+// The week store's data source: the live Apps Script sync or the demo. The store only composes
 // and shows; everything that differs between the two lives behind this interface, so no demo branch can reach live
 // storage, the queue or the network.
 import type { EventType } from '#lib/contract/api.ts';
@@ -7,13 +7,13 @@ import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 import type { ComposedModel } from './view.ts';
 
-/** A banner held open (hover/focus) keeps its action unsent for at most this long (then both end; round 7 M1). */
+/** A banner held open (hover/focus) keeps its action unsent for at most this long (then both end). */
 export const HOLD_MAX_MS = 2 * 60_000;
 
 export interface SendOptions {
   /** An undo window: shown at once, not sent before then. */
   holdMs?: number;
-  /** An edit of a week that locks (server-clock ms): it must reach the server before then (round 7 M1). */
+  /** An edit of a week that locks (server-clock ms): it must reach the server before then. */
   lockAt?: number;
 }
 

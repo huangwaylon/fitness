@@ -1,8 +1,8 @@
 // Scene clock: the device time, or `?date=YYYY-MM-DDTHH:mm` (Tokyo time; testing seasonal events, night naps).
 // The preview lasts for this page load only (kept across in-app navigation, never persisted).
 // Every wall-clock reading (sky, season, naps, the host's greeting, the phone clock) goes through jst(): the model's
-// days and cutoffs are Tokyo's, so the island agrees with them on a phone set to another zone (round 9).
-import { parseInstant } from './dates.ts';
+// days and cutoffs are Tokyo's, so the island agrees with them on a phone set to another zone.
+import { localDateAt, parseInstant, ZONE_OFFSET_MS } from './dates.ts';
 import { prefersReducedMotion } from 'svelte/motion';
 import { createSubscriber } from 'svelte/reactivity';
 
@@ -53,8 +53,6 @@ export function reducedMotion(): boolean {
   return prefersReducedMotion.current;
 }
 
-const JST_MS = 9 * 60 * 60 * 1000; // Asia/Tokyo: UTC+9, no DST
-
 /** Tokyo wall-clock fields of an instant (month 1–12, weekday 0 = Sunday). */
 export interface Jst {
   year: number;
@@ -65,12 +63,9 @@ export interface Jst {
   weekday: number;
 }
 export function jst(d: Date = now()): Jst {
-  const t = new Date(d.getTime() + JST_MS);
+  const t = new Date(d.getTime() + ZONE_OFFSET_MS);
   return { year: t.getUTCFullYear(), month: t.getUTCMonth() + 1, day: t.getUTCDate(), hour: t.getUTCHours(), minute: t.getUTCMinutes(), weekday: t.getUTCDay() };
 }
 
 /** Tokyo `YYYY-MM-DD` of the scene clock. */
-export function dayKey(d = now()): string {
-  const { year, month, day } = jst(d);
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
+export const dayKey = (d = now()): string => localDateAt(d.getTime());

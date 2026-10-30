@@ -1,5 +1,5 @@
-// UI label for a canonical (English) workout type (golden.test.ts checks they still agree with the old server's).
-// Dependency-free: the parser (and so the Apps Script bundle) inverts the same table for Japanese Health names.
+// UI label for a canonical (English) workout type. Dependency-free: the parser (and so the Apps Script bundle)
+// inverts the same table for Japanese Health names.
 
 export const WORKOUT_LABELS_JA: Record<string, string> = {
   'Traditional Strength Training': '筋力トレーニング',

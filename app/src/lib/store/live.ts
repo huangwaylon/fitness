@@ -1,5 +1,5 @@
 // The live backend: paints from the IndexedDB cache + the write queue, then syncs in the background (flush the
-// queue, fetch rows `since` the last seen server time). Undo windows and week locks: round 7 M1/M2.
+// queue, fetch rows `since` the last seen server time), with undo windows and week locks.
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import type { EventType } from '#lib/contract/api.ts';
@@ -16,7 +16,7 @@ import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult
 const REFRESH_FLOOR_MS = 30_000;
 /** After acked writes, re-read the server so its timestamps replace the optimistic ones. */
 const RECONCILE_MS = 1500;
-/** A held edit goes out at least this long before its week's lock (server clock), so it lands in time (M1). */
+/** A held edit goes out at least this long before its week's lock (server clock), so it lands in time. */
 export const LOCK_MARGIN_MS = 60_000;
 /** Closer than this to the lock an edit can't be trusted to land: refused at once, with a message. */
 const LOCK_LATE_MS = 5_000;
@@ -61,7 +61,7 @@ export class LiveBackend implements Backend {
     if (this.#started) return;
     this.#started = true;
     addEventListener('online', () => void this.refresh({}));
-    // Full storage or private mode: the app works from memory, but say so once (round 9 §2 item 2).
+    // Full storage or private mode: the app works from memory, but say so once.
     onStorageProblem((p) => {
       if (this.#told.has(p)) return;
       this.#told.add(p);
@@ -74,7 +74,7 @@ export class LiveBackend implements Backend {
     if (!getKey() || keyFromHash(location.hash)) {
       // Not paired yet, or opened from a `#key=…` link: the pair page takes it from here (and keeps the hash).
       h.status = 'ready';
-      // replaceState: the `/#key=…` entry must not stay in back/forward history (round 16 L11)
+      // replaceState: the `/#key=…` entry must not stay in back/forward history
       await goto(resolve('/pair') + (keyFromHash(location.hash) ? location.hash : ''), { replaceState: true });
       return;
     }
@@ -97,7 +97,7 @@ export class LiveBackend implements Backend {
       await this.#flush(false);
       r = await refreshSnapshot();
     } catch (e) {
-      // never leave the pill spinning and the sync buttons disabled (round 16 H2)
+      // never leave the pill spinning and the sync buttons disabled
       console.warn('refresh failed', e);
       r = { ok: false, error: 'unavailable' };
     } finally {
@@ -131,14 +131,14 @@ export class LiveBackend implements Backend {
   /**
    * Queue an event; the store shows it at once. Never fails for network reasons: the queue retries until the
    * server acks. `holdMs`: an undo window; `undo()` takes back only this event, not others made in the window
-   * (review r2 N4).
+   *.
    */
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult {
     let holdMs = opts.holdMs ?? 0;
     const lockAt = opts.lockAt;
     const skew = () => this.#cache?.skewMs ?? 0;
     if (lockAt !== undefined) {
-      // An edit of a week that locks: it must reach the server before the lock (round 7 M1). Too close → refused
+      // An edit of a week that locks: it must reach the server before the lock. Too close → refused
       // now; close → its undo window shrinks (to none) so it is sent in time.
       const left = lockAt - skew() - Date.now();
       if (left < LOCK_LATE_MS) {
@@ -179,7 +179,7 @@ export class LiveBackend implements Backend {
       this.#host.changed();
     }
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
-    // event that left the queue because it was undone mid-flush must not come back (review r2 N1).
+    // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
       toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
@@ -198,7 +198,7 @@ export class LiveBackend implements Backend {
 
   /**
    * After a fetch: an acked edit whose server row is stamped at or after its lock was refused by the model. Say so
-   * (it disappears from the screen with this refresh) instead of letting it vanish silently (round 7 M1).
+   * (it disappears from the screen with this refresh) instead of letting it vanish silently.
    */
   #noteRefused(cache: SnapshotCache): void {
     const late = ackedEvents().filter((e) => e.lockAt !== undefined);

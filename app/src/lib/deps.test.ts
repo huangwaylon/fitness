@@ -1,4 +1,4 @@
-// Folder boundaries (round 9 §1): each top-level folder of src/lib may import only the folders on its allow-list,
+// Folder boundaries: each top-level folder of src/lib may import only the folders on its allow-list,
 // so the direction contract/time → config/scoring/model → sync → store → ui-state → components holds, and nothing
 // under lib imports a route. A new edge has to be added here on purpose.
 import { describe, expect, it } from 'vitest';
@@ -18,7 +18,7 @@ const ALLOW: Record<string, string[]> = {
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN],
   store: [...DOMAIN, 'sync', 'i18n', 'ui-state'],
-  // store → ui-state (toasts), never back: ui-state importing store would close a cycle (round 16 M10)
+  // store → ui-state (toasts), never back: ui-state importing store would close a cycle
   'ui-state': [...DOMAIN, 'i18n'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],

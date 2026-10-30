@@ -1,7 +1,7 @@
 // Rule versions: compute-on-read re-prices every week a value applies to, so versions in use must never change.
 import { describe, expect, it } from 'vitest';
-import { RULES, type RuleVersion } from './rules.ts';
-import { rulesFor, weekKeyOf } from '#lib/scoring/index.ts';
+import { RULES, rulesFor, type RuleVersion } from './rules.ts';
+import { weekKeyOf } from '#lib/time/dates.ts';
 import { reduce } from '#lib/model/state.ts';
 import { economyWeeks, weekBells } from '#lib/model/bells.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
@@ -49,7 +49,7 @@ describe('RULES', () => {
       expect(weekKeyOf(v.from)).toBe(v.from);
       if (i > 0) expect(v.from > RULES[i - 1].from).toBe(true);
     }
-    expect(rulesFor('2026-10-26')).toBe(RULES[0]); // before the first version (the demo calendar)
+    expect(rulesFor('2026-08-31')).toBe(RULES[0]); // before the first version (the demo calendar)
     const v2: RuleVersion = { ...RULES[0], from: '2026-12-07', bells: { ...RULES[0].bells, perStandMin: 2 } };
     withAppended(RULES, v2, () => {
       expect(rulesFor('2026-11-30')).toBe(RULES[0]);

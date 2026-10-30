@@ -1,4 +1,4 @@
-// Round 5 U3: an action must move the score and fruit at once, in live mode (queued events through the model)
+// An action must show at once, in live mode (queued events through the model)
 // (the demo runs the same model on generated rows: demoRows.test.ts), and must not snap back between the server's ack and the next fetch.
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/contract/api.ts';

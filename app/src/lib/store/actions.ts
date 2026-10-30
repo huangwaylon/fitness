@@ -1,6 +1,6 @@
 // One function per user action. Each records an event through the store's backend (live: the write queue,
 // lib/sync/queue.ts; demo: kept in memory, demo/backend.ts) and the store recomputes the view with it at once through
-// the model, so a tap moves the fruit, today's ベル and the pots the same way everywhere. Results are synchronous.
+// the model, so a tap moves the wallet and きろく the same way everywhere. Results are synchronous.
 import { week } from './week.svelte.ts';
 import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -8,18 +8,18 @@ import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs, parseMenu } from '#lib/model/state.ts';
 import type { WalletItem } from '#lib/types.ts';
-import { weekKeyOf } from '#lib/scoring/index.ts';
+import { weekKeyOf } from '#lib/time/dates.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
 import { MOVE_GOAL } from '#lib/config/rules.ts';
 
-/** 買う！, its もとに戻す and きろく edits wait this long before they are sent, with もとに戻す on the banner (round 5 U9). */
+/** 買う！, its もとに戻す and きろく edits wait this long before they are sent, with もとに戻す on the banner. */
 const UNDO_MS = 5000;
-/** きろく's edit controls close this long before a week's lock: an edit made then still lands in time (round 7 M1). */
+/** きろく's edit controls close this long before a week's lock: an edit made then still lands in time. */
 export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
 
 /**
- * The banner for an edit held UNDO_MS: it names what was done (round 5 N5) and carries もとに戻す; hovering, touching
- * or focusing it holds both the banner and the send (N7). `after` runs once an undo took the edit back. A refused
+ * The banner for an edit held UNDO_MS: it names what was done and carries もとに戻す; hovering, touching
+ * or focusing it holds both the banner and the send. `after` runs once an undo took the edit back. A refused
  * edit (the week closed) shows nothing here: the store already said so.
  */
 export function undoBanner(text: string, r: SendResult, opts: { reaction?: string; after?: () => void } = {}): void {
@@ -76,7 +76,7 @@ export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(
 
 // ---- きろく edits (history-and-editing.md §4): always my own data, open weeks only (the model refuses the rest).
 // Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless that would miss
-// the week's lock (the store shortens or refuses it, round 7 M1).
+// the week's lock (the store shortens or refuses it).
 
 export function setMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
   return week.send('metric_set', { date, metric, value: Math.round(value) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });

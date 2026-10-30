@@ -26,12 +26,14 @@ export interface Workout {
   avgHr: number | null;
   /** A きろく mark (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
   strengthOverride?: boolean;
-  /** Added by hand in きろく (Watch forgotten): its minutes count toward the day's active minutes (ADR 0011). */
+  /** Added by hand in きろく (Watch forgotten): its minutes count toward the day's exercise minutes (max, never a sum). */
   manual?: boolean;
 }
 
 /** A gym arrival (the `gym` action): a strength day on its Tokyo date, whatever its label (ADR 0021). */
-export interface Visit {
+export interface GymArrival {
+  /** Stable id: the arrival instant (ISO). */
+  id: string;
   /** Free text from the automation, shown in きろく only ('' = ジム). */
   label: string;
   date: LocalDate;
@@ -39,8 +41,6 @@ export interface Visit {
 }
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
-
-// ---- ベル economy (ADR 0019) ----
 
 /** A shared menu entry (ADR 0022: one list), editable in the app (`pref` menu): either person can buy it from the wallet. */
 export interface WalletItem {

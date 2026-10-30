@@ -1,13 +1,13 @@
 // Usage: npm run bench   (plain Node ≥ 24, no build step)
 // Times the compute-on-read model on (1) the golden 10-week rows and (2) realistic synthetic rows (scripts/bench-rows.ts:
-// both people, hourly syncs) at year 1 and year 3, raw and after `compactRows` (what the client caches, round 9).
-// Acceptance (round 9): year 3, compacted, reduce + buildWeekView ≤ 15 ms on a laptop.
+// both people, hourly syncs) at year 1 and year 3, raw and after `compactRows` (what the client caches).
+// Acceptance: year 3, compacted, reduce + buildWeekView ≤ 15 ms on a laptop.
 import { performance } from 'node:perf_hooks';
 import { buildWeekView } from '#lib/model/week.ts';
 import { bellsLedger, historyWeeks, weekDetail } from '#lib/model/history.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { reduce, type State } from '#lib/model/state.ts';
-import { addDays, weekKeyOf } from '#lib/scoring/index.ts';
+import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import golden from '../src/lib/model/fixtures/timeline-rows.json' with { type: 'json' };
 import { FIRST_DAY, jst, syntheticRows } from './bench-rows.ts';

@@ -3,9 +3,10 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { weekDays } from '#lib/scoring/index.ts';
+import { weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
-import { buildWeekView, metricAsOf } from './week.ts';
+import { buildWeekView } from './week.ts';
+import { metricAsOf } from './inputs.ts';
 import { weekBells } from './bells.ts';
 import { bellsLedger, dayDetail, editLog, historyWeeks, weekDetail } from './history.ts';
 
@@ -236,7 +237,7 @@ describe('history views', () => {
   });
 });
 
-describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
+describe('manual workouts, lock boundaries, no-op edits', () => {
   const LOCK = ms('2026-11-25', '04:00');
   const add = (at: string, date: string, min: number, id = `m:add-${++n}`) => ev(at, 'A', 'workout_add', { id, date, type: 'Pilates', durationMin: min });
 
@@ -285,7 +286,7 @@ describe('round 7: manual workouts, lock boundaries, no-op edits', () => {
     expect(metricAsOf(reduce(withRows(goodWeek(), { events: [early] })), 'A', '2026-11-23', 'steps', LIVE)).toBeNull();
   });
 
-  it('a metric_set that changes nothing is not in the change log (L8), and the log is memoised per state (L5)', () => {
+  it('a metric_set that changes nothing is not in the change log, and the log is memoised per state', () => {
     const rows = withRows(goodWeek(), {
       events: [
         ev(jst(DAYS[2], '23:00'), 'A', 'metric_set', { date: DAYS[0], metric: 'steps', value: 7000 }),

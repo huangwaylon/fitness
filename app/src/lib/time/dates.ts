@@ -2,7 +2,7 @@
 import type { LocalDate, WeekKey } from '#lib/types.ts';
 import { DATE_RE } from '../contract/api.ts';
 
-const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
+export const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Parse an ISO instant or a compact-offset timestamp (`2026-11-02 07:15:00 +0900`) to epoch ms. */
@@ -26,6 +26,17 @@ export function parseInstant(ts: string): number {
   const ms = Date.parse(s);
   if (Number.isNaN(ms)) throw new Error(`Unparseable timestamp: ${ts}`);
   return ms;
+}
+
+/** `parseInstant`, or null for an empty or unreadable value (a hand-edited cell). */
+export function instantOrNull(v: unknown): number | null {
+  const s = String(v ?? '').trim();
+  if (!s) return null;
+  try {
+    return parseInstant(s);
+  } catch {
+    return null;
+  }
 }
 
 function ymd(d: Date): LocalDate {
@@ -53,7 +64,7 @@ export function dateMs(date: LocalDate): number {
 
 const LOCAL_DAY = new Map<number, LocalDate>();
 /** Epoch ms → local date in Asia/Tokyo. */
-export function localDateOfMs(ms: number): LocalDate {
+export function localDateAt(ms: number): LocalDate {
   const day = Math.floor((ms + ZONE_OFFSET_MS) / DAY_MS);
   let d = LOCAL_DAY.get(day);
   if (d === undefined) LOCAL_DAY.set(day, (d = ymd(new Date(day * DAY_MS))));
@@ -62,7 +73,7 @@ export function localDateOfMs(ms: number): LocalDate {
 
 /** ISO timestamp (with offset) → local date in Asia/Tokyo. */
 export function toLocalDate(iso: string): LocalDate {
-  return localDateOfMs(parseInstant(iso));
+  return localDateAt(parseInstant(iso));
 }
 
 export function addDays(date: LocalDate, n: number): LocalDate {
@@ -85,11 +96,13 @@ export function weekDays(weekKey: WeekKey): LocalDate[] {
   return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 }
 
-/** Current local date/time parts in Asia/Tokyo (weekday 0 = Sunday). */
-export function nowInZone(now: Date = new Date()): { date: LocalDate; weekday: number; hour: number; minute: number } {
-  const t = new Date(now.getTime() + ZONE_OFFSET_MS);
-  return { date: ymd(t), weekday: t.getUTCDay(), hour: t.getUTCHours(), minute: t.getUTCMinutes() };
+/** Epoch ms of a Tokyo wall-clock time on `date`. */
+export function jstMs(date: LocalDate, hour: number, minute: number): number {
+  return dateMs(date) - ZONE_OFFSET_MS + (hour * 60 + minute) * 60_000;
 }
+
+/** Whole days from `a` to `b`. */
+export const daysBetween = (a: LocalDate, b: LocalDate): number => Math.round((dateMs(b) - dateMs(a)) / DAY_MS);
 
 /** Whether a date's `MM-DD` falls in [from, to] (inclusive), handling ranges that wrap past New Year. */
 export function inMonthDayRange(date: LocalDate, from: string, to: string): boolean {
