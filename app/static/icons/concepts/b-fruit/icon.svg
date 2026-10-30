@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Concept B "fit fruit buddy": a kawaii peach in a sweatband lifting a dumbbell. Key art inside the central 80%. -->
+  <defs>
+    <path id="body" d="M470 318 C 520 250, 760 300, 760 540 C 760 720, 640 800, 470 800 C 300 800, 180 720, 180 540 C 180 300, 420 250, 470 318 Z"/>
+    <clipPath id="clip"><use href="#body"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" fill="#6ED07A"/>
+  <circle cx="512" cy="540" r="390" fill="#8EDC8F"/>
+  <g transform="translate(496 540) scale(.88) translate(-500 -520)">
+  <ellipse cx="470" cy="822" rx="230" ry="36" fill="#4FB35C"/>
+  <!-- arm (behind the body so the body outline closes the joint) -->
+  <path d="M680 610 Q 780 600 780 470" fill="none" stroke="#4A3A2C" stroke-width="100" stroke-linecap="round"/>
+  <path d="M680 610 Q 780 600 780 470" fill="none" stroke="#FFB496" stroke-width="64" stroke-linecap="round"/>
+  <!-- body -->
+  <use href="#body" fill="#FFB496"/>
+  <g clip-path="url(#clip)">
+    <path d="M170 650 C 320 760, 620 760, 770 560 V 820 H 170 Z" fill="#FF9C80"/>
+    <!-- sweatband -->
+    <path d="M170 440 C 320 510, 620 510, 770 430 V 530 C 620 610, 320 610, 170 540 Z" fill="#FFD84D" stroke="#4A3A2C" stroke-width="20" stroke-linejoin="round"/>
+  </g>
+  <path d="M470 322 C 438 370, 430 410, 440 462" fill="none" stroke="#E98468" stroke-width="18" stroke-linecap="round"/>
+  <use href="#body" fill="none" stroke="#4A3A2C" stroke-width="24" stroke-linejoin="round"/>
+  <!-- sweatband knot tails -->
+  <path d="M196 500 C 150 480, 120 500, 110 530 C 150 540, 180 530, 196 515 Z" fill="#FFD84D" stroke="#4A3A2C" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M196 520 C 160 545, 150 580, 160 605 C 195 590, 210 560, 206 530 Z" fill="#FFD84D" stroke="#4A3A2C" stroke-width="18" stroke-linejoin="round"/>
+  <!-- highlight -->
+  <ellipse cx="270" cy="400" rx="24" ry="44" fill="#FFFFFF" opacity=".9" transform="rotate(35 270 400)"/>
+  <!-- face -->
+  <ellipse cx="392" cy="638" rx="26" ry="34" fill="#4A3A2C"/>
+  <ellipse cx="552" cy="638" rx="26" ry="34" fill="#4A3A2C"/>
+  <circle cx="400" cy="626" r="9" fill="#FFFFFF"/>
+  <circle cx="560" cy="626" r="9" fill="#FFFFFF"/>
+  <ellipse cx="325" cy="700" rx="40" ry="22" fill="#FF7F72"/>
+  <ellipse cx="620" cy="700" rx="40" ry="22" fill="#FF7F72"/>
+  <path d="M440 684 Q 472 736 504 684 Z" fill="#4A3A2C" stroke="#4A3A2C" stroke-width="14" stroke-linejoin="round"/>
+  <!-- leaf -->
+  <path d="M474 312 C 480 230, 560 190, 640 205 C 625 285, 545 330, 474 312 Z" fill="#4FB35C" stroke="#4A3A2C" stroke-width="20" stroke-linejoin="round"/>
+  <path d="M492 302 Q 555 262 608 228" fill="none" stroke="#2F8A3F" stroke-width="12" stroke-linecap="round"/>
+  <!-- dumbbell, held up beside the face -->
+  <g transform="translate(-22 22) rotate(-12 806 410)" stroke="#4A3A2C" stroke-width="20" stroke-linejoin="round">
+    <rect x="680" y="386" width="252" height="48" rx="24" fill="#E3E8EC"/>
+    <rect x="650" y="316" width="78" height="188" rx="34" fill="#4C9DE8"/>
+    <rect x="884" y="316" width="78" height="188" rx="34" fill="#4C9DE8"/>
+  </g>
+  <g transform="translate(-22 22) rotate(-12 806 410)" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity=".75">
+    <path d="M676 346 V 388"/><path d="M910 346 V 388"/>
+  </g>
+  <circle cx="784" cy="434" r="50" fill="#FFB496" stroke="#4A3A2C" stroke-width="20"/>
+  <!-- sparkle -->
+  <path d="M272 168 Q 282 236 336 246 Q 282 256 272 324 Q 262 256 208 246 Q 262 236 272 168 Z" fill="#FFF9E3" stroke="#4A3A2C" stroke-width="14" stroke-linejoin="round"/>
+  </g>
+</svg>
