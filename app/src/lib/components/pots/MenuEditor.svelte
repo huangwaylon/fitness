@@ -92,8 +92,12 @@
 <style>
   .hint { margin: -6px 2px 12px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-  /* name | price | × in one row; minmax(0, …) so a long name never widens the sheet at 320 */
-  .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 7.5em) var(--hit); gap: 8px; align-items: center; padding: 8px 8px 8px 10px; }
+  /* the name and × on top, the price under the name (room for 7 digits + the unit at 320); minmax(0, …) so a long
+     name never widens the sheet */
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) var(--hit); gap: 6px 8px; align-items: center; padding: 8px 6px 10px 10px; }
+  .name { grid-column: 1; grid-row: 1; }
+  .rm { grid-column: 2; grid-row: 1; }
+  .price { grid-column: 1; grid-row: 2; max-width: 12em; }
   .row.bad { box-shadow: 0 var(--lip-h) 0 var(--lip), inset 0 0 0 2px var(--c-coral); }
   .f { position: relative; display: block; min-width: 0; }
   input {
@@ -117,5 +121,4 @@
   }
   .add:disabled { opacity: .5; cursor: default; }
   .acts { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
-  @media (max-width: 359px) { .row { grid-template-columns: minmax(0, 1fr) minmax(0, 6.4em) var(--hit); gap: 6px; padding: 6px; } }
 </style>

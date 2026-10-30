@@ -28,15 +28,15 @@
 <style>
   .shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .item {
-    appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--c-ink); min-width: 0; min-height: 96px;
-    display: grid; justify-items: center; align-content: center; gap: 2px; padding: 10px 6px 8px; text-align: center;
+    appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--c-ink); min-width: 0; min-height: 84px;
+    display: grid; justify-items: center; align-content: center; gap: 1px; padding: 8px 6px; text-align: center;
     border-radius: var(--r-btn); background: var(--fill-on-surface); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     transition: transform var(--dur-base) var(--ease-bounce);
   }
   .item:active:not(:disabled) { transform: translateY(3px) scale(1.04, .94); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
   .item:disabled { cursor: default; box-shadow: none; background: color-mix(in srgb, var(--fill-on-surface) 55%, transparent); color: var(--text-soft); }
   .item:disabled .ic { opacity: .45; filter: saturate(.3); }
-  .ic { width: 40px; height: 40px; margin-bottom: 2px; }
+  .ic { width: 34px; height: 34px; margin-bottom: 2px; }
   .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.2; overflow-wrap: anywhere; word-break: auto-phrase; }
   .pr { font-size: var(--fs-body); }
   .short { font-size: var(--fs-s); font-weight: 700; }
