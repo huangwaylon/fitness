@@ -41,6 +41,8 @@
   "island.jar": "ふたりの壺 {bells}",
   "island.highfive": "{name}の今週",
   "island.highfiveSent": "{name}さんにハイタッチしました！",
+  "checkin.allDone": "ぜんぶできた！",
+  "checkin.allDoneDone": "ぜんぶそろいました",
   "checkin.today": "今日",
   "checkin.yesterday": "昨日",
   "weekday.1": "月",

@@ -1,5 +1,6 @@
 <script lang="ts">
   // 今夜のチェック (v5 §4: one sheet skin): my three habits for today (or yesterday, 48 h fill-in) as big toggles. Each tap saves at once (check-in = 2 taps); the sticky 保存 just closes.
+  // 「ぜんぶできた！」 ticks every habit still open in one tap (round 15 food automation: a good day = 1 tap).
   // 正月: eating isn't scored, so it's "off".
   import Sheet from '../ui/Sheet.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -47,6 +48,18 @@
     cue(done ? 'checkin-saved' : 'toggle');
   }
 
+  const habitKeys = $derived(me?.habits?.keys ?? []);
+  const allDone = $derived(habitKeys.length > 0 && habitKeys.every((k) => ticks.includes(k)));
+  function tickAll() {
+    const open = habitKeys.filter((k) => !ticks.includes(k));
+    if (!open.length) return;
+    for (const k of open) checkin(date, k, true);
+    pop = open[open.length - 1];
+    clearTimeout(popTimer);
+    popTimer = setTimeout(() => (pop = null), 900);
+    cue('checkin-saved');
+  }
+
 </script>
 
 <Sheet bind:open label={t('island.checkin')} title={t('island.checkin')} {onclose}>
@@ -69,6 +82,9 @@
         <p>{t('checkin.newYearOff')}</p>
       </div>
     {:else}
+      <button type="button" class="btn yuzu all" disabled={allDone} onclick={tickAll}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{allDone ? t('checkin.allDoneDone') : t('checkin.allDone')}
+      </button>
       <div class="habits">
         {#each me.habits?.keys ?? [] as key (key)}
           {@const on = ticks.includes(key)}
@@ -102,6 +118,8 @@
   .day[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge); }
   .day.fillable::after { content: ''; position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--c-mint-lip); }
 
+  .all { margin-bottom: 14px; }
+  .all:disabled { --fill: var(--ctl-off); }
   .habits { display: grid; gap: 12px; }
   .habit {
     appearance: none; border: 0; cursor: pointer; text-align: left; position: relative; width: 100%; font: inherit;
