@@ -1,7 +1,7 @@
 // Today's progress of one fruit toward the daily goal both people share (ADR 0019 §2), as the island draws it.
 import type { FruitKey, FruitProgress, PersonWeekView } from '#lib/types.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
-import { RULES } from '#lib/config/rules.ts';
+import { DAILY, RULES } from '#lib/config/rules.ts';
 
 /** 0–100: today's share of the daily goal (met = 100, also when met by the tsuyu rule). */
 export function todayPct(f: Pick<FruitProgress, 'todayActual' | 'todayGoal' | 'todayMet'>): number {
@@ -12,7 +12,7 @@ export function todayPct(f: Pick<FruitProgress, 'todayActual' | 'todayGoal' | 't
 /** The most one person can earn in a day (1,125 ベル with the 2026-10-30 rules). */
 export function dayMax(): number {
   const r = RULES[RULES.length - 1];
-  return r.goals.activeMin * r.bells.perMinute + r.bells.stepDay + r.bells.strengthDay + 3 * r.bells.perTick;
+  return r.goals.activeMin * r.bells.perMinute + r.bells.stepDay + r.bells.strengthDay + DAILY.maxTicks * r.bells.perTick;
 }
 
 /** 0–100: how much of a full day this person has earned today (idle life's "doing well" weight). */

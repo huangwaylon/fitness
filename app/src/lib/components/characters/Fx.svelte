@@ -17,7 +17,7 @@
   // Transform/opacity only, pointer-events none, aria-hidden. Reduced motion: one static icon that
   // fades in and out (notes/hearts/sparkles), nothing for the rest.
   import { onMount } from 'svelte';
-  import { reducedMotion } from '../../time/clock.ts';
+  import { reducedMotion } from '#lib/time/clock.ts';
 
   interface Props {
     kind: FxKind;

@@ -15,7 +15,7 @@
   import CoinFlow, { type Flight } from './CoinFlow.svelte';
   import { potFill } from '../pots/flow.ts';
   import { react } from '../motion/director.svelte.ts';
-  import { reducedMotion } from '../../time/clock.ts';
+  import { reducedMotion } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';

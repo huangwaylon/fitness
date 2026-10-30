@@ -18,7 +18,7 @@
   let msg = $state('');
   let standalone = $state(true);
 
-  const ready = $derived(/^[0-9a-f]{16,128}$/.test(code));
+  const ready = $derived(/^[0-9a-f]{32,128}$/.test(code));
 
   onMount(() => {
     standalone = isStandalone();

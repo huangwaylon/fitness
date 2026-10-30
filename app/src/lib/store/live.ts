@@ -74,7 +74,8 @@ export class LiveBackend implements Backend {
     if (!getKey() || keyFromHash(location.hash)) {
       // Not paired yet, or opened from a `#key=…` link: the pair page takes it from here (and keeps the hash).
       h.status = 'ready';
-      await goto(resolve('/pair') + (keyFromHash(location.hash) ? location.hash : ''));
+      // replaceState: the `/#key=…` entry must not stay in back/forward history (round 16 L11)
+      await goto(resolve('/pair') + (keyFromHash(location.hash) ? location.hash : ''), { replaceState: true });
       return;
     }
     this.#start();

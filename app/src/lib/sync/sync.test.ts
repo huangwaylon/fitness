@@ -87,6 +87,8 @@ describe('post', () => {
     expect(keyFromHash(`#key=${KEY.toUpperCase()}`)).toBe(KEY);
     expect(keyFromHash('#other=1&key=' + KEY)).toBe(KEY);
     expect(keyFromHash('#key=short')).toBeNull();
+    expect(keyFromHash('#key=' + 'a'.repeat(31))).toBeNull(); // the server refuses under 32 (round 16 L15)
+    expect(keyFromHash('#key=' + 'a'.repeat(32))).toBe('a'.repeat(32));
     expect(keyFromHash('')).toBeNull();
   });
 });
