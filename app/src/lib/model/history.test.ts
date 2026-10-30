@@ -8,7 +8,7 @@ import { reduce } from './state.ts';
 import { buildWeekView, metricAsOf, paidAt, payoutAsOf, settledWeeks, replayPurse } from './week.ts';
 import { dayDetail, editLog, historyWeeks, moneyLog, weekDetail } from './history.ts';
 
-// A scored (non-calibration) week of season 1: Sunday 19:30 = 11-22, the lock = Wednesday 11-25 04:00 JST.
+// A week of the economy: Sunday 19:30 = 11-22, the lock = Wednesday 11-25 04:00 JST.
 const WK = '2026-11-16';
 const DAYS = weekDays(WK);
 const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toISOString();

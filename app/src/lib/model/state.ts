@@ -1,7 +1,7 @@
 // Snapshot rows → validated, indexed state. This is where the old server's write-time refusals become read-time
 // rules (an event the server would have refused with 4xx is ignored here), so the sheet can stay a dumb log.
 import type { LocalDate, MenuItem, PersonId, PotKey, WeekKey } from '#lib/types.ts';
-import { CALIBRATION_WEEKS, CUTOFFS, ECONOMY_START, LIMITS } from '#lib/config/rules.ts';
+import { CUTOFFS, ECONOMY_START, LIMITS } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import { addDays, toLocalDate, weekKeyOf } from '#lib/scoring/index.ts';
 import { localDateOfMs } from '#lib/time/dates.ts';
@@ -37,14 +37,11 @@ export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.ho
 
 /**
  * The demo (`?demo`, lib/store/demo/rows.ts) runs before season 1 starts, so it moves the calendar: its own first paid
- * week and no calibration weeks. It travels with the state (`reduce(rows, calendar)`), never as a module global
+ * week. It travels with the state (`reduce(rows, calendar)`), never as a module global
  * (round 7 L2); live state always has `calendar: null`.
  */
 export interface DemoCalendar { firstWeek: WeekKey }
 type Cal = Pick<State, 'calendar'>;
-
-/** Weeks paid at the flat calibration rate. */
-export const isCalibrationWeek = (s: Cal, wk: WeekKey): boolean => !s.calendar && CALIBRATION_WEEKS.includes(wk);
 
 /** First week of the economy (ADR 0019 §7: Mon 2026-10-26), or the demo's own one. */
 export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_START;

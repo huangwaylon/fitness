@@ -1,5 +1,5 @@
 // Weekly score: four fruits, integer milli-fruit per category, score = floor(sum / 1000) (ADR 0009, 0011, 0014).
-import { CALIBRATION, DAILY, HOLIDAY, PEACH_DAILY_CAP, REST, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import { DAILY, HOLIDAY, PEACH_DAILY_CAP, REST, STRENGTH, TSUYU } from '#lib/config/rules.ts';
 import type { CategoryResult, FruitKey, LocalDate, WeekInput, WeekScore, Workout } from '#lib/types.ts';
 import { activeMilliOfDay, manualMinutesByDay, strengthDaysOf, toMilli } from '#lib/scoring/bells.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
@@ -110,9 +110,7 @@ export function scoreWeek(input: WeekInput): WeekScore {
 
   const dataDays = dataRows.length;
   const sum = peachMilli + coconutMilli + appleMilli + pearMilli;
-  const score = input.calibration
-    ? dataDays >= CALIBRATION.minDataDays ? CALIBRATION.flatScore : 0
-    : Math.floor(sum / 1000);
+  const score = Math.floor(sum / 1000);
 
   return { person: input.person, weekKey: input.weekKey, score, categories, restDays, strengthDays, dataDays };
 }

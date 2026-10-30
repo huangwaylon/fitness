@@ -18,7 +18,7 @@ class Mem implements KV {
   removeItem(k: string) { this.m.delete(k); }
 }
 
-const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST, a scored (non-calibration) week
+const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
 const rows = (): SnapshotRows => ({
   metrics: [['2026-11-17T12:00:00.000Z', 'A', '2026-11-17', 'steps', 6000]],
   // A 45-minute yoga session: an ask-type workout, so it waits for 「筋トレでしたか？」.
