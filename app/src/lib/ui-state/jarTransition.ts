@@ -1,4 +1,4 @@
-// 島 ⇄ 旅の壺 transition: a ~360 ms eased zoom from the island's jar into the Jar page, and back out into the
+// 島 ⇄ ふたりの壺 transition: a ~360 ms eased zoom from the island's jar into the pots page, and back out into the
 // jar on 「◀ 島へ」 (or the browser's back). The View Transitions API (Chrome, iOS Safari 18+) snapshots both
 // pages and the CSS in styles/theme.css zooms them about the jar; without it the arriving page plays the same
 // zoom as a plain CSS entrance (`html[data-enter]`). Reduced motion: a short crossfade (or nothing).

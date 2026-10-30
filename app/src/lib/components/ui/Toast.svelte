@@ -95,7 +95,7 @@
   /* the sync chip pushes the ribbon down 40px (Hud.svelte), so the banner follows */
   :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--safe-top) + 152px); }
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; border-radius: inherit; }
-  /* The undo banner sits over the scrolling 旅の壺 page and the phone: a vertical swipe that starts on it scrolls
+  /* The undo banner sits over the scrolling ふたりの壺 page and the phone: a vertical swipe that starts on it scrolls
      what is under it (round 10 L2). It ends by itself; the swipe-down dismiss stays best effort. */
   .undo .hit { touch-action: pan-y; }
   .pebble {

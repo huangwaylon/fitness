@@ -96,7 +96,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 }
 .icon-btn:active { transform: translateY(2px) scale(1.06, .92); box-shadow: 0 1px 0 var(--c-lip); transition-duration: var(--dur-tap); }
 
-/* ---------- 島 ⇄ 旅の壺 (ui-state/jarTransition.ts) ----------
+/* ---------- 島 ⇄ ふたりの壺 (ui-state/jarTransition.ts) ----------
    The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).
    Around it the pages crossfade with a slight push about the jar (--vt-x / --vt-y): in 320ms, back 280ms,
    cubic-bezier(.4,0,.2,1); the Jar page's blocks rise 16px with a 40ms stagger. Reduced motion: 150ms fade. */

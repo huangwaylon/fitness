@@ -96,7 +96,7 @@
   "pending.counted": "Counted toward {activity}!",
   "pending.skipped": "Got it!",
   "island.checkinLeft": "Tonight's check · {n} left",
-  "harvest.done": "{bells} went into the pots!",
+  "harvest.done": "went into your pots!",
   "harvest.doneHost": "What a harvest!",
   "harvest.home": "Back to island",
   "error.title": "That didn't open",

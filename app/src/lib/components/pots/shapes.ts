@@ -3,8 +3,8 @@ import type { MenuItem } from '#lib/types.ts';
 
 export type { MenuItem, PotKey } from '#lib/types.ts';
 
-/** Labels and prices a menu editor accepts (a label fits a 2-column button at 320; a price is a whole number). */
-export const MENU_LIMITS = { label: 16, minBells: 1, maxBells: 9_999_999, items: 12 } as const;
+/** Labels and prices a menu editor accepts (a label fits two lines of a 2-column button at 320; a price is a whole number). */
+export const MENU_LIMITS = { label: 24, minBells: 1, maxBells: 9_999_999, items: 12 } as const;
 
 /** A menu as the editor keeps it: trimmed labels, whole prices in range, at most MENU_LIMITS.items. */
 export function cleanMenu(items: { id: string; label: string; bells: number | string }[]): MenuItem[] {
