@@ -13,7 +13,7 @@
   import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, editWorkout, fixCheckin, setGoalWeight, setMetric, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { addWorkout, editWorkout, setGoalWeight, setMetric, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import { weightOn, weightTrend } from '#lib/model/weight.ts';
   import { localDateAt } from '#lib/model/state.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -124,9 +124,6 @@
     void refocus(`w:${id}`);
     undoToast(t('kiroku.savedWorkout', { label }), editWorkout(id, date, change));
   }
-  function tickFix(date: string, habit: string, done: boolean) {
-    undoToast(t('kiroku.saved', { field: t(`habit.${habit}`) }), fixCheckin(date, habit, done));
-  }
   /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
   function askVoid(id: string, label: string, bells: number) {
     void go({ k: 'void', id, label, bells });
@@ -183,7 +180,7 @@
       {@const date = top.date}
       <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}
         onmetric={(metric) => go({ k: 'metric', date, metric })} onworkout={(id) => go({ k: 'workout', date, id })}
-        onadd={() => { addType = null; go({ k: 'add', date }); }} ontick={(h, done) => tickFix(date, h, done)} />
+        onadd={() => { addType = null; go({ k: 'add', date }); }} />
     {:else if top.k === 'weight' && trends}
       {@const p = top.p}
       <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today}

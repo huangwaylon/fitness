@@ -89,7 +89,7 @@ describe('event queue (v5 §6)', () => {
   it('plays events one at a time; touch feedback never waits', async () => {
     const { react, queuedEvents, actors, resetAll } = await import('./director.svelte.ts');
     resetAll();
-    react('R2'); // check-in saved: 2200 ms
+    react('R2'); // cheer: 2200 ms
     react('R3'); // partner data arrives meanwhile: queued
     react('R3'); // duplicate: dropped
     expect(queuedEvents()).toEqual(['R3']);

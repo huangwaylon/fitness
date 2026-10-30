@@ -20,7 +20,6 @@ const SELF: Record<string, string> = {
   'lib/components/ui/Sheet.svelte': 'backdrop / Esc / grabber: back on a paper sheet, phone-close on the phone (ShimaPhone)',
   'lib/components/phone/ShimaPhone.svelte': 'phone-app, back, phone-close',
   'lib/components/phone/SoundApp.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
-  'lib/components/sheets/CheckinSheet.svelte': 'a habit on → checkin-saved, off → toggle-off; ぜんぶできた → checkin-saved',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/pots/BuyConfirm.svelte': '買う！/ 行く！ → purchase (routes/jar buy), or the boop if the pot fell short',
   'lib/components/kiroku/NumberPad.svelte': 'each key → key / key-fn (typed digits too)',
@@ -38,8 +37,7 @@ const NONE: Record<string, string> = {
   'lib/components/pots/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
   'lib/components/phone/VillagerApp.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/phone/LangApp.svelte': 'the language already chosen does nothing',
-  'lib/components/kiroku/Kiroku.svelte': 'the tab already shown does nothing',
-  'lib/components/sheets/CheckinSheet.svelte': 'the day already shown (今日 / 昨日) does nothing'
+  'lib/components/kiroku/Kiroku.svelte': 'the tab already shown does nothing'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */

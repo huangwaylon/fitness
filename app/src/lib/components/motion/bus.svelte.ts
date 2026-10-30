@@ -2,9 +2,9 @@
 // island scene listens and plays the matching reaction (§M.5). Diff events (partner data, fruit
 // ripening, a received high-five) are detected inside the scene from the `view` prop instead.
 //   import { emit } from '#lib/components/motion/bus.svelte.ts';
-//   emit('checkin-saved');
+//   emit('cheer');
 export type IslandEvent =
-  | 'open' | 'checkin-saved' | 'highfive-sent' | 'highfive-received' | 'sync-error'
+  | 'open' | 'cheer' | 'highfive-sent' | 'highfive-received' | 'sync-error'
   /** Dev gallery only: play a catalogue reaction by id (`detail` = 'R1'…'R19'), or force an event. */
   | 'dev:react' | 'dev:balloon' | 'dev:fireworks';
 

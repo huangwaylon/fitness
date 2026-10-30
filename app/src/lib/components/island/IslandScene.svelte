@@ -29,7 +29,7 @@
   // The horizon sits at stage y HORIZON_U (a short open-sea strip behind the island), so on a tall phone the
   // spare height goes to the sky (sun + clouds), never to an empty sea band. Read back --horizon-y /
   // --stage-top (set on .if-scene) to place overlays.
-  // Life (islandLife.svelte.ts): the motion bus (emit('checkin-saved') etc.), reactions to the `view` diff (partner
+  // Life (islandLife.svelte.ts): the motion bus (emit('cheer') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import Villager from '../characters/Villager.svelte';
