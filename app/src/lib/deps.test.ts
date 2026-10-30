@@ -2,7 +2,7 @@
 // so the direction contract/time → config/scoring/model → sync → store → ui-state → components holds, and nothing
 // under lib imports a route. A new edge has to be added here on purpose.
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
 const LIB = import.meta.dirname;
@@ -18,7 +18,8 @@ const ALLOW: Record<string, string[]> = {
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN],
   store: [...DOMAIN, 'sync', 'i18n', 'ui-state'],
-  'ui-state': [...DOMAIN, 'store', 'i18n'],
+  // store → ui-state (toasts), never back: ui-state importing store would close a cycle (round 16 M10)
+  'ui-state': [...DOMAIN, 'i18n'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
   sound: ['types', 'time', 'sync'],
@@ -40,17 +41,40 @@ function folderOf(path: string): string {
   return r.includes('/') ? r.split('/')[0] : r.replace(/\.(ts|svelte)$/, '');
 }
 
+/** A specifier's file: as written, or with `.ts` / `/index.ts` added. */
+const fileOf = (p: string): string => [p, `${p}.ts`, join(p, 'index.ts')].find((c) => existsSync(c) && statSync(c).isFile()) ?? p;
+
 const edges: { from: string; to: string; file: string }[] = [];
+/** File → the files it imports (within the repo), for the transitive checks. */
+const graph = new Map<string, string[]>();
+/** Aliased specifiers this scan doesn't understand: each must be added here on purpose. */
+const unknown: string[] = [];
 for (const f of files(LIB)) {
-  for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?:from|import)\s*\(?\s*'([^']+)'/g)) {
+  const out: string[] = [];
+  for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
     let target: string;
     if (spec.startsWith('#lib/')) target = join(LIB, spec.slice(5));
+    else if (spec.startsWith('$lib/')) target = join(LIB, spec.slice(5));
     else if (spec.startsWith('.')) target = resolve(dirname(f), spec);
-    else continue; // packages, $app/*
+    else if (/^\$app\/|^\$service-worker$/.test(spec) || /^(@[\w.-]+\/)?[\w.-]+(\/[\w./-]+)?$|^node:/.test(spec)) continue; // packages, Kit's modules
+    else { unknown.push(`${relative(LIB, f)}: ${spec}`); continue; }
+    out.push(fileOf(target));
     const from = folderOf(f);
     const to = folderOf(target);
     if (from !== to) edges.push({ from, to, file: relative(LIB, f) });
   }
+  graph.set(f, out);
+}
+
+/** Every file reachable from `start` through imports. */
+function reachable(start: string): Set<string> {
+  const seen = new Set<string>();
+  const todo = [start];
+  while (todo.length) {
+    const f = todo.pop()!;
+    for (const g of graph.get(f) ?? []) if (!seen.has(g)) (seen.add(g), todo.push(g));
+  }
+  return seen;
 }
 
 describe('src/lib folder boundaries', () => {
@@ -68,5 +92,23 @@ describe('src/lib folder boundaries', () => {
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);
     expect(bad).toEqual([]);
+  });
+});
+
+describe('import specifiers', () => {
+  it('are all understood by this scan (relative, #lib/, $lib/, a package or Kit)', () => {
+    expect(unknown).toEqual([]);
+  });
+});
+
+describe('ADR 0020: weight is never rewarded', () => {
+  it('model/bells.ts and scoring/* never import model/weight.ts, even indirectly', () => {
+    const weight = join(LIB, 'model/weight.ts');
+    expect(existsSync(weight)).toBe(true);
+    const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
+    expect(roots.length).toBeGreaterThan(2);
+    expect(roots.filter((r) => reachable(r).has(weight)).map((r) => relative(LIB, r))).toEqual([]);
+    // the check can see an import of weight.ts (Kiroku reaches it)
+    expect(reachable(join(LIB, 'components/kiroku/Kiroku.svelte')).has(weight)).toBe(true);
   });
 });
