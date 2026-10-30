@@ -143,3 +143,14 @@ export const LIMITS = {
   menuIdMaxChars: 40,
   villagerNameMaxChars: 20
 } as const;
+
+/**
+ * Body-weight trend (ADR 0020). Shown only: weight never earns ベル and nothing in the economy reads it.
+ * - `alpha`: the trend is an exponentially weighted moving average of the daily weigh-ins (as in The Hacker's Diet,
+ *   Libra or Happy Scale): each day moves the trend 10% of the way to that day's weight. A gap of g days weighs the
+ *   next weigh-in 1 − 0.9^g, so a skipped week doesn't make one reading count like one day.
+ * - `rateDays`: the weekly pace is the trend's average change over the last 28 days (at least `minRateDays` of data).
+ * - `projectMaxWeeks`: a goal date further out than this isn't shown.
+ * - `chartWeeks`: きろく's chart shows the last 12 weeks.
+ */
+export const WEIGHT = { alpha: 0.1, rateDays: 28, minRateDays: 14, minPacePerWeek: 0.05, projectMaxWeeks: 156, chartWeeks: 12 } as const;

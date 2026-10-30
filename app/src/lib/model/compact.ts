@@ -6,6 +6,10 @@
 // appends only higher values), so "the row with the largest value at or before T" answers every read at T
 // (`metricAsOf`, `watchIsEdit`). A hand edit that breaks it bumps `rev`, and the client then refetches everything
 // (sheets-architecture.md §2.1).
+//
+// Weight rows (ADR 0020) are the exception: a day's weight is its LATEST row (the server appends whenever the day's
+// first Body Mass sample changes, up or down), and the model only reads it as of now. So per (person, date) only the
+// newest `weight` row is kept, never "the largest".
 import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, isRec, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { parseInstant } from '#lib/time/dates.ts';
@@ -66,6 +70,12 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
   });
   for (const n of Object.values(newest)) if (n) keep.add(n.i);
   for (const [k, list] of groups) {
+    if (list[0].row[3] === 'weight') {
+      let last = list[0];
+      for (const x of list) if (x.at >= last.at) last = x;
+      keep.add(last.i);
+      continue;
+    }
     const wk = weekKeyOf(String(list[0].row[2]));
     for (const t of [finalMs(wk), Infinity, ...(edits.get(k) ?? [])]) {
       let best: { v: number; at: number; i: number } | null = null;
