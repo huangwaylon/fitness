@@ -126,7 +126,8 @@
         <button type="button" class="btn" onclick={receive}>{t('harvest.receive')}</button>
       {:else}
         <section class="card done" role="status">
-          <b class="dhead">{t('harvest.done', { bells: formatBells(bonusTotal) })}</b>
+          <span class="dnum"><Bells bells={bonusTotal} signed /></span>
+          <b class="dhead">{t('harvest.done')}</b>
           <div class="pots">
             {#each pots as p, i (p)}
               <div class="pot" style:--d="{0.25 + i * 0.25}s">
@@ -199,7 +200,8 @@
   .mini { font-weight: 700; font-size: var(--fs-s); color: var(--text-soft); }
 
   .done { display: grid; justify-items: center; gap: 10px; text-align: center; }
-  .dhead { font-size: var(--fs-title); line-height: 1.25; }
+  .dnum { font-size: var(--fs-title); }
+  .dhead { margin-top: -4px; font-size: var(--fs-talk); line-height: 1.3; }
   .pots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; }
   .pot { position: relative; display: grid; justify-items: center; gap: 2px; padding: 26px 6px 12px; border-radius: var(--r-btn); background: var(--fill-on-surface); min-width: 0; }
   .pot small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

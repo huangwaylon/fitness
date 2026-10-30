@@ -96,7 +96,7 @@
   "pending.counted": "{activity}に入れました！",
   "pending.skipped": "わかりました！",
   "island.checkinLeft": "今夜のチェック · あと{n}つ",
-  "harvest.done": "{bells}が壺に入りました！",
+  "harvest.done": "ふたりの壺に入りました！",
   "harvest.doneHost": "いい収穫でしたね！",
   "harvest.home": "島へもどる",
   "error.title": "うまく開けませんでした",

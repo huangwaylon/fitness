@@ -57,7 +57,7 @@
     onme?: () => void;
     /** Partner villager tapped (open the partner sheet). */
     onpartner?: () => void;
-    /** Jar tapped (go to 旅の壺), after a short look-at-the-jar beat. */
+    /** Jar tapped (go to ふたりの壺), after a short look-at-the-jar beat. */
     onjar?: () => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
@@ -118,7 +118,7 @@
         celebrate={life.celebrate[pid]} {covered} />
     {/each}
 
-    <!-- the jar + its plate (JarSpot): one button, the doorway to 旅の壺 -->
+    <!-- the jar + its plate (JarSpot): one button, the doorway to ふたりの壺 -->
     <JarSpot {view} {live} {covered} {onjar} later={life.later} />
 
     <FlowerBeds {season} />

@@ -79,7 +79,7 @@
   --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
   /* しまフォン grid: tiles follow the smaller of width and height, so a tall phone gets bigger tiles (sizing #7) */
   --tile: clamp(52px, min(22vw, calc(11 * var(--vh1))), 96px); --tile-gap: clamp(12px, 4.5vw, 22px);
-  --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* 旅の壺 hero jar */
+  --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ふたりの壺 hero jar */
   --key-h: clamp(46px, calc(7 * var(--vh1)), 64px);    /* NumberPad keys */
 
   /* ---------- surfaces (round 10 T3) ----------
@@ -285,8 +285,8 @@
 @keyframes if-fade-hold { 0% { opacity: 0; } 5.5%, 94.5% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
 
-/* Jar ⇄ 旅の壺 shared element (round 6): the island jar carries view-transition-name: jar (<Jar name="jar">);
-   when the 旅の壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (ui-state/jarTransition.ts,
+/* Jar ⇄ ふたりの壺 shared element (round 6): the island jar carries view-transition-name: jar (<Jar name="jar">);
+   when the ふたりの壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (ui-state/jarTransition.ts,
    data-vt in / out / fade). In: 320ms, back: 280ms, both cubic-bezier(.4,0,.2,1). */
 ::view-transition-group(jar) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 ::view-transition-old(jar), ::view-transition-new(jar) { animation-duration: 320ms; height: 100%; }
