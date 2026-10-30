@@ -96,7 +96,7 @@ export interface HarvestBonus {
 export interface RingProgress {
   /** Today's counted amount (🍑 max(Watch, workouts added in きろく); 🥥 1 on a gym day). */
   today: number;
-  /** Today's daily goal: 60, the person's Move goal in force today, 180, 8,000, 1. */
+  /** Today's daily goal at the week's rule version (rules.ts goals; 🍐 the person's Move goal in force today; 🥥 1). */
   goal: number;
   /** Today's goal is met (🍎 also by the tsuyu rule). */
   met: boolean;

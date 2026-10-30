@@ -81,7 +81,6 @@ export function rulesFor(weekKey: WeekKey): RuleVersion {
   return RULES[0];
 }
 
-
 /** A default menu entry; the label follows the viewer's language until the menu is edited (then it is the typed label). */
 interface DefaultMenuItem { id: string; bells: number; label: { ja: string; en: string } }
 
