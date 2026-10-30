@@ -50,6 +50,8 @@ export function startViewport(): () => void {
   const t = setTimeout(schedule, 300);
   return () => {
     clearTimeout(t);
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
     removeEventListener('resize', schedule);
     removeEventListener('orientationchange', schedule);
     removeEventListener('scroll', pinScroll);

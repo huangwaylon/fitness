@@ -44,14 +44,14 @@ export function jarTransition(): void {
         if (dir === 'out') setOrigin(root, (last = jarOrigin() ?? last));
         root.dataset.enter = dir;
         setTimeout(() => root.dataset.enter === dir && delete root.dataset.enter, 450);
-      });
+      }, () => {}); // an aborted navigation rejects: no zoom
       return;
     }
     root.dataset.vt = reduced ? 'fade' : dir;
     return new Promise<void>((ready) => {
       const vt = document.startViewTransition(async () => {
         ready();
-        await nav.complete;
+        await nav.complete.catch(() => {}); // aborted: nothing to zoom to
         // Back on 島: zoom out of wherever the jar is now (the layout may differ from the last visit).
         if (dir === 'out') setOrigin(root, (last = jarOrigin() ?? last));
       });
