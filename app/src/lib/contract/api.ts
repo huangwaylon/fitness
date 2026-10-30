@@ -96,3 +96,5 @@ export type SnapshotReply = { ok: true; me: PersonId; now: string; rev: string; 
 export type WhoamiReply = { ok: true; me: PersonId; build: string } | Fail;
 /** Keyless `{"action":"health"}`: the deployment is up, authorized and running `build` (runbook §5). */
 export type HealthReply = { ok: true; build: string } | Fail;
+/** `uploads`: the caller's last ingest audit rows, newest first (`notes` holds warnings plus the body's shape). */
+export type UploadsReply = { ok: true; rows: { at: string; status: string; bytes: number; notes: string }[] } | Fail;

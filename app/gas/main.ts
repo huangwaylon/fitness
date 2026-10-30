@@ -13,7 +13,7 @@ import type { PersonId } from '../src/lib/types.ts';
 import {
   DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, MONTH_RE, NUMERIC_COLUMNS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
-  type TabName, type WhoamiReply
+  type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
 
 /** Set by `npm run gas:build` (a hash of the bundle); `dev` when main.ts runs unbundled (tests). */
@@ -80,6 +80,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     case 'presence': return presence(me, body);
     case 'event': return event(me, body);
     case 'snapshot': return snapshot(me, body);
+    case 'uploads': return uploads(me);
     case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) tab(t); return { ok: true, me, build: BUILD }; });
     default: return fail('bad_request');
   }
@@ -296,6 +297,36 @@ function num(v: unknown): number | null {
 
 // ---------------------------------------------------------------- actions
 
+/**
+ * The shape of an ingest body for the `uploads` audit: each field's type, list length and first item (40 chars), never
+ * the key. Enough to see what a Shortcut really sends without storing the whole body twice.
+ */
+export function bodyShape(body: Rec): string {
+  const first = (v: unknown) => JSON.stringify(v)?.slice(0, 40) ?? '';
+  const parts = Object.entries(body).filter(([k]) => k !== 'key').map(([k, v]) => {
+    if (Array.isArray(v)) return `${k}:array[${v.length}] ${first(v[0])}`;
+    if (typeof v === 'string') {
+      const lines = v.split('\n');
+      return `${k}:text[${lines.length}] ${first(lines[0])}`;
+    }
+    if (isRec(v)) return `${k}:object{${Object.keys(v).join(',').slice(0, 80)}}`;
+    return `${k}:${typeof v} ${first(v)}`;
+  });
+  return parts.join('; ').slice(0, 2000);
+}
+
+/** The caller's last 20 ingest audit rows, newest first (runbook §5: what did the Shortcut send?). */
+function uploads(me: PersonId): UploadsReply {
+  return withLock((): UploadsReply => {
+    const rows = readRows(tab('uploads'), 'uploads')
+      .filter((r) => text(r[1]) === me)
+      .slice(-20)
+      .reverse()
+      .map((r) => ({ at: instant(r[0]), status: text(r[2]), bytes: num(r[3]) ?? 0, notes: text(r[4]) }));
+    return { ok: true, rows };
+  });
+}
+
 function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   let parsed: ReturnType<typeof parseShortcut>;
   try {
@@ -304,7 +335,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const msg = (err instanceof Error ? err.message : String(err)).slice(0, 300);
     // Audit the failure (best effort: a busy lock just skips the row).
     try {
-      withLock((): PresenceReply => { appendRows(tab('uploads'), 'uploads', [[nextAt(), me, 'error', bytes, msg]]); return { ok: true }; });
+      withLock((): PresenceReply => { appendRows(tab('uploads'), 'uploads', [[nextAt(), me, 'error', bytes, `${msg} | ${bodyShape(body)}`]]); return { ok: true }; });
     } catch { /* the reply matters more than the audit row */ }
     return fail('bad_request', msg);
   }
@@ -350,7 +381,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
       parsed.skipped ? `${parsed.skipped} items skipped` : '',
       parsed.unknownTypes.length ? `unknown workout types: ${parsed.unknownTypes.join(', ')}` : ''
     ].filter(Boolean).join('; ');
-    appendRows(tab('uploads'), 'uploads', [[at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes.slice(0, 300)]]);
+    appendRows(tab('uploads'), 'uploads', [[at, me, parsed.skipped ? 'partial' : 'ok', bytes, `${notes.slice(0, 300)} | ${bodyShape(body)}`]]);
 
     return {
       ok: true, metrics: newMetrics.length, workouts: newWorkouts.length,

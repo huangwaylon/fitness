@@ -153,7 +153,8 @@ describe('ingest', () => {
       [at, 'A', '2026-09-28', 'steps', 855], [at, 'A', '2026-09-29', 'steps', 9206],
       [at, 'A', '2026-09-28', 'exercise_min', 0], [at, 'A', '2026-09-29', 'exercise_min', 30]
     ]);
-    expect(data('uploads')).toEqual([[at, 'A', 'ok', JSON.stringify({ key: KEY_A, action: 'ingest', ...REAL }).length, '']]);
+    expect(data('uploads')).toEqual([[at, 'A', 'ok', JSON.stringify({ key: KEY_A, action: 'ingest', ...REAL }).length, expect.stringMatching(/^ \| action:text\[1\] "ingest"; /)]]);
+    expect(String(data('uploads')[0][4])).not.toContain(KEY_A); // the shape never logs the key
     tick();
     expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 0, workouts: 0 });
     expect(data('metrics')).toHaveLength(4);
@@ -216,7 +217,7 @@ describe('ingest', () => {
     expect(a('ingest', { workouts: [{ type: 'Traditional Strength Training', start: '2026-11-01 23:30:40 +0000', end: '2026-11-02 00:22:10 +0000' }] }))
       .toMatchObject({ workouts: 0 });
     expect(data('workouts')).toHaveLength(2);
-    expect(data('uploads').at(0)![4]).toBe('unknown workout types: カバディ');
+    expect(String(data('uploads').at(0)![4]).split(' | ')[0]).toBe('unknown workout types: カバディ');
   });
 
   it('a bad shape is bad_request with a hint, and audited as an error', () => {
@@ -230,7 +231,7 @@ describe('ingest', () => {
   it('a mismatched exercise list is reported in the reply and the audit row, and the steps are saved', () => {
     const r = a('ingest', { dates: '2026-10-27\n2026-10-28', steps: '100\n200', exercise_minutes: '1' });
     expect(r).toEqual({ ok: true, metrics: 2, workouts: 0, skipped: 1, warnings: ['exercise: 1 values but 2 dates; exercise not saved'] });
-    expect(data('uploads').at(-1)!.slice(2)).toEqual(['partial', expect.any(Number), 'exercise: 1 values but 2 dates; exercise not saved; 1 items skipped']);
+    expect(data('uploads').at(-1)!.slice(2)).toEqual(['partial', expect.any(Number), expect.stringMatching(/^exercise: 1 values but 2 dates; exercise not saved; 1 items skipped \| /)]);
   });
 
   it(`recent dates read only the last ${INGEST_TAIL_ROWS} metrics rows; older dates read the whole tab`, () => {
@@ -247,9 +248,19 @@ describe('ingest', () => {
     expect(reads.filter((n) => n > 1)).toEqual([INGEST_TAIL_ROWS, INGEST_TAIL_ROWS + 2]); // (1-row ranges are the appends)
   });
 
+  it('uploads: the caller reads their own audit rows, newest first, with the body shape', () => {
+    a('ingest', REAL);
+    tick();
+    a('ingest', { dates: 'x', steps: '1' });
+    const r = a('uploads', {}) as { ok: true; rows: { status: string; notes: string }[] };
+    expect(r.rows.map((x) => x.status)).toEqual(['partial', 'ok']);
+    expect(r.rows[1].notes).toMatch(/action:text\[1\] "ingest"; dates:/);
+    expect((b('uploads', {}) as { rows: unknown[] }).rows).toEqual([]);
+  });
+
   it('partial uploads say how many items were skipped', () => {
     expect(a('ingest', { steps: { values: [1, 'x'], starts: ['2026-10-28', '2026-10-28'] } })).toEqual({ ok: true, metrics: 1, workouts: 0, skipped: 1 });
-    expect(data('uploads')[0].slice(2)).toEqual(['partial', expect.any(Number), '1 items skipped']);
+    expect(data('uploads')[0].slice(2)).toEqual(['partial', expect.any(Number), expect.stringMatching(/^1 items skipped \| /)]);
   });
 
   it('grows the sheet past its initial 1000 rows', () => {
