@@ -7,7 +7,7 @@ import type { SnapshotReply, SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import type { DemoCalendar } from '#lib/model/state.ts';
-import { getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
+import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type GasResult } from './transport.ts';
 
 export interface SnapshotCache {
@@ -201,13 +201,18 @@ async function fetchSnapshot(clientNow: () => number): Promise<GasResult<{ cache
 }
 
 async function fetchAndMerge(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
+  const key = getKey();
   const prev = await loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;
   let r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', since ? { since } : {});
-  // The sheet was edited by hand since these rows were cached (or they predate revisions): start over.
-  const stale = r.ok && since && prev && r.rev !== undefined && r.rev !== prev.rev;
+  // Start over when the sheet was edited by hand since these rows were cached (or they predate revisions), or when
+  // the key answers for someone else: a `since` page merged into nothing would pass for the whole history.
+  const stale = r.ok && since && prev && ((r.rev !== undefined && r.rev !== prev.rev) || r.me !== prev.me);
   if (stale) r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', {});
+  // Paired again while this was in flight: the reply belongs to the old key, so neither its rows nor its `me` may
+  // overwrite what pairing just reset (the refresh pairing starts fetches for the new key).
+  if (getKey() !== key) return { ok: false, error: 'unavailable', detail: 'paired again during the fetch' };
   if (!r.ok) return r;
   const cache = applySnapshot(since && !stale ? prev : null, r, clientNow());
   void saveCache(cache);
