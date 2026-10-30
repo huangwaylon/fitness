@@ -127,6 +127,12 @@ export function looseDate(v: unknown): string | null {
   if (typeof v !== 'string') return null;
   const native = shortcutsDefaultDate(v.trim().replace(/\u202f|\u00a0/g, ' '));
   if (native) return native;
+  // "2026/10/30 午後0:58" (Japanese locale with slashes): fold 午前/午後 into a 24-hour time first.
+  const ja = v.trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})\s*(午前|午後)\s*(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (ja) {
+    const hour = (Number(ja[5]) % 12) + (ja[4] === '午後' ? 12 : 0);
+    return toIsoDate(`${ja[1]}-${pad(ja[2])}-${pad(ja[3])} ${pad(hour)}:${ja[6]}:${ja[7] ?? '00'}`);
+  }
   let s = v.trim().replace(/\//g, '-');
   s = s.replace(/^(\d{4})-(\d{1,2})-(\d{1,2})/, (_, y, mo, d) => `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`);
   s = s.replace(/([ T])(\d):/, '$10$2:');
@@ -323,7 +329,10 @@ export function parseShortcut(raw: unknown): ParsedBody {
   // instead of refusing the whole body, so a bad exercise list never costs the steps.
   const warnings: string[] = [];
   let dropped = 0;
-  const pick = (...names: string[]) => names.map((n) => r[n]).find((v) => v !== undefined);
+  // Field names typed by hand in Shortcuts drift ("Weight Dates", "weight-dates"): also match case- and separator-blind.
+  const norm = (k: string) => k.toLowerCase().replace(/[\s_-]+/g, '');
+  const loose = new Map(Object.keys(r).map((k) => [norm(k), r[k]]));
+  const pick = (...names: string[]) => names.map((n) => r[n] ?? loose.get(norm(n))).find((v) => v !== undefined);
   const exDates = pick('exercise_dates', 'exerciseDates');
   if (r.dates !== undefined || exDates !== undefined) {
     for (const k of ['steps', 'exercise'] as const) {
@@ -346,12 +355,12 @@ export function parseShortcut(raw: unknown): ParsedBody {
   let weight: { values: unknown[]; dates: unknown[] } | undefined;
   const wValues = pick('weights', 'weight');
   if (wValues !== undefined) {
-    const values = list(wValues, 'weights');
+    // A Shortcut field typed Number sends one bare number. weight_sources is accepted but unused (a day's weight is its
+    // first sample whatever the source), so a missing or short sources list never drops the weight.
+    const values = typeof wValues === 'number' ? [wValues] : list(wValues, 'weights');
     const dates = list(pick('weight_dates', 'weightDates'), 'weight_dates');
-    const src = pick('weight_sources', 'weightSources');
-    const sources = src === undefined ? undefined : list(src, 'weight_sources');
-    if (values.length !== dates.length || (sources && sources.length !== values.length)) {
-      warnings.push(`weight: ${values.length} values but ${dates.length} weight_dates${sources ? ` and ${sources.length} sources` : ''}; weight not saved`);
+    if (values.length !== dates.length) {
+      warnings.push(`weight: ${values.length} values but ${dates.length} weight_dates; weight not saved`);
       dropped += values.length;
     } else if (values.length) weight = { values, dates };
   }
@@ -379,7 +388,15 @@ export function parseShortcut(raw: unknown): ParsedBody {
     if (!s) continue;
     for (const [date, v] of dailyTotals(s, skip)) metrics.push({ date, metric: key, value: round(v) });
   }
-  if (weight) for (const [date, kg] of firstWeightOfDay(weight.values, weight.dates, skip)) metrics.push({ date, metric: 'weight', value: kg });
+  if (weight) {
+    const days = firstWeightOfDay(weight.values, weight.dates, skip);
+    for (const [date, kg] of days) metrics.push({ date, metric: 'weight', value: kg });
+    // Say what was unreadable, so a Shortcut set-up problem shows in the reply (one sample is enough to diagnose).
+    if (days.size === 0) warnings.push(`weight: could not read ${JSON.stringify(String(weight.values[0]).slice(0, 40))} at ${JSON.stringify(String(weight.dates[0]).slice(0, 40))}`);
+  } else if (wValues === undefined) {
+    const near = Object.keys(r).filter((k) => /weight|体重|body|mass/i.test(k));
+    if (near.length) warnings.push(`weight: fields not recognised (${near.join(', ').slice(0, 80)}); expected weights + weight_dates`);
+  }
   for (const d of days ?? []) {
     const date = isRec(d) ? looseDate(d.date) : null;
     if (!isRec(d) || !date) { skip(); continue; }

@@ -256,9 +256,21 @@ describe('parse: body weight (ADR 0020)', () => {
     });
     expect(r.metrics).toEqual([{ date: '2026-10-28', metric: 'steps', value: 9000 }]);
     expect(r.warnings).toEqual(['weight: 2 values but 1 weight_dates; weight not saved']);
+    // Sources are unused for weight, so a short or empty list never drops it (a weight typed into Health may have none).
     const s = parseShortcut({ dates: ['2026-10-28T08:00:00+09:00'], steps: ['9000'], weight_dates: ['2026-10-28T07:00:00+09:00'], weights: ['68.4'], weight_sources: [] });
-    expect(s.warnings[0]).toMatch(/1 weight_dates and 0 sources/);
+    expect(s.warnings).toEqual([]);
+    expect(s.metrics).toContainEqual({ date: '2026-10-28', metric: 'weight', value: 68.4 });
     expect(() => parseShortcut({ weights: ['68.4'] })).toThrow(/weight: 1 values but 0 weight_dates/);
+  });
+
+  it('reads the shapes a hand-built Shortcut sends: a Number field, 午前/午後 with slashes, drifting field names', () => {
+    const w = (body: Record<string, unknown>) => parseShortcut({ dates: ['2026-10-30T13:00:00+09:00'], steps: ['100'], ...body });
+    const kg = (body: Record<string, unknown>) => w(body).metrics.filter((m) => m.metric === 'weight');
+    expect(kg({ weight_dates: 'Oct 30, 2026 at 12:58 PM', weights: 68.4 })).toEqual([{ date: '2026-10-30', metric: 'weight', value: 68.4 }]);
+    expect(kg({ weight_dates: '2026/10/30 午前7:05', weights: '68.4 kg' })).toEqual([{ date: '2026-10-30', metric: 'weight', value: 68.4 }]);
+    expect(kg({ 'Weight Dates': '2026-10-30 07:05', Weights: '68.4' })).toEqual([{ date: '2026-10-30', metric: 'weight', value: 68.4 }]);
+    expect(w({ weight_dates: 'yesterday', weights: 'heavy' }).warnings).toEqual(['weight: could not read "heavy" at "yesterday"']);
+    expect(w({ body_mass: '68.4' }).warnings).toEqual(['weight: fields not recognised (body_mass); expected weights + weight_dates']);
   });
 
   it('a body with only weights is fine; a body without them is unchanged', () => {
