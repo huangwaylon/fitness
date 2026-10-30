@@ -23,7 +23,7 @@ Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `
 `VITE_GAS_URL=${{ vars.GAS_URL }}`, upload `app/build-pages/`. Locally: `cd app && npm run build` (output
 `build-pages/`), `npx vite preview` to try it, `npm run dev` for development (without `VITE_GAS_URL` in `.env` it
 runs on demo data). The site has a strict CSP (a `<meta>` tag): it can only talk to itself and the Apps Script
-origins. Before a model change: `npx vitest run`, `npm run check`, `npm run bench` (hourly-sync rows at years 1 and 3;
+origins. Before a model change: `npx vitest run`, `npm run check`, `npm run bench` (rows from ≈ hourly Shortcut runs at years 1 and 3;
 year 3 compacted with a `rev` should stay ≤ 15 ms for reduce + view) and `npx knip` (`app/knip.json`).
 
 Backend code changes (`app/gas/**`, the parser): google-setup.md §11 (`npm run gas:build`, paste, **new version on
