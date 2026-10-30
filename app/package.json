@@ -13,6 +13,7 @@
     "prepare": "svelte-kit sync || true",
     "assets:fetch": "node scripts/fetch-assets.ts",
     "fonts:subset": "node scripts/font-subsets.ts",
+    "icons:build": "node scripts/icons.ts",
     "audio:music": "node scripts/music.ts",
     "gas:build": "node gas/build.ts",
     "bench": "node scripts/bench-model.ts"
