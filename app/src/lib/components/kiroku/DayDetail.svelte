@@ -97,7 +97,7 @@
   .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--c-leaf-lip); }
   .state.locked { color: var(--text-soft); }
   .pc { display: grid; gap: 4px; padding: 12px 14px; }
-  .pc.ro { background: color-mix(in srgb, var(--bg) 70%, var(--surface)); }
+  .pc.ro { background: color-mix(in srgb, var(--fill-on-surface) 70%, var(--surface)); }
   .who { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
   .nm { flex: 1; font-size: var(--fs-body); }
   .nm small { color: var(--text-soft); font-size: var(--fs-s); }
@@ -105,10 +105,10 @@
   .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
   .row + .row, .who + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
-  /* a workout / visit row: the label keeps the body size and takes its own line when the time and chips do not fit
-     beside it (sizing #13); the value and ✎ then sit right-aligned under it */
-  .wo { flex-wrap: wrap; row-gap: 2px; padding: 6px 0; }
-  .wo .k { flex: 1 0 9em; }
+  /* a workout / visit row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
+     (sizing #13: at 12px beside them it wrapped to 3 lines) */
+  .wo { flex-wrap: wrap; row-gap: 0; min-height: 0; padding: 8px 0 4px; }
+  .wo .k { flex-basis: 100%; }
   .wo .v.small { margin-left: auto; }
   .v { font-size: var(--fs-talk); white-space: nowrap; }
   .v.small { font-size: var(--fs-s); display: flex; align-items: center; gap: 6px; white-space: normal; flex-wrap: wrap; justify-content: flex-end; }

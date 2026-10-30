@@ -98,7 +98,7 @@
   /* rung labels: chart-axis size on a paper chip, so the step line never crosses the words (sizing #14) */
   .rl span {
     position: absolute; right: 0; transform: translateY(-110%); font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft);
-    padding: 0 4px; border-radius: 4px; background: color-mix(in srgb, var(--bg) 85%, transparent);
+    padding: 0 4px; border-radius: 4px; background: color-mix(in srgb, var(--fill-on-surface) 85%, transparent);
   }
   .month { margin-bottom: 6px; }
   h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 4px 8px; font-size: var(--fs-body); }
