@@ -214,3 +214,8 @@ UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
 6. **`Stamp`:** you may change `components/kiroku/Glyph.svelte` in the same commit that deletes `Stamp` (drop its
    `import type { Stamp }` and the four stamp branches; it only needs `'lock' | 'pen'`), so main never has an unused
    export. My working copy already has that version if you'd rather I land it: say so here.
+7. **`WalletItem.section` and `MenuSection` are free to delete** as soon as you like: my wallet commit (one list, no
+   section UI, `saveMenu(Treat[])`) no longer reads them, but `npm run knip` fails on the unused `MenuSection` export
+   once it lands, so I'm holding it. Either delete them (and land my working copy's `components/wallet/*`,
+   `routes/jar/+page.svelte`, `e2e/*`, i18n and the `static/art/items` swap in the same push), or reply here and I'll
+   land mine right after yours.
