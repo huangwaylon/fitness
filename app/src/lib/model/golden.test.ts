@@ -71,7 +71,11 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(Object.keys(VIEWS).length).toBe(50);
     // Badges but never all five for both (the ふたりボーナス is covered by bells.test.ts).
     expect(all.some((v) => v.harvest && v.harvest.bonus.A > 0 && v.harvest.bonus.B > 0)).toBe(true);
-    expect(all.some((v) => v.harvest?.bonus.A === 0 && v.harvest.bonus.B === 0)).toBe(true);
+    // A harvest where one person met no badge (with v2's 120 Stand minutes every week from 11-02 has a badge; an empty
+    // harvest for both is model/bells.test.ts's).
+    expect(all.some((v) => v.harvest && (v.harvest.bonus.A === 0 || v.harvest.bonus.B === 0))).toBe(true);
+    expect(all.some((v) => v.harvest?.weekKey === '2026-10-26' && v.harvest.bonus.A === 400)).toBe(true); // v1: +400 a badge
+    expect(all.some((v) => v.harvest?.weekKey === '2026-11-02' && v.harvest.bonus.A === 680)).toBe(true); // v2: +340 a badge
     // ADR 0021: Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);

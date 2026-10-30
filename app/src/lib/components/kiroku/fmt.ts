@@ -1,9 +1,9 @@
 // Small formatters shared by the きろく screens (the day title, numbers, the change-log line); dates: i18n/format.ts.
-import type { RingFruit } from '#lib/types.ts';
+import type { RingFruit, WeekKey } from '#lib/types.ts';
 import type { EditLog } from '#lib/model/history.ts';
 import { workoutLabel } from '#lib/contract/labels.ts';
 import { isWeightKg } from '#lib/contract/api.ts';
-import { MOVE_GOAL, RULES } from '#lib/config/rules.ts';
+import { MOVE_GOAL, rulesFor } from '#lib/config/rules.ts';
 import { i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 
@@ -40,9 +40,9 @@ export function editText(e: EditLog): { field: string; before: string; after: st
   return { field, before: v(e.before), after: v(e.after) };
 }
 
-/** Days needed for each weekly badge (the latest rules: 5 · 5 · 5 · 4 · 3). */
-export function badgeGoals(): Record<RingFruit, number> {
-  const b = RULES[RULES.length - 1].badges;
+/** Days needed for each weekly badge in the week's rules (5 · 5 · 5 · 4 · 3). */
+export function badgeGoals(weekKey: WeekKey): Record<RingFruit, number> {
+  const b = rulesFor(weekKey).badges;
   return { peach: b.exerciseDays, pear: b.moveDays, cherry: b.standDays, apple: b.stepDays, coconut: b.gymDays };
 }
 

@@ -196,17 +196,17 @@ describe('history views', () => {
   it('a Move or Stand edit (metric_set move_kcal / stand_min) re-prices the day and shows in the log and the ✎ fields', () => {
     const edited = withRows(goodWeek(), { events: [
       ev(jst(DAYS[2], '09:00'), 'A', 'metric_set', { date: DAYS[1], metric: 'move_kcal', value: 600 }),
-      ev(jst(DAYS[2], '09:01'), 'A', 'metric_set', { date: DAYS[1], metric: 'stand_min', value: 180 })
+      ev(jst(DAYS[2], '09:01'), 'A', 'metric_set', { date: DAYS[1], metric: 'stand_min', value: 100 })
     ] });
     const s = reduce(edited);
     expect(editLog(s)).toMatchObject([
-      { by: 'A', date: DAYS[1], field: 'move_kcal', before: 500, after: 600 }, { by: 'A', date: DAYS[1], field: 'stand_min', before: 150, after: 180 }
+      { by: 'A', date: DAYS[1], field: 'move_kcal', before: 500, after: 600 }, { by: 'A', date: DAYS[1], field: 'stand_min', before: 150, after: 100 }
     ]);
     expect(weekDetail(s, WK, WED_MID).people.A.days[1]).toMatchObject({
-      moveKcal: 600, standMin: 180, rings: { pear: 180, cherry: 180 }, met: { pear: true, cherry: true }, editedFields: ['move', 'stand']
+      moveKcal: 600, standMin: 100, rings: { pear: 180, cherry: 100 }, met: { pear: true, cherry: false }, // v2: Stand goal 120 editedFields: ['move', 'stand']
     });
-    expect(dayDetail(s, DAYS[1], WED_MID).people.A).toMatchObject({ move: { value: 600, goal: 600, edited: true }, stand: { value: 180, edited: true } });
-    expect(weekDetail(reduce(goodWeek()), WK, WED_MID).people.A.days[1].rings).toMatchObject({ pear: 150, cherry: 150 }); // 500 / 600 × 180
+    expect(dayDetail(s, DAYS[1], WED_MID).people.A).toMatchObject({ move: { value: 600, goal: 600, edited: true }, stand: { value: 100, edited: true } });
+    expect(weekDetail(reduce(goodWeek()), WK, WED_MID).people.A.days[1].rings).toMatchObject({ pear: 150, cherry: 120 }); // 500 / 600 × 180; 150 stand min, capped at 120
   });
 
   it('week list: newest first from the economy’s first week, both people, locked and open flags', () => {

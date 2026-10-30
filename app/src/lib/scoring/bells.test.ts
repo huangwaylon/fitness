@@ -6,7 +6,8 @@ import { weekDays } from '#lib/time/dates.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { duoBonus, earnWeek, type EarnDay, type EarnInput } from './bells.ts';
 
-const WK = '2026-11-02';
+/** A v1 week (RULES[0]); the v2 rules from 2026-11-02 have their own block below. */
+const WK = '2026-10-26';
 const D = weekDays(WK);
 
 let n = 0;
@@ -157,9 +158,9 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
   it('only dates in the week count; the first metrics row of a date wins', () => {
     const row = (date: string, steps: number, kcal: number): EarnDay => ({ date, steps, exerciseMin: 0, moveKcal: kcal, standMin: 0, moveGoal: 600 });
     const e = earnWeek(input({
-      days: [row(D[0], 8000, 0), row(D[0], 100, 600), row('2026-11-09', 9000, 600)],
-      workouts: [workout('2026-11-01', 'Pilates', 30)],
-      arrivals: [arrival('2026-11-09')]
+      days: [row(D[0], 8000, 0), row(D[0], 100, 600), row('2026-11-02', 9000, 600)],
+      workouts: [workout('2026-10-25', 'Pilates', 30)],
+      arrivals: [arrival('2026-11-02')]
     }));
     expect(e.days[0].rings.apple).toBe(200);
     expect(e.days[0].rings.pear).toBe(0);
@@ -237,6 +238,66 @@ describe('ADR 0021: the headline number', () => {
     expect(a.daily).toBe(4700);
     expect(b.daily).toBe(4700);
     expect(a.bonus).toBe(2000);
+    expect(duoBonus(a, b)).toBe(1000);
+    expect(a.daily + a.bonus + b.daily + b.bonus + duoBonus(a, b)).toBe(14_400);
+  });
+});
+
+describe('RULES v2 from 2026-11-02 (push exercise + strength)', () => {
+  const WK2 = '2026-11-02';
+  const D2 = weekDays(WK2);
+  const day = (c: Cols, p: Partial<EarnInput> = {}) => earnWeek(input({ weekKey: WK2, days: days(WK2, c), ...p })).days[0];
+
+  it('switches on Monday 2026-11-02: Sunday 11-01 still earns v1, the Monday v2', () => {
+    const sun = (wk: string, i: number) => {
+      const e = earnWeek(input({ weekKey: wk, days: days(wk, { ex: all(60), stand: all(150) }), arrivals: [arrival(weekDays(wk)[i])] }));
+      return e.days[i].rings;
+    };
+    expect(sun('2026-10-26', 6)).toMatchObject({ peach: 180, cherry: 150, coconut: 400 }); // Sun 11-01
+    expect(sun(WK2, 0)).toMatchObject({ peach: 240, cherry: 120, coconut: 500 }); // Mon 11-02
+  });
+
+  it('per-fruit caps: 🍑 4/min to 240, 🍐 180, 🍒 1/min to 120, 🍎 200, 🥥 500; a perfect day is 1,240', () => {
+    const peach = (ex: number) => day({ ex: [ex] }).rings.peach;
+    expect([peach(1), peach(59.9), peach(60), peach(200)]).toEqual([4, 236, 240, 240]);
+    expect(day({ ex: [59] }).met.peach).toBe(false);
+    expect(day({ ex: [60] }).met.peach).toBe(true);
+    const cherry = (st: number) => day({ stand: [st] }).rings.cherry;
+    expect([cherry(58), cherry(119.9), cherry(120), cherry(1440)]).toEqual([58, 119, 120, 120]);
+    expect(day({ stand: [119] }).met.cherry).toBe(false);
+    expect(day({ stand: [120] }).met.cherry).toBe(true);
+    const pear = (kcal: number, goal: number) => day({ kcal: [kcal], goal }).rings.pear;
+    expect([pear(300, 600), pear(600, 600), pear(2500, 600), pear(400, 400)]).toEqual([90, 180, 180, 180]); // the Move goal stays per person
+    expect([day({ st: [7999] }).rings.apple, day({ st: [8000] }).rings.apple, day({ st: [30000] }).rings.apple]).toEqual([0, 200, 200]);
+    expect(day({}, { arrivals: [arrival(D2[0]), arrival(D2[0], '19:00')] }).rings.coconut).toBe(500);
+    const p = earnWeek(perfect(WK2)).days[0];
+    expect(p.rings).toEqual({ peach: 240, pear: 180, cherry: 120, apple: 200, coconut: 500 });
+    expect(p.bells).toBe(1240);
+  });
+
+  it('badges keep their thresholds (5 · 5 · 5 · 4 · 3) at +340 each; the ふたりボーナス stays +200 a shared badge', () => {
+    const e = earnWeek(input({ weekKey: WK2, days: days(WK2, { stand: [120, 120, 120, 120, 120] }) }));
+    expect(e.badges).toEqual({ peach: false, pear: false, cherry: true, apple: false, coconut: false });
+    expect(e.bonus).toBe(340);
+    const four = earnWeek(input({ weekKey: WK2, days: days(WK2, { stand: [120, 120, 120, 120, 119] }) }));
+    expect(four.badges.cherry).toBe(false);
+    expect(duoBonus(earnWeek(perfect(WK2)), earnWeek(perfect(WK2, 'B')))).toBe(1000);
+  });
+
+  it('a minimum on-target week is still 14,400 ベル for the two of them', () => {
+    // 5 × 240 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 + 3 × 500 🥥 = 5,000 daily; 5 × 340 = 1,700 badges; 6,700 each;
+    // + 5 × 200 ふたりボーナス = 14,400.
+    const onTarget = (person: PersonId, goal: number) => earnWeek(input({
+      person, weekKey: WK2,
+      days: days(WK2, { ex: [60, 60, 60, 60, 60], kcal: Array(5).fill(goal), stand: [120, 120, 120, 120, 120], st: [8000, 8000, 8000, 8000], goal }),
+      arrivals: D2.slice(0, 3).map((x) => arrival(x))
+    }));
+    const a = onTarget('A', 600), b = onTarget('B', 400);
+    expect(a.fruits.peach.weekBells).toBe(1200);
+    expect(a.fruits.coconut.weekBells).toBe(1500);
+    expect(a.daily).toBe(5000);
+    expect(b.daily).toBe(5000);
+    expect(a.bonus).toBe(1700);
     expect(duoBonus(a, b)).toBe(1000);
     expect(a.daily + a.bonus + b.daily + b.bonus + duoBonus(a, b)).toBe(14_400);
   });

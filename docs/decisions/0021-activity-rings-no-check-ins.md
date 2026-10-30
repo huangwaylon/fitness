@@ -70,3 +70,29 @@ dropped whatever its label. There is no place list (`config/places.ts` is delete
 validation; the `presence` action is removed outright (`bad_request`, no compatibility path). The sheet tab keeps its
 name `presence` (no sheet change) with simpler columns `[at, person, label, arrived_at]`; it was empty, and a tab with
 the old header is relabelled by its first row. One Code.js redeploy; shortcut-health-sync.md §5 has the steps.
+
+## Amendment 2026-10-30: v2 from 2026-11-02, push exercise + strength
+**User decision** after the round-19 goals review (`docs/reviews/round-19/goals-data-review.md`): the user wants more
+exercise and intensity, so the Exercise goal stays high (the review's 45 min was declined) and Exercise becomes the
+biggest daily earner; strength pays more; Stand, the least useful for recomposition, asks less and pays less. Applied as
+a **new rule version, `RULES[1]`, from Mon 2026-11-02**: the week of 10-26 has already earned under `RULES[0]`, which
+stays unchanged (`rules.test.ts` pins both; `rulesFor(weekKey)` picks the version, so Sunday 11-01 is v1 and Monday
+11-02 v2).
+
+| | Daily goal | ベル a day | Badge |
+|---|---|---|---|
+| 🍑 Exercise | 60 min (unchanged) | **4** per minute (max **240**) | ≥ 5 days |
+| 🍐 Move | per person, unchanged (the user enters their Fitness-app goal in きろく → 目標; defaults 600 / 400) | floor(180 × min(kcal, goal) / goal), max 180 | ≥ 5 days |
+| 🍒 Stand | **120** min | 1 per minute (max **120**) | ≥ 5 days |
+| 🍎 Steps | 8,000 | 200 | ≥ 4 days |
+| 🥥 Gym | a gym day | **500** | ≥ 3 days |
+
+Badges **+340** each (was +400), thresholds unchanged; ふたりボーナス +200 per badge both met (unchanged). On target per
+person: 5 × 240 + 5 × 180 + 5 × 120 + 4 × 200 + 3 × 500 = 5,000 daily + 5 × 340 = 1,700 badges = 6,700; both 13,400 +
+5 × 200 duo = **14,400 ベル a week**, as before, so the prices (ADR 0022) are untouched. The badge value solves
+10,000 + 10b + 1,000 = 14,400 (b = 340); the alternative +300 badges with duo +200 would have given 14,000. Max 1,240 a
+day per person. Client-side only: no sheet, contract or backend behaviour change. Code.js carried the unused `RULES`
+literal (esbuild kept it for `ECONOMY_START = RULES[0].from`); `ECONOMY_START` is now a literal, so the bundle drops
+`RULES` and a rule version never changes Code.js again. That one regeneration removes dead code only (new build hash;
+a redeploy is optional and changes nothing the server does).
+

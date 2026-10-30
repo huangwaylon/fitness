@@ -136,22 +136,29 @@ Values in `config/rules.ts` (`RULES`, versioned by week), the earning rule in `s
 `model/bells.ts`. Pinned by `scoring/bells.test.ts`, `config/rules.test.ts` and the golden fixtures.
 
 **ベル per person per day**, recomputed from the rows (so they move whenever data arrives), five automatic metrics,
-one fruit each:
+one fruit each. A week is priced by its own rule version (`rulesFor(weekKey)`; the island, the tree popups, あそびかた,
+きろく and the harvest read the version of the week in view). The values below are **v2, from Mon 2026-11-02** ("push
+exercise + strength", ADR 0021 amendment); v1 (the week of 10-26 only) paid 🍑 3/min, 🍒 to 180 min, 🥥 400 and +400 a
+badge:
 
 | Fruit | Metric (Shortcut field → stored metric) | Daily goal | ベル a day |
 |---|---|---|---|
-| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | 3 per minute (max 180) |
+| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | 4 per minute (max 240) |
 | 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person, `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | floor(180 × min(kcal, goal) / goal) |
-| 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 180 min | 1 per minute (max 180) |
+| 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 120 min | 1 per minute (max 120) |
 | 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min) | 200 |
-| 🥥 coconut | Gym: any gym arrival, or a strength workout (Traditional / Functional Strength Training, Pilates, ≥ 15 min; any other type only when marked in きろく) | a gym day | 400 |
+| 🥥 coconut | Gym: any gym arrival, or a strength workout (Traditional / Functional Strength Training, Pilates, ≥ 15 min; any other type only when marked in きろく) | a gym day | 500 |
 
-- Max 1,140 a day. The Move goal in force on a day is the last one set on or before that Tokyo date: a change never
+- Max 1,240 a day (v1: 1,140). The Move goal in force on a day is the last one set on or before that Tokyo date: a change never
   re-prices earlier days.
-- **Weekly bonus** at the Sunday 19:30 harvest: +400 per badge (🍑 / 🍐 / 🍒 goal met on ≥ 5 days, 🍎 ≥ 4, 🥥 ≥ 3) and
+- **Weekly bonus** at the Sunday 19:30 harvest: +340 per badge (v1: +400; 🍑 / 🍐 / 🍒 goal met on ≥ 5 days, 🍎 ≥ 4, 🥥 ≥ 3) and
   the ふたりボーナス, +200 for each badge both people met.
-- **On target** (every badge for both, minimum days): per person 4,700 daily + 2,000 badges = 6,700; both + 1,000 duo =
-  **14,400 ベル a week**. The daily part is 65% of it, so a week short of badges still pays most of its work.
+- **On target** (every badge for both, minimum days), v2: per person 5 × 240 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 +
+  3 × 500 🥥 = 5,000 daily + 5 × 340 badges = 6,700; both (13,400) + 5 × 200 duo = **14,400 ベル a week**, the same as
+  v1 (4,700 daily + 2,000 badges), so the menu prices still fit. The badge amount absorbed the extra 300 daily: 2 × 5 ×
+  b + 5 × 200 = 14,400 − 10,000 gives b = 340 with the duo unchanged. Per-person shares: 🥥 1,840 (27%), 🍑 1,540
+  (23%), 🍐 1,240, 🍎 1,140, 🍒 940. The daily part is 69% of the week (v1 65%), so a week short of badges still pays most of
+  its work.
 - **One shared wallet:** every ベル earned (daily as it happens, the bonus at Sunday 19:30) goes into it. One shared,
   editable menu, one list (`pref` menu, latest wins, items `{id, label, bells}`). Either person buys
   (`spend`), the buyer can undo (`spend_void`), no approvals. Buys replay in server order and a buy counts only if the

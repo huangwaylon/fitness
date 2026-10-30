@@ -46,7 +46,7 @@ describe('live optimistic view', () => {
     const before = composeView(cache, [], NOW);
     const after = composeView(cache, [ev('c1', 'workout_edit', { id: 'yoga-1', strength: true })], NOW);
     expect(after.people.A.rings.coconut.weekDays).toBe(before.people.A.rings.coconut.weekDays + 1);
-    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 400);
+    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 500); // a v2 week: 🥥 500
   });
 
   it('a new Move goal re-prices today’s 🍐 at once', () => {
