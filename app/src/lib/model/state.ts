@@ -296,8 +296,8 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    // Old `share` rows (the removed privacy toggles) and other unknown types are ignored; so are the old economy's
-    // `approve`, `transfer` and `transfer_undo` (still event types: their rows exist).
+    // Rows of removed types (the privacy toggles' `share`; the yen economy's `approve`, `transfer`, `transfer_undo`)
+    // and any other unknown type are ignored: their rows stay in the sheet.
     if (d && (EVENT_TYPES as readonly string[]).includes(type)) ON_EVENT[type](c, person, at, d);
   }
   // The per-workout lookups are indexes of workoutEdits (one source; round 7 L6).
@@ -360,9 +360,6 @@ const hasId = (v: unknown): boolean => v !== undefined && v !== null;
  * always have the sender as subject, so the partner's data is unreachable; activity edits only count while the day's
  * week is open (§4.3).
  */
-/** The old yen economy's events (ADR 0019 §6): their rows exist in the sheet and are ignored. */
-const ignored: OnEvent = () => {};
-
 const ON_EVENT: Record<EventType, OnEvent> = {
   checkin({ s }, person, at, d) {
     const date = normDate(d.date);
@@ -400,8 +397,6 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
     s.bellSpends.push({ at, person, spendId, pot: d.pot, item: d.item, label, bells });
   },
-  approve: ignored,
-  transfer: ignored,
   metric_set({ s }, person, at, d) {
     const date = normDate(d.date);
     const metric = d.metric;
@@ -450,7 +445,6 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
   },
-  transfer_undo: ignored,
   harvest({ s }, person, at, d) {
     const week = normDate(d.week);
     if (week) s.harvests.push({ at, person, week });

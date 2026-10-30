@@ -22,6 +22,13 @@ describe('shortcutDate: Shortcuts date text, English or Japanese', () => {
     expect(shortcutDate('Feb 30, 2026')).toBeNull();
     expect(shortcutDate('soon')).toBeNull();
   });
+
+  it('refuses a time that does not exist (seconds included)', () => {
+    expect(shortcutDate('2026/10/28 8:59:30')).toEqual({ day: '2026-10-28', time: '08:59:30' });
+    expect(shortcutDate('2026/10/28 8:59:75')).toBeNull();
+    expect(shortcutDate('Oct 28, 2026 at 8:61 AM')).toBeNull();
+    expect(shortcutDate('2026/10/28 24:00')).toBeNull();
+  });
 });
 
 describe('parseShortcut: the official body', () => {
@@ -50,6 +57,16 @@ describe('parseShortcut: the official body', () => {
     const r = parseShortcut({ dates: 'Oct 28, 2026\nsoon\nOct 30, 2026', steps: '100\n200\n8,000', weight: '0\n70\n400' });
     expect(r.metrics).toEqual([{ date: '2026-10-28', metric: 'steps', value: 100 }]);
     expect(r.skipped).toBe(4); // the bad date (steps, weight), "8,000", 400 kg
+  });
+
+  it('a step or minute value above METRIC_BOUNDS is skipped with a warning', () => {
+    const r = parseShortcut({ dates: 'Oct 28, 2026\nOct 29, 2026', steps: '856400\n100000', exercise_minutes: '1441\n1440' });
+    expect(r.metrics).toEqual([
+      { date: '2026-10-29', metric: 'steps', value: 100000 },
+      { date: '2026-10-29', metric: 'exercise_min', value: 1440 }
+    ]);
+    expect(r.skipped).toBe(2);
+    expect(r.warnings).toEqual(['steps: 856400 on 2026-10-28 is above 100000; skipped', 'exercise_minutes: 1441 on 2026-10-28 is above 1440; skipped']);
   });
 
   it('every list is Text; nothing to save is refused with what to send', () => {
@@ -81,6 +98,12 @@ describe('parseShortcut: the official body', () => {
     expect(workoutKey('ヨガ', '2026-10-28T19:00:30+09:00')).toBe(a);
     expect(workoutKey('Yoga', '2026-10-28T19:01:00+09:00')).not.toBe(a);
     expect(workoutKey('Pilates', '2026-10-28T19:00:00+09:00')).not.toBe(a);
+  });
+
+  it('a workout with an impossible time is skipped, never stored with a NaN duration', () => {
+    const r = parseShortcut({ workouts: { types: 'Yoga\nYoga', starts: '2026/10/28 8:59:75\n2026/10/28 9:00', ends: '2026/10/28 9:30\n2026/10/28 9:30' } });
+    expect(r.workouts.map((w) => w.durationMin)).toEqual([30]);
+    expect(r.skipped).toBe(1);
   });
 
   it('mismatched workout lists are dropped with a warning', () => {

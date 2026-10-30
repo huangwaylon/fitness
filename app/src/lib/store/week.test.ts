@@ -54,7 +54,7 @@ describe('week.send with a lock (M1)', () => {
   });
 
   it('caps a hold at HOLD_MAX_MS, and before the lock', async () => {
-    const far = week.send('transfer', { month: '2026-11' }, { holdMs: 5000 });
+    const far = week.send('spend_void', { spendId: 's1' }, { holdMs: 5000 });
     expect(far.hold!(null)).toBe(HOLD_MAX_MS);
     const lockAt = NOW + LOCK_MARGIN_MS + 30_000;
     const near = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
@@ -63,10 +63,10 @@ describe('week.send with a lock (M1)', () => {
   });
 
   it('undo takes back only its own event', async () => {
-    const a = week.send('transfer', { month: '2026-10' }, { holdMs: 5000 });
-    week.send('transfer', { month: '2026-11' }, { holdMs: 5000 });
+    const a = week.send('spend_void', { spendId: 's1' }, { holdMs: 5000 });
+    week.send('spend_void', { spendId: 's2' }, { holdMs: 5000 });
     expect(a.undo!()).toBe(true);
-    expect(queued().map((e) => e.data.month)).toEqual(['2026-11']);
+    expect(queued().map((e) => e.data.spendId)).toEqual(['s2']);
     expect(a.undo!()).toBe(false);
   });
 });

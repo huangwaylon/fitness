@@ -107,7 +107,7 @@ describe('write queue', () => {
   });
   it('reports only acked events: one undone while an earlier event is in flight is not acked (r2 N1)', async () => {
     const first = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true });
-    const second = enqueue('transfer', { month: '2026-10' });
+    const second = enqueue('highfive', {});
     handler = (body) => {
       // While the first event is on the wire, the user taps 取り消す on the second.
       if (body.id === first.id) expect(unqueue(second.id)).toBe(true);
@@ -148,7 +148,7 @@ describe('write queue', () => {
   });
   it('a held (undo-window) event does not block later events; it still goes once due (r2 N3)', async () => {
     const t = 1_000_000;
-    const held = enqueue('transfer', { month: '2026-10' }, t, 5000);
+    const held = enqueue('spend_void', { spendId: 's1' }, t, 5000);
     const tick = enqueue('checkin', { date: '2026-11-02', habit: 'h', done: true }, t);
     expect(nextRetryAt(t)).toBe(t); // the check-in is due now, not in 5 s
     let r = await flush(() => t);

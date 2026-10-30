@@ -11,7 +11,7 @@ import { parseInstant } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import {
-  DATE_RE, EVENT_TYPES, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, MONTH_RE, NUMERIC_COLUMNS, TABS, validMetricValue,
+  DATE_RE, EVENT_TYPES, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -490,8 +490,6 @@ function validEditData(type: string, d: Rec): boolean {
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');
     case 'spend_void':
       return isId(d.spendId) || (typeof d.spendId === 'number' && Number.isFinite(d.spendId));
-    case 'transfer_undo':
-      return typeof d.month === 'string' && MONTH_RE.test(d.month);
     default:
       return true;
   }
