@@ -18,6 +18,8 @@ export interface QueuedEvent {
   person?: PersonId;
   /** An edit of a week that locks (server-clock ms): rows stamped at or after it are refused (round 7 M1). */
   lockAt?: number;
+  /** Client time the server acked it (ms): set once it left the queue for `ackedEvents()`. */
+  ackedAt?: number;
 }
 
 export function newId(): string {
@@ -44,10 +46,35 @@ function saveQueue(q: QueuedEvent[]): void {
   unsaved = writeJson(localKV(), LIVE.queue, q) ? null : q;
 }
 
-/** Pairing as someone else: their unsent events are not mine to send. */
+/** Pairing as someone else: their unsent events are not mine to send (nor their acked ones mine to show). */
 export function clearQueue(): void {
   unsaved = null;
+  unsavedAcked = null;
   remove(localKV(), LIVE.queue);
+  remove(localKV(), LIVE.acked);
+}
+
+/**
+ * Events the server acked whose rows the snapshot cache doesn't have yet. Persisted next to the queue, so a cold
+ * open paints everything the user did before any fetch: without it, a tap acked just before the app was closed
+ * vanished from the screen until the next snapshot brought its row back. The store drops each one once the cache
+ * holds its id (`keepAcked`).
+ */
+let unsavedAcked: QueuedEvent[] | null = null;
+
+export function ackedEvents(): QueuedEvent[] {
+  if (unsavedAcked) return unsavedAcked;
+  const q = readJson<unknown>(localKV(), LIVE.acked);
+  return Array.isArray(q) ? q.filter(isEvent) : [];
+}
+
+export function keepAcked(list: QueuedEvent[]): void {
+  if (!list.length) {
+    unsavedAcked = null;
+    remove(localKV(), LIVE.acked);
+    return;
+  }
+  unsavedAcked = writeJson(localKV(), LIVE.acked, list) ? null : list;
 }
 
 /** `holdMs`: not sent before then (an undo window); it still shows in the optimistic view at once. */
@@ -166,6 +193,8 @@ export function flush(now: () => number = Date.now, expired: (ev: QueuedEvent, t
       if (r.ok) {
         sent++;
         acked.push(ev);
+        // into the acked list before it leaves the queue: closing the app between the two never loses it
+        keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
         saveQueue(cur.filter((x) => x.id !== ev.id));
         continue;
       }

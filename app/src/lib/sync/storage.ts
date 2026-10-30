@@ -14,6 +14,8 @@ export const LIVE = {
   key: 'island.key',
   me: 'island.me',
   queue: 'island.queue',
+  /** Events the server acked whose rows the snapshot cache hasn't fetched back yet (queue.ts `ackedEvents()`). */
+  acked: 'island.acked',
   /** The pre-IndexedDB snapshot cache (round 9): migrated once, then removed. */
   legacyCache: 'island.snapshot'
 } as const;

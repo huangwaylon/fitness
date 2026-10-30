@@ -6,10 +6,10 @@ import type { EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
-import { enqueue, flush, holdEvent, nextRetryAt, queued, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
+import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
-import { missesLock, notInCache } from './view.ts';
+import { missesLock, pendingAcked } from './view.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
 
 /** Background refreshes (app becoming visible) at most this often. */
@@ -24,11 +24,6 @@ const LOCK_LATE_MS = 5_000;
 export class LiveBackend implements Backend {
   #host: Host;
   #cache: SnapshotCache | null = null;
-  /**
-   * Events the server acked but the cache hasn't fetched back yet. They stay in the view until the reconcile
-   * refresh brings their rows; otherwise any recompute in between (the next tap) would undo them on screen.
-   */
-  #sent: QueuedEvent[] = [];
   #lastFetch = 0;
   /** Bumped per refresh; a response is applied only if no newer refresh started meanwhile. */
   #refreshSeq = 0;
@@ -46,10 +41,20 @@ export class LiveBackend implements Backend {
     return this.#cache;
   }
 
+  /**
+   * The queue, after the events the server acked but the cache hasn't fetched back yet (persisted: queue.ts
+   * `ackedEvents()`). Those stay in the view until a refresh brings their rows, so neither the next tap's recompute
+   * nor a cold open before the first fetch undoes them on screen; a fetch that already has them drops them here.
+   */
   events(): { list: QueuedEvent[]; unsent: Set<string> } {
-    if (this.#cache) this.#sent = notInCache(this.#cache, this.#sent);
+    let sent = ackedEvents();
+    if (this.#cache && sent.length) {
+      const still = pendingAcked(this.#cache, sent);
+      if (still.length !== sent.length) keepAcked(still);
+      sent = still;
+    }
     const q = queued();
-    return { list: [...this.#sent, ...q], unsent: new Set(q.map((e) => e.id)) };
+    return { list: [...sent, ...q], unsent: new Set(q.map((e) => e.id)) };
   }
 
   #start(): void {
@@ -118,7 +123,7 @@ export class LiveBackend implements Backend {
 
   reset(): void {
     this.#cache = null;
-    this.#sent = [];
+    keepAcked([]);
     this.#lastFetch = 0;
   }
 
@@ -172,10 +177,8 @@ export class LiveBackend implements Backend {
       toasts.show(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
       this.#host.changed();
     }
-    // Only events the server acked stay on screen until the snapshot has them. An event that left the
-    // queue because it was undone mid-flush must not come back (review r2 N1).
-    const known = new Set(this.#sent.map((e) => e.id));
-    this.#sent.push(...r.acked.filter((e) => !known.has(e.id)));
+    // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
+    // event that left the queue because it was undone mid-flush must not come back (review r2 N1).
     if (r.dropped.length) {
       toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
@@ -197,7 +200,7 @@ export class LiveBackend implements Backend {
    * (it disappears from the screen with this refresh) instead of letting it vanish silently (round 7 M1).
    */
   #noteRefused(cache: SnapshotCache): void {
-    const late = this.#sent.filter((e) => e.lockAt !== undefined);
+    const late = ackedEvents().filter((e) => e.lockAt !== undefined);
     if (!late.length) return;
     const atOf = new Map(cache.rows.events.map((r) => [String(r[2]), Date.parse(String(r[0]))]));
     if (late.some((e) => (atOf.get(e.id) ?? -Infinity) >= e.lockAt!)) toasts.show(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });

@@ -2,8 +2,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
-import { configureCache } from '#lib/sync/cache.ts';
-import { queued } from '#lib/sync/queue.ts';
+import { IDBFactory } from 'fake-indexeddb';
+import { cacheWritten, configureCache, type SnapshotCache } from '#lib/sync/cache.ts';
+import { ackedEvents, enqueue, flush, queued } from '#lib/sync/queue.ts';
+import { buildWeekView } from '#lib/model/week.ts';
+import { ACKED_MAX_UNSEEN_MS, composeModel, pendingAcked } from './view.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -72,5 +75,109 @@ describe('LiveBackend sync recovery (round 16 H2)', () => {
     expect(h.syncing).toBe(false);
     expect(h.status).toBe('ready');
     warn.mockRestore();
+  });
+});
+
+describe('LiveBackend cold open after an ack (no flash of the old state)', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
+  const TICK = { date: '2026-11-18', habit: 'protein_each_meal', done: true };
+  type Row = [string, string, string, string, string];
+  let idb: IDBFactory;
+  let serverEvents: Row[];
+  let snapshots: number;
+  let hang: boolean;
+  let hung: (() => void)[];
+  /** Let the requests that were left hanging answer now. */
+  const release = () => hung.splice(0).forEach((f) => f());
+
+  const reply = () => ({ ok: true, me: 'A', now: new Date(NOW).toISOString(), rev: 'r1', rows: { metrics: [], workouts: [], presence: [], events: serverEvents } });
+  const ticks = (b: LiveBackend) => {
+    const m = composeModel(b.cache()!, b.events().list, NOW);
+    return buildWeekView(m.state, m.me, m.now).people.A.habits?.ticksByDate['2026-11-18'] ?? [];
+  };
+  /** A new page load: same localStorage and IndexedDB, nothing in memory; resolves once it painted from the cache. */
+  const coldOpen = async () => {
+    await cacheWritten();
+    configureCache({ indexedDB: idb });
+    let painted!: () => void;
+    const ready = new Promise<void>((ok) => (painted = ok));
+    const h: Host = { ...host(), changed: () => painted() };
+    const b = new LiveBackend(h);
+    void b.refresh({});
+    await ready;
+    return { b, h };
+  };
+
+  beforeEach(async () => {
+    configureStorage({ local: new Mem() });
+    idb = new IDBFactory();
+    configureCache({ indexedDB: idb });
+    serverEvents = [];
+    snapshots = 0;
+    hang = false;
+    hung = [];
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+    configureTransport({
+      url: 'https://script.example/exec',
+      fetch: (async (_u: unknown, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as { action: string; id?: string; type?: string; data?: unknown };
+        if (body.action === 'event') {
+          serverEvents.push(['2026-11-18T12:00:05.000Z', 'A', body.id!, body.type!, JSON.stringify(body.data)]);
+          return new Response('{"ok":true}');
+        }
+        snapshots++;
+        if (hang) return new Promise<Response>((ok) => hung.push(() => ok(new Response(JSON.stringify(reply())))));
+        return new Response(JSON.stringify(reply()));
+      }) as typeof fetch
+    });
+    setKey('ab'.repeat(32), 'A');
+    const b = new LiveBackend(host());
+    await b.refresh({}); // the cache, before the tap
+  });
+
+  afterEach(() => {
+    release();
+    vi.useRealTimers();
+  });
+
+  it('a tick acked just before closing shows on the next open with no fetch, and a later snapshot does not double it', async () => {
+    const ev = enqueue('checkin', TICK, NOW);
+    expect((await flush(() => NOW)).acked.map((e) => e.id)).toEqual([ev.id]);
+    expect(queued()).toEqual([]);
+    expect(ackedEvents().map((e) => e.id)).toEqual([ev.id]);
+
+    hang = true; // the network never answers: the paint must not need it
+    const before = snapshots;
+    const { b } = await coldOpen();
+    expect(snapshots - before).toBeLessThanOrEqual(1); // the background refresh may start, but nothing waited for it
+    expect(ticks(b)).toEqual(['protein_each_meal']);
+    expect(b.events().unsent.size).toBe(0);
+
+    // the next snapshot brings the server row: the provisional copy goes, and the tick counts once
+    hang = false;
+    release();
+    const { b: c } = await coldOpen();
+    await c.refresh({});
+    expect(ticks(c)).toEqual(['protein_each_meal']);
+    expect(c.events().list).toEqual([]);
+    expect(ackedEvents()).toEqual([]);
+  });
+
+  it('an unacked tick survives a reload too (still queued)', async () => {
+    hang = true;
+    configureTransport({ url: 'https://script.example/exec', fetch: (async () => new Response('{"ok":false,"error":"busy"}')) as typeof fetch });
+    const ev = enqueue('checkin', TICK, NOW);
+    await flush(() => NOW);
+    const { b } = await coldOpen();
+    expect(b.events().unsent.has(ev.id)).toBe(true);
+    expect(ticks(b)).toEqual(['protein_each_meal']);
+  });
+
+  it('an acked event a much later fetch still lacks (deleted in the sheet) stops showing', () => {
+    const cache: SnapshotCache = { v: 1, me: 'A', rows: { metrics: [], workouts: [], presence: [], events: [] }, since: null, skewMs: 0, fetchedAt: NOW };
+    const ev = { id: 'x', ackedAt: NOW - 1000 };
+    expect(pendingAcked({ ...cache }, [ev])).toEqual([ev]);
+    expect(pendingAcked({ ...cache, fetchedAt: NOW - 1000 + ACKED_MAX_UNSEEN_MS }, [ev])).toEqual([]);
   });
 });
