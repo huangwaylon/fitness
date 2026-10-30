@@ -12,15 +12,17 @@ Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.m
 2. **Point the Pages build at it:** `gh variable set GAS_URL --body 'https://script.google.com/macros/s/…/exec'`,
    then re-run the *Deploy UI to GitHub Pages* workflow (or push). Until `GAS_URL` is set, the site shows
    「まだ設定されていません / Not set up yet」 with a link to the demo.
-3. **Shortcut on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §5 (gym
+3. **Shortcuts on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §5 (gym
    Arrive), §6 (the optional 84-day baseline).
 4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
    **Add to Home Screen** *first*, open it from the icon, and paste that person's key ([google-setup.md §7](google-setup.md#7-pairing-the-phones)).
 5. **Day 8 or later:** run the `whoami` curl again ([google-setup.md §9](google-setup.md#9-does-it-need-the-shared-finances-cloud-project-or-a-published-consent-screen)).
 
 ## 2. Deploying the UI
-Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `npm ci`, `npm run build` with
-`VITE_GAS_URL=${{ vars.GAS_URL }}`, upload `app/build-pages/`. Locally: `cd app && npm run build` (output
+Every push to `main` that touches `app/**` runs `.github/workflows/pages.yml`: `npm ci`, `npm run check`,
+`npm run knip`, `npx vitest run`, `npm run build` with `VITE_GAS_URL=${{ vars.GAS_URL }}`, the Playwright demo tests
+(`npm run e2e`), then the deploy of `app/build-pages/`. Pull requests (Dependabot's included) run the same checks
+without deploying. Locally: `cd app && npm run build` (output
 `build-pages/`), `npx vite preview` to try it, `npm run dev` for development (without `VITE_GAS_URL` in `.env` it
 runs on demo data). The site has a strict CSP (a `<meta>` tag): it can only talk to itself and the Apps Script
 origins. Before a model change: `npx vitest run`, `npm run check`, `npm run bench` (rows from ≈ hourly Shortcut runs at years 1 and 3;
@@ -56,12 +58,12 @@ curl -sSL "$GAS_URL" -H 'Content-Type: text/plain;charset=utf-8' --data '{"actio
 | Anything else, or a timeout | Apps Script is down or the URL is wrong |
 
 **The repo's build** is line 3 of the committed `app/apps-script/Code.js`: `// build: <12 hex>`
-(`sed -n 's#^// build: ##p' app/apps-script/Code.js`). `npm run gas:build` prints it, `bundle.test.ts` pins it, and
+(`sed -n 's#^// build: ##p' app/apps-script/Code.js`). `npm run gas:build` prints it, `bundle.test.ts` checks the committed bundle is up to date, and
 `whoami` returns it too (`{ok, me, build}`, for the app's sync screen). It is the first 12 hex characters of SHA-256
 over the bundle, so any code change changes it.
 
-**The monitor** (CI, WS3): a scheduled GitHub workflow runs the probe against the `GAS_URL` repo variable (a few times
-a day) and fails, so GitHub e-mails the owner, unless the reply is JSON with `ok:true` and `build` equal to the repo's
+**The monitor** (`.github/workflows/health.yml`): runs the probe against the `GAS_URL` repo variable every 6 hours
+(and on demand) and fails, so GitHub e-mails the owner, unless the reply is JSON with `ok:true` and `build` equal to the repo's
 build. A health probe is not a secret: the URL isn't one either (google-setup.md §4).
 
 **Redeploying** is always google-setup.md §11 (new *version* on the existing deployment, never a new deployment),
