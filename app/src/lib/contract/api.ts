@@ -22,10 +22,14 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
   uploads: ['bytes']
 };
 
+/**
+ * The event types the server accepts and the model reads. The sheet also holds rows of removed types (the privacy
+ * toggles' `share`, the yen economy's `approve`, `transfer`, `transfer_undo`): the model ignores any type not listed.
+ */
 export const EVENT_TYPES = [
-  'checkin', 'confirm', 'spend', 'approve', 'transfer', 'harvest', 'highfive', 'pref',
+  'checkin', 'confirm', 'spend', 'harvest', 'highfive', 'pref',
   // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
-  'metric_set', 'workout_edit', 'workout_add', 'spend_void', 'transfer_undo'
+  'metric_set', 'workout_edit', 'workout_add', 'spend_void'
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -41,8 +45,6 @@ export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) |
 
 /** A local date `YYYY-MM-DD`. */
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-/** A month `YYYY-MM` (`transfer`, `transfer_undo`). */
-export const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 /** A `workout_add` id: `m:` + up to 100 word characters or dashes. */
 export const MANUAL_ID_RE = /^m:[\w-]{1,100}$/;
 

@@ -92,7 +92,7 @@ describe('reduce: events', () => {
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['B', Date.parse(at(WK, '13:00'))]]);
   });
 
-  it('the old economy’s approve, transfer and transfer_undo rows are read and ignored', () => {
+  it('rows of the removed approve, transfer and transfer_undo types are read and ignored, not a crash', () => {
     const old = [
       ev(at('2026-12-02'), 'A', 'approve', { spendId: 7 }),
       ev(at('2026-12-02'), 'A', 'transfer', { month: '2026-11' }),

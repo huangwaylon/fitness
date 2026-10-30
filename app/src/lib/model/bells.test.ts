@@ -227,7 +227,7 @@ describe('spends: the pot must cover it, the buyer can undo it', () => {
     const at = jst(MON, '10:00');
     const s = reduce(plus(r, { events: [
       ev(at, 'A', 'spend', { spendId: 'y1', label: 'カフェ', amountYen: 2000 }),
-      ev(at, 'B', 'approve', { spendId: 'y1' }),
+      ev(at, 'B', 'approve' as EventRow[3], { spendId: 'y1' }), // a removed type: its rows are ignored
       ev(at, 'A', 'spend', { spendId: 'x1', pot: 'jar', item: 'ice', label: 'アイス', bells: 500 }),
       ev(at, 'A', 'spend', { spendId: 'x2', pot: 'treat', item: 'ice', label: 'アイス', bells: 1.5 }),
       ev(at, 'A', 'spend', { spendId: 'x3', pot: 'treat', item: 'ice', label: 'アイス', bells: -5 }),

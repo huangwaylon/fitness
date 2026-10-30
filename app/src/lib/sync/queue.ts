@@ -95,7 +95,7 @@ const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.n
 
 /**
  * What an event changes, for ordering: a later event on the same thing (a habit tick of the same day, the same
- * workout, metric, spend or month) never passes a held one, so the server keeps the order the screen showed
+ * workout, metric or spend) never passes a held one, so the server keeps the order the screen showed
  * (round 7 M2). Null: nothing else touches it.
  */
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
@@ -105,8 +105,7 @@ function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
     case 'metric_set': return `metric|${String(d.date)}|${String(d.metric)}`;
     case 'workout_edit': return `workout|${String(d.id)}`;
     case 'confirm': return `${d.kind === 'workout' ? 'workout' : 'visit'}|${String(d.id)}`;
-    case 'spend_void': case 'approve': return `spend|${String(d.spendId)}`;
-    case 'transfer': case 'transfer_undo': return `transfer|${String(d.month)}`;
+    case 'spend_void': return `spend|${String(d.spendId)}`;
     default: return null;
   }
 }

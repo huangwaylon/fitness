@@ -11,7 +11,7 @@
 // Other fields (e.g. "calories") are ignored. A list whose length differs from `dates` is dropped with a warning and
 // the rest is kept. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
 import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
-import { isRec, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
+import { isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedWorkout {
@@ -60,8 +60,8 @@ export function shortcutDate(v: string): { day: string; time: string } | null {
   if (ap === 'am' || ap === '午前') hour %= 12;
   const day = `${y}-${pad(mo)}-${pad(d)}`;
   const time = `${pad(hour)}:${mi ?? '00'}:${sec ?? '00'}`;
-  // A real calendar day (no Feb 30) and a real time.
-  if (new Date(Date.UTC(Number(y), mo - 1, Number(d))).toISOString().slice(0, 10) !== day || hour > 23 || Number(mi ?? 0) > 59) return null;
+  // A real calendar day (no Feb 30) and a real time (no 08:59:75, which would make a NaN duration).
+  if (new Date(Date.UTC(Number(y), mo - 1, Number(d))).toISOString().slice(0, 10) !== day || hour > 23 || Number(mi ?? 0) > 59 || Number(sec ?? 0) > 59) return null;
   return { day, time };
 }
 
@@ -123,7 +123,13 @@ export function parseShortcut(body: unknown): ParsedBody {
       const day = days[i];
       const n = amount(raw);
       if (!day || n === null) { skipped++; return; }
-      if (metric !== 'weight') { metrics.push({ date: day.day, metric, value: Math.round(n) }); return; }
+      if (metric !== 'weight') {
+        // the same ceiling a manual edit gets (one bad line must not become the day's permanent maximum)
+        const v = Math.round(n);
+        if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day.day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
+        metrics.push({ date: day.day, metric, value: v });
+        return;
+      }
       if (n === 0) return; // no weigh-in that day
       const kg = roundKg(n);
       if (kg < WEIGHT_KG.min || kg > WEIGHT_KG.max) { skipped++; return; }
@@ -148,12 +154,13 @@ export function parseShortcut(body: unknown): ParsedBody {
         const e = shortcutDate(ends[i]);
         const start = s && `${s.day}T${s.time}+09:00`;
         const end = e && `${e.day}T${e.time}+09:00`;
-        if (!name || !s || !start || !end || Date.parse(end) < Date.parse(start)) { skipped++; return; }
+        const ms = start && end ? Date.parse(end) - Date.parse(start) : NaN;
+        if (!name || !s || !start || !end || !Number.isFinite(ms) || ms < 0) { skipped++; return; }
         const type = canonicalWorkoutType(name);
         if (/[^\x00-\x7F]/.test(type) && !unknownTypes.includes(type)) unknownTypes.push(type);
         workouts.push({
           id: workoutKey(type, start), date: s.day, type, start, end,
-          durationMin: Math.round(((Date.parse(end) - Date.parse(start)) / 60000) * 10) / 10,
+          durationMin: Math.round((ms / 60000) * 10) / 10,
           avgHr: hrs.length ? amount(hrs[i]) : null
         });
       });

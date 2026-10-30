@@ -310,7 +310,6 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     { type: 'workout_edit', data: { id: 'w1', strength: null, excluded: true } },
     { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
     { type: 'spend_void', data: { spendId: 'sp-1' } },
-    { type: 'transfer_undo', data: { month: '2026-09' } },
     { type: 'checkin', data: { date: '2026-10-26', habit: 'veg_two_meals', done: true, edit: true } }
   ];
 
@@ -367,7 +366,10 @@ describe('edit events (history-and-editing.md §4.1)', () => {
       { type: 'workout_add', data: { id: 'm:2', date: '2026-10-28', type: 'Underwater Basket Weaving', durationMin: 30 } }, // L7
       { type: 'share', data: { key: 'steps', value: false } }, // L3: no longer an event type
       { type: 'spend_void', data: {} },
-      { type: 'transfer_undo', data: { month: '2026-13' } }
+      // the yen economy's types are gone: refused like any unknown type (old rows are still read and ignored)
+      { type: 'approve', data: { spendId: 7 } },
+      { type: 'transfer', data: { month: '2026-10' } },
+      { type: 'transfer_undo', data: { month: '2026-09' } }
     ];
     bad.forEach((e, i) => expect(a('event', { id: `c${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events')).toEqual([]);
