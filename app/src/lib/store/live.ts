@@ -86,10 +86,18 @@ export class LiveBackend implements Backend {
     this.#lastFetch = Date.now();
     const seq = ++this.#refreshSeq;
     h.syncing = true;
-    await this.#flush(false);
-    const r = await refreshSnapshot();
-    if (seq !== this.#refreshSeq) return; // a newer refresh owns the view (and `syncing`)
-    h.syncing = false;
+    let r: Awaited<ReturnType<typeof refreshSnapshot>>;
+    try {
+      await this.#flush(false);
+      r = await refreshSnapshot();
+    } catch (e) {
+      // never leave the pill spinning and the sync buttons disabled (round 16 H2)
+      console.warn('refresh failed', e);
+      r = { ok: false, error: 'unavailable' };
+    } finally {
+      if (seq === this.#refreshSeq) h.syncing = false; // else a newer refresh owns `syncing`
+    }
+    if (seq !== this.#refreshSeq) return; // a newer refresh owns the view
     if (r.ok) {
       this.#noteRefused(r.cache);
       this.#cache = r.cache;

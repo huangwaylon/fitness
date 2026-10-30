@@ -185,9 +185,10 @@ export function flush(now: () => number = Date.now, expired: (ev: QueuedEvent, t
     return { sent, acked, dropped, expired: late, remaining: queued().length, error };
   })();
   flushing = p;
-  void p.then(() => {
+  // cleared however it settles (round 16 H2): a throw (storage) must not wedge every later flush
+  void p.finally(() => {
     if (flushing === p) flushing = null;
-  });
+  }).catch(() => {});
   return p;
 }
 
