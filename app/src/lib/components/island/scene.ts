@@ -91,7 +91,7 @@ export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as cons
 const PLATEAU_BOTTOM = PLATEAU.y1;
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the stage's front beach (below y 360 − TUCK_U) tucks under
  *  the top of the fixed chrome slot, so the shore runs down to the dialogue instead of an empty sea band. */
-const HORIZON_U = 8;
+export const HORIZON_U = 8;
 const TUCK_U = 34;
 
 /** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the jar, on columns ±2/±3 of the

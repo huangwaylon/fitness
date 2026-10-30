@@ -3,6 +3,7 @@
   // one flower per tile on the NH grid (columns ±2/±3, the beds' back row and the front row), the back row
   // one species and the front row another. FLOWER_U tall (≈ 0.45 × a villager). Contact shadows are drawn
   // in Ground.svelte. Winter: roses and pansies, each with a little snow cap.
+  // A tap wiggles a flower (SceneTaps.svelte finds it by data-flower="row-col").
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { BEDS, BED_ROWS, BED_X, FLOWER_SCALE, FLOWER_U, u } from './scene.ts';
@@ -15,8 +16,8 @@
 
 {#each BED_ROWS as y, r (y)}
   {@const id = r ? bed.front : bed.back}
-  {#each xs as x (x)}
-    <span class="fl" style:left={u(x)} style:top={u(y)} style:z-index={r ? 53 : 49}>
+  {#each xs as x, c (x)}
+    <span class="fl" data-flower="{r}-{c}" style:left={u(x)} style:top={u(y)} style:z-index={r ? 53 : 49}>
       <OfficialArt key={flowerArt(id)} size={u(FLOWER_U * (FLOWER_SCALE[id] ?? 1))} />
       {#if season === 'winter'}<span class="cap"></span>{/if}
     </span>

@@ -46,6 +46,7 @@
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
   import Balloon from './Balloon.svelte';
+  import SceneTaps from './SceneTaps.svelte';
   import { IslandLife } from './islandLife.svelte.ts';
   import { TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { actors } from '../motion/director.svelte.ts';
@@ -98,6 +99,9 @@
   // A tap anywhere else (the popup itself lets taps through, so tapping it closes it too) or Esc closes it; it never
   // times out (user 2026-10-30).
   let openTree = $state<PersonId | null>(null);
+  /** The pointerdown that just closed a popup: on scenery, that tap only closes it (SceneTaps). */
+  let closedBy: Event | null = null;
+  let sceneEl = $state<HTMLElement>();
   $effect(() => {
     if (covered) openTree = null;
   });
@@ -105,7 +109,10 @@
     if (!openTree) return;
     // Capture phase, so it runs before the tapped control's own handler; the tap still does what it does.
     const away = (e: PointerEvent) => {
-      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn')) openTree = null;
+      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn')) {
+        openTree = null;
+        closedBy = e;
+      }
     };
     const esc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') openTree = null;
@@ -124,7 +131,7 @@
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
 
-<div class="if-scene scene" data-season={season} data-tod={tod} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
+<div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
   <Sky {tod} fireworks={ev.fireworks || ev.newYear || life.devFireworks}>
     {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
   </Sky>
@@ -164,6 +171,10 @@
     {/each}
 
     <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" />
+    {#if live}
+      <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
+      <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} />
+    {/if}
     <div class="tint"></div>
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>
   </div>
