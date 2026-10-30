@@ -132,7 +132,7 @@
   .cross { stroke: color-mix(in srgb, var(--text) 40%, transparent); stroke-width: 1; }
   .ring { fill: none; stroke: var(--text); stroke-width: 2; }
   .tip {
-    position: absolute; top: -6px; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
+    position: absolute; top: 0; transform: translateX(-50%); pointer-events: none; white-space: nowrap;
     display: grid; gap: 2px; padding: 6px 10px; border-radius: var(--r-chip); background: var(--c-cream); color: var(--c-ink);
     box-shadow: var(--sh-float); font-size: var(--fs-s); font-weight: 700; text-align: center;
   }

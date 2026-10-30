@@ -33,7 +33,7 @@
     <label class="top" for="wi-kg"><b>{label}</b><span class="sub money">{sub}</span>{#if old !== null}<span class="old money">({kgText(old)})</span>{/if}</label>
     <div class="field">
       <input id="wi-kg" bind:this={input} bind:value={text} type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done"
-        placeholder={old !== null ? old.toFixed(1) : '00.0'} aria-invalid={bad} aria-describedby="wi-hint" maxlength="6" />
+        placeholder={old !== null ? old.toFixed(1) : '00.0'} aria-invalid={bad} aria-describedby="wi-hint" maxlength="6" size="6" />
       <span class="unit" aria-hidden="true">kg</span>
     </div>
     <p id="wi-hint" class="hint" class:bad>{t('weight.range')}</p>
@@ -48,14 +48,14 @@
 </form>
 
 <style>
-  .wi { display: grid; gap: 16px; }
-  .screen { display: grid; gap: 8px; padding: 14px 16px 12px; }
+  .wi { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .screen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 16px 12px; min-width: 0; }
   .top { display: flex; align-items: baseline; gap: 10px; font-size: var(--fs-body); flex-wrap: wrap; }
   .sub { color: var(--text-soft); font-size: var(--fs-body); }
   .old { margin-left: auto; color: var(--text-soft); font-size: var(--fs-body); }
   .field { display: flex; align-items: baseline; gap: 8px; }
   input {
-    flex: 1; min-width: 0; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); text-align: right;
+    flex: 1; min-width: 0; width: 100%; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); text-align: right;
     font: 700 max(var(--fs-input), var(--fs-hero))/1.1 var(--font-num); color: var(--c-ink); background: var(--fill-on-surface);
     box-shadow: inset 0 0 0 2px var(--lip); font-variant-numeric: tabular-nums;
   }

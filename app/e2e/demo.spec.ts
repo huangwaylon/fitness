@@ -89,3 +89,33 @@ test('きろく: editing a day’s steps', async ({ page }) => {
   await expect(sheet(page).getByText('12,345', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'もとに戻す' })).toBeVisible();
 });
+
+test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', async ({ page }) => {
+  await page.goto('?demo');
+  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+  await expect(ribbon).toBeVisible();
+  const bells = await ribbon.getAttribute('aria-label');
+  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  await page.locator('.app[data-app=kiroku]').click();
+  await expect(sheet(page).getByRole('heading', { name: '体重のながれ' })).toBeVisible();
+  await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
+  await expect(sheet(page).getByRole('img', { name: /の体重 12週間/ })).toBeVisible();
+  await sheet(page).getByRole('button', { name: '体重を記録' }).click();
+  const input = sheet(page).getByRole('textbox');
+  await expect(input).toHaveAttribute('inputmode', 'decimal');
+  await input.fill('20,0');
+  await input.fill('300.5');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await input.fill('66,4');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(page.getByText('体重を記録しました')).toBeVisible();
+  await expect(sheet(page).locator('.recent tbody tr').first()).toContainText('66.4');
+  await sheet(page).getByRole('button', { name: /目標を(決める|変える)/ }).click();
+  await sheet(page).getByRole('textbox').fill('65');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(sheet(page).getByText('目標 65.0 kg')).toBeVisible();
+  // weight never earns: today's ベル didn't move
+  await page.keyboard.press('Escape');
+  await expect(ribbon).toHaveAttribute('aria-label', bells!);
+});

@@ -149,7 +149,7 @@ function demoRows(now: number): SnapshotRows {
   // Body weight (ADR 0020): 12 weeks of morning weigh-ins, gently down with day-to-day water noise, a few days
   // skipped, synced after breakfast; and a goal each. Weight never earns, so none of this moves a ベル.
   const WEIGHT_DEMO: Record<PersonId, { start: number; perWeek: number; noise: number; skip: number; goal: number }> = {
-    A: { start: 72.6, perWeek: -0.35, noise: 0.9, skip: 0.15, goal: 68 },
+    A: { start: 72.6, perWeek: -0.35, noise: 0.9, skip: 0.15, goal: 66 },
     B: { start: 58.4, perWeek: -0.2, noise: 0.7, skip: 0.25, goal: 55.5 }
   };
   const wStart = addDays(cur, -7 * 12);
