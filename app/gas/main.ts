@@ -12,7 +12,7 @@ import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
 import {
-  DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
+  DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type GymReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -453,7 +453,7 @@ function gym(me: PersonId, body: Rec): GymReply {
 
 function event(me: PersonId, body: Rec): EventReply {
   const id = body.id;
-  if (typeof id !== 'string' || id.length === 0 || id.length > 128) return fail('bad_request');
+  if (!isId(id)) return fail('bad_request');
   if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
   const data = body.data === undefined ? {} : body.data;
   if (!isRec(data)) return fail('bad_request');
@@ -475,7 +475,6 @@ function event(me: PersonId, body: Rec): EventReply {
 }
 
 const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
-const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
 /**
  * Shape checks per event type. Only the shape: who may edit what, which weeks are still open, whether the wallet covers a

@@ -26,7 +26,7 @@ interface ParsedWorkout {
   durationMin: number;
   avgHr: number | null;
 }
-export interface ParsedBody {
+interface ParsedBody {
   metrics: ParsedMetric[];
   workouts: ParsedWorkout[];
   /** Lines dropped because a value or date was unreadable. */

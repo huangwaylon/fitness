@@ -5,7 +5,7 @@ import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/r
 import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
+  DATE_RE, EVENT_TYPES, isId, GYM_LABEL_MAX_CHARS, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
   type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
@@ -54,9 +54,9 @@ export const editableAt = (date: LocalDate, t: number): boolean => date <= local
 
 // ---------- records ----------
 
-export interface Timed<T> { at: number; v: T }
+interface Timed<T> { at: number; v: T }
 
-export interface WorkoutRec {
+interface WorkoutRec {
   at: number;
   id: string;
   date: LocalDate;
@@ -322,7 +322,6 @@ export function parseMenu(v: unknown): WalletItem[] | null {
 }
 
 const isStrengthChoice = (v: unknown): v is boolean | null => v === null || typeof v === 'boolean';
-const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
 /**
  * One handler per event type: each accepts (indexes) the event or ignores it. The edits (history-and-editing.md §4)
