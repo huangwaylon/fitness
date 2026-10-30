@@ -63,7 +63,9 @@ describe('villager roster', () => {
     expect(ROSTER.goldie.looksRight).toBe(true);
     expect(ROSTER.anchovy.looksRight).toBe(false);
     // Outfit numbers would read backwards if mirrored.
-    for (const id of ['raymond', 'kid-cat', 'agent-s', 'rocket', 'tad', 'octavian'] as const) expect(ROSTER[id].noMirror).toBe(true);
+    for (const id of ['raymond', 'kid-cat', 'agent-s', 'rocket', 'tad', 'octavian', 'coach', 'tank', 'chabwick', 'curt', 'axel'] as const)
+      expect(ROSTER[id].noMirror).toBe(true);
+    expect(ROSTER.marcie.noMirror).toBe(true); // the star mark over one eye
     expect(ROSTER.bob.noMirror).toBe(false);
   });
 });
