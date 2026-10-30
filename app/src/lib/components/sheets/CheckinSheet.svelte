@@ -14,11 +14,9 @@
   let { open = $bindable(), onclose }: { open: boolean; onclose?: () => void } = $props();
 
   const ICONS: Record<string, { id: string; vb: string }> = {
-    teishoku_lunch: { id: 'i-tray', vb: '0 0 40 40' },
-    low_salt_day: { id: 'i-salt', vb: '0 0 40 40' },
-    veg_two_meals: { id: 'i-veg', vb: '0 0 40 40' },
-    eat_lunch: { id: 'i-bowl', vb: '0 0 48 48' },
-    snack_swap: { id: 'i-snack', vb: '0 0 40 40' }
+    protein_each_meal: { id: 'i-tray', vb: '0 0 40 40' },
+    no_sweets: { id: 'i-snack', vb: '0 0 40 40' },
+    veg_two_meals: { id: 'i-veg', vb: '0 0 40 40' }
   };
 
   const view = $derived(week.view);
@@ -71,7 +69,7 @@
       <div class="habits">
         {#each me.habits?.keys ?? [] as key (key)}
           {@const on = ticks.includes(key)}
-          {@const ic = ICONS[key] ?? ICONS.eat_lunch}
+          {@const ic = ICONS[key] ?? ICONS.veg_two_meals}
           <button type="button" class="habit" class:on role="switch" aria-checked={on} onclick={() => toggle(key)}>
             <span class="ic"><svg viewBox={ic.vb} aria-hidden="true"><use href="#{ic.id}" /></svg></span>
             <span class="txt">{t(`habit.${key}`)}{#if has(`habit.${key}.hint`)}<small>{t(`habit.${key}.hint`)}</small>{/if}</span>

@@ -20,7 +20,7 @@ const metric = (at: string, person: PersonId, date: string, m: 'steps' | 'exerci
 const workout = (at: string, person: PersonId, id: string, date: string, type: string, min: number): WorkoutRow =>
   [at, person, id, date, type, jst(date, '18:00'), new Date(ms(date, '18:00') + min * 60_000).toISOString(), min, 110];
 
-const HABITS: Record<PersonId, string[]> = { A: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], B: ['eat_lunch', 'snack_swap', 'veg_two_meals'] };
+const HABITS: Record<PersonId, string[]> = { A: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], B: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] };
 
 /** A good week for both (score ≥ 60, so each earns a ¥1,000 purse): steps, minutes, two Pilates days, all ticks. */
 function goodWeek(): SnapshotRows {
@@ -187,18 +187,18 @@ describe('check-ins', () => {
     const at = jst(DAYS[6], '20:00');
     const rows = withRows(goodWeek(), {
       events: [
-        ev(at, 'A', 'checkin', { date: DAYS[0], habit: 'low_salt_day', done: false, edit: true }),
-        ev(at, 'A', 'checkin', { date: DAYS[1], habit: 'low_salt_day', done: false })
+        ev(at, 'A', 'checkin', { date: DAYS[0], habit: 'no_sweets', done: false, edit: true }),
+        ev(at, 'A', 'checkin', { date: DAYS[1], habit: 'no_sweets', done: false })
       ]
     });
     const sc = scoreAt(rows, 'A', LIVE);
     expect(sc.categories.pear.actual).toBe(20);
     const log = editLog(reduce(rows));
-    expect(log).toMatchObject([{ by: 'A', date: DAYS[0], field: 'checkin', subject: 'low_salt_day', before: true, after: false }]);
+    expect(log).toMatchObject([{ by: 'A', date: DAYS[0], field: 'checkin', subject: 'no_sweets', before: true, after: false }]);
   });
 
   it('edit:true on a locked week is refused', () => {
-    const rows = withRows(goodWeek(), { events: [ev(new Date(THU_AFTER).toISOString(), 'A', 'checkin', { date: DAYS[0], habit: 'low_salt_day', done: false, edit: true })] });
+    const rows = withRows(goodWeek(), { events: [ev(new Date(THU_AFTER).toISOString(), 'A', 'checkin', { date: DAYS[0], habit: 'no_sweets', done: false, edit: true })] });
     expect(reduce(rows).checkins.A.filter((c) => c.edit)).toEqual([]);
   });
 });

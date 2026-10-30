@@ -134,7 +134,7 @@ export interface DayBells {
 export interface PotBalance {
   /** earned − spent (never negative: a spend above the balance is ignored on read). */
   balance: number;
-  /** This pot's share of everything earned so far (30% / 70% of the total, on totals). */
+  /** This pot's share of everything earned so far (POTS.treatPercent% to おやつ, the rest to 旅, on totals). */
   earned: number;
   /** Sum of the accepted, not voided spends from this pot. */
   spent: number;

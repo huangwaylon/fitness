@@ -39,7 +39,7 @@ Edits from きろく (`docs/design/history-and-editing.md` §4; added 2026-10-29
 **ベル on read (ADR 0019, `model/bells.ts`).** A day's earnings are recomputed from the rows, so they change with late
 syncs and edits until the week locks (Wednesday 04:00 JST after its Sunday); after that they are fixed at the lock
 (rows stamped later never count). Up and down: there is no top-up or "keep the max" any more. A day's ベル land in the
-pots that day, the weekly bonus at Sunday 19:30. Pots: おやつ = floor(total × 30%), 旅 = the rest, on all-time
+pots that day, the weekly bonus at Sunday 19:30. Pots: おやつ = floor(total × `POTS.treatPercent`%) (20%), 旅 = the rest, on all-time
 totals; each balance = its share − its accepted, not voided spends. Spends and voids replay in server order; a spend
 whose pot didn't cover it at its `at` (earned by then − spent so far) is ignored, so no balance goes negative.
 
@@ -97,7 +97,7 @@ Every request has `{key, action, ...}`. Every reply is JSON: `{ok:true, ...}` or
 - The parser: unit tests (ported from the shortcut-ingest tests).
 - The GAS backend: vitest with an in-memory fake of `SpreadsheetApp`/`PropertiesService`/`LockService`/`CacheService`/`ContentService`. It covers auth, never-throws, append-only + higher-only metrics, dedupe, snapshot `since`, rate limit and body cap.
 - The model's edits: `model/history.test.ts` (lowering, later higher syncs, lock, top-up, own data only, workouts, check-in fixes, voids, transfer undo, the change log, the history views).
-- The ベル economy: `scoring/bells.test.ts` (the daily table, the max of the minute sources, caps, tsuyu, 正月, badges, the ふたりボーナス, the 30/70 split) and `model/bells.test.ts` (earnings landing as they happen, the bonus at Sunday 19:30, locks, spends that the pot can't cover, voids, menus last-writer-wins, the ledger).
+- The ベル economy: `scoring/bells.test.ts` (the daily table, the max of the minute sources, caps, tsuyu, 正月, badges, the ふたりボーナス, the 20/80 split) and `model/bells.test.ts` (earnings landing as they happen, the bonus at Sunday 19:30, locks, spends that the pot can't cover, voids, menus last-writer-wins, the ledger).
 - The model: was differential-tested against the old server (`getWeekView`, settlement, payout) on a 10-week timeline and on the real DB; those server outputs are frozen golden fixtures (`app/src/lib/model/fixtures/`, `golden.test.ts`), regenerated on purpose with `GOLDEN_UPDATE=1` when a rule changes (round 11: the ベル economy).
 - The client: queue/retry/merge unit tests.
 

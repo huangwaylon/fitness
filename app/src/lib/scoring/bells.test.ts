@@ -2,12 +2,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CheckinTick, DayMetrics, Visit, Workout } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
-import { RULES } from '#lib/config/rules.ts';
+import { POTS, RULES } from '#lib/config/rules.ts';
 import { duoBonus, earnWeek, splitPots, type EarnInput } from './bells.ts';
 
 const WK = '2026-11-02';
 const D = weekDays(WK);
-const HABITS = ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'];
+const HABITS = ['protein_each_meal', 'no_sweets', 'veg_two_meals'];
 
 let n = 0;
 const workout = (date: string, type: string, durationMin: number, extra: Partial<Workout> = {}): Workout => ({
@@ -38,11 +38,11 @@ function perfect(weekKey = WK): EarnInput {
 }
 
 describe('earnWeek: the daily table (ADR 0019 §3)', () => {
-  it('a perfect day is 225 + 200 + 300 + 300 = 1,025 ベル, split per fruit', () => {
+  it('a perfect day is 225 + 200 + 400 + 300 = 1,125 ベル, split per fruit', () => {
     const d = earnWeek(perfect()).days[0];
-    expect(d.parts).toEqual({ peach: 225, apple: 200, coconut: 300, pear: 300 });
-    expect(d.bells).toBe(1025);
-    expect(earnWeek(perfect()).daily).toBe(7 * 1025);
+    expect(d.parts).toEqual({ peach: 225, apple: 200, coconut: 400, pear: 300 });
+    expect(d.bells).toBe(1125);
+    expect(earnWeek(perfect()).daily).toBe(7 * 1125);
   });
 
   it('an empty day earns nothing', () => {
@@ -93,16 +93,16 @@ describe('earnWeek: the daily table (ADR 0019 §3)', () => {
     expect(apple('2026-11-02', 0, 90)).toBe(0); // November
   });
 
-  it('🥥 300 on a strength day, at most once a day', () => {
+  it('🥥 400 on a strength day, at most once a day', () => {
     const coconut = (w: Workout[], v: Visit[] = []) => day0({ workouts: w, visits: v }).parts.coconut;
-    expect(coconut([workout(D[0], 'Pilates', 15)])).toBe(300);
+    expect(coconut([workout(D[0], 'Pilates', 15)])).toBe(400);
     expect(coconut([workout(D[0], 'Pilates', 14)])).toBe(0);
-    expect(coconut([workout(D[0], 'Pilates', 30), workout(D[0], 'Traditional Strength Training', 30)], [visit(D[0], true)])).toBe(300);
+    expect(coconut([workout(D[0], 'Pilates', 30), workout(D[0], 'Traditional Strength Training', 30)], [visit(D[0], true)])).toBe(400);
     expect(coconut([workout(D[0], 'Yoga', 30)])).toBe(0); // ask type, unanswered
-    expect(coconut([workout(D[0], 'Yoga', 30, { includesStrength: true })])).toBe(300);
-    expect(coconut([workout(D[0], 'Running', 30, { strengthOverride: true })])).toBe(300); // きろく override
+    expect(coconut([workout(D[0], 'Yoga', 30, { includesStrength: true })])).toBe(400);
+    expect(coconut([workout(D[0], 'Running', 30, { strengthOverride: true })])).toBe(400); // きろく override
     expect(coconut([workout(D[0], 'Pilates', 30, { strengthOverride: false })])).toBe(0);
-    expect(coconut([], [visit(D[0], true)])).toBe(300); // PT studio
+    expect(coconut([], [visit(D[0], true)])).toBe(400); // PT studio
     expect(coconut([], [visit(D[0], false, null)])).toBe(0); // unconfirmed gym visit
     expect(coconut([], [visit(D[0], false, true, 29)])).toBe(0); // too short
   });
@@ -110,14 +110,14 @@ describe('earnWeek: the daily table (ADR 0019 §3)', () => {
   it('🥥 confirmed gym visits count on at most 2 days a week (auto places and workouts are not limited)', () => {
     const e = earnWeek(input({ visits: D.slice(0, 4).map((d) => visit(d, false, true)), workouts: [workout(D[5], 'Pilates', 30)] }));
     expect(e.days.map((d) => d.strength)).toEqual([true, true, false, false, false, true, false]);
-    expect(e.fruits.coconut.weekBells).toBe(900);
+    expect(e.fruits.coconut.weekBells).toBe(1200);
   });
 
   it('🍐 100 per distinct tick of my 3 habits, max 3 a day', () => {
     const pear = (c: CheckinTick[]) => day0({ checkins: c }).parts.pear;
-    expect(pear(ticks(D[0], ['teishoku_lunch']))).toBe(100);
-    expect(pear(ticks(D[0], ['teishoku_lunch', 'teishoku_lunch']))).toBe(100);
-    expect(pear(ticks(D[0], ['teishoku_lunch', 'eat_lunch']))).toBe(100); // not my habit
+    expect(pear(ticks(D[0], ['no_sweets']))).toBe(100);
+    expect(pear(ticks(D[0], ['no_sweets', 'no_sweets']))).toBe(100);
+    expect(pear(ticks(D[0], ['no_sweets', 'eat_lunch']))).toBe(100); // not my habit
     expect(pear(ticks(D[0]))).toBe(300);
   });
 
@@ -130,7 +130,7 @@ describe('earnWeek: the daily table (ADR 0019 §3)', () => {
     const wk2 = '2027-01-04'; // Mon Jan 4: back to normal
     expect(earnWeek(input({ weekKey: wk2 })).fruits.pear.weekGoalDays).toBe(15);
     const wk0 = '2026-12-21'; // no pear-off day; other activity unaffected by 正月 (no easy weeks any more)
-    expect(earnWeek(input({ weekKey: wk0 })).fruits).toMatchObject({ pear: { weekGoalDays: 15 }, peach: { weekGoalDays: 5 }, apple: { weekGoalDays: 4 }, coconut: { weekGoalDays: 2 } });
+    expect(earnWeek(input({ weekKey: wk0 })).fruits).toMatchObject({ pear: { weekGoalDays: 15 }, peach: { weekGoalDays: 5 }, apple: { weekGoalDays: 4 }, coconut: { weekGoalDays: 3 } });
   });
 
   it('only dates in the week count; the first metrics row of a date wins', () => {
@@ -145,20 +145,20 @@ describe('earnWeek: the daily table (ADR 0019 §3)', () => {
 });
 
 describe('earnWeek: weekly badges (ADR 0019 §4)', () => {
-  it('🍑 45+ minutes on 5 days, 🍎 8,000 steps on 4 days, 🥥 2 strength days, 🍐 15 ticks', () => {
+  it('🍑 45+ minutes on 5 days, 🍎 8,000 steps on 4 days, 🥥 3 strength days, 🍐 15 ticks', () => {
     const at = (k: number) => input({
       days: days(WK, Array(7).fill(0).map((_, i) => (i < k ? 45 : 44)), Array(7).fill(0).map((_, i) => (i < k - 1 ? 8000 : 7999))),
-      workouts: D.slice(0, k - 3).map((d) => workout(d, 'Pilates', 30)),
+      workouts: D.slice(0, k - 2).map((d) => workout(d, 'Pilates', 30)),
       checkins: D.flatMap((d) => ticks(d)).slice(0, 10 + k)
     });
-    const four = earnWeek(at(4)); // 4 active days, 3 step days, 1 strength day, 14 ticks
+    const four = earnWeek(at(4)); // 4 active days, 3 step days, 2 strength days, 14 ticks
     expect(four.badges).toEqual({ peach: false, apple: false, coconut: false, pear: false });
     expect(four.bonus).toBe(0);
-    const five = earnWeek(at(5)); // 5, 4, 2, 15: all four
+    const five = earnWeek(at(5)); // 5, 4, 3, 15: all four
     expect(five.badges).toEqual({ peach: true, apple: true, coconut: true, pear: true });
     expect(five.fruits.peach).toMatchObject({ weekDays: 5, weekGoalDays: 5, badge: true });
     expect(five.fruits.apple).toMatchObject({ weekDays: 4, weekGoalDays: 4 });
-    expect(five.fruits.coconut).toMatchObject({ weekDays: 2, weekGoalDays: 2 });
+    expect(five.fruits.coconut).toMatchObject({ weekDays: 3, weekGoalDays: 3 });
     expect(five.fruits.pear).toMatchObject({ weekDays: 15, weekGoalDays: 15 });
     expect(five.bonus).toBe(2000);
     expect(five.allBadges).toBe(true);
@@ -194,18 +194,18 @@ describe('earnWeek: weekly badges (ADR 0019 §4)', () => {
   });
 });
 
-describe('splitPots: 30% おやつ / 70% 旅 on totals', () => {
-  it('treats = floor(total × 0.3), trips = the rest: nothing lost to rounding', () => {
+describe('splitPots: 20% おやつ / 80% 旅 on totals', () => {
+  it('treats = floor(total × 0.2), trips = the rest: nothing lost to rounding', () => {
     expect(splitPots(0)).toEqual({ treat: 0, trip: 0 });
     expect(splitPots(1)).toEqual({ treat: 0, trip: 1 });
-    expect(splitPots(3)).toEqual({ treat: 0, trip: 3 });
-    expect(splitPots(4)).toEqual({ treat: 1, trip: 3 });
-    expect(splitPots(10)).toEqual({ treat: 3, trip: 7 });
-    expect(splitPots(1025)).toEqual({ treat: 307, trip: 718 });
+    expect(splitPots(4)).toEqual({ treat: 0, trip: 4 });
+    expect(splitPots(5)).toEqual({ treat: 1, trip: 4 });
+    expect(splitPots(10)).toEqual({ treat: 2, trip: 8 });
+    expect(splitPots(1125)).toEqual({ treat: 225, trip: 900 });
     for (const t of [7, 99, 12345, 9_999_999]) {
       const s = splitPots(t);
       expect(s.treat + s.trip).toBe(t);
-      expect(s.treat).toBe(Math.floor(t * 0.3));
+      expect(s.treat).toBe(Math.floor((t * POTS.treatPercent) / 100));
     }
   });
 });

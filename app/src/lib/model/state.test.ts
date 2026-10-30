@@ -42,17 +42,17 @@ describe('reduce: events', () => {
   it('checkin: own habits, today and two days back, not after the lock; edits any day of an open week', () => {
     const tue = '2026-11-10';
     const s = reduce(rows([
-      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'teishoku_lunch', done: true }),
-      ev(at(tue), 'A', 'checkin', { date: '2026-11-08', habit: 'teishoku_lunch', done: true }), // 2 days back: ok
-      ev(at(tue), 'A', 'checkin', { date: '2026-11-07', habit: 'teishoku_lunch', done: true }), // 3 days back
-      ev(at(tue), 'A', 'checkin', { date: '2026-11-11', habit: 'teishoku_lunch', done: true }), // tomorrow
-      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'eat_lunch', done: true }), // B's habit
-      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'teishoku_lunch', done: 'yes' }),
+      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'protein_each_meal', done: true }),
+      ev(at(tue), 'A', 'checkin', { date: '2026-11-08', habit: 'protein_each_meal', done: true }), // 2 days back: ok
+      ev(at(tue), 'A', 'checkin', { date: '2026-11-07', habit: 'protein_each_meal', done: true }), // 3 days back
+      ev(at(tue), 'A', 'checkin', { date: '2026-11-11', habit: 'protein_each_meal', done: true }), // tomorrow
+      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'not_a_habit', done: true }), // not a habit
+      ev(at(tue), 'A', 'checkin', { date: tue, habit: 'protein_each_meal', done: 'yes' }),
       ev(at('2026-11-16'), 'A', 'checkin', { date: '2026-11-14', habit: 'veg_two_meals', done: true, edit: true }), // open week
       ev(at('2026-11-21'), 'A', 'checkin', { date: '2026-11-14', habit: 'veg_two_meals', done: false, edit: true }) // locked
     ]));
     expect(s.checkins.A.map((c) => `${c.date}:${c.habit}:${c.edit ?? false}`)).toEqual([
-      `${tue}:teishoku_lunch:false`, '2026-11-08:teishoku_lunch:false', '2026-11-14:veg_two_meals:true'
+      `${tue}:protein_each_meal:false`, '2026-11-08:protein_each_meal:false', '2026-11-14:veg_two_meals:true'
     ]);
   });
 

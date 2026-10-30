@@ -3,7 +3,8 @@
 [0006](0006-yen-single-currency-and-accountability.md), [0008](0008-open-ended-savings-per-fruit-rate.md),
 [0011](0011-mvp-rule-defaults.md) and [0017](0017-round-4-rule-changes-and-rule-versions.md) (§2–4, calibration).
 Keeps the four fruits as the four activities, rule versioning by week (0017 §7), the Wednesday 04:00 lock and きろく
-editing. Values: `app/src/lib/config/rules.ts`.
+editing. Values: `app/src/lib/config/rules.ts`. **Amended 2026-10-30** (tuned values, see the end): the numbers below
+are the original ones where the amendment changes them.
 
 **Context.** Several things made the game hard to follow and slow to reward:
 - Money was in four places: the jar layers A/B/team, the Treat Purse and a monthly real-yen transfer.
@@ -109,3 +110,33 @@ The user wants:
   (rates) or in the app (prices).
 - **History:** earlier weeks never paid real money (the first payout was due 2026-11-08), so there's nothing to migrate.
 - **What changes for the user:** the island headline becomes today's ベル, and 旅の壺 becomes the two-pot screen.
+
+## Amendment 2026-10-30: tuning for the couple's goals
+**Status:** Accepted (lead's tuning, approved by the user 2026-10-30). Values: `app/src/lib/config/rules.ts`.
+
+**Why.** The goals for the year:
+- A year of on-target play should pay for **2 trips abroad, 6 weekend trips and 1–2 onsen**.
+- Sweets should be deliberately expensive.
+- Both are aiming at weight loss and muscle gain for their wedding on **2027-10-08**, so strength is weighted up and
+  the habits are about protein and sweets.
+
+**Changes** (they replace the numbers above):
+
+| | Was | Now |
+|---|---|---|
+| 🥥 strength day | 300 ベル | **400 ベル** (max per person per day 1,025 → **1,125**) |
+| 🥥 weekly badge | 2 strength days | **3 strength days** |
+| Pot split (`POTS.treatPercent`) | おやつ 30% / 旅 70% | **おやつ 20% / 旅 80%** |
+| おやつ menu | おやつ 300 · アイス 500 · カフェデート 1,500 · 外ごはん 5,000 | **おやつ 1,500 · アイス 2,000 · カフェデート 2,000 · デザート・パフェ 3,000 (new, `dessert`) · 外ごはん 5,000** |
+| 旅 trip types | 日帰り 20,000 · 温泉 50,000 · 週末旅行 100,000 · 海外旅行 400,000 | **日帰り 12,000 · 週末旅行 35,000 · 温泉 45,000 · 海外旅行 160,000** |
+| Habits (🍐) | A: 定食ランチ · 減塩デー · 野菜 2食; B: 昼ごはん · おやつに果物・ナッツ · 野菜 2食 | **both: 毎食たんぱく質 (`protein_each_meal`) · 甘いものは壺から (`no_sweets`) · 野菜 2食 (`veg_two_meals`)** |
+
+**Numbers on target** (every badge for both, minimum days): per person a week 5 × 225 + 4 × 200 + 3 × 400 + 15 × 100
+= 4,625 daily + 2,000 badges; both + 1,000 duo = **14,250 ベル a week**, about **741,000 a year**:
+- 旅 80% ≈ 593,000 a year = 2 × 160,000 + 6 × 35,000 + 45,000 (575,000), with room for a second onsen in a strong year.
+- おやつ 20% ≈ 2,850 a week: one café date or ice cream a week, a dinner out every couple of weeks.
+
+**How it was applied.** Nothing had paid (ベル are play money and the economy started that week), so `RULES[0]` was
+edited in place rather than appending a version (`rules.test.ts` notes the one-off). Old check-in rows with the old
+habit keys simply stop counting. Menus that were already edited in the app (`pref`) keep their prices; only the defaults
+changed.

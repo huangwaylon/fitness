@@ -13,7 +13,7 @@ const WK = '2026-11-16'; // Sunday 19:30 = 11-22 10:30Z; lock = Wednesday 11-25 
 const D = weekDays(WK);
 const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toISOString();
 const ms = (date: string, hm: string) => Date.parse(jst(date, hm));
-const HABITS: Record<PersonId, string[]> = { A: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], B: ['eat_lunch', 'snack_swap', 'veg_two_meals'] };
+const HABITS: Record<PersonId, string[]> = { A: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], B: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] };
 
 let n = 0;
 const ev = (at: string, person: PersonId, type: EventRow[3], data: object): EventRow => [at, person, `e${++n}`, type, JSON.stringify(data)];
@@ -28,7 +28,7 @@ const plus = (a: SnapshotRows, b: Partial<SnapshotRows>): SnapshotRows => ({
   presence: [...a.presence, ...(b.presence ?? [])], events: [...a.events, ...(b.events ?? [])]
 });
 
-/** Every daily maximum on every day of WK, for both: 1,025 a day each, all four badges. */
+/** Every daily maximum on every day of WK, for both: 1,125 a day each, all four badges. */
 function perfectWeek(people: PersonId[] = ['A', 'B']): SnapshotRows {
   const r = rowsOf();
   for (const p of people) {
@@ -53,15 +53,15 @@ describe('daily earnings land as they happen', () => {
   it('today’s ベル show on the person, the fruits and the pots', () => {
     const now = ms(D[2], '23:00'); // Wednesday night
     const v = buildWeekView(reduce(perfectWeek()), 'A', now);
-    expect(v.people.A.today).toEqual({ bells: 1025, parts: { peach: 225, apple: 200, coconut: 300, pear: 300 } });
-    expect(v.people.A.weekBells).toBe(3 * 1025); // only days up to today count, even with later-dated rows
-    expect(v.pots.todayBells).toBe(2050);
-    expect(v.pots.weekBells).toBe(6 * 1025);
-    expect(v.pots.treat).toEqual({ earned: Math.floor(6 * 1025 * 0.3), spent: 0, balance: Math.floor(6 * 1025 * 0.3) });
-    expect(v.pots.trip.earned).toBe(6 * 1025 - v.pots.treat.earned);
+    expect(v.people.A.today).toEqual({ bells: 1125, parts: { peach: 225, apple: 200, coconut: 400, pear: 300 } });
+    expect(v.people.A.weekBells).toBe(3 * 1125); // only days up to today count, even with later-dated rows
+    expect(v.pots.todayBells).toBe(2250);
+    expect(v.pots.weekBells).toBe(6 * 1125);
+    expect(v.pots.treat).toEqual({ earned: 6 * 1125 * 0.2, spent: 0, balance: 6 * 1125 * 0.2 });
+    expect(v.pots.trip.earned).toBe(6 * 1125 - v.pots.treat.earned);
     expect(v.people.A.fruits.peach).toMatchObject({ todayActual: 60, todayGoal: 45, todayMet: true, weekDays: 7, weekGoalDays: 5, badge: true, weekBells: 3 * 225 });
     expect(v.people.A.fruits.apple).toMatchObject({ todayActual: 9000, todayGoal: 8000, todayMet: true, weekBells: 600 });
-    expect(v.people.A.fruits.coconut).toMatchObject({ todayActual: 1, todayGoal: 1, todayMet: true, weekDays: 7, weekGoalDays: 2 });
+    expect(v.people.A.fruits.coconut).toMatchObject({ todayActual: 1, todayGoal: 1, todayMet: true, weekDays: 7, weekGoalDays: 3 });
     expect(v.people.A.fruits.pear).toMatchObject({ todayActual: 3, todayGoal: 3, todayMet: true, weekDays: 21, weekGoalDays: 15 });
   });
 
@@ -71,7 +71,7 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.B.today).toEqual({ bells: 100, parts: { peach: 100, apple: 0, coconut: 0, pear: 0 } });
     expect(v.people.B.fruits.apple).toMatchObject({ todayActual: 5000, todayMet: false, weekDays: 0, badge: false });
     expect(v.people.A.today.bells).toBe(0);
-    expect(v.pots.trip).toEqual({ earned: 70, spent: 0, balance: 70 });
+    expect(v.pots.trip).toEqual({ earned: 80, spent: 0, balance: 80 });
   });
 
   it('days before the economy’s first week (2026-10-26) never earn', () => {
@@ -87,12 +87,12 @@ describe('the weekly bonus lands at the Sunday 19:30 harvest', () => {
     const s = reduce(perfectWeek());
     const before = buildWeekView(s, 'A', SUN_BEFORE);
     expect(before.harvest?.weekKey).toBe('2026-11-09'); // last week's (empty) harvest, never tapped
-    expect(before.pots.weekBells).toBe(14 * 1025);
+    expect(before.pots.weekBells).toBe(14 * 1125);
     const after = buildWeekView(s, 'A', SUN_AFTER);
-    expect(after.harvest).toMatchObject({ weekKey: WK, bonus: { A: 2000, B: 2000, duo: 1000 }, totalBells: 14 * 1025 + 5000, confirmedBy: [] });
-    expect(after.pots.weekBells).toBe(14 * 1025 + 5000);
-    expect(after.pots.treat.earned + after.pots.trip.earned).toBe(14 * 1025 + 5000);
-    expect(after.host).toMatchObject({ key: 'host.harvest_ready', params: { bells: 14 * 1025 + 5000 } });
+    expect(after.harvest).toMatchObject({ weekKey: WK, bonus: { A: 2000, B: 2000, duo: 1000 }, totalBells: 14 * 1125 + 5000, confirmedBy: [] });
+    expect(after.pots.weekBells).toBe(14 * 1125 + 5000);
+    expect(after.pots.treat.earned + after.pots.trip.earned).toBe(14 * 1125 + 5000);
+    expect(after.host).toMatchObject({ key: 'host.harvest_ready', params: { bells: 14 * 1125 + 5000 } });
   });
 
   it('no duo bonus when one of us misses a badge', () => {
@@ -136,7 +136,7 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
     const r = plus(perfectWeek(['A']), { events: [ev(jst(D[3], '08:00'), 'A', 'metric_set', { date: D[0], metric: 'steps', value: 1000 })] });
     const w = weekBells(reduce(r), WK, MON_AFTER);
     expect(w.A.days[0].parts.apple).toBe(0);
-    expect(w.A.days[0].bells).toBe(825);
+    expect(w.A.days[0].bells).toBe(925);
   });
 
   it('a locked week is the same from a fresh State of the same rows (cache) and with a revision', () => {
@@ -150,43 +150,43 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
 });
 
 describe('spends: the pot must cover it, the buyer can undo it', () => {
-  // A perfect week for both: 14 × 1,025 + 5,000 = 19,350 → おやつ 5,805 / 旅 13,545 by Monday.
+  // A perfect week for both: 14 × 1,125 + 5,000 = 20,750 → おやつ 4,150 / 旅 16,600 by Monday.
   const r = perfectWeek();
   const MON = '2026-11-23';
 
   it('a spend takes from its pot; the other pot is untouched', () => {
     const s = reduce(plus(r, { events: [spend(jst(MON, '10:00'), 'A', 's1', 'treat', 1500, 'カフェデート', 'cafe')] }));
     const p = potsAt(s, MON_AFTER).pots;
-    expect(p.treat).toEqual({ earned: 5805, spent: 1500, balance: 4305 });
-    expect(p.trip).toEqual({ earned: 13545, spent: 0, balance: 13545 });
+    expect(p.treat).toEqual({ earned: 4150, spent: 1500, balance: 2650 });
+    expect(p.trip).toEqual({ earned: 16600, spent: 0, balance: 16600 });
   });
 
   it('a spend above the balance is ignored on read, never shown, and the balance never goes negative', () => {
     const s = reduce(plus(r, { events: [
-      spend(jst(MON, '10:00'), 'A', 'big', 'treat', 5806), // 1 more than the pot
-      spend(jst(MON, '10:01'), 'B', 'ok', 'treat', 5805),
+      spend(jst(MON, '10:00'), 'A', 'big', 'treat', 4151), // 1 more than the pot
+      spend(jst(MON, '10:01'), 'B', 'ok', 'treat', 4150),
       spend(jst(MON, '10:02'), 'A', 'more', 'treat', 1) // the pot is empty now
     ] }));
     const p = potsAt(s, MON_AFTER);
-    expect(p.pots.treat).toEqual({ earned: 5805, spent: 5805, balance: 0 });
+    expect(p.pots.treat).toEqual({ earned: 4150, spent: 4150, balance: 0 });
     expect(p.spends.map((x) => x.spendId)).toEqual(['ok']);
   });
 
   it('a spend is judged at its own time: earnings that came later don’t rescue it', () => {
-    const early = spend(jst(D[0], '23:00'), 'A', 'early', 'trip', 2000); // Monday: 2 × 1,025 → trip 1,435
+    const early = spend(jst(D[0], '23:00'), 'A', 'early', 'trip', 2000); // Monday: 2 × 1,125 → trip 1,800
     const s = reduce(plus(r, { events: [early] }));
     expect(potsAt(s, MON_AFTER).spends).toEqual([]);
     expect(potsAt(s, MON_AFTER).pots.trip.spent).toBe(0);
-    const ok = spend(jst(D[0], '23:00'), 'A', 'ok', 'trip', 1435);
-    expect(potsAt(reduce(plus(r, { events: [ok] })), MON_AFTER).pots.trip.spent).toBe(1435);
+    const ok = spend(jst(D[0], '23:00'), 'A', 'ok', 'trip', 1800);
+    expect(potsAt(reduce(plus(r, { events: [ok] })), MON_AFTER).pots.trip.spent).toBe(1800);
   });
 
   it('the buyer’s spend_void gives it back; the partner’s, an early or a second one, is ignored', () => {
     const buy = spend(jst(MON, '10:00'), 'A', 's1', 'treat', 500);
     const pot = (events: EventRow[]) => potsAt(reduce(plus(r, { events: [buy, ...events] })), MON_AFTER);
-    expect(pot([]).pots.treat.balance).toBe(5305);
+    expect(pot([]).pots.treat.balance).toBe(3650);
     const voided = pot([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' })]);
-    expect(voided.pots.treat).toEqual({ earned: 5805, spent: 0, balance: 5805 });
+    expect(voided.pots.treat).toEqual({ earned: 4150, spent: 0, balance: 4150 });
     expect(voided.spends[0]).toMatchObject({ spendId: 's1', voided: true, voidedAt: ms(MON, '10:05') });
     expect(pot([ev(jst(MON, '10:05'), 'B', 'spend_void', { spendId: 's1' })]).pots.treat.spent).toBe(500);
     expect(pot([ev(jst(MON, '09:59'), 'A', 'spend_void', { spendId: 's1' })]).pots.treat.spent).toBe(500);
@@ -195,14 +195,14 @@ describe('spends: the pot must cover it, the buyer can undo it', () => {
 
   it('a void frees the pot for later spends, in server order', () => {
     const s = reduce(plus(r, { events: [
-      spend(jst(MON, '10:00'), 'A', 'a', 'treat', 5000),
-      spend(jst(MON, '10:01'), 'B', 'b', 'treat', 5000), // refused: only 805 left
+      spend(jst(MON, '10:00'), 'A', 'a', 'treat', 4000),
+      spend(jst(MON, '10:01'), 'B', 'b', 'treat', 4000), // refused: only 150 left
       ev(jst(MON, '10:02'), 'A', 'spend_void', { spendId: 'a' }),
-      spend(jst(MON, '10:03'), 'B', 'c', 'treat', 5000)
+      spend(jst(MON, '10:03'), 'B', 'c', 'treat', 4000)
     ] }));
     const p = potsAt(s, MON_AFTER);
     expect(p.spends.map((x) => [x.spendId, x.voided])).toEqual([['a', true], ['c', false]]);
-    expect(p.pots.treat.balance).toBe(805);
+    expect(p.pots.treat.balance).toBe(150);
   });
 
   it('spends are never locked: a void long after still counts', () => {
@@ -240,11 +240,12 @@ describe('menus: shared, editable, the latest pref by either person wins', () =>
 
   it('defaults, in the viewer’s language', () => {
     expect(menus([]).treat).toEqual([
-      { id: 'snack', label: 'おやつ', bells: 300 }, { id: 'ice', label: 'アイス', bells: 500 },
-      { id: 'cafe', label: 'カフェデート', bells: 1500 }, { id: 'dinner', label: '外ごはん', bells: 5000 }
+      { id: 'snack', label: 'おやつ', bells: 1500 }, { id: 'ice', label: 'アイス', bells: 2000 },
+      { id: 'cafe', label: 'カフェデート', bells: 2000 }, { id: 'dessert', label: 'デザート・パフェ', bells: 3000 },
+      { id: 'dinner', label: '外ごはん', bells: 5000 }
     ]);
-    expect(menus([]).trip.map((x) => [x.id, x.bells])).toEqual([['daytrip', 20000], ['onsen', 50000], ['weekend', 100000], ['abroad', 400000]]);
-    expect(menus([], 'en').trip[0]).toEqual({ id: 'daytrip', label: 'Day trip', bells: 20000 });
+    expect(menus([]).trip.map((x) => [x.id, x.bells])).toEqual([['daytrip', 12000], ['weekend', 35000], ['onsen', 45000], ['abroad', 160000]]);
+    expect(menus([], 'en').trip[0]).toEqual({ id: 'daytrip', label: 'Day trip', bells: 12000 });
   });
 
   it('last writer wins across both people, per menu', () => {
@@ -277,24 +278,24 @@ describe('menus: shared, editable, the latest pref by either person wins', () =>
 describe('the きろく ledger and history fields', () => {
   const r = plus(perfectWeek(), { events: [
     spend(jst('2026-11-23', '10:00'), 'A', 's1', 'treat', 500),
-    spend(jst('2026-11-23', '11:00'), 'B', 's2', 'trip', 13545, '日帰り', 'daytrip'),
+    spend(jst('2026-11-23', '11:00'), 'B', 's2', 'trip', 16600, '日帰り', 'daytrip'),
     ev(jst('2026-11-23', '11:05'), 'B', 'spend_void', { spendId: 's2' })
   ] });
 
   it('per-day rows for both people, bonus rows and spends, newest first', () => {
     const l = bellsLedger(reduce(r), MON_AFTER);
-    expect(l.earned).toBe(19350);
-    expect(l.pots.treat).toEqual({ earned: 5805, spent: 500, balance: 5305 });
-    expect(l.pots.trip).toEqual({ earned: 13545, spent: 0, balance: 13545 });
+    expect(l.earned).toBe(20750);
+    expect(l.pots.treat).toEqual({ earned: 4150, spent: 500, balance: 3650 });
+    expect(l.pots.trip).toEqual({ earned: 16600, spent: 0, balance: 16600 });
     expect(l.days[0]).toMatchObject({ date: '2026-11-23', weekKey: '2026-11-23', bells: 0, locked: false });
     const sun = l.days.find((d) => d.date === D[6])!;
-    expect(sun).toMatchObject({ weekKey: WK, bells: 2050, locked: false, people: { A: { date: D[6], bells: 1025 }, B: { bells: 1025 } } });
+    expect(sun).toMatchObject({ weekKey: WK, bells: 2250, locked: false, people: { A: { date: D[6], bells: 1125 }, B: { bells: 1125 } } });
     expect(l.days.at(-1)!.date).toBe('2026-10-26');
     expect(l.days).toHaveLength(29); // 10-26 → 11-23
     expect(l.bonuses.map((b) => [b.weekKey, b.bells])).toEqual([[WK, 5000], ['2026-11-09', 0], ['2026-11-02', 0], ['2026-10-26', 0]]);
     expect(l.bonuses[0]).toMatchObject({ at: SUN_BEFORE + 60_000, bonus: { A: 2000, B: 2000, duo: 1000 }, badges: { A: { pear: true }, B: { peach: true } } });
     expect(l.spends.map((x) => [x.spendId, x.by, x.pot, x.label, x.bells, x.voided])).toEqual([
-      ['s2', 'B', 'trip', '日帰り', 13545, true], ['s1', 'A', 'treat', 'アイス', 500, false]
+      ['s2', 'B', 'trip', '日帰り', 16600, true], ['s1', 'A', 'treat', 'アイス', 500, false]
     ]);
     expect(bellsLedger(reduce(r), LOCKED).days.find((d) => d.date === D[0])!.locked).toBe(true);
   });
@@ -302,15 +303,15 @@ describe('the きろく ledger and history fields', () => {
   it('week list, week detail and day detail carry the ベル', () => {
     const s = reduce(r);
     const w = historyWeeks(s, SUN_BEFORE).find((x) => x.weekKey === WK)!;
-    expect(w.bells).toBe(14 * 1025); // no bonus before the harvest
-    expect(w.people.A).toMatchObject({ bells: 7 * 1025, badges: { peach: true, apple: true, coconut: true, pear: true } });
-    expect(historyWeeks(s, MON_AFTER).find((x) => x.weekKey === WK)!.bells).toBe(19350);
+    expect(w.bells).toBe(14 * 1125); // no bonus before the harvest
+    expect(w.people.A).toMatchObject({ bells: 7 * 1125, badges: { peach: true, apple: true, coconut: true, pear: true } });
+    expect(historyWeeks(s, MON_AFTER).find((x) => x.weekKey === WK)!.bells).toBe(20750);
     const d = weekDetail(s, WK, MON_AFTER);
-    expect(d).toMatchObject({ bells: 19350, bonus: { A: 2000, B: 2000, duo: 1000 } });
-    expect(d.people.B).toMatchObject({ dailyBells: 7175, bonus: 2000 });
-    expect(d.people.A.days[0]).toMatchObject({ bells: 1025, parts: { peach: 225, apple: 200, coconut: 300, pear: 300 } });
+    expect(d).toMatchObject({ bells: 20750, bonus: { A: 2000, B: 2000, duo: 1000 } });
+    expect(d.people.B).toMatchObject({ dailyBells: 7875, bonus: 2000 });
+    expect(d.people.A.days[0]).toMatchObject({ bells: 1125, parts: { peach: 225, apple: 200, coconut: 400, pear: 300 } });
     const mid = weekDetail(s, WK, ms(D[1], '12:00'));
-    expect(mid.people.A.days.map((x) => x.bells)).toEqual([1025, 1025, 0, 0, 0, 0, 0]); // future days: 0
-    expect(dayDetail(s, D[3], MON_AFTER).people.A).toMatchObject({ bells: 1025, parts: { coconut: 300 } });
+    expect(mid.people.A.days.map((x) => x.bells)).toEqual([1125, 1125, 0, 0, 0, 0, 0]); // future days: 0
+    expect(dayDetail(s, D[3], MON_AFTER).people.A).toMatchObject({ bells: 1125, parts: { coconut: 400 } });
   });
 });

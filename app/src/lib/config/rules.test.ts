@@ -22,11 +22,14 @@ function withAppended<T>(list: readonly T[], extra: T, fn: () => void): void {
 
 describe('RULES', () => {
   it('the paid versions are pinned: append a new version instead of editing one', () => {
+    // RULES[0] was edited in place once, on 2026-10-30 (ADR 0019 amendment: strength 400 ベル, 3-day badge): nothing
+    // had paid yet (ベル are play money and the economy started that week), so there was no paid week to protect.
+    // From here on, append a version instead.
     expect(RULES[0]).toEqual({
       from: '2026-10-26',
       goals: { activeMin: 45, steps: 8000 },
-      bells: { perMinute: 5, stepDay: 200, strengthDay: 300, perTick: 100 },
-      badges: { activeDays: 5, stepDays: 4, strengthDays: 2, ticks: 15, bells: 500, duo: 1000 },
+      bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
+      badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duo: 1000 },
       money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
       points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
     });
