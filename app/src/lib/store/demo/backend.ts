@@ -1,9 +1,11 @@
 // The demo backend (`?demo`, `?demo=harvest`, `?demo&as=B`): generated rows (rows.ts) and the session's taps, run
-// through the same model as the live app. Nothing is sent. Its taps are kept under `island-demo.*` for the day,
+// through the same model as the live app. Nothing is sent. Its taps are kept under `island-demo.*` for the (scene) day,
 // shared by both players' tabs; it never touches the live key, queue or cache. Loaded only in the demo.
+// Its clock is the scene clock: `?demo&date=2026-11-03T12:10` builds the rows and runs the model on that day.
 import type { EventType } from '#lib/contract/api.ts';
 import type { PersonId, WeekView } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { dayKey, now as sceneNow } from '#lib/time/clock.ts';
 import { harvestOf } from '#lib/model/week.ts';
 import { weekBells } from '#lib/model/bells.ts';
 import { DEMO, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -41,7 +43,7 @@ export class DemoBackend implements Backend {
 
   async refresh(): Promise<void> {
     if (!this.#cache) {
-      this.#cache = demoCache(Date.now(), this.#me);
+      this.#cache = demoCache(this.now(), this.#me);
       this.#events = this.#load();
       globalThis.window?.addEventListener('storage', (e) => {
         if (e.key !== DEMO.events) return;
@@ -56,8 +58,12 @@ export class DemoBackend implements Backend {
 
   reset(): void {}
 
+  now(): number {
+    return sceneNow().getTime();
+  }
+
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult {
-    const now = Date.now();
+    const now = this.now();
     const ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#events.length}`, type, data, queuedAt: now, tries: 0, nextAt: now, person: this.#me };
     this.#events.push(ev);
     this.#save();
@@ -85,10 +91,10 @@ export class DemoBackend implements Backend {
   /** The demo's taps of today (both players), oldest first. */
   #load(): QueuedEvent[] {
     const raw = readJson<{ day: string; events: QueuedEvent[] }>(localKV(), DEMO.events);
-    return raw && raw.day === new Date().toDateString() && Array.isArray(raw.events) ? raw.events : [];
+    return raw && raw.day === dayKey() && Array.isArray(raw.events) ? raw.events : [];
   }
 
   #save(): void {
-    writeJson(localKV(), DEMO.events, { day: new Date().toDateString(), events: this.#events }); // full: it still works in memory
+    writeJson(localKV(), DEMO.events, { day: dayKey(), events: this.#events }); // full: it still works in memory
   }
 }
