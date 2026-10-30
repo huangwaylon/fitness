@@ -11,7 +11,7 @@ import { parseInstant } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import {
-  DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, METRIC_BOUNDS, MONTH_RE, NUMERIC_COLUMNS, TABS,
+  DATE_RE, EVENT_TYPES, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, MONTH_RE, NUMERIC_COLUMNS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type PresenceReply, type SnapshotReply, type SnapshotRows,
   type TabName, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -314,16 +314,19 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const latest = new Map<string, number>();
     const recent = new Date(Date.now() + 9 * 3600_000 - RECENT_DAYS * 86400_000).toISOString().slice(0, 10);
     const tail = parsed.metrics.every((m) => m.date >= recent) ? INGEST_TAIL_ROWS : Infinity;
+    // Steps and minutes: the highest row so far, and only a higher value is appended (a day only goes up).
+    // Weight (ADR 0020): the LAST row so far, and any different value is appended (a weight goes down too).
     for (const r of readRows(mSheet, 'metrics', tail)) {
       const k = `${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`;
       const v = num(r[4]);
-      if (v !== null && v > (latest.get(k) ?? -Infinity)) latest.set(k, v);
+      if (v === null) continue;
+      if (text(r[3]) === 'weight' || v > (latest.get(k) ?? -Infinity)) latest.set(k, v);
     }
     const newMetrics: unknown[][] = [];
     for (const m of parsed.metrics) {
       const k = `${me}|${m.date}|${m.metric}`;
       const cur = latest.get(k);
-      if (cur === undefined || m.value > cur) {
+      if (cur === undefined || (m.metric === 'weight' ? m.value !== cur : m.value > cur)) {
         newMetrics.push([at, me, m.date, m.metric, m.value]);
         latest.set(k, m.value);
       }
@@ -409,8 +412,8 @@ const isId = (v: unknown): boolean => typeof v === 'string' && v.length > 0 && v
 function validEditData(type: string, d: Rec): boolean {
   switch (type) {
     case 'metric_set':
-      return typeof d.date === 'string' && DATE_RE.test(d.date) && isMetricKey(d.metric) &&
-        isInt(d.value, 0, METRIC_BOUNDS[d.metric]);
+      // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal (ADR 0020).
+      return typeof d.date === 'string' && DATE_RE.test(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
     case 'workout_edit':
       return isId(d.id) && (d.strength !== undefined || d.excluded !== undefined) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean') &&

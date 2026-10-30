@@ -169,6 +169,25 @@ describe('ingest', () => {
     expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['steps', 9000], ['exercise_min', 40], ['steps', 9500]]);
   });
 
+  it('weight: any changed value is appended (a weight goes down too); the same value never twice', () => {
+    const wb = (kg: string) => ({ weight_dates: ['2026-10-27T07:00:00+09:00'], weights: [kg] });
+    expect(a('ingest', wb('68.4 kg'))).toMatchObject({ metrics: 1 });
+    tick();
+    expect(a('ingest', wb('68.4'))).toMatchObject({ metrics: 0 });
+    tick();
+    expect(a('ingest', wb('68.1'))).toMatchObject({ metrics: 1 }); // lower: still appended (unlike steps)
+    tick();
+    expect(a('ingest', wb('68.4'))).toMatchObject({ metrics: 1 }); // back up: the last row (not the max) is compared
+    expect(data('metrics').map((r) => [r[2], r[3], r[4]])).toEqual([
+      ['2026-10-27', 'weight', 68.4], ['2026-10-27', 'weight', 68.1], ['2026-10-27', 'weight', 68.4]
+    ]);
+  });
+
+  it('a body without weight lists behaves as before (no weight rows)', () => {
+    a('ingest', REAL);
+    expect(data('metrics').some((r) => r[3] === 'weight')).toBe(false);
+  });
+
   it('dates stay text in the sheet (cells are plain-text formatted)', () => {
     a('ingest', REAL);
     expect(typeof data('metrics')[0][2]).toBe('string');
@@ -305,6 +324,17 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     expect(a('event', { id: 'ok-max', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 100_000 } })).toEqual({ ok: true });
     expect(a('event', { id: 'ok-min', type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 1440 } })).toEqual({ ok: true });
     expect(data('events')).toHaveLength(2);
+  });
+
+  it('metric_set weight: 20–300 kg with at most one decimal (decimals for weight only)', () => {
+    const bad = [19.9, 300.1, 68.45, '68.4', null, Number.NaN];
+    bad.forEach((value, i) => expect(a('event', { id: `w${i}`, type: 'metric_set', data: { date: '2026-10-28', metric: 'weight', value } }), String(value))
+      .toEqual({ ok: false, error: 'bad_request' }));
+    for (const [i, value] of [68.4, 20, 300, 71].entries()) {
+      expect(a('event', { id: `wok${i}`, type: 'metric_set', data: { date: '2026-10-28', metric: 'weight', value } })).toEqual({ ok: true });
+    }
+    expect(a('event', { id: 'st-dec', type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 30.5 } })).toEqual({ ok: false, error: 'bad_request' });
+    expect(data('events')).toHaveLength(4);
   });
 
   it('other edit shapes are checked too', () => {
