@@ -12,10 +12,11 @@ Google's consoles quietly act as the wrong account when several are signed in.
 ## 1. Create the spreadsheet
 
 1. Go to **sheets.new** and rename it **Island Fund**. Don't add tabs. The script creates `metrics`, `workouts`,
-   `presence`, `events` and `uploads`, with headers, the first time it runs.
+   `presence` (gym arrivals), `events` and `uploads`, with headers, the first time it runs (§8).
 2. Sharing is optional. To look at the data by hand from your own accounts, **Share** with both addresses as
    **Viewer**, general access **Restricted**. Never choose *Anyone with the link*.
-3. Don't edit or delete rows by hand. Every tab is append-only, and the app reads the history.
+3. Don't edit or delete rows by hand unless you must (then run `resync`, §3). Every tab is append-only, and the app
+   reads the history.
 
 ## 2. Create the bound script
 
@@ -78,7 +79,7 @@ read -s KEY            # paste KEY_A, press Enter
 post() { curl -sSL "$URL" -H 'Content-Type: text/plain;charset=utf-8' --data "$1"; echo; }
 
 post "{\"key\":\"$KEY\",\"action\":\"whoami\"}"
-# → {"ok":true,"me":"A"}    (and the five tabs now exist in the sheet)
+# → {"ok":true,"me":"A","build":"<12 hex>"}    (and the five tabs now exist in the sheet)
 
 post "{\"key\":\"$KEY\",\"action\":\"ingest\",\"dates\":\"Sep 28, 2026 at 7:11 AM\",\"steps\":\"855\",\"exercise_minutes\":\"0\"}"
 # → {"ok":true,"metrics":2,"workouts":0}; run it again → "metrics":0 (higher-only, idempotent)
@@ -90,17 +91,13 @@ post '{"key":"wrong","action":"whoami"}'
 Leave out `-X POST`: `/exec` replies with a 302 that has to be followed as a GET, and `-L --data` does exactly
 that. If you get back HTML instead of JSON, see §9.
 
-(The test `ingest` above writes real rows for 2026-09-28. They match the migrated values, so they're harmless.)
+The test `ingest` above writes real rows for 2026-09-28 (before the economy starts, so they earn nothing).
 
-## 6. Point the Shortcut at it (sheets-architecture.md §5)
+## 6. Point the Shortcuts at it
 
-In **しまの同期**, keep the existing dictionary (`dates`, `steps`, `exercise_minutes`, …) and add two fields:
-`key` = your key, `action` = `ingest`. In **Get Contents of URL**, set the URL to the `/exec` URL, Method **POST**,
-Request Body **JSON** (or **Text** containing the JSON), and **delete the `Authorization` header**. Run it once. The
-result should be `{"ok":true,…}`. Each row also leaves an audit line in the `uploads` tab (status, size, no payload).
-
-Limits: 1 MB per request (an 84-day raw-sample baseline can go over: send it in chunks of a few weeks) and
-120 requests per key per minute.
+Build the health-sync Shortcut and the gym Arrive automation with the `/exec` URL and each person's key:
+[shortcut-health-sync.md](shortcut-health-sync.md) §2–5. Every `ingest` leaves an audit row in the `uploads` tab
+(status, size, warnings and the body's shape; never the key).
 
 ## 7. Pairing the phones
 
@@ -108,9 +105,17 @@ On each iPhone, **Add to Home Screen first** (Safari → Share → Add to Home S
 that person's key. `whoami` confirms who it is. A `…/#key=<key>` link only works when opened inside the installed
 app: iOS keeps a separate storage for the Home Screen app, so a key saved in Safari isn't seen there.
 
-## 8. (Retired) Mac data migration
+## 8. The tabs
 
-Done on 2026-10-29. The export script is deleted; the old database is archived privately, off the repo.
+| Tab | Rows | Written by |
+|---|---|---|
+| `metrics` | `at, person, date, metric, value` (`steps`, `exercise_min`, `move_kcal`, `stand_min`, `weight`) | `ingest` |
+| `workouts` | `at, person, id, date, type, start, end, duration_min, avg_hr` | `ingest` (optional `workouts` field) |
+| `presence` | `at, person, label, arrived_at`: gym arrivals (the name is historical) | `gym` |
+| `events` | `at, person, id, type, data` (buys, menu and goal prefs, harvest taps, high-fives, きろく edits) | the app (`event`) |
+| `uploads` | `at, person, status, bytes, error` (an audit line per `ingest`) | `ingest` |
+
+`at` is the server time (ISO UTC). The full contract: [sheets-architecture.md](../design/sheets-architecture.md).
 
 ## 9. Does it need the shared-finances Cloud project or a published consent screen?
 
