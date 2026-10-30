@@ -27,11 +27,6 @@ function onEdit(e) {
 function resync() {
   IslandFund.resync();
 }
-
-/** ONE-OFF (runbook §9): run once from the editor after ADR 0021 to delete the rows of past designs, then remove. */
-function cleanupLegacyData() {
-  return IslandFund.cleanupLegacyData();
-}
 `;
 
 /** The first 12 hex chars of SHA-256 over the bundle built with BUILD = "dev": changes with any code change. */

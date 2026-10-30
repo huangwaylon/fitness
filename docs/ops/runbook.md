@@ -122,32 +122,3 @@ trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-
 | `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
 | Numbers didn't move | The `uploads` tab (or `{"key":"…","action":"uploads"}`) shows each Shortcut run: status, warnings and the body's shape (each field's type, line count and first line). Synced metrics only go up (a lower re-send is ignored); a きろく edit can lower a day in an open week |
 | Changes made offline | They stay queued on the phone and are sent when it's back online (the sync pill shows it) |
-
-## 9. One-off cleanup after ADR 0021 (run once, then remove)
-ADR 0021 left rows of past designs in the sheet: check-ins, 「筋トレでしたか？」 answers (`confirm`), the yen economy's
-`approve` / `transfer` / `transfer_undo`, unused `pref`s (e.g. `share`, the two pots' `treatMenu` / `tripMenu`), every
-`spend` and `spend_void` (ADR 0022: the wallet starts clean from earnings), presence `leave` rows, and every lower
-metrics re-send. The app no longer reads or accepts any of them. `cleanupLegacyData` deletes them in one go
-(user decision 2026-10-30: we're still developing).
-
-1. **Back up first:** open the sheet → **File → Make a copy** (name it e.g. *Island Fund before cleanup*).
-2. Make sure the deployed web app runs the build with `cleanupLegacyData` (the build in the commit that added it, or
-   later): paste `app/apps-script/Code.js` into the editor and deploy (google-setup.md §11) if not.
-3. In the sheet: **Extensions → Apps Script**. In the toolbar's function dropdown pick **`cleanupLegacyData`** →
-   **Run**. Authorise if asked (the same current-sheet-only scope as the web app).
-4. Read the log (**Execution log** opens below): `cleanupLegacyData: {"events":{"before":…,"after":…},"presence":…,
-   "metrics":…,"uploads":…,"rev":"…"}`. Under the script lock it:
-   - **events**: keeps only rows the script would accept today (`harvest`, `highfive`, `pref` with a key the app reads,
-     `metric_set`, `workout_edit`, `workout_add`) and deletes **every** `spend` and `spend_void`, so run it right after
-     deploying, before anyone buys from the new wallet;
-   - **presence**: keeps `arrive` rows;
-   - **metrics**: per person, date and metric keeps the rows the app reads (the highest value, the highest at the
-     week's Wednesday lock and around each `metric_set`; for weight the latest row), each with its original `at`;
-   - **uploads**: keeps the last 50;
-   - bumps `REV` (both phones drop their caches and refetch everything on their next sync) and records the new row
-     counts, so the next write isn't taken for a hand edit.
-   Running it twice is harmless (the second run only bumps `REV`). `busy` = a phone was writing: run it again.
-5. Open the app on both phones: the earnings are the same as before; the wallet holds everything earned (no buys yet).
-6. **Afterwards remove it** from the code: the `cleanupLegacyData` section at the end of `app/gas/main.ts`, its footer
-   function in `app/gas/build.ts`, its tests (`gas/main.test.ts`, `gas/bundle.test.ts`) and this section; then
-   `npm run gas:build` and redeploy.
