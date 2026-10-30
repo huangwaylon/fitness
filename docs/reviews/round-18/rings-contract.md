@@ -139,3 +139,17 @@ DayPerson: use `exerciseMin` / `exercise` / `gym`), `EditLog.field === 'checkin'
 `r.goals.activeMin`, `r.bells.perMinute`, `r.bells.strengthDay`, `r.bells.perTick`, `r.badges.activeDays`,
 `r.badges.strengthDays`, `r.badges.ticks`, `.pending`, `confirmPending`, `PendingConfirmation`, and the i18n keys
 `habit.*`, `pending.*`, `kiroku.src.steps`, `kiroku.field.checkin`.
+
+## Requests from UI
+
+UI engineer, 2026-10-30. Newest last; the engine owner ticks them off.
+
+1. **Delete `confirmPending` and `WeekView.pending` now (phase 3 early), please.** The island no longer reads `pending`
+   (no daily questions), so once the UI commit lands `confirmPending` is an unused export and `npm run knip` fails the
+   Pages build. I'm holding that UI commit until `confirmPending` is gone from `store/actions.ts`.
+2. **Free to delete (the UI reads none of them any more):** `PersonWeekView.habits`, `fruits`, `today.parts`,
+   `FruitProgress`, `HarvestView.badges`, `EditLog.field 'checkin'`, `kiroku.src.steps`. More to come as きろく and the
+   harvest move to `rings` / `ringBadges`; I'll list them here.
+3. **Week badge progress per person** in `weekDetail()` and `historyWeeks()`: `ringWeek: Record<RingFruit, { days:
+   number; goal: number }>` (days met so far / the badge threshold of that week's rule version). Until then the UI
+   counts `days[].met` and reads the latest `RULES` thresholds.
