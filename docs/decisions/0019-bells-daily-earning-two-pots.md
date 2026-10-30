@@ -140,3 +140,18 @@ The user wants:
 edited in place rather than appending a version (`rules.test.ts` notes the one-off). Old check-in rows with the old
 habit keys simply stop counting. Menus that were already edited in the app (`pref`) keep their prices; only the defaults
 changed.
+
+## Amendment 2 — 2026-10-30, after the goals review
+The goals review ([round 12](../reviews/round-12/goals-review.md)) found ウェイ's real recent weeks earn ~21% of on
+target, and flagged rule gaps. The user kept the on-target goals (no phased ramp) and chose:
+
+| | Was | Now |
+|---|---|---|
+| ふたりボーナス | +1,000 only when both meet all four badges | **+250 for each badge both people meet** (same 1,000 max; one miss costs one share), `badges.duoPerBadge` |
+| Confirmed gym visits paid | 2 a week (`STRENGTH.maxConfirmedVisitsPerWeek`) | **3 a week**, so the 3-day strength badge is reachable from gym visits alone |
+| 🍐 `no_sweets` habit | 甘いものは壺から | **間食は計画どおり** (snacks only as planned: sweets *and* chips only when bought from the pot) |
+| おやつ menu | 1,500 · 2,000 · 2,000 · 3,000 · 5,000 | **おやつ 800 · アイス 1,000 · カフェデート 2,000 · デザート・パフェ 2,000 · 外ごはん 5,000**: dear but reachable, since strict bans backfire |
+| 旅 trip types | 12,000 · 35,000 · 45,000 · 160,000 | **日帰り 10,000 · 週末旅行 28,000 · 温泉 36,000 · 海外旅行 130,000**: the year's plan (2 × abroad + 6 × weekend + 1–2 × onsen ≈ 470,000–506,000) costs ~80% of a year on target, leaving room for off weeks |
+
+Not adopted (user decision): phases/seasons, a cap on paid strength days, 30-minute minimum sessions, strength
+minutes counting as active minutes, pass weeks, the comeback bonus. Applied in place to `RULES[0]` (nothing paid).

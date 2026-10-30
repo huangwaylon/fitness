@@ -107,11 +107,11 @@ describe('the weekly bonus lands at the Sunday 19:30 harvest', () => {
     expect(after.host).toMatchObject({ key: 'host.harvest_ready', params: { bells: 14 * 1125 + 5000 } });
   });
 
-  it('no duo bonus when one of us misses a badge', () => {
+  it('a missed badge costs only its share of the duo bonus', () => {
     const r = perfectWeek();
     r.events = r.events.filter((e) => !(e[1] === 'B' && JSON.parse(e[4]).date >= D[2])); // B: 6 ticks
     const h = buildWeekView(reduce(r), 'B', SUN_AFTER).harvest!;
-    expect(h.bonus).toEqual({ A: 2000, B: 1500, duo: 0 });
+    expect(h.bonus).toEqual({ A: 2000, B: 1500, duo: 750 });
   });
 
   it('a harvest tap doesn’t change the money', () => {
@@ -252,12 +252,12 @@ describe('menus: shared, editable, the latest pref by either person wins', () =>
 
   it('defaults, in the viewer’s language', () => {
     expect(menus([]).treat).toEqual([
-      { id: 'snack', label: 'おやつ', bells: 1500 }, { id: 'ice', label: 'アイス', bells: 2000 },
-      { id: 'cafe', label: 'カフェデート', bells: 2000 }, { id: 'dessert', label: 'デザート・パフェ', bells: 3000 },
+      { id: 'snack', label: 'おやつ', bells: 800 }, { id: 'ice', label: 'アイス', bells: 1000 },
+      { id: 'cafe', label: 'カフェデート', bells: 2000 }, { id: 'dessert', label: 'デザート・パフェ', bells: 2000 },
       { id: 'dinner', label: '外ごはん', bells: 5000 }
     ]);
-    expect(menus([]).trip.map((x) => [x.id, x.bells])).toEqual([['daytrip', 12000], ['weekend', 35000], ['onsen', 45000], ['abroad', 160000]]);
-    expect(menus([], 'en').trip[0]).toEqual({ id: 'daytrip', label: 'Day trip', bells: 12000 });
+    expect(menus([]).trip.map((x) => [x.id, x.bells])).toEqual([['daytrip', 10000], ['weekend', 28000], ['onsen', 36000], ['abroad', 130000]]);
+    expect(menus([], 'en').trip[0]).toEqual({ id: 'daytrip', label: 'Day trip', bells: 10000 });
   });
 
   it('last writer wins across both people, per menu', () => {

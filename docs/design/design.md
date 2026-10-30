@@ -78,7 +78,7 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
   30 minutes), 🥥 400 on a strength day, 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,125 a day.
   The same goals and the same habits for both people (毎食たんぱく質 · 甘いものは壺から · 野菜 2食).
 - **Weekly bonus at the Sunday 19:30 harvest:** +500 per badge (🍑 5 days at 45 min, 🍎 4 step days, 🥥 3 strength
-  days, 🍐 15 ticks, prorated over 正月), +1,000 ふたりボーナス when both have all four. 「受け取る」 is a ceremony.
+  days, 🍐 15 ticks, prorated over 正月), ふたりボーナス +250 for each badge both people meet. 「受け取る」 is a ceremony.
 - **Two shared pots:** everything earned splits おやつ 20% / 旅 80% (`POTS.treatPercent`, on totals). Shared, editable menus (`pref`
   `treatMenu` / `tripMenu`, latest wins); a buy is a `spend`, undone by the buyer's `spend_void`; no approvals; a
   balance never goes negative.

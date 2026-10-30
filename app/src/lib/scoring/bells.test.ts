@@ -107,10 +107,10 @@ describe('earnWeek: the daily table (ADR 0019 §3)', () => {
     expect(coconut([], [visit(D[0], false, true, 29)])).toBe(0); // too short
   });
 
-  it('🥥 confirmed gym visits count on at most 2 days a week (auto places and workouts are not limited)', () => {
+  it('🥥 confirmed gym visits count on at most 3 days a week (auto places and workouts are not limited)', () => {
     const e = earnWeek(input({ visits: D.slice(0, 4).map((d) => visit(d, false, true)), workouts: [workout(D[5], 'Pilates', 30)] }));
-    expect(e.days.map((d) => d.strength)).toEqual([true, true, false, false, false, true, false]);
-    expect(e.fruits.coconut.weekBells).toBe(1200);
+    expect(e.days.map((d) => d.strength)).toEqual([true, true, true, false, false, true, false]);
+    expect(e.fruits.coconut.weekBells).toBe(1600);
   });
 
   it('🍐 100 per distinct tick of my 3 habits, max 3 a day', () => {
@@ -172,17 +172,18 @@ describe('earnWeek: weekly badges (ADR 0019 §4)', () => {
     expect(e.daily).toBe(5 * 225);
   });
 
-  it('the ふたりボーナス needs all four badges from both', () => {
+  it('the ふたりボーナス: +250 for each badge both people met', () => {
     const a = earnWeek(perfect());
     const b = earnWeek({ ...perfect(), person: 'B' });
     expect(duoBonus(a, b)).toBe(1000);
     const weak = earnWeek({ ...perfect(), person: 'B', checkins: [] });
     expect(weak.bonus).toBe(1500);
-    expect(duoBonus(a, weak)).toBe(0);
+    expect(duoBonus(a, weak)).toBe(750); // one miss costs one share, never the lot
+    expect(duoBonus(weak, weak)).toBe(750);
   });
 
   it('values come from the week’s rule version', () => {
-    const v2 = { ...RULES[0], from: '2027-01-04', bells: { ...RULES[0].bells, perMinute: 10 }, badges: { ...RULES[0].badges, duo: 2000 } };
+    const v2 = { ...RULES[0], from: '2027-01-04', bells: { ...RULES[0].bells, perMinute: 10 }, badges: { ...RULES[0].badges, duoPerBadge: 500 } };
     (RULES as (typeof v2)[]).push(v2);
     try {
       expect(earnWeek(perfect()).days[0].parts.peach).toBe(225);

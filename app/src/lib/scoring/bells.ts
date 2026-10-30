@@ -185,8 +185,9 @@ export function earnWeek(input: EarnInput): WeekEarning {
   };
 }
 
-/** The ふたりボーナス: both people met all four badges. */
-export const duoBonus = (a: WeekEarning, b: WeekEarning): number => (a.allBadges && b.allBadges ? rulesFor(a.weekKey).badges.duo : 0);
+/** The ふたりボーナス: +badges.duoPerBadge for each badge both people met (user 2026-10-30: one miss never costs it all). */
+export const duoBonus = (a: WeekEarning, b: WeekEarning): number =>
+  FRUIT_KEYS.filter((f) => a.badges[f] && b.badges[f]).length * rulesFor(a.weekKey).badges.duoPerBadge;
 
 /** Split an all-time total into the two pots (on totals, so nothing is lost to rounding). */
 export function splitPots(total: number): Record<PotKey, number> {

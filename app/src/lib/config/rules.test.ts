@@ -33,12 +33,13 @@ describe('RULES', () => {
   it('the versions in use are pinned: append a new version instead of editing one', () => {
     // RULES[0] was edited in place once, on 2026-10-30 (ADR 0019 amendment: strength 400 ベル, 3-day badge): nothing
     // had paid yet (ベル are play money and the economy started that week), so there was no paid week to protect.
-    // From here on, append a version instead.
+    // A second in-place edit the same day (goals review round 12: duo per shared badge) was equally safe. From here
+    // on, append a version instead.
     expect(RULES[0]).toEqual({
       from: '2026-10-26',
       goals: { activeMin: 45, steps: 8000 },
       bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
-      badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duo: 1000 }
+      badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250 }
     });
     const habits = ['protein_each_meal', 'no_sweets', 'veg_two_meals'];
     expect(HABITS[0]).toEqual({ from: '2026-10-26', people: { A: { habits }, B: { habits } } });

@@ -16,8 +16,8 @@ export interface RuleVersion {
   goals: { activeMin: number; steps: number };
   /** ベル per day: per counted minute (up to goals.activeMin), on a step-goal day, on a strength day, per habit tick. */
   bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number };
-  /** Weekly badges (+`bells` each) and the ふたりボーナス (`duo`, both people with all four). */
-  badges: { activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duo: number };
+  /** Weekly badges (+`bells` each) and the ふたりボーナス (+`duoPerBadge` for each badge both people met). */
+  badges: { activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duoPerBadge: number };
 }
 
 export const RULES: readonly RuleVersion[] = [
@@ -26,7 +26,7 @@ export const RULES: readonly RuleVersion[] = [
     from: '2026-10-26',
     goals: { activeMin: 45, steps: 8000 },
     bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
-    badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duo: 1000 }
+    badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duoPerBadge: 250 }
   }
 ];
 
@@ -46,19 +46,19 @@ export interface DefaultMenuItem { id: string; bells: number; label: { ja: strin
 /** The shared menus before anyone edits them (ADR 0019 §5). */
 export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
   treat: [
-    // Sweets are deliberately dear (wedding goal, user 2026-10-30): on target the pair earns ~2,900 おやつ ベル a week.
-    { id: 'snack', bells: 1500, label: { ja: 'おやつ', en: 'Snack' } },
-    { id: 'ice', bells: 2000, label: { ja: 'アイス', en: 'Ice cream' } },
+    // Sweets are dear but reachable (wedding goal; goals review round 12, user 2026-10-30): on target ~2,900 おやつ ベル a week.
+    { id: 'snack', bells: 800, label: { ja: 'おやつ', en: 'Snack' } },
+    { id: 'ice', bells: 1000, label: { ja: 'アイス', en: 'Ice cream' } },
     { id: 'cafe', bells: 2000, label: { ja: 'カフェデート', en: 'Café date' } },
-    { id: 'dessert', bells: 3000, label: { ja: 'デザート・パフェ', en: 'Dessert' } },
+    { id: 'dessert', bells: 2000, label: { ja: 'デザート・パフェ', en: 'Dessert' } },
     { id: 'dinner', bells: 5000, label: { ja: '外ごはん', en: 'Dinner out' } }
   ],
   trip: [
-    // Priced so a year on target (~600,000 旅 ベル) pays 2 × abroad + 6 × weekend + 1–2 × onsen (user 2026-10-30).
-    { id: 'daytrip', bells: 12000, label: { ja: '日帰り', en: 'Day trip' } },
-    { id: 'weekend', bells: 35000, label: { ja: '週末旅行', en: 'Weekend trip' } },
-    { id: 'onsen', bells: 45000, label: { ja: '温泉', en: 'Onsen' } },
-    { id: 'abroad', bells: 160000, label: { ja: '海外旅行', en: 'Travel abroad' } }
+    // ~80% of a year on target (~600,000 旅 ベル) pays 2 × abroad + 6 × weekend + 1–2 × onsen, leaving room for off weeks (round 12).
+    { id: 'daytrip', bells: 10000, label: { ja: '日帰り', en: 'Day trip' } },
+    { id: 'weekend', bells: 28000, label: { ja: '週末旅行', en: 'Weekend trip' } },
+    { id: 'onsen', bells: 36000, label: { ja: '温泉', en: 'Onsen' } },
+    { id: 'abroad', bells: 130000, label: { ja: '海外旅行', en: 'Travel abroad' } }
   ]
 };
 
@@ -68,7 +68,7 @@ export const STRENGTH = {
   minWorkoutMin: 15,
   minVisitMin: 30,
   /** Confirmed (non-auto) gym visits paid per week. */
-  maxConfirmedVisitsPerWeek: 2
+  maxConfirmedVisitsPerWeek: 3
 } as const;
 
 /**
