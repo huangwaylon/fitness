@@ -3,16 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
 
-/** The demo usually opens on しずえ's 「…は筋トレでしたか？」 (one or more): answer them until she's quiet. */
-async function answerPending(page: Page) {
+/** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
+async function islandReady(page: Page) {
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
-  const yes = page.getByRole('button', { name: 'はい', exact: true });
-  await page.waitForTimeout(300);
-  for (let i = 0; i < 5 && (await yes.isVisible()); i++) {
-    await yes.click();
-    await page.waitForTimeout(300);
-  }
-  await expect(yes).toHaveCount(0);
 }
 
 /** `きょう 620 ベル` → 620. */
@@ -124,7 +117,7 @@ test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', asyn
 
 test('tree popup: the five ring fruits, today against the goal, today’s ベル and the week’s pips (ADR 0021)', async ({ page }) => {
   await page.goto('?demo');
-  await answerPending(page);
+  await islandReady(page);
   await page.locator('button.canopy').nth(0).click();
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
@@ -144,7 +137,7 @@ test('tree popup: the five ring fruits, today against the goal, today’s ベル
 
 test('partner: a villager card (their line, when their data came, ハイタッチ), no numbers', async ({ page }) => {
   await page.goto('?demo');
-  await answerPending(page);
+  await islandReady(page);
   await page.waitForTimeout(1500); // the opening beats (villagers are disabled until then)
   await page.locator('.if-scene button.vil').nth(1).click();
   const card = sheet(page);
@@ -181,7 +174,7 @@ test('きろく: the Move goal (ADR 0021), mine only, a numeric field ≥ 16px, 
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
   await page.goto('?demo');
-  await answerPending(page);
+  await islandReady(page);
   const canopies = page.locator('button.canopy');
   const popups = page.locator('.detail');
   await canopies.nth(0).click();
@@ -205,7 +198,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
 
 test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
   await page.goto('?demo');
-  await answerPending(page);
+  await islandReady(page);
   await page.waitForTimeout(1500);
   const box = async (sel: ReturnType<Page['locator']>) => (await sel.boundingBox())!;
   const vw = page.viewportSize()!.width;

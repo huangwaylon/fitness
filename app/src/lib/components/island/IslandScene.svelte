@@ -3,7 +3,7 @@
   // docs/design/design.md §S.3). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
   // (390 × 360 units) anchored to the bottom, painted like the official renders (light from the upper left,
   // soft gradients and contact shadows, no strokes or lips on scenery).
-  //   <IslandScene {view} onme onpartner onjar paused />
+  //   <IslandScene {view} onpartner onjar paused />
   // Sky: sky table per time of day, sun / moon at the upper left with a soft glow + stars, two soft clouds,
   // balloon present, event fireworks. Stage: the sea (Sea.svelte: one layer from the horizon to below the
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
@@ -50,8 +50,6 @@
 
   interface Props {
     view: WeekView;
-    /** My villager tapped (open 今夜のチェック). Fires 200 ms after the tap, after the squish. */
-    onme?: () => void;
     /** Partner villager tapped (open the partner sheet). */
     onpartner?: () => void;
     /** Jar tapped (go to ごほうび), after a short look-at-the-jar beat. */
@@ -60,22 +58,21 @@
     paused?: boolean;
     /** Interactive + idle life + reactions (false for gallery thumbnails). */
     live?: boolean;
-    /** Dev gallery: force a season / night / time of day instead of the theme clock. */
+    /** Dev gallery: force a season / time of day instead of the theme clock. */
     season?: Season;
     /** Oak foliage (defaults to the season's signature look when `season` is forced, else the clock). */
     foliage?: Foliage;
-    night?: boolean;
     tod?: Tod;
   }
   let {
-    view, onme, onpartner, onjar, paused = false, live = true,
-    season: seasonProp, foliage: foliageProp, night: nightProp, tod: todProp
+    view, onpartner, onjar, paused = false, live = true,
+    season: seasonProp, foliage: foliageProp, tod: todProp
   }: Props = $props();
 
   const uid = $props.id();
   const season = $derived(seasonProp ?? theme.season);
   const foliage = $derived<Foliage>(foliageProp ?? (seasonProp ? defaultFoliage(seasonProp) : theme.foliage));
-  const tod = $derived<Tod>(todProp ?? (nightProp === true ? 'night' : nightProp === false && theme.tod === 'night' ? 'day' : theme.tod));
+  const tod = $derived<Tod>(todProp ?? theme.tod);
 
   // The clock (device time or ?date=), at each new minute.
   const clock = $derived(minuteNow());
@@ -159,7 +156,7 @@
           aria-label={id === 'mine'
             ? t('island.me', { name: s.person.villagerName, bells: formatBells(s.person.today.bells) })
             : t('island.highfive', { name: s.person.villagerName })}
-          onclick={() => life.tapVillager(id, id === 'mine' ? onme : onpartner)}>
+          onclick={() => life.tapVillager(id, id === 'mine' ? undefined : onpartner)}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
             actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} />
         </button>

@@ -155,13 +155,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   const btn = (name: string | RegExp, scope = page.locator('body')) => scope.getByRole('button', { name, exact: typeof name === 'string' });
 
   // 島
-  const yes = btn('はい');
   await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
-  await page.waitForTimeout(300);
-  for (let i = 0; i < 5 && (await yes.isVisible()); i++) {
-    await step('島', 'しずえ: はい (choice)', () => yes.tap(), ['choice-pick']);
-    await page.waitForTimeout(300);
-  }
   await page.waitForTimeout(1500); // the opening beats
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
   await step('島', 'tree canopy again (closes)', () => page.locator('button.canopy').first().tap(), ['tick']);

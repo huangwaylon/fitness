@@ -125,7 +125,7 @@
   .pen-sp { width: var(--hit); flex: none; }
   .row + .row, .earn + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
-  /* a workout / visit row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
+  /* a workout / gym arrival row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
      (sizing #13: at 12px beside them it wrapped to 3 lines) */
   .wo { flex-wrap: wrap; row-gap: 0; min-height: 0; padding: 8px 0 4px; }
   .wo .k { flex-basis: 100%; }
