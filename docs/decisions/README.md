@@ -25,3 +25,4 @@ Numbered `NNNN-title.md`. Superseded decisions stay, marked as such; the newest 
 | [0019](0019-bells-daily-earning-two-pots.md) | Play money (ベル) earned daily; same goals for both; two shared pots (おやつ / 旅) | Accepted; amended 2026-10-30 (tuning) | |
 | [0020](0020-weight-trend-never-rewarded.md) | Body-weight trend in きろく; weight never earns ベル | Accepted | |
 | [0021](0021-activity-rings-no-check-ins.md) | Activity Rings (Move/Exercise/Stand) + steps + gym; no manual check-ins | Accepted | |
+| [0022](0022-one-wallet-small-luxuries.md) | One shared wallet of small luxuries (everyday + trip treats); trips paid outside the game | Accepted | |
