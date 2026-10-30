@@ -6,7 +6,7 @@
 //
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
-import { looseDate, parseShortcut } from './parse.ts';
+import { parseShortcut } from './parse.ts';
 import { parseInstant } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
@@ -301,7 +301,7 @@ function num(v: unknown): number | null {
  * The shape of an ingest body for the `uploads` audit: each field's type, list length and first item (40 chars), never
  * the key. Enough to see what a Shortcut really sends without storing the whole body twice.
  */
-export function bodyShape(body: Rec): string {
+function bodyShape(body: Rec): string {
   const first = (v: unknown) => JSON.stringify(v)?.slice(0, 40) ?? '';
   const parts = Object.entries(body).filter(([k]) => k !== 'key').map(([k, v]) => {
     if (Array.isArray(v)) return `${k}:array[${v.length}] ${first(v[0])}`;
@@ -398,9 +398,10 @@ function presence(me: PersonId, body: Rec): PresenceReply {
   if (body.event !== 'arrive' && body.event !== 'leave') return fail('bad_request');
   let eventAt: string | null = null;
   if (body.at !== undefined && body.at !== null && body.at !== '') {
-    const iso = looseDate(body.at);
-    if (!iso) return fail('bad_request');
-    eventAt = new Date(Date.parse(iso)).toISOString();
+    // An ISO 8601 instant with its offset (the gym automation's Current Date, formatted ISO 8601).
+    const ms = typeof body.at === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(body.at) ? Date.parse(body.at) : NaN;
+    if (Number.isNaN(ms)) return fail('bad_request');
+    eventAt = new Date(ms).toISOString();
   }
   const ev = body.event;
   return withLock((): PresenceReply => {

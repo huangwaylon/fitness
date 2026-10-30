@@ -11,13 +11,11 @@ food, so a raw number shown every day is mostly noise.
    economy: `model/bells.ts` doesn't import `model/weight.ts`, and weight rows are indexed apart from steps and minutes
    (`State.weights` / `State.weightSets`). `model/weight.test.ts` checks that weight rows, weight edits and goals change
    no view.
-2. **Ingest:** the Shortcut sends Health "Body Mass" samples as `weight_dates` / `weights` / optional `weight_sources`
-   (`docs/ops/shortcut-health-sync.md`). Values are kg (one decimal); "68.4 kg", a decimal comma and marked pounds
-   ("150.8 lb") are read, an unmarked number is kg, and anything outside 20–300 kg is skipped.
-3. **A day's weight is its first sample of the (Tokyo) day**: the morning weigh-in is the most comparable from day to
-   day, and a later weigh-in after food and water is ignored. It's stored in `metrics` as metric `weight`. A day's
-   steps only ever go up (the max), but a weight goes down too, so **the latest row wins**. The server appends a weight
-   row whenever the day's value differs from its last row, not only when it's higher.
+2. **Ingest:** the Shortcut sends `weight`, one line per day alongside `dates`: that day's Body Mass in kg as Health
+   groups it by day, `0` = no weigh-in (`docs/ops/shortcut-health-sync.md` §1; the one format, amended 2026-10-30
+   after the `uploads` log showed what the Shortcut really sends). Outside 20–300 kg is skipped.
+3. **Stored** in `metrics` as metric `weight`. A day's steps only ever go up (the max), but a weight goes down too, so
+   **the latest row wins**: the server appends a weight row whenever the day's value differs from its last row.
 4. **Hand entry:** きろく can log or correct a weight with `metric_set {date, metric:'weight', value}`: 20–300 kg, at most
    one decimal (decimals are allowed for weight only). There's no week lock, because nothing is paid: any day up to
    today. A day's weight is the latest of its ingested rows and edits, so a later *different* value from Health
