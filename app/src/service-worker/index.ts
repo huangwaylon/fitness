@@ -2,7 +2,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, SHELL, isAudio, isMusic, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, SHELL, isAudio, isFont, isMusic, isVillagerArt, lruEvict, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -11,12 +11,10 @@ const CACHE = `${SHELL}${version}`;
 const FONTS = 'island-fonts-v1';
 /** A slow network (one bar, a captive portal) must not hang the launch: after this the cached shell opens. */
 const NAV_TIMEOUT_MS = 3000;
-const isFont = (p: string) => /\.(woff2?|ttf)$/.test(p);
 // Villager art: ~160 villagers × render + icon is too much to download at install. Only the two
 // default villagers are precached; every other render/icon is cached on first use, in a cache that outlives builds
 // (bump the suffix if villager art is re-fetched under the same paths).
 const VILLAGERS = 'island-villagers-v1';
-const isVillagerArt = (p: string) => p.includes('/art/villagers/');
 
 // Precache built JS/CSS + static files (caches.ts precachable): font subsets (Japanese = many files) are cached on
 // first use instead; the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
