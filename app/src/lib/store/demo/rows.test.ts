@@ -33,13 +33,13 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   it('the spends were all accepted (one voided), the menu was edited, the island asks about the yoga', () => {
     const ledger = bellsLedger(s, now);
     const spends = Object.fromEntries(ledger.spends.map((x) => [x.spendId, x.voided]));
-    expect(spends).toMatchObject({ 'demo-ice-1': false, 'demo-cafe-1': false, 'demo-dinner': true, 'demo-parfait': false, 'demo-daytrip': false, 'demo-cafe-2': false });
+    expect(spends).toMatchObject({ 'demo-ice-1': false, 'demo-cafe-1': false, 'demo-snack-void': true, 'demo-parfait': false, 'demo-daytrip': false, 'demo-cafe-2': false });
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
     expect(view.pending.some((p) => p.kind === 'workout')).toBe(true);
     expect(view.menus.treat.map((x) => x.id)).toContain('parfait');
     expect(view.pots.treat).toEqual(ledger.pots.treat);
-    expect(view.pots.trip.spent).toBe(20000);
+    expect(view.pots.trip.spent).toBe(12000);
     expect(view.pots.treat.balance).toBeGreaterThan(0);
     expect(view.pots.trip.balance).toBeGreaterThan(0);
     if (process.env.DEMO_DEBUG) console.log(iso, view.pots, view.people.A.today);

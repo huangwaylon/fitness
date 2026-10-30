@@ -9,7 +9,7 @@ export function todayPct(f: Pick<FruitProgress, 'todayActual' | 'todayGoal' | 't
   return f.todayGoal > 0 ? Math.max(0, Math.min(100, (f.todayActual * 100) / f.todayGoal)) : 0;
 }
 
-/** The most one person can earn in a day (1,025 ベル). */
+/** The most one person can earn in a day (1,125 ベル with the 2026-10-30 rules). */
 export function dayMax(): number {
   const r = RULES[RULES.length - 1];
   return r.goals.activeMin * r.bells.perMinute + r.bells.stepDay + r.bells.strengthDay + 3 * r.bells.perTick;

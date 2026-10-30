@@ -26,7 +26,7 @@ function rng(seed: string): () => number {
 
 const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
-const HABITS: Record<PersonId, string[]> = { A: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], B: ['eat_lunch', 'snack_swap', 'veg_two_meals'] };
+const HABITS: Record<PersonId, string[]> = { A: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], B: ['protein_each_meal', 'no_sweets', 'veg_two_meals'] };
 
 function demoFirstWeek(now: number): WeekKey {
   return addDays(weekKeyOf(nowInZone(new Date(now)).date), -7 * DEMO_WEEKS_BACK);
@@ -124,27 +124,27 @@ function demoRows(now: number): SnapshotRows {
   // うめ: a manual Pilates (3 weeks ago), counted as strength.
   edit(at(addDays(w(3), 4), 20, 12), 'B', 'workout_add', { id: 'm:demo-pilates', date: addDays(w(3), 3), type: 'Pilates', durationMin: 35, strength: true }, addDays(w(3), 3));
   // ウェイ: a missed check-in ticked later (this week, if Monday is past).
-  if (today > cur) edit(at(today, 7, 40), 'A', 'checkin', { date: cur, habit: 'low_salt_day', done: true, edit: true }, cur);
+  if (today > cur) edit(at(today, 7, 40), 'A', 'checkin', { date: cur, habit: 'no_sweets', done: true, edit: true }, cur);
 
   // The pots (ADR 0019): treats most weeks, a day trip, one treat taken back by its buyer, and a menu edit.
   const buy = (t: number, p: PersonId, spendId: string, pot: 'treat' | 'trip', item: string, label: string, bells: number) =>
     ev(t, p, 'spend', { spendId, pot, item, label, bells });
-  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'treat', 'ice', 'アイス', 500);
-  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'treat', 'cafe', 'カフェデート', 1500);
-  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-dinner', 'treat', 'dinner', '外ごはん', 5000);
-  ev(at(addDays(w(4), 2), 19, 34), 'A', 'spend_void', { spendId: 'demo-dinner' });
+  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'treat', 'ice', 'アイス', 2000);
+  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'treat', 'cafe', 'カフェデート', 2000);
+  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-snack-void', 'treat', 'snack', 'おやつ', 1500);
+  ev(at(addDays(w(4), 2), 19, 34), 'A', 'spend_void', { spendId: 'demo-snack-void' });
   // うめ adds パフェ to the treats menu.
   ev(at(addDays(w(4), 3), 21, 0), 'B', 'pref', {
     key: 'treatMenu',
     value: JSON.stringify([
-      { id: 'snack', label: 'おやつ', bells: 300 }, { id: 'ice', label: 'アイス', bells: 500 }, { id: 'parfait', label: 'パフェ', bells: 800 },
-      { id: 'cafe', label: 'カフェデート', bells: 1500 }, { id: 'dinner', label: '外ごはん', bells: 5000 }
+      { id: 'snack', label: 'おやつ', bells: 1500 }, { id: 'ice', label: 'アイス', bells: 2000 }, { id: 'cafe', label: 'カフェデート', bells: 2000 },
+      { id: 'parfait', label: 'パフェ', bells: 2500 }, { id: 'dessert', label: 'デザート・パフェ', bells: 3000 }, { id: 'dinner', label: '外ごはん', bells: 5000 }
     ])
   });
-  buy(at(addDays(w(3), 5), 16, 0), 'B', 'demo-parfait', 'treat', 'parfait', 'パフェ', 800);
-  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-daytrip', 'trip', 'daytrip', '日帰り', 20000);
-  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'treat', 'cafe', 'カフェデート', 1500);
-  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'treat', 'snack', 'おやつ', 300);
+  buy(at(addDays(w(3), 5), 16, 0), 'B', 'demo-parfait', 'treat', 'parfait', 'パフェ', 2500);
+  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-daytrip', 'trip', 'daytrip', '日帰り', 12000);
+  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'treat', 'cafe', 'カフェデート', 2000);
+  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'treat', 'snack', 'おやつ', 1500);
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(presence), events: byAt(events) };

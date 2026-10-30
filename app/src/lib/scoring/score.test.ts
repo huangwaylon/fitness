@@ -84,11 +84,11 @@ describe('scoreWeek: totals', () => {
         workout(d[3], 'Yoga', 20, 100, null) // unanswered → not strength
       ],
       checkins: [
-        ...ticks(d[0], ['teishoku_lunch', 'low_salt_day', 'veg_two_meals']),
-        ...ticks(d[1], ['teishoku_lunch', 'veg_two_meals']),
+        ...ticks(d[0], ['protein_each_meal', 'no_sweets', 'veg_two_meals']),
+        ...ticks(d[1], ['protein_each_meal', 'veg_two_meals']),
         ...ticks(d[2], ['veg_two_meals']),
-        ...ticks(d[3], ['teishoku_lunch', 'low_salt_day', 'veg_two_meals']),
-        ...ticks(d[5], ['low_salt_day', 'veg_two_meals'])
+        ...ticks(d[3], ['protein_each_meal', 'no_sweets', 'veg_two_meals']),
+        ...ticks(d[5], ['no_sweets', 'veg_two_meals'])
       ]
     }));
     // Peach, per day max(Watch min, (steps − 7500)/100), capped at 67.5:
@@ -220,7 +220,7 @@ describe('scoreWeek: pear', () => {
   const d = weekDays(WK);
   it('counts distinct ticks of the 3 habits only', () => {
     const s = scoreWeek(input({
-      checkins: [...ticks(d[0], ['teishoku_lunch', 'teishoku_lunch', 'eat_lunch', 'snack_swap']), ...ticks(d[1], ['veg_two_meals'])]
+      checkins: [...ticks(d[0], ['protein_each_meal', 'protein_each_meal', 'not_a_habit', 'teishoku_lunch']), ...ticks(d[1], ['veg_two_meals'])]
     }));
     expect(s.categories.pear.actual).toBe(2);
     expect(s.categories.pear.milli).toBe(Math.floor((25000 * 2) / 15));
@@ -253,7 +253,7 @@ describe('scoreWeek: 正月 holiday', () => {
     const wk = '2026-12-28';
     const d = weekDays(wk);
     const t = targetsFor('B', wk);
-    const s = scoreWeek(input({ person: 'B', weekKey: wk, targets: t, checkins: [...ticks(d[0], ['eat_lunch', 'snack_swap']), ...ticks(d[2], [...t.habits])] }));
+    const s = scoreWeek(input({ person: 'B', weekKey: wk, targets: t, checkins: [...ticks(d[0], ['protein_each_meal', 'no_sweets']), ...ticks(d[2], [...t.habits])] }));
     expect(s.categories.pear.actual).toBe(2);
     expect(s.categories.pear.target).toBeCloseTo(15 / 7, 10);
     expect(s.categories.pear.milli).toBe(23333); // 25000 × 2 × 7 / 15

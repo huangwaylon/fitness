@@ -21,6 +21,10 @@
 // host.* (regenerated after checking every view and digest matched with the old name restored). Everything else is
 // still the frozen server's output.
 //
+// Regenerated on 2026-10-30 for the ADR 0019 amendment, after checking the diff touched only: 🥥 400 ベル and a 3-day
+// badge, the 20 / 80 pot split, the new default menus, and the habit keys (the rows' old keys were renamed one to one:
+// A teishoku_lunch / low_salt_day, B eat_lunch / snack_swap → protein_each_meal / no_sweets; old-economy fields unchanged).
+//
 // If a change to the rules is intended, regenerate the goldens from the model and review the diff of
 // timeline-views.json: `GOLDEN_UPDATE=1 npx vitest run src/lib/model/golden.test.ts` (keeps the same instants).
 import { describe, expect, it } from 'vitest';

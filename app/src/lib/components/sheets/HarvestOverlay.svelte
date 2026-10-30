@@ -4,7 +4,7 @@
   // in the thumb zone. Recap: per person the four badges (lit = met, +500 each) and their bonus, then ふたりボーナス
   // (+1,000 when both have all four) and the week's bonus as the one big number. 「受け取る」 is a ceremony (the
   // bonus counts either way): it records that I saw it, then the end card drops the bonus into the two pots, split
-  // おやつ 30% / 旅 70%: coins fall into each and its balance counts up. No confetti (not in the games): an item-get beat.
+  // おやつ / 旅 by POTS.treatPercent: coins fall into each and its balance counts up. No confetti (not in the games): an item-get beat.
   // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   import type { FruitKey, HarvestView, PersonId, PotKey, WeekView } from '#lib/types.ts';
   import { FRUITS } from '#lib/config/rules.ts';

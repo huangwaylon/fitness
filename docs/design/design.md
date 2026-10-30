@@ -70,15 +70,16 @@ A NookPhone-screen sheet: status row (time · leaf · デモ in demo), title, an
 
 - **ベル, play money**, earned per person per day from the rows (so they move whenever data arrives): 🍑 5 per counted
   minute up to 45 (minutes = max(Watch, (steps − 8,000)/100, manual workouts)), 🍎 200 at 8,000 steps (tsuyu: also at
-  30 minutes), 🥥 300 on a strength day, 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,025 a day.
-  The same goals for both people.
-- **Weekly bonus at the Sunday 19:30 harvest:** +500 per badge (🍑 5 days at 45 min, 🍎 4 step days, 🥥 2 strength
+  30 minutes), 🥥 400 on a strength day, 🍐 100 per habit tick (max 3; none on 正月 pear-off days). Max 1,125 a day.
+  The same goals and the same habits for both people (毎食たんぱく質 · 甘いものは壺から · 野菜 2食).
+- **Weekly bonus at the Sunday 19:30 harvest:** +500 per badge (🍑 5 days at 45 min, 🍎 4 step days, 🥥 3 strength
   days, 🍐 15 ticks, prorated over 正月), +1,000 ふたりボーナス when both have all four. 「受け取る」 is a ceremony.
-- **Two shared pots:** everything earned splits おやつ 30% / 旅 70% (on totals). Shared, editable menus (`pref`
+- **Two shared pots:** everything earned splits おやつ 20% / 旅 80% (`POTS.treatPercent`, on totals). Shared, editable menus (`pref`
   `treatMenu` / `tripMenu`, latest wins); a buy is a `spend`, undone by the buyer's `spend_void`; no approvals; a
   balance never goes negative.
 - **Locks:** a week's earnings can change until its Wednesday 04:00 lock, then they are fixed. Spends never lock.
-- **Starts** in the week of Mon 2026-10-26. Gone: the score /100, yen, the team layer, the purse, transfers, rungs,
+- **Starts** in the week of Mon 2026-10-26. Tuned 2026-10-30 (ADR 0019 amendment): sweets are dear
+  (おやつ 1,500–5,000) and a year on target pays 2 × abroad, 6 × weekend, 1–2 × onsen. Gone: the score /100, yen, the team layer, the purse, transfers, rungs,
   calibration, per-person targets, the rest-day bonus.
 - **View model:** `WeekView.people[p].today`, `fruits[f]` progress, `pots`, `menus`, `harvest.bonus/totalBells`;
   きろく: `bellsLedger()`. Exact types: [round-11/engine-contract.md](../reviews/round-11/engine-contract.md).

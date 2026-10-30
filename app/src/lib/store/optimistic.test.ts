@@ -53,20 +53,20 @@ describe('live optimistic view', () => {
 
   it('a habit tick grows the pear and the score at once', () => {
     const before = composeView(cache, [], NOW);
-    const after = composeView(cache, [ev('t1', 'checkin', { date: '2026-11-18', habit: 'teishoku_lunch', done: true })], NOW);
+    const after = composeView(cache, [ev('t1', 'checkin', { date: '2026-11-18', habit: 'protein_each_meal', done: true })], NOW);
     expect(after.people.A.fruits.pear.milli).toBeGreaterThan(before.people.A.fruits.pear.milli);
     expect(after.people.A.score).toBeGreaterThanOrEqual(before.people.A.score);
   });
 
   it('keeps an acked event in the view until the server rows bring it back', async () => {
-    enqueue('checkin', { date: '2026-11-18', habit: 'teishoku_lunch', done: true }, NOW);
+    enqueue('checkin', { date: '2026-11-18', habit: 'protein_each_meal', done: true }, NOW);
     const sent = queued();
     const r = await flush(() => NOW);
     expect(r.sent).toBe(1);
     expect(queued()).toEqual([]);
     // Before the fix the store composed only `queued()` here, so the tick vanished until the reconcile fetch.
     const pending = notInCache(cache, sent);
-    expect(composeView(cache, [...pending, ...queued()], NOW).people.A.habits?.ticksByDate['2026-11-18']).toEqual(['teishoku_lunch']);
+    expect(composeView(cache, [...pending, ...queued()], NOW).people.A.habits?.ticksByDate['2026-11-18']).toEqual(['protein_each_meal']);
     const fetched = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-18T12:00:01.000Z', 'A', sent[0].id, 'checkin', JSON.stringify(sent[0].data)]] }) };
     expect(notInCache(fetched, sent)).toEqual([]);
   });

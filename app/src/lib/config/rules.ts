@@ -29,8 +29,8 @@ export const RULES: readonly RuleVersion[] = [
     // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns.
     from: '2026-10-26',
     goals: { activeMin: 45, steps: 8000 },
-    bells: { perMinute: 5, stepDay: 200, strengthDay: 300, perTick: 100 },
-    badges: { activeDays: 5, stepDays: 4, strengthDays: 2, ticks: 15, bells: 500, duo: 1000 },
+    bells: { perMinute: 5, stepDay: 200, strengthDay: 400, perTick: 100 },
+    badges: { activeDays: 5, stepDays: 4, strengthDays: 3, ticks: 15, bells: 500, duo: 1000 },
     money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
     points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
   }
@@ -41,7 +41,7 @@ export const RULES: readonly RuleVersion[] = [
  * totals (treats = floor(total × treatPercent / 100), trips = total − treats). Not versioned by week: a change
  * re-splits everything earned so far.
  */
-export const POTS = { treatPercent: 30 } as const;
+export const POTS = { treatPercent: 20 } as const;
 
 /** First week that earns ベル (ADR 0019 §7). */
 export const ECONOMY_START: WeekKey = RULES[0].from;
@@ -52,16 +52,19 @@ export interface DefaultMenuItem { id: string; bells: number; label: { ja: strin
 /** The shared menus before anyone edits them (ADR 0019 §5). */
 export const DEFAULT_MENUS: Record<PotKey, readonly DefaultMenuItem[]> = {
   treat: [
-    { id: 'snack', bells: 300, label: { ja: 'おやつ', en: 'Snack' } },
-    { id: 'ice', bells: 500, label: { ja: 'アイス', en: 'Ice cream' } },
-    { id: 'cafe', bells: 1500, label: { ja: 'カフェデート', en: 'Café date' } },
+    // Sweets are deliberately dear (wedding goal, user 2026-10-30): on target the pair earns ~2,900 おやつ ベル a week.
+    { id: 'snack', bells: 1500, label: { ja: 'おやつ', en: 'Snack' } },
+    { id: 'ice', bells: 2000, label: { ja: 'アイス', en: 'Ice cream' } },
+    { id: 'cafe', bells: 2000, label: { ja: 'カフェデート', en: 'Café date' } },
+    { id: 'dessert', bells: 3000, label: { ja: 'デザート・パフェ', en: 'Dessert' } },
     { id: 'dinner', bells: 5000, label: { ja: '外ごはん', en: 'Dinner out' } }
   ],
   trip: [
-    { id: 'daytrip', bells: 20000, label: { ja: '日帰り', en: 'Day trip' } },
-    { id: 'onsen', bells: 50000, label: { ja: '温泉', en: 'Onsen' } },
-    { id: 'weekend', bells: 100000, label: { ja: '週末旅行', en: 'Weekend trip' } },
-    { id: 'abroad', bells: 400000, label: { ja: '海外旅行', en: 'Travel abroad' } }
+    // Priced so a year on target (~600,000 旅 ベル) pays 2 × abroad + 6 × weekend + 1–2 × onsen (user 2026-10-30).
+    { id: 'daytrip', bells: 12000, label: { ja: '日帰り', en: 'Day trip' } },
+    { id: 'weekend', bells: 35000, label: { ja: '週末旅行', en: 'Weekend trip' } },
+    { id: 'onsen', bells: 45000, label: { ja: '温泉', en: 'Onsen' } },
+    { id: 'abroad', bells: 160000, label: { ja: '海外旅行', en: 'Travel abroad' } }
   ]
 };
 
@@ -112,8 +115,8 @@ export const SEASONS: Season[] = [
     key: 's1',
     from: '2026-11-01',
     targets: {
-      A: { activeMinPerWeek: 135, strengthDaysPerWeek: 2, stepGoal: 7500, stepDaysPerWeek: 4, habits: ['teishoku_lunch', 'low_salt_day', 'veg_two_meals'], pearTicksPerWeek: 15 },
-      B: { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoal: 6250, stepDaysPerWeek: 4, habits: ['eat_lunch', 'snack_swap', 'veg_two_meals'], pearTicksPerWeek: 15 }
+      A: { activeMinPerWeek: 135, strengthDaysPerWeek: 2, stepGoal: 7500, stepDaysPerWeek: 4, habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], pearTicksPerWeek: 15 },
+      B: { activeMinPerWeek: 85, strengthDaysPerWeek: 2, stepGoal: 6250, stepDaysPerWeek: 4, habits: ['protein_each_meal', 'no_sweets', 'veg_two_meals'], pearTicksPerWeek: 15 }
     }
   }
 ];
