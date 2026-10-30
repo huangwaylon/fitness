@@ -1,12 +1,15 @@
 // きろく (history-and-editing.md): every recorded week, day and yen, for both people, computed on read from the same
 // state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
-import type { DayBells, FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, PotBalance, PotKey, WeekKey, WeekScore } from '#lib/types.ts';
+import type { FruitBells, FruitKey, HarvestBonus, LocalDate, PersonId, WeekKey, WeekScore } from '#lib/types.ts';
 import { DAILY, FRUITS, STRENGTH } from '#lib/config/rules.ts';
 import { PLACES } from '#lib/config/places.ts';
 import {
   addDays, isStrengthWorkout, manualMinutesByDay, minuteSourcesMilli, payoutWeek, scoreWeek, targetsFor, weekDays, weekKeyOf
 } from '#lib/scoring/index.ts';
-import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, type State } from './state.ts';
+import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, localDateAt, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
+import { rulesFor } from '#lib/scoring/targets.ts';
+import type { WeekEarning } from '#lib/scoring/bells.ts';
+import { dailyUpTo, weekBells, type WeekBells } from './bells.ts';
 import {
   activityAsOf, buckets, jarSum, maxBuckets, metricAsOf, monthOfWeek, paidAt, pctOf, purseSum, replayHarvests, replayPurse, settledWeeks, settleWeek, transferDoneAt, weekDates, weekInput, workoutsAsOf,
   type Activity, type Buckets, type SettledWeek, type SpendLog
@@ -14,8 +17,19 @@ import {
 
 const LIVE = Infinity;
 
-const noParts = (): FruitBells => ({ peach: 0, coconut: 0, apple: 0, pear: 0 });
-const noBadges = (): Record<FruitKey, boolean> => ({ peach: false, coconut: false, apple: false, pear: false });
+/** A week's ベル at `now`: daily earnings up to today, and the bonus once it landed (Sunday 19:30). */
+function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
+  const landed = provisionalMs(w.weekKey) <= now;
+  const bonus: HarvestBonus = landed ? { ...w.bonus } : { A: 0, B: 0, duo: 0 };
+  const person = (e: WeekEarning) => ({ daily: dailyUpTo(e, today), bonus: bonus[e.person], badges: { ...e.badges } });
+  const A = person(w.A);
+  const B = person(w.B);
+  return { bonus, A, B, bells: A.daily + A.bonus + B.daily + B.bonus + bonus.duo };
+}
+const dayOf = (e: WeekEarning, date: LocalDate): { bells: number; parts: FruitBells } => {
+  const d = e.days.find((x) => x.date === date);
+  return d ? { bells: d.bells, parts: { ...d.parts } } : { bells: 0, parts: { peach: 0, coconut: 0, apple: 0, pear: 0 } };
+};
 
 export type Stamp = 'strength' | 'active' | 'none' | 'future';
 /** Where a day's counted minutes come from: the Watch, a きろく edit of them, the steps, or workouts added by hand. */
@@ -86,7 +100,7 @@ interface DayMinutes {
  */
 function dayMinutes(s: State, p: PersonId, date: LocalDate, t: number, steps: number | null, manualMin: number): DayMinutes {
   const watch = metricAsOf(s, p, date, 'exercise_min', t);
-  const src = minuteSourcesMilli(steps, watch, manualMin, targetsFor(p, weekKeyOf(date)).stepGoal);
+  const src = minuteSourcesMilli(steps, watch, manualMin, rulesFor(weekKeyOf(date)).goals.steps);
   const best = Math.max(src.watch, src.steps, src.manual);
   const value = Math.floor(best / 1000);
   if (steps === null && watch === null && manualMin === 0) return { value, watch, source: null };
@@ -108,7 +122,7 @@ function watchIsEdit(s: State, p: PersonId, date: LocalDate, t: number): boolean
 const manualAsOf = (act: Activity): Map<LocalDate, number> => manualMinutesByDay(act.workouts);
 
 function stampsFor(s: State, person: PersonId, wk: WeekKey, c: WeekCalc, today: LocalDate): Stamp[] {
-  const goal = targetsFor(person, wk).stepGoal;
+  const goal = rulesFor(wk).goals.steps;
   const strength = new Set(c.scores[person].strengthDays);
   const manual = manualAsOf(c.act[person]);
   return weekDays(wk).map((date) => {
@@ -141,6 +155,7 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
   for (let wk = cur; wk >= start; wk = addDays(wk, -7)) {
     const c = calc(s, wk, now);
     const y = weekYen(wk, now, settled.get(wk), c);
+    const b = weekBellsView(weekBells(s, wk, now, c.t === LIVE ? c.act : undefined), today, now);
     out.push({
       weekKey: wk,
       current: wk === cur,
@@ -150,10 +165,10 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
       locked: isLockedAt(s, wk, now),
       open: editableAt(wk, now), // this week, and last week until Wednesday 04:00
       harvested: harvested.has(wk),
-      bells: 0,
+      bells: b.bells,
       people: {
-        A: { bells: 0, badges: noBadges(), score: c.scores.A.score, stamps: stampsFor(s, 'A', wk, c, today) },
-        B: { bells: 0, badges: noBadges(), score: c.scores.B.score, stamps: stampsFor(s, 'B', wk, c, today) }
+        A: { bells: b.A.daily + b.A.bonus, badges: b.A.badges, score: c.scores.A.score, stamps: stampsFor(s, 'A', wk, c, today) },
+        B: { bells: b.B.daily + b.B.bonus, badges: b.B.badges, score: c.scores.B.score, stamps: stampsFor(s, 'B', wk, c, today) }
       }
     });
   }
@@ -225,6 +240,8 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const c = calc(s, wk, now);
   const settled = settleWeek(s, wk, now) ?? undefined;
   const y = weekYen(wk, now, settled, c);
+  const wb = weekBells(s, wk, now, c.t === LIVE ? c.act : undefined);
+  const b = weekBellsView(wb, today, now);
   const person = (p: PersonId): WeekDetailPerson => {
     const score = c.scores[p];
     const input = weekInput(s, p, wk, c.t, c.act[p]);
@@ -232,9 +249,9 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
     const manual = manualAsOf(c.act[p]);
     const strength = new Set(score.strengthDays);
     return {
-      dailyBells: 0,
-      bonus: 0,
-      badges: noBadges(),
+      dailyBells: b[p].daily,
+      bonus: b[p].bonus,
+      badges: b[p].badges,
       score: score.score,
       fruits: Object.fromEntries(FRUITS.map((k) => {
         const cat = score.categories[k];
@@ -251,8 +268,7 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
           minutesSource: m.source,
           strength: strength.has(d.date),
           ticks: Math.min(DAILY.maxTicks, new Set(input.checkins.filter((x) => x.date === d.date).map((x) => x.habit)).size),
-          bells: 0,
-          parts: noParts(),
+          ...(d.date <= today ? dayOf(wb[p], d.date) : dayOf(wb[p], '')),
           edited: fields.length > 0,
           editedFields: fields
         };
@@ -266,8 +282,8 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
     locked: isLockedAt(s, wk, now),
     open: editableAt(wk, now),
     lockAt: finalMs(wk),
-    bells: 0,
-    bonus: { A: 0, B: 0, duo: 0 },
+    bells: b.bells,
+    bonus: b.bonus,
     yen: y.yen,
     estimate: y.estimate,
     breakdown: y.breakdown,
@@ -322,6 +338,7 @@ export interface DayDetail {
 export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const wk = weekKeyOf(date);
   const c = calc(s, wk, now);
+  const wb = weekBells(s, wk, now, c.t === LIVE ? c.act : undefined);
   const places = new Map(PLACES.map((p) => [p.key, p.name]));
   const log = editLog(s).filter((e) => e.date === date);
   const person = (p: PersonId): DayPerson => {
@@ -349,8 +366,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const input = weekInput(s, p, wk, t, c.act[p]);
     const mine = log.filter((e) => e.by === p);
     return {
-      bells: 0,
-      parts: noParts(),
+      ...(date <= localDateAt(now) ? dayOf(wb[p], date) : dayOf(wb[p], '')),
       steps: { value: steps, edited: mine.some((e) => e.field === 'steps') },
       minutes: { ...m, edited: mine.some((e) => e.field === 'exercise_min') },
       workouts,
@@ -484,57 +500,6 @@ export function moneyLog(s: State, now: number): MoneyLog {
   };
 }
 
-// ---------- ベル ledger (ADR 0019) ----------
+// ---------- ベル ledger (ADR 0019): model/bells.ts ----------
 
-/** One day of the ledger: both people's earnings. `locked`: its week locked, so the numbers are final. */
-export interface LedgerDay {
-  date: LocalDate;
-  weekKey: WeekKey;
-  /** Both people. */
-  bells: number;
-  people: Record<PersonId, DayBells>;
-  locked: boolean;
-}
-
-/** A week's bonus row: it lands at the Sunday 19:30 harvest (`at`). */
-export interface LedgerBonus {
-  weekKey: WeekKey;
-  at: number;
-  bonus: HarvestBonus;
-  /** bonus.A + bonus.B + bonus.duo. */
-  bells: number;
-  badges: Record<PersonId, Record<FruitKey, boolean>>;
-  locked: boolean;
-}
-
-/** An accepted spend (a spend the pot couldn't afford is ignored and never listed). */
-export interface LedgerSpend {
-  spendId: string;
-  at: number;
-  by: PersonId;
-  pot: PotKey;
-  /** The menu item id it was bought from. */
-  item: string;
-  label: string;
-  bells: number;
-  voided: boolean;
-  voidedAt: number | null;
-}
-
-export interface BellsLedger {
-  pots: Record<PotKey, PotBalance>;
-  /** Everything earned so far, both people (= treat.earned + trip.earned). */
-  earned: number;
-  /** Newest first, from the economy's first day to today. */
-  days: LedgerDay[];
-  /** Newest first, weeks whose harvest has opened. */
-  bonuses: LedgerBonus[];
-  /** Newest first. */
-  spends: LedgerSpend[];
-}
-
-/** The きろく ledger at `now`: every day's earnings, the weekly bonuses and the spends. */
-export function bellsLedger(_s: State, _now: number): BellsLedger {
-  const zero = (): PotBalance => ({ balance: 0, earned: 0, spent: 0 });
-  return { pots: { treat: zero(), trip: zero() }, earned: 0, days: [], bonuses: [], spends: [] };
-}
+export { bellsLedger, type BellsLedger, type LedgerBonus, type LedgerDay, type LedgerSpend } from './bells.ts';

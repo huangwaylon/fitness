@@ -18,8 +18,6 @@ export interface RuleVersion {
   bells: { perMinute: number; stepDay: number; strengthDay: number; perTick: number };
   /** Weekly badges (+`bells` each) and the ふたりボーナス (`duo`, both people with all four). */
   badges: { activeDays: number; stepDays: number; strengthDays: number; ticks: number; bells: number; duo: number };
-  /** Share of every earning that goes to the おやつ pot, in percent (on totals; the rest goes to 旅). */
-  treatPercent: number;
   /** @deprecated Old yen economy (ADR 0008), read only by the old view fields; removed once the UI has moved over. */
   money: { yenPerFruit: number; teamYenPerFruit: number; purseYen: number; purseMinScore: number };
   /** @deprecated Old fruit points (score /100). */
@@ -33,11 +31,17 @@ export const RULES: readonly RuleVersion[] = [
     goals: { activeMin: 45, steps: 8000 },
     bells: { perMinute: 5, stepDay: 200, strengthDay: 300, perTick: 100 },
     badges: { activeDays: 5, stepDays: 4, strengthDays: 2, ticks: 15, bells: 500, duo: 1000 },
-    treatPercent: 30,
     money: { yenPerFruit: 50, teamYenPerFruit: 20, purseYen: 1000, purseMinScore: 60 },
     points: { peachActive: 30, peachRest: 5, coconut: 25, apple: 15, pear: 25 }
   }
 ];
+
+/**
+ * The two shared pots (ADR 0019 §5): every earning splits おやつ `treatPercent`% / 旅 the rest, computed on all-time
+ * totals (treats = floor(total × treatPercent / 100), trips = total − treats). Not versioned by week: a change
+ * re-splits everything earned so far.
+ */
+export const POTS = { treatPercent: 30 } as const;
 
 /** First week that earns ベル (ADR 0019 §7). */
 export const ECONOMY_START: WeekKey = RULES[0].from;

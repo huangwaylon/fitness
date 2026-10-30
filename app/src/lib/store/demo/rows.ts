@@ -1,12 +1,11 @@
 // `?demo`: believable sheet rows for both people (ウェイ = A = me, うめ = B), generated around the real clock and fed
 // through the same model as the live app, so the island, the Jar and きろく agree and every edit really recomputes.
-// Season 1 starts after the demo's weeks, so the demo moves the model's calendar (setDemoCalendar): its first paid
-// week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
+// The economy starts 2026-10-26, so the demo moves the model's calendar (`DemoCalendar`, carried by the state): its
+// first week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
 import type { PersonId, WeekKey } from '#lib/types.ts';
 import type { EventRow, MetricRow, PresenceRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import { addDays, nowInZone, weekDays, weekKeyOf } from '#lib/scoring/index.ts';
 import { finalMs, jstMs, provisionalMs } from '#lib/model/state.ts';
-import { prevMonth } from '#lib/model/week.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 
 const DEMO_WEEKS_BACK = 8;
@@ -69,14 +68,15 @@ function demoRows(now: number): SnapshotRows {
     for (const p of ['A', 'B'] as PersonId[]) {
       const r = rng(`${p}|${d}`);
       const lazy = r() < 0.3;
-      const steps = Math.round(((p === 'A' ? 7400 : 6300) + (r() - 0.5) * (p === 'A' ? 6000 : 5000) - (lazy ? 3000 : 0)) * partial);
-      const mins = Math.round(((p === 'A' ? 20 : 12) + (r() - 0.5) * 30 - (lazy ? 14 : 0)) * partial);
+      // Around the shared goals (45 min, 8,000 steps: ADR 0019), a lazy day now and then.
+      const steps = Math.round(((p === 'A' ? 9000 : 8600) + (r() - 0.5) * (p === 'A' ? 6000 : 5000) - (lazy ? 3500 : 0)) * partial);
+      const mins = Math.round(((p === 'A' ? 44 : 40) + (r() - 0.5) * 36 - (lazy ? 22 : 0)) * partial);
       if (syncAt > at(d, 6) && syncAt < now) {
         metrics.push([iso(syncAt), p, d, 'steps', Math.max(300, steps)], [iso(syncAt), p, d, 'exercise_min', Math.max(0, mins)]);
       }
       // Eating check-ins, ticked in the evening.
       const tickAt = at(d, 21, 10 + Math.floor(r() * 30));
-      for (const h of HABITS[p]) if (r() < (p === 'A' ? 0.5 : 0.62)) ev(tickAt, p, 'checkin', { date: d, habit: h, done: true });
+      for (const h of HABITS[p]) if (r() < (p === 'A' ? 0.68 : 0.78)) ev(tickAt, p, 'checkin', { date: d, habit: h, done: true });
     }
     // ウェイ: strength at the gym Mon/Thu (a Watch workout + an エニタイム visit), a run some Saturdays.
     const ra = rng(`A-w|${d}`);
@@ -126,18 +126,25 @@ function demoRows(now: number): SnapshotRows {
   // ウェイ: a missed check-in ticked later (this week, if Monday is past).
   if (today > cur) edit(at(today, 7, 40), 'A', 'checkin', { date: cur, habit: 'low_salt_day', done: true, edit: true }, cur);
 
-  // The purse: a few treats (one ≥ ¥5,000 needs the other's OK), one voided by its spender.
-  const spend = (t: number, p: PersonId, spendId: string, label: string, amountYen: number) => ev(t, p, 'spend', { spendId, label, amountYen });
-  spend(at(addDays(w(5), 5), 15, 20), 'A', 'demo-cafe', 'カフェ', 2000);
-  spend(at(addDays(w(4), 6), 13, 0), 'B', 'demo-karaoke', 'カラオケ', 3000);
-  spend(at(addDays(w(3), 2), 19, 30), 'A', 'demo-movie', '映画', 4000);
-  ev(at(addDays(w(3), 2), 19, 34), 'A', 'spend_void', { spendId: 'demo-movie' });
-  spend(at(addDays(w(2), 5), 10, 0), 'B', 'demo-onsen', '温泉', 5000);
-  ev(at(addDays(w(2), 5), 12, 30), 'A', 'approve', { spendId: 'demo-onsen' });
-
-  // Bank transfers: every month before last is ticked ✓ (last month's is the payday cue).
-  const last = prevMonth(today);
-  for (let m = prevMonth(`${last}-01`); m >= first.slice(0, 7); m = prevMonth(`${m}-01`)) ev(at(`${last}-25`, 20), 'A', 'transfer', { month: m });
+  // The pots (ADR 0019): treats most weeks, a day trip, one treat taken back by its buyer, and a menu edit.
+  const buy = (t: number, p: PersonId, spendId: string, pot: 'treat' | 'trip', item: string, label: string, bells: number) =>
+    ev(t, p, 'spend', { spendId, pot, item, label, bells });
+  buy(at(addDays(w(6), 5), 15, 20), 'A', 'demo-ice-1', 'treat', 'ice', 'アイス', 500);
+  buy(at(addDays(w(5), 6), 13, 0), 'B', 'demo-cafe-1', 'treat', 'cafe', 'カフェデート', 1500);
+  buy(at(addDays(w(4), 2), 19, 30), 'A', 'demo-dinner', 'treat', 'dinner', '外ごはん', 5000);
+  ev(at(addDays(w(4), 2), 19, 34), 'A', 'spend_void', { spendId: 'demo-dinner' });
+  // うめ adds パフェ to the treats menu.
+  ev(at(addDays(w(4), 3), 21, 0), 'B', 'pref', {
+    key: 'treatMenu',
+    value: JSON.stringify([
+      { id: 'snack', label: 'おやつ', bells: 300 }, { id: 'ice', label: 'アイス', bells: 500 }, { id: 'parfait', label: 'パフェ', bells: 800 },
+      { id: 'cafe', label: 'カフェデート', bells: 1500 }, { id: 'dinner', label: '外ごはん', bells: 5000 }
+    ])
+  });
+  buy(at(addDays(w(3), 5), 16, 0), 'B', 'demo-parfait', 'treat', 'parfait', 'パフェ', 800);
+  buy(at(addDays(w(2), 6), 10, 0), 'A', 'demo-daytrip', 'trip', 'daytrip', '日帰り', 20000);
+  buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'treat', 'cafe', 'カフェデート', 1500);
+  if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'treat', 'snack', 'おやつ', 300);
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(presence), events: byAt(events) };

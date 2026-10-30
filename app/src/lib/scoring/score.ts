@@ -1,11 +1,9 @@
 // Weekly score: four fruits, integer milli-fruit per category, score = floor(sum / 1000) (ADR 0009, 0011, 0014).
-import { CALIBRATION, DAILY, HOLIDAY, PEACH_DAILY_CAP, REST, STEP_MINUTES, STRENGTH, TSUYU } from '#lib/config/rules.ts';
-import type { CategoryResult, FruitKey, LocalDate, Visit, WeekInput, WeekScore, Workout } from '#lib/types.ts';
+import { CALIBRATION, DAILY, HOLIDAY, PEACH_DAILY_CAP, REST, STRENGTH, TSUYU } from '#lib/config/rules.ts';
+import type { CategoryResult, FruitKey, LocalDate, WeekInput, WeekScore, Workout } from '#lib/types.ts';
+import { activeMilliOfDay, manualMinutesByDay, strengthDaysOf, toMilli } from '#lib/scoring/bells.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 import { rulesFor } from '#lib/scoring/targets.ts';
-
-/** Convert a (possibly fractional) count to integer milli-units. Targets are pre-rounded to 3 dp by targetsFor. */
-const toMilli = (x: number): number => Math.round(x * 1000);
 
 /** Exact floor(a / b) for non-negative integers. */
 const idiv = (a: number, b: number): number => (a - (a % b)) / b;
@@ -22,42 +20,6 @@ export function ratioMilli(maxMilli: number, actualMilli: number, weeklyTargetMi
   if (num >= den) return maxMilli;
   return idiv(maxMilli * num, den);
 }
-
-/**
- * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
- * type, or an ask type answered "yes".
- */
-export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'includesStrength' | 'strengthOverride'>): boolean =>
-  w.durationMin >= STRENGTH.minWorkoutMin &&
-  (typeof w.strengthOverride === 'boolean'
-    ? w.strengthOverride
-    : (STRENGTH.autoTypes as readonly string[]).includes(w.type) ||
-      ((STRENGTH.askTypes as readonly string[]).includes(w.type) && w.includesStrength === true));
-
-/** Minutes of the workouts added by hand, per day. */
-export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin' | 'manual'>[]): Map<LocalDate, number> {
-  const out = new Map<LocalDate, number>();
-  for (const w of workouts) if (w.manual) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
-  return out;
-}
-
-/** The three minute sources of a day, in milli-minutes (uncapped); the day counts the largest. */
-export function minuteSourcesMilli(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): { watch: number; steps: number; manual: number } {
-  return {
-    watch: toMilli(exerciseMin ?? 0),
-    steps: steps === null ? 0 : Math.floor(Math.max(0, steps - stepGoal) * 1000 / STEP_MINUTES.stepsPerMin),
-    manual: toMilli(manualMin)
-  };
-}
-
-/** A day's active milli-minutes before the daily cap: max(Watch, step-derived, manual workouts). */
-function activeMilliOfDay(steps: number | null, exerciseMin: number | null, manualMin: number, stepGoal: number): number {
-  const m = minuteSourcesMilli(steps, exerciseMin, manualMin, stepGoal);
-  return Math.max(0, m.watch, m.steps, m.manual);
-}
-
-const isStrengthVisit = (v: Visit): boolean =>
-  v.dwellMin >= STRENGTH.minVisitMin && (v.autoStrength || v.confirmed === true);
 
 /**
  * Score one person's week.
@@ -86,15 +48,7 @@ export function scoreWeek(input: WeekInput): WeekScore {
   const visits = input.visits.filter((v) => inWeek.has(v.date));
 
   // 🥥 Coconut: strength days (max 1 per day).
-  const strengthSet = new Set<LocalDate>();
-  for (const w of workouts) if (isStrengthWorkout(w)) strengthSet.add(w.date);
-  // Confirmed (non-auto) gym visits pay at most STRENGTH.maxConfirmedVisitsPerWeek days.
-  let confirmedVisits = 0;
-  for (const v of [...visits].sort((x, y) => x.date.localeCompare(y.date))) {
-    if (!isStrengthVisit(v) || strengthSet.has(v.date)) continue;
-    if (!v.autoStrength && confirmedVisits++ >= STRENGTH.maxConfirmedVisitsPerWeek) continue;
-    strengthSet.add(v.date);
-  }
+  const strengthSet = strengthDaysOf(workouts, visits);
   const strengthDays = [...strengthSet].sort();
   const strengthTargetMilli = toMilli(targets.strengthDaysPerWeek);
   const coconutMilli = ratioMilli(points.coconut * 1000, strengthDays.length * 1000, strengthTargetMilli);
