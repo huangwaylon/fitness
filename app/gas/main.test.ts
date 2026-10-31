@@ -312,7 +312,8 @@ describe('events', () => {
       { type: 'spend', data: { spendId: 's6', item: 'ice', label: 'アイス', bells: 10_000_001 } },
       { type: 'pref', data: { key: 'share', value: true } },
       { type: 'pref', data: { key: 'locale' } },
-      { type: 'harvest', data: { week: 'soon' } }
+      { type: 'harvest', data: { week: 'soon' } },
+      { type: 'harvest', data: { week: '2026-02-30' } } // not a calendar date
     ];
     bad.forEach((e, i) => expect(a('event', { id: `bad${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events')).toHaveLength(ok.length);

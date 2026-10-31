@@ -11,7 +11,7 @@ import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
 import {
-  DATE_RE, editTarget, EVENT_TYPES, isLocalDate, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
+  editTarget, EVENT_TYPES, isLocalDate, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -451,7 +451,7 @@ function validEventData(type: string, d: Rec): boolean {
     case 'pref':
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined;
     case 'harvest':
-      return typeof d.week === 'string' && DATE_RE.test(d.week);
+      return isLocalDate(d.week);
     case 'metric_set':
       // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal.
       return isLocalDate(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
