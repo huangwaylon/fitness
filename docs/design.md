@@ -618,7 +618,7 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
   the ずかん at once); only what shows waits for the walk. The reel, a dive's chase, a tarantula's rear and charge
   and the wasps never walk (their timing is the game); the villager just turns.
 - **Where it stands:** around the target at 26u, else 40u (a can or a net also across a bed, 74–96u, level with it),
-  the nearest by walking; a spot counts only if the standing figure (0.45 × 0.92 of its height) covers no control and
+  the nearest by walking; a spot counts only if the standing figure (0.45 × 0.92 of its height) covers no control, no visitor and
   no canopy, measured, and stays on screen. Bubbles and plates are placed against the villager's live box (the held-up
   item is a guard too).
 - **After:** it stays 4–6 s, then wanders home at 90 u/s. A new tap re-targets from where it is. A sheet stops
