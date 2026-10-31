@@ -43,7 +43,7 @@ const slimAudioManifest: Plugin = {
   }
 };
 
-// A static SPA (GitHub Pages). The backend is the Apps Script web app (ADR 0015): its /exec URL is VITE_GAS_URL.
+// A static SPA (GitHub Pages). The backend is the Apps Script web app: its /exec URL is VITE_GAS_URL.
 // Output goes to build-pages/.
 export default defineConfig({
   plugins: [

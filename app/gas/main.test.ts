@@ -22,7 +22,7 @@ const tick = (ms = 1000) => vi.setSystemTime(Date.now() + ms);
 const data = (tab: string) => gas.sheets.get(tab)?.data() ?? [];
 
 // The user's real Shortcut body (sheets-architecture.md §5): the old dictionary plus key + action.
-// The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories = Move kcal (ADR 0021).
+// The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories = Move kcal.
 const REAL = {
   dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM',
   steps: '855\n9106',
@@ -173,7 +173,7 @@ describe('ingest', () => {
     expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['steps', 9000], ['exercise_min', 40], ['steps', 9500]]);
   });
 
-  it('Move kcal and Stand minutes (ADR 0021) are daily totals, appended only when higher, like steps', () => {
+  it('Move kcal and Stand minutes are daily totals, appended only when higher, like steps', () => {
     const ms = (kcal: string, stand: string) => ({ dates: 'Oct 27, 2026', calories: kcal, stand_minutes: stand });
     expect(a('ingest', ms('250.4', '58'))).toMatchObject({ metrics: 2 });
     tick();
@@ -397,7 +397,7 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     expect(data('events')).toEqual([]);
   });
 
-  it('`person` (whose data, ADR 0023): A or B on the edit types and the goal prefs; refused anywhere else', () => {
+  it('`person` (whose data): A or B on the edit types and the goal prefs; refused anywhere else', () => {
     const ok = [
       { type: 'metric_set', data: { person: 'B', date: '2026-10-28', metric: 'steps', value: 9800 } },
       { type: 'metric_set', data: { person: 'A', date: '2026-10-28', metric: 'weight', value: 68.4 } },

@@ -1,4 +1,4 @@
-// The ベル economy on read (ADR 0019, one wallet: ADR 0022): each week's earnings (live until the week locks on its
+// The ベル economy on read: each week's earnings (live until the week locks on its
 // Wednesday 04:00, then fixed at the lock), what has landed in the wallet by `now`, the buys replayed against it, the
 // shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
@@ -100,7 +100,7 @@ export function dayBells(e: WeekEarning | undefined, date: LocalDate): { bells: 
 /** A person's daily ベル of a week, counting only days up to `today` (a future-dated row never earns early). */
 export const dailyUpTo = (e: WeekEarning, today: LocalDate): number => e.days.reduce((n, d) => (d.date <= today ? n + d.bells : n), 0);
 
-// ---------- the wallet and spends (ADR 0022) ----------
+// ---------- the wallet and spends ----------
 
 /** The shared menu, one list: the latest valid `pref` menu by either person, else the defaults in the viewer's language. */
 function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
@@ -277,7 +277,7 @@ export interface LedgerBonus {
   bonus: HarvestBonus;
   /** bonus.A + bonus.B + bonus.duo. */
   bells: number;
-  /** The week's five badges per person (ADR 0021). */
+  /** The week's four badges per person. */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
   locked: boolean;
 }

@@ -1,5 +1,5 @@
-// ADR 0021: ベル per day for the four fruits (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps), weekly badges, the
-// ふたりボーナス (ADR 0019).
+// ベル per day for the four fruits (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps), weekly badges, the
+// ふたりボーナス.
 import { describe, expect, it } from 'vitest';
 import type { PersonId, Workout } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
@@ -37,7 +37,7 @@ function perfect(weekKey = WK, person: PersonId = 'A'): EarnInput {
   });
 }
 
-describe('earnWeek: the daily table (ADR 0021 §3)', () => {
+describe('earnWeek: the daily table', () => {
   it('a perfect day is 180 + 180 + 180 + 200 = 740 ベル, split per fruit (no 🥥: four fruits only)', () => {
     const d = earnWeek(perfect()).days[0];
     expect(d.rings).toEqual({ peach: 180, pear: 180, cherry: 180, apple: 200 });
@@ -74,7 +74,7 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
   it('🍑 minutes are max(Watch, workouts added in きろく), never a sum; steps never count as minutes', () => {
     const manual = (min: number) => workout(D[0], 'Yoga', min);
     const mins = (ex: number | null, w: Workout[] = [], st: number | null = null) => day0({ ex: [ex], st: [st] }, { workouts: w }).exerciseMin;
-    expect(mins(30, [], 20000)).toBe(30); // ADR 0021 §2: 20,000 steps add no minutes
+    expect(mins(30, [], 20000)).toBe(30); // 20,000 steps add no minutes
     expect(mins(null, [], 20000)).toBe(0);
     expect(mins(30, [manual(20), manual(15)])).toBe(35); // manual workouts of a day add up, then max
     expect(mins(30, [manual(20)])).toBe(30);
@@ -144,7 +144,7 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
   });
 });
 
-describe('earnWeek: weekly badges (ADR 0021 §4)', () => {
+describe('earnWeek: weekly badges', () => {
   it('🍑 🍐 🍒 goal met on 5 days, 🍎 8,000 steps on 4 days', () => {
     // k days at each goal (one day fewer for 🍎), just under it on the others.
     const at = (k: number) => input({

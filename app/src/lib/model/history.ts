@@ -32,7 +32,7 @@ type MinutesSource = 'watch' | 'edit' | 'manual';
 
 /**
  * One accepted edit, derived from the event rows (§4.4). `person`: whose data it changed; `by`: who made it (either
- * person may edit either person's data, ADR 0023). `before` is the value as of `at − 1`.
+ * person may edit either person's data). `before` is the value as of `at − 1`.
  */
 export interface EditLog {
   at: number;
@@ -49,7 +49,7 @@ export interface EditLog {
 interface HistoryPerson {
   /** The person's ベル of the week: daily earnings + their badge bonus once it landed. */
   bells: number;
-  /** The four badges (ADR 0021). */
+  /** The four badges. */
   ringBadges: Record<RingFruit, boolean>;
   /** Badge progress per fruit (days at the goal / the threshold). */
   ringWeek: RingWeek;
@@ -173,7 +173,7 @@ interface WeekDetailPerson {
   dailyBells: number;
   /** The badge bonus (+badges.bells each; 0 until it lands on Sunday 19:30). */
   bonus: number;
-  /** The four badges (ADR 0021). */
+  /** The four badges. */
   ringBadges: Record<RingFruit, boolean>;
   /** Badge progress per fruit (days at the goal / the threshold). */
   ringWeek: RingWeek;
@@ -351,6 +351,6 @@ function buildEditLog(s: State): EditLog[] {
 /** The accepted edits of one week (both people), newest first. */
 export const weekEdits = (s: State, wk: WeekKey): EditLog[] => editLog(s).filter((e) => weekKeyOf(e.date) === wk).reverse();
 
-// ---------- ベル ledger (ADR 0019): model/bells.ts ----------
+// ---------- ベル ledger: model/bells.ts ----------
 
 export { bellsLedger, type BellsLedger, type LedgerBonus, type LedgerDay, type LedgerSpend } from './bells.ts';

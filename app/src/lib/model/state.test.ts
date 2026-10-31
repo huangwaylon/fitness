@@ -37,7 +37,7 @@ describe('reduce: rows', () => {
 });
 
 describe('reduce: events', () => {
-  it('move_kcal and stand_min rows are activity metrics (ADR 0021); metric_set accepts them within bounds', () => {
+  it('move_kcal and stand_min rows are activity metrics; metric_set accepts them within bounds', () => {
     const s = reduce(rows([
       ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 450 }),
       ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 10_001 }),
@@ -125,7 +125,7 @@ describe('reduce: events', () => {
       ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1', excluded: true, strength: null }),
       ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1' }),
       ev(at(WK, '21:00'), 'B', 'workout_edit', { id: 'm:1', excluded: true }), // B's own (no such workout)
-      ev(at(WK, '21:30'), 'B', 'workout_edit', { id: 'm:1', excluded: false, person: 'A' }), // either person's (ADR 0023)
+      ev(at(WK, '21:30'), 'B', 'workout_edit', { id: 'm:1', excluded: false, person: 'A' }), // either person's
       ev(LOCKED, 'A', 'workout_edit', { id: 'm:1', excluded: false })
     ]));
     expect(s.workoutEdits.map(({ person, by, id, excluded }) => ({ person, by, id, excluded }))).toEqual([

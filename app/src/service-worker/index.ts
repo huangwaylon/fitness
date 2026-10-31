@@ -1,4 +1,4 @@
-// Island Fund service worker: caches the app shell so the PWA opens offline. (No web push: ADR 0016.)
+// Island Fund service worker: caches the app shell so the PWA opens offline. (No web push: docs/decisions.md#no-alerts.)
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';

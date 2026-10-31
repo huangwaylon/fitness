@@ -1,5 +1,5 @@
 # Builds the UI as a static site and deploys it to GitHub Pages: https://huangwaylon.github.io/fitness/
-# The backend is the Apps Script web app (ADR 0015); its /exec URL comes from the repo variable GAS_URL.
+# The backend is the Apps Script web app; its /exec URL comes from the repo variable GAS_URL.
 name: Deploy UI to GitHub Pages
 
 on:

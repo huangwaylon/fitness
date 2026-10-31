@@ -1,4 +1,4 @@
-// ADR 0020: the weight trend (daily value, EWMA, weekly pace, since start, goal projection), and weight never earns.
+// the weight trend (daily value, EWMA, weekly pace, since start, goal projection), and weight never earns.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
@@ -158,7 +158,7 @@ describe('weightTrend: week change, since start, pace, goal', () => {
   });
 });
 
-describe('weight never earns (ADR 0020)', () => {
+describe('weight never earns', () => {
   const WK = '2026-11-16';
   const D = weekDays(WK);
   /** A normal active week for both. */

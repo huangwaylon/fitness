@@ -102,7 +102,7 @@ describe('import specifiers', () => {
   });
 });
 
-describe('ADR 0020: weight is never rewarded', () => {
+describe('weight is never rewarded', () => {
   it('model/bells.ts and scoring/* never import model/weight.ts, even indirectly', () => {
     const weight = join(LIB, 'model/weight.ts');
     expect(existsSync(weight)).toBe(true);

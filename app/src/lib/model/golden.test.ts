@@ -78,7 +78,7 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(all.some((v) => v.harvest?.weekKey === '2026-11-02' && v.harvest.bonus.A % 450 === 0 && v.harvest.bonus.A > 0)).toBe(true); // v2: +450 a badge
     // Four fruits only, everywhere.
     expect(all.every((v) => PEOPLE.every((p) => Object.keys(v.people[p].rings).join() === 'peach,pear,cherry,apple'))).toBe(true);
-    // ADR 0021: Move and Stand earn, and the Move goal changes (g1–g3).
+    // Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));

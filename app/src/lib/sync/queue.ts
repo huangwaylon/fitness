@@ -140,7 +140,7 @@ const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.n
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
   const d = ev.data;
   switch (ev.type) {
-    // `person`: whose data (ADR 0023; absent = the sender, always me in the queue).
+    // `person`: whose data (absent = the sender, always me in the queue).
     case 'metric_set': return `metric|${String(d.person ?? '')}|${String(d.date)}|${String(d.metric)}`;
     case 'workout_add':
     case 'workout_edit': return `workout|${String(d.person ?? '')}|${String(d.id)}`;

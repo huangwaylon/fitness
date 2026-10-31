@@ -30,11 +30,11 @@ export type EventType = (typeof EVENT_TYPES)[number];
 /**
  * The activity metrics: they earn ベル, and a day's value from the Shortcut only ever goes up (the max of its rows).
  * `move_kcal`: the Move ring's active energy (the Shortcut's `calories`); `stand_min`: Health Stand Time in minutes
- * (the Shortcut's `stand_minutes`), ADR 0021.
+ * (the Shortcut's `stand_minutes`).
  */
 export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min';
 /**
- * `weight`: body weight in kg with one decimal (ADR 0020). A trend only: it never earns ベル, and a day's value is the
+ * `weight`: body weight in kg with one decimal. A trend only: it never earns ベル, and a day's value is the
  * latest row for it (not the max), since a weight goes down as well as up.
  */
 export type MetricKey = ActivityMetric | 'weight';
@@ -43,12 +43,12 @@ export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) |
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg, ADR 0020) and `moveGoal` (kcal, ADR 0021), and the shared `menu` (ADR 0022).
+ * `goalWeight` (kg) and `moveGoal` (kcal), and the shared `menu`.
  */
 export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'] as const;
 
 /**
- * The edit events whose `data.person` names whose data they change (ADR 0023): either person may edit either person's
+ * The edit events whose `data.person` names whose data they change: either person may edit either person's
  * data. Absent = the sender. `pref` takes it only for the goals (`PERSON_PREF_KEYS`).
  */
 const PERSON_EDIT_TYPES = ['metric_set', 'workout_edit', 'workout_add', 'pref'] as const;

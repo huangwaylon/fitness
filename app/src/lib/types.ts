@@ -7,7 +7,7 @@ export type LocalDate = string;
 export type WeekKey = string;
 
 /**
- * The four fruits of ADR 0021, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
+ * The four ring fruits, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
  * 🍒 cherry = Stand minutes, 🍎 apple = steps.
  */
 export type RingFruit = 'peach' | 'pear' | 'cherry' | 'apple';
@@ -26,7 +26,7 @@ export interface Workout {
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
 
-/** A shared menu entry (ADR 0022: one list), editable in the app (`pref` menu): either person can buy it from the wallet. */
+/** A shared menu entry (one list for both), editable in the app (`pref` menu): either person can buy it from the wallet. */
 export interface WalletItem {
   id: string;
   label: string;
@@ -34,7 +34,7 @@ export interface WalletItem {
 }
 
 /**
- * A menu entry as the wallet shows it (ADR 0022 amendment "escalating food treats"). `bells` / `basePrice`: the menu's
+ * A menu entry as the wallet shows it. `bells` / `basePrice`: the menu's
  * price; `price`: what the next buy costs now (the base, or for an escalating item the base × 1.5 per accepted, not
  * voided buy of that id this week by either person, model/bells.ts `treatPrice`).
  */
@@ -47,7 +47,7 @@ export interface MenuItemView extends WalletItem {
   escalates: boolean;
 }
 
-/** The shared wallet (ADR 0022): every ベル earned, minus the accepted buys. */
+/** The shared wallet: every ベル earned, minus the accepted buys. */
 export interface WalletView {
   /** earned − spent (never negative: a buy above the balance is ignored on read). */
   balance: number;
@@ -65,7 +65,7 @@ export interface WalletView {
 export interface DayBells {
   date: LocalDate;
   bells: number;
-  /** Per ring fruit (ADR 0021); sums to `bells`. */
+  /** Per ring fruit; sums to `bells`. */
   rings: RingBells;
 }
 
@@ -76,7 +76,7 @@ export interface HarvestBonus {
   duo: number;
 }
 
-/** A ring fruit's progress today and this week (ADR 0021). Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
+/** A ring fruit's progress today and this week. Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
 export interface RingProgress {
   /** Today's counted amount (🍑 max(Watch, workouts added in きろく)). */
   today: number;
@@ -111,11 +111,11 @@ export interface PersonWeekView {
   villagerName: string;
   /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
   villager: string | null;
-  /** Today's earnings so far, per ring fruit (ADR 0021; `rings` sums to `bells`). */
+  /** Today's earnings so far, per ring fruit (`rings` sums to `bells`). */
   today: { bells: number; rings: RingBells };
   /** This week's daily earnings so far (without the weekly bonus). */
   weekBells: number;
-  /** The four ring fruits (ADR 0021). */
+  /** The four ring fruits. */
   rings: Record<RingFruit, RingProgress>;
   /** The person's Move goal in force today, kcal (`pref` moveGoal; default ウェイ 600, うめ 400). */
   moveGoal: number;
@@ -124,11 +124,11 @@ export interface PersonWeekView {
 
 export interface HarvestView {
   weekKey: WeekKey;
-  /** The week's weekly bonus (ADR 0019); it counts whether or not 「受け取る」 is tapped. */
+  /** The week's weekly bonus; it counts whether or not 「受け取る」 is tapped. */
   bonus: HarvestBonus;
   /** The week's total ベル, both people: daily earnings + the bonus. */
   totalBells: number;
-  /** The week's four badges per person (ADR 0021; lit = met, +bonus each). */
+  /** The week's four badges per person (lit = met, +bonus each). */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
   /** Who tapped 「受け取る」 (a ceremony only). */
   confirmedBy: PersonId[];
@@ -141,7 +141,7 @@ export interface WeekView {
   weekKey: WeekKey;
   today: LocalDate;
   people: Record<PersonId, PersonWeekView>;
-  /** The shared wallet (ADR 0022). */
+  /** The shared wallet. */
   wallet: WalletView;
   /** The shared menu, one list (latest `pref` menu by either person, else the defaults), with this week's prices. */
   menu: MenuItemView[];
