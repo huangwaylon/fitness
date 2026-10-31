@@ -2,8 +2,7 @@
   // One metric's chart (けんこう), one person's: a bar per day (1週, 1か月) or per week / month (the daily average of its
   // recorded days) in their colour, solid when the goal was met and pale when not; today's bar is outlined (still
   // running); a day with no record gets a pale hatched column (not a gap that reads as zero). The dashed line is their
-  // goal (stepped when their Move goal changed), the solid line the 7-day average (day bars only); with room (1週) each
-  // bar carries its value. A tap shows that bar's exact numbers; a horizontal drag turns the page (gestures.ts).
+  // goal (stepped when their Move goal changed); with room (1週) each bar carries its value. A tap shows that bar's exact numbers; a horizontal drag turns the page (gestures.ts).
   // Hand-drawn SVG at the measured width.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { BucketValue, Metric, Range } from '#lib/model/health.ts';
@@ -18,8 +17,6 @@
     /** Whose bars (their colour). */
     p: PersonId;
     vals: BucketValue[];
-    /** The 7-day average per day (day bars only). */
-    roll: (number | null)[] | null;
     /** The first record (days before it aren't "no record"). */
     first: LocalDate;
     today: LocalDate;
@@ -31,7 +28,7 @@
     /** Which way the last page turn went, for the slide. */
     slide: -1 | 0 | 1;
   }
-  let { metric, range, p, vals, roll, first, today, label, selected, onselect, onswipe, slide }: Props = $props();
+  let { metric, range, p, vals, first, today, label, selected, onselect, onswipe, slide }: Props = $props();
 
   let w = $state(0);
   let dx = $state(0);
@@ -46,7 +43,6 @@
   const ticks = $derived.by(() => {
     let max = 0;
     for (const b of vals) max = Math.max(max, b.v ?? 0, b.goal);
-    for (const r of roll ?? []) max = Math.max(max, r ?? 0);
     return niceTicks(max * (labels ? 1.12 : 1.04));
   });
   const top = $derived(ticks.at(-1) ?? 1);
@@ -74,16 +70,6 @@
     });
     return d;
   });
-  function rollPath(r: (number | null)[]): string {
-    let d = '';
-    let pen = false;
-    r.forEach((v, i) => {
-      if (v === null) return void (pen = false);
-      d += `${pen ? 'L' : 'M'}${cx(i).toFixed(1)} ${y(v).toFixed(1)}`;
-      pen = true;
-    });
-    return d;
-  }
   const missing = (i: number) => {
     const b = range.buckets[i];
     return b.to >= first && b.from < today;
@@ -132,7 +118,6 @@
               {/if}
             {/each}
             <path class="goal" d={goalPath} />
-            {#if roll}<path class="roll-halo" d={rollPath(roll)} /><path class="roll p{p}" d={rollPath(roll)} />{/if}
             {#if labels}
               {#each vals as b, i (i)}
                 {#if b.v !== null && b.v > 0}<text class="val" x={cx(i)} y={Math.min(y(b.v), base - 1) - 4} text-anchor="middle">{barNum(b.v)}</text>{/if}
@@ -180,11 +165,6 @@
   .hatch { fill: color-mix(in srgb, var(--text-soft) 22%, transparent); }
   .goal { fill: none; stroke: var(--text-soft); stroke-width: 1.5; stroke-dasharray: 5 4; }
   .val { fill: var(--text); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
-  .roll, .roll-halo { fill: none; stroke-linejoin: round; stroke-linecap: round; }
-  .roll { stroke-width: 2; }
-  .roll.pA { stroke: color-mix(in srgb, var(--person-a) 70%, var(--text)); fill: none; }
-  .roll.pB { stroke: color-mix(in srgb, var(--person-b) 70%, var(--text)); fill: none; }
-  .roll-halo { stroke: var(--card); stroke-width: 5; }
   .tip {
     position: absolute; top: 2px; pointer-events: none; white-space: nowrap; z-index: 1;
     display: grid; gap: 3px; padding: 7px 11px; border-radius: var(--r-chip); background: var(--c-cream); color: var(--c-ink);

@@ -16,5 +16,5 @@ test('a failed panel chunk reloads the page once, then the panel opens', async (
   await page.unroute('**/_app/immutable/**/*.js', stale);
   await page.waitForLoadState('load');
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
-  await expect(page.locator('dialog[open]').locator('button.dbtn').first()).toBeVisible();
+  await expect(page.locator('dialog[open]').locator('.health .mc').first()).toBeVisible(); // it opens on けんこう
 });

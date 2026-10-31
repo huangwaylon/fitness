@@ -59,7 +59,7 @@ The economy starts with the data: the first week with an activity row stamped by
 keep in the code, and a baseline of old days can't earn.
 
 ### Rings four automatic fruits
-Four automatic metrics, one fruit each, always listed in Apple's ring order (Move, Exercise, Stand), then steps:
+Four automatic metrics, one fruit each, listed in Apple's ring order (Move, Exercise, Stand), then steps (けんこう alone puts steps first, user request):
 
 | Fruit | Metric | Daily goal |
 |---|---|---|
@@ -119,7 +119,7 @@ Steps, exercise, Move, Stand and weight come only from the Shortcut; the app nev
 other prefs are the sender's own. Why: all health data is already in Apple Health, so manual edits only add a second, conflicting source.
 
 ### Health trends (けんこう)
-A third panel tab, けんこう (Health), between きろく and せってい, shows the Health data over time for the personal trainer
+A panel tab, けんこう (Health), the first (the panel opens on it; user request: the trends first), before きろく and せってい, shows the Health data over time for the personal trainer
 (user request, 2026-10-31; team discussion in `docs/reviews/kenkou/discussion.md`). Computed on read in the browser
 from the same rows (`model/health.ts`), no backend change, its code loaded with the tab.
 - **Values:** a day's value is Apple Health's latest row, not the as-of-lock value: the trainer wants the truth, and the
@@ -138,9 +138,12 @@ from the same rows (`model/health.ts`), no backend change, its code loaded with 
 - **Periods:** 1週 and 1か月 (30 days) by day, 3か月 by week (13, ending on the last day shown), 1年 and すべて by calendar
   month (daily averages per bucket), so long ranges stay readable on a phone; ‹ › and a drag on any chart step a whole
   period, きょう comes back; the change compares with the period of equal length just before.
-- **Each chart:** one series in the person's fixed colour (ウェイ blue, うめ orange; a CVD-safe pair, checked with a
-  validator), solid = goal met, their goal dashed (their own Move goal history), the 7-day average on day bars, a tap
-  for the exact value. Weight on an axis fitted to that person's weights.
+- **Each chart:** steps first, then Move, Exercise, Stand (user request); one series in the person's fixed colour
+  (ウェイ blue, うめ orange; a CVD-safe pair, checked with a validator), solid = goal met, their goal dashed (their own
+  Move goal history), a tap for the exact value. No trend line (user decision: no moving average on the bars, no
+  smoothed weight line); weight shows its weigh-ins joined by a thin line, on an axis fitted to that person's weights.
+- **First tab** (user request): the panel opens on けんこう (then きろく, せってい), and remembers the last tab for the
+  session.
 - **No week card** (user decision): the period's charts and stats carry the trends; 1週 is the week view.
 - **Weight moved here:** the weight trend left きろく (no information twice); its goal is still set in きろく's 目標 card.
 - **No export:** no copy/CSV of a summary (user decision); the trainer reads the screen.

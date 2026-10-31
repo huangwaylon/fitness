@@ -24,7 +24,6 @@
   "health.chartLabel": "{metric} {range}。1日の平均 {avg}",
   "health.key.met": "目標達成",
   "health.key.missed": "とどかず",
-  "health.key.roll": "7日平均",
   "health.key.share": "こいほど 目標達成の日が 多い",
   "health.weight.avg": "平均",
   "health.weight.count": "{n}回の記録",

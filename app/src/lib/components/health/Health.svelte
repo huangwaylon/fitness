@@ -5,11 +5,12 @@
 </script>
 
 <script lang="ts">
-  // けんこう (health, design.md "Kenkou"): the island panel's second tab, the Health data over time for the personal
-  // trainer, one person at a time. First whose data (ウェイ / うめ, this phone's person by default; switching keeps the
-  // period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年 / すべて) and a sticky row with ‹ the visible range › and きょう; then a card per metric in the app's order (🍐 Move, 🍑 Exercise,
-  // 🍒 Stand, 🍎 Steps) and 体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers. Read-only,
-  // computed on read from the store's model (model/health.ts); loaded with the tab, not with the island.
+  // けんこう (health, design.md "Kenkou"): the island panel's first tab (it opens on it), the Health data over time for
+  // the personal trainer, one person at a time. First whose data (ウェイ / うめ, this phone's person by default;
+  // switching keeps the period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年 / すべて) and
+  // a sticky row with ‹ the visible range › and きょう; then a card per metric, steps first (🍎 Steps, 🍐 Move,
+  // 🍑 Exercise, 🍒 Stand), and 体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
+  // Read-only, computed on read from the store's model (model/health.ts); loaded with the tab, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import { canShift, healthSeries, METRICS, PERIODS, rangeFor, shiftAnchor, type Metric } from '#lib/model/health.ts';

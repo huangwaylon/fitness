@@ -13,6 +13,12 @@ async function openPanel(page: Page) {
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await expect(sheet(page).locator('.panel-body')).toBeVisible();
 }
+/** The panel on its きろく tab (it opens on けんこう). */
+async function openKiroku(page: Page) {
+  await openPanel(page);
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
+  await expect(sheet(page).locator('.kiroku')).toBeVisible();
+}
 /** The panel on its せってい tab (むらびと, サウンド, ことば, つうしん, あそびかた). */
 async function openSettings(page: Page) {
   await openPanel(page);
@@ -73,7 +79,7 @@ test('harvest: a recap of the week: each of us, ふたりで ぜんぶ, the tota
 
 test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day is read-only: values, ✓ and +1', async ({ page }) => {
   await page.goto('?demo');
-  await openPanel(page);
+  await openKiroku(page);
   const day = sheet(page).locator('li.day:not(.head)').first();
   await expect(day.locator('.marks')).toHaveCount(2);
   await expect(day.locator('.marks').first().locator('.m')).toHaveCount(4);
@@ -90,7 +96,7 @@ test('けんこう: the weight trend (from Health, no logging by hand); its goal
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
   const bells = await ribbon.getAttribute('aria-label');
-  await openPanel(page);
+  await openKiroku(page);
   // きろく no longer repeats the weight: the trend lives in けんこう
   await expect(sheet(page).locator('.kiroku')).not.toContainText('ながれ');
   await sheet(page).locator('.tab[data-tab=health]').click();
@@ -166,7 +172,7 @@ test('partner: a villager card (their line, ハイタッチ), no numbers and no 
 
 test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
   await page.goto('?demo');
-  await openPanel(page);
+  await openKiroku(page);
   const goals = sheet(page).locator('.goals');
   await expect(goals).toContainText('600 kcal');
   await goals.getByRole('button', { name: /ムーブ（1日） ✎$/ }).click();
@@ -257,7 +263,8 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await openPanel(page);
   const bar = sheet(page).locator('.titlebar');
   const tabs = sheet(page).locator('.tabs');
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true'); // きろく first
+  await expect(sheet(page).locator('.tabs .tab')).toHaveText(['けんこう', 'きろく', 'せってい']); // けんこう first
+  await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true'); // and the panel opens on it
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
   await sheet(page).locator('.tab[data-tab=settings]').click();
@@ -378,7 +385,7 @@ test('with the undo banner up, a sheet’s footer (買う！) rises above it: a 
   expect(hit).toBe(true);
 });
 
-test('the panel remembers its tab for the session; a reload opens on きろく', async ({ page }) => {
+test('the panel remembers its tab for the session; a reload opens on けんこう', async ({ page }) => {
   await page.goto('?demo');
   await openSettings(page);
   await sheet(page).locator('.titlebar .close').click();
@@ -387,12 +394,12 @@ test('the panel remembers its tab for the session; a reload opens on きろく',
   await expect(sheet(page).locator('#sec-sound')).toBeVisible();
   await page.reload();
   await openPanel(page);
-  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('きろく opens light: the newest three weeks of ベル; 「まえの週も 見る」 adds older ones', async ({ page }) => {
   await page.goto('?demo');
-  await openPanel(page);
+  await openKiroku(page);
   const weeks = sheet(page).locator('section.week');
   await expect(weeks).toHaveCount(3);
   // earnings only: the demo buys every week, and none of it shows here (the buys live on ごほうび)

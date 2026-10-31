@@ -7,8 +7,7 @@
 // - No record: a day with no row; for steps, under STEPS_MIN (the phone wasn't carried); for Move, Exercise and Stand
 //   together, a day the Watch wasn't clearly worn (Move under WORN_KCAL and Stand under WORN_STAND). Such a day has no
 //   bar (a hatched mark instead) and stays out of every average, best day, goal count and trend, and is counted as 記録なし.
-// - Today is still running: it is drawn (a lighter bar, whenever it has anything above 0) but stays out of the stats
-//   and the 7-day line.
+// - Today is still running: it is drawn (a lighter bar, whenever it has anything above 0) but stays out of the stats.
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
 //   8,000. Days met / days recorded.
 // - Periods end on an anchor day (today until ‹): 1週 = 7 days and 1か月 = 30 days by day, 3か月 = 13 weeks by week
@@ -22,8 +21,8 @@ import { moveGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
 import { weightTrend, type WeightTrend } from './weight.ts';
 
-/** The four metrics in the app's order (🍐 Move, 🍑 Exercise, 🍒 Stand, 🍎 Steps). */
-export const METRICS = ['move', 'exercise', 'stand', 'steps'] as const;
+/** The four metrics in けんこう's order, steps first (🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; the island keeps the rings' order). */
+export const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
 export type Metric = (typeof METRICS)[number];
 export const METRIC_FRUIT: Record<Metric, RingFruit> = { move: 'pear', exercise: 'peach', stand: 'cherry', steps: 'apple' };
 const ROW: Record<Metric, ActivityMetric> = { move: 'move_kcal', exercise: 'exercise_min', stand: 'stand_min', steps: 'steps' };
@@ -38,8 +37,6 @@ export const WORN_KCAL = 100;
 export const WORN_STAND = 30;
 /** A finished day counts for steps only from this many (fewer: the phone stayed home). */
 export const STEPS_MIN = 500;
-/** The 7-day line needs this many recorded days in its window. */
-const ROLL_MIN = 3;
 
 /** One person's days, index i = `from` + i days. null = no record. */
 interface PersonSeries {
@@ -223,27 +220,6 @@ export function bucketValues(hs: HealthSeries, p: PersonId, m: Metric, r: Range)
   });
 }
 
-/** The 7-day average ending each day of the range (finished days only; null under ROLL_MIN recorded days). */
-export function rolling7(hs: HealthSeries, p: PersonId, m: Metric, r: Range): (number | null)[] {
-  const vals = hs.people[p].values[m];
-  const today = idx(hs, hs.to);
-  const out: (number | null)[] = [];
-  for (let d = r.from; d <= r.to; d = addDays(d, 1)) {
-    const end = idx(hs, d);
-    if (end >= today || end < 0) {
-      out.push(null);
-      continue;
-    }
-    let sum = 0, k = 0;
-    for (let i = Math.max(0, end - 6); i <= end; i++) {
-      const v = vals[i];
-      if (v !== null && v !== undefined) (sum += v), k++;
-    }
-    out.push(k >= ROLL_MIN ? sum / k : null);
-  }
-  return out;
-}
-
 export interface MetricStats {
   /** Average of the recorded, finished days (null: none). */
   avg: number | null;
@@ -295,8 +271,6 @@ export interface WeightBucket {
   /** The average weigh-in in the bucket (null: none). */
   kg: number | null;
   n: number;
-  /** The trend at the bucket's end (null before the first weigh-in). */
-  trend: number | null;
 }
 
 export function weightBuckets(hs: HealthSeries, p: PersonId, r: Range): WeightBucket[] {
@@ -308,7 +282,7 @@ export function weightBuckets(hs: HealthSeries, p: PersonId, r: Range): WeightBu
       const v = ps.kg[i];
       if (v !== null && v !== undefined) (sum += v), n++;
     }
-    return { kg: n ? Math.round((sum / n) * 10) / 10 : null, n, trend: last >= 0 ? ps.trend[last] ?? null : null };
+    return { kg: n ? Math.round((sum / n) * 10) / 10 : null, n };
   });
 }
 

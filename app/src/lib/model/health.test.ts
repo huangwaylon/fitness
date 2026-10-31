@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  bucketValues, canShift, healthSeries, metricStats, previousRange, rangeFor, rolling7, shiftAnchor, STEPS_MIN, weightBuckets, weightStats, WORN_KCAL, WORN_STAND
+  bucketValues, canShift, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, STEPS_MIN, weightBuckets, weightStats, WORN_KCAL, WORN_STAND
 } from './health.ts';
 
 const jst = (date: string, hm = '22:00') => new Date(`${date}T${hm}:00+09:00`).toISOString();
@@ -78,14 +78,6 @@ describe('days with no record', () => {
     expect(b.map((x) => x.v)).toEqual([9000, 5000, null, 7000, null, 11000, 1000]);
     expect(b.at(-1)!.today).toBe(true);
     expect(b[0].goal).toBe(8000);
-  });
-
-  it('the 7-day line: finished days only, at least 3 recorded in the window', () => {
-    const roll = rolling7(hs, 'A', 'steps', week);
-    expect(roll[0]).toBeNull(); // 1 recorded
-    expect(roll[1]).toBeNull(); // 2 recorded
-    expect(roll[3]).toBeCloseTo((9000 + 5000 + 7000) / 3);
-    expect(roll[6]).toBeNull(); // today
   });
 });
 
@@ -189,7 +181,7 @@ describe('edge cases', () => {
     expect(hs.activityFrom).toBe(TODAY);
     expect(metricStats(hs, 'A', 'steps', r).missing).toBe(0);
     const b = weightBuckets(hs, 'A', r);
-    expect(b[0]).toMatchObject({ kg: null, n: 0, trend: 70 });
+    expect(b[0]).toEqual({ kg: null, n: 0 });
     expect(b.find((x) => x.kg === 69)).toBeTruthy();
     // a period with no weigh-in says nothing, even with a trend carried through it
     const empty = weightStats(hs, 'A', rangeFor('week', '2026-09-20', hs.from));
@@ -253,7 +245,7 @@ describe('worn and carried: the thresholds', () => {
 });
 
 describe('one person at a time', () => {
-  it('each person’s bars, goals (their own Move goal history), 7-day line and stats are theirs alone', () => {
+  it('each person’s bars, goals (their own Move goal history) and stats are theirs alone', () => {
     const metrics: MetricRow[] = [];
     for (let i = 0; i < 7; i++) {
       metrics.push(...day('A', addDays('2026-10-24', i), { steps: 10000, ex: 70, kcal: 700, stand: 130 }));
@@ -266,8 +258,6 @@ describe('one person at a time', () => {
     expect(b.slice(0, 6).map((x) => x.v)).toEqual([300, 300, 300, 300, 300, 300]);
     expect(a.map((x) => x.goal).every((g) => g === a[0].goal)).toBe(true);
     expect(b.map((x) => x.goal)).toEqual([400, 400, 400, 250, 250, 250, 250]); // 250 from 10-28;
-    expect(rolling7(hs, 'A', 'steps', r)[5]).toBe(10000);
-    expect(rolling7(hs, 'B', 'steps', r)[5]).toBe(4000);
     expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: 300, met: 3, days: 6 });
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 6 });
   });
