@@ -1,11 +1,13 @@
 <script lang="ts">
   // What a shaken tree drops (docs/design.md "Trees", "Shaking a tree"; island/treeShake.ts): FruitTree reports a shake
   // (a quick run of canopy taps) and this rolls the drop. A tree branch falls beside the trunk on the jar's side and lies
-  // there until a tap picks it up (a pop, gone; cosmetic). Rarely a wasp nest falls beside the trunk on the outer side:
+  // there until a tap picks it up (a pop, gone; cosmetic). Now and then a bagworm (at night sometimes a spider) drops
+  // out of the canopy on its thread beside the trunk on the outer side and dangles there, swaying, for DANGLE_MS: a tap
+  // nets it (NH's catch line, the ずかん's bagworm or spider), else it climbs back up. Rarely a wasp nest falls beside the trunk on the outer side:
   // it lands with a thud, and SWARM_DELAY_MS later three wasps buzz out and charge the villager standing on that side
   // for SWARM_MS. A tap on them in time nets one (the net's swing, NH's catch line on the plate, the shared ずかん's
   // wasp); too late and they sting (`onsting`: the scene gives that villager a fright and a puffy eye), then fly off.
-  // Nothing here pays ベル. `?shake=nest|branch` (dev or ?demo) makes the next shake drop that (the e2e's hook).
+  // Nothing here pays ベル. `?shake=nest|branch|bagworm|spider` (dev or ?demo) makes the next shake drop that (the e2e's hook).
   import { onDestroy } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Plate from './Plate.svelte';
@@ -16,9 +18,13 @@
   import { sceneSfx } from './sceneTaps.ts';
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { stageGeo } from './placement.ts';
-  import { critterArt } from './critters.ts';
+  import { critterArt, type BugId } from './critters.ts';
   import { catchLine, loadLines } from './catchLine.ts';
-  import { SWARM_DELAY_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, type ShakeDrop } from './treeShake.ts';
+  import { jst } from '#lib/time/clock.ts';
+  import { artUrl } from '#lib/art.ts';
+  import {
+    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakenBug, type ShakeDrop
+  } from './treeShake.ts';
 
   type Side = 'mine' | 'partner';
   interface Props {
@@ -45,32 +51,48 @@
   const NEST_DX = 34, BRANCH_DX = 30;
   /** Where a falling thing starts: inside the canopy. */
   const FROM = TREE.base - TREE.h * 0.55;
+  /** A dangling bug hangs beside the trunk on the outer side, at a branch's height (its tap target between the canopy's
+   *  and the fruit row's buttons). */
+  const DANGLE_DX = 30;
+  const DANGLE_Y = FOOT - 9;
 
   let seq = 0;
   let nests = $state<{ n: number; pid: PersonId; x: number; y: number; fading: boolean }[]>([]);
   let branches = $state<{ n: number; pid: PersonId; x: number; y: number }[]>([]);
   let swarm = $state<{ n: number; side: Side; x0: number; y0: number; x1: number; y1: number; at: number; stung: boolean } | null>(null);
   let net = $state<{ n: number; x: number; y: number } | null>(null);
-  let card = $state<{ n: number; x: number; y: number; text: string } | null>(null);
+  let card = $state<{ n: number; x: number; y: number; text: string | string[]; art: string } | null>(null);
   let swarmEl = $state<HTMLElement>();
+  let dangler = $state<{ n: number; pid: PersonId; id: 'bagworm' | 'spider'; x: number; y: number; up: boolean } | null>(null);
 
-  // the dev hook: the next shake drops this
-  let forced: ShakeDrop | undefined = (() => {
+  // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
+  let forced: string | undefined = (() => {
     if (typeof location === 'undefined') return undefined;
     const q = new URLSearchParams(location.search);
     const v = q.get('shake');
-    return (import.meta.env.DEV || q.has('demo')) && (v === 'nest' || v === 'branch') ? v : undefined;
+    return (import.meta.env.DEV || q.has('demo')) && v && ['nest', 'branch', 'bagworm', 'spider'].includes(v) ? v : undefined;
   })();
 
   /** A shake of `pid`'s tree, standing on `slot` (A: the left, beside my villager; B: the right, the partner's). */
   export function shaken(pid: PersonId, slot: 'A' | 'B') {
     const now = Date.now();
-    let drop = shakeDrop(Math.random, now, lastNest(pid), forced);
+    const bugForced = forced === 'bagworm' || forced === 'spider' ? forced : undefined;
+    let drop = shakeDrop(Math.random, now, lastNest(pid), bugForced ? 'bug' : (forced as ShakeDrop | undefined));
     forced = undefined;
-    if (drop === 'nest' && (swarm || nests.some((s) => s.pid === pid))) drop = null;
+    if (drop === 'nest' && (swarm || dangler?.pid === pid || nests.some((s) => s.pid === pid))) drop = null;
     if (drop === 'branch' && branches.some((b) => b.pid === pid)) drop = null;
+    if (drop === 'bug' && (dangler || nests.some((s) => s.pid === pid))) drop = null;
     const tx = TREE.x[slot], out = slot === 'A' ? -1 : 1;
-    if (drop === 'branch') {
+    if (drop === 'bug') {
+      const id = bugForced ?? shakenBug(jst().hour, Math.random);
+      void loadLines().catch(() => {});
+      const url = artUrl(critterArt(id));
+      if (url) new Image().src = url;
+      const d = { n: ++seq, pid, id, x: tx + out * DANGLE_DX, y: DANGLE_Y, up: false };
+      dangler = d;
+      later(DANGLE_MS, () => dangler?.n === d.n && (dangler = { ...d, up: true }));
+      later(DANGLE_MS + 900, () => dangler?.n === d.n && (dangler = null));
+    } else if (drop === 'branch') {
       branches = [...branches, { n: ++seq, pid, x: tx - out * BRANCH_DX, y: FOOT }];
       later(520, () => sceneSfx('twig'));
     } else if (drop === 'nest') {
@@ -81,6 +103,23 @@
       later(560, () => (sceneSfx('nest'), waspMusic('nest')));
       later(560 + SWARM_DELAY_MS, () => charge(nest.n, nest.x, nest.y - 10, slot));
     }
+  }
+
+  /** A tap on the dangling bug: netted (the net's swing, NH's catch line, a ずかん find). */
+  function netDangler() {
+    const d = dangler;
+    if (!d || d.up) return;
+    dangler = null;
+    net = { n: ++seq, x: d.x, y: d.y };
+    sceneSfx('net');
+    later(420, () => (net = null));
+    later(160, async () => {
+      sceneSfx('catch');
+      const added = recordFind('bug', d.id);
+      const n = ++seq;
+      const text = await catchLine(d.id as BugId);
+      card = { n, x: d.x, y: d.y, text: added ? [text, t('zukan.added')] : text, art: critterArt(d.id) };
+    });
   }
 
   function charge(nestN: number, x: number, y: number, slot: 'A' | 'B') {
@@ -120,10 +159,10 @@
     later(420, () => (net = null));
     later(160, async () => {
       sceneSfx('catch');
-      recordFind('bug', 'wasp');
+      const added = recordFind('bug', 'wasp');
       const n = ++seq;
       const text = await catchLine('wasp');
-      card = { n, x, y, text };
+      card = { n, x, y, text: added ? [text, t('zukan.added')] : text, art: critterArt('wasp') };
     });
   }
 
@@ -162,6 +201,30 @@
     onclick={() => pick(b.n)}></button>
 {/each}
 
+{#if dangler}
+  {@const d = dangler}
+  {#key d.n}
+    <!-- a bagworm or a spider on its thread, out of the canopy beside the trunk: it drops, sways, and climbs back up -->
+    <span class="dangle {d.id}" class:up={d.up} data-dangle={d.id} style:left={u(d.x)} style:top={u(FROM)} style:--len={u(d.y - FROM)}>
+      <i class="thread"></i>
+      <svg class="dbug" viewBox="-8 -8 16 16" aria-hidden="true">
+        {#if d.id === 'bagworm'}
+          <path d="M0 -6 C3.6 -5 4.4 1 3 5.6 C1.6 7.4 -1.6 7.4 -3 5.6 C-4.4 1 -3.6 -5 0 -6 Z" fill="#8A6A3E" />
+          <path d="M-3.4 -1.6 L3.4 -2.6 M-3.8 1.6 L3.8 .8 M-3.2 4.6 L3.2 4" stroke="#5E4628" stroke-width=".8" stroke-linecap="round" />
+          <path d="M-2.6 -3.6 L-1 -5 M1.4 -4.8 L2.8 -3.4 M-3.6 .6 L-5 -.4 M3.8 -.6 L5 -1.8" stroke="#6E8A3E" stroke-width="1" stroke-linecap="round" />
+        {:else}
+          <path d="M-1.8 -1 L-6 -4.4 L-7 -1 M-1.8 .6 L-6.6 1 L-7 4.6 M1.8 -1 L6 -4.4 L7 -1 M1.8 .6 L6.6 1 L7 4.6 M-1.4 2 L-4 5.8 M1.4 2 L4 5.8 M-1.4 -2 L-3.6 -6 M1.4 -2 L3.6 -6"
+            fill="none" stroke="#2A2420" stroke-width=".8" stroke-linecap="round" stroke-linejoin="round" />
+          <ellipse cx="0" cy="1.6" rx="2.6" ry="3" fill="#2E2826" /><circle cx="0" cy="-2" r="1.8" fill="#3A322E" />
+          <path d="M-1 1 H1 M-1.4 2.6 H1.4" stroke="#C9A040" stroke-width=".6" />
+        {/if}
+      </svg>
+    </span>
+    <button type="button" class="pick" data-dangler={d.id} data-sfx="self" aria-label={t('shake.dangle')} disabled={d.up}
+      style:left={u(d.x)} style:top={u(d.y)} onclick={netDangler}></button>
+  {/key}
+{/if}
+
 <div class="held">
   {#if swarm}
     {@const s = swarm}
@@ -191,7 +254,7 @@
   {/if}
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={critterArt('wasp')} parts={c.text} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.text} ondone={() => card?.n === c.n && (card = null)} />{/key}
   {/if}
 </div>
 
@@ -216,6 +279,18 @@
     appearance: none; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent;
   }
   .pick:focus-visible, .swarm:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; }
+  /* a dangling bug: its thread out of the canopy (it drops down it, sways, and climbs back up it) */
+  .dangle {
+    /* under the canopy (its thread runs up into it), over the grass */
+    position: absolute; z-index: var(--z-tree); width: 0; height: var(--len); pointer-events: none; transform-origin: 50% 0;
+    animation: dangle-drop 650ms cubic-bezier(.3, .6, .5, 1.2) both, sway 2.6s ease-in-out 650ms infinite alternate;
+  }
+  .dangle.up { animation: dangle-up 850ms ease-in both; }
+  .thread { position: absolute; left: -.5px; top: 0; width: 1px; height: 100%; background: rgba(255, 255, 255, .7); }
+  .dbug { position: absolute; left: 0; top: 100%; width: calc(16 * 100cqw / 390); translate: -50% -30%; overflow: visible; }
+  @keyframes dangle-drop { from { translate: 0 calc(var(--len) * -1); } }
+  @keyframes dangle-up { from { translate: 0 0; opacity: 1; } to { translate: 0 calc(var(--len) * -1); opacity: 0; } }
+  @keyframes sway { from { rotate: -5deg; } to { rotate: 5deg; } }
   .held { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   /* the swarm: a ≥ 44px button that charges from the nest to the villager's face, wobbling; stung, it flies off */
   .swarm {

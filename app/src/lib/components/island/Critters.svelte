@@ -9,12 +9,16 @@
   //   second early tap or none in time and it flees. 1 in 14 the line brings up a boot, a tire or a can.
   //   Bugs (NH's by month and hour): butterflies, a bee or a ladybug over the flower beds, a dragonfly over the hedge,
   //   fireflies on summer nights, grasshoppers, crickets and mantises in the grass, a cicada perched on a trunk.
-  //   Bugs: a tap on one swings the net (caught); a tap close by startles it away.
+  //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion (night,
+  //   the grass) rears up at the first tap; a tap while it's reared and it charges off; once it settles, a tap nets it.
+  //   A mole cricket chirps under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea
+  //   hopping off it (`fromVillager`).
   // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`), and a shaken bush (`fromBush`).
   // Cheap: ≤ 1 fish + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
   // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
   // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
-  //   ?critter=fish | <fish id> | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook).
+  //   ?critter=fish | <fish id> | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook); ?flea: a tap
+  //   on my villager always sends a flea off it.
   import { onMount } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
@@ -26,9 +30,9 @@
   import { catchLine, loadLines } from './catchLine.ts';
   import { t } from '#lib/i18n/index.ts';
   import {
-    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
-    hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
-    type Flight, type JunkId
+    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
+    fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, stalkTap, type BitePlan,
+    type BugId, type FishId, type Flight, type JunkId, type StalkState
   } from './critters.ts';
 
   interface Props {
@@ -47,7 +51,11 @@
     /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
     hesitated: boolean;
   }
-  interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean }
+  interface Bug {
+    id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean;
+    /** A tarantula's or a scorpion's mood (stalkTap). */
+    stalk?: StalkState;
+  }
   interface Card { n: number; x: number; y: number; art: string; parts: string[] }
   interface Net { n: number; x: number; y: number }
 
@@ -62,6 +70,8 @@
   let bug = $state<Bug | null>(null);
   let card = $state<Card | null>(null);
   let net = $state<Net | null>(null);
+  /** Earth flying up where a mole cricket was dug up. */
+  let dig = $state<Net | null>(null);
   let seq = 0;
   let bugEl = $state<HTMLElement>();
   let hopEl = $state<HTMLElement>();
@@ -79,7 +89,7 @@
   function clearAll() {
     for (const id of timers) clearTimeout(id);
     timers.clear();
-    fish = cast = bug = card = net = null;
+    fish = cast = bug = card = net = dig = null;
   }
 
   // ---------- geometry ----------
@@ -121,10 +131,11 @@
   }
   /** Bugs that don't fly in: a cicada's shell, a walking stick (they're on their trunk already). */
   const STILL = new Set<BugId>(['cicada-shell', 'walking-stick']);
-  /** How a percher is drawn: a cicada (or its shell), a stag beetle with its jaws, a horned or round beetle, a stick. */
-  const PERCH: Partial<Record<BugId, 'stag' | 'beetle' | 'stick'>> = {
-    'saw-stag': 'stag', 'miyama-stag': 'stag', 'giant-stag': 'stag', 'rainbow-stag': 'stag',
-    'horned-dynastid': 'beetle', 'goliath-beetle': 'beetle', 'drone-beetle': 'beetle', 'jewel-beetle': 'beetle', 'walking-stick': 'stick'
+  /** A crawler's pace: how far it goes at a time (u) and how long that takes (ms). A hermit crab scuttles, a tiger beetle
+   *  runs, a snail or a walking leaf barely moves, a stink bug ambles over the flowers. */
+  const PACE: Partial<Record<BugId, [number, number, number]>> = {
+    'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [8, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
+    stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400]
   };
   /** A cicada's perch: the visible trunk of a tree, midway between its canopy and its fruit row (both buttons, measured:
    *  the row's 44px tap target reaches up the trunk on a small phone), so a tap on the cicada (a finger's fuzzy hit
@@ -149,6 +160,11 @@
   }
   /** A shadow's length (u): NH's sizes 1–6; the eels' thin shadow is long. */
   const sizeU = (f: Fish) => 8 + (f.shape === 'narrow' ? 5.5 : f.size) * 4.5;
+
+  /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
+  let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
+  let sprite: Promise<unknown> | null = null;
+  const loadSprite = () => (sprite ??= import('./BugSprite.svelte').then((m) => (Sprite = m.default)).catch(() => (sprite = null)));
 
   function preload(key: string) {
     const url = artUrl(key);
@@ -301,13 +317,16 @@
   function spawnBug(id: BugId | null, from?: { x: number; y: number }, stay = true) {
     const g = geo();
     if (!id || !g || bug) return;
+    void loadSprite();
     preload(critterArt(id));
     void loadLines().catch(() => {});
     const flight = BUGS[id].flight;
-    const side = rand() < 0.5 ? -1 : 1;
+    // a flea hops off a villager into the grass on its side
+    const side = from && id === 'flea' ? (from.x < 195 ? -1 : 1) : rand() < 0.5 ? -1 : 1;
     const ground = BUGS[id].ground;
     const area = flight === 'perch' ? trunk(g, side)
       : ground === 'beach' ? beach(g)
+      : id === 'flea' || flight === 'stalk' || flight === 'burrow' ? GRASS[side < 0 ? 0 : 1]
       : from || id === 'moth' || flight === 'dart' ? HEDGE
       : flight === 'hop' || ground === 'grass' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
     if (!area) return;
@@ -318,9 +337,9 @@
     const spot = freeIn(area, keep);
     if (!spot) return;
     // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
-    const inPlace = flight === 'drift' || flight === 'hop' || flight === 'crawl' || STILL.has(id);
+    const inPlace = flight === 'drift' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
     const start = from ?? (inPlace ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y - (flight === 'perch' ? 40 : 0) });
-    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false };
+    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false, ...(flight === 'stalk' && { stalk: 'calm' as const }) };
     later(fly, 60);
     if (stay) later(() => bugLeave(), STAY_MS.bug);
   }
@@ -342,13 +361,16 @@
       hopEl?.animate([{ translate: '0 0' }, { translate: `0 ${U(-9)}`, offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
       return later(fly, 420 + between(1400, 2800));
     }
-    if (b.flight === 'crawl') {
-      // a little way along its ground, then a rest: a hermit crab scuttles sideways, a snail barely moves
-      const crab = b.id === 'hermit-crab', snail = b.id === 'snail';
-      const reach = crab ? 30 : snail ? 8 : 18;
+    if (b.flight === 'burrow') return; // under its mound, chirping, until it's dug up or done
+    if (b.flight === 'crawl' || b.flight === 'stalk') {
+      // a little way along its ground, then a rest: a hermit crab scuttles sideways, a snail barely moves; a reared
+      // tarantula holds still
+      if (b.stalk === 'rear') return later(fly, 600);
+      const [reach, m0, m1] = PACE[b.id] ?? [18, 1600, 2600];
+      const crab = b.id === 'hermit-crab';
       const x = clamp(b.x + clamp(p.x - b.x, -reach, reach), b.area.x0, b.area.x1);
       const y = clamp(b.y + clamp(p.y - b.y, -reach / 3, reach / 3), b.area.y0, b.area.y1);
-      const ms = crab ? between(450, 700) : snail ? between(3500, 5000) : between(1600, 2600);
+      const ms = between(m0, m1);
       Object.assign(b, { ms, flip: crab ? b.flip : x > b.x, x, y });
       return later(fly, ms + between(1200, 3200));
     }
@@ -361,9 +383,10 @@
     const b = bug, g = geo();
     if (!b || b.gone || !g) return;
     b.gone = true;
-    if (b.flight === 'drift' || ((b.flight === 'hop' || b.flight === 'crawl' || STILL.has(b.id)) && !fast)) {
+    const ground = b.flight === 'crawl' || b.flight === 'stalk';
+    if (b.flight === 'drift' || b.flight === 'burrow' || ((b.flight === 'hop' || ground || STILL.has(b.id)) && !fast)) {
       b.ms = 900;
-    } else if (b.flight === 'crawl') {
+    } else if (ground) {
       // startled: it scurries off along the ground and is gone
       const dir = away ?? (b.x < 195 ? -1 : 1);
       Object.assign(b, { ms: 700, flip: dir > 0, x: b.x + dir * 26 });
@@ -379,12 +402,21 @@
     if (bug) return;
     const { hour } = jst(now());
     const id: BugId = oddsAt(BUGS.centipede, 1, hour) > 0 ? 'centipede' : 'pill-bug';
+    void loadSprite();
     preload(critterArt(id));
     // a little patch of lawn by the rock, in front of the hedge
     const area = { x0: x - 18, x1: x + 20, y0: y - 9, y1: y - 3 }; // in front of the rock's foot, above the jar's lid
     bug = { id, flight: 'crawl', x: x + 8, y: y - 4, ms: 0, flip: false, gone: false, area, keep: [], sat: false };
     later(fly, 300);
     later(() => bugLeave(), STAY_MS.bug);
+  }
+
+  /** A tap on my villager (IslandScene via SceneTaps): now and then a flea hops off it into the grass (NH's fleas). */
+  export function fromVillager(el: Element) {
+    const g = geo();
+    if (bug || !g || !(forceFlea || fleaJumps(jst(now()).month, rand))) return;
+    const r = el.getBoundingClientRect();
+    spawnBug('flea', { x: (r.left + r.width / 2 - g.r.left) * g.k, y: (r.top + r.height * 0.3 - g.r.top) * g.k });
   }
 
   /** A shaken bush lets a bug out now and then (SceneTaps' bush tap). */
@@ -419,6 +451,38 @@
       const r = bugEl.getBoundingClientRect();
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       const swing = netSwing(d, Math.max(r.width, r.height));
+      const bx = (r.left + r.width / 2 - g.r.left) * g.k, by = (r.top + r.height / 2 - g.r.top) * g.k;
+      if (b.flight === 'stalk' && b.stalk) {
+        // NH's tarantula: it rears up when it's come at, charges if you keep coming; settled again, it can be netted
+        const act = stalkTap(b.stalk, swing);
+        if (act === 'rear') {
+          b.stalk = 'rear';
+          later(() => bug === b && b.stalk === 'rear' && (b.stalk = 'settled'), REAR_MS);
+          return true;
+        }
+        if (act === 'charge') {
+          sceneSfx('bug-flee');
+          const tx = (px - g.r.left) * g.k, ty = (py - g.r.top) * g.k;
+          const dx = Math.sign(tx - b.x) || 1;
+          b.stalk = 'calm';
+          Object.assign(b, { ms: 220, flip: dx > 0, x: b.x + clamp(tx - b.x, -16, 16), y: b.y + clamp(ty - b.y, -6, 6) });
+          later(() => bugLeave(true, -dx), 260);
+          return true;
+        }
+      }
+      if (b.flight === 'burrow') {
+        // dug up: a puff of earth and it's caught; a tap anywhere else leaves it under its mound
+        if (swing !== 'catch') return false;
+        dig = { n: ++seq, x: bx, y: by };
+        sceneSfx('dig');
+        bug = null;
+        later(() => {
+          sceneSfx('catch');
+          show(b.id, bx, by);
+        }, 260);
+        later(() => (dig = null), 700);
+        return true;
+      }
       if (swing === 'catch') {
         const x = (r.left + r.width / 2 - g.r.left) * g.k, y = (r.top + r.height / 2 - g.r.top) * g.k;
         net = { n: ++seq, x, y };
@@ -452,6 +516,8 @@
   let remaining = nextSpawnMs(rand, true);
   /** `?critter=` (dev or ?demo) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
   const pinned = typeof location !== 'undefined' && new URLSearchParams(location.search).has('critter') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
+  /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
+  const forceFlea = typeof location !== 'undefined' && new URLSearchParams(location.search).has('flea') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
   $effect(() => {
     if (!scene || !enabled() || reducedMotion() || pinned) return;
     let started = performance.now();
@@ -485,7 +551,8 @@
       if (!enabled()) return later(go, 300);
       if (want === 'fish') spawnFish(false);
       else if (want in FISH) spawnFish(false, want as FishId);
-      else if (want in BUGS) spawnBug(want as BugId, undefined, false);
+      else if (want === 'flea') spawnBug('flea', { x: 150, y: 250 }, false);
+      else if (want in BUGS && BUGS[want as BugId].flight !== 'dangle') spawnBug(want as BugId, undefined, false);
     };
     later(go, 600);
     return clearAll;
@@ -522,61 +589,7 @@
       style:translate="{U(b.x)} {U(b.y)}" style:transition-duration="{b.ms}ms">
       <span class="hopper" bind:this={hopEl}>
         <span class="face" class:flip={b.flip}>
-          {#if b.flight === 'drift'}
-            <i class="glow"></i>
-          {:else if b.flight === 'dart'}
-            <svg viewBox="-12 -8 24 16"><g class="dwing"><ellipse cx="-3" cy="-4" rx="2.2" ry="5.5" transform="rotate(-62 -3 -4)" /><ellipse cx="-3" cy="4" rx="2.2" ry="5.5" transform="rotate(62 -3 4)" />
-              <ellipse cx="1" cy="-4" rx="1.9" ry="5" transform="rotate(-70 1 -4)" /><ellipse cx="1" cy="4" rx="1.9" ry="5" transform="rotate(70 1 4)" /></g>
-              <path class="dbody" d="M-11 0 L4 0" /><path class="dband" d="M-11 0 L4 0" /><circle class="dhead" cx="5.5" cy="0" r="2" /></svg>
-          {:else if b.flight === 'perch' && PERCH[b.id] === 'stag'}
-            <!-- a stag beetle on the trunk, head up, its jaws open -->
-            <svg viewBox="-6 -9 12 17"><path class="jaw" d="M-1.2 -5.4 C-3.6 -7 -3.4 -8.6 -2 -9 M1.2 -5.4 C3.6 -7 3.4 -8.6 2 -9" />
-              <ellipse class="shellb" cx="0" cy="1.2" rx="3.4" ry="4.8" /><path class="seam" d="M0 -2.6 V5.8" /><ellipse class="bhead" cx="0" cy="-4.4" rx="2.3" ry="1.6" /></svg>
-          {:else if b.flight === 'perch' && PERCH[b.id] === 'beetle'}
-            <!-- a beetle on the trunk (the horned dynastid with its horn) -->
-            <svg viewBox="-6 -9 12 17">{#if b.id === 'horned-dynastid'}<path class="horn" d="M0 -5 C-.2 -7.4 .8 -8.8 2.2 -8.8" />{/if}
-              <ellipse class="shellb" cx="0" cy="1.2" rx="3.7" ry="4.8" /><path class="seam" d="M0 -2.4 V5.8" /><ellipse class="bhead" cx="0" cy="-4.2" rx="2.4" ry="1.7" /></svg>
-          {:else if b.flight === 'perch' && PERCH[b.id] === 'stick'}
-            <svg viewBox="-4 -10 8 20"><path class="stick" d="M0 -9 V9 M0 -5 L-2.6 -8 M0 -5 L2.6 -8 M0 0 L-3 1.2 M0 0 L3 1.2 M0 4 L-2.4 7.4 M0 4 L2.4 7.4" /></svg>
-          {:else if b.flight === 'crawl'}
-            {#if b.id === 'hermit-crab'}
-              <!-- a hermit crab: a borrowed shell, two red claws, little legs -->
-              <svg viewBox="-8 -7 16 12"><path class="cleg" d="M-3.6 2 L-6.4 4.2 M-2.4 2.6 L-4.4 5.2 M3.6 2 L6.4 4.2 M2.4 2.6 L4.4 5.2" />
-                <circle class="claw" cx="-4.6" cy=".6" r="1.6" /><circle class="claw" cx="4.6" cy=".6" r="1.6" />
-                <path class="cshell" d="M-4 2.4 C-5 -2.6 -1.4 -6.4 2.6 -5.2 C5.4 -4.2 5.2 1 4 2.4 Z" /><path class="swirl" d="M-1.2 -.6 C-.4 -3.6 3 -3.2 2.6 -.4" /></svg>
-            {:else if b.id === 'snail'}
-              <svg viewBox="-8 -7 16 12"><path class="sbody" d="M-7 3.6 H4.6 Q7 3.6 7 1.6 L6.2 -.6 L5 2.2 H-6 Z" /><path class="sant" d="M5.6 -.4 L6.4 -3.8 M6.3 0 L7.9 -2.8" />
-                <circle class="sshell" cx="-.6" cy="-.6" r="4" /><path class="swirl" d="M-.6 -.6 m-2.2 0 a2.2 2.2 0 1 1 2.2 2.2" /></svg>
-            {:else if b.id === 'centipede'}
-              <svg viewBox="-10 -4 20 8"><path class="cleg" d="M-7.6 -2.6 V2.6 M-4.6 -2.6 V2.6 M-1.6 -2.6 V2.6 M1.4 -2.6 V2.6 M4.4 -2.6 V2.6" />
-                {#each [-7.6, -4.6, -1.6, 1.4, 4.4] as cx (cx)}<circle class="cseg" {cx} cy="0" r="1.8" />{/each}<circle class="chead" cx="7.2" cy="0" r="2" /></svg>
-            {:else}
-              <!-- a pill bug or a wharf roach: a segmented little oval (the roach with feelers) -->
-              <svg viewBox="-8 -5 16 10">{#if b.id === 'wharf-roach'}<path class="ant" d="M4.4 -1 Q7.6 -4 8.6 -2.4 M4.4 1 Q7.6 4 8.6 2.4" />{/if}
-                <ellipse class="pill" rx={b.id === 'wharf-roach' ? 5 : 4.2} ry="2.9" /><path class="seg" d="M-2 -2.6 V2.6 M.4 -2.8 V2.8 M2.8 -2.3 V2.3" /></svg>
-            {/if}
-          {:else if b.flight === 'perch'}
-            <!-- a cicada on the trunk, head up, wings folded over its back -->
-            <svg viewBox="-6 -8 12 16"><ellipse class="cibody" cx="0" cy="-.5" rx="2.6" ry="4.6" /><circle class="cibody" cx="0" cy="-5" r="2.2" />
-              <circle class="eye" cx="-1.7" cy="-5.6" r=".8" /><circle class="eye" cx="1.7" cy="-5.6" r=".8" />
-              <g class="ciwing"><path d="M-.3 -3.4 C-4.6 -2 -4.4 4.6 -1 7.4 C-.4 4 -.2 0 -.3 -3.4 Z" /><path d="M.3 -3.4 C4.6 -2 4.4 4.6 1 7.4 C.4 4 .2 0 .3 -3.4 Z" /></g></svg>
-          {:else if b.id === 'mantis' || b.id === 'orchid-mantis'}
-            <svg viewBox="-8 -8 16 16"><path class="mbody" d="M-6 3 Q-1 2 3 -1" /><path class="mleg" d="M2 -.6 L4.8 -4.8 L6.6 -2.6 M-2 2.4 L-3.2 5.6 M-4.4 2.8 L-6.6 5.4 M0 1.6 L1 5.2" />
-              <path class="mhead" d="M2.6 -1.8 L5.2 -3 L5 -.6 Z" /></svg>
-          {:else if b.flight === 'hop'}
-            <svg viewBox="-8 -6 16 12"><path class="leg" d="M-1 1 L-5 -3.5 L-7 3" /><ellipse class="cbody" cx="0" cy="0" rx="4.6" ry="2.6" />
-              <circle class="cbody" cx="4.4" cy="-.6" r="1.8" /><path class="ant" d="M5.5 -1.8 Q8 -6 3 -5.6 M5.8 -1.4 Q9 -4 6 -6" /></svg>
-          {:else if b.id === 'honeybee'}
-            <svg viewBox="-8 -8 16 16"><g class="wing"><ellipse cx="-2" cy="-4" rx="2" ry="3.2" transform="rotate(-25 -2 -4)" /></g>
-              <g class="wing r"><ellipse cx="2" cy="-4" rx="2" ry="3.2" transform="rotate(25 2 -4)" /></g>
-              <ellipse class="bee" rx="4.4" ry="3.2" /><path class="stripe" d="M-1.6 -3 V3 M1.2 -3.1 V3.1" /><circle class="beehead" cx="4.6" cy="-.4" r="1.9" /></svg>
-          {:else}
-            <svg viewBox="-12 -10 24 20">
-              <g class="wing"><path d="M0 0 C-4 -9 -12 -9 -11 -2 C-10 2 -4 2 0 0 Z M0 0 C-3 3 -9 6 -7 9 C-5 10 -1 5 0 0 Z" /></g>
-              <g class="wing r"><path d="M0 0 C4 -9 12 -9 11 -2 C10 2 4 2 0 0 Z M0 0 C3 3 9 6 7 9 C5 10 1 5 0 0 Z" /></g>
-              <ellipse rx="1" ry="4.5" class="bbody" />
-            </svg>
-          {/if}
+          {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
         </span>
       </span>
     </span>
@@ -584,6 +597,12 @@
 </div>
 
 <div class="held">
+  {#if dig}
+    {#key dig.n}
+      <!-- the mound dug open: clods of earth fly up -->
+      <span class="mover digfx" style:translate="{U(dig.x)} {U(dig.y)}">{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+    {/key}
+  {/if}
   {#if cast?.under}
     <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
     <span class="mover" style:translate="{U(cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
@@ -690,101 +709,24 @@
   .ripple.big { width: calc(28 * var(--su)); height: calc(9 * var(--su)); margin: calc(-4.5 * var(--su)) 0 0 calc(-14 * var(--su)); }
   @keyframes ripple { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
 
-  /* bugs: our own little NH-style sprites (the official icon is the catch) */
+  /* bugs: the motion (the sprites are BugSprite.svelte, loaded with the first bug) */
   .bug.gone { opacity: 0; }
   .bug .hopper, .bug .face { left: 0; top: 0; display: block; }
-  .bug svg { position: absolute; overflow: visible; translate: -50% -50%; }
   .flutter .hopper { animation: flutter .42s ease-in-out infinite alternate; }
   @keyframes flutter { from { transform: translateY(calc(-2.5 * var(--su))); } to { transform: translateY(calc(2 * var(--su))); } }
-  .flutter svg { width: calc(18 * var(--su)); }
-  .moth svg { width: calc(14 * var(--su)); }
-  .ladybug svg { width: calc(10 * var(--su)); }
-  .wing { transform-origin: 0 0; animation: flap .13s ease-in-out infinite alternate; }
-  .ladybug .wing { transform-origin: 0 -3px; }
-  @keyframes flap { to { scale: .25 1; } }
-  .common-butterfly .wing { fill: #FFFDF3; stroke: #77738F; stroke-width: .8; }
-  .yellow-butterfly .wing { fill: #FFE46E; stroke: #C79A2A; stroke-width: .8; }
-  .tiger-butterfly .wing { fill: #FFCF45; stroke: #3B3026; stroke-width: 1.3; stroke-dasharray: 2 1.4; }
-  .peacock-butterfly .wing { fill: #2C3438; stroke: #3BB49E; stroke-width: 1.1; }
-  .emperor-butterfly .wing { fill: #4C93F2; stroke: #1F3A78; stroke-width: 1; }
-  .moth .wing { fill: #DCCBA6; stroke: #A38B62; stroke-width: .8; }
-  .honeybee svg { width: calc(11 * var(--su)); }
-  .honeybee .wing { fill: rgba(255, 255, 255, .7); stroke: rgba(120, 130, 150, .6); stroke-width: .4; animation-duration: .06s; }
-  .bee { fill: #F7C63C; } .stripe { stroke: #3A2C1E; stroke-width: 1.1; } .beehead { fill: #3A2C1E; }
-  .bbody { fill: #4E3E30; }
-  .ladybug .wing { fill: rgba(255, 255, 255, .55); }
-  .lady { fill: #E8443B; } .seam { stroke: #3A2A22; stroke-width: .6; } .dot { fill: #2E2420; }
-  /* dragonfly: darts and hovers, wings a shimmer */
-  .dart svg { width: calc(24 * var(--su)); }
-  .dwing { fill: rgba(255, 255, 255, .55); stroke: rgba(120, 140, 160, .5); stroke-width: .4; animation: shimmer .08s linear infinite alternate; }
-  @keyframes shimmer { to { opacity: .55; } }
-  .dbody { stroke-width: 1.8; stroke-linecap: round; }
-  .darner-dragonfly .dbody { stroke: #3C8FC4; } .darner-dragonfly .dhead { fill: #2F7A62; }
-  .red-dragonfly .dbody { stroke: #E0473A; } .red-dragonfly .dhead { fill: #B8342B; }
-  .dband { display: none; }
-  .banded-dragonfly .dbody { stroke: #2E2C24; } .banded-dragonfly .dhead { fill: #3E7A4A; }
-  .banded-dragonfly .dband { display: inline; stroke: #F2CC3A; stroke-width: 1.8; stroke-dasharray: 1.3 1.5; }
   .dart.mover { transition-timing-function: cubic-bezier(.2, .8, .3, 1); }
-  /* firefly: a soft drifting light that blinks */
-  .glow {
-    display: block; left: 0; top: 0; width: 4.6px; height: 4.6px; margin: -2.3px; border-radius: 50%;
-    background: var(--firefly, #F6FF9E); box-shadow: 0 0 7px var(--firefly-glow, #EFFF7A); animation: blink 2.2s ease-in-out infinite;
-  }
-  @keyframes blink { 0%, 100% { opacity: .25; } 40%, 60% { opacity: 1; } }
-  /* crickets: in the grass, a hop now and then (the hop is a Web Animation on .hopper) */
-  .hop svg { width: calc(13 * var(--su)); }
-  .cbody { fill: #8A6238; } .bell-cricket .cbody { fill: #5A4A36; }
-  .rice-grasshopper .cbody { fill: #A9C653; } .grasshopper .cbody { fill: #6DAA3C; } .migratory-locust .cbody { fill: #8F8B4A; }
-  .mantis svg, .orchid-mantis svg { width: calc(15 * var(--su)); }
-  .mbody { fill: none; stroke: #79B648; stroke-width: 2; stroke-linecap: round; }
-  .mleg { fill: none; stroke: #5E9A36; stroke-width: .8; stroke-linecap: round; stroke-linejoin: round; } .mhead { fill: #79B648; }
-  .orchid-mantis .mbody, .orchid-mantis .mhead { stroke: #F4C9DC; fill: #F4C9DC; } .orchid-mantis .mbody { fill: none; }
-  .orchid-mantis .mleg { stroke: #E6A6C3; }
-  /* cicadas: flown in to a trunk, then perched (a faint buzz of the wings while it sings) */
-  .perch svg { width: calc(11 * var(--su)); }
   .perch.mover { transition-timing-function: cubic-bezier(.3, .6, .4, 1); }
-  .cibody { fill: #3E4A38; } .evening-cicada .cibody { fill: #8B6A3C; } .eye { fill: #1E2418; }
-  .ciwing path { fill: rgba(232, 242, 236, .55); stroke: rgba(80, 110, 90, .7); stroke-width: .4; }
-  .perch.sat .ciwing { animation: buzz .07s linear infinite alternate; }
-  @keyframes buzz { to { translate: .25px 0; } }
-  .leg, .ant { fill: none; stroke: #4A3420; stroke-width: .7; stroke-linecap: round; }
-  /* more cicadas, the shell a cicada left behind (amber, see-through), the beetles and the walking stick */
-  .walker-cicada .cibody { fill: #5C7A4A; } .giant-cicada .cibody { fill: #2E2A26; }
-  .brown-cicada .cibody { fill: #6B4A2A; } .brown-cicada .ciwing path { fill: rgba(150, 100, 60, .8); }
-  .cicada-shell .cibody { fill: rgba(196, 136, 64, .78); } .cicada-shell .ciwing path { fill: rgba(220, 170, 100, .5); }
-  .cicada-shell.sat .ciwing { animation: none; }
-  .perch svg:has(.shellb), .perch svg:has(.stick) { width: calc(11 * var(--su)); }
-  .shellb { fill: var(--beetle, #4A2A18); } .bhead { fill: var(--beetle-head, #2E1C12); }
-  .seam { stroke: rgba(0, 0, 0, .35); stroke-width: .5; }
-  .jaw, .horn { fill: none; stroke: var(--beetle-head, #2E1C12); stroke-width: 1.1; stroke-linecap: round; }
-  .saw-stag { --beetle: #6A3A20; } .miyama-stag { --beetle: #7A4A26; } .giant-stag { --beetle: #2A1E16; --beetle-head: #15100C; }
-  .rainbow-stag { --beetle: #3BAA6E; --beetle-head: #8E5AD0; }
-  .goliath-beetle { --beetle: #F2EEE4; } .goliath-beetle .seam { stroke: #2A2420; stroke-width: 1; }
-  .drone-beetle { --beetle: #3F6E3C; --beetle-head: #2A4A28; }
-  .jewel-beetle { --beetle: #2FA05A; --beetle-head: #1F6E3E; } .jewel-beetle .seam { stroke: #E0503E; stroke-width: 1.1; }
-  .stick { fill: none; stroke: #8A6A3A; stroke-width: 1; stroke-linecap: round; }
-  /* crawlers on the beach, the grass and the beds: they fade in where they are */
   .crawl { animation: fade-in .8s ease-out both; }
   .crawl.mover { transition-timing-function: ease-in-out; }
-  .crawl svg { width: calc(12 * var(--su)); }
-  .centipede svg { width: calc(16 * var(--su)); } .hermit-crab svg { width: calc(14 * var(--su)); }
-  .cleg { fill: none; stroke: #C2453A; stroke-width: .8; stroke-linecap: round; }
-  .claw { fill: #E0503E; } .cshell { fill: #F2D2B0; stroke: #C99A6A; stroke-width: .5; } .swirl { fill: none; stroke: #B07A4A; stroke-width: .6; }
-  .pill { fill: #7E8590; } .wharf-roach .pill { fill: #8C8478; } .seg { stroke: rgba(0, 0, 0, .3); stroke-width: .5; }
-  .centipede .cleg { stroke: #E8A23A; } .cseg { fill: #8A3A26; } .chead { fill: #B8452A; }
-  .sbody { fill: #D9C2A0; } .sant { fill: none; stroke: #B49A78; stroke-width: .7; stroke-linecap: round; }
-  .sshell { fill: #C98A4A; stroke: #8E5A2A; stroke-width: .5; } .snail .swirl { stroke: #7A4A22; }
-  /* the bigger butterflies and the moth of the night */
-  .paper-kite-butterfly .wing { fill: #FFFDF8; stroke: #2E2A26; stroke-width: 1.2; stroke-dasharray: 1.2 1.6; }
-  .agrias-butterfly .wing { fill: #E8433E; stroke: #2B6CC4; stroke-width: 1.4; }
-  .monarch-butterfly .wing { fill: #FF9A2E; stroke: #2E2218; stroke-width: 1.2; }
-  .queen-alexandras-birdwing .wing { fill: #3FB59A; stroke: #1E2A24; stroke-width: 1.5; }
-  .rajah-brookes-birdwing .wing { fill: #1F2622; stroke: #3ED68C; stroke-width: 1.7; }
-  .atlas-moth .wing { fill: #C8693A; stroke: #7A3A1E; stroke-width: 1; }
-  .queen-alexandras-birdwing svg, .rajah-brookes-birdwing svg, .atlas-moth svg { width: calc(23 * var(--su)); }
-  .damselfly svg { width: calc(18 * var(--su)); } .damselfly .dbody { stroke: #4AB3E8; stroke-width: 1.2; } .damselfly .dhead { fill: #2A6FA0; }
-  .long-locust svg { width: calc(15 * var(--su)); } .long-locust .cbody { fill: #7CC24A; }
   .hop.mover { transition-timing-function: ease-out; }
+  .stalk { animation: fade-in .8s ease-out both; }
+  .stalk.mover { transition-timing-function: ease-in-out; }
+  .burrow.mover { animation: fade-in .8s ease-out both; }
+  .digfx i {
+    position: absolute; left: calc(-1.4 * var(--su)); top: calc(-1.4 * var(--su)); width: calc(2.8 * var(--su)); height: calc(2.8 * var(--su));
+    border-radius: 45%; background: #8A6A44; rotate: var(--a); transform-origin: 50% 100%; animation: clod .6s cubic-bezier(.2, .7, .4, 1) both;
+  }
+  @keyframes clod { from { transform: translateY(0) scale(.6); opacity: 1; } 60% { opacity: 1; } to { transform: translateY(calc(-14 * var(--su))) scale(.9); opacity: 0; } }
   /* at night the bugs sit above the tint: dim them like the island (a firefly keeps its light) */
   .night .bug:not(.drift) .face { filter: brightness(.8) saturate(.85); }
 

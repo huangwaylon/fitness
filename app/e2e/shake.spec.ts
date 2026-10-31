@@ -1,7 +1,7 @@
 // Shaking a tree (docs/design.md "Shaking a tree"): one tap still opens the popup; a quick run of taps shakes the tree.
-// A shake may drop a branch (a tap picks it up) or, rarely, a wasp nest: its wasps charge the villager on that side; a
-// tap on them in time nets one (NH's catch line), else they sting (a puffy eye). `?shake=nest|branch` forces the next
-// shake's drop. Nothing changes ベル.
+// A shake may drop a branch (a tap picks it up), a bagworm or a spider dangling on its thread (a tap nets it) or, rarely,
+// a wasp nest: its wasps charge the villager on that side; a tap on them in time nets one (NH's catch line), else they
+// sting (a puffy eye). `?shake=nest|branch|bagworm|spider` forces the next shake's drop. Nothing changes ベル.
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -81,4 +81,37 @@ test('a shaken branch lies beside the trunk until a tap picks it up', async ({ p
   await expect(twig).toHaveCount(0);
   expect(await cues(page)).toContain('scene-twig');
   await expect(page.locator('.detail')).toHaveCount(0);
+});
+
+test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH’s line, a ずかん find, no ベル)', async ({ page }) => {
+  await open(page, '&shake=bagworm');
+  const bells = await ribbon(page).getAttribute('aria-label');
+  await shake(page);
+  await expect(page.locator('[data-dangle="bagworm"]')).toBeAttached();
+  const btn = page.locator('button[data-dangler="bagworm"]');
+  await expect(btn).toHaveAttribute('data-sfx', 'self');
+  await expect(btn).toHaveAttribute('aria-label', 'むしを つかまえる');
+  await page.waitForTimeout(700); // down its thread
+  // its tap target is its own: clear of the canopy and the fruit row
+  const b = (await btn.boundingBox())!;
+  const under = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.getAttribute('data-dangler'), { x: b.x + b.width / 2, y: b.y + b.height / 2 });
+  expect(under).toBe('bagworm');
+  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  await expect(page.locator('[data-fx="catch"]')).toContainText('ミノムシを つかまえた！', { timeout: 3000 });
+  await expect(page.locator('[data-dangle]')).toHaveCount(0);
+  expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
+  await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
+});
+
+test('at night a spider can dangle instead; left alone it climbs back up into the tree', async ({ page }) => {
+  test.setTimeout(40_000);
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto('?demo&date=2026-11-04T22:00&shake=spider');
+  await expect(ribbon(page)).toBeVisible();
+  await page.waitForTimeout(2600);
+  await shake(page);
+  await expect(page.locator('[data-dangle="spider"]')).toBeAttached();
+  await page.waitForTimeout(11_500);
+  await expect(page.locator('[data-dangle]')).toHaveCount(0);
+  await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });

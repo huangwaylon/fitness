@@ -158,6 +158,7 @@
   "critter.junk.empty-can": "Got one! …Oh. It's an empty can.",
   "shake.swarm": "Net the wasps",
   "shake.branch": "Pick up the tree branch",
+  "shake.dangle": "Net the bug",
   "beach.picked": "I picked up {name}!",
   "beach.fossil": "I dug up a fossil! It's {name}!",
   "beach.dug": "I dug up {name}!",

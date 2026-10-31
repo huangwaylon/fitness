@@ -322,10 +322,10 @@ its person's flowers through one Tokyo day (a quick run of canopy taps shakes it
 
 - **Tap or shake:** one canopy tap opens (or closes) the popup as before; a quick run, the third tap within 1.2 s
   and each quick tap after, is a shake: the popup closes, the tree rustles and drops its leaves (`tree-shake`).
-- **What falls:** 1 in 8 shakes a wasp nest (at most one per tree an hour, `tree-nest` in localStorage), else 1 in 5
-  a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the plaza's side, between the canopy's and the fruit
-  row's buttons, until a tap picks it up (a hop and gone, `scene-twig`; cosmetic). No ベル ever: scenery never pays
-  (NH's bells and furniture from trees are left out).
+- **What falls:** 1 in 8 shakes a wasp nest (at most one per tree an hour, `tree-nest` in localStorage), else 1 in 7
+  a dangling bug, else 1 in 5 a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the plaza's side,
+  between the canopy's and the fruit row's buttons, until a tap picks it up (a hop and gone, `scene-twig`; cosmetic).
+  No ベル ever: scenery never pays (NH's bells and furniture from trees are left out).
 - **The nest:** it falls beside the trunk on the outer side (`scene-nest`); 0.6 s later three wasps buzz out
   (`scene-buzz`) and charge the villager on that side (the left tree's at mine) for 1.5 s, a ≥ 44px button. A tap on
   them in time nets one: the net's swing, `scene-catch`, NH's catch line on the plate (「ハチを つかまえた！ ブン！ ブン！
@@ -333,7 +333,11 @@ its person's flowers through one Tokyo day (a quick run of canopy taps shakes it
   the wasp is never about on its own: weight 0). Too late, they sting (`scene-sting`): that villager starts with a 「！」
   and one eye swells under a pink lump for a minute (not kept across a reload), and the wasps fly off. The nest fades
   once they are out.
-- `?shake=nest|branch` (dev or `?demo`) makes the next shake drop that.
+- **A dangling bug** (NH's hardwood shake): a bagworm, or in the spider's hours (19:00–08:00) a spider 3 times in 8
+  (NH's 50 : 30), drops out of the canopy on its thread beside the trunk on the outer side and sways there for 10 s,
+  its ≥ 44px tap target between the canopy's and the fruit row's buttons. A tap nets it (the net's swing, NH's catch
+  line, a ずかん find); left alone it climbs back up. Both are weight 0 in the bug table: never about on their own.
+- `?shake=nest|branch|bagworm|spider` (dev or `?demo`) makes the next shake drop that.
 
 ### Scene interactions
 
@@ -366,11 +370,20 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
   no rain gate). NH's shadows: sizes 1–6, a long thin one for the eels, a fin cutting the surface for the sharks, the
   ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
-- **Bugs** (47 NH species, `BUGS`): butterflies (the paper kite, agrias, monarch and the two birdwings among them),
+- **Bugs** (67 of NH's 80, `BUGS`): butterflies (the paper kite, agrias, monarch, the two birdwings, the common
+  bluebottle and the great purple emperor among them) and the Madagascan sunset moth,
   the honeybee, ladybug and a snail on the beds; dragonflies and the damselfly over the hedge; the cicadas (a shell
   now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick on
   the trunks; fireflies and the Atlas moth at night; grasshoppers, locusts, mantises, crickets, the pill bug and the
-  centipede in the grass; the hermit crab (after dark) and the wharf roach on the front beach. Fliers come in from the
+  centipede in the grass; the hermit crab (after dark) and the wharf roach on the front beach. More of NH's: the
+  mosquito on summer evenings; the stink bugs on the beds (the man-faced one at night); the tiger beetle (it runs),
+  the earth-boring dung beetle and the walking leaf in the grass; NH's stump beetles (violin, citrus long-horned,
+  rosalia batesi: the island has no stumps, so a trunk, like the jewel beetle) and the scarab at night on the trunks;
+  the **mole cricket** under a little mound of earth in the grass that twitches as it chirps (a tap digs it up: clods
+  fly, `scene-dig`); the **tarantula** (winter) and the **scorpion** (summer), rare, in the grass at night: the first
+  tap on or near one makes it rear up (NH: it's been come at); a tap while it's reared and it charges and scuttles off
+  (`scene-bug-flee`); once it settles (1.6 s) a tap nets it. A tap on my villager sends a **flea** hopping off into
+  the grass 1 in 10 (Apr–Nov; 1 in 30 otherwise; `?flea` always). Fliers come in from the
   side, perchers fly in to a trunk (a shell and a walking stick are just there), crawlers fade in and creep (a crab
   scuttles sideways, a snail barely moves). A tap on one swings the net (caught); within 80px it startles away. A
   shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
@@ -480,7 +493,7 @@ or `?demo`, forces it with its evening):
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
-(Critterpedia) in きろく: さかな 33, むし 48 (the wasp from a shaken nest included), かせき 32, かいがら 7, shared between the two of us (the first `find` of
+(Critterpedia) in きろく: さかな 33, むし 67 (the wasp, bagworm and spider from a shaken tree and the flea included), かせき 32, かいがら 7, shared between the two of us (the first `find` of
 either). A kind's page lists every entry in the game's order: the official icon (loaded lazily) and the name for the
 found ones, a silhouette (the icon in one shade) and ？？？ for the rest; 「コンプリート！」 when all are in. The names of
 everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん, the first critter of a session

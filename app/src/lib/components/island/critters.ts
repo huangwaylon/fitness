@@ -88,12 +88,18 @@ export type BugId =
   | 'rainbow-stag' | 'horned-dynastid' | 'goliath-beetle' | 'drone-beetle' | 'jewel-beetle' | 'walking-stick' | 'hermit-crab'
   | 'wharf-roach' | 'pill-bug' | 'centipede' | 'snail' | 'paper-kite-butterfly' | 'agrias-butterfly'
   | 'queen-alexandras-birdwing' | 'rajah-brookes-birdwing' | 'monarch-butterfly' | 'atlas-moth' | 'damselfly' | 'long-locust'
-  | 'wasp';
+  | 'wasp' | 'common-bluebottle' | 'great-purple-emperor' | 'madagascan-sunset-moth' | 'mosquito' | 'stinkbug'
+  | 'man-faced-stink-bug' | 'tiger-beetle' | 'earth-boring-dung-beetle' | 'walking-leaf' | 'violin-beetle'
+  | 'citrus-long-horned-beetle' | 'rosalia-batesi-beetle' | 'scarab-beetle' | 'mole-cricket' | 'tarantula' | 'scorpion'
+  | 'flea' | 'bagworm' | 'spider';
 
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers, a dragonfly darts and hovers over the
  *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada or a beetle flies
- *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a bed. */
-export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch' | 'crawl';
+ *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a bed.
+ *  A tarantula or a scorpion stalks the grass at night (it rears up when it's come at: `stalkTap`), a mole cricket
+ *  chirps under a little mound of earth (dug up with a tap), and a bagworm or a spider dangles on its thread from a
+ *  shaken tree (TreeShakes.svelte). */
+export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
 /** Where a crawler keeps to: the front beach (NH's beach and rocks), the grass, the flower beds. */
 type Ground = 'beach' | 'grass' | 'beds';
 
@@ -105,7 +111,7 @@ interface Bug extends Seasonal {
   ground?: Ground;
 }
 
-/** NH bugs that suit this island (no wasps about, only from a shaken nest; nothing that chases, no tarantulas or scorpions): months and hours as in
+/** NH bugs that suit this island (no wasps about, only from a shaken nest): months and hours as in
  *  NH's northern hemisphere (Nookipedia). Spring: the butterflies, the honeybee, the ladybug, the peacock butterfly;
  *  summer: the emperor butterfly at dusk, the dragonflies, the cicadas on the trunks, fireflies at night; autumn: the
  *  red dragonfly, the grasshoppers and the locust, the crickets in the evening, the mantises; winter: the common
@@ -166,7 +172,36 @@ export const BUGS: Record<BugId, Bug> = {
   damselfly: { months: span(11, 2), hours: ALL_DAY, flight: 'dart', weight: 2 },
   'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 },
   // never about on its own (weight 0): only out of a nest shaken from a tree (island/treeShake.ts), netted in time
-  wasp: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', weight: 0 }
+  wasp: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', weight: 0 },
+  // the rest of NH's bugs that this island can hold. Flying: the bluebottle, the great purple emperor and the
+  // Madagascan sunset moth by day, the mosquito on summer evenings
+  'common-bluebottle': { months: span(4, 8), hours: [4, 19], flight: 'flutter', weight: 3 },
+  'great-purple-emperor': { months: span(5, 8), hours: [4, 19], flight: 'flutter', weight: 0.7 },
+  'madagascan-sunset-moth': { months: span(4, 9), hours: [8, 16], flight: 'flutter', weight: 0.7 },
+  mosquito: { months: span(6, 9), hours: [17, 4], flight: 'flutter', weight: 2 },
+  // on the flowers: the stink bugs (the man-faced one at night)
+  stinkbug: { months: span(3, 10), hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 2 },
+  'man-faced-stink-bug': { months: span(3, 10), hours: [19, 8], flight: 'crawl', ground: 'beds', weight: 1.2 },
+  // on the ground: the tiger beetle (it runs), the earth-boring dung beetle, the walking leaf (NH: a leaf under the
+  // trees, here in the grass)
+  'tiger-beetle': { months: span(2, 10), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1 },
+  'earth-boring-dung-beetle': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1.5 },
+  'walking-leaf': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1 },
+  // on the trunks: NH's stump beetles (the island has no stumps: a trunk, like the jewel beetle) and the scarab at night
+  'violin-beetle': { months: [5, 6, 9, 10, 11], hours: ALL_DAY, flight: 'perch', weight: 1 },
+  'citrus-long-horned-beetle': { months: ALL_YEAR, hours: ALL_DAY, flight: 'perch', weight: 1 },
+  'rosalia-batesi-beetle': { months: span(5, 9), hours: ALL_DAY, flight: 'perch', weight: 0.5 },
+  'scarab-beetle': { months: [7, 8], hours: [23, 8], flight: 'perch', weight: 0.5 },
+  // under the lawn: the mole cricket of winter and spring, chirping under a mound of earth
+  'mole-cricket': { months: span(11, 5), hours: ALL_DAY, flight: 'burrow', weight: 1.5 },
+  // in the grass at night, rare: the tarantula (winter) and the scorpion (summer); come at one and it rears up
+  tarantula: { months: span(11, 4), hours: [19, 4], flight: 'stalk', weight: 0.5 },
+  scorpion: { months: span(5, 10), hours: [19, 4], flight: 'stalk', weight: 0.5 },
+  // never about on their own (weight 0): a flea hops off my villager now and then (`fleaJumps`), a bagworm or (at
+  // night) a spider dangles from a shaken tree (island/treeShake.ts)
+  flea: { months: span(4, 11), hours: ALL_DAY, flight: 'hop', weight: 0 },
+  bagworm: { months: ALL_YEAR, hours: ALL_DAY, flight: 'dangle', weight: 0 },
+  spider: { months: ALL_YEAR, hours: [19, 8], flight: 'dangle', weight: 0 }
 };
 
 /** Inside [from, to) of the day, wrapping past midnight when to < from. */
@@ -209,6 +244,28 @@ export function bushBug(month: number, hour: number, r: () => number): BugId | n
   if (oddsAt(BUGS.ladybug, month, hour) > 0 && r() < 0.25) return 'ladybug';
   const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && oddsAt(BUGS[k], month, hour) > 0);
   return flutter.length ? flutter[Math.floor(r() * flutter.length)] : null;
+}
+
+/** A tap on my villager: a flea hops off now and then (NH: villagers sometimes have fleas), 1 in FLEA_ODDS, ×IN_SEASON
+ *  in its NH months. */
+const FLEA_ODDS = 30;
+export const fleaJumps = (month: number, r: () => number): boolean => r() * FLEA_ODDS < (BUGS.flea.months.includes(month) ? IN_SEASON : 1);
+
+// ---------- the ground at night: a tarantula, a scorpion ----------
+
+/** Where a tarantula or a scorpion stands with you: just about, reared up (it has noticed you), or settled again. */
+export type StalkState = 'calm' | 'rear' | 'settled';
+/** How long it stays reared up before it settles (ms). */
+export const REAR_MS = 1600;
+
+/** A tap at a tarantula or a scorpion (`swing`: how close, as the net sees it). NH: come at one too fast and it rears up;
+ *  keep coming while it does and it charges. Here, gently: the first tap on it or near it makes it rear up; a tap while
+ *  it's reared makes it charge (it rushes at you and scuttles off: gone); once it has settled, a tap on it nets it (a
+ *  tap only near it makes it rear again). */
+export function stalkTap(state: StalkState, swing: 'catch' | 'startle' | 'none'): 'catch' | 'rear' | 'charge' | 'none' {
+  if (swing === 'none') return 'none';
+  if (state === 'rear') return 'charge';
+  return state === 'settled' && swing === 'catch' ? 'catch' : 'rear';
 }
 
 // ---------- timing ----------
