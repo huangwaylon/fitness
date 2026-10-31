@@ -52,7 +52,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
     await expect(page.locator('dialog[open]'), name).toHaveCount(0);
   }
   // a flourish is gone within ~1 s, and nothing else moved
-  await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
+  await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 4000 }); // a flourish waits for my villager's walk (≤ 0.9 s)
   expect(page.url()).toBe(url);
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
   await expect(jar).toHaveAttribute('aria-label', jarLabel!);

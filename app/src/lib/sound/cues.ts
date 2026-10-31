@@ -22,6 +22,8 @@ export type Cue =
   | 'buy' | 'badge-met' | 'harvest-receive'
   // scenery taps (island/sceneTaps.ts sceneSfx)
   | `scene-${SceneSfx}`
+  // a walking villager's footsteps (island/IslandScene: by the ground under it)
+  | 'footstep-grass' | 'footstep-sand' | 'footstep-snow'
   // a visitor's own (K.K.'s song); group stretching's tune
   | 'kk-song' | 'stretch';
 
@@ -126,6 +128,10 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-mushroom': { sound: 'pop', gain: 0.7, step: 7, world: true },
   // visitors: a soft pop for a tap; K.K.'s tune (a jingle, only with the music on)
   'scene-visitor': { sound: 'pop', gain: 0.6, world: true },
+  // a walking villager's steps: the scenery's own step sounds, much quieter (at most one per 320 ms, the director's)
+  'footstep-grass': { sound: 'step-grass', gain: 0.3, world: true },
+  'footstep-sand': { sound: 'step-sand', gain: 0.3, world: true },
+  'footstep-snow': { sound: 'step-snow', gain: 0.3, world: true },
   'kk-song': { sound: 'kk-song', world: true },
   // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks)
   stretch: { sound: 'stretch-song', world: true }

@@ -1,6 +1,6 @@
 // Walking (docs/design.md "Walking"): my villager walks to what I tap and does it there (tool in hand), holds up a catch,
-// stays a moment and wanders home; it never ends up over a control, stays a thumb-sized button while it walks, and a
-// sheet stops it where it is.
+// stays a moment and wanders home; the partner's wanders between points of interest with footsteps under it. Neither
+// ends up over a control, mine stays a thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -22,9 +22,9 @@ const centre = (page: Page, sel: string, n = 0) =>
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   });
 /** Controls the standing figure (≈ 0.45 × 0.92 of its height above the feet) overlaps: none, ever. */
-const overlaps = (page: Page) =>
-  page.evaluate(() => {
-    const actor = document.querySelector<HTMLElement>('[data-actor="mine"]')!;
+const overlaps = (page: Page, id = 'mine') =>
+  page.evaluate((id) => {
+    const actor = document.querySelector<HTMLElement>(`[data-actor="${id}"]`)!;
     const fig = actor.querySelector('.villager')!.getBoundingClientRect();
     const m = new DOMMatrixReadOnly(getComputedStyle(actor).transform), s = actor.parentElement!.getBoundingClientRect();
     const x = s.left + m.m41, y = s.top + m.m42, h = fig.height;
@@ -35,7 +35,7 @@ const overlaps = (page: Page) =>
       const hit = r.width && me.x0 < r.right && r.left < me.x1 && me.y0 < r.bottom && r.top < me.y1;
       return hit ? [b.className.split(' ')[0]] : [];
     });
-  });
+  }, id);
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`a tap on a weed: my villager walks there, then pulls it; it never stands over a control (${w}px)`, async ({ page }) => {
@@ -121,4 +121,42 @@ test('a sheet stops the walk where it is', async ({ page }) => {
   await page.waitForTimeout(700);
   expect(await feet(page)).toEqual(a);
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+});
+
+const footsteps = (page: Page) =>
+  page.evaluate(() => ((window as { __cues?: string[] }).__cues ?? []).filter((c) => c.startsWith('footstep-')).length);
+
+for (const [w, h] of [[390, 844], [320, 568]] as const)
+  test(`the partner wanders off to a point of interest and back, footsteps under it, never over a control (${w}px)`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+    await page.goto('?demo&date=2026-11-04T12:00&wander');
+    await expect(ribbon(page)).toBeVisible();
+    const home = await feet(page, 'partner');
+    expect(await footsteps(page)).toBe(0);
+    await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
+    await expect.poll(() => footsteps(page)).toBeGreaterThan(0);
+    await expect(page.locator('[data-actor="partner"].walking')).toHaveCount(0, { timeout: 8000 });
+    const there = await feet(page, 'partner');
+    expect(Math.hypot(there.x - home.x, there.y - home.y)).toBeGreaterThan(20);
+    expect(await overlaps(page, 'partner')).toEqual([]);
+    await page.screenshot({ path: test.info().outputPath(`wander-${w}.png`) });
+    // an outing ends at home
+    await expect.poll(async () => {
+      const f = await feet(page, 'partner');
+      return Math.round(Math.hypot(f.x - home.x, f.y - home.y));
+    }, { timeout: 30_000 }).toBeLessThan(2);
+  });
+
+test('under a sheet the walkers stop and no footstep sounds', async ({ page }) => {
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto('?demo&date=2026-11-04T12:00&wander');
+  await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
+  await ribbon(page).click();
+  await expect(page.locator('dialog[open]')).toBeVisible();
+  const n = await footsteps(page);
+  const a = await feet(page, 'partner');
+  await page.waitForTimeout(1500);
+  expect(await feet(page, 'partner')).toEqual(a);
+  expect(await footsteps(page)).toBe(n);
 });

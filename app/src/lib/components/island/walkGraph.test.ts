@@ -32,10 +32,10 @@ describe('the walk geometry (from the scene constants)', () => {
       }
     }
   });
-  it('homes are the villagers’ spots; the trunks, beds and rock are not walkable; the plaza is open', () => {
+  it('homes are the villagers’ spots; the trunks, beds and rock are not walkable; centre stage is open', () => {
     expect(g.nodes.homeA).toEqual([VILLAGER.x.A, VILLAGER.foot]);
     expect(walkable(g, TREE.x.A, TREE.base - 4)).toBe(false);
-    expect(walkable(g, 195, TREE.base)).toBe(true); // the plaza
+    expect(walkable(g, 195, TREE.base)).toBe(true); // centre stage
     expect(walkable(g, 85, BED_ROWS[0] + 10)).toBe(false); // the left bed
     expect(walkable(g, 195, 20)).toBe(false); // the hedge and the sea behind it
     expect(walkable(g, 195, 400)).toBe(false); // the sea in front
@@ -48,7 +48,7 @@ describe('the walk geometry (from the scene constants)', () => {
     expect(r.at(-1)).toEqual(to);
     sound(g, from, r);
   });
-  it('something standing in the plaza is walked around', () => {
+  it('something standing on centre stage is walked around', () => {
     const from = g.nodes.backA, to = g.nodes.treeB;
     expect(route(g, from, to)).toEqual([to]);
     const r = route(walkGeo({ obstacles: [{ x0: 169, x1: 221, y0: 150, y1: 178 }] }), from, to)!;

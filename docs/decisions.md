@@ -262,7 +262,10 @@ drag or virtual stick, villagers wandering on their own) walk-then-act keeps eve
 already do something and a stick fights the stage and the sheets. Kept snappy: 240 u/s, at most 0.9 s, no walk over
 1.2 s, and the outcome is decided at the tap, so the walk is only cosmetic and a timing game (the bite, the wasps)
 never waits for it. Spots are measured so a standing villager never covers a control. Transitions only, no rAF; a sheet
-stops it. It always animates, reduced motion or not (user).
+stops it. It always animates, reduced motion or not (user). The partner's villager is never driven from this phone: it
+goes about on its own (points of interest, following mine after 8 s away, a chat side by side, its tree when its
+person meets a goal), one villager out at a time, because NH's villagers wander and a second avatar would make the
+other person's taps matter on my phone.
 
 ### Sea creatures by diving, a find kind of their own
 NH's 40 sea creatures come by diving: a bubble spot in the sea takes a fish shadow's turn (1 in 4), so the sea still

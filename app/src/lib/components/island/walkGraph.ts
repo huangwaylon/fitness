@@ -52,8 +52,8 @@ export function walkGeo(extra: WalkExtra = {}): WalkGeo {
   const nodes: Record<string, Pt> = {
     homeA: [xs.A, VILLAGER.foot], homeB: [xs.B, VILLAGER.foot],
     midA: [xs.A, mid], midB: [xs.B, mid], centre: [(xs.A + xs.B) / 2, mid],
-    // the plaza: the open middle, kept for a visitor (the villagers wander there when nobody's visiting)
-    plaza: [CENTRE_STAGE.x, CENTRE_STAGE.base],
+    // centre stage: the open middle, kept for a visitor (the villagers wander there when nobody's visiting)
+    centreStage: [CENTRE_STAGE.x, CENTRE_STAGE.base],
     treeA: [Math.max(inner, TREE.x.A + 40), TREE.base + 18], treeB: [Math.min(390 - inner, TREE.x.B - 40), TREE.base + 18],
     outA: [TREE.x.A - 40, TREE.base + 20], outB: [TREE.x.B + 40, TREE.base + 20],
     backA: [TREE.x.A + 40, lawn.y0 + 30], backB: [TREE.x.B - 40, lawn.y0 + 30], backC: [195, lawn.y0 + 22],

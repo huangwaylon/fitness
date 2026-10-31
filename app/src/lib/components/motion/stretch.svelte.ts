@@ -1,4 +1,4 @@
-// Group stretching's choreography (island/stretching.ts): both villagers (home first: a stroll is cut short and they
+// Group stretching's choreography (island/stretching.ts): both villagers (home first: a walk is cut short and they
 // walk back) and the visitor do the same stretches on the same beat. The villagers run through the director (one motion
 // per pose, busy for the whole routine so idle life keeps out); the visitor isn't a director actor, so it reads
 // `stretch.pose` (Visitor.svelte plays the same keyframes).
@@ -8,7 +8,7 @@ import type { Motion } from './reactions.ts';
 /** The pose everyone is doing now (null between routines), bumped `n` on each. */
 export const stretch = $state<{ pose: Motion | null; n: number }>({ pose: null, n: 0 });
 
-/** How long a villager who is out (a stroll, a walk to something) takes to get home. */
+/** How long a villager who is out (a wander, a walk to something) takes to get home. */
 const HOME_MS = 1600;
 
 /** Run the routine: `poses` of `ms` each. Returns the ms until it starts (0, or the walk home). */

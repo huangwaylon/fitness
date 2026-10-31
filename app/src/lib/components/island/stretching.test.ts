@@ -73,11 +73,11 @@ describe('the routine (director)', () => {
     expect(done).toHaveBeenCalledOnce();
     expect(actors.mine.emote).toBe('mark-note');
   });
-  it('a villager out on a stroll walks home first; the routine starts when both are home', async () => {
-    const { actors, resetAll, stroll } = await import('../motion/director.svelte.ts');
+  it('a villager out on a walk walks home first; the routine starts when both are home', async () => {
+    const { actors, resetAll, walkTo } = await import('../motion/director.svelte.ts');
     const { groupStretch } = await import('../motion/stretch.svelte.ts');
     resetAll();
-    stroll('mine', 30);
+    walkTo('mine', [[30, 0]], { ms: 1600 });
     expect(actors.mine.x - actors.mine.home[0]).toBe(30);
     const wait = groupStretch(POSES, POSE_MS);
     expect(wait).toBe(1600);

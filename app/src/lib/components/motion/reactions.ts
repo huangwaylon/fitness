@@ -108,7 +108,7 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
 
 /** Idle-life actions (design.md "Motion"). */
 export type IdleAction =
-  | 'look' | 'wiggle' | 'hum' | 'hop' | 'stroll' | 'peek' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch' | 'doze';
+  | 'look' | 'wiggle' | 'hum' | 'hop' | 'wander' | 'peek' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch' | 'doze';
 
 interface IdleEntry {
   action: IdleAction;
@@ -129,7 +129,9 @@ export const IDLE_POOL: IdleEntry[] = [
   { action: 'look', weight: 14 },
   { action: 'wiggle', weight: 8 },
   { action: 'hop', weight: 6, day: true },
-  { action: 'stroll', weight: 6, day: true, every: 90_000 },
+  // a walk to a point of interest or a few (island/avatar.ts wander): mine only when I've left it alone a while; the
+  // partner's outings come on their own beat (idle life's tick, below the pool)
+  { action: 'wander', weight: 8, every: 60_000 },
   { action: 'peek', weight: 6, day: true, every: 120_000 }, // a glance up at the jar in the HUD
   { action: 'treeshake', weight: 5, day: true, every: 60_000 },
   { action: 'chat', weight: 8, every: 60_000, pair: true },

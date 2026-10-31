@@ -1,12 +1,13 @@
 // Idle life (design.md "Motion"): one scheduler per live scene. Every 9–15 s one actor does one
-// small background thing from its pool (look around, wiggle, hop, stroll, a glance up at the jar, tree shake,
+// small background thing from its pool (look around, wiggle, hop, wander off to a point of interest, a glance up at
+// the jar, tree shake,
 // chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab
 // is hidden, a sheet is open, or under reduced motion; slows after 3 min without input and stops after
 // 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and
 // stop() cancels them all, so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
-import { actors, addFx, applyStep, awayFromHome, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
+import { actors, addFx, applyStep, awayFromHome, busy, later as directorLater, lastEvent, setEmote, setMotion } from './director.svelte.ts';
 import { jst, reducedMotion } from '#lib/time/clock.ts';
 
 interface IdleContext {
@@ -20,9 +21,17 @@ interface IdleContext {
   scores: () => [number, number];
   /** Shake that actor's own tree (+ a falling leaf). */
   treeShake: (id: 'mine' | 'partner') => void;
+  /** Send a villager off on a walk to a point of interest or a few (island/avatar.ts); false when it can't go now. */
+  wander?: (id: 'mine' | 'partner') => boolean;
   /** Random source (tests). */
   random?: () => number;
 }
+
+/** The partner's outings: at most one per this long (ms), and the chance a tick sends it off when it's free. */
+const PARTNER_WANDER_GAP = 9_000;
+const PARTNER_WANDER_ODDS = 0.5;
+/** Mine wanders on its own only when I haven't touched the island for this long. */
+const MINE_WANDER_IDLE = 120_000;
 
 function pickWeighted<T extends { weight: number }>(items: T[], rnd: () => number): T | null {
   const total = items.reduce((s, i) => s + i.weight, 0);
@@ -90,6 +99,12 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     const r = rnd();
     let id: ActorId = r < 0.4 ? 'partner' : r < 0.8 ? 'mine' : 'host';
     if (id === 'host' && (!actors.host.present || Date.now() - lastHost < 20_000)) id = rnd() < 0.5 ? 'mine' : 'partner';
+    // the partner goes about the island on its own: a walk to a point of interest or a few, every other tick or so
+    if (ctx.wander && !actors.partner.asleep && !busy('partner') && Date.now() - (lastAt['partner:wander'] ?? 0) > PARTNER_WANDER_GAP &&
+      rnd() < PARTNER_WANDER_ODDS && ctx.wander('partner')) {
+      lastAt['partner:wander'] = Date.now();
+      return schedule();
+    }
     if (busy(id)) return schedule(1_500);
     if (id === 'host') hostIdle();
     else villagerIdle(id);
@@ -134,8 +149,8 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
       if (e.hours && !(h >= e.hours[0] && h < e.hours[1])) return false;
       if (e.every && t - (lastAt[`${id}:${e.action}`] ?? 0) < e.every) return false;
       if (e.pair && busy(other)) return false;
-      // one villager on the path at a time
-      if (e.action === 'stroll' && (actors[other].walking || awayFromHome(other))) return false;
+      // one villager out at a time; mine only when left alone a while
+      if (e.action === 'wander' && (!ctx.wander || actors[other].walking || awayFromHome(other) || (id === 'mine' && t - lastInput < MINE_WANDER_IDLE))) return false;
       if (e.action === 'dance' && Math.min(sa, sb) < 70) return false;
       return true;
     }).map((e) => (e.action === 'dance' && Math.min(sa, sb) >= 80 ? { ...e, weight: 15 } : e));
@@ -154,8 +169,10 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
         return setMotion(id, 'hum');
       case 'hop':
         return setMotion(id, 'hop');
-      case 'stroll':
-        return stroll(id, 40, () => setMotion(id, 'wiggle'));
+      case 'wander':
+        me.busyUntil = 0; // the walk sets its own
+        ctx.wander?.(id);
+        return;
       case 'peek':
         // a glance up at the jar (in the sky HUD beside the ribbon since it left the island): turn to it, then home
         applyStep(id, { actor: id, face: 'jar', motion: 'turn' });

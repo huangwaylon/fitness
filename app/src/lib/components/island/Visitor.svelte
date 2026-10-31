@@ -25,7 +25,7 @@
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { ISLAND_SEED, zodiacOf } from './beach.ts';
-  import { approach } from './avatar.ts';
+  import { approach, presence } from './avatar.ts';
   import { showerAt } from './meteor.ts';
   import { CENTRE_STAGE, VILLAGER } from './scene.ts';
   import { VISITORS, visitorAt, visitorLine, type VisitorId } from './visitors.ts';
@@ -241,13 +241,24 @@
     if (!id || !r || !enabled()) return false;
     const pad = 8; // a finger's slack around the figure (px)
     if (px < r.left - pad || px > r.right + pad || py < r.top - pad || py > r.bottom + pad) return false;
-    // my villager walks over to talk (avatar.ts); they speak once it's there
+    // my villager walks over to talk (avatar.ts); they speak once it's there (a tap meanwhile is the same tap)
+    if (talkTimer) return true;
     const { ms } = spot ? approach(spot.x, spot.y) : { ms: 0 };
-    clearTimeout(talkTimer);
-    if (ms) talkTimer = setTimeout(() => talk(id), ms);
-    else void talk(id);
+    if (!ms) {
+      void talk(id);
+      return true;
+    }
+    talkTimer = setTimeout(() => {
+      talkTimer = undefined;
+      void talk(id);
+    }, ms);
     return true;
   }
+  // centre stage and the shore in front of it are the visitor's while one is out (the villagers wander elsewhere)
+  $effect(() => {
+    presence.visitor = !!(who && spot);
+    return () => (presence.visitor = false);
+  });
   let talkTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(talkTimer));
 </script>

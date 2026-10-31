@@ -54,13 +54,15 @@
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
-  import { BEDS, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
+  import { BEDS, CENTRE_STAGE, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
-  import { actors, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
+  import { actors, onStep, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
+  import { hitStage } from './sceneTaps.ts';
+  import { cue } from '#lib/sound/cues.ts';
   import { depthZ, walkGeo } from './walkGraph.ts';
-  import { approach, attachAvatar, freeze, snapHome, thaw, SNAP_HOME_MS } from './avatar.ts';
+  import { approach, attachAvatar, presence, freeze, snapHome, thaw, SNAP_HOME_MS } from './avatar.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
@@ -204,7 +206,8 @@
   // My villager walks to what I tap (avatar.ts): the walk geometry from the scene's constants, a spot is fine when a
   // villager standing there covers no control and isn't hidden behind a canopy (measured) and
   // stays on screen, and the feet's live position (a walk re-targets from mid-step).
-  const geo = walkGeo();
+  // with a visitor on centre stage the villagers walk around them (and wander elsewhere: wander.ts)
+  const geo = walkGeo(), geoVisited = walkGeo({ obstacles: [{ x0: CENTRE_STAGE.x - 18, x1: CENTRE_STAGE.x + 18, y0: CENTRE_STAGE.base - 10, y1: CENTRE_STAGE.base + 6 }] });
   function feet(id: 'mine' | 'partner'): readonly [number, number] {
     const el = sceneEl?.querySelector<HTMLElement>(`[data-actor="${id}"]`), g = stageGeo(sceneEl);
     if (!el || !g) return [actors[id].x, actors[id].y];
@@ -223,14 +226,22 @@
   }
   onMount(() => {
     if (!live) return;
-    const off = attachAvatar({ geo: () => geo, clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
+    const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited : geo), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
     let hiddenAt = 0;
     const vis = () => {
       if (document.hidden) hiddenAt = Date.now();
       else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) snapHome();
     };
     document.addEventListener('visibilitychange', vis);
+    // footsteps by the ground under the walker (quiet world cues: silent under a sheet; the director spaces them)
+    const offStep = onStep((_id, x, y) => {
+      if (covered || life.hidden) return;
+      const k = hitStage(x, y).kind;
+      if (k === 'sand') cue('footstep-sand');
+      else if (k !== 'sea') cue(season === 'winter' ? 'footstep-snow' : 'footstep-grass');
+    });
     return () => {
+      offStep();
       off();
       document.removeEventListener('visibilitychange', vis);
     };
