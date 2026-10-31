@@ -6,7 +6,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { buy, saveMenu, setMoveGoal, undoSpend } from './actions.ts';
+import { addWorkout, buy, editWorkout, saveMenu, setGoalWeight, setGym, setMetric, setMoveGoal, setWeight, undoSpend } from './actions.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 
@@ -69,9 +69,37 @@ describe('wallet actions', () => {
   });
 
   it('setMoveGoal sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', () => {
-    for (const bad of [99, 2001, NaN, Infinity]) expect(setMoveGoal(bad)).toEqual({ ok: false });
+    for (const bad of [99, 2001, NaN, Infinity]) expect(setMoveGoal('A', bad)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    expect(setMoveGoal(549.6).ok).toBe(true);
-    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { key: 'moveGoal', value: 550 }]]);
+    expect(setMoveGoal('B', 549.6).ok).toBe(true);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'moveGoal', value: 550 }]]);
+  });
+});
+
+describe('きろく edits name whose data (ADR 0023)', () => {
+  it('every edit carries an explicit person, mine or the partner’s', () => {
+    const date = '2026-11-17';
+    expect(setMetric('B', date, 'steps', 4000.4).ok).toBe(true);
+    expect(setGym('B', date, false).ok).toBe(true);
+    expect(setGym('A', '2026-11-18', true).ok).toBe(true);
+    expect(editWorkout('B', 'w1', date, { excluded: true }).ok).toBe(true);
+    expect(addWorkout('B', date, 'Yoga', 30).ok).toBe(true);
+    expect(setWeight('B', date, 61.24).ok).toBe(true);
+    expect(setGoalWeight('B', 58).ok).toBe(true);
+    expect(setGoalWeight('A', null).ok).toBe(true);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([
+      ['metric_set', { person: 'B', date, metric: 'steps', value: 4000 }],
+      ['gym_set', { person: 'B', date, on: false }],
+      ['gym_set', { person: 'A', date: '2026-11-18', on: true }],
+      ['workout_edit', { person: 'B', id: 'w1', excluded: true }],
+      ['workout_add', { person: 'B', id: expect.stringMatching(/^m:[\w-]+$/), date, type: 'Yoga', durationMin: 30 }],
+      ['metric_set', { person: 'B', date, metric: 'weight', value: 61.2 }],
+      ['pref', { person: 'B', key: 'goalWeight', value: 58 }],
+      ['pref', { person: 'A', key: 'goalWeight', value: null }]
+    ]);
+    // the activity edits are held for the undo banner and must land before the week's lock
+    const gym = queued()[1];
+    expect(gym.nextAt).toBeGreaterThan(gym.queuedAt);
+    expect(gym.lockAt).toBe(Date.parse('2026-11-25T04:00:00+09:00'));
   });
 });

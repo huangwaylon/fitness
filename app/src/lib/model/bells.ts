@@ -9,7 +9,7 @@ import { DEFAULT_MENU, ESCALATING_ITEMS, ESCALATION } from '#lib/config/rules.ts
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, isLockedAt, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
-import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
+import { activityAsOf, gymSetAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
 /** `t` for an open week: every row counts. */
 export const LIVE = Infinity;
@@ -30,7 +30,8 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Acti
       exerciseMin: metricAsOf(s, person, date, 'exercise_min', t),
       moveKcal: metricAsOf(s, person, date, 'move_kcal', t),
       standMin: metricAsOf(s, person, date, 'stand_min', t),
-      moveGoal: moveGoalOn(s, person, date, t)
+      moveGoal: moveGoalOn(s, person, date, t),
+      gymSet: gymSetAsOf(s, person, date, t)
     })),
     workouts: act.workouts.filter((w) => inWeek(w.date)),
     arrivals: act.arrivals.filter((a) => inWeek(a.date))

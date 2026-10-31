@@ -14,11 +14,18 @@ export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'str
   w.durationMin >= STRENGTH.minWorkoutMin &&
   (typeof w.strengthOverride === 'boolean' ? w.strengthOverride : (STRENGTH.autoTypes as readonly string[]).includes(w.type));
 
-/** Gym days of a week (max one per date): strength workouts and gym arrivals. */
-function gymDaysOf(workouts: readonly Workout[], arrivals: readonly GymArrival[]): Set<LocalDate> {
+/**
+ * Gym days of a week (max one per date): strength workouts and gym arrivals, then the きろく / tree-popup overrides
+ * (`gym_set`, ADR 0023): `true` makes a date a gym day without either, `false` cancels it whatever they say.
+ */
+export function gymDaysOf(workouts: readonly Workout[], arrivals: readonly GymArrival[], overrides: ReadonlyMap<LocalDate, boolean> = new Map()): Set<LocalDate> {
   const set = new Set<LocalDate>();
   for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
   for (const a of arrivals) set.add(a.date);
+  for (const [date, on] of overrides) {
+    if (on) set.add(date);
+    else set.delete(date);
+  }
   return set;
 }
 
@@ -75,6 +82,8 @@ export interface EarnDay {
   standMin: number | null;
   /** kcal (`pref` moveGoal in force that day, else PEOPLE[p].moveGoal). */
   moveGoal: number;
+  /** A `gym_set` override of the day's 🥥 (ADR 0023): true = a gym day, false = not, absent/null = automatic. */
+  gymSet?: boolean | null;
 }
 
 /** One person's week as of some time: the inputs `earnWeek` needs (dates outside the week are ignored). */
@@ -136,7 +145,7 @@ export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple
  * - 🍐 floor(moveAtGoal × min(kcal, goal) / goal), the goal being the person's Move goal in force that day.
  * - 🍒 perStandMin × whole stand minutes, up to goals.standMin.
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
- * - 🥥 gymDay on a gym day (max 1/day): a strength workout or any gym arrival.
+ * - 🥥 gymDay on a gym day (max 1/day): a strength workout or any gym arrival, unless a `gym_set` says otherwise.
  * With a milestone curve (v2) 🍑🍐🍒🍎 instead pay `milestoneBells` at the last milestone reached (0 below the first).
  * Badges (+badges.bells each): days at the goal ≥ exerciseDays / moveDays / standDays / stepDays / gymDays.
  */
@@ -147,7 +156,9 @@ export function earnWeek(input: EarnInput): WeekEarning {
   const rows = new Map<LocalDate, EarnDay>();
   for (const d of input.days) if (inWeek.has(d.date) && !rows.has(d.date)) rows.set(d.date, d);
   const workouts = input.workouts.filter((w) => inWeek.has(w.date));
-  const gym = gymDaysOf(workouts, input.arrivals.filter((a) => inWeek.has(a.date)));
+  const overrides = new Map<LocalDate, boolean>();
+  for (const d of input.days) if (inWeek.has(d.date) && typeof d.gymSet === 'boolean' && !overrides.has(d.date)) overrides.set(d.date, d.gymSet);
+  const gym = gymDaysOf(workouts, input.arrivals.filter((a) => inWeek.has(a.date)), overrides);
   const manual = manualMinutesByDay(workouts);
   const exGoalMilli = r.goals.exerciseMin * 1000;
 

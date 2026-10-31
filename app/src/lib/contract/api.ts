@@ -26,8 +26,9 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
 export const EVENT_TYPES = [
   'spend', 'harvest', 'highfive', 'pref',
-  // History and editing (docs/design/history-and-editing.md §4): own data only, open weeks only (the model decides).
-  'metric_set', 'workout_edit', 'workout_add', 'spend_void'
+  // History and editing (docs/design/history-and-editing.md §4): anyone's data (`data.person`), open weeks only (the
+  // model decides). `gym_set`: a 🥥 day turned on or off by hand (ADR 0023).
+  'metric_set', 'workout_edit', 'workout_add', 'gym_set', 'spend_void'
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -51,8 +52,37 @@ export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) |
  */
 export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'] as const;
 
+/**
+ * The edit events whose `data.person` names whose data they change (ADR 0023): either person may edit either person's
+ * data. Absent = the sender. `pref` takes it only for the goals (`PERSON_PREF_KEYS`).
+ */
+const PERSON_EDIT_TYPES = ['metric_set', 'workout_edit', 'workout_add', 'gym_set', 'pref'] as const;
+/** The `pref` keys another person may set for you: the two goals. Everything else in `pref` is the sender's own. */
+const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal'] as const;
+
+export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
+
+/**
+ * Whose data an edit event changes: `data.person` when present (it must be `A` or `B`), else the sender. Null for an
+ * invalid `person` (the script refuses it; the model ignores the event), or a `person` on a type or `pref` key that
+ * doesn't take one. Shared by the Apps Script and the model.
+ */
+export function editTarget(type: string, d: Record<string, unknown>, sender: PersonId): PersonId | null {
+  if (d.person === undefined) return sender;
+  if (!isPersonId(d.person)) return null;
+  if (!(PERSON_EDIT_TYPES as readonly string[]).includes(type)) return null;
+  if (type === 'pref' && !(PERSON_PREF_KEYS as readonly unknown[]).includes(d.key)) return null;
+  return d.person;
+}
+
 /** A local date `YYYY-MM-DD`. */
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+/** A real calendar date `YYYY-MM-DD` (not 2026-02-30). */
+export function isLocalDate(v: unknown): v is string {
+  if (typeof v !== 'string' || !DATE_RE.test(v)) return false;
+  const ms = Date.parse(`${v}T00:00:00Z`);
+  return !Number.isNaN(ms) && new Date(ms).toISOString().slice(0, 10) === v;
+}
 /** A `workout_add` id: `m:` + up to 100 word characters or dashes. */
 export const MANUAL_ID_RE = /^m:[\w-]{1,100}$/;
 

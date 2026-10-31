@@ -3,6 +3,7 @@
 import type { GymArrival, LocalDate, PersonId, WeekKey, Workout } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
+import { gymDaysOf } from '#lib/scoring/bells.ts';
 import { allWorkouts, latestAt, latestTimed, type State } from './state.ts';
 
 /** An inclusive date window (every caller passes one: perf is weeks × rows). */
@@ -54,3 +55,14 @@ export function activityAsOf(s: State, person: PersonId, t: number, dates: Dates
   return { workouts: workoutsAsOf(s, person, t, dates), arrivals: arrivalsAsOf(s, person, t, dates) };
 }
 
+
+/** The day's `gym_set` as of T (ADR 0023): true / false by hand, or null (automatic: arrivals and strength workouts). */
+export const gymSetAsOf = (s: State, person: PersonId, date: LocalDate, t: number): boolean | null =>
+  latestAt(s.gymSets[person].get(date), t) ?? null;
+
+/** Whether `date` is a 🥥 day for `person` as of T: the same rule as earnWeek (scoring/bells.ts gymDaysOf). */
+export function gymDayAsOf(s: State, person: PersonId, date: LocalDate, t: number): boolean {
+  const dates = { from: date, to: date };
+  const set = gymSetAsOf(s, person, date, t);
+  return gymDaysOf(workoutsAsOf(s, person, t, dates), arrivalsAsOf(s, person, t, dates), set === null ? undefined : new Map([[date, set]])).has(date);
+}

@@ -361,6 +361,8 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     { type: 'workout_edit', data: { id: 'Yoga@2026-10-28T09:00:00.000Z', strength: false } },
     { type: 'workout_edit', data: { id: 'w1', strength: null, excluded: true } },
     { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
+    { type: 'gym_set', data: { person: 'A', date: '2026-10-28', on: true } },
+    { type: 'gym_set', data: { date: '2026-10-28', on: false } },
     { type: 'spend_void', data: { spendId: 'sp-1' } }
   ];
 
@@ -422,6 +424,55 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     ];
     bad.forEach((e, i) => expect(a('event', { id: `c${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events')).toEqual([]);
+  });
+
+  it('gym_set: a real date and a boolean `on`, nothing looser (ADR 0023)', () => {
+    const bad = [
+      { date: '2026-10-28' },
+      { date: '2026-10-28', on: 'true' },
+      { date: '2026-10-28', on: 1 },
+      { date: '2026-10-28', on: null },
+      { date: '2026-02-30', on: true },
+      { date: '2026-13-01', on: true },
+      { date: '2026-10-28T00:00:00Z', on: true },
+      { date: 20261028, on: true },
+      { on: true },
+      { date: '2026-10-28', on: true, person: 'C' },
+      { date: '2026-10-28', on: true, person: 'a' },
+      { date: '2026-10-28', on: true, person: null }
+    ];
+    bad.forEach((d, i) => expect(a('event', { id: `g${i}`, type: 'gym_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' }));
+    expect(data('events')).toEqual([]);
+    expect(b('event', { id: 'g-ok', type: 'gym_set', data: { person: 'A', date: '2026-10-28', on: false } })).toEqual({ ok: true });
+    expect(data('events').map((r) => [r[1], r[3]])).toEqual([['B', 'gym_set']]);
+  });
+
+  it('`person` (whose data, ADR 0023): A or B on the edit types and the goal prefs; refused anywhere else', () => {
+    const ok = [
+      { type: 'metric_set', data: { person: 'B', date: '2026-10-28', metric: 'steps', value: 9800 } },
+      { type: 'metric_set', data: { person: 'A', date: '2026-10-28', metric: 'weight', value: 68.4 } },
+      { type: 'workout_edit', data: { person: 'B', id: 'w1', excluded: true } },
+      { type: 'workout_add', data: { person: 'B', id: 'm:9', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
+      { type: 'pref', data: { person: 'B', key: 'moveGoal', value: 450 } },
+      { type: 'pref', data: { person: 'B', key: 'goalWeight', value: null } }
+    ];
+    ok.forEach((e, i) => expect(a('event', { id: `p${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
+    const bad = [
+      { type: 'metric_set', data: { person: 'C', date: '2026-10-28', metric: 'steps', value: 1 } },
+      { type: 'metric_set', data: { person: '', date: '2026-10-28', metric: 'steps', value: 1 } },
+      { type: 'metric_set', data: { person: ['B'], date: '2026-10-28', metric: 'steps', value: 1 } },
+      { type: 'workout_edit', data: { person: 'b', id: 'w1', excluded: true } },
+      { type: 'workout_add', data: { person: 2, id: 'm:8', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
+      { type: 'pref', data: { person: 'B', key: 'locale', value: 'en' } }, // only the goals take a person
+      { type: 'pref', data: { person: 'B', key: 'villagerName', value: 'うめ' } },
+      { type: 'spend_void', data: { person: 'B', spendId: 'sp-1' } },
+      { type: 'spend', data: { person: 'B', spendId: 's1', item: 'ice', label: 'アイス', bells: 1 } },
+      { type: 'highfive', data: { person: 'B' } },
+      { type: 'metric_set', data: { person: 'B', date: '2026-02-29', metric: 'steps', value: 1 } }, // not a leap year
+      { type: 'workout_add', data: { person: 'B', id: 'm:7', date: '2026-10-32', type: 'Yoga', durationMin: 30 } }
+    ];
+    bad.forEach((e, i) => expect(a('event', { id: `q${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
+    expect(data('events').map((r) => [r[1], r[3], JSON.parse(String(r[4])).person])).toEqual(ok.map((e) => ['A', e.type, e.data.person]));
   });
 
   it('a duplicate edit id is acknowledged and ignored', () => {

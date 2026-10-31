@@ -1,11 +1,11 @@
-// Snapshot rows → validated, indexed state. Who may edit what, which weeks are open and what the wallet covers are
-// read-time rules here (an invalid event is ignored, not refused), so the sheet stays a dumb append-only log.
+// Snapshot rows → validated, indexed state. Whose data an edit changes (`data.person`, ADR 0023), which weeks are open
+// and what the wallet covers are read-time rules here (an invalid event is ignored, not refused), so the sheet stays a dumb append-only log.
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
 import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import {
-  DATE_RE, EVENT_TYPES, isId, GYM_LABEL_MAX_CHARS, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
+  DATE_RE, editTarget, EVENT_TYPES, isId, isLocalDate, isPersonId, GYM_LABEL_MAX_CHARS, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
   type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
@@ -52,6 +52,8 @@ export const editableAt = (date: LocalDate, t: number): boolean => date <= local
 // ---------- records ----------
 
 interface Timed<T> { at: number; v: T }
+/** An accepted edit of someone's data: `by` made it (ADR 0023: either person edits either person's data). */
+interface Edit<T> extends Timed<T> { by: PersonId }
 
 interface WorkoutRec {
   at: number;
@@ -64,6 +66,8 @@ interface WorkoutRec {
   avgHr: number | null;
   /** A `workout_add` (Watch forgotten), not an ingested Health workout. */
   manual?: true;
+  /** Who added it by hand (a `workout_add`'s sender). */
+  by?: PersonId;
 }
 
 /** A gym arrival: a strength day on its Tokyo date, whatever its label. */
@@ -79,8 +83,8 @@ interface GymRec {
   date: LocalDate;
 }
 
-/** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. */
-interface WorkoutEditRec { at: number; person: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
+/** A `workout_edit` field change: `strength` (null = automatic) or `excluded`. `person`: whose workout; `by`: who changed it. */
+interface WorkoutEditRec { at: number; person: PersonId; by: PersonId; id: string; strength?: boolean | null; excluded?: boolean }
 /** A buy from the wallet (ADR 0022): `{spendId, item, label, bells}`. */
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: string; label: string; bells: number }
 
@@ -95,15 +99,20 @@ export interface State {
   bellSpends: BellSpendRec[];
   /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
   menu: Timed<WalletItem[]>[];
-  /** Accepted activity `metric_set` (steps, minutes) per person, keyed `date|metric`, ascending `at`. */
-  metricSets: Record<PersonId, Map<string, Timed<number>[]>>;
+  /** Accepted activity `metric_set` (steps, minutes) per person edited, keyed `date|metric`, ascending `at`. */
+  metricSets: Record<PersonId, Map<string, Edit<number>[]>>;
+  /**
+   * Accepted `gym_set` per person, keyed by date, ascending `at` (ADR 0023): the latest makes the date a 🥥 day (true)
+   * or not (false), whatever its arrivals and strength workouts say.
+   */
+  gymSets: Record<PersonId, Map<LocalDate, Edit<boolean>[]>>;
   /**
    * Body weight (ADR 0020), kept apart from the activity metrics so the economy can't read it: ingested `weight` rows
    * and accepted `metric_set {metric:'weight'}` per person, keyed by date, ascending `at`. A day's weight is the latest
    * of the two (`model/weight.ts`).
    */
   weights: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
-  weightSets: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
+  weightSets: Record<PersonId, Map<LocalDate, Edit<number>[]>>;
   /** Accepted `workout_edit`s (and a `workout_add`'s strength choice), ascending `at`. */
   workoutEdits: WorkoutEditRec[];
   /** Indexes of `workoutEdits` per workout key `person|id`. */
@@ -117,7 +126,7 @@ export interface State {
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (ADR 0021 §5; `moveGoalOn` picks the one in force). */
-  moveGoals: Record<PersonId, Timed<number>[]>;
+  moveGoals: Record<PersonId, Edit<number>[]>;
   /** Newest metrics/workouts row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
   /** The demo's calendar; null for real data. */
@@ -160,7 +169,6 @@ function normDate(v: unknown): LocalDate | null {
   }
 }
 
-const isPerson = (p: unknown): p is PersonId => p === 'A' || p === 'B';
 const num = (v: unknown): number | null => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
 
 function parseData(d: unknown): Record<string, unknown> | null {
@@ -177,7 +185,7 @@ function parseData(d: unknown): Record<string, unknown> | null {
 function sortedByAt<T extends readonly unknown[]>(rows: T[]): { r: T; at: number }[] {
   return rows
     .map((r, i) => ({ r, at: instantOrNull(r[0]), i }))
-    .filter((x): x is { r: T; at: number; i: number } => x.at !== null && isPerson(x.r[1]))
+    .filter((x): x is { r: T; at: number; i: number } => x.at !== null && isPersonId(x.r[1]))
     .sort((x, y) => x.at - y.at || x.i - y.i);
 }
 
@@ -197,6 +205,7 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
     bellSpends: [],
     menu: [],
     metricSets: { A: new Map(), B: new Map() },
+    gymSets: { A: new Map(), B: new Map() },
     weights: { A: new Map(), B: new Map() },
     weightSets: { A: new Map(), B: new Map() },
     workoutEdits: [],
@@ -265,8 +274,10 @@ export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | n
   for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    // A type the server wouldn't accept (a hand edit of the sheet) is ignored.
-    if (d && (EVENT_TYPES as readonly string[]).includes(type)) ON_EVENT[type](c, person, at, d);
+    // A type the server wouldn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
+    if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
+    const target = editTarget(type, d, person);
+    if (target) ON_EVENT[type](c, target, at, d, person);
   }
   // The per-workout lookups are indexes of workoutEdits (one source).
   for (const e of s.workoutEdits) {
@@ -285,7 +296,8 @@ interface Ctx {
   workoutById: Map<string, WorkoutRec>;
 }
 type Data = Record<string, unknown>;
-type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data) => void;
+/** `person`: whose data the event changes (`data.person`, else the sender); `by`: the sender. */
+type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data, by: PersonId) => void;
 
 const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
 const MENU_ID_RE = /^[\w-]+$/;
@@ -322,8 +334,8 @@ const isStrengthChoice = (v: unknown): v is boolean | null => v === null || type
 
 /**
  * One handler per event type: each accepts (indexes) the event or ignores it. The edits (history-and-editing.md §4)
- * always have the sender as subject, so the partner's data is unreachable; activity edits only count while the day's
- * week is open (§4.3).
+ * change `person`'s data (either person's, ADR 0023) and remember `by`; activity edits only count while the day's week
+ * is open (§4.3).
  */
 const ON_EVENT: Record<EventType, OnEvent> = {
   spend({ s }, person, at, d) {
@@ -335,31 +347,37 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
     s.bellSpends.push({ at, person, spendId, item: d.item, label, bells });
   },
-  metric_set({ s }, person, at, d) {
+  metric_set({ s }, person, at, d, by) {
     const date = normDate(d.date);
     const metric = d.metric;
     if (!date) return;
     if (metric === 'weight') {
       // A weight (ADR 0020) earns nothing, so no week lock: any day up to today, one decimal, 20–300 kg.
-      if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value });
+      if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value, by });
       return;
     }
     if (!isActivityMetric(metric) || !validMetricValue(metric, d.value)) return;
-    if (editableAt(date, at)) push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value });
+    if (editableAt(date, at)) push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value, by });
   },
-  workout_edit({ s, workoutById }, person, at, d) {
+  gym_set({ s }, person, at, d, by) {
+    // A 🥥 day by hand (ADR 0023): on even without an arrival, off even with one or a strength workout. It earns, so
+    // only in an open week, like the other activity edits.
+    if (!isLocalDate(d.date) || typeof d.on !== 'boolean' || !editableAt(d.date, at)) return;
+    push(s.gymSets[person], d.date, { at, v: d.on, by });
+  },
+  workout_edit({ s, workoutById }, person, at, d, by) {
     if (typeof d.id !== 'string') return;
     const w = workoutById.get(`${person}|${d.id}`);
     if (!w || w.at > at || !editableAt(w.date, at)) return;
     const strength = isStrengthChoice(d.strength) ? d.strength : undefined;
     const excluded = typeof d.excluded === 'boolean' ? d.excluded : undefined;
     if (strength === undefined && excluded === undefined) return;
-    const rec: WorkoutEditRec = { at, person, id: d.id };
+    const rec: WorkoutEditRec = { at, person, by, id: d.id };
     if (strength !== undefined) rec.strength = strength;
     if (excluded !== undefined) rec.excluded = excluded;
     s.workoutEdits.push(rec);
   },
-  workout_add({ s, workoutById }, person, at, d) {
+  workout_add({ s, workoutById }, person, at, d, by) {
     const date = normDate(d.date);
     const id = typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) ? d.id : null;
     const dur = d.durationMin;
@@ -370,10 +388,10 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     // No clock time is asked for: it sits at noon (Tokyo).
     const startAt = `${date}T12:00:00+09:00`;
     const endAt = new Date(Date.parse(startAt) + dur * 60_000).toISOString();
-    const w: WorkoutRec = { at, id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true };
+    const w: WorkoutRec = { at, id, date, type: d.type, startAt, endAt, durationMin: dur, avgHr: null, manual: true, by };
     workoutById.set(key, w);
     s.manualWorkouts[person].push(w);
-    if (isStrengthChoice(d.strength)) s.workoutEdits.push({ at, person, id, strength: d.strength });
+    if (isStrengthChoice(d.strength)) s.workoutEdits.push({ at, person, by, id, strength: d.strength });
   },
   spend_void({ s }, person, at, d) {
     const spendId = d.spendId;
@@ -390,7 +408,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   highfive({ s }, person, at) {
     s.highfives.push({ at, person });
   },
-  pref({ s }, person, at, d) {
+  pref({ s }, person, at, d, by) {
     if (d.key === 'menu') {
       const items = parseMenu(d.value);
       if (items) s.menu.push({ at, v: items });
@@ -399,7 +417,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (d.key === 'moveGoal') {
       // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
       const v = d.value;
-      if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v });
+      if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v, by });
       return;
     }
     const p = s.prefs[person];
