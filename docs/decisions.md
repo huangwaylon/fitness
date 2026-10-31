@@ -230,13 +230,13 @@ the economy; one rule table keeps the next event (Toy Day, the countdown) a smal
 side's (the hour's track), not here.
 
 ### The rest of NH's bugs: what the island can hold
-Of NH's 80 bugs the island has 67: every one whose NH behaviour has a faithful place here. NH's stumps are the
+Of NH's 80 bugs the island has 70: every one whose NH behaviour has a faithful place here. NH's stumps are the
 trunks (as the jewel beetle already was); the tarantula and the scorpion are kept, but gentle: no fainting, the first
 tap makes one rear up, a second while it's reared makes it charge off, and once it settles a tap nets it (NH's "wait
 for it to calm down"); a flea hops off my villager now and then on a tap (NH: villagers carry fleas); the bagworm and
-the spider dangle from a shaken tree; the mole cricket chirps under a mound (NH: heard, then dug up). Left out until
-the island has the thing they need: the pondskater, the diving beetle and the giant water bug (a pond or river); the
-seven palm-tree bugs (blue weevil beetle, cyclommatus, golden and giraffe stags, horned atlas, elephant and hercules:
+the spider dangle from a shaken tree; the mole cricket chirps under a mound (NH: heard, then dug up); the pondskater,
+the diving beetle and the giant water bug keep to the pond's water. Left out until the island has the thing they need:
+the seven palm-tree bugs (blue weevil beetle, cyclommatus, golden and giraffe stags, horned atlas, elephant and hercules:
 the island's trees are hardwoods, and the Goliath beetle already stands in on the trunks); the dung beetle (snowballs);
 the ant and the fly (rotten turnips, candy, trash on the ground). Why: the user wants more to catch, faithful to NH;
 a bug in the wrong place reads as a mistake, and these few need scenery the island doesn't have yet.
@@ -289,6 +289,23 @@ shadow in time (the quickest sometimes get clean away). They are their own ず�
 NH finds while diving is a shell (かいがら), so its kind needs nothing new. Pascal (a scallop for a pearl) is left to the
 visitors. Why: the user wants more to catch, faithful to NH and not stiffly seasonal; a dive spot reads as NH's and
 costs one small layer, and the creatures' data, names, lines and sprites all load only when first needed.
+
+### The pond and the museum
+For fun, frequent and NH-faithful (user), and never paying: no ベル from either.
+- **One pond holds every freshwater fish.** The island has no river, so NH's 46 river, river-mouth, clifftop and pond
+  fish all come to one small pond at the back, as often as the sea's (a visit fills the sea, then the pond), fished
+  exactly like the sea (one fishing code, two water boxes). Their table is its own chunk, fetched with the pond's first
+  shadow. A catch is a ずかん find of kind `fish`; the script checks a find's id by shape, not against a list, so the new
+  ids needed no script change. NH's three water bugs (pondskater, diving beetle, giant water bug) keep to its water.
+  Why: NH's fishing is half freshwater; a river would not fit the stage, a pond does.
+- **The museum is the ずかん's door.** NH's upgraded museum (the official render, not the early tent) stands at the back
+  in the middle; a tap is one line from Blathers (drowsy by day, lively at night, NH's owl), then the panel opens on
+  きろく's ずかん when his box closes. One page only, so the door never makes you wait; a second tap goes straight in.
+- **In the hedge's row.** The island got only a little deeper, so the pond and the museum take the places of four hedge
+  bushes at the back (the back row reads bush · pond · museum · bush · bush), keeping the centre stage free for
+  visitors. The museum is a control for taps and for what stands on the lawn, but a passing balloon or plate may sit
+  over it when nothing else has room (it's a building, like the hedge it replaced).
+- **No reduced-motion branches** (user decision: always animate); all of it is transform and opacity.
 
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`

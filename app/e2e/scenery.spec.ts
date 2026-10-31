@@ -39,7 +39,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   const url = page.url();
 
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
-    ['bush', () => stagePoint(page, 195, 58), 'bush'],
+    ['bush', () => stagePoint(page, 283, 40), 'bush'], // a bush on the right of the back row (the museum stands in the middle)
     ['flower', () => stagePoint(page, 63, 283), 'flower'],
     ['grass', () => stagePoint(page, 195, 228), 'grass'],
     ['sea', () => openSea(page), 'splash'],

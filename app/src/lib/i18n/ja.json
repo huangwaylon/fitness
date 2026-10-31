@@ -495,5 +495,15 @@
   "visitor.surprise": "おまかせ",
   "visitor.stop": "ストップ",
   "visitor.keep": "つづけて",
-  "visitor.other": "ほかの 曲"
+  "visitor.other": "ほかの 曲",
+  "museum.label": "はくぶつかん：ずかんを ひらく",
+  "museum.blathers": "フータ",
+  "museum.day.0": "ホ… ホー？ むにゃ… おっと、ようこそ はくぶつかんへ！",
+  "museum.day.1": "ふわぁ… ホー… ひるまは どうにも ねむくて いけませんな",
+  "museum.day.2": "…ZZZ… はっ！ ホー！ これは これは、いらっしゃい",
+  "museum.day.find": "ホ… ホー… {name}を 見つけたとか… むにゃ…",
+  "museum.night.0": "ホー！ ようこそ！ 夜の はくぶつかんは いいものですぞ！",
+  "museum.night.1": "ホーホー！ 今夜も ずかんを ごらんに なりますかな？",
+  "museum.night.2": "ホー！ この時間は 目が さえて しかたありません！",
+  "museum.night.find": "ホー！ さいきん {name}を 見つけたそうですな！"
 }

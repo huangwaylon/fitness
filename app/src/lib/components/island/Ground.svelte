@@ -16,7 +16,7 @@
   // Colours: the season tables in tokens.css (Builder A block). The time of day is ONE multiply tint over
   // land and sea (IslandScene .tint), so nothing here is keyed on tod (except the dusk shadow stretch).
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, ROW, SAND, TILE, TREE, outline, smooth } from './scene.ts';
+  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, ROW, SAND, TILE, TREE, hedgeKept, outline, smooth } from './scene.ts';
   import { mulberry32 } from '#lib/random.ts';
 
   interface Props {
@@ -121,7 +121,7 @@
   const LIP_SHADE = smooth(shift(top, (y) => Math.min(drop(y), 5)));
 
   /** Contact shadows of the hedge and the flowers (one per tile). */
-  const BUSH_SH = HEDGE_X.map((x) => ({ x: x + 2, y: HEDGE_BASE + 1, rx: BUSH_U * 0.56, ry: 5.5 }));
+  const BUSH_SH = HEDGE_X.filter((_, i) => hedgeKept(i)).map((x) => ({ x: x + 2, y: HEDGE_BASE + 1, rx: BUSH_U * 0.56, ry: 5.5 }));
   const FLOWER_SH = BED_ROWS.flatMap((y) => [...BED_X.left, ...BED_X.right].map((x) => ({ x: x + 1.5, y: y + 0.5, rx: 11, ry: 3.2 })));
   const SH_TREE = { rx: TREE.h * 0.26, ry: TREE.h * 0.06 };
 </script>

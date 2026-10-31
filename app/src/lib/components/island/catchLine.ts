@@ -3,8 +3,7 @@
 // netted from a shaken tree's nest (TreeShakes.svelte).
 import { i18n, t } from '#lib/i18n/index.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { caption, type BugId, type FishId, type JunkId } from './critters.ts';
-import type { SeaId } from './sea.ts';
+import { caption, type Catch } from './critters.ts';
 
 let chunk: Promise<typeof import('./catchLines.ts')['CATCH_LINES']> | null = null;
 /** Starts (or joins) loading the catch lines. */
@@ -14,7 +13,7 @@ export const loadLines = () => (chunk ??= Promise.all([import('./catchLines.ts')
 export const loadNames = (): Promise<unknown> => import('#lib/i18n/catch.ts');
 
 /** NH's line for `item` in the app's language (「<Player>」 is my よびな), else our caption. */
-export async function catchLine(item: FishId | JunkId | BugId | SeaId): Promise<string> {
+export async function catchLine(item: Catch): Promise<string> {
   const lines = await loadLines().catch(() => null);
   const line = lines?.[item]?.[i18n.locale === 'en' ? 1 : 0];
   if (line) return line.replace('<Player>', week.view?.people[week.view.me].villagerName ?? '');

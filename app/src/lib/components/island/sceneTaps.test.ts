@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { hitStage, inRRect } from './sceneTaps.ts';
-import { BED_ROWS, BED_X, HEDGE_BASE, HEDGE_X, PLATEAU } from './scene.ts';
+import { BED_ROWS, BED_X, HEDGE_BASE, HEDGE_X, PLATEAU, POND, hedgeKept } from './scene.ts';
 
 describe('hitStage', () => {
   it('finds each hedge bush by its tile', () => {
-    HEDGE_X.forEach((x, i) => expect(hitStage(x + 10, HEDGE_BASE - 20)).toEqual({ kind: 'bush', i }));
+    HEDGE_X.forEach((x, i) => hedgeKept(i) && expect(hitStage(x + 10, HEDGE_BASE - 20)).toEqual({ kind: 'bush', i }));
+    // the pond and the museum stand where the middle bushes were
+    expect(hitStage(HEDGE_X[1], HEDGE_BASE - 20).kind).not.toBe('bush');
+    expect(hitStage(HEDGE_X[3], HEDGE_BASE - 20).kind).not.toBe('bush');
   });
   it('finds the flowers, the front row first where the rows overlap', () => {
     expect(hitStage(BED_X.left[0], BED_ROWS[0] - 20)).toEqual({ kind: 'flower', row: 0, col: 0 });
@@ -17,6 +20,11 @@ describe('hitStage', () => {
     expect(hitStage(10, 200)).toEqual({ kind: 'sea' });
     expect(hitStage(400, 200)).toEqual({ kind: 'sea' });
     expect(hitStage(195, 4)).toEqual({ kind: 'sea' }); // the open-sea strip behind the hedge's top
+  });
+  it('finds the pond on the lawn (its water, not its bank)', () => {
+    expect(hitStage(POND.cx, POND.cy)).toEqual({ kind: 'pond' });
+    expect(hitStage(POND.cx + POND.rx * 0.9, POND.cy)).toEqual({ kind: 'pond' });
+    expect(hitStage(POND.cx + POND.rx + 2, POND.cy).kind).not.toBe('pond');
   });
 });
 

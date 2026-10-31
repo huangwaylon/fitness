@@ -12,6 +12,8 @@ export interface Seasonal {
   hours: readonly [number, number];
   /** Relative odds among the critters about at that moment. */
   weight: number;
+  /** A second span of hours (NH's evening cicada: dawn and dusk; the piranha: midday and midnight). */
+  also?: readonly [number, number];
 }
 
 export const ALL_YEAR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
@@ -26,8 +28,21 @@ export type FishId =
   | 'giant-trevally' | 'tuna' | 'blue-marlin' | 'suckerfish' | 'oarfish' | 'saw-shark' | 'hammerhead-shark'
   | 'great-white-shark' | 'whale-shark' | 'barreleye' | 'coelacanth';
 export type JunkId = 'boot' | 'old-tire' | 'empty-can';
+/** Anything the rod or the net brings up: a sea fish, a pond fish (pondFish.ts, its own chunk), junk or a bug. */
+export type Catch = FishId | PondFishId | JunkId | BugId | SeaId;
+/** The pond's fish (their table, pondFish.ts, is its own chunk; the ids are all the island needs up front). */
+const POND_FISH_IDS = [
+  'bitterling', 'pale-chub', 'crucian-carp', 'dace', 'carp', 'koi', 'goldfish', 'pop-eyed-goldfish', 'ranchu-goldfish',
+  'killifish', 'crawfish', 'soft-shelled-turtle', 'snapping-turtle', 'tadpole', 'frog', 'freshwater-goby', 'loach',
+  'catfish', 'giant-snakehead', 'bluegill', 'yellow-perch', 'black-bass', 'tilapia', 'pike', 'pond-smelt', 'sweetfish',
+  'cherry-salmon', 'char', 'golden-trout', 'stringfish', 'salmon', 'king-salmon', 'mitten-crab', 'guppy', 'nibble-fish',
+  'angelfish', 'betta', 'neon-tetra', 'rainbowfish', 'piranha', 'arowana', 'dorado', 'gar', 'arapaima', 'saddled-bichir',
+  'sturgeon'
+] as const;
+export type PondFishId = (typeof POND_FISH_IDS)[number];
+const POND_IDS: ReadonlySet<string> = new Set(POND_FISH_IDS);
 
-interface Fish extends Seasonal {
+export interface Fish extends Seasonal {
   /** NH's shadow size, 1 (tiny) – 6 (huge). */
   size: number;
   /** NH's two odd shadows: a long thin one (the eels) and one with a fin cutting the surface (the sharks, the sunfish,
@@ -93,7 +108,7 @@ export type BugId =
   | 'wasp' | 'common-bluebottle' | 'great-purple-emperor' | 'madagascan-sunset-moth' | 'mosquito' | 'stinkbug'
   | 'man-faced-stink-bug' | 'tiger-beetle' | 'earth-boring-dung-beetle' | 'walking-leaf' | 'violin-beetle'
   | 'citrus-long-horned-beetle' | 'rosalia-batesi-beetle' | 'scarab-beetle' | 'mole-cricket' | 'tarantula' | 'scorpion'
-  | 'flea' | 'bagworm' | 'spider';
+  | 'flea' | 'bagworm' | 'spider' | 'pondskater' | 'diving-beetle' | 'giant-water-bug';
 
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers, a dragonfly darts and hovers over the
  *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada or a beetle flies
@@ -102,13 +117,11 @@ export type BugId =
  *  chirps under a little mound of earth (dug up with a tap), and a bagworm or a spider dangles on its thread from a
  *  shaken tree (TreeShakes.svelte). */
 export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
-/** Where a crawler keeps to: the front beach (NH's beach and rocks), the grass, the flower beds. */
-type Ground = 'beach' | 'grass' | 'beds';
+/** Where a crawler keeps to: the front beach (NH's beach and rocks), the grass, the flower beds, the pond's water. */
+type Ground = 'beach' | 'grass' | 'beds' | 'pond';
 
 interface Bug extends Seasonal {
   flight: Flight;
-  /** A second span of hours (NH's evening cicada: dawn and dusk). */
-  also?: readonly [number, number];
   /** A crawler's ground. */
   ground?: Ground;
 }
@@ -175,6 +188,11 @@ export const BUGS: Record<BugId, Bug> = {
   'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 },
   // never about on its own (weight 0): only out of a nest shaken from a tree (island/treeShake.ts), netted in time
   wasp: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', weight: 0 },
+  // on the pond's water (Pond.svelte; NH: on rivers and ponds): the pondskater skating, the diving beetle surfacing, the
+  // giant water bug at night
+  pondskater: { months: span(5, 9), hours: [8, 19], flight: 'crawl', ground: 'pond', weight: 2 },
+  'diving-beetle': { months: span(5, 9), hours: [8, 19], flight: 'crawl', ground: 'pond', weight: 1.5 },
+  'giant-water-bug': { months: span(4, 9), hours: [19, 8], flight: 'crawl', ground: 'pond', weight: 1 },
   // the rest of NH's bugs that this island can hold. Flying: the bluebottle, the great purple emperor and the
   // Madagascan sunset moth by day, the mosquito on summer evenings
   'common-bluebottle': { months: span(4, 8), hours: [4, 19], flight: 'flutter', weight: 3 },
@@ -212,9 +230,9 @@ export function inHours([from, to]: readonly [number, number], h: number): boole
 }
 /** Odds for a critter in its NH months against out of them: the season is a flavour, never a gate (user). */
 export const IN_SEASON = 3;
-const inHoursOf = (c: Seasonal & { also?: readonly [number, number] }, hour: number) => inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour));
+const inHoursOf = (c: Seasonal, hour: number) => inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour));
 /** Its odds at (month, hour): 0 outside its hours, else its weight, ×IN_SEASON in its months. */
-export const oddsAt = (c: Seasonal & { also?: readonly [number, number] }, month: number, hour: number): number =>
+export const oddsAt = (c: Seasonal, month: number, hour: number): number =>
   !inHoursOf(c, hour) ? 0 : c.weight * (c.months.includes(month) ? IN_SEASON : 1);
 
 /** A weighted pick among the ids that can come at (month, hour), or null. `r` is a uniform [0, 1) source. */
@@ -231,7 +249,7 @@ export function pick<K extends string>(table: Record<K, Seasonal>, month: number
 export const pickFish = (month: number, hour: number, r: () => number): FishId => pick(FISH, month, hour, r) ?? 'sea-bass';
 
 /** What the line brings up from a `fish` shadow: the fish, or 1 in JUNK_ODDS a piece of junk. */
-export function hookItem(fish: FishId, r: () => number): FishId | JunkId {
+export function hookItem<F extends FishId | PondFishId>(fish: F, r: () => number): F | JunkId {
   return r() * JUNK_ODDS < 1 ? JUNK[Math.floor(r() * JUNK.length)] : fish;
 }
 
@@ -278,16 +296,54 @@ export const nextSpawnMs = (r: () => number, first = false): number => (first ? 
 
 /** The share of the sea's turns that bring a bubble spot to dive at instead of a fish shadow (island/sea.ts). */
 export const BUBBLE_SHARE = 0.25;
-/** Which ambient critter to bring on (≤ 1 in the sea, ≤ 1 bug, so ≤ 2 animating at once): whenever the sea is empty a
- *  fish shadow, or 1 in 4 a bubble spot (the sea holds one or the other, so it's no busier than with fish alone);
- *  otherwise a bug when none is about (most visits; `r` keeps a little air between them). */
-export function spawnKind(slots: { sea: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'sea' | 'bug' | null {
+/** Which ambient critter to bring on (≤ 1 in the sea, ≤ 1 in the pond, ≤ 1 bug, so ≤ 3 animating at once): whenever
+ *  the sea is empty a fish shadow, or 1 in 4 a bubble spot (the sea holds one or the other); then whenever the pond is
+ *  empty a pond shadow (as often as the sea's); otherwise a bug when none is about (most visits; `r` keeps a little air
+ *  between them). A slot is true when taken (the pond's too when this screen has none). */
+export function spawnKind(slots: { sea: boolean; pond: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'sea' | 'pond' | 'bug' | null {
   if (!slots.sea) return r() < BUBBLE_SHARE ? 'sea' : 'fish';
+  if (!slots.pond) return 'pond';
   return !slots.bug && bugAbout && r() < 0.8 ? 'bug' : null;
 }
 
 /** How long an ambient critter stays if nobody plays with it (ms). */
 export const STAY_MS = { fish: 45_000, bug: 18_000 } as const;
+
+// ---------- the water: the sea or the pond ----------
+
+/** Where a shadow swims: the sea off the beaches, or the pond at the back of the island. */
+export type Water = 'sea' | 'pond';
+/** An oval in stage units (the pond's water: its centre and half-axes). */
+export interface Oval { cx: number; cy: number; rx: number; ry: number }
+
+/** Inside the oval shrunk to `k` of its size. */
+export const inOval = (o: Oval, x: number, y: number, k = 1): boolean => ((x - o.cx) / (o.rx * k)) ** 2 + ((y - o.cy) / (o.ry * k)) ** 2 <= 1;
+
+/** The water a tap at (x, y) u lands in: the pond's oval (grown by `reach`: the pond is small, a finger's slack around
+ *  its rim still casts into it), else the sea (`sea`: the tap is off the island, beyond the beach), else none. */
+export const waterAt = (pond: Oval | null, x: number, y: number, sea: boolean, reach = 1): Water | null =>
+  pond && inOval(pond, x, y, reach) ? 'pond' : sea ? 'sea' : null;
+/** How far around the pond's water a tap still casts into it (×, the oval's size). */
+export const POND_REACH = 1.6;
+
+/** Where a pond shadow dawdles: the open middle of the water, clear of the rim (a fish's length inside its oval). */
+export const pondBox = (o: Oval): { x0: number; x1: number; y0: number; y1: number } =>
+  ({ x0: o.cx - o.rx * 0.55, x1: o.cx + o.rx * 0.55, y0: o.cy - o.ry * 0.35, y1: o.cy + o.ry * 0.4 });
+
+/** A pond shadow is drawn smaller than the sea's (a small pond, seen from further back): NH's sizes 1–6 still read
+ *  apart, a size 6 still fits. */
+export const POND_SHADOW = 0.6;
+
+/** Where the bobber lands for a tap in the pond (kept a little inside the rim) and where the angler stands: on the
+ *  pond's front rim, a little toward the island's middle. */
+export function pondCast(o: Oval, x: number, y: number): { x: number; y: number; sx: number; sy: number } {
+  const d = Math.hypot((x - o.cx) / o.rx, (y - o.cy) / o.ry);
+  const k = d > 0.75 ? 0.75 / d : 1;
+  const bx = o.cx + (x - o.cx) * k, by = o.cy + (y - o.cy) * k;
+  const sx = bx + (bx < 195 ? 1 : -1) * o.rx * 0.25;
+  const t = Math.max(-1, Math.min(1, (sx - o.cx) / o.rx));
+  return { x: bx, y: by, sx, sy: o.cy + o.ry * Math.sqrt(1 - t * t) + 2 };
+}
 
 // ---------- fishing ----------
 
@@ -367,12 +423,17 @@ export function netSwing(distPx: number, sizePx: number): 'catch' | 'startle' | 
 
 /** The catch caption: NH's 「〇〇を つりあげた！」 / 「〇〇を つかまえた！」, the sea bass's famous joke, or the junk's
  *  letdown (a sea creature: 「〇〇を とったよ！」). Returns an i18n key and its params (the name is looked up by the caller under critter.name.<id>). */
-export function caption(item: FishId | JunkId | BugId | SeaId): { key: string; name?: string } {
+export function caption(item: Catch): { key: string; name?: string } {
   if (item === 'sea-bass') return { key: 'critter.seaBass' };
   if ((JUNK as readonly string[]).includes(item)) return { key: `critter.junk.${item}` };
-  if (!(item in FISH) && !(item in BUGS)) return { key: 'critter.caughtSea', name: `sea.name.${item}` };
-  return { key: item in FISH ? 'critter.caughtFish' : 'critter.caughtBug', name: `critter.name.${item}` };
+  if (!(item in FISH) && !(item in BUGS) && !POND_IDS.has(item)) return { key: 'critter.caughtSea', name: `sea.name.${item}` };
+  return { key: item in BUGS ? 'critter.caughtBug' : 'critter.caughtFish', name: `critter.name.${item}` };
 }
 
+/** What a rod or a net's catch counts as in the shared ずかん: a fish (the sea's or the pond's), a bug, or nothing (junk;
+ *  a sea creature from a dive is the caller's: `sea`). */
+export const findKind = (item: FishId | PondFishId | JunkId | BugId): 'fish' | 'bug' | null =>
+  (JUNK as readonly string[]).includes(item) ? null : item in BUGS ? 'bug' : 'fish';
+
 /** The official icon of a catch (static/art/critters/, fetched by scripts/fetch-assets.ts; the sea creatures too). */
-export const critterArt = (item: FishId | JunkId | BugId | SeaId): string => `critters/${item}`;
+export const critterArt = (item: Catch): string => `critters/${item}`;

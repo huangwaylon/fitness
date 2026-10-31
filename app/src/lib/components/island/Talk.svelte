@@ -10,7 +10,9 @@
   // A line may end on a choice (NH's answers: Jack's 「キャンディを あげる」): its answers show in a row at the balloon's
   // foot (the box keeps their room on every page) once the last page has typed; until one is picked a tap on the box
   // does nothing (left alone 15 s, it closes unanswered).
-  //   <Talk bind:this={talk} scene={el} />   talk.say(name, ['page…', 'next part…'], speakerEl, { colour, choices })
+  //   <Talk bind:this={talk} scene={el} />   talk.say(name, ['page…', 'next part…'], speakerEl, { colour, choices, ondone })
+  // `ondone` runs once the box closes (tapped away, answered or read through; at once when there's no room for it),
+  // not when a new line replaces it.
   import { tick } from 'svelte';
   import { place, type Box } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
@@ -25,6 +27,8 @@
   /** The answers show once the last page has typed. */
   const asking = $derived(!!said?.choices.length && pg.page >= pg.pages.length - 1 && !typing(pg));
   let seq = 0;
+  /** The open box's `ondone`. */
+  let done: (() => void) | undefined;
   let typer: ReturnType<typeof setInterval> | undefined;
   let idle: ReturnType<typeof setTimeout> | undefined;
   const stop = () => {
@@ -32,6 +36,14 @@
     clearTimeout(idle);
   };
   $effect(() => stop);
+  /** Close the box and run its `ondone`. */
+  function close() {
+    stop();
+    said = null;
+    const d = done;
+    done = undefined;
+    d?.();
+  }
 
   /** Type the current page, then wait: the next page after 6 s, or close after a read's length on the last. */
   function run(n: number) {
@@ -52,7 +64,7 @@
     const read = said?.choices.length ? 15000 : Math.max(2800, 900 + [...pg.pages[pg.page]].length * 70);
     idle = setTimeout(() => {
       if (said?.n !== n) return;
-      if (last) said = null;
+      if (last) close();
       else {
         pg = tapBox(pg).state;
         run(n);
@@ -66,14 +78,13 @@
     if (!s || asking) return;
     const r = tapBox(pg);
     pg = r.state;
-    if (r.action === 'close') return stop(), (said = null);
+    if (r.action === 'close') return close();
     if (r.action === 'finish') return clearInterval(typer), rest(s.n);
     run(s.n);
   }
 
   function choose(c: Choice) {
-    stop();
-    said = null;
+    close();
     c.pick();
   }
 
@@ -85,9 +96,10 @@
 
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
    *  head). `avoid`: more boxes to keep clear of (client px), e.g. the speaker's emote; `colour`: the name tag's. */
-  export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string; choices?: Choice[] } = {}) {
+  export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
     stop();
     const n = ++seq;
+    done = o.ondone;
     pg = { pages: paginate(parts), page: 0, shown: 0 };
     said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, below: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0 };
     await tick();
@@ -106,7 +118,7 @@
     const avoid = [...(o.avoid ?? []), self];
     // + the tail; a question with no room clear of the controls may sit over them (it waits for its answer)
     const at = place(scene, box.width, box.height + 10, sx, sy, avoid) ?? (said.mh ? place(scene, box.width, box.height + 10, sx, sy, avoid, true) : null);
-    if (!at) return (said = null);
+    if (!at) return close();
     const below = at.y > sy;
     const tail = Math.max(-box.width / 2 + 18, Math.min(box.width / 2 - 18, sx - at.x));
     const bx = at.x - stage.left, by = at.y - stage.top + (below ? 5 : -5);

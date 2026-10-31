@@ -41,7 +41,9 @@ export type SceneSfx =
   // shaking a tree (island/treeShake.ts): a nest lands, its wasps buzz out, they sting; a branch picked up
   | 'nest' | 'buzz' | 'sting' | 'twig'
   // mushroom season (island/mushrooms.ts): one picked up beside a tree
-  | 'mushroom';
+  | 'mushroom'
+  // the museum's door (island/Museum.svelte)
+  | 'museum';
 
 interface SoundDef {
   bus: 'sfx';

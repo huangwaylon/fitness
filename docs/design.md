@@ -358,7 +358,7 @@ butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day o
 summer nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in
 winter); a cloud squishes; the sun glints; the moon sends a shooting star; the night sky twinkles (1 in 4 a shooting
 star); a clear night sends a shooting star every 15–40 s (a meteor shower's night: every 3–8 s, [Celeste and meteor
-showers](#celeste-and-meteor-showers)).
+showers](#celeste-and-meteor-showers)); the pond rings like the sea, smaller.
 
 **Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
 the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
@@ -367,18 +367,19 @@ Short skies fly a smaller balloon under the ribbon, or none.
 
 **Critters** (NH species, Tokyo clock; for fun, frequent): a visit every 8–15 s of on-screen time (the first after
 3–6 s; the countdown holds while covered or hidden, and the critters leave): a fish shadow whenever the sea is empty,
-else usually a bug; ≤ 1 of each. **Seasons are a flavour, not a gate:** any fish or bug can come in any month, 3× likelier
+then one whenever the pond is ([Pond](#pond)), else usually a bug; ≤ 1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any fish or bug can come in any month, 3× likelier
 in its NH northern-hemisphere months; hours still hold (butterflies and bees by day, fireflies and moths at night).
 
-- **Fishing:** a shadow (NH sizes 1–6) dawdles off the front beach. A tap near it (1.5× the old reach) casts a
+- **Fishing** (the same in the sea and the pond: `critters.ts` `Water`, the sea's box or the pond's oval): a shadow
+  (NH sizes 1–6) dawdles off the front beach (or in the pond). A tap near it (1.5× the old reach) casts a
   red-and-white bobber; the fish swims up and nibbles 0–3 times (small wiggles), then bites: a 「！」 pops, the bobber is
-  yanked under with its own sound, and a tap anywhere on the sea in the next 1.6 s catches it. The first early tap only
+  yanked under with its own sound, and a tap anywhere in the next 1.6 s catches it. The first early tap only
   makes it hesitate and nibble again; a second scares it off. 1 in 14 a boot, tire or can.
 - **Fish** (all 33 of NH's sea and pier fish, `FISH`): mostly sea bass; the reef fish of spring and summer, the big ones
   (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
   no rain gate). NH's shadows: sizes 1–6, a long thin one for the eels, a fin cutting the surface for the sharks, the
   ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
-- **Bugs** (67 of NH's 80, `BUGS`): butterflies (the paper kite, agrias, monarch, the two birdwings, the common
+- **Bugs** (70 of NH's 80, `BUGS`): butterflies (the paper kite, agrias, monarch, the two birdwings, the common
   bluebottle and the great purple emperor among them) and the Madagascan sunset moth,
   the honeybee, ladybug and a snail on the beds; dragonflies and the damselfly over the hedge; the cicadas (a shell
   now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick on
@@ -391,7 +392,9 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   fly, `scene-dig`); the **tarantula** (winter) and the **scorpion** (summer), rare, in the grass at night: the first
   tap on or near one makes it rear up (NH: it's been come at); a tap while it's reared and it charges and scuttles off
   (`scene-bug-flee`); once it settles (1.6 s) a tap nets it. A tap on my villager sends a **flea** hopping off into
-  the grass 1 in 10 (Apr–Nov; 1 in 30 otherwise; `?flea` always). Fliers come in from the
+  the grass 1 in 10 (Apr–Nov; 1 in 30 otherwise; `?flea` always). On the pond's water ([Pond](#pond)): the
+  **pondskater** skating in quick glides and the **diving beetle** paddling (May–September by day), the **giant water
+  bug** at night (April–September). Fliers come in from the
   side, perchers fly in to a trunk (a shell and a walking stick are just there), crawlers fade in and creep (a crab
   scuttles sideways, a snail barely moves). A tap on one swings the net (caught); within 80px it startles away. A
   shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
@@ -407,7 +410,7 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   25 is NH's pearl (a quick one; 「しんじゅを ひろった！」, a shell in the ずかん). `?sea=<id>|pearl` (dev or `?demo`)
   brings a spot at once and keeps it until dived.
 - **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's own catch
-  line for it (`island/catchLines.ts`, every fish, bug and sea creature and the three pieces of junk: English from Nookipedia,
+  line for it (`island/catchLines.ts`, every fish (the pond's too), bug and sea creature and the three pieces of junk: English from Nookipedia,
   Japanese from the game's messages, a line break where the game has one; 「スズキを 釣り上げた！ 鈴木・・・じゃなくて、
   鱸なのね！」 / "I caught a sea bass! No, wait—it's at least a C+!"), loaded with the first critter of a session. It
   sits centred above (else below) the catch, inside the safe area and clear of every control, popup and しずえ's box;
@@ -583,7 +586,8 @@ villager and the deck goes for the day (once a day per phone). No ベル. `?stre
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
-(Critterpedia) in きろく: さかな 33, むし 67 (the wasp, bagworm and spider from a shaken tree and the flea included),
+(Critterpedia) in きろく: さかな 79 (the sea's 33 and the pond's 46, in NH's critterpedia order: the freshwater fish
+first), むし 70 (the wasp, bagworm and spider from a shaken tree, the flea and the pond's three included),
 うみのさち 40 (diving), かせき 73, かいがら 9 (the pearl from diving last), shared between the two of us (the first `find` of either). A kind's page lists every entry in the
 game's order: the official icon (loaded lazily) and the name for the found ones, a silhouette (the icon in one shade)
 and ？？？ for the rest; 「コンプリート！」 when all are in. The fossils are laid out like NH's museum: the standalone ones,
@@ -593,10 +597,50 @@ or a beach find's plate, out of the island's first load. A tap on a
 found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish, bugs and sea creatures, NH's catch line.
 
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
-wing or fin loop each while on screen; between visits one timer. Art loads on first need. Layers: sea life z 1 (under
-the tint), bugs `--z-leaf` (night `--z-taps`, so fireflies glow), the catch `--z-taps`, the present under `--z-tree`.
+wing or fin loop each while on screen; between visits one timer. Art loads on first need (the pond's fish table too).
+Layers: sea life z 1 (under the tint; the pond's shadows over the pond), bugs `--z-leaf` (night `--z-taps`, so
+fireflies glow), the catch `--z-taps`, the present under `--z-tree`.
 Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1 s, never jingles; [Cues](#cues)).
-`?critter=fish|<fish id>|<bug id>` (dev or `?demo`) brings one on at once and keeps it until caught; `?balloon` floats one.
+`?critter=fish|pond|<fish id>|<pond fish id>|<bug id>` (dev or `?demo`) brings one on at once and keeps it until
+caught; `?balloon` floats one.
+
+### Pond
+
+`island/Pond.svelte`, `island/pondFish.ts`, `island/Critters.svelte`, `e2e/pond.spec.ts`. NH's pond, small, on the back
+row at the left, between the corner bush and the museum where the hedge's column −2 bush was (`scene.ts` `POND`, its
+water an oval 52 × 18u; the back row reads bush · pond · museum · bush · bush): a light earthen bank lit from the upper left, the far
+bank's inner wall in shade, NH's teal water lighter toward the front, two lily pads (one with a pink bloom), reeds and
+cattails on the back-left bank, one slow ripple ring (its one animation). Drawn in stage units in its own svg, over the
+ground, under the hedge and everything standing, under the tint.
+
+- **Its fish:** all 46 of NH's freshwater fish, the river's, the river mouth's, the clifftop's and the pond's
+  (`POND_FISH`, NH's critterpedia order; months, hours and shadows from the game's data; the island has no river, so
+  they all come here). Like the sea's, the season only weights the odds (3× in its NH months), the hours hold, rare is a
+  low weight (the golden trout and the stringfish rarest; the crucian carp, carp, black bass, bluegill, pale chub and
+  dace common). Deviations: the clifftop char and cherry salmon keep 4 pm – 9 am in autumn (NH: all day).
+- **Visits:** as often as the sea's (a visit fills the sea first, then the pond: its own slot beside the sea's fish or
+  bubble spot), one shadow at a time, 45 s if nobody
+  fishes; drawn at 0.6 of the sea's size (NH's sizes 1–6 still read apart), clear of any control over the pond on a small
+  screen. Fishing is the sea's: a tap on the water or within a finger's slack of it (`POND_REACH`) casts, the line
+  starts at the pond's front rim, the bobber stays inside it, a flee is a dive.
+- **Its bugs:** NH's three water bugs keep to its water as crawlers (`BUGS`, ground `pond`): the pondskater and the
+  diving beetle by day in summer, the giant water bug at night; netted like any bug.
+- **The catch:** NH's catch line (`catchLines.ts`), the icon, and the first of each a ずかん `find` (kind `fish`: the
+  script checks a find's id by shape, not a list, so no script change). A tap on the water with no fish rings it.
+- **Cost:** the table (`pondFish.ts`) is its own chunk, fetched with the pond's first shadow; the names come with the
+  catch catalog like every catchable's; icons on first need.
+
+### Museum
+
+`island/Museum.svelte`, `island/blathers.ts`, `e2e/museum.spec.ts`. NH's museum (the upgraded building, the official
+render, 100u wide) on the back row in the middle, where the hedge's three middle bushes were (`scene.ts` `MUSEUM`,
+`hedgeKept`), the door to the ずかん: a button
+(`aria-label` 「はくぶつかん：ずかんを ひらく」, `scene-museum`, a soft knock). A tap and Blathers (フータ, his NH colour on the
+name tag) says one line in NH's dialogue box: by day (05:00–19:00) drowsy (「ホ… ホー？ むにゃ… おっと、ようこそ
+はくぶつかんへ！」), at night lively (「ホーホー！ 今夜も ずかんを ごらんに なりますかな？」); when either of us found
+something in the last week, 3 times in 5 about the latest find instead (「ホー！ さいきん コイを 見つけたそうですな！」).
+When the box closes (tapped away, or read through) the panel opens on きろく scrolled to the ずかん (`ui.zukan`); a
+second tap on the museum while he talks opens it at once. Our own lines in his manner, ja/en. No ベル, no write.
 
 ## Motion
 

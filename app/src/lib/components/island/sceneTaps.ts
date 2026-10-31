@@ -5,7 +5,8 @@
 import type { FlowerId } from '#lib/art.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { SceneSfx } from '#lib/sound/ids.ts';
-import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, SAND } from './scene.ts';
+import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, POND, SAND, hedgeKept } from './scene.ts';
+import { inOval } from './critters.ts';
 
 export type SceneHit =
   | { kind: 'bush'; i: number }
@@ -13,7 +14,9 @@ export type SceneHit =
   | { kind: 'flower'; row: number; col: number }
   | { kind: 'grass' }
   | { kind: 'sand' }
-  | { kind: 'sea' };
+  | { kind: 'sea' }
+  /** The pond's water (it ripples like the sea). */
+  | { kind: 'pond' };
 
 interface RRect { x0: number; y0: number; x1: number; y1: number; rt: number; rb: number }
 
@@ -40,7 +43,7 @@ const FLOWER_COLS = [...BED_X.left, ...BED_X.right];
  *  out before this; anything off the island is sea (the open sea behind it, the sea at its sides and in front). */
 export function hitStage(x: number, y: number): SceneHit {
   if (y >= HEDGE_BASE - BUSH_U - FOOT && y <= HEDGE_BASE + FOOT) {
-    const i = HEDGE_X.findIndex((hx) => Math.abs(x - hx) <= BUSH_HALF);
+    const i = HEDGE_X.findIndex((hx, j) => hedgeKept(j) && Math.abs(x - hx) <= BUSH_HALF);
     if (i >= 0) return { kind: 'bush', i };
   }
   // the front row is drawn over the back row's stems: test it first
@@ -50,6 +53,7 @@ export function hitStage(x: number, y: number): SceneHit {
     const col = FLOWER_COLS.findIndex((fx) => Math.abs(x - fx) <= FLOWER_HALF);
     if (col >= 0) return { kind: 'flower', row, col };
   }
+  if (inOval(POND, x, y)) return { kind: 'pond' };
   if (inRRect(PLATEAU, x, y)) return { kind: 'grass' };
   if (inRRect(SAND, x, y)) return { kind: 'sand' };
   return { kind: 'sea' };

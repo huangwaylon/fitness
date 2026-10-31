@@ -55,6 +55,8 @@ export const CENTRE_STAGE = { x: col(0), base: ROWS.trees } as const;
 
 interface Prop {
   key: string;
+  /** A hedge bush's index in HEDGE_X (SceneTaps finds it by data-bush). */
+  bush?: number;
   /** Height in u. */
   h: number;
   x: number;
@@ -84,6 +86,10 @@ function hedgePair(month: number): [BushId, BushId] {
 export const HEDGE_X = [-3, -2, -1, 0, 1, 2, 3].map(col);
 export const HEDGE_BASE = ROWS.hedge;
 export const BUSH_U = 48;
+/** The bushes still standing (indices into HEDGE_X): the pond takes column −2 and the museum columns −1…1, so the
+ *  back row reads bush · pond · museum · bush · bush (design.md "Pond", "Museum"). */
+const HEDGE_KEPT: readonly number[] = [0, 5, 6];
+export const hedgeKept = (i: number): boolean => HEDGE_KEPT.includes(i);
 
 /** design.md "Environment", a "Pocket Camp diorama": the island is an organic rounded plateau with
  *  sea on both sides. Grass top surface x 44–346, y 32–316 (rounded corners: rt at the back, rb at the
@@ -95,6 +101,15 @@ export const SAND = { x0: 30, y0: 26, x1: 360, y1: 352, rt: 72, rb: 60 } as cons
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the island
  *  (the hedge's top 14u to the beach's foam 356u) is centred in the visible ocean, the horizon down to the screen's bottom. */
 export const HORIZON_U = 0;
+
+/** The pond (design.md "Pond"): a small rounded pond on the back row at the left, in place of the hedge's column −2
+ *  bush (between the corner bush and the museum, behind the left tree's canopy top); its water's centre and half-axes
+ *  (the bank is drawn ~3u outside). Its fish swim and are fished there (critters.ts `Oval`). */
+export const POND = { cx: 117, cy: 46, rx: 26, ry: 9 } as const;
+/** The museum (design.md "Museum"): NH's museum, the official render (540 × 296), on the back row in the middle in
+ *  place of the hedge's columns −1…1; `x` its centre, `base` the front of its slab (the hedge's row), `w` its width
+ *  (u): 100u wide, 55u tall (a little taller than the bushes, as a building is). */
+export const MUSEUM = { x: col(0), base: ROWS.hedge, w: 100 } as const;
 
 /** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the middle, on columns ±2/±3 of the
  *  front two rows (the villagers stand on columns ±1; column 0 stays open for their strolls). One flower per
@@ -125,10 +140,10 @@ export const HALLOWEEN_SPOTS: readonly (readonly [number, number])[] = [
   [col(-0.5), ROWS.trees + 4], [col(0.5), ROWS.trees + 4]
 ];
 
-/** Back row (the hedge only; no building, bench, cedar or path). */
+/** Back row: the hedge, its bushes where the pond and the museum leave room (no bench, cedar or path). */
 export function props(month: number): Prop[] {
   const [b1, b2] = hedgePair(month);
-  return HEDGE_X.map((x, i) => ({ key: `bushes/${i % 2 ? b2 : b1}`, h: BUSH_U, x, base: HEDGE_BASE, z: 20 }));
+  return HEDGE_X.flatMap((x, i) => (hedgeKept(i) ? [{ key: `bushes/${i % 2 ? b2 : b1}`, bush: i, h: BUSH_U, x, base: HEDGE_BASE, z: 20 }] : []));
 }
 
 /** Japan-date events (design.md "Particles and events"). */

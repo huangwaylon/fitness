@@ -67,7 +67,19 @@
     <svg viewBox="-9 -5 18 8"><ellipse class="mound" cx="0" cy="0" rx="7.4" ry="3.2" /><path class="crack" d="M-3 -.6 L-1 .4 L.6 -1 L2.6 .2" />
       <circle class="clod" cx="-5" cy="1.6" r=".9" /><circle class="clod" cx="4.6" cy="-1.6" r=".7" /></svg>
   {:else if flight === 'crawl'}
-    {#if id === 'hermit-crab'}
+    {#if id === 'pondskater'}
+      <!-- a pondskater on the water: a thin dark body, its long legs splayed, a dimple of ripple under each foot -->
+      <svg viewBox="-9 -6 18 12"><g class="dimple"><ellipse cx="-6.4" cy="-3.6" rx="1.6" ry=".6" /><ellipse cx="6.4" cy="-3.6" rx="1.6" ry=".6" />
+        <ellipse cx="-7" cy="3.8" rx="1.6" ry=".6" /><ellipse cx="7" cy="3.8" rx="1.6" ry=".6" /></g>
+        <path class="pleg" d="M-1 -.6 L-6.4 -3.6 M1 -.6 L6.4 -3.6 M-1 .8 L-7 3.8 M1 .8 L7 3.8 M0 -2 L-1.6 -4.4 M0 -2 L1.6 -4.4" />
+        <ellipse class="pbody" cx="0" cy="0" rx="1" ry="2.8" /></svg>
+    {:else if id === 'diving-beetle' || id === 'giant-water-bug'}
+      <!-- a water beetle at the surface: a smooth oval (the diving beetle dark with a yellow rim; the giant water bug flat
+           and brown with its grasping front legs), a ring of ripple round it -->
+      <svg viewBox="-8 -8 16 16"><ellipse class="wring" cx="0" cy=".6" rx="6.6" ry="3.2" />
+        {#if id === 'giant-water-bug'}<path class="gclaw" d="M-1.4 -3.6 Q-4.4 -6 -3 -7.2 M1.4 -3.6 Q4.4 -6 3 -7.2" />{/if}
+        <ellipse class={id === 'giant-water-bug' ? 'gwbody' : 'dbbody'} cx="0" cy="0" rx="3" ry="4.4" /><path class="wseam" d="M0 -2.6 V4.2" /></svg>
+    {:else if id === 'hermit-crab'}
       <!-- a hermit crab: a borrowed shell, two red claws, little legs -->
       <svg viewBox="-8 -7 16 12"><path class="cleg" d="M-3.6 2 L-6.4 4.2 M-2.4 2.6 L-4.4 5.2 M3.6 2 L6.4 4.2 M2.4 2.6 L4.4 5.2" />
         <circle class="claw" cx="-4.6" cy=".6" r="1.6" /><circle class="claw" cx="4.6" cy=".6" r="1.6" />
@@ -223,6 +235,12 @@
   .stick { fill: none; stroke: #8A6A3A; stroke-width: 1; stroke-linecap: round; }
   /* crawlers on the beach, the grass and the beds: they fade in where they are */
   .crawl svg { width: calc(12 * var(--su)); }
+  /* the pond's bugs: small on its water (NH's pondskater, diving beetle and giant water bug) */
+  .pondskater svg { width: calc(11 * var(--su)); } .diving-beetle svg, .giant-water-bug svg { width: calc(10 * var(--su)); }
+  .pleg { fill: none; stroke: #3A3530; stroke-width: .5; stroke-linecap: round; } .pbody { fill: #3A3530; }
+  .dimple ellipse, .wring { fill: none; stroke: rgba(255, 255, 255, .7); stroke-width: .45; }
+  .dbbody { fill: #2E3A2C; stroke: #E6C34A; stroke-width: .7; } .gwbody { fill: #7A5A34; stroke: #5A3E22; stroke-width: .5; }
+  .gclaw { fill: none; stroke: #5A3E22; stroke-width: .9; stroke-linecap: round; } .wseam { stroke: rgba(0, 0, 0, .3); stroke-width: .4; }
   .centipede svg { width: calc(16 * var(--su)); }
   .hermit-crab svg { width: calc(14 * var(--su)); }
   .cleg { fill: none; stroke: #C2453A; stroke-width: .8; stroke-linecap: round; }

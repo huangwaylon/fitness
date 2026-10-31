@@ -1,13 +1,15 @@
-// NH's catch lines (docs/design.md "Scene interactions"): what the player says on catching each fish, bug and sea creature (and
-// each piece of junk), the official New Horizons text: English from Nookipedia (the `catchphrase` field), Japanese from
-// the game's own messages (SYS_Get_Fish / SYS_Get_Insect / the dive catches / Trash, as datamined in jameskokoska/ACNH-Pocket-Guide).
+// NH's catch lines (docs/design.md "Scene interactions"): what the player says on catching each fish (the sea's and the
+// pond's), bug and sea creature (and each piece of junk), the official New Horizons text: English from Nookipedia (the
+// `catchphrase` field), Japanese from the game's own messages (SYS_Get_Fish / SYS_Get_Insect / the dive catches / Trash,
+// as datamined in jameskokoska/ACNH-Pocket-Guide).
 // The first of each critter's lines; a line break where the game has one. Loaded with the first critter of a session
 // (Critters.svelte), out of the first load. Keys: island/critters.ts and island/sea.ts ids.
 import type { BugId, FishId, JunkId } from './critters.ts';
 import type { SeaId } from './sea.ts';
+import type { PondFishId } from './critters.ts';
 
 /** id → [ja, en]. */
-export const CATCH_LINES: Record<FishId | BugId | JunkId | SeaId, readonly [string, string]> = {
+export const CATCH_LINES: Record<FishId | PondFishId | BugId | JunkId | SeaId, readonly [string, string]> = {
   "sea-bass": ["スズキを 釣り上げた！\n鈴木・・・じゃなくて、鱸なのね！", "I caught a sea bass! No, wait—it's at least a C+!"],
   "horse-mackerel": ["アジを 釣り上げた！\nさて、味は いかほどか？", "I caught a horse mackerel! Of course, mack...er...el."],
   "olive-flounder": ["カレイを 釣り上げたー\nって、んん？\nこれって よく見たら\nヒラメ・・・？ ヒラメなの？", "I caught an olive flounder! That's not the pits!"],
@@ -41,6 +43,53 @@ export const CATCH_LINES: Record<FishId | BugId | JunkId | SeaId, readonly [stri
   "great-white-shark": ["サメを 釣り上げた！\n上手に釣れたなー！", "I caught a great white shark! Watch out for its jaws!"],
   "whale-shark": ["ギョエーッ！！！\nジンベエザメを 釣り上げちゃった！\nでっかい！", "Thar she blows! I caught a whale shark! I'm tellin' ya, it was thiiiiiiiiiiiiiiiiiiiis big!"],
   coelacanth: ["ギョギョォォ？！\nシーラカンスを 釣り上げた！\nこんなのが いるのかーー？！", "Blast from the past! I caught a coelacanth! Think positive! Be a coela-CAN!"],
+  // the pond (pondFish.ts): NH's freshwater fish
+  "bitterling": ["タナゴを 釣り上げた！\n小さくて キュート！", "I caught a bitterling! It's mad at me, but only a little."],
+  "pale-chub": ["オイカワを 釣り上げた！\nふむふむ、ヤマベとも言うのか", "I caught a pale chub! That name seems a bit judgy..."],
+  "crucian-carp": ["フナを 釣り上げた！\nフナっこ フナっこ！", "I caught a crucian carp! My skills are sharp!"],
+  "dace": ["ウグイを 釣り上げた！\nなんか、マイナー？", "I caught a dace! Hope I have some space!"],
+  "carp": ["コイを 釣り上げた！\nカッコイーッ！", "I caught a carp! If I catch another, they can carpool!"],
+  "koi": ["ニシキゴイを 釣り上げた！\nたっ たかそーっ！", "I caught a koi! I don't know why it's so shy... or such a bad speller..."],
+  "goldfish": ["キンギョが 釣れた！\n真っ赤な おベベだー！", "I caught a goldfish! It's worth its weight in fish!"],
+  "pop-eyed-goldfish": ["デメキンが 釣れた！\n目元 パッチリ！", "I got a pop-eyed goldfish! It looks so...surprised!"],
+  "ranchu-goldfish": ["ランチュウを 釣り上げた！\nボコボコ頭の キングオブキンギョ", "I caught a ranchu goldfish! But I prefer balsamicu goldfish!"],
+  "killifish": ["メダカを 釣り上げた！\nまだ 小学生だな", "I caught a killifish! The streams are safe again."],
+  "crawfish": ["ザリガニを 釣り上げた！\nはさまないでー！", "I caught a crawfish! Or else it's a lobster and I'm a giant!"],
+  "soft-shelled-turtle": ["スッポンを 釣り上げた！\nスッポンポン！", "I caught a soft-shelled turtle! It's more sensitive than other turtles."],
+  "snapping-turtle": ["カミツキガメを 釣り上げた！\nかみつかれないように 気をつけよう", "I caught a snapping turtle! How can it snap without fingers?"],
+  "tadpole": ["オタマジャクシを 釣り上げた！\nカエルの子は オタマジャクシ！", "I caught a tadpole... It's just a tad small."],
+  "frog": ["カエルを 釣り上げた！\nぴょこぴょこ！", "I caught a frog! Or it's a new neighbor...and I have some apologizing to do."],
+  "freshwater-goby": ["ドンコが 釣れた！\nちっちゃいけれど、顔はイカツイ", "I caught a freshwater goby! Time to go bye-bye!"],
+  "loach": ["ドジョウを 釣り上げた！\nあら エッサッサ～！", "I caught a loach! It's...looking at me with reproach."],
+  "catfish": ["ナマズを 釣り上げた！\n立派なヒゲだー！", "I caught a catfish! I'm more of a dogfish person..."],
+  "giant-snakehead": ["ライギョを 釣り上げた！\n別名 スネークヘッドだー！", "I caught a giant snakehead! Um...but I asked for a medium?"],
+  "bluegill": ["ブルーギルを 釣り上げた！\n釣れちゃったって 言わないで", "I caught a bluegill! Do you think it calls me \"pinklung\"?"],
+  "yellow-perch": ["イエローパーチを 釣り上げた！\nそんなに 黄色くもない", "I caught a yellow perch! Those yellow birds have to sit somewhere!"],
+  "black-bass": ["ブラックバスを 釣り上げた！\n何センチ？ 何センチ？", "I caught a black bass! The most metal of all fish!"],
+  "tilapia": ["ティラピアを 釣り上げた！\nなんでも食べる 食いしんぼう", "I caught a tilapia! It makes me happy-a!"],
+  "pike": ["パイクを 釣り上げた！\n鋭い歯に ご用心！", "I caught a pike! Think a swordfish would be up for a duel?"],
+  "pond-smelt": ["ワカサギを 釣り上げた！\n氷がなくても 釣れるのね", "I caught a pond smelt! Whoever smelt it dealt it!"],
+  "sweetfish": ["アユを 釣り上げた！\nAre you アユ？", "I caught a sweetfish! Hope it's not artificially sweet!"],
+  "cherry-salmon": ["ヤマメを 釣り上げた！\nなかなか いいヤマメだ", "I caught a cherry salmon! It's the perfect topper for a marlin sundae!"],
+  "char": ["オオイワナを 釣り上げた！\nこいつは 何年モノかな？", "I caught a char! Now I'm gonna sit on it!"],
+  "golden-trout": ["ゴールデントラウトを 釣り上げた！\nまばゆい美しさ！", "I caught a golden trout! But the real treasure? Friendship."],
+  "stringfish": ["うぉぉぉーーーっ？！\nイトウを 釣り上げた！\n幻の サカナだーーー！！", "OH MY GOSH! I caught a stringfish! Five more and I'll have a guitarfish!"],
+  "salmon": ["サケを 釣り上げた！\nお帰りなさーい！", "I caught a salmon! It's all upstream from here!"],
+  "king-salmon": ["やったぁ～～～！\nキングサーモンを 釣り上げたぞ！\nキング！ キング！\nキングサーモンだ～", "WOO-HOO! I caught a King salmon! Checkmate!"],
+  "mitten-crab": ["シャンハイガニを 釣り上げた！\nおいしく いただいちゃう！", "I caught a mitten crab! One more and I'm ready for winter!"],
+  "guppy": ["グッピーが 釣れた！\n輝いてるね！", "I caught a guppy! Welcome to the team, newbie!"],
+  "nibble-fish": ["ドクターフィッシュを 釣り上げた！\n川のエステティシャン！", "I caught a nibble fish! Come to think of it, I could use a bite!"],
+  "angelfish": ["エンゼルフィッシュが 釣れた！\nキミは 天使だ！", "I caught an angelfish! That other fish told me to do it!"],
+  "betta": ["ベタを 釣り上げた！\nキレイだけど ケンカっ早い", "I caught a betta! I betta not drop it!"],
+  "neon-tetra": ["ネオンテトラを 釣り上げた！\nネオンみたいに ピッカピカ！", "I caught a neon tetra! Wasn't hard to track."],
+  "rainbowfish": ["レインボーフィッシュを 釣り上げた！\nカラフルで メタリック", "I caught a rainbowfish! Where's my pot of goldfish?"],
+  "piranha": ["ピラニアが 釣れた！\nかじっちゃ ヤーよ", "I caught a piranha! Sure hope it was the only one!"],
+  "arowana": ["アロワナが 釣れた！\n金ピカで ゴージャス！", "I caught an arowana! I'd make a joke, but I don't 'wana."],
+  "dorado": ["うわっ？！\n黄金のサカナ・・・？！\nこれって確か ドラドだー！\nこの島でも 釣れるのかー！", "I caught a dorado! I say \"dorado,\" you say \"doraydo.\""],
+  "gar": ["ガーを 釣り上げた！\n口が 長ーい！！", "I caught a gar! Yar! It's a gar! Har har!"],
+  "arapaima": ["ピラルクを 釣り上げた！\nデカすぎて ギョエーッ？！", "I caught an arapaima! How did it get here? Arapaiknow!"],
+  "saddled-bichir": ["うおぉ・・・ エンドリケリー・・・\nエンドリケリーを 釣り上げた！", "Wow! A saddled bichir! And me without my tiny riding crop..."],
+  "sturgeon": ["チョウザメを 釣り上げた！\nキャビア キャビア！", "I caught a sturgeon! Wonder if it can perform sturgery..."],
   "common-butterfly": ["モンシロチョウを つかまえた！\n白くて チャーミング！", "I caught a common butterfly! They often flutter by!"],
   "yellow-butterfly": ["モンキチョウを つかまえた！\n黄色くて キュート！", "I caught a yellow butterfly! Shouldn't all BUTTERflies be yellow?"],
   "tiger-butterfly": ["アゲハチョウを つかまえた！\nアゲアゲだ～っ！", "I caught a tiger butterfly! I've earned my stripes!"],
@@ -106,6 +155,9 @@ export const CATCH_LINES: Record<FishId | BugId | JunkId | SeaId, readonly [stri
   mosquito: ["カを つかまえた！\n吸ったモノ、返して！", "I caught a mosquito! It's itching for a fight!"],
   flea: ["ノミだーっ！\nあー、かゆっ！", "I caught a flea! The curse is lifted."],
   spider: ["クモを つかまえた！\nスパイダー・キャッチ！！", "I caught a spider! I spied 'er first!"],
+  pondskater: ["アメンボを つかまえた！\nキミは おぼれない！", "I caught a pondskater! Wonder if it can do a pond ollie..."],
+  "diving-beetle": ["ゲンゴロウを つかまえた！\nおしりに あぶくが？！", "I caught a diving beetle! Now I'm making a splash!"],
+  "giant-water-bug": ["タガメを つかまえた！\n水中のギャング\n刺されたら ちょ～イタイ！", "I caught a giant water bug! It should've stayed in the water!"],
   tarantula: ["タランチュラを つかまえた！\n（マネしないでね！！）", "I caught a tarantula! This situation just got hairy!"],
   scorpion: ["サソリを つかまえた！\n毒があるから 触っちゃダメ～！", "I caught a scorpion! It was a sting operation!"],
   seaweed: ["ワカメを とったよ！\nミネラルたっぷり！", "I got some seaweed! I couldn't kelp myself."],
