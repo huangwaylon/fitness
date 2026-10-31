@@ -1,5 +1,5 @@
 {
-  "version": 37,
+  "version": 38,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -1225,11 +1225,35 @@
       "h": 205,
       "source": "https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png"
     },
+    "deco/birthday-cake": {
+      "path": "deco/birthday-cake.webp",
+      "w": 88,
+      "h": 79,
+      "source": "https://nookipedia.com/wiki/File:Birthday_Cake_(Strawberry_Buttercream)_NH_Icon.png"
+    },
+    "deco/birthday-hat-blue": {
+      "path": "deco/birthday-hat-blue.webp",
+      "w": 96,
+      "h": 68,
+      "source": "https://nookipedia.com/wiki/File:Birthday_Hat_(Blue)_NH_Icon.png"
+    },
+    "deco/birthday-hat-pink": {
+      "path": "deco/birthday-hat-pink.webp",
+      "w": 96,
+      "h": 68,
+      "source": "https://nookipedia.com/wiki/File:Birthday_Hat_(Pink)_NH_Icon.png"
+    },
     "deco/museum": {
       "path": "deco/museum.webp",
       "w": 360,
       "h": 197,
       "source": "https://nookipedia.com/wiki/File:Museum_NH.png"
+    },
+    "deco/party-popper": {
+      "path": "deco/party-popper.webp",
+      "w": 87,
+      "h": 87,
+      "source": "https://nookipedia.com/wiki/File:Party_Popper_NH_Inv_Icon.png"
     },
     "deco/present": {
       "path": "deco/present.webp",

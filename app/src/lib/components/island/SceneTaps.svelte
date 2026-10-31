@@ -30,6 +30,7 @@
   import Visitor from './Visitor.svelte';
   import type { Choice } from './pager.ts';
   import TapeDeck from './TapeDeck.svelte';
+  import Cake from './Cake.svelte';
   import { water } from './sceneDay.ts';
   import { ISLAND_SEED, findArt } from './beach.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -56,8 +57,10 @@
     exercise?: boolean;
     /** A tap in the sky (client px) during a fireworks show sends one more (IslandScene's Fireworks): true when it did. */
     skyTap?: (x: number, y: number) => boolean;
+    /** One of our birthdays: the cake is out (Cake.svelte). */
+    cake?: boolean;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false }: Props = $props();
 
   type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass' | 'glow';
   interface Fx {
@@ -94,6 +97,7 @@
   let care = $state<ReturnType<typeof Care>>();
   let visitor = $state<ReturnType<typeof Visitor>>();
   let deck = $state<ReturnType<typeof TapeDeck>>();
+  let cakeEl = $state<ReturnType<typeof Cake>>();
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
 
@@ -174,6 +178,8 @@
     // bottle, a dig spot) and the island's care (a weed to pull, the rock by the hedge)
     // group stretching's tape deck (when it's out: small and exact, before the visitor's wider reach)
     if (deck?.tap(e.clientX, e.clientY)) return;
+    // a birthday's cake: a music box, the candles out
+    if (cakeEl?.tap(e.clientX, e.clientY)) return;
     if (visitor?.tap(e.clientX, e.clientY)) return;
     if (finds?.tap(e.clientX, e.clientY)) return;
     if (care?.tap(e.clientX, e.clientY)) return;
@@ -382,6 +388,7 @@
 <Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
 <Visitor bind:this={visitor} {scene} {enabled} {say} {ontrick} />
 <TapeDeck bind:this={deck} {scene} {enabled} {exercise} />
+<Cake bind:this={cakeEl} {scene} {enabled} on={cake} />
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}

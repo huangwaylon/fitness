@@ -25,7 +25,9 @@ export type Cue =
   // a walking villager's footsteps (island/IslandScene: by the ground under it)
   | 'footstep-grass' | 'footstep-sand' | 'footstep-snow'
   // a visitor's own (K.K.'s song); group stretching's tune
-  | 'kk-song' | 'stretch';
+  | 'kk-song' | 'stretch'
+  // a birthday's cake
+  | 'birthday-cake';
 
 interface CueDef {
   sound: SoundId;
@@ -139,7 +141,9 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-museum': { sound: 'clonk', gain: 0.45, step: 5, world: true },
   'kk-song': { sound: 'kk-song', world: true },
   // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks)
-  stretch: { sound: 'stretch-song', world: true }
+  stretch: { sound: 'stretch-song', world: true },
+  // a birthday's cake (island/Cake.svelte): its music box as the candles go out
+  'birthday-cake': { sound: 'music-box', world: true }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the

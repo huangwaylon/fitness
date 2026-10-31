@@ -254,6 +254,13 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.45, g: 0.6, lo: 60, hi: 700, shape: 'decay' },
     { kind: 'noise', t: 0.08, d: 0.8, g: 0.35, lo: 2500, hi: 9000, shape: 'decay', grains: 45 }
   ],
+  // A birthday's music box: an original little waltz in 3/4 on a comb (bright bells with a quick decay and a soft
+  // tine partial), the melody over a plucked bass on each bar's first beat, ~4 s. Not "Happy Birthday".
+  'music-box': [
+    ...([[84, 0], [88, 0.3], [91, 0.6], [93, 0.9], [91, 1.2], [88, 1.5], [89, 1.8], [93, 2.1], [91, 2.4], [88, 2.7], [86, 3.0], [84, 3.3]] as const)
+      .map(([m, t]): Tone => ({ ...bell(m, t, t === 3.3 ? 0.9 : 0.55, 0.42), partials: [[2.76, 0.25, 0.3], [5.4, 0.08, 0.15]] })),
+    ...([[60, 0], [65, 0.9], [67, 1.8], [60, 2.7], [48, 3.3]] as const).map(([m, t]): Tone => bell(m + 12, t, 0.7, 0.22))
+  ],
   bottle: [
     bell(E7, 0, 0.3, 0.55),
     { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },

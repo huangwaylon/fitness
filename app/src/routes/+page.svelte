@@ -20,6 +20,9 @@
   import { localKV, readJson, SCENE, writeRaw } from '#lib/sync/storage.ts';
   import { highFive } from '#lib/store/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
+  import { birthdaysOn } from '#lib/components/island/birthday.ts';
+  import { localDateAt } from '#lib/time/dates.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
 
   let partnerOpen = $state(false);
   let panelOpen = $state(false);
@@ -45,7 +48,11 @@
    *  「収穫の時間ですよ！」, after it 「あとは うめさんの ばんですよ！」 until they collect theirs. */
   const news = $derived.by((): string | null => {
     const h = view?.harvest;
-    if (!view || !h) return null;
+    if (!view) return null;
+    // one of our birthdays (island/birthday.ts): 「うめさん、おたんじょうび おめでとう！」 (the harvest still comes first)
+    const born = h ? [] : birthdaysOn(localDateAt(minuteNow().getTime()));
+    if (born.length) return hostLine('birthday', { name: view.people[born[0]].villagerName });
+    if (!h) return null;
     return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');
   });
 

@@ -51,6 +51,8 @@
   import TreeShakes from './TreeShakes.svelte';
   import Halloween from './Halloween.svelte';
   import Wedding from './Wedding.svelte';
+  import Birthday from './Birthday.svelte';
+  import { HATS, birthdaysOn, isBirthday } from './birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import { TRICK_MS } from './visitors.ts';
@@ -165,7 +167,12 @@
     const mood = moodOf(entry);
     const met = RING_FRUITS.filter((f) => p.rings[f].met).length;
     const event = nhEvent?.night ? nhEvent.id : undefined;
-    const line = chatLine(mood, { hour: jst(now()).hour, met, asleep, event }, Math.random, lastLine);
+    // my villager's own NH birthday (villagers/birthdays.ts): it says so the first time, then now and then
+    const mineBday = !asleep && isBirthday(villagerBdays?.[resolveLook({ villager: p.villager, person: v.me }).id], today);
+    const line = mineBday && (lastLine !== 'chat.birthday' && (!toldBday || Math.random() < 1 / 3))
+      ? { key: 'chat.birthday' }
+      : chatLine(mood, { hour: jst(now()).hour, met, asleep, event }, Math.random, lastLine);
+    if (line.key === 'chat.birthday') toldBday = true;
     lastLine = line.key;
     // above the villager's head, clear of its emote (the ♪ of the tap) as it floats up
     if (actors.mine.walking) return; // it only speaks standing still
@@ -175,6 +182,17 @@
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
   const today = $derived(localDateAt(clock.getTime()));
+  // Birthdays (birthday.ts): ours from the people config (both villagers wear NH's birthday hat, the cake, the
+  // confetti, a popper on a goal), and an NH villager's own from the roster's birthdays (a small chunk of its own,
+  // loaded with the island, never with the first load or the roster): that villager wears the hat and says so.
+  const bday = $derived(birthdaysOn(today));
+  let villagerBdays = $state<Record<string, string> | null>(null);
+  let toldBday = false;
+  $effect(() => {
+    if (live) void import('#lib/villagers/birthdays.ts').then((m) => (villagerBdays = m.BIRTHDAYS));
+  });
+  const hatOf = (id: 'mine' | 'partner', person: PersonWeekView): string | null =>
+    bday.length || isBirthday(villagerBdays?.[resolveLook({ villager: person.villager, person: person.person }).id], today) ? HATS[id] : null;
   const hybrid = $derived.by(() => {
     if (!live) return null;
     const row = (r: number) => (r ? BEDS[season].front : BEDS[season].back);
@@ -330,7 +348,7 @@
             life.tapVillager(id, id === 'mine' ? undefined : onpartner);
           }}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
-            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} puffy={puffy[id]} tricked={id === 'mine' && tricked} />
+            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} puffy={puffy[id]} tricked={id === 'mine' && tricked} hat={live ? hatOf(id, s.person) : null} />
         </button>
       </div>
     {/each}
@@ -339,7 +357,7 @@
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
-        exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met}
+        exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
         skyTap={(x, y) => !!fireworks?.tap(x, y)}
         say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} />
       <Talk bind:this={talk} scene={sceneEl} />
@@ -348,6 +366,7 @@
     {/if}
     <div class="tint"></div>
     {#if live && nhEvent?.id === 'halloween'}<Halloween scene={sceneEl} night={nhEvent.night} />{/if}
+    {#if live && bday.length}<Birthday {view} people={bday} date={today} />{/if}
     {#if live && (wedding.arch || wedding.day)}<Wedding scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>
   </div>

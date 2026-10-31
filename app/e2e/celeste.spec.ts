@@ -28,6 +28,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
   });
 
 test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)', async ({ page }) => {
+  test.setTimeout(45_000);
   await page.goto('?demo&date=2026-11-12T22:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
   await page.evaluate(() => {
@@ -37,8 +38,8 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
       for (const m of ms) for (const n of m.addedNodes) if (n instanceof HTMLElement && n.dataset.fx === 'shoot') w.__stars!++;
     }).observe(document.body, { childList: true, subtree: true });
   });
-  await page.waitForTimeout(17_000);
-  expect(await page.evaluate(() => (window as { __stars?: number }).__stars)).toBeGreaterThanOrEqual(2);
+  // at least two in 24 s (a clear night would bring one at most; a streak with no clear path is skipped now and then)
+  await expect.poll(() => page.evaluate(() => (window as { __stars?: number }).__stars ?? 0), { timeout: 24_000, intervals: [1000] }).toBeGreaterThanOrEqual(2);
 });
 
 test('not a shower night: no Celeste; each wish is a fragment the next morning, a shower night’s like any other', async ({ page }) => {

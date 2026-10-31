@@ -241,6 +241,13 @@ the island's trees are hardwoods, and the Goliath beetle already stands in on th
 the ant and the fly (rotten turnips, candy, trash on the ground). Why: the user wants more to catch, faithful to NH;
 a bug in the wrong place reads as a mistake, and these few need scenery the island doesn't have yet.
 
+### Birthdays from the people config
+Our two birthdays sit beside the other per-person defaults (`PEOPLE`: name, Move goal, birthday; null = off), not in
+the sheet: they never change, both phones agree from the code, and nothing is synced. The party is NH's (hats, cake,
+music box, confetti, a popper on a goal), cosmetic and local (the confetti and the candles once a day per phone). NH
+villagers' birthdays are Nookipedia's, in a small module of their own so neither the first load nor the roster grows.
+Why: a day that's about the person, with nothing to set up and nothing that pays.
+
 ### Wedding countdown as visitors
 The countdown to 2027-10-08 is NH's wedding couple coming on milestone days (365 … 1, the day), one visitor drawn as a
 pair, not a counter on screen; the day itself is a pose, confetti and fireworks, and June Sundays get NH's arch. Why:
