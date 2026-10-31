@@ -573,7 +573,7 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
 - **Reactions** (`REACTIONS`, R1–R19): events such as first open, the partner's day growing, high-fives, a goal met,
   all four goals met, taps, waking, a low week (Thu–Sat), a sync problem, the harvest. They never fire
   on first render; pages `emit(…)` (`motion/bus.svelte.ts`).
-- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (しずえ ≤ every 20–30 s), no
+- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (a look around, a wiggle, a stroll, a glance up at the jar in the HUD, …) (しずえ ≤ every 20–30 s), no
   emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden, covered or under reduced motion.
 - **Reduced motion:** no loops, hops or dances; emotes fade in; dialogue appears at once. Walking is the exception
   (user): it always animates.

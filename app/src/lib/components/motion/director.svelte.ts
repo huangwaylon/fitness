@@ -175,7 +175,8 @@ export function removeFx(id: ActorId, n: number) {
 export function applyStep(id: ActorId, s: Step) {
   const a = actors[id];
   if (id === 'host' && !a.present) return;
-  if (s.face) a.face = s.face === 'home' ? 'home' : s.face === 'other' ? toward(id, actors[id === 'mine' ? 'partner' : 'mine'].x) : 'in';
+  // 'jar': the jar sits in the sky HUD beside the ribbon, up to the right: both look that way
+  if (s.face) a.face = s.face === 'home' ? 'home' : s.face === 'other' ? toward(id, actors[id === 'mine' ? 'partner' : 'mine'].x) : s.face === 'jar' ? 'r' : 'in';
   if (s.pose) {
     a.pose = s.pose;
     later(id, EMOTE_MS, () => (actors[id].pose = null));

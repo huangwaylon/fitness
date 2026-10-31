@@ -1,5 +1,5 @@
 // Idle life (design.md "Motion"): one scheduler per live scene. Every 9–15 s one actor does one
-// small background thing from its pool (look around, wiggle, hop, stroll, peek into the jar, tree shake,
+// small background thing from its pool (look around, wiggle, hop, stroll, a glance up at the jar, tree shake,
 // chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab
 // is hidden, a sheet is open, or under reduced motion; slows after 3 min without input and stops after
@@ -23,9 +23,6 @@ interface IdleContext {
   /** Random source (tests). */
   random?: () => number;
 }
-
-/** Stroll distance to stand beside the jar (stage units). */
-const PEEK_DX = 56;
 
 function pickWeighted<T extends { weight: number }>(items: T[], rnd: () => number): T | null {
   const total = items.reduce((s, i) => s + i.weight, 0);
@@ -138,7 +135,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
       if (e.every && t - (lastAt[`${id}:${e.action}`] ?? 0) < e.every) return false;
       if (e.pair && busy(other)) return false;
       // one villager on the path at a time
-      if ((e.action === 'stroll' || e.action === 'peek') && (actors[other].walking || awayFromHome(other))) return false;
+      if (e.action === 'stroll' && (actors[other].walking || awayFromHome(other))) return false;
       if (e.action === 'dance' && Math.min(sa, sb) < 70) return false;
       return true;
     }).map((e) => (e.action === 'dance' && Math.min(sa, sb) >= 80 ? { ...e, weight: 15 } : e));
@@ -160,8 +157,9 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
       case 'stroll':
         return stroll(id, 40, () => setMotion(id, 'wiggle'));
       case 'peek':
-        // walk to the jar, peer in (a nod), walk back
-        return stroll(id, PEEK_DX, () => setMotion(id, 'nod'));
+        // a glance up at the jar (in the sky HUD beside the ribbon since it left the island): turn to it, then home
+        applyStep(id, { actor: id, face: 'jar', motion: 'turn' });
+        return later(id, 1_800, () => (actors[id].face = 'home'));
       case 'daydream':
         return setMotion(id, 'turn');
       case 'treeshake':

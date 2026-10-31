@@ -130,7 +130,7 @@ export const IDLE_POOL: IdleEntry[] = [
   { action: 'wiggle', weight: 8 },
   { action: 'hop', weight: 6, day: true },
   { action: 'stroll', weight: 6, day: true, every: 90_000 },
-  { action: 'peek', weight: 6, day: true, every: 120_000 },
+  { action: 'peek', weight: 6, day: true, every: 120_000 }, // a glance up at the jar in the HUD
   { action: 'treeshake', weight: 5, day: true, every: 60_000 },
   { action: 'chat', weight: 8, every: 60_000, pair: true },
   { action: 'dance', weight: 3, pair: true },
