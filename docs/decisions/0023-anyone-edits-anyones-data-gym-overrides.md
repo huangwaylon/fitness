@@ -40,4 +40,5 @@ misses a visit and sometimes fires without one, and the only fix was a workout m
 With the gym 🥥 removed (ADR 0021 amendment "no gym; four metrics"), `gym_set` is no longer an event type: the server
 refuses it (`bad_request`), the model ignores old rows of it, and the tree popup's きのう / きょう chips, きろく's 🥥 row and
 its ✎ are gone. Decisions 1, 2 and 5 stand for the remaining edits (`metric_set`, `workout_edit {excluded}`,
-`workout_add`, the two goal prefs). The two `gym_set` rows already in the sheet do nothing.
+`workout_add`, the two goal prefs). The two `gym_set` rows already in the sheet do nothing, and the `presence` tab (the 2 gym arrivals) can be deleted by
+hand (runbook §9).

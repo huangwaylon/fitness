@@ -20,7 +20,7 @@ wallet, which they spend on small treats they agreed on together. Japanese-first
 - **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes everything on the phone.
 
 **Architecture.** The Google Sheet is an append-only log (`metrics`, `events`, `uploads`; the old `presence` and
-`workouts` tabs are no longer read or written, runbook §8). `app/gas/` (bundled to `app/apps-script/Code.js`) is the only reader and writer: it validates
+`workouts` tabs are no longer read or written, runbook §9). `app/gas/` (bundled to `app/apps-script/Code.js`) is the only reader and writer: it validates
 shapes and appends, nothing more. The client keeps the rows in IndexedDB, merges incremental `snapshot` replies and
 derives every number on read in `app/src/lib/model/` (pure functions over the rows), so a rule change re-prices
 history consistently and the sheet stays a dumb log. User actions are `event` rows sent through a persisted queue with

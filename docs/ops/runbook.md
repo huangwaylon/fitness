@@ -12,8 +12,8 @@ Contract: [`docs/design/sheets-architecture.md`](../design/sheets-architecture.m
 2. **Point the Pages build at it:** `gh variable set GAS_URL --body 'https://script.google.com/macros/s/…/exec'`,
    then re-run the *Deploy UI to GitHub Pages* workflow (or push). Until `GAS_URL` is set, the site shows
    「まだ設定されていません / Not set up yet」 with a link to the demo.
-3. **Shortcuts on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §5 (gym
-   Arrive), §6 (the optional 84-day baseline).
+3. **Shortcuts on each phone:** [shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (health sync), §6 (the
+   optional 84-day baseline). There is no gym automation any more (§5 there: delete old Arrive automations).
 4. **Pair the phones:** on each iPhone open https://huangwaylon.github.io/fitness/ in Safari → Share →
    **Add to Home Screen** *first*, open it from the icon, and paste that person's key ([google-setup.md §7](google-setup.md#7-pairing-the-phones)).
 5. **Day 8 or later:** run the `whoami` curl again ([google-setup.md §9](google-setup.md#9-does-it-need-the-shared-finances-cloud-project-or-a-published-consent-screen)).
@@ -40,7 +40,8 @@ the existing deployment**, never a new deployment).
 ## 4. Shortcuts
 - Health sync: [shortcut-health-sync.md](shortcut-health-sync.md) (URL → `/exec`, body gets `key` + `action:"ingest"`,
   no `Authorization` header).
-- Gym Arrive (`action:"gym"`): same doc, §5.
+- No gym Arrive any more: the `gym` action is refused (ADR 0021 amendment "no gym; four metrics"). Delete the old
+  Arrive automations on both phones (same doc, §5).
 
 ## 5. Monitoring and the deployed version
 **The probe** (no key, costs no Properties read, takes no lock, touches no sheet):
@@ -124,3 +125,13 @@ trade-off and the fallback are [ADR 0018](../decisions/0018-official-art-public-
 | `too_large` | Body over 1 MB: send the baseline in chunks of a few weeks |
 | Numbers didn't move | The `uploads` tab (or `{"key":"…","action":"uploads"}`) shows each Shortcut run: status, warnings and the body's shape (each field's type, line count and first line). Synced metrics only go up (a lower re-send is ignored); a きろく edit can lower a day in an open week |
 | Changes made offline | They stay queued on the phone and are sent when it's back online (the sync pill shows it) |
+
+## 9. Old tabs you can delete by hand (2026-10-31)
+The gym and the Watch workouts are gone (ADR 0021 amendment "no gym; four metrics"; one Code.js redeploy, google-setup.md
+§11). The script no longer reads, writes or creates the **`presence`** tab (gym arrivals; it has 2 rows) or the
+**`workouts`** tab, and `snapshot` no longer returns them, so they are dead weight. To tidy the sheet: open *Island
+Fund* → right-click the **presence** tab at the bottom → **Delete** → OK; the same for **workouts**. Nothing else
+changes and no `resync` is needed (neither tab is synced any more). The two `gym_set` rows in `events` and any old
+`workout_edit {strength}` rows stay where they are: the model ignores them. Keep a weekly backup (§6) from before the
+delete if you want the history.
+

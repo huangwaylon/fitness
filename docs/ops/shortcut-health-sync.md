@@ -1,6 +1,6 @@
 # Health sync with iOS Shortcuts
 
-Sends steps, exercise minutes, Move (active energy), stand minutes, workouts and body weight from each iPhone to the Island Fund sheet (through the Apps Script web
+Sends steps, exercise minutes, Move (active energy), stand minutes and body weight from each iPhone to the Island Fund sheet (through the Apps Script web
 app) **every time you open an app you use daily** (e.g. LINE), at most once an hour. Set it up once per phone.
 
 **Why "when I open LINE"?** iOS locks Health data while the phone is locked, so a 3 am timer can't read it. Opening
@@ -35,19 +35,16 @@ one line per day**, every list a **Text** field. The parser (`app/gas/parse.ts`)
 - **`calories`**: that day's **active energy** in kcal (the Move ring, not total energy). Stored as the metric `move_kcal` (rounded) and earns 🍐 against your Move goal (ADR 0021). Above 10,000 is
   skipped with a warning.
 - **`stand_minutes`**: that day's Health **Stand Time** in minutes (Shortcuts doesn't expose the ring's
-  Stand *Hours*). Stored as `stand_min`; earns 🍒, goal 180 min. Above 1,440 is skipped with a warning.
-- Every daily list is optional; any other field is ignored. A body with none of them (and no `workouts`) is a
-  `bad_request`.
-- **`workouts`** (optional; the current Shortcut doesn't send it): `{"types": "…", "starts": "…", "ends": "…",
-  "avgHrs": "…"}`, each Text with one line per workout (start/end in the same date text; `avgHrs` optional). A
-  Traditional / Functional Strength Training or Pilates workout of ≥ 15 min is a 🥥 day. Without it, 🥥 days come
-  from gym arrivals (§5) and workouts added or marked in きろく.
+  Stand *Hours*). Stored as `stand_min`; earns 🍒, goal 120 min (180 in the week of 10-26). Above 1,440 is skipped with a warning.
+- Every daily list is optional; any other field is ignored (an old `workouts` field too: Watch workouts aren't
+  uploaded any more, ADR 0021 amendment "no gym; four metrics"; a forgotten workout is added by hand in きろく and its
+  minutes count toward 🍑). A body with none of the daily lists is a `bad_request`.
 - A list whose line count differs from `dates` is **dropped** and named in `warnings`; the rest is saved. An
   unreadable line is skipped and counted in `skipped`.
 - A day's steps, minutes, kcal and stand minutes only ever go up, so re-sending is harmless and a partial day never overwrites a full one
   (a きろく edit can still lower a day in an open week). A day's weight is its latest value: a new row is saved whenever
   it changes.
-- Reply: `{"ok":true,"metrics":8,"workouts":0}` (rows actually added), plus `skipped` / `unknownTypes` / `warnings`.
+- Reply: `{"ok":true,"metrics":8}` (rows actually added), plus `skipped` / `warnings`.
   Errors: `{"ok":false,"error":"unauthorized"|"bad_request"|"too_large"|"busy"|"unavailable"}`.
 - **Log:** every run leaves a row in the `uploads` tab with the warnings and the body's **shape** (each field's type,
   line count and first line; never the key). Read your last 20 with `{"key": "…", "action": "uploads"}` (runbook §8).
@@ -86,37 +83,13 @@ gets the link. Before sharing: Shortcut settings (ⓘ) → **Setup** → **Impor
 **Copy iCloud Link** → send it to B. Importing asks B for B's key. Put your own key back afterwards. B then adds the
 automation from §3. If a link with a key in it was ever shared, rotate that key (google-setup.md §10).
 
-## 5. Gym Arrive (per phone: one automation per gym)
-An arrival at a gym is a 🥥 strength day for the person whose key sent it, on that (Tokyo) date: no question, no
-minimum stay, no Leave automation. Arriving twice in a day (or at two gyms) is still one strength day. Build this once
-per gym, on each phone (the automations are identical apart from the location and the optional label):
-
-1. Shortcuts → **Automation** → **+** → **Arrive**.
-2. **Location** → **Choose** → search the gym → shrink the radius to **100–150 m** → **Done**.
-3. Choose **Run Immediately** and turn **Notify When Run** off [U: labels vary by iOS version] → **Next** → **New Blank
-   Automation**.
-4. Add **Get Contents of URL**: the `/exec` URL; ▸ **Method** **POST**; **Headers** none; **Request Body** **JSON**,
-   with these fields, each typed **Text**:
-
-   ```json
-   { "key": "<your key>", "action": "gym" }
-   ```
-
-   That is the whole request. Two optional fields:
-   - `"place"`: any text up to 40 characters (e.g. `エニタイム`), only a label shown in きろく; without it きろく shows
-     ジム. It never changes what counts.
-   - `"at"`: the true arrival time, so a late or retried run keeps it: add **Current Date** above **Get Contents of URL**,
-     then **Format Date** (Date Format **ISO 8601**, **Include Time** on) and use its result as the `at` value. It must
-     be an ISO 8601 instant with an offset (`2026-10-30T18:05:00+09:00`); one more than 48 h from the server time is
-     ignored.
-5. **Done**. Test it with the ▶ button of the **Get Contents of URL** action (in the automation's editor): the reply is
-   `{"ok":true}`. That records a **real gym day** for today, so test on a day you go to the gym anyway (or delete the
-   row from the sheet's `presence` tab afterwards, then run `resync` in the script editor).
-
-**Location permission:** Arrive automations need Location Services on for Shortcuts (Settings → Privacy & Security →
-Location Services → **Shortcuts** → **While Using the App** or **Always**, with **Precise Location** on) [U: iOS asks on
-the first Arrive automation]. If an arrival never fires, check this first. A repeat arrival within 2 minutes is
-dropped.
+## 5. No gym automation (delete the Arrive automations)
+The gym 🥥 is gone (user, 2026-10-31: "I don't want the gym shortcut any more; it's not reliable"; ADR 0021 amendment
+"no gym; four metrics"). The server now refuses `{"action":"gym"}` with `bad_request` and nothing reads gym arrivals.
+**On both phones, delete every gym Arrive automation:** Shortcuts → **Automation** → swipe left on each "Arrive"
+automation for a gym → **Delete** [U: on some iOS versions, tap it and choose **Delete Automation** at the bottom].
+Once none is left, Shortcuts no longer needs Location Services for this (Settings → Privacy & Security → Location
+Services → **Shortcuts** can go back to **Never**, unless another automation of yours uses it).
 
 ## 6. One-time baseline (optional)
 Duplicate the Shortcut, change the range in steps 2 and 4–7 to the last **84 days** and run it once. Only the
@@ -131,8 +104,7 @@ trend.
 | `bad_request` with `…: expected Text` | That field is typed Number/Array in step 8: make it **Text** |
 | `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same 31-day **Group by Day** range as `dates` |
 | `skipped` in the reply | A date or number didn't parse; `{"action":"uploads"}` shows the first line of each field |
-| `unknownTypes: [...]` | A workout name we don't map yet: add it to `WORKOUT_LABELS_JA` in `app/src/lib/contract/labels.ts`, then google-setup.md §11 |
 | A weight about 2.2× too high | Health's weight unit is pounds: set it to kg |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash a banner] |
 | Nothing arrives | Settings → Health → Data Access → Shortcuts permissions |
-| No gym day after arriving | Location permission (§5); the Arrive radius too small for the gym's GPS fix; `bad_request` = `place` over 40 characters, or `at` not an ISO 8601 instant with offset |
+| A `bad_request` banner when arriving at the gym | An old gym Arrive automation is still on that phone: delete it (§5) |
