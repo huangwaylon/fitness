@@ -545,6 +545,21 @@ introduction, then four lines; ja/en; their day's two villager lines join the ch
 Jack keeps Halloween ([Halloween](#halloween)). `?event=<id>` (dev or `?demo`) forces a day; `?visitor=<id>` brings a
 host; `?find=earth-egg` makes every dig spot an egg.
 
+### Birthdays
+
+`island/birthday.ts`, `island/Birthday.svelte`, `island/Cake.svelte`, `villagers/birthdays.ts`, `e2e/birthday.spec.ts`.
+Ours come from the people config (`PEOPLE` in `config/rules.ts`: ウェイ `10-06`, うめ `03-04`, Tokyo dates; null turns a
+person's off; Feb 29 falls on Feb 28 in other years). On one of them: both villagers wear NH's birthday hat (mine
+pink, the partner's blue); NH's birthday cake stands in front of the centre stage (else behind it by the hedge;
+measured clear of every control and the visitor), its five candles lit; confetti over both villagers the first time
+the island opens that day on this phone (a fanfare; `scene-birthday`); しずえ's line 「うめさん、おたんじょうび おめでとう！」
+(the harvest still comes first). A tap on the cake (a scene item, a 44px reach) plays a little music box (`music-box`,
+an original waltz, a jingle) and blows the candles out: a puff of smoke, out for the day on this phone. Each time the
+birthday person meets a goal that day, NH's party popper goes off over their villager with confetti. An NH villager's
+own birthday (all 417 and the 23 special characters, Nookipedia's dates, in their own small module loaded with the
+island, never with the first load or the roster) puts the hat on that villager, and my villager says so in its chats
+(「きょうは わたしの たんじょうび なの！」, the first tap, then now and then). No ベル.
+
 ### Wedding countdown
 
 `island/wedding.ts`, `island/Wedding.svelte`, `island/Visitor.svelte`, `e2e/wedding.spec.ts`. Our wedding is 2027-10-08

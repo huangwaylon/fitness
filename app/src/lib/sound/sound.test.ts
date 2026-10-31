@@ -132,7 +132,7 @@ describe('placeholder effects (synth.ts)', () => {
     for (const id of SOUND_IDS) {
       const x = render(id, 22050);
       expect(x.length).toBe(Math.ceil(durationOf(id) * 22050));
-      expect(durationOf(id)).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'chime' || id === 'fanfare' || id === 'kk-song' ? 2.5 : 1);
+      expect(durationOf(id)).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'music-box' ? 4.5 : id === 'chime' || id === 'fanfare' || id === 'kk-song' ? 2.5 : 1);
       // one expect per sound, not per sample (a slow runner timed out on ~10^6 of them)
       let peak = 0, finite = true;
       for (const v of x) {

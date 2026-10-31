@@ -32,7 +32,9 @@ export type SoundId =
   // group stretching (island/stretching.ts): a bright little march on the piano for the stretches (an original, ~6 s)
   | 'stretch-song'
   // the night sky: a wish's soft chime; fireworks: a rocket's rising whistle and the burst (a soft boom and a crackle)
-  | 'wish' | 'whistle' | 'firework';
+  | 'wish' | 'whistle' | 'firework'
+  // a birthday's cake (island/Cake.svelte): a little music box (an original waltz, ~4 s)
+  | 'music-box';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
@@ -117,7 +119,8 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   wish: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },
   // fireworks come every couple of seconds for hours: kept low, two at most
   whistle: { bus: 'sfx', gain: 0.16, jitter: 120, max: 2 },
-  firework: { bus: 'sfx', gain: 0.28, jitter: 90, max: 2 }
+  firework: { bus: 'sfx', gain: 0.28, jitter: 90, max: 2 },
+  'music-box': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1, jingle: true }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

@@ -104,6 +104,11 @@ const SPECS: Record<string, Spec> = {
   'villagers/reese': [512, 'Reese_NH_Model.png', 'Reese_NH.png'],
   'villagers/cyrus': [512, 'Cyrus_NH_Model.png', 'Cyrus_NH.png'],
   'deco/wedding-arch': [256, 'Wedding_Arch_(Cute)_NH_Icon.png'],
+  // birthdays (island/Birthday.svelte): NH's birthday cake, the party hats our villagers wear, the party popper
+  'deco/birthday-cake': [128, 'Birthday_Cake_(Strawberry_Buttercream)_NH_Icon.png'],
+  'deco/birthday-hat-pink': [96, 'Birthday_Hat_(Pink)_NH_Icon.png'],
+  'deco/birthday-hat-blue': [96, 'Birthday_Hat_(Blue)_NH_Icon.png'],
+  'deco/party-popper': [96, 'Party_Popper_NH_Inv_Icon.png'],
   // group stretching's tape deck (island/TapeDeck.svelte)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
   // the museum at the back of the island (island/Museum.svelte): NH's upgraded museum, the official render, drawn ~84u
@@ -197,7 +202,7 @@ for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses',
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');

@@ -37,11 +37,12 @@ export const SHOP = [
 export const shopPrice = (id: unknown): number | undefined => SHOP.find((x) => x.id === id)?.bells;
 
 /**
- * The default villager names (until changed in むらびと) and Move goals in kcal (until set with `pref` moveGoal).
+ * The default villager names (until changed in むらびと), Move goals in kcal (until set with `pref` moveGoal) and
+ * birthdays ('MM-DD', Tokyo; null turns the island's birthday off for that person: docs/design.md "Birthdays").
  */
-export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number }> = {
-  A: { villager: 'ウェイ', moveGoal: 600 },
-  B: { villager: 'うめ', moveGoal: 400 }
+export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number; birthday: string | null }> = {
+  A: { villager: 'ウェイ', moveGoal: 600, birthday: '10-06' },
+  B: { villager: 'うめ', moveGoal: 400, birthday: '03-04' }
 };
 
 /** A `pref` moveGoal: an integer kcal in this range (inclusive); anything else is ignored (the previous goal stays). */

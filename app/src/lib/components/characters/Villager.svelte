@@ -46,12 +46,14 @@
     shadow?: boolean;
     /** Stung by a shaken tree's wasps (island/TreeShakes.svelte): NH's swollen eye, for a while. */
     puffy?: boolean;
+    /** A hat on its head (island/birthday.ts: NH's birthday hat on a birthday), an art key. */
+    hat?: string | null;
     /** Tricked by Jack on Halloween (island/Visitor.svelte): NH's trick changes your look; here, party nose glasses. */
     tricked?: boolean;
   }
   let {
     person = 'A', villager, expression = 'happy', size = 48, head, emote = false,
-    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, puffy = false, tricked = false
+    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, puffy = false, tricked = false, hat = null
   }: Props = $props();
 
   const pref = $derived(week.view?.people?.[person]?.villager);
@@ -115,6 +117,7 @@
         {#snippet fallback()}<RosterSilhouette id={look.id} head={headOnly} height={h} />{/snippet}
       </OfficialArt>
       {#if puffy && !headOnly}<span class="puffy" data-puffy aria-hidden="true"></span>{/if}
+      {#if hat && !headOnly}<span class="hat" data-hat aria-hidden="true"><OfficialArt key={hat} size="calc(var(--h) * .24)" eager /></span>{/if}
       {#if tricked && !headOnly}
         <svg class="tricked" data-tricked viewBox="0 0 72 34" aria-hidden="true">
           <path d="M28 12 Q36 7 44 12" fill="none" stroke="#2B2230" stroke-width="2.6" stroke-linecap="round" />
@@ -179,6 +182,10 @@
   }
   @keyframes trick-on { from { transform: scale(.2) rotate(-20deg); opacity: 0; } 50% { opacity: 1; } }
   @keyframes puff-up { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
+  /* NH's birthday hat: perched on the top of the head, a little tilted, popping on */
+  .hat { position: absolute; left: 50%; top: 0; translate: -50% -62%; rotate: -8deg; line-height: 0; animation: puff-up 420ms var(--ease-bounce) both; }
+  .right .hat { rotate: 8deg; }
+  .hat :global(.official) { max-width: none; filter: drop-shadow(0 1px 1px rgba(80, 50, 40, .3)); }
   .body.bob { animation: if-bob 2400ms var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
   .body.sleep { animation: if-breath-slow 4000ms var(--ease-idle) infinite; }
   .body.walk { animation: if-walkbounce var(--step, 640ms) linear infinite; }
