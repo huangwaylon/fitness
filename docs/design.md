@@ -375,7 +375,7 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   red-and-white bobber; the fish swims up and nibbles 0–3 times (small wiggles), then bites: a 「！」 pops, the bobber is
   yanked under with its own sound, and a tap anywhere in the next 1.6 s catches it. The first early tap only
   makes it hesitate and nibble again; a second scares it off. 1 in 14 a boot, tire or can.
-- **Fish** (all 33 of NH's sea and pier fish, `FISH`): mostly sea bass; the reef fish of spring and summer, the big ones
+- **Fish** (all 34 of NH's sea and pier fish, `FISH`): mostly sea bass; the blowfish (フグ) on winter nights and the puffer fish (ハリセンボン) in summer; the reef fish of spring and summer, the big ones
   (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
   no rain gate). NH's shadows: sizes 1–6, a long thin one for the eels, a fin cutting the surface for the sharks, the
   ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
@@ -602,7 +602,7 @@ villager and the deck goes for the day (once a day per phone). No ベル. `?stre
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
-(Critterpedia) in きろく: さかな 79 (the sea's 33 and the pond's 46, in NH's critterpedia order: the freshwater fish
+(Critterpedia) in きろく: さかな 80 (the sea's 34 and the pond's 46, in NH's critterpedia order: the freshwater fish
 first), むし 70 (the wasp, bagworm and spider from a shaken tree, the flea and the pond's three included),
 うみのさち 40 (diving), かせき 73, かいがら 9 (the pearl from diving last), shared between the two of us (the first `find` of either). A kind's page lists every entry in the
 game's order: the official icon (loaded lazily) and the name for the found ones, a silhouette (the icon in one shade)

@@ -1,5 +1,5 @@
 {
-  "version": 38,
+  "version": 39,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -162,6 +162,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Black_Bass_NH_Icon.png"
+    },
+    "critters/blowfish": {
+      "path": "critters/blowfish.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Blowfish_NH_Icon.png"
     },
     "critters/blue-marlin": {
       "path": "critters/blue-marlin.webp",

@@ -48,8 +48,8 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
       expect(top, `month ${m}`).toBe('sea-bass');
     }
   });
-  it("every NH sea and pier fish (33), with NH's shadows: the eels narrow, the sharks, the sunfish and the suckerfish with a fin", () => {
-    expect(Object.keys(FISH)).toHaveLength(33);
+  it("every NH sea and pier fish (34), with NH's shadows: the eels narrow, the sharks, the sunfish and the suckerfish with a fin", () => {
+    expect(Object.keys(FISH)).toHaveLength(34);
     for (const id of ['ribbon-eel', 'moray-eel'] as FishId[]) expect(FISH[id].shape).toBe('narrow');
     for (const id of ['saw-shark', 'hammerhead-shark', 'great-white-shark', 'whale-shark', 'ocean-sunfish', 'suckerfish'] as FishId[])
       expect(FISH[id].shape, id).toBe('fin');
@@ -60,6 +60,13 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     const w = Object.values(FISH).map((f) => f.weight);
     expect(FISH.coelacanth.weight).toBe(Math.min(...w));
     expect(FISH['great-white-shark'].weight).toBeLessThan(FISH.clownfish.weight);
+  });
+  it("NH's two puffers: the blowfish (フグ) on winter nights, the puffer fish (ハリセンボン) all day in summer", () => {
+    expect(FISH.blowfish).toMatchObject({ months: [11, 12, 1, 2], hours: [21, 4], size: 3 });
+    expect(FISH['puffer-fish']).toMatchObject({ months: [7, 8, 9], hours: [0, 24], size: 3 });
+    expect(oddsAt(FISH.blowfish, 12, 12)).toBe(0);
+    expect(oddsAt(FISH.blowfish, 12, 23)).toBe(FISH.blowfish.weight * IN_SEASON);
+    expect(oddsAt(FISH['puffer-fish'], 8, 12)).toBe(FISH['puffer-fish'].weight * IN_SEASON);
   });
   it('a shark keeps to its NH hours (4 pm – 9 am) and is likelier in summer, never a gate', () => {
     expect(oddsAt(FISH['great-white-shark'], 7, 12)).toBe(0);

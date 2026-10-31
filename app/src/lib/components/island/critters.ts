@@ -23,7 +23,7 @@ const range = (a: number, b: number): number[] => Array.from({ length: b - a + 1
 
 export type FishId =
   | 'sea-bass' | 'horse-mackerel' | 'olive-flounder' | 'red-snapper' | 'dab' | 'squid' | 'sea-butterfly'
-  | 'puffer-fish' | 'barred-knifejaw' | 'anchovy' | 'zebra-turkeyfish' | 'ribbon-eel' | 'football-fish' | 'clownfish'
+  | 'blowfish' | 'puffer-fish' | 'barred-knifejaw' | 'anchovy' | 'zebra-turkeyfish' | 'ribbon-eel' | 'football-fish' | 'clownfish'
   | 'surgeonfish' | 'butterfly-fish' | 'sea-horse' | 'moray-eel' | 'napoleonfish' | 'ray' | 'ocean-sunfish' | 'mahi-mahi'
   | 'giant-trevally' | 'tuna' | 'blue-marlin' | 'suckerfish' | 'oarfish' | 'saw-shark' | 'hammerhead-shark'
   | 'great-white-shark' | 'whale-shark' | 'barreleye' | 'coelacanth';
@@ -64,7 +64,8 @@ export const FISH: Record<FishId, Fish> = {
   dab: { months: span(10, 4), hours: ALL_DAY, size: 3, weight: 3 },
   squid: { months: span(12, 8), hours: ALL_DAY, size: 3, weight: 2 },
   'sea-butterfly': { months: span(12, 3), hours: ALL_DAY, size: 1, weight: 2 },
-  'puffer-fish': { months: span(11, 2), hours: ALL_DAY, size: 3, weight: 1 },
+  blowfish: { months: span(11, 2), hours: [21, 4], size: 3, weight: 1 },
+  'puffer-fish': { months: span(7, 9), hours: ALL_DAY, size: 3, weight: 1 },
   'barred-knifejaw': { months: span(3, 11), hours: ALL_DAY, size: 3, weight: 1 },
   // the reef fish of spring and summer
   'zebra-turkeyfish': { months: span(4, 11), hours: ALL_DAY, size: 3, weight: 2 },

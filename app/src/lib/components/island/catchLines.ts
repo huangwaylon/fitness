@@ -18,6 +18,7 @@ export const CATCH_LINES: Record<FishId | PondFishId | BugId | JunkId | SeaId, r
   dab: ["カレイを 釣り上げたー！\n見た？ カレイな さおさばき！", "I caught a dab! Not bad!"],
   squid: ["イカを 釣り上げた！\nゲッソー！", "I caught a squid! Do they...not actually \"bloop\"?"],
   "sea-butterfly": ["クリオネを 釣り上げた！\nちょっと 天使な気分！", "I caught a sea butterfly! Try not to confuse it for a sea moth!"],
+  "blowfish": ["フグを 釣り上げた！\nてっさ、てっちり、フグざんまい！", "I caught a blowfish! I'm blown away!"],
   "puffer-fish": ["ハリセンボンを 釣り上げた！\nイテテテ・・・", "I caught a puffer fish! I thought you would be tougher, fish!"],
   "barred-knifejaw": ["イシダイを 釣り上げた！\nあらいその 王者だー！！", "I caught a barred knifejaw! They must have a hard time eating!"],
   "zebra-turkeyfish": ["ミノカサゴを 釣り上げた！\nヒレに毒があるから 触るとキケン！", "I caught a zebra turkeyfish! Land, air, water—make up your mind!"],

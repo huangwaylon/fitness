@@ -125,7 +125,7 @@ const SPECS: Record<string, Spec> = {
 // Scene critters (docs/design.md#scene-interactions): the critterpedia icon of each catch (fish, bugs, junk), shown
 // ~36px for a moment after a catch and only loaded then (island/critters.ts critterArt).
 for (const name of [
-  'Sea Bass', 'Horse Mackerel', 'Olive Flounder', 'Red Snapper', 'Dab', 'Squid', 'Sea Butterfly', 'Puffer Fish',
+  'Sea Bass', 'Horse Mackerel', 'Olive Flounder', 'Red Snapper', 'Dab', 'Squid', 'Sea Butterfly', 'Blowfish', 'Puffer Fish',
   'Barred Knifejaw', 'Anchovy', 'Common Butterfly', 'Yellow Butterfly', 'Tiger Butterfly', 'Darner Dragonfly',
   'Red Dragonfly', 'Firefly', 'Moth', 'Bell Cricket', 'Cricket', 'Ladybug', 'Boot', 'Old Tire', 'Empty Can',
   'Peacock Butterfly', 'Emperor Butterfly', 'Honeybee', 'Banded Dragonfly', 'Robust Cicada', 'Evening Cicada',
