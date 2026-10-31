@@ -44,6 +44,8 @@
   import FruitTree from './FruitTree.svelte';
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
+  import Weather from './Weather.svelte';
+  import { raining, weather } from './weatherNow.svelte.ts';
   import Balloon from './Balloon.svelte';
   import Fireworks from './Fireworks.svelte';
   import SceneTaps from './SceneTaps.svelte';
@@ -273,8 +275,10 @@
     const offStep = onStep((_id, x, y) => {
       if (covered || life.hidden) return;
       const k = hitStage(x, y).kind;
-      if (k === 'sand') cue('footstep-sand');
-      else if (k !== 'sea') cue(season === 'winter' ? 'footstep-snow' : 'footstep-grass');
+      if (k === 'sea') return;
+      if (raining()) cue('footstep-splash');
+      else if (k === 'sand') cue('footstep-sand');
+      else cue(season === 'winter' ? 'footstep-snow' : 'footstep-grass');
     });
     return () => {
       offStep();
@@ -309,10 +313,11 @@
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
 
-<div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
+<div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
   <Sky {tod}>
     {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
   </Sky>
+  {#if live}<Weather where="sky" />{/if}
   {#if live}<Fireworks bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="stage">
@@ -356,7 +361,7 @@
       </div>
     {/each}
 
-    <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" />
+    <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={live && raining()} />
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
@@ -368,10 +373,11 @@
       <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} />
     {/if}
     <div class="tint"></div>
+    {#if live}<Weather where="stage" />{/if}
     {#if live && nhEvent?.id === 'halloween'}<Halloween scene={sceneEl} night={nhEvent.night} />{/if}
     {#if live && bday.length}<Birthday {view} people={bday} date={today} />{/if}
     {#if live && (wedding.arch || wedding.day)}<Wedding scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
-    <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>
+    <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={live ? weather.sky === 'snow' : undefined} /></div>
   </div>
 </div>
 

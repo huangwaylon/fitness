@@ -284,10 +284,32 @@ flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · centre sta
 
 ### Particles and events
 
-≤ 3 particles (petals, maple leaves, snow, summer fireflies). Events (`eventsAt`): cherry blossom Apr 1–10, maple week
+≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Events (`eventsAt`): cherry blossom Apr 1–10, maple week
 Nov 16–25, Toy Day Dec 24, the balloon present; the fireworks keep their own schedule ([Fireworks](#fireworks)). Only
 `transform` and `opacity` animate; everything pauses while hidden (`data-paused`); a sheet also pauses particles and
 idle life (`data-covered`).
+
+### Weather
+
+`island/weather.ts` (pure), `island/weatherNow.svelte.ts` (the state, each minute), `island/Weather.svelte`,
+`e2e/weather.spec.ts`. NH's weather, seeded by the date (a weather day runs 05:00 → 05:00), so both phones agree:
+about one day in six is wet: rain all day (light or a downpour), a wet morning (to 12:00), or heavy rain that clears at
+16:00 and leaves a **rainbow** 16:00–17:00 (building to its peak at half past; 1 in 8 double). In December–February a
+wet day snows instead (about one in four; light or heavy). Fine days only: **fog** at 07:00 October–March (1 in 8),
+the **aurora** on winter nights 19:00–04:00 (1 in 10, never on a meteor shower's night). NH's fireworks days (August
+Sundays, Dec 31, Jan 1) and meteor shower nights are always fine.
+
+- **Look:** the sky goes grey (an overcast over the sky, darker at night); a wet day's darker multiply tint over land
+  and sea; rain is ONE tiled layer of streaks moved by transform (denser and faster in a downpour), snow two slow tiled
+  layers plus the three official snowflakes (they fall only on snow days now, not every winter day); fog a haze with
+  two drifting banks; the rainbow soft arcs low in the sky's right; the aurora three swaying curtains of light. All over
+  the time-of-day tint and under every control; paused with the scene.
+- **Sound:** the hour's rain or snow arrangement (`sound.weather`; a missing one falls back to the sunny hour: no
+  rain/snow files are in the manifest yet), the rain bed (louder in a downpour), footsteps splash in the rain.
+- **Critters (NH):** the coelacanth only in rain or snow; the snail only in the rain; NH's 34 "any except rain" bugs
+  (butterflies, moths, dragonflies, grasshoppers, crickets, mantises, the honeybee, the ladybug, fireflies, the mosquito…)
+  stay away while it rains, and a shaken bush lets nothing out. No shooting-star showers unless the night is clear.
+- `?weather=clear|rain|heavy|snow|fog|aurora|rainbow` (dev or `?demo`) forces one for the load, any hour.
 
 ### Trees
 
@@ -817,8 +839,8 @@ hourly music and opening are the user's own files; every effect is an original p
 
 ### Hourly music
 
-One track per **Tokyo hour** (`hourly.ts`) in sunny / rain / snow arrangements (`sound.weather`, sunny for now;
-`?weather=` previews; a missing variant falls back to the hour's sunny track). A 3 s crossfade on the hour; the next
+One track per **Tokyo hour** (`hourly.ts`) in sunny / rain / snow arrangements (`sound.weather`, from the island's
+[weather](#weather); a missing variant falls back to the hour's sunny track). A 3 s crossfade on the hour; the next
 file is fetched a minute early. Each file is a loop period plus a 3 s copy of its start; two `<audio>` decks hand over
 inside the copy (aligned to ~12 ms, 0.15 s crossfade), so the loop has no gap. Turning ミュージック on plays the
 opening theme until it ends or the panel closes. Under a sheet, the panel or the harvest the music is low-passed at 900 Hz.

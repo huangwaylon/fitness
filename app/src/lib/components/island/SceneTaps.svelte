@@ -36,6 +36,7 @@
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { nextStarMs, showerAt } from './meteor.ts';
+  import { weather } from './weatherNow.svelte.ts';
   import { eggTime, eventAt, forcedEvent } from './events.ts';
   import { eggInBalloon } from './eggs.ts';
   import { LONG_REACH, approach } from './avatar.ts';
@@ -337,7 +338,7 @@
     };
   });
 
-  // The night sky's shooting stars (stars.ts): on a clear night (NH's star hours) a shower every 3–8 minutes of
+  // The night sky's shooting stars (stars.ts): on a clear night (no rain or snow: weatherNow.svelte.ts) (NH's star hours) a shower every 3–8 minutes of
   // on-screen night, the first soon after the night sky shows; on a meteor shower's night (meteor.ts, Celeste's) one
   // every 3–8 s. Not while covered or hidden (the countdown holds).
   const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
@@ -362,7 +363,7 @@
   const starHours = $derived(inStarHours(jst(minuteNow()).hour));
   let showerIn = nextShowerMs(Math.random, true);
   $effect(() => {
-    if (!night || shower || !starHours || !enabled()) return;
+    if (!night || shower || !starHours || weather.sky !== 'clear' || !enabled()) return;
     let started = performance.now();
     let id: ReturnType<typeof setTimeout>;
     const arm = () => {
