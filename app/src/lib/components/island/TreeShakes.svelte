@@ -187,7 +187,7 @@
   {/if}
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={critterArt('wasp')} text={c.text} ms={Math.min(5600, 2600 + c.text.length * 45)} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={critterArt('wasp')} parts={c.text} ondone={() => card?.n === c.n && (card = null)} />{/key}
   {/if}
 </div>
 

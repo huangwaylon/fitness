@@ -22,6 +22,15 @@ export interface ChatCtx {
 
 export interface Line { key: string; params?: Record<string, string | number> }
 
+/** Lines with a second page (`<key>.more`): NH villagers often go on a little. */
+export const FOLLOW_UPS: ReadonlySet<string> = new Set([
+  'chat.lazy.0', 'chat.lazy.5', 'chat.peppy.0', 'chat.peppy.4', 'chat.smug.3', 'chat.smug.6', 'chat.cranky.2', 'chat.cranky.5',
+  'chat.normal.1', 'chat.normal.4', 'chat.jock.1', 'chat.jock.7', 'chat.snooty.1', 'chat.snooty.5', 'chat.sisterly.1',
+  'chat.sisterly.3', 'chat.special.0', 'chat.day.any.0'
+]);
+/** The pages of a line: its own, then its follow-up if it has one (i18n keys). */
+export const pagesOf = (l: Line): string[] => (FOLLOW_UPS.has(l.key) ? [l.key, `${l.key}.more`] : [l.key]);
+
 /** How often a tap asks about the day instead of a personality line. */
 const DAY_ODDS = 0.3;
 

@@ -23,6 +23,7 @@
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
+  import Visitor from './Visitor.svelte';
   import { water } from './sceneDay.ts';
   import { findArt } from './beach.ts';
   import { dayKey } from '#lib/time/clock.ts';
@@ -36,8 +37,10 @@
     enabled: () => boolean;
     /** The pointerdown that just closed a tree's popup: that tap only closes it. */
     swallowed?: () => Event | null;
+    /** A visitor's line in the speech balloon (IslandScene's Talk). */
+    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string }) => void;
   }
-  let { scene, season, tod, enabled, swallowed }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say }: Props = $props();
 
   type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow';
   interface Fx {
@@ -67,6 +70,7 @@
   let critters = $state<ReturnType<typeof Critters>>();
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
+  let visitor = $state<ReturnType<typeof Visitor>>();
   /** A shooting star is crossing until then (a tap in the sky meanwhile is a wish: NH). */
   let shootUntil = 0;
 
@@ -132,9 +136,10 @@
     const calm = reducedMotion();
     // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
     if (!calm && critters?.tap(e.clientX, e.clientY)) return;
-    // then the day's finds: a shell, a fragment, the bottle, a dig spot
+    // a visitor on the beach answers with a line (K.K. with a song); then the day's finds (a shell, a fragment, the
+    // bottle, a dig spot) and the island's care (a weed to pull, the rock by the hedge)
+    if (visitor?.tap(e.clientX, e.clientY)) return;
     if (finds?.tap(e.clientX, e.clientY)) return;
-    // and the island's care: a weed to pull, the rock by the hedge
     if (care?.tap(e.clientX, e.clientY)) return;
     // the sky ends at the scene's horizon, which on a tall phone rises above the stage's own (open sea behind the island)
     if (y < horizonPx(stage, r)) return sky(e, r, x, y, calm);
@@ -292,6 +297,7 @@
 <Critters bind:this={critters} {scene} {tod} {enabled} />
 <Finds bind:this={finds} {scene} {enabled} />
 <Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
+<Visitor bind:this={visitor} {scene} {enabled} {say} />
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}
