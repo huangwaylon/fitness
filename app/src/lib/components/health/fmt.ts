@@ -13,6 +13,9 @@ export function metricText(m: Metric, v: number): string {
 /** An axis number: `600`, `8,000`, `12k`. */
 export const axisNum = (v: number): string => (v >= 10000 ? `${Math.round(v / 100) / 10}k` : formatNum(v));
 
+/** A value over its bar: `620`, `9.2k` (short enough for a day's column). */
+export const barNum = (v: number): string => (v >= 1000 ? `${(Math.floor(v / 100) / 10).toFixed(1)}k` : formatNum(Math.floor(v)));
+
 /** A nice axis: 0 to a round top over `max`, about three steps. */
 export function niceTicks(max: number): number[] {
   if (!(max > 0)) return [0, 1];
