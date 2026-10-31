@@ -26,7 +26,7 @@ export type EventType = (typeof EVENT_TYPES)[number];
  * A `find` (docs/backend.md#events): the island's scenery, a catch or a pick-up for the shared ずかん. It never earns
  * or costs ベル. `kind` is one of these; `id` a catalog id (the client's lists may grow without a redeploy).
  */
-const FIND_KINDS = ['fish', 'bug', 'fossil', 'shell', 'fragment'] as const;
+const FIND_KINDS = ['fish', 'bug', 'sea', 'fossil', 'shell', 'fragment'] as const;
 export type FindKind = (typeof FIND_KINDS)[number];
 /** A catalog id: lowercase letters, digits and dashes, starting with a letter, at most 48 characters. */
 const FIND_ID_RE = /^[a-z][a-z0-9-]{0,47}$/;

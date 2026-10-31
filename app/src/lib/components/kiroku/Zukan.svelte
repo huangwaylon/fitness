@@ -2,7 +2,7 @@
   // A ずかん page (docs/design.md "Zukan"): every entry of one kind in the game's order, the official icon (lazy) and the
   // name for the ones either of us has found, a silhouette and ？？？ for the rest; the fossils' dinosaurs each as a set
   // under its name with its pieces found (「Tレックス 2/3」). A tap on a found one shows it on top:
-  // the icon, the name, when and who found it first, and (fish and bugs) NH's catch line.
+  // the icon, the name, when and who found it first, and (fish, bugs, sea creatures) NH's catch line.
   import { tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Avatar from '../characters/Avatar.svelte';
@@ -33,7 +33,7 @@
     line = '';
     await tick();
     detail?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    if (kind !== 'fish' && kind !== 'bug') return;
+    if (kind !== 'fish' && kind !== 'bug' && kind !== 'sea') return;
     const { CATCH_LINES } = await import('../island/catchLines.ts');
     if (pick?.id !== e.id) return;
     const l = CATCH_LINES[e.id as keyof typeof CATCH_LINES]?.[i18n.locale === 'en' ? 1 : 0] ?? '';

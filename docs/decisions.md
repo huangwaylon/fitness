@@ -264,6 +264,15 @@ already do something and a stick fights the stage and the sheets. Kept snappy: 2
 never waits for it. Spots are measured so a standing villager never covers a control. Transitions only, no rAF; a sheet
 stops it. It always animates, reduced motion or not (user).
 
+### Sea creatures by diving, a find kind of their own
+NH's 40 sea creatures come by diving: a bubble spot in the sea takes a fish shadow's turn (1 in 4), so the sea still
+holds one thing at a time and the island is no busier; a tap dives, and NH's speeds become a second tap on a darting
+shadow in time (the quickest sometimes get clean away). They are their own ずかん page, 「うみのさち」, recorded as a
+`find` of kind `sea` (FIND_KINDS gained it: the script was rebuilt and redeployed, its ids still free-form); the pearl
+NH finds while diving is a shell (かいがら), so its kind needs nothing new. Pascal (a scallop for a pearl) is left to the
+visitors. Why: the user wants more to catch, faithful to NH and not stiffly seasonal; a dive spot reads as NH's and
+costs one small layer, and the creatures' data, names, lines and sprites all load only when first needed.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

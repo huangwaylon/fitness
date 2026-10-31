@@ -1,11 +1,12 @@
-// The ずかん's catalog (docs/design.md "Zukan"): every fish, bug, fossil and shell the island has, in the game's order,
+// The ずかん's catalog (docs/design.md "Zukan"): every fish, bug, sea creature, fossil and shell the island has, in the game's order,
 // with each entry's icon and name key. Pure; the panel's ずかん reads it with the model's finds (model/finds.ts).
 import type { FindKind } from '#lib/contract/api.ts';
 import { BUGS, FISH, critterArt } from '../island/critters.ts';
 import { FOSSILS, FOSSIL_SETS, SHELLS, findArt } from '../island/beach.ts';
+import { PEARL, SEA } from '../island/sea.ts';
 
 export type ZukanKind = Exclude<FindKind, 'fragment'>;
-export const ZUKAN_KINDS: readonly ZukanKind[] = ['fish', 'bug', 'fossil', 'shell'];
+export const ZUKAN_KINDS: readonly ZukanKind[] = ['fish', 'bug', 'sea', 'fossil', 'shell'];
 
 export interface Entry { id: string; art: string; name: string }
 
@@ -13,8 +14,10 @@ export interface Entry { id: string; art: string; name: string }
 export function entries(kind: ZukanKind): Entry[] {
   if (kind === 'fish') return Object.keys(FISH).map((id) => ({ id, art: critterArt(id as keyof typeof FISH), name: `critter.name.${id}` }));
   if (kind === 'bug') return Object.keys(BUGS).map((id) => ({ id, art: critterArt(id as keyof typeof BUGS), name: `critter.name.${id}` }));
+  if (kind === 'sea') return Object.keys(SEA).map((id) => ({ id, art: critterArt(id as keyof typeof SEA), name: `sea.name.${id}` }));
   if (kind === 'fossil') return FOSSILS.map(fossil);
-  return SHELLS.map(([id]) => ({ id, art: findArt(id), name: `beach.name.${id}` }));
+  // the beach's shells, then the pearl from diving
+  return [...SHELLS.map(([id]) => id), PEARL].map((id) => ({ id, art: findArt(id), name: `beach.name.${id}` }));
 }
 const fossil = (id: string): Entry => ({ id, art: findArt(id), name: `beach.name.${id}` });
 
@@ -37,5 +40,6 @@ export const bare = (name: string): string => name.replace(/^(an?|some) /, '');
 
 /** The icon that stands for a kind on the summary card. */
 export const KIND_ART: Record<ZukanKind, string> = {
-  fish: critterArt('sea-bass'), bug: critterArt('common-butterfly'), fossil: findArt('ammonite'), shell: findArt('cowrie')
+  fish: critterArt('sea-bass'), bug: critterArt('common-butterfly'), sea: critterArt('octopus'), fossil: findArt('ammonite'),
+  shell: findArt('cowrie')
 };

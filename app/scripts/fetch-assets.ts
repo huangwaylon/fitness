@@ -126,7 +126,14 @@ for (const name of [
   // the rest of NH's bugs the island can hold (a flea off a villager, a bagworm or a spider from a shaken tree)
   'Common Bluebottle', 'Great Purple Emperor', 'Madagascan Sunset Moth', 'Mosquito', 'Stinkbug', 'Man-Faced Stink Bug',
   'Tiger Beetle', 'Earth-Boring Dung Beetle', 'Walking Leaf', 'Violin Beetle', 'Citrus Long-Horned Beetle',
-  'Rosalia Batesi Beetle', 'Scarab Beetle', 'Mole Cricket', 'Tarantula', 'Scorpion', 'Flea', 'Bagworm', 'Spider'
+  'Rosalia Batesi Beetle', 'Scarab Beetle', 'Mole Cricket', 'Tarantula', 'Scorpion', 'Flea', 'Bagworm', 'Spider',
+  // NH's 40 sea creatures, caught by diving at a bubble spot (island/sea.ts)
+  'Seaweed', 'Sea Grapes', 'Sea Cucumber', 'Sea Pig', 'Sea Star', 'Sea Urchin', 'Slate Pencil Urchin', 'Sea Anemone',
+  'Moon Jellyfish', 'Sea Slug', 'Pearl Oyster', 'Mussel', 'Oyster', 'Scallop', 'Whelk', 'Turban Shell', 'Abalone',
+  'Gigas Giant Clam', 'Chambered Nautilus', 'Octopus', 'Umbrella Octopus', 'Vampire Squid', 'Firefly Squid', 'Gazami Crab',
+  'Dungeness Crab', 'Snow Crab', 'Red King Crab', 'Acorn Barnacle', 'Spider Crab', 'Tiger Prawn', 'Sweet Shrimp',
+  'Mantis Shrimp', 'Spiny Lobster', 'Lobster', 'Giant Isopod', 'Horseshoe Crab', 'Sea Pineapple', 'Spotted Garden Eel',
+  'Flatworm', "Venus' Flower Basket"
 ])
   SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 // Beach finds (docs/design.md#beach-finds): NH's seashells, fossils (the assessed icon), star fragments, the message
@@ -134,7 +141,8 @@ for (const name of [
 const FIND_FILES: Record<string, string> = {
   'sea-snail': 'Sea_Snail_NH_Inv_Icon.png', cowrie: 'Cowrie_NH_Inv_Icon.png', 'venus-comb': 'Venus_Comb_NH_Inv_Icon.png',
   'sand-dollar': 'Sand_Dollar_NH_Inv_Icon.png', coral: 'Coral_NH_Inv_Icon.png', conch: 'Conch_NH_Inv_Icon.png',
-  'giant-clam': 'Giant_Clam_NH_Inv_Icon.png', 'summer-shell': 'Summer_Shell_NH_Inv_Icon.png', 'message-bottle': 'Message_Bottle_NH_Inv_Icon.png', shovel: 'Shovel_NH_Icon.png',
+  'giant-clam': 'Giant_Clam_NH_Inv_Icon.png', 'summer-shell': 'Summer_Shell_NH_Inv_Icon.png',
+  pearl: 'Pearl_NH_Inv_Icon.png', 'message-bottle': 'Message_Bottle_NH_Inv_Icon.png', shovel: 'Shovel_NH_Icon.png',
   'star-fragment': 'Star_Fragment_NH_Inv_Icon.png', 'large-star-fragment': 'Large_Star_Fragment_NH_Inv_Icon.png'
 };
 for (const z of ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpius', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'])

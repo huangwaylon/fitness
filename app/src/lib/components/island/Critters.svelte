@@ -7,6 +7,9 @@
   //   sound and NH's 「！」 over it. While the bobber is out any tap is the reel: on the bite (within 1.6 s) it catches
   //   the fish; a first tap any earlier only makes it hesitate (it backs off, comes back, nibbles and bites later), a
   //   second early tap or none in time and it flees. 1 in 14 the line brings up a boot, a tire or a can.
+  //   Diving (island/sea.ts, loaded with the first bubble spot): 1 sea turn in 4 brings a spot of bubbles rising instead
+  //   of a shadow; a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
+  //   shadow and a second tap on it in time catches it, or it gets away. Now and then the spot holds NH's pearl.
   //   Bugs (NH's by month and hour): butterflies, a bee or a ladybug over the flower beds, a dragonfly over the hedge,
   //   fireflies on summer nights, grasshoppers, crickets and mantises in the grass, a cicada perched on a trunk.
   //   Bugs: a tap on one swings the net (caught); a tap close by startles it away. A tarantula or a scorpion (night,
@@ -32,6 +35,9 @@
   import { LONG_REACH, approach, goHomeLater, turnTo } from './avatar.ts';
   import { HOLD_MS, actors, holdUp, putAway, useTool } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { findArt } from './beach.ts';
+  import type { DiveItem } from './sea.ts';
+  import { loadNames } from './catchLine.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
     fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, stalkTap, type BitePlan,
@@ -76,6 +82,14 @@
   let bug = $state<Bug | null>(null);
   let card = $state<Card | null>(null);
   let net = $state<Net | null>(null);
+  /** A spot of bubbles in the sea: something to dive for. */
+  let bubbles = $state<{ n: number; item: DiveItem; x: number; y: number; box: Box } | null>(null);
+  /** A dive: the splash, then (a quick one) its shadow darting off, catchable until `until`. */
+  let diving = $state<{ n: number; item: DiveItem; x: number; y: number; ms: number; size: number; chase: boolean; until: number; gone: boolean } | null>(null);
+  /** The sea creatures' module (island/sea.ts): loaded with the first bubble spot, out of the island's first load. */
+  let S: typeof import('./sea.ts') | null = null;
+  let seaChunk: Promise<typeof import('./sea.ts')> | null = null;
+  const loadSea = () => (seaChunk ??= import('./sea.ts').then((m) => (S = m)).catch((e) => ((seaChunk = null), Promise.reject(e))));
   /** Earth flying up where a mole cricket was dug up. */
   let dig = $state<Net | null>(null);
   let seq = 0;
@@ -95,7 +109,7 @@
   function clearAll() {
     for (const id of timers) clearTimeout(id);
     timers.clear();
-    fish = cast = bug = card = net = dig = null;
+    fish = cast = bug = card = net = dig = bubbles = diving = null;
   }
 
   // ---------- geometry ----------
@@ -455,17 +469,75 @@
     spawnBug(bushBug(month, hour, rand), { x: HEDGE_X[i], y: HEDGE_BASE - BUSH_U * 0.7 });
   }
 
+  // ---------- diving ----------
+  /** A spot of bubbles rises somewhere off the beach (where a shadow would swim), with a sea creature (or a pearl) under it. */
+  async function spawnBubbles(stay = true, want?: string) {
+    const m = await loadSea().catch(() => null);
+    const g = geo();
+    if (!m || !g || fish || bubbles || diving) return;
+    const side = rand() < 0.5 ? -1 : 1;
+    const box = seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1);
+    if (!box) return;
+    const { month, hour } = jst(now());
+    const item = (want as DiveItem | undefined) ?? m.pickDive(month, hour, rand);
+    preload(item === m.PEARL ? findArt(item) : critterArt(item));
+    void loadLines().catch(() => {});
+    const b = { n: ++seq, item, box, ...inBox(box) };
+    bubbles = b;
+    if (stay) later(() => bubbles?.n === b.n && (bubbles = null), m.BUBBLE_STAY_MS);
+  }
+  /** NH's dive at the bubbles: a splash and a ripple; what's there is caught, darts off as a shadow, or is gone. */
+  function diveAt(b: NonNullable<typeof bubbles>) {
+    const m = S!;
+    bubbles = null;
+    sceneSfx('splash');
+    const speed = m.speedOf(b.item);
+    const out = m.dive(speed, rand);
+    const size = b.item === m.PEARL ? 1 : m.SEA[b.item].size;
+    const d = { n: ++seq, item: b.item, x: b.x, y: b.y, ms: 0, size, chase: false, until: 0, gone: false };
+    diving = d;
+    later(() => {
+      if (diving?.n !== d.n) return;
+      if (out === 'catch') return caught(d);
+      // a quick one: its shadow darts off a little way (and, clean away, keeps going)
+      // within its patch of sea (on screen), away from the nearer edge if it's close
+      const room = { l: d.x - b.box.x0, r: b.box.x1 - d.x };
+      const dir = room.l < 30 ? 1 : room.r < 30 ? -1 : rand() < 0.5 ? -1 : 1;
+      const dx = dir * Math.min(between(26, 40), Math.max(room.l, room.r)), dy = between(-8, 8);
+      const window = out === 'escape' ? 0 : m.CHASE_MS[speed];
+      diving = { ...d, chase: true, ms: 320, x: clamp(d.x + dx, b.box.x0, b.box.x1), y: clamp(d.y + dy, b.box.y0, b.box.y1), until: performance.now() + 320 + window };
+      if (out === 'escape') return later(() => getAway(d.n), 350);
+      later(() => getAway(d.n), 320 + window);
+    }, 450);
+  }
+  function getAway(n: number) {
+    const d = diving;
+    if (d?.n !== n) return;
+    sceneSfx('flee');
+    diving = { ...d, ms: 650, gone: true, x: d.x + Math.sign(d.x - 195 || 1) * 40 };
+    later(() => diving?.n === n && (diving = null), 700);
+  }
+  function caught(d: NonNullable<typeof diving>) {
+    diving = null;
+    sceneSfx('catch');
+    void show(d.item, d.x, d.y);
+  }
+
   // ---------- the catch ----------
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
    *  (Plate.svelte places it clear of every control). */
-  async function show(item: FishId | JunkId | BugId, x: number, y: number) {
-    // the shared ずかん: the first catch of each fish or bug (junk isn't a find) gets a second page saying so
-    const added = item in FISH ? recordFind('fish', item) : item in BUGS ? recordFind('bug', item) : false;
+  async function show(item: FishId | JunkId | BugId | DiveItem, x: number, y: number) {
+    // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
+    // a second page saying so
+    const pearl = item === 'pearl';
+    const added = pearl ? recordFind('shell', item) : item in FISH ? recordFind('fish', item) : item in BUGS ? recordFind('bug', item)
+      : S && item in S.SEA ? recordFind('sea', item) : false;
     const n = ++seq;
-    const text = await catchLine(item);
+    const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item);
     if (seq !== n) return;
-    card = { n, x, y, art: critterArt(item), parts: added ? [text, t('zukan.added')] : [text] };
-    holdUp('mine', critterArt(item), HOLD_MS);
+    const art = pearl ? findArt(item) : critterArt(item);
+    card = { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text] };
+    holdUp('mine', art, HOLD_MS);
   }
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
@@ -547,6 +619,18 @@
       }
     }
     const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
+    const reach = Math.max(S?.DIVE_U ?? 30, 22 * g.k); // a 44px target at least
+    const d = diving;
+    if (d?.chase && !d.gone && performance.now() <= d.until && Math.hypot(x - d.x, y - d.y) <= reach * 1.2) {
+      sceneSfx('splash');
+      caught(d);
+      return true;
+    }
+    const spot = bubbles;
+    if (spot && S && hitStage(x, y).kind === 'sea' && Math.hypot(x - spot.x, y - spot.y) <= reach) {
+      diveAt(spot);
+      return true;
+    }
     const f = fish;
     if (f && !f.gone && offshore(x, y) && hitStage(x, y).kind === 'sea' && Math.hypot(x - f.x, y - f.y) < CAST_U) {
       castAt(x, y);
@@ -560,7 +644,7 @@
   // tab (and the critters leave), and resumes where it was.
   let remaining = nextSpawnMs(rand, true);
   /** `?critter=` (dev or ?demo) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
-  const pinned = typeof location !== 'undefined' && new URLSearchParams(location.search).has('critter') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
+  const pinned = typeof location !== 'undefined' && ['critter', 'sea'].some((k) => new URLSearchParams(location.search).has(k)) && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
   /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
   const forceFlea = typeof location !== 'undefined' && new URLSearchParams(location.search).has('flea') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
   $effect(() => {
@@ -573,8 +657,9 @@
     };
     const visit = () => {
       const { month, hour } = jst(now());
-      const kind = spawnKind({ fish: !!fish, bug: !!bug }, pickBug(month, hour, () => 0) !== null, rand);
+      const kind = spawnKind({ sea: !!(fish || bubbles || diving), bug: !!bug }, pickBug(month, hour, () => 0) !== null, rand);
       if (kind === 'fish') spawnFish();
+      else if (kind === 'sea') void spawnBubbles();
       else if (kind === 'bug') spawnBug(pickBug(month, hour, rand));
       remaining = nextSpawnMs(rand);
       arm();
@@ -589,12 +674,15 @@
 
   onMount(() => {
     const q = new URLSearchParams(location.search);
-    const want = q.get('critter');
-    if (!want || !(import.meta.env.DEV || q.has('demo'))) return;
+    const want = q.get('critter'), dive = q.get('sea');
+    if (!(want || dive) || !(import.meta.env.DEV || q.has('demo'))) return;
     const go = () => {
       if (reducedMotion()) return;
       if (!enabled()) return later(go, 300);
-      if (want === 'fish') spawnFish(false);
+      // ?sea=<id> | pearl | (anything else: the usual pick)
+      if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined));
+      else if (want === 'fish') spawnFish(false);
+      else if (!want) return;
       else if (want in FISH) spawnFish(false, want as FishId);
       else if (want === 'flea') spawnBug('flea', { x: 150, y: 250 }, false);
       else if (want in BUGS && BUGS[want as BugId].flight !== 'dangle') spawnBug(want as BugId, undefined, false);
@@ -605,6 +693,19 @@
 </script>
 
 <div class="sea-life" aria-hidden="true">
+  {#if bubbles}
+    <!-- NH's dive spot: little bubbles rising and popping at the surface -->
+    <span class="mover bubbles" data-bubbles={bubbles.item} style:translate="{U(bubbles.x)} {U(bubbles.y)}">
+      {#each [[-3, 0], [2.5, 0.5], [-0.5, 1], [4, 1.5]] as [dx, d], i (i)}<i style:--dx={U(dx)} style:animation-delay="{d * 0.45}s"></i>{/each}
+    </span>
+  {/if}
+  {#if diving}
+    {@const d = diving}
+    <span class="mover dive" class:gone={d.gone} data-dive={d.chase ? 'chase' : 'splash'} style:translate="{U(d.x)} {U(d.y)}" style:transition-duration="{d.ms}ms">
+      {#if !d.chase}<i class="ripple big"></i><span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+      {:else}<span class="shadow"><i class="fin" style:--w={U(8 + d.size * 4.5)}></i></span>{/if}
+    </span>
+  {/if}
   {#if fish}
     <span class="mover shadow {fish.shape ? `is-${fish.shape}` : ''}" class:gone={fish.gone} class:dash={fish.dash} data-critter="fish" bind:this={fishEl}
       style:translate="{U(fish.x)} {U(fish.y)}" style:transition-duration="{fish.ms}ms" style:--w={U(sizeU(fish))}>
@@ -702,6 +803,17 @@
   }
   @keyframes wag { from { transform: skewY(-4deg) scale(1, .96); } to { transform: skewY(4deg) scale(.97, 1); } }
   @keyframes fade-in { from { opacity: 0; } }
+
+  /* the dive spot: bubbles rise from a point and pop; the dive: a splash, then a quick one's shadow darting off */
+  .bubbles i {
+    position: absolute; left: var(--dx); top: 0; width: calc(3.2 * var(--su)); height: calc(3.2 * var(--su)); margin: calc(-1.6 * var(--su));
+    border-radius: 50%; border: 1px solid rgba(255, 255, 255, .9); background: rgba(255, 255, 255, .25);
+    animation: bubble 1.8s ease-out infinite both;
+  }
+  @keyframes bubble { from { transform: translateY(calc(2 * var(--su))) scale(.4); opacity: 0; } 25% { opacity: 1; } 80% { opacity: .9; } to { transform: translateY(calc(-5 * var(--su))) scale(1.15); opacity: 0; } }
+  .dive.mover { transition-timing-function: cubic-bezier(.2, .7, .4, 1); }
+  .dive.gone { opacity: 0; }
+  .dive .shadow { animation: fade-in .2s ease-out both; }
 
   /* the line: a thin arc from the beach to the bobber, drawn once the bobber lands */
   .line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; opacity: 0; transition: opacity .25s; }

@@ -1,12 +1,13 @@
-// NH's catch lines (docs/design.md "Scene interactions"): what the player says on catching each fish and bug (and
+// NH's catch lines (docs/design.md "Scene interactions"): what the player says on catching each fish, bug and sea creature (and
 // each piece of junk), the official New Horizons text: English from Nookipedia (the `catchphrase` field), Japanese from
-// the game's own messages (SYS_Get_Fish / SYS_Get_Insect / Trash, as datamined in jameskokoska/ACNH-Pocket-Guide).
+// the game's own messages (SYS_Get_Fish / SYS_Get_Insect / the dive catches / Trash, as datamined in jameskokoska/ACNH-Pocket-Guide).
 // The first of each critter's lines; a line break where the game has one. Loaded with the first critter of a session
-// (Critters.svelte), out of the first load. Keys: island/critters.ts ids.
+// (Critters.svelte), out of the first load. Keys: island/critters.ts and island/sea.ts ids.
 import type { BugId, FishId, JunkId } from './critters.ts';
+import type { SeaId } from './sea.ts';
 
 /** id → [ja, en]. */
-export const CATCH_LINES: Record<FishId | BugId | JunkId, readonly [string, string]> = {
+export const CATCH_LINES: Record<FishId | BugId | JunkId | SeaId, readonly [string, string]> = {
   "sea-bass": ["スズキを 釣り上げた！\n鈴木・・・じゃなくて、鱸なのね！", "I caught a sea bass! No, wait—it's at least a C+!"],
   "horse-mackerel": ["アジを 釣り上げた！\nさて、味は いかほどか？", "I caught a horse mackerel! Of course, mack...er...el."],
   "olive-flounder": ["カレイを 釣り上げたー\nって、んん？\nこれって よく見たら\nヒラメ・・・？ ヒラメなの？", "I caught an olive flounder! That's not the pits!"],
@@ -107,6 +108,46 @@ export const CATCH_LINES: Record<FishId | BugId | JunkId, readonly [string, stri
   spider: ["クモを つかまえた！\nスパイダー・キャッチ！！", "I caught a spider! I spied 'er first!"],
   tarantula: ["タランチュラを つかまえた！\n（マネしないでね！！）", "I caught a tarantula! This situation just got hairy!"],
   scorpion: ["サソリを つかまえた！\n毒があるから 触っちゃダメ～！", "I caught a scorpion! It was a sting operation!"],
+  seaweed: ["ワカメを とったよ！\nミネラルたっぷり！", "I got some seaweed! I couldn't kelp myself."],
+  "sea-grapes": ["ウミブドウを とったよ！\nプチプチ やみつきの食感！", "I got some sea grapes! Can't let these go sour."],
+  "sea-cucumber": ["ナマコを とったよ！\nコリコリ 大人の食感", "I got a sea cucumber! It's a bit cumbersome."],
+  "sea-pig": ["センジュナマコを とったよ！\nキモカワイイ！", "I got a sea pig! What's next? Air pigs?"],
+  "sea-star": ["ヒトデを とったよ！\n海の お星さま", "I got a sea star! Maybe it'll give me an autograph!"],
+  "sea-urchin": ["ウニを とったよ！\nうまいものには トゲがある", "I got a sea urchin! Wasn't even 'earchin for it."],
+  "slate-pencil-urchin": ["パイプウニを とったよ！\nトゲが太くて 尖ってない", "I got a slate pencil urchin! Its handwriting is gorgeous."],
+  "sea-anemone": ["イソギンチャクを とったよ！\n触手に ちょっと毒がある", "I got a sea anemone! The enemy of my anemone is my afrenome!"],
+  "moon-jellyfish": ["ミズクラゲを とったよ！\nちょっとだけ 毒がある", "I got a moon jellyfish! Now to find a sun peanutbutterfish."],
+  "sea-slug": ["ウミウシを とったよ！\nとってもカラフル！", "I got a sea slug! It's kinda salty about that."],
+  "pearl-oyster": ["アコヤガイを とったよ！\n真珠を作る貝だ", "I got a pearl oyster! Aw, shucks. Don't clam up now!"],
+  mussel: ["ムールガイを とったよ！\nう～ん、パエリア！", "I got a mussel! It's been working out."],
+  oyster: ["オイスターを とったよ！\n栄養たっぷり 海のミルク！", "I got an oyster! It's a little shellfish."],
+  scallop: ["ホタテを とったよ！\n貝柱が デカイ！", "I got a scallop! It otter be savored."],
+  whelk: ["バイガイを とったよ！\nおなじみの巻貝だ", "I got a whelk! Happy snails to ya."],
+  "turban-shell": ["サザエを とったよ！\nフタがついた 巻貝だ！", "I got a turban shell! It's totally TURB...ular!"],
+  abalone: ["アワビを とったよ！\nあこがれの 高級食材だ！", "I got an abalone! Why do I want a sandwich now?"],
+  "gigas-giant-clam": ["オオシャコガイを とったよ！\nカラに はさまれたら 大変だ～", "I got a gigas giant clam! It's kind of a big deal."],
+  "chambered-nautilus": ["オウムガイを とったよ！\nタコやイカの仲間だ", "I got a chambered nautilus! Is it on the naughty list?"],
+  octopus: ["タコを とったよ！\nスミに おけないヤツめ", "I got an octopus! It can give four hugs at once!"],
+  "umbrella-octopus": ["メンダコを とったよ！\n深海に漂う パラシュート", "I got an umbrella octopus! Too bad I'm already soaked."],
+  "vampire-squid": ["コウモリダコを とったよ！\n学名は、地獄の吸血鬼イカ！！\nタコなのに？！", "I got a vampire squid! A lot was at stake."],
+  "firefly-squid": ["ホタルイカを とったよ！\n神秘的に光ってる～", "I got a firefly squid! More like a glowswim squid."],
+  "gazami-crab": ["ガザミを とったよ！\nワタリガニとも言うのね", "I got a gazami crab! What a gripping find!"],
+  "dungeness-crab": ["ダンジネスクラブを とったよ！\nイチョウガニとも言うのか", "I got a Dungeness crab! Dun dun duuuun...geness."],
+  "snow-crab": ["ズワイガニを とったよ！\n深い海に棲む 冬の味覚", "I got a snow crab! It's giving me the cold shoulder."],
+  "red-king-crab": ["タラバガニを とったよ！\nカニはカニでも ヤドカリの仲間", "I caught a red king crab! It's royally flushed."],
+  "acorn-barnacle": ["フジツボを とったよ！\n実はエビの仲間だ", "I got an acorn barnacle! Will it grow into an oak barnacle?"],
+  "spider-crab": ["タカアシガニを とったよ！\n足、長～い！", "I got a spider crab! Water bugs can rest easy."],
+  "tiger-prawn": ["クルマエビを とったよ！\n高級なエビだ！", "I got a tiger prawn! I ain't lion!"],
+  "sweet-shrimp": ["アマエビを とったよ！\nとれたては そんなに甘くない", "I got a sweet shrimp! It's being very considerate."],
+  "mantis-shrimp": ["シャコを とったよ！\nパンチの破壊力は ハンパじゃない", "I got a mantis shrimp! Shrimply amazing!"],
+  "spiny-lobster": ["イセエビを とったよ！\nおめでたい エビの王様だ！", "I got a spiny lobster! It's got a lot of backbone!"],
+  lobster: ["ロブスターを とったよ！\nエビの世界の トップスター！", "I got a lobster! Lobjective complete."],
+  "giant-isopod": ["ギョエーッ！！！\nダイオウグソクムシが とれちゃった！\n深く もぐりすぎたか・・・？", "GAAAAH! I got a giant isopod! It's the crustodian of the sea."],
+  "horseshoe-crab": ["カブトガニを とったよ！\n生きた化石だ～", "I got a horseshoe crab! I hope it's lucky!"],
+  "sea-pineapple": ["ホヤを とったよ！\nオトナの味だ", "I got a sea pineapple! Your move, sea pizzas."],
+  "spotted-garden-eel": ["チンアナゴを とったよ！\n穴の中から コンニチハ！", "I got a spotted garden eel! Was it un-spotted before I saw it?"],
+  flatworm: ["ヒラムシを とったよ！\nうわ～っ、ひらべったい・・・", "I got a flatworm! Guess it forgot its spareworm."],
+  "venus-flower-basket": ["カイロウドウケツを とったよ！\nビーナスの花かご", "I got a Venus' flower basket! Why was she picking flowers here?"],
   boot: ["ながぐつを 釣り上げた！\n海や川を キレイにしよう！！", "I caught a boot! It, uh, wasn't made for swimming."],
   "old-tire": ["タイヤを 釣り上げた！\n・・・誰のクルマのかなぁ？", "I caught an old tire! I sure am tired of that!"],
   "empty-can": ["あきカンが 釣れた！\n捨てたら アカン！！", "I caught an empty can! Aren't you supposed to catch the fish before you can it?"]

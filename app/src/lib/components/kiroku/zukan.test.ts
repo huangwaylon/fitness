@@ -20,11 +20,13 @@ describe('the ずかん', () => {
       }
     }
   });
-  it('counts NH’s catalogue: 33 sea fish, 67 bugs, 73 fossils, 8 shells', () => {
+  it('counts NH’s catalogue: 33 sea fish, 67 bugs, 40 sea creatures, 73 fossils, 9 shells (the pearl from diving)', () => {
     expect(entries('fish')).toHaveLength(33);
     expect(entries('bug')).toHaveLength(67);
     expect(entries('fossil')).toHaveLength(73);
-    expect(entries('shell')).toHaveLength(8);
+    expect(entries('sea')).toHaveLength(40);
+    expect(entries('shell')).toHaveLength(9);
+    expect(entries('shell').at(-1)!.id).toBe('pearl');
   });
   it('lays the fossils out as NH’s museum: the standalone ones, then each dinosaur’s pieces under its name', () => {
     const g = groups('fossil');
