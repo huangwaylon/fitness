@@ -28,7 +28,9 @@ export type SoundId =
   // a shaken tree's wasps: their angry buzz
   | 'buzz'
   // visitors: K.K.'s little tune on his guitar (an original, a jingle: the music ducks under it)
-  | 'kk-song';
+  | 'kk-song'
+  // group stretching (island/stretching.ts): a bright little march on the piano for the stretches (an original, ~6 s)
+  | 'stretch-song';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
@@ -105,7 +107,8 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   sprinkle: { bus: 'sfx', gain: 0.35, jitter: 60, max: 1 },
   clonk: { bus: 'sfx', gain: 0.45, jitter: 50, max: 2 },
   buzz: { bus: 'sfx', gain: 0.4, jitter: 40, max: 1 },
-  'kk-song': { bus: 'sfx', gain: 0.6, jitter: 0, max: 1, jingle: true }
+  'kk-song': { bus: 'sfx', gain: 0.6, jitter: 0, max: 1, jingle: true },
+  'stretch-song': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

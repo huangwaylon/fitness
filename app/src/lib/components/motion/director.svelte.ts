@@ -173,6 +173,18 @@ const queue: { rid: ReactionId; swap: boolean }[] = [];
 let eventUntil = 0;
 let drainTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** Hold event reactions for `ms` (they queue and play after): a routine that must not be cut short (group stretching).
+ *  Direct touch feedback still plays at once. */
+export function holdEvents(ms: number) {
+  eventUntil = Math.max(eventUntil, Date.now() + ms);
+  if (drainTimer) {
+    // a queued reaction waits for the new end too
+    clearTimeout(drainTimer);
+    drainTimer = null;
+    drainLater();
+  }
+}
+
 /** Queued events (tests / the gallery). */
 export function queuedEvents(): ReactionId[] {
   return queue.map((q) => q.rid);

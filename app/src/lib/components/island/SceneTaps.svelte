@@ -25,6 +25,7 @@
   import Care from './Care.svelte';
   import Visitor from './Visitor.svelte';
   import type { Choice } from './pager.ts';
+  import TapeDeck from './TapeDeck.svelte';
   import { water } from './sceneDay.ts';
   import { findArt } from './beach.ts';
   import { dayKey } from '#lib/time/clock.ts';
@@ -42,8 +43,10 @@
     say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; choices?: Choice[] }) => void;
     /** Jack's trick (Visitor.svelte), when he gets no candy. */
     ontrick?: () => void;
+    /** Either of us met 🍑 Exercise today (group stretching's tape deck comes out). */
+    exercise?: boolean;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false }: Props = $props();
 
   type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow';
   interface Fx {
@@ -74,6 +77,7 @@
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
   let visitor = $state<ReturnType<typeof Visitor>>();
+  let deck = $state<ReturnType<typeof TapeDeck>>();
   /** A shooting star is crossing until then (a tap in the sky meanwhile is a wish: NH). */
   let shootUntil = 0;
 
@@ -146,6 +150,8 @@
     if (!calm && critters?.tap(e.clientX, e.clientY)) return;
     // a visitor on the beach answers with a line (K.K. with a song); then the day's finds (a shell, a fragment, the
     // bottle, a dig spot) and the island's care (a weed to pull, the rock by the hedge)
+    // group stretching's tape deck (when it's out: small and exact, before the visitor's wider reach)
+    if (deck?.tap(e.clientX, e.clientY)) return;
     if (visitor?.tap(e.clientX, e.clientY)) return;
     if (finds?.tap(e.clientX, e.clientY)) return;
     if (care?.tap(e.clientX, e.clientY)) return;
@@ -306,6 +312,7 @@
 <Finds bind:this={finds} {scene} {enabled} />
 <Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
 <Visitor bind:this={visitor} {scene} {enabled} {say} {ontrick} />
+<TapeDeck bind:this={deck} {scene} {enabled} {exercise} />
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}

@@ -175,6 +175,9 @@
   .body:global([data-act='hum']) { animation: if-bob 1200ms var(--ease-idle) 2 both; }
   .body:global([data-act='bow']) { animation: if-bow 1100ms var(--ease-soft) both; }
   .body:global([data-act='headshake']) { animation: if-headshake 600ms ease-in-out both; }
+  .body:global([data-act='warmup']) { animation: if-warmup 2000ms ease-in-out both; }
+  .body:global([data-act='sidebend']) { animation: if-sidebend 2000ms ease-in-out both; }
+  .body:global([data-act='leap']) { animation: if-leap 2000ms ease-in-out both; }
 
   /* ground shadow: shrinks while the body is in the air */
   .shadow {

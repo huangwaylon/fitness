@@ -315,6 +315,19 @@
   50% { transform: rotate(3deg); } 67% { transform: rotate(-3deg); } 84% { transform: rotate(1.5deg); }
 }
 /* a front-facing bow (there is no official bow render): the figure dips and squashes from the feet, holds, rises */
+/* group stretching (NH's ラジオ体操), 2 s each, the same beat for everyone: Posture Warm-Up (knees bend, then up on
+   the toes, arms high: tall and thin, twice), Side Bends (lean left, hold, right, hold), Jump (three hops and a
+   landing) */
+@keyframes if-warmup {
+  0%,50%,100% { transform: none; } 10%,60% { transform: scale(1.06,.92); } 25%,35%,75%,85% { transform: translateY(-3%) scale(.94,1.1); }
+}
+@keyframes if-sidebend {
+  0%,50%,100% { transform: none; } 15%,35% { transform: rotate(-11deg) scale(.98,1.02); } 65%,85% { transform: rotate(11deg) scale(.98,1.02); }
+}
+@keyframes if-leap {
+  0%,100% { transform: none; } 6%,30%,54% { transform: scale(1.08,.92); } 18%,42%,66% { transform: translateY(-12%) scale(.94,1.06); }
+  78% { transform: translateY(-16%) scale(.92,1.08); } 90% { transform: scale(1.1,.9); }
+}
 @keyframes if-bow { 0%,100% { transform: none; } 30%,62% { transform: translateY(1.5%) scale(1.03,.91); } }
 @keyframes if-talk { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
 @keyframes if-headshake {

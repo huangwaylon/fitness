@@ -495,6 +495,19 @@ or `?demo`, forces it with its evening):
 - **Villagers:** in the evening their day lines include three Halloween ones, weighed double (about 1 tap in 6).
 - **Music:** the Halloween BGM belongs to the hourly music (the audio side), not this.
 
+### Group stretching
+
+`island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`, `e2e/radio.spec.ts`. NH's ラジオ体操: NH's
+tape deck (official icon) comes out on the lawn on a day either of us met 🍑 Exercise, or when the island is opened
+06:00–08:00 (kept for the day: `scene-stretch` in localStorage), in front of the hedge beside the plaza (else between the
+villagers' feet; measured clear of every control, the rock, a dig spot and a mushroom, else not shown); a ♪ floats up
+from it now and then. A tap (a scene item like the visitors, a 44px reach) plays its tape (`stretch`, an original
+~6 s march on a soft piano, a jingle: the music ducks) and both villagers, and the visitor if one is out and awake
+(Gulliver sleeps through it), do three of NH's stretches together on one beat: Posture Warm-Up, Side Bends, Jump (2 s
+each, `if-warmup`, `if-sidebend`, `if-leap`); a villager out on a stroll walks home first, a sleeper joins in and dozes
+off again, event reactions wait for the end (`holdEvents`). ♪ rise from the deck while it plays; then a note over each
+villager and the deck goes for the day (once a day per phone). No ベル. `?stretch` (dev or `?demo`) brings it out.
+
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
@@ -515,7 +528,7 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
 
 - **Rig** (`Villager.svelte`, `Host.svelte`): `.actor` › `.face` (facing) › `.body` (one motion) › the art; emotes and
   fx sit beside `.face`, so they never squash or mirror. The director (`motion/director.svelte.ts`) holds one state per
-  actor.
+  actor; `holdEvents(ms)` makes event reactions queue behind a routine ([Group stretching](#group-stretching)).
 - **Primitives:** `if-` keyframes in `tokens.css`; durations in `MOTION_MS` (`motion/reactions.ts`) must match.
 - **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble
   (`Emote.svelte`). Effects (`Fx.svelte`) remove themselves.

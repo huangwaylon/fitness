@@ -241,6 +241,14 @@ the island's trees are hardwoods, and the Goliath beetle already stands in on th
 the ant and the fly (rotten turnips, candy, trash on the ground). Why: the user wants more to catch, faithful to NH;
 a bug in the wrong place reads as a mistake, and these few need scenery the island doesn't have yet.
 
+### Group stretching on an Exercise day
+NH's tape deck comes out on a day either of us met 🍑 Exercise, or on a morning opening (06:00–08:00), and a tap makes
+everyone on the island stretch together for ~6 s, once a day per phone. Why: NH's most fitness-like ritual ties to the
+goal that is literally exercise without paying anything (no ベル, no event: a missed stretch costs nothing, a phone that
+loses its record only sees the deck again); the morning hours are NH's own ラジオ体操. The tune is an original synthesized
+march (no copyrighted radio-exercise music). The deck is a scene item like the visitors, not a button: a 44px button
+doesn't fit on the lawn by the hedge on a small screen without sitting under a canopy.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

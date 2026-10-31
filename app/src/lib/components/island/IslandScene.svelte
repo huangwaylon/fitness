@@ -234,6 +234,7 @@
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
+        exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met}
         say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} />
       <Talk bind:this={talk} scene={sceneEl} />
       <!-- what a shaken tree drops: a branch, now and then a wasp nest -->

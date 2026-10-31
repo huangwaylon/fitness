@@ -224,6 +224,23 @@ const RECIPES: Record<SoundId, Ev[]> = {
     })),
     { kind: 'tone', f: hz(72), t: 2.0, d: 0.3, g: 0.45, wave: 'tri', attack: 0.004, partials: [[2, 0.2, 0.5]] }
   ],
+  // Group stretching's tape: an original, bright little march on a soft piano (triangle tones with a hammer partial),
+  // 2/4 at 120: bass on the beat, chord stabs off it, a tune climbing then coming home over I-IV-V-I, one phrase per
+  // stretch (2 s each), ~6.3 s. Not the radio exercise song.
+  'stretch-song': [
+    ...['I', 'I', 'IV', 'IV', 'IV', 'IV', 'V', 'V', 'V', 'V', 'I', 'I'].flatMap((c, i): Tone[] => {
+      const bass = { I: [48, 43], IV: [41, 48], V: [43, 50] }[c as 'I' | 'IV' | 'V'][i % 2];
+      const chord = { I: [60, 64, 67], IV: [60, 65, 69], V: [59, 62, 67] }[c as 'I' | 'IV' | 'V'];
+      return [
+        { kind: 'tone', f: hz(bass), t: i * 0.5, d: 0.4, g: 0.42, wave: 'tri', attack: 0.004, partials: [[2, 0.3, 0.4]] },
+        ...chord.map((m): Tone => ({ kind: 'tone', f: hz(m), t: i * 0.5 + 0.25, d: 0.18, g: 0.16, wave: 'tri', attack: 0.003, partials: [[2, 0.2, 0.3]] }))
+      ];
+    }),
+    ...([[72, 0], [74, 0.25], [76, 0.5], [77, 0.75], [79, 1], [79, 1.5], [81, 2], [77, 2.5], [79, 3], [76, 3.5],
+      [74, 4], [76, 4.25], [77, 4.5], [79, 4.75], [76, 5], [74, 5.25], [72, 5.5]] as const).map(([m, t]): Tone => ({
+      kind: 'tone', f: hz(m), t, d: t === 5.5 ? 0.8 : 0.32, g: 0.5, wave: 'tri', attack: 0.003, partials: [[2, 0.18, 0.4], [4, 0.06, 0.2]]
+    }))
+  ],
   bottle: [
     bell(E7, 0, 0.3, 0.55),
     { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },
