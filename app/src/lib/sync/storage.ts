@@ -36,8 +36,6 @@ export const DEVICE = {
 export const SCENE = {
   /** localStorage `if-<beat>` = the Tokyo day a startup beat (open, morning, evening, lowweek) last played. */
   beat: (beat: string) => `if-${beat}`,
-  /** sessionStorage: balloons shown this session (at most 3). */
-  balloons: 'if-balloon',
   /** localStorage `hf-seen:<day>` = how many of the partner's high-fives that day were already announced. */
   highFivesSeen: (day: string) => `hf-seen:${day}`,
   /** localStorage `bells-seen` = `{ date, parts: { A, B } }`: today's ベル per person and fruit already shown flying into

@@ -73,6 +73,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Anchovy_NH_Icon.png"
     },
+    "critters/banded-dragonfly": {
+      "path": "critters/banded-dragonfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Banded_Dragonfly_NH_Icon.png"
+    },
     "critters/barred-knifejaw": {
       "path": "critters/barred-knifejaw.webp",
       "w": 96,
@@ -115,17 +121,41 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Darner_Dragonfly_NH_Icon.png"
     },
+    "critters/emperor-butterfly": {
+      "path": "critters/emperor-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Emperor_Butterfly_NH_Icon.png"
+    },
     "critters/empty-can": {
       "path": "critters/empty-can.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Empty_Can_NH_Icon.png"
     },
+    "critters/evening-cicada": {
+      "path": "critters/evening-cicada.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Evening_Cicada_NH_Icon.png"
+    },
     "critters/firefly": {
       "path": "critters/firefly.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Firefly_NH_Icon.png"
+    },
+    "critters/grasshopper": {
+      "path": "critters/grasshopper.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Grasshopper_NH_Icon.png"
+    },
+    "critters/honeybee": {
+      "path": "critters/honeybee.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Honeybee_NH_Icon.png"
     },
     "critters/horse-mackerel": {
       "path": "critters/horse-mackerel.webp",
@@ -138,6 +168,18 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ladybug_NH_Icon.png"
+    },
+    "critters/mantis": {
+      "path": "critters/mantis.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Mantis_NH_Icon.png"
+    },
+    "critters/migratory-locust": {
+      "path": "critters/migratory-locust.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Migratory_Locust_NH_Icon.png"
     },
     "critters/moth": {
       "path": "critters/moth.webp",
@@ -157,6 +199,18 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Olive_Flounder_NH_Icon.png"
     },
+    "critters/orchid-mantis": {
+      "path": "critters/orchid-mantis.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Orchid_Mantis_NH_Icon.png"
+    },
+    "critters/peacock-butterfly": {
+      "path": "critters/peacock-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Peacock_Butterfly_NH_Icon.png"
+    },
     "critters/puffer-fish": {
       "path": "critters/puffer-fish.webp",
       "w": 96,
@@ -174,6 +228,18 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Red_Snapper_NH_Icon.png"
+    },
+    "critters/rice-grasshopper": {
+      "path": "critters/rice-grasshopper.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Rice_Grasshopper_NH_Icon.png"
+    },
+    "critters/robust-cicada": {
+      "path": "critters/robust-cicada.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Robust_Cicada_NH_Icon.png"
     },
     "critters/sea-bass": {
       "path": "critters/sea-bass.webp",

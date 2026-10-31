@@ -1,5 +1,5 @@
 // The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
-// beats, naps at night, the motion bus, idle life, the balloon present and the page-visibility pause. Create one per
+// beats, naps at night, the motion bus, idle life, the balloon present's schedule and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
 import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
@@ -10,7 +10,7 @@ import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
-import { localKV, SCENE, sessionKV, writeRaw, type KV } from '#lib/sync/storage.ts';
+import { localKV, SCENE, writeRaw, type KV } from '#lib/sync/storage.ts';
 
 /** Thursday–Saturday under this many ベル this week: the low-week encouragement beat (R15). */
 const LOW_WEEK_BELLS = 1000;
@@ -24,6 +24,10 @@ interface Ctx {
   night: () => boolean;
   day: () => boolean;
 }
+
+/** On-screen daytime until the next balloon (ms): 30–60 s for the first, then 2–3 minutes from one to the next (its
+ *  22 s flight included: the countdown holds while one is up). */
+const balloonMs = (first = false, r = Math.random): number => (first ? 30_000 + r() * 30_000 : 98_000 + r() * 60_000);
 
 /** Four ripeness stages of a fruit's day (a stage-up is R7): < 25% · < 60% · < 100% · the goal. */
 const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);
@@ -83,6 +87,25 @@ export class IslandLife {
         setAsleep('mine', s);
         setAsleep('partner', s);
       });
+    });
+
+    // Balloon present (NH): one floats by in the daytime every 2–3 minutes of on-screen time, the first after 30–60 s.
+    // A countdown of the time the island is in the day, on screen (not covered, the page visible) and without a
+    // balloon already up: it holds otherwise and resumes where it was. No cap per session.
+    let remaining = balloonMs(true);
+    $effect(() => {
+      if (!ctx.day() || ctx.covered() || this.hidden || this.balloon || reducedMotion()) return;
+      const started = performance.now();
+      let fired = false;
+      const id = setTimeout(() => {
+        fired = true;
+        remaining = balloonMs();
+        this.balloon = true;
+      }, remaining);
+      return () => {
+        clearTimeout(id);
+        if (!fired) remaining = Math.max(1000, remaining - (performance.now() - started));
+      };
     });
 
     onMount(() => this.#start());
@@ -174,19 +197,6 @@ export class IslandLife {
       }
     });
 
-    // Balloon present: day only, first after 45 s on the island, then every
-    // 4 min, at most 3 per session.
-    const balloonTry = (ms: number) =>
-      this.later(() => {
-        const n = Number(safeGet(sessionKV(), SCENE.balloons) ?? 0);
-        if (n >= 3) return;
-        if (ctx.day() && !ctx.covered() && !this.hidden && !reducedMotion() && !this.balloon) {
-          writeRaw(sessionKV(), SCENE.balloons, String(n + 1));
-          this.balloon = true;
-          balloonTry(240_000);
-        } else balloonTry(30_000);
-      }, ms);
-    balloonTry(45_000);
     // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
     const q = new URLSearchParams(location.search);
     if (q.has('balloon') && (import.meta.env.DEV || q.has('demo'))) this.later(() => (this.balloon = true), 400);

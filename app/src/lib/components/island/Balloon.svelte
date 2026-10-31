@@ -1,8 +1,8 @@
 <script lang="ts">
   // Balloon present (design.md "Particles and events"), after NH: one round glossy balloon (ours, drawn in NH's soft item style: a
   // top-left highlight, a rim light on the shaded side, a knot) on a thin string, carrying the official present
-  // (deco/present). It drifts across the sky on the breeze in 22 s (either way, at a cloud's altitude, in front of
-  // the clouds and under the HUD), bobbing ±5px on a 3.6 s sine and leaning ±4°; the present swings under it like a
+  // (deco/present). It drifts across the sky on the breeze in 22 s (either way, in the lane between the ribbon, which
+  // sits in the sky band's middle, and the horizon, in front of the clouds; as big as that lane allows, ≤ 34px), bobbing ±5px on a 3.6 s sine and leaning ±4°; the present swings under it like a
   // pendulum from the knot, a beat behind, and trails the drift a little. A colour per appearance from NH's balloon
   // palette (1 in 20: gold). A tap pops it (NH's slingshot shot, here a tap): a "pan!", a puff of confetti in its
   // colours, and the present drops onto the island (SceneTaps.svelte draws the fall: this sends it `island:present`
@@ -31,9 +31,9 @@
   const GOLD = ['#F2C33F', '#FFEA9A', '#C28A1C', '#FFF4C4'];
   const gold = Math.random() < 0.05;
   const [body, light, shade, rim] = gold ? GOLD : COLOURS[Math.floor(Math.random() * COLOURS.length)];
-  // The breeze blows either way; the altitude varies a little (0–0.3 balloon widths under the ribbon).
+  // The breeze blows either way; the altitude varies within whatever room the lane has to spare.
   const ltr = Math.random() < 0.5;
-  const alt = Math.random() * 0.6;
+  const alt = Math.random();
   const gid = $props.id();
 
   let fly = $state<HTMLElement | null>(null);
@@ -52,10 +52,13 @@
   const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];
 
   onMount(() => {
-    // no room under the HUD (the ribbon and its sync chip, 6px clear): no balloon today
+    // no room under the HUD (the ribbon and, when it shows, its sync chip, 6px clear) or the present would sink past
+    // the horizon (a sky too short for even the smallest balloon): no balloon this time
     const hud = document.querySelector('.ribbon-wrap')?.getBoundingClientRect();
-    const top = fly?.getBoundingClientRect().top ?? Infinity;
-    if (reducedMotion() || (hud && hud.height && top < hud.bottom + 6)) ondone?.();
+    const r = fly?.getBoundingClientRect();
+    const band = fly?.parentElement?.getBoundingClientRect();
+    const short = !!r && !!band && r.bottom > band.bottom + 8;
+    if (reducedMotion() || !r || short || (hud && hud.height && r.top < hud.bottom + 6)) ondone?.();
     return () => clearTimeout(gone);
   });
 </script>
@@ -111,16 +114,16 @@
 <style>
   /* the balloon's size: everything below is in em (the balloon's width) */
   .fly {
-    --bw: clamp(22px, 7.6cqw, 34px);
-    /* just under the ribbon (--hud-top is the screen's, the band starts at the safe area) + a little, but the present
-       always clears the horizon bank */
+    /* the lane: from 8px under the ribbon (--hud-top is the screen's, the band starts at the safe area) to the band's
+       foot; the balloon with its present (2.6em) as big as that lane holds, between 14px and 34px across, at a
+       random height within any room to spare */
+    --rb: calc(var(--hud-top) + var(--hit) + var(--lip-h) - var(--safe-top));
+    --room: calc(100cqh - var(--rb) - 8px);
+    --bw: max(14px, min(clamp(22px, 7.6cqw, 34px), calc(var(--room) / 2.65)));
     position: absolute; z-index: 3; left: 0; font-size: var(--bw);
-    top: min(calc(var(--hud-top) + var(--hit) + var(--lip-h) - var(--safe-top) + 8px + var(--alt) * .5em), calc(100cqh - 2.55em));
+    top: calc(var(--rb) + 8px + var(--alt) * max(0px, var(--room) - 2.65em));
     animation: across 22s linear both; will-change: transform;
   }
-  /* short skies (under 190px): a smaller balloon low in the band, its present just over the horizon, under the HUD;
-     where even that would reach the ribbon (or the sync chip under it), it doesn't come at all (onMount) */
-  @container sky (max-height: 190px) { .fly { --bw: 16px; top: calc(100cqh + 6px - 2.6em); } }
   .fly.rtl { animation-name: across-rtl; }
   @keyframes across { from { transform: translateX(-1.6em); } to { transform: translateX(calc(100cqw + .4em)); } }
   @keyframes across-rtl { from { transform: translateX(calc(100cqw + .4em)); } to { transform: translateX(-1.6em); } }

@@ -88,12 +88,13 @@ export const CUES: Record<Cue, CueDef> = {
   // the balloon pops; its present lands with a soft thud (the fall keyframes touch down at 1.5 s)
   'scene-balloon': { sound: 'burst', world: true },
   'scene-present': { sound: 'thud', gain: 0.5, delay: 1.5, world: true },
-  // fishing: the rod's swing, the bobber landing on the cast's arc, a nibble's little bob, the bite (pulled under), the
+  // fishing: the rod's swing, the bobber landing on the cast's arc, a nibble's little bob, the bite (its own sound: the
+  // bobber yanked under with a deep gulp and a splash), the
   // reel and the catch tune, or the fish's getaway; the net's swing and a startled bug
   'scene-cast': { sound: 'swish', gain: 0.8, world: true },
   'scene-plop': { sound: 'plop', delay: 0.3, world: true },
   'scene-nibble': { sound: 'plop', gain: 0.45, step: 5, world: true },
-  'scene-bite': { sound: 'plop', gain: 1.2, step: -5, world: true },
+  'scene-bite': { sound: 'bite', world: true },
   'scene-reel': { sound: 'reel', world: true },
   'scene-catch': { sound: 'catch', delay: 0.25, world: true },
   'scene-flee': { sound: 'splash', gain: 0.6, step: 3, world: true },
