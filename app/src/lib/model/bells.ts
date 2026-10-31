@@ -3,7 +3,7 @@
 // shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
 // locked weeks, across States of the same sheet revision.
 import type {
-  DayBells, HarvestBonus, LocalDate, MenuItemView, PersonId, RingBells, RingFruit, WalletItem, WalletView, WeekKey
+  DayBells, HarvestBonus, LocalDate, MenuItemView, PersonId, RingBells, RingFruit, WalletItem, WeekKey
 } from '#lib/types.ts';
 import { DEFAULT_MENU, ESCALATING_ITEMS, ESCALATION } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
@@ -143,8 +143,8 @@ export interface LedgerSpend {
   voidedAt: number | null;
 }
 
-/** The wallet's totals (WalletView without the today / week flow). */
-type WalletBalance = Pick<WalletView, 'balance' | 'earned' | 'spent'>;
+/** The wallet's totals: everything earned (daily + the bonuses that landed), the accepted buys, and the difference. */
+interface WalletBalance { balance: number; earned: number; spent: number }
 
 interface WalletState {
   wallet: WalletBalance;
@@ -279,8 +279,7 @@ export interface LedgerBonus {
 }
 
 export interface BellsLedger {
-  wallet: WalletBalance;
-  /** Everything earned so far, both people (= wallet.earned). */
+  /** Everything earned so far, both people. */
   earned: number;
   /** Newest first, from the economy's first day to today. */
   days: LedgerDay[];
@@ -312,7 +311,6 @@ export function bellsLedger(s: State, now: number): BellsLedger {
     }
   }
   return {
-    wallet: { ...p.wallet },
     earned: p.wallet.earned,
     days: days.reverse(),
     bonuses: bonuses.reverse(),

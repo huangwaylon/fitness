@@ -83,7 +83,6 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
-    expect(all.some((v) => v.wallet.spent > 0)).toBe(true);
     expect(all.some((v) => v.menu.some((x) => x.id === 'taiyaki'))).toBe(true);
     const end = bellsLedger(reduce(ROWS), END);
     expect(end.spends.map((x) => [x.spendId, x.voided])).toEqual([['bs-taiyaki', false], ['bs-daytrip', false], ['bs-ice', false], ['bs-cafe', true], ['bs-early', false]]); // bs-upgrade (160,000) is refused
@@ -115,8 +114,7 @@ describe('golden: the WeekView on a 10-week timeline', () => {
       expect(l.earned, t).toBe(earned);
       for (const me of PEOPLE) {
         const v = buildWeekView(s, me, tMs);
-        expect(v.wallet, t).toMatchObject(l.wallet);
-        expect(v.wallet.earned).toBe(l.earned);
+        expect(v.wallet.balance, t).toBe(l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0));
         const h = v.harvest;
         if (h && provisionalMs(h.weekKey) <= tMs) expect(h.ringBadges, `${t} badges`).toEqual(l.bonuses.find((b) => b.weekKey === h.weekKey)!.ringBadges);
       }

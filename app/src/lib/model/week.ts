@@ -38,7 +38,7 @@ export function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId
 
 // ---------- view ----------
 
-/** A ring fruit's progress today and this week (its ベル count days up to today). */
+/** A ring fruit's progress today and its badge days this week. */
 function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: number): RingProgress {
   const r = rulesFor(e.weekKey);
   const d = e.days.find((x) => x.date === today);
@@ -51,20 +51,17 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
   const f = e.fruits[key];
   const view: RingProgress = {
     today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false, todayBells: d?.rings[key] ?? 0,
-    weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge,
-    weekBells: e.days.reduce((n, x) => (x.date <= today ? n + x.rings[key] : n), 0)
+    weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge
   };
   // The milestone fields only exist in a week with a curve, so v1 views stay as they were.
   if (!r.curve) return view;
-  const pay = milestoneBells(e.weekKey, key);
-  if (!pay) return view;
+  const pay = milestoneBells(e.weekKey, key)!; // a week with a curve has its steps
   const milestone = d?.milestone?.[key] ?? 0;
   const next = milestone < pay.length ? milestone : null;
   return {
     ...view,
     milestone,
     nextAt: next === null ? null : Math.ceil(r.curve.at[next] * view.goal),
-    nextBells: next === null ? null : pay[next],
     nextGain: next === null ? null : pay[next] - view.todayBells
   };
 }
@@ -129,12 +126,9 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   return { ...base, host: hostLine(base) };
 }
 
-/** The wallet at `now`, and what both people earned today and this week (the bonus once it landed). */
+/** The wallet's balance at `now`, and what both people earned today. */
 function walletView(s: State, cur: WeekBells, today: LocalDate, now: number): WalletView {
-  const { wallet } = walletAt(s, now);
-  const todayBells = dayBells(cur.A, today).bells + dayBells(cur.B, today).bells;
-  const weekBells = dailyUpTo(cur.A, today) + dailyUpTo(cur.B, today) + (provisionalMs(cur.weekKey) <= now ? cur.bonusBells : 0);
-  return { ...wallet, today: todayBells, week: weekBells };
+  return { balance: walletAt(s, now).wallet.balance, today: dayBells(cur.A, today).bells + dayBells(cur.B, today).bells };
 }
 
 /** A week's harvest card: its bonus, total and badges (also the demo's `?demo=harvest`). */

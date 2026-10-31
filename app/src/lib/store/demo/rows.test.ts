@@ -47,7 +47,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
     expect(view.menu.map((x) => x.id)).toEqual(['snack', 'cafe', 'dinner', 'want', 'trip']); // the defaults, nothing custom
-    expect(view.wallet).toMatchObject(ledger.wallet);
+    expect(view.wallet.balance).toBe(ledger.earned - ledger.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0));
     expect(view.wallet.balance).toBeGreaterThan(0);
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today);
   });
