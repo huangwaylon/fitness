@@ -17,12 +17,14 @@
     onedit: () => void;
   }
   let { items, balance, onbuy, onedit }: Props = $props();
+  // Cheapest first (user): by the base price, so a tile never jumps under the finger when this week's price rises.
+  const sorted = $derived([...items].sort((x, y) => x.basePrice - y.basePrice));
 </script>
 
 <section class="treats" aria-label={t('menu.title')}>
   {#if items.length}
     <div class="shelf">
-      {#each items as item (item.id)}
+      {#each sorted as item (item.id)}
         {@const short = item.price - balance}
         {@const nth = item.escalates && item.boughtThisWeek > 0 ? item.boughtThisWeek + 1 : 0}
         <button type="button" class="item" aria-disabled={short > 0} data-sfx="open" data-item={item.id} onclick={() => onbuy(item)}
