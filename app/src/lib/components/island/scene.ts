@@ -31,7 +31,7 @@ export const TREE = { base: ROWS.trees, h: 120, x: { A: col(-2), B: col(2) } as 
 /** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
 export const OAK_AR = 329 / 409;
 /** Ground fruit: per ring fruit 0–3 items = thirds of today's goal (todayPct), in
- *  a fixed arc in front of the trunk, 🍑 🍐 🍒 🍎 left to right (RING_FRUITS order). [dx, dy] from the trunk base.
+ *  a fixed arc in front of the trunk, 🍐 🍑 🍒 🍎 left to right (RING_FRUITS order). [dx, dy] from the trunk base.
  *  NH puts one dropped item per tile; 4 kinds × 3 items can't, so they sit at a 20u pitch (compromise), centred on the
  *  trunk, and the row leans FRUIT_LEAN u away from the jar (out from the plaza), so it stays clear of the jar's plate
  *  and inside the plateau's side (x 44). */

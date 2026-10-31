@@ -200,7 +200,7 @@
       {/if}
     {:else if top.k === 'week' && wkDetail}
       <WeekDetail d={wkDetail.d} edits={wkDetail.edits} {order} {names} {villagers}
-        onday={(date) => go({ k: 'day', date })} />
+        onday={(date) => go({ k: 'day', date })} now={m.now} />
     {:else if top.k === 'day' && day}
       {@const date = top.date}
       <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}

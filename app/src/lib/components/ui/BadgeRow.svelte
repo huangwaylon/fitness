@@ -1,7 +1,7 @@
 <script lang="ts">
   // A week's four badges: the ring fruits, lit when that badge was met, faded when not. `progress`
   // (a week still running) puts the days met so far under each fruit: 3/5.
-  //   <BadgeRow badges={{ peach: true, pear: false, cherry: true, apple: true }} size="28px" />
+  //   <BadgeRow badges={{ pear: true, peach: false, cherry: true, apple: true }} size="28px" />
   import type { RingFruit } from '#lib/types.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';

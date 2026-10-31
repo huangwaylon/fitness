@@ -72,7 +72,7 @@
     </div>
     <div class="row btns">
       {#each FX as k (k)}<button type="button" class="chip" onclick={() => (fxPlay = { k, n: ++fxN })}>{k}</button>{/each}
-      <span class="fxstage">{#if fxPlay}{#key fxPlay.n}<Fx kind={fxPlay.k} spread="60px" />{/key}{/if}</span>
+      <span class="fxstage">{#if fxPlay}{#key fxPlay.n}<Fx kind={fxPlay.k} />{/key}{/if}</span>
     </div>
   </section>
 
@@ -113,7 +113,6 @@
     <h2>Money</h2>
     <div class="row">
       <span class="amt"><LeafCoin size="1.1em" />146,200 ベル</span>
-      <LeafCoin kind="leaf" size={32} />
     </div>
   </section>
 

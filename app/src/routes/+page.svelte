@@ -41,14 +41,12 @@
     timers.clear();
   });
 
-  /** しずえ's news, or null (then she stays away and the island is HUD-light). */
+  /** しずえ's news, or null (then she stays away and the island is HUD-light): only the harvest. Before my 受け取る！
+   *  「収穫の時間ですよ！」, after it 「あとは うめさんの ばんですよ！」 until they collect theirs. */
   const news = $derived.by((): string | null => {
-    if (!view) return null;
-    // After my 受け取る！ (also in demo, whose host key is fixed): 「うめさんの番です！」 until they drop theirs.
-    if (view.harvest?.confirmedBy.includes(view.me)) return hostLine('harvest_waiting', { name: view.people[view.partner].villagerName });
-    const key = view.host.key.replace(/^host\./, '');
-    if (key === 'harvest_ready') return hostLine(key, view.host.params);
-    return null;
+    const h = view?.harvest;
+    if (!view || !h) return null;
+    return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');
   });
 
   // The partner sheet has closed by now, so R4 plays in the scene behind it.
