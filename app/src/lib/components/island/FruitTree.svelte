@@ -53,7 +53,7 @@
   const ring = (f: RingFruit) => person.rings[f];
 
   const amount = (f: RingFruit) => todayAmount(f, ring(f));
-  /** The one nudge (v2 milestones, docs/reviews/round-19/milestones-contract.md): 「あと 8分で +45」 for the tapped fruit,
+  /** The one nudge (v2 milestones): 「あと 8分で +45」 for the tapped fruit,
    *  else for the fruit nearest its next step (by share of the goal). None in a v1 week or once every step is reached. */
   const next = $derived.by((): { f: RingFruit; text: string } | null => {
     const open = RING_FRUITS.filter((f) => ring(f).nextAt != null && ring(f).nextGain != null);
@@ -67,8 +67,9 @@
     `${person.villagerName}: ` +
       RING_FRUITS.map((f) => {
         const r = ring(f);
-        const bells = r.todayBells > 0 ? formatBells(r.todayBells, { signed: true }) : '';
-        return `${t(`fruit.${f}`)} ${amount(f)} ${bells} ${t('tree.week', { d: Math.min(r.weekDays, r.weekGoalDays), w: r.weekGoalDays })}${r.badge ? ' ✓' : ''}`;
+        const bells = r.todayBells > 0 ? formatBells(r.todayBells, { signed: true }) : null;
+        const week = t('tree.week', { d: Math.min(r.weekDays, r.weekGoalDays), w: r.weekGoalDays }) + (r.badge ? ' ✓' : '');
+        return [t(`fruit.${f}`), amount(f), bells, week].filter(Boolean).join(' ');
       }).join('、') + (next ? `。${next.text}` : '')
   );
   /** The fruit row leans away from the jar (left tree left, right tree right). */
@@ -168,7 +169,7 @@
 
 <div class="tree" bind:this={treeEl} style:left={u(x)} style:top={u(BASE)} style:width={u(W)} style:height={u(H)}
   onanimationend={(e) => e.animationName === 'if-shake' && treeEl?.classList.remove('shaking')}>
-  <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} eager /></span>
+  <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} priority /></span>
 </div>
 <button type="button" class="canopy" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
   style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} data-sfx="self" onclick={() => tap(null)}></button>
