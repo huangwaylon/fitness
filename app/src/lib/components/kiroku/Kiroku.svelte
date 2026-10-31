@@ -3,7 +3,7 @@
   // then the past weeks) and then からだ (the weight trend, the two goals), each under a section heading;
   // a day, the weight screen, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
   // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
-  // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on my buys.
+  // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on a buy (either of us, any buy).
   // Everything is computed from the store's reduced model, lazily for the opened day.
   import { tick } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
@@ -126,7 +126,7 @@
     {#if !top}
       {#if money}
         <h2 class="sec">{t('panel.bells')}</h2>
-        <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
+        <BellsLog ledger={money} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
       {#if trends}
         <h2 class="sec">{t('panel.body')}</h2>

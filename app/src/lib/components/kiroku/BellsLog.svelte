@@ -5,7 +5,7 @@
 
 <script lang="ts">
   // The passbook (like NH's ATM statement): everything ever earned, then the ledger by week, newest first, each with its
-  // total: the buys (my own → とりけす, asked first) and one line per day: each person's four goals (bright = met, +1
+  // total: the buys (any → とりけす, asked first) and one line per day: each person's four goals (bright = met, +1
   // each), the ふたりでぜんぶ star (+2) and the day's ベル; tap → the day.
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerDay, LedgerSpend } from '#lib/model/history.ts';
@@ -19,14 +19,13 @@
 
   interface Props {
     ledger: BellsLedger;
-    me: PersonId;
     order: PersonId[];
     names: Record<PersonId, string>;
     villagers: Record<PersonId, string | null>;
     onvoid: (spendId: string, label: string, bells: number) => void;
     onday: (date: string) => void;
   }
-  let { ledger, me, order, names, villagers, onvoid, onday }: Props = $props();
+  let { ledger, order, names, villagers, onvoid, onday }: Props = $props();
 
   interface Week { weekKey: WeekKey; days: LedgerDay[]; spends: LedgerSpend[]; bells: number }
   const weeks = $derived.by((): Week[] => {
@@ -68,7 +67,7 @@
           <Avatar person={s.by} villager={villagers[s.by]} size={24} />
           <span class="lbl"><span>{label}</span><small class="meta"><span>{stampOf(s.at)}</span>{#if s.voided}<span>{t('kiroku.spend.voided')}</span>{/if}</small></span>
           <span class="money amt">{formatBells(-s.bells)}</span>
-          {#if s.by === me && !s.voided}
+          {#if !s.voided}
             <button type="button" class="mini" data-sfx="page" onclick={() => onvoid(s.spendId, label, s.bells)}>{t('kiroku.voidSpend')}</button>
           {/if}
         </li>

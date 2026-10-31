@@ -90,12 +90,20 @@ Every ベル earned goes into one shared wallet, from its day. Why: one number t
 game.
 
 ### Two rewards
-Exactly two fixed treats: おやつ 8 ベル and 外食 15 ベル (`SHOP`). Either person buys, the buyer can undo
+Exactly two fixed treats: おやつ 8 ベル and 外食 15 ベル (`SHOP`). Either person buys, either person can undo any buy
 (`spend_void`), and a buy the wallet can't cover is ignored on read, so the balance never goes negative. A spend names
 its item at exactly its price; the server refuses anything else. Why: two clear choices priced against the week
 (a perfect week, 70, buys three of each; a typical one, 46, two of each), nothing to edit or argue about. Raised from
 6 and 20 (2026-10-31): a perfect day pays 10, so at 6 the おやつ was a daily treat; now each is a two-to-three-times-a-week
 thing, depending on effort.
+
+### Erasing a buy
+The ごほうび page lists every buy (「かいもの きろく」) and either of us can erase any of them, at any time; the ベル go back
+(2026-10-31, user: "in case we make a mistake"). It reuses the append-only `spend_void` (nothing is deleted from the
+sheet), no longer the buyer's only: one shared wallet, and any of us may edit any data. The script now checks a void
+names a `spend` on the sheet (else `bad_request`), and a second void of the same buy is acknowledged as a duplicate and
+not appended (the other phone got there first), so it stays idempotent. The week lock freezes earnings, not spending, so
+a buy from a locked week can still be erased; the harvest recap counts earnings only and never changes.
 
 ### Weight never earns
 Weight is shown as a trend only: no ベル, no goal that pays, and the economy never reads it. The trend is
@@ -107,8 +115,8 @@ for kilograms rewards crash diets and punishes muscle.
 ### Apple Health is the source of truth
 Steps, exercise, Move, Stand and weight come only from the Shortcut; the app never enters or fixes them (no
 `metric_set`, `workout_add` or `workout_edit`: the server refuses them and the model ignores old rows). The goals
-(`moveGoal`, `goalWeight`) stay editable for either person (`data.person`); other prefs and `spend_void` are the
-sender's own. Why: all health data is already in Apple Health, so manual edits only add a second, conflicting source.
+(`moveGoal`, `goalWeight`) stay editable for either person (`data.person`), and either may void any buy (`spend_void`);
+other prefs are the sender's own. Why: all health data is already in Apple Health, so manual edits only add a second, conflicting source.
 
 ## App and hosting
 

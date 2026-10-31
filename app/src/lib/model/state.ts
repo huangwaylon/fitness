@@ -59,7 +59,7 @@ export interface State {
    * person, keyed by date, ascending `at`. A day's weight is its latest row (`model/weight.ts`).
    */
   weights: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
-  /** Accepted `spend_void`s (by the spender, after the spend). */
+  /** Accepted `spend_void`s (by either person, once per buy, after it). */
   spendVoids: { at: number; person: PersonId; spendId: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
@@ -232,8 +232,8 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     const spendId = d.spendId;
     if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
-    // The spender only, once, after the spend.
-    if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
+    // Either of us (one shared wallet), once, after the spend.
+    if (!sp || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
   },
   harvest(s, person, at, d) {
