@@ -9,7 +9,7 @@ import { covered, play } from './sound.svelte.ts';
 
 export type Cue =
   // the island
-  | 'tree-shake' | 'fruit-land' | 'coin-land' | 'bells-arrive' | 'jar-tap'
+  | 'tree-shake' | 'fruit-land' | 'fruit-pick' | 'coin-land' | 'bells-arrive' | 'jar-tap'
   // villagers and しずえ (reaction steps)
   | 'villager-tap' | 'host-tap' | 'emote-surprise' | 'emote-love' | 'emote-joy' | 'emote-idea' | 'trouble' | 'announce'
   // choices
@@ -40,6 +40,8 @@ export const CUES: Record<Cue, CueDef> = {
   'tree-shake': { sound: 'rustle', world: true },
   // fruit-drop keyframes: the item hits the ground at 55% of 520 ms
   'fruit-land': { sound: 'thud', delay: 0.29, world: true },
+  // a fallen fruit picked up: a bright little pop, a fourth up
+  'fruit-pick': { sound: 'pop', gain: 0.8, step: 5, world: true },
   'coin-land': { sound: 'coin', world: true },
   'bells-arrive': { sound: 'bells', world: true },
   'jar-tap': { sound: 'pop', gain: 0.6 },

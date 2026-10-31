@@ -143,8 +143,8 @@ test('tree popup: the four goals, today’s amount / the goal with ✓ once met,
   await expect(pop.locator('.steps, .next, .wk')).toHaveCount(0);
   // its last line: when this person's data last arrived (one home: not on the partner card)
   await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
-  // ground fruit: four kinds under each tree
-  await expect(page.locator('.fruit.k0')).toHaveCount(8);
+  // each tree's four fruits (in the canopy, or fallen once met: e2e/trees.spec.ts)
+  await expect(page.locator('.if-scene [data-fruit]')).toHaveCount(8);
 });
 
 test('partner: a villager card (their line, ハイタッチ), no numbers and no sync time (those are on their tree)', async ({ page }) => {

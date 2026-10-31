@@ -1,32 +1,34 @@
 <script lang="ts">
-  // One person's tree (faithful to AC): a plain official hardwood of the season (an AC tree bears one
-  // kind of fruit, so this one bears none), with today's fruit lying on the ground in front of the trunk, the way NH
-  // drops fruit around a shaken tree: per ring fruit 0–3 items = thirds of today's goal (scene.ts fruitCount),
-  // 🍐 🍑 🍒 🍎 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
-  // kind earns an item (new data from the Watch), the tree shakes (±4°, 3 swings, 500ms) and the new item drops in with
-  // a bounce. Narrow stages (< 360px) show one item per kind, sized by its count. The tree stands still otherwise
-  // (the idle budget).
+  // One person's tree (docs/design.md "Trees"): a plain official hardwood of the season with today's four fruits in its
+  // canopy, 🍐 🍑 🍒 🍎 left to right (RING_FRUITS, TREE_FRUIT). Each hangs grey at 0 and fills with colour as today's
+  // amount nears its goal (fruitDay.ts greyAt). Once met it drops to the ground in front of the trunk (FRUIT_SPOTS): the
+  // tree shakes, the fruit falls and bounces, a little dust, once (fruit-day in localStorage: a reload finds it lying
+  // there). A tap on it picks it up (a hop, a sparkle; gone until the next Tokyo day). Picking up is cosmetic: the ベル
+  // come from the goal, on read. A flower blooms at the trunk's foot for each goal met today (TREE_FLOWER), and with
+  // all four met the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
-  // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail:
-  // a nameplate (whose tree), then per goal today's amount against the goal (met or not), ✓ once met, and its +1 ベル;
-  // then today's ふたりでぜんぶ
-  // (both people, all four goals: +2) and when the data last arrived. It stays until this tree is tapped again, the
-  // other tree is tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
-  // pops + sparkles a fruit.
+  // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
+  // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal today's amount against the
+  // goal (met or not), ✓ once met, and its +1 ベル; then today's ふたりでぜんぶ (both people, all four goals: +2) and
+  // when the data last arrived. It stays until this tree is tapped again, the other tree is tapped, or a tap lands
+  // elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
-  import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
+  import { flowerArt, fruitArt, seasonArt, treeArt } from '#lib/art.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { lastSyncLine } from '#lib/i18n/format.ts';
-  import { minuteNow } from '#lib/time/clock.ts';
+  import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { todayPct } from './progress.ts';
   import { RULES } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
+  import {
+    FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, TREE, TREE_FLOWER, TREE_FLOWERS, TREE_FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, u
+  } from './scene.ts';
+  import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   interface Props {
@@ -44,13 +46,22 @@
   let { person, x, foliage, shakeN = 0, celebrate = null, open = false, ontoggle }: Props = $props();
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
+  /** A hanging fruit is drawn at the ground size, scaled down (so the fall scales it up, one image). */
+  const UP = TREE_FRUIT_U / FRUIT_U;
   const detailId = $props.id();
   let picked = $state<RingFruit | null>(null);
   let taps = $state(0);
-  const leafTimers = new Set<ReturnType<typeof setTimeout>>();
+  const timers = new Set<ReturnType<typeof setTimeout>>();
   onDestroy(() => {
-    for (const t of leafTimers) clearTimeout(t);
+    for (const id of timers) clearTimeout(id);
   });
+  const later = (ms: number, f: () => void) => {
+    const id = setTimeout(() => {
+      timers.delete(id);
+      f();
+    }, ms);
+    timers.add(id);
+  };
   let leaves = $state<{ n: number; x: number; y: number }[]>([]);
   let leafN = 0;
   let treeEl: HTMLElement | null = $state(null);
@@ -73,28 +84,91 @@
   const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
   /** The fruit row leans away from the jar (left tree left, right tree right). */
   const lean = $derived(x < JAR.x ? -FRUIT_LEAN : FRUIT_LEAN);
-  const spots = $derived(RING_FRUITS.map((f, i) => ({ f, n: fruitCount(todayPct(ring(f))), x: x + lean + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
-  const rowL = $derived(Math.min(...spots.map((s) => s.x)) - FRUIT_U);
-  const rowR = $derived(Math.max(...spots.map((s) => s.x)) + FRUIT_U);
 
-  // A newly earned item drops in (never on the first render) and the tree shakes once for it.
-  let ready = false;
-  let prevN = '';
+  /** Today (the model's Tokyo day; the gallery has no view) and this phone's record of today's fallen and picked fruit. */
+  const date = $derived(week.view?.today ?? dayKey(minuteNow()));
+  // svelte-ignore state_referenced_locally
+  let rec = $state(fruitDay(date));
   $effect(() => {
-    const key = spots.map((s) => s.n).join();
+    const d = date;
     untrack(() => {
-      const before = prevN.split(',').map(Number);
-      if (ready && spots.some((s, i) => s.n > (before[i] ?? 0))) shake(true);
-      prevN = key;
-      ready = true;
+      if (rec.date !== d) rec = fruitDay(d);
     });
   });
-  /** {@attach}: items that mount after the first render fall in from the canopy (and thud as they land). */
-  const dropIn = (el: HTMLElement) => {
-    if (!ready) return;
-    el.classList.add('drop');
+  /** Fruit falling right now: its drop and its flower's bloom play once. */
+  let falling = $state<RingFruit[]>([]);
+
+  const spots = $derived(
+    RING_FRUITS.map((f, i) => {
+      const r = ring(f);
+      const stage = stageOf(fruitId(person.person, f), r.met, rec);
+      const tx = x + TREE_FRUIT[i][0], ty = BASE + TREE_FRUIT[i][1];
+      const gx = x + lean + FRUIT_SPOTS[i][0], gy = BASE + FRUIT_SPOTS[i][1];
+      const down = stage === 'ground' || stage === 'gone';
+      return { f, i, met: r.met, stage, filter: fruitFilter(r.met ? 100 : todayPct(r)), tx, ty, gx, gy, x: down ? gx : tx, y: down ? gy : ty, down };
+    })
+  );
+  const rowL = $derived(x + lean + FRUIT_SPOTS[0][0] - FRUIT_U);
+  const rowR = $derived(x + lean + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U);
+  /** Fallen fruit, waiting to be picked up. */
+  const ground = $derived(spots.filter((s) => s.stage === 'ground'));
+  /** All four met today: the canopy glints (NH's money tree). */
+  const allMet = $derived(spots.every((s) => s.met));
+
+  // A newly met fruit falls: on the first render after a beat (the tree is seen first), else after its colour has
+  // filled in; the tree shakes once for them all and they fall 150 ms apart. Each is marked as it falls, so a reload
+  // finds it on the ground.
+  let first = true;
+  const queued = new Set<string>();
+  $effect(() => {
+    const d = date;
+    const due = spots.filter((s) => s.stage === 'fall' && !queued.has(`${d}|${s.f}`)).map((s) => s.f);
+    untrack(() => {
+      const wait = first ? 700 : 900;
+      first = false;
+      if (!due.length) return;
+      for (const f of due) queued.add(`${d}|${f}`);
+      later(wait, () => {
+        if (rec.date !== d) return;
+        shake(true);
+        due.forEach((f, k) => later(250 + k * 150, () => drop(d, f)));
+      });
+    });
+  });
+  function drop(d: string, f: RingFruit) {
+    if (rec.date !== d) return;
+    rec = markDropped(d, fruitId(person.person, f));
+    falling = [...falling, f];
     cue('fruit-land');
-  };
+    const s = spots.find((p) => p.f === f);
+    if (s) later(290, () => addFx('puff', s.gx, s.gy + FRUIT_U * 0.4));
+    later(1600, () => (falling = falling.filter((g) => g !== f)));
+  }
+
+  /** Short effects on the stage: dust where a fruit lands, sparkles where one is picked up. */
+  let fx = $state<{ n: number; kind: 'puff' | 'sparkles'; x: number; y: number }[]>([]);
+  let fxN = 0;
+  function addFx(kind: 'puff' | 'sparkles', fxX: number, fxY: number) {
+    fx = [...fx.slice(-3), { n: ++fxN, kind, x: fxX, y: fxY }];
+  }
+  const dropFx = (n: number) => (fx = fx.filter((e) => e.n !== n));
+
+  /** NH's pick-up: the fruit hops up and shrinks away (an out transition: transform and opacity only). */
+  function pickUp(_el: Element) {
+    return {
+      duration: 340,
+      css: (tt: number, v: number) =>
+        `transform: translateY(${(-60 * Math.sin(v * Math.PI * 0.6)).toFixed(1)}%) scale(${(1 - 0.7 * v * v).toFixed(3)}); opacity: ${Math.min(1, tt * 3).toFixed(2)}`
+    };
+  }
+  /** Picks up a fallen fruit: gone from this phone until the next Tokyo day (no ベル: those come from the goal). */
+  function collect(f: RingFruit) {
+    const s = spots.find((p) => p.f === f);
+    if (!s || s.stage !== 'ground') return;
+    cue('fruit-pick');
+    rec = markPicked(date, fruitId(person.person, f));
+    addFx('sparkles', s.gx, s.gy - FRUIT_U * 0.4);
+  }
 
   /** `sound`: a tap or a real event rustles; idle life's shake stays silent. */
   function shake(sound = false) {
@@ -107,11 +181,7 @@
     const a = ++leafN, b = ++leafN;
     const y = BASE - H * 0.55;
     leaves = [...leaves.slice(-2), { n: a, x: x - W * 0.3, y }, { n: b, x: x + W * 0.28, y }];
-    const lt = setTimeout(() => {
-      leafTimers.delete(lt);
-      leaves = leaves.filter((l) => l.n !== a && l.n !== b);
-    }, 2000);
-    leafTimers.add(lt);
+    later(2000, () => (leaves = leaves.filter((l) => l.n !== a && l.n !== b)));
   }
 
   // React to `shakeN` only (shake() reads and writes `leaves`, which must not become a dependency).
@@ -119,28 +189,35 @@
     if (shakeN > 0) untrack(() => shake());
   });
 
-  /** A tap on the canopy or the fruit row: closes this tree's popup if it's open, else shakes (canopy) and opens it. */
-  function tap(f: RingFruit | null) {
+  /** A tap on the canopy (or the row with nothing to pick up): closes this tree's popup if it's open, else opens it (the
+   *  canopy shakes the tree; the row highlights its nearest fruit). */
+  function tap(f: RingFruit | null, canopy = f === null) {
     if (open) {
       cue('tick');
       return ontoggle?.(false);
     }
-    if (!f) shake(true);
-    else cue('tick'); // the fruit row: no shake, just its popup
+    if (canopy) shake(true);
+    else cue('tick');
     picked = f;
     taps++;
     ontoggle?.(true);
   }
 
-  /** The fruit nearest the tap along the row (keyboard: none highlighted). */
-  function fruitAt(e: MouseEvent): RingFruit | null {
-    const btn = e.currentTarget as HTMLElement;
-    if (!e.detail || !btn) return null;
+  /** A tap on the fruit row: picks up the fallen fruit nearest the tap (within 22u, or 22px on a small stage: a 44px
+   *  target for a lone fruit), else opens the popup with the nearest fruit highlighted. From the keyboard: the first
+   *  fallen fruit, else the popup. */
+  function rowTap(e: MouseEvent) {
+    const btn = e.currentTarget as HTMLElement | null;
+    if (!e.detail || !btn) return ground.length ? collect(ground[0].f) : tap(null, false);
     const r = btn.getBoundingClientRect();
-    const px = rowL + ((e.clientX - r.left) / r.width) * (rowR - rowL);
-    let best = spots[0];
-    for (const s of spots) if (Math.abs(s.x - px) < Math.abs(best.x - px)) best = s;
-    return best.f;
+    const k = r.width / (rowR - rowL);
+    const px = rowL + (e.clientX - r.left) / k;
+    const near = <T extends { gx: number }>(list: T[]) => list.reduce((a, b) => (Math.abs(b.gx - px) < Math.abs(a.gx - px) ? b : a));
+    if (ground.length) {
+      const g = near(ground);
+      if (Math.abs(g.gx - px) <= Math.max(22, 22 / k)) return collect(g.f);
+    }
+    tap(near(spots).f);
   }
 
   /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD (its measured bottom + room for the
@@ -173,23 +250,51 @@
 <button type="button" class="canopy" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
   style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} data-sfx="self" onclick={() => tap(null)}></button>
 
+<!-- a flower at the trunk's foot for each goal met today (it blooms as its fruit lands) -->
 {#each spots as s (s.f)}
-  {#each PILE.slice(0, Math.max(1, s.n)) as [px, py], k (k)}
-    <span class="fruit k{k} n{s.n}" class:ghost={s.n === 0} style:left={u(s.x + px)} style:top={u(s.y + py)} style:width={u(FRUIT_U)}
-      style:z-index={py > 0 ? 'calc(var(--z-fruit) + 1)' : 'var(--z-fruit)'}>
-      <span class="f" {@attach dropIn}>
+  {#if s.met && s.stage !== 'fall'}
+    <span class="flower" class:bloom={falling.includes(s.f)} data-bloom={s.f} data-tree={person.person} style:left={u(x + TREE_FLOWERS[s.i][0])}
+      style:top={u(BASE + TREE_FLOWERS[s.i][1])}>
+      <OfficialArt key={flowerArt(TREE_FLOWER[s.f])} size={u(TREE_FLOWER_U)} />
+    </span>
+  {/if}
+{/each}
+
+<!-- today's fruit: in the canopy (grey → colour with progress), then on the ground once met, until picked up -->
+{#each spots as s (s.f)}
+  {#if s.stage !== 'gone'}
+    <span class="fruit" class:up={!s.down} class:drop={falling.includes(s.f)} data-fruit={s.f} data-tree={person.person} data-stage={s.stage}
+      style:left={u(s.x)} style:top={u(s.y)} style:width={u(FRUIT_U)} style:--fx={u(s.tx - s.gx)} style:--fy={u(s.ty - s.gy)}
+      style:--up={UP} out:pickUp>
+      <span class="f" style:filter={s.filter}>
         <OfficialArt key={fruitArt(s.f)} size={u(FRUIT_U)} eager>
           {#snippet fallback()}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#f-{s.f}" /></svg>{/snippet}
         </OfficialArt>
       </span>
-      {#if k === 0 && celebrate?.fruit === s.f}
+      {#if celebrate?.fruit === s.f}
         {#key celebrate.n}<span class="fxa"><Fx kind="sparkles" spread={u(30)} /></span>{/key}
       {/if}
     </span>
-  {/each}
+  {/if}
 {/each}
-<button type="button" class="row-btn" style:left={u(rowL)} style:top={u(BASE + 8)} style:width={u(rowR - rowL)}
-  aria-label={label} aria-expanded={open} aria-controls={detailId} tabindex="-1" data-sfx="self" onclick={(e) => tap(fruitAt(e))}></button>
+<button type="button" class="row-btn" style:left={u(rowL)} style:top={u(BASE + 12)} style:width={u(rowR - rowL)}
+  aria-label={ground.length ? t(`tree.pick.${ground[0].f}`) : label} aria-expanded={open} aria-controls={detailId}
+  tabindex={ground.length ? 0 : -1} data-sfx="self" onclick={rowTap}></button>
+
+<!-- all four met: a few glints on the canopy now and then (NH's money tree) -->
+{#if allMet}
+  <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)} style:height={u(H * 0.62)}>
+    {#each [[22, 30], [70, 18], [58, 62]] as [gx, gy], k (k)}
+      <svg class="glint" viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:animation-delay="{k * 1.3}s">
+        <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
+      </svg>
+    {/each}
+  </span>
+{/if}
+
+{#each fx as e (e.n)}
+  <span class="fxa at" style:left={u(e.x)} style:top={u(e.y)}><Fx kind={e.kind} spread={u(26)} ondone={() => dropFx(e.n)} /></span>
+{/each}
 
 {#each leaves as l (l.n)}
   <span class="leaf" style:left={u(l.x)} style:top={u(l.y)}>
@@ -224,33 +329,43 @@
   .tree { position: absolute; z-index: var(--z-tree); transform-origin: 50% 100%; translate: -50% -100%; pointer-events: none; }
   .tree:global(.shaking) { animation: if-shake 500ms ease-in-out 1; }
   .oak { position: absolute; inset: 0; display: flex; justify-content: center; line-height: 0; }
-  /* fruit items lie on the ground (z above the trunk, below the villagers) */
-  .fruit { position: absolute; aspect-ratio: 1; translate: -50% -50%; line-height: 0; pointer-events: none; }
-  .f { display: block; transform-origin: 50% 100%; }
-  /* a soft radial contact shadow under each item (0.45 of its size, +6% right and down) */
+  /* today's fruit: z above the trunk, below the villagers; in the canopy it is drawn at the ground size scaled to
+     TREE_FRUIT_U (--up), so the fall grows it with one image */
+  .fruit { position: absolute; z-index: var(--z-fruit); aspect-ratio: 1; translate: -50% -50%; line-height: 0; pointer-events: none; }
+  .f { display: block; transform-origin: 50% 100%; transition: filter 1200ms ease; }
+  .fruit.up .f { transform: scale(var(--up)); }
+  /* on the ground: a soft radial contact shadow under it (0.45 of its size, +6% right and down) */
   .fruit::before {
     content: ''; position: absolute; z-index: -1; left: 11%; width: 90%; bottom: -8%; height: 26%; border-radius: 50%;
     background: radial-gradient(closest-side, var(--sh-c), transparent); pointer-events: none;
   }
-  .fruit.ghost::before { display: none; }
-  /* nothing earned yet: a small flat silhouette where it will fall, like NH's catalogue "not yet" (a
-     faded copy reads as grey pebbles) */
-  .fruit.ghost .f { scale: .7; opacity: .2; }
-  .fruit.ghost :global(.official) { filter: brightness(0); }
-  /* a newly earned item falls from the canopy and bounces (250ms after the shake starts) */
-  .f:global(.drop) { animation: fruit-drop 520ms cubic-bezier(.3, 0, .5, 1) both; }
+  .fruit.up::before { display: none; }
+  /* met: it falls from its place in the canopy (--fx, --fy) and bounces (250 ms after the shake starts; fruit-land's
+     thud at 55%) */
+  .fruit.drop .f { animation: fruit-drop 520ms cubic-bezier(.45, 0, .8, .6) both; }
+  .fruit.drop::before { animation: shade-in 300ms 200ms both; }
+  @keyframes shade-in { from { opacity: 0; } }
   @keyframes fruit-drop {
-    0% { transform: translateY(-260%); opacity: 0; } 15% { opacity: 1; }
-    55% { transform: translateY(0) scale(1.12, .86); } 72% { transform: translateY(-30%) scale(.96, 1.04); }
+    0% { transform: translate(var(--fx), var(--fy)) scale(var(--up)); }
+    55% { transform: translate(0, 0) scale(1.12, .86); animation-timing-function: ease-out; }
+    72% { transform: translateY(-24%) scale(.96, 1.04); animation-timing-function: ease-in; }
     86% { transform: translateY(0) scale(1.04, .96); } 100% { transform: none; }
   }
-  /* narrow stages: one item per kind, sized by its count (readable at 320) */
-  @container (max-width: 359px) {
-    .fruit.k1, .fruit.k2 { display: none; }
-    .fruit.ghost .f { scale: .85; }
-    .fruit.n1 .f { scale: 1; } .fruit.n2 .f { scale: 1.12; } .fruit.n3 .f { scale: 1.25; }
+  /* a flower per goal met at the trunk's foot, behind the trunk; it pops up as its fruit lands */
+  .flower { position: absolute; z-index: calc(var(--z-tree) - 1); translate: -50% -100%; line-height: 0; pointer-events: none; transform-origin: 50% 100%; }
+  .flower.bloom { animation: bloom 520ms 320ms var(--ease-bounce) both; }
+  @keyframes bloom { 0% { transform: scale(0, .2); opacity: 0; } 30% { opacity: 1; } 65% { transform: scale(1.12, .92); } 100% { transform: none; } }
+  /* all four met: three white glints twinkle on the canopy in turn, one every 1.3 s (a 3.9 s loop each) */
+  .glints { position: absolute; z-index: var(--z-fruit); pointer-events: none; }
+  .glint {
+    position: absolute; width: 13px; height: 13px; translate: -50% -50%; fill: #fff; opacity: 0;
+    animation: glint 3.9s ease-in-out infinite both;
   }
+  @keyframes glint { 0%, 16%, 100% { transform: scale(0) rotate(0); opacity: 0; } 8% { transform: scale(1) rotate(45deg); opacity: .95; } }
+  /* an endless loop: holds still under a sheet, like the sea's glints (hidden pages pause every animation) */
+  :global(.if-scene[data-covered]) .glint { animation-play-state: paused; }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
+  .fxa.at { z-index: var(--z-fruit-row); pointer-events: none; }
   .canopy, .row-btn {
     position: absolute; z-index: var(--z-canopy); appearance: none; border: 0; background: none; padding: 0;
     cursor: pointer; border-radius: 45%; -webkit-tap-highlight-color: transparent;
@@ -331,6 +446,6 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }
-    .f:global(.drop), .detail { animation: none; }
+    .detail { animation: none; }
   }
 </style>
