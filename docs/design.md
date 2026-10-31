@@ -89,6 +89,7 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
   day's ベル (tap → the day).
 - **目標:** the Move and weight goals (two avatar pills pick whose, either person sets either person's). The weight
   trend is in [けんこう](#kenkou).
+- **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found (→ that kind's page).
 - **Day:** ふたりでぜんぶ (+2 or —), then me and the partner: the day's ベル and, per goal, its value (green when met)
   and +1.
 
@@ -392,6 +393,18 @@ fragment is a ずかん `find` (never ベル).
 - Weeds, dig spots and the rock are measured clear of the controls themselves on each screen (a spot a control covers
   isn't shown); a flower's tap cell is a reach away from every lawn spot. `?hybrid` (dev or `?demo`) shows one.
 
+### Dialogue
+
+`island/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`, `e2e/dialogue.spec.ts`. The speech balloon and the catch
+plate read like NH's dialogue box: the text types in at 33 ms a glyph, two lines a page (split at the text's line
+breaks: NH's own catch lines carry the game's; each part of a dialogue starts a page; the box is sized for its longest
+page). A tap on the box finishes the page at once, the next turns it, and the last closes it; a small orange ▼ bobs at
+its bottom-right (0.6 s) only while another page follows. Left alone a finished page turns after 6 s and the last
+closes after a read's length. The balloon's name tag sits tilted on its top-left in the speaker's own NH colour (the
+roster's), its ink picked to read on it. The box is a button (`data-sfx` tick), placed clear of every control; no
+voices or blips. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction, a
+first find adds 「ずかんに のったよ！」 after the catch line.
+
 ### Villager chats
 
 `island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop (R9) and says a line in
@@ -401,6 +414,24 @@ Lines follow the villager's NH personality (lazy, peppy, smug, cranky, normal, j
 characters 10 of their own), 3 in 10 about the day instead (the morning, the night, today's goals so far: 「目標 2つ
 クリア！ あと すこし！」, never ベル), a sleepy one when the tap wakes them; never the same line twice in a row. Kid-friendly,
 ja/en. The roster (personalities) loads on the first chat. One balloon at a time; a new tap replaces it.
+
+### Visitors
+
+`island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors on the front beach (official
+renders), one at a time, measured clear of every control (the middle first, else a little to the side, else none):
+**K.K. Slider** with his guitar on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp**
+(see-through, a slow bob) on 1 in 4 nights 20:00–04:00, **Gulliver** washed up asleep on his side on 1 in 4 days
+06:00–18:00, seeded by the date (both phones see the same). A tap: their introduction the first time (two pages), then
+one of their lines; with ミュージック on K.K. plays a short original tune instead (a jingle: the hour's track ducks; ♪
+float up). No trading, no ベル. `?visitor=<id>` (dev or `?demo`) brings one.
+
+### Zukan
+
+`kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
+(Critterpedia) in きろく: さかな 33, むし 48 (the wasp from a shaken nest included), かせき 32, かいがら 7, shared between the two of us (the first `find` of
+either). A kind's page lists every entry in the game's order: the official icon (loaded lazily) and the name for the
+found ones, a silhouette (the icon in one shade) and ？？？ for the rest; 「コンプリート！」 when all are in. A tap on a
+found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish and bugs, NH's catch line.
 
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
 wing or fin loop each while on screen; between visits one timer. Art loads on first need. Layers: sea life z 1 (under

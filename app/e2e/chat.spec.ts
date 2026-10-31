@@ -11,7 +11,7 @@ const under = (page: Page, sel: string) =>
   page.evaluate((s) => {
     const b = document.querySelector(s)!.getBoundingClientRect();
     const pts = [[b.left + 3, b.top + 3], [b.right - 3, b.top + 3], [b.left + 3, b.bottom - 3], [b.right - 3, b.bottom - 3], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button, .ribbon-wrap')).map((e) => e.className));
+    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button, .ribbon-wrap') && !e.closest('[data-fx="talk"]')).map((e) => e.className));
   }, sel);
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)

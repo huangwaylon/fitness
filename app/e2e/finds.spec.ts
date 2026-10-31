@@ -40,7 +40,7 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
   const p = await at(page, '[data-find="shell"]');
   expect(await control(page, p)).toBe('');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText(/を ひろった！$/);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(/を ひろった！/);
   await expect(shells).toHaveCount(2);
   expect(await cues(page)).toContain('scene-shell');
   expect(await finds(page)).toEqual([{ kind: 'shell', id }]);
@@ -60,7 +60,7 @@ test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 an
   const p = await at(page, '[data-find="fossil"]');
   expect(await control(page, p)).toBe('');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText(/化石を ほりだした！ .+だ！$/);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(/化石を ほりだした！ .+だ！/);
   await expect(spots).toHaveCount(n - 1);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-dig', 'scene-catch']));
   expect((await finds(page))[0]).toMatchObject({ kind: 'fossil' });
@@ -71,7 +71,7 @@ test('a message bottle at the water’s edge: a tap reads its note', async ({ pa
   const before = await open(page, '&date=2026-11-04T12:00&find=bottle');
   const p = await at(page, '[data-find="bottle"]');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText(/メッセージボトル！ 『.+』$/);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(/メッセージボトル！ 『.+』/);
   await expect(page.locator('[data-find="bottle"]')).toHaveCount(0);
   expect(await cues(page)).toContain('scene-bottle');
   expect(await finds(page)).toEqual([]); // a bottle isn't a ずかん find
@@ -84,7 +84,7 @@ test('a wish on a shooting star brings star fragments the next morning; a tap pi
   const moon = await at(page, '.orb');
   await page.mouse.click(moon.x, moon.y);
   await page.mouse.click(moon.x + 120, moon.y + 10);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText('ながれぼしに おねがい！');
+  await expect(page.locator('[data-fx="catch"]')).toContainText('ながれぼしに おねがい！');
   expect(await page.evaluate(() => localStorage.getItem('scene-wish'))).toBe('"2026-11-05"');
   expect(await cues(page)).toContain('scene-wish');
   await page.goto('?demo&date=2026-11-05T08:00');
@@ -94,7 +94,7 @@ test('a wish on a shooting star brings star fragments the next morning; a tap pi
   const id = await frags.first().getAttribute('data-id');
   const p = await at(page, '[data-find="fragment"]');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText(/かけらを ひろった！$/);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(/かけらを ひろった！/);
   expect(await finds(page)).toEqual([{ kind: 'fragment', id }]);
   await unchanged(page, before);
 });

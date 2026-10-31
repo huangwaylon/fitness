@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LINES, chatLine, moodOf, type Mood } from './chat.ts';
+import { FOLLOW_UPS, LINES, chatLine, moodOf, pagesOf, type Mood } from './chat.ts';
 import { PERSONALITIES } from '#lib/villagers/species.ts';
 import { mulberry32 } from '#lib/random.ts';
 import ja from '#lib/i18n/ja.json';
@@ -50,5 +50,11 @@ describe('villager chats', () => {
     expect(moodOf({ special: false, personality: 'cranky' })).toBe('cranky');
     expect(moodOf({ special: true, personality: null })).toBe('special');
     expect(moodOf(undefined)).toBe('normal');
+  });
+  it('some lines go on to a second page (NH villagers often do), in both languages', () => {
+    expect(FOLLOW_UPS.size).toBeGreaterThanOrEqual(16);
+    for (const k of FOLLOW_UPS) for (const c of cat) expect(c[`${k}.more`], k).toBeTruthy();
+    expect(pagesOf({ key: 'chat.jock.1' })).toEqual(['chat.jock.1', 'chat.jock.1.more']);
+    expect(pagesOf({ key: 'chat.jock.2' })).toEqual(['chat.jock.2']);
   });
 });

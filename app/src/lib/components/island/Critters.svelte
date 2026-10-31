@@ -24,6 +24,7 @@
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { catchLine, loadLines } from './catchLine.ts';
+  import { t } from '#lib/i18n/index.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
     hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
@@ -47,7 +48,7 @@
     hesitated: boolean;
   }
   interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean }
-  interface Card { n: number; x: number; y: number; art: string; text: string }
+  interface Card { n: number; x: number; y: number; art: string; parts: string[] }
   interface Net { n: number; x: number; y: number }
 
   // Everything in stage units (u: 390 across), drawn with calc(n × --su).
@@ -397,24 +398,16 @@
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
    *  (Plate.svelte places it clear of every control). */
   async function show(item: FishId | JunkId | BugId, x: number, y: number) {
-    // the shared ずかん: the first catch of each fish or bug (junk isn't a find)
-    if (item in FISH) recordFind('fish', item);
-    else if (item in BUGS) recordFind('bug', item);
+    // the shared ずかん: the first catch of each fish or bug (junk isn't a find) gets a second page saying so
+    const added = item in FISH ? recordFind('fish', item) : item in BUGS ? recordFind('bug', item) : false;
     const n = ++seq;
     const text = await catchLine(item);
     if (seq !== n) return;
-    card = { n, x, y, art: critterArt(item), text };
+    card = { n, x, y, art: critterArt(item), parts: added ? [text, t('zukan.added')] : [text] };
   }
-  /** The catch plate's box (a tap on it dismisses it, NH's A). */
-  let heldEl = $state<HTMLElement>();
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
   export function tap(px: number, py: number): boolean {
-    const plate = card && heldEl?.querySelector('.catch-plate')?.getBoundingClientRect();
-    if (plate && px >= plate.left && px <= plate.right && py >= plate.top && py <= plate.bottom + 4) {
-      card = null;
-      return true;
-    }
     if (cast) {
       reelIn();
       return true;
@@ -439,9 +432,9 @@
         return true;
       }
       if (swing === 'startle') {
+        // it flies off; the tap still lands where it was meant (a visitor, a shell, the grass)
         sceneSfx('bug-flee');
         bugLeave(true, px < r.left + r.width / 2 ? 1 : -1);
-        return true;
       }
     }
     const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
@@ -590,7 +583,7 @@
   {/if}
 </div>
 
-<div class="held" aria-hidden="true" bind:this={heldEl}>
+<div class="held">
   {#if cast?.under}
     <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
     <span class="mover" style:translate="{U(cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
@@ -604,7 +597,7 @@
   {/if}
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} text={c.text} ms={Math.min(5600, 2600 + c.text.length * 45)} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && (card = null)} />{/key}
   {/if}
 </div>
 

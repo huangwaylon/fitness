@@ -20,7 +20,7 @@ export type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
 function guards(): Box[] {
   const out: Box[] = [];
   for (const el of document.querySelectorAll('button, .detail, .news')) {
-    if (el.classList.contains('balloon')) continue;
+    if (el.classList.contains('balloon') || el.closest('[data-fx]:not(.placed)')) continue; // an overlay still being measured
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
     const px = el.classList.contains('ribbon') ? 20 : 6;

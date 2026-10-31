@@ -95,11 +95,10 @@
   // ---------- the moment of a find ----------
   interface Lift { n: number; x: number; y: number; art: string; tilt: number }
   interface Dig { n: number; x: number; y: number }
-  interface Card { n: number; x: number; y: number; art: string; text: string }
+  interface Card { n: number; x: number; y: number; art: string; parts: string[] }
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
   let card = $state<Card | null>(null);
-  let heldEl = $state<HTMLElement>();
   let seq = 0;
   const timers = new Set<ReturnType<typeof setTimeout>>();
   function later(fn: () => void, ms: number) {
@@ -114,9 +113,10 @@
     timers.clear();
   });
 
-  function plate(x: number, y: number, art: string, text: string, delay = 0) {
+  /** The plate, `delay` ms after the tap; a first find of its kind gets a second page saying it's in the ずかん. */
+  function plate(x: number, y: number, art: string, text: string, delay = 0, added = false) {
     const n = ++seq;
-    later(() => (card = { n, x, y, art, text }), delay);
+    later(() => (card = { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text] }), delay);
   }
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number) {
     take(date, uid);
@@ -129,8 +129,8 @@
   function pickShell(s: Shell) {
     pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
     sceneSfx('shell');
-    recordFind('shell', s.id);
-    plate(s.x, s.y, findArt(s.id), t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180);
+    const added = recordFind('shell', s.id);
+    plate(s.x, s.y, findArt(s.id), t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
   }
   function pickFragment(f: Fragment) {
     pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
@@ -150,11 +150,11 @@
     holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
     taken++;
     sceneSfx('dig');
-    recordFind('fossil', s.fossil);
+    const added = recordFind('fossil', s.fossil);
     const n = ++seq;
     dig = { n, x: s.x, y: s.y };
     later(() => dig?.n === n && (dig = null), 3200);
-    plate(s.x, s.y - 4, findArt(s.fossil), t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650);
+    plate(s.x, s.y - 4, findArt(s.fossil), t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
     later(() => sceneSfx('catch'), 650);
   }
 
@@ -162,12 +162,6 @@
   export function tap(px: number, py: number): boolean {
     const g = stageGeo(scene);
     if (!g || !enabled()) return false;
-    // a tap on the plate dismisses it (NH's A)
-    const plate = card && heldEl?.querySelector('.catch-plate')?.getBoundingClientRect();
-    if (plate && px >= plate.left && px <= plate.right && py >= plate.top && py <= plate.bottom + 4) {
-      card = null;
-      return true;
-    }
     const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
     const reach = 22 * g.k;
     type Hit = { d: number; go: () => void };
@@ -243,10 +237,10 @@
   {/if}
 </div>
 
-<div class="held" aria-hidden="true" bind:this={heldEl}>
+<div class="held">
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} text={c.text} ms={c.text.length > 24 ? 3800 : 2600} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && (card = null)} />{/key}
   {/if}
 </div>
 

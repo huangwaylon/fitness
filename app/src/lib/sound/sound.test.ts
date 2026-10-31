@@ -118,7 +118,7 @@ describe('placeholder effects (synth.ts)', () => {
     for (const id of SOUND_IDS) {
       const x = render(id, 22050);
       expect(x.length).toBe(Math.ceil(durationOf(id) * 22050));
-      expect(durationOf(id)).toBeLessThan(id === 'chime' || id === 'fanfare' ? 2.5 : 1);
+      expect(durationOf(id)).toBeLessThan(id === 'chime' || id === 'fanfare' || id === 'kk-song' ? 2.5 : 1);
       let peak = 0;
       for (const v of x) {
         expect(Number.isFinite(v)).toBe(true);

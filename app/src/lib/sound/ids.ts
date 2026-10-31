@@ -26,14 +26,16 @@ export type SoundId =
   // island care: a weed plucked, the watering can's sprinkle, the rock's clonk
   | 'pluck' | 'sprinkle' | 'clonk'
   // a shaken tree's wasps: their angry buzz
-  | 'buzz';
+  | 'buzz'
+  // visitors: K.K.'s little tune on his guitar (an original, a jingle: the music ducks under it)
+  | 'kk-song';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
   | 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shooting-star'
   | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly'
   | 'present' | 'cast' | 'plop' | 'nibble' | 'bite' | 'reel' | 'catch' | 'flee' | 'net' | 'bug-flee'
-  | 'shell' | 'fragment' | 'bottle' | 'dig' | 'wish' | 'weed' | 'water' | 'clonk' | 'glint'
+  | 'shell' | 'fragment' | 'bottle' | 'dig' | 'wish' | 'weed' | 'water' | 'clonk' | 'glint' | 'visitor'
   // shaking a tree (island/treeShake.ts): a nest lands, its wasps buzz out, they sting; a branch picked up
   | 'nest' | 'buzz' | 'sting' | 'twig';
 
@@ -100,7 +102,8 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   pluck: { bus: 'sfx', gain: 0.4, jitter: 70, max: 2 },
   sprinkle: { bus: 'sfx', gain: 0.35, jitter: 60, max: 1 },
   clonk: { bus: 'sfx', gain: 0.45, jitter: 50, max: 2 },
-  buzz: { bus: 'sfx', gain: 0.4, jitter: 40, max: 1 }
+  buzz: { bus: 'sfx', gain: 0.4, jitter: 40, max: 1 },
+  'kk-song': { bus: 'sfx', gain: 0.6, jitter: 0, max: 1, jingle: true }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

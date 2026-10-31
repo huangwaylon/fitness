@@ -48,7 +48,7 @@
   import Talk from './Talk.svelte';
   import TreeShakes from './TreeShakes.svelte';
   import { PUFFY_MS } from './treeShake.ts';
-  import { chatLine, moodOf } from './chat.ts';
+  import { chatLine, moodOf, pagesOf } from './chat.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
@@ -139,13 +139,15 @@
   async function chat(btn: HTMLElement, asleep: boolean) {
     const v = view, p = v.people[v.me];
     const { ROSTER } = await import('#lib/villagers/roster.ts');
-    const mood = moodOf(ROSTER[resolveLook({ villager: p.villager, person: v.me }).id]);
+    const entry = ROSTER[resolveLook({ villager: p.villager, person: v.me }).id];
+    const mood = moodOf(entry);
     const met = RING_FRUITS.filter((f) => p.rings[f].met).length;
     const line = chatLine(mood, { hour: jst(now()).hour, met, asleep }, Math.random, lastLine);
     lastLine = line.key;
     // above the villager's head, clear of its emote (the ♪ of the tap) as it floats up
     const r = btn.getBoundingClientRect();
-    talk?.say(p.villagerName, t(line.key, line.params), btn, [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }]);
+    const pages = pagesOf(line).map((k) => t(k, line.params));
+    talk?.say(p.villagerName, pages, btn, { avoid: [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }], colour: entry?.colour });
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
   const today = $derived(localDateAt(clock.getTime()));
@@ -217,7 +219,8 @@
     <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" />
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-      <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} />
+      <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
+        say={(name, parts, from, o) => talk?.say(name, parts, from, o)} />
       <Talk bind:this={talk} scene={sceneEl} />
       <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
       <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} />
@@ -232,7 +235,8 @@
     --scene-h-auto: clamp(300px, calc(100dvh - var(--island-bottom, 0px)), 600px);
     /* emotes are game objects: 44u on the stage (resolved where used, against the stage), 36–56px */
     --emote-size: clamp(36px, calc(44 * 100cqw / 390), 56px);
-    position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: hidden;
+    /* clip, not hidden: nothing may scroll the scene (a focused balloon or plate would otherwise pull it along) */
+    position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: clip;
     container-type: inline-size; isolation: isolate;
     /* the layout (see the contract at the top of the script). The island's box in stage units: the hedge's top
        (32u) to the beach's foam (356u), centred on 194u. It is centred in the visible OCEAN, the
