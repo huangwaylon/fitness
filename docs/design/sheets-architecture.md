@@ -20,25 +20,31 @@ tab is **append-only**; the app never updates or deletes a row.
 
 ### Events
 
-Exactly the types in `EVENT_TYPES`; the script refuses any other type or shape with `bad_request` (only shapes: who may
-edit what, open weeks and wallet cover are read-time rules in the model). `data` ≤ 20,000 characters.
+Exactly the types in `EVENT_TYPES`; the script refuses any other type or shape with `bad_request` (only shapes: open
+weeks and wallet cover are read-time rules in the model). `data` ≤ 20,000 characters. A `person` field (whose data an
+edit changes, ADR 0023) must be `A` or `B` and is allowed only where the table below says; dates must be real calendar
+dates.
 
 - `spend {spendId, item, label, bells}` (ADR 0022): a buy from the shared wallet; `spendId` a string (1–128), `bells` an integer 1–10,000,000,
   `label` 1–60 characters, `item` ≤ 40. The model counts it only if the wallet covered it at its `at`.
 - `spend_void {spendId}`: the buyer only, once, after the spend; the ベル go back. Buys never lock.
 - `harvest {week}` (受け取る: a ceremony; the bonus counts either way) · `highfive {}`.
-- `pref {key, value}`, `key` in `PREF_KEYS`: `locale` (`ja`|`en`), `villagerName` (1–20), `villager` (a roster id),
+- `pref {key, value, person?}`, `key` in `PREF_KEYS` (`person` only with `goalWeight` / `moveGoal`): `locale` (`ja`|`en`), `villagerName` (1–20), `villager` (a roster id),
   `goalWeight` (kg, 20–300, one decimal, or `null` to clear; ADR 0020), `moveGoal` (integer 100–2,000 kcal, from the
   Tokyo date of its `at` on; ADR 0021), and the shared `menu`: a JSON array of `{id, label, bells}` (≤ 30 items,
   unique ids `[\w-]{1,40}`, label 1–60, bells 1–10,000,000). The latest valid value wins; an invalid one is ignored as
   a whole.
-- きろく edits ([history-and-editing.md](history-and-editing.md) §4). The subject is always the sender: there is no
-  person field, so nobody can edit the partner's record.
-  - `metric_set {date, metric, value}`: an activity metric (integer; steps 0–100,000, minutes 0–1,440, kcal 0–10,000)
-    overrides the day's value, also lower; or `metric:'weight'` (kg, 20–300, one decimal; no week lock).
-  - `workout_edit {id, strength?: true|false|null, excluded?: boolean}`: count as strength or not (`null` =
-    automatic), or leave out of scoring.
-  - `workout_add {id:'m:<id>', date, type, durationMin 1–600, strength?}`: a workout added by hand (a known type).
+- きろく edits ([history-and-editing.md](history-and-editing.md) §4). Either person edits either person's data
+  ([ADR 0023](../decisions/0023-anyone-edits-anyones-data-gym-overrides.md)): `person?: 'A'|'B'` names whose (absent =
+  the sender); the row's `person` column stays the sender, so the log knows who fixed it.
+
+  | type | data | |
+  |---|---|---|
+  | `metric_set` | `{person?, date, metric, value}` | an activity metric (integer; steps 0–100,000, minutes 0–1,440, kcal 0–10,000) overrides the day's value, also lower; or `metric:'weight'` (kg, 20–300, one decimal; no week lock) |
+  | `workout_edit` | `{person?, id, strength?: true\|false\|null, excluded?: boolean}` | count as strength or not (`null` = automatic), or leave out of scoring |
+  | `workout_add` | `{person?, id:'m:<id>', date, type, durationMin 1–600, strength?}` | a workout added by hand (a known type) |
+  | `gym_set` | `{person?, date, on: true\|false}` | the day's 🥥 by hand: on without an arrival, off despite one; the latest wins per person and date |
+  | `pref` | `{person?, key: 'moveGoal'\|'goalWeight', value}` | either person's goals (the other keys refuse `person`) |
 
 **ベル on read** (`model/bells.ts`): earnings are recomputed from the rows, so they move with late syncs and edits
 until the week's Wednesday 04:00 lock, then are fixed at the lock. The rules live in `config/rules.ts`; there is no
