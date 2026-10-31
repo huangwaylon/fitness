@@ -27,9 +27,9 @@
   const want = (import.meta.env.DEV || q.has('demo')) && q.has('stretch');
   const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
 
-  /** Where the deck may stand (stage units: x, foot y), in order: on the lawn in front of the hedge beside the plaza
-   *  (either side of a weed there), else between the villagers' feet (the beach in front stays the visitors'). */
-  const SPOTS: readonly (readonly [number, number])[] = [[220, 103], [200, 103], [195, 303]];
+  /** Where the deck may stand (stage units: x, foot y), in order: on the lawn in front of the hedge, behind centre stage
+   *  (between the rock and the back weed spot, clear above a visitor's head), else between the villagers' feet. */
+  const SPOTS: readonly (readonly [number, number])[] = [[195, 82], [195, 303]];
   /** Half its width and its height (u: the radio is about 1.4 times as wide as tall), for the clearance check. */
   const HW = 12.5, UP = 18;
 

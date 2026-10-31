@@ -127,7 +127,7 @@
   const inBox = (b: Box) => ({ x: between(b.x0, b.x1), y: between(b.y0, b.y1) });
   /** The open places a bug keeps to: the flower beds, the hedge tops, the grass in front of the beds. */
   const BEDS: Box[] = [{ x0: 45, x1: 110, y0: 212, y1: 285 }, { x0: 280, x1: 345, y0: 212, y1: 285 }];
-  const HEDGE: Box = { x0: 50, x1: 340, y0: 14, y1: 46 };
+  const HEDGE: Box = { x0: 50, x1: 340, y0: HEDGE_BASE - 66, y1: HEDGE_BASE - 34 };
   const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
   /** The front beach (a crab, a wharf roach): the sand between the cliff's foot and the foam, on screen. */
   function beach(g: StageGeo): Box | null {
@@ -434,7 +434,7 @@
     void loadSprite();
     preload(critterArt(id));
     // a little patch of lawn by the rock, in front of the hedge
-    const area = { x0: x - 18, x1: x + 20, y0: y - 9, y1: y - 3 }; // in front of the rock's foot, above the jar's lid
+    const area = { x0: x - 18, x1: x + 20, y0: y - 9, y1: y - 3 }; // in front of the rock's foot
     bug = { id, flight: 'crawl', x: x + 8, y: y - 4, ms: 0, flip: false, gone: false, area, keep: [], sat: false };
     later(fly, 300);
     later(() => bugLeave(), STAY_MS.bug);

@@ -63,5 +63,5 @@ export function rockTap(r: () => number): 'clonk' | 'sparkle' | 'bug' {
   const x = r();
   return x < 0.125 ? 'bug' : x < 0.375 ? 'sparkle' : 'clonk';
 }
-/** The rock's place (stage units): on the lawn in front of the hedge, by the jar's lid. */
-export const ROCK = { x: 175, y: 101, h: 15 } as const;
+/** The rock's place (stage units): on the lawn in front of the hedge, between the left canopy and centre stage (a visitor's spot). */
+export const ROCK = { x: 164, y: 92, h: 15 } as const;

@@ -16,7 +16,7 @@ describe('hitStage', () => {
     expect(hitStage(195, 340)).toEqual({ kind: 'sand' });
     expect(hitStage(10, 200)).toEqual({ kind: 'sea' });
     expect(hitStage(400, 200)).toEqual({ kind: 'sea' });
-    expect(hitStage(195, 8)).toEqual({ kind: 'sea' });
+    expect(hitStage(195, 4)).toEqual({ kind: 'sea' }); // the open-sea strip behind the hedge's top
   });
 });
 

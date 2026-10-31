@@ -95,9 +95,10 @@ export function zodiacOf(date: string): string {
 /** The front beach between the cliff's foot and the foam (shells, the bottle, fragments): x and a 0–1 depth. */
 export const BEACH = { x0: 74, x1: 316, y0: 331, y1: 345 } as const;
 /** Open lawn for a dig spot or a weed, clear of every control at 320–430 px (measured: the canopies, the fruit rows,
- *  the jar, the villagers) and a tap's reach away from the flowers: beside the trunks under the canopies (the dig
- *  spots), in front of the hedge by the jar and between the villagers' feet (weeds too). */
-export const LAWN: readonly (readonly [number, number])[] = [[68, 143], [142, 143], [248, 143], [322, 143], [214, 98], [195, 310]];
+ *  the villagers) and a tap's reach away from the flowers: beside the trunks under the canopies (the dig spots), in
+ *  front of the hedge (between the right canopy and centre stage) and between the villagers' feet (weeds too).
+ *  Centre stage (scene.ts CENTRE_STAGE, a visitor's spot) stays clear. */
+export const LAWN: readonly (readonly [number, number])[] = [[68, 143], [142, 143], [248, 143], [322, 143], [226, 92], [195, 310]];
 export const DIG_SPOTS = LAWN.slice(0, 4);
 
 // ---------- the schedules ----------
