@@ -6,7 +6,7 @@
   // nets it (NH's catch line, the ずかん's bagworm or spider), else it climbs back up. Rarely a wasp nest falls beside the trunk on the outer side:
   // it lands with a thud, and SWARM_DELAY_MS later three wasps buzz out and charge the villager standing on that side
   // for SWARM_MS. A tap on them in time nets one (the net's swing, NH's catch line on the plate, the shared ずかん's
-  // wasp); too late and they sting (`onsting`: the scene gives that villager a fright and a puffy eye), then fly off.
+  // wasp); too late and they sting (`onsting`: the scene gives that villager a fright and a sweat drop), then fly off.
   // Nothing here pays ベル. `?shake=nest|branch|bagworm|spider` (dev or ?demo) makes the next shake drop that (the e2e's hook).
   import { onDestroy } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -26,7 +26,7 @@
     DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakenBug, type ShakeDrop
   } from './treeShake.ts';
   import { approach, turnTo } from './avatar.ts';
-  import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
+  import { HOLD_MS, actors, holdUp, putAway } from '../motion/director.svelte.ts';
 
   type Side = 'mine' | 'partner';
   interface Props {
@@ -136,7 +136,10 @@
   function charge(nestN: number, x: number, y: number, slot: 'A' | 'B') {
     const side: Side = slot === 'A' ? 'mine' : 'partner';
     const n = ++seq;
-    swarm = { n, side, x0: x, y0: y, x1: VILLAGER.x[slot], y1: VILLAGER.foot - VILLAGER.h * 0.78, at: performance.now(), stung: false };
+    // at that villager's face where it stands now (mine has usually walked over to shake the tree)
+    const a = actors[side];
+    const [vx, vy] = a.x || a.y ? [a.x, a.y] : [VILLAGER.x[slot], VILLAGER.foot];
+    swarm = { n, side, x0: x, y0: y, x1: vx, y1: vy - VILLAGER.h * 0.78, at: performance.now(), stung: false };
     sceneSfx('buzz');
     waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music
     later(SWARM_MS, () => {
@@ -255,7 +258,7 @@
       <button type="button" class="swarm" class:stung={s.stung} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')} bind:this={swarmEl}
         style:--x0={u(s.x0)} style:--y0={u(s.y0)} style:--x1={u(s.x1)} style:--y1={u(s.y1)} style:--ms="{SWARM_MS}ms"
         style:--away={u(s.x1 < 195 ? -120 : 120)} onclick={netIt}>
-        {#each [[-7, -3, 0], [6, -6, 0.13], [1, 6, 0.26]] as [dx, dy, d], k (k)}
+        {#each [[-11, -4, 0], [10, -9, 0.13], [1, 9, 0.26]] as [dx, dy, d], k (k)}
           <svg class="wasp" viewBox="-8 -8 16 16" aria-hidden="true" style:--dx={u(dx)} style:--dy={u(dy)} style:animation-delay="-{d}s">
             <g class="w"><ellipse cx="-2" cy="-4.2" rx="2" ry="3.4" transform="rotate(-25 -2 -4.2)" /><ellipse cx="2" cy="-4.2" rx="2" ry="3.4" transform="rotate(25 2 -4.2)" /></g>
             <ellipse cx="-2.6" cy=".2" rx="3.4" ry="2.6" fill="#F2B21E" />
@@ -317,7 +320,7 @@
   .held { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   /* the swarm: a ≥ 44px button that charges from the nest to the villager's face, wobbling; stung, it flies off */
   .swarm {
-    position: absolute; left: 0; top: 0; width: max(44px, calc(36 * 100cqw / 390)); aspect-ratio: 1; margin: calc(max(44px, calc(36 * 100cqw / 390)) / -2) 0 0 calc(max(44px, calc(36 * 100cqw / 390)) / -2);
+    position: absolute; left: 0; top: 0; width: max(44px, calc(46 * 100cqw / 390)); aspect-ratio: 1; margin: calc(max(44px, calc(46 * 100cqw / 390)) / -2) 0 0 calc(max(44px, calc(46 * 100cqw / 390)) / -2);
     appearance: none; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 50%; pointer-events: auto;
     -webkit-tap-highlight-color: transparent; animation: charge var(--ms) cubic-bezier(.4, .1, .7, 1) both;
   }
@@ -325,7 +328,8 @@
   @keyframes charge { from { translate: var(--x0) var(--y0); } to { translate: var(--x1) var(--y1); } }
   @keyframes away { from { translate: var(--x1) var(--y1); opacity: 1; } to { translate: calc(var(--x1) + var(--away)) calc(var(--y1) - 25cqw); opacity: 0; } }
   .wasp {
-    position: absolute; left: 50%; top: 50%; width: calc(13 * 100cqw / 390); overflow: visible;
+    /* NH's wasps are big and plain to see: each about a third of a villager's head */
+    position: absolute; left: 50%; top: 50%; width: calc(21 * 100cqw / 390); overflow: visible;
     translate: calc(-50% + var(--dx)) calc(-50% + var(--dy)); animation: buzz .3s ease-in-out infinite alternate;
   }
   @keyframes buzz { from { transform: translate(-2px, 1px) rotate(-8deg); } to { transform: translate(2px, -2px) rotate(8deg); } }

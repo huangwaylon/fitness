@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BITE_WINDOW_MS, BUBBLE_SHARE, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, inOval, pondBox, pondCast, waterAt,
+  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, inOval, pondBox, pondCast, waterAt, shadowLen, POND_SHADOW,
   type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -91,7 +91,9 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(oddsAt(BUGS['red-dragonfly'], 10, 12)).toBe(BUGS['red-dragonfly'].weight * IN_SEASON);
     expect(oddsAt(BUGS['red-dragonfly'], 4, 12)).toBe(BUGS['red-dragonfly'].weight);
     expect(BUGS['robust-cicada'].flight).toBe('perch');
-    for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch', 'crawl', 'stalk', 'burrow', 'dangle']).toContain(b.flight);
+    // NH's flower bugs sit on a flower's head: the ladybug and the mantises
+    for (const id of ['ladybug', 'mantis', 'orchid-mantis'] as BugId[]) expect(BUGS[id].flight, id).toBe('flower');
+    for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'flower', 'hop', 'perch', 'crawl', 'stalk', 'burrow', 'dangle']).toContain(b.flight);
   });
   it('70 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass, the beds and the pond (and the wasp of a shaken nest)', () => {
     expect(Object.keys(BUGS)).toHaveLength(70);
@@ -291,5 +293,15 @@ describe('the water box: the sea or the pond', () => {
       expect(c.sy).toBeGreaterThan(pond.cy); // in front
       expect(inOval(pond, c.sx, c.sy - 2.5, 1.01)).toBe(true); // on the rim
     }
+  });
+});
+
+describe('fish shadows', () => {
+  it("NH's sizes 1–6 as one teardrop each, the eels long and thin", () => {
+    expect([1, 2, 3, 4, 5, 6].map((n) => shadowLen(n))).toEqual([14, 18, 23, 28, 34, 46]);
+    expect(shadowLen(3, 'narrow')).toBe(32);
+    expect(shadowLen(6, 'fin')).toBe(46);
+    expect(shadowLen(9)).toBe(46);
+    expect(shadowLen(6) * POND_SHADOW).toBeLessThan(52); // a size 6 still fits the pond's water (52u across)
   });
 });

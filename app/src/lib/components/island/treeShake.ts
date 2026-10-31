@@ -3,7 +3,7 @@
 // quick tap after it, is a shake. A shake may drop something: now and then a tree branch to pick up (cosmetic), a
 // bagworm (at night sometimes a spider) dangling on its thread for a while to net (NH's hardwood trees), and
 // rarely a wasp nest, at most one per tree per NEST_GAP_MS; out of it the wasps charge the villager standing nearest,
-// and a tap on them within SWARM_MS nets one (the ずかん's wasp), else they sting (a puffy eye for a while). No ベル ever
+// and a tap on them within SWARM_MS nets one (the ずかん's wasp), else they sting (a fright: a 「！」 and a sweat drop). No ベル ever
 // (scenery never pays); the last nest's time per tree is this phone's own (`tree-nest` in localStorage).
 import type { PersonId } from '#lib/types.ts';
 import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
@@ -55,8 +55,9 @@ export const SWARM_MS = 1500;
 /** A tap on the swarm `ms` after it came out: netted while it is still on its way, else too late (it has stung). */
 export const netsSwarm = (ms: number): boolean => ms >= 0 && ms <= SWARM_MS;
 
-/** How long a sting leaves its puffy eye. */
-export const PUFFY_MS = 60 * 1000;
+/** A sting's fright: a 「！」, then a sweat drop (an emote: NH's swollen eye can't be placed on 440 different faces),
+ *  the sweat this long after the 「！」. */
+export const STUNG_SWEAT_MS = 1300;
 
 type NestRecord = Partial<Record<PersonId, number>>;
 
