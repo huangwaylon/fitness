@@ -130,6 +130,8 @@ export class Engine {
   #wrapTimer: ReturnType<typeof setTimeout> | undefined;
   #wrapToken = 0;
   #wrapping = false;
+  /** Paused from outside (holdMusic): no track sounds again until a tap (unlock) or the Media Session's ▶ (unhold). */
+  #held = false;
   /** Called when a one-shot track (the opening) ends. */
   onended: ((key: string) => void) | null = null;
   /** Called when the context starts running again (after an interruption, or iOS resuming it on its own). */
@@ -190,6 +192,7 @@ export class Engine {
   unlock(music: boolean, activation = true): void {
     const ctx = this.#ensure(music);
     if (!ctx) return;
+    this.#held = false;
     clearTimeout(this.#sleepTimer);
     if (ctx.state !== 'running') this.#wake(ctx);
     if (activation) {
@@ -517,7 +520,7 @@ export class Engine {
    *  out to silence. */
   async setTrack(key: string | null, track: MusicTrack | null, loop = true): Promise<void> {
     const ctx = this.ctx;
-    if (!ctx || !this.#decks.length) return;
+    if (!ctx || !this.#decks.length || (key && this.#held)) return; // held: not even a cue's wake or coming back
     const cur = this.#decks[this.#front];
     if (key && cur.key === key) {
       const fading = cur.starting || ctx.currentTime < cur.fadeEnd;
@@ -737,8 +740,14 @@ export class Engine {
     g.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
     cur.fadeEnd = 0;
     const key = cur.key;
+    this.#held = true;
     setTimeout(() => token === this.#token && cur.key === key && cur.el.pause(), 380);
     this.#idle.poke(); // held, nothing sounds: the context may sleep (#onIdle)
+  }
+
+  /** The Media Session's ▶ (in front): the held track may play again. */
+  unhold(): void {
+    this.#held = false;
   }
 
   /** The ambience layers to sound now (only ids with a file): new ones fade in, gone ones fade out (`immediate`: stop
