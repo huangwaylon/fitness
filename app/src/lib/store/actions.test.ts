@@ -70,3 +70,16 @@ describe('the goals name whose goal', () => {
     expect(queued().every((e) => e.nextAt === e.queuedAt)).toBe(true);
   });
 });
+
+describe('the island’s finds (the ずかん)', () => {
+  it('recordFind sends {kind, id} the first time either of us finds it, and nothing once the model has it', async () => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const { recordFind } = await import('./actions.ts');
+    week.model = { state: reduce({ metrics: [], events: [] }) } as unknown as typeof week.model;
+    expect(recordFind('fish', 'tuna')).toBe(true);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([['find', { kind: 'fish', id: 'tuna' }]]);
+    week.model = { state: reduce({ metrics: [], events: [['2026-11-18T01:00:00.000Z', 'B', 'x', 'find', '{"kind":"bug","id":"snail"}']] }) } as unknown as typeof week.model;
+    expect(recordFind('bug', 'snail')).toBe(false); // うめ found it already
+    expect(queued()).toHaveLength(1);
+  });
+});

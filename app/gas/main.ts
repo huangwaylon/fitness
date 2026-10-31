@@ -10,7 +10,7 @@ import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { shopPrice } from '../src/lib/config/rules.ts';
 import {
-  eventSubject, EVENT_TYPES, isLocalDate, isId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
+  eventSubject, EVENT_TYPES, isFind, isLocalDate, isId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -447,6 +447,8 @@ function validEventData(type: string, d: Rec): boolean {
       return isLocalDate(d.week);
     case 'spend_void':
       return isId(d.spendId);
+    case 'find':
+      return isFind(d);
     default:
       return true;
   }

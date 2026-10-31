@@ -7,7 +7,8 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { PersonId, ShopItemId } from '#lib/types.ts';
-import { isWeightKg, roundKg } from '#lib/contract/api.ts';
+import { isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
+import { findKey, findsView } from '#lib/model/finds.ts';
 import { MOVE_GOAL, shopPrice } from '#lib/config/rules.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
@@ -95,4 +96,15 @@ export function setVillagerName(name: string): SendResult {
 /** Villager from the roster (しまフォン → 村人), e.g. 'goldie' (lib/villagers/roster.ts). */
 export function setVillager(villager: string) {
   return week.send('pref', { key: 'villager', value: villager });
+}
+
+// ---- The island's finds (the ずかん): a catch or a pick-up is sent once per kind and id, the first time either of us
+// finds it. Never ベル.
+
+/** Record a find for the shared ずかん, unless one of us already found it (the model includes queued events, so a
+ *  second catch before the first is acked sends nothing). True when it was new. */
+export function recordFind(kind: FindKind, id: string): boolean {
+  const m = week.model;
+  if (!m || findsView(m.state).has(findKey(kind, id))) return false;
+  return week.send('find', { kind, id }).ok;
 }

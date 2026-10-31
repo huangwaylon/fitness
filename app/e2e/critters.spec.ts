@@ -134,6 +134,9 @@ test('a tap on a butterfly nets it', async ({ page }) => {
   await page.mouse.click(b.x, b.y);
   await expect(page.locator('[data-fx="catch"]')).toHaveText('モンシロチョウを つかまえた！');
   await expect(page.locator('[data-critter]')).toHaveCount(0);
+  // the shared ずかん: the first catch is a `find` (the demo keeps its events in localStorage), never ベル
+  const finds = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
+  expect(finds).toEqual([{ kind: 'bug', id: 'common-butterfly' }]);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
   await unchanged(page, before);
 });

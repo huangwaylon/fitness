@@ -113,3 +113,13 @@ describe('weight is never rewarded', () => {
     expect(reachable(join(LIB, 'components/kiroku/Kiroku.svelte')).has(weight)).toBe(true);
   });
 });
+
+describe('scenery is never rewarded', () => {
+  it('model/bells.ts and scoring/* never import model/finds.ts (the ずかん) or the island scenery, even indirectly', () => {
+    const finds = join(LIB, 'model/finds.ts');
+    expect(existsSync(finds)).toBe(true);
+    const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
+    const bad = (r: string) => [...reachable(r)].some((f) => f === finds || f.includes('/components/island/'));
+    expect(roots.filter(bad).map((r) => relative(LIB, r))).toEqual([]);
+  });
+});
