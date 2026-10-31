@@ -17,7 +17,8 @@ the same soft, toy-like way, without counting for anything.
   the art's own element). At most 4 flourishes at once, ≤ 6 nodes each, removed after ≤ 1.1 s. When idle nothing runs
   except the night's shooting-star timer.
 - **Buttons come first:** taps inside a control (trees, fruit rows, jar, villagers, balloon, the HUD) are ignored; the
-  art keeps `pointer-events: none`. A tap that closes a tree's popup only closes it.
+  art keeps `pointer-events: none`. A tap that closes a tree's popup only closes it. The popup's 🥥 chips (きのう / きょう, ADR 0023) are buttons: a tap on one toggles that
+  gym day and keeps the popup open.
 - **Scene state:** nothing spawns while `data-covered` (a sheet is open) or `data-paused` (hidden), or in gallery
   thumbnails.
 - **Reduced motion:** every tap gives only a soft glow at the tap point (450 ms, opacity); no shakes, no idle shooting
