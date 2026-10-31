@@ -16,6 +16,10 @@
   import BellsLog from './BellsLog.svelte';
   import ValueInput from './ValueInput.svelte';
   import GoalCard from './GoalCard.svelte';
+  import ZukanCard from './ZukanCard.svelte';
+  import Zukan from './Zukan.svelte';
+  import type { ZukanKind } from './zukan.ts';
+  import { findsView } from '#lib/model/finds.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { parseKcalInput, parseKgInput } from './fmt.ts';
   import { t, formatNum } from '#lib/i18n/index.ts';
@@ -23,7 +27,8 @@
   type Screen =
     | { k: 'day'; date: string }
     | { k: 'goal'; p: PersonId }
-    | { k: 'moveGoal'; p: PersonId };
+    | { k: 'moveGoal'; p: PersonId }
+    | { k: 'zukan'; kind: ZukanKind };
 
   let { level = $bindable(0) }: { level?: number } = $props();
   let stack = $state<Screen[]>([]);
@@ -111,6 +116,11 @@
       {/if}
       <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
         onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
+      <!-- the shared ずかん: what either of us has caught, dug up or picked up on the island -->
+      <h2 class="sec">{t('zukan.title')}</h2>
+      <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
+    {:else if top.k === 'zukan'}
+      <Zukan kind={top.kind} finds={findsView(m.state)} {names} {villagers} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
     {:else if top.k === 'goal'}
