@@ -430,7 +430,7 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   the honeybee and a snail on the beds; the ladybug and the mantises sitting on a flower's head (NH's flower bugs: a
   1u bob every 2.4 s; the orchid mantis on a white flower when the beds have one); dragonflies and the damselfly
   darting over the open lawn (y 110–200u, clear of the controls); the cicadas (a shell
-  now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick on
+  now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick (a thin darker outline keeps it findable on the bark) on
   the trunks; fireflies (a little cloud of four 7px lights, drifting and blinking out of step) and the Atlas moth at
   night; grasshoppers, locusts, crickets, the pill bug and the
   centipede in the grass; the hermit crab (after dark) and the wharf roach on the front beach. More of NH's: the

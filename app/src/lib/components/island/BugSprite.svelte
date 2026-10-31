@@ -55,7 +55,8 @@
       <circle class="spot" cx="-1.2" cy="0" r=".7" /><circle class="spot" cx="1.3" cy="1.6" r=".7" /><circle class="spot" cx="-1" cy="3.8" r=".7" /><circle class="spot" cx="1.1" cy="-1.6" r=".6" />
       <ellipse class="bhead" cx="0" cy="-4.6" rx="1.8" ry="1.4" /></svg>
   {:else if flight === 'perch' && PERCH[id] === 'stick'}
-    <svg viewBox="-4 -10 8 20"><path class="stick" d="M0 -9 V9 M0 -5 L-2.6 -8 M0 -5 L2.6 -8 M0 0 L-3 1.2 M0 0 L3 1.2 M0 4 L-2.4 7.4 M0 4 L2.4 7.4" /></svg>
+    <!-- a walking stick: NH's blends into the bark; a thin darker outline keeps it findable on a phone -->
+    <svg viewBox="-4 -10 8 20"><path class="stick-edge" d="M0 -9 V9 M0 -5 L-2.6 -8 M0 -5 L2.6 -8 M0 0 L-3 1.2 M0 0 L3 1.2 M0 4 L-2.4 7.4 M0 4 L2.4 7.4" /><path class="stick" d="M0 -9 V9 M0 -5 L-2.6 -8 M0 -5 L2.6 -8 M0 0 L-3 1.2 M0 0 L3 1.2 M0 4 L-2.4 7.4 M0 4 L2.4 7.4" /></svg>
   {:else if flight === 'stalk'}
     <span class="stalker" class:rear={stalk === 'rear'} data-stalk={stalk}>
       {#if id === 'tarantula'}
@@ -248,6 +249,7 @@
   .jewel-beetle { --beetle: #2FA05A; --beetle-head: #1F6E3E; }
   .jewel-beetle .seam { stroke: #E0503E; stroke-width: 1.1; }
   .stick { fill: none; stroke: #8A6A3A; stroke-width: 1; stroke-linecap: round; }
+  .stick-edge { fill: none; stroke: #4A3418; stroke-width: 1.8; stroke-linecap: round; }
   /* crawlers on the beach, the grass and the beds: they fade in where they are */
   .crawl svg { width: calc(12 * var(--su)); }
   /* the pond's bugs: small on its water (NH's pondskater, diving beetle and giant water bug) */
