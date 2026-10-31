@@ -6,8 +6,8 @@ import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, shopPrice } from '#lib/config/rules
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  DATE_RE, eventSubject, EVENT_TYPES, isId, isPersonId, isActivityMetric, isWeightKg, roundKg, WEIGHT_KG,
-  type ActivityMetric, type EventType, type SnapshotRows
+  DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isActivityMetric, isWeightKg, roundKg, WEIGHT_KG,
+  type ActivityMetric, type EventType, type FindKind, type SnapshotRows
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -63,6 +63,8 @@ export interface State {
   spendVoids: { at: number; person: PersonId; spendId: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
+  /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
+  finds: { at: number; person: PersonId; kind: FindKind; id: string }[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
@@ -158,6 +160,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     spendVoids: [],
     harvests: [],
     highfives: [],
+    finds: [],
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
     lastSync: { A: null, B: null },
@@ -239,6 +242,9 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   },
   highfive(s, person, at) {
     s.highfives.push({ at, person });
+  },
+  find(s, person, at, d) {
+    if (isFind(d)) s.finds.push({ at, person, kind: d.kind as FindKind, id: d.id as string });
   },
   pref(s, person, at, d) {
     if (d.key === 'moveGoal') {

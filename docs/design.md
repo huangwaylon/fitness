@@ -170,7 +170,7 @@ locked week's earnings stay as of its lock). Nothing in the app enters or fixes 
 
 What the app sends instead ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either
 person's: `data.person`, absent = the sender), buys and voids, harvest taps, high-fives, and the sender's own
-`locale`, `villagerName` and `villager`. A buy and its とりけす are shown at once and wait 5 s with とりけす before they
+`locale`, `villagerName` and `villager`, and the island's finds for the ずかん (`find`, the first of each, never ベル). A buy and its とりけす are shown at once and wait 5 s with とりけす before they
 are sent (touching the banner holds it, ≤ 2 min). Rows of an event type the app no longer knows are ignored.
 
 ## Weight trend

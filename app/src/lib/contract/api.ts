@@ -19,8 +19,20 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'highfive', 'pref'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'highfive', 'pref', 'find'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
+
+/**
+ * A `find` (docs/backend.md#events): the island's scenery, a catch or a pick-up for the shared ずかん. It never earns
+ * or costs ベル. `kind` is one of these; `id` a catalog id (the client's lists may grow without a redeploy).
+ */
+const FIND_KINDS = ['fish', 'bug', 'fossil', 'shell', 'fragment'] as const;
+export type FindKind = (typeof FIND_KINDS)[number];
+/** A catalog id: lowercase letters, digits and dashes, starting with a letter, at most 48 characters. */
+const FIND_ID_RE = /^[a-z][a-z0-9-]{0,47}$/;
+const isFindKind = (v: unknown): v is FindKind => (FIND_KINDS as readonly unknown[]).includes(v);
+/** A `find`'s data: a known kind and a well-formed id. Shared by the Apps Script and the model. */
+export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind) && typeof d.id === 'string' && FIND_ID_RE.test(d.id);
 
 /**
  * The activity metrics: they earn ベル, and a day's value is its latest row (Apple Health's current total; a re-sync

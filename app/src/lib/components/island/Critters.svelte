@@ -22,6 +22,7 @@
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
   import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, SAND, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
+  import { recordFind } from '#lib/store/actions.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, caption, critterArt,
     hesitatePlan, hookItem, netSwing, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
@@ -412,6 +413,9 @@
    *  clear of every control and popup (guards); with no room anywhere it's skipped (the catch tune still plays).
    *  Gone after 2.6 s. */
   async function show(item: FishId | JunkId | BugId, x: number, y: number) {
+    // the shared ずかん: the first catch of each fish or bug (junk isn't a find)
+    if (item in FISH) recordFind('fish', item);
+    else if (item in BUGS) recordFind('bug', item);
     const c = caption(item);
     const n = ++seq;
     card = { n, x, y, dx: 0, dy: 0, art: critterArt(item), text: t(c.key, c.name ? { name: t(c.name) } : undefined), placed: false };

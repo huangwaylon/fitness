@@ -328,7 +328,9 @@ describe('events', () => {
       { type: 'spend', data: { spendId: 's1', item: 'snack', bells: 6 } },
       { type: 'spend', data: { spendId: 's7', item: 'dinner', bells: 20 } },
       ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'].map((key) => ({ type: 'pref', data: { key, value: null } })),
-      { type: 'harvest', data: { week: '2026-10-26' } }
+      { type: 'harvest', data: { week: '2026-10-26' } },
+      ...['fish', 'bug', 'fossil', 'shell', 'fragment'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
+      { type: 'find', data: { kind: 'fossil', id: 't-rex-skull' } }
     ];
     ok.forEach((e, i) => expect(a('event', { id: `ok${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
     const bad = [
@@ -343,7 +345,13 @@ describe('events', () => {
       { type: 'pref', data: { key: 'menu', value: '[]' } }, // there is no menu to edit
       { type: 'pref', data: { key: 'locale' } },
       { type: 'harvest', data: { week: 'soon' } },
-      { type: 'harvest', data: { week: '2026-02-30' } } // not a calendar date
+      { type: 'harvest', data: { week: '2026-02-30' } }, // not a calendar date
+      { type: 'find', data: { kind: 'bells', id: 'sea-bass' } }, // finds are scenery: fish, bug, fossil, shell, fragment
+      { type: 'find', data: { kind: 'fish' } },
+      { type: 'find', data: { kind: 'fish', id: 'Sea Bass' } },
+      { type: 'find', data: { kind: 'fish', id: 7 } },
+      { type: 'find', data: { kind: 'bug', id: 'x'.repeat(49) } },
+      { type: 'find', data: { kind: 'shell', id: 'cowrie', person: 'B' } } // only the goal prefs take a person
     ];
     bad.forEach((e, i) => expect(a('event', { id: `bad${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events')).toHaveLength(ok.length);
