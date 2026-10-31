@@ -199,6 +199,24 @@
       plate(b.x, b.y, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
     });
   }
+  /** Balloon presents lying where they fell (SceneTaps lands them; u), until picked up. Not kept across a reload. */
+  let presents = $state<{ uid: string; x: number; y: number; art: string; size: number }[]>([]);
+  /** A balloon's present has landed on the lawn (SceneTaps): it lies there until a tap picks it up (NH). */
+  export function present(x: number, y: number, art: string, size: number) {
+    presents = [...presents.slice(-2), { uid: `p${++seq}`, x, y, art, size }];
+  }
+  function pickPresent(p: (typeof presents)[number]) {
+    walkTo(p.uid, p.x, p.y, () => {
+      presents = presents.filter((q) => q.uid !== p.uid);
+      const n = ++seq;
+      lift = { n, x: p.x, y: p.y, art: p.art, tilt: 0 };
+      later(() => lift?.n === n && (lift = null), 500);
+      sceneSfx('present');
+      // NH: a pick-up line, no ベル (what's inside is left out, like the trees' furniture)
+      const egg = p.art.endsWith('sky-egg');
+      plate(p.x, p.y, p.art, () => t('beach.picked', { name: t(egg ? 'beach.name.sky-egg' : 'beach.name.present') }), 180);
+    });
+  }
   function pickMushroom(m: Mushroom) {
     walkTo(m.uid, m.x, m.y, () => {
       pickUp(m.uid, m.x, m.y - 6, findArt(m.id), 0);
@@ -237,7 +255,8 @@
       ...fragments.map((f) => ({ d: Math.hypot(f.x - x, f.y - y), go: () => pickFragment(f) })),
       ...(bottle ? [{ d: Math.hypot(bottle.x - x, bottle.y - y), go: () => pickBottle(bottle!) }] : []),
       ...visibleSpots.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => digUp(s) })),
-      ...visibleMushrooms.map((m) => ({ d: Math.hypot(m.x - x, m.y - 6 - y), go: () => pickMushroom(m) }))
+      ...visibleMushrooms.map((m) => ({ d: Math.hypot(m.x - x, m.y - 6 - y), go: () => pickMushroom(m) })),
+      ...presents.map((p) => ({ d: Math.hypot(p.x - x, p.y - y), go: () => pickPresent(p) }))
     ];
     const best = hits.filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
     if (!best) return false;
@@ -301,6 +320,9 @@
     <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} style:translate="{U(m.x)} {U(m.y)}">
       <OfficialArt key={findArt(m.id)} size="calc(13 * var(--su))" />
     </span>
+  {/each}
+  {#each presents as p (p.uid)}
+    <span class="item gift" data-find="present" style:translate="{U(p.x)} {U(p.y)}"><OfficialArt key={p.art} size={U(p.size)} eager /></span>
   {/each}
   {#each shells as s (s.uid)}
     <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} style:translate="{U(s.x)} {U(s.y)}" style:--tilt="{s.tilt}deg">
@@ -374,6 +396,8 @@
     animation: twinkle var(--tw, 4s) ease-out var(--twd, 0s) infinite;
   }
   @keyframes twinkle { 0%, 80% { transform: scale(0) rotate(0); opacity: 0; } 88% { transform: scale(1) rotate(40deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
+  /* a balloon's present where it landed, a soft shadow at its foot */
+  .gift > :global(*) { translate: -50% -50%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */
   .mush > :global(*) { translate: -50% -92%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   .mush.flip > :global(*) { scale: -1 1; }
