@@ -3,7 +3,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import { configureStorage, getKey, getStoredMe, type KV } from './storage.ts';
 import { configureTransport, post } from './transport.ts';
-import { backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, unqueue } from './queue.ts';
+import { ackedEvents, backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, retryNow, unqueue } from './queue.ts';
 import { applySnapshot, configureCache, loadCache, refreshSnapshot } from './cache.ts';
 import { keyFromHash, setKey } from './pairing.ts';
 import { composeModel, missesLock } from '#lib/store/view.ts';
@@ -260,6 +260,37 @@ describe('write queue', () => {
     expect(backoffMs(3, mid)).toBe(4000);
     expect(backoffMs(30, mid)).toBe(300_000);
   });
+  it('retryNow: back online (or a sync tap), an event backed off for minutes goes at once; held ones keep their time', async () => {
+    const t = 1_000_000;
+    let now = t;
+    const a = enqueue('highfive', {}, t);
+    const held = enqueue('harvest', { week: '2026-11-02' }, t, 5000);
+    handler = () => ({ ok: false, error: 'offline' });
+    for (let i = 0; i < 9; i++) {
+      await flush(() => now);
+      now = queued()[0].nextAt; // offline for a while: the backoff grows
+    }
+    now = t + 60_000;
+    expect(queued()[0].nextAt - now).toBeGreaterThan(60_000);
+    handler = () => ({ ok: true });
+    calls = [];
+    expect(await flush(() => now)).toMatchObject({ sent: 0 }); // still waiting out the backoff
+    retryNow(now);
+    expect(queued().find((x) => x.id === held.id)!.nextAt).toBe(t + 5000); // untouched (an undo window)
+    expect(await flush(() => now)).toMatchObject({ sent: 2, remaining: 0 });
+    expect(calls.map((c) => c.id)).toEqual([a.id, held.id]); // the held one was due by then anyway
+  });
+  it('an ack that lands after pairing as someone else is not kept as the new person’s', async () => {
+    enqueue('highfive', {});
+    handler = () => {
+      setKey('cd'.repeat(32), 'B');
+      return { ok: true };
+    };
+    const r = await flush();
+    expect(r.sent).toBe(0);
+    expect(ackedEvents()).toEqual([]);
+    expect(queued()).toEqual([]);
+  });
   it('pairing as the other person drops the old queue and cache', () => {
     enqueue('highfive', {});
     setKey(KEY, 'A');
@@ -306,6 +337,27 @@ describe('snapshot cache', () => {
     expect(calls).toHaveLength(1);
     await refreshSnapshot();
     expect(calls).toHaveLength(2); // a later refresh is a new request
+  });
+  it('a fresh refresh (the re-read after an ack) never reuses a request already in flight: one more follows it', async () => {
+    let n = 0;
+    handler = () => ({ ok: true, me: 'A', now: '2026-11-02T02:00:00.000Z', rows: n++ ? { metrics: [], events: [['2026-11-02T01:30:00.000Z', 'A', 'acked', 'highfive', '{}']] } : rowsA() });
+    const first = refreshSnapshot();
+    const [x, y] = await Promise.all([refreshSnapshot(Date.now, true), refreshSnapshot(Date.now, true)]);
+    await first;
+    expect(x).toBe(y); // the fresh callers share the one follow-up
+    expect(calls).toHaveLength(2);
+    expect(x.ok && x.cache.rows.events.map((r) => r[2])).toEqual(['e1', 'acked']);
+    await refreshSnapshot(Date.now, true); // nothing in flight: just one request
+    expect(calls).toHaveLength(3);
+  });
+  it('an empty `since` poll keeps the cached rows object (the store keeps its reduced state)', () => {
+    const prev = applySnapshot(null, { me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
+    const next = applySnapshot(prev, { me: 'A', now: '2026-11-02T02:05:00.000Z', rows: { metrics: [], events: [] } }, 1000);
+    expect(next.rows).toBe(prev.rows);
+    expect(next.rowsAt).toBe(prev.rowsAt);
+    const m = composeModel(prev, [], 0);
+    expect(composeModel(next, [], 1000, undefined, m).state).toBe(m.state);
+    expect(mergeRows(prev.rows, {})).toBe(prev.rows);
   });
   it('a reply for another person starts from scratch', () => {
     const prev = applySnapshot(null, { me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);

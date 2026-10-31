@@ -174,12 +174,22 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
 }
 
 let fetching: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
+/** The one follow-up fetch `fresh` callers wait for while a request is in flight. */
+let again: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
 
 /**
  * Fetch rows since the last seen `at` (everything on first run, or after a hand edit changed `rev`), merge and persist. Overlapping
- * callers share the request in flight, so two replies never merge from the same stale cache.
+ * callers share the request in flight, so two replies never merge from the same stale cache. `fresh`: the caller
+ * needs rows written before now (the re-read after an ack), so a request already in flight (it may have been answered
+ * before the write) is followed by one more, shared by every such caller.
  */
-export function refreshSnapshot(clientNow: () => number = Date.now): Promise<GasResult<{ cache: SnapshotCache }>> {
+export function refreshSnapshot(clientNow: () => number = Date.now, fresh = false): Promise<GasResult<{ cache: SnapshotCache }>> {
+  if (fetching && fresh) {
+    return (again ??= fetching.then(() => {
+      again = null;
+      return refreshSnapshot(clientNow);
+    }));
+  }
   if (fetching) return fetching;
   const p = fetchSnapshot(clientNow);
   fetching = p;

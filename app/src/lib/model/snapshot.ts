@@ -48,12 +48,14 @@ function mergeTab<T extends readonly unknown[]>(base: T[], add: T[] | undefined,
   return out.map((r, i) => [r, i] as const).sort((x, y) => atMs(x[0]) - atMs(y[0]) || x[1] - y[1]).map(([r]) => r);
 }
 
-/** Merge a `since` reply into cached rows (dedupe by natural key, ordered by server `at`). */
+/**
+ * Merge a `since` reply into cached rows (dedupe by natural key, ordered by server `at`). `base` itself when nothing
+ * was added (the usual empty poll), so the store keeps its reduced state (view.ts composeModel compares by identity).
+ */
 export function mergeRows(base: SnapshotRows, add: Partial<SnapshotRows>): SnapshotRows {
-  return {
-    metrics: mergeTab(base.metrics, add.metrics, KEYS.metrics),
-    events: mergeTab(base.events, add.events, KEYS.events)
-  };
+  const metrics = mergeTab(base.metrics, add.metrics, KEYS.metrics);
+  const events = mergeTab(base.events, add.events, KEYS.events);
+  return metrics === base.metrics && events === base.events ? base : { metrics, events };
 }
 
 /** The largest server `at` in the rows (the next `since`), or null when empty. */

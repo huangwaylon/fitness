@@ -2,7 +2,7 @@
 // until the server acks them. Undo windows (`holdMs`) and week locks are decided here.
 import type { EventReply, EventType } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { LIVE, localKV, readJson, remove, writeJson } from './storage.ts';
+import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
 import { post, type GasError } from './transport.ts';
 
 export interface QueuedEvent {
@@ -101,6 +101,18 @@ export function holdEvent(id: string, until: number): boolean {
   return true;
 }
 
+/**
+ * The connection is back (the `online` event) or the user asked to sync: events waiting out a backoff go again now.
+ * Without it a queue that backed off to minutes while offline sat out the rest of its wait with the network up (and
+ * the sync pill gone, since the snapshot succeeds), and an edit behind it could miss its lock. Held events (undo
+ * windows) keep their time.
+ */
+export function retryNow(now = Date.now()): void {
+  const q = queued();
+  if (!q.some((x) => x.tries > 0 && x.nextAt > now)) return;
+  saveQueue(q.map((x) => (x.tries > 0 && x.nextAt > now ? { ...x, nextAt: now } : x)));
+}
+
 /** 1 s, 2 s, 4 s … capped at 5 min, ±20 % jitter. */
 export function backoffMs(tries: number, rand = Math.random): number {
   const base = Math.min(300_000, 1000 * 2 ** Math.max(0, tries - 1));
@@ -188,8 +200,11 @@ export function flush(now: () => number = Date.now, expired: (ev: QueuedEvent, t
         continue;
       }
       flushingId = ev.id;
+      const key = getKey();
       const r = await post<Extract<EventReply, { ok: true }>>('event', { id: ev.id, type: ev.type, data: ev.data });
       flushingId = null;
+      // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
+      if (getKey() !== key) break;
       const cur = queued();
       if (r.ok) {
         sent++;
