@@ -83,9 +83,8 @@ export function moneyArt(kind: 'bells' | 'leaf'): string {
 /** NH reaction-wheel icons (mostly a grey cat face + coloured accents): しずえ's bubble; villagers use
  *  only the colour glyphs among them (`villagerEmote`). */
 export const REACTIONS = [
-  'joy', 'delight', 'love', 'surprise', 'laughter', 'sleepy', 'happiness', 'greetings', 'encouraging', 'glee',
-  'pleased', 'pride', 'inspiration', 'daydreaming', 'dozing', 'amazed', 'curiosity', 'thought', 'flourish',
-  'bashfulness', 'sheepishness', 'worry', 'confident', 'shocked'
+  'joy', 'love', 'surprise', 'laughter', 'sleepy', 'happiness', 'encouraging', 'glee', 'pleased', 'pride',
+  'inspiration', 'dozing', 'curiosity', 'thought', 'flourish', 'sheepishness', 'worry', 'shocked'
 ] as const;
 export type ReactionId = (typeof REACTIONS)[number];
 
@@ -97,15 +96,14 @@ export type MarkId = (typeof MARKS)[number];
 export type EmoteIcon = ReactionId | 'pose-viva' | `mark-${MarkId}`;
 
 /** Official reaction glyphs that are pure colour symbols (no grey cat face): fine on villagers. */
-export const COLOUR_GLYPHS: readonly ReactionId[] = ['love', 'surprise', 'glee', 'inspiration', 'curiosity', 'thought', 'daydreaming'];
+export const COLOUR_GLYPHS: readonly ReactionId[] = ['love', 'surprise', 'glee', 'inspiration', 'curiosity', 'thought'];
 
 /** NH villagers never show the player's cat-face icons: map any cat face to the floating
  *  symbol a villager would show. Colour glyphs, poses and marks pass through. */
 const FOR_VILLAGER: Partial<Record<ReactionId, EmoteIcon>> = {
-  joy: 'glee', delight: 'glee', laughter: 'glee', happiness: 'mark-note', greetings: 'mark-note', pleased: 'mark-note',
-  pride: 'mark-sparkle', confident: 'mark-sparkle', flourish: 'mark-sparkle', amazed: 'mark-sparkle', encouraging: 'mark-heart',
-  sleepy: 'mark-zzz', dozing: 'mark-zzz', shocked: 'mark-bang', sheepishness: 'mark-sweat', worry: 'mark-sweat',
-  bashfulness: 'mark-heart'
+  joy: 'glee', laughter: 'glee', happiness: 'mark-note', pleased: 'mark-note', pride: 'mark-sparkle', flourish: 'mark-sparkle',
+  encouraging: 'mark-heart', sleepy: 'mark-zzz', dozing: 'mark-zzz', shocked: 'mark-bang', sheepishness: 'mark-sweat',
+  worry: 'mark-sweat'
 };
 export function villagerEmote(e: EmoteIcon): EmoteIcon {
   return (FOR_VILLAGER as Record<string, EmoteIcon>)[e] ?? e;

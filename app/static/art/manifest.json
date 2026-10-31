@@ -265,41 +265,11 @@
       "h": 92,
       "source": "https://nookipedia.com/wiki/File:NookPhone_Rescue_Service_NH_Icon.png"
     },
-    "reactions/amazed": {
-      "path": "reactions/amazed.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emotion_Amazed_NH_Icon.png"
-    },
-    "reactions/bashfulness": {
-      "path": "reactions/bashfulness.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emotion_Bashfulness_NH_Icon.png"
-    },
-    "reactions/confident": {
-      "path": "reactions/confident.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emotion_Confident_NH_Icon.png"
-    },
     "reactions/curiosity": {
       "path": "reactions/curiosity.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Emotion_Curiosity_NH_Icon.png"
-    },
-    "reactions/daydreaming": {
-      "path": "reactions/daydreaming.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emotion_Daydreaming_NH_Icon.png"
-    },
-    "reactions/delight": {
-      "path": "reactions/delight.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emotion_Delight_NH_Icon.png"
     },
     "reactions/dozing": {
       "path": "reactions/dozing.webp",
@@ -324,12 +294,6 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Emotion_Glee_NH_Icon.png"
-    },
-    "reactions/greetings": {
-      "path": "reactions/greetings.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emotion_Greetings_NH_Icon.png"
     },
     "reactions/happiness": {
       "path": "reactions/happiness.webp",
