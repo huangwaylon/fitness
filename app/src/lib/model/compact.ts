@@ -12,15 +12,17 @@
 // newest `weight` row is kept, never "the largest".
 import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, isRec, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
-import { instantOrNull as instant, weekKeyOf } from '#lib/time/dates.ts';
+import { weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs } from './state.ts';
+import { rowAt } from './snapshot.ts';
 
 /** `metric_set` times per `person|date|metric` (accepted or not: a superset of what the model reads is harmless). */
 function editTimes(rows: SnapshotRows): Map<string, number[]> {
   const out = new Map<string, number[]>();
-  for (const [at, person, , type, data] of rows.events) {
+  for (const row of rows.events) {
+    const [, person, , type, data] = row;
     if (type !== 'metric_set') continue;
-    const t = instant(at);
+    const t = rowAt(row);
     let d: unknown;
     try {
       d = JSON.parse(data);
@@ -48,7 +50,7 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
   const keep = new Set<number>();
   const newest: Partial<Record<PersonId, { at: number; i: number }>> = {};
   rows.metrics.forEach((row, i) => {
-    const at = instant(row[0]);
+    const at = rowAt(row);
     const date = String(row[2]);
     if (at === null || !DATE_RE.test(date) || !Number.isFinite(Number(row[4])) || now < finalMs(weekKeyOf(date))) {
       keep.add(i);

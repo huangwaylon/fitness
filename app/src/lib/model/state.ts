@@ -2,7 +2,8 @@
 // and what the wallet covers are read-time rules here (an invalid event is ignored, not refused), so the sheet stays a dumb append-only log.
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
-import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
+import { rowAt } from './snapshot.ts';
 import {
   DATE_RE, editTarget, EVENT_TYPES, isId, isPersonId, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
   type EventType, type SnapshotRows
@@ -37,6 +38,13 @@ type Cal = Pick<State, 'calendar'>;
 
 /** First week of the economy (Mon 2026-10-26), or the demo's own one. */
 export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_START;
+
+/** The latest week lock (a Wednesday 04:00) at or before `t`: what `rev` reuses earnings up to, and compaction compacts through. */
+export function lastLockAt(t: number): number {
+  const prev = addDays(weekKeyOf(localDateAt(t)), -7);
+  const lock = finalMs(prev);
+  return lock <= t ? lock : finalMs(addDays(prev, -7));
+}
 
 /** A week locks (its earnings are final) at its Wednesday 04:00; weeks before the first week never lock. */
 export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
@@ -156,11 +164,18 @@ function parseData(d: unknown): Record<string, unknown> | null {
   }
 }
 
+/** The rows with a readable `at` and person, in server order (as the sheet returns them, so the sort is rarely needed). */
 function sortedByAt<T extends readonly unknown[]>(rows: T[]): { r: T; at: number }[] {
-  return rows
-    .map((r, i) => ({ r, at: instantOrNull(r[0]), i }))
-    .filter((x): x is { r: T; at: number; i: number } => x.at !== null && isPersonId(x.r[1]))
-    .sort((x, y) => x.at - y.at || x.i - y.i);
+  const out: { r: T; at: number; i: number }[] = [];
+  let ordered = true;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const at = rowAt(r, false);
+    if (at === null || !isPersonId(r[1])) continue;
+    if (ordered && out.length && at < out[out.length - 1].at) ordered = false;
+    out.push({ r, at, i });
+  }
+  return ordered ? out : out.sort((x, y) => x.at - y.at || x.i - y.i);
 }
 
 const push = <K, V>(m: Map<K, V[]>, k: K, v: V) => {

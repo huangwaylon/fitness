@@ -1,6 +1,7 @@
 // Pure helpers to merge incremental (`since`) `snapshot` replies into the cached rows (docs/backend.md#tabs, #api).
 // Rows are compact arrays in the sheet's column order.
 import type { SnapshotRows } from '#lib/contract/api.ts';
+import { instantOrNull } from '#lib/time/dates.ts';
 
 export const emptyRows = (): SnapshotRows => ({ metrics: [], events: [] });
 
@@ -10,17 +11,22 @@ const KEYS: { [K in keyof SnapshotRows]: (r: SnapshotRows[K][number]) => string 
   events: (r) => String(r[2])
 };
 
-/** Server `at` of a row in epoch ms (0 if unreadable), parsed once per row. */
-const parsed = new WeakMap<readonly unknown[], number>();
-function atMs(r: readonly unknown[]): number {
+const parsed = new WeakMap<readonly unknown[], number | null>();
+/**
+ * A row's server `at` (its first cell) in epoch ms, or null if unreadable. Rows are never mutated and the same row
+ * objects are merged, compacted and reduced again after every poll, so the merge and the compaction keep what they
+ * parse (`keep`); `reduce` only reads it, since a cold start's rows (fresh from IndexedDB) would pay more to store
+ * than to parse.
+ */
+export function rowAt(r: readonly unknown[], keep = true): number | null {
   let ms = parsed.get(r);
   if (ms === undefined) {
-    ms = Date.parse(String(r[0]));
-    if (Number.isNaN(ms)) ms = 0;
-    parsed.set(r, ms);
+    ms = instantOrNull(r[0]);
+    if (keep) parsed.set(r, ms);
   }
   return ms;
 }
+const atMs = (r: readonly unknown[]): number => rowAt(r) ?? 0;
 
 const isSorted = (rows: readonly (readonly unknown[])[]): boolean => rows.every((r, i) => i === 0 || atMs(rows[i - 1]) <= atMs(r));
 

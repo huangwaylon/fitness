@@ -3,10 +3,11 @@
 // edited in the sheet) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
 // session (reported).
 import type { PersonId } from '#lib/types.ts';
-import type { SnapshotReply, SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
-import type { DemoCalendar } from '#lib/model/state.ts';
+import { finalMs, lastLockAt, type DemoCalendar } from '#lib/model/state.ts';
+import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type GasResult } from './transport.ts';
 
@@ -23,6 +24,8 @@ export interface SnapshotCache {
    * locked weeks (`model/bells.ts` lockedWeeks; `reduce(…, rev)` counts rows up to a cutoff, which only holds while rows are only added).
    */
   rowsAt?: number;
+  /** The week lock (`lastLockAt`) the rows were last compacted through: a poll compacts again only past a newer one. */
+  compactedAt?: number;
   /** Server clock − client clock at the last fetch (ms). */
   skewMs: number;
   /** Client time of the last successful fetch (ms). */
@@ -154,20 +157,30 @@ export function clearCache(): Promise<void> {
 
 type Reply = { me: PersonId; now: string; rev?: string; rows: Partial<SnapshotRows> };
 
+/** The later of two `since` values (ISO instants; null = none). */
+const laterAt = (a: string | null, b: string | null): string | null => (a === null ? b : b === null || Date.parse(a) >= Date.parse(b) ? a : b);
+
 /**
  * Merge a snapshot reply into the cache (pure; exported for tests). `prev` null: the reply is everything. Metrics of
  * locked weeks are compacted to the rows the model still reads (model/compact.ts: ~90% fewer at year 3, views
- * identical).
+ * identical). Compaction is a fixed point, so a poll runs it again only when it could drop something: a week locked
+ * since the last one, or the reply brought metric rows of a locked week (a late sync). Skipping it is always safe.
  */
 export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNow: number): SnapshotCache {
   const same = prev && prev.me === reply.me ? prev : null;
   const merged = mergeRows(same?.rows ?? emptyRows(), reply.rows);
   const serverNow = Date.parse(reply.now);
-  const rows = Number.isNaN(serverNow) ? merged : compactRows(merged, serverNow);
+  const lock = Number.isNaN(serverNow) ? null : lastLockAt(serverNow);
+  const late = (reply.rows.metrics ?? []).some((r) => DATE_RE.test(String(r[2])) && finalMs(weekKeyOf(String(r[2]))) <= serverNow);
+  const compact = lock !== null && (!same || late || (same.compactedAt ?? -Infinity) < lock);
+  const rows = compact ? compactRows(merged, serverNow) : merged;
+  const compactedAt = compact ? lock! : same?.compactedAt;
   const rev = reply.rev ?? same?.rev;
   const rowsAt = !same || rows !== merged ? clientNow : (same.rowsAt ?? clientNow);
+  // `since` from the rows before compaction: the newest of what was seen and what this reply adds.
+  const since = same ? laterAt(same.since, maxAt({ metrics: reply.rows.metrics ?? [], events: reply.rows.events ?? [] })) : maxAt(merged);
   return {
-    v: 1, me: reply.me, rows, since: maxAt(merged), ...(rev === undefined ? {} : { rev }), rowsAt,
+    v: 1, me: reply.me, rows, since, ...(rev === undefined ? {} : { rev }), ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt,
     skewMs: Number.isNaN(serverNow) ? (prev?.skewMs ?? 0) : serverNow - clientNow,
     fetchedAt: clientNow
   };

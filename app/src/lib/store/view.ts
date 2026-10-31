@@ -1,8 +1,7 @@
 // Cached snapshot + still-queued events → the reduced state (optimistic: a tap shows at once, before the server acks it).
 import type { EventRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { finalMs, reduce, type State } from '#lib/model/state.ts';
-import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
+import { lastLockAt, reduce, type State } from '#lib/model/state.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 
@@ -22,12 +21,6 @@ export interface ComposedModel {
 export const missesLock = (ev: Pick<QueuedEvent, 'lockAt' | 'nextAt'>, clientNow: number, skewMs: number): boolean =>
   ev.lockAt !== undefined && Math.max(ev.nextAt, clientNow) + skewMs >= ev.lockAt;
 
-/** The latest week lock (a Wednesday 04:00) at or before `now`: locked weeks' earnings are what `rev` reuses. */
-function lastLock(now: number): number {
-  const prev = addDays(weekKeyOf(localDateAt(now)), -7);
-  const t = finalMs(prev);
-  return t <= now ? t : finalMs(addDays(prev, -7));
-}
 
 /**
  * Queued events become rows stamped just after the newest server row (in queue order) on the server's clock, so
@@ -53,7 +46,7 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
     extra.push([new Date(at).toISOString(), (cache.demo && ev.person) || cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
-  const rev = cache.demo || !cache.rev || (extra.length && Date.parse(extra[0][0]) <= lastLock(now)) ? null : `${cache.rev}@${cache.rowsAt ?? 0}`;
+  const rev = cache.demo || !cache.rev || (extra.length && Date.parse(extra[0][0]) <= lastLockAt(now)) ? null : `${cache.rev}@${cache.rowsAt ?? 0}`;
   const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), rev };
   const p = prev?.from;
   if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.rev === from.rev && prev.me === cache.me) {
