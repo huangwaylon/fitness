@@ -47,7 +47,7 @@
     shown = g ? list.filter((w) => clearAt(keep, w.x, w.y - 5, 6, 5)) : [];
   });
 
-  interface Fx { n: number; kind: 'pull' | 'spark'; x: number; y: number; flip?: boolean }
+  interface Fx { n: number; kind: 'pull' | 'spark' | 'strike'; x: number; y: number; flip?: boolean }
   let fx = $state<Fx[]>([]);
   let seq = 0;
   const timers = new Set<ReturnType<typeof setTimeout>>();
@@ -62,6 +62,17 @@
   }
   $effect(() => () => timers.forEach(clearTimeout));
   let rockEl = $state<HTMLElement>();
+  // A weed that sprouts while the island is open pops up out of the lawn; the ones already there when it opens just stand.
+  let opened = false;
+  const seen = new Set<string>();
+  const sprouts = (uid: string): boolean => {
+    if (seen.has(uid)) return false;
+    seen.add(uid);
+    return opened;
+  };
+  $effect(() => {
+    opened = true;
+  });
 
   /** After my villager's walk there (avatar.ts; 0 when it doesn't walk). */
   function after(ms: number, fn: () => void) {
@@ -88,12 +99,15 @@
   }
   function hitRock() {
     const what = rockTap(Math.random);
-    const { ms } = approach(ROCK.x, ROCK.y, { tool: 'shovel', toolMs: 700, motion: 'nod' });
-    after(ms, () => clonk(what));
+    const { ms, walked } = approach(ROCK.x, ROCK.y, { tool: 'shovel', toolMs: 700, motion: 'nod' });
+    // the shovel comes down on it (in my villager's hand; else a floating one), then the clonk
+    if (!walked) spawn({ kind: 'strike', x: ROCK.x, y: ROCK.y - ROCK.h * 0.5 }, 400);
+    after(ms + 300, () => clonk(what));
   }
   function clonk(what: ReturnType<typeof rockTap>) {
     sceneSfx('clonk');
-    rockEl?.animate([{ transform: 'none' }, { transform: 'translateX(-1.5px)', offset: 0.2 }, { transform: 'translateX(1.5px)', offset: 0.45 }, { transform: 'translateX(-.8px)', offset: 0.7 }, { transform: 'none' }], { duration: 320, easing: 'ease-out' });
+    // NH's tool strike on a rock: it squashes under the blow and bounces back
+    rockEl?.animate([{ transform: 'none' }, { transform: 'scale(1.06, .94)', offset: 0.3 }, { transform: 'scale(.97, 1.04)', offset: 0.65 }, { transform: 'none' }], { duration: 280, easing: 'ease-out' });
     if (what === 'sparkle') {
       spawn({ kind: 'spark', x: ROCK.x + 6, y: ROCK.y - ROCK.h }, 800);
       sceneSfx('glint');
@@ -117,11 +131,13 @@
     <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={U(ROCK.h)} /></span>
   </span>
   {#each shown as w (w.uid)}
-    <span class="item weed" class:flip={w.flip} data-care="weed" style:translate="{U(w.x)} {U(w.y)}">{@render tuft()}</span>
+    <span class="item weed" class:flip={w.flip} class:sprout={sprouts(w.uid)} data-care="weed" style:translate="{U(w.x)} {U(w.y)}"><i class="shade"></i>{@render tuft()}</span>
   {/each}
   {#each fx as f (f.n)}
     <span class="item fx-{f.kind}" class:flip={f.flip} style:translate="{U(f.x)} {U(f.y)}">
-      {#if f.kind === 'pull'}
+      {#if f.kind === 'strike'}
+        <span class="strike"><OfficialArt key={findArt('shovel')} size={U(26)} eager /></span>
+      {:else if f.kind === 'pull'}
         <span class="up">{@render tuft()}</span>
         <i class="clod" style:--dx="-1"></i><i class="clod" style:--dx="1"></i>
       {:else}
@@ -131,10 +147,13 @@
   {/each}
 </div>
 
-<!-- NH's weeds: a bright tuft of blades, a darker one behind -->
+<!-- NH's weeds: a chunky, rounded clump about half a tile wide: five broad blades in front (a light highlight down
+     each), a darker clump behind -->
 {#snippet tuft()}
-  <svg viewBox="-8 -11 16 12"><path class="back" d="M-1 0 C-2 -4 -5 -6 -7 -7 C-4 -6 -2 -4 -1 0 Z M1 0 C2 -3 4 -5 6.5 -5.5 C4 -4 2.5 -2 1 0 Z" />
-    <path class="front" d="M0 0 C-1 -4 -3 -7 -5 -9 C-2 -7 -.6 -4 0 0 Z M0 0 C0 -5 1 -8 2 -10.5 C2 -6 1.5 -3 0 0 Z M0 0 C1 -3 3 -5 5.5 -7 C3.5 -4.5 2 -2 0 0 Z" /></svg>
+  <svg viewBox="-10 -13 20 14"><path class="back" d="M-6 0 C-8 -4 -9 -7 -8.5 -9 C-6 -7 -4.5 -4 -3.5 0 Z M3.5 0 C4.5 -4 6 -7 8.5 -9 C9 -7 8 -4 6 0 Z M-2 0 C-2.5 -4 -2 -8 -1 -11 C.5 -8 1 -4 1.5 0 Z" />
+    <path class="front" d="M-7 0 C-8 -3 -8 -5.5 -7 -7.5 C-5 -5.5 -3.8 -3 -3.5 0 Z M-4 0 C-4.8 -4 -4.5 -7.5 -3 -10 C-1.4 -7.5 -1 -4 -1 0 Z M-1.2 0 C-1.4 -4.5 -.6 -9 1 -12 C2.4 -9 2.6 -4.5 1.6 0 Z M1.4 0 C1.6 -4 2.6 -7 4.6 -9 C5.4 -6.5 5 -3.5 4 0 Z M3.8 0 C4.4 -3 5.6 -5 7.6 -6.4 C7.8 -4 7.2 -2 6.6 0 Z" />
+    <path class="hi" d="M-5.6 -1.5 C-6 -3 -6.2 -4.4 -6.6 -5.6 M-2.6 -1.5 C-2.8 -4 -3 -6 -3 -8 M.4 -1.5 C.4 -4.5 .6 -7.5 1 -10 M3.2 -1.5 C3.4 -3.6 3.8 -5.6 4.4 -7.2" />
+    <path class="base" d="M-7.5 0 C-4 1 4 1 7.5 0 Z" /></svg>
 {/snippet}
 
 <style>
@@ -142,11 +161,20 @@
   .care { position: absolute; inset: 0; z-index: 25; pointer-events: none; --su: calc(100cqw / 390); }
   .item { position: absolute; left: 0; top: 0; width: 0; height: 0; }
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
-  .rock > :global(*) { translate: -50% -92%; filter: drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
+  .rock > :global(*) { translate: -50% -92%; transform-origin: 50% 100%; filter: drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
   .rock :global(.official) { max-width: none; }
-  .weed svg, .up svg { width: calc(13 * var(--su)); translate: -50% -92%; overflow: visible; }
+  .weed svg, .up svg { width: calc(20 * var(--su)); translate: -50% -92%; overflow: visible; }
   .flip svg { scale: -1 1; }
-  .front { fill: #5FC14A; } .back { fill: #3F9A3A; }
+  .front { fill: #4DB04A; } .back { fill: #2F7F36; } .base { fill: #2F7F36; }
+  .hi { fill: none; stroke: #8FD66A; stroke-width: .9; stroke-linecap: round; }
+  /* its contact shadow on the lawn */
+  .shade { display: block; width: calc(14 * var(--su)); height: calc(3 * var(--su)); translate: -50% -60%; border-radius: 50%; background: rgba(60, 70, 30, .25); }
+  /* sprouting while the island is open: it pops up out of the lawn once */
+  .weed.sprout svg { transform-origin: 50% 100%; animation: sprout 420ms cubic-bezier(.34, 1.56, .64, 1) both; }
+  @keyframes sprout { from { transform: scale(0); } 70% { transform: scale(1.15); } to { transform: none; } }
+  /* the rock: the shovel comes down on it */
+  .strike { translate: -20% -95%; transform-origin: 30% 100%; animation: strike .3s cubic-bezier(.4, 0, .7, 1) both; }
+  @keyframes strike { 0% { transform: rotate(-45deg) translateY(-6px); opacity: 0; } 20% { opacity: 1; } 75% { transform: rotate(6deg); opacity: 1; } 100% { transform: rotate(0); opacity: 0; } }
   /* pulled: the tuft pops up and tumbles away, two clods of earth fly */
   .up { animation: pull .65s cubic-bezier(.3, .7, .4, 1) both; }
   @keyframes pull {

@@ -420,8 +420,8 @@
       {:else if f.kind === 'flower'}
         <i class="petal" style:--dx="-1"></i><i class="petal two" style:--dx="1"></i>
         <svg class="spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
-        {#if !f.held}<span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(18 * var(--su))" eager /></span>{:else}<span data-fx="water"></span>{/if}
-        {#each [0, 1, 2] as i (i)}<i class="drip" style:--i={i}></i>{/each}
+        {#if !f.held}<span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(22 * var(--su))" eager /></span>{:else}<span data-fx="water"></span>{/if}
+        {#each [0, 1, 2, 3, 4] as i (i)}<i class="drip" style:--i={i} style:--dx={(i % 3) - 1}></i>{/each}
         <svg class="spark late" viewBox="0 0 24 24"><path d={STAR} /></svg>
         {#if f.rare === 'butterfly'}
           <span class="bfly"><svg viewBox="-12 -10 24 20">
@@ -528,9 +528,10 @@
   .drip {
     left: calc(2 * var(--su)); top: calc(-14 * var(--su)); width: calc(2 * var(--su)); height: calc(3 * var(--su));
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9FD8FF; box-shadow: 0 0 0 .5px rgba(60, 120, 180, .5);
-    animation: drip .45s ease-in calc(.3s + var(--i) * .1s) both;
+    animation: drip .45s ease-in calc(.3s + var(--i) * 60ms) both;
   }
-  @keyframes drip { from { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } to { transform: translate(calc(-2 * var(--su)), calc(12 * var(--su))); opacity: 0; } }
+  /* five drops, 60 ms apart, spread a little over the bloom */
+  @keyframes drip { from { transform: translate(calc(var(--dx) * 2 * var(--su)), 0); opacity: 0; } 20% { opacity: 1; } to { transform: translate(calc(-2 * var(--su) + var(--dx) * 3 * var(--su)), calc(13 * var(--su))); opacity: 0; } }
   .spark.late { left: calc(-10 * var(--su)); top: calc(-4 * var(--su)); width: calc(8 * var(--su)); height: calc(8 * var(--su)); animation-delay: .62s; }
   /* NH's common butterfly (white, a little yellow at the base): it lifts off the bloom and away, flapping */
   .bfly { left: 0; top: 0; width: calc(18 * var(--su)); margin: calc(-7.5 * var(--su)) 0 0 calc(-9 * var(--su)); line-height: 0; animation: bfly 1.05s ease-in both; }

@@ -41,9 +41,17 @@ export function garden(date: string, yesterday: string, grow: (watered: string[]
   writeJson(localKV(), SCENE.garden, next);
   return next;
 }
-/** Remember a watered cell today. */
+/** Remember a watered cell today (and tell the beds: their watered flowers glitter for the day). */
 export function water(date: string, cell: string): void {
   const g = readJson<Garden>(localKV(), SCENE.garden);
   const cur = g && g.date === date ? g : { date, watered: [], hybrid: null };
   if (!cur.watered.includes(cell)) writeJson(localKV(), SCENE.garden, { ...cur, watered: [...cur.watered, cell] });
+  if (typeof document !== 'undefined') document.dispatchEvent(new CustomEvent(WATERED));
+}
+/** The event `water` sends. */
+export const WATERED = 'island:watered';
+/** The cells watered on `date` (none on another day). */
+export function wateredOn(date: string): string[] {
+  const g = readJson<Garden>(localKV(), SCENE.garden);
+  return g && g.date === date ? (g.watered ?? []) : [];
 }
