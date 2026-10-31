@@ -1,7 +1,7 @@
-# Backend monitor (docs/ops/runbook.md §5): a keyless {"action":"health"} POST to the Apps Script /exec URL
+# Backend monitor (docs/ops/runbook.md §3): a keyless {"action":"health"} POST to the Apps Script /exec URL
 # (repo variable GAS_URL). It fails, so GitHub e-mails the owner, unless the reply is JSON with ok:true and a `build`
 # equal to the committed Code.js's (line 3, `// build: <12 hex>`). HTML = the authorization lapsed (google-setup.md
-# §9); another build = Code.js changed but was not redeployed (google-setup.md §11).
+# §9); another build = Code.js changed but was not redeployed (runbook.md §2).
 name: Backend health
 
 on:
@@ -32,7 +32,7 @@ jobs:
           live=$(echo "$body" | jq -r '.build // ""')
           repo=$(sed -n 's#^// build: ##p' app/apps-script/Code.js)
           if [ "$live" != "$repo" ]; then
-            echo "::error::/exec runs build '$live' but main's apps-script/Code.js is '$repo': redeploy (google-setup.md §11)"
+            echo "::error::/exec runs build '$live' but main's apps-script/Code.js is '$repo': redeploy (docs/ops/runbook.md §2)"
             exit 1
           fi
           echo "healthy, build $live"
