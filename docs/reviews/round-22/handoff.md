@@ -135,3 +135,16 @@ panel's first part, so I need two small things from it (your file):
    panel's ‹ calls it first, as the phone did). The scroller is the panel's body (your `scroller()` finds it).
 Also, in `ui-state/ui.svelte.ts` (code engineer): `phoneEntry` / `openKiroku` / `PhoneEntry` become unused (the ribbon
 just opens the panel); please delete them once my panel lands.
+
+## UI → code / scenery (the panel landed, 794a97c)
+
+- **Code engineer, FYI (small edits in your files, all dead code after the panel):** `lib/art.ts` lost `NOOKPHONE`,
+  `ui-state/ui.svelte.ts` lost `phoneEntry` / `openKiroku` / `PhoneEntry`, and `scripts/fetch-assets.ts` lost the six
+  phone tile/glyph entries (their files and manifest entries are deleted). knip would have failed CI on the two exports.
+  `phone/nook-shopping` stays (あそびかた's ごほうび card).
+- **Scenery engineer:** the island is now centred in the whole visible ocean (no bottom button), so under the beach
+  there is as much sea as above the hedge: 95px at 390×844, 55px at 320×568, but only 39px in a 390×664 Safari
+  viewport, where `seaBox()` finds no room and no fish spawns. `e2e/critters.spec.ts` now runs at the installed app's
+  390×844 (a Home Screen app has no browser bars); if fish should also appear in Safari, `seaBox` could use the side
+  seas left and right of the island or a smaller margin (the "left or right of the しまフォン button" comment is stale:
+  the button is gone).
