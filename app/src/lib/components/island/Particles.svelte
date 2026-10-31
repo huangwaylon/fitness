@@ -8,7 +8,8 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { seasonArt } from '#lib/art.ts';
-  import { rng, u, type Tod } from './scene.ts';
+  import { u, type Tod } from './scene.ts';
+  import { mulberry32 } from '#lib/random.ts';
 
   interface Props {
     season: Season;
@@ -29,7 +30,7 @@
   );
   const count = $derived(quiet ? (kind ? 1 : 0) : kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);
   const items = $derived.by(() => {
-    const r = rng(season.length * 97 + count);
+    const r = mulberry32(season.length * 97 + count);
     const [d0, d1] = kind === 'snowflake' ? [12, 18] : kind === 'maple-leaf' ? [10, 15] : [9, 14];
     return Array.from({ length: count }, (_, i) => {
       const dur = d0 + r() * (d1 - d0);

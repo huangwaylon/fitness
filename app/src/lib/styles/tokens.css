@@ -45,8 +45,8 @@
   --fs-input: max(16px, 1rem);
   --lh:1.45;
 
-  /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/phone · 30% tiles ---------- */
-  --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-tile:30%; --r-pill:999px;
+  /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/panel ---------- */
+  --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-pill:999px;
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
   --lip-h:4px;      /* the one lip depth */
@@ -76,21 +76,20 @@
   --hit: 44px;
   /* A list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
-  --phone-h: 92px;
 
   /* ---------- stacking: one z scale ----------
-     The page: the scene's stage < the HUD (ribbon, sync chip) < the dock (しまフォン, しずえ's box). Modal <dialog>s
-     (sheets, the phone, the harvest) live in the top layer above every z-index; the banner is a popover shown after
+     The page: the scene's stage < the HUD (ribbon, sync chip) < the dock (しずえ's box). Modal <dialog>s
+     (sheets, the panel, the harvest) live in the top layer above every z-index; the banner is a popover shown after
      them, so it sits above an open sheet (--z-toast is its fallback without popover support).
      Inside the stage (its own stacking context): trees < canopy taps < ground fruit < the fruit-row tap < falling leaves
      < villagers (mine in front) < tree-shake leaves < the time-of-day tint < the jar + plate < scenery flourishes
      < flying coins < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
   --z-stage: 1; --z-hud: 7; --z-dock: 9; --z-harvest: 60; --z-toast: 90;
   --z-tree: 30; --z-canopy: 32; --z-fruit: 33; --z-fruit-row: 34; --z-fall: 50; --z-villager: 51; --z-villager-mine: 52;
-  --z-leaf: 70; --z-tint: 80; --z-jar: 81; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-gain: 92; --z-popup: 95;    /* the island's NookPhone button: 68px disc + 2px + the 「しまフォン」 plate + its lip */
+  --z-leaf: 70; --z-tint: 80; --z-jar: 81; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-gain: 92; --z-popup: 95;
 
   /* ---------- viewport heights ----------
-     --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, phone,
+     --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, panel,
      sheet max-height). --vh-page: 100svh, the min-height of a page the document scrolls (stable while
      Safari's toolbars collapse). --vh1: 1dvh for clamps. Each falls back to vh before Safari 15.4 (the
      @supports block below), so a height never resolves to an invalid dvh. Never add --kb to these: iOS
@@ -99,8 +98,6 @@
 
   /* ---------- fluid scale: clamps instead of breakpoint steps ---------- */
   --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
-  /* しまフォン grid: tiles follow the smaller of width and height, so a tall phone gets bigger tiles */
-  --tile: clamp(52px, min(22vw, calc(11 * var(--vh1))), 96px); --tile-gap: clamp(12px, 4.5vw, 22px);
   --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ごほうび hero jar */
 
   /* ---------- surfaces + button tiers ----------
@@ -144,7 +141,7 @@
 }
 
 /* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ----------
-   (--cta-h / --tile / --tile-gap are fluid clamps: no steps here) */
+   (--cta-h is a fluid clamp: no steps here) */
 @media (max-height: 700px), (max-width: 359px) {
   :root { --gap: 8px; --talk-lines: 1; --fs-talk: 1rem; }
 }
@@ -244,7 +241,7 @@
 }
 /* Pause every scene animation while the tab is hidden (design.md "Particles and events"). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
-/* Under a sheet (the phone, a card) the endless loops hold still too: clouds, sea glints, stars, fireflies and the
+/* Under a sheet (the panel, a card) the endless loops hold still too: clouds, sea glints, stars, fireflies and the
    villagers' idle bob, so the compositor draws no frames for a scene nobody is looking at. One-off motions (a hop,
    an emote) still finish. */
 .if-scene[data-covered] :is(.cloud, .glints, .star, .ff, .body.bob) { animation-play-state: paused !important; }

@@ -15,7 +15,7 @@
     toyDay?: boolean;
   }
   let { season, month, toyDay = false }: Props = $props();
-  const list = $derived(sceneProps(season, month));
+  const list = $derived(sceneProps(month));
 </script>
 
 {#each list as p, i (p.key + i)}

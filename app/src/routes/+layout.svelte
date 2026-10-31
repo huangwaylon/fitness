@@ -74,7 +74,7 @@
     const onStale = () => safeReload();
     window.addEventListener('vite:preloadError', onStale);
     const stopViewport = startViewport();
-    // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the phone or the harvest.
+    // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the panel or the harvest.
     const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
     // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
     const stopTaps = startTaps();
