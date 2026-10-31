@@ -31,7 +31,7 @@
 <style>
   .err {
     --nook-h: 120px;
-    max-width: 380px; margin: 0 auto; min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 14px;
+    max-width: 380px; margin: 0 auto; min-height: 100dvh; display: grid; place-content: center stretch; justify-items: center; gap: 14px;
     text-align: center; background: var(--bg); color: var(--text);
     padding: calc(var(--safe-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--pad-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
   }
