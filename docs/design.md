@@ -308,7 +308,7 @@ fragment is a ずかん `find` (never ベル).
   `scene-wish` in localStorage); the next morning (a wish before 05:00: that morning) 2–3 fragments lie on the beach:
   star fragments, now and then a large one or the season's zodiac fragment.
 - The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
-  44px; reduced motion keeps the pick-ups, without the lift or the shovel. `?find=bottle|fragment` (dev or `?demo`)
+  44px. `?find=bottle|fragment` (dev or `?demo`)
   brings one now.
 
 **Island care** (`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts`; no ベル, no find):

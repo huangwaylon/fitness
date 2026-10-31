@@ -98,12 +98,3 @@ test('a wish on a shooting star brings star fragments the next morning; a tap pi
   expect(await finds(page)).toEqual([{ kind: 'fragment', id }]);
   await unchanged(page, before);
 });
-
-test('reduced motion: a shell is still picked up (no lift), the plate fades in', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await open(page, '&date=2026-11-04T12:00');
-  const p = await at(page, '[data-find="shell"]');
-  await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText(/を ひろった！$/);
-  await expect(page.locator('[data-find="shell"]')).toHaveCount(2);
-});

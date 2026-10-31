@@ -3,10 +3,9 @@
   // to the speaker and a nameplate) for my villager's chat and the visitors' lines. One at a time; a new line replaces
   // the last. It sits as close above (else below) the speaker as it can, inside the scene's safe area and clear of
   // every control, a tree's popup, しずえ's box and the villager's own emote (placement.ts); with no room it's skipped.
-  // The text types in at 33 ms a glyph (NH); reduced motion shows it at once. Gone after a read's length (≥ 2.8 s).
+  // The text types in at 33 ms a glyph (NH). Gone after a read's length (≥ 2.8 s).
   //   <Talk bind:this={talk} scene={el} />   talk.say(name, text, speakerEl)
   import { tick } from 'svelte';
-  import { reducedMotion } from '#lib/time/clock.ts';
   import { place, type Box } from './placement.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
@@ -28,8 +27,7 @@
   export async function say(name: string, text: string, from: Element, avoid: Box[] = []) {
     stop();
     const n = ++seq;
-    const calm = reducedMotion();
-    said = { n, name, text, shown: calm ? text.length : 0, x: 0, y: 0, tail: 0, below: false, placed: false };
+    said = { n, name, text, shown: 0, x: 0, y: 0, tail: 0, below: false, placed: false };
     await tick();
     const stage = scene?.querySelector('.stage')?.getBoundingClientRect();
     const box = el?.getBoundingClientRect(), src = from.getBoundingClientRect();
@@ -40,12 +38,11 @@
     const below = at.y > sy;
     const tail = Math.max(-box.width / 2 + 18, Math.min(box.width / 2 - 18, sx - at.x));
     Object.assign(said, { x: at.x - stage.left, y: at.y - stage.top + (below ? 5 : -5), tail, below, placed: true });
-    if (!calm)
-      typing = setInterval(() => {
-        if (!said || said.n !== n || said.shown >= text.length) return clearInterval(typing);
-        said.shown++;
-      }, 33);
-    done = setTimeout(() => said?.n === n && (said = null), (calm ? 0 : text.length * 33) + Math.max(2800, 900 + text.length * 70));
+    typing = setInterval(() => {
+      if (!said || said.n !== n || said.shown >= text.length) return clearInterval(typing);
+      said.shown++;
+    }, 33);
+    done = setTimeout(() => said?.n === n && (said = null), text.length * 33 + Math.max(2800, 900 + text.length * 70));
   }
 </script>
 
@@ -85,6 +82,4 @@
   .rest { visibility: hidden; } /* the untyped rest keeps its room, so the bubble never grows as it types */
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @keyframes pop { from { transform: scale(.6); opacity: 0; } }
-  @keyframes fade { from { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .say { animation: fade .2s ease-out both; } }
 </style>
