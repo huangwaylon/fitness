@@ -38,7 +38,7 @@ in the visible ocean, from the horizon down to the screen's bottom above the hom
 ribbon.
 
 - **Trees:** one per person; today's four fruits hang in the canopy, grey at 0 and colouring in toward the goal; a met
-  one falls to the ground for a tap to pick up, and a flower blooms at the trunk ([Trees](#trees)). A tap opens a
+  one falls to the ground for a tap to pick up, and that goal's flower blooms in the person's bed ([Trees](#trees)). A tap opens a
   popup: per goal today's amount against the goal, met or not (「638 / 600 kcal」, 「14,164 / 8,000歩」), a ✓ before
   it once met, and its +1 (bright once earned); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
   line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
@@ -238,7 +238,7 @@ to front: sky · sea · ground · hedge · trees + fruit · jar · flower beds �
 
 `scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 80 · trees + jar
 173 · bed back 266 · front 297. Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u (cols −3…3) ·
-flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · tree-foot flower 16u · jar 52u wide (col 0).
+flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · jar 52u wide (col 0).
 
 ### Environment
 
@@ -247,7 +247,7 @@ flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · tree-foot 
 - **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
   Night is soft periwinkle, never black.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
-  Jan–Mar camellia). Two flower beds by season. A newly met goal shakes its tree and its fruit drops.
+  Jan–Mar camellia). Two flower beds by season, each its person's goal flowers ([Trees](#trees)). A newly met goal shakes its tree and its fruit drops.
 
 ### Particles and events
 
@@ -258,7 +258,8 @@ idle life (`data-covered`).
 
 ### Trees
 
-`island/FruitTree.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit through one Tokyo day:
+`island/FruitTree.svelte`, `island/FlowerBeds.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit and
+its person's flowers through one Tokyo day:
 
 - **Hanging:** each goal's fruit hangs in the canopy, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour as
   today's amount nears the goal (grayscale = 1 − share, washed lighter while grey so a dark apple never reads as a
@@ -273,11 +274,21 @@ idle life (`data-covered`).
   the one button: a tap within 22u (or 22px on a small stage, a 44px target for a lone fruit) of a fallen fruit picks
   up the nearest, else it opens the popup as before; from the keyboard (focusable once something lies there) it
   picks up the first.
-- **After:** a small NH flower blooms behind the trunk's foot for each goal met that day (yellow tulip 🍐, pink cosmos
-  🍑, red rose 🍒, red tulip 🍎; it pops up as its fruit lands, persists all day, picked or not), and with all four met
-  three white glints twinkle on the canopy in turn (NH's money tree; a 3.9 s loop, paused under a sheet).
-- `fruit-day` in localStorage (`{ date, dropped, picked }`, ids `A:pear`): losing it only drops a fruit again. Cost:
-  transform and opacity, a static filter on eight small images, one infinite loop of three 13px stars on a perfect day.
+- **Goal flowers:** each 2 × 2 flower bed belongs to the person whose villager stands beside it (mine on the left, the
+  partner's on the right), one flower per goal in reading order, the same in both beds (`BED_FRUIT`): 🍐 Move
+  back-left, 🍑 Exercise back-right, 🍒 Stand front-left, 🍎 Steps front-right. The species stay the season's bed
+  (autumn: pink cosmos behind, purple mums in front), not the fruit's colour: a tidy two-species bed is how NH players
+  plant, and 🍒 and 🍎 would both be red. Not met today: NH's growth stage before the bloom at the flower's full height
+  (its leaves and stem, a closed bud about 0.45 of the head's width in a darker shade of its petals, green sepals),
+  swaying ±1.5° every 3.6 s. Met: it blooms once per phone (as the tree's fruit lands: 1.3 s after opening, else 1.5 s
+  after the data; several 150 ms apart): the bud squashes (120 ms), the flower pops .6 → 1.14 and settles (to 620 ms),
+  five petal-coloured bits burst 10–14u, a white glint at 300 ms, a soft pop (`flower-bloom`). A reload finds it open;
+  buds again at the next Tokyo day. A tap still waters it (watering a bud is fine); a hybrid shows once its cell blooms.
+- **All four met:** four warm glints (24u, #FFF7CF with a gold glow) twinkle on the canopy in turn over a soft gold
+  pulse (NH's money tree; a 2.6 s loop, the right tree .33 s later), above the night tint, paused under a sheet.
+- `fruit-day` in localStorage (`{ date, dropped, picked, bloomed }`, ids `A:pear`): losing it only drops a fruit and
+  blooms a flower again. Cost: transform and opacity, a static filter on eight small images, eight small swaying buds,
+  four glints on a perfect day.
 
 ### Scene interactions
 

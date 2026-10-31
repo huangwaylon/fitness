@@ -4,8 +4,8 @@
   // amount nears its goal (fruitDay.ts greyAt). Once met it drops to the ground in front of the trunk (FRUIT_SPOTS): the
   // tree shakes, the fruit falls and bounces, a little dust, once (fruit-day in localStorage: a reload finds it lying
   // there). A tap on it picks it up (a hop, a sparkle; gone until the next Tokyo day). Picking up is cosmetic: the ベル
-  // come from the goal, on read. A flower blooms at the trunk's foot for each goal met today (TREE_FLOWER), and with
-  // all four met the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
+  // come from the goal, on read. Each met goal's flower opens in the person's bed (FlowerBeds), and with all four met
+  // the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal today's amount against the
@@ -18,7 +18,7 @@
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
-  import { flowerArt, fruitArt, seasonArt, treeArt } from '#lib/art.ts';
+  import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { lastSyncLine } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
@@ -26,7 +26,7 @@
   import { RULES } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import {
-    FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, TREE, TREE_FLOWER, TREE_FLOWERS, TREE_FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, u
+    FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u
   } from './scene.ts';
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -48,6 +48,8 @@
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
   /** A hanging fruit is drawn at the ground size, scaled down (so the fall scales it up, one image). */
   const UP = TREE_FRUIT_U / FRUIT_U;
+  /** The money-tree glints on a perfect day: [left, top] in % of the canopy. */
+  const GLINTS: [number, number][] = [[25, 38], [52, 22], [72, 44], [44, 58]];
   const detailId = $props.id();
   let picked = $state<RingFruit | null>(null);
   let taps = $state(0);
@@ -95,7 +97,7 @@
       if (rec.date !== d) rec = fruitDay(d);
     });
   });
-  /** Fruit falling right now: its drop and its flower's bloom play once. */
+  /** Fruit falling right now: its drop plays once. */
   let falling = $state<RingFruit[]>([]);
 
   const spots = $derived(
@@ -250,16 +252,6 @@
 <button type="button" class="canopy" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
   style:height={u(H * 0.62)} aria-label={label} aria-expanded={open} aria-controls={detailId} data-sfx="self" onclick={() => tap(null)}></button>
 
-<!-- a flower at the trunk's foot for each goal met today (it blooms as its fruit lands) -->
-{#each spots as s (s.f)}
-  {#if s.met && s.stage !== 'fall'}
-    <span class="flower" class:bloom={falling.includes(s.f)} data-bloom={s.f} data-tree={person.person} style:left={u(x + TREE_FLOWERS[s.i][0])}
-      style:top={u(BASE + TREE_FLOWERS[s.i][1])}>
-      <OfficialArt key={flowerArt(TREE_FLOWER[s.f])} size={u(TREE_FLOWER_U)} />
-    </span>
-  {/if}
-{/each}
-
 <!-- today's fruit: in the canopy (grey → colour with progress), then on the ground once met, until picked up -->
 {#each spots as s (s.f)}
   {#if s.stage !== 'gone'}
@@ -281,11 +273,13 @@
   aria-label={ground.length ? t(`tree.pick.${ground[0].f}`) : label} aria-expanded={open} aria-controls={detailId}
   tabindex={ground.length ? 0 : -1} data-sfx="self" onclick={rowTap}></button>
 
-<!-- all four met: a few glints on the canopy now and then (NH's money tree) -->
+<!-- all four met: glints twinkle on the canopy in turn over a soft gold glow (NH's money tree), above the night tint -->
 {#if allMet}
-  <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)} style:height={u(H * 0.62)}>
-    {#each [[22, 30], [70, 18], [58, 62]] as [gx, gy], k (k)}
-      <svg class="glint" viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:animation-delay="{k * 1.3}s">
+  <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
+    style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < JAR.x ? 0 : 0.33}s">
+    <span class="glow"></span>
+    {#each GLINTS as [gx, gy], k (k)}
+      <svg class="glint" viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:--k={k}>
         <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
       </svg>
     {/each}
@@ -351,19 +345,25 @@
     72% { transform: translateY(-24%) scale(.96, 1.04); animation-timing-function: ease-in; }
     86% { transform: translateY(0) scale(1.04, .96); } 100% { transform: none; }
   }
-  /* a flower per goal met at the trunk's foot, behind the trunk; it pops up as its fruit lands */
-  .flower { position: absolute; z-index: calc(var(--z-tree) - 1); translate: -50% -100%; line-height: 0; pointer-events: none; transform-origin: 50% 100%; }
-  .flower.bloom { animation: bloom 520ms 320ms var(--ease-bounce) both; }
-  @keyframes bloom { 0% { transform: scale(0, .2); opacity: 0; } 30% { opacity: 1; } 65% { transform: scale(1.12, .92); } 100% { transform: none; } }
-  /* all four met: three white glints twinkle on the canopy in turn, one every 1.3 s (a 3.9 s loop each) */
-  .glints { position: absolute; z-index: var(--z-fruit); pointer-events: none; }
-  .glint {
-    position: absolute; width: 13px; height: 13px; translate: -50% -50%; fill: #fff; opacity: 0;
-    animation: glint 3.9s ease-in-out infinite both;
+  /* all four met: four warm glints twinkle on the canopy in turn (one every .65 s of a 2.6 s loop; the right tree
+     .33 s later) over a soft gold glow, above the night tint like the fireflies */
+  .glints { position: absolute; z-index: var(--z-taps); pointer-events: none; }
+  .glow {
+    position: absolute; inset: 4% 8% 10%; border-radius: 50%; opacity: 0;
+    background: radial-gradient(closest-side, #FFE070, transparent); animation: tree-glow 2.6s ease-in-out var(--late) infinite both;
   }
-  @keyframes glint { 0%, 16%, 100% { transform: scale(0) rotate(0); opacity: 0; } 8% { transform: scale(1) rotate(45deg); opacity: .95; } }
-  /* an endless loop: holds still under a sheet, like the sea's glints (hidden pages pause every animation) */
-  :global(.if-scene[data-covered]) .glint { animation-play-state: paused; }
+  @keyframes tree-glow { 0%, 100% { opacity: 0; } 50% { opacity: .18; } }
+  .glint {
+    position: absolute; width: var(--g); height: var(--g); translate: -50% -50%; fill: #FFF7CF; opacity: 0;
+    filter: drop-shadow(0 0 3px #FFE070) drop-shadow(0 0 1px #fff);
+    animation: glint 2.6s ease-in-out calc(var(--k) * .65s + var(--late)) infinite both;
+  }
+  @keyframes glint {
+    0% { transform: scale(0) rotate(0); opacity: 0; } 18% { transform: scale(1.15) rotate(45deg); opacity: 1; }
+    30% { transform: scale(.9) rotate(60deg); opacity: 1; } 42% { transform: scale(0) rotate(90deg); opacity: 0; } 100% { transform: scale(0); opacity: 0; }
+  }
+  /* endless loops: they hold still under a sheet, like the sea's glints (hidden pages pause every animation) */
+  :global(.if-scene[data-covered]) :is(.glint, .glow) { animation-play-state: paused; }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .fxa.at { z-index: var(--z-fruit-row); pointer-events: none; }
   .canopy, .row-btn {

@@ -46,8 +46,9 @@ export const SCENE = {
   /** localStorage `scene-day` = `{ date, picked: [uid…] }`: the day items (shells, fossils, the bottle, fragments, weeds)
    *  this phone picked up, dug or pulled today (island/sceneDay.ts; a new day starts empty). */
   day: 'scene-day',
-  /** localStorage `fruit-day` = `{ date, dropped: [id…], picked: [id…] }`: today's met fruit this phone has shown
-   *  falling and picked up (`A:pear`; island/fruitDay.ts; a new day starts empty). */
+  /** localStorage `fruit-day` = `{ date, dropped: [id…], picked: [id…], bloomed: [id…] }`: today's met fruit this
+   *  phone has shown falling and picked up, and the goal flowers it has shown blooming (`A:pear`; island/fruitDay.ts;
+   *  a new day starts empty). */
   fruit: 'fruit-day',
   /** localStorage `scene-wish` = the Tokyo date whose morning brings star fragments (a wish on a shooting star). */
   wish: 'scene-wish',
