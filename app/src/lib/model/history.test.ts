@@ -124,7 +124,7 @@ describe('goals: either person sets either person’s', () => {
       events: [
         ev(jst(DAYS[2], '09:00'), 'B', 'pref', { person: 'A', key: 'villagerName', value: 'X' }),
         ev(jst(DAYS[2], '09:01'), 'B', 'pref', { person: 'C', key: 'moveGoal', value: 450 }),
-        ev(jst(DAYS[2], '09:02'), 'B', 'spend', { person: 'A', spendId: 's1', item: 'snack', bells: 6 })
+        ev(jst(DAYS[2], '09:02'), 'B', 'spend', { person: 'A', spendId: 's1', item: 'snack', bells: 8 })
       ]
     });
     const s = reduce(rows);

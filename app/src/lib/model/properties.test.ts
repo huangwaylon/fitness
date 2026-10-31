@@ -50,7 +50,7 @@ function randomSheet(seed: number) {
     if (rand() < 0.6 || buys.length === 0) {
       const item = pick(ITEMS);
       // Mostly the price; sometimes the other item's price.
-      const bells = rand() < 0.85 ? (shopPrice(item) ?? 6) : pick([6, 20, 5]);
+      const bells = rand() < 0.85 ? (shopPrice(item) ?? 8) : pick([8, 15, 6, 20, 5]);
       const b = { at: t, by, spendId: `s${id++}`, item, bells };
       buys.push(b);
       events.push([iso(t), by, `e${i}`, 'spend', JSON.stringify({ spendId: b.spendId, item, bells })]);

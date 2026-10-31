@@ -118,8 +118,9 @@ describe('the numbers check (docs/design.md#economy)', () => {
     expect(pairWeek(week(days), week(days, 'B'))).toBe(28);
   });
 
-  it('the two rewards against it: おやつ 6, 外食 20; a typical week pays two おやつ and a 外食 with 14 to spare', () => {
-    expect(SHOP).toEqual([{ id: 'snack', bells: 6 }, { id: 'dinner', bells: 20 }]);
-    expect(46 - 2 * shopPrice('snack')! - shopPrice('dinner')!).toBe(14);
+  it('the two rewards against it: おやつ 8, 外食 15; a perfect week pays three of each, a typical week two of each', () => {
+    expect(SHOP).toEqual([{ id: 'snack', bells: 8 }, { id: 'dinner', bells: 15 }]);
+    expect(70 - 3 * shopPrice('snack')! - 3 * shopPrice('dinner')!).toBe(1);
+    expect(46 - 2 * shopPrice('snack')! - 2 * shopPrice('dinner')!).toBe(0);
   });
 });

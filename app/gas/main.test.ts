@@ -325,8 +325,8 @@ describe('events', () => {
 
   it('spend (one of the two rewards at its price), pref and harvest shapes are checked; unknown types and pref keys are refused', () => {
     const ok = [
-      { type: 'spend', data: { spendId: 's1', item: 'snack', bells: 6 } },
-      { type: 'spend', data: { spendId: 's7', item: 'dinner', bells: 20 } },
+      { type: 'spend', data: { spendId: 's1', item: 'snack', bells: 8 } },
+      { type: 'spend', data: { spendId: 's7', item: 'dinner', bells: 15 } },
       ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'].map((key) => ({ type: 'pref', data: { key, value: null } })),
       { type: 'harvest', data: { week: '2026-10-26' } },
       ...['fish', 'bug', 'fossil', 'shell', 'fragment'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
@@ -335,12 +335,14 @@ describe('events', () => {
     ok.forEach((e, i) => expect(a('event', { id: `ok${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
     const bad = [
       { type: 'checkin', data: { date: '2026-10-29', habit: 'veg', done: true } },
-      { type: 'spend', data: { spendId: 7, item: 'snack', bells: 6 } },
-      { type: 'spend', data: { spendId: 's3', item: 'snack', bells: 6.5 } },
-      { type: 'spend', data: { spendId: 's4', item: 'snack', bells: 20 } }, // not its price
-      { type: 'spend', data: { spendId: 's5', bells: 6 } },
-      { type: 'spend', data: { spendId: 's6', item: 'cafe', bells: 6 } }, // not a reward
-      { type: 'spend', data: { spendId: 's8', item: 'dinner', bells: '20' } },
+      { type: 'spend', data: { spendId: 7, item: 'snack', bells: 8 } },
+      { type: 'spend', data: { spendId: 's3', item: 'snack', bells: 8.5 } },
+      { type: 'spend', data: { spendId: 's4', item: 'snack', bells: 15 } }, // not its price
+      { type: 'spend', data: { spendId: 's9', item: 'snack', bells: 6 } }, // the old prices
+      { type: 'spend', data: { spendId: 's10', item: 'dinner', bells: 20 } },
+      { type: 'spend', data: { spendId: 's5', bells: 8 } },
+      { type: 'spend', data: { spendId: 's6', item: 'cafe', bells: 8 } }, // not a reward
+      { type: 'spend', data: { spendId: 's8', item: 'dinner', bells: '15' } },
       { type: 'pref', data: { key: 'share', value: true } },
       { type: 'pref', data: { key: 'menu', value: '[]' } }, // there is no menu to edit
       { type: 'pref', data: { key: 'locale' } },
@@ -392,7 +394,7 @@ describe('removed and person-bearing events', () => {
       { type: 'pref', data: { person: 'B', key: 'locale', value: 'en' } }, // only the goals take a person
       { type: 'pref', data: { person: 'B', key: 'villagerName', value: 'うめ' } },
       { type: 'spend_void', data: { person: 'B', spendId: 'sp-1' } },
-      { type: 'spend', data: { person: 'B', spendId: 's1', item: 'snack', bells: 6 } },
+      { type: 'spend', data: { person: 'B', spendId: 's1', item: 'snack', bells: 8 } },
       { type: 'highfive', data: { person: 'B' } }
     ];
     bad.forEach((e, i) => expect(a('event', { id: `q${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
