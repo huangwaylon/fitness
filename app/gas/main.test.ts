@@ -375,9 +375,26 @@ describe('removed and person-bearing events', () => {
   });
 
   it('spend_void appends with the server `at`, the sender as person and the data as JSON; an empty one is refused', () => {
+    expect(a('event', { id: 's1', type: 'spend', data: { spendId: 'sp-1', item: 'snack', bells: 8 } })).toEqual({ ok: true });
+    tick();
     expect(a('event', { id: 'v1', type: 'spend_void', data: { spendId: 'sp-1' } })).toEqual({ ok: true });
     expect(a('event', { id: 'v2', type: 'spend_void', data: {} })).toEqual({ ok: false, error: 'bad_request' });
-    expect(data('events').map((r) => [r[0], r[1], r[3], r[4]])).toEqual([['2026-10-29T03:00:00.000Z', 'A', 'spend_void', '{"spendId":"sp-1"}']]);
+    expect(data('events').map((r) => [r[0], r[1], r[3], r[4]]).slice(1)).toEqual([['2026-10-29T03:00:01.000Z', 'A', 'spend_void', '{"spendId":"sp-1"}']]);
+  });
+
+  it('spend_void must name a buy on the sheet; either person may undo it; a second void is acknowledged, not appended', () => {
+    expect(a('event', { id: 'h1', type: 'highfive', data: { spendId: 'hf' } })).toEqual({ ok: true }); // not a spend
+    expect(a('event', { id: 'p1', type: 'pref', data: { key: 'villagerName', value: 'sp-9' } })).toEqual({ ok: true });
+    expect(a('event', { id: 's1', type: 'spend', data: { spendId: 'sp-9x', item: 'dinner', bells: 15 } })).toEqual({ ok: true });
+    for (const spendId of ['nope', 'hf', 'sp-9']) {
+      expect(a('event', { id: `v-${spendId}`, type: 'spend_void', data: { spendId } }), spendId).toMatchObject({ ok: false, error: 'bad_request' });
+    }
+    expect(b('event', { id: 'v1', type: 'spend_void', data: { spendId: 'sp-9x' } })).toEqual({ ok: true }); // the partner's buy
+    expect(a('event', { id: 'v2', type: 'spend_void', data: { spendId: 'sp-9x' } })).toEqual({ ok: true, duplicate: true });
+    expect(b('event', { id: 'v1', type: 'spend_void', data: { spendId: 'sp-9x' } })).toEqual({ ok: true, duplicate: true }); // a retry
+    expect(data('events').map((r) => [r[1], r[2], r[3]])).toEqual([
+      ['A', 'h1', 'highfive'], ['A', 'p1', 'pref'], ['A', 's1', 'spend'], ['B', 'v1', 'spend_void']
+    ]);
   });
 
   it('`person` (whose goal): A or B on the goal prefs only; refused anywhere else', () => {

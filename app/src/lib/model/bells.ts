@@ -136,7 +136,7 @@ const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
 /**
  * The wallet at `now`. A day's ベル (its current value) count from that day. Buys and voids replay in server order; a
  * buy counts only if the wallet covered it then (earned on days up to its date − spent so far), so the balance never
- * goes negative, and the buyer's void gives it back.
+ * goes negative, and a void (by either of us) gives it back.
  */
 export function walletAt(s: State, now: number): WalletState {
   const memo = walletMemo.get(s);

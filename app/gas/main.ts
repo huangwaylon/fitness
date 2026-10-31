@@ -424,9 +424,15 @@ function event(me: PersonId, body: Rec): EventReply {
     const sh = tab('events');
     const last = sh.getLastRow();
     noteRows('events', last);
-    if (last >= 2) {
-      const ids = sh.getRange(2, 3, last - 1, 1).getValues();
-      for (const r of ids) if (text(r[0]) === id) return { ok: true, duplicate: true };
+    // id, and for a void also type and data (columns 3–5).
+    const rows = last >= 2 ? sh.getRange(2, 3, last - 1, type === 'spend_void' ? 3 : 1).getValues() : [];
+    for (const r of rows) if (text(r[0]) === id) return { ok: true, duplicate: true };
+    if (type === 'spend_void') {
+      const v = voidTarget(rows, data.spendId as string);
+      // A void must name a buy on the sheet; a second void of the same buy (the other phone got there first) changes
+      // nothing, so it is acknowledged like a retry, not appended.
+      if (v === 'missing') return fail('bad_request', 'no such spend');
+      if (v === 'voided') return { ok: true, duplicate: true };
     }
     appendRows(sh, 'events', [[nextAt(), me, id, type, json]]);
     return { ok: true };
@@ -452,6 +458,26 @@ function validEventData(type: string, d: Rec): boolean {
     default:
       return true;
   }
+}
+
+/**
+ * What a `spend_void` of `spendId` would undo, from the events tab's `[id, type, data]` rows: `missing` (no `spend` with
+ * that id), `voided` (already undone) or `ok`. Only rows whose data mentions the id are parsed.
+ */
+function voidTarget(rows: unknown[][], spendId: string): 'missing' | 'voided' | 'ok' {
+  let found = false;
+  for (const r of rows) {
+    const type = text(r[1]);
+    if (type !== 'spend' && type !== 'spend_void') continue;
+    const raw = text(r[2]);
+    if (!raw.includes(spendId)) continue;
+    let d: unknown;
+    try { d = JSON.parse(raw); } catch { continue; }
+    if (!isRec(d) || d.spendId !== spendId) continue;
+    if (type === 'spend_void') return 'voided';
+    found = true;
+  }
+  return found ? 'ok' : 'missing';
 }
 
 /**

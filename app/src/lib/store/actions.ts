@@ -53,7 +53,7 @@ export function buy(item: ShopItemId): SendResult & { bells?: number } {
   return { ...r, bells };
 }
 
-/** Take a buy back (the buyer only; the model ignores anyone else's `spend_void`). */
+/** Take a buy back (either of us, any buy: one wallet; the server and the model take one void per buy). */
 export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }

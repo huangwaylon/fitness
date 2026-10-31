@@ -156,7 +156,7 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
   });
 });
 
-describe('buys: one of the two rewards, at its price, covered by the wallet; the buyer can undo', () => {
+describe('buys: one of the two rewards, at its price, covered by the wallet; either of us can undo', () => {
   const r = perfectWeek(); // 70 in the wallet by Monday
 
   it('a buy takes from the one wallet: おやつ 8, 外食 15', () => {
@@ -184,18 +184,28 @@ describe('buys: one of the two rewards, at its price, covered by the wallet; the
     expect(walletAt(ok, MON_AFTER).wallet.spent).toBe(15);
   });
 
-  it('the buyer’s spend_void gives it back; the partner’s, an early or a second one, is ignored', () => {
+  it('a spend_void by either of us gives it back; an early, a second or one naming no buy is ignored', () => {
     const buy = spend(jst(MON, '10:00'), 'A', 's1', 'dinner');
     const wallet = (events: EventRow[]) => walletAt(reduce(plus(r, { events: [buy, ...events] })), MON_AFTER);
     expect(wallet([]).wallet.balance).toBe(55);
     const voided = wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' })]);
     expect(voided.wallet).toEqual({ earned: 70, spent: 0, balance: 70 });
     expect(voided.spends[0]).toMatchObject({ spendId: 's1', voided: true, voidedAt: ms(MON, '10:05') });
-    expect(wallet([ev(jst(MON, '10:05'), 'B', 'spend_void', { spendId: 's1' })]).wallet.spent).toBe(15);
+    // the partner's undo counts too: one shared wallet
+    expect(wallet([ev(jst(MON, '10:05'), 'B', 'spend_void', { spendId: 's1' })]).wallet).toEqual({ earned: 70, spent: 0, balance: 70 });
     expect(wallet([ev(jst(MON, '09:59'), 'A', 'spend_void', { spendId: 's1' })]).wallet.spent).toBe(15);
     expect(wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 'nope' })]).wallet.spent).toBe(15);
-    const twice = wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' }), ev(jst(MON, '10:06'), 'A', 'spend_void', { spendId: 's1' })]);
-    expect(twice.wallet.spent).toBe(0);
+    // a void of something that isn't a buy (a high-five's id) is no void
+    const hf = ev(jst(MON, '10:01'), 'B', 'highfive', {});
+    expect(wallet([hf, ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: hf[2] })]).wallet.spent).toBe(15);
+    // a second void (either of us) never returns the ベル twice
+    const twice = wallet([ev(jst(MON, '10:05'), 'A', 'spend_void', { spendId: 's1' }), ev(jst(MON, '10:06'), 'B', 'spend_void', { spendId: 's1' })]);
+    expect(twice.wallet).toEqual({ earned: 70, spent: 0, balance: 70 });
+    expect(twice.spends).toHaveLength(1);
+    // undoing a buy that the wallet didn't cover (never shown) gives nothing back
+    const big = spend(jst(MON, '10:15'), 'B', 'big', 'dinner');
+    const many = ['x1', 'x2', 'x3'].map((id, i) => spend(jst(MON, `10:1${i}`), 'A', id, 'dinner'));
+    expect(wallet([...many, big, ev(jst(MON, '10:20'), 'A', 'spend_void', { spendId: 'big' })]).wallet.balance).toBe(10);
   });
 
   it('a void frees the wallet for later buys, in server order', () => {

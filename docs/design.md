@@ -54,6 +54,12 @@ tiles with NH item art: 🍦 おやつ 8 ベル (たこやき・アイス・あ�
 おすし・ラーメン・韓国料理・トッポッキ). One the wallet can't cover is sunk with あと N ベル. 買う！ asks first, applies at
 once and waits 5 s with とりけす before it is sent.
 
+Under the tiles, 「かいもの きろく」 (`wallet/Purchases.svelte`): the buys, newest first, one line each: the item's art and
+name, the day (10/31(土)), who bought it (their villager's head and よびな) and the price. Ten at first, ten more per
+「もっと見る」. Each line has ✕ (either of us, any buy: one wallet, in case of a mistake): it asks first, NH style
+(「このかいものを けしますか？ 8 ベル もどります」 はい / いいえ); はい sends a `spend_void`, the line leaves the list, the ベル
+go back, and the banner carries とりけす for 5 s like a buy's.
+
 ### Panel
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`, a top sheet: the safe area
@@ -76,7 +82,7 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
 
 きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, the panel's first tab, in two sections:
 
-- **ベル:** everything earned, then by week (its ベル): the buys (my own → とりけす) and one line per day under the two
+- **ベル:** everything earned, then by week (its ベル): the buys (any → とりけす) and one line per day under the two
   avatars: each person's four fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day).
 - **からだ・目標:** a weight card per person (→ the weight screen), 目標 (the Move and weight goals; two avatar pills
   pick whose, either person sets either person's).
@@ -140,7 +146,7 @@ A perfect week buys three おやつ and three 外食 (69); a typical week two of
 Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 8 ベル** (`snack`: takoyaki, ice cream, anmitsu, chips, sweets,
 Starbucks) and 🍜 **外食 15 ベル** (`dinner`: malatang, sushi, ramen, Korean food, tteokbokki). A buy is
 `spend {spendId, item, bells}` with `bells` exactly the item's price (the server refuses anything else; the model
-ignores it too). Either person buys, no approvals; the buyer undoes (`spend_void`).
+ignores it too). Either person buys, no approvals; either person undoes any buy (`spend_void`).
 
 ### The first week
 
@@ -160,7 +166,8 @@ A day's ベル count in the wallet from that day (at their current value). Buys 
 - **Coverage:** a buy counts only if covered: everything earned on days up to its date minus earlier accepted buys.
   An uncovered buy is ignored, so the balance never goes negative (a higher Move goal set later the same day can lower
   that day's ベル and so uncover a buy).
-- **Voids:** the buyer only, once (`spend_void`); the ベル return. Buys and voids never lock.
+- **Voids:** either of us, any buy, once (`spend_void`); the ベル return. Buys and voids never lock (the lock freezes
+  earnings, not spending), so a buy can be erased any time.
 
 ## Health data
 

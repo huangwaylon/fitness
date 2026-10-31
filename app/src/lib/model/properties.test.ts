@@ -56,7 +56,7 @@ function randomSheet(seed: number) {
       events.push([iso(t), by, `e${i}`, 'spend', JSON.stringify({ spendId: b.spendId, item, bells })]);
     } else {
       const target = pick(buys);
-      // A void of an earlier buy, by the buyer or the partner (ignored), sometimes a second one (ignored).
+      // A void of an earlier buy, by the buyer or the partner (either counts), sometimes a second one (ignored).
       const v = { at: t, by: rand() < 0.75 ? target.by : by, spendId: target.spendId };
       voids.push(v);
       events.push([iso(t), v.by, `e${i}`, 'spend_void', JSON.stringify({ spendId: v.spendId })]);
@@ -67,7 +67,7 @@ function randomSheet(seed: number) {
 
 /**
  * The rule written out plainly, against the ledger's earnings: a buy counts if it is a reward at its price and the
- * wallet covers it (earned on days up to its date − live buys); the buyer's first void after it gives it back.
+ * wallet covers it (earned on days up to its date − live buys); the first void after it (either of us) gives it back.
  */
 function oracle(s: ReturnType<typeof randomSheet>, now: number) {
   const st = reduce(s.rows);
@@ -76,7 +76,7 @@ function oracle(s: ReturnType<typeof randomSheet>, now: number) {
   const theVoid = new Map<string, number>();
   for (const v of s.voids) {
     const b = s.buys.find((x) => x.spendId === v.spendId)!;
-    if (v.by === b.by && v.at >= b.at && !theVoid.has(v.spendId)) theVoid.set(v.spendId, v.at);
+    if (v.at >= b.at && !theVoid.has(v.spendId)) theVoid.set(v.spendId, v.at);
   }
   const accepted: Buy[] = [];
   const live = (t: number) => accepted.filter((x) => !(theVoid.get(x.spendId)! < t)); // voided strictly before t

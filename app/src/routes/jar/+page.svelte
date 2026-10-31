@@ -3,23 +3,31 @@
   // (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island's jar, so the route change still
   // morphs one into the other, over the wallet's balance: the number on the island's plate), then the two rewards as
   // big tiles. Buying asks first, then shows at once and waits 5 s with とりけす on the banner before it is sent.
-  // History lives in きろく. No しずえ here.
+  // Under them the buys so far (Purchases), each erasable by either of us (asked first; the ベル go back, with とりけす
+  // on the banner). The day-by-day ledger lives in きろく. No しずえ here.
   import { resolve } from '$app/paths';
   import Jar from '#lib/components/island/Jar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import Shop from '#lib/components/wallet/Shop.svelte';
   import BuyConfirm from '#lib/components/wallet/BuyConfirm.svelte';
+  import Purchases from '#lib/components/wallet/Purchases.svelte';
   import Bells from '#lib/components/ui/Bells.svelte';
-  import type { ShopItemId } from '#lib/types.ts';
+  import type { PersonId, ShopItemId } from '#lib/types.ts';
+  import { walletAt, type LedgerSpend } from '#lib/model/bells.ts';
   import { walletFill } from '#lib/components/wallet/fill.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { buy as buyItem, undoBanner } from '#lib/store/actions.ts';
+  import { buy as buyItem, undoBanner, undoSpend } from '#lib/store/actions.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   const view = $derived(week.view);
   const balance = $derived(view?.wallet.balance ?? 0);
+  const m = $derived(week.model);
+  /** The buys, newest first (walletAt is memoised per model and minute, as the view computed it). */
+  const spends = $derived(m ? [...walletAt(m.state, m.now).spends].reverse() : []);
+  const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
+  const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
 
   /** The reward being asked about. */
   let ask = $state<ShopItemId | null>(null);
@@ -34,6 +42,10 @@
     }
     cue('buy');
     undoBanner(t('wallet.bought', { label: t(`shop.${item}`), bells: formatBells(r.bells ?? 0) }), r, { reaction: 'joy' });
+  }
+
+  function erase(s: LedgerSpend) {
+    undoBanner(t('wallet.erased', { label: t(`shop.${s.item}`), bells: formatBells(s.bells) }), undoSpend(s.spendId));
   }
 </script>
 
@@ -52,6 +64,8 @@
     </div>
 
     <Shop {balance} onbuy={(item) => (ask = item)} />
+
+    <Purchases {spends} {names} {villagers} onerase={erase} />
   </main>
 
   <BuyConfirm item={ask} {balance} onconfirm={buy} onclose={() => (ask = null)} />
