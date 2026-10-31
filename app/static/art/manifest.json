@@ -133,12 +133,6 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Cherry_NH_Inv_Icon.png"
     },
-    "fruit/coconut": {
-      "path": "fruit/coconut.webp",
-      "w": 128,
-      "h": 128,
-      "source": "https://nookipedia.com/wiki/File:Coconut_NH_Inv_Icon.png"
-    },
     "fruit/peach": {
       "path": "fruit/peach.webp",
       "w": 128,

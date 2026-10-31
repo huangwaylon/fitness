@@ -7,37 +7,21 @@ export type LocalDate = string;
 export type WeekKey = string;
 
 /**
- * The five fruits of ADR 0021, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
- * 🍒 cherry = Stand minutes, 🍎 apple = steps, 🥥 coconut = gym (an arrival or a Watch strength workout).
+ * The four fruits of ADR 0021, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
+ * 🍒 cherry = Stand minutes, 🍎 apple = steps.
  */
-export type RingFruit = 'peach' | 'pear' | 'cherry' | 'apple' | 'coconut';
+export type RingFruit = 'peach' | 'pear' | 'cherry' | 'apple';
 
 /** ベル per ring fruit. */
 export type RingBells = Record<RingFruit, number>;
 
+/** A workout added by hand in きろく (`workout_add`): its minutes count toward the day's exercise minutes (max, never a sum). */
 export interface Workout {
   id: string;
   date: LocalDate;
-  /** Canonical (English) workout name, e.g. "Traditional Strength Training", "Yoga", "Outdoor Walk". */
+  /** Canonical (English) workout name, e.g. "Yoga", "Outdoor Walk" (contract/labels.ts WORKOUT_TYPES). */
   type: string;
-  startAt: string; // ISO with offset
-  endAt: string;
   durationMin: number;
-  avgHr: number | null;
-  /** A きろく mark (`workout_edit`/`workout_add`): counts (true) or not (false) as strength, for any type. Absent = automatic. */
-  strengthOverride?: boolean;
-  /** Added by hand in きろく (Watch forgotten): its minutes count toward the day's exercise minutes (max, never a sum). */
-  manual?: boolean;
-}
-
-/** A gym arrival (the `gym` action): a strength day on its Tokyo date, whatever its label (ADR 0021). */
-export interface GymArrival {
-  /** Stable id: the arrival instant (ISO). */
-  id: string;
-  /** Free text from the automation, shown in きろく only ('' = ジム). */
-  label: string;
-  date: LocalDate;
-  arriveAt: string;
 }
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
@@ -92,11 +76,11 @@ export interface HarvestBonus {
   duo: number;
 }
 
-/** A ring fruit's progress today and this week (ADR 0021). Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps, 🥥 1/0. */
+/** A ring fruit's progress today and this week (ADR 0021). Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
 export interface RingProgress {
-  /** Today's counted amount (🍑 max(Watch, workouts added in きろく); 🥥 1 on a gym day). */
+  /** Today's counted amount (🍑 max(Watch, workouts added in きろく)). */
   today: number;
-  /** Today's daily goal at the week's rule version (rules.ts goals; 🍐 the person's Move goal in force today; 🥥 1). */
+  /** Today's daily goal at the week's rule version (rules.ts goals; 🍐 the person's Move goal in force today). */
   goal: number;
   /** Today's goal is met (🍎 also by the tsuyu rule). */
   met: boolean;
@@ -104,14 +88,14 @@ export interface RingProgress {
   todayBells: number;
   /** Days this week meeting the daily goal. */
   weekDays: number;
-  /** The badge threshold: 5 days (🍑🍐🍒), 4 (🍎), 3 (🥥). */
+  /** The badge threshold: 5 days (🍑🍐🍒), 4 (🍎). */
   weekGoalDays: number;
   badge: boolean;
   /** This fruit's daily ベル this week up to today (the badge bonus is in the harvest bonus, not here). */
   weekBells: number;
   /**
-   * The milestone curve (docs/reviews/round-19/milestones-contract.md). Present only for 🍑🍐🍒🍎 in a week with a curve
-   * (v2, from 2026-11-02); absent for 🥥 and in v1 weeks. `milestone`: steps reached today, 0–4 (4 = the goal met).
+   * The milestone curve (docs/reviews/round-19/milestones-contract.md). Present in a week with a curve (v2, from
+   * 2026-11-02); absent in v1 weeks. `milestone`: steps reached today, 0–4 (4 = the goal met).
    */
   milestone?: number;
   /** The next milestone's amount, in `today`/`goal` units (minutes, kcal rounded up, steps); null once the goal is met. */
@@ -131,7 +115,7 @@ export interface PersonWeekView {
   today: { bells: number; rings: RingBells };
   /** This week's daily earnings so far (without the weekly bonus). */
   weekBells: number;
-  /** The five ring fruits (ADR 0021). */
+  /** The four ring fruits (ADR 0021). */
   rings: Record<RingFruit, RingProgress>;
   /** The person's Move goal in force today, kcal (`pref` moveGoal; default ウェイ 600, うめ 400). */
   moveGoal: number;
@@ -144,7 +128,7 @@ export interface HarvestView {
   bonus: HarvestBonus;
   /** The week's total ベル, both people: daily earnings + the bonus. */
   totalBells: number;
-  /** The week's five badges per person (ADR 0021; lit = met, +bonus each). */
+  /** The week's four badges per person (ADR 0021; lit = met, +bonus each). */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
   /** Who tapped 「受け取る」 (a ceremony only). */
   confirmedBy: PersonId[];

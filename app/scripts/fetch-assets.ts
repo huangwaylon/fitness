@@ -36,7 +36,6 @@ const SPECS: Record<string, Spec> = {
   'host/tom-nook': [512, 'Tom_Nook_NH.png'],
   // The five fruit rings (ADR 0021: 🍒 cherry = Stand).
   'fruit/peach': [128, 'Peach_NH_Inv_Icon.png'],
-  'fruit/coconut': [128, 'Coconut_NH_Inv_Icon.png'],
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],
   'fruit/pear': [128, 'Pear_NH_Inv_Icon.png'],
   'fruit/cherry': [128, 'Cherry_NH_Inv_Icon.png'],

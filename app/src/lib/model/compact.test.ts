@@ -23,8 +23,7 @@ function views(rows: SnapshotRows, now: number, rev: string | null = null) {
 
 const atOf = (r: { 0: string }) => Date.parse(r[0]);
 const until = (rows: SnapshotRows, t: number): SnapshotRows => ({
-  metrics: rows.metrics.filter((r) => atOf(r) <= t), workouts: rows.workouts.filter((r) => atOf(r) <= t),
-  presence: rows.presence.filter((r) => atOf(r) <= t), events: rows.events.filter((r) => atOf(r) <= t)
+  metrics: rows.metrics.filter((r) => atOf(r) <= t), events: rows.events.filter((r) => atOf(r) <= t)
 });
 
 describe('compactRows', () => {
@@ -35,7 +34,6 @@ describe('compactRows', () => {
     for (const now of [nowAt(60, '12:00'), nowAt(65, '19:45'), nowAt(72, '03:59'), nowAt(119, '23:00')]) {
       const rows = until(all, now);
       const small = compactRows(rows, now);
-      expect(small.workouts).toBe(rows.workouts);
       expect(small.events).toBe(rows.events);
       expect(small.metrics.length).toBeLessThan(rows.metrics.length * 0.25);
       expect(views(small, now)).toBe(views(rows, now));
@@ -72,7 +70,7 @@ describe('compactRows', () => {
         m('garbage', wk, 1), m(jst(wk, '12:00'), 'not-a-date', 5),
         m(jst(addDays(wk, 20), '09:00'), wk, 400) // a late sync, after the lock
       ],
-      workouts: [], presence: [], events: []
+      events: []
     };
     const before = Date.parse(jst(addDays(wk, 9), '03:59'));
     expect(compactRows(rows, before)).toBe(rows);
@@ -86,7 +84,7 @@ describe('compactRows', () => {
     const sun = addDays(wk, 6);
     const m = (date: string, hm: string, v: number): MetricRow => [jst(date, hm), 'A', wk, 'steps', v];
     // 19:00 Sunday (the best row at 19:30), then a late sync on Monday, before the lock.
-    const rows: SnapshotRows = { metrics: [m(wk, '22:00', 100), m(sun, '19:00', 200), m(addDays(wk, 7), '09:00', 300)], workouts: [], presence: [], events: [] };
+    const rows: SnapshotRows = { metrics: [m(wk, '22:00', 100), m(sun, '19:00', 200), m(addDays(wk, 7), '09:00', 300)], events: [] };
     const now = Date.parse(jst(addDays(wk, 30), '00:00'));
     expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([300]);
     expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
@@ -97,7 +95,7 @@ describe('compactRows', () => {
     const m = (hm: string, v: number): MetricRow => [jst(wk, hm), 'A', wk, 'steps', v];
     const rows: SnapshotRows = {
       metrics: [m('09:00', 100), m('10:00', 200), m('11:00', 300), m('13:00', 400), m('14:00', 500)],
-      workouts: [], presence: [],
+      
       events: [[jst(wk, '12:00'), 'A', 'e1', 'metric_set', JSON.stringify({ date: wk, metric: 'steps', value: 250 })]]
     };
     const now = Date.parse(jst(addDays(wk, 30), '00:00'));

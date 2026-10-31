@@ -90,7 +90,7 @@
   const covered = $derived(paused || ui.overlay);
 
   // The trees' detail popups: at most one open (a tree's tap toggles it; the other tree's tap moves it there).
-  // A tap anywhere else (the popup itself lets taps through, so tapping it closes it too; not its gym chips) or Esc closes it; it never
+  // A tap anywhere else (the popup itself lets taps through, so tapping it closes it too) or Esc closes it; it never
   // times out (user 2026-10-30).
   let openTree = $state<PersonId | null>(null);
   /** The pointerdown that just closed a popup: on scenery, that tap only closes it (SceneTaps). */
@@ -103,8 +103,8 @@
     if (!openTree) return;
     // Capture phase, so it runs before the tapped control's own handler; the tap still does what it does.
     const away = (e: PointerEvent) => {
-      // A tree's own buttons toggle it themselves; the popup's gym chips keep it open (ADR 0023).
-      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn, .gym-chip')) {
+      // A tree's own buttons toggle it themselves.
+      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn')) {
         openTree = null;
         closedBy = e;
       }
@@ -141,7 +141,7 @@
 
     {#each ['A', 'B'] as const as pid (pid)}
       <FruitTree person={view.people[pid]} x={TREE.x[slot(pid)]} {foliage} shakeN={life.shakeN[pid]}
-        celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)} editable={live} />
+        celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)} />
     {/each}
 
     <!-- the jar + its plate (JarSpot): one button, the doorway to the wallet (ごほうび) -->

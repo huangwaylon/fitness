@@ -14,7 +14,7 @@ import { composeModel, type ComposedModel } from './view.ts';
 const atOf = (r: { 0: string }) => Date.parse(r[0]);
 const between = (rows: SnapshotRows, from: number, to: number): SnapshotRows => {
   const f = <T extends { 0: string }>(tab: T[]) => tab.filter((r) => atOf(r) > from && atOf(r) <= to);
-  return { metrics: f(rows.metrics), workouts: f(rows.workouts), presence: f(rows.presence), events: f(rows.events) };
+  return { metrics: f(rows.metrics), events: f(rows.events) };
 };
 const shown = (m: Pick<ComposedModel, 'state' | 'now'>) => JSON.stringify({
   a: buildWeekView(m.state, 'A', m.now), b: buildWeekView(m.state, 'B', m.now), history: historyWeeks(m.state, m.now), ledger: bellsLedger(m.state, m.now)
@@ -52,7 +52,7 @@ describe('compacted cache through applySnapshot', () => {
   it('`since` stays the newest server `at`, even when compaction drops rows', () => {
     const t = at(60, '12:00');
     const c = applySnapshot(null, { me: 'A', now: new Date(t).toISOString(), rev: 'r1', rows: between(all, 0, t) }, t);
-    const newest = [all.metrics, all.workouts, all.presence, all.events].flat().map(atOf).filter((x) => x <= t).reduce((x, y) => Math.max(x, y));
+    const newest = [all.metrics, all.events].flat().map(atOf).filter((x) => x <= t).reduce((x, y) => Math.max(x, y));
     expect(Date.parse(c.since!)).toBe(newest);
     expect(c.rowsAt).toBe(t);
     // A poll that drops nothing keeps rowsAt (the model's reuse of locked weeks stays valid).

@@ -12,8 +12,8 @@ import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
 import {
-  DATE_RE, editTarget, EVENT_TYPES, isLocalDate, GYM_LABEL_MAX_CHARS, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
-  type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type GymReply, type SnapshotReply, type SnapshotRows,
+  DATE_RE, editTarget, EVENT_TYPES, isLocalDate, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
+  type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
 
@@ -30,14 +30,14 @@ const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 /** How long the keys stay in CacheService. A rotated key keeps working for at most this long (google-setup.md §10). */
 export const KEY_CACHE_SECONDS = 300;
 /** Tabs whose rows the client caches; a hand change to any of them bumps `REV`. */
-const SYNCED_TABS = ['metrics', 'workouts', 'presence', 'events'] as const satisfies readonly TabName[];
+const SYNCED_TABS = ['metrics', 'events'] as const satisfies readonly TabName[];
 const MAX_EVENT_DATA_CHARS = 20_000;
 /** `readTail` reads a tab backwards in chunks of this many rows, doubling each time. */
 const TAIL_CHUNK = 256;
 const DAY_MS = 86400_000;
 
 /** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
-type Reply = IngestReply | GymReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
+type Reply = IngestReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
 type Rec = Record<string, unknown>;
 
 const fail = (error: ApiError, detail?: string): Fail => (detail ? { ok: false, error, detail } : { ok: false, error });
@@ -74,7 +74,6 @@ function handle(e: GAS.PostEvent | undefined): Reply {
 
   switch (body.action) {
     case 'ingest': return ingest(me, body, typeof post?.length === 'number' ? post.length : text.length);
-    case 'gym': return gym(me, body);
     case 'event': return event(me, body);
     case 'snapshot': return snapshot(me, body);
     case 'uploads': return uploads(me);
@@ -138,7 +137,7 @@ function underRateLimit(me: PersonId): boolean {
  * request's rows: all rows of one request share one `at`, and a client that saw part of them would skip the rest
  * with `at > since`.
  */
-function withLock<R extends Reply>(fn: () => R): R | Fail {
+function withLock<R>(fn: () => R): R | Fail {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(LOCK_WAIT_MS)) return fail('busy');
   try {
@@ -367,14 +366,14 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const msg = (err instanceof Error ? err.message : String(err)).slice(0, 300);
     // Audit the failure (best effort: a busy lock just skips the row).
     try {
-      withLock((): GymReply => { appendRows(tab('uploads'), 'uploads', [auditRow(nextAt(), me, 'error', bytes, msg, body)]); return { ok: true }; });
+      withLock(() => { appendRows(tab('uploads'), 'uploads', [auditRow(nextAt(), me, 'error', bytes, msg, body)]); });
     } catch { /* the reply matters more than the audit row */ }
     return fail('bad_request', msg);
   }
   // Rows about a day are only ever written from that day on (Health has no future), so every earlier row for the
-  // body's days (or its workouts' days) is after the day before its earliest one: a tail. One day of slack covers a
+  // body's days is after the day before its earliest one: a tail. One day of slack covers a
   // phone in a zone ahead of Tokyo. Each Shortcut run's 31-day body reads ~a month of rows, not the whole tab.
-  const days = [...parsed.metrics, ...parsed.workouts].map((x) => x.date).sort();
+  const days = parsed.metrics.map((x) => x.date).sort();
   const from = days.length ? new Date(Date.parse(`${days[0]}T00:00:00+09:00`) - DAY_MS).toISOString() : '';
   return withLock((): IngestReply => {
     const at = nextAt();
@@ -400,54 +399,18 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
       }
     }
 
-    const wSheet = tab('workouts');
-    const seen = new Set<string>();
-    if (parsed.workouts.length) for (const r of readTail(wSheet, 'workouts', reachesBack(from))) seen.add(`${text(r[1])}|${text(r[2])}`);
-    const newWorkouts: unknown[][] = [];
-    for (const w of parsed.workouts) {
-      const k = `${me}|${w.id}`;
-      if (seen.has(k)) continue;
-      seen.add(k);
-      newWorkouts.push([at, me, w.id, w.date, w.type, w.start, w.end, w.durationMin, w.avgHr ?? '']);
-    }
-
     appendRows(mSheet, 'metrics', newMetrics);
-    appendRows(wSheet, 'workouts', newWorkouts);
     const notes = [
       ...parsed.warnings,
-      parsed.skipped ? `${parsed.skipped} items skipped` : '',
-      parsed.unknownTypes.length ? `unknown workout types: ${parsed.unknownTypes.join(', ')}` : ''
+      parsed.skipped ? `${parsed.skipped} items skipped` : ''
     ].filter(Boolean).join('; ');
     appendRows(tab('uploads'), 'uploads', [auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body)]);
 
     return {
-      ok: true, metrics: newMetrics.length, workouts: newWorkouts.length,
+      ok: true, metrics: newMetrics.length,
       ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
-      ...(parsed.unknownTypes.length ? { unknownTypes: parsed.unknownTypes } : {}),
       ...(parsed.warnings.length ? { warnings: parsed.warnings } : {})
     };
-  });
-}
-
-/**
- * A gym arrival from the iOS Arrive automation: `{key, action:'gym', place?, at?}` (ADR 0021). The key is the person;
- * `place` is only a label for きろく; `at` is the true arrival time (the model ignores one too far from the server `at`).
- */
-function gym(me: PersonId, body: Rec): GymReply {
-  if (body.place !== undefined && body.place !== null && typeof body.place !== 'string') return fail('bad_request');
-  const label = typeof body.place === 'string' ? body.place.trim() : '';
-  if (label.length > GYM_LABEL_MAX_CHARS) return fail('bad_request');
-  let arrivedAt: string | null = null;
-  if (body.at !== undefined && body.at !== null && body.at !== '') {
-    // An ISO 8601 instant with its offset (the automation's Current Date, formatted ISO 8601).
-    const ms = typeof body.at === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(body.at) ? Date.parse(body.at) : NaN;
-    if (Number.isNaN(ms)) return fail('bad_request');
-    arrivedAt = new Date(ms).toISOString();
-  }
-  return withLock((): GymReply => {
-    const at = nextAt();
-    appendRows(tab('presence'), 'presence', [[at, me, label, arrivedAt ?? at]]);
-    return { ok: true };
   });
 }
 
@@ -494,17 +457,12 @@ function validEventData(type: string, d: Rec): boolean {
       // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal (ADR 0020).
       return isLocalDate(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
     case 'workout_edit':
-      return isId(d.id) && (d.strength !== undefined || d.excluded !== undefined) &&
-        (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean') &&
-        (d.excluded === undefined || typeof d.excluded === 'boolean');
-    case 'gym_set':
-      // A 🥥 day by hand (ADR 0023): a real date and a boolean, nothing else.
-      return isLocalDate(d.date) && typeof d.on === 'boolean';
+      // A workout added in きろく left out of scoring, or put back.
+      return isId(d.id) && typeof d.excluded === 'boolean';
     case 'workout_add':
       return typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) && isLocalDate(d.date) &&
         typeof d.type === 'string' && WORKOUT_TYPES.includes(d.type) &&
-        isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) &&
-        (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');
+        isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max);
     case 'spend_void':
       return isId(d.spendId);
     default:
@@ -544,10 +502,6 @@ function snapshot(me: PersonId, body: Rec): SnapshotReply {
         .map((r) => [r, instant(r[0])] as const).filter(([, at]) => at > since).map(([r, at]) => row(r, at));
     const rows = {
       metrics: pick('metrics', (r, at) => [at, text(r[1]), text(r[2], 'date'), text(r[3]), num(r[4]) ?? 0]),
-      workouts: pick('workouts', (r, at) => [
-        at, text(r[1]), text(r[2]), text(r[3], 'date'), text(r[4]), text(r[5], 'at'), text(r[6], 'at'), num(r[7]) ?? 0, num(r[8])
-      ]),
-      presence: pick('presence', (r, at) => [at, text(r[1]), text(r[2]), text(r[3], 'at')]),
       events: pick('events', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
     } as SnapshotRows;
     return { ok: true, me, now: new Date().toISOString(), rev: current().rev, rows };

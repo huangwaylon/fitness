@@ -14,8 +14,9 @@
   import { MOVE_GOAL } from '#lib/config/rules.ts';
   import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
+  import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, editWorkout, setGoalWeight, setGym, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { addWorkout, excludeWorkout, setGoalWeight, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import { weightOn, weightTrend } from '#lib/model/weight.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -39,7 +40,6 @@
     | { k: 'metric'; p: PersonId; date: string; metric: 'steps' | 'exercise_min' }
     | { k: 'workout'; p: PersonId; date: string; id: string }
     | { k: 'add'; p: PersonId; date: string }
-    | { k: 'gym'; p: PersonId; date: string }
     | { k: 'void'; id: string; label: string; bells: number }
     | { k: 'weight'; p: PersonId }
     | { k: 'weightIn'; p: PersonId; date: string }
@@ -131,15 +131,10 @@
     void refocus(`${p}:${metric}`);
     undoToast(savedText(p, t(`kiroku.field.${metric}`)), setMetric(p, date, metric, value));
   }
-  function workoutChange(p: PersonId, id: string, date: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
+  function workoutChange(p: PersonId, id: string, date: string, label: string, excluded: boolean) {
     back();
     void refocus(`${p}:w:${id}`);
-    undoToast(p === me ? t('kiroku.savedWorkout', { label }) : savedText(p, label), editWorkout(p, id, date, change));
-  }
-  function saveGym(p: PersonId, date: string, on: boolean) {
-    back();
-    void refocus(`${p}:gym`);
-    undoToast(t(on ? 'kiroku.savedGymOn' : 'kiroku.savedGymOff', { day: `${p === me ? '' : `${names[p]} `}${dayTitle(date)}` }), setGym(p, date, on));
+    undoToast(p === me ? t('kiroku.savedWorkout', { label }) : savedText(p, label), excludeWorkout(p, id, date, excluded));
   }
   /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
   function askVoid(id: string, label: string, bells: number) {
@@ -167,7 +162,6 @@
   }
 
   // Add a workout: pick a type, then the minutes on the keypad.
-  const ADD_TYPES = ['Traditional Strength Training', 'Pilates', 'Yoga', 'Outdoor Walk', 'Outdoor Run', 'Cycling', 'Swimming', 'Dance', 'High Intensity Interval Training'];
   let addType = $state<string | null>(null);
   function saveAdd(p: PersonId, date: string, min: number) {
     const type = addType!;
@@ -207,7 +201,7 @@
       {@const date = top.date}
       <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}
         onmetric={(p, metric) => go({ k: 'metric', p, date, metric })} onworkout={(p, id) => go({ k: 'workout', p, date, id })}
-        onadd={(p) => { addType = null; go({ k: 'add', p, date }); }} ongym={(p) => go({ k: 'gym', p, date })} />
+        onadd={(p) => { addType = null; go({ k: 'add', p, date }); }} />
     {:else if top.k === 'weight' && trends}
       {@const p = top.p}
       <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today}
@@ -243,20 +237,6 @@
       <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={whoSub(s.p, dayTitle(s.date))} max={METRIC_BOUNDS[s.metric]}
         old={s.metric === 'steps' ? d.steps.value : d.exercise.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
         onok={(v) => saveMetric(s.p, s.date, s.metric, v)} oncancel={back} />
-    {:else if top.k === 'gym' && day}
-      {@const s = top}
-      {@const g = day.people[s.p].gym}
-      <section class="card wcard">
-        <b>{t('kiroku.gym')}</b><span class="money">{whoSub(s.p, dayTitle(s.date))}</span>
-        {#if g.on}<em class="ok">{t('kiroku.gymYes')}</em>{:else}<em>{t('kiroku.val.gymOff')}</em>{/if}
-      </section>
-      <p class="note">{t('kiroku.gymNote')}</p>
-      <div class="wchoices">
-        <ChoiceList choices={[
-          g.on ? { label: t('kiroku.gymOff'), run: () => saveGym(s.p, s.date, false) } : { label: t('kiroku.gymOn'), run: () => saveGym(s.p, s.date, true) },
-          { label: t('kiroku.cancel'), run: back, cancel: true }
-        ]} />
-      </div>
     {:else if top.k === 'workout' && day}
       {@const s = top}
       {@const w = day.people[s.p].workouts.find((x) => x.id === s.id)}
@@ -264,16 +244,12 @@
         {@const label = typeLabel(w.type)}
         <section class="card wcard">
           <b><TypeName type={w.type} /></b><span class="money">{whoSub(s.p, dayTitle(s.date))} · {t('kiroku.min', { n: w.durationMin })}</span>
-          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
+          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{/if}
         </section>
         <div class="wchoices">
           <ChoiceList choices={[
-            ...(w.excluded ? [{ label: t('kiroku.include'), run: () => workoutChange(s.p, s.id, s.date, label, { excluded: false }) }] : [
-              ...(w.eligible && !w.strength ? [{ label: t('kiroku.count'), run: () => workoutChange(s.p, s.id, s.date, label, { strength: true }) }] : []),
-              ...(w.strength ? [{ label: t('kiroku.nocount'), run: () => workoutChange(s.p, s.id, s.date, label, { strength: false }) }] : []),
-              ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.p, s.id, s.date, label, { strength: null }) }] : []),
-              { label: t('kiroku.exclude'), run: () => workoutChange(s.p, s.id, s.date, label, { excluded: true }) }
-            ]),
+            w.excluded ? { label: t('kiroku.include'), run: () => workoutChange(s.p, s.id, s.date, label, false) }
+              : { label: t('kiroku.exclude'), run: () => workoutChange(s.p, s.id, s.date, label, true) },
             { label: t('kiroku.cancel'), run: back, cancel: true }
           ]} />
         </div>
@@ -284,7 +260,7 @@
         <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{whoSub(s.p, dayTitle(s.date))}</span></h3>
         <p class="note">{t('kiroku.addNote')}</p>
         <div class="types" role="group" aria-label={t('kiroku.pickType')}>
-          {#each ADD_TYPES as ty (ty)}
+          {#each WORKOUT_TYPES as ty (ty)}
             <button type="button" class="type" data-sfx="page" onclick={() => (addType = ty)}><TypeName type={ty} /></button>
           {/each}
         </div>
@@ -318,7 +294,6 @@
   .wcard b { font-size: var(--fs-talk); }
   .wcard .money { font-size: var(--fs-body); color: var(--text-soft); }
   em { font-style: normal; font-size: var(--fs-s); font-weight: 700; padding: 3px 8px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
-  em.ok { background: var(--c-yuzu); color: var(--c-ink); }
   .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
   .addh { margin: 0 2px; font-size: var(--fs-talk); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .addh .nw { white-space: nowrap; }

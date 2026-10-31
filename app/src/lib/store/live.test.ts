@@ -69,7 +69,7 @@ describe('LiveBackend sync recovery', () => {
     await b.refresh({});
     expect(h.syncing).toBe(false);
     expect(h.status).toBe('error');
-    body = { ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: { metrics: [], workouts: [], presence: [], events: [] } };
+    body = { ok: true, me: 'A', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } };
     await b.refresh({});
     expect(calls).toBe(2);
     expect(h.syncing).toBe(false);
@@ -90,7 +90,7 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
   /** Let the requests that were left hanging answer now. */
   const release = () => hung.splice(0).forEach((f) => f());
 
-  const reply = () => ({ ok: true, me: 'A', now: new Date(NOW).toISOString(), rev: 'r1', rows: { metrics: [], workouts: [], presence: [], events: serverEvents } });
+  const reply = () => ({ ok: true, me: 'A', now: new Date(NOW).toISOString(), rev: 'r1', rows: { metrics: [], events: serverEvents } });
   const goal = (b: LiveBackend) => {
     const m = composeModel(b.cache()!, b.events().list, NOW);
     return buildWeekView(m.state, m.me, m.now).people.A.moveGoal;
@@ -175,7 +175,7 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
   });
 
   it('an acked event a much later fetch still lacks (deleted in the sheet) stops showing', () => {
-    const cache: SnapshotCache = { v: 1, me: 'A', rows: { metrics: [], workouts: [], presence: [], events: [] }, since: null, skewMs: 0, fetchedAt: NOW };
+    const cache: SnapshotCache = { v: 1, me: 'A', rows: { metrics: [], events: [] }, since: null, skewMs: 0, fetchedAt: NOW };
     const ev = { id: 'x', ackedAt: NOW - 1000 };
     expect(pendingAcked({ ...cache }, [ev])).toEqual([ev]);
     expect(pendingAcked({ ...cache, fetchedAt: NOW - 1000 + ACKED_MAX_UNSEEN_MS }, [ev])).toEqual([]);

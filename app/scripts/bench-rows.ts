@@ -2,7 +2,7 @@
 // every waking hour.
 // Deterministic (seeded), so runs compare.
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
-import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
+import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
 export const FIRST_DAY = '2026-11-02';
@@ -14,8 +14,6 @@ export function syntheticRows(days: number): SnapshotRows {
   let seed = 42;
   const rand = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
   const metrics: MetricRow[] = [];
-  const workouts: WorkoutRow[] = [];
-  const arrivals: GymRow[] = [];
   const events: EventRow[] = [];
   let ms = 0;
   // Strictly increasing server `at`s, like LAST_AT.
@@ -30,7 +28,6 @@ export function syntheticRows(days: number): SnapshotRows {
     const wk = weekKeyOf(date);
     const total = { A: 4000 + Math.floor(rand() * 9000), B: 3000 + Math.floor(rand() * 8000) };
     const exTotal = { A: Math.floor(rand() * 70), B: Math.floor(rand() * 50) };
-    const gym = { A: d % 2 === 0, B: d % 7 === 1 || d % 7 === 4 };
     const steps = { A: 0, B: 0 };
     const ex = { A: 0, B: 0 };
     const kcalTotal = { A: 350 + Math.floor(rand() * 450), B: 250 + Math.floor(rand() * 300) };
@@ -48,17 +45,16 @@ export function syntheticRows(days: number): SnapshotRows {
           ex[p] = Math.min(exTotal[p], ex[p] + 5 + Math.floor(rand() * 20));
           metrics.push([at(date, hm(h, m)), p, date, 'exercise_min', ex[p]]);
         }
-        const label = p === 'A' ? 'エニタイム' : 'PTスタジオ';
-        if (gym[p] && h === 18) arrivals.push([at(date, hm(18, 0)), p, label, jst(date, '18:00')]);
-        if (gym[p] && h === 19) {
-          workouts.push([at(date, hm(h, m)), p, `w:${p}${d}`, date, 'Traditional Strength Training', jst(date, '18:05'), jst(date, '18:55'), 50, 118]);
-        }
       }
     }
     for (const p of people) last[p] = { date, steps: steps[p] };
     if (d % 7 === 6) {
       for (const p of people) events.push([at(date, '20:00'), p, `h:${p}${d}`, 'harvest', JSON.stringify({ week: wk })]);
       events.push([at(date, '20:01'), 'A', `hf:${d}`, 'highfive', '{}']);
+    }
+    // A workout added by hand twice a week (Watch forgotten).
+    if (d % 7 === 1 || d % 7 === 4) {
+      events.push([at(date, '21:00'), 'B', `wa:${d}`, 'workout_add', JSON.stringify({ id: `m:${d}`, date, type: 'Pilates', durationMin: 50 })]);
     }
     if (d % 30 === 10) {
       events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, item: 'cafe', label: 'カフェデート', bells: 2000 })]);
@@ -68,5 +64,5 @@ export function syntheticRows(days: number): SnapshotRows {
       events.push([at(date, '22:50'), 'A', `ms:${d}`, 'metric_set', JSON.stringify({ date: addDays(date, -1), metric: 'steps', value: 3000 })]);
     }
   }
-  return { metrics, workouts, presence: arrivals, events };
+  return { metrics, events };
 }

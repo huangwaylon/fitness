@@ -27,7 +27,7 @@ beforeEach(() => {
   install(gas);
   vi.useFakeTimers({ toFake: ['Date'] });
   const rows = syntheticRows(DAYS);
-  const lastAt = [rows.metrics, rows.workouts, rows.presence, rows.events].flat().map((r) => r[0]).sort().at(-1)!;
+  const lastAt = [rows.metrics, rows.events].flat().map((r) => r[0]).sort().at(-1)!;
   vi.setSystemTime(Date.parse(lastAt) + 3600_000);
   post({ action: 'whoami' }); // creates the tabs
   for (const [name, list] of Object.entries(rows) as [string, unknown[][]][]) {

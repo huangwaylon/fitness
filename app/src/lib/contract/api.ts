@@ -5,9 +5,6 @@ import type { PersonId } from '../types.ts';
 
 export const TABS = {
   metrics: ['at', 'person', 'date', 'metric', 'value'],
-  workouts: ['at', 'person', 'id', 'date', 'type', 'start', 'end', 'duration_min', 'avg_hr'],
-  /** Gym arrivals (the `gym` action, GymRow); the tab keeps its old name so the sheet needs no change. */
-  presence: ['at', 'person', 'label', 'arrived_at'],
   events: ['at', 'person', 'id', 'type', 'data'],
   uploads: ['at', 'person', 'status', 'bytes', 'error']
 } as const;
@@ -17,8 +14,6 @@ export type TabName = keyof typeof TABS;
 /** Columns holding numbers; every other column is formatted as plain text so Sheets never turns dates into Dates. */
 export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
   metrics: ['value'],
-  workouts: ['duration_min', 'avg_hr'],
-  presence: [],
   events: [],
   uploads: ['bytes']
 };
@@ -27,8 +22,8 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 export const EVENT_TYPES = [
   'spend', 'harvest', 'highfive', 'pref',
   // History and editing (docs/design/history-and-editing.md §4): anyone's data (`data.person`), open weeks only (the
-  // model decides). `gym_set`: a 🥥 day turned on or off by hand (ADR 0023).
-  'metric_set', 'workout_edit', 'workout_add', 'gym_set', 'spend_void'
+  // model decides).
+  'metric_set', 'workout_edit', 'workout_add', 'spend_void'
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -56,7 +51,7 @@ export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'm
  * The edit events whose `data.person` names whose data they change (ADR 0023): either person may edit either person's
  * data. Absent = the sender. `pref` takes it only for the goals (`PERSON_PREF_KEYS`).
  */
-const PERSON_EDIT_TYPES = ['metric_set', 'workout_edit', 'workout_add', 'gym_set', 'pref'] as const;
+const PERSON_EDIT_TYPES = ['metric_set', 'workout_edit', 'workout_add', 'pref'] as const;
 /** The `pref` keys another person may set for you: the two goals. Everything else in `pref` is the sender's own. */
 const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal'] as const;
 
@@ -116,25 +111,16 @@ export const MANUAL_WORKOUT_MIN = { min: 1, max: 600 } as const;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
-export type WorkoutRow = [at: string, person: PersonId, id: string, date: string, type: string, start: string, end: string, durationMin: number, avgHr: number | null];
-/**
- * A gym arrival (`gym` action, ADR 0021): a strength day for its person on the Tokyo date of `arrivedAt`. `label` is
- * free text shown in きろく only ('' = ジム); `arrivedAt` is the body's `at`, or `at` when it sent none.
- */
-export type GymRow = [at: string, person: PersonId, label: string, arrivedAt: string];
 /** `data` is the JSON text exactly as stored in the cell. */
 export type EventRow = [at: string, person: PersonId, id: string, type: EventType, data: string];
 
-export interface SnapshotRows { metrics: MetricRow[]; workouts: WorkoutRow[]; presence: GymRow[]; events: EventRow[] }
+export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }
 
 export type ApiError = 'unauthorized' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
 /** `warnings`: daily-form lists that were dropped (length mismatch) while the rest was saved. */
-export type IngestReply = { ok: true; metrics: number; workouts: number; skipped?: number; unknownTypes?: string[]; warnings?: string[] } | Fail;
-export type GymReply = { ok: true } | Fail;
-/** A `gym` label: trimmed, at most this many characters. */
-export const GYM_LABEL_MAX_CHARS = 40;
+export type IngestReply = { ok: true; metrics: number; skipped?: number; warnings?: string[] } | Fail;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**
  * `rev` is the data revision (sheets-architecture.md §2.1): when it differs from the one the client cached with, rows

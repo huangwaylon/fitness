@@ -16,7 +16,7 @@ let n = 0;
 const ev = (at: string, person: PersonId, type: EventRow[3], data: object): EventRow => [at, person, `w${++n}`, type, JSON.stringify(data)];
 const kg = (at: string, person: PersonId, date: string, v: number): MetricRow => [at, person, date, 'weight', v];
 const rowsOf = (add: Partial<SnapshotRows> = {}): SnapshotRows => ({
-  metrics: add.metrics ?? [], workouts: add.workouts ?? [], presence: add.presence ?? [], events: add.events ?? []
+  metrics: add.metrics ?? [], events: add.events ?? []
 });
 
 describe('a day’s weight: the latest row, not the max', () => {

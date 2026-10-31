@@ -1,8 +1,8 @@
 <script lang="ts">
   // 3.3 Day detail (round 17 IA §3.1: the home of a day's ベル per fruit, its raw data and its edits): two stacked cards
   // (me, then the partner), each opening with the day's ベル, then one row per ring fruit: the day's value (green when
-  // the goal was met) and the ベル it earned; then the workouts and gym arrivals. ✎ on both cards (ADR 0023: either
-  // person edits either person's data): steps, exercise minutes, the 🥥 gym day (`gym_set`), each workout and ＋ (a
+  // the goal was met) and the ベル it earned; then the workouts added by hand. ✎ on both cards (ADR 0023: either
+  // person edits either person's data): steps, exercise minutes, each workout (leave it out / put it back) and ＋ (a
   // workout added by hand counts toward 🍑), only while the week is open (`editable`: Kiroku closes it a minute before
   // the lock); へんこう履歴 at the bottom. A locked day's cards get the 見るだけ badge (round 7 F5).
   import type { PersonId, RingFruit } from '#lib/types.ts';
@@ -16,7 +16,6 @@
   import { fruitArt } from '#lib/art.ts';
   import { dayTitle, leftLabel, num, typeLabel } from './fmt.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
-  import { timeOf } from '#lib/i18n/format.ts';
 
   interface Props {
     d: DayDetail;
@@ -30,20 +29,18 @@
     onmetric: (p: PersonId, metric: 'steps' | 'exercise_min') => void;
     onworkout: (p: PersonId, id: string) => void;
     onadd: (p: PersonId) => void;
-    ongym: (p: PersonId) => void;
   }
-  let { d, editable, me, partner, names, villagers, now, onmetric, onworkout, onadd, ongym }: Props = $props();
+  let { d, editable, me, partner, names, villagers, now, onmetric, onworkout, onadd }: Props = $props();
 
-  /** A fruit's value that day: 45分 · 420/600 kcal · 93分 · 6,210 · ✓ (a gym day). */
+  /** A fruit's value that day: 45分 · 420/600 kcal · 93分 · 6,210. */
   function value(x: DayPerson, f: RingFruit): string {
     if (f === 'peach') return t('kiroku.min', { n: x.exercise.value });
     if (f === 'pear') return x.move.value === null ? '–' : t('kiroku.kcalOf', { n: num(x.move.value), g: num(x.move.goal) });
     if (f === 'cherry') return x.stand.value === null ? '–' : t('kiroku.min', { n: x.stand.value });
-    if (f === 'apple') return num(x.steps.value);
-    return x.gym.on ? '✓' : '–';
+    return num(x.steps.value);
   }
   const edited = (x: DayPerson, f: RingFruit): boolean =>
-    f === 'peach' ? x.exercise.edited : f === 'pear' ? x.move.edited : f === 'cherry' ? x.stand.edited : f === 'apple' ? x.steps.edited : x.gym.override !== null && x.gym.on !== x.gym.auto;
+    f === 'peach' ? x.exercise.edited : f === 'pear' ? x.move.edited : f === 'cherry' ? x.stand.edited : x.steps.edited;
 </script>
 
 <header class="sub">
@@ -72,23 +69,15 @@
         {#if edited(x, f)}<Glyph kind="pen" size={12} label={t('kiroku.edited')} />{/if}
         <b class="money b" class:zero={!x.rings[f]}>{x.rings[f] ? `+${formatNum(x.rings[f])}` : '—'}</b>
         {#if can && edit}<button type="button" class="pen-btn" data-sfx="page" data-focus="{p}:{edit}" aria-label="{names[p]} {t(`fruit.${f}`)} ✎" onclick={() => onmetric(p, edit)}><Glyph kind="pen" size={18} /></button>
-        {:else if can && f === 'coconut'}<button type="button" class="pen-btn" data-sfx="page" data-focus="{p}:gym" aria-label="{names[p]} {t('kiroku.gym')} ✎" onclick={() => ongym(p)}><Glyph kind="pen" size={18} /></button>
         {:else if can}<span class="pen-sp"></span>{/if}
       </div>
     {/each}
     {#each x.workouts as w (w.id)}
       <div class="row wo" class:out={w.excluded}>
         <span class="k"><TypeName type={w.type} /></span>
-        <span class="v small"><span class="money">{w.manual ? '' : timeOf(w.startAt) + ' '}{t('kiroku.min', { n: w.durationMin })}</span>
-          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
-          {#if w.manual}<em>{t('kiroku.manual')}</em>{/if}</span>
+        <span class="v small"><span class="money">{t('kiroku.min', { n: w.durationMin })}</span>
+          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{/if}</span>
         {#if can}<button type="button" class="pen-btn" data-sfx="page" data-focus="{p}:w:{w.id}" aria-label="{names[p]} {typeLabel(w.type)} ✎" onclick={() => onworkout(p, w.id)}><Glyph kind="pen" size={18} /></button>{/if}
-      </div>
-    {/each}
-    {#each x.arrivals as v (v.id)}
-      <div class="row wo">
-        <span class="k">{v.label || t('kiroku.gym')}</span>
-        <span class="v small"><span class="money">{timeOf(v.arriveAt)}</span>{#if x.gym.on}<em class="ok">{t('kiroku.gymYes')}</em>{:else}<em>{t('kiroku.val.gymOff')}</em>{/if}</span>
       </div>
     {/each}
     {#if can}<button type="button" class="add-btn" data-focus="{p}:add" data-sfx="page" onclick={() => onadd(p)}>＋ {t('kiroku.addWorkout')}</button>{/if}
@@ -129,7 +118,7 @@
   .pen-sp { width: var(--hit); flex: none; }
   .row + .row, .earn + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
-  /* a workout / gym arrival row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
+  /* a workout row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
      (sizing #13: at 12px beside them it wrapped to 3 lines) */
   .wo { flex-wrap: wrap; row-gap: 0; min-height: 0; padding: 8px 0 4px; }
   .wo .k { flex-basis: 100%; }
@@ -139,7 +128,6 @@
   .v.small .money { font-size: var(--fs-s); }
   .out .k, .out .money { color: var(--text-soft); text-decoration: line-through; }
   em { font-style: normal; font-size: var(--fs-s); white-space: nowrap; font-weight: 700; padding: 2px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
-  em.ok { background: var(--c-yuzu); color: var(--c-ink); }
   .src { font-size: var(--fs-s); color: var(--text-soft); font-weight: 700; }
   .add-btn { margin-top: 6px; }
 </style>

@@ -9,7 +9,6 @@ async function islandReady(page: Page) {
 }
 
 /** `きょう 620 ベル` → 620. */
-const bellsOf = (label: string | null) => Number((label ?? '').replace(/,/g, '').match(/(\d+)\s*ベル/)![1]);
 
 test('buy: a treat comes back with とりけす', async ({ page }) => {
   await page.goto('jar?demo');
@@ -77,12 +76,12 @@ test('menu: adding a treat to the shared list (ADR 0022)', async ({ page }) => {
   await expect(treats.getByRole('button', { name: /^たいやき 250\sベル/ })).toBeVisible();
 });
 
-test('harvest: five badges per person, the together bonus, and the bonus lands in the wallet', async ({ page }) => {
+test('harvest: four badges per person, the together bonus, and the bonus lands in the wallet', async ({ page }) => {
   await page.goto('?demo=harvest');
   const tally = page.locator('.overlay .tally');
   await expect(tally.getByText('バッジ', { exact: true })).toBeVisible();
   await expect(tally.locator('.trow:not(.duo) .badges')).toHaveCount(2);
-  for (const row of await tally.locator('.trow:not(.duo) .badges').all()) await expect(row.locator('.b')).toHaveCount(5);
+  for (const row of await tally.locator('.trow:not(.duo) .badges').all()) await expect(row.locator('.b')).toHaveCount(4);
   await expect(tally.locator('.duo')).toContainText('ふたりボーナス');
   await page.getByRole('button', { name: '受け取る！' }).click();
   await expect(page.getByText('おさいふに 入りました！')).toBeVisible();
@@ -96,8 +95,9 @@ test('きろく: editing a day’s steps', async ({ page }) => {
   await page.locator('.app[data-app=kiroku]').click();
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
   await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
-  // the day: the five ring fruits, each with its value and ベル
-  await expect(sheet(page).locator('.pc').first().locator('.row.fr')).toHaveCount(5);
+  // the day: the four ring fruits, each with its value and ベル (no gym row or gym ✎)
+  await expect(sheet(page).locator('.pc').first().locator('.row.fr')).toHaveCount(4);
+  await expect(sheet(page).getByRole('button', { name: /ジム ✎$/ })).toHaveCount(0);
   await sheet(page).locator('.pc').first().getByRole('button', { name: /歩数 ✎$/ }).click();
   const pad = sheet(page);
   await pad.getByRole('button', { name: 'クリア' }).click();
@@ -141,7 +141,7 @@ test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', asyn
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the five ring fruits, today against the goal, today’s ベル and the week toward each badge (ADR 0021)', async ({ page }) => {
+test('tree popup: the four ring fruits, today against the goal, today’s ベル and the week toward each badge (ADR 0021)', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -155,32 +155,32 @@ test('tree popup: the five ring fruits, today against the goal, today’s ベル
   expect(p!.y + p!.height).toBeLessThan(c!.y + c!.height);
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   const rows = pop.locator('.row:not(.hd)');
-  await expect(rows).toHaveCount(5);
-  // the gym row's word gives its room to the きのう / きょう chips (ADR 0023); the 🥥 art and the group's label name it
+  await expect(rows).toHaveCount(4);
   await expect(rows.locator('.lbl')).toHaveText(['エクササイズ', 'ムーブ', 'スタンド', '歩数']);
-  await expect(rows.nth(4).getByRole('group', { name: 'ジム' }).locator('.gym-chip')).toHaveCount(2);
+  // no gym: no 🥥 row and no きのう / きょう chips
+  await expect(pop.locator('.gym-chip, .gym')).toHaveCount(0);
   await expect(rows.nth(0).locator('.amt')).toHaveText(/^[\d,]+\/60分$/);
   await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
   await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/180分$/);
   await expect(rows.nth(3).locator('.amt')).toHaveText(/^[\d,]+\/8,000歩$/);
-  // the week: days met / 5 · 5 · 5 · 4 · 3 (or a ✓ once the badge is met)
+  // the week: days met / 5 · 5 · 5 · 4 (or a ✓ once the badge is met)
   const weeks = await rows.evaluateAll((els) => els.map((e) => (e.querySelector('.wk.badge') ? 'ok' : e.querySelector('.wk')!.textContent!.trim())));
-  weeks.forEach((w, i) => expect(w === 'ok' || w.endsWith(`/${[5, 5, 5, 4, 3][i]}`), `${i}: ${w}`).toBe(true));
+  weeks.forEach((w, i) => expect(w === 'ok' || w.endsWith(`/${[5, 5, 5, 4][i]}`), `${i}: ${w}`).toBe(true));
   // a v1 week has no milestone pips and no nudge
   await expect(pop.locator('.steps i')).toHaveCount(0);
   await expect(pop.locator('.next')).toHaveCount(0);
-  // ground fruit: five kinds under each tree
-  await expect(page.locator('.fruit.k0')).toHaveCount(10);
+  // ground fruit: four kinds under each tree
+  await expect(page.locator('.fruit.k0')).toHaveCount(8);
 });
 
-test('tree popup, v2 milestones (from 11-02): four pips per ring fruit, none for the gym, one 「あと…で +N」 nudge', async ({ page }) => {
+test('tree popup, v2 milestones (from 11-02): four pips per ring fruit, one 「あと…で +N」 nudge', async ({ page }) => {
   await page.goto('?demo&date=2026-11-03T12:10'); // ?date= moves the demo's calendar too (no pinned clock)
   await islandReady(page);
   await page.locator('button.canopy').nth(0).click();
   const rows = page.locator('.detail .row:not(.hd)');
   await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/120分$/);
   const pips = await rows.evaluateAll((els) => els.map((e) => e.querySelectorAll('.steps i').length));
-  expect(pips).toEqual([4, 4, 4, 4, 0]);
+  expect(pips).toEqual([4, 4, 4, 4]);
   const next = page.locator('.detail .next');
   if (await next.count()) await expect(next).toHaveText(/^あと [\d,]+ ?(分|kcal|歩)で \+[\d,]+$/);
 });
@@ -235,53 +235,6 @@ test('きろく: the Move goal (ADR 0021), a numeric field ≥ 16px, 100–2,000
   await expect(goals).toContainText('520 kcal');
   await goals.locator('button.pp').nth(0).click();
   await expect(goals).toContainText('450 kcal');
-});
-
-test('tree popup gym chips (ADR 0023): きのう / きょう, one tap each, the popup stays and the ベル follow', async ({ page }) => {
-  await page.clock.install({ time: new Date('2026-11-04T12:10:00+09:00') });
-  await page.clock.resume();
-  await page.goto('?demo');
-  await islandReady(page);
-  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-  const before = bellsOf(await ribbon.getAttribute('aria-label'));
-  await page.locator('button.canopy').nth(0).click();
-  const pop = page.locator('.detail');
-  const chips = pop.locator('.gym-chip');
-  await expect(chips).toHaveCount(2);
-  await expect(chips.nth(0)).toHaveText(/きのう/);
-  await expect(chips.nth(1)).toHaveText(/きょう/);
-  await page.waitForTimeout(400); // the pop-in
-  for (const c of await chips.all()) {
-    const box = (await c.boundingBox())!;
-    expect(box.height).toBeGreaterThanOrEqual(44);
-    expect(box.width).toBeGreaterThanOrEqual(44);
-  }
-  const today = chips.nth(1);
-  const was = (await today.getAttribute('aria-pressed')) === 'true';
-  await expect(today).toHaveAttribute('data-sfx', was ? 'toggle-off' : 'toggle-on');
-  await today.tap();
-  // one tap flips it, the popup stays open, today's ベル move by the gym day's 500, with とりけす on the banner
-  await expect(today).toHaveAttribute('aria-pressed', String(!was));
-  await expect(pop).toBeVisible();
-  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
-  await expect.poll(async () => bellsOf(await ribbon.getAttribute('aria-label'))).toBe(before + (was ? -500 : 500));
-  // and back
-  await today.tap();
-  await expect(today).toHaveAttribute('aria-pressed', String(was));
-  await expect.poll(async () => bellsOf(await ribbon.getAttribute('aria-label'))).toBe(before);
-  // yesterday (another day: today's ベル stay) toggles too
-  const y = chips.nth(0);
-  const yWas = (await y.getAttribute('aria-pressed')) === 'true';
-  await y.tap();
-  await expect(y).toHaveAttribute('aria-pressed', String(!yWas));
-  await expect(pop).toBeVisible();
-  expect(bellsOf(await ribbon.getAttribute('aria-label'))).toBe(before);
-  // the partner's tree has its own chips
-  const mine = await page.locator('.detail .plate').textContent();
-  await page.keyboard.press('Escape'); // this popup can cover the other canopy (a tap on it only closes it)
-  await page.locator('button.canopy').nth(1).click();
-  await expect(page.locator('.detail .plate')).not.toHaveText(mine!);
-  await expect(page.locator('.detail .gym-chip')).toHaveCount(2);
 });
 
 test('きろく: editing the partner’s steps (ADR 0023), with who fixed it in the change log', async ({ page }) => {

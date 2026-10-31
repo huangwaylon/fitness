@@ -31,14 +31,11 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     if (process.env.DEMO_DEBUG) console.log(iso, weeks.map((w) => `${w.weekKey} ${w.people.A.bells}/${w.people.B.bells} = ${w.bells}`));
   });
 
-  it('has strength days made by a gym arrival alone (no Watch workout)', () => {
+  it('four fruits only: no day earns anything but 🍑🍐🍒🍎, and no rows of the old workouts / presence tabs', () => {
+    expect(Object.keys(cache.rows).sort()).toEqual(['events', 'metrics']);
     const settled = historyWeeks(s, now).filter((w) => w.settled);
     const days = settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now)));
-    const byArrival = days.filter((d) => {
-      const b = d.people.B;
-      return b.arrivals.length > 0 && !b.workouts.some((w) => w.strength) && b.rings.coconut > 0;
-    });
-    expect(byArrival.length).toBeGreaterThan(0);
+    for (const d of days) expect(Object.keys(d.people.A.rings)).toEqual(['peach', 'pear', 'cherry', 'apple']);
   });
 
   it('the buys were all accepted (one voided); the menu is the default one', () => {

@@ -1,13 +1,12 @@
 // きろく (history-and-editing.md): every recorded week and day, with its ベル, for both people, computed on read from the
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
-import { STRENGTH } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
-import { exerciseMilli, isStrengthWorkout, manualMinutesByDay, zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
-import { allWorkouts, editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
+import { exerciseMilli, manualMinutesByDay, zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
+import { editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
 import { dailyUpTo, dayBells, earnTimeOf, LIVE, weekBells, type WeekBells } from './bells.ts';
 import { replayHarvests } from './week.ts';
-import { activityAsOf, gymDayAsOf, gymSetAsOf, metricAsOf, weekDates, workoutsAsOf, type Activity } from './inputs.ts';
+import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
 
 /** A week's ベル at `now`: daily earnings up to today, and the bonus once it landed (Sunday 19:30). */
 function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
@@ -40,8 +39,7 @@ export interface EditLog {
   person: PersonId;
   by: PersonId;
   date: LocalDate;
-  /** `gym`: the day's 🥥 turned on or off by hand (`gym_set`); before / after = a gym day or not. */
-  field: 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min' | 'workout_strength' | 'workout_excluded' | 'workout_add' | 'gym';
+  field: 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min' | 'workout_excluded' | 'workout_add';
   /** Workout type (workout_*). */
   subject?: string;
   before: number | boolean | null;
@@ -51,7 +49,7 @@ export interface EditLog {
 interface HistoryPerson {
   /** The person's ベル of the week: daily earnings + their badge bonus once it landed. */
   bells: number;
-  /** The five badges (ADR 0021). */
+  /** The four badges (ADR 0021). */
   ringBadges: Record<RingFruit, boolean>;
   /** Badge progress per fruit (days at the goal / the threshold). */
   ringWeek: RingWeek;
@@ -74,7 +72,7 @@ export interface HistoryWeek {
 
 /**
  * A week as きろく reads it: open weeks show live numbers; a closed week shows what it had at its lock (late syncs after
- * it never count). `wb`: the week's earnings (its days' metrics, gym days and ベル).
+ * it never count). `wb`: the week's earnings (its days' metrics and ベル).
  */
 interface WeekCalc { t: number; act: Record<PersonId, Activity>; wb: WeekBells }
 
@@ -142,7 +140,7 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
 // ---------- week detail ----------
 
 /** What an accepted edit changed, for the ✎ next to that number in the week table. */
-type EditedField = 'steps' | 'minutes' | 'move' | 'stand' | 'workout';
+type EditedField = 'steps' | 'minutes' | 'move' | 'stand';
 
 interface DayRow {
   date: LocalDate;
@@ -154,8 +152,6 @@ interface DayRow {
   moveKcal: number | null;
   moveGoal: number;
   standMin: number | null;
-  /** A gym day (a strength workout or an arrival). */
-  gym: boolean;
   /** The daily goal met, per fruit. */
   met: Record<RingFruit, boolean>;
   /** The day's ベル, per ring fruit. */
@@ -168,8 +164,8 @@ interface DayRow {
 
 const FIELD_OF: Record<EditLog['field'], EditedField> = {
   steps: 'steps', exercise_min: 'minutes', move_kcal: 'move', stand_min: 'stand',
-  // the 🥥 column: workouts and the gym day itself
-  workout_strength: 'workout', workout_excluded: 'workout', workout_add: 'workout', gym: 'workout'
+  // a workout added in きろく (or left out) changes the day's exercise minutes
+  workout_excluded: 'minutes', workout_add: 'minutes'
 };
 
 interface WeekDetailPerson {
@@ -177,7 +173,7 @@ interface WeekDetailPerson {
   dailyBells: number;
   /** The badge bonus (+badges.bells each; 0 until it lands on Sunday 19:30). */
   bonus: number;
-  /** The five badges (ADR 0021). */
+  /** The four badges (ADR 0021). */
   ringBadges: Record<RingFruit, boolean>;
   /** Badge progress per fruit (days at the goal / the threshold). */
   ringWeek: RingWeek;
@@ -226,7 +222,6 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
           moveKcal: d.moveKcal,
           moveGoal: d.moveGoal,
           standMin: d.standMin,
-          gym: d.gym,
           met: { ...d.met },
           ...(d.date <= today ? dayBells(wb[p], d.date) : NO_BELLS()),
           edited: fields.length > 0,
@@ -250,29 +245,8 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
 
 // ---------- day detail ----------
 
-interface DayWorkout {
-  id: string;
-  type: string;
-  startAt: string;
-  durationMin: number;
-  /** Counts as a strength workout now. */
-  strength: boolean;
-  /** The きろく override (absent = automatic). */
-  override: boolean | null;
-  excluded: boolean;
-  manual: boolean;
-  /** Long enough to count as strength at all. */
-  eligible: boolean;
-}
-
-/** A gym arrival (a strength day unless the day was turned off by hand): `label` '' shows as ジム. */
-interface DayArrival { id: string; label: string; arriveAt: string }
-
-/**
- * The day's 🥥 (ADR 0023): `on` = a gym day now; `auto` = what arrivals and strength workouts alone say; `override` =
- * the latest `gym_set` (null = none, automatic).
- */
-interface DayGym { on: boolean; auto: boolean; override: boolean | null }
+/** A workout added in きろく that day; `excluded`: left out since (its minutes no longer count). */
+interface DayWorkout { id: string; type: string; durationMin: number; excluded: boolean }
 
 export interface DayPerson {
   /** The day's ベル, per ring fruit. */
@@ -288,9 +262,6 @@ export interface DayPerson {
   /** Stand minutes. */
   stand: { value: number | null; edited: boolean };
   workouts: DayWorkout[];
-  /** Gym arrivals that day. */
-  arrivals: DayArrival[];
-  gym: DayGym;
 }
 
 export interface DayDetail {
@@ -315,33 +286,20 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const t = c.t;
     const m = dayExercise(s, p, date, t, manualMinutesByDay(c.act[p].workouts).get(date) ?? 0);
     const d = wb[p].days.find((x) => x.date === date);
-    const counted = new Map(c.act[p].workouts.map((w) => [w.id, w]));
-    const workouts = allWorkouts(s, p)
+    const counted = new Set(c.act[p].workouts.map((w) => w.id));
+    const workouts = s.workouts[p]
       .filter((w) => w.date === date && w.at <= t)
-      .sort((x, y) => x.startAt.localeCompare(y.startAt))
-      .map((w): DayWorkout => {
-        const key = `${p}|${w.id}`;
-        const live = counted.get(w.id);
-        return {
-          id: w.id, type: w.type, startAt: w.startAt, durationMin: w.durationMin,
-          strength: !!live && isStrengthWorkout(live), override: latestAt(s.workoutStrength.get(key), t) ?? null,
-          excluded: !live, manual: !!w.manual, eligible: w.durationMin >= STRENGTH.minWorkoutMin
-        };
-      });
-    const arrivals = c.act[p].arrivals.filter((a) => a.date === date).map(({ id, label, arriveAt }): DayArrival => ({ id, label, arriveAt }));
+      .map((w): DayWorkout => ({ id: w.id, type: w.type, durationMin: w.durationMin, excluded: !counted.has(w.id) }));
     const mine = log.filter((e) => e.person === p);
-    const override = gymSetAsOf(s, p, date, t);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
       ...(date <= localDateAt(now) ? dayBells(wb[p], date) : NO_BELLS()),
-      met: d ? { ...d.met } : { peach: false, pear: false, cherry: false, apple: false, coconut: false },
+      met: d ? { ...d.met } : { peach: false, pear: false, cherry: false, apple: false },
       steps: { value: metricAsOf(s, p, date, 'steps', t), edited: mine.some((e) => e.field === 'steps') },
       exercise,
       move: { value: metricAsOf(s, p, date, 'move_kcal', t), goal: d?.moveGoal ?? 0, edited: mine.some((e) => e.field === 'move_kcal') },
       stand: { value: metricAsOf(s, p, date, 'stand_min', t), edited: mine.some((e) => e.field === 'stand_min') },
-      workouts,
-      arrivals,
-      gym: { on: d?.gym ?? false, auto: autoGymDay(c.act[p], date), override }
+      workouts
     };
   };
   return {
@@ -349,10 +307,6 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     lockAt: finalMs(wk), people: { A: person('A'), B: person('B') }, edits: [...log].reverse()
   };
 }
-
-/** A gym day without the hand overrides: an arrival or a strength workout that day. */
-const autoGymDay = (act: Activity, date: LocalDate): boolean =>
-  act.arrivals.some((a) => a.date === date) || act.workouts.some((w) => w.date === date && isStrengthWorkout(w));
 
 // ---------- the change log ----------
 
@@ -379,36 +333,17 @@ function buildEditLog(s: State): EditLog[] {
         if (before !== after) out.push({ at: e.at, person: p, by: e.by, date, field, before, after });
       }
     }
-    for (const [date, list] of s.gymSets[p]) {
-      for (const e of list) {
-        const before = gymDayAsOf(s, p, date, e.at - 1);
-        const after = gymDayAsOf(s, p, date, e.at);
-        if (before !== after) out.push({ at: e.at, person: p, by: e.by, date, field: 'gym', before, after });
-      }
-    }
-    for (const w of s.manualWorkouts[p]) {
-      out.push({ at: w.at, person: p, by: w.by ?? p, date: w.date, field: 'workout_add', subject: w.type, before: null, after: w.durationMin });
+    for (const w of s.workouts[p]) {
+      out.push({ at: w.at, person: p, by: w.by, date: w.date, field: 'workout_add', subject: w.type, before: null, after: w.durationMin });
     }
   }
-  const byId = new Map<string, { date: LocalDate; type: string; at: number }>();
-  for (const p of PEOPLE_IDS) for (const w of allWorkouts(s, p)) byId.set(`${p}|${w.id}`, w);
+  const byId = new Map<string, { date: LocalDate; type: string }>();
+  for (const p of PEOPLE_IDS) for (const w of s.workouts[p]) byId.set(`${p}|${w.id}`, w);
   for (const e of s.workoutEdits) {
     const w = byId.get(`${e.person}|${e.id}`);
     if (!w) continue;
-    if (e.at === w.at) continue; // the strength choice made with a workout_add is part of the add
-    const counts = (t: number) => {
-      const wo = workoutsAsOf(s, e.person, t, { from: w.date, to: w.date }).find((x) => x.id === e.id);
-      return !!wo && isStrengthWorkout(wo);
-    };
-    if (e.excluded !== undefined) {
-      const was = latestAt(s.workoutExcluded.get(`${e.person}|${e.id}`), e.at - 1) ?? false;
-      if (was !== e.excluded) out.push({ at: e.at, person: e.person, by: e.by, date: w.date, field: 'workout_excluded', subject: w.type, before: was, after: e.excluded });
-    }
-    if (e.strength !== undefined) {
-      const before = counts(e.at - 1);
-      const after = counts(e.at);
-      if (before !== after) out.push({ at: e.at, person: e.person, by: e.by, date: w.date, field: 'workout_strength', subject: w.type, before, after });
-    }
+    const was = latestAt(s.workoutExcluded.get(`${e.person}|${e.id}`), e.at - 1) ?? false;
+    if (was !== e.excluded) out.push({ at: e.at, person: e.person, by: e.by, date: w.date, field: 'workout_excluded', subject: w.type, before: was, after: e.excluded });
   }
   return out.sort((x, y) => x.at - y.at);
 }
