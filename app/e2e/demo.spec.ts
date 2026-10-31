@@ -122,7 +122,7 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the four goals (steps first), today’s amount / the goal with ✓ once met, +1 each (+2 with ★ at 1.5×), and today’s ふたりで ぜんぶ', async ({ page }) => {
+test('tree popup: the four goals (steps first), today’s amount / the goal with ✓ once met (a がんばり chip at 1.5×, no numbers on the rows), the day\'s ledger and today’s ふたりで ぜんぶ', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -144,11 +144,15 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
     // today's amount against the goal, met or not; ✓ before it once met
     await expect(row.locator('.amt')).toHaveText(new RegExp(`^[\\d,]+ / [\\d,]+ ?${units[i].source}`));
     await expect(row.locator('.amt svg.ok')).toHaveCount(await row.locator('.amt.met').count());
-    await expect(row.locator('b')).toHaveText(/^\+[12]$/);
-    // +2 only on a row at 1.5× (its ★); e2e/stretch.spec.ts has the rule's edges and the cap
-    if ((await row.locator('b').innerText()) === '+2') await expect(row.locator('.amt svg.gb')).toHaveCount(1);
+    // no ベル on a row; a chip only at 1.5× (e2e/stretch.spec.ts has the rule's edges and the cap)
+    await expect(row.locator('b')).toHaveCount(0);
+    await expect(row.locator('.chip')).toHaveCount(await row.getAttribute('data-stretched') ? 1 : 0);
   }
-  await expect(pop.locator('.duo')).toHaveText(/^ふたりで ぜんぶ まで：あと [1-8]つ$|^ふたりで ぜんぶ！ \+2$/);
+  // the ledger: goals, this person's total (がんばり only when reached)
+  await expect(pop.locator('.sum [data-v=goals]')).toHaveText(/^\+[0-4]$/);
+  await expect(pop.locator('.sum .k.tot')).toHaveText('ウェイの きょう');
+  await expect(pop.locator('.sum [data-v=total]')).toHaveText(/^\+?\d\sベル$/);
+  await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ まで：あと [1-8]つ$|^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
   // nothing of the old popup: no pips, nudges or badge weeks
   await expect(pop.locator('.steps, .next, .wk')).toHaveCount(0);
   // its last line: when this person's data last arrived (one home: not on the partner card)
@@ -223,7 +227,8 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await expect(popups).toHaveCount(1);
   await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'false');
   await expect(canopies.nth(1)).toHaveAttribute('aria-expanded', 'true');
-  await canopies.nth(1).click(); // the same tree: it closes
+  // the same tree: it closes (its lower canopy: on a short screen the popup is pushed down over the top of it)
+  await canopies.nth(1).click({ position: { x: (await canopies.nth(1).boundingBox())!.width / 2, y: (await canopies.nth(1).boundingBox())!.height - 8 } });
   await expect(popups).toHaveCount(0);
   await canopies.nth(0).click();
   await page.mouse.click(20, 300); // the sky: it closes

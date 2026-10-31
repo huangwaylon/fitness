@@ -41,9 +41,13 @@ ribbon.
   one falls to the ground for a tap to pick up, and that goal's flower blooms in the person's bed ([Trees](#trees)). A tap opens a
   popup: per goal, 🍎 steps first, then Move, Exercise, Stand (its own order; the canopy and the beds keep
   `RING_FRUITS`), today's amount against the goal, met or not (「14,164 / 8,000歩」, 「638 / 600 kcal」), a ✓ before
-  it once met, a small yuzu ★ after it at 1.5× ([がんばり](#goals)), and its ベル (+1, bright once earned; +2 when its
-  がんばり is paid); then, when any goal is at 1.5×, a がんばり line (「がんばり +1」, 「がんばり +2」, or 「がんばり +2（上限）」
-  when three or four were reached: they all keep their ★, only two pay); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
+  it once met, and a small yuzu chip 「がんばり」 after it at 1.5× ([がんばり](#goals)): the same chip on every row at
+  1.5×, whichever the cap pays; no ベル on the rows. Then one ledger, word left and ベル right: 「もくひょう +3」 (goals
+  met), 「がんばり +1」 when any goal is at 1.5× (「がんばり（上限 2） +2」 when three or four were reached), and under a
+  hairline this person's total, 「うめの きょう +6 ベル」 (goals + がんばり). Then a star line for today's ふたりでぜんぶ,
+  「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2 ふたりに」: the pair's, shown in
+  both popups and outside either total, so ウェイ's total + うめ's + ふたりでぜんぶ is the ribbon. No stretch target on
+  rows not yet at 1.5× (mocked: it repeated がんばり on every row and widened the popup at 320; あそびかた lists them). The last
   line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
   small dot once it is over 6 hours old.
 - **Jar** (`island/HudJar.svelte`, in the HUD row): a cream pill as tall as the ribbon, with its lip, the jar (our
@@ -100,7 +104,8 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
   itself is in [けんこう](#kenkou).
 - **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found (→ that kind's page).
 - **Day:** ふたりでぜんぶ (+2 or —), then me and the partner: the day's ベル and, per goal, its value (green when met,
-  ★ at 1.5×) and +1 (+2 with its がんばり paid), then a がんばり row when any (+1, +2, or +2（上限）).
+  the popup's 「がんばり」 chip at 1.5×) and its goal's +1, then a がんばり row when any (+1, +2, or 「がんばり（上限 2）」
+  +2), like the tree's popup.
 
 ### Kenkou
 

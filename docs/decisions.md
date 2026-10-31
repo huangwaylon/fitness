@@ -56,7 +56,10 @@ and 0–14 for the pair a day. One `RULES` object and one `STRETCH` object, no v
 and earnings are recomputed from the rows. A typical week is ≈ 52 for the pair, at most 98, a perfect one without
 がんばり 70, a lazy one ≈ 28. Why: numbers a child can add up, every goal counts the same, a big day is worth a little
 more without making the goals themselves optional (the cap keeps one heroic day from outweighing steady ones), and
-the bonus makes a day a team effort.
+the bonus makes a day a team effort. Shown as earned, never mixed: a goal's row shows the goal (✓) and a 「がんばり」
+chip at 1.5× (the same on every stretched row, whatever the cap pays), with no ベル on it; the popup's ledger adds
+もくひょう and がんばり (「（上限 2）」 when more were reached) to the person's total, and ふたりでぜんぶ, shown in both
+popups, stays outside both totals, so the two totals and the bonus add up to the ribbon once.
 
 ### Economy start
 The economy starts with the data: the first week with an activity row stamped by its lock. Why: no start date to

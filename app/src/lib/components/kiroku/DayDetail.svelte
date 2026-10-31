@@ -1,7 +1,8 @@
 <script lang="ts">
   // A day (the home of its Health data): ふたりでぜんぶ (+2 when both met all four goals), then two stacked cards (me,
-  // then the partner), each opening with the day's ベル, then one row per goal: the day's value (green when met, ★ at
-  // 1.5×) and its +1 (+2 with its がんばり paid), then the day's がんばり when any (+2 上限 when more were reached).
+  // then the partner), each opening with the day's ベル, then one row per goal: the day's value (green when met, a
+  // 「がんばり」 chip at 1.5×, every stretched row alike) and its goal's +1, then the day's がんばり when any (+1 or +2;
+  // 「（上限 2）」 when more were reached than the cap pays), like the tree's popup.
   // Read-only: Apple Health is the source of truth.
   import type { PersonId, RingFruit } from '#lib/types.ts';
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
@@ -53,16 +54,17 @@
       <div class="row">
         <span class="ic"><OfficialArt key={fruitArt(f)} size={22} /></span>
         <span class="k">{t(`fruit.${f}`)}</span>
-        <span class="v money" class:met={x.met[f]}>{value(x, f)}{#if x.stretched[f]}{@render star()}{/if}</span>
-        <b class="money b" class:zero={!x.met[f]}>{x.met[f] ? `+${x.rings[f]}` : '—'}</b>
+        <span class="v money" class:met={x.met[f]}>{value(x, f)}</span>
+        {#if x.stretched[f]}<span class="chip">{t('kiroku.stretch')}</span>{/if}
+        <b class="money b" class:zero={!x.met[f]}>{x.met[f] ? `+${RULES.perGoal}` : '—'}</b>
       </div>
     {/each}
     {#if x.stretch}
       {@const capped = RING_FRUITS.filter((f) => x.stretched[f]).length * STRETCH.perGoal > STRETCH.cap}
       <div class="gbrow" data-stretch={x.stretch}>
         <span class="ic">{@render star()}</span>
-        <span class="k">{t('kiroku.stretch')}</span>
-        <b class="money b">{capped ? t('kiroku.stretchCap', { b: x.stretch }) : `+${x.stretch}`}</b>
+        <span class="k">{capped ? t('kiroku.stretchCap', { cap: STRETCH.cap }) : t('kiroku.stretch')}</span>
+        <b class="money b">+{x.stretch}</b>
       </div>
     {/if}
   </section>
@@ -93,7 +95,11 @@
   .v { font-size: var(--fs-body); color: var(--text-soft); white-space: nowrap; }
   .v.met { color: var(--leaf-text); }
   .b { min-width: 2.4em; text-align: right; font-size: var(--fs-s); }
-  .st { width: 15px; height: 15px; margin-left: 4px; vertical-align: -2px; fill: var(--c-yuzu-lip); }
-  .gbrow .ic .st { width: 20px; height: 20px; margin: 0; }
+  .st { width: 20px; height: 20px; fill: var(--c-yuzu-lip); }
+  /* がんばり on a row (1.5×): the tree popup's yuzu chip */
+  .chip {
+    flex: none; padding: 2px 6px 3px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink);
+    font: 700 11px/1.1 var(--font-ui); box-shadow: 0 1px 0 var(--c-yuzu-lip);
+  }
   .b.zero { color: var(--text-soft); font-weight: 500; }
 </style>
