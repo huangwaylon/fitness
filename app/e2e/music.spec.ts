@@ -62,13 +62,17 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   expect(audio.filter((p) => p === 'music/hour-12.m4a')).toHaveLength(1);
 });
 
-test('a tap on K.K. plays one of his songs (not the placeholder tune)', async ({ page }) => {
+test('K.K.: his request prompt, then おまかせ plays one of his songs (not the placeholder tune)', async ({ page }) => {
   const audio = await open(page, '2026-11-07T20:00'); // a Saturday
   const kk = page.locator('[data-visitor="kk-slider"] .art');
   await expect(kk).toBeVisible();
   const r = (await kk.boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
+  // his show (NH): the greeting asks for a request; おまかせ plays one of his songs
+  // a tap on the asked question would close it: wait for the answers (the greeting is one page)
+  await expect(page.locator('.choices.asking')).toBeVisible({ timeout: 8000 });
+  await page.locator('.choice', { hasText: 'おまかせ' }).click();
   await expect.poll(() => audio.find((p) => /^kk\/kk-[a-z]+\.m4a$/.test(p))).toBeTruthy();
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).not.toContain('kk-song');
 });

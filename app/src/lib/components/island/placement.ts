@@ -5,6 +5,7 @@
 
 export interface Box { x0: number; x1: number; y0: number; y1: number }
 
+
 /** The stage's box, the px → u factor and what of the stage is on screen (u). */
 export function stageGeo(scene: HTMLElement | undefined) {
   const stage = scene?.querySelector<HTMLElement>('.stage');

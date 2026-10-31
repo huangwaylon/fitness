@@ -374,7 +374,6 @@
   "chat.sp.kk-slider.1": "Music feeds the soul, man.",
   "chat.sp.kk-slider.2": "Turn the music on and I'll play you one.",
   "chat.sp.kk-slider.3": "Saturday nights, you'll find me here.",
-  "chat.sp.kk-slider.song": "♪ La la la ♪ …Good night for it.",
   "chat.sp.daisy-mae.0": "Turnips, anyone?",
   "chat.sp.daisy-mae.1": "Grandma's turnips are the best!",
   "chat.sp.daisy-mae.2": "I only come on Sunday mornings!",
@@ -438,5 +437,15 @@
   "zodiac.aquarius": "Aquarius",
   "zodiac.pisces": "Pisces",
   "chat.sp.gulliver.intro": "…Mmmh… Huh!\nWhat island is this?\nI seem to have fallen off my ship…\nI'll wait here for my crew.",
-  "zukan.added": "It's in the Critterpedia now!"
+  "zukan.added": "It's in the Critterpedia now!",
+  "chat.sp.kk-slider.hello": "Hey, thanks for coming out tonight.\nGot a request?",
+  "chat.sp.kk-slider.which": "Which one'll it be?",
+  "chat.sp.kk-slider.tuning": "Just tuning my guitar right now…\nGive me a little while.",
+  "chat.sp.kk-slider.playing": "♪~ …What's up?",
+  "chat.sp.kk-slider.bye": "…Thanks, everybody!\nCatch you next Saturday.",
+  "visitor.request": "Request",
+  "visitor.surprise": "Surprise me",
+  "visitor.stop": "Stop",
+  "visitor.keep": "Keep going",
+  "visitor.other": "Another"
 }

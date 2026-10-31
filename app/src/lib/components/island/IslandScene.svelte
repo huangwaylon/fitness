@@ -378,6 +378,10 @@
     translate: calc(var(--h) * .036) calc(var(--h) * .007); transform-origin: 30% 50%;
   }
   /* falling leaves pass behind the villagers (z 51/52), never across their faces */
+  /* K.K.'s show: the villagers sway to the beat (Visitor sets data-show; rotate, apart from the rig's transforms) */
+  .scene:global([data-show]) .vil { transform-origin: 50% 100%; animation: sway .84s ease-in-out infinite alternate; }
+  .scene:global([data-show]) .actor:nth-of-type(odd) .vil { animation-delay: -.42s; }
+  @keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
   .fall { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--sh) - var(--ib)); z-index: var(--z-fall); pointer-events: none; }
   .scene[data-covered] .fall :global(*) { animation-play-state: paused !important; }
 
