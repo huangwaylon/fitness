@@ -8,15 +8,15 @@ async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
 }
-/** The controls under a figure's corners and middle. */
-const under = (page: Page, sel: string) =>
-  page.evaluate((s) => {
+/** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage). */
+const under = (page: Page, sel: string, hud = false) =>
+  page.evaluate(([s, hud]) => {
     return [...document.querySelectorAll(s)].flatMap((el) => {
       const b = el.getBoundingClientRect();
       const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-      return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]')).map((e) => e.className));
+      return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !(hud && e.closest('.stage'))).map((e) => e.className));
     });
-  }, sel);
+  }, [sel, hud] as const);
 /** Tap the balloon until its last page has typed (its answers show). */
 async function toAnswers(page: Page) {
   const box = page.locator('[data-fx="talk"].placed');
@@ -62,8 +62,8 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(box.locator('.who')).toHaveText('パンプキング');
     await expect(box).toHaveAttribute('data-pages', '3'); // the introduction (two pages), then the ask
     await toAnswers(page);
-    // on a tall phone the question and its answers cover no control (a short one may put them over the island's)
-    if (h > 800) expect(await under(page, '[data-fx="talk"], .choices.asking')).toEqual([]);
+    // the question and its answers cover none of the HUD's controls (they may sit over the island's, by Jack)
+    expect((await under(page, '[data-fx="talk"], .choices.asking', true))).toEqual([]);
     if (w === 390) await page.screenshot({ path: '/tmp/halloween/jack-ask-390.png' });
     await page.getByRole('button', { name: 'キャンディを あげる' }).click();
     await expect(page.locator('[data-treat] .candy')).toBeVisible();

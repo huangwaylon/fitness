@@ -89,11 +89,11 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       const box = page.locator('[data-fx="talk"].placed');
       await expect(box.locator('.who')).toHaveText(name);
       await expect(box).toHaveAttribute('data-pages', '2');
-      // and its balloon covers no control (but itself: it's the button that turns its pages)
+      // and its balloon covers none of the HUD's controls (it may sit over the island's: the museum, the trees)
       const notSelf = await page.evaluate(() => {
         const b = document.querySelector('[data-fx="talk"]')!.getBoundingClientRect();
         return [[b.left + 3, b.top + 3], [b.right - 3, b.bottom - 3], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]]
-          .flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx="talk"]')).map((e) => e.className));
+          .flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('.stage')).map((e) => e.className));
       });
       expect(notSelf).toEqual([]);
     }

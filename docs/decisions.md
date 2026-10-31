@@ -357,3 +357,11 @@ bugs that hide from rain, splashing steps; never ベル. Snowflakes now fall onl
 snow on the ground but none falling). No umbrella over the villagers: the renders are single front-facing images with no hand to
 hold one, so an umbrella would float over the head; left out rather than shipped poor.
 
+### Speech balloons stand by their speaker
+Every balloon (my villager, the visitors, Blathers) is placed by one rule: by the speaker, the tail at them, at most
+40px off; above, else beside, else below; never over the HUD, the speaker or off the scene; what may sit under it
+loosens step by step (the museum, then the trees, then the villagers) before it would ever stand further off. Why: the
+old search kept clear of every control at any distance, so a visitor at centre stage, under the museum, got a balloon
+floating above the museum, 100px+ from their head, and a reader couldn't tell who spoke. NH's box sits over the world
+by the speaker; covering a tree for a few seconds is fine, losing the speaker isn't. The HUD stays uncovered because a
+balloon over the ribbon or the jar would hide the app's own controls.
