@@ -115,6 +115,33 @@ describe('LiveBackend after a long time offline', () => {
   });
 });
 
+describe('LiveBackend: an acked edit the server stamped after its lock', () => {
+  it('says so after the next fetch (the model refuses it, so it would vanish silently)', async () => {
+    configureStorage({ local: new Mem() });
+    setKey('ab'.repeat(32), 'A');
+    const lockAt = Date.now() + 10 * 60_000;
+    const stamped: [string, string, string, string, string][] = [];
+    configureTransport({
+      url: 'https://script.example/exec',
+      fetch: (async (_u: unknown, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as { action: string; id?: string; type?: string; data?: unknown };
+        if (body.action === 'event') {
+          stamped.push([new Date(lockAt + 1).toISOString(), 'A', body.id!, body.type!, JSON.stringify(body.data)]); // a slow server: past the lock
+          return new Response('{"ok":true}');
+        }
+        return new Response(JSON.stringify({ ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: stamped } }));
+      }) as typeof fetch
+    });
+    const b = new LiveBackend(host());
+    await b.refresh({});
+    expect(b.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { lockAt }).ok).toBe(true);
+    await flush(); // the send's flush, in flight
+    expect(toasts.current).toBeNull();
+    await b.refresh({});
+    expect(toasts.current?.text).toBe(t('kiroku.missedLock'));
+  });
+});
+
 describe('LiveBackend cold open after an ack (no flash of the old state)', () => {
   const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
   const GOAL = { key: 'moveGoal', value: 450 };
