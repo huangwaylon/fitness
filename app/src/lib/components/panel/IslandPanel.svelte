@@ -1,9 +1,15 @@
+<script module lang="ts">
+  type Tab = 'kiroku' | 'settings';
+  /** The last tab, for this session (a reload opens on きろく again). */
+  let lastTab: Tab = 'kiroku';
+</script>
+
 <script lang="ts">
-  // The island panel: tap today's ベル ribbon → one panel slides down from the top with everything that isn't on the
-  // island itself, in one scroller: きろく (the ベル ledger, then からだ and the goals), むらびと, サウンド, ことば,
-  // つうしん and あそびかた (design.md "Panel"). A few things push a level with ‹ in the title bar (a week, a day, the
-  // villager picker, the full guide); ✕, the backdrop and Esc close it. The wallet stays on the jar and per-fruit detail
-  // in the tree popups (one home per datum).
+  // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
+  // itself, in two tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, then からだ and the
+  // goals) and せってい (むらびと, サウンド, ことば, つうしん, あそびかた). A few things push a level with ‹ in the title
+  // bar (a week, a day, the villager picker, the full guide); ✕, the backdrop and Esc close it. The wallet stays on the
+  // jar and per-fruit detail in the tree popups (one home per datum).
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -29,6 +35,12 @@
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
+  let tab = $state<Tab>(lastTab);
+  function pick(to: Tab) {
+    if (to === tab) return;
+    tab = lastTab = to;
+    body?.scrollTo({ top: 0 });
+  }
 
   const view = $derived(week.view);
   const deep = $derived(push !== null || kirokuLevel > 0);
@@ -76,46 +88,61 @@
 
 <Sheet bind:open label={t('panel.title')} variant="top" onclose={closed}>
   <div class="titlebar"><NavBar {title} onback={deep ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+  {#if !deep}
+    <!-- A segmented switch (toggle buttons), pinned under the title bar while the tab scrolls -->
+    <div class="tabs" role="group" aria-label={t('panel.title')}>
+      {#each ['kiroku', 'settings'] as const as id (id)}
+        <button type="button" class="tab" aria-pressed={tab === id} data-tab={id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => pick(id)}>{t(`panel.tab.${id}`)}</button>
+      {/each}
+    </div>
+  {/if}
 
   <div class="panel-body" bind:this={body}>
     {#if push === 'villager' && view}
       <div class="page"><VillagerPicker {view} /></div>
     {:else if push === 'help' && view}
       <div class="page"><HelpGuide {view} /></div>
-    {:else if view && me}
+    {:else if view && me && tab === 'kiroku'}
       <Kiroku bind:this={kiroku} bind:level={kirokuLevel} />
-      {#if kirokuLevel === 0}
-        <section class="sec" aria-labelledby="sec-villager">
-          <h2 id="sec-villager">{t('panel.villager')}</h2>
-          <div class="prow static me">
-            <Avatar person={view.me} villager={me.villager} size={48} />
-            <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
-            <button type="button" class="btn small paper" data-push="villager" data-sfx="page" onclick={() => go('villager')}>{t('panel.change')}</button>
-          </div>
-        </section>
-        <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
-        <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
-        <section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>
-        <section class="sec" aria-labelledby="sec-help">
-          <h2 id="sec-help">{t('panel.help')}</h2>
-          <div class="card help">
-            <p>{t('panel.helpSummary')}</p>
-            <button type="button" class="btn small paper" data-push="help" data-sfx="page" onclick={() => go('help')}>{t('panel.more')}</button>
-          </div>
-        </section>
-        {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
-      {/if}
+    {:else if view && me}
+      <section class="sec" aria-labelledby="sec-villager">
+        <h2 id="sec-villager">{t('panel.villager')}</h2>
+        <div class="prow static me">
+          <Avatar person={view.me} villager={me.villager} size={48} />
+          <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
+          <button type="button" class="btn small paper" data-push="villager" data-sfx="page" onclick={() => go('villager')}>{t('panel.change')}</button>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>
+      <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang">{t('panel.lang')}</h2><LangSection /></section>
+      <section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync">{t('panel.sync')}</h2><SyncSection {view} /></section>
+      <section class="sec" aria-labelledby="sec-help">
+        <h2 id="sec-help">{t('panel.help')}</h2>
+        <div class="card help">
+          <p>{t('panel.helpSummary')}</p>
+          <button type="button" class="btn small paper" data-push="help" data-sfx="page" onclick={() => go('help')}>{t('panel.more')}</button>
+        </div>
+      </section>
+      {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
     {/if}
   </div>
 </Sheet>
 
 <style>
-  .titlebar { flex: none; position: relative; z-index: 1; margin-bottom: 4px; }
-  /* rows scrolling up fade out under the title bar instead of being cut at a hard edge */
-  .titlebar::after {
+  .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
+  /* rows scrolling up fade out under the title bar (or the tabs) instead of being cut at a hard edge */
+  .titlebar:not(:has(+ .tabs))::after, .tabs::after {
     content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
     background: linear-gradient(var(--surface), transparent);
   }
+  /* the two tabs, pinned under the title bar (outside the scroller): NH's yellow for the one shown, the edge tier */
+  .tabs { flex: none; position: relative; z-index: 1; display: flex; gap: 8px; justify-content: center; margin: 0 0 6px; }
+  .tab {
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 112px; padding: 0 18px; border-radius: var(--r-pill);
+    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
+  }
+  .tab[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
+  .tab:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* The one scroller. It bleeds 8px past the side padding so focus rings and lips are not clipped by its overflow. */
   .panel-body {
     flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;

@@ -240,6 +240,8 @@
   "panel.change": "Change",
   "panel.more": "More",
   "panel.helpSummary": "Just wear your Apple Watch. Four fruits fill up with Bells, and you spend them on treats together.",
-  "panel.kiroku": "Records",
-  "panel.body": "Body & goals"
+  "panel.body": "Body & goals",
+  "panel.tab.kiroku": "Records",
+  "panel.tab.settings": "Settings",
+  "panel.bells": "Bells"
 }

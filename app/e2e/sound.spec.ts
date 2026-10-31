@@ -113,6 +113,7 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.locator('.tab[data-tab=settings]').click();
   await page.locator('[data-push=help]').click();
   await page.locator('.titlebar .back').click();
   await page.locator('.titlebar .close').click();
@@ -196,6 +197,8 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
   await step('きろく', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
   await step('きろく', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
+  await step('パネル', 'せってい tab', () => dlg.locator('.tab[data-tab=settings]').tap(), ['tick']);
+  await step('パネル', 'せってい tab again', () => dlg.locator('.tab[data-tab=settings]').tap(), []);
   await step('むらびと', 'かえる', () => dlg.locator('[data-push=villager]').tap(), ['page']);
   await step('むらびと', 'search field', () => dlg.getByRole('searchbox').tap(), []);
   await step('むらびと', 'pick a villager', () => dlg.locator('.rv[aria-checked="false"]').first().tap(), ['tick']);
@@ -206,6 +209,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('つうしん', 'いま つうしん while syncing (aria-disabled)', () => dlg.locator('.prows .btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
   await step('あそびかた', 'くわしく', () => dlg.locator('[data-push=help]').tap(), ['page']);
   await step('あそびかた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('パネル', 'きろく tab', () => dlg.locator('.tab[data-tab=kiroku]').tap(), ['tick']);
   await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
