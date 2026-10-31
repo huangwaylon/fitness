@@ -12,7 +12,7 @@ import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
 import {
-  DATE_RE, EVENT_TYPES, GYM_LABEL_MAX_CHARS, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
+  DATE_RE, editTarget, EVENT_TYPES, isLocalDate, GYM_LABEL_MAX_CHARS, isActivityMetric, isId, isMetricKey, isRec, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, NUMERIC_COLUMNS, PREF_KEYS, TABS, validMetricValue,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type GymReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -459,7 +459,8 @@ function event(me: PersonId, body: Rec): EventReply {
   if (!isRec(data)) return fail('bad_request');
   const json = JSON.stringify(data);
   if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
-  if (!validEventData(body.type, data)) return fail('bad_request');
+  // `person` (whose data an edit changes, ADR 0023): only `A` / `B`, only on the edit types (and the goal prefs).
+  if (!editTarget(body.type, data, me) || !validEventData(body.type, data)) return fail('bad_request');
   const type = body.type;
   return withLock((): EventReply => {
     const sh = tab('events');
@@ -477,7 +478,7 @@ function event(me: PersonId, body: Rec): EventReply {
 const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
 
 /**
- * Shape checks per event type. Only the shape: who may edit what, which weeks are still open, whether the wallet covers a
+ * Shape checks per event type. Only the shape: which weeks are still open, whether the wallet covers a
  * spend and the full menu/value rules stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
  */
 function validEventData(type: string, d: Rec): boolean {
@@ -491,13 +492,16 @@ function validEventData(type: string, d: Rec): boolean {
       return typeof d.week === 'string' && DATE_RE.test(d.week);
     case 'metric_set':
       // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal (ADR 0020).
-      return typeof d.date === 'string' && DATE_RE.test(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
+      return isLocalDate(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
     case 'workout_edit':
       return isId(d.id) && (d.strength !== undefined || d.excluded !== undefined) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean') &&
         (d.excluded === undefined || typeof d.excluded === 'boolean');
+    case 'gym_set':
+      // A 🥥 day by hand (ADR 0023): a real date and a boolean, nothing else.
+      return isLocalDate(d.date) && typeof d.on === 'boolean';
     case 'workout_add':
-      return typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) && typeof d.date === 'string' && DATE_RE.test(d.date) &&
+      return typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) && isLocalDate(d.date) &&
         typeof d.type === 'string' && WORKOUT_TYPES.includes(d.type) &&
         isInt(d.durationMin, MANUAL_WORKOUT_MIN.min, MANUAL_WORKOUT_MIN.max) &&
         (d.strength === undefined || d.strength === null || typeof d.strength === 'boolean');

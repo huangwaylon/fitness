@@ -37,7 +37,8 @@ const NONE: Record<string, string> = {
   'lib/components/wallet/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
   'lib/components/phone/VillagerApp.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/phone/LangApp.svelte': 'the language already chosen does nothing',
-  'lib/components/kiroku/Kiroku.svelte': 'the tab already shown does nothing'
+  'lib/components/kiroku/Kiroku.svelte': 'the tab already shown does nothing',
+  'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */

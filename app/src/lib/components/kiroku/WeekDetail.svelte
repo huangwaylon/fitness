@@ -75,7 +75,7 @@
   {/each}
 </section>
 
-<ChangeLog {edits} {villagers} withDate />
+<ChangeLog {edits} {names} {villagers} withDate />
 
 <style>
   .sub { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 2px; }

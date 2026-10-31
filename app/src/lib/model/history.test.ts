@@ -1,14 +1,18 @@
 // History and editing (docs/design/history-and-editing.md §4–5): edits on top of the ベル model.
-// Own data only (the sender is the subject), open weeks only (this week, and last week until Wednesday 04:00 JST).
+// Anyone's data (`data.person`, ADR 0023; absent = the sender), open weeks only (this week, and last week until Wednesday
+// 04:00 JST); `gym_set` turns a 🥥 day on or off by hand.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
-import { metricAsOf } from './inputs.ts';
+import { gymDayAsOf, metricAsOf } from './inputs.ts';
+import { weightOn } from './weight.ts';
+import { moveGoalOn } from './state.ts';
 import { weekBells } from './bells.ts';
 import { bellsLedger, dayDetail, editLog, historyWeeks, weekDetail } from './history.ts';
+import { gymChips } from './gym.ts';
 
 // A week of the economy: Sunday 19:30 = 11-22, the lock = Wednesday 11-25 04:00 JST.
 const WK = '2026-11-16';
@@ -110,19 +114,35 @@ describe('metric_set', () => {
     expect(earnAt(lowered, 'A', THU_AFTER).fruits.apple.weekDays).toBe(0);
   });
 
-  it("the partner can't touch my data: the sender is always the subject", () => {
+  it('`person` names whose data: B lowers A’s steps, and A’s ベル follow; without it the sender is the subject', () => {
     const base = goodWeek();
     const rows = withRows(base, {
       events: [
-        ev(jst(DAYS[2], '09:00'), 'B', 'metric_set', { date: DAYS[0], metric: 'steps', value: 100, person: 'A' }),
-        ev(jst(DAYS[2], '09:01'), 'B', 'workout_edit', { id: 'A-pil-1', excluded: true })
+        ev(jst(DAYS[2], '09:00'), 'B', 'metric_set', { person: 'A', date: DAYS[0], metric: 'steps', value: 100 }),
+        ev(jst(DAYS[2], '09:01'), 'B', 'metric_set', { date: DAYS[1], metric: 'steps', value: 200 })
       ]
     });
     const s = reduce(rows);
-    expect(metricAsOf(s, 'A', DAYS[0], 'steps', WED_MID)).toBe(9000);
-    expect(metricAsOf(s, 'B', DAYS[0], 'steps', WED_MID)).toBe(100);
-    expect(s.workoutEdits).toEqual([]);
-    expect(earnAt(rows, 'A')).toEqual(earnAt(base, 'A'));
+    expect(metricAsOf(s, 'A', DAYS[0], 'steps', WED_MID)).toBe(100);
+    expect(metricAsOf(s, 'B', DAYS[0], 'steps', WED_MID)).toBe(9000);
+    expect(metricAsOf(s, 'B', DAYS[1], 'steps', WED_MID)).toBe(200);
+    expect(metricAsOf(s, 'A', DAYS[1], 'steps', WED_MID)).toBe(9000);
+    expect(earnAt(rows, 'A').fruits.apple.weekDays).toBe(earnAt(base, 'A').fruits.apple.weekDays - 1);
+  });
+
+  it('a bad `person` ignores the event (the script refuses it too)', () => {
+    const rows = withRows(goodWeek(), {
+      events: [
+        ev(jst(DAYS[2], '09:00'), 'B', 'metric_set', { person: 'C', date: DAYS[0], metric: 'steps', value: 100 }),
+        ev(jst(DAYS[2], '09:00'), 'B', 'gym_set', { person: 'a', date: DAYS[0], on: true }),
+        ev(jst(DAYS[2], '09:00'), 'B', 'pref', { person: 'A', key: 'villagerName', value: 'のっとり' }), // only the goals take a person
+        ev(jst(DAYS[2], '09:00'), 'B', 'spend_void', { person: 'A', spendId: 'x' })
+      ]
+    });
+    const s = reduce(rows);
+    expect(s.metricSets.A.size + s.metricSets.B.size + s.gymSets.A.size + s.gymSets.B.size).toBe(0);
+    expect(s.prefs.A.villagerName).toBeUndefined();
+    expect(s.prefs.B.villagerName).toBeUndefined();
   });
 
   it('refuses future days and out-of-range values', () => {
@@ -188,8 +208,8 @@ describe('history views', () => {
 
   it('EditLog has who, when, before and after (value as of at − 1)', () => {
     expect(editLog(reduce(rows))).toEqual([
-      { at: ms(DAYS[2], '23:00'), by: 'A', date: DAYS[0], field: 'steps', before: 9000, after: 7000 },
-      { at: ms(DAYS[2], '23:10'), by: 'B', date: DAYS[0], field: 'exercise_min', before: 30, after: 45 }
+      { at: ms(DAYS[2], '23:00'), person: 'A', by: 'A', date: DAYS[0], field: 'steps', before: 9000, after: 7000 },
+      { at: ms(DAYS[2], '23:10'), person: 'B', by: 'B', date: DAYS[0], field: 'exercise_min', before: 30, after: 45 }
     ]);
   });
 
@@ -363,5 +383,175 @@ describe('gym rows (read-time rules in reduce)', () => {
   it("each row counts for its own person only (the key that sent it)", () => {
     expect(kept([gym(T, 'B', 'エニタイム')])).toEqual([]);
     expect(kept([gym(T, 'B', 'エニタイム')], 'B')).toHaveLength(1);
+  });
+});
+
+describe('cross-person edits (ADR 0023): either person edits either person’s data', () => {
+  it('every edit type reaches the partner’s data, and the change log says who made it', () => {
+    const rows = withRows(goodWeek(), {
+      events: [
+        ev(jst(DAYS[2], '09:00'), 'B', 'metric_set', { person: 'A', date: DAYS[0], metric: 'steps', value: 4000 }),
+        ev(jst(DAYS[2], '09:01'), 'B', 'metric_set', { person: 'A', date: DAYS[0], metric: 'exercise_min', value: 60 }),
+        ev(jst(DAYS[2], '09:02'), 'B', 'workout_edit', { person: 'A', id: 'A-pil-1', excluded: true }),
+        ev(jst(DAYS[2], '09:03'), 'B', 'workout_add', { person: 'A', id: 'm:b-for-a', date: DAYS[2], type: 'Yoga', durationMin: 70 }),
+        ev(jst(DAYS[2], '09:04'), 'B', 'workout_edit', { person: 'A', id: 'm:b-for-a', strength: true }),
+        ev(jst(DAYS[2], '09:05'), 'B', 'gym_set', { person: 'A', date: DAYS[0], on: true }),
+        ev(jst(DAYS[2], '09:06'), 'B', 'metric_set', { person: 'A', date: DAYS[1], metric: 'weight', value: 61.2 }),
+        ev(jst(DAYS[2], '09:07'), 'B', 'pref', { person: 'A', key: 'moveGoal', value: 450 }),
+        ev(jst(DAYS[2], '09:08'), 'B', 'pref', { person: 'A', key: 'goalWeight', value: 58.5 }),
+        // A edits B the same way
+        ev(jst(DAYS[2], '09:09'), 'A', 'metric_set', { person: 'B', date: DAYS[0], metric: 'steps', value: 1234 }),
+        ev(jst(DAYS[2], '09:10'), 'A', 'workout_edit', { person: 'B', id: 'B-pil-1', strength: false })
+      ]
+    });
+    const s = reduce(rows);
+    // A's data, changed by B
+    expect(metricAsOf(s, 'A', DAYS[0], 'steps', LIVE)).toBe(4000);
+    expect(metricAsOf(s, 'A', DAYS[0], 'exercise_min', LIVE)).toBe(60);
+    expect(s.manualWorkouts.A.map((w) => [w.id, w.by])).toEqual([['m:b-for-a', 'B']]);
+    expect(s.manualWorkouts.B).toEqual([]);
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[2], DAYS[3]]); // gym_set on Mon, the marked Yoga on Wed; Tue's Pilates left out
+    expect(weightOn(s, 'A', DAYS[1], LIVE)).toBe(61.2);
+    expect(moveGoalOn(s, 'A', DAYS[2])).toBe(450);
+    expect(moveGoalOn(s, 'B', DAYS[2])).not.toBe(450);
+    expect(s.prefs.A.goalWeight).toBe(58.5);
+    expect(s.prefs.B.goalWeight).toBeUndefined();
+    // B's data, changed by A
+    expect(metricAsOf(s, 'B', DAYS[0], 'steps', LIVE)).toBe(1234);
+    expect(strengthDates(rows, 'B')).toEqual([DAYS[3]]);
+    // the log: whose data (person) and who changed it (by)
+    expect(editLog(s).map((e) => [e.person, e.by, e.field, e.before, e.after])).toEqual([
+      ['A', 'B', 'steps', 9000, 4000],
+      ['A', 'B', 'exercise_min', 30, 60],
+      ['A', 'B', 'workout_excluded', false, true],
+      ['A', 'B', 'workout_add', null, 70],
+      ['A', 'B', 'workout_strength', false, true],
+      ['A', 'B', 'gym', false, true],
+      ['B', 'A', 'steps', 9000, 1234],
+      ['B', 'A', 'workout_strength', true, false]
+    ]);
+    // きろく marks the edited numbers on the person whose data changed, not on the one who changed it
+    const dd = dayDetail(s, DAYS[0], WED_MID);
+    expect(dd.people.A.steps).toEqual({ value: 4000, edited: true });
+    expect(dd.people.B.steps).toEqual({ value: 1234, edited: true });
+    expect(dd.people.A.gym).toEqual({ on: true, auto: false, override: true });
+    expect(weekDetail(s, WK, WED_MID).people.A.days[0].editedFields.sort()).toEqual(['minutes', 'steps', 'workout']);
+    expect(weekDetail(s, WK, WED_MID).people.B.days[0].editedFields).toEqual(['steps']);
+  });
+
+  it('the week lock holds for the partner’s edits too', () => {
+    const late = new Date(THU_AFTER).toISOString();
+    const rows = withRows(goodWeek(), {
+      events: [
+        ev(late, 'B', 'metric_set', { person: 'A', date: DAYS[0], metric: 'steps', value: 1 }),
+        ev(late, 'B', 'workout_edit', { person: 'A', id: 'A-pil-1', excluded: true }),
+        ev(late, 'B', 'workout_add', { person: 'A', id: 'm:late', date: DAYS[0], type: 'Pilates', durationMin: 30 }),
+        ev(late, 'B', 'gym_set', { person: 'A', date: DAYS[0], on: true })
+      ]
+    });
+    const s = reduce(rows);
+    expect(s.metricSets.A.size + s.gymSets.A.size + s.workoutEdits.length + s.manualWorkouts.A.length).toBe(0);
+    expect(editLog(s)).toEqual([]);
+    expect(bellsLedger(s, THU_AFTER + 1000)).toEqual(bellsLedger(reduce(goodWeek()), THU_AFTER + 1000));
+  });
+});
+
+describe('gym_set (ADR 0023): a 🥥 day by hand', () => {
+  const arrival = (p: PersonId, date: string, hm = '07:30'): GymRow => [jst(date, hm), p, '', jst(date, hm)];
+  const gym = (at: string, by: PersonId, date: string, on: boolean, person?: PersonId) => ev(at, by, 'gym_set', { ...(person ? { person } : {}), date, on });
+
+  it('on:true makes a day without an arrival or a strength workout a gym day (and earns its ベル)', () => {
+    const base = goodWeek();
+    const rows = withRows(base, { events: [gym(jst(DAYS[2], '09:00'), 'A', DAYS[0], true)] });
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[1], DAYS[3]]);
+    const d0 = earnAt(rows, 'A').days[0];
+    expect(d0.rings.coconut).toBeGreaterThan(0);
+    expect(earnAt(rows, 'A').daily - earnAt(base, 'A').daily).toBe(d0.rings.coconut);
+    expect(strengthDates(rows, 'B')).toEqual([DAYS[1], DAYS[3]]);
+  });
+
+  it('on:false cancels an arrival and a strength workout (a false positive)', () => {
+    const rows = withRows(goodWeek(), {
+      presence: [arrival('A', DAYS[2])],
+      events: [gym(jst(DAYS[2], '20:00'), 'A', DAYS[2], false), gym(jst(DAYS[2], '20:01'), 'A', DAYS[1], false)]
+    });
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[3]]);
+    const s = reduce(rows);
+    expect(dayDetail(s, DAYS[2], WED_MID).people.A.gym).toEqual({ on: false, auto: true, override: false });
+    expect(dayDetail(s, DAYS[2], WED_MID).people.A.arrivals).toHaveLength(1); // the arrival still shows
+    expect(dayDetail(s, DAYS[1], WED_MID).people.A.gym).toEqual({ on: false, auto: true, override: false });
+  });
+
+  it('the latest by server order wins, per person and date; an arrival after an off stays off', () => {
+    const rows = withRows(goodWeek(), {
+      presence: [arrival('A', DAYS[2], '18:00')],
+      events: [
+        gym(jst(DAYS[2], '09:00'), 'A', DAYS[2], true),
+        gym(jst(DAYS[2], '09:01'), 'B', DAYS[2], false, 'A'),
+        gym(jst(DAYS[2], '09:02'), 'A', DAYS[0], false),
+        gym(jst(DAYS[2], '09:03'), 'A', DAYS[0], true)
+      ]
+    });
+    const s = reduce(rows);
+    expect(gymDayAsOf(s, 'A', DAYS[2], ms(DAYS[2], '09:00'))).toBe(true);
+    expect(gymDayAsOf(s, 'A', DAYS[2], LIVE)).toBe(false);
+    expect(gymDayAsOf(s, 'A', DAYS[0], LIVE)).toBe(true);
+    expect(strengthDates(rows, 'A')).toEqual([DAYS[0], DAYS[1], DAYS[3]]);
+    // Monday's off was a no-op (no gym day yet), so only its on shows
+    expect(editLog(s).filter((e) => e.field === 'gym').map((e) => [e.date, e.person, e.by, e.before, e.after])).toEqual([
+      [DAYS[2], 'A', 'A', false, true], [DAYS[2], 'A', 'B', true, false], [DAYS[0], 'A', 'A', false, true]
+    ]);
+  });
+
+  it('a no-op gym_set (already a gym day) is not in the change log', () => {
+    const s = reduce(withRows(goodWeek(), { events: [gym(jst(DAYS[2], '09:00'), 'A', DAYS[1], true)] }));
+    expect(editLog(s)).toEqual([]);
+    expect(dayDetail(s, DAYS[1], WED_MID).people.A.gym).toEqual({ on: true, auto: true, override: true });
+  });
+
+  it('the week lock: refused at the lock, counted a millisecond before; future days are refused', () => {
+    const LOCK = ms('2026-11-25', '04:00');
+    const at = (t: number) => new Date(t).toISOString();
+    expect(strengthDates(withRows(goodWeek(), { events: [gym(at(LOCK), 'A', DAYS[0], true)] }), 'A')).toEqual([DAYS[1], DAYS[3]]);
+    const before = withRows(goodWeek(), { events: [gym(at(LOCK - 1), 'A', DAYS[0], true)] });
+    expect(weekBells(reduce(before), WK, THU_AFTER).A.days[0].gym).toBe(true);
+    expect(reduce(withRows(goodWeek(), { events: [gym(jst(DAYS[2], '09:00'), 'A', DAYS[5], true)] })).gymSets.A.size).toBe(0);
+  });
+
+  it('badges are recomputed: a third gym day earns the 🥥 badge, cancelling one takes it back', () => {
+    const base = goodWeek(); // two Pilates days: 2 of 3
+    expect(earnAt(base, 'A', MON_AFTER).badges.coconut).toBe(false);
+    const on = withRows(base, { events: [gym(jst(DAYS[6], '20:00'), 'B', DAYS[5], true, 'A')] });
+    const e = earnAt(on, 'A', MON_AFTER);
+    expect(e.badges.coconut).toBe(true);
+    expect(e.bonus).toBeGreaterThan(earnAt(base, 'A', MON_AFTER).bonus);
+    expect(historyWeeks(reduce(on), MON_AFTER).find((w) => w.weekKey === WK)!.people.A.ringBadges.coconut).toBe(true);
+    const off = withRows(on, { events: [gym(jst(DAYS[6], '20:05'), 'A', DAYS[1], false)] });
+    expect(earnAt(off, 'A', MON_AFTER).badges.coconut).toBe(false);
+  });
+
+  it('gymChips: yesterday and today for a person, with the week lock (yesterday may be last week)', () => {
+    const rows = withRows(goodWeek(), { presence: [arrival('B', DAYS[2])], events: [gym(jst(DAYS[2], '09:00'), 'A', DAYS[1], false, 'B')] });
+    const s = reduce(rows);
+    expect(gymChips(s, 'B', WED_MID)).toEqual([
+      { date: DAYS[1], which: 'yesterday', on: false, override: true, open: true, lockAt: ms('2026-11-25', '04:00') },
+      { date: DAYS[2], which: 'today', on: true, override: false, open: true, lockAt: ms('2026-11-25', '04:00') }
+    ]);
+    // Wednesday 03:59 after the week: yesterday (Tuesday) is this week; Monday 00:30: yesterday is last Sunday, still open
+    const MON = ms('2026-11-23', '00:30');
+    expect(gymChips(s, 'A', MON).map((c) => [c.date, c.open])).toEqual([[DAYS[6], true], ['2026-11-23', true]]);
+    // a week later: last week's Sunday is locked
+    const MON2 = ms('2026-11-30', '00:30');
+    expect(gymChips(s, 'A', MON2).map((c) => [c.date, c.open])).toEqual([['2026-11-29', true], ['2026-11-30', true]]);
+    const LOCKED_SUN = ms('2026-11-25', '04:00') + 1;
+    expect(gymChips(s, 'A', LOCKED_SUN).map((c) => [c.date, c.open])).toEqual([['2026-11-24', true], ['2026-11-25', true]]);
+  });
+
+  it('the WeekView’s 🥥 today follows a gym_set', () => {
+    const today = DAYS[2];
+    const rows = withRows(goodWeek(), { presence: [arrival('A', today)] });
+    const viewOf = (r: SnapshotRows) => buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows: r }, 'A', WED_MID).people.A.rings.coconut;
+    expect(viewOf(rows)).toMatchObject({ met: true, today: 1 });
+    expect(viewOf(withRows(rows, { events: [gym(jst(today, '20:00'), 'B', today, false, 'A')] }))).toMatchObject({ met: false, today: 0, todayBells: 0 });
   });
 });

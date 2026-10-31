@@ -4,7 +4,8 @@
 
 <script lang="ts">
   // きろく (records) NookPhone app (history-and-editing.md): からだ | ベル pills, week cards → week → day → edit,
-  // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first.
+  // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first. Every edit
+  // screen names whose data it changes (`p`): either person edits either person's data (ADR 0023).
   // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
   // queue (held 5 s with とりけす) and recompute the island's ベル ribbon and the wallet at once. Loaded on first open
   // (ShimaPhone imports it dynamically, round 7 L1).
@@ -14,7 +15,7 @@
   import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
   import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, editWorkout, setGoalWeight, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
+  import { addWorkout, editWorkout, setGoalWeight, setGym, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
   import { weightOn, weightTrend } from '#lib/model/weight.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -35,14 +36,15 @@
   type Screen =
     | { k: 'week'; wk: string }
     | { k: 'day'; date: string }
-    | { k: 'metric'; date: string; metric: 'steps' | 'exercise_min' }
-    | { k: 'workout'; date: string; id: string }
-    | { k: 'add'; date: string }
+    | { k: 'metric'; p: PersonId; date: string; metric: 'steps' | 'exercise_min' }
+    | { k: 'workout'; p: PersonId; date: string; id: string }
+    | { k: 'add'; p: PersonId; date: string }
+    | { k: 'gym'; p: PersonId; date: string }
     | { k: 'void'; id: string; label: string; bells: number }
     | { k: 'weight'; p: PersonId }
-    | { k: 'weightIn'; date: string }
-    | { k: 'goal' }
-    | { k: 'moveGoal' };
+    | { k: 'weightIn'; p: PersonId; date: string }
+    | { k: 'goal'; p: PersonId }
+    | { k: 'moveGoal'; p: PersonId };
 
   let { entry = null }: { entry?: KirokuEntry | null } = $props();
   let tab = $state<'body' | 'money'>('body');
@@ -59,6 +61,9 @@
   const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
   const top = $derived(stack.at(-1) ?? null);
+  /** Whose goals the 目標 card shows (null: mine). */
+  let goalPick = $state<PersonId | null>(null);
+  const goalP = $derived<PersonId>(goalPick ?? me);
   // One computation per screen and model (not per use; round 7 L5).
   const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
   const money = $derived(m && !top && tab === 'money' ? bellsLedger(m.state, m.now) : null);
@@ -117,15 +122,24 @@
     else root?.closest('dialog')?.focus();
   }
 
-  function saveMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
+  /** 「歩数を なおしました」, or 「うめの 歩数を なおしました」 for the partner's. */
+  /** An edit screen's subtitle: the day, and whose it is when it is the partner's (「うめ · 11/18(水)」). */
+  const whoSub = (p: PersonId, sub: string) => (p === me ? sub : sub ? `${names[p]} · ${sub}` : names[p]);
+  const savedText = (p: PersonId, field: string) => (p === me ? t('kiroku.saved', { field }) : t('kiroku.savedFor', { name: names[p], field }));
+  function saveMetric(p: PersonId, date: string, metric: 'steps' | 'exercise_min', value: number) {
     back();
-    void refocus(metric);
-    undoToast(t('kiroku.saved', { field: t(`kiroku.field.${metric}`) }), setMetric(date, metric, value));
+    void refocus(`${p}:${metric}`);
+    undoToast(savedText(p, t(`kiroku.field.${metric}`)), setMetric(p, date, metric, value));
   }
-  function workoutChange(id: string, date: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
+  function workoutChange(p: PersonId, id: string, date: string, label: string, change: { strength?: boolean | null; excluded?: boolean }) {
     back();
-    void refocus(`w:${id}`);
-    undoToast(t('kiroku.savedWorkout', { label }), editWorkout(id, date, change));
+    void refocus(`${p}:w:${id}`);
+    undoToast(p === me ? t('kiroku.savedWorkout', { label }) : savedText(p, label), editWorkout(p, id, date, change));
+  }
+  function saveGym(p: PersonId, date: string, on: boolean) {
+    back();
+    void refocus(`${p}:gym`);
+    undoToast(t(on ? 'kiroku.savedGymOn' : 'kiroku.savedGymOff', { day: `${p === me ? '' : `${names[p]} `}${dayTitle(date)}` }), setGym(p, date, on));
   }
   /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
   function askVoid(id: string, label: string, bells: number) {
@@ -136,31 +150,32 @@
     undoToast(t('kiroku.spendVoided', { label }), undoSpend(id));
   }
 
-  function saveWeight(date: string, kg: number) {
+  function saveWeight(p: PersonId, date: string, kg: number) {
     back();
     void refocus(date === today ? 'weight-log' : `wfix:${date}`);
-    undoToast(t('weight.saved'), setWeight(date, kg));
+    undoToast(p === me ? t('weight.saved') : savedText(p, t('kiroku.field.weight')), setWeight(p, date, kg));
   }
-  function saveGoal(kg: number | null) {
+  function saveGoal(p: PersonId, kg: number | null) {
     back();
     void refocus('weight-goal');
-    if (setGoalWeight(kg).ok) toasts.show(t(kg === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
+    if (setGoalWeight(p, kg).ok) toasts.show(t(kg === null ? 'weight.goalCleared' : 'weight.goalSaved'), 2500, { reaction: 'pleased' });
   }
-  function saveMoveGoal(kcal: number) {
+  function saveMoveGoal(p: PersonId, kcal: number) {
     back();
     void refocus('move-goal');
-    if (setMoveGoal(kcal).ok) toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' });
+    if (setMoveGoal(p, kcal).ok) toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' });
   }
 
   // Add a workout: pick a type, then the minutes on the keypad.
   const ADD_TYPES = ['Traditional Strength Training', 'Pilates', 'Yoga', 'Outdoor Walk', 'Outdoor Run', 'Cycling', 'Swimming', 'Dance', 'High Intensity Interval Training'];
   let addType = $state<string | null>(null);
-  function saveAdd(date: string, min: number) {
+  function saveAdd(p: PersonId, date: string, min: number) {
     const type = addType!;
     addType = null;
     back();
-    void refocus('add');
-    undoToast(t('kiroku.added', { label: typeLabel(type) }), addWorkout(date, type, min));
+    void refocus(`${p}:add`);
+    const label = typeLabel(type);
+    undoToast(t('kiroku.added', { label: p === me ? label : `${names[p]} ${label}` }), addWorkout(p, date, type, min));
   }
 </script>
 
@@ -177,8 +192,8 @@
       </div>
       {#if weeks && trends}
         <WeightCard {trends} {order} {names} {villagers} {today} onopen={(p) => go({ k: 'weight', p })} />
-        <GoalCard {me} villager={villagers[me]} moveGoal={view.people[me].moveGoal} goalWeight={m.state.prefs[me].goalWeight ?? null}
-          onmove={() => go({ k: 'moveGoal' })} onweight={() => go({ k: 'goal' })} />
+        <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
+          onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
       {/if}
       {#if weeks}
         <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
@@ -191,23 +206,25 @@
     {:else if top.k === 'day' && day}
       {@const date = top.date}
       <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}
-        onmetric={(metric) => go({ k: 'metric', date, metric })} onworkout={(id) => go({ k: 'workout', date, id })}
-        onadd={() => { addType = null; go({ k: 'add', date }); }} />
+        onmetric={(p, metric) => go({ k: 'metric', p, date, metric })} onworkout={(p, id) => go({ k: 'workout', p, date, id })}
+        onadd={(p) => { addType = null; go({ k: 'add', p, date }); }} ongym={(p) => go({ k: 'gym', p, date })} />
     {:else if top.k === 'weight' && trends}
       {@const p = top.p}
       <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today}
-        onlog={(date) => go({ k: 'weightIn', date })} />
+        onlog={(date) => go({ k: 'weightIn', p, date })} />
     {:else if top.k === 'weightIn'}
       {@const s = top}
-      <ValueInput label={t('kiroku.field.weight')} sub={dayTitle(s.date)} old={weightOn(m.state, me, s.date, m.now)} unit="kg"
-        parse={parseKgInput} hint={t('weight.range')} onok={(kg) => saveWeight(s.date, kg)} oncancel={back} />
+      <ValueInput label={t('kiroku.field.weight')} sub={whoSub(s.p, dayTitle(s.date))} old={weightOn(m.state, s.p, s.date, m.now)} unit="kg"
+        parse={parseKgInput} hint={t('weight.range')} onok={(kg) => saveWeight(s.p, s.date, kg)} oncancel={back} />
     {:else if top.k === 'goal'}
-      {@const goal = m.state.prefs[me].goalWeight ?? null}
-      <ValueInput label={t('weight.goalWeight')} sub="" old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
-        onok={(kg) => saveGoal(kg)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(null) }} />
+      {@const s = top}
+      {@const goal = m.state.prefs[s.p].goalWeight ?? null}
+      <ValueInput label={t('weight.goalWeight')} sub={whoSub(s.p, '')} old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
+        onok={(kg) => saveGoal(s.p, kg)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(s.p, null) }} />
     {:else if top.k === 'moveGoal'}
-      <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[me].moveGoal} unit="kcal" parse={parseKcalInput}
-        hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={saveMoveGoal} oncancel={back} />
+      {@const s = top}
+      <ValueInput label={t('goal.move')} sub={whoSub(s.p, t('goal.moveNote'))} old={view.people[s.p].moveGoal} unit="kcal" parse={parseKcalInput}
+        hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={(kcal) => saveMoveGoal(s.p, kcal)} oncancel={back} />
     {:else if top.k === 'void'}
       {@const s = top}
       <section class="card ask">
@@ -222,26 +239,40 @@
       </div>
     {:else if top.k === 'metric' && day}
       {@const s = top}
-      {@const d = day.people[me]}
-      <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={dayTitle(s.date)} max={METRIC_BOUNDS[s.metric]}
+      {@const d = day.people[s.p]}
+      <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={whoSub(s.p, dayTitle(s.date))} max={METRIC_BOUNDS[s.metric]}
         old={s.metric === 'steps' ? d.steps.value : d.exercise.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
-        onok={(v) => saveMetric(s.date, s.metric, v)} oncancel={back} />
+        onok={(v) => saveMetric(s.p, s.date, s.metric, v)} oncancel={back} />
+    {:else if top.k === 'gym' && day}
+      {@const s = top}
+      {@const g = day.people[s.p].gym}
+      <section class="card wcard">
+        <b>{t('kiroku.gym')}</b><span class="money">{whoSub(s.p, dayTitle(s.date))}</span>
+        {#if g.on}<em class="ok">{t('kiroku.gymYes')}</em>{:else}<em>{t('kiroku.val.gymOff')}</em>{/if}
+      </section>
+      <p class="note">{t('kiroku.gymNote')}</p>
+      <div class="wchoices">
+        <ChoiceList choices={[
+          g.on ? { label: t('kiroku.gymOff'), run: () => saveGym(s.p, s.date, false) } : { label: t('kiroku.gymOn'), run: () => saveGym(s.p, s.date, true) },
+          { label: t('kiroku.cancel'), run: back, cancel: true }
+        ]} />
+      </div>
     {:else if top.k === 'workout' && day}
       {@const s = top}
-      {@const w = day.people[me].workouts.find((x) => x.id === s.id)}
+      {@const w = day.people[s.p].workouts.find((x) => x.id === s.id)}
       {#if w}
         {@const label = typeLabel(w.type)}
         <section class="card wcard">
-          <b><TypeName type={w.type} /></b><span class="money">{dayTitle(s.date)} · {t('kiroku.min', { n: w.durationMin })}</span>
+          <b><TypeName type={w.type} /></b><span class="money">{whoSub(s.p, dayTitle(s.date))} · {t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{:else if w.strength}<em class="ok">{t('kiroku.strengthYes')}</em>{/if}
         </section>
         <div class="wchoices">
           <ChoiceList choices={[
-            ...(w.excluded ? [{ label: t('kiroku.include'), run: () => workoutChange(s.id, s.date, label, { excluded: false }) }] : [
-              ...(w.eligible && !w.strength ? [{ label: t('kiroku.count'), run: () => workoutChange(s.id, s.date, label, { strength: true }) }] : []),
-              ...(w.strength ? [{ label: t('kiroku.nocount'), run: () => workoutChange(s.id, s.date, label, { strength: false }) }] : []),
-              ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.id, s.date, label, { strength: null }) }] : []),
-              { label: t('kiroku.exclude'), run: () => workoutChange(s.id, s.date, label, { excluded: true }) }
+            ...(w.excluded ? [{ label: t('kiroku.include'), run: () => workoutChange(s.p, s.id, s.date, label, { excluded: false }) }] : [
+              ...(w.eligible && !w.strength ? [{ label: t('kiroku.count'), run: () => workoutChange(s.p, s.id, s.date, label, { strength: true }) }] : []),
+              ...(w.strength ? [{ label: t('kiroku.nocount'), run: () => workoutChange(s.p, s.id, s.date, label, { strength: false }) }] : []),
+              ...(w.override !== null ? [{ label: t('kiroku.auto'), run: () => workoutChange(s.p, s.id, s.date, label, { strength: null }) }] : []),
+              { label: t('kiroku.exclude'), run: () => workoutChange(s.p, s.id, s.date, label, { excluded: true }) }
             ]),
             { label: t('kiroku.cancel'), run: back, cancel: true }
           ]} />
@@ -250,7 +281,7 @@
     {:else if top.k === 'add'}
       {@const s = top}
       {#if !addType}
-        <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{dayTitle(s.date)}</span></h3>
+        <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{whoSub(s.p, dayTitle(s.date))}</span></h3>
         <p class="note">{t('kiroku.addNote')}</p>
         <div class="types" role="group" aria-label={t('kiroku.pickType')}>
           {#each ADD_TYPES as ty (ty)}
@@ -258,8 +289,8 @@
           {/each}
         </div>
       {:else}
-        <NumberPad label={typeLabel(addType)} sub={dayTitle(s.date)} old={null} min={MANUAL_WORKOUT_MIN.min} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
-          onok={(v) => saveAdd(s.date, v)} oncancel={() => (addType = null)} />
+        <NumberPad label={typeLabel(addType)} sub={whoSub(s.p, dayTitle(s.date))} old={null} min={MANUAL_WORKOUT_MIN.min} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
+          onok={(v) => saveAdd(s.p, s.date, v)} oncancel={() => (addType = null)} />
       {/if}
     {/if}
   {/if}

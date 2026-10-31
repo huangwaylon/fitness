@@ -1,5 +1,6 @@
 <script lang="ts">
-  // へんこう履歴: every accepted edit (both people), newest first: when, who, what, before → after.
+  // へんこう履歴: every accepted edit (both people), newest first: when, whose data (the avatar), what, before → after,
+  // and who made it (「うめが なおしました」: either person edits either person's data, ADR 0023).
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -7,7 +8,13 @@
   import { t } from '#lib/i18n/index.ts';
   import { stampOf } from '#lib/i18n/format.ts';
 
-  let { edits, villagers, withDate = false }: { edits: EditLog[]; villagers: Record<PersonId, string | null>; withDate?: boolean } = $props();
+  interface Props {
+    edits: EditLog[];
+    names: Record<PersonId, string>;
+    villagers: Record<PersonId, string | null>;
+    withDate?: boolean;
+  }
+  let { edits, names, villagers, withDate = false }: Props = $props();
 </script>
 
 <section class="log" aria-label={t('kiroku.changes')}>
@@ -16,12 +23,13 @@
     <p class="none">{t('kiroku.noChanges')}</p>
   {:else}
     <ul>
-      {#each edits as e (e.at + e.by + e.field + (e.subject ?? ''))}
+      {#each edits as e (e.at + e.person + e.by + e.field + (e.subject ?? ''))}
         {@const x = editText(e)}
         <li>
           <span class="when money">{stampOf(e.at)}</span>
-          <Avatar person={e.by} villager={villagers[e.by]} size={22} />
-          <span class="what">{#if withDate}<small>{dayTitle(e.date)}</small>{/if}{x.field} {#if e.before !== null}<s>{x.before}</s> → {/if}<b>{x.after}</b></span>
+          <Avatar person={e.person} villager={villagers[e.person]} size={22} />
+          <span class="what">{#if withDate}<small>{dayTitle(e.date)}</small>{/if}{x.field} {#if e.before !== null}<s>{x.before}</s> → {/if}<b>{x.after}</b>
+            <small class="by" data-by={e.by}>{t('kiroku.by', { name: names[e.by] })}</small></span>
         </li>
       {/each}
     </ul>
@@ -37,5 +45,6 @@
   .when { flex: none; width: 6.4em; font-size: var(--fs-s); color: var(--text-soft); }
   .what { flex: 1; min-width: 0; line-height: 1.35; }
   .what small { display: block; font-size: var(--fs-s); color: var(--text-soft); }
+  .what small.by { font-size: var(--fs-xs); }
   s { color: var(--text-soft); text-decoration-thickness: 1.5px; }
 </style>

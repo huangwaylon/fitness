@@ -132,7 +132,7 @@ describe('reduce: events', () => {
       add(LOCKED, { id: 'm:4' })
     ]));
     expect(s.manualWorkouts.A.map((w) => [w.id, w.durationMin, w.startAt, w.manual])).toEqual([['m:1', 30, `${WK}T12:00:00+09:00`, true]]);
-    expect(s.workoutEdits).toEqual([{ at: Date.parse(at(WK, '21:00')), person: 'A', id: 'm:1', strength: true }]);
+    expect(s.workoutEdits).toEqual([{ at: Date.parse(at(WK, '21:00')), person: 'A', by: 'A', id: 'm:1', strength: true }]);
   });
 
   it('harvest, highfive and pref', () => {

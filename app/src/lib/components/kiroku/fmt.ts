@@ -35,6 +35,7 @@ export function editText(e: EditLog): { field: string; before: string; after: st
     if (x === null) return '–';
     if (typeof x === 'number') return e.field === 'steps' ? num(x) : e.field === 'move_kcal' ? t('kiroku.kcal', { n: num(x) }) : t('kiroku.min', { n: x });
     if (e.field === 'workout_strength') return t(x ? 'kiroku.val.yes' : 'kiroku.val.no');
+    if (e.field === 'gym') return t(x ? 'kiroku.val.gymOn' : 'kiroku.val.gymOff');
     return t(x ? 'kiroku.val.out' : 'kiroku.val.in');
   };
   return { field, before: v(e.before), after: v(e.after) };

@@ -1,8 +1,8 @@
 <script lang="ts">
   // One person's weight (ADR 0020): the trend in kg, this week's change, the change since the first weigh-in and the
   // weekly pace; the 12-week chart (dots = weigh-ins, line = trend, dashes = goal); the goal and, at the current pace, a
-  // month it may be reached. Mine: 体重を記録 (the goal is set in きろく's 目標 card). The recent weigh-ins double as the chart's table view (and, on
-  // mine, each row fixes that day). Supportive wording only: no red, no "bad week".
+  // month it may be reached. 体重を記録 (the goal is set in きろく's 目標 card). The recent weigh-ins double as the chart's table view, and
+  // each row fixes that day: on either person's screen (ADR 0023: either person edits either person's data). Supportive wording only: no red, no "bad week".
   import type { PersonId } from '#lib/types.ts';
   import type { WeightTrend } from '#lib/model/weight.ts';
   import { WEIGHT } from '#lib/config/rules.ts';
@@ -61,11 +61,9 @@
   <section class="card stats empty"><p>{mine ? t('weight.emptyMine') : t('weight.empty')}</p></section>
 {/if}
 
-{#if mine}
-  <div class="acts">
-    <button type="button" class="btn small" data-focus="weight-log" data-sfx="page" onclick={() => onlog(today)}>{t('weight.log')}</button>
-  </div>
-{/if}
+<div class="acts">
+  <button type="button" class="btn small" data-focus="weight-log" data-sfx="page" onclick={() => onlog(today)}>{t('weight.log')}</button>
+</div>
 
 <p class="note">{t('weight.note')}</p>
 
@@ -73,16 +71,14 @@
   <section class="card recent" aria-labelledby="wrec-h">
     <h4 id="wrec-h">{t('weight.recent')}</h4>
     <table>
-      <thead><tr><th scope="col">{t('weight.col.day')}</th><th scope="col">{t('weight.col.kg')}</th><th scope="col">{t('weight.legend.trend')}</th>{#if mine}<th><span class="sr-only">✎</span></th>{/if}</tr></thead>
+      <thead><tr><th scope="col">{t('weight.col.day')}</th><th scope="col">{t('weight.col.kg')}</th><th scope="col">{t('weight.legend.trend')}</th><th><span class="sr-only">✎</span></th></tr></thead>
       <tbody>
         {#each recent as p (p.date)}
           <tr>
             <td>{dayTitle(p.date)}</td>
             <td class="money">{p.kg.toFixed(1)}</td>
             <td class="money soft">{p.trend.toFixed(1)}</td>
-            {#if mine}
-              <td class="pc"><button type="button" class="pen-btn" data-focus="wfix:{p.date}" data-sfx="page" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
-            {/if}
+            <td class="pc"><button type="button" class="pen-btn" data-focus="wfix:{p.date}" data-sfx="page" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
           </tr>
         {/each}
       </tbody>

@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import { finalMs, parseMenu } from '#lib/model/state.ts';
-import type { WalletItem } from '#lib/types.ts';
+import type { PersonId, WalletItem } from '#lib/types.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
 import { MOVE_GOAL } from '#lib/config/rules.ts';
@@ -76,50 +76,58 @@ export function saveMenu(items: WalletItem[]): SendResult {
 /** A fresh id for a new menu item. */
 export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
 
-// ---- きろく edits (history-and-editing.md §4): always my own data, open weeks only (the model refuses the rest).
-// Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless that would miss
-// the week's lock (the store shortens or refuses it).
+// ---- きろく edits (history-and-editing.md §4): either person's data (`person`, ADR 0023), open weeks only (the
+// model refuses the rest). Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless
+// that would miss the week's lock (the store shortens or refuses it). Every edit names its `person` explicitly.
 
-export function setMetric(date: string, metric: 'steps' | 'exercise_min', value: number) {
-  return week.send('metric_set', { date, metric, value: Math.round(value) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+export function setMetric(person: PersonId, date: string, metric: 'steps' | 'exercise_min', value: number) {
+  return week.send('metric_set', { person, date, metric, value: Math.round(value) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+}
+
+/**
+ * Make `date` a 🥥 day for `person` (`on`), or not, whatever its arrivals and workouts say (ADR 0023): きろく's day
+ * detail and the tree popup's きのう / きょう chips. The latest wins.
+ */
+export function setGym(person: PersonId, date: string, on: boolean): SendResult {
+  return week.send('gym_set', { person, date, on }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 /**
  * A day's body weight from きろく (ADR 0020): kg, one decimal. Weight earns nothing, so no week lock applies (any day up
  * to today); it still waits UNDO_MS with もとに戻す. `{ok:false}` for a value outside 20–300 kg.
  */
-export function setWeight(date: string, kg: number): SendResult {
+export function setWeight(person: PersonId, date: string, kg: number): SendResult {
   const value = roundKg(kg);
   if (!isWeightKg(value)) return { ok: false };
-  return week.send('metric_set', { date, metric: 'weight', value }, { holdMs: UNDO_MS });
+  return week.send('metric_set', { person, date, metric: 'weight', value }, { holdMs: UNDO_MS });
 }
 
-/** My goal weight in kg (one decimal), or null to clear it. Both of us see it; it never earns. */
-export function setGoalWeight(kg: number | null): SendResult {
-  if (kg === null) return week.send('pref', { key: 'goalWeight', value: null });
+/** A goal weight in kg (one decimal), or null to clear it. Both of us see it; it never earns. */
+export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
+  if (kg === null) return week.send('pref', { person, key: 'goalWeight', value: null });
   const value = roundKg(kg);
   if (!isWeightKg(value)) return { ok: false };
-  return week.send('pref', { key: 'goalWeight', value });
+  return week.send('pref', { person, key: 'goalWeight', value });
 }
 
 /**
- * My daily Move goal in kcal (ADR 0021 §5): an integer within MOVE_GOAL (100–2,000), rounded. It applies from today
+ * A daily Move goal in kcal (ADR 0021 §5): an integer within MOVE_GOAL (100–2,000), rounded. It applies from today
  * on, never to earlier days. `{ok:false}` for a value outside the bounds.
  */
-export function setMoveGoal(kcal: number): SendResult {
+export function setMoveGoal(person: PersonId, kcal: number): SendResult {
   const value = Math.round(kcal);
   if (!Number.isFinite(value) || value < MOVE_GOAL.min || value > MOVE_GOAL.max) return { ok: false };
-  return week.send('pref', { key: 'moveGoal', value });
+  return week.send('pref', { person, key: 'moveGoal', value });
 }
 
 /** `strength`: count as strength (true), not (false) or automatic (null); `excluded`: out of scoring. `date`: the workout's day. */
-export function editWorkout(id: string, date: string, change: { strength?: boolean | null; excluded?: boolean }) {
-  return week.send('workout_edit', { id, ...change }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+export function editWorkout(person: PersonId, id: string, date: string, change: { strength?: boolean | null; excluded?: boolean }) {
+  return week.send('workout_edit', { person, id, ...change }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
-export function addWorkout(date: string, type: string, durationMin: number) {
+export function addWorkout(person: PersonId, date: string, type: string, durationMin: number) {
   const id = `m:${newId().replace(/[^\w-]/g, '').slice(0, 36)}`;
-  return week.send('workout_add', { id, date, type, durationMin: Math.round(durationMin) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+  return week.send('workout_add', { person, id, date, type, durationMin: Math.round(durationMin) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 export function setLanguage(locale: Locale) {
