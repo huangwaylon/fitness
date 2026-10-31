@@ -44,10 +44,14 @@
   import Particles from './Particles.svelte';
   import Balloon from './Balloon.svelte';
   import SceneTaps from './SceneTaps.svelte';
+  import Talk from './Talk.svelte';
+  import { chatLine, moodOf } from './chat.ts';
+  import { RING_FRUITS } from '#lib/config/rules.ts';
+  import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { actors } from '../motion/director.svelte.ts';
-  import { jst, minuteNow } from '#lib/time/clock.ts';
+  import { jst, minuteNow, now } from '#lib/time/clock.ts';
 
   interface Props {
     view: WeekView;
@@ -122,6 +126,21 @@
   // `live` is fixed per scene (the gallery's thumbnails are never live).
   // svelte-ignore state_referenced_locally
   const life = new IslandLife({ view: () => view, live, covered: () => covered, night: () => tod === 'night', day: () => tod === 'day' });
+  // Villager chats (design.md "Villager chats"): a tap on mine hops (R9) and says a line in its NH personality; a tap on
+  // the partner keeps opening their card. The roster (personalities) loads on the first chat, out of the first load.
+  let talk = $state<ReturnType<typeof Talk>>();
+  let lastLine: string | undefined;
+  async function chat(btn: HTMLElement, asleep: boolean) {
+    const v = view, p = v.people[v.me];
+    const { ROSTER } = await import('#lib/villagers/roster.ts');
+    const mood = moodOf(ROSTER[resolveLook({ villager: p.villager, person: v.me }).id]);
+    const met = RING_FRUITS.filter((f) => p.rings[f].met).length;
+    const line = chatLine(mood, { hour: jst(now()).hour, met, asleep }, Math.random, lastLine);
+    lastLine = line.key;
+    // above the villager's head, clear of its emote (the ♪ of the tap) as it floats up
+    const r = btn.getBoundingClientRect();
+    talk?.say(p.villagerName, t(line.key, line.params), btn, [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }]);
+  }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
@@ -158,7 +177,10 @@
           aria-label={id === 'mine'
             ? t('island.me', { name: s.person.villagerName, bells: formatBells(s.person.today.bells) })
             : t('island.highfive', { name: s.person.villagerName })}
-          onclick={() => life.tapVillager(id, id === 'mine' ? undefined : onpartner)}>
+          onclick={(e) => {
+            if (id === 'mine') void chat(e.currentTarget, actors.mine.asleep);
+            life.tapVillager(id, id === 'mine' ? undefined : onpartner);
+          }}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
             actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} />
         </button>
@@ -169,6 +191,7 @@
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} />
+      <Talk bind:this={talk} scene={sceneEl} />
     {/if}
     <div class="tint"></div>
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>

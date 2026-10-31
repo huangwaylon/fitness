@@ -44,7 +44,7 @@ ribbon.
   small dot once it is over 6 hours old.
 - **Jar + plate:** the balance; each goal met flies in as a +1 coin from its fruit, ふたりでぜんぶ as a +2 over the
   jar. Tap → ごほうび.
-- **Villagers:** mine hops when tapped; the partner opens their card.
+- **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner opens their card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers and jar 64px); focus order = visual order.
 
 ### Wallet
@@ -277,6 +277,16 @@ fragment is a ずかん `find` (never ベル).
 - The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
   44px; reduced motion keeps the pick-ups, without the lift or the shovel. `?find=bottle|fragment` (dev or `?demo`)
   brings one now.
+
+### Villager chats
+
+`island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop (R9) and says a line in
+NH's speech balloon (cream, a nameplate with my よびな, a tail to the speaker; 33 ms a glyph; ≥ 2.8 s), as close above
+(else below) the head as fits, clear of every control and of its own ♪. The partner's tap still opens their card.
+Lines follow the villager's NH personality (lazy, peppy, smug, cranky, normal, jock, snooty, sisterly: 12 each; special
+characters 10 of their own), 3 in 10 about the day instead (the morning, the night, today's goals so far: 「目標 2つ
+クリア！ あと すこし！」, never ベル), a sleepy one when the tap wakes them; never the same line twice in a row. Kid-friendly,
+ja/en. The roster (personalities) loads on the first chat. One balloon at a time; a new tap replaces it.
 
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
 wing or fin loop each while on screen; between visits one timer. Art loads on first need. Layers: sea life z 1 (under
