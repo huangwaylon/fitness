@@ -200,6 +200,17 @@ describe('write queue', () => {
     await flush(() => t + 5000);
     expect(calls.map((c) => c.id)).toEqual([other.id, fix.id, island.id]); // the screen's order
   });
+  it('subjects include whose data (ADR 0023): a gym_set waits behind a held one for the same person and day only', async () => {
+    const t = 1_000_000;
+    const held = enqueue('gym_set', { person: 'B', date: '2026-11-02', on: true }, t, 5000);
+    const same = enqueue('gym_set', { person: 'B', date: '2026-11-02', on: false }, t + 1);
+    const mine = enqueue('gym_set', { person: 'A', date: '2026-11-02', on: true }, t + 2);
+    const steps = enqueue('metric_set', { person: 'A', date: '2026-11-02', metric: 'steps', value: 1 }, t + 3);
+    await flush(() => t + 4);
+    expect(calls.map((c) => c.id)).toEqual([mine.id, steps.id]);
+    await flush(() => t + 5000);
+    expect(calls.map((c) => c.id)).toEqual([mine.id, steps.id, held.id, same.id]);
+  });
   it('an edit of a held workout_add, or a void of a held spend, waits for it (else the server would refuse it)', async () => {
     const t = 1_000_000;
     const add = enqueue('workout_add', { id: 'm:x', date: '2026-11-02', type: 'Yoga', durationMin: 30 }, t, 5000);
