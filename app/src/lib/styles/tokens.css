@@ -22,6 +22,7 @@
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
   --c-mint:#7BD7C1;  --c-mint-lip:#63B4B5;               /* NH map mint (tiles, bars track) */
   --c-coral:#FF8F7A;                                     /* errors only */
+  --person-a:#2F86BD; --person-b:#D2701F;           /* けんこう's charts: ウェイ blue, うめ orange (CVD-safe pair, >= 3:1 on the card) */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
@@ -133,6 +134,7 @@
   --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
   --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
   --text:#FFF6E0; --text-soft:#D2D9F5; --focus:#FFF6E0; --leaf-text:#9EE6A6;
+  --person-a:#7EC8F0; --person-b:#FFB066;             /* the same pair lightened for the navy card (>= 3:1) */
   --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
   color-scheme: dark;
 }

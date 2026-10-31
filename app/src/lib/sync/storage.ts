@@ -23,7 +23,9 @@ export const DEMO = {
   /** sessionStorage: `plain` | `harvest`, sticky for the tab once `?demo` was opened. */
   mode: 'island-demo.mode',
   /** sessionStorage: which player this tab is (`?demo&as=B`). */
-  as: 'island-demo.as'
+  as: 'island-demo.as',
+  /** sessionStorage: how many weeks of history the demo makes (`?demo&weeks=60`; default 8). */
+  weeks: 'island-demo.weeks'
 } as const;
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */

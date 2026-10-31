@@ -58,3 +58,22 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect([...goals].sort()).toEqual([400, 450]);
   });
 });
+
+describe('?demo&weeks=60: a longer history for けんこう', () => {
+  const now = Date.parse('2026-10-31T03:00:00.000Z');
+  const cache = demoCache(now, 'A', 60);
+  const s = reduce(cache.rows);
+  it('has 61 weeks of activity, and weight across them', () => {
+    const weeks = economyWeeks(s, now);
+    expect(weeks).toHaveLength(61);
+    const weighed = cache.rows.metrics.filter((m) => m[3] === 'weight').map((m) => String(m[2])).sort();
+    expect(weighed[0] <= weeks[0]).toBe(true);
+  });
+  it('now and then a day without the Watch: steps only', () => {
+    const days = new Map<string, Record<string, number>>();
+    for (const [, p, d, m, v] of cache.rows.metrics) if (p === 'A' && m !== 'weight') days.set(String(d), { ...days.get(String(d)), [m]: Number(v) });
+    const bare = [...days.values()].filter((x) => x.steps > 0 && x.move_kcal === 0 && x.exercise_min === 0 && x.stand_min === 0);
+    expect(bare.length).toBeGreaterThan(3);
+    expect(bare.length).toBeLessThan(days.size / 10);
+  });
+});

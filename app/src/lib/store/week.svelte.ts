@@ -38,6 +38,7 @@ class WeekStore implements Host {
       const mode: DemoMode = p.get('demo') === 'harvest' ? 'harvest' : 'plain';
       writeRaw(ss, DEMO.mode, mode);
       writeRaw(ss, DEMO.as, p.get('as') === 'B' ? 'B' : 'A');
+      writeRaw(ss, DEMO.weeks, p.get('weeks') ?? '');
       this.demo = mode;
       this.view = null;
     } else {

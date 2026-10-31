@@ -85,19 +85,21 @@ test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day
   await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
 });
 
-test('きろく: the weight trend (from Health, no logging by hand) and a goal', async ({ page }) => {
+test('けんこう: the weight trend (from Health, no logging by hand); its goal is set in きろく', async ({ page }) => {
   await page.goto('?demo');
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
   const bells = await ribbon.getAttribute('aria-label');
   await openPanel(page);
-  await expect(sheet(page).getByRole('heading', { name: '体重のながれ' })).toBeVisible();
-  await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
-  await expect(sheet(page).getByRole('img', { name: /の体重 12週間/ })).toBeVisible();
-  await expect(sheet(page).locator('.recent tbody tr').first()).toBeVisible();
-  await expect(sheet(page).locator('.pen-btn, input, .acts')).toHaveCount(0); // nothing to log or fix by hand
-  // the goal is set in きろく's 目標 card (one place for both goals) and drawn on the weight screen
-  await sheet(page).locator('.titlebar .back').click();
+  // きろく no longer repeats the weight: the trend lives in けんこう
+  await expect(sheet(page).locator('.kiroku')).not.toContainText('ながれ');
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  const card = sheet(page).locator('.wc');
+  await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
+  await expect(card.getByRole('img', { name: /の体重 / })).toHaveCount(2); // one chart per person, each on its own axis
+  await expect(card.locator('.pen-btn, input, .acts')).toHaveCount(0); // nothing to log or fix by hand
+  // the goal is set in きろく's 目標 card (one place for both goals) and drawn on the weight chart
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
   await sheet(page).getByRole('button', { name: '体重 ✎' }).click();
   const input = sheet(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
@@ -107,8 +109,8 @@ test('きろく: the weight trend (from Health, no logging by hand) and a goal',
   await input.fill('65');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(sheet(page).locator('.goals')).toContainText('65.0 kg');
-  await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
-  await expect(sheet(page).getByText('目標 65.0 kg')).toBeVisible();
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  await expect(sheet(page).locator('.wc .person[data-person=A]')).toContainText('目標 65.0');
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
@@ -400,7 +402,7 @@ test('きろく opens light: the newest three weeks of ベル; 「まえの週�
 test('the panel: its tabs show whole (lip included, nothing paints over it) and it reaches the screen’s bottom', async ({ page }) => {
   await page.goto('?demo');
   await openPanel(page);
-  for (const tab of ['kiroku', 'settings']) {
+  for (const tab of ['kiroku', 'health', 'settings']) {
     await sheet(page).locator(`.tab[data-tab=${tab}]`).click();
     const m = await sheet(page).evaluate((d) => {
       const row = d.querySelector('.tabs')!.getBoundingClientRect();
