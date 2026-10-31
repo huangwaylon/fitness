@@ -56,7 +56,7 @@ describe('apps-script/Code.js', () => {
     expect(call({ key: 'b'.repeat(64), action: 'whoami' })).toEqual({ ok: true, me: 'B', build: buildHash() });
     expect(call({ action: 'health' })).toEqual({ ok: true, build: buildHash() });
     expect(buildHash()).toMatch(/^[0-9a-f]{12}$/);
-    expect(code.split('\n')[2]).toBe(`// build: ${buildHash()}`); // what the health monitor compares against (runbook §5)
+    expect(code.split('\n')[2]).toBe(`// build: ${buildHash()}`); // what the health monitor compares against (docs/ops/runbook.md §3)
     expect(call({ key, action: 'snapshot' }).rev).toEqual(expect.any(String));
     expect(() => ctx.onEdit(undefined)).not.toThrow();
     expect(typeof ctx.resync).toBe('function');
