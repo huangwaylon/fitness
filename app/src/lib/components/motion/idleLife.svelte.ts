@@ -83,7 +83,8 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     timer = null;
     if (stopped) return;
     if (document.hidden) return; // asleep until the page shows again (onVis), no polling while hidden
-    if (ctx.paused() || reducedMotion()) return schedule(2_000);
+    // covered by a sheet or reduced motion: no polling; the next touch or key (closing the sheet) wakes it
+    if (ctx.paused() || reducedMotion()) return;
     if (Date.now() - lastEvent.at < 3_000) return schedule(3_000);
     if (ctx.asleep()) {
       doze();
@@ -190,6 +191,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     timer = null;
   };
   addEventListener('pointerdown', wakeUp, { passive: true });
+  addEventListener('keydown', wakeUp, { passive: true });
   document.addEventListener('visibilitychange', onVis);
   schedule(rand(2_500, 4_500));
 
@@ -200,6 +202,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     for (const c of owned) c();
     owned.clear();
     removeEventListener('pointerdown', wakeUp);
+    removeEventListener('keydown', wakeUp);
     document.removeEventListener('visibilitychange', onVis);
   };
   /** Pending idle-owned follow-ups (tests). */
