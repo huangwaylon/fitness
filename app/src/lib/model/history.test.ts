@@ -158,7 +158,7 @@ describe('workouts (added by hand in きろく)', () => {
     const rows = withRows(base, { events: [added(jst(DAYS[1], '22:00'), 'A', 'm:lift', DAYS[1], 'Traditional Strength Training', 50)] });
     const day = earnAt(rows, 'A').days[1];
     expect(day.exerciseMin).toBe(50);
-    expect(Object.keys(day.rings)).toEqual(['peach', 'pear', 'cherry', 'apple']);
+    expect(Object.keys(day.rings)).toEqual(['pear', 'peach', 'cherry', 'apple']);
     expect(day.rings.peach).toBe(230); // v2: 45 of 60 min (the Watch said 30)
     expect(earnAt(rows, 'A').daily - earnAt(base, 'A').daily).toBe(230 - 120);
   });

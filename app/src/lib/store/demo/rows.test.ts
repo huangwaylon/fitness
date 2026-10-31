@@ -32,11 +32,11 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect([...by].sort()).toEqual(['A', 'B']);
   });
 
-  it('four fruits only: no day earns anything but 🍑🍐🍒🍎, and no rows of the old workouts / presence tabs', () => {
+  it('four fruits only: no day earns anything but 🍐🍑🍒🍎, and no rows of the old workouts / presence tabs', () => {
     expect(Object.keys(cache.rows).sort()).toEqual(['events', 'metrics']);
     const settled = historyWeeks(s, now).filter((w) => provisionalMs(w.weekKey) <= now);
     const days = settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now)));
-    for (const d of days) expect(Object.keys(d.people.A.rings)).toEqual(['peach', 'pear', 'cherry', 'apple']);
+    for (const d of days) expect(Object.keys(d.people.A.rings)).toEqual(['pear', 'peach', 'cherry', 'apple']);
   });
 
   it('the buys were all accepted (one voided); the menu is the default one', () => {

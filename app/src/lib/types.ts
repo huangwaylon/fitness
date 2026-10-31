@@ -7,10 +7,10 @@ export type LocalDate = string;
 export type WeekKey = string;
 
 /**
- * The four ring fruits, one automatic metric each: 🍑 peach = Exercise minutes, 🍐 pear = Move (active kcal),
- * 🍒 cherry = Stand minutes, 🍎 apple = steps.
+ * The four ring fruits, one automatic metric each: 🍐 pear = Move (active kcal), 🍑 peach = Exercise minutes,
+ * 🍒 cherry = Stand minutes, 🍎 apple = steps (display order: config/rules.ts RING_FRUITS).
  */
-export type RingFruit = 'peach' | 'pear' | 'cherry' | 'apple';
+export type RingFruit = 'pear' | 'peach' | 'cherry' | 'apple';
 
 /** ベル per ring fruit. */
 export type RingBells = Record<RingFruit, number>;

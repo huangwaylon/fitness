@@ -92,10 +92,12 @@ arrives. The economy starts with the week of Mon 2026-10-26.
 
 ### Fruits and goals
 
+Every list shows them in Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS`).
+
 | Fruit | Metric (Shortcut field → stored) | Daily goal |
 |---|---|---|
-| 🍑 Exercise | max(Watch minutes, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min |
 | 🍐 Move | active kcal (`calories` → `move_kcal`) | per person `pref` moveGoal, 100–2,000 (default ウェイ 600, うめ 400) |
+| 🍑 Exercise | max(Watch minutes, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min |
 | 🍒 Stand | Stand Time (`stand_minutes` → `stand_min`) | 120 min (v1 180) |
 | 🍎 Steps | `steps` | 8,000; Jun 1 – Jul 20 (tsuyu) 30 exercise minutes also count |
 
@@ -108,12 +110,12 @@ In v2 each fruit pays at 25 / 50 / 75 / 100% of the goal (nothing below 25%, the
 
 | % of goal | 25% | 50% | 75% | 100% |
 |---|---|---|---|---|
-| 🍑 (60 min) | 15 min → 45 | 30 → 120 | 45 → 230 | 60 → 420 |
 | 🍐 (e.g. 600 kcal) | 150 → 19 | 300 → 53 | 450 → 98 | 600 → 180 |
+| 🍑 (60 min) | 15 min → 45 | 30 → 120 | 45 → 230 | 60 → 420 |
 | 🍒 (120 min) | 30 min → 13 | 60 → 35 | 90 → 65 | 120 → 120 |
 | 🍎 (8,000) | 2,000 → 20 | 4,000 → 60 | 6,000 → 110 | 8,000 → 200 |
 
-The view exposes each fruit's step and the next one (`RingProgress.milestone`, `nextAt`, `nextBells`, `nextGain`).
+The view exposes each fruit's step and the next one (`RingProgress.milestone`, `nextAt`, `nextGain`).
 
 ### Rule versions
 
@@ -122,19 +124,19 @@ version of the week in view. A change is a new version with a later `from`, neve
 
 | | v1 (week of 2026-10-26) | v2 (from Mon 2026-11-02) |
 |---|---|---|
-| 🍑 | 3 a minute to 60 min (180) | milestones, max 420 |
 | 🍐 | floor(180 × min(kcal, goal) / goal) | milestones, max 180 |
+| 🍑 | 3 a minute to 60 min (180) | milestones, max 420 |
 | 🍒 | 1 a minute to 180 min (180) | milestones, max 120 |
 | 🍎 | 200 at the goal | milestones, max 200 |
 | Badge / duo per badge | 400 / 200 | 450 / 500 |
 | Day max · on target for both | 740 · 11,000 | 920 · 14,400 |
 
-On target in v2 (every badge for both, minimum days): per person 5 × 420 + 5 × 180 + 5 × 120 + 4 × 200 = 4,400 + 4 ×
+On target in v2 (every badge for both, minimum days): per person 5 × 180 + 5 × 420 + 5 × 120 + 4 × 200 = 4,400 + 4 ×
 450 = 6,200; both 12,400 + 4 × 500 = 14,400, of which 8,800 is daily.
 
 ### Badges and duo bonus
 
-A badge per fruit when its goal (100%) was met on enough days: 🍑 🍐 🍒 5, 🍎 4. Each pays the badge ベル; the
+A badge per fruit when its goal (100%) was met on enough days: 🍐 🍑 🍒 5, 🍎 4. Each pays the badge ベル; the
 ふたりボーナス pays the duo amount for each badge both people met. Both land as the week's bonus.
 
 ### Harvest and lock

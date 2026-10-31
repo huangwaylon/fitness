@@ -1,4 +1,4 @@
-// ベル per day for the four fruits (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps), weekly badges, the
+// ベル per day for the four fruits (🍐 Move, 🍑 Exercise, 🍒 Stand, 🍎 steps), weekly badges, the
 // ふたりボーナス.
 import { describe, expect, it } from 'vitest';
 import type { PersonId, Workout } from '#lib/types.ts';
@@ -57,7 +57,7 @@ describe('earnWeek: the daily table', () => {
     const d = day0({}, { workouts: [workout(D[0], 'Traditional Strength Training', 45)] });
     expect(d.rings).toEqual({ peach: 135, pear: 0, cherry: 0, apple: 0 });
     expect(d.bells).toBe(135);
-    expect(Object.keys(d.met)).toEqual(['peach', 'pear', 'cherry', 'apple']);
+    expect(Object.keys(d.met)).toEqual(['pear', 'peach', 'cherry', 'apple']);
   });
 
   it('🍑 3 per whole counted exercise minute, capped at 60', () => {
@@ -283,7 +283,7 @@ describe('v2 milestone curve from 2026-11-02 (25 / 50 / 75 / 100% of the goal)',
     // 🍑 stays within 2.5 ベル of the shares 25 / 70 / 130 / 240 of its max (43.75 / 122.5 / 227.5 / 420).
     const shares = [25, 70, 130, 240].map((x) => (420 * x) / 240);
     milestoneBells(WK2, 'peach')!.forEach((b, i) => expect(Math.abs(b - shares[i])).toBeLessThanOrEqual(2.5));
-    for (const f of ['peach', 'pear', 'cherry', 'apple'] as const) {
+    for (const f of ['pear', 'peach', 'cherry', 'apple'] as const) {
       const b = milestoneBells(WK2, f)!;
       const steps = b.map((x, i) => x - (i ? b[i - 1] : 0));
       for (let i = 1; i < steps.length; i++) expect(steps[i], `${f} step ${i}`).toBeGreaterThan(steps[i - 1]); // each step worth more
