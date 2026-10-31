@@ -34,7 +34,7 @@
   }
   let { scene, season, tod, enabled, swallowed }: Props = $props();
 
-  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow' | 'present';
+  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow';
   interface Fx {
     id: number;
     kind: Kind;
@@ -50,9 +50,6 @@
     flip?: boolean;
     /** cloud: the side the puffs fly off (−1 / 1). */
     dir?: number;
-    /** present: its fall (px) and size (px). */
-    dy?: number;
-    size?: number;
   }
   const MAX_FX = 4;
   const LIFE_MS = 1100;
@@ -219,8 +216,11 @@
     sceneSfx('shooting-star');
   }
 
-  /** NH's balloon present, shot down: it falls from where the balloon burst onto the island (the back lawn, in front of
-   *  the trees), lands with a bounce and a sparkle and fades; off the island's edge it drops into the sea. */
+  /** NH's balloon present, shot down: it falls from where the balloon burst onto the lawn in front of the hedge (drifting
+   *  on the breeze to the open middle, between the trees, above the jar), lands with a bounce and a sparkle and fades;
+   *  past the island's edge it drops into the sea. It falls behind the trees, the jar and everyone (z under the trees),
+   *  so it never covers a control. */
+  let drops = $state<{ id: number; x: number; y: number; dx: number; dy: number; size: number; sea: boolean }[]>([]);
   function present(e: Event) {
     const d = (e as CustomEvent<{ x: number; y: number; size: number }>).detail;
     const stage = scene?.querySelector<HTMLElement>('.stage');
@@ -228,9 +228,12 @@
     const r = stage.getBoundingClientRect();
     const k = 390 / r.width;
     const x = d.x - r.left, y = d.y - r.top;
-    const land = 198 / k; // the lawn between the fruit and the villagers' heads
-    const sea = hitStage(x * k, 198).kind === 'sea';
-    spawn({ kind: 'present', x, y, dy: Math.max(0, land - y), size: d.size, v: sea ? 'sea' : undefined }, 3300);
+    const sea = x * k < 34 || x * k > 356; // off the island's back corners
+    const land = (sea ? 30 : 90) / k;
+    const to = sea ? x : Math.min(Math.max(x, 172 / k), 218 / k);
+    const id = ++seq;
+    drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size, sea }];
+    later(() => (drops = drops.filter((p) => p.id !== id)), 3300);
     if (sea) later(() => sceneSfx('splash'), 1500);
     else sceneSfx('present');
   }
@@ -266,6 +269,20 @@
 </script>
 
 <Critters bind:this={critters} {scene} {tod} {enabled} />
+
+<div class="drops" aria-hidden="true">
+  {#each drops as p (p.id)}
+    <span class="fx" data-fx="present" style:left="{p.x}px" style:top="{p.y}px" style:--dx="{p.dx}px" style:--dy="{p.dy}px" style:--gs="{p.size}px">
+      <span class="gift" class:sea={p.sea}><span class="drop-in"><OfficialArt key="deco/present" size="100%" eager /></span></span>
+      {#if p.sea}
+        <span class="land"><i class="ring"></i><i class="ring late"></i></span>
+      {:else}
+        <svg class="spark land-spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
+        <svg class="spark land-spark two" viewBox="0 0 24 24"><path d={STAR} /></svg>
+      {/if}
+    </span>
+  {/each}
+</div>
 
 <div class="taps" aria-hidden="true">
   {#each fx as f (f.id)}
@@ -308,16 +325,6 @@
         <svg class="twinkle" viewBox="0 0 24 24"><path d={STAR} /></svg>
       {:else if f.kind === 'shoot'}
         <span class="streak"><i></i></span>
-      {:else if f.kind === 'present'}
-        <span class="gift" class:sea={f.v === 'sea'} style:--dy="{f.dy}px" style:--gs="{f.size}px">
-          <span class="drop-in"><OfficialArt key="deco/present" size="100%" eager /></span>
-        </span>
-        {#if f.v === 'sea'}
-          <span class="land" style:--dy="{f.dy}px"><i class="ring"></i><i class="ring late"></i></span>
-        {:else}
-          <svg class="spark land-spark" viewBox="0 0 24 24" style:--dy="{f.dy}px"><path d={STAR} /></svg>
-          <svg class="spark land-spark two" viewBox="0 0 24 24" style:--dy="{f.dy}px"><path d={STAR} /></svg>
-        {/if}
       {:else}
         <i class="dot"></i>
       {/if}
@@ -329,6 +336,9 @@
   /* inside the stage, over the time-of-day tint (z 80) with the fireflies (z 82), so the sky's sparkles and a firefly
      glow; at night the ground's flourishes are dimmed instead (the tint would only grey them) */
   .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
+  /* a falling present: in front of the hedge, behind the trees (z 30) and everything after them */
+  .drops { position: absolute; inset: 0; z-index: calc(var(--z-tree) - 5); pointer-events: none; --su: calc(100cqw / 390); }
+  .drops .fx > * { position: absolute; }
   :global(.if-scene[data-tod='night']) :is(.bush, .splash, .sand, .grass, .flower .petal, .flower .spark) { opacity: .55; }
   :global(.if-scene[data-tod='dusk']) :is(.bush, .splash, .sand, .grass, .flower .petal) { opacity: .85; }
   .fx { position: absolute; width: 0; height: 0; }
@@ -497,17 +507,17 @@
     animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .6s ease-in 2.7s both;
   }
   .gift .drop-in { display: block; height: 100%; transform-origin: 50% 100%; animation: gift-sway 1.5s ease-in-out both, gift-land .5s ease-out 1.5s both; }
-  @keyframes gift-fall { from { transform: translateY(0); } to { transform: translateY(var(--dy)); } }
+  @keyframes gift-fall { from { transform: translate(0, 0); } to { transform: translate(var(--dx), var(--dy)); } }
   @keyframes gift-sway { 0% { rotate: -10deg; } 30% { rotate: 8deg; } 60% { rotate: -6deg; } 85% { rotate: 3deg; } 100% { rotate: 0deg; } }
   @keyframes gift-land { 0% { scale: 1.12 .82; } 45% { scale: .95 1.06; } 100% { scale: 1; } }
   @keyframes gift-fade { to { opacity: 0; } }
   .gift.sea { animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .35s ease-in 1.5s both; }
   .gift.sea .drop-in { animation: gift-sway 1.5s ease-in-out both; }
-  .land { left: 0; top: var(--dy); width: 0; height: 0; opacity: 0; animation: land-on .01s 1.5s forwards; }
+  .land { left: var(--dx); top: var(--dy); width: 0; height: 0; opacity: 0; animation: land-on .01s 1.5s forwards; }
   @keyframes land-on { to { opacity: 1; } }
   .land .ring { animation-delay: 1.5s; } .land .ring.late { animation-delay: 1.66s; }
-  .land-spark { left: calc(-16 * var(--su)); top: calc(var(--dy) - 26 * var(--su)); animation-delay: 1.55s; }
-  .land-spark.two { left: calc(6 * var(--su)); top: calc(var(--dy) - 18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
+  .land-spark { left: calc(var(--dx) - 16 * var(--su)); top: calc(var(--dy) - 26 * var(--su)); animation-delay: 1.55s; }
+  .land-spark.two { left: calc(var(--dx) + 6 * var(--su)); top: calc(var(--dy) - 18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
 
   /* reduced motion: a soft glow where you tapped, nothing moves */
   .dot {
