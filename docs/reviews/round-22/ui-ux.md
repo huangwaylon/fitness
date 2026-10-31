@@ -175,5 +175,33 @@ static server (no gzip) gave 68–79, which is useful only for comparing builds 
 - **The open popup over the jar's lid at 320:** a tap on the popup closes it, by design.
 - **The undo banner hold during Playwright runs:** the mouse rests where the banner appears and pauses it. This is a
   test artifact; on a phone, a touch ends with pointerleave.
-- Fishing readability, more bugs, and the balloon schedule (user feedback) were in progress when this was written:
-  see the latest commits.
+
+## Last batch (user feedback on the scenery)
+
+- **Fishing (ad8992e):** the bite now has a 「！」 pop, a bigger dip and its own sound; nibbles are small wiggles. The bite
+  window is 1.6 s. The first early tap only makes the fish hesitate; a second one scares it off. While the bobber is
+  out, a tap anywhere on the sea reels in. The cast reaches 1.5× as far. Played in Playwright with real timing,
+  reacting to the 「！」 after about 400 ms, at 390 and 320 (`/tmp/r22-fish/bite-390.png`, `bite-320.png`).
+- **More bugs:** 11 more NH species, with official icons cached on first use (`/tmp/r22-fish/bug-*.png`).
+- **Balloons are back:** they had been skipped because their lane sat above the ribbon. They now fly in a lane under
+  the ribbon at every size (`/tmp/r22-fish/balloon-*.png`, `balloon-real-320.png`).
+- **"For fun, frequent":**
+  - Seasons only weight the odds: 3× in a species' NH months. Hours still keep butterflies to the day and fireflies
+    and moths to the night.
+  - A critter visits every 8–15 s; a fish comes whenever the sea is empty.
+  - A shaken bush lets a bug out 1 in 3.
+  - A balloon every 45–90 s by day; a shooting star every 15–40 s at night.
+  - `?critter=` now shows that one critter alone, so the e2e is deterministic: `critters.spec` passed 3 runs in a row
+    (`--repeat-each`).
+- **Economy leftovers:**
+  - the low-week beat now fires under 6 ベル by Thursday;
+  - `dayScore`'s unused argument is gone;
+  - the `remove` cue and its `poof` sound are gone;
+  - the Gallery sample now shows 26 ベル.
+
+## Not started
+
+The next scenery brief: more fish, more bugs, beach finds, villager chats, island care, visitors and a shared ずかん
+with a `find` event and a Code.js change. It touches `scripts/fetch-assets.ts` and `static/art/manifest.json` while the
+roster engineer has uncommitted work in both, and it needs a backend change. It should start from a clean tree, after
+the roster commit lands.
