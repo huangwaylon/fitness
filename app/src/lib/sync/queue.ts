@@ -1,4 +1,4 @@
-// The write queue (sheets-architecture.md §2): events persisted in localStorage and replayed in order, with backoff,
+// The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
 // until the server acks them. Undo windows (`holdMs`) and week locks are decided here.
 import type { EventReply, EventType } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';

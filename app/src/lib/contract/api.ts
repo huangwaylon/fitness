@@ -1,4 +1,4 @@
-// The sheet layout and the web-app API shapes (docs/design/sheets-architecture.md §1–2). Shared by the Apps
+// The sheet layout and the web-app API shapes (docs/backend.md#tabs, #api). Shared by the Apps
 // Script (app/gas/main.ts), the model and the client: row tuples, reply shapes and the validation regexes both sides
 // apply. Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
 import type { PersonId } from '../types.ts';
@@ -21,7 +21,7 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
 export const EVENT_TYPES = [
   'spend', 'harvest', 'highfive', 'pref',
-  // History and editing (docs/design/history-and-editing.md §4): anyone's data (`data.person`), open weeks only (the
+  // History and editing (docs/design.md#editing): anyone's data (`data.person`), open weeks only (the
   // model decides).
   'metric_set', 'workout_edit', 'workout_add', 'spend_void'
 ] as const;
@@ -123,13 +123,13 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
 export type IngestReply = { ok: true; metrics: number; skipped?: number; warnings?: string[] } | Fail;
 export type EventReply = { ok: true; duplicate?: true } | Fail;
 /**
- * `rev` is the data revision (sheets-architecture.md §2.1): when it differs from the one the client cached with, rows
+ * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, rows
  * were changed by hand, so drop the cache and fetch everything (no `since`).
  */
 export type SnapshotReply = { ok: true; me: PersonId; now: string; rev: string; rows: SnapshotRows } | Fail;
 /** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. */
 export type WhoamiReply = { ok: true; me: PersonId; build: string } | Fail;
-/** Keyless `{"action":"health"}`: the deployment is up, authorized and running `build` (runbook §5). */
+/** Keyless `{"action":"health"}`: the deployment is up, authorized and running `build` (docs/ops/runbook.md §3). */
 export type HealthReply = { ok: true; build: string } | Fail;
 /** `uploads`: the caller's last ingest audit rows, newest first (`notes` holds warnings plus the body's shape). */
 export type UploadsReply = { ok: true; rows: { at: string; status: string; bytes: number; notes: string }[] } | Fail;

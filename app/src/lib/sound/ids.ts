@@ -1,4 +1,4 @@
-// The sound catalogue (docs/design/sound.md §5): every sound the app can make, its bus and how it is mixed.
+// The sound catalogue (docs/design.md#cues): every sound the app can make, its bus and how it is mixed.
 // Ids name the SOUND (a coin clink), not the moment (cues.ts maps app moments to these). A file listed for an id in
 // static/audio/manifest.json replaces its procedural placeholder (synth.ts) with no code change.
 
@@ -8,7 +8,7 @@ export type Bus = 'music' | 'sfx' | 'voice';
 export type SoundId =
   // UI (NookPhone and menus)
   | 'cursor' | 'confirm' | 'cancel' | 'phone-open' | 'phone-close' | 'phone-app'
-  // UI taps (sound.md §13): a soft select, the switch pair, keypad keys, a page, the "can't" boop, sync, remove, undo
+  // UI taps (docs/design.md#taps): a soft select, the switch pair, keypad keys, a page, the "can't" boop, sync, remove, undo
   | 'select' | 'toggle-on' | 'toggle-off' | 'key' | 'page' | 'boop' | 'whoosh' | 'poof' | 'undo'
   // dialogue text blips (NH: Animalese; しずえ has her own higher voice)
   | 'blip-host' | 'blip-villager'
@@ -18,7 +18,7 @@ export type SoundId =
   | 'fanfare' | 'miles' | 'chime'
   // villager reactions (the sound under an emote bubble)
   | 'pop' | 'surprise' | 'heart' | 'sparkle' | 'oops'
-  // scenery taps (docs/design/scene-interactions.md §Sound): quiet, jittered, two at most
+  // scenery taps (docs/design.md#scene-interactions): quiet, jittered, two at most
   | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow' | 'squeak';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
@@ -46,7 +46,7 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   'phone-open': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1 },
   'phone-close': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 },
   'phone-app': { bus: 'sfx', gain: 0.5, jitter: 30, max: 1 },
-  // taps (§13): heard dozens of times a day, so under the confirm; the keypad the softest of all
+  // taps: heard dozens of times a day, so under the confirm; the keypad the softest of all
   select: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },
   'toggle-on': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
   'toggle-off': { bus: 'sfx', gain: 0.36, jitter: 0, max: 1 },

@@ -1,4 +1,4 @@
-// Sound settings (docs/design/sound.md §10): per device (a phone's speaker is not shared data, so not synced like
+// Sound settings (docs/design.md#sound-settings): per device (a phone's speaker is not shared data, so not synced like
 // the language), kept in the storage registry (sync/storage.ts DEVICE.sound). Everything starts OFF (an
 // app opened on a train must never surprise anyone).
 import { DEVICE, readJson, writeJson, type KV } from '#lib/sync/storage.ts';

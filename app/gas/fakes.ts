@@ -64,7 +64,7 @@ export class FakeSheet {
   data() { return this.rows.slice(1, this.getLastRow()); }
 }
 
-export interface FakeOptions { keyA?: string | null; keyB?: string | null }
+interface FakeOptions { keyA?: string | null; keyB?: string | null }
 
 export function makeGas(opts: FakeOptions = {}) {
   const sheets = new Map<string, FakeSheet>();

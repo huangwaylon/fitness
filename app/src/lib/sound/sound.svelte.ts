@@ -1,4 +1,4 @@
-// Sound for the app (docs/design/sound.md): the settings, the unlock on the first tap, the hourly music clock, the
+// Sound for the app (docs/design.md#sound): the settings, the unlock on the first tap, the hourly music clock, the
 // weather hook, the muffle under sheets and the pause in the background. App moments go through cue() (cues.ts);
 // this module decides whether anything may sound at all. Nothing is created while every setting is off.
 //   startSound({ muffled: () => ui.sheets.length > 0 })   // once, in the root layout

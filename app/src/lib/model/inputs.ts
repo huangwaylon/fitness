@@ -21,7 +21,7 @@ function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates): Work
 }
 
 /**
- * A day's metric as of T (history-and-editing.md §4.1). Ingest rows are append-only and higher-only, so their max ≤ T
+ * A day's metric as of T (docs/design.md#how-edits-apply). Ingest rows are append-only and higher-only, so their max ≤ T
  * is the latest value (and robust to a hand-edited sheet). A `metric_set` S (the latest with at ≤ T) overrides it, even
  * lower, but a later and higher sync still wins: max(S, ingest rows with S.at < at ≤ T).
  */

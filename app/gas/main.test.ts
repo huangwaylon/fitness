@@ -21,7 +21,7 @@ const b = (action: string, extra: object = {}) => post({ key: KEY_B, action, ...
 const tick = (ms = 1000) => vi.setSystemTime(Date.now() + ms);
 const data = (tab: string) => gas.sheets.get(tab)?.data() ?? [];
 
-// The user's real Shortcut body (sheets-architecture.md §5): the old dictionary plus key + action.
+// The user's real Shortcut body (docs/backend.md#ingest): the old dictionary plus key + action.
 // The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories = Move kcal.
 const REAL = {
   dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM',
@@ -319,7 +319,7 @@ describe('events', () => {
   });
 });
 
-describe('edit events (history-and-editing.md §4.1)', () => {
+describe('edit events (docs/design.md#how-edits-apply)', () => {
   const edits = [
     { type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } },
     { type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 0 } },
@@ -493,7 +493,7 @@ describe('snapshot', () => {
   });
 });
 
-describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => {
+describe('rev: resync after hand changes (docs/backend.md#revision)', () => {
   const rev = () => a('snapshot').rev as string;
 
   it('is stable across the app\'s own writes', () => {

@@ -1,4 +1,4 @@
-// The hourly music and the ambience, pure (sound.md §1, §2): track choice by Tokyo hour and weather, the next hour,
+// The hourly music and the ambience, pure (docs/design.md#hourly-music, #ambience): track choice by Tokyo hour and weather, the next hour,
 // the crossfade schedule, the ambient layers.
 import { describe, expect, it } from 'vitest';
 import { CROSSFADE, FADE_IN, crossfadePlan, hourKey, msToNextHour, trackAt, trackFor, type MusicFiles } from './hourly.ts';

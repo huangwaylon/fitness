@@ -23,7 +23,7 @@ function onEdit(e) {
   IslandFund.onEdit(e);
 }
 
-/** Run from the editor after fixing rows by hand (sheets-architecture.md §2.1). */
+/** Run from the editor after fixing rows by hand (docs/backend.md#revision). */
 function resync() {
   IslandFund.resync();
 }

@@ -1,4 +1,4 @@
-// The one place app moments meet sounds (docs/design/sound.md §5, the mapping table). Components and the motion
+// The one place app moments meet sounds (docs/design.md#cues, the mapping table). Components and the motion
 // director call cue('…') at the moment; what it sounds like (and how loud, how late) is decided here, so the mix can
 // be tuned without touching a component. Villager reactions name their cue in the reaction catalogue
 // (motion/reactions.ts `cue`), and the director plays it with the step.
@@ -14,7 +14,7 @@ export type Cue =
   | 'villager-tap' | 'host-tap' | 'emote-surprise' | 'emote-love' | 'emote-joy' | 'emote-idea' | 'trouble' | 'announce'
   // choices
   | 'choice-move' | 'choice-pick'
-  // taps (sound.md §13; most are named by a control's data-sfx, taps.ts)
+  // taps (docs/design.md#taps; most are named by a control's data-sfx, taps.ts)
   | 'tick' | 'open' | 'confirm' | 'toggle-on' | 'toggle-off' | 'key' | 'key-fn' | 'page' | 'boop' | 'sync' | 'remove' | 'undo'
   // the しまフォン
   | 'phone-open' | 'phone-close' | 'phone-app' | 'back'
@@ -53,7 +53,7 @@ export const CUES: Record<Cue, CueDef> = {
   announce: { sound: 'chime', world: true },
   'choice-move': { sound: 'cursor' },
   'choice-pick': { sound: 'confirm' },
-  // taps (sound.md §13): all UI, so they sound under a sheet too
+  // taps (docs/design.md#taps): all UI, so they sound under a sheet too
   tick: { sound: 'cursor', gain: 0.8 },
   open: { sound: 'select' },
   confirm: { sound: 'confirm' },
@@ -73,7 +73,7 @@ export const CUES: Record<Cue, CueDef> = {
   buy: { sound: 'purchase' },
   'badge-met': { sound: 'miles' },
   'harvest-receive': { sound: 'fanfare' },
-  // scenery (scene-interactions.md §Sound): quiet world sounds, muted under a sheet like the rest of the island
+  // scenery (docs/design.md#scene-interactions): quiet world sounds, muted under a sheet like the rest of the island
   'scene-bush': { sound: 'rustle', gain: 0.7, world: true },
   'scene-flower': { sound: 'swish', world: true },
   'scene-butterfly': { sound: 'sparkle', gain: 0.3, step: 7, world: true },

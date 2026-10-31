@@ -1,4 +1,4 @@
-// Apps Script transport (docs/design/sheets-architecture.md §2): one POST helper and `whoami`. Never throws; every
+// Apps Script transport (docs/backend.md#api): one POST helper and `whoami`. Never throws; every
 // failure maps to the error taxonomy. Plain TS (no Svelte) so it is unit-testable; fetch and the URL are injectable.
 import type { PersonId } from '#lib/types.ts';
 import type { WhoamiReply } from '#lib/contract/api.ts';

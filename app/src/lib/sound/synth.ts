@@ -1,4 +1,4 @@
-// Procedural placeholder effects (docs/design/sound.md §8): original, short, NH-*inspired* sounds rendered as raw
+// Procedural placeholder effects (docs/design.md#audio-files): original, short, NH-*inspired* sounds rendered as raw
 // samples (pure: no AudioContext, deterministic per id), so the feature works before any audio file exists. Each is
 // built from a few soft mallets, bells, glides and filtered noise. None of them copies a game melody: the jingles
 // are plain arpeggios and the announcement chime is the generic Japanese PA ピンポンパンポン (F-A-C-F).
@@ -66,7 +66,7 @@ const RECIPES: Record<SoundId, Ev[]> = {
   'phone-open': [mallet(C6, 0, 0.2, 0.7), mallet(E6, 0.05, 0.2, 0.7), mallet(G6, 0.1, 0.2, 0.75), mallet(C7, 0.15, 0.36, 0.85)],
   'phone-close': [mallet(G6, 0, 0.15, 0.75), mallet(C6, 0.06, 0.26, 0.8)],
   'phone-app': [{ kind: 'tone', f: 600, to: 1300, glide: 0.05, t: 0, d: 0.09, g: 0.8, attack: 0.001 }, mallet(C7, 0.045, 0.2, 0.35)],
-  // taps (sound.md §13). select: one soft woody "pok" (lighter than the confirm's two notes)
+  // taps (docs/design.md#taps). select: one soft woody "pok" (lighter than the confirm's two notes)
   select: [{ ...mallet(A6, 0, 0.11, 0.9), wave: 'tri' }],
   // a switch: two quick notes up (on) / down (off), the off one rounder
   'toggle-on': [mallet(C6, 0, 0.07, 0.7), mallet(G6, 0.045, 0.12, 0.9)],

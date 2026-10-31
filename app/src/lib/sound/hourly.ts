@@ -1,4 +1,4 @@
-// The hourly music (docs/design/sound.md §1): NH plays one track per real-world hour, in a sunny, rainy or snowy
+// The hourly music (docs/design.md#hourly-music): NH plays one track per real-world hour, in a sunny, rainy or snowy
 // arrangement, and changes track at the top of the hour. Pure: which track, when the next hour starts, how the fade
 // runs. The hour is Tokyo's (time/clock.ts jst()), like every other clock in the app.
 import { jst } from '#lib/time/clock.ts';

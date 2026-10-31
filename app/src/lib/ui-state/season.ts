@@ -9,7 +9,7 @@
 import { jst } from '#lib/time/clock.ts';
 
 export type Season = 'spring' | 'summer' | 'autumn' | 'winter';
-export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
+type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type Foliage = 'blossom' | 'green' | 'fall' | 'snow';
 
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];

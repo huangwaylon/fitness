@@ -1,4 +1,4 @@
-// The Web Audio engine's lifecycle against a small fake AudioContext and <audio> (sound.md §11): the decks' fades and
+// The Web Audio engine's lifecycle against a small fake AudioContext and <audio> (docs/design.md#engine-lifecycle): the decks' fades and
 // pauses, the idle suspend, the listeners a wait leaves behind, and the ambience on pause. Fake timers throughout.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IDLE_SUSPEND_MS } from './session.ts';

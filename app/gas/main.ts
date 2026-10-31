@@ -26,7 +26,7 @@ const LOCK_WAIT_MS = 10_000;
 const MIN_KEY_CHARS = 32;
 /** Keys are `openssl rand -hex 32`; anything else is refused before any Properties read. */
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
-/** How long the keys stay in CacheService. A rotated key keeps working for at most this long (google-setup.md §10). */
+/** How long the keys stay in CacheService. A rotated key keeps working for at most this long (docs/ops/runbook.md §4). */
 export const KEY_CACHE_SECONDS = 300;
 /** Tabs whose rows the client caches; a hand change to any of them bumps `REV`. */
 const SYNCED_TABS = ['metrics', 'events'] as const satisfies readonly TabName[];
@@ -64,7 +64,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     return fail('bad_request');
   }
   if (!isRec(body)) return fail('bad_request');
-  // Keyless liveness and version probe for the monitor (runbook §5): no Properties, no lock, no sheet.
+  // Keyless liveness and version probe for the monitor (docs/ops/runbook.md §3): no Properties, no lock, no sheet.
   if (body.action === 'health' && body.key === undefined) return { ok: true, build: BUILD };
 
   const me = personFor(body.key);
@@ -160,7 +160,7 @@ function withLock<R>(fn: () => R): R | Fail {
  * The script's own bookkeeping in Script Properties, read once and written at most once per locked request:
  * - `LAST_AT`: the last server `at` handed out (they strictly increase).
  * - `ROWS`: JSON `{tab: last row}` of the synced tabs as this script last left them.
- * - `REV`: the data revision (sheets-architecture.md §2.1). Changes when the synced tabs were changed by hand.
+ * - `REV`: the data revision (docs/backend.md#revision). Changes when the synced tabs were changed by hand.
  */
 interface ServerState { lastAt: number; rows: Partial<Record<TabName, number>>; rev: string; revChanged: boolean; dirty: boolean }
 let state: ServerState | null = null;
@@ -340,7 +340,7 @@ function bodyShape(body: Rec): string {
 
 const UPLOADS_SHOWN = 20;
 
-/** The caller's last 20 ingest audit rows, newest first (runbook §5: what did the Shortcut send?). */
+/** The caller's last 20 ingest audit rows, newest first (docs/ops/runbook.md §6: what did the Shortcut send?). */
 function uploads(me: PersonId): UploadsReply {
   return withLock((): UploadsReply => {
     let mine = 0;

@@ -76,7 +76,7 @@ export function saveMenu(items: WalletItem[]): SendResult {
 /** A fresh id for a new menu item. */
 export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
 
-// ---- きろく edits (history-and-editing.md §4): either person's data (`person`), open weeks only (the
+// ---- きろく edits (docs/design.md#editing): either person's data (`person`), open weeks only (the
 // model refuses the rest). Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless
 // that would miss the week's lock (the store shortens or refuses it). Every edit names its `person` explicitly.
 

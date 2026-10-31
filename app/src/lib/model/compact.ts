@@ -5,7 +5,7 @@
 // It relies on the sheet's invariant that ingest rows for a (person, date, metric) only go up over time (the server
 // appends only higher values), so "the row with the largest value at or before T" answers every read at T
 // (`metricAsOf`, `watchIsEdit`). A hand edit that breaks it bumps `rev`, and the client then refetches everything
-// (sheets-architecture.md §2.1).
+// (docs/backend.md#revision).
 //
 // Weight rows are the exception: a day's weight is its LATEST row (the server appends whenever the day's Body Mass
 // differs from its last row, up or down), and the model only reads it as of now. So per (person, date) only the

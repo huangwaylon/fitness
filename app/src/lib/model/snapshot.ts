@@ -1,4 +1,4 @@
-// The `snapshot` reply of the Apps Script backend (docs/design/sheets-architecture.md §1–2) and pure helpers to
+// The `snapshot` reply of the Apps Script backend (docs/backend.md#tabs, #api) and pure helpers to
 // merge incremental (`since`) replies. Rows are compact arrays in the sheet's column order.
 import type { PersonId } from '#lib/types.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';

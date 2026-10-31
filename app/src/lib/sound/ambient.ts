@@ -1,4 +1,4 @@
-// The island's ambience (docs/design/sound.md §2), pure: which loops sound at a given hour, month and weather, and
+// The island's ambience (docs/design.md#ambience), pure: which loops sound at a given hour, month and weather, and
 // how loud. They play on the music bus (ミュージック) and only from files (static/audio/manifest.json `ambient`);
 // there is no procedural placeholder: a synthesised surf wears thin within a day.
 import type { Weather } from './hourly.ts';
