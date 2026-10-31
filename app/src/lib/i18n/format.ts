@@ -9,7 +9,7 @@ const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
 /** `水` / `Wed`. */
 export const weekdayOf = (d: string): string => t(`weekday.${isoWeekday(d)}`);
 /** `10/28`. */
-const md = (d: string): string => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+export const md = (d: string): string => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
 /** A week from its Monday: `10/26–11/1`. */
 export const weekRange = (wk: string): string => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
 

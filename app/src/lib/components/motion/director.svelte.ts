@@ -7,7 +7,7 @@ import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion,
 import { reducedMotion } from '#lib/time/clock.ts';
 import { cue } from '#lib/sound/cues.ts';
 
-export interface ActorState {
+interface ActorState {
   motion: Motion | null;
   /** Bumped on every motion so the same motion can replay back to back. */
   motionN: number;

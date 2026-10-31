@@ -52,7 +52,7 @@ export const VILLAGER = { foot: ROWS.front, h: 80, x: { A: col(-1), B: col(1) } 
  *  tiles, 65u ≈ 0.8 villager tall: a little over one-tile furniture so the coins and the plate stay legible). */
 export const JAR = { x: col(0), base: ROWS.trees, w: 52 };
 
-export interface Prop {
+interface Prop {
   key: string;
   /** Height in u. */
   h: number;

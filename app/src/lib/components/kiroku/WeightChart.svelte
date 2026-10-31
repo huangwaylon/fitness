@@ -6,7 +6,7 @@
   import type { WeightPoint } from '#lib/model/weight.ts';
   import { addDays, daysBetween } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { formatDate } from '#lib/i18n/format.ts';
+  import { formatDate, md } from '#lib/i18n/format.ts';
   import { WEIGHT } from '#lib/config/rules.ts';
   import { kgText } from './fmt.ts';
 
@@ -66,7 +66,6 @@
   });
   /** Dates under the x axis: every 4 weeks back from today. */
   const xTicks = $derived(mini ? [] : [0, 1, 2].map((k) => addDays(to, -28 * k)).filter((d) => d >= from));
-  const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
 
   let hover = $state<WeightPoint | null>(null);
   function move(e: PointerEvent) {

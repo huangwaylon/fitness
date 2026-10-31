@@ -9,14 +9,12 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { dayMax } from '../island/progress.ts';
-  import { badgeGoals } from '../kiroku/fmt.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { weightTrend } from '#lib/model/weight.ts';
 
   let { view }: { view: WeekView } = $props();
   const r = $derived(rulesFor(view.weekKey));
-  const days = $derived(badgeGoals(view.weekKey));
   const moveGoal = $derived(view.people[view.me].moveGoal);
   /** Each fruit: its daily goal and what it pays. */
   const goal = (f: RingFruit): string =>
@@ -86,7 +84,7 @@
     <p>{t('help.badge.body', { bells: formatBells(r.badges.bells) })}</p>
     <ul class="chips">
       {#each RING_FRUITS as f (f)}
-        <li><OfficialArt key={fruitArt(f)} size={20} /><span class="money">{t('help.badge.days', { n: days[f] })}</span></li>
+        <li><OfficialArt key={fruitArt(f)} size={20} /><span class="money">{t('help.badge.days', { n: view.people[view.me].rings[f].weekGoalDays })}</span></li>
       {/each}
     </ul>
     <p class="note">{t('help.badge.duo', { bells: formatBells(r.badges.duoPerBadge) })}</p>

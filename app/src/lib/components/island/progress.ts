@@ -9,7 +9,7 @@ export function todayPct(r: Pick<RingProgress, 'today' | 'goal' | 'met'>): numbe
   return r.goal > 0 ? Math.max(0, Math.min(100, (r.today * 100) / r.goal)) : 0;
 }
 
-/** The most one person can earn in a day of the week (the Move goal pays the same at any kcal): 740 ベル in v1, 1,400 from 2026-11-02. */
+/** The most one person can earn in a day of the week (the Move goal pays the same at any kcal): 740 ベル in v1, 920 from 2026-11-02. */
 export function dayMax(weekKey: WeekKey): number {
   const r = rulesFor(weekKey);
   const b = r.bells;
@@ -18,8 +18,7 @@ export function dayMax(weekKey: WeekKey): number {
 
 /** 0–100: how much of a full day this person has earned today (idle life's "doing well" weight). */
 export const dayScore = (p: PersonWeekView, weekKey: WeekKey): number => {
-  const bells = Object.values(p.today.rings).reduce((a, b) => a + b, 0);
-  return Math.min(100, Math.round((bells * 100) / dayMax(weekKey)));
+  return Math.min(100, Math.round((p.today.bells * 100) / dayMax(weekKey)));
 };
 
 /** 「30/60分」「420/600kcal」「6,200/8,000歩」: today against the daily goal. */
