@@ -21,7 +21,7 @@ test('K.K. Slider comes on Saturday night; with the music on a tap plays his son
     localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: true, volume: 0.8 }));
     (window as { __cues?: string[] }).__cues = [];
   });
-  await page.goto('?demo&date=2026-10-31T20:00'); // a Saturday
+  await page.goto('?demo&date=2026-10-24T20:00'); // a Saturday (not Halloween: Jack's night)
   await expect(ribbon(page)).toBeVisible();
   const bells = await ribbon(page).getAttribute('aria-label');
   const kk = page.locator('[data-visitor="kk-slider"] .art');

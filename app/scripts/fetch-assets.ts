@@ -88,6 +88,12 @@ const SPECS: Record<string, Spec> = {
   // v4 island decorations.
   'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
+  // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
+  // Jack is given; Jack himself (the 3D model: his NH artwork is a small crop; a visitor only, so not in the roster).
+  'deco/pumpkin': [96, 'Orange_Pumpkin_NH_Inv_Icon.png'],
+  'deco/spooky-lantern': [128, 'Spooky_Lantern_(Orange)_NH_Icon.png'],
+  'items/candy': [96, 'Candy_NH_Inv_Icon.png'],
+  'villagers/jack': [512, 'Jack_NH_Model.png', 'Jack_NH.png'],
   // Game-derived replacements for hand-drawn chrome.
   // v4 seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
@@ -146,7 +152,7 @@ for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses',
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');

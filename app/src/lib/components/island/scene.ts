@@ -114,6 +114,15 @@ export const BED_ROWS = [ROWS.bedBack, ROWS.front];
  *  front-left, 🍎 Steps front-right. `BED_FRUIT[row][k]`, k = 0 for the bed's left column, 1 for its right. */
 export const BED_FRUIT: [RingFruit, RingFruit][] = [['pear', 'peach'], ['cherry', 'apple']];
 
+/** Halloween's pumpkins (Halloween.svelte), each shown only where it's clear of every control: one in front of the
+ *  hedge in the middle (between the rock and a weed's spot), one between each trunk and its person's bed, a pair on the
+ *  middle of the lawn on the trees' row. */
+export const PUMPKIN_U = 22;
+export const HALLOWEEN_SPOTS: readonly (readonly [number, number])[] = [
+  [col(0), HEDGE_BASE + 14], [TREE.x.A - 22, ROWS.bedBack - 30], [TREE.x.B + 22, ROWS.bedBack - 30],
+  [col(-0.5), ROWS.trees + 4], [col(0.5), ROWS.trees + 4]
+];
+
 /** Back row (the hedge only; no building, bench, cedar or path). */
 export function props(month: number): Prop[] {
   const [b1, b2] = hedgePair(month);
