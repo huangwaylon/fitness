@@ -200,7 +200,7 @@ describe('write queue', () => {
     await flush(() => t + 5000);
     expect(calls.map((c) => c.id)).toEqual([other.id, fix.id, island.id]); // the screen's order
   });
-  it('subjects include whose data (ADR 0023): a metric_set waits behind a held one for the same person, day and metric only', async () => {
+  it('subjects include whose data: a metric_set waits behind a held one for the same person, day and metric only', async () => {
     const t = 1_000_000;
     const held = enqueue('metric_set', { person: 'B', date: '2026-11-02', metric: 'steps', value: 1 }, t, 5000);
     const same = enqueue('metric_set', { person: 'B', date: '2026-11-02', metric: 'steps', value: 2 }, t + 1);

@@ -52,7 +52,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today);
   });
 
-  it('ADR 0021 rows: Move and Stand every day, no check-ins or questions; うめ’s Move goal applies from its day', () => {
+  it('Move and Stand every day, no check-ins or questions; うめ’s Move goal applies from its day', () => {
     expect(cache.rows.events.filter((e) => !['spend', 'harvest', 'highfive', 'pref', 'metric_set', 'workout_edit', 'workout_add', 'spend_void'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'weight']);

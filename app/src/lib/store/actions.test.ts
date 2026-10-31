@@ -1,4 +1,4 @@
-// The wallet actions (ADR 0022): buy from the shared menu (only what the wallet covers), undo, edit the menu.
+// The wallet actions: buy from the shared menu (only what the wallet covers), undo, edit the menu.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
@@ -76,7 +76,7 @@ describe('wallet actions', () => {
   });
 });
 
-describe('きろく edits name whose data (ADR 0023)', () => {
+describe('きろく edits name whose data', () => {
   it('every edit carries an explicit person, mine or the partner’s', () => {
     const date = '2026-11-17';
     expect(setMetric('B', date, 'steps', 4000.4).ok).toBe(true);

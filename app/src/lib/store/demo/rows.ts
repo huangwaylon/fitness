@@ -47,10 +47,10 @@ function demoRows(now: number): SnapshotRows {
     for (const p of ['A', 'B'] as PersonId[]) {
       const r = rng(`${p}|${d}`);
       const lazy = r() < 0.3;
-      // Around the goals (ADR 0021: 60 exercise min, 8,000 steps), a lazy day now and then.
+      // Around the goals (60 exercise min, 8,000 steps), a lazy day now and then.
       const steps = Math.round(((p === 'A' ? 9000 : 8600) + (r() - 0.5) * (p === 'A' ? 6000 : 5000) - (lazy ? 3500 : 0)) * partial);
       const mins = Math.round(((p === 'A' ? 62 : 56) + (r() - 0.5) * 44 - (lazy ? 28 : 0)) * partial);
-      // Move (active kcal) around each default goal (ウェイ 600, うめ 400) and Stand minutes around 180 (ADR 0021).
+      // Move (active kcal) around each default goal (ウェイ 600, うめ 400) and Stand minutes around 180.
       const kcal = Math.round(((p === 'A' ? 610 : 420) + (r() - 0.5) * (p === 'A' ? 360 : 260) - (lazy ? 200 : 0)) * partial);
       const stand = Math.round((190 + (r() - 0.5) * 120 - (lazy ? 60 : 0)) * partial);
       if (syncAt > at(d, 6) && syncAt < now) {
@@ -84,7 +84,7 @@ function demoRows(now: number): SnapshotRows {
   // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
   ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 
-  // The wallet (ADR 0022): treats most weeks, a dinner out, a trip treat saved up for, and one buy taken back by its
+  // The wallet: treats most weeks, a dinner out, a trip treat saved up for, and one buy taken back by its
   // buyer. The menu stays the default one.
   const buy = (t: number, p: PersonId, spendId: string, item: string, label: string, bells: number) =>
     ev(t, p, 'spend', { spendId, item, label, bells });
@@ -98,7 +98,7 @@ function demoRows(now: number): SnapshotRows {
   buy(at(addDays(w(1), 4), 20, 15), 'B', 'demo-cafe-2', 'cafe', 'カフェ・デザート', 2500);
   if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack', 'snack', 'おやつ', 1200);
 
-  // Body weight (ADR 0020): 12 weeks of morning weigh-ins, gently down with day-to-day water noise, a few days
+  // Body weight: 12 weeks of morning weigh-ins, gently down with day-to-day water noise, a few days
   // skipped, synced after breakfast; and a goal each. Weight never earns, so none of this moves a ベル.
   const WEIGHT_DEMO: Record<PersonId, { start: number; perWeek: number; noise: number; skip: number; goal: number }> = {
     A: { start: 72.6, perWeek: -0.35, noise: 0.9, skip: 0.15, goal: 66 },

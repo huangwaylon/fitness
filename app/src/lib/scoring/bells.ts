@@ -1,4 +1,4 @@
-// ベル earned per person per day and weekly badges (ADR 0019, what earns: ADR 0021): four automatic metrics, one fruit
+// ベル earned per person per day and weekly badges: four automatic metrics, one fruit
 // each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps). Pure; the model feeds it one person's week as of a time and decides
 // which weeks count (the economy's first week, locks).
 import { RING_FRUITS, rulesFor, TSUYU, type RuleVersion } from '#lib/config/rules.ts';
@@ -16,7 +16,7 @@ export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'du
 
 const toMilli = (x: number): number => Math.round(x * 1000);
 
-/** A day's counted exercise milli-minutes: max(Watch, workouts added in きろく), never a sum (ADR 0021 §2). */
+/** A day's counted exercise milli-minutes: max(Watch, workouts added in きろく), never a sum. */
 export const exerciseMilli = (watchMin: number | null, manualMin: number): number => Math.max(0, toMilli(watchMin ?? 0), toMilli(manualMin));
 
 const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
@@ -113,7 +113,7 @@ export interface WeekEarning {
 export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple: 0 });
 
 /**
- * One person's ベル for a week (ADR 0021 §3–4), at the week's rule version. Per day:
+ * One person's ベル for a week, at the week's rule version. Per day:
  * - 🍑 perExerciseMin × counted minutes, up to goals.exerciseMin. Minutes = max(Watch, workouts added in きろく).
  * - 🍐 floor(moveAtGoal × min(kcal, goal) / goal), the goal being the person's Move goal in force that day.
  * - 🍒 perStandMin × whole stand minutes, up to goals.standMin.

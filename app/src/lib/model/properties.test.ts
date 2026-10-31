@@ -77,7 +77,7 @@ function randomSheet(seed: number) {
 }
 
 /**
- * The rule written out plainly (ADR 0022 and its escalation amendment), against the ledger's earnings: a buy counts if
+ * The rule written out plainly (one wallet, escalating treats), against the ledger's earnings: a buy counts if
  * it is at this week's price (from ESCALATION.enforceFrom) and the wallet covers it; the buyer's first void after it
  * gives it back.
  */

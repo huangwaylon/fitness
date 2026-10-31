@@ -2,7 +2,7 @@
 // Usage (from app/): npm run assets:fetch   [--force to re-download everything]
 //                    npm run assets:fetch -- --only=trees/oak,host/   (re-download keys with these prefixes)
 //
-// The art is Nintendo's, used for a personal, non-commercial app: see docs/decisions/0018-official-art-public-site.md for where it is published.
+// The art is Nintendo's, used for a personal, non-commercial app: see docs/decisions.md#official-nh-art.
 // Output: static/art/<category>/<id>.webp (+ static/art/manifest.json), downscaled to ≤ the size the UI needs.
 // Idempotent: files already on disk are skipped (a file on disk but missing from the manifest, e.g. after an
 // interrupted run, is adopted: its size is read from the webp header). The manifest is saved after every file and
@@ -34,12 +34,12 @@ const SPECS: Record<string, Spec> = {
   'host/isabelle-winter': [512, 'Isabelle_NH_Model_2.png'],
   'host/isabelle-icon': [128, 'Isabelle_NH_Character_Icon.png'],
   'host/tom-nook': [512, 'Tom_Nook_NH.png'],
-  // The five fruit rings (ADR 0021: 🍒 cherry = Stand).
+  // The fruit icons (🍒 cherry = Stand).
   'fruit/peach': [128, 'Peach_NH_Inv_Icon.png'],
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],
   'fruit/pear': [128, 'Pear_NH_Inv_Icon.png'],
   'fruit/cherry': [128, 'Cherry_NH_Inv_Icon.png'],
-  // The wallet's five default treats (ADR 0022, one list): NH item art (an item someone adds shows the bag of bells).
+  // The wallet's five default treats (one list): NH item art (an item someone adds shows the bag of bells).
   'items/snack': [96, 'Cookies_NH_Icon.png'],
   'items/cafe': [96, 'Coffee_Cup_NH_Icon.png'],
   'items/dinner': [96, 'Pizza_Margherita_NH_Icon.png'],

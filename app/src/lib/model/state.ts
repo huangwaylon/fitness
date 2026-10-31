@@ -1,4 +1,4 @@
-// Snapshot rows → validated, indexed state. Whose data an edit changes (`data.person`, ADR 0023), which weeks are open
+// Snapshot rows → validated, indexed state. Whose data an edit changes (`data.person`), which weeks are open
 // and what the wallet covers are read-time rules here (an invalid event is ignored, not refused), so the sheet stays a dumb append-only log.
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
@@ -36,7 +36,7 @@ export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.ho
 export interface DemoCalendar { firstWeek: WeekKey }
 type Cal = Pick<State, 'calendar'>;
 
-/** First week of the economy (ADR 0019 §7: Mon 2026-10-26), or the demo's own one. */
+/** First week of the economy (Mon 2026-10-26), or the demo's own one. */
 export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_START;
 
 /** A week locks (its earnings are final) at its Wednesday 04:00; weeks before the first week never lock. */
@@ -52,7 +52,7 @@ export const editableAt = (date: LocalDate, t: number): boolean => date <= local
 // ---------- records ----------
 
 interface Timed<T> { at: number; v: T }
-/** An accepted edit of someone's data: `by` made it (ADR 0023: either person edits either person's data). */
+/** An accepted edit of someone's data: `by` made it (either person edits either person's data). */
 interface Edit<T> extends Timed<T> { by: PersonId }
 
 /** A workout added by hand in きろく (`workout_add`). */
@@ -68,10 +68,10 @@ interface WorkoutRec {
 
 /** A `workout_edit`: a hand-added workout left out of scoring (`excluded`) or back in. `person`: whose workout; `by`: who changed it. */
 interface WorkoutEditRec { at: number; person: PersonId; by: PersonId; id: string; excluded: boolean }
-/** A buy from the wallet (ADR 0022): `{spendId, item, label, bells}`. */
+/** A buy from the wallet: `{spendId, item, label, bells}`. */
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: string; label: string; bells: number }
 
-/** `goalWeight`: the person's optional goal in kg (ADR 0020), shown on the weight chart; never earns. */
+/** `goalWeight`: the person's optional goal in kg, shown on the weight chart; never earns. */
 interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number }
 
 export interface State {
@@ -83,7 +83,7 @@ export interface State {
   /** Accepted activity `metric_set` (steps, minutes) per person edited, keyed `date|metric`, ascending `at`. */
   metricSets: Record<PersonId, Map<string, Edit<number>[]>>;
   /**
-   * Body weight (ADR 0020), kept apart from the activity metrics so the economy can't read it: ingested `weight` rows
+   * Body weight, kept apart from the activity metrics so the economy can't read it: ingested `weight` rows
    * and accepted `metric_set {metric:'weight'}` per person, keyed by date, ascending `at`. A day's weight is the latest
    * of the two (`model/weight.ts`).
    */
@@ -100,7 +100,7 @@ export interface State {
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
-  /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (ADR 0021 §5; `moveGoalOn` picks the one in force). */
+  /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Edit<number>[]>;
   /** Newest metrics row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
@@ -248,7 +248,7 @@ const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isI
 const MENU_ID_RE = /^[\w-]+$/;
 
 /**
- * A `pref` menu value (ADR 0022): a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
+ * A `pref` menu value: a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
  * LIMITS.menuMaxItems (other keys are ignored). Anything invalid ignores the whole pref (the previous menu stays).
  */
 export function parseMenu(v: unknown): WalletItem[] | null {
@@ -277,12 +277,12 @@ export function parseMenu(v: unknown): WalletItem[] | null {
 
 /**
  * One handler per event type: each accepts (indexes) the event or ignores it. The edits (history-and-editing.md §4)
- * change `person`'s data (either person's, ADR 0023) and remember `by`; activity edits only count while the day's week
+ * change `person`'s data (either person's) and remember `by`; activity edits only count while the day's week
  * is open (§4.3).
  */
 const ON_EVENT: Record<EventType, OnEvent> = {
   spend({ s }, person, at, d) {
-    // A buy from the wallet (ADR 0022). Validity only: whether the wallet covered it is decided on read (bells.ts).
+    // A buy from the wallet. Validity only: whether the wallet covered it is decided on read (bells.ts).
     const label = typeof d.label === 'string' ? d.label.trim() : '';
     const { spendId, bells } = d;
     if (!isId(spendId) || !label || label.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return;
@@ -295,7 +295,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     const metric = d.metric;
     if (!date) return;
     if (metric === 'weight') {
-      // A weight (ADR 0020) earns nothing, so no week lock: any day up to today, one decimal, 20–300 kg.
+      // A weight earns nothing, so no week lock: any day up to today, one decimal, 20–300 kg.
       if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value, by });
       return;
     }
@@ -362,7 +362,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
 };
 
 /**
- * A person's Move goal on `date` (ADR 0021 §5): the latest `pref` moveGoal made on or before that Tokyo date (and
+ * A person's Move goal on `date`: the latest `pref` moveGoal made on or before that Tokyo date (and
  * stamped by t), else PEOPLE[p].moveGoal. A change applies from the day it's made, never to earlier days.
  */
 export function moveGoalOn(s: Pick<State, 'moveGoals'>, person: PersonId, date: LocalDate, t = Infinity): number {

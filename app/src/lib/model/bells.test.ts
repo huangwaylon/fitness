@@ -1,4 +1,4 @@
-// ADR 0019 on read (what earns: ADR 0021; one wallet: ADR 0022): earnings land in the wallet as they happen, the
+// The ベル economy on read: earnings land in the wallet as they happen, the
 // weekly bonus at the Sunday harvest, buys replay against it (never below zero), voids, the shared menus, locks, the Move goal in
 // force per day and the きろく ledger.
 import { describe, expect, it } from 'vitest';
@@ -157,7 +157,7 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
   });
 });
 
-describe('buys: the wallet must cover them, the buyer can undo them (ADR 0022)', () => {
+describe('buys: the wallet must cover them, the buyer can undo them', () => {
   // A perfect v2 week for both: 14 × 920 + 5,600 = 18,480 in the wallet by Monday.
   const r = perfectWeek();
   const MON = '2026-11-23';
@@ -211,7 +211,7 @@ describe('buys: the wallet must cover them, the buyer can undo them (ADR 0022)',
     expect(p.wallet.balance).toBe(3480);
   });
 
-  it('a later down-edit of an open week can uncover an earlier buy: it is ignored on read (pinned; ADR 0023 open question)', () => {
+  it('a later down-edit of an open week can uncover an earlier buy: it is ignored on read (pinned: an open question for the user)', () => {
     // Monday: A earns 920 by 09:00 and buys for 900 at 10:00. At 11:00 the exercise minutes are fixed down to 10 (below the first milestone, 🍑 0):
     // the replay uses the day's current ベル, so the buy is no longer covered and drops out (the balance stays ≥ 0).
     const day = D[0];
@@ -290,7 +290,7 @@ describe('the menu: one list, shared and editable; the latest pref by either per
   });
 });
 
-describe('escalating food treats: ×1.5 per repeat of an item in a Tokyo week, both people (ADR 0022 amendment)', () => {
+describe('escalating food treats: ×1.5 per repeat of an item in a Tokyo week, both people', () => {
   // A perfect v2 week for both (WK): 18,480 in the wallet from Monday 2026-11-23; buys in the week of 11-23 (Mon–Sun).
   const r = perfectWeek();
   const MON = '2026-11-23';
@@ -461,7 +461,7 @@ describe('the きろく ledger and history fields', () => {
   });
 });
 
-describe('the Move goal in force (ADR 0021 §5): per person, from the day it is set, never re-pricing earlier days', () => {
+describe('the Move goal in force: per person, from the day it is set, never re-pricing earlier days', () => {
   // A: 450 kcal every day. Default goal 600 → 75%, 98 a day (v2 milestones); a goal of 400 set on Wednesday morning pays 180 from Wednesday.
   const kcal = rowsOf({ metrics: D.map((d) => metric(jst(d, '22:00'), 'A', d, 'move_kcal', 450)) });
   const goal = (at: string, p: PersonId, value: number) => ev(at, p, 'pref', { key: 'moveGoal', value });

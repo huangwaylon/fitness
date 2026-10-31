@@ -1,5 +1,5 @@
 // History and editing (docs/design/history-and-editing.md §4–5): edits on top of the ベル model.
-// Anyone's data (`data.person`, ADR 0023; absent = the sender), open weeks only (this week, and last week until Wednesday
+// Anyone's data (`data.person`; absent = the sender), open weeks only (this week, and last week until Wednesday
 // 04:00 JST). Workouts are only the ones added by hand in きろく (`workout_add`): minutes toward 🍑, nothing more.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
@@ -340,7 +340,7 @@ describe('harvest taps (one acceptance rule for the island and きろく)', () =
   });
 });
 
-describe('cross-person edits (ADR 0023): either person edits either person’s data', () => {
+describe('cross-person edits: either person edits either person’s data', () => {
   it('every edit type reaches the partner’s data, and the change log says who made it', () => {
     const rows = withRows(goodWeek(), {
       events: [

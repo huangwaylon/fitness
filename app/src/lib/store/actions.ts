@@ -46,7 +46,7 @@ export function confirmHarvest(): SendResult {
   return week.send('harvest', { week: wk });
 }
 
-// ---- The wallet (ADR 0022): buy from the shared menu, undo, edit the menu. No approvals.
+// ---- The wallet: buy from the shared menu, undo, edit the menu. No approvals.
 
 /**
  * Buy a menu item from the wallet at its current price (an escalating food treat's price this week, `MenuItemView.price`):
@@ -76,7 +76,7 @@ export function saveMenu(items: WalletItem[]): SendResult {
 /** A fresh id for a new menu item. */
 export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
 
-// ---- きろく edits (history-and-editing.md §4): either person's data (`person`, ADR 0023), open weeks only (the
+// ---- きろく edits (history-and-editing.md §4): either person's data (`person`), open weeks only (the
 // model refuses the rest). Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless
 // that would miss the week's lock (the store shortens or refuses it). Every edit names its `person` explicitly.
 
@@ -85,7 +85,7 @@ export function setMetric(person: PersonId, date: string, metric: 'steps' | 'exe
 }
 
 /**
- * A day's body weight from きろく (ADR 0020): kg, one decimal. Weight earns nothing, so no week lock applies (any day up
+ * A day's body weight from きろく: kg, one decimal. Weight earns nothing, so no week lock applies (any day up
  * to today); it still waits UNDO_MS with もとに戻す. `{ok:false}` for a value outside 20–300 kg.
  */
 export function setWeight(person: PersonId, date: string, kg: number): SendResult {
@@ -103,7 +103,7 @@ export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
 }
 
 /**
- * A daily Move goal in kcal (ADR 0021 §5): an integer within MOVE_GOAL (100–2,000), rounded. It applies from today
+ * A daily Move goal in kcal: an integer within MOVE_GOAL (100–2,000), rounded. It applies from today
  * on, never to earlier days. `{ok:false}` for a value outside the bounds.
  */
 export function setMoveGoal(person: PersonId, kcal: number): SendResult {

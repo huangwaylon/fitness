@@ -7,8 +7,8 @@
 // (`metricAsOf`, `watchIsEdit`). A hand edit that breaks it bumps `rev`, and the client then refetches everything
 // (sheets-architecture.md §2.1).
 //
-// Weight rows (ADR 0020) are the exception: a day's weight is its LATEST row (the server appends whenever the day's
-// first Body Mass sample changes, up or down), and the model only reads it as of now. So per (person, date) only the
+// Weight rows are the exception: a day's weight is its LATEST row (the server appends whenever the day's Body Mass
+// differs from its last row, up or down), and the model only reads it as of now. So per (person, date) only the
 // newest `weight` row is kept, never "the largest".
 import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, isRec, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';

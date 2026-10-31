@@ -1,4 +1,4 @@
-// Parser of the iOS Shortcut's health body (ADR 0015, docs/ops/shortcut-health-sync.md §1). One format, the one the
+// Parser of the iOS Shortcut's health body (docs/ops/shortcut-health-sync.md §1). One format, the one the
 // Shortcut sends (read from the `uploads` log, 2026-10-30): daily totals as newline-joined Text, one line per day.
 //
 //   { "key": "…", "action": "ingest",
@@ -6,7 +6,7 @@
 //     "steps": "8564\n…",                       that day's total
 //     "exercise_minutes": "22\n…",              that day's total
 //     "calories": "251.3\n…",                   that day's active energy in kcal (the Move ring) → metric move_kcal
-//     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min (ADR 0021)
+//     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min
 //     "weight": "0\n68.4\n…" }                 that day's Body Mass in kg; 0 = no weigh-in
 //
 // Other fields are ignored (an old Shortcut's `workouts` too: workouts are only added by hand in きろく). Every daily field is optional. A list whose length differs from `dates` is dropped with a

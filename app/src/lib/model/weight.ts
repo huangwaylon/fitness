@@ -1,10 +1,10 @@
-// Body-weight trend (ADR 0020): a calm view of where each person's weight is heading. Shown only: nothing here feeds
+// Body-weight trend: a calm view of where each person's weight is heading. Shown only: nothing here feeds
 // the ベル economy (bells.ts never imports this file, and weight rows live in their own State maps).
 //
 // Rules:
 // - A day's weight is the latest of its ingested rows and its きろく edits (`metric_set {metric:'weight'}`) stamped at
-//   or before T. The Shortcut sends the day's first Body Mass sample (gas/parse.ts), and the server appends a row
-//   whenever that value changes, so the latest row is the current one (unlike steps, which take the max).
+//   or before T. The Shortcut sends the day's Body Mass (gas/parse.ts), and the server appends a row whenever it
+//   differs from the day's last row, so the latest row is the current one (unlike steps, which take the max).
 // - The trend is an exponentially weighted moving average (WEIGHT.alpha = 0.1 a day, gap-aware), seeded with the
 //   first weigh-in.
 import type { LocalDate, PersonId } from '#lib/types.ts';
@@ -104,7 +104,7 @@ export function project(latest: WeightPoint, start: WeightPoint, goal: number, p
   return { kind: 'date', date: addDays(latest.date, Math.ceil(weeks * 7)) };
 }
 
-/** One person's weight trend as of `now` (both people's are visible to both: ADR 0016). */
+/** One person's weight trend as of `now` (both people's are visible to both). */
 export function weightTrend(s: State, p: PersonId, now: number): WeightTrend {
   const points = ewmaTrend(weighIns(s, p, now));
   const goal = s.prefs[p].goalWeight ?? null;
