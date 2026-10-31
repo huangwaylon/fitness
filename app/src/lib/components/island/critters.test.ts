@@ -4,8 +4,13 @@ import {
   hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaNames from '#lib/i18n/catch.ja.json';
+import enNames from '#lib/i18n/catch.en.json';
+
+const ja = { ...jaMain, ...jaNames };
+const en = { ...enMain, ...enNames };
 
 /** A sequence of fixed rolls (then 0.5s). */
 const rolls = (...xs: number[]) => () => (xs.length ? xs.shift()! : 0.5);

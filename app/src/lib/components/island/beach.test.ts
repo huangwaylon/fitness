@@ -4,8 +4,13 @@ import {
   shellsAt, zodiacOf
 } from './beach.ts';
 import { addDays } from '#lib/time/dates.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaNames from '#lib/i18n/catch.ja.json';
+import enNames from '#lib/i18n/catch.en.json';
+
+const ja = { ...jaMain, ...jaNames };
+const en = { ...enMain, ...enNames };
 
 const H = 3_600_000;
 

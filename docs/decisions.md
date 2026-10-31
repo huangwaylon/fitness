@@ -177,7 +177,8 @@ Why: the app opens instantly and offline.
 
 ### Japanese first
 The UI defaults to Japanese; each person can switch to English (`pref` `locale`). Strings live in `ja.json` and
-`en.json` (けんこう's in `kenkou.ja.json` / `kenkou.en.json`, loaded with its tab to keep the first load small), the type is rounded (Zen Maru Gothic), and dates are formatted the Japanese way. Why: both live in
+`en.json` (けんこう's in `kenkou.ja.json` / `kenkou.en.json`, loaded with its tab, and the names of everything the island lets
+us catch in `catch.ja.json` / `catch.en.json`, loaded with the first catch, beach find or the ずかん, to keep the first load small), the type is rounded (Zen Maru Gothic), and dates are formatted the Japanese way. Why: both live in
 Japan.
 
 ## Content, art and sound

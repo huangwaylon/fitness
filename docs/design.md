@@ -449,7 +449,9 @@ float up). No trading, no ベル. `?visitor=<id>` (dev or `?demo`) brings one.
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
 (Critterpedia) in きろく: さかな 33, むし 48 (the wasp from a shaken nest included), かせき 32, かいがら 7, shared between the two of us (the first `find` of
 either). A kind's page lists every entry in the game's order: the official icon (loaded lazily) and the name for the
-found ones, a silhouette (the icon in one shade) and ？？？ for the rest; 「コンプリート！」 when all are in. A tap on a
+found ones, a silhouette (the icon in one shade) and ？？？ for the rest; 「コンプリート！」 when all are in. The names of
+everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん, the first critter of a session
+or a beach find's plate, out of the island's first load. A tap on a
 found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish and bugs, NH's catch line.
 
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one

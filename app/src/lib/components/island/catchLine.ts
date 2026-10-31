@@ -7,7 +7,10 @@ import { caption, type BugId, type FishId, type JunkId } from './critters.ts';
 
 let chunk: Promise<typeof import('./catchLines.ts')['CATCH_LINES']> | null = null;
 /** Starts (or joins) loading the catch lines. */
-export const loadLines = () => (chunk ??= import('./catchLines.ts').then((m) => m.CATCH_LINES));
+/** Starts (or joins) loading the catch lines, and the names with them (the fallback caption names the catch). */
+export const loadLines = () => (chunk ??= Promise.all([import('./catchLines.ts'), loadNames()]).then(([m]) => m.CATCH_LINES));
+/** Starts (or joins) loading the catchables' names (i18n/catch.ts, its own chunk). */
+export const loadNames = (): Promise<unknown> => import('#lib/i18n/catch.ts');
 
 /** NH's line for `item` in the app's language (「<Player>」 is my よびな), else our caption. */
 export async function catchLine(item: FishId | JunkId | BugId): Promise<string> {
