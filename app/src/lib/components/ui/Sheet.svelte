@@ -136,6 +136,10 @@
     flex: 1; min-height: 0; display: flex; flex-direction: column;
     padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
+  /* An undo banner is up: the last row can scroll clear of it… */
+  dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
+  /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
+  dialog.toasting .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
   dialog.top.toasting .inner { padding-bottom: 0; }
   dialog.top.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
   @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }

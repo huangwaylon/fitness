@@ -403,3 +403,16 @@ test('a sheet opened while the undo banner is up starts at its top (the menu edi
   await expect(sheet(page).locator('.hint')).toBeVisible();
   expect(await sheet(page).evaluate((d) => d.scrollTop)).toBe(0);
 });
+
+test('with the undo banner up, a sheet’s footer (買う！) rises above it: a tap on 買う！ reaches 買う！', async ({ page }) => {
+  await page.goto('jar?demo');
+  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
+  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
+  const buy = sheet(page).getByRole('button', { name: '買う！' });
+  await expect(buy).toBeVisible();
+  await sheet(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished)));
+  const hit = await buy.evaluate((b) => { const r = b.getBoundingClientRect(); const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!top && b.contains(top); });
+  expect(hit).toBe(true);
+});
