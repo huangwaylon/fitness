@@ -7,6 +7,12 @@ import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion,
 import { reducedMotion } from '#lib/time/clock.ts';
 import { cue } from '#lib/sound/cues.ts';
 
+/** Which way an actor looks: as drawn ('home'), toward the middle of the island ('in'), or left / right. */
+export type Facing = 'home' | 'in' | 'l' | 'r';
+/** A tool in my villager's hand (NH: out of the pocket for the job). */
+export type Tool = 'can' | 'shovel' | 'net' | 'rod';
+type Pt = readonly [number, number];
+
 interface ActorState {
   motion: Motion | null;
   /** Bumped on every motion so the same motion can replay back to back. */
@@ -16,11 +22,24 @@ interface ActorState {
   /** Keep the bubble up (sleepy while asleep). */
   emoteHold: boolean;
   fx: { kind: FxKind; n: number }[];
-  /** 'in' = facing the middle of the island (the other villager / the jar). */
-  face: 'home' | 'in';
-  /** Stroll offset in stage units (toward the jar), and whether the walk bounce runs. */
-  walkX: number;
+  face: Facing;
+  /** Where the feet are (stage units): the spot the CSS transition is heading for. */
+  x: number;
+  y: number;
+  /** The feet's y the depth (z) is taken from: set at a segment's start walking toward the camera, at its end walking
+   *  away, so the villager never pops in front of what it's still behind. */
+  zy: number;
+  /** The current segment's duration (ms; 0 = a snap). */
+  walkMs: number;
+  /** One walk cycle (two steps), ms. */
+  stepMs: number;
+  /** Where the villager lives on the island (stage units). */
+  home: Pt;
   walking: boolean;
+  tool: Tool | null;
+  toolN: number;
+  /** NH's hold-up: the item's art over the head. */
+  holding: { art: string; n: number } | null;
   asleep: boolean;
   /** しずえ pose override while a beat plays. */
   pose: 'wave' | 'stand' | 'bow' | null;
@@ -30,8 +49,9 @@ interface ActorState {
 }
 
 const blank = (): ActorState => ({
-  motion: null, motionN: 0, emote: null, emoteN: 0, emoteHold: false, fx: [], face: 'home', walkX: 0,
-  walking: false, asleep: false, pose: null, present: false, busyUntil: 0
+  motion: null, motionN: 0, emote: null, emoteN: 0, emoteHold: false, fx: [], face: 'home', x: 0, y: 0, zy: 0, walkMs: 0,
+  stepMs: 640, home: [0, 0], walking: false, tool: null, toolN: 0, holding: null, asleep: false, pose: null, present: false,
+  busyUntil: 0
 });
 
 export const actors = $state<Record<ActorId, ActorState>>({ mine: blank(), partner: blank(), host: blank() });
@@ -103,10 +123,11 @@ export function cancel(id: ActorId) {
   }
   const a = actors[id];
   a.motion = null;
-  a.walking = false;
-  a.walkX = 0;
+  a.walking = false; // a segment under way slides on to its end and stops there
+  a.tool = null;
   a.pose = null;
   a.busyUntil = 0;
+  walks[id].clear();
 }
 
 export function busy(id: ActorId): boolean {
@@ -154,7 +175,7 @@ export function removeFx(id: ActorId, n: number) {
 export function applyStep(id: ActorId, s: Step) {
   const a = actors[id];
   if (id === 'host' && !a.present) return;
-  if (s.face) a.face = s.face === 'home' ? 'home' : 'in';
+  if (s.face) a.face = s.face === 'home' ? 'home' : s.face === 'other' ? toward(id, actors[id === 'mine' ? 'partner' : 'mine'].x) : 'in';
   if (s.pose) {
     a.pose = s.pose;
     later(id, EMOTE_MS, () => (actors[id].pose = null));
@@ -239,32 +260,184 @@ function play(rid: ReactionId, swap: boolean) {
   }
 }
 
-/** Walk leg length (= --dur-walk in tokens.css), the wait at the far end, and the puff cadence. */
+/** Facing toward stage x from where the actor stands ('in' when it's right there). */
+function toward(id: ActorId, x: number): Facing {
+  const a = actors[id];
+  return Math.abs(x - a.x) < 2 ? 'in' : x < a.x ? 'l' : 'r';
+}
+
+/** Away from its home spot (walking, or standing somewhere else). */
+export function awayFromHome(id: ActorId): boolean {
+  const a = actors[id];
+  return Math.hypot(a.x - a.home[0], a.y - a.home[1]) > 2;
+}
+
+/** Where an actor lives; puts it there unless it's out walking (the scene calls this as it mounts). */
+export function setHome(id: ActorId, x: number, y: number) {
+  const a = actors[id];
+  const atHome = !awayFromHome(id) || (a.x === 0 && a.y === 0);
+  a.home = [x, y];
+  if (atHome) place(id, x, y);
+}
+
+/** The way home from where an actor is (the scene's walk graph, island/avatar.ts; straight until it's attached). */
+let router: ((id: ActorId) => Pt[] | null) | null = null;
+export function setRouter(fn: typeof router): void {
+  router = fn;
+}
+export function routeHome(id: ActorId): Pt[] {
+  return router?.(id) ?? [actors[id].home];
+}
+
+/** Put an actor at (x, y) at once (no walk): back home after a long absence, frozen under a sheet. */
+export function place(id: ActorId, x: number, y: number) {
+  const a = actors[id];
+  for (const c of walks[id]) c();
+  walks[id].clear();
+  Object.assign(a, { x, y, zy: y, walkMs: 0, walking: false });
+}
+
+/** Called at each step of a walk (the scene plays a footstep: grass or sand), at most one per STEP_GAP_MS. */
+let stepHook: ((id: ActorId, x: number, y: number) => void) | null = null;
+export function onStep(fn: (id: ActorId, x: number, y: number) => void): () => void {
+  stepHook = fn;
+  return () => {
+    if (stepHook === fn) stepHook = null;
+  };
+}
+export const STEP_GAP_MS = 320;
+/** Walk timers per actor (a new walk drops the last one's; so do cancel() and place()). */
+const walks: Record<ActorId, Set<() => void>> = { mine: new Set(), partner: new Set(), host: new Set() };
+
+interface WalkOpts {
+  /** Total duration (ms), shared between the segments by length; else from `speed`. */
+  ms?: number;
+  /** u/s (when no `ms`). */
+  speed?: number;
+  /** Where the feet are now, if not (x, y): a walk re-targeted mid-step starts from the live position. */
+  from?: Pt;
+  /** On arrival. */
+  then?: () => void;
+  /** Face this way on arrival. */
+  face?: Facing;
+}
+
+/** Walk an actor along `pts` (stage units; design.md "Walking"): one CSS transition of transform per segment (no rAF),
+ *  facing the way it goes, the walk bounce, a dust puff and a footstep every other step, depth from the feet's y. A new
+ *  walk replaces the last; returns the total ms. */
+export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): number {
+  const a = actors[id];
+  for (const c of walks[id]) c();
+  walks[id].clear();
+  const from: Pt = o.from ?? [a.x, a.y];
+  const lens: number[] = [];
+  let at = from;
+  for (const p of pts) {
+    lens.push(Math.hypot(p[0] - at[0], p[1] - at[1]));
+    at = p;
+  }
+  const len = lens.reduce((s, l) => s + l, 0);
+  if (!pts.length || len < 1) {
+    if (o.face) a.face = o.face;
+    o.then?.();
+    return 0;
+  }
+  const total = o.ms ?? (len / (o.speed ?? 90)) * 1000;
+  const own = (ms: number, fn: () => void) => {
+    const c = later(id, ms, () => {
+      walks[id].delete(c);
+      fn();
+    }, () => walks[id].delete(c));
+    walks[id].add(c);
+  };
+  // brisk walks take quick steps (NH's run), a wander slow ones
+  a.stepMs = len / Math.max(0.001, total / 1000) >= 180 ? 360 : 640;
+  a.walking = true;
+  a.busyUntil = Math.max(a.busyUntil, Date.now() + total + 200);
+  let t = 0;
+  at = from;
+  pts.forEach((p, i) => {
+    const ms = (total * lens[i]) / len;
+    const prev = at;
+    const seg = () => {
+      if (Math.abs(p[0] - prev[0]) >= 3) a.face = p[0] < prev[0] ? 'l' : 'r';
+      a.walkMs = Math.round(ms);
+      a.x = p[0];
+      a.y = p[1];
+      if (p[1] >= prev[1]) a.zy = p[1];
+    };
+    if (t === 0) seg();
+    else own(t, seg);
+    if (p[1] < prev[1]) own(t + ms, () => (a.zy = p[1]));
+    t += ms;
+    at = p;
+  });
+  // a puff and a footstep every other step (at most one per STEP_GAP_MS)
+  const gap = Math.max(STEP_GAP_MS, a.stepMs / 2);
+  for (let s = gap / 2; s < total - 60; s += gap)
+    own(s, () => {
+      addFx(id, 'puff');
+      stepHook?.(id, a.x, a.y);
+    });
+  own(total, () => {
+    a.walking = false;
+    if (o.face) a.face = o.face;
+    o.then?.();
+  });
+  return total;
+}
+
+/** Walk leg length and the wait at the far end of a stroll. */
 const WALK_MS = 1600;
 const WALK_WAIT_MS = 1200;
-const PUFF_MS = 640;
 
-/** A walk (stroll): out `dx` stage units, wait, and back (design.md "Motion"). */
+/** A walk (stroll): out `dx` stage units toward the middle, wait, and back (design.md "Motion"). */
 export function stroll(id: 'mine' | 'partner', dx: number, onWait?: () => void) {
   const a = actors[id];
-  if (reducedMotion()) return;
+  const [hx, hy] = a.home;
+  const dir = id === 'mine' ? 1 : -1;
+  walkTo(id, [[hx + dir * dx, hy]], {
+    ms: WALK_MS,
+    then: () => {
+      onWait?.();
+      later(id, WALK_WAIT_MS, () => walkTo(id, [[hx, hy]], { ms: WALK_MS, face: 'home' }));
+    }
+  });
   a.busyUntil = Date.now() + WALK_MS * 2 + WALK_WAIT_MS + 200;
-  a.face = 'in';
-  a.walking = true;
-  a.walkX = dx;
-  const puff = () => addFx(id, 'puff');
-  for (let t = 300; t < WALK_MS; t += PUFF_MS) later(id, t, puff);
-  later(id, WALK_MS, () => {
-    a.walking = false;
-    onWait?.();
-  });
-  later(id, WALK_MS + WALK_WAIT_MS, () => {
-    a.face = 'home';
-    a.walking = true;
-    a.walkX = 0;
-    for (let t = 300; t < WALK_MS; t += PUFF_MS) later(id, t, puff);
-  });
-  later(id, WALK_MS * 2 + WALK_WAIT_MS, () => (a.walking = false));
+}
+
+/** A tool out for `ms` (my villager's watering can, shovel, net or rod). */
+export function useTool(id: ActorId, tool: Tool | null, ms = 900) {
+  const a = actors[id];
+  a.tool = tool;
+  const n = ++a.toolN;
+  if (tool) later(id, ms, () => actors[id].toolN === n && (actors[id].tool = null));
+}
+
+/** How long a hold-up lasts by default (ms): about a catch plate's first page. */
+export const HOLD_MS = 3200;
+
+/** NH's hold-up: the villager lifts the item over its head (a squash, a rise, held) for `ms`. */
+export function holdUp(id: ActorId, art: string, ms = HOLD_MS) {
+  const a = actors[id];
+  if (a.asleep) return;
+  const n = (a.holding?.n ?? 0) + 1;
+  a.tool = null;
+  a.holding = { art, n };
+  a.busyUntil = Math.max(a.busyUntil, Date.now() + ms);
+  setMotion(id, 'holdup');
+  // not through later(): a reaction may preempt the pose, the item still goes away
+  setTimeout(() => actors[id].holding?.n === n && (actors[id].holding = null), ms);
+}
+
+/** Put the held item away (its plate closed). */
+export function putAway(id: ActorId) {
+  actors[id].holding = null;
+}
+
+/** Turn to face stage x. */
+export function faceToward(id: ActorId, x: number) {
+  actors[id].face = toward(id, x);
 }
 
 /** Night naps (R13): asleep = slow breath + a zzz loop (reduced motion: a held zzz mark). */
@@ -306,9 +479,9 @@ export function resetAll() {
   drainTimer = null;
   eventUntil = 0;
   for (const id of ['mine', 'partner', 'host'] as const) {
-    const present = actors[id].present;
+    const { present, home } = actors[id];
     cancel(id);
-    Object.assign(actors[id], blank(), { present });
+    Object.assign(actors[id], blank(), { present, home, x: home[0], y: home[1], zy: home[1] });
   }
 }
 

@@ -305,8 +305,15 @@
   37.5%,87.5% { transform: translate(4%,-5%) rotate(8deg); }
   50% { transform: translate(4%,0) rotate(8deg) scale(1.04,.96); }
 }
+/* a walk: two steps a cycle, a bob with a ±2° rock and a small squash at each footfall (0% and 50%) */
 @keyframes if-walkbounce {
-  0%,50%,100% { transform: none; } 25% { transform: translateY(-4%) rotate(2deg); } 75% { transform: translateY(-4%) rotate(-2deg); }
+  0%,100% { transform: scale(1.03,.97); } 25% { transform: translateY(-4%) rotate(2deg); }
+  50% { transform: scale(1.03,.97); } 75% { transform: translateY(-4%) rotate(-2deg); }
+}
+/* NH's hold-up (a catch, a find): a squash, a rise onto the toes as the item goes up, held, settle */
+@keyframes if-holdup {
+  0%,100% { transform: none; } 14% { transform: scale(1.1,.88); } 34% { transform: translateY(-5%) scale(.95,1.07); }
+  48%,88% { transform: translateY(-1.5%) scale(.98,1.03); }
 }
 /* trees: origin at the trunk base */
 /* NH's tree shake: ±4°, three swings, 500ms */

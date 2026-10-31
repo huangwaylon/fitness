@@ -77,6 +77,12 @@
     c.pick();
   }
 
+  /** Close the balloon (my villager set off walking: it only speaks standing still). */
+  export function hush() {
+    stop();
+    said = null;
+  }
+
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
    *  head). `avoid`: more boxes to keep clear of (client px), e.g. the speaker's emote; `colour`: the name tag's. */
   export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string; choices?: Choice[] } = {}) {

@@ -14,6 +14,7 @@
   import { ISLAND_SEED, digSpots, findArt } from './beach.ts';
   import { ROCK, rockTap, weedsAt, type Weed } from './care.ts';
   import { take, takenOn } from './sceneDay.ts';
+  import { approach } from './avatar.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -62,14 +63,35 @@
   $effect(() => () => timers.forEach(clearTimeout));
   let rockEl = $state<HTMLElement>();
 
+  /** After my villager's walk there (avatar.ts; 0 when it doesn't walk). */
+  function after(ms: number, fn: () => void) {
+    if (!ms) return fn();
+    const id = setTimeout(() => {
+      timers.delete(id);
+      fn();
+    }, ms);
+    timers.add(id);
+  }
+  /** Weeds being walked to (a second tap meanwhile does nothing). */
+  const going = new Set<string>();
   function pull(w: Weed) {
-    take(date, w.uid);
-    pulled++;
-    sceneSfx('weed');
-    spawn({ kind: 'pull', x: w.x, y: w.y, flip: w.flip }, 700);
+    if (going.has(w.uid)) return;
+    going.add(w.uid);
+    const { ms } = approach(w.x, w.y, { motion: 'squish' });
+    after(ms, () => {
+      going.delete(w.uid);
+      take(date, w.uid);
+      pulled++;
+      sceneSfx('weed');
+      spawn({ kind: 'pull', x: w.x, y: w.y, flip: w.flip }, 700);
+    });
   }
   function hitRock() {
     const what = rockTap(Math.random);
+    const { ms } = approach(ROCK.x, ROCK.y, { tool: 'shovel', toolMs: 700, motion: 'nod' });
+    after(ms, () => clonk(what));
+  }
+  function clonk(what: ReturnType<typeof rockTap>) {
     sceneSfx('clonk');
     rockEl?.animate([{ transform: 'none' }, { transform: 'translateX(-1.5px)', offset: 0.2 }, { transform: 'translateX(1.5px)', offset: 0.45 }, { transform: 'translateX(-.8px)', offset: 0.7 }, { transform: 'none' }], { duration: 320, easing: 'ease-out' });
     if (what === 'sparkle') {

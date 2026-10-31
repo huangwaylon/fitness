@@ -36,6 +36,7 @@
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
+  import { approach } from './avatar.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -186,6 +187,19 @@
   }
   /** Picks up a fallen fruit: gone from this phone until the next Tokyo day (no ベル: those come from the goal). */
   function collect(f: RingFruit) {
+    const s = spots.find((p) => p.f === f);
+    if (!s || s.stage !== 'ground' || going.has(f)) return;
+    // my villager walks over and picks it up (avatar.ts)
+    going.add(f);
+    const { ms } = approach(s.gx, s.gy, { motion: 'squish' });
+    later(ms, () => {
+      going.delete(f);
+      pick(f);
+    });
+  }
+  /** Fruit my villager is walking to. */
+  const going = new Set<RingFruit>();
+  function pick(f: RingFruit) {
     const s = spots.find((p) => p.f === f);
     if (!s || s.stage !== 'ground') return;
     cue('fruit-pick');

@@ -25,6 +25,8 @@
   import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentDay, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wishDay, wishFor } from './sceneDay.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
+  import { approach } from './avatar.ts';
+  import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -105,7 +107,8 @@
 
   // ---------- the moment of a find ----------
   interface Lift { n: number; x: number; y: number; art: string; tilt: number }
-  interface Dig { n: number; x: number; y: number }
+  /** `held`: the shovel is in my villager's hand (no floating one). */
+  interface Dig { n: number; x: number; y: number; held?: boolean }
   interface Card { n: number; x: number; y: number; art: string; parts: string[] }
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
@@ -125,10 +128,13 @@
   });
 
   /** The plate, `delay` ms after the tap; a first find of its kind gets a second page saying it's in the ずかん. */
-  function plate(x: number, y: number, art: string, text: () => string, delay = 0, added = false) {
+  function plate(x: number, y: number, art: string, text: () => string, delay = 0, added = false, hold = true) {
     const n = ++seq;
     const names = loadNames().catch(() => {});
-    later(() => void names.then(() => (card = { n, x, y, art, parts: added ? [text(), t('zukan.added')] : [text()] })), delay);
+    later(() => void names.then(() => {
+      card = { n, x, y, art, parts: added ? [text(), t('zukan.added')] : [text()] };
+      if (hold) holdUp('mine', art, HOLD_MS);
+    }), delay);
   }
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number) {
     take(date, uid);
@@ -138,44 +144,67 @@
     later(() => lift?.n === n && (lift = null), 500);
   }
 
+  /** Things my villager is walking to (a second tap meanwhile does nothing). */
+  const going = new Set<string>();
+  /** My villager walks to the find (avatar.ts), picks it up and holds it up over its head while the plate reads. The
+   *  find is decided (and the ずかん written) at the tap; what shows waits for the walk. */
+  function walkTo(uid: string, x: number, y: number, fn: (walked: boolean) => void, tool?: { tool: 'shovel'; toolMs: number }) {
+    if (going.has(uid)) return;
+    going.add(uid);
+    const { ms, walked } = approach(x, y, tool ?? { motion: 'squish' });
+    const go = () => {
+      going.delete(uid);
+      fn(walked);
+    };
+    if (ms) later(go, ms);
+    else go();
+  }
   function pickShell(s: Shell) {
-    pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
-    sceneSfx('shell');
     const added = recordFind('shell', s.id);
-    plate(s.x, s.y, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
+    walkTo(s.uid, s.x, s.y, () => {
+      pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
+      sceneSfx('shell');
+      plate(s.x, s.y, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
+    });
   }
   function pickFragment(f: Fragment) {
-    pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
-    sceneSfx('fragment');
     recordFind('fragment', f.id);
-    plate(f.x, f.y, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
+    walkTo(f.uid, f.x, f.y, () => {
+      pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
+      sceneSfx('fragment');
+      plate(f.x, f.y, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
+    });
   }
   function pickBottle(b: Bottle) {
-    pickUp(b.uid, b.x, b.y, findArt('message-bottle'), -64);
-    sceneSfx('bottle');
-    plate(b.x, b.y, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
+    walkTo(b.uid, b.x, b.y, () => {
+      pickUp(b.uid, b.x, b.y, findArt('message-bottle'), -64);
+      sceneSfx('bottle');
+      plate(b.x, b.y, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
+    });
   }
   function pickMushroom(m: Mushroom) {
-    pickUp(m.uid, m.x, m.y - 6, findArt(m.id), 0);
-    sceneSfx('mushroom');
-    plate(m.x, m.y - 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
+    walkTo(m.uid, m.x, m.y, () => {
+      pickUp(m.uid, m.x, m.y - 6, findArt(m.id), 0);
+      sceneSfx('mushroom');
+      plate(m.x, m.y - 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
+    });
   }
   function digUp(s: DigSpot) {
-    take(date, s.uid);
-    digHold = Date.now() + 20_000 + rand() * 20_000;
-    clearTimeout(holdTimer);
-    holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
-    taken++;
-    sceneSfx('dig');
-    const n = ++seq;
-    dig = { n, x: s.x, y: s.y };
-    later(() => dig?.n === n && (dig = null), 3200);
-    if (rare(s)) plate(s.x, s.y - 4, findArt('rare-mushroom'), () => t('beach.dug', { name: t('beach.name.rare-mushroom') }), 650);
-    else {
-      const added = recordFind('fossil', s.fossil);
-      plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
-    }
-    later(() => sceneSfx('catch'), 650);
+    const added = rare(s) ? false : recordFind('fossil', s.fossil);
+    walkTo(s.uid, s.x, s.y, (walked) => {
+      take(date, s.uid);
+      digHold = Date.now() + 20_000 + rand() * 20_000;
+      clearTimeout(holdTimer);
+      holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
+      taken++;
+      sceneSfx('dig');
+      const n = ++seq;
+      dig = { n, x: s.x, y: s.y, held: walked };
+      later(() => dig?.n === n && (dig = null), 3200);
+      if (rare(s)) plate(s.x, s.y - 4, findArt('rare-mushroom'), () => t('beach.dug', { name: t('beach.name.rare-mushroom') }), 650);
+      else plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
+      later(() => sceneSfx('catch'), 650);
+    }, { tool: 'shovel', toolMs: 640 });
   }
 
   /** A tap on the scene (client px), after the critters: true when a find took it. Reach: a 44px target. */
@@ -224,7 +253,7 @@
     const { hour } = jst(now());
     wishFor(fragmentDay(date, hour, (d) => addDays(d, 1)));
     taken++; // before dawn the fragments are this morning's
-    plate(x, y, findArt('star-fragment'), () => t('beach.wish'));
+    plate(x, y, findArt('star-fragment'), () => t('beach.wish'), 0, false, false);
   }
 </script>
 
@@ -260,7 +289,7 @@
       <span class="item digfx" style:translate="{U(dig.x)} {U(dig.y)}">
         <i class="hole"></i>
         {#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx} style:--i={i}></i>{/each}
-        <span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(24 * var(--su))" eager /></span>
+        {#if !dig.held}<span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(24 * var(--su))" eager /></span>{/if}
       </span>
     {/key}
   {/if}
@@ -274,7 +303,7 @@
 <div class="held">
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
   {/if}
 </div>
 

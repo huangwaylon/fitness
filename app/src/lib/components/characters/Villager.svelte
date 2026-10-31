@@ -19,6 +19,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { actors, removeFx } from '../motion/director.svelte.ts';
   import type { ActorId, Motion } from '../motion/reactions.ts';
+  import type { Tool } from '../motion/director.svelte.ts';
 
   interface Props {
     person?: PersonId;
@@ -76,14 +77,17 @@
   const emoteN = $derived(st ? st.emoteN : 0);
   const asleep = $derived(st ? st.asleep : expression === 'sleepy');
   const walking = $derived(st?.walking ?? false);
-  const inward = $derived(st?.face === 'in');
-  // "Face in" turns toward the middle of the island; look.ts says which way each render looks as drawn.
-  const lean = $derived(inward && look.noMirror);
-  const facing = $derived.by(() => {
-    if (!inward || look.noMirror) return 1;
-    const wantRight = side === 'left';
-    return wantRight === look.looksRight ? 1 : -1;
+  // Facing: as drawn, toward the middle of the island ('in'), or left / right (a walk, a target); look.ts says which way
+  // each render looks as drawn. A render that must never mirror (text on the outfit) leans that way instead.
+  const wantRight = $derived.by<boolean | null>(() => {
+    const f = st?.face ?? 'home';
+    return f === 'l' ? false : f === 'r' ? true : f === 'in' ? side === 'left' : null;
   });
+  const lean = $derived(wantRight !== null && look.noMirror && wantRight !== look.looksRight);
+  const facing = $derived(wantRight === null || look.noMirror ? 1 : wantRight === look.looksRight ? 1 : -1);
+  const tool = $derived(st?.tool ?? null);
+  const holding = $derived(st?.holding ?? null);
+  const TOOL_ART: Partial<Record<Tool, string>> = { can: 'finds/watering-can', shovel: 'finds/shovel' };
 
   // Replay the same motion back to back: drop the attribute, reflow, set it again.
   let bodyEl = $state<HTMLElement | null>(null);
@@ -100,8 +104,9 @@
   const dir = $derived<1 | -1>(side === 'left' ? -1 : 1);
 </script>
 
-<span class="villager" class:head={headOnly} class:right={side === 'right'} style:--h={h} style:--facing={facing}
-  style:--in={side === 'left' ? 1 : -1} aria-hidden="true">
+<span class="villager" class:head={headOnly} class:right={side === 'right'} class:drawn-right={look.looksRight} style:--h={h}
+  style:--facing={facing} style:--in={side === 'left' ? 1 : -1} style:--lean={wantRight ? 1 : -1} style:--step={st ? `${st.stepMs}ms` : null}
+  aria-hidden="true">
   {#if shadow && !headOnly}<span class="shadow" data-act={animate ? motion : null}></span>{/if}
   <span class="face" class:turning={motion === 'turn' && animate} class:lean>
     <span bind:this={bodyEl} class="body" class:bob={animate && !headOnly && !asleep && !walking} class:sleep={animate && asleep && !headOnly}
@@ -121,7 +126,26 @@
         </svg>
       {/if}
     </span>
+    {#if tool && !headOnly}
+      <!-- the tool in hand, on the side the render looks to (mirrors with the facing) -->
+      {#key st?.toolN}
+        <span class="tool {tool}" data-tool={tool}>
+          {#if TOOL_ART[tool]}<OfficialArt key={TOOL_ART[tool]} size="calc(var(--h) * .3)" eager />
+          {:else if tool === 'net'}
+            <svg viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
+          {:else}
+            <svg viewBox="-4 -40 44 44"><path class="handle" d="M0 0 L30 -34" /><path class="reel" d="M5 -6 h4" /></svg>
+          {/if}
+        </span>
+      {/key}
+    {/if}
   </span>
+  {#if holding && !headOnly}
+    <!-- NH's hold-up: the catch or find lifted over the head while its plate reads (placement.ts keeps clear of it) -->
+    {#key holding.n}
+      <span class="held-up" data-holding={holding.art} data-guard><OfficialArt key={holding.art} size="calc(var(--h) * .36)" eager /></span>
+    {/key}
+  {/if}
   {#if shownEmote}
     <span class="emote">
       {#key emoteN}
@@ -141,7 +165,6 @@
   .villager { position: relative; display: inline-block; flex: none; line-height: 0; vertical-align: bottom; }
   /* facing flips squash through scaleX(0) over 200ms; .lean tilts toward the middle instead */
   .face { display: block; transform-origin: 50% 100%; transform: scaleX(var(--facing, 1)); transition: transform 200ms var(--ease-soft); }
-  .face.lean { transform: translateX(calc(var(--in) * 4%)) rotate(calc(var(--in) * 6deg)); }
   .body { position: relative; display: block; transform-origin: 50% 100%; }
   /* NH's sting: one eye swollen shut under a round pink lump (on the face, over the eye on the left as drawn) */
   .puffy {
@@ -158,7 +181,36 @@
   @keyframes puff-up { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
   .body.bob { animation: if-bob 2400ms var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
   .body.sleep { animation: if-breath-slow 4000ms var(--ease-idle) infinite; }
-  .body.walk { animation: if-walkbounce 640ms linear infinite; }
+  .body.walk { animation: if-walkbounce var(--step, 640ms) linear infinite; }
+  .face.lean { transform: translateX(calc(var(--lean) * 4%)) rotate(calc(var(--lean) * 6deg)); }
+
+  /* a tool in hand: at the hip on the side the render looks to; each comes out with its own little swing */
+  .tool { position: absolute; bottom: 18%; left: 2%; line-height: 0; transform-origin: 70% 90%; pointer-events: none; }
+  .drawn-right .tool { left: auto; right: 2%; scale: -1 1; }
+  .tool :global(.official) { max-width: none; }
+  .tool svg { width: calc(var(--h) * .36); overflow: visible; }
+  .tool.net svg { width: calc(var(--h) * .42); }
+  .tool .hoop { fill: rgba(255, 255, 255, .25); stroke: #F4E9D2; stroke-width: 1.6; }
+  .tool .mesh { stroke: rgba(255, 255, 255, .6); stroke-width: .5; fill: none; }
+  .tool .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+  .tool .reel { stroke: #6B5B4B; stroke-width: 3; stroke-linecap: round; }
+  .tool.can { animation: tool-pour 900ms ease-out both; }
+  .tool.shovel { animation: tool-dig 640ms cubic-bezier(.3, .6, .4, 1) both; }
+  .tool.net { animation: tool-swing 420ms cubic-bezier(.3, .7, .4, 1) both; bottom: 30%; }
+  .tool.rod { animation: tool-cast 520ms cubic-bezier(.3, .7, .4, 1) both; bottom: 30%; }
+  @keyframes tool-pour { 0% { transform: translateY(10%) scale(.6); opacity: 0; } 18% { transform: none; opacity: 1; } 40%, 75% { transform: rotate(-28deg); } 100% { transform: rotate(-8deg); } }
+  @keyframes tool-dig { 0% { transform: rotate(30deg) scale(.6); opacity: 0; } 15% { opacity: 1; } 40% { transform: rotate(-20deg); } 60% { transform: rotate(14deg); } 80% { transform: rotate(-10deg); } 100% { transform: none; } }
+  @keyframes tool-swing { 0% { transform: rotate(60deg) scale(.7); opacity: 0; } 20% { opacity: 1; } 70% { transform: rotate(-30deg); } 100% { transform: rotate(-24deg); } }
+  @keyframes tool-cast { 0% { transform: rotate(50deg); opacity: 0; } 20% { opacity: 1; } 55% { transform: rotate(-20deg); } 100% { transform: rotate(-6deg); } }
+  /* the hold-up: up out of the hands to over the head, then a slow bob */
+  .held-up {
+    position: absolute; z-index: 2; left: 50%; bottom: 97%; line-height: 0; translate: -50% 0; pointer-events: none;
+    animation: held-rise 520ms cubic-bezier(.3, .8, .4, 1.2) 120ms both, held-bob 1800ms ease-in-out 700ms infinite;
+  }
+  .held-up :global(.official) { max-width: none; filter: drop-shadow(0 2px 2px rgb(60 40 20 / .3)); }
+  @keyframes held-rise { from { transform: translateY(60%) scale(.4); opacity: 0; } 50% { opacity: 1; } to { transform: none; opacity: 1; } }
+  @keyframes held-bob { 0%, 100% { transform: none; } 50% { transform: translateY(-5%); } }
+  .body:global([data-act='holdup']) { animation: if-holdup 1600ms var(--ease-soft) both; }
   .face.turning { animation: if-turn 1400ms var(--ease-soft) both; transition: none; }
   .face.turning .body { animation: if-turn-dip 1400ms linear both; }
   .body:global([data-act='squish']) { animation: if-squish 220ms var(--ease-bounce) both; }

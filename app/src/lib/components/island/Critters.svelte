@@ -19,7 +19,7 @@
   // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
   //   ?critter=fish | <fish id> | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook); ?flea: a tap
   //   on my villager always sends a flea off it.
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
@@ -28,6 +28,9 @@
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { catchLine, loadLines } from './catchLine.ts';
+  import { BEACH } from './beach.ts';
+  import { LONG_REACH, approach, goHomeLater, turnTo } from './avatar.ts';
+  import { HOLD_MS, actors, holdUp, putAway, useTool } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
@@ -55,9 +58,12 @@
     id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean;
     /** A tarantula's or a scorpion's mood (stalkTap). */
     stalk?: StalkState;
+    /** Netted: it holds still until the swing lands (my villager is on its way). */
+    held?: boolean;
   }
   interface Card { n: number; x: number; y: number; art: string; parts: string[] }
-  interface Net { n: number; x: number; y: number }
+  /** `held`: the net is in my villager's hand (no floating one). */
+  interface Net { n: number; x: number; y: number; held?: boolean }
 
   // Everything in stage units (u: 390 across), drawn with calc(n × --su).
   const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
@@ -217,6 +223,8 @@
     later(() => fish === f && (fish = null), 700);
   }
 
+  /** My villager is walking down to the beach to cast (a tap meanwhile does nothing). */
+  let casting = false;
   function castAt(x: number, y: number) {
     const f = fish!;
     // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
@@ -225,6 +233,16 @@
     const by = front ? Math.max(y, shoreY(x) + 8) : y;
     const side = x < 195 ? 1 : -1;
     const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
+    // my villager walks to that spot on the beach (avatar.ts), rod in hand, and casts from there
+    casting = true;
+    const spot = [Math.round(clamp(sx, BEACH.x0 + 4, BEACH.x1 - 4)), Math.round(Math.min(sy + 2, BEACH.y1 - 1))] as const;
+    const { ms } = approach(bx, by, { spot, tool: 'rod', toolMs: 20_000, linger: 20_000 });
+    if (ms) later(() => throwLine(f, bx, by, sx, sy), ms);
+    else throwLine(f, bx, by, sx, sy);
+  }
+  function throwLine(f: Fish, bx: number, by: number, sx: number, sy: number) {
+    casting = false;
+    if (fish !== f || f.gone) return putRodAway();
     cast = { x: bx, y: by, sx, sy, landed: false, t0: 0, plan: null, under: false, rings: 0, gen: 0, hesitated: false };
     sceneSfx('cast');
     sceneSfx('plop');
@@ -286,6 +304,7 @@
   /** NH's A button while the bobber is out. */
   function reelIn() {
     const c = cast!;
+    turnTo(c.x);
     if (!c.landed) return; // still in the air
     const ms = performance.now() - c.t0;
     const r = reel(castPhase(c.plan, ms), c.hesitated);
@@ -312,6 +331,16 @@
     sceneSfx('catch');
     show(f.item, c.x, c.y);
   }
+
+  /** The line's in (caught, gone or never cast): the rod goes away and my villager heads home in a while. */
+  function putRodAway() {
+    if (actors.mine.tool !== 'rod') return;
+    useTool('mine', null);
+    goHomeLater('mine', 3000);
+  }
+  $effect(() => {
+    if (!cast && actors.mine.tool === 'rod' && !casting) untrack(putRodAway);
+  });
 
   // ---------- bugs ----------
   function spawnBug(id: BugId | null, from?: { x: number; y: number }, stay = true) {
@@ -345,7 +374,7 @@
   }
   function fly() {
     const b = bug;
-    if (!b || b.gone) return;
+    if (!b || b.gone || b.held) return;
     const p = freeIn(b.area, b.keep);
     if (!p) return bugLeave();
     if (b.flight === 'perch') {
@@ -381,7 +410,7 @@
   /** Off to the nearer side, up a little, fading (a firefly or a cricket just fades where it is). */
   function bugLeave(fast = false, away?: number) {
     const b = bug, g = geo();
-    if (!b || b.gone || !g) return;
+    if (!b || b.gone || b.held || !g) return;
     b.gone = true;
     const ground = b.flight === 'crawl' || b.flight === 'stalk';
     if (b.flight === 'drift' || b.flight === 'burrow' || ((b.flight === 'hop' || ground || STILL.has(b.id)) && !fast)) {
@@ -436,10 +465,12 @@
     const text = await catchLine(item);
     if (seq !== n) return;
     card = { n, x, y, art: critterArt(item), parts: added ? [text, t('zukan.added')] : [text] };
+    holdUp('mine', critterArt(item), HOLD_MS);
   }
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
   export function tap(px: number, py: number): boolean {
+    if (casting) return true;
     if (cast) {
       reelIn();
       return true;
@@ -471,28 +502,42 @@
         }
       }
       if (b.flight === 'burrow') {
-        // dug up: a puff of earth and it's caught; a tap anywhere else leaves it under its mound
+        // dug up: a puff of earth and it's caught; a tap anywhere else leaves it under its mound. My villager walks
+        // over with the shovel first (avatar.ts).
         if (swing !== 'catch') return false;
-        dig = { n: ++seq, x: bx, y: by };
-        sceneSfx('dig');
-        bug = null;
+        if (b.held) return true;
+        b.held = true;
+        const { ms } = approach(bx, by, { tool: 'shovel', toolMs: 640 });
         later(() => {
-          sceneSfx('catch');
-          show(b.id, bx, by);
-        }, 260);
-        later(() => (dig = null), 700);
+          dig = { n: ++seq, x: bx, y: by };
+          sceneSfx('dig');
+          if (bug === b) bug = null;
+          later(() => {
+            sceneSfx('catch');
+            show(b.id, bx, by);
+          }, 260);
+          later(() => (dig = null), 700);
+        }, ms);
         return true;
       }
       if (swing === 'catch') {
+        if (b.held) return true;
         const x = (r.left + r.width / 2 - g.r.left) * g.k, y = (r.top + r.height / 2 - g.r.top) * g.k;
-        net = { n: ++seq, x, y };
-        sceneSfx('net');
+        // it holds still where it is (mid-flight included) while my villager walks over with the net (avatar.ts)
+        const cs = getComputedStyle(bugEl).translate.split(' ').map(parseFloat);
+        if (cs.length >= 2 && cs.every(Number.isFinite)) Object.assign(b, { x: cs[0] * g.k, y: cs[1] * g.k });
+        Object.assign(b, { held: true, ms: 0 });
+        const { ms, walked } = approach(x, y, { tool: 'net', toolMs: 450, reach: LONG_REACH });
         later(() => {
-          if (bug === b) bug = null;
-          sceneSfx('catch');
-          show(b.id, x, y);
-        }, 160);
-        later(() => (net = null), 420);
+          net = { n: ++seq, x, y, held: walked };
+          sceneSfx('net');
+          later(() => {
+            if (bug === b) bug = null;
+            sceneSfx('catch');
+            show(b.id, x, y);
+          }, walked ? 420 : 160); // in hand, the swing finishes before the hold-up
+          later(() => (net = null), 420);
+        }, ms);
         return true;
       }
       if (swing === 'startle') {
@@ -609,14 +654,14 @@
   {/if}
   {#if net}
     {#key net.n}
-      <span class="mover netfx" style:translate="{U(net.x)} {U(net.y)}">
-        <svg viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
+      <span class="mover netfx" data-net={net.held ? 'held' : 'float'} style:translate="{U(net.x)} {U(net.y)}">
+        <svg class:held={net.held} viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
       </span>
     {/key}
   {/if}
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
   {/if}
 </div>
 
@@ -731,6 +776,7 @@
   .night .bug:not(.drift) .face { filter: brightness(.8) saturate(.85); }
 
   /* the net: one swing across the bug */
+  .netfx svg.held { display: none; }
   .netfx svg { width: calc(30 * var(--su)); translate: -50% -50%; overflow: visible; transform-origin: 80% 80%; animation: swing .4s cubic-bezier(.3, .7, .4, 1) both; }
   .hoop { fill: rgba(255, 255, 255, .25); stroke: #F4E9D2; stroke-width: 1.6; }
   .mesh { stroke: rgba(255, 255, 255, .6); stroke-width: .5; }

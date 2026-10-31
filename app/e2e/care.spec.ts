@@ -37,7 +37,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     const p = await at(page, '[data-care="weed"]');
     await page.mouse.click(p.x, p.y - 4);
     await expect(weeds).toHaveCount(2);
-    expect(await cues(page)).toContain('scene-weed');
+    await expect.poll(() => cues(page)).toContain('scene-weed');
     await unchanged(page, before);
     await page.reload();
     await expect(ribbon(page)).toBeVisible();
@@ -66,6 +66,6 @@ test('the rock by the hedge: a tap clonks it (now and then a sparkle or a bug)',
   const before = await open(page, '&date=2026-11-04T12:00');
   const p = await at(page, '[data-care="rock"]');
   await page.mouse.click(p.x, p.y - 8);
-  expect(await cues(page)).toContain('scene-clonk');
+  await expect.poll(() => cues(page)).toContain('scene-clonk'); // after my villager's walk to it
   await unchanged(page, before);
 });

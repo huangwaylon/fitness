@@ -17,10 +17,12 @@ export type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
 
 /** The UI nothing of ours may cover, in client px: every control but the balloon, a tree's popup and しずえ's box,
  *  padded 6px (the ribbon 20px across: its folded tails hang 16px outside it). */
-function guards(): Box[] {
+function guards(skip?: (el: Element) => boolean): Box[] {
   const out: Box[] = [];
-  for (const el of document.querySelectorAll('button, .detail, .news')) {
+  // [data-guard]: what a villager holds up over its head
+  for (const el of document.querySelectorAll('button, .detail, .news, [data-guard]')) {
     if (el.classList.contains('balloon') || el.closest('[data-fx]:not(.placed)')) continue; // an overlay still being measured
+    if (skip?.(el)) continue;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
     const px = el.classList.contains('ribbon') ? 20 : 6;
@@ -31,9 +33,9 @@ function guards(): Box[] {
 
 const hits = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
-/** The guards in stage units, grown by `pad` u. */
-export function guardsU(g: StageGeo, pad: number): Box[] {
-  return guards().map((b) => ({
+/** The guards in stage units, grown by `pad` u (`skip`: leave some out). */
+export function guardsU(g: StageGeo, pad: number, skip?: (el: Element) => boolean): Box[] {
+  return guards(skip).map((b) => ({
     x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad
   }));
 }

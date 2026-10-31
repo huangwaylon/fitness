@@ -58,7 +58,12 @@
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
-  import { actors, setEmote, setMotion } from '../motion/director.svelte.ts';
+  import { actors, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
+  import { depthZ, walkGeo } from './walkGraph.ts';
+  import { approach, attachAvatar, freeze, snapHome, thaw, SNAP_HOME_MS } from './avatar.ts';
+  import { clearAt, guardsU, stageGeo } from './placement.ts';
+  import { onMount, untrack } from 'svelte';
+  import type { ActorId } from '../motion/reactions.ts';
   import { jst, minuteNow, now } from '#lib/time/clock.ts';
 
   interface Props {
@@ -151,6 +156,7 @@
     const line = chatLine(mood, { hour: jst(now()).hour, met, asleep, event }, Math.random, lastLine);
     lastLine = line.key;
     // above the villager's head, clear of its emote (the ♪ of the tap) as it floats up
+    if (actors.mine.walking) return; // it only speaks standing still
     const r = btn.getBoundingClientRect();
     const pages = pagesOf(line).map((k) => t(k, line.params));
     talk?.say(p.villagerName, pages, btn, { avoid: [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }], colour: entry?.colour });
@@ -185,6 +191,64 @@
     clearTimeout(untrick);
     untrick = setTimeout(() => (tricked = false), TRICK_MS);
   }
+  // Where each villager lives (the director walks them from there and back; design.md "Walking"), and depth from the
+  // feet's y: behind the trees, among the beds, on the front row, on the beach; in one band, the nearer one in front.
+  // svelte-ignore state_referenced_locally
+  if (live) for (const id of ['mine', 'partner'] as const) setHome(id, sides[id].x, VILLAGER.foot);
+  const depth = $derived.by(() => {
+    if (!live) return { mine: 'var(--z-villager-mine)', partner: 'var(--z-villager)' };
+    const zm = depthZ(actors.mine.zy), zp = depthZ(actors.partner.zy);
+    const mineFront = zm === zp ? actors.mine.zy >= actors.partner.zy : true;
+    return { mine: String(zm + (mineFront && zm === zp ? 1 : 0)), partner: String(zp + (!mineFront ? 1 : 0)) };
+  });
+  // My villager walks to what I tap (avatar.ts): the walk geometry from the scene's constants, a spot is fine when a
+  // villager standing there covers no control and isn't hidden behind a canopy (measured) and
+  // stays on screen, and the feet's live position (a walk re-targets from mid-step).
+  const geo = walkGeo();
+  function feet(id: 'mine' | 'partner'): readonly [number, number] {
+    const el = sceneEl?.querySelector<HTMLElement>(`[data-actor="${id}"]`), g = stageGeo(sceneEl);
+    if (!el || !g) return [actors[id].x, actors[id].y];
+    const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+    return [Math.round(m.m41 * g.k), Math.round(m.m42 * g.k)];
+  }
+  function standsClear(id: ActorId, x: number, y: number): boolean {
+    const g = stageGeo(sceneEl);
+    if (!g || x - 22 < g.left || x + 22 > g.right || y + 4 > g.bottom) return false;
+    const self = sceneEl?.querySelector(`[data-actor="${id}"] .vil`);
+    // behind the trees the fruit row (down at the trunk's foot) stays on top; a canopy would hide the villager
+    const behind = depthZ(y) < 30;
+    // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height)
+    const keep = guardsU(g, -6 * g.k, (el) => el === self || (behind && el.matches('.row-btn')));
+    return clearAt(keep, x, y - VILLAGER.h * 0.46, VILLAGER.h * 0.225, VILLAGER.h * 0.46);
+  }
+  onMount(() => {
+    if (!live) return;
+    const off = attachAvatar({ geo: () => geo, clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
+    let hiddenAt = 0;
+    const vis = () => {
+      if (document.hidden) hiddenAt = Date.now();
+      else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) snapHome();
+    };
+    document.addEventListener('visibilitychange', vis);
+    return () => {
+      off();
+      document.removeEventListener('visibilitychange', vis);
+    };
+  });
+  // a sheet over the scene: everyone stops where they are; uncovered, whoever is away wanders home
+  let wasCovered = false;
+  $effect(() => {
+    const c = covered;
+    if (!live || c === wasCovered) return;
+    wasCovered = c;
+    untrack(() => (c ? freeze() : thaw()));
+  });
+  // A shaken tree: my villager walks up to its trunk and shakes it (avatar.ts), then what falls falls.
+  function shakeTree(pid: PersonId) {
+    const { ms } = approach(TREE.x[slot(pid)], TREE.base, { motion: 'shake' });
+    if (ms) life.later(() => shakes?.shaken(pid, slot(pid)), ms);
+    else shakes?.shaken(pid, slot(pid));
+  }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
@@ -205,7 +269,7 @@
     {#each ['A', 'B'] as const as pid (pid)}
       <FruitTree person={view.people[pid]} x={TREE.x[slot(pid)]} {foliage} shakeN={life.shakeN[pid]}
         celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
-        onshake={() => shakes?.shaken(pid, slot(pid))} />
+        onshake={() => shakeTree(pid)} />
     {/each}
 
     <FlowerBeds {season} {hybrid} people={[view.people[view.me], view.people[view.partner]]} />
@@ -213,8 +277,9 @@
     {#each ['mine', 'partner'] as const as id (id)}
       {@const s = sides[id]}
       {@const a = actors[id]}
-      <div class="actor" style:left={u(s.x)} style:top={u(VILLAGER.foot)} style:z-index={id === 'mine' ? 'var(--z-villager-mine)' : 'var(--z-villager)'}
-        style:--walk={live ? (s.side === 'left' ? 1 : -1) * a.walkX : 0} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}>
+      {@const at = live ? [a.x, a.y] : [s.x, VILLAGER.foot]}
+      <div class="actor" class:walking={live && a.walking} data-actor={id} style:--x={at[0]} style:--y={at[1]} style:transition-duration="{live ? a.walkMs : 0}ms"
+        style:z-index={depth[id]} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}>
         <button type="button" class="vil" disabled={!live} data-sfx="self"
           aria-label={id === 'mine'
             ? t('island.me', { name: s.person.villagerName, bells: formatBells(s.person.today.bells) })
@@ -283,10 +348,12 @@
   }
   .ground { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
 
+  /* the feet at (--x, --y) u: a walk is one transition of transform per segment (its duration set per segment) */
   .actor {
-    position: absolute; width: 0; height: 0;
-    transform: translateX(calc(var(--walk, 0) * 100cqw / 390)); transition: transform var(--dur-walk) linear; will-change: transform;
+    position: absolute; left: 0; top: 0; width: 0; height: 0;
+    transform: translate(calc(var(--x) * 100cqw / 390), calc(var(--y) * 100cqw / 390)); transition: transform 0ms linear;
   }
+  .actor.walking { will-change: transform; }
   .vil {
     position: absolute; left: 0; bottom: 0; translate: -50% 2px; width: max-content;
     appearance: none; background: none; border: 0; padding: 8px 8px 0; margin: 0; cursor: pointer;
