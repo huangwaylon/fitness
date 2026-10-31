@@ -1,10 +1,10 @@
 <script lang="ts">
-  // しまフォン → あそびかた (ADR 0021), written for a 10-year-old: no taps needed, the five fruits and their daily goals
+  // しまフォン → あそびかた (ADR 0021), written for a 10-year-old: no taps needed, the four fruits and their daily goals
   // (what each pays), the weekly badges and the together bonus, the one shared wallet (ADR 0022) with the treat guide,
   // the protein tip and the one-line setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, rulesFor, type CurveFruit } from '#lib/config/rules.ts';
+  import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
   import { milestoneBells } from '#lib/scoring/bells.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
@@ -23,20 +23,18 @@
     f === 'peach' ? t('help.goal.min', { n: r.goals.exerciseMin })
     : f === 'pear' ? t('help.goal.kcal', { n: formatNum(moveGoal) })
     : f === 'cherry' ? t('help.goal.min', { n: r.goals.standMin })
-    : f === 'apple' ? t('help.goal.steps', { n: formatNum(r.goals.steps) })
-    : t('help.goal.gym');
+    : t('help.goal.steps', { n: formatNum(r.goals.steps) });
   const pays = (f: RingFruit): string =>
     f === 'peach' ? t('help.pay.perMin', { b: r.bells.perExerciseMin })
     : f === 'pear' ? t('help.pay.atGoal', { b: formatBells(r.bells.moveAtGoal) })
     : f === 'cherry' ? t('help.pay.perMin', { b: r.bells.perStandMin })
-    : f === 'apple' ? formatBells(r.bells.stepDay)
-    : formatBells(r.bells.gymDay);
+    : formatBells(r.bells.stepDay);
 
-  /** v2 (from 2026-11-02): 🍑🍐🍒🍎 pay in four steps of the goal (docs/reviews/round-19/milestones-contract.md):
+  /** v2 (from 2026-11-02): every fruit pays in four steps of the goal (docs/reviews/round-19/milestones-contract.md):
    *  each step's amount and the fruit's ベル for the day once it's reached. Null in a v1 week (linear pay). */
   const stepsOf = (f: RingFruit): { at: string; bells: string }[] | null => {
-    if (f === 'coconut' || !r.curve) return null;
-    const bells = milestoneBells(view.weekKey, f as CurveFruit);
+    if (!r.curve) return null;
+    const bells = milestoneBells(view.weekKey, f);
     if (!bells) return null;
     const goalOf = { peach: r.goals.exerciseMin, pear: moveGoal, cherry: r.goals.standMin, apple: r.goals.steps }[f];
     return r.curve.at.map((x, k) => ({ at: t('help.step', { n: formatNum(Math.ceil(x * goalOf)), u: t(`kiroku.unit.${f}`) }), bells: formatNum(bells[k]) }));
@@ -102,7 +100,7 @@
   </section>
 
   <section class="card">
-    <h3><span class="hi"><OfficialArt key={fruitArt('coconut')} size={28} /></span>{t('help.protein.title')}</h3>
+    <h3><span class="hi"><OfficialArt key="items/dinner" size={28} /></span>{t('help.protein.title')}</h3>
     <p>{t('help.protein.body')}</p>
     {#if protein}<p class="note">{protein}</p>{/if}
   </section>
@@ -138,7 +136,8 @@
   .st:last-child { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
   /* night: the soft lilac was 3.5:1 on the cream-tinted cell (round 21) */
   :global(:root[data-tod='night']) .st small { color: var(--text); }
-  .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  /* the four badges in two rows of two (a flex wrap left one alone on a row at 390 and 320) */
+  .chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .chips li { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--r-pill); background: var(--hl); }
   .chips .money { font-size: var(--fs-s); }
   .ver { margin: 16px 0 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }

@@ -31,11 +31,11 @@ export const TREE = { base: ROWS.trees, h: 120, x: { A: col(-2), B: col(2) } as 
 /** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
 export const OAK_AR = 329 / 409;
 /** Ground fruit (game-designer round 6, ADR 0021): per ring fruit 0–3 items = thirds of today's goal (todayPct), in
- *  a fixed arc in front of the trunk, 🍑 🍐 🍒 🍎 🥥 left to right (RING_FRUITS order). [dx, dy] from the trunk base.
- *  NH puts one dropped item per tile; 5 kinds × 3 items can't, so they sit at a 20u pitch (compromise), and the row
- *  leans FRUIT_LEAN u away from the jar (out from the plaza), so it stays clear of the jar's plate and inside the
- *  plateau's side (x 44). */
-export const FRUIT_SPOTS: [number, number][] = [[-40, 4], [-20, 10], [0, 13], [20, 10], [40, 4]];
+ *  a fixed arc in front of the trunk, 🍑 🍐 🍒 🍎 left to right (RING_FRUITS order). [dx, dy] from the trunk base.
+ *  NH puts one dropped item per tile; 4 kinds × 3 items can't, so they sit at a 20u pitch (compromise), centred on the
+ *  trunk, and the row leans FRUIT_LEAN u away from the jar (out from the plaza), so it stays clear of the jar's plate
+ *  and inside the plateau's side (x 44). */
+export const FRUIT_SPOTS: [number, number][] = [[-30, 6], [-10, 12], [10, 12], [30, 6]];
 export const FRUIT_LEAN = 8;
 /** Where the 1st / 2nd / 3rd item of one kind lies, around its spot (a little NH drop pile). */
 export const PILE: [number, number][] = [[0, -3], [-6, 4], [6, 4]];

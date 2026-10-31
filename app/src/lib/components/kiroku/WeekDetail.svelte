@@ -1,7 +1,7 @@
 <script lang="ts">
-  // 3.2 Week detail (round 17 IA §4.7): the week and its ベル (one number) and 🔒 once locked; per person the five
+  // 3.2 Week detail (round 17 IA §4.7): the week and its ベル (one number) and 🔒 once locked; per person the four
   // badges with the days met so far (and the ふたりボーナス once it landed); then the week's table: one row per day
-  // (tap → the day), a line per person, the five metrics in the fruit columns (met = bold green); the change log.
+  // (tap → the day), a line per person, the four metrics in the fruit columns (met = bold green); the change log.
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog, WeekDetail } from '#lib/model/history.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -31,10 +31,9 @@
     if (f === 'peach') return String(r.exerciseMin);
     if (f === 'pear') return num(r.moveKcal);
     if (f === 'cherry') return num(r.standMin);
-    if (f === 'apple') return num(r.steps);
-    return r.gym ? '✓' : '';
+    return num(r.steps);
   }
-  const EDIT_OF = { peach: 'minutes', pear: 'move', cherry: 'stand', apple: 'steps', coconut: 'workout' } as const;
+  const EDIT_OF = { peach: 'minutes', pear: 'move', cherry: 'stand', apple: 'steps' } as const;
 </script>
 
 <header class="sub">
@@ -89,14 +88,13 @@
   .duo b { color: var(--leaf-text); }
   @media (max-width: 389px) { .people { grid-template-columns: minmax(0, 1fr); } }
 
-  /* the table: a weekday column, then per person a line with an avatar and the five metric columns */
-  .days { padding: 4px 6px; display: grid; --wd-w: 22px; --cols: 18px repeat(4, minmax(0, 1fr)) 22px; }
+  /* the table: a weekday column, then per person a line with an avatar and the four metric columns */
+  .days { padding: 4px 6px; display: grid; --wd-w: 22px; --cols: 18px repeat(4, minmax(0, 1fr)); }
   .days:lang(en) { --wd-w: 2.1rem; }
   .row { display: grid; grid-template-columns: var(--cols); align-items: center; gap: 4px; min-width: 0; }
   .head { grid-template-columns: var(--wd-w) var(--cols); padding: 6px 6px 4px; border-bottom: 2px solid color-mix(in srgb, var(--lip) 40%, transparent); }
-  /* every header icon on one line, units under them (round 21: the unit-less 🥥 sat 7.5px lower, centred) */
+  /* every header icon on one line, units under them */
   .hc { display: grid; justify-items: end; align-self: start; gap: 1px; line-height: 0; }
-  .hc:last-child { justify-items: center; }
   .hc small { font-size: var(--fs-xs); line-height: 1.1; color: var(--text-soft); font-weight: 700; }
   .day {
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; width: 100%;
@@ -110,7 +108,6 @@
   .wd { font-weight: 700; font-size: var(--fs-body); }
   .av { line-height: 0; }
   .c { position: relative; text-align: right; font-size: var(--fs-s); color: var(--text-soft); white-space: nowrap; font-weight: 500; }
-  .c:last-child { text-align: center; }
   .c.met { color: var(--leaf-text); font-weight: 700; }
   /* ✎ sits on the corner of the number it changed. */
   .ed { position: absolute; right: -7px; top: -6px; line-height: 0; color: var(--leaf-text); }

@@ -29,7 +29,7 @@ const ZONE = 'Asia/Tokyo';
 const hm = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: ZONE });
 const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: ZONE }); // YYYY-MM-DD
 /** A stamp's 24 h Tokyo time: `21:04`. */
-export const timeOf = (at: number | string | Date): string => hm.format(new Date(at));
+const timeOf = (at: number | string | Date): string => hm.format(new Date(at));
 /** `10/22 21:04` (Tokyo). */
 export const stampOf = (at: number): string => `${md(ymd.format(new Date(at)))} ${timeOf(at)}`;
 

@@ -130,7 +130,6 @@ function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
   switch (ev.type) {
     // `person`: whose data (ADR 0023; absent = the sender, always me in the queue).
     case 'metric_set': return `metric|${String(d.person ?? '')}|${String(d.date)}|${String(d.metric)}`;
-    case 'gym_set': return `gym|${String(d.person ?? '')}|${String(d.date)}`;
     case 'workout_add':
     case 'workout_edit': return `workout|${String(d.person ?? '')}|${String(d.id)}`;
     case 'spend':

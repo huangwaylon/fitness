@@ -50,7 +50,8 @@ describe('Move goal input (ADR 0021)', () => {
 });
 
 describe('badge thresholds', () => {
-  it('are the latest rules: 5 · 5 · 5 · 4 · 3 days', () => {
-    expect(badgeGoals('2026-10-26')).toEqual({ peach: 5, pear: 5, cherry: 5, apple: 4, coconut: 3 });
+  it('are the latest rules: 5 · 5 · 5 · 4 days (four fruits, no 🥥)', () => {
+    expect(badgeGoals('2026-10-26')).toEqual({ peach: 5, pear: 5, cherry: 5, apple: 4 });
+    expect(badgeGoals('2026-11-02')).toEqual({ peach: 5, pear: 5, cherry: 5, apple: 4 });
   });
 });

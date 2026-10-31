@@ -7,32 +7,17 @@
 //     "exercise_minutes": "22\n…",              that day's total
 //     "calories": "251.3\n…",                   that day's active energy in kcal (the Move ring) → metric move_kcal
 //     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min (ADR 0021)
-//     "weight": "0\n68.4\n…",                   that day's Body Mass in kg; 0 = no weigh-in
-//     "workouts": { "types": "…", "starts": "…", "ends": "…", "avgHrs": "…" }   optional, one line per workout }
+//     "weight": "0\n68.4\n…" }                 that day's Body Mass in kg; 0 = no weigh-in
 //
-// Other fields are ignored. Every daily field is optional. A list whose length differs from `dates` is dropped with a
+// Other fields are ignored (an old Shortcut's `workouts` too: workouts are only added by hand in きろく). Every daily field is optional. A list whose length differs from `dates` is dropped with a
 // warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000, stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
-import { WORKOUT_LABELS_JA } from '../src/lib/contract/labels.ts';
 import { isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
-interface ParsedWorkout {
-  /** `workoutKey(type, start)`: stable across re-sends and phone-language switches. */
-  id: string;
-  date: string;
-  type: string;
-  start: string;
-  end: string;
-  durationMin: number;
-  avgHr: number | null;
-}
 interface ParsedBody {
   metrics: ParsedMetric[];
-  workouts: ParsedWorkout[];
   /** Lines dropped because a value or date was unreadable. */
   skipped: number;
-  /** Non-ASCII workout names with no alias yet (worth adding to WORKOUT_LABELS_JA). */
-  unknownTypes: string[];
   /** Lists that were dropped (and why), while the rest of the body was kept. */
   warnings: string[];
 }
@@ -65,28 +50,6 @@ export function shortcutDate(v: string): { day: string; time: string } | null {
   // A real calendar day (no Feb 30) and a real time (no 08:59:75, which would make a NaN duration).
   if (new Date(Date.UTC(Number(y), mo - 1, Number(d))).toISOString().slice(0, 10) !== day || hour > 23 || Number(mi ?? 0) > 59 || Number(sec ?? 0) > 59) return null;
   return { day, time };
-}
-
-// ---------------------------------------------------------------- workout names and ids
-
-/** Japanese display names → canonical English names (the inverse of the UI labels), plus one more Health uses. */
-const ALIASES: Record<string, string> = {
-  ...Object.fromEntries(Object.entries(WORKOUT_LABELS_JA).map(([en, ja]) => [ja, en])),
-  '伝統的な筋力トレーニング': 'Traditional Strength Training'
-};
-const canonicalWorkoutType = (name: string): string => ALIASES[name] ?? name;
-
-/** FNV-1a (32-bit) of a string, as 8 hex chars. */
-function fnv1a(s: string, seed: number): string {
-  let h = seed;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
-  return (h >>> 0).toString(16).padStart(8, '0');
-}
-
-/** Stable workout id: `w:` + 64 bits of FNV-1a over `<canonical type>|<start minute>` (start is Tokyo ISO). */
-export function workoutKey(type: string, start: string): string {
-  const k = `${canonicalWorkoutType(type)}|${start.slice(0, 16)}`;
-  return `w:${fnv1a(k, 0x811c9dc5)}${fnv1a(k, 0x01000193)}`;
 }
 
 // ---------------------------------------------------------------- body
@@ -141,36 +104,6 @@ export function parseShortcut(body: unknown): ParsedBody {
     });
   }
 
-  const workouts: ParsedWorkout[] = [];
-  const unknownTypes: string[] = [];
-  if (body.workouts !== undefined) {
-    const w = body.workouts;
-    if (!isRec(w)) throw new ShapeError('workouts: expected {"types", "starts", "ends", "avgHrs"}');
-    const types = lines(w.types, 'workouts.types');
-    const starts = lines(w.starts, 'workouts.starts');
-    const ends = lines(w.ends, 'workouts.ends');
-    const hrs = w.avgHrs === undefined ? [] : lines(w.avgHrs, 'workouts.avgHrs');
-    if (starts.length !== types.length || ends.length !== types.length || (hrs.length > 0 && hrs.length !== types.length)) {
-      warnings.push(`workouts: ${types.length} types, ${starts.length} starts, ${ends.length} ends, ${hrs.length} avgHrs; workouts not saved`);
-    } else {
-      types.forEach((name, i) => {
-        const s = shortcutDate(starts[i]);
-        const e = shortcutDate(ends[i]);
-        const start = s && `${s.day}T${s.time}+09:00`;
-        const end = e && `${e.day}T${e.time}+09:00`;
-        const ms = start && end ? Date.parse(end) - Date.parse(start) : NaN;
-        if (!name || !s || !start || !end || !Number.isFinite(ms) || ms < 0) { skipped++; return; }
-        const type = canonicalWorkoutType(name);
-        if (/[^\x00-\x7F]/.test(type) && !unknownTypes.includes(type)) unknownTypes.push(type);
-        workouts.push({
-          id: workoutKey(type, start), date: s.day, type, start, end,
-          durationMin: Math.round((ms / 60000) * 10) / 10,
-          avgHr: hrs.length ? amount(hrs[i]) : null
-        });
-      });
-    }
-  }
-
-  if (!sent.length && body.workouts === undefined) throw new ShapeError('nothing to save: send dates with steps, exercise_minutes, calories, stand_minutes or weight');
-  return { metrics, workouts, skipped, unknownTypes, warnings };
+  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, exercise_minutes, calories, stand_minutes or weight');
+  return { metrics, skipped, warnings };
 }

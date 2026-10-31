@@ -166,11 +166,6 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
   await page.waitForTimeout(1500); // the opening beats
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
-  // the gym chips (ADR 0023): one toggle cue each, no popup tick, and the popup stays open
-  const chip = page.locator('.detail .gym-chip[data-day=today]');
-  const on = (await chip.getAttribute('aria-pressed')) === 'true';
-  await step('島', 'gym chip (きょう)', () => chip.tap(), [on ? 'toggle-off' : 'toggle-on']);
-  await step('島', 'gym chip again', () => chip.tap(), [on ? 'toggle-on' : 'toggle-off']);
   await expect(page.locator('.detail')).toHaveCount(1);
   await step('島', 'the tree popup (closes)', () => page.locator('.detail .plate').tap(), ['tick']);
   await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());

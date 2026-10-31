@@ -47,8 +47,7 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
     peach: [d?.exerciseMin ?? 0, r.goals.exerciseMin],
     pear: [d?.moveKcal ?? 0, d?.moveGoal ?? moveGoal],
     cherry: [d?.standMin ?? 0, r.goals.standMin],
-    apple: [d?.steps ?? 0, r.goals.steps],
-    coconut: [d?.gym ? 1 : 0, 1]
+    apple: [d?.steps ?? 0, r.goals.steps]
   };
   const f = e.fruits[key];
   const view: RingProgress = {
@@ -57,7 +56,7 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
     weekBells: e.days.reduce((n, x) => (x.date <= today ? n + x.rings[key] : n), 0)
   };
   // The milestone fields only exist in a week with a curve, so v1 views stay as they were.
-  if (key === 'coconut' || !r.curve) return view;
+  if (!r.curve) return view;
   const pay = milestoneBells(e.weekKey, key);
   if (!pay) return view;
   const milestone = d?.milestone?.[key] ?? 0;

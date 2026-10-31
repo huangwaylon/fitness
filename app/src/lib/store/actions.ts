@@ -85,14 +85,6 @@ export function setMetric(person: PersonId, date: string, metric: 'steps' | 'exe
 }
 
 /**
- * Make `date` a 🥥 day for `person` (`on`), or not, whatever its arrivals and workouts say (ADR 0023): きろく's day
- * detail and the tree popup's きのう / きょう chips. The latest wins.
- */
-export function setGym(person: PersonId, date: string, on: boolean): SendResult {
-  return week.send('gym_set', { person, date, on }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
-}
-
-/**
  * A day's body weight from きろく (ADR 0020): kg, one decimal. Weight earns nothing, so no week lock applies (any day up
  * to today); it still waits UNDO_MS with もとに戻す. `{ok:false}` for a value outside 20–300 kg.
  */
@@ -120,9 +112,9 @@ export function setMoveGoal(person: PersonId, kcal: number): SendResult {
   return week.send('pref', { person, key: 'moveGoal', value });
 }
 
-/** `strength`: count as strength (true), not (false) or automatic (null); `excluded`: out of scoring. `date`: the workout's day. */
-export function editWorkout(person: PersonId, id: string, date: string, change: { strength?: boolean | null; excluded?: boolean }) {
-  return week.send('workout_edit', { person, id, ...change }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
+/** Leave a workout added in きろく out of scoring (`excluded`), or put it back. `date`: the workout's day. */
+export function excludeWorkout(person: PersonId, id: string, date: string, excluded: boolean) {
+  return week.send('workout_edit', { person, id, excluded }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 export function addWorkout(person: PersonId, date: string, type: string, durationMin: number) {

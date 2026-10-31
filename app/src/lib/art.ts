@@ -67,7 +67,7 @@ export function hostArt(pose: HostPose = 'wave', nook = false): string {
   return HOST[pose];
 }
 
-/** One of the five ring fruits (ADR 0021) → inventory icon key. */
+/** One of the four ring fruits (ADR 0021) → inventory icon key. */
 export function fruitArt(fruit: RingFruit): string {
   return `fruit/${fruit}`;
 }

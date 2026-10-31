@@ -2,8 +2,10 @@
 // what the island, the wallet or the harvest show is a reviewed diff.
 //
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
-// fixes, wallet buys, a void, a menu edit and gym arrivals. Regenerating them for a past design change left every view
-// and digest the same; the history is in git and the ADRs. The 外ごはん and カフェ buys carry the default menu prices
+// fixes, wallet buys, a void, a menu edit and two workouts added by hand. Regenerating them for a past design change
+// left every view and digest the same; the history is in git and the ADRs. On 2026-10-31 the gym 🥥 and the Watch
+// workouts went (ADR 0021 amendment "no gym; four metrics"): their tabs left the rows, two workout_add events joined
+// them, v2 was rebalanced, and the goldens were regenerated on purpose. The 外ごはん and カフェ buys carry the default menu prices
 // since escalating food treats (ADR 0022 amendment): a buy of an escalating item must pay its price that week.
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
@@ -43,7 +45,7 @@ const digest = (v: unknown) => createHash('sha256').update(canon(v)).digest('hex
 const AT = new Map<readonly unknown[], number>(Object.values(ROWS).flatMap((tab: (readonly unknown[])[]) => tab.map((r) => [r, Date.parse(String(r[0]))] as const)));
 function rowsAt(tMs: number): SnapshotRows {
   const upTo = <T extends readonly unknown[]>(tab: T[]) => tab.filter((r) => AT.get(r)! <= tMs);
-  return { metrics: upTo(ROWS.metrics), workouts: upTo(ROWS.workouts), presence: upTo(ROWS.presence), events: upTo(ROWS.events) };
+  return { metrics: upTo(ROWS.metrics), events: upTo(ROWS.events) };
 }
 
 /** Both people's views at t, from one reduce of the rows (the State is shared, as in the app). */
@@ -70,13 +72,15 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     const all = Object.values(VIEWS).flatMap((v) => PEOPLE.map((p) => v[p]));
     expect(Object.keys(DIGESTS).length).toBe(660);
     expect(Object.keys(VIEWS).length).toBe(50);
-    // Badges but never all five for both (the ふたりボーナス is covered by bells.test.ts).
+    // Badges but never all four for both (the ふたりボーナス is covered by bells.test.ts).
     expect(all.some((v) => v.harvest && v.harvest.bonus.A > 0 && v.harvest.bonus.B > 0)).toBe(true);
     // A harvest where one person met no badge (with v2's 120 Stand minutes every week from 11-02 has a badge; an empty
     // harvest for both is model/bells.test.ts's).
     expect(all.some((v) => v.harvest && (v.harvest.bonus.A === 0 || v.harvest.bonus.B === 0))).toBe(true);
     expect(all.some((v) => v.harvest?.weekKey === '2026-10-26' && v.harvest.bonus.A === 400)).toBe(true); // v1: +400 a badge
-    expect(all.some((v) => v.harvest?.weekKey === '2026-11-02' && v.harvest.bonus.A === 680)).toBe(true); // v2: +340 a badge
+    expect(all.some((v) => v.harvest?.weekKey === '2026-11-02' && v.harvest.bonus.A % 450 === 0 && v.harvest.bonus.A > 0)).toBe(true); // v2: +450 a badge
+    // Four fruits only, everywhere.
+    expect(all.every((v) => PEOPLE.every((p) => Object.keys(v.people[p].rings).join() === 'peach,pear,cherry,apple'))).toBe(true);
     // ADR 0021: Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);

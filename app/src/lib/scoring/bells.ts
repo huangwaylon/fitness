@@ -1,38 +1,16 @@
-// ベル earned per person per day and weekly badges (ADR 0019, what earns: ADR 0021): five automatic metrics, one fruit each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps, 🥥 gym). Pure; the model feeds it one person's
-// week as of a time and decides which weeks count (the economy's first week, locks).
-import { RING_FRUITS, rulesFor, STRENGTH, TSUYU, type CurveFruit, type RuleVersion } from '#lib/config/rules.ts';
-import type { LocalDate, PersonId, RingBells, RingFruit, GymArrival, WeekKey, Workout } from '#lib/types.ts';
+// ベル earned per person per day and weekly badges (ADR 0019, what earns: ADR 0021): four automatic metrics, one fruit
+// each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps). Pure; the model feeds it one person's week as of a time and decides
+// which weeks count (the economy's first week, locks).
+import { RING_FRUITS, rulesFor, TSUYU, type RuleVersion } from '#lib/config/rules.ts';
+import type { LocalDate, PersonId, RingBells, RingFruit, WeekKey, Workout } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 
 // ---------- a day's raw facts (also read by きろく) ----------
 
-/**
- * Strength workout: at least STRENGTH.minWorkoutMin, and a きろく override if there is one (any type), else an auto
- * type. Other types count only when marked in きろく.
- */
-export const isStrengthWorkout = (w: Pick<Workout, 'type' | 'durationMin' | 'strengthOverride'>): boolean =>
-  w.durationMin >= STRENGTH.minWorkoutMin &&
-  (typeof w.strengthOverride === 'boolean' ? w.strengthOverride : (STRENGTH.autoTypes as readonly string[]).includes(w.type));
-
-/**
- * Gym days of a week (max one per date): strength workouts and gym arrivals, then the きろく / tree-popup overrides
- * (`gym_set`, ADR 0023): `true` makes a date a gym day without either, `false` cancels it whatever they say.
- */
-export function gymDaysOf(workouts: readonly Workout[], arrivals: readonly GymArrival[], overrides: ReadonlyMap<LocalDate, boolean> = new Map()): Set<LocalDate> {
-  const set = new Set<LocalDate>();
-  for (const w of workouts) if (isStrengthWorkout(w)) set.add(w.date);
-  for (const a of arrivals) set.add(a.date);
-  for (const [date, on] of overrides) {
-    if (on) set.add(date);
-    else set.delete(date);
-  }
-  return set;
-}
-
 /** Minutes of the workouts added by hand, per day. */
-export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin' | 'manual'>[]): Map<LocalDate, number> {
+export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin'>[]): Map<LocalDate, number> {
   const out = new Map<LocalDate, number>();
-  for (const w of workouts) if (w.manual) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
+  for (const w of workouts) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
   return out;
 }
 
@@ -46,17 +24,17 @@ const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.
 // ---------- the milestone curve (v2) ----------
 
 /** A fruit's ベル at the day's goal: its daily max. */
-const fruitMax = (r: RuleVersion, f: CurveFruit): number =>
+const fruitMax = (r: RuleVersion, f: RingFruit): number =>
   f === 'peach' ? r.goals.exerciseMin * r.bells.perExerciseMin
   : f === 'pear' ? r.bells.moveAtGoal
   : f === 'cherry' ? r.goals.standMin * r.bells.perStandMin
   : r.bells.stepDay;
 
 /**
- * A fruit's ベル at each milestone of the week's curve, e.g. 🍑 v2 [25, 70, 130, 240]; null when the week has no curve
+ * A fruit's ベル at each milestone of the week's curve, e.g. 🍑 v2 [45, 120, 230, 420]; null when the week has no curve
  * (v1: linear).
  */
-export function milestoneBells(weekKey: WeekKey, f: CurveFruit): readonly number[] | null {
+export function milestoneBells(weekKey: WeekKey, f: RingFruit): readonly number[] | null {
   const r = rulesFor(weekKey);
   if (!r.curve) return null;
   const max = fruitMax(r, f);
@@ -82,8 +60,6 @@ export interface EarnDay {
   standMin: number | null;
   /** kcal (`pref` moveGoal in force that day, else PEOPLE[p].moveGoal). */
   moveGoal: number;
-  /** A `gym_set` override of the day's 🥥 (ADR 0023): true = a gym day, false = not, absent/null = automatic. */
-  gymSet?: boolean | null;
 }
 
 /** One person's week as of some time: the inputs `earnWeek` needs (dates outside the week are ignored). */
@@ -91,8 +67,8 @@ export interface EarnInput {
   person: PersonId;
   weekKey: WeekKey;
   days: EarnDay[];
+  /** The workouts added in きろく: their minutes count toward the exercise minutes. */
   workouts: Workout[];
-  arrivals: GymArrival[];
 }
 
 /** A day's earnings with the facts behind them. */
@@ -106,11 +82,10 @@ interface DayEarning {
   moveGoal: number;
   standMin: number | null;
   steps: number | null;
-  gym: boolean;
   /** The daily goal met, per fruit (🍎 also by the tsuyu rule). */
   met: Record<RingFruit, boolean>;
   /** Milestones reached per curve fruit (0–4; the goal met is the last, 🍎's tsuyu day too); null in a week without a curve (v1). */
-  milestone: Record<CurveFruit, number> | null;
+  milestone: Record<RingFruit, number> | null;
 }
 
 interface FruitWeek {
@@ -135,9 +110,7 @@ export interface WeekEarning {
   bonus: number;
 }
 
-const CURVE_FRUITS = ['peach', 'pear', 'cherry', 'apple'] as const satisfies readonly CurveFruit[];
-
-export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple: 0, coconut: 0 });
+export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple: 0 });
 
 /**
  * One person's ベル for a week (ADR 0021 §3–4), at the week's rule version. Per day:
@@ -145,9 +118,8 @@ export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple
  * - 🍐 floor(moveAtGoal × min(kcal, goal) / goal), the goal being the person's Move goal in force that day.
  * - 🍒 perStandMin × whole stand minutes, up to goals.standMin.
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
- * - 🥥 gymDay on a gym day (max 1/day): a strength workout or any gym arrival, unless a `gym_set` says otherwise.
- * With a milestone curve (v2) 🍑🍐🍒🍎 instead pay `milestoneBells` at the last milestone reached (0 below the first).
- * Badges (+badges.bells each): days at the goal ≥ exerciseDays / moveDays / standDays / stepDays / gymDays.
+ * With a milestone curve (v2) each fruit instead pays `milestoneBells` at the last milestone reached (0 below the first).
+ * Badges (+badges.bells each): days at the goal ≥ exerciseDays / moveDays / standDays / stepDays.
  */
 export function earnWeek(input: EarnInput): WeekEarning {
   const r = rulesFor(input.weekKey);
@@ -155,11 +127,7 @@ export function earnWeek(input: EarnInput): WeekEarning {
   const inWeek = new Set(week);
   const rows = new Map<LocalDate, EarnDay>();
   for (const d of input.days) if (inWeek.has(d.date) && !rows.has(d.date)) rows.set(d.date, d);
-  const workouts = input.workouts.filter((w) => inWeek.has(w.date));
-  const overrides = new Map<LocalDate, boolean>();
-  for (const d of input.days) if (inWeek.has(d.date) && typeof d.gymSet === 'boolean' && !overrides.has(d.date)) overrides.set(d.date, d.gymSet);
-  const gym = gymDaysOf(workouts, input.arrivals.filter((a) => inWeek.has(a.date)), overrides);
-  const manual = manualMinutesByDay(workouts);
+  const manual = manualMinutesByDay(input.workouts.filter((w) => inWeek.has(w.date)));
   const exGoalMilli = r.goals.exerciseMin * 1000;
 
   const days = week.map((date): DayEarning => {
@@ -175,15 +143,13 @@ export function earnWeek(input: EarnInput): WeekEarning {
       peach: ex >= exGoalMilli,
       pear: moveGoal > 0 && kcal >= moveGoal,
       cherry: stand >= r.goals.standMin,
-      apple: (steps !== null && steps >= r.goals.steps) || (isTsuyu(date) && ex >= TSUYU.exerciseMin * 1000),
-      coconut: gym.has(date)
+      apple: (steps !== null && steps >= r.goals.steps) || (isTsuyu(date) && ex >= TSUYU.exerciseMin * 1000)
     };
     const rings: RingBells = {
       peach: Math.floor(Math.min(ex, exGoalMilli) / 1000) * r.bells.perExerciseMin,
       pear: moveGoal > 0 ? Math.floor((r.bells.moveAtGoal * Math.min(kcal, moveGoal)) / moveGoal) : 0,
       cherry: Math.min(stand, r.goals.standMin) * r.bells.perStandMin,
-      apple: met.apple ? r.bells.stepDay : 0,
-      coconut: met.coconut ? r.bells.gymDay : 0
+      apple: met.apple ? r.bells.stepDay : 0
     };
     let milestone: DayEarning['milestone'] = null;
     if (r.curve) {
@@ -194,16 +160,16 @@ export function earnWeek(input: EarnInput): WeekEarning {
         cherry: milestoneOf(at, stand, r.goals.standMin),
         apple: met.apple ? at.length : milestoneOf(at, steps ?? 0, r.goals.steps)
       };
-      for (const f of CURVE_FRUITS) rings[f] = milestone[f] > 0 ? milestoneBells(input.weekKey, f)![milestone[f] - 1] : 0;
+      for (const f of RING_FRUITS) rings[f] = milestone[f] > 0 ? milestoneBells(input.weekKey, f)![milestone[f] - 1] : 0;
     }
     return {
       date, bells: RING_FRUITS.reduce((n, f) => n + rings[f], 0), rings,
-      exerciseMin: Math.floor(ex / 1000), moveKcal, moveGoal, standMin, steps, gym: met.coconut, met, milestone
+      exerciseMin: Math.floor(ex / 1000), moveKcal, moveGoal, standMin, steps, met, milestone
     };
   });
 
   const need: Record<RingFruit, number> = {
-    peach: r.badges.exerciseDays, pear: r.badges.moveDays, cherry: r.badges.standDays, apple: r.badges.stepDays, coconut: r.badges.gymDays
+    peach: r.badges.exerciseDays, pear: r.badges.moveDays, cherry: r.badges.standDays, apple: r.badges.stepDays
   };
   const fruits = {} as Record<RingFruit, FruitWeek>;
   const badges = {} as Record<RingFruit, boolean>;

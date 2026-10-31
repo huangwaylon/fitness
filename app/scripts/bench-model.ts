@@ -20,7 +20,7 @@ function time(label: string, fn: (i: number) => unknown): void {
   console.log(`  ${label.padEnd(24)} ${((performance.now() - t0) / RUNS).toFixed(1).padStart(7)} ms`);
 }
 
-const count = (r: SnapshotRows) => r.metrics.length + r.workouts.length + r.presence.length + r.events.length;
+const count = (r: SnapshotRows) => r.metrics.length + r.events.length;
 const mb = (r: SnapshotRows) => (Buffer.byteLength(JSON.stringify(r)) / 1e6).toFixed(2);
 const midweek = (days: number) => Date.parse(jst(addDays(FIRST_DAY, days - 4), '12:00'));
 

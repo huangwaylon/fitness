@@ -22,8 +22,6 @@ class Mem implements KV {
 
 const rows = (n = 1): SnapshotRows => ({
   metrics: Array.from({ length: n }, (_, i) => [`2026-11-02T0${i}:00:00.000Z`, 'A', '2026-11-02', 'steps', 1000 * (i + 1)] as SnapshotRows['metrics'][number]),
-  workouts: [],
-  presence: [],
   events: [['2026-11-02T01:00:00.000Z', 'A', 'e1', 'pref', '{"key":"locale","value":"en"}']]
 });
 

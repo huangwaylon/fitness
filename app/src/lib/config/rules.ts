@@ -5,11 +5,8 @@
 // rules.test.ts pins the versions in use.
 import type { PersonId, RingFruit, WeekKey } from '#lib/types.ts';
 
-/** The fruits that can pay on a milestone curve (🥥 is one event a day). */
-export type CurveFruit = Exclude<RingFruit, 'coconut'>;
-
-/** The five ring fruits (ADR 0021), in display order: Exercise, Move, Stand, steps, gym. */
-export const RING_FRUITS = ['peach', 'pear', 'cherry', 'apple', 'coconut'] as const satisfies readonly RingFruit[];
+/** The four ring fruits (ADR 0021), in display order: Exercise, Move, Stand, steps. */
+export const RING_FRUITS = ['peach', 'pear', 'cherry', 'apple'] as const satisfies readonly RingFruit[];
 
 /** What a week earns (ADR 0019). The model picks the version by week (`rulesFor`). */
 export interface RuleVersion {
@@ -22,15 +19,14 @@ export interface RuleVersion {
   goals: { exerciseMin: number; standMin: number; steps: number };
   /**
    * ベル per day (ADR 0021): perExerciseMin per counted minute up to goals.exerciseMin (🍑); moveAtGoal at the Move
-   * goal, proportional below it (🍐); perStandMin per stand minute up to goals.standMin (🍒); stepDay (🍎); gymDay
-   * (🥥).
+   * goal, proportional below it (🍐); perStandMin per stand minute up to goals.standMin (🍒); stepDay (🍎).
    */
-  bells: { perExerciseMin: number; moveAtGoal: number; perStandMin: number; stepDay: number; gymDay: number };
+  bells: { perExerciseMin: number; moveAtGoal: number; perStandMin: number; stepDay: number };
   /**
    * Weekly badges (+`bells` each) and the ふたりボーナス (+`duoPerBadge` for each badge both people met). ADR 0021
-   * thresholds: exerciseDays, moveDays, standDays, stepDays, gymDays.
+   * thresholds: exerciseDays, moveDays, standDays, stepDays.
    */
-  badges: { exerciseDays: number; moveDays: number; standDays: number; stepDays: number; gymDays: number; bells: number; duoPerBadge: number };
+  badges: { exerciseDays: number; moveDays: number; standDays: number; stepDays: number; bells: number; duoPerBadge: number };
   /**
    * The milestone curve (v2, ADR 0021 amendment "v2 milestone curve"). Without it (v1) 🍑🍐🍒 pay linearly and 🍎 all
    * or nothing, as `bells` says. With it 🍑🍐🍒🍎 pay in steps: reaching `at[i]` of the day's goal pays
@@ -38,7 +34,7 @@ export interface RuleVersion {
    * above the goal the max. `pay` is shares in whole numbers (no arithmetic here, so the Apps Script bundle can still
    * drop RULES); `bells[f]` replaces a fruit's computed steps exactly. `at` ascends to 1, `pay` ascends.
    */
-  curve?: { at: readonly number[]; pay: readonly number[]; bells?: Partial<Record<CurveFruit, readonly number[]>> };
+  curve?: { at: readonly number[]; pay: readonly number[]; bells?: Partial<Record<RingFruit, readonly number[]>> };
 }
 
 /**
@@ -50,28 +46,31 @@ export const ECONOMY_START: WeekKey = '2026-10-26';
 export const RULES: readonly RuleVersion[] = [
   {
     // The economy starts in the week of Mon 2026-10-26 (ADR 0019 §7): the current week already earns. What earns is
-    // ADR 0021 (edited in place on 2026-10-30, in the economy's first week: see rules.test.ts). On target (every
-    // badge for both, minimum days) a person earns 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 + 3 × 400 🥥 =
-    // 4,700 daily + 5 × 400 badges = 6,700; both + 5 × 200 ふたりボーナス = 14,400 ベル a week (design.md §E).
+    // ADR 0021 (edited in place on 2026-10-30, and again on 2026-10-31 when the gym 🥥 went: the economy is play
+    // money, so this week simply loses its gym ベル; see rules.test.ts). On target (every badge for both, minimum
+    // days) a person earns 5 × 180 🍑 + 5 × 180 🍐 + 5 × 180 🍒 + 4 × 200 🍎 = 3,500 daily + 4 × 400 badges = 5,100;
+    // both + 4 × 200 ふたりボーナス = 11,000 ベル a week (design.md §E).
     from: ECONOMY_START,
     goals: { exerciseMin: 60, standMin: 180, steps: 8000 },
-    bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 400 },
-    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 400, duoPerBadge: 200 }
+    bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200 },
+    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, bells: 400, duoPerBadge: 200 }
   },
   {
-    // v2 "push exercise + strength" (user, 2026-10-30; ADR 0021 amendment, round-19 goals review): Exercise stays at
-    // 60 min but pays 4 a minute (the biggest daily earner), the gym 500, Stand 120 min (1 a minute). On target a
-    // person earns 5 × 240 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 + 3 × 500 🥥 = 5,000 daily + 5 × 340 badges =
-    // 6,700; both + 5 × 200 ふたりボーナス = 14,400 ベル a week, as in v1, so the menu prices still fit (design.md §E).
+    // v2 "push exercise" (user, 2026-10-30; ADR 0021 amendments, round-19 goals review), rebalanced on 2026-10-31
+    // without the gym ("keep ~14,400, boost Exercise"): Exercise stays at 60 min but pays 7 a minute (420, the biggest
+    // daily earner by far: the gym's share moved here), Stand 120 min (1 a minute). On target a person earns
+    // 5 × 420 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 = 4,400 daily + 4 × 450 badges = 6,200; both
+    // + 4 × 500 ふたりボーナス = 14,400 ベル a week, as before, so the menu prices still fit (design.md §E).
     from: '2026-11-02',
     goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
-    bells: { perExerciseMin: 4, moveAtGoal: 180, perStandMin: 1, stepDay: 200, gymDay: 500 },
-    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, gymDays: 3, bells: 340, duoPerBadge: 200 },
-    // The milestone curve (user, 2026-10-30): 25 / 50 / 75 / 100% of the goal pay 25 / 70 / 130 / 240 of 🍑's 240,
-    // each step more than the last and the biggest at the goal. 🍐 and 🍒 take the same shares (19 / 53 / 98 / 180 and
-    // 13 / 35 / 65 / 120); 🍎 pays the user-approved 20 / 60 / 110 / 200 (the shares would give 21 / 58 / 108). The
-    // maxima are unchanged, so the on-target week is still 14,400.
-    curve: { at: [0.25, 0.5, 0.75, 1], pay: [25, 70, 130, 240], bells: { apple: [20, 60, 110, 200] } }
+    bells: { perExerciseMin: 7, moveAtGoal: 180, perStandMin: 1, stepDay: 200 },
+    badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, bells: 450, duoPerBadge: 500 },
+    // The milestone curve (user, 2026-10-30): 25 / 50 / 75 / 100% of the goal pay the shares 25 / 70 / 130 / 240 of a
+    // fruit's max, each step more than the last and the biggest at the goal. 🍐 and 🍒 take the shares (19 / 53 / 98 /
+    // 180 and 13 / 35 / 65 / 120); 🍑 pays the shares of 420 rounded to 5s, 45 / 120 / 230 / 420 (15 / 30 / 45 / 60
+    // min; exact: 43.75 / 122.5 / 227.5); 🍎 the user-approved 20 / 60 / 110 / 200 (the shares would give 21 / 58 /
+    // 108). The maxima are the fruits' ベル at the goal, so the on-target week is 14,400.
+    curve: { at: [0.25, 0.5, 0.75, 1], pay: [25, 70, 130, 240], bells: { peach: [45, 120, 230, 420], apple: [20, 60, 110, 200] } }
   }
 ];
 
@@ -115,11 +114,6 @@ export const ESCALATING_ITEMS: readonly string[] = ['snack', 'cafe', 'dinner'];
  */
 export const ESCALATION = { num: 3, den: 2, roundTo: 50, enforceFrom: '2026-10-31T00:00:00+09:00' } as const;
 
-export const STRENGTH = {
-  autoTypes: ['Traditional Strength Training', 'Functional Strength Training', 'Pilates'],
-  minWorkoutMin: 15
-} as const;
-
 /** Tokyo tsuyu: ≥ 30 counted exercise minutes also counts as a step day. */
 export const TSUYU = { from: '06-01', to: '07-20', exerciseMin: 30 } as const;
 
@@ -146,10 +140,6 @@ export const CUTOFFS = {
 
 /** Read-time checks on event rows: an event outside them is ignored (the server would have refused it). */
 export const LIMITS = {
-  /** Automations sometimes fire twice: a person's repeat gym arrival this close is dropped (whatever its label). */
-  gymDuplicateMs: 120_000,
-  /** A gym row whose `arrived_at` is further than this from the server `at` is ignored. */
-  gymSkewMs: 48 * 3600_000,
   spendLabelMaxChars: 60,
   /** A spend or a menu price: a positive integer up to this. */
   bellsMax: 10_000_000,

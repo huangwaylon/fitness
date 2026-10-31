@@ -21,9 +21,6 @@ class Mem implements KV {
 const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
 const rows = (): SnapshotRows => ({
   metrics: [['2026-11-17T12:00:00.000Z', 'A', '2026-11-17', 'steps', 6000], ['2026-11-18T11:00:00.000Z', 'A', '2026-11-18', 'move_kcal', 450]],
-  // A 45-minute yoga session: not a strength type, so it counts only when marked in きろく (no questions).
-  workouts: [['2026-11-17T12:00:00.000Z', 'A', 'yoga-1', '2026-11-17', 'Yoga', '2026-11-17T19:00:00+09:00', '2026-11-17T19:45:00+09:00', 45, 110]],
-  presence: [],
   events: []
 });
 const ev = (id: string, type: QueuedEvent['type'], data: Record<string, unknown>): QueuedEvent => ({ id, type, data, queuedAt: NOW, tries: 0, nextAt: NOW });
@@ -42,11 +39,11 @@ beforeEach(() => {
 describe('live optimistic view', () => {
   const cache = applySnapshot(null, { me: 'A', now: new Date(NOW).toISOString(), rows: rows() }, NOW);
 
-  it('marking the yoga workout as strength in きろく counts a gym day and raises the week’s ベル at once', () => {
+  it('a workout added in きろく (Watch forgotten) raises the week’s 🍑 ベル at once', () => {
     const before = composeView(cache, [], NOW);
-    const after = composeView(cache, [ev('c1', 'workout_edit', { id: 'yoga-1', strength: true })], NOW);
-    expect(after.people.A.rings.coconut.weekDays).toBe(before.people.A.rings.coconut.weekDays + 1);
-    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 500); // a v2 week: 🥥 500
+    const after = composeView(cache, [ev('c1', 'workout_add', { id: 'm:yoga', date: '2026-11-17', type: 'Yoga', durationMin: 45 })], NOW);
+    expect(after.people.A.rings.peach.weekBells).toBe(before.people.A.rings.peach.weekBells + 230); // v2: 45 of 60 min
+    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 230);
   });
 
   it('a new Move goal re-prices today’s 🍐 at once', () => {

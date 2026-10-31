@@ -3,7 +3,7 @@
 // The economy starts 2026-10-26, so the demo moves the model's calendar (`DemoCalendar`, carried by the state): its
 // first week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
 import type { PersonId, WeekKey } from '#lib/types.ts';
-import type { EventRow, GymRow, MetricRow, SnapshotRows, WorkoutRow } from '#lib/contract/api.ts';
+import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { addDays, jstMs, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs, provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
@@ -32,27 +32,13 @@ function demoRows(now: number): SnapshotRows {
   const cur = weekKeyOf(today);
   const first = demoFirstWeek(now);
   const metrics: MetricRow[] = [];
-  const workouts: WorkoutRow[] = [];
-  const arrivals: GymRow[] = [];
   const events: EventRow[] = [];
   let n = 0;
   const ev = (t: number, p: PersonId, type: EventRow[3], data: object) => {
     if (t < now) events.push([iso(t), p, `demo-${++n}`, type, JSON.stringify(data)]);
   };
-  const wo = (sync: number, p: PersonId, date: string, type: string, h: number, m: number, min: number, hr: number) => {
-    if (sync >= now) return;
-    const start = at(date, h, m);
-    workouts.push([iso(sync), p, `${type}@${iso(start)}`, date, type, iso(start), iso(start + min * 60_000), min, hr]);
-  };
-  // A gym arrival (the Arrive automation's `gym` action): a strength day, however long the stay. `label` is the
-  // optional `place` text ('' = ジム).
-  const arrive = (p: PersonId, label: string, date: string, h: number, m: number) => {
-    const a = at(date, h, m);
-    if (a + 30_000 < now) arrivals.push([iso(a + 30_000), p, label, iso(a)]);
-  };
 
   for (let d = first; d <= today; d = addDays(d, 1)) {
-    const dow = (weekDays(weekKeyOf(d)).indexOf(d) + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7; // 1 = Mon
     const isToday = d === today;
     const night = at(d, 22, 30);
     // Today only has a midday sync, scaled to the hour.
@@ -74,24 +60,6 @@ function demoRows(now: number): SnapshotRows {
         );
       }
     }
-    // ウェイ: strength at the gym Mon/Thu (a Watch workout + an エニタイム arrival), a run some Saturdays.
-    const ra = rng(`A-w|${d}`);
-    if ((dow === 1 || dow === 4) && ra() < 0.7) {
-      wo(night, 'A', d, 'Traditional Strength Training', 19, 15, 45 + Math.floor(ra() * 20), 118);
-      arrive('A', 'エニタイム', d, 19, 5);
-    }
-    if (dow === 6 && ra() < 0.6) wo(night, 'A', d, 'Outdoor Run', 8, 10, 28 + Math.floor(ra() * 15), 152);
-    // Watch forgotten: the エニタイム arrival alone makes it a strength day.
-    if (dow === 3 && ra() < 0.3) arrive('A', '', d, 20, 0);
-    // うめ: PT studio on Fridays (an arrival, no Watch workout), Pilates on Tuesdays, yoga on Sundays.
-    const rb = rng(`B-w|${d}`);
-    if (dow === 5 && rb() < 0.75) arrive('B', 'PTスタジオ', d, 18, 30);
-    if (dow === 2 && rb() < 0.8) wo(night, 'B', d, 'Pilates', 7, 0, 40, 104);
-    // Yoga isn't a strength type (no questions are asked): うめ marks a power-yoga Sunday as strength in きろく now and then.
-    if (dow === 7 && rb() < 0.7) {
-      wo(night, 'B', d, 'Yoga', 9, 30, 45, 96);
-      if (rb() < 0.5 && at(d, 22, 40) < finalMs(weekKeyOf(d))) ev(at(d, 22, 40), 'B', 'workout_edit', { id: `Yoga@${iso(at(d, 9, 30))}`, strength: true });
-    }
   }
 
   // Harvests: both tap 受け取る on Sunday evening.
@@ -111,8 +79,8 @@ function demoRows(now: number): SnapshotRows {
   edit(at(addDays(w(1), 2), 21, 4), 'B', 'metric_set', { date: addDays(w(1), 1), metric: 'exercise_min', value: 55 }, addDays(w(1), 1));
   // ウェイ: a walk that the Watch double-counted (2 weeks ago: steps lowered).
   edit(at(addDays(w(2), 3), 22, 50), 'A', 'metric_set', { date: addDays(w(2), 2), metric: 'steps', value: 6400 }, addDays(w(2), 2));
-  // うめ: a manual Pilates (3 weeks ago), counted as strength.
-  edit(at(addDays(w(3), 4), 20, 12), 'B', 'workout_add', { id: 'm:demo-pilates', date: addDays(w(3), 3), type: 'Pilates', durationMin: 35, strength: true }, addDays(w(3), 3));
+  // うめ: a Pilates class without her Watch, added by hand (3 weeks ago): its minutes count toward 🍑.
+  edit(at(addDays(w(3), 4), 20, 12), 'B', 'workout_add', { id: 'm:demo-pilates', date: addDays(w(3), 3), type: 'Pilates', durationMin: 35 }, addDays(w(3), 3));
   // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
   ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 
@@ -151,7 +119,7 @@ function demoRows(now: number): SnapshotRows {
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
-  return { metrics: byAt(metrics), workouts: byAt(workouts), presence: byAt(arrivals), events: byAt(events) };
+  return { metrics: byAt(metrics), events: byAt(events) };
 }
 
 /** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`), carrying the demo's calendar for the model. */

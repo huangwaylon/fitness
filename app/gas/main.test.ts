@@ -45,7 +45,7 @@ describe('auth', () => {
 
   it('whoami creates every tab with its header', () => {
     a('whoami');
-    expect([...gas.sheets.keys()].sort()).toEqual(['events', 'metrics', 'presence', 'uploads', 'workouts']);
+    expect([...gas.sheets.keys()].sort()).toEqual(['events', 'metrics', 'uploads']); // no presence or workouts tab any more
     expect(gas.sheets.get('metrics')!.rows[0]).toEqual(['at', 'person', 'date', 'metric', 'value']);
     expect(gas.sheets.get('metrics')!.frozen).toBe(1);
   });
@@ -137,10 +137,6 @@ describe('never throws', () => {
 
   it('bad action fields are bad_request', () => {
     expect(a('presence', { place: 'gym', event: 'arrive' }).error).toBe('bad_request'); // the old action is gone
-    expect(a('gym', { place: 'x'.repeat(41) }).error).toBe('bad_request');
-    expect(a('gym', { place: 5 }).error).toBe('bad_request');
-    expect(a('gym', { at: 'whenever' }).error).toBe('bad_request');
-    expect(a('gym', { at: '2026-10-29T11:05:00' }).error).toBe('bad_request'); // no offset
     expect(a('event', { id: 'e1', type: 'nope', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: '', type: 'highfive', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: 'e1', type: 'highfive', data: [1] }).error).toBe('bad_request');
@@ -152,7 +148,7 @@ describe('never throws', () => {
 
 describe('ingest', () => {
   it("the Shortcut's body: rows appended with server time, audit row with the body's shape, nothing stored twice", () => {
-    expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 6, workouts: 0 });
+    expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 6 });
     const at = '2026-10-29T03:00:00.000Z';
     expect(data('metrics')).toEqual([
       [at, 'A', '2026-09-28', 'steps', 855], [at, 'A', '2026-09-29', 'steps', 9106],
@@ -162,7 +158,7 @@ describe('ingest', () => {
     expect(data('uploads')).toEqual([[at, 'A', 'ok', JSON.stringify({ key: KEY_A, action: 'ingest', ...REAL }).length, ' | action:text[1] "ingest"; dates:text[2] "Sep 28, 2026 at 7:11 AM"; steps:text[2] "855"; exercise_minutes:text[2] "0"; calories:text[2] "0"']]);
     expect(String(data('uploads')[0][4])).not.toContain(KEY_A); // the shape never logs the key
     tick();
-    expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 0, workouts: 0 });
+    expect(a('ingest', REAL)).toEqual({ ok: true, metrics: 0 });
     expect(data('metrics')).toHaveLength(6);
     expect(data('uploads')).toHaveLength(2);
   });
@@ -217,22 +213,11 @@ describe('ingest', () => {
     expect(data('metrics').filter((r) => r[1] === 'B')).toHaveLength(6);
   });
 
-  it('workouts are deduped by id, also across phone languages', () => {
-    const body = (types: string) => ({
-      workouts: {
-        types,
-        starts: 'Nov 2, 2026 at 8:30 AM\nNov 3, 2026 at 6:00 PM',
-        ends: 'Nov 2, 2026 at 9:22 AM\nNov 3, 2026 at 6:30 PM',
-        avgHrs: '118\n0'
-      }
-    });
-    expect(a('ingest', body('伝統的な筋力トレーニング\nカバディ'))).toEqual({ ok: true, metrics: 0, workouts: 2, unknownTypes: ['カバディ'] });
-    const [w] = data('workouts');
-    expect(w.slice(1)).toEqual(['A', w[2], '2026-11-02', 'Traditional Strength Training', '2026-11-02T08:30:00+09:00', '2026-11-02T09:22:00+09:00', 52, 118]);
-    tick();
-    expect(a('ingest', body('Traditional Strength Training\nカバディ'))).toMatchObject({ workouts: 0 });
-    expect(data('workouts')).toHaveLength(2);
-    expect(String(data('uploads').at(0)![4]).split(' | ')[0]).toBe('unknown workout types: カバディ');
+  it('an old Shortcut’s `workouts` field is ignored: nothing is stored, no workouts tab is made', () => {
+    const workouts = { types: 'ヨガ', starts: 'Nov 2, 2026 at 8:30 AM', ends: 'Nov 2, 2026 at 9:22 AM', avgHrs: '118' };
+    expect(a('ingest', { ...day('Nov 2, 2026', 8000, 30), workouts })).toEqual({ ok: true, metrics: 2 });
+    expect(gas.sheets.has('workouts')).toBe(false);
+    expect(a('ingest', { workouts })).toMatchObject({ ok: false, error: 'bad_request', detail: expect.stringMatching(/nothing to save/) });
   });
 
   it('a bad shape is bad_request with a hint, and audited as an error', () => {
@@ -245,7 +230,7 @@ describe('ingest', () => {
 
   it('a mismatched list is reported in the reply and the audit row, and the other lists are saved', () => {
     const r = a('ingest', { dates: 'Oct 27, 2026\nOct 28, 2026', steps: '100\n200', exercise_minutes: '1' });
-    expect(r).toEqual({ ok: true, metrics: 2, workouts: 0, warnings: ['exercise_minutes: 1 lines but 2 dates; exercise_minutes not saved'] });
+    expect(r).toEqual({ ok: true, metrics: 2, warnings: ['exercise_minutes: 1 lines but 2 dates; exercise_minutes not saved'] });
     expect(data('uploads').at(-1)!.slice(2)).toEqual(['ok', expect.any(Number), expect.stringMatching(/^exercise_minutes: 1 lines but 2 dates; exercise_minutes not saved \| /)]);
   });
 
@@ -286,7 +271,7 @@ describe('ingest', () => {
   });
 
   it('partial uploads say how many lines were skipped', () => {
-    expect(a('ingest', { dates: 'Oct 28, 2026\nOct 29, 2026', steps: '1\nx' })).toEqual({ ok: true, metrics: 1, workouts: 0, skipped: 1 });
+    expect(a('ingest', { dates: 'Oct 28, 2026\nOct 29, 2026', steps: '1\nx' })).toEqual({ ok: true, metrics: 1, skipped: 1 });
     expect(data('uploads')[0].slice(2)).toEqual(['partial', expect.any(Number), expect.stringMatching(/^1 items skipped \| /)]);
   });
 
@@ -297,26 +282,11 @@ describe('ingest', () => {
   });
 });
 
-describe('gym and events', () => {
-  it('gym rows: the trimmed label (any text up to 40 chars, empty is fine) and the arrival time, defaulting to now', () => {
-    expect(a('gym', { place: '  エニタイム  ', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: true });
-    tick();
-    expect(b('gym')).toEqual({ ok: true });
-    tick();
-    expect(b('gym', { place: 'x'.repeat(40), at: '2026-10-29T03:00:00.5Z' })).toEqual({ ok: true });
-    expect(data('presence')).toEqual([
-      ['2026-10-29T03:00:00.000Z', 'A', 'エニタイム', '2026-10-29T02:05:00.000Z'],
-      ['2026-10-29T03:00:01.000Z', 'B', '', '2026-10-29T03:00:01.000Z'],
-      ['2026-10-29T03:00:02.000Z', 'B', 'x'.repeat(40), '2026-10-29T03:00:00.500Z']
-    ]);
-  });
-
-  it('an empty tab with the old 5-column header is relabelled on its first row', () => {
-    a('whoami');
-    gas.sheets.get('presence')!.rows[0] = ['at', 'person', 'place', 'event', 'event_at'];
-    a('gym');
-    expect(gas.sheets.get('presence')!.rows[0]).toEqual(['at', 'person', 'label', 'arrived_at', '']);
-    expect(data('presence')).toHaveLength(1);
+describe('the gym is gone, and events', () => {
+  it('the `gym` action is refused and writes nothing (no presence tab)', () => {
+    expect(a('gym', { place: 'エニタイム', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: false, error: 'bad_request' });
+    expect(b('gym')).toEqual({ ok: false, error: 'bad_request' });
+    expect(gas.sheets.has('presence')).toBe(false);
   });
 
   it('events: a duplicate id is acknowledged and ignored, so retries are safe', () => {
@@ -358,11 +328,8 @@ describe('edit events (history-and-editing.md §4.1)', () => {
   const edits = [
     { type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } },
     { type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 0 } },
-    { type: 'workout_edit', data: { id: 'Yoga@2026-10-28T09:00:00.000Z', strength: false } },
-    { type: 'workout_edit', data: { id: 'w1', strength: null, excluded: true } },
     { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
-    { type: 'gym_set', data: { person: 'A', date: '2026-10-28', on: true } },
-    { type: 'gym_set', data: { date: '2026-10-28', on: false } },
+    { type: 'workout_edit', data: { id: 'm:3f1c', excluded: true } },
     { type: 'spend_void', data: { spendId: 'sp-1' } }
   ];
 
@@ -414,7 +381,9 @@ describe('edit events (history-and-editing.md §4.1)', () => {
   it('other edit shapes are checked too', () => {
     const bad = [
       { type: 'workout_edit', data: { id: 'w1' } },
-      { type: 'workout_edit', data: { id: 'w1', strength: 'yes' } },
+      { type: 'workout_edit', data: { id: 'w1', strength: true } }, // the strength mark is gone
+      { type: 'workout_edit', data: { id: 'w1', excluded: 'yes' } },
+      { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Core Training', durationMin: 30 } }, // a Watch-only type
       { type: 'workout_add', data: { id: 'w-no-prefix', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 601 } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 0 } },
@@ -426,25 +395,11 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     expect(data('events')).toEqual([]);
   });
 
-  it('gym_set: a real date and a boolean `on`, nothing looser (ADR 0023)', () => {
-    const bad = [
-      { date: '2026-10-28' },
-      { date: '2026-10-28', on: 'true' },
-      { date: '2026-10-28', on: 1 },
-      { date: '2026-10-28', on: null },
-      { date: '2026-02-30', on: true },
-      { date: '2026-13-01', on: true },
-      { date: '2026-10-28T00:00:00Z', on: true },
-      { date: 20261028, on: true },
-      { on: true },
-      { date: '2026-10-28', on: true, person: 'C' },
-      { date: '2026-10-28', on: true, person: 'a' },
-      { date: '2026-10-28', on: true, person: null }
-    ];
-    bad.forEach((d, i) => expect(a('event', { id: `g${i}`, type: 'gym_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' }));
+  it('gym_set is no longer an event type: refused, whatever its data', () => {
+    for (const [i, d] of [{ date: '2026-10-28', on: true }, { person: 'A', date: '2026-10-28', on: false }].entries()) {
+      expect(a('event', { id: `g${i}`, type: 'gym_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' });
+    }
     expect(data('events')).toEqual([]);
-    expect(b('event', { id: 'g-ok', type: 'gym_set', data: { person: 'A', date: '2026-10-28', on: false } })).toEqual({ ok: true });
-    expect(data('events').map((r) => [r[1], r[3]])).toEqual([['B', 'gym_set']]);
   });
 
   it('`person` (whose data, ADR 0023): A or B on the edit types and the goal prefs; refused anywhere else', () => {
@@ -498,26 +453,22 @@ describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);
     tick();
-    b('gym', { place: 'studio', at: '2026-10-29T12:00:00+09:00' });
-    tick();
     a('event', { id: 'e1', type: 'highfive', data: {} });
-    a('ingest', { workouts: { types: 'Yoga', starts: 'Oct 29, 2026 at 7:00 AM', ends: 'Oct 29, 2026 at 7:30 AM' } });
+    tick();
+    b('event', { id: 'e2', type: 'highfive', data: {} });
 
     const full = b('snapshot');
     expect(full).toMatchObject({ ok: true, me: 'B', now: expect.any(String) });
+    expect(Object.keys(full.rows).sort()).toEqual(['events', 'metrics']); // no presence (gym) or workouts tab
     expect(full.rows.metrics).toHaveLength(6);
     expect(full.rows.metrics[0]).toEqual(['2026-10-29T03:00:00.000Z', 'A', '2026-09-28', 'steps', 855]);
-    expect(full.rows.presence).toEqual([['2026-10-29T03:00:01.000Z', 'B', 'studio', '2026-10-29T03:00:00.000Z']]);
-    expect(full.rows.events).toEqual([[expect.any(String), 'A', 'e1', 'highfive', '{}']]);
-    expect(full.rows.workouts[0].slice(1, 9)).toEqual(['A', expect.stringMatching(/^w:[0-9a-f]{16}$/), '2026-10-29', 'Yoga', '2026-10-29T07:00:00+09:00', '2026-10-29T07:30:00+09:00', 30, null]);
-    expect(full.rows).not.toHaveProperty('uploads');
+    expect(full.rows.events).toEqual([['2026-10-29T03:00:01.000Z', 'A', 'e1', 'highfive', '{}'], ['2026-10-29T03:00:02.000Z', 'B', 'e2', 'highfive', '{}']]);
 
-    const since = full.rows.presence[0][0];
+    const since = full.rows.events[0][0];
     const inc = a('snapshot', { since });
+    expect(Object.keys(inc.rows).sort()).toEqual(['events', 'metrics']);
     expect(inc.rows.metrics).toEqual([]);
-    expect(inc.rows.presence).toEqual([]);
     expect(inc.rows.events).toHaveLength(1);
-    expect(inc.rows.workouts).toHaveLength(1);
   });
 
   it('every request gets a strictly later `at`, even within the same millisecond', () => {
@@ -555,8 +506,6 @@ describe('rev: resync after hand changes (sheets-architecture.md §2.1)', () => 
     expect(r0).toMatch(/^[0-9a-z]+$/);
     a('ingest', REAL);
     b('event', { id: 'e1', type: 'highfive' });
-    b('gym');
-    a('ingest', { workouts: { types: 'Yoga', starts: 'Oct 29, 2026 at 7:00 AM', ends: 'Oct 29, 2026 at 7:30 AM' } });
     expect(rev()).toBe(r0);
   });
 

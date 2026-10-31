@@ -1,27 +1,16 @@
-// UI label for a canonical (English) workout type. Dependency-free: the parser (and so the Apps Script bundle)
-// inverts the same table for Japanese Health names.
+// The workout types きろく offers for a workout added by hand (`workout_add`), in its order, with their Japanese UI
+// labels. Dependency-free: the Apps Script bundle validates `workout_add` against the same list.
 
-export const WORKOUT_LABELS_JA: Record<string, string> = {
+const WORKOUT_LABELS_JA: Record<string, string> = {
   'Traditional Strength Training': '筋力トレーニング',
-  'Functional Strength Training': '機能的な筋力トレーニング',
-  'Core Training': 'コアトレーニング',
   Pilates: 'ピラティス',
   Yoga: 'ヨガ',
-  'High Intensity Interval Training': '高強度インターバルトレーニング',
-  'Mixed Cardio': 'ミックスカーディオ',
-  'Cross Training': 'クロストレーニング',
-  Walking: 'ウォーキング',
   'Outdoor Walk': '屋外ウォーキング',
-  'Indoor Walk': '室内ウォーキング',
-  Hiking: 'ハイキング',
-  Running: 'ランニング',
   'Outdoor Run': '屋外ランニング',
-  'Indoor Run': '室内ランニング',
   Cycling: 'サイクリング',
   Swimming: '水泳',
   Dance: 'ダンス',
-  Elliptical: 'エリプティカル',
-  Rowing: 'ローイング'
+  'High Intensity Interval Training': '高強度インターバルトレーニング'
 };
 
 export const WORKOUT_TYPES = Object.keys(WORKOUT_LABELS_JA);

@@ -2,17 +2,15 @@
   // One person's tree (round 6, faithful to AC; ADR 0021): a plain official hardwood of the season (an AC tree bears one
   // kind of fruit, so this one bears none), with today's fruit lying on the ground in front of the trunk, the way NH
   // drops fruit around a shaken tree: per ring fruit 0–3 items = thirds of today's goal (scene.ts fruitCount),
-  // 🍑 🍐 🍒 🍎 🥥 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
+  // 🍑 🍐 🍒 🍎 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
   // kind earns an item (new data from the Watch), the tree shakes (±4°, 3 swings, 500ms) and the new item drops in with
   // a bounce. Narrow stages (< 360px) show one item per kind, sized by its count. The tree stands still otherwise
   // (v5 §6 idle budget).
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail
   // (round 17 IA §3.1): a nameplate (whose tree), then per fruit today / goal, today's ベル and the week's badge pips
-  // (●●●○○ = 3 of 5 days; ✓ once the badge is met). Under the 🥥 row, two check chips きのう / きょう turn this
-  // person's gym day on or off with one tap (`gym_set`, ADR 0023: a forgotten arrival or a false one; held 5 s with
-  // とりけす like every edit; a locked week's chip shows 🔒). It stays until this tree is tapped again, the other tree is
-  // tapped, or a tap lands elsewhere (a chip keeps it open). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
+  // (●●●○○ = 3 of 5 days; ✓ once the badge is met). It stays until this tree is tapped again, the other tree is
+  // tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
   // pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
@@ -20,15 +18,11 @@
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
-  import Glyph from '../kiroku/Glyph.svelte';
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { todayAmount, todayPct } from './progress.ts';
   import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { week } from '#lib/store/week.svelte.ts';
-  import { gymChips, type GymChip } from '#lib/model/gym.ts';
-  import { EDIT_CUTOFF_MS, setGym, undoBanner } from '#lib/store/actions.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -41,10 +35,8 @@
     open?: boolean;
     /** A tap on this tree: open its popup (true) or close it (false). */
     ontoggle?: (open: boolean) => void;
-    /** The popup's gym chips can edit (the live island; never the gallery's thumbnails). */
-    editable?: boolean;
   }
-  let { person, x, foliage, shakeN = 0, celebrate = null, open = false, ontoggle, editable = false }: Props = $props();
+  let { person, x, foliage, shakeN = 0, celebrate = null, open = false, ontoggle }: Props = $props();
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
   const detailId = $props.id();
@@ -60,18 +52,6 @@
 
   const ring = (f: RingFruit) => person.rings[f];
 
-  /** Yesterday's and today's 🥥 (only while the popup is open), and whether each can still change. */
-  const gym = $derived.by(() => {
-    const m = open && editable ? week.model : null;
-    if (!m) return null;
-    return gymChips(m.state, person.person, m.now).map((c) => ({ ...c, can: c.open && m.now < c.lockAt - EDIT_CUTOFF_MS }));
-  });
-  function toggleGym(c: GymChip & { can: boolean }) {
-    if (!c.can) return;
-    const mine = person.person === week.view?.me;
-    const day = `${mine ? '' : `${person.villagerName} `}${t(`tree.${c.which}`)}`;
-    undoBanner(t(c.on ? 'kiroku.savedGymOff' : 'kiroku.savedGymOn', { day }), setGym(person.person, c.date, !c.on));
-  }
   const amount = (f: RingFruit) => todayAmount(f, ring(f));
   /** The one nudge (v2 milestones, docs/reviews/round-19/milestones-contract.md): 「あと 8分で +45」 for the tapped fruit,
    *  else for the fruit nearest its next step (by share of the goal). None in a v1 week or once every step is reached. */
@@ -228,24 +208,10 @@
         {@const r = ring(f)}
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
-          {#if !(f === 'coconut' && gym)}<span class="lbl">{t(`fruit.${f}`)}</span>{/if}
-          {#if f === 'coconut' && gym}
-            <!-- the gym row's quick fix in place of today's ✓: yesterday / today, one tap each (a chip tap keeps the popup
-                 open: IslandScene) -->
-            <span class="gym" role="group" aria-label={t('kiroku.gym')}>
-              {#each gym as c (c.date)}
-                <button type="button" class="gym-chip" aria-pressed={c.on} aria-disabled={c.can ? undefined : 'true'} data-sfx={c.on ? 'toggle-off' : 'toggle-on'}
-                  data-day={c.which} aria-label={t('tree.gymChip', { name: person.villagerName, day: t(`tree.${c.which}`) })}
-                  onpointerdown={(e) => e.stopPropagation()} onclick={() => toggleGym(c)}>
-                  <span class="box" aria-hidden="true">{#if !c.can}<Glyph kind="lock" size={14} />{:else if c.on}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}</span>{t(`tree.${c.which}`)}
-                </button>
-              {/each}
-            </span>
-          {:else}
-            <span class="amt money" class:met={r.met}>{amount(f)}</span>
-            <!-- today's milestones (v2): four pips filling up toward the goal -->
-            <span class="steps">{#if r.milestone !== undefined}{#each [1, 2, 3, 4] as k (k)}<i class:on={k <= r.milestone}></i>{/each}{/if}</span>
-          {/if}
+          <span class="lbl">{t(`fruit.${f}`)}</span>
+          <span class="amt money" class:met={r.met}>{amount(f)}</span>
+          <!-- today's milestones (v2): four pips filling up toward the goal -->
+          <span class="steps">{#if r.milestone !== undefined}{#each [1, 2, 3, 4] as k (k)}<i class:on={k <= r.milestone}></i>{/each}{/if}</span>
           <b class="money" class:zero={!r.todayBells}>{r.todayBells > 0 ? `+${formatNum(r.todayBells)}` : '—'}</b>
           <!-- the week toward the badge: days met / days needed, a ✓ disc once it's earned -->
           <span class="wk money" class:badge={r.badge}>{#if r.badge}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{Math.min(r.weekDays, r.weekGoalDays)}/{r.weekGoalDays}{/if}</span>
@@ -280,8 +246,7 @@
     55% { transform: translateY(0) scale(1.12, .86); } 72% { transform: translateY(-30%) scale(.96, 1.04); }
     86% { transform: translateY(0) scale(1.04, .96); } 100% { transform: none; }
   }
-  /* narrow stages: one item per kind, sized by its count (readable at 320; five kinds at 22u pitch leave room for
-     ×1.25 at most) */
+  /* narrow stages: one item per kind, sized by its count (readable at 320) */
   @container (max-width: 359px) {
     .fruit.k1, .fruit.k2 { display: none; }
     .fruit.ghost .f { scale: .85; }
@@ -343,26 +308,6 @@
   /* the week toward the badge: 「2/5」 days, or a ✓ disc once the badge is earned */
   .wk { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); min-width: 22px; text-align: left; }
   .wk.badge svg { width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
-  /* the 🥥 row's two check chips (きのう / きょう), in the today and milestone columns: ≥ 44px tall, a box that fills leaf
-     green with ✓ when it is a gym day */
-  /* they take the word's column too (the 🥥 art names the row; the group's label says ジム), so the popup stays as wide */
-  .gym { grid-column: span 3; display: flex; justify-content: flex-end; gap: 4px; margin-block: -2px; }
-  .gym-chip {
-    appearance: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-height: 44px; min-width: 44px;
-    padding: 0 9px 0 6px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1 var(--font-ui); color: var(--plate-ink);
-    background: color-mix(in srgb, var(--plate-ink) 8%, transparent); -webkit-tap-highlight-color: transparent;
-  }
-  .gym-chip .box {
-    width: 18px; height: 18px; flex: none; border-radius: 6px; display: grid; place-items: center; line-height: 0;
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--plate-ink) 40%, transparent);
-  }
-  .gym-chip .box svg { width: 14px; height: 14px; }
-  .gym-chip[aria-pressed='true'] { background: color-mix(in srgb, var(--c-leaf) 30%, transparent); }
-  .gym-chip[aria-pressed='true'] .box { background: var(--c-leaf); color: var(--c-ink); box-shadow: none; }
-  .gym-chip[aria-disabled='true'] { cursor: default; opacity: .6; }
-  .gym-chip[aria-disabled='true'] .box { box-shadow: none; color: var(--c-ink-soft); }
-  .gym-chip:active:not([aria-disabled='true']) { transform: translateY(1px); }
-  .gym-chip:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
   /* the one nudge: what the next step pays */
   .next {
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
@@ -373,9 +318,6 @@
     .detail { grid-template-columns: 20px auto auto auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
-    .gym { grid-column: span 2; }
-    .gym-chip { padding: 0 7px 0 5px; gap: 4px; font-size: var(--fs-xs); }
-    .gym-chip .box { width: 16px; height: 16px; }
     /* the longest value (2,384/8,000歩) ran into its fruit (1px); keep a clear gap (round 21) */
     .amt { padding-left: 4px; }
   }

@@ -17,8 +17,8 @@
   const view = $derived(week.view);
   const p = $derived(view ? view.people[view.partner] : null);
 
-  /** What they say: all five met, else the proudest ring met today (gym first), else a cheer. */
-  const SAY_ORDER: RingFruit[] = ['coconut', 'peach', 'apple', 'pear', 'cherry'];
+  /** What they say: all four met, else the proudest ring met today (Exercise first), else a cheer. */
+  const SAY_ORDER: RingFruit[] = ['peach', 'apple', 'pear', 'cherry'];
   function say(person: PersonWeekView): string {
     if (RING_FRUITS.every((f) => person.rings[f].met)) return t('partner.say.all');
     const f = SAY_ORDER.find((k) => person.rings[k].met);

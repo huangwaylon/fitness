@@ -13,7 +13,7 @@ export const num = (n: number | null) => (n === null ? '–' : n.toLocaleString(
 export const typeLabel = (type: string) => workoutLabel(type, i18n.locale);
 
 /** The word joints of a Japanese workout label (筋力|トレーニング, 高強度|インターバル|トレーニング). */
-const JA_JOINTS = /(筋力|トレーニング|インターバル|ウォーキング|ランニング|カーディオ)/;
+const JA_JOINTS = /(筋力|トレーニング|インターバル|ウォーキング|ランニング)/;
 /** A workout label in the pieces it may break between (T7): iPhone Safari has no `word-break: auto-phrase`, so
  *  Japanese would otherwise break inside a word (筋力トレーニ / ング). `spaced`: the pieces are English words. */
 export function typeParts(type: string): { parts: string[]; spaced: boolean } {
@@ -34,17 +34,15 @@ export function editText(e: EditLog): { field: string; before: string; after: st
   const v = (x: number | boolean | null): string => {
     if (x === null) return '–';
     if (typeof x === 'number') return e.field === 'steps' ? num(x) : e.field === 'move_kcal' ? t('kiroku.kcal', { n: num(x) }) : t('kiroku.min', { n: x });
-    if (e.field === 'workout_strength') return t(x ? 'kiroku.val.yes' : 'kiroku.val.no');
-    if (e.field === 'gym') return t(x ? 'kiroku.val.gymOn' : 'kiroku.val.gymOff');
     return t(x ? 'kiroku.val.out' : 'kiroku.val.in');
   };
   return { field, before: v(e.before), after: v(e.after) };
 }
 
-/** Days needed for each weekly badge in the week's rules (5 · 5 · 5 · 4 · 3). */
+/** Days needed for each weekly badge in the week's rules (5 · 5 · 5 · 4). */
 export function badgeGoals(weekKey: WeekKey): Record<RingFruit, number> {
   const b = rulesFor(weekKey).badges;
-  return { peach: b.exerciseDays, pear: b.moveDays, cherry: b.standDays, apple: b.stepDays, coconut: b.gymDays };
+  return { peach: b.exerciseDays, pear: b.moveDays, cherry: b.standDays, apple: b.stepDays };
 }
 
 

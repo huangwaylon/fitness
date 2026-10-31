@@ -10,13 +10,11 @@ export interface Snapshot {
   rows: SnapshotRows;
 }
 
-export const emptyRows = (): SnapshotRows => ({ metrics: [], workouts: [], presence: [], events: [] });
+export const emptyRows = (): SnapshotRows => ({ metrics: [], events: [] });
 
 /** Natural key per tab: a re-sent or overlapping `since` page never duplicates a row. */
 const KEYS: { [K in keyof SnapshotRows]: (r: SnapshotRows[K][number]) => string } = {
   metrics: (r) => `${r[1]}|${r[2]}|${r[3]}|${Number(r[4])}`,
-  workouts: (r) => `${r[1]}|${r[2]}`,
-  presence: (r) => `${r[0]}|${r[1]}|${r[2]}|${r[3]}`,
   events: (r) => String(r[2])
 };
 
@@ -54,8 +52,6 @@ function mergeTab<T extends readonly unknown[]>(base: T[], add: T[] | undefined,
 export function mergeRows(base: SnapshotRows, add: Partial<SnapshotRows>): SnapshotRows {
   return {
     metrics: mergeTab(base.metrics, add.metrics, KEYS.metrics),
-    workouts: mergeTab(base.workouts, add.workouts, KEYS.workouts),
-    presence: mergeTab(base.presence, add.presence, KEYS.presence),
     events: mergeTab(base.events, add.events, KEYS.events)
   };
 }
@@ -64,7 +60,7 @@ export function mergeRows(base: SnapshotRows, add: Partial<SnapshotRows>): Snaps
 export function maxAt(rows: SnapshotRows): string | null {
   let best: string | null = null;
   let bestMs = -Infinity;
-  for (const tab of [rows.metrics, rows.workouts, rows.presence, rows.events] as (readonly unknown[])[][]) {
+  for (const tab of [rows.metrics, rows.events] as (readonly unknown[])[][]) {
     for (const r of tab) {
       const ms = atMs(r);
       if (ms > bestMs) {

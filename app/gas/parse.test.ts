@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseShortcut, shortcutDate, ShapeError, workoutKey } from './parse.ts';
+import { parseShortcut, shortcutDate, ShapeError } from './parse.ts';
 
 // The Shortcut's real body (the `uploads` log, 2026-10-30): daily totals, one line per day, every list as Text.
 const BODY = {
@@ -50,7 +50,7 @@ describe('parseShortcut: the official body', () => {
       { date: '2026-10-30', metric: 'stand_min', value: 4 },
       { date: '2026-10-30', metric: 'weight', value: 68.4 }
     ]);
-    expect(r).toMatchObject({ workouts: [], skipped: 0, warnings: [], unknownTypes: [] });
+    expect(r).toEqual({ metrics: r.metrics, skipped: 0, warnings: [] });
   });
 
   it('a list whose length differs from dates is dropped with a warning; the rest is kept', () => {
@@ -103,39 +103,10 @@ describe('parseShortcut: the official body', () => {
     expect(parseShortcut({ dates: '', steps: '' }).metrics).toEqual([]);
   });
 
-  it('workouts: one line per workout; Japanese names map to the canonical English ones', () => {
-    const r = parseShortcut({
-      workouts: {
-        types: '伝統的な筋力トレーニング\nヨガ\nカバディ',
-        starts: 'Oct 28, 2026 at 7:00 AM\n2026/10/28 19:00\nOct 29, 2026 at 6:00 PM',
-        ends: 'Oct 28, 2026 at 7:45 AM\n2026/10/28 19:30\nOct 29, 2026 at 6:20 PM',
-        avgHrs: '118\n95\n130'
-      }
-    });
-    expect(r.workouts.map((w) => [w.type, w.date, w.durationMin, w.avgHr])).toEqual([
-      ['Traditional Strength Training', '2026-10-28', 45, 118], ['Yoga', '2026-10-28', 30, 95], ['カバディ', '2026-10-29', 20, 130]
-    ]);
-    expect(r.unknownTypes).toEqual(['カバディ']);
-    expect(r.workouts[0].id).toBe(workoutKey('Traditional Strength Training', '2026-10-28T07:00:00+09:00'));
-  });
-
-  it('workout ids are stable across re-sends and phone languages, and differ by type or minute', () => {
-    const a = workoutKey('Yoga', '2026-10-28T19:00:00+09:00');
-    expect(a).toMatch(/^w:[0-9a-f]{16}$/);
-    expect(workoutKey('ヨガ', '2026-10-28T19:00:30+09:00')).toBe(a);
-    expect(workoutKey('Yoga', '2026-10-28T19:01:00+09:00')).not.toBe(a);
-    expect(workoutKey('Pilates', '2026-10-28T19:00:00+09:00')).not.toBe(a);
-  });
-
-  it('a workout with an impossible time is skipped, never stored with a NaN duration', () => {
-    const r = parseShortcut({ workouts: { types: 'Yoga\nYoga', starts: '2026/10/28 8:59:75\n2026/10/28 9:00', ends: '2026/10/28 9:30\n2026/10/28 9:30' } });
-    expect(r.workouts.map((w) => w.durationMin)).toEqual([30]);
-    expect(r.skipped).toBe(1);
-  });
-
-  it('mismatched workout lists are dropped with a warning', () => {
-    const r = parseShortcut({ workouts: { types: 'Yoga\nYoga', starts: 'Oct 28, 2026 at 7:00 AM', ends: 'Oct 28, 2026 at 7:30 AM' } });
-    expect(r.workouts).toEqual([]);
-    expect(r.warnings[0]).toMatch(/^workouts: 2 types, 1 starts/);
+  it('an old Shortcut’s `workouts` field is ignored (workouts are only added by hand in きろく); alone it is nothing to save', () => {
+    const workouts = { types: 'ヨガ', starts: 'Oct 28, 2026 at 7:00 AM', ends: 'Oct 28, 2026 at 7:45 AM', avgHrs: '118' };
+    const r = parseShortcut({ dates: 'Oct 28, 2026', steps: '8000', workouts });
+    expect(r).toEqual({ metrics: [{ date: '2026-10-28', metric: 'steps', value: 8000 }], skipped: 0, warnings: [] });
+    expect(() => parseShortcut({ workouts })).toThrow(/nothing to save/);
   });
 });
