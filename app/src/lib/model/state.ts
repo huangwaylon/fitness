@@ -3,7 +3,6 @@
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
 import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
-import type { Snapshot } from './snapshot.ts';
 import {
   DATE_RE, editTarget, EVENT_TYPES, isId, isPersonId, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
   type EventType, type SnapshotRows
@@ -171,8 +170,7 @@ const push = <K, V>(m: Map<K, V[]>, k: K, v: V) => {
 };
 
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
-export function reduce(rows: SnapshotRows | Snapshot, calendar: DemoCalendar | null = null, rev: string | null = null): State {
-  const r = 'rows' in rows ? rows.rows : rows;
+export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, rev: string | null = null): State {
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],

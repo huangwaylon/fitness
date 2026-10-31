@@ -61,7 +61,7 @@ describe('metric_set', () => {
     const s = reduce(rows);
     expect(metricAsOf(s, 'A', DAYS[0], 'steps', WED_MID)).toBe(3000);
     expect(earnAt(rows, 'A').fruits.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
-    const view = buildWeekView({ me: 'A', now: new Date(WED_MID).toISOString(), rows }, 'A', WED_MID);
+    const view = buildWeekView(reduce(rows), 'A', WED_MID);
     expect(view.people.A.rings.apple.weekDays).toBe(before.fruits.apple.weekDays - 1);
   });
 
@@ -312,7 +312,7 @@ describe('manual workouts, lock boundaries, no-op edits', () => {
 describe('harvest taps (one acceptance rule for the island and きろく)', () => {
   const SUN = DAYS[6];
   const harvest = (at: string, person: PersonId, week = WK) => ev(at, person, 'harvest', { week });
-  const view = (rows: SnapshotRows, me: PersonId, t: number) => buildWeekView({ me, now: new Date(t).toISOString(), rows }, me, t);
+  const view = (rows: SnapshotRows, me: PersonId, t: number) => buildWeekView(reduce(rows), me, t);
   const harvested = (rows: SnapshotRows, t: number) => historyWeeks(reduce(rows), t).find((w) => w.weekKey === WK)!.harvested;
   const AFTER = ms(SUN, '21:00');
 

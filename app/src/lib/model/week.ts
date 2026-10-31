@@ -7,8 +7,7 @@ import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
 import { milestoneBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { dailyUpTo, dayBells, menuView, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
-import type { Snapshot } from './snapshot.ts';
-import { firstWeek, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
+import { firstWeek, moveGoalOn, partnerOf, provisionalMs, type State } from './state.ts';
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
@@ -90,15 +89,11 @@ function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
   return { key: 'host.default' };
 }
 
-const toMs = (t: Date | string | number): number => (t instanceof Date ? t.getTime() : typeof t === 'number' ? t : Date.parse(t));
-
 /**
- * The WeekView for `me` at `now`, from a snapshot (or an already-reduced state). Rows stamped after `now` still count
- * for open weeks (the server clock may run ahead of the phone); `now` decides which harvests opened and weeks locked.
+ * The WeekView for `me` at `now` (server-clock ms). Rows stamped after `now` still count for open weeks (the server
+ * clock may run ahead of the phone); `now` decides which harvests opened and weeks locked.
  */
-export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Date | string | number): WeekView {
-  const s = 'rows' in input ? reduce(input) : input;
-  const now = toMs(nowArg);
+export function buildWeekView(s: State, me: PersonId, now: number): WeekView {
   const today = localDateAt(now);
   const weekKey = weekKeyOf(today);
   const partner = partnerOf(me);

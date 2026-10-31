@@ -76,7 +76,7 @@ export function jitterRate(cents: number, rng: () => number = Math.random): numb
 export const semitones = (n: number): number => 2 ** (n / 12);
 
 /** Music under a jingle (NH dips the BGM for the item-get fanfare and brings it back after). */
-export const DUCK = { depth: 0.25, attack: 0.12, release: 0.8 } as const;
+const DUCK = { depth: 0.25, attack: 0.12, release: 0.8 } as const;
 
 /** Gain points (time in s on the audio clock → music duck gain) for a jingle from `at` to `until`. */
 export function duckPlan(at: number, until: number, d: { depth: number; attack: number; release: number } = DUCK): { t: number; gain: number }[] {
