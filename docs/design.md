@@ -66,12 +66,12 @@ go back, and the banner carries とりけす for 5 s like a buy's.
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`, a top sheet: the safe area
 over its title bar 「しまの てちょう」, filling the screen to its bottom edge, rounded there like the screen's corners;
 its height never changes between tabs). Three tabs sit
-pinned under the title bar (NH's yellow for the one shown); it opens on **きろく**, and remembers the last tab for the
-session:
+pinned under the title bar (NH's yellow for the one shown), けんこう · きろく · せってい; it opens on **けんこう**, and
+remembers the last tab for the session (a new launch opens on けんこう again):
 
-- **きろく:** the ベル ledger by week and day, then 目標 (the Move and weight goals) ([Kiroku](#kiroku)).
 - **けんこう:** the Health data over time for the trainer, one person at a time: whose data, then a chart per metric and 体重
-  ([Kenkou](#kenkou)); its own chunk, loaded with the tab.
+  ([Kenkou](#kenkou)); its own chunk, loaded when the panel first opens on it (never with the island).
+- **きろく:** the ベル ledger by week and day, then 目標 (the Move and weight goals) ([Kiroku](#kiroku)).
 - **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH villagers; its head (my villager, よびな, the search) stays pinned while the head grid scrolls under it),
   **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last
   synced; いま つうしん) and **あそびかた** (one line; くわしく → the guide: the four goals at +1 each, ふたりでぜんぶ
@@ -82,7 +82,7 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
 
 ### Kiroku
 
-きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, the panel's first tab, in two sections:
+きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, the panel's second tab, in two sections:
 
 - **ベル:** everything earned, then by week (its ベル earned: earnings only; the buys live on ごほうび's かいもの きろく)
   one line per day under the two avatars: each person's four fruits (bright = met), a star on a ふたりでぜんぶ day, the
@@ -105,20 +105,21 @@ the personal trainer to review, one person at a time; computed on read from the 
 - **Controls:** the period 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月, kept for the session), then a sticky row: ‹
   the visible range (「10/2–10/31」, the year when it isn't this one; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの
   1日平均」 under it) › and きょう (‹ › and きょう are `aria-disabled` when there's nothing that way).
-- **A card per metric** (🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド, 🍎 歩数): the person's goal; 1日の平均（記録のある日） large,
+- **A card per metric**, steps first (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド; the island keeps the rings' order):
+  the person's goal; 1日の平均（記録のある日） large,
   前の期間より ↑/↓ % beside it, then 目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key in the person's
   colour (with 記録なし's hatch).
 - **Chart** (`BarChart`, hand-drawn SVG): one series, a bar per day (1週, 1か月), per week (3か月: 13 weeks ending on the
   last day shown) or per calendar month (1年, すべて), the bucket's daily average, wide bars in the person's colour
   (ウェイ blue, うめ orange, `--person-a/-b`); solid when the goal was met, pale when not (a week or month: darker the
   more of its days met it); today outlined (still running); a pale hatched column for a finished day or bucket with no
-  record (never a gap that reads as zero). Dashed: their goal (stepped when their Move goal changed). Line: their 7-day
-  average (day bars only). On 1週 each bar carries its value (`620`, `9.2k`). A tap shows that bar's one value (inside
+  record (never a gap that reads as zero). Dashed: their goal (stepped when their Move goal changed). No trend line
+  (user decision): the bars, the goal and the stats carry it. On 1週 each bar carries its value (`620`, `9.2k`). A tap shows that bar's one value (inside
   the chart, on the side away from the bar); a horizontal drag turns the page (right = older); vertical drags scroll
   the panel (`touch-action: pan-y`).
 - **体重** (`WeightCard`, `WeightChart`): the person's 平均 (n回の記録), ながれの変化 (the trend's change over the period, and
-  per week), the chart on an axis fitted to their weights (dots = weigh-ins or a bucket's average, line = the trend,
-  dashes = the goal, or a 「目標 66.0 ↓」 label when it's far off), at today's pace the goal month (only when the period
+  per week, from the smoothed trend below), the chart on an axis fitted to their weights (dots = weigh-ins or a bucket's
+  average, joined by a thin line across the days between weigh-ins; no smoothed line drawn; dashes = the goal, or a 「目標 66.0 ↓」 label when it's far off), at today's pace the goal month (only when the period
   ends today), the note that weight never earns.
 - **Rules** (decisions.md "Health trends"): a day's value is Health's latest; no record = no row, under 500 steps (the
   phone left home: steps only), or the Watch not clearly worn (Move under 100 kcal and Stand under 30 min: Move,
@@ -221,7 +222,7 @@ are sent (touching the banner holds it, ≤ 2 min). Rows of an event type the ap
 
 ## Weight trend
 
-Shown in けんこう only; never earns (`deps.test.ts`: the economy never imports `model/weight.ts`). An exponentially
+Used for けんこう's ながれの変化 and goal month (not drawn); never earns (`deps.test.ts`: the economy never imports `model/weight.ts`). An exponentially
 weighted average of the weigh-ins: each day moves it 10% towards that day's weight (a gap of g days weighs the next
 1 − 0.9^g). Pace = the trend's average change over the last 28 days (needs 14). A goal date shows when the pace heads
 to the goal at ≥ 0.05 kg a week within 156 weeks.

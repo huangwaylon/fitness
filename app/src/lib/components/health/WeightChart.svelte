@@ -1,6 +1,6 @@
 <script lang="ts">
-  // One person's weight (けんこう): a dot per day with a weigh-in (or per week / month: the average of its weigh-ins), the
-  // trend as a line, the goal dashed, on an axis fitted to their weights. A tap shows that day's numbers; a horizontal
+  // One person's weight (けんこう): a dot per day with a weigh-in (or per week / month: the average of its weigh-ins),
+  // the dots joined by a thin line across the gaps between weigh-ins, the goal dashed, on an axis fitted to their weights. A tap shows that day's numbers; a horizontal
   // drag turns the page. No good / bad colours.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { Range, WeightBucket } from '#lib/model/health.ts';
@@ -33,7 +33,7 @@
   const bw = $derived(plotW / n);
   const cx = (i: number) => pad.l + i * bw + bw / 2;
 
-  const dataVals = $derived(buckets.flatMap((b) => [b.kg, b.trend]).filter((v): v is number => v !== null));
+  const dataVals = $derived(buckets.map((b) => b.kg).filter((v): v is number => v !== null));
   /** A goal far from the period's weights isn't drawn to scale (it would flatten them): a label at that edge instead. */
   const goalOff = $derived.by((): 'above' | 'below' | null => {
     if (goal === null || !dataVals.length) return null;
@@ -61,12 +61,13 @@
     for (let v = Math.ceil(domain.lo / step) * step; v <= domain.hi; v += step) out.push(v);
     return out;
   });
-  const trendPath = $derived.by(() => {
+  /** The weigh-ins in order, one thin line through them (a gap without one is bridged, not broken). */
+  const linePath = $derived.by(() => {
     let d = '';
     let pen = false;
     buckets.forEach((b, i) => {
-      if (b.trend === null) return void (pen = false);
-      d += `${pen ? 'L' : 'M'}${cx(i).toFixed(1)} ${y(b.trend).toFixed(1)}`;
+      if (b.kg === null) return;
+      d += `${pen ? 'L' : 'M'}${cx(i).toFixed(1)} ${y(b.kg).toFixed(1)}`;
       pen = true;
     });
     return d;
@@ -108,7 +109,7 @@
             {#each buckets as b, i (i)}
               {#if b.kg !== null}<circle class="dot p{person}" cx={cx(i)} cy={y(b.kg)} {r} />{/if}
             {/each}
-            {#if any && trendPath}<path class="trend p{person}" d={trendPath} />{/if}
+            {#if linePath}<path class="line p{person}" d={linePath} />{/if}
           </g>
         {/key}
       </g>
@@ -125,7 +126,6 @@
         <b>{title(sel)}</b>
         {#if b.kg === null}<span class="soft">{t('health.noData')}</span>
         {:else}<span><span class="money">{kgText(b.kg)}</span>{#if b.n > 1}<span class="soft"> {t('health.weight.avgOf', { n: b.n })}</span>{/if}</span>{/if}
-        {#if b.trend !== null}<span class="soft">{t('weight.legend.trend')} <span class="money">{kgText(b.trend)}</span></span>{/if}
       </div>
     {/if}
   {/if}
@@ -145,9 +145,9 @@
   .dot { opacity: .55; }
   .dot.pA { fill: var(--person-a); }
   .dot.pB { fill: var(--person-b); }
-  .trend { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
-  .trend.pA { stroke: color-mix(in srgb, var(--person-a) 70%, var(--text)); }
-  .trend.pB { stroke: color-mix(in srgb, var(--person-b) 70%, var(--text)); }
+  .line { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; opacity: .6; }
+  .line.pA { stroke: var(--person-a); }
+  .line.pB { stroke: var(--person-b); }
   .tip {
     position: absolute; top: 2px; pointer-events: none; white-space: nowrap; z-index: 1;
     display: grid; gap: 3px; padding: 7px 11px; border-radius: var(--r-chip); background: var(--c-cream); color: var(--c-ink);

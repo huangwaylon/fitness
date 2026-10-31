@@ -1,13 +1,13 @@
 <script module lang="ts">
   type Tab = 'kiroku' | 'health' | 'settings';
-  /** The last tab, for this session (a reload opens on きろく again). */
-  let lastTab: Tab = 'kiroku';
+  /** The last tab, for this session (a reload opens on けんこう, the first, again). */
+  let lastTab: Tab = 'health';
 </script>
 
 <script lang="ts">
   // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
-  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, then the goals),
-  // けんこう (the Health data over time, its own chunk loaded with the tab) and せってい (むらびと, サウンド, ことば,
+  // itself, in three tabs pinned under the title bar (design.md "Panel"): けんこう (the Health data over time, its own
+  // chunk loaded with the tab; the panel opens on it), きろく (the ベル ledger, then the goals) and せってい (むらびと, サウンド, ことば,
   // つうしん, あそびかた). A few things push a level with ‹ in the title
   // bar (a week, a day, the villager picker, the full guide); ✕, the backdrop and Esc close it. The wallet stays on the
   // jar and per-fruit detail in the tree popups (one home per datum).
@@ -96,7 +96,7 @@
   {#if !deep}
     <!-- A segmented switch (toggle buttons), pinned under the title bar while the tab scrolls -->
     <div class="tabs" role="group" aria-label={t('panel.title')}>
-      {#each ['kiroku', 'health', 'settings'] as const as id (id)}
+      {#each ['health', 'kiroku', 'settings'] as const as id (id)}
         <button type="button" class="tab" aria-pressed={tab === id} data-tab={id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => pick(id)}>{t(`panel.tab.${id}`)}</button>
       {/each}
     </div>

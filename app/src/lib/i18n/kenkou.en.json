@@ -24,7 +24,6 @@
   "health.chartLabel": "{metric}, {range}. Daily average: {avg}",
   "health.key.met": "Goal met",
   "health.key.missed": "Not met",
-  "health.key.roll": "7-day average",
   "health.key.share": "Darker = more days at the goal",
   "health.weight.avg": "Average",
   "health.weight.count": "{n} weigh-ins",

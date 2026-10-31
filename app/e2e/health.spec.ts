@@ -16,11 +16,11 @@ async function openHealth(page: Page, query = '?demo') {
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
-test('the tab: one person at a time, a card per metric in the app’s order, then 体重; averages over the days with data', async ({ page }) => {
+test('the tab: one person at a time, a card per metric, steps first, then 体重; averages over the days with data', async ({ page }) => {
   await openHealth(page);
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数', '体重']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド', '体重']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
@@ -155,14 +155,16 @@ test('a tap on a bar shows that day’s one value (and again closes it)', async 
   await expect(tip).toHaveCount(0); // another person closes the callout
 });
 
-test('the tab remembers its period and person for the session, and its code loads only with the tab', async ({ page }) => {
+test('the panel opens on it; it remembers its period and person for the session; its code loads with the panel, not the island', async ({ page }) => {
   const js: string[] = [];
   page.on('response', (r) => r.url().endsWith('.js') && js.push(r.url()));
   await page.goto('?demo');
-  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
-  await expect(sheet(page).locator('.kiroku')).toBeVisible();
+  const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+  await expect(ribbon).toBeVisible();
+  await page.waitForTimeout(500);
   const before = js.length;
-  await sheet(page).locator('.tab[data-tab=health]').click();
+  await ribbon.click();
+  await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
   expect(js.length).toBeGreaterThan(before); // its own chunk
   await expect(sheet(page).locator('[data-who=A]')).toHaveAttribute('aria-pressed', 'true');

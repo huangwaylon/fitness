@@ -52,7 +52,6 @@
   {/if}
   <p class="key" aria-hidden="true">
     <span><i class="k-dot"></i>{range.unit === 'day' ? t('weight.legend.day') : t('health.weight.avgKey')}</span>
-    <span><i class="k-line"></i>{t('weight.legend.trend')}</span>
     <span><i class="k-goal"></i>{t('goal.title')}</span>
   </p>
   <p class="note">{t('weight.note')}</p>
@@ -76,7 +75,6 @@
   .key span { display: inline-flex; align-items: center; gap: 5px; }
   .key i { display: inline-block; flex: none; }
   .k-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-soft); opacity: .7; }
-  .k-line { width: 14px; height: 2px; border-radius: 2px; background: var(--text); }
   .k-goal { width: 14px; border-top: 2px dashed var(--c-yuzu-lip); }
   .note { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

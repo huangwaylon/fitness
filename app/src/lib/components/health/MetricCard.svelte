@@ -3,7 +3,7 @@
   // recorded days, the change against the previous period, the goal met n/N days (%), the best day and the days with no
   // record; then the chart (in the person's colour) and a one-line key.
   import type { LocalDate, PersonId } from '#lib/types.ts';
-  import { bucketValues, metricStats, METRIC_FRUIT, rolling7, type HealthSeries, type Metric, type Range } from '#lib/model/health.ts';
+  import { bucketValues, metricStats, METRIC_FRUIT, type HealthSeries, type Metric, type Range } from '#lib/model/health.ts';
   import { fruitArt } from '#lib/art.ts';
   import { md } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -28,7 +28,6 @@
   const today: LocalDate = $derived(hs.to);
   const s = $derived(metricStats(hs, p, metric, range));
   const vals = $derived(bucketValues(hs, p, metric, range));
-  const roll = $derived(range.unit === 'day' ? rolling7(hs, p, metric, range) : null);
   /** The goal at the period's end (only Move's changes). */
   const goalText = $derived(metricText(metric, Math.round(vals.at(-1)?.goal ?? 0)));
   const label = $derived(t('health.chartLabel', {
@@ -59,13 +58,12 @@
     </small>
   </div>
 
-  <BarChart {metric} {range} {p} {vals} {roll} first={hs.activityFrom} {today} {label} {selected} {onselect} {onswipe} {slide} />
+  <BarChart {metric} {range} {p} {vals} first={hs.activityFrom} {today} {label} {selected} {onselect} {onswipe} {slide} />
 
   <p class="key p{p}" aria-hidden="true">
     {#if range.unit === 'day'}
       <span><i class="k-met"></i>{t('health.key.met')}</span>
       <span><i class="k-miss"></i>{t('health.key.missed')}</span>
-      <span><i class="k-roll"></i>{t('health.key.roll')}</span>
     {:else}
       <span><i class="k-miss"></i><i class="k-mid"></i><i class="k-met"></i>{t('health.key.share')}</span>
     {/if}
@@ -99,7 +97,6 @@
   .k-miss { opacity: .34; }
   .k-mid { opacity: .67; margin-left: -3px; }
   .k-mid + .k-met { margin-left: -3px; }
-  .k-roll { width: 14px; height: 2px; border-radius: 2px; background: color-mix(in srgb, var(--pc) 70%, var(--text)); }
   .k-goal { width: 14px; border-top: 2px dashed var(--text-soft); }
   .k-none { width: 8px; height: 11px; border-radius: 2px 2px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--text-soft) 45%, transparent) 0 1.5px, transparent 1.5px 3.5px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-soft) 40%, transparent); }
 </style>
