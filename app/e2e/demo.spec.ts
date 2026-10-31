@@ -156,11 +156,11 @@ test('tree popup: the four ring fruits, today against the goal, today’s ベル
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   const rows = pop.locator('.row:not(.hd)');
   await expect(rows).toHaveCount(4);
-  await expect(rows.locator('.lbl')).toHaveText(['エクササイズ', 'ムーブ', 'スタンド', '歩数']);
+  await expect(rows.locator('.lbl')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数']); // Apple's ring order, then steps
   // no gym: no 🥥 row and no きのう / きょう chips
   await expect(pop.locator('.gym-chip, .gym')).toHaveCount(0);
-  await expect(rows.nth(0).locator('.amt')).toHaveText(/^[\d,]+\/60分$/);
-  await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
+  await expect(rows.nth(0).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
+  await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/60分$/);
   await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/180分$/);
   await expect(rows.nth(3).locator('.amt')).toHaveText(/^[\d,]+\/8,000歩$/);
   // the week: days met / 5 · 5 · 5 · 4 (or a ✓ once the badge is met)
@@ -219,7 +219,7 @@ test('きろく: the Move goal (ADR 0021), a numeric field ≥ 16px, 100–2,000
   // today's tree popup reads the new goal
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
-  await expect(page.locator('.detail .row:not(.hd)').nth(1).locator('.amt')).toHaveText(/\/450kcal$/);
+  await expect(page.locator('.detail .row:not(.hd)').nth(0).locator('.amt')).toHaveText(/\/450kcal$/);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal (ADR 0023)
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
