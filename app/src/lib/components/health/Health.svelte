@@ -1,14 +1,13 @@
 <script module lang="ts">
   import type { Period } from '#lib/model/health.ts';
-  /** The period and whose data, for this session (like the panel's tab). */
-  const last: { period: Period; who: 'both' | 'A' | 'B' } = { period: 'month', who: 'both' };
+  /** The period and whose data (null: this phone's person), kept for the session like the panel's tab. */
+  const last: { period: Period; who: 'A' | 'B' | null } = { period: 'month', who: null };
 </script>
 
 <script lang="ts">
   // けんこう (health, design.md "Kenkou"): the island panel's second tab, the Health data over time for the personal
-  // trainer. First 今週と 先週 (WeekCard: this week so far against last, both of us), then one period for every chart
-  // (1週 / 1か月 / 3か月 / 1年 / すべて), whose data (ふたり / each of us), and a
-  // sticky row with ‹ the visible range › and きょう; then a card per metric in the app's order (🍐 Move, 🍑 Exercise,
+  // trainer, one person at a time. First whose data (ウェイ / うめ, this phone's person by default; switching keeps the
+  // period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年 / すべて) and a sticky row with ‹ the visible range › and きょう; then a card per metric in the app's order (🍐 Move, 🍑 Exercise,
   // 🍒 Stand, 🍎 Steps) and 体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers. Read-only,
   // computed on read from the store's model (model/health.ts); loaded with the tab, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
@@ -19,7 +18,6 @@
   import { cue } from '#lib/sound/cues.ts';
   import Avatar from '../characters/Avatar.svelte';
   import MetricCard from './MetricCard.svelte';
-  import WeekCard from './WeekCard.svelte';
   import WeightCard from './WeightCard.svelte';
   import { rangeLabel } from './fmt.ts';
 
@@ -32,17 +30,18 @@
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
 
   let period = $state<Period>(last.period);
-  let who = $state<'both' | PersonId>(last.who);
+  let picked = $state<PersonId | null>(last.who);
+  /** Whose data every card shows. */
+  const who = $derived<PersonId>(picked ?? me);
   /** The last day shown (null: today, following the clock). */
   let anchor = $state<LocalDate | null>(null);
   let slide = $state<-1 | 0 | 1>(0);
-  /** The one open callout: a metric's bar, or a person's weight dot. */
-  let sel = $state<{ k: Metric | 'weight'; p?: PersonId; i: number } | null>(null);
+  /** The one open callout: a metric's bar or the weight dot. */
+  let sel = $state<{ k: Metric | 'weight'; i: number } | null>(null);
 
   const today = $derived(hs?.to ?? '');
   const range = $derived(hs ? rangeFor(period, anchor ?? today, hs.from) : null);
   const can = $derived(hs && range ? canShift(range, hs.from, today) : { back: false, on: false });
-  const shown = $derived<PersonId[]>(who === 'both' ? [me, partner] : [who]);
   const unitKey = $derived(range?.unit ?? 'day');
 
   function setPeriod(p: Period) {
@@ -51,9 +50,10 @@
     slide = 0;
     sel = null;
   }
-  function setWho(w: 'both' | PersonId) {
-    if (w === who) return;
-    who = last.who = w;
+  /** Another person: the same period and range, their numbers. */
+  function setWho(p: PersonId) {
+    if (p === who) return;
+    picked = last.who = p;
     sel = null;
   }
   /** ‹ / ›, a swipe: one whole period older (−1) or newer (+1). */
@@ -72,26 +72,24 @@
     sel = null;
   }
   const swipe = (dir: -1 | 1) => go(dir, true);
-  function pick(k: Metric | 'weight', i: number | null, p?: PersonId) {
-    sel = i === null ? null : { k, p, i };
+  function pick(k: Metric | 'weight', i: number | null) {
+    sel = i === null ? null : { k, i };
     if (i !== null) cue('tick');
   }
 </script>
 
 <div class="health">
   {#if hs && range}
-    {#if hs.any}<WeekCard {hs} order={[me, partner]} {names} {villagers} />{/if}
+    <div class="seg who" role="group" aria-label={t('health.who')}>
+      {#each [me, partner] as p (p)}
+        <button type="button" class="sb pp" aria-pressed={who === p} data-who={p} data-sfx={who === p ? 'none' : 'tick'} onclick={() => setWho(p)}>
+          <Avatar person={p} villager={villagers[p]} size={28} /><span class="nm">{names[p]}</span><i class="sw p{p}" aria-hidden="true"></i>
+        </button>
+      {/each}
+    </div>
     <div class="seg" role="group" aria-label={t('health.period')}>
       {#each PERIODS as id (id)}
         <button type="button" class="sb" aria-pressed={period === id} data-period={id} data-sfx={period === id ? 'none' : 'tick'} onclick={() => setPeriod(id)}>{t(`health.period.${id}`)}</button>
-      {/each}
-    </div>
-    <div class="seg who" role="group" aria-label={t('health.who')}>
-      <button type="button" class="sb" aria-pressed={who === 'both'} data-who="both" data-sfx={who === 'both' ? 'none' : 'tick'} onclick={() => setWho('both')}>{t('health.both')}</button>
-      {#each [me, partner] as p (p)}
-        <button type="button" class="sb pp" aria-pressed={who === p} data-who={p} data-sfx={who === p ? 'none' : 'tick'} onclick={() => setWho(p)}>
-          <Avatar person={p} villager={villagers[p]} size={22} /><span class="nm">{names[p]}</span>
-        </button>
       {/each}
     </div>
 
@@ -114,11 +112,11 @@
       <section class="card empty"><p>{t('kiroku.empty')}</p></section>
     {:else}
       {#each METRICS as k (k)}
-        <MetricCard metric={k} {hs} {range} {shown} {names} {villagers} {slide} onswipe={swipe}
+        <MetricCard metric={k} {hs} {range} p={who} {slide} onswipe={swipe}
           selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} />
       {/each}
-      <WeightCard {hs} {range} {shown} {names} {villagers} {slide} onswipe={swipe}
-        selected={sel?.k === 'weight' && sel.p ? { p: sel.p, i: sel.i } : null} onselect={(s) => pick('weight', s?.i ?? null, s?.p)} />
+      <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
+        selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} />
       <p class="note">{t('health.note')}</p>
     {/if}
   {/if}
@@ -135,8 +133,13 @@
   }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .who .sb.pp { flex-grow: 1.4; }
+  /* whose data: the avatar pills, a little taller, the person's colour (their bars) under the pressed one's name */
+  .who .sb { position: relative; min-height: 52px; gap: 8px; font-size: var(--fs-talk); }
   .pp .nm { overflow: hidden; text-overflow: ellipsis; }
+  .pp .sw { position: absolute; left: 50%; bottom: 7px; width: 28px; height: 4px; margin-left: -14px; border-radius: 2px; opacity: 0; }
+  .pp[aria-pressed='true'] .sw { opacity: 1; }
+  .sw.pA { background: var(--person-a); }
+  .sw.pB { background: var(--person-b); }
   /* the range row stays at the top of the panel while the charts scroll under it */
   .nav {
     position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 8px; min-width: 0;

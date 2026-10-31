@@ -6,7 +6,6 @@
   "health.period.year": "1Y",
   "health.period.all": "All",
   "health.who": "Whose data",
-  "health.both": "Both",
   "health.earlier": "Earlier",
   "health.later": "Later",
   "health.today": "Today",
@@ -22,7 +21,7 @@
   "health.noData": "No data",
   "health.todaySoFar": "today, so far",
   "health.tipDays": "goal {n}/{d} days",
-  "health.chartLabel": "{metric}, {range}. Daily average: {avgs}",
+  "health.chartLabel": "{metric}, {range}. Daily average: {avg}",
   "health.key.met": "Goal met",
   "health.key.missed": "Not met",
   "health.key.roll": "7-day average",
@@ -34,15 +33,5 @@
   "health.weight.avgOf": "(average of {n})",
   "health.weight.avgKey": "Average weigh-in",
   "health.weight.chartLabel": "{name}'s weight, {range}. Average {kg}",
-  "health.note": "Averages and goal days count days with data only: days without the Watch (Move, Exercise and Stand all 0), days with 0 steps and today (still running) are left out. The previous period is the same length, just before.",
-  "health.u.move": "kcal",
-  "health.u.exercise": "min",
-  "health.u.stand": "min",
-  "health.u.steps": "steps",
-  "health.week.title": "This week vs last",
-  "health.week.spans": "This week {cur} · last week {prev}",
-  "health.week.cur": "This wk ({n}d)",
-  "health.week.prev": "Last wk",
-  "health.week.change": "Change",
-  "health.week.foot": "Daily averages. This week counts finished days only (not today); days without data are left out; goal = days met / days with data."
+  "health.note": "Averages, best days and goal days count days with data only: a day the Watch wasn't really worn (Move under 100 kcal and Stand under 30 min) has no Move, Exercise or Stand; a day under 500 steps (the phone left at home) has no steps; today (still running) is left out. The previous period is the same length, just before."
 }

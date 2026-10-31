@@ -1,5 +1,5 @@
 // けんこう (design.md "Kenkou"): the panel's Health tab for the trainer. Open it, switch the period, page through the
-// history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, one person or both; on `?demo` and a longer
+// history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, switch whose data (one person at a time); on `?demo` and a longer
 // `?demo&weeks=60`, at 390 and 320.
 import { expect, test, type Page } from '@playwright/test';
 
@@ -16,43 +16,67 @@ async function openHealth(page: Page, query = '?demo') {
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
-test('the tab: a card per metric in the app’s order, then 体重; averages over the days with data', async ({ page }) => {
+test('the tab: one person at a time, a card per metric in the app’s order, then 体重; averages over the days with data', async ({ page }) => {
   await openHealth(page);
-  await expect(sheet(page).locator('.health section.card:not(.wk) h3')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数', '体重']);
+  await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
+  await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数', '体重']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
-  await expect(move.locator('.shead')).toContainText('1日の平均（記録のある日）');
-  for (const p of ['A', 'B']) {
-    const row = move.locator(`.srow[data-person=${p}]`);
-    await expect(row.locator('.avg')).toHaveText(/^[\d,]+ kcal$/);
-    await expect(row.locator('.chg')).toHaveText(/^[↑↓→] [+−±]\d+%$/);
-    await expect(row.locator('.sub')).toContainText(/目標 \d+\/\d+日（\d+%）/);
-    await expect(row.locator('.sub')).toContainText(/ベスト [\d,]+ kcal（\d+\/\d+）/);
-  }
+  await expect(move.locator('.srow')).toHaveCount(1);
+  await expect(move.locator('.lab')).toHaveText('1日の平均（記録のある日）');
+  await expect(move.locator('.avg')).toHaveText(/^[\d,]+ kcal$/);
+  await expect(move.locator('.chg .cv')).toHaveText(/^[↑↓→] [+−±]\d+%$/);
+  await expect(move.locator('.sub')).toContainText(/目標 \d+\/\d+日（\d+%）/);
+  await expect(move.locator('.sub')).toContainText(/ベスト [\d,]+ kcal（\d+\/\d+）/);
   await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 8,000歩');
-  await expect(sheet(page).locator('.health > .note')).toContainText('ウォッチを つけていない日');
+  await expect(sheet(page).locator('.health > .note')).toContainText('100kcal未満');
+  // one series: every bar in this phone's person's colour
+  await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
+  expect(await sheet(page).locator('.mc path.bar.pA').count()).toBeGreaterThan(100);
 });
 
-test('今週と 先週: the trainer card at the top, both of us, calendar weeks, this week so far = its finished days', async ({ page }) => {
-  await openHealth(page); // Saturday 10/31: five days finished
-  const card = sheet(page).locator('.health > .wk');
-  await expect(sheet(page).locator('.health > *').first()).toHaveClass(/wk/); // above the controls and the charts
-  await expect(card.locator('h3')).toHaveText('今週と 先週');
-  await expect(card.locator('.span')).toHaveText('今週 10/26–11/1・先週 10/19–10/25');
-  await expect(card.locator('.pb')).toHaveCount(2);
-  for (const p of ['A', 'B']) {
-    const t = card.locator(`.pb[data-person=${p}]`);
-    await expect(t.locator('thead th')).toHaveText(['今週（5日）', '先週', 'くらべて', '目標']);
-    await expect(t.locator('tbody tr')).toHaveCount(5);
-    await expect(t.locator('tbody th')).toContainText(['ムーブ', 'エクササイズ', 'スタンド', '歩数', '体重']);
-    await expect(t.locator('tr[data-metric=steps] td').nth(0)).toHaveText(/^[\d,]+$/);
-    await expect(t.locator('tr[data-metric=steps] td').nth(2)).toHaveText(/^[↑↓→][+−±]\d+%$/);
-    await expect(t.locator('tr[data-metric=steps] td').nth(3)).toHaveText(/^[0-5]\/[1-5]$/);
-    await expect(t.locator('tr[data-metric=weight] td').nth(2)).toHaveText(/^[+−±]\d+\.\d$|^–$/);
+test('whose data: this phone’s person by default; switching changes the numbers and the colour and keeps the period and range', async ({ page }) => {
+  await openHealth(page, '?demo&as=B');
+  const who = (p: string) => sheet(page).locator(`.health .who [data-who=${p}]`);
+  await expect(who('B')).toHaveAttribute('aria-pressed', 'true'); // うめ's phone: うめ
+  await expect(who('A')).toHaveAttribute('aria-pressed', 'false');
+  await expect(sheet(page).locator('.health .who .sb').first()).toHaveAttribute('data-who', 'B'); // me first
+  await expect(who('B')).toHaveAttribute('data-sfx', 'none');
+  await expect(who('A')).toHaveAttribute('data-sfx', 'tick');
+  const steps = sheet(page).locator('.mc[data-metric=steps]');
+  await expect(steps).toHaveAttribute('data-person', 'B');
+  await expect(steps.locator('path.bar.pA')).toHaveCount(0);
+  await sheet(page).locator('[data-period=week]').click();
+  await sheet(page).locator('[data-nav=back]').click();
+  await expect(range(page)).toHaveText('10/18–10/24');
+  const avgB = (await steps.locator('.avg').textContent())!;
+  const fill = () => steps.locator('path.bar').first().evaluate((e) => getComputedStyle(e).fill);
+  const barB = await fill();
+  await who('A').click();
+  await expect(who('A')).toHaveAttribute('aria-pressed', 'true');
+  await expect(steps).toHaveAttribute('data-person', 'A');
+  await expect(steps.locator('path.bar.pB')).toHaveCount(0);
+  await expect(steps.locator('path.bar.pA')).not.toHaveCount(0);
+  await expect(steps.locator('.avg')).not.toHaveText(avgB);
+  expect(await fill()).not.toBe(barB);
+  await expect(sheet(page).locator('.wc')).toHaveAttribute('data-person', 'A');
+  await expect(sheet(page).locator('.wc').getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1);
+  // the same period and visible range
+  await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(range(page)).toHaveText('10/18–10/24');
+});
+
+test('a day without data (the Watch on its charger, the phone left home) is a hatched column and 記録なし, not a zero', async ({ page }) => {
+  await openHealth(page, '?demo&weeks=60');
+  await sheet(page).locator('[data-period=quarter]').click();
+  await sheet(page).locator('[data-period=month]').click();
+  for (const m of ['move', 'exercise', 'stand', 'steps']) {
+    const card = sheet(page).locator(`.mc[data-metric=${m}]`);
+    const n = Number((await card.locator('.sub').textContent())!.match(/記録なし (\d+)日/)?.[1] ?? 0);
+    await expect(card.locator('rect.none'), m).toHaveCount(n); // one hatched column per day counted as 記録なし
   }
-  // it doesn't follow the period below
-  await sheet(page).locator('[data-period=year]').click();
-  await expect(card.locator('.span')).toHaveText('今週 10/26–11/1・先週 10/19–10/25');
+  await expect(sheet(page).locator('.mc .key').first()).toContainText('記録なし');
 });
 
 test('period: 1週 by day, 3か月 by week, 1年 by month; ‹ › page through and きょう comes back', async ({ page }) => {
@@ -103,7 +127,7 @@ test('a drag across a chart turns the page (right = older); a short one doesn’
   await expect(sheet(page).locator('.chart .tip')).toHaveCount(0); // a drag never opens a callout
 });
 
-test('a tap on a bar shows that day for both of us (and again closes it); one person shows one', async ({ page }) => {
+test('a tap on a bar shows that day’s one value (and again closes it)', async ({ page }) => {
   await openHealth(page);
   await sheet(page).locator('[data-period=week]').click();
   const chart = sheet(page).locator('.mc[data-metric=steps] .chart');
@@ -115,8 +139,9 @@ test('a tap on a bar shows that day for both of us (and again closes it); one pe
   const tip = chart.locator('.tip');
   await expect(tip).toBeVisible();
   await expect(tip.locator('b')).toHaveText('10月30日(金)');
-  await expect(tip.locator('.trow')).toHaveCount(2);
-  await expect(tip.locator('.trow').first()).toContainText(/ウェイ\s*[\d,]+歩/);
+  await expect(tip.locator('.trow')).toHaveCount(1);
+  await expect(tip.locator('.trow')).toHaveText(/^\s*([\d,]+歩\s*(✓)?|記録なし)\s*$/);
+  await expect(tip.locator('.trow .dot.pA')).toHaveCount(1);
   // the callout sits inside the chart, on the side away from the bar
   const tb = (await tip.boundingBox())!;
   expect(tb.x).toBeGreaterThanOrEqual(b.x - 1);
@@ -127,12 +152,10 @@ test('a tap on a bar shows that day for both of us (and again closes it); one pe
   await chart.click({ position: at(6) }); // today: still running
   await expect(tip.locator('b')).toContainText('きょう（とちゅう）');
   await sheet(page).locator('[data-who=B]').click();
-  await expect(sheet(page).locator('.mc[data-metric=steps] .srow')).toHaveCount(1);
-  await expect(sheet(page).locator('.mc[data-metric=steps] path.bar.pA')).toHaveCount(0);
-  await expect(sheet(page).locator('.wc .person')).toHaveCount(1);
+  await expect(tip).toHaveCount(0); // another person closes the callout
 });
 
-test('the tab remembers its period for the session, and its code loads only with the tab', async ({ page }) => {
+test('the tab remembers its period and person for the session, and its code loads only with the tab', async ({ page }) => {
   const js: string[] = [];
   page.on('response', (r) => r.url().endsWith('.js') && js.push(r.url()));
   await page.goto('?demo');
@@ -142,10 +165,17 @@ test('the tab remembers its period for the session, and its code loads only with
   await sheet(page).locator('.tab[data-tab=health]').click();
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
   expect(js.length).toBeGreaterThan(before); // its own chunk
+  await expect(sheet(page).locator('[data-who=A]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-period=quarter]').click();
+  await sheet(page).locator('[data-who=B]').click();
   await sheet(page).locator('.titlebar .close').click();
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await expect(sheet(page).locator('[data-period=quarter]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-who=B]')).toHaveAttribute('aria-pressed', 'true');
+  await page.reload(); // a new session: this phone's person again
+  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await sheet(page).locator('.tab[data-tab=health]').click();
+  await expect(sheet(page).locator('[data-who=A]')).toHaveAttribute('aria-pressed', 'true');
 });
 
 for (const [w, h] of [[390, 844], [320, 568]]) {

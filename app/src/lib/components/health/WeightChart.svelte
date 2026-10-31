@@ -1,7 +1,7 @@
 <script lang="ts">
   // One person's weight (けんこう): a dot per day with a weigh-in (or per week / month: the average of its weigh-ins), the
-  // trend as a line, the goal dashed. Its own axis per person (small multiples: two people's kilograms on one axis
-  // would flatten both). A tap shows that day's numbers; a horizontal drag turns the page. No good / bad colours.
+  // trend as a line, the goal dashed, on an axis fitted to their weights. A tap shows that day's numbers; a horizontal
+  // drag turns the page. No good / bad colours.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { Range, WeightBucket } from '#lib/model/health.ts';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -26,7 +26,7 @@
 
   let w = $state(0);
   let dx = $state(0);
-  const H = 132;
+  const H = 148;
   const pad = { l: 38, r: 6, t: 10, b: 22 };
   const n = $derived(range.buckets.length);
   const plotW = $derived(Math.max(1, w - pad.l - pad.r));
@@ -136,7 +136,7 @@
   .chart { position: relative; width: 100%; scroll-margin: 84px 0 12px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: pointer; }
   svg { display: block; overflow: visible; }
   .grid { stroke: color-mix(in srgb, var(--text-soft) 16%, transparent); stroke-width: 1; }
-  .ax { fill: var(--text-soft); font: 700 var(--fs-xs)/1 var(--font-num); }
+  .ax { fill: var(--text-soft); font: 700 var(--fs-s)/1 var(--font-num); }
   .plot { animation: slide 220ms cubic-bezier(.2, .8, .2, 1); }
   .plot:not(.dragging) { transition: transform 200ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: .2; translate: var(--slide) 0; } to { opacity: 1; translate: 0 0; } }

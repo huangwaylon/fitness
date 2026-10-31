@@ -6,7 +6,6 @@
   "health.period.year": "1年",
   "health.period.all": "すべて",
   "health.who": "だれの データ",
-  "health.both": "ふたり",
   "health.earlier": "まえの きかん",
   "health.later": "つぎの きかん",
   "health.today": "きょう",
@@ -22,7 +21,7 @@
   "health.noData": "記録なし",
   "health.todaySoFar": "きょう（とちゅう）",
   "health.tipDays": "目標 {n}/{d}日",
-  "health.chartLabel": "{metric} {range}。1日の平均 {avgs}",
+  "health.chartLabel": "{metric} {range}。1日の平均 {avg}",
   "health.key.met": "目標達成",
   "health.key.missed": "とどかず",
   "health.key.roll": "7日平均",
@@ -34,15 +33,5 @@
   "health.weight.avgOf": "（{n}回の平均）",
   "health.weight.avgKey": "記録の平均",
   "health.weight.chartLabel": "{name}の体重 {range}。平均 {kg}",
-  "health.note": "平均と 目標の日数は 記録のある日だけ。ウォッチを つけていない日（ムーブ・エクササイズ・スタンドが ぜんぶ 0）、歩数が 0の日、とちゅうの きょうは 入りません。前の期間は 同じ長さの ひとつ前。",
-  "health.u.move": "kcal",
-  "health.u.exercise": "分",
-  "health.u.stand": "分",
-  "health.u.steps": "歩",
-  "health.week.title": "今週と 先週",
-  "health.week.spans": "今週 {cur}・先週 {prev}",
-  "health.week.cur": "今週（{n}日）",
-  "health.week.prev": "先週",
-  "health.week.change": "くらべて",
-  "health.week.foot": "1日の平均。今週は おわった日だけ（きょうは まだ）。記録のない日は 入れず、目標は 達成した日 / 記録のある日。"
+  "health.note": "平均・ベスト・目標の日数は 記録のある日だけ。ウォッチを ちゃんと つけていない日（ムーブ 100kcal未満 かつ スタンド 30分未満）は ムーブ・エクササイズ・スタンドの記録なし、500歩未満の日は 歩数の記録なし（スマホを 持っていない日）。とちゅうの きょうも 入りません。前の期間は 同じ長さの ひとつ前。"
 }

@@ -195,12 +195,13 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('けんこう', '1年', () => dlg.locator('[data-period=year]').tap(), ['tick']);
   await step('けんこう', '1年 again', () => dlg.locator('[data-period=year]').tap(), []);
   await step('けんこう', '1か月', () => dlg.locator('[data-period=month]').tap(), ['tick']);
-  await step('けんこう', 'one person', () => dlg.locator('[data-who=A]').tap(), ['tick']);
+  await step('けんこう', 'うめ', () => dlg.locator('[data-who=B]').tap(), ['tick']);
+  await step('けんこう', 'うめ again', () => dlg.locator('[data-who=B]').tap(), []);
   await step('けんこう', '‹', () => dlg.locator('[data-nav=back]').tap(), ['tick']);
   await step('けんこう', 'きょう', () => dlg.locator('[data-nav=today]').tap(), ['tick']);
   await step('けんこう', 'きょう again (aria-disabled)', () => dlg.locator('[data-nav=today]').tap({ force: true }), ['boop']);
   await step('けんこう', '› at today (aria-disabled)', () => dlg.locator('[data-nav=on]').tap({ force: true }), ['boop']);
-  await step('けんこう', 'ふたり', () => dlg.locator('[data-who=both]').tap(), ['tick']);
+  await step('けんこう', 'back to ウェイ', () => dlg.locator('[data-who=A]').tap(), ['tick']);
   await step('パネル', 'せってい tab', () => dlg.locator('.tab[data-tab=settings]').tap(), ['tick']);
   await step('パネル', 'せってい tab again', () => dlg.locator('.tab[data-tab=settings]').tap(), []);
   await step('むらびと', 'かえる', () => dlg.locator('[data-push=villager]').tap(), ['page']);

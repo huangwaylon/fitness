@@ -1,12 +1,14 @@
-// けんこう (docs/design.md#kenkou, decisions.md "Health trends"): the Health data over time, for both people, as the
+// けんこう (docs/design.md#kenkou, decisions.md "Health trends"): the Health data over time, one person at a time, as the
 // personal trainer reads it. Pure and computed on read from the reduced State; nothing here feeds the ベル economy.
 //
 // Rules:
 // - A day's value is Apple Health's latest row (metricAsOf at `now`), the truth for a trainer. (The ベル of a locked
 //   week stay as of its lock, so a sync after a lock can show here and not in the ledger.)
-// - No record: a day with no row, steps of 0, and a day the Watch wasn't worn: Move, Exercise and Stand all 0 (or
-//   absent). Such a day has no bar and stays out of every average, goal count and trend, and is counted as 記録なし.
-// - Today is still running: it is drawn (a lighter bar) but stays out of the stats and the 7-day line.
+// - No record: a day with no row; for steps, under STEPS_MIN (the phone wasn't carried); for Move, Exercise and Stand
+//   together, a day the Watch wasn't clearly worn (Move under WORN_KCAL and Stand under WORN_STAND). Such a day has no
+//   bar (a hatched mark instead) and stays out of every average, best day, goal count and trend, and is counted as 記録なし.
+// - Today is still running: it is drawn (a lighter bar, whenever it has anything above 0) but stays out of the stats
+//   and the 7-day line.
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
 //   8,000. Days met / days recorded.
 // - Periods end on an anchor day (today until ‹): 1週 = 7 days and 1か月 = 30 days by day, 3か月 = 13 weeks by week
@@ -14,7 +16,7 @@
 //   previous period is the same length just before (1年: the 12 months before).
 import type { LocalDate, PersonId, RingFruit } from '#lib/types.ts';
 import { RULES } from '#lib/config/rules.ts';
-import { addDays, daysBetween, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
 import { moveGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
@@ -30,6 +32,12 @@ export const PERIODS = ['week', 'month', 'quarter', 'year', 'all'] as const;
 export type Period = (typeof PERIODS)[number];
 /** Day-based periods: their length in days (1年 and すべて go by calendar month). */
 const DAYS: Partial<Record<Period, number>> = { week: 7, month: 30, quarter: 91 };
+/** A finished day counts for Move, Exercise and Stand only when the Watch was clearly worn: this much Move or… */
+export const WORN_KCAL = 100;
+/** …this many Stand minutes. Under both: a Watch on its charger, or on for minutes, not a lazy day. */
+export const WORN_STAND = 30;
+/** A finished day counts for steps only from this many (fewer: the phone stayed home). */
+export const STEPS_MIN = 500;
 /** The 7-day line needs this many recorded days in its window. */
 const ROLL_MIN = 3;
 
@@ -87,10 +95,12 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     let carried: number | null = null;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       const raw = (m: Metric) => metricAsOf(s, p, d, ROW[m], now);
+      // today (still running, drawn but never counted) shows anything above 0
+      const live = d === to;
       const steps = raw('steps');
-      values.steps.push(steps === null || steps <= 0 ? null : steps);
+      values.steps.push(steps === null || steps < (live ? 1 : STEPS_MIN) ? null : steps);
       const watch = [raw('move'), raw('exercise'), raw('stand')];
-      const worn = watch.some((v) => v !== null && v > 0);
+      const worn = live ? watch.some((v) => v !== null && v > 0) : (watch[0] ?? 0) >= WORN_KCAL || (watch[2] ?? 0) >= WORN_STAND;
       values.move.push(worn ? watch[0] : null);
       values.exercise.push(worn ? watch[1] : null);
       values.stand.push(worn ? watch[2] : null);
@@ -239,7 +249,7 @@ export interface MetricStats {
   avg: number | null;
   /** Recorded finished days. */
   days: number;
-  /** Finished days in the period with no record (no data or the Watch not worn), since the first activity record. */
+  /** Finished days in the period with no record (no data, the Watch not worn, the phone not carried), since the first activity record. */
   missing: number;
   /** Recorded days the goal was met. */
   met: number;
@@ -339,55 +349,5 @@ export function weightStats(hs: HealthSeries, p: PersonId, r: Range): WeightStat
     change,
     perWeek: change !== null && days >= 7 ? Math.round(((end! - start!) / days) * 7 * 100) / 100 : null,
     trend: n ? end : null
-  };
-}
-
-// ---------- this week vs last week ----------
-
-/** One side of the week card: the daily average over the week's recorded, finished days. */
-interface WeekSide {
-  avg: number | null;
-  /** Recorded finished days. */
-  days: number;
-  met: number;
-}
-type Span = { from: LocalDate; to: LocalDate };
-export interface WeekCompare {
-  /** This calendar week (Mon–Sun, as everywhere in the app; the Wednesday lock is the economy's only) and last. */
-  cur: Span;
-  prev: Span;
-  /** Finished days of this week so far (today is still running): 0 on a Monday. */
-  elapsed: number;
-  metrics: Record<Metric, { cur: WeekSide; prev: WeekSide; change: number | null }>;
-  /** The average weigh-in of each week (today's counts: a weigh-in is done once made) and the difference, kg. */
-  weight: { cur: number | null; prev: number | null; diff: number | null };
-}
-
-/** The trainer's week card for one person: this week so far (its finished, recorded days) against last week. */
-export function weekCompare(hs: HealthSeries, p: PersonId): WeekCompare {
-  const wk = weekKeyOf(hs.to);
-  const cur = { from: wk, to: addDays(wk, 6) };
-  const prev = { from: addDays(wk, -7), to: addDays(wk, -1) };
-  const side = (m: Metric, r: Span): WeekSide => {
-    const s = rawStats(hs, p, m, r.from, r.to);
-    return { avg: s.avg, days: s.days, met: s.met };
-  };
-  const metrics = Object.fromEntries(METRICS.map((m) => {
-    const c = side(m, cur), pr = side(m, prev);
-    return [m, { cur: c, prev: pr, change: c.avg !== null && pr.avg ? (c.avg - pr.avg) / pr.avg : null }];
-  })) as WeekCompare['metrics'];
-  const kgAvg = (r: Span): number | null => {
-    const kg = hs.people[p].kg;
-    let sum = 0, n = 0;
-    for (let i = Math.max(0, idx(hs, r.from)); i <= Math.min(idx(hs, r.to), idx(hs, hs.to)); i++) {
-      const v = kg[i];
-      if (v !== null && v !== undefined) (sum += v), n++;
-    }
-    return n ? Math.round((sum / n) * 10) / 10 : null;
-  };
-  const wc = kgAvg(cur), wp = kgAvg(prev);
-  return {
-    cur, prev, elapsed: daysBetween(wk, hs.to), metrics,
-    weight: { cur: wc, prev: wp, diff: wc !== null && wp !== null ? Math.round((wc - wp) * 10) / 10 : null }
   };
 }

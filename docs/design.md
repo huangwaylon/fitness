@@ -70,7 +70,7 @@ pinned under the title bar (NH's yellow for the one shown); it opens on **きろ
 session:
 
 - **きろく:** the ベル ledger by week and day, then 目標 (the Move and weight goals) ([Kiroku](#kiroku)).
-- **けんこう:** the Health data over time for the trainer: 今週と 先週, then a chart per metric and 体重
+- **けんこう:** the Health data over time for the trainer, one person at a time: whose data, then a chart per metric and 体重
   ([Kenkou](#kenkou)); its own chunk, loaded with the tab.
 - **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH villagers; its head (my villager, よびな, the search) stays pinned while the head grid scrolls under it),
   **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last
@@ -95,37 +95,38 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
 ### Kenkou
 
 けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`) is the Health data over time, read-only, for
-the personal trainer to review; computed on read from the same model, nothing sent. Top to bottom:
+the personal trainer to review, one person at a time; computed on read from the same model, nothing sent. Top to bottom:
 
-- **今週と 先週** (`WeekCard`): both of us (me first), always this calendar week (Mon–Sun, 「今週 10/26–11/1・先週
-  10/19–10/25」) against last: per metric and 体重, this week's daily average so far (its finished days with data,
-  「今週（5日）」), last week's, くらべて (↑/↓ %, weight ± kg of the average weigh-ins) and 目標 (days met / days with
-  data). It doesn't follow the period below.
-- **Controls:** the period 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月), whose data ふたり · ウェイ · うめ (both kept for the
-  session), then a sticky row: ‹ the visible range (「10/2–10/31」, the year when it isn't this one; 「1日ごと」 /
-  「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」 under it) › and きょう (‹ › and きょう are `aria-disabled` when there's nothing
-  that way).
-- **A card per metric** (🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド, 🍎 歩数): the goal (the Move goal per person); per person
-  (a colour swatch under the avatar = their bars) 1日の平均（記録のある日）, 前の期間より ↑/↓ %, 目標 n/N日（%）, ベスト
-  and 記録なし n日; the chart; a one-line key.
-- **Chart** (`BarChart`, hand-drawn SVG): a bar per day (1週, 1か月), per week (3か月: 13 weeks ending on the last day
-  shown) or per calendar month (1年, すべて), the bucket's daily average; ウェイ blue, うめ orange (`--person-a/-b`), side
-  by side; solid when the goal was met, pale when not (a week or month: darker the more of its days met it); today
-  outlined (still running); a dash on the baseline for a day with no record. Dashed: the goal (stepped when the Move goal
-  changed). Line: the 7-day average (day bars only). A tap shows that bar's numbers for both (inside the chart, on the
-  side away from the bar); a horizontal drag turns the page (right = older); vertical drags scroll the panel
-  (`touch-action: pan-y`).
-- **体重** (`WeightCard`, `WeightChart`): per person, each on its own axis (two people's kilograms on one would flatten
-  both): 平均 (n回の記録), ながれの変化 (the trend's change over the period, and per week), the chart (dots = weigh-ins or
-  a bucket's average, line = the trend, dashes = the goal, or a 「目標 66.0 ↓」 label when it's far off), at today's pace
-  the goal month (only when the period ends today), the note that weight never earns.
-- **Rules** (decisions.md "Health trends"): a day's value is Health's latest; no record = no row, 0 steps, or the Watch
-  not worn (Move, Exercise and Stand all 0), left out of every average, goal count and change, and counted as 記録なし
-  from the first activity record on; today is drawn but left out of the numbers; the previous period is the same
+- **Whose data:** two avatar pills, ウェイ · うめ (this phone's person first and chosen on opening; the pressed one
+  carries the person's colour under the name). Every card follows it. Switching keeps the period and the visible range
+  and closes an open callout (one derived pass, no long task at 4× CPU). The choice is kept for the session like the
+  period (closing and reopening the panel keeps it); a new launch starts on this phone's person again.
+- **Controls:** the period 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月, kept for the session), then a sticky row: ‹
+  the visible range (「10/2–10/31」, the year when it isn't this one; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの
+  1日平均」 under it) › and きょう (‹ › and きょう are `aria-disabled` when there's nothing that way).
+- **A card per metric** (🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド, 🍎 歩数): the person's goal; 1日の平均（記録のある日） large,
+  前の期間より ↑/↓ % beside it, then 目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key in the person's
+  colour (with 記録なし's hatch).
+- **Chart** (`BarChart`, hand-drawn SVG): one series, a bar per day (1週, 1か月), per week (3か月: 13 weeks ending on the
+  last day shown) or per calendar month (1年, すべて), the bucket's daily average, wide bars in the person's colour
+  (ウェイ blue, うめ orange, `--person-a/-b`); solid when the goal was met, pale when not (a week or month: darker the
+  more of its days met it); today outlined (still running); a pale hatched column for a finished day or bucket with no
+  record (never a gap that reads as zero). Dashed: their goal (stepped when their Move goal changed). Line: their 7-day
+  average (day bars only). On 1週 each bar carries its value (`620`, `9.2k`). A tap shows that bar's one value (inside
+  the chart, on the side away from the bar); a horizontal drag turns the page (right = older); vertical drags scroll
+  the panel (`touch-action: pan-y`).
+- **体重** (`WeightCard`, `WeightChart`): the person's 平均 (n回の記録), ながれの変化 (the trend's change over the period, and
+  per week), the chart on an axis fitted to their weights (dots = weigh-ins or a bucket's average, line = the trend,
+  dashes = the goal, or a 「目標 66.0 ↓」 label when it's far off), at today's pace the goal month (only when the period
+  ends today), the note that weight never earns.
+- **Rules** (decisions.md "Health trends"): a day's value is Health's latest; no record = no row, under 500 steps (the
+  phone left home: steps only), or the Watch not clearly worn (Move under 100 kcal and Stand under 30 min: Move,
+  Exercise and Stand together), left out of every average, best day, goal count and change, and counted as 記録なし
+  from the first activity record on; today is drawn (anything above 0) but left out of the numbers; the previous period is the same
   length just before (1年: the 12 months before). The tab's footnote says so.
 - **Cost:** the tab's code and its strings (`i18n/kenkou.*.json`, merged by `i18n/kenkou.ts`) load with the tab, so
   the island's first load doesn't grow; the daily series is built once per model and day (memoised); a period switch at
-  4× CPU with two years of data is ~100 ms with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day without
+  4× CPU with two years of data is ~100 ms and a person switch ~20–70 ms, with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day without
   the Watch now and then.
 
 ### Sheets and harvest

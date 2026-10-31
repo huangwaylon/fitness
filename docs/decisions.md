@@ -124,19 +124,24 @@ A third panel tab, けんこう (Health), between きろく and せってい, sh
 from the same rows (`model/health.ts`), no backend change, its code loaded with the tab.
 - **Values:** a day's value is Apple Health's latest row, not the as-of-lock value: the trainer wants the truth, and the
   ベル keep theirs.
-- **No record, not zero:** no row, 0 steps, or the Watch not worn (Move, Exercise and Stand all 0, steps from the phone)
-  is a day without data for those metrics: no bar, out of every average, goal count and change, counted as 記録なし
-  (from the first activity record), and labelled 「1日の平均（記録のある日）」. Today is drawn, not counted. Why: zeros
-  from a Watch on its charger would read as lazy days and drag the averages.
+- **One person at a time** (user request): a ウェイ / うめ switch at the top, this phone's person by default (kept for
+  the session, like the period); every card shows that person only. Why: the point is one person's trends, and one
+  series reads better on a phone (wider bars, values on 1週).
+- **No record, not zero:** a finished day counts for Move, Exercise and Stand only when the Watch was clearly worn:
+  Move ≥ 100 kcal or Stand ≥ 30 min (`WORN_KCAL`, `WORN_STAND` in `model/health.ts`), else all three are 記録なし; it
+  counts for steps only from 500 (`STEPS_MIN`; fewer: the phone stayed home); no row is 記録なし too. Such a day has a
+  pale hatched column instead of a bar, stays out of every average, best day, goal count and change, is counted as
+  記録なし (from the first activity record), and the averages say 「1日の平均（記録のある日）」. Today is drawn (anything
+  above 0), not counted. Why: a Watch on its charger, or worn for minutes (3 kcal, 26 kcal and 4 min of Stand), and a
+  phone left on the desk (66 steps) are not lazy days; counted, they dragged the real averages down. These thresholds
+  are けんこう's only: the ベル keep the stamp card's rules.
 - **Periods:** 1週 and 1か月 (30 days) by day, 3か月 by week (13, ending on the last day shown), 1年 and すべて by calendar
   month (daily averages per bucket), so long ranges stay readable on a phone; ‹ › and a drag on any chart step a whole
   period, きょう comes back; the change compares with the period of equal length just before.
-- **Each chart:** both people side by side in a fixed colour each (ウェイ blue, うめ orange; a CVD-safe pair, checked with
-  a validator), solid = goal met, the goal dashed (per person for Move), the 7-day average on day bars, a tap for exact
-  numbers. Weight is per person on its own axis (one axis would flatten both).
-- **今週と 先週** at the top (user request): both of us, calendar weeks Mon–Sun (the app's week; the Wednesday lock is the
-  economy's only), this week so far over its finished days with data. It is the tab's one summary card, so the charts'
-  headers don't repeat it per metric for the week.
+- **Each chart:** one series in the person's fixed colour (ウェイ blue, うめ orange; a CVD-safe pair, checked with a
+  validator), solid = goal met, their goal dashed (their own Move goal history), the 7-day average on day bars, a tap
+  for the exact value. Weight on an axis fitted to that person's weights.
+- **No week card** (user decision): the period's charts and stats carry the trends; 1週 is the week view.
 - **Weight moved here:** the weight trend left きろく (no information twice); its goal is still set in きろく's 目標 card.
 - **No export:** no copy/CSV of a summary (user decision); the trainer reads the screen.
 Why: the trainer needs exact, comparable numbers over weeks to years, without leaving the game's look.

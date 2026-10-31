@@ -96,7 +96,7 @@ test('けんこう: the weight trend (from Health, no logging by hand); its goal
   await sheet(page).locator('.tab[data-tab=health]').click();
   const card = sheet(page).locator('.wc');
   await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
-  await expect(card.getByRole('img', { name: /の体重 / })).toHaveCount(2); // one chart per person, each on its own axis
+  await expect(card.getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1); // this phone's person's (the tab shows one person)
   await expect(card.locator('.pen-btn, input, .acts')).toHaveCount(0); // nothing to log or fix by hand
   // the goal is set in きろく's 目標 card (one place for both goals) and drawn on the weight chart
   await sheet(page).locator('.tab[data-tab=kiroku]').click();
@@ -110,7 +110,7 @@ test('けんこう: the weight trend (from Health, no logging by hand); its goal
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(sheet(page).locator('.goals')).toContainText('65.0 kg');
   await sheet(page).locator('.tab[data-tab=health]').click();
-  await expect(sheet(page).locator('.wc .person[data-person=A]')).toContainText('目標 65.0');
+  await expect(sheet(page).locator('.wc[data-person=A]')).toContainText('目標 65.0');
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
