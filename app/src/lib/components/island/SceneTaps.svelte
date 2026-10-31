@@ -5,7 +5,9 @@
   // with a sparkle (rarely a butterfly flutters off it; on a summer night, a firefly); a cloud squishes and puffs; the
   // sun glints; the moon bobs and sends a shooting star; a tap in the night sky lights a star (sometimes a shooting
   // star); the sea rings and splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a
-  // dust puff (snow in winter). On a clear night a shooting star crosses now and then on its own.
+  // dust puff (snow in winter). On a clear night a shooting star crosses now and then on its own. A popped balloon's
+  // present (Balloon.svelte sends `island:present`) falls onto the island, sparkles and fades (or sinks in the sea).
+  // The critters (Critters.svelte: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One pointerdown listener on the scene: anything inside a control (trees, fruit row, jar, villagers, balloon) is
   // theirs. The hit test is in stage units (sceneTaps.ts), the sky against the live boxes of the sun / moon / clouds.
@@ -18,6 +20,7 @@
   import { reducedMotion } from '#lib/time/clock.ts';
   import { BEDS, BED_X, BED_ROWS, BUSH_U, FLOWER_U, HEDGE_BASE, HEDGE_X, HORIZON_U, type Tod } from './scene.ts';
   import { PETAL, hitStage, sceneSfx } from './sceneTaps.ts';
+  import Critters from './Critters.svelte';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -31,7 +34,7 @@
   }
   let { scene, season, tod, enabled, swallowed }: Props = $props();
 
-  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow';
+  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow' | 'present';
   interface Fx {
     id: number;
     kind: Kind;
@@ -47,6 +50,9 @@
     flip?: boolean;
     /** cloud: the side the puffs fly off (−1 / 1). */
     dir?: number;
+    /** present: its fall (px) and size (px). */
+    dy?: number;
+    size?: number;
   }
   const MAX_FX = 4;
   const LIFE_MS = 1100;
@@ -56,6 +62,7 @@
   const timers = new Set<ReturnType<typeof setTimeout>>();
   const night = $derived(tod === 'night');
   const roll = (n: number) => Math.random() * n < 1;
+  let critters = $state<ReturnType<typeof Critters>>();
 
   function later(fn: () => void, ms: number) {
     const id = setTimeout(() => {
@@ -117,6 +124,8 @@
     const k = 390 / r.width; // px → u (the stage keeps its 390 : 360 aspect)
     const x = e.clientX - r.left, y = e.clientY - r.top;
     const calm = reducedMotion();
+    // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
+    if (!calm && critters?.tap(e.clientX, e.clientY)) return;
     // the sky ends at the scene's horizon, which on a tall phone rises above the stage's own (open sea behind the island)
     if (y < horizonPx(stage, r)) return sky(e, r, x, y, calm);
     const hit = hitStage(x * k, Math.max(y * k, HORIZON_U));
@@ -125,6 +134,7 @@
       case 'bush': {
         jiggle(stage.querySelector(`[data-bush="${hit.i}"]`), RUSTLE, 520, FOOT_ORIGIN);
         spawn({ kind: 'bush', x: HEDGE_X[hit.i] / k, y: (HEDGE_BASE - BUSH_U * 0.62) / k, v: shed(season) });
+        critters?.fromBush(hit.i);
         return sceneSfx('bush');
       }
       case 'flower': {
@@ -209,12 +219,32 @@
     sceneSfx('shooting-star');
   }
 
+  /** NH's balloon present, shot down: it falls from where the balloon burst onto the island (the back lawn, in front of
+   *  the trees), lands with a bounce and a sparkle and fades; off the island's edge it drops into the sea. */
+  function present(e: Event) {
+    const d = (e as CustomEvent<{ x: number; y: number; size: number }>).detail;
+    const stage = scene?.querySelector<HTMLElement>('.stage');
+    if (!d || !stage || !enabled()) return;
+    const r = stage.getBoundingClientRect();
+    const k = 390 / r.width;
+    const x = d.x - r.left, y = d.y - r.top;
+    const land = 198 / k; // the lawn between the fruit and the villagers' heads
+    const sea = hitStage(x * k, 198).kind === 'sea';
+    spawn({ kind: 'present', x, y, dy: Math.max(0, land - y), size: d.size, v: sea ? 'sea' : undefined }, 3300);
+    if (sea) later(() => sceneSfx('splash'), 1500);
+    else sceneSfx('present');
+  }
+
   // The listener lives on the scene (no element of ours under the finger: the art keeps pointer-events: none).
   $effect(() => {
     const el = scene;
     if (!el) return;
     el.addEventListener('pointerdown', onDown);
-    return () => el.removeEventListener('pointerdown', onDown);
+    el.addEventListener('island:present', present);
+    return () => {
+      el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('island:present', present);
+    };
   });
 
   // A clear night: now and then a shooting star on its own (45–120 s apart; not while covered / hidden).
@@ -234,6 +264,8 @@
 
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
+
+<Critters bind:this={critters} {scene} {tod} {enabled} />
 
 <div class="taps" aria-hidden="true">
   {#each fx as f (f.id)}
@@ -276,6 +308,16 @@
         <svg class="twinkle" viewBox="0 0 24 24"><path d={STAR} /></svg>
       {:else if f.kind === 'shoot'}
         <span class="streak"><i></i></span>
+      {:else if f.kind === 'present'}
+        <span class="gift" class:sea={f.v === 'sea'} style:--dy="{f.dy}px" style:--gs="{f.size}px">
+          <span class="drop-in"><OfficialArt key="deco/present" size="100%" eager /></span>
+        </span>
+        {#if f.v === 'sea'}
+          <span class="land" style:--dy="{f.dy}px"><i class="ring"></i><i class="ring late"></i></span>
+        {:else}
+          <svg class="spark land-spark" viewBox="0 0 24 24" style:--dy="{f.dy}px"><path d={STAR} /></svg>
+          <svg class="spark land-spark two" viewBox="0 0 24 24" style:--dy="{f.dy}px"><path d={STAR} /></svg>
+        {/if}
       {:else}
         <i class="dot"></i>
       {/if}
@@ -448,6 +490,24 @@
     0% { transform: rotate(152deg) translateX(0); opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; }
     100% { transform: rotate(152deg) translateX(150px); opacity: 0; }
   }
+
+  /* the balloon's present: falls (gravity, a gentle sway), lands with a squash, sparkles, fades; or sinks in the sea */
+  .gift {
+    left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) / -2) 0 0 calc(var(--gs) / -2); line-height: 0;
+    animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .6s ease-in 2.7s both;
+  }
+  .gift .drop-in { display: block; height: 100%; transform-origin: 50% 100%; animation: gift-sway 1.5s ease-in-out both, gift-land .5s ease-out 1.5s both; }
+  @keyframes gift-fall { from { transform: translateY(0); } to { transform: translateY(var(--dy)); } }
+  @keyframes gift-sway { 0% { rotate: -10deg; } 30% { rotate: 8deg; } 60% { rotate: -6deg; } 85% { rotate: 3deg; } 100% { rotate: 0deg; } }
+  @keyframes gift-land { 0% { scale: 1.12 .82; } 45% { scale: .95 1.06; } 100% { scale: 1; } }
+  @keyframes gift-fade { to { opacity: 0; } }
+  .gift.sea { animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .35s ease-in 1.5s both; }
+  .gift.sea .drop-in { animation: gift-sway 1.5s ease-in-out both; }
+  .land { left: 0; top: var(--dy); width: 0; height: 0; opacity: 0; animation: land-on .01s 1.5s forwards; }
+  @keyframes land-on { to { opacity: 1; } }
+  .land .ring { animation-delay: 1.5s; } .land .ring.late { animation-delay: 1.66s; }
+  .land-spark { left: calc(-16 * var(--su)); top: calc(var(--dy) - 26 * var(--su)); animation-delay: 1.55s; }
+  .land-spark.two { left: calc(6 * var(--su)); top: calc(var(--dy) - 18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
 
   /* reduced motion: a soft glow where you tapped, nothing moves */
   .dot {

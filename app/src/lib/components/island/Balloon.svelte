@@ -4,7 +4,9 @@
   // (deco/present). It drifts across the sky on the breeze in 22 s (either way, at a cloud's altitude, in front of
   // the clouds and under the HUD), bobbing ±5px on a 3.6 s sine and leaning ±4°; the present swings under it like a
   // pendulum from the knot, a beat behind, and trails the drift a little. A colour per appearance from NH's balloon
-  // palette (1 in 20: gold). No points: a tap only wobbles it. Paused while the page is hidden or covered; reduced
+  // palette (1 in 20: gold). A tap pops it (NH's slingshot shot, here a tap): a "pan!", a puff of confetti in its
+  // colours, and the present drops onto the island (SceneTaps.svelte draws the fall: this sends it `island:present`
+  // with where the present was). No points, no caption. Paused while the page is hidden or covered; reduced
   // motion: none (it ends at once). Night / dawn / dusk: dimmed / warmed like the clouds. The parent mounts it.
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -35,28 +37,37 @@
   const gid = $props.id();
 
   let fly = $state<HTMLElement | null>(null);
-  let wobble = $state(false);
+  let gift = $state<HTMLElement | null>(null);
+  let popped = $state(false);
+  let gone: ReturnType<typeof setTimeout> | undefined;
   function tap() {
-    wobble = true;
+    if (popped || !gift) return;
+    const g = gift.getBoundingClientRect();
+    popped = true;
     sceneSfx('balloon');
+    gift.dispatchEvent(new CustomEvent('island:present', { bubbles: true, detail: { x: g.left + g.width / 2, y: g.top + g.height / 2, size: g.height } }));
+    gone = setTimeout(() => ondone?.(), 650);
   }
+  // the confetti: eight bits in the balloon's colours and NH's party colours, flung out from the burst
+  const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];
 
   onMount(() => {
     if (reducedMotion()) ondone?.();
+    return () => clearTimeout(gone);
   });
 </script>
 
-<div class="fly" class:rtl={!ltr} bind:this={fly} style:--alt={alt}
+<div class="fly" class:rtl={!ltr} class:popped bind:this={fly} style:--alt={alt}
   onanimationend={(e) => e.target === fly && ondone?.()}>
   <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} onclick={tap}>
     <span class="bob">
-      <span class="rig" class:wobble onanimationend={(e) => e.animationName.includes('wobble') && (wobble = false)}>
+      <span class="rig">
         <span class="hang">
           <svg class="string" viewBox="0 0 10 30" aria-hidden="true">
             <path d="M5 0 C3.6 7 6.6 12 5.2 19 C4.4 23 5.4 26.5 5 30" fill="none" stroke="#9A8A72" stroke-width=".9"
               stroke-linecap="round" />
           </svg>
-          <span class="gift"><OfficialArt key="deco/present" size="100%" /></span>
+          <span class="gift" bind:this={gift}><OfficialArt key="deco/present" size="100%" /></span>
         </span>
         <svg class="ball" viewBox="0 0 40 44" aria-hidden="true">
           <defs>
@@ -84,6 +95,12 @@
           {/if}
         </svg>
       </span>
+      {#if popped}
+        <span class="burst" aria-hidden="true">
+          <i class="flash"></i>
+          {#each BITS as c, i (i)}<i class="bit" style:--a="{i * 45 + 20}deg" style:--c={c}></i>{/each}
+        </span>
+      {/if}
     </span>
   </button>
 </div>
@@ -133,12 +150,26 @@
   .gift :global(.official) { filter: drop-shadow(0 .02em .02em rgba(90, 60, 30, .25)); }
   .spark { transform-origin: 30px 9.5px; animation: spark 1.6s ease-in-out infinite alternate; }
   @keyframes spark { from { opacity: .2; transform: scale(.6); } to { opacity: 1; transform: none; } }
-  /* a tap: a soft rubbery wobble and a little hop up on the string (it bobs back down), nothing more */
-  .rig.wobble { animation: wobble .7s cubic-bezier(.3, 1.4, .5, 1), lean 5.2s cubic-bezier(.37, 0, .63, 1) .7s infinite; }
-  @keyframes wobble {
-    0% { transform: none; } 25% { transform: translateY(-.16em) rotate(-9deg) scale(1.06, .95); }
-    50% { transform: translateY(-.1em) rotate(7deg) scale(.97, 1.03); }
-    75% { transform: translateY(.03em) rotate(-3deg); } 100% { transform: rotate(-4deg); }
+  /* popped: the drift holds where it burst, the balloon and its present vanish (the present falls in the stage), a
+     flash and the confetti fly out and fade */
+  .popped, .popped * { animation-play-state: paused; }
+  .popped .rig { visibility: hidden; }
+  .balloon:has(.burst) { cursor: default; }
+  .burst { position: absolute; left: 50%; top: .55em; width: 0; height: 0; }
+  .burst i { position: absolute; animation-play-state: running !important; }
+  .flash {
+    left: -.6em; top: -.6em; width: 1.2em; height: 1.2em; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 245, .95), rgba(255, 255, 245, 0)); animation: flash .3s ease-out both;
+  }
+  @keyframes flash { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
+  .bit {
+    left: -.07em; top: -.05em; width: .14em; height: .1em; border-radius: 1px; background: var(--c);
+    animation: bit .6s cubic-bezier(.2, .7, .4, 1) both;
+  }
+  @keyframes bit {
+    from { transform: rotate(var(--a)) translateY(-.15em) rotate(0); opacity: 1; }
+    70% { opacity: 1; }
+    to { transform: rotate(var(--a)) translateY(-.95em) rotate(220deg) translateY(.2em); opacity: 0; }
   }
   /* time of day: dim and cool at night (like the clouds), warm at dawn / dusk */
   :global(.if-scene[data-tod='night']) .fly { filter: brightness(.76) saturate(.78) contrast(.95); }

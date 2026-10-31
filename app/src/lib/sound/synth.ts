@@ -142,7 +142,7 @@ const RECIPES: Record<SoundId, Ev[]> = {
   sparkle: [bell(G6, 0, 0.25, 0.5), bell(C7, 0.05, 0.3, 0.45), bell(E7, 0.1, 0.35, 0.4)],
   oops: [{ kind: 'tone', f: 700, to: 420, glide: 0.22, t: 0, d: 0.3, g: 0.9, wave: 'tri', vib: [9, 40] }],
   // scenery: a soft swish through flowers, an airy cloud "pof", a shooting star's rising "shiing", a water plop, and
-  // footsteps in sand (gritty), grass (soft) and snow (a squeaky crunch), and a rubbery balloon boing
+  // footsteps in sand (gritty), grass (soft) and snow (a squeaky crunch)
   swish: [
     { kind: 'noise', t: 0, d: 0.22, g: 1, lo: 2200, hi: 8000, shape: 'swell' },
     { kind: 'noise', t: 0.01, d: 0.18, g: 0.3, lo: 500, hi: 2000, shape: 'swell' }
@@ -166,7 +166,26 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.15, g: 1, lo: 1200, hi: 5000, shape: 'decay', grains: 500 },
     { kind: 'tone', f: 1900, to: 1500, glide: 0.06, t: 0.01, d: 0.07, g: 0.15, wave: 'tri' }
   ],
-  squeak: [{ kind: 'tone', f: 330, to: 760, glide: 0.07, t: 0, d: 0.24, g: 1, wave: 'tri', attack: 0.004, vib: [16, 55], partials: [[2, 0.25, 0.6]] }]
+  // critters: a bobber's "pocha" (a quick falling blip and a little water), the reel's ratchet, an original catch tune
+  // (four mallet notes up and a twinkle: not NH's), the net's airy swing and the balloon's "pan!" with a glint
+  plop: [
+    { kind: 'tone', f: 950, to: 260, glide: 0.05, t: 0, d: 0.1, g: 0.9, attack: 0.001 },
+    { kind: 'noise', t: 0.02, d: 0.14, g: 0.35, lo: 600, hi: 3200, shape: 'decay', grains: 60 }
+  ],
+  reel: [
+    ...Array.from({ length: 7 }, (_, i): Noise => ({ kind: 'noise', t: i * 0.045, d: 0.022, g: 0.7, lo: 2200, hi: 8000, shape: 'decay' })),
+    { kind: 'tone', f: 520, to: 880, glide: 0.3, t: 0, d: 0.32, g: 0.12, wave: 'tri', attack: 0.01 }
+  ],
+  catch: [mallet(C6, 0, 0.2, 0.75), mallet(E6, 0.07, 0.2, 0.75), mallet(G6, 0.14, 0.2, 0.8), mallet(C7, 0.21, 0.4, 0.9), bell(G7, 0.3, 0.32, 0.18)],
+  net: [
+    { kind: 'noise', t: 0, d: 0.2, g: 1, lo: 700, hi: 4000, shape: 'swell' },
+    { kind: 'noise', t: 0.03, d: 0.15, g: 0.4, lo: 3000, hi: 9000, shape: 'swell' }
+  ],
+  burst: [
+    { kind: 'noise', t: 0, d: 0.07, g: 1, lo: 1500, hi: 10000, shape: 'decay' },
+    { kind: 'tone', f: 260, to: 120, glide: 0.06, t: 0, d: 0.1, g: 0.5, attack: 0.001 },
+    bell(E7, 0.05, 0.25, 0.15)
+  ]
 };
 
 const seedOf = (s: string) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);

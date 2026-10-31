@@ -7,7 +7,8 @@ import { durationOf } from './synth.ts';
 // every kind sceneSfx() can ask for (the Record type makes the compiler list them all)
 const KINDS: Record<SceneSfx, true> = {
   bush: true, flower: true, cloud: true, sun: true, moon: true, star: true, 'shooting-star': true,
-  splash: true, fish: true, sand: true, grass: true, snow: true, balloon: true, butterfly: true
+  splash: true, fish: true, sand: true, grass: true, snow: true, balloon: true, butterfly: true,
+  present: true, cast: true, plop: true, nibble: true, bite: true, reel: true, catch: true, flee: true, net: true, 'bug-flee': true
 };
 
 describe('scenery cues', () => {

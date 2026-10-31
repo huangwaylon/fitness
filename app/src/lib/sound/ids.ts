@@ -19,12 +19,16 @@ export type SoundId =
   // villager reactions (the sound under an emote bubble)
   | 'pop' | 'surprise' | 'heart' | 'sparkle' | 'oops'
   // scenery taps (docs/design.md#scene-interactions): quiet, jittered, two at most
-  | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow' | 'squeak';
+  | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow'
+  // the island's critters and the balloon (docs/design.md#scene-interactions): a bobber plop, the reel, a little catch
+  // tune, the net's swing, the balloon's pop
+  | 'plop' | 'reel' | 'catch' | 'net' | 'burst';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
   | 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shooting-star'
-  | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly';
+  | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly'
+  | 'present' | 'cast' | 'plop' | 'nibble' | 'bite' | 'reel' | 'catch' | 'flee' | 'net' | 'bug-flee';
 
 interface SoundDef {
   bus: 'sfx' | 'voice';
@@ -79,7 +83,12 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   'step-sand': { bus: 'sfx', gain: 0.4, jitter: 90, max: 2 },
   'step-grass': { bus: 'sfx', gain: 0.35, jitter: 90, max: 2 },
   'step-snow': { bus: 'sfx', gain: 0.4, jitter: 90, max: 2 },
-  squeak: { bus: 'sfx', gain: 0.4, jitter: 50, max: 2 }
+  plop: { bus: 'sfx', gain: 0.4, jitter: 60, max: 2 },
+  reel: { bus: 'sfx', gain: 0.3, jitter: 30, max: 1 },
+  // a catch's little tune: an effect, not a jingle (it must not duck the music)
+  catch: { bus: 'sfx', gain: 0.42, jitter: 10, max: 1 },
+  net: { bus: 'sfx', gain: 0.38, jitter: 70, max: 2 },
+  burst: { bus: 'sfx', gain: 0.42, jitter: 50, max: 1 }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

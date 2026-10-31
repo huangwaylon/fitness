@@ -96,6 +96,14 @@ const SPECS: Record<string, Spec> = {
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
 };
+// Scene critters (docs/design.md#scene-interactions): the critterpedia icon of each catch (fish, bugs, junk), shown
+// ~36px for a moment after a catch and only loaded then (island/critters.ts critterArt).
+for (const name of [
+  'Sea Bass', 'Horse Mackerel', 'Olive Flounder', 'Red Snapper', 'Dab', 'Squid', 'Sea Butterfly', 'Puffer Fish',
+  'Barred Knifejaw', 'Anchovy', 'Common Butterfly', 'Yellow Butterfly', 'Tiger Butterfly', 'Darner Dragonfly',
+  'Red Dragonfly', 'Firefly', 'Moth', 'Bell Cricket', 'Cricket', 'Ladybug', 'Boot', 'Old Tire', 'Empty Can'
+])
+  SPECS[`critters/${name.toLowerCase().replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
 const TRIM = ['bushes/', 'flowers/'];
