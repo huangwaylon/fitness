@@ -249,6 +249,15 @@ loses its record only sees the deck again); the morning hours are NH's own ãƒ©ã‚
 march (no copyrighted radio-exercise music). The deck is a scene item like the visitors, not a button: a 44px button
 doesn't fit on the lawn by the hedge on a small screen without sitting under a canopy.
 
+### My villager walks to what I tap
+A tap on something to do sends my villager there first (NH: you walk up and do it), on each phone its own person's
+villager. Of the ways to move a villager on a phone (walk-then-act on the existing taps, tap empty lawn to walk, a
+drag or virtual stick, villagers wandering on their own) walk-then-act keeps every tap as it was: the lawn's taps
+already do something and a stick fights the stage and the sheets. Kept snappy: 240 u/s, at most 0.9 s, no walk over
+1.2 s, and the outcome is decided at the tap, so the walk is only cosmetic and a timing game (the bite, the wasps)
+never waits for it. Spots are measured so a standing villager never covers a control. Transitions only, no rAF; a sheet
+stops it. It always animates, reduced motion or not (user).
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

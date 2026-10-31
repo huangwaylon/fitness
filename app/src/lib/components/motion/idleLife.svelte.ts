@@ -6,7 +6,7 @@
 // 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and
 // stop() cancels them all, so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
-import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
+import { actors, addFx, applyStep, awayFromHome, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
 import { jst, reducedMotion } from '#lib/time/clock.ts';
 
 interface IdleContext {
@@ -138,7 +138,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
       if (e.every && t - (lastAt[`${id}:${e.action}`] ?? 0) < e.every) return false;
       if (e.pair && busy(other)) return false;
       // one villager on the path at a time
-      if ((e.action === 'stroll' || e.action === 'peek') && actors[other].walkX !== 0) return false;
+      if ((e.action === 'stroll' || e.action === 'peek') && (actors[other].walking || awayFromHome(other))) return false;
       if (e.action === 'dance' && Math.min(sa, sb) < 70) return false;
       return true;
     }).map((e) => (e.action === 'dance' && Math.min(sa, sb) >= 80 ? { ...e, weight: 15 } : e));

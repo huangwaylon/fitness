@@ -20,6 +20,7 @@
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { ISLAND_SEED } from './beach.ts';
+  import { approach } from './avatar.ts';
   import { VISITORS, visitorAt, visitorLine, type VisitorId } from './visitors.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import type { Choice } from './pager.ts';
@@ -173,9 +174,15 @@
     if (!id || !r || !enabled()) return false;
     const pad = 8; // a finger's slack around the figure (px)
     if (px < r.left - pad || px > r.right + pad || py < r.top - pad || py > r.bottom + pad) return false;
-    talk(id);
+    // my villager walks over to talk (avatar.ts); they speak once it's there
+    const { ms } = spot ? approach(spot.x, spot.y) : { ms: 0 };
+    clearTimeout(talkTimer);
+    if (ms) talkTimer = setTimeout(() => talk(id), ms);
+    else talk(id);
     return true;
   }
+  let talkTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(talkTimer));
 </script>
 
 {#if who && spot}

@@ -78,10 +78,10 @@ describe('the routine (director)', () => {
     const { groupStretch } = await import('../motion/stretch.svelte.ts');
     resetAll();
     stroll('mine', 30);
-    expect(actors.mine.walkX).toBe(30);
+    expect(actors.mine.x - actors.mine.home[0]).toBe(30);
     const wait = groupStretch(POSES, POSE_MS);
     expect(wait).toBe(1600);
-    expect(actors.mine.walkX).toBe(0);
+    expect(actors.mine.x).toBe(actors.mine.home[0]);
     expect(actors.mine.walking).toBe(true);
     expect(actors.partner.motion).toBeNull();
     vi.advanceTimersByTime(1600);

@@ -29,6 +29,7 @@
   import { water } from './sceneDay.ts';
   import { findArt } from './beach.ts';
   import { dayKey } from '#lib/time/clock.ts';
+  import { LONG_REACH, approach } from './avatar.ts';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -64,6 +65,8 @@
     flip?: boolean;
     /** cloud: the side the puffs fly off (−1 / 1). */
     dir?: number;
+    /** flower: the can is in my villager's hand (no floating can). */
+    held?: boolean;
   }
   const MAX_FX = 4;
   const LIFE_MS = 1100;
@@ -92,6 +95,12 @@
     for (const id of timers) clearTimeout(id);
     timers.clear();
   });
+
+  /** Run `fn` after my villager's walk (now when it didn't walk). */
+  function after(ms: number, fn: () => void) {
+    if (ms) later(fn, ms);
+    else fn();
+  }
 
   function spawn(f: Omit<Fx, 'id'>, ms = LIFE_MS) {
     const id = ++seq;
@@ -161,23 +170,32 @@
     if (calm) return spawn({ kind: 'glow', x, y }, 450);
     switch (hit.kind) {
       case 'bush': {
-        jiggle(stage.querySelector(`[data-bush="${hit.i}"]`), RUSTLE, 520, FOOT_ORIGIN);
-        spawn({ kind: 'bush', x: HEDGE_X[hit.i] / k, y: (HEDGE_BASE - BUSH_U * 0.62) / k, v: shed(season) });
-        critters?.fromBush(hit.i);
-        return sceneSfx('bush');
+        // my villager walks up to the hedge and gives the bush a shake (avatar.ts), then it rustles
+        const i = hit.i;
+        const { ms } = approach(HEDGE_X[i], HEDGE_BASE + 4, { motion: 'shake' });
+        return after(ms, () => {
+          jiggle(stage.querySelector(`[data-bush="${i}"]`), RUSTLE, 520, FOOT_ORIGIN);
+          spawn({ kind: 'bush', x: HEDGE_X[i] / k, y: (HEDGE_BASE - BUSH_U * 0.62) / k, v: shed(season) });
+          critters?.fromBush(i);
+          sceneSfx('bush');
+        });
       }
       case 'flower': {
-        jiggle(stage.querySelector(`[data-flower="${hit.row}-${hit.col}"]`), WIGGLE, 620, FOOT_ORIGIN);
-        const id = hit.row ? BEDS[season].front : BEDS[season].back;
-        const fx0 = [...BED_X.left, ...BED_X.right][hit.col];
+        const { row, col } = hit;
+        const id = row ? BEDS[season].front : BEDS[season].back;
+        const fx0 = [...BED_X.left, ...BED_X.right][col];
         // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
         const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
-        // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
-        spawn({ kind: 'flower', x: fx0 / k, y: (BED_ROWS[hit.row] - FLOWER_U * 0.72) / k, color: PETAL[id], rare, flip: fx0 > 195 });
-        water(dayKey(), `${hit.row}-${hit.col}`);
-        sceneSfx('water');
-        if (rare === 'butterfly') sceneSfx('butterfly');
-        return;
+        water(dayKey(), `${row}-${col}`);
+        // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
+        const { ms, walked } = approach(fx0, BED_ROWS[row], { tool: 'can', toolMs: 900, reach: LONG_REACH });
+        return after(ms, () => {
+          jiggle(stage.querySelector(`[data-flower="${row}-${col}"]`), WIGGLE, 620, FOOT_ORIGIN);
+          // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
+          spawn({ kind: 'flower', x: fx0 / k, y: (BED_ROWS[row] - FLOWER_U * 0.72) / k, color: PETAL[id], rare, flip: fx0 > 195, held: walked });
+          sceneSfx('water');
+          if (rare === 'butterfly') sceneSfx('butterfly');
+        });
       }
       case 'sea': {
         const rare = roll(10) ? 'fish' : undefined;
@@ -343,7 +361,7 @@
       {:else if f.kind === 'flower'}
         <i class="petal" style:--dx="-1"></i><i class="petal two" style:--dx="1"></i>
         <svg class="spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
-        <span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(18 * var(--su))" eager /></span>
+        {#if !f.held}<span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(18 * var(--su))" eager /></span>{:else}<span data-fx="water"></span>{/if}
         {#each [0, 1, 2] as i (i)}<i class="drip" style:--i={i}></i>{/each}
         <svg class="spark late" viewBox="0 0 24 24"><path d={STAR} /></svg>
         {#if f.rare === 'butterfly'}

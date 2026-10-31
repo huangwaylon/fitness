@@ -6,14 +6,14 @@ import type { Cue } from '#lib/sound/cues.ts';
 /** CSS keyframe primitives (tokens.css Builder A block), prefix `if-`. */
 export type Motion =
   | 'squish' | 'hop' | 'hop2' | 'wiggle' | 'turn' | 'nod' | 'laugh' | 'surprise' | 'shy' | 'stretch'
-  | 'proud' | 'dance' | 'shake' | 'bow' | 'headshake' | 'hum'
+  | 'proud' | 'dance' | 'shake' | 'bow' | 'headshake' | 'hum' | 'holdup'
   // group stretching (island/stretching.ts, NH's ラジオ体操): Posture Warm-Up, Side Bends, Jump
   | 'warmup' | 'sidebend' | 'leap';
 
 /** Durations in ms (must match the keyframes). */
 export const MOTION_MS: Record<Motion, number> = {
   squish: 220, hop: 600, hop2: 900, wiggle: 700, turn: 1400, nod: 520, laugh: 620, surprise: 420, shy: 1000,
-  stretch: 1400, proud: 900, dance: 1600, shake: 480, bow: 1100, headshake: 600, hum: 2400,
+  stretch: 1400, proud: 900, dance: 1600, shake: 480, bow: 1100, headshake: 600, hum: 2400, holdup: 1600,
   warmup: 2000, sidebend: 2000, leap: 2000
 };
 

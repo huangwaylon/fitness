@@ -25,6 +25,8 @@
   import {
     DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakenBug, type ShakeDrop
   } from './treeShake.ts';
+  import { approach, turnTo } from './avatar.ts';
+  import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
 
   type Side = 'mine' | 'partner';
   interface Props {
@@ -108,8 +110,16 @@
   /** A tap on the dangling bug: netted (the net's swing, NH's catch line, a ずかん find). */
   function netDangler() {
     const d = dangler;
-    if (!d || d.up) return;
-    dangler = null;
+    if (!d || d.up || netting) return;
+    // my villager walks over with the net (avatar.ts); caught at the tap, swung on arrival
+    netting = true;
+    const { ms } = approach(d.x, d.y, { tool: 'net', toolMs: 450 });
+    later(ms, () => swingAt(d));
+  }
+  let netting = false;
+  function swingAt(d: NonNullable<typeof dangler>) {
+    netting = false;
+    if (dangler === d) dangler = null;
     net = { n: ++seq, x: d.x, y: d.y };
     sceneSfx('net');
     later(420, () => (net = null));
@@ -119,6 +129,7 @@
       const n = ++seq;
       const text = await catchLine(d.id as BugId);
       card = { n, x: d.x, y: d.y, text: added ? [text, t('zukan.added')] : text, art: critterArt(d.id) };
+      holdUp('mine', critterArt(d.id), HOLD_MS);
     });
   }
 
@@ -151,6 +162,7 @@
     const g = stageGeo(scene), r = swarmEl?.getBoundingClientRect();
     const x = g && r ? (r.left + r.width / 2 - g.r.left) * g.k : s.x1, y = g && r ? (r.top + r.height / 2 - g.r.top) * g.k : s.y1;
     swarm = null;
+    turnTo(x); // no walk: the wasps' timing stays as it is
     net = { n: ++seq, x, y };
     sceneSfx('net');
     waspMusic('caught');
@@ -163,6 +175,7 @@
       const n = ++seq;
       const text = await catchLine('wasp');
       card = { n, x, y, text: added ? [text, t('zukan.added')] : text, art: critterArt('wasp') };
+      holdUp('mine', critterArt('wasp'), HOLD_MS);
     });
   }
 
@@ -174,9 +187,19 @@
         `transform: translateY(${(-60 * Math.sin(v * Math.PI * 0.6)).toFixed(1)}%) scale(${(1 - 0.7 * v * v).toFixed(3)}); opacity: ${Math.min(1, tt * 3).toFixed(2)}`
     };
   }
+  /** Branches my villager is walking to. */
+  const going = new Set<number>();
+  /** My villager walks over (avatar.ts) and picks the branch up. */
   function pick(n: number) {
-    sceneSfx('twig');
-    branches = branches.filter((b) => b.n !== n);
+    const b = branches.find((x) => x.n === n);
+    if (!b || going.has(n)) return;
+    going.add(n);
+    const { ms } = approach(b.x, b.y, { motion: 'squish' });
+    later(ms, () => {
+      going.delete(n);
+      sceneSfx('twig');
+      branches = branches.filter((x) => x.n !== n);
+    });
   }
 </script>
 
@@ -254,7 +277,7 @@
   {/if}
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.text} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.text} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
   {/if}
 </div>
 
