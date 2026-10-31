@@ -113,6 +113,25 @@ for (const name of [
   "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust'
 ])
   SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
+// Beach finds (docs/design.md#beach-finds): NH's seashells, fossils (the assessed icon), star fragments, the message
+// bottle and the shovel, shown small on the sand and on the catch plate, only loaded when one is about.
+const FIND_FILES: Record<string, string> = {
+  'sea-snail': 'Sea_Snail_NH_Inv_Icon.png', cowrie: 'Cowrie_NH_Inv_Icon.png', 'venus-comb': 'Venus_Comb_NH_Inv_Icon.png',
+  'sand-dollar': 'Sand_Dollar_NH_Inv_Icon.png', coral: 'Coral_NH_Inv_Icon.png', conch: 'Conch_NH_Inv_Icon.png',
+  'giant-clam': 'Giant_Clam_NH_Inv_Icon.png', 'message-bottle': 'Message_Bottle_NH_Inv_Icon.png', shovel: 'Shovel_NH_Icon.png',
+  'star-fragment': 'Star_Fragment_NH_Inv_Icon.png', 'large-star-fragment': 'Large_Star_Fragment_NH_Inv_Icon.png'
+};
+for (const z of ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpius', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'])
+  FIND_FILES[`${z.toLowerCase()}-fragment`] = `${z}_Fragment_NH_Inv_Icon.png`;
+for (const f of [
+  'Amber', 'Ammonite', 'Trilobite', 'Dinosaur Track', 'Shark-Tooth Pattern', 'Coprolite', 'Myllokunmingia', 'Juramaia',
+  'Anomalocaris', 'Archaeopteryx', 'Dunkleosteus', 'Eusthenopteron', 'Acanthostega', 'Australopith', 'T. Rex Skull',
+  'Tricera Skull', 'Stego Skull', 'Brachio Skull', 'Mammoth Skull', 'Sabertooth Skull', 'Dimetrodon Skull', 'Ankylo Skull',
+  'Plesio Skull', 'Spino Skull', 'Iguanodon Skull', 'Pachy Skull', 'Diplo Skull', 'Ptera Body', 'Megacero Skull',
+  'Parasaur Skull', 'Ophthalmo Skull', 'Archelon Skull'
+])
+  FIND_FILES[f.toLowerCase().replace(/\. /g, '-').replace(/ /g, '-')] = `${f.replace(/ /g, '_')}_NH_Icon.png`;
+for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96, file];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
 const TRIM = ['bushes/', 'flowers/'];

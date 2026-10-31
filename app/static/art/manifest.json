@@ -1,5 +1,5 @@
 {
-  "version": 26,
+  "version": 27,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -576,6 +576,336 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Present_NH_Inv_Icon.png"
+    },
+    "finds/acanthostega": {
+      "path": "finds/acanthostega.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Acanthostega_NH_Icon.png"
+    },
+    "finds/amber": {
+      "path": "finds/amber.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Amber_NH_Icon.png"
+    },
+    "finds/ammonite": {
+      "path": "finds/ammonite.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ammonite_NH_Icon.png"
+    },
+    "finds/ankylo-skull": {
+      "path": "finds/ankylo-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ankylo_Skull_NH_Icon.png"
+    },
+    "finds/anomalocaris": {
+      "path": "finds/anomalocaris.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Anomalocaris_NH_Icon.png"
+    },
+    "finds/aquarius-fragment": {
+      "path": "finds/aquarius-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Aquarius_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/archaeopteryx": {
+      "path": "finds/archaeopteryx.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Archaeopteryx_NH_Icon.png"
+    },
+    "finds/archelon-skull": {
+      "path": "finds/archelon-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Archelon_Skull_NH_Icon.png"
+    },
+    "finds/aries-fragment": {
+      "path": "finds/aries-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Aries_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/australopith": {
+      "path": "finds/australopith.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Australopith_NH_Icon.png"
+    },
+    "finds/brachio-skull": {
+      "path": "finds/brachio-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Brachio_Skull_NH_Icon.png"
+    },
+    "finds/cancer-fragment": {
+      "path": "finds/cancer-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cancer_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/capricorn-fragment": {
+      "path": "finds/capricorn-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Capricorn_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/conch": {
+      "path": "finds/conch.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Conch_NH_Inv_Icon.png"
+    },
+    "finds/coprolite": {
+      "path": "finds/coprolite.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Coprolite_NH_Icon.png"
+    },
+    "finds/coral": {
+      "path": "finds/coral.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Coral_NH_Inv_Icon.png"
+    },
+    "finds/cowrie": {
+      "path": "finds/cowrie.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cowrie_NH_Inv_Icon.png"
+    },
+    "finds/dimetrodon-skull": {
+      "path": "finds/dimetrodon-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dimetrodon_Skull_NH_Icon.png"
+    },
+    "finds/dinosaur-track": {
+      "path": "finds/dinosaur-track.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dinosaur_Track_NH_Icon.png"
+    },
+    "finds/diplo-skull": {
+      "path": "finds/diplo-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Diplo_Skull_NH_Icon.png"
+    },
+    "finds/dunkleosteus": {
+      "path": "finds/dunkleosteus.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dunkleosteus_NH_Icon.png"
+    },
+    "finds/eusthenopteron": {
+      "path": "finds/eusthenopteron.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Eusthenopteron_NH_Icon.png"
+    },
+    "finds/gemini-fragment": {
+      "path": "finds/gemini-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Gemini_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/giant-clam": {
+      "path": "finds/giant-clam.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Giant_Clam_NH_Inv_Icon.png"
+    },
+    "finds/iguanodon-skull": {
+      "path": "finds/iguanodon-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Iguanodon_Skull_NH_Icon.png"
+    },
+    "finds/juramaia": {
+      "path": "finds/juramaia.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Juramaia_NH_Icon.png"
+    },
+    "finds/large-star-fragment": {
+      "path": "finds/large-star-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Large_Star_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/leo-fragment": {
+      "path": "finds/leo-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Leo_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/libra-fragment": {
+      "path": "finds/libra-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Libra_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/mammoth-skull": {
+      "path": "finds/mammoth-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Mammoth_Skull_NH_Icon.png"
+    },
+    "finds/megacero-skull": {
+      "path": "finds/megacero-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Megacero_Skull_NH_Icon.png"
+    },
+    "finds/message-bottle": {
+      "path": "finds/message-bottle.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Message_Bottle_NH_Inv_Icon.png"
+    },
+    "finds/myllokunmingia": {
+      "path": "finds/myllokunmingia.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Myllokunmingia_NH_Icon.png"
+    },
+    "finds/ophthalmo-skull": {
+      "path": "finds/ophthalmo-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ophthalmo_Skull_NH_Icon.png"
+    },
+    "finds/pachy-skull": {
+      "path": "finds/pachy-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pachy_Skull_NH_Icon.png"
+    },
+    "finds/parasaur-skull": {
+      "path": "finds/parasaur-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Parasaur_Skull_NH_Icon.png"
+    },
+    "finds/pisces-fragment": {
+      "path": "finds/pisces-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pisces_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/plesio-skull": {
+      "path": "finds/plesio-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Plesio_Skull_NH_Icon.png"
+    },
+    "finds/ptera-body": {
+      "path": "finds/ptera-body.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ptera_Body_NH_Icon.png"
+    },
+    "finds/sabertooth-skull": {
+      "path": "finds/sabertooth-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sabertooth_Skull_NH_Icon.png"
+    },
+    "finds/sagittarius-fragment": {
+      "path": "finds/sagittarius-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sagittarius_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/sand-dollar": {
+      "path": "finds/sand-dollar.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sand_Dollar_NH_Inv_Icon.png"
+    },
+    "finds/scorpius-fragment": {
+      "path": "finds/scorpius-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Scorpius_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/sea-snail": {
+      "path": "finds/sea-snail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sea_Snail_NH_Inv_Icon.png"
+    },
+    "finds/shark-tooth-pattern": {
+      "path": "finds/shark-tooth-pattern.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Shark-Tooth_Pattern_NH_Icon.png"
+    },
+    "finds/shovel": {
+      "path": "finds/shovel.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Shovel_NH_Icon.png"
+    },
+    "finds/spino-skull": {
+      "path": "finds/spino-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Spino_Skull_NH_Icon.png"
+    },
+    "finds/star-fragment": {
+      "path": "finds/star-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Star_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/stego-skull": {
+      "path": "finds/stego-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Stego_Skull_NH_Icon.png"
+    },
+    "finds/t-rex-skull": {
+      "path": "finds/t-rex-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:T._Rex_Skull_NH_Icon.png"
+    },
+    "finds/taurus-fragment": {
+      "path": "finds/taurus-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Taurus_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/tricera-skull": {
+      "path": "finds/tricera-skull.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Tricera_Skull_NH_Icon.png"
+    },
+    "finds/trilobite": {
+      "path": "finds/trilobite.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Trilobite_NH_Icon.png"
+    },
+    "finds/venus-comb": {
+      "path": "finds/venus-comb.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Venus_Comb_NH_Inv_Icon.png"
+    },
+    "finds/virgo-fragment": {
+      "path": "finds/virgo-fragment.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Virgo_Fragment_NH_Inv_Icon.png"
     },
     "flowers/orange-pansies": {
       "path": "flowers/orange-pansies.webp",

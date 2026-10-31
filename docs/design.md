@@ -257,6 +257,27 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   「つれた！ …と思ったら、ながぐつだった」. It sits centred above (else below) the catch, inside the safe area and clear of
   every control, popup and しずえ's box; with no room it's skipped. 2.6 s.
 
+**Beach finds** (`island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`): the day's items
+derive from the Tokyo date and time plus a seed (`?seed=` in the demo), so both phones broadly see the same island;
+what a phone picks up is hidden there only (`scene-day` in localStorage), and the first of each shell, fossil and
+fragment is a ずかん `find` (never ベル).
+
+- **Seashells** (NH's seven: sea snail, cowrie, venus comb, sand dollar, coral, conch, giant clam): one washes up on the
+  front beach every 60–120 s, the newest three lie on the sand (one arriving on screen slides in from the foam). A tap
+  picks it up: 「タカラガイを ひろった！」.
+- **Fossils** (32: NH's standalone fossils and one piece of each dinosaur): NH's star-shaped ✕ crack on the lawn, 1–2 at
+  a time on six spots measured clear of every control (beside the trunks, between the fruit rows and the beds; a spot a
+  control covers on a small screen isn't shown). A tap digs it up (the official shovel strikes twice, earth flies, a
+  hole): 「化石を ほりだした！ アンモナイトだ！」. The next spot turns up 20–40 s later.
+- **Message bottle:** every 8–14 minutes one lies at the water's edge for 6; a tap reads its note (16 short, kind notes,
+  ja/en). Not a find.
+- **Star fragments:** a tap in the night sky while a shooting star crosses is a wish (「ながれぼしに おねがい！」,
+  `scene-wish` in localStorage); the next morning (a wish before 05:00: that morning) 2–3 fragments lie on the beach:
+  star fragments, now and then a large one or the season's zodiac fragment.
+- The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
+  44px; reduced motion keeps the pick-ups, without the lift or the shovel. `?find=bottle|fragment` (dev or `?demo`)
+  brings one now.
+
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
 wing or fin loop each while on screen; between visits one timer. Art loads on first need. Layers: sea life z 1 (under
 the tint), bugs `--z-leaf` (night `--z-taps`, so fireflies glow), the catch `--z-taps`, the present under `--z-tree`.
