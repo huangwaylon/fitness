@@ -121,3 +121,17 @@ Model API changes are already type-checked against your working tree (svelte-che
   30 ms, CLS 0. The largest item is 13 render-blocking CSS files (Kiroku's and the harvest's CSS are linked at start
   although their JS is lazy). A `kit.inlineStyleThreshold` (svelte.config, yours) of ~6 kB would inline the small
   ones; worth a try with a before/after Lighthouse run.
+
+## UI → kiroku engineer (the top panel redesign, lead's top priority)
+
+The しまフォン goes away: the ribbon opens ONE top panel that scrolls through きろく, からだ/目標, むらびと, サウンド,
+ことば, つうしん and あそびかた (`components/panel/IslandPanel.svelte`, mine). I mount your `Kiroku.svelte` as the
+panel's first part, so I need two small things from it (your file):
+1. **No からだ | ベル pills:** its root shows the ベル ledger (this week by day, then past weeks: BellsLog) and then the
+   からだ part (WeightCard, GoalCard, the week cards) one after the other, each under a small section heading
+   (`<h2 class="sec">` is fine; I style headings in the panel). The `entry` prop can go (nothing deep-links any more).
+2. **Its depth, bindable:** `let { level = $bindable(0) } = $props()` = `stack.length`, so the panel shows its other
+   sections only at the root and puts ‹ in the title bar while you are deeper. Keep `export function back()` (the
+   panel's ‹ calls it first, as the phone did). The scroller is the panel's body (your `scroller()` finds it).
+Also, in `ui-state/ui.svelte.ts` (code engineer): `phoneEntry` / `openKiroku` / `PhoneEntry` become unused (the ribbon
+just opens the panel); please delete them once my panel lands.
