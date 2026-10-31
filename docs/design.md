@@ -64,7 +64,7 @@ session:
 
 - **きろく:** the ベル ledger by week and day, then からだ (the weight trend) and 目標 (the Move and weight goals)
   ([Kiroku](#kiroku)).
-- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH villagers),
+- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH villagers; its head (my villager, よびな, the search) stays pinned while the head grid scrolls under it),
   **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last
   synced; いま つうしん) and **あそびかた** (one line; くわしく → the guide: the four goals at +1 each, ふたりでぜんぶ
   +2, the two treats and their prices, the Sunday recap; a protein hint of 1.6 g per kg a day, not tracked).
