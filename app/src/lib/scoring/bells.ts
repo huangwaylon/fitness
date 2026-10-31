@@ -30,16 +30,18 @@ const fruitMax = (r: RuleVersion, f: RingFruit): number =>
   : f === 'cherry' ? r.goals.standMin * r.bells.perStandMin
   : r.bells.stepDay;
 
+const steps = new WeakMap<RuleVersion, Partial<Record<RingFruit, readonly number[]>>>();
 /**
  * A fruit's ベル at each milestone of the week's curve, e.g. 🍑 v2 [45, 120, 230, 420]; null when the week has no curve
- * (v1: linear).
+ * (v1: linear). Computed once per rule version and fruit (earnWeek asks for every day).
  */
 export function milestoneBells(weekKey: WeekKey, f: RingFruit): readonly number[] | null {
   const r = rulesFor(weekKey);
   if (!r.curve) return null;
-  const max = fruitMax(r, f);
+  let byFruit = steps.get(r);
+  if (!byFruit) steps.set(r, (byFruit = {}));
   const { pay } = r.curve;
-  return r.curve.bells?.[f] ?? pay.map((x) => Math.round((max * x) / pay[pay.length - 1]));
+  return (byFruit[f] ??= r.curve.bells?.[f] ?? pay.map((x) => Math.round((fruitMax(r, f) * x) / pay[pay.length - 1])));
 }
 
 /** Milestones reached (0..at.length): how many steps of the goal `amount` has met. */
@@ -124,10 +126,10 @@ export const zeroRings = (): RingBells => ({ pear: 0, peach: 0, cherry: 0, apple
 export function earnWeek(input: EarnInput): WeekEarning {
   const r = rulesFor(input.weekKey);
   const week = weekDays(input.weekKey);
-  const inWeek = new Set(week);
+  const inWeek = (d: LocalDate) => d >= week[0] && d <= week[6];
   const rows = new Map<LocalDate, EarnDay>();
-  for (const d of input.days) if (inWeek.has(d.date) && !rows.has(d.date)) rows.set(d.date, d);
-  const manual = manualMinutesByDay(input.workouts.filter((w) => inWeek.has(w.date)));
+  for (const d of input.days) if (inWeek(d.date) && !rows.has(d.date)) rows.set(d.date, d);
+  const manual = manualMinutesByDay(input.workouts.filter((w) => inWeek(w.date)));
   const exGoalMilli = r.goals.exerciseMin * 1000;
 
   const days = week.map((date): DayEarning => {

@@ -116,10 +116,13 @@ export function weekKeyOf(date: LocalDate): WeekKey {
   return wk;
 }
 
-/** The seven dates Mon..Sun of a week. */
-export function weekDays(weekKey: WeekKey): LocalDate[] {
+const WEEK_DAYS = new Map<WeekKey, readonly LocalDate[]>();
+/** The seven dates Mon..Sun of a week (shared and frozen: the model asks for the same weeks over and over). */
+export function weekDays(weekKey: WeekKey): readonly LocalDate[] {
   const monday = weekKeyOf(weekKey);
-  return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  let days = WEEK_DAYS.get(monday);
+  if (!days) WEEK_DAYS.set(monday, (days = Object.freeze(Array.from({ length: 7 }, (_, i) => addDays(monday, i)))));
+  return days;
 }
 
 /** Epoch ms of a Tokyo wall-clock time on `date`. */

@@ -26,10 +26,12 @@ export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates
  * lower, but a later and higher sync still wins: max(S, ingest rows with S.at < at ≤ T).
  */
 export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: ActivityMetric, t: number): number | null {
-  const set = latestTimed(s.metricSets[person].get(`${date}|${metric}`), t);
+  const key = `${date}|${metric}`;
+  const set = latestTimed(s.metricSets[person].get(key), t);
   let best: number | null = set ? set.v : null;
   const after = set ? set.at : -Infinity;
-  for (const r of s.metrics[person].get(`${date}|${metric}`) ?? []) if (r.at <= t && r.at > after && (best === null || r.v > best)) best = r.v;
+  const rows = s.metrics[person].get(key);
+  if (rows) for (const r of rows) if (r.at <= t && r.at > after && (best === null || r.v > best)) best = r.v;
   return best;
 }
 
