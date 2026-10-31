@@ -55,7 +55,8 @@ week (no cap). 買う！ asks first, applies at once and waits 5 s with とり�
 ### Panel
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`, a top sheet: the safe area
-over its title bar 「しまの てちょう」, rounded at the bottom, stopping 24px short of the screen's bottom). Two tabs sit
+over its title bar 「しまの てちょう」, filling the screen to its bottom edge, rounded there like the screen's corners;
+its height never changes between tabs). Two tabs sit
 pinned under the title bar (NH's yellow for the one shown); it opens on **きろく**, and remembers the last tab for the
 session:
 

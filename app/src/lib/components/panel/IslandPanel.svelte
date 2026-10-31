@@ -136,7 +136,8 @@
     background: linear-gradient(var(--surface), transparent);
   }
   /* the two tabs, pinned under the title bar (outside the scroller): NH's yellow for the one shown, the edge tier */
-  .tabs { flex: none; position: relative; z-index: 1; display: flex; gap: 8px; justify-content: center; margin: 0 0 6px; }
+  /* the row holds the tabs' 4px lip (and a focus ring's 3px) inside its own box: the fade under it starts below the lip */
+  .tabs { flex: none; position: relative; z-index: 1; display: flex; gap: 8px; justify-content: center; padding: 0 0 calc(var(--lip-h) + 4px); }
   .tab {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 112px; padding: 0 18px; border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);

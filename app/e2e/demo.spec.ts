@@ -448,3 +448,22 @@ test('きろく opens light: the newest three weeks of ベル (and four week car
   await sheet(page).getByRole('button', { name: 'まえの週も 見る' }).first().click();
   await expect.poll(() => weeks.count()).toBeGreaterThan(3);
 });
+
+test('the panel: its tabs show whole (lip included, nothing paints over it) and it reaches the screen’s bottom', async ({ page }) => {
+  await page.goto('?demo');
+  await openPanel(page);
+  for (const tab of ['kiroku', 'settings']) {
+    await sheet(page).locator(`.tab[data-tab=${tab}]`).click();
+    const m = await sheet(page).evaluate((d) => {
+      const row = d.querySelector('.tabs')!.getBoundingClientRect();
+      const tabs = [...d.querySelectorAll('.tab')].map((t) => {
+        const r = t.getBoundingClientRect(); const lip = r.bottom + 4; // the 4px lip under the pill
+        const over = document.elementFromPoint(r.left + r.width / 2, lip - 1.5);
+        return { inRow: lip <= row.bottom + 0.5, clean: !!over && (t.contains(over) || over === t.parentElement) };
+      });
+      return { tabs, gap: innerHeight - d.getBoundingClientRect().bottom };
+    });
+    for (const x of m.tabs) expect(x).toEqual({ inRow: true, clean: true });
+    expect(Math.abs(m.gap)).toBeLessThanOrEqual(1);
+  }
+});
