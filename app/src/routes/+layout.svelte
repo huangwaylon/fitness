@@ -38,7 +38,7 @@
   let kept = $state<HarvestView | null>(null);
   const harvest = $derived(kept ?? week.view?.harvest ?? null);
   const showHarvest = $derived(
-    !onPair && !!week.view && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
+    !onPair && !page.error && !!week.view && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
   );
   // Pages hold their toasts while the harvest is up (U6).
   ui.provideOverlay(() => showHarvest);
@@ -151,7 +151,7 @@
   .state {
     --nook-h: 120px;
     max-width: 380px; margin: 0 auto;
-    min-height: var(--vh-page); display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center;
+    min-height: var(--vh-page); display: grid; place-content: center stretch; justify-items: center; gap: 16px; text-align: center;
     padding: calc(var(--safe-top) + 24px) calc(var(--side) + 6px) calc(var(--pad-bottom) + 24px);
   }
   .state :global(.talk) { width: 100%; }
