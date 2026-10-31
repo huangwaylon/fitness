@@ -1,7 +1,10 @@
 // Japanese lines break only at the copy's spaces or after 、。！ (`word-break: keep-all` on html[lang=ja]), so a
 // run with no break opportunity is one unbreakable word: long ones overflow a 320px screen or a narrow card.
 import { describe, expect, it } from 'vitest';
-import ja from './ja.json';
+import jaMain from './ja.json';
+import jaTab from './kenkou.ja.json';
+
+const ja = { ...jaMain, ...jaTab };
 
 /** The longest stretch of a string with no break opportunity under keep-all, in characters ({n} counts as one). */
 function longestRun(s: string): number {

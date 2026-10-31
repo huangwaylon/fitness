@@ -11,6 +11,7 @@
   // sticky row with ‹ the visible range › and きょう; then a card per metric in the app's order (🍐 Move, 🍑 Exercise,
   // 🍒 Stand, 🍎 Steps) and 体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers. Read-only,
   // computed on read from the store's model (model/health.ts); loaded with the tab, not with the island.
+  import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import { canShift, healthSeries, METRICS, PERIODS, rangeFor, shiftAnchor, type Metric } from '#lib/model/health.ts';
   import { week } from '#lib/store/week.svelte.ts';

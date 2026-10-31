@@ -123,8 +123,9 @@ the personal trainer to review; computed on read from the same model, nothing se
   not worn (Move, Exercise and Stand all 0), left out of every average, goal count and change, and counted as 記録なし
   from the first activity record on; today is drawn but left out of the numbers; the previous period is the same
   length just before (1年: the 12 months before). The tab's footnote says so.
-- **Cost:** the daily series is built once per model and day (memoised); a period switch at 4× CPU with two years of
-  data is ~100 ms with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day without
+- **Cost:** the tab's code and its strings (`i18n/kenkou.*.json`, merged by `i18n/kenkou.ts`) load with the tab, so
+  the island's first load doesn't grow; the daily series is built once per model and day (memoised); a period switch at
+  4× CPU with two years of data is ~100 ms with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day without
   the Watch now and then.
 
 ### Sheets and harvest
