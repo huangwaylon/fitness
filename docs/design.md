@@ -392,9 +392,17 @@ meteor showers](#celeste-and-meteor-showers)); the pond rings like the sea, smal
 the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
 behind the trees (between them, x 150–240u, the spot nearest where it fell that keeps 16u beyond both halves from
 anything lying on the lawn: a weed, the rock, a dig spot, a mushroom, a branch, a pumpkin, another present; and covers
-no control), bounces and sparkles, and stays there, as in NH, until a tap picks it up (my villager walks over; a hop
-and gone, its plate 「プレゼントを ひろった！」, no ベル; not kept across a reload). Off the island's corner, or with nowhere
-clear, it drops into the sea.
+no control), bounces and sparkles, and stays there, as in NH, until a tap opens it (not kept across a reload). My
+villager walks over (the usual walk-then-act), the wrapping pops (the box squashes and flies off, 14 bits of confetti in
+wrapping-paper colours, three sparkles, the present's pop and the catch fanfare) and what was inside is held up over
+its head while the plate reads 「ロッキングチェアを てにいれた！」 (`island/presents.ts`): NH's balloon presents hold
+furniture, clothing, a DIY recipe or Bells; here 35 of NH's cute furniture and clothing items (official icons and
+names; a kotatsu or a knit hat likelier in winter, a beach chair or a fan in summer, spring's flower pieces in spring)
+and, in their NH windows, the seasonal DIY recipes NH's balloons carry (cherry-blossom Apr 1–10, young spring bamboo
+Mar–May, the tree's bounty Sep 1 – Dec 10, maple leaves Nov 16–25, mushrooms in November, ornaments Dec 15 – Jan 6,
+snowflakes Dec 11 – Feb 24: half the presents then), shown as NH's DIY recipe card with 「DIYレシピ「さくらクロック」を
+てにいれた！」. Never Bells, nothing kept (no inventory). On Bunny Day a sky egg instead, just picked up. Off the
+island's corner, or with nowhere clear, it drops into the sea.
 Short skies fly a smaller balloon under the ribbon, or none.
 
 **Critters** (NH species, Tokyo clock; for fun, frequent): a visit every 8–15 s of on-screen time (the first after

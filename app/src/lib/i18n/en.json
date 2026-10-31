@@ -162,6 +162,8 @@
   "shake.branch": "Pick up the tree branch",
   "shake.dangle": "Net the bug",
   "beach.picked": "I picked up {name}!",
+  "present.got": "I got {name}!",
+  "present.gotRecipe": "I got a DIY recipe for {name}!",
   "beach.fossil": "I dug up a fossil! It's {name}!",
   "beach.dug": "I dug up {name}!",
   "beach.bottle": "A message in a bottle! “{note}”",

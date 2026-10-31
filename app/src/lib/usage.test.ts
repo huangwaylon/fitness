@@ -20,6 +20,7 @@ import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beac
 import { PEARL, SEA } from '#lib/components/island/sea.ts';
 import { MUSHROOMS } from '#lib/components/island/mushrooms.ts';
 import { EGGS } from '#lib/components/island/eggs.ts';
+import { PRESENTS, presentArt, type PresentId } from '#lib/components/island/presents.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
@@ -53,7 +54,7 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaNames };
 const en: Record<string, string> = { ...enMain, ...enTab, ...enNames };
 /** A lazily loaded catalog's own key prefixes. */
-const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
+const NAME_KEY = /^(critter|sea|beach|present)\.name\.|^fossil\.set\./;
 
 describe('i18n catalogs', () => {
   it('keep けんこう’s strings (health.*) in its own catalog, out of the first load', () => {
@@ -120,7 +121,9 @@ describe('official art (static/art/manifest.json)', () => {
     // mushroom season (island/mushrooms.ts)
     ...[...MUSHROOMS.map(([id]) => id), 'rare-mushroom'].map(findArt),
     // Bunny Day's eggs (island/eggs.ts)
-    ...EGGS.map(findArt)
+    ...EGGS.map(findArt),
+    // what a balloon's present holds (island/presents.ts presentArt)
+    ...(Object.keys(PRESENTS) as PresentId[]).map(presentArt)
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {
