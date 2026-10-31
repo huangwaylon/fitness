@@ -31,7 +31,7 @@
     size?: number | string;
     /** Head icon only. */
     head?: boolean;
-    /** Idle bob + director beats (off under reduced motion). */
+    /** Idle bob + director beats. */
     animate?: boolean;
     /** Her line is typing (letter reveal running): small talking bounce. */
     talking?: boolean;
@@ -157,8 +157,4 @@
   .fxa { position: absolute; left: 50%; top: 6%; width: 0; height: 0; }
   .fxa.sweat { left: 70%; top: 20%; }
   .fxa.notes { left: 72%; }
-  @media (prefers-reduced-motion: reduce) {
-    .body.float, .body.talk, .body.sleep, .body:global([data-act]), .layer.in, .layer.out { animation: none; }
-    .layer.out { opacity: 0; }
-  }
 </style>

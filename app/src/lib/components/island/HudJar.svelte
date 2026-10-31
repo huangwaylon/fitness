@@ -5,7 +5,7 @@
   // phone last showed it (SCENE.bellsSeen, per day), a "+1" pops over that fruit under its tree on the island and three
   // coins hop up into the jar; the number counts up as they land and the jar squashes. Anything else that raises the
   // wallet (ふたりでぜんぶ's +2) rises with a "+N" pop under the jar. It all waits while a sheet or the harvest covers the
-  // scene. Reduced motion: no flight, the number just changes.
+  // scene.
   //   <Hud …>{#snippet jar()}<HudJar {view} {covered} onjar={…} {later} />{/snippet}</Hud>
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
@@ -17,7 +17,6 @@
   import CoinFlow, { type Flight } from './CoinFlow.svelte';
   import { walletFill } from '../wallet/fill.ts';
   import { react } from '../motion/director.svelte.ts';
-  import { reducedMotion } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -95,7 +94,7 @@
     if (covered) return;
     untrack(() => {
       const fresh = newFlights();
-      const motion = !reducedMotion() && (!fresh.length || measure());
+      const motion = !fresh.length || measure();
       if (!motion || to <= jarBells) {
         jarBells = to;
         flights = [];
@@ -141,7 +140,7 @@
   // svelte-ignore state_referenced_locally
   const plate = new Tween(jarBells, { duration: 900, easing: cubicOut });
   $effect(() => {
-    plate.set(jarBells, { duration: reducedMotion() ? 0 : 900 });
+    plate.set(jarBells, { duration: 900 });
   });
   /** Press squash (pointer down), released with a springy overshoot. */
   let pressed = $state(false);
@@ -151,13 +150,8 @@
    *  and this jar morphs into the ごほうび hero jar (<Jar name="jar">). */
   function tap() {
     pressed = false;
-    if (!reducedMotion()) {
-      react('R18');
-      later(() => onjar?.(), 90);
-    } else {
-      cue('jar-tap'); // R18 carries it otherwise
-      onjar?.();
-    }
+    react('R18');
+    later(() => onjar?.(), 90);
   }
 </script>
 
@@ -225,5 +219,4 @@
     0% { opacity: 0; transform: translateY(-10px) scale(.6); } 14% { opacity: 1; transform: translateY(0) scale(1.08); }
     22% { transform: scale(1); } 78% { opacity: 1; transform: translateY(4px); } 100% { opacity: 0; transform: translateY(8px); }
   }
-  @media (prefers-reduced-motion: reduce) { .squash, .hud-jar { transition: none; } .hud-jar.pressed .squash, .squash:global(.catch) { transform: none; animation: none; } }
 </style>

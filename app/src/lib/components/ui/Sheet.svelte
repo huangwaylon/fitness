@@ -145,7 +145,4 @@
   dialog.top.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
-  @media (prefers-reduced-motion: reduce) {
-    dialog[open] { animation: none; }
-  }
 </style>

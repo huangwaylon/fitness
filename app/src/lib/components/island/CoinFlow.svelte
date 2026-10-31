@@ -13,7 +13,7 @@
   // ベル flowing up into the HUD's jar: when new earnings arrive, a small "+150" pops over the fruit
   // that earned them and three coins hop from there into the jar, one after another (NH's bell pickup: a short arc,
   // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the jar can squash and its
-  // plate count up in step. In stage units (the stage is the container). Reduced motion: the parent skips this.
+  // plate count up in step. In stage units (the stage is the container).
   //   <CoinFlow flights={[{ id: 1, from: [120, 180], bells: 150, delay: 0 }]} to={[195, 140]} onland={(id) => …} />
   import { u } from '../island/scene.ts';
   import { formatBells } from '#lib/i18n/index.ts';

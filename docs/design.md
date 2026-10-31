@@ -163,7 +163,7 @@ the personal trainer to review, one person at a time; computed on read from the 
 
 ✕ sits top-right and closes the whole sheet from any level; ‹ sits top-left only when there is a level to go up to; a
 full page has ‹ 島へ. Backdrop tap and Esc also close. `ui/NavBar.svelte` + `ui/NavButton.svelte`; `ui/nav.test.ts`
-fails on a modal without them. Sheets rise and levels slide in over 240 ms (no slide under reduced motion).
+fails on a modal without them. Sheets rise and levels slide in over 240 ms.
 
 ## Economy
 
@@ -379,7 +379,7 @@ its person's flowers through one Tokyo day (a quick run of canopy taps shakes it
 `island/SceneTaps.svelte`, `island/sceneTaps.ts`, `island/Critters.svelte`, `island/critters.ts`, `e2e/scenery.spec.ts`,
 `e2e/critters.spec.ts`. Every part of the island answers a tap softly and counts for nothing: no ベル, no state, no
 navigation, no writes; one `pointerdown` listener; ≤ 4 flourishes at once; taps on controls are ignored; nothing while
-covered or hidden; reduced motion gives a 450 ms glow and no critters; decorative, `aria-hidden`, pointer-only.
+covered or hidden; decorative, `aria-hidden`, pointer-only.
 
 **Scenery** (≤ 1 s each): a bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out: a moth after dark, else a
 butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on
@@ -850,10 +850,9 @@ night, in NH's hours (19:00–04:00):
   all four goals met, taps, waking, a low week (Thu–Sat), a sync problem, the harvest. They never fire
   on first render; pages `emit(…)` (`motion/bus.svelte.ts`).
 - **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (a look around, a wiggle, a wander off, a glance up at the jar in the HUD, …) (しずえ ≤ every 20–30 s), no
-  emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden, covered or under reduced motion.
+  emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden or covered.
   The partner's outings ([Walking](#walking)) ride on its ticks.
-- **Reduced motion:** no loops, hops or dances; emotes fade in; dialogue appears at once. Walking is the exception
-  (user): it always animates.
+- **No reduced-motion variants** anywhere (user): everything always animates.
 
 ### Walking
 

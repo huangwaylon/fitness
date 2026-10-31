@@ -87,7 +87,4 @@
     0% { transform: translate(0, 0); opacity: .2; } 50% { transform: translate(10px, -14px); opacity: 1; }
     100% { transform: translate(-12px, -4px); opacity: .3; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .layer, .ff { display: none; }
-  }
 </style>

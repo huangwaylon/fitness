@@ -10,7 +10,6 @@
   // motion: none (it ends at once). Night / dawn / dusk: dimmed / warmed like the clouds. The parent mounts it.
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { reducedMotion } from '#lib/time/clock.ts';
   import { t } from '#lib/i18n/index.ts';
   import { sceneSfx } from './sceneTaps.ts';
 
@@ -58,7 +57,7 @@
     const r = fly?.getBoundingClientRect();
     const band = fly?.parentElement?.getBoundingClientRect();
     const short = !!r && !!band && r.bottom > band.bottom + 8;
-    if (reducedMotion() || !r || short || (hud && hud.height && r.top < hud.bottom + 6)) ondone?.();
+    if (!r || short || (hud && hud.height && r.top < hud.bottom + 6)) ondone?.();
     return () => clearTimeout(gone);
   });
 </script>
@@ -183,5 +182,4 @@
   :global(.if-scene[data-tod='dusk']) .fly, :global(.if-scene[data-tod='dawn']) .fly { filter: sepia(.12) saturate(1.05); }
   /* a sheet or overlay over the scene: hold still (the page-hidden pause is global, tokens.css) */
   :global(.if-scene[data-covered]) .fly, :global(.if-scene[data-covered]) .fly * { animation-play-state: paused !important; }
-  @media (prefers-reduced-motion: reduce) { .fly { display: none; } }
 </style>

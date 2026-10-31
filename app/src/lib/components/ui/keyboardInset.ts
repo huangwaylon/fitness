@@ -5,7 +5,6 @@
 // `scroll-margin-bottom: --kb` (styles/theme.css). A `[data-kb-scroll]` ancestor (the pair form: field + button)
 // is scrolled into view as a whole, its bottom just above the keyboard.
 import type { Attachment } from 'svelte/attachments';
-import { reducedMotion } from '#lib/time/clock.ts';
 
 export const keyboardInset: Attachment<HTMLElement> = (node) => {
   const vv = window.visualViewport;
@@ -17,7 +16,7 @@ export const keyboardInset: Attachment<HTMLElement> = (node) => {
     const box = el.closest<HTMLElement>('[data-kb-scroll]');
     const t = setTimeout(() => {
       timers.delete(t);
-      (box ?? el).scrollIntoView({ block: box ? 'end' : 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+      (box ?? el).scrollIntoView({ block: box ? 'end' : 'center', behavior: 'smooth' });
     }, 300);
     timers.add(t);
   };

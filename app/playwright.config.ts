@@ -2,7 +2,7 @@
 // CI installs Playwright's Chromium; locally it uses the installed Google Chrome. `npm run e2e`.
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4173;
+const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE = process.env.BASE_PATH ?? '/fitness';
 
 export default defineConfig({

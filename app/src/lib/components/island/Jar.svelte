@@ -60,5 +60,4 @@
   .lid-lip { fill: var(--c-yuzu-lip); }
   .lid { fill: var(--c-yuzu); }
   .leaf { fill: var(--jar-leaf); }
-  @media (prefers-reduced-motion: reduce) { .coins { transition: none; } }
 </style>

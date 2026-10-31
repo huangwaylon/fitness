@@ -522,8 +522,4 @@
     .row { padding-block: 1px; }
     .duo, .sum { margin-top: 2px; padding-top: 3px; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .tree, .tree:global(.shaking), .leaf { animation: none; }
-    .detail { animation: none; }
-  }
 </style>

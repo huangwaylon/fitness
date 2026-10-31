@@ -3,7 +3,6 @@
 // Every wall-clock reading (sky, season, naps, the host's greeting, the phone clock) goes through jst(): the model's
 // days and cutoffs are Tokyo's, so the island agrees with them on a phone set to another zone.
 import { localDateAt, parseInstant, ZONE_OFFSET_MS } from './dates.ts';
-import { prefersReducedMotion } from 'svelte/motion';
 import { createSubscriber } from 'svelte/reactivity';
 
 let offset: number | null = null;
@@ -66,11 +65,6 @@ const minuteTick = createSubscriber((update) => minuteTimer(update));
 export function minuteNow(): Date {
   minuteTick();
   return now();
-}
-
-/** Shared, reactive `prefers-reduced-motion` (follows the setting when the user toggles it). */
-export function reducedMotion(): boolean {
-  return prefersReducedMotion.current;
 }
 
 /** Tokyo wall-clock fields of an instant (month 1–12, weekday 0 = Sunday). */
