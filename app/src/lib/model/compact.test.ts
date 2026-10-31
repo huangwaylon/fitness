@@ -83,7 +83,7 @@ describe('compactRows', () => {
     const wk = '2026-11-02';
     const sun = addDays(wk, 6);
     const m = (date: string, hm: string, v: number): MetricRow => [jst(date, hm), 'A', wk, 'steps', v];
-    // 19:00 Sunday (the best row at 19:30), then a late sync on Monday, before the lock.
+    // 19:00 Sunday (the row read at 19:30), then a late sync on Monday, before the lock.
     const rows: SnapshotRows = { metrics: [m(wk, '22:00', 100), m(sun, '19:00', 200), m(addDays(wk, 7), '09:00', 300)], events: [] };
     const now = Date.parse(jst(addDays(wk, 30), '00:00'));
     expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([300]);
@@ -100,5 +100,23 @@ describe('compactRows', () => {
     const now = Date.parse(jst(addDays(wk, 30), '00:00'));
     expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([500]);
     expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
+  });
+
+  it('latest wins: keeps the latest row at the lock and the latest overall, even when they are lower than earlier rows', () => {
+    const wk = '2026-11-02';
+    const m = (date: string, hm: string, v: number): MetricRow => [jst(date, hm), 'A', wk, 'steps', v];
+    const rows: SnapshotRows = {
+      metrics: [
+        m(wk, '20:00', 26072), // inflated (iPhone + Watch summed)
+        m(addDays(wk, 7), '09:00', 13172), // corrected before the lock: the row the lock reads
+        m(addDays(wk, 8), '09:00', 13300),
+        m(addDays(wk, 20), '09:00', 13000) // a later, lower sync after the lock: the day's current value
+      ],
+      events: []
+    };
+    const now = Date.parse(jst(addDays(wk, 30), '00:00'));
+    expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([13300, 13000]);
+    expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
+    expect(reduce(compactRows(rows, now)).metrics.A.get(wk)!.steps!.map((r) => r.v)).toEqual([13300, 13000]);
   });
 });

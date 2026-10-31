@@ -2,14 +2,10 @@
 // but once its week has locked (Wednesday 04:00) the model only ever reads that day's value at a few fixed times.
 // Keeping the row that answers each of those times leaves the views unchanged and drops ~90% of the rows.
 //
-// It relies on the sheet's invariant that ingest rows for a (person, date, metric) only go up over time (the server
-// appends only higher values), so "the row with the largest value at or before T" answers every read at T
-// (`metricAsOf`). A hand edit that breaks it bumps `rev`, and the client then refetches everything
-// (docs/backend.md#revision).
-//
-// Weight rows are the exception: a day's weight is its LATEST row (the server appends whenever the day's Body Mass
-// differs from its last row, up or down), and the model only reads it as of now. So per (person, date) only the
-// newest `weight` row is kept, never "the largest".
+// A day's value as of T is its latest row stamped at or before T (`metricAsOf`, `latestAt`; rows sorted by `at`, ties
+// in sheet order). A locked week's earnings read it as of the lock, so per (person, date, metric) the latest row at
+// or before the lock is kept, and the latest overall (the day's current value). Weight is read only as of now, so
+// only its newest row per (person, date) is kept.
 import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
@@ -18,8 +14,8 @@ import { rowAt } from './snapshot.ts';
 
 /**
  * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read: per
- * (person, date, metric), the best row at or before the Wednesday 04:00 lock (the week's earnings are fixed there) and
- * the best overall (late syncs), and per person the newest row (`lastSync`). Rows of open weeks, rows the model would
+ * (person, date, metric), the latest row at or before the Wednesday 04:00 lock (the week's earnings are fixed there)
+ * and the latest overall (late syncs), and per person the newest row (`lastSync`). Rows of open weeks, rows the model would
  * skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
  * when nothing was dropped.
  */
@@ -40,22 +36,15 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
     (groups.get(k) ?? groups.set(k, []).get(k)!).push({ row, at, i });
   });
   for (const n of Object.values(newest)) if (n) keep.add(n.i);
+  /** The latest row stamped at or before t (a tie: the later one in the list, as the model's stable sort reads it). */
+  const latestBy = (list: { at: number; i: number }[], t: number) => {
+    let last: { at: number; i: number } | null = null;
+    for (const x of list) if (x.at <= t && (!last || x.at >= last.at)) last = x;
+    if (last) keep.add(last.i);
+  };
   for (const list of groups.values()) {
-    if (list[0].row[3] === 'weight') {
-      let last = list[0];
-      for (const x of list) if (x.at >= last.at) last = x;
-      keep.add(last.i);
-      continue;
-    }
-    const wk = weekKeyOf(String(list[0].row[2]));
-    for (const t of [finalMs(wk), Infinity]) {
-      let best: { v: number; at: number; i: number } | null = null;
-      for (const { row, at, i } of list) {
-        const v = Number(row[4]);
-        if (at <= t && (!best || v > best.v || (v === best.v && at > best.at))) best = { v, at, i };
-      }
-      if (best) keep.add(best.i);
-    }
+    latestBy(list, Infinity);
+    if (list[0].row[3] !== 'weight') latestBy(list, finalMs(weekKeyOf(String(list[0].row[2]))));
   }
   if (keep.size === rows.metrics.length) return rows;
   return { ...rows, metrics: rows.metrics.filter((_, i) => keep.has(i)) };

@@ -98,13 +98,21 @@ cache (never the unsent queue) and fetch everything. Locked weeks' earnings are 
 ## Ingest
 
 `gas/parse.ts`: newline-joined Text lists, one line per day, each optional: `dates` (Shortcuts' date text, English or
-Japanese; only the day is used), `steps`, `exercise_minutes` (→ `exercise_min`), `calories` (→ `move_kcal`),
+Japanese; only the day is used), `steps` (the iPhone's), `steps_watch` (the Apple Watch's), `exercise_minutes` (→ `exercise_min`), `calories` (→ `move_kcal`),
 `stand_minutes` (→ `stand_min`), `weight` (kg; 0 = none). Other fields are ignored. A list whose length differs from
 `dates` is dropped with a warning; an unreadable line, an activity value above `METRIC_BOUNDS` or a weight
 outside 20–300 kg is skipped. A body with none of the fields is `bad_request` (audited as `error`).
 
-Activity metrics are appended only when higher than the highest row so far for (person, date, metric); weight (one
-decimal) whenever it differs from the last row for (person, date). The Shortcut posts to the `/exec` URL with `"key"`
+**Steps:** Shortcuts' Find Health Samples sums every source, so the iPhone's and the Watch's steps would count twice
+(Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, filtered by Source, and a day's
+steps are max(`steps`, `steps_watch`) (Health's merge counts one device at a time, so the max is close to its total;
+a day unreadable in one list takes the other). Without `steps_watch`, `steps` is stored as sent. `steps_watch` is
+validated like the other lists (Text, length = `dates`, ≤ 100,000).
+
+**Latest wins:** Apple Health is the source of truth, so a row is appended whenever a value differs from the last row
+for (person, date, metric), lower or higher (weight with one decimal); the same value is never appended twice. The
+model reads a day's latest row ([design.md](design.md#health-data)); a locked week reads it as of its lock (Wednesday
+04:00), so a later sync never moves locked earnings. The Shortcut posts to the `/exec` URL with `"key"`
 and `"action": "ingest"` (`docs/ops/shortcut-health-sync.md`).
 
 ## Client sync
@@ -131,7 +139,7 @@ lands after pairing again is dropped.
 ### Compaction
 
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
-metric) it keeps the best row at the lock and the overall best; per person the newest row. Weight keeps the newest
+metric) it keeps the latest row at the lock and the latest overall; per person the newest row. Weight keeps the newest
 row per day. Views are unchanged; ~90% of rows go.
 
 ### Write queue
