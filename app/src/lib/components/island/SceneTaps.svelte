@@ -22,6 +22,10 @@
   import { PETAL, hitStage, sceneSfx } from './sceneTaps.ts';
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
+  import Care from './Care.svelte';
+  import { water } from './sceneDay.ts';
+  import { findArt } from './beach.ts';
+  import { dayKey } from '#lib/time/clock.ts';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -62,6 +66,7 @@
   const roll = (n: number) => Math.random() * n < 1;
   let critters = $state<ReturnType<typeof Critters>>();
   let finds = $state<ReturnType<typeof Finds>>();
+  let care = $state<ReturnType<typeof Care>>();
   /** A shooting star is crossing until then (a tap in the sky meanwhile is a wish: NH). */
   let shootUntil = 0;
 
@@ -129,6 +134,8 @@
     if (!calm && critters?.tap(e.clientX, e.clientY)) return;
     // then the day's finds: a shell, a fragment, the bottle, a dig spot (they work under reduced motion too)
     if (finds?.tap(e.clientX, e.clientY)) return;
+    // and the island's care: a weed to pull, the rock by the hedge
+    if (care?.tap(e.clientX, e.clientY)) return;
     // the sky ends at the scene's horizon, which on a tall phone rises above the stage's own (open sea behind the island)
     if (y < horizonPx(stage, r)) return sky(e, r, x, y, calm);
     const hit = hitStage(x * k, Math.max(y * k, HORIZON_U));
@@ -146,8 +153,10 @@
         const fx0 = [...BED_X.left, ...BED_X.right][hit.col];
         // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
         const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
+        // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
         spawn({ kind: 'flower', x: fx0 / k, y: (BED_ROWS[hit.row] - FLOWER_U * 0.72) / k, color: PETAL[id], rare, flip: fx0 > 195 });
-        sceneSfx('flower');
+        water(dayKey(), `${hit.row}-${hit.col}`);
+        sceneSfx('water');
         if (rare === 'butterfly') sceneSfx('butterfly');
         return;
       }
@@ -282,6 +291,7 @@
 
 <Critters bind:this={critters} {scene} {tod} {enabled} />
 <Finds bind:this={finds} {scene} {enabled} />
+<Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}
@@ -312,6 +322,9 @@
       {:else if f.kind === 'flower'}
         <i class="petal" style:--dx="-1"></i><i class="petal two" style:--dx="1"></i>
         <svg class="spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
+        <span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(18 * var(--su))" eager /></span>
+        {#each [0, 1, 2] as i (i)}<i class="drip" style:--i={i}></i>{/each}
+        <svg class="spark late" viewBox="0 0 24 24"><path d={STAR} /></svg>
         {#if f.rare === 'butterfly'}
           <span class="bfly"><svg viewBox="-12 -10 24 20">
             <g class="wing"><path d="M0 0 C-4 -9 -12 -9 -11 -2 C-10 2 -4 2 0 0 Z M0 0 C-3 3 -9 6 -7 9 C-5 10 -1 5 0 0 Z" /></g>
@@ -401,6 +414,21 @@
     0% { transform: scale(0) rotate(0); opacity: 0; } 35% { transform: scale(1.1) rotate(45deg); opacity: 1; }
     100% { transform: scale(0) rotate(90deg); opacity: 0; }
   }
+  /* the watering can: it tilts in over the bloom (from its outer side), three drops fall, a late glint (watered) */
+  .can { left: calc(6 * var(--su)); top: calc(-26 * var(--su)); line-height: 0; transform-origin: 20% 80%; animation: can .9s ease-out both; }
+  .flip .can { scale: -1 1; }
+  .can :global(.official) { max-width: none; }
+  @keyframes can {
+    0% { transform: rotate(10deg) translateY(-4px); opacity: 0; } 18% { opacity: 1; transform: rotate(0deg); }
+    40%, 70% { transform: rotate(-28deg); opacity: 1; } 100% { transform: rotate(-10deg) translateY(-4px); opacity: 0; }
+  }
+  .drip {
+    left: calc(2 * var(--su)); top: calc(-14 * var(--su)); width: calc(2 * var(--su)); height: calc(3 * var(--su));
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9FD8FF; box-shadow: 0 0 0 .5px rgba(60, 120, 180, .5);
+    animation: drip .45s ease-in calc(.3s + var(--i) * .1s) both;
+  }
+  @keyframes drip { from { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } to { transform: translate(calc(-2 * var(--su)), calc(12 * var(--su))); opacity: 0; } }
+  .spark.late { left: calc(-10 * var(--su)); top: calc(-4 * var(--su)); width: calc(8 * var(--su)); height: calc(8 * var(--su)); animation-delay: .62s; }
   /* NH's common butterfly (white, a little yellow at the base): it lifts off the bloom and away, flapping */
   .bfly { left: 0; top: 0; width: calc(18 * var(--su)); margin: calc(-7.5 * var(--su)) 0 0 calc(-9 * var(--su)); line-height: 0; animation: bfly 1.05s ease-in both; }
   .bfly svg { width: 100%; height: auto; overflow: visible; }

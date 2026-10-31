@@ -26,7 +26,7 @@
   import { recordFind } from '#lib/store/actions.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, caption, critterArt,
-    hesitatePlan, hookItem, netSwing, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
+    hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
     type Flight, type JunkId
   } from './critters.ts';
 
@@ -369,6 +369,19 @@
       Object.assign(b, { ms: fast ? 700 : 1600, flip: dir > 0, x: dir < 0 ? g.left - 20 : g.right + 20, y: Math.max(10, b.y - 30) });
     }
     later(() => bug === b && (bug = null), b.ms + 50);
+  }
+
+  /** A pill bug (or, in its hours, a centipede) crawls out from under the rock by the hedge (Care's rock tap). */
+  export function fromRock(x: number, y: number) {
+    if (bug || reducedMotion()) return;
+    const { hour } = jst(now());
+    const id: BugId = oddsAt(BUGS.centipede, 1, hour) > 0 ? 'centipede' : 'pill-bug';
+    preload(critterArt(id));
+    // a little patch of lawn by the rock, in front of the hedge
+    const area = { x0: x - 18, x1: x + 20, y0: y - 9, y1: y - 3 }; // in front of the rock's foot, above the jar's lid
+    bug = { id, flight: 'crawl', x: x + 8, y: y - 4, ms: 0, flip: false, gone: false, area, keep: [], sat: false };
+    later(fly, 300);
+    later(() => bugLeave(), STAY_MS.bug);
   }
 
   /** A shaken bush lets a bug out now and then (SceneTaps' bush tap). */

@@ -49,7 +49,10 @@
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
-  import { TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
+  import { BEDS, TREE, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
+  import { HYBRIDS, hybridFor } from './care.ts';
+  import { garden } from './sceneDay.ts';
+  import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { actors } from '../motion/director.svelte.ts';
   import { jst, minuteNow, now } from '#lib/time/clock.ts';
 
@@ -141,6 +144,15 @@
     const r = btn.getBoundingClientRect();
     talk?.say(p.villagerName, t(line.key, line.params), btn, [{ x0: r.left - 6, x1: r.right + 6, y0: r.top - 56, y1: r.bottom }]);
   }
+  // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
+  const today = $derived(localDateAt(clock.getTime()));
+  const hybrid = $derived.by(() => {
+    if (!live) return null;
+    const row = (r: number) => (r ? BEDS[season].front : BEDS[season].back);
+    const q = new URLSearchParams(location.search);
+    if (q.has('hybrid') && (import.meta.env.DEV || q.has('demo'))) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
+    return garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
+  });
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
@@ -166,7 +178,7 @@
     <!-- the jar + its plate (JarSpot): one button, the doorway to the wallet (ごほうび) -->
     <JarSpot {view} {live} {covered} {onjar} later={life.later} />
 
-    <FlowerBeds {season} />
+    <FlowerBeds {season} {hybrid} />
 
     {#each ['mine', 'partner'] as const as id (id)}
       {@const s = sides[id]}

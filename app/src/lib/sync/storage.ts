@@ -45,7 +45,10 @@ export const SCENE = {
    *  this phone picked up, dug or pulled today (island/sceneDay.ts; a new day starts empty). */
   day: 'scene-day',
   /** localStorage `scene-wish` = the Tokyo date whose morning brings star fragments (a wish on a shooting star). */
-  wish: 'scene-wish'
+  wish: 'scene-wish',
+  /** localStorage `scene-garden` = `{ date, watered: ['row-col'…], hybrid }`: the flowers watered today and the hybrid
+   *  today shows (from yesterday's watering). */
+  garden: 'scene-garden'
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */

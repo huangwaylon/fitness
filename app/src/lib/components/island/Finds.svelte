@@ -188,8 +188,9 @@
     const list = spots;
     const g = stageGeo(scene);
     if (!g) return void (visibleSpots = []);
-    const keep = guardsU(g, 0);
-    visibleSpots = list.filter((s) => clearAt(keep, s.x, s.y, 10, 6)); // the crack, a little proud
+    // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over the crack)
+    const keep = guardsU(g, -5 * g.k);
+    visibleSpots = list.filter((s) => clearAt(keep, s.x, s.y, 10, 6));
   });
 
   /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; x, y in u): star fragments on the beach

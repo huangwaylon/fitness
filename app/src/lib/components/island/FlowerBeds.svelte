@@ -9,7 +9,8 @@
   import { BEDS, BED_ROWS, BED_X, FLOWER_SCALE, FLOWER_U, u } from './scene.ts';
   import { flowerArt } from '#lib/art.ts';
 
-  let { season }: { season: Season } = $props();
+  /** A hybrid colour in one cell today (`row-col`; the day after a watering, IslandScene). */
+  let { season, hybrid = null }: { season: Season; hybrid?: { cell: string; flower: string } | null } = $props();
   const bed = $derived(BEDS[season]);
   const xs = [...BED_X.left, ...BED_X.right];
 </script>
@@ -18,7 +19,7 @@
   {@const id = r ? bed.front : bed.back}
   {#each xs as x, c (x)}
     <span class="fl" data-flower="{r}-{c}" style:left={u(x)} style:top={u(y)} style:z-index={r ? 53 : 49}>
-      <OfficialArt key={flowerArt(id)} size={u(FLOWER_U * (FLOWER_SCALE[id] ?? 1))} />
+      <OfficialArt key={hybrid?.cell === `${r}-${c}` ? `flowers/${hybrid.flower}` : flowerArt(id)} size={u(FLOWER_U * (FLOWER_SCALE[id] ?? 1))} />
       {#if season === 'winter'}<span class="cap"></span>{/if}
     </span>
   {/each}

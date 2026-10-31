@@ -194,6 +194,20 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0.3, d: 0.14, g: 0.85, lo: 200, hi: 2000, shape: 'decay', grains: 300 },
     { kind: 'tone', f: 110, to: 55, glide: 0.08, t: 0.32, d: 0.12, g: 0.5, attack: 0.002 }
   ],
+  // island care: a weed plucked (a rip of grass and a little "pop"), the can's sprinkle (a soft patter), the rock's
+  // "kon" (a dull woody knock with a stony click)
+  pluck: [
+    { kind: 'noise', t: 0, d: 0.12, g: 0.8, lo: 1400, hi: 6500, shape: 'swell', grains: 160 },
+    { kind: 'tone', f: 380, to: 900, glide: 0.04, t: 0.08, d: 0.08, g: 0.9, attack: 0.001 }
+  ],
+  sprinkle: [
+    { kind: 'noise', t: 0, d: 0.6, g: 1, lo: 2500, hi: 9000, shape: 'swell', grains: 220 },
+    { kind: 'noise', t: 0.05, d: 0.45, g: 0.35, lo: 600, hi: 2500, shape: 'swell', grains: 80 }
+  ],
+  clonk: [
+    { kind: 'tone', f: 230, to: 170, glide: 0.06, t: 0, d: 0.16, g: 1, wave: 'tri', attack: 0.001, partials: [[2.4, 0.3, 0.3]] },
+    { kind: 'noise', t: 0, d: 0.04, g: 0.5, lo: 1500, hi: 6000, shape: 'decay' }
+  ],
   bottle: [
     bell(E7, 0, 0.3, 0.55),
     { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },

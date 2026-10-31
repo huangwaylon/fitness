@@ -9,7 +9,7 @@ import { mulberry32 } from '#lib/random.ts';
 export const ISLAND_SEED = 'island-fund';
 
 /** A seeded PRNG for one stream of one day. */
-function dayRand(date: string, stream: string, seed = ISLAND_SEED): () => number {
+export function dayRand(date: string, stream: string, seed = ISLAND_SEED): () => number {
   let h = 2166136261;
   for (const c of `${seed}|${date}|${stream}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
   return mulberry32(h);
@@ -64,11 +64,11 @@ export function zodiacOf(date: string): string {
 
 /** The front beach between the cliff's foot and the foam (shells, the bottle, fragments): x and a 0–1 depth. */
 export const BEACH = { x0: 74, x1: 316, y0: 331, y1: 345 } as const;
-/** Open lawn for a dig spot, clear of every control at 320–430 px (measured: the canopies, the fruit rows, the jar,
- *  the villagers): beside the trunks under the canopies, and between the fruit rows and the beds. */
-export const DIG_SPOTS: readonly (readonly [number, number])[] = [
-  [68, 143], [142, 143], [248, 143], [322, 143], [66, 219], [324, 219]
-];
+/** Open lawn for a dig spot or a weed, clear of every control at 320–430 px (measured: the canopies, the fruit rows,
+ *  the jar, the villagers) and a tap's reach away from the flowers: beside the trunks under the canopies (the dig
+ *  spots), in front of the hedge by the jar and between the villagers' feet (weeds too). */
+export const LAWN: readonly (readonly [number, number])[] = [[68, 143], [142, 143], [248, 143], [322, 143], [214, 98], [195, 310]];
+export const DIG_SPOTS = LAWN.slice(0, 4);
 
 // ---------- the schedules ----------
 
