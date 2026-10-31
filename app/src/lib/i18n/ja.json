@@ -158,6 +158,7 @@
   "critter.junk.empty-can": "つれた！ …と思ったら、あきかんだった",
   "shake.swarm": "ハチを つかまえる",
   "shake.branch": "木のえだを ひろう",
+  "shake.dangle": "むしを つかまえる",
   "beach.picked": "{name}を ひろった！",
   "beach.fossil": "化石を ほりだした！ {name}だ！",
   "beach.dug": "{name}を ほりだした！",

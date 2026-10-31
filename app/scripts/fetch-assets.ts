@@ -120,7 +120,11 @@ for (const name of [
   'Pill Bug', 'Centipede', 'Snail', 'Paper Kite Butterfly', 'Agrias Butterfly', "Queen Alexandra's Birdwing",
   "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust',
   // only from a shaken tree's wasp nest (island/treeShake.ts)
-  'Wasp'
+  'Wasp',
+  // the rest of NH's bugs the island can hold (a flea off a villager, a bagworm or a spider from a shaken tree)
+  'Common Bluebottle', 'Great Purple Emperor', 'Madagascan Sunset Moth', 'Mosquito', 'Stinkbug', 'Man-Faced Stink Bug',
+  'Tiger Beetle', 'Earth-Boring Dung Beetle', 'Walking Leaf', 'Violin Beetle', 'Citrus Long-Horned Beetle',
+  'Rosalia Batesi Beetle', 'Scarab Beetle', 'Mole Cricket', 'Tarantula', 'Scorpion', 'Flea', 'Bagworm', 'Spider'
 ])
   SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 // Beach finds (docs/design.md#beach-finds): NH's seashells, fossils (the assessed icon), star fragments, the message

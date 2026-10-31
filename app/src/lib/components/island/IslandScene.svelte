@@ -138,6 +138,8 @@
   // Villager chats (design.md "Villager chats"): a tap on mine hops (R9) and says a line in its NH personality; a tap on
   // the partner keeps opening their card. The roster (personalities) loads on the first chat, out of the first load.
   let talk = $state<ReturnType<typeof Talk>>();
+  /** The scenery taps (a tap on my villager may send a flea hopping off it). */
+  let sceneTaps = $state<ReturnType<typeof SceneTaps>>();
   let lastLine: string | undefined;
   async function chat(btn: HTMLElement, asleep: boolean) {
     const v = view, p = v.people[v.me];
@@ -219,6 +221,7 @@
             : t('island.highfive', { name: s.person.villagerName })}
           onclick={(e) => {
             if (id === 'mine') void chat(e.currentTarget, actors.mine.asleep);
+            if (id === 'mine') sceneTaps?.villagerTap(e.currentTarget);
             life.tapVillager(id, id === 'mine' ? undefined : onpartner);
           }}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
@@ -230,7 +233,7 @@
     <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" />
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-      <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
+      <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
         say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} />
       <Talk bind:this={talk} scene={sceneEl} />
       <!-- what a shaken tree drops: a branch, now and then a wasp nest -->

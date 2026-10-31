@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  NEST_GAP_MS, NEST_ODDS, SHAKE_WINDOW_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakeTap
+  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, SHAKE_WINDOW_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakeTap, shakenBug
 } from './treeShake.ts';
 import { BUGS, pickBug } from './critters.ts';
 import { CATCH_LINES } from './catchLines.ts';
@@ -40,13 +40,25 @@ describe('a tap or a shake', () => {
 });
 
 describe('what a shake drops', () => {
-  it('about 1 in 8 shakes a nest when one is due, about 1 in 5 of the rest a branch (seeded)', () => {
+  it('about 1 in 8 shakes a nest when one is due, 1 in 7 of the rest a dangling bug, about 1 in 5 of the rest a branch (seeded)', () => {
     const r = mulberry32(42);
-    const n = 8000;
-    const got = { nest: 0, branch: 0, none: 0 };
+    const n = 20_000;
+    const got = { nest: 0, bug: 0, branch: 0, none: 0 };
     for (let i = 0; i < n; i++) got[shakeDrop(r, 0, undefined) ?? 'none']++;
     expect(got.nest / n).toBeCloseTo(1 / NEST_ODDS, 1);
-    expect(got.branch / (n - got.nest)).toBeCloseTo(1 / 5, 1);
+    expect(got.bug / (n - got.nest)).toBeCloseTo(1 / BUG_ODDS, 1);
+    expect(got.branch / (n - got.nest - got.bug)).toBeCloseTo(1 / 5, 1);
+  });
+  it('the dangling bug: a bagworm by day; in the spider’s hours (7 pm – 8 am) a spider 3 times in 8 (NH’s rates, seeded)', () => {
+    const r = mulberry32(5);
+    for (let i = 0; i < 400; i++) expect(shakenBug(12, r)).toBe('bagworm');
+    const night = Array.from({ length: 8000 }, () => shakenBug(22, r));
+    expect(night.filter((b) => b === 'spider').length / night.length).toBeCloseTo(3 / 8, 1);
+    expect(shakenBug(7, () => 0)).toBe('spider');
+    expect(shakenBug(8, () => 0)).toBe('bagworm');
+    // never about on their own: only out of a shaken tree
+    for (let m = 1; m <= 12; m++) for (let h = 0; h < 24; h++) for (const x of [0, 0.5, 0.999]) expect(['bagworm', 'spider']).not.toContain(pickBug(m, h, () => x));
+    expect(BUGS.bagworm.flight).toBe('dangle');
   });
   it('at most one nest per tree an hour: before the gap only branches (or nothing)', () => {
     const r = mulberry32(7);
@@ -68,6 +80,7 @@ describe('what a shake drops', () => {
   it('the dev hook forces the drop', () => {
     expect(shakeDrop(() => 0.99, 0, 0, 'nest')).toBe('nest');
     expect(shakeDrop(() => 0, 0, undefined, 'branch')).toBe('branch');
+    expect(shakeDrop(() => 0.99, 0, 0, 'bug')).toBe('bug');
   });
   it("each tree's last nest is kept on this phone; a broken record has none", () => {
     expect(lastNest('A')).toBeUndefined();

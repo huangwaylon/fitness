@@ -226,6 +226,18 @@ event, no script change. Why: the user asked for NH's Halloween on the night (20
 the economy; one rule table keeps the next event (Toy Day, the countdown) a small change. The music is the audio
 side's (the hour's track), not here.
 
+### The rest of NH's bugs: what the island can hold
+Of NH's 80 bugs the island has 67: every one whose NH behaviour has a faithful place here. NH's stumps are the
+trunks (as the jewel beetle already was); the tarantula and the scorpion are kept, but gentle: no fainting, the first
+tap makes one rear up, a second while it's reared makes it charge off, and once it settles a tap nets it (NH's "wait
+for it to calm down"); a flea hops off my villager now and then on a tap (NH: villagers carry fleas); the bagworm and
+the spider dangle from a shaken tree; the mole cricket chirps under a mound (NH: heard, then dug up). Left out until
+the island has the thing they need: the pondskater, the diving beetle and the giant water bug (a pond or river); the
+seven palm-tree bugs (blue weevil beetle, cyclommatus, golden and giraffe stags, horned atlas, elephant and hercules:
+the island's trees are hardwoods, and the Goliath beetle already stands in on the trunks); the dung beetle (snowballs);
+the ant and the fly (rotten turnips, candy, trash on the ground). Why: the user wants more to catch, faithful to NH;
+a bug in the wrong place reads as a mistake, and these few need scenery the island doesn't have yet.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

@@ -127,6 +127,11 @@
     return Math.abs(x - (r.left + r.width / 2)) <= w / 2 && Math.abs(y - (r.top + r.height / 2)) <= h / 2;
   }
 
+  /** A tap on my villager (IslandScene's button): now and then a flea hops off it (Critters). */
+  export function villagerTap(el: Element) {
+    if (enabled() && !reducedMotion()) critters?.fromVillager(el);
+  }
+
   function onDown(e: PointerEvent) {
     if (!e.isPrimary || e.button > 0 || !enabled() || e === swallowed?.()) return;
     const t = e.target;
