@@ -19,6 +19,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { startTheme } from '#lib/ui-state/theme.svelte.ts';
+  import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { jarTransition } from '#lib/ui-state/jarTransition.ts';
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
@@ -64,6 +65,7 @@
 
   onMount(() => {
     const stopTheme = startTheme();
+    const stopWeather = startWeather();
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
@@ -86,6 +88,7 @@
       stopSound();
       stopViewport();
       stopTheme();
+      stopWeather();
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('vite:preloadError', onStale);
     };

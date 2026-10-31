@@ -5,6 +5,7 @@
 // anything: a catch is a caption and an icon, never ベル or a write.
 
 import type { SeaId } from './sea.ts';
+import type { Sky } from './weather.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
 export interface Seasonal {
@@ -14,6 +15,9 @@ export interface Seasonal {
   weight: number;
   /** A second span of hours (NH's evening cicada: dawn and dusk; the piranha: midday and midnight). */
   also?: readonly [number, number];
+  /** NH's weather (island/weather.ts): `dry` never in the rain (most butterflies, moths, dragonflies, grasshoppers…),
+   *  `rain` only while it rains (the snail), `wet` only in rain or snow (the coelacanth). Snow isn't rain. */
+  weather?: 'dry' | 'rain' | 'wet';
 }
 
 export const ALL_YEAR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
@@ -53,8 +57,8 @@ export interface Fish extends Seasonal {
 /** The sea fish you can catch from a beach or a pier in NH (northern hemisphere; Nookipedia), with their shadow sizes
  *  and shapes. Months and hours only weight the odds (`oddsAt`); a low weight is a rare fish. The sea bass is the famous
  *  one: all year, all day, and by far the most common (every other weight × IN_SEASON stays under its 10). Deviations
- *  from NH: the pier fish (mahi-mahi, giant trevally, tuna, blue marlin) come to the beach, the island has no pier; the
- *  coelacanth (NH: rain only) is simply the rarest, since the island has no weather. */
+ *  from NH: the pier fish (mahi-mahi, giant trevally, tuna, blue marlin) come to the beach, the island has no pier. The
+ *  coelacanth comes only in rain or snow, as in NH. */
 export const FISH: Record<FishId, Fish> = {
   'sea-bass': { months: ALL_YEAR, hours: ALL_DAY, size: 5, weight: 10 },
   'horse-mackerel': { months: ALL_YEAR, hours: ALL_DAY, size: 2, weight: 4 },
@@ -92,7 +96,7 @@ export const FISH: Record<FishId, Fish> = {
   'hammerhead-shark': { months: span(6, 9), hours: [16, 9], size: 6, shape: 'fin', weight: 0.4 },
   'great-white-shark': { months: span(6, 9), hours: [16, 9], size: 6, shape: 'fin', weight: 0.3 },
   'whale-shark': { months: span(6, 9), hours: ALL_DAY, size: 6, shape: 'fin', weight: 0.3 },
-  coelacanth: { months: ALL_YEAR, hours: ALL_DAY, size: 6, weight: 0.1 }
+  coelacanth: { months: ALL_YEAR, hours: ALL_DAY, size: 6, weight: 0.3, weather: 'wet' }
 };
 /** NH's junk: now and then the line brings up a boot, a tire or a can instead (1 in JUNK_ODDS). */
 export const JUNK: readonly JunkId[] = ['boot', 'old-tire', 'empty-can'];
@@ -135,27 +139,27 @@ interface Bug extends Seasonal {
  *  butterfly by day, moths at night. Deviations from NH: fireflies follow the island's own summer nights (NH: June
  *  only); the emperor butterfly keeps to summer (NH: also Dec–Mar). NH has no pine cricket (its コオロギ is `cricket`). */
 export const BUGS: Record<BugId, Bug> = {
-  'common-butterfly': { months: span(9, 6), hours: [4, 19], flight: 'flutter', weight: 4 },
-  'yellow-butterfly': { months: [3, 4, 5, 6, 9, 10], hours: [4, 19], flight: 'flutter', weight: 2 },
-  'tiger-butterfly': { months: span(3, 9), hours: [4, 19], flight: 'flutter', weight: 2 },
-  'peacock-butterfly': { months: [3, 4, 5, 6], hours: [4, 19], flight: 'flutter', weight: 1 },
-  'emperor-butterfly': { months: [6, 7, 8, 9], hours: [17, 8], flight: 'flutter', weight: 1 },
-  honeybee: { months: [3, 4, 5, 6, 7], hours: [8, 17], flight: 'flutter', weight: 2 },
-  ladybug: { months: [3, 4, 5, 6, 10], hours: [8, 17], flight: 'flower', weight: 1 },
-  'darner-dragonfly': { months: span(4, 10), hours: [8, 17], flight: 'dart', weight: 2 },
-  'banded-dragonfly': { months: span(5, 10), hours: [8, 17], flight: 'dart', weight: 1 },
-  'red-dragonfly': { months: [9, 10], hours: [8, 19], flight: 'dart', weight: 3 },
+  'common-butterfly': { months: span(9, 6), hours: [4, 19], flight: 'flutter', weight: 4, weather: 'dry' },
+  'yellow-butterfly': { months: [3, 4, 5, 6, 9, 10], hours: [4, 19], flight: 'flutter', weight: 2, weather: 'dry' },
+  'tiger-butterfly': { months: span(3, 9), hours: [4, 19], flight: 'flutter', weight: 2, weather: 'dry' },
+  'peacock-butterfly': { months: [3, 4, 5, 6], hours: [4, 19], flight: 'flutter', weight: 1, weather: 'dry' },
+  'emperor-butterfly': { months: [6, 7, 8, 9], hours: [17, 8], flight: 'flutter', weight: 1, weather: 'dry' },
+  honeybee: { months: [3, 4, 5, 6, 7], hours: [8, 17], flight: 'flutter', weight: 2, weather: 'dry' },
+  ladybug: { months: [3, 4, 5, 6, 10], hours: [8, 17], flight: 'flower', weight: 1, weather: 'dry' },
+  'darner-dragonfly': { months: span(4, 10), hours: [8, 17], flight: 'dart', weight: 2, weather: 'dry' },
+  'banded-dragonfly': { months: span(5, 10), hours: [8, 17], flight: 'dart', weight: 1, weather: 'dry' },
+  'red-dragonfly': { months: [9, 10], hours: [8, 19], flight: 'dart', weight: 3, weather: 'dry' },
   'robust-cicada': { months: [7, 8], hours: [8, 17], flight: 'perch', weight: 3 },
   'evening-cicada': { months: [7, 8], hours: [4, 8], also: [16, 19], flight: 'perch', weight: 3 },
-  firefly: { months: [6, 7, 8], hours: [19, 4], flight: 'drift', weight: 5 },
+  firefly: { months: [6, 7, 8], hours: [19, 4], flight: 'drift', weight: 5, weather: 'dry' },
   'rice-grasshopper': { months: [8, 9, 10, 11], hours: [8, 19], flight: 'hop', weight: 2 },
-  grasshopper: { months: [7, 8, 9], hours: [8, 17], flight: 'hop', weight: 2 },
+  grasshopper: { months: [7, 8, 9], hours: [8, 17], flight: 'hop', weight: 2, weather: 'dry' },
   'migratory-locust': { months: [8, 9, 10, 11], hours: [8, 19], flight: 'hop', weight: 1 },
-  mantis: { months: span(3, 11), hours: [8, 17], flight: 'flower', weight: 1 },
-  'orchid-mantis': { months: span(3, 11), hours: [8, 17], flight: 'flower', weight: 1 },
-  'bell-cricket': { months: [9, 10], hours: [17, 8], flight: 'hop', weight: 2 },
-  cricket: { months: [9, 10, 11], hours: [17, 8], flight: 'hop', weight: 2 },
-  moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 1 },
+  mantis: { months: span(3, 11), hours: [8, 17], flight: 'flower', weight: 1, weather: 'dry' },
+  'orchid-mantis': { months: span(3, 11), hours: [8, 17], flight: 'flower', weight: 1, weather: 'dry' },
+  'bell-cricket': { months: [9, 10], hours: [17, 8], flight: 'hop', weight: 2, weather: 'dry' },
+  cricket: { months: [9, 10, 11], hours: [17, 8], flight: 'hop', weight: 2, weather: 'dry' },
+  moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 1, weather: 'dry' },
   // on the trees: the rest of the cicadas (and a shell left on a trunk), the beetles (NH's stumps are trunks here), the
   // walking stick at dawn and dusk; the big beetles come out at night
   'walker-cicada': { months: [8, 9], hours: [8, 17], flight: 'perch', weight: 3 },
@@ -169,24 +173,24 @@ export const BUGS: Record<BugId, Bug> = {
   'horned-dynastid': { months: [7, 8], hours: [17, 8], flight: 'perch', weight: 1 },
   'goliath-beetle': { months: span(6, 9), hours: [17, 8], flight: 'perch', weight: 0.5 },
   'drone-beetle': { months: span(6, 8), hours: ALL_DAY, flight: 'perch', weight: 1 },
-  'jewel-beetle': { months: span(4, 8), hours: ALL_DAY, flight: 'perch', weight: 0.7 },
+  'jewel-beetle': { months: span(4, 8), hours: ALL_DAY, flight: 'perch', weight: 0.7, weather: 'dry' },
   'walking-stick': { months: span(7, 11), hours: [4, 8], also: [17, 19], flight: 'perch', weight: 1 },
   // on the beach and in the grass: the hermit crab after dark, the wharf roach on the rocks, the pill bug and the
-  // centipede (NH: under rocks), the snail on the flowers (NH: rain only; a rare one here)
+  // centipede (NH: under rocks), the snail on the flowers (only in the rain, as in NH)
   'hermit-crab': { months: ALL_YEAR, hours: [19, 8], flight: 'crawl', ground: 'beach', weight: 2 },
   'wharf-roach': { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beach', weight: 1.5 },
   'pill-bug': { months: span(9, 6), hours: [23, 16], flight: 'crawl', ground: 'grass', weight: 1.5 },
   centipede: { months: span(9, 6), hours: [16, 23], flight: 'crawl', ground: 'grass', weight: 1 },
-  snail: { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 0.7 },
+  snail: { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 3, weather: 'rain' },
   // flying: the big tropical butterflies (rare), the monarch in autumn, the Atlas moth at night, the damselfly in
   // winter, the long locust
-  'paper-kite-butterfly': { months: ALL_YEAR, hours: [8, 19], flight: 'flutter', weight: 2 },
-  'agrias-butterfly': { months: span(4, 9), hours: [8, 17], flight: 'flutter', weight: 1 },
-  'queen-alexandras-birdwing': { months: span(5, 9), hours: [8, 16], flight: 'flutter', weight: 0.5 },
-  'rajah-brookes-birdwing': { months: [...span(4, 9), 12, 1, 2], hours: [8, 17], flight: 'flutter', weight: 0.7 },
-  'monarch-butterfly': { months: span(9, 11), hours: [4, 17], flight: 'flutter', weight: 2 },
+  'paper-kite-butterfly': { months: ALL_YEAR, hours: [8, 19], flight: 'flutter', weight: 2, weather: 'dry' },
+  'agrias-butterfly': { months: span(4, 9), hours: [8, 17], flight: 'flutter', weight: 1, weather: 'dry' },
+  'queen-alexandras-birdwing': { months: span(5, 9), hours: [8, 16], flight: 'flutter', weight: 0.5, weather: 'dry' },
+  'rajah-brookes-birdwing': { months: [...span(4, 9), 12, 1, 2], hours: [8, 17], flight: 'flutter', weight: 0.7, weather: 'dry' },
+  'monarch-butterfly': { months: span(9, 11), hours: [4, 17], flight: 'flutter', weight: 2, weather: 'dry' },
   'atlas-moth': { months: span(4, 9), hours: [19, 4], flight: 'flutter', weight: 0.7 },
-  damselfly: { months: span(11, 2), hours: ALL_DAY, flight: 'dart', weight: 2 },
+  damselfly: { months: span(11, 2), hours: ALL_DAY, flight: 'dart', weight: 2, weather: 'dry' },
   'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 },
   // never about on its own (weight 0): only out of a nest shaken from a tree (island/treeShake.ts), netted in time
   wasp: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', weight: 0 },
@@ -197,22 +201,22 @@ export const BUGS: Record<BugId, Bug> = {
   'giant-water-bug': { months: span(4, 9), hours: [19, 8], flight: 'crawl', ground: 'pond', weight: 1 },
   // the rest of NH's bugs that this island can hold. Flying: the bluebottle, the great purple emperor and the
   // Madagascan sunset moth by day, the mosquito on summer evenings
-  'common-bluebottle': { months: span(4, 8), hours: [4, 19], flight: 'flutter', weight: 3 },
-  'great-purple-emperor': { months: span(5, 8), hours: [4, 19], flight: 'flutter', weight: 0.7 },
-  'madagascan-sunset-moth': { months: span(4, 9), hours: [8, 16], flight: 'flutter', weight: 0.7 },
-  mosquito: { months: span(6, 9), hours: [17, 4], flight: 'flutter', weight: 2 },
+  'common-bluebottle': { months: span(4, 8), hours: [4, 19], flight: 'flutter', weight: 3, weather: 'dry' },
+  'great-purple-emperor': { months: span(5, 8), hours: [4, 19], flight: 'flutter', weight: 0.7, weather: 'dry' },
+  'madagascan-sunset-moth': { months: span(4, 9), hours: [8, 16], flight: 'flutter', weight: 0.7, weather: 'dry' },
+  mosquito: { months: span(6, 9), hours: [17, 4], flight: 'flutter', weight: 2, weather: 'dry' },
   // on the flowers: the stink bugs (the man-faced one at night)
-  stinkbug: { months: span(3, 10), hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 2 },
-  'man-faced-stink-bug': { months: span(3, 10), hours: [19, 8], flight: 'crawl', ground: 'beds', weight: 1.2 },
+  stinkbug: { months: span(3, 10), hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 2, weather: 'dry' },
+  'man-faced-stink-bug': { months: span(3, 10), hours: [19, 8], flight: 'crawl', ground: 'beds', weight: 1.2, weather: 'dry' },
   // on the ground: the tiger beetle (it runs), the earth-boring dung beetle, the walking leaf (NH: a leaf under the
   // trees, here in the grass)
-  'tiger-beetle': { months: span(2, 10), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1 },
+  'tiger-beetle': { months: span(2, 10), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1, weather: 'dry' },
   'earth-boring-dung-beetle': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1.5 },
   'walking-leaf': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1 },
   // on the trunks: NH's stump beetles (the island has no stumps: a trunk, like the jewel beetle) and the scarab at night
-  'violin-beetle': { months: [5, 6, 9, 10, 11], hours: ALL_DAY, flight: 'perch', weight: 1 },
-  'citrus-long-horned-beetle': { months: ALL_YEAR, hours: ALL_DAY, flight: 'perch', weight: 1 },
-  'rosalia-batesi-beetle': { months: span(5, 9), hours: ALL_DAY, flight: 'perch', weight: 0.5 },
+  'violin-beetle': { months: [5, 6, 9, 10, 11], hours: ALL_DAY, flight: 'perch', weight: 1, weather: 'dry' },
+  'citrus-long-horned-beetle': { months: ALL_YEAR, hours: ALL_DAY, flight: 'perch', weight: 1, weather: 'dry' },
+  'rosalia-batesi-beetle': { months: span(5, 9), hours: ALL_DAY, flight: 'perch', weight: 0.5, weather: 'dry' },
   'scarab-beetle': { months: [7, 8], hours: [23, 8], flight: 'perch', weight: 0.5 },
   // under the lawn: the mole cricket of winter and spring, chirping under a mound of earth
   'mole-cricket': { months: span(11, 5), hours: ALL_DAY, flight: 'burrow', weight: 1.5 },
@@ -233,13 +237,18 @@ export function inHours([from, to]: readonly [number, number], h: number): boole
 /** Odds for a critter in its NH months against out of them: the season is a flavour, never a gate (user). */
 export const IN_SEASON = 3;
 const inHoursOf = (c: Seasonal, hour: number) => inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour));
-/** Its odds at (month, hour): 0 outside its hours, else its weight, ×IN_SEASON in its months. */
-export const oddsAt = (c: Seasonal, month: number, hour: number): number =>
-  !inHoursOf(c, hour) ? 0 : c.weight * (c.months.includes(month) ? IN_SEASON : 1);
+/** Whether the weather lets it out (Seasonal `weather`). */
+function weatherLets(c: Seasonal, sky: Sky): boolean {
+  const rain = sky === 'rain' || sky === 'heavy';
+  return c.weather === 'dry' ? !rain : c.weather === 'rain' ? rain : c.weather === 'wet' ? sky !== 'clear' : true;
+}
+/** Its odds at (month, hour, sky): 0 outside its hours or its weather, else its weight, ×IN_SEASON in its months. */
+export const oddsAt = (c: Seasonal, month: number, hour: number, sky: Sky = 'clear'): number =>
+  !inHoursOf(c, hour) || !weatherLets(c, sky) ? 0 : c.weight * (c.months.includes(month) ? IN_SEASON : 1);
 
-/** A weighted pick among the ids that can come at (month, hour), or null. `r` is a uniform [0, 1) source. */
-export function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number): K | null {
-  const live = (Object.keys(table) as K[]).map((k) => [k, oddsAt(table[k], month, hour)] as const).filter(([, w]) => w > 0);
+/** A weighted pick among the ids that can come at (month, hour, sky), or null. `r` is a uniform [0, 1) source. */
+export function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number, sky: Sky = 'clear'): K | null {
+  const live = (Object.keys(table) as K[]).map((k) => [k, oddsAt(table[k], month, hour, sky)] as const).filter(([, w]) => w > 0);
   const total = live.reduce((s, [, w]) => s + w, 0);
   if (!total) return null;
   let x = r() * total;
@@ -248,23 +257,24 @@ export function pick<K extends string>(table: Record<K, Seasonal>, month: number
 }
 
 /** The fish under a new shadow (always someone: the sea bass never takes a day off). */
-export const pickFish = (month: number, hour: number, r: () => number): FishId => pick(FISH, month, hour, r) ?? 'sea-bass';
+export const pickFish = (month: number, hour: number, r: () => number, sky: Sky = 'clear'): FishId => pick(FISH, month, hour, r, sky) ?? 'sea-bass';
 
 /** What the line brings up from a `fish` shadow: the fish, or 1 in JUNK_ODDS a piece of junk. */
 export function hookItem<F extends FishId | PondFishId>(fish: F, r: () => number): F | JunkId {
   return r() * JUNK_ODDS < 1 ? JUNK[Math.floor(r() * JUNK.length)] : fish;
 }
 
-/** An ambient bug for (month, hour), or null when nobody is about (with the moths out every night, never in NH's table). */
-export const pickBug = (month: number, hour: number, r: () => number): BugId | null => pick(BUGS, month, hour, r);
+/** An ambient bug for (month, hour, sky), or null when nobody is about (with the moths out every night, never in NH's
+ *  table; in the rain, fewer: NH's "any except rain" stay away and the snail comes out). */
+export const pickBug = (month: number, hour: number, r: () => number, sky: Sky = 'clear'): BugId | null => pick(BUGS, month, hour, r, sky);
 
 /** What flies out of a shaken bush: 1 in 3 a bug (a moth after dark, else a butterfly, 1 in 4 a ladybug by day), or
- *  nothing. */
-export function bushBug(month: number, hour: number, r: () => number): BugId | null {
+ *  nothing (in the rain, nothing: they all stay out of it). */
+export function bushBug(month: number, hour: number, r: () => number, sky: Sky = 'clear'): BugId | null {
   if (r() * 3 >= 1) return null;
-  if (oddsAt(BUGS.moth, month, hour) > 0) return 'moth';
-  if (oddsAt(BUGS.ladybug, month, hour) > 0 && r() < 0.25) return 'ladybug';
-  const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && oddsAt(BUGS[k], month, hour) > 0);
+  if (oddsAt(BUGS.moth, month, hour, sky) > 0) return 'moth';
+  if (oddsAt(BUGS.ladybug, month, hour, sky) > 0 && r() < 0.25) return 'ladybug';
+  const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && oddsAt(BUGS[k], month, hour, sky) > 0);
   return flutter.length ? flutter[Math.floor(r() * flutter.length)] : null;
 }
 

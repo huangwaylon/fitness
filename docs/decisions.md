@@ -348,3 +348,12 @@ crickets on autumn nights). A file in the manifest still replaces any bed. Why: 
 and no megabytes to fetch for sounds that sit under the music; quiet, varied enough over 12–40 s loops that start at a
 random point. If a bed wears thin, a CC0 recording can take its place without code.
 
+### Weather days by the date
+The weather is seeded by the date (NH's 05:00 day), with NH's own rules (rain about one day in six, snow in winter, the
+rainbow after a downpour clears late in the afternoon, fog at 07:00 in the cold months, the aurora on rare winter
+nights), so nothing is stored or synced and both phones see the same sky. Rain and snow are tiled layers moved by
+transform, not particle systems. It touches play the way NH does and no more: the rain-only coelacanth and snail, the
+bugs that hide from rain, splashing steps; never ベル. Snowflakes now fall only on snow days (NH: a clear winter day has
+snow on the ground but none falling). No umbrella over the villagers: the renders are single front-facing images with no hand to
+hold one, so an umbrella would float over the head; left out rather than shipped poor.
+

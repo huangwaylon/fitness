@@ -25,6 +25,7 @@
   //   ?critter=fish | pond | <fish id> | <pond fish id> | <bug id> (dev or ?demo): one now, staying until caught (the
   //   e2e's hook); ?flea: a tap
   //   on my villager always sends a flea off it.
+  import { weather } from './weatherNow.svelte.ts';
   import { onMount, untrack } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
@@ -249,7 +250,7 @@
     if (water === 'sea') {
       const side = rand() < 0.5 ? -1 : 1;
       box = seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1);
-      id = want ?? pickFish(month, hour, rand);
+      id = want ?? pickFish(month, hour, rand, weather.sky);
       look = FISH[id as FishId];
     } else {
       const o = pond();
@@ -578,7 +579,7 @@
   export function fromBush(i: number) {
     if (bug || reducedMotion()) return;
     const { month, hour } = jst(now());
-    spawnBug(bushBug(month, hour, rand), { x: HEDGE_X[i], y: HEDGE_BASE - BUSH_U * 0.7 });
+    spawnBug(bushBug(month, hour, rand, weather.sky), { x: HEDGE_X[i], y: HEDGE_BASE - BUSH_U * 0.7 });
   }
 
   // ---------- diving ----------
@@ -793,11 +794,11 @@
     };
     const visit = () => {
       const { month, hour } = jst(now());
-      const kind = spawnKind({ sea: !!(fishes.sea || bubbles || diving), pond: !!fishes.pond || !pond(), bug: !!bug }, pickBug(month, hour, () => 0) !== null, rand);
+      const kind = spawnKind({ sea: !!(fishes.sea || bubbles || diving), pond: !!fishes.pond || !pond(), bug: !!bug }, pickBug(month, hour, () => 0, weather.sky) !== null, rand);
       if (kind === 'fish') void spawnFish('sea');
       else if (kind === 'pond') void spawnFish('pond');
       else if (kind === 'sea') void spawnBubbles();
-      else if (kind === 'bug') spawnBug(pickBug(month, hour, rand));
+      else if (kind === 'bug') spawnBug(pickBug(month, hour, rand, weather.sky));
       remaining = nextSpawnMs(rand);
       arm();
     };

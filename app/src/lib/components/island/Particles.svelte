@@ -1,7 +1,7 @@
 <script lang="ts">
   // Seasonal particles (design.md "Particles and events"), transform/opacity only, ONE animation each (the side-to-side
   // flutter is folded into the fall keyframes; ≤ 3 particles in the idle budget): cherry-blossom
-  // petals, autumn maple leaves (2, 3 in festival week), winter snow (3), all official art; summer nights get
+  // petals, autumn maple leaves (2, 3 in festival week), snowflakes on a snow day (3), all official art; summer nights get
   // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size
   // container, so the fall distance is in cqh of the whole scene.
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -21,12 +21,16 @@
     /** Cherry-blossom / maple week: a few more. */
     festival?: boolean;
     mode?: 'fall' | 'fireflies';
+    /** Snow is falling (a snow day: weatherNow.svelte.ts); without the weather (the gallery), every winter. */
+    snowing?: boolean;
+    /** Raining: no fireflies (NH: never in the rain). */
+    raining?: boolean;
   }
-  let { season, foliage = 'green', tod, quiet = false, festival = false, mode = 'fall' }: Props = $props();
+  let { season, foliage = 'green', tod, quiet = false, festival = false, mode = 'fall', snowing = season === 'winter', raining = false }: Props = $props();
 
   const kind = $derived(
     // leaves and petals rest at night (idle budget); snow keeps falling
-    foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' && tod !== 'night' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
+    foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' && tod !== 'night' ? 'maple-leaf' : snowing ? 'snowflake' : null
   );
   const count = $derived(quiet ? (kind ? 1 : 0) : kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);
   const items = $derived.by(() => {
@@ -56,7 +60,7 @@
       </span>
     {/each}
   </div>
-{:else if mode === 'fireflies' && season === 'summer' && tod === 'night'}
+{:else if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
   {#each FIREFLIES as [x, y], i (i)}
     <span class="ff" style:left={u(x)} style:top={u(y)} style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
   {/each}

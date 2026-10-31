@@ -3,7 +3,7 @@
 // this module decides whether anything may sound at all. Nothing is created while every setting is off.
 //   startSound({ muffled: () => ui.sheets.length > 0 })   // once, in the root layout
 //   setSound({ music: true })                             // from a tap (the settings app)
-//   sound.weather = 'rain'                                // the hour's rain arrangement (only `?weather=` sets it yet)
+//   sound.weather = 'rain'; sound.heavy = true                // set by the island's weather (island/weatherNow.svelte.ts)
 //   waspMusic('chase') · playKK('kk-march')               // cut-ins over the island's music (events.ts, kk.ts)
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
@@ -11,7 +11,7 @@ import { Engine } from './engine.ts';
 import type { Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
-import { WEATHERS, trackAt, type MusicTrack, type Weather } from './hourly.ts';
+import { trackAt, type MusicTrack, type Weather } from './hourly.ts';
 import { eventMusicAt, type EventMusicId } from './events.ts';
 import { kkTracks } from './kk.ts';
 import { HourClock } from './session.ts';
@@ -320,12 +320,11 @@ export function stopKK(): void {
 }
 
 /** Once, in the root layout. `muffled`: a sheet, the phone or the harvest is up (the music goes soft and dull under
- *  it, as under NH's menus). `?weather=rain|snow` previews a weather for this load. Returns the cleanup. */
+ *  it, as under NH's menus). The weather's arrangement and rain follow the island's weather (`?weather=` forces one in
+ *  dev or `?demo`: island/weatherNow.svelte.ts). Returns the cleanup. */
 export function startSound(o: { muffled: () => boolean }): () => void {
   coveredBy = o.muffled;
   sound.settings = loadSound(localKV());
-  const w = new URLSearchParams(location.search).get('weather') as Weather | null;
-  if (w && WEATHERS.includes(w)) sound.weather = w;
   const gestures = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'] as const;
   for (const g of gestures) document.addEventListener(g, unlock, { capture: true, passive: true });
   initMediaSession();

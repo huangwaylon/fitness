@@ -75,7 +75,7 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     const r = mulberry32(11);
     const seen = new Set(Array.from({ length: 60_000 }, () => pickFish(1, 22, r)));
     expect(seen.has('whale-shark')).toBe(true);
-    expect(seen.has('coelacanth')).toBe(true);
+    expect(seen.has('coelacanth')).toBe(false); // rain or snow only (critterWeather.test.ts)
   });
   it('bugs: any month, only in their hours (day bugs by day, fireflies and moths at night); in season 3× likelier', () => {
     const seen = (month: number, hour: number) => {
