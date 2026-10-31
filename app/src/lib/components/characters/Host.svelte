@@ -133,7 +133,7 @@
   {/if}
   {#if driven}
     {#each st.fx as f (f.n)}
-      <span class="fxa {f.kind}"><Fx kind={f.kind} dir={1} spread="calc(var(--h) * .5)" ondone={() => removeFx('host', f.n)} /></span>
+      <span class="fxa {f.kind}"><Fx kind={f.kind} spread="calc(var(--h) * .5)" ondone={() => removeFx('host', f.n)} /></span>
     {/each}
   {/if}
 </span>

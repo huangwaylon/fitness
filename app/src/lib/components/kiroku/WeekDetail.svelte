@@ -10,7 +10,7 @@
   import BadgeRow from '../ui/BadgeRow.svelte';
   import Glyph from './Glyph.svelte';
   import ChangeLog from './ChangeLog.svelte';
-  import { num } from './fmt.ts';
+  import { dayTitle, leftLabel, num } from './fmt.ts';
   import { fruitArt } from '#lib/art.ts';
   import { t, formatBells } from '#lib/i18n/index.ts';
   import { weekRange, weekdayOf } from '#lib/i18n/format.ts';
@@ -22,8 +22,9 @@
     names: Record<PersonId, string>;
     villagers: Record<PersonId, string | null>;
     onday: (date: string) => void;
+    now: number;
   }
-  let { d, edits, order, names, villagers, onday }: Props = $props();
+  let { d, edits, order, names, villagers, onday, now }: Props = $props();
 
   type Row = WeekDetail['people'][PersonId]['days'][number];
   /** A metric's cell: the value, and whether that day's goal was met. */
@@ -40,6 +41,8 @@
   <h3>{d.current ? t('kiroku.thisWeek') + ' ' : ''}<span class="money">{weekRange(d.weekKey)}</span>{#if d.locked}<Glyph kind="lock" size={14} label={t('kiroku.locked')} />{/if}</h3>
   <span class="total money">{formatBells(d.bells)}</span>
 </header>
+<!-- how long this week's days can still be fixed (the same line as on a day) -->
+{#if d.open}<p class="state"><Glyph kind="pen" size={14} />{leftLabel(d.lockAt, now)}</p>{/if}
 
 <section class="card people" aria-label={t('badge.title')}>
   {#each order as p (p)}
@@ -59,7 +62,7 @@
   </div>
   {#each d.people[order[0]].days as first, i (first.date)}
     <button type="button" class="day" aria-disabled={first.future} data-sfx="page" onclick={() => onday(first.date)}
-      aria-label={t('kiroku.dayTitle', { m: Number(first.date.slice(5, 7)), d: Number(first.date.slice(8, 10)), w: weekdayOf(first.date) })}>
+      aria-label={dayTitle(first.date)}>
       <span class="wd">{weekdayOf(first.date)}</span>
       {#each order as p, j (p)}
         {@const r = d.people[p].days[i]}
@@ -78,6 +81,7 @@
 
 <style>
   .sub { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 2px; }
+  .state { display: flex; align-items: center; gap: 6px; margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .sub h3 { margin: 0; font-size: var(--fs-talk); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .total { font-size: var(--fs-title); white-space: nowrap; }
   .people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px; --bd: clamp(14px, 4.2vw, 20px); }

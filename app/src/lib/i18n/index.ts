@@ -8,7 +8,7 @@ export { i18n, setLocale, type Locale };
 type Catalog = Record<string, string>;
 const catalogs: Record<Locale, Catalog> = { ja, en };
 
-export type Params = Record<string, string | number | null | undefined>;
+type Params = Record<string, string | number | null | undefined>;
 
 function interpolate(msg: string, params?: Params): string {
   if (!params) return msg.replace(/\{\w+\}/g, '');
@@ -42,12 +42,12 @@ export function hostLine(key: string, params?: Params): string {
   return t(full, p);
 }
 
-/** `1,234 ベル` / `1,234 Bells` (play money, ADR 0019). `signed`: `+620 ベル` (a gain; a loss is always `−`). */
-export function formatBells(amount: number, opts: { signed?: boolean; locale?: Locale } = {}): string {
+/** `1,234 ベル` / `1,234 Bells` (play money). `signed`: `+620 ベル` (a gain; a loss is always `−`). */
+export function formatBells(amount: number, opts: { signed?: boolean } = {}): string {
   const n = Math.round(amount);
   const digits = new Intl.NumberFormat('en-US').format(Math.abs(n));
   const sign = n < 0 ? '−' : opts.signed && n > 0 ? '+' : '';
-  return t('bells.amount', { n: sign + digits }, opts.locale);
+  return t('bells.amount', { n: sign + digits });
 }
 
 /** Just the digits with separators: `1,234` (when the unit is drawn apart, e.g. a big total). */

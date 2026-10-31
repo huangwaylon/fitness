@@ -1,20 +1,19 @@
 <script lang="ts">
-  // Money mark (design.md "Official art"): the official Bells bag next to ベル amounts. `kind="leaf"` = the NH leaf (small accents). A drawn coin is the fallback.
-  //   <LeafCoin size={22} />  <LeafCoin size="1.1em" />  <LeafCoin kind="leaf" size={18} />
+  // Money mark (design.md "Official art"): the official Bells bag next to ベル amounts. A drawn coin is the fallback.
+  //   <LeafCoin size={22} />  <LeafCoin size="1.1em" />
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { moneyArt } from '#lib/art.ts';
 
   interface Props {
     size?: number | string;
-    kind?: 'bells' | 'leaf';
     eager?: boolean;
   }
-  let { size = 22, kind = 'bells', eager = false }: Props = $props();
+  let { size = 22, eager = false }: Props = $props();
   const dim = $derived(typeof size === 'number' ? `${size}px` : size);
 </script>
 
 <span class="money-mark" aria-hidden="true">
-  <OfficialArt key={moneyArt(kind)} size={dim} {eager}>
+  <OfficialArt key={moneyArt('bells')} size={dim} {eager}>
     {#snippet fallback()}
       <svg class="coin" viewBox="0 0 24 24" style:width={dim} style:height={dim}>
         <circle cx="12" cy="12" r="10" fill="#F7C548" stroke="#D9962A" stroke-width="2" />
