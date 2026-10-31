@@ -241,6 +241,12 @@ the island's trees are hardwoods, and the Goliath beetle already stands in on th
 the ant and the fly (rotten turnips, candy, trash on the ground). Why: the user wants more to catch, faithful to NH;
 a bug in the wrong place reads as a mistake, and these few need scenery the island doesn't have yet.
 
+### Wedding countdown as visitors
+The countdown to 2027-10-08 is NH's wedding couple coming on milestone days (365 … 1, the day), one visitor drawn as a
+pair, not a counter on screen; the day itself is a pose, confetti and fireworks, and June Sundays get NH's arch. Why:
+a countdown that turns up as an event keeps the island a game (one more thing to find, never a number to watch), on
+dates both phones agree on, with nothing stored but the confetti's once-a-day.
+
 ### Holiday hosts in the visitor slot
 NH's holidays are date rules in `events.ts`, each checked on Nookipedia (Turkey Day the fourth Thursday of November;
 Toy Day Dec 24, all day in NH rather than only its night; Festivale Shrove Monday, 48 days before Easter; Bunny Day

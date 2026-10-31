@@ -34,6 +34,7 @@
   import { stretch } from '../motion/stretch.svelte.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { critterArt, type FishId } from './critters.ts';
+  import { daysUntil } from './wedding.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -57,20 +58,23 @@
   /** NH heights relative to a villager (VILLAGER.h): K.K. stands about as tall, Daisy Mae is a child, Wisp a small
    *  ghost floating a little off the ground, Gulliver a tall seagull. */
   const REL: Record<VisitorId, number> = { 'kk-slider': 1, 'daisy-mae': 0.78, wisp: 0.7, gulliver: 1.1, jack: 1, celeste: 0.85,
-    franklin: 1, jingle: 1.05, pave: 1.1, zipper: 0.9 };
+    franklin: 1, jingle: 1.05, pave: 1.1, zipper: 0.9, reese: 0.76 };
+  /** A pair standing side by side (Reese and Cyrus): how many figures wide the clearance is. */
+  const WIDE: Partial<Record<VisitorId, number>> = { reese: 1.95 };
   /** Floating off the ground (u). */
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
   /** The front beach's smaller figures, for when the centre stage is covered: height and half-width (u). */
   const BEACH: Record<VisitorId, { h: number; hw: number }> = {
     'kk-slider': { h: 48, hw: 15 }, 'daisy-mae': { h: 48, hw: 16 }, wisp: { h: 30, hw: 16 }, gulliver: { h: 44, hw: 18 }, jack: { h: 48, hw: 17 }, celeste: { h: 44, hw: 15 },
-    franklin: { h: 46, hw: 15 }, jingle: { h: 46, hw: 17 }, pave: { h: 46, hw: 20 }, zipper: { h: 46, hw: 13 }
+    franklin: { h: 46, hw: 15 }, jingle: { h: 46, hw: 17 }, pave: { h: 46, hw: 20 }, zipper: { h: 46, hw: 13 }, reese: { h: 42, hw: 30 }
   };
   /** Visitors outside the roster (an event's guest): their render and name-tag colour (Jack: his robe's purple; the
    *  holiday hosts: Nookipedia's title colours). */
   const ART: Partial<Record<VisitorId, string>> = {
     jack: 'villagers/jack', franklin: 'villagers/franklin', jingle: 'villagers/jingle', pave: 'villagers/pave', zipper: 'villagers/zipper'
   };
-  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', pave: '#0A96AE', zipper: '#FFE20B' };
+  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', pave: '#0A96AE', zipper: '#FFE20B', reese: '#FFAAD1' };
+  const CYRUS_TAG = '#4DDCD9';
 
   const clock = $derived(minuteNow());
   const who = $derived.by<VisitorId | null>(() => {
@@ -88,7 +92,7 @@
     // clear of the controls themselves (their 6px tap padding may run over a head)
     const keep = guardsU(g, -5 * g.k);
     const h = VILLAGER.h * REL[id], up = h + (FLOAT[id] ?? 0);
-    if (clearAt(keep, CENTRE_STAGE.x, CENTRE_STAGE.base - up / 2, h * 0.32, up / 2)) return void (spot = { x: CENTRE_STAGE.x, y: CENTRE_STAGE.base, h, stage: true });
+    if (clearAt(keep, CENTRE_STAGE.x, CENTRE_STAGE.base - up / 2, h * 0.32 * (WIDE[id] ?? 1), up / 2)) return void (spot = { x: CENTRE_STAGE.x, y: CENTRE_STAGE.base, h, stage: true });
     const b = BEACH[id], bup = b.h + (FLOAT[id] ? 9 : 0);
     const x = [195, 160, 230, 125, 265].find((x) => clearAt(keep, x, 349 - bup / 2, b.hw, bup / 2));
     spot = x === undefined ? null : { x, y: 349, h: b.h, stage: false };
@@ -247,6 +251,23 @@
     return () => host.removeEventListener('island:catch', onCatch);
   });
 
+  /** Reese and Cyrus on a milestone day: her introduction ends on the count (「けっこんしき まで あと 100日！」; on the day
+   *  「ごけっこん おめでとう！」), then they take turns. */
+  let coupleTurn = 0;
+  function couple(target: Element) {
+    const left = daysUntil(today());
+    const count = left === 0 ? t('chat.sp.reese.day') : t('chat.sp.reese.count', { n: left });
+    if (!met.has('reese')) {
+      met.add('reese');
+      return say?.(t('visitor.reese'), [t('chat.sp.reese.intro'), count], target, { colour: TAG.reese });
+    }
+    // Cyrus a line of his; Reese one of hers, and the count again
+    const cyrus = coupleTurn++ % 2 === 0;
+    last = visitorLine((cyrus ? 'cyrus' : 'reese') as VisitorId, Math.random, last);
+    if (cyrus) say?.(t('visitor.cyrus'), t(last), target, { colour: CYRUS_TAG });
+    else say?.(t('visitor.reese'), [t(last), count], target, { colour: TAG.reese });
+  }
+
   async function talk(id: VisitorId) {
     const target = art();
     if (!target) return;
@@ -254,6 +275,7 @@
     const name = t(`visitor.${id}`);
     if (id === 'jack') return jack(name, target, TAG.jack!);
     if (id === 'franklin') return franklin(name, target, TAG.franklin!);
+    if (id === 'reese') return couple(target);
     // their name tag in their own NH colour (the roster, loaded on the first visit's tap)
     const colour = TAG[id] ?? ((await import('#lib/villagers/roster.ts')).ROSTER as Record<string, { colour?: string }>)[id]?.colour;
     if (id === 'kk-slider') {
@@ -298,7 +320,9 @@
     if (px < r.left - pad || px > r.right + pad || py < r.top - pad || py > r.bottom + pad) return false;
     // my villager walks over to talk (avatar.ts); they speak once it's there (a tap meanwhile is the same tap)
     if (talkTimer) return true;
-    const { ms } = spot ? approach(spot.x, spot.y) : { ms: 0 };
+    // it stands beside them, not on them: the figure's half-width plus a villager's (a pair is wider)
+    const hw = spot ? (spot.stage ? spot.h * 0.32 * (WIDE[id] ?? 1) : BEACH[id].hw) : 0;
+    const { ms } = spot ? approach(spot.x, spot.y, { reach: [hw + 22, hw + 36] }) : { ms: 0 };
     if (!ms) {
       void talk(id);
       return true;
@@ -323,7 +347,13 @@
     <span class="visitor {who}" class:show={!!playing} data-visitor={who} data-stage={spot.stage || undefined} bind:this={el}
       style:translate="{U(spot.x)} {U(spot.y)}" style:--h={U(spot.h)} style:--lift={U(spot.stage ? (FLOAT[who] ?? 0) : 0)}>
       <i class="shade"></i>
-      <span class="art"><span class="body" bind:this={bodyEl}><OfficialArt key={ART[who] ?? `villagers/${who}`} size={U(spot.h)} /></span></span>
+      {#if who === 'reese'}
+        <!-- Reese and Cyrus, side by side, under their heart float -->
+        <span class="art pair"><span class="body" bind:this={bodyEl}><OfficialArt key="villagers/reese" size={U(spot.h)} /><OfficialArt key="villagers/cyrus" size={U(spot.h * 1.05)} /></span></span>
+        <span class="float" data-heart-float>{@render heart()}</span>
+      {:else}
+        <span class="art"><span class="body" bind:this={bodyEl}><OfficialArt key={ART[who] ?? `villagers/${who}`} size={U(spot.h)} /></span></span>
+      {/if}
       {#if playing}<span class="notes">{#each [0, 1, 2] as i (i)}<i style:--i={i}>♪</i>{/each}</span>{/if}
       {#if treat}
         <!-- Jack's joy at a treat: the candy pops up over his head in a little spooky sparkle -->
@@ -341,6 +371,12 @@
   <span class="caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {titleOf(playing)}</span>
 {/if}
 
+<!-- the heart float: a pink heart balloon on a string, a highlight on its upper left (NH's soft item style) -->
+{#snippet heart()}
+  <svg viewBox="-24 -24 48 64"><path class="string" d="M0 18 C-3 26 3 32 0 40" /><path class="hb" d="M0 18 C-26 2 -20 -20 -8 -20 C-3 -20 0 -16 0 -12 C0 -16 3 -20 8 -20 C20 -20 26 2 0 18 Z" />
+    <path class="hl" d="M-12 -12 C-9 -16 -5 -15 -4 -12" /></svg>
+{/snippet}
+
 <style>
   /* on the centre stage: among the island's things (z 45: over the trees' row and the hedge, under the villagers 51–52;
      the spot is measured clear of every control), under the time-of-day tint; on the beach in front of everyone */
@@ -349,6 +385,13 @@
   .visitor { position: absolute; left: 0; top: 0; width: 0; height: 0; }
   .visitor > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .art { translate: -50% calc(-97% - var(--lift)); transform-origin: 50% 100%; animation: arrive .6s ease-out both; }
+  /* Reese and Cyrus: side by side, a little apart */
+  .pair .body { display: flex; align-items: flex-end; gap: calc(var(--h) * .03); }
+  .float { left: 0; top: calc(var(--h) * -1.5); width: calc(var(--h) * .5); translate: -50% 0; animation: arrive .6s ease-out both, bob 3.4s ease-in-out infinite alternate; }
+  .float svg { width: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(120, 40, 70, .3)); }
+  .float .hb { fill: #FF7FAE; } .float .hl { fill: none; stroke: #FFE3EE; stroke-width: 3; stroke-linecap: round; }
+  .float .string { fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 1.4; }
+  @keyframes bob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(calc(var(--h) * -.06)) rotate(3deg); } }
   .art :global(.official) { max-width: none; }
   @keyframes arrive { from { opacity: 0; } }
   /* group stretching: the same stretches as the villagers (tokens.css), from the feet */

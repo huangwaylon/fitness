@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { VISITORS, VISITOR_LINES, VISIT_ODDS, visitorAt, visitorLine } from './visitors.ts';
 import { eventAt } from './events.ts';
+import { milestoneOn } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { EventNow } from './events.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -36,7 +37,7 @@ describe('visitors (NH)', () => {
       const wd = (d + 1) % 7; // 2026-01-05 is a Monday
       if (wd === 6 || wd === 0) continue;
       // a holiday host's day (events.ts) has its own visitor until midnight
-      if (eventAt(date, 12) || eventAt(addDays(date, 1), 2)) continue;
+      if (eventAt(date, 12) || eventAt(addDays(date, 1), 2) || milestoneOn(date) !== null) continue; // and the wedding countdown's
       const night = at(date, 22, wd), dawn = visitorAt(addDays(date, 1), date, 2, (wd + 1) % 7);
       expect(dawn).toBe(night); // the same night across midnight
       if (night === 'wisp') wisp++;

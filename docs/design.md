@@ -542,6 +542,20 @@ introduction, then four lines; ja/en; their day's two villager lines join the ch
 Jack keeps Halloween ([Halloween](#halloween)). `?event=<id>` (dev or `?demo`) forces a day; `?visitor=<id>` brings a
 host; `?find=earth-egg` makes every dig spot an egg.
 
+### Wedding countdown
+
+`island/wedding.ts`, `island/Wedding.svelte`, `island/Visitor.svelte`, `e2e/wedding.spec.ts`. Our wedding is 2027-10-08
+(Tokyo). On the milestone days before it, 365, 200, 100, 50, 30, 7 and 1 days to go and the day itself (2026-10-08,
+2027-03-22, 06-30, 08-19, 09-08, 10-01, 10-07, 10-08), Reese and Cyrus (リサ, カイゾー: NH's wedding couple, official
+renders) are the visitor from 06:00 to midnight, side by side on the centre stage (0.76 of a villager, so the pair
+clears both canopies) under a pink heart float that bobs on its string. Reese's introduction ends on the count,
+「けっこんしき まで あと 100日！」 (on the day 「ごけっこん おめでとう！」); then they take turns, Cyrus a line of his, Reese one of
+hers and the count again. On the day: the villagers turn to each other, bow and glow with hearts as the island opens,
+under a burst of confetti the first time that day on this phone (`scene-wedding`), and fireworks from 19:00 (the sky's
+burst). Every June Sunday (NH's Wedding Season) NH's wedding arch (cute) stands behind the centre stage, measured
+clear of every control (the tape deck keeps clear of it). No ベル. My villager walking over to a visitor stands
+beside them (the figure's half-width plus a villager's), never on them.
+
 ### Celeste and meteor showers
 
 `island/meteor.ts`, `island/visitors.ts`, `e2e/celeste.spec.ts`. NH's meteor showers: about one night in ten, at most one a
