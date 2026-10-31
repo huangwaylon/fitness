@@ -45,38 +45,58 @@ export const JUNK: readonly JunkId[] = ['boot', 'old-tire', 'empty-can'];
 const JUNK_ODDS = 14;
 
 export type BugId =
-  | 'common-butterfly' | 'yellow-butterfly' | 'tiger-butterfly' | 'darner-dragonfly' | 'red-dragonfly' | 'firefly'
-  | 'moth' | 'bell-cricket' | 'cricket' | 'ladybug';
+  | 'common-butterfly' | 'yellow-butterfly' | 'tiger-butterfly' | 'peacock-butterfly' | 'emperor-butterfly' | 'honeybee'
+  | 'ladybug' | 'darner-dragonfly' | 'banded-dragonfly' | 'red-dragonfly' | 'robust-cicada' | 'evening-cicada' | 'firefly'
+  | 'rice-grasshopper' | 'grasshopper' | 'migratory-locust' | 'mantis' | 'orchid-mantis' | 'bell-cricket' | 'cricket'
+  | 'moth';
 
-/** How a bug moves: a butterfly flutters about the flowers, a dragonfly darts and hovers over the lawn, a firefly
- *  drifts and blinks, a cricket hops in the grass, a ladybug crawls out and flies off. */
-export type Flight = 'flutter' | 'dart' | 'drift' | 'hop';
+/** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers, a dragonfly darts and hovers over the
+ *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada flies in to a
+ *  tree's trunk and perches there, singing. */
+export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch';
 
 interface Bug extends Seasonal {
   flight: Flight;
+  /** A second span of hours (NH's evening cicada: dawn and dusk). */
+  also?: readonly [number, number];
 }
 
-/** NH bugs that suit this island (no wasps, nothing that chases): months and hours as in NH's northern hemisphere.
- *  Fireflies follow the island's own summer nights (NH: June). The moth and the ladybug are weight 0 as ambient
- *  critters: they come out of a shaken bush (bushBug). */
+/** NH bugs that suit this island (no wasps, nothing that chases, nothing tropical in winter): months and hours as in
+ *  NH's northern hemisphere (Nookipedia). Spring: the butterflies, the honeybee, the ladybug, the peacock butterfly;
+ *  summer: the emperor butterfly at dusk, the dragonflies, the cicadas on the trunks, fireflies at night; autumn: the
+ *  red dragonfly, the grasshoppers and the locust, the crickets in the evening, the mantises; winter: the common
+ *  butterfly by day, moths at night. Deviations from NH: fireflies follow the island's own summer nights (NH: June
+ *  only); the emperor butterfly keeps to summer (NH: also Dec–Mar). NH has no pine cricket (its コオロギ is `cricket`). */
 export const BUGS: Record<BugId, Bug> = {
   'common-butterfly': { months: span(9, 6), hours: [4, 19], flight: 'flutter', weight: 4 },
   'yellow-butterfly': { months: [3, 4, 5, 6, 9, 10], hours: [4, 19], flight: 'flutter', weight: 2 },
   'tiger-butterfly': { months: span(3, 9), hours: [4, 19], flight: 'flutter', weight: 2 },
+  'peacock-butterfly': { months: [3, 4, 5, 6], hours: [4, 19], flight: 'flutter', weight: 1 },
+  'emperor-butterfly': { months: [6, 7, 8, 9], hours: [17, 8], flight: 'flutter', weight: 1 },
+  honeybee: { months: [3, 4, 5, 6, 7], hours: [8, 17], flight: 'flutter', weight: 2 },
+  ladybug: { months: [3, 4, 5, 6, 10], hours: [8, 17], flight: 'flutter', weight: 1 },
   'darner-dragonfly': { months: span(4, 10), hours: [8, 17], flight: 'dart', weight: 2 },
+  'banded-dragonfly': { months: span(5, 10), hours: [8, 17], flight: 'dart', weight: 1 },
   'red-dragonfly': { months: [9, 10], hours: [8, 19], flight: 'dart', weight: 3 },
+  'robust-cicada': { months: [7, 8], hours: [8, 17], flight: 'perch', weight: 3 },
+  'evening-cicada': { months: [7, 8], hours: [4, 8], also: [16, 19], flight: 'perch', weight: 3 },
   firefly: { months: [6, 7, 8], hours: [19, 4], flight: 'drift', weight: 5 },
+  'rice-grasshopper': { months: [8, 9, 10, 11], hours: [8, 19], flight: 'hop', weight: 2 },
+  grasshopper: { months: [7, 8, 9], hours: [8, 17], flight: 'hop', weight: 2 },
+  'migratory-locust': { months: [8, 9, 10, 11], hours: [8, 19], flight: 'hop', weight: 1 },
+  mantis: { months: span(3, 11), hours: [8, 17], flight: 'hop', weight: 1 },
+  'orchid-mantis': { months: span(3, 11), hours: [8, 17], flight: 'hop', weight: 1 },
   'bell-cricket': { months: [9, 10], hours: [17, 8], flight: 'hop', weight: 2 },
   cricket: { months: [9, 10, 11], hours: [17, 8], flight: 'hop', weight: 2 },
-  moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 0 },
-  ladybug: { months: [3, 4, 5, 6, 10], hours: [8, 17], flight: 'flutter', weight: 0 }
+  moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 1 }
 };
 
 /** Inside [from, to) of the day, wrapping past midnight when to < from. */
 export function inHours([from, to]: readonly [number, number], h: number): boolean {
   return from <= to ? h >= from && h < to : h >= from || h < to;
 }
-const about = (c: Seasonal, month: number, hour: number) => c.months.includes(month) && inHours(c.hours, hour);
+const about = (c: Seasonal & { also?: readonly [number, number] }, month: number, hour: number) =>
+  c.months.includes(month) && (inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour)));
 
 /** A weighted pick among the ids about at (month, hour) with weight > 0, or null. `r` is a uniform [0, 1) source. */
 function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number): K | null {
@@ -96,7 +116,7 @@ export function hookItem(fish: FishId, r: () => number): FishId | JunkId {
   return r() * JUNK_ODDS < 1 ? JUNK[Math.floor(r() * JUNK.length)] : fish;
 }
 
-/** An ambient bug for (month, hour), or null (a winter evening, say: nobody about). */
+/** An ambient bug for (month, hour), or null when nobody is about (with the moths out every night, never in NH's table). */
 export const pickBug = (month: number, hour: number, r: () => number): BugId | null => pick(BUGS, month, hour, r);
 
 /** What flies out of a shaken bush: 1 in 10 a bug (a moth after dark, else a butterfly of the season; 1 in 4 of those a
@@ -105,7 +125,7 @@ export function bushBug(month: number, hour: number, r: () => number): BugId | n
   if (r() * 10 >= 1) return null;
   if (about(BUGS.moth, month, hour)) return 'moth';
   if (about(BUGS.ladybug, month, hour) && r() < 0.25) return 'ladybug';
-  const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => BUGS[k].flight === 'flutter' && BUGS[k].weight > 0 && about(BUGS[k], month, hour));
+  const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && about(BUGS[k], month, hour));
   return flutter.length ? flutter[Math.floor(r() * flutter.length)] : null;
 }
 
@@ -140,14 +160,19 @@ export interface BitePlan {
   window: number;
 }
 
-/** The bite window (ms): NH's is about half a second with a controller; a phone tap gets a little longer. */
-export const BITE_WINDOW_MS = 1000;
-/** A shadow notices a bobber this close (stage units). */
-export const NOTICE_U = 90;
+/** The bite window (ms): NH's is about half a second with a controller; a phone tap, reacting to the 「！」, gets
+ *  longer (a human sees it, decides and taps in ~0.4–0.8 s). */
+export const BITE_WINDOW_MS = 1600;
+/** A tap in the sea this close to a shadow (stage units) casts a bobber (1.5× the old 130u)... */
+export const CAST_U = 195;
+/** ...and the shadow notices a bobber this close, so every cast it allows is noticed (the bobber lands a little nearer
+ *  the beach than the tap, now and then). */
+export const NOTICE_U = 210;
 
-export function bitePlan(distU: number, r: () => number): BitePlan {
-  const arrive = 500 + Math.min(distU, NOTICE_U) * 14 + r() * 500; // a slow, curious swim
-  const n = Math.floor(r() * 4); // 0–3 nibbles
+/** A slow, curious swim up to the bobber `distU` away, 0–3 nibbles (or `minNibbles`+), then the bite, all from `from`. */
+function story(from: number, distU: number, r: () => number, minNibbles = 0): BitePlan {
+  const arrive = from + 500 + Math.min(distU, NOTICE_U) * 8 + r() * 500;
+  const n = minNibbles + Math.floor(r() * (4 - minNibbles)); // up to 3 nibbles
   const nibbles: number[] = [];
   let at = arrive + 400 + r() * 500;
   for (let i = 0; i < n; i++) {
@@ -156,6 +181,14 @@ export function bitePlan(distU: number, r: () => number): BitePlan {
   }
   return { arrive: Math.round(arrive), nibbles, bite: Math.round(at), window: BITE_WINDOW_MS };
 }
+
+export const bitePlan = (distU: number, r: () => number): BitePlan => story(0, distU, r);
+
+/** The fish hesitates (a first tap before the bite, `ms` after the bobber landed): it backs off HESITATE_U, then
+ *  comes back from there and nibbles (at least once) before it bites, later. */
+export const HESITATE_U = 16;
+export const HESITATE_MS = 700;
+export const hesitatePlan = (ms: number, r: () => number): BitePlan => story(ms + HESITATE_MS, HESITATE_U, r, 1);
 
 /** Where a cast stands when the player taps again. */
 export type CastPhase = 'waiting' | 'approach' | 'nibble' | 'bite' | 'late';
@@ -168,10 +201,13 @@ export function castPhase(plan: BitePlan | null, ms: number): CastPhase {
   return ms < plan.bite + plan.window ? 'bite' : 'late';
 }
 
-/** A tap while the bobber is out (NH's A button): reel in on the bite to catch it; any earlier (or too late) and the fish
- *  is spooked and gone; with no fish interested it just reels the line back in. */
-export function reel(phase: CastPhase): 'catch' | 'flee' | 'reel' {
-  return phase === 'bite' ? 'catch' : phase === 'waiting' ? 'reel' : 'flee';
+/** A tap while the bobber is out (NH's A button): reel in on the bite to catch it. A first tap any earlier only makes
+ *  the fish hesitate (it backs off and comes back); a second early tap (or one too late) and it's spooked and gone.
+ *  With no fish interested it just reels the line back in. */
+export function reel(phase: CastPhase, hesitated = false): 'catch' | 'hesitate' | 'flee' | 'reel' {
+  if (phase === 'bite') return 'catch';
+  if (phase === 'waiting') return 'reel';
+  return phase !== 'late' && !hesitated ? 'hesitate' : 'flee';
 }
 
 // ---------- the net ----------

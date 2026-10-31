@@ -158,11 +158,19 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.15, g: 1, lo: 1200, hi: 5000, shape: 'decay', grains: 500 },
     { kind: 'tone', f: 1900, to: 1500, glide: 0.06, t: 0.01, d: 0.07, g: 0.15, wave: 'tri' }
   ],
-  // critters: a bobber's "pocha" (a quick falling note and a little water), the reel's ratchet, an original catch tune
+  // critters: a bobber's "pocha" (a quick falling note and a little water), the bite's gulp and splash, the reel's ratchet, an original catch tune
   // (four mallet notes up and a twinkle: not NH's), the net's airy swing and the balloon's "pan!" with a glint
   plop: [
     { kind: 'tone', f: 950, to: 260, glide: 0.05, t: 0, d: 0.1, g: 0.9, attack: 0.001 },
     { kind: 'noise', t: 0.02, d: 0.14, g: 0.35, lo: 600, hi: 3200, shape: 'decay', grains: 60 }
+  ],
+  // the bite: NH's "zubon!" as the float is yanked under: a deep falling gulp, a heavy splash and a bright spray,
+  // nothing like the nibble's light high "pocha"
+  bite: [
+    { kind: 'tone', f: 520, to: 95, glide: 0.12, t: 0, d: 0.24, g: 1, attack: 0.002, partials: [[2, 0.3, 0.4]] },
+    { kind: 'noise', t: 0.01, d: 0.34, g: 0.9, lo: 250, hi: 2400, shape: 'decay', grains: 120 },
+    { kind: 'noise', t: 0.04, d: 0.3, g: 0.55, lo: 2500, hi: 9000, shape: 'decay', grains: 200 },
+    { kind: 'tone', f: 180, to: 70, glide: 0.2, t: 0.06, d: 0.26, g: 0.5, attack: 0.004 }
   ],
   reel: [
     ...Array.from({ length: 7 }, (_, i): Noise => ({ kind: 'noise', t: i * 0.045, d: 0.022, g: 0.7, lo: 2200, hi: 8000, shape: 'decay' })),

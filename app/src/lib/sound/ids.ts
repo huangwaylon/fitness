@@ -18,9 +18,9 @@ export type SoundId =
   | 'pop' | 'surprise' | 'heart' | 'sparkle' | 'oops'
   // scenery taps (docs/design.md#scene-interactions): quiet, jittered, two at most
   | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow'
-  // the island's critters and the balloon (docs/design.md#scene-interactions): a bobber plop, the reel, a little catch
-  // tune, the net's swing, the balloon's pop
-  | 'plop' | 'reel' | 'catch' | 'net' | 'burst';
+  // the island's critters and the balloon (docs/design.md#scene-interactions): a bobber plop, the bite (the bobber
+  // yanked under), the reel, a little catch tune, the net's swing, the balloon's pop
+  | 'plop' | 'bite' | 'reel' | 'catch' | 'net' | 'burst';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
@@ -79,6 +79,8 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   'step-grass': { bus: 'sfx', gain: 0.35, jitter: 90, max: 2 },
   'step-snow': { bus: 'sfx', gain: 0.4, jitter: 90, max: 2 },
   plop: { bus: 'sfx', gain: 0.4, jitter: 60, max: 2 },
+  // the bite must be heard over the waves: the loudest of the scenery (still ≤ 0.5)
+  bite: { bus: 'sfx', gain: 0.5, jitter: 40, max: 1 },
   reel: { bus: 'sfx', gain: 0.3, jitter: 30, max: 1 },
   // a catch's little tune: an effect, not a jingle (it must not duck the music)
   catch: { bus: 'sfx', gain: 0.42, jitter: 10, max: 1 },

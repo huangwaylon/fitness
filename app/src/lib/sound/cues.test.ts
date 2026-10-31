@@ -30,4 +30,13 @@ describe('scenery cues', () => {
       expect(durationOf(c.sound), k).toBeLessThan(1); // a ≤ 1 s flourish
     }
   });
+  it("fishing: the bite has its own sound (not the nibble's plop), the loudest of the scenery, so it's heard at once", () => {
+    const bite = CUES['scene-bite'], nibble = CUES['scene-nibble'];
+    expect(bite.sound).toBe('bite');
+    expect(nibble.sound).not.toBe(bite.sound);
+    expect(bite.delay ?? 0).toBe(0); // at the moment the bobber goes under
+    const level = (k: SceneSfx) => SOUNDS[CUES[`scene-${k}`].sound].gain * (CUES[`scene-${k}`].gain ?? 1);
+    for (const k of Object.keys(KINDS) as SceneSfx[]) expect(level('bite'), k).toBeGreaterThanOrEqual(level(k));
+    expect(level('bite')).toBeGreaterThan(level('nibble') * 2);
+  });
 });

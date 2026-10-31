@@ -90,7 +90,9 @@ const SPECS: Record<string, Spec> = {
 for (const name of [
   'Sea Bass', 'Horse Mackerel', 'Olive Flounder', 'Red Snapper', 'Dab', 'Squid', 'Sea Butterfly', 'Puffer Fish',
   'Barred Knifejaw', 'Anchovy', 'Common Butterfly', 'Yellow Butterfly', 'Tiger Butterfly', 'Darner Dragonfly',
-  'Red Dragonfly', 'Firefly', 'Moth', 'Bell Cricket', 'Cricket', 'Ladybug', 'Boot', 'Old Tire', 'Empty Can'
+  'Red Dragonfly', 'Firefly', 'Moth', 'Bell Cricket', 'Cricket', 'Ladybug', 'Boot', 'Old Tire', 'Empty Can',
+  'Peacock Butterfly', 'Emperor Butterfly', 'Honeybee', 'Banded Dragonfly', 'Robust Cicada', 'Evening Cicada',
+  'Rice Grasshopper', 'Grasshopper', 'Migratory Locust', 'Mantis', 'Orchid Mantis'
 ])
   SPECS[`critters/${name.toLowerCase().replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and

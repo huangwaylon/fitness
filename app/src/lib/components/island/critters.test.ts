@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BITE_WINDOW_MS, BUGS, FISH, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hookItem, inHours, netSwing,
-  nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BugId, type FishId
+  BITE_WINDOW_MS, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
+  hookItem, inHours, netSwing, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 import ja from '#lib/i18n/ja.json';
@@ -43,22 +43,44 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
       expect(top, `month ${m}`).toBe('sea-bass');
     }
   });
-  it('bugs by month and hour: butterflies by day, fireflies on summer nights, crickets on autumn evenings, nobody on a winter night', () => {
+  it('bugs by month and hour: butterflies by day, fireflies on summer nights, crickets on autumn evenings, only moths on a winter night', () => {
     const about = (month: number, hour: number) => {
       const r = mulberry32(month * 100 + hour);
-      return new Set(Array.from({ length: 2000 }, () => pickBug(month, hour, r)));
+      return new Set(Array.from({ length: 4000 }, () => pickBug(month, hour, r)));
     };
     expect(about(5, 12).has('common-butterfly')).toBe(true);
     expect(about(7, 12).has('common-butterfly')).toBe(false); // NH: Sep–Jun
-    expect(about(7, 21)).toEqual(new Set(['firefly']));
-    expect(about(10, 20)).toEqual(new Set(['bell-cricket', 'cricket']));
+    expect(about(7, 21)).toEqual(new Set(['firefly', 'moth', 'emperor-butterfly']));
+    expect(about(10, 20)).toEqual(new Set(['bell-cricket', 'cricket', 'moth']));
     expect(about(10, 12).has('red-dragonfly')).toBe(true);
-    expect(about(1, 23)).toEqual(new Set([null]));
-    // the moth and the ladybug only come out of a bush
-    for (let m = 1; m <= 12; m++) for (let h = 0; h < 24; h++) {
-      const s = about(m, h);
-      expect(s.has('moth') || s.has('ladybug')).toBe(false);
+    expect(about(1, 23)).toEqual(new Set(['moth']));
+    expect(about(1, 18)).toEqual(new Set(['common-butterfly'])); // NH: 4 am – 7 pm, even in winter
+  });
+  it("NH's seasons for the new bugs (northern hemisphere, Nookipedia)", () => {
+    const about = (month: number, hour: number) => {
+      const r = mulberry32(month * 7 + hour);
+      return new Set(Array.from({ length: 6000 }, () => pickBug(month, hour, r)));
+    };
+    const spring = about(4, 10);
+    for (const id of ['common-butterfly', 'yellow-butterfly', 'tiger-butterfly', 'honeybee', 'ladybug', 'peacock-butterfly'] as BugId[])
+      expect(spring.has(id), id).toBe(true);
+    const summer = about(7, 10);
+    for (const id of ['darner-dragonfly', 'banded-dragonfly', 'robust-cicada', 'grasshopper'] as BugId[]) expect(summer.has(id), id).toBe(true);
+    expect(summer.has('red-dragonfly')).toBe(false); // late summer – autumn (Sep–Oct)
+    expect(about(7, 17).has('evening-cicada')).toBe(true); // dawn and dusk only
+    expect(about(7, 12).has('evening-cicada')).toBe(false);
+    expect(about(7, 6).has('evening-cicada')).toBe(true);
+    expect(about(8, 20).has('emperor-butterfly')).toBe(true); // a summer evening
+    const autumn = about(10, 10);
+    for (const id of ['red-dragonfly', 'rice-grasshopper', 'migratory-locust', 'mantis', 'orchid-mantis'] as BugId[]) expect(autumn.has(id), id).toBe(true);
+    // winter: the common butterfly by day, moths at night; nothing tropical
+    for (const m of [12, 1, 2]) {
+      expect(about(m, 12)).toEqual(new Set(['common-butterfly']));
+      expect(about(m, 21)).toEqual(new Set(['moth']));
     }
+    // the cicada perches on a trunk; every flight is one of the five
+    expect(BUGS['robust-cicada'].flight).toBe('perch');
+    for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch']).toContain(b.flight);
   });
   it('a shaken bush: mostly nothing; a moth after dark; a butterfly (now and then a ladybug) by day', () => {
     expect(bushBug(5, 12, rolls(0.5))).toBeNull();
@@ -66,6 +88,7 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(bushBug(5, 12, rolls(0.05, 0.1))).toBe('ladybug');
     expect(BUGS[bushBug(5, 12, rolls(0.05, 0.9, 0))!].flight).toBe('flutter');
     expect(bushBug(7, 12, rolls(0.05, 0.9, 0))).toBe('tiger-butterfly'); // July: the common one is out of season
+    expect(bushBug(5, 12, rolls(0.05, 0.9, 0.99))).toMatch(/-butterfly$/); // never a bee out of a bush
   });
   it('1 in 14 a piece of junk instead of the fish', () => {
     const r = mulberry32(7);
@@ -104,14 +127,35 @@ describe('fishing', () => {
       expect(p.window).toBe(BITE_WINDOW_MS);
     }
   });
-  it('reeling on the bite catches it; early or late it flees; with nobody interested the line comes back', () => {
-    const p = { arrive: 1000, nibbles: [1500, 2300], bite: 3000, window: 1000 };
-    expect(reel(castPhase(p, 500))).toBe('flee'); // still swimming up
-    expect(reel(castPhase(p, 1600))).toBe('flee'); // a nibble
+  it('a 1.6 s bite window; the cast reaches 1.5× as far as before, and the shadow notices a bobber that far', () => {
+    expect(BITE_WINDOW_MS).toBe(1600);
+    expect(CAST_U).toBe(195);
+    expect(NOTICE_U).toBeGreaterThanOrEqual(CAST_U);
+  });
+  it('reeling on the bite catches it; a first early tap makes it hesitate, a second scares it off; late it flees', () => {
+    const p = { arrive: 1000, nibbles: [1500, 2300], bite: 3000, window: BITE_WINDOW_MS };
+    expect(reel(castPhase(p, 500))).toBe('hesitate'); // still swimming up
+    expect(reel(castPhase(p, 1600))).toBe('hesitate'); // a nibble
+    expect(reel(castPhase(p, 500), true)).toBe('flee'); // the second early tap
+    expect(reel(castPhase(p, 1600), true)).toBe('flee');
     expect(reel(castPhase(p, 3000))).toBe('catch');
-    expect(reel(castPhase(p, 3999))).toBe('catch');
-    expect(reel(castPhase(p, 4000))).toBe('flee'); // too late
+    expect(reel(castPhase(p, 4599))).toBe('catch');
+    expect(reel(castPhase(p, 4599), true)).toBe('catch'); // a hesitant fish still bites in the end
+    expect(reel(castPhase(p, 4600))).toBe('flee'); // too late
     expect(reel(castPhase(null, 5000))).toBe('reel');
+  });
+  it('a hesitating fish backs off, comes back, nibbles at least once, and bites later', () => {
+    for (let s = 0; s < 200; s++) {
+      const tap = 400 + (s % 7) * 500;
+      const h = hesitatePlan(tap, mulberry32(s));
+      expect(h.arrive).toBeGreaterThan(tap + HESITATE_MS);
+      expect(h.nibbles.length).toBeGreaterThanOrEqual(1);
+      expect(h.nibbles.length).toBeLessThanOrEqual(3);
+      expect(h.nibbles.every((t) => t > h.arrive && t < h.bite)).toBe(true);
+      expect(h.bite - tap).toBeLessThan(7000);
+      expect(castPhase(h, tap + 1)).toBe('approach'); // a tap just after: the second early one (flees)
+      expect(h.window).toBe(BITE_WINDOW_MS);
+    }
   });
 });
 

@@ -1,11 +1,14 @@
 <script lang="ts">
-  // The island's critters (docs/design.md "Scene interactions"), after NH: now and then (every 1–3 minutes the island
-  // is on screen) a fish shadow swims in the sea off the beach or a bug of the season and hour comes by (butterflies
-  // over the flower beds, a dragonfly over the hedge, fireflies on summer nights, a cricket in the autumn grass); a
-  // shaken bush sometimes lets one out. Nothing counts: a catch is an official icon and NH's caption for a moment.
-  //   Fishing: a tap in the sea near a shadow casts a bobber (a line from the beach); the fish swims up, nibbles 0–3
-  //   times and bites (the bobber goes under, plop): a tap then catches it, a tap any earlier or none in time and it
-  //   flees. 1 in 14 the line brings up a boot, a tire or a can.
+  // The island's critters (docs/design.md "Scene interactions"), after NH: now and then (every 15–40 s the island
+  // is on screen) a fish shadow swims in the sea off the beach or a bug of the season and hour comes by; a shaken
+  // bush sometimes lets a butterfly or a moth out. Nothing counts: a catch is an official icon and NH's caption for a moment.
+  //   Fishing: a tap in the sea near a shadow (CAST_U) casts a bobber (a line from the beach); the fish swims up,
+  //   nibbles 0–3 times (small wiggles of the bobber) and bites: the bobber is yanked under with a splash, its own
+  //   sound and NH's 「！」 over it. While the bobber is out any tap is the reel: on the bite (within 1.6 s) it catches
+  //   the fish; a first tap any earlier only makes it hesitate (it backs off, comes back, nibbles and bites later), a
+  //   second early tap or none in time and it flees. 1 in 14 the line brings up a boot, a tire or a can.
+  //   Bugs (NH's by month and hour): butterflies, a bee or a ladybug over the flower beds, a dragonfly over the hedge,
+  //   fireflies on summer nights, grasshoppers, crickets and mantises in the grass, a cicada perched on a trunk.
   //   Bugs: a tap on one swings the net (caught); a tap close by startles it away.
   // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`), and a shaken bush (`fromBush`).
   // Cheap: ≤ 1 fish + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
@@ -17,11 +20,12 @@
   import { artUrl } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
-  import { HEDGE_BASE, HEDGE_X, BUSH_U, SAND, type Tod } from './scene.ts';
+  import { HEDGE_BASE, HEDGE_X, BUSH_U, SAND, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
   import {
-    BUGS, FISH, STAY_MS, bitePlan, bushBug, castPhase, caption, critterArt, hookItem, netSwing, nextSpawnMs, pickBug,
-    pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId, type Flight, type JunkId
+    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, caption, critterArt,
+    hesitatePlan, hookItem, netSwing, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
+    type Flight, type JunkId
   } from './critters.ts';
 
   interface Props {
@@ -34,8 +38,14 @@
 
   interface Box { x0: number; x1: number; y0: number; y1: number }
   interface Fish { item: FishId | JunkId; size: number; x: number; y: number; ms: number; flip: boolean; box: Box; gone: boolean; dash: boolean }
-  interface Cast { x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number }
-  interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[] }
+  interface Cast {
+    x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
+    /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
+    gen: number;
+    /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
+    hesitated: boolean;
+  }
+  interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean }
   interface Card { n: number; x: number; y: number; dx: number; dy: number; art: string; text: string; placed: boolean }
   interface Net { n: number; x: number; y: number }
 
@@ -109,6 +119,18 @@
   const BEDS: Box[] = [{ x0: 45, x1: 110, y0: 212, y1: 285 }, { x0: 280, x1: 345, y0: 212, y1: 285 }];
   const HEDGE: Box = { x0: 50, x1: 340, y0: 14, y1: 46 };
   const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
+  /** A cicada's perch: the visible trunk of a tree, midway between its canopy and its fruit row (both buttons, measured:
+   *  the row's 44px tap target reaches up the trunk on a small phone), so a tap on the cicada (a finger's fuzzy hit
+   *  included) lands on neither; null when the gap is under 20px. */
+  function trunk(g: NonNullable<ReturnType<typeof geo>>, side: -1 | 1): Box | null {
+    const tree = scene?.querySelectorAll<HTMLElement>('.canopy')[side < 0 ? 0 : 1];
+    const row = scene?.querySelectorAll<HTMLElement>('.row-btn')[side < 0 ? 0 : 1];
+    if (!tree || !row) return null;
+    const top = tree.getBoundingClientRect().bottom, bottom = row.getBoundingClientRect().top;
+    if (bottom - top < 20) return null;
+    const y = ((top + bottom) / 2 - g.r.top) * g.k, x = side < 0 ? TREE.x.A : TREE.x.B;
+    return { x0: x - 2, x1: x + 2, y0: y - 1.5, y1: y + 1.5 };
+  }
 
   /** The UI nothing of ours may cover, in client px: every control (the ribbon and its tails, the sync chip, the
    *  trees, the fruit rows, the jar and its plate, the villagers) but the balloon, a tree's popup
@@ -199,7 +221,7 @@
     const by = front ? Math.max(y, shoreY(x) + 8) : y;
     const side = x < 195 ? 1 : -1;
     const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
-    cast = { x: bx, y: by, sx, sy, landed: false, t0: 0, plan: null, under: false, rings: 0 };
+    cast = { x: bx, y: by, sx, sy, landed: false, t0: 0, plan: null, under: false, rings: 0, gen: 0, hesitated: false };
     sceneSfx('cast');
     sceneSfx('plop');
     later(() => {
@@ -209,40 +231,75 @@
       c.t0 = performance.now();
       c.rings++;
       const d = Math.hypot(f.x - c.x, f.y - c.y);
-      if (d > 90 || fish !== f) return later(() => cast === c && (cast = null), 9000); // nobody noticed
-      const plan = (c.plan = bitePlan(d, rand));
-      // swim up to it, nose to the bobber
-      const ux = (c.x - f.x) / (d || 1), uy = (c.y - f.y) / (d || 1);
-      const len = sizeU(f) * 0.5;
-      Object.assign(f, { ms: plan.arrive, flip: c.x > f.x, x: c.x - ux * len, y: c.y - uy * len * 0.6 });
-      for (const at of plan.nibbles)
-        later(() => {
-          if (cast !== c) return;
-          c.rings++;
-          dip(0.9);
-          sceneSfx('nibble');
-        }, at);
-      later(() => {
-        if (cast !== c) return;
-        c.under = true;
-        c.rings++;
-        sceneSfx('bite');
-      }, plan.bite);
-      later(() => cast === c && flee(), plan.bite + plan.window); // too late
+      if (d > NOTICE_U || fish !== f) return later(() => cast === c && (cast = null), 9000); // nobody noticed
+      follow(c, f, bitePlan(d, rand));
     }, 300);
   }
 
+  /** Play out a plan (ms from the bobber landing): the swim up to it, nose to the bobber, the nibbles, the bite and its
+   *  window. A new plan (the fish hesitated) supersedes the old one's timers. */
+  function follow(c: Cast, f: Fish, plan: BitePlan) {
+    const gen = ++c.gen;
+    c.plan = plan;
+    const live = () => cast === c && c.gen === gen;
+    const at = (ms: number) => Math.max(0, ms - (performance.now() - c.t0));
+    const d = Math.hypot(f.x - c.x, f.y - c.y) || 1;
+    const ux = (c.x - f.x) / d, uy = (c.y - f.y) / d;
+    const len = sizeU(f) * 0.5;
+    Object.assign(f, { ms: at(plan.arrive), flip: c.x > f.x, x: c.x - ux * len, y: c.y - uy * len * 0.6 });
+    for (const t of plan.nibbles)
+      later(() => {
+        if (!live()) return;
+        c.rings++;
+        nibble();
+        sceneSfx('nibble');
+      }, at(t));
+    later(() => {
+      if (!live()) return;
+      c.under = true;
+      c.rings++;
+      sceneSfx('bite');
+    }, at(plan.bite));
+    later(() => live() && flee(), at(plan.bite + plan.window)); // too late
+  }
+
   let bobEl = $state<HTMLElement>();
-  function dip(depth: number) {
-    bobEl?.animate([{ translate: '0 0' }, { translate: `0 ${U(depth * 2.4)}`, offset: 0.35 }, { translate: '0 0' }], { duration: 300, easing: 'ease-out' });
+  let fishEl = $state<HTMLElement>();
+  /** The shadow's position on screen right now (u), mid-transition included. */
+  function fishNow(): { x: number; y: number } | null {
+    const g = geo(), r = fishEl?.getBoundingClientRect();
+    return g && r ? { x: (r.left - g.r.left) * g.k, y: (r.top - g.r.top) * g.k } : null;
+  }
+  /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
+  function nibble() {
+    bobEl?.animate(
+      [{ translate: '0 0', rotate: '0deg' }, { translate: `0 ${U(0.9)}`, rotate: '-9deg', offset: 0.25 },
+        { translate: `0 ${U(0.2)}`, rotate: '7deg', offset: 0.55 }, { translate: '0 0', rotate: '0deg' }],
+      { duration: 380, easing: 'ease-out' }
+    );
   }
 
   /** NH's A button while the bobber is out. */
   function reelIn() {
     const c = cast!;
     if (!c.landed) return; // still in the air
-    const r = reel(castPhase(c.plan, performance.now() - c.t0));
+    const ms = performance.now() - c.t0;
+    const r = reel(castPhase(c.plan, ms), c.hesitated);
     if (r === 'flee') return flee();
+    if (r === 'hesitate') {
+      // the line twitches; the fish backs off a little, thinks it over, and comes back for another try
+      const f = fish!;
+      c.hesitated = true;
+      c.gen++;
+      c.rings++;
+      nibble();
+      // from where it is now (it may still be swimming up), straight back from the bobber
+      const p = fishNow() ?? f;
+      const d = Math.hypot(p.x - c.x, p.y - c.y) || 1;
+      Object.assign(f, { ms: HESITATE_MS, x: p.x + ((p.x - c.x) / d) * HESITATE_U, y: p.y + ((p.y - c.y) / d) * HESITATE_U * 0.6 });
+      const plan = hesitatePlan(ms, rand);
+      return later(() => cast === c && fish === f && follow(c, f, plan), HESITATE_MS);
+    }
     cast = null;
     sceneSfx('reel');
     if (r === 'reel') return;
@@ -259,14 +316,17 @@
     preload(critterArt(id));
     const flight = BUGS[id].flight;
     const side = rand() < 0.5 ? -1 : 1;
-    const area = from || id === 'moth' || flight === 'dart' ? HEDGE : flight === 'hop' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
-    // flyers come in from the side of their patch; a firefly blinks on, a cricket is just there in the grass
-    // its patch, minus the controls (measured once: the villagers and the jar don't move far)
-    const keep = guardsU(g, 16);
+    const area = flight === 'perch' ? trunk(g, side)
+      : from || id === 'moth' || flight === 'dart' ? HEDGE : flight === 'hop' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
+    if (!area) return;
+    // flyers come in from the side of their patch; a firefly blinks on, a grasshopper is just there in the grass
+    // its patch, minus the controls (measured once: the villagers and the jar don't move far); a cicada's trunk spot
+    // is already measured clear of the tree's buttons
+    const keep = flight === 'perch' ? [] : guardsU(g, 16);
     const spot = freeIn(area, keep);
     if (!spot) return;
-    const start = from ?? (flight === 'drift' || flight === 'hop' ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y });
-    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep };
+    const start = from ?? (flight === 'drift' || flight === 'hop' ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y - (flight === 'perch' ? 40 : 0) });
+    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false };
     later(fly, 60);
     if (stay) later(() => bugLeave(), STAY_MS.bug);
   }
@@ -275,6 +335,11 @@
     if (!b || b.gone) return;
     const p = freeIn(b.area, b.keep);
     if (!p) return bugLeave();
+    if (b.flight === 'perch') {
+      // in to the trunk, then it sits there and sings until it's netted, startled or done
+      Object.assign(b, { ms: 1500, flip: p.x > b.x, x: p.x, y: p.y });
+      return later(() => bug === b && (b.sat = true), 1500);
+    }
     if (b.flight === 'hop') {
       // a short hop along the grass toward a free spot, then a sit
       const x = clamp(b.x + Math.sign(p.x - b.x || 1) * Math.min(Math.abs(p.x - b.x), between(14, 30)), b.area.x0, b.area.x1);
@@ -379,7 +444,7 @@
     }
     const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
     const f = fish;
-    if (f && !f.gone && offshore(x, y) && hitStage(x, y).kind === 'sea' && Math.hypot(x - f.x, y - f.y) < 130) {
+    if (f && !f.gone && offshore(x, y) && hitStage(x, y).kind === 'sea' && Math.hypot(x - f.x, y - f.y) < CAST_U) {
       castAt(x, y);
       return true;
     }
@@ -431,7 +496,7 @@
 
 <div class="sea-life" aria-hidden="true">
   {#if fish}
-    <span class="mover shadow" class:gone={fish.gone} class:dash={fish.dash} data-critter="fish"
+    <span class="mover shadow" class:gone={fish.gone} class:dash={fish.dash} data-critter="fish" bind:this={fishEl}
       style:translate="{U(fish.x)} {U(fish.y)}" style:transition-duration="{fish.ms}ms" style:--w={U(sizeU(fish))}>
       <i class="fin" class:flip={fish.flip}></i>
     </span>
@@ -443,6 +508,10 @@
     <span class="mover bobber" data-bobber={cast.under ? 'bite' : cast.landed ? 'wait' : 'cast'} class:under={cast.under}
       style:translate="{U(cast.x)} {U(cast.y)}" style:--fx={U(cast.sx - cast.x)} style:--fy={U(cast.sy - cast.y)}>
       {#key cast.rings}{#if cast.rings}<i class="ripple" class:big={cast.under}></i>{/if}{/key}
+      {#if cast.under}
+        <i class="ripple big late"></i>
+        <span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+      {/if}
       <span class="float" bind:this={bobEl}><i class="ball"></i></span>
     </span>
   {/if}
@@ -451,7 +520,7 @@
 <div class="air-life" class:night aria-hidden="true">
   {#if bug}
     {@const b = bug}
-    <span class="mover bug {b.flight} {b.id}" class:gone={b.gone} data-critter={b.id} bind:this={bugEl}
+    <span class="mover bug {b.flight} {b.id}" class:gone={b.gone} class:sat={b.sat} data-critter={b.id} bind:this={bugEl}
       style:translate="{U(b.x)} {U(b.y)}" style:transition-duration="{b.ms}ms">
       <span class="hopper" bind:this={hopEl}>
         <span class="face" class:flip={b.flip}>
@@ -460,13 +529,22 @@
           {:else if b.flight === 'dart'}
             <svg viewBox="-12 -8 24 16"><g class="dwing"><ellipse cx="-3" cy="-4" rx="2.2" ry="5.5" transform="rotate(-62 -3 -4)" /><ellipse cx="-3" cy="4" rx="2.2" ry="5.5" transform="rotate(62 -3 4)" />
               <ellipse cx="1" cy="-4" rx="1.9" ry="5" transform="rotate(-70 1 -4)" /><ellipse cx="1" cy="4" rx="1.9" ry="5" transform="rotate(70 1 4)" /></g>
-              <path class="dbody" d="M-11 0 L4 0" /><circle class="dhead" cx="5.5" cy="0" r="2" /></svg>
+              <path class="dbody" d="M-11 0 L4 0" /><path class="dband" d="M-11 0 L4 0" /><circle class="dhead" cx="5.5" cy="0" r="2" /></svg>
+          {:else if b.flight === 'perch'}
+            <!-- a cicada on the trunk, head up, wings folded over its back -->
+            <svg viewBox="-6 -8 12 16"><ellipse class="cibody" cx="0" cy="-.5" rx="2.6" ry="4.6" /><circle class="cibody" cx="0" cy="-5" r="2.2" />
+              <circle class="eye" cx="-1.7" cy="-5.6" r=".8" /><circle class="eye" cx="1.7" cy="-5.6" r=".8" />
+              <g class="ciwing"><path d="M-.3 -3.4 C-4.6 -2 -4.4 4.6 -1 7.4 C-.4 4 -.2 0 -.3 -3.4 Z" /><path d="M.3 -3.4 C4.6 -2 4.4 4.6 1 7.4 C.4 4 .2 0 .3 -3.4 Z" /></g></svg>
+          {:else if b.id === 'mantis' || b.id === 'orchid-mantis'}
+            <svg viewBox="-8 -8 16 16"><path class="mbody" d="M-6 3 Q-1 2 3 -1" /><path class="mleg" d="M2 -.6 L4.8 -4.8 L6.6 -2.6 M-2 2.4 L-3.2 5.6 M-4.4 2.8 L-6.6 5.4 M0 1.6 L1 5.2" />
+              <path class="mhead" d="M2.6 -1.8 L5.2 -3 L5 -.6 Z" /></svg>
           {:else if b.flight === 'hop'}
             <svg viewBox="-8 -6 16 12"><path class="leg" d="M-1 1 L-5 -3.5 L-7 3" /><ellipse class="cbody" cx="0" cy="0" rx="4.6" ry="2.6" />
               <circle class="cbody" cx="4.4" cy="-.6" r="1.8" /><path class="ant" d="M5.5 -1.8 Q8 -6 3 -5.6 M5.8 -1.4 Q9 -4 6 -6" /></svg>
-          {:else if b.id === 'ladybug'}
-            <svg viewBox="-9 -8 18 16"><g class="wing"><ellipse cx="-3" cy="-4" rx="4" ry="2.4" /></g><g class="wing r"><ellipse cx="3" cy="-4" rx="4" ry="2.4" /></g>
-              <circle class="lady" r="4.4" /><path d="M0 -4.4 V4.4" class="seam" /><circle cx="-2" cy="-1" r=".9" class="dot" /><circle cx="2.1" cy="1.4" r=".9" class="dot" /><circle cx="-1.6" cy="2.2" r=".7" class="dot" /></svg>
+          {:else if b.id === 'honeybee'}
+            <svg viewBox="-8 -8 16 16"><g class="wing"><ellipse cx="-2" cy="-4" rx="2" ry="3.2" transform="rotate(-25 -2 -4)" /></g>
+              <g class="wing r"><ellipse cx="2" cy="-4" rx="2" ry="3.2" transform="rotate(25 2 -4)" /></g>
+              <ellipse class="bee" rx="4.4" ry="3.2" /><path class="stripe" d="M-1.6 -3 V3 M1.2 -3.1 V3.1" /><circle class="beehead" cx="4.6" cy="-.4" r="1.9" /></svg>
           {:else}
             <svg viewBox="-12 -10 24 20">
               <g class="wing"><path d="M0 0 C-4 -9 -12 -9 -11 -2 C-10 2 -4 2 0 0 Z M0 0 C-3 3 -9 6 -7 9 C-5 10 -1 5 0 0 Z" /></g>
@@ -481,6 +559,10 @@
 </div>
 
 <div class="held" aria-hidden="true">
+  {#if cast?.under}
+    <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
+    <span class="mover" style:translate="{U(cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
+  {/if}
   {#if net}
     {#key net.n}
       <span class="mover netfx" style:translate="{U(net.x)} {U(net.y)}">
@@ -536,7 +618,7 @@
   .line.landed { opacity: 1; }
   .line path { fill: none; stroke: rgba(255, 255, 255, .8); stroke-width: 1px; vector-effect: non-scaling-stroke; }
   /* the bobber: NH's red-and-white float, arcing in from the beach, then bobbing; under on the bite */
-  .bobber .float { left: 0; top: 0; animation: cast .3s cubic-bezier(.3, .2, .6, 1) both; }
+  .bobber .float { left: 0; top: 0; transform-origin: 50% 100%; animation: cast .3s cubic-bezier(.3, .2, .6, 1) both; }
   @keyframes cast {
     from { transform: translate(var(--fx), var(--fy)) translateY(calc(-14 * var(--su))); }
     50% { transform: translate(calc(var(--fx) * .5), calc(var(--fy) * .5)) translateY(calc(-16 * var(--su))); }
@@ -544,10 +626,37 @@
   .ball {
     display: block; width: calc(8 * var(--su)); height: calc(8 * var(--su)); margin: calc(-6.4 * var(--su)) 0 0 calc(-4 * var(--su));
     border-radius: 50%; background: linear-gradient(180deg, #F2484A 0 48%, #FFFDF6 52%); box-shadow: inset -1px -1px 0 rgba(0, 0, 0, .12);
-    animation: bob 1.5s ease-in-out .3s infinite alternate; transition: translate .12s ease-in, opacity .12s, scale .12s;
+    animation: bob 1.5s ease-in-out .3s infinite alternate;
   }
   @keyframes bob { from { transform: translateY(calc(-.6 * var(--su))); } to { transform: translateY(calc(.6 * var(--su))); } }
-  .under .ball { translate: 0 calc(3 * var(--su)); scale: .8; opacity: .35; }
+  /* the bite: the bobber is yanked under (a plunge, then only a dark smudge where it went), a splash, a second ring and
+     NH's 「！」 popping up over it: the moment to tap */
+  .under .ball { animation: plunge .22s cubic-bezier(.5, 0, .9, .5) both; }
+  @keyframes plunge {
+    0% { transform: translateY(0); scale: 1; opacity: 1; }
+    30% { transform: translateY(calc(-1.6 * var(--su))); scale: 1.05; }
+    100% { transform: translateY(calc(4.5 * var(--su))); scale: .7 .5; opacity: .2; }
+  }
+  .ripple.late { animation-delay: .25s; }
+  .splash { left: 0; top: 0; }
+  .splash i {
+    position: absolute; left: calc(-1.3 * var(--su)); top: calc(-1.6 * var(--su)); width: calc(2.6 * var(--su)); height: calc(3.6 * var(--su));
+    border-radius: 50% 50% 45% 45%; background: rgba(255, 255, 255, .92); rotate: var(--a); transform-origin: 50% 100%;
+    animation: drop .55s cubic-bezier(.2, .7, .4, 1) both;
+  }
+  @keyframes drop {
+    from { transform: translateY(0) scale(.4); opacity: 1; }
+    60% { opacity: 1; }
+    to { transform: translateY(calc(-11 * var(--su))) scale(.7); opacity: 0; }
+  }
+  .bang {
+    left: 0; top: 0; translate: -50% -100%; margin-top: calc(-12 * var(--su));
+    display: grid; place-items: center; width: clamp(30px, calc(34 * var(--su)), 38px); aspect-ratio: 1; border-radius: 50%;
+    background: #FFFDF6; box-shadow: 0 3px 0 rgba(150, 110, 70, .35), 0 0 0 2px #F2484A inset;
+    font: 900 clamp(20px, calc(23 * var(--su)), 26px) / 1 var(--font-ui); color: #E8383A;
+    transform-origin: 50% 100%; animation: bang .32s cubic-bezier(.3, 1.6, .5, 1) both;
+  }
+  @keyframes bang { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
   .ripple {
     display: block; left: 0; top: 0; width: calc(18 * var(--su)); height: calc(6 * var(--su)); margin: calc(-3 * var(--su)) 0 0 calc(-9 * var(--su));
     border: 1.4px solid rgba(255, 255, 255, .85); border-radius: 50%; animation: ripple .8s ease-out both;
@@ -570,7 +679,12 @@
   .common-butterfly .wing { fill: #FFFDF3; stroke: #77738F; stroke-width: .8; }
   .yellow-butterfly .wing { fill: #FFE46E; stroke: #C79A2A; stroke-width: .8; }
   .tiger-butterfly .wing { fill: #FFCF45; stroke: #3B3026; stroke-width: 1.3; stroke-dasharray: 2 1.4; }
+  .peacock-butterfly .wing { fill: #2C3438; stroke: #3BB49E; stroke-width: 1.1; }
+  .emperor-butterfly .wing { fill: #4C93F2; stroke: #1F3A78; stroke-width: 1; }
   .moth .wing { fill: #DCCBA6; stroke: #A38B62; stroke-width: .8; }
+  .honeybee svg { width: calc(11 * var(--su)); }
+  .honeybee .wing { fill: rgba(255, 255, 255, .7); stroke: rgba(120, 130, 150, .6); stroke-width: .4; animation-duration: .06s; }
+  .bee { fill: #F7C63C; } .stripe { stroke: #3A2C1E; stroke-width: 1.1; } .beehead { fill: #3A2C1E; }
   .bbody { fill: #4E3E30; }
   .ladybug .wing { fill: rgba(255, 255, 255, .55); }
   .lady { fill: #E8443B; } .seam { stroke: #3A2A22; stroke-width: .6; } .dot { fill: #2E2420; }
@@ -581,6 +695,9 @@
   .dbody { stroke-width: 1.8; stroke-linecap: round; }
   .darner-dragonfly .dbody { stroke: #3C8FC4; } .darner-dragonfly .dhead { fill: #2F7A62; }
   .red-dragonfly .dbody { stroke: #E0473A; } .red-dragonfly .dhead { fill: #B8342B; }
+  .dband { display: none; }
+  .banded-dragonfly .dbody { stroke: #2E2C24; } .banded-dragonfly .dhead { fill: #3E7A4A; }
+  .banded-dragonfly .dband { display: inline; stroke: #F2CC3A; stroke-width: 1.8; stroke-dasharray: 1.3 1.5; }
   .dart.mover { transition-timing-function: cubic-bezier(.2, .8, .3, 1); }
   /* firefly: a soft drifting light that blinks */
   .glow {
@@ -591,6 +708,19 @@
   /* crickets: in the grass, a hop now and then (the hop is a Web Animation on .hopper) */
   .hop svg { width: calc(13 * var(--su)); }
   .cbody { fill: #8A6238; } .bell-cricket .cbody { fill: #5A4A36; }
+  .rice-grasshopper .cbody { fill: #A9C653; } .grasshopper .cbody { fill: #6DAA3C; } .migratory-locust .cbody { fill: #8F8B4A; }
+  .mantis svg, .orchid-mantis svg { width: calc(15 * var(--su)); }
+  .mbody { fill: none; stroke: #79B648; stroke-width: 2; stroke-linecap: round; }
+  .mleg { fill: none; stroke: #5E9A36; stroke-width: .8; stroke-linecap: round; stroke-linejoin: round; } .mhead { fill: #79B648; }
+  .orchid-mantis .mbody, .orchid-mantis .mhead { stroke: #F4C9DC; fill: #F4C9DC; } .orchid-mantis .mbody { fill: none; }
+  .orchid-mantis .mleg { stroke: #E6A6C3; }
+  /* cicadas: flown in to a trunk, then perched (a faint buzz of the wings while it sings) */
+  .perch svg { width: calc(11 * var(--su)); }
+  .perch.mover { transition-timing-function: cubic-bezier(.3, .6, .4, 1); }
+  .cibody { fill: #3E4A38; } .evening-cicada .cibody { fill: #8B6A3C; } .eye { fill: #1E2418; }
+  .ciwing path { fill: rgba(232, 242, 236, .55); stroke: rgba(80, 110, 90, .7); stroke-width: .4; }
+  .perch.sat .ciwing { animation: buzz .07s linear infinite alternate; }
+  @keyframes buzz { to { translate: .25px 0; } }
   .leg, .ant { fill: none; stroke: #4A3420; stroke-width: .7; stroke-linecap: round; }
   .hop.mover { transition-timing-function: ease-out; }
   /* at night the bugs sit above the tint: dim them like the island (a firefly keeps its light) */
