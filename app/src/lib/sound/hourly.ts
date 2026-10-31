@@ -62,7 +62,8 @@ interface FadePlan {
 
 /** The fade for a change that starts at `at` (s on the audio clock). With nothing playing there is nothing to fade
  *  out: the track just fades in. */
-export function crossfadePlan(at: number, playing: boolean, c: { out: number; inAt: number; inFor: number } = CROSSFADE): FadePlan {
+export function crossfadePlan(at: number, playing: boolean): FadePlan {
   if (!playing) return { outFrom: at, outTo: at, inFrom: at, inTo: at + FADE_IN };
+  const c = CROSSFADE;
   return { outFrom: at, outTo: at + c.out, inFrom: at + c.inAt, inTo: at + c.inAt + c.inFor };
 }

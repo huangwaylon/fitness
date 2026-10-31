@@ -24,10 +24,8 @@ type WeightProjection =
   | { kind: 'none' };
 
 export interface WeightTrend {
-  person: PersonId;
   /** Every weigh-in day with its trend, ascending. */
   points: WeightPoint[];
-  start: WeightPoint | null;
   latest: WeightPoint | null;
   /** Trend now − the trend 7 days before the latest weigh-in; null without a weigh-in that far back. */
   weekChange: number | null;
@@ -67,7 +65,7 @@ export function weighIns(s: State, p: PersonId, t: number): WeighIn[] {
  * The trend through ascending weigh-ins: trend₀ = the first weight; then, g days after the previous weigh-in,
  * trend += (1 − (1 − α)^g) × (weight − trend). With daily weigh-ins that's the classic 10% EWMA.
  */
-export function ewmaTrend(days: readonly WeighIn[], alpha: number = WEIGHT.alpha): WeightPoint[] {
+export function ewmaTrend(days: readonly WeighIn[]): WeightPoint[] {
   const out: WeightPoint[] = [];
   let trend = 0;
   let prev: LocalDate | null = null;
@@ -75,7 +73,7 @@ export function ewmaTrend(days: readonly WeighIn[], alpha: number = WEIGHT.alpha
     if (prev === null) trend = d.kg;
     else {
       const g = Math.max(1, daysBetween(prev, d.date));
-      trend += (1 - (1 - alpha) ** g) * (d.kg - trend);
+      trend += (1 - (1 - WEIGHT.alpha) ** g) * (d.kg - trend);
     }
     prev = d.date;
     out.push({ date: d.date, kg: d.kg, trend: round2(trend) });
@@ -110,13 +108,13 @@ export function weightTrend(s: State, p: PersonId, now: number): WeightTrend {
   const goal = s.prefs[p].goalWeight ?? null;
   const start = points[0] ?? null;
   const latest = points.at(-1) ?? null;
-  if (!start || !latest) return { person: p, points, start, latest, weekChange: null, sinceStart: null, perWeek: null, goal, projection: null };
+  if (!start || !latest) return { points, latest, weekChange: null, sinceStart: null, perWeek: null, goal, projection: null };
   const weekAgo = trendAt(points, addDays(latest.date, -7));
   const span = Math.min(WEIGHT.rateDays, daysBetween(start.date, latest.date));
   const base = span >= WEIGHT.minRateDays ? trendAt(points, addDays(latest.date, -span)) : null;
   const perWeek = base === null ? null : round2(((latest.trend - base) / span) * 7);
   return {
-    person: p, points, start, latest,
+    points, latest,
     weekChange: weekAgo === null ? null : round1(latest.trend - weekAgo),
     sinceStart: round1(latest.trend - start.kg),
     perWeek,

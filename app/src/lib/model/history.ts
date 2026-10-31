@@ -83,13 +83,13 @@ function dayExercise(s: State, p: PersonId, date: LocalDate, t: number, manualMi
   const watch = metricAsOf(s, p, date, 'exercise_min', t);
   const value = Math.floor(exerciseMilli(watch, manualMin) / 1000);
   if (watch === null && manualMin === 0) return { value, watch, source: null };
-  const source: MinutesSource = manualMin > (watch ?? 0) ? 'manual' : watchIsEdit(s, p, date, 'exercise_min', t) ? 'edit' : 'watch';
+  const source: MinutesSource = manualMin > (watch ?? 0) ? 'manual' : watchIsEdit(s, p, date, t) ? 'edit' : 'watch';
   return { value, watch, source };
 }
 
-/** The day's value of `metric` is a きろく edit (no later, higher ingest row beat it). */
-function watchIsEdit(s: State, p: PersonId, date: LocalDate, metric: 'exercise_min' | 'move_kcal' | 'stand_min', t: number): boolean {
-  const key = `${date}|${metric}`;
+/** The day's exercise minutes are a きろく edit (no later, higher ingest row beat it). */
+function watchIsEdit(s: State, p: PersonId, date: LocalDate, t: number): boolean {
+  const key = `${date}|exercise_min`;
   const set = latestTimed(s.metricSets[p].get(key), t);
   if (!set) return false;
   return !(s.metrics[p].get(key) ?? []).some((r) => r.at > set.at && r.at <= t && r.v > set.v);

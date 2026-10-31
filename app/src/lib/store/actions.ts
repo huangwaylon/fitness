@@ -19,16 +19,16 @@ export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
 
 /**
  * The banner for an edit held UNDO_MS: it names what was done and carries もとに戻す; hovering, touching
- * or focusing it holds both the banner and the send. `after` runs once an undo took the edit back. A refused
+ * or focusing it holds both the banner and the send. A refused
  * edit (the week closed) shows nothing here: the store already said so.
  */
-export function undoBanner(text: string, r: SendResult, opts: { reaction?: string; after?: () => void } = {}): void {
+export function undoBanner(text: string, r: SendResult, opts: { reaction?: string } = {}): void {
   if (!r.ok) return;
   const undo = r.undo;
   toasts.show(text, UNDO_MS, {
     reaction: opts.reaction ?? 'pleased',
     hold: r.hold,
-    ...(undo ? { action: { label: t('common.undo'), run: () => undo() && opts.after?.() } } : {})
+    ...(undo ? { action: { label: t('common.undo'), run: () => undo() } } : {})
   });
 }
 

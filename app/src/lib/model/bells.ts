@@ -38,7 +38,6 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInpu
 /** Both people's earnings of a week, as of `t` (earnTimeOf). */
 export interface WeekBells {
   weekKey: WeekKey;
-  t: number;
   A: WeekEarning;
   B: WeekEarning;
   /** The weekly bonus; it lands at the Sunday 19:30 harvest. */
@@ -51,7 +50,7 @@ function computeWeekBells(s: State, wk: WeekKey, t: number): WeekBells {
   const A = earnWeek(earnInput(s, 'A', wk, t));
   const B = earnWeek(earnInput(s, 'B', wk, t));
   const bonus = { A: A.bonus, B: B.bonus, duo: duoBonus(A, B) };
-  return { weekKey: wk, t, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo };
+  return { weekKey: wk, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo };
 }
 
 const perState = new WeakMap<State, Map<string, WeekBells>>();

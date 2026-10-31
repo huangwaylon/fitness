@@ -73,4 +73,4 @@ export const AUDIO = parseManifest(raw).manifest;
 export const audioUrl = (path: string): string => asset(`audio/${path}` as Parameters<typeof asset>[0]);
 
 /** Any hourly track at all (the settings say so when there is none yet). */
-export const hasMusic = (m: AudioManifest = AUDIO): boolean => Object.values(m.music).some((h) => Object.keys(h ?? {}).length > 0);
+export const hasMusic = (): boolean => Object.values(AUDIO.music).some((h) => Object.keys(h ?? {}).length > 0);

@@ -62,7 +62,7 @@ const HOST: Record<HostPose, string> = {
  *  'winter' is the full-body cardigan model on the same canvas as 'stand'.
  *  `nook`: Tom Nook stands in (a player picked Isabelle): his one render for every pose (the precached `host/` copy,
  *  also the error page's), his roster head icon. */
-export function hostArt(pose: HostPose = 'wave', nook = false): string {
+export function hostArt(pose: HostPose, nook = false): string {
   if (nook) return pose === 'icon' ? 'villagers/tom-nook-icon' : 'host/tom-nook';
   return HOST[pose];
 }

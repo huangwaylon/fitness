@@ -19,9 +19,9 @@ export const isMusic = (path: string): boolean => path.includes('/audio/music/')
 
 /** Least recently used first out: `keys` in use order (oldest first: a hit is re-put at the end); which to delete so
  *  at most `keep` music files remain. Effects and ambience (small) are never evicted. */
-export function lruEvict(keys: readonly string[], keep = MUSIC_KEEP): string[] {
+export function lruEvict(keys: readonly string[]): string[] {
   const music = keys.filter((k) => isMusic(new URL(k, 'https://x/').pathname));
-  return music.slice(0, Math.max(0, music.length - keep));
+  return music.slice(0, Math.max(0, music.length - MUSIC_KEEP));
 }
 
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);

@@ -98,8 +98,8 @@ export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n),
 /** Test hook (e2e/sound.spec.ts): an array on `window.__cues` collects every cue that passes the world/UI rule. */
 type CueLog = { __cues?: Cue[] };
 
-/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level; `delay`: extra seconds. */
-export function cue(c: Cue, o: { step?: number; gain?: number; delay?: number } = {}): void {
+/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level. */
+export function cue(c: Cue, o: { step?: number; gain?: number } = {}): void {
   // untracked: a cue fired from an {@attach} or an $effect must not make it depend on the sheets or the sound
   // settings (FruitTree's drop-in re-ran, re-dropping and re-thudding its newest fruit, every time a sheet closed)
   untrack(() => {
@@ -107,6 +107,6 @@ export function cue(c: Cue, o: { step?: number; gain?: number; delay?: number } 
     if (d.world && covered()) return;
     (globalThis as CueLog).__cues?.push(c);
     const step = (d.step ?? 0) + (o.step ?? 0);
-    play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: (d.delay ?? 0) + (o.delay ?? 0), rate: step ? semitones(step) : undefined });
+    play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: d.delay ?? 0, rate: step ? semitones(step) : undefined });
   });
 }
