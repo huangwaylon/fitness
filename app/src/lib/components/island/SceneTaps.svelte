@@ -303,9 +303,9 @@
   }
 
   /** NH's balloon present, shot down: it falls from where the balloon burst onto the lawn in front of the hedge (drifting
-   *  on the breeze to the open middle, between the trees, above the jar), lands with a bounce and a sparkle and fades;
-   *  past the island's edge it drops into the sea. It falls behind the trees, the jar and everyone (z under the trees),
-   *  so it never covers a control. */
+   *  on the breeze to the open middle between the trees), lands with a bounce and a sparkle and stays there until a tap
+   *  picks it up (Finds); past the island's edge it drops into the sea. It falls behind the trees and everyone (z under
+   *  the trees), so it never covers a control, and lands at least PRESENT_GAP clear of everything lying on the lawn. */
   let drops = $state<{ id: number; x: number; y: number; dx: number; dy: number; size: number; sea: boolean; art: string }[]>([]);
   function present(e: Event) {
     const d = (e as CustomEvent<{ x: number; y: number; size: number }>).detail;
@@ -315,15 +315,49 @@
     const k = 390 / r.width;
     const x = d.x - r.left, y = d.y - r.top;
     const sea = x * k < 34 || x * k > 356; // off the island's back corners
-    const land = (sea ? 30 : 90) / k;
-    const to = sea ? x : Math.min(Math.max(x, 172 / k), 218 / k);
+    const spot = sea ? null : landing(x * k, d.size * k * 1.2);
+    const land = sea || !spot ? 30 / k : spot[1] / k;
+    const to = sea || !spot ? x : spot[0] / k;
     const id = ++seq;
     // Bunny Day's celebrations: now and then the balloon carried NH's sky egg instead of its present
     const c = minuteNow(), egg = eggTime(eventAt(localDateAt(c.getTime()), jst(c).hour, forcedEvent())) && eggInBalloon();
-    drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size, sea, art: egg ? findArt('sky-egg') : 'deco/present' }];
-    later(() => (drops = drops.filter((p) => p.id !== id)), 3300);
-    if (sea) later(() => sceneSfx('splash'), 1500);
-    else sceneSfx('present');
+    drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size * 1.2, sea, art: egg ? findArt('sky-egg') : 'deco/present' }];
+    if (sea) {
+      later(() => (drops = drops.filter((p) => p.id !== id)), 2000);
+      later(() => sceneSfx('splash'), 1500);
+      return;
+    }
+    sceneSfx('present');
+    // landed (and squashed): it lies there among the day's finds until it's picked up
+    later(() => spot && finds?.present(spot[0], spot[1], egg ? findArt('sky-egg') : 'deco/present', d.size * k * 1.2), 2000);
+    later(() => (drops = drops.filter((p) => p.id !== id)), 2500);
+  }
+  /** How far a landed present keeps from anything lying on the lawn (a weed, the rock, a dig spot, a mushroom, a branch,
+   *  a pumpkin, another present), u, beyond both their halves. */
+  const PRESENT_GAP = 16;
+  /** Where a present falling from x (u) lands: on the open lawn in front of the hedge, between the trees (x 150–240,
+   *  y 86–96), the spot nearest x that keeps PRESENT_GAP from everything lying there and covers no control; null when
+   *  there's none (it falls into the sea instead). `size`: the present's size (u). */
+  function landing(x: number, size: number): [number, number] | null {
+    const stage = scene?.querySelector<HTMLElement>('.stage'), g = stageGeo(scene);
+    if (!stage || !g) return null;
+    const things = [...stage.querySelectorAll('[data-care], [data-find], [data-branch], [data-nest], [data-pumpkin]')].map((el) => {
+      const b = el.getBoundingClientRect();
+      // the ground items are 0 × 0 anchors at their foot; buttons are boxes
+      const cx = (b.left + b.width / 2 - g.r.left) * g.k, foot = (b.bottom - g.r.top) * g.k;
+      const r = el.matches('[data-care="rock"]') ? 11 : Math.max(8, (b.width * g.k) / 2);
+      return { x: cx, y: foot - r * 0.6, r };
+    });
+    const keep = guardsU(g, 2);
+    const half = size / 2;
+    const xs = Array.from({ length: 31 }, (_, i) => 150 + i * 3).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
+    for (const cx of xs)
+      for (const cy of [90, 86, 94]) {
+        // (cx, cy) is the present's centre, as it falls and as it lies
+        const clear = things.every((t) => Math.hypot(t.x - cx, t.y - cy) >= PRESENT_GAP + t.r + half);
+        if (clear && !keep.some((b) => cx + half > b.x0 && cx - half < b.x1 && cy + half > b.y0 && cy - half < b.y1)) return [cx, cy];
+      }
+    return null;
   }
 
   // The listener lives on the scene (no element of ours under the finger: the art keeps pointer-events: none).
@@ -651,7 +685,7 @@
   /* the balloon's present: falls (gravity, a gentle sway), lands with a squash, sparkles, fades; or sinks in the sea */
   .gift {
     left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) / -2) 0 0 calc(var(--gs) / -2); line-height: 0;
-    animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .6s ease-in 2.7s both;
+    animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .01s linear 2s both;
   }
   .gift .drop-in { display: block; height: 100%; transform-origin: 50% 100%; animation: gift-sway 1.5s ease-in-out both, gift-land .5s ease-out 1.5s both; }
   @keyframes gift-fall { from { transform: translate(0, 0); } to { transform: translate(var(--dx), var(--dy)); } }

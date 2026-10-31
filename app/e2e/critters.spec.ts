@@ -36,7 +36,7 @@ const at = (page: Page, sel: string) =>
 
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
-test('a tap pops the balloon; its present falls onto the island', async ({ page }) => {
+test('a tap pops the balloon; its present falls onto the island and lies there until a tap picks it up', async ({ page }) => {
   const before = await open(page, '&balloon');
   const balloon = page.locator('.if-scene .balloon');
   // it drifts in from off the screen's edge: wait until it's well inside
@@ -46,7 +46,22 @@ test('a tap pops the balloon; its present falls onto the island', async ({ page 
   await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
   await expect(balloon).toHaveCount(0);
   expect(await cues(page)).toContain('scene-balloon');
-  await expect(page.locator('[data-fx="present"]')).toHaveCount(0, { timeout: 5000 });
+  // it lands on the lawn and stays there (NH) until it's picked up, clear of everything lying there
+  const gift = page.locator('[data-find="present"]');
+  await expect(gift).toHaveCount(1, { timeout: 4000 });
+  await page.waitForTimeout(5000);
+  await expect(gift).toHaveCount(1);
+  const g = (await gift.locator(':scope > *').boundingBox())!;
+  for (const other of await page.locator('[data-care], [data-find]:not([data-find="present"])').all()) {
+    const o = (await other.boundingBox())!;
+    if (!o) continue;
+    const d = Math.hypot(o.x + o.width / 2 - (g.x + g.width / 2), o.y + o.height - (g.y + g.height));
+    expect(d, await other.getAttribute('data-care') ?? await other.getAttribute('data-find') ?? '').toBeGreaterThan(16);
+  }
+  // a tap picks it up: a pick-up line, no ベル
+  await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+  await expect(page.locator('[data-fx="catch"]')).toContainText('プレゼントを ひろった！', { timeout: 4000 });
+  await expect(gift).toHaveCount(0);
   await unchanged(page, before);
 });
 

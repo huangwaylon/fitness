@@ -28,7 +28,7 @@
 <div class="halloween" class:night data-halloween={night ? 'night' : 'day'} aria-hidden="true">
   {#if night}<div class="wash"></div>{/if}
   {#each spots as [x, y], i (`${x},${y}`)}
-    <span class="pumpkin" style:translate="{U(x)} {U(y)}" style:--i={i}>
+    <span class="pumpkin" data-pumpkin style:translate="{U(x)} {U(y)}" style:--i={i}>
       {#if night}<span class="glow"></span>{/if}
       <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={U(PUMPKIN_U)} /></span>
     </span>

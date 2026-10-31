@@ -389,7 +389,11 @@ meteor showers](#celeste-and-meteor-showers)); the pond rings like the sea, smal
 
 **Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
 the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
-behind the trees, bounces, sparkles and fades (off the island's corner it drops into the sea). No caption.
+behind the trees (between them, x 150–240u, the spot nearest where it fell that keeps 16u beyond both halves from
+anything lying on the lawn: a weed, the rock, a dig spot, a mushroom, a branch, a pumpkin, another present; and covers
+no control), bounces and sparkles, and stays there, as in NH, until a tap picks it up (my villager walks over; a hop
+and gone, its plate 「プレゼントを ひろった！」, no ベル; not kept across a reload). Off the island's corner, or with nowhere
+clear, it drops into the sea.
 Short skies fly a smaller balloon under the ribbon, or none.
 
 **Critters** (NH species, Tokyo clock; for fun, frequent): a visit every 8–15 s of on-screen time (the first after
