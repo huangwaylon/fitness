@@ -4,7 +4,6 @@
   // there are no ベル here and no colours for "good" or "bad": a change is just a number.
   import type { PersonId } from '#lib/types.ts';
   import type { WeightTrend } from '#lib/model/weight.ts';
-  import { WEIGHT } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
   import WeightChart from './WeightChart.svelte';
   import { kgDelta, kgText } from './fmt.ts';
@@ -33,7 +32,7 @@
           <span class="wk money">{t('weight.weekShort', { d: kgDelta(w.weekChange) })}</span>
         </span>
         <span class="spark" aria-hidden="true">
-          <WeightChart points={w.points} goal={null} to={today} weeks={WEIGHT.chartWeeks} mini label="" />
+          <WeightChart points={w.points} goal={null} to={today} mini label="" />
         </span>
       {:else}
         <span class="none">{t('weight.empty')}</span>

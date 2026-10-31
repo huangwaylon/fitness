@@ -1,8 +1,7 @@
 <script lang="ts">
-  // A ベル amount (ADR 0019): the official Bells bag before `1,234 ベル` / `1,234 Bells`.
+  // A ベル amount: the official Bells bag before `1,234 ベル` / `1,234 Bells`.
   //   <Bells bells={n} />                  bag at 1.1em, the unit a little smaller than the digits
   //   <Bells bells={620} signed />         `+620 ベル` (today's flow)
-  //   <Bells bells={n} bag={false} />      digits + unit only (rows, chips)
   // When the amount changes, the digits count up over 600 ms and the bag hops (instant under reduced motion).
   import { untrack } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
@@ -14,11 +13,9 @@
     bells: number;
     /** `+620` for a gain. */
     signed?: boolean;
-    /** The Bells bag before the digits. */
-    bag?: boolean;
     class?: string;
   }
-  let { bells, signed = false, bag = true, class: cls = '' }: Props = $props();
+  let { bells, signed = false, class: cls = '' }: Props = $props();
 
   const shown = new Tween(untrack(() => bells), { duration: 600, easing: cubicOut });
   let hop = $state(0);
@@ -27,7 +24,7 @@
     const to = bells;
     if (to === untrack(() => shown.target)) return;
     const instant = prefersReducedMotion.current;
-    if (!instant && bag) hop++;
+    if (!instant) hop++;
     shown.set(to, { duration: instant ? 0 : 600 });
   });
   const n = $derived(Math.round(shown.current));
@@ -37,7 +34,7 @@
 </script>
 
 <span class="bells money {cls}">
-  {#if bag}{#key hop}<span class="bag" class:hop={hop > 0}><LeafCoin size="1.1em" eager /></span>{/key}{/if}
+  {#key hop}<span class="bag" class:hop={hop > 0}><LeafCoin size="1.1em" eager /></span>{/key}
   {#if parts[0].trim()}<span class="unit">{parts[0].trim()}</span>{/if}<span class="num">{sign}{formatNum(Math.abs(n))}</span>{#if parts[1]?.trim()}<span class="unit">{parts[1].trim()}</span>{/if}
 </span>
 

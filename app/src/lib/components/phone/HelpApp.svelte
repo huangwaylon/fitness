@@ -30,7 +30,7 @@
     : f === 'cherry' ? t('help.pay.perMin', { b: r.bells.perStandMin })
     : formatBells(r.bells.stepDay);
 
-  /** v2 (from 2026-11-02): every fruit pays in four steps of the goal (docs/reviews/round-19/milestones-contract.md):
+  /** v2 (from 2026-11-02): every fruit pays in four steps of the goal:
    *  each step's amount and the fruit's ベル for the day once it's reached. Null in a v1 week (linear pay). */
   const stepsOf = (f: RingFruit): { at: string; bells: string }[] | null => {
     if (!r.curve) return null;

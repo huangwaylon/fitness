@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The weight chart (ADR 0020): one person, the last WEIGHT.chartWeeks weeks. Each weigh-in is a small mint dot, the
+  // The weight chart: one person, the last WEIGHT.chartWeeks weeks. Each weigh-in is a small mint dot, the
   // trend an ink line, the optional goal a dashed yuzu line. `mini`: a sparkline (no axes, no hover) for the summary
   // card. Drawn in pixels at the measured width so the dots stay round at 320–430. Hover / touch on the full chart
   // shows the day under the finger (date, weight, trend).
@@ -7,6 +7,7 @@
   import { addDays, daysBetween } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatDate } from '#lib/i18n/format.ts';
+  import { WEIGHT } from '#lib/config/rules.ts';
   import { kgText } from './fmt.ts';
 
   interface Props {
@@ -14,16 +15,15 @@
     goal: number | null;
     /** The last day shown (today). */
     to: string;
-    weeks: number;
     mini?: boolean;
     label: string;
   }
-  let { points, goal, to, weeks, mini = false, label }: Props = $props();
+  let { points, goal, to, mini = false, label }: Props = $props();
 
   let w = $state(0);
   const h = $derived(mini ? 44 : 176);
   const pad = $derived(mini ? { l: 3, r: 3, t: 5, b: 5 } : { l: 34, r: 8, t: 14, b: 22 });
-  const from = $derived(addDays(to, -7 * weeks + 1));
+  const from = $derived(addDays(to, -7 * WEIGHT.chartWeeks + 1));
   const span = $derived(Math.max(1, daysBetween(from, to)));
   const shown = $derived(points.filter((p) => p.date >= from && p.date <= to));
   /** The trend line starts from the trend carried into the window (the last weigh-in before it), so it never jumps. */
