@@ -37,7 +37,8 @@ only when sync isn't ok, the scene, しずえ's box only with news. Nothing else
 in the visible ocean, from the horizon down to the screen's bottom above the home indicator, and never runs under the
 ribbon.
 
-- **Trees:** one per person; today's four fruits lie in front, 0–3 items each (thirds of the goal). A tap opens a
+- **Trees:** one per person; today's four fruits hang in the canopy, grey at 0 and colouring in toward the goal; a met
+  one falls to the ground for a tap to pick up, and a flower blooms at the trunk ([Trees](#trees)). A tap opens a
   popup: per goal today's amount against the goal, met or not (「638 / 600 kcal」, 「14,164 / 8,000歩」), a ✓ before
   it once met, and its +1 (bright once earned); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
   line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
@@ -201,7 +202,7 @@ to front: sky · sea · ground · hedge · trees + fruit · jar · flower beds �
 
 `scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 80 · trees + jar
 173 · bed back 266 · front 297. Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u (cols −3…3) ·
-flower 32u (cols ±2/±3) · ground fruit 24u · jar 52u wide (col 0).
+flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · tree-foot flower 16u · jar 52u wide (col 0).
 
 ### Environment
 
@@ -210,7 +211,7 @@ flower 32u (cols ±2/±3) · ground fruit 24u · jar 52u wide (col 0).
 - **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
   Night is soft periwinkle, never black.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
-  Jan–Mar camellia). Two flower beds by season. A newly earned fruit shakes its tree and drops in.
+  Jan–Mar camellia). Two flower beds by season. A newly met goal shakes its tree and its fruit drops.
 
 ### Particles and events
 
@@ -218,6 +219,29 @@ flower 32u (cols ±2/±3) · ground fruit 24u · jar 52u wide (col 0).
 Nov 16–25, fireworks on August Sundays from 19:00 and at New Year, Toy Day Dec 24, the balloon present. Only
 `transform` and `opacity` animate; everything pauses while hidden (`data-paused`); a sheet also pauses particles and
 idle life (`data-covered`).
+
+### Trees
+
+`island/FruitTree.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit through one Tokyo day:
+
+- **Hanging:** each goal's fruit hangs in the canopy, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour as
+  today's amount nears the goal (grayscale = 1 − share, washed lighter while grey so a dark apple never reads as a
+  black lump; a 1.2 s fade as new data arrives).
+- **Falling:** met, it falls to its spot on the ground in front of the trunk: the tree shakes, the fruit drops and
+  bounces with a thud, a puff of dust; several fall 150 ms apart. The fall plays once per phone, the first time the
+  island shows that fruit met (on opening, after a 0.7 s beat; with live data, once its colour has filled in); a
+  reload finds it lying there.
+- **Picking up:** a tap on a fallen fruit picks it up (NH's pick-up: a hop and gone, a sparkle, a little pop). It
+  stays gone on this phone until the next Tokyo day (midnight, the model's day). Either person may pick up either
+  tree's fruit; it is cosmetic: no ベル (those come from the goal, on read), no event, never synced. The fruit row is
+  the one button: a tap within 22u (or 22px on a small stage, a 44px target for a lone fruit) of a fallen fruit picks
+  up the nearest, else it opens the popup as before; from the keyboard (focusable once something lies there) it
+  picks up the first.
+- **After:** a small NH flower blooms behind the trunk's foot for each goal met that day (yellow tulip 🍐, pink cosmos
+  🍑, red rose 🍒, red tulip 🍎; it pops up as its fruit lands, persists all day, picked or not), and with all four met
+  three white glints twinkle on the canopy in turn (NH's money tree; a 3.9 s loop, paused under a sheet).
+- `fruit-day` in localStorage (`{ date, dropped, picked }`, ids `A:pear`): losing it only drops a fruit again. Cost:
+  transform and opacity, a static filter on eight small images, one infinite loop of three 13px stars on a perfect day.
 
 ### Scene interactions
 
@@ -386,7 +410,7 @@ text just types).
 ### Cues
 
 `cues.ts CUES` maps moments to sounds, levels and delays; nothing calls `play()` directly. Reactions name a cue per
-step, taps in `data-sfx`, outcomes call `cue()`. Examples: tree tap → rustle, fruit lands → thud, each coin → coin
+step, taps in `data-sfx`, outcomes call `cue()`. Examples: tree tap → rustle, fruit lands → thud, a fallen fruit picked up → pop, each coin → coin
 (climbing a pentatonic run), a ふたりでぜんぶ week in the harvest → miles, 受け取る → fanfare, buy → purchase, villager/jar tap → pop, first open of
 the day → chime (waits up to 15 s for the first tap), scenery → `scene-<kind>`. **World cues** (the island's own
 sounds) are skipped while a sheet, the panel or the harvest covers the scene; UI cues always play.

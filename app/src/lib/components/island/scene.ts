@@ -2,6 +2,7 @@
 // x 0–390, y 0–360, origin top-left, y down; "base" = the y of the feet / trunk bottom.
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { BushId, FlowerId } from '#lib/art.ts';
+import type { RingFruit } from '#lib/types.ts';
 import { jst } from '#lib/time/clock.ts';
 
 const STAGE_W = 390;
@@ -23,26 +24,35 @@ const col = (k: number): number => 195 + k * TILE;
  *  (the villagers stand on the front row). */
 const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
 
-/** One tree per person: a plain official hardwood of the season (in AC a tree bears one kind of
- *  fruit, so this one bears none), trunk on column ±2. NH hardwood ≈ 1.5 × a villager tall, canopy ≈ 2.2
- *  tiles wide. Today's fruit lies on the ground in front of its trunk, the way NH drops fruit around a
- *  shaken tree. `x` = trunk centre; `base` = trunk bottom. */
+/** One tree per person: a plain official hardwood of the season, trunk on column ±2. NH hardwood ≈ 1.5 × a villager
+ *  tall, canopy ≈ 2.2 tiles wide. Today's four fruits hang in its canopy (TREE_FRUIT) and drop to the ground in front
+ *  of the trunk once met (FRUIT_SPOTS), the way NH drops fruit around a shaken tree. `x` = trunk centre; `base` =
+ *  trunk bottom. */
 export const TREE = { base: ROWS.trees, h: 120, x: { A: col(-2), B: col(2) } as const };
 /** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
 export const OAK_AR = 329 / 409;
-/** Ground fruit: per ring fruit 0–3 items = thirds of today's goal (todayPct), in
- *  a fixed arc in front of the trunk, 🍐 🍑 🍒 🍎 left to right (RING_FRUITS order). [dx, dy] from the trunk base.
- *  NH puts one dropped item per tile; 4 kinds × 3 items can't, so they sit at a 20u pitch (compromise), centred on the
+/** Fruit hanging in the canopy, 🍐 🍑 🍒 🍎 left to right (RING_FRUITS order): [dx, dy] of each item's centre from the
+ *  trunk base, on the canopy's lower front like NH's three, in a loose arc (the middle two a little higher). */
+export const TREE_FRUIT: [number, number][] = [[-27, -56], [-10, -68], [10, -62], [27, -54]];
+/** A hanging fruit is a little smaller than one on the ground (the canopy is further back). */
+export const TREE_FRUIT_U = 20;
+/** Fruit on the ground, once met: [dx, dy] from the trunk base, in a fixed arc in front of the trunk, 🍐 🍑 🍒 🍎 left
+ *  to right. NH puts one dropped item per tile; four can't fit, so they sit at a 20u pitch (compromise), centred on the
  *  trunk, and the row leans FRUIT_LEAN u away from the jar (out from the plaza), so it stays clear of the jar's plate
  *  and inside the plateau's side (x 44). */
 export const FRUIT_SPOTS: [number, number][] = [[-30, 6], [-10, 12], [10, 12], [30, 6]];
 export const FRUIT_LEAN = 8;
-/** Where the 1st / 2nd / 3rd item of one kind lies, around its spot (a little NH drop pile). */
-export const PILE: [number, number][] = [[0, -3], [-6, 4], [6, 4]];
 /** Ground item size in u: NH dropped fruit ≈ 0.3 × a villager (≈ half a tile). */
 export const FRUIT_U = 24;
-/** Items earned for a fruit kind: thirds of today's goal (0–3). */
-export const fruitCount = (pct: number): number => Math.max(0, Math.min(3, Math.floor((pct * 3) / 100 + 1e-9)));
+/** A flower blooms at the tree's foot for each goal met today, 🍐 🍑 🍒 🍎 left to right: [dx, foot dy] from the
+ *  trunk base, two each side of the trunk, behind the fruit row's tap target and under the canopy's, and inside the
+ *  lawn spots beside the trunks (beach.ts LAWN, x ±35–39: weeds and dig spots), so they never stand on one. */
+export const TREE_FLOWERS: [number, number][] = [[-26, -14], [-15, -18], [15, -18], [26, -14]];
+/** Tree-foot flowers are small (half a bed flower), so four never crowd a 320px phone. */
+export const TREE_FLOWER_U = 16;
+/** Which NH flower blooms for each goal, its colour echoing the fruit: a yellow tulip for the pear, a pink cosmos for
+ *  the peach, a red rose for the cherry, a red tulip for the apple. */
+export const TREE_FLOWER: Record<RingFruit, FlowerId> = { pear: 'yellow-tulips', peach: 'pink-cosmos', cherry: 'red-roses', apple: 'red-tulips' };
 
 /** Villagers (the scale's reference): 80u tall (≈ 1.8 tiles), on columns ±1 of the front row, flanking the
  *  jar; their heads stay below the ground fruit. */

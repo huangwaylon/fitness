@@ -141,6 +141,16 @@ Japan.
 
 ## Content, art and sound
 
+### Fruit on the tree, picked up for the day
+Each goal's fruit hangs in its person's tree, grey at 0 and colouring in with progress; met, it falls (once per
+phone) and a tap picks it up, gone until the next Tokyo day. A flower blooms at the trunk per goal met that day, and
+all four met make the canopy glint (NH's money tree), so the day's progress stays visible after the pick-up. Picking
+up is cosmetic and local (`fruit-day` in localStorage): no ベル, no event, no backend change, and either person may
+pick up either tree's fruit. Why: the user asked for NH's harvest feel (2026-10-31) without touching the economy;
+the ベル stay computed from the goals on read, so a pick-up can never earn, lose or double anything, and a phone that
+loses the record only sees a fruit fall again. Syncing pick-ups was weighed and left out: two phones disagreeing about
+a cosmetic fruit costs nothing, a new event type costs a script redeploy. Replaces the ground piles in thirds.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a
