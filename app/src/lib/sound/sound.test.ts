@@ -153,6 +153,8 @@ describe('dialogue blips', () => {
   it('the same glyph always gets the same pitch, within ±3 semitones', () => {
     const a = blipPlan(line('あいうえお')).rates;
     expect(blipPlan(line('あいうえお')).rates).toEqual(a);
+    // and different glyphs get different pitches: the line has a melody, not one note
+    expect(new Set(blipPlan(line('あかさたなはまやらわ')).rates).size).toBeGreaterThan(2);
     for (const r of a) {
       expect(r).toBeGreaterThanOrEqual(semitones(-3) - 1e-9);
       expect(r).toBeLessThanOrEqual(semitones(3) + 1e-9);

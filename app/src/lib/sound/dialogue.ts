@@ -16,7 +16,7 @@ export const MAX_BLIPS = 40;
 const QUIET = /[\s、。，．,.!?！？…・「」『』（）()〜~ー—:：;；"'“”‘’]/u;
 
 /** −3 … +3 semitones from the glyph's code point. */
-const pitchOf = (ch: string) => semitones(((ch.codePointAt(0) ?? 0) * 7) % 7 - 3);
+const pitchOf = (ch: string) => semitones(((ch.codePointAt(0) ?? 0) % 7) - 3);
 
 export function blipPlan(glyphs: readonly Glyph[]): { times: number[]; rates: number[] } {
   const times: number[] = [];
