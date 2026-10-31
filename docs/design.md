@@ -246,7 +246,7 @@ the sea). No caption. Short skies fly a smaller balloon under the ribbon, or non
 **Critters** (NH, northern hemisphere, Tokyo clock): every 1–3 minutes of on-screen time (first after 30–90 s; the
 countdown holds while covered or hidden, and the critters leave) a fish shadow or a bug comes by; ≤ 1 of each.
 
-- **Fishing:** a shadow (NH sizes 1–6) dawdles in the sea off the beach, left or right of the しまフォン button. A tap
+- **Fishing:** a shadow (NH sizes 1–6) dawdles off the front beach (on a short screen, beside the island). A tap
   near it casts a red-and-white bobber on a line from the beach; within 90u the fish swims up, nibbles 0–3 times (a
   bob) and bites (the bobber goes under): a tap in the next 1 s catches it, a tap any earlier or none in time and it
   flees; a cast it ignores is reeled back by the next tap. Mostly sea bass (all year); horse mackerel, anchovy (4–21h),
