@@ -223,6 +223,36 @@ describe('the idle suspend', () => {
   });
 });
 
+describe('an outside ⏸ holds until a tap', () => {
+  it('a cue that wakes the sleeping context, or coming back to the app, doesn’t bring the music back; a tap or ▶ does', async () => {
+    const { e, ctx, decks } = await unlocked();
+    e.onrunning = () => void e.setTrack('10', HOUR); // as sound.svelte.ts does (syncMusic)
+    void e.setTrack('10', HOUR);
+    await settle();
+    const deck = decks.find((d) => !d.paused)!;
+    e.holdMusic();
+    await vi.advanceTimersByTimeAsync(IDLE_SUSPEND_MS + 500);
+    expect(ctx.state).toBe('suspended');
+    e.play('confirm'); // a world sound after a background sync, no tap: wakes the context
+    await settle();
+    expect(ctx.state).toBe('running');
+    expect(deck.paused).toBe(true);
+    void e.setTrack('10', HOUR); // back in front (syncMusic)
+    await settle();
+    expect(deck.paused).toBe(true);
+    e.unlock(true); // a tap
+    void e.setTrack('10', HOUR);
+    await settle();
+    expect(deck.paused).toBe(false);
+    e.holdMusic();
+    await settle();
+    e.unhold(); // the lock screen's ▶, in front
+    void e.setTrack('10', HOUR);
+    await settle();
+    expect(deck.paused).toBe(false);
+  });
+});
+
 describe('pause', () => {
   it('suspends at once and pauses both decks', async () => {
     const { e, ctx, decks } = await unlocked();

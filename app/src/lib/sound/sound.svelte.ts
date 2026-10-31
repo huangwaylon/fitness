@@ -139,6 +139,7 @@ function initMediaSession(): void {
   };
   handle('play', () => {
     if (document.hidden || !engine?.ctx || silent(sound.settings)) return void (ms.playbackState = 'paused');
+    engine.unhold();
     engine.resume();
     syncMusic();
   });
