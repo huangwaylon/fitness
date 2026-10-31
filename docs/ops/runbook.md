@@ -77,7 +77,7 @@ hand fix, to be sure: script editor → function menu → `resync` → **Run**.
 curl -sSL "$GAS_URL" -H 'Content-Type: text/plain;charset=utf-8' --data "{\"key\":\"$KEY\",\"action\":\"uploads\"}"
 ```
 
-Every list should have as many lines as `dates`. A lower re-send of steps or minutes is ignored (they only go up).
+Every list should have as many lines as `dates`. Each run replaces a day's values with Health's current totals (latest wins; a locked week's ベル stay put).
 Shortcut fixes: [shortcut §6](shortcut-health-sync.md#6-troubleshooting).
 
 ## 7. Backups

@@ -2,7 +2,8 @@
 // what the island, the wallet or the harvest show is a reviewed diff.
 //
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
-// Health syncs (one before a lock, one after), wallet buys, a void and a menu edit. The 外ごはん and カフェ buys pay the escalating
+// Health syncs (one before a lock, one after), a double-counted day corrected by a lower re-sync (A, 12-03: latest
+// wins) and a lower re-sync after a lock (A, 11-29: the locked week stays put), wallet buys, a void and a menu edit. The 外ごはん and カフェ buys pay the escalating
 // price of their week (a buy of an escalating item at any other price is ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
@@ -128,6 +129,14 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     const atLock = weekBells(reduce(rowsAt(t)), week, t);
     expect(atLock.B.daily).toBeGreaterThan(atHarvest.B.daily);
     expect(weekBells(reduce(ROWS), week, END)).toEqual(atLock);
+  });
+
+  it('latest wins: a lower re-sync replaces a double-counted day while its week is open; after the lock it changes nothing', () => {
+    const inflated = Date.parse('2026-12-04T00:00:00.000Z');
+    expect(weekBells(reduce(rowsAt(inflated)), '2026-11-30', inflated).A.days[3].steps).toBe(16608);
+    expect(weekBells(reduce(ROWS), '2026-11-30', END).A.days[3].steps).toBe(8400);
+    // 11-29's 25,000 (a late sync before its lock) stays in the locked week though a later sync says 7,180
+    expect(weekBells(reduce(ROWS), '2026-11-23', END).A.days[6].steps).toBe(25000);
   });
 });
 

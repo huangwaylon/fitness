@@ -23,14 +23,15 @@ export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'highfive', 'pref'
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**
- * The activity metrics: they earn ベル, and a day's value from the Shortcut only ever goes up (the max of its rows).
+ * The activity metrics: they earn ベル, and a day's value is its latest row (Apple Health's current total; a re-sync
+ * may lower it).
  * `move_kcal`: the Move ring's active energy (the Shortcut's `calories`); `stand_min`: Health Stand Time in minutes
  * (the Shortcut's `stand_minutes`).
  */
 export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min';
 /**
- * `weight`: body weight in kg with one decimal. A trend only: it never earns ベル, and a day's value is the
- * latest row for it (not the max), since a weight goes down as well as up.
+ * `weight`: body weight in kg with one decimal. A trend only: it never earns ベル; a day's value is its latest row,
+ * like the activity metrics.
  */
 export type MetricKey = ActivityMetric | 'weight';
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';

@@ -62,12 +62,17 @@ describe('Apple Health is the source of truth', () => {
     expect(bellsLedger(s, THU_AFTER)).toEqual(bellsLedger(reduce(goodWeek()), THU_AFTER));
   });
 
-  it('a day’s metric is the highest Shortcut row so far', () => {
-    const rows = withRows(goodWeek(), { metrics: [metric(jst(DAYS[0], '23:00'), 'A', DAYS[0], 'steps', 9500)] });
+  it('a day’s metric is its latest Shortcut row so far (a lower re-sync replaces a higher one)', () => {
+    const rows = withRows(goodWeek(), {
+      metrics: [metric(jst(DAYS[0], '23:00'), 'A', DAYS[0], 'steps', 18000), metric(jst(DAYS[1], '08:00'), 'A', DAYS[0], 'steps', 9500)]
+    });
     const s = reduce(rows);
     expect(metricAsOf(s, 'A', DAYS[0], 'steps', LIVE)).toBe(9500);
+    expect(metricAsOf(s, 'A', DAYS[0], 'steps', ms(DAYS[0], '23:30'))).toBe(18000);
     expect(metricAsOf(s, 'A', DAYS[0], 'steps', ms(DAYS[0], '22:30'))).toBe(9000);
     expect(metricAsOf(s, 'A', DAYS[1], 'steps', ms(DAYS[0], '22:30'))).toBeNull();
+    // the open week earns on the corrected value
+    expect(weekBells(s, WK, WED_MID).A.days[0].steps).toBe(9500);
   });
 
   it('late Health data after the Wednesday 04:00 lock never changes the week (its earnings are final)', () => {
@@ -78,6 +83,21 @@ describe('Apple Health is the source of truth', () => {
     const early = new Date(ms('2026-11-24', '12:00')).toISOString();
     const open = withRows(goodWeek(), { metrics: [metric(early, 'A', DAYS[0], 'exercise_min', 60)] });
     expect(weekBells(reduce(open), WK, THU_AFTER).A.days[0].exerciseMin).toBe(60);
+  });
+
+  it('a locked week stays frozen when a later sync lowers a day: it reads the latest row as of the lock', () => {
+    const inflated = withRows(goodWeek(), { metrics: [metric(jst(DAYS[0], '23:00'), 'A', DAYS[0], 'steps', 26072)] });
+    const frozen = weekBells(reduce(inflated), WK, THU_AFTER);
+    expect(frozen.A.days[0].steps).toBe(26072);
+    // a 31-day re-sync after the lock corrects the day to Health's total: the locked week's earnings don't move
+    const late = jst('2026-11-30', '09:00');
+    const corrected = withRows(inflated, { metrics: [metric(late, 'A', DAYS[0], 'steps', 13172), metric(late, 'A', DAYS[1], 'exercise_min', 0)] });
+    const after = ms('2026-11-30', '12:00');
+    expect(weekBells(reduce(corrected), WK, after)).toEqual(weekBells(reduce(inflated), WK, after));
+    expect(weekBells(reduce(corrected), WK, after).A.days[0].steps).toBe(26072);
+    // the same correction before the lock counts
+    const early = withRows(inflated, { metrics: [metric(jst('2026-11-24', '09:00'), 'A', DAYS[0], 'steps', 13172)] });
+    expect(weekBells(reduce(early), WK, THU_AFTER).A.days[0].steps).toBe(13172);
   });
 });
 

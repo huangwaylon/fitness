@@ -164,28 +164,56 @@ describe('ingest', () => {
     expect(data('uploads')).toHaveLength(2);
   });
 
-  it('appends only higher steps and minutes; lower ones never overwrite (append-only)', () => {
-    a('ingest', day('Oct 27, 2026', 9000, 40));
+  it('latest wins: any changed steps or minutes are appended, lower too (Apple Health is the truth); the same value never twice', () => {
+    a('ingest', day('Oct 27, 2026', 26072, 40));
     tick();
-    expect(a('ingest', day('Oct 27, 2026', 1200, 5))).toMatchObject({ metrics: 0 });
+    expect(a('ingest', day('Oct 27, 2026', 26072, 40))).toMatchObject({ metrics: 0 });
     tick();
-    expect(a('ingest', day('Oct 27, 2026', 9500, 40))).toMatchObject({ metrics: 1 });
-    expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['steps', 9000], ['exercise_min', 40], ['steps', 9500]]);
+    expect(a('ingest', day('Oct 27, 2026', 13172, 40))).toMatchObject({ metrics: 1 }); // lower: replaces the inflated value
+    tick();
+    expect(a('ingest', day('Oct 27, 2026', 13172, 38))).toMatchObject({ metrics: 1 });
+    tick();
+    expect(a('ingest', day('Oct 27, 2026', 13500, 38))).toMatchObject({ metrics: 1 }); // compared with the last row, not the max
+    expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([
+      ['steps', 26072], ['exercise_min', 40], ['steps', 13172], ['exercise_min', 38], ['steps', 13500]
+    ]);
   });
 
-  it('Move kcal and Stand minutes are daily totals, appended only when higher, like steps', () => {
+  it('Move kcal and Stand minutes are daily totals, latest wins like steps; over-max values are skipped', () => {
     const ms = (kcal: string, stand: string) => ({ dates: 'Oct 27, 2026', calories: kcal, stand_minutes: stand });
     expect(a('ingest', ms('250.4', '58'))).toMatchObject({ metrics: 2 });
     tick();
-    expect(a('ingest', ms('120', '30'))).toMatchObject({ metrics: 0 });
+    expect(a('ingest', ms('250', '58'))).toMatchObject({ metrics: 0 }); // 250.4 is stored rounded
     tick();
-    expect(a('ingest', ms('480', '58'))).toMatchObject({ metrics: 1 });
+    expect(a('ingest', ms('120', '30'))).toMatchObject({ metrics: 2 });
     tick();
     expect(a('ingest', ms('12000', '1500'))).toMatchObject({ metrics: 0, skipped: 2 }); // above 10,000 kcal / 1,440 min
-    expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['move_kcal', 250], ['stand_min', 58], ['move_kcal', 480]]);
+    expect(data('metrics').map((r) => [r[3], r[4]])).toEqual([['move_kcal', 250], ['stand_min', 58], ['move_kcal', 120], ['stand_min', 30]]);
     const audit = data('uploads').at(-1)!;
     expect(audit[2]).toBe('partial');
     expect(String(audit[4])).toContain('calories: 12000 on 2026-10-27 is above 10000; skipped');
+  });
+
+  it('steps_watch: a day\'s steps are max(iPhone, Watch); without it, steps as sent', () => {
+    const both = { dates: 'Oct 30, 2026\nOct 31, 2026', steps: '4100\n13172', steps_watch: '9800\n12900' };
+    expect(a('ingest', both)).toEqual({ ok: true, metrics: 2 });
+    expect(data('metrics').map((r) => [r[2], r[3], r[4]])).toEqual([['2026-10-30', 'steps', 9800], ['2026-10-31', 'steps', 13172]]);
+    tick();
+    expect(a('ingest', { dates: 'Oct 31, 2026', steps: '13300' })).toEqual({ ok: true, metrics: 1 }); // an old Shortcut: steps as given
+    expect(data('metrics').at(-1)!.slice(2)).toEqual(['2026-10-31', 'steps', 13300]);
+    expect(String(data('uploads')[0][4])).toContain('steps_watch:text[2] "9800"');
+  });
+
+  it('steps_watch is validated like the other lists: Text, its length, its bounds', () => {
+    expect(a('ingest', { dates: 'Oct 31, 2026', steps: '100', steps_watch: 100 })).toMatchObject({ ok: false, error: 'bad_request', detail: 'steps_watch: expected Text (one line per item)' });
+    expect(a('ingest', { dates: 'Oct 31, 2026', steps: '100', steps_watch: '1\n2' })).toEqual({
+      ok: true, metrics: 1, warnings: ['steps_watch: 2 lines but 1 dates; steps_watch not saved']
+    });
+    tick();
+    expect(a('ingest', { dates: 'Oct 31, 2026', steps: '200', steps_watch: '100001' })).toEqual({
+      ok: true, metrics: 1, skipped: 1, warnings: ['steps_watch: 100001 on 2026-10-31 is above 100000; skipped']
+    });
+    expect(data('metrics').map((r) => r[4])).toEqual([100, 200]);
   });
 
   it('weight: any changed value is appended (a weight goes down too); the same value never twice; 0 is no weigh-in', () => {
@@ -248,7 +276,7 @@ describe('ingest', () => {
     expect(a('ingest', { dates: 'Oct 28, 2026', steps: '10' })).toMatchObject({ metrics: 1 });
     expect(reads).toEqual([256, 512]); // the 512-row chunk starts before Oct 27: done
     reads.length = 0;
-    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '6000' })).toMatchObject({ metrics: 0 }); // reaches the Sep 1 row: still higher-only
+    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '7000' })).toMatchObject({ metrics: 0 }); // reaches the Sep 1 row: the same value
     expect(reads.reduce((x, y) => x + y)).toBe(3302);
   });
 
@@ -406,8 +434,8 @@ describe('snapshot', () => {
     const sh = gas.sheets.get('metrics')!;
     sh.rows.push([new Date('2026-09-01T00:00:00.000Z'), 'A', new Date('2026-09-01T00:00:00+09:00'), 'steps', '7000']);
     expect(a('snapshot').rows.metrics).toEqual([['2026-09-01T00:00:00.000Z', 'A', '2026-09-01', 'steps', 7000]]);
-    // …and the higher-only index reads them too.
-    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '6000' })).toMatchObject({ metrics: 0 });
+    // …and the latest-row index reads them too.
+    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '7000' })).toMatchObject({ metrics: 0 });
   });
 
   it('a hand-pasted `at` without milliseconds or UTC is normalised, so `since` compares it correctly', () => {

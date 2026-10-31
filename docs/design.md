@@ -188,7 +188,8 @@ server order is ignored, so of two simultaneous buys the server's first wins. A 
 ## Health data
 
 Apple Health is the source of truth. Steps, exercise, Move, Stand and weight come only from the Shortcut's `metrics`
-rows; a day's activity value is its highest row, its weight its latest. Nothing in the app enters or fixes them.
+rows; a day's value (activity and weight) is its latest row, so each sync replaces it with Health's current total (a
+locked week's earnings stay as of its lock). Nothing in the app enters or fixes them.
 
 What the app sends instead ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either
 person's: `data.person`, absent = the sender), the menu, buys and voids, harvest taps, high-fives, and the sender's own

@@ -10,7 +10,7 @@ import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
 import {
-  eventSubject, EVENT_TYPES, isLocalDate, isActivityMetric, isId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
+  eventSubject, EVENT_TYPES, isLocalDate, isId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -376,22 +376,19 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   return withLock((): IngestReply => {
     const at = nextAt();
     const mSheet = tab('metrics');
+    // Every metric: Apple Health's current total is the truth, so a day's value is its LAST row so far, and any
+    // different value is appended (up or down: a re-sync corrects an earlier value). The tail is in `at` order.
     const latest = new Map<string, number>();
-    // Steps and minutes: the highest row so far, and only a higher value is appended (a day only goes up).
-    // Weight: the LAST row so far, and any different value is appended (a weight goes down too).
     if (parsed.metrics.length) {
       for (const r of readTail(mSheet, 'metrics', reachesBack(from))) {
-        const k = `${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`;
         const v = num(r[4]);
-        if (v === null) continue;
-        if (!isActivityMetric(r[3]) || v > (latest.get(k) ?? -Infinity)) latest.set(k, v);
+        if (v !== null) latest.set(`${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`, v);
       }
     }
     const newMetrics: unknown[][] = [];
     for (const m of parsed.metrics) {
       const k = `${me}|${m.date}|${m.metric}`;
-      const cur = latest.get(k);
-      if (cur === undefined || (isActivityMetric(m.metric) ? m.value > cur : m.value !== cur)) {
+      if (latest.get(k) !== m.value) {
         newMetrics.push([at, me, m.date, m.metric, m.value]);
         latest.set(k, m.value);
       }

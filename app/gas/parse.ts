@@ -3,11 +3,17 @@
 //
 //   { "key": "…", "action": "ingest",
 //     "dates": "Sep 30, 2026 at 8:59 AM\n…",   one line per day (Shortcuts' date text; only the calendar day is used)
-//     "steps": "8564\n…",                       that day's total
+//     "steps": "8564\n…",                       that day's steps from the iPhone (Source = this iPhone)
+//     "steps_watch": "9120\n…",                 that day's steps from the Apple Watch (Source = this Watch); optional
 //     "exercise_minutes": "22\n…",              that day's total
 //     "calories": "251.3\n…",                   that day's active energy in kcal (the Move ring) → metric move_kcal
 //     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min
 //     "weight": "0\n68.4\n…" }                 that day's Body Mass in kg; 0 = no weigh-in
+//
+// Steps: Shortcuts' "Find Health Samples" sums every source's samples, so the iPhone's and the Watch's steps would be
+// counted twice (Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, and a day's steps
+// are the larger of the two (Health's merge counts one device at a time, so the max is close to Health's total). Without
+// `steps_watch`, `steps` is taken as it is.
 //
 // Other fields are ignored (an old Shortcut's `workouts` too). Every daily field is optional. A list whose length differs from `dates` is dropped with a
 // warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000, stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
@@ -65,6 +71,7 @@ const amount = (s: string): number | null => (/^\d+(\.\d+)?$/.test(s) ? Number(s
 
 const COLUMNS = [
   { field: 'steps', metric: 'steps' },
+  { field: 'steps_watch', metric: 'steps' },
   { field: 'exercise_minutes', metric: 'exercise_min' },
   { field: 'calories', metric: 'move_kcal' },
   { field: 'stand_minutes', metric: 'stand_min' },
@@ -79,6 +86,8 @@ export function parseShortcut(body: unknown): ParsedBody {
   const metrics: ParsedMetric[] = [];
   const days = body.dates === undefined ? [] : lines(body.dates, 'dates').map(shortcutDate);
   const sent = COLUMNS.filter(({ field }) => body[field] !== undefined);
+  /** The index in `metrics` of each day's steps, so the iPhone's and the Watch's lists merge into one value (the max). */
+  const stepsAt = new Map<string, number>();
 
   for (const { field, metric } of sent) {
     const values = lines(body[field], field);
@@ -91,9 +100,14 @@ export function parseShortcut(body: unknown): ParsedBody {
       const n = amount(raw);
       if (!day || n === null) { skipped++; return; }
       if (metric !== 'weight') {
-        // a ceiling: one bad line must not become the day's permanent maximum
+        // a ceiling: one bad line must not reach the ベル (it would earn until the next sync)
         const v = Math.round(n);
         if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
+        if (metric === 'steps') {
+          const at = stepsAt.get(day);
+          if (at !== undefined) { metrics[at].value = Math.max(metrics[at].value, v); return; }
+          stepsAt.set(day, metrics.length);
+        }
         metrics.push({ date: day, metric, value: v });
         return;
       }
@@ -104,6 +118,6 @@ export function parseShortcut(body: unknown): ParsedBody {
     });
   }
 
-  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, exercise_minutes, calories, stand_minutes or weight');
+  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes or weight');
   return { metrics, skipped, warnings };
 }

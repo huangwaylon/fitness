@@ -35,8 +35,9 @@ export function syntheticRows(days: number): SnapshotRows {
     for (let h = 7; h <= 22; h++) {
       for (const p of people) {
         const m = (p === 'A' ? 5 : 35) + Math.floor(rand() * 10);
-        // The first sync of the day also brings yesterday's late steps.
-        if (h === 7 && last[p] && rand() < 0.7) metrics.push([at(date, hm(h, m)), p, last[p]!.date, 'steps', last[p]!.steps + 50 + Math.floor(rand() * 400)]);
+        // The first sync of the day also brings yesterday's late steps, now and then lower (Health re-counted: latest wins).
+        const late = h === 7 && last[p] ? rand() : 1;
+        if (late < 0.7) metrics.push([at(date, hm(h, m)), p, last[p]!.date, 'steps', last[p]!.steps + (late < 0.1 ? -100 - Math.floor(rand() * 400) : 50 + Math.floor(rand() * 400))]);
         steps[p] = Math.round((total[p] * (h - 6)) / 16);
         metrics.push([at(date, hm(h, m)), p, date, 'steps', steps[p]]);
         metrics.push([at(date, hm(h, m)), p, date, 'move_kcal', Math.round((kcalTotal[p] * (h - 6)) / 16)]);

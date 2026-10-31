@@ -109,4 +109,17 @@ describe('parseShortcut: the official body', () => {
     expect(r).toEqual({ metrics: [{ date: '2026-10-28', metric: 'steps', value: 8000 }], skipped: 0, warnings: [] });
     expect(() => parseShortcut({ workouts })).toThrow(/nothing to save/);
   });
+
+  it('steps_watch: each day\'s steps are max(iPhone, Watch), one row in the steps position; one side unreadable = the other', () => {
+    const r = parseShortcut({ ...BODY, steps: '4963\n13172\nx', steps_watch: '5200\n12900\n1658' });
+    expect(r.metrics.filter((m) => m.metric === 'steps')).toEqual([
+      { date: '2026-10-28', metric: 'steps', value: 5200 },
+      { date: '2026-10-29', metric: 'steps', value: 13172 },
+      { date: '2026-10-30', metric: 'steps', value: 1658 }
+    ]);
+    expect(r.metrics[0].metric).toBe('steps');
+    expect(r.skipped).toBe(1);
+    expect(parseShortcut({ dates: 'Oct 28, 2026', steps_watch: '9000' }).metrics).toEqual([{ date: '2026-10-28', metric: 'steps', value: 9000 }]);
+    expect(() => parseShortcut({ dates: 'Oct 28, 2026', steps_watch: ['9000'] })).toThrow(/steps_watch: expected Text/);
+  });
 });
