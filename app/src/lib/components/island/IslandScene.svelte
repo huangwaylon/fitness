@@ -47,6 +47,8 @@
   import Talk from './Talk.svelte';
   import TreeShakes from './TreeShakes.svelte';
   import Halloween from './Halloween.svelte';
+  import Wedding from './Wedding.svelte';
+  import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import { TRICK_MS } from './visitors.ts';
   import { PUFFY_MS } from './treeShake.ts';
@@ -99,6 +101,11 @@
   // NH's dated events (events.ts): Halloween's pumpkins all day, Jack, the lanterns and the villagers' lines at night
   const forced = forcedEvent();
   const nhEvent = $derived(eventAt(localDateAt(clock.getTime()), jst(clock).hour, forced));
+  // the wedding countdown (wedding.ts): the arch on June Sundays, the day itself, its fireworks at night
+  const wedding = $derived.by(() => {
+    const date = localDateAt(clock.getTime()), { hour, weekday } = jst(clock);
+    return { date, arch: archOn(date, weekday), day: weddingDay(date), fireworks: weddingDay(date) && hour >= FIREWORKS_FROM };
+  });
 
   // I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.
   const slot = (pid: PersonId): 'A' | 'B' => (pid === view.me ? 'A' : 'B');
@@ -270,7 +277,7 @@
 </script>
 
 <div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
-  <Sky {tod} fireworks={ev.fireworks || ev.newYear || life.devFireworks}>
+  <Sky {tod} fireworks={ev.fireworks || ev.newYear || life.devFireworks || wedding.fireworks}>
     {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
   </Sky>
 
@@ -323,6 +330,7 @@
     {/if}
     <div class="tint"></div>
     {#if live && nhEvent?.id === 'halloween'}<Halloween scene={sceneEl} night={nhEvent.night} />{/if}
+    {#if live && (wedding.arch || wedding.day)}<Wedding scene={sceneEl} arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>
   </div>
 </div>

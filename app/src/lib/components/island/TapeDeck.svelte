@@ -54,7 +54,7 @@
     // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over it), and of the rock, a dig
     // spot or a mushroom (a weed may stand behind it)
     const keep = guardsU(g, -5 * g.k);
-    for (const it of scene?.querySelectorAll('[data-care="rock"], [data-find]') ?? []) {
+    for (const it of scene?.querySelectorAll('[data-care="rock"], [data-find], [data-arch]') ?? []) {
       const r = (it.firstElementChild ?? it).getBoundingClientRect();
       if (r.width) keep.push({ x0: (r.left - g.r.left) * g.k, x1: (r.right - g.r.left) * g.k, y0: (r.top - g.r.top) * g.k, y1: (r.bottom - g.r.top) * g.k });
     }

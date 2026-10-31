@@ -1,5 +1,5 @@
 {
-  "version": 35,
+  "version": 36,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -954,6 +954,12 @@
       "w": 66,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Tape_Deck_NH_Icon.png"
+    },
+    "deco/wedding-arch": {
+      "path": "deco/wedding-arch.webp",
+      "w": 113,
+      "h": 119,
+      "source": "https://nookipedia.com/wiki/File:Wedding_Arch_(Cute)_NH_Icon.png"
     },
     "finds/acanthostega": {
       "path": "finds/acanthostega.webp",
@@ -3366,6 +3372,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Cyrano_NH_Villager_Icon.png"
+    },
+    "villagers/cyrus": {
+      "path": "villagers/cyrus.webp",
+      "w": 326,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Cyrus_NH_Model.png"
     },
     "villagers/daisy": {
       "path": "villagers/daisy.webp",
@@ -5994,6 +6006,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Redd_NH_Character_Icon.png"
+    },
+    "villagers/reese": {
+      "path": "villagers/reese.webp",
+      "w": 315,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Reese_NH_Model.png"
     },
     "villagers/renee": {
       "path": "villagers/renee.webp",

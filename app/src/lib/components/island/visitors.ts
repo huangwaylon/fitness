@@ -5,13 +5,15 @@
 // 17:00–24:00) Jack comes instead of anyone else and asks for candy (a choice: a treat, or his trick). On a meteor
 // shower's night (meteor.ts, at most once a week) Celeste comes to watch it, 20:00–04:00. NH's holiday hosts take the
 // slot on their day (events.ts): Franklin on Turkey Day (he asks for a fish), Jingle on Toy Day, Pavé at Festivale,
-// Zipper on the first and last days of Bunny Day.
+// Zipper on the first and last days of Bunny Day. On the wedding countdown's milestone days (wedding.ts) Reese and Cyrus
+// come together (one visitor, `reese`, drawn as the pair).
 import { ISLAND_SEED, dayRand } from './beach.ts';
 import { eventAt, type EventId, type EventNow } from './events.ts';
 import { showerAt } from './meteor.ts';
+import { coupleAt } from './wedding.ts';
 
-export type VisitorId = 'kk-slider' | 'daisy-mae' | 'wisp' | 'gulliver' | 'jack' | 'celeste' | 'franklin' | 'jingle' | 'pave' | 'zipper';
-export const VISITORS: readonly VisitorId[] = ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'jack', 'celeste', 'franklin', 'jingle', 'pave', 'zipper'];
+export type VisitorId = 'kk-slider' | 'daisy-mae' | 'wisp' | 'gulliver' | 'jack' | 'celeste' | 'franklin' | 'jingle' | 'pave' | 'zipper' | 'reese';
+export const VISITORS: readonly VisitorId[] = ['kk-slider', 'daisy-mae', 'wisp', 'gulliver', 'jack', 'celeste', 'franklin', 'jingle', 'pave', 'zipper', 'reese'];
 /** Each event's host (NH), in the visitor slot from its main part's hour. */
 export const HOSTS: Partial<Record<EventId, VisitorId>> = { halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', festivale: 'pave', 'bunny-day': 'zipper' };
 /** How often Wisp's night and Gulliver's day come (NH: now and then). */
@@ -26,6 +28,7 @@ export function visitorAt(date: string, prevDate: string, hour: number, weekday:
   ev: EventNow | null = eventAt(date, hour), shower = showerAt(date, prevDate, hour, seed)): VisitorId | null {
   const host = ev?.night ? HOSTS[ev.id] : undefined;
   if (host) return host;
+  if (coupleAt(date, hour)) return 'reese';
   if (shower) return 'celeste';
   if (weekday === 6 && hour >= 18) return 'kk-slider';
   if (weekday === 0 && hour >= 5 && hour < 12) return 'daisy-mae';

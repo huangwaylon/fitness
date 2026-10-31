@@ -63,7 +63,9 @@ export const SCENE = {
   stretch: 'scene-stretch',
   /** localStorage `scene-franklin` = `{ date, asked, fed }`: Turkey Day on this phone (island/Visitor.svelte): whether
    *  Franklin asked for his fish and whether a catch made him happy. */
-  franklin: 'scene-franklin'
+  franklin: 'scene-franklin',
+  /** localStorage `scene-wedding` = the date the wedding day's confetti last burst on this phone (island/Wedding.svelte). */
+  wedding: 'scene-wedding'
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */

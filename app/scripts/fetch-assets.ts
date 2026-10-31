@@ -100,6 +100,10 @@ const SPECS: Record<string, Spec> = {
   'villagers/jingle': [512, 'Jingle_NH_Model.png'],
   'villagers/pave': [512, 'Pavé_NH_Model.png', 'Pavé_NH.png'],
   'villagers/zipper': [512, 'Zipper_T._Bunny_NH_Model.png'],
+  // the wedding countdown (island/wedding.ts): Reese and Cyrus, and NH's wedding arch for June Sundays
+  'villagers/reese': [512, 'Reese_NH_Model.png', 'Reese_NH.png'],
+  'villagers/cyrus': [512, 'Cyrus_NH_Model.png', 'Cyrus_NH.png'],
+  'deco/wedding-arch': [256, 'Wedding_Arch_(Cute)_NH_Icon.png'],
   // group stretching's tape deck (island/TapeDeck.svelte)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
   // Game-derived replacements for hand-drawn chrome.
@@ -181,7 +185,7 @@ for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses',
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');
