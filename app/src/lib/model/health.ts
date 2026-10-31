@@ -6,7 +6,10 @@
 //   week stay as of its lock, so a sync after a lock can show here and not in the ledger.)
 // - No record: a day with no row; for steps, under STEPS_MIN (the phone wasn't carried); for Move, Exercise and Stand
 //   together, a day the Watch wasn't clearly worn (Move under WORN_KCAL and Stand under WORN_STAND). Such a day has no
-//   bar (a hatched mark instead) and stays out of every average, best day, goal count and trend, and is counted as 記録なし.
+//   bar (a short faint stub at the axis instead) and stays out of every average, best day and goal count, and is counted
+//   as 記録なし.
+// - Weight: the period's weigh-ins, their average and the plain change (model/weight.ts plainChange: the first week's
+//   average → the last week's, else the first weigh-in → the last), and from it the goal month.
 // - Today is still running: it is drawn (a lighter bar, whenever it has anything above 0) but stays out of the stats.
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
 //   8,000. Days met / days recorded.
@@ -19,7 +22,7 @@ import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import type { ActivityMetric } from '#lib/contract/api.ts';
 import { moveGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
-import { weightTrend, type WeightTrend } from './weight.ts';
+import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
 
 /** The four metrics in けんこう's order, steps first (🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; the island keeps the rings' order). */
 export const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
@@ -43,12 +46,10 @@ interface PersonSeries {
   values: Record<Metric, (number | null)[]>;
   /** The Move goal in force each day (the other goals are fixed). */
   moveGoal: number[];
-  /** That day's weigh-in (kg) and the weight trend carried to that day (null before the first weigh-in). */
+  /** That day's weigh-in (kg), null without one. */
   kg: (number | null)[];
-  trend: (number | null)[];
-  /** The weight goal (shown only) and, at today's pace, when the trend may reach it. */
+  /** The weight goal (shown only). */
   goalWeight: number | null;
-  projection: WeightTrend['projection'];
 }
 
 export interface HealthSeries {
@@ -85,11 +86,8 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
   const person = (p: PersonId): PersonSeries => {
     const values = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, (number | null)[]>;
     const moveGoal: number[] = [];
-    const w = weightTrend(s, p, now);
-    const kgBy = new Map(w.points.map((x) => [x.date, x] as const));
+    const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const kg: (number | null)[] = [];
-    const trend: (number | null)[] = [];
-    let carried: number | null = null;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       const raw = (m: Metric) => metricAsOf(s, p, d, ROW[m], now);
       // today (still running, drawn but never counted) shows anything above 0
@@ -102,12 +100,9 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
       values.exercise.push(worn ? watch[1] : null);
       values.stand.push(worn ? watch[2] : null);
       moveGoal.push(moveGoalOn(s, p, d));
-      const wi = kgBy.get(d);
-      if (wi) carried = wi.trend;
-      kg.push(wi?.kg ?? null);
-      trend.push(carried);
+      kg.push(kgBy.get(d) ?? null);
     }
-    return { values, moveGoal, kg, trend, goalWeight: w.goal, projection: w.projection };
+    return { values, moveGoal, kg, goalWeight: s.prefs[p].goalWeight ?? null };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
 }
@@ -291,37 +286,27 @@ export interface WeightStats {
   n: number;
   /** Their average. */
   avg: number | null;
-  /** The trend at the period's end − the trend at its start (or at its first weigh-in). */
-  change: number | null;
-  /** That change per week. */
-  perWeek: number | null;
-  /** The trend at the period's end. */
-  trend: number | null;
+  /** The plain change over the period (null under two weigh-ins). */
+  change: PlainChange | null;
+  /** With a goal and a change: reached, the month at the period's pace, or none. */
+  projection: WeightProjection | null;
 }
 
 export function weightStats(hs: HealthSeries, p: PersonId, r: Range): WeightStats {
   const ps = hs.people[p];
   const lo = Math.max(0, idx(hs, r.from));
   const hi = Math.min(idx(hs, r.to), idx(hs, hs.to));
-  let sum = 0, n = 0, firstI = -1;
+  const days: WeighIn[] = [];
   for (let i = lo; i <= hi; i++) {
-    const v = ps.kg[i];
-    if (v === null || v === undefined) continue;
-    if (firstI < 0) firstI = i;
-    sum += v;
-    n++;
+    const kg = ps.kg[i];
+    if (kg !== null && kg !== undefined) days.push({ date: addDays(hs.from, i), kg });
   }
-  const end = hi >= 0 ? ps.trend[hi] ?? null : null;
-  // the trend carried into the period, else its first weigh-in's
-  const startI = lo > 0 && ps.trend[lo - 1] !== null ? lo - 1 : firstI;
-  const start = startI >= 0 ? ps.trend[startI] ?? null : null;
-  const change = n && end !== null && start !== null ? Math.round((end - start) * 10) / 10 : null;
-  const days = startI >= 0 ? hi - startI : 0;
+  const n = days.length;
+  const change = plainChange(days);
   return {
     n,
-    avg: n ? Math.round((sum / n) * 10) / 10 : null,
+    avg: n ? Math.round((days.reduce((a, d) => a + d.kg, 0) / n) * 10) / 10 : null,
     change,
-    perWeek: change !== null && days >= 7 ? Math.round(((end! - start!) / days) * 7 * 100) / 100 : null,
-    trend: n ? end : null
+    projection: ps.goalWeight === null || !change ? null : project(change, ps.goalWeight)
   };
 }

@@ -151,7 +151,7 @@ describe('edge cases', () => {
     expect(metricStats(hs, 'A', 'steps', r)).toEqual({ avg: null, days: 0, missing: 0, met: 0, best: null, change: null });
     expect(bucketValues(hs, 'B', 'move', r).every((b) => b.v === null)).toBe(true);
     expect(canShift(r, hs.from, TODAY).back).toBe(false);
-    expect(weightStats(hs, 'A', r)).toEqual({ n: 0, avg: null, change: null, perWeek: null, trend: null });
+    expect(weightStats(hs, 'A', r)).toEqual({ n: 0, avg: null, change: null, projection: null });
   });
 
   it('one person only: the other has no record anywhere', () => {
@@ -161,7 +161,7 @@ describe('edge cases', () => {
     expect(metricStats(hs, 'B', 'steps', r)).toMatchObject({ avg: null, days: 0, missing: 1 });
   });
 
-  it('sparse weight: buckets average their weigh-ins, the trend carries between them, the change is trend to trend', () => {
+  it('sparse weight: buckets average their weigh-ins; the change is plain, first weigh-in to last, inside the period', () => {
     const hs = series(rows([
       m('A', '2026-09-01', 'weight', 70, '08:00'),
       m('A', '2026-10-20', 'weight', 69, '08:00'),
@@ -171,22 +171,38 @@ describe('edge cases', () => {
     const s = weightStats(hs, 'A', r);
     expect(s.n).toBe(2);
     expect(s.avg).toBe(68.5);
-    // the trend carried in (70) to the trend after 69 (gap 49 days) and 68 (2 days)
-    const t1 = 70 + (1 - 0.9 ** 49) * (69 - 70);
-    const t2 = t1 + (1 - 0.9 ** 2) * (68 - t1);
-    expect(s.trend).toBeCloseTo(t2, 1);
-    expect(s.change).toBeCloseTo(Math.round((t2 - 70) * 10) / 10, 5);
-    expect(s.perWeek).not.toBeNull();
+    // 09-01 is outside the period and doesn't count; two days apart: no weekly pace
+    expect(s.change).toMatchObject({ basis: 'ends', from: 69, to: 68, change: -1, perWeek: null });
+    expect(s.projection).toBeNull(); // no goal
     // weight alone isn't a missing activity day
     expect(hs.activityFrom).toBe(TODAY);
     expect(metricStats(hs, 'A', 'steps', r).missing).toBe(0);
     const b = weightBuckets(hs, 'A', r);
     expect(b[0]).toEqual({ kg: null, n: 0 });
     expect(b.find((x) => x.kg === 69)).toBeTruthy();
-    // a period with no weigh-in says nothing, even with a trend carried through it
-    const empty = weightStats(hs, 'A', rangeFor('week', '2026-09-20', hs.from));
-    expect(empty).toMatchObject({ n: 0, change: null, trend: null });
+    // a period with no weigh-in says nothing; one weigh-in has no change
+    expect(weightStats(hs, 'A', rangeFor('week', '2026-09-20', hs.from))).toEqual({ n: 0, avg: null, change: null, projection: null });
+    expect(weightStats(hs, 'A', rangeFor('week', '2026-09-03', hs.from))).toMatchObject({ n: 1, avg: 70, change: null });
     expect(weightStats(hs, 'B', r).n).toBe(0);
+  });
+
+  it('weight over a month: the first week’s average → the last week’s, per week, and the goal month at that pace', () => {
+    // 10-02..10-31: 72.0 then 0.1 kg lower every day
+    const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'weight', Math.round((72 - 0.1 * i) * 10) / 10, '08:00'));
+    const goal = (g: number) => [[jst('2026-10-01', '08:00'), 'A', `g${g}`, 'pref', JSON.stringify({ key: 'goalWeight', value: g })] as EventRow];
+    const hs = series(rows(metrics, goal(66)));
+    const s = weightStats(hs, 'A', rangeFor('month', TODAY, hs.from));
+    // 10-02..10-08 average 71.7 (mean day 10-05); 10-25..10-31 average 69.4 (mean day 10-28): 23 days apart
+    expect(s.change).toMatchObject({ basis: 'weeks', from: 71.7, to: 69.4, at: '2026-10-28', change: -2.3, perWeek: -0.7 });
+    // (66 − 69.4) / −0.7 = 4.86 weeks → 35 days after 10-28
+    expect(s.projection).toEqual({ kind: 'date', date: '2026-12-02' });
+    // the 1週 period: first weigh-in → last, too short for a pace or a date
+    const w = weightStats(hs, 'A', rangeFor('week', TODAY, hs.from));
+    expect(w.change).toMatchObject({ basis: 'ends', from: 69.7, to: 69.1, change: -0.6, perWeek: null });
+    expect(w.projection).toEqual({ kind: 'none' });
+    // moving away from the goal: none; already past it: reached
+    expect(weightStats(series(rows(metrics, goal(75))), 'A', rangeFor('month', TODAY, hs.from)).projection).toEqual({ kind: 'none' });
+    expect(weightStats(series(rows(metrics, goal(70))), 'A', rangeFor('month', TODAY, hs.from)).projection).toEqual({ kind: 'reached' });
   });
 
   it('is memoised per State and day', () => {

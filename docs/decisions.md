@@ -110,9 +110,8 @@ not appended (the other phone got there first), so it stays idempotent. The week
 a buy from a locked week can still be erased; the harvest recap counts earnings only and never changes.
 
 ### Weight never earns
-Weight is shown as a trend only: no ベル, no goal that pays, and the economy never reads it. The trend is
-an EWMA (alpha 0.1), with an optional goal line; a day's weight is its latest row, 20–300 kg. Why: paying
-for kilograms rewards crash diets and punishes muscle.
+Weight is shown only: no ベル, no goal that pays, and the economy never reads it; an optional goal line; a day's
+weight is its latest row, 20–300 kg. Why: paying for kilograms rewards crash diets and punishes muscle.
 
 ## Health data
 
@@ -134,7 +133,7 @@ from the same rows (`model/health.ts`), no backend change, its code loaded with 
 - **No record, not zero:** a finished day counts for Move, Exercise and Stand only when the Watch was clearly worn:
   Move ≥ 100 kcal or Stand ≥ 30 min (`WORN_KCAL`, `WORN_STAND` in `model/health.ts`), else all three are 記録なし; it
   counts for steps only from 500 (`STEPS_MIN`; fewer: the phone stayed home); no row is 記録なし too. Such a day has a
-  pale hatched column instead of a bar, stays out of every average, best day, goal count and change, is counted as
+  short faint stub on the axis instead of a bar (user decision: a full-height hatched column read like a huge value), stays out of every average, best day, goal count and change, is counted as
   記録なし (from the first activity record), and the averages say 「1日の平均（記録のある日）」. Today is drawn (anything
   above 0), not counted. Why: a Watch on its charger, or worn for minutes (3 kcal, 26 kcal and 4 min of Stand), and a
   phone left on the desk (66 steps) are not lazy days; counted, they dragged the real averages down. These thresholds
@@ -146,10 +145,13 @@ from the same rows (`model/health.ts`), no backend change, its code loaded with 
   (ウェイ blue, うめ orange; a CVD-safe pair, checked with a validator), solid = goal met, their goal dashed (their own
   Move goal history), a tap for the exact value. No trend line (user decision: no moving average on the bars, no
   smoothed weight line); weight shows its weigh-ins joined by a thin line, on an axis fitted to that person's weights.
+- **Weight's change is plain** (user decision): 期間の変化 = the first week's average weigh-in → the last week's in the
+  visible period (else the first weigh-in → the last, saying which), and the goal month extends that weekly pace; no
+  smoothed trend anywhere. Why: a number anyone can check against the dots beats a filtered one nobody can.
 - **First tab** (user request): the panel opens on けんこう (then きろく, せってい), and remembers the last tab for the
   session.
 - **No week card** (user decision): the period's charts and stats carry the trends; 1週 is the week view.
-- **Weight moved here:** the weight trend left きろく (no information twice); its goal is still set in きろく's 目標 card.
+- **Weight moved here:** the weight left きろく (no information twice); its goal is still set in きろく's 目標 card.
 - **No export:** no copy/CSV of a summary (user decision); the trainer reads the screen.
 Why: the trainer needs exact, comparable numbers over weeks to years, without leaving the game's look.
 

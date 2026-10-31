@@ -10,7 +10,7 @@
   import { fruitArt } from '#lib/art.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { weightTrend } from '#lib/model/weight.ts';
+  import { weighIns } from '#lib/model/weight.ts';
 
   let { view }: { view: WeekView } = $props();
   const moveGoal = $derived(view.people[view.me].moveGoal);
@@ -28,12 +28,12 @@
     : t('help.stretch.steps', { n: formatNum(stretchOf(RULES.goals.steps)) });
 
   /** The protein tip (not tracked): 1.6 g per kg a day, per person from their goal weight (else their
-   *  weight trend), rounded to 5 g; just the rule when neither is known. */
+   *  latest weigh-in), rounded to 5 g; just the rule when neither is known. */
   const protein = $derived.by((): string => {
     const m = week.model;
     if (!m) return '';
     return [view.me, view.partner].flatMap((p) => {
-      const kg = m.state.prefs[p].goalWeight ?? weightTrend(m.state, p, m.now).latest?.trend ?? null;
+      const kg = m.state.prefs[p].goalWeight ?? weighIns(m.state, p, m.now).at(-1)?.kg ?? null;
       return kg ? [t('help.protein.person', { name: view.people[p].villagerName, g: Math.round((kg * 1.6) / 5) * 5 })] : [];
     }).join(t('help.protein.sep'));
   });
