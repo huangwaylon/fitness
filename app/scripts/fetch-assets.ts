@@ -11,7 +11,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { ROSTER } from '../src/lib/villagers/roster.ts';
+import { registerHooks } from 'node:module';
+
+// The roster's look helpers import lib/art.ts, which reads Kit's `$app/paths` and the art manifest as JSON: stub the
+// one and load the other as JSON, so this script can read the roster outside Vite.
+registerHooks({
+  resolve: (spec, ctx, next) =>
+    spec === '$app/paths' ? { url: 'data:text/javascript,export const asset = (p) => p;', shortCircuit: true } : next(spec, ctx),
+  load: (url, ctx, next) => (url.endsWith('.json') ? next(url, { ...ctx, importAttributes: { type: 'json' } }) : next(url, ctx))
+});
+const { ROSTER } = await import('../src/lib/villagers/roster.ts');
 
 const UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
@@ -92,9 +101,13 @@ for (const name of [
   'Barred Knifejaw', 'Anchovy', 'Common Butterfly', 'Yellow Butterfly', 'Tiger Butterfly', 'Darner Dragonfly',
   'Red Dragonfly', 'Firefly', 'Moth', 'Bell Cricket', 'Cricket', 'Ladybug', 'Boot', 'Old Tire', 'Empty Can',
   'Peacock Butterfly', 'Emperor Butterfly', 'Honeybee', 'Banded Dragonfly', 'Robust Cicada', 'Evening Cicada',
-  'Rice Grasshopper', 'Grasshopper', 'Migratory Locust', 'Mantis', 'Orchid Mantis'
+  'Rice Grasshopper', 'Grasshopper', 'Migratory Locust', 'Mantis', 'Orchid Mantis',
+  // the rest of NH's sea and pier fish
+  'Zebra Turkeyfish', 'Ribbon Eel', 'Football Fish', 'Clownfish', 'Surgeonfish', 'Butterfly Fish', 'Sea Horse', 'Moray Eel',
+  'Napoleonfish', 'Ray', 'Ocean Sunfish', 'Mahi-Mahi', 'Giant Trevally', 'Tuna', 'Blue Marlin', 'Suckerfish', 'Oarfish',
+  'Saw Shark', 'Hammerhead Shark', 'Great White Shark', 'Whale Shark', 'Barreleye', 'Coelacanth'
 ])
-  SPECS[`critters/${name.toLowerCase().replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
+  SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
 const TRIM = ['bushes/', 'flowers/'];

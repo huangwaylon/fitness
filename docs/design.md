@@ -238,7 +238,11 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
 - **Fishing:** a shadow (NH sizes 1–6) dawdles off the front beach. A tap near it (1.5× the old reach) casts a
   red-and-white bobber; the fish swims up and nibbles 0–3 times (small wiggles), then bites: a 「！」 pops, the bobber is
   yanked under with its own sound, and a tap anywhere on the sea in the next 1.6 s catches it. The first early tap only
-  makes it hesitate and nibble again; a second scares it off. Mostly sea bass; 1 in 14 a boot, tire or can.
+  makes it hesitate and nibble again; a second scares it off. 1 in 14 a boot, tire or can.
+- **Fish** (all 33 of NH's sea and pier fish, `FISH`): mostly sea bass; the reef fish of spring and summer, the big ones
+  (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
+  no rain gate). NH's shadows: sizes 1–6, a long thin one for the eels, a fin cutting the surface for the sharks, the
+  ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
 - **Bugs** (21 NH species: butterflies, the honeybee and ladybug over the beds; dragonflies over the hedge; cicadas
   perched on the trunks; fireflies at night; grasshoppers, the locust, mantises and crickets in the grass): a tap on
   one swings the net (caught); within 80px it startles away. A shaken bush lets one out 1 in 3. Bugs keep clear of

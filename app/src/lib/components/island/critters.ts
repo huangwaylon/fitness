@@ -19,16 +19,25 @@ const range = (a: number, b: number): number[] => Array.from({ length: b - a + 1
 
 export type FishId =
   | 'sea-bass' | 'horse-mackerel' | 'olive-flounder' | 'red-snapper' | 'dab' | 'squid' | 'sea-butterfly'
-  | 'puffer-fish' | 'barred-knifejaw' | 'anchovy';
+  | 'puffer-fish' | 'barred-knifejaw' | 'anchovy' | 'zebra-turkeyfish' | 'ribbon-eel' | 'football-fish' | 'clownfish'
+  | 'surgeonfish' | 'butterfly-fish' | 'sea-horse' | 'moray-eel' | 'napoleonfish' | 'ray' | 'ocean-sunfish' | 'mahi-mahi'
+  | 'giant-trevally' | 'tuna' | 'blue-marlin' | 'suckerfish' | 'oarfish' | 'saw-shark' | 'hammerhead-shark'
+  | 'great-white-shark' | 'whale-shark' | 'barreleye' | 'coelacanth';
 export type JunkId = 'boot' | 'old-tire' | 'empty-can';
 
 interface Fish extends Seasonal {
   /** NH's shadow size, 1 (tiny) – 6 (huge). */
   size: number;
+  /** NH's two odd shadows: a long thin one (the eels) and one with a fin cutting the surface (the sharks, the sunfish,
+   *  the suckerfish). */
+  shape?: 'narrow' | 'fin';
 }
 
-/** The sea fish you can catch from a beach in NH (northern hemisphere), with their shadow sizes. The sea bass is the
- *  famous one: all year, all day, and by far the most common. */
+/** The sea fish you can catch from a beach or a pier in NH (northern hemisphere; Nookipedia), with their shadow sizes
+ *  and shapes. Months and hours only weight the odds (`oddsAt`); a low weight is a rare fish. The sea bass is the famous
+ *  one: all year, all day, and by far the most common (every other weight × IN_SEASON stays under its 10). Deviations
+ *  from NH: the pier fish (mahi-mahi, giant trevally, tuna, blue marlin) come to the beach, the island has no pier; the
+ *  coelacanth (NH: rain only) is simply the rarest, since the island has no weather. */
 export const FISH: Record<FishId, Fish> = {
   'sea-bass': { months: ALL_YEAR, hours: ALL_DAY, size: 5, weight: 10 },
   'horse-mackerel': { months: ALL_YEAR, hours: ALL_DAY, size: 2, weight: 4 },
@@ -39,7 +48,33 @@ export const FISH: Record<FishId, Fish> = {
   squid: { months: span(12, 8), hours: ALL_DAY, size: 3, weight: 2 },
   'sea-butterfly': { months: span(12, 3), hours: ALL_DAY, size: 1, weight: 2 },
   'puffer-fish': { months: span(11, 2), hours: ALL_DAY, size: 3, weight: 1 },
-  'barred-knifejaw': { months: span(3, 11), hours: ALL_DAY, size: 3, weight: 1 }
+  'barred-knifejaw': { months: span(3, 11), hours: ALL_DAY, size: 3, weight: 1 },
+  // the reef fish of spring and summer
+  'zebra-turkeyfish': { months: span(4, 11), hours: ALL_DAY, size: 3, weight: 2 },
+  clownfish: { months: span(4, 9), hours: ALL_DAY, size: 1, weight: 2 },
+  surgeonfish: { months: span(4, 9), hours: ALL_DAY, size: 2, weight: 2 },
+  'butterfly-fish': { months: span(4, 9), hours: ALL_DAY, size: 2, weight: 2 },
+  'sea-horse': { months: span(4, 11), hours: ALL_DAY, size: 1, weight: 2 },
+  'ribbon-eel': { months: span(6, 10), hours: ALL_DAY, size: 3, shape: 'narrow', weight: 1 },
+  'moray-eel': { months: span(8, 10), hours: ALL_DAY, size: 3, shape: 'narrow', weight: 1 },
+  // the big ones
+  'football-fish': { months: span(11, 3), hours: [16, 9], size: 4, weight: 1 },
+  ray: { months: span(8, 11), hours: [4, 21], size: 5, weight: 1 },
+  'mahi-mahi': { months: span(5, 10), hours: ALL_DAY, size: 5, weight: 1 },
+  'giant-trevally': { months: span(5, 10), hours: ALL_DAY, size: 5, weight: 1 },
+  suckerfish: { months: span(6, 9), hours: ALL_DAY, size: 4, shape: 'fin', weight: 1 },
+  napoleonfish: { months: [7, 8], hours: [4, 21], size: 6, weight: 0.5 },
+  'ocean-sunfish': { months: span(7, 9), hours: [4, 21], size: 6, shape: 'fin', weight: 0.5 },
+  tuna: { months: span(11, 4), hours: ALL_DAY, size: 6, weight: 0.5 },
+  'blue-marlin': { months: [...span(7, 9), ...span(11, 4)], hours: ALL_DAY, size: 6, weight: 0.5 },
+  oarfish: { months: span(12, 5), hours: ALL_DAY, size: 6, weight: 0.5 },
+  barreleye: { months: ALL_YEAR, hours: [21, 4], size: 2, weight: 0.5 },
+  // the sharks: summer, mostly after dark; rare
+  'saw-shark': { months: span(6, 9), hours: [16, 9], size: 6, shape: 'fin', weight: 0.4 },
+  'hammerhead-shark': { months: span(6, 9), hours: [16, 9], size: 6, shape: 'fin', weight: 0.4 },
+  'great-white-shark': { months: span(6, 9), hours: [16, 9], size: 6, shape: 'fin', weight: 0.3 },
+  'whale-shark': { months: span(6, 9), hours: ALL_DAY, size: 6, shape: 'fin', weight: 0.3 },
+  coelacanth: { months: ALL_YEAR, hours: ALL_DAY, size: 6, weight: 0.1 }
 };
 /** NH's junk: now and then the line brings up a boot, a tire or a can instead (1 in JUNK_ODDS). */
 export const JUNK: readonly JunkId[] = ['boot', 'old-tire', 'empty-can'];
