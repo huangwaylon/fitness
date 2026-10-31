@@ -389,13 +389,20 @@ fragment is a ずかん `find` (never ベル).
   a time on six spots measured clear of every control (beside the trunks, between the fruit rows and the beds; a spot a
   control covers on a small screen isn't shown). A tap digs it up (the official shovel strikes twice, earth flies, a
   hole): 「化石を ほりだした！ アンモナイトだ！」. The next spot turns up 20–40 s later.
+- **Mushroom season** (`island/mushrooms.ts`): NH's November mushrooms beside the trees: every November day 1–2 (half
+  the days two) on the four trunk spots (beside each trunk, between the canopy and the fruit row, relative to `TREE`; one
+  a control covers on this screen isn't shown), NH's weights (skinny 35, round 30, flat 30, elegant 5); not a hard gate:
+  1 in 8 October and December days bring one, other months none. A tap picks it up: 「まるいキノコを ひろった！」
+  (`scene-mushroom`). 1 in 20 November dig spots hold the rare mushroom instead of their fossil (their own stream):
+  「めずらしいキノコを ほりだした！」. Cosmetic: no ベル and no `find` (the ずかん has no kind for them).
+  `?find=mushroom|rare-mushroom` (dev or `?demo`) brings one now / makes every dig spot the rare one.
 - **Message bottle:** every 8–14 minutes one lies at the water's edge for 6; a tap reads its note (16 short, kind notes,
   ja/en). Not a find.
 - **Star fragments:** a tap in the night sky while a shooting star crosses is a wish (「ながれぼしに おねがい！」,
   `scene-wish` in localStorage); the next morning (a wish before 05:00: that morning) 2–3 fragments lie on the beach:
   star fragments, now and then a large one or the season's zodiac fragment.
 - The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
-  44px. `?find=bottle|fragment` (dev or `?demo`)
+  44px. `?find=bottle|fragment|mushroom|rare-mushroom` (dev or `?demo`)
   brings one now.
 
 **Island care** (`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts`; no ベル, no find):

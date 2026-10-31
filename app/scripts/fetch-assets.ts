@@ -137,6 +137,8 @@ for (const f of [
   FIND_FILES[f.toLowerCase().replace(/\. /g, '-').replace(/ /g, '-')] = `${f.replace(/ /g, '_')}_NH_Icon.png`;
 // Island care: the watering can and the rock by the hedge (the weeds are ours: NH's icon is a sack of them).
 Object.assign(FIND_FILES, { 'watering-can': 'Watering_Can_NH_Icon.png', rock: 'Rock_NH_Icon.png' });
+// Mushroom season (island/mushrooms.ts): NH's four ground mushrooms beside the trees and the rare one dug up.
+for (const m of ['Round', 'Skinny', 'Flat', 'Elegant', 'Rare']) FIND_FILES[`${m.toLowerCase()}-mushroom`] = `${m}_Mushroom_NH_Icon.png`;
 for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96, file];
 // The hybrid flowers a watered bed can grow the next day (NH's genetics, simplified), trimmed like the beds' flowers.
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
@@ -144,7 +146,7 @@ for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses',
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock'];
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');

@@ -151,6 +151,7 @@
   "shake.branch": "Pick up the tree branch",
   "beach.picked": "I picked up {name}!",
   "beach.fossil": "I dug up a fossil! It's {name}!",
+  "beach.dug": "I dug up {name}!",
   "beach.bottle": "A message in a bottle! “{note}”",
   "beach.wish": "I wished on a shooting star!",
   "beach.note.0": "Hope it's sunny where you are!",

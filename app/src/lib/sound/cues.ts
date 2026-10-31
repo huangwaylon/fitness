@@ -122,6 +122,8 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-sting': { sound: 'surprise', world: true },
   'scene-twig': { sound: 'pop', gain: 0.8, step: 3, world: true },
   'scene-glint': { sound: 'sparkle', gain: 0.6, step: 5, delay: 0.1, world: true },
+  // mushroom season: a mushroom picked up beside a tree (a soft pop, a little higher than a branch)
+  'scene-mushroom': { sound: 'pop', gain: 0.7, step: 7, world: true },
   // visitors: a soft pop for a tap; K.K.'s tune (a jingle, only with the music on)
   'scene-visitor': { sound: 'pop', gain: 0.6, world: true },
   'kk-song': { sound: 'kk-song', world: true }

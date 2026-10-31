@@ -1,5 +1,5 @@
 {
-  "version": 30,
+  "version": 32,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -709,11 +709,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Dunkleosteus_NH_Icon.png"
     },
+    "finds/elegant-mushroom": {
+      "path": "finds/elegant-mushroom.webp",
+      "w": 51,
+      "h": 93,
+      "source": "https://nookipedia.com/wiki/File:Elegant_Mushroom_NH_Icon.png"
+    },
     "finds/eusthenopteron": {
       "path": "finds/eusthenopteron.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Eusthenopteron_NH_Icon.png"
+    },
+    "finds/flat-mushroom": {
+      "path": "finds/flat-mushroom.webp",
+      "w": 92,
+      "h": 61,
+      "source": "https://nookipedia.com/wiki/File:Flat_Mushroom_NH_Icon.png"
     },
     "finds/gemini-fragment": {
       "path": "finds/gemini-fragment.webp",
@@ -817,11 +829,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ptera_Body_NH_Icon.png"
     },
+    "finds/rare-mushroom": {
+      "path": "finds/rare-mushroom.webp",
+      "w": 62,
+      "h": 62,
+      "source": "https://nookipedia.com/wiki/File:Rare_Mushroom_NH_Icon.png"
+    },
     "finds/rock": {
       "path": "finds/rock.webp",
       "w": 90,
       "h": 66,
       "source": "https://nookipedia.com/wiki/File:Rock_NH_Icon.png"
+    },
+    "finds/round-mushroom": {
+      "path": "finds/round-mushroom.webp",
+      "w": 80,
+      "h": 56,
+      "source": "https://nookipedia.com/wiki/File:Round_Mushroom_NH_Icon.png"
     },
     "finds/sabertooth-skull": {
       "path": "finds/sabertooth-skull.webp",
@@ -864,6 +888,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Shovel_NH_Icon.png"
+    },
+    "finds/skinny-mushroom": {
+      "path": "finds/skinny-mushroom.webp",
+      "w": 58,
+      "h": 83,
+      "source": "https://nookipedia.com/wiki/File:Skinny_Mushroom_NH_Icon.png"
     },
     "finds/spino-skull": {
       "path": "finds/spino-skull.webp",
