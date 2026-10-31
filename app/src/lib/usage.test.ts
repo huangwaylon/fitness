@@ -10,6 +10,7 @@ import en from '#lib/i18n/en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
+import { BUGS, FISH, JUNK, critterArt } from '#lib/components/island/critters.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
@@ -87,7 +88,9 @@ describe('official art (static/art/manifest.json)', () => {
   const built = new Set([
     ...RING_FRUITS.map((f) => `fruit/${f}`),
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
-    ...REACTIONS.map((r) => `reactions/${r}`)
+    ...REACTIONS.map((r) => `reactions/${r}`),
+    // the scene's catches (island/critters.ts critterArt)
+    ...[...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK].map((id) => critterArt(id as keyof typeof FISH))
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {

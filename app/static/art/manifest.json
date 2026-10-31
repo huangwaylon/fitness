@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 21,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -66,6 +66,144 @@
       "w": 100,
       "h": 101,
       "source": "https://nookipedia.com/wiki/File:Yellow-Tea-Olive_Bush_NH_Icon.png"
+    },
+    "critters/anchovy": {
+      "path": "critters/anchovy.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Anchovy_NH_Icon.png"
+    },
+    "critters/barred-knifejaw": {
+      "path": "critters/barred-knifejaw.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Barred_Knifejaw_NH_Icon.png"
+    },
+    "critters/bell-cricket": {
+      "path": "critters/bell-cricket.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Bell_Cricket_NH_Icon.png"
+    },
+    "critters/boot": {
+      "path": "critters/boot.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Boot_NH_Icon.png"
+    },
+    "critters/common-butterfly": {
+      "path": "critters/common-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Common_Butterfly_NH_Icon.png"
+    },
+    "critters/cricket": {
+      "path": "critters/cricket.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cricket_NH_Icon.png"
+    },
+    "critters/dab": {
+      "path": "critters/dab.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dab_NH_Icon.png"
+    },
+    "critters/darner-dragonfly": {
+      "path": "critters/darner-dragonfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Darner_Dragonfly_NH_Icon.png"
+    },
+    "critters/empty-can": {
+      "path": "critters/empty-can.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Empty_Can_NH_Icon.png"
+    },
+    "critters/firefly": {
+      "path": "critters/firefly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Firefly_NH_Icon.png"
+    },
+    "critters/horse-mackerel": {
+      "path": "critters/horse-mackerel.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Horse_Mackerel_NH_Icon.png"
+    },
+    "critters/ladybug": {
+      "path": "critters/ladybug.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ladybug_NH_Icon.png"
+    },
+    "critters/moth": {
+      "path": "critters/moth.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Moth_NH_Icon.png"
+    },
+    "critters/old-tire": {
+      "path": "critters/old-tire.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Old_Tire_NH_Icon.png"
+    },
+    "critters/olive-flounder": {
+      "path": "critters/olive-flounder.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Olive_Flounder_NH_Icon.png"
+    },
+    "critters/puffer-fish": {
+      "path": "critters/puffer-fish.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Puffer_Fish_NH_Icon.png"
+    },
+    "critters/red-dragonfly": {
+      "path": "critters/red-dragonfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Red_Dragonfly_NH_Icon.png"
+    },
+    "critters/red-snapper": {
+      "path": "critters/red-snapper.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Red_Snapper_NH_Icon.png"
+    },
+    "critters/sea-bass": {
+      "path": "critters/sea-bass.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sea_Bass_NH_Icon.png"
+    },
+    "critters/sea-butterfly": {
+      "path": "critters/sea-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sea_Butterfly_NH_Icon.png"
+    },
+    "critters/squid": {
+      "path": "critters/squid.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Squid_NH_Icon.png"
+    },
+    "critters/tiger-butterfly": {
+      "path": "critters/tiger-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Tiger_Butterfly_NH_Icon.png"
+    },
+    "critters/yellow-butterfly": {
+      "path": "critters/yellow-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Yellow_Butterfly_NH_Icon.png"
     },
     "deco/airport": {
       "path": "deco/airport.webp",
