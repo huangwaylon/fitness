@@ -122,13 +122,14 @@
     background: linear-gradient(transparent, var(--surface) 30%);
   }
   /* The top panel: paper (--surface) so its cream cards have a body; a non-scrolling flex column whose `.panel-body`
-     is the one scroller. It hangs from the top edge: the safe area over its title bar, rounded at the bottom, and it
-     stops 24px above the screen's bottom so the island still peeks out under it. --body-pad is the scroller's bottom
-     padding. */
+     is the one scroller. It fills the screen from the top edge (the safe area over its title bar) to the bottom edge
+     (the home indicator's safe area inside its scroller's padding), so switching tabs never changes its height and no
+     sliver of island shows under it; rounded at the bottom like the screen's corners. --body-pad is the scroller's
+     bottom padding. */
   dialog.top {
-    --body-pad: calc(18px + var(--kb, 0px));
-    margin: 0 auto auto; max-height: calc(var(--vh-fill) - var(--safe-bottom) - 24px);
-    border-radius: 0 0 var(--r-sheet) var(--r-sheet); box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-float);
+    --body-pad: calc(var(--safe-bottom) + 18px + var(--kb, 0px));
+    margin: 0 auto; height: var(--vh-fill); max-height: none;
+    border-radius: 0 0 var(--r-sheet) var(--r-sheet); box-shadow: var(--sh-float);
     overflow: hidden; display: none; flex-direction: column;
   }
   dialog.top[open] { display: flex; animation-name: down; }
@@ -141,7 +142,7 @@
   /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
   dialog.toasting .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
   dialog.top.toasting .inner { padding-bottom: 0; }
-  dialog.top.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
+  dialog.top.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
   @media (prefers-reduced-motion: reduce) {
