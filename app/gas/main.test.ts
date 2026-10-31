@@ -320,128 +320,54 @@ describe('events', () => {
   });
 });
 
-describe('edit events (docs/design.md#how-edits-apply)', () => {
-  const edits = [
-    { type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } },
-    { type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 0 } },
-    { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
-    { type: 'workout_edit', data: { id: 'm:3f1c', excluded: true } },
-    { type: 'spend_void', data: { spendId: 'sp-1' } }
-  ];
-
-  it('each new type appends with the server `at`, the sender as person and the data as JSON', () => {
-    edits.forEach((e, i) => {
-      expect(a('event', { id: `e${i}`, ...e }), e.type).toEqual({ ok: true });
-      tick();
-    });
-    const rows = data('events');
-    expect(rows.map((r) => [r[1], r[3], r[4]])).toEqual(edits.map((e) => ['A', e.type, JSON.stringify(e.data)]));
-    expect(rows.map((r) => r[0])).toEqual(edits.map((_, i) => new Date(Date.parse('2026-10-29T03:00:00.000Z') + i * 1000).toISOString()));
-  });
-
-  it('an unknown type is bad_request', () => {
-    expect(a('event', { id: 'x1', type: 'metric_delete', data: {} })).toEqual({ ok: false, error: 'bad_request' });
-    expect(data('events')).toEqual([]);
-  });
-
-  it('metric_set with a non-integer or out-of-range value (or a bad date/metric) is refused', () => {
-    const bad = [
-      { date: '2026-10-28', metric: 'steps', value: 100_001 },
-      { date: '2026-10-28', metric: 'steps', value: -1 },
-      { date: '2026-10-28', metric: 'steps', value: 12.5 },
-      { date: '2026-10-28', metric: 'steps', value: '9800' },
-      { date: '2026-10-28', metric: 'exercise_min', value: 1441 },
-      { date: '2026-10-28', metric: 'calories', value: 10 },
-      { date: '2026-10-28', metric: 'move_kcal', value: 10_001 },
-      { date: '2026-10-28', metric: 'stand_min', value: 1441 },
-      { date: '10/28', metric: 'steps', value: 10 },
-      { metric: 'steps', value: 10 }
+describe('removed and person-bearing events', () => {
+  it('the removed edit types (Apple Health is the source of truth) are refused, whatever their data', () => {
+    const removed = [
+      { type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } },
+      { type: 'metric_set', data: { date: '2026-10-28', metric: 'weight', value: 68.4 } },
+      { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
+      { type: 'workout_edit', data: { id: 'm:3f1c', excluded: true } },
+      { type: 'gym_set', data: { date: '2026-10-28', on: true } }, // retired long ago
+      { type: 'metric_delete', data: {} }
     ];
-    bad.forEach((d, i) => expect(a('event', { id: `b${i}`, type: 'metric_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' }));
-    expect(a('event', { id: 'ok-max', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 100_000 } })).toEqual({ ok: true });
-    expect(a('event', { id: 'ok-min', type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 1440 } })).toEqual({ ok: true });
-    expect(data('events')).toHaveLength(2);
-  });
-
-  it('metric_set weight: 20–300 kg with at most one decimal (decimals for weight only)', () => {
-    const bad = [19.9, 300.1, 68.45, '68.4', null, Number.NaN];
-    bad.forEach((value, i) => expect(a('event', { id: `w${i}`, type: 'metric_set', data: { date: '2026-10-28', metric: 'weight', value } }), String(value))
-      .toEqual({ ok: false, error: 'bad_request' }));
-    for (const [i, value] of [68.4, 20, 300, 71].entries()) {
-      expect(a('event', { id: `wok${i}`, type: 'metric_set', data: { date: '2026-10-28', metric: 'weight', value } })).toEqual({ ok: true });
-    }
-    expect(a('event', { id: 'st-dec', type: 'metric_set', data: { date: '2026-10-28', metric: 'exercise_min', value: 30.5 } })).toEqual({ ok: false, error: 'bad_request' });
-    expect(data('events')).toHaveLength(4);
-  });
-
-  it('other edit shapes are checked too', () => {
-    const bad = [
-      { type: 'workout_edit', data: { id: 'w1' } },
-      { type: 'workout_edit', data: { id: 'w1', strength: true } }, // no `excluded`
-      { type: 'workout_edit', data: { id: 'w1', excluded: 'yes' } },
-      { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Core Training', durationMin: 30 } }, // a Watch-only type
-      { type: 'workout_add', data: { id: 'w-no-prefix', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
-      { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 601 } },
-      { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Yoga', durationMin: 0 } },
-      { type: 'workout_add', data: { id: 'm:2', date: '2026-10-28', type: 'Underwater Basket Weaving', durationMin: 30 } }, // an unknown type
-      { type: 'share', data: { key: 'steps', value: false } }, // not an event type
-      { type: 'spend_void', data: {} }
-    ];
-    bad.forEach((e, i) => expect(a('event', { id: `c${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
+    removed.forEach((e, i) => expect(a('event', { id: `r${i}`, ...e }), e.type).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events')).toEqual([]);
   });
 
-  it('a retired type (`gym_set`, from a stale client) is refused, whatever its data', () => {
-    for (const [i, d] of [{ date: '2026-10-28', on: true }, { person: 'A', date: '2026-10-28', on: false }].entries()) {
-      expect(a('event', { id: `g${i}`, type: 'gym_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' });
-    }
-    expect(data('events')).toEqual([]);
+  it('spend_void appends with the server `at`, the sender as person and the data as JSON; an empty one is refused', () => {
+    expect(a('event', { id: 'v1', type: 'spend_void', data: { spendId: 'sp-1' } })).toEqual({ ok: true });
+    expect(a('event', { id: 'v2', type: 'spend_void', data: {} })).toEqual({ ok: false, error: 'bad_request' });
+    expect(data('events').map((r) => [r[0], r[1], r[3], r[4]])).toEqual([['2026-10-29T03:00:00.000Z', 'A', 'spend_void', '{"spendId":"sp-1"}']]);
   });
 
-  it('`person` (whose data): A or B on the edit types and the goal prefs; refused anywhere else', () => {
+  it('`person` (whose goal): A or B on the goal prefs only; refused anywhere else', () => {
     const ok = [
-      { type: 'metric_set', data: { person: 'B', date: '2026-10-28', metric: 'steps', value: 9800 } },
-      { type: 'metric_set', data: { person: 'A', date: '2026-10-28', metric: 'weight', value: 68.4 } },
-      { type: 'workout_edit', data: { person: 'B', id: 'w1', excluded: true } },
-      { type: 'workout_add', data: { person: 'B', id: 'm:9', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
       { type: 'pref', data: { person: 'B', key: 'moveGoal', value: 450 } },
-      { type: 'pref', data: { person: 'B', key: 'goalWeight', value: null } }
+      { type: 'pref', data: { person: 'A', key: 'goalWeight', value: null } }
     ];
     ok.forEach((e, i) => expect(a('event', { id: `p${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
     const bad = [
-      { type: 'metric_set', data: { person: 'C', date: '2026-10-28', metric: 'steps', value: 1 } },
-      { type: 'metric_set', data: { person: '', date: '2026-10-28', metric: 'steps', value: 1 } },
-      { type: 'metric_set', data: { person: ['B'], date: '2026-10-28', metric: 'steps', value: 1 } },
-      { type: 'workout_edit', data: { person: 'b', id: 'w1', excluded: true } },
-      { type: 'workout_add', data: { person: 2, id: 'm:8', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
+      { type: 'pref', data: { person: 'C', key: 'moveGoal', value: 450 } },
+      { type: 'pref', data: { person: '', key: 'moveGoal', value: 450 } },
+      { type: 'pref', data: { person: ['B'], key: 'goalWeight', value: 60 } },
+      { type: 'pref', data: { person: 'b', key: 'goalWeight', value: 60 } },
       { type: 'pref', data: { person: 'B', key: 'locale', value: 'en' } }, // only the goals take a person
       { type: 'pref', data: { person: 'B', key: 'villagerName', value: 'うめ' } },
       { type: 'spend_void', data: { person: 'B', spendId: 'sp-1' } },
       { type: 'spend', data: { person: 'B', spendId: 's1', item: 'ice', label: 'アイス', bells: 1 } },
-      { type: 'highfive', data: { person: 'B' } },
-      { type: 'metric_set', data: { person: 'B', date: '2026-02-29', metric: 'steps', value: 1 } }, // not a leap year
-      { type: 'workout_add', data: { person: 'B', id: 'm:7', date: '2026-10-32', type: 'Yoga', durationMin: 30 } }
+      { type: 'highfive', data: { person: 'B' } }
     ];
     bad.forEach((e, i) => expect(a('event', { id: `q${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events').map((r) => [r[1], r[3], JSON.parse(String(r[4])).person])).toEqual(ok.map((e) => ['A', e.type, e.data.person]));
   });
 
-  it('a duplicate edit id is acknowledged and ignored', () => {
-    const ev = { id: 'm-1', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } };
+  it('a duplicate event id is acknowledged and ignored', () => {
+    const ev = { id: 'g-1', type: 'pref', data: { key: 'moveGoal', value: 450 } };
     expect(a('event', ev)).toEqual({ ok: true });
     tick();
-    expect(a('event', { ...ev, data: { ...ev.data, value: 1 } })).toEqual({ ok: true, duplicate: true });
+    expect(a('event', { ...ev, data: { ...ev.data, value: 500 } })).toEqual({ ok: true, duplicate: true });
     expect(data('events')).toHaveLength(1);
-    expect(JSON.parse(String(data('events')[0][4])).value).toBe(9800);
-  });
-
-  it('a lowering metric_set does not stop later ingests from appending only above the sheet max', () => {
-    a('ingest', { dates: '2026-10-28', steps: '12410', exercise_minutes: '30' });
-    tick();
-    a('event', { id: 'm-2', type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } });
-    tick();
-    // A stale re-send of the wrong value appends nothing, so it cannot revive it.
-    expect(a('ingest', { dates: '2026-10-28', steps: '12410', exercise_minutes: '30' })).toMatchObject({ ok: true, metrics: 0 });
+    expect(JSON.parse(String(data('events')[0][4])).value).toBe(450);
   });
 });
 

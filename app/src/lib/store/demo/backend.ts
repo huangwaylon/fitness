@@ -37,8 +37,8 @@ export class DemoBackend implements Backend {
     return this.#cache;
   }
 
-  events(): { list: QueuedEvent[]; unsent: Set<string> } {
-    return { list: this.#events, unsent: new Set() };
+  events(): QueuedEvent[] {
+    return this.#events;
   }
 
   async refresh(): Promise<void> {

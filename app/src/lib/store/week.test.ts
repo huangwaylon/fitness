@@ -1,4 +1,4 @@
-// The week store's undo/lock logic and the banner controller: fake timers, a memory
+// The week store's undo logic and the banner controller: fake timers, a memory
 // queue, a backend that never answers (nothing held is sent during a test).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
@@ -7,7 +7,6 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import { week } from './week.svelte.ts';
 import { HOLD_MAX_MS } from './backend.ts';
-import { LOCK_MARGIN_MS } from './live.ts';
 import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS } from '#lib/ui-state/toast.svelte.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 
@@ -31,35 +30,19 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-describe('week.send with a lock', () => {
-  it('refuses an edit closer than 5 s to its lock, with a banner', async () => {
-    const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 4000 });
-    expect(r).toEqual({ ok: false });
-    expect(queued()).toEqual([]);
-    expect(toasts.current?.reaction).toBe('sheepishness');
+describe('week.send with an undo window', () => {
+  it('holds the event for its window; a hold is capped at HOLD_MAX_MS', async () => {
+    const r = week.send('spend_void', { spendId: 's1' }, { holdMs: 5000 });
+    expect(r.ok).toBe(true);
+    expect(queued()[0].nextAt).toBe(NOW + 5000);
+    expect(r.hold!(null)).toBe(HOLD_MAX_MS);
+    expect(queued()[0].nextAt).toBe(NOW + HOLD_MAX_MS);
   });
 
-  it('shrinks the undo window so the edit still lands a minute before the lock', async () => {
-    const lockAt = NOW + LOCK_MARGIN_MS + 2000;
-    const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
-    expect(r.ok).toBe(true);
-    expect(queued()[0].nextAt).toBe(NOW + 2000);
-  });
-
-  it('sends at once (no undo) when the lock is within the margin', async () => {
-    const r = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt: NOW + 30_000 });
-    expect(r.ok).toBe(true);
-    expect(r.undo).toBeUndefined();
+  it('sends at once (no undo) without a window', async () => {
+    const r = week.send('pref', { key: 'moveGoal', value: 500 }, {});
+    expect(r).toEqual({ ok: true });
     expect(queued()[0].nextAt).toBe(NOW);
-  });
-
-  it('caps a hold at HOLD_MAX_MS, and before the lock', async () => {
-    const far = week.send('spend_void', { spendId: 's1' }, { holdMs: 5000 });
-    expect(far.hold!(null)).toBe(HOLD_MAX_MS);
-    const lockAt = NOW + LOCK_MARGIN_MS + 30_000;
-    const near = week.send('metric_set', { date: '2026-11-17', metric: 'steps', value: 1 }, { holdMs: 5000, lockAt });
-    expect(near.hold!(null)).toBe(30_000);
-    expect(queued().find((e) => e.lockAt === lockAt)!.nextAt).toBe(NOW + 30_000);
   });
 
   it('undo takes back only its own event', async () => {

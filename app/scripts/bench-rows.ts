@@ -52,17 +52,10 @@ export function syntheticRows(days: number): SnapshotRows {
       for (const p of people) events.push([at(date, '20:00'), p, `h:${p}${d}`, 'harvest', JSON.stringify({ week: wk })]);
       events.push([at(date, '20:01'), 'A', `hf:${d}`, 'highfive', '{}']);
     }
-    // A workout added by hand twice a week (Watch forgotten).
-    if (d % 7 === 1 || d % 7 === 4) {
-      events.push([at(date, '21:00'), 'B', `wa:${d}`, 'workout_add', JSON.stringify({ id: `m:${d}`, date, type: 'Pilates', durationMin: 50 })]);
-    }
     if (d % 30 === 10) {
       events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, item: 'cafe', label: 'カフェデート', bells: 2000 })]);
     }
     if (d % 90 === 5) events.push([at(date, '21:30'), 'B', `mg:${d}`, 'pref', JSON.stringify({ key: 'moveGoal', value: 400 + (d % 180 === 5 ? 50 : 0) })]);
-    if (d % 30 === 20) {
-      events.push([at(date, '22:50'), 'A', `ms:${d}`, 'metric_set', JSON.stringify({ date: addDays(date, -1), metric: 'steps', value: 3000 })]);
-    }
   }
   return { metrics, events };
 }

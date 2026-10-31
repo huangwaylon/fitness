@@ -1,5 +1,5 @@
 // Date and time formatting, one place for each shape. Dates are `YYYY-MM-DD` strings (calendar days, read
-// in UTC so they never shift); stamps (sync, workouts, edits) are shown in Tokyo time.
+// in UTC so they never shift); stamps (sync, buys) are shown in Tokyo time.
 import { i18n, t } from './index.ts';
 import { addDays, dateMs } from '#lib/time/dates.ts';
 import { jst } from '#lib/time/clock.ts';

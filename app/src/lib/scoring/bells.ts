@@ -2,22 +2,11 @@
 // each (🍐 Move, 🍑 Exercise, 🍒 Stand, 🍎 steps). Pure; the model feeds it one person's week as of a time and decides
 // which weeks count (the economy's first week, locks).
 import { RING_FRUITS, rulesFor, TSUYU, type RuleVersion } from '#lib/config/rules.ts';
-import type { LocalDate, PersonId, RingBells, RingFruit, WeekKey, Workout } from '#lib/types.ts';
+import type { LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { inMonthDayRange, weekDays } from '#lib/time/dates.ts';
 
-// ---------- a day's raw facts (also read by きろく) ----------
-
-/** Minutes of the workouts added by hand, per day. */
-export function manualMinutesByDay(workouts: readonly Pick<Workout, 'date' | 'durationMin'>[]): Map<LocalDate, number> {
-  const out = new Map<LocalDate, number>();
-  for (const w of workouts) out.set(w.date, (out.get(w.date) ?? 0) + w.durationMin);
-  return out;
-}
-
-const toMilli = (x: number): number => Math.round(x * 1000);
-
-/** A day's counted exercise milli-minutes: max(Watch, workouts added in きろく), never a sum. */
-export const exerciseMilli = (watchMin: number | null, manualMin: number): number => Math.max(0, toMilli(watchMin ?? 0), toMilli(manualMin));
+/** A day's exercise milli-minutes (the Watch may send fractions; never negative). */
+const exerciseMilli = (min: number | null): number => Math.max(0, Math.round((min ?? 0) * 1000));
 
 const isTsuyu = (d: LocalDate): boolean => inMonthDayRange(d, TSUYU.from, TSUYU.to);
 
@@ -69,8 +58,6 @@ export interface EarnInput {
   person: PersonId;
   weekKey: WeekKey;
   days: EarnDay[];
-  /** The workouts added in きろく: their minutes count toward the exercise minutes. */
-  workouts: Workout[];
 }
 
 /** A day's earnings with the facts behind them. */
@@ -78,7 +65,7 @@ interface DayEarning {
   date: LocalDate;
   bells: number;
   rings: RingBells;
-  /** Counted exercise minutes, floored, before the daily cap. */
+  /** Exercise minutes, floored, before the daily cap. */
   exerciseMin: number;
   moveKcal: number | null;
   moveGoal: number;
@@ -116,7 +103,7 @@ export const zeroRings = (): RingBells => ({ pear: 0, peach: 0, cherry: 0, apple
 
 /**
  * One person's ベル for a week, at the week's rule version. Per day:
- * - 🍑 perExerciseMin × counted minutes, up to goals.exerciseMin. Minutes = max(Watch, workouts added in きろく).
+ * - 🍑 perExerciseMin × Watch exercise minutes, up to goals.exerciseMin.
  * - 🍐 floor(moveAtGoal × min(kcal, goal) / goal), the goal being the person's Move goal in force that day.
  * - 🍒 perStandMin × whole stand minutes, up to goals.standMin.
  * - 🍎 stepDay at goals.steps; in tsuyu also at TSUYU.exerciseMin counted minutes.
@@ -129,7 +116,6 @@ export function earnWeek(input: EarnInput): WeekEarning {
   const inWeek = (d: LocalDate) => d >= week[0] && d <= week[6];
   const rows = new Map<LocalDate, EarnDay>();
   for (const d of input.days) if (inWeek(d.date) && !rows.has(d.date)) rows.set(d.date, d);
-  const manual = manualMinutesByDay(input.workouts.filter((w) => inWeek(w.date)));
   const exGoalMilli = r.goals.exerciseMin * 1000;
 
   const days = week.map((date): DayEarning => {
@@ -138,7 +124,7 @@ export function earnWeek(input: EarnInput): WeekEarning {
     const moveKcal = m?.moveKcal ?? null;
     const standMin = m?.standMin ?? null;
     const moveGoal = m?.moveGoal ?? 0;
-    const ex = exerciseMilli(m?.exerciseMin ?? null, manual.get(date) ?? 0);
+    const ex = exerciseMilli(m?.exerciseMin ?? null);
     const kcal = Math.max(0, moveKcal ?? 0);
     const stand = Math.max(0, Math.floor(standMin ?? 0));
     const met: Record<RingFruit, boolean> = {

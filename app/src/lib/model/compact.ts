@@ -4,48 +4,26 @@
 //
 // It relies on the sheet's invariant that ingest rows for a (person, date, metric) only go up over time (the server
 // appends only higher values), so "the row with the largest value at or before T" answers every read at T
-// (`metricAsOf`, `watchIsEdit`). A hand edit that breaks it bumps `rev`, and the client then refetches everything
+// (`metricAsOf`). A hand edit that breaks it bumps `rev`, and the client then refetches everything
 // (docs/backend.md#revision).
 //
 // Weight rows are the exception: a day's weight is its LATEST row (the server appends whenever the day's Body Mass
 // differs from its last row, up or down), and the model only reads it as of now. So per (person, date) only the
 // newest `weight` row is kept, never "the largest".
 import type { PersonId } from '#lib/types.ts';
-import { DATE_RE, isRec, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs } from './state.ts';
 import { rowAt } from './snapshot.ts';
 
-/** `metric_set` times per `person|date|metric` (accepted or not: a superset of what the model reads is harmless). */
-function editTimes(rows: SnapshotRows): Map<string, number[]> {
-  const out = new Map<string, number[]>();
-  for (const row of rows.events) {
-    const [, person, , type, data] = row;
-    if (type !== 'metric_set') continue;
-    const t = rowAt(row);
-    let d: unknown;
-    try {
-      d = JSON.parse(data);
-    } catch {
-      continue;
-    }
-    if (t === null || !isRec(d)) continue;
-    const k = `${person}|${String(d.date)}|${String(d.metric)}`;
-    (out.get(k) ?? out.set(k, []).get(k)!).push(t - 1, t);
-  }
-  return out;
-}
-
 /**
  * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read: per
- * (person, date, metric), the best row at or before the Wednesday 04:00 lock (the week's earnings are fixed there),
- * each `metric_set` of that day (and just before it, for the change log), and overall (late syncs, `lastSync`).
- * Rows of open weeks, rows the
- * model would skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
+ * (person, date, metric), the best row at or before the Wednesday 04:00 lock (the week's earnings are fixed there) and
+ * the best overall (late syncs), and per person the newest row (`lastSync`). Rows of open weeks, rows the model would
+ * skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
  * when nothing was dropped.
  */
 export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
-  const edits = editTimes(rows);
   const groups = new Map<string, { row: MetricRow; at: number; i: number }[]>();
   const keep = new Set<number>();
   const newest: Partial<Record<PersonId, { at: number; i: number }>> = {};
@@ -62,7 +40,7 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
     (groups.get(k) ?? groups.set(k, []).get(k)!).push({ row, at, i });
   });
   for (const n of Object.values(newest)) if (n) keep.add(n.i);
-  for (const [k, list] of groups) {
+  for (const list of groups.values()) {
     if (list[0].row[3] === 'weight') {
       let last = list[0];
       for (const x of list) if (x.at >= last.at) last = x;
@@ -70,7 +48,7 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
       continue;
     }
     const wk = weekKeyOf(String(list[0].row[2]));
-    for (const t of [finalMs(wk), Infinity, ...(edits.get(k) ?? [])]) {
+    for (const t of [finalMs(wk), Infinity]) {
       let best: { v: number; at: number; i: number } | null = null;
       for (const { row, at, i } of list) {
         const v = Number(row[4]);

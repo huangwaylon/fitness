@@ -2,16 +2,16 @@
 // the ベル economy (bells.ts never imports this file, and weight rows live in their own State maps).
 //
 // Rules:
-// - A day's weight is the latest of its ingested rows and its きろく edits (`metric_set {metric:'weight'}`) stamped at
-//   or before T. The Shortcut sends the day's Body Mass (gas/parse.ts), and the server appends a row whenever it
-//   differs from the day's last row, so the latest row is the current one (unlike steps, which take the max).
+// - A day's weight is its latest ingested row stamped at or before T. The Shortcut sends the day's Body Mass from
+//   Apple Health (gas/parse.ts), and the server appends a row whenever it differs from the day's last row, so the
+//   latest row is the current one (unlike steps, which take the max).
 // - The trend is an exponentially weighted moving average (WEIGHT.alpha = 0.1 a day, gap-aware), seeded with the
 //   first weigh-in.
 import type { LocalDate, PersonId } from '#lib/types.ts';
 import { WEIGHT } from '#lib/config/rules.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import { roundKg as round1 } from '#lib/contract/api.ts';
-import { latestTimed, type State } from './state.ts';
+import { latestAt, type State } from './state.ts';
 
 interface WeighIn { date: LocalDate; kg: number }
 export interface WeightPoint extends WeighIn { trend: number }
@@ -40,23 +40,14 @@ export interface WeightTrend {
 /** Trend values and the weekly pace keep two decimals (shown with one). */
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
-/** A day's weight as of T: the latest ingested row or edit stamped at or before T. */
-export function weightOn(s: State, p: PersonId, date: LocalDate, t: number): number | null {
-  const a = latestTimed(s.weights[p].get(date), t);
-  const b = latestTimed(s.weightSets[p].get(date), t);
-  if (!a && !b) return null;
-  return !b || (a && a.at > b.at) ? a!.v : b.v;
-}
-
-/** Every day with a weight as of T (none after T's own date), ascending. */
+/** Every day with a weight as of T (none after T's own date), ascending: each day's latest row stamped at or before T. */
 export function weighIns(s: State, p: PersonId, t: number): WeighIn[] {
   const today = localDateAt(t);
-  const dates = new Set([...s.weights[p].keys(), ...s.weightSets[p].keys()]);
   const out: WeighIn[] = [];
-  for (const date of [...dates].sort()) {
+  for (const date of [...s.weights[p].keys()].sort()) {
     if (date > today) continue;
-    const kg = weightOn(s, p, date, t);
-    if (kg !== null) out.push({ date, kg });
+    const kg = latestAt(s.weights[p].get(date), t);
+    if (kg !== undefined) out.push({ date, kg });
   }
   return out;
 }

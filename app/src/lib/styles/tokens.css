@@ -102,7 +102,6 @@
   /* しまフォン grid: tiles follow the smaller of width and height, so a tall phone gets bigger tiles */
   --tile: clamp(52px, min(22vw, calc(11 * var(--vh1))), 96px); --tile-gap: clamp(12px, 4.5vw, 22px);
   --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ごほうび hero jar */
-  --key-h: clamp(46px, calc(7 * var(--vh1)), 64px);    /* NumberPad keys */
 
   /* ---------- surfaces + button tiers ----------
      The panel (--bg / --surface: NH's tan) is a step darker than what sits on it (--card: white-cream).

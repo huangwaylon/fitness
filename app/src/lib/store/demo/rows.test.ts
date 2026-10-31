@@ -5,7 +5,7 @@ import { demoCache } from './rows.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { provisionalMs, reduce } from '#lib/model/state.ts';
 import { weekBells } from '#lib/model/bells.ts';
-import { bellsLedger, dayDetail, editLog, historyWeeks } from '#lib/model/history.ts';
+import { bellsLedger, dayDetail, historyWeeks } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
@@ -17,7 +17,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     s = reduce(cache.rows, cache.demo);
   });
 
-  it('has 9 weeks of history for both people, with ベル, badges and edits by both', () => {
+  it('has 9 weeks of history for both people, with ベル and badges', () => {
     const weeks = historyWeeks(s, now);
     expect(weeks).toHaveLength(9);
     const past = weeks.filter((w) => provisionalMs(w.weekKey) <= now);
@@ -28,8 +28,6 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
       expect(b.B.daily + b.bonus.B).toBeGreaterThan(2000);
     }
     expect(past.some((w) => Object.values(w.people.A.ringBadges).some(Boolean))).toBe(true);
-    const by = new Set(editLog(s).map((e) => e.by));
-    expect([...by].sort()).toEqual(['A', 'B']);
   });
 
   it('four fruits only: no day earns anything but 🍐🍑🍒🍎, and no rows of the old workouts / presence tabs', () => {
@@ -54,7 +52,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day, no check-ins or questions; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'harvest', 'highfive', 'pref', 'metric_set', 'workout_edit', 'workout_add', 'spend_void'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'highfive', 'pref'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = historyWeeks(s, now).filter((w) => provisionalMs(w.weekKey) <= now);

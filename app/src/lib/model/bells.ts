@@ -8,14 +8,14 @@ import type {
 import { DEFAULT_MENU, ESCALATING_ITEMS, ESCALATION } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
-import { finalMs, firstWeek, isLockedAt, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
-import { metricAsOf, weekDates, workoutsAsOf } from './inputs.ts';
+import { finalMs, firstWeek, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
+import { metricAsOf } from './inputs.ts';
 
 /** `t` for an open week: every row counts. */
 const LIVE = Infinity;
 
-/** A week's earnings are live until its lock, then fixed at the lock (a late sync or edit after it never counts). */
-export const earnTimeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
+/** A week's earnings are live until its lock, then fixed at the lock (a late sync after it never counts). */
+const earnTimeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
 
 /** One person's week as of t, for `earnWeek`. */
 function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInput {
@@ -30,8 +30,7 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInpu
       moveKcal: metricAsOf(s, person, date, 'move_kcal', t),
       standMin: metricAsOf(s, person, date, 'stand_min', t),
       moveGoal: moveGoalOn(s, person, date, t)
-    })),
-    workouts: workoutsAsOf(s, person, t, weekDates(wk))
+    }))
   };
 }
 
@@ -255,14 +254,13 @@ export function menuView(s: State, locale: 'ja' | 'en', now: number): MenuItemVi
 
 // ---------- the きろく ledger ----------
 
-/** One day of the ledger: both people's earnings. `locked`: its week locked, so the numbers are final. */
+/** One day of the ledger: both people's earnings. */
 export interface LedgerDay {
   date: LocalDate;
   weekKey: WeekKey;
   /** Both people. */
   bells: number;
   people: Record<PersonId, DayBells>;
-  locked: boolean;
 }
 
 /** A week's bonus row: it lands at the Sunday 19:30 harvest (`at`). */
@@ -274,7 +272,6 @@ export interface LedgerBonus {
   bells: number;
   /** The week's four badges per person. */
   ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
-  locked: boolean;
 }
 
 export interface BellsLedger {
@@ -295,17 +292,16 @@ export function bellsLedger(s: State, now: number): BellsLedger {
   const days: LedgerDay[] = [];
   const bonuses: LedgerBonus[] = [];
   for (const w of p.weeks) {
-    const locked = isLockedAt(s, w.weekKey, now);
     for (let i = 0; i < 7; i++) {
       const [a, b] = [w.A.days[i], w.B.days[i]];
       if (a.date > today) break;
       const day = (d: typeof a): DayBells => ({ date: d.date, bells: d.bells, rings: { ...d.rings } });
-      days.push({ date: a.date, weekKey: w.weekKey, bells: a.bells + b.bells, people: { A: day(a), B: day(b) }, locked });
+      days.push({ date: a.date, weekKey: w.weekKey, bells: a.bells + b.bells, people: { A: day(a), B: day(b) } });
     }
     if (provisionalMs(w.weekKey) <= now) {
       bonuses.push({
         weekKey: w.weekKey, at: provisionalMs(w.weekKey), bonus: { ...w.bonus }, bells: w.bonusBells,
-        ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } }, locked
+        ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } }
       });
     }
   }

@@ -2,7 +2,7 @@
 // what the island, the wallet or the harvest show is a reviewed diff.
 //
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
-// fixes, wallet buys, a void, a menu edit and two workouts added by hand. The 外ごはん and カフェ buys pay the escalating
+// Health syncs (one before a lock, one after), wallet buys, a void and a menu edit. The 外ごはん and カフェ buys pay the escalating
 // price of their week (a buy of an escalating item at any other price is ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
@@ -77,7 +77,7 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(all.some((v) => v.harvest?.weekKey === '2026-10-26' && v.harvest.bonus.A === 400)).toBe(true); // v1: +400 a badge
     expect(all.some((v) => v.harvest?.weekKey === '2026-11-02' && v.harvest.bonus.A % 450 === 0 && v.harvest.bonus.A > 0)).toBe(true); // v2: +450 a badge
     // Four fruits only, everywhere.
-    expect(all.every((v) => PEOPLE.every((p) => Object.keys(v.people[p].rings).join() === 'peach,pear,cherry,apple'))).toBe(true);
+    expect(all.every((v) => PEOPLE.every((p) => Object.keys(v.people[p].rings).join() === 'pear,peach,cherry,apple'))).toBe(true);
     // Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
     expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
@@ -121,12 +121,12 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     }
   });
 
-  it('late data before the lock lowers a week; after the lock the week is fixed', () => {
+  it('a late sync before the lock raises a week; after the lock the week is fixed', () => {
     const week = '2026-11-16';
     const t = Date.parse('2026-11-24T19:01:00.000Z'); // Wednesday 04:01 JST
     const atHarvest = weekBells(reduce(rowsAt(provisionalMs(week) + 60_000)), week, provisionalMs(week) + 60_000);
     const atLock = weekBells(reduce(rowsAt(t)), week, t);
-    expect(atLock.B.daily).toBeLessThan(atHarvest.B.daily);
+    expect(atLock.B.daily).toBeGreaterThan(atHarvest.B.daily);
     expect(weekBells(reduce(ROWS), week, END)).toEqual(atLock);
   });
 });

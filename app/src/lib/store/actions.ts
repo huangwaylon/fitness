@@ -6,21 +6,17 @@ import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import { finalMs, parseMenu } from '#lib/model/state.ts';
+import { parseMenu } from '#lib/model/state.ts';
 import type { PersonId, WalletItem } from '#lib/types.ts';
-import { weekKeyOf } from '#lib/time/dates.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
 import { MOVE_GOAL } from '#lib/config/rules.ts';
 
-/** 買う！, its もとに戻す and きろく edits wait this long before they are sent, with もとに戻す on the banner. */
+/** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
 const UNDO_MS = 5000;
-/** きろく's edit controls close this long before a week's lock: an edit made then still lands in time. */
-export const EDIT_CUTOFF_MS = UNDO_MS + 60_000;
 
 /**
- * The banner for an edit held UNDO_MS: it names what was done and carries もとに戻す; hovering, touching
- * or focusing it holds both the banner and the send. A refused
- * edit (the week closed) shows nothing here: the store already said so.
+ * The banner for an action held UNDO_MS: it names what was done and carries もとに戻す; hovering, touching
+ * or focusing it holds both the banner and the send. A refused action shows nothing here.
  */
 export function undoBanner(text: string, r: SendResult, opts: { reaction?: string } = {}): void {
   if (!r.ok) return;
@@ -31,9 +27,6 @@ export function undoBanner(text: string, r: SendResult, opts: { reaction?: strin
     ...(undo ? { action: { label: t('common.undo'), run: () => undo() } } : {})
   });
 }
-
-/** Server-clock lock of the week a day belongs to (an edit stamped at or after it is refused). */
-const lockOf = (date: string): number => finalMs(weekKeyOf(date));
 
 /** `highFivesToday` counts the partner's high-fives to me, so sending one changes nothing in my view. */
 export function highFive() {
@@ -76,23 +69,8 @@ export function saveMenu(items: WalletItem[]): SendResult {
 /** A fresh id for a new menu item. */
 export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
 
-// ---- きろく edits (docs/design.md#editing): either person's data (`person`), open weeks only (the
-// model refuses the rest). Each shows at once and waits UNDO_MS with もとに戻す on the banner, like 買う！, unless
-// that would miss the week's lock (the store shortens or refuses it). Every edit names its `person` explicitly.
-
-export function setMetric(person: PersonId, date: string, metric: 'steps' | 'exercise_min', value: number) {
-  return week.send('metric_set', { person, date, metric, value: Math.round(value) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
-}
-
-/**
- * A day's body weight from きろく: kg, one decimal. Weight earns nothing, so no week lock applies (any day up
- * to today); it still waits UNDO_MS with もとに戻す. `{ok:false}` for a value outside 20–300 kg.
- */
-export function setWeight(person: PersonId, date: string, kg: number): SendResult {
-  const value = roundKg(kg);
-  if (!isWeightKg(value)) return { ok: false };
-  return week.send('metric_set', { person, date, metric: 'weight', value }, { holdMs: UNDO_MS });
-}
+// ---- The goals, in きろく's 目標 card: either person sets either person's (`person`). Health data itself is never
+// entered here: Apple Health is the source of truth.
 
 /** A goal weight in kg (one decimal), or null to clear it. Both of us see it; it never earns. */
 export function setGoalWeight(person: PersonId, kg: number | null): SendResult {
@@ -110,16 +88,6 @@ export function setMoveGoal(person: PersonId, kcal: number): SendResult {
   const value = Math.round(kcal);
   if (!Number.isFinite(value) || value < MOVE_GOAL.min || value > MOVE_GOAL.max) return { ok: false };
   return week.send('pref', { person, key: 'moveGoal', value });
-}
-
-/** Leave a workout added in きろく out of scoring (`excluded`), or put it back. `date`: the workout's day. */
-export function excludeWorkout(person: PersonId, id: string, date: string, excluded: boolean) {
-  return week.send('workout_edit', { person, id, excluded }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
-}
-
-export function addWorkout(person: PersonId, date: string, type: string, durationMin: number) {
-  const id = `m:${newId().replace(/[^\w-]/g, '').slice(0, 36)}`;
-  return week.send('workout_add', { person, id, date, type, durationMin: Math.round(durationMin) }, { holdMs: UNDO_MS, lockAt: lockOf(date) });
 }
 
 export function setLanguage(locale: Locale) {

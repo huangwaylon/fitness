@@ -15,7 +15,7 @@ export type Cue =
   // choices
   | 'choice-move' | 'choice-pick'
   // taps (docs/design.md#taps; most are named by a control's data-sfx, taps.ts)
-  | 'tick' | 'open' | 'confirm' | 'toggle-on' | 'toggle-off' | 'key' | 'key-fn' | 'page' | 'boop' | 'sync' | 'remove' | 'undo'
+  | 'tick' | 'open' | 'confirm' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'sync' | 'remove' | 'undo'
   // the しまフォン
   | 'phone-open' | 'phone-close' | 'phone-app' | 'back'
   // money and the harvest
@@ -59,8 +59,6 @@ export const CUES: Record<Cue, CueDef> = {
   confirm: { sound: 'confirm' },
   'toggle-on': { sound: 'toggle-on' },
   'toggle-off': { sound: 'toggle-off' },
-  key: { sound: 'key' },
-  'key-fn': { sound: 'key', step: -5 },
   page: { sound: 'page' },
   boop: { sound: 'boop' },
   sync: { sound: 'whoosh' },

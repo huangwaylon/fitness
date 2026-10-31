@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { compactRows } from './compact.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
-import { bellsLedger, dayDetail, editLog, historyWeeks, weekDetail } from './history.ts';
+import { bellsLedger, dayDetail, historyWeeks, weekDetail } from './history.ts';
 import { mergeRows } from './snapshot.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { MetricRow, SnapshotRows } from '#lib/contract/api.ts';
@@ -17,7 +17,7 @@ function views(rows: SnapshotRows, now: number, rev: string | null = null) {
   return JSON.stringify({
     a: buildWeekView(s, 'A', now), b: buildWeekView(s, 'B', now), history: historyWeeks(s, now), ledger: bellsLedger(s, now),
     weeks: weeks.map((w) => weekDetail(s, w, now)), days: weeks.flatMap((w) => [0, 3, 6].map((i) => dayDetail(s, addDays(w, i), now))),
-    log: editLog(s), lastSync: s.lastSync
+    lastSync: s.lastSync
   });
 }
 
@@ -79,7 +79,7 @@ describe('compactRows', () => {
     expect(views(after, Date.parse(jst(addDays(wk, 30), '00:00')))).toBe(views(rows, Date.parse(jst(addDays(wk, 30), '00:00'))));
   });
 
-  it('a locked week keeps only the rows its lock and its edits read (not the one that answered Sunday 19:30)', () => {
+  it('a locked week keeps only the rows its lock and the latest read (not the one that answered Sunday 19:30)', () => {
     const wk = '2026-11-02';
     const sun = addDays(wk, 6);
     const m = (date: string, hm: string, v: number): MetricRow => [jst(date, hm), 'A', wk, 'steps', v];
@@ -90,16 +90,15 @@ describe('compactRows', () => {
     expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
   });
 
-  it('keeps the rows a metric_set of the day is measured against', () => {
+  it('an old metric_set row in the sheet keeps no extra rows (the model ignores it)', () => {
     const wk = '2026-11-09';
     const m = (hm: string, v: number): MetricRow => [jst(wk, hm), 'A', wk, 'steps', v];
     const rows: SnapshotRows = {
       metrics: [m('09:00', 100), m('10:00', 200), m('11:00', 300), m('13:00', 400), m('14:00', 500)],
-      
-      events: [[jst(wk, '12:00'), 'A', 'e1', 'metric_set', JSON.stringify({ date: wk, metric: 'steps', value: 250 })]]
+      events: [[jst(wk, '12:00'), 'A', 'e1', 'metric_set' as SnapshotRows['events'][number][3], JSON.stringify({ date: wk, metric: 'steps', value: 250 })]]
     };
     const now = Date.parse(jst(addDays(wk, 30), '00:00'));
-    expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([300, 500]);
+    expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([500]);
     expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
   });
 });

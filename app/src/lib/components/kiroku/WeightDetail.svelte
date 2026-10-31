@@ -1,13 +1,12 @@
 <script lang="ts">
   // One person's weight: the trend in kg, this week's change, the change since the first weigh-in and the
   // weekly pace; the 12-week chart (dots = weigh-ins, line = trend, dashes = goal); the goal and, at the current pace, a
-  // month it may be reached. 体重を記録 (the goal is set in きろく's 目標 card). The recent weigh-ins double as the chart's table view, and
-  // each row fixes that day: on either person's screen (either person edits either person's data). Supportive wording only: no red, no "bad week".
+  // month it may be reached (the goal is set in きろく's 目標 card). The recent weigh-ins, from Apple Health, double as
+  // the chart's table view. Read-only. Supportive wording only: no red, no "bad week".
   import type { PersonId } from '#lib/types.ts';
   import type { WeightTrend } from '#lib/model/weight.ts';
   import { WEIGHT } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import Glyph from './Glyph.svelte';
   import WeightChart from './WeightChart.svelte';
   import { dayTitle, kgDelta, kgText, monthText } from './fmt.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -19,9 +18,8 @@
     villager: string | null;
     mine: boolean;
     today: string;
-    onlog: (date: string) => void;
   }
-  let { w, person, name, villager, mine, today, onlog }: Props = $props();
+  let { w, person, name, villager, mine, today }: Props = $props();
   const recent = $derived(w.points.slice(-7).reverse());
 </script>
 
@@ -61,24 +59,19 @@
   <section class="card stats empty"><p>{mine ? t('weight.emptyMine') : t('weight.empty')}</p></section>
 {/if}
 
-<div class="acts">
-  <button type="button" class="btn small" data-focus="weight-log" data-sfx="page" onclick={() => onlog(today)}>{t('weight.log')}</button>
-</div>
-
 <p class="note">{t('weight.note')}</p>
 
 {#if recent.length}
   <section class="card recent" aria-labelledby="wrec-h">
     <h4 id="wrec-h">{t('weight.recent')}</h4>
     <table>
-      <thead><tr><th scope="col">{t('weight.col.day')}</th><th scope="col">{t('weight.col.kg')}</th><th scope="col">{t('weight.legend.trend')}</th><th><span class="sr-only">✎</span></th></tr></thead>
+      <thead><tr><th scope="col">{t('weight.col.day')}</th><th scope="col">{t('weight.col.kg')}</th><th scope="col">{t('weight.legend.trend')}</th></tr></thead>
       <tbody>
         {#each recent as p (p.date)}
           <tr>
             <td>{dayTitle(p.date)}</td>
             <td class="money">{p.kg.toFixed(1)}</td>
             <td class="money soft">{p.trend.toFixed(1)}</td>
-            <td class="pc"><button type="button" class="pen-btn" data-focus="wfix:{p.date}" data-sfx="page" aria-label={t('weight.fix', { date: dayTitle(p.date) })} onclick={() => onlog(p.date)}><Glyph kind="pen" size={18} /></button></td>
           </tr>
         {/each}
       </tbody>
@@ -108,15 +101,12 @@
   .lgoal { width: 16px; border-top: 2px dashed var(--c-yuzu-lip); }
   .proj { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh); }
   .proj b { margin-right: 6px; white-space: nowrap; }
-  .acts { display: flex; gap: 10px; flex-wrap: wrap; }
-  .acts .btn { flex: 1 1 8em; margin: 0; }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .recent { padding: 12px 14px; display: grid; gap: 6px; }
   .recent h4 { margin: 0; font-size: var(--fs-body); }
   table { width: 100%; border-collapse: collapse; font-size: var(--fs-body); }
   th { font-size: var(--fs-xs); color: var(--text-soft); text-align: right; font-weight: 700; padding: 2px 4px; }
   th:first-child, td:first-child { text-align: left; }
-  td { text-align: right; padding: 2px 4px; height: var(--row-obj); border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
+  td { text-align: right; padding: 10px 4px; border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   td.soft { color: var(--text-soft); }
-  td.pc { width: var(--hit); padding: 0; }
 </style>

@@ -6,9 +6,9 @@ import { addDays, weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger } from './bells.ts';
-import { dayDetail, editLog, historyWeeks, weekDetail } from './history.ts';
+import { dayDetail, historyWeeks, weekDetail } from './history.ts';
 import { compactRows } from './compact.ts';
-import { ewmaTrend, project, trendAt, weighIns, weightOn, weightTrend } from './weight.ts';
+import { ewmaTrend, project, trendAt, weighIns, weightTrend } from './weight.ts';
 
 const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toISOString();
 const ms = (date: string, hm: string) => Date.parse(jst(date, hm));
@@ -23,42 +23,25 @@ describe('a day’s weight: the latest row, not the max', () => {
   const D = '2026-11-10';
   it('a later lower row wins over an earlier higher one; rows after T are not seen', () => {
     const s = reduce(rowsOf({ metrics: [kg(jst(D, '08:00'), 'A', D, 69.0), kg(jst(D, '09:00'), 'A', D, 68.4)] }));
-    expect(weightOn(s, 'A', D, ms(D, '08:30'))).toBe(69.0);
-    expect(weightOn(s, 'A', D, ms(D, '10:00'))).toBe(68.4);
-    expect(weightOn(s, 'A', D, ms(D, '07:00'))).toBeNull();
+    expect(weighIns(s, 'A', ms(D, '08:30'))).toEqual([{ date: D, kg: 69.0 }]);
+    expect(weighIns(s, 'A', ms(D, '10:00'))).toEqual([{ date: D, kg: 68.4 }]);
+    expect(weighIns(s, 'A', ms(D, '07:00'))).toEqual([]);
   });
 
-  it('an edit from きろく overrides, a later different sync wins again; any past day, never a future one', () => {
+  it('ignores implausible rows and future days; the partner’s data stays theirs', () => {
     const s = reduce(rowsOf({
-      metrics: [kg(jst(D, '08:00'), 'A', D, 68.4), kg(jst(addDays(D, 1), '08:00'), 'A', D, 68.9)],
-      events: [
-        ev(jst(D, '12:00'), 'A', 'metric_set', { date: D, metric: 'weight', value: 68.0 }),
-        ev(jst(D, '12:00'), 'A', 'metric_set', { date: addDays(D, 1), metric: 'weight', value: 67 }), // tomorrow: ignored
-        ev(jst('2027-03-01', '12:00'), 'A', 'metric_set', { date: '2026-09-01', metric: 'weight', value: 70.2 }) // months back: fine
-      ]
-    }));
-    expect(weightOn(s, 'A', D, ms(D, '13:00'))).toBe(68.0);
-    expect(weightOn(s, 'A', D, ms(addDays(D, 2), '00:00'))).toBe(68.9);
-    expect(weightOn(s, 'A', addDays(D, 1), ms('2027-04-01', '00:00'))).toBeNull();
-    expect(weightOn(s, 'A', '2026-09-01', ms('2027-04-01', '00:00'))).toBe(70.2);
-  });
-
-  it('ignores implausible rows, bad edits and the partner’s data stays theirs', () => {
-    const s = reduce(rowsOf({
-      metrics: [kg(jst(D, '08:00'), 'A', D, 500), kg(jst(D, '08:00'), 'B', D, 55.2)],
-      events: [
-        ev(jst(D, '12:00'), 'A', 'metric_set', { date: D, metric: 'weight', value: 68.45 }),
-        ev(jst(D, '12:00'), 'A', 'metric_set', { date: D, metric: 'weight', value: '68' }),
-        ev(jst(D, '12:00'), 'A', 'metric_set', { date: D, metric: 'weight', value: 15 })
-      ]
+      metrics: [kg(jst(D, '08:00'), 'A', D, 500), kg(jst(D, '08:00'), 'B', D, 55.2), kg(jst(D, '08:00'), 'B', addDays(D, 1), 55)]
     }));
     expect(weighIns(s, 'A', ms(D, '23:00'))).toEqual([]);
     expect(weighIns(s, 'B', ms(D, '23:00'))).toEqual([{ date: D, kg: 55.2 }]);
   });
 
-  it('steps and minutes still take decimals nowhere', () => {
-    const s = reduce(rowsOf({ events: [ev(jst(D, '12:00'), 'A', 'metric_set', { date: D, metric: 'steps', value: 9000.5 })] }));
-    expect(s.metricSets.A.size).toBe(0);
+  it('an old `metric_set` weight row in the sheet is ignored (weight comes from Apple Health only)', () => {
+    const s = reduce(rowsOf({
+      metrics: [kg(jst(D, '08:00'), 'A', D, 68.4)],
+      events: [ev(jst(D, '12:00'), 'A', 'metric_set' as EventRow[3], { date: D, metric: 'weight', value: 68.0 })]
+    }));
+    expect(weighIns(s, 'A', ms(D, '13:00'))).toEqual([{ date: D, kg: 68.4 }]);
   });
 });
 
@@ -177,14 +160,13 @@ describe('weight never earns', () => {
     for (const p of ['A', 'B'] as PersonId[]) {
       D.forEach((d, i) => {
         out.metrics.push(kg(jst(d, '07:30'), p, d, 70 - i * 0.3), kg(jst(d, '20:00'), p, d, 71 - i * 0.2));
-        out.events.push(ev(jst(d, '21:00'), p, 'metric_set', { date: d, metric: 'weight', value: 65 }));
       });
       out.events.push(ev(jst(D[0], '06:00'), p, 'pref', { key: 'goalWeight', value: 60 }));
     }
     return out;
   }
 
-  it('weight rows, weight edits and goals change no view: today, the week, the wallet, the harvest, きろく, the ledger', () => {
+  it('weight rows and goals change no view: today, the week, the wallet, the harvest, きろく, the ledger', () => {
     const base = week();
     const heavy = withWeights(base);
     for (const now of [ms(D[2], '23:00'), ms(D[6], '19:31'), ms('2026-11-26', '12:00')]) {
@@ -192,7 +174,7 @@ describe('weight never earns', () => {
       const b = reduce(heavy);
       const all = (s: ReturnType<typeof reduce>) => JSON.stringify({
         A: buildWeekView(s, 'A', now), B: buildWeekView(s, 'B', now), history: historyWeeks(s, now), ledger: bellsLedger(s, now),
-        week: weekDetail(s, WK, now), days: D.map((d) => dayDetail(s, d, now)), log: editLog(s)
+        week: weekDetail(s, WK, now), days: D.map((d) => dayDetail(s, d, now))
       });
       expect(all(b)).toBe(all(a));
       expect(weightTrend(b, 'A', now).points.length).toBeGreaterThan(0);

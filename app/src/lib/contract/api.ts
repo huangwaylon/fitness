@@ -19,12 +19,7 @@ export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
 };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = [
-  'spend', 'harvest', 'highfive', 'pref',
-  // History and editing (docs/design.md#editing): anyone's data (`data.person`), open weeks only (the
-  // model decides).
-  'metric_set', 'workout_edit', 'workout_add', 'spend_void'
-] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'highfive', 'pref'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**
@@ -39,7 +34,6 @@ export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min
  */
 export type MetricKey = ActivityMetric | 'weight';
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
-export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) || v === 'weight';
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
@@ -47,26 +41,19 @@ export const isMetricKey = (v: unknown): v is MetricKey => isActivityMetric(v) |
  */
 export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'] as const;
 
-/**
- * The edit events whose `data.person` names whose data they change: either person may edit either person's
- * data. Absent = the sender. `pref` takes it only for the goals (`PERSON_PREF_KEYS`).
- */
-const PERSON_EDIT_TYPES = ['metric_set', 'workout_edit', 'workout_add', 'pref'] as const;
-/** The `pref` keys another person may set for you: the two goals. Everything else in `pref` is the sender's own. */
+/** The `pref` keys either person may set for either person (`data.person`): the two goals. The rest are the sender's own. */
 const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal'] as const;
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 
 /**
- * Whose data an edit event changes: `data.person` when present (it must be `A` or `B`), else the sender. Null for an
- * invalid `person` (the script refuses it; the model ignores the event), or a `person` on a type or `pref` key that
- * doesn't take one. Shared by the Apps Script and the model.
+ * Whose data an event changes: `data.person` when present (only on a goal `pref`, and it must be `A` or `B`), else the
+ * sender. Null for a `person` that is invalid or on an event that doesn't take one (the script refuses it; the model
+ * ignores the event). Shared by the Apps Script and the model.
  */
-export function editTarget(type: string, d: Record<string, unknown>, sender: PersonId): PersonId | null {
+export function eventSubject(type: string, d: Record<string, unknown>, sender: PersonId): PersonId | null {
   if (d.person === undefined) return sender;
-  if (!isPersonId(d.person)) return null;
-  if (!(PERSON_EDIT_TYPES as readonly string[]).includes(type)) return null;
-  if (type === 'pref' && !(PERSON_PREF_KEYS as readonly unknown[]).includes(d.key)) return null;
+  if (!isPersonId(d.person) || type !== 'pref' || !(PERSON_PREF_KEYS as readonly unknown[]).includes(d.key)) return null;
   return d.person;
 }
 
@@ -78,17 +65,15 @@ export function isLocalDate(v: unknown): v is string {
   const ms = Date.parse(`${v}T00:00:00Z`);
   return !Number.isNaN(ms) && new Date(ms).toISOString().slice(0, 10) === v;
 }
-/** A `workout_add` id: `m:` + up to 100 word characters or dashes. */
-export const MANUAL_ID_RE = /^m:[\w-]{1,100}$/;
 
 /** An event or spend id: a non-empty string of at most 128 characters. */
 export const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 128;
 
 export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** `metric_set` upper bounds (inclusive). The Apps Script refuses anything else with `bad_request`. */
-export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440, weight: 300 } as const;
-/** A plausible body weight in kg (inclusive): ingest skips anything else, `metric_set` and `goalWeight` are refused. */
+/** Ingest's upper bounds for the activity metrics (inclusive): a higher value is skipped. */
+export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440 } as const;
+/** A plausible body weight in kg (inclusive): ingest skips anything else, a `goalWeight` outside it is refused. */
 export const WEIGHT_KG = { min: 20, max: 300 } as const;
 
 /** kg to one decimal (how weights are stored). */
@@ -97,17 +82,6 @@ export const roundKg = (v: number): number => Math.round(v * 10) / 10;
 /** A weight in kg: finite, within WEIGHT_KG, at most one decimal. */
 export const isWeightKg = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v >= WEIGHT_KG.min && v <= WEIGHT_KG.max && Math.abs(v * 10 - Math.round(v * 10)) < 1e-6;
-
-/**
- * A `metric_set` value: an integer 0–METRIC_BOUNDS for steps, minutes and kcal; a weight (`isWeightKg`, decimals allowed)
- * for `weight`. Shared by the Apps Script (refuses) and the model (ignores).
- */
-export function validMetricValue(metric: MetricKey, v: unknown): v is number {
-  if (metric === 'weight') return isWeightKg(v);
-  return typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= METRIC_BOUNDS[metric];
-}
-/** `workout_add` minutes (inclusive, integer). */
-export const MANUAL_WORKOUT_MIN = { min: 1, max: 600 } as const;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];

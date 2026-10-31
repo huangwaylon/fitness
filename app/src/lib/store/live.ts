@@ -1,5 +1,5 @@
 // The live backend: paints from the IndexedDB cache + the write queue, then syncs in the background (flush the
-// queue, fetch rows `since` the last seen server time), with undo windows and week locks.
+// queue, fetch rows `since` the last seen server time), with undo windows.
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import type { EventType } from '#lib/contract/api.ts';
@@ -9,17 +9,13 @@ import { getKey, onStorageProblem, type StorageProblem } from '#lib/sync/storage
 import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
-import { missesLock, pendingAcked } from './view.ts';
+import { pendingAcked } from './view.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
 
 /** Background refreshes (app becoming visible) at most this often. */
 const REFRESH_FLOOR_MS = 30_000;
 /** After acked writes, re-read the server so its timestamps replace the optimistic ones. */
 const RECONCILE_MS = 1500;
-/** A held edit goes out at least this long before its week's lock (server clock), so it lands in time. */
-export const LOCK_MARGIN_MS = 60_000;
-/** Closer than this to the lock an edit can't be trusted to land: refused at once, with a message. */
-const LOCK_LATE_MS = 5_000;
 
 export class LiveBackend implements Backend {
   #host: Host;
@@ -46,15 +42,14 @@ export class LiveBackend implements Backend {
    * `ackedEvents()`). Those stay in the view until a refresh brings their rows, so neither the next tap's recompute
    * nor a cold open before the first fetch undoes them on screen; a fetch that already has them drops them here.
    */
-  events(): { list: QueuedEvent[]; unsent: Set<string> } {
+  events(): QueuedEvent[] {
     let sent = ackedEvents();
     if (this.#cache && sent.length) {
       const still = pendingAcked(this.#cache, sent);
       if (still.length !== sent.length) keepAcked(still);
       sent = still;
     }
-    const q = queued();
-    return { list: [...sent, ...q], unsent: new Set(q.map((e) => e.id)) };
+    return [...sent, ...queued()];
   }
 
   #start(): void {
@@ -107,7 +102,6 @@ export class LiveBackend implements Backend {
     }
     if (seq !== this.#refreshSeq) return; // a newer refresh owns the view
     if (r.ok) {
-      this.#noteRefused(r.cache);
       this.#cache = r.cache;
       h.offline = false;
       h.lastSync = new Date();
@@ -135,20 +129,8 @@ export class LiveBackend implements Backend {
    * server acks. `holdMs`: an undo window; `undo()` takes back only this event, not others made in the window.
    */
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult {
-    let holdMs = opts.holdMs ?? 0;
-    const lockAt = opts.lockAt;
-    const skew = () => this.#cache?.skewMs ?? 0;
-    if (lockAt !== undefined) {
-      // An edit of a week that locks: it must reach the server before the lock. Too close → refused
-      // now; close → its undo window shrinks (to none) so it is sent in time.
-      const left = lockAt - skew() - Date.now();
-      if (left < LOCK_LATE_MS) {
-        toasts.show(t('kiroku.lockedNow'), 4000, { reaction: 'sheepishness' });
-        return { ok: false };
-      }
-      holdMs = Math.max(0, Math.min(holdMs, left - LOCK_MARGIN_MS));
-    }
-    const ev = enqueue(type, data, Date.now(), holdMs, lockAt);
+    const holdMs = opts.holdMs ?? 0;
+    const ev = enqueue(type, data, Date.now(), holdMs);
     this.#host.changed();
     void this.#flush(true);
     if (holdMs <= 0) return { ok: true };
@@ -157,12 +139,10 @@ export class LiveBackend implements Backend {
       if (ok) this.#host.changed();
       return ok;
     };
-    /** Hold it (capped at HOLD_MAX_MS, and so that it still lands before its lock); returns the ms granted. */
+    /** Hold it (capped at HOLD_MAX_MS); returns the ms granted. */
     const hold = (ms: number | null) => {
       const now = Date.now();
-      let until = now + (ms ?? HOLD_MAX_MS);
-      if (lockAt !== undefined) until = Math.min(until, lockAt - skew() - LOCK_MARGIN_MS);
-      until = Math.max(now, until);
+      const until = now + Math.max(0, ms ?? HOLD_MAX_MS);
       if (!holdEvent(ev.id, until)) return 0;
       this.#scheduleRetry();
       return until - now;
@@ -173,12 +153,7 @@ export class LiveBackend implements Backend {
   async #flush(reconcile: boolean): Promise<void> {
     if (this.#retryTimer) clearTimeout(this.#retryTimer);
     this.#retryTimer = null;
-    const skew = this.#cache?.skewMs ?? 0;
-    const r = await flush(Date.now, (ev, now) => missesLock(ev, now, skew));
-    if (r.expired.length) {
-      toasts.show(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
-      this.#host.changed();
-    }
+    const r = await flush(Date.now);
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
@@ -196,17 +171,6 @@ export class LiveBackend implements Backend {
       this.#reconcileTimer = setTimeout(() => void this.refresh({ fresh: true }), RECONCILE_MS);
     }
     if (r.remaining > 0) this.#scheduleRetry();
-  }
-
-  /**
-   * After a fetch: an acked edit whose server row is stamped at or after its lock was refused by the model. Say so
-   * (it disappears from the screen with this refresh) instead of letting it vanish silently.
-   */
-  #noteRefused(cache: SnapshotCache): void {
-    const late = ackedEvents().filter((e) => e.lockAt !== undefined);
-    if (!late.length) return;
-    const atOf = new Map(cache.rows.events.map((r) => [String(r[2]), Date.parse(String(r[0]))]));
-    if (late.some((e) => (atOf.get(e.id) ?? -Infinity) >= e.lockAt!)) toasts.show(t('kiroku.missedLock'), 5000, { reaction: 'sheepishness' });
   }
 
   /** Wake the queue when its next event is due (a backoff, or the end of an undo window). */

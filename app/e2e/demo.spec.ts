@@ -1,4 +1,4 @@
-// Demo smoke test: tap, undo, harvest, きろく edit, on `?demo` (no backend, no key).
+// Demo smoke test: tap, undo, harvest, きろく (read-only, the goals), on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -88,24 +88,20 @@ test('harvest: four badges per person, the together bonus, and the bonus lands i
   await expect(page.getByRole('button', { name: '受け取る！' })).toHaveCount(0);
 });
 
-test('きろく: editing a day’s steps', async ({ page }) => {
+test('きろく: a day is read-only: both people’s four fruits with their ベル, no ✎ or keypad', async ({ page }) => {
   await page.goto('?demo');
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
   await page.locator('.app[data-app=kiroku]').click();
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
+  await expect(sheet(page).locator('.pen-btn')).toHaveCount(0);
   await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
-  // the day: the four ring fruits, each with its value and ベル
-  await expect(sheet(page).locator('.pc').first().locator('.row.fr')).toHaveCount(4);
-  await sheet(page).locator('.pc').first().getByRole('button', { name: /歩数 ✎$/ }).click();
-  const pad = sheet(page);
-  await pad.getByRole('button', { name: 'クリア' }).click();
-  for (const k of '12345') await pad.getByRole('button', { name: k, exact: true }).click();
-  await pad.getByRole('button', { name: 'けってい' }).click();
-  await expect(sheet(page).getByText('12,345', { exact: true }).first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
+  await expect(sheet(page).locator('.pc')).toHaveCount(2);
+  for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row.fr`)).toHaveCount(4);
+  await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
+  await expect(sheet(page).getByText(/見るだけ|なおせます|なおした/)).toHaveCount(0);
 });
 
-test('きろく: the weight trend, logging a weight and a goal', async ({ page }) => {
+test('きろく: the weight trend (from Health, no logging by hand) and a goal', async ({ page }) => {
   await page.goto('?demo');
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
@@ -115,21 +111,17 @@ test('きろく: the weight trend, logging a weight and a goal', async ({ page }
   await expect(sheet(page).getByRole('heading', { name: '体重のながれ' })).toBeVisible();
   await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
   await expect(sheet(page).getByRole('img', { name: /の体重 12週間/ })).toBeVisible();
-  await sheet(page).getByRole('button', { name: '体重を記録' }).click();
-  const input = sheet(page).getByRole('textbox');
-  await expect(input).toHaveAttribute('inputmode', 'decimal');
-  await input.fill('20,0');
-  await input.fill('300.5');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await input.fill('66,4');
-  await sheet(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(page.getByText('体重を記録しました')).toBeVisible();
-  await expect(sheet(page).locator('.recent tbody tr').first()).toContainText('66.4');
+  await expect(sheet(page).locator('.recent tbody tr').first()).toBeVisible();
+  await expect(sheet(page).locator('.pen-btn, input, .acts')).toHaveCount(0); // nothing to log or fix by hand
   // the goal is set in きろく's 目標 card (one place for both goals) and drawn on the weight screen
   await sheet(page).locator('.titlebar .back').click();
   await sheet(page).getByRole('button', { name: '体重 ✎' }).click();
-  await sheet(page).getByRole('textbox').fill('65');
+  const input = sheet(page).getByRole('textbox');
+  await expect(input).toHaveAttribute('inputmode', 'decimal');
+  await input.fill('300.5');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await input.fill('65');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(sheet(page).locator('.goals')).toContainText('65.0 kg');
   await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
@@ -234,34 +226,6 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await expect(goals).toContainText('520 kcal');
   await goals.locator('button.pp').nth(0).click();
   await expect(goals).toContainText('450 kcal');
-});
-
-test('きろく: editing the partner’s steps, with who fixed it in the change log', async ({ page }) => {
-  await page.goto('?demo');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await page.locator('.app[data-app=kiroku]').click();
-  await sheet(page).getByRole('button', { name: /^今週/ }).click();
-  await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
-  const partner = sheet(page).locator('.pc[data-person=B]');
-  await expect(partner).not.toHaveClass(/\bro\b/);
-  await expect(partner.locator('.tag')).toHaveCount(0); // no 見るだけ on an open day
-  const name = (await partner.locator('.nm').textContent())!.trim();
-  await partner.getByRole('button', { name: /歩数 ✎$/ }).click();
-  const pad = sheet(page);
-  await expect(pad.locator('.who')).toHaveText(name); // the keypad opens with whose steps (avatar + name)
-  await pad.getByRole('button', { name: 'クリア' }).click();
-  for (const k of '4321') await pad.getByRole('button', { name: k, exact: true }).click();
-  await pad.getByRole('button', { name: 'けってい' }).click();
-  await expect(partner.getByText('4,321', { exact: true })).toBeVisible();
-  await expect(page.getByText(`${name}の 歩数を なおしました`)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
-  // the change log: the partner's avatar, and who fixed it (me)
-  const me = (await sheet(page).locator('.pc[data-person=A] .nm').textContent())!.replace(/·.*$/, '').trim();
-  const line = sheet(page).locator('.log li').first();
-  await expect(line).toContainText('4,321');
-  await expect(line.locator('.by')).toHaveText(`${me}が なおしました`);
-  // my own card is untouched
-  await expect(sheet(page).locator('.pc[data-person=A]').getByText('4,321', { exact: true })).toHaveCount(0);
 });
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {

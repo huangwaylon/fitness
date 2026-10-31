@@ -9,7 +9,7 @@
 //     "stand_minutes": "58\n…",                 that day's Stand Time in minutes → metric stand_min
 //     "weight": "0\n68.4\n…" }                 that day's Body Mass in kg; 0 = no weigh-in
 //
-// Other fields are ignored (an old Shortcut's `workouts` too: workouts are only added by hand in きろく). Every daily field is optional. A list whose length differs from `dates` is dropped with a
+// Other fields are ignored (an old Shortcut's `workouts` too). Every daily field is optional. A list whose length differs from `dates` is dropped with a
 // warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000, stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
 import { isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
@@ -91,7 +91,7 @@ export function parseShortcut(body: unknown): ParsedBody {
       const n = amount(raw);
       if (!day || n === null) { skipped++; return; }
       if (metric !== 'weight') {
-        // the same ceiling a manual edit gets (one bad line must not become the day's permanent maximum)
+        // a ceiling: one bad line must not become the day's permanent maximum
         const v = Math.round(n);
         if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
         metrics.push({ date: day, metric, value: v });

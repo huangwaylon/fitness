@@ -3,21 +3,18 @@
 </script>
 
 <script lang="ts">
-  // きろく (records) NookPhone app (design.md "Kiroku"): からだ | ベル pills, week cards → week → day → edit,
-  // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first. Every edit
-  // screen names whose data it changes (`p`): either person edits either person's data.
-  // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
-  // queue (held 5 s with とりけす) and recompute the island's ベル ribbon and the wallet at once. Loaded on first open
-  // (ShimaPhone imports it dynamically).
+  // きろく (records) NookPhone app (design.md "Kiroku"): からだ | ベル pills, week cards → week → day, read-only
+  // (Apple Health is the source of truth), full screen inside the phone. ◀ (the phone's back) goes up one level: the
+  // phone calls `back()` first. The only inputs are the two goals (either person's: the goal screen names whose) and
+  // とりけす on my buys. Everything is computed from the store's reduced model, lazily for the opened week/day. Loaded
+  // on first open (ShimaPhone imports it dynamically).
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { MOVE_GOAL } from '#lib/config/rules.ts';
-  import { bellsLedger, dayDetail, historyWeeks, weekDetail, weekEdits } from '#lib/model/history.ts';
-  import { METRIC_BOUNDS, MANUAL_WORKOUT_MIN } from '#lib/contract/api.ts';
-  import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
+  import { bellsLedger, dayDetail, historyWeeks, weekDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { addWorkout, excludeWorkout, setGoalWeight, setMetric, setMoveGoal, setWeight, undoBanner as undoToast, undoSpend, EDIT_CUTOFF_MS } from '#lib/store/actions.ts';
-  import { weightOn, weightTrend } from '#lib/model/weight.ts';
+  import { setGoalWeight, setMoveGoal, undoBanner, undoSpend } from '#lib/store/actions.ts';
+  import { weightTrend } from '#lib/model/weight.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
@@ -29,21 +26,15 @@
   import WeightDetail from './WeightDetail.svelte';
   import ValueInput from './ValueInput.svelte';
   import GoalCard from './GoalCard.svelte';
-  import NumberPad from './NumberPad.svelte';
-  import TypeName from './TypeName.svelte';
   import Avatar from '../characters/Avatar.svelte';
-  import { dayTitle, parseKcalInput, parseKgInput, typeLabel } from './fmt.ts';
+  import { parseKcalInput, parseKgInput } from './fmt.ts';
   import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'week'; wk: string }
     | { k: 'day'; date: string }
-    | { k: 'metric'; p: PersonId; date: string; metric: 'steps' | 'exercise_min' }
-    | { k: 'workout'; p: PersonId; date: string; id: string }
-    | { k: 'add'; p: PersonId; date: string }
     | { k: 'void'; id: string; label: string; bells: number }
     | { k: 'weight'; p: PersonId }
-    | { k: 'weightIn'; p: PersonId; date: string }
     | { k: 'goal'; p: PersonId }
     | { k: 'moveGoal'; p: PersonId };
 
@@ -68,15 +59,12 @@
   // One computation per screen and model (not per use).
   const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
   const money = $derived(m && !top && tab === 'money' ? bellsLedger(m.state, m.now) : null);
-  const wkDetail = $derived(m && top?.k === 'week' ? { d: weekDetail(m.state, top.wk, m.now), edits: weekEdits(m.state, top.wk) } : null);
+  const wkDetail = $derived(m && top?.k === 'week' ? weekDetail(m.state, top.wk, m.now) : null);
   const today = $derived(m ? localDateAt(m.now) : '');
   // The weight trend: both people on the からだ list, one on its own screen.
   const trends = $derived(m && ((!top && tab === 'body') || top?.k === 'weight')
     ? { A: weightTrend(m.state, 'A', m.now), B: weightTrend(m.state, 'B', m.now) } : null);
-  const dayDate = $derived(top && 'date' in top && top.k !== 'weightIn' ? top.date : null);
-  const day = $derived(m && dayDate ? dayDetail(m.state, dayDate, m.now) : null);
-  /** Edit controls close a little before the lock, so an edit made now still lands in time. */
-  const canEdit = $derived(!!day && !!m && day.open && !day.future && m.now < day.lockAt - EDIT_CUTOFF_MS);
+  const day = $derived(m && top?.k === 'day' ? dayDetail(m.state, top.date, m.now) : null);
 
   // Apply an entry (ribbon → this week, jar total → the ベル tab) each time one arrives.
   $effect(() => {
@@ -115,7 +103,7 @@
     return true;
   }
 
-  /** After けってい: focus back on the ✎ that opened the edit, else on the phone. */
+  /** After けってい: focus back on the goal's ✎, else on the phone. */
   async function refocus(key: string) {
     await tick();
     const el = root?.querySelector<HTMLElement>(`[data-focus="${CSS.escape(key)}"]`);
@@ -123,31 +111,13 @@
     else root?.closest('dialog')?.focus();
   }
 
-  /** 「歩数を なおしました」, or 「うめの 歩数を なおしました」 for the partner's. */
-  const savedText = (p: PersonId, field: string) => (p === me ? t('kiroku.saved', { field }) : t('kiroku.savedFor', { name: names[p], field }));
-  function saveMetric(p: PersonId, date: string, metric: 'steps' | 'exercise_min', value: number) {
-    back();
-    void refocus(`${p}:${metric}`);
-    undoToast(savedText(p, t(`kiroku.field.${metric}`)), setMetric(p, date, metric, value));
-  }
-  function workoutChange(p: PersonId, id: string, date: string, label: string, excluded: boolean) {
-    back();
-    void refocus(`${p}:w:${id}`);
-    undoToast(p === me ? t('kiroku.savedWorkout', { label }) : savedText(p, label), excludeWorkout(p, id, date, excluded));
-  }
   /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner. */
   function askVoid(id: string, label: string, bells: number) {
     void go({ k: 'void', id, label, bells });
   }
   function voidIt(id: string, label: string) {
     back();
-    undoToast(t('kiroku.spendVoided', { label }), undoSpend(id));
-  }
-
-  function saveWeight(p: PersonId, date: string, kg: number) {
-    back();
-    void refocus(date === today ? 'weight-log' : `wfix:${date}`);
-    undoToast(p === me ? t('weight.saved') : savedText(p, t('kiroku.field.weight')), setWeight(p, date, kg));
+    undoBanner(t('kiroku.spendVoided', { label }), undoSpend(id));
   }
   function saveGoal(p: PersonId, kg: number | null) {
     back();
@@ -159,20 +129,9 @@
     void refocus('move-goal');
     if (setMoveGoal(p, kcal).ok) toasts.show(t('goal.moveSaved'), 2500, { reaction: 'pleased' });
   }
-
-  // Add a workout: pick a type, then the minutes on the keypad.
-  let addType = $state<string | null>(null);
-  function saveAdd(p: PersonId, date: string, min: number) {
-    const type = addType!;
-    addType = null;
-    back();
-    void refocus(`${p}:add`);
-    const label = typeLabel(type);
-    undoToast(t('kiroku.added', { label: p === me ? label : `${names[p]} ${label}` }), addWorkout(p, date, type, min));
-  }
 </script>
 
-<!-- Every edit screen opens with whose data it changes (either person edits either person's data). -->
+<!-- A goal screen opens with whose goal it sets (either person sets either person's). -->
 {#snippet who(p: PersonId)}
   <p class="who"><Avatar person={p} villager={villagers[p]} size={32} /><b>{names[p]}</b>{#if p === me}<small>· {t('kiroku.me')}</small>{/if}</p>
 {/snippet}
@@ -199,22 +158,12 @@
         <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
     {:else if top.k === 'week' && wkDetail}
-      <WeekDetail d={wkDetail.d} edits={wkDetail.edits} {order} {names} {villagers}
-        onday={(date) => go({ k: 'day', date })} now={m.now} />
+      <WeekDetail d={wkDetail} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
     {:else if top.k === 'day' && day}
-      {@const date = top.date}
-      <DayDetail d={day} editable={canEdit} {me} {partner} {names} {villagers} now={m.now}
-        onmetric={(p, metric) => go({ k: 'metric', p, date, metric })} onworkout={(p, id) => go({ k: 'workout', p, date, id })}
-        onadd={(p) => { addType = null; go({ k: 'add', p, date }); }} />
+      <DayDetail d={day} {me} {partner} {names} {villagers} />
     {:else if top.k === 'weight' && trends}
       {@const p = top.p}
-      <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today}
-        onlog={(date) => go({ k: 'weightIn', p, date })} />
-    {:else if top.k === 'weightIn'}
-      {@const s = top}
-      {@render who(s.p)}
-      <ValueInput label={t('kiroku.field.weight')} sub={dayTitle(s.date)} old={weightOn(m.state, s.p, s.date, m.now)} unit="kg"
-        parse={parseKgInput} hint={t('weight.range')} onok={(kg) => saveWeight(s.p, s.date, kg)} oncancel={back} />
+      <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today} />
     {:else if top.k === 'goal'}
       {@const s = top}
       {@render who(s.p)}
@@ -238,46 +187,6 @@
           { label: t('kiroku.cancel'), run: back, cancel: true }
         ]} />
       </div>
-    {:else if top.k === 'metric' && day}
-      {@const s = top}
-      {@render who(s.p)}
-      {@const d = day.people[s.p]}
-      <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={dayTitle(s.date)} max={METRIC_BOUNDS[s.metric]}
-        old={s.metric === 'steps' ? d.steps.value : d.exercise.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
-        onok={(v) => saveMetric(s.p, s.date, s.metric, v)} oncancel={back} />
-    {:else if top.k === 'workout' && day}
-      {@const s = top}
-      {@const w = day.people[s.p].workouts.find((x) => x.id === s.id)}
-      {#if w}
-        {@const label = typeLabel(w.type)}
-        {@render who(s.p)}
-        <section class="card wcard">
-          <b><TypeName type={w.type} /></b><span class="money">{dayTitle(s.date)} · {t('kiroku.min', { n: w.durationMin })}</span>
-          {#if w.excluded}<em>{t('kiroku.excluded')}</em>{/if}
-        </section>
-        <div class="wchoices">
-          <ChoiceList choices={[
-            w.excluded ? { label: t('kiroku.include'), run: () => workoutChange(s.p, s.id, s.date, label, false) }
-              : { label: t('kiroku.exclude'), run: () => workoutChange(s.p, s.id, s.date, label, true) },
-            { label: t('kiroku.cancel'), run: back, cancel: true }
-          ]} />
-        </div>
-      {/if}
-    {:else if top.k === 'add'}
-      {@const s = top}
-      {@render who(s.p)}
-      {#if !addType}
-        <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{dayTitle(s.date)}</span></h3>
-        <p class="note">{t('kiroku.addNote')}</p>
-        <div class="types" role="group" aria-label={t('kiroku.pickType')}>
-          {#each WORKOUT_TYPES as ty (ty)}
-            <button type="button" class="type" data-sfx="page" onclick={() => (addType = ty)}><TypeName type={ty} /></button>
-          {/each}
-        </div>
-      {:else}
-        <NumberPad label={typeLabel(addType)} sub={dayTitle(s.date)} old={null} min={MANUAL_WORKOUT_MIN.min} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
-          onok={(v) => saveAdd(s.p, s.date, v)} oncancel={() => (addType = null)} />
-      {/if}
     {/if}
   {/if}
   </div>
@@ -286,10 +195,6 @@
 
 <style>
   .kiroku { padding-bottom: 8px; }
-  /* the keypad fills the phone so its keys sit at the bottom, in the thumb zone (ShimaPhone stretches this root;
-     without this link in the chain the keys hang under the title with empty space below them) */
-  .kiroku:has(:global(.atm)) { display: flex; flex-direction: column; }
-  .kiroku:has(:global(.atm)) > .lvl { flex: 1 0 auto; grid-template-rows: auto 1fr; }
   .who { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
   .who small { color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
   /* each level slides in like a phone app (design.md "Navigation": one push motion, 240ms) */
@@ -302,23 +207,8 @@
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
   .pill[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .wcard { display: grid; gap: 6px; justify-items: start; }
-  .wcard b { font-size: var(--fs-talk); }
-  .wcard .money { font-size: var(--fs-body); color: var(--text-soft); }
-  em { font-style: normal; font-size: var(--fs-s); font-weight: 700; padding: 3px 8px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 45%, transparent); }
   .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
-  .addh { margin: 0 2px; font-size: var(--fs-talk); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-  .addh .nw { white-space: nowrap; }
-  .addh .money { font-size: var(--fs-body); color: var(--text-soft); }
-  .note { margin: -6px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .ask { padding: 16px; display: grid; gap: 6px; }
   .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
   .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; }
-  /* minmax(0, 1fr): the longest label (高強度インターバルトレーニング) must not set a column's minimum */
-  .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .type {
-    appearance: none; border: 0; cursor: pointer; min-width: 0; overflow-wrap: anywhere; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);
-    font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .type:active { transform: translateY(3px); box-shadow: var(--sh-ctl-press); }
 </style>

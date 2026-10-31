@@ -13,8 +13,6 @@ export const HOLD_MAX_MS = 2 * 60_000;
 export interface SendOptions {
   /** An undo window: shown at once, not sent before then. */
   holdMs?: number;
-  /** An edit of a week that locks (server-clock ms): it must reach the server before then. */
-  lockAt?: number;
 }
 
 /** A tap's outcome, known at once (the queue retries until the server acks). */
@@ -39,8 +37,8 @@ export interface Host {
 export interface Backend {
   /** The rows the view is composed from (null: nothing to show yet). */
   cache(): SnapshotCache | null;
-  /** Events applied on top of the rows (oldest first), and which of them are still unsent (only those can miss a lock). */
-  events(): { list: QueuedEvent[]; unsent: Set<string> };
+  /** Events applied on top of the rows (oldest first). */
+  events(): QueuedEvent[];
   /** Load, then sync. `background` refreshes respect a floor; `fresh` ones never reuse a fetch already in flight. */
   refresh(opts: { background?: boolean; fresh?: boolean }): Promise<void>;
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult;

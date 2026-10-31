@@ -8,8 +8,8 @@ export type Bus = 'music' | 'sfx' | 'voice';
 export type SoundId =
   // UI (NookPhone and menus)
   | 'cursor' | 'confirm' | 'cancel' | 'phone-open' | 'phone-close' | 'phone-app'
-  // UI taps (docs/design.md#taps): a soft select, the switch pair, keypad keys, a page, the "can't" boop, sync, remove, undo
-  | 'select' | 'toggle-on' | 'toggle-off' | 'key' | 'page' | 'boop' | 'whoosh' | 'poof' | 'undo'
+  // UI taps (docs/design.md#taps): a soft select, the switch pair, a page, the "can't" boop, sync, remove, undo
+  | 'select' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'whoosh' | 'poof' | 'undo'
   // dialogue text blips (NH: Animalese; しずえ has her own higher voice)
   | 'blip-host' | 'blip-villager'
   // island actions and money
@@ -54,7 +54,6 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   select: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },
   'toggle-on': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
   'toggle-off': { bus: 'sfx', gain: 0.36, jitter: 0, max: 1 },
-  key: { bus: 'sfx', gain: 0.26, jitter: 45, max: 2 },
   page: { bus: 'sfx', gain: 0.24, jitter: 60, max: 1 },
   boop: { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
   whoosh: { bus: 'sfx', gain: 0.38, jitter: 30, max: 1 },

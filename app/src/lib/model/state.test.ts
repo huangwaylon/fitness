@@ -5,9 +5,8 @@ import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import type { EventRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 
-const WK = '2026-11-09'; // a paid week: open until Wed 2026-11-18 04:00 JST
+const WK = '2026-11-09'; // a paid week
 const at = (date: string, hm = '12:00') => new Date(`${date}T${hm}:00+09:00`).toISOString();
-const LOCKED = at('2026-11-18', '04:00');
 let n = 0;
 const ev = (when: string, person: PersonId, type: string, data: object | string): EventRow =>
   [when, person, `e${++n}`, type as EventRow[3], typeof data === 'string' ? data : JSON.stringify(data)];
@@ -31,21 +30,14 @@ describe('reduce: rows', () => {
       presence: [[at(WK, '18:00'), 'A', 'エニタイム', at(WK, '18:00')]]
     };
     const s = reduce({ ...rows([]), ...old } as SnapshotRows);
-    expect(s.workouts).toEqual({ A: [], B: [] });
-    expect(s.lastSync).toEqual({ A: null, B: null });
+    expect({ ...s, ats: [] }).toEqual({ ...reduce(rows([])), ats: [] });
   });
 });
 
 describe('reduce: events', () => {
-  it('move_kcal and stand_min rows are activity metrics; metric_set accepts them within bounds', () => {
-    const s = reduce(rows([
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 450 }),
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'move_kcal', value: 10_001 }),
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'stand_min', value: 1_440 }),
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'stand_min', value: 1_441 })
-    ], { metrics: [[at(WK, '22:00'), 'B', WK, 'move_kcal', 512.5], [at(WK, '22:00'), 'B', WK, 'stand_min', 58]] }));
+  it('move_kcal and stand_min rows are activity metrics', () => {
+    const s = reduce(rows([], { metrics: [[at(WK, '22:00'), 'B', WK, 'move_kcal', 512.5], [at(WK, '22:00'), 'B', WK, 'stand_min', 58]] }));
     expect(s.metrics.B.get(WK)).toEqual({ move_kcal: [{ at: Date.parse(at(WK, '22:00')), v: 512.5 }], stand_min: [{ at: Date.parse(at(WK, '22:00')), v: 58 }] });
-    expect([...s.metricSets.A.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|move_kcal`, [450]], [`${WK}|stand_min`, [1440]]]);
   });
 
   it('pref moveGoal: an integer kcal in 100–2,000 per person, in at order; anything else is ignored', () => {
@@ -89,53 +81,14 @@ describe('reduce: events', () => {
     expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
   });
 
-  it('metric_set: integer within bounds, a day that has happened, in an open week', () => {
+  it('an event type the model doesn’t know (old `gym_set`, `metric_set`, `workout_add`, `workout_edit` rows in the sheet) is ignored', () => {
     const s = reduce(rows([
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'steps', value: 5000 }),
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'steps', value: 100_001 }),
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'exercise_min', value: 1.5 }),
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: '2026-11-12', metric: 'steps', value: 1 }), // future day
-      ev(LOCKED, 'A', 'metric_set', { date: WK, metric: 'steps', value: 1 }), // locked
-      ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'floors', value: 1 })
+      ev(at(WK, '21:00'), 'A', 'gym_set', { date: WK, on: true }),
+      ev(at(WK, '21:00'), 'B', 'metric_set', { date: WK, metric: 'steps', value: 5000 }),
+      ev(at(WK, '21:00'), 'B', 'metric_set', { date: WK, metric: 'weight', value: 55 }),
+      ev(at(WK, '21:00'), 'A', 'workout_add', { id: 'm:1', date: WK, type: 'Yoga', durationMin: 30 }),
+      ev(at(WK, '21:30'), 'A', 'workout_edit', { id: 'm:1', excluded: true })
     ]));
-    expect([...s.metricSets.A.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|steps`, [5000]]]);
-  });
-
-  it('workout_add: m: id, a known type, 1–600 minutes, open week, first id wins; unknown fields are ignored', () => {
-    const add = (when: string, d: object) => ev(when, 'A', 'workout_add', { date: WK, type: 'Yoga', durationMin: 30, ...d });
-    const s = reduce(rows([
-      add(at(WK, '21:00'), { id: 'm:1', strength: true }),
-      add(at(WK, '21:00'), { id: 'm:1', durationMin: 10 }),
-      add(at(WK, '21:00'), { id: 'w:1' }),
-      add(at(WK, '21:00'), { id: 'm:2', type: 'Juggling' }),
-      add(at(WK, '21:00'), { id: 'm:2b', type: 'Core Training' }), // a Watch-only type: never offered by きろく
-      add(at(WK, '21:00'), { id: 'm:3', durationMin: 601 }),
-      add(LOCKED, { id: 'm:4' })
-    ]));
-    expect(s.workouts.A).toEqual([{ at: Date.parse(at(WK, '21:00')), id: 'm:1', date: WK, type: 'Yoga', durationMin: 30, by: 'A' }]);
-    expect(s.workoutEdits).toEqual([]);
-  });
-
-  it('workout_edit: a workout added in きろく, left out or put back (excluded only), open week', () => {
-    const add = ev(at(WK, '20:00'), 'A', 'workout_add', { id: 'm:1', date: WK, type: 'Yoga', durationMin: 30 });
-    const s = reduce(rows([
-      add,
-      ev(at(WK, '19:00'), 'A', 'workout_edit', { id: 'm:1', excluded: true }), // before the add
-      ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1', strength: true }), // no `excluded`: ignored
-      ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1', excluded: true, strength: null }),
-      ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1' }),
-      ev(at(WK, '21:00'), 'B', 'workout_edit', { id: 'm:1', excluded: true }), // B's own (no such workout)
-      ev(at(WK, '21:30'), 'B', 'workout_edit', { id: 'm:1', excluded: false, person: 'A' }), // either person's
-      ev(LOCKED, 'A', 'workout_edit', { id: 'm:1', excluded: false })
-    ]));
-    expect(s.workoutEdits.map(({ person, by, id, excluded }) => ({ person, by, id, excluded }))).toEqual([
-      { person: 'A', by: 'A', id: 'm:1', excluded: true }, { person: 'A', by: 'B', id: 'm:1', excluded: false }
-    ]);
-    expect(s.workoutExcluded.get('A|m:1')!.map((x) => x.v)).toEqual([true, false]);
-  });
-
-  it('an event type the model doesn’t know (the old `gym_set` rows in the sheet) is ignored', () => {
-    const s = reduce(rows([ev(at(WK, '21:00'), 'A', 'gym_set', { date: WK, on: true })]));
     expect({ ...s, ats: [] }).toEqual({ ...reduce(rows([])), ats: [] });
   });
 
