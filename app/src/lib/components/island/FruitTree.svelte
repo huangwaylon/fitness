@@ -9,10 +9,12 @@
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
-  // today's amount against the goal (met or not), ✓ once met, a ★ once at 1.5× (がんばり), and its ベル (+1, +2 with
-  // its がんばり paid); then the day's がんばり (+1, +2, or +2 with 上限 when more were reached than the cap pays),
-  // today's ふたりでぜんぶ (both people, all four goals: +2) and when the data last arrived. It stays until this tree is tapped again, the other tree is tapped, or a tap lands
-  // elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
+  // today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
+  // alike, whatever the cap; no numbers on the rows); then one ledger of the day: もくひょう (+1 a goal met), がんばり
+  // (+1 a goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6
+  // ベル」), then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ +
+  // ふたりでぜんぶ is the ribbon) and when the data last arrived. It stays until this tree is tapped again, the other
+  // tree is tapped, or a tap lands elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
@@ -22,7 +24,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { lastSyncLine } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { todayPct } from './progress.ts';
@@ -77,25 +79,28 @@
   const ring = (f: RingFruit) => person.rings[f];
   /** The popup's rows: 🍎 steps first, then Apple's rings (the canopy and the beds keep RING_FRUITS). */
   const POPUP_ORDER: readonly RingFruit[] = ['apple', 'pear', 'peach', 'cherry'];
-  /** A row's ベル: +1, +2 once its がんばり is paid (shown faded as +1 while unmet). */
-  const pay = (f: RingFruit) => person.today.rings[f] || RULES.perGoal;
-  /** Today's がんばり: the fruits at 1.5×, the ベル paid (at most STRETCH.cap) and whether more were reached than that. */
+  /** The day's ledger: goals met (+1 each), がんばり (the fruits at 1.5×, the ベル paid: at most STRETCH.cap, 上限 when
+   *  more were reached than that) and this person's total (goals + がんばり; ふたりでぜんぶ is the pair's, apart). */
+  const goalBells = $derived(RING_FRUITS.filter((f) => ring(f).met).length * RULES.perGoal);
   const stretched = $derived(RING_FRUITS.filter((f) => ring(f).stretched).length);
   const stretchBells = $derived(Math.min(STRETCH.cap, stretched * STRETCH.perGoal));
-  const stretchLine = $derived(
-    stretched ? t(stretched * STRETCH.perGoal > STRETCH.cap ? 'tree.stretch.cap' : 'tree.stretch', { b: stretchBells }) : null
+  const stretchKey = $derived(
+    stretched ? t(stretched * STRETCH.perGoal > STRETCH.cap ? 'tree.sum.stretchCap' : 'tree.sum.stretch', { cap: STRETCH.cap }) : null
   );
+  const signed = (n: number) => `+${formatNum(n)}`;
 
   /** Today's amount against the goal, always (met too): 「103 / 60分」 (whole units, rounded down so a goal shows met
    *  only once it is). */
   const amount = (f: RingFruit) => t(`tree.of.${f}`, { n: formatNum(Math.floor(ring(f).today)), g: formatNum(ring(f).goal) });
   /** Today's ふたりでぜんぶ (both people's goals), from the store's view; none in the gallery. */
   const together = $derived(week.view?.together ?? null);
-  const togetherLine = $derived(together ? (together.met ? t('tree.together.met', { b: RULES.together }) : t('tree.together.left', { n: together.left })) : null);
+  const totalKey = $derived(t('tree.sum.total', { name: person.villagerName }));
   const label = $derived(
     `${person.villagerName}: ` +
-      POPUP_ORDER.map((f) => `${t(`fruit.${f}`)} ${amount(f)}${ring(f).met ? ` ✓ +${pay(f)}` : ''}${ring(f).stretched ? ' ★' : ''}`).join('、') +
-      (stretchLine ? `。${stretchLine}` : '') + (togetherLine ? `。${togetherLine}` : '')
+      POPUP_ORDER.map((f) => `${t(`fruit.${f}`)} ${amount(f)}${ring(f).met ? ' ✓' : ''}${ring(f).stretched ? ` ${t('tree.stretched')}` : ''}`).join('、') +
+      `。${t('tree.sum.goals')} ${signed(goalBells)}` + (stretchKey ? `、${stretchKey} ${signed(stretchBells)}` : '') +
+      `、${totalKey} ${formatBells(person.today.bells, { signed: true })}` +
+      (together ? `。${together.met ? `${t('tree.together.met')} ${signed(RULES.together)}` : t('tree.together.left', { n: together.left })}` : '')
   );
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
    *  clock ticks only then. */
@@ -337,14 +342,23 @@
         <span class="row" class:on={picked === f} data-row={f} data-stretched={r.stretched || null}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{amount(f)}{#if r.stretched}{@render star('gb')}{/if}</span>
-          <b class="money" class:zero={!r.met}>+{pay(f)}</b>
+          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{amount(f)}</span>
+          <span class="gbc">{#if r.stretched}<span class="chip">{t('tree.stretched')}</span>{/if}</span>
         </span>
       {/each}
-      <!-- today's がんばり: goals at 1.5× (+1 each, at most +2 a day; 上限 when more were reached) -->
-      {#if stretchLine}<span class="gbl">{@render star('gb')}{stretchLine}</span>{/if}
-      <!-- today's ふたりでぜんぶ: both of us, all four goals (+2 shared) -->
-      {#if togetherLine}<span class="duo" class:met={together?.met}>{@render star('')}{togetherLine}</span>{/if}
+      <!-- the day's ledger: goals, がんばり (上限 when more were reached), this person's total; then ふたりでぜんぶ (shared) -->
+      <span class="sum" data-sum>
+        <span class="k">{t('tree.sum.goals')}</span><b class="v money" data-v="goals">{signed(goalBells)}</b>
+        {#if stretchKey}<span class="k">{stretchKey}</span><b class="v money" data-v="stretch">{signed(stretchBells)}</b>{/if}
+        <span class="rule"></span>
+        <span class="k tot">{totalKey}</span><b class="v money tot" data-v="total">{formatBells(person.today.bells, { signed: true })}</b>
+      </span>
+      <!-- today's ふたりでぜんぶ: both of us, all four goals (+2, the pair's: in both popups, counted once in the ribbon) -->
+      {#if together}
+        <span class="duo" class:met={together.met}>{@render star('')}{#if together.met}<span class="k">{t('tree.together.met')}</span><b class="money">{signed(RULES.together)}</b><small>{t('tree.together.shared')}</small>
+          {:else}{t('tree.together.left', { n: together.left })}{/if}
+        </span>
+      {/if}
       <!-- when this person's data last arrived (it explains a low tree); a soft dot once it is SYNC_LATE_MS old -->
       {#if sync}<span class="sync" class:late={sync.late}>{sync.text}</span>{/if}
     </div>
@@ -441,21 +455,30 @@
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
   .amt { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink-soft); }
   .amt.met { color: var(--c-leaf-text); }
-  .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
-  .row b.zero { color: var(--c-ink-soft); font-weight: 500; }
   .ok { width: 18px; height: 18px; flex: none; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
-  /* がんばり: a small yuzu star after a value at 1.5×, and the day's line under the goals */
-  .gb { width: 15px; height: 15px; flex: none; margin-left: -1px; fill: var(--c-yuzu-lip); filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--plate-ink) 25%, transparent)); }
-  .gbl {
-    grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 3px; padding: 5px 8px 1px;
-    border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
+  /* がんばり on a row (1.5×): the same small yuzu chip on every stretched row, in its own column so the values line up */
+  .gbc { display: flex; justify-content: flex-start; }
+  .chip {
+    padding: 2px 6px 3px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink);
+    font: 700 11px/1.1 var(--font-ui); box-shadow: 0 1px 0 var(--c-yuzu-lip);
   }
-  .gbl + .duo { border-top: 0; margin-top: 0; padding-top: 3px; }
-  /* today's ふたりでぜんぶ: a star line under the goals (yuzu once both met everything) */
+  /* the day's ledger: word left, ベル right; this person's total under a hairline */
+  .sum {
+    grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px;
+    margin-top: 3px; padding: 5px 8px 1px; border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent);
+    font: 500 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
+  }
+  .sum .v { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
+  .sum .rule { grid-column: 1 / -1; height: 1px; margin: 1px 0; background: color-mix(in srgb, var(--plate-ink) 15%, transparent); }
+  .sum .tot { font-weight: 700; }
+  .sum b.tot { font-size: var(--fs-body); }
+  /* today's ふたりでぜんぶ: the pair's line under the ledger (yuzu once both met everything; 「ふたりに」: shared) */
   .duo {
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
     border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
   }
+  .duo b { font-family: var(--font-num); }
+  .duo small { font: 500 11px/1.1 var(--font-ui); color: var(--c-ink-soft); }
   .duo svg { width: 16px; height: 16px; flex: none; fill: color-mix(in srgb, var(--plate-ink) 30%, transparent); }
   .duo.met svg { fill: var(--c-yuzu-lip); }
   /* when the data last arrived: soft and small, under everything; the plate is cream at every time of day, so the
@@ -477,11 +500,13 @@
   @media (max-height: 700px) {
     .detail { gap: 0; padding: 14px 8px 6px; }
     .row { padding-block: 2px; }
+    .sum { row-gap: 0; }
+    .sum .rule { margin: 0; }
   }
   @media (max-height: 600px) {
     .detail { padding: 13px 6px 4px; }
     .row { padding-block: 1px; }
-    .duo, .gbl { margin-top: 2px; padding-top: 3px; }
+    .duo, .sum { margin-top: 2px; padding-top: 3px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }
