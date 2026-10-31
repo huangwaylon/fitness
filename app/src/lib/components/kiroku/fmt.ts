@@ -1,15 +1,14 @@
 // Small formatters shared by the きろく screens (the day title, numbers, the change-log line); dates: i18n/format.ts.
-import type { RingFruit, WeekKey } from '#lib/types.ts';
 import type { EditLog } from '#lib/model/history.ts';
 import { workoutLabel } from '#lib/contract/labels.ts';
 import { isWeightKg } from '#lib/contract/api.ts';
-import { MOVE_GOAL, rulesFor } from '#lib/config/rules.ts';
-import { i18n, t } from '#lib/i18n/index.ts';
+import { MOVE_GOAL } from '#lib/config/rules.ts';
+import { formatNum, i18n, t } from '#lib/i18n/index.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 
 export const dayTitle = (d: string) => t('kiroku.dayTitle', { m: Number(d.slice(5, 7)), d: Number(d.slice(8, 10)), w: weekdayOf(d) });
 
-export const num = (n: number | null) => (n === null ? '–' : n.toLocaleString('en-US'));
+export const num = (n: number | null) => (n === null ? '–' : formatNum(n));
 export const typeLabel = (type: string) => workoutLabel(type, i18n.locale);
 
 /** The word joints of a Japanese workout label (筋力|トレーニング, 高強度|インターバル|トレーニング). */
@@ -37,12 +36,6 @@ export function editText(e: EditLog): { field: string; before: string; after: st
     return t(x ? 'kiroku.val.out' : 'kiroku.val.in');
   };
   return { field, before: v(e.before), after: v(e.after) };
-}
-
-/** Days needed for each weekly badge in the week's rules (5 · 5 · 5 · 4). */
-export function badgeGoals(weekKey: WeekKey): Record<RingFruit, number> {
-  const b = rulesFor(weekKey).badges;
-  return { peach: b.exerciseDays, pear: b.moveDays, cherry: b.standDays, apple: b.stepDays };
 }
 
 

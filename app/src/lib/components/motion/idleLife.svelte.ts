@@ -9,7 +9,7 @@ import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleA
 import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
 import { jst, reducedMotion } from '#lib/time/clock.ts';
 
-export interface IdleContext {
+interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
   paused: () => boolean;
   /** The villagers are asleep (22–05). */

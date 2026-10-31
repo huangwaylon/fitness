@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '#lib/i18n/state.svelte.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
-import { badgeGoals, kgDelta, kgText, parseKcalInput, parseKgInput, typeLabel, typeParts } from './fmt.ts';
+import { kgDelta, kgText, parseKcalInput, parseKgInput, typeLabel, typeParts } from './fmt.ts';
 
 afterEach(() => setLocale('ja'));
 
@@ -49,9 +49,3 @@ describe('Move goal input', () => {
   });
 });
 
-describe('badge thresholds', () => {
-  it('are the latest rules: 5 · 5 · 5 · 4 days (four fruits, no 🥥)', () => {
-    expect(badgeGoals('2026-10-26')).toEqual({ peach: 5, pear: 5, cherry: 5, apple: 4 });
-    expect(badgeGoals('2026-11-02')).toEqual({ peach: 5, pear: 5, cherry: 5, apple: 4 });
-  });
-});
