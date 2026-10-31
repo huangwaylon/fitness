@@ -10,7 +10,8 @@ Apple Watch. Their activity, measured automatically, grows fruit and earns **ベ
 spent on small treats they agreed on. Japanese first, English per person.
 
 - **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
-  weight) several times a day. Workouts the Watch missed are added by hand in きろく.
+  weight) several times a day. **Apple Health is the source of truth:** no health number is entered or fixed in the
+  app ([Health data](#health-data)).
 - **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes every number on the
   phone (`lib/model/`, pure functions), so a rule change re-prices history consistently.
 - **Principles:** zero required taps a day; both people see all data; no notifications.
@@ -58,15 +59,15 @@ of 1.6 g per kg a day, not tracked) · **村人** (my villager: 23 special chara
 
 ### Kiroku
 
-きろく (`model/history.ts`, `components/kiroku/*`), two pills: **からだ** | **ベル**.
+きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, two pills: **からだ** | **ベル**.
 
-- **からだ:** a weight card per person (→ the weight screen), 目標 (Move and weight goals, either person's), then one
-  card per week, newest first: 🔒 once locked, ✓ once both harvested, each person's four badges.
-- **Week:** ベル, how long it stays editable, badges, a day table (✎ on edited values), the week's change log.
-- **Day:** me then the partner: ベル per fruit and the hand-added workouts. ✎ on steps, exercise minutes and workouts,
-  ＋ ワークアウト, only while the week is open (else 見るだけ). Numbers are entered on the ATM keypad.
+- **からだ:** a weight card per person (→ the weight screen), 目標 (the Move and weight goals; two avatar pills pick
+  whose, either person sets either person's), then one card per week, newest first: ✓ once both harvested, each
+  person's four badges.
+- **Week:** ベル, badges, a day table (tap a day).
+- **Day:** me then the partner: the day's ベル and, per fruit, its value (green at the goal) and ベル.
 - **Weight screen:** trend, week change, since start, pace, a 12-week chart (dots = weigh-ins, line = trend, dashes =
-  goal), the goal month at the current pace; record or fix a day. No good/bad colours.
+  goal), the goal month at the current pace, the recent weigh-ins. No good/bad colours.
 - **ベル:** everything earned, then by week: the Sunday bonus, the buys (my own → とりけす) and one line per day.
 
 ### Sheets and harvest
@@ -97,7 +98,7 @@ Every list shows them in Apple's ring order, Move, Exercise, Stand, then steps (
 | Fruit | Metric (Shortcut field → stored) | Daily goal |
 |---|---|---|
 | 🍐 Move | active kcal (`calories` → `move_kcal`) | per person `pref` moveGoal, 100–2,000 (default ウェイ 600, うめ 400) |
-| 🍑 Exercise | max(Watch minutes, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min |
+| 🍑 Exercise | Watch exercise minutes (`exercise_minutes` → `exercise_min`) | 60 min |
 | 🍒 Stand | Stand Time (`stand_minutes` → `stand_min`) | 120 min (v1 180) |
 | 🍎 Steps | `steps` | 8,000; Jun 1 – Jul 20 (tsuyu) 30 exercise minutes also count |
 
@@ -142,8 +143,8 @@ A badge per fruit when its goal (100%) was met on enough days: 🍐 🍑 🍒 5,
 ### Harvest and lock
 
 - **Sunday 19:30 JST:** the harvest opens and the week's bonus lands in the wallet.
-- **The following Wednesday 04:00 JST:** the week locks. Until then its earnings move with late syncs and edits; after,
-  they are computed as of the lock.
+- **The following Wednesday 04:00 JST:** the week locks. Until then its earnings move with late syncs; after, they are
+  computed as of the lock, so the past stays put. The lock is internal: nothing shows it.
 
 ### Wallet and buys
 
@@ -151,8 +152,8 @@ One shared wallet: a day's ベル count from that day (at their current value), 
 Either person buys (`spend`), no approvals. Buys and voids replay in server order.
 
 - **Coverage:** a buy counts only if covered: everything earned on days up to its date plus bonuses landed by its time,
-  minus earlier accepted buys. An uncovered buy is ignored, so the balance never goes negative. Open weeks still move,
-  so a later down-edit can uncover an earlier buy.
+  minus earlier accepted buys. An uncovered buy is ignored, so the balance never goes negative (a higher Move goal set
+  later the same day can lower that day's ベル and so uncover a buy).
 - **Voids:** the buyer only, once (`spend_void`); the ベル return. Buys and voids never lock.
 
 ### Escalating treats
@@ -169,44 +170,15 @@ server order is ignored, so of two simultaneous buys the server's first wins. A 
 `DEFAULT_MENU` until edited (`pref` menu, latest wins): おやつ 1,200 · カフェ・デザート 2,500 · 外ごはん 6,000 · ほしいもの
 8,000 · 旅のごほうび 12,000. On target, treats ≈ 8,500 a week leave ≈ 5,900 to save.
 
-## Editing
+## Health data
 
-Either person edits either person's data; edits are events ([backend.md](backend.md#events)). Code:
-`store/actions.ts`, `model/state.ts`, `model/inputs.ts`.
+Apple Health is the source of truth. Steps, exercise, Move, Stand and weight come only from the Shortcut's `metrics`
+rows; a day's activity value is its highest row, its weight its latest. Nothing in the app enters or fixes them.
 
-### Who edits what
-
-The subject is `data.person` (absent = the sender); the sender is recorded as `by`. `person` is allowed on
-`metric_set`, `workout_add`, `workout_edit` and the goals (`moveGoal`, `goalWeight`); `locale`, `villagerName` and
-`villager` are the sender's own; `spend_void` is the buyer's. きろく edits steps, exercise minutes, workouts, weights and
-goals.
-
-### How edits apply
-
-- **A metric** at time T: S = the latest `metric_set` stamped ≤ T; without one, the max of the ingest rows ≤ T; else
-  max(S, ingest rows stamped after S). An edit overrides, also lower, but a later higher sync still wins.
-- **A day's weight** is the latest of its rows and edits.
-- **Workouts:** `workout_add` (one of きろく's types, 1–600 min) counts toward 🍑 as max(Watch, the day's added
-  minutes); `workout_edit {excluded}` leaves one out or puts it back. No type earns on its own.
-
-### Open weeks
-
-Activity edits count only if the day has happened and the server stamps them before its week's lock: this week, and
-last week until Wednesday 04:00 (≤ ~9.5 days back). Locked weeks are view-only. Weights (any day to today), goals and
-voids never lock.
-
-### Held edits and undo
-
-Every edit and buy shows at once and waits 5 s with とりけす before it is sent; touching the banner holds it (≤ 2 min).
-The server stamps the send time, so: きろく's controls close 65 s before the lock, a hold never runs past lock − 60 s,
-and within 5 s of the lock an edit is refused. An edit that would reach the server after its lock is dropped unsent
-with a message, as is an acked one stamped after it ([backend.md](backend.md#write-queue)).
-
-### Change log
-
-`editLog`: `{at, person, by, date, field, before, after}` per accepted edit that changed something (`before` = the
-value just before `at`). へんこう履歴 shows whose avatar, the change and 「〇〇が なおしました」. The sheet stays the raw
-audit.
+What the app sends instead ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either
+person's: `data.person`, absent = the sender), the menu, buys and voids, harvest taps, high-fives, and the sender's own
+`locale`, `villagerName` and `villager`. A buy and its とりけす are shown at once and wait 5 s with とりけす before they
+are sent (touching the banner holds it, ≤ 2 min). Rows of an event type the app no longer knows are ignored.
 
 ## Weight trend
 

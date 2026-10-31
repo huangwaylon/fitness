@@ -65,8 +65,7 @@ Why: the Watch measures them with no effort, and the same goals apply to both pe
 each person's own Fitness goal).
 
 ### Exercise minutes
-A day's counted minutes are max(Watch exercise minutes, workouts added by hand in きろく), never a sum. Steps never
-turn into minutes. Why: covers a forgotten Watch without counting anything twice.
+A day's minutes are the Watch's exercise minutes. Steps never turn into minutes. Why: one source, no double counting.
 
 ### Move goal per person
 A `pref` `moveGoal` (whole kcal, 100–2,000), which either person may set. It applies from the Tokyo day it is set
@@ -94,8 +93,10 @@ edit one whose weeks have earned. Why: everything is computed on read, so an edi
 
 ### Harvest and week lock
 Each week has two times (JST). At Sunday 19:30 the harvest opens and the weekly bonus lands; tapping 受け取る is
-ceremony only. At the Wednesday 04:00 after, the week locks: its earnings are fixed, and later syncs or edits
-don't count. Spends are never locked. Why: late data and fixes get a grace period, then the past stays put.
+ceremony only. At the Wednesday 04:00 after, the week locks: its earnings are fixed, and later syncs don't count.
+Spends are never locked. The lock is internal (no 🔒 or countdown in the UI). Why: late Health syncs get a grace
+period, then the past (and the badges paid at the harvest) stays put; it also lets the client compact and memoise
+locked weeks.
 
 ### One wallet
 Every ベル earned, daily and weekly, goes into one shared wallet. Daily ベル count from their day, the bonus from
@@ -115,21 +116,16 @@ bigger yes.
 
 ### Weight never earns
 Weight is shown as a trend only: no ベル, no badge, no goal that pays, and the economy never reads it. The trend is
-an EWMA (alpha 0.1), with an optional goal line; a day's weight is its latest row or edit, 20–300 kg. Why: paying
+an EWMA (alpha 0.1), with an optional goal line; a day's weight is its latest row, 20–300 kg. Why: paying
 for kilograms rewards crash diets and punishes muscle.
 
-## Editing
+## Health data
 
-### Anyone edits anyones data
-Either person may fix either person's data. `metric_set`, `workout_add`, `workout_edit` and the goal prefs
-(`moveGoal`, `goalWeight`) take `data.person` (absent means the sender). The change log shows whose data it was and
-who fixed it. Other prefs and `spend_void` stay the sender's own. Why: when one person forgets, the other can fix
-it.
-
-### Edits only in open weeks
-Activity edits count only for days that have happened, in weeks not yet locked (at most ~9.5 days back). Weight
-edits have no lock, because weight earns nothing. Why: locked weeks stay final. A down-edit inside an open week can
-still leave an earlier buy uncovered, and that buy is then ignored on read.
+### Apple Health is the source of truth
+Steps, exercise, Move, Stand and weight come only from the Shortcut; the app never enters or fixes them (no
+`metric_set`, `workout_add` or `workout_edit`: the server refuses them and the model ignores old rows). The goals
+(`moveGoal`, `goalWeight`) stay editable for either person (`data.person`); other prefs and `spend_void` are the
+sender's own. Why: all health data is already in Apple Health, so manual edits only add a second, conflicting source.
 
 ## App and hosting
 

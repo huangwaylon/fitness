@@ -29,8 +29,8 @@ and shared by all rows of one request. Dates are `YYYY-MM-DD` (Tokyo). The app n
 ## Events
 
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is refused with `bad_request`. `data` is an object,
-≤ 20,000 characters as JSON. The server checks shapes only: open weeks, wallet cover, menu contents and escalated
-prices are read-time rules in the model, which ignores an invalid row.
+≤ 20,000 characters as JSON. The server checks shapes only: wallet cover, menu contents and escalated prices are
+read-time rules in the model, which ignores an invalid row.
 
 | type | data | Rules |
 |---|---|---|
@@ -39,13 +39,11 @@ prices are read-time rules in the model, which ignores an invalid row.
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `highfive` | `{}` | |
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000), `menu` (JSON array of ≤ 30 `{id, label, bells}`, unique ids `[\w-]{1,40}`; invalid = ignored whole) |
-| `metric_set` | `{person?, date, metric, value}` | a real date; steps 0–100,000, minutes 0–1,440, kcal 0–10,000 (integers), or `weight` 20–300 kg, one decimal |
-| `workout_add` | `{person?, id, date, type, durationMin}` | `id` = `m:` + 1–100 word chars; `type` from `contract/labels.ts`; 1–600 min |
-| `workout_edit` | `{person?, id, excluded}` | `excluded` boolean |
 
-`person` (`A`/`B`, whose data an edit changes; absent = the sender) is allowed only on `metric_set`, `workout_add`,
-`workout_edit` and the `goalWeight` / `moveGoal` prefs (`editTarget`, shared by both sides). The row's `person` column
-is always the sender. Semantics: [design.md](design.md#editing).
+`person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the `goalWeight` / `moveGoal` prefs
+(`eventSubject`, shared by both sides). The row's `person` column is always the sender. There are no health-data events:
+Apple Health is the source of truth ([design.md](design.md#health-data)); the old `metric_set`, `workout_add` and
+`workout_edit` are refused, and rows of them in the sheet are ignored.
 
 ## API
 
@@ -102,7 +100,7 @@ cache (never the unsent queue) and fetch everything. Locked weeks' earnings are 
 `gas/parse.ts`: newline-joined Text lists, one line per day, each optional: `dates` (Shortcuts' date text, English or
 Japanese; only the day is used), `steps`, `exercise_minutes` (→ `exercise_min`), `calories` (→ `move_kcal`),
 `stand_minutes` (→ `stand_min`), `weight` (kg; 0 = none). Other fields are ignored. A list whose length differs from
-`dates` is dropped with a warning; an unreadable line, an activity value above the `metric_set` bounds or a weight
+`dates` is dropped with a warning; an unreadable line, an activity value above `METRIC_BOUNDS` or a weight
 outside 20–300 kg is skipped. A body with none of the fields is `bad_request` (audited as `error`).
 
 Activity metrics are appended only when higher than the highest row so far for (person, date, metric); weight (one
@@ -133,8 +131,8 @@ lands after pairing again is dropped.
 ### Compaction
 
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
-metric) it keeps the best row at the lock, the rows answering each `metric_set` (and just before it), and the overall
-best; per person the newest row. Weight keeps the newest row per day. Views are unchanged; ~90% of rows go.
+metric) it keeps the best row at the lock and the overall best; per person the newest row. Weight keeps the newest
+row per day. Views are unchanged; ~90% of rows go.
 
 ### Write queue
 
@@ -142,24 +140,20 @@ best; per person the newest row. Weight keeps the newest row per day. Views are 
 
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back, `holdEvent`
   moves its time.
-- **Subjects:** a later event on the same subject (a person's day metric, a workout, a spend) never overtakes a held
-  one, so the server keeps the on-screen order.
+- **Subjects:** a later event on the same spend (its `spend_void`) never overtakes a held one, so the server keeps the
+  on-screen order.
 - **Replies:** acked (`ok` or `duplicate`) → into `island.acked`, then out of the queue; acked events stay in the view
   until a snapshot holds their id (given up 5 minutes after the ack). `bad_request` / `too_large` → dropped with a
   message. `unauthorized` → pairing. Other errors keep the event and all after it, with backoff 1 s, 2 s, 4 s … ≤ 5
   min, ±20%.
 - **Retry now:** the `online` event, a sync tap and the re-read after an ack send backed-off events at once (a
   background refresh on becoming visible keeps the backoff).
-- **Locks:** an edit carries `lockAt`. `LiveBackend.send` refuses it within 5 s of the lock and ends its hold 60 s
-  before it (server clock = client + skew); an unsent edit that can no longer land in time is dropped with a message,
-  and an acked one stamped after its lock is reported after the next fetch.
 
 ### Optimistic view
 
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
-row on the server's clock, so read-time rules judge it as the server will; unsent edits that would miss their lock are
-left out. The store recomputes on every change and each minute (not while hidden: a missed minute recomputes once
-on return).
+row on the server's clock, so read-time rules judge it as the server will. The store recomputes on every change and
+each minute (not while hidden: a missed minute recomputes once on return).
 
 ### When it syncs
 
