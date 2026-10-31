@@ -31,5 +31,4 @@
   svg { width: 14px; height: 14px; color: var(--c-coral); flex: none; }
   .spin { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 </style>

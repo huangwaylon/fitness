@@ -2,9 +2,9 @@
   // A ベル amount: the official Bells bag before `1,234 ベル` / `1,234 Bells`.
   //   <Bells bells={n} />                  bag at 1.1em, the unit a little smaller than the digits
   //   <Bells bells={620} signed />         `+620 ベル` (today's flow)
-  // When the amount changes, the digits count up over 600 ms and the bag hops (instant under reduced motion).
+  // When the amount changes, the digits count up over 600 ms and the bag hops.
   import { untrack } from 'svelte';
-  import { Tween, prefersReducedMotion } from 'svelte/motion';
+  import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import LeafCoin from './LeafCoin.svelte';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -23,9 +23,8 @@
   $effect(() => {
     const to = bells;
     if (to === untrack(() => shown.target)) return;
-    const instant = prefersReducedMotion.current;
-    if (!instant) hop++;
-    shown.set(to, { duration: instant ? 0 : 600 });
+    hop++;
+    shown.set(to, { duration: 600 });
   });
   const n = $derived(Math.round(shown.current));
   const sign = $derived(n < 0 ? '−' : signed && n > 0 ? '+' : '');

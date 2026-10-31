@@ -3,12 +3,12 @@
 // the jar, tree shake,
 // chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab
-// is hidden, a sheet is open, or under reduced motion; slows after 3 min without input and stops after
+// is hidden or a sheet is open; slows after 3 min without input and stops after
 // 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and
 // stop() cancels them all, so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
 import { actors, addFx, applyStep, awayFromHome, busy, later as directorLater, lastEvent, setEmote, setMotion } from './director.svelte.ts';
-import { jst, reducedMotion } from '#lib/time/clock.ts';
+import { jst } from '#lib/time/clock.ts';
 
 interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
@@ -92,8 +92,8 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     timer = null;
     if (stopped) return;
     if (document.hidden) return; // asleep until the page shows again (onVis), no polling while hidden
-    // covered by a sheet or reduced motion: no polling; the next touch or key (closing the sheet) wakes it
-    if (ctx.paused() || reducedMotion()) return;
+    // covered by a sheet: no polling; the next touch or key (closing the sheet) wakes it
+    if (ctx.paused()) return;
     if (Date.now() - lastEvent.at < 3_000) return schedule(3_000);
     ctx.visitor?.();
     if (ctx.asleep()) {

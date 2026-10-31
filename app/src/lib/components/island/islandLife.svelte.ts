@@ -10,7 +10,7 @@ import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { goalWalk, meetUp, presence, wander } from './avatar.ts';
 import { goalMoves } from './wander.ts';
 import { on } from '../motion/bus.svelte.ts';
-import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
+import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
 import { localKV, SCENE, writeRaw, type KV } from '#lib/sync/storage.ts';
 
@@ -96,7 +96,7 @@ export class IslandLife {
     // balloon already up: it holds otherwise and resumes where it was. No cap per session.
     let remaining = balloonMs(true);
     $effect(() => {
-      if (!ctx.day() || ctx.covered() || this.hidden || this.balloon || reducedMotion()) return;
+      if (!ctx.day() || ctx.covered() || this.hidden || this.balloon) return;
       const started = performance.now();
       let fired = false;
       const id = setTimeout(() => {

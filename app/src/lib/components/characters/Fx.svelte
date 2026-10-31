@@ -13,10 +13,8 @@
   // sweat drop, zzz, confetti, dust puffs and a glint. A 0×0 anchor: the parent positions it (head
   // top centre for most, the feet for puffs, the temple for sweat). Removes itself via `ondone`.
   //   <Fx kind="hearts" ondone={() => …} />
-  // Transform/opacity only, pointer-events none, aria-hidden. Reduced motion: one static icon that
-  // fades in and out (notes/hearts/sparkles), nothing for the rest.
+  // Transform/opacity only, pointer-events none, aria-hidden.
   import { onMount } from 'svelte';
-  import { reducedMotion } from '#lib/time/clock.ts';
   import { mulberry32 } from '#lib/random.ts';
 
   interface Props {
@@ -29,7 +27,6 @@
   }
   let { kind, spread = '60px', dir = 1, ondone }: Props = $props();
 
-  const reduced = $derived(reducedMotion());
   const CONFETTI = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
   const CONFETTI_N = 16;
   // the same seeded burst every time
@@ -49,7 +46,7 @@
   });
 
   onMount(() => {
-    const ms = reduced ? 1200 : FX_MS[kind];
+    const ms = FX_MS[kind];
     if (!Number.isFinite(ms)) return;
     const t = setTimeout(() => ondone?.(), ms + 60);
     return () => clearTimeout(t);
@@ -61,16 +58,8 @@
   const NOTE2 = 'M10 2 L13 2 L13 15 A4 3.4 0 1 1 10 12 Z M13 2 C16 4 19 5 18 10 C17 7 15 6.5 13 6.5 Z';
 </script>
 
-<span class="fx {kind}" class:reduced style:--spread={spread} style:--dir={dir} aria-hidden="true">
-  {#if reduced}
-    {#if kind === 'notes' || kind === 'hearts' || kind === 'sparkles' || kind === 'confetti'}
-      <svg class="still" viewBox="0 0 24 24" style:width="16px">
-        {#if kind === 'hearts'}<path d={HEART} fill="var(--fx-heart)" />
-        {:else if kind === 'notes'}<path d={NOTE1} fill="var(--fx-note-1)" />
-        {:else}<path d={STAR} fill="var(--fx-spark)" />{/if}
-      </svg>
-    {/if}
-  {:else if kind === 'sparkles'}
+<span class="fx {kind}" style:--spread={spread} style:--dir={dir} aria-hidden="true">
+  {#if kind === 'sparkles'}
     {#each [-0.5, -0.18, 0.18, 0.5] as x, i (i)}
       <svg class="p" viewBox="0 0 24 24" style:--x={x} style:--y={Math.abs(x) * 0.8} style:width="{[10, 14, 12, 8][i]}px" style:animation-delay="{i * 90}ms">
         <path d={STAR} fill="var(--fx-spark)" /><circle cx="12" cy="12" r="3" fill="#fff" />
@@ -161,5 +150,4 @@
   @keyframes puff { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(1.2) translateY(-3px); opacity: 0; } }
   .glint .p { translate: -50% -50%; animation: twinkle 600ms ease-in-out both; }
   @keyframes twinkle { 0%, 100% { transform: scale(0); opacity: 0; } 50% { transform: scale(1); opacity: 1; } }
-  .still { position: absolute; translate: -50% -100%; animation: if-fade-hold 1200ms linear both; }
 </style>

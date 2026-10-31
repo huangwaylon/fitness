@@ -4,7 +4,6 @@
   //   <Emote id="sleepy" hold size={36} />
   // `tail` = which side the little tail points from ('left' | 'right' | 'none').
   //   <Emote id="mark-note" bare />      floating symbol, no cream disc (villagers); `mark-*` are ours
-  // Under reduced motion it fades in for 120 ms instead of popping.
   import OfficialArt from './OfficialArt.svelte';
   import Mark from '../ui/Mark.svelte';
   import { isMark, reactionArt, type EmoteIcon, type MarkId } from '#lib/art.ts';
@@ -64,9 +63,4 @@
   .bubble.none::after { display: none; }
   .ico { width: 77%; height: 77%; display: grid; place-items: center; line-height: 0; }
   .ico :global(.official) { height: 100%; width: 100%; }
-  @media (prefers-reduced-motion: reduce) {
-    .bubble, .float { animation: if-fade-hold 2200ms linear both; }
-    .bubble.hold, .float.hold { animation: fade-in 120ms linear both; }
-  }
-  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 </style>

@@ -182,7 +182,6 @@
   /* the +N pops in over the jar as its coins land, then fades: the balance below is the one resting number */
   .add { font-size: var(--fs-talk); color: var(--leaf-text); animation: add-pop 2.6s var(--ease-soft) calc(var(--d) + .2s) both; }
   @keyframes add-pop { 0% { opacity: 0; transform: translateY(6px) scale(.7); } 12% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
-  @media (prefers-reduced-motion: reduce) { .add { animation: none; } }
   .bal { font-size: var(--fs-talk); }
   .bal small { font: 700 .75em/1 var(--font-ui); margin-left: .25em; color: var(--text-soft); }
   /* three coins fall into the jar, one after another (the week's coins landing) */
@@ -194,5 +193,4 @@
   }
   .drop i:nth-child(2) { left: -16px; } .drop i:nth-child(3) { left: 0; }
   @keyframes coin-drop { 0% { transform: translateY(-40px) scale(.7); opacity: 0; } 20% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(34px) scale(.6); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .drop { display: none; } }
 </style>

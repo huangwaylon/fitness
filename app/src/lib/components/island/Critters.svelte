@@ -21,7 +21,7 @@
   // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`), and a shaken bush (`fromBush`).
   // Cheap: ≤ 1 fish in each water + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
   // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
-  // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
+  // they all leave at once and the countdown holds. Decorative, pointer-only.
   //   ?critter=fish | pond | <fish id> | <pond fish id> | <bug id> (dev or ?demo): one now, staying until caught (the
   //   e2e's hook); ?flea: a tap
   //   on my villager always sends a flea off it.
@@ -29,7 +29,7 @@
   import { onMount, untrack } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
-  import { jst, now, reducedMotion } from '#lib/time/clock.ts';
+  import { jst, now } from '#lib/time/clock.ts';
   import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, POND, SAND, TREE, shoreY, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
@@ -620,7 +620,7 @@
 
   /** A shaken bush lets a bug out now and then (SceneTaps' bush tap). */
   export function fromBush(i: number) {
-    if (bug || reducedMotion()) return;
+    if (bug) return;
     const { month, hour } = jst(now());
     spawnBug(bushBug(month, hour, rand, weather.sky), { x: HEDGE_X[i], y: HEDGE_BASE - BUSH_U * 0.7 });
   }
@@ -828,7 +828,7 @@
   /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
   const forceFlea = typeof location !== 'undefined' && new URLSearchParams(location.search).has('flea') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
   $effect(() => {
-    if (!scene || !enabled() || reducedMotion() || pinned) return;
+    if (!scene || !enabled() || pinned) return;
     let started = performance.now();
     let id: ReturnType<typeof setTimeout>;
     const arm = () => {
@@ -867,7 +867,6 @@
       if (!spawnBug(id, undefined, false) && ++tries < 10) later(() => bugFor(id), 400);
     };
     const go = () => {
-      if (reducedMotion()) return;
       if (!enabled()) return later(go, 300);
       // ?sea=<id> | pearl | (anything else: the usual pick)
       if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined));
@@ -1110,8 +1109,4 @@
   .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; }
   @keyframes swing { 0% { transform: rotate(-70deg); opacity: 0; } 20% { opacity: 1; } 70% { transform: rotate(25deg); opacity: 1; } 100% { transform: rotate(32deg); opacity: 0; } }
 
-  @media (prefers-reduced-motion: reduce) {
-    .sea-life, .air-life { display: none; }
-    .held * { animation-name: fade-in !important; transform: none !important; }
-  }
 </style>

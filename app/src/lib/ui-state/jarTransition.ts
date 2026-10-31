@@ -1,11 +1,10 @@
 // 島 ⇄ wallet transition: a ~360 ms eased zoom from the jar (in the island's HUD, beside the ribbon) into the wallet page (/jar), and back out into
 // the jar on 「◀ 島へ」 (or the browser's back). The View Transitions API (Chrome, iOS Safari 18+) snapshots both
 // pages and the CSS in styles/theme.css zooms them about the jar; without it the arriving page plays the same
-// zoom as a plain CSS entrance (`html[data-enter]`). Reduced motion: a short crossfade (or nothing).
+// zoom as a plain CSS entrance (`html[data-enter]`).
 // The jar's own press squash is HudJar's; it calls `onjar` once the squash has played.
 import { onNavigate } from '$app/navigation';
 import { routeOf } from './paths.ts';
-import { reducedMotion } from '#lib/time/clock.ts';
 
 type Dir = 'in' | 'out';
 
@@ -33,12 +32,10 @@ export function jarTransition(): void {
     const dir: Dir | null = from === '/' && to?.startsWith('/jar') ? 'in' : from?.startsWith('/jar') && to === '/' ? 'out' : null;
     if (!dir) return;
     const root = document.documentElement;
-    const reduced = reducedMotion();
     if (dir === 'in') last = jarOrigin() ?? last;
     setOrigin(root, last);
 
     if (!document.startViewTransition) {
-      if (reduced) return;
       // CSS fallback: the arriving page zooms in (from the jar, or out of it) once it has rendered.
       void nav.complete.then(() => {
         if (dir === 'out') setOrigin(root, (last = jarOrigin() ?? last));
@@ -47,7 +44,7 @@ export function jarTransition(): void {
       }, () => {}); // an aborted navigation rejects: no zoom
       return;
     }
-    root.dataset.vt = reduced ? 'fade' : dir;
+    root.dataset.vt = dir;
     return new Promise<void>((ready) => {
       const vt = document.startViewTransition(async () => {
         ready();

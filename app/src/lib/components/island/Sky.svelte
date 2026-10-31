@@ -80,7 +80,4 @@
   .moon svg { width: calc(var(--glow) / 2.2); height: auto; fill: var(--moon); overflow: visible; }
   .star { position: absolute; height: auto; fill: #FFF6D6; animation: if-twinkle 3s var(--ease-idle) infinite; }
   .star.still { animation: none; opacity: .75; }
-  @media (prefers-reduced-motion: reduce) {
-    .star { animation: none; opacity: .9; transform: none; }
-  }
 </style>

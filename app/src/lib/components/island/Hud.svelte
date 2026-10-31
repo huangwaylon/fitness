@@ -4,7 +4,7 @@
   // when sync is not ok, the sync chip centred under it. When ベル arrive the ribbon counts up (the focus beat).
   // Tap → the island panel slides down from under it (きろく first). The panel is its own chunk, loaded on first open.
   import { tick, untrack, type Snippet } from 'svelte';
-  import { Tween, prefersReducedMotion } from 'svelte/motion';
+  import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import SyncPill from '../ui/SyncPill.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
@@ -30,14 +30,14 @@
     panelOpen = true;
   });
 
-  // Count-up on a rise (instant under reduced motion, on a fall and on first paint), with a beat. The ribbon is never
+  // Count-up on a rise (instant on a fall and on first paint), with a beat. The ribbon is never
   // remounted for it, so a focused ribbon keeps its focus.
   const shown = new Tween(untrack(() => bells), { duration: 900, easing: cubicOut });
   let beat = $state(false);
   let ribbon: HTMLButtonElement | undefined = $state();
   $effect(() => {
     const to = bells;
-    const rise = to > untrack(() => shown.target) && !prefersReducedMotion.current;
+    const rise = to > untrack(() => shown.target);
     shown.set(to, { duration: rise ? 900 : 0 });
     if (rise) void replayBeat();
   });

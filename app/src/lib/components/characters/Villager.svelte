@@ -33,7 +33,7 @@
     head?: boolean;
     /** true = the expression's reaction, or an official reaction icon id; false = none. */
     emote?: boolean | EmoteIcon;
-    /** Idle bob (full body) and motions. Off under reduced motion regardless. */
+    /** Idle bob (full body) and motions. */
     animate?: boolean;
     eager?: boolean;
     /** Island scene: render from the stage director's state for this actor. */
@@ -259,7 +259,4 @@
   .right .fxa.notes { left: 70%; }
   .fxa.confetti { top: 0; }
 
-  @media (prefers-reduced-motion: reduce) {
-    .body.bob, .body.sleep, .body.walk, .face.turning, .face.turning .body, .body:global([data-act]), .shadow:global([data-act]) { animation: none; }
-  }
 </style>

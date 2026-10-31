@@ -121,10 +121,4 @@
   @keyframes out { to { transform: translateY(-120%); opacity: 0; } }
   @keyframes down-out { to { transform: translateY(120%); opacity: 0; } }
   @keyframes in { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) {
-    .banner { animation: fade 120ms both; }
-    .banner.leaving, .banner.undo.leaving { animation: fade-out 120ms both; }
-    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes fade-out { to { opacity: 0; } }
-  }
 </style>

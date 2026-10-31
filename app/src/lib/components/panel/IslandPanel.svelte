@@ -175,7 +175,6 @@
   /* a pushed level slides in from the right (design.md "Navigation") */
   .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .page { animation: none; } }
 
   /* one section per topic: a small heading over its rows */
   .sec { display: grid; gap: 8px; }

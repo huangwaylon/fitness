@@ -155,13 +155,6 @@
   :root { --side: 14px; }
 }
 
-/* ---------- reduced motion = static ---------- */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --dur-tap:0ms; --dur-quick:0ms; --dur-base:120ms; --dur-pop:120ms; --dur-emote:1600ms;
-    --ease-bounce: ease; --ease-squash: ease;
-  }
-}
 
 /* ---------- chrome keyframes (prefix if-; if-pop / if-hop live in the Builder A block) ---------- */
 /* letter reveal: each glyph */
@@ -346,7 +339,6 @@
   0% { transform: scale(0); opacity: 0; } 10% { transform: scale(1.15); opacity: 1; } 16.4% { transform: none; }
   90.9% { transform: none; opacity: 1; } 100% { transform: scale(.8); opacity: 0; }
 }
-@keyframes if-fade-hold { 0% { opacity: 0; } 5.5%, 94.5% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
 
 /* Jar ⇄ ごほうび shared element: the HUD's jar carries view-transition-name: jar (<Jar name="jar">);
@@ -355,4 +347,3 @@
 ::view-transition-group(jar) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 ::view-transition-old(jar), ::view-transition-new(jar) { animation-duration: 320ms; height: 100%; }
 :root[data-vt="out"]::view-transition-group(jar), :root[data-vt="out"]::view-transition-old(jar), :root[data-vt="out"]::view-transition-new(jar) { animation-duration: 280ms; }
-:root[data-vt="fade"]::view-transition-group(jar) { animation-duration: 150ms; }

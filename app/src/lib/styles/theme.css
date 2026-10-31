@@ -3,12 +3,6 @@
    Depth is the 4px lip (--sh-lip) and --sh-float on floating layers only. Tappable things add an edge
    (a 2px outline + the lip in one >= 3:1 colour: --sh-ctl / --sh-obj, tokens.css "button tiers"). */
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
-    animation-delay: 0s !important; transition-duration: 120ms !important;
-  }
-}
 
 * { box-sizing: border-box; }
 /* The document is the scroller of the
@@ -93,9 +87,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
-@media (prefers-reduced-motion: reduce) {
-  .btn:active:not(:disabled, [aria-disabled='true']) { transform: none; filter: brightness(.95); }
-}
 
 /* ---------- ✎ (きろく): a 44px cream object with the brown edge, the pencil in ink ---------- */
 .pen-btn {
@@ -118,7 +109,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* ---------- 島 ⇄ ごほうび (ui-state/jarTransition.ts) ----------
    The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).
    Around it the pages crossfade with a slight push about the jar (--vt-x / --vt-y): in 320ms, back 280ms,
-   cubic-bezier(.4,0,.2,1); the Jar page's blocks rise 16px with a 40ms stagger. Reduced motion: 150ms fade. */
+   cubic-bezier(.4,0,.2,1); the Jar page's blocks rise 16px with a 40ms stagger. */
 :root[data-vt="in"]::view-transition-old(root), :root[data-vt="in"]::view-transition-new(root),
 :root[data-vt="out"]::view-transition-old(root), :root[data-vt="out"]::view-transition-new(root) {
   transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); mix-blend-mode: normal;
@@ -129,7 +120,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 :root[data-vt="in"]::view-transition-new(root) { animation-name: vt-fade-in; }
 :root[data-vt="out"]::view-transition-old(root) { animation-name: vt-fade-out; z-index: 1; }
 :root[data-vt="out"]::view-transition-new(root) { animation-name: vt-pull-in; }
-:root[data-vt="fade"]::view-transition-group(root) { animation-duration: 150ms; }
 @keyframes vt-push-out { to { transform: scale(1.12); opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
 @keyframes vt-fade-out { to { opacity: 0; } }
@@ -142,6 +132,3 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 :root[data-enter="in"] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); animation: vt-grow 320ms cubic-bezier(.4, 0, .2, 1) both; }
 :root[data-enter="out"] .page > main { animation: vt-fade-in 280ms cubic-bezier(.4, 0, .2, 1) both; }
 @keyframes vt-grow { from { transform: scale(.6); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  :root[data-enter] .page > main, :root[data-vt] .jar-screen * { animation: none !important; }
-}

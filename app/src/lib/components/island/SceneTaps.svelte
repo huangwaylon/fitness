@@ -15,11 +15,10 @@
   // Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4 flourishes at
   // once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
   //   ?shower (dev or ?demo): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
-  // Reduced motion: a soft glow at the tap, no movement. Decorative and pointer-only (aria-hidden, no focus stops).
+  // Decorative and pointer-only (aria-hidden, no focus stops).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { reducedMotion } from '#lib/time/clock.ts';
   import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
   import { BEDS, BED_X, BED_ROWS, BUSH_U, FLOWER_U, HEDGE_BASE, HEDGE_X, HORIZON_U, type Tod } from './scene.ts';
@@ -63,7 +62,7 @@
   }
   let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false }: Props = $props();
 
-  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass' | 'glow';
+  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
   interface Fx {
     id: number;
     kind: Kind;
@@ -160,7 +159,7 @@
 
   /** A tap on my villager (IslandScene's button): now and then a flea hops off it (Critters). */
   export function villagerTap(el: Element) {
-    if (enabled() && !reducedMotion()) critters?.fromVillager(el);
+    if (enabled()) critters?.fromVillager(el);
   }
 
   function onDown(e: PointerEvent) {
@@ -172,9 +171,8 @@
     const r = stage.getBoundingClientRect();
     const k = 390 / r.width; // px → u (the stage keeps its 390 : 360 aspect)
     const x = e.clientX - r.left, y = e.clientY - r.top;
-    const calm = reducedMotion();
     // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
-    if (!calm && critters?.tap(e.clientX, e.clientY)) return;
+    if (critters?.tap(e.clientX, e.clientY)) return;
     // a visitor on the beach answers with a line (K.K. with a song); then the day's finds (a shell, a fragment, the
     // bottle, a dig spot) and the island's care (a weed to pull, the rock by the hedge)
     // group stretching's tape deck (when it's out: small and exact, before the visitor's wider reach)
@@ -185,9 +183,8 @@
     if (finds?.tap(e.clientX, e.clientY)) return;
     if (care?.tap(e.clientX, e.clientY)) return;
     // the sky ends at the scene's horizon, which on a tall phone rises above the stage's own (open sea behind the island)
-    if (y < horizonPx(stage, r)) return sky(e, r, x, y, calm);
+    if (y < horizonPx(stage, r)) return sky(e, r, x, y);
     const hit = hitStage(x * k, Math.max(y * k, HORIZON_U));
-    if (calm) return spawn({ kind: 'glow', x, y }, 450);
     switch (hit.kind) {
       case 'bush': {
         // my villager walks up to the hedge and gives the bush a shake (avatar.ts), then it rustles
@@ -244,13 +241,12 @@
     return Number.isFinite(hy) && Number.isFinite(st) ? hy - st : HORIZON_U * (r.width / 390);
   }
 
-  function sky(e: PointerEvent, r: DOMRect, x: number, y: number, calm: boolean) {
+  function sky(e: PointerEvent, r: DOMRect, x: number, y: number) {
     const s = scene!;
     const orb = s.querySelector('.orb');
     const o = orb?.getBoundingClientRect();
     if (orb && o && near(o, e.clientX, e.clientY, 0.7)) {
       const ox = o.left + o.width / 2 - r.left, oy = o.top + o.height / 2 - r.top;
-      if (calm) return spawn({ kind: 'glow', x: ox, y: oy }, 450);
       jiggle(orb, POP, 600);
       if (night) {
         spawn({ kind: 'moon', x: ox, y: oy });
@@ -262,7 +258,6 @@
     for (const c of s.querySelectorAll('.cloud')) {
       const b = c.getBoundingClientRect();
       if (!near(b, e.clientX, e.clientY)) continue;
-      if (calm) return spawn({ kind: 'glow', x, y }, 450);
       jiggle(c, SQUISH, 620);
       // the wisps break off the cloud's edge on the tapped side (white on white would vanish inside it)
       const dir = e.clientX < b.left + b.width / 2 ? -1 : 1;
@@ -280,7 +275,6 @@
     }
     if (skyTap?.(e.clientX, e.clientY)) return;
     if (!night) return;
-    if (calm) return spawn({ kind: 'glow', x, y }, 450);
     spawn({ kind: 'star', x, y });
     sceneSfx('star');
   }
@@ -490,8 +484,6 @@
         {#each [[-14, -10, 0], [12, -16, 1], [2, 8, 2]] as [dx, dy, i] (i)}
           <svg class="twinkle wishspark" viewBox="0 0 24 24" style:--dx="{dx}px" style:--dy="{dy}px" style:--i={i}><path d={STAR} /></svg>
         {/each}
-      {:else}
-        <i class="dot"></i>
       {/if}
     </span>
   {/each}
@@ -702,12 +694,4 @@
   .land-spark { left: calc(var(--dx) - 16 * var(--su)); top: calc(var(--dy) - 26 * var(--su)); animation-delay: 1.55s; }
   .land-spark.two { left: calc(var(--dx) + 6 * var(--su)); top: calc(var(--dy) - 18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
 
-  /* reduced motion: a soft glow where you tapped, nothing moves */
-  .dot {
-    left: 0; top: 0; width: 22px; height: 22px; margin: -11px; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(255, 255, 240, .75), transparent); animation: print .45s ease-out both;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .fx * { animation-name: print !important; transform: none !important; }
-  }
 </style>

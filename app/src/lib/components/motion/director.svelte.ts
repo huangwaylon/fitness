@@ -4,7 +4,6 @@
 // and a new step on an actor preempts whatever it was doing.
 import type { EmoteIcon } from '#lib/art.ts';
 import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
-import { reducedMotion } from '#lib/time/clock.ts';
 import { cue } from '#lib/sound/cues.ts';
 
 /** Which way an actor looks: as drawn ('home'), toward the middle of the island ('in'), or left / right. */
@@ -136,7 +135,7 @@ export function busy(id: ActorId): boolean {
 
 export function setMotion(id: ActorId, m: Motion | null, ms = m ? MOTION_MS[m] : 0) {
   const a = actors[id];
-  a.motion = reducedMotion() ? null : m;
+  a.motion = m;
   a.motionN++;
   if (m) {
     const n = a.motionN;
@@ -422,18 +421,14 @@ export function faceToward(id: ActorId, x: number) {
   actors[id].face = toward(id, x);
 }
 
-/** Night naps (R13): asleep = slow breath + a zzz loop (reduced motion: a held zzz mark). */
+/** Night naps (R13): asleep = slow breath + a zzz loop. */
 export function setAsleep(id: ActorId, asleep: boolean) {
   const a = actors[id];
   if (a.asleep === asleep) return;
   a.asleep = asleep;
   if (asleep) {
-    // the zzz loop is the sleep sign; under reduced motion a held (static) zzz mark instead
-    if (reducedMotion()) setEmote(id, 'sleepy', true);
-    else {
-      setEmote(id, 'dozing');
-      addFx(id, 'zzz');
-    }
+    setEmote(id, 'dozing');
+    addFx(id, 'zzz');
   } else if (a.emoteHold) {
     setEmote(id, null);
   }

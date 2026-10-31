@@ -37,7 +37,4 @@
   }
   /* one tile per loop, so it wraps seamlessly */
   @keyframes sea-drift { from { transform: translateX(0); } to { transform: translateX(var(--tile-w)); } }
-  @media (prefers-reduced-motion: reduce) {
-    .glints { animation: none; }
-  }
 </style>

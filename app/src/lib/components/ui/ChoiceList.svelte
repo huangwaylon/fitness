@@ -62,5 +62,4 @@
   .sel .cur { opacity: 1; transform: none; animation: nudge 800ms var(--ease-idle) infinite; }
   @keyframes nudge { 0%, 100% { translate: 0; } 50% { translate: 3px; } }
   .choice:active { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
-  @media (prefers-reduced-motion: reduce) { .sel .cur { animation: none; } }
 </style>

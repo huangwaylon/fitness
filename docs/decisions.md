@@ -285,7 +285,7 @@ drag or virtual stick, villagers wandering on their own) walk-then-act keeps eve
 already do something and a stick fights the stage and the sheets. Kept snappy: 240 u/s, at most 0.9 s, no walk over
 1.2 s, and the outcome is decided at the tap, so the walk is only cosmetic and a timing game (the bite, the wasps)
 never waits for it. Spots are measured so a standing villager never covers a control. Transitions only, no rAF; a sheet
-stops it. It always animates, reduced motion or not (user). The partner's villager is never driven from this phone: it
+stops it. The partner's villager is never driven from this phone: it
 goes about on its own (points of interest, following mine after 8 s away, a chat side by side, its tree when its
 person meets a goal), one villager out at a time, because NH's villagers wander and a second avatar would make the
 other person's taps matter on my phone.
@@ -329,7 +329,7 @@ For fun, frequent and NH-faithful (user), and never paying: no ベル from any o
   evening both of us meet all four goals (once a day per phone, from 18:00), and a tap during a show sends one more.
   They open in the sky and the open sea behind the island, each whole burst clear of every control; the HUD fills the
   middle of a short sky, so bursts there are small and the big ones open low over the water as in NH.
-- **No reduced-motion branches** in these (user decision: always animate); all of it is transform and opacity.
+- All of it is transform and opacity.
 
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`

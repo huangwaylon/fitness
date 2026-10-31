@@ -2,13 +2,12 @@
   // NH dialogue box: wobbly cream box (a game object: cream at every time of day), tilted yuzu nameplate that pops in after the box,
   // letter-by-letter reveal at 33 ms/char (tap to finish). The box holds --talk-lines lines (2; 1 on compact screens)
   // and never grows. しずえ stands on the left with her feet on the bubble's baseline (official art by pose; the season
-  // picks her outfit), the tail pointing at her. Reduced motion: text appears at once.
+  // picks her outfit), the tail pointing at her.
   // The real text lives in an aria-live node. The typing is silent (the villagers don't speak).
   import { t } from '#lib/i18n/index.ts';
   import Host from '../characters/Host.svelte';
   import { hostIsNook } from '../characters/hostWho.ts';
   import { hostTap } from '../motion/director.svelte.ts';
-  import { reducedMotion } from '#lib/time/clock.ts';
   import type { HostPose } from '#lib/art.ts';
 
   interface Props {
@@ -29,9 +28,6 @@
 
   const TYPE_MS = 33;
   const PAUSE_MS = 180;
-  /** Live: turning reduced motion on mid-line finishes the line at once. */
-  const reduced = $derived(reducedMotion());
-
   /** Glyphs with their reveal delay (ms). */
   const glyphs = $derived.by(() => {
     let at = 0;
@@ -47,7 +43,7 @@
 
   // Restart typing whenever the line changes.
   $effect(() => {
-    if (reduced || !text) {
+    if (!text) {
       typing = false;
       return;
     }
@@ -130,8 +126,5 @@
   .spk {
     flex: none; display: grid; justify-items: center; align-items: end; height: var(--h); min-width: 56px; margin-bottom: 4px;
     appearance: none; border: 0; padding: 0; background: none; cursor: pointer; border-radius: var(--r-btn);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .bubble, .who { animation: none; }
   }
 </style>

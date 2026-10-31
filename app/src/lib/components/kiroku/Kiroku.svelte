@@ -157,7 +157,6 @@
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .lvl { animation: none; } }
   /* a ずかん page pins its head and scrolls its own grid: the level fills the panel body, which holds still (IslandPanel) */
   .kiroku.fill { flex: 1; min-height: 0; display: flex; flex-direction: column; padding-bottom: 0; }
   .fill .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; }
