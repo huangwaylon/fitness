@@ -540,7 +540,7 @@ villagers' feet; measured clear of every control, the rock, a dig spot and a mus
 from it now and then. A tap (a scene item like the visitors, a 44px reach) plays its tape (`stretch`, an original
 ~6 s march on a soft piano, a jingle: the music ducks) and both villagers, and the visitor if one is out and awake
 (Gulliver sleeps through it), do three of NH's stretches together on one beat: Posture Warm-Up, Side Bends, Jump (2 s
-each, `if-warmup`, `if-sidebend`, `if-leap`); a villager out on a stroll walks home first, a sleeper joins in and dozes
+each, `if-warmup`, `if-sidebend`, `if-leap`); a villager out on a walk walks home first, a sleeper joins in and dozes
 off again, event reactions wait for the end (`holdEvents`). ♪ rise from the deck while it plays; then a note over each
 villager and the deck goes for the day (once a day per phone). No ベル. `?stretch` (dev or `?demo`) brings it out.
 
@@ -573,24 +573,28 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
 - **Reactions** (`REACTIONS`, R1–R19): events such as first open, the partner's day growing, high-fives, a goal met,
   all four goals met, taps, waking, a low week (Thu–Sat), a sync problem, the harvest. They never fire
   on first render; pages `emit(…)` (`motion/bus.svelte.ts`).
-- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (a look around, a wiggle, a stroll, a glance up at the jar in the HUD, …) (しずえ ≤ every 20–30 s), no
+- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (a look around, a wiggle, a wander off, a glance up at the jar in the HUD, …) (しずえ ≤ every 20–30 s), no
   emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden, covered or under reduced motion.
+  The partner's outings ([Walking](#walking)) ride on its ticks.
 - **Reduced motion:** no loops, hops or dances; emotes fade in; dialogue appears at once. Walking is the exception
   (user): it always animates.
 
 ### Walking
 
-`island/walkGraph.ts` (pure), `island/avatar.ts`, `motion/director.svelte.ts` `walkTo`, `e2e/movement.spec.ts`.
+`island/walkGraph.ts`, `island/wander.ts` (pure), `island/avatar.ts`, `motion/director.svelte.ts` `walkTo`,
+`e2e/movement.spec.ts`.
 
 - **My villager is me:** on each phone a tap on something to do walks my villager there first, then the action plays
   where it stands: a bush (a shake), a flower (the watering can in hand), the rock (the shovel), a weed, a dig spot
   (the shovel), a fallen fruit, a branch, a mushroom, a shell, a fragment or the bottle, a tree to shake, the sea
-  (down to the beach, the rod in hand, then the cast), a bug (the net in hand; the bug holds still until the swing),
-  a visitor (they speak once it's there). With the tool in hand the scene's floating one stays away.
+  (down to the beach, the rod in hand, then the cast), bubbles (down to the water's edge, a hop, then the dive), a bug
+  (the net in hand; the bug holds still until the swing; a tarantula or a scorpion once it has settled), a mole
+  cricket's mound (the shovel), a dangling bagworm or spider (the net), a visitor (they speak once it's there). With the
+  tool in hand the scene's floating one stays away. A flea is tapped off my villager itself: no walk.
 - **Snappy:** 240 u/s, a walk clamped to 150–900 ms; one that would take over 1.2 s (or with nowhere clear to stand)
   isn't made: the villager turns to it and the action plays as before. The outcome is decided at the tap (a find is in
-  the ずかん at once); only what shows waits for the walk. The reel and the wasps never walk (their timing is the game);
-  the villager just turns.
+  the ずかん at once); only what shows waits for the walk. The reel, a dive's chase, a tarantula's rear and charge
+  and the wasps never walk (their timing is the game); the villager just turns.
 - **Where it stands:** around the target at 26u, else 40u (a can or a net also across a bed, 74–96u, level with it),
   the nearest by walking; a spot counts only if the standing figure (0.45 × 0.92 of its height) covers no control and
   no canopy, measured, and stays on screen. Bubbles and plates are placed against the villager's live box (the held-up
@@ -602,7 +606,7 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
   villager's head (`if-holdup`: a squash, a rise, held; the item rises and bobs) while its plate reads.
 - **Walk mask:** the lawn (inside the plateau, in front of the hedge), the front beach, and the low front of the cliff
   between the homes as the way down; obstacles are the trunks, the beds and the rock (grown by an 8u footprint).
-  ~20 named nodes (homes, beside and behind each tree, mid-lawn, the plaza, the rock, the ramp, the shore) built from
+  ~20 named nodes (homes, beside and behind each tree, mid-lawn, centre stage, the rock, the ramp, the shore) built from
   the scene's constants; a straight segment when it's clear, else the shortest route through the nodes (a visibility
   graph, no nav-mesh). `walkGeo(extra)` takes more zones, obstacles and nodes (a back strip, a pond, a museum door).
 - **Rendering:** the actor's feet at `translate(x, y)` u, one CSS transition of `transform` per segment (duration =
@@ -610,8 +614,24 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
   render looks as drawn; `NO_MIRROR` ones lean instead of flipping). Depth from the feet's y (`depthZ`): behind the
   trees 27, between the trees and the beds 47, among the beds 50, the front row 51, the beach 53; set at a segment's
   start toward the camera and at its end away from it; in one band the nearer is in front. The walk cycle is
-  `if-walkbounce` (a ±2° rock and a squash at each footfall; quick steps at 360 ms, a stroll's at 640), a dust puff
+  `if-walkbounce` (a ±2° rock and a squash at each footfall; quick steps at 360 ms, a wander's at 640), a dust puff
   every other step.
+- **The villagers' own outings:** the partner's villager goes about the island: on an idle tick (at most one per 9 s,
+  about every other tick) it walks at 90 u/s to a point of interest, 1–3 of them, staying 3–5 s at each, then home:
+  beside or behind either tree (a stretch), the rock (a nod), the shore (it stares out to sea), centre stage (left to a
+  visitor while one is out, with the shore in front of it), and any spot a later layout adds as a walk node (a
+  pondside, a museum door). Mine does the same only when I've left the island alone for 2 min. One villager leaves
+  home at a time; nothing starts after 10 min without input (idle life stops). `?wander` (dev or `?demo`) sends the
+  partner off at once.
+- **Follow and chat:** when mine has been away over 8 s (a line out, one tap after another) the partner comes over and
+  stands beside it; two villagers standing within 64u chat (face each other, a nod, a laugh: idle life's chat). When
+  mine heads home, a partner who came along does too.
+- **Goals:** a fruit newly met walks that person's villager briskly to their own tree (as the fruit falls), and its
+  reaction (R6, or R8 for all four) plays there; ふたりでぜんぶ (both all four for the first time) brings both to the
+  middle of the lawn, a step either side of centre stage's column, for a high-five (both hop with sparkles, one
+  `emote-joy`). Then they wander home.
+- **Footsteps:** a quiet step under a walker by the ground under its feet (`footstep-grass`, `-sand`, `-snow` in
+  winter: the scenery's step sounds at 0.3), at most one per 320 ms; world cues, so silent under a sheet.
 
 ## Chrome and tokens
 

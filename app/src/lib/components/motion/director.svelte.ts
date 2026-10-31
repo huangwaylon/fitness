@@ -388,25 +388,6 @@ export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): numbe
   return total;
 }
 
-/** Walk leg length and the wait at the far end of a stroll. */
-const WALK_MS = 1600;
-const WALK_WAIT_MS = 1200;
-
-/** A walk (stroll): out `dx` stage units toward the middle, wait, and back (design.md "Motion"). */
-export function stroll(id: 'mine' | 'partner', dx: number, onWait?: () => void) {
-  const a = actors[id];
-  const [hx, hy] = a.home;
-  const dir = id === 'mine' ? 1 : -1;
-  walkTo(id, [[hx + dir * dx, hy]], {
-    ms: WALK_MS,
-    then: () => {
-      onWait?.();
-      later(id, WALK_WAIT_MS, () => walkTo(id, [[hx, hy]], { ms: WALK_MS, face: 'home' }));
-    }
-  });
-  a.busyUntil = Date.now() + WALK_MS * 2 + WALK_WAIT_MS + 200;
-}
-
 /** A tool out for `ms` (my villager's watering can, shovel, net or rod). */
 export function useTool(id: ActorId, tool: Tool | null, ms = 900) {
   const a = actors[id];

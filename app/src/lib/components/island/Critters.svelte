@@ -239,6 +239,8 @@
 
   /** My villager is walking down to the beach to cast (a tap meanwhile does nothing). */
   let casting = false;
+  /** …or to dive at the bubbles. */
+  let diveWalk = false;
   function castAt(x: number, y: number) {
     const f = fish!;
     // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
@@ -558,6 +560,7 @@
       if (b.flight === 'stalk' && b.stalk) {
         // NH's tarantula: it rears up when it's come at, charges if you keep coming; settled again, it can be netted
         const act = stalkTap(b.stalk, swing);
+        if (act === 'rear' || act === 'charge') turnTo(bx); // no walk: its mood is the game
         if (act === 'rear') {
           b.stalk = 'rear';
           later(() => bug === b && b.stalk === 'rear' && (b.stalk = 'settled'), REAR_MS);
@@ -622,13 +625,22 @@
     const reach = Math.max(S?.DIVE_U ?? 30, 22 * g.k); // a 44px target at least
     const d = diving;
     if (d?.chase && !d.gone && performance.now() <= d.until && Math.hypot(x - d.x, y - d.y) <= reach * 1.2) {
+      turnTo(d.x); // no walk: the chase is a timing game
       sceneSfx('splash');
       caught(d);
       return true;
     }
     const spot = bubbles;
     if (spot && S && hitStage(x, y).kind === 'sea' && Math.hypot(x - spot.x, y - spot.y) <= reach) {
-      diveAt(spot);
+      if (diveWalk) return true;
+      // my villager walks down to the water's edge (avatar.ts), hops and dives; the chase after it never walks
+      diveWalk = true;
+      const edge = [Math.round(clamp(spot.x, BEACH.x0 + 4, BEACH.x1 - 4)), BEACH.y1 - 1] as const;
+      const { ms } = approach(spot.x, spot.y, { spot: edge, motion: 'hop' });
+      later(() => {
+        diveWalk = false;
+        if (bubbles === spot) diveAt(spot);
+      }, ms);
       return true;
     }
     const f = fish;

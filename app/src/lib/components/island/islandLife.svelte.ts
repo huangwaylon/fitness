@@ -7,6 +7,8 @@ import { RING_FRUITS } from '#lib/config/rules.ts';
 import { dayScore, todayPct } from './progress.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
+import { goalWalk, meetUp, wander } from './avatar.ts';
+import { goalMoves } from './wander.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
@@ -130,6 +132,11 @@ export class IslandLife {
 
   #diff(p: WeekView, v: WeekView): void {
     if (v.highFivesToday > p.highFivesToday) return this.later(() => react('R5'), 700);
+    // the villagers go to it (avatar.ts): ふたりでぜんぶ brings both to the middle for a high-five; a fruit met walks that
+    // person's villager to their tree, and its reaction plays there
+    const moves = goalMoves(p, v);
+    if (moves.meet && meetUp()) return;
+    const walk = moves.walk ? goalWalk(moves.walk) : 0;
     for (const who of ['mine', 'partner'] as const) {
       const pid = who === 'mine' ? v.me : v.partner;
       const a = p.people[pid].rings, b = v.people[pid].rings;
@@ -137,10 +144,11 @@ export class IslandLife {
       const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
       const stagedUp = RING_FRUITS.filter((f) => stage(todayPct(b[f])) !== stage(todayPct(a[f])) && todayPct(b[f]) > todayPct(a[f]));
       const swap = who === 'partner';
-      if (newlyRipe.length && ripeNow.length === RING_FRUITS.length) return react('R8', swap);
+      const at = (r: ReactionId) => (walk ? this.later(() => react(r, swap), walk) : react(r, swap));
+      if (newlyRipe.length && ripeNow.length === RING_FRUITS.length) return at('R8');
       if (newlyRipe.length) {
         this.celebrate[pid] = { fruit: newlyRipe[0], n: ++this.#celebrateN };
-        return react('R6', swap);
+        return at('R6');
       }
       if (stagedUp.length) return react('R7', swap);
     }
@@ -191,6 +199,7 @@ export class IslandLife {
       asleep: () => actors.mine.asleep && actors.partner.asleep,
       night: ctx.night,
       scores: () => { const v = ctx.view(); return [dayScore(v.people.A), dayScore(v.people.B)]; },
+      wander,
       treeShake: (id) => {
         const v = ctx.view();
         this.shakeN[id === 'mine' ? v.me : v.partner]++;
@@ -200,6 +209,8 @@ export class IslandLife {
     // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
     const q = new URLSearchParams(location.search);
     if (q.has('balloon') && (import.meta.env.DEV || q.has('demo'))) this.later(() => (this.balloon = true), 400);
+    // `?wander` (dev or ?demo only): the partner sets off on an outing now (the e2e's hook)
+    if (q.has('wander') && (import.meta.env.DEV || q.has('demo'))) this.later(() => wander('partner'), 3200); // after the opening beats
 
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);
