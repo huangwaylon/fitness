@@ -526,15 +526,29 @@ breaks: NH's own catch lines carry the game's; each part of a dialogue starts a 
 page). A tap on the box finishes the page at once, the next turns it, and the last closes it; a small orange ▼ bobs at
 its bottom-right (0.6 s) only while another page follows. Left alone a finished page turns after 6 s and the last
 closes after a read's length. The balloon's name tag sits tilted on its top-left in the speaker's own NH colour (the
-roster's), its ink picked to read on it. The box is a button (`data-sfx` tick), placed clear of every control; no
-voices or blips. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction, a
+roster's), its ink picked to read on it. The box is a button (`data-sfx` tick); no voices or blips.
+
+Where it stands, one rule for every speaker (my villager, the visitors, Blathers at the museum; `placement.ts`
+`placeBy`, `e2e/bubbles.spec.ts`): by the speaker, its tail pointing at them, at most 40px off (beyond the tail's
+12px): above the head when there's room, else beside it (the tail on its side, at the upper part of the figure), else
+below the feet, sliding along so the tail can still reach. What counts as room gives way step by step, nearness
+doesn't: clear of every control, else over the museum (a building that is also a control), both only within 16px so
+the tail stays at the speaker; else over the island's things (the trees, the fruit rows) but not the villagers; else
+over them too. Never over the HUD (the ribbon, the
+jar, the sync chip, the panel's controls), しずえ's box, a tree's popup or another overlay showing; never over the
+speaker or what floats with it (my villager's ♪); never off the scene. Only when nothing near fits at all does it stand
+further off. It follows the speaker while it talks (a move that lasts 0.6 s, so a hop doesn't shake it) and closes if
+they go; my villager hushes as it sets off walking. (A visitor's balloon used to float above the museum, 100px+ off
+their head: the search took the first spot clear of every control at any distance, before letting the museum sit
+under a balloon by the head.) Plates and captions (`place`: the catch plate, the wish, K.K.'s 「♪ title」) keep clear
+of every control, above the point then below, nearest first, over the museum before further off. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction, a
 first find adds 「ずかんに のったよ！」 after the catch line. A line may end on NH's answers (Jack's trick or treat, [Halloween](#halloween)).
 
 ### Villager chats
 
 `island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop (R9) and says a line in
-NH's speech balloon (cream, a nameplate with my よびな, a tail to the speaker; 33 ms a glyph; ≥ 2.8 s), as close above
-(else below) the head as fits, clear of every control and of its own ♪. The partner's tap still opens their card.
+NH's speech balloon (cream, a nameplate with my よびな, a tail to the speaker; 33 ms a glyph; ≥ 2.8 s), above the head
+and its own ♪ (where: [Dialogue](#dialogue)). The partner's tap still opens their card.
 Lines follow the villager's NH personality (lazy, peppy, smug, cranky, normal, jock, snooty, sisterly: 12 each; special
 characters 10 of their own), 3 in 10 about the day instead (the morning, the night, today's goals so far: 「目標 2つ
 クリア！ あと すこし！」, never ベル), a sleepy one when the tap wakes them; never the same line twice in a row. Kid-friendly,

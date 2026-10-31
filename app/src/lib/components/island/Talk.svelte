@@ -4,9 +4,12 @@
   // speaker's own colour (the villager's NH colour) at its top-left. The text types in at 33 ms a glyph, two lines a
   // page; a tap on the box finishes the page at once, the next turns the page (a ▼ bobs at the bottom-right while one
   // follows), and on the last page a tap closes it. Left alone, a finished page turns after 6 s and the last closes
-  // after a read's length. One at a time; a new line replaces the last. It sits as close above (else below) the speaker
-  // as it can, inside the scene's safe area and clear of every control, a tree's popup, しずえ's box and the speaker
-  // (placement.ts); with no room it's skipped. The box is sized for its longest page, so it never jumps between pages.
+  // after a read's length. One at a time; a new line replaces the last. It stands by its speaker, the tail pointing at
+  // them (placement.ts placeBy, NH's rule for every speaker): above the head when there's room, else beside, else below,
+  // at most NEAR px off, never over the HUD, しずえ's box, a tree's popup, the speaker or off the safe area (what gives
+  // way first: the museum, then the island's things, then the villagers); it follows the speaker while it talks and
+  // closes if they go (my villager hushes as it sets off walking). The box is sized for its longest page, so it never
+  // jumps between pages.
   // A line may end on a choice (NH's answers: Jack's 「キャンディを あげる」): its answers show in a row at the balloon's
   // foot (the box keeps their room on every page) once the last page has typed; until one is picked a tap on the box
   // does nothing (left alone 15 s, it closes unanswered).
@@ -14,16 +17,17 @@
   // `ondone` runs once the box closes (tapped away, answered or read through; at once when there's no room for it),
   // not when a new line replaces it.
   import { tick } from 'svelte';
-  import { place, type Box } from './placement.ts';
+  import { TAIL_IN, placeBy, type Box, type Side } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
 
-  interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; below: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number }
+  interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; side: Side; follow: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number }
   let said = $state<Said | null>(null);
   let pg = $state<PagerState>({ pages: [''], page: 0, shown: 0 });
   let el = $state<HTMLElement>();
   let menu = $state<HTMLElement>();
+  let layer = $state<HTMLElement>();
   /** The answers show once the last page has typed. */
   const asking = $derived(!!said?.choices.length && pg.page >= pg.pages.length - 1 && !typing(pg));
   let seq = 0;
@@ -35,10 +39,15 @@
     clearInterval(typer);
     clearTimeout(idle);
   };
-  $effect(() => stop);
+  /** Stop everything, the following too. */
+  const halt = () => {
+    stop();
+    clearInterval(watcher);
+  };
+  $effect(() => halt);
   /** Close the box and run its `ondone`. */
   function close() {
-    stop();
+    halt();
     said = null;
     const d = done;
     done = undefined;
@@ -90,18 +99,19 @@
 
   /** Close the balloon (my villager set off walking: it only speaks standing still). */
   export function hush() {
-    stop();
+    halt();
     said = null;
   }
 
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
-   *  head). `avoid`: more boxes to keep clear of (client px), e.g. the speaker's emote; `colour`: the name tag's. */
+   *  head). `avoid`: what floats with the speaker (client px, e.g. its emote): kept clear, moved along as the speaker
+   *  moves, and the balloon stands off it as off the speaker; `colour`: the name tag's. */
   export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
-    stop();
+    halt();
     const n = ++seq;
     done = o.ondone;
     pg = { pages: paginate(parts), page: 0, shown: 0 };
-    said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, below: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0 };
+    said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, side: 'top', follow: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0 };
     await tick();
     // the answers' row: measured first, then the balloon keeps its room at its foot
     const m = menu?.getBoundingClientRect();
@@ -109,31 +119,63 @@
       Object.assign(said, { mw: m.width, mh: m.height });
       await tick();
     }
-    const stage = scene?.querySelector('.stage')?.getBoundingClientRect();
-    const box = el?.getBoundingClientRect(), src = from.getBoundingClientRect();
-    if (!scene || !stage || !box || said?.n !== n) return;
-    const sx = src.left + src.width / 2, sy = src.top;
-    // never over the speaker itself
-    const self = { x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 };
-    const avoid = [...(o.avoid ?? []), self];
-    // + the tail; a question with no room clear of the controls may sit over them (it waits for its answer)
-    const at = place(scene, box.width, box.height + 10, sx, sy, avoid) ?? (said.mh ? place(scene, box.width, box.height + 10, sx, sy, avoid, true) : null);
-    if (!at) return close();
-    const below = at.y > sy;
-    const tail = Math.max(-box.width / 2 + 18, Math.min(box.width / 2 - 18, sx - at.x));
-    const bx = at.x - stage.left, by = at.y - stage.top + (below ? 5 : -5);
-    // the answers' row: centred in the room at the balloon's foot
-    const mx = bx - said.mw / 2, my = by + box.height / 2 - 10 - said.mh;
-    Object.assign(said, { x: bx, y: by, tail, below, placed: true, mx, my });
+    if (!scene || said?.n !== n) return;
+    speaker = { from, avoid: o.avoid ?? [], at: from.getBoundingClientRect() };
+    if (!at(n)) return close();
     run(n);
+    watch(n);
+  }
+
+  /** The open balloon's speaker and what else it keeps clear of (to follow the speaker as it moves). */
+  let speaker: { from: Element; avoid: Box[]; at: DOMRect } | undefined;
+  let seen: DOMRect | undefined;
+  let watcher: ReturnType<typeof setInterval> | undefined;
+  /** Place the balloon by its speaker as it stands now (placement.ts placeBy: NH's rule); false when there's no room. */
+  function at(n: number): boolean {
+    const st = scene?.querySelector('.stage')?.getBoundingClientRect(), box = el?.getBoundingClientRect();
+    if (!scene || !st || !box || !speaker || said?.n !== n) return false;
+    const src = (seen = speaker.from.getBoundingClientRect());
+    // what floats with it, where the speaker is now; the balloon stands off them all (never over the speaker)
+    const dx = src.left - speaker.at.left, dy = src.top - speaker.at.top;
+    const avoid = speaker.avoid.map((b) => ({ x0: b.x0 + dx, x1: b.x1 + dx, y0: b.y0 + dy, y1: b.y1 + dy }));
+    const from = avoid.reduce((a, b) => ({ x0: Math.min(a.x0, b.x0), x1: Math.max(a.x1, b.x1), y0: Math.min(a.y0, b.y0), y1: Math.max(a.y1, b.y1) }),
+      { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom });
+    const self = { x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 };
+    const p = placeBy(scene, box.width, box.height, from, [...avoid, self], layer);
+    if (!p) return false;
+    // the tail: along the balloon's edge facing the speaker, at its head (from above or below) or upper part (beside)
+    const side = p.side === 'top' || p.side === 'bottom';
+    const tail = side
+      ? Math.max(-box.width / 2 + TAIL_IN, Math.min(box.width / 2 - TAIL_IN, (src.left + src.right) / 2 - p.x))
+      : Math.max(-box.height / 2 + TAIL_IN, Math.min(box.height / 2 - TAIL_IN, from.y0 + Math.min(24, (from.y1 - from.y0) * 0.3) - p.y));
+    const bx = p.x - st.left, by = p.y - st.top;
+    // the answers' row: centred in the room at the balloon's foot
+    Object.assign(said, { x: bx, y: by, tail, side: p.side, placed: true, mx: bx - said.mw / 2, my: by + box.height / 2 - 10 - said.mh });
+    return true;
+  }
+  /** While it talks the balloon follows its speaker (steps, the layout changing); it closes if the speaker goes. A move
+   *  must last (3 looks, 0.6 s) before the balloon goes after it, so a hop or a bob doesn't shake it; once it follows,
+   *  every look does until the speaker stands still again. */
+  function watch(n: number) {
+    clearInterval(watcher);
+    let moved = 0;
+    watcher = setInterval(() => {
+      if (said?.n !== n || !speaker) return clearInterval(watcher);
+      if (!speaker.from.isConnected) return close();
+      const r = speaker.from.getBoundingClientRect();
+      if (!seen || Math.abs(r.left - seen.left) + Math.abs(r.top - seen.top) + Math.abs(r.width - seen.width) < 8) return void (moved = 0);
+      if (++moved < 3) return;
+      said.follow = true;
+      if (!at(n)) close();
+    }, 200);
   }
 </script>
 
-<div class="talk">
+<div class="talk" bind:this={layer}>
   {#if said}
     {@const [typed, untyped] = split(pg)}
     {#key said.n}
-      <button type="button" class="say" class:placed={said.placed} class:below={said.below} data-fx="talk" data-sfx="tick" bind:this={el}
+      <button type="button" class="say" class:placed={said.placed} class:follow={said.follow} data-side={said.side} data-fx="talk" data-sfx="tick" bind:this={el}
         aria-label="{said.name}: {pg.pages.join(' ')}" data-page={pg.page} data-pages={pg.pages.length}
         style:left="{said.x}px" style:top="{said.y}px" style:--tail="{said.tail}px" style:--tag={said.colour} style:--tag-ink={tagInk(said.colour)}
         style:padding-bottom={said.mh ? `${said.mh + 18}px` : null} style:min-width={said.mw ? `${said.mw + 16}px` : null}
@@ -174,7 +216,13 @@
     content: ''; position: absolute; left: calc(50% + var(--tail) - 9px); bottom: -9px; width: 18px; height: 11px;
     background: inherit; clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 2px 0 rgba(150, 110, 70, .2));
   }
-  .say.below::after { bottom: auto; top: -9px; clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: none; }
+  .say[data-side='bottom']::after { bottom: auto; top: -9px; clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: none; }
+  /* beside the speaker: the tail on the edge facing it, at its upper part */
+  .say[data-side='left']::after, .say[data-side='right']::after { bottom: auto; top: calc(50% + var(--tail) - 9px); width: 11px; height: 18px; filter: none; }
+  .say[data-side='left']::after { left: auto; right: -9px; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .say[data-side='right']::after { left: -9px; clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+  /* following a speaker who moves while talking */
+  .say.follow { transition: left .2s linear, top .2s linear; }
   .who {
     position: absolute; left: 12px; top: -12px; padding: 2px 11px; border-radius: 999px; rotate: -4deg;
     background: var(--tag); color: var(--tag-ink); font: 700 12px/1.35 var(--font-ui);
