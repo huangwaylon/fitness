@@ -41,9 +41,9 @@ describe('live optimistic view', () => {
 
   it('a new Move goal re-prices today’s 🍐 at once', () => {
     const before = composeView(cache, [], NOW);
-    expect(before.people.A.rings.pear).toEqual({ today: 450, goal: 600, met: false });
+    expect(before.people.A.rings.pear).toEqual({ today: 450, goal: 600, met: false, stretched: false });
     const after = composeView(cache, [ev('g1', 'pref', { key: 'moveGoal', value: 450 })], NOW);
-    expect(after.people.A.rings.pear).toEqual({ today: 450, goal: 450, met: true });
+    expect(after.people.A.rings.pear).toEqual({ today: 450, goal: 450, met: true, stretched: false });
     expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 1);
   });
 

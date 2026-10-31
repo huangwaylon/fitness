@@ -85,9 +85,9 @@ export function economyWeeks(s: State, now: number): WeekKey[] {
 }
 
 /** A person's earnings of one day (nothing for a date outside the week). */
-export function dayBells(e: WeekEarning, date: LocalDate): DayBells {
+function dayBells(e: WeekEarning, date: LocalDate): DayBells {
   const d = e.days.find((x) => x.date === date);
-  return { date, bells: d?.bells ?? 0, met: d ? { ...d.met } : noneMet() };
+  return { date, bells: d?.bells ?? 0, met: d ? { ...d.met } : noneMet(), stretch: d?.stretch ?? 0 };
 }
 
 /** The week's ベル, counting only days up to `today` (a future-dated row never earns early). */

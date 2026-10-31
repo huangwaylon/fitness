@@ -2,8 +2,8 @@
 // ベル economy itself (earnings, the wallet, buys, the ledger) lives in bells.ts; golden.test.ts pins the views.
 import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, TogetherView, WeekKey, WeekView } from '#lib/types.ts';
 import { PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
-import { ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dayBells, walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
+import { noneMet, ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
+import { walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, type State } from './state.ts';
 
@@ -42,7 +42,7 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
     cherry: [d?.standMin ?? 0, RULES.goals.standMin],
     apple: [d?.steps ?? 0, RULES.goals.steps]
   };
-  return { today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false };
+  return { today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false, stretched: d?.stretched[key] ?? false };
 }
 
 /** One person's card. Both players see everything (no privacy filter). */
@@ -50,12 +50,12 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
   const pref = s.prefs[person];
   const moveGoal = moveGoalOn(s, person, today);
   const rings = Object.fromEntries(RING_FRUITS.map((k) => [k, ringView(e, k, today, moveGoal)])) as PersonWeekView['rings'];
-  const day = dayBells(e, today);
+  const d = e.days.find((x) => x.date === today);
   return {
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
-    today: { bells: day.bells, rings: ringBells(day.met) },
+    today: { bells: d?.bells ?? 0, rings: ringBells(d ?? { met: noneMet(), stretched: noneMet() }) },
     weekBells,
     rings,
     moveGoal,

@@ -4,8 +4,9 @@
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
 // Health syncs (one before a lock, one after), a double-counted day corrected by a lower re-sync (A, 12-03: latest
 // wins), a lower re-sync after a lock (A, 11-29: the locked week stays put), ふたりでぜんぶ days (11-05, 12-16, 12-20),
-// wallet buys, a void, a void by the partner (it counts: one wallet), buys at a wrong price or of an unknown item (ignored) and a buy
-// beyond the wallet (ignored).
+// がんばり days (a goal at 1.5×; both stretched past the cap on 12-14 and 12-15), wallet buys, a void, a void by the
+// partner (it counts: one wallet), buys at a wrong price or of an unknown item (ignored) and a buy beyond the wallet
+// (ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,
@@ -73,24 +74,30 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     // Harvest recaps with and without ふたりでぜんぶ days.
     expect(all.some((v) => v.harvest && v.harvest.togetherDays === 2 && v.harvest.bells.together === 4)).toBe(true);
     expect(all.some((v) => v.harvest && v.harvest.togetherDays === 0 && v.harvest.totalBells > 0)).toBe(true);
-    // Four fruits only, everywhere; at most 4 ベル a person a day.
+    // Four fruits only, everywhere; at most 4 + がんばり 2 ベル a person a day, and its fruits add up to it.
     expect(all.every((v) => PEOPLE.every((p) => Object.keys(v.people[p].rings).join() === 'pear,peach,cherry,apple'))).toBe(true);
-    expect(all.every((v) => PEOPLE.every((p) => v.people[p].today.bells >= 0 && v.people[p].today.bells <= 4))).toBe(true);
-    // Today's ふたりでぜんぶ, met (Sunday 12-20 19:29) and not.
-    expect(all.some((v) => v.together.met && v.together.left === 0 && v.wallet.today === 10)).toBe(true);
+    expect(all.every((v) => PEOPLE.every((p) => v.people[p].today.bells >= 0 && v.people[p].today.bells <= 6))).toBe(true);
+    expect(all.every((v) => PEOPLE.every((p) => Object.values(v.people[p].today.rings).reduce((a, b) => a + b, 0) === v.people[p].today.bells))).toBe(true);
+    // がんばり today, paid (+2 on a fruit) at some instants.
+    expect(all.some((v) => PEOPLE.some((p) => Object.values(v.people[p].today.rings).includes(2)))).toBe(true);
+    // Today's ふたりでぜんぶ, met (Sunday 12-20 19:29: 4 + 4 + うめ's がんばり 1 + 2 = 11) and not.
+    expect(all.some((v) => v.together.met && v.together.left === 0 && v.wallet.today === 11 && v.people.B.today.bells === 5)).toBe(true);
     expect(all.some((v) => !v.together.met && v.together.left > 0)).toBe(true);
     // Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.met && v.people.B.rings.cherry.met)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
     const end = bellsLedger(reduce(ROWS), END);
-    // bs-wrong (5 ベル), bs-trip (no such reward) and bs-b24 (a 外食 beyond the wallet: 13 left) are ignored; B's void
+    // bs-wrong (5 ベル), bs-trip (no such reward) and bs-b28 (a 外食 beyond the wallet: 10 left) are ignored; B's void
     // of A's dinner gives its 15 back (either of us may undo any buy).
     expect(end.spends.map((x) => [x.spendId, x.voided]).reverse()).toEqual([
       ['bs-early', false], ['bs-snack', true], ['bs-dinner', true], ['bs-snack-2', false],
-      ...['b10', 'b11', 'b12', 'b13', 'b14', 'b15', 'b16', 'b17', 'b18', 'b19', 'b20', 'b21', 'b22', 'b23'].map((id) => [`bs-${id}`, false])
+      ...['b10', 'b11', 'b12', 'b13', 'b14', 'b15', 'b16', 'b17', 'b18', 'b19', 'b20', 'b21', 'b22', 'b23', 'b24', 'b25', 'b26', 'b27'].map((id) => [`bs-${id}`, false])
     ]);
-    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(13);
+    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(10);
+    // がんばり in the ledger, capped at 2 where more were reached
+    expect(end.days.some((d) => d.people.A.stretch === 2 || d.people.B.stretch === 2)).toBe(true);
+    expect(end.days.every((d) => d.people.A.stretch <= 2 && d.people.B.stretch <= 2)).toBe(true);
   });
 
   it('matches the full WeekView at every key instant, for both people', () => {

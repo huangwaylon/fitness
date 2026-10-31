@@ -49,17 +49,21 @@ simpler, and the app is opened by choice.
 couple chooses, with no real money at stake.
 
 ### A stamp card
-Per person per Tokyo day, +1 ベル for each daily goal met, all or nothing (at most 4), and ふたりでぜんぶ: +2 shared
-when both meet all four the same day. One `RULES` object, no versions; the user resets the sheet for it. A typical
-week is ≈ 46 for the pair, a perfect one 70, a lazy one ≈ 28. Why: numbers a child can add up, every goal counts the
-same, and the bonus makes a day a team effort.
+Per person per Tokyo day, +1 ベル for each daily goal met, all or nothing (at most 4); がんばり, +1 more for each goal
+reached at 1.5× its target (🍐 1.5 × that day's Move goal, 🍑 90 min, 🍒 180 min, 🍎 12,000 steps), at most +2 a day;
+and ふたりでぜんぶ: +2 shared when both meet all four the same day (がんばり doesn't enter it). So 0–4 + 0–2 a person
+and 0–14 for the pair a day. One `RULES` object and one `STRETCH` object, no versions: the rule applies to every day
+and earnings are recomputed from the rows. A typical week is ≈ 52 for the pair, at most 98, a perfect one without
+がんばり 70, a lazy one ≈ 28. Why: numbers a child can add up, every goal counts the same, a big day is worth a little
+more without making the goals themselves optional (the cap keeps one heroic day from outweighing steady ones), and
+the bonus makes a day a team effort.
 
 ### Economy start
 The economy starts with the data: the first week with an activity row stamped by its lock. Why: no start date to
 keep in the code, and a baseline of old days can't earn.
 
 ### Rings four automatic fruits
-Four automatic metrics, one fruit each, listed in Apple's ring order (Move, Exercise, Stand), then steps (けんこう alone puts steps first, user request):
+Four automatic metrics, one fruit each, listed in Apple's ring order (Move, Exercise, Stand), then steps (けんこう and the tree's popup put steps first, user request):
 
 | Fruit | Metric | Daily goal |
 |---|---|---|
@@ -93,9 +97,9 @@ game.
 Exactly two fixed treats: おやつ 8 ベル and 外食 15 ベル (`SHOP`). Either person buys, either person can undo any buy
 (`spend_void`), and a buy the wallet can't cover is ignored on read, so the balance never goes negative. A spend names
 its item at exactly its price; the server refuses anything else. Why: two clear choices priced against the week
-(a perfect week, 70, buys three of each; a typical one, 46, two of each), nothing to edit or argue about. Raised from
-6 and 20 (2026-10-31): a perfect day pays 10, so at 6 the おやつ was a daily treat; now each is a two-to-three-times-a-week
-thing, depending on effort.
+(the most a week pays, 98, buys four of each; a perfect week, 70, three of each; a typical one, ≈ 52, two of each),
+nothing to edit or argue about. A perfect day pays 10 to 14, so each treat is a two-to-four-times-a-week thing,
+depending on effort.
 
 ### Erasing a buy
 The ごほうび page lists every buy (「かいもの きろく」) and either of us can erase any of them, at any time; the ベル go back

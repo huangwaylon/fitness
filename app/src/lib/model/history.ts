@@ -1,17 +1,23 @@
 // きろく (docs/design.md#kiroku): every recorded day, with its ベル, for both people, computed on read from the same
 // state as the WeekView. Read-only (Apple Health is the source of truth). Pure; the UI asks for one opened day at a
 // time (lazy).
-import type { LocalDate, PersonId, RingFruit } from '#lib/types.ts';
+import type { LocalDate, PersonId, RingBells, RingFruit } from '#lib/types.ts';
 import { localDateAt, weekKeyOf } from '#lib/time/dates.ts';
-import { noneMet } from '#lib/scoring/bells.ts';
+import { noneMet, ringBells } from '#lib/scoring/bells.ts';
 import type { State } from './state.ts';
 import { weekBells } from './bells.ts';
 
 export interface DayPerson {
-  /** The day's ベル: +1 per goal met. */
+  /** The day's ベル: +1 per goal met, + がんばり. */
   bells: number;
   /** The daily goal met, per fruit. */
   met: Record<RingFruit, boolean>;
+  /** The stretch target (1.5 × the goal) reached, per fruit. */
+  stretched: Record<RingFruit, boolean>;
+  /** がんばり ベル in `bells` (0–2). */
+  stretch: number;
+  /** ベル per fruit (1 = met, 2 = met and its がんばり paid). */
+  rings: RingBells;
   steps: number | null;
   /** Exercise minutes (floored). */
   exerciseMin: number;
@@ -33,9 +39,15 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const i = wb.A.days.findIndex((x) => x.date === date);
   const person = (p: PersonId): DayPerson => {
     const d = wb[p].days[i];
+    const e = future ? undefined : d;
+    const met = e ? { ...e.met } : noneMet();
+    const stretched = e ? { ...e.stretched } : noneMet();
     return {
-      bells: future || !d ? 0 : d.bells,
-      met: future || !d ? noneMet() : { ...d.met },
+      bells: e?.bells ?? 0,
+      met,
+      stretched,
+      stretch: e?.stretch ?? 0,
+      rings: ringBells({ met, stretched }),
       steps: d?.steps ?? null,
       exerciseMin: d?.exerciseMin ?? 0,
       move: { value: d?.moveKcal ?? null, goal: d?.moveGoal ?? 0 },

@@ -15,6 +15,8 @@ import { shopPrice } from '#lib/config/rules.ts';
 const DEMO_WEEKS_BACK = 8;
 /** About one day in 25 the Watch stays on the charger (Move, Exercise and Stand 0; steps from the phone). */
 const NO_WATCH = 0.04;
+/** About 1 in 5 met goals reach 1.5× (がんばり), so the cap shows up now and then. */
+const STRETCH_ODDS = 0.2;
 
 /** A PRNG seeded by a string. */
 function rng(seed: string): () => number {
@@ -49,8 +51,14 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
     const good = rng(`day|${d}`)() < 0.4;
     for (const p of ['A', 'B'] as PersonId[]) {
       const r = rng(`${p}|${d}`);
-      /** Around a goal: met (5–35% over) or not (50–95% of it). */
-      const around = (goal: number) => Math.round(goal * (good || r() < 0.5 ? 1.05 + r() * 0.3 : 0.5 + r() * 0.45) * partial);
+      /** Around a goal: met (5–35% over; about 1 in 5 met goals at 1.5–1.75×, がんばり) or not (50–95% of it). The
+       *  stretch has its own RNG, so the rest of the history doesn't move with it. */
+      const sr = rng(`${p}|stretch|${d}`);
+      const over = () => {
+        const x = 1.05 + r() * 0.3;
+        return sr() < STRETCH_ODDS ? 1.5 + sr() * 0.25 : x;
+      };
+      const around = (goal: number) => Math.round(goal * (good || r() < 0.5 ? over() : 0.5 + r() * 0.45) * partial);
       const steps = around(8000), mins = around(60), kcal = around(p === 'A' ? 600 : 450), stand = around(120);
       const watch = isToday || rng(`${p}|watch|${d}`)() >= NO_WATCH;
       if (syncAt > at(d, 6) && syncAt < now) {

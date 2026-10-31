@@ -6,7 +6,8 @@
 <script lang="ts">
   // The passbook (like NH's ATM statement): everything ever earned, then the ledger by week, newest first, each with its
   // earnings and one line per day: each person's four goals (bright = met, +1 each), the ふたりでぜんぶ star (+2) and the
-  // day's ベル; tap → the day. Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
+  // day's ベル, with a がんばり line under it on a day either of us reached 1.5× of a goal (each person's +1 / +2 under
+  // their goals); tap → the day. Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerDay } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -73,6 +74,12 @@
             {#each order as p (p)}<span class="pv"><GoalMarks met={d.people[p].met} name={names[p]} size="var(--mk)" /></span>{/each}
             <span class="st">{#if d.together}{@render star(true)}<span class="sr-only">{t('together.name')}</span>{/if}</span>
             <b class="money tot">{formatBells(d.bells, { signed: true })}</b>
+            {#if order.some((p) => d.people[p].stretch)}
+              <span class="gbk">{t('kiroku.stretch')}</span>
+              {#each order as p (p)}
+                <span class="pv gbv money" data-person={p} data-stretch={d.people[p].stretch || null}>{#if d.people[p].stretch}{formatBells(d.people[p].stretch, { signed: true })}<span class="sr-only"> {names[p]}</span>{/if}</span>
+              {/each}
+            {/if}
           </button>
         </li>
       {/each}
@@ -114,5 +121,9 @@
   .star { width: 18px; height: 18px; fill: var(--c-yuzu-lip); }
   .tot { font-size: var(--fs-body); white-space: nowrap; text-align: right; }
   .zero .dbtn { color: var(--text-soft); }
+  /* がんばり: a second, smaller line in the same columns (the label under the date, each person's ベル under their goals) */
+  .gbk, .gbv { grid-row: 2; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.2; margin-top: -2px; }
+  .gbk { grid-column: 1; padding-left: 1em; }
+  .gbv { justify-content: center; color: var(--text); }
   @media (max-width: 359px) { .rows { padding: 4px 8px; --mk: 13px; } .day, .dbtn { column-gap: 6px; } }
 </style>

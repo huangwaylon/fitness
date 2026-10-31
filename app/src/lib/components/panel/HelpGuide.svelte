@@ -1,10 +1,11 @@
 <script lang="ts">
-  // せってい → あそびかた, written for a 10-year-old: the four goals (+1 ベル each, my own Move goal), ふたりでぜんぶ, the
+  // せってい → あそびかた, written for a 10-year-old: the four goals (+1 ベル each, my own Move goal, and each one's
+  // がんばり target at 1.5×: +1 more, at most +2 a day), ふたりでぜんぶ, the
   // two rewards, the Sunday recap; then the protein tip and the one-line setup. Every number comes from the rules (and
   // my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, RULES, shopPrice } from '#lib/config/rules.ts';
+  import { RING_FRUITS, RULES, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
@@ -19,6 +20,12 @@
     : f === 'pear' ? t('help.goal.kcal', { n: formatNum(moveGoal) })
     : f === 'cherry' ? t('help.goal.min', { n: RULES.goals.standMin })
     : t('help.goal.steps', { n: formatNum(RULES.goals.steps) });
+  /** Each fruit's がんばり target (1.5 × the goal; kcal rounded up, as a fraction of a kcal never shows). */
+  const stretch = (f: RingFruit): string =>
+    f === 'peach' ? t('help.stretch.min', { n: stretchOf(RULES.goals.exerciseMin) })
+    : f === 'pear' ? t('help.stretch.kcal', { n: formatNum(Math.ceil(stretchOf(moveGoal))) })
+    : f === 'cherry' ? t('help.stretch.min', { n: stretchOf(RULES.goals.standMin) })
+    : t('help.stretch.steps', { n: formatNum(stretchOf(RULES.goals.steps)) });
 
   /** The protein tip (not tracked): 1.6 g per kg a day, per person from their goal weight (else their
    *  weight trend), rounded to 5 g; just the rule when neither is known. */
@@ -40,11 +47,12 @@
       {#each RING_FRUITS as f (f)}
         <li>
           <OfficialArt key={fruitArt(f)} size={26} />
-          <span class="nm"><b>{t(`fruit.${f}`)}</b><small>{goal(f)}</small></span>
+          <span class="nm"><b>{t(`fruit.${f}`)}</b><small>{goal(f)}</small><small class="st">{stretch(f)}</small></span>
           <span class="pay money">{formatBells(RULES.perGoal, { signed: true })}</span>
         </li>
       {/each}
     </ul>
+    <p>{t('help.stretch', { b: formatBells(STRETCH.perGoal, { signed: true }), cap: formatBells(STRETCH.cap) })}</p>
     <p>{t('help.together', { b: formatBells(RULES.together, { signed: true }) })}</p>
     <p>{t('help.shop', { snack: formatBells(shopPrice('snack') ?? 0), dinner: formatBells(shopPrice('dinner') ?? 0) })}</p>
     <p>{t('help.sunday')}</p>
@@ -78,6 +86,7 @@
   .nm { flex: 1; min-width: 0; display: grid; gap: 1px; }
   .nm b { font-size: var(--fs-body); }
   .nm small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .nm small.st { font-weight: 500; }
   .pay { flex: none; font-size: var(--fs-body); text-align: right; }
   .ver { margin: 16px 0 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
 </style>

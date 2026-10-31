@@ -142,7 +142,10 @@ describe('the day', () => {
     const s = reduce(rows);
     const dd = dayDetail(s, DAYS[1], WED_MID);
     // 9,000 steps and 150 Stand minutes meet their goals; 30 exercise minutes and 500 of 600 kcal don't
-    expect(dd.people.A).toEqual({ bells: 2, met: { pear: false, peach: false, cherry: true, apple: true }, steps: 9000, exerciseMin: 30, move: { value: 500, goal: 600 }, standMin: 150 });
+    expect(dd.people.A).toEqual({
+      bells: 2, met: { pear: false, peach: false, cherry: true, apple: true }, stretched: { pear: false, peach: false, cherry: false, apple: false }, stretch: 0,
+      rings: { pear: 0, peach: 0, cherry: 1, apple: 1 }, steps: 9000, exerciseMin: 30, move: { value: 500, goal: 600 }, standMin: 150
+    });
     expect(dd.people.B.met.pear).toBe(true); // 500 of うめ's 400
     expect(dayDetail(s, DAYS[0], WED_MID).people.B).toMatchObject({ bells: 4, exerciseMin: 65 });
     expect(dd.together).toBe(false);
