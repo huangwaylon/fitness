@@ -31,6 +31,7 @@
   import GoalCard from './GoalCard.svelte';
   import NumberPad from './NumberPad.svelte';
   import TypeName from './TypeName.svelte';
+  import Avatar from '../characters/Avatar.svelte';
   import { dayTitle, parseKcalInput, parseKgInput, typeLabel } from './fmt.ts';
   import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
 
@@ -123,8 +124,6 @@
   }
 
   /** 「歩数を なおしました」, or 「うめの 歩数を なおしました」 for the partner's. */
-  /** An edit screen's subtitle: the day, and whose it is when it is the partner's (「うめ · 11/18(水)」). */
-  const whoSub = (p: PersonId, sub: string) => (p === me ? sub : sub ? `${names[p]} · ${sub}` : names[p]);
   const savedText = (p: PersonId, field: string) => (p === me ? t('kiroku.saved', { field }) : t('kiroku.savedFor', { name: names[p], field }));
   function saveMetric(p: PersonId, date: string, metric: 'steps' | 'exercise_min', value: number) {
     back();
@@ -173,6 +172,11 @@
   }
 </script>
 
+<!-- Every edit screen opens with whose data it changes (either person edits either person's data). -->
+{#snippet who(p: PersonId)}
+  <p class="who"><Avatar person={p} villager={villagers[p]} size={32} /><b>{names[p]}</b>{#if p === me}<small>· {t('kiroku.me')}</small>{/if}</p>
+{/snippet}
+
 <div class="kiroku" bind:this={root}>
   {#key stack.length}
   <div class="lvl">
@@ -208,16 +212,19 @@
         onlog={(date) => go({ k: 'weightIn', p, date })} />
     {:else if top.k === 'weightIn'}
       {@const s = top}
-      <ValueInput label={t('kiroku.field.weight')} sub={whoSub(s.p, dayTitle(s.date))} old={weightOn(m.state, s.p, s.date, m.now)} unit="kg"
+      {@render who(s.p)}
+      <ValueInput label={t('kiroku.field.weight')} sub={dayTitle(s.date)} old={weightOn(m.state, s.p, s.date, m.now)} unit="kg"
         parse={parseKgInput} hint={t('weight.range')} onok={(kg) => saveWeight(s.p, s.date, kg)} oncancel={back} />
     {:else if top.k === 'goal'}
       {@const s = top}
+      {@render who(s.p)}
       {@const goal = m.state.prefs[s.p].goalWeight ?? null}
-      <ValueInput label={t('weight.goalWeight')} sub={whoSub(s.p, '')} old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
+      <ValueInput label={t('weight.goalWeight')} sub="" old={goal} unit="kg" parse={parseKgInput} hint={t('weight.range')}
         onok={(kg) => saveGoal(s.p, kg)} oncancel={back} extra={goal === null ? null : { label: t('weight.clearGoal'), run: () => saveGoal(s.p, null) }} />
     {:else if top.k === 'moveGoal'}
       {@const s = top}
-      <ValueInput label={t('goal.move')} sub={whoSub(s.p, t('goal.moveNote'))} old={view.people[s.p].moveGoal} unit="kcal" parse={parseKcalInput}
+      {@render who(s.p)}
+      <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[s.p].moveGoal} unit="kcal" parse={parseKcalInput}
         hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={(kcal) => saveMoveGoal(s.p, kcal)} oncancel={back} />
     {:else if top.k === 'void'}
       {@const s = top}
@@ -233,8 +240,9 @@
       </div>
     {:else if top.k === 'metric' && day}
       {@const s = top}
+      {@render who(s.p)}
       {@const d = day.people[s.p]}
-      <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={whoSub(s.p, dayTitle(s.date))} max={METRIC_BOUNDS[s.metric]}
+      <NumberPad label={t(`kiroku.field.${s.metric}`)} sub={dayTitle(s.date)} max={METRIC_BOUNDS[s.metric]}
         old={s.metric === 'steps' ? d.steps.value : d.exercise.watch} unit={s.metric === 'steps' ? '' : t('kiroku.min', { n: '' }).trim()}
         onok={(v) => saveMetric(s.p, s.date, s.metric, v)} oncancel={back} />
     {:else if top.k === 'workout' && day}
@@ -242,8 +250,9 @@
       {@const w = day.people[s.p].workouts.find((x) => x.id === s.id)}
       {#if w}
         {@const label = typeLabel(w.type)}
+        {@render who(s.p)}
         <section class="card wcard">
-          <b><TypeName type={w.type} /></b><span class="money">{whoSub(s.p, dayTitle(s.date))} · {t('kiroku.min', { n: w.durationMin })}</span>
+          <b><TypeName type={w.type} /></b><span class="money">{dayTitle(s.date)} · {t('kiroku.min', { n: w.durationMin })}</span>
           {#if w.excluded}<em>{t('kiroku.excluded')}</em>{/if}
         </section>
         <div class="wchoices">
@@ -256,8 +265,9 @@
       {/if}
     {:else if top.k === 'add'}
       {@const s = top}
+      {@render who(s.p)}
       {#if !addType}
-        <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{whoSub(s.p, dayTitle(s.date))}</span></h3>
+        <h3 class="addh"><span class="nw">{t('kiroku.addWorkout')}</span> <span class="money">{dayTitle(s.date)}</span></h3>
         <p class="note">{t('kiroku.addNote')}</p>
         <div class="types" role="group" aria-label={t('kiroku.pickType')}>
           {#each WORKOUT_TYPES as ty (ty)}
@@ -265,7 +275,7 @@
           {/each}
         </div>
       {:else}
-        <NumberPad label={typeLabel(addType)} sub={whoSub(s.p, dayTitle(s.date))} old={null} min={MANUAL_WORKOUT_MIN.min} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
+        <NumberPad label={typeLabel(addType)} sub={dayTitle(s.date)} old={null} min={MANUAL_WORKOUT_MIN.min} max={MANUAL_WORKOUT_MIN.max} unit={t('kiroku.min', { n: '' }).trim()}
           onok={(v) => saveAdd(s.p, s.date, v)} oncancel={() => (addType = null)} />
       {/if}
     {/if}
@@ -279,7 +289,9 @@
   /* the keypad fills the phone so its keys sit at the bottom, in the thumb zone (ShimaPhone stretches this root; round 21:
      the chain stopped here and the keys hung under the title with ~230px empty below them) */
   .kiroku:has(:global(.atm)) { display: flex; flex-direction: column; }
-  .kiroku:has(:global(.atm)) > .lvl { flex: 1 0 auto; }
+  .kiroku:has(:global(.atm)) > .lvl { flex: 1 0 auto; grid-template-rows: auto 1fr; }
+  .who { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
+  .who small { color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
   /* each level slides in like a phone app (design.md "Navigation": one push motion, 240ms) */
   .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
