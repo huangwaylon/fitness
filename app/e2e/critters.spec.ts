@@ -112,6 +112,20 @@ test('fishing: after a hesitation the fish comes back and bites, and the bite st
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(1);
 });
 
+test('a shark: a fin cuts the surface (NH), and the catch names it', async ({ page }) => {
+  const before = await open(page, '&critter=great-white-shark');
+  const fish = page.locator('[data-critter="fish"].is-fin');
+  await expect(fish).toBeAttached();
+  await page.waitForTimeout(500);
+  const f = await at(page, '[data-critter="fish"]');
+  await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y);
+  await expect(page.locator('[data-bite]')).toBeAttached({ timeout: 10_000 });
+  await page.waitForTimeout(400);
+  await seaTap(page);
+  await expect(page.locator('[data-fx="catch"]')).toHaveText('サメを つりあげた！');
+  await unchanged(page, before);
+});
+
 test('a tap on a butterfly nets it', async ({ page }) => {
   const before = await open(page, '&critter=common-butterfly');
   await expect(page.locator('[data-critter="common-butterfly"]')).toBeAttached();

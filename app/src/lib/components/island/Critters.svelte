@@ -14,7 +14,7 @@
   // Cheap: ≤ 1 fish + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
   // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
   // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
-  //   ?critter=fish | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook).
+  //   ?critter=fish | <fish id> | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook).
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { artUrl } from '#lib/art.ts';
@@ -37,7 +37,7 @@
   let { scene, tod, enabled }: Props = $props();
 
   interface Box { x0: number; x1: number; y0: number; y1: number }
-  interface Fish { item: FishId | JunkId; size: number; x: number; y: number; ms: number; flip: boolean; box: Box; gone: boolean; dash: boolean }
+  interface Fish { item: FishId | JunkId; size: number; shape?: 'narrow' | 'fin'; x: number; y: number; ms: number; flip: boolean; box: Box; gone: boolean; dash: boolean }
   interface Cast {
     x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
     /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
@@ -161,7 +161,8 @@
     }
     return null;
   }
-  const sizeU = (f: Fish) => 8 + f.size * 4.5;
+  /** A shadow's length (u): NH's sizes 1–6; the eels' thin shadow is long. */
+  const sizeU = (f: Fish) => 8 + (f.shape === 'narrow' ? 5.5 : f.size) * 4.5;
 
   function preload(key: string) {
     const url = artUrl(key);
@@ -169,17 +170,17 @@
   }
 
   // ---------- fish ----------
-  function spawnFish(stay = true) {
+  function spawnFish(stay = true, want?: FishId) {
     const g = geo();
     const side = rand() < 0.5 ? -1 : 1;
     const box = g && (seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1));
     if (!box) return;
     const { month, hour } = jst(now());
-    const id = pickFish(month, hour, rand);
-    const item = hookItem(id, rand);
+    const id = want ?? pickFish(month, hour, rand);
+    const item = want ?? hookItem(id, rand);
     preload(critterArt(item));
     const p = inBox(box);
-    fish = { item, size: FISH[id].size, ...p, ms: 0, flip: rand() < 0.5, box, gone: false, dash: false };
+    fish = { item, size: FISH[id].size, shape: FISH[id].shape, ...p, ms: 0, flip: rand() < 0.5, box, gone: false, dash: false };
     later(swim, 400);
     if (stay) later(() => leaveFish(), STAY_MS.fish);
   }
@@ -489,6 +490,7 @@
       if (reducedMotion()) return;
       if (!enabled()) return later(go, 300);
       if (want === 'fish') spawnFish(false);
+      else if (want in FISH) spawnFish(false, want as FishId);
       else if (want in BUGS) spawnBug(want as BugId, undefined, false);
     };
     later(go, 600);
@@ -498,7 +500,7 @@
 
 <div class="sea-life" aria-hidden="true">
   {#if fish}
-    <span class="mover shadow" class:gone={fish.gone} class:dash={fish.dash} data-critter="fish" bind:this={fishEl}
+    <span class="mover shadow {fish.shape ? `is-${fish.shape}` : ''}" class:gone={fish.gone} class:dash={fish.dash} data-critter="fish" bind:this={fishEl}
       style:translate="{U(fish.x)} {U(fish.y)}" style:transition-duration="{fish.ms}ms" style:--w={U(sizeU(fish))}>
       <i class="fin" class:flip={fish.flip}></i>
     </span>
@@ -611,6 +613,14 @@
       radial-gradient(closest-side, rgba(14, 44, 82, .62), rgba(14, 44, 82, .4) 60%, transparent) 0 0 / 76% 100% no-repeat,
       radial-gradient(closest-side, rgba(14, 44, 82, .48), transparent) 100% 50% / 30% 72% no-repeat;
     animation: wag 1.3s ease-in-out infinite alternate;
+  }
+  /* NH's long thin shadow (the eels) and the fin cutting the surface (the sharks, the sunfish, the suckerfish): a dark
+     sail over the shadow's front half with a thin white wake at its foot */
+  .is-narrow .fin { height: calc(var(--w) * .2); }
+  .is-fin .fin::before {
+    content: ''; position: absolute; left: 28%; bottom: 44%; width: 20%; height: 95%;
+    background: linear-gradient(180deg, rgba(36, 58, 92, .95), rgba(44, 70, 108, .85)); clip-path: polygon(38% 0, 100% 100%, 0 100%);
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .85));
   }
   @keyframes wag { from { transform: skewY(-4deg) scale(1, .96); } to { transform: skewY(4deg) scale(.97, 1); } }
   @keyframes fade-in { from { opacity: 0; } }

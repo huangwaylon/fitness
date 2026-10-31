@@ -42,6 +42,28 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
       expect(top, `month ${m}`).toBe('sea-bass');
     }
   });
+  it("every NH sea and pier fish (33), with NH's shadows: the eels narrow, the sharks, the sunfish and the suckerfish with a fin", () => {
+    expect(Object.keys(FISH)).toHaveLength(33);
+    for (const id of ['ribbon-eel', 'moray-eel'] as FishId[]) expect(FISH[id].shape).toBe('narrow');
+    for (const id of ['saw-shark', 'hammerhead-shark', 'great-white-shark', 'whale-shark', 'ocean-sunfish', 'suckerfish'] as FishId[])
+      expect(FISH[id].shape, id).toBe('fin');
+    for (const f of Object.values(FISH)) expect(f.size).toBeGreaterThanOrEqual(1), expect(f.size).toBeLessThanOrEqual(6);
+    expect(FISH['sea-horse'].size).toBe(1);
+    expect(FISH['whale-shark'].size).toBe(6);
+    // rare = a low weight: the coelacanth is the rarest, every shark under the reef fish
+    const w = Object.values(FISH).map((f) => f.weight);
+    expect(FISH.coelacanth.weight).toBe(Math.min(...w));
+    expect(FISH['great-white-shark'].weight).toBeLessThan(FISH.clownfish.weight);
+  });
+  it('a shark keeps to its NH hours (4 pm – 9 am) and is likelier in summer, never a gate', () => {
+    expect(oddsAt(FISH['great-white-shark'], 7, 12)).toBe(0);
+    expect(oddsAt(FISH['great-white-shark'], 7, 20)).toBe(FISH['great-white-shark'].weight * IN_SEASON);
+    expect(oddsAt(FISH['great-white-shark'], 1, 20)).toBe(FISH['great-white-shark'].weight);
+    const r = mulberry32(11);
+    const seen = new Set(Array.from({ length: 60_000 }, () => pickFish(1, 22, r)));
+    expect(seen.has('whale-shark')).toBe(true);
+    expect(seen.has('coelacanth')).toBe(true);
+  });
   it('bugs: any month, only in their hours (day bugs by day, fireflies and moths at night); in season 3× likelier', () => {
     const seen = (month: number, hour: number) => {
       const r = mulberry32(month * 100 + hour);
