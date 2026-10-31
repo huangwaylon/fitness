@@ -11,7 +11,8 @@ import type { Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { blipPlan, type Glyph } from './dialogue.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
-import { PREFETCH_MS, WEATHERS, msToNextHour, trackAt, type Weather } from './hourly.ts';
+import { WEATHERS, trackAt, type Weather } from './hourly.ts';
+import { HourClock } from './session.ts';
 import { ambientFor } from './ambient.ts';
 import { localKV } from '#lib/sync/storage.ts';
 import { jst, now } from '#lib/time/clock.ts';
@@ -28,7 +29,6 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; playing
 let engine: Engine | null = null;
 /** The opening theme is playing (or about to): the hourly track waits for it to end. */
 let opening = false;
-let clock: ReturnType<typeof setTimeout>[] = [];
 /** A sheet, the phone or the harvest covers the scene (from the layout). */
 let coveredBy: () => boolean = () => false;
 /** しずえ's daily announcement fires as the island opens, before any tap can unlock audio: it waits this long for the
@@ -177,21 +177,17 @@ function prefetchFirst(): void {
   if (tr) e.prefetch(tr.file);
 }
 
-/** Timers for the next top of the hour: fetch its track a minute early, change on the hour. */
-function armClock(): void {
-  clock.forEach(clearTimeout);
-  const ms = msToNextHour(now());
-  clock = [
-    setTimeout(() => {
-      const t = trackAt(new Date(now().getTime() + PREFETCH_MS + 1000), sound.weather, AUDIO.music);
-      if (t && sound.settings.music && engine?.ctx) engine.prefetch(t.file);
-    }, Math.max(0, ms - PREFETCH_MS)),
-    setTimeout(() => {
-      syncMusic();
-      armClock();
-    }, ms + 30)
-  ];
-}
+/** The next hour's track a minute early (only while it could play: visible, ミュージック on and audible), and the change
+ *  on the hour. Stopped while hidden (onHide), so nothing is fetched and kept for hours nobody hears. */
+const hourClock = new HourClock(
+  now,
+  (at) => {
+    const s = sound.settings;
+    const tr = trackAt(at, sound.weather, AUDIO.music);
+    if (tr && s.music && s.volume > 0 && engine?.ctx && !document.hidden) engine.prefetch(tr.file);
+  },
+  syncMusic
+);
 
 /** Change settings (from a tap: that tap unlocks audio). Turning a kind on previews it: 効果音 a confirm, おしゃべり a
  *  few blips, ミュージック the opening theme before the hour's track (NH's title screen). */
@@ -240,18 +236,19 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   initMediaSession();
   // the renderer is pure and small: fetch it ahead of the first tap when a setting is on (nothing loads while off);
   // with ミュージック on, the hour's file too, so the first tap anywhere starts it inside that tap (no fetch to wait for)
-  if (!silent(sound.settings)) setTimeout(prefetchFirst, 1000);
+  const first = silent(sound.settings) ? undefined : setTimeout(prefetchFirst, 1000);
   const onHide = () => {
+    hourClock.stop();
     engine?.pause();
     const ms = mediaSession();
     if (ms && ms.playbackState !== 'none') ms.playbackState = 'paused';
   };
   const onVisible = () => {
     if (document.hidden) return onHide();
+    hourClock.start(); // even before the first tap: the tap's syncMusic needs the hour change after it
     if (!engine?.ctx || silent(sound.settings)) return;
     engine.resume();
     syncMusic();
-    armClock();
   };
   // pagehide / pageshow: a bfcache restore, or a pagehide without a visibilitychange first (a fast reload)
   const onPageShow = (e: PageTransitionEvent) => e.persisted && onVisible();
@@ -278,14 +275,15 @@ export function startSound(o: { muffled: () => boolean }): () => void {
       untrack(syncMusic);
     });
   });
-  armClock();
+  hourClock.start();
   return () => {
+    clearTimeout(first);
     for (const g of gestures) document.removeEventListener(g, unlock, { capture: true });
     document.removeEventListener('visibilitychange', onVisible);
     window.removeEventListener('pagehide', onHide);
     window.removeEventListener('pageshow', onPageShow);
     stopEffects();
-    clock.forEach(clearTimeout);
+    hourClock.stop();
     engine?.pause();
   };
 }

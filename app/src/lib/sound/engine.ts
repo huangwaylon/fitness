@@ -37,6 +37,8 @@ interface Deck {
   starting: boolean;
   /** The audio-clock time its current fade-in is complete. */
   fadeEnd: number;
+  /** Bumped whenever `key` changes: a fade-out's delayed pause() only applies to the assignment it faded out. */
+  gen: number;
 }
 
 type AudioSessionNav = Navigator & { audioSession?: { type: string } };
@@ -73,6 +75,21 @@ function whenIdle(f: () => void, ms = 60): void {
 }
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** The first of `events` on `el` (or 'timeout' after `ms`). Every listener it added is removed, so the events that
+ *  didn't fire leave nothing behind on a deck that lives for the whole session. */
+function firstEvent(el: HTMLMediaElement, events: string[], ms?: number): Promise<string> {
+  return new Promise((done) => {
+    const ac = new AbortController();
+    const timer = ms === undefined ? undefined : setTimeout(() => end('timeout'), ms);
+    function end(type: string) {
+      ac.abort();
+      clearTimeout(timer);
+      done(type);
+    }
+    for (const e of events) el.addEventListener(e, () => end(e), { signal: ac.signal });
+  });
+}
 const clock = () => performance.now();
 
 export class Engine {
@@ -256,7 +273,7 @@ export class Engine {
         const gain = ctx.createGain();
         gain.gain.value = 0;
         ctx.createMediaElementSource(el).connect(gain).connect(this.#duck);
-        const deck: Deck = { el, gain, key: null, level: 1, end: null, starting: false, fadeEnd: 0 };
+        const deck: Deck = { el, gain, key: null, level: 1, end: null, starting: false, fadeEnd: 0, gen: 0 };
         el.addEventListener('ended', () => this.#ended(deck));
         // Never in the background: the lock screen, Control Center or headphones may play the element while the page
         // is hidden (it's the Now Playing item under the 'playback' session). Keep it paused there.
@@ -285,12 +302,16 @@ export class Engine {
   #loadFiles(): void {
     if (this.#files || !this.ctx) return;
     const entries = Object.entries(AUDIO.sfx) as [SoundId, string][];
+    let failed = false;
     this.#files = Promise.all(
       entries.map(async ([id, path]) => {
         const b = await this.#decode(path);
         if (b) this.#buffers.set(id, b);
+        else failed = true;
       })
-    ).then(() => {});
+    ).then(() => {
+      if (failed) this.#files = null; // offline on the first tap: a later unlock tries the missing files again
+    });
   }
 
   async #decode(path: string): Promise<AudioBuffer | null> {
@@ -416,7 +437,10 @@ export class Engine {
   /** IDLE_SUSPEND_MS without a sound and no music meant to play: let the hardware sleep (the next cue wakes it). */
   #onIdle(): void {
     const ctx = this.ctx;
-    if (!ctx || ctx.state !== 'running' || this.track || document.hidden) return;
+    const f = this.#decks[this.#front];
+    // A track held by an outside ⏸ (holdMusic) or refused by the browser isn't sounding: the next tap restarts it.
+    const sounding = !!this.track && !(f.el.paused && !f.starting);
+    if (!ctx || ctx.state !== 'running' || sounding || document.hidden) return;
     if (this.#live.size || ctx.currentTime < this.#blipsUntil) return this.#idle.poke();
     this.#asleep = true;
     void ctx.suspend().catch(() => {});
@@ -515,6 +539,7 @@ export class Engine {
     this.#front = 1 - this.#front;
     const next = this.#decks[this.#front];
     next.key = key;
+    next.gen++;
     next.level = trackLevel(track.gain);
     next.end = loop && track.end ? track.end : null;
     next.el.loop = loop && next.end === null;
@@ -524,21 +549,14 @@ export class Engine {
     next.el.src = url;
     next.el.play().catch(() => {}); // at gain 0: the seek and the fade-in follow
     // seek once the element knows the file (start = where the loop begins musically); an undecodable file goes on
-    await new Promise<void>((done) => {
-      const go = () => {
-        try {
-          next.el.currentTime = track.start;
-        } catch {
-          /* plays from 0 */
-        }
-        done();
-      };
-      if (next.el.readyState >= 1) go();
-      else {
-        next.el.addEventListener('loadedmetadata', go, { once: true });
-        next.el.addEventListener('error', () => done(), { once: true });
+    const known = next.el.readyState >= 1 || (await firstEvent(next.el, ['loadedmetadata', 'error'])) === 'loadedmetadata';
+    if (known) {
+      try {
+        next.el.currentTime = track.start;
+      } catch {
+        /* plays from 0 */
       }
-    });
+    }
     if (token !== this.#token) return void (next.starting = false);
     const lead = Math.max(0, plan.inFrom - ctx.currentTime);
     this.#fadeIn(next, { inFrom: ctx.currentTime + lead, inTo: ctx.currentTime + lead + (plan.inTo - plan.inFrom) });
@@ -567,13 +585,12 @@ export class Engine {
     g.cancelScheduledValues(0);
     g.setValueAtTime(g.value, from);
     g.linearRampToValueAtTime(0, Math.max(from + 0.05, to));
-    const key = d.key;
     d.key = null; // no longer the one meant to sound (a return to its key starts it afresh)
+    const gen = ++d.gen;
     d.starting = false;
     d.fadeEnd = 0;
-    setTimeout(() => {
-      if (d.key === null || d.key === key) d.el.pause();
-    }, (to - (this.ctx?.currentTime ?? 0)) * 1000 + 80);
+    // Not if the deck was given a track since (even the same key: the flip after a quick off/on reuses this deck).
+    setTimeout(() => d.gen === gen && d.el.pause(), (to - (this.ctx?.currentTime ?? 0)) * 1000 + 80);
   }
 
   /** A deck reached the end of its file: a one-shot (the opening) is over; a hand-off track whose hand-off didn't
@@ -624,11 +641,9 @@ export class Engine {
     b.el.loop = false;
     if (b.el.src !== a.el.src) {
       b.el.src = a.el.src;
-      await new Promise<void>((done) => {
-        b.el.addEventListener('loadedmetadata', () => done(), { once: true });
-        b.el.addEventListener('error', () => done(), { once: true });
-        b.el.load();
-      });
+      const loaded = firstEvent(b.el, ['loadedmetadata', 'error']);
+      b.el.load();
+      await loaded;
     }
     const tail = (Number.isFinite(b.el.duration) ? b.el.duration : a.el.duration) - end;
     if (stale() || !(tail > 1)) return void (this.#wrapping = false);
@@ -661,10 +676,7 @@ export class Engine {
       if (Math.abs(off) <= WRAP.tolerance) break;
       lag += off;
       b.el.currentTime = target + lag;
-      await new Promise<void>((done) => {
-        b.el.addEventListener('seeked', () => done(), { once: true });
-        setTimeout(done, 250);
-      });
+      await firstEvent(b.el, ['seeked'], 250);
     }
     if (stale()) return this.#cancelWrap();
     const now = ctx.currentTime;
@@ -675,11 +687,12 @@ export class Engine {
     ga.cancelScheduledValues(0);
     ga.setValueAtTime(ga.value, now);
     ga.linearRampToValueAtTime(0, now + WRAP.fade);
-    Object.assign(b, { key, level: a.level, end, starting: false, fadeEnd: now + WRAP.fade });
+    Object.assign(b, { key, level: a.level, end, starting: false, fadeEnd: now + WRAP.fade, gen: b.gen + 1 });
     Object.assign(a, { key: null, starting: false, fadeEnd: 0 });
+    const gen = ++a.gen;
     this.#front = this.#decks.indexOf(b);
     this.#wrapping = false;
-    setTimeout(() => a.key === null && a.el.pause(), WRAP.fade * 1000 + 80);
+    setTimeout(() => a.gen === gen && a.el.pause(), WRAP.fade * 1000 + 80);
     this.#armWrap();
   }
 
@@ -725,11 +738,13 @@ export class Engine {
     cur.fadeEnd = 0;
     const key = cur.key;
     setTimeout(() => token === this.#token && cur.key === key && cur.el.pause(), 380);
+    this.#idle.poke(); // held, nothing sounds: the context may sleep (#onIdle)
   }
 
-  /** The ambience layers to sound now (only ids with a file): new ones fade in, gone ones fade out. Loops are decoded
-   *  buffers (short, mono), so they loop without the gap an <audio loop> can have. */
-  async setAmbient(layers: { id: AmbientId; gain: number }[]): Promise<void> {
+  /** The ambience layers to sound now (only ids with a file): new ones fade in, gone ones fade out (`immediate`: stop
+   *  at once, for pause(): the suspended clock would freeze a fade, so they'd still sound on the way back). Loops are
+   *  decoded buffers (short, mono), so they loop without the gap an <audio loop> can have. */
+  async setAmbient(layers: { id: AmbientId; gain: number }[], immediate = false): Promise<void> {
     const ctx = this.ctx;
     if (!ctx) return;
     const token = ++this.#ambientToken;
@@ -739,8 +754,14 @@ export class Engine {
         a.gain.gain.setTargetAtTime(want.get(id)!, ctx.currentTime, 0.5);
         continue;
       }
-      a.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
-      a.src.stop(ctx.currentTime + 2.5);
+      if (immediate) {
+        a.gain.gain.cancelScheduledValues(0);
+        a.gain.gain.value = 0;
+        a.src.stop();
+      } else {
+        a.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
+        a.src.stop(ctx.currentTime + 2.5);
+      }
       this.#ambient.delete(id);
     }
     for (const [id, gain] of want) {
@@ -749,6 +770,7 @@ export class Engine {
       if (!path) continue;
       if (!this.#ambientBuffers.has(id)) this.#ambientBuffers.set(id, this.#decode(path));
       const buf = await this.#ambientBuffers.get(id)!;
+      if (!buf) this.#ambientBuffers.delete(id); // offline: the next change tries again
       if (!buf || token !== this.#ambientToken || this.#ambient.has(id)) continue;
       const src = ctx.createBufferSource();
       src.buffer = buf;
@@ -757,6 +779,7 @@ export class Engine {
       g.gain.value = 0;
       g.gain.setTargetAtTime(gain, ctx.currentTime, 0.8);
       src.connect(g).connect(this.#bus.ambient);
+      src.onended = () => g.disconnect();
       src.start(ctx.currentTime, Math.random() * buf.duration); // a random point: not the same surf every launch
       this.#ambient.set(id, { src, gain: g });
     }
@@ -778,7 +801,7 @@ export class Engine {
       d.starting = false;
       d.el.pause();
     }
-    void this.setAmbient([]);
+    void this.setAmbient([], true);
     this.#asleep = false;
     void ctx.suspend().catch(() => {});
   }

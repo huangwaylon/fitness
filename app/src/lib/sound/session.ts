@@ -1,6 +1,7 @@
 // The rules the engine follows around iOS's audio session and the AudioContext's life (docs/design/sound.md §11),
 // pure so they can be tested without an AudioContext: which session type, when a tap is needed, when a cue may
-// sound, when to let the hardware sleep, when a deck needs its fade-in, and the wrap hand-off's timing.
+// sound, when to let the hardware sleep, when a deck needs its fade-in, the wrap hand-off's timing and the hour clock.
+import { PREFETCH_MS, msToNextHour } from './hourly.ts';
 
 /** `navigator.audioSession.type`: 'playback' plays through the Ring/Silent switch and stops other apps' audio (the
  *  user asked for the music to play in silent mode); 'ambient' mixes with their audio and follows the switch. */
@@ -116,6 +117,46 @@ export class IdleTimer {
 
   get armed(): boolean {
     return this.#id !== null;
+  }
+}
+
+/**
+ * The top-of-the-hour timers for the hourly music: `prefetch(at)` PREFETCH_MS before the hour (`at`: just after it),
+ * then `change()` on the hour, re-arming itself. Stopped while the app is hidden (nothing changes or fetches there;
+ * coming back starts it again), so a background tab never piles up an hour's file at a time.
+ */
+export class HourClock {
+  #ids: unknown[] = [];
+  #now: () => Date;
+  #prefetch: (at: Date) => void;
+  #change: () => void;
+  #timers: Timers;
+  constructor(now: () => Date, prefetch: (at: Date) => void, change: () => void, timers: Timers = TIMERS) {
+    this.#now = now;
+    this.#prefetch = prefetch;
+    this.#change = change;
+    this.#timers = timers;
+  }
+
+  start(): void {
+    this.stop();
+    const ms = msToNextHour(this.#now());
+    this.#ids = [
+      this.#timers.set(() => this.#prefetch(new Date(this.#now().getTime() + PREFETCH_MS + 1000)), Math.max(0, ms - PREFETCH_MS)),
+      this.#timers.set(() => {
+        this.#change();
+        this.start();
+      }, ms + 30)
+    ];
+  }
+
+  stop(): void {
+    for (const id of this.#ids) this.#timers.clear(id);
+    this.#ids = [];
+  }
+
+  get armed(): boolean {
+    return this.#ids.length > 0;
   }
 }
 
