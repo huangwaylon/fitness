@@ -158,7 +158,8 @@ best; per person the newest row. Weight keeps the newest row per day. Views are 
 
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
 row on the server's clock, so read-time rules judge it as the server will; unsent edits that would miss their lock are
-left out. The store recomputes on every change and each minute.
+left out. The store recomputes on every change and each minute (not while hidden: a missed minute recomputes once
+on return).
 
 ### When it syncs
 

@@ -27,19 +27,39 @@ export function now(): Date {
   return new Date(Date.now() + init());
 }
 
-/** One timer for every clock on screen: it fires as the scene clock's minute changes, while anything reads it. */
-const minuteTick = createSubscriber((update) => {
+type Doc = Pick<Document, 'hidden' | 'addEventListener' | 'removeEventListener'>;
+
+/**
+ * The timer behind `minuteNow`: `update` as the scene clock's minute changes, but not while the page is hidden (a
+ * background tab still fires timers, and nothing is on screen to change): a missed minute updates once on return.
+ * Returns the cleanup.
+ */
+export function minuteTimer(update: () => void, doc: Doc | undefined = globalThis.document): () => void {
   let id: ReturnType<typeof setTimeout>;
+  let missed = false;
   const arm = () => {
     const d = now();
     id = setTimeout(() => {
-      update();
+      if (doc?.hidden) missed = true;
+      else update();
       arm();
     }, 60_000 - (d.getSeconds() * 1000 + d.getMilliseconds()) + 20);
   };
+  const onVisible = () => {
+    if (doc?.hidden || !missed) return;
+    missed = false;
+    update();
+  };
+  doc?.addEventListener('visibilitychange', onVisible);
   arm();
-  return () => clearTimeout(id);
-});
+  return () => {
+    clearTimeout(id);
+    doc?.removeEventListener('visibilitychange', onVisible);
+  };
+}
+
+/** One timer for every clock on screen, while anything reads it. */
+const minuteTick = createSubscriber((update) => minuteTimer(update));
 
 /** The scene clock, reactive: an effect or template that reads it re-runs at each new minute (HUD, しまフォン, the
  *  island's naps, the theme, the store's recompute). */
