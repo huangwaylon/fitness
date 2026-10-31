@@ -30,7 +30,7 @@
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
-  import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, POND, SAND, TREE, type Tod } from './scene.ts';
+  import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, POND, SAND, TREE, shoreY, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
@@ -136,13 +136,6 @@
 
   // ---------- geometry ----------
   const geo = () => stageGeo(scene);
-  /** The beach's sea edge (SAND's front, rounded at the corners) at x, in u. */
-  function shoreY(x: number): number {
-    const { x0, x1, y1, rb } = SAND;
-    const cx = clamp(x, x0 + rb, x1 - rb);
-    const dx = Math.min(Math.abs(x - cx), rb);
-    return y1 - rb + Math.sqrt(rb * rb - dx * dx);
-  }
   /** Where a shadow can swim on one side (−1 left, 1 right): the open sea off the front beach, just past the foam, down
    *  to above the screen's bottom edge and しずえ's box; where that's too shallow (a short browser viewport), the strip
    *  of side sea beside the island; null when neither has room. */
@@ -214,7 +207,7 @@
 
   /** A spot in `area` clear of the guards (null when there's none to be found). */
   function freeIn(area: Box, keep: Box[]): { x: number; y: number } | null {
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 48; i++) { // the lawn is mostly controls on a small phone: enough tries to find its gaps
       const p = inBox(area);
       if (!keep.some((b) => p.x > b.x0 && p.x < b.x1 && p.y > b.y0 && p.y < b.y1)) return p;
     }
@@ -433,9 +426,10 @@
   });
 
   // ---------- bugs ----------
-  function spawnBug(id: BugId | null, from?: { x: number; y: number }, stay = true) {
+  /** A bug comes on; false when there's nowhere clear for it on this screen right now. */
+  function spawnBug(id: BugId | null, from?: { x: number; y: number }, stay = true): boolean {
     const g = geo();
-    if (!id || !g || bug) return;
+    if (!id || !g || bug) return !!bug;
     void loadSprite();
     preload(critterArt(id));
     void loadLines().catch(() => {});
@@ -456,26 +450,28 @@
       : flight === 'dart' && !from ? LAWN
       : from || id === 'moth' ? HEDGE
       : flight === 'hop' || ground === 'grass' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
-    if (!area) return;
+    if (!area) return false;
     // flyers come in from the side of their patch; a firefly blinks on, a grasshopper is just there in the grass
     // its patch, minus the controls (measured once: the villagers and the jar don't move far); a cicada's trunk spot
     // is already measured clear of the tree's buttons
     // (on the pond, only the controls themselves: a canopy's top comes close to its water)
-    const keep = flight === 'perch' || flight === 'flower' ? [] : guardsU(g, ground === 'pond' ? 4 : 16);
+    // on the pond, only the controls themselves (a canopy's padding comes over its water, as for the pond's fish)
+    const keep = flight === 'perch' || flight === 'flower' ? [] : guardsU(g, ground === 'pond' ? -6 * g.k : 16);
     const spot = freeIn(area, keep);
-    if (!spot) return;
+    if (!spot) return false;
     // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
     const inPlace = flight === 'drift' || flight === 'flower' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
     const start = from ?? (inPlace ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y - (flight === 'perch' ? 40 : 0) });
     bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false, hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const }) };
     later(fly, 60);
     if (stay) later(() => bugLeave(), STAY_MS.bug);
+    return true;
   }
   function fly() {
     const b = bug;
     if (!b || b.gone || b.held) return;
     const p = freeIn(b.area, b.keep);
-    if (!p) return bugLeave();
+    if (!p) return later(fly, 1000); // nowhere else clear just now: it stays where it is a while
     if (b.flight === 'perch') {
       // in to the trunk, then it sits there and sings until it's netted, startled or done
       Object.assign(b, { ms: 1500, flip: p.x > b.x, x: p.x, y: p.y });
@@ -819,6 +815,10 @@
     const fishFor = async (water: Water, id?: FishId | PondFishId) => {
       if (!(await spawnFish(water, false, id)) && ++tries < 10) later(() => void fishFor(water, id), 400);
     };
+    // a bug, too, waits for a clear spot (the layout settling, a walk under way)
+    const bugFor = (id: BugId) => {
+      if (!spawnBug(id, undefined, false) && ++tries < 10) later(() => bugFor(id), 400);
+    };
     const go = () => {
       if (reducedMotion()) return;
       if (!enabled()) return later(go, 300);
@@ -829,7 +829,7 @@
       else if (want === 'pond') void fishFor('pond');
       else if (want in FISH) void fishFor('sea', want as FishId);
       else if (want === 'flea') spawnBug('flea', { x: 150, y: 250 }, false);
-      else if (want in BUGS && BUGS[want as BugId].flight !== 'dangle') spawnBug(want as BugId, undefined, false);
+      else if (want in BUGS && BUGS[want as BugId].flight !== 'dangle') bugFor(want as BugId);
       else void loadPond().then(({ POND_FISH }) => { if (want in POND_FISH) void fishFor('pond', want as PondFishId); });
     };
     later(go, 600);

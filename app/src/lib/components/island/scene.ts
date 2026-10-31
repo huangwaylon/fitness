@@ -98,6 +98,13 @@ export const hedgeKept = (i: number): boolean => HEDGE_KEPT.includes(i);
  *  trees: the hedge stands 111u behind their trunks, the rock and a weed spot in between. */
 export const PLATEAU = { x0: 44, y0: 32, x1: 346, y1: 316, rt: 60, rb: 26 } as const;
 export const SAND = { x0: 30, y0: 26, x1: 360, y1: 352, rt: 72, rb: 60 } as const;
+/** The front beach's sea edge (SAND's front, rounded at the corners) at x, in u. */
+export function shoreY(x: number): number {
+  const { x0, x1, y1, rb } = SAND;
+  const cx = Math.min(x1 - rb, Math.max(x0 + rb, x));
+  const dx = Math.min(Math.abs(x - cx), rb);
+  return y1 - rb + Math.sqrt(rb * rb - dx * dx);
+}
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the island
  *  (the hedge's top 14u to the beach's foam 356u) is centred in the visible ocean, the horizon down to the screen's bottom. */
 export const HORIZON_U = 0;
