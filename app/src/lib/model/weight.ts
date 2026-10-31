@@ -39,7 +39,7 @@ export interface WeightTrend {
   projection: WeightProjection | null;
 }
 
-/** Re-exported for WeightChart.svelte, which imports it from here. */
+/** Trend values and the weekly pace keep two decimals (shown with one). */
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
 /** A day's weight as of T: the latest ingested row or edit stamped at or before T. */

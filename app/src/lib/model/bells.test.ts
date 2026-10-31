@@ -212,6 +212,21 @@ describe('buys: the wallet must cover them, the buyer can undo them (ADR 0022)',
     expect(p.wallet.balance).toBe(3480);
   });
 
+  it('a later down-edit of an open week can uncover an earlier buy: it is ignored on read (pinned; ADR 0023 open question)', () => {
+    // Monday: A earns 920 by 09:00 and buys for 900 at 10:00. At 11:00 the exercise minutes are fixed down to 10 (below the first milestone, 🍑 0):
+    // the replay uses the day's current ベル, so the buy is no longer covered and drops out (the balance stays ≥ 0).
+    const day = D[0];
+    const at = jst(day, '09:00');
+    const rows = rowsOf({
+      metrics: [metric(at, 'A', day, 'steps', 9000), metric(at, 'A', day, 'exercise_min', 60), metric(at, 'A', day, 'move_kcal', 700), metric(at, 'A', day, 'stand_min', 200)],
+      events: [spend(jst(day, '10:00'), 'A', 's1', 900, 'x', 'trip')]
+    });
+    const edit = ev(jst(day, '11:00'), 'B', 'metric_set', { person: 'A', date: day, metric: 'exercise_min', value: 10 });
+    const noon = ms(day, '12:00');
+    expect(potsAt(reduce(rows), noon).wallet).toEqual({ earned: 920, spent: 900, balance: 20 });
+    expect(potsAt(reduce(plus(rows, { events: [edit] })), noon)).toMatchObject({ wallet: { earned: 500, spent: 0, balance: 500 }, spends: [] });
+  });
+
   it('buys are never locked: a void long after still counts', () => {
     const later = '2026-12-10';
     const s = reduce(plus(r, { events: [spend(jst(MON, '10:00'), 'A', 's1', 13000), ev(jst(later, '10:00'), 'A', 'spend_void', { spendId: 's1' })] }));
