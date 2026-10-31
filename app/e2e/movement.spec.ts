@@ -160,3 +160,19 @@ test('under a sheet the walkers stop and no footstep sounds', async ({ page }) =
   expect(await feet(page, 'partner')).toEqual(a);
   expect(await footsteps(page)).toBe(n);
 });
+
+for (const [w, h] of [[390, 844], [320, 568]] as const)
+  test(`a visitor: my villager walks over to talk and stands beside them, never in front (${w}px)`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none');
+    await expect(ribbon(page)).toBeVisible();
+    await page.waitForTimeout(800);
+    const v = await centre(page, '[data-visitor="gulliver"] .art');
+    await page.mouse.click(v.x, v.y);
+    await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+    // their middle is still theirs: no villager of mine under it
+    const onTop = await page.evaluate(({ x, y }) => document.elementsFromPoint(x, y).some((e) => e.closest('[data-actor="mine"]')), v);
+    expect(onTop).toBe(false);
+    expect(await overlaps(page)).toEqual([]);
+  });

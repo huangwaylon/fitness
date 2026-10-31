@@ -204,7 +204,7 @@
     return { mine: String(zm + (mineFront && zm === zp ? 1 : 0)), partner: String(zp + (!mineFront ? 1 : 0)) };
   });
   // My villager walks to what I tap (avatar.ts): the walk geometry from the scene's constants, a spot is fine when a
-  // villager standing there covers no control and isn't hidden behind a canopy (measured) and
+  // villager standing there covers no control or visitor and isn't hidden behind a canopy (measured) and
   // stays on screen, and the feet's live position (a walk re-targets from mid-step).
   // with a visitor on centre stage the villagers walk around them (and wander elsewhere: wander.ts)
   const geo = walkGeo(), geoVisited = walkGeo({ obstacles: [{ x0: CENTRE_STAGE.x - 18, x1: CENTRE_STAGE.x + 18, y0: CENTRE_STAGE.base - 10, y1: CENTRE_STAGE.base + 6 }] });
@@ -222,6 +222,11 @@
     const behind = depthZ(y) < 30;
     // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height)
     const keep = guardsU(g, -6 * g.k, (el) => el === self || (behind && el.matches('.row-btn')));
+    // nor in front of a visitor (a tap meant for them would land on the villager)
+    for (const v of sceneEl?.querySelectorAll('[data-visitor] .art') ?? []) {
+      const r = v.getBoundingClientRect();
+      if (r.width) keep.push({ x0: (r.left - g.r.left) * g.k + 4, x1: (r.right - g.r.left) * g.k - 4, y0: (r.top - g.r.top) * g.k + 4, y1: (r.bottom - g.r.top) * g.k - 4 });
+    }
     return clearAt(keep, x, y - VILLAGER.h * 0.46, VILLAGER.h * 0.225, VILLAGER.h * 0.46);
   }
   onMount(() => {
