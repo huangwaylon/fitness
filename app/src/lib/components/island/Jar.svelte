@@ -16,7 +16,8 @@
   let { fill, width = '60px', name }: Props = $props();
   const uid = $props.id();
 
-  const BODY = 'M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z';
+  /** The glass, its bottom bowed (2.6u at the middle) like the trunks' bases in NH's three-quarter view; it touches y 67.3. */
+  const BODY = 'M13 18 Q4 24 4 36 V58 Q4 66 12 66 Q27 68.6 42 66 Q50 66 50 58 V36 Q50 24 41 18 Z';
   const COIN_TOP = 22;
   /** The coin stack is drawn full and slid down by (1 − fill) × 44 (+8 when empty, fully hidden). */
   const slide = (f: number) => ((1 - Math.min(1, Math.max(0, f))) * 44 + (f > 0 ? 0 : 8)).toFixed(2);

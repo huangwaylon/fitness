@@ -5,7 +5,7 @@ import type { BushId, FlowerId } from '#lib/art.ts';
 import type { RingFruit } from '#lib/types.ts';
 import { jst } from '#lib/time/clock.ts';
 
-const STAGE_W = 390;
+export const STAGE_W = 390;
 const STAGE_H = 360;
 
 /** Stage units → CSS length (relative to the stage width; the stage is the container). */
@@ -15,12 +15,12 @@ export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
 /** The NH tile grid (docs/design.md "Layout and scale"). One tile = TILE u wide; a tile row is
  *  ROW u deep on screen (NH's camera foreshortens ground depth to ≈ 0.7 of the width). Columns are centred on
- *  the jar: col(k) = 195 + k·TILE, k = −3…3 (7 tiles across the plateau). Every size is a multiple of the
+ *  the plaza: col(k) = 195 + k·TILE, k = −3…3 (7 tiles across the plateau). Every size is a multiple of the
  *  villager height VILLAGER.h ≈ 1.8 tiles, measured against in-game screenshots (`.refs/scale/`). */
 export const TILE = 44;
 export const ROW = 31;
 const col = (k: number): number => 195 + k * TILE;
-/** Row bases (y of the feet / trunk bottom): back hedge, trees + jar, the flower beds' back and front rows
+/** Row bases (y of the feet / trunk bottom): back hedge, trees + plaza, the flower beds' back and front rows
  *  (the villagers stand on the front row). */
 const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
 
@@ -38,19 +38,19 @@ export const TREE_FRUIT: [number, number][] = [[-27, -56], [-10, -68], [10, -62]
 export const TREE_FRUIT_U = 20;
 /** Fruit on the ground, once met: [dx, dy] from the trunk base, in a fixed arc in front of the trunk, 🍐 🍑 🍒 🍎 left
  *  to right. NH puts one dropped item per tile; four can't fit, so they sit at a 20u pitch (compromise), centred on the
- *  trunk, and the row leans FRUIT_LEAN u away from the jar (out from the plaza), so it stays clear of the jar's plate
+ *  trunk, and the row leans FRUIT_LEAN u out from the plaza, so it stays clear of the middle
  *  and inside the plateau's side (x 44). */
 export const FRUIT_SPOTS: [number, number][] = [[-30, 6], [-10, 12], [10, 12], [30, 6]];
 export const FRUIT_LEAN = 8;
 /** Ground item size in u: NH dropped fruit ≈ 0.3 × a villager (≈ half a tile). */
 export const FRUIT_U = 24;
 /** Villagers (the scale's reference): 80u tall (≈ 1.8 tiles), on columns ±1 of the front row, flanking the
- *  jar; their heads stay below the ground fruit. */
+ *  plaza; their heads stay below the ground fruit. */
 export const VILLAGER = { foot: ROWS.front, h: 80, x: { A: col(-1), B: col(1) } as const };
 
-/** Jar (design.md "Layout and scale"): the plaza centrepiece on column 0 of the tree row, on a round sand patch; 52u wide (≈ 1.2
- *  tiles, 65u ≈ 0.8 villager tall: a little over one-tile furniture so the coins and the plate stay legible). */
-export const JAR = { x: col(0), base: ROWS.trees, w: 52 };
+/** The plaza (design.md "Layout and scale"): the island's open middle, column 0 of the tree row, a round sand patch
+ *  between the trees, kept free for a visiting villager (the jar is in the HUD, HudJar). */
+export const PLAZA = { x: col(0), base: ROWS.trees };
 
 interface Prop {
   key: string;
@@ -94,7 +94,7 @@ export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as cons
  *  (the hedge's top 32u to the beach's foam 356u) is centred in the visible ocean, the horizon down to the screen's bottom. */
 export const HORIZON_U = 8;
 
-/** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the jar, on columns ±2/±3 of the
+/** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the plaza, on columns ±2/±3 of the
  *  front two rows (the villagers stand on columns ±1; column 0 stays open for their strolls). One flower per
  *  tile, the back row one species and the front row another, as NH players plan a bed. NH flowers keep
  *  blooming under snow, so winter keeps roses and pansies, on snow mounds. A flower ≈ 0.45 × a villager. */

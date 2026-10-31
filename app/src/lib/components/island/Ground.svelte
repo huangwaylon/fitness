@@ -11,12 +11,12 @@
   //   strata) · the overhang's soft shade on the cliff top · the 3u grass overhang · the grass (radial highlight
   //   at (30%, 25%), broad blurred tonal patches, a soft lower shade, NH leaf triangles ≈ 0.2 tile on a jittered
   //   tile grid, flattened to the camera; winter: snow dimples, a blue-lilac lower shade and scallops over the
-  //   cliff edge) · the plaza patch under the jar · soft radial contact shadows under the trees, the jar, every
+  //   cliff edge) · the plaza patch · soft radial contact shadows under the trees, every
   //   hedge bush and every flower (docs/design.md "Layout and scale").
   // Colours: the season tables in tokens.css (Builder A block). The time of day is ONE multiply tint over
   // land and sea (IslandScene .tint), so nothing here is keyed on tod (except the dusk shadow stretch).
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, JAR, PLATEAU, ROW, SAND, TILE, TREE, outline, smooth } from './scene.ts';
+  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, PLATEAU, PLAZA, ROW, SAND, TILE, TREE, outline, smooth } from './scene.ts';
   import { mulberry32 } from '#lib/random.ts';
 
   interface Props {
@@ -69,9 +69,9 @@
     const inCorner = (x < P.x0 + r || x > P.x1 - r) && (y < P.y0 + r || y > P.y1 - r);
     return !inCorner || Math.hypot(x - cx, y - cy) < r - m;
   };
-  /** Clear ground: the plaza patch under the jar and the trunks' root flare. */
+  /** Clear ground: the plaza patch and the trunks' root flare. */
   const clear = (x: number, y: number) =>
-    Math.hypot((x - JAR.x) / 52, (y - JAR.base + 6) / 22) < 1 ||
+    Math.hypot((x - PLAZA.x) / 52, (y - PLAZA.base + 6) / 22) < 1 ||
     [TREE.x.A, TREE.x.B].some((tx) => Math.hypot((x - tx) / 26, (y - TREE.base + 3) / 9) < 1);
   const FLECKS = (() => {
     const r = mulberry32(1907);
@@ -202,14 +202,13 @@
   <g fill="var(--grass)">{#each SCALLOPS as [x, y], i (i)}<circle cx={x} cy={y} r="3.2" />{/each}</g>
 {/if}
 
-<!-- the plaza: a soft round sand patch under the jar (where NH puts the plaza) -->
-<ellipse cx={JAR.x} cy={JAR.base - 5} rx="52" ry="22" fill="url(#{uid}-plaza)" />
+<!-- the plaza: a soft round sand patch in the middle (where NH puts the plaza; a visitor stands there) -->
+<ellipse cx={PLAZA.x} cy={PLAZA.base - 5} rx="52" ry="22" fill="url(#{uid}-plaza)" />
 
 <!-- contact shadows (+6% right and down; dusk: stretched to the right) -->
 {#each [TREE.x.A, TREE.x.B] as x (x)}
   <ellipse cx={x + SH_TREE.rx * 0.12} cy={TREE.base + 1.5} rx={SH_TREE.rx} ry={SH_TREE.ry} fill="url(#{uid}-sh)" class="sh" />
 {/each}
-<ellipse cx={JAR.x + 3} cy={JAR.base + 1} rx={JAR.w * 0.55} ry="7" fill="url(#{uid}-sh-sand)" class="sh" />
 {#each BUSH_SH as b, i (i)}<ellipse cx={b.x} cy={b.y} rx={b.rx} ry={b.ry} fill="url(#{uid}-sh)" class="sh" />{/each}
 {#each FLOWER_SH as f, i (i)}<ellipse cx={f.x} cy={f.y} rx={f.rx} ry={f.ry} fill="url(#{uid}-sh)" opacity=".8" class="sh" />{/each}
 

@@ -45,10 +45,10 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
-test('wallet: one balance (the island plate’s) and exactly two rewards with their art: おやつ 8, 外食 15', async ({ page }) => {
+test('wallet: one balance (the HUD jar’s) and exactly two rewards with their art: おやつ 8, 外食 15', async ({ page }) => {
   await page.goto('?demo');
-  const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
-  await page.locator('.if-scene .jar').click();
+  const plate = await page.locator('.hud-jar > b').innerText();
+  await page.locator('.hud-jar').click();
   await expect(page.locator('.jar-screen')).toBeVisible();
   await expect(page.locator('.hero .total')).toContainText(plate.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ','));
   const shop = page.locator('.shop');
@@ -233,7 +233,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await expect(popups).toHaveCount(0);
 });
 
-test('a tap on an open tree popup closes it and reaches nothing under it (the jar, the other tree)', async ({ page }) => {
+test('a tap on an open tree popup closes it and reaches nothing under it (the other tree)', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   await page.locator('button.canopy').first().click();
@@ -289,7 +289,7 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await bar.locator('.close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // the wallet: ‹ 島へ top-left; the buy confirm has ✕
-  await page.locator('.if-scene .jar').click();
+  await page.locator('.hud-jar').click();
   await expect(page.locator('.jar-screen a.back')).toBeVisible();
   await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
   close = sheet(page).locator('.navbar .close');
@@ -428,4 +428,37 @@ test('the panel: its tabs show whole (lip included, nothing paints over it) and 
     for (const x of m.tabs) expect(x).toEqual({ inRow: true, clean: true });
     expect(Math.abs(m.gap)).toBeLessThanOrEqual(1);
   }
+});
+
+test('the jar sits beside today’s ribbon: one row centred as a group, both ≥ 44px and apart, on screen at 320–390, day and night', async ({ page }) => {
+  for (const [w, h] of [[320, 568], [375, 667], [390, 844]]) {
+    for (const at of ['2026-10-28T12:00', '2026-10-28T22:00']) {
+      await page.setViewportSize({ width: w, height: h });
+      await page.goto(`?demo&date=${at}`);
+      await islandReady(page);
+      const ribbon = (await page.locator('.ribbon').boundingBox())!;
+      const jar = (await page.locator('.hud-jar').boundingBox())!;
+      expect(ribbon.height).toBeGreaterThanOrEqual(44);
+      expect(jar.height).toBeGreaterThanOrEqual(44);
+      expect(jar.width).toBeGreaterThanOrEqual(44);
+      // one row: the same top and height
+      expect(Math.abs(jar.y - ribbon.y)).toBeLessThan(1);
+      // the ribbon's right tail (16px) sits in the gap, clear of the jar
+      expect(jar.x - (ribbon.x + ribbon.width)).toBeGreaterThanOrEqual(18);
+      // centred as a group (the left tail counted in), inside the screen with room to spare
+      const left = ribbon.x - 16, right = jar.x + jar.width;
+      expect(left).toBeGreaterThanOrEqual(8);
+      expect(right).toBeLessThanOrEqual(w - 8);
+      expect(Math.abs((left + right) / 2 - w / 2)).toBeLessThan(2);
+      // the jar's lid rises out of the pill
+      const glass = (await page.locator('.hud-jar .jarart').boundingBox())!;
+      expect(glass.y).toBeLessThan(jar.y);
+    }
+  }
+  // the two taps stay apart: the ribbon opens the panel, the jar goes to ごほうび
+  await openPanel(page);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await page.locator('.hud-jar').click();
+  await expect(page.locator('.jar-screen')).toBeVisible();
 });

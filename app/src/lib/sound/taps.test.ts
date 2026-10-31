@@ -21,7 +21,7 @@ const SELF: Record<string, string> = {
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
-  'lib/components/island/JarSpot.svelte': 'the jar → jar-tap',
+  'lib/components/island/HudJar.svelte': 'the jar → jar-tap',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon'
@@ -42,7 +42,6 @@ const NONE: Record<string, string> = {
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */
 const DISABLED: Record<string, string> = {
   'lib/components/island/IslandScene.svelte': 'villagers during the opening beats (not a "can\'t", the scene is still arriving)',
-  'lib/components/island/JarSpot.svelte': 'the jar during the opening beats',
   'lib/components/panel/SoundSection.svelte': 'the volume slider while all sound is off (nothing could sound anyway)',
   'routes/pair/+page.svelte': 'つなぐ while the key is being checked (busy, not refused)'
 };

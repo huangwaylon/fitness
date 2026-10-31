@@ -31,8 +31,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ### Island
 
-Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; centred in the sky between the safe
-area and the horizon; tap → [the panel](#panel)), a sync chip
+Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the panel](#panel))
+with the jar beside it on its right, the two one row centred in the sky between the safe area and the horizon, a sync chip
 only when sync isn't ok, the scene, しずえ's box only with news. Nothing else sits at the bottom: the island is centred
 in the visible ocean, from the horizon down to the screen's bottom above the home indicator, and never runs under the
 ribbon.
@@ -46,10 +46,15 @@ ribbon.
   when three or four were reached: they all keep their ★, only two pay); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
   line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
   small dot once it is over 6 hours old.
-- **Jar + plate:** the balance; each goal met flies in as a +1 coin from its fruit (+2 with its がんばり), ふたりでぜんぶ
-  as a +2 over the jar. Tap → ごほうび.
+- **Jar** (`island/HudJar.svelte`, in the HUD row): a cream pill as tall as the ribbon, with its lip, the jar (our
+  drawing, 36–42px wide) rising out of its left end, then the shared balance and a leaf ▶ dot. The ribbon's right tail
+  sits in the 20–26px gap; the row's left pad balances the left tail, so the pair is centred; on a narrow phone the
+  ribbon's padding tightens (realistic widths, 「+18」 and 9,999, fit 320 with 12px to spare). Each goal met flies in as
+  a +1 coin from its fruit on the island (+2 with its がんばり), up into the jar (CoinFlow, in a layer over the stage); ふたりでぜんぶ as a +2
+  under the jar. Tap → ごほうび (the page zooms about the jar, which morphs into the hero jar).
+- **The plaza:** the island's middle (column 0 of the tree row, `PLAZA`), a round sand patch kept open for a visitor.
 - **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner opens their card.
-- Controls are real buttons with `aria-label`, ≥ 44px (villagers and jar 64px); focus order = visual order.
+- Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
 
@@ -255,11 +260,11 @@ each surface one fill, one gradient, one soft shade, sparse flecks; no strokes o
 An elastic sky over a **stage of 390 × 360 units (u)**. The island (32u–356u) is centred between the horizon and the
 screen's bottom above the home indicator (`--island-bottom`); the sky is at most 27% of the screen; nothing runs under
 the ribbon. Back
-to front: sky · sea · ground · hedge · trees + fruit · jar · flower beds · villagers · particles · one tint.
+to front: sky · sea · ground · hedge · trees + fruit · flower beds · villagers · particles · one tint.
 
-`scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 80 · trees + jar
+`scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 80 · trees + plaza
 173 · bed back 266 · front 297. Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u (cols −3…3) ·
-flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · jar 52u wide (col 0).
+flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · the plaza patch 104u × 44u (col 0).
 
 ### Environment
 
@@ -318,7 +323,7 @@ its person's flowers through one Tokyo day (a quick run of canopy taps shakes it
 - **Tap or shake:** one canopy tap opens (or closes) the popup as before; a quick run, the third tap within 1.2 s
   and each quick tap after, is a shake: the popup closes, the tree rustles and drops its leaves (`tree-shake`).
 - **What falls:** 1 in 8 shakes a wasp nest (at most one per tree an hour, `tree-nest` in localStorage), else 1 in 5
-  a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the jar's side, between the canopy's and the fruit
+  a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the plaza's side, between the canopy's and the fruit
   row's buttons, until a tap picks it up (a hop and gone, `scene-twig`; cosmetic). No ベル ever: scenery never pays
   (NH's bells and furniture from trees are left out).
 - **The nest:** it falls beside the trunk on the outer side (`scene-nest`); 0.6 s later three wasps buzz out
@@ -345,7 +350,7 @@ star); a clear night sends a shooting star every 15–40 s.
 
 **Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
 the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
-behind the trees and the jar, bounces, sparkles and fades (off the island's corner it drops into the sea). No caption.
+behind the trees, bounces, sparkles and fades (off the island's corner it drops into the sea). No caption.
 Short skies fly a smaller balloon under the ribbon, or none.
 
 **Critters** (NH species, Tokyo clock; for fun, frequent): a visit every 8–15 s of on-screen time (the first after
@@ -408,13 +413,13 @@ fragment is a ずかん `find` (never ベル).
 **Island care** (`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts`; no ベル, no find):
 
 - **Weeds** (our own tufts: NH's icon is a sack of them) sprout every 30–60 minutes on the lawn's free spots (`LAWN`:
-  beside the trunks, in front of the hedge by the jar, between the villagers' feet; a showing dig spot keeps its spot),
+  beside the trunks, in front of the hedge by the plaza, between the villagers' feet; a showing dig spot keeps its spot),
   the newest three at a time. A tap pulls one: it pops up and tumbles away with two clods of earth (`scene-weed`).
 - **Watering:** a flower tap is NH's watering can (it tilts in over the bloom, three drops, a late glint; `scene-water`)
   on top of the wiggle. A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell tomorrow (NH's
   hybrids, simplified: tulips → purple, black, orange; roses → black, orange, pink, purple, blue; cosmos → orange,
   black; mums → pink, green; pansies → blue, purple), for that whole day (`scene-garden` in localStorage).
-- **The rock** (NH's rock, in front of the hedge by the jar's lid): a tap clonks it (a jolt, `scene-clonk`), 1 in 4 a
+- **The rock** (NH's rock, in front of the hedge, left of the plaza): a tap clonks it (a jolt, `scene-clonk`), 1 in 4 a
   sparkle (NH's money rock, without the money), 1 in 8 a pill bug or a centipede crawls out from under it.
 - Weeds, dig spots and the rock are measured clear of the controls themselves on each screen (a spot a control covers
   isn't shown); a flower's tap cell is a reach away from every lawn spot. `?hybrid` (dev or `?demo`) shows one.
@@ -508,7 +513,7 @@ Official NH renders only from `static/art/` through `<OfficialArt>`, with a fall
 screen; WebP, never upscaled. Manifest and helpers `lib/art.ts`; files from `scripts/fetch-assets.ts`. Groups:
 villagers (all 417 of NH + 23 special characters; roster `lib/villagers/roster.ts`, loaded with the picker; the
 island draws through `lib/villagers/look.ts`: ids, facing, defaults goldie and anchovy), host (しずえ, たぬきち),
-fruit, seasonal oaks, bushes, flowers, season particles, reactions, money, deco. Ours: sky, sea, ground, the jar, effects, marks,
+fruit, seasonal oaks, bushes, flowers, season particles, reactions, money, deco. Ours: sky, sea, ground, the jar (HUD and ごほうび), effects, marks,
 UI sprites. Names follow the Japanese game (しずえ, ベル); no Nintendo fonts.
 
 ## Sound
