@@ -64,6 +64,30 @@ describe('LiveBackend storage problems', () => {
   });
 });
 
+describe('LiveBackend refused events', () => {
+  const refusing = () => configureTransport({
+    url: 'https://script.example/exec',
+    fetch: (async (_u: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body)) as { action: string };
+      return new Response(JSON.stringify(body.action === 'event' ? { ok: false, error: 'bad_request' }
+        : { ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }));
+    }) as typeof fetch
+  });
+  it('a refused buy or pref says so; a refused ずかん find (a script not yet redeployed) goes quietly', async () => {
+    configureStorage({ local: new Mem() });
+    setKey('ab'.repeat(32), 'A');
+    refusing();
+    const b = new LiveBackend(host());
+    b.send('find', { kind: 'fish', id: 'tuna' }, {});
+    await b.refresh({});
+    expect(queued()).toHaveLength(0);
+    expect(toasts.current).toBeNull();
+    b.send('highfive', {}, {});
+    await b.refresh({});
+    expect(toasts.current?.text).toBe(t('state.saveFailed'));
+  });
+});
+
 describe('LiveBackend sync recovery', () => {
   it('a malformed reply stops the spinner, and the next refresh fetches again', async () => {
     configureStorage({ local: new Mem() });
