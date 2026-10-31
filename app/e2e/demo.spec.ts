@@ -395,6 +395,8 @@ test('きろく opens light: the newest three weeks of ベル; 「まえの週�
   await openPanel(page);
   const weeks = sheet(page).locator('section.week');
   await expect(weeks).toHaveCount(3);
+  // earnings only: the demo buys every week, and none of it shows here (the buys live on ごほうび)
+  await expect(weeks.first()).not.toContainText(/おやつ|外食|とりけす/);
   await sheet(page).getByRole('button', { name: 'まえの週も 見る' }).first().click();
   await expect.poll(() => weeks.count()).toBeGreaterThan(3);
 });

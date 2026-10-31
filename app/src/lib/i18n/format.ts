@@ -30,8 +30,6 @@ const hm = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit'
 const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: ZONE }); // YYYY-MM-DD
 /** A stamp's 24 h Tokyo time: `21:04`. */
 const timeOf = (at: number | string | Date): string => hm.format(new Date(at));
-/** `10/22 21:04` (Tokyo). */
-export const stampOf = (at: number): string => `${md(ymd.format(new Date(at)))} ${timeOf(at)}`;
 
 /** A sync time: 24 h Tokyo, prefixed with the date when it isn't `today`. */
 export function formatSyncTime(iso: string | Date | null, today?: string): string {

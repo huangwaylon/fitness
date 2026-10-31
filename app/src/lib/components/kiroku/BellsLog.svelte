@@ -5,16 +5,15 @@
 
 <script lang="ts">
   // The passbook (like NH's ATM statement): everything ever earned, then the ledger by week, newest first, each with its
-  // total: the buys (any → とりけす, asked first) and one line per day: each person's four goals (bright = met, +1
-  // each), the ふたりでぜんぶ star (+2) and the day's ベル; tap → the day.
+  // earnings and one line per day: each person's four goals (bright = met, +1 each), the ふたりでぜんぶ star (+2) and the
+  // day's ベル; tap → the day. Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
   import type { PersonId, WeekKey } from '#lib/types.ts';
-  import type { BellsLedger, LedgerDay, LedgerSpend } from '#lib/model/history.ts';
-  import { localDateAt, weekKeyOf } from '#lib/time/dates.ts';
+  import type { BellsLedger, LedgerDay } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Bells from '../ui/Bells.svelte';
   import GoalMarks from './GoalMarks.svelte';
   import { formatBells, t } from '#lib/i18n/index.ts';
-  import { stampOf, weekRange } from '#lib/i18n/format.ts';
+  import { weekRange } from '#lib/i18n/format.ts';
   import { dayTitle } from './fmt.ts';
 
   interface Props {
@@ -22,21 +21,19 @@
     order: PersonId[];
     names: Record<PersonId, string>;
     villagers: Record<PersonId, string | null>;
-    onvoid: (spendId: string, label: string, bells: number) => void;
     onday: (date: string) => void;
   }
-  let { ledger, order, names, villagers, onvoid, onday }: Props = $props();
+  let { ledger, order, names, villagers, onday }: Props = $props();
 
-  interface Week { weekKey: WeekKey; days: LedgerDay[]; spends: LedgerSpend[]; bells: number }
+  interface Week { weekKey: WeekKey; days: LedgerDay[]; bells: number }
   const weeks = $derived.by((): Week[] => {
     const m = new Map<WeekKey, Week>();
-    const get = (wk: WeekKey) => m.get(wk) ?? m.set(wk, { weekKey: wk, days: [], spends: [], bells: 0 }).get(wk)!;
+    const get = (wk: WeekKey) => m.get(wk) ?? m.set(wk, { weekKey: wk, days: [], bells: 0 }).get(wk)!;
     for (const d of ledger.days) {
       const w = get(d.weekKey);
       w.days.push(d);
       w.bells += d.bells;
     }
-    for (const s of ledger.spends) get(weekKeyOf(localDateAt(s.at))).spends.push(s);
     return [...m.values()].sort((a, b) => b.weekKey.localeCompare(a.weekKey));
   });
   /** The newest weeks first; older ones a tap away, so opening the panel doesn't build every week's rows at once. */
@@ -61,17 +58,6 @@
       <b class="money">{formatBells(w.bells, { signed: true })}</b>
     </h4>
     <ul class="card rows">
-      {#each w.spends as s (s.spendId)}
-        {@const label = t(`shop.${s.item}`)}
-        <li class="sp" class:void={s.voided}>
-          <Avatar person={s.by} villager={villagers[s.by]} size={24} />
-          <span class="lbl"><span>{label}</span><small class="meta"><span>{stampOf(s.at)}</span>{#if s.voided}<span>{t('kiroku.spend.voided')}</span>{/if}</small></span>
-          <span class="money amt">{formatBells(-s.bells)}</span>
-          {#if !s.voided}
-            <button type="button" class="mini" data-sfx="page" onclick={() => onvoid(s.spendId, label, s.bells)}>{t('kiroku.voidSpend')}</button>
-          {/if}
-        </li>
-      {/each}
       {#if w.days.length}
         <!-- whose goals each column shows -->
         <li class="day head" aria-hidden="true">
@@ -108,23 +94,7 @@
   h4 b { margin-left: auto; font-size: var(--fs-talk); color: var(--text); }
   .rows { list-style: none; margin: 0; padding: 4px 12px; display: grid; }
   .rows li { display: flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; }
-  /* a spend: the label block, the amount, then とりけす (wraps under them on a narrow phone) */
-  .sp { flex-wrap: wrap; align-content: flex-start; row-gap: 4px; padding: 4px 0 8px; }
-  .sp .lbl { flex: 1 1 6em; }
   .rows li + li { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
-  .lbl { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: var(--fs-body); padding: 6px 0; }
-  .lbl small { font-size: var(--fs-s); color: var(--text-soft); }
-  /* meta parts never break inside a name or an amount; they wrap between parts */
-  .meta { display: flex; flex-wrap: wrap; gap: 0 8px; }
-  .meta > span { white-space: nowrap; }
-  .amt { font-size: var(--fs-body); white-space: nowrap; }
-  .void .lbl, .void .amt { color: var(--text-soft); }
-  .void .amt, .void .lbl > :first-child { text-decoration: line-through; }
-  .mini {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: var(--hit); padding: 0 10px; border-radius: var(--r-btn); flex: none;
-    font: 700 var(--fs-s)/1 var(--font-ui); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); white-space: nowrap; margin-left: auto;
-  }
-  .mini:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* a day: one line in shared columns (date · my goals · the partner's · ★ · the day's ベル); the line opens the day */
   .day { padding: 0 !important; }
   /* fixed columns, so the head's avatars sit over their goals and every day lines up (--mw: one GoalMarks row) */
@@ -144,5 +114,5 @@
   .star { width: 18px; height: 18px; fill: var(--c-yuzu-lip); }
   .tot { font-size: var(--fs-body); white-space: nowrap; text-align: right; }
   .zero .dbtn { color: var(--text-soft); }
-  @media (max-width: 359px) { .sp :global(.av) { display: none; } .rows { padding: 4px 8px; --mk: 13px; } .day, .dbtn { column-gap: 6px; } }
+  @media (max-width: 359px) { .rows { padding: 4px 8px; --mk: 13px; } .day, .dbtn { column-gap: 6px; } }
 </style>
