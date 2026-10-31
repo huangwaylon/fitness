@@ -4,9 +4,9 @@ import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey }
 import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { exerciseMilli, manualMinutesByDay, zeroRings, type WeekEarning } from '#lib/scoring/bells.ts';
 import { editableAt, finalMs, firstWeek, isLockedAt, latestAt, latestTimed, PEOPLE_IDS, provisionalMs, type State } from './state.ts';
-import { dailyUpTo, dayBells, earnTimeOf, LIVE, weekBells, type WeekBells } from './bells.ts';
+import { dailyUpTo, dayBells, earnTimeOf, weekBells, type WeekBells } from './bells.ts';
 import { replayHarvests } from './week.ts';
-import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
+import { metricAsOf, weekDates, workoutsAsOf } from './inputs.ts';
 
 /** A week's ベル at `now`: daily earnings up to today, and the bonus once it landed (Sunday 19:30). */
 function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
@@ -74,12 +74,11 @@ export interface HistoryWeek {
  * A week as きろく reads it: open weeks show live numbers; a closed week shows what it had at its lock (late syncs after
  * it never count). `wb`: the week's earnings (its days' metrics and ベル).
  */
-interface WeekCalc { t: number; act: Record<PersonId, Activity>; wb: WeekBells }
+interface WeekCalc { t: number; wb: WeekBells }
 
 function calc(s: State, wk: WeekKey, now: number): WeekCalc {
   const t = earnTimeOf(wk, now);
-  const act = { A: activityAsOf(s, 'A', t, weekDates(wk)), B: activityAsOf(s, 'B', t, weekDates(wk)) };
-  return { t, act, wb: weekBells(s, wk, now, t === LIVE ? act : undefined) };
+  return { t, wb: weekBells(s, wk, now) };
 }
 
 interface DayExercise {
@@ -284,12 +283,13 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   const log = editLog(s).filter((e) => e.date === date);
   const person = (p: PersonId): DayPerson => {
     const t = c.t;
-    const m = dayExercise(s, p, date, t, manualMinutesByDay(c.act[p].workouts).get(date) ?? 0);
+    const counted = workoutsAsOf(s, p, t, weekDates(wk));
+    const m = dayExercise(s, p, date, t, manualMinutesByDay(counted).get(date) ?? 0);
     const d = wb[p].days.find((x) => x.date === date);
-    const counted = new Set(c.act[p].workouts.map((w) => w.id));
+    const countedIds = new Set(counted.map((w) => w.id));
     const workouts = s.workouts[p]
       .filter((w) => w.date === date && w.at <= t)
-      .map((w): DayWorkout => ({ id: w.id, type: w.type, durationMin: w.durationMin, excluded: !counted.has(w.id) }));
+      .map((w): DayWorkout => ({ id: w.id, type: w.type, durationMin: w.durationMin, excluded: !countedIds.has(w.id) }));
     const mine = log.filter((e) => e.person === p);
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {

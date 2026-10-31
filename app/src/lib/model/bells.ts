@@ -9,18 +9,17 @@ import { DEFAULT_MENU, ESCALATING_ITEMS, ESCALATION } from '#lib/config/rules.ts
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, isLockedAt, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
-import { activityAsOf, metricAsOf, weekDates, type Activity } from './inputs.ts';
+import { metricAsOf, weekDates, workoutsAsOf } from './inputs.ts';
 
 /** `t` for an open week: every row counts. */
-export const LIVE = Infinity;
+const LIVE = Infinity;
 
 /** A week's earnings are live until its lock, then fixed at the lock (a late sync or edit after it never counts). */
 export const earnTimeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? finalMs(wk) : LIVE);
 
-/** One person's week as of t, for `earnWeek`. `act`: their activity as of t covering the week (else derived). */
-function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Activity = activityAsOf(s, person, t, weekDates(wk))): EarnInput {
+/** One person's week as of t, for `earnWeek`. */
+function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInput {
   const dates = weekDays(wk);
-  const inWeek = (d: LocalDate) => d >= dates[0] && d <= dates[6];
   return {
     person,
     weekKey: wk,
@@ -32,7 +31,7 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number, act: Acti
       standMin: metricAsOf(s, person, date, 'stand_min', t),
       moveGoal: moveGoalOn(s, person, date, t)
     })),
-    workouts: act.workouts.filter((w) => inWeek(w.date))
+    workouts: workoutsAsOf(s, person, t, weekDates(wk))
   };
 }
 
@@ -48,9 +47,9 @@ export interface WeekBells {
   bonusBells: number;
 }
 
-function computeWeekBells(s: State, wk: WeekKey, t: number, act?: Partial<Record<PersonId, Activity>>): WeekBells {
-  const A = earnWeek(earnInput(s, 'A', wk, t, act?.A));
-  const B = earnWeek(earnInput(s, 'B', wk, t, act?.B));
+function computeWeekBells(s: State, wk: WeekKey, t: number): WeekBells {
+  const A = earnWeek(earnInput(s, 'A', wk, t));
+  const B = earnWeek(earnInput(s, 'B', wk, t));
   const bonus = { A: A.bonus, B: B.bonus, duo: duoBonus(A, B) };
   return { weekKey: wk, t, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo };
 }
@@ -59,11 +58,8 @@ const perState = new WeakMap<State, Map<string, WeekBells>>();
 /** Locked weeks across States: keyed by week and the rows stamped by its lock, per `rev`. */
 const lockedWeeks = { rev: '', byKey: new Map<string, WeekBells>() };
 
-/**
- * A week's earnings at `now`. `act` (activity as of LIVE covering the week) only saves work for an open week.
- * Don't mutate the result: it is shared.
- */
-export function weekBells(s: State, wk: WeekKey, now: number, act?: Partial<Record<PersonId, Activity>>): WeekBells {
+/** A week's earnings at `now`. Don't mutate the result: it is shared. */
+export function weekBells(s: State, wk: WeekKey, now: number): WeekBells {
   const t = earnTimeOf(wk, now);
   let mine = perState.get(s);
   if (!mine) perState.set(s, (mine = new Map()));
@@ -78,7 +74,7 @@ export function weekBells(s: State, wk: WeekKey, now: number, act?: Partial<Reco
     const k = `${wk}|${rowsUpTo(s, t)}`;
     w = lockedWeeks.byKey.get(k);
     if (!w) lockedWeeks.byKey.set(k, (w = computeWeekBells(s, wk, t)));
-  } else w = computeWeekBells(s, wk, t, t === LIVE ? act : undefined);
+  } else w = computeWeekBells(s, wk, t);
   mine.set(key, w);
   return w;
 }

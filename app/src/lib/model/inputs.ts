@@ -10,7 +10,7 @@ export interface Dates { from: LocalDate; to: LocalDate }
 export const weekDates = (wk: WeekKey): Dates => ({ from: wk, to: addDays(wk, 6) });
 
 /** The workouts added in きろく as of T, without the ones excluded since. */
-function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates): Workout[] {
+export function workoutsAsOf(s: State, person: PersonId, t: number, dates: Dates): Workout[] {
   const out: Workout[] = [];
   for (const w of s.workouts[person]) {
     if (w.at > t || w.date < dates.from || w.date > dates.to) continue;
@@ -33,9 +33,4 @@ export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 
   return best;
 }
 
-export interface Activity { workouts: Workout[] }
-
-export function activityAsOf(s: State, person: PersonId, t: number, dates: Dates): Activity {
-  return { workouts: workoutsAsOf(s, person, t, dates) };
-}
 
