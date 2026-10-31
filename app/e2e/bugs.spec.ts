@@ -94,3 +94,51 @@ test('a stink bug on the flower beds and a long-horned beetle on a trunk are net
     await expect(page.locator('[data-fx="catch"]')).toContainText(said(id));
   }
 });
+
+/** The bed flower whose head (its top third) is under the point, if any. */
+const onFlowerHead = (page: Page, p: { x: number; y: number }) =>
+  page.evaluate(({ x, y }) => [...document.querySelectorAll('[data-flower]')].some((el) => {
+    const r = el.getBoundingClientRect();
+    return x > r.left && x < r.right && y > r.top - 4 && y < r.top + r.height * 0.35;
+  }), p);
+
+test('NH’s flower bugs: a ladybug and a mantis sit still on a flower’s head (and are netted there)', async ({ page }) => {
+  for (const id of ['ladybug', 'orchid-mantis']) {
+    await open(page, `&date=2026-05-10T12:00&critter=${id}`);
+    await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
+    await page.waitForTimeout(900);
+    const p = await at(page, `[data-critter="${id}"]`);
+    expect(await onFlowerHead(page, p), id).toBe(true);
+    expect(await clear(page, p)).toBe('');
+    await page.waitForTimeout(1500);
+    const q = await at(page, `[data-critter="${id}"]`);
+    expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);
+  }
+  const m = await at(page, '[data-critter="orchid-mantis"]');
+  await page.mouse.click(m.x, m.y);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(said('orchid-mantis').slice(0, 6), { timeout: 4000 });
+});
+
+test('fireflies: a little cloud of lights blinking out of step', async ({ page }) => {
+  await open(page, '&date=2026-07-10T21:00&critter=firefly');
+  const lights = page.locator('[data-critter="firefly"] .glow');
+  await expect(lights).toHaveCount(4);
+  const delays = await lights.evaluateAll((els) => els.map((e) => getComputedStyle(e).animationDelay.split(',')[0]));
+  expect(new Set(delays).size).toBe(4);
+});
+
+test('a butterfly lands on a flower now and then (its wings slowly opening and closing)', async ({ page }) => {
+  await open(page, '&date=2026-05-10T12:00&critter=common-butterfly');
+  await expect(page.locator('[data-critter="common-butterfly"].sat')).toBeAttached({ timeout: 15_000 });
+  expect(await onFlowerHead(page, await at(page, '[data-critter="common-butterfly"]'))).toBe(true);
+});
+
+test('a dragonfly darts over the open lawn, in front of the back row (not the sea behind it)', async ({ page }) => {
+  await open(page, '&date=2026-08-10T12:00&critter=darner-dragonfly');
+  await expect(page.locator('[data-critter="darner-dragonfly"]')).toBeAttached();
+  await page.waitForTimeout(2500);
+  const p = await at(page, '[data-critter="darner-dragonfly"]');
+  const museum = (await page.locator('[data-scenery]').first().boundingBox())!;
+  expect(p.y).toBeGreaterThan(museum.y + museum.height);
+  expect(await clear(page, p)).toBe('');
+});

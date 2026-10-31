@@ -44,8 +44,6 @@
     emoteSize?: string;
     /** Ground shadow under the feet (squashes with hops). */
     shadow?: boolean;
-    /** Stung by a shaken tree's wasps (island/TreeShakes.svelte): NH's swollen eye, for a while. */
-    puffy?: boolean;
     /** A hat on its head (island/birthday.ts: NH's birthday hat on a birthday), an art key. */
     hat?: string | null;
     /** Tricked by Jack on Halloween (island/Visitor.svelte): NH's trick changes your look; here, party nose glasses. */
@@ -53,7 +51,7 @@
   }
   let {
     person = 'A', villager, expression = 'happy', size = 48, head, emote = false,
-    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, puffy = false, tricked = false, hat = null
+    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, tricked = false, hat = null
   }: Props = $props();
 
   const pref = $derived(week.view?.people?.[person]?.villager);
@@ -116,7 +114,6 @@
       <OfficialArt {key} size={h} {eager}>
         {#snippet fallback()}<RosterSilhouette id={look.id} head={headOnly} height={h} />{/snippet}
       </OfficialArt>
-      {#if puffy && !headOnly}<span class="puffy" data-puffy aria-hidden="true"></span>{/if}
       {#if hat && !headOnly}<span class="hat" data-hat aria-hidden="true"><OfficialArt key={hat} size="calc(var(--h) * .24)" eager /></span>{/if}
       {#if tricked && !headOnly}
         <svg class="tricked" data-tricked viewBox="0 0 72 34" aria-hidden="true">
@@ -169,12 +166,6 @@
   /* facing flips squash through scaleX(0) over 200ms; .lean tilts toward the middle instead */
   .face { display: block; transform-origin: 50% 100%; transform: scaleX(var(--facing, 1)); transition: transform 200ms var(--ease-soft); }
   .body { position: relative; display: block; transform-origin: 50% 100%; }
-  /* NH's sting: one eye swollen shut under a round pink lump (on the face, over the eye on the left as drawn) */
-  .puffy {
-    position: absolute; left: 19%; top: 14%; width: 19%; aspect-ratio: 1.1; border-radius: 50% 50% 46% 46%;
-    background: radial-gradient(circle at 36% 32%, #FFE3E6 0 14%, #FF9FAE 34%, #EE6F86 78%, #D95773);
-    box-shadow: 0 1px 2px rgb(120 30 50 / .3); transform-origin: 50% 70%; animation: puff-up 420ms var(--ease-bounce) both;
-  }
   /* Jack's trick: party nose glasses (鼻めがね) over the face, popping on with a wobble */
   .tricked {
     position: absolute; left: 14%; top: 11%; width: 72%; height: auto; overflow: visible;

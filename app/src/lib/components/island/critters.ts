@@ -111,13 +111,14 @@ export type BugId =
   | 'citrus-long-horned-beetle' | 'rosalia-batesi-beetle' | 'scarab-beetle' | 'mole-cricket' | 'tarantula' | 'scorpion'
   | 'flea' | 'bagworm' | 'spider' | 'pondskater' | 'diving-beetle' | 'giant-water-bug';
 
-/** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers, a dragonfly darts and hovers over the
- *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada or a beetle flies
+/** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers (a butterfly lands on one now and then), a
+ *  dragonfly darts and hovers over the lawn, a few fireflies drift and blink, a ladybug or a mantis sits on a flower's
+ *  head (NH's flower bugs), a grasshopper or a cricket hops in the grass, a cicada or a beetle flies
  *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a bed.
  *  A tarantula or a scorpion stalks the grass at night (it rears up when it's come at: `stalkTap`), a mole cricket
  *  chirps under a little mound of earth (dug up with a tap), and a bagworm or a spider dangles on its thread from a
  *  shaken tree (TreeShakes.svelte). */
-export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
+export type Flight = 'flutter' | 'dart' | 'drift' | 'flower' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
 /** Where a crawler keeps to: the front beach (NH's beach and rocks), the grass, the flower beds, the pond's water. */
 type Ground = 'beach' | 'grass' | 'beds' | 'pond';
 
@@ -140,7 +141,7 @@ export const BUGS: Record<BugId, Bug> = {
   'peacock-butterfly': { months: [3, 4, 5, 6], hours: [4, 19], flight: 'flutter', weight: 1 },
   'emperor-butterfly': { months: [6, 7, 8, 9], hours: [17, 8], flight: 'flutter', weight: 1 },
   honeybee: { months: [3, 4, 5, 6, 7], hours: [8, 17], flight: 'flutter', weight: 2 },
-  ladybug: { months: [3, 4, 5, 6, 10], hours: [8, 17], flight: 'flutter', weight: 1 },
+  ladybug: { months: [3, 4, 5, 6, 10], hours: [8, 17], flight: 'flower', weight: 1 },
   'darner-dragonfly': { months: span(4, 10), hours: [8, 17], flight: 'dart', weight: 2 },
   'banded-dragonfly': { months: span(5, 10), hours: [8, 17], flight: 'dart', weight: 1 },
   'red-dragonfly': { months: [9, 10], hours: [8, 19], flight: 'dart', weight: 3 },
@@ -150,8 +151,8 @@ export const BUGS: Record<BugId, Bug> = {
   'rice-grasshopper': { months: [8, 9, 10, 11], hours: [8, 19], flight: 'hop', weight: 2 },
   grasshopper: { months: [7, 8, 9], hours: [8, 17], flight: 'hop', weight: 2 },
   'migratory-locust': { months: [8, 9, 10, 11], hours: [8, 19], flight: 'hop', weight: 1 },
-  mantis: { months: span(3, 11), hours: [8, 17], flight: 'hop', weight: 1 },
-  'orchid-mantis': { months: span(3, 11), hours: [8, 17], flight: 'hop', weight: 1 },
+  mantis: { months: span(3, 11), hours: [8, 17], flight: 'flower', weight: 1 },
+  'orchid-mantis': { months: span(3, 11), hours: [8, 17], flight: 'flower', weight: 1 },
   'bell-cricket': { months: [9, 10], hours: [17, 8], flight: 'hop', weight: 2 },
   cricket: { months: [9, 10, 11], hours: [17, 8], flight: 'hop', weight: 2 },
   moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 1 },
@@ -331,9 +332,14 @@ export const POND_REACH = 1.6;
 export const pondBox = (o: Oval): { x0: number; x1: number; y0: number; y1: number } =>
   ({ x0: o.cx - o.rx * 0.55, x1: o.cx + o.rx * 0.55, y0: o.cy - o.ry * 0.35, y1: o.cy + o.ry * 0.4 });
 
+/** A shadow's length (u) by NH's size 1 (tiny) – 6 (huge): one teardrop, 0.42 of its length tall; the eels' long thin
+ *  one (`narrow`) is 32u at 0.18. */
+const SHADOW_U = [14, 18, 23, 28, 34, 46] as const;
+export const shadowLen = (size: number, shape?: 'narrow' | 'fin'): number =>
+  shape === 'narrow' ? 32 : SHADOW_U[Math.min(6, Math.max(1, Math.round(size))) - 1];
 /** A pond shadow is drawn smaller than the sea's (a small pond, seen from further back): NH's sizes 1–6 still read
- *  apart, a size 6 still fits. */
-export const POND_SHADOW = 0.6;
+ *  apart, a size 6 still fits its water. */
+export const POND_SHADOW = 0.65;
 
 /** Where the bobber lands for a tap in the pond (kept a little inside the rim) and where the angler stands: on the
  *  pond's front rim, a little toward the island's middle. */

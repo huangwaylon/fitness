@@ -56,7 +56,7 @@
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import { TRICK_MS } from './visitors.ts';
-  import { PUFFY_MS } from './treeShake.ts';
+  import { STUNG_SWEAT_MS } from './treeShake.ts';
   import { chatLine, moodOf, pagesOf } from './chat.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -200,16 +200,19 @@
     if (q.has('hybrid') && (import.meta.env.DEV || q.has('demo'))) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
     return garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
   });
-  // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright and a puffy eye for a while.
+  // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop.
   let shakes = $state<ReturnType<typeof TreeShakes>>();
-  let puffy = $state<Record<'mine' | 'partner', boolean>>({ mine: false, partner: false });
-  const unpuff: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeout>>> = {};
+  let stung = $state<Record<'mine' | 'partner', boolean>>({ mine: false, partner: false });
+  const unsting: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeout>>> = {};
   function sting(side: 'mine' | 'partner') {
     setMotion(side, 'surprise');
     setEmote(side, 'mark-bang');
-    puffy[side] = true;
-    clearTimeout(unpuff[side]);
-    unpuff[side] = setTimeout(() => (puffy[side] = false), PUFFY_MS);
+    stung[side] = true;
+    clearTimeout(unsting[side]);
+    unsting[side] = setTimeout(() => {
+      setEmote(side, 'mark-sweat');
+      unsting[side] = setTimeout(() => (stung[side] = false), STUNG_SWEAT_MS);
+    }, STUNG_SWEAT_MS);
   }
   // Jack's trick (no candy for him): my villager's face goes goofy for a minute (NH's trick changes your look)
   let tricked = $state(false);
@@ -336,7 +339,7 @@
       {@const s = sides[id]}
       {@const a = actors[id]}
       {@const at = live ? [a.x, a.y] : [s.x, VILLAGER.foot]}
-      <div class="actor" class:walking={live && a.walking} data-actor={id} style:--x={at[0]} style:--y={at[1]} style:transition-duration="{live ? a.walkMs : 0}ms"
+      <div class="actor" class:walking={live && a.walking} data-actor={id} data-stung={stung[id] || null} style:--x={at[0]} style:--y={at[1]} style:transition-duration="{live ? a.walkMs : 0}ms"
         style:z-index={depth[id]} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}>
         <button type="button" class="vil" disabled={!live} data-sfx="self"
           aria-label={id === 'mine'
@@ -348,7 +351,7 @@
             life.tapVillager(id, id === 'mine' ? undefined : onpartner);
           }}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
-            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} puffy={puffy[id]} tricked={id === 'mine' && tricked} hat={live ? hatOf(id, s.person) : null} />
+            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} tricked={id === 'mine' && tricked} hat={live ? hatOf(id, s.person) : null} />
         </button>
       </div>
     {/each}

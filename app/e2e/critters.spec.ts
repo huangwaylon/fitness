@@ -197,3 +197,13 @@ test('a balloon floats by on its own in the daytime (the first in 30–60 s), in
   expect(box.top).toBeGreaterThanOrEqual(box.ribbon + 6);
   expect(box.bottom).toBeLessThanOrEqual(box.band + 8);
 });
+
+test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {
+  const len = async (id: string) => {
+    await open(page, `&critter=${id}`);
+    await expect(page.locator('[data-critter=fish] .fin svg')).toHaveCount(1);
+    return (await page.locator('[data-critter=fish] .fin').boundingBox())!.width;
+  };
+  const small = await len('clownfish'), big = await len('whale-shark');
+  expect(big / small).toBeGreaterThan(2.8); // 46u against 14u
+});

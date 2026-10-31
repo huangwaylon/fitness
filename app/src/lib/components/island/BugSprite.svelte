@@ -26,7 +26,16 @@
 
 <span class="sprite {flight} {id}" class:sat>
   {#if flight === 'drift'}
-    <i class="glow"></i>
+    <!-- NH's fireflies: a little cloud of lights drifting about each other, blinking out of step -->
+    {#each [[0, 0, 0], [-13, 6, .7], [11, 9, 1.5], [3, -12, 1.1]] as [dx, dy, d], k (k)}
+      <i class="glow" style:--dx="calc({dx} * var(--su))" style:--dy="calc({dy} * var(--su))" style:--d="{d}s"></i>
+    {/each}
+  {:else if id === 'ladybug'}
+    <!-- a ladybug: a red dome, three black spots and a black head, sitting on a flower -->
+    <svg viewBox="-6 -6.5 12 11"><ellipse class="lhead2" cx="0" cy="-4.4" rx="2.6" ry="1.9" /><circle class="leye" cx="-1.1" cy="-4.9" r=".45" /><circle class="leye" cx="1.1" cy="-4.9" r=".45" />
+      <path class="lady" d="M-4.6 1 C-4.6 -2.6 -2.6 -4.2 0 -4.2 C2.6 -4.2 4.6 -2.6 4.6 1 C4.6 3.4 2.4 4.4 0 4.4 C-2.4 4.4 -4.6 3.4 -4.6 1 Z" />
+      <path class="lseam" d="M0 -4 V4.2" /><circle class="dot" cx="-2.2" cy="-1" r="1" /><circle class="dot" cx="2.1" cy="-.4" r="1" /><circle class="dot" cx="-.9" cy="2.4" r=".9" />
+      <ellipse class="lshine" cx="-2.4" cy="-2.6" rx="1" ry=".55" transform="rotate(-30 -2.4 -2.6)" /></svg>
   {:else if flight === 'dart'}
     <svg viewBox="-12 -8 24 16"><g class="dwing"><ellipse cx="-3" cy="-4" rx="2.2" ry="5.5" transform="rotate(-62 -3 -4)" /><ellipse cx="-3" cy="4" rx="2.2" ry="5.5" transform="rotate(62 -3 4)" />
       <ellipse cx="1" cy="-4" rx="1.9" ry="5" transform="rotate(-70 1 -4)" /><ellipse cx="1" cy="4" rx="1.9" ry="5" transform="rotate(70 1 4)" /></g>
@@ -148,10 +157,12 @@
   .sprite svg { position: absolute; overflow: visible; translate: -50% -50%; }
   .flutter svg { width: calc(18 * var(--su)); }
   .moth svg { width: calc(14 * var(--su)); }
-  .ladybug svg { width: calc(10 * var(--su)); }
+  .ladybug svg { width: calc(9 * var(--su)); }
   .wing { transform-origin: 0 0; animation: flap .13s ease-in-out infinite alternate; }
-  .ladybug .wing { transform-origin: 0 -3px; }
   @keyframes flap { to { scale: .25 1; } }
+  /* a butterfly resting on a flower: its wings slowly open and close */
+  .sat .wing { animation: rest-wings 1.2s ease-in-out infinite alternate; }
+  @keyframes rest-wings { from { scale: 1 1; } to { scale: .2 1; } }
   .common-butterfly .wing { fill: #FFFDF3; stroke: #77738F; stroke-width: .8; }
   .yellow-butterfly .wing { fill: #FFE46E; stroke: #C79A2A; stroke-width: .8; }
   .tiger-butterfly .wing { fill: #FFCF45; stroke: #3B3026; stroke-width: 1.3; stroke-dasharray: 2 1.4; }
@@ -164,8 +175,10 @@
   .stripe { stroke: #3A2C1E; stroke-width: 1.1; }
   .beehead { fill: #3A2C1E; }
   .bbody { fill: #4E3E30; }
-  .ladybug .wing { fill: rgba(255, 255, 255, .55); }
-  .lady { fill: #E8443B; }
+  .lady { fill: #E8443B; stroke: #A82A24; stroke-width: .35; }
+  .lhead2, .lseam { fill: #2A201C; stroke: #2A201C; stroke-width: .5; }
+  .leye { fill: #FFFDF6; }
+  .lshine { fill: rgba(255, 255, 255, .55); }
   .seam { stroke: #3A2A22; stroke-width: .6; }
   .dot { fill: #2E2420; }
   /* dragonfly: darts and hovers, wings a shimmer */
@@ -183,10 +196,12 @@
   .banded-dragonfly .dband { display: inline; stroke: #F2CC3A; stroke-width: 1.8; stroke-dasharray: 1.3 1.5; }
   /* firefly: a soft drifting light that blinks */
   .glow {
-    display: block; left: 0; top: 0; width: 4.6px; height: 4.6px; margin: -2.3px; border-radius: 50%;
-    background: var(--firefly, #F6FF9E); box-shadow: 0 0 7px var(--firefly-glow, #EFFF7A); animation: blink 2.2s ease-in-out infinite;
+    position: absolute; display: block; left: var(--dx); top: var(--dy); width: 7px; height: 7px; margin: -3.5px; border-radius: 50%;
+    background: var(--firefly, #F6FF9E); box-shadow: 0 0 14px 2px var(--firefly-glow, #EFFF7A);
+    animation: blink 2.2s ease-in-out var(--d) infinite, wander 3.4s ease-in-out calc(var(--d) * -2) infinite alternate;
   }
-  @keyframes blink { 0%, 100% { opacity: .25; } 40%, 60% { opacity: 1; } }
+  @keyframes blink { 0%, 100% { opacity: .15; } 40%, 60% { opacity: 1; } }
+  @keyframes wander { from { transform: translate(calc(-3 * var(--su)), calc(2 * var(--su))); } to { transform: translate(calc(3 * var(--su)), calc(-3 * var(--su))); } }
   /* crickets: in the grass, a hop now and then (the hop is a Web Animation on .hopper) */
   .hop svg { width: calc(13 * var(--su)); }
   .cbody { fill: #8A6238; }

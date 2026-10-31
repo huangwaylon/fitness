@@ -44,7 +44,7 @@
   import type { DiveItem } from './sea.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_REACH, POND_SHADOW, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
-    findKind, fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, pondBox, pondCast, reel, spawnKind,
+    findKind, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, pondBox, pondCast, reel, spawnKind,
     stalkTap, waterAt, type BitePlan, type BugId, type Catch, type FishId, type Flight, type JunkId, type Oval, type StalkState, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
@@ -74,7 +74,13 @@
     hesitated: boolean;
   }
   interface Bug {
-    id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean;
+    id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[];
+    /** Sat down: a cicada on its trunk, a butterfly resting on a flower (its wings slowly open and close). */
+    sat: boolean;
+    /** A butterfly's hops since it last rested on a flower, and how many it makes before the next rest. */
+    hops?: number; rest?: number;
+    /** Startled: it rises up and away, fully seen, and fades out at the end. */
+    fled?: boolean;
     /** A tarantula's or a scorpion's mood (stalkTap). */
     stalk?: StalkState;
     /** Netted: it holds still until the swing lands (my villager is on its way). */
@@ -157,6 +163,24 @@
   /** The open places a bug keeps to: the flower beds, the hedge tops, the grass in front of the beds. */
   const BEDS: Box[] = [{ x0: 45, x1: 110, y0: 212, y1: 285 }, { x0: 280, x1: 345, y0: 212, y1: 285 }];
   const HEDGE: Box = { x0: 50, x1: 340, y0: HEDGE_BASE - 66, y1: HEDGE_BASE - 34 };
+  /** The open lawn between the hedge and the beds, where a dragonfly darts and hovers (NH: over open ground). */
+  const LAWN: Box = { x0: 60, x1: 330, y0: 110, y1: 200 };
+  /** NH's butterflies that land on flowers now and then (the moths, the bee and the mosquito keep flying). */
+  const LANDS = (id: BugId) => /butterfly|birdwing|bluebottle|emperor/.test(id);
+  /** The bed flowers' heads (u), measured from the beds as drawn (a bud's or a bloom's), clear of the guards: where a
+   *  ladybug or a mantis sits and a butterfly rests. `side` keeps to one bed; the orchid mantis prefers white flowers. */
+  function flowerHeads(g: StageGeo, keep: Box[], side?: -1 | 1): { x: number; y: number; white: boolean }[] {
+    const out: { x: number; y: number; white: boolean }[] = [];
+    for (const el of scene?.querySelectorAll<HTMLElement>('[data-flower]') ?? []) {
+      const r = el.getBoundingClientRect();
+      if (!r.width) continue;
+      const x = (r.left + r.width / 2 - g.r.left) * g.k, y = (r.top + r.height * 0.16 - g.r.top) * g.k;
+      if (side && Math.sign(x - 195) !== side) continue;
+      if (keep.some((b) => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1)) continue;
+      out.push({ x, y, white: !!el.querySelector('img[src*="white"]') });
+    }
+    return out;
+  }
   const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
   /** The front beach (a crab, a wharf roach): the sand between the cliff's foot and the foam, on screen. */
   function beach(g: StageGeo): Box | null {
@@ -195,8 +219,8 @@
     }
     return null;
   }
-  /** A shadow's length (u): NH's sizes 1–6; the eels' thin shadow is long. */
-  const sizeU = (f: Fish) => (8 + (f.shape === 'narrow' ? 5.5 : f.size) * 4.5) * (f.water === 'pond' ? POND_SHADOW : 1);
+  /** A shadow's length (u): NH's sizes 1–6 (critters.ts SHADOW_U); the eels' thin shadow is long. */
+  const sizeU = (f: Fish) => shadowLen(f.size, f.shape) * (f.water === 'pond' ? POND_SHADOW : 1);
 
   /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
   let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
@@ -231,7 +255,9 @@
       const o = pond();
       if (!o) return false;
       box = pondBox(o);
-      keep = guardsU(g, 4); // a canopy over the pond on a small phone: those spots aren't tappable
+      // a canopy over the pond on a small phone: the spots under the control itself aren't tappable (its 6px of padding
+      // would cover the whole pond at 320 × 568)
+      keep = guardsU(g, -6 * g.k);
       const { POND_FISH, pickPondFish } = await loadPond();
       if (fishes.pond || !enabled()) return !!fishes.pond;
       id = want ?? pickPondFish(month, hour, rand);
@@ -417,24 +443,30 @@
     const side = from && id === 'flea' ? (from.x < 195 ? -1 : 1) : rand() < 0.5 ? -1 : 1;
     const ground = BUGS[id].ground;
     const o = pond();
-    const area = flight === 'perch' ? trunk(g, side)
+    // a ladybug or a mantis sits on a flower's head (the orchid mantis on a white one if the beds have any)
+    let heads = flight === 'flower' ? flowerHeads(g, guardsU(g, 8)) : [];
+    if (id === 'orchid-mantis' && heads.some((h) => h.white)) heads = heads.filter((h) => h.white);
+    const head = heads.length ? heads[Math.floor(rand() * heads.length)] : null;
+    const area = flight === 'flower' ? head && { x0: head.x, x1: head.x, y0: head.y, y1: head.y }
+      : flight === 'perch' ? trunk(g, side)
       : ground === 'beach' ? beach(g)
       : ground === 'pond' ? o && pondBox(o)
       : id === 'flea' || flight === 'stalk' || flight === 'burrow' ? GRASS[side < 0 ? 0 : 1]
-      : from || id === 'moth' || flight === 'dart' ? HEDGE
+      : flight === 'dart' && !from ? LAWN
+      : from || id === 'moth' ? HEDGE
       : flight === 'hop' || ground === 'grass' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
     if (!area) return;
     // flyers come in from the side of their patch; a firefly blinks on, a grasshopper is just there in the grass
     // its patch, minus the controls (measured once: the villagers and the jar don't move far); a cicada's trunk spot
     // is already measured clear of the tree's buttons
     // (on the pond, only the controls themselves: a canopy's top comes close to its water)
-    const keep = flight === 'perch' ? [] : guardsU(g, ground === 'pond' ? 4 : 16);
+    const keep = flight === 'perch' || flight === 'flower' ? [] : guardsU(g, ground === 'pond' ? 4 : 16);
     const spot = freeIn(area, keep);
     if (!spot) return;
     // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
-    const inPlace = flight === 'drift' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
+    const inPlace = flight === 'drift' || flight === 'flower' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
     const start = from ?? (inPlace ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y - (flight === 'perch' ? 40 : 0) });
-    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false, ...(flight === 'stalk' && { stalk: 'calm' as const }) };
+    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep, sat: false, hops: 0, rest: 2 + Math.floor(rand() * 2), ...(flight === 'stalk' && { stalk: 'calm' as const }) };
     later(fly, 60);
     if (stay) later(() => bugLeave(), STAY_MS.bug);
   }
@@ -457,6 +489,30 @@
       return later(fly, 420 + between(1400, 2800));
     }
     if (b.flight === 'burrow') return; // under its mound, chirping, until it's dug up or done
+    if (b.flight === 'flower') {
+      // flown in from a shaken bush: down onto its flower; else it's just there, sitting still (a slow bob)
+      Object.assign(b, { ms: b.x === p.x && b.y === p.y ? 0 : 1200, flip: p.x > b.x, x: p.x, y: p.y });
+      return;
+    }
+    if (b.flight === 'flutter' && LANDS(b.id)) {
+      // NH's butterflies: every 2–3 hops it lands on a flower head, rests 2–4 s with its wings slowly opening and
+      // closing, then lifts off again
+      if (b.sat) {
+        b.sat = false;
+        b.hops = 0;
+        b.rest = 2 + Math.floor(rand() * 2);
+      } else if ((b.hops = (b.hops ?? 0) + 1) > (b.rest ?? 2)) {
+        const g = geo();
+        const heads = g ? flowerHeads(g, b.keep).filter((h) => Math.abs(h.x - b.x) < 120) : [];
+        const h = heads[Math.floor(rand() * heads.length)];
+        if (h) {
+          const ms = between(1100, 1600);
+          Object.assign(b, { ms, flip: h.x > b.x, x: h.x, y: h.y - 2 });
+          later(() => bug === b && !b.gone && !b.held && (b.sat = true), ms);
+          return later(fly, ms + between(2000, 4000));
+        }
+      }
+    }
     if (b.flight === 'crawl' || b.flight === 'stalk') {
       // a little way along its ground, then a rest: a hermit crab scuttles sideways, a snail barely moves; a reared
       // tarantula holds still
@@ -484,10 +540,14 @@
     } else if (ground) {
       // startled: it scurries off along the ground and is gone
       const dir = away ?? (b.x < 195 ? -1 : 1);
-      Object.assign(b, { ms: 700, flip: dir > 0, x: b.x + dir * 26 });
+      Object.assign(b, { ms: 700, fled: true, flip: dir > 0, x: b.x + dir * 26 });
+    } else if (fast) {
+      // startled: it rises 40u up and away, in full view, and fades only at the end
+      const dir = away ?? (b.x < 195 ? -1 : 1);
+      Object.assign(b, { ms: 800, sat: false, fled: true, flip: dir > 0, x: clamp(b.x + dir * 50, g.left + 12, g.right - 12), y: Math.max(10, b.y - 40) });
     } else {
       const dir = away ?? (b.x < 195 ? -1 : 1);
-      Object.assign(b, { ms: fast ? 700 : 1600, flip: dir > 0, x: dir < 0 ? g.left - 20 : g.right + 20, y: Math.max(10, b.y - 30) });
+      Object.assign(b, { ms: 1600, sat: false, flip: dir > 0, x: dir < 0 ? g.left - 20 : g.right + 20, y: Math.max(10, b.y - 30) });
     }
     later(() => bug === b && (bug = null), b.ms + 50);
   }
@@ -776,6 +836,11 @@
   });
 </script>
 
+<!-- NH's fish shadow: one dark teardrop, its tail joined on (head to the left unless flipped) -->
+{#snippet teardrop()}
+  <svg viewBox="0 0 100 42" preserveAspectRatio="none"><path d="M3 21 C3 8 20 2 38 3 C56 4 68 11 80 17 L96 8 C99 16 99 26 96 34 L80 25 C68 31 56 38 38 39 C20 40 3 34 3 21 Z" /></svg>
+{/snippet}
+
 <div class="sea-life" aria-hidden="true">
   {#if bubbles}
     <!-- NH's dive spot: little bubbles rising and popping at the surface -->
@@ -787,7 +852,7 @@
     {@const d = diving}
     <span class="mover dive" class:gone={d.gone} data-dive={d.chase ? 'chase' : 'splash'} style:translate="{U(d.x)} {U(d.y)}" style:transition-duration="{d.ms}ms">
       {#if !d.chase}<i class="ripple big"></i><span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
-      {:else}<span class="shadow"><i class="fin" style:--w={U(8 + d.size * 4.5)}></i></span>{/if}
+      {:else}<span class="shadow"><i class="fin" style:--w={U(shadowLen(d.size))}>{@render teardrop()}</i></span>{/if}
     </span>
   {/if}
   {#each WATERS as w (w)}
@@ -795,7 +860,7 @@
     {#if f}
       <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {w}" class:gone={f.gone} class:dash={f.dash} data-critter={w === 'sea' ? 'fish' : 'pond'}
         bind:this={fishEls[w]} style:translate="{U(f.x)} {U(f.y)}" style:transition-duration="{f.ms}ms" style:--w={U(sizeU(f))}>
-        <i class="fin" class:flip={f.flip}></i>
+        <i class="fin" class:flip={f.flip}>{@render teardrop()}</i>
       </span>
     {/if}
   {/each}
@@ -818,8 +883,8 @@
 <div class="air-life" class:night aria-hidden="true">
   {#if bug}
     {@const b = bug}
-    <span class="mover bug {b.flight} {b.id}" class:gone={b.gone} class:sat={b.sat} data-critter={b.id} bind:this={bugEl}
-      style:translate="{U(b.x)} {U(b.y)}" style:transition-duration="{b.ms}ms">
+    <span class="mover bug {b.flight} {b.id}" class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} bind:this={bugEl}
+      style:translate="{U(b.x)} {U(b.y)}" style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
       <span class="hopper" bind:this={hopEl}>
         <span class="face" class:flip={b.flip}>
           {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
@@ -875,14 +940,14 @@
   .shadow.dash { transition-timing-function: cubic-bezier(.2, .7, .4, 1); transition-duration: .65s, .6s; }
   .fin {
     display: block; left: 0; top: 0; width: var(--w); height: calc(var(--w) * .42); translate: -50% -50%;
-    background:
-      radial-gradient(closest-side, rgba(14, 44, 82, .62), rgba(14, 44, 82, .4) 60%, transparent) 0 0 / 76% 100% no-repeat,
-      radial-gradient(closest-side, rgba(14, 44, 82, .48), transparent) 100% 50% / 30% 72% no-repeat;
     animation: wag 1.3s ease-in-out infinite alternate;
   }
+  .fin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: rgba(10, 36, 70, .55); filter: blur(calc(1.5 * var(--su))); }
+  /* the pond's are smaller and seen through shallower water: a sharper edge */
+  .pond .fin svg { fill: rgba(10, 36, 70, .62); filter: blur(calc(.7 * var(--su))); }
   /* NH's long thin shadow (the eels) and the fin cutting the surface (the sharks, the sunfish, the suckerfish): a dark
      sail over the shadow's front half with a thin white wake at its foot */
-  .is-narrow .fin { height: calc(var(--w) * .2); }
+  .is-narrow .fin { height: calc(var(--w) * .18); }
   .is-fin .fin::before {
     content: ''; position: absolute; left: 28%; bottom: 44%; width: 20%; height: 95%;
     background: linear-gradient(180deg, rgba(36, 58, 92, .95), rgba(44, 70, 108, .85)); clip-path: polygon(38% 0, 100% 100%, 0 100%);
@@ -955,8 +1020,15 @@
 
   /* bugs: the motion (the sprites are BugSprite.svelte, loaded with the first bug) */
   .bug.gone { opacity: 0; }
+  /* startled: seen all the way up and away, fading only over the last 40% */
+  .bug.fled { transition-duration: var(--ms), calc(var(--ms) * .4); transition-delay: 0s, calc(var(--ms) * .6); transition-timing-function: cubic-bezier(.3, .6, .4, 1), linear; }
   .bug .hopper, .bug .face { left: 0; top: 0; display: block; }
   .flutter .hopper { animation: flutter .42s ease-in-out infinite alternate; }
+  .flutter.sat .hopper { animation: none; }
+  /* a ladybug or a mantis on a flower head: a 1u bob every 2.4 s */
+  .flower .hopper { animation: perch-bob 2.4s ease-in-out infinite; }
+  @keyframes perch-bob { 0%, 100% { transform: none; } 50% { transform: translateY(calc(-1 * var(--su))); } }
+  .flower.mover { transition-timing-function: cubic-bezier(.3, .6, .4, 1); }
   @keyframes flutter { from { transform: translateY(calc(-2.5 * var(--su))); } to { transform: translateY(calc(2 * var(--su))); } }
   .dart.mover { transition-timing-function: cubic-bezier(.2, .8, .3, 1); }
   .perch.mover { transition-timing-function: cubic-bezier(.3, .6, .4, 1); }

@@ -338,7 +338,9 @@ its person's flowers through one Tokyo day (a quick run of canopy taps shakes it
   them in time nets one: the net's swing, `scene-catch`, NH's catch line on the plate (「ハチを つかまえた！ ブン！ ブン！
   ブン！ （手づかみ しないでね）」 / "I caught a wasp! That's gotta sting...") and the shared ずかん's wasp (a `find`;
   the wasp is never about on its own: weight 0). Too late, they sting (`scene-sting`): that villager starts with a 「！」
-  and one eye swells under a pink lump for a minute (not kept across a reload), and the wasps fly off. The nest fades
+  (`surprise`), then a sweat drop, and the wasps fly off (they fly at that villager's face where it stands: mine has
+  usually walked over to shake the tree). NH's swollen eye is an emote here: one lump can't sit on the eye of 440
+  different renders. The nest fades
   once they are out.
 - **A dangling bug** (NH's hardwood shake): a bagworm, or in the spider's hours (19:00–08:00) a spider 3 times in 8
   (NH's 50 : 30), drops out of the canopy on its thread beside the trunk on the outer side and sways there for 10 s,
@@ -377,13 +379,17 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   makes it hesitate and nibble again; a second scares it off. 1 in 14 a boot, tire or can.
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): mostly sea bass; the blowfish (フグ) on winter nights and the puffer fish (ハリセンボン) in summer; the reef fish of spring and summer, the big ones
   (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
-  no rain gate). NH's shadows: sizes 1–6, a long thin one for the eels, a fin cutting the surface for the sharks, the
-  ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
+  no rain gate). NH's shadows: one dark teardrop with its tail joined on (rgba(10, 36, 70, .55), a 1.5u blur), its length by
+  NH's size 1–6: 14 / 18 / 23 / 28 / 34 / 46u, 0.42 of that tall (`SHADOW_U`); the eels' long thin one 32u at 0.18; a fin
+  cutting the surface for the sharks, the ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
 - **Bugs** (70 of NH's 80, `BUGS`): butterflies (the paper kite, agrias, monarch, the two birdwings, the common
   bluebottle and the great purple emperor among them) and the Madagascan sunset moth,
-  the honeybee, ladybug and a snail on the beds; dragonflies and the damselfly over the hedge; the cicadas (a shell
+  the honeybee and a snail on the beds; the ladybug and the mantises sitting on a flower's head (NH's flower bugs: a
+  1u bob every 2.4 s; the orchid mantis on a white flower when the beds have one); dragonflies and the damselfly
+  darting over the open lawn (y 110–200u, clear of the controls); the cicadas (a shell
   now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick on
-  the trunks; fireflies and the Atlas moth at night; grasshoppers, locusts, mantises, crickets, the pill bug and the
+  the trunks; fireflies (a little cloud of four 7px lights, drifting and blinking out of step) and the Atlas moth at
+  night; grasshoppers, locusts, crickets, the pill bug and the
   centipede in the grass; the hermit crab (after dark) and the wharf roach on the front beach. More of NH's: the
   mosquito on summer evenings; the stink bugs on the beds (the man-faced one at night); the tiger beetle (it runs),
   the earth-boring dung beetle and the walking leaf in the grass; NH's stump beetles (violin, citrus long-horned,
@@ -396,7 +402,9 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   **pondskater** skating in quick glides and the **diving beetle** paddling (May–September by day), the **giant water
   bug** at night (April–September). Fliers come in from the
   side, perchers fly in to a trunk (a shell and a walking stick are just there), crawlers fade in and creep (a crab
-  scuttles sideways, a snail barely moves). A tap on one swings the net (caught); within 80px it startles away. A
+  scuttles sideways, a snail barely moves). A butterfly lands on a flower's head every 2–3 hops and rests there 2–4 s, its wings slowly opening and
+  closing (1.2 s). A tap on one swings the net (caught); within 80px it startles away: it rises 40u up and away in
+  full view and fades over the last 40% of its flight. A
   shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
   fruit row).
 - **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): the sea
@@ -636,7 +644,7 @@ ground, under the hedge and everything standing, under the tint.
   dace common). Deviations: the clifftop char and cherry salmon keep 4 pm – 9 am in autumn (NH: all day).
 - **Visits:** as often as the sea's (a visit fills the sea first, then the pond: its own slot beside the sea's fish or
   bubble spot), one shadow at a time, 45 s if nobody
-  fishes; drawn at 0.6 of the sea's size (NH's sizes 1–6 still read apart), clear of any control over the pond on a small
+  fishes; drawn at 0.65 of the sea's size with a sharper edge (NH's sizes 1–6 still read apart), clear of any control over the pond on a small
   screen. Fishing is the sea's: a tap on the water or within a finger's slack of it (`POND_REACH`) casts, the line
   starts at the pond's front rim, the bobber stays inside it, a flee is a dive.
 - **Its bugs:** NH's three water bugs keep to its water as crawlers (`BUGS`, ground `pond`): the pondskater and the

@@ -55,7 +55,7 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   }
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
   await expect.poll(() => audio).toContain('music/bee-chase.m4a');
-  await expect(page.locator('[data-puffy]')).toHaveCount(1, { timeout: 3000 }); // no tap: stung
+  await expect(page.locator('[data-stung]')).toHaveCount(1, { timeout: 3000 }); // no tap: stung
   await expect.poll(() => audio).toContain('music/bee-stung.m4a');
   // the hour's file was kept for the hand back: not fetched again
   await page.waitForTimeout(13_000);

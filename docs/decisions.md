@@ -205,7 +205,8 @@ the tree's one home for the day's numbers, so it keeps the single tap, and a run
 anyway (tapping while the popup is open was weighed: it would make closing the popup a shake). A shake drops a branch
 now and then and a wasp nest 1 in 8 (at most one per tree an hour, no daily cap: the user asked for it fun and
 frequent); the wasps are caught with a tap within 1.5 s or sting. Nothing pays or costs: no ベル from trees (scenery
-never pays), a sting is a puffy eye for a minute, and the caught wasp is a ずかん find like any bug (an existing event,
+never pays), a sting is a fright and a sweat drop (NH's swollen eye was a lump drawn over the eye of the default render: on
+most of the 440 villagers it missed the eye, so it became an emote), and the caught wasp is a ずかん find like any bug (an existing event,
 no script change). The wasp is in the bug table with weight 0, so it only ever comes from a nest.
 
 ### Mushrooms are cosmetic

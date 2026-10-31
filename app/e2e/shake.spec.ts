@@ -1,7 +1,7 @@
 // Shaking a tree (docs/design.md "Shaking a tree"): one tap still opens the popup; a quick run of taps shakes the tree.
 // A shake may drop a branch (a tap picks it up), a bagworm or a spider dangling on its thread (a tap nets it) or, rarely,
 // a wasp nest: its wasps charge the villager on that side; a tap on them in time nets one (NH's catch line), else they
-// sting (a puffy eye). `?shake=nest|branch|bagworm|spider` forces the next shake's drop. Nothing changes ベル.
+// sting (a fright and a sweat drop). `?shake=nest|branch|bagworm|spider` forces the next shake's drop. Nothing changes ベル.
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -52,21 +52,21 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
   await expect(swarm).toHaveCount(0);
   await page.waitForTimeout(1800);
-  await expect(page.locator('[data-puffy]')).toHaveCount(0);
+  await expect(page.locator('[data-stung]')).toHaveCount(0);
   await expect(page.locator('[data-nest]')).toHaveCount(0); // the nest goes once the wasps are out
   await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('tree-nest')))!)).toHaveProperty('A');
 });
 
-test('too late: the wasps sting the villager on that side (a fright and a puffy eye) and fly off', async ({ page }) => {
+test('too late: the wasps sting the villager on that side (a fright and a sweat drop) and fly off', async ({ page }) => {
   await open(page, '&shake=nest');
   await shake(page);
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
-  await expect(page.locator('[data-puffy]')).toHaveCount(1, { timeout: 2500 });
+  // the left tree's wasps go for the villager on the left, at its face where it stands
+  await expect(page.locator('[data-actor="mine"][data-stung]')).toHaveCount(1, { timeout: 2500 });
+  const v = (await page.locator('[data-actor="mine"] .vil').boundingBox())!, w = (await page.locator('button[data-swarm]').boundingBox())!;
+  expect(Math.abs(w.x + w.width / 2 - (v.x + v.width / 2))).toBeLessThan(v.width);
   expect(await cues(page)).toContain('scene-sting');
-  // the left tree's wasps go for the villager on the left
-  const p = (await page.locator('[data-puffy]').boundingBox())!;
-  expect(p.x + p.width / 2).toBeLessThan(195);
   await expect(page.locator('button[data-swarm]')).toHaveCount(0, { timeout: 2000 });
 });
 
