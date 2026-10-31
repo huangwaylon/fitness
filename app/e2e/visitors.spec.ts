@@ -1,5 +1,5 @@
 // Visitors (docs/design.md "Visitors"): K.K. on Saturday nights (a song with the music on), Daisy Mae on Sunday
-// mornings, Wisp on some nights, Gulliver washed up on some days. On the front beach, never over a control; a tap gives
+// mornings, Wisp on some nights, Gulliver washed up on some days (asleep until the fifth nudge). On the front beach, never over a control; a tap gives
 // a line (an introduction first), no trading, no ベル.
 import { expect, test, type Page } from '@playwright/test';
 
@@ -86,6 +86,14 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await expect(page.locator(`[data-visitor="${id}"] .art`)).toBeVisible();
       expect(await under(page, `[data-visitor="${id}"] .art`), id).toEqual([]);
       await tapOn(page, `[data-visitor="${id}"] .art`);
+      if (id === 'gulliver') {
+        // asleep face down: the fifth nudge wakes him (NH)
+        await page.waitForTimeout(1100);
+        for (let i = 1; i < 5; i++) {
+          await tapOn(page, `[data-visitor="${id}"] .art`);
+          await page.waitForTimeout(250);
+        }
+      }
       const box = page.locator('[data-fx="talk"].placed');
       await expect(box.locator('.who')).toHaveText(name);
       await expect(box).toHaveAttribute('data-pages', '2');

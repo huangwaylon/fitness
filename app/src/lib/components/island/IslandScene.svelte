@@ -240,7 +240,14 @@
   // villager standing there covers no control or visitor and isn't hidden behind a canopy (measured) and
   // stays on screen, and the feet's live position (a walk re-targets from mid-step).
   // with a visitor on centre stage the villagers walk around them (and wander elsewhere: wander.ts)
-  const geo = walkGeo(), geoVisited = walkGeo({ obstacles: [{ x0: CENTRE_STAGE.x - 18, x1: CENTRE_STAGE.x + 18, y0: CENTRE_STAGE.base - 10, y1: CENTRE_STAGE.base + 6 }] });
+  // (where the visitor stands now: the ones who roam stroll a little way from centre stage; Visitor.svelte)
+  const geo = walkGeo();
+  let visited: { at: string; geo: ReturnType<typeof walkGeo> } | null = null;
+  function geoVisited() {
+    const { x, y } = actors.visitor, at = x || y ? [x, y] : [CENTRE_STAGE.x, CENTRE_STAGE.base];
+    if (visited?.at !== String(at)) visited = { at: String(at), geo: walkGeo({ obstacles: [{ x0: at[0] - 18, x1: at[0] + 18, y0: at[1] - 10, y1: at[1] + 6 }] }) };
+    return visited.geo;
+  }
   function feet(id: 'mine' | 'partner'): readonly [number, number] {
     const el = sceneEl?.querySelector<HTMLElement>(`[data-actor="${id}"]`), g = stageGeo(sceneEl);
     if (!el || !g) return [actors[id].x, actors[id].y];
@@ -264,7 +271,7 @@
   }
   onMount(() => {
     if (!live) return;
-    const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited : geo), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
+    const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited() : geo), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
     let hiddenAt = 0;
     const vis = () => {
       if (document.hidden) hiddenAt = Date.now();

@@ -571,8 +571,9 @@ seeded by the date (both phones see the same): **K.K. Slider** with his guitar o
 ([Holiday hosts](#holiday-hosts)). They stand on the centre stage (`CENTRE_STAGE` in `island/scene.ts`: column
 0 of the tree row, NH's plaza, where the jar stood) at the villagers' scale (`VILLAGER.h` × their NH height: K.K. 1,
 Daisy Mae 0.78, Wisp 0.7 floating 12u up, Gulliver 1.1, Jack 1, Celeste 0.85, Franklin 1, Jingle 1.05, Pavé 1.1, Zipper 0.9) with the villagers' contact shadow; while a control still
-covers the centre (the jar), a smaller figure on the front beach (Gulliver asleep on his side), else none. A tap: their
-introduction the first time (two pages), then one of their lines. No trading, no ベル. `?visitor=<id>` (dev or `?demo`).
+covers the centre (the jar), a smaller figure on the front beach, else none. A tap: their introduction the first time
+(two pages), then one of their lines. No trading, no ベル. `?visitor=<id>` (dev or `?demo`). They're alive: see
+[Visitors: life](#visitors-life).
 
 **K.K.'s show** (NH's Saturday concert): he strums with a gentle head-bob. With ミュージック on, a tap is his greeting,
 「よう、 今夜も 来てくれたな リクエストは あるかな？」 with NH's choice box: **リクエスト** (up to four of his songs to
@@ -582,6 +583,56 @@ sway, and a 「♪ けけボッサ」 caption sits by him (placed clear of every
 つづけて. At its end (or ストップ, or the music turned off) his sign-off 「…サンキュー！ また 来週の 土曜に な」 and the
 island's music comes back. His songs are `sound/kk.ts` `kkTracks` (the manifest's `kk`); with none he says he's
 tuning his guitar, and with the music off he only talks.
+
+### Visitors: life
+
+`island/visitorLife.ts` (pure), `island/Visitor.svelte`, `island/avatar.ts` (`meetVisitor`, `visitorRoute`),
+`e2e/visitor-life.spec.ts`. The visitor is the stage director's fourth actor (`'visitor'` in `motion/director.svelte.ts`):
+its walks, motions, emotes, fx and facing go through the same calls as the villagers' ([Motion](#motion),
+[Walking](#walking)), and idle life's scheduler gives it a beat on every tick (`visitor` in `idleLife.svelte.ts`, awake or
+asleep: visitors keep their own hours).
+
+- **Always (CSS, transform and opacity only):** a breath (`scale`, about 1.5% taller with a tiny squash at the bottom of
+  it, 2.4–3.2 s, each visitor its own) and now and then a weight shift (`rotate` + `translate`, a ~9 s loop with holds);
+  the contact shadow breathes with it and shrinks under a hop. Each property animates on its own, so a signature loop
+  adds to the breath.
+- **Signatures (NH):** K.K. strums with a head-bob (harder and quicker during a song) and nods with notes on a beat;
+  Wisp floats, drifts a little side to side and flickers, with a soft glow; Jack sways theatrically and twirls (a spin
+  through edge-on) with a spooky glint; Daisy Mae shifts her turnip bundle (a wobble) and hums (♪); Franklin waddles,
+  flaps and looks one way then the other for something to cook; Jingle bounces, a jingle sparkle; Pavé does Festivale's
+  dance steps all day and a bigger samba with confetti; Zipper hops on the spot and hops along when he walks; Celeste
+  looks up at the sky and, when a shooting star crosses (SceneTaps' `island:star`), turns to it and points; Reese and
+  Cyrus lean toward each other in turn and nuzzle with hearts.
+- **Gulliver** sleeps face down on the lawn (on his front, his beak in the sand; standing with a droop where lying would
+  cover a control) with a snoring breath and the zzz loop, twitching now and then. A tap is a nudge (my villager walks
+  over first): a twitch and his sleep talk (「…ムニャムニャ…」, a small caption, not the balloon); the **fifth** wakes him
+  (NH): a start, a 「！」 glyph and a sweat drop, he eases up onto his feet, looks at my villager and introduces himself.
+  He stays up for the day (this session).
+- **A beat** (`pickAct`): the signature (likeliest), one of their emotes (never the same twice running), a look at the
+  nearest villager, for those who roam a **stroll**, back to their spot when away, or (at most every 45 s, when the
+  partner is home and free and nobody is walking) **a villager comes over**: the partner walks beside them (else a step
+  in front to one side: centre stage sits between the fruit rows), they face each other, a nod and an emote, the
+  visitor answers with theirs (K.K. a nod, the rest a hop), a laugh, and the partner wanders home. One walker at a time.
+  Half the quiet beats get a second one 4–6.5 s later. Nothing while a line of theirs is in the balloon.
+- **Strolls:** Daisy Mae (30u), Franklin (28u), Zipper (30u) and Celeste (26u) amble (48 u/s) to a spot around theirs,
+  level with it or in front (never back under the canopies), walkable, clear of every control and 44u from either
+  villager, along the walk graph; a look around there and back 4–7 s later. K.K., Gulliver, Jack, Wisp, Pavé, Jingle and
+  the pair stay put. While a visitor is out the villagers route around where it stands now.
+- **A tap:** the visitor walks back to its spot first if it had strolled off (160 u/s; the balloon anchors to it there),
+  turns to my villager with a little hop (K.K. nods from his stool, Wisp wobbles, Gulliver starts) and speaks once the
+  hop lands and my villager is beside them; it stands still until the balloon closes. A tap elsewhere on the island
+  now and then draws a glance that way. The live box is `[data-visitor] .art` (its client rect is where it is now).
+- **Arriving and leaving:** when a visit starts with the island open they come the NH way: walkers up from the water's
+  edge in front of centre stage along the walk graph (80 u/s, fading in at the edge; Zipper hops), Wisp floats down
+  from the sky (2.2 s), Celeste flies down (1.6 s), K.K. (on his stool) and Gulliver (washed up) appear, Jack in a spooky
+  puff; their depth follows the feet like the villagers'. When the visit ends they leave the same way (Gulliver, woken,
+  flies off; asleep he just fades), then the next visitor, if any, arrives. On a page's first paint they're simply there
+  (a 0.7 s pop in place). `?arrive` plays the arrival on load, `?leave=<ms>` ends the visit after that long, `?stroll`
+  and `?meet` start a stroll or the partner's hello (dev or `?demo`).
+- **Performance:** no rAF; CSS keyframes on transform/opacity and the director's timers; `will-change` only while
+  walking; everything pauses under a sheet or with the page hidden (`[data-covered]`, `[data-paused]`). At 4× CPU
+  throttling (390 and 320, a visitor with the scenery): 16.7 ms frames (p95 16.7–16.8, none over 33 ms), task time
+  30–51 ms/s against 21–22 with nobody visiting.
 
 ### Halloween
 

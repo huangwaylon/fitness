@@ -126,3 +126,41 @@ describe('idle life while the page is hidden', () => {
     stop();
   });
 });
+
+describe('the visitor’s beat', () => {
+  it('runs on every tick (awake or asleep: visitors keep their own hours), never under a sheet', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { lastEvent, resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    lastEvent.at = 0;
+    let beats = 0, covered = false, asleep = false;
+    // random 0.5: the first tick at 3.5 s, then every 12 s
+    const stop = startIdleLife({ paused: () => covered, asleep: () => asleep, scores: () => [0, 0], treeShake: () => {}, visitor: () => beats++, random: () => 0.5 });
+    await vi.advanceTimersByTimeAsync(3_600);
+    expect(beats).toBe(1);
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(beats).toBe(2);
+    asleep = true;
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(beats).toBe(3);
+    covered = true;
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(beats).toBe(3);
+    stop();
+  });
+  it('the director drives a visitor like any actor: a motion, an emote, a walk, all dropped by cancel', async () => {
+    const { actors, cancel, place, resetAll, setEmote, setMotion, walkTo, pendingTimers } = await import('./director.svelte.ts');
+    resetAll();
+    place('visitor', 195, 173);
+    setMotion('visitor', 'twirl');
+    setEmote('visitor', 'glee');
+    expect(actors.visitor.motion).toBe('twirl');
+    walkTo('visitor', [[225, 180]], { speed: 48 });
+    expect(actors.visitor.walking).toBe(true);
+    expect([actors.visitor.x, actors.visitor.y]).toEqual([225, 180]);
+    cancel('visitor');
+    expect(actors.visitor.walking).toBe(false);
+    expect(pendingTimers('visitor')).toBe(0);
+    resetAll();
+  });
+});

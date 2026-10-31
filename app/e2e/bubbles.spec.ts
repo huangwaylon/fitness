@@ -33,6 +33,15 @@ async function tapAt(page: Page, sel: string, fy = 0.5) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height * fy);
 }
+/** Gulliver sleeps face down until the fifth nudge (NH): the first tap walks my villager over, four more wake him. */
+async function wakeGulliver(page: Page, sel: string) {
+  await tapAt(page, sel);
+  await page.waitForTimeout(1100);
+  for (let i = 1; i < 5; i++) {
+    await tapAt(page, sel);
+    await page.waitForTimeout(250);
+  }
+}
 const balloon = (page: Page) => expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 6000 });
 
 for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
@@ -43,7 +52,8 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
         await page.goto(`?demo&date=2026-11-04T${at}&visitor=${v}&critter=none`);
         const art = `[data-visitor="${v}"] .art`;
         await expect(page.locator(art)).toBeVisible();
-        await tapAt(page, art, 0.3);
+        if (v === 'gulliver') await wakeGulliver(page, art);
+        else await tapAt(page, art, 0.3);
         await balloon(page);
         await expectBy(page, art, 56); // GAP + NEAR, and a little
       });
@@ -69,8 +79,9 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none');
   const art = '[data-visitor="gulliver"] .art';
   await expect(page.locator(art)).toBeVisible();
-  await tapAt(page, art, 0.3);
+  await wakeGulliver(page, art);
   await balloon(page);
+  await page.waitForTimeout(700); // up on his feet
   const y0 = (await page.locator('[data-fx="talk"]').boundingBox())!.y;
   // a step down the lawn: the balloon goes after it (once the move has lasted), its tail still at the head
   await page.locator('[data-visitor="gulliver"]').evaluate((el) => ((el as HTMLElement).style.marginTop = '60px'));

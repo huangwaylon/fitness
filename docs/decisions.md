@@ -290,6 +290,17 @@ goes about on its own (points of interest, following mine after 8 s away, a chat
 person meets a goal), one villager out at a time, because NH's villagers wander and a second avatar would make the
 other person's taps matter on my phone.
 
+### Visitors are the director's fourth actor
+The visitors stood as single still renders and felt lifeless (user). Rather than a parallel animation system, the
+visitor became the stage director's fourth actor (`'visitor'`): its walks, motions, emotes and facing use the same calls
+as the villagers', idle life's scheduler gives it a beat, and the walk graph routes its strolls and arrivals, so a sheet,
+a hidden page and the 10-minute idle stop already apply. Continuous life (breath, weight shift, each visitor's NH loop)
+is CSS on separate transform properties so loops add up without JS. NH decides who roams (Daisy Mae, Franklin, Zipper,
+Celeste) and who stays put (K.K. on his stool, Gulliver, Jack), and Gulliver sleeps until the fifth nudge as in NH; his
+sleep talk is a small caption, not the balloon, so the nudges stay quick. A visitor returns to its spot before a line so
+the balloon anchors where the bubble placement expects it. Arrivals and departures play only when a visit starts or ends
+with the island open (or `?arrive`): a page load shows them already there, so a tap never chases a figure walking in.
+
 ### Sea creatures by diving, a find kind of their own
 NH's 40 sea creatures come by diving: a bubble spot in the sea takes a fish shadow's turn (1 in 4), so the sea still
 holds one thing at a time and the island is no busier; a tap dives, and NH's speeds become a second tap on a darting
