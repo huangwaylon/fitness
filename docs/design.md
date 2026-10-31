@@ -243,10 +243,15 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
   no rain gate). NH's shadows: sizes 1–6, a long thin one for the eels, a fin cutting the surface for the sharks, the
   ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
-- **Bugs** (21 NH species: butterflies, the honeybee and ladybug over the beds; dragonflies over the hedge; cicadas
-  perched on the trunks; fireflies at night; grasshoppers, the locust, mantises and crickets in the grass): a tap on
-  one swings the net (caught); within 80px it startles away. A shaken bush lets one out 1 in 3. Bugs keep clear of
-  every control.
+- **Bugs** (47 NH species, `BUGS`): butterflies (the paper kite, agrias, monarch and the two birdwings among them),
+  the honeybee, ladybug and a snail on the beds; dragonflies and the damselfly over the hedge; the cicadas (a shell
+  now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick on
+  the trunks; fireflies and the Atlas moth at night; grasshoppers, locusts, mantises, crickets, the pill bug and the
+  centipede in the grass; the hermit crab (after dark) and the wharf roach on the front beach. Fliers come in from the
+  side, perchers fly in to a trunk (a shell and a walking stick are just there), crawlers fade in and creep (a crab
+  scuttles sideways, a snail barely moves). A tap on one swings the net (caught); within 80px it startles away. A
+  shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
+  fruit row).
 - **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's line:
   「〇〇を つりあげた！」 / 「〇〇を つかまえた！」, the sea bass 「…まあまあ かな？」 ("it's at least a C+!"), junk
   「つれた！ …と思ったら、ながぐつだった」. It sits centred above (else below) the catch, inside the safe area and clear of

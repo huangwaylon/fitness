@@ -149,6 +149,28 @@ test('a cicada perches on a trunk, clear of the tree, and a tap on it nets it', 
   await expect(page.locator('[data-fx="catch"]')).toHaveText('ミンミンゼミを つかまえた！');
 });
 
+test('a hermit crab crawls on the beach at night, clear of every control, and a tap on it nets it', async ({ page }) => {
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto('?demo&date=2026-07-04T21:00&critter=hermit-crab');
+  const crab = page.locator('[data-critter="hermit-crab"]');
+  await expect(crab).toBeAttached();
+  await page.waitForTimeout(1000);
+  const p = await at(page, '[data-critter="hermit-crab"]');
+  const sand = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
+  expect(sand).toBe('');
+  await page.mouse.click(p.x, p.y);
+  await expect(page.locator('[data-fx="catch"]')).toHaveText('ヤドカリを つかまえた！');
+});
+
+test('a stag beetle perches on a trunk at night and is netted', async ({ page }) => {
+  await page.goto('?demo&date=2026-07-04T22:00&critter=rainbow-stag');
+  await expect(page.locator('[data-critter="rainbow-stag"].sat')).toBeAttached({ timeout: 5000 });
+  const p = await at(page, '[data-critter="rainbow-stag"]');
+  expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p)).toBe('');
+  await page.mouse.click(p.x, p.y);
+  await expect(page.locator('[data-fx="catch"]')).toHaveText('ニジイロクワガタを つかまえた！');
+});
+
 test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the lane under the ribbon', async ({ page }) => {
   await page.clock.install();
   await open(page, '');
