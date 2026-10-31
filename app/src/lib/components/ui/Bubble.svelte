@@ -3,9 +3,7 @@
   // letter-by-letter reveal at 33 ms/char (tap to finish). The box holds --talk-lines lines (2; 1 on compact screens)
   // and never grows. しずえ stands on the left with her feet on the bubble's baseline (official art by pose; the season
   // picks her outfit), the tail pointing at her. Reduced motion: text appears at once.
-  // The real text lives in an aria-live node. Sound: NH's Animalese-style blips as it types (おしゃべり, design.md "UI sounds and blips"),
-  // しずえ's voice by default, a lower one for anyone else (`name`).
-  import { talk } from '#lib/sound/sound.svelte.ts';
+  // The real text lives in an aria-live node. The typing is silent (the villagers don't speak).
   import { t } from '#lib/i18n/index.ts';
   import Host from '../characters/Host.svelte';
   import { hostIsNook } from '../characters/hostWho.ts';
@@ -47,9 +45,6 @@
   });
   const total = $derived((glyphs.at(-1)?.at ?? 0) + 140);
 
-  /** Stops this line's blips (tap to finish, a new line, unmount). */
-  let hush = () => {};
-
   // Restart typing whenever the line changes.
   $effect(() => {
     if (reduced || !text) {
@@ -58,18 +53,12 @@
     }
     typing = true;
     const timer = setTimeout(() => (typing = false), total);
-    hush = talk(glyphs, name ? 'villager' : 'host');
-    return () => {
-      clearTimeout(timer);
-      hush();
-    };
+    return () => clearTimeout(timer);
   });
 
   function tap() {
-    if (typing) {
-      typing = false;
-      hush();
-    } else hostTap();
+    if (typing) typing = false;
+    else hostTap();
   }
 </script>
 

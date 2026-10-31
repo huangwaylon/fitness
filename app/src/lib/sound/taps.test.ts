@@ -13,13 +13,11 @@ const SKIP = [/\/dev\//];
 
 /** `self`: the handler (or what it sets off) plays the outcome's own cue. Where that sound comes from. */
 const SELF: Record<string, string> = {
-  'lib/components/ui/PhoneButton.svelte': 'opens the phone: ShimaPhone plays phone-open',
-  'lib/components/island/Hud.svelte': 'the ribbon opens the phone into きろく: phone-open',
-  'lib/components/ui/Bubble.svelte': 'finishing a line is silent (the blips stop, as Ⓐ skips text in NH); then しずえ hops: host-tap',
-  'lib/components/ui/NavButton.svelte': 'the phone passes self: its ‹ plays back and its ✕ the phone-close tune (ShimaPhone)',
-  'lib/components/ui/Sheet.svelte': 'backdrop / Esc: back on a paper sheet, phone-close on the phone (ShimaPhone)',
-  'lib/components/phone/ShimaPhone.svelte': 'phone-app, back, phone-close',
-  'lib/components/phone/SoundApp.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
+  'lib/components/island/Hud.svelte': 'the ribbon opens the panel: IslandPanel plays phone-open',
+  'lib/components/ui/Bubble.svelte': 'finishing a line is silent (as Ⓐ skips text in NH); then しずえ hops: host-tap',
+  'lib/components/ui/NavButton.svelte': 'the panel passes self: its ‹ plays back and its ✕ the phone-close tune (IslandPanel)',
+  'lib/components/ui/Sheet.svelte': 'backdrop / Esc: back',
+  'lib/components/panel/SoundSection.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
@@ -34,9 +32,8 @@ const NONE: Record<string, string> = {
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
   'lib/components/kiroku/ValueInput.svelte': 'the goal fields (weight, Move): the system keyboard clicks',
   'lib/components/wallet/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
-  'lib/components/phone/VillagerApp.svelte': 'name and search fields; the villager already chosen does nothing',
-  'lib/components/phone/LangApp.svelte': 'the language already chosen does nothing',
-  'lib/components/kiroku/Kiroku.svelte': 'the tab already shown does nothing',
+  'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
+  'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing'
 };
 
@@ -44,7 +41,7 @@ const NONE: Record<string, string> = {
 const DISABLED: Record<string, string> = {
   'lib/components/island/IslandScene.svelte': 'villagers during the opening beats (not a "can\'t", the scene is still arriving)',
   'lib/components/island/JarSpot.svelte': 'the jar during the opening beats',
-  'lib/components/phone/SoundApp.svelte': 'the volume slider while all sound is off (nothing could sound anyway)',
+  'lib/components/panel/SoundSection.svelte': 'the volume slider while all sound is off (nothing could sound anyway)',
   'routes/pair/+page.svelte': 'つなぐ while the key is being checked (busy, not refused)'
 };
 

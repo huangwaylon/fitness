@@ -32,7 +32,7 @@
   const shown = $derived(searchVillagers(query));
   const groups = $derived([
     { label: SPECIAL[lang], ids: shown.filter((id) => ROSTER[id].special) },
-    { label: t('phone.villager.villagers'), ids: shown.filter((id) => !ROSTER[id].special) }
+    { label: t('panel.villager.villagers'), ids: shown.filter((id) => !ROSTER[id].special) }
   ].filter((g) => g.ids.length));
   /** The radio in the tab order: the chosen one if it is shown, else the first shown. */
   const tabStop = $derived(shown.includes(current) ? current : shown[0]);
@@ -53,20 +53,20 @@
     </span>
   {/key}
   <label class="namefield">
-    <span>{t('phone.name.label')}</span>
+    <span>{t('panel.nickname')}</span>
     <input class="name" type="text" maxlength="12" data-sfx="none" bind:value={name} onblur={saveName}
       onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} enterkeyhint="done" />
   </label>
 </div>
 <label class="search">
   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.6" /><path d="M15.5 15.5 20 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></svg>
-  <span class="sr-only">{t('phone.villager.search')}</span>
-  <input type="search" data-sfx="none" bind:value={query} placeholder={t('phone.villager.search')} enterkeyhint="search" autocomplete="off" spellcheck="false"
+  <span class="sr-only">{t('panel.villager.search')}</span>
+  <input type="search" data-sfx="none" bind:value={query} placeholder={t('panel.villager.search')} enterkeyhint="search" autocomplete="off" spellcheck="false"
     onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} />
 </label>
 <div class="scroll">
   {#if shown.length}
-    <div role="radiogroup" aria-label={t('phone.app.villager')} {@attach roving}>
+    <div role="radiogroup" aria-label={t('panel.villager')} {@attach roving}>
       {#each groups as g (g.label)}
         <h3 class="grp">{g.label}</h3>
         <div class="roster">
@@ -81,7 +81,7 @@
       {/each}
     </div>
   {:else}
-    <p class="none" role="status">{t('phone.villager.none')}</p>
+    <p class="none" role="status">{t('panel.villager.none')}</p>
   {/if}
 </div>
 

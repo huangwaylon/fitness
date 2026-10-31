@@ -21,8 +21,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ## Simplicity rules
 
-- No tab bar: 島 (the island) and ごほうび (the wallet), plus the しまフォン for everything else.
-- One focal point per screen (島: today's ベル; ごほうび: the balance), one obvious control in the thumb zone.
+- No tab bar: 島 (the island) and ごほうび (the wallet), plus one panel for everything else (tap the ribbon).
+- One focal point per screen (島: today's ベル, which is also the door to the panel; ごほうび: the balance).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
   characters), only with news.
@@ -31,13 +31,16 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ### Island
 
-Top to bottom: the ribbon 「きょう +620 ベル」 (both people today; counts up; tap → きろく ベル), a sync chip only when
-sync isn't ok, the scene, しずえ's box only with news, the しまフォン button.
+Top to bottom: the ribbon 「きょう +620 ベル」 (both people today; counts up; tap → [the panel](#panel)), a sync chip
+only when sync isn't ok, the scene, しずえ's box only with news. Nothing else sits at the bottom: the island is centred
+in the visible ocean, from the horizon down to the screen's bottom above the home indicator, and never runs under the
+ribbon.
 
 - **Trees:** one per person; today's four fruits lie in front, 0–3 items each (thirds of the goal). A tap opens a
   popup: per fruit today / goal, today's ベル, the week as 「2/5」 (days met / needed, ✓ once the badge is met). In a
   week with the milestone curve each fruit shows four pips and one nudge line, 「あと 8分で +45」, for the tapped fruit
-  or the one nearest its next step.
+  or the one nearest its next step. The last line says, softly, when that person's data last arrived (「15:24 に
+  とどいた」, 「きのう 21:10」, 「10/29」), with a small dot once it is over 6 hours old.
 - **Jar + plate:** the balance; new ベル fly in as coins. Tap → ごほうび.
 - **Villagers:** mine hops when tapped; the partner opens their card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers and jar 64px); focus order = visual order.
@@ -49,32 +52,36 @@ price of the next buy. An escalating treat bought this week shows its base struc
 the wallet can't cover is sunk with あと N ベル. ✎ edits the shared list. A guide line: food treats about three times a
 week (no cap). 買う！ asks first, applies at once and waits 5 s with とりけす before it is sent.
 
-### NookPhone
+### Panel
 
-The しまフォン (`phone/ShimaPhone.svelte`): a 3-column grid of tiles; each app slides in from the right.
-**きろく** ([Kiroku](#kiroku)) · **あそびかた** (how it works, step tables, the treat guide and escalation, a protein hint
-of 1.6 g per kg a day, not tracked) · **村人** (my villager: 23 special characters and 158 villagers; my よびな) ·
-**ことば** (日本語 / English) · **つうしん** (when each of us last synced; いま つうしん) · **サウンド**
-([Sound settings](#sound-settings)).
+Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`, a top sheet: the safe area
+over its title bar 「しまの てちょう」, rounded at the bottom, stopping 24px short of the screen's bottom). One scroller,
+in this order: **きろく** ([Kiroku](#kiroku)), **からだ / 目標**, **むらびと** (my villager and よびな; かえる → the
+picker: 23 special characters and 158 villagers), **サウンド** ([Sound settings](#sound-settings)), **ことば**
+(日本語 / English), **つうしん** (when each of us last synced; いま つうしん) and **あそびかた** (one line; くわしく →
+the guide: step tables, the treat guide and escalation, a protein hint of 1.6 g per kg a day, not tracked). A week, a
+day, the weight screen, the picker and the guide push a level with ‹; ✕, the backdrop and Esc close the panel.
+The panel is its own chunk, loaded on the first tap.
 
 ### Kiroku
 
-きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, two pills: **からだ** | **ベル**.
+きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history at the top of the panel, two sections:
 
-- **からだ:** a weight card per person (→ the weight screen), 目標 (the Move and weight goals; two avatar pills pick
-  whose, either person sets either person's), then one card per week, newest first: ✓ once both harvested, each
-  person's four badges.
+- **きろく (ベル):** everything earned, then by week: the Sunday bonus, the buys (my own → とりけす) and one line per day
+  (tap → the day).
+- **からだ・目標:** a weight card per person (→ the weight screen), 目標 (the Move and weight goals; two avatar pills
+  pick whose, either person sets either person's), then one card per week, newest first: ✓ once both harvested, each
+  person's four badges (tap → the week).
 - **Week:** ベル, badges, a day table (tap a day).
 - **Day:** me then the partner: the day's ベル and, per fruit, its value (green at the goal) and ベル.
 - **Weight screen:** trend, week change, since start, pace, a 12-week chart (dots = weigh-ins, line = trend, dashes =
   goal), the goal month at the current pace, the recent weigh-ins. No good/bad colours.
-- **ベル:** everything earned, then by week: the Sunday bonus, the buys (my own → とりけす) and one line per day.
 
 ### Sheets and harvest
 
 - One sheet skin (`ui/Sheet.svelte`, a native `<dialog>`): tan paper, cream cards (navy at night), sticky title bar,
   one CTA in a sticky footer above the keyboard.
-- **Partner card:** face, one line about their day, when their data last arrived, ハイタッチ.
+- **Partner card:** face, one line about their day, ハイタッチ (when their data arrived is on their tree).
 - **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped: badges, bonuses, the
   ふたりボーナス, then 受け取る and coins fall into the jar. ✕ = あとで. The bonus is in the wallet from 19:30 either way.
 - **Pair** (`routes/pair`): paste the key, or open a `#key=` link in the installed app.
@@ -195,7 +202,8 @@ each surface one fill, one gradient, one soft shade, sparse flecks; no strokes o
 ### Layout and scale
 
 An elastic sky over a **stage of 390 × 360 units (u)**. The island (32u–356u) is centred between the horizon and the
-phone's top (`--island-bottom`); the sky is at most 27% of the screen; nothing runs under the ribbon or the phone. Back
+screen's bottom above the home indicator (`--island-bottom`); the sky is at most 27% of the screen; nothing runs under
+the ribbon. Back
 to front: sky · sea · ground · hedge · trees + fruit · jar · flower beds · villagers · particles · one tint.
 
 `scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 80 · trees + jar
@@ -292,16 +300,15 @@ Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1
 
 Compact = `(max-height: 700px) or (max-width: 359px)`, tiny = `(max-width: 339px)`; portrait; wider screens centre a
 480px column. No horizontal scroll at 320, inputs ≥ 16px (`inputs.test.ts`), targets ≥ 44px; the keyboard inset `--kb`
-from `visualViewport` (`ui/keyboardInset.ts`). The phone has a fixed 92px slot and short screens scale the island
-down. Check at 393×852, 375×667 and 320×568, day, dusk, night and winter.
+from `visualViewport` (`ui/keyboardInset.ts`). Short screens scale the island down. Check at 393×852, 375×667 and 320×568, day, dusk, night and winter.
 
 ## Official art
 
 Official NH renders only from `static/art/` through `<OfficialArt>`, with a fallback so a missing file never breaks a
 screen; WebP, never upscaled. Manifest and helpers `lib/art.ts`; files from `scripts/fetch-assets.ts`. Groups:
 villagers (roster `lib/villagers/roster.ts`; defaults goldie and anchovy), host (しずえ, たぬきち), fruit, seasonal oaks,
-bushes, flowers, season particles, reactions, money, phone tiles, deco. Ours: sky, sea, ground, the jar, effects, marks,
-UI sprites. Names follow the Japanese game (しずえ, しまフォン, ベル); no Nintendo fonts.
+bushes, flowers, season particles, reactions, money, deco. Ours: sky, sea, ground, the jar, effects, marks,
+UI sprites. Names follow the Japanese game (しずえ, ベル); no Nintendo fonts.
 
 ## Sound
 
@@ -314,7 +321,7 @@ One track per **Tokyo hour** (`hourly.ts`) in sunny / rain / snow arrangements (
 `?weather=` previews; a missing variant falls back to the hour's sunny track). A 3 s crossfade on the hour; the next
 file is fetched a minute early. Each file is a loop period plus a 3 s copy of its start; two `<audio>` decks hand over
 inside the copy (aligned to ~12 ms, 0.15 s crossfade), so the loop has no gap. Turning ミュージック on plays the
-opening theme until it ends or the phone closes. Under a sheet, the phone or the harvest the music is low-passed at 900 Hz.
+opening theme until it ends or the panel closes. Under a sheet, the panel or the harvest the music is low-passed at 900 Hz.
 
 ### Ambience
 
@@ -322,11 +329,10 @@ opening theme until it ends or the phone closes. Under a sheet, the phone or the
 Jul–Aug; higurashi 04–08 and 16–19 Jul–Aug; crickets 17–05 Sep–Nov; wind Dec–Feb or snow; rain. Files only (none are
 listed yet).
 
-### UI sounds and blips
+### UI sounds
 
-Soft mallets and bells for the phone, cursor, confirm and cancel. Dialogue blips (`dialogue.ts`): every other spoken
-glyph, pitch ±3 semitones from its code point (a line always sounds the same), a question rises, ≤ 40 a line; voices
-`blip-host` (しずえ) and `blip-villager`; tap-to-finish stops them.
+Soft mallets and bells for the phone, cursor, confirm and cancel. Dialogue is silent: the villagers don't speak (the
+text just types).
 
 ### Cues
 
@@ -334,7 +340,7 @@ glyph, pitch ±3 semitones from its code point (a line always sounds the same), 
 step, taps in `data-sfx`, outcomes call `cue()`. Examples: tree tap → rustle, fruit lands → thud, each coin → coin
 (climbing a pentatonic run), badge met → miles, 受け取る → fanfare, buy → purchase, villager/jar tap → pop, first open of
 the day → chime (waits up to 15 s for the first tap), scenery → `scene-<kind>`. **World cues** (the island's own
-sounds) are skipped while a sheet, the phone or the harvest covers the scene; UI cues always play.
+sounds) are skipped while a sheet, the panel or the harvest covers the scene; UI cues always play.
 
 ### Taps
 
@@ -344,7 +350,7 @@ swallowed and plays `boop`. Enforced by `taps.test.ts`, walked by `e2e/sound.spe
 
 ### Mix
 
-Buses: music 0.30, ambience 0.28, effects 0.90, blips 0.40; master 音量 squared (default 0.8). ≤ 6 voices and a cap
+Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0.8). ≤ 6 voices and a cap
 per sound (`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the music to 25%. Effects jitter pitch
 (UI and jingles don't).
 
@@ -358,7 +364,7 @@ per sound (`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the
   started by the next tap.
 - **Nothing queues:** a cue on a context that isn't running is dropped; a tap's own sound may run within 250 ms of its
   resume and is cancelled if the context still isn't running 300 ms later.
-- **Idle suspend:** with only effects or blips on (or the music held by an outside ⏸) the context sleeps 10 s after
+- **Idle suspend:** with only effects on (or the music held by an outside ⏸) the context sleeps 10 s after
   the last sound.
 - **Background:** hidden → decks paused, ambience stopped, context suspended, the hour clock stopped (no prefetch while
   hidden or muted); back in front the same hour fades in over 0.8 s. A deck that starts while hidden is paused again.
@@ -378,6 +384,6 @@ appends the copy, encodes AAC 64 kbps, sets `gain` to −16 LUFS. Audio is never
 
 ### Sound settings
 
-しまフォン → サウンド: **ミュージック** (music, ambience), **効果音** (effects, jingles), **おしゃべり** (blips), **音量**
-0–10; all off at first; turning one on previews it. 音量 0 mutes in place. In localStorage (`island.sound`), never
+The panel's サウンド: **ミュージック** (music, ambience), **効果音** (effects, jingles), **音量** 0–10; both off at
+first; turning one on previews it. 音量 0 mutes in place. In localStorage (`island.sound`), never
 synced.

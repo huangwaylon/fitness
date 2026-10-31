@@ -2,8 +2,8 @@
 // hourly.ts, ambient.ts and session.ts (tested there). One AudioContext, created inside the first tap after a sound
 // setting is on (iOS only starts audio from a gesture), never while everything is off.
 //
-//   effects  AudioBufferSource → gain ─┬→ sfx bus ──┐
-//   blips    AudioBufferSource → gain ─┴→ voice bus ┼→ master (音量) → speakers
+//   effects  AudioBufferSource → gain ──→ sfx bus ──┐
+//                                                  ├→ master (音量) → speakers
 //   music    <audio> deck A/B → gain ─┐            │
 //   ambience loop sources → ambient ──┴→ duck → muffle (low-pass) → music bus
 //
@@ -106,8 +106,6 @@ export class Engine {
   #files: Promise<void> | null = null;
   #limiter = new VoiceLimiter();
   #live = new Map<number, AudioBufferSourceNode>();
-  /** Audio-clock time the last line of blips ends. */
-  #blipsUntil = 0;
   #decks: Deck[] = [];
   #decksReady = false;
   #silentUrl: string | null = null;
@@ -148,7 +146,7 @@ export class Engine {
     const g = () => ctx.createGain();
     this.#master = g();
     this.#master.connect(ctx.destination);
-    this.#bus = { music: g(), sfx: g(), voice: g(), ambient: g() };
+    this.#bus = { music: g(), sfx: g(), ambient: g() };
     for (const b of Object.values(this.#bus)) b.gain.value = 0;
     this.#duck = g();
     this.#muffle = ctx.createBiquadFilter();
@@ -156,7 +154,6 @@ export class Engine {
     this.#muffle.frequency.value = 20000;
     this.#muffle.Q.value = 0.5;
     this.#bus.sfx.connect(this.#master);
-    this.#bus.voice.connect(this.#master);
     this.#bus.ambient.connect(this.#duck);
     this.#duck.connect(this.#muffle).connect(this.#bus.music).connect(this.#master);
     ctx.addEventListener('statechange', () => {
@@ -256,7 +253,7 @@ export class Engine {
     const step = () => {
       const ctx = this.ctx;
       const s = this.#levels;
-      const id = order.find((i) => !this.#buffers.has(i) && (!s || (SOUNDS[i].bus === 'voice' ? s.voice : s.sfx)));
+      const id = order.find((i) => !this.#buffers.has(i) && (!s || s.sfx));
       if (!ctx || !id || document.hidden) return void (this.#prerendering = false);
       order.splice(order.indexOf(id), 1);
       this.#buffer(ctx, id);
@@ -401,42 +398,6 @@ export class Engine {
     this.#limiter.release(key);
   }
 
-  /** A line of dialogue: one blip per entry (s from now, playback rate). They never overlap, so they skip the
-   *  voice limit. Returns a canceller (the line was tapped through or changed). */
-  blips(id: 'blip-host' | 'blip-villager', times: number[], rates: number[]): () => void {
-    const ctx = this.#ready();
-    const buf = ctx && this.#buffer(ctx, id);
-    if (!ctx || !buf || !times.length) return () => {};
-    const out = ctx.createGain();
-    out.gain.value = SOUNDS[id].gain;
-    out.connect(this.#bus.voice);
-    const t0 = ctx.currentTime + 0.02;
-    const srcs = times.map((t, i) => {
-      const s = ctx.createBufferSource();
-      s.buffer = buf;
-      s.playbackRate.value = rates[i] ?? 1;
-      s.connect(out);
-      s.start(t0 + t);
-      return s;
-    });
-    this.#blipsUntil = Math.max(this.#blipsUntil, t0 + times[times.length - 1] + buf.duration);
-    srcs[srcs.length - 1].onended = () => out.disconnect();
-    const cancel = () => {
-      const now = ctx.currentTime;
-      out.gain.setTargetAtTime(0, now, 0.01);
-      for (const s of srcs) {
-        try {
-          s.stop(now + 0.05);
-        } catch {
-          /* ended */
-        }
-      }
-    };
-    this.#dropIfStuck(ctx, cancel);
-    this.#idle.poke();
-    return cancel;
-  }
-
   /** IDLE_SUSPEND_MS without a sound and no music meant to play: let the hardware sleep (the next cue wakes it). */
   #onIdle(): void {
     const ctx = this.ctx;
@@ -444,7 +405,7 @@ export class Engine {
     // A track held by an outside ⏸ (holdMusic) or refused by the browser isn't sounding: the next tap restarts it.
     const sounding = !!this.track && !(f.el.paused && !f.starting);
     if (!ctx || ctx.state !== 'running' || sounding || document.hidden) return;
-    if (this.#live.size || ctx.currentTime < this.#blipsUntil) return this.#idle.poke();
+    if (this.#live.size) return this.#idle.poke();
     this.#asleep = true;
     void ctx.suspend().catch(() => {});
   }
@@ -477,7 +438,6 @@ export class Engine {
     set(this.#bus.music.gain, s.music ? LEVELS.music : 0);
     set(this.#bus.ambient.gain, s.music ? LEVELS.ambient : 0);
     set(this.#bus.sfx.gain, s.sfx ? LEVELS.sfx : 0);
-    set(this.#bus.voice.gain, s.voice ? LEVELS.voice : 0);
   }
 
   /** A music file as a blob URL. The whole file (0.4–0.9 MB) is fetched through the service worker's audio cache

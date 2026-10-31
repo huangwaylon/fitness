@@ -361,47 +361,11 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
     },
-    "phone/glyph-chat": {
-      "path": "phone/glyph-chat.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Menu_Chat_Log_NH_Icon.png"
-    },
-    "phone/glyph-help": {
-      "path": "phone/glyph-help.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Menu_Island_Life_101_NH_Icon.png"
-    },
-    "phone/miles": {
-      "path": "phone/miles.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Miles_NH_Icon.png"
-    },
     "phone/nook-shopping": {
       "path": "phone/nook-shopping.webp",
       "w": 92,
       "h": 92,
       "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Shopping_NH_Icon.png"
-    },
-    "phone/nookphone": {
-      "path": "phone/nookphone.webp",
-      "w": 208,
-      "h": 180,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_NH_Model.png"
-    },
-    "phone/passport": {
-      "path": "phone/passport.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_Passport_NH_Icon.png"
-    },
-    "phone/rescue": {
-      "path": "phone/rescue.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_Rescue_Service_NH_Icon.png"
     },
     "reactions/curiosity": {
       "path": "reactions/curiosity.webp",

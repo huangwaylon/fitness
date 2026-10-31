@@ -7,7 +7,7 @@ import { PREFETCH_MS, msToNextHour } from './hourly.ts';
  *  user asked for the music to play in silent mode); 'ambient' mixes with their audio and follows the switch. */
 export type SessionType = 'playback' | 'ambient';
 
-/** Only ミュージック takes the 'playback' session (the user's choice): effects and voices alone are 'ambient'. */
+/** Only ミュージック takes the 'playback' session (the user's choice): effects alone are 'ambient'. */
 export const sessionType = (music: boolean): SessionType => (music ? 'playback' : 'ambient');
 
 /** Leaving 'playback' waits until the music's fade-out (0.6 s) is over, so the category never changes under audio
@@ -86,7 +86,7 @@ export function gestureAction(g: Gesture, s: Parameters<typeof needsUnlock>[0]):
   return 'full';
 }
 
-/** With only 効果音 / おしゃべり on, the context is suspended after this long without a sound (an open context keeps
+/** With only 効果音 on, the context is suspended after this long without a sound (an open context keeps
  *  the audio hardware awake), and the next cue resumes it. */
 export const IDLE_SUSPEND_MS = 10_000;
 

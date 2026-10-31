@@ -93,11 +93,8 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.22, g: 1, lo: 250, hi: 1800, shape: 'swell' },
     { kind: 'tone', f: 560, to: 190, glide: 0.15, t: 0, d: 0.17, g: 0.35, wave: 'tri', attack: 0.004 }
   ],
-  // undo: the app-open blip played backwards (a glide down), then a low note
+  // undo: the app-open chirp played backwards (a glide down), then a low note
   undo: [{ kind: 'tone', f: 1300, to: 600, glide: 0.06, t: 0, d: 0.1, g: 0.8, attack: 0.001 }, mallet(E6, 0.06, 0.18, 0.35)],
-  // a voiced syllable: a short gliding tone with a couple of harmonics (pitch per character comes from the rate)
-  'blip-host': [{ kind: 'tone', f: 560, to: 505, glide: 0.05, t: 0, d: 0.055, g: 0.9, wave: 'tri', attack: 0.004, partials: [[2, 0.35, 0.8], [3, 0.15, 0.6]] }],
-  'blip-villager': [{ kind: 'tone', f: 300, to: 270, glide: 0.05, t: 0, d: 0.06, g: 0.7, wave: 'sq', attack: 0.004, partials: [[2, 0.3, 0.8]] }],
   rustle: [
     { kind: 'noise', t: 0, d: 0.42, g: 1, lo: 1500, hi: 7000, shape: 'swell', grains: 70 },
     { kind: 'noise', t: 0.02, d: 0.36, g: 0.4, lo: 300, hi: 1800, shape: 'swell' }
@@ -161,7 +158,7 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.15, g: 1, lo: 1200, hi: 5000, shape: 'decay', grains: 500 },
     { kind: 'tone', f: 1900, to: 1500, glide: 0.06, t: 0.01, d: 0.07, g: 0.15, wave: 'tri' }
   ],
-  // critters: a bobber's "pocha" (a quick falling blip and a little water), the reel's ratchet, an original catch tune
+  // critters: a bobber's "pocha" (a quick falling note and a little water), the reel's ratchet, an original catch tune
   // (four mallet notes up and a twinkle: not NH's), the net's airy swing and the balloon's "pan!" with a glint
   plop: [
     { kind: 'tone', f: 950, to: 260, glide: 0.05, t: 0, d: 0.1, g: 0.9, attack: 0.001 },

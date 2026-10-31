@@ -1,5 +1,5 @@
-// Settings persistence, the audio manifest (and that every file it names is on disk), the placeholder renders and
-// the dialogue blips (docs/design.md#ui-sounds-and-blips, #audio-files, #sound-settings).
+// Settings persistence, the audio manifest (and that every file it names is on disk) and the placeholder renders
+// (docs/design.md#audio-files, #sound-settings).
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -9,8 +9,6 @@ import { AUDIO, hasMusic, parseManifest } from './manifest.ts';
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import { durationOf, render } from './synth.ts';
 import { SOUND_IDS } from './ids.ts';
-import { BLIP_EVERY, MAX_BLIPS, blipPlan } from './dialogue.ts';
-import { semitones } from './mix.ts';
 
 const memory = (init: Record<string, string> = {}): KV & { data: Record<string, string> } => {
   const data = { ...init };
@@ -19,18 +17,18 @@ const memory = (init: Record<string, string> = {}): KV & { data: Record<string, 
 
 describe('settings', () => {
   it('start all OFF', () => {
-    expect(loadSound(memory())).toEqual({ music: false, sfx: false, voice: false, volume: 0.8 });
+    expect(loadSound(memory())).toEqual({ music: false, sfx: false, volume: 0.8 });
     expect(silent(DEFAULT_SOUND)).toBe(true);
   });
   it('persist in the storage registry key and read back', () => {
     const kv = memory();
-    expect(saveSound(kv, { music: true, sfx: false, voice: true, volume: 0.5 })).toBe(true);
+    expect(saveSound(kv, { music: true, sfx: false, volume: 0.5 })).toBe(true);
     expect(Object.keys(kv.data)).toEqual([DEVICE.sound]);
-    expect(loadSound(kv)).toEqual({ music: true, sfx: false, voice: true, volume: 0.5 });
+    expect(loadSound(kv)).toEqual({ music: true, sfx: false, volume: 0.5 });
   });
   it('anything malformed falls back to the default, the volume is clamped', () => {
     expect(loadSound(memory({ [DEVICE.sound]: '{nope' }))).toEqual(DEFAULT_SOUND);
-    expect(sanitize({ music: 'yes', sfx: true, volume: 7 })).toEqual({ music: false, sfx: true, voice: false, volume: 1 });
+    expect(sanitize({ music: 'yes', sfx: true, volume: 7 })).toEqual({ music: false, sfx: true, volume: 1 });
     expect(sanitize({ volume: -1 }).volume).toBe(0);
     expect(sanitize({ volume: NaN }).volume).toBe(0.8);
     expect(sanitize(null)).toEqual(DEFAULT_SOUND);
@@ -137,38 +135,6 @@ describe('placeholder effects (synth.ts)', () => {
     expect(durationOf('cursor')).toBeLessThan(0.1);
     expect(durationOf('confirm')).toBeLessThan(0.4);
     expect(durationOf('fanfare')).toBeGreaterThan(1);
-  });
-});
-
-describe('dialogue blips', () => {
-  const line = (s: string) => [...s].map((ch, i) => ({ ch, at: i * 33 }));
-  it('every other spoken glyph, punctuation and spaces silent', () => {
-    const p = blipPlan(line('こんにちは、しずえです。'));
-    // 9 spoken glyphs → 5 blips (the 1st, 3rd, 5th…)
-    expect(p.times).toHaveLength(5);
-    expect(p.times[0]).toBe(0);
-    expect(p.times[1]).toBeCloseTo(0.066);
-    expect(BLIP_EVERY).toBe(2);
-  });
-  it('the same glyph always gets the same pitch, within ±3 semitones', () => {
-    const a = blipPlan(line('あいうえお')).rates;
-    expect(blipPlan(line('あいうえお')).rates).toEqual(a);
-    // and different glyphs get different pitches: the line has a melody, not one note
-    expect(new Set(blipPlan(line('あかさたなはまやらわ')).rates).size).toBeGreaterThan(2);
-    for (const r of a) {
-      expect(r).toBeGreaterThanOrEqual(semitones(-3) - 1e-9);
-      expect(r).toBeLessThanOrEqual(semitones(3) + 1e-9);
-    }
-  });
-  it('a question rises at the end', () => {
-    const flat = blipPlan(line('筋トレでしたか')).rates;
-    const ask = blipPlan(line('筋トレでしたか？')).rates;
-    expect(ask.at(-1)).toBeCloseTo(flat.at(-1)! * semitones(4));
-    expect(ask[0]).toBe(flat[0]);
-  });
-  it('a long line goes quiet after the cap', () => {
-    expect(blipPlan(line('あ'.repeat(500))).times).toHaveLength(MAX_BLIPS);
-    expect(blipPlan([])).toEqual({ times: [], rates: [] });
   });
 });
 

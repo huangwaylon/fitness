@@ -1,18 +1,18 @@
 <script lang="ts">
-  // しまフォン → サウンド (docs/design.md "Sound settings"): ミュージック, 効果音 and おしゃべり as three ON/OFF rows (NH's yellow
-  // highlight when on, the button tiers) and one 音量 slider. All start OFF; turning one on plays a taste of it (the
-  // opening theme, a confirm, a few blips). Kept on this phone only (not synced like the language).
+  // The panel's サウンド (docs/design.md "Sound settings"): ミュージック and 効果音 as two ON/OFF rows (NH's yellow
+  // highlight when on, the button tiers) and one 音量 slider. Both start OFF; turning one on plays a taste of it (the
+  // opening theme, a confirm). Kept on this phone only (not synced like the language).
   import { setSound, sound } from '#lib/sound/sound.svelte.ts';
   import { hasMusic } from '#lib/sound/manifest.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
-  const ROWS = ['music', 'sfx', 'voice'] as const;
+  const ROWS = ['music', 'sfx'] as const;
   const s = $derived(sound.settings);
   const hour = $derived(jst(minuteNow()).hour);
   const volume = $derived(Math.round(s.volume * 10));
-  const off = $derived(!s.music && !s.sfx && !s.voice);
+  const off = $derived(!s.music && !s.sfx);
 </script>
 
 <div class="prows">
@@ -27,7 +27,7 @@
     </button>
   {/each}
 
-  <!-- nothing to turn up while all three are off: the disabled tier (sunk, no edge) -->
+  <!-- nothing to turn up while both are off: the disabled tier (sunk, no edge) -->
   <label class="prow vol" class:off>
     <span class="prl">{t('sound.volume')}</span>
     <input type="range" min="0" max="10" step="1" value={volume} disabled={off} data-sfx="self" style:--v="{volume * 10}%"

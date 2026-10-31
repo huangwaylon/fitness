@@ -1,10 +1,6 @@
 // Tiny shared UI state (not data): whether a full-screen overlay (the Sunday harvest) is open, so pages hold their
-// own toasts until it closes; a pending きろく entry for the しまフォン; and the open sheets, newest last (the
-// banner renders inside the topmost one).
-type PhoneEntry = { tab: 'body' | 'money'; week?: string };
-
+// own toasts until it closes; and the open sheets, newest last (the banner renders inside the topmost one).
 class Ui {
-  phoneEntry = $state<PhoneEntry | null>(null);
   sheets = $state<number[]>([]);
   #overlay: () => boolean = () => false;
   /** The harvest overlay is up (read straight from the layout's state: no mirroring effect). */
@@ -18,8 +14,3 @@ class Ui {
 }
 
 export const ui = new Ui();
-
-/** Open the しまフォン straight into きろく (the HUD's ベル → the ベル tab). */
-export function openKiroku(entry: PhoneEntry): void {
-  ui.phoneEntry = entry;
-}

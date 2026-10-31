@@ -2,11 +2,11 @@
 // pitch jitter and the music duck under a jingle.
 import { SOUNDS, type SoundId } from './ids.ts';
 
-/** Bus levels at full volume (engine.ts). NH's BGM is gentle and sits well under the effects; blips are quiet.
+/** Bus levels at full volume (engine.ts). NH's BGM is gentle and sits well under the effects.
  *  scripts/music.ts reads `music` for the tracks' true-peak ceiling. */
-export const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9, voice: 0.4 } as const;
+export const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9 } as const;
 
-/** At most this many effects and blips sound at once (NH stays sparse: one or two things at a time). */
+/** At most this many effects sound at once (NH stays sparse: one or two things at a time). */
 export const MAX_VOICES = 6;
 
 interface Voice {

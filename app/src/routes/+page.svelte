@@ -1,7 +1,7 @@
 <script lang="ts">
-  // 島 Island: the scene full bleed under a light, symmetric HUD (today's ベル ribbon
-  // centred at the top = the one focal point) and ONE control at the bottom centre: the NookPhone, the hub (きろく,
-  // あそびかた, …), in the thumb zone. The day needs zero taps (the Watch and the Shortcut fill the trees);
+  // 島 Island: the scene full bleed under a light, symmetric HUD: today's ベル ribbon centred at the top, the one focal
+  // point and the door to everything else (tap → the island panel slides down: きろく, むらびと, settings, あそびかた).
+  // The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager (tap them → their villager card), as talking to a villager does in NH.
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
   // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → their card; my villager → a hop.
@@ -12,7 +12,6 @@
   import { emit } from '#lib/components/motion/bus.svelte.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
-  import PhoneButton from '#lib/components/ui/PhoneButton.svelte';
   import PartnerSheet from '#lib/components/sheets/PartnerSheet.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -22,7 +21,7 @@
   import { t, hostLine } from '#lib/i18n/index.ts';
 
   let partnerOpen = $state(false);
-  let phoneOpen = $state(false);
+  let panelOpen = $state(false);
 
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
@@ -80,46 +79,36 @@
   <main class="island" class:covered={ui.overlay}>
     <h1 class="sr-only">{t('app.name')}</h1>
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the scene (trees, villagers,
-         the jar), then the phone (and しずえ's box) at the bottom. All are absolutely placed, so the order costs no layout;
-         the stacking comes from the --z-* scale (tokens.css). -->
-    <Hud bells={view.wallet.today} bind:phoneOpen />
+         the jar), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
+         comes from the --z-* scale (tokens.css). -->
+    <Hud bells={view.wallet.today} bind:panelOpen />
     <div class="top">
       <IslandScene {view} onpartner={() => (partnerOpen = true)} onjar={() => goto(resolve('/jar'))}
-        paused={partnerOpen || phoneOpen} />
+        paused={partnerOpen || panelOpen} />
     </div>
-    <!-- The bottom band (a constant height): the NookPhone, centred. しずえ's box, when she has news, floats just above
-         it over the front beach, so nothing in the scene moves when she speaks. -->
-    <div class="below">
-      {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}
-      <PhoneButton bind:open={phoneOpen} />
-    </div>
+    <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
+    {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}
   </main>
   <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
 {/if}
 
 <style>
-  /* The island is centred in the visible ocean (the horizon down to the NookPhone), never under the
-     ribbon or the phone. The phone sits in ONE fixed slot over the sea at the bottom (its height is a constant, so
-     nothing moves when しずえ speaks: her box floats above it); IslandScene centres the island between the horizon
-     and --island-bottom (the phone's top), and keeps the horizon under --hud-bottom (the ribbon's lip, Hud.svelte). */
+  /* The island is centred in the visible ocean, from the horizon down to the bottom of the screen (above the home
+     indicator), never under the ribbon: IslandScene centres it between the horizon and --island-bottom, and keeps
+     the horizon under --hud-bottom (the ribbon's lip, Hud.svelte). */
   .island {
-    --chrome-below: calc(var(--phone-h) + 2 * var(--gap) + var(--pad-bottom));
     --hud-bottom: calc(var(--safe-top) + 16px + var(--hit) + var(--lip-h));
-    --island-bottom: calc(var(--chrome-below) - var(--gap));
+    --island-bottom: var(--safe-bottom);
     --scene-h: var(--vh-fill);
     position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden;
   }
   .top { position: absolute; inset: 0; overflow: hidden; }
-  .below {
-    position: absolute; z-index: var(--z-dock); left: 0; right: 0; bottom: 0;
-    height: var(--chrome-below); display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
-    padding: var(--gap) calc(var(--side) + var(--safe-right)) calc(var(--pad-bottom) + var(--gap)) calc(var(--side) + var(--safe-left));
-    pointer-events: none;
+  /* Under the harvest only the island shows through the tint: no HUD, no dialogue. */
+  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered :global(.jar-plate), .covered .news { visibility: hidden; }
+  /* しずえ's box: over the sea at the bottom, the column's width, above the home indicator */
+  .news {
+    position: absolute; z-index: var(--z-dock); left: calc(var(--side) + var(--safe-left)); right: calc(var(--side) + var(--safe-right));
+    bottom: calc(var(--pad-bottom) + var(--gap));
   }
-  .below > :global(*) { pointer-events: auto; }
-  /* Under the harvest only the island shows through the tint: no HUD, no dialogue, no action. */
-  .covered :global(.hud), .covered :global(.ribbon-wrap), .covered :global(.jar-plate), .covered .below { visibility: hidden; }
-  /* しずえ's box: over the front beach, just above the phone, the column's width */
-  .news { position: absolute; left: calc(var(--side) + var(--safe-left)); right: calc(var(--side) + var(--safe-right)); bottom: calc(100% - var(--gap)); }
   .news :global(.bubble) { margin-bottom: 0; }
 </style>
