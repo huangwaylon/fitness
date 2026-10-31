@@ -137,7 +137,7 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
     const r = late(new Date(ms('2026-11-25', '04:00') + 1).toISOString());
     expect(walletAt(reduce(r), LOCKED).wallet.earned).toBe(0);
     expect(weekBells(reduce(r), WK, LOCKED).A.days[0].steps).toBe(1000);
-    expect(historyWeeks(reduce(r), LOCKED).find((w) => w.weekKey === WK)!.bells).toBe(0);
+    expect(weekDetail(reduce(r), WK, LOCKED).bells).toBe(0);
   });
 
   it('an edit (metric_set) in the open week moves the earnings, even down', () => {
@@ -435,25 +435,21 @@ describe('the きろく ledger and history fields', () => {
     expect(bellsLedger(reduce(r), LOCKED).days.find((d) => d.date === D[0])!.locked).toBe(true);
   });
 
-  it('week list, week detail and day detail carry the ベル', () => {
+  it('week list, week detail and day detail carry the ベル and the badges', () => {
     const s = reduce(r);
     const w = historyWeeks(s, SUN_BEFORE).find((x) => x.weekKey === WK)!;
-    expect(w.bells).toBe(14 * 920); // no bonus before the harvest
+    expect(weekDetail(s, WK, SUN_BEFORE).bells).toBe(14 * 920); // no bonus before the harvest
     const four = { peach: true, pear: true, cherry: true, apple: true };
-    expect(w.people.A).toMatchObject({ bells: 7 * 920, ringBadges: four });
-    expect(historyWeeks(s, MON_AFTER).find((x) => x.weekKey === WK)!.bells).toBe(18480);
+    expect(w.people.A).toMatchObject({ ringBadges: four });
     const d = weekDetail(s, WK, MON_AFTER);
     expect(d).toMatchObject({ bells: 18480, bonus: { A: 1800, B: 1800, duo: 2000 } });
-    expect(d.people.B).toMatchObject({ dailyBells: 6440, bonus: 1800, ringBadges: four });
+    expect(d.people.B).toMatchObject({ ringBadges: four });
     expect(d.people.A.ringWeek).toEqual({ peach: { days: 7, goal: 5 }, pear: { days: 7, goal: 5 }, cherry: { days: 7, goal: 5 }, apple: { days: 7, goal: 4 } });
     expect(w.people.B.ringWeek).toEqual(d.people.B.ringWeek);
-    expect(d.people.A.days[0]).toMatchObject({
-      bells: 920, rings: { peach: 420, pear: 180, cherry: 120, apple: 200 },
-      exerciseMin: 60, moveKcal: 700, moveGoal: 600, standMin: 200, steps: 9000, met: four
-    });
-    expect(d.people.B.days[0]).toMatchObject({ moveGoal: 400 });
-    const mid = weekDetail(s, WK, ms(D[1], '12:00'));
-    expect(mid.people.A.days.map((x) => x.bells)).toEqual([920, 920, 0, 0, 0, 0, 0]); // future days: 0
+    expect(d.people.A.days[0]).toMatchObject({ exerciseMin: 60, moveKcal: 700, standMin: 200, steps: 9000, met: four });
+    expect(dayDetail(s, D[0], MON_AFTER).people.B.move.goal).toBe(400);
+    const mid = ms(D[1], '12:00');
+    expect(D.map((x) => dayDetail(s, x, mid).people.A.bells)).toEqual([920, 920, 0, 0, 0, 0, 0]); // future days: 0
     expect(dayDetail(s, D[3], MON_AFTER).people.A).toMatchObject({
       bells: 920, rings: { peach: 420 }, met: four, exercise: { value: 60, watch: 60, source: 'watch', edited: false },
       move: { value: 700, goal: 600, edited: false }, stand: { value: 200, edited: false }

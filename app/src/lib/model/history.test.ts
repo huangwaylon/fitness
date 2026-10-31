@@ -213,10 +213,11 @@ describe('history views', () => {
       { by: 'A', date: DAYS[1], field: 'move_kcal', before: 500, after: 600 }, { by: 'A', date: DAYS[1], field: 'stand_min', before: 150, after: 100 }
     ]);
     expect(weekDetail(s, WK, WED_MID).people.A.days[1]).toMatchObject({
-      moveKcal: 600, standMin: 100, rings: { pear: 180, cherry: 65 }, met: { pear: true, cherry: false }, // v2: Stand goal 120 editedFields: ['move', 'stand']
+      moveKcal: 600, standMin: 100, met: { pear: true, cherry: false }, editedFields: ['move', 'stand'] // v2: Stand goal 120
     });
+    expect(dayDetail(s, DAYS[1], WED_MID).people.A.rings).toMatchObject({ pear: 180, cherry: 65 });
     expect(dayDetail(s, DAYS[1], WED_MID).people.A).toMatchObject({ move: { value: 600, goal: 600, edited: true }, stand: { value: 100, edited: true } });
-    expect(weekDetail(reduce(goodWeek()), WK, WED_MID).people.A.days[1].rings).toMatchObject({ pear: 98, cherry: 120 }); // 500 / 600 is past 75% (v2 milestones: 98); 150 stand min, capped at 120
+    expect(dayDetail(reduce(goodWeek()), DAYS[1], WED_MID).people.A.rings).toMatchObject({ pear: 98, cherry: 120 }); // 500 / 600 is past 75% (v2 milestones: 98); 150 stand min, capped at 120
   });
 
   it('week list: newest first from the economy’s first week, both people, locked and open flags', () => {
@@ -224,25 +225,25 @@ describe('history views', () => {
     const weeks = historyWeeks(reduce(rows), now);
     expect(weeks.map((w) => w.weekKey)).toEqual(['2026-11-23', '2026-11-16', '2026-11-09', '2026-11-02', '2026-10-26']); // the economy starts 2026-10-26
     const w = weeks[1];
-    expect(w).toMatchObject({ settled: true, locked: false, open: true, current: false });
+    expect(w).toMatchObject({ locked: false, current: false });
     expect(w.people.A.ringWeek).toEqual({ peach: { days: 0, goal: 5 }, pear: { days: 0, goal: 5 }, cherry: { days: 7, goal: 5 }, apple: { days: 6, goal: 4 } });
     const locked = historyWeeks(reduce(rows), THU_AFTER)[1];
-    expect(locked).toMatchObject({ weekKey: WK, locked: true, open: false });
+    expect(locked).toMatchObject({ weekKey: WK, locked: true });
   });
 
   it('week detail and day detail show both people, the source of minutes and the change log', () => {
     const s = reduce(rows);
     const wd = weekDetail(s, WK, WED_MID);
     expect(wd.open).toBe(true);
-    expect(wd.people.A.days[0]).toMatchObject({ steps: 7000, edited: true, exerciseMin: 30 });
-    expect(wd.people.B.days[0]).toMatchObject({ exerciseMin: 45, edited: true, editedFields: ['minutes'] });
+    expect(wd.people.A.days[0]).toMatchObject({ steps: 7000, editedFields: ['steps'], exerciseMin: 30 });
+    expect(wd.people.B.days[0]).toMatchObject({ exerciseMin: 45, editedFields: ['minutes'] });
     expect(wd.people.A.days[4].future).toBe(true);
     const dd = dayDetail(s, DAYS[0], WED_MID);
     expect(dd.people.A.steps).toEqual({ value: 7000, edited: true });
     expect(dd.people.B.exercise).toMatchObject({ value: 45, source: 'edit', edited: true });
     expect(dd.edits.map((e) => e.by)).toEqual(['B', 'A']);
     expect(dd.people.A.workouts).toEqual([]);
-    expect(dayDetail(s, DAYS[0], THU_AFTER)).toMatchObject({ open: false, locked: true });
+    expect(dayDetail(s, DAYS[0], THU_AFTER)).toMatchObject({ open: false });
   });
 });
 

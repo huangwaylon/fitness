@@ -8,16 +8,10 @@ import { dailyUpTo, dayBells, earnTimeOf, weekBells, type WeekBells } from './be
 import { replayHarvests } from './week.ts';
 import { metricAsOf, weekDates, workoutsAsOf } from './inputs.ts';
 
-/** A week's ベル at `now`: daily earnings up to today, and the bonus once it landed (Sunday 19:30). */
-function weekBellsView(w: WeekBells, today: LocalDate, now: number) {
-  const landed = provisionalMs(w.weekKey) <= now;
-  const bonus: HarvestBonus = landed ? { ...w.bonus } : { A: 0, B: 0, duo: 0 };
-  const person = (e: WeekEarning) => ({
-    daily: dailyUpTo(e, today), bonus: bonus[e.person], ringBadges: { ...e.badges }, ringWeek: ringWeekOf(e)
-  });
-  const A = person(w.A);
-  const B = person(w.B);
-  return { bonus, A, B, bells: A.daily + A.bonus + B.daily + B.bonus + bonus.duo };
+/** A week's ベル at `now` (both people's daily earnings up to today, and the bonus once it landed on Sunday 19:30). */
+function weekTotal(w: WeekBells, today: LocalDate, now: number): { bells: number; bonus: HarvestBonus } {
+  const bonus: HarvestBonus = provisionalMs(w.weekKey) <= now ? { ...w.bonus } : { A: 0, B: 0, duo: 0 };
+  return { bonus, bells: dailyUpTo(w.A, today) + dailyUpTo(w.B, today) + bonus.A + bonus.B + bonus.duo };
 }
 /** A future day's ベル: nothing yet, whatever rows are dated to it. */
 const NO_BELLS = () => ({ bells: 0, rings: zeroRings() });
@@ -47,8 +41,6 @@ export interface EditLog {
 }
 
 interface HistoryPerson {
-  /** The person's ベル of the week: daily earnings + their badge bonus once it landed. */
-  bells: number;
   /** The four badges. */
   ringBadges: Record<RingFruit, boolean>;
   /** Badge progress per fruit (days at the goal / the threshold). */
@@ -58,15 +50,9 @@ interface HistoryPerson {
 export interface HistoryWeek {
   weekKey: WeekKey;
   current: boolean;
-  /** Sunday 19:30 has passed: the harvest opened and the weekly bonus landed. */
-  settled: boolean;
   locked: boolean;
-  /** Edits for this week count right now. */
-  open: boolean;
   /** Both tapped 受け取る. */
   harvested: boolean;
-  /** The week's ベル, both people: daily earnings + the weekly bonus once it landed (Sunday 19:30). */
-  bells: number;
   people: Record<PersonId, HistoryPerson>;
 }
 
@@ -117,21 +103,9 @@ export function historyWeeks(s: State, now: number): HistoryWeek[] {
   const out: HistoryWeek[] = [];
   const start = firstWeek(s) < cur ? firstWeek(s) : cur;
   for (let wk = cur; wk >= start; wk = addDays(wk, -7)) {
-    const c = calc(s, wk, now);
-    const b = weekBellsView(c.wb, today, now);
-    out.push({
-      weekKey: wk,
-      current: wk === cur,
-      settled: wk >= firstWeek(s) && provisionalMs(wk) <= now,
-      locked: isLockedAt(s, wk, now),
-      open: editableAt(wk, now), // this week, and last week until Wednesday 04:00
-      harvested: harvested.has(wk),
-      bells: b.bells,
-      people: {
-        A: { bells: b.A.daily + b.A.bonus, ringBadges: b.A.ringBadges, ringWeek: b.A.ringWeek },
-        B: { bells: b.B.daily + b.B.bonus, ringBadges: b.B.ringBadges, ringWeek: b.B.ringWeek }
-      }
-    });
+    const { wb } = calc(s, wk, now);
+    const person = (e: WeekEarning): HistoryPerson => ({ ringBadges: { ...e.badges }, ringWeek: ringWeekOf(e) });
+    out.push({ weekKey: wk, current: wk === cur, locked: isLockedAt(s, wk, now), harvested: harvested.has(wk), people: { A: person(wb.A), B: person(wb.B) } });
   }
   return out;
 }
@@ -147,17 +121,12 @@ interface DayRow {
   steps: number | null;
   /** Counted exercise minutes: max(Watch, workouts added in きろく). */
   exerciseMin: number;
-  /** Move, active kcal, and the goal in force that day. */
+  /** Move, active kcal. */
   moveKcal: number | null;
-  moveGoal: number;
   standMin: number | null;
   /** The daily goal met, per fruit. */
   met: Record<RingFruit, boolean>;
-  /** The day's ベル, per ring fruit. */
-  bells: number;
-  rings: RingBells;
-  /** An accepted edit touched this person's day. */
-  edited: boolean;
+  /** What accepted edits changed on this person's day. */
   editedFields: EditedField[];
 }
 
@@ -168,10 +137,6 @@ const FIELD_OF: Record<EditLog['field'], EditedField> = {
 };
 
 interface WeekDetailPerson {
-  /** Daily earnings of the week (without the bonus). */
-  dailyBells: number;
-  /** The badge bonus (+badges.bells each; 0 until it lands on Sunday 19:30). */
-  bonus: number;
   /** The four badges. */
   ringBadges: Record<RingFruit, boolean>;
   /** Badge progress per fruit (days at the goal / the threshold). */
@@ -203,30 +168,22 @@ export function weekDetail(s: State, wk: WeekKey, now: number): WeekDetail {
   const today = localDateAt(now);
   const c = calc(s, wk, now);
   const wb = c.wb;
-  const b = weekBellsView(wb, today, now);
+  const b = weekTotal(wb, today, now);
   const person = (p: PersonId): WeekDetailPerson => {
     const edited = editedFields(s, p);
     return {
-      dailyBells: b[p].daily,
-      bonus: b[p].bonus,
-      ringBadges: b[p].ringBadges,
-      ringWeek: b[p].ringWeek,
-      days: wb[p].days.map((d) => {
-        const fields = [...(edited.get(d.date) ?? [])];
-        return {
-          date: d.date,
-          future: d.date > today,
-          steps: d.steps,
-          exerciseMin: d.exerciseMin,
-          moveKcal: d.moveKcal,
-          moveGoal: d.moveGoal,
-          standMin: d.standMin,
-          met: { ...d.met },
-          ...(d.date <= today ? dayBells(wb[p], d.date) : NO_BELLS()),
-          edited: fields.length > 0,
-          editedFields: fields
-        };
-      })
+      ringBadges: { ...wb[p].badges },
+      ringWeek: ringWeekOf(wb[p]),
+      days: wb[p].days.map((d) => ({
+        date: d.date,
+        future: d.date > today,
+        steps: d.steps,
+        exerciseMin: d.exerciseMin,
+        moveKcal: d.moveKcal,
+        standMin: d.standMin,
+        met: { ...d.met },
+        editedFields: [...(edited.get(d.date) ?? [])]
+      }))
     };
   };
   return {
@@ -265,9 +222,7 @@ export interface DayPerson {
 
 export interface DayDetail {
   date: LocalDate;
-  weekKey: WeekKey;
   future: boolean;
-  locked: boolean;
   /** Edits to this day count now. */
   open: boolean;
   lockAt: number;
@@ -303,7 +258,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     };
   };
   return {
-    date, weekKey: wk, future: date > localDateAt(now), locked: isLockedAt(s, wk, now), open: editableAt(date, now),
+    date, future: date > localDateAt(now), open: editableAt(date, now),
     lockAt: finalMs(wk), people: { A: person('A'), B: person('B') }, edits: [...log].reverse()
   };
 }
