@@ -17,13 +17,15 @@
     onopen: (wk: string) => void;
   }
   let { weeks, order, names, villagers, onopen }: Props = $props();
+  /** The newest weeks first; older ones a tap away (the panel's first open stays light). */
+  let shown = $state(4);
 </script>
 
 {#if weeks.length === 0}
   <p class="empty">{t('kiroku.empty')}</p>
 {/if}
 <ul class="list">
-  {#each weeks as w, i (w.weekKey)}
+  {#each weeks.slice(0, shown) as w, i (w.weekKey)}
     <li style:animation-delay="{Math.min(i, 6) * 40}ms">
       <button type="button" class="card wk" class:cur={w.current} data-sfx="page" onclick={() => onopen(w.weekKey)}
         aria-label="{w.current ? t('kiroku.thisWeek') : t('kiroku.weekOf', { range: weekRange(w.weekKey) })}{w.harvested ? ' ' + t('kiroku.harvested') : ''}">
@@ -42,8 +44,12 @@
     </li>
   {/each}
 </ul>
+{#if weeks.length > shown}
+  <button type="button" class="btn small paper more" data-sfx="page" onclick={() => (shown += 4)}>{t('kiroku.earlier')}</button>
+{/if}
 
 <style>
+  .more { justify-self: center; }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
   .list li { animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
   .empty { text-align: center; color: var(--text-soft); font-weight: 700; }

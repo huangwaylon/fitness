@@ -243,5 +243,6 @@
   "panel.body": "Body & goals",
   "panel.tab.kiroku": "Records",
   "panel.tab.settings": "Settings",
-  "panel.bells": "Bells"
+  "panel.bells": "Bells",
+  "kiroku.earlier": "Earlier weeks"
 }
