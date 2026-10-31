@@ -78,6 +78,35 @@ describe('LiveBackend sync recovery', () => {
   });
 });
 
+describe('LiveBackend after a long time offline', () => {
+  it('a sync (or the online event) sends what backed off for minutes at once, not after the rest of its wait', async () => {
+    configureStorage({ local: new Mem() });
+    setKey('ab'.repeat(32), 'A');
+    let online = false;
+    const sent: string[] = [];
+    configureTransport({
+      url: 'https://script.example/exec',
+      fetch: (async (_u: unknown, init?: RequestInit) => {
+        if (!online) throw new TypeError('Load failed');
+        const body = JSON.parse(String(init?.body)) as { action: string; id?: string };
+        if (body.action === 'event') sent.push(body.id!);
+        return new Response(JSON.stringify({ ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }));
+      }) as typeof fetch
+    });
+    const ev = enqueue('highfive', {});
+    for (let i = 0; i < 9; i++) {
+      await flush(() => queued()[0].nextAt); // each retry fails offline: the backoff grows to minutes
+    }
+    expect(queued()[0].nextAt - Date.now()).toBeGreaterThan(60_000);
+    online = true;
+    const h = host();
+    await new LiveBackend(h).refresh({});
+    expect(sent).toEqual([ev.id]);
+    expect(queued()).toEqual([]);
+    expect(h.offline).toBe(false);
+  });
+});
+
 describe('LiveBackend cold open after an ack (no flash of the old state)', () => {
   const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // Wed 21:00 JST
   const GOAL = { key: 'moveGoal', value: 450 };

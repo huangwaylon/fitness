@@ -6,7 +6,7 @@ import type { EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
-import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
+import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { missesLock, pendingAcked } from './view.ts';
@@ -60,6 +60,7 @@ export class LiveBackend implements Backend {
   #start(): void {
     if (this.#started) return;
     this.#started = true;
+    // back online: also what backed off while offline goes now (refresh → retryNow)
     addEventListener('online', () => void this.refresh({}));
     // Full storage or private mode: the app works from memory, but say so once.
     onStorageProblem((p) => {
@@ -69,7 +70,7 @@ export class LiveBackend implements Backend {
     });
   }
 
-  async refresh(opts: { background?: boolean }): Promise<void> {
+  async refresh(opts: { background?: boolean; fresh?: boolean }): Promise<void> {
     const h = this.#host;
     if (!getKey() || keyFromHash(location.hash)) {
       // Not paired yet, or opened from a `#key=…` link: the pair page takes it from here (and keeps the hash).
@@ -90,12 +91,13 @@ export class LiveBackend implements Backend {
     }
     if (opts.background && Date.now() - this.#lastFetch < REFRESH_FLOOR_MS) return;
     this.#lastFetch = Date.now();
+    if (!opts.background) retryNow(); // asked for (sync, reconnect, after an ack): don't sit out a backoff
     const seq = ++this.#refreshSeq;
     h.syncing = true;
     let r: Awaited<ReturnType<typeof refreshSnapshot>>;
     try {
       await this.#flush(false);
-      r = await refreshSnapshot();
+      r = await refreshSnapshot(Date.now, opts.fresh);
     } catch (e) {
       // never leave the pill spinning and the sync buttons disabled
       console.warn('refresh failed', e);
@@ -190,7 +192,8 @@ export class LiveBackend implements Backend {
     if (r.error) this.#host.offline = true;
     if (r.sent > 0 && reconcile) {
       if (this.#reconcileTimer) clearTimeout(this.#reconcileTimer);
-      this.#reconcileTimer = setTimeout(() => void this.refresh({}), RECONCILE_MS);
+      // fresh: a fetch that started before the ack may not have the rows yet
+      this.#reconcileTimer = setTimeout(() => void this.refresh({ fresh: true }), RECONCILE_MS);
     }
     if (r.remaining > 0) this.#scheduleRetry();
   }

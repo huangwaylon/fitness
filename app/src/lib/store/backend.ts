@@ -41,8 +41,8 @@ export interface Backend {
   cache(): SnapshotCache | null;
   /** Events applied on top of the rows (oldest first), and which of them are still unsent (only those can miss a lock). */
   events(): { list: QueuedEvent[]; unsent: Set<string> };
-  /** Load, then sync. `background` refreshes respect a floor. */
-  refresh(opts: { background?: boolean }): Promise<void>;
+  /** Load, then sync. `background` refreshes respect a floor; `fresh` ones never reuse a fetch already in flight. */
+  refresh(opts: { background?: boolean; fresh?: boolean }): Promise<void>;
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult;
   /** Forget the cached state (after pairing as someone else). */
   reset(): void;
