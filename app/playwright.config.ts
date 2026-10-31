@@ -1,4 +1,4 @@
-// The demo smoke test (round 9): the built app (`npm run build` first) under `vite preview`, on a phone viewport.
+// The demo smoke test: the built app (`npm run build` first) under `vite preview`, on a phone viewport.
 // CI installs Playwright's Chromium; locally it uses the installed Google Chrome. `npm run e2e`.
 import { defineConfig, devices } from '@playwright/test';
 
