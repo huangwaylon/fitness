@@ -14,7 +14,7 @@ describe('villager search', () => {
   });
 
   it('matches names in both languages', () => {
-    expect(searchVillagers('anch')).toEqual(['anchovy']);
+    expect(searchVillagers('ancho')).toEqual(['anchovy']); // 'anch' also finds Blanche
     expect(searchVillagers('あんちょび')).toEqual(['anchovy']);
     expect(searchVillagers('ジュン')).toContain('marshal');
   });

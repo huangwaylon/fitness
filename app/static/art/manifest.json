@@ -2263,6 +2263,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Erik_NH_Villager_Icon.png"
     },
+    "villagers/etoile": {
+      "path": "villagers/etoile.webp",
+      "w": 398,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Étoile_NH_Model.png"
+    },
+    "villagers/etoile-icon": {
+      "path": "villagers/etoile-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Étoile_NH_Villager_Icon.png"
+    },
     "villagers/eugene": {
       "path": "villagers/eugene.webp",
       "w": 429,
@@ -2419,6 +2431,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Francine_NH_Villager_Icon.png"
     },
+    "villagers/frank": {
+      "path": "villagers/frank.webp",
+      "w": 423,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Frank_NH.png"
+    },
+    "villagers/frank-icon": {
+      "path": "villagers/frank-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Frank_NH_Villager_Icon.png"
+    },
+    "villagers/freckles": {
+      "path": "villagers/freckles.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Freckles_NH.png"
+    },
+    "villagers/freckles-icon": {
+      "path": "villagers/freckles-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Freckles_NH_Villager_Icon.png"
+    },
     "villagers/frett": {
       "path": "villagers/frett.webp",
       "w": 309,
@@ -2443,6 +2479,66 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Freya_NH_Villager_Icon.png"
     },
+    "villagers/friga": {
+      "path": "villagers/friga.webp",
+      "w": 387,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Friga_NH.png"
+    },
+    "villagers/friga-icon": {
+      "path": "villagers/friga-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Friga_NH_Villager_Icon.png"
+    },
+    "villagers/frita": {
+      "path": "villagers/frita.webp",
+      "w": 420,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Frita_NH.png"
+    },
+    "villagers/frita-icon": {
+      "path": "villagers/frita-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Frita_NH_Villager_Icon.png"
+    },
+    "villagers/frobert": {
+      "path": "villagers/frobert.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Frobert_NH.png"
+    },
+    "villagers/frobert-icon": {
+      "path": "villagers/frobert-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Frobert_NH_Villager_Icon.png"
+    },
+    "villagers/fuchsia": {
+      "path": "villagers/fuchsia.webp",
+      "w": 343,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Fuchsia_NH.png"
+    },
+    "villagers/fuchsia-icon": {
+      "path": "villagers/fuchsia-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Fuchsia_NH_Villager_Icon.png"
+    },
+    "villagers/gabi": {
+      "path": "villagers/gabi.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gabi_NH.png"
+    },
+    "villagers/gabi-icon": {
+      "path": "villagers/gabi-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gabi_NH_Villager_Icon.png"
+    },
     "villagers/gala": {
       "path": "villagers/gala.webp",
       "w": 277,
@@ -2454,6 +2550,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Gala_NH_Villager_Icon.png"
+    },
+    "villagers/gaston": {
+      "path": "villagers/gaston.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gaston_NH.png"
+    },
+    "villagers/gaston-icon": {
+      "path": "villagers/gaston-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gaston_NH_Villager_Icon.png"
     },
     "villagers/gayle": {
       "path": "villagers/gayle.webp",
@@ -2479,6 +2587,42 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Genji_NH_Villager_Icon.png"
     },
+    "villagers/gigi": {
+      "path": "villagers/gigi.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gigi_NH.png"
+    },
+    "villagers/gigi-icon": {
+      "path": "villagers/gigi-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gigi_NH_Villager_Icon.png"
+    },
+    "villagers/gladys": {
+      "path": "villagers/gladys.webp",
+      "w": 291,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gladys_NH_Transparent.png"
+    },
+    "villagers/gladys-icon": {
+      "path": "villagers/gladys-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gladys_NH_Villager_Icon.png"
+    },
+    "villagers/gloria": {
+      "path": "villagers/gloria.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gloria_NH.png"
+    },
+    "villagers/gloria-icon": {
+      "path": "villagers/gloria-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gloria_NH_Villager_Icon.png"
+    },
     "villagers/goldie": {
       "path": "villagers/goldie.webp",
       "w": 308,
@@ -2490,6 +2634,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Goldie_NH_Villager_Icon.png"
+    },
+    "villagers/gonzo": {
+      "path": "villagers/gonzo.webp",
+      "w": 429,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gonzo_NH.png"
+    },
+    "villagers/gonzo-icon": {
+      "path": "villagers/gonzo-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gonzo_NH_Villager_Icon.png"
     },
     "villagers/goose": {
       "path": "villagers/goose.webp",
@@ -2503,6 +2659,66 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Goose_NH_Villager_Icon.png"
     },
+    "villagers/graham": {
+      "path": "villagers/graham.webp",
+      "w": 350,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Graham_NH.png"
+    },
+    "villagers/graham-icon": {
+      "path": "villagers/graham-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Graham_NH_Villager_Icon.png"
+    },
+    "villagers/greta": {
+      "path": "villagers/greta.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Greta_NH.png"
+    },
+    "villagers/greta-icon": {
+      "path": "villagers/greta-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Greta_NH_Villager_Icon.png"
+    },
+    "villagers/grizzly": {
+      "path": "villagers/grizzly.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Grizzly_NH.png"
+    },
+    "villagers/grizzly-icon": {
+      "path": "villagers/grizzly-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Grizzly_NH_Villager_Icon.png"
+    },
+    "villagers/groucho": {
+      "path": "villagers/groucho.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Groucho_NH.png"
+    },
+    "villagers/groucho-icon": {
+      "path": "villagers/groucho-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Groucho_NH_Villager_Icon.png"
+    },
+    "villagers/gruff": {
+      "path": "villagers/gruff.webp",
+      "w": 369,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gruff_NH.png"
+    },
+    "villagers/gruff-icon": {
+      "path": "villagers/gruff-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gruff_NH_Villager_Icon.png"
+    },
     "villagers/gulliver": {
       "path": "villagers/gulliver.webp",
       "w": 304,
@@ -2514,6 +2730,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Gulliver_NH_Character_Icon.png"
+    },
+    "villagers/gwen": {
+      "path": "villagers/gwen.webp",
+      "w": 387,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Gwen_NH.png"
+    },
+    "villagers/gwen-icon": {
+      "path": "villagers/gwen-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Gwen_NH_Villager_Icon.png"
     },
     "villagers/hamlet": {
       "path": "villagers/hamlet.webp",
@@ -2527,6 +2755,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Hamlet_NH_Villager_Icon.png"
     },
+    "villagers/hamphrey": {
+      "path": "villagers/hamphrey.webp",
+      "w": 350,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Hamphrey_NH.png"
+    },
+    "villagers/hamphrey-icon": {
+      "path": "villagers/hamphrey-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Hamphrey_NH_Villager_Icon.png"
+    },
     "villagers/hans": {
       "path": "villagers/hans.webp",
       "w": 439,
@@ -2538,6 +2778,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Hans_NH_Villager_Icon.png"
+    },
+    "villagers/harry": {
+      "path": "villagers/harry.webp",
+      "w": 414,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Harry_NH.png"
+    },
+    "villagers/harry-icon": {
+      "path": "villagers/harry-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Harry_NH_Villager_Icon.png"
     },
     "villagers/harvey": {
       "path": "villagers/harvey.webp",
@@ -2563,6 +2815,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Hazel_NH_Villager_Icon.png"
     },
+    "villagers/henry": {
+      "path": "villagers/henry.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Henry_NH.png"
+    },
+    "villagers/henry-icon": {
+      "path": "villagers/henry-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Henry_NH_Villager_Icon.png"
+    },
     "villagers/hippeux": {
       "path": "villagers/hippeux.webp",
       "w": 414,
@@ -2575,6 +2839,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Hippeux_NH_Villager_Icon.png"
     },
+    "villagers/hopkins": {
+      "path": "villagers/hopkins.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Hopkins_NH.png"
+    },
+    "villagers/hopkins-icon": {
+      "path": "villagers/hopkins-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Hopkins_NH_Villager_Icon.png"
+    },
+    "villagers/hopper": {
+      "path": "villagers/hopper.webp",
+      "w": 387,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Hopper_NH.png"
+    },
+    "villagers/hopper-icon": {
+      "path": "villagers/hopper-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Hopper_NH_Villager_Icon.png"
+    },
     "villagers/hornsby": {
       "path": "villagers/hornsby.webp",
       "w": 339,
@@ -2586,6 +2874,54 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Hornsby_NH_Villager_Icon.png"
+    },
+    "villagers/huck": {
+      "path": "villagers/huck.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Huck_NH.png"
+    },
+    "villagers/huck-icon": {
+      "path": "villagers/huck-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Huck_NH_Villager_Icon.png"
+    },
+    "villagers/hugh": {
+      "path": "villagers/hugh.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Hugh_NH.png"
+    },
+    "villagers/hugh-icon": {
+      "path": "villagers/hugh-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Hugh_NH_Villager_Icon.png"
+    },
+    "villagers/iggly": {
+      "path": "villagers/iggly.webp",
+      "w": 387,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Iggly_NH.png"
+    },
+    "villagers/iggly-icon": {
+      "path": "villagers/iggly-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Iggly_NH_Villager_Icon.png"
+    },
+    "villagers/ike": {
+      "path": "villagers/ike.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Ike_NH.png"
+    },
+    "villagers/ike-icon": {
+      "path": "villagers/ike-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Ike_NH_Villager_Icon.png"
     },
     "villagers/ione": {
       "path": "villagers/ione.webp",
@@ -2611,6 +2947,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Character_Icon.png"
     },
+    "villagers/jacob": {
+      "path": "villagers/jacob.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jacob_NH.png"
+    },
+    "villagers/jacob-icon": {
+      "path": "villagers/jacob-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Jacob_NH_Villager_Icon.png"
+    },
     "villagers/jacques": {
       "path": "villagers/jacques.webp",
       "w": 271,
@@ -2622,6 +2970,66 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Jacques_NH_Villager_Icon.png"
+    },
+    "villagers/jambette": {
+      "path": "villagers/jambette.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jambette_NH.png"
+    },
+    "villagers/jambette-icon": {
+      "path": "villagers/jambette-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Jambette_NH_Villager_Icon.png"
+    },
+    "villagers/jay": {
+      "path": "villagers/jay.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jay_NH_1.png"
+    },
+    "villagers/jay-icon": {
+      "path": "villagers/jay-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Jay_NH_Villager_Icon.png"
+    },
+    "villagers/jeremiah": {
+      "path": "villagers/jeremiah.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jeremiah_NH.png"
+    },
+    "villagers/jeremiah-icon": {
+      "path": "villagers/jeremiah-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Jeremiah_NH_Villager_Icon.png"
+    },
+    "villagers/jitters": {
+      "path": "villagers/jitters.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jitters_NH.png"
+    },
+    "villagers/jitters-icon": {
+      "path": "villagers/jitters-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Jitters_NH_Villager_Icon.png"
+    },
+    "villagers/joey": {
+      "path": "villagers/joey.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Joey_NH.png"
+    },
+    "villagers/joey-icon": {
+      "path": "villagers/joey-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Joey_NH_Villager_Icon.png"
     },
     "villagers/judy": {
       "path": "villagers/judy.webp",
@@ -2658,6 +3066,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Julian_NH_Villager_Icon.png"
+    },
+    "villagers/june": {
+      "path": "villagers/june.webp",
+      "w": 291,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:June_NH.png"
+    },
+    "villagers/june-icon": {
+      "path": "villagers/june-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:June_NH_Villager_Icon.png"
     },
     "villagers/kabuki": {
       "path": "villagers/kabuki.webp",
@@ -2731,6 +3151,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Ketchup_NH_Villager_Icon.png"
     },
+    "villagers/kevin": {
+      "path": "villagers/kevin.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Kevin_NH.png"
+    },
+    "villagers/kevin-icon": {
+      "path": "villagers/kevin-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Kevin_NH_Villager_Icon.png"
+    },
     "villagers/kicks": {
       "path": "villagers/kicks.webp",
       "w": 358,
@@ -2754,6 +3186,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Kid_Cat_NH_Villager_Icon.png"
+    },
+    "villagers/kidd": {
+      "path": "villagers/kidd.webp",
+      "w": 369,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Kidd_NH.png"
+    },
+    "villagers/kidd-icon": {
+      "path": "villagers/kidd-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Kidd_NH_Villager_Icon.png"
     },
     "villagers/kiki": {
       "path": "villagers/kiki.webp",
@@ -2779,6 +3223,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Kitt_NH_Villager_Icon.png"
     },
+    "villagers/kitty": {
+      "path": "villagers/kitty.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Kitty_NH.png"
+    },
+    "villagers/kitty-icon": {
+      "path": "villagers/kitty-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Kitty_NH_Villager_Icon.png"
+    },
     "villagers/kk-slider": {
       "path": "villagers/kk-slider.webp",
       "w": 300,
@@ -2790,6 +3246,54 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:K.K._Slider_NH_Question_Icon.png"
+    },
+    "villagers/klaus": {
+      "path": "villagers/klaus.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Klaus_NH.png"
+    },
+    "villagers/klaus-icon": {
+      "path": "villagers/klaus-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Klaus_NH_Villager_Icon.png"
+    },
+    "villagers/knox": {
+      "path": "villagers/knox.webp",
+      "w": 310,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Knox_NH.png"
+    },
+    "villagers/knox-icon": {
+      "path": "villagers/knox-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Knox_NH_Villager_Icon.png"
+    },
+    "villagers/kody": {
+      "path": "villagers/kody.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Kody_NH.png"
+    },
+    "villagers/kody-icon": {
+      "path": "villagers/kody-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Kody_NH_Villager_Icon.png"
+    },
+    "villagers/kyle": {
+      "path": "villagers/kyle.webp",
+      "w": 256,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Kyle_NH.png"
+    },
+    "villagers/kyle-icon": {
+      "path": "villagers/kyle-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Kyle_NH_Villager_Icon.png"
     },
     "villagers/label": {
       "path": "villagers/label.webp",
@@ -2815,6 +3319,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Leif_NH_Character_Icon.png"
     },
+    "villagers/leonardo": {
+      "path": "villagers/leonardo.webp",
+      "w": 295,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Leonardo_NH.png"
+    },
+    "villagers/leonardo-icon": {
+      "path": "villagers/leonardo-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Leonardo_NH_Villager_Icon.png"
+    },
+    "villagers/leopold": {
+      "path": "villagers/leopold.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Leopold_NH.png"
+    },
+    "villagers/leopold-icon": {
+      "path": "villagers/leopold-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Leopold_NH_Villager_Icon.png"
+    },
     "villagers/lily": {
       "path": "villagers/lily.webp",
       "w": 323,
@@ -2827,6 +3355,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Lily_NH_Villager_Icon.png"
     },
+    "villagers/limberg": {
+      "path": "villagers/limberg.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Limberg_NH.png"
+    },
+    "villagers/limberg-icon": {
+      "path": "villagers/limberg-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Limberg_NH_Villager_Icon.png"
+    },
     "villagers/lionel": {
       "path": "villagers/lionel.webp",
       "w": 308,
@@ -2838,6 +3378,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Lionel_NH_Villager_Icon.png"
+    },
+    "villagers/lobo": {
+      "path": "villagers/lobo.webp",
+      "w": 256,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Lobo_NH.png"
+    },
+    "villagers/lobo-icon": {
+      "path": "villagers/lobo-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Lobo_NH_Villager_Icon.png"
     },
     "villagers/lolly": {
       "path": "villagers/lolly.webp",
@@ -2863,6 +3415,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Lopez_NH_Villager_Icon.png"
     },
+    "villagers/louie": {
+      "path": "villagers/louie.webp",
+      "w": 439,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Louie_NH.png"
+    },
+    "villagers/louie-icon": {
+      "path": "villagers/louie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Louie_NH_Villager_Icon.png"
+    },
+    "villagers/lucha": {
+      "path": "villagers/lucha.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Lucha_NH.png"
+    },
+    "villagers/lucha-icon": {
+      "path": "villagers/lucha-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Lucha_NH_Villager_Icon.png"
+    },
     "villagers/lucky": {
       "path": "villagers/lucky.webp",
       "w": 308,
@@ -2874,6 +3450,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Lucky_NH_Villager_Icon.png"
+    },
+    "villagers/lucy": {
+      "path": "villagers/lucy.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Lucy_NH.png"
+    },
+    "villagers/lucy-icon": {
+      "path": "villagers/lucy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Lucy_NH_Villager_Icon.png"
     },
     "villagers/lyman": {
       "path": "villagers/lyman.webp",
@@ -2899,6 +3487,66 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Mabel_NH_Character_Icon.png"
     },
+    "villagers/mac": {
+      "path": "villagers/mac.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Mac_NH.png"
+    },
+    "villagers/mac-icon": {
+      "path": "villagers/mac-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mac_NH_Villager_Icon.png"
+    },
+    "villagers/maddie": {
+      "path": "villagers/maddie.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Maddie_NH.png"
+    },
+    "villagers/maddie-icon": {
+      "path": "villagers/maddie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Maddie_NH_Villager_Icon.png"
+    },
+    "villagers/maelle": {
+      "path": "villagers/maelle.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Maelle_NH.png"
+    },
+    "villagers/maelle-icon": {
+      "path": "villagers/maelle-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Maelle_NH_Villager_Icon.png"
+    },
+    "villagers/maggie": {
+      "path": "villagers/maggie.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Maggie_NH.png"
+    },
+    "villagers/maggie-icon": {
+      "path": "villagers/maggie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Maggie_NH_Villager_Icon.png"
+    },
+    "villagers/mallary": {
+      "path": "villagers/mallary.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Mallary_NH.png"
+    },
+    "villagers/mallary-icon": {
+      "path": "villagers/mallary-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mallary_NH_Villager_Icon.png"
+    },
     "villagers/maple": {
       "path": "villagers/maple.webp",
       "w": 293,
@@ -2911,6 +3559,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Maple_NH_Villager_Icon.png"
     },
+    "villagers/marcel": {
+      "path": "villagers/marcel.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Marcel_NH.png"
+    },
+    "villagers/marcel-icon": {
+      "path": "villagers/marcel-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Marcel_NH_Villager_Icon.png"
+    },
     "villagers/marcie": {
       "path": "villagers/marcie.webp",
       "w": 303,
@@ -2922,6 +3582,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Marcie_NH_Villager_Icon.png"
+    },
+    "villagers/margie": {
+      "path": "villagers/margie.webp",
+      "w": 377,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Margie_NH_1.png"
+    },
+    "villagers/margie-icon": {
+      "path": "villagers/margie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Margie_NH_Villager_Icon.png"
     },
     "villagers/marina": {
       "path": "villagers/marina.webp",
@@ -2959,6 +3631,42 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Marshal_NH_Villager_Icon.png"
     },
+    "villagers/marty": {
+      "path": "villagers/marty.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Marty_NH_Model.png"
+    },
+    "villagers/marty-icon": {
+      "path": "villagers/marty-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Marty_NH_Villager_Icon.png"
+    },
+    "villagers/mathilda": {
+      "path": "villagers/mathilda.webp",
+      "w": 303,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Mathilda_NH.png"
+    },
+    "villagers/mathilda-icon": {
+      "path": "villagers/mathilda-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mathilda_NH_Villager_Icon.png"
+    },
+    "villagers/megan": {
+      "path": "villagers/megan.webp",
+      "w": 255,
+      "h": 456,
+      "source": "https://nookipedia.com/wiki/File:Megan_NH_1.png"
+    },
+    "villagers/megan-icon": {
+      "path": "villagers/megan-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Megan_NH_Villager_Icon.png"
+    },
     "villagers/melba": {
       "path": "villagers/melba.webp",
       "w": 429,
@@ -2983,6 +3691,54 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Merengue_NH_Villager_Icon.png"
     },
+    "villagers/merry": {
+      "path": "villagers/merry.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Merry_NH.png"
+    },
+    "villagers/merry-icon": {
+      "path": "villagers/merry-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Merry_NH_Villager_Icon.png"
+    },
+    "villagers/midge": {
+      "path": "villagers/midge.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Midge_NH.png"
+    },
+    "villagers/midge-icon": {
+      "path": "villagers/midge-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Midge_NH_Villager_Icon.png"
+    },
+    "villagers/mineru": {
+      "path": "villagers/mineru.webp",
+      "w": 337,
+      "h": 510,
+      "source": "https://nookipedia.com/wiki/File:Mineru_NH.png"
+    },
+    "villagers/mineru-icon": {
+      "path": "villagers/mineru-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mineru_NH_Villager_Icon.png"
+    },
+    "villagers/mint": {
+      "path": "villagers/mint.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Mint_NH.png"
+    },
+    "villagers/mint-icon": {
+      "path": "villagers/mint-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mint_NH_Villager_Icon.png"
+    },
     "villagers/mira": {
       "path": "villagers/mira.webp",
       "w": 253,
@@ -2994,6 +3750,42 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Mira_NH_Villager_Icon.png"
+    },
+    "villagers/miranda": {
+      "path": "villagers/miranda.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Miranda_NH.png"
+    },
+    "villagers/miranda-icon": {
+      "path": "villagers/miranda-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Miranda_NH_Villager_Icon.png"
+    },
+    "villagers/mitzi": {
+      "path": "villagers/mitzi.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Mitzi_NH.png"
+    },
+    "villagers/mitzi-icon": {
+      "path": "villagers/mitzi-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mitzi_NH_Villager_Icon.png"
+    },
+    "villagers/moe": {
+      "path": "villagers/moe.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Moe_NH.png"
+    },
+    "villagers/moe-icon": {
+      "path": "villagers/moe-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Moe_NH_Villager_Icon.png"
     },
     "villagers/molly": {
       "path": "villagers/molly.webp",
@@ -3007,6 +3799,54 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Molly_NH_Villager_Icon.png"
     },
+    "villagers/monique": {
+      "path": "villagers/monique.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Monique_NH.png"
+    },
+    "villagers/monique-icon": {
+      "path": "villagers/monique-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Monique_NH_Villager_Icon.png"
+    },
+    "villagers/monty": {
+      "path": "villagers/monty.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Monty_NH.png"
+    },
+    "villagers/monty-icon": {
+      "path": "villagers/monty-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Monty_NH_Villager_Icon.png"
+    },
+    "villagers/moose": {
+      "path": "villagers/moose.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Moose_NH.png"
+    },
+    "villagers/moose-icon": {
+      "path": "villagers/moose-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Moose_NH_Villager_Icon.png"
+    },
+    "villagers/mott": {
+      "path": "villagers/mott.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Mott_NH.png"
+    },
+    "villagers/mott-icon": {
+      "path": "villagers/mott-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Mott_NH_Villager_Icon.png"
+    },
     "villagers/muffy": {
       "path": "villagers/muffy.webp",
       "w": 417,
@@ -3018,6 +3858,30 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Muffy_NH_Villager_Icon.png"
+    },
+    "villagers/murphy": {
+      "path": "villagers/murphy.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Murphy_NH.png"
+    },
+    "villagers/murphy-icon": {
+      "path": "villagers/murphy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Murphy_NH_Villager_Icon.png"
+    },
+    "villagers/nan": {
+      "path": "villagers/nan.webp",
+      "w": 369,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Nan_NH.png"
+    },
+    "villagers/nan-icon": {
+      "path": "villagers/nan-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Nan_NH_Villager_Icon.png"
     },
     "villagers/nana": {
       "path": "villagers/nana.webp",
@@ -3043,6 +3907,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Naomi_NH_Villager_Icon.png"
     },
+    "villagers/nate": {
+      "path": "villagers/nate.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Nate_NH.png"
+    },
+    "villagers/nate-icon": {
+      "path": "villagers/nate-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Nate_NH_Villager_Icon.png"
+    },
+    "villagers/nibbles": {
+      "path": "villagers/nibbles.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Nibbles_NH.png"
+    },
+    "villagers/nibbles-icon": {
+      "path": "villagers/nibbles-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Nibbles_NH_Villager_Icon.png"
+    },
     "villagers/norma": {
       "path": "villagers/norma.webp",
       "w": 303,
@@ -3067,6 +3955,42 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Octavian_NH_Villager_Icon.png"
     },
+    "villagers/ohare": {
+      "path": "villagers/ohare.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:O'Hare_NH.png"
+    },
+    "villagers/ohare-icon": {
+      "path": "villagers/ohare-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:O'Hare_NH_Villager_Icon.png"
+    },
+    "villagers/olaf": {
+      "path": "villagers/olaf.webp",
+      "w": 409,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Olaf_NH.png"
+    },
+    "villagers/olaf-icon": {
+      "path": "villagers/olaf-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Olaf_NH_Villager_Icon.png"
+    },
+    "villagers/olive": {
+      "path": "villagers/olive.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Olive_NH.png"
+    },
+    "villagers/olive-icon": {
+      "path": "villagers/olive-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Olive_NH_Villager_Icon.png"
+    },
     "villagers/olivia": {
       "path": "villagers/olivia.webp",
       "w": 244,
@@ -3079,6 +4003,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Olivia_NH_Villager_Icon.png"
     },
+    "villagers/opal": {
+      "path": "villagers/opal.webp",
+      "w": 377,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Opal_NH.png"
+    },
+    "villagers/opal-icon": {
+      "path": "villagers/opal-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Opal_NH_Villager_Icon.png"
+    },
     "villagers/orville": {
       "path": "villagers/orville.webp",
       "w": 361,
@@ -3090,6 +4026,66 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Orville_NH_Character_Icon.png"
+    },
+    "villagers/ozzie": {
+      "path": "villagers/ozzie.webp",
+      "w": 430,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Ozzie_NH.png"
+    },
+    "villagers/ozzie-icon": {
+      "path": "villagers/ozzie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Ozzie_NH_Villager_Icon.png"
+    },
+    "villagers/pancetti": {
+      "path": "villagers/pancetti.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pancetti_NH.png"
+    },
+    "villagers/pancetti-icon": {
+      "path": "villagers/pancetti-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pancetti_NH_Villager_Icon.png"
+    },
+    "villagers/pango": {
+      "path": "villagers/pango.webp",
+      "w": 409,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pango_NH.png"
+    },
+    "villagers/pango-icon": {
+      "path": "villagers/pango-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pango_NH_Villager_Icon.png"
+    },
+    "villagers/paolo": {
+      "path": "villagers/paolo.webp",
+      "w": 378,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Paolo_NH.png"
+    },
+    "villagers/paolo-icon": {
+      "path": "villagers/paolo-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Paolo_NH_Villager_Icon.png"
+    },
+    "villagers/papi": {
+      "path": "villagers/papi.webp",
+      "w": 290,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Papi_NH.png"
+    },
+    "villagers/papi-icon": {
+      "path": "villagers/papi-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Papi_NH_Villager_Icon.png"
     },
     "villagers/pascal": {
       "path": "villagers/pascal.webp",
@@ -3115,6 +4111,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Pashmina_NH_Villager_Icon.png"
     },
+    "villagers/pate": {
+      "path": "villagers/pate.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pate_NH.png"
+    },
+    "villagers/pate-icon": {
+      "path": "villagers/pate-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pate_NH_Villager_Icon.png"
+    },
     "villagers/patty": {
       "path": "villagers/patty.webp",
       "w": 304,
@@ -3126,6 +4134,78 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Patty_NH_Villager_Icon.png"
+    },
+    "villagers/paula": {
+      "path": "villagers/paula.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Paula_NH.png"
+    },
+    "villagers/paula-icon": {
+      "path": "villagers/paula-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Paula_NH_Villager_Icon.png"
+    },
+    "villagers/peaches": {
+      "path": "villagers/peaches.webp",
+      "w": 290,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Peaches_NH.png"
+    },
+    "villagers/peaches-icon": {
+      "path": "villagers/peaches-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peaches_NH_Villager_Icon.png"
+    },
+    "villagers/peanut": {
+      "path": "villagers/peanut.webp",
+      "w": 512,
+      "h": 508,
+      "source": "https://nookipedia.com/wiki/File:Peanut_NH_Transparent.png"
+    },
+    "villagers/peanut-icon": {
+      "path": "villagers/peanut-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peanut_NH_Villager_Icon.png"
+    },
+    "villagers/pecan": {
+      "path": "villagers/pecan.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pecan_NH.png"
+    },
+    "villagers/pecan-icon": {
+      "path": "villagers/pecan-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pecan_NH_Villager_Icon.png"
+    },
+    "villagers/peck": {
+      "path": "villagers/peck.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Peck_NH.png"
+    },
+    "villagers/peck-icon": {
+      "path": "villagers/peck-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peck_NH_Villager_Icon.png"
+    },
+    "villagers/peewee": {
+      "path": "villagers/peewee.webp",
+      "w": 439,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Peewee_NH.png"
+    },
+    "villagers/peewee-icon": {
+      "path": "villagers/peewee-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Peewee_NH_Villager_Icon.png"
     },
     "villagers/peggy": {
       "path": "villagers/peggy.webp",
@@ -3151,6 +4231,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Pekoe_NH_Villager_Icon.png"
     },
+    "villagers/penelope": {
+      "path": "villagers/penelope.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Penelope_NH.png"
+    },
+    "villagers/penelope-icon": {
+      "path": "villagers/penelope-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Penelope_NH_Villager_Icon.png"
+    },
     "villagers/petri": {
       "path": "villagers/petri.webp",
       "w": 343,
@@ -3163,6 +4255,42 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Petri_NH_Villager_Icon.png"
     },
+    "villagers/phil": {
+      "path": "villagers/phil.webp",
+      "w": 246,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Phil_NH.png"
+    },
+    "villagers/phil-icon": {
+      "path": "villagers/phil-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Phil_NH_Villager_Icon.png"
+    },
+    "villagers/phoebe": {
+      "path": "villagers/phoebe.webp",
+      "w": 235,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Phoebe_NH.png"
+    },
+    "villagers/phoebe-icon": {
+      "path": "villagers/phoebe-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Phoebe_NH_Villager_Icon.png"
+    },
+    "villagers/pierce": {
+      "path": "villagers/pierce.webp",
+      "w": 423,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pierce_NH.png"
+    },
+    "villagers/pierce-icon": {
+      "path": "villagers/pierce-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pierce_NH_Villager_Icon.png"
+    },
     "villagers/pietro": {
       "path": "villagers/pietro.webp",
       "w": 420,
@@ -3174,6 +4302,42 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Pietro_NH_Villager_Icon.png"
+    },
+    "villagers/pinky": {
+      "path": "villagers/pinky.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pinky_NH.png"
+    },
+    "villagers/pinky-icon": {
+      "path": "villagers/pinky-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pinky_NH_Villager_Icon.png"
+    },
+    "villagers/piper": {
+      "path": "villagers/piper.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Piper_NH.png"
+    },
+    "villagers/piper-icon": {
+      "path": "villagers/piper-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Piper_NH_Villager_Icon.png"
+    },
+    "villagers/pippy": {
+      "path": "villagers/pippy.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pippy_NH.png"
+    },
+    "villagers/pippy-icon": {
+      "path": "villagers/pippy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pippy_NH_Villager_Icon.png"
     },
     "villagers/plucky": {
       "path": "villagers/plucky.webp",
@@ -3235,6 +4399,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Portia_NH_Villager_Icon.png"
     },
+    "villagers/prince": {
+      "path": "villagers/prince.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Prince_NH.png"
+    },
+    "villagers/prince-icon": {
+      "path": "villagers/prince-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Prince_NH_Villager_Icon.png"
+    },
+    "villagers/puck": {
+      "path": "villagers/puck.webp",
+      "w": 384,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Puck_NH.png"
+    },
+    "villagers/puck-icon": {
+      "path": "villagers/puck-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Puck_NH_Villager_Icon.png"
+    },
     "villagers/puddles": {
       "path": "villagers/puddles.webp",
       "w": 323,
@@ -3247,6 +4435,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Puddles_NH_Villager_Icon.png"
     },
+    "villagers/pudge": {
+      "path": "villagers/pudge.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pudge_NH.png"
+    },
+    "villagers/pudge-icon": {
+      "path": "villagers/pudge-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Pudge_NH_Villager_Icon.png"
+    },
     "villagers/punchy": {
       "path": "villagers/punchy.webp",
       "w": 244,
@@ -3258,6 +4458,42 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Punchy_NH_Villager_Icon.png"
+    },
+    "villagers/purrl": {
+      "path": "villagers/purrl.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Purrl_NH.png"
+    },
+    "villagers/purrl-icon": {
+      "path": "villagers/purrl-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Purrl_NH_Villager_Icon.png"
+    },
+    "villagers/queenie": {
+      "path": "villagers/queenie.webp",
+      "w": 243,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Queenie_NH.png"
+    },
+    "villagers/queenie-icon": {
+      "path": "villagers/queenie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Queenie_NH_Villager_Icon.png"
+    },
+    "villagers/quillson": {
+      "path": "villagers/quillson.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Quillson_NH.png"
+    },
+    "villagers/quillson-icon": {
+      "path": "villagers/quillson-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Quillson_NH_Villager_Icon.png"
     },
     "villagers/quinn": {
       "path": "villagers/quinn.webp",
@@ -3283,6 +4519,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Raddle_NH_Villager_Icon.png"
     },
+    "villagers/rasher": {
+      "path": "villagers/rasher.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rasher_NH.png"
+    },
+    "villagers/rasher-icon": {
+      "path": "villagers/rasher-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rasher_NH_Villager_Icon.png"
+    },
     "villagers/raymond": {
       "path": "villagers/raymond.webp",
       "w": 184,
@@ -3307,6 +4555,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Redd_NH_Character_Icon.png"
     },
+    "villagers/renee": {
+      "path": "villagers/renee.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Renée_NH.png"
+    },
+    "villagers/renee-icon": {
+      "path": "villagers/renee-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Renée_NH_Villager_Icon.png"
+    },
     "villagers/reneigh": {
       "path": "villagers/reneigh.webp",
       "w": 258,
@@ -3318,6 +4578,66 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Reneigh_NH_Villager_Icon.png"
+    },
+    "villagers/rex": {
+      "path": "villagers/rex.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rex_NH.png"
+    },
+    "villagers/rex-icon": {
+      "path": "villagers/rex-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rex_NH_Villager_Icon.png"
+    },
+    "villagers/rhonda": {
+      "path": "villagers/rhonda.webp",
+      "w": 339,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rhonda_NH.png"
+    },
+    "villagers/rhonda-icon": {
+      "path": "villagers/rhonda-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rhonda_NH_Villager_Icon.png"
+    },
+    "villagers/ribbot": {
+      "path": "villagers/ribbot.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Ribbot_NH.png"
+    },
+    "villagers/ribbot-icon": {
+      "path": "villagers/ribbot-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Ribbot_NH_Villager_Icon.png"
+    },
+    "villagers/ricky": {
+      "path": "villagers/ricky.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Ricky_NH.png"
+    },
+    "villagers/ricky-icon": {
+      "path": "villagers/ricky-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Ricky_NH_Villager_Icon.png"
+    },
+    "villagers/rilla": {
+      "path": "villagers/rilla.webp",
+      "w": 459,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rilla_NH_Model.png"
+    },
+    "villagers/rilla-icon": {
+      "path": "villagers/rilla-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rilla_NH_Villager_Icon.png"
     },
     "villagers/rio": {
       "path": "villagers/rio.webp",
@@ -3331,6 +4651,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Rio_NH_Villager_Icon.png"
     },
+    "villagers/rizzo": {
+      "path": "villagers/rizzo.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rizzo_NH.png"
+    },
+    "villagers/rizzo-icon": {
+      "path": "villagers/rizzo-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rizzo_NH_Villager_Icon.png"
+    },
     "villagers/roald": {
       "path": "villagers/roald.webp",
       "w": 387,
@@ -3342,6 +4674,30 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Roald_NH_Villager_Icon.png"
+    },
+    "villagers/robin": {
+      "path": "villagers/robin.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Robin_NH.png"
+    },
+    "villagers/robin-icon": {
+      "path": "villagers/robin-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Robin_NH_Villager_Icon.png"
+    },
+    "villagers/rocco": {
+      "path": "villagers/rocco.webp",
+      "w": 414,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rocco_NH.png"
+    },
+    "villagers/rocco-icon": {
+      "path": "villagers/rocco-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rocco_NH_Villager_Icon.png"
     },
     "villagers/rocket": {
       "path": "villagers/rocket.webp",
@@ -3355,6 +4711,42 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Rocket_NH_Villager_Icon.png"
     },
+    "villagers/rod": {
+      "path": "villagers/rod.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rod_NH_1.png"
+    },
+    "villagers/rod-icon": {
+      "path": "villagers/rod-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rod_NH_Villager_Icon.png"
+    },
+    "villagers/rodeo": {
+      "path": "villagers/rodeo.webp",
+      "w": 317,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rodeo_NH.png"
+    },
+    "villagers/rodeo-icon": {
+      "path": "villagers/rodeo-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rodeo_NH_Villager_Icon.png"
+    },
+    "villagers/rodney": {
+      "path": "villagers/rodney.webp",
+      "w": 350,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rodney_NH.png"
+    },
+    "villagers/rodney-icon": {
+      "path": "villagers/rodney-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rodney_NH_Villager_Icon.png"
+    },
     "villagers/rolf": {
       "path": "villagers/rolf.webp",
       "w": 294,
@@ -3366,6 +4758,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Rolf_NH_Villager_Icon.png"
+    },
+    "villagers/rooney": {
+      "path": "villagers/rooney.webp",
+      "w": 303,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rooney_NH.png"
+    },
+    "villagers/rooney-icon": {
+      "path": "villagers/rooney-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rooney_NH_Villager_Icon.png"
     },
     "villagers/rory": {
       "path": "villagers/rory.webp",
@@ -3415,6 +4819,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Roswell_NH_Villager_Icon.png"
     },
+    "villagers/rowan": {
+      "path": "villagers/rowan.webp",
+      "w": 301,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rowan_NH_Transparent.png"
+    },
+    "villagers/rowan-icon": {
+      "path": "villagers/rowan-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rowan_NH_Villager_Icon.png"
+    },
     "villagers/ruby": {
       "path": "villagers/ruby.webp",
       "w": 253,
@@ -3426,6 +4842,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Ruby_NH_Villager_Icon.png"
+    },
+    "villagers/rudy": {
+      "path": "villagers/rudy.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Rudy_NH.png"
+    },
+    "villagers/rudy-icon": {
+      "path": "villagers/rudy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Rudy_NH_Villager_Icon.png"
     },
     "villagers/sable": {
       "path": "villagers/sable.webp",
@@ -3451,6 +4879,42 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Saharah_NH_Character_Icon.png"
     },
+    "villagers/sally": {
+      "path": "villagers/sally.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sally_NH.png"
+    },
+    "villagers/sally-icon": {
+      "path": "villagers/sally-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sally_NH_Villager_Icon.png"
+    },
+    "villagers/samson": {
+      "path": "villagers/samson.webp",
+      "w": 340,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Samson_NH.png"
+    },
+    "villagers/samson-icon": {
+      "path": "villagers/samson-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Samson_NH_Villager_Icon.png"
+    },
+    "villagers/sandy": {
+      "path": "villagers/sandy.webp",
+      "w": 243,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sandy_NH.png"
+    },
+    "villagers/sandy-icon": {
+      "path": "villagers/sandy-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sandy_NH_Villager_Icon.png"
+    },
     "villagers/sasha": {
       "path": "villagers/sasha.webp",
       "w": 253,
@@ -3463,6 +4927,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Sasha_NH_Villager_Icon.png"
     },
+    "villagers/savannah": {
+      "path": "villagers/savannah.webp",
+      "w": 290,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Savannah_NH.png"
+    },
+    "villagers/savannah-icon": {
+      "path": "villagers/savannah-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Savannah_NH_Villager_Icon.png"
+    },
+    "villagers/scoot": {
+      "path": "villagers/scoot.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Scoot_NH.png"
+    },
+    "villagers/scoot-icon": {
+      "path": "villagers/scoot-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Scoot_NH_Villager_Icon.png"
+    },
     "villagers/shari": {
       "path": "villagers/shari.webp",
       "w": 293,
@@ -3474,6 +4962,30 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Shari_NH_Villager_Icon.png"
+    },
+    "villagers/sheldon": {
+      "path": "villagers/sheldon.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sheldon_NH.png"
+    },
+    "villagers/sheldon-icon": {
+      "path": "villagers/sheldon-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sheldon_NH_Villager_Icon.png"
+    },
+    "villagers/shep": {
+      "path": "villagers/shep.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Shep_NH.png"
+    },
+    "villagers/shep-icon": {
+      "path": "villagers/shep-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Shep_NH_Villager_Icon.png"
     },
     "villagers/sherb": {
       "path": "villagers/sherb.webp",
@@ -3499,6 +5011,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Shino_NH_Villager_Icon.png"
     },
+    "villagers/simon": {
+      "path": "villagers/simon.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Simon_NH.png"
+    },
+    "villagers/simon-icon": {
+      "path": "villagers/simon-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Simon_NH_Villager_Icon.png"
+    },
     "villagers/skye": {
       "path": "villagers/skye.webp",
       "w": 256,
@@ -3511,6 +5035,90 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Skye_NH_Villager_Icon.png"
     },
+    "villagers/sly": {
+      "path": "villagers/sly.webp",
+      "w": 311,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sly_NH.png"
+    },
+    "villagers/sly-icon": {
+      "path": "villagers/sly-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sly_NH_Villager_Icon.png"
+    },
+    "villagers/snake": {
+      "path": "villagers/snake.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Snake_NH.png"
+    },
+    "villagers/snake-icon": {
+      "path": "villagers/snake-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Snake_NH_Villager_Icon.png"
+    },
+    "villagers/snooty": {
+      "path": "villagers/snooty.webp",
+      "w": 409,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Snooty_NH.png"
+    },
+    "villagers/snooty-icon": {
+      "path": "villagers/snooty-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Snooty_NH_Villager_Icon.png"
+    },
+    "villagers/soleil": {
+      "path": "villagers/soleil.webp",
+      "w": 350,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Soleil_NH.png"
+    },
+    "villagers/soleil-icon": {
+      "path": "villagers/soleil-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Soleil_NH_Villager_Icon.png"
+    },
+    "villagers/sparro": {
+      "path": "villagers/sparro.webp",
+      "w": 273,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sparro_NH.png"
+    },
+    "villagers/sparro-icon": {
+      "path": "villagers/sparro-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sparro_NH_Villager_Icon.png"
+    },
+    "villagers/spike": {
+      "path": "villagers/spike.webp",
+      "w": 339,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Spike_NH.png"
+    },
+    "villagers/spike-icon": {
+      "path": "villagers/spike-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Spike_NH_Villager_Icon.png"
+    },
+    "villagers/spork": {
+      "path": "villagers/spork.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Spork_NH.png"
+    },
+    "villagers/spork-icon": {
+      "path": "villagers/spork-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Spork_NH_Villager_Icon.png"
+    },
     "villagers/sprinkle": {
       "path": "villagers/sprinkle.webp",
       "w": 387,
@@ -3522,6 +5130,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Sprinkle_NH_Villager_Icon.png"
+    },
+    "villagers/sprocket": {
+      "path": "villagers/sprocket.webp",
+      "w": 243,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sprocket_NH.png"
+    },
+    "villagers/sprocket-icon": {
+      "path": "villagers/sprocket-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sprocket_NH_Villager_Icon.png"
     },
     "villagers/static": {
       "path": "villagers/static.webp",
@@ -3547,6 +5167,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Stella_NH_Villager_Icon.png"
     },
+    "villagers/sterling": {
+      "path": "villagers/sterling.webp",
+      "w": 423,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sterling_NH.png"
+    },
+    "villagers/sterling-icon": {
+      "path": "villagers/sterling-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sterling_NH_Villager_Icon.png"
+    },
+    "villagers/stinky": {
+      "path": "villagers/stinky.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Stinky_NH.png"
+    },
+    "villagers/stinky-icon": {
+      "path": "villagers/stinky-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Stinky_NH_Villager_Icon.png"
+    },
     "villagers/stitches": {
       "path": "villagers/stitches.webp",
       "w": 293,
@@ -3571,6 +5215,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Stu_NH_Villager_Icon.png"
     },
+    "villagers/sydney": {
+      "path": "villagers/sydney.webp",
+      "w": 429,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sydney_NH.png"
+    },
+    "villagers/sydney-icon": {
+      "path": "villagers/sydney-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sydney_NH_Villager_Icon.png"
+    },
+    "villagers/sylvana": {
+      "path": "villagers/sylvana.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Sylvana_NH.png"
+    },
+    "villagers/sylvana-icon": {
+      "path": "villagers/sylvana-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Sylvana_NH_Villager_Icon.png"
+    },
     "villagers/sylvia": {
       "path": "villagers/sylvia.webp",
       "w": 303,
@@ -3583,6 +5251,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Sylvia_NH_Villager_Icon.png"
     },
+    "villagers/t-bone": {
+      "path": "villagers/t-bone.webp",
+      "w": 317,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:T-Bone_NH.png"
+    },
+    "villagers/t-bone-icon": {
+      "path": "villagers/t-bone-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:T-Bone_NH_Villager_Icon.png"
+    },
+    "villagers/tabby": {
+      "path": "villagers/tabby.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tabby_NH.png"
+    },
+    "villagers/tabby-icon": {
+      "path": "villagers/tabby-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tabby_NH_Villager_Icon.png"
+    },
     "villagers/tad": {
       "path": "villagers/tad.webp",
       "w": 323,
@@ -3594,6 +5286,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Tad_NH_Villager_Icon.png"
+    },
+    "villagers/tammi": {
+      "path": "villagers/tammi.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tammi_NH.png"
+    },
+    "villagers/tammi-icon": {
+      "path": "villagers/tammi-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tammi_NH_Villager_Icon.png"
     },
     "villagers/tammy": {
       "path": "villagers/tammy.webp",
@@ -3631,6 +5335,18 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Tank_NH_Villager_Icon.png"
     },
+    "villagers/tasha": {
+      "path": "villagers/tasha.webp",
+      "w": 428,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tasha_NH.png"
+    },
+    "villagers/tasha-icon": {
+      "path": "villagers/tasha-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tasha_NH_Villager_Icon.png"
+    },
     "villagers/teddy": {
       "path": "villagers/teddy.webp",
       "w": 287,
@@ -3642,6 +5358,18 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Teddy_NH_Villager_Icon.png"
+    },
+    "villagers/tex": {
+      "path": "villagers/tex.webp",
+      "w": 387,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tex_NH.png"
+    },
+    "villagers/tex-icon": {
+      "path": "villagers/tex-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tex_NH_Villager_Icon.png"
     },
     "villagers/tia": {
       "path": "villagers/tia.webp",
@@ -3655,6 +5383,78 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Tia_NH_Villager_Icon.png"
     },
+    "villagers/tiansheng": {
+      "path": "villagers/tiansheng.webp",
+      "w": 295,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tiansheng_NH_Model.png"
+    },
+    "villagers/tiansheng-icon": {
+      "path": "villagers/tiansheng-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tiansheng_NH_Villager_Icon.png"
+    },
+    "villagers/tiffany": {
+      "path": "villagers/tiffany.webp",
+      "w": 253,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tiffany_NH.png"
+    },
+    "villagers/tiffany-icon": {
+      "path": "villagers/tiffany-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tiffany_NH_Villager_Icon.png"
+    },
+    "villagers/timbra": {
+      "path": "villagers/timbra.webp",
+      "w": 420,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Timbra_NH.png"
+    },
+    "villagers/timbra-icon": {
+      "path": "villagers/timbra-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Timbra_NH_Villager_Icon.png"
+    },
+    "villagers/tipper": {
+      "path": "villagers/tipper.webp",
+      "w": 303,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tipper_NH.png"
+    },
+    "villagers/tipper-icon": {
+      "path": "villagers/tipper-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tipper_NH_Villager_Icon.png"
+    },
+    "villagers/toby": {
+      "path": "villagers/toby.webp",
+      "w": 257,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Toby_NH_Model.png"
+    },
+    "villagers/toby-icon": {
+      "path": "villagers/toby-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Toby_NH_Villager_Icon.png"
+    },
+    "villagers/tom": {
+      "path": "villagers/tom.webp",
+      "w": 244,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tom_NH.png"
+    },
+    "villagers/tom-icon": {
+      "path": "villagers/tom-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tom_NH_Villager_Icon.png"
+    },
     "villagers/tom-nook": {
       "path": "villagers/tom-nook.webp",
       "w": 312,
@@ -3667,6 +5467,54 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH_Character_Icon.png"
     },
+    "villagers/truffles": {
+      "path": "villagers/truffles.webp",
+      "w": 277,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Truffles_NH_1.png"
+    },
+    "villagers/truffles-icon": {
+      "path": "villagers/truffles-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Truffles_NH_Villager_Icon.png"
+    },
+    "villagers/tucker": {
+      "path": "villagers/tucker.webp",
+      "w": 391,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tucker_NH.png"
+    },
+    "villagers/tucker-icon": {
+      "path": "villagers/tucker-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tucker_NH_Villager_Icon.png"
+    },
+    "villagers/tulin": {
+      "path": "villagers/tulin.webp",
+      "w": 280,
+      "h": 477,
+      "source": "https://nookipedia.com/wiki/File:Tulin_NH.png"
+    },
+    "villagers/tulin-icon": {
+      "path": "villagers/tulin-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tulin_NH_Villager_Icon.png"
+    },
+    "villagers/tutu": {
+      "path": "villagers/tutu.webp",
+      "w": 287,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tutu_NH.png"
+    },
+    "villagers/tutu-icon": {
+      "path": "villagers/tutu-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tutu_NH_Villager_Icon.png"
+    },
     "villagers/twiggy": {
       "path": "villagers/twiggy.webp",
       "w": 273,
@@ -3678,6 +5526,186 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Twiggy_NH_Villager_Icon.png"
+    },
+    "villagers/tybalt": {
+      "path": "villagers/tybalt.webp",
+      "w": 294,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Tybalt_NH.png"
+    },
+    "villagers/tybalt-icon": {
+      "path": "villagers/tybalt-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Tybalt_NH_Villager_Icon.png"
+    },
+    "villagers/ursala": {
+      "path": "villagers/ursala.webp",
+      "w": 255,
+      "h": 456,
+      "source": "https://nookipedia.com/wiki/File:Ursala_NH.png"
+    },
+    "villagers/ursala-icon": {
+      "path": "villagers/ursala-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Ursala_NH_Villager_Icon.png"
+    },
+    "villagers/velma": {
+      "path": "villagers/velma.webp",
+      "w": 369,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Velma_NH.png"
+    },
+    "villagers/velma-icon": {
+      "path": "villagers/velma-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Velma_NH_Villager_Icon.png"
+    },
+    "villagers/vesta": {
+      "path": "villagers/vesta.webp",
+      "w": 407,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Vesta_NH_Transparent.png"
+    },
+    "villagers/vesta-icon": {
+      "path": "villagers/vesta-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Vesta_NH_Villager_Icon.png"
+    },
+    "villagers/vic": {
+      "path": "villagers/vic.webp",
+      "w": 317,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Vic_NH.png"
+    },
+    "villagers/vic-icon": {
+      "path": "villagers/vic-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Vic_NH_Villager_Icon.png"
+    },
+    "villagers/viche": {
+      "path": "villagers/viche.webp",
+      "w": 344,
+      "h": 438,
+      "source": "https://nookipedia.com/wiki/File:Viché_NH.png"
+    },
+    "villagers/viche-icon": {
+      "path": "villagers/viche-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Viché_NH_Villager_Icon.png"
+    },
+    "villagers/victoria": {
+      "path": "villagers/victoria.webp",
+      "w": 290,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Victoria_NH.png"
+    },
+    "villagers/victoria-icon": {
+      "path": "villagers/victoria-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Victoria_NH_Villager_Icon.png"
+    },
+    "villagers/violet": {
+      "path": "villagers/violet.webp",
+      "w": 439,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Violet_NH.png"
+    },
+    "villagers/violet-icon": {
+      "path": "villagers/violet-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Violet_NH_Villager_Icon.png"
+    },
+    "villagers/vivian": {
+      "path": "villagers/vivian.webp",
+      "w": 256,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Vivian_NH.png"
+    },
+    "villagers/vivian-icon": {
+      "path": "villagers/vivian-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Vivian_NH_Villager_Icon.png"
+    },
+    "villagers/vladimir": {
+      "path": "villagers/vladimir.webp",
+      "w": 293,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Vladimir_NH.png"
+    },
+    "villagers/vladimir-icon": {
+      "path": "villagers/vladimir-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Vladimir_NH_Villager_Icon.png"
+    },
+    "villagers/wade": {
+      "path": "villagers/wade.webp",
+      "w": 387,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Wade_NH.png"
+    },
+    "villagers/wade-icon": {
+      "path": "villagers/wade-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Wade_NH_Villager_Icon.png"
+    },
+    "villagers/walker": {
+      "path": "villagers/walker.webp",
+      "w": 308,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Walker_NH.png"
+    },
+    "villagers/walker-icon": {
+      "path": "villagers/walker-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Walker_NH_Villager_Icon.png"
+    },
+    "villagers/walt": {
+      "path": "villagers/walt.webp",
+      "w": 303,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Walt_NH.png"
+    },
+    "villagers/walt-icon": {
+      "path": "villagers/walt-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Walt_NH_Villager_Icon.png"
+    },
+    "villagers/wart-jr": {
+      "path": "villagers/wart-jr.webp",
+      "w": 323,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Wart_Jr._NH.png"
+    },
+    "villagers/wart-jr-icon": {
+      "path": "villagers/wart-jr-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Wart_Jr._NH_Villager_Icon.png"
+    },
+    "villagers/weber": {
+      "path": "villagers/weber.webp",
+      "w": 324,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Weber_NH.png"
+    },
+    "villagers/weber-icon": {
+      "path": "villagers/weber-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Weber_NH_Villager_Icon.png"
     },
     "villagers/wendy": {
       "path": "villagers/wendy.webp",
@@ -3715,6 +5743,30 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Wilbur_NH_Character_Icon.png"
     },
+    "villagers/willow": {
+      "path": "villagers/willow.webp",
+      "w": 420,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Willow_NH.png"
+    },
+    "villagers/willow-icon": {
+      "path": "villagers/willow-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Willow_NH_Villager_Icon.png"
+    },
+    "villagers/winnie": {
+      "path": "villagers/winnie.webp",
+      "w": 290,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Winnie_NH.png"
+    },
+    "villagers/winnie-icon": {
+      "path": "villagers/winnie-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Winnie_NH_Villager_Icon.png"
+    },
     "villagers/wisp": {
       "path": "villagers/wisp.webp",
       "w": 197,
@@ -3738,6 +5790,30 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Wolfgang_NH_Villager_Icon.png"
+    },
+    "villagers/yuka": {
+      "path": "villagers/yuka.webp",
+      "w": 429,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Yuka_NH.png"
+    },
+    "villagers/yuka-icon": {
+      "path": "villagers/yuka-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Yuka_NH_Villager_Icon.png"
+    },
+    "villagers/zell": {
+      "path": "villagers/zell.webp",
+      "w": 305,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Zell_NH.png"
+    },
+    "villagers/zell-icon": {
+      "path": "villagers/zell-icon.webp",
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Zell_NH_Villager_Icon.png"
     },
     "villagers/zoe": {
       "path": "villagers/zoe.webp",
