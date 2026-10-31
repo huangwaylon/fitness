@@ -20,7 +20,7 @@ describe('reduce: rows', () => {
         [at(WK), 'A', WK, 'floors' as 'steps', 1], [at(WK), 'A', WK, 'steps', 'x' as unknown as number]],
       events: []
     });
-    expect([...s.metrics.A.values()].flat().map((r) => r.v)).toEqual([100]);
+    expect([...s.metrics.A.values()].flatMap((day) => Object.values(day).flat()).map((r) => r.v)).toEqual([100]);
     expect(s.metrics.B.size).toBe(0);
     expect(s.lastSync).toEqual({ A: at(WK), B: null });
   });
@@ -44,7 +44,7 @@ describe('reduce: events', () => {
       ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'stand_min', value: 1_440 }),
       ev(at('2026-11-10'), 'A', 'metric_set', { date: WK, metric: 'stand_min', value: 1_441 })
     ], { metrics: [[at(WK, '22:00'), 'B', WK, 'move_kcal', 512.5], [at(WK, '22:00'), 'B', WK, 'stand_min', 58]] }));
-    expect([...s.metrics.B.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|move_kcal`, [512.5]], [`${WK}|stand_min`, [58]]]);
+    expect(s.metrics.B.get(WK)).toEqual({ move_kcal: [{ at: Date.parse(at(WK, '22:00')), v: 512.5 }], stand_min: [{ at: Date.parse(at(WK, '22:00')), v: 58 }] });
     expect([...s.metricSets.A.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|move_kcal`, [450]], [`${WK}|stand_min`, [1440]]]);
   });
 

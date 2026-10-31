@@ -30,7 +30,7 @@ export function metricAsOf(s: State, person: PersonId, date: LocalDate, metric: 
   const set = latestTimed(s.metricSets[person].get(key), t);
   let best: number | null = set ? set.v : null;
   const after = set ? set.at : -Infinity;
-  const rows = s.metrics[person].get(key);
+  const rows = s.metrics[person].get(date)?.[metric];
   if (rows) for (const r of rows) if (r.at <= t && r.at > after && (best === null || r.v > best)) best = r.v;
   return best;
 }
