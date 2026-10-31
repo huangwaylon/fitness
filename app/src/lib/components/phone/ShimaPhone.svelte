@@ -9,11 +9,6 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import HelpApp from './HelpApp.svelte';
-  import VillagerApp from './VillagerApp.svelte';
-  import LangApp from './LangApp.svelte';
-  import SyncApp from './SyncApp.svelte';
-  import SoundApp from './SoundApp.svelte';
   import type { KirokuEntry } from '../kiroku/Kiroku.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -38,8 +33,15 @@
   ];
 
   let app = $state<AppId | null>(null);
-  /** きろく is loaded the first time it opens, so the island doesn't pay for it up front. */
-  const loadKiroku = lazy(() => import('../kiroku/Kiroku.svelte'));
+  /** Every app is its own chunk, loaded the first time it opens, so the island doesn't pay for them up front. */
+  const LOAD = {
+    kiroku: lazy(() => import('../kiroku/Kiroku.svelte')),
+    help: lazy(() => import('./HelpApp.svelte')),
+    villager: lazy(() => import('./VillagerApp.svelte')),
+    lang: lazy(() => import('./LangApp.svelte')),
+    sync: lazy(() => import('./SyncApp.svelte')),
+    sound: lazy(() => import('./SoundApp.svelte'))
+  };
   let kiroku: { back: () => boolean } | undefined = $state();
   let entry = $state<KirokuEntry | null>(null);
 
@@ -90,6 +92,8 @@
   });
 </script>
 
+{#snippet fail()}<p class="fail" role="status">{t('state.error')}</p>{/snippet}
+
 <Sheet bind:open label={t('phone.name')} variant="phone" onclose={closed}>
   <!-- the one title bar: ‹ back to the previous level (an app → home, a きろく level → the one above), ✕ closes the phone -->
   <div class="titlebar"><NavBar {title} onback={app ? back : null} onclose={() => (open = false)} sfx="self" /></div>
@@ -116,17 +120,17 @@
   {:else}
     <div class="page">
       {#if app === 'kiroku'}
-        {#await loadKiroku() then { default: Kiroku }}<Kiroku bind:this={kiroku} {entry} />{:catch}<p class="fail" role="status">{t('state.error')}</p>{/await}
+        {#await LOAD.kiroku() then { default: Kiroku }}<Kiroku bind:this={kiroku} {entry} />{:catch}{@render fail()}{/await}
       {:else if app === 'help' && view}
-        <HelpApp {view} />
+        {#await LOAD.help() then { default: HelpApp }}<HelpApp {view} />{:catch}{@render fail()}{/await}
       {:else if app === 'villager' && view}
-        <VillagerApp {view} />
+        {#await LOAD.villager() then { default: VillagerApp }}<VillagerApp {view} />{:catch}{@render fail()}{/await}
       {:else if app === 'lang'}
-        <LangApp />
+        {#await LOAD.lang() then { default: LangApp }}<LangApp />{:catch}{@render fail()}{/await}
       {:else if app === 'sync' && view}
-        <SyncApp {view} />
+        {#await LOAD.sync() then { default: SyncApp }}<SyncApp {view} />{:catch}{@render fail()}{/await}
       {:else if app === 'sound'}
-        <SoundApp />
+        {#await LOAD.sound() then { default: SoundApp }}<SoundApp />{:catch}{@render fail()}{/await}
       {/if}
     </div>
   {/if}
