@@ -5,10 +5,15 @@
   // front, two lily pads (one with a pink bloom), a clump of reeds on its back-left bank and one slow ripple ring (the
   // pond's one animation: transform and opacity). Its fish (Critters.svelte) swim over it; a tap on the water ripples
   // (SceneTaps). Stage units, its own svg so it never touches the ground's; under the time-of-day tint like the land.
+  // Floating on it in their weeks (NH's petals on the water in cherry-blossom week, maple leaves in maple week): a few
+  // drift slowly across, one group's transform.
   import { POND } from './scene.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
 
-  let { uid, season }: { uid: string; season: Season } = $props();
+  let { uid, season, floating = null }: { uid: string; season: Season; floating?: 'petal' | 'maple' | null } = $props();
+  // [x across the pond (−1…1), y (−1…1), turn°, size]
+  const FLOAT: [number, number, number, number][] = [[-0.62, 0.1, 20, 1], [-0.25, 0.55, -35, 0.85], [0.08, -0.2, 70, 0.9], [0.3, 0.45, 140, 1.1], [0.72, 0.05, -60, 0.8]];
+  const MAPLE = ['#E8572E', '#F08A2E', '#D9442B'];
   const { cx, cy, rx, ry } = POND;
   const winter = $derived(season === 'winter');
   // reeds on the back-left bank: [x, height, lean]
@@ -41,6 +46,19 @@
     <rect x={cx + rx * 0.12} y={cy + ry * 0.38} width="5" height="1.1" rx=".55" fill="rgba(255, 255, 255, .55)" />
     <!-- the ripple: one ring widening out from the middle and fading, every few seconds -->
     <ellipse class="ripple" cx={cx + rx * 0.18} cy={cy + ry * 0.05} rx={rx * 0.42} ry={ry * 0.4} />
+    {#if floating}
+      <g class="floating" data-floating={floating}>
+        {#each FLOAT as [kx, ky, turn, s], i (i)}
+          <g transform="translate({cx + rx * kx * 0.85} {cy + ry * ky * 0.7}) rotate({turn}) scale({s * 1.3} {s * 0.7})">
+            {#if floating === 'petal'}
+              <path d="M0 -2.2 C1.5 -2.2 1.9 -.4 0 1.6 C-1.9 -.4 -1.5 -2.2 0 -2.2 Z M0 -2.2 l.35 .7 l-.7 0 z" fill="#FFC6D9" />
+            {:else}
+              <path d="M0 -2.6 L.6 -1 L2.2 -1.5 L1.2 -.1 L2.4 .8 L.7 .7 L.4 2 L0 1 L-.4 2 L-.7 .7 L-2.4 .8 L-1.2 -.1 L-2.2 -1.5 L-.6 -1 Z" fill={MAPLE[i % 3]} />
+            {/if}
+          </g>
+        {/each}
+      </g>
+    {/if}
   </g>
   <!-- lily pads: round leaves with NH's notch, one with a pink bloom -->
   <g class="pads">
@@ -67,5 +85,7 @@
   .pond { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; overflow: visible; pointer-events: none; }
   .ripple { fill: none; stroke: rgba(255, 255, 255, .75); stroke-width: .7; transform-box: fill-box; transform-origin: center;
     animation: pond-ripple 4.6s ease-out infinite; }
+  .floating { animation: pond-drift 26s ease-in-out infinite alternate; }
+  @keyframes pond-drift { from { transform: translateX(-2.5px); } to { transform: translateX(2.5px); } }
   @keyframes pond-ripple { 0% { transform: scale(.15); opacity: 0; } 12% { opacity: .9; } 70%, 100% { transform: scale(1.25); opacity: 0; } }
 </style>

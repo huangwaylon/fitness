@@ -327,8 +327,8 @@
     </svg>
 
     <!-- the back of the island: the pond (left) and the museum (the middle), the door to the ずかん -->
-    <Pond {uid} {season} />
-    <Museum {live} say={(name, parts, from, o) => talk?.say(name, parts, from, o)} />
+    <Pond {uid} {season} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} />
+    <Museum {live} snow={season === 'winter'} say={(name, parts, from, o) => talk?.say(name, parts, from, o)} />
 
     <BackRow {season} {month} toyDay={ev.toyDay} />
 
