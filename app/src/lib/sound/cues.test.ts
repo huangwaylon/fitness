@@ -9,7 +9,8 @@ const KINDS: Record<SceneSfx, true> = {
   bush: true, flower: true, cloud: true, sun: true, moon: true, star: true, 'shooting-star': true,
   splash: true, fish: true, sand: true, grass: true, snow: true, balloon: true, butterfly: true,
   present: true, cast: true, plop: true, nibble: true, bite: true, reel: true, catch: true, flee: true, net: true, 'bug-flee': true,
-  shell: true, fragment: true, bottle: true, dig: true, wish: true, weed: true, water: true, clonk: true, glint: true
+  shell: true, fragment: true, bottle: true, dig: true, wish: true, weed: true, water: true, clonk: true, glint: true,
+  nest: true, buzz: true, sting: true, twig: true
 };
 
 describe('scenery cues', () => {

@@ -1,5 +1,5 @@
 {
-  "version": 29,
+  "version": 30,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -541,6 +541,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Walking_Stick_NH_Icon.png"
     },
+    "critters/wasp": {
+      "path": "critters/wasp.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Wasp_NH_Icon.png"
+    },
     "critters/whale-shark": {
       "path": "critters/whale-shark.webp",
       "w": 96,
@@ -888,6 +894,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Taurus_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/tree-branch": {
+      "path": "finds/tree-branch.webp",
+      "w": 64,
+      "h": 64,
+      "source": "https://nookipedia.com/wiki/File:Tree_Branch_NH_Inv_Icon.png"
     },
     "finds/tricera-skull": {
       "path": "finds/tricera-skull.webp",

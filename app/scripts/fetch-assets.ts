@@ -93,6 +93,8 @@ const SPECS: Record<string, Spec> = {
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
+  // a shaken tree's branch, on the ground to pick up (island/TreeShakes.svelte)
+  'finds/tree-branch': [64, 'Tree_Branch_NH_Inv_Icon.png'],
 };
 // Scene critters (docs/design.md#scene-interactions): the critterpedia icon of each catch (fish, bugs, junk), shown
 // ~36px for a moment after a catch and only loaded then (island/critters.ts critterArt).
@@ -110,7 +112,9 @@ for (const name of [
   'Walker Cicada', 'Brown Cicada', 'Giant Cicada', 'Cicada Shell', 'Saw Stag', 'Miyama Stag', 'Giant Stag', 'Rainbow Stag',
   'Horned Dynastid', 'Goliath Beetle', 'Drone Beetle', 'Jewel Beetle', 'Walking Stick', 'Hermit Crab', 'Wharf Roach',
   'Pill Bug', 'Centipede', 'Snail', 'Paper Kite Butterfly', 'Agrias Butterfly', "Queen Alexandra's Birdwing",
-  "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust'
+  "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust',
+  // only from a shaken tree's wasp nest (island/treeShake.ts)
+  'Wasp'
 ])
   SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 // Beach finds (docs/design.md#beach-finds): NH's seashells, fossils (the assessed icon), star fragments, the message

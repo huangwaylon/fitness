@@ -114,6 +114,11 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-weed': { sound: 'pluck', world: true },
   'scene-water': { sound: 'sprinkle', world: true },
   'scene-clonk': { sound: 'clonk', world: true },
+  // shaking a tree: the nest's thud, its wasps' buzz, the sting's yelp, a branch picked up (a little pop)
+  'scene-nest': { sound: 'thud', gain: 0.6, world: true },
+  'scene-buzz': { sound: 'buzz', world: true },
+  'scene-sting': { sound: 'surprise', world: true },
+  'scene-twig': { sound: 'pop', gain: 0.8, step: 3, world: true },
   'scene-glint': { sound: 'sparkle', gain: 0.6, step: 5, delay: 0.1, world: true }
 };
 

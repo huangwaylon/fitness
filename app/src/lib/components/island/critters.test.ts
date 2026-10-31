@@ -80,8 +80,8 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(BUGS['robust-cicada'].flight).toBe('perch');
     for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch', 'crawl']).toContain(b.flight);
   });
-  it('47 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass and the beds', () => {
-    expect(Object.keys(BUGS)).toHaveLength(47);
+  it('48 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass and the beds (and the wasp of a shaken nest)', () => {
+    expect(Object.keys(BUGS)).toHaveLength(48);
     for (const id of ['walker-cicada', 'brown-cicada', 'giant-cicada', 'saw-stag', 'rainbow-stag', 'horned-dynastid', 'goliath-beetle', 'drone-beetle'] as BugId[])
       expect(BUGS[id].flight, id).toBe('perch');
     expect(BUGS['hermit-crab']).toMatchObject({ flight: 'crawl', ground: 'beach' });

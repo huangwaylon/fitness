@@ -204,6 +204,12 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.6, g: 1, lo: 2500, hi: 9000, shape: 'swell', grains: 220 },
     { kind: 'noise', t: 0.05, d: 0.45, g: 0.35, lo: 600, hi: 2500, shape: 'swell', grains: 80 }
   ],
+  // a shaken tree's wasps: an angry swarm's buzz (two detuned square drones with a fast flutter, swelling and fading)
+  buzz: [
+    { kind: 'tone', f: 196, t: 0, d: 0.85, g: 0.5, wave: 'sq', attack: 0.06, vib: [11, 40], trem: [32, 0.6] },
+    { kind: 'tone', f: 233, t: 0.04, d: 0.8, g: 0.35, wave: 'sq', attack: 0.08, vib: [9, 55], trem: [27, 0.5] },
+    { kind: 'noise', t: 0, d: 0.8, g: 0.25, lo: 300, hi: 1600, shape: 'swell' }
+  ],
   clonk: [
     { kind: 'tone', f: 230, to: 170, glide: 0.06, t: 0, d: 0.16, g: 1, wave: 'tri', attack: 0.001, partials: [[2.4, 0.3, 0.3]] },
     { kind: 'noise', t: 0, d: 0.04, g: 0.5, lo: 1500, hi: 6000, shape: 'decay' }

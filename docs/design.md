@@ -259,7 +259,7 @@ idle life (`data-covered`).
 ### Trees
 
 `island/FruitTree.svelte`, `island/FlowerBeds.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit and
-its person's flowers through one Tokyo day:
+its person's flowers through one Tokyo day (a quick run of canopy taps shakes it instead: [Shaking a tree](#shaking-a-tree)):
 
 - **Hanging:** each goal's fruit hangs in the canopy, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour as
   today's amount nears the goal (grayscale = 1 − share, washed lighter while grey so a dark apple never reads as a
@@ -289,6 +289,25 @@ its person's flowers through one Tokyo day:
 - `fruit-day` in localStorage (`{ date, dropped, picked, bloomed }`, ids `A:pear`): losing it only drops a fruit and
   blooms a flower again. Cost: transform and opacity, a static filter on eight small images, eight small swaying buds,
   four glints on a perfect day.
+
+### Shaking a tree
+
+`island/treeShake.ts`, `island/TreeShakes.svelte`, `e2e/shake.spec.ts`. NH's shake, beside the tree's popup:
+
+- **Tap or shake:** one canopy tap opens (or closes) the popup as before; a quick run, the third tap within 1.2 s
+  and each quick tap after, is a shake: the popup closes, the tree rustles and drops its leaves (`tree-shake`).
+- **What falls:** 1 in 8 shakes a wasp nest (at most one per tree an hour, `tree-nest` in localStorage), else 1 in 5
+  a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the jar's side, between the canopy's and the fruit
+  row's buttons, until a tap picks it up (a hop and gone, `scene-twig`; cosmetic). No ベル ever: scenery never pays
+  (NH's bells and furniture from trees are left out).
+- **The nest:** it falls beside the trunk on the outer side (`scene-nest`); 0.6 s later three wasps buzz out
+  (`scene-buzz`) and charge the villager on that side (the left tree's at mine) for 1.5 s, a ≥ 44px button. A tap on
+  them in time nets one: the net's swing, `scene-catch`, NH's catch line on the plate (「ハチを つかまえた！ ブン！ ブン！
+  ブン！ （手づかみ しないでね）」 / "I caught a wasp! That's gotta sting...") and the shared ずかん's wasp (a `find`;
+  the wasp is never about on its own: weight 0). Too late, they sting (`scene-sting`): that villager starts with a 「！」
+  and one eye swells under a pink lump for a minute (not kept across a reload), and the wasps fly off. The nest fades
+  once they are out.
+- `?shake=nest|branch` (dev or `?demo`) makes the next shake drop that.
 
 ### Scene interactions
 

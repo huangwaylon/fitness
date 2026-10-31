@@ -11,7 +11,9 @@
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal today's amount against the
   // goal (met or not), ✓ once met, and its +1 ベル; then today's ふたりでぜんぶ (both people, all four goals: +2) and
   // when the data last arrived. It stays until this tree is tapped again, the other tree is tapped, or a tap lands
-  // elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
+  // elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
+  // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
+  // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
@@ -30,6 +32,7 @@
   } from './scene.ts';
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { shakeTap } from './treeShake.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -42,8 +45,10 @@
     open?: boolean;
     /** A tap on this tree: open its popup (true) or close it (false). */
     ontoggle?: (open: boolean) => void;
+    /** A quick run of taps shook the tree (the scene drops what falls). */
+    onshake?: () => void;
   }
-  let { person, x, foliage, shakeN = 0, celebrate = null, open = false, ontoggle }: Props = $props();
+  let { person, x, foliage, shakeN = 0, celebrate = null, open = false, ontoggle, onshake }: Props = $props();
 
   const H = TREE.h, W = TREE.h * OAK_AR, BASE = TREE.base;
   /** A hanging fruit is drawn at the ground size, scaled down (so the fall scales it up, one image). */
@@ -193,7 +198,17 @@
 
   /** A tap on the canopy (or the row with nothing to pick up): closes this tree's popup if it's open, else opens it (the
    *  canopy shakes the tree; the row highlights its nearest fruit). */
+  let canopyTaps: number[] = [];
   function tap(f: RingFruit | null, canopy = f === null) {
+    if (canopy) {
+      const run = shakeTap(canopyTaps, Date.now());
+      canopyTaps = run.taps;
+      if (run.shake) {
+        if (open) ontoggle?.(false);
+        shake(true);
+        return onshake?.();
+      }
+    }
     if (open) {
       cue('tick');
       return ontoggle?.(false);

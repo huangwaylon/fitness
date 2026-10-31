@@ -87,7 +87,8 @@ export type BugId =
   | 'moth' | 'walker-cicada' | 'brown-cicada' | 'giant-cicada' | 'cicada-shell' | 'saw-stag' | 'miyama-stag' | 'giant-stag'
   | 'rainbow-stag' | 'horned-dynastid' | 'goliath-beetle' | 'drone-beetle' | 'jewel-beetle' | 'walking-stick' | 'hermit-crab'
   | 'wharf-roach' | 'pill-bug' | 'centipede' | 'snail' | 'paper-kite-butterfly' | 'agrias-butterfly'
-  | 'queen-alexandras-birdwing' | 'rajah-brookes-birdwing' | 'monarch-butterfly' | 'atlas-moth' | 'damselfly' | 'long-locust';
+  | 'queen-alexandras-birdwing' | 'rajah-brookes-birdwing' | 'monarch-butterfly' | 'atlas-moth' | 'damselfly' | 'long-locust'
+  | 'wasp';
 
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers, a dragonfly darts and hovers over the
  *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada or a beetle flies
@@ -104,7 +105,7 @@ interface Bug extends Seasonal {
   ground?: Ground;
 }
 
-/** NH bugs that suit this island (no wasps, nothing that chases, no tarantulas or scorpions): months and hours as in
+/** NH bugs that suit this island (no wasps about, only from a shaken nest; nothing that chases, no tarantulas or scorpions): months and hours as in
  *  NH's northern hemisphere (Nookipedia). Spring: the butterflies, the honeybee, the ladybug, the peacock butterfly;
  *  summer: the emperor butterfly at dusk, the dragonflies, the cicadas on the trunks, fireflies at night; autumn: the
  *  red dragonfly, the grasshoppers and the locust, the crickets in the evening, the mantises; winter: the common
@@ -163,7 +164,9 @@ export const BUGS: Record<BugId, Bug> = {
   'monarch-butterfly': { months: span(9, 11), hours: [4, 17], flight: 'flutter', weight: 2 },
   'atlas-moth': { months: span(4, 9), hours: [19, 4], flight: 'flutter', weight: 0.7 },
   damselfly: { months: span(11, 2), hours: ALL_DAY, flight: 'dart', weight: 2 },
-  'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 }
+  'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 },
+  // never about on its own (weight 0): only out of a nest shaken from a tree (island/treeShake.ts), netted in time
+  wasp: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', weight: 0 }
 };
 
 /** Inside [from, to) of the day, wrapping past midnight when to < from. */

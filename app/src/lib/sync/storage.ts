@@ -50,6 +50,9 @@ export const SCENE = {
    *  phone has shown falling and picked up, and the goal flowers it has shown blooming (`A:pear`; island/fruitDay.ts;
    *  a new day starts empty). */
   fruit: 'fruit-day',
+  /** localStorage `tree-nest` = `{ A?: ms, B?: ms }`: when a shaken tree last dropped a wasp nest on this phone (at most
+   *  one an hour per tree; island/treeShake.ts). */
+  nest: 'tree-nest',
   /** localStorage `scene-wish` = the Tokyo date whose morning brings star fragments (a wish on a shooting star). */
   wish: 'scene-wish',
   /** localStorage `scene-garden` = `{ date, watered: ['row-col'…], hybrid }`: the flowers watered today and the hybrid
