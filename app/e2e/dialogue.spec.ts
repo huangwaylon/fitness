@@ -35,7 +35,9 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
   await page.waitForTimeout(300); // a person's pause between taps
   // the next tap on him: one of his lines, one page
   await expect.poll(async () => {
-    if (!(await page.locator('[data-fx="talk"]').count())) await tapOn(page, '[data-visitor="gulliver"] .art');
+    // his head: my villager walked over to talk and stands in front of him
+    const g = (await page.locator('[data-visitor="gulliver"] .art').boundingBox())!;
+    if (!(await page.locator('[data-fx="talk"]').count())) await page.mouse.click(g.x + g.width / 2, g.y + g.height * 0.12);
     return page.locator('[data-fx="talk"].placed').getAttribute('data-pages').catch(() => null);
   }, { timeout: 8000 }).toBe('1');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
