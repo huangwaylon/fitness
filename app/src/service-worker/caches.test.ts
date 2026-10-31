@@ -41,6 +41,9 @@ describe('audio cache (LRU for music)', () => {
 });
 
 describe('precache', () => {
+  it('leaves the critters (fish, bugs, junk) out: they are cached on first use', () => {
+    for (const p of ['art/critters/sea-bass.webp', '/fitness/art/critters/common-butterfly.webp']) expect(precachable(p)).toBe(false);
+  });
   it('keeps the shell, the default villagers and the scene art', () => {
     for (const p of ['_app/immutable/entry/app.js', 'art/fruit/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
       expect(precachable(p)).toBe(true);

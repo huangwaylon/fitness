@@ -16,7 +16,8 @@
   // Colours: the season tables in tokens.css (Builder A block). The time of day is ONE multiply tint over
   // land and sea (IslandScene .tint), so nothing here is keyed on tod (except the dusk shadow stretch).
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, JAR, PLATEAU, ROW, SAND, TILE, TREE, outline, rng, smooth } from './scene.ts';
+  import { BED_ROWS, BED_X, BUSH_U, HEDGE_BASE, HEDGE_X, JAR, PLATEAU, ROW, SAND, TILE, TREE, outline, smooth } from './scene.ts';
+  import { mulberry32 } from '#lib/random.ts';
 
   interface Props {
     uid: string;
@@ -73,7 +74,7 @@
     Math.hypot((x - JAR.x) / 52, (y - JAR.base + 6) / 22) < 1 ||
     [TREE.x.A, TREE.x.B].some((tx) => Math.hypot((x - tx) / 26, (y - TREE.base + 3) / 9) < 1);
   const FLECKS = (() => {
-    const r = rng(1907);
+    const r = mulberry32(1907);
     // a jittered grid (≈ 2.4 cells per tile, 62% filled): even cover, no clumps, no repeat
     const cw = TILE / 2.4, ch = ROW / 2.2;
     const tri = (x: number, y: number, a: number, s: number) =>
@@ -99,7 +100,7 @@
   })();
   /** Winter: NH's snow ground has soft round dimples instead of leaves. */
   const DIMPLES = (() => {
-    const r = rng(77);
+    const r = mulberry32(77);
     let d = '';
     for (let gy = P.y0 + 4; gy < P.y1; gy += 16)
       for (let gx = P.x0 + 4; gx < P.x1; gx += 20) {
@@ -111,7 +112,7 @@
   })();
   /** Broad tonal patches (blurred): lighter where the light falls, darker worn/shaded spots, seeded. */
   const PATCHES = (() => {
-    const r = rng(311);
+    const r = mulberry32(311);
     return Array.from({ length: 14 }, (_, i) => {
       const rx = 24 + r() * 40;
       return { x: P.x0 + 24 + r() * (P.x1 - P.x0 - 48), y: P.y0 + 18 + r() * (P.y1 - P.y0 - 36), rx, ry: rx * (0.45 + r() * 0.25), light: i % 3 !== 2, o: 0.35 + r() * 0.3 };

@@ -69,7 +69,7 @@ interface Prop {
 /** The hedge's species of the month (NH flowering seasons, northern hemisphere): one species per hedge,
  *  its two colours alternating (how NH players plant a tidy hedge). Spring azaleas, June hydrangeas,
  *  Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly, Jan–Mar camellias. */
-function hedgePair(_season: Season, month: number): [BushId, BushId] {
+function hedgePair(month: number): [BushId, BushId] {
   if (month >= 4 && month <= 5) return ['pink-azalea', 'white-azalea'];
   if (month === 6) return ['blue-hydrangea', 'pink-hydrangea'];
   if (month >= 7 && month <= 8) return ['red-hibiscus', 'yellow-hibiscus'];
@@ -91,7 +91,7 @@ export const BUSH_U = 48;
 export const PLATEAU = { x0: 44, y0: 50, x1: 346, y1: 316, rt: 60, rb: 26 } as const;
 export const SAND = { x0: 30, y0: 44, x1: 360, y1: 352, rt: 72, rb: 60 } as const;
 /** Framing (IslandScene): the horizon sits at stage y HORIZON_U, a narrow open-sea strip behind the island; the island
- *  (the hedge's top 32u to the beach's foam 356u) is centred in the visible ocean, the horizon down to the phone. */
+ *  (the hedge's top 32u to the beach's foam 356u) is centred in the visible ocean, the horizon down to the screen's bottom. */
 export const HORIZON_U = 8;
 
 /** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the jar, on columns ±2/±3 of the
@@ -111,8 +111,8 @@ export const BED_X = { left: [col(-3), col(-2)], right: [col(2), col(3)] };
 export const BED_ROWS = [ROWS.bedBack, ROWS.front];
 
 /** Back row (the hedge only; no building, bench, cedar or path). */
-export function props(season: Season, month: number): Prop[] {
-  const [b1, b2] = hedgePair(season, month);
+export function props(month: number): Prop[] {
+  const [b1, b2] = hedgePair(month);
   return HEDGE_X.map((x, i) => ({ key: `bushes/${i % 2 ? b2 : b1}`, h: BUSH_U, x, base: HEDGE_BASE, z: 20 }));
 }
 
@@ -136,14 +136,6 @@ export function eventsAt(d: Date): Events {
 }
 
 
-/** Small deterministic PRNG so scattered details sit still between renders. */
-export function rng(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 4294967296;
-  };
-}
 
 type Pt = [number, number];
 interface RRect { x0: number; y0: number; x1: number; y1: number; rt: number; rb: number }
