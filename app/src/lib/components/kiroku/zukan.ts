@@ -18,7 +18,7 @@ const NH_FISH_ORDER = [
   'bluegill', 'yellow-perch', 'black-bass', 'tilapia', 'pike', 'pond-smelt', 'sweetfish', 'cherry-salmon', 'char', 'golden-trout',
   'stringfish', 'salmon', 'king-salmon', 'mitten-crab', 'guppy', 'nibble-fish', 'angelfish', 'betta', 'neon-tetra', 'rainbowfish',
   'piranha', 'arowana', 'dorado', 'gar', 'arapaima', 'saddled-bichir', 'sturgeon', 'sea-butterfly', 'sea-horse', 'clownfish',
-  'surgeonfish', 'butterfly-fish', 'napoleonfish', 'zebra-turkeyfish', 'puffer-fish', 'anchovy', 'horse-mackerel', 'barred-knifejaw',
+  'surgeonfish', 'butterfly-fish', 'napoleonfish', 'zebra-turkeyfish', 'blowfish', 'puffer-fish', 'anchovy', 'horse-mackerel', 'barred-knifejaw',
   'sea-bass', 'red-snapper', 'dab', 'olive-flounder', 'squid', 'moray-eel', 'ribbon-eel', 'tuna', 'blue-marlin', 'giant-trevally',
   'mahi-mahi', 'ocean-sunfish', 'ray', 'saw-shark', 'hammerhead-shark', 'great-white-shark', 'whale-shark', 'suckerfish',
   'football-fish', 'oarfish', 'barreleye', 'coelacanth'
