@@ -2,7 +2,8 @@
 // and first find (shared between us), silhouettes and ？？？ for the rest.
 import { expect, test, type Page } from '@playwright/test';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { BUGS } from '../src/lib/components/island/critters.ts';
+import { BUGS, FISH } from '../src/lib/components/island/critters.ts';
+import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
 import { FOSSIL_SETS, digSpots } from '../src/lib/components/island/beach.ts';
 import { addDays } from '../src/lib/time/dates.ts';
 
@@ -20,7 +21,7 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   await page.locator('dialog[open] .tab[data-tab=kiroku]').click(); // the panel opens on けんこう
   const row = page.locator('[data-zukan="bug"]');
   await expect(row).toContainText(`1 / ${Object.keys(BUGS).length}`);
-  await expect(page.locator('[data-zukan="fish"]')).toContainText('0 / 33');
+  await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);
   await expect(page.locator('[data-zukan="fossil"]')).toContainText('0 / 73');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
   await expect(page.locator('[data-zukan="shell"]')).toContainText('0 / 9');

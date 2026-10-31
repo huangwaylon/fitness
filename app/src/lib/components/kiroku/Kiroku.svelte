@@ -80,6 +80,14 @@
     return true;
   }
 
+  /** The museum's door: back to the top, the ずかん's heading at the top of the panel. */
+  export async function showZukan() {
+    stack = [];
+    saved = [];
+    await tick();
+    root?.querySelector<HTMLElement>('[data-sec="zukan"]')?.scrollIntoView({ block: 'start' });
+  }
+
   /** After けってい: focus back on the goal's ✎, else on the panel. */
   async function refocus(key: string) {
     await tick();
@@ -117,7 +125,7 @@
       <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
         onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
       <!-- the shared ずかん: what either of us has caught, dug up or picked up on the island -->
-      <h2 class="sec">{t('zukan.title')}</h2>
+      <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
       <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
     {:else if top.k === 'zukan'}
       <Zukan kind={top.kind} finds={findsView(m.state)} {names} {villagers} />

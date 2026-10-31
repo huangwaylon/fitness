@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   BITE_WINDOW_MS, BUBBLE_SHARE, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, type BugId,
-  type FishId
+  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, inOval, pondBox, pondCast, waterAt,
+  type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 import jaMain from '#lib/i18n/ja.json';
@@ -86,8 +86,13 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(BUGS['robust-cicada'].flight).toBe('perch');
     for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch', 'crawl', 'stalk', 'burrow', 'dangle']).toContain(b.flight);
   });
-  it('67 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass and the beds (and the wasp of a shaken nest)', () => {
-    expect(Object.keys(BUGS)).toHaveLength(67);
+  it('70 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass, the beds and the pond (and the wasp of a shaken nest)', () => {
+    expect(Object.keys(BUGS)).toHaveLength(70);
+    // the pond's three keep to its water, in NH's months and hours (the giant water bug at night)
+    for (const id of ['pondskater', 'diving-beetle', 'giant-water-bug'] as BugId[]) expect(BUGS[id].ground, id).toBe('pond');
+    expect(oddsAt(BUGS.pondskater, 7, 12)).toBe(BUGS.pondskater.weight * IN_SEASON);
+    expect(oddsAt(BUGS['giant-water-bug'], 7, 12)).toBe(0);
+    expect(oddsAt(BUGS['giant-water-bug'], 7, 22)).toBe(BUGS['giant-water-bug'].weight * IN_SEASON);
     for (const id of ['walker-cicada', 'brown-cicada', 'giant-cicada', 'saw-stag', 'rainbow-stag', 'horned-dynastid', 'goliath-beetle', 'drone-beetle'] as BugId[])
       expect(BUGS[id].flight, id).toBe('perch');
     expect(BUGS['hermit-crab']).toMatchObject({ flight: 'crawl', ground: 'beach' });
@@ -170,19 +175,20 @@ describe('visits', () => {
   });
   it('the sea holds a fish shadow or, 1 turn in 4, a bubble spot to dive at: one at a time (seeded)', () => {
     const r = mulberry32(9);
-    const n = Array.from({ length: 8000 }, () => spawnKind({ sea: false, bug: true }, true, r));
+    const n = Array.from({ length: 8000 }, () => spawnKind({ sea: false, pond: true, bug: true }, true, r));
     expect(n.filter((k) => k === 'sea').length / n.length).toBeCloseTo(BUBBLE_SHARE, 1);
     expect(n.every((k) => k === 'sea' || k === 'fish')).toBe(true);
-    for (const x of [0, 0.5, 0.99]) expect(spawnKind({ sea: true, bug: true }, true, () => x)).toBeNull();
+    for (const x of [0, 0.5, 0.99]) expect(spawnKind({ sea: true, pond: true, bug: true }, true, () => x)).toBeNull();
   });
-  it('at most one fish and one bug at a time', () => {
-    expect(spawnKind({ sea: true, bug: true }, true, () => 0)).toBeNull();
-    expect(spawnKind({ sea: true, bug: false }, true, () => 0)).toBe('bug');
-    expect(spawnKind({ sea: false, bug: true }, true, () => 0.9)).toBe('fish');
-    expect(spawnKind({ sea: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
-    expect(spawnKind({ sea: true, bug: false }, false, () => 0)).toBeNull();
-    expect(spawnKind({ sea: true, bug: false }, true, () => 0.5)).toBe('bug'); // most visits bring a bug
-    expect(spawnKind({ sea: true, bug: false }, true, () => 0.9)).toBeNull(); // a little air between them
+  it('at most one in the sea, one in the pond and one bug at a time', () => {
+    expect(spawnKind({ sea: true, pond: true, bug: true }, true, () => 0)).toBeNull();
+    expect(spawnKind({ sea: true, pond: true, bug: false }, true, () => 0)).toBe('bug');
+    expect(spawnKind({ sea: false, pond: true, bug: true }, true, () => 0.9)).toBe('fish');
+    expect(spawnKind({ sea: false, pond: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
+    expect(spawnKind({ sea: true, pond: false, bug: false }, true, () => 0)).toBe('pond'); // then the pond, as often as the sea
+    expect(spawnKind({ sea: true, pond: true, bug: false }, false, () => 0)).toBeNull();
+    expect(spawnKind({ sea: true, pond: true, bug: false }, true, () => 0.5)).toBe('bug'); // most visits bring a bug
+    expect(spawnKind({ sea: true, pond: true, bug: false }, true, () => 0.9)).toBeNull(); // a little air between them
   });
 });
 
@@ -252,5 +258,31 @@ describe('captions', () => {
     expect(caption('boot').key).toBe('critter.junk.boot');
     expect(caption('squid')).toEqual({ key: 'critter.caughtFish', name: 'critter.name.squid' });
     expect(caption('firefly')).toEqual({ key: 'critter.caughtBug', name: 'critter.name.firefly' });
+  });
+});
+
+describe('the water box: the sea or the pond', () => {
+  const pond = { cx: 100, cy: 40, rx: 40, ry: 16 };
+  it('a tap in the pond is the pond, off the island the sea, on the land neither', () => {
+    expect(waterAt(pond, 100, 40, false)).toBe('pond');
+    expect(waterAt(pond, 135, 42, false)).toBe('pond');
+    expect(waterAt(pond, 141, 40, false)).toBeNull(); // just past the rim: the lawn
+    expect(waterAt(pond, 100, 40, true)).toBe('pond'); // the pond wins
+    expect(waterAt(pond, 200, 340, true)).toBe('sea');
+    expect(waterAt(null, 100, 40, false)).toBeNull(); // no pond on this screen
+    expect(waterAt(pond, 150, 40, false, 1.6)).toBe('pond'); // a finger's slack around a small pond
+    expect(waterAt(pond, 170, 40, false, 1.6)).toBeNull();
+  });
+  it('a pond shadow keeps to the open water inside the rim', () => {
+    const b = pondBox(pond);
+    for (const [x, y] of [[b.x0, b.y0], [b.x1, b.y0], [b.x0, b.y1], [b.x1, b.y1]]) expect(inOval(pond, x, y)).toBe(true);
+  });
+  it('a cast lands inside the rim, the angler on the front rim', () => {
+    for (const [x, y] of [[100, 40], [139, 40], [70, 28], [130, 55]]) {
+      const c = pondCast(pond, x, y);
+      expect(inOval(pond, c.x, c.y, 0.76), `${x},${y}`).toBe(true);
+      expect(c.sy).toBeGreaterThan(pond.cy); // in front
+      expect(inOval(pond, c.sx, c.sy - 2.5, 1.01)).toBe(true); // on the rim
+    }
   });
 });

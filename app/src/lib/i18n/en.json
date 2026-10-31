@@ -495,5 +495,15 @@
   "visitor.surprise": "Surprise me",
   "visitor.stop": "Stop",
   "visitor.keep": "Keep going",
-  "visitor.other": "Another"
+  "visitor.other": "Another",
+  "museum.label": "Museum: open the Critterpedia",
+  "museum.blathers": "Blathers",
+  "museum.day.0": "Hoo... wha? Oh! Welcome to the museum!",
+  "museum.day.1": "Hoo... *yawn*... Daytime is no time for an owl, I'm afraid.",
+  "museum.day.2": "...Zzz... Hm? Hoo! Oh, hello there! Do come in.",
+  "museum.day.find": "Hoo... you found {name}, you say... *mumble*...",
+  "museum.night.0": "Hoo! Welcome! The museum is at its finest by night!",
+  "museum.night.1": "Hoo hoo! Come to browse the Critterpedia tonight?",
+  "museum.night.2": "Hoo! I'm positively wide awake at this hour!",
+  "museum.night.find": "Hoo! I hear you found {name} recently!"
 }

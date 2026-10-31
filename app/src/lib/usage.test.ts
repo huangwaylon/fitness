@@ -15,6 +15,7 @@ import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { BUGS, FISH, JUNK, critterArt } from '#lib/components/island/critters.ts';
+import { POND_FISH } from '#lib/components/island/pondFish.ts';
 import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beach.ts';
 import { PEARL, SEA } from '#lib/components/island/sea.ts';
 import { MUSHROOMS } from '#lib/components/island/mushrooms.ts';
@@ -113,7 +114,7 @@ describe('official art (static/art/manifest.json)', () => {
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`),
     // the scene's catches (island/critters.ts critterArt)
-    ...[...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK, ...Object.keys(SEA)].map((id) => critterArt(id as keyof typeof FISH)),
+    ...[...Object.keys(FISH), ...Object.keys(POND_FISH), ...Object.keys(BUGS), ...JUNK, ...Object.keys(SEA)].map((id) => critterArt(id as keyof typeof FISH)),
     // the beach finds (island/beach.ts findArt)
     ...[...SHELLS.map(([id]) => id), PEARL, ...FOSSILS, ...FRAGMENTS, 'message-bottle', 'shovel', 'rock', 'watering-can'].map(findArt),
     // mushroom season (island/mushrooms.ts)

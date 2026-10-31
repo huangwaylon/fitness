@@ -24,7 +24,8 @@ const SELF: Record<string, string> = {
   'lib/components/island/HudJar.svelte': 'the jar → jar-tap',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
-  'lib/components/island/Balloon.svelte': 'scene-balloon'
+  'lib/components/island/Balloon.svelte': 'scene-balloon',
+  'lib/components/island/Museum.svelte': 'the museum → scene-museum (a soft knock), then the panel plays phone-open as the ずかん opens'
 };
 
 /** `none`: deliberately silent. */

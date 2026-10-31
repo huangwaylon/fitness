@@ -27,12 +27,13 @@
   import { ROSTER } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
   /** A level of the panel's own (きろく keeps its own levels: week → day, the weight trend, a goal). */
   let push = $state<'villager' | 'help' | null>(null);
-  let kiroku: { back: () => boolean } | undefined = $state();
+  let kiroku: { back: () => boolean; showZukan: () => Promise<void> } | undefined = $state();
   /** How deep きろく is (0 = its first screen): the other sections show only at the very top. */
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
@@ -80,6 +81,17 @@
     push = null;
     kirokuLevel = 0;
   }
+
+  // The museum's door (design.md "Museum"): きろく's ずかん, at its top level, scrolled to.
+  let zukanAsked = 0;
+  $effect(() => {
+    const n = ui.zukan;
+    if (!n || n === zukanAsked) return;
+    zukanAsked = n;
+    push = null;
+    tab = lastTab = 'kiroku';
+    void tick().then(() => kiroku?.showZukan());
+  });
 
   // The panel's open and close tunes. It mounts on the first tap of the ribbon (Hud), already open: that is an open too.
   let wasOpen = false;

@@ -2,6 +2,8 @@
 // own toasts until it closes; and the open sheets, newest last (the banner renders inside the topmost one).
 class Ui {
   sheets = $state<number[]>([]);
+  /** The museum asked for the ずかん (bumped per ask): the HUD opens the panel and the panel shows きろく's ずかん. */
+  zukan = $state(0);
   #overlay: () => boolean = () => false;
   /** The harvest overlay is up (read straight from the layout's state: no mirroring effect). */
   get overlay(): boolean {

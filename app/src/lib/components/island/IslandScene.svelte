@@ -39,6 +39,8 @@
   import Sea from './Sea.svelte';
   import Ground from './Ground.svelte';
   import BackRow from './BackRow.svelte';
+  import Pond from './Pond.svelte';
+  import Museum from './Museum.svelte';
   import FruitTree from './FruitTree.svelte';
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
@@ -286,6 +288,10 @@
     <svg class="ground" viewBox="0 0 390 360" preserveAspectRatio="none" aria-hidden="true">
       <Ground {uid} {season} />
     </svg>
+
+    <!-- the back of the island: the pond (left) and the museum (the middle), the door to the ずかん -->
+    <Pond {uid} {season} />
+    <Museum {live} say={(name, parts, from, o) => talk?.say(name, parts, from, o)} />
 
     <BackRow {season} {month} toyDay={ev.toyDay} />
 

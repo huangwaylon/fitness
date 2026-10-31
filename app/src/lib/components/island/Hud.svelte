@@ -8,6 +8,7 @@
   import { cubicOut } from 'svelte/easing';
   import SyncPill from '../ui/SyncPill.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -22,6 +23,12 @@
   const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
   /** Mounted from the first open on (it keeps its state between opens). */
   let opened = $state(false);
+  // The museum's door: open the panel (it shows the ずかん itself, IslandPanel)
+  $effect(() => {
+    if (!ui.zukan) return;
+    opened = true;
+    panelOpen = true;
+  });
 
   // Count-up on a rise (instant under reduced motion, on a fall and on first paint), with a beat. The ribbon is never
   // remounted for it, so a focused ribbon keeps its focus.

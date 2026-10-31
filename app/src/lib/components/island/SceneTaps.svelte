@@ -4,7 +4,7 @@
   // leaves (petals in spring, maple leaves in autumn, a clump of snow in winter); a flower wiggles and drops a petal
   // with a sparkle (rarely a butterfly flutters off it; on a summer night, a firefly); a cloud squishes and puffs; the
   // sun glints; the moon bobs and sends a shooting star; a tap in the night sky lights a star (sometimes a shooting
-  // star); the sea rings and splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a
+  // star); the sea (and the pond) rings and splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a
   // dust puff (snow in winter). On a clear night a shooting star crosses now and then on its own. A popped balloon's
   // present (Balloon.svelte sends `island:present`) falls onto the island, sparkles and fades (or sinks in the sea).
   // The critters (Critters.svelte: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
@@ -206,6 +206,10 @@
         spawn({ kind: 'splash', x, y, rare, flip: roll(2) });
         return sceneSfx(rare ? 'fish' : 'splash');
       }
+      case 'pond':
+        // the pond's still water: a small ring and a few drops (no fish darting off: its fish come by on their own)
+        spawn({ kind: 'splash', x, y, v: 'pond', flip: roll(2) });
+        return sceneSfx('splash');
       case 'sand':
         spawn({ kind: 'sand', x, y, flip: roll(2) });
         return sceneSfx('sand');
@@ -363,7 +367,7 @@
 
 <div class="taps" aria-hidden="true">
   {#each fx as f (f.id)}
-    <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} data-fx={f.kind} style:left="{f.x}px" style:top="{f.y}px"
+    <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:left="{f.x}px" style:top="{f.y}px"
       style:--c={f.color} style:--dir={f.dir}>
       {#if f.kind === 'bush'}
         {#each [-1, 0.3, 1] as dx, i (i)}
@@ -511,6 +515,7 @@
     border: 1.6px solid rgba(255, 255, 255, .9); border-radius: 50%; animation: ring .8s ease-out both;
   }
   .ring.late { animation-delay: .16s; animation-duration: .75s; }
+  .splash.small { scale: .6; }
   @keyframes ring { 0% { transform: scale(.15); opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
   .drop {
     left: 0; top: 0; width: calc(3 * var(--su)); height: calc(3.6 * var(--su)); margin: calc(-1.8 * var(--su)) 0 0 calc(-1.5 * var(--su));

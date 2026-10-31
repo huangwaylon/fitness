@@ -19,7 +19,7 @@
 </script>
 
 {#each list as p, i (p.key + i)}
-  <span class="prop" data-bush={i} class:flip={p.flip} class:snow={season === 'winter' && p.key.startsWith('bushes/')} style:left={u(p.x)} style:top={u(p.base)} style:z-index={p.z}>
+  <span class="prop" data-bush={p.bush ?? i} class:flip={p.flip} class:snow={season === 'winter' && p.key.startsWith('bushes/')} style:left={u(p.x)} style:top={u(p.base)} style:z-index={p.z}>
     <OfficialArt key={p.key} size={u(p.h)} eager={p.eager} />
   </span>
 {/each}

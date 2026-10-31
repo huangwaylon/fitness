@@ -132,6 +132,8 @@ export const CUES: Record<Cue, CueDef> = {
   'footstep-grass': { sound: 'step-grass', gain: 0.3, world: true },
   'footstep-sand': { sound: 'step-sand', gain: 0.3, world: true },
   'footstep-snow': { sound: 'step-snow', gain: 0.3, world: true },
+  // the museum's door: a soft knock before Blathers speaks
+  'scene-museum': { sound: 'clonk', gain: 0.45, step: 5, world: true },
   'kk-song': { sound: 'kk-song', world: true },
   // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks)
   stretch: { sound: 'stretch-song', world: true }

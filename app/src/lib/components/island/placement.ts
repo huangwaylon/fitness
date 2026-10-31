@@ -47,7 +47,7 @@ export const clearAt = (keep: Box[], x: number, y: number, hw = 0, hh = 0): bool
 
 /** Where a w × h box (client px) centred near (sx, sy) fits: the scene's safe area (under the status bar, above the
  *  bottom band, 8px from the sides), overlapping no guard. Tries above the source first, then below, moving out 4px at
- *  a time; then the same against either side. Null when there's no room. `cover`: only `extra` is kept clear (a
+ *  a time; then the same against either side; then over the museum (`data-scenery`). Null when there's no room. `cover`: only `extra` is kept clear (a
  *  question that waits for its answer may sit over the controls when nothing else fits, as NH's box does). */
 export function place(scene: HTMLElement, w: number, h: number, sx: number, sy: number, extra: Box[] = [], cover = false): { x: number; y: number } | null {
   const s = scene.getBoundingClientRect();
@@ -55,14 +55,19 @@ export function place(scene: HTMLElement, w: number, h: number, sx: number, sy: 
   const bottom = Math.min(s.bottom, document.querySelector('.below')?.getBoundingClientRect().top ?? s.bottom) - 4;
   const L = s.left + 8 + w / 2, R = s.right - 8 - w / 2;
   if (L > R) return null;
-  const keep = cover ? extra : [...guards(), ...extra];
-  const fits = (x: number, y: number) => {
-    const b = { x0: x - w / 2, x1: x + w / 2, y0: y - h / 2, y1: y + h / 2 };
-    return b.y0 >= top && b.y1 <= bottom && !keep.some((k) => hits(b, k));
-  };
   const clamp = (v: number) => Math.min(R, Math.max(L, v));
-  for (const x of [clamp(sx), L, R])
-    for (let d = 0; d < 600; d += 4)
-      for (const y of [sy - h / 2 - 14 - d, sy + h / 2 + 14 + d]) if (fits(x, y)) return { x, y };
-  return null;
+  const search = (keep: Box[]) => {
+    const fits = (x: number, y: number) => {
+      const b = { x0: x - w / 2, x1: x + w / 2, y0: y - h / 2, y1: y + h / 2 };
+      return b.y0 >= top && b.y1 <= bottom && !keep.some((k) => hits(b, k));
+    };
+    for (const x of [clamp(sx), L, R])
+      for (let d = 0; d < 600; d += 4)
+        for (const y of [sy - h / 2 - 14 - d, sy + h / 2 + 14 + d]) if (fits(x, y)) return { x, y };
+    return null;
+  };
+  if (cover) return search(extra);
+  // clear of every control; failing that, a building that is also a control (the museum, `data-scenery`) may sit under
+  // a passing balloon or plate, like the hedge (the spots on the ground keep clear of it all the same: guardsU)
+  return search([...guards(), ...extra]) ?? search([...guards((el) => el.hasAttribute('data-scenery')), ...extra]);
 }

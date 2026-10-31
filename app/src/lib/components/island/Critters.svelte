@@ -1,8 +1,10 @@
 <script lang="ts">
-  // The island's critters (docs/design.md "Scene interactions"), after NH: now and then (every 15–40 s the island
-  // is on screen) a fish shadow swims in the sea off the beach or a bug of the season and hour comes by; a shaken
-  // bush sometimes lets a butterfly or a moth out. Nothing counts: a catch is an official icon and NH's caption for a moment.
-  //   Fishing: a tap in the sea near a shadow (CAST_U) casts a bobber (a line from the beach); the fish swims up,
+  // The island's critters (docs/design.md "Scene interactions"), after NH: now and then (a visit every 8–15 s the
+  // island is on screen) a fish shadow swims in the sea off the beach, another in the pond at the back (NH's freshwater
+  // fish, pondFish.ts: its own chunk, fetched with the pond's first shadow), or a bug of the season and hour comes by; a
+  // shaken bush sometimes lets a butterfly or a moth out. Nothing counts: a catch is an official icon and NH's caption.
+  //   Fishing, the same in either water (critters.ts `Water`: the sea's box or the pond's oval): a tap in the water near a
+  //   shadow (CAST_U) casts a bobber (a line from the beach, or the pond's front rim); the fish swims up,
   //   nibbles 0–3 times (small wiggles of the bobber) and bites: the bobber is yanked under with a splash, its own
   //   sound and NH's 「！」 over it. While the bobber is out any tap is the reel: on the bite (within 1.6 s) it catches
   //   the fish; a first tap any earlier only makes it hesitate (it backs off, comes back, nibbles and bites later), a
@@ -17,16 +19,17 @@
   //   A mole cricket chirps under a mound of earth: a tap digs it up. A tap on my villager now and then sends a flea
   //   hopping off it (`fromVillager`).
   // SceneTaps.svelte mounts this inside the stage and routes taps here first (`tap`), and a shaken bush (`fromBush`).
-  // Cheap: ≤ 1 fish + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
+  // Cheap: ≤ 1 fish in each water + 1 bug; they move by CSS transitions between waypoints a timer picks every second or few (no rAF),
   // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
   // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
-  //   ?critter=fish | <fish id> | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook); ?flea: a tap
+  //   ?critter=fish | pond | <fish id> | <pond fish id> | <bug id> (dev or ?demo): one now, staying until caught (the
+  //   e2e's hook); ?flea: a tap
   //   on my villager always sends a flea off it.
   import { onMount, untrack } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
-  import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, SAND, TREE, type Tod } from './scene.ts';
+  import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, POND, SAND, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
@@ -40,10 +43,13 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import {
-    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
-    fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, stalkTap, type BitePlan,
-    type BugId, type FishId, type Flight, type JunkId, type StalkState
+    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_REACH, POND_SHADOW, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
+    findKind, fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, pondBox, pondCast, reel, spawnKind,
+    stalkTap, waterAt, type BitePlan, type BugId, type Catch, type FishId, type Flight, type JunkId, type Oval, type StalkState, type Water
   } from './critters.ts';
+  import type { PondFishId } from './pondFish.ts';
+
+  const WATERS: readonly Water[] = ['sea', 'pond'];
 
   interface Props {
     scene?: HTMLElement;
@@ -53,8 +59,14 @@
   }
   let { scene, tod, enabled }: Props = $props();
 
-  interface Fish { item: FishId | JunkId; size: number; shape?: 'narrow' | 'fin'; x: number; y: number; ms: number; flip: boolean; box: Box; gone: boolean; dash: boolean }
+  interface Fish {
+    item: FishId | PondFishId | JunkId; water: Water; size: number; shape?: 'narrow' | 'fin'; x: number; y: number; ms: number; flip: boolean; box: Box;
+    /** Spots in its water a control covers (the pond under a canopy on a small phone): it never swims there. */
+    keep: Box[]; gone: boolean; dash: boolean;
+  }
   interface Cast {
+    /** The shadow it was cast to (its water). */
+    fish: Fish;
     x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
     /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
     gen: number;
@@ -78,7 +90,8 @@
   const between = (a: number, b: number) => a + rand() * (b - a);
   const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-  let fish = $state<Fish | null>(null);
+  /** One shadow in the sea and one in the pond, at most. */
+  let fishes = $state<Record<Water, Fish | null>>({ sea: null, pond: null });
   let cast = $state<Cast | null>(null);
   let bug = $state<Bug | null>(null);
   let card = $state<Card | null>(null);
@@ -110,7 +123,8 @@
   function clearAll() {
     for (const id of timers) clearTimeout(id);
     timers.clear();
-    fish = cast = bug = card = net = dig = bubbles = diving = null;
+    fishes = { sea: null, pond: null };
+    cast = bug = card = net = dig = bubbles = diving = null;
   }
 
   // ---------- geometry ----------
@@ -156,7 +170,9 @@
    *  runs, a snail or a walking leaf barely moves, a stink bug ambles over the flowers. */
   const PACE: Partial<Record<BugId, [number, number, number]>> = {
     'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [8, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
-    stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400]
+    stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400],
+    // on the pond: the pondskater skates in quick glides, the diving beetle paddles, the giant water bug lurks
+    pondskater: [12, 260, 420], 'diving-beetle': [8, 900, 1400], 'giant-water-bug': [5, 1800, 2600]
   };
   /** A cicada's perch: the visible trunk of a tree, midway between its canopy and its fruit row (both buttons, measured:
    *  the row's 44px tap target reaches up the trunk on a small phone), so a tap on the cicada (a finger's fuzzy hit
@@ -180,7 +196,7 @@
     return null;
   }
   /** A shadow's length (u): NH's sizes 1–6; the eels' thin shadow is long. */
-  const sizeU = (f: Fish) => 8 + (f.shape === 'narrow' ? 5.5 : f.size) * 4.5;
+  const sizeU = (f: Fish) => (8 + (f.shape === 'narrow' ? 5.5 : f.size) * 4.5) * (f.water === 'pond' ? POND_SHADOW : 1);
 
   /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
   let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
@@ -193,74 +209,106 @@
   }
 
   // ---------- fish ----------
-  function spawnFish(stay = true, want?: FishId) {
+  /** The pond's water on the stage (u), or null when this screen has none. */
+  const pond = (): Oval | null => POND;
+  /** The pond's fish table: its own chunk, fetched with the pond's first shadow. */
+  let pondChunk: Promise<typeof import('./pondFish.ts')> | null = null;
+  const loadPond = () => (pondChunk ??= import('./pondFish.ts'));
+
+  /** A shadow in the sea (off the front beach, or beside the island) or in the pond, `want` being one of that water's
+   *  fish (`?critter=`). */
+  async function spawnFish(water: Water, stay = true, want?: FishId | PondFishId): Promise<boolean> {
     const g = geo();
-    const side = rand() < 0.5 ? -1 : 1;
-    const box = g && (seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1));
-    if (!box) return;
+    if (!g || fishes[water]) return !!fishes[water];
     const { month, hour } = jst(now());
-    const id = want ?? pickFish(month, hour, rand);
+    let box: Box | null, keep: Box[] = [], id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
+    if (water === 'sea') {
+      const side = rand() < 0.5 ? -1 : 1;
+      box = seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1);
+      id = want ?? pickFish(month, hour, rand);
+      look = FISH[id as FishId];
+    } else {
+      const o = pond();
+      if (!o) return false;
+      box = pondBox(o);
+      keep = guardsU(g, 4); // a canopy over the pond on a small phone: those spots aren't tappable
+      const { POND_FISH, pickPondFish } = await loadPond();
+      if (fishes.pond || !enabled()) return !!fishes.pond;
+      id = want ?? pickPondFish(month, hour, rand);
+      look = POND_FISH[id as PondFishId];
+    }
+    const p = box && freeIn(box, keep);
+    if (!box || !p) return false;
     const item = want ?? hookItem(id, rand);
     preload(critterArt(item));
     void loadLines().catch(() => {});
-    const p = inBox(box);
-    fish = { item, size: FISH[id].size, shape: FISH[id].shape, ...p, ms: 0, flip: rand() < 0.5, box, gone: false, dash: false };
-    later(swim, 400);
-    if (stay) later(() => leaveFish(), STAY_MS.fish);
+    const f: Fish = { item, water, size: look.size, shape: look.shape, ...p, ms: 0, flip: rand() < 0.5, box, keep, gone: false, dash: false };
+    fishes[water] = f;
+    later(() => swim(f), 400);
+    if (stay) later(() => leaveFish(f), STAY_MS.fish);
+    return true;
   }
-  /** A slow wander to another spot in its patch of sea (NH shadows dawdle), unless it's busy with a bobber. */
-  function swim() {
-    const f = fish;
-    if (!f || f.gone) return;
-    if (!cast) {
-      const p = inBox(f.box);
-      f.ms = clamp(Math.hypot(p.x - f.x, p.y - f.y) * 110, 2500, 6000);
+  /** A slow wander to another spot in its patch of water (NH shadows dawdle), unless it's busy with a bobber. */
+  function swim(f: Fish) {
+    if (fishes[f.water] !== f || f.gone) return;
+    if (cast?.fish !== f) {
+      const p = freeIn(f.box, f.keep) ?? f;
+      f.ms = clamp(Math.hypot(p.x - f.x, p.y - f.y) * (f.water === 'pond' ? 160 : 110), 2500, 6000);
       f.flip = p.x > f.x;
       f.x = p.x;
       f.y = p.y;
     }
-    later(swim, (fish?.ms ?? 3000) + between(600, 2200));
+    later(() => swim(f), f.ms + between(600, 2200));
   }
-  function leaveFish() {
-    if (!fish) return;
-    if (cast) return later(leaveFish, 4000); // never while it's playing with the bobber
-    fish.gone = true;
-    later(() => (fish = null), 1200);
+  function leaveFish(f: Fish) {
+    if (fishes[f.water] !== f) return;
+    if (cast?.fish === f) return later(() => leaveFish(f), 4000); // never while it's playing with the bobber
+    f.gone = true;
+    later(() => fishes[f.water] === f && (fishes[f.water] = null), 1200);
   }
   /** The fish is spooked: a quick dart away from the bobber and gone. */
   function flee() {
-    const f = fish, c = cast;
+    const c = cast, f = c?.fish;
     cast = null;
     sceneSfx('flee');
-    if (!f) return;
+    if (!f || fishes[f.water] !== f) return;
     const dx = c ? Math.sign(f.x - c.x) || 1 : f.flip ? 1 : -1;
-    Object.assign(f, { ms: 650, dash: true, gone: true, flip: dx > 0, x: f.x + dx * 40, y: f.y + between(-6, 10) });
-    later(() => fish === f && (fish = null), 700);
+    const run = f.water === 'pond' ? 14 : 40; // the pond is small: it dives instead of darting off
+    Object.assign(f, { ms: 650, dash: true, gone: true, flip: dx > 0, x: f.x + dx * run, y: f.y + between(-3, f.water === 'pond' ? 3 : 10) });
+    later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
   }
 
-  /** My villager is walking down to the beach to cast (a tap meanwhile does nothing). */
+  /** My villager is walking down to cast (a tap meanwhile does nothing). */
   let casting = false;
   /** …or to dive at the bubbles. */
   let diveWalk = false;
-  function castAt(x: number, y: number) {
-    const f = fish!;
-    // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
-    const front = y > shoreY(x);
-    const bx = front ? x : x < 195 ? Math.min(x, SAND.x0 - 6) : Math.max(x, SAND.x1 + 6);
-    const by = front ? Math.max(y, shoreY(x) + 8) : y;
-    const side = x < 195 ? 1 : -1;
-    const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
-    // my villager walks to that spot on the beach (avatar.ts), rod in hand, and casts from there
+  function castAt(f: Fish, x: number, y: number) {
+    let to: Throw, spot: readonly [number, number];
+    const o = pond();
+    if (f.water === 'pond' && o) {
+      // the angler stands on the pond's front rim, a little toward the island's middle
+      to = pondCast(o, x, y);
+      spot = [Math.round(to.sx), Math.round(to.sy + 2)];
+    } else {
+      // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
+      const front = y > shoreY(x);
+      const side = x < 195 ? 1 : -1;
+      const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
+      to = { x: front ? x : x < 195 ? Math.min(x, SAND.x0 - 6) : Math.max(x, SAND.x1 + 6), y: front ? Math.max(y, shoreY(x) + 8) : y, sx, sy };
+      spot = [Math.round(clamp(sx, BEACH.x0 + 4, BEACH.x1 - 4)), Math.round(Math.min(sy + 2, BEACH.y1 - 1))];
+    }
+    // my villager walks to that spot (avatar.ts), rod in hand, and casts from there
     casting = true;
-    const spot = [Math.round(clamp(sx, BEACH.x0 + 4, BEACH.x1 - 4)), Math.round(Math.min(sy + 2, BEACH.y1 - 1))] as const;
-    const { ms } = approach(bx, by, { spot, tool: 'rod', toolMs: 20_000, linger: 20_000 });
-    if (ms) later(() => throwLine(f, bx, by, sx, sy), ms);
-    else throwLine(f, bx, by, sx, sy);
+    const { ms } = approach(to.x, to.y, { spot, tool: 'rod', toolMs: 20_000, linger: 20_000 });
+    if (ms) later(() => throwLine(f, to), ms);
+    else throwLine(f, to);
   }
-  function throwLine(f: Fish, bx: number, by: number, sx: number, sy: number) {
+  /** Where the bobber lands and where the line starts (u). */
+  interface Throw { x: number; y: number; sx: number; sy: number }
+  function throwLine(f: Fish, to: Throw) {
     casting = false;
-    if (fish !== f || f.gone) return putRodAway();
-    cast = { x: bx, y: by, sx, sy, landed: false, t0: 0, plan: null, under: false, rings: 0, gen: 0, hesitated: false };
+    if (fishes[f.water] !== f || f.gone) return putRodAway();
+    cast = { fish: f, ...to, landed: false, t0: 0, plan: null, under: false, rings: 0, gen: 0, hesitated: false };
     sceneSfx('cast');
     sceneSfx('plop');
     later(() => {
@@ -270,7 +318,7 @@
       c.t0 = performance.now();
       c.rings++;
       const d = Math.hypot(f.x - c.x, f.y - c.y);
-      if (d > NOTICE_U || fish !== f) return later(() => cast === c && (cast = null), 9000); // nobody noticed
+      if (d > NOTICE_U || fishes[f.water] !== f) return later(() => cast === c && (cast = null), 9000); // nobody noticed
       follow(c, f, bitePlan(d, rand));
     }, 300);
   }
@@ -303,10 +351,10 @@
   }
 
   let bobEl = $state<HTMLElement>();
-  let fishEl = $state<HTMLElement>();
+  const fishEls: Record<Water, HTMLElement | undefined> = $state({ sea: undefined, pond: undefined });
   /** The shadow's position on screen right now (u), mid-transition included. */
-  function fishNow(): { x: number; y: number } | null {
-    const g = geo(), r = fishEl?.getBoundingClientRect();
+  function fishNow(f: Fish): { x: number; y: number } | null {
+    const g = geo(), r = fishEls[f.water]?.getBoundingClientRect();
     return g && r ? { x: (r.left - g.r.left) * g.k, y: (r.top - g.r.top) * g.k } : null;
   }
   /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
@@ -320,7 +368,7 @@
 
   /** NH's A button while the bobber is out. */
   function reelIn() {
-    const c = cast!;
+    const c = cast!, f = c.fish;
     turnTo(c.x);
     if (!c.landed) return; // still in the air
     const ms = performance.now() - c.t0;
@@ -328,23 +376,21 @@
     if (r === 'flee') return flee();
     if (r === 'hesitate') {
       // the line twitches; the fish backs off a little, thinks it over, and comes back for another try
-      const f = fish!;
       c.hesitated = true;
       c.gen++;
       c.rings++;
       nibble();
       // from where it is now (it may still be swimming up), straight back from the bobber
-      const p = fishNow() ?? f;
+      const p = fishNow(f) ?? f;
       const d = Math.hypot(p.x - c.x, p.y - c.y) || 1;
       Object.assign(f, { ms: HESITATE_MS, x: p.x + ((p.x - c.x) / d) * HESITATE_U, y: p.y + ((p.y - c.y) / d) * HESITATE_U * 0.6 });
       const plan = hesitatePlan(ms, rand);
-      return later(() => cast === c && fish === f && follow(c, f, plan), HESITATE_MS);
+      return later(() => cast === c && fishes[f.water] === f && follow(c, f, plan), HESITATE_MS);
     }
     cast = null;
     sceneSfx('reel');
     if (r === 'reel') return;
-    const f = fish!;
-    fish = null;
+    if (fishes[f.water] === f) fishes[f.water] = null;
     sceneSfx('catch');
     show(f.item, c.x, c.y);
   }
@@ -370,8 +416,10 @@
     // a flea hops off a villager into the grass on its side
     const side = from && id === 'flea' ? (from.x < 195 ? -1 : 1) : rand() < 0.5 ? -1 : 1;
     const ground = BUGS[id].ground;
+    const o = pond();
     const area = flight === 'perch' ? trunk(g, side)
       : ground === 'beach' ? beach(g)
+      : ground === 'pond' ? o && pondBox(o)
       : id === 'flea' || flight === 'stalk' || flight === 'burrow' ? GRASS[side < 0 ? 0 : 1]
       : from || id === 'moth' || flight === 'dart' ? HEDGE
       : flight === 'hop' || ground === 'grass' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
@@ -379,7 +427,8 @@
     // flyers come in from the side of their patch; a firefly blinks on, a grasshopper is just there in the grass
     // its patch, minus the controls (measured once: the villagers and the jar don't move far); a cicada's trunk spot
     // is already measured clear of the tree's buttons
-    const keep = flight === 'perch' ? [] : guardsU(g, 16);
+    // (on the pond, only the controls themselves: a canopy's top comes close to its water)
+    const keep = flight === 'perch' ? [] : guardsU(g, ground === 'pond' ? 4 : 16);
     const spot = freeIn(area, keep);
     if (!spot) return;
     // a firefly blinks on, a grasshopper or a crawler is just there, a shell or a walking stick is on its trunk already
@@ -477,7 +526,7 @@
   async function spawnBubbles(stay = true, want?: string) {
     const m = await loadSea().catch(() => null);
     const g = geo();
-    if (!m || !g || fish || bubbles || diving) return;
+    if (!m || !g || fishes.sea || bubbles || diving) return;
     const side = rand() < 0.5 ? -1 : 1;
     const box = seaBox(g, side) ?? seaBox(g, side < 0 ? 1 : -1);
     if (!box) return;
@@ -529,10 +578,13 @@
   // ---------- the catch ----------
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
    *  (Plate.svelte places it clear of every control). */
-  async function show(item: FishId | JunkId | BugId | DiveItem, x: number, y: number) {
-    // Bunny Day's celebrations: now and then a fish on the line is NH's water egg (a caption only, no find)
+  async function show(item: Catch | DiveItem, x: number, y: number) {
+    const pearl = item === 'pearl';
+    const kind = pearl ? 'shell' : S && item in S.SEA ? 'sea' : findKind(item as FishId | PondFishId | JunkId | BugId);
+    // Bunny Day's celebrations: now and then a fish on the line (the sea's or the pond's) is NH's water egg (a caption
+    // only, no find)
     const t0 = now();
-    if (item in FISH && eggTime(eventAt(localDateAt(t0.getTime()), jst(t0).hour, forcedEvent())) && eggOnLine(rand)) {
+    if (kind === 'fish' && eggTime(eventAt(localDateAt(t0.getTime()), jst(t0).hour, forcedEvent())) && eggOnLine(rand)) {
       const n = ++seq;
       await loadNames().catch(() => {});
       if (seq !== n) return;
@@ -540,17 +592,15 @@
       holdUp('mine', findArt('water-egg'), HOLD_MS);
       return;
     }
-    // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
-    // a second page saying so
-    const pearl = item === 'pearl';
-    const added = pearl ? recordFind('shell', item) : item in FISH ? recordFind('fish', item) : item in BUGS ? recordFind('bug', item)
-      : S && item in S.SEA ? recordFind('sea', item) : false;
+    // the shared ずかん: the first catch of each fish (the sea's or the pond's), bug or sea creature (junk isn't a find;
+    // the pearl is a shell) gets a second page saying so
+    const added = kind ? recordFind(kind, item) : false;
     // a fish tells the island (Turkey Day: Franklin is waiting for one)
-    if (item in FISH) scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
+    if (kind === 'fish') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
     const n = ++seq;
-    const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item);
+    const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item as Catch);
     if (seq !== n) return;
-    const art = pearl ? findArt(item) : critterArt(item);
+    const art = pearl ? findArt(item) : critterArt(item as Catch);
     card = { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text] };
     holdUp('mine', art, HOLD_MS);
   }
@@ -656,9 +706,10 @@
       }, ms);
       return true;
     }
-    const f = fish;
-    if (f && !f.gone && offshore(x, y) && hitStage(x, y).kind === 'sea' && Math.hypot(x - f.x, y - f.y) < CAST_U) {
-      castAt(x, y);
+    const w = waterAt(pond(), x, y, offshore(x, y) && hitStage(x, y).kind === 'sea', POND_REACH);
+    const f = w && fishes[w];
+    if (f && !f.gone && Math.hypot(x - f.x, y - f.y) < CAST_U) {
+      castAt(f, x, y);
       return true;
     }
     return false;
@@ -682,8 +733,9 @@
     };
     const visit = () => {
       const { month, hour } = jst(now());
-      const kind = spawnKind({ sea: !!(fish || bubbles || diving), bug: !!bug }, pickBug(month, hour, () => 0) !== null, rand);
-      if (kind === 'fish') spawnFish();
+      const kind = spawnKind({ sea: !!(fishes.sea || bubbles || diving), pond: !!fishes.pond || !pond(), bug: !!bug }, pickBug(month, hour, () => 0) !== null, rand);
+      if (kind === 'fish') void spawnFish('sea');
+      else if (kind === 'pond') void spawnFish('pond');
       else if (kind === 'sea') void spawnBubbles();
       else if (kind === 'bug') spawnBug(pickBug(month, hour, rand));
       remaining = nextSpawnMs(rand);
@@ -701,16 +753,23 @@
     const q = new URLSearchParams(location.search);
     const want = q.get('critter'), dive = q.get('sea');
     if (!(want || dive) || !(import.meta.env.DEV || q.has('demo'))) return;
+    // a fish waits for a free spot in its water (the layout may still be settling): a few tries
+    let tries = 0;
+    const fishFor = async (water: Water, id?: FishId | PondFishId) => {
+      if (!(await spawnFish(water, false, id)) && ++tries < 10) later(() => void fishFor(water, id), 400);
+    };
     const go = () => {
       if (reducedMotion()) return;
       if (!enabled()) return later(go, 300);
       // ?sea=<id> | pearl | (anything else: the usual pick)
       if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined));
-      else if (want === 'fish') spawnFish(false);
+      else if (want === 'fish') void fishFor('sea');
       else if (!want) return;
-      else if (want in FISH) spawnFish(false, want as FishId);
+      else if (want === 'pond') void fishFor('pond');
+      else if (want in FISH) void fishFor('sea', want as FishId);
       else if (want === 'flea') spawnBug('flea', { x: 150, y: 250 }, false);
       else if (want in BUGS && BUGS[want as BugId].flight !== 'dangle') spawnBug(want as BugId, undefined, false);
+      else void loadPond().then(({ POND_FISH }) => { if (want in POND_FISH) void fishFor('pond', want as PondFishId); });
     };
     later(go, 600);
     return clearAll;
@@ -731,12 +790,15 @@
       {:else}<span class="shadow"><i class="fin" style:--w={U(8 + d.size * 4.5)}></i></span>{/if}
     </span>
   {/if}
-  {#if fish}
-    <span class="mover shadow {fish.shape ? `is-${fish.shape}` : ''}" class:gone={fish.gone} class:dash={fish.dash} data-critter="fish" bind:this={fishEl}
-      style:translate="{U(fish.x)} {U(fish.y)}" style:transition-duration="{fish.ms}ms" style:--w={U(sizeU(fish))}>
-      <i class="fin" class:flip={fish.flip}></i>
-    </span>
-  {/if}
+  {#each WATERS as w (w)}
+    {@const f = fishes[w]}
+    {#if f}
+      <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {w}" class:gone={f.gone} class:dash={f.dash} data-critter={w === 'sea' ? 'fish' : 'pond'}
+        bind:this={fishEls[w]} style:translate="{U(f.x)} {U(f.y)}" style:transition-duration="{f.ms}ms" style:--w={U(sizeU(f))}>
+        <i class="fin" class:flip={f.flip}></i>
+      </span>
+    {/if}
+  {/each}
   {#if cast}
     <svg class="line" class:landed={cast.landed} viewBox="0 0 390 360" preserveAspectRatio="none">
       <path d="M{cast.sx} {cast.sy} Q{(cast.sx + cast.x) / 2} {Math.min(cast.sy, cast.y) - 12} {cast.x} {cast.y - 1.5}" />

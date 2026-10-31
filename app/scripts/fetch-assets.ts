@@ -106,6 +106,9 @@ const SPECS: Record<string, Spec> = {
   'deco/wedding-arch': [256, 'Wedding_Arch_(Cute)_NH_Icon.png'],
   // group stretching's tape deck (island/TapeDeck.svelte)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
+  // the museum at the back of the island (island/Museum.svelte): NH's upgraded museum, the official render, drawn ~84u
+  // wide (≤ 120 CSS px), shipped at 3× that
+  'deco/museum': [360, 'Museum_NH.png'],
   // Game-derived replacements for hand-drawn chrome.
   // v4 seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
@@ -137,13 +140,22 @@ for (const name of [
   'Common Bluebottle', 'Great Purple Emperor', 'Madagascan Sunset Moth', 'Mosquito', 'Stinkbug', 'Man-Faced Stink Bug',
   'Tiger Beetle', 'Earth-Boring Dung Beetle', 'Walking Leaf', 'Violin Beetle', 'Citrus Long-Horned Beetle',
   'Rosalia Batesi Beetle', 'Scarab Beetle', 'Mole Cricket', 'Tarantula', 'Scorpion', 'Flea', 'Bagworm', 'Spider',
+  // the pond's bugs (on its water: island/Pond.svelte)
+  'Pondskater', 'Diving Beetle', 'Giant Water Bug',
   // NH's 40 sea creatures, caught by diving at a bubble spot (island/sea.ts)
   'Seaweed', 'Sea Grapes', 'Sea Cucumber', 'Sea Pig', 'Sea Star', 'Sea Urchin', 'Slate Pencil Urchin', 'Sea Anemone',
   'Moon Jellyfish', 'Sea Slug', 'Pearl Oyster', 'Mussel', 'Oyster', 'Scallop', 'Whelk', 'Turban Shell', 'Abalone',
   'Gigas Giant Clam', 'Chambered Nautilus', 'Octopus', 'Umbrella Octopus', 'Vampire Squid', 'Firefly Squid', 'Gazami Crab',
   'Dungeness Crab', 'Snow Crab', 'Red King Crab', 'Acorn Barnacle', 'Spider Crab', 'Tiger Prawn', 'Sweet Shrimp',
   'Mantis Shrimp', 'Spiny Lobster', 'Lobster', 'Giant Isopod', 'Horseshoe Crab', 'Sea Pineapple', 'Spotted Garden Eel',
-  'Flatworm', "Venus' Flower Basket"
+  'Flatworm', "Venus' Flower Basket",
+  // the pond's fish (island/pondFish.ts): NH's river, river-mouth, clifftop and pond fish
+  'Bitterling', 'Pale Chub', 'Crucian Carp', 'Dace', 'Carp', 'Koi', 'Goldfish', 'Pop-Eyed Goldfish', 'Ranchu Goldfish',
+  'Killifish', 'Crawfish', 'Soft-Shelled Turtle', 'Snapping Turtle', 'Tadpole', 'Frog', 'Freshwater Goby', 'Loach',
+  'Catfish', 'Giant Snakehead', 'Bluegill', 'Yellow Perch', 'Black Bass', 'Tilapia', 'Pike', 'Pond Smelt', 'Sweetfish',
+  'Cherry Salmon', 'Char', 'Golden Trout', 'Stringfish', 'Salmon', 'King Salmon', 'Mitten Crab', 'Guppy', 'Nibble Fish',
+  'Angelfish', 'Betta', 'Neon Tetra', 'Rainbowfish', 'Piranha', 'Arowana', 'Dorado', 'Gar', 'Arapaima', 'Saddled Bichir',
+  'Sturgeon'
 ])
   SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 // Beach finds (docs/design.md#beach-finds): NH's seashells, fossils (the assessed icon), star fragments, the message
