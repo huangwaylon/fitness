@@ -26,10 +26,10 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   const balance = async () => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
   const before = await balance();
   await shop.locator('button[data-item="dinner"]').click();
-  await expect(sheet(page).locator('.price')).toContainText('20');
+  await expect(sheet(page).locator('.price')).toContainText('15');
   await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect(page.getByText(/外食を 買いました！ −20\sベル/)).toBeVisible();
-  await expect.poll(balance).toBe(before - 20);
+  await expect(page.getByText(/外食を 買いました！ −15\sベル/)).toBeVisible();
+  await expect.poll(balance).toBe(before - 15);
   await page.getByRole('button', { name: 'とりけす' }).click();
   await expect.poll(balance).toBe(before);
   // やめる closes the confirm without spending
@@ -39,7 +39,7 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
-test('wallet: one balance (the island plate’s) and exactly two rewards with their art: おやつ 6, 外食 20', async ({ page }) => {
+test('wallet: one balance (the island plate’s) and exactly two rewards with their art: おやつ 8, 外食 15', async ({ page }) => {
   await page.goto('?demo');
   const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
   await page.locator('.if-scene .jar').click();
@@ -48,7 +48,7 @@ test('wallet: one balance (the island plate’s) and exactly two rewards with th
   const shop = page.locator('.shop');
   await expect(shop.locator('button.item')).toHaveCount(2);
   await expect(shop.locator('.nm')).toHaveText(['おやつ', '外食']);
-  await expect(shop.locator('.pr')).toHaveText([/^6\sベル$/, /^20\sベル$/]);
+  await expect(shop.locator('.pr')).toHaveText([/^8\sベル$/, /^15\sベル$/]);
   await expect(shop.locator('.ex').first()).toContainText('たこやき');
   await expect(shop.locator('.ex').last()).toContainText('マーラータン');
   for (const id of ['snack', 'dinner']) await expect(shop.locator(`button[data-item=${id}] img`)).toHaveAttribute('src', new RegExp(`items/${id}\\.webp`));
@@ -114,7 +114,7 @@ test('きろく: the weight trend (from Health, no logging by hand) and a goal',
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the four goals, ✓ or what is left, +1 each, and today’s ふたりで ぜんぶ', async ({ page }) => {
+test('tree popup: the four goals, today’s amount / the goal with ✓ once met, +1 each, and today’s ふたりで ぜんぶ', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -133,8 +133,9 @@ test('tree popup: the four goals, ✓ or what is left, +1 each, and today’s �
   const units = [/kcal$/, /分$/, /分$/, /歩$/];
   for (let i = 0; i < 4; i++) {
     const row = rows.nth(i);
-    if (await row.locator('.amt.met').count()) await expect(row.locator('.amt svg.ok')).toHaveCount(1);
-    else await expect(row.locator('.amt')).toHaveText(new RegExp(`^あと [\\d,]+ ?${units[i].source}`));
+    // today's amount against the goal, met or not; ✓ before it once met
+    await expect(row.locator('.amt')).toHaveText(new RegExp(`^[\\d,]+ / [\\d,]+ ?${units[i].source}`));
+    await expect(row.locator('.amt svg.ok')).toHaveCount(await row.locator('.amt.met').count());
     await expect(row.locator('b')).toHaveText('+1');
   }
   await expect(pop.locator('.duo')).toHaveText(/^ふたりで ぜんぶ まで：あと [1-8]つ$|^ふたりで ぜんぶ！ \+2$/);
@@ -177,10 +178,11 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('ムーブの目標を かえました')).toBeVisible();
   await expect(goals).toContainText('2,000 kcal');
-  // today's tree popup reads the new goal: no day reaches 2,000 kcal, so what is left shows
+  // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
-  await expect(page.locator('.detail .row').nth(0).locator('.amt')).toHaveText(/^あと [\d,]+ kcal$/);
+  await expect(page.locator('.detail .row').nth(0).locator('.amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
+  await expect(page.locator('.detail .row').nth(0).locator('.amt svg')).toHaveCount(0);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
   await openPanel(page);

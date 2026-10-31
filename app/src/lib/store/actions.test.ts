@@ -33,14 +33,14 @@ describe('wallet actions', () => {
     expect(buy('snack')).toEqual({ ok: false });
     expect(buy('nope' as ShopItemId)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    week.view = view(19);
-    expect(buy('snack')).toMatchObject({ ok: true, bells: 6 });
+    week.view = view(14);
+    expect(buy('snack')).toMatchObject({ ok: true, bells: 8 });
     expect(buy('dinner')).toEqual({ ok: false });
-    week.view = view(20);
-    expect(buy('dinner')).toMatchObject({ ok: true, bells: 20 });
+    week.view = view(15);
+    expect(buy('dinner')).toMatchObject({ ok: true, bells: 15 });
     expect(queued().map((e) => [e.type, e.data])).toEqual([
-      ['spend', { spendId: expect.any(String), item: 'snack', bells: 6 }],
-      ['spend', { spendId: expect.any(String), item: 'dinner', bells: 20 }]
+      ['spend', { spendId: expect.any(String), item: 'snack', bells: 8 }],
+      ['spend', { spendId: expect.any(String), item: 'dinner', bells: 15 }]
     ]);
   });
 

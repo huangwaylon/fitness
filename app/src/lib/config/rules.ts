@@ -19,8 +19,8 @@ export const RULES = {
 
 /** The two rewards (one shared wallet): a buy must name one of these ids at exactly its price. */
 export const SHOP = [
-  { id: 'snack', bells: 6 },
-  { id: 'dinner', bells: 20 }
+  { id: 'snack', bells: 8 },
+  { id: 'dinner', bells: 15 }
 ] as const satisfies readonly { id: ShopItemId; bells: number }[];
 
 /** A reward's price, or undefined for anything that isn't one. */

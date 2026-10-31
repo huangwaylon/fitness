@@ -84,13 +84,13 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
     const end = bellsLedger(reduce(ROWS), END);
-    // bs-wrong (5 ベル), bs-trip (no such reward) and bs-b20 (beyond the wallet: it is empty) are ignored; B's void of
-    // A's dinner too.
+    // bs-wrong (5 ベル), bs-trip (no such reward) and bs-b23 (a 外食 beyond the wallet: 13 left) are ignored; B's void
+    // of A's dinner too.
     expect(end.spends.map((x) => [x.spendId, x.voided]).reverse()).toEqual([
       ['bs-early', false], ['bs-snack', true], ['bs-dinner', false], ['bs-snack-2', false],
-      ...['b10', 'b11', 'b12', 'b13', 'b14', 'b15', 'b16', 'b17', 'b18', 'b19'].map((id) => [`bs-${id}`, false])
+      ...['b10', 'b11', 'b12', 'b13', 'b14', 'b15', 'b16', 'b17', 'b18', 'b19', 'b20', 'b21', 'b22'].map((id) => [`bs-${id}`, false])
     ]);
-    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(0);
+    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(13);
   });
 
   it('matches the full WeekView at every key instant, for both people', () => {

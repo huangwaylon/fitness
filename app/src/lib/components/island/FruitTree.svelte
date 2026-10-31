@@ -8,7 +8,8 @@
   // (the idle budget).
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail:
-  // a nameplate (whose tree), then per goal ✓ once met or what is left, and its +1 ベル; then today's ふたりでぜんぶ
+  // a nameplate (whose tree), then per goal today's amount against the goal (met or not), ✓ once met, and its +1 ベル;
+  // then today's ふたりでぜんぶ
   // (both people, all four goals: +2) and when the data last arrived. It stays until this tree is tapped again, the
   // other tree is tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
   // pops + sparkles a fruit.
@@ -56,14 +57,15 @@
 
   const ring = (f: RingFruit) => person.rings[f];
 
-  /** What is left of a goal not met yet: 「あと 12分」 (whole units, at least 1). */
-  const left = (f: RingFruit) => t(`tree.left.${f}`, { n: formatNum(Math.max(1, Math.ceil(ring(f).goal - ring(f).today))) });
+  /** Today's amount against the goal, always (met too): 「103 / 60分」 (whole units, rounded down so a goal shows met
+   *  only once it is). */
+  const amount = (f: RingFruit) => t(`tree.of.${f}`, { n: formatNum(Math.floor(ring(f).today)), g: formatNum(ring(f).goal) });
   /** Today's ふたりでぜんぶ (both people's goals), from the store's view; none in the gallery. */
   const together = $derived(week.view?.together ?? null);
   const togetherLine = $derived(together ? (together.met ? t('tree.together.met', { b: RULES.together }) : t('tree.together.left', { n: together.left })) : null);
   const label = $derived(
     `${person.villagerName}: ` +
-      RING_FRUITS.map((f) => `${t(`fruit.${f}`)} ${ring(f).met ? `✓ +${RULES.perGoal}` : left(f)}`).join('、') +
+      RING_FRUITS.map((f) => `${t(`fruit.${f}`)} ${amount(f)}${ring(f).met ? ` ✓ +${RULES.perGoal}` : ''}`).join('、') +
       (togetherLine ? `。${togetherLine}` : '')
   );
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
@@ -206,7 +208,7 @@
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{left(f)}{/if}</span>
+          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{amount(f)}</span>
           <b class="money" class:zero={!r.met}>+{RULES.perGoal}</b>
         </span>
       {/each}
@@ -262,7 +264,7 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: a nameplate, then one row per fruit (icon · word · ✓ or what is left · +1), in shared columns
+  /* NH-style popup: a nameplate, then one row per fruit (icon · word · ✓ once met and amount / goal · +1), in shared columns
      (subgrid) so the numbers line up */
   .detail {
     position: absolute; z-index: var(--z-popup); translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
@@ -290,11 +292,11 @@
   .row.on { background: var(--c-yuzu); }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
-  .amt { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; color: var(--c-ink-soft); }
+  .amt { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink-soft); }
   .amt.met { color: var(--c-leaf-text); }
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
   .row b.zero { color: var(--c-ink-soft); font-weight: 500; }
-  .ok { width: 18px; height: 18px; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; margin-left: auto; }
+  .ok { width: 18px; height: 18px; flex: none; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
   /* today's ふたりでぜんぶ: a star line under the goals (yuzu once both met everything) */
   .duo {
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
@@ -314,7 +316,7 @@
     .detail { grid-template-columns: 20px auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
-    /* a clear gap, so the longest value (2,384/8,000歩) never touches its fruit */
+    /* a clear gap, so the longest value (14,164 / 8,000歩) never touches its fruit */
     .amt { padding-left: 4px; }
   }
   /* short screens: tighter rows, so the popup covers less of the canopy when the sky is short (keepInside) */

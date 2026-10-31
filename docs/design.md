@@ -38,8 +38,8 @@ in the visible ocean, from the horizon down to the screen's bottom above the hom
 ribbon.
 
 - **Trees:** one per person; today's four fruits lie in front, 0–3 items each (thirds of the goal). A tap opens a
-  popup: per goal ✓ once met, else what is left (「あと 12分」), and its +1 (bright once earned); then a star line for
-  today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
+  popup: per goal today's amount against the goal, met or not (「638 / 600 kcal」, 「14,164 / 8,000歩」), a ✓ before
+  it once met, and its +1 (bright once earned); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
   line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
   small dot once it is over 6 hours old.
 - **Jar + plate:** the balance; each goal met flies in as a +1 coin from its fruit, ふたりでぜんぶ as a +2 over the
@@ -50,7 +50,7 @@ ribbon.
 ### Wallet
 
 ごほうび (`routes/jar/+page.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the balance, then two big
-tiles with NH item art: 🍦 おやつ 6 ベル (たこやき・アイス・あんみつ・ポテチ・スイーツ・スタバ) and 🍜 外食 20 ベル (マーラータン・
+tiles with NH item art: 🍦 おやつ 8 ベル (たこやき・アイス・あんみつ・ポテチ・スイーツ・スタバ) and 🍜 外食 15 ベル (マーラータン・
 おすし・ラーメン・韓国料理・トッポッキ). One the wallet can't cover is sunk with あと N ベル. 買う！ asks first, applies at
 once and waits 5 s with とりけす before it is sent.
 
@@ -133,12 +133,12 @@ The Move goal on a day is the last one set on or before that Tokyo date: a chang
 | Typical | each goal met on 5 of 7 days, both perfect on 3 days | 20 × 2 + 3 × 2 = **46** |
 | Lazy | two easy goals a day (say Move and Stand), never all four | 2 × 7 × 2 = **28** |
 
-A typical week buys two おやつ and a 外食 (32) with 14 to spare; a lazy one a 外食 and a おやつ.
+A perfect week buys three おやつ and three 外食 (69); a typical week two of each (46); a lazy one a 外食 and a おやつ.
 
 ### Rewards
 
-Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 6 ベル** (`snack`: takoyaki, ice cream, anmitsu, chips, sweets,
-Starbucks) and 🍜 **外食 20 ベル** (`dinner`: malatang, sushi, ramen, Korean food, tteokbokki). A buy is
+Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 8 ベル** (`snack`: takoyaki, ice cream, anmitsu, chips, sweets,
+Starbucks) and 🍜 **外食 15 ベル** (`dinner`: malatang, sushi, ramen, Korean food, tteokbokki). A buy is
 `spend {spendId, item, bells}` with `bells` exactly the item's price (the server refuses anything else; the model
 ignores it too). Either person buys, no approvals; the buyer undoes (`spend_void`).
 

@@ -34,7 +34,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 
 | type | data | Rules |
 |---|---|---|
-| `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 6, or `dinner` with `bells` 20 |
+| `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 8, or `dinner` with `bells` 15 |
 | `spend_void` | `{spendId}` | the model accepts it from the buyer, once, after the spend |
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `highfive` | `{}` | |

@@ -90,10 +90,12 @@ Every ベル earned goes into one shared wallet, from its day. Why: one number t
 game.
 
 ### Two rewards
-Exactly two fixed treats: おやつ 6 ベル and 外食 20 ベル (`SHOP`). Either person buys, the buyer can undo
+Exactly two fixed treats: おやつ 8 ベル and 外食 15 ベル (`SHOP`). Either person buys, the buyer can undo
 (`spend_void`), and a buy the wallet can't cover is ignored on read, so the balance never goes negative. A spend names
-its item at exactly its price; the server refuses anything else. Why: two clear choices priced against the typical
-week (two おやつ and a 外食 with some to spare), nothing to edit or argue about.
+its item at exactly its price; the server refuses anything else. Why: two clear choices priced against the week
+(a perfect week, 70, buys three of each; a typical one, 46, two of each), nothing to edit or argue about. Raised from
+6 and 20 (2026-10-31): a perfect day pays 10, so at 6 the おやつ was a daily treat; now each is a two-to-three-times-a-week
+thing, depending on effort.
 
 ### Weight never earns
 Weight is shown as a trend only: no ベル, no goal that pays, and the economy never reads it. The trend is
