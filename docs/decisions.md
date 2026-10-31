@@ -241,6 +241,14 @@ the island's trees are hardwoods, and the Goliath beetle already stands in on th
 the ant and the fly (rotten turnips, candy, trash on the ground). Why: the user wants more to catch, faithful to NH;
 a bug in the wrong place reads as a mistake, and these few need scenery the island doesn't have yet.
 
+### Holiday hosts in the visitor slot
+NH's holidays are date rules in `events.ts`, each checked on Nookipedia (Turkey Day the fourth Thursday of November;
+Toy Day Dec 24, all day in NH rather than only its night; Festivale Shrove Monday, 48 days before Easter; Bunny Day
+Easter Sunday with the seven days before, Zipper on the first and last), and their hosts come as visitors before
+anyone else. Franklin's "fish for the dish" is the one quest: the next catch that day, no inventory, kept on the phone
+for the day; Bunny Day's eggs are captions in the places NH hides them (a balloon, a dig spot, the line), never ベル or
+finds. Why: NH's calendar on the island with no new screens, no state to sync and nothing that pays.
+
 ### Meteor showers by the week
 A shower night is seeded by the week (at most one a week, about one night in ten), not by the night, so it can never fall
 twice in a week, as NH's Celeste never comes twice; it rides on the existing wish (a shower's wish is the usual

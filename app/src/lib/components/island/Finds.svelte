@@ -25,6 +25,8 @@
   import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentDay, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wishDay, wishFor } from './sceneDay.ts';
   import { showerNight } from './meteor.ts';
+  import { eggTime, eventAt, forcedEvent } from './events.ts';
+  import { eggInDig } from './eggs.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { approach } from './avatar.ts';
   import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
@@ -86,6 +88,9 @@
   });
   /** Whether a dig spot holds the rare mushroom (`?find=rare-mushroom`: every one). */
   const rare = (s: DigSpot): boolean => want === 'rare-mushroom' || rareMushroom(date, s.uid, seed);
+  /** Whether a dig spot holds Bunny Day's earth egg (its celebrations only; `?find=earth-egg`: every one). */
+  const egg = (s: DigSpot): boolean =>
+    want === 'earth-egg' || (eggTime(eventAt(date, jst(now()).hour, forcedEvent())) && eggInDig(date, s.uid, seed));
   const fragments = $derived.by<Fragment[]>(() => {
     void taken;
     if (want !== 'fragment' && wishDay() !== date) return [];
@@ -192,7 +197,8 @@
     });
   }
   function digUp(s: DigSpot) {
-    const added = rare(s) ? false : recordFind('fossil', s.fossil);
+    const special = rare(s) ? 'rare-mushroom' : egg(s) ? 'earth-egg' : null;
+    const added = special ? false : recordFind('fossil', s.fossil);
     walkTo(s.uid, s.x, s.y, (walked) => {
       take(date, s.uid);
       digHold = Date.now() + 20_000 + rand() * 20_000;
@@ -203,7 +209,7 @@
       const n = ++seq;
       dig = { n, x: s.x, y: s.y, held: walked };
       later(() => dig?.n === n && (dig = null), 3200);
-      if (rare(s)) plate(s.x, s.y - 4, findArt('rare-mushroom'), () => t('beach.dug', { name: t('beach.name.rare-mushroom') }), 650);
+      if (special) plate(s.x, s.y - 4, findArt(special), () => t('beach.dug', { name: t(`beach.name.${special}`) }), 650);
       else plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
       later(() => sceneSfx('catch'), 650);
     }, { tool: 'shovel', toolMs: 640 });

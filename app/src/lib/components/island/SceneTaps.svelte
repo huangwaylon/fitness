@@ -31,6 +31,8 @@
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { nextStarMs, showerAt } from './meteor.ts';
+  import { eggTime, eventAt, forcedEvent } from './events.ts';
+  import { eggInBalloon } from './eggs.ts';
   import { LONG_REACH, approach } from './avatar.ts';
 
   interface Props {
@@ -280,7 +282,7 @@
    *  on the breeze to the open middle, between the trees, above the jar), lands with a bounce and a sparkle and fades;
    *  past the island's edge it drops into the sea. It falls behind the trees, the jar and everyone (z under the trees),
    *  so it never covers a control. */
-  let drops = $state<{ id: number; x: number; y: number; dx: number; dy: number; size: number; sea: boolean }[]>([]);
+  let drops = $state<{ id: number; x: number; y: number; dx: number; dy: number; size: number; sea: boolean; art: string }[]>([]);
   function present(e: Event) {
     const d = (e as CustomEvent<{ x: number; y: number; size: number }>).detail;
     const stage = scene?.querySelector<HTMLElement>('.stage');
@@ -292,7 +294,9 @@
     const land = (sea ? 30 : 90) / k;
     const to = sea ? x : Math.min(Math.max(x, 172 / k), 218 / k);
     const id = ++seq;
-    drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size, sea }];
+    // Bunny Day's celebrations: now and then the balloon carried NH's sky egg instead of its present
+    const c = minuteNow(), egg = eggTime(eventAt(localDateAt(c.getTime()), jst(c).hour, forcedEvent())) && eggInBalloon();
+    drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size, sea, art: egg ? findArt('sky-egg') : 'deco/present' }];
     later(() => (drops = drops.filter((p) => p.id !== id)), 3300);
     if (sea) later(() => sceneSfx('splash'), 1500);
     else sceneSfx('present');
@@ -346,7 +350,7 @@
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}
     <span class="fx" data-fx="present" style:left="{p.x}px" style:top="{p.y}px" style:--dx="{p.dx}px" style:--dy="{p.dy}px" style:--gs="{p.size}px">
-      <span class="gift" class:sea={p.sea}><span class="drop-in"><OfficialArt key="deco/present" size="100%" eager /></span></span>
+      <span class="gift" class:sea={p.sea}><span class="drop-in"><OfficialArt key={p.art} size="100%" eager /></span></span>
       {#if p.sea}
         <span class="land"><i class="ring"></i><i class="ring late"></i></span>
       {:else}

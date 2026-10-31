@@ -1165,6 +1165,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Dunkleosteus_NH_Icon.png"
     },
+    "finds/earth-egg": {
+      "path": "finds/earth-egg.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Earth_Egg_NH_Inv_Icon.png"
+    },
     "finds/elegant-mushroom": {
       "path": "finds/elegant-mushroom.webp",
       "w": 51,
@@ -1471,6 +1477,12 @@
       "h": 83,
       "source": "https://nookipedia.com/wiki/File:Skinny_Mushroom_NH_Icon.png"
     },
+    "finds/sky-egg": {
+      "path": "finds/sky-egg.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sky_Egg_NH_Inv_Icon.png"
+    },
     "finds/spino-skull": {
       "path": "finds/spino-skull.webp",
       "w": 96,
@@ -1584,6 +1596,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Virgo_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/water-egg": {
+      "path": "finds/water-egg.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Water_Egg_NH_Inv_Icon.png"
     },
     "finds/watering-can": {
       "path": "finds/watering-can.webp",
@@ -3841,6 +3859,12 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Frank_NH_Villager_Icon.png"
     },
+    "villagers/franklin": {
+      "path": "villagers/franklin.webp",
+      "w": 271,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Franklin_NH_Model.png"
+    },
     "villagers/freckles": {
       "path": "villagers/freckles.webp",
       "w": 324,
@@ -4410,6 +4434,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Jeremiah_NH_Villager_Icon.png"
+    },
+    "villagers/jingle": {
+      "path": "villagers/jingle.webp",
+      "w": 363,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jingle_NH_Model.png"
     },
     "villagers/jitters": {
       "path": "villagers/jitters.webp",
@@ -5550,6 +5580,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Paula_NH_Villager_Icon.png"
+    },
+    "villagers/pave": {
+      "path": "villagers/pave.webp",
+      "w": 440,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Pavé_NH_Model.png"
     },
     "villagers/peaches": {
       "path": "villagers/peaches.webp",
@@ -7218,6 +7254,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Zell_NH_Villager_Icon.png"
+    },
+    "villagers/zipper": {
+      "path": "villagers/zipper.webp",
+      "w": 232,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Zipper_T._Bunny_NH_Model.png"
     },
     "villagers/zoe": {
       "path": "villagers/zoe.webp",

@@ -60,7 +60,10 @@ export const SCENE = {
   garden: 'scene-garden',
   /** localStorage `scene-stretch` = `{ date, morning, done }`: today's group stretching on this phone (island/stretching.ts):
    *  whether the island was opened 06:00–08:00 (the tape deck's morning) and whether it already played. */
-  stretch: 'scene-stretch'
+  stretch: 'scene-stretch',
+  /** localStorage `scene-franklin` = `{ date, asked, fed }`: Turkey Day on this phone (island/Visitor.svelte): whether
+   *  Franklin asked for his fish and whether a catch made him happy. */
+  franklin: 'scene-franklin'
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */

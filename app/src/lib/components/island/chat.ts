@@ -35,7 +35,7 @@ export const FOLLOW_UPS: ReadonlySet<string> = new Set([
 export const pagesOf = (l: Line): string[] => (FOLLOW_UPS.has(l.key) ? [l.key, `${l.key}.more`] : [l.key]);
 
 /** Lines per event (chat.day.<event>.0 …). */
-export const EVENT_LINES: Record<EventId, number> = { halloween: 3 };
+export const EVENT_LINES: Partial<Record<EventId, number>> = { halloween: 3, 'turkey-day': 2, 'toy-day': 2, festivale: 2, 'bunny-day': 2 };
 
 /** How often a tap asks about the day instead of a personality line. */
 const DAY_ODDS = 0.3;
@@ -49,7 +49,7 @@ function dayLines({ hour, met, event }: ChatCtx): Line[] {
   else if (met > 0) out.push({ key: 'chat.day.someMet', params: { n: met } });
   else if (hour >= 12) out.push({ key: 'chat.day.noneYet' });
   // an event's lines weigh double: most day lines on the night are about it
-  if (event) for (let i = 0; i < EVENT_LINES[event]; i++) out.push({ key: `chat.day.${event}.${i}` }, { key: `chat.day.${event}.${i}` });
+  if (event) for (let i = 0; i < (EVENT_LINES[event] ?? 0); i++) out.push({ key: `chat.day.${event}.${i}` }, { key: `chat.day.${event}.${i}` });
   return out;
 }
 
