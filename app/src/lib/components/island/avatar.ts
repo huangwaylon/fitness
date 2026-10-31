@@ -13,7 +13,8 @@ import { actors, addFx, applyStep, awayFromHome, busy, faceToward, later, place,
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
 import type { ActorId, Motion } from '../motion/reactions.ts';
-import { REACH, SPEED, actionMs, actionSpots, route, routeLength, type Pt, type WalkGeo } from './walkGraph.ts';
+import { REACH, SPEED, actionMs, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
+import type { EmoteIcon } from '#lib/art.ts';
 
 export interface AvatarCtx {
   geo: () => WalkGeo;
@@ -33,15 +34,16 @@ const homeTimers: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeou
 let followTimer: ReturnType<typeof setTimeout> | undefined;
 /** When my villager left home for something (the partner follows after FOLLOW_MS), and whether the partner did. */
 const away = { since: 0, followed: false };
-/** A visitor is on the island (Visitor.svelte): centre stage is theirs. */
-export const presence = { visitor: false };
+/** A visitor is on the island (Visitor.svelte): centre stage is theirs. `beat`: the visitor's turn on idle life's tick
+ *  (Visitor.svelte sets it while one is out; island/visitorLife.ts). */
+export const presence: { visitor: boolean; beat: (() => void) | null } = { visitor: false, beat: null };
 type Villager = 'mine' | 'partner';
 const otherOf = (id: Villager): Villager => (id === 'mine' ? 'partner' : 'mine');
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
 export function attachAvatar(c: AvatarCtx): () => void {
   ctx = c;
-  setRouter((id) => (id === 'host' ? null : route(c.geo(), c.where(id), actors[id].home)));
+  setRouter((id) => (id === 'host' || id === 'visitor' ? null : route(c.geo(), c.where(id), actors[id].home)));
   return () => {
     if (ctx === c) {
       ctx = null;
@@ -312,3 +314,49 @@ export function snapHome(): void {
 }
 /** Hidden this long, everyone is home on return. */
 export const SNAP_HOME_MS = 30_000;
+
+// The visitor (Visitor.svelte, visitorLife.ts) walks on the island's open ground: its own spot isn't an obstacle to it.
+let openGeo: WalkGeo | null = null;
+const open = (): WalkGeo => (openGeo ??= walkGeo());
+/** The visitor's way from `from` to `to` on the walk graph (null: none). */
+export const visitorRoute = (from: Pt, to: Pt): Pt[] | null => route(open(), from, to);
+/** Whether the visitor may stand at (x, y): walkable ground. */
+export const visitorWalkable = (x: number, y: number): boolean => walkable(open(), x, y);
+/** The water's edge in front of centre stage (where a visitor walks on from and off to). */
+export const shore = (): Pt => open().nodes.shoreC;
+
+/** A villager is free to go over to the visitor: the partner, both villagers home, nobody walking. */
+export function villagerFree(): boolean {
+  if (!ctx?.enabled() || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
+  return free('partner');
+}
+
+/** The partner comes over to the visitor standing at `at` (one at a time): beside them, they face each other, a nod
+ *  and an emote, the visitor answers (`answer`, with where the villager stands), a laugh; then home. */
+export function meetVisitor(at: Pt, answer: (x: number) => void): boolean {
+  const c = ctx;
+  if (!c || !villagerFree()) return false;
+  const id: Villager = 'partner', g = c.geo(), from = c.where(id);
+  // beside them, else a step in front of them to one side (centre stage sits between the fruit rows)
+  const side = from[0] <= at[0] ? -1 : 1;
+  const front = ([[side * 16, 78], [-side * 16, 78], [side * 10, 84], [-side * 10, 84], [0, 86]] as const)
+    .map(([dx, dy]) => [Math.round(at[0] + dx), Math.round(at[1] + dy)] as Pt).filter(([x, y]) => walkable(g, x, y));
+  for (const s of [...besideSpots(g, at, from), ...front]) {
+    if (!c.clear(id, s[0], s[1])) continue;
+    const pts = route(g, from, s);
+    if (!pts) continue;
+    clearTimeout(homeTimers[id]);
+    walkTo(id, pts, { speed: SPEED.wander, from, then: () => {
+      faceToward(id, at[0]);
+      const hi: EmoteIcon = Math.random() < 0.5 ? 'mark-note' : 'glee';
+      actors[id].busyUntil = Math.max(actors[id].busyUntil, Date.now() + 3200);
+      setMotion(id, 'nod');
+      setEmote(id, hi);
+      answer(s[0]);
+      later(id, 1300, () => setMotion(id, 'laugh'));
+      goHomeLater(id, rand(3500, 5000));
+    } });
+    return true;
+  }
+  return false;
+}

@@ -14,7 +14,13 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none'); // no ambient critters to net instead
   await expect(ribbon(page)).toBeVisible();
   const bells = await ribbon(page).getAttribute('aria-label');
+  // he sleeps face down until the fifth nudge (NH); then his introduction
   await tapOn(page, '[data-visitor="gulliver"] .art');
+  await page.waitForTimeout(1100); // my villager walks over
+  for (let i = 1; i < 5; i++) {
+    await tapOn(page, '[data-visitor="gulliver"] .art');
+    await page.waitForTimeout(250);
+  }
   const box = page.locator('[data-fx="talk"].placed');
   await expect(box).toBeVisible();
   await expect(box).toHaveAttribute('data-pages', '2');

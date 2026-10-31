@@ -23,6 +23,9 @@ interface IdleContext {
   treeShake: (id: 'mine' | 'partner') => void;
   /** Send a villager off on a walk to a point of interest or a few (island/avatar.ts); false when it can't go now. */
   wander?: (id: 'mine' | 'partner') => boolean;
+  /** The visitor's turn (island/Visitor.svelte, visitorLife.ts): on every tick, awake or asleep (they keep their own
+   *  hours), beside whatever the villagers do. */
+  visitor?: () => void;
   /** Random source (tests). */
   random?: () => number;
 }
@@ -92,6 +95,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     // covered by a sheet or reduced motion: no polling; the next touch or key (closing the sheet) wakes it
     if (ctx.paused() || reducedMotion()) return;
     if (Date.now() - lastEvent.at < 3_000) return schedule(3_000);
+    ctx.visitor?.();
     if (ctx.asleep()) {
       doze();
       return schedule(rand(20_000, 30_000));

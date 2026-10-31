@@ -7,7 +7,7 @@ import { RING_FRUITS } from '#lib/config/rules.ts';
 import { dayScore, todayPct } from './progress.ts';
 import { actors, react, resetAll, setAsleep, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
-import { goalWalk, meetUp, wander } from './avatar.ts';
+import { goalWalk, meetUp, presence, wander } from './avatar.ts';
 import { goalMoves } from './wander.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
@@ -200,6 +200,7 @@ export class IslandLife {
       night: ctx.night,
       scores: () => { const v = ctx.view(); return [dayScore(v.people.A), dayScore(v.people.B)]; },
       wander,
+      visitor: () => presence.beat?.(),
       treeShake: (id) => {
         const v = ctx.view();
         this.shakeN[id === 'mine' ? v.me : v.partner]++;

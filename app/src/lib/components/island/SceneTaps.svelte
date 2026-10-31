@@ -51,7 +51,7 @@
     /** The pointerdown that just closed a tree's popup: that tap only closes it. */
     swallowed?: () => Event | null;
     /** A visitor's line in the speech balloon (IslandScene's Talk). */
-    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; choices?: Choice[] }) => void;
+    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; choices?: Choice[]; ondone?: () => void }) => void;
     /** Jack's trick (Visitor.svelte), when he gets no candy. */
     ontrick?: () => void;
     /** Either of us met 🍑 Exercise today (group stretching's tape deck comes out). */
@@ -300,6 +300,8 @@
     spawn({ kind: 'shoot', x: path.x, y: path.y, a: path.angle, len: path.len }, STREAK_MS + 100);
     streak = { until: performance.now() + WISH_MS, wished: false };
     sceneSfx('shooting-star');
+    // a visitor watching the sky looks up at it (Celeste points: Visitor.svelte)
+    scene?.dispatchEvent(new CustomEvent('island:star', { detail: { x: path.x } }));
   }
 
   /** NH's balloon present, shot down: it falls from where the balloon burst onto the lawn in front of the hedge (drifting
