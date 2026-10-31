@@ -52,7 +52,7 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.A.weekBells).toBe(3 * 920); // only days up to today count, even with later-dated rows
     expect(v.wallet).toEqual({ balance: 6 * 920, today: 1840 }); // no split
     const rings = v.people.A.rings;
-    expect(Object.keys(rings)).toEqual(['peach', 'pear', 'cherry', 'apple']);
+    expect(Object.keys(rings)).toEqual(['pear', 'peach', 'cherry', 'apple']);
     expect(rings.peach).toEqual({ today: 60, goal: 60, met: true, todayBells: 420, weekDays: 7, weekGoalDays: 5, badge: true, milestone: 4, nextAt: null, nextGain: null });
     expect(rings.pear).toEqual({ today: 700, goal: 600, met: true, todayBells: 180, weekDays: 7, weekGoalDays: 5, badge: true, milestone: 4, nextAt: null, nextGain: null });
     expect(rings.cherry).toEqual({ today: 200, goal: 120, met: true, todayBells: 120, weekDays: 7, weekGoalDays: 5, badge: true, milestone: 4, nextAt: null, nextGain: null });

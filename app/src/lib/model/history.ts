@@ -249,7 +249,7 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
     const exercise = { ...m, edited: mine.some((e) => e.field === 'exercise_min') };
     return {
       ...(date <= localDateAt(now) ? dayBells(wb[p], date) : NO_BELLS()),
-      met: d ? { ...d.met } : { peach: false, pear: false, cherry: false, apple: false },
+      met: d ? { ...d.met } : { pear: false, peach: false, cherry: false, apple: false },
       steps: { value: metricAsOf(s, p, date, 'steps', t), edited: mine.some((e) => e.field === 'steps') },
       exercise,
       move: { value: metricAsOf(s, p, date, 'move_kcal', t), goal: d?.moveGoal ?? 0, edited: mine.some((e) => e.field === 'move_kcal') },

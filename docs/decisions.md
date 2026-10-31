@@ -52,12 +52,12 @@ chooses, with no real money at stake.
 The economy counts from the week of Mon 2026-10-26 (`ECONOMY_START`). Why: the week it shipped already earned.
 
 ### Rings four automatic fruits
-Four automatic metrics, one fruit each:
+Four automatic metrics, one fruit each, always listed in Apple's ring order (Move, Exercise, Stand), then steps:
 
 | Fruit | Metric | Daily goal |
 |---|---|---|
-| 🍑 peach | Exercise minutes | 60 min |
 | 🍐 pear | Move, active kcal | per person (`moveGoal`, defaults 600 / 400) |
+| 🍑 peach | Exercise minutes | 60 min |
 | 🍒 cherry | Stand Time, minutes | 120 min (v1: 180) |
 | 🍎 apple | Steps | 8,000 |
 
@@ -73,8 +73,8 @@ A `pref` `moveGoal` (whole kcal, 100–2,000), which either person may set. It a
 and never re-prices earlier days. Why: Move kcal depend on body size.
 
 ### Milestone curve
-From v2, each fruit pays in steps at 25 / 50 / 75 / 100% of the goal, each step worth more than the last: 🍑 45 /
-120 / 230 / 420, 🍐 19 / 53 / 98 / 180, 🍒 13 / 35 / 65 / 120, 🍎 20 / 60 / 110 / 200. Below 25% pays 0; above the
+From v2, each fruit pays in steps at 25 / 50 / 75 / 100% of the goal, each step worth more than the last: 🍐 19 /
+53 / 98 / 180, 🍑 45 / 120 / 230 / 420, 🍒 13 / 35 / 65 / 120, 🍎 20 / 60 / 110 / 200. Below 25% pays 0; above the
 goal stays at the max. Why: a partial day still pays, but the goal pays most.
 
 ### Rainy season
@@ -82,13 +82,13 @@ From Jun 1 to Jul 20, 30 or more counted exercise minutes also count as a full s
 walking hard.
 
 ### Weekly badges and duo bonus
-At the Sunday harvest each person gets +450 ベル for each badge met (🍑, 🍐 and 🍒 at the goal on 5 or more days;
+At the Sunday harvest each person gets +450 ベル for each badge met (🍐, 🍑 and 🍒 at the goal on 5 or more days;
 🍎 on 4 or more days). The ふたりボーナス adds +500 for each badge both people met. Why: rewards consistency, and
 the duo bonus makes it a team effort without one miss costing everything.
 
 ### Rule versions by week
-`RULES` is a list of versions by first week; `rulesFor(week)` picks one. v1 (week of 10-26) pays linearly (🍑 3 a
-minute, 🍐 up to 180, 🍒 1 a minute up to 180, 🍎 200; badges +400, duo +200). v2 (from 2026-11-02) has the values
+`RULES` is a list of versions by first week; `rulesFor(week)` picks one. v1 (week of 10-26) pays linearly (🍐 up to
+180, 🍑 3 a minute, 🍒 1 a minute up to 180, 🍎 200; badges +400, duo +200). v2 (from 2026-11-02) has the values
 above, an on-target week being 14,400 ベル for both. To change a value, append a version with a later `from`; never
 edit one whose weeks have earned. Why: everything is computed on read, so an edit in place would re-price the past.
 

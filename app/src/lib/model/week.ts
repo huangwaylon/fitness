@@ -42,8 +42,8 @@ function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: nu
   const r = rulesFor(e.weekKey);
   const d = e.days.find((x) => x.date === today);
   const amount: Record<RingFruit, [today: number, goal: number]> = {
-    peach: [d?.exerciseMin ?? 0, r.goals.exerciseMin],
     pear: [d?.moveKcal ?? 0, d?.moveGoal ?? moveGoal],
+    peach: [d?.exerciseMin ?? 0, r.goals.exerciseMin],
     cherry: [d?.standMin ?? 0, r.goals.standMin],
     apple: [d?.steps ?? 0, r.goals.steps]
   };

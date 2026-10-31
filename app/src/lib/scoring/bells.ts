@@ -1,5 +1,5 @@
 // ベル earned per person per day and weekly badges: four automatic metrics, one fruit
-// each (🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps). Pure; the model feeds it one person's week as of a time and decides
+// each (🍐 Move, 🍑 Exercise, 🍒 Stand, 🍎 steps). Pure; the model feeds it one person's week as of a time and decides
 // which weeks count (the economy's first week, locks).
 import { RING_FRUITS, rulesFor, TSUYU, type RuleVersion } from '#lib/config/rules.ts';
 import type { LocalDate, PersonId, RingBells, RingFruit, WeekKey, Workout } from '#lib/types.ts';
@@ -110,7 +110,7 @@ export interface WeekEarning {
   bonus: number;
 }
 
-export const zeroRings = (): RingBells => ({ peach: 0, pear: 0, cherry: 0, apple: 0 });
+export const zeroRings = (): RingBells => ({ pear: 0, peach: 0, cherry: 0, apple: 0 });
 
 /**
  * One person's ベル for a week, at the week's rule version. Per day:
@@ -140,14 +140,14 @@ export function earnWeek(input: EarnInput): WeekEarning {
     const kcal = Math.max(0, moveKcal ?? 0);
     const stand = Math.max(0, Math.floor(standMin ?? 0));
     const met: Record<RingFruit, boolean> = {
-      peach: ex >= exGoalMilli,
       pear: moveGoal > 0 && kcal >= moveGoal,
+      peach: ex >= exGoalMilli,
       cherry: stand >= r.goals.standMin,
       apple: (steps !== null && steps >= r.goals.steps) || (isTsuyu(date) && ex >= TSUYU.exerciseMin * 1000)
     };
     const rings: RingBells = {
-      peach: Math.floor(Math.min(ex, exGoalMilli) / 1000) * r.bells.perExerciseMin,
       pear: moveGoal > 0 ? Math.floor((r.bells.moveAtGoal * Math.min(kcal, moveGoal)) / moveGoal) : 0,
+      peach: Math.floor(Math.min(ex, exGoalMilli) / 1000) * r.bells.perExerciseMin,
       cherry: Math.min(stand, r.goals.standMin) * r.bells.perStandMin,
       apple: met.apple ? r.bells.stepDay : 0
     };
@@ -155,8 +155,8 @@ export function earnWeek(input: EarnInput): WeekEarning {
     if (r.curve) {
       const at = r.curve.at;
       milestone = {
-        peach: milestoneOf(at, ex, exGoalMilli),
         pear: milestoneOf(at, kcal, moveGoal),
+        peach: milestoneOf(at, ex, exGoalMilli),
         cherry: milestoneOf(at, stand, r.goals.standMin),
         apple: met.apple ? at.length : milestoneOf(at, steps ?? 0, r.goals.steps)
       };
@@ -169,7 +169,7 @@ export function earnWeek(input: EarnInput): WeekEarning {
   });
 
   const need: Record<RingFruit, number> = {
-    peach: r.badges.exerciseDays, pear: r.badges.moveDays, cherry: r.badges.standDays, apple: r.badges.stepDays
+    pear: r.badges.moveDays, peach: r.badges.exerciseDays, cherry: r.badges.standDays, apple: r.badges.stepDays
   };
   const fruits = {} as Record<RingFruit, FruitWeek>;
   const badges = {} as Record<RingFruit, boolean>;

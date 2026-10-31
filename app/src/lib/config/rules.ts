@@ -5,8 +5,9 @@
 // rules.test.ts pins the versions in use.
 import type { PersonId, RingFruit, WeekKey } from '#lib/types.ts';
 
-/** The four ring fruits, in display order: 🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 steps. */
-export const RING_FRUITS = ['peach', 'pear', 'cherry', 'apple'] as const satisfies readonly RingFruit[];
+/** The four ring fruits in display order, Apple's rings first: 🍐 Move, 🍑 Exercise, 🍒 Stand, then 🍎 steps. Every
+ *  list of fruits (the tree, its popup, badges, きろく, あそびかた) follows this. */
+export const RING_FRUITS = ['pear', 'peach', 'cherry', 'apple'] as const satisfies readonly RingFruit[];
 
 /** What a week earns. The model picks the version by week (`rulesFor`). */
 export interface RuleVersion {
@@ -25,7 +26,7 @@ export interface RuleVersion {
    */
   badges: { exerciseDays: number; moveDays: number; standDays: number; stepDays: number; bells: number; duoPerBadge: number };
   /**
-   * The milestone curve (v2). Without it (v1) 🍑🍐🍒 pay linearly and 🍎 all or nothing, as `bells` says. With it 🍑🍐🍒🍎 pay in steps: reaching `at[i]` of the day's goal pays
+   * The milestone curve (v2). Without it (v1) 🍐🍑🍒 pay linearly and 🍎 all or nothing, as `bells` says. With it 🍐🍑🍒🍎 pay in steps: reaching `at[i]` of the day's goal pays
    * round(max × pay[i] / pay[last]) ベル, max being the fruit's ベル at the goal (as `bells` gives it); below at[0] 0,
    * above the goal the max. `pay` is shares in whole numbers (no arithmetic here, so the Apps Script bundle can still
    * drop RULES); `bells[f]` replaces a fruit's computed steps exactly. `at` ascends to 1, `pay` ascends.
