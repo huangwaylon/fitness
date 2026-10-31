@@ -2,7 +2,7 @@
   // One person's tree (faithful to AC): a plain official hardwood of the season (an AC tree bears one
   // kind of fruit, so this one bears none), with today's fruit lying on the ground in front of the trunk, the way NH
   // drops fruit around a shaken tree: per ring fruit 0–3 items = thirds of today's goal (scene.ts fruitCount),
-  // 🍑 🍐 🍒 🍎 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
+  // 🍐 🍑 🍒 🍎 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
   // kind earns an item (new data from the Watch), the tree shakes (±4°, 3 swings, 500ms) and the new item drops in with
   // a bounce. Narrow stages (< 360px) show one item per kind, sized by its count. The tree stands still otherwise
   // (the idle budget).
@@ -20,6 +20,8 @@
   import Fx from '../characters/Fx.svelte';
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
+  import { lastSyncLine } from '#lib/i18n/format.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
   import { todayAmount, todayPct } from './progress.ts';
   import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -72,6 +74,9 @@
         return [t(`fruit.${f}`), amount(f), bells, week].filter(Boolean).join(' ');
       }).join('、') + (next ? `。${next.text}` : '')
   );
+  /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
+   *  clock ticks only then. */
+  const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
   /** The fruit row leans away from the jar (left tree left, right tree right). */
   const lean = $derived(x < JAR.x ? -FRUIT_LEAN : FRUIT_LEAN);
   const spots = $derived(RING_FRUITS.map((f, i) => ({ f, n: fruitCount(todayPct(ring(f))), x: x + lean + FRUIT_SPOTS[i][0], y: BASE + FRUIT_SPOTS[i][1] })));
@@ -219,6 +224,8 @@
         </span>
       {/each}
       {#if next}<span class="next"><OfficialArt key={fruitArt(next.f)} size="16px" eager />{next.text}</span>{/if}
+      <!-- when this person's data last arrived (it explains a low tree); a soft dot once it is SYNC_LATE_MS old -->
+      {#if sync}<span class="sync" class:late={sync.late}>{sync.text}</span>{/if}
     </div>
   {/key}
 {/if}
@@ -314,6 +321,13 @@
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
     border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
   }
+  /* when the data last arrived: soft and small, under everything; the plate is cream at every time of day, so the
+     soft ink is the plate's, not the theme's */
+  .sync {
+    grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 2px;
+    font: 500 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft);
+  }
+  .sync.late::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--c-ink-soft) 55%, transparent); }
   /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree */
   @container (max-width: 400px) {
     .detail { grid-template-columns: 20px auto auto auto auto; }

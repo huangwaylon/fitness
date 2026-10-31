@@ -1,8 +1,8 @@
 <script lang="ts">
   // Partner sheet: tap the partner's villager on 島 → a villager card, the way talking to a
   // villager works in NH: their name (the title bar), their face, one line they say about their day (picked from their rings: an NH
-  // beat that replaces the numbers, never adds one), when their data last arrived (it explains low numbers right
-  // where you'd ask) and one action, ハイタッチ. Their numbers live on their tree (the popup), not here.
+  // beat that replaces the numbers, never adds one) and one action, ハイタッチ. Their numbers and when their data last
+  // arrived live on their tree (the popup), not here.
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -10,7 +10,6 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { formatSyncTime } from '#lib/i18n/format.ts';
 
   let { open = $bindable(), onhighfive }: { open: boolean; onhighfive: () => void } = $props();
 
@@ -37,7 +36,6 @@
       <Avatar person={p.person} villager={p.villager} size={72} />
       <div class="who">
         <p class="say">{say(p)}</p>
-        <span class="sync">{p.lastSyncAt ? t('partner.synced', { time: formatSyncTime(p.lastSyncAt, view.today) }) : t('partner.never')}</span>
       </div>
     </div>
     <button type="button" class="btn" data-sfx="confirm" onclick={five}>
@@ -49,8 +47,6 @@
 <style>
   .head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
   .who { flex: 1; min-width: 0; display: grid; gap: 6px; }
-  /* flush with the bubble's left edge */
-  .sync { margin-left: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* their line: a small cream speech bubble with its tail toward the face */
   .say {
     position: relative; justify-self: start; margin: 2px 0 2px 6px; padding: 7px 12px; border-radius: var(--r-chip);
