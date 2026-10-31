@@ -1,21 +1,21 @@
-// 島 ⇄ wallet transition: a ~360 ms eased zoom from the island's jar into the wallet page (/jar), and back out into
+// 島 ⇄ wallet transition: a ~360 ms eased zoom from the jar (in the island's HUD, beside the ribbon) into the wallet page (/jar), and back out into
 // the jar on 「◀ 島へ」 (or the browser's back). The View Transitions API (Chrome, iOS Safari 18+) snapshots both
 // pages and the CSS in styles/theme.css zooms them about the jar; without it the arriving page plays the same
 // zoom as a plain CSS entrance (`html[data-enter]`). Reduced motion: a short crossfade (or nothing).
-// The jar's own press squash is the scene's; it calls `onjar` once the squash has played.
+// The jar's own press squash is HudJar's; it calls `onjar` once the squash has played.
 import { onNavigate } from '$app/navigation';
 import { routeOf } from './paths.ts';
 import { reducedMotion } from '#lib/time/clock.ts';
 
 type Dir = 'in' | 'out';
 
-/** The island's jar (the zoom's origin), or null when the island is not on screen. */
+/** The HUD's jar (the zoom's origin, the middle of the glass), or null when the island is not on screen. */
 function jarOrigin(): { x: number; y: number } | null {
-  const el = document.querySelector<HTMLElement>('.if-scene .jar');
+  const el = document.querySelector<HTMLElement>('.hud-jar .jarart');
   if (!el) return null;
   const r = el.getBoundingClientRect();
   if (!r.width) return null;
-  return { x: r.left + r.width / 2, y: r.top + r.height * 0.6 };
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
 function setOrigin(root: HTMLElement, o: { x: number; y: number } | null): void {

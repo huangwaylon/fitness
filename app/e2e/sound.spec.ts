@@ -221,7 +221,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await page.waitForTimeout(400);
 
   // ごほうび
-  await step('島', 'jar', () => page.locator('.if-scene .jar').tap(), ['jar-tap']);
+  await step('島', 'jar', () => page.locator('.hud-jar').tap(), ['jar-tap']);
   await expect(page.locator('.jar-screen')).toBeVisible();
   await page.waitForTimeout(600);
   const shop = page.locator('.shop');

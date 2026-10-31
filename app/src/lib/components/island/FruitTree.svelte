@@ -29,7 +29,7 @@
   import { RULES, STRETCH } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import {
-    FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u
+    FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, OAK_AR, PLAZA, TREE, TREE_FRUIT, TREE_FRUIT_U, u
   } from './scene.ts';
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -100,8 +100,8 @@
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
    *  clock ticks only then. */
   const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
-  /** The fruit row leans away from the jar (left tree left, right tree right). */
-  const lean = $derived(x < JAR.x ? -FRUIT_LEAN : FRUIT_LEAN);
+  /** The fruit row leans out from the plaza (left tree left, right tree right). */
+  const lean = $derived(x < PLAZA.x ? -FRUIT_LEAN : FRUIT_LEAN);
 
   /** Today (the model's Tokyo day; the gallery has no view) and this phone's record of today's fallen and picked fruit. */
   const date = $derived(week.view?.today ?? dayKey(minuteNow()));
@@ -302,7 +302,7 @@
 <!-- all four met: glints twinkle on the canopy in turn over a soft gold glow (NH's money tree), above the night tint -->
 {#if allMet}
   <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(x - W / 2)} style:top={u(BASE - H)} style:width={u(W)}
-    style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < JAR.x ? 0 : 0.33}s">
+    style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < PLAZA.x ? 0 : 0.33}s">
     <span class="glow"></span>
     {#each GLINTS as [gx, gy], k (k)}
       <svg class="glint" viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:--k={k}>
@@ -417,8 +417,8 @@
     position: absolute; z-index: var(--z-popup); translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
-    /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches the jar or
-       the other tree drawn under it (at 320 it covers the jar's lid) */
+    /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches a visitor or
+       the other tree drawn under it */
     pointer-events: auto; cursor: default;
     transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
   }

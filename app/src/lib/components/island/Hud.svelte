@@ -3,7 +3,7 @@
   // of the NH map's yellow title banner: the screen's one focal point, 「きょう +620 ベル」 for both of us) and, only
   // when sync is not ok, the sync chip centred under it. When ベル arrive the ribbon counts up (the focus beat).
   // Tap → the island panel slides down from under it (きろく first). The panel is its own chunk, loaded on first open.
-  import { tick, untrack } from 'svelte';
+  import { tick, untrack, type Snippet } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import SyncPill from '../ui/SyncPill.svelte';
@@ -15,8 +15,10 @@
     bells: number;
     /** Bindable: the panel is open (the island pauses under it). */
     panelOpen?: boolean;
+    /** The jar (HudJar), beside the ribbon: the two are one group, centred. */
+    jar?: Snippet;
   }
-  let { bells, panelOpen = $bindable(false) }: Props = $props();
+  let { bells, panelOpen = $bindable(false), jar }: Props = $props();
   const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
   /** Mounted from the first open on (it keeps its state between opens). */
   let opened = $state(false);
@@ -41,11 +43,14 @@
 </script>
 
 <div class="ribbon-wrap">
+  <div class="hud-row">
   <!-- Tap → the island panel (design.md "Panel"). -->
   <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })}
     aria-haspopup="dialog" aria-expanded={panelOpen} onanimationend={() => (beat = false)} onclick={() => { opened = true; panelOpen = true; }}>
     <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('bells.unit')}</small></b>
   </button>
+  {@render jar?.()}
+  </div>
   <SyncPill />
 </div>
 
@@ -61,6 +66,11 @@
     display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none;
   }
   .ribbon-wrap > :global(*) { pointer-events: auto; }
+  /* the ribbon and the jar: one row, centred as a group (the ribbon's left tail counted in: the row's 16px left pad
+     balances it), 24px apart (the right tail sits in the gap); on a narrow phone both tighten */
+  .hud-row { display: flex; align-items: center; gap: clamp(20px, 6vw, 26px); padding-left: 16px; max-width: 100%; }
+  .hud-row:has(> :only-child) { padding-left: 0; }
+  .hud-row:not(:has(> :only-child)) .ribbon { padding: 0 clamp(12px, 4vw, 28px); gap: clamp(6px, 2.4vw, 10px); }
   /* The NH map title banner: a yuzu band, darker swallow-tails tucked behind each end. */
   .ribbon {
     appearance: none; border: 0; cursor: pointer; font: inherit; pointer-events: auto;

@@ -211,6 +211,11 @@ November dig spots) are picked up for a caption only: no ベル and no ずかん
 museum (fish, bugs, fossils) plus the shells; NH's mushrooms are crafting materials with no catalogue page, and a new
 find kind would need a script redeploy for a seasonal flourish. Seeded by the date, so both phones see the same ones.
 
+### The jar beside the ribbon
+The shared wallet's jar sits in the HUD, on the right of 「きょう +N ベル」, as one centred row (user). The goals' coins
+still fly from the fruit on the island up into it. Why: today's ベル and the wallet read together where the eye
+already goes, and the island's middle is free for visitors.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

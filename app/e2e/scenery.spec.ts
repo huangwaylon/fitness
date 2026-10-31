@@ -33,7 +33,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await page.goto('?demo&date=2026-11-04T12:00');
   await islandReady(page);
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
-  const jar = page.locator('.if-scene .jar');
+  const jar = page.locator('.hud-jar');
   const bells = await ribbon.getAttribute('aria-label');
   const jarLabel = await jar.getAttribute('aria-label');
   const url = page.url();

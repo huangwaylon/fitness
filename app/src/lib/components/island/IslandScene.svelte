@@ -3,16 +3,16 @@
   // design.md "Environment"). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
   // (390 × 360 units) anchored to the bottom, painted like the official renders (light from the upper left,
   // soft gradients and contact shadows, no strokes or lips on scenery).
-  //   <IslandScene {view} onpartner onjar paused />
+  //   <IslandScene {view} onpartner paused />
   // Sky: sky table per time of day, sun / moon at the upper left with a soft glow + stars, two soft clouds,
   // balloon present, event fireworks. Stage: the sea (Sea.svelte: one layer from the horizon to below the
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
   // wet band, foam, shallows, terracotta cliff, NH grass with flecks), one hedge along the back, one plain
-  // seasonal oak per person with today's fruit on the ground at its base (FruitTree), the jar + its ベル
-  // nameplate in the middle (the scene's only label and the doorway to the wallet (ごほうび)), each person's flower bed (a bud
+  // seasonal oak per person with today's fruit on the ground at its base (FruitTree), the middle left open (a visitor
+  // stands there; the jar is in the HUD, HudJar), each person's flower bed (a bud
   // per goal, blooming once met: FlowerBeds), the
   // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
-  // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
+  // tint for the time of day over land and sea (stars and fireflies stay above it).
   // The HUD (today's ベル ribbon, with the sync chip under it when it shows) overlays the sky, the ribbon centred in the
   // sky band's middle; the clouds keep clear of it (Clouds.svelte) and the balloon flies in the lane under it.
   // Layout contract (for the page): the island is CENTRED in the visible ocean (horizon → bottom chrome).
@@ -37,7 +37,6 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import Sky from './Sky.svelte';
   import Sea from './Sea.svelte';
-  import JarSpot from './JarSpot.svelte';
   import Ground from './Ground.svelte';
   import BackRow from './BackRow.svelte';
   import FruitTree from './FruitTree.svelte';
@@ -63,8 +62,6 @@
     view: WeekView;
     /** Partner villager tapped (open the partner sheet). */
     onpartner?: () => void;
-    /** Jar tapped (go to ごほうび), after a short look-at-the-jar beat. */
-    onjar?: () => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
     /** Interactive + idle life + reactions (false for gallery thumbnails). */
@@ -76,7 +73,7 @@
     tod?: Tod;
   }
   let {
-    view, onpartner, onjar, paused = false, live = true,
+    view, onpartner, paused = false, live = true,
     season: seasonProp, foliage: foliageProp, tod: todProp
   }: Props = $props();
 
@@ -192,9 +189,6 @@
         onshake={() => shakes?.shaken(pid, slot(pid))} />
     {/each}
 
-    <!-- the jar + its plate (JarSpot): one button, the doorway to the wallet (ごほうび) -->
-    <JarSpot {view} {live} {covered} {onjar} later={life.later} />
-
     <FlowerBeds {season} {hybrid} people={[view.people[view.me], view.people[view.partner]]} />
 
     {#each ['mine', 'partner'] as const as id (id)}
@@ -281,8 +275,8 @@
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   /* ONE time-of-day layer: a multiply tint over land, sea and the sprites, from the horizon to the
-     scene's bottom edge and out to both screen edges (the sky has its own table; the jar z 81, fireflies z 82
-     and the stars stay above it). Day: none. */
+     scene's bottom edge and out to both screen edges (the sky has its own table; fireflies z 82 and the
+     stars stay above it). Day: none. */
   .tint {
     position: absolute; z-index: var(--z-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
     top: calc(var(--if-hy) - var(--if-st)); bottom: -100vh; left: -100vw; right: -100vw;

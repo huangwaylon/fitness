@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  // ベル flowing into the jar: when new earnings arrive, a small "+150" pops over the fruit
+  // ベル flowing up into the HUD's jar: when new earnings arrive, a small "+150" pops over the fruit
   // that earned them and three coins hop from there into the jar, one after another (NH's bell pickup: a short arc,
   // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the jar can squash and its
   // plate count up in step. In stage units (the stage is the container). Reduced motion: the parent skips this.
@@ -57,7 +57,7 @@
 {/each}
 
 <style>
-  /* above the time-of-day tint (z 80) and the jar (z 81), under the fruit popup (z 95) */
+  /* in HudJar's layer over the stage (above the whole scene); the coins rise out of the island into the HUD's jar */
   .cx {
     position: absolute; z-index: var(--z-coin); width: 0; height: 0; pointer-events: none;
     animation-name: cf-x; animation-timing-function: linear; animation-fill-mode: both;

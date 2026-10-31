@@ -1,6 +1,6 @@
 // Where the island's overlays may go (docs/design.md "Scene interactions"): the stage's geometry and the UI nothing of
 // ours may cover. Shared by the critters, the beach finds, the chats and the visitors: they keep clear of every control
-// (the ribbon and its tails, the sync chip, the trees, the fruit rows, the jar and its plate, the villagers), a tree's
+// (the ribbon and its tails, the jar beside it, the sync chip, the trees, the fruit rows, the villagers), a tree's
 // popup and しずえ's box, measured live with getBoundingClientRect.
 
 export interface Box { x0: number; x1: number; y0: number; y1: number }
