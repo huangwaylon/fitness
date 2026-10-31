@@ -14,12 +14,13 @@ wallet, which they spend on small treats they agreed on together. Japanese-first
 (ADR 0007). Both see all data; there are no privacy settings and no notifications (ADR 0016).
 
 - **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
-  body weight) to a Google Apps Script web app several times a day; an Arrive automation posts a gym arrival
-  (ADR 0015, 0021; [shortcut-health-sync.md](../ops/shortcut-health-sync.md)).
+  body weight) to a Google Apps Script web app several times a day (ADR 0015, 0021;
+  [shortcut-health-sync.md](../ops/shortcut-health-sync.md)). There is no gym automation and no Watch-workout upload
+  (ADR 0021 amendment "no gym; four metrics", 2026-10-31); a forgotten workout is added by hand in きろく.
 - **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes everything on the phone.
 
-**Architecture.** The Google Sheet is an append-only log (`metrics`, `workouts`, `presence` = gym arrivals,
-`events`, `uploads`). `app/gas/` (bundled to `app/apps-script/Code.js`) is the only reader and writer: it validates
+**Architecture.** The Google Sheet is an append-only log (`metrics`, `events`, `uploads`; the old `presence` and
+`workouts` tabs are no longer read or written, runbook §8). `app/gas/` (bundled to `app/apps-script/Code.js`) is the only reader and writer: it validates
 shapes and appends, nothing more. The client keeps the rows in IndexedDB, merges incremental `snapshot` replies and
 derives every number on read in `app/src/lib/model/` (pure functions over the rows), so a rule change re-prices
 history consistently and the sheet stays a dumb log. User actions are `event` rows sent through a persisted queue with
@@ -71,11 +72,11 @@ bottom             (📱)  しまフォン                   the NookPhone: 56px
   16px). It counts up when ベル arrive. Tap → きろく ベル.
 - **Jar + plate:** the wallet's balance as a bare number on a cream plate. New ベル fly in as coins from the fruit that
   earned them. Tap → ごほうび.
-- **Trees:** one per person; today's five ring fruit lie on the ground in front (per kind 0–3 items = thirds of the
-  daily goal, 🍑 🍐 🍒 🍎 🥥; a kind with nothing yet shows one faint item). Tap the canopy or the fruit row → the popup:
+- **Trees:** one per person; today's four ring fruit lie on the ground in front (per kind 0–3 items = thirds of the
+  daily goal, 🍑 🍐 🍒 🍎; a kind with nothing yet shows one faint item). Tap the canopy or the fruit row → the popup:
   a nameplate, per fruit today / goal, today's ベル and the week as a small 「2/5」 (days met / needed; a ✓ disc once
   the badge is met). In a v2 week (from 2026-11-02) each ring fruit also shows today's **4 milestone pips** (yuzu =
-  reached; none for 🥥), and **one** nudge line sits under the rows, 「あと 8分で +45」, for the tapped fruit or else the
+  reached), and **one** nudge line sits under the rows, 「あと 8分で +45」, for the tapped fruit or else the
   fruit nearest its next step (`nextAt`, `nextGain`); v1 weeks show neither. The popup always opens **upwards**, tail
   down at its tree; where the sky is short it is pushed down over the canopy (never flipped; tighter rows on short
   screens), staying inside the screen and under the ribbon. The popup is the one home of per-fruit detail; a tap on it
@@ -115,7 +116,7 @@ three official full tiles (きろく, 村人, つうしん) sit on their own bac
 | App | Tile | What |
 |---|---|---|
 | きろく | `phone/miles` | からだ (weight trend, 目標: Move goal + weight goal, weeks of badges) and ベル (the passbook); week → day → fix ([history-and-editing.md](history-and-editing.md)). Lazy-loaded |
-| あそびかた | `phone/glyph-help` | No taps needed, the five fruits and goals (v2: 「ベルは 4つの だんかいで ふえるよ…」 and per fruit a 4-cell step table, amount over ベル, the goal step ringed), badges, the wallet with the treat guide (「食べものの ごほうびは、ふたりで 週3回くらいが めやす…」, no cap) and the escalation line (「おやつ・カフェ・外ごはんは、おなじ週に 買うたびに ちょっとずつ 高くなるよ（1.5ばい）。月曜日に もとの 値段に もどります！」), a 「たんぱく質の ヒント」 card (1.6 g per kg a day, per person from the goal weight else the trend, rounded to 5 g; not tracked), the setup |
+| あそびかた | `phone/glyph-help` | No taps needed, the four fruits and goals (v2: 「ベルは 4つの だんかいで ふえるよ…」 and per fruit a 4-cell step table, amount over ベル, the goal step ringed), badges, the wallet with the treat guide (「食べものの ごほうびは、ふたりで 週3回くらいが めやす…」, no cap) and the escalation line (「おやつ・カフェ・外ごはんは、おなじ週に 買うたびに ちょっとずつ 高くなるよ（1.5ばい）。月曜日に もとの 値段に もどります！」), a 「たんぱく質の ヒント」 card (1.6 g per kg a day, per person from the goal weight else the trend, rounded to 5 g; not tracked), the setup |
 | 村人 | `phone/passport` | My villager from the roster (one search field): 23 special characters first (とくべつ: たぬきち, しずえ, とたけけ…), then 158 villagers by species; and my よびな. If either of us picks しずえ, たぬきち hosts (nameplate, banner icon) |
 | ことば | `phone/glyph-chat` | 日本語 / English |
 | つうしん | `phone/rescue` | When each of us last synced, いま つうしん |
@@ -129,7 +130,7 @@ three official full tiles (きろく, 村人, つうしん) sit on their own bac
 - **Partner card** (`sheets/PartnerSheet.svelte`): name, face, one line about their day (from their rings), when their
   data last arrived, and ハイタッチ.
 - **日曜の収穫** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both tapped. The week's recap (per person the
-  five badges and bonus, the ふたりボーナス, the week's bonus as the big number) → 受け取る (a ceremony: the bonus counts
+  four badges and bonus, the ふたりボーナス, the week's bonus as the big number) → 受け取る (a ceremony: the bonus counts
   either way) → coins fall into the jar and the balance counts up. ✕ / Esc = あとで.
 - **Pair** (`routes/pair`): `deco/airport` hero, しずえ and one line, paste the key (or open a `#key=` link in the
   installed app).
@@ -154,45 +155,51 @@ slides in from the right in 240 ms; reduced motion: no slide.
 Values in `config/rules.ts` (`RULES`, versioned by week), the earning rule in `scoring/bells.ts`, the economy on read in
 `model/bells.ts`. Pinned by `scoring/bells.test.ts`, `config/rules.test.ts` and the golden fixtures.
 
-**ベル per person per day**, recomputed from the rows (so they move whenever data arrives), five automatic metrics,
-one fruit each. A week is priced by its own rule version (`rulesFor(weekKey)`; the island, the tree popups, あそびかた,
-きろく and the harvest read the version of the week in view). The values below are **v2, from Mon 2026-11-02** ("push
-exercise + strength" and "v2 milestone curve", ADR 0021 amendments); v1 (the week of 10-26 only) paid 🍑 3/min, 🍒 1/min
-to 180 min, 🍐 floor(180 × min(kcal, goal) / goal), 🍎 200 all or nothing, 🥥 400 and +400 a badge:
+**ベル per person per day**, recomputed from the rows (so they move whenever data arrives), four automatic metrics,
+one fruit each (no gym 🥥 since 2026-10-31: ADR 0021 amendment "no gym; four metrics"). A week is priced by its own
+rule version (`rulesFor(weekKey)`; the island, the tree popups, あそびかた, きろく and the harvest read the version of
+the week in view). The values below are **v2, from Mon 2026-11-02** ("push exercise", "v2 milestone curve" and "no
+gym; four metrics", ADR 0021 amendments); v1 (the week of 10-26 only) pays 🍑 3/min, 🍒 1/min to 180 min,
+🍐 floor(180 × min(kcal, goal) / goal), 🍎 200 all or nothing and +400 a badge, +200 duo (it lost its 🥥 400 a gym day
+in place: the economy is play money, accepted by the user):
 
 | Fruit | Metric (Shortcut field → stored metric) | Daily goal | ベル a day |
 |---|---|---|---|
-| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | milestones 25 / 70 / 130 / **240** |
+| 🍑 peach | Exercise minutes: max(Watch, workouts added in きろく), never a sum (`exercise_minutes` → `exercise_min`) | 60 min | milestones 45 / 120 / 230 / **420** |
 | 🍐 pear | Move, active kcal (`calories` → `move_kcal`) | per person, `pref` moveGoal (default ウェイ 600, うめ 400; 100–2,000) | milestones 19 / 53 / 98 / **180** |
 | 🍒 cherry | Stand minutes, Health Stand Time (`stand_minutes` → `stand_min`) | 120 min | milestones 13 / 35 / 65 / **120** |
 | 🍎 apple | Steps (`steps`) | 8,000 (tsuyu Jun 1–Jul 20: or 30 exercise min, the full 200) | milestones 20 / 60 / 110 / **200** |
-| 🥥 coconut | Gym: any gym arrival, or a strength workout (Traditional / Functional Strength Training, Pilates, ≥ 15 min; any other type only when marked in きろく) | a gym day | 500 |
 
-- **Milestones** (v2, `RULES[1].curve`): 🍑🍐🍒🍎 pay at 25 / 50 / 75 / 100% of the day's goal, each step worth more
+- **Milestones** (v2, `RULES[1].curve`): every fruit pays at 25 / 50 / 75 / 100% of the day's goal, each step worth more
   than the last and the biggest at the goal; below 25% nothing, above the goal the max. One shared share table, 25 / 70
-  / 130 / 240 of the max (≈ 0.104 / 0.292 / 0.542 / 1), rounded to whole ベル; 🍎 pays the user-approved 20 / 60 / 110 /
-  200 instead of the shares' 21 / 58 / 108. 🥥 stays one event.
+  / 130 / 240 of the max (≈ 0.104 / 0.292 / 0.542 / 1), rounded to whole ベル (🍐, 🍒). 🍑 (max 420) pays the shares
+  rounded to 5s, 45 / 120 / 230 / 420 (exact 43.75 / 122.5 / 227.5); 🍎 pays the user-approved 20 / 60 / 110 / 200
+  instead of the shares' 21 / 58 / 108.
 
   | % of goal | 25% | 50% | 75% | 100% |
   |---|---|---|---|---|
-  | 🍑 Exercise (60 min) | 15 min → 25 | 30 → 70 | 45 → 130 | 60 → 240 |
+  | 🍑 Exercise (60 min) | 15 min → 45 | 30 → 120 | 45 → 230 | 60 → 420 |
   | 🍐 Move (own goal, e.g. 600 kcal) | 150 → 19 | 300 → 53 | 450 → 98 | 600 → 180 |
   | 🍒 Stand (120 min) | 30 min → 13 | 60 → 35 | 90 → 65 | 120 → 120 |
   | 🍎 Steps (8,000) | 2,000 → 20 | 4,000 → 60 | 6,000 → 110 | 8,000 → 200 |
 
   The view exposes today's step and the next one per fruit (`RingProgress.milestone`, `nextAt`, `nextBells`,
   `nextGain`: `docs/reviews/round-19/milestones-contract.md`).
-- Max 1,240 a day (v1: 1,140). The Move goal in force on a day is the last one set on or before that Tokyo date: a change never
-  re-prices earlier days.
-- **Weekly bonus** at the Sunday 19:30 harvest: +340 per badge (v1: +400; 🍑 / 🍐 / 🍒 goal met (100%) on ≥ 5 days, 🍎 ≥ 4, 🥥 ≥ 3) and
-  the ふたりボーナス, +200 for each badge both people met.
-- **On target** (every badge for both, minimum days), v2: per person 5 × 240 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎 +
-  3 × 500 🥥 = 5,000 daily + 5 × 340 badges = 6,700; both (13,400) + 5 × 200 duo = **14,400 ベル a week**, the same as
-  v1 (4,700 daily + 2,000 badges), so the menu prices still fit. Goal days pay the max on the curve too, so the
-  milestones change only partial days. The badge amount absorbed the extra 300 daily: 2 × 5 ×
-  b + 5 × 200 = 14,400 − 10,000 gives b = 340 with the duo unchanged. Per-person shares: 🥥 1,840 (27%), 🍑 1,540
-  (23%), 🍐 1,240, 🍎 1,140, 🍒 940. The daily part is 69% of the week (v1 65%), so a week short of badges still pays most of
-  its work.
+- Max 920 a day (v1: 740). The Move goal in force on a day is the last one set on or before that Tokyo date: a change
+  never re-prices earlier days.
+- **Workouts** are only the ones added by hand in きろく (`workout_add`, Watch forgotten): their minutes count toward 🍑
+  as max(Watch, the day's added minutes); `workout_edit {excluded}` leaves one out or puts it back. No type earns
+  anything of its own (no strength days).
+- **Weekly bonus** at the Sunday 19:30 harvest: +450 per badge (v1: +400; 🍑 / 🍐 / 🍒 goal met (100%) on ≥ 5 days,
+  🍎 ≥ 4) and the ふたりボーナス, +500 for each badge both people met (v1: +200).
+- **On target** (every badge for both, minimum days), v2: per person 5 × 420 🍑 + 5 × 180 🍐 + 5 × 120 🍒 + 4 × 200 🍎
+  = 4,400 daily + 4 × 450 badges = 6,200; both (12,400) + 4 × 500 duo = **14,400 ベル a week**, the same as before the
+  gym went, so the menu prices still fit. The gym's old share (per person 3 × 500 + its 340 badge, and 200 of duo) moved
+  mostly to 🍑, the intensity lever: 🍑 4 → 7 a minute (+900 a week each), the badge 340 → 450 and the duo 200 → 500
+  (fewer badges, each worth more): 2 × (4,400 + 4b) + 4d = 14,400 with b = 450, d = 500. Goal days pay the max on the
+  curve too, so the milestones change only partial days. Per-person shares (daily + badge): 🍑 2,550 (41%), 🍐 1,350,
+  🍎 1,250, 🍒 1,050. The daily part is 61% of the week (8,800 of 14,400), so a week short of badges still pays most of
+  its work. v1 this week: 3,500 daily + 1,600 badges each, + 800 duo = 11,000.
 - **One shared wallet:** every ベル earned (daily as it happens, the bonus at Sunday 19:30) goes into it. One shared,
   editable menu, one list (`pref` menu, latest wins, items `{id, label, bells}`). Either person buys
   (`spend`), the buyer can undo (`spend_void`), no approvals. Buys replay in server order and a buy counts only if the
@@ -228,7 +235,7 @@ decorative. Helpers and the manifest (bundled at build time): `lib/art.ts`; file
 |---|---|---|
 | Villagers | `villagers/<id>`, `villagers/<id>-icon`; roster `lib/villagers/roster.ts` (158; defaults A = goldie, B = anchovy, precached by the service worker; the rest cached on first use) | Scene, avatars, sheets |
 | Host | `host/isabelle` (wave), `-stand`, `-winter`, `-icon`, `host/tom-nook` | Dialogue box, toasts, not-set-up |
-| Fruit | `fruit/peach · pear · cherry · apple · coconut` | Ground fruit, popups, harvest |
+| Fruit | `fruit/peach · pear · cherry · apple` | Ground fruit, popups, harvest |
 | Trees | `trees/oak-spring` (blossom) · `oak-summer` · `oak-fall` · `oak-winter` | One hardwood per person |
 | Bushes | azalea, hydrangea, hibiscus, tea olive (two colours each), camellia (two), holly | Back hedge (§S.3) |
 | Flowers | red/yellow tulips, red/white roses, pink cosmos, purple mums, orange pansies | Flower beds (§S.3) |

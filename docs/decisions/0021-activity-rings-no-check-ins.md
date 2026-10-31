@@ -123,3 +123,40 @@ a redeploy is optional and changes nothing the server does).
   98–130 instead of 135–180, a 50% steps day 60 instead of 0).
 - The view gives each curve fruit today's step and the next (`milestone`, `nextAt`, `nextBells`, `nextGain` on
   `RingProgress`; `docs/reviews/round-19/milestones-contract.md`).
+
+## Amendment 2026-10-31: no gym; four metrics; v2 rebalanced
+**User decision:** "Get rid of the concept of gym visits; it's too complicated. We already have steps, exercise
+minutes, stand and calories. I don't want the gym shortcut any more; it's not reliable." Then (lead, same day): with
+the gym gone, Watch workouts have no purpose either. **Supersedes** the 🥥 row of the decision, the amendments "no
+daily questions" (strength types, `workout_edit {strength}`) and "the gym arrival is `{key, action:"gym"}`", and the 🥥
+lines of the two v2 amendments.
+
+- **Four automatic metrics, one fruit each:** 🍑 Exercise, 🍐 Move, 🍒 Stand, 🍎 Steps. No 🥥 fruit, badge, milestone or
+  ふたりボーナス share; no strength days, no gym arrivals, no `STRENGTH` types.
+- **Removed, with no compatibility path:** the `gym` action, the `gym_set` event (ADR 0023), the `presence` and
+  `workouts` tabs (not in `TABS`, not in `snapshot`, not read), the Shortcut's optional `workouts` field (ignored now),
+  `workout_edit {strength}` and `workout_add {strength}`. Old rows of them in the sheet are ignored on read; the user
+  can delete the two tabs by hand (runbook §8). One Code.js redeploy.
+- **Kept:** workouts added by hand in きろく (`workout_add`, Watch forgotten) count toward 🍑 as max(Watch, the day's added
+  minutes); `workout_edit {excluded}` leaves one out or puts it back. The types offered are the nine of きろく's list
+  (`contract/labels.ts`).
+- **v1 (the week of 2026-10-26) loses its 🥥 in place** (the economy is play money and still in development; the user
+  accepted it): 🍑 3/min to 60, 🍐 180, 🍒 1/min to 180, 🍎 200, +400 a badge, +200 duo. On target 3,500 daily + 1,600
+  badges each + 800 duo = **11,000** for the week (was 14,400); this week's gym ベル simply disappear from the wallet.
+- **v2 rebalanced ("keep ~14,400, boost Exercise")**, from Mon 2026-11-02 (`RULES[1]`, edited before any v2 week
+  earned), so the treat prices don't change and the gym's share moves mostly to 🍑, the intensity lever:
+
+| Fruit | Daily goal | Milestones 25 / 50 / 75 / 100% | Badge |
+|---|---|---|---|
+| 🍑 Exercise (**7 a minute**, was 4) | 60 min | 15 min → **45** · 30 → **120** · 45 → **230** · 60 → **420** | ≥ 5 days |
+| 🍐 Move | own goal | 19 · 53 · 98 · 180 | ≥ 5 days |
+| 🍒 Stand | 120 min | 13 · 35 · 65 · 120 | ≥ 5 days |
+| 🍎 Steps | 8,000 | 20 · 60 · 110 · 200 | ≥ 4 days |
+
+  Badges **+450** each (was 340), ふたりボーナス **+500** per badge both met (was 200). 🍑's steps are the shared shares
+  25 / 70 / 130 / 240 of its new max, rounded to 5s (exact 43.75 / 122.5 / 227.5 / 420), set in `curve.bells.peach`.
+  On target per person: 5 × 420 + 5 × 180 + 5 × 120 + 4 × 200 = 4,400 daily + 4 × 450 = 6,200; both 12,400 + 4 × 500 =
+  **14,400** (2 × (4,400 + 4b) + 4d = 14,400 with b = 450, d = 500). A perfect day is 920 (was 1,240). Per-person
+  shares (daily + badge): 🍑 2,550 (41%), 🍐 1,350, 🍎 1,250, 🍒 1,050; the daily part is 61% of the week.
+- The goldens were regenerated on purpose (the fixture rows lost their `workouts` and `presence` tabs and gained two
+  `workout_add` events).
