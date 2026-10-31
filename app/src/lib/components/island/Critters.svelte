@@ -87,15 +87,23 @@
     const dx = Math.min(Math.abs(x - cx), rb);
     return y1 - rb + Math.sqrt(rb * rb - dx * dx);
   }
-  /** The open sea off the beach on one side (left or right of the しまフォン button, which sits in the middle), from
-   *  just past the foam down to above the screen's bottom edge; null when a short screen leaves no room. */
+  /** Where a shadow can swim on one side (−1 left, 1 right): the open sea off the front beach, just past the foam, down
+   *  to above the screen's bottom edge and しずえ's box; where that's too shallow (a short browser viewport), the strip
+   *  of side sea beside the island; null when neither has room. */
   function seaBox(g: NonNullable<ReturnType<typeof geo>>, side: -1 | 1): Box | null {
-    const [f0, f1] = side < 0 ? [0.08, 0.3] : [0.7, 0.92];
+    const [f0, f1] = side < 0 ? [0.06, 0.44] : [0.56, 0.94];
     const x0 = g.left + g.w * f0, x1 = g.left + g.w * f1;
-    const y0 = Math.max(shoreY(x0), shoreY(x1)) + 12;
-    const y1 = Math.min(y0 + 40, g.bottom - 34 * g.k);
-    return y1 - y0 >= 14 ? { x0, x1, y0, y1 } : null;
+    const news = document.querySelector('.news')?.getBoundingClientRect();
+    const floor = Math.min(g.bottom - 16 * g.k, news?.height ? (news.top - g.r.top) * g.k - 6 : Infinity);
+    const y0 = Math.max(shoreY(x0), shoreY(x1)) + 10;
+    const y1 = Math.min(y0 + 44, floor);
+    if (y1 - y0 >= 12) return { x0, x1, y0, y1 };
+    // the side sea: beyond the sand's straight edge, alongside the lawn
+    const [sx0, sx1] = side < 0 ? [g.left + 6 * g.k, SAND.x0 - 8] : [SAND.x1 + 8, g.right - 6 * g.k];
+    return sx1 - sx0 >= 12 ? { x0: sx0, x1: sx1, y0: 130, y1: Math.min(290, floor) } : null;
   }
+  /** Sea beyond the beach (in front of it, or beside the island). */
+  const offshore = (x: number, y: number) => y > shoreY(x) || x < SAND.x0 || x > SAND.x1;
   const inBox = (b: Box) => ({ x: between(b.x0, b.x1), y: between(b.y0, b.y1) });
   /** The open places a bug keeps to: the flower beds, the hedge tops, the grass in front of the beds. */
   const BEDS: Box[] = [{ x0: 45, x1: 110, y0: 212, y1: 285 }, { x0: 280, x1: 345, y0: 212, y1: 285 }];
@@ -103,7 +111,7 @@
   const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
 
   /** The UI nothing of ours may cover, in client px: every control (the ribbon and its tails, the sync chip, the
-   *  trees, the fruit rows, the jar and its plate, the villagers, the しまフォン button) but the balloon, a tree's popup
+   *  trees, the fruit rows, the jar and its plate, the villagers) but the balloon, a tree's popup
    *  and しずえ's box, padded 6px. */
   function guards(): Box[] {
     const out: Box[] = [];
@@ -185,9 +193,13 @@
 
   function castAt(x: number, y: number) {
     const f = fish!;
-    const by = Math.max(y, shoreY(x) + 8);
-    const side = x < 195 ? 1 : -1; // the angler stands on the beach, a little toward the middle
-    cast = { x, y: by, sx: x + side * 10, sy: shoreY(x + side * 10) - 4, landed: false, t0: 0, plan: null, under: false, rings: 0 };
+    // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
+    const front = y > shoreY(x);
+    const bx = front ? x : x < 195 ? Math.min(x, SAND.x0 - 6) : Math.max(x, SAND.x1 + 6);
+    const by = front ? Math.max(y, shoreY(x) + 8) : y;
+    const side = x < 195 ? 1 : -1;
+    const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
+    cast = { x: bx, y: by, sx, sy, landed: false, t0: 0, plan: null, under: false, rings: 0 };
     sceneSfx('cast');
     sceneSfx('plop');
     later(() => {
@@ -367,7 +379,7 @@
     }
     const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
     const f = fish;
-    if (f && !f.gone && y > shoreY(x) && hitStage(x, y).kind === 'sea' && Math.abs(x - f.x) < 130) {
+    if (f && !f.gone && offshore(x, y) && hitStage(x, y).kind === 'sea' && Math.hypot(x - f.x, y - f.y) < 130) {
       castAt(x, y);
       return true;
     }
