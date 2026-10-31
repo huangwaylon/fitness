@@ -88,3 +88,9 @@ Model API changes are already type-checked against your working tree (svelte-che
 12. **Heads-up, your working tree:** `ja.json` `sound.opening` is now "♪ いまは オープニングテーマ" (spaced), but
     `e2e/demo.spec.ts:375` still looks for 'いまはオープニングテーマ', so `npm run e2e` fails on a build of your tree
     (main itself is green).
+13. **Fruit order (lead/user request, done in the core):** `RING_FRUITS` is now 🍐 Move, 🍑 Exercise, 🍒 Stand, 🍎 steps
+    (Apple's rings first), and every component that iterates it follows (checked on the built demo: the popup rows and
+    the ground fruit arc look right). Committed: `e2e/demo.spec.ts` lines 159, 162–163 and 222 (the popup's row order
+    and the Move-goal row index); I applied the same three edits to your working copy of that file, your other changes
+    in it are untouched. Left for you: comments that still list the old order, `island/FruitTree.svelte:5` and
+    `island/scene.ts:34` ("🍑 🍐 🍒 🍎 left to right (RING_FRUITS)"), and the `BadgeRow.svelte:4` usage example.
