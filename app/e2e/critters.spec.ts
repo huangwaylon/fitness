@@ -3,6 +3,10 @@
 // changes ベル, opens a sheet or navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from '@playwright/test';
 
+// The installed app's full screen (a Home Screen app has no browser bars): with the island centred in the whole ocean,
+// the 664px Safari viewport leaves too little sea under the beach for a fish.
+test.use({ viewport: { width: 390, height: 844 } });
+
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 
 async function open(page: Page, q: string) {

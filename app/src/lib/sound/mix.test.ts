@@ -77,9 +77,9 @@ describe('duck under a jingle', () => {
 });
 
 describe('the catalogue and the cue table', () => {
-  it('every cue names a real sound, and every sound is used by a cue or the voice', () => {
+  it('every cue names a real sound, and every sound is used by a cue', () => {
     for (const c of Object.values(CUES)) expect(isSoundId(c.sound)).toBe(true);
-    const used = new Set<string>([...Object.values(CUES).map((c) => c.sound), 'blip-host', 'blip-villager']);
+    const used = new Set<string>(Object.values(CUES).map((c) => c.sound));
     expect(SOUND_IDS.filter((id) => !used.has(id))).toEqual([]);
   });
   it('levels stay gentle: nothing above 0.8, UI ticks under the island actions, jingles on the sfx bus', () => {

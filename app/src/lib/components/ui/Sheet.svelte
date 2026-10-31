@@ -8,9 +8,9 @@
   // top-right; nothing advertises swipe-down), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
-  // variant="phone": the しまフォン launcher (NookPhone screen, rounded all round, full height minus the status bar).
-  // The phone itself does not scroll: it is a flex column, and the app puts its scrolling body in a
-  // `.phone-body` child (fixed status row + title bar, one scroller).
+  // variant="top": the island panel, sliding down from under the ribbon (rounded at the bottom, the safe area on top).
+  // It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
+  // scrolling body (`.panel-body`) inside.
   import { untrack, type Snippet } from 'svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -25,7 +25,7 @@
     label: string;
     /** The title bar's title (centred). */
     title?: string;
-    variant?: 'paper' | 'phone';
+    variant?: 'paper' | 'top';
     onclose?: () => void;
     children: Snippet;
     footer?: Snippet;
@@ -68,10 +68,10 @@
     onclose?.();
   }
 
-  /** Dismissed by hand (the backdrop, Esc): Ⓑ (✕ sounds it through its data-sfx). The phone plays its own put-away
-   *  tune (ShimaPhone), and a sheet closed by its own button (保存, 買う！) sounds that button instead. */
+  /** Dismissed by hand (the backdrop, Esc): Ⓑ (✕ sounds it through its data-sfx); a sheet closed by its own button
+   *  (保存, 買う！) sounds that button instead. */
   function dismissed() {
-    if (variant !== 'phone') cue('back');
+    cue('back');
   }
 
   function backdrop(e: MouseEvent) {
@@ -86,7 +86,7 @@
   {#if open}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      {#if variant !== 'phone'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}
+      {#if variant !== 'top'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}
@@ -121,28 +121,24 @@
     padding: 10px calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 12px) calc(var(--side) + var(--safe-left));
     background: linear-gradient(transparent, var(--surface) 30%);
   }
-  /* The phone: paper (--surface) so its cream controls and cards have a body; a non-scrolling flex
-     column whose `.phone-body` is the one scroller. --body-pad is that scroller's bottom padding. */
-  dialog.phone {
-    --body-pad: calc(22px + var(--kb, 0px));
-    width: calc(100% - 16px); max-width: calc(var(--col) - 16px); margin-bottom: var(--pad-bottom);
-    height: calc(var(--vh-fill) - var(--safe-top) - 12px - var(--pad-bottom)); max-height: none;
-    background: var(--surface); border-radius: var(--r-sheet); box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-float);
+  /* The top panel: paper (--surface) so its cream cards have a body; a non-scrolling flex column whose `.panel-body`
+     is the one scroller. It hangs from the top edge: the safe area over its title bar, rounded at the bottom, and it
+     stops 24px above the screen's bottom so the island still peeks out under it. --body-pad is the scroller's bottom
+     padding. */
+  dialog.top {
+    --body-pad: calc(18px + var(--kb, 0px));
+    margin: 0 auto auto; max-height: calc(var(--vh-fill) - var(--safe-bottom) - 24px);
+    border-radius: 0 0 var(--r-sheet) var(--r-sheet); box-shadow: 0 var(--lip-h) 0 var(--lip), var(--sh-float);
     overflow: hidden; display: none; flex-direction: column;
   }
-  dialog.phone[open] { display: flex; }
-  dialog.phone .inner {
+  dialog.top[open] { display: flex; animation-name: down; }
+  dialog.top .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
-    /* 14px over the title bar, as on a paper sheet: ✕ and ‹ sit 18px from the phone's top and its side */
-    padding: 14px calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left));
+    padding: calc(var(--safe-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
-  /* An undo banner is up: the last row can scroll clear of it. */
-  dialog.toasting .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
-  /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
-  dialog.toasting .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
-  dialog.phone.toasting .inner { padding-bottom: 0; }
-  dialog.phone.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
-  @media (max-width: 339px) { dialog.phone .inner { padding: 14px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); } }
+  dialog.top.toasting .inner { padding-bottom: 0; }
+  dialog.top.toasting { --body-pad: calc(96px + var(--kb, 0px)); }
+  @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
   @media (prefers-reduced-motion: reduce) {
     dialog[open] { animation: none; }

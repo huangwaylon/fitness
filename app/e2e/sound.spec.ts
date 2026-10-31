@@ -77,7 +77,7 @@ const sea = (page: Page) =>
 test.describe('the first tap starts the music', () => {
   for (const [wait, perSrc] of [[1800, false], [0, false], [1800, true]] as const) {
     test(`a tap on plain scenery, no click (iOS), ${wait ? 'hour prefetched' : 'straight after launch'}${perSrc ? ', strict per-source policy' : ''}`, async ({ page }) => {
-      await instrument(page, { sound: { music: true, sfx: false, voice: false, volume: 0.8 }, noClick: true, perSrc });
+      await instrument(page, { sound: { music: true, sfx: false, volume: 0.8 }, noClick: true, perSrc });
       await page.goto('?demo&date=2026-11-04T12:00');
       await expect(page.locator('.if-scene .stage')).toBeVisible();
       await page.waitForTimeout(wait);
@@ -96,7 +96,7 @@ test.describe('the first tap starts the music', () => {
 });
 
 test('strict per-source policy, tapped before the file is in: a refused start is retried by the next plain tap', async ({ page }) => {
-  await instrument(page, { sound: { music: true, sfx: false, voice: false, volume: 0.8 }, noClick: true, perSrc: true });
+  await instrument(page, { sound: { music: true, sfx: false, volume: 0.8 }, noClick: true, perSrc: true });
   await page.goto('?demo&date=2026-11-04T12:00');
   await expect(page.locator('.if-scene .stage')).toBeVisible();
   const { x, y } = await sea(page);
@@ -107,13 +107,13 @@ test('strict per-source policy, tapped before the file is in: a refused start is
 });
 
 test('sound off: no AudioContext, no media element, however much is tapped', async ({ page }) => {
-  await instrument(page, { sound: { music: false, sfx: false, voice: false, volume: 0.8 } });
+  await instrument(page, { sound: { music: false, sfx: false, volume: 0.8 } });
   await page.goto('?demo&date=2026-11-04T12:00');
   await expect(page.locator('.if-scene .stage')).toBeVisible();
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
-  await page.locator('.phone-btn').click();
-  await page.locator('.app[data-app="kiroku"]').click();
+  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await page.locator('[data-push=help]').click();
   await page.locator('.titlebar .back').click();
   await page.locator('.titlebar .close').click();
   await page.waitForTimeout(500);
@@ -133,7 +133,7 @@ const ISLAND = /^(fruit-land|coin-land|bells-arrive|tree-shake|emote-|announce|t
 test('the tap walk: each tap plays its one cue', async ({ page }) => {
   test.setTimeout(90_000);
   await page.addInitScript(() => {
-    localStorage.setItem('island.sound', JSON.stringify({ music: false, sfx: true, voice: false, volume: 0.8 }));
+    localStorage.setItem('island.sound', JSON.stringify({ music: false, sfx: true, volume: 0.8 }));
     (window as unknown as { __cues: string[] }).__cues = [];
   });
   await page.goto('?demo&date=2026-11-04T12:00');
@@ -183,14 +183,8 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('なかま', 'ハイタッチ', () => btn(/ハイタッチ/, dlg).tap());
   await page.waitForTimeout(2000);
 
-  // しまフォン
-  const phone = btn('しまフォンを開く');
-  await step('しまフォン', 'NookPhone button', () => phone.tap(), ['phone-open']);
-  await step('しまフォン', 'きろく tile', () => page.locator('.app[data-app=kiroku]').tap(), ['phone-app']);
-  await expect(dlg.locator('.pill').first()).toBeVisible();
-  await step('きろく', 'ベル tab', () => dlg.locator('.pill').nth(1).tap(), ['tick']);
-  await step('きろく', 'ベル tab again', () => dlg.locator('.pill').nth(1).tap(), []);
-  await step('きろく', 'からだ tab', () => dlg.locator('.pill').nth(0).tap(), ['tick']);
+  // the island panel (tap the ribbon)
+  await step('島', 'ribbon (→ the panel)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['phone-open']);
   await step('きろく', 'weight card', () => btn(/の体重のながれ/, dlg).first().tap(), ['page']);
   await step('きろく', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', 'week card', () => btn(/^今週/, dlg).tap(), ['page']);
@@ -198,32 +192,21 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   if (await future.count()) await step('きろく', 'a future day (aria-disabled)', () => future.first().tap({ force: true }), ['boop']);
   await step('きろく', 'day', () => btn(/\(月\)$/, dlg).tap(), ['page']);
   await step('きろく', 'back (‹) to the week', () => dlg.locator('.titlebar .back').tap(), ['back']);
-  await step('きろく', 'back (‹) to the list', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('きろく', 'back (‹) to the panel', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
   await step('きろく', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
   await step('きろく', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
-  await step('きろく', 'back (‹) to home', () => dlg.locator('.titlebar .back').tap(), ['back']);
-  await step('しまフォン', 'あそびかた tile', () => page.locator('.app[data-app=help]').tap(), ['phone-app']);
-  await step('しまフォン', 'back', () => dlg.locator('.titlebar .back').tap(), ['back']);
-  await step('しまフォン', '通信 tile', () => page.locator('.app[data-app=sync]').tap(), ['phone-app']);
-  await step('通信', 'いま同期', () => dlg.locator('.btn').tap(), ['sync']);
-  await step('通信', 'いま同期 while syncing (aria-disabled)', () => dlg.locator('.btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
-  await dlg.locator('.titlebar .back').tap();
-  await step('しまフォン', 'ことば tile', () => page.locator('.app[data-app=lang]').tap(), ['phone-app']);
-  await step('ことば', '日本語 (already chosen)', () => dlg.getByRole('radio', { name: '日本語' }).tap(), []);
-  await dlg.locator('.titlebar .back').tap();
-  await step('しまフォン', 'じゅうにん tile', () => page.locator('.app[data-app=villager]').tap(), ['phone-app']);
-  await step('じゅうにん', 'search field', () => dlg.getByRole('searchbox').tap(), []);
-  await step('じゅうにん', 'pick a villager', () => dlg.locator('.rv[aria-checked="false"]').first().tap(), ['tick']);
-  await dlg.locator('.titlebar .back').tap();
-  await step('しまフォン', 'サウンド tile', () => page.locator('.app[data-app=sound]').tap(), ['phone-app']);
-  await step('サウンド', 'おしゃべり on', () => dlg.getByRole('switch', { name: /^おしゃべり/ }).tap(), ['toggle-on']);
-  await step('サウンド', 'おしゃべり off', () => dlg.getByRole('switch', { name: /^おしゃべり/ }).tap(), ['toggle-off']);
+  await step('むらびと', 'かえる', () => dlg.locator('[data-push=villager]').tap(), ['page']);
+  await step('むらびと', 'search field', () => dlg.getByRole('searchbox').tap(), []);
+  await step('むらびと', 'pick a villager', () => dlg.locator('.rv[aria-checked="false"]').first().tap(), ['tick']);
+  await step('むらびと', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('サウンド', '音量 slider (change)', () => dlg.locator('input[type=range]').fill('6'), ['tick']);
-  await step('しまフォン', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
-  await expect(dlg).toHaveCount(0);
-  await step('島', 'ribbon (→ きろく ベル)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['phone-open']);
-  await step('しまフォン', '✕', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
+  await step('ことば', '日本語 (already chosen)', () => dlg.getByRole('radio', { name: '日本語' }).tap(), []);
+  await step('つうしん', 'いま つうしん', () => dlg.locator('.prows .btn').tap(), ['sync']);
+  await step('つうしん', 'いま つうしん while syncing (aria-disabled)', () => dlg.locator('.prows .btn[aria-disabled="true"]').tap({ force: true, timeout: 300 }).catch(() => {}));
+  await step('あそびかた', 'くわしく', () => dlg.locator('[data-push=help]').tap(), ['page']);
+  await step('あそびかた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 

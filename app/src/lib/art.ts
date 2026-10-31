@@ -72,8 +72,6 @@ export function fruitArt(fruit: RingFruit): string {
   return `fruit/${fruit}`;
 }
 
-/** The NookPhone itself (launcher button). */
-export const NOOKPHONE = 'phone/nookphone';
 
 /** Money UI: 'bells' (the Bells bag) or 'leaf'. */
 export function moneyArt(kind: 'bells' | 'leaf'): string {

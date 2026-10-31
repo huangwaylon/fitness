@@ -25,8 +25,8 @@ describe('navigation', () => {
     const sheet = files.find((x) => x.f.endsWith('ui/Sheet.svelte'))!.src;
     expect(sheet).toMatch(/<NavBar\b[^>]*onclose=/);
   });
-  it('every phone sheet renders its own title bar with ✕ and ‹ back', () => {
-    const phones = files.filter((x) => /<Sheet\b[^>]*variant="phone"/.test(x.src));
+  it('every top panel renders its own title bar with ✕ and ‹ back', () => {
+    const phones = files.filter((x) => /<Sheet\b[^>]*variant="top"/.test(x.src));
     expect(phones.length).toBeGreaterThan(0);
     for (const x of phones) expect(x.src, x.f).toMatch(/<NavBar\b[^>]*onback=[^>]*onclose=/);
   });

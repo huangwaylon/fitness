@@ -8,6 +8,12 @@ async function islandReady(page: Page) {
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
 }
 
+/** Tap today's ベル ribbon: the island panel slides down (きろく first). */
+async function openPanel(page: Page) {
+  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await expect(sheet(page).locator('.panel-body')).toBeVisible();
+}
+
 /** `きょう 620 ベル` → 620. */
 
 test('buy: a treat comes back with とりけす', async ({ page }) => {
@@ -90,8 +96,7 @@ test('harvest: four badges per person, the together bonus, and the bonus lands i
 
 test('きろく: a day is read-only: both people’s four fruits with their ベル, no ✎ or keypad', async ({ page }) => {
   await page.goto('?demo');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await page.locator('.app[data-app=kiroku]').click();
+  await openPanel(page);
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
   await expect(sheet(page).locator('.pen-btn')).toHaveCount(0);
   await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
@@ -106,8 +111,7 @@ test('きろく: the weight trend (from Health, no logging by hand) and a goal',
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
   const bells = await ribbon.getAttribute('aria-label');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await page.locator('.app[data-app=kiroku]').click();
+  await openPanel(page);
   await expect(sheet(page).getByRole('heading', { name: '体重のながれ' })).toBeVisible();
   await sheet(page).getByRole('button', { name: /の体重のながれ/ }).first().click();
   await expect(sheet(page).getByRole('img', { name: /の体重 12週間/ })).toBeVisible();
@@ -192,8 +196,7 @@ test('partner: a villager card (their line, ハイタッチ), no numbers and no 
 
 test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
   await page.goto('?demo');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await page.locator('.app[data-app=kiroku]').click();
+  await openPanel(page);
   const goals = sheet(page).locator('.goals');
   await expect(goals).toContainText('600 kcal');
   await goals.getByRole('button', { name: /ムーブ（1日） ✎$/ }).click();
@@ -213,8 +216,7 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await expect(page.locator('.detail .row:not(.hd)').nth(0).locator('.amt')).toHaveText(/\/450kcal$/);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await page.locator('.app[data-app=kiroku]').click();
+  await openPanel(page);
   const other = goals.locator('button.pp').nth(1);
   const partner = (await other.textContent())!.trim();
   await other.click();
@@ -265,7 +267,7 @@ test('a tap on an open tree popup closes it and reaches nothing under it (the ja
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
-test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
+test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   await expect(page.locator('.if-scene button.vil').nth(1)).toBeEnabled();
@@ -280,27 +282,28 @@ test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-
   expect(b.x + b.width).toBeGreaterThan(vw - 40);
   await close.click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  // the phone: ✕ on the home screen, ‹ + ✕ in every app, ‹ goes back a level
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
+  // the panel: ✕ at its top level, ‹ + ✕ one level in (a week, a day, the picker, the guide), ‹ goes back a level
+  await openPanel(page);
   const bar = sheet(page).locator('.titlebar');
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
-  for (const app of ['kiroku', 'help', 'villager', 'lang', 'sync', 'sound']) {
-    await page.locator(`.app[data-app=${app}]`).click();
+  for (const push of ['villager', 'help']) {
+    await sheet(page).locator(`[data-push=${push}]`).click();
     await expect(bar.locator('.back')).toBeVisible();
     b = await box(bar.locator('.back'));
     expect(b.width).toBeGreaterThanOrEqual(44);
     await bar.locator('.back').click();
-    await expect(page.locator(`.app[data-app=${app}]`)).toBeVisible();
+    await expect(sheet(page).locator(`[data-push=${push}]`)).toBeVisible();
   }
-  // きろく: week → day, then ‹ ‹ back to the list
-  await page.locator('.app[data-app=kiroku]').click();
+  // きろく: week → day, then ‹ ‹ back to the panel's top, with every section again
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
+  await expect(sheet(page).locator('[data-push=villager]')).toHaveCount(0); // a level in: only that screen
   await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
   await bar.locator('.back').click();
   await expect(sheet(page).locator('.days')).toBeVisible();
   await bar.locator('.back').click();
-  await expect(sheet(page).locator('.pills')).toBeVisible();
+  await expect(sheet(page).locator('[data-push=villager]')).toBeVisible();
+  await expect(bar.locator('.back')).toHaveCount(0);
   await bar.locator('.close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // the wallet: ‹ 島へ top-left; the buy confirm and the editor have ✕
@@ -324,35 +327,33 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   const audio: string[] = [];
   page.on('request', (r) => r.url().includes('/audio/') && audio.push(new URL(r.url()).pathname));
   await page.goto('?demo');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await sheet(page).getByRole('button', { name: 'サウンド' }).click();
+  await openPanel(page);
   const row = (name: string) => sheet(page).getByRole('switch', { name: new RegExp(`^${name}`) });
-  for (const n of ['ミュージック', '効果音', 'おしゃべり']) await expect(row(n)).toHaveAttribute('aria-checked', 'false');
+  for (const n of ['ミュージック', '効果音']) await expect(row(n)).toHaveAttribute('aria-checked', 'false');
+  await expect(row('おしゃべり')).toHaveCount(0); // the villagers don't speak: no voice setting
   expect(audio).toEqual([]); // nothing is fetched while everything is off
   await row('効果音').click();
   await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');
   await row('ミュージック').click();
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
-  // the opening theme plays while the phone is up (NH's title screen); closing the phone hands over to the hour
+  // the opening theme plays while the panel is up (NH's title screen); closing the panel hands over to the hour
   await expect(sheet(page).getByText('いまは オープニングテーマ')).toBeVisible();
   await expect.poll(() => audio).toContain('/fitness/audio/music/opening.m4a');
   await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
   await sheet(page).locator('.titlebar .close').click();
   await expect.poll(() => audio.some((p) => /\/audio\/music\/hour-\d\d\.m4a$/.test(p))).toBe(true);
   await page.reload();
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await sheet(page).getByRole('button', { name: 'サウンド' }).click();
+  await openPanel(page);
   await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
-  await expect(row('おしゃべり')).toHaveAttribute('aria-checked', 'false');
   await expect(sheet(page).getByRole('slider', { name: '音量' })).toHaveValue('4');
   expect(errors).toEqual([]);
 });
 
-test('focus ring: none on a しまフォン tile after tap → ‹ back; the keyboard still shows it', async ({ page }) => {
+test('focus ring: none on the panel’s くわしく after tap → ‹ back; the keyboard still shows it', async ({ page }) => {
   await page.goto('?demo');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).tap();
-  const tile = sheet(page).locator('.app[data-app=help]');
+  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).tap();
+  const tile = sheet(page).locator('[data-push=help]');
   await tile.tap();
   await sheet(page).locator('.titlebar .back').tap();
   await expect(tile).toBeFocused();
@@ -360,7 +361,7 @@ test('focus ring: none on a しまフォン tile after tap → ‹ back; the key
   await expect(page.locator('html')).toHaveAttribute('data-input', 'pointer');
   const ring = () => tile.evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(await ring()).toBe('none');
-  // keyboard: Tab onto the next tile and back: the ring shows
+  // keyboard: Tab onto the next control and back: the ring shows
   await page.keyboard.press('Tab');
   await page.keyboard.press('Shift+Tab');
   await expect(tile).toBeFocused();
@@ -368,10 +369,10 @@ test('focus ring: none on a しまフォン tile after tap → ‹ back; the key
   expect(await ring()).not.toBe('none');
 });
 
-test('村人: とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
+test('むらびと: the panel shows my villager; かえる → とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
   await page.goto('?demo');
-  await page.getByRole('button', { name: 'しまフォンを開く' }).click();
-  await page.locator('.app[data-app=villager]').click();
+  await openPanel(page);
+  await sheet(page).locator('[data-push=villager]').click();
   const dlg = sheet(page);
   await expect(dlg.locator('.grp')).toHaveText(['とくべつ', 'むらびと']);
   await expect(dlg.getByRole('radio').first()).toHaveAccessibleName('たぬきち');

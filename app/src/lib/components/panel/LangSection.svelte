@@ -7,7 +7,7 @@
   const LANGS: { id: Locale; label: string }[] = [{ id: 'ja', label: '日本語' }, { id: 'en', label: 'English' }];
 </script>
 
-<div class="prows" role="radiogroup" aria-label={t('phone.app.lang')} {@attach roving}>
+<div class="prows" role="radiogroup" aria-label={t('panel.lang')} {@attach roving}>
   {#each LANGS as l (l.id)}
     {@const on = i18n.locale === l.id}
     <button type="button" class="prow" role="radio" lang={l.id} aria-checked={on} tabindex={on ? 0 : -1} data-sfx={on ? 'none' : 'tick'} onclick={() => !on && setLanguage(l.id)}>

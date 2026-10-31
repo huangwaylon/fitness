@@ -5,11 +5,10 @@
 //   setSound({ music: true })                             // from a tap (the settings app)
 //   sound.weather = 'rain'                                // the hour's rain arrangement (only `?weather=` sets it yet)
 import { untrack } from 'svelte';
-import { SOUNDS, type SoundId } from './ids.ts';
+import type { SoundId } from './ids.ts';
 import { Engine } from './engine.ts';
 import type { Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
-import { blipPlan, type Glyph } from './dialogue.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
 import { WEATHERS, trackAt, type Weather } from './hourly.ts';
 import { HourClock } from './session.ts';
@@ -52,7 +51,7 @@ function eng(): Engine {
 }
 
 const musicOn = (s: SoundSettings): boolean => s.music && hasMusic();
-const anyOn = (s: SoundSettings): boolean => s.music || s.sfx || s.voice;
+const anyOn = (s: SoundSettings): boolean => s.music || s.sfx;
 
 /** Inside a user gesture: start audio (or wake it after iOS suspended it, or restart a track something outside
  *  paused or the browser refused to start) if any setting wants it (session.ts gestureAction). Any tap does it, on
@@ -190,8 +189,8 @@ const hourClock = new HourClock(
   syncMusic
 );
 
-/** Change settings (from a tap: that tap unlocks audio). Turning a kind on previews it: 効果音 a confirm, おしゃべり a
- *  few blips, ミュージック the opening theme before the hour's track (NH's title screen). */
+/** Change settings (from a tap: that tap unlocks audio). Turning a kind on previews it: 効果音 a confirm, ミュージック
+ *  the opening theme before the hour's track (NH's title screen). */
 export function setSound(patch: Partial<SoundSettings>): void {
   const prev = sound.settings;
   const next = sanitize({ ...prev, ...patch });
@@ -203,26 +202,17 @@ export function setSound(patch: Partial<SoundSettings>): void {
   const e = engine;
   if (!e) return;
   if (next.sfx && !prev.sfx) void e.whenReady().then(() => play('confirm'));
-  if (next.voice && !prev.voice) void e.whenReady().then(() => talk([...'こんにちは'].map((ch, i) => ({ ch, at: i * 66 })), 'host'));
 }
 
 /** The scene is covered (world cues wait; cues.ts). */
 export const covered = (): boolean => coveredBy();
 
-/** Play an effect or blip if its setting is on (cues.ts is the usual way in). */
+/** Play an effect if 効果音 is on (cues.ts is the usual way in). */
 export function play(id: SoundId, o?: { gain?: number; rate?: number; delay?: number }): void {
   const s = sound.settings;
-  if (s.volume <= 0 || !(SOUNDS[id].bus === 'voice' ? s.voice : s.sfx)) return;
+  if (s.volume <= 0 || !s.sfx) return;
   if (id === 'chime' && engine?.needsUnlock(false) !== false) announceAt = Date.now();
   else engine?.play(id, o);
-}
-
-/** Blips for a line as it types (Bubble.svelte); returns a canceller (tap-to-finish, a new line). */
-export function talk(glyphs: readonly Glyph[], voice: 'host' | 'villager'): () => void {
-  const s = sound.settings;
-  if (!s.voice || s.volume <= 0 || !engine) return () => {};
-  const p = blipPlan(glyphs);
-  return engine.blips(voice === 'host' ? 'blip-host' : 'blip-villager', p.times, p.rates);
 }
 
 /** Once, in the root layout. `muffled`: a sheet, the phone or the harvest is up (the music goes soft and dull under

@@ -23,7 +23,7 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe('audio session type', () => {
-  it("'playback' only while ミュージック is on; effects and voices alone are 'ambient'", () => {
+  it("'playback' only while ミュージック is on; effects alone are 'ambient'", () => {
     expect(sessionType(true)).toBe('playback');
     expect(sessionType(false)).toBe('ambient');
   });

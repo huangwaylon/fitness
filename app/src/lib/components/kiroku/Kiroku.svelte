@@ -1,14 +1,11 @@
-<script module lang="ts">
-  export type KirokuEntry = { tab: 'body' | 'money'; week?: string };
-</script>
-
 <script lang="ts">
-  // きろく (records) NookPhone app (design.md "Kiroku"): からだ | ベル pills, week cards → week → day, read-only
-  // (Apple Health is the source of truth), full screen inside the phone. ◀ (the phone's back) goes up one level: the
-  // phone calls `back()` first. The only inputs are the two goals (either person's: the goal screen names whose) and
-  // とりけす on my buys. Everything is computed from the store's reduced model, lazily for the opened week/day. Loaded
-  // on first open (ShimaPhone imports it dynamically).
-  import { tick, untrack } from 'svelte';
+  // きろく (records, design.md "Kiroku"), the island panel's first part: at its top the ベル ledger (this week by day,
+  // then the past weeks) and then からだ (the weight trend, the two goals, the week cards), each under a section heading;
+  // a week → its days, a day, the weight screen, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
+  // the panel shows its other sections only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
+  // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on my buys.
+  // Everything is computed from the store's reduced model, lazily for the opened week/day.
+  import { tick } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { MOVE_GOAL } from '#lib/config/rules.ts';
   import { bellsLedger, dayDetail, historyWeeks, weekDetail } from '#lib/model/history.ts';
@@ -38,9 +35,11 @@
     | { k: 'goal'; p: PersonId }
     | { k: 'moveGoal'; p: PersonId };
 
-  let { entry = null }: { entry?: KirokuEntry | null } = $props();
-  let tab = $state<'body' | 'money'>('body');
+  let { level = $bindable(0) }: { level?: number } = $props();
   let stack = $state<Screen[]>([]);
+  $effect(() => {
+    level = stack.length;
+  });
   let root: HTMLElement | undefined = $state();
   /** The scroll position of each level under the open one (parallel to `stack`), restored on ◀. */
   let saved: number[] = [];
@@ -57,27 +56,16 @@
   let goalPick = $state<PersonId | null>(null);
   const goalP = $derived<PersonId>(goalPick ?? me);
   // One computation per screen and model (not per use).
-  const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
-  const money = $derived(m && !top && tab === 'money' ? bellsLedger(m.state, m.now) : null);
+  const weeks = $derived(m && !top ? historyWeeks(m.state, m.now) : null);
+  const money = $derived(m && !top ? bellsLedger(m.state, m.now) : null);
   const wkDetail = $derived(m && top?.k === 'week' ? weekDetail(m.state, top.wk, m.now) : null);
   const today = $derived(m ? localDateAt(m.now) : '');
   // The weight trend: both people on the からだ list, one on its own screen.
-  const trends = $derived(m && ((!top && tab === 'body') || top?.k === 'weight')
+  const trends = $derived(m && (!top || top?.k === 'weight')
     ? { A: weightTrend(m.state, 'A', m.now), B: weightTrend(m.state, 'B', m.now) } : null);
   const day = $derived(m && top?.k === 'day' ? dayDetail(m.state, top.date, m.now) : null);
 
-  // Apply an entry (ribbon → this week, jar total → the ベル tab) each time one arrives.
-  $effect(() => {
-    const e = entry;
-    if (!e) return;
-    untrack(() => {
-      tab = e.tab;
-      stack = e.week ? [{ k: 'week', wk: e.week === 'current' ? (view?.weekKey ?? '') : e.week }] : [];
-      saved = stack.map(() => 0);
-    });
-  });
-
-  /** The element that scrolls きろく: the nearest scrolling ancestor (the phone's app body or the dialog itself). */
+  /** The element that scrolls きろく: the nearest scrolling ancestor (the panel's body). */
   function scroller(): HTMLElement | null {
     for (let el = root?.parentElement; el; el = el.parentElement) {
       const o = getComputedStyle(el).overflowY;
@@ -93,7 +81,7 @@
     await tick();
     sc?.scrollTo({ top: 0 });
   }
-  /** ◀: one level up, back where that list was scrolled to. False at the top (the phone goes back to its home screen). */
+  /** ‹: one level up, back where that list was scrolled to. False at the top. */
   export function back(): boolean {
     if (!stack.length) return false;
     stack = stack.slice(0, -1);
@@ -103,7 +91,7 @@
     return true;
   }
 
-  /** After けってい: focus back on the goal's ✎, else on the phone. */
+  /** After けってい: focus back on the goal's ✎, else on the panel. */
   async function refocus(key: string) {
     await tick();
     const el = root?.querySelector<HTMLElement>(`[data-focus="${CSS.escape(key)}"]`);
@@ -141,21 +129,16 @@
   <div class="lvl">
   {#if m && view}
     {#if !top}
-      <!-- A segmented switch (toggle buttons), not tabs: there is no tab panel to move to. -->
-      <div class="pills" role="group" aria-label={t('phone.app.kiroku')}>
-        {#each ['body', 'money'] as const as id (id)}
-          <button type="button" class="pill" aria-pressed={tab === id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => (tab = id)}>{t(`kiroku.tab.${id}`)}</button>
-        {/each}
-      </div>
+      {#if money}
+        <h2 class="sec">{t('panel.kiroku')}</h2>
+        <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
+      {/if}
       {#if weeks && trends}
+        <h2 class="sec">{t('panel.body')}</h2>
         <WeightCard {trends} {order} {names} {villagers} {today} onopen={(p) => go({ k: 'weight', p })} />
         <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
           onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
-      {/if}
-      {#if weeks}
         <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
-      {:else if money}
-        <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
     {:else if top.k === 'week' && wkDetail}
       <WeekDetail d={wkDetail} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
@@ -195,18 +178,15 @@
 
 <style>
   .kiroku { padding-bottom: 8px; }
+  /* the section headings: the same small soft label as the panel's other sections */
+  .sec { margin: 6px 2px -4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
+  .sec ~ .sec { margin-top: 10px; }
   .who { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
   .who small { color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
-  /* each level slides in like a phone app (design.md "Navigation": one push motion, 240ms) */
+  /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .lvl { animation: none; } }
-  .pills { display: flex; gap: 8px; justify-content: center; margin: -4px 0 4px; }
-  .pill {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 104px; padding: 0 18px; border-radius: var(--r-pill);
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .pill[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
   .ask { padding: 16px; display: grid; gap: 6px; }
   .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }

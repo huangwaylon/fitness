@@ -1,22 +1,25 @@
 <script lang="ts">
-  // 島's HUD, NH island-view light and symmetric (the NookPhone is at the bottom centre): today's
-  // ベル ribbon centred under the notch / Dynamic Island (a copy of the NH map's yellow title banner: the screen's one
-  // focal point, 「きょう +620 ベル」 for both of us) and, only when sync is not ok, the sync chip centred under it.
-  // When ベル arrive the ribbon counts up (the focus beat). Tap → きろく ベル (the ledger).
+  // 島's HUD, NH island-view light and symmetric: today's ベル ribbon centred under the notch / Dynamic Island (a copy
+  // of the NH map's yellow title banner: the screen's one focal point, 「きょう +620 ベル」 for both of us) and, only
+  // when sync is not ok, the sync chip centred under it. When ベル arrive the ribbon counts up (the focus beat).
+  // Tap → the island panel slides down from under it (きろく first). The panel is its own chunk, loaded on first open.
   import { tick, untrack } from 'svelte';
   import { Tween, prefersReducedMotion } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import SyncPill from '../ui/SyncPill.svelte';
-  import { openKiroku } from '#lib/ui-state/ui.svelte.ts';
+  import { lazy } from '#lib/ui-state/reload.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
     /** Today's ベル so far, both people. */
     bells: number;
-    /** Bindable: the phone is open (the ribbon opens it into きろく). */
-    phoneOpen?: boolean;
+    /** Bindable: the panel is open (the island pauses under it). */
+    panelOpen?: boolean;
   }
-  let { bells, phoneOpen = $bindable(false) }: Props = $props();
+  let { bells, panelOpen = $bindable(false) }: Props = $props();
+  const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
+  /** Mounted from the first open on (it keeps its state between opens). */
+  let opened = $state(false);
 
   // Count-up on a rise (instant under reduced motion, on a fall and on first paint), with a beat. The ribbon is never
   // remounted for it, so a focused ribbon keeps its focus.
@@ -38,13 +41,17 @@
 </script>
 
 <div class="ribbon-wrap">
-  <!-- Tap → きろく ベル, the ledger (design.md "Kiroku"). -->
-  <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })} onanimationend={() => (beat = false)}
-    onclick={() => { openKiroku({ tab: 'money' }); phoneOpen = true; }}>
+  <!-- Tap → the island panel (design.md "Panel"). -->
+  <button type="button" class="ribbon" class:beat bind:this={ribbon} data-sfx="self" aria-label={t('hud.today', { bells: formatBells(bells) })}
+    aria-haspopup="dialog" aria-expanded={panelOpen} onanimationend={() => (beat = false)} onclick={() => { opened = true; panelOpen = true; }}>
     <span class="wk" aria-hidden="true">{t('hud.todayShort')}</span><b class="money" aria-hidden="true">{shown.current >= 0.5 ? '+' : ''}{formatNum(shown.current)}<small>{t('bells.unit')}</small></b>
   </button>
   <SyncPill />
 </div>
+
+{#if opened}
+  {#await loadPanel() then { default: IslandPanel }}<IslandPanel bind:open={panelOpen} />{/await}
+{/if}
 
 <style>
   /* centred on the column (left/right 0 inside the centred .island), 16px under the safe area (the notch / Dynamic

@@ -57,13 +57,7 @@ const SPECS: Record<string, Spec> = {
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
   // NookPhone (しまフォン launcher).
-  'phone/nookphone': [208, 'NookPhone_NH_Model.png'], // drawn 30px tall (35 wide) → 2× at 3x DPR
-  'phone/passport': [92, 'NookPhone_Passport_NH_Icon.png'],
   // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
-  'phone/rescue': [92, 'NookPhone_Rescue_Service_NH_Icon.png'],
-  'phone/miles': [92, 'NookPhone_Nook_Miles_NH_Icon.png'],
-  'phone/glyph-help': [96, 'Menu_Island_Life_101_NH_Icon.png'],
-  'phone/glyph-chat': [96, 'Menu_Chat_Log_NH_Icon.png'],
   'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
   // v4 trees: the hardwood in its four seasonal looks is the NH fruit tree (each bears one fruit kind);
   // A11: the seasonal sources are only 329×409, so they ship at full

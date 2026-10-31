@@ -14,7 +14,6 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <!-- app additions (same 2–2.6px brown-ink stroke language) -->
     <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12 H20.5 M12 3.5 Q7 12 12 20.5 Q17 12 12 3.5"/></g></symbol>
-    <symbol id="i-note" viewBox="0 0 24 24"><g fill="currentColor"><ellipse cx="7.6" cy="17.8" rx="3.8" ry="2.9" transform="rotate(-18 7.6 17.8)"/><ellipse cx="17.6" cy="15.6" rx="3.8" ry="2.9" transform="rotate(-18 17.6 15.6)"/><path d="M9.4 17.6 V6.4 L21.4 3.2 V15.6 H19.4 V7.4 L11.4 9.5 V17.6 Z"/></g></symbol>
     <symbol id="i-sync" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9 A7.5 7.5 0 0 0 5.5 8 M5 15 A7.5 7.5 0 0 0 18.5 16"/><path d="M5 4 V8.5 H9.5 M19 20 V15.5 H14.5"/></g></symbol>
   </defs>
 </svg>

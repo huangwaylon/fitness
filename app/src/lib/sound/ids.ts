@@ -2,16 +2,14 @@
 // Ids name the SOUND (a coin clink), not the moment (cues.ts maps app moments to these). A file listed for an id in
 // static/audio/manifest.json replaces its procedural placeholder (synth.ts) with no code change.
 
-/** Mixer buses: music and ambience (ミュージック), effects (効果音), dialogue blips (おしゃべり). */
-export type Bus = 'music' | 'sfx' | 'voice';
+/** Mixer buses: music and ambience (ミュージック), effects (効果音). */
+export type Bus = 'music' | 'sfx';
 
 export type SoundId =
   // UI (NookPhone and menus)
   | 'cursor' | 'confirm' | 'cancel' | 'phone-open' | 'phone-close' | 'phone-app'
   // UI taps (docs/design.md#taps): a soft select, the switch pair, a page, the "can't" boop, sync, remove, undo
   | 'select' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'whoosh' | 'poof' | 'undo'
-  // dialogue text blips (NH: Animalese; しずえ has her own higher voice)
-  | 'blip-host' | 'blip-villager'
   // island actions and money
   | 'rustle' | 'thud' | 'coin' | 'bells' | 'purchase'
   // jingles (duck the music, one at a time)
@@ -31,7 +29,7 @@ export type SceneSfx =
   | 'present' | 'cast' | 'plop' | 'nibble' | 'bite' | 'reel' | 'catch' | 'flee' | 'net' | 'bug-flee';
 
 interface SoundDef {
-  bus: 'sfx' | 'voice';
+  bus: 'sfx';
   /** Level on its bus, 0–1 (the placeholder renders all peak at the same level; this is the mix). */
   gain: number;
   /** ± cents of random pitch per play (NH never plays a repeated effect at exactly the same pitch). */
@@ -42,7 +40,7 @@ interface SoundDef {
   jingle?: boolean;
 }
 
-// Levels: soft UI ticks well under the island actions, the jingles at the top (they are the rewards), blips quiet.
+// Levels: soft UI ticks well under the island actions, the jingles at the top (they are the rewards).
 export const SOUNDS: Record<SoundId, SoundDef> = {
   cursor: { bus: 'sfx', gain: 0.35, jitter: 0, max: 1 },
   confirm: { bus: 'sfx', gain: 0.55, jitter: 0, max: 1 },
@@ -59,8 +57,6 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   whoosh: { bus: 'sfx', gain: 0.38, jitter: 30, max: 1 },
   poof: { bus: 'sfx', gain: 0.42, jitter: 40, max: 1 },
   undo: { bus: 'sfx', gain: 0.45, jitter: 0, max: 1 },
-  'blip-host': { bus: 'voice', gain: 0.5, jitter: 0, max: 2 },
-  'blip-villager': { bus: 'voice', gain: 0.5, jitter: 0, max: 2 },
   rustle: { bus: 'sfx', gain: 0.6, jitter: 80, max: 2 },
   thud: { bus: 'sfx', gain: 0.7, jitter: 60, max: 2 },
   coin: { bus: 'sfx', gain: 0.4, jitter: 25, max: 3 },
