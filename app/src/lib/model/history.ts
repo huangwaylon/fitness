@@ -92,7 +92,7 @@ function watchIsEdit(s: State, p: PersonId, date: LocalDate, t: number): boolean
   const key = `${date}|exercise_min`;
   const set = latestTimed(s.metricSets[p].get(key), t);
   if (!set) return false;
-  return !(s.metrics[p].get(key) ?? []).some((r) => r.at > set.at && r.at <= t && r.v > set.v);
+  return !(s.metrics[p].get(date)?.exercise_min ?? []).some((r) => r.at > set.at && r.at <= t && r.v > set.v);
 }
 
 /** Every week from the economy's first week (or this week, before it starts) to this week, newest first. */

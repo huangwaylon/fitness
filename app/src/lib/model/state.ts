@@ -6,7 +6,7 @@ import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/d
 import { rowAt } from './snapshot.ts';
 import {
   DATE_RE, editTarget, EVENT_TYPES, isId, isPersonId, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
-  type EventType, type SnapshotRows
+  type ActivityMetric, type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
 
@@ -82,7 +82,8 @@ interface BellSpendRec { at: number; person: PersonId; spendId: string; item: st
 interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number }
 
 export interface State {
-  metrics: Record<PersonId, Map<string, Timed<number>[]>>;
+  /** Ingested activity rows per person: date → metric → rows, ascending `at` (no key string built per row). */
+  metrics: Record<PersonId, Map<LocalDate, Partial<Record<ActivityMetric, Timed<number>[]>>>>;
   /** Buys from the wallet, in server order. */
   bellSpends: BellSpendRec[];
   /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
@@ -228,7 +229,11 @@ export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, re
     if (metric === 'weight') {
       if (value < WEIGHT_KG.min || value > WEIGHT_KG.max) continue;
       push(s.weights[person], date, { at, v: roundKg(value) });
-    } else if (isActivityMetric(metric)) push(s.metrics[person], `${date}|${metric}`, { at, v: value });
+    } else if (isActivityMetric(metric)) {
+      let day = s.metrics[person].get(date);
+      if (!day) s.metrics[person].set(date, (day = {}));
+      (day[metric] ??= []).push({ at, v: value });
+    }
     else continue;
     synced(person, at, String(iso));
   }
