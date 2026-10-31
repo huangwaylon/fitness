@@ -11,7 +11,7 @@ const CACHE = `${SHELL}${version}`;
 const FONTS = 'island-fonts-v1';
 /** A slow network (one bar, a captive portal) must not hang the launch: after this the cached shell opens. */
 const NAV_TIMEOUT_MS = 3000;
-// Villager art: ~160 villagers × render + icon is too much to download at install. Only the two
+// Villager art: 440 villagers × render + icon (~12 MB) is too much to download at install. Only the two
 // default villagers are precached; every other render/icon is cached on first use, in a cache that outlives builds
 // (bump the suffix if villager art is re-fetched under the same paths).
 const VILLAGERS = 'island-villagers-v1';

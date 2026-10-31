@@ -28,7 +28,7 @@ export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
 /** The island's catches (fish, bugs, junk): shown only after a catch, so cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean => path.includes('/art/critters/');
-/** The two default villagers' art is precached (lib/villagers/roster.ts DEFAULT_VILLAGER); the rest is cached on use. */
+/** The two default villagers' art is precached (lib/villagers/look.ts DEFAULT_VILLAGER); the rest is cached on use. */
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base

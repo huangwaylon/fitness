@@ -4,11 +4,13 @@
 // personality in the game, `special: true`), shown first in the picker. Names follow the Japanese game; species,
 // personality and gender come from each villager's Nookipedia infobox. `colour` (the infobox title colour) only tints the generic
 // silhouette (Silhouette.svelte) that shows if an image is missing.
-// Selection: prefs `villager` (roster id) → per-person default. Unknown ids fall back to the default.
+// This module (names, species: ~35 KB) stays out of the first load: the island draws villagers through look.ts (ids
+// from the art manifest, facing flags, defaults); the picker, the panel and the search import this.
+import { LOOKS_RIGHT, NO_MIRROR } from './facing.ts';
+import type { Look } from './look.ts';
 import { SPECIES, type Personality, type Species } from './species.ts';
 
-interface Look {
-  id: RosterId;
+interface RosterEntry extends Look {
   nameJa: string;
   nameEn: string;
   /** A special character (not a villager): `species` and `personality` are null. */
@@ -18,10 +20,6 @@ interface Look {
   gender: 'm' | 'f';
   /** Silhouette tint (the infobox title colour), only seen if an image is missing. */
   colour: string;
-  /** The render looks toward the viewer's right as drawn (most NH renders are near-frontal and count as left). */
-  looksRight: boolean;
-  /** Never mirror: text/numbers on the outfit or a one-sided design (Raymond's odd eyes). Leans in instead. */
-  noMirror: boolean;
 }
 
 type Row = readonly [id: string, nameJa: string, nameEn: string, species: Species, personality: Personality, gender: 'm' | 'f', colour: string];
@@ -480,31 +478,15 @@ const SPECIAL_ROWS = [
 
 export type RosterId = (typeof ROWS)[number][0] | (typeof SPECIAL_ROWS)[number][0];
 
-// Checked by eye against the renders (a contact sheet of static/art/villagers); update when adding villagers. None of
-// the 259 added in the full-NH pass faces right (the side-profile species, anteaters, eagles, elephants, look left).
-// Special characters: Orville's beak points right; K.K.'s guitar (it would turn left-handed), the DAL text on
-// Orville's mug and Wilbur's badge, Kapp'n's shirt logo and Gulliver's sailor uniform never mirror.
-const LOOKS_RIGHT: ReadonlySet<RosterId> = new Set<RosterId>(['goldie', 'bunnie', 'judy', 'molly', 'dom', 'orville']);
-const NO_MIRROR: ReadonlySet<RosterId> = new Set<RosterId>([
-  'raymond', 'sasha', 'stitches', 'lucky', 'agent-s', 'kid-cat', 'rocket', 'tad', 'octavian',
-  'coach', 'tank', 'chabwick', 'curt', 'axel', 'marcie', 'kk-slider', 'orville', 'wilbur', 'kappn', 'gulliver',
-  // the rest of NH (contact sheets of the 259 added renders): numbers, letters and logos on the outfit…
-  'astrid', 'bella', 'tabby', 'benedict', 'biff', 'chow', 'spike', 'big-top', 'bill', 'boyd', 'buzz', 'ricky', 'drift', 'jay',
-  'peewee', 'victoria', 'walker', 'broccolo', 'mac', 'peck', 'camofrog', 'frank', 'pudge', 'tex', 'mott', 'puck', 'rilla',
-  'samson', 'tom',
-  // …and one-sided faces: Cece's and Kody's patches, Peaches' mark, Rasher's and Walt's scars, Stinky's two-tone mask
-  'cece', 'kody', 'peaches', 'rasher', 'walt', 'stinky'
-]);
-
-const look = (id: RosterId, rest: Omit<Look, 'id' | 'looksRight' | 'noMirror'>): [RosterId, Look] =>
+const entry = (id: RosterId, rest: Omit<RosterEntry, 'id' | 'looksRight' | 'noMirror'>): [RosterId, RosterEntry] =>
   [id, { id, ...rest, looksRight: LOOKS_RIGHT.has(id), noMirror: NO_MIRROR.has(id) }];
 
 export const ROSTER = Object.fromEntries([
   ...SPECIAL_ROWS.map(([id, nameJa, nameEn, gender, colour]) =>
-    look(id, { nameJa, nameEn, special: true, species: null, personality: null, gender, colour })),
+    entry(id, { nameJa, nameEn, special: true, species: null, personality: null, gender, colour })),
   ...ROWS.map(([id, nameJa, nameEn, species, personality, gender, colour]) =>
-    look(id, { nameJa, nameEn, special: false, species, personality, gender, colour }))
-]) as Record<RosterId, Look>;
+    entry(id, { nameJa, nameEn, special: false, species, personality, gender, colour }))
+]) as Record<RosterId, RosterEntry>;
 
 const SPECIES_ORDER: (Species | null)[] = Object.keys(SPECIES) as Species[];
 /** The special characters (curated order), then every villager by species (SPECIES order) and English name: the
@@ -515,21 +497,3 @@ export const ROSTER_IDS: RosterId[] = [
     (a, b) => SPECIES_ORDER.indexOf(ROSTER[a].species) - SPECIES_ORDER.indexOf(ROSTER[b].species) || ROSTER[a].nameEn.localeCompare(ROSTER[b].nameEn)
   )
 ];
-
-/** Defaults until the users pick: A = Goldie (dog), B = Anchovy (bird). */
-const DEFAULT_VILLAGER: Record<'A' | 'B', RosterId> = { A: 'goldie', B: 'anchovy' };
-
-export function isRosterId(s: unknown): s is RosterId {
-  return typeof s === 'string' && Object.hasOwn(ROSTER, s);
-}
-
-/** Resolve who to draw: a roster `villager` id wins; anything else → the per-person default. */
-export function resolveLook(opts: { villager?: string | null; person?: 'A' | 'B' }): Look {
-  if (isRosterId(opts.villager)) return ROSTER[opts.villager];
-  return ROSTER[DEFAULT_VILLAGER[opts.person ?? 'A']];
-}
-
-/** The island host: しずえ, or たぬきち once a player picked しずえ as their villager (never two Isabelles on screen). */
-export function hostOf(picks: readonly (string | null | undefined)[]): 'isabelle' | 'tom-nook' {
-  return picks.includes('isabelle') ? 'tom-nook' : 'isabelle';
-}

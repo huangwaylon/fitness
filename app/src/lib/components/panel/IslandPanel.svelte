@@ -22,7 +22,8 @@
   import SyncSection from './SyncSection.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { ROSTER, resolveLook } from '#lib/villagers/roster.ts';
+  import { resolveLook } from '#lib/villagers/look.ts';
+  import { ROSTER } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
