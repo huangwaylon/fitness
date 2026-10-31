@@ -155,7 +155,7 @@ export function clearCache(): Promise<void> {
   return p;
 }
 
-type Reply = { me: PersonId; now: string; rev?: string; rows: Partial<SnapshotRows> };
+type Reply = { me: PersonId; now: string; rev: string; rows: Partial<SnapshotRows> };
 
 /** The later of two `since` values (ISO instants; null = none). */
 const laterAt = (a: string | null, b: string | null): string | null => (a === null ? b : b === null || Date.parse(a) >= Date.parse(b) ? a : b);
@@ -175,12 +175,11 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
   const compact = lock !== null && (!same || late || (same.compactedAt ?? -Infinity) < lock);
   const rows = compact ? compactRows(merged, serverNow) : merged;
   const compactedAt = compact ? lock! : same?.compactedAt;
-  const rev = reply.rev ?? same?.rev;
-  const rowsAt = !same || rows !== merged ? clientNow : (same.rowsAt ?? clientNow);
+  const rowsAt = !same || rows !== merged ? clientNow : same.rowsAt;
   // `since` from the rows before compaction: the newest of what was seen and what this reply adds.
   const since = same ? laterAt(same.since, maxAt({ metrics: reply.rows.metrics ?? [], events: reply.rows.events ?? [] })) : maxAt(merged);
   return {
-    v: 1, me: reply.me, rows, since, ...(rev === undefined ? {} : { rev }), ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt,
+    v: 1, me: reply.me, rows, since, rev: reply.rev, ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt,
     skewMs: Number.isNaN(serverNow) ? (prev?.skewMs ?? 0) : serverNow - clientNow,
     fetchedAt: clientNow
   };
@@ -229,9 +228,9 @@ async function fetchAndMerge(clientNow: () => number): Promise<GasResult<{ cache
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;
   let r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', since ? { since } : {});
-  // Start over when the sheet was edited by hand since these rows were cached (or they predate revisions), or when
-  // the key answers for someone else: a `since` page merged into nothing would pass for the whole history.
-  const stale = r.ok && since && prev && ((r.rev !== undefined && r.rev !== prev.rev) || r.me !== prev.me);
+  // Start over when the sheet was edited by hand since these rows were cached, or when the key answers for someone
+  // else: a `since` page merged into nothing would pass for the whole history.
+  const stale = r.ok && since && prev && (r.rev !== prev.rev || r.me !== prev.me);
   if (stale) r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', {});
   // Paired again while this was in flight: the reply belongs to the old key, so neither its rows nor its `me` may
   // overwrite what pairing just reset (the refresh pairing starts fetches for the new key).

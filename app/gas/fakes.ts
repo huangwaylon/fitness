@@ -15,6 +15,9 @@ export class FakeSheet {
 
   getName() { return this.name; }
   getMaxRows() { return this.maxRows; }
+  getLastColumn() {
+    return this.rows.reduce((w, r) => { for (let j = (r?.length ?? 0) - 1; j >= w; j--) if (r[j] !== '' && r[j] !== null && r[j] !== undefined) return j + 1; return w; }, 0);
+  }
   getLastRow() {
     for (let i = this.rows.length - 1; i >= 0; i--) if (this.rows[i]?.some((v) => v !== '' && v !== null && v !== undefined)) return i + 1;
     return 0;

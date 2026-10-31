@@ -31,8 +31,8 @@ export const fruitId = (p: PersonId, f: RingFruit): string => `${p}:${f}`;
 /** This phone's record of `date` (another date, or nothing kept, starts empty). */
 export function fruitDay(date: string): FruitDay {
   const d = readJson<Partial<FruitDay>>(localKV(), SCENE.fruit);
-  if (!d || d.date !== date || !Array.isArray(d.dropped) || !Array.isArray(d.picked)) return { date, dropped: [], picked: [], bloomed: [] };
-  return { date, dropped: d.dropped, picked: d.picked, bloomed: Array.isArray(d.bloomed) ? d.bloomed : [] };
+  if (!d || d.date !== date || !Array.isArray(d.dropped) || !Array.isArray(d.picked) || !Array.isArray(d.bloomed)) return { date, dropped: [], picked: [], bloomed: [] };
+  return { date, dropped: d.dropped, picked: d.picked, bloomed: d.bloomed };
 }
 
 /** Where a fruit is: `met` today's goal, `day` this phone's record. A met fruit not yet seen dropped falls. */

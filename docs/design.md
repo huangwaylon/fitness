@@ -245,7 +245,7 @@ locked week's earnings stay as of its lock). Nothing in the app enters or fixes 
 What the app sends instead ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either
 person's: `data.person`, absent = the sender), buys and voids, harvest taps, high-fives, and the sender's own
 `locale`, `villagerName` and `villager`, and the island's finds for the ずかん (`find`, the first of each, never ベル). A buy and its とりけす are shown at once and wait 5 s with とりけす before they
-are sent (touching the banner holds it, ≤ 2 min). Rows of an event type the app no longer knows are ignored.
+are sent (touching the banner holds it, ≤ 2 min).
 
 ## Weight
 
@@ -981,7 +981,7 @@ The settings' note and the Now Playing tile name the event track or song.
 Rockin' K.K.), one-shots under `audio/kk/`. `playKK(id)` plays one over the island's music (from a tap; false when
 it can't sound), `stopKK()` ends it early, `sound.kk` is the song playing. A tap on K.K. (Saturday 18–24) with
 ミュージック on plays one (`kkPick`: never the last one again) unless one is playing; his show ending or the island
-closing stops it. Without song files, his short placeholder tune plays instead.
+closing stops it. Without song files he says he's tuning his guitar.
 
 ### Ambience
 

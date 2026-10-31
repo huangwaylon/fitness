@@ -6,8 +6,8 @@
 export type Bus = 'music' | 'sfx';
 
 export type SoundId =
-  // UI (NookPhone and menus)
-  | 'cursor' | 'confirm' | 'cancel' | 'phone-open' | 'phone-close' | 'phone-app'
+  // UI (the panel and menus)
+  | 'cursor' | 'confirm' | 'cancel' | 'panel-open' | 'panel-close'
   // UI taps (docs/design.md#taps): a soft select, the switch pair, a page, the "can't" boop, sync, undo
   | 'select' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'whoosh' | 'undo'
   // island actions and money
@@ -27,8 +27,6 @@ export type SoundId =
   | 'pluck' | 'sprinkle' | 'clonk'
   // a shaken tree's wasps: their angry buzz
   | 'buzz'
-  // visitors: K.K.'s little tune on his guitar (an original, a jingle: the music ducks under it)
-  | 'kk-song'
   // group stretching (island/stretching.ts): a bright little march on the piano for the stretches (an original, ~6 s)
   | 'stretch-song'
   // the night sky: a wish's soft chime; fireworks: a rocket's rising whistle and the burst (a soft boom and a crackle)
@@ -66,9 +64,8 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   cursor: { bus: 'sfx', gain: 0.35, jitter: 0, max: 1 },
   confirm: { bus: 'sfx', gain: 0.55, jitter: 0, max: 1 },
   cancel: { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 },
-  'phone-open': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1 },
-  'phone-close': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 },
-  'phone-app': { bus: 'sfx', gain: 0.5, jitter: 30, max: 1 },
+  'panel-open': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1 },
+  'panel-close': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1 },
   // taps: heard dozens of times a day, so under the confirm; the keypad the softest of all
   select: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },
   'toggle-on': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
@@ -114,7 +111,6 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   sprinkle: { bus: 'sfx', gain: 0.35, jitter: 60, max: 1 },
   clonk: { bus: 'sfx', gain: 0.45, jitter: 50, max: 2 },
   buzz: { bus: 'sfx', gain: 0.4, jitter: 40, max: 1 },
-  'kk-song': { bus: 'sfx', gain: 0.6, jitter: 0, max: 1, jingle: true },
   'stretch-song': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true },
   // a wish: an effect, not a jingle (it must not duck the music)
   wish: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },

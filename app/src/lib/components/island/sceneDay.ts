@@ -20,11 +20,9 @@ export function take(date: string, uid: string): void {
   if (!d.picked.includes(uid)) writeJson(localKV(), SCENE.day, { date, picked: [...d.picked.slice(-199), uid] });
 }
 
-/** This phone's wishes on shooting stars: the morning each brings its fragment to → how many (stars.ts). An older
- *  phone's single date (2–3 fragments that morning) reads as two wishes. */
+/** This phone's wishes on shooting stars: the morning each brings its fragment to → how many (stars.ts). */
 export function wishes(): Wishes {
-  const w = readJson<Wishes | string>(localKV(), SCENE.wish);
-  if (typeof w === 'string') return { [w]: 2 };
+  const w = readJson<Wishes>(localKV(), SCENE.wish);
   return w && typeof w === 'object' ? w : {};
 }
 /** One more wish, for `day`'s morning (`today`: older mornings are dropped). */

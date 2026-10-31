@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しまフォン → 村人: my villager (roster radios) and its name. The name field is seeded once, when the app opens:
+  // せってい → むらびと: my villager (roster radios) and its name. The name field is seeded once, when the app opens:
   // the store recomputes `view` on every tick, sync and tap, and must never overwrite what is being typed.
   // Layout: a pinned head (my villager's render, its name, the name and search fields) over the icon grid, which
   // scrolls on its own (the panel's body holds still on this level: IslandPanel `.fill`), so the search stays in reach

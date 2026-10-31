@@ -3,7 +3,7 @@ import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { execSync } from 'node:child_process';
 
-/** The app version (shown in しまフォン → あそびかた, names the SW cache, and in _app/version.json for Kit's update
+/** The app version (shown in せってい → あそびかた, names the SW cache, and in _app/version.json for Kit's update
  *  check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
   let sha = process.env.GITHUB_SHA?.slice(0, 7);

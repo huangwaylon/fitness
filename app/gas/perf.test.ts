@@ -68,6 +68,8 @@ describe('year-3 volume', () => {
     vi.setSystemTime(Date.now() + 1000);
     const poll = measure(() => post({ action: 'snapshot', since }));
     expect(poll.reply.rows.metrics).toHaveLength(31 * 2 + 11);
+    const quiet = measure(() => post({ action: 'snapshot', since: poll.reply.rows.metrics.at(-1)[0] }));
+    expect(quiet.reply.rows).toEqual({ metrics: [], events: [] });
 
     const full = measure(() => post({ action: 'snapshot' }));
     expect(full.reply.rows.metrics).toHaveLength(metricRows + 31 * 2 + 11);
@@ -75,11 +77,12 @@ describe('year-3 volume', () => {
     console.log([
       `metrics rows: ${metricRows}`,
       `ingest: ${ingest.cells} cells, ${ingest.ms} ms; re-send: ${resend.cells} cells, ${resend.ms} ms`,
-      `snapshot since: ${poll.cells} cells, ${poll.ms} ms; full: ${full.cells} cells, ${full.ms} ms`
+      `snapshot since: ${poll.cells} cells, ${poll.ms} ms; nothing new: ${quiet.cells} cells; full: ${full.cells} cells, ${full.ms} ms`
     ].join('\n'));
     // The hot paths read a month of rows at most, not three years.
     expect(ingest.cells).toBeLessThan(25_000);
     expect(poll.cells).toBeLessThan(10_000);
+    expect(quiet.cells).toBe(0); // most polls: nothing after `since`, so no rows are read
   });
 
   it('an event write reads one column of ids (the duplicate check), never the whole tab', () => {

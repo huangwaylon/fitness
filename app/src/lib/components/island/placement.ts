@@ -119,9 +119,7 @@ export function spotBy(w: number, h: number, from: Box, area: Box, tiers: readon
   return null;
 }
 
-/** The scene's safe area (client px): under the status bar, 4px inside its foot, 8px from the sides. (It used to stop
- *  at a `.below` band that no longer exists: the only `.below` left was a balloon under its speaker, which then cut the
- *  area short for the next balloon or plate.) */
+/** The scene's safe area (client px): under the status bar, 4px inside its foot, 8px from the sides. */
 function safeArea(scene: HTMLElement): Box {
   const s = scene.getBoundingClientRect();
   return {

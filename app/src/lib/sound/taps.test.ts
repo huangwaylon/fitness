@@ -13,9 +13,9 @@ const SKIP = [/\/dev\//];
 
 /** `self`: the handler (or what it sets off) plays the outcome's own cue. Where that sound comes from. */
 const SELF: Record<string, string> = {
-  'lib/components/island/Hud.svelte': 'the ribbon opens the panel: IslandPanel plays phone-open',
+  'lib/components/island/Hud.svelte': 'the ribbon opens the panel: IslandPanel plays panel-open',
   'lib/components/ui/Bubble.svelte': 'finishing a line is silent (as Ⓐ skips text in NH); then しずえ hops: host-tap',
-  'lib/components/ui/NavButton.svelte': 'the panel passes self: its ‹ plays back and its ✕ the phone-close tune (IslandPanel)',
+  'lib/components/ui/NavButton.svelte': 'the panel passes self: its ‹ plays back and its ✕ the panel-close tune (IslandPanel)',
   'lib/components/ui/Sheet.svelte': 'backdrop / Esc: back',
   'lib/components/panel/SoundSection.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
@@ -25,7 +25,7 @@ const SELF: Record<string, string> = {
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
-  'lib/components/island/Museum.svelte': 'the museum → scene-museum (a soft knock), then the panel plays phone-open as the ずかん opens'
+  'lib/components/island/Museum.svelte': 'the museum → scene-museum (a soft knock), then the panel plays panel-open as the ずかん opens'
 };
 
 /** `none`: deliberately silent. */

@@ -36,7 +36,7 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
     extra.push([new Date(at).toISOString(), (cache.demo && ev.person) || cache.me, ev.id, ev.type, JSON.stringify(ev.data)]);
   }
   const now = Math.max(clientNow + cache.skewMs, floor);
-  const rev = cache.demo || !cache.rev || (extra.length && Date.parse(extra[0][0]) <= lastLockAt(now)) ? null : `${cache.rev}@${cache.rowsAt ?? 0}`;
+  const rev = cache.demo || !cache.rev || (extra.length && Date.parse(extra[0][0]) <= lastLockAt(now)) ? null : `${cache.rev}@${cache.rowsAt}`;
   const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), rev };
   const p = prev?.from;
   if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.rev === from.rev && prev.me === cache.me) {

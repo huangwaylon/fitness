@@ -60,7 +60,7 @@ export function minuteTimer(update: () => void, doc: Doc | undefined = globalThi
 /** One timer for every clock on screen, while anything reads it. */
 const minuteTick = createSubscriber((update) => minuteTimer(update));
 
-/** The scene clock, reactive: an effect or template that reads it re-runs at each new minute (HUD, しまフォン, the
+/** The scene clock, reactive: an effect or template that reads it re-runs at each new minute (HUD, the panel, the
  *  island's naps, the theme, the store's recompute). */
 export function minuteNow(): Date {
   minuteTick();

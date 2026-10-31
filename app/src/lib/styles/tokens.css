@@ -20,7 +20,7 @@
   --c-leaf-text:#256E33;                                 /* green TEXT on a light fill (4.98:1 on paper,
                                                            ~5.8:1 on a card); -lip is never a text colour */
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
-  --c-mint:#7BD7C1;  --c-mint-lip:#63B4B5;               /* NH map mint (tiles, bars track) */
+  --c-mint:#7BD7C1;                                    /* NH map mint (bars track) */
   --c-coral:#FF8F7A;                                     /* errors only */
   --person-a:#2F86BD; --person-b:#D2701F;           /* けんこう's charts: ウェイ blue, うめ orange (CVD-safe pair, >= 3:1 on the card) */
 
@@ -91,7 +91,7 @@
      < flying coins (HudJar's, in their own layer over the stage) < the "+N" pop < the tree popup. The HUD and dock stay above the whole stage, the popup included. */
   --z-stage: 1; --z-hud: 7; --z-dock: 9; --z-harvest: 60; --z-toast: 90;
   --z-tree: 30; --z-canopy: 32; --z-fruit: 33; --z-fruit-row: 34; --z-fall: 50; --z-villager: 51; --z-villager-mine: 52;
-  --z-leaf: 70; --z-tint: 80; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-gain: 92; --z-popup: 95;
+  --z-leaf: 70; --z-tint: 80; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-popup: 95;
 
   /* ---------- viewport heights ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, panel,
@@ -170,7 +170,6 @@
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
   --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
   --firefly:#F3FF9E; --firefly-glow:#E8F59A;
-  --dur-walk:1600ms; /* = WALK_MS in motion/director.svelte.ts */
   /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar) */
   --sh-ground: rgba(40, 60, 40, .18);
 }

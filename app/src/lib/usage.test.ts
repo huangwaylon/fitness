@@ -1,7 +1,7 @@
 // Every i18n key, sprite symbol and art file the UI uses exists, and none is left unused. Usage is read
 // from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
-// the static prefix of a dynamic key (`habit.${k}`, 'rung.' + key). The host's lines (`host.<line>`) are picked by
-// name: `hostLine('grew')` or `key === 'payday'`.
+// the static prefix of a dynamic key (`panel.tab.${id}`). The host's lines (`host.<line>`) are
+// picked by name.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -136,7 +136,7 @@ describe('official art (static/art/manifest.json)', () => {
     expect(keys.filter((k) => !literals.has(k) && !built.has(k) && !byId(k))).toEqual([]);
   });
   it('every key named in the code exists', () => {
-    const named = [...literals].filter((l) => /^(bushes|deco|flowers|fruit|host|money|phone|reactions|season|trees|villagers)\/[\w-]+$/.test(l));
+    const named = [...literals].filter((l) => /^(bushes|deco|flowers|fruit|host|money|reactions|season|trees|villagers)\/[\w-]+$/.test(l));
     expect(named.filter((k) => !keys.includes(k))).toEqual([]);
   });
 });

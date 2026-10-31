@@ -31,7 +31,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(sums.some((w) => w.togetherDays > 0)).toBe(true);
   });
 
-  it('four fruits only, and no rows of the old workouts / presence tabs', () => {
+  it('four fruits only, and only the synced tabs', () => {
     expect(Object.keys(cache.rows).sort()).toEqual(['events', 'metrics']);
     const d = dayDetail(s, economyWeeks(s, now)[0], now);
     expect(Object.keys(d.people.A.met)).toEqual(['pear', 'peach', 'cherry', 'apple']);
@@ -49,7 +49,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today, view.together);
   });
 
-  it('Move and Stand every day, no check-ins or questions; うめ’s Move goal applies from its day', () => {
+  it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
     expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'highfive', 'pref'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'weight']);

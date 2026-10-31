@@ -10,7 +10,7 @@ import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { shopPrice } from '../src/lib/config/rules.ts';
 import {
-  eventSubject, EVENT_TYPES, isFind, isLocalDate, isId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
+  eventSubject, EVENT_TYPES, isFind, isLocalDate, isId, isMetricKey, isPersonId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
@@ -75,7 +75,7 @@ function handle(e: GAS.PostEvent | undefined): Reply {
     case 'event': return event(me, body);
     case 'snapshot': return snapshot(me, body);
     case 'uploads': return uploads(me);
-    case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) tab(t); return { ok: true, me, build: BUILD }; });
+    case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) heal(tab(t), t); return { ok: true, me, build: BUILD }; });
     default: return fail('bad_request');
   }
 }
@@ -159,27 +159,42 @@ function withLock<R>(fn: () => R): R | Fail {
  * The script's own bookkeeping in Script Properties, read once and written at most once per locked request:
  * - `LAST_AT`: the last server `at` handed out (they strictly increase).
  * - `ROWS`: JSON `{tab: last row}` of the synced tabs as this script last left them.
+ * - `TAILS`: JSON `{tab: at}`, the `at` of the last row this script appended to each synced tab.
  * - `REV`: the data revision (docs/backend.md#revision). Changes when the synced tabs were changed by hand.
  */
-interface ServerState { lastAt: number; rows: Partial<Record<TabName, number>>; rev: string; revChanged: boolean; dirty: boolean }
+interface ServerState {
+  lastAt: number;
+  rows: Partial<Record<TabName, number>>;
+  tails: Partial<Record<TabName, string>>;
+  rev: string;
+  revChanged: boolean;
+  dirty: boolean;
+}
 let state: ServerState | null = null;
 
 const newRev = (): string => `${Date.now().toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
 
+/** A JSON object property, `{}` when unset or unreadable (it is re-learnt). */
+function record(v: string | undefined): Rec {
+  try {
+    const r = JSON.parse(v ?? '{}');
+    return isRec(r) ? r : {};
+  } catch {
+    return {};
+  }
+}
+
 function loadState(): ServerState {
   const p = PropertiesService.getScriptProperties().getProperties();
-  let rows: ServerState['rows'] = {};
-  try {
-    const r = JSON.parse(p.ROWS ?? '{}');
-    if (isRec(r)) rows = r as ServerState['rows'];
-  } catch { /* re-learnt below */ }
   const rev = p.REV || newRev();
-  return { lastAt: Date.parse(p.LAST_AT ?? '') || 0, rows, rev, revChanged: !p.REV, dirty: !p.REV };
+  return {
+    lastAt: Date.parse(p.LAST_AT ?? '') || 0, rows: record(p.ROWS), tails: record(p.TAILS), rev, revChanged: !p.REV, dirty: !p.REV
+  } as ServerState;
 }
 
 function saveState(st: ServerState): void {
   if (!st.dirty) return;
-  const out: Record<string, string> = { ROWS: JSON.stringify(st.rows) };
+  const out: Record<string, string> = { ROWS: JSON.stringify(st.rows), TAILS: JSON.stringify(st.tails) };
   if (st.lastAt) out.LAST_AT = new Date(st.lastAt).toISOString();
   // Only a bump of our own is written, so a concurrent `onEdit` bump (outside the lock) is never overwritten.
   if (st.revChanged) out.REV = st.rev;
@@ -193,20 +208,23 @@ function current(): ServerState {
 
 /**
  * Compare a synced tab's last row with what this script last wrote. A difference means rows were added or deleted
- * by hand (or the tab was recreated), so cached clients can't catch up with `since`: bump `REV`. The first sight of
- * a tab (no `ROWS` entry yet) only learns it.
+ * by hand (or the tab was recreated), so cached clients can't catch up with `since`: bump `REV` and put the tab's
+ * layout right (`heal`). The first sight of a tab (no `ROWS` entry yet) only learns it. True when the tab is exactly
+ * as this script left it.
  */
-function noteRows(name: TabName, lastRow: number): void {
-  if (!(SYNCED_TABS as readonly string[]).includes(name)) return;
+function noteRows(sh: GAS.Sheet, name: TabName, lastRow: number): boolean {
+  if (!(SYNCED_TABS as readonly string[]).includes(name)) return false;
   const st = current();
   const known = st.rows[name];
-  if (known === lastRow) return;
+  if (known === lastRow) return true;
   if (known !== undefined) {
     st.rev = newRev();
     st.revChanged = true;
+    heal(sh, name);
   }
   st.rows[name] = lastRow;
   st.dirty = true;
+  return false;
 }
 
 /** Server timestamp for this request's rows: strictly later than any `at` written before (under the lock). */
@@ -238,16 +256,27 @@ export function resync(): void {
 function tab(name: TabName): GAS.Sheet {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(name);
-  if (!sh) {
-    sh = ss.insertSheet(name);
-    const cols = TABS[name];
-    // Plain-text format on the text columns first, so pasted or written dates stay strings.
-    const max = sh.getMaxRows();
-    cols.forEach((c, i) => { if (!NUMERIC_COLUMNS[name].includes(c)) sh!.getRange(1, i + 1, max, 1).setNumberFormat('@'); });
-    sh.getRange(1, 1, 1, cols.length).setValues([[...cols]]).setFontWeight('bold');
-    sh.setFrozenRows(1);
-  }
+  if (!sh) heal((sh = ss.insertSheet(name)), name);
   return sh;
+}
+
+/** A column's number format: plain text, so Sheets never turns a pasted or written date into a Date, or a number. */
+const formatOf = (name: TabName, col: string): string => (NUMERIC_COLUMNS[name].includes(col) ? '0.##' : '@');
+
+/**
+ * Put a tab's layout right: TABS' header in row 1 (bold, frozen; any column right of it unlabelled) and each
+ * column's format. Runs when the tab is made, on `whoami` (pairing) and when a hand change is noticed (`noteRows`).
+ */
+function heal(sh: GAS.Sheet, name: TabName): void {
+  const cols = TABS[name];
+  const width = Math.max(sh.getLastColumn(), cols.length);
+  const want = cols.concat(Array(width - cols.length).fill('') as never[]);
+  const head = sh.getRange(1, 1, 1, width);
+  if (head.getValues()[0].some((v, i) => String(v) !== want[i])) head.setValues([want]);
+  sh.getRange(1, 1, 1, cols.length).setFontWeight('bold');
+  sh.setFrozenRows(1);
+  const max = sh.getMaxRows();
+  cols.forEach((c, i) => sh.getRange(1, i + 1, max, 1).setNumberFormat(formatOf(name, c)));
 }
 
 /** The tab's data rows. */
@@ -264,7 +293,7 @@ function readRows(sh: GAS.Sheet, name: TabName): unknown[][] {
  */
 function readTail(sh: GAS.Sheet, name: TabName, enough: (chunk: unknown[][]) => boolean): unknown[][] {
   const last = sh.getLastRow();
-  noteRows(name, last);
+  noteRows(sh, name, last);
   const chunks: unknown[][][] = [];
   for (let end = last, n = TAIL_CHUNK; end >= 2; n *= 2) {
     const first = Math.max(2, end - n + 1);
@@ -273,7 +302,16 @@ function readTail(sh: GAS.Sheet, name: TabName, enough: (chunk: unknown[][]) => 
     end = first - 1;
     if (enough(chunk)) break;
   }
+  if (chunks.length) learnTail(name, instant(chunks[chunks.length - 1].at(-1)![0]));
   return chunks.length === 1 ? chunks[0] : ([] as unknown[][]).concat(...chunks);
+}
+
+/** Remember the `at` of a synced tab's last row (`TAILS`), so a poll with nothing after it reads no rows. */
+function learnTail(name: TabName, at: string): void {
+  const st = current();
+  if (!(SYNCED_TABS as readonly string[]).includes(name) || st.tails[name] === at) return;
+  st.tails[name] = at;
+  st.dirty = true;
 }
 
 /** `readTail`'s stop: the chunk starts at or before `at` (an ISO instant), so it holds every row after `at`. */
@@ -283,19 +321,17 @@ function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
   if (rows.length === 0) return;
   const cols = TABS[name];
   const last = sh.getLastRow();
-  noteRows(name, last);
-  // A tab's first data row (re)writes its header as TABS has it, so an empty tab with an older header is relabelled
-  // (the extra '' clears one stale column of a wider old header).
-  if (last <= 1) sh.getRange(1, 1, 1, cols.length + 1).setValues([[...cols, '']]);
+  noteRows(sh, name, last);
   const start = Math.max(last, 1) + 1;
   const need = start + rows.length - 1 - sh.getMaxRows();
   if (need > 0) sh.insertRowsAfter(sh.getMaxRows(), need);
-  const formats = cols.map((c) => (NUMERIC_COLUMNS[name].includes(c) ? '0.##' : '@'));
+  const formats = cols.map((c) => formatOf(name, c));
   sh.getRange(start, 1, rows.length, cols.length).setNumberFormats(rows.map(() => formats)).setValues(rows);
   if ((SYNCED_TABS as readonly string[]).includes(name)) {
     const st = current();
     st.rows[name] = start + rows.length - 1;
     st.dirty = true;
+    learnTail(name, text(rows[rows.length - 1][0]));
   }
 }
 
@@ -423,7 +459,7 @@ function event(me: PersonId, body: Rec): EventReply {
   return withLock((): EventReply => {
     const sh = tab('events');
     const last = sh.getLastRow();
-    noteRows('events', last);
+    noteRows(sh, 'events', last);
     // id, and for a void also type and data (columns 3–5).
     const rows = last >= 2 ? sh.getRange(2, 3, last - 1, type === 'spend_void' ? 3 : 1).getValues() : [];
     for (const r of rows) if (text(r[0]) === id) return { ok: true, duplicate: true };
@@ -506,13 +542,19 @@ function snapshot(me: PersonId, body: Rec): SnapshotReply {
     }
   } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
   return withLock((): SnapshotReply => {
-    // With `since`, only the tail after it is read (a poll reads a few hundred rows, not years of them).
-    const pick = (name: TabName, row: (r: unknown[], at: string) => unknown[]) =>
-      (since ? readTail(tab(name), name, reachesBack(since)) : readRows(tab(name), name))
-        .map((r) => [r, instant(r[0])] as const).filter(([, at]) => at > since).map(([r, at]) => row(r, at));
+    // With `since`, only the tail after it is read (a poll reads a few hundred rows, not years of them), and nothing at
+    // all when the tab is as this script left it and its last row is not after `since` (most polls).
+    const pick = (name: TabName, keep: (r: unknown[]) => boolean, row: (r: unknown[], at: string) => unknown[]) => {
+      const sh = tab(name);
+      const tail = current().tails[name];
+      if (since && tail && tail <= since && noteRows(sh, name, sh.getLastRow())) return [];
+      return (since ? readTail(sh, name, reachesBack(since)) : readRows(sh, name))
+        .map((r) => [r, instant(r[0])] as const).filter(([r, at]) => at > since && keep(r)).map(([r, at]) => row(r, at));
+    };
+    // Only what the client reads: rows of an event type or metric it doesn't know never leave the sheet.
     const rows = {
-      metrics: pick('metrics', (r, at) => [at, text(r[1]), text(r[2], 'date'), text(r[3]), num(r[4]) ?? 0]),
-      events: pick('events', (r, at) => [at, text(r[1]), text(r[2]), text(r[3]), text(r[4])])
+      metrics: pick('metrics', (r) => isPersonId(r[1]) && isMetricKey(r[3]), (r, at) => [at, r[1], text(r[2], 'date'), r[3], num(r[4]) ?? 0]),
+      events: pick('events', (r) => isPersonId(r[1]) && (EVENT_TYPES as readonly unknown[]).includes(r[3]), (r, at) => [at, r[1], text(r[2]), r[3], text(r[4])])
     } as SnapshotRows;
     return { ok: true, me, now: new Date().toISOString(), rev: current().rev, rows };
   });

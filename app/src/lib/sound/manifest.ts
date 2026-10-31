@@ -33,10 +33,10 @@ const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object'
 
 const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
-/** A bare path plays from 0; `{ file, start, end?, gain? }` from `start` s (see MusicTrack). A bad `end` (not after
- *  `start`) falls back to `<audio loop>`; a bad `gain` to 0 dB. */
+/** `{ file, start, end?, gain? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls back
+ *  to `<audio loop>`; a bad `gain` to 0 dB. */
 function track(v: unknown): MusicTrack | null {
-  const t = str(v) ? { file: v } : obj(v);
+  const t = obj(v);
   if (!str(t.file)) return null;
   const start = num(t.start) && t.start >= 0 ? t.start : 0;
   const out: MusicTrack = { file: t.file, start };

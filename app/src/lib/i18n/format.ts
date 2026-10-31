@@ -19,7 +19,7 @@ export function formatDate(d: string): string {
   return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(dateMs(d)));
 }
 
-/** The device clock (HUD, しまフォン status row): `9:05`. */
+/** The device clock (HUD, the panel): `9:05`. */
 export const clockTime = (d: Date): string => {
   const { hour, minute } = jst(d);
   return `${hour}:${String(minute).padStart(2, '0')}`;

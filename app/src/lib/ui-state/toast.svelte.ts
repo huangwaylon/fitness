@@ -1,4 +1,4 @@
-// The one banner (NookPhone notification): its text, icon, optional undo, and its life. ToastHost renders `toasts.current`
+// The one banner (an NH-style notification): its text, icon, optional undo, and its life. ToastHost renders `toasts.current`
 // (in the layout, or inside the topmost open sheet).
 import type { PersonId } from '#lib/types.ts';
 

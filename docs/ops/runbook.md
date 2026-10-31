@@ -123,10 +123,8 @@ set the new `/exec` URL in `GAS_URL` and in both Shortcuts.
 The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts/fetch-assets.ts`, then
 `cd app && npm run assets:fetch` (needs `cwebp`: `brew install webp`).
 
-## 9. Sheet leftovers
-An older sheet may still hold:
-- `gym_set`, `metric_set`, `workout_add` and `workout_edit` rows in `events` (e.g. B's one `metric_set`): not event
-  types the app knows any more (Apple Health is the source of truth), so the model ignores them and the server refuses
-  new ones. Harmless; leave them, or delete those rows by hand (that bumps `REV`, so each phone refetches once).
-- `presence` and `workouts` tabs: nothing reads or writes them. Delete them by hand if you like (right-click the tab
-  → **Delete**). Neither is a synced tab, so this doesn't change `REV` and needs no `resync`.
+## 9. What the sheet should hold
+Exactly three tabs, `metrics`, `events` and `uploads`, with the headers in [backend.md](../backend.md#tabs) (the script
+rewrites a wrong header itself). Any other tab (`presence`, `workouts`) is unused: delete it (right-click the tab →
+**Delete**; not a synced tab, no `resync`). Rows of an event type or metric the app doesn't know never reach the phones
+(`snapshot` leaves them out); deleting them by hand is optional (it bumps `REV`, so each phone refetches once).

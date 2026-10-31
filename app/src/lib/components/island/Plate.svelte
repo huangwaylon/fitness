@@ -70,9 +70,9 @@
       const sx = g.r.left + x / g.k, sy = g.r.top + y / g.k, h = plate.height + 4; // + the plate's lip
       let p = place(scene, plate.width, h, sx, sy);
       if (!p || Math.abs(p.y - sy) > NEAR_PX) {
-        // NH's box: low in the middle of the screen (the lowest free spot above the bottom band)
-        const s = scene.getBoundingClientRect(), bottom = Math.min(s.bottom, document.querySelector('.below')?.getBoundingClientRect().top ?? s.bottom);
-        p = place(scene, plate.width, h, (s.left + s.right) / 2, bottom + h / 2 + 10) ?? p;
+        // NH's box: low in the middle of the screen (the lowest free spot)
+        const s = scene.getBoundingClientRect();
+        p = place(scene, plate.width, h, (s.left + s.right) / 2, s.bottom + h / 2 + 10) ?? p;
       }
       if (!p) return ondone();
       const cx = (p.x - g.r.left) * g.k, cy = (p.y - g.r.top) * g.k;

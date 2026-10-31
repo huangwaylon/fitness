@@ -1,6 +1,6 @@
 // きろく's views and the event rules around them (docs/design.md#kiroku). Read-only: Apple Health is the source of
 // truth, so the only data is the Shortcut's rows; the goals (`pref` moveGoal / goalWeight) may be set for either
-// person (`data.person`). Rows of event types since removed (`metric_set`, `workout_add`, `workout_edit`) are ignored.
+// person (`data.person`).
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
@@ -45,14 +45,11 @@ const WED_MID = ms(DAYS[2], '23:30'); // mid-week, open
 const THU_AFTER = ms('2026-11-26', '12:00'); // locked
 
 describe('Apple Health is the source of truth', () => {
-  it('rows of the removed edit events (metric_set, workout_add, workout_edit) are ignored, without a crash', () => {
+  it('an unknown event type changes no metric, weight or ベル, without a crash', () => {
     const rows = withRows(goodWeek(), {
       events: [
-        ev(jst(DAYS[2], '09:00'), 'B', 'metric_set', { date: DAYS[0], metric: 'exercise_min', value: 60 }),
-        ev(jst(DAYS[2], '09:01'), 'A', 'metric_set', { person: 'B', date: DAYS[1], metric: 'weight', value: 61.2 }),
-        ev(jst(DAYS[2], '09:02'), 'B', 'workout_add', { id: 'm:1', date: DAYS[2], type: 'Pilates', durationMin: 70 }),
-        ev(jst(DAYS[2], '09:03'), 'B', 'workout_edit', { id: 'm:1', excluded: true }),
-        ev(jst(DAYS[2], '09:04'), 'B', 'no_such_type', {})
+        ev(jst(DAYS[2], '09:00'), 'B', 'no_such_type', { date: DAYS[0], metric: 'exercise_min', value: 60 }),
+        ev(jst(DAYS[2], '09:01'), 'A', 'no_such_type', { person: 'B', date: DAYS[1], metric: 'weight', value: 61.2 })
       ]
     });
     const s = reduce(rows);

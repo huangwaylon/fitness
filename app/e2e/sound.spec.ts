@@ -185,7 +185,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   // the island panel (tap the ribbon)
-  await step('島', 'ribbon (→ the panel)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['phone-open']);
+  await step('島', 'ribbon (→ the panel)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['panel-open']);
   await step('パネル', 'きろく tab', () => dlg.locator('.tab[data-tab=kiroku]').tap(), ['tick']);
   await step('きろく', 'day', () => dlg.locator('button.dbtn').first().tap(), ['page']);
   await step('きろく', 'back (‹) to the panel', () => dlg.locator('.titlebar .back').tap(), ['back']);
@@ -216,7 +216,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('あそびかた', 'くわしく', () => dlg.locator('[data-push=help]').tap(), ['page']);
   await step('あそびかた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('パネル', 'けんこう tab (back)', () => dlg.locator('.tab[data-tab=health]').tap(), ['tick']);
-  await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['phone-close']);
+  await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 

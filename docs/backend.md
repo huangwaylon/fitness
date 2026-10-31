@@ -14,8 +14,9 @@ server-side economy and no config tab: the client caches the rows and derives ev
 
 ## Tabs
 
-Row 1 is the header. A missing tab is created on first use with its text columns formatted as plain text (so Sheets
-never turns dates into Dates). `at` is the request's server time, ISO 8601 UTC with milliseconds, strictly increasing
+Row 1 is the header. The script keeps each tab's layout right (`heal`): a missing tab is created on first use, and on
+`whoami` and whenever a hand change is noticed it rewrites the header as `TABS` has it (any column right of it
+unlabelled) and formats each column as text or number (`NUMERIC_COLUMNS`; text so Sheets never turns dates into Dates). `at` is the request's server time, ISO 8601 UTC with milliseconds, strictly increasing
 and shared by all rows of one request. Dates are `YYYY-MM-DD` (Tokyo). The app never updates or deletes a row.
 
 | Tab | Columns | Written by |
@@ -48,8 +49,7 @@ model folds away). The model's `findsView` (`model/finds.ts`) keeps the first fi
 
 `person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the `goalWeight` / `moveGoal` prefs
 (`eventSubject`, shared by both sides). The row's `person` column is always the sender. There are no health-data events:
-Apple Health is the source of truth ([design.md](design.md#health-data)); the old `metric_set`, `workout_add` and
-`workout_edit` are refused, and rows of them in the sheet are ignored.
+Apple Health is the source of truth ([design.md](design.md#health-data)).
 
 ## API
 
@@ -62,7 +62,7 @@ is JSON: `{ok:true, ...}` or `{ok:false, error, detail?}`, `error` ∈ `unauthor
 |---|---|---|
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
 | `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate, so retries are safe |
-| `snapshot` | `since?` (ISO: the max `at` cached) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people |
+| `snapshot` | `since?` (ISO: the max `at` cached) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people; only rows the client reads (a known metric or event type, person `A`/`B`) |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows, newest first |
 | `whoami` | | `{ok, me, build}` (pairing; creates missing tabs) |
 | `health` | no `key` | `{ok, build}`: no Properties, no lock, no sheet (the monitor) |
@@ -83,11 +83,12 @@ bundle (`gas/build.ts`; `dev` unbundled), also on line 3 of `Code.js`.
 Every keyed action runs under the script lock (wait ≤ 10 s, else `busy`), so a snapshot never sees half a request's
 rows. Each locked request reads Script Properties once and writes them at most once, also after a failure:
 `LAST_AT` (the last `at`; the next is max(now, `LAST_AT` + 1 ms)), `ROWS` (each synced tab's last row as the script left
-it) and `REV` ([Revision](#revision)).
+it), `TAILS` (the `at` of each synced tab's last row) and `REV` ([Revision](#revision)).
 
 **Tail reads:** rows are appended in `at` order, so "rows after X" is a tail, read backwards in doubling chunks (256,
 512, …) until a chunk starts at or before X. `snapshot` with `since`, `ingest`'s comparison (from the day before the
-body's earliest date) and `uploads` read tails; a full `snapshot` and the `event` id dedupe read the whole tab.
+body's earliest date) and `uploads` read tails; a full `snapshot` and the `event` id dedupe read the whole tab. A `snapshot` with `since` reads no rows of a tab that is
+as the script left it (`ROWS`) and whose last row is not after `since` (`TAILS`): most polls read nothing.
 
 ## Revision
 

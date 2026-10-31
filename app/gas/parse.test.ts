@@ -60,13 +60,13 @@ describe('parseShortcut: the official body', () => {
     expect(r.metrics).toHaveLength(12);
   });
 
-  it('calories or stand_minutes with a different length are dropped with a warning; an older body without them still works', () => {
+  it('calories or stand_minutes with a different length are dropped with a warning; each field is optional', () => {
     const r = parseShortcut({ ...BODY, calories: '120\n249', stand_minutes: '1\n2\n3\n4' });
     expect(r.warnings).toEqual(['calories: 2 lines but 3 dates; calories not saved', 'stand_minutes: 4 lines but 3 dates; stand_minutes not saved']);
     expect(r.metrics.filter((m) => m.metric === 'move_kcal' || m.metric === 'stand_min')).toEqual([]);
     expect(r.metrics).toHaveLength(7);
-    const { calories: _c, stand_minutes: _s, ...old } = BODY;
-    expect(parseShortcut(old).metrics.map((m) => m.metric)).not.toContain('move_kcal');
+    const { calories: _c, stand_minutes: _s, ...some } = BODY;
+    expect(parseShortcut(some).metrics.map((m) => m.metric)).not.toContain('move_kcal');
     expect(parseShortcut({ dates: 'Oct 28, 2026', stand_minutes: '30' }).metrics).toEqual([{ date: '2026-10-28', metric: 'stand_min', value: 30 }]);
   });
 
@@ -101,13 +101,6 @@ describe('parseShortcut: the official body', () => {
     expect(() => parseShortcut({ dates: 'Oct 28, 2026' })).toThrow(ShapeError);
     expect(() => parseShortcut('steps')).toThrow(/expected a JSON object/);
     expect(parseShortcut({ dates: '', steps: '' }).metrics).toEqual([]);
-  });
-
-  it('an old Shortcut’s `workouts` field is ignored (workouts are only added by hand in きろく); alone it is nothing to save', () => {
-    const workouts = { types: 'ヨガ', starts: 'Oct 28, 2026 at 7:00 AM', ends: 'Oct 28, 2026 at 7:45 AM', avgHrs: '118' };
-    const r = parseShortcut({ dates: 'Oct 28, 2026', steps: '8000', workouts });
-    expect(r).toEqual({ metrics: [{ date: '2026-10-28', metric: 'steps', value: 8000 }], skipped: 0, warnings: [] });
-    expect(() => parseShortcut({ workouts })).toThrow(/nothing to save/);
   });
 
   it('steps_watch: each day\'s steps are max(iPhone, Watch), one row in the steps position; one side unreadable = the other', () => {

@@ -17,7 +17,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { localKV, readJson, SCENE, writeRaw } from '#lib/sync/storage.ts';
+  import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { highFive } from '#lib/store/actions.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
   import { birthdaysOn } from '#lib/components/island/birthday.ts';
@@ -74,10 +74,10 @@
   $effect(() => {
     const v = week.view;
     if (!v || v.highFivesToday <= 0 || ui.overlay || toasts.current) return;
-    const k = SCENE.highFivesSeen(v.today);
-    const seen = Number(readJson<number>(localKV(), k) ?? 0);
+    const kept = readJson<{ date?: string; n?: number }>(localKV(), SCENE.highFivesSeen);
+    const seen = kept?.date === v.today ? Number(kept.n) || 0 : 0;
     if (v.highFivesToday > seen) {
-      writeRaw(localKV(), k, String(v.highFivesToday));
+      writeJson(localKV(), SCENE.highFivesSeen, { date: v.today, n: v.highFivesToday });
       later(() => toasts.show(t('island.highfiveGot', { name: v.people[v.partner].villagerName }), 3200, { person: v.partner, reaction: 'love' }), 700);
     }
   });

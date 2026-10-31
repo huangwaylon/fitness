@@ -113,7 +113,6 @@ function normDate(v: unknown): LocalDate | null {
 const num = (v: unknown): number | null => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
 
 function parseData(d: unknown): Record<string, unknown> | null {
-  if (d && typeof d === 'object') return d as Record<string, unknown>;
   if (typeof d !== 'string' || !d) return d === '' ? {} : null;
   try {
     const v = JSON.parse(d);
@@ -203,8 +202,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
   for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    // A type the server doesn't accept (a hand edit of the sheet, or a row of a type since removed) is ignored, and
-    // so is a bad `person`.
+    // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
     if (subject) ON_EVENT[type](s, subject, at, d);
