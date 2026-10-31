@@ -184,7 +184,7 @@ describe('weight never earns (ADR 0020)', () => {
     return out;
   }
 
-  it('weight rows, weight edits and goals change no view: today, the week, the pots, the harvest, きろく, the ledger', () => {
+  it('weight rows, weight edits and goals change no view: today, the week, the wallet, the harvest, きろく, the ledger', () => {
     const base = week();
     const heavy = withWeights(base);
     for (const now of [ms(D[2], '23:00'), ms(D[6], '19:31'), ms('2026-11-26', '12:00')]) {

@@ -45,7 +45,7 @@ describe('auth', () => {
 
   it('whoami creates every tab with its header', () => {
     a('whoami');
-    expect([...gas.sheets.keys()].sort()).toEqual(['events', 'metrics', 'uploads']); // no presence or workouts tab any more
+    expect([...gas.sheets.keys()].sort()).toEqual(['events', 'metrics', 'uploads']);
     expect(gas.sheets.get('metrics')!.rows[0]).toEqual(['at', 'person', 'date', 'metric', 'value']);
     expect(gas.sheets.get('metrics')!.frozen).toBe(1);
   });
@@ -136,7 +136,8 @@ describe('never throws', () => {
   });
 
   it('bad action fields are bad_request', () => {
-    expect(a('presence', { place: 'gym', event: 'arrive' }).error).toBe('bad_request'); // the old action is gone
+    for (const old of ['presence', 'gym']) expect(a(old, { place: 'エニタイム', event: 'arrive' }).error).toBe('bad_request'); // retired actions
+    expect(gas.sheets.has('presence')).toBe(false);
     expect(a('event', { id: 'e1', type: 'nope', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: '', type: 'highfive', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: 'e1', type: 'highfive', data: [1] }).error).toBe('bad_request');
@@ -282,13 +283,7 @@ describe('ingest', () => {
   });
 });
 
-describe('the gym is gone, and events', () => {
-  it('the `gym` action is refused and writes nothing (no presence tab)', () => {
-    expect(a('gym', { place: 'エニタイム', at: '2026-10-29T11:05:00+09:00' })).toEqual({ ok: false, error: 'bad_request' });
-    expect(b('gym')).toEqual({ ok: false, error: 'bad_request' });
-    expect(gas.sheets.has('presence')).toBe(false);
-  });
-
+describe('events', () => {
   it('events: a duplicate id is acknowledged and ignored, so retries are safe', () => {
     const ev = { id: 'A-1730170000-1', type: 'pref', data: { key: 'moveGoal', value: 500 } };
     expect(a('event', ev)).toEqual({ ok: true });
@@ -381,7 +376,7 @@ describe('edit events (history-and-editing.md §4.1)', () => {
   it('other edit shapes are checked too', () => {
     const bad = [
       { type: 'workout_edit', data: { id: 'w1' } },
-      { type: 'workout_edit', data: { id: 'w1', strength: true } }, // the strength mark is gone
+      { type: 'workout_edit', data: { id: 'w1', strength: true } }, // no `excluded`
       { type: 'workout_edit', data: { id: 'w1', excluded: 'yes' } },
       { type: 'workout_add', data: { id: 'm:1', date: '2026-10-28', type: 'Core Training', durationMin: 30 } }, // a Watch-only type
       { type: 'workout_add', data: { id: 'w-no-prefix', date: '2026-10-28', type: 'Yoga', durationMin: 30 } },
@@ -395,7 +390,7 @@ describe('edit events (history-and-editing.md §4.1)', () => {
     expect(data('events')).toEqual([]);
   });
 
-  it('gym_set is no longer an event type: refused, whatever its data', () => {
+  it('a retired type (`gym_set`, from a stale client) is refused, whatever its data', () => {
     for (const [i, d] of [{ date: '2026-10-28', on: true }, { person: 'A', date: '2026-10-28', on: false }].entries()) {
       expect(a('event', { id: `g${i}`, type: 'gym_set', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' });
     }
