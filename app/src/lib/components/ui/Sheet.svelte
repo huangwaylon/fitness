@@ -55,7 +55,10 @@
     if (!dlg) return;
     if (open && !dlg.open) {
       dlg.showModal();
-      dlg.focus(); // focus the sheet itself, not the first control (no stray focus ring)
+      // the sheet itself, not the first control (no stray focus ring); showModal's own focus on that control may have
+      // scrolled it (the undo banner's とりけす comes first), so start at the top
+      dlg.focus({ preventScroll: true });
+      dlg.scrollTop = 0;
     } else if (!open && dlg.open) dlg.close();
   });
 
