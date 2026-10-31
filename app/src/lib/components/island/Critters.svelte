@@ -376,7 +376,7 @@
 
   /** A pill bug (or, in its hours, a centipede) crawls out from under the rock by the hedge (Care's rock tap). */
   export function fromRock(x: number, y: number) {
-    if (bug || reducedMotion()) return;
+    if (bug) return;
     const { hour } = jst(now());
     const id: BugId = oddsAt(BUGS.centipede, 1, hour) > 0 ? 'centipede' : 'pill-bug';
     preload(critterArt(id));

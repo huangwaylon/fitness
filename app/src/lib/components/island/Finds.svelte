@@ -8,14 +8,14 @@
   // Everything derives from the Tokyo date and the time (beach.ts), so both phones broadly see the same island; what
   // this phone took is hidden here only (sceneDay.ts). SceneTaps mounts this inside the stage and asks it about each
   // tap after the critters (`tap`). Cheap: static images and one-shot animations; no timers but the dig's short wait,
-  // the clock is the scene's minute tick. Reduced motion: no lift or shovel, the plate fades in.
+  // the clock is the scene's minute tick.
   //   ?find=bottle | fragment (dev or ?demo): a bottle or this morning's fragments now (the e2e's hook); ?seed= varies the
   //   island's seed.
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Plate from './Plate.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { jst, minuteNow, now, reducedMotion } from '#lib/time/clock.ts';
+  import { jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { sceneSfx } from './sceneTaps.ts';
@@ -121,11 +121,9 @@
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number) {
     take(date, uid);
     taken++;
-    if (!reducedMotion()) {
-      const n = ++seq;
-      lift = { n, x, y, art, tilt };
-      later(() => lift?.n === n && (lift = null), 500);
-    }
+    const n = ++seq;
+    lift = { n, x, y, art, tilt };
+    later(() => lift?.n === n && (lift = null), 500);
   }
 
   function pickShell(s: Shell) {
@@ -146,7 +144,6 @@
     plate(b.x, b.y, findArt('message-bottle'), t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
   }
   function digUp(s: DigSpot) {
-    const calm = reducedMotion();
     take(date, s.uid);
     digHold = Date.now() + 20_000 + rand() * 20_000;
     clearTimeout(holdTimer);
@@ -154,13 +151,11 @@
     taken++;
     sceneSfx('dig');
     recordFind('fossil', s.fossil);
-    if (!calm) {
-      const n = ++seq;
-      dig = { n, x: s.x, y: s.y };
-      later(() => dig?.n === n && (dig = null), 3200);
-    }
-    plate(s.x, s.y - 4, findArt(s.fossil), t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), calm ? 0 : 650);
-    later(() => sceneSfx('catch'), calm ? 0 : 650);
+    const n = ++seq;
+    dig = { n, x: s.x, y: s.y };
+    later(() => dig?.n === n && (dig = null), 3200);
+    plate(s.x, s.y - 4, findArt(s.fossil), t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650);
+    later(() => sceneSfx('catch'), 650);
   }
 
   /** A tap on the scene (client px), after the critters: true when a find took it. Reach: a 44px target. */
@@ -296,7 +291,4 @@
   /* picked up: it lifts off the sand and fades */
   .lift > :global(*) { translate: -50% -60%; rotate: var(--tilt); animation: lift .5s ease-out both; }
   @keyframes lift { to { transform: translateY(calc(-16 * var(--su))) scale(1.15); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) {
-    .shell.fresh, .lift > :global(*), .shovel, .clod { animation: none; }
-  }
 </style>

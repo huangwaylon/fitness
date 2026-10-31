@@ -7,7 +7,7 @@
   // own (sceneDay.ts). SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`).
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { jst, minuteNow, reducedMotion } from '#lib/time/clock.ts';
+  import { jst, minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
@@ -66,13 +66,12 @@
     take(date, w.uid);
     pulled++;
     sceneSfx('weed');
-    if (!reducedMotion()) spawn({ kind: 'pull', x: w.x, y: w.y, flip: w.flip }, 700);
+    spawn({ kind: 'pull', x: w.x, y: w.y, flip: w.flip }, 700);
   }
   function hitRock() {
     const what = rockTap(Math.random);
     sceneSfx('clonk');
-    if (!reducedMotion())
-      rockEl?.animate([{ transform: 'none' }, { transform: 'translateX(-1.5px)', offset: 0.2 }, { transform: 'translateX(1.5px)', offset: 0.45 }, { transform: 'translateX(-.8px)', offset: 0.7 }, { transform: 'none' }], { duration: 320, easing: 'ease-out' });
+    rockEl?.animate([{ transform: 'none' }, { transform: 'translateX(-1.5px)', offset: 0.2 }, { transform: 'translateX(1.5px)', offset: 0.45 }, { transform: 'translateX(-.8px)', offset: 0.7 }, { transform: 'none' }], { duration: 320, easing: 'ease-out' });
     if (what === 'sparkle') {
       spawn({ kind: 'spark', x: ROCK.x + 6, y: ROCK.y - ROCK.h }, 800);
       sceneSfx('glint');
@@ -146,5 +145,4 @@
     0% { transform: scale(0) rotate(0); opacity: 0; } 35% { transform: scale(1.1) rotate(45deg); opacity: 1; }
     100% { transform: scale(0) rotate(90deg); opacity: 0; }
   }
-  @media (prefers-reduced-motion: reduce) { .up, .clod, .glint { animation-name: none; } }
 </style>

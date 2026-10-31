@@ -67,8 +67,4 @@
   .catch-icon :global(.official) { max-width: none; filter: drop-shadow(0 1.5px 1.5px rgba(60, 40, 20, .3)); }
   /* the icon starts at the source (the plate's centre + --dx/--dy) and pops over to its place */
   @keyframes lift { from { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } 25% { opacity: 1; } }
-  @keyframes fade-in { from { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) {
-    .catch, .catch * { animation-name: fade-in !important; transform: none !important; }
-  }
 </style>

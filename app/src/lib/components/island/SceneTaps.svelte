@@ -132,7 +132,7 @@
     const calm = reducedMotion();
     // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
     if (!calm && critters?.tap(e.clientX, e.clientY)) return;
-    // then the day's finds: a shell, a fragment, the bottle, a dig spot (they work under reduced motion too)
+    // then the day's finds: a shell, a fragment, the bottle, a dig spot
     if (finds?.tap(e.clientX, e.clientY)) return;
     // and the island's care: a weed to pull, the rock by the hedge
     if (care?.tap(e.clientX, e.clientY)) return;
