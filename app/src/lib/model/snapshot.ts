@@ -1,14 +1,6 @@
-// The `snapshot` reply of the Apps Script backend (docs/backend.md#tabs, #api) and pure helpers to
-// merge incremental (`since`) replies. Rows are compact arrays in the sheet's column order.
-import type { PersonId } from '#lib/types.ts';
+// Pure helpers to merge incremental (`since`) `snapshot` replies into the cached rows (docs/backend.md#tabs, #api).
+// Rows are compact arrays in the sheet's column order.
 import type { SnapshotRows } from '#lib/contract/api.ts';
-
-export interface Snapshot {
-  me: PersonId;
-  /** Server time of the reply (ISO). */
-  now: string;
-  rows: SnapshotRows;
-}
 
 export const emptyRows = (): SnapshotRows => ({ metrics: [], events: [] });
 
