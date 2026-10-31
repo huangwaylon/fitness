@@ -43,7 +43,7 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
     return { state: prev.state, me: cache.me, now, from };
   }
   const rows = extra.length ? { ...cache.rows, events: [...cache.rows.events, ...extra] } : cache.rows;
-  return { state: reduce(rows, cache.demo ?? null, rev), me: cache.me, now, from };
+  return { state: reduce(rows, rev), me: cache.me, now, from };
 }
 
 /**

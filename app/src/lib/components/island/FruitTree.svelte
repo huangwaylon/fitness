@@ -8,9 +8,9 @@
   // (the idle budget).
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail:
-  // a nameplate (whose tree), then per fruit today / goal, today's ベル and the week's badge pips
-  // (●●●○○ = 3 of 5 days; ✓ once the badge is met). It stays until this tree is tapped again, the other tree is
-  // tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
+  // a nameplate (whose tree), then per goal ✓ once met or what is left, and its +1 ベル; then today's ふたりでぜんぶ
+  // (both people, all four goals: +2) and when the data last arrived. It stays until this tree is tapped again, the
+  // other tree is tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
   // pops + sparkles a fruit.
   import { onDestroy, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
@@ -19,10 +19,12 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Fx from '../characters/Fx.svelte';
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
-  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
+  import { formatNum, t } from '#lib/i18n/index.ts';
   import { lastSyncLine } from '#lib/i18n/format.ts';
   import { minuteNow } from '#lib/time/clock.ts';
-  import { todayAmount, todayPct } from './progress.ts';
+  import { todayPct } from './progress.ts';
+  import { RULES } from '#lib/config/rules.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, PILE, TREE, fruitCount, u } from './scene.ts';
   import { cue } from '#lib/sound/cues.ts';
 
@@ -54,25 +56,15 @@
 
   const ring = (f: RingFruit) => person.rings[f];
 
-  const amount = (f: RingFruit) => todayAmount(f, ring(f));
-  /** The one nudge (v2 milestones): 「あと 8分で +45」 for the tapped fruit,
-   *  else for the fruit nearest its next step (by share of the goal). None in a v1 week or once every step is reached. */
-  const next = $derived.by((): { f: RingFruit; text: string } | null => {
-    const open = RING_FRUITS.filter((f) => ring(f).nextAt != null && ring(f).nextGain != null);
-    if (!open.length) return null;
-    const gap = (f: RingFruit) => (ring(f).nextAt! - ring(f).today) / (ring(f).goal || 1);
-    const f = picked && open.includes(picked) ? picked : open.reduce((a, b) => (gap(b) < gap(a) ? b : a));
-    const r = ring(f);
-    return { f, text: t(`tree.next.${f}`, { n: formatNum(Math.max(1, Math.ceil(r.nextAt! - r.today))), b: formatNum(r.nextGain!) }) };
-  });
+  /** What is left of a goal not met yet: 「あと 12分」 (whole units, at least 1). */
+  const left = (f: RingFruit) => t(`tree.left.${f}`, { n: formatNum(Math.max(1, Math.ceil(ring(f).goal - ring(f).today))) });
+  /** Today's ふたりでぜんぶ (both people's goals), from the store's view; none in the gallery. */
+  const together = $derived(week.view?.together ?? null);
+  const togetherLine = $derived(together ? (together.met ? t('tree.together.met', { b: RULES.together }) : t('tree.together.left', { n: together.left })) : null);
   const label = $derived(
     `${person.villagerName}: ` +
-      RING_FRUITS.map((f) => {
-        const r = ring(f);
-        const bells = r.todayBells > 0 ? formatBells(r.todayBells, { signed: true }) : null;
-        const week = t('tree.week', { d: Math.min(r.weekDays, r.weekGoalDays), w: r.weekGoalDays }) + (r.badge ? ' ✓' : '');
-        return [t(`fruit.${f}`), amount(f), bells, week].filter(Boolean).join(' ');
-      }).join('、') + (next ? `。${next.text}` : '')
+      RING_FRUITS.map((f) => `${t(`fruit.${f}`)} ${ring(f).met ? `✓ +${RULES.perGoal}` : left(f)}`).join('、') +
+      (togetherLine ? `。${togetherLine}` : '')
   );
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
    *  clock ticks only then. */
@@ -209,21 +201,17 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="detail" id={detailId} role="status" onpointerdown={() => cue('tick')} style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
       <span class="plate">{person.villagerName}</span>
-      <span class="row hd" aria-hidden="true"><span></span><span class="lbl"></span><span>{t('tree.today')}</span><span></span><span>{t('bells.unit')}</span><span>{t('tree.thisWeek')}</span></span>
       {#each RING_FRUITS as f (f)}
         {@const r = ring(f)}
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{amount(f)}</span>
-          <!-- today's milestones (v2): four pips filling up toward the goal -->
-          <span class="steps">{#if r.milestone !== undefined}{#each [1, 2, 3, 4] as k (k)}<i class:on={k <= r.milestone}></i>{/each}{/if}</span>
-          <b class="money" class:zero={!r.todayBells}>{r.todayBells > 0 ? `+${formatNum(r.todayBells)}` : '—'}</b>
-          <!-- the week toward the badge: days met / days needed, a ✓ disc once it's earned -->
-          <span class="wk money" class:badge={r.badge}>{#if r.badge}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{Math.min(r.weekDays, r.weekGoalDays)}/{r.weekGoalDays}{/if}</span>
+          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{left(f)}{/if}</span>
+          <b class="money" class:zero={!r.met}>+{RULES.perGoal}</b>
         </span>
       {/each}
-      {#if next}<span class="next"><OfficialArt key={fruitArt(next.f)} size="16px" eager />{next.text}</span>{/if}
+      <!-- today's ふたりでぜんぶ: both of us, all four goals (+2 shared) -->
+      {#if togetherLine}<span class="duo" class:met={together?.met}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" /></svg>{togetherLine}</span>{/if}
       <!-- when this person's data last arrived (it explains a low tree); a soft dot once it is SYNC_LATE_MS old -->
       {#if sync}<span class="sync" class:late={sync.late}>{sync.text}</span>{/if}
     </div>
@@ -274,10 +262,10 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: a nameplate, a faint column head, then one row per fruit (icon · word · today/goal · ベル · the
-     week's pips), in shared columns (subgrid) so the numbers line up */
+  /* NH-style popup: a nameplate, then one row per fruit (icon · word · ✓ or what is left · +1), in shared columns
+     (subgrid) so the numbers line up */
   .detail {
-    position: absolute; z-index: var(--z-popup); translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto auto auto; gap: 3px 0;
+    position: absolute; z-index: var(--z-popup); translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
     /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches the jar or
@@ -299,9 +287,6 @@
     grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; column-gap: 8px;
     padding: 3px 6px; border-radius: var(--r-chip); line-height: 1;
   }
-  .row.hd { padding-block: 0 1px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
-  .row.hd > :nth-child(n + 3) { text-align: right; }
-  .row.hd > :last-child { text-align: left; }
   .row.on { background: var(--c-yuzu); }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
@@ -309,18 +294,14 @@
   .amt.met { color: var(--c-leaf-text); }
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
   .row b.zero { color: var(--c-ink-soft); font-weight: 500; }
-  /* today's milestones: four small pips (yuzu = reached), one per 25% of the goal */
-  .steps { display: flex; gap: 2px; align-items: center; }
-  .steps i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--plate-ink) 22%, transparent); }
-  .steps i.on { background: var(--c-yuzu-lip); }
-  /* the week toward the badge: 「2/5」 days, or a ✓ disc once the badge is earned */
-  .wk { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); min-width: 22px; text-align: left; }
-  .wk.badge svg { width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
-  /* the one nudge: what the next step pays */
-  .next {
+  .ok { width: 18px; height: 18px; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; margin-left: auto; }
+  /* today's ふたりでぜんぶ: a star line under the goals (yuzu once both met everything) */
+  .duo {
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
     border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
   }
+  .duo svg { width: 16px; height: 16px; flex: none; fill: color-mix(in srgb, var(--plate-ink) 30%, transparent); }
+  .duo.met svg { fill: var(--c-yuzu-lip); }
   /* when the data last arrived: soft and small, under everything; the plate is cream at every time of day, so the
      soft ink is the plate's, not the theme's */
   .sync {
@@ -330,7 +311,7 @@
   .sync.late::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--c-ink-soft) 55%, transparent); }
   /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree */
   @container (max-width: 400px) {
-    .detail { grid-template-columns: 20px auto auto auto auto; }
+    .detail { grid-template-columns: 20px auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
     /* a clear gap, so the longest value (2,384/8,000歩) never touches its fruit */
@@ -344,7 +325,7 @@
   @media (max-height: 600px) {
     .detail { padding: 13px 6px 4px; }
     .row { padding-block: 1px; }
-    .next { margin-top: 2px; padding-top: 3px; }
+    .duo { margin-top: 2px; padding-top: 3px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }

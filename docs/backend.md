@@ -29,16 +29,16 @@ and shared by all rows of one request. Dates are `YYYY-MM-DD` (Tokyo). The app n
 ## Events
 
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is refused with `bad_request`. `data` is an object,
-≤ 20,000 characters as JSON. The server checks shapes only: wallet cover, menu contents and escalated prices are
-read-time rules in the model, which ignores an invalid row.
+≤ 20,000 characters as JSON. The server checks shapes (and a spend's item and price, `SHOP` in `config/rules.ts`);
+wallet cover is a read-time rule in the model, which ignores an invalid row.
 
 | type | data | Rules |
 |---|---|---|
-| `spend` | `{spendId, item, label, bells}` | `spendId` 1–128 chars, `item` ≤ 40, `label` 1–60, `bells` integer 1–10,000,000 |
+| `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 6, or `dinner` with `bells` 20 |
 | `spend_void` | `{spendId}` | the model accepts it from the buyer, once, after the spend |
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `highfive` | `{}` | |
-| `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000), `menu` (JSON array of ≤ 30 `{id, label, bells}`, unique ids `[\w-]{1,40}`; invalid = ignored whole) |
+| `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000) |
 
 `person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the `goalWeight` / `moveGoal` prefs
 (`eventSubject`, shared by both sides). The row's `person` column is always the sender. There are no health-data events:

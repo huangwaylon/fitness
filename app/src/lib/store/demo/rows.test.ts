@@ -4,8 +4,8 @@ import { composeModel } from '../view.ts';
 import { demoCache } from './rows.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { provisionalMs, reduce } from '#lib/model/state.ts';
-import { weekBells } from '#lib/model/bells.ts';
-import { bellsLedger, dayDetail, historyWeeks } from '#lib/model/history.ts';
+import { economyWeeks, weekBells, weekSum } from '#lib/model/bells.ts';
+import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
@@ -14,50 +14,47 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   let s: ReturnType<typeof reduce>;
   beforeEach(() => {
     cache = demoCache(now);
-    s = reduce(cache.rows, cache.demo);
+    s = reduce(cache.rows);
   });
 
-  it('has 9 weeks of history for both people, with ベル and badges', () => {
-    const weeks = historyWeeks(s, now);
+  it('has 9 weeks of history for both people, with ベル and some ふたりでぜんぶ days', () => {
+    const weeks = economyWeeks(s, now);
     expect(weeks).toHaveLength(9);
-    const past = weeks.filter((w) => provisionalMs(w.weekKey) <= now);
+    const past = weeks.filter((wk) => provisionalMs(wk) <= now);
     expect(past.length).toBeGreaterThanOrEqual(8);
-    for (const w of past) {
-      const b = weekBells(s, w.weekKey, now);
-      expect(b.A.daily + b.bonus.A).toBeGreaterThan(2000);
-      expect(b.B.daily + b.bonus.B).toBeGreaterThan(2000);
+    const sums = past.map((wk) => weekSum(weekBells(s, wk, now), addDays(wk, 6)));
+    for (const w of sums) {
+      expect(w.A).toBeGreaterThan(8);
+      expect(w.B).toBeGreaterThan(8);
+      expect(w.total).toBeLessThanOrEqual(70);
     }
-    expect(past.some((w) => Object.values(w.people.A.ringBadges).some(Boolean))).toBe(true);
+    expect(sums.some((w) => w.togetherDays > 0)).toBe(true);
   });
 
-  it('four fruits only: no day earns anything but 🍐🍑🍒🍎, and no rows of the old workouts / presence tabs', () => {
+  it('four fruits only, and no rows of the old workouts / presence tabs', () => {
     expect(Object.keys(cache.rows).sort()).toEqual(['events', 'metrics']);
-    const settled = historyWeeks(s, now).filter((w) => provisionalMs(w.weekKey) <= now);
-    const days = settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now)));
-    for (const d of days) expect(Object.keys(d.people.A.rings)).toEqual(['pear', 'peach', 'cherry', 'apple']);
+    const d = dayDetail(s, economyWeeks(s, now)[0], now);
+    expect(Object.keys(d.people.A.met)).toEqual(['pear', 'peach', 'cherry', 'apple']);
   });
 
-  it('the buys were all accepted (one voided); the menu is the default one', () => {
+  it('the buys were all accepted (one voided); the wallet adds up', () => {
     const ledger = bellsLedger(s, now);
-    const spends = Object.fromEntries(ledger.spends.map((x) => [x.spendId, x.voided]));
-    expect(spends).toMatchObject({
-      'demo-ice-1': false, 'demo-cafe-1': false, 'demo-snack-void': true, 'demo-snack-2': false, 'demo-dinner': false, 'demo-meal': false, 'demo-cafe-2': false
-    });
+    const sent = cache.rows.events.filter((e) => e[3] === 'spend').map((e) => JSON.parse(e[4]).spendId);
+    expect(ledger.spends.map((x) => x.spendId).sort()).toEqual([...sent].sort());
+    expect(ledger.spends.filter((x) => x.voided).map((x) => x.spendId)).toEqual(sent.includes('demo-snack-void') ? ['demo-snack-void'] : []);
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    expect(view.menu.map((x) => x.id)).toEqual(['snack', 'cafe', 'dinner', 'want', 'trip']); // the defaults, nothing custom
     expect(view.wallet.balance).toBe(ledger.earned - ledger.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0));
-    expect(view.wallet.balance).toBeGreaterThan(0);
-    if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today);
+    expect(view.wallet.balance).toBeGreaterThan(20);
+    if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today, view.together);
   });
 
   it('Move and Stand every day, no check-ins or questions; うめ’s Move goal applies from its day', () => {
     expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'highfive', 'pref'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'weight']);
-    const settled = historyWeeks(s, now).filter((w) => provisionalMs(w.weekKey) <= now);
-    expect(settled.some((w) => Object.values(w.people.B.ringBadges).some(Boolean))).toBe(true);
-    const goals = new Set(settled.flatMap((w) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(w.weekKey, i), now).people.B.move.goal)));
+    const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
+    const goals = new Set(settled.flatMap((wk) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(wk, i), now).people.B.move.goal)));
     expect([...goals].sort()).toEqual([400, 450]);
   });
 });

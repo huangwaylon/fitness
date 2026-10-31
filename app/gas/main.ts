@@ -8,7 +8,7 @@
 import { parseShortcut } from './parse.ts';
 import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import type { PersonId } from '../src/lib/types.ts';
-import { LIMITS } from '../src/lib/config/rules.ts';
+import { shopPrice } from '../src/lib/config/rules.ts';
 import {
   eventSubject, EVENT_TYPES, isLocalDate, isId, isRec, NUMERIC_COLUMNS, PREF_KEYS, TABS,
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
@@ -433,17 +433,14 @@ function event(me: PersonId, body: Rec): EventReply {
   });
 }
 
-const isInt = (v: unknown, lo: number, hi: number): boolean => typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
-
 /**
- * Shape checks per event type. Only the shape: whether the wallet covers a
- * spend and the full menu/value rules stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
+ * Shape checks per event type: a spend names one of the two rewards (SHOP) at exactly its price. Whether the wallet
+ * covers it and the pref values stay read-time rules in the model (`model/state.ts`), so the sheet stays a dumb log.
  */
 function validEventData(type: string, d: Rec): boolean {
   switch (type) {
     case 'spend':
-      return isId(d.spendId) && isInt(d.bells, 1, LIMITS.bellsMax) && typeof d.item === 'string' && d.item.length <= LIMITS.menuIdMaxChars &&
-        typeof d.label === 'string' && d.label.trim().length > 0 && d.label.trim().length <= LIMITS.spendLabelMaxChars;
+      return isId(d.spendId) && shopPrice(d.item) !== undefined && d.bells === shopPrice(d.item);
     case 'pref':
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined;
     case 'harvest':

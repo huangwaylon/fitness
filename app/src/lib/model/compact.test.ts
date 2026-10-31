@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { compactRows } from './compact.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
-import { bellsLedger, dayDetail, historyWeeks, weekDetail } from './history.ts';
+import { bellsLedger, dayDetail } from './history.ts';
 import { mergeRows } from './snapshot.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
 import type { MetricRow, SnapshotRows } from '#lib/contract/api.ts';
@@ -10,13 +10,13 @@ import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
 
 /** Everything the app shows, as one comparable value. */
 function views(rows: SnapshotRows, now: number, rev: string | null = null) {
-  const s = reduce(rows, null, rev);
+  const s = reduce(rows, rev);
   const today = new Date(now + 9 * 3600_000).toISOString().slice(0, 10);
   const wk = weekKeyOf(today);
   const weeks = [wk, addDays(wk, -7), addDays(wk, -14), addDays(wk, -35)];
   return JSON.stringify({
-    a: buildWeekView(s, 'A', now), b: buildWeekView(s, 'B', now), history: historyWeeks(s, now), ledger: bellsLedger(s, now),
-    weeks: weeks.map((w) => weekDetail(s, w, now)), days: weeks.flatMap((w) => [0, 3, 6].map((i) => dayDetail(s, addDays(w, i), now))),
+    a: buildWeekView(s, 'A', now), b: buildWeekView(s, 'B', now), ledger: bellsLedger(s, now),
+    days: weeks.flatMap((w) => [0, 3, 6].map((i) => dayDetail(s, addDays(w, i), now))),
     lastSync: s.lastSync
   });
 }

@@ -53,27 +53,26 @@ describe('reduce: events', () => {
     expect(s.prefs).toEqual({ A: {}, B: {} });
   });
 
-  it('spend and spend_void: string ids, first id wins, only the spender voids, once', () => {
-    const bell = (spendId: unknown, extra: object = {}) => ({ spendId, item: 'cake', label: ' ケーキ ', bells: 800, ...extra });
+  it('spend and spend_void: a reward at its price, string ids, first id wins, only the spender voids, once', () => {
+    const buy = (spendId: unknown, extra: object = {}) => ({ spendId, item: 'snack', bells: 6, ...extra });
     const s = reduce(rows([
-      ev(at(WK), 'B', 'spend', bell(7)), // not a string id
-      ev(at(WK), 'B', 'spend', bell('7')),
-      ev(at(WK), 'B', 'spend', bell('7', { label: 'dup', bells: 1 })),
-      ev(at(WK), 'B', 'spend', bell('x', { label: '' })),
-      ev(at(WK), 'B', 'spend', bell('y', { bells: 1.5 })),
-      ev(at(WK), 'B', 'spend', bell('z', { bells: 10_000_001 })),
-      ev(at(WK), 'B', 'spend', { spendId: 'nopot', label: 'ケーキ', bells: 800 }), // no item
+      ev(at(WK), 'B', 'spend', buy(7)), // not a string id
+      ev(at(WK), 'B', 'spend', buy('7')),
+      ev(at(WK), 'B', 'spend', buy('7', { item: 'dinner', bells: 20 })), // the id again
+      ev(at(WK), 'B', 'spend', buy('x', { bells: 20 })), // not its price
+      ev(at(WK), 'B', 'spend', buy('y', { item: 'cake' })), // not a reward
+      ev(at(WK), 'B', 'spend', { spendId: 'nopot', bells: 6 }), // no item
       ev(at(WK, '13:00'), 'A', 'spend_void', { spendId: '7' }), // not the spender
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: 'nopot' }), // not an accepted spend
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: '7' }),
       ev(at(WK, '14:00'), 'B', 'spend_void', { spendId: '7' }) // twice
     ]));
-    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'cake', label: 'ケーキ', bells: 800 }]);
+    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'snack', bells: 6 }]);
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['B', Date.parse(at(WK, '13:00'))]]);
   });
 
   it('a row of a type the server refuses (a hand edit of the sheet) is ignored, not a crash', () => {
-    const odd = [ev(at('2026-12-02'), 'A', 'nonsense', { x: 1 }), ev(at('2026-12-02'), 'B', 'spend', { spendId: 'y', label: 'x', amount: 5 })];
+    const odd = [ev(at('2026-12-02'), 'A', 'nonsense', { x: 1 }), ev(at('2026-12-02'), 'B', 'spend', { spendId: 'y', item: 'snack', amount: 6 })];
     const tick = ev(at('2026-12-03'), 'B', 'highfive', {});
     const a = reduce(rows([...odd, tick]));
     const b = reduce(rows([tick]));

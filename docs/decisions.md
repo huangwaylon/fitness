@@ -17,7 +17,7 @@ typing the key. Why: no accounts and no login, for two people.
 
 ### Append-only compute-on-read
 The sheet holds raw rows only: `metrics`, `events`, `uploads`. The server stamps every row with its own `at` and
-checks shapes; the app computes everything else (ベル, badges, locks, the wallet) from the rows on read. Why: no
+checks shapes; the app computes everything else (ベル, locks, the wallet) from the rows on read. Why: no
 ledger and no scheduler, and the rules sit in one place, in the app.
 
 ### Local-first sync
@@ -45,11 +45,18 @@ simpler, and the app is opened by choice.
 ## Economy
 
 ### Bells play money
-ベル are play money, not tied to yen: no transfers and no payday. Amounts are whole numbers. Why: prices the couple
-chooses, with no real money at stake.
+ベル are play money, not tied to yen: no transfers and no payday. Amounts are small whole numbers. Why: prices the
+couple chooses, with no real money at stake.
+
+### A stamp card
+Per person per Tokyo day, +1 ベル for each daily goal met, all or nothing (at most 4), and ふたりでぜんぶ: +2 shared
+when both meet all four the same day. One `RULES` object, no versions; the user resets the sheet for it. A typical
+week is ≈ 46 for the pair, a perfect one 70, a lazy one ≈ 28. Why: numbers a child can add up, every goal counts the
+same, and the bonus makes a day a team effort.
 
 ### Economy start
-The economy counts from the week of Mon 2026-10-26 (`ECONOMY_START`). Why: the week it shipped already earned.
+The economy starts with the data: the first week with an activity row stamped by its lock. Why: no start date to
+keep in the code, and a baseline of old days can't earn.
 
 ### Rings four automatic fruits
 Four automatic metrics, one fruit each, always listed in Apple's ring order (Move, Exercise, Stand), then steps:
@@ -58,7 +65,7 @@ Four automatic metrics, one fruit each, always listed in Apple's ring order (Mov
 |---|---|---|
 | 🍐 pear | Move, active kcal | per person (`moveGoal`, defaults 600 / 400) |
 | 🍑 peach | Exercise minutes | 60 min |
-| 🍒 cherry | Stand Time, minutes | 120 min (v1: 180) |
+| 🍒 cherry | Stand Time, minutes | 120 min |
 | 🍎 apple | Steps | 8,000 |
 
 Why: the Watch measures them with no effort, and the same goals apply to both people (except Move, which follows
@@ -71,51 +78,25 @@ A day's minutes are the Watch's exercise minutes. Steps never turn into minutes.
 A `pref` `moveGoal` (whole kcal, 100–2,000), which either person may set. It applies from the Tokyo day it is set
 and never re-prices earlier days. Why: Move kcal depend on body size.
 
-### Milestone curve
-From v2, each fruit pays in steps at 25 / 50 / 75 / 100% of the goal, each step worth more than the last: 🍐 19 /
-53 / 98 / 180, 🍑 45 / 120 / 230 / 420, 🍒 13 / 35 / 65 / 120, 🍎 20 / 60 / 110 / 200. Below 25% pays 0; above the
-goal stays at the max. Why: a partial day still pays, but the goal pays most.
-
-### Rainy season
-From Jun 1 to Jul 20, 30 or more counted exercise minutes also count as a full step day. Why: Tokyo's tsuyu makes
-walking hard.
-
-### Weekly badges and duo bonus
-At the Sunday harvest each person gets +450 ベル for each badge met (🍐, 🍑 and 🍒 at the goal on 5 or more days;
-🍎 on 4 or more days). The ふたりボーナス adds +500 for each badge both people met. Why: rewards consistency, and
-the duo bonus makes it a team effort without one miss costing everything.
-
-### Rule versions by week
-`RULES` is a list of versions by first week; `rulesFor(week)` picks one. v1 (week of 10-26) pays linearly (🍐 up to
-180, 🍑 3 a minute, 🍒 1 a minute up to 180, 🍎 200; badges +400, duo +200). v2 (from 2026-11-02) has the values
-above, an on-target week being 14,400 ベル for both. To change a value, append a version with a later `from`; never
-edit one whose weeks have earned. Why: everything is computed on read, so an edit in place would re-price the past.
-
 ### Harvest and week lock
-Each week has two times (JST). At Sunday 19:30 the harvest opens and the weekly bonus lands; tapping 受け取る is
-ceremony only. At the Wednesday 04:00 after, the week locks: its earnings are fixed, and later syncs don't count.
-Spends are never locked. The lock is internal (no 🔒 or countdown in the UI). Why: late Health syncs get a grace
-period, then the past (and the badges paid at the harvest) stays put; it also lets the client compact and memoise
-locked weeks.
+Each week has two times (JST). At Sunday 19:30 the harvest recap opens (each person's ベル, the ふたりでぜんぶ days, the
+total); tapping 受け取る is ceremony only and nothing lands then. At the Wednesday 04:00 after, the week locks: its
+earnings are fixed, and later syncs don't count. Spends are never locked. The lock is internal (no 🔒 or countdown in
+the UI). Why: late Health syncs get a grace period, then the past stays put; it also lets the client compact and
+memoise locked weeks.
 
 ### One wallet
-Every ベル earned, daily and weekly, goes into one shared wallet. Daily ベル count from their day, the bonus from
-Sunday 19:30. Why: one number to watch; trips are paid for outside the game.
+Every ベル earned goes into one shared wallet, from its day. Why: one number to watch; trips are paid for outside the
+game.
 
-### One menu
-One shared, editable list (`pref` `menu`: `{id, label, bells}`). Either person buys, the buyer can undo
-(`spend_void`), and a buy the wallet can't cover is ignored on read, so the balance never goes negative. Defaults:
-おやつ 1,200 · カフェ・デザート 2,500 · 外ごはん 6,000 · ほしいもの 8,000 · 旅のごほうび 12,000. Why: rewards are
-permission for small luxuries, priced against the on-target week.
-
-### Escalating food treats
-`snack`, `cafe` and `dinner` cost base × 1.5^n, where n is that item's earlier accepted, not-undone buys in the same
-Tokyo week by either person. The price is rounded to the nearest 50 ベル (an exact half rounds down) and resets on
-Monday. A buy that doesn't carry its price, in server order, is ignored. Why: a second treat in a week should be a
-bigger yes.
+### Two rewards
+Exactly two fixed treats: おやつ 6 ベル and 外食 20 ベル (`SHOP`). Either person buys, the buyer can undo
+(`spend_void`), and a buy the wallet can't cover is ignored on read, so the balance never goes negative. A spend names
+its item at exactly its price; the server refuses anything else. Why: two clear choices priced against the typical
+week (two おやつ and a 外食 with some to spare), nothing to edit or argue about.
 
 ### Weight never earns
-Weight is shown as a trend only: no ベル, no badge, no goal that pays, and the economy never reads it. The trend is
+Weight is shown as a trend only: no ベル, no goal that pays, and the economy never reads it. The trend is
 an EWMA (alpha 0.1), with an optional goal line; a day's weight is its latest row, 20–300 kg. Why: paying
 for kilograms rewards crash diets and punishes muscle.
 

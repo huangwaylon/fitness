@@ -31,7 +31,6 @@ const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
   'lib/components/kiroku/ValueInput.svelte': 'the goal fields (weight, Move): the system keyboard clicks',
-  'lib/components/wallet/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
   'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
@@ -95,7 +94,7 @@ const VALID = new Set<string>([...TAP_SFX, 'self', 'none']);
 
 describe('every tap has a sound (docs/design.md#taps)', () => {
   it('finds the app\'s tappables', () => {
-    expect(taps.length).toBeGreaterThan(45);
+    expect(taps.length).toBeGreaterThan(40);
   });
   it('every tappable names its sound in data-sfx', () => {
     const missing = taps.filter((t) => !t.sfx.length).map((t) => `${t.file}:${t.line} ${t.tag}`);

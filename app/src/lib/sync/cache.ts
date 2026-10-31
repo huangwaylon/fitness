@@ -6,7 +6,7 @@ import type { PersonId } from '#lib/types.ts';
 import { DATE_RE, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
-import { finalMs, lastLockAt, type DemoCalendar } from '#lib/model/state.ts';
+import { finalMs, lastLockAt } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type GasResult } from './transport.ts';
@@ -30,8 +30,8 @@ export interface SnapshotCache {
   skewMs: number;
   /** Client time of the last successful fetch (ms). */
   fetchedAt: number;
-  /** Demo only (never persisted): the demo's calendar, and queued events may name their sender (`person`). */
-  demo?: DemoCalendar;
+  /** Demo only (never persisted): queued events may name their sender (`person`). */
+  demo?: true;
 }
 
 const DB_NAME = 'island';

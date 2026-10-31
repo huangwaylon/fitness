@@ -81,7 +81,7 @@ Every list should have as many lines as `dates`. Each run replaces a day's value
 Shortcut fixes: [shortcut §6](shortcut-health-sync.md#6-troubleshooting).
 
 ## 7. Backups
-The sheet is the only copy of buys, the menu and goal changes (health numbers come from Apple Health and can be re-sent:
+The sheet is the only copy of buys and goal changes (health numbers come from Apple Health and can be re-sent:
 [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). Google's version history (File → Version
 history) covers bad edits, not a lost file or account.
 

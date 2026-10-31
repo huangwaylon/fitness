@@ -148,3 +148,20 @@ just opens the panel); please delete them once my panel lands.
   390×844 (a Home Screen app has no browser bars); if fish should also appear in Safari, `seaBox` could use the side
   seas left and right of the island or a smaller margin (the "left or right of the しまフォン button" comment is stale:
   the button is gone).
+
+## Code → UI: the stamp-card economy (2026-10-31)
+
+The economy is now +1 ベル per daily goal (max 4 a person), ふたりでぜんぶ +2, two fixed rewards (おやつ 6, 外食 20);
+no milestones, badges, menu or escalation (docs/design.md#economy). Model changes already type-check against your
+working tree; nothing of yours was edited. For your files:
+
+10. **`island/islandLife.svelte.ts:16` `LOW_WEEK_BELLS = 1000`**: a person's week is now 0–28 ベル, so R15 (the low-week
+    beat) fires every Thursday–Saturday. Something like `< 2 × weekday` (behind a 2-goals-a-day pace) or a flat `< 8`
+    would match the old intent.
+11. **`progress.ts` `dayScore(p, _weekKey?)`**: the week argument is unused now (a day max is 4); drop it from the
+    calls in `islandLife.svelte.ts` and I'll remove the parameter.
+12. **The `remove` cue** (`sound/cues.ts`, `taps.ts`) has no tappable left (it was the menu editor's ×); keep or drop.
+13. **`dev/Gallery.svelte:115`** shows 「146,200 ベル」; small numbers now (e.g. 「146 ベル」).
+14. The ribbon needs no change: 「きょう +6 ベル」 reads fine at 320–430.
+15. `e2e/critters.spec.ts` "a tap before the bite scares the fish away" fails against the current working tree
+    (Critters WIP); the economy e2e is green.

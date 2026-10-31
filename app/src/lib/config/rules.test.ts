@@ -1,90 +1,22 @@
-// Rule versions: compute-on-read re-prices every week a value applies to, so versions in use must never change.
+// The rules as data: the order of the fruits, the two rewards and their lookup.
 import { describe, expect, it } from 'vitest';
-import { RULES, rulesFor, type RuleVersion } from './rules.ts';
-import { weekKeyOf } from '#lib/time/dates.ts';
-import { reduce } from '#lib/model/state.ts';
-import { economyWeeks, weekBells } from '#lib/model/bells.ts';
-import type { SnapshotRows } from '#lib/contract/api.ts';
-import rowsJson from '#lib/model/fixtures/timeline-rows.json' with { type: 'json' };
+import { PEOPLE, RING_FRUITS, SHOP, shopPrice } from './rules.ts';
+import { PREF_KEYS } from '#lib/contract/api.ts';
 
-const ROWS = rowsJson as unknown as SnapshotRows;
-const END = Date.parse('2027-01-12T15:00:00Z');
-
-/** Run `fn` with an extra version appended (the way a rule change is made), then take it out again. */
-function withAppended<T>(list: readonly T[], extra: T, fn: () => void): void {
-  (list as T[]).push(extra);
-  try {
-    fn();
-  } finally {
-    (list as T[]).pop();
-  }
-}
-
-/** Every week's earnings (both people, daily + bonus) at END, from a fresh State. */
-const earnings = () => {
-  const s = reduce(ROWS);
-  return economyWeeks(s, END).map((wk) => {
-    const w = weekBells(s, wk, END);
-    return { weekKey: wk, A: w.A.daily, B: w.B.daily, bonus: w.bonusBells };
-  });
-};
-
-describe('RULES', () => {
-  it('the versions in use are pinned: append a new version instead of editing one', () => {
-    expect(RULES[0]).toEqual({
-      from: '2026-10-26',
-      goals: { exerciseMin: 60, standMin: 180, steps: 8000 },
-      bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200 },
-      badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, bells: 400, duoPerBadge: 200 }
-    });
-    expect(RULES[1]).toEqual({
-      from: '2026-11-02',
-      goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
-      bells: { perExerciseMin: 7, moveAtGoal: 180, perStandMin: 1, stepDay: 200 },
-      badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, bells: 450, duoPerBadge: 500 },
-      curve: { at: [0.25, 0.5, 0.75, 1], pay: [25, 70, 130, 240], bells: { peach: [45, 120, 230, 420], apple: [20, 60, 110, 200] } }
-    });
-    expect(RULES).toHaveLength(2);
+describe('rules', () => {
+  it('lists the fruits in Apple\'s ring order, then steps', () => {
+    expect(RING_FRUITS).toEqual(['pear', 'peach', 'cherry', 'apple']);
   });
 
-  it('v2 starts on Monday 2026-11-02: the week before is v1', () => {
-    expect(rulesFor('2026-10-26')).toBe(RULES[0]);
-    expect(rulesFor('2026-11-02')).toBe(RULES[1]);
-    expect(rulesFor('2027-06-07')).toBe(RULES[1]);
-    expect(weekKeyOf('2026-11-01')).toBe('2026-10-26'); // Sunday 11-01 belongs to the v1 week
-    expect(weekKeyOf('2026-11-02')).toBe('2026-11-02');
+  it('has exactly two rewards, おやつ 6 and 外食 20; shopPrice knows nothing else', () => {
+    expect(SHOP.map((x) => [x.id, x.bells])).toEqual([['snack', 6], ['dinner', 20]]);
+    expect(shopPrice('snack')).toBe(6);
+    expect(shopPrice('dinner')).toBe(20);
+    for (const v of ['cafe', 'trip', '', null, undefined, 6, {}]) expect(shopPrice(v)).toBeUndefined();
   });
 
-  it('versions start on Mondays, in ascending order; a week takes the latest that has started', () => {
-    for (const [i, v] of RULES.entries()) {
-      expect(weekKeyOf(v.from)).toBe(v.from);
-      if (i > 0) expect(v.from > RULES[i - 1].from).toBe(true);
-    }
-    expect(rulesFor('2026-08-31')).toBe(RULES[0]); // before the first version (the demo calendar)
-    const last = RULES[RULES.length - 1];
-    const next: RuleVersion = { ...last, from: '2026-12-07', bells: { ...last.bells, perStandMin: 2 } };
-    withAppended(RULES, next, () => {
-      expect(rulesFor('2026-11-30')).toBe(last);
-      expect(rulesFor('2026-12-07')).toBe(next);
-      expect(rulesFor('2027-06-07')).toBe(next);
-    });
-  });
-
-  it('a new version re-prices only the weeks from its `from`, never an earlier week', () => {
-    const before = earnings();
-    const last = RULES[RULES.length - 1];
-    const next: RuleVersion = {
-      ...last,
-      from: '2026-12-07',
-      bells: { ...last.bells, perExerciseMin: 5, stepDay: 300 },
-      badges: { ...last.badges, bells: 800 }
-    };
-    withAppended(RULES, next, () => {
-      const after = earnings();
-      expect(after.map((w) => w.weekKey)).toEqual(before.map((w) => w.weekKey));
-      const early = (ws: typeof before) => ws.filter((w) => w.weekKey < next.from);
-      expect(early(after)).toEqual(early(before));
-      expect(after.filter((w) => w.weekKey >= next.from)).not.toEqual(before.filter((w) => w.weekKey >= next.from));
-    });
+  it('the Move goal defaults per person; there is no menu to edit', () => {
+    expect([PEOPLE.A.moveGoal, PEOPLE.B.moveGoal]).toEqual([600, 400]);
+    expect(PREF_KEYS).not.toContain('menu');
   });
 });

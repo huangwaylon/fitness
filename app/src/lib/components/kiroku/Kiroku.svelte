@@ -1,22 +1,20 @@
 <script lang="ts">
   // きろく (records, design.md "Kiroku"), the island panel's first tab: at its top the ベル ledger (this week by day,
-  // then the past weeks) and then からだ (the weight trend, the two goals, the week cards), each under a section heading;
-  // a week → its days, a day, the weight screen, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
+  // then the past weeks) and then からだ (the weight trend, the two goals), each under a section heading;
+  // a day, the weight screen, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
   // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
   // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on my buys.
-  // Everything is computed from the store's reduced model, lazily for the opened week/day.
+  // Everything is computed from the store's reduced model, lazily for the opened day.
   import { tick } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { MOVE_GOAL } from '#lib/config/rules.ts';
-  import { bellsLedger, dayDetail, historyWeeks, weekDetail } from '#lib/model/history.ts';
+  import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { setGoalWeight, setMoveGoal, undoBanner, undoSpend } from '#lib/store/actions.ts';
   import { weightTrend } from '#lib/model/weight.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
-  import WeekList from './WeekList.svelte';
-  import WeekDetail from './WeekDetail.svelte';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
   import WeightCard from './WeightCard.svelte';
@@ -28,7 +26,6 @@
   import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
-    | { k: 'week'; wk: string }
     | { k: 'day'; date: string }
     | { k: 'void'; id: string; label: string; bells: number }
     | { k: 'weight'; p: PersonId }
@@ -56,9 +53,7 @@
   let goalPick = $state<PersonId | null>(null);
   const goalP = $derived<PersonId>(goalPick ?? me);
   // One computation per screen and model (not per use).
-  const weeks = $derived(m && !top ? historyWeeks(m.state, m.now) : null);
   const money = $derived(m && !top ? bellsLedger(m.state, m.now) : null);
-  const wkDetail = $derived(m && top?.k === 'week' ? weekDetail(m.state, top.wk, m.now) : null);
   const today = $derived(m ? localDateAt(m.now) : '');
   // The weight trend: both people on the からだ list, one on its own screen.
   const trends = $derived(m && (!top || top?.k === 'weight')
@@ -133,15 +128,12 @@
         <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
-      {#if weeks && trends}
+      {#if trends}
         <h2 class="sec">{t('panel.body')}</h2>
         <WeightCard {trends} {order} {names} {villagers} {today} onopen={(p) => go({ k: 'weight', p })} />
         <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
           onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
-        <WeekList {weeks} {order} {names} {villagers} onopen={(wk) => go({ k: 'week', wk })} />
       {/if}
-    {:else if top.k === 'week' && wkDetail}
-      <WeekDetail d={wkDetail} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
     {:else if top.k === 'weight' && trends}
