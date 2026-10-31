@@ -15,7 +15,7 @@ import { SOUNDS, SOUND_IDS, type Bus, type SoundId } from './ids.ts';
 import { LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
 import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
-import { IdleTimer, QUEUED_DROP_MS, SessionSwitch, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
+import { IdleTimer, QUEUED_DROP_MS, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
 import type { AmbientId } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
 
@@ -120,7 +120,6 @@ export class Engine {
   #ambientToken = 0;
   /** When the last resume() was asked for (performance.now()): a tap's own cue may sound while it settles. */
   #resumeAt = -Infinity;
-  #session = new SessionSwitch(applySession);
   #idle = new IdleTimer(() => this.#onIdle());
   /** Suspended by the idle timer (not by the background or an interruption): the next cue may wake it. */
   #asleep = false;
@@ -136,12 +135,13 @@ export class Engine {
   onrunning: (() => void) | null = null;
 
   /** The context, created on first use (inside a tap on iOS). Null where Web Audio is missing. */
-  #ensure(music: boolean): AudioContext | null {
+  #ensure(): AudioContext | null {
     if (this.ctx) return this.ctx;
     const AC = window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
     if (!AC) return null;
-    // Before the context exists: WebKit takes the session type when audio first starts (session.ts).
-    this.#session.want(music, true);
+    // Game music (user): 'ambient' mixes with other apps' audio and follows the Ring/Silent switch. WebKit takes the
+    // type when audio first starts, so it's set before the context exists.
+    applySession('ambient');
     const ctx = new AC({ latencyHint: 'interactive' });
     const g = () => ctx.createGain();
     this.#master = g();
@@ -163,11 +163,6 @@ export class Engine {
     return ctx;
   }
 
-  /** 'playback' while ミュージック is on (plays in silent mode), else 'ambient' (session.ts). */
-  setSession(music: boolean): void {
-    if (this.ctx) this.#session.want(music);
-  }
-
   #unlockState(music: boolean) {
     const f = this.#decks[this.#front];
     return { state: this.ctx?.state ?? null, music, decksReady: this.#decksReady, frontStalled: !!f?.key && f.el.paused && !f.starting };
@@ -187,7 +182,7 @@ export class Engine {
    *  pointerdown, which isn't a user activation on a touch screen) only creates and resumes the context, so the tap's
    *  own sound (fired on pointerdown) can be scheduled; the decks wait for the pointerup. */
   unlock(music: boolean, activation = true): void {
-    const ctx = this.#ensure(music);
+    const ctx = this.#ensure();
     if (!ctx) return;
     this.#held = false;
     clearTimeout(this.#sleepTimer);

@@ -1,4 +1,4 @@
-// The audio session, the resume and unlock conditions, the idle suspend and the hand-off timing (session.ts), and the
+// The resume and unlock conditions, the idle suspend and the hand-off timing (session.ts), and the
 // loudness gain (hourly.ts trackLevel), without an AudioContext (docs/design.md#engine-lifecycle).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -6,76 +6,17 @@ import {
   HourClock,
   IdleTimer,
   RESUME_WINDOW_MS,
-  SESSION_RELEASE_MS,
-  SessionSwitch,
   canSound,
   gestureAction,
   needsFadeIn,
   needsUnlock,
-  sessionType,
   wrapTarget,
-  type Gesture,
-  type SessionType
+  type Gesture
 } from './session.ts';
 import { trackLevel } from './hourly.ts';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
-
-describe('audio session type', () => {
-  it("'playback' only while ミュージック is on; effects alone are 'ambient'", () => {
-    expect(sessionType(true)).toBe('playback');
-    expect(sessionType(false)).toBe('ambient');
-  });
-
-  const make = () => {
-    const set: SessionType[] = [];
-    return { set, sw: new SessionSwitch((t) => set.push(t)) };
-  };
-
-  it('the first type applies at once, before the context exists, even when it is ambient', () => {
-    const { set, sw } = make();
-    sw.want(false, true);
-    expect(set).toEqual(['ambient']);
-  });
-
-  it("music on: 'playback' at once (inside the tap, before the deck starts)", () => {
-    const { set, sw } = make();
-    sw.want(false, true);
-    sw.want(true);
-    expect(set).toEqual(['ambient', 'playback']);
-    expect(sw.current).toBe('playback');
-  });
-
-  it("music off: back to 'ambient' only after the music's fade-out", () => {
-    const { set, sw } = make();
-    sw.want(true, true);
-    sw.want(false);
-    expect(set).toEqual(['playback']);
-    vi.advanceTimersByTime(SESSION_RELEASE_MS - 1);
-    expect(set).toEqual(['playback']);
-    vi.advanceTimersByTime(1);
-    expect(set).toEqual(['playback', 'ambient']);
-  });
-
-  it('music back on during the fade-out: the pending release is dropped, nothing changes', () => {
-    const { set, sw } = make();
-    sw.want(true, true);
-    sw.want(false);
-    vi.advanceTimersByTime(300);
-    sw.want(true);
-    vi.advanceTimersByTime(5000);
-    expect(set).toEqual(['playback']);
-  });
-
-  it('the same type again is not re-applied', () => {
-    const { set, sw } = make();
-    sw.want(true, true);
-    sw.want(true);
-    sw.want(true);
-    expect(set).toEqual(['playback']);
-  });
-});
 
 describe('when a cue may sound', () => {
   it('always while running', () => {
