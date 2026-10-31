@@ -187,7 +187,7 @@ then fetches.
 - **Navigations:** network first; the cached shell offline or after 3 s. A response becomes this version's shell only
   if it has none, so an old worker never stores a newer build's HTML.
 - **Runtime:** fonts and villager art cache-first on first use; audio (`island-audio-v1`) cache-first with the 3 most
-  recent music files kept; Range requests pass through. Other GETs: this version's cache, the previous one, then the
+  recent music files (the hours, event music, K.K.'s songs) kept; Range requests pass through. Other GETs: this version's cache, the previous one, then the
   network. The Apps Script backend is cross-origin and always live.
 
 ## Tests

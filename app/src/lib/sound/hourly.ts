@@ -46,6 +46,9 @@ export const msToNextHour = (d: Date): number => HOUR_MS - (((d.getTime() % HOUR
 /** The hour change, in seconds from the top of the hour: a 3 s crossfade in which the old track leaves first and the
  *  new one enters from its start a second later (NH lets the old hour fade before the new one is heard). */
 export const CROSSFADE = { out: 3, inAt: 1, inFor: 2 } as const;
+/** A cut-in (the wasps' chase or sting, a K.K. song) and the hand back after the chase: NH swaps the music at once,
+ *  so the old track is gone in a quarter second as the new one comes up. */
+const CUT = { out: 0.25, inAt: 0, inFor: 0.25 } as const;
 /** Coming back to the app (or a first start): the track fades in from where it was. */
 export const FADE_IN = 0.8;
 /** The next hour's file is fetched this long before the change, so the crossfade never waits on the network. */
@@ -61,9 +64,9 @@ interface FadePlan {
 }
 
 /** The fade for a change that starts at `at` (s on the audio clock). With nothing playing there is nothing to fade
- *  out: the track just fades in. */
-export function crossfadePlan(at: number, playing: boolean): FadePlan {
-  if (!playing) return { outFrom: at, outTo: at, inFrom: at, inTo: at + FADE_IN };
-  const c = CROSSFADE;
+ *  out: the track just fades in. `cut`: the quick swap (CUT) instead of the hour's crossfade. */
+export function crossfadePlan(at: number, playing: boolean, cut = false): FadePlan {
+  if (!playing) return { outFrom: at, outTo: at, inFrom: at, inTo: at + (cut ? CUT.inFor : FADE_IN) };
+  const c = cut ? CUT : CROSSFADE;
   return { outFrom: at, outTo: at + c.out, inFrom: at + c.inAt, inTo: at + c.inAt + c.inFor };
 }

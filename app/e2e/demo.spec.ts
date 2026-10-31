@@ -320,7 +320,8 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await expect.poll(() => audio).toContain('/fitness/audio/music/opening.m4a');
   await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
   await sheet(page).locator('.titlebar .close').click();
-  await expect.poll(() => audio.some((p) => /\/audio\/music\/hour-\d\d\.m4a$/.test(p))).toBe(true);
+  // the hour's track (or, on an event day, its track: events.ts)
+  await expect.poll(() => audio.some((p) => /\/audio\/music\/(hour-\d\d|halloween|turkey-day|happy-new-year|new-year-0am|new-year-2am|new-years-day)\.m4a$/.test(p))).toBe(true);
   await page.reload();
   await openSettings(page);
   await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');

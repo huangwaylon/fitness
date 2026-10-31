@@ -22,7 +22,7 @@ const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
 /** Code outside the UI that hands i18n keys to it (the model's host line, labels, …). */
 const EMITTER_DIRS = ['lib/model', 'lib/scoring', 'lib/config', 'lib/contract', 'lib/time'];
-const UI_DIRS = ['lib/components', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts'];
+const UI_DIRS = ['lib/components', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts'];
 
 function files(p: string): string[] {
   try {

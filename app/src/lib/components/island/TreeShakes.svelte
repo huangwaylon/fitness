@@ -14,6 +14,7 @@
   import { recordFind } from '#lib/store/actions.ts';
   import { TREE, VILLAGER, u } from './scene.ts';
   import { sceneSfx } from './sceneTaps.ts';
+  import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { stageGeo } from './placement.ts';
   import { critterArt } from './critters.ts';
   import { catchLine, loadLines } from './catchLine.ts';
@@ -77,7 +78,7 @@
       void loadLines().catch(() => {});
       const nest = { n: ++seq, pid, x: tx + out * NEST_DX, y: FOOT, fading: false };
       nests = [...nests, nest];
-      later(560, () => sceneSfx('nest'));
+      later(560, () => (sceneSfx('nest'), waspMusic('nest')));
       later(560 + SWARM_DELAY_MS, () => charge(nest.n, nest.x, nest.y - 10, slot));
     }
   }
@@ -87,10 +88,12 @@
     const n = ++seq;
     swarm = { n, side, x0: x, y0: y, x1: VILLAGER.x[slot], y1: VILLAGER.foot - VILLAGER.h * 0.78, at: performance.now(), stung: false };
     sceneSfx('buzz');
+    waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music
     later(SWARM_MS, () => {
       if (swarm?.n !== n) return;
       swarm = { ...swarm, stung: true };
       sceneSfx('sting');
+      waspMusic('stung');
       onsting?.(side);
       later(900, () => swarm?.n === n && (swarm = null));
       fadeNest(nestN);
@@ -111,6 +114,7 @@
     swarm = null;
     net = { n: ++seq, x, y };
     sceneSfx('net');
+    waspMusic('caught');
     const nest = nests.find((ns) => !ns.fading);
     if (nest) fadeNest(nest.n);
     later(420, () => (net = null));

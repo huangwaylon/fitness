@@ -32,6 +32,8 @@ describe('audio cache (LRU for music)', () => {
 
   it('tells audio and music paths apart', () => {
     expect([isAudio('/fitness/audio/sfx/coin.m4a'), isMusic('/fitness/audio/sfx/coin.m4a'), isMusic('/fitness/audio/music/opening.m4a')]).toEqual([true, false, true]);
+    // the event music sits with the hours; K.K.'s songs are music too (LRU), never precached
+    expect([isMusic('/fitness/audio/music/halloween.m4a'), isMusic('/fitness/audio/kk/kk-march.m4a'), precachable('audio/kk/kk-march.m4a')]).toEqual([true, true, false]);
     expect(isAudio('/fitness/art/fruit/peach.webp')).toBe(false);
   });
 

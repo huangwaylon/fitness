@@ -2,16 +2,18 @@
   // Visitors (docs/design.md "Visitors"), after NH: K.K. Slider with his guitar on Saturday nights, Daisy Mae on Sunday
   // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver washed up asleep on the beach on some
   // days. They stand (or lie, or float) on the front beach, measured clear of every control (else a little to the side,
-  // else not at all). A tap gives a line in the speech balloon (no trading, no ベル); K.K. plays a short song if the
-  // music is on (his tune ducks it, ♪ float up). Official renders (static/art/villagers/, cached on first use).
+  // else not at all). A tap gives a line in the speech balloon (no trading, no ベル); K.K. plays one of his songs if the
+  // music is on (sound/kk.ts: the island's music stops for it, ♪ float up). Official renders (static/art/villagers/, cached on first use).
   // SceneTaps mounts this inside the stage and asks it about each tap after the care (`tap`). `?visitor=<id>` (dev or
   // ?demo) brings one now.
+  import { untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { sound } from '#lib/sound/sound.svelte.ts';
+  import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { kkPick } from '#lib/sound/kk.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { ISLAND_SEED } from './beach.ts';
@@ -61,9 +63,16 @@
   /** Visitors who introduced themselves this session. */
   const met = new Set<VisitorId>();
   let last: string | undefined;
+  let lastSong: string | undefined;
   let notes = $state(0);
   let notesTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(notesTimer));
+  // his show is over (midnight) or the island is left: his song stops and the island's music comes back
+  $effect(() => {
+    const here = who === 'kk-slider';
+    untrack(() => !here && stopKK());
+    return () => untrack(stopKK);
+  });
 
   async function talk(id: VisitorId) {
     const target = el?.querySelector('.art');
@@ -72,10 +81,15 @@
     // their name tag in their own NH colour (the roster, loaded on the first visit's tap)
     const colour = (await import('#lib/villagers/roster.ts')).ROSTER[id]?.colour;
     const name = t(`visitor.${id}`);
-    // K.K. plays when the music is on (his tune is a jingle: the hour's track ducks under it)
+    // K.K. plays when the music is on: one of his songs (sound/kk.ts) over the island's music, which comes back after
+    // it; a tap while he plays doesn't restart it. Without song files, his short placeholder tune (a jingle).
     if (id === 'kk-slider' && sound.settings.music) {
       met.add(id);
-      cue('kk-song');
+      if (!sound.kk) {
+        const song = kkPick(Math.random, lastSong);
+        if (song && playKK(song.id)) lastSong = song.id;
+        else cue('kk-song');
+      }
       notes++;
       clearTimeout(notesTimer);
       notesTimer = setTimeout(() => (notes = 0), 2600);

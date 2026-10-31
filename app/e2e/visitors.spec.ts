@@ -30,7 +30,8 @@ test('K.K. Slider comes on Saturday night; with the music on a tap plays his son
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('♪');
-  expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('kk-song');
+  // one of his songs plays (music.spec), not the placeholder tune
+  expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).not.toContain('kk-song');
   await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
 });
 

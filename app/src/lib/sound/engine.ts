@@ -115,6 +115,7 @@ export class Engine {
   #blobs = new Map<string, Promise<string | null>>();
   /** The same, resolved (path → URL): a file already here starts inside the tap that asks for it (setTrack). */
   #urls = new Map<string, string>();
+  #pinned: string[] = [];
   #ambient = new Map<AmbientId, { src: AudioBufferSourceNode; gain: GainNode }>();
   #ambientBuffers = new Map<AmbientId, Promise<AudioBuffer | null>>();
   #ambientToken = 0;
@@ -129,7 +130,7 @@ export class Engine {
   #wrapping = false;
   /** Paused from outside (holdMusic): no track sounds again until a tap (unlock) or the Media Session's ▶ (unhold). */
   #held = false;
-  /** Called when a one-shot track (the opening) ends. */
+  /** Called when a one-shot track (the opening, a jingle, a sting, a K.K. song) ends. */
   onended: ((key: string) => void) | null = null;
   /** Called when the context starts running again (after an interruption, or iOS resuming it on its own). */
   onrunning: (() => void) | null = null;
@@ -459,10 +460,17 @@ export class Engine {
     void this.#blob(path);
   }
 
-  /** Drop every blob but these paths. */
+  /** Files a track change keeps (and fetches now): during a cut-in, the track it interrupted (so coming back starts
+   *  at once) and the wasps' sting after their chase. `[]` lets them go at the next change. */
+  pin(paths: string[]): void {
+    this.#pinned = paths;
+    for (const p of paths) void this.#blob(p);
+  }
+
+  /** Drop every blob but these paths (and the pinned ones). */
   #trimBlobs(keep: string[]): void {
     for (const [path, p] of this.#blobs) {
-      if (keep.includes(path)) continue;
+      if (keep.includes(path) || this.#pinned.includes(path)) continue;
       this.#blobs.delete(path);
       this.#urls.delete(path);
       void p.then((url) => url && URL.revokeObjectURL(url));
@@ -472,8 +480,8 @@ export class Engine {
   /** Play `track` under `key` (an hour like 'sunny/07', or 'opening'), crossfading from the one playing
    *  (hourly.ts crossfadePlan). The same key again fades it back in where it is if it isn't audibly up (paused, or
    *  played by iOS at gain 0 while hidden). Looping tracks wrap seamlessly; a one-shot calls `onended`. Null = fade
-   *  out to silence. */
-  async setTrack(key: string | null, track: MusicTrack | null, loop = true): Promise<void> {
+   *  out to silence. `cut`: the quick swap of a cut-in (hourly.ts CUT). */
+  async setTrack(key: string | null, track: MusicTrack | null, loop = true, cut = false): Promise<void> {
     const ctx = this.ctx;
     if (!ctx || !this.#decks.length || (key && this.#held)) return; // held: not even a cue's wake or coming back
     const cur = this.#decks[this.#front];
@@ -485,7 +493,7 @@ export class Engine {
     const token = ++this.#token;
     this.#cancelWrap();
     const playing = !!cur.key && !cur.el.paused;
-    const plan = crossfadePlan(ctx.currentTime, playing);
+    const plan = crossfadePlan(ctx.currentTime, playing, cut);
     this.#fadeOut(cur, plan.outFrom, plan.outTo);
     if (!key || !track) return;
     // Already fetched (prefetched at launch, or heard this session): no await, so when this runs inside a tap the
