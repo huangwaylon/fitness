@@ -1,7 +1,8 @@
 // A tree's fruit through one Tokyo day (docs/design.md "Trees"): each goal's fruit hangs in the canopy, grey at 0 and
 // filling with colour as today's amount nears the goal; once met it drops to the ground (animated once, on the first
 // render that sees it met), and a tap picks it up, gone until the next Tokyo day. Cosmetic only: ベル are computed from
-// the goals on read and never from a pick-up. This phone's own record (`fruit-day` in localStorage, sync/storage.ts
+// the goals on read and never from a pick-up. The same record keeps each goal's flower in the beds (FlowerBeds): a bud
+// until met, then it blooms (animated once) and stays open until the next Tokyo day. This phone's own record (`fruit-day` in localStorage, sync/storage.ts
 // SCENE): the other phone keeps its own, and losing it only puts a fruit back on the ground.
 import type { PersonId, RingFruit } from '#lib/types.ts';
 import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
@@ -20,14 +21,18 @@ export function fruitFilter(pct: number): string {
 /** One fruit: in the canopy (not met), falling (met, first seen now), on the ground (met, seen) or picked up today. */
 export type FruitStage = 'tree' | 'fall' | 'ground' | 'gone';
 
-export interface FruitDay { date: string; dropped: string[]; picked: string[] }
+/** One goal's flower in its person's bed: a bud (not met), opening (met, first seen now) or open (met, seen). */
+export type FlowerStage = 'bud' | 'bloom' | 'open';
+
+export interface FruitDay { date: string; dropped: string[]; picked: string[]; bloomed: string[] }
 
 export const fruitId = (p: PersonId, f: RingFruit): string => `${p}:${f}`;
 
 /** This phone's record of `date` (another date, or nothing kept, starts empty). */
 export function fruitDay(date: string): FruitDay {
-  const d = readJson<FruitDay>(localKV(), SCENE.fruit);
-  return d && d.date === date && Array.isArray(d.dropped) && Array.isArray(d.picked) ? d : { date, dropped: [], picked: [] };
+  const d = readJson<Partial<FruitDay>>(localKV(), SCENE.fruit);
+  if (!d || d.date !== date || !Array.isArray(d.dropped) || !Array.isArray(d.picked)) return { date, dropped: [], picked: [], bloomed: [] };
+  return { date, dropped: d.dropped, picked: d.picked, bloomed: Array.isArray(d.bloomed) ? d.bloomed : [] };
 }
 
 /** Where a fruit is: `met` today's goal, `day` this phone's record. A met fruit not yet seen dropped falls. */
@@ -37,7 +42,13 @@ export function stageOf(id: string, met: boolean, day: FruitDay): FruitStage {
   return day.dropped.includes(id) ? 'ground' : 'fall';
 }
 
-function add(date: string, list: 'dropped' | 'picked', id: string): FruitDay {
+/** A goal's flower: `met` today's goal, `day` this phone's record. A met flower not yet seen open blooms. */
+export function flowerOf(id: string, met: boolean, day: FruitDay): FlowerStage {
+  if (!met) return 'bud';
+  return day.bloomed.includes(id) ? 'open' : 'bloom';
+}
+
+function add(date: string, list: 'dropped' | 'picked' | 'bloomed', id: string): FruitDay {
   const d = fruitDay(date);
   if (d[list].includes(id)) return d;
   const next = { ...d, [list]: [...d[list], id] };
@@ -52,3 +63,5 @@ export function markPicked(date: string, id: string): FruitDay {
   add(date, 'dropped', id);
   return add(date, 'picked', id);
 }
+/** Its flower's bloom has been shown (a reload finds it open). */
+export const markBloomed = (date: string, id: string): FruitDay => add(date, 'bloomed', id);

@@ -170,9 +170,12 @@ Japan.
 
 ### Fruit on the tree, picked up for the day
 Each goal's fruit hangs in its person's tree, grey at 0 and colouring in with progress; met, it falls (once per
-phone) and a tap picks it up, gone until the next Tokyo day. A flower blooms at the trunk per goal met that day, and
-all four met make the canopy glint (NH's money tree), so the day's progress stays visible after the pick-up. Picking
-up is cosmetic and local (`fruit-day` in localStorage): no ベル, no event, no backend change, and either person may
+phone) and a tap picks it up, gone until the next Tokyo day. The day's progress stays visible after the pick-up in
+the flower beds and the canopy: each bed is the goal flowers of the person standing beside it, one per goal (a bud
+until met, then it blooms, once per phone), and all four met make the canopy glint (NH's money tree). The beds were
+already there, so completion needs no new object on a small stage, and a bud-to-bloom reads as NH's own growth; the
+species stay the season's (a tidy two-species bed), not the fruit's colours. Picking up and blooming are cosmetic and
+local (`fruit-day` in localStorage): no ベル, no event, no backend change, and either person may
 pick up either tree's fruit. Why: the user asked for NH's harvest feel (2026-10-31) without touching the economy;
 the ベル stay computed from the goals on read, so a pick-up can never earn, lose or double anything, and a phone that
 loses the record only sees a fruit fall again. Syncing pick-ups was weighed and left out: two phones disagreeing about

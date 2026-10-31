@@ -9,7 +9,8 @@
   // bottom edge, glints), the ground (Ground.svelte: organic plateau with sea on both sides, sand crescent,
   // wet band, foam, shallows, terracotta cliff, NH grass with flecks), one hedge along the back, one plain
   // seasonal oak per person with today's fruit on the ground at its base (FruitTree), the jar + its ベル
-  // nameplate in the middle (the scene's only label and the doorway to the wallet (ごほうび)), a front row of flowers, the
+  // nameplate in the middle (the scene's only label and the doorway to the wallet (ごほうび)), each person's flower bed (a bud
+  // per goal, blooming once met: FlowerBeds), the
   // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
   // The HUD (today's ベル ribbon, with the sync chip under it when it shows) overlays the sky, the ribbon centred in the
@@ -178,7 +179,7 @@
     <!-- the jar + its plate (JarSpot): one button, the doorway to the wallet (ごほうび) -->
     <JarSpot {view} {live} {covered} {onjar} later={life.later} />
 
-    <FlowerBeds {season} {hybrid} />
+    <FlowerBeds {season} {hybrid} people={[view.people[view.me], view.people[view.partner]]} />
 
     {#each ['mine', 'partner'] as const as id (id)}
       {@const s = sides[id]}

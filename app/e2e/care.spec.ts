@@ -53,7 +53,9 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered bed can show 
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-garden')))!)).toMatchObject({ date: '2026-11-03', watered: ['0-1'] });
   await unchanged(page, before);
   // 2026-11-04 is a hybrid day for a bed watered the day before (care.ts, seeded): the autumn cosmos grows black
-  await page.goto('?demo&date=2026-11-04T09:00');
+  // (it shows once that goal's flower has bloomed: by 23:00 every goal is met, e2e/trees.spec.ts)
+  await page.goto('?demo&date=2026-11-04T23:00');
+  await expect(page.locator('[data-flower="0-1"]')).toHaveAttribute('data-stage', 'open', { timeout: 5000 });
   await expect(page.locator('[data-flower="0-1"] img')).toHaveAttribute('src', /black-cosmos/);
   await expect(page.locator('[data-flower="0-0"] img')).toHaveAttribute('src', /pink-cosmos/);
   await page.reload(); // it stays for the day

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
-import { fruitDay, fruitFilter, fruitId, greyAt, markDropped, markPicked, stageOf } from './fruitDay.ts';
-import { TREE_FLOWER, TREE_FLOWERS, TREE_FRUIT } from './scene.ts';
+import { flowerOf, fruitDay, fruitFilter, fruitId, greyAt, markBloomed, markDropped, markPicked, stageOf } from './fruitDay.ts';
+import { BED_FRUIT, TREE_FRUIT } from './scene.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 
 function memKV(): KV {
@@ -49,12 +49,12 @@ describe('a fruit through the day', () => {
   it('a picked fruit counts as dropped, and marking twice keeps one entry', () => {
     markPicked('2026-11-04', id);
     markPicked('2026-11-04', id);
-    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: [id], picked: [id] });
+    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: [id], picked: [id], bloomed: [] });
   });
   it('the next Tokyo day starts fresh: back in the tree (grey until its goal) and falls again when met', () => {
     markPicked('2026-11-04', id);
     const next = fruitDay('2026-11-05');
-    expect(next).toEqual({ date: '2026-11-05', dropped: [], picked: [] });
+    expect(next).toEqual({ date: '2026-11-05', dropped: [], picked: [], bloomed: [] });
     expect(stageOf(id, false, next)).toBe('tree');
     expect(stageOf(id, true, next)).toBe('fall');
     markDropped('2026-11-05', id);
@@ -64,17 +64,50 @@ describe('a fruit through the day', () => {
     const kv = memKV();
     kv.setItem('fruit-day', '{"date":"2026-11-04","dropped":"x"}');
     configureStorage({ local: kv });
-    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: [], picked: [] });
+    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: [], picked: [], bloomed: [] });
     configureStorage({ local: null });
     expect(markPicked('2026-11-04', id).picked).toEqual([id]);
   });
 });
 
+describe("a goal's flower through the day", () => {
+  const id = fruitId('B', 'peach');
+  it('a bud while not met, blooms once when first seen met, then stays open (a reload: no second bloom)', () => {
+    expect(flowerOf(id, false, fruitDay('2026-11-04'))).toBe('bud');
+    expect(flowerOf(id, true, fruitDay('2026-11-04'))).toBe('bloom');
+    markBloomed('2026-11-04', id);
+    expect(flowerOf(id, true, fruitDay('2026-11-04'))).toBe('open');
+    markBloomed('2026-11-04', id);
+    expect(fruitDay('2026-11-04').bloomed).toEqual([id]);
+  });
+  it('is per person and per goal, and independent of the fruit (picked up or not)', () => {
+    markBloomed('2026-11-04', id);
+    expect(flowerOf(fruitId('A', 'peach'), true, fruitDay('2026-11-04'))).toBe('bloom');
+    expect(flowerOf(fruitId('B', 'apple'), true, fruitDay('2026-11-04'))).toBe('bloom');
+    markPicked('2026-11-04', fruitId('B', 'apple'));
+    expect(flowerOf(fruitId('B', 'apple'), true, fruitDay('2026-11-04'))).toBe('bloom');
+    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: ['B:apple'], picked: ['B:apple'], bloomed: [id] });
+  });
+  it('buds again the next Tokyo day, and blooms again once met', () => {
+    markBloomed('2026-11-04', id);
+    expect(flowerOf(id, false, fruitDay('2026-11-05'))).toBe('bud');
+    expect(flowerOf(id, true, fruitDay('2026-11-05'))).toBe('bloom');
+  });
+  it('a record kept before the flowers (no bloomed list) keeps its fruit and starts the flowers as buds', () => {
+    const kv = memKV();
+    kv.setItem('fruit-day', '{"date":"2026-11-04","dropped":["A:pear"],"picked":[]}');
+    configureStorage({ local: kv });
+    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: ['A:pear'], picked: [], bloomed: [] });
+    expect(flowerOf(fruitId('A', 'pear'), true, fruitDay('2026-11-04'))).toBe('bloom');
+  });
+});
+
 describe('the tree layout', () => {
-  it('a canopy spot, a ground spot and a flower for each goal, left to right in ring order', () => {
+  it('a canopy spot and a ground spot for each goal, left to right in ring order', () => {
     expect(TREE_FRUIT).toHaveLength(RING_FRUITS.length);
-    expect(TREE_FLOWERS).toHaveLength(RING_FRUITS.length);
-    for (const s of [TREE_FRUIT, TREE_FLOWERS]) for (let i = 1; i < s.length; i++) expect(s[i][0]).toBeGreaterThan(s[i - 1][0]);
-    expect(Object.keys(TREE_FLOWER).sort()).toEqual([...RING_FRUITS].sort());
+    for (let i = 1; i < TREE_FRUIT.length; i++) expect(TREE_FRUIT[i][0]).toBeGreaterThan(TREE_FRUIT[i - 1][0]);
+  });
+  it('each bed holds one flower per goal, in ring order reading back row then front row, left to right', () => {
+    expect(BED_FRUIT.flat()).toEqual([...RING_FRUITS]);
   });
 });

@@ -44,16 +44,6 @@ export const FRUIT_SPOTS: [number, number][] = [[-30, 6], [-10, 12], [10, 12], [
 export const FRUIT_LEAN = 8;
 /** Ground item size in u: NH dropped fruit ≈ 0.3 × a villager (≈ half a tile). */
 export const FRUIT_U = 24;
-/** A flower blooms at the tree's foot for each goal met today, 🍐 🍑 🍒 🍎 left to right: [dx, foot dy] from the
- *  trunk base, two each side of the trunk, behind the fruit row's tap target and under the canopy's, and inside the
- *  lawn spots beside the trunks (beach.ts LAWN, x ±35–39: weeds and dig spots), so they never stand on one. */
-export const TREE_FLOWERS: [number, number][] = [[-26, -14], [-15, -18], [15, -18], [26, -14]];
-/** Tree-foot flowers are small (half a bed flower), so four never crowd a 320px phone. */
-export const TREE_FLOWER_U = 16;
-/** Which NH flower blooms for each goal, its colour echoing the fruit: a yellow tulip for the pear, a pink cosmos for
- *  the peach, a red rose for the cherry, a red tulip for the apple. */
-export const TREE_FLOWER: Record<RingFruit, FlowerId> = { pear: 'yellow-tulips', peach: 'pink-cosmos', cherry: 'red-roses', apple: 'red-tulips' };
-
 /** Villagers (the scale's reference): 80u tall (≈ 1.8 tiles), on columns ±1 of the front row, flanking the
  *  jar; their heads stay below the ground fruit. */
 export const VILLAGER = { foot: ROWS.front, h: 80, x: { A: col(-1), B: col(1) } as const };
@@ -119,6 +109,10 @@ export const FLOWER_U = 32;
 export const FLOWER_SCALE: Partial<Record<FlowerId, number>> = { 'orange-pansies': 0.8, 'purple-mums': 0.92 };
 export const BED_X = { left: [col(-3), col(-2)], right: [col(2), col(3)] };
 export const BED_ROWS = [ROWS.bedBack, ROWS.front];
+/** Each bed is its person's goal flowers (the bed beside their villager: mine on the left, the partner's on the right),
+ *  one per goal in reading order, the same in both beds: 🍐 Move back-left, 🍑 Exercise back-right, 🍒 Stand
+ *  front-left, 🍎 Steps front-right. `BED_FRUIT[row][k]`, k = 0 for the bed's left column, 1 for its right. */
+export const BED_FRUIT: [RingFruit, RingFruit][] = [['pear', 'peach'], ['cherry', 'apple']];
 
 /** Back row (the hedge only; no building, bench, cedar or path). */
 export function props(month: number): Prop[] {
