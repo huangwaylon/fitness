@@ -12,7 +12,7 @@
 // one loop period plus a copy of its first seconds (scripts/music.ts): the two decks hand over inside that copy, so
 // the loop never relies on `<audio loop>`'s seek at the end. Effects are small decoded buffers.
 import { SOUNDS, SOUND_IDS, type Bus, type SoundId } from './ids.ts';
-import { DUCK, LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
+import { LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
 import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
 import { IdleTimer, QUEUED_DROP_MS, SessionSwitch, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
@@ -113,7 +113,7 @@ export class Engine {
   #silentUrl: string | null = null;
   #front = 0;
   #token = 0;
-  /** Music files as blob URLs (path → URL), the current and the prefetched next one only. */
+  /** Music files as blob URLs (path → URL): the current one, and the next hour's once prefetched. */
   #blobs = new Map<string, Promise<string | null>>();
   /** The same, resolved (path → URL): a file already here starts inside the tap that asks for it (setTrack). */
   #urls = new Map<string, string>();
@@ -450,7 +450,7 @@ export class Engine {
   #duckUnder(at: number, until: number): void {
     const p = this.#duck.gain;
     p.cancelScheduledValues(at);
-    const plan = duckPlan(at, until, DUCK);
+    const plan = duckPlan(at, until);
     p.setValueAtTime(plan[0].gain, plan[0].t);
     for (const pt of plan.slice(1)) p.linearRampToValueAtTime(pt.gain, pt.t);
   }
@@ -479,7 +479,7 @@ export class Engine {
 
   /** A music file as a blob URL. The whole file (0.4–0.9 MB) is fetched through the service worker's audio cache
    *  and played from memory: the element never sends Range requests the worker would have to answer, and an hour
-   *  heard once plays offline. Only the current and the prefetched next file are kept. */
+   *  heard once plays offline. A track change keeps only its own file. */
   #blob(path: string): Promise<string | null> {
     let p = this.#blobs.get(path);
     if (!p) {
@@ -515,7 +515,7 @@ export class Engine {
    *  (hourly.ts crossfadePlan). The same key again fades it back in where it is if it isn't audibly up (paused, or
    *  played by iOS at gain 0 while hidden). Looping tracks wrap seamlessly; a one-shot calls `onended`. Null = fade
    *  out to silence. */
-  async setTrack(key: string | null, track: MusicTrack | null, loop = true, prefetched: string[] = []): Promise<void> {
+  async setTrack(key: string | null, track: MusicTrack | null, loop = true): Promise<void> {
     const ctx = this.ctx;
     if (!ctx || !this.#decks.length) return;
     const cur = this.#decks[this.#front];
@@ -535,7 +535,7 @@ export class Engine {
     // unlocked by its silent clip in the first tap, and a refused play() is retried by the next tap.
     const url = this.#urls.get(track.file) ?? (await this.#blob(track.file));
     if (!url || token !== this.#token) return; // offline and never heard: silence until the next change
-    this.#trimBlobs([track.file, ...prefetched]);
+    this.#trimBlobs([track.file]);
     this.#front = 1 - this.#front;
     const next = this.#decks[this.#front];
     next.key = key;

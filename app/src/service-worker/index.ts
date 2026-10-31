@@ -115,12 +115,13 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isFont(url.pathname) || isVillagerArt(url.pathname)) {
-    const runtime = isFont(url.pathname) ? FONTS : VILLAGERS;
+    const font = isFont(url.pathname);
     event.respondWith(
       (async () => {
-        const precached = await caches.open(CACHE).then((c) => c.match(req));
+        // the two default villagers are precached (fonts never are)
+        const precached = font ? undefined : await caches.open(CACHE).then((c) => c.match(req));
         if (precached) return precached;
-        const cache = await caches.open(runtime);
+        const cache = await caches.open(font ? FONTS : VILLAGERS);
         const hit = await cache.match(req);
         if (hit) return hit;
         const res = await fetch(req);

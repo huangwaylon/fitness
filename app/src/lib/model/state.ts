@@ -88,7 +88,7 @@ export interface State {
    * of the two (`model/weight.ts`).
    */
   weights: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
-  weightSets: Record<PersonId, Map<LocalDate, Edit<number>[]>>;
+  weightSets: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
   /** Accepted `workout_edit`s, ascending `at`. */
   workoutEdits: WorkoutEditRec[];
   /** Index of `workoutEdits` per workout key `person|id`. */
@@ -101,7 +101,7 @@ export interface State {
   highfives: { at: number; person: PersonId }[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
-  moveGoals: Record<PersonId, Edit<number>[]>;
+  moveGoals: Record<PersonId, Timed<number>[]>;
   /** Newest metrics row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
   /** The demo's calendar; null for real data. */
@@ -296,7 +296,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (!date) return;
     if (metric === 'weight') {
       // A weight earns nothing, so no week lock: any day up to today, one decimal, 20–300 kg.
-      if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value, by });
+      if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value });
       return;
     }
     if (!isActivityMetric(metric) || !validMetricValue(metric, d.value)) return;
@@ -335,7 +335,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   highfive({ s }, person, at) {
     s.highfives.push({ at, person });
   },
-  pref({ s }, person, at, d, by) {
+  pref({ s }, person, at, d) {
     if (d.key === 'menu') {
       const items = parseMenu(d.value);
       if (items) s.menu.push({ at, v: items });
@@ -344,7 +344,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (d.key === 'moveGoal') {
       // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
       const v = d.value;
-      if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v, by });
+      if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v });
       return;
     }
     const p = s.prefs[person];
