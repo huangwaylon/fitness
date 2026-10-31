@@ -18,3 +18,11 @@ describe('ja copy under keep-all', () => {
     expect(long).toEqual([]);
   });
 });
+
+describe('catalog text', () => {
+  it('has no broken characters (U+FFFD) in either language', async () => {
+    const en = (await import('./en.json')).default as Record<string, string>;
+    const bad = [...Object.entries(ja as Record<string, string>), ...Object.entries(en)].filter(([, v]) => v.includes('\uFFFD')).map(([k]) => k);
+    expect(bad).toEqual([]);
+  });
+});
