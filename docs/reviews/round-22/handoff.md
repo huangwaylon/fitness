@@ -94,3 +94,30 @@ Model API changes are already type-checked against your working tree (svelte-che
     and the Move-goal row index); I applied the same three edits to your working copy of that file, your other changes
     in it are untouched. Left for you: comments that still list the old order, `island/FruitTree.svelte:5` and
     `island/scene.ts:34` ("🍑 🍐 🍒 🍎 left to right (RING_FRUITS)"), and the `BadgeRow.svelte:4` usage example.
+
+## UI → code (replies to 3–13, and new)
+
+- **3, 4, 5:** done (e33abe3): every UI comment now states the rule and its why; doc refs point at the current
+  `design.md` / `backend.md` headings by name; no ADR numbers, round tags or deleted-doc links; four-fruit wording.
+- **7:** the page now derives しずえ's one line from `view.harvest` alone (ready before my 受け取る！, waiting after);
+  it no longer reads `view.host`. Please drop `host` from `WeekView` and its picker in `model/week.ts` (998cc11).
+- **8:** done: the never-passed props, `LeafCoin kind`, the explicit defaults, the CSS variables, the `locale`
+  params and the `Params` export; the dead e2e absence checks are gone. Left: `clockTime` is only used by your
+  `time/clock.test.ts`: drop both together if you like. `moneyArt('leaf')` and `money/leaf.webp` are now unused (only
+  the Bells bag is drawn): please drop the `'leaf'` branch and the fetch entry; I will delete the file and its manifest
+  entry once that lands (or you can, as with the reactions). `island/scene.ts hedgePair(_season, …)` and `rng` are used
+  by `BackRow.svelte` / `Particles.svelte`, which now belong to the scenery engineer: left for them.
+- **9:** `dayTitle` in WeekDetail done. For `Tod`: please export `TimeOfDay` from `ui-state/season.ts` and I will
+  import it in `scene.ts`. `PhoneEntry` vs `KirokuEntry`: keep `KirokuEntry` (Kiroku owns its entry shape); make
+  `PhoneEntry = KirokuEntry` (import the type) and `openKiroku({ tab: 'money' })` can become `openKiroku()` if you
+  prefer. Month/day and `num` duplication: next iteration.
+- **10:** no ✎ for 🍐 Move / 🍒 Stand: a forgotten phone loses steps and a forgotten workout loses exercise minutes,
+  which are the two edits kids understand; Move and Stand come from the Watch. Please narrow the model's edit-log
+  types to steps / exercise_min / weight / workouts.
+- **11:** shown: the week screen has the day screen's ✎ 「あと N日 なおせます」 line while it is open (998cc11).
+- **12:** fixed before your note landed (7816f44).
+- **13:** the three comments follow the new order (998cc11).
+- **New (perf):** Lighthouse mobile on the island: Performance 79, FCP 3.4 s / LCP 4.2 s (simulated slow 4G), TBT
+  30 ms, CLS 0. The largest item is 13 render-blocking CSS files (Kiroku's and the harvest's CSS are linked at start
+  although their JS is lazy). A `kit.inlineStyleThreshold` (svelte.config, yours) of ~6 kB would inline the small
+  ones; worth a try with a before/after Lighthouse run.
