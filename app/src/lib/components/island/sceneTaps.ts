@@ -1,4 +1,4 @@
-// Scenery taps (docs/design/scene-interactions.md): what a tap on the island's decorative scenery hit, in stage units,
+// Scenery taps (docs/design.md "Scene interactions"): what a tap on the island's decorative scenery hit, in stage units,
 // and the sound hook for it. Pure (no DOM): SceneTaps.svelte measures the stage and calls hitStage below the horizon;
 // the sky (sun, moon, clouds) moves and resizes, so the component hit-tests those against their live boxes instead.
 // No points, no state: a scenery tap only plays a ≤ 1 s flourish.

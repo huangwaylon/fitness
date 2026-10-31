@@ -1,8 +1,8 @@
 <script lang="ts">
-  // One person's weight (ADR 0020): the trend in kg, this week's change, the change since the first weigh-in and the
+  // One person's weight: the trend in kg, this week's change, the change since the first weigh-in and the
   // weekly pace; the 12-week chart (dots = weigh-ins, line = trend, dashes = goal); the goal and, at the current pace, a
   // month it may be reached. 体重を記録 (the goal is set in きろく's 目標 card). The recent weigh-ins double as the chart's table view, and
-  // each row fixes that day: on either person's screen (ADR 0023: either person edits either person's data). Supportive wording only: no red, no "bad week".
+  // each row fixes that day: on either person's screen (either person edits either person's data). Supportive wording only: no red, no "bad week".
   import type { PersonId } from '#lib/types.ts';
   import type { WeightTrend } from '#lib/model/weight.ts';
   import { WEIGHT } from '#lib/config/rules.ts';
@@ -27,7 +27,7 @@
 
 <header class="who">
   <Avatar {person} {villager} size={34} />
-  <h3>{name}{#if mine}<small> · {t('kiroku.me')}</small>{/if}</h3>
+  <h3>{name}{#if mine}<small>&nbsp;· {t('kiroku.me')}</small>{/if}</h3>
 </header>
 
 {#if w.latest}

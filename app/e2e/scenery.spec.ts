@@ -1,4 +1,4 @@
-// Scenery taps (docs/design/scene-interactions.md): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
+// Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
 import { expect, test, type Page } from '@playwright/test';
 
@@ -65,7 +65,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0);
 
-  // the partner opens their villager card (mine only hops: nothing to fill in, ADR 0021)
+  // the partner opens their villager card (mine only hops: nothing to fill in)
   await page.locator('.if-scene button.vil').nth(1).click();
   await expect(page.locator('dialog[open]')).toHaveCount(1);
   await page.keyboard.press('Escape');

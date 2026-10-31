@@ -1,10 +1,10 @@
 <script lang="ts">
-  // 3.3 Day detail (round 17 IA §3.1: the home of a day's ベル per fruit, its raw data and its edits): two stacked cards
+  // 3.3 Day detail (the home of a day's ベル per fruit, its raw data and its edits): two stacked cards
   // (me, then the partner), each opening with the day's ベル, then one row per ring fruit: the day's value (green when
-  // the goal was met) and the ベル it earned; then the workouts added by hand. ✎ on both cards (ADR 0023: either
+  // the goal was met) and the ベル it earned; then the workouts added by hand. ✎ on both cards (either
   // person edits either person's data): steps, exercise minutes, each workout (leave it out / put it back) and ＋ (a
   // workout added by hand counts toward 🍑), only while the week is open (`editable`: Kiroku closes it a minute before
-  // the lock); へんこう履歴 at the bottom. A locked day's cards get the 見るだけ badge (round 7 F5).
+  // the lock); へんこう履歴 at the bottom. A locked day's cards get the 見るだけ badge.
   import type { PersonId, RingFruit } from '#lib/types.ts';
   import type { DayDetail, DayPerson } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -55,7 +55,7 @@
   <section class="card pc" class:ro={!can} data-person={p}>
     <div class="who">
       <Avatar person={p} villager={villagers[p]} size={34} />
-      <b class="nm">{names[p]}{#if mine}<small> · {t('kiroku.me')}</small>{/if}</b>
+      <b class="nm">{names[p]}{#if mine}<small>&nbsp;· {t('kiroku.me')}</small>{/if}</b>
       {#if !can}<span class="tag"><Glyph kind="lock" size={12} />{t('kiroku.readOnly')}</span>{/if}
     </div>
     <div class="earn"><span>{t('kiroku.dayBells')}</span><b class="money">{formatBells(x.bells, { signed: true })}</b></div>
@@ -91,7 +91,7 @@
 
 <style>
   .sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px; flex-wrap: wrap; }
-  /* the date in the numbers' Fredoka, like the week title (round 21: it was the thin UI face) */
+  /* the date in the numbers' Fredoka, like the week title */
   .sub h3 { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-num); }
   .state { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .state.locked { color: var(--text-soft); }
@@ -119,7 +119,7 @@
   .row + .row, .earn + .row { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
   .k { flex: 1; min-width: 0; font-weight: 700; font-size: var(--fs-body); }
   /* a workout row: the label on its own line at the body size, the time, chips and ✎ right-aligned under it
-     (sizing #13: at 12px beside them it wrapped to 3 lines) */
+     (at 12px beside them it would wrap to 3 lines) */
   .wo { flex-wrap: wrap; row-gap: 0; min-height: 0; padding: 8px 0 4px; }
   .wo .k { flex-basis: 100%; }
   .wo .v.small { margin-left: auto; }

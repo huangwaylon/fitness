@@ -1,5 +1,5 @@
-// The island event bus (design.md §M.7). Pages call `emit()` after a store action resolves; the
-// island scene listens and plays the matching reaction (§M.5). Diff events (partner data, fruit
+// The island event bus (design.md "Motion"). Pages call `emit()` after a store action resolves; the
+// island scene listens and plays the matching reaction. Diff events (partner data, fruit
 // ripening, a received high-five) are detected inside the scene from the `view` prop instead.
 //   import { emit } from '#lib/components/motion/bus.svelte.ts';
 //   emit('highfive-sent');

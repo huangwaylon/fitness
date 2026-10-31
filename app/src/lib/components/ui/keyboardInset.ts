@@ -1,7 +1,7 @@
-// The on-screen keyboard (design.md §R): `{@attach keyboardInset}` sets `--kb` on the element to the keyboard's height
+// The on-screen keyboard (design.md "Small screens"): `{@attach keyboardInset}` sets `--kb` on the element to the keyboard's height
 // (innerHeight − visualViewport.height − offsetTop) so a sticky action can ride above it, and scrolls a focused
-// field to the centre once the keyboard is up. Used by Sheet and the pair page (round 8: one copy).
-// Round 10: iOS does not shrink the layout viewport, so "centre" is taken in the part above the keyboard: fields get
+// field to the centre once the keyboard is up. Used by Sheet and the pair page.
+// iOS does not shrink the layout viewport, so "centre" is taken in the part above the keyboard: fields get
 // `scroll-margin-bottom: --kb` (styles/theme.css). A `[data-kb-scroll]` ancestor (the pair form: field + button)
 // is scrolled into view as a whole, its bottom just above the keyboard.
 import type { Attachment } from 'svelte/attachments';

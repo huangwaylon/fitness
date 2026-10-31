@@ -1,6 +1,6 @@
 <script lang="ts">
   // へんこう履歴: every accepted edit (both people), newest first: when, whose data (the avatar), what, before → after,
-  // and who made it (「うめが なおしました」: either person edits either person's data, ADR 0023).
+  // and who made it (「うめが なおしました」: either person edits either person's data).
   import type { PersonId } from '#lib/types.ts';
   import type { EditLog } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';

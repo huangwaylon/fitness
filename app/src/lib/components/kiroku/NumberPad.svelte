@@ -69,9 +69,9 @@
 </div>
 
 <style>
-  /* The keys sit at the bottom of the phone, in the thumb zone, with the value right above them (round 7 F10). The
+  /* The keys sit at the bottom of the phone, in the thumb zone, with the value right above them. The
      phone's scrolling body stretches this screen to its own height (ShimaPhone .phone-body), so the pad needs no
-     height of its own (round 10: the old `100dvh − … − 150px` broke whenever the phone's chrome changed). */
+     height of its own (a computed `100dvh − …` height would break whenever the phone's chrome changes). */
   .atm { display: grid; align-content: end; gap: 16px; }
   /* The pad takes the typed digits (it is focused on open): with keyboard focus, its screen shows the ring (WCAG 2.4.7). */
   .atm:focus { outline: none; }
@@ -84,7 +84,7 @@
   .new small { font-size: var(--fs-talk); margin-left: 4px; }
   .new.ph { color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
   .new.over { color: var(--c-coral); }
-  /* Full-width keys at every width (sizing #4: they used to be 60×54 at 390+ and 101×46 at 375), the height
+  /* Full-width keys at every width, the height
      fluid with the screen, then ▶ けってい / やめる side by side under them. */
   .row { display: grid; gap: 14px; }
   .keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -94,7 +94,7 @@
     font: 700 var(--fs-title)/1 var(--font-num); display: grid; place-items: center;
     transition: transform var(--dur-base) var(--ease-bounce);
   }
-  /* C in the keys' own bold Fredoka (round 21: a thin 15px UI-font C beside the 24px digits) */
+  /* C in the keys' own bold Fredoka, so it matches the 24px digits */
   .key.fn { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); font: 700 var(--fs-talk)/1 var(--font-num); }
   .key svg { width: 24px; height: 24px; }
   .key:active { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }

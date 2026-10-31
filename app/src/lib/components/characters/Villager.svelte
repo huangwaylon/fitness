@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A villager (design.md §M.1): the official NH render on a small CSS rig, with the generic
+  // A villager (design.md "Motion"): the official NH render on a small CSS rig, with the generic
   // silhouette as the fallback if the image is missing.
   //   <Villager villager="raymond" size={88} />            full body, `size` = figure height
   //   <Villager person="B" size={44} head />               head icon; villager from that person's prefs
@@ -30,7 +30,7 @@
     size?: number | string;
     /** Head icon instead of the full body. Default: auto (true when a numeric size is under 56). */
     head?: boolean;
-    /** true = the expression's reaction, or a v4 reaction icon id; false = none. */
+    /** true = the expression's reaction, or an official reaction icon id; false = none. */
     emote?: boolean | EmoteIcon;
     /** Idle bob (full body) and motions. Off under reduced motion regardless. */
     animate?: boolean;
@@ -55,7 +55,7 @@
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
   const key = $derived(villagerArt(look.id, headOnly));
 
-  // Villagers show floating NH marks / colour glyphs, never the player's cat faces (A1, villagerEmote).
+  // Villagers show floating NH marks / colour glyphs, never the player's cat faces (villagerEmote).
   const EXPR: Record<Expression, EmoteIcon | null> = { happy: null, cheer: 'glee', sleepy: 'mark-zzz', surprised: 'surprise', proud: 'mark-sparkle' };
   const propEmote = $derived<EmoteIcon | null>(
     emote === false ? null : emote === true ? (EXPR[expression] ?? 'mark-note') : emote

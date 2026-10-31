@@ -1,7 +1,7 @@
 <svelte:options namespace="svg" />
 
 <script lang="ts">
-  // The island ground (round 7, docs/design/design.md §S.3 "Pocket Camp diorama"), inside the stage
+  // The island ground (docs/design.md "Environment", a "Pocket Camp diorama"), inside the stage
   // svg (390 × 360 u, overflow visible). Painted like the official renders: light from the upper left, no
   // strokes or offset lips on scenery; every surface = one base fill + one gentle gradient + one soft lower
   // shade + sparse NH flecks. Back to front:
@@ -12,7 +12,7 @@
   //   at (30%, 25%), broad blurred tonal patches, a soft lower shade, NH leaf triangles ≈ 0.2 tile on a jittered
   //   tile grid, flattened to the camera; winter: snow dimples, a blue-lilac lower shade and scallops over the
   //   cliff edge) · the plaza patch under the jar · soft radial contact shadows under the trees, the jar, every
-  //   hedge bush and every flower (docs/design/design.md §S.2).
+  //   hedge bush and every flower (docs/design.md "Layout and scale").
   // Colours: the season tables in tokens.css (Builder A block). The time of day is ONE multiply tint over
   // land and sea (IslandScene .tint), so nothing here is keyed on tod (except the dusk shadow stretch).
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -57,7 +57,7 @@
   // 6u scallops along the straight front run (the corners stay smooth)
   const SCALLOPS: Pt[] = Array.from({ length: Math.floor((P.x1 - P.x0 - 2 * P.rb) / 5.5) + 1 }, (_, i) => [P.x0 + P.rb + i * 5.5, P.y1 + 1.4]);
 
-  // ---- grass (scale pass, docs/design/design.md §S.2): NH's grass is a plain green with two-tone leaf
+  // ---- grass (docs/design.md "Layout and scale"): NH's grass is a plain green with two-tone leaf
   // triangles about a fifth of a tile across, lying flat on the ground (squashed to the camera's 0.7 depth),
   // a couple per tile, never in a repeating pattern; plus broad, soft lighter and darker patches. ----
   const inside = (x: number, y: number, m: number) => {

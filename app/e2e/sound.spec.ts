@@ -1,4 +1,4 @@
-// Sound in the built app (docs/design/sound.md §11 "The first tap", §13 "Every tap"), in Chrome with an instrumented
+// Sound in the built app (docs/design.md "Engine lifecycle", "Taps"), in Chrome with an instrumented
 // media element and AudioContext.
 import { expect, test, type Page } from '@playwright/test';
 
@@ -123,7 +123,7 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
 });
 
 /**
- * The tap walk (sound.md §13 "Every tap", the log): 効果音 on, every screen, each tap's cues read from the cue
+ * The tap walk (design.md "Taps", the log): 効果音 on, every screen, each tap's cues read from the cue
  * function's test hook (`window.__cues`). Each step expects exactly its cue: one sound per tap, never two.
  * `WALK_LOG=path` writes the log as a markdown table.
  */

@@ -1,6 +1,6 @@
-/* Island Fund base styles v5: element defaults + the few shared building blocks (v5 §5).
+/* Island Fund base styles: element defaults + the few shared building blocks.
    All custom properties (tokens) live in lib/styles/tokens.css, which is imported first.
-   Depth is the 4px lip (--sh-lip) and --sh-float on floating layers only. Round 13: tappable things add an edge
+   Depth is the 4px lip (--sh-lip) and --sh-float on floating layers only. Tappable things add an edge
    (a 2px outline + the lip in one >= 3:1 colour: --sh-ctl / --sh-obj, tokens.css "button tiers"). */
 
 @media (prefers-reduced-motion: reduce) {
@@ -11,14 +11,14 @@
 }
 
 * { box-sizing: border-box; }
-/* Round 10 (ios-scroll-audit, "Recommended scroll architecture"): the document is the scroller of the
+/* The document is the scroller of the
    scrolling pages (/jar, /pair, error), so the root has a stable svh min-height, no overscroll-behavior (iOS
    keeps its rubber band; only the island, which never scrolls, opts out) and overflow-x: clip on html
    (clip makes no scroll container and does not break sticky). */
 html, body { margin: 0; min-height: var(--vh-page); }
 html { -webkit-text-size-adjust: 100%; background: var(--bg); overflow-x: clip; }
 html:has(.island) { overscroll-behavior: none; }
-/* H2: any open sheet / overlay locks the page behind it (Sheet and HarvestOverlay ref-count the class via
+/* Any open sheet / overlay locks the page behind it (Sheet and HarvestOverlay ref-count the class via
    ui/scrollLock.ts; iOS 16+ honours overflow: hidden on the root for touch scrolling). */
 :root.sheet-open { overflow: hidden; }
 dialog { overscroll-behavior: contain; }
@@ -26,12 +26,12 @@ body {
   font-family: var(--font-ui); font-weight: 500; color: var(--text); background: var(--bg);
   font-size: var(--fs-body); line-height: var(--lh); font-feature-settings: "palt";
   -webkit-font-smoothing: antialiased;
-  /* T7: WebKit has no word-break: auto-phrase; a word too long for its line still breaks instead of overflowing */
+  /* WebKit has no word-break: auto-phrase; a word too long for its line still breaks instead of overflowing */
   overflow-wrap: break-word; line-break: strict;
   transition: background-color var(--dur-base) var(--ease-soft), color var(--dur-base);
 }
 html[lang="ja"] * { letter-spacing: 0 !important; }
-/* Round 21: Japanese lines break only where the copy has a space (the kids-style 分かち書き) or after 、。！, never inside
+/* Japanese lines break only where the copy has a space (the kids-style 分かち書き) or after 、。！, never inside
    a word (ごほう / び, がんばろ / う), the same on iPhone Safari and in Chrome (keep-all is WebKit-safe; auto-phrase is not) */
 html[lang="ja"] body { word-break: keep-all; }
 h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
@@ -43,7 +43,7 @@ button, [role="button"], [role="switch"], a {
 /* after a touch, a programmatic focus (‹ back, an edit saved, a sheet opened) shows no ring (ui/modality.ts) */
 html[data-input='pointer'] :focus-visible:not(input, textarea, select),
 html[data-input='pointer'] :focus-visible .screen { outline: none !important; }
-/* H1: iOS zooms on focus below 16px. A scoped `font:` shorthand beats this, so components use --fs-input
+/* iOS zooms on focus below 16px. A scoped `font:` shorthand beats this, so components use --fs-input
    (lib/inputs.test.ts fails on any input / textarea / select rule below 16px). */
 input, textarea, select { font-size: var(--fs-input); font-family: var(--font-ui); }
 /* keyboardInset scrolls a focused field into the part of the screen above the keyboard (--kb) */
@@ -101,7 +101,7 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .pen-btn {
   appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
   display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-  /* the lip hangs 4px under the box: lift it by half, so the button and its lip sit centred in the row (round 21) */
+  /* the lip hangs 4px under the box: lift it by half, so the button and its lip sit centred in the row */
   margin-bottom: var(--lip-h);
 }
 .pen-btn:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }

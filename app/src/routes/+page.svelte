@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 島 Island (v5 §3, ADR 0021, round 18 layout): the scene full bleed under a light, symmetric HUD (today's ベル ribbon
+  // 島 Island: the scene full bleed under a light, symmetric HUD (today's ベル ribbon
   // centred at the top = the one focal point) and ONE control at the bottom centre: the NookPhone, the hub (きろく,
   // あそびかた, …), in the thumb zone. The day needs zero taps (the Watch and the Shortcut fill the trees);
   // ハイタッチ lives with the partner's villager (tap them → their villager card), as talking to a villager does in NH.
@@ -27,7 +27,7 @@
   const view = $derived(week.view);
   const me = $derived(view ? view.people[view.me] : null);
 
-  /** Every timeout this page starts, cleared when it unmounts (review P11). */
+  /** Every timeout this page starts, cleared when it unmounts. */
   const timers = new Set<ReturnType<typeof setTimeout>>();
   function later(fn: () => void, ms: number): void {
     const id = setTimeout(() => {
@@ -59,13 +59,13 @@
     emit('highfive-sent');
   }
 
-  // A failed save (the store's toast, by its code, not its wording: review P9) → my villager looks sheepish (R17).
+  // A failed save (the store's toast, by its code, not its wording) → my villager looks sheepish (R17).
   $effect(() => {
     if (toasts.current?.code === 'save-failed') emit('sync-error');
   });
 
-  // M5: tell me when my partner sent a high-five today (once per new one, per device), with their villager on the
-  // banner (U6), but not over the harvest: wait until it closes, and not over another banner: one at a time (U13).
+  // Tell me when my partner sent a high-five today (once per new one, per device), with their villager on the
+  // banner, but not over the harvest: wait until it closes, and not over another banner: one at a time.
   $effect(() => {
     const v = week.view;
     if (!v || v.highFivesToday <= 0 || ui.overlay || toasts.current) return;
@@ -100,7 +100,7 @@
 {/if}
 
 <style>
-  /* Round 20 (user): the island is centred in the visible ocean (the horizon down to the NookPhone), never under the
+  /* The island is centred in the visible ocean (the horizon down to the NookPhone), never under the
      ribbon or the phone. The phone sits in ONE fixed slot over the sea at the bottom (its height is a constant, so
      nothing moves when しずえ speaks: her box floats above it); IslandScene centres the island between the horizon
      and --island-bottom (the phone's top), and keeps the horizon under --hud-bottom (the ribbon's lip, Hud.svelte). */

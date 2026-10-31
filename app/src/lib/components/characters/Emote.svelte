@@ -1,16 +1,16 @@
 <script lang="ts">
-  // Emote bubble (design.md §M.3): a cream circle holding an official NH reaction icon.
+  // Emote bubble (design.md "Motion"): a cream circle holding an official NH reaction icon.
   //   <Emote id="joy" />                 pops in, holds, fades (2.2 s); `hold` keeps it up
   //   <Emote id="sleepy" hold size={36} />
   // `tail` = which side the little tail points from ('left' | 'right' | 'none').
-  //   <Emote id="mark-note" bare />      floating symbol, no cream disc (villagers, A1); `mark-*` are ours
+  //   <Emote id="mark-note" bare />      floating symbol, no cream disc (villagers); `mark-*` are ours
   // Under reduced motion it fades in for 120 ms instead of popping.
   import OfficialArt from './OfficialArt.svelte';
   import Mark from '../ui/Mark.svelte';
   import { isMark, reactionArt, type EmoteIcon, type MarkId } from '#lib/art.ts';
 
   interface Props {
-    /** Official reaction icon (v4) or one of our marks. */
+    /** Official reaction icon or one of our marks. */
     id: EmoteIcon;
     /** Bubble width: px number or CSS length. Default 44px. */
     size?: number | string;
@@ -40,7 +40,7 @@
   .bubble {
     position: relative; display: grid; place-items: center; flex: none;
     width: var(--w); height: var(--w); border-radius: 50%;
-    background: var(--c-cream); box-shadow: 0 3px 0 var(--c-lip); /* v5: no stroke, one lip */
+    background: var(--c-cream); box-shadow: 0 3px 0 var(--c-lip); /* no stroke, one lip */
     transform-origin: 30% 110%;
     animation: if-bubble var(--dur-emote, 2200ms) var(--ease-bounce) both;
   }

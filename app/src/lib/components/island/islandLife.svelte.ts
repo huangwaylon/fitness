@@ -1,4 +1,4 @@
-// The island's life, outside the scene's markup (round 8): reactions from the view diff, the greeting and startup
+// The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
 // beats, naps at night, the motion bus, idle life, the balloon present and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
 import { onMount, untrack } from 'svelte';
@@ -156,7 +156,7 @@ export class IslandLife {
     if (!asleepHour(d)) {
       if (once('open')) beats.push('R1');
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
-      // evening: my partner turns to me while my day is still under half (ADR 0021: a nudge to move, not to check in)
+      // evening: my partner turns to me while my day is still under half (a nudge to move, not to report in)
       if (h >= 18 && h < 22 && dayScore(me, view.weekKey) < 50 && once('evening')) beats.push('R12');
       if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');
     }
@@ -174,7 +174,7 @@ export class IslandLife {
       }
     });
 
-    // Balloon present (A8: a bit more often): day only, first after 45 s on the island, then every
+    // Balloon present: day only, first after 45 s on the island, then every
     // 4 min, at most 3 per session.
     const balloonTry = (ms: number) =>
       this.later(() => {

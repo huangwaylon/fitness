@@ -1,4 +1,4 @@
-// One navigation model (docs/design/design.md "Navigation", round 18): every modal has a visible ✕ (or a labelled
+// One navigation model (docs/design.md "Navigation"): every modal has a visible ✕ (or a labelled
 // close) in the one title bar, every pushed level a ‹ back, and nothing advertises swipe-down (no grabber).
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';

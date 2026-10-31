@@ -3,12 +3,12 @@
 </script>
 
 <script lang="ts">
-  // きろく (records) NookPhone app (history-and-editing.md): からだ | ベル pills, week cards → week → day → edit,
+  // きろく (records) NookPhone app (design.md "Kiroku"): からだ | ベル pills, week cards → week → day → edit,
   // full screen inside the phone. ◀ (the phone's back) goes up one level: the phone calls `back()` first. Every edit
-  // screen names whose data it changes (`p`): either person edits either person's data (ADR 0023).
+  // screen names whose data it changes (`p`): either person edits either person's data.
   // Everything is computed from the store's reduced model, lazily for the opened week/day; edits go through the
   // queue (held 5 s with とりけす) and recompute the island's ベル ribbon and the wallet at once. Loaded on first open
-  // (ShimaPhone imports it dynamically, round 7 L1).
+  // (ShimaPhone imports it dynamically).
   import { tick, untrack } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { MOVE_GOAL } from '#lib/config/rules.ts';
@@ -51,7 +51,7 @@
   let tab = $state<'body' | 'money'>('body');
   let stack = $state<Screen[]>([]);
   let root: HTMLElement | undefined = $state();
-  /** The scroll position of each level under the open one (parallel to `stack`), restored on ◀ (scroll audit L1). */
+  /** The scroll position of each level under the open one (parallel to `stack`), restored on ◀. */
   let saved: number[] = [];
 
   const m = $derived(week.model);
@@ -65,17 +65,17 @@
   /** Whose goals the 目標 card shows (null: mine). */
   let goalPick = $state<PersonId | null>(null);
   const goalP = $derived<PersonId>(goalPick ?? me);
-  // One computation per screen and model (not per use; round 7 L5).
+  // One computation per screen and model (not per use).
   const weeks = $derived(m && !top && tab === 'body' ? historyWeeks(m.state, m.now) : null);
   const money = $derived(m && !top && tab === 'money' ? bellsLedger(m.state, m.now) : null);
   const wkDetail = $derived(m && top?.k === 'week' ? { d: weekDetail(m.state, top.wk, m.now), edits: weekEdits(m.state, top.wk) } : null);
   const today = $derived(m ? localDateAt(m.now) : '');
-  // The weight trend (ADR 0020): both people on the からだ list, one on its own screen.
+  // The weight trend: both people on the からだ list, one on its own screen.
   const trends = $derived(m && ((!top && tab === 'body') || top?.k === 'weight')
     ? { A: weightTrend(m.state, 'A', m.now), B: weightTrend(m.state, 'B', m.now) } : null);
   const dayDate = $derived(top && 'date' in top && top.k !== 'weightIn' ? top.date : null);
   const day = $derived(m && dayDate ? dayDetail(m.state, dayDate, m.now) : null);
-  /** Edit controls close a little before the lock, so an edit made now still lands in time (M1). */
+  /** Edit controls close a little before the lock, so an edit made now still lands in time. */
   const canEdit = $derived(!!day && !!m && day.open && !day.future && m.now < day.lockAt - EDIT_CUTOFF_MS);
 
   // Apply an entry (ribbon → this week, jar total → the ベル tab) each time one arrives.
@@ -115,7 +115,7 @@
     return true;
   }
 
-  /** After けってい: focus back on the ✎ that opened the edit (round 7 F4), else on the phone. */
+  /** After けってい: focus back on the ✎ that opened the edit, else on the phone. */
   async function refocus(key: string) {
     await tick();
     const el = root?.querySelector<HTMLElement>(`[data-focus="${CSS.escape(key)}"]`);
@@ -135,7 +135,7 @@
     void refocus(`${p}:w:${id}`);
     undoToast(p === me ? t('kiroku.savedWorkout', { label }) : savedText(p, label), excludeWorkout(p, id, date, excluded));
   }
-  /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner (round 7 F7). */
+  /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner. */
   function askVoid(id: string, label: string, bells: number) {
     void go({ k: 'void', id, label, bells });
   }
@@ -286,8 +286,8 @@
 
 <style>
   .kiroku { padding-bottom: 8px; }
-  /* the keypad fills the phone so its keys sit at the bottom, in the thumb zone (ShimaPhone stretches this root; round 21:
-     the chain stopped here and the keys hung under the title with ~230px empty below them) */
+  /* the keypad fills the phone so its keys sit at the bottom, in the thumb zone (ShimaPhone stretches this root;
+     without this link in the chain the keys hang under the title with empty space below them) */
   .kiroku:has(:global(.atm)) { display: flex; flex-direction: column; }
   .kiroku:has(:global(.atm)) > .lvl { flex: 1 0 auto; grid-template-rows: auto 1fr; }
   .who { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
@@ -314,7 +314,7 @@
   .ask { padding: 16px; display: grid; gap: 6px; }
   .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
   .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; }
-  /* minmax(0, 1fr): the longest label (高強度インターバルトレーニング) must not set a column's minimum (sizing #3, scroll M1) */
+  /* minmax(0, 1fr): the longest label (高強度インターバルトレーニング) must not set a column's minimum */
   .types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .type {
     appearance: none; border: 0; cursor: pointer; min-width: 0; overflow-wrap: anywhere; min-height: 52px; padding: 6px 10px; border-radius: var(--r-btn);

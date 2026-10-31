@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The treats (ADR 0022: one simple list): big buy tiles in two columns (the item's NH art, its name, the price in ベル).
+  // The treats (one simple list): big buy tiles in two columns (the item's NH art, its name, the price in ベル).
   // An escalating food treat already bought this week shows its price now, the base struck through and 「こんしゅう 2かいめ」.
   // A treat the wallet can't pay for yet is aria-disabled (a tap boops, as NH's shop does) and says how much is missing.
   // Tap → `onbuy` (the page asks first). Under the tiles, a quiet ✎ to change the list.
@@ -17,7 +17,7 @@
     onedit: () => void;
   }
   let { items, balance, onbuy, onedit }: Props = $props();
-  // Cheapest first (user): by the base price, so a tile never jumps under the finger when this week's price rises.
+  // Cheapest first, by the base price, so a tile never jumps under the finger when this week's price rises.
   const sorted = $derived([...items].sort((x, y) => x.basePrice - y.basePrice));
 </script>
 
@@ -55,8 +55,8 @@
   .item:active:not([aria-disabled='true']) { transform: translateY(3px) scale(1.04, .94); box-shadow: var(--sh-ctl-press); transition-duration: var(--dur-tap); }
   .item[aria-disabled='true'] { cursor: default; box-shadow: none; background: var(--ctl-off); color: var(--text-soft); transform: translateY(4px); }
   .item[aria-disabled='true'] .ic { opacity: .5; filter: saturate(.3); }
-  /* top-anchored (round 21): a tile beside one with the 2かいめ pill keeps its art, name and price level with it (they sat
-     10px lower, centred); without a pill both tiles are as tall as their content, so nothing changes */
+  /* top-anchored: a tile beside one with the 2かいめ pill keeps its art, name and price level with it (centred, they
+     would sit lower); without a pill both tiles are as tall as their content, so nothing changes */
   .ic { width: 60px; height: 60px; margin-bottom: 2px; display: grid; place-items: center; line-height: 0; }
   .nm { max-width: 100%; font-size: var(--fs-body); line-height: 1.25; overflow-wrap: anywhere; }
   .pr { font-size: var(--fs-talk); }

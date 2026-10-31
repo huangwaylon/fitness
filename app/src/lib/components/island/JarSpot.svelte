@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The island's jar + its ベル nameplate: one button (≥ 64px), the doorway to the wallet (ごほうび) (v5 §5; Jar.svelte is the one jar
-  // drawing). The plate shows the shared wallet (ADR 0022). When new ベル arrive (a sync), they fly
+  // The island's jar + its ベル nameplate: one button (≥ 64px), the doorway to the wallet (ごほうび) (Jar.svelte is the one jar
+  // drawing). The plate shows the shared wallet. When new ベル arrive (a sync), they fly
   // in (CoinFlow): for each person and fruit that earned more than this phone last showed (SCENE.bellsSeen, per day),
   // a "+N" pops over that fruit under its tree and three coins hop into the jar; the plate counts up as they land and
   // the jar squashes. Anything else that raises the wallet (the Sunday bonus) rises with a "+N" pop over the jar.
@@ -169,7 +169,7 @@
 <style>
   /* jar + plate: one button (≥ 64px), anchored at the jar's base; the plate hangs just below it */
   .jar {
-    /* above the time-of-day tint: the jar and its plate stay game-object bright (v5 §5) */
+    /* above the time-of-day tint: the jar and its plate stay game-object bright */
     position: absolute; z-index: var(--z-jar); translate: -50% 0; display: flex; flex-direction: column; align-items: center;
     min-width: 64px; min-height: 64px; padding: 0 6px; margin: 0; appearance: none; background: none; border: 0;
     border-radius: 24px; cursor: pointer; color: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
@@ -182,13 +182,13 @@
   .squash:global(.catch) { animation: catch 260ms var(--ease-bounce); }
   @keyframes catch { 0%, 100% { transform: none; } 40% { transform: scale(1.06, .94); } }
   .jar.pressed .jar-plate { transform: translateY(2px); box-shadow: 0 1px 0 var(--plate-lip); }
-  /* the wallet's nameplate: the scene's only label (v5 §3), cream pill with a 4px lip and a leaf "go" dot; just the
-     number (the jar above says what it counts, the label says ベル), so the five-fruit rows fit beside it (ADR 0021) */
+  /* the wallet's nameplate: the scene's only label, cream pill with a 4px lip and a leaf "go" dot; just the
+     number (the jar above says what it counts, the label says ベル), so the four-fruit rows fit beside it */
   .jar-plate {
     display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; padding: 3px 4px 3px 10px; border-radius: var(--r-pill);
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 4px 0 var(--plate-lip); white-space: nowrap;
     transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft); font-variant-numeric: tabular-nums;
-    /* a game object on the stage: sized in stage units (14u), 13–16px (sizing #6, T5) */
+    /* a game object on the stage: sized in stage units (14u), 13–16px */
     font-size: clamp(13px, calc(14 * 100cqw / 390), 16px);
   }
   .jar-plate b { font: 700 1em/1.25 var(--font-num); letter-spacing: .02em; }

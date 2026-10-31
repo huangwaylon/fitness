@@ -1,8 +1,7 @@
 <script lang="ts">
-  // 目標 (round 17 IA addendum): one person's two goals in one place on きろく's からだ, each with ✎: the Move goal (ADR
-  // 0021 §5: the 🍐 ring's daily kcal, per person, from today on; earlier days keep theirs) and the weight goal (ADR
-  // 0020: shown only, never earns). The two avatars on top switch whose goals these are; either person may set either
-  // person's (ADR 0023).
+  // 目標: one person's two goals in one place on きろく's からだ, each with ✎: the Move goal (the 🍐 ring's daily
+  // kcal, per person, from today on; earlier days keep theirs) and the weight goal (shown only, never earns). The two
+  // avatars on top switch whose goals these are; either person may set either person's.
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Glyph from './Glyph.svelte';

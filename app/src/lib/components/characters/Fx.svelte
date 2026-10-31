@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-  // Cute overlay effects (design.md §M.4), all ours (SVG/CSS): sparkles, hearts, music notes, a
+  // Cute overlay effects (design.md "Motion"), all ours (SVG/CSS): sparkles, hearts, music notes, a
   // sweat drop, zzz, confetti, dust puffs and a glint. A 0×0 anchor: the parent positions it (head
   // top centre for most, the feet for puffs, the temple for sweat). Removes itself via `ondone`.
   //   <Fx kind="hearts" ondone={() => …} />
@@ -94,7 +94,7 @@
       <ellipse cx="3.4" cy="9" rx="1.2" ry="2" fill="#fff" opacity=".8" />
     </svg>
   {:else if kind === 'zzz'}
-    <!-- one looping element per sleeper (v5 §6 idle budget) -->
+    <!-- one looping element per sleeper (the idle budget) -->
     <span class="p z" style:font-size="15px">zZ</span>
   {:else if kind === 'confetti'}
     {#each pieces as p, i (i)}

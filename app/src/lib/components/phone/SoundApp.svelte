@@ -1,6 +1,6 @@
 <script lang="ts">
-  // しまフォン → サウンド (docs/design/sound.md §10): ミュージック, 効果音 and おしゃべり as three ON/OFF rows (NH's yellow
-  // highlight when on, round 13 tiers) and one 音量 slider. All start OFF; turning one on plays a taste of it (the
+  // しまフォン → サウンド (docs/design.md "Sound settings"): ミュージック, 効果音 and おしゃべり as three ON/OFF rows (NH's yellow
+  // highlight when on, the button tiers) and one 音量 slider. All start OFF; turning one on plays a taste of it (the
   // opening theme, a confirm, a few blips). Kept on this phone only (not synced like the language).
   import { setSound, sound } from '#lib/sound/sound.svelte.ts';
   import { hasMusic } from '#lib/sound/manifest.ts';
@@ -27,7 +27,7 @@
     </button>
   {/each}
 
-  <!-- nothing to turn up while all three are off: the disabled tier (round 13: sunk, no edge) -->
+  <!-- nothing to turn up while all three are off: the disabled tier (sunk, no edge) -->
   <label class="prow vol" class:off>
     <span class="prl">{t('sound.volume')}</span>
     <input type="range" min="0" max="10" step="1" value={volume} disabled={off} data-sfx="self" style:--v="{volume * 10}%"
@@ -44,7 +44,7 @@
   .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .prow[aria-checked='true'] .prl small { color: var(--c-ink-soft); }
 
-  /* the switch: a sunk tan track (off) or a leaf one (on) with a cream knob, both edged (round 13) */
+  /* the switch: a sunk tan track (off) or a leaf one (on) with a cream knob, both edged */
   .sw {
     position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
     background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);

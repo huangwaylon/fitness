@@ -1,8 +1,8 @@
 <script lang="ts">
-  // NookPhone-style notification banner (v5: a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover).
+  // NookPhone-style notification banner (a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover).
   // ToastHost renders it inside the open sheet's <dialog> when there is one: a popover outside a modal dialog is
-  // inert (round 7 F1). Slides down below the status row, holds (the store decides how long), slides up: the store
-  // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro (round 7 F2).
+  // inert. Slides down below the status row, holds (the store decides how long), slides up: the store
+  // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro.
   // Left: a 36px icon on a pebble (partner's villager for partner events, しずえ for system ones). Right: one official reaction icon. Tap or swipe up to dismiss.
   import type { PersonId } from '#lib/types.ts';
   import Host from '../characters/Host.svelte';
@@ -90,20 +90,20 @@
     animation: in 320ms var(--ease-bounce) both;
   }
   .banner:popover-open { inset: auto 0; top: calc(var(--safe-top) + 56px); }
-  /* 島: below today's ベル ribbon, so a banner never covers the focal point (sizing #17). */
+  /* 島: below today's ベル ribbon, so a banner never covers the focal point. */
   :global(:root:has(.island)) .banner:not(.undo) { top: calc(var(--safe-top) + 76px); }
   /* the sync chip sits under the ribbon (Hud.svelte), so the banner goes under it */
   :global(:root:has(.island .chip)) .banner:not(.undo) { top: calc(var(--safe-top) + 120px); }
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; border-radius: inherit; }
   /* The undo banner sits over the scrolling ごほうび page and the phone: a vertical swipe that starts on it scrolls
-     what is under it (round 10 L2). It ends by itself; the swipe-down dismiss stays best effort. */
+     what is under it. It ends by itself; the swipe-down dismiss stays best effort. */
   .undo .hit { touch-action: pan-y; }
   .pebble {
     width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
     background: color-mix(in srgb, var(--c-yuzu) 40%, var(--c-cream));
   }
   .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* An undo banner (N5): low, in the thumb zone, so it never covers the Jar's total; its text (what was done:
+  /* An undo banner: low, in the thumb zone, so it never covers the Jar's total; its text (what was done:
      「アイス 1,000 ベル つかいました！」) may take two lines next to the button. */
   .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
   .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // きろく's flat glyphs (no strokes, v5 §5): the 🔒 of a locked week, the ✎ of a fix.
+  // きろく's flat glyphs (no strokes): the 🔒 of a locked week, the ✎ of a fix.
   let { kind, size = 16, label }: { kind: 'lock' | 'pen'; size?: number; label?: string } = $props();
 </script>
 
@@ -15,5 +15,5 @@
 <style>
   .g { display: inline-block; flex: none; vertical-align: middle; }
   .lock { fill: var(--text-soft); stroke: var(--text-soft); }
-  .pen { fill: currentColor; } /* round 13: follows the text, so it reads at night too */
+  .pen { fill: currentColor; } /* follows the text, so it reads at night too */
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Balloon present (design.md §S.4), after NH: one round glossy balloon (ours, drawn in NH's soft item style: a
+  // Balloon present (design.md "Particles and events"), after NH: one round glossy balloon (ours, drawn in NH's soft item style: a
   // top-left highlight, a rim light on the shaded side, a knot) on a thin string, carrying the official present
   // (deco/present). It drifts across the sky on the breeze in 22 s (either way, at a cloud's altitude, in front of
   // the clouds and under the HUD), bobbing ±5px on a 3.6 s sine and leaning ±4°; the present swings under it like a

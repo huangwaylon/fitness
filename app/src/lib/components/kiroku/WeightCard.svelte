@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 体重のながれ (ADR 0020): the calm summary at the top of きろく's からだ, one row per person (me first): avatar, the
+  // 体重のながれ: the calm summary at the top of きろく's からだ, one row per person (me first): avatar, the
   // trend kg, this week's change and a sparkline. A row opens that person's weight screen. Weight never earns ベル, so
   // there are no ベル here and no colours for "good" or "bad": a change is just a number.
   import type { PersonId } from '#lib/types.ts';

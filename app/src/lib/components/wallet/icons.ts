@@ -1,4 +1,4 @@
-// A treat's picture (ADR 0022): official NH item art for the five defaults (static/art/items); an item someone added
+// A treat's picture: official NH item art for the five defaults (static/art/items); an item someone added
 // shows the bag of bells.
 const ART: Record<string, string> = {
   snack: 'items/snack',

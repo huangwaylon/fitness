@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Type a number for きろく: a weight (ADR 0020: decimal, 20–300 kg) or the Move goal (ADR 0021: whole kcal, 100–2,000).
+  // Type a number for きろく: a weight (decimal, 20–300 kg) or the Move goal (whole kcal, 100–2,000).
   // A 16px+ field (iOS doesn't zoom) with the right keypad (`inputmode`), the old value grey, then NH's choice list
   // ▶ けってい / (目標をなくす) / やめる. `parse` turns the text into a value or null (shown as the hint in coral).
   import ChoiceList from '../ui/ChoiceList.svelte';

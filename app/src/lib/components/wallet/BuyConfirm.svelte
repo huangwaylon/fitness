@@ -1,6 +1,6 @@
 <script lang="ts">
-  // Ask before spending (ADR 0022): the item's picture, name and price, and the wallet before → after. やめる beside the
-  // one CTA (買う！), as NH pairs every purchase (round 16 #7); the page spends it and shows the banner with とりけす.
+  // Ask before spending: the item's picture, name and price, and the wallet before → after. やめる beside the
+  // one CTA (買う！), as NH pairs every purchase; the page spends it and shows the banner with とりけす.
   // The price is the one being paid now: an escalating food treat's price this week, with 「こんしゅう 2かいめ」.
   // `item` is the live menu item, so a price that steps up while the sheet is open (a sync: the partner bought the same
   // おやつ) shows here before 買う！ charges it.

@@ -1,6 +1,6 @@
 <script lang="ts">
-  // Seasonal particles (design.md §S.4), transform/opacity only, ONE animation each (the side-to-side
-  // flutter is folded into the fall keyframes; v5 §6: ≤ 3 particles in the idle budget): cherry-blossom
+  // Seasonal particles (design.md "Particles and events"), transform/opacity only, ONE animation each (the side-to-side
+  // flutter is folded into the fall keyframes; ≤ 3 particles in the idle budget): cherry-blossom
   // petals, autumn maple leaves (2, 3 in festival week), winter snow (3), all official art; summer nights get
   // our fireflies (stage units, so pass mode="fireflies" inside the stage). The falling layer is a size
   // container, so the fall distance is in cqh of the whole scene.
@@ -24,7 +24,7 @@
   let { season, foliage = 'green', tod, quiet = false, festival = false, mode = 'fall' }: Props = $props();
 
   const kind = $derived(
-    // leaves and petals rest at night (v5 §6 budget); snow keeps falling
+    // leaves and petals rest at night (idle budget); snow keeps falling
     foliage === 'blossom' && tod !== 'night' ? 'petal' : foliage === 'fall' && tod !== 'night' ? 'maple-leaf' : season === 'winter' ? 'snowflake' : null
   );
   const count = $derived(quiet ? (kind ? 1 : 0) : kind === 'petal' || kind === 'maple-leaf' ? (festival ? 3 : 2) : kind === 'snowflake' ? 3 : 0);

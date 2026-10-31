@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The island (design.md §S, §1.1, round 6 layout, round 7 "Pocket Camp diorama" environment:
-  // docs/design/design.md §S.3). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
+  // The island (design.md "Island scene"; the "Pocket Camp diorama" environment:
+  // design.md "Environment"). A capped 3-stop sky, one NH-blue sea and a fixed-aspect stage
   // (390 × 360 units) anchored to the bottom, painted like the official renders (light from the upper left,
   // soft gradients and contact shadows, no strokes or lips on scenery).
   //   <IslandScene {view} onpartner onjar paused />
@@ -14,7 +14,7 @@
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
   // The HUD (sync chip, today's ベル ribbon, NookPhone) overlays the sky; clouds keep below it
   // (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
-  // Layout contract (round 20, for the page): the island is CENTRED in the visible ocean (horizon → bottom chrome).
+  // Layout contract (for the page): the island is CENTRED in the visible ocean (horizon → bottom chrome).
   //   --scene-h       the scene's height (give it the whole page, e.g. 100dvh, and keep it stable);
   //                   fallback clamp(300px, 100dvh − var(--island-bottom), 600px).
   //   --hud-bottom    the bottom edge of the top chrome (the ribbon), from the scene's top. Default 0.
@@ -80,7 +80,7 @@
   const month = $derived(jst(clock).month);
   const ev = $derived(eventsAt(clock));
 
-  // v5 §3: I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.
+  // I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.
   const slot = (pid: PersonId): 'A' | 'B' => (pid === view.me ? 'A' : 'B');
   const sides = $derived<Record<'mine' | 'partner', { person: PersonWeekView; x: number; side: 'left' | 'right' }>>({
     mine: { person: view.people[view.me], x: VILLAGER.x.A, side: 'left' },
@@ -91,7 +91,7 @@
 
   // The trees' detail popups: at most one open (a tree's tap toggles it; the other tree's tap moves it there).
   // A tap anywhere else (the popup itself lets taps through, so tapping it closes it too) or Esc closes it; it never
-  // times out (user 2026-10-30).
+  // times out.
   let openTree = $state<PersonId | null>(null);
   /** The pointerdown that just closed a popup: on scenery, that tap only closes it (SceneTaps). */
   let closedBy: Event | null = null;
@@ -178,12 +178,12 @@
 <style>
   .scene {
     --scene-h-auto: clamp(300px, calc(100dvh - var(--island-bottom, 0px)), 600px);
-    /* emotes are game objects: 44u on the stage (resolved where used, against the stage), 36–56px (T5) */
+    /* emotes are game objects: 44u on the stage (resolved where used, against the stage), 36–56px */
     --emote-size: clamp(36px, calc(44 * 100cqw / 390), 56px);
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: hidden;
     container-type: inline-size; isolation: isolate;
     /* the layout (see the contract at the top of the script). The island's box in stage units: the hedge's top
-       (32u) to the beach's foam (356u), centred on 194u. Round 20 (user): it is centred in the visible OCEAN, the
+       (32u) to the beach's foam (356u), centred on 194u. It is centred in the visible OCEAN, the
        horizon down to the phone's top (--sea-bottom). The horizon is the stage's own (8u, 24u above the hedge) unless
        that would make the sky taller than 27% of the scene; then it stops there and the island sits lower in
        open sea. Centred, the island's own horizon lands at --sea-bottom − 372u, so that is where it starts. */
@@ -224,14 +224,14 @@
   .vil:disabled { cursor: default; }
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  /* ONE time-of-day layer (round 7): a multiply tint over land, sea and the sprites, from the horizon to the
+  /* ONE time-of-day layer: a multiply tint over land, sea and the sprites, from the horizon to the
      scene's bottom edge and out to both screen edges (the sky has its own table; the jar z 81, fireflies z 82
      and the stars stay above it). Day: none. */
   .tint {
     position: absolute; z-index: var(--z-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
     top: calc(var(--if-hy) - var(--if-st)); bottom: -100vh; left: -100vw; right: -100vw;
   }
-  /* villager contact shadow (round 7): radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk:
+  /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk:
      stretched to the right (--sh-scale) */
   .vil :global(.shadow) {
     width: calc(var(--h) * .6); height: calc(var(--h) * .12); margin-left: calc(var(--h) * -.3); bottom: calc(var(--h) * -.05);

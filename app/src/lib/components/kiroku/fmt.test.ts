@@ -1,4 +1,4 @@
-// typeParts (T7): Japanese workout labels break only at their word joints, English at its spaces.
+// typeParts: Japanese workout labels break only at their word joints, English at its spaces.
 import { afterEach, describe, expect, it } from 'vitest';
 import { setLocale } from '#lib/i18n/state.svelte.ts';
 import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
@@ -40,7 +40,7 @@ describe('weight text', () => {
   });
 });
 
-describe('Move goal input (ADR 0021)', () => {
+describe('Move goal input', () => {
   it('reads whole kcal in the pref bounds', () => {
     expect(parseKcalInput('600')).toBe(600);
     expect(parseKcalInput(' 1,200 kcal')).toBe(1200);

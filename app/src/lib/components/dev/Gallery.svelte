@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Dev art gallery (design.md §A): every official art key, the villager roster, しずえ poses,
+  // Dev art gallery (design.md "Official art"): every official art key, the villager roster, しずえ poses,
   // the fallback silhouette, money marks, emotes, and the island in every
   // season × day/night. Loaded by routes/dev/characters only in `vite dev`, so the production build drops it.
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
@@ -43,7 +43,7 @@
   <p class="cap">{KEYS.length} official files · tap a villager to replay its hop</p>
 
   <section>
-    <h2>Live island · reactions (§M.5) · events</h2>
+    <h2>Live island · reactions · events</h2>
     <p class="cap">Season / time: <code>?season=</code> <code>&amp;theme=night</code> · events: <code>?date=2026-04-03T10:00</code> (cherry), <code>2026-08-02T20:00</code> (fireworks), <code>2026-11-20T15:00</code> (maple), <code>2026-12-24T12:00</code> (Toy Day), <code>2026-12-31T23:00</code> (NYE), <code>T23:30</code> (naps)</p>
     <div class="live">
       {#if week.view}<div class="livescene"><IslandScene view={week.view} /></div>{/if}

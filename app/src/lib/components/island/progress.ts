@@ -1,4 +1,4 @@
-// Today's progress of one ring fruit toward its daily goal (ADR 0021), as the island draws it.
+// Today's progress of one ring fruit toward its daily goal, as the island draws it.
 import type { PersonWeekView, RingFruit, RingProgress, WeekKey } from '#lib/types.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { rulesFor } from '#lib/config/rules.ts';

@@ -1,6 +1,6 @@
 <script lang="ts">
-  // 3.1 Week list (からだ: what our bodies did, round 17 IA §4.7): newest first, one cream Nook Miles+ card per week.
-  // Each card: the week (今週 or dates), 🔒 once it locked, ✓ once harvested, and per person the villager and the five
+  // 3.1 Week list (からだ: what our bodies did): newest first, one cream Nook Miles+ card per week.
+  // Each card: the week (今週 or dates), 🔒 once it locked, ✓ once harvested, and per person the villager and the four
   // badge fruits (lit = met); this week also shows the days met so far under each. The ベル live in the ベル tab.
   import type { PersonId } from '#lib/types.ts';
   import type { HistoryWeek } from '#lib/model/history.ts';
@@ -63,7 +63,7 @@
   .hv { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
   .hv svg { width: 14px; height: 14px; }
   .who { display: flex; align-items: center; gap: 12px; }
-  /* the five badges spread over the card (round 21: they bunched on the left, ~120px empty on the right at 390) */
+  /* the four badges spread over the card instead of bunching on the left */
   .who :global(.badges) { flex: 1; max-width: 240px; justify-content: space-between; }
   @media (max-width: 359px) { .wk { padding: 10px 12px; } .who { gap: 8px; } }
 </style>

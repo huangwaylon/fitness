@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Sky (round 7, design.md §S.3): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
+  // Sky (design.md "Environment"): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
   // season shifts by day) bleeding under the status bar; the sun at the upper left (left 18%, 58% down the
   // band; dawn / dusk: 22% above the horizon) as ONE soft radial glow, or the moon (a crescent with a soft
   // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and event
@@ -19,7 +19,7 @@
   const uid = $props.id();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
-  // 2 twinkling + 8 still stars (v5 §6: idle budget ≤ 10)
+  // 2 twinkling + 8 still stars (idle budget ≤ 10)
   const STARS = [
     [8, 18], [17, 52], [26, 30], [34, 70], [43, 14], [52, 46], [60, 26], [67, 64], [88, 58], [5, 78]
   ];
@@ -52,7 +52,7 @@
       <span class="orb sun" class:low></span>
     {/if}
     {#if fireworks}
-      <!-- one burst element (§S.10: 1 burst every 6 s; P5 budget) that moves and changes colour each time -->
+      <!-- one burst element (design.md "Particles and events": 1 burst every 6 s) that moves and changes colour each time -->
       <span class="burst">
         {#each Array.from({ length: 12 }) as _, k (k)}<i style:--a="{k * 30}deg"></i>{/each}
       </span>

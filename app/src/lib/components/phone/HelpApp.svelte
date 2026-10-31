@@ -1,6 +1,6 @@
 <script lang="ts">
-  // しまフォン → あそびかた (ADR 0021), written for a 10-year-old: no taps needed, the four fruits and their daily goals
-  // (what each pays), the weekly badges and the together bonus, the one shared wallet (ADR 0022) with the treat guide,
+  // しまフォン → あそびかた, written for a 10-year-old: no taps needed, the four fruits and their daily goals
+  // (what each pays), the weekly badges and the together bonus, the one shared wallet with the treat guide,
   // the protein tip and the one-line setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
@@ -41,7 +41,7 @@
   };
   const curved = $derived(RING_FRUITS.some((f) => stepsOf(f)));
 
-  /** The protein tip (user, round 19; not tracked): 1.6 g per kg a day, per person from their goal weight (else their
+  /** The protein tip (not tracked): 1.6 g per kg a day, per person from their goal weight (else their
    *  weight trend), rounded to 5 g; just the rule when neither is known. */
   const protein = $derived.by((): string => {
     const m = week.model;
@@ -134,7 +134,7 @@
   .st small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .st b { font-size: var(--fs-s); }
   .st:last-child { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
-  /* night: the soft lilac was 3.5:1 on the cream-tinted cell (round 21) */
+  /* night: the soft lilac is only 3.5:1 on the cream-tinted cell */
   :global(:root[data-tod='night']) .st small { color: var(--text); }
   /* the four badges in two rows of two (a flex wrap left one alone on a row at 390 and 320) */
   .chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }

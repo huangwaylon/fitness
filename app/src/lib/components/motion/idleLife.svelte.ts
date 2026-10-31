@@ -1,10 +1,10 @@
-// Idle life (design.md §M.7, v5 §6): one scheduler per live scene. Every 9–15 s one actor does one
+// Idle life (design.md "Motion"): one scheduler per live scene. Every 9–15 s one actor does one
 // small background thing from its pool (look around, wiggle, hop, stroll, peek into the jar, tree shake,
 // chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
 // evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab
 // is hidden, a sheet is open, or under reduced motion; slows after 3 min without input and stops after
 // 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and
-// stop() cancels them all (P2), so nothing writes to the actors after the scene unmounts.
+// stop() cancels them all, so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
 import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion, stroll } from './director.svelte.ts';
 import { jst, reducedMotion } from '#lib/time/clock.ts';
@@ -14,7 +14,7 @@ export interface IdleContext {
   paused: () => boolean;
   /** The villagers are asleep (22–05). */
   asleep: () => boolean;
-  /** Evening (tod night but still awake): no day-only actions (P8). */
+  /** Evening (tod night but still awake): no day-only actions. */
   night?: () => boolean;
   /** Both people's day scores (today's ベル as % of a full day, progress.ts dayScore), for the dance-together weight. */
   scores: () => [number, number];
@@ -57,7 +57,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
         owned.delete(c);
         if (!stopped) fn();
       },
-      () => owned.delete(c) // a reaction preempted the actor (director cancel): forget it (N8)
+      () => owned.delete(c) // a reaction preempted the actor (director cancel): forget it
     );
     owned.add(c);
   }
