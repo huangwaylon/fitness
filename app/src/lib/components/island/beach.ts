@@ -4,6 +4,7 @@
 // phone picked up is hidden there only (the caller keeps that list). Nothing here counts for anything: a pick-up is a
 // caption, an icon and (the first time) a ずかん `find`, never ベル.
 import { mulberry32 } from '#lib/random.ts';
+import { shoreY } from './scene.ts';
 
 /** The island's own seed (`?seed=` in the demo varies it). */
 export const ISLAND_SEED = 'island-fund';
@@ -94,6 +95,32 @@ export function zodiacOf(date: string): string {
 
 /** The front beach between the cliff's foot and the foam (shells, the bottle, fragments): x and a 0–1 depth. */
 export const BEACH = { x0: 74, x1: 316, y0: 331, y1: 345 } as const;
+/** The least gap (u) between two things lying on the front beach (shells, fragments, the bottle): about two of them
+ *  side by side, so they never clump or touch. */
+export const BEACH_GAP = 34;
+type Pt = { x: number; y: number };
+/** A spot on the beach (from the item's own stream `r`) at least BEACH_GAP from every point in `near`: every 5u along
+ *  the sand, tried in a seeded order (so a gap is found whenever there is one), else the spot furthest from them (a
+ *  crowded beach: fragments after many wishes). `first`: an x to try first (a fragment's stretch of sand); `edge`: at the
+ *  water's edge, half in the foam (the bottle). Depth varies a little (y0 − 2 to y1). */
+function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }: { first?: number; edge?: boolean } = {}): Pt {
+  const x0 = BEACH.x0 + 6 + r() * 5, n = Math.floor((BEACH.x1 - 6 - x0) / 5) + 1;
+  const xs = Array.from({ length: n }, (_, k) => x0 + k * 5);
+  for (let i = xs.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [xs[i], xs[j]] = [xs[j], xs[i]];
+  }
+  if (first !== undefined) xs.unshift(first);
+  let best: Pt = { x: xs[0], y: BEACH.y1 }, bestD = -1;
+  const tenth = (v: number) => Math.round(v * 10) / 10;
+  for (const x0 of xs) {
+    const x = tenth(x0), y = tenth(edge ? shoreY(x) - 3 : BEACH.y0 - 2 + r() * (BEACH.y1 - BEACH.y0 + 2));
+    const d = Math.min(Infinity, ...near.map((p) => Math.hypot(p.x - x, p.y - y)));
+    if (d >= BEACH_GAP) return { x, y };
+    if (d > bestD) (best = { x, y }), (bestD = d);
+  }
+  return best;
+}
 /** Open lawn for a dig spot or a weed, clear of every control at 320–430 px (measured: the canopies, the fruit rows,
  *  the villagers) and a tap's reach away from the flowers: beside the trunks under the canopies (the dig spots), in
  *  front of the hedge (between the right canopy and centre stage) and between the villagers' feet (weeds too).
@@ -117,15 +144,42 @@ export interface Shell { uid: string; id: ShellId; x: number; y: number; tilt: n
  *  tide). `ms`: ms after Tokyo midnight. Picked ones (by uid) are left out by the caller. */
 const SHELL_GAP: readonly [number, number] = [60_000, 120_000];
 export const MAX_SHELLS = 3;
-export function shellsAt(date: string, ms: number, seed = ISLAND_SEED): Shell[] {
-  const r = dayRand(date, 'shells', seed);
-  const times = arrivals(r, SHELL_GAP, ms, 0.25);
+/** The shells (`at` ≤ ms, the newest 3) on the sand at `ms`, keeping BEACH_GAP from each other, the morning's
+ *  `fragments` and a bottle lying there. Picked ones (by uid) are left out by the caller. */
+export function shellsAt(date: string, ms: number, seed = ISLAND_SEED, fragments: readonly Fragment[] = []): Shell[] {
+  return beachDay(date, seed, fragments).shells.filter((s) => s.at <= ms).slice(-MAX_SHELLS);
+}
+
+/** The whole day on the front beach, worked out once (per date, seed and the morning's fragments): every shell and
+ *  bottle in the order they arrive, each placed BEACH_GAP clear of what lies there when it lands (the fragments, the
+ *  last two shells, a bottle), so a new arrival never moves anything already lying there and both phones agree. */
+const days = new Map<string, { shells: Shell[]; bottles: Bottle[] }>();
+function beachDay(date: string, seed: string, fragments: readonly Fragment[]): { shells: Shell[]; bottles: Bottle[] } {
+  const key = `${date}|${seed}|${fragments.map((f) => `${f.x},${f.y}`).join(';')}`;
+  const hit = days.get(key);
+  if (hit) return hit;
+  const DAY = 24 * 3600_000;
+  const shellTimes = arrivals(dayRand(date, 'shells', seed), SHELL_GAP, DAY, 0.25);
+  const bottleTimes = arrivals(dayRand(date, 'bottles', seed), BOTTLE_GAP, DAY);
   const odds = shellOdds(Number(date.slice(5, 7)));
-  return times.slice(-MAX_SHELLS).map((at) => {
-    // each shell's own stream (so the list doesn't shift as more arrive)
-    const s = dayRand(date, `shell@${at}`, seed);
-    return { uid: `s${at}`, id: weighted(odds, s), x: BEACH.x0 + s() * (BEACH.x1 - BEACH.x0), y: BEACH.y0 + s() * (BEACH.y1 - BEACH.y0), tilt: Math.round(s() * 50 - 25), at };
-  });
+  const shells: Shell[] = [], bottles: Bottle[] = [];
+  const events = [...shellTimes.map((at) => ({ at, shell: true })), ...bottleTimes.map((at) => ({ at, shell: false }))].sort((a, b) => a.at - b.at);
+  for (const { at, shell } of events) {
+    const lying: Pt[] = [...fragments, ...shells.slice(shell ? -(MAX_SHELLS - 1) : -MAX_SHELLS), ...bottles.filter((b) => at - b.at <= BOTTLE_STAY)];
+    if (shell) {
+      // each shell's own stream (its kind and tilt don't depend on what else is about)
+      const s = dayRand(date, `shell@${at}`, seed);
+      const id = weighted(odds, s), tilt = Math.round(s() * 50 - 25);
+      shells.push({ uid: `s${at}`, id, tilt, at, ...beachSpot(s, lying) });
+    } else {
+      const s = dayRand(date, `bottle@${at}`, seed);
+      bottles.push({ uid: `b${at}`, note: Math.floor(s() * NOTES), at, ...beachSpot(s, lying, { edge: true }) });
+    }
+  }
+  if (days.size > 8) days.clear();
+  const day = { shells, bottles };
+  days.set(key, day);
+  return day;
 }
 
 export interface DigSpot { uid: string; fossil: FossilId; x: number; y: number }
@@ -157,11 +211,16 @@ const BOTTLE_GAP: readonly [number, number] = [8 * 60_000, 14 * 60_000];
 export const BOTTLE_STAY = 6 * 60_000;
 /** How many notes the bottles carry (beach.note.0 … ). */
 export const NOTES = 16;
-export function bottleAt(date: string, ms: number, seed = ISLAND_SEED): Bottle | null {
-  const at = arrivals(dayRand(date, 'bottles', seed), BOTTLE_GAP, ms).at(-1);
-  if (at === undefined || ms - at > BOTTLE_STAY) return null;
-  const s = dayRand(date, `bottle@${at}`, seed);
-  return { uid: `b${at}`, note: Math.floor(s() * NOTES), x: BEACH.x0 + 10 + s() * (BEACH.x1 - BEACH.x0 - 20), y: BEACH.y1 + 2, at };
+/** The bottle at the water's edge at `ms` (half in the foam, BEACH_GAP clear of what was lying there when it came), or
+ *  null. */
+export function bottleAt(date: string, ms: number, seed = ISLAND_SEED, fragments: readonly Fragment[] = []): Bottle | null {
+  const b = beachDay(date, seed, fragments).bottles.filter((x) => x.at <= ms).at(-1);
+  return b && ms - b.at <= BOTTLE_STAY ? b : null;
+}
+/** A bottle brought now (`?find=bottle`): at the water's edge, clear of what lies on the sand. */
+export function bottleNow(date: string, lying: readonly Pt[], seed = ISLAND_SEED): Bottle {
+  const s = dayRand(date, 'bottle-now', seed);
+  return { uid: 'b-demo', note: Math.floor(s() * NOTES), at: 0, ...beachSpot(s, lying, { edge: true }) };
 }
 
 export interface Fragment { uid: string; id: string; x: number; y: number }
@@ -173,15 +232,18 @@ export interface Fragment { uid: string; id: string; x: number; y: number }
 export function fragmentsOn(date: string, n: number, seed = ISLAND_SEED, shower = false): Fragment[] {
   const slots = SLOTS(date, seed);
   const zodiac = shower ? 0.4 : 0.2;
-  return Array.from({ length: n }, (_, i) => {
+  const out: Fragment[] = [];
+  for (let i = 0; i < n; i++) {
     const r = dayRand(date, `fragment@${i}`, seed);
     const k = r();
     const id = k < zodiac ? zodiacOf(date) : k < zodiac + 0.2 ? 'large-star-fragment' : 'star-fragment';
-    // the beach in MAX_FRAGMENTS stretches, taken in a seeded order: one fragment to a stretch
+    // the beach in MAX_FRAGMENTS stretches, taken in a seeded order: one fragment to a stretch (tried first), each
+    // BEACH_GAP clear of the ones before it where the sand has room
     const slot = slots[i % slots.length];
-    const x = BEACH.x0 + ((slot + 0.2 + r() * 0.6) / FRAGMENT_SLOTS) * (BEACH.x1 - BEACH.x0);
-    return { uid: `g${i}`, id, x, y: BEACH.y0 + r() * (BEACH.y1 - BEACH.y0) };
-  });
+    const first = BEACH.x0 + ((slot + 0.35 + r() * 0.3) / FRAGMENT_SLOTS) * (BEACH.x1 - BEACH.x0);
+    out.push({ uid: `g${i}`, id, ...beachSpot(r, out, { first }) });
+  }
+  return out;
 }
 /** The beach's stretches for fragments (stars.ts MAX_FRAGMENTS), in the day's order. */
 const FRAGMENT_SLOTS = 8;

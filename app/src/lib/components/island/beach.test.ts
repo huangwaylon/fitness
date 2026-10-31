@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BEACH, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots,
+  BEACH, BEACH_GAP, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots,
   fragmentsOn, shellOdds, shellsAt, zodiacOf
 } from './beach.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -115,7 +115,7 @@ describe('the message bottle and the star fragments', () => {
         expect(FRAGMENTS).toContain(x.id);
         ids.add(x.id);
         expect(x.x).toBeGreaterThanOrEqual(BEACH.x0), expect(x.x).toBeLessThanOrEqual(BEACH.x1);
-        expect(x.y).toBeGreaterThanOrEqual(BEACH.y0), expect(x.y).toBeLessThanOrEqual(BEACH.y1);
+        expect(x.y).toBeGreaterThanOrEqual(BEACH.y0 - 2), expect(x.y).toBeLessThanOrEqual(BEACH.y1);
       }
       const xs = f.map((x) => x.x).sort((a, b) => a - b);
       for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeGreaterThan(4); // never piled up
@@ -138,5 +138,38 @@ describe('names', () => {
     for (const cat of [ja, en] as Record<string, string>[]) expect(keys.filter((k) => !cat[k])).toEqual([]);
     expect(FOSSILS).toHaveLength(73);
     expect(SHELLS).toHaveLength(8);
+  });
+});
+
+describe('where things lie on the beach', () => {
+  const gaps = (pts: { x: number; y: number }[]) => pts.flatMap((a, i) => pts.slice(i + 1).map((b) => Math.hypot(a.x - b.x, a.y - b.y)));
+  it(`shells and the bottle keep ${BEACH_GAP}u apart (never clumped or touching), across days and hours; with a fragment, nearly`, () => {
+    for (const n of [0, 1]) {
+      let worst = Infinity;
+      for (let d = 1; d <= 28; d++) {
+        const date = `2026-11-${String(d).padStart(2, '0')}`;
+        const frags = fragmentsOn(date, n);
+        for (let m = 6 * 60; m < 24 * 60; m += 7) {
+          const ms = m * 60_000, b = bottleAt(date, ms, undefined, frags);
+          worst = Math.min(worst, ...gaps([...frags, ...shellsAt(date, ms, undefined, frags), ...(b ? [b] : [])]));
+        }
+      }
+      expect(worst, `${n} fragments`).toBeGreaterThanOrEqual(n ? 30 : BEACH_GAP);
+    }
+  });
+  it('a crowded morning (8 fragments and the shells) still spreads them out as far as the sand allows', () => {
+    const frags = fragmentsOn('2026-11-04', 8);
+    expect(Math.min(...gaps([...frags, ...shellsAt('2026-11-04', 12 * H, undefined, frags)]))).toBeGreaterThan(10);
+  });
+  it('the bottle lies at the water’s edge, half in the foam; a new shell never moves the ones already lying there', () => {
+    for (let m = 0; m < 24 * 60; m += 11) {
+      const b = bottleAt('2026-11-04', m * 60_000);
+      if (b) expect(b.y).toBeGreaterThan(BEACH.y1);
+    }
+    const s = shellsAt('2026-11-04', 15 * H);
+    for (let k = 1; k < 6; k++) for (const x of shellsAt('2026-11-04', 15 * H + k * 61_000)) {
+      const was = s.find((y) => y.uid === x.uid);
+      if (was) expect(x).toEqual(was);
+    }
   });
 });
