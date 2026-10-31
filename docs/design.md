@@ -403,9 +403,14 @@ then one whenever the pond is ([Pond](#pond)), else usually a bug; ≤ 1 in each
 in its NH northern-hemisphere months; hours still hold (butterflies and bees by day, fireflies and moths at night).
 
 - **Fishing** (the same in the sea and the pond: `critters.ts` `Water`, the sea's box or the pond's oval): a shadow
-  (NH sizes 1–6) dawdles off the front beach (or in the pond). A tap near it (1.5× the old reach) casts a
-  red-and-white bobber; the fish swims up and nibbles 0–3 times (small wiggles), then bites: a 「！」 pops, the bobber is
-  yanked under with its own sound, and a tap anywhere in the next 1.6 s catches it. The first early tap only
+  (NH sizes 1–6) dawdles in deep enough water off the front beach (22–92u past the foam, as the screen allows; or in
+  the pond). A tap near it (1.5× the old reach) casts a red-and-white bobber (at least 16u past the foam), the line
+  running from the tip of the rod in my villager's hand (measured; slack, sagging 8u; at the water's edge when it
+  didn't walk); the fish turns to it and closes in over 2–3 short darts (450–700 ms each, quick off the mark) with
+  pauses (300–600 ms) between them, then nibbles 0–3 times (its nose bumps the bobber 2u as the bobber twitches), then
+  bites: the bobber is yanked under with its own sound and a bigger splash (seven drops, 14u high), a small 「！」 pops
+  over it (26–28px, kept 8px inside the screen: NH has only the plunk, the phone gets a cue), and a tap anywhere in the
+  next 1.6 s catches it. The first early tap only
   makes it hesitate and nibble again; a second scares it off. 1 in 14 a boot, tire or can.
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): mostly sea bass; the blowfish (フグ) on winter nights and the puffer fish (ハリセンボン) in summer; the reef fish of spring and summer, the big ones
   (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
@@ -451,8 +456,10 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   line for it (`island/catchLines.ts`, every fish (the pond's too), bug and sea creature and the three pieces of junk: English from Nookipedia,
   Japanese from the game's messages, a line break where the game has one; 「スズキを 釣り上げた！ 鈴木・・・じゃなくて、
   鱸なのね！」 / "I caught a sea bass! No, wait—it's at least a C+!"), loaded with the first critter of a session. It
-  sits centred above (else below) the catch, inside the safe area and clear of every control, popup and しずえ's box;
-  with no room it's skipped. 2.6 s plus the line's length; a tap on it dismisses it (NH's A).
+  sits centred above (else below) the catch, inside the safe area and clear of every control, popup and しずえ's box
+  (the item held up over my villager's head included); when the nearest room is over 150px from the catch it sits low in
+  the middle instead, like NH's text box; with no room it's skipped. Up to 340px wide (two lines fit), the icon 40–48px
+  (NH holds the catch up big). 2.6 s plus the line's length; a tap on it dismisses it (NH's A).
 
 **Beach finds** (`island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`): the day's items
 derive from the Tokyo date and time plus a seed (`?seed=` in the demo), so both phones broadly see the same island;
@@ -688,8 +695,9 @@ ground, under the hedge and everything standing, under the tint.
 - **Visits:** as often as the sea's (a visit fills the sea first, then the pond: its own slot beside the sea's fish or
   bubble spot), one shadow at a time, 45 s if nobody
   fishes; drawn at 0.65 of the sea's size with a sharper edge (NH's sizes 1–6 still read apart), clear of any control over the pond on a small
-  screen. Fishing is the sea's: a tap on the water or within a finger's slack of it (`POND_REACH`) casts, the line
-  starts at the pond's front rim, the bobber stays inside it, a flee is a dive.
+  screen. Fishing is the sea's: a tap on the water or within a finger's slack of it (`POND_REACH`) casts: the front rim is under the left tree's canopy, so my villager walks round to the back bank behind the
+  water (up the gap between the pond and the museum, walkGraph's `pondside`; a far walk, up to 1.45 s) and fishes from
+  there, the line from its rod; the bobber stays inside the water, a flee is a dive.
 - **Its bugs:** NH's three water bugs keep to its water as crawlers (`BUGS`, ground `pond`): the pondskater and the
   diving beetle by day in summer, the giant water bug at night; netted like any bug.
 - **The catch:** NH's catch line (`catchLines.ts`), the icon, and the first of each a ずかん `find` (kind `fish`: the
@@ -795,11 +803,12 @@ night, in NH's hours (19:00–04:00):
   balloon opens only over a villager standing still; setting off closes it.
 - **Hold-up:** a catch or a find (fish, bug, wasp, shell, fragment, bottle, fossil, mushroom) is lifted over my
   villager's head (`if-holdup`: a squash, a rise, held; the item rises and bobs) while its plate reads.
-- **Walk mask:** the lawn (inside the plateau, in front of the hedge), the front beach, and the low front of the cliff
-  between the homes as the way down; obstacles are the trunks, the beds and the rock (grown by an 8u footprint).
-  ~20 named nodes (homes, beside and behind each tree, mid-lawn, centre stage, the rock, the ramp, the shore) built from
-  the scene's constants; a straight segment when it's clear, else the shortest route through the nodes (a visibility
-  graph, no nav-mesh). `walkGeo(extra)` takes more zones, obstacles and nodes (a back strip, a pond, a museum door).
+- **Walk mask:** the lawn (inside the plateau, in front of the hedge), the front beach, the low front of the cliff
+  between the homes as the way down, and the pond's back bank with the lane up to it beside the museum; obstacles are
+  the trunks, the beds, the rock and the pond's water (grown by an 8u footprint). ~25 named nodes (homes, beside and
+  behind each tree, mid-lawn, centre stage, the rock, the ramp, the shore, the way up to the pondside) built from the
+  scene's constants; a straight segment when it's clear, else the shortest route through the nodes (a visibility
+  graph, no nav-mesh). `walkGeo(extra)` takes more zones, obstacles and nodes (a museum door).
 - **Rendering:** the actor's feet at `translate(x, y)` u, one CSS transition of `transform` per segment (duration =
   length / speed, linear); no rAF; `will-change` only while walking. Facing by the direction (`LOOKS_RIGHT` says how a
   render looks as drawn; `NO_MIRROR` ones lean instead of flipping). Depth from the feet's y (`depthZ`): behind the
@@ -810,8 +819,8 @@ night, in NH's hours (19:00–04:00):
 - **The villagers' own outings:** the partner's villager goes about the island: on an idle tick (at most one per 9 s,
   about every other tick) it walks at 90 u/s to a point of interest, 1–3 of them, staying 3–5 s at each, then home:
   beside or behind either tree (a stretch), the rock (a nod), the shore (it stares out to sea), centre stage (left to a
-  visitor while one is out, with the shore in front of it), and any spot a later layout adds as a walk node (a
-  pondside, a museum door). Mine does the same only when I've left the island alone for 2 min. One villager leaves
+  visitor while one is out, with the shore in front of it), the pond's back bank (`pondside`), and any spot a later layout adds
+  as a walk node (a museum door). Mine does the same only when I've left the island alone for 2 min. One villager leaves
   home at a time; nothing starts after 10 min without input (idle life stops). `?wander` (dev or `?demo`) sends the
   partner off at once.
 - **Follow and chat:** when mine has been away over 8 s (a line out, one tap after another) the partner comes over and

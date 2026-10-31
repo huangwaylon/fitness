@@ -4,7 +4,7 @@
 // change carries over; parameterised (`walkGeo(extra)`) for the spots that come and go and for the tests. A straight
 // segment when it stays in the mask and misses every obstacle, else the shortest way through the nodes (a visibility
 // graph of ~15 points: no nav-mesh, nothing per frame).
-import { BED_ROWS, BED_X, CENTRE_STAGE, HEDGE_BASE, PLATEAU, TREE, VILLAGER } from './scene.ts';
+import { BED_ROWS, BED_X, CENTRE_STAGE, HEDGE_BASE, PLATEAU, POND, TREE, VILLAGER } from './scene.ts';
 import { BEACH } from './beach.ts';
 import { ROCK } from './care.ts';
 
@@ -35,15 +35,21 @@ export interface WalkExtra {
 /** The island's walk geometry from the scene's constants. */
 export function walkGeo(extra: WalkExtra = {}): WalkGeo {
   const front = BED_ROWS[1];
-  const lawn: Box = { x0: PLATEAU.x0 + 16, x1: PLATEAU.x1 - 16, y0: HEDGE_BASE + 14, y1: PLATEAU.y1 - 6 };
+  const lawnTop = HEDGE_BASE + 14;
+  const lawn: Box = { x0: PLATEAU.x0 + 16, x1: PLATEAU.x1 - 16, y0: lawnTop, y1: PLATEAU.y1 - 6 };
   const beach: Box = { x0: BEACH.x0, x1: BEACH.x1, y0: PLATEAU.y1 + 12, y1: BEACH.y1 };
   // the way down to the beach: the low front of the cliff between the villagers' homes
   const ramp: Box = { x0: VILLAGER.x.A + 14, x1: VILLAGER.x.B - 14, y0: front - 4, y1: beach.y0 + 6 };
   const trunk = (x: number): Box => ({ x0: x - 14, x1: x + 14, y0: TREE.base - 12, y1: TREE.base + 6 });
   const bed = (xs: number[]): Box => ({ x0: Math.min(...xs) - 20, x1: Math.max(...xs) + 18, y0: BED_ROWS[0] - 14, y1: front + 4 });
+  // the pond (design.md "Pond"): its water is no ground; its front rim is under the left tree's canopy, so the angler
+  // stands on the back bank behind it, reached up the gap between the pond's right bank and the museum
+  const pond: Box = { x0: POND.cx - POND.rx, x1: POND.cx + POND.rx, y0: POND.cy - POND.ry + 6, y1: POND.cy + POND.ry };
+  const bank: Box = { x0: pond.x0 + 4, x1: pond.x1 + 18, y0: 28, y1: 35 };
+  const lane: Box = { x0: pond.x1 - 7, x1: pond.x1 + 18, y0: 28, y1: lawnTop + 4 };
   const obstacles: Box[] = [
     trunk(TREE.x.A), trunk(TREE.x.B), bed(BED_X.left), bed(BED_X.right),
-    { x0: ROCK.x - 10, x1: ROCK.x + 10, y0: ROCK.y - 6, y1: ROCK.y + 3 },
+    { x0: ROCK.x - 10, x1: ROCK.x + 10, y0: ROCK.y - 6, y1: ROCK.y + 3 }, pond,
     ...(extra.obstacles ?? [])
   ];
   const inner = (TREE.x.A + VILLAGER.x.A) / 2 + 22; // between a trunk and the middle
@@ -61,9 +67,11 @@ export function walkGeo(extra: WalkExtra = {}): WalkGeo {
     rock: [ROCK.x + 22, ROCK.y + 4],
     rampTop: [(xs.A + xs.B) / 2, front + 8],
     shoreL: [BEACH.x0 + 40, beach.y0 + 6], shoreC: [195, beach.y0 + 6], shoreR: [BEACH.x1 - 40, beach.y0 + 6],
+    // up the lane beside the pond to its back bank (the pondside: an angler's spot, a point of interest)
+    pondFoot: [lane.x0 + 1, lawnTop - 4], pondTurn: [pond.x1 + 10, lawnTop - 8], pondLane: [pond.x1 + 11, POND.cy + 4], pondTop: [pond.x1 + 11, 31], pondside: [POND.cx, 32],
     ...(extra.nodes ?? {})
   };
-  return { zones: [lawn, beach, ramp, ...(extra.zones ?? [])], obstacles, nodes, pad: 8 };
+  return { zones: [lawn, beach, ramp, bank, lane, ...(extra.zones ?? [])], obstacles, nodes, pad: 8 };
 }
 
 const inside = (b: Box, x: number, y: number, pad = 0) => x > b.x0 - pad && x < b.x1 + pad && y > b.y0 - pad && y < b.y1 + pad;
@@ -128,16 +136,17 @@ export function routeLength(from: Pt, pts: readonly Pt[]): number {
 
 /** Walk speeds (u/s): to a tapped thing, and wandering about. */
 export const SPEED = { action: 240, wander: 90 } as const;
-/** An action walk's duration bounds (ms), and the longest walk worth making (longer: turn and act from where you are). */
-export const ACTION_MS = { min: 150, max: 900, cap: 1200 } as const;
+/** An action walk's duration bounds (ms), and the longest walk worth making (longer: turn and act from where you are);
+ *  `far`: a walk to somewhere set apart (the pond's back bank) may take a little longer. */
+export const ACTION_MS = { min: 150, max: 900, cap: 1200, far: 1450 } as const;
 
 /** How long an action walk of `len` u takes (ms): at SPEED.action, clamped to 150–900; null when it would take over
- *  1.2 s (no walk: turn and act); 0 when already there. */
-export function actionMs(len: number): number | null {
+ *  1.2 s (no walk: turn and act); 0 when already there. `far`: up to 1.45 s, unclamped above. */
+export function actionMs(len: number, far = false): number | null {
   if (len < 4) return 0;
   const raw = (len / SPEED.action) * 1000;
-  if (raw > ACTION_MS.cap) return null;
-  return Math.min(ACTION_MS.max, Math.max(ACTION_MS.min, raw));
+  if (raw > (far ? ACTION_MS.far : ACTION_MS.cap)) return null;
+  return Math.min(far ? ACTION_MS.far : ACTION_MS.max, Math.max(ACTION_MS.min, raw));
 }
 
 /** A wander's duration (ms) at SPEED.wander. */

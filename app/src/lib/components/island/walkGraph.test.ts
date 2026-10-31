@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ACTION_MS, actionMs, actionSpots, depthZ, facingFor, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Box, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
-import { BED_ROWS, TREE, VILLAGER } from './scene.ts';
+import { BED_ROWS, POND, TREE, VILLAGER } from './scene.ts';
 
 const crosses = (a: Pt, b: Pt, o: Box) => {
   for (let i = 0; i <= 100; i++) {
@@ -54,6 +54,15 @@ describe('the walk geometry (from the scene constants)', () => {
     const r = route(walkGeo({ obstacles: [{ x0: 169, x1: 221, y0: 150, y1: 178 }] }), from, to)!;
     expect(r.length).toBeGreaterThan(1);
     sound(g, from, r);
+  });
+  it('round the pond to its back bank (an angler’s spot: the front rim is under a canopy), never over its water', () => {
+    expect(walkable(g, POND.cx, POND.cy)).toBe(false);
+    for (const x of [POND.cx - 18, POND.cx, POND.cx + 7]) {
+      const r = route(g, g.nodes.homeA, [x, 32])!;
+      sound(g, g.nodes.homeA, r);
+      expect(actionMs(routeLength(g.nodes.homeA, r), true), `${x}`).not.toBeNull(); // worth the walk (a far one)
+      expect(actionMs(routeLength(g.nodes.homeA, r))).toBeNull(); // further than an ordinary action walk
+    }
   });
   it('down to the beach and back (the ramp between the homes)', () => {
     for (const s of ['shoreL', 'shoreC', 'shoreR']) sound(g, g.nodes.homeB, route(g, g.nodes.homeB, g.nodes[s])!);
