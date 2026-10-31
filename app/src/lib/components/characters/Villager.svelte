@@ -11,10 +11,10 @@
   import OfficialArt from './OfficialArt.svelte';
   import Emote from './Emote.svelte';
   import Fx from './Fx.svelte';
-  import Silhouette from './Silhouette.svelte';
+  import RosterSilhouette from './RosterSilhouette.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
   import type { Expression } from '#lib/villagers/species.ts';
-  import { resolveLook } from '#lib/villagers/roster.ts';
+  import { resolveLook } from '#lib/villagers/look.ts';
   import { villagerArt } from '#lib/art.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { actors, removeFx } from '../motion/director.svelte.ts';
@@ -73,7 +73,7 @@
   const asleep = $derived(st ? st.asleep : expression === 'sleepy');
   const walking = $derived(st?.walking ?? false);
   const inward = $derived(st?.face === 'in');
-  // "Face in" turns toward the middle of the island; the roster says which way each render looks as drawn.
+  // "Face in" turns toward the middle of the island; look.ts says which way each render looks as drawn.
   const lean = $derived(inward && look.noMirror);
   const facing = $derived.by(() => {
     if (!inward || look.noMirror) return 1;
@@ -103,7 +103,7 @@
     <span bind:this={bodyEl} class="body" class:bob={animate && !headOnly && !asleep && !walking} class:sleep={animate && asleep && !headOnly}
       class:walk={animate && walking}>
       <OfficialArt {key} size={h} {eager}>
-        {#snippet fallback()}<Silhouette colour={look.colour} head={headOnly} height={h} />{/snippet}
+        {#snippet fallback()}<RosterSilhouette id={look.id} head={headOnly} height={h} />{/snippet}
       </OfficialArt>
     </span>
   </span>

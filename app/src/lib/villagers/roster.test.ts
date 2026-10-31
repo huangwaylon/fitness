@@ -1,16 +1,16 @@
 // The roster ↔ the art on disk: every villager and special character has a render and an icon in the manifest (and
 // the files exist), ids are unique, and both names are filled in.
 import { describe, expect, it } from 'vitest';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import manifest from '../../../static/art/manifest.json';
-import { ROSTER, ROSTER_IDS, hostOf, isRosterId, resolveLook } from './roster.ts';
+import { art, artKeys } from '../art.ts';
+import { hostOf, isRosterId, resolveLook } from './look.ts';
+import { ROSTER, ROSTER_IDS } from './roster.ts';
 import { PERSONALITIES, SPECIES } from './species.ts';
 
 const VILLAGERS = Object.values(ROSTER).filter((v) => !v.special);
 const SPECIALS = ROSTER_IDS.filter((id) => ROSTER[id].special);
 
-const FILES = manifest.files as Record<string, { path: string; h: number }>;
 const ART = join(import.meta.dirname, '..', '..', '..', 'static', 'art');
 
 describe('villager roster', () => {
@@ -43,8 +43,9 @@ describe('villager roster', () => {
 
   it.each(ROSTER_IDS)('%s has a render and an icon on disk', (id) => {
     for (const key of [`villagers/${id}`, `villagers/${id}-icon`]) {
-      expect(FILES[key], key).toBeDefined();
-      expect(existsSync(join(ART, FILES[key].path)), FILES[key].path).toBe(true);
+      const e = art(key);
+      expect(e, key).not.toBeNull();
+      expect(existsSync(join(ART, e!.path)), e!.path).toBe(true);
     }
   });
 
@@ -58,7 +59,7 @@ describe('villager roster', () => {
   });
 
   it('every villager render is a full-size figure, not a small crop (MODEL_FIRST in scripts/fetch-assets.ts)', () => {
-    for (const v of VILLAGERS) expect(FILES[`villagers/${v.id}`].h, v.id).toBeGreaterThanOrEqual(380);
+    for (const v of VILLAGERS) expect(art(`villagers/${v.id}`)?.h, v.id).toBeGreaterThanOrEqual(380);
   });
 
   it('the villagers span every species, every personality and both genders', () => {
@@ -82,10 +83,27 @@ describe('villager roster', () => {
     expect(new Set(all.map((v) => v.nameEn)).size).toBe(all.length);
   });
 
+  it('look.ts (the first load) knows exactly the roster: its ids are the villager icons in the art manifest', () => {
+    expect(ROSTER_IDS.every(isRosterId)).toBe(true);
+    expect(artKeys().filter((k) => /^villagers\/.+-icon$/.test(k))).toHaveLength(ROSTER_IDS.length);
+  });
+
+  it('roster.ts (names, ~35 KB) stays out of the first load: only the lazy panel, the search and the dev gallery import it', () => {
+    const SRC = join(import.meta.dirname, '..', '..');
+    const importers = (readdirSync(SRC, { recursive: true }) as string[])
+      .filter((f) => /\.(ts|svelte)$/.test(f) && !f.endsWith('.test.ts'))
+      .filter((f) => /^\s*import (?!type )[^;]*from '(#lib\/villagers|\.)\/roster\.ts'/m.test(readFileSync(join(SRC, f), 'utf8')))
+      .sort();
+    expect(importers).toEqual([
+      'lib/components/dev/Gallery.svelte', 'lib/components/panel/IslandPanel.svelte', 'lib/components/panel/VillagerPicker.svelte', 'lib/villagers/search.ts'
+    ]);
+  });
+
   it('resolves unknown ids to the per-person default', () => {
     expect(isRosterId('anchovy')).toBe(true);
     expect(isRosterId('toString')).toBe(false);
-    expect(resolveLook({ villager: 'anchovy' }).nameJa).toBe('アンチョビ');
+    expect(resolveLook({ villager: 'anchovy' })).toEqual({ id: 'anchovy', looksRight: false, noMirror: false });
+    expect(resolveLook({ villager: 'raymond' }).noMirror).toBe(true);
     expect(resolveLook({ villager: 'nobody', person: 'B' }).id).toBe('anchovy');
     expect(resolveLook({ villager: null }).id).toBe('goldie');
   });

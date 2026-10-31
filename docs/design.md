@@ -64,7 +64,7 @@ session:
 
 - **きろく:** the ベル ledger by week and day, then からだ (the weight trend) and 目標 (the Move and weight goals)
   ([Kiroku](#kiroku)).
-- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and 158 villagers),
+- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH villagers),
   **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last
   synced; いま つうしん) and **あそびかた** (one line; くわしく → the guide: the four goals at +1 each, ふたりでぜんぶ
   +2, the two treats and their prices, the Sunday recap; a protein hint of 1.6 g per kg a day, not tracked).
@@ -293,8 +293,9 @@ from `visualViewport` (`ui/keyboardInset.ts`). Short screens scale the island do
 
 Official NH renders only from `static/art/` through `<OfficialArt>`, with a fallback so a missing file never breaks a
 screen; WebP, never upscaled. Manifest and helpers `lib/art.ts`; files from `scripts/fetch-assets.ts`. Groups:
-villagers (roster `lib/villagers/roster.ts`; defaults goldie and anchovy), host (しずえ, たぬきち), fruit, seasonal oaks,
-bushes, flowers, season particles, reactions, money, deco. Ours: sky, sea, ground, the jar, effects, marks,
+villagers (all 417 of NH + 23 special characters; roster `lib/villagers/roster.ts`, loaded with the picker; the
+island draws through `lib/villagers/look.ts`: ids, facing, defaults goldie and anchovy), host (しずえ, たぬきち),
+fruit, seasonal oaks, bushes, flowers, season particles, reactions, money, deco. Ours: sky, sea, ground, the jar, effects, marks,
 UI sprites. Names follow the Japanese game (しずえ, ベル); no Nintendo fonts.
 
 ## Sound

@@ -15,7 +15,8 @@ interface ArtEntry {
   box?: [number, number, number, number];
 }
 
-const FILES = manifest.files as Record<string, ArtEntry>;
+/** key → [w, h]: the build ships the manifest slimmed (vite.config.ts slimArtManifest); the file is `<key>.webp`. */
+const FILES = manifest.files as unknown as Record<string, readonly [number, number]>;
 
 // Renders whose figure sits in a padded canvas: <OfficialArt> crops to this box so `size` means
 // "figure height" for every character. (Measured from the alpha channel; the rest are already tight.)
@@ -27,8 +28,9 @@ const BOX: Record<string, [number, number, number, number]> = {
 
 /** Manifest entry for a key like 'villagers/raymond', or null when that art isn't on disk. */
 export function art(key: string | null | undefined): ArtEntry | null {
-  const e = (key && FILES[key]) || null;
-  return e && key && BOX[key] ? { ...e, box: BOX[key] } : e;
+  const size = key ? FILES[key] : undefined;
+  if (!key || !size) return null;
+  return { path: `${key}.webp`, w: size[0], h: size[1], ...(BOX[key] && { box: BOX[key] }) };
 }
 
 /** Every manifest key (dev gallery, asset tests). */

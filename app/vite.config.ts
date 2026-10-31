@@ -17,15 +17,19 @@ function appVersion(): string {
   return `${new Date().toISOString().slice(0, 10)}.${sha}`;
 }
 
-/** The art manifest is bundled into the main chunk (lib/art.ts): ship only the keys, paths and sizes, not the
- *  `source` credit URLs (they stay in static/art/manifest.json for the runbook). */
+/** The art manifest is bundled into the main chunk (lib/art.ts): ship only each key's size, `{ key: [w, h] }` (every
+ *  file is `<key>.webp`, so the path is implied), not the `source` credit URLs (they stay in static/art/manifest.json
+ *  for the runbook). ~1,000 keys (440 villagers × render + icon): a third of the object form. */
 const slimArtManifest: Plugin = {
   name: 'slim-art-manifest',
   enforce: 'pre',
   transform(code, id) {
     if (!id.split('?')[0].endsWith('/static/art/manifest.json')) return;
     const { files } = JSON.parse(code) as { files: Record<string, { path: string; w: number; h: number }> };
-    const slim = Object.fromEntries(Object.entries(files).map(([k, { path, w, h }]) => [k, { path, w, h }]));
+    const slim = Object.fromEntries(Object.entries(files).map(([k, { path, w, h }]) => {
+      if (path !== `${k}.webp`) throw new Error(`static/art/manifest.json: ${k} is not at ${k}.webp (lib/art.ts assumes it)`);
+      return [k, [w, h]];
+    }));
     return { code: JSON.stringify({ files: slim }), map: null };
   }
 };

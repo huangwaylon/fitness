@@ -2,7 +2,8 @@
   // しまフォン → 村人: my villager (roster radios) and its name. The name field is seeded once, when the app opens:
   // the store recomputes `view` on every tick, sync and tap, and must never overwrite what is being typed.
   // Picker: a search field (name / species / personality, ja or en: villagers/search.ts) over the icon grid, which
-  // flows in the phone's one scroller (no scroller inside the scroller); icons load lazily as they scroll in. The chosen villager stays in the tab order even when filtered out of view.
+  // flows in the phone's one scroller (no scroller inside the scroller), built a slice per frame; icons load lazily as
+  // they scroll in. The chosen villager stays in the tab order even when filtered out of view.
   // Two groups in one radiogroup: とくべつ (たぬきち, しずえ…) first, then the villagers by species; a heading only shows
   // over a group the search left non-empty.
   import { untrack } from 'svelte';
@@ -11,7 +12,8 @@
   import Villager from '../characters/Villager.svelte';
   import { roving } from '../ui/roving.ts';
   import { setVillagerName, setVillager } from '#lib/store/actions.ts';
-  import { ROSTER, resolveLook, type RosterId } from '#lib/villagers/roster.ts';
+  import { resolveLook } from '#lib/villagers/look.ts';
+  import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
   import { searchVillagers } from '#lib/villagers/search.ts';
   import { PERSONALITIES, SPECIAL, SPECIES } from '#lib/villagers/species.ts';
   import { t, i18n } from '#lib/i18n/index.ts';
@@ -30,12 +32,26 @@
   let name = $state(untrack(() => me.villagerName));
   let query = $state('');
   const shown = $derived(searchVillagers(query));
+  // The grid is built a slice per frame (440 heads at once is a ~100 ms task on a phone, when the page opens and when
+  // the search is cleared): the first screenful at once, then STEP more each frame. A new result list starts over.
+  const FIRST = 40;
+  const STEP = 50;
+  let limit = $derived.by(() => {
+    void shown;
+    return FIRST;
+  });
+  $effect(() => {
+    if (limit >= shown.length) return;
+    const raf = requestAnimationFrame(() => (limit += STEP));
+    return () => cancelAnimationFrame(raf);
+  });
+  const built = $derived(shown.slice(0, limit));
   const groups = $derived([
-    { label: SPECIAL[lang], ids: shown.filter((id) => ROSTER[id].special) },
-    { label: t('panel.villager.villagers'), ids: shown.filter((id) => !ROSTER[id].special) }
+    { label: SPECIAL[lang], ids: built.filter((id) => ROSTER[id].special) },
+    { label: t('panel.villager.villagers'), ids: built.filter((id) => !ROSTER[id].special) }
   ].filter((g) => g.ids.length));
-  /** The radio in the tab order: the chosen one if it is shown, else the first shown. */
-  const tabStop = $derived(shown.includes(current) ? current : shown[0]);
+  /** The radio in the tab order: the chosen one if it is shown (and built), else the first shown. */
+  const tabStop = $derived(built.includes(current) ? current : built[0]);
 
   function saveName() {
     if (name.trim() && name.trim() !== me.villagerName) setVillagerName(name);
