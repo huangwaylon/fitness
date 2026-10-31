@@ -42,7 +42,7 @@
 
   const openZukan = () => {
     talking = false;
-    ui.zukan++;
+    ui.zukan = true;
   };
 
   async function tap() {

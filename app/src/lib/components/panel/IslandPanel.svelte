@@ -83,11 +83,10 @@
   }
 
   // The museum's door (design.md "Museum"): きろく's ずかん, at its top level, scrolled to.
-  let zukanAsked = 0;
   $effect(() => {
-    const n = ui.zukan;
-    if (!n || n === zukanAsked) return;
-    zukanAsked = n;
+    if (!ui.zukan) return;
+    ui.zukan = false; // answered: a remount (back from ごほうび) doesn't ask again
+    open = true; // mounted already, this may run before the HUD's own effect sees the ask
     push = null;
     tab = lastTab = 'kiroku';
     void tick().then(() => kiroku?.showZukan());
