@@ -1,5 +1,5 @@
 <script lang="ts">
-  // NookPhone-style notification banner (a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover).
+  // NH-style notification banner (a floating layer, so it alone gets --sh-float; cream at every time of day). Lives in the top layer (popover).
   // ToastHost renders it inside the open sheet's <dialog> when there is one: a popover outside a modal dialog is
   // inert. Slides down below the status row, holds (the store decides how long), slides up: the store
   // sets `leaving` for the slide-out and then drops it, so it never depends on a Svelte outro.

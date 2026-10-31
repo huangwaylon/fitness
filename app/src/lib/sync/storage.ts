@@ -30,7 +30,7 @@ export const DEMO = {
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
 export const DEVICE = {
-  /** localStorage: `{ music, sfx, voice, volume }` (lib/sound/settings.ts; all off by default). */
+  /** localStorage: `{ music, sfx, volume }` (lib/sound/settings.ts; all off by default). */
   sound: 'island.sound'
 } as const;
 
@@ -38,8 +38,8 @@ export const DEVICE = {
 export const SCENE = {
   /** localStorage `if-<beat>` = the Tokyo day a startup beat (open, morning, evening, lowweek) last played. */
   beat: (beat: string) => `if-${beat}`,
-  /** localStorage `hf-seen:<day>` = how many of the partner's high-fives that day were already announced. */
-  highFivesSeen: (day: string) => `hf-seen:${day}`,
+  /** localStorage `hf-seen` = `{ date, n }`: how many of the partner's high-fives that Tokyo day were already announced. */
+  highFivesSeen: 'hf-seen',
   /** localStorage `bells-seen` = `{ date, parts: { A, B } }`: today's ベル per person and fruit already shown flying into
    *  the wallet, so only new earnings fly in. */
   bellsSeen: 'bells-seen',

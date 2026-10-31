@@ -93,7 +93,7 @@ export function setVillagerName(name: string): SendResult {
   return week.send('pref', { key: 'villagerName', value: villagerName });
 }
 
-/** Villager from the roster (しまフォン → 村人), e.g. 'goldie' (lib/villagers/roster.ts). */
+/** Villager from the roster (せってい → むらびと), e.g. 'goldie' (lib/villagers/roster.ts). */
 export function setVillager(villager: string) {
   return week.send('pref', { key: 'villager', value: villager });
 }

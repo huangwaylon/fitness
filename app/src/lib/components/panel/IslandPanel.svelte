@@ -98,7 +98,7 @@
     const o = open;
     if (o === wasOpen) return;
     wasOpen = o;
-    cue(o ? 'phone-open' : 'phone-close');
+    cue(o ? 'panel-open' : 'panel-close');
   });
 </script>
 

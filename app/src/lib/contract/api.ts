@@ -47,6 +47,7 @@ export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min
  */
 export type MetricKey = ActivityMetric | 'weight';
 export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
+export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isActivityMetric(v);
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,

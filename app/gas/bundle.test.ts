@@ -43,8 +43,7 @@ describe('apps-script/Code.js', () => {
     const body = { key, action: 'ingest', dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM', steps: '855\n9106', exercise_minutes: '0\n23' };
     expect(call(body)).toEqual({ ok: true, metrics: 4 });
     expect(call(body)).toEqual({ ok: true, metrics: 0 });
-    expect(call({ key, action: 'gym' })).toEqual({ ok: false, error: 'bad_request' });
-    expect(call({ key, action: 'event', id: 'g1', type: 'gym_set', data: { date: '2026-09-29', on: true } })).toEqual({ ok: false, error: 'bad_request' });
+    expect(call({ key, action: 'nope' })).toEqual({ ok: false, error: 'bad_request' });
     const snap = call({ key, action: 'snapshot' });
     expect(Object.keys(snap.rows).sort()).toEqual(['events', 'metrics']);
     expect(snap.rows.metrics.map((r: unknown[]) => r.slice(1))).toEqual([

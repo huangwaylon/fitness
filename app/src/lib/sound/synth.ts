@@ -63,9 +63,8 @@ const RECIPES: Record<SoundId, Ev[]> = {
   confirm: [mallet(E6, 0, 0.16, 0.8), mallet(B6, 0.075, 0.24, 0.9)],
   // down a fourth, a little rounder
   cancel: [{ ...mallet(D6, 0, 0.14, 0.8), wave: 'tri' }, { ...mallet(G5, 0.07, 0.2, 0.8), wave: 'tri' }],
-  'phone-open': [mallet(C6, 0, 0.2, 0.7), mallet(E6, 0.05, 0.2, 0.7), mallet(G6, 0.1, 0.2, 0.75), mallet(C7, 0.15, 0.36, 0.85)],
-  'phone-close': [mallet(G6, 0, 0.15, 0.75), mallet(C6, 0.06, 0.26, 0.8)],
-  'phone-app': [{ kind: 'tone', f: 600, to: 1300, glide: 0.05, t: 0, d: 0.09, g: 0.8, attack: 0.001 }, mallet(C7, 0.045, 0.2, 0.35)],
+  'panel-open': [mallet(C6, 0, 0.2, 0.7), mallet(E6, 0.05, 0.2, 0.7), mallet(G6, 0.1, 0.2, 0.75), mallet(C7, 0.15, 0.36, 0.85)],
+  'panel-close': [mallet(G6, 0, 0.15, 0.75), mallet(C6, 0.06, 0.26, 0.8)],
   // taps (docs/design.md#taps). select: one soft woody "pok" (lighter than the confirm's two notes)
   select: [{ ...mallet(A6, 0, 0.11, 0.9), wave: 'tri' }],
   // a switch: two quick notes up (on) / down (off), the off one rounder
@@ -217,16 +216,6 @@ const RECIPES: Record<SoundId, Ev[]> = {
   clonk: [
     { kind: 'tone', f: 230, to: 170, glide: 0.06, t: 0, d: 0.16, g: 1, wave: 'tri', attack: 0.001, partials: [[2.4, 0.3, 0.3]] },
     { kind: 'noise', t: 0, d: 0.04, g: 0.5, lo: 1500, hi: 6000, shape: 'decay' }
-  ],
-  // K.K.'s tune: an original, unhurried strum on a nylon-string guitar (plucked triangle tones): a I–vi–IV–V walk with a
-  // little melody on top, ~2.3 s. Not one of his songs.
-  'kk-song': [
-    ...[[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]].flatMap((chord, i) =>
-      chord.map((m, j): Tone => ({ kind: 'tone', f: hz(m), t: i * 0.5 + j * 0.03, d: 0.7, g: 0.32, wave: 'tri', attack: 0.003, partials: [[2, 0.25, 0.4], [3, 0.08, 0.3]] }))),
-    ...[[76, 0], [79, 0.25], [77, 0.5], [76, 0.75], [74, 1], [72, 1.25], [74, 1.5], [79, 1.75]].map(([m, t]): Tone => ({
-      kind: 'tone', f: hz(m), t, d: 0.42, g: 0.5, wave: 'tri', attack: 0.004, vib: [5, 8], partials: [[2, 0.2, 0.5]]
-    })),
-    { kind: 'tone', f: hz(72), t: 2.0, d: 0.3, g: 0.45, wave: 'tri', attack: 0.004, partials: [[2, 0.2, 0.5]] }
   ],
   // Group stretching's tape: an original, bright little march on a soft piano (triangle tones with a hammer partial),
   // 2/4 at 120: bass on the beat, chord stabs off it, a tune climbing then coming home over I-IV-V-I, one phrase per

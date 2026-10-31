@@ -311,8 +311,8 @@ describe('snapshot cache', () => {
     expect(calls).toHaveLength(3);
   });
   it('an empty `since` poll keeps the cached rows object (the store keeps its reduced state)', () => {
-    const prev = applySnapshot(null, { me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
-    const next = applySnapshot(prev, { me: 'A', now: '2026-11-02T02:05:00.000Z', rows: { metrics: [], events: [] } }, 1000);
+    const prev = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
+    const next = applySnapshot(prev, { me: 'A', rev: 'r1', now: '2026-11-02T02:05:00.000Z', rows: { metrics: [], events: [] } }, 1000);
     expect(next.rows).toBe(prev.rows);
     expect(next.rowsAt).toBe(prev.rowsAt);
     const m = composeModel(prev, [], 0);
@@ -320,8 +320,8 @@ describe('snapshot cache', () => {
     expect(mergeRows(prev.rows, {})).toBe(prev.rows);
   });
   it('a reply for another person starts from scratch', () => {
-    const prev = applySnapshot(null, { me: 'A', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
-    const next = applySnapshot(prev, { me: 'B', now: '2026-11-02T02:00:00.000Z', rows: emptyRows() }, 0);
+    const prev = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T02:00:00.000Z', rows: rowsA() }, 0);
+    const next = applySnapshot(prev, { me: 'B', rev: 'r1', now: '2026-11-02T02:00:00.000Z', rows: emptyRows() }, 0);
     expect(next.rows.metrics).toEqual([]);
   });
   it('a `since` page answered for someone else is refetched whole, never kept as their history', async () => {
@@ -351,17 +351,15 @@ describe('snapshot cache', () => {
 
 describe('optimistic view', () => {
   it('shows queued events at once, judged like the server will (server clock)', () => {
-    const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, Date.parse('2026-11-04T12:00:00.000Z'));
+    const cache = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, Date.parse('2026-11-04T12:00:00.000Z'));
     const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST
     expect(composeView(cache, [], now).people.A.moveGoal).toBe(600);
     const q = [
       { id: 'q1', type: 'pref' as const, data: { key: 'moveGoal', value: 450 }, queuedAt: now, tries: 0, nextAt: now },
-      { id: 'q2', type: 'metric_set' as unknown as 'pref', data: { date: '2026-11-04', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt: now }, // a stale removed type
       { id: 'q3', type: 'pref' as const, data: { key: 'locale', value: 'ja' }, queuedAt: now, tries: 0, nextAt: now }
     ];
     const v = composeView(cache, q, now);
     expect(v.people.A.moveGoal).toBe(450);
-    expect(v.people.A.rings.apple.today).toBe(0); // the removed type is ignored
     expect(v.locale).toBe('ja');
     // Once the server has the event (same id), the queued copy is ignored.
     const acked = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-04T12:00:01.000Z', 'A', 'q3', 'pref', '{"key":"locale","value":"en"}']] }) };
@@ -369,13 +367,13 @@ describe('optimistic view', () => {
   });
   it('live events are always mine: a stray `person` on a queued event never changes the sender', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');
-    const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
+    const cache = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
     const ev = { id: 'p', type: 'highfive' as const, data: {}, queuedAt: now, tries: 0, nextAt: now, person: 'B' as const };
     expect(composeModel(cache, [ev], now).state.highfives.map((h) => h.person)).toEqual(['A']);
   });
   it('the same event listed twice is applied once', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');
-    const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
+    const cache = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
     const ev = (id: string, value: number) => ({ id, type: 'pref' as const, data: { key: 'moveGoal', value }, queuedAt: now, tries: 0, nextAt: now });
     // 500, then 700, then the 500 again as a duplicate (acked copy + queued copy): still 700.
     expect(composeView(cache, [ev('a', 500), ev('b', 700), ev('a', 500)], now).people.A.moveGoal).toBe(700);

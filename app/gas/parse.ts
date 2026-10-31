@@ -1,5 +1,5 @@
-// Parser of the iOS Shortcut's health body (docs/ops/shortcut-health-sync.md §1). One format, the one the
-// Shortcut sends (read from the `uploads` log, 2026-10-30): daily totals as newline-joined Text, one line per day.
+// Parser of the iOS Shortcut's health body (docs/ops/shortcut-health-sync.md §1): daily totals as newline-joined
+// Text, one line per day.
 //
 //   { "key": "…", "action": "ingest",
 //     "dates": "Sep 30, 2026 at 8:59 AM\n…",   one line per day (Shortcuts' date text; only the calendar day is used)
@@ -12,11 +12,11 @@
 //
 // Steps: Shortcuts' "Find Health Samples" sums every source's samples, so the iPhone's and the Watch's steps would be
 // counted twice (Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, and a day's steps
-// are the larger of the two (Health's merge counts one device at a time, so the max is close to Health's total). Without
-// `steps_watch`, `steps` is taken as it is.
+// are the larger of the two (Health's merge counts one device at a time, so the max is close to Health's total).
 //
-// Other fields are ignored (an old Shortcut's `workouts` too). Every daily field is optional. A list whose length differs from `dates` is dropped with a
-// warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000, stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019 only.
+// Only these fields are read (`key` and `action` are main.ts's); every daily one is optional. A list whose length
+// differs from `dates` is dropped with a warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000,
+// stand > 1,440) is skipped. It runs in Apps Script (bundled into apps-script/Code.js) and in Node tests: plain ES2019.
 import { isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }

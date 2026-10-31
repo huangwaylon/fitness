@@ -380,7 +380,7 @@ export interface BitePlan {
 /** The bite window (ms): NH's is about half a second with a controller; a phone tap, reacting to the 「！」, gets
  *  longer (a human sees it, decides and taps in ~0.4–0.8 s). */
 export const BITE_WINDOW_MS = 1600;
-/** A tap in the sea this close to a shadow (stage units) casts a bobber (1.5× the old 130u)... */
+/** A tap in the sea this close to a shadow (stage units) casts a bobber... */
 export const CAST_U = 195;
 /** ...and the shadow notices a bobber this close, so every cast it allows is noticed (the bobber lands a little nearer
  *  the beach than the tap, now and then). */

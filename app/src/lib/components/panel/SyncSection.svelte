@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しまフォン → 通信: when each of us last synced, and いま同期. (No "reload everything": a hand edit of the sheet changes
+  // せってい → つうしん: when each of us last synced, and いま同期. (No "reload everything": a hand edit of the sheet changes
   // `rev`, and the next sync refetches everything by itself, backend.md "Revision".)
   import type { WeekView } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';

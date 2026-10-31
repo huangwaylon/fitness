@@ -36,13 +36,6 @@ describe('a day’s weight: the latest row, not the max', () => {
     expect(weighIns(s, 'B', ms(D, '23:00'))).toEqual([{ date: D, kg: 55.2 }]);
   });
 
-  it('an old `metric_set` weight row in the sheet is ignored (weight comes from Apple Health only)', () => {
-    const s = reduce(rowsOf({
-      metrics: [kg(jst(D, '08:00'), 'A', D, 68.4)],
-      events: [ev(jst(D, '12:00'), 'A', 'metric_set' as EventRow[3], { date: D, metric: 'weight', value: 68.0 })]
-    }));
-    expect(weighIns(s, 'A', ms(D, '13:00'))).toEqual([{ date: D, kg: 68.4 }]);
-  });
 });
 
 describe('plainChange: the first week’s average → the last week’s, else the first weigh-in → the last', () => {

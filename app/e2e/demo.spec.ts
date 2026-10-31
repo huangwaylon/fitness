@@ -58,8 +58,6 @@ test('wallet: one balance (the HUD jar’s) and exactly two rewards with their a
   await expect(shop.locator('.ex').first()).toContainText('たこやき');
   await expect(shop.locator('.ex').last()).toContainText('マーラータン');
   for (const id of ['snack', 'dinner']) await expect(shop.locator(`button[data-item=${id}] img`)).toHaveAttribute('src', new RegExp(`items/${id}\\.webp`));
-  // nothing of the old shop: no editor, no escalation
-  await expect(page.locator('.edit, .nth, .was')).toHaveCount(0);
 });
 
 test('harvest: a recap of the week: each of us, ふたりで ぜんぶ, the total; the coins land in the jar', async ({ page }) => {
@@ -97,8 +95,6 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await expect(ribbon).toBeVisible();
   const bells = await ribbon.getAttribute('aria-label');
   await openKiroku(page);
-  // きろく no longer repeats the weight: it lives in けんこう
-  await expect(sheet(page).locator('.kiroku')).not.toContainText('ながれ');
   await sheet(page).locator('.tab[data-tab=health]').click();
   const card = sheet(page).locator('.wc');
   await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
@@ -153,8 +149,6 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await expect(pop.locator('.sum .k.tot')).toHaveText('ウェイの きょう');
   await expect(pop.locator('.sum [data-v=total]')).toHaveText(/^\+?\d\sベル$/);
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ まで：あと [1-8]つ$|^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
-  // nothing of the old popup: no pips, nudges or badge weeks
-  await expect(pop.locator('.steps, .next, .wk')).toHaveCount(0);
   // its last line: when this person's data last arrived (one home: not on the partner card)
   await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
   // each tree's four fruits (in the canopy, or fallen once met: e2e/trees.spec.ts)

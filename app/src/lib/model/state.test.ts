@@ -1,4 +1,4 @@
-// reduce: one block per event type, accepted vs ignored (the read-time rules that replace the old server's refusals).
+// reduce: one block per event type, accepted vs ignored (the read-time rules).
 import { describe, expect, it } from 'vitest';
 import { reduce } from './state.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
@@ -24,14 +24,6 @@ describe('reduce: rows', () => {
     expect(s.lastSync).toEqual({ A: at(WK), B: null });
   });
 
-  it('tabs the model doesn’t read (old `workouts` and `presence` rows still in the sheet) are ignored', () => {
-    const old = {
-      workouts: [[at(WK, '20:00'), 'A', 'w1', WK, 'Yoga', at(WK, '07:00'), at(WK, '07:30'), 30, null]],
-      presence: [[at(WK, '18:00'), 'A', 'エニタイム', at(WK, '18:00')]]
-    };
-    const s = reduce({ ...rows([]), ...old } as SnapshotRows);
-    expect({ ...s, ats: [] }).toEqual({ ...reduce(rows([])), ats: [] });
-  });
 });
 
 describe('reduce: events', () => {
@@ -80,13 +72,10 @@ describe('reduce: events', () => {
     expect({ ...a, ats: [] }).toEqual({ ...b, ats: [] }); // only the row counts differ
   });
 
-  it('an event type the model doesn’t know (old `gym_set`, `metric_set`, `workout_add`, `workout_edit` rows in the sheet) is ignored', () => {
+  it('an event type the model doesn’t know is ignored', () => {
     const s = reduce(rows([
-      ev(at(WK, '21:00'), 'A', 'gym_set', { date: WK, on: true }),
-      ev(at(WK, '21:00'), 'B', 'metric_set', { date: WK, metric: 'steps', value: 5000 }),
-      ev(at(WK, '21:00'), 'B', 'metric_set', { date: WK, metric: 'weight', value: 55 }),
-      ev(at(WK, '21:00'), 'A', 'workout_add', { id: 'm:1', date: WK, type: 'Yoga', durationMin: 30 }),
-      ev(at(WK, '21:30'), 'A', 'workout_edit', { id: 'm:1', excluded: true })
+      ev(at(WK, '21:00'), 'A', 'no_such_type', { date: WK, on: true }),
+      ev(at(WK, '21:00'), 'B', 'no_such_type', { date: WK, metric: 'steps', value: 5000 })
     ]));
     expect({ ...s, ats: [] }).toEqual({ ...reduce(rows([])), ats: [] });
   });

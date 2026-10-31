@@ -14,7 +14,7 @@ the wrong account when several are signed in).
    | Tab | Columns | Written by |
    |---|---|---|
    | `metrics` | `at, person, date, metric, value` (`steps`, `exercise_min`, `move_kcal`, `stand_min`, `weight`) | `ingest` (the Shortcut) |
-   | `events` | `at, person, id, type, data` (buys, prefs, harvests, high-fives, きろく edits) | `event` (the app) |
+   | `events` | `at, person, id, type, data` (buys and their voids, prefs, harvests, high-fives, ずかん finds) | `event` (the app) |
    | `uploads` | `at, person, status, bytes, error` (one audit row per `ingest`) | `ingest` |
 
 2. Sharing is optional: to read the data from your own accounts, **Share** them as **Viewer**, general access
@@ -43,7 +43,7 @@ openssl rand -hex 32   # KEY_B
 Keep both in the shared password manager. **Project Settings → Script Properties → Add script property**: `KEY_A`
 and `KEY_B`. A key must be 32–128 hex characters.
 
-The script adds `LAST_AT`, `ROWS` and `REV` itself. Leave them alone (`REV`: [runbook §5](runbook.md#5-resync-rev)).
+The script adds `LAST_AT`, `ROWS`, `TAILS` and `REV` itself. Leave them alone (`REV`: [runbook §5](runbook.md#5-resync-rev)).
 
 ## 4. Deploy the web app
 1. **Deploy → New deployment** → gear → **Web app**.

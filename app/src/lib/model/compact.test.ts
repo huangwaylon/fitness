@@ -90,17 +90,6 @@ describe('compactRows', () => {
     expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
   });
 
-  it('an old metric_set row in the sheet keeps no extra rows (the model ignores it)', () => {
-    const wk = '2026-11-09';
-    const m = (hm: string, v: number): MetricRow => [jst(wk, hm), 'A', wk, 'steps', v];
-    const rows: SnapshotRows = {
-      metrics: [m('09:00', 100), m('10:00', 200), m('11:00', 300), m('13:00', 400), m('14:00', 500)],
-      events: [[jst(wk, '12:00'), 'A', 'e1', 'metric_set' as SnapshotRows['events'][number][3], JSON.stringify({ date: wk, metric: 'steps', value: 250 })]]
-    };
-    const now = Date.parse(jst(addDays(wk, 30), '00:00'));
-    expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([500]);
-    expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
-  });
 
   it('latest wins: keeps the latest row at the lock and the latest overall, even when they are lower than earlier rows', () => {
     const wk = '2026-11-02';

@@ -13,6 +13,7 @@ declare namespace GAS {
   interface Sheet {
     getName(): string;
     getLastRow(): number;
+    getLastColumn(): number;
     getMaxRows(): number;
     getRange(row: number, column: number, numRows?: number, numColumns?: number): Range;
     insertRowsAfter(afterPosition: number, howMany: number): Sheet;

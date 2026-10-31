@@ -93,13 +93,6 @@ describe("a goal's flower through the day", () => {
     expect(flowerOf(id, false, fruitDay('2026-11-05'))).toBe('bud');
     expect(flowerOf(id, true, fruitDay('2026-11-05'))).toBe('bloom');
   });
-  it('a record kept before the flowers (no bloomed list) keeps its fruit and starts the flowers as buds', () => {
-    const kv = memKV();
-    kv.setItem('fruit-day', '{"date":"2026-11-04","dropped":["A:pear"],"picked":[]}');
-    configureStorage({ local: kv });
-    expect(fruitDay('2026-11-04')).toEqual({ date: '2026-11-04', dropped: ['A:pear'], picked: [], bloomed: [] });
-    expect(flowerOf(fruitId('A', 'pear'), true, fruitDay('2026-11-04'))).toBe('bloom');
-  });
 });
 
 describe('the tree layout', () => {

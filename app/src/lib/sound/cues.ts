@@ -16,22 +16,22 @@ export type Cue =
   | 'choice-move' | 'choice-pick'
   // taps (docs/design.md#taps; most are named by a control's data-sfx, taps.ts)
   | 'tick' | 'open' | 'confirm' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'sync' | 'undo'
-  // the しまフォン
-  | 'phone-open' | 'phone-close' | 'phone-app' | 'back'
+  // the panel
+  | 'panel-open' | 'panel-close' | 'back'
   // money and the harvest
   | 'buy' | 'badge-met' | 'harvest-receive'
   // scenery taps (island/sceneTaps.ts sceneSfx)
   | `scene-${SceneSfx}`
   // a walking villager's footsteps (island/IslandScene: by the ground under it; a splash on a rainy day)
   | 'footstep-grass' | 'footstep-sand' | 'footstep-snow' | 'footstep-splash'
-  // a visitor's own (K.K.'s song); group stretching's tune
-  | 'kk-song' | 'stretch'
+  // group stretching's tune
+  | 'stretch'
   // a birthday's cake
   | 'birthday-cake';
 
 interface CueDef {
   sound: SoundId;
-  /** A sound of the island itself: silent while a sheet, the phone or the harvest covers the scene (NH's world goes
+  /** A sound of the island itself: silent while a sheet, the panel or the harvest covers the scene (NH's world goes
    *  quiet under its menus). UI cues always play. */
   world?: boolean;
   /** Level on top of the sound's own (1 = as defined in ids.ts). */
@@ -73,9 +73,8 @@ export const CUES: Record<Cue, CueDef> = {
   boop: { sound: 'boop' },
   sync: { sound: 'whoosh' },
   undo: { sound: 'undo' },
-  'phone-open': { sound: 'phone-open' },
-  'phone-close': { sound: 'phone-close' },
-  'phone-app': { sound: 'phone-app' },
+  'panel-open': { sound: 'panel-open' },
+  'panel-close': { sound: 'panel-close' },
   back: { sound: 'cancel' },
   buy: { sound: 'purchase' },
   'badge-met': { sound: 'miles' },
@@ -140,7 +139,6 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-firework': { sound: 'firework', world: true },
   // the museum's door: a soft knock before Blathers speaks
   'scene-museum': { sound: 'clonk', gain: 0.45, step: 5, world: true },
-  'kk-song': { sound: 'kk-song', world: true },
   // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks)
   stretch: { sound: 'stretch-song', world: true },
   // a birthday's cake (island/Cake.svelte): its music box as the candles go out

@@ -91,7 +91,7 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       sfx: { coin: 'sfx/coin.m4a', nope: 'x.m4a', pop: 3 },
       music: {
         sunny: {
-          '07': 'music/a.m4a',
+          '07': { file: 'music/a.m4a' },
           '24': 'music/b.m4a',
           '08': { file: 'music/c.m4a', start: 12.5 },
           '09': { file: 'music/d.m4a', start: 3, end: 60, gain: -2.5 },
@@ -132,7 +132,7 @@ describe('placeholder effects (synth.ts)', () => {
     for (const id of SOUND_IDS) {
       const x = render(id, 22050);
       expect(x.length).toBe(Math.ceil(durationOf(id) * 22050));
-      expect(durationOf(id)).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'music-box' ? 4.5 : id === 'chime' || id === 'fanfare' || id === 'kk-song' ? 2.5 : 1);
+      expect(durationOf(id)).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'music-box' ? 4.5 : id === 'chime' || id === 'fanfare' ? 2.5 : 1);
       // one expect per sound, not per sample (a slow runner timed out on ~10^6 of them)
       let peak = 0, finite = true;
       for (const v of x) {
@@ -155,8 +155,7 @@ describe('placeholder effects (synth.ts)', () => {
 });
 
 describe('the opening in the manifest', () => {
-  it('a bare path or an entry with a gain; it always plays from 0', () => {
-    expect(parseManifest({ opening: 'music/o.m4a' }).manifest.opening).toEqual({ file: 'music/o.m4a', start: 0 });
+  it('an entry with a gain; it always plays from 0', () => {
     expect(parseManifest({ opening: { file: 'music/o.m4a', start: 9, gain: -5.3 } }).manifest.opening).toEqual({ file: 'music/o.m4a', start: 0, gain: -5.3 });
   });
 });

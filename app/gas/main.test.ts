@@ -21,7 +21,6 @@ const b = (action: string, extra: object = {}) => post({ key: KEY_B, action, ...
 const tick = (ms = 1000) => vi.setSystemTime(Date.now() + ms);
 const data = (tab: string) => gas.sheets.get(tab)?.data() ?? [];
 
-// The user's real Shortcut body (docs/backend.md#ingest): the old dictionary plus key + action.
 // The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories = Move kcal.
 const REAL = {
   dates: 'Sep 28, 2026 at 7:11 AM\nSep 29, 2026 at 7:55 AM',
@@ -48,6 +47,16 @@ describe('auth', () => {
     expect([...gas.sheets.keys()].sort()).toEqual(['events', 'metrics', 'uploads']);
     expect(gas.sheets.get('metrics')!.rows[0]).toEqual(['at', 'person', 'date', 'metric', 'value']);
     expect(gas.sheets.get('metrics')!.frozen).toBe(1);
+  });
+
+  it('whoami puts a tab\'s layout right: its header (a stray column unlabelled) and each column text or number', () => {
+    a('whoami');
+    const sh = gas.sheets.get('uploads')!;
+    sh.rows[0] = ['at', 'who', 'status', 'bytes', 'error', 'extra'];
+    sh.formats.clear();
+    a('whoami');
+    expect(sh.rows[0]).toEqual(['at', 'person', 'status', 'bytes', 'error', '']);
+    expect([1, 2, 3, 4, 5].map((c) => sh.formats.get(`900:${c}`))).toEqual(['@', '@', '@', '0.##', '@']);
   });
 
   it('an unset or short key property never matches', () => {
@@ -136,8 +145,6 @@ describe('never throws', () => {
   });
 
   it('bad action fields are bad_request', () => {
-    for (const old of ['presence', 'gym']) expect(a(old, { place: 'エニタイム', event: 'arrive' }).error).toBe('bad_request'); // retired actions
-    expect(gas.sheets.has('presence')).toBe(false);
     expect(a('event', { id: 'e1', type: 'nope', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: '', type: 'highfive', data: {} }).error).toBe('bad_request');
     expect(a('event', { id: 'e1', type: 'highfive', data: [1] }).error).toBe('bad_request');
@@ -194,12 +201,12 @@ describe('ingest', () => {
     expect(String(audit[4])).toContain('calories: 12000 on 2026-10-27 is above 10000; skipped');
   });
 
-  it('steps_watch: a day\'s steps are max(iPhone, Watch); without it, steps as sent', () => {
+  it('steps_watch: a day\'s steps are max(iPhone, Watch); steps alone are taken as sent', () => {
     const both = { dates: 'Oct 30, 2026\nOct 31, 2026', steps: '4100\n13172', steps_watch: '9800\n12900' };
     expect(a('ingest', both)).toEqual({ ok: true, metrics: 2 });
     expect(data('metrics').map((r) => [r[2], r[3], r[4]])).toEqual([['2026-10-30', 'steps', 9800], ['2026-10-31', 'steps', 13172]]);
     tick();
-    expect(a('ingest', { dates: 'Oct 31, 2026', steps: '13300' })).toEqual({ ok: true, metrics: 1 }); // an old Shortcut: steps as given
+    expect(a('ingest', { dates: 'Oct 31, 2026', steps: '13300' })).toEqual({ ok: true, metrics: 1 });
     expect(data('metrics').at(-1)!.slice(2)).toEqual(['2026-10-31', 'steps', 13300]);
     expect(String(data('uploads')[0][4])).toContain('steps_watch:text[2] "9800"');
   });
@@ -240,13 +247,6 @@ describe('ingest', () => {
     a('ingest', REAL);
     expect(b('ingest', REAL)).toMatchObject({ metrics: 6 });
     expect(data('metrics').filter((r) => r[1] === 'B')).toHaveLength(6);
-  });
-
-  it('an old Shortcut’s `workouts` field is ignored: nothing is stored, no workouts tab is made', () => {
-    const workouts = { types: 'ヨガ', starts: 'Nov 2, 2026 at 8:30 AM', ends: 'Nov 2, 2026 at 9:22 AM', avgHrs: '118' };
-    expect(a('ingest', { ...day('Nov 2, 2026', 8000, 30), workouts })).toEqual({ ok: true, metrics: 2 });
-    expect(gas.sheets.has('workouts')).toBe(false);
-    expect(a('ingest', { workouts })).toMatchObject({ ok: false, error: 'bad_request', detail: expect.stringMatching(/nothing to save/) });
   });
 
   it('a bad shape is bad_request with a hint, and audited as an error', () => {
@@ -361,20 +361,7 @@ describe('events', () => {
   });
 });
 
-describe('removed and person-bearing events', () => {
-  it('the removed edit types (Apple Health is the source of truth) are refused, whatever their data', () => {
-    const removed = [
-      { type: 'metric_set', data: { date: '2026-10-28', metric: 'steps', value: 9800 } },
-      { type: 'metric_set', data: { date: '2026-10-28', metric: 'weight', value: 68.4 } },
-      { type: 'workout_add', data: { id: 'm:3f1c', date: '2026-10-28', type: 'Pilates', durationMin: 40 } },
-      { type: 'workout_edit', data: { id: 'm:3f1c', excluded: true } },
-      { type: 'gym_set', data: { date: '2026-10-28', on: true } }, // retired long ago
-      { type: 'metric_delete', data: {} }
-    ];
-    removed.forEach((e, i) => expect(a('event', { id: `r${i}`, ...e }), e.type).toEqual({ ok: false, error: 'bad_request' }));
-    expect(data('events')).toEqual([]);
-  });
-
+describe('voids and person-bearing events', () => {
   it('spend_void appends with the server `at`, the sender as person and the data as JSON; an empty one is refused', () => {
     expect(a('event', { id: 's1', type: 'spend', data: { spendId: 'sp-1', item: 'snack', bells: 8 } })).toEqual({ ok: true });
     tick();
@@ -439,7 +426,7 @@ describe('snapshot', () => {
 
     const full = b('snapshot');
     expect(full).toMatchObject({ ok: true, me: 'B', now: expect.any(String) });
-    expect(Object.keys(full.rows).sort()).toEqual(['events', 'metrics']); // no presence (gym) or workouts tab
+    expect(Object.keys(full.rows).sort()).toEqual(['events', 'metrics']);
     expect(full.rows.metrics).toHaveLength(6);
     expect(full.rows.metrics[0]).toEqual(['2026-10-29T03:00:00.000Z', 'A', '2026-09-28', 'steps', 855]);
     expect(full.rows.events).toEqual([['2026-10-29T03:00:01.000Z', 'A', 'e1', 'highfive', '{}'], ['2026-10-29T03:00:02.000Z', 'B', 'e2', 'highfive', '{}']]);
@@ -449,6 +436,39 @@ describe('snapshot', () => {
     expect(Object.keys(inc.rows).sort()).toEqual(['events', 'metrics']);
     expect(inc.rows.metrics).toEqual([]);
     expect(inc.rows.events).toHaveLength(1);
+  });
+
+  it('only rows the client reads leave the sheet: a hand-typed unknown event type, metric or person is not sent', () => {
+    a('whoami');
+    a('event', { id: 'e1', type: 'highfive' });
+    gas.sheets.get('events')!.rows.push(['2026-10-29T03:00:00.500Z', 'A', 'x1', 'no_such_type', '{}'], ['2026-10-29T03:00:00.600Z', 'C', 'x2', 'highfive', '{}']);
+    gas.sheets.get('metrics')!.rows.push(['2026-10-29T03:00:00.500Z', 'A', '2026-10-29', 'no_such_metric', 30], ['2026-10-29T03:00:00.600Z', 'B', '2026-10-29', 'steps', 30]);
+    const { rows } = a('snapshot');
+    expect(rows.events.map((r: unknown[]) => r[2])).toEqual(['e1']);
+    expect(rows.metrics.map((r: unknown[]) => r[3])).toEqual(['steps']);
+  });
+
+  it('a poll with nothing new reads no rows; a write or a hand change makes it read again', () => {
+    a('ingest', REAL);
+    const since = a('snapshot').rows.metrics.at(-1)[0];
+    tick();
+    const reads = () => {
+      let n = 0;
+      for (const sh of gas.sheets.values()) {
+        const getRange = sh.getRange.bind(sh);
+        sh.getRange = (...args: Parameters<typeof getRange>) => { n++; return getRange(...args); };
+      }
+      return () => n;
+    };
+    let count = reads();
+    expect(a('snapshot', { since }).rows).toEqual({ metrics: [], events: [] });
+    expect(count()).toBe(0);
+    b('event', { id: 'e1', type: 'highfive' });
+    expect(a('snapshot', { since }).rows.events).toHaveLength(1);
+    gas.sheets.get('metrics')!.rows.push(['2026-10-29T03:00:00.000Z', 'B', '2026-10-29', 'steps', 5]); // pasted by hand
+    count = reads();
+    expect(a('snapshot', { since: new Date().toISOString() }).rows.metrics).toEqual([]);
+    expect(count()).toBeGreaterThan(0);
   });
 
   it('every request gets a strictly later `at`, even within the same millisecond', () => {

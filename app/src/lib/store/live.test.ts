@@ -73,17 +73,14 @@ describe('LiveBackend refused events', () => {
         : { ok: true, me: 'A', now: new Date().toISOString(), rev: 'r1', rows: { metrics: [], events: [] } }));
     }) as typeof fetch
   });
-  it('a refused buy or pref says so; a refused ずかん find (a script not yet redeployed) goes quietly', async () => {
+  it('a refused event leaves the queue and says so', async () => {
     configureStorage({ local: new Mem() });
     setKey('ab'.repeat(32), 'A');
     refusing();
     const b = new LiveBackend(host());
-    b.send('find', { kind: 'fish', id: 'tuna' }, {});
-    await b.refresh({});
-    expect(queued()).toHaveLength(0);
-    expect(toasts.current).toBeNull();
     b.send('highfive', {}, {});
     await b.refresh({});
+    expect(queued()).toHaveLength(0);
     expect(toasts.current?.text).toBe(t('state.saveFailed'));
   });
 });

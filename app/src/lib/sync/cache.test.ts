@@ -85,8 +85,8 @@ describe('IndexedDB cache', () => {
   });
 
   it('the last save wins, in order', async () => {
-    const a = applySnapshot(null, { me: 'A', now: '2026-11-02T05:00:00.000Z', rows: rows(1) }, 0);
-    const b = applySnapshot(null, { me: 'A', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 0);
+    const a = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: rows(1) }, 0);
+    const b = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 0);
     void saveCache(a);
     await saveCache(b);
     await reload();

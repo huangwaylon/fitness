@@ -62,17 +62,14 @@ const SPECS: Record<string, Spec> = {
   // Money UI.
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
-  // NookPhone (しまフォン launcher).
-  // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
-  // v4 trees: the hardwood in its four seasonal looks is the NH fruit tree (each bears one fruit kind);
-  // A11: the seasonal sources are only 329×409, so they ship at full
+  // Trees: the hardwood in its four seasonal looks. The seasonal sources are only 329×409, so they ship at full
   // resolution (never upscaled: the orchard draws them ≤ 104u ≈ 315 device px); summer has a big
   // source and ships at 2× the drawn size.
   'trees/oak-spring': [409, 'Oak_Tree_NH_Spring.png'],
   'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
   'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
   'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
-  // Scale pass (docs/design.md#layout-and-scale): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
+  // The hedge (docs/design.md#layout-and-scale) uses the 3D catalog renders (`*_Bush_NH_Icon`,
   // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
   'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
   'bushes/white-azalea': [128, 'White-Azalea_Bush_NH_Icon.png'],
@@ -85,7 +82,7 @@ const SPECS: Record<string, Spec> = {
   'bushes/holly': [128, 'Holly_Bush_NH_Icon.png'],
   'bushes/pink-camellia': [128, 'Pink-Camellia_Bush_NH_Icon.png'],
   'bushes/red-camellia': [128, 'Red-Camellia_Bush_NH_Icon.png'],
-  // v4 island decorations.
+  // Island decorations.
   'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
@@ -115,7 +112,7 @@ const SPECS: Record<string, Spec> = {
   // wide (≤ 120 CSS px), shipped at 3× that
   'deco/museum': [360, 'Museum_NH.png'],
   // Game-derived replacements for hand-drawn chrome.
-  // v4 seasonal particles.
+  // Seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
@@ -222,7 +219,7 @@ const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');
 
-// v4 reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.
+// Reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.
 const EMOTIONS = [
   'Joy', 'Love', 'Surprise', 'Laughter', 'Sleepy', 'Happiness', 'Encouraging', 'Glee', 'Pleased', 'Pride',
   'Inspiration', 'Dozing', 'Curiosity', 'Thought', 'Flourish', 'Sheepishness', 'Worry', 'Shocked'

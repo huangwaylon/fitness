@@ -1,4 +1,4 @@
-// The last input modality on <html data-input="pointer|keyboard">, so a tapped しまフォン icon shows no stray
+// The last input modality on <html data-input="pointer|keyboard">, so a tapped control shows no stray
 // outline after ‹ back. Focus is still restored after ‹ back, after an edit and when a sheet
 // opens, for keyboard and VoiceOver users; but WebKit shows :focus-visible on a programmatic focus that follows a
 // touch, so theme.css hides the ring while the last input was a pointer. Text fields keep their own focus styles.

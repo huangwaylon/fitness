@@ -37,7 +37,7 @@ beforeEach(() => {
 });
 
 describe('live optimistic view', () => {
-  const cache = applySnapshot(null, { me: 'A', now: new Date(NOW).toISOString(), rows: rows() }, NOW);
+  const cache = applySnapshot(null, { me: 'A', rev: 'r1', now: new Date(NOW).toISOString(), rows: rows() }, NOW);
 
   it('a new Move goal re-prices today’s 🍐 at once', () => {
     const before = composeView(cache, [], NOW);
