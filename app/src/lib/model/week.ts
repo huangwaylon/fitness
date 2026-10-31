@@ -5,11 +5,10 @@ import type {
 } from '#lib/types.ts';
 import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
 import { milestoneBells, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, dayBells, LIVE, menuView, walletAt, weekBells, type WeekBells } from './bells.ts';
+import { dailyUpTo, dayBells, menuView, walletAt, weekBells, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { Snapshot } from './snapshot.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, reduce, type State } from './state.ts';
-import { activityAsOf, type Activity } from './inputs.ts';
 
 /** Which week's harvest is open at t, given the confirmations so far (Sunday 19:30 until both tapped). */
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
@@ -106,13 +105,10 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
   const today = localDateAt(now);
   const weekKey = weekKeyOf(today);
   const partner = partnerOf(me);
-  // This week and last (the harvest week).
-  const dates = { from: addDays(weekKey, -7), to: addDays(weekKey, 6) };
-  const act = { A: activityAsOf(s, 'A', LIVE, dates), B: activityAsOf(s, 'B', LIVE, dates) };
   const locale = s.prefs[me].locale ?? 'ja';
 
   const startOfToday = jstMs(today, 0, 0);
-  const earning = weekBells(s, weekKey, now, act);
+  const earning = weekBells(s, weekKey, now);
   const wallet = walletView(s, earning, today, now);
   const menu = menuView(s, locale, now);
   const base: Omit<WeekView, 'host'> = {
@@ -127,7 +123,7 @@ export function buildWeekView(input: Snapshot | State, me: PersonId, nowArg: Dat
     } as Record<PersonId, PersonWeekView>,
     wallet,
     menu,
-    harvest: harvestView(s, now, act),
+    harvest: harvestView(s, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
   return { ...base, host: hostLine(base) };
@@ -153,9 +149,9 @@ export function harvestOf(w: WeekBells, confirmedBy: PersonId[]): HarvestView {
 }
 
 /** The open harvest at `now` (Sunday 19:30 until both tapped). */
-function harvestView(s: State, now: number, act: Record<PersonId, Activity>): HarvestView | null {
+function harvestView(s: State, now: number): HarvestView | null {
   const confirms = replayHarvests(s, now);
   const wk = harvestWeekAt(s, now, confirms);
   if (!wk) return null;
-  return harvestOf(weekBells(s, wk, now, act), [...(confirms.get(wk) ?? [])].sort());
+  return harvestOf(weekBells(s, wk, now), [...(confirms.get(wk) ?? [])].sort());
 }
