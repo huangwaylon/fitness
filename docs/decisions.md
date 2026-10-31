@@ -257,9 +257,10 @@ finds. Why: NH's calendar on the island with no new screens, no state to sync an
 
 ### Meteor showers by the week
 A shower night is seeded by the week (at most one a week, about one night in ten), not by the night, so it can never fall
-twice in a week, as NH's Celeste never comes twice; it rides on the existing wish (a shower's wish is the usual
-`scene-wish` date, and the morning reads whether the night before was a shower's), so nothing new is stored and both
-phones agree. Why: NH's rhythm (rare, a night worth staying up for) with no state to sync; more fragments, never ベル.
+twice in a week, as NH's Celeste never comes twice; it rides on the existing wish (a shower's wishes are the usual
+`scene-wish` count, and the morning reads whether the night before was a shower's), so nothing new is stored and both
+phones agree. Why: NH's rhythm (rare, a night worth staying up for) with no state to sync; more stars to wish on, so
+more fragments, never ベル.
 
 ### Group stretching on an Exercise day
 NH's tape deck comes out on a day either of us met 🍑 Exercise, or on a morning opening (06:00–08:00), and a tap makes
@@ -290,22 +291,26 @@ NH finds while diving is a shell (かいがら), so its kind needs nothing new. 
 visitors. Why: the user wants more to catch, faithful to NH and not stiffly seasonal; a dive spot reads as NH's and
 costs one small layer, and the creatures' data, names, lines and sprites all load only when first needed.
 
-### The pond and the museum
-For fun, frequent and NH-faithful (user), and never paying: no ベル from either.
+### The pond, the museum and the night sky
+For fun, frequent and NH-faithful (user), and never paying: no ベル from any of it.
 - **One pond holds every freshwater fish.** The island has no river, so NH's 46 river, river-mouth, clifftop and pond
   fish all come to one small pond at the back, as often as the sea's (a visit fills the sea, then the pond), fished
   exactly like the sea (one fishing code, two water boxes). Their table is its own chunk, fetched with the pond's first
   shadow. A catch is a ずかん find of kind `fish`; the script checks a find's id by shape, not against a list, so the new
-  ids needed no script change. NH's three water bugs (pondskater, diving beetle, giant water bug) keep to its water.
-  Why: NH's fishing is half freshwater; a river would not fit the stage, a pond does.
+  ids needed no script change. Why: NH's fishing is half freshwater; a river would not fit the stage, a pond does.
 - **The museum is the ずかん's door.** NH's upgraded museum (the official render, not the early tent) stands at the back
   in the middle; a tap is one line from Blathers (drowsy by day, lively at night, NH's owl), then the panel opens on
   きろく's ずかん when his box closes. One page only, so the door never makes you wait; a second tap goes straight in.
-- **In the hedge's row.** The island got only a little deeper, so the pond and the museum take the places of four hedge
-  bushes at the back (the back row reads bush · pond · museum · bush · bush), keeping the centre stage free for
-  visitors. The museum is a control for taps and for what stands on the lawn, but a passing balloon or plate may sit
-  over it when nothing else has room (it's a building, like the hedge it replaced).
-- **No reduced-motion branches** (user decision: always animate); all of it is transform and opacity.
+- **Shooting stars come in showers, each wish one fragment.** On a clear night a shower every 3–8 minutes (1 in 6 a
+  bigger one) in NH's hours, rather than single stars every few seconds or summoned by a tap on the moon: waiting for
+  them is NH's moment (a meteor shower's night, Celeste's, keeps its star every few seconds). Each wish is one star
+  fragment the next morning (at most 8, the beach's room), per phone, a shower's night's like any other (its zodiac
+  fragment likelier): the more you wish, the more you find, as in NH.
+- **Fireworks on NH's dates and our own day.** NH's August Sundays and the New Year countdown, plus a short volley the
+  evening both of us meet all four goals (once a day per phone, from 18:00), and a tap during a show sends one more.
+  They open in the sky and the open sea behind the island, each whole burst clear of every control; the HUD fills the
+  middle of a short sky, so bursts there are small and the big ones open low over the water as in NH.
+- **No reduced-motion branches** in these (user decision: always animate); all of it is transform and opacity.
 
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`

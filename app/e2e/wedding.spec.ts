@@ -50,7 +50,7 @@ test('the wedding day: confetti and hearts on the villagers, Reese’s congratul
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('.fxa.confetti').first()).toBeAttached({ timeout: 4000 });
   await expect(page.locator('.fxa.hearts').first()).toBeAttached();
-  await expect(page.locator('.sky .burst')).toBeAttached();
+  await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 }); // the show (Fireworks.svelte)
   await tapOn(page, '[data-visitor="reese"] .art');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ごけっこん おめでとう', { timeout: 4000 });
   // the confetti once a day on this phone; the hearts every time

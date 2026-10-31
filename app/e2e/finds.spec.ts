@@ -78,16 +78,10 @@ test('a message bottle at the water’s edge: a tap reads its note', async ({ pa
   await unchanged(page, before);
 });
 
-test('a wish on a shooting star brings star fragments the next morning; a tap picks one up', async ({ page }) => {
-  await open(page, '&date=2026-11-04T21:00');
-  // the moon sends a shooting star; a tap in the sky while it crosses is a wish
-  const moon = await at(page, '.orb');
-  await page.mouse.click(moon.x, moon.y);
-  await page.mouse.click(moon.x + 120, moon.y + 10);
-  await expect(page.locator('[data-fx="catch"]')).toContainText('ながれぼしに おねがい！');
-  expect(await page.evaluate(() => localStorage.getItem('scene-wish'))).toBe('"2026-11-05"');
-  expect(await cues(page)).toContain('scene-wish');
+test('wishes on shooting stars bring star fragments the next morning; a tap picks one up (the wish itself: sky.spec)', async ({ page }) => {
+  await page.addInitScript(() => localStorage.getItem('scene-wish') || localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-05': 3 })));
   await page.goto('?demo&date=2026-11-05T08:00');
+  await expect(page.locator('[data-find="fragment"]')).toHaveCount(3);
   const frags = page.locator('[data-find="fragment"]');
   await expect(frags.first()).toBeAttached();
   const before = { bells: await ribbon(page).getAttribute('aria-label'), url: page.url() };

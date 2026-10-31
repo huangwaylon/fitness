@@ -1,6 +1,6 @@
 // Celeste and meteor showers (docs/design.md "Celeste and meteor showers"): about one night in ten, at most one a week,
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
-// 3–8 s; a wish that night brings 4–5 star fragments the next morning. No ベル.
+// 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -41,21 +41,17 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
   expect(await page.evaluate(() => (window as { __stars?: number }).__stars)).toBeGreaterThanOrEqual(2);
 });
 
-test('not a shower night: no Celeste; a wish on a shower night brings 4–5 fragments the next morning (else 2–3)', async ({ page }) => {
+test('not a shower night: no Celeste; each wish is a fragment the next morning, a shower night’s like any other', async ({ page }) => {
   await page.goto('?demo&date=2026-11-11T21:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
   await page.waitForTimeout(500);
   await expect(page.locator('[data-visitor="celeste"]')).toHaveCount(0);
-  await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify('2026-11-13')));
+  // five wishes on the shower night of 11-12: five fragments on the 13th's beach
+  await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-13': 5 })));
   await page.goto('?demo&date=2026-11-13T08:00&critter=none');
-  await expect(page.locator('[data-find="fragment"]').first()).toBeAttached();
-  const n = await page.locator('[data-find="fragment"]').count();
-  expect(n).toBeGreaterThanOrEqual(4);
-  expect(n).toBeLessThanOrEqual(5);
-  await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify('2026-11-12')));
+  await expect(page.locator('[data-find="fragment"]')).toHaveCount(5);
+  // two wishes on a plain night: two
+  await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-12': 2 })));
   await page.goto('?demo&date=2026-11-12T08:00&critter=none');
-  await expect(page.locator('[data-find="fragment"]').first()).toBeAttached();
-  const plain = await page.locator('[data-find="fragment"]').count();
-  expect(plain).toBeGreaterThanOrEqual(2);
-  expect(plain).toBeLessThanOrEqual(3);
+  await expect(page.locator('[data-find="fragment"]')).toHaveCount(2);
 });

@@ -32,6 +32,9 @@ function guards(skip?: (el: Element) => boolean): Box[] {
   return out;
 }
 
+/** The UI nothing of ours may cover (client px): every control (the fireworks keep their bursts off it). */
+export const uiBoxes = (): Box[] => guards();
+
 const hits = (a: Box, b: Box): boolean => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
 /** The guards in stage units, grown by `pad` u (`skip`: leave some out). */

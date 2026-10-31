@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BEACH, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots, fragmentDay,
+  BEACH, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots,
   fragmentsOn, shellOdds, shellsAt, zodiacOf
 } from './beach.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -18,7 +18,7 @@ describe('seeded day items: both phones see the same island', () => {
   it('the same date, time and seed give the same shells, dig spots, bottle and fragments; another day or seed differs', () => {
     expect(shellsAt('2026-11-04', 12 * H)).toEqual(shellsAt('2026-11-04', 12 * H));
     expect(digSpots('2026-11-04', new Set())).toEqual(digSpots('2026-11-04', new Set()));
-    expect(fragmentsOn('2026-11-05')).toEqual(fragmentsOn('2026-11-05'));
+    expect(fragmentsOn('2026-11-05', 3)).toEqual(fragmentsOn('2026-11-05', 3));
     expect(shellsAt('2026-11-05', 12 * H)).not.toEqual(shellsAt('2026-11-04', 12 * H));
     expect(shellsAt('2026-11-04', 12 * H, 'other')).not.toEqual(shellsAt('2026-11-04', 12 * H));
   });
@@ -105,16 +105,24 @@ describe('the message bottle and the star fragments', () => {
     expect(seen).toBeGreaterThan(24 * 60 / 14 - 2);
     expect(seen).toBeLessThan(24 * 60 / 8 + 2);
   });
-  it('a wish lands its fragments the next morning (before dawn, that morning), 2–3 of them, the season’s zodiac now and then', () => {
-    const next = (d: string) => addDays(d, 1);
-    expect(fragmentDay('2026-11-04', 21, next)).toBe('2026-11-05');
-    expect(fragmentDay('2026-11-05', 2, next)).toBe('2026-11-05');
+  it('n wishes, n fragments: spread along the beach (one to a stretch), each staying put as more come, the season’s zodiac now and then', () => {
+    const ids = new Set<string>();
     for (let d = 1; d <= 30; d++) {
-      const f = fragmentsOn(`2026-11-${String(d).padStart(2, '0')}`);
-      expect(f.length).toBeGreaterThanOrEqual(2);
-      expect(f.length).toBeLessThanOrEqual(3);
-      for (const x of f) expect(FRAGMENTS).toContain(x.id);
+      const date = `2026-11-${String(d).padStart(2, '0')}`;
+      const f = fragmentsOn(date, 8);
+      expect(f).toHaveLength(8);
+      for (const x of f) {
+        expect(FRAGMENTS).toContain(x.id);
+        ids.add(x.id);
+        expect(x.x).toBeGreaterThanOrEqual(BEACH.x0), expect(x.x).toBeLessThanOrEqual(BEACH.x1);
+        expect(x.y).toBeGreaterThanOrEqual(BEACH.y0), expect(x.y).toBeLessThanOrEqual(BEACH.y1);
+      }
+      const xs = f.map((x) => x.x).sort((a, b) => a - b);
+      for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeGreaterThan(4); // never piled up
+      expect(fragmentsOn(date, 3)).toEqual(f.slice(0, 3)); // a later wish only adds one
     }
+    expect(ids).toEqual(new Set(['star-fragment', 'large-star-fragment', 'scorpius-fragment', 'sagittarius-fragment']));
+    expect(fragmentsOn('2026-11-04', 0)).toEqual([]);
     expect(zodiacOf('2026-11-04')).toBe('scorpius-fragment');
     expect(zodiacOf('2026-11-23')).toBe('sagittarius-fragment');
     expect(zodiacOf('2026-01-05')).toBe('capricorn-fragment');

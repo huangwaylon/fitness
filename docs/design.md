@@ -285,7 +285,7 @@ flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · centre sta
 ### Particles and events
 
 ≤ 3 particles (petals, maple leaves, snow, summer fireflies). Events (`eventsAt`): cherry blossom Apr 1–10, maple week
-Nov 16–25, fireworks on August Sundays from 19:00 and at New Year, Toy Day Dec 24, the balloon present. Only
+Nov 16–25, Toy Day Dec 24, the balloon present; the fireworks keep their own schedule ([Fireworks](#fireworks)). Only
 `transform` and `opacity` animate; everything pauses while hidden (`data-paused`); a sheet also pauses particles and
 idle life (`data-covered`).
 
@@ -356,9 +356,9 @@ covered or hidden; reduced motion gives a 450 ms glow and no critters; decorativ
 **Scenery** (≤ 1 s each): a bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out: a moth after dark, else a
 butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on
 summer nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in
-winter); a cloud squishes; the sun glints; the moon sends a shooting star; the night sky twinkles (1 in 4 a shooting
-star); a clear night sends a shooting star every 15–40 s (a meteor shower's night: every 3–8 s, [Celeste and meteor
-showers](#celeste-and-meteor-showers)); the pond rings like the sea, smaller.
+winter); a cloud squishes; the sun glints; the moon bobs and twinkles; the night sky twinkles where it's tapped (and
+grants a wish while a shooting star crosses: [Shooting stars](#shooting-stars); a meteor shower's night: [Celeste and
+meteor showers](#celeste-and-meteor-showers)); the pond rings like the sea, smaller.
 
 **Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
 the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
@@ -438,10 +438,10 @@ fragment is a ずかん `find` (never ベル).
   `?find=mushroom|rare-mushroom` (dev or `?demo`) brings one now / makes every dig spot the rare one.
 - **Message bottle:** every 8–14 minutes one lies at the water's edge for 6; a tap reads its note (16 short, kind notes,
   ja/en). Not a find.
-- **Star fragments:** a tap in the night sky while a shooting star crosses is a wish (「ながれぼしに おねがい！」,
-  `scene-wish` in localStorage); the next morning (a wish before 05:00: that morning) 2–3 fragments lie on the beach:
-  star fragments, now and then a large one or the season's zodiac fragment; after a meteor shower's night 4–5, the
-  zodiac one twice as likely.
+- **Star fragments:** each wish on a shooting star ([Shooting stars](#shooting-stars)) is one fragment on the front
+  beach the next morning (a wish before 05:00: that morning), from 05:00 for the day, at most 8 (the beach's room): star
+  fragments, now and then a large one or the season's zodiac fragment (after a meteor shower's night twice as likely),
+  one to each eighth of the sand (seeded per day, so a later wish only adds one further along; `fragmentsOn`).
 - The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
   44px. `?find=bottle|fragment|mushroom|rare-mushroom` (dev or `?demo`)
   brings one now.
@@ -554,8 +554,8 @@ renders) are the visitor from 06:00 to midnight, side by side on the centre stag
 clears both canopies) under a pink heart float that bobs on its string. Reese's introduction ends on the count,
 「けっこんしき まで あと 100日！」 (on the day 「ごけっこん おめでとう！」); then they take turns, Cyrus a line of his, Reese one of
 hers and the count again. On the day: the villagers turn to each other, bow and glow with hearts as the island opens,
-under a burst of confetti the first time that day on this phone (`scene-wedding`), and fireworks from 19:00 (the sky's
-burst). Every June Sunday (NH's Wedding Season) NH's wedding arch (cute) stands behind the centre stage, measured
+under a burst of confetti the first time that day on this phone (`scene-wedding`), and fireworks from 19:00 (the
+show: [Fireworks](#fireworks)). Every June Sunday (NH's Wedding Season) NH's wedding arch (cute) stands behind the centre stage, measured
 clear of every control (the tape deck keeps clear of it). No ベル. My villager walking over to a visitor stands
 beside them (the figure's half-width plus a villager's), never on them.
 
@@ -564,11 +564,12 @@ beside them (the figure's half-width plus a villager's), never on them.
 `island/meteor.ts`, `island/visitors.ts`, `e2e/celeste.spec.ts`. NH's meteor showers: about one night in ten, at most one a
 week (a week has one with a 0.7 chance, on one of its seven nights; seeded by the week's Monday, so both phones agree;
 2026-11-12 is one). That night Celeste (フーコ, the official render) is the visitor from 20:00 to 04:00 (after Jack on
-Halloween, before K.K. and Wisp), and shooting stars cross every 3–8 s instead of every 15–40 s. Her introduction (two
-pages) says the shower is on; her lines explain wishing (tap the sky while a star crosses), the fragments it brings, and
-the season's sign (「いまの 季節の 星座は さそりざ。」, `zodiac.<sign>`). A wish that night brings 4–5 fragments the next
-morning instead of 2–3, the season's zodiac fragment twice as likely (`fragmentsOn(date, seed, shower)`, the night
-before the morning). No ベル. `?shower` (dev or `?demo`) makes tonight a shower's night; `?visitor=celeste` brings her.
+Halloween, before K.K. and Wisp), and shooting stars cross every 3–8 s instead of in a shower every few minutes
+([Shooting stars](#shooting-stars)). Her introduction (two pages) says the shower is on; her lines explain wishing (tap
+the sky while a star crosses), the fragments it brings, and the season's sign (「いまの 季節の 星座は さそりざ。」,
+`zodiac.<sign>`). Each wish that night is a fragment the next morning like any wish (so a shower night brings many),
+the season's zodiac fragment twice as likely (`fragmentsOn(date, n, seed, shower)`, the night before the morning). No
+ベル. `?shower` (dev or `?demo`) makes tonight a shower's night; `?visitor=celeste` brings her.
 
 ### Group stretching
 
@@ -641,6 +642,50 @@ name tag) says one line in NH's dialogue box: by day (05:00–19:00) drowsy (「
 something in the last week, 3 times in 5 about the latest find instead (「ホー！ さいきん コイを 見つけたそうですな！」).
 When the box closes (tapped away, or read through) the panel opens on きろく scrolled to the ずかん (`ui.zukan`); a
 second tap on the museum while he talks opens it at once. Our own lines in his manner, ja/en. No ベル, no write.
+
+### Shooting stars
+
+`island/stars.ts`, `island/SceneTaps.svelte`, `island/Finds.svelte`, `e2e/sky.spec.ts`. NH's shooting stars on a clear
+night, in NH's hours (19:00–04:00):
+
+- **Showers:** every 3–8 minutes of on-screen night (the first 30–90 s after the night sky shows), 1–3 streaks a second
+  or three apart; 1 in 6 a bigger shower of 5–8 in quick succession. The countdown holds while covered or hidden. On a
+  meteor shower's night (about one in ten, Celeste's: [Celeste and meteor showers](#celeste-and-meteor-showers)) one
+  crosses every 3–8 s instead.
+- **The streak:** a quick white streak falling to the lower left (146°–170°, up to 150 px), its whole path inside the
+  sky (under the status bar, above the horizon) and clear of every control (the ribbon, the jar, the sync chip): a short
+  sky beside the HUD gets a shorter, flatter one in the lane above or below it, or none.
+- **A wish:** a tap anywhere in the sky while one crosses (its 0.9 s and a moment's grace), once a star: three
+  sparkles at the finger, a soft rising chime (`scene-wish`) and a brief cream caption 「ながれぼしに おねがい！」 placed
+  clear of every control. Each wish is a star fragment on the beach the next morning ([Beach finds](#scene-interactions);
+  `scene-wish` in localStorage: `{ <morning>: n }` per phone, older mornings dropped).
+- `?shower` (dev or `?demo`) makes tonight a meteor shower's night (a star every 3–8 s, Celeste).
+
+### Fireworks
+
+`island/fireworks.ts`, `island/Fireworks.svelte`, `e2e/sky.spec.ts`. NH's fireworks:
+
+- **When:** NH's Fireworks Show, every Sunday in August 19:00–24:00, a shell every 2–4.5 s (1 in 5 two at once); New
+  Year's countdown, Dec 31 23:00–24:00, one every 6–10 s, then a volley of 8 at midnight and the show until 01:00.
+- **Our wedding night** (2027-10-08, [the wedding countdown](#wedding-countdown)): the show from 19:00.
+- **Our celebration:** the day both of us meet all four goals, a volley of 3–5, once a day per phone (`fireworks-day`
+  in localStorage): at once from 18:00, or at 18:00 while the island is open.
+- **The look:** a shell rises from behind the island with a short trail and bursts: a peony (two rings), a ring, a gold
+  willow that droops, a heart, a star, now and then a little pixel pattern (NH's leaf, a smile, an apple: after the
+  custom-design fireworks Isabelle launches); NH's colours. A flash, then ~16–30 sparks out to the burst's radius,
+  drifting down as they fade (2.7 s).
+- **Where:** over the night sky and, on a tall phone, the open sea behind the island (they open low over the water as in
+  NH), down to the island's back edge (`ISLAND_TOP_U`); each burst's whole circle (18–58 px, the size at random, smaller
+  where it must) clear of every control. A tap in the sky during a show sends one more where it was tapped (if there's
+  room there). The layer sits over the stage and its tint (lights), under the HUD.
+- **Villagers:** now and then (≥ 6 s apart, 3 in 10 bursts) one of them cheers: a hop and a glad mark (awake and not
+  busy).
+- **Sound:** a thin rising whistle and a soft low boom with a crackle (`scene-launch`, `scene-firework`), low and two
+  at most (it can run for hours).
+- **Cost:** each spark one transform/opacity keyframe animation on the compositor; ≤ 4 bursts at once, each gone after
+  2.7 s; one timer between them; paused with the scene. At 4× CPU on a 390 × 844 night with a show, a shower, the
+  critters and the fireflies: frames at 16.7 ms p99, no long task.
+- `?fireworks` (dev or `?demo`): a show now, any night.
 
 ## Motion
 

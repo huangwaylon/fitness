@@ -241,6 +241,19 @@ const RECIPES: Record<SoundId, Ev[]> = {
       kind: 'tone', f: hz(m), t, d: t === 5.5 ? 0.8 : 0.32, g: 0.5, wave: 'tri', attack: 0.003, partials: [[2, 0.18, 0.4], [4, 0.06, 0.2]]
     }))
   ],
+  // a wish: four soft bells rising (G B D G), a breath of shimmer under them
+  wish: [
+    bell(G6, 0, 0.6, 0.5), bell(B6, 0.07, 0.6, 0.45), bell(D6 + 12, 0.14, 0.65, 0.42), bell(G7, 0.22, 0.72, 0.38),
+    { kind: 'noise', t: 0.04, d: 0.8, g: 0.06, lo: 7000, hi: 12000, shape: 'swell' }
+  ],
+  // fireworks: a rocket's thin rising whistle; the burst: a soft low boom (not a bang: it plays for hours, quietly) and
+  // a crackle of sparks fading
+  whistle: [{ kind: 'tone', f: 700, to: 1700, glide: 0.75, t: 0, d: 0.8, g: 0.5, attack: 0.05, vib: [9, 25] }],
+  firework: [
+    { kind: 'tone', f: 110, to: 46, glide: 0.3, t: 0, d: 0.6, g: 1, attack: 0.004, partials: [[2.1, 0.25, 0.4]] },
+    { kind: 'noise', t: 0, d: 0.45, g: 0.6, lo: 60, hi: 700, shape: 'decay' },
+    { kind: 'noise', t: 0.08, d: 0.8, g: 0.35, lo: 2500, hi: 9000, shape: 'decay', grains: 45 }
+  ],
   bottle: [
     bell(E7, 0, 0.3, 0.55),
     { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },

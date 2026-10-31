@@ -3,21 +3,25 @@
   // flourish after NH / Pocket Camp, and nothing else (no points, no state, no sheets). A bush rustles and sheds a few
   // leaves (petals in spring, maple leaves in autumn, a clump of snow in winter); a flower wiggles and drops a petal
   // with a sparkle (rarely a butterfly flutters off it; on a summer night, a firefly); a cloud squishes and puffs; the
-  // sun glints; the moon bobs and sends a shooting star; a tap in the night sky lights a star (sometimes a shooting
-  // star); the sea (and the pond) rings and splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a
-  // dust puff (snow in winter). On a clear night a shooting star crosses now and then on its own. A popped balloon's
+  // sun glints; the moon bobs and twinkles; a tap in the night sky lights a star; the sea (and the pond) rings and
+  // splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a dust puff (snow in winter).
+  // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
+  // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: Finds.wish). A popped balloon's
   // present (Balloon.svelte sends `island:present`) falls onto the island, sparkles and fades (or sinks in the sea).
   // The critters (Critters.svelte: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One pointerdown listener on the scene: anything inside a control (trees, fruit row, jar, villagers, balloon) is
   // theirs. The hit test is in stage units (sceneTaps.ts), the sky against the live boxes of the sun / moon / clouds.
   // Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4 flourishes at
-  // once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shooting-star timer.
+  // once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
+  //   ?shower (dev or ?demo): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Reduced motion: a soft glow at the tap, no movement. Decorative and pointer-only (aria-hidden, no focus stops).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { reducedMotion } from '#lib/time/clock.ts';
+  import { guardsU, stageGeo } from './placement.ts';
+  import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
   import { BEDS, BED_X, BED_ROWS, BUSH_U, FLOWER_U, HEDGE_BASE, HEDGE_X, HORIZON_U, type Tod } from './scene.ts';
   import { PETAL, hitStage, sceneSfx } from './sceneTaps.ts';
   import Critters from './Critters.svelte';
@@ -50,10 +54,12 @@
     ontrick?: () => void;
     /** Either of us met 🍑 Exercise today (group stretching's tape deck comes out). */
     exercise?: boolean;
+    /** A tap in the sky (client px) during a fireworks show sends one more (IslandScene's Fireworks): true when it did. */
+    skyTap?: (x: number, y: number) => boolean;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap }: Props = $props();
 
-  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow';
+  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass' | 'glow';
   interface Fx {
     id: number;
     kind: Kind;
@@ -71,6 +77,9 @@
     dir?: number;
     /** flower: the can is in my villager's hand (no floating can). */
     held?: boolean;
+    /** shoot: its heading (deg) and length (px). */
+    a?: number;
+    len?: number;
   }
   const MAX_FX = 4;
   const LIFE_MS = 1100;
@@ -85,8 +94,8 @@
   let care = $state<ReturnType<typeof Care>>();
   let visitor = $state<ReturnType<typeof Visitor>>();
   let deck = $state<ReturnType<typeof TapeDeck>>();
-  /** A shooting star is crossing until then (a tap in the sky meanwhile is a wish: NH). */
-  let shootUntil = 0;
+  /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
+  let streak: { until: number; wished: boolean } | null = null;
 
   function later(fn: () => void, ms: number) {
     const id = setTimeout(() => {
@@ -238,7 +247,6 @@
       jiggle(orb, POP, 600);
       if (night) {
         spawn({ kind: 'moon', x: ox, y: oy });
-        shootingStar(r);
         return sceneSfx('moon');
       }
       spawn({ kind: 'sun', x: ox, y: oy });
@@ -255,30 +263,35 @@
       spawn({ kind: 'cloud', x: ex, y: b.top + b.height * 0.55 - r.top, dir });
       return sceneSfx('cloud');
     }
+    // a wish comes first (it's only a moment); then, during a show, one more firework where the tap was
+    const now = streak;
+    if (night && now && !now.wished && performance.now() < now.until) {
+      now.wished = true;
+      spawn({ kind: 'wish', x, y });
+      sceneSfx('wish');
+      return finds?.wish(e.clientX, e.clientY);
+    }
+    if (skyTap?.(e.clientX, e.clientY)) return;
     if (!night) return;
     if (calm) return spawn({ kind: 'glow', x, y }, 450);
     spawn({ kind: 'star', x, y });
-    // NH: a tap while a shooting star crosses is a wish; star fragments wash up the next morning
-    if (performance.now() < shootUntil) {
-      sceneSfx('wish');
-      return finds?.wish(x * (390 / r.width), y * (390 / r.width));
-    }
     sceneSfx('star');
-    if (roll(4)) shootingStar(r);
   }
 
-  /** NH's shooting star: a quick white streak falling to the lower left through the upper night sky (no wish, no
-   *  points; just the moment). */
-  function shootingStar(r: DOMRect) {
-    const stage = scene?.querySelector<HTMLElement>('.stage');
-    const s = scene?.getBoundingClientRect();
-    if (!s || !stage) return;
-    const top = s.top - r.top; // the scene's top in stage px (negative: the sky is above the stage)
-    const horizon = horizonPx(stage, r);
-    const h = horizon - top;
-    const y0 = top + h * (0.3 + Math.random() * 0.2);
-    spawn({ kind: 'shoot', x: r.width * (0.55 + Math.random() * 0.35), y: Math.min(y0, horizon - 80) }, 1000);
-    shootUntil = performance.now() + 1100;
+  /** NH's shooting star: a quick white streak falling to the lower left through the night sky, its whole path inside
+   *  the sky (under the status bar, above the horizon) and clear of every control (the ribbon, the sync chip). */
+  function shootingStar() {
+    const stage = scene?.querySelector<HTMLElement>('.stage'), g = stageGeo(scene);
+    const band = scene?.querySelector('.band')?.getBoundingClientRect();
+    if (!stage || !g || !band) return;
+    const r = g.r, s = scene!.getBoundingClientRect();
+    // in stage px (the sky is above the stage: negative y)
+    const sky = { x0: s.left - r.left + 8, x1: s.right - r.left - 8, y0: band.top - r.top + 6, y1: horizonPx(stage, r) - 14 };
+    const avoid = guardsU(g, 4).map((b) => ({ x0: b.x0 / g.k, x1: b.x1 / g.k, y0: b.y0 / g.k, y1: b.y1 / g.k }));
+    const path = streakPath(sky, avoid, Math.random);
+    if (!path) return;
+    spawn({ kind: 'shoot', x: path.x, y: path.y, a: path.angle, len: path.len }, STREAK_MS + 100);
+    streak = { until: performance.now() + WISH_MS, wished: false };
     sceneSfx('shooting-star');
   }
 
@@ -318,8 +331,9 @@
     };
   });
 
-  // A clear night: a shooting star on its own every 15–40 s; a meteor shower's night (meteor.ts, Celeste's): every 3–8 s
-  // (not while covered / hidden).
+  // The night sky's shooting stars (stars.ts): on a clear night (NH's star hours) a shower every 3–8 minutes of
+  // on-screen night, the first soon after the night sky shows; on a meteor shower's night (meteor.ts, Celeste's) one
+  // every 3–8 s. Not while covered or hidden (the countdown holds).
   const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
   const hooks = import.meta.env.DEV || q.has('demo');
   const islandSeed = (hooks && q.get('seed')) || ISLAND_SEED;
@@ -328,18 +342,36 @@
     return showerAt(date, addDays(date, -1), jst(c).hour, islandSeed, hooks && q.has('shower'));
   });
   $effect(() => {
-    if (!night || !enabled() || reducedMotion()) return;
-    const fast = shower;
+    if (!night || !shower || !enabled()) return;
     let id: ReturnType<typeof setTimeout>;
     const arm = () => {
       id = setTimeout(() => {
-        const r = scene?.querySelector('.stage')?.getBoundingClientRect();
-        if (r && enabled()) shootingStar(r);
+        if (enabled()) shootingStar();
         arm();
-      }, nextStarMs(fast));
+      }, nextStarMs());
     };
     arm();
     return () => clearTimeout(id);
+  });
+  const starHours = $derived(inStarHours(jst(minuteNow()).hour));
+  let showerIn = nextShowerMs(Math.random, true);
+  $effect(() => {
+    if (!night || shower || !starHours || !enabled()) return;
+    let started = performance.now();
+    let id: ReturnType<typeof setTimeout>;
+    const arm = () => {
+      started = performance.now();
+      id = setTimeout(() => {
+        for (const at of showerPlan(Math.random)) later(() => enabled() && shootingStar(), at);
+        showerIn = nextShowerMs(Math.random);
+        arm();
+      }, showerIn);
+    };
+    arm();
+    return () => {
+      clearTimeout(id);
+      showerIn = Math.max(1000, showerIn - (performance.now() - started));
+    };
   });
 
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
@@ -408,7 +440,12 @@
       {:else if f.kind === 'moon' || f.kind === 'star'}
         <svg class="twinkle" viewBox="0 0 24 24"><path d={STAR} /></svg>
       {:else if f.kind === 'shoot'}
-        <span class="streak"><i></i></span>
+        <span class="streak" style:--a="{f.a ?? 152}deg" style:--len="{f.len ?? 150}px"><i></i></span>
+      {:else if f.kind === 'wish'}
+        <!-- a wish: a little burst of sparkles where the tap was -->
+        {#each [[-14, -10, 0], [12, -16, 1], [2, 8, 2]] as [dx, dy, i] (i)}
+          <svg class="twinkle wishspark" viewBox="0 0 24 24" style:--dx="{dx}px" style:--dy="{dy}px" style:--i={i}><path d={STAR} /></svg>
+        {/each}
       {:else}
         <i class="dot"></i>
       {/if}
@@ -588,6 +625,7 @@
 
   /* shooting star: NH's quick white streak falling to the lower left */
   .streak { left: 0; top: 0; transform-origin: 0 0; animation: shoot .85s cubic-bezier(.45, 0, .8, .6) both; }
+  .wishspark { animation-delay: calc(var(--i) * 90ms); translate: var(--dx) var(--dy); fill: #FFF3B0; filter: drop-shadow(0 0 3px rgba(255, 240, 170, .9)); }
   .streak i {
     position: absolute; right: 0; top: -1px; width: 64px; height: 2px; border-radius: 2px;
     background: linear-gradient(to left, #FFFBEA, rgba(255, 251, 234, 0));
@@ -597,8 +635,8 @@
     background: #FFFDF0; box-shadow: 0 0 6px 2px rgba(255, 246, 200, .7);
   }
   @keyframes shoot {
-    0% { transform: rotate(152deg) translateX(0); opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; }
-    100% { transform: rotate(152deg) translateX(150px); opacity: 0; }
+    0% { transform: rotate(var(--a)) translateX(0); opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; }
+    100% { transform: rotate(var(--a)) translateX(var(--len)); opacity: 0; }
   }
 
   /* the balloon's present: falls (gravity, a gentle sway), lands with a squash, sparkles, fades; or sinks in the sea */

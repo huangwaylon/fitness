@@ -2,8 +2,8 @@
   // Sky (design.md "Environment"): a 3-stop gradient (top · mid at 55% · horizon, per time of day;
   // season shifts by day) bleeding under the status bar; the sun low at the left (left 12%, 82% down the band, under
   // the ribbon, which sits in the band's middle) as ONE soft radial glow, or the moon (a crescent with a soft
-  // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and event
-  // fireworks. The sun / moon sit above the clouds, so a cloud never hides them. The visible band (below the
+  // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and the fireworks
+  // (Fireworks.svelte, passed in as children). The sun / moon sit above the clouds, so a cloud never hides them. The visible band (below the
   // safe area) is a size container named `sky`.
   import type { Snippet } from 'svelte';
   import Clouds from './Clouds.svelte';
@@ -11,11 +11,9 @@
 
   interface Props {
     tod: Tod;
-    /** One firework burst every 6 s (August Sundays, New Year's Eve). */
-    fireworks?: boolean;
     children?: Snippet;
   }
-  let { tod, fireworks = false, children }: Props = $props();
+  let { tod, children }: Props = $props();
   const uid = $props.id();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
@@ -51,12 +49,6 @@
     {:else}
       <span class="orb sun" class:low></span>
     {/if}
-    {#if fireworks}
-      <!-- one burst element (design.md "Particles and events": 1 burst every 6 s) that moves and changes colour each time -->
-      <span class="burst">
-        {#each Array.from({ length: 12 }) as _, k (k)}<i style:--a="{k * 30}deg"></i>{/each}
-      </span>
-    {/if}
     {@render children?.()}
   </div>
 </div>
@@ -88,25 +80,7 @@
   .moon svg { width: calc(var(--glow) / 2.2); height: auto; fill: var(--moon); overflow: visible; }
   .star { position: absolute; height: auto; fill: #FFF6D6; animation: if-twinkle 3s var(--ease-idle) infinite; }
   .star.still { animation: none; opacity: .75; }
-  .burst { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: burst 18s ease-out infinite; opacity: 0; }
-  .burst i {
-    position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: currentColor;
-    transform: rotate(var(--a)) translateY(-34px);
-  }
-  /* three 6 s beats: pink at (24%, 30%), yellow at (58%, 18%), blue at (40%, 48%) of the sky band */
-  @keyframes burst {
-    0% { translate: 24cqw 30cqh; color: #FF7FA8; scale: .1; opacity: 0; } 1.3% { opacity: 1; }
-    6% { translate: 24cqw 30cqh; scale: 1; opacity: 1; } 7.7% { translate: 24cqw 31cqh; scale: 1.08; opacity: 0; }
-    33.2% { translate: 24cqw 30cqh; color: #FF7FA8; opacity: 0; }
-    33.3% { translate: 58cqw 18cqh; color: #FFD84D; scale: .1; opacity: 0; } 34.6% { opacity: 1; }
-    39.3% { translate: 58cqw 18cqh; scale: 1; opacity: 1; } 41% { translate: 58cqw 19cqh; scale: 1.08; opacity: 0; }
-    66.5% { translate: 58cqw 18cqh; color: #FFD84D; opacity: 0; }
-    66.6% { translate: 40cqw 48cqh; color: #6FCFF6; scale: .1; opacity: 0; } 67.9% { opacity: 1; }
-    72.6% { translate: 40cqw 48cqh; scale: 1; opacity: 1; } 74.3% { translate: 40cqw 49cqh; scale: 1.08; opacity: 0; }
-    100% { translate: 40cqw 48cqh; color: #6FCFF6; opacity: 0; }
-  }
   @media (prefers-reduced-motion: reduce) {
     .star { animation: none; opacity: .9; transform: none; }
-    .burst { display: none; }
   }
 </style>
