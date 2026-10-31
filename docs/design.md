@@ -283,10 +283,12 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   scuttles sideways, a snail barely moves). A tap on one swings the net (caught); within 80px it startles away. A
   shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
   fruit row).
-- **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's line:
-  「〇〇を つりあげた！」 / 「〇〇を つかまえた！」, the sea bass 「…まあまあ かな？」 ("it's at least a C+!"), junk
-  「つれた！ …と思ったら、ながぐつだった」. It sits centred above (else below) the catch, inside the safe area and clear of
-  every control, popup and しずえ's box; with no room it's skipped. 2.6 s.
+- **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's own catch
+  line for it (`island/catchLines.ts`, all 80 fish and bugs and the three pieces of junk: English from Nookipedia,
+  Japanese from the game's messages, a line break where the game has one; 「スズキを 釣り上げた！ 鈴木・・・じゃなくて、
+  鱸なのね！」 / "I caught a sea bass! No, wait—it's at least a C+!"), loaded with the first critter of a session. It
+  sits centred above (else below) the catch, inside the safe area and clear of every control, popup and しずえ's box;
+  with no room it's skipped. 2.6 s plus the line's length; a tap on it dismisses it (NH's A).
 
 **Beach finds** (`island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`): the day's items
 derive from the Tokyo date and time plus a seed (`?seed=` in the demo), so both phones broadly see the same island;

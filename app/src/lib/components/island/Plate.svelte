@@ -57,9 +57,9 @@
   @keyframes fade-out { 85% { opacity: 1; } 100% { opacity: 0; } }
   .catch-plate {
     left: 0; top: 0; translate: -50% -50%; display: flex; align-items: center; gap: 6px;
-    width: max-content; max-width: min(272px, calc(100vw - 24px)); padding: 3px 12px 3px 4px; border-radius: var(--r-pill);
+    width: max-content; max-width: min(272px, calc(100vw - 24px)); padding: 3px 12px 3px 4px; border-radius: 22px;
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 var(--lip-h) 0 var(--plate-lip);
-    font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.3 var(--font-ui); text-wrap: balance;
+    font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.3 var(--font-ui); text-wrap: balance; white-space: pre-line;
     animation: say .25s ease-out both;
   }
   @keyframes say { from { opacity: 0; transform: translateY(4px) scale(.96); } }

@@ -2,6 +2,10 @@
 // falls; a fish shadow can be fished (caught on the bite, lost on an early tap); a bug can be netted. None of it
 // changes ベル, opens a sheet or navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from '@playwright/test';
+import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
+
+/** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
+const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 
 // The installed app's full screen (a Home Screen app has no browser bars): with the island centred in the whole ocean,
 // the 664px Safari viewport leaves too little sea under the beach for a fish.
@@ -66,7 +70,7 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   await seaTap(page);
   const caught = page.locator('[data-fx="catch"]');
   await expect(caught).toHaveCount(1);
-  await expect(caught).toHaveText(/つりあげた|と思ったら/);
+  await expect(caught).toHaveText(/釣り上げた|釣れた/);
   await expect(page.locator('[data-bobber]')).toHaveCount(0);
   await expect(page.locator('[data-bite]')).toHaveCount(0);
   await expect(fish).toHaveCount(0);
@@ -122,7 +126,7 @@ test('a shark: a fin cuts the surface (NH), and the catch names it', async ({ pa
   await expect(page.locator('[data-bite]')).toBeAttached({ timeout: 10_000 });
   await page.waitForTimeout(400);
   await seaTap(page);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText('サメを つりあげた！');
+  await expect(page.locator('[data-fx="catch"]')).toHaveText(said('great-white-shark'));
   await unchanged(page, before);
 });
 
@@ -132,7 +136,7 @@ test('a tap on a butterfly nets it', async ({ page }) => {
   await page.waitForTimeout(2200); // in over its flower bed
   const b = await at(page, '[data-critter="common-butterfly"]');
   await page.mouse.click(b.x, b.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText('モンシロチョウを つかまえた！');
+  await expect(page.locator('[data-fx="catch"]')).toHaveText(said('common-butterfly'));
   await expect(page.locator('[data-critter]')).toHaveCount(0);
   // the shared ずかん: the first catch is a `find` (the demo keeps its events in localStorage), never ベル
   const finds = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
@@ -149,7 +153,7 @@ test('a cicada perches on a trunk, clear of the tree, and a tap on it nets it', 
   const target = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
   expect(target).toBe(''); // not on the canopy or the fruit row
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText('ミンミンゼミを つかまえた！');
+  await expect(page.locator('[data-fx="catch"]')).toHaveText(said('robust-cicada'));
 });
 
 test('a hermit crab crawls on the beach at night, clear of every control, and a tap on it nets it', async ({ page }) => {
@@ -162,7 +166,7 @@ test('a hermit crab crawls on the beach at night, clear of every control, and a 
   const sand = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
   expect(sand).toBe('');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText('ヤドカリを つかまえた！');
+  await expect(page.locator('[data-fx="catch"]')).toHaveText(said('hermit-crab'));
 });
 
 test('a stag beetle perches on a trunk at night and is netted', async ({ page }) => {
@@ -171,7 +175,11 @@ test('a stag beetle perches on a trunk at night and is netted', async ({ page })
   const p = await at(page, '[data-critter="rainbow-stag"]');
   expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p)).toBe('');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toHaveText('ニジイロクワガタを つかまえた！');
+  await expect(page.locator('[data-fx="catch"]')).toHaveText(said('rainbow-stag'));
+  // NH's A: a tap on the plate dismisses it
+  const plate = (await page.locator('[data-fx="catch"] .catch-plate').boundingBox())!;
+  await page.mouse.click(plate.x + plate.width / 2, plate.y + plate.height / 2);
+  await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
 test('a balloon floats by on its own in the daytime (the first in 30–60 s), in the lane under the ribbon', async ({ page }) => {
