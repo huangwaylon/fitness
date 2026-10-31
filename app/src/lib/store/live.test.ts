@@ -28,14 +28,22 @@ class Mem implements KV {
 
 const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, changed() {} });
 
+// LiveBackend schedules retries and re-reads (setTimeout): fake them, so none fires into a later test.
+const TIMERS = ['setTimeout', 'clearTimeout'] as const;
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: [...TIMERS] });
   vi.stubGlobal('location', { hash: '', search: '' });
   vi.stubGlobal('addEventListener', () => {});
   configureCache({ indexedDB: null });
   configureTransport({ url: 'https://script.example/exec', fetch: (async () => new Response('{"ok":false,"error":"busy"}')) as typeof fetch });
   toasts.dismiss();
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 describe('LiveBackend storage problems', () => {
   it('a full localStorage: the tap still counts (in memory) and a banner says so, once', async () => {
@@ -145,7 +153,7 @@ describe('LiveBackend cold open after an ack (no flash of the old state)', () =>
     snapshots = 0;
     hang = false;
     hung = [];
-    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.useFakeTimers({ toFake: ['Date', ...TIMERS] });
     vi.setSystemTime(NOW);
     configureTransport({
       url: 'https://script.example/exec',
