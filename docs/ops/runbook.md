@@ -81,7 +81,7 @@ Every list should have as many lines as `dates`. A lower re-send of steps or min
 Shortcut fixes: [shortcut §6](shortcut-health-sync.md#6-troubleshooting).
 
 ## 7. Backups
-The sheet is the only copy of buys, menu and goal changes and きろく edits (health numbers can be re-sent:
+The sheet is the only copy of buys, the menu and goal changes (health numbers come from Apple Health and can be re-sent:
 [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). Google's version history (File → Version
 history) covers bad edits, not a lost file or account.
 
@@ -120,6 +120,8 @@ The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts
 
 ## 9. Sheet leftovers
 An older sheet may still hold:
-- `gym_set` rows in `events`: not an event type the app knows, so the model ignores them. Harmless; leave them.
+- `gym_set`, `metric_set`, `workout_add` and `workout_edit` rows in `events` (e.g. B's one `metric_set`): not event
+  types the app knows any more (Apple Health is the source of truth), so the model ignores them and the server refuses
+  new ones. Harmless; leave them, or delete those rows by hand (that bumps `REV`, so each phone refetches once).
 - `presence` and `workouts` tabs: nothing reads or writes them. Delete them by hand if you like (right-click the tab
   → **Delete**). Neither is a synced tab, so this doesn't change `REV` and needs no `resync`.
