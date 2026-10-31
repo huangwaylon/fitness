@@ -228,26 +228,28 @@
         {@const r = ring(f)}
         <span class="row" class:on={picked === f}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
-          <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{amount(f)}</span>
-          <!-- today's milestones (v2): four pips filling up toward the goal -->
-          <span class="steps">{#if r.milestone !== undefined}{#each [1, 2, 3, 4] as k (k)}<i class:on={k <= r.milestone}></i>{/each}{/if}</span>
+          {#if !(f === 'coconut' && gym)}<span class="lbl">{t(`fruit.${f}`)}</span>{/if}
+          {#if f === 'coconut' && gym}
+            <!-- the gym row's quick fix in place of today's ✓: yesterday / today, one tap each (a chip tap keeps the popup
+                 open: IslandScene) -->
+            <span class="gym" role="group" aria-label={t('kiroku.gym')}>
+              {#each gym as c (c.date)}
+                <button type="button" class="gym-chip" aria-pressed={c.on} aria-disabled={c.can ? undefined : 'true'} data-sfx={c.on ? 'toggle-off' : 'toggle-on'}
+                  data-day={c.which} aria-label={t('tree.gymChip', { name: person.villagerName, day: t(`tree.${c.which}`) })}
+                  onpointerdown={(e) => e.stopPropagation()} onclick={() => toggleGym(c)}>
+                  <span class="box" aria-hidden="true">{#if !c.can}<Glyph kind="lock" size={14} />{:else if c.on}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}</span>{t(`tree.${c.which}`)}
+                </button>
+              {/each}
+            </span>
+          {:else}
+            <span class="amt money" class:met={r.met}>{amount(f)}</span>
+            <!-- today's milestones (v2): four pips filling up toward the goal -->
+            <span class="steps">{#if r.milestone !== undefined}{#each [1, 2, 3, 4] as k (k)}<i class:on={k <= r.milestone}></i>{/each}{/if}</span>
+          {/if}
           <b class="money" class:zero={!r.todayBells}>{r.todayBells > 0 ? `+${formatNum(r.todayBells)}` : '—'}</b>
           <!-- the week toward the badge: days met / days needed, a ✓ disc once it's earned -->
           <span class="wk money" class:badge={r.badge}>{#if r.badge}<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}{Math.min(r.weekDays, r.weekGoalDays)}/{r.weekGoalDays}{/if}</span>
         </span>
-        {#if f === 'coconut' && gym}
-          <!-- the gym row's quick fix: yesterday / today, one tap each (a chip tap keeps the popup open: IslandScene) -->
-          <span class="gym" role="group" aria-label={t('kiroku.gym')}>
-            {#each gym as c (c.date)}
-              <button type="button" class="gym-chip" aria-pressed={c.on} aria-disabled={c.can ? undefined : 'true'} data-sfx={c.on ? 'toggle-off' : 'toggle-on'}
-                data-day={c.which} aria-label={t('tree.gymChip', { name: person.villagerName, day: t(`tree.${c.which}`) })}
-                onpointerdown={(e) => e.stopPropagation()} onclick={() => toggleGym(c)}>
-                <span class="box" aria-hidden="true">{#if !c.can}<Glyph kind="lock" size={14} />{:else if c.on}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}</span>{t(`tree.${c.which}`)}
-              </button>
-            {/each}
-          </span>
-        {/if}
       {/each}
       {#if next}<span class="next"><OfficialArt key={fruitArt(next.f)} size="16px" eager />{next.text}</span>{/if}
     </div>
@@ -341,15 +343,17 @@
   /* the week toward the badge: 「2/5」 days, or a ✓ disc once the badge is earned */
   .wk { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); min-width: 22px; text-align: left; }
   .wk.badge svg { width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
-  /* the 🥥 row's two check chips (きのう / きょう): ≥ 44px tall, a box that fills leaf green with ✓ when it is a gym day */
-  .gym { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 6px; padding: 0 2px 2px; }
+  /* the 🥥 row's two check chips (きのう / きょう), in the today and milestone columns: ≥ 44px tall, a box that fills leaf
+     green with ✓ when it is a gym day */
+  /* they take the word's column too (the 🥥 art names the row; the group's label says ジム), so the popup stays as wide */
+  .gym { grid-column: span 3; display: flex; justify-content: flex-end; gap: 4px; margin-block: -2px; }
   .gym-chip {
-    appearance: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px;
-    padding: 0 12px 0 8px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1 var(--font-ui); color: var(--plate-ink);
+    appearance: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-height: 44px; min-width: 44px;
+    padding: 0 9px 0 6px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1 var(--font-ui); color: var(--plate-ink);
     background: color-mix(in srgb, var(--plate-ink) 8%, transparent); -webkit-tap-highlight-color: transparent;
   }
   .gym-chip .box {
-    width: 20px; height: 20px; flex: none; border-radius: 6px; display: grid; place-items: center; line-height: 0;
+    width: 18px; height: 18px; flex: none; border-radius: 6px; display: grid; place-items: center; line-height: 0;
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--plate-ink) 40%, transparent);
   }
   .gym-chip .box svg { width: 14px; height: 14px; }
@@ -369,6 +373,9 @@
     .detail { grid-template-columns: 20px auto auto auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
+    .gym { grid-column: span 2; }
+    .gym-chip { padding: 0 7px 0 5px; gap: 4px; font-size: var(--fs-xs); }
+    .gym-chip .box { width: 16px; height: 16px; }
     /* the longest value (2,384/8,000歩) ran into its fruit (1px); keep a clear gap (round 21) */
     .amt { padding-left: 4px; }
   }

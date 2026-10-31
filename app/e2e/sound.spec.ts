@@ -166,7 +166,13 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(btn(/^きょう [\d,]+\sベル$/)).toBeVisible();
   await page.waitForTimeout(1500); // the opening beats
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
-  await step('島', 'the tree popup (closes)', () => page.locator('.detail').tap(), ['tick']);
+  // the gym chips (ADR 0023): one toggle cue each, no popup tick, and the popup stays open
+  const chip = page.locator('.detail .gym-chip[data-day=today]');
+  const on = (await chip.getAttribute('aria-pressed')) === 'true';
+  await step('島', 'gym chip (きょう)', () => chip.tap(), [on ? 'toggle-off' : 'toggle-on']);
+  await step('島', 'gym chip again', () => chip.tap(), [on ? 'toggle-on' : 'toggle-off']);
+  await expect(page.locator('.detail')).toHaveCount(1);
+  await step('島', 'the tree popup (closes)', () => page.locator('.detail .plate').tap(), ['tick']);
   await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
   await expect(dlg).toHaveCount(1);
   await step('なかま', '✕', () => dlg.locator('.navbar .close').tap(), ['back']);
@@ -196,7 +202,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   const future = dlg.locator('button.day[aria-disabled="true"]');
   if (await future.count()) await step('きろく', 'a future day (aria-disabled)', () => future.first().tap({ force: true }), ['boop']);
   await step('きろく', 'day', () => btn(/\(月\)$/, dlg).tap(), ['page']);
-  await step('きろく', '✎ steps', () => btn(/^歩数/, dlg).tap(), ['page']);
+  await step('きろく', '✎ steps', () => btn(/歩数 ✎$/, dlg.locator('.pc').first()).tap(), ['page']);
   const pad = dlg.locator('.atm');
   await step('きろく', 'keypad 1', () => btn('1', pad).tap(), ['key']);
   await step('きろく', 'keypad ⌫', () => btn('ひとつ消す', pad).or(pad.locator('.key.fn').first()).first().tap(), ['key-fn']);
@@ -204,14 +210,14 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('きろく', 'keypad C', () => pad.locator('.key.fn').nth(1).tap(), ['key-fn']);
   await step('きろく', 'けってい with nothing typed (aria-disabled)', () => btn('けってい', dlg).tap({ force: true }), ['boop']);
   await step('きろく', 'やめる (choice)', () => btn('やめる', dlg).tap(), ['back']);
-  await step('きろく', '✎ steps again', () => btn(/^歩数/, dlg).tap(), ['page']);
+  await step('きろく', '✎ steps again', () => btn(/歩数 ✎$/, dlg.locator('.pc').first()).tap(), ['page']);
   for (const k of '4321') await btn(k, pad).tap();
   await step('きろく', 'けってい', () => btn('けってい', dlg).tap(), ['choice-pick']);
   const undo = btn('とりけす');
   await step('きろく', 'とりけす (banner)', () => undo.tap(), ['undo']);
   await step('きろく', 'back (‹) to the week', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', 'back (‹) to the list', () => dlg.locator('.titlebar .back').tap(), ['back']);
-  await step('きろく', '✎ Move goal', () => btn(/^ムーブ（1日） ✎/, dlg).tap(), ['page']);
+  await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
   await step('きろく', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
   await step('きろく', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
   await step('きろく', 'back (‹) to home', () => dlg.locator('.titlebar .back').tap(), ['back']);
