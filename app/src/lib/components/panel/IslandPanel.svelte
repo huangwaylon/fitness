@@ -169,8 +169,8 @@
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .panel-body > :global(*) { flex: none; }
-  /* the villager picker pins its head and scrolls its own grid (to the bottom edge): the body holds still */
-  .panel-body.fill { overflow: hidden; padding-bottom: 0; }
+  /* the villager picker and a ずかん page pin their head and scroll their own grid (to the bottom edge): the body holds still */
+  .panel-body.fill, .panel-body:has(> :global(.kiroku.fill)) { overflow: hidden; padding-bottom: 0; }
   .panel-body.fill > .page { flex: 1; min-height: 0; }
   /* a pushed level slides in from the right (design.md "Navigation") */
   .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }

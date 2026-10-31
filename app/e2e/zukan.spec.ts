@@ -62,3 +62,62 @@ test('the fossils: a dug-up piece shows under its dinosaur with the set’s coun
   await page.locator(`button.tile[data-entry="${id}"]`).click();
   await expect(page.locator(`[data-zukan-detail="${id}"]`)).toContainText('の ');
 });
+
+// The page's head is pinned (as the むらびと picker's): the picked entry's details stay in view while the grid scrolls
+// in its own scroller under them, and picking another updates them without moving the grid.
+for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
+  test(`the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (${vp.width}x${vp.height})`, async ({ page }) => {
+    await page.setViewportSize(vp);
+    // three fish A found today (the demo's own events, as a catch writes them)
+    await page.addInitScript(() => {
+      if (localStorage.getItem('island-demo.events')) return;
+      const at = Date.parse('2026-07-04T11:00:00+09:00');
+      const events = ['bitterling', 'sea-bass', 'coelacanth'].map((id, i) => ({
+        id: `seed-${i}`, type: 'find', data: { kind: 'fish', id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i
+      }));
+      localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-07-04', events }));
+    });
+    await page.goto('?demo&date=2026-07-04T12:00');
+    await expect(ribbon(page)).toBeVisible();
+    await ribbon(page).click();
+    await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+    await page.locator('[data-zukan="fish"]').click();
+    const head = page.locator('[data-zukan-head]');
+    const grid = page.locator('[data-zukan-grid]');
+    // nothing picked: the head shows the page's count
+    await expect(head).toContainText(`3 / ${Object.keys(FISH).length + Object.keys(POND_FISH).length}`);
+    // the grid keeps most of the screen
+    expect((await grid.boundingBox())!.height).toBeGreaterThan(vp.height * 0.5);
+
+    const first = page.locator('button.tile[data-entry="bitterling"]');
+    const firstName = (await first.getAttribute('aria-label'))!;
+    await first.click();
+    await expect(head.locator('[data-zukan-detail="bitterling"]')).toContainText(firstName);
+    await expect(head.locator('.line')).toBeVisible();
+    const headBox = (await head.boundingBox())!;
+
+    // scrolled to the bottom: the head hasn't moved and still names the bitterling; the panel body itself never scrolled
+    await grid.evaluate((el) => (el.scrollTop = el.scrollHeight));
+    await expect.poll(() => grid.evaluate((el) => el.scrollTop)).toBeGreaterThan(300);
+    expect(await page.locator('dialog[open] .panel-body').evaluate((el) => el.scrollTop)).toBe(0);
+    await expect(head).toBeInViewport({ ratio: 1 });
+    await expect(head).toContainText(firstName);
+    expect(Math.abs((await head.boundingBox())!.y - headBox.y)).toBeLessThan(1);
+    // the head sits above the grid, never over it; the last row clears the bottom of the screen
+    expect(headBox.y + headBox.height).toBeLessThanOrEqual((await grid.boundingBox())!.y + 1);
+    const last = (await page.locator('[data-entry="coelacanth"]').boundingBox())!;
+    expect(last.y + last.height).toBeLessThanOrEqual(vp.height);
+
+    // another pick from down there: the head updates, the grid stays where it was
+    const top = await grid.evaluate((el) => el.scrollTop);
+    const other = page.locator('button.tile[data-entry="coelacanth"]');
+    const otherName = (await other.getAttribute('aria-label'))!;
+    await other.click();
+    await expect(head.locator('[data-zukan-detail="coelacanth"]')).toContainText(otherName);
+    await expect(head).not.toContainText(firstName);
+    await expect(head.locator('.line')).toBeVisible(); // its catch line
+    await page.waitForTimeout(300);
+    expect(Math.abs((await grid.evaluate((el) => el.scrollTop)) - top)).toBeLessThan(2);
+    await page.screenshot({ path: `/tmp/zukan-pin/fish-${vp.width}.png` });
+  });
+}
