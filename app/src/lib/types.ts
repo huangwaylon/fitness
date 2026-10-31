@@ -28,12 +28,14 @@ interface WalletView {
   today: number;
 }
 
-/** One person's earnings of one day: +1 ベル per goal met. */
+/** One person's earnings of one day: +1 ベル per goal met, + がんばり (+1 per goal at 1.5×, at most +2). */
 export interface DayBells {
   date: LocalDate;
   bells: number;
   /** The daily goal met, per ring fruit. */
   met: Record<RingFruit, boolean>;
+  /** がんばり ベル in `bells` (0–2). */
+  stretch: number;
 }
 
 /** A ring fruit's progress today. Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
@@ -44,6 +46,8 @@ export interface RingProgress {
   goal: number;
   /** Today's goal is met: +1 ベル. */
   met: boolean;
+  /** Today's stretch target (1.5 × the goal) is reached: がんばり (+1 within the day's cap of 2). */
+  stretched: boolean;
 }
 
 export interface PersonWeekView {
@@ -51,7 +55,8 @@ export interface PersonWeekView {
   villagerName: string;
   /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
   villager: string | null;
-  /** Today's ベル so far (0–4) and, per ring fruit, the ベル it earned (1 = met). */
+  /** Today's ベル so far (0–4 goals + 0–2 がんばり) and, per ring fruit, the ベル it earned (1 = met, 2 = met and its
+   *  がんばり paid). */
   today: { bells: number; rings: RingBells };
   /** This week's ベル so far (this person's goals; ふたりでぜんぶ is shared, not in here). */
   weekBells: number;

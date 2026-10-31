@@ -3,7 +3,7 @@
 import type { PersonId, RingFruit, ShopItemId } from '#lib/types.ts';
 
 /** The four ring fruits in display order, Apple's rings first: 🍐 Move, 🍑 Exercise, 🍒 Stand, then 🍎 steps. Every
- *  list of fruits (the tree, its popup, きろく, あそびかた) follows this. */
+ *  list of fruits (the tree, きろく, あそびかた) follows this, except けんこう and the tree's popup (steps first). */
 export const RING_FRUITS = ['pear', 'peach', 'cherry', 'apple'] as const satisfies readonly RingFruit[];
 
 /**
@@ -16,6 +16,16 @@ export const RULES = {
   perGoal: 1,
   together: 2
 } as const;
+
+/**
+ * がんばり (the stretch bonus). Per person per Tokyo day: +`perGoal` more for each goal reached at `multiplier` × its
+ * target (🍐 1.5 × the Move goal in force that day; 🍑 90 min; 🍒 180 min; 🍎 12,000 steps), at most `cap` ベル a day
+ * (the first fruits in RING_FRUITS order take them). So a person earns 0–4 + 0–2 a day; ふたりでぜんぶ ignores it.
+ */
+export const STRETCH = { multiplier: 1.5, perGoal: 1, cap: 2 } as const;
+
+/** A goal's stretch target: 1.5 × the goal (60 → 90 min, 8,000 → 12,000 steps, 600 → 900 kcal). */
+export const stretchOf = (goal: number): number => goal * STRETCH.multiplier;
 
 /** The two rewards (one shared wallet): a buy must name one of these ids at exactly its price. */
 export const SHOP = [

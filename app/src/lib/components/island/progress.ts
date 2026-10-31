@@ -1,6 +1,6 @@
 // Today's progress of one ring fruit toward its daily goal, as the island draws it.
 import type { PersonWeekView, RingProgress } from '#lib/types.ts';
-import { RING_FRUITS, RULES } from '#lib/config/rules.ts';
+import { RING_FRUITS } from '#lib/config/rules.ts';
 
 /** 0–100: today's share of the daily goal (met = 100). */
 export function todayPct(r: Pick<RingProgress, 'today' | 'goal' | 'met'>): number {
@@ -8,8 +8,6 @@ export function todayPct(r: Pick<RingProgress, 'today' | 'goal' | 'met'>): numbe
   return r.goal > 0 ? Math.max(0, Math.min(100, (r.today * 100) / r.goal)) : 0;
 }
 
-/** The most one person can earn in a day: every goal met (4 ベル). */
-const DAY_MAX = RING_FRUITS.length * RULES.perGoal;
-
-/** 0–100: how much of a full day this person has earned today (idle life's "doing well" weight). */
-export const dayScore = (p: PersonWeekView): number => Math.min(100, Math.round((p.today.bells * 100) / DAY_MAX));
+/** 0–100: the share of today's four goals this person has met (idle life's "doing well" weight; がんばり aside). */
+export const dayScore = (p: PersonWeekView): number =>
+  Math.round((RING_FRUITS.filter((f) => p.rings[f].met).length * 100) / RING_FRUITS.length);

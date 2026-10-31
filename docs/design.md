@@ -39,12 +39,15 @@ ribbon.
 
 - **Trees:** one per person; today's four fruits hang in the canopy, grey at 0 and colouring in toward the goal; a met
   one falls to the ground for a tap to pick up, and that goal's flower blooms in the person's bed ([Trees](#trees)). A tap opens a
-  popup: per goal today's amount against the goal, met or not (「638 / 600 kcal」, 「14,164 / 8,000歩」), a ✓ before
-  it once met, and its +1 (bright once earned); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
+  popup: per goal, 🍎 steps first, then Move, Exercise, Stand (its own order; the canopy and the beds keep
+  `RING_FRUITS`), today's amount against the goal, met or not (「14,164 / 8,000歩」, 「638 / 600 kcal」), a ✓ before
+  it once met, a small yuzu ★ after it at 1.5× ([がんばり](#goals)), and its ベル (+1, bright once earned; +2 when its
+  がんばり is paid); then, when any goal is at 1.5×, a がんばり line (「がんばり +1」, 「がんばり +2」, or 「がんばり +2（上限）」
+  when three or four were reached: they all keep their ★, only two pay); then a star line for today's ふたりでぜんぶ, 「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2」. The last
   line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
   small dot once it is over 6 hours old.
-- **Jar + plate:** the balance; each goal met flies in as a +1 coin from its fruit, ふたりでぜんぶ as a +2 over the
-  jar. Tap → ごほうび.
+- **Jar + plate:** the balance; each goal met flies in as a +1 coin from its fruit (+2 with its がんばり), ふたりでぜんぶ
+  as a +2 over the jar. Tap → ごほうび.
 - **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner opens their card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers and jar 64px); focus order = visual order.
 
@@ -86,12 +89,13 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
 
 - **ベル:** everything earned, then by week (its ベル earned: earnings only; the buys live on ごほうび's かいもの きろく)
   one line per day under the two avatars: each person's four fruits (bright = met), a star on a ふたりでぜんぶ day, the
-  day's ベル (tap → the day).
+  day's ベル (tap → the day); on a day either of us reached 1.5× of a goal, a smaller second line in the same columns:
+  「がんばり」 under the date and each person's がんばり ベル (+1 / +2) under their fruits.
 - **目標:** the Move and weight goals (two avatar pills pick whose, either person sets either person's). The weight
   trend is in [けんこう](#kenkou).
 - **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found (→ that kind's page).
-- **Day:** ふたりでぜんぶ (+2 or —), then me and the partner: the day's ベル and, per goal, its value (green when met)
-  and +1.
+- **Day:** ふたりでぜんぶ (+2 or —), then me and the partner: the day's ベル and, per goal, its value (green when met,
+  ★ at 1.5×) and +1 (+2 with its がんばり paid), then a がんばり row when any (+1, +2, or +2（上限）).
 
 ### Kenkou
 
@@ -105,7 +109,7 @@ the personal trainer to review, one person at a time; computed on read from the 
 - **Controls:** the period 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月, kept for the session), then a sticky row: ‹
   the visible range (「10/2–10/31」, the year when it isn't this one; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの
   1日平均」 under it) › and きょう (‹ › and きょう are `aria-disabled` when there's nothing that way).
-- **A card per metric**, steps first (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド; the island keeps the rings' order):
+- **A card per metric**, steps first (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド, like the tree's popup; the canopy and the beds keep the rings' order):
   the person's goal; 1日の平均（記録のある日） large,
   前の期間より ↑/↓ % beside it, then 目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key in the person's
   colour (with 記録なし's hatch).
@@ -150,13 +154,13 @@ fails on a modal without them. Sheets rise and levels slide in over 240 ms (no s
 ## Economy
 
 A stamp card with small numbers. Rule `scoring/bells.ts`, economy on read `model/bells.ts`, values `config/rules.ts`
-(`RULES`, `SHOP`); pinned by their tests, `model/properties.test.ts` and the golden fixtures. Earnings are recomputed
+(`RULES`, `STRETCH`, `SHOP`); pinned by their tests, `model/properties.test.ts` and the golden fixtures. Earnings are recomputed
 from the rows, so they move whenever data arrives.
 
 ### Goals
 
-Every list shows them in Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS`). Per person per Tokyo
-day, all or nothing: **+1 ベル for each goal met**, so at most 4.
+Every list shows them in Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS`), except けんこう and the tree's popup (steps first). Per person per Tokyo
+day, all or nothing: **+1 ベル for each goal met**, so at most 4 (plus がんばり, below).
 
 | Fruit | Metric (Shortcut field → stored) | Daily goal |
 |---|---|---|
@@ -167,7 +171,14 @@ day, all or nothing: **+1 ベル for each goal met**, so at most 4.
 
 The Move goal on a day is the last one set on or before that Tokyo date: a change never re-prices earlier days.
 
-**ふたりでぜんぶ:** +2 shared when both people meet all four goals on the same Tokyo day. A day pays 0–10 for the pair.
+**がんばり (stretch):** +1 more for each goal reached at 1.5× its target (`STRETCH.multiplier`), at most **+2 a person
+a day** (`STRETCH.cap`), on every day alike. The targets: 🍐 1.5 × that day's Move goal (900 kcal for 600, 600 for 400),
+🍑 90 min, 🍒 180 min (whole minutes, like the goal), 🍎 12,000 steps; at or above counts. When three or four are
+reached, the cap is paid to the first ones in `RING_FRUITS` order (so the per-fruit ベル add up to the day). A person
+earns 0–4 + 0–2 a day. Locked weeks read it as of the lock, like the goals.
+
+**ふたりでぜんぶ:** +2 shared when both people meet all four goals on the same Tokyo day (がんばり doesn't enter it). A
+day pays 0–14 for the pair.
 
 ### Numbers check
 
@@ -175,11 +186,13 @@ The Move goal on a day is the last one set on or before that Tokyo date: a chang
 
 | Week | How | ベル |
 |---|---|---|
-| Perfect | every goal every day, both | 4 × 7 × 2 + 2 × 7 = **70** |
-| Typical | each goal met on 5 of 7 days, both perfect on 3 days | 20 × 2 + 3 × 2 = **46** |
+| Most | every goal every day, both, and two at 1.5× every day | (4 + 2) × 7 × 2 + 2 × 7 = **98** |
+| Perfect | every goal every day, both, no がんばり | 4 × 7 × 2 + 2 × 7 = **70** |
+| Typical | each goal met on 5 of 7 days, both perfect on 3 days with one goal at 1.5× | 23 × 2 + 3 × 2 = **52** |
 | Lazy | two easy goals a day (say Move and Stand), never all four | 2 × 7 × 2 = **28** |
 
-A perfect week buys three おやつ and three 外食 (69); a typical week two of each (46); a lazy one a 外食 and a おやつ.
+The most a week pays buys four おやつ and four 外食 (92); a perfect week three of each (69); a typical week two of each
+(46, 6 left over); a lazy one a 外食 and a おやつ.
 
 ### Rewards
 

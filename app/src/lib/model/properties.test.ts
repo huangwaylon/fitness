@@ -2,11 +2,11 @@
 // - The wallet: over random buys (right or wrong prices, unknown items) and voids (by the buyer, the partner, twice,
 //   early), the replay matches a plain re-implementation of the rule (bells.ts `walletAt`), and the balance never goes
 //   negative.
-// - A day: more of any metric never pays less, and a day pays 0–4 per person, 0–10 for the pair.
+// - A day: more of any metric never pays less, and a day pays 0–4 + がんばり 0–2 per person, 0–14 for the pair.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import type { PersonId, RingFruit } from '#lib/types.ts';
-import { RING_FRUITS, RULES, SHOP, shopPrice } from '#lib/config/rules.ts';
+import { RING_FRUITS, RULES, SHOP, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays } from '#lib/time/dates.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { earnWeek, type EarnDay } from '#lib/scoring/bells.ts';
@@ -34,8 +34,8 @@ function randomSheet(seed: number) {
       if (rand() < 0.15) continue; // a day without a sync
       const at = iso(jstMs(date, '21:00') + Math.floor(rand() * 3_600_000));
       metrics.push(
-        [at, p, date, 'steps', Math.floor(rand() * 12_000)], [at, p, date, 'exercise_min', Math.floor(rand() * 80)],
-        [at, p, date, 'move_kcal', Math.floor(rand() * 900)], [at, p, date, 'stand_min', Math.floor(rand() * 180)]
+        [at, p, date, 'steps', Math.floor(rand() * 15_000)], [at, p, date, 'exercise_min', Math.floor(rand() * 110)],
+        [at, p, date, 'move_kcal', Math.floor(rand() * 1100)], [at, p, date, 'stand_min', Math.floor(rand() * 220)]
       );
     }
   }
@@ -104,10 +104,15 @@ describe('the wallet over random buys and voids', () => {
         expect(w.wallet.balance).toBe(w.wallet.earned - w.wallet.spent);
         expect(w.wallet.balance).toBeGreaterThanOrEqual(0);
         expect(w.wallet.spent).toBe(w.spends.filter((x) => !x.voided).reduce((n, x) => n + x.bells, 0));
-        // A day pays 0–4 per person, plus 2 when both met all four.
+        // A day pays 0–4 per person + がんばり 0–2, plus 2 when both met all four.
         for (const d of o.ledger.days) {
-          for (const p of PEOPLE) expect(d.people[p].bells).toBe(RING_FRUITS.filter((f) => d.people[p].met[f]).length);
-          expect(d.together).toBe(PEOPLE.every((p) => d.people[p].bells === 4));
+          for (const p of PEOPLE) {
+            const met = RING_FRUITS.filter((f) => d.people[p].met[f]).length;
+            expect(d.people[p].stretch).toBeGreaterThanOrEqual(0), expect(d.people[p].stretch).toBeLessThanOrEqual(STRETCH.cap);
+            expect(d.people[p].bells).toBe(met + d.people[p].stretch);
+          }
+          expect(d.together).toBe(PEOPLE.every((p) => RING_FRUITS.every((f) => d.people[p].met[f])));
+          expect(d.bells).toBeLessThanOrEqual(14);
           expect(d.bells).toBe(d.people.A.bells + d.people.B.bells + (d.together ? RULES.together : 0));
         }
       }
@@ -130,11 +135,11 @@ describe('a day: more never pays less', () => {
     f === 'peach' ? RULES.goals.exerciseMin : f === 'pear' ? 600 : f === 'cherry' ? RULES.goals.standMin : RULES.goals.steps;
 
   for (const f of RING_FRUITS) {
-    it(`${f}: 0 below the goal, 1 from the goal on`, () => {
+    it(`${f}: 0 below the goal, 1 from the goal on, 2 from 1.5× on`, () => {
       const goal = goalOf(f);
       for (let i = 0; i <= 400; i++) {
         const v = (goal * i) / 200; // 0 … 2 × the goal, fractions included
-        expect(pay(f, v)).toBe(v >= goal ? 1 : 0);
+        expect(pay(f, v)).toBe(v >= stretchOf(goal) ? 2 : v >= goal ? 1 : 0);
       }
     });
   }

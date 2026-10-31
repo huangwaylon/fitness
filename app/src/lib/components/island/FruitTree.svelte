@@ -8,9 +8,10 @@
   // the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
-  // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal today's amount against the
-  // goal (met or not), ✓ once met, and its +1 ベル; then today's ふたりでぜんぶ (both people, all four goals: +2) and
-  // when the data last arrived. It stays until this tree is tapped again, the other tree is tapped, or a tap lands
+  // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
+  // today's amount against the goal (met or not), ✓ once met, a ★ once at 1.5× (がんばり), and its ベル (+1, +2 with
+  // its がんばり paid); then the day's がんばり (+1, +2, or +2 with 上限 when more were reached than the cap pays),
+  // today's ふたりでぜんぶ (both people, all four goals: +2) and when the data last arrived. It stays until this tree is tapped again, the other tree is tapped, or a tap lands
   // elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
@@ -25,7 +26,7 @@
   import { lastSyncLine } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { todayPct } from './progress.ts';
-  import { RULES } from '#lib/config/rules.ts';
+  import { RULES, STRETCH } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import {
     FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, JAR, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u
@@ -74,6 +75,16 @@
   let treeEl: HTMLElement | null = $state(null);
 
   const ring = (f: RingFruit) => person.rings[f];
+  /** The popup's rows: 🍎 steps first, then Apple's rings (the canopy and the beds keep RING_FRUITS). */
+  const POPUP_ORDER: readonly RingFruit[] = ['apple', 'pear', 'peach', 'cherry'];
+  /** A row's ベル: +1, +2 once its がんばり is paid (shown faded as +1 while unmet). */
+  const pay = (f: RingFruit) => person.today.rings[f] || RULES.perGoal;
+  /** Today's がんばり: the fruits at 1.5×, the ベル paid (at most STRETCH.cap) and whether more were reached than that. */
+  const stretched = $derived(RING_FRUITS.filter((f) => ring(f).stretched).length);
+  const stretchBells = $derived(Math.min(STRETCH.cap, stretched * STRETCH.perGoal));
+  const stretchLine = $derived(
+    stretched ? t(stretched * STRETCH.perGoal > STRETCH.cap ? 'tree.stretch.cap' : 'tree.stretch', { b: stretchBells }) : null
+  );
 
   /** Today's amount against the goal, always (met too): 「103 / 60分」 (whole units, rounded down so a goal shows met
    *  only once it is). */
@@ -83,8 +94,8 @@
   const togetherLine = $derived(together ? (together.met ? t('tree.together.met', { b: RULES.together }) : t('tree.together.left', { n: together.left })) : null);
   const label = $derived(
     `${person.villagerName}: ` +
-      RING_FRUITS.map((f) => `${t(`fruit.${f}`)} ${amount(f)}${ring(f).met ? ` ✓ +${RULES.perGoal}` : ''}`).join('、') +
-      (togetherLine ? `。${togetherLine}` : '')
+      POPUP_ORDER.map((f) => `${t(`fruit.${f}`)} ${amount(f)}${ring(f).met ? ` ✓ +${pay(f)}` : ''}${ring(f).stretched ? ' ★' : ''}`).join('、') +
+      (stretchLine ? `。${stretchLine}` : '') + (togetherLine ? `。${togetherLine}` : '')
   );
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
    *  clock ticks only then. */
@@ -312,22 +323,28 @@
   </span>
 {/each}
 
+{#snippet star(cls: string)}
+  <svg class={cls} viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" /></svg>
+{/snippet}
+
 {#if open}
   {#key taps}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="detail" id={detailId} role="status" onpointerdown={() => cue('tick')} style:left={u(x)} style:top={u(BASE - H + 4)} {@attach keepInside}>
       <span class="plate">{person.villagerName}</span>
-      {#each RING_FRUITS as f (f)}
+      {#each POPUP_ORDER as f (f)}
         {@const r = ring(f)}
-        <span class="row" class:on={picked === f}>
+        <span class="row" class:on={picked === f} data-row={f} data-stretched={r.stretched || null}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{amount(f)}</span>
-          <b class="money" class:zero={!r.met}>+{RULES.perGoal}</b>
+          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{/if}{amount(f)}{#if r.stretched}{@render star('gb')}{/if}</span>
+          <b class="money" class:zero={!r.met}>+{pay(f)}</b>
         </span>
       {/each}
+      <!-- today's がんばり: goals at 1.5× (+1 each, at most +2 a day; 上限 when more were reached) -->
+      {#if stretchLine}<span class="gbl">{@render star('gb')}{stretchLine}</span>{/if}
       <!-- today's ふたりでぜんぶ: both of us, all four goals (+2 shared) -->
-      {#if togetherLine}<span class="duo" class:met={together?.met}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" /></svg>{togetherLine}</span>{/if}
+      {#if togetherLine}<span class="duo" class:met={together?.met}>{@render star('')}{togetherLine}</span>{/if}
       <!-- when this person's data last arrived (it explains a low tree); a soft dot once it is SYNC_LATE_MS old -->
       {#if sync}<span class="sync" class:late={sync.late}>{sync.text}</span>{/if}
     </div>
@@ -427,6 +444,13 @@
   .row b { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
   .row b.zero { color: var(--c-ink-soft); font-weight: 500; }
   .ok { width: 18px; height: 18px; flex: none; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
+  /* がんばり: a small yuzu star after a value at 1.5×, and the day's line under the goals */
+  .gb { width: 15px; height: 15px; flex: none; margin-left: -1px; fill: var(--c-yuzu-lip); filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--plate-ink) 25%, transparent)); }
+  .gbl {
+    grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 3px; padding: 5px 8px 1px;
+    border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
+  }
+  .gbl + .duo { border-top: 0; margin-top: 0; padding-top: 3px; }
   /* today's ふたりでぜんぶ: a star line under the goals (yuzu once both met everything) */
   .duo {
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
@@ -457,7 +481,7 @@
   @media (max-height: 600px) {
     .detail { padding: 13px 6px 4px; }
     .row { padding-block: 1px; }
-    .duo { margin-top: 2px; padding-top: 3px; }
+    .duo, .gbl { margin-top: 2px; padding-top: 3px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .tree, .tree:global(.shaking), .leaf { animation: none; }

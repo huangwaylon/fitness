@@ -122,7 +122,7 @@ test('けんこう: the weight trend (from Health, no logging by hand); its goal
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the four goals, today’s amount / the goal with ✓ once met, +1 each, and today’s ふたりで ぜんぶ', async ({ page }) => {
+test('tree popup: the four goals (steps first), today’s amount / the goal with ✓ once met, +1 each (+2 with ★ at 1.5×), and today’s ふたりで ぜんぶ', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -137,14 +137,16 @@ test('tree popup: the four goals, today’s amount / the goal with ✓ once met,
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   const rows = pop.locator('.row');
   await expect(rows).toHaveCount(4);
-  await expect(rows.locator('.lbl')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数']); // Apple's ring order, then steps
-  const units = [/kcal$/, /分$/, /分$/, /歩$/];
+  await expect(rows.locator('.lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']); // steps first, then Apple's ring order
+  const units = [/歩$/, /kcal$/, /分$/, /分$/];
   for (let i = 0; i < 4; i++) {
     const row = rows.nth(i);
     // today's amount against the goal, met or not; ✓ before it once met
     await expect(row.locator('.amt')).toHaveText(new RegExp(`^[\\d,]+ / [\\d,]+ ?${units[i].source}`));
     await expect(row.locator('.amt svg.ok')).toHaveCount(await row.locator('.amt.met').count());
-    await expect(row.locator('b')).toHaveText('+1');
+    await expect(row.locator('b')).toHaveText(/^\+[12]$/);
+    // +2 only on a row at 1.5× (its ★); e2e/stretch.spec.ts has the rule's edges and the cap
+    if ((await row.locator('b').innerText()) === '+2') await expect(row.locator('.amt svg.gb')).toHaveCount(1);
   }
   await expect(pop.locator('.duo')).toHaveText(/^ふたりで ぜんぶ まで：あと [1-8]つ$|^ふたりで ぜんぶ！ \+2$/);
   // nothing of the old popup: no pips, nudges or badge weeks
@@ -189,8 +191,8 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
-  await expect(page.locator('.detail .row').nth(0).locator('.amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
-  await expect(page.locator('.detail .row').nth(0).locator('.amt svg')).toHaveCount(0);
+  await expect(page.locator('.detail .row[data-row=pear] .amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
+  await expect(page.locator('.detail .row[data-row=pear] .amt svg')).toHaveCount(0);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
   await openPanel(page);

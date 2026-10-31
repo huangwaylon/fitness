@@ -22,9 +22,9 @@ const rowsOf = (add: Partial<SnapshotRows> = {}): SnapshotRows => ({ metrics: ad
 const plus = (a: SnapshotRows, b: Partial<SnapshotRows>): SnapshotRows => ({
   metrics: [...a.metrics, ...(b.metrics ?? [])], events: [...a.events, ...(b.events ?? [])]
 });
-/** A day meeting all four goals (the Move goal defaults to 600 / 400). */
+/** A day meeting all four goals, none at 1.5× (the Move goal defaults to 600 / 400: 700 / 550 kcal). */
 const allFour = (at: string, p: PersonId, d: string): MetricRow[] => [
-  metric(at, p, d, 'steps', 9000), metric(at, p, d, 'exercise_min', 60), metric(at, p, d, 'move_kcal', 700), metric(at, p, d, 'stand_min', 130)
+  metric(at, p, d, 'steps', 9000), metric(at, p, d, 'exercise_min', 60), metric(at, p, d, 'move_kcal', p === 'A' ? 700 : 550), metric(at, p, d, 'stand_min', 130)
 ];
 
 /** Every goal on every day of WK, for both: 4 + 4 + 2 = 10 a day, 70 the week. */
@@ -53,10 +53,10 @@ describe('daily earnings land as they happen', () => {
     const rings = v.people.A.rings;
     expect(Object.keys(rings)).toEqual(['pear', 'peach', 'cherry', 'apple']);
     expect(rings).toEqual({
-      pear: { today: 700, goal: 600, met: true }, peach: { today: 60, goal: 60, met: true },
-      cherry: { today: 130, goal: 120, met: true }, apple: { today: 9000, goal: 8000, met: true }
+      pear: { today: 700, goal: 600, met: true, stretched: false }, peach: { today: 60, goal: 60, met: true, stretched: false },
+      cherry: { today: 130, goal: 120, met: true, stretched: false }, apple: { today: 9000, goal: 8000, met: true, stretched: false }
     });
-    expect(v.people.B.rings.pear).toEqual({ today: 700, goal: 400, met: true });
+    expect(v.people.B.rings.pear).toEqual({ today: 550, goal: 400, met: true, stretched: false });
   });
 
   it('a partial day: what each goal is at, and how many goals both still have for ふたりでぜんぶ', () => {
@@ -64,7 +64,7 @@ describe('daily earnings land as they happen', () => {
     const r = rowsOf({ metrics: [metric(at, 'B', D[0], 'steps', 8200), metric(at, 'B', D[0], 'exercise_min', 20), ...allFour(at, 'A', D[0])] });
     const v = buildWeekView(reduce(r), 'A', ms(D[0], '13:00'));
     expect(v.people.B.today).toEqual({ bells: 1, rings: { pear: 0, peach: 0, cherry: 0, apple: 1 } });
-    expect(v.people.B.rings.peach).toEqual({ today: 20, goal: 60, met: false });
+    expect(v.people.B.rings.peach).toEqual({ today: 20, goal: 60, met: false, stretched: false });
     expect(v.together).toEqual({ met: false, left: 3 });
     expect(v.wallet).toEqual({ balance: 5, today: 5 });
   });
@@ -257,7 +257,7 @@ describe('the きろく ledger and the day', () => {
     expect(l.days.map((d) => d.date)).toEqual([MON, ...[...D].reverse()]);
     const tue = l.days.find((d) => d.date === D[1])!;
     expect(tue).toMatchObject({ weekKey: WK, bells: 7, together: false });
-    expect(tue.people.A).toEqual({ date: D[1], bells: 3, met: { pear: true, peach: true, cherry: true, apple: false } });
+    expect(tue.people.A).toEqual({ date: D[1], bells: 3, met: { pear: true, peach: true, cherry: true, apple: false }, stretch: 0 });
     expect(l.days.find((d) => d.date === D[0])).toMatchObject({ bells: 10, together: true });
     expect(l.spends.map((x) => [x.spendId, x.item, x.bells])).toEqual([['s1', 'snack', 8]]);
   });
@@ -265,7 +265,10 @@ describe('the きろく ledger and the day', () => {
   it('a day: each person’s values, goals met and ベル, and ふたりでぜんぶ; a future day earns nothing', () => {
     const d = dayDetail(reduce(r), D[1], MON_AFTER);
     expect(d.together).toBe(false);
-    expect(d.people.A).toEqual({ bells: 3, met: { pear: true, peach: true, cherry: true, apple: false }, steps: null, exerciseMin: 60, move: { value: 700, goal: 600 }, standMin: 130 });
+    expect(d.people.A).toEqual({
+      bells: 3, met: { pear: true, peach: true, cherry: true, apple: false }, stretched: { pear: false, peach: false, cherry: false, apple: false }, stretch: 0,
+      rings: { pear: 1, peach: 1, cherry: 1, apple: 0 }, steps: null, exerciseMin: 60, move: { value: 700, goal: 600 }, standMin: 130
+    });
     expect(dayDetail(reduce(r), D[0], MON_AFTER).together).toBe(true);
     const future = dayDetail(reduce(r), D[6], ms(D[2], '12:00'));
     expect(future.people.A.bells).toBe(0);
@@ -287,7 +290,7 @@ describe('the Move goal in force: per person, from the day it is set, never re-p
     const r = plus(kcal, { events: [goal(jst(D[2], '07:00'), 'A', 400)] });
     expect(pears(r, MON_AFTER)).toEqual([[0, 600], [0, 600], [1, 400], [1, 400], [1, 400], [1, 400], [1, 400]]);
     expect(buildWeekView(reduce(r), 'A', ms(D[1], '23:00')).people.A.moveGoal).toBe(600); // Tuesday: still the old goal
-    expect(buildWeekView(reduce(r), 'A', ms(D[2], '12:00')).people.A.rings.pear).toEqual({ today: 450, goal: 400, met: true });
+    expect(buildWeekView(reduce(r), 'A', ms(D[2], '12:00')).people.A.rings.pear).toEqual({ today: 450, goal: 400, met: true, stretched: false });
     expect(buildWeekView(reduce(r), 'B', ms(D[2], '12:00')).people.B.moveGoal).toBe(400); // B's own default
   });
 
@@ -299,5 +302,58 @@ describe('the Move goal in force: per person, from the day it is set, never re-p
   it('a change after the week never re-prices it; one partner’s goal never moves the other’s', () => {
     const r = plus(kcal, { events: [goal(jst(MON, '08:00'), 'A', 400), goal(jst(D[0], '08:00'), 'B', 1000)] });
     expect(pears(r, MON_AFTER)).toEqual(D.map(() => [0, 600]));
+  });
+});
+
+describe('がんばり: +1 per goal at 1.5×, at most +2 a person a day, in the wallet, the ribbon and きろく', () => {
+  /** A's day: every goal met, these metrics raised to (at least) 1.5×. */
+  const big = (at: string, d: string, over: Partial<Record<MetricRow[3], number>>): MetricRow[] =>
+    allFour(at, 'A', d).map((m) => (over[m[3]] !== undefined ? metric(at, 'A', d, m[3], over[m[3]]!) : m));
+
+  it('today: the stretched fruits, +2 on their rings, the day and the wallet; ふたりでぜんぶ unchanged', () => {
+    const r = perfectWeek();
+    r.metrics.push(...big(jst(D[2], '22:30'), D[2], { steps: 12000, move_kcal: 900 }));
+    const v = buildWeekView(reduce(r), 'A', ms(D[2], '23:00'));
+    expect(v.people.A.today).toEqual({ bells: 6, rings: { pear: 2, peach: 1, cherry: 1, apple: 2 } });
+    expect(v.people.A.rings.apple).toEqual({ today: 12000, goal: 8000, met: true, stretched: true });
+    expect(v.people.A.rings.peach.stretched).toBe(false);
+    expect(v.together).toEqual({ met: true, left: 0 });
+    expect(v.wallet.today).toBe(6 + 4 + 2); // the ribbon: both people's ベル with がんばり, + ふたりでぜんぶ
+    expect(v.wallet.balance).toBe(3 * 10 + 2);
+    expect(v.people.A.weekBells).toBe(3 * 4 + 2);
+  });
+
+  it('three or four stretched: all reached, +2 paid (the first fruits in ring order)', () => {
+    const r = perfectWeek();
+    r.metrics.push(...big(jst(D[0], '22:30'), D[0], { steps: 15000, exercise_min: 95, stand_min: 200 }));
+    const v = buildWeekView(reduce(r), 'A', ms(D[0], '23:00'));
+    expect(['pear', 'peach', 'cherry', 'apple'].map((f) => v.people.A.rings[f as 'pear'].stretched)).toEqual([false, true, true, true]);
+    expect(v.people.A.today).toEqual({ bells: 6, rings: { pear: 1, peach: 2, cherry: 2, apple: 1 } });
+  });
+
+  it('the ledger and the day show each person\'s がんばり; the totals include it', () => {
+    const r = perfectWeek();
+    r.metrics.push(...big(jst(D[1], '22:30'), D[1], { steps: 12000, move_kcal: 1000, exercise_min: 90 }));
+    const l = bellsLedger(reduce(r), MON_AFTER);
+    const tue = l.days.find((d) => d.date === D[1])!;
+    expect([tue.people.A.stretch, tue.people.B.stretch, tue.people.A.bells, tue.bells]).toEqual([2, 0, 6, 12]);
+    expect(l.earned).toBe(70 + 2);
+    const dd = dayDetail(reduce(r), D[1], MON_AFTER).people.A;
+    expect(dd).toMatchObject({ bells: 6, stretch: 2, stretched: { pear: true, peach: true, cherry: false, apple: true }, rings: { pear: 2, peach: 2, cherry: 1, apple: 1 } });
+  });
+
+  it('a locked week\'s がんばり reads its values as of the lock: a later, higher sync never adds it', () => {
+    const early = plus(perfectWeek(), { metrics: big(jst(D[3], '22:30'), D[3], { steps: 12500 }) });
+    // Friday at 1.5×, stamped Wednesday 19:00 JST: after the week locked at 04:00
+    const late = plus(early, { metrics: big('2026-11-25T10:00:00.000Z', D[4], { steps: 13000, move_kcal: 950 }) });
+    expect(walletAt(reduce(early), LOCKED).wallet.earned).toBe(71);
+    expect(walletAt(reduce(late), LOCKED).wallet.earned).toBe(71);
+    expect(weekBells(reduce(late), WK, LOCKED).A.days.map((d) => d.stretch)).toEqual([0, 0, 0, 1, 0, 0, 0]);
+  });
+
+  it('a stretch synced before the lock counts', () => {
+    const r = plus(perfectWeek(), { metrics: big('2026-11-24T10:00:00.000Z', D[4], { steps: 13000, move_kcal: 950 }) });
+    expect(weekBells(reduce(r), WK, LOCKED).A.days[4].stretch).toBe(2);
+    expect(walletAt(reduce(r), LOCKED).wallet.earned).toBe(72);
   });
 });
