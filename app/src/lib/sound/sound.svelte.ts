@@ -161,7 +161,7 @@ function nowPlaying(title: string | null): void {
   }
   const name = title.replace(/^♪\s*/, '');
   if (ms.metadata?.title !== name && typeof MediaMetadata === 'function') {
-    ms.metadata = new MediaMetadata({ title: name, artist: t('app.name'), artwork: [{ src: asset('icons/icon-512.png'), sizes: '512x512', type: 'image/png' }] });
+    ms.metadata = new MediaMetadata({ title: name, artist: t('app.name'), artwork: [{ src: asset('icons/icon-512.webp'), sizes: '512x512', type: 'image/webp' }] });
   }
   ms.playbackState = document.hidden ? 'paused' : 'playing';
 }
