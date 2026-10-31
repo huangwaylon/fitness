@@ -24,11 +24,16 @@ After any change to `app/gas/**` or the code it imports:
 1. `cd app && npm run gas:build`. It rewrites `app/apps-script/Code.js` and prints the **build** (12 hex: a hash of
    the bundle, also line 3 of `Code.js`). `npx vitest run` fails if the committed `Code.js` is stale.
 2. Commit and push.
-3. Paste the new `Code.js` into the script editor's `Code.gs` (or `npx @google/clasp push` from `app/apps-script/`) and save.
-4. **Deploy → Manage deployments** → pencil on the existing deployment → **Version: New version** → **Deploy**.
-   Saving alone changes nothing (a deployment is pinned to a version). **Never** *New deployment*: it makes a new
-   `/exec` URL that nothing calls.
-5. Check (§3): `health` must answer the new build.
+3. `cd app && npm run gas:deploy`. It refuses a stale `Code.js`, then pushes it, cuts a version, points the existing
+   deployment at it and waits until `health` answers the new build. Once per machine: `npx @google/clasp login`
+   (the Island Fund account; the Apps Script API on at script.google.com/home/usersettings) and
+   `app/apps-script/.clasp.json` (gitignored: the repo is public) with
+   `{"scriptId":"<Project Settings>","rootDir":".","deploymentId":"<the /exec one, Deploy → Manage deployments>"}`.
+
+By hand instead: paste `Code.js` into the editor's `Code.gs` and save, then **Deploy → Manage deployments** → pencil on
+the existing deployment → **Version: New version** → **Deploy** (saving alone changes nothing: a deployment is pinned
+to a version), then check `health` (§3). **Never** *New deployment*: it makes a new `/exec` URL that nothing calls. A
+change that needs a new OAuth scope also needs the editor once (Google asks you to authorize it).
 
 ## 3. Check the backend
 ```sh

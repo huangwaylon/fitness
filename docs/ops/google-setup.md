@@ -32,7 +32,8 @@ the wrong account when several are signed in).
 
 Optional, with clasp instead of pasting (not `clasp clone`, which overwrites the built file): `npx @google/clasp login`,
 create `app/apps-script/.clasp.json` (gitignored) with `{"scriptId":"<Script ID from Project Settings>","rootDir":"."}`,
-then `npx @google/clasp push` from `app/apps-script/`.
+then `npx @google/clasp push` from `app/apps-script/`. Later redeploys: `npm run gas:deploy`
+([runbook §2](runbook.md#2-redeploy-the-apps-script)).
 
 ## 3. Add the two keys
 ```sh
