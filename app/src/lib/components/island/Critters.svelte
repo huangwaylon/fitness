@@ -407,6 +407,7 @@
     const want = q.get('critter');
     if (!want || !(import.meta.env.DEV || q.has('demo'))) return;
     const go = () => {
+      if (reducedMotion()) return;
       if (!enabled()) return later(go, 300);
       if (want === 'fish') spawnFish(false);
       else if (want in BUGS) spawnBug(want as BugId, undefined, false);
