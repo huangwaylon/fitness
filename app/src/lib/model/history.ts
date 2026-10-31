@@ -47,4 +47,4 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
 
 // ---------- ベル ledger: model/bells.ts ----------
 
-export { bellsLedger, type BellsLedger, type LedgerDay, type LedgerSpend } from './bells.ts';
+export { bellsLedger, type BellsLedger, type LedgerDay } from './bells.ts';

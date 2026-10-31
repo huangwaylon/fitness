@@ -141,6 +141,10 @@ from the same rows (`model/health.ts`), no backend change, its code loaded with 
 - **No export:** no copy/CSV of a summary (user decision); the trainer reads the screen.
 Why: the trainer needs exact, comparable numbers over weeks to years, without leaving the game's look.
 
+### きろく is earnings only
+The ベル ledger shows what was earned (weeks, days, ふたりでぜんぶ); the buys and their erase live only on ごほうび's
+かいもの きろく (user decision, 2026-10-31). Why: one home per datum.
+
 ## App and hosting
 
 ### PWA on GitHub Pages

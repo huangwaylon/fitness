@@ -84,8 +84,9 @@ open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on
 
 きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, the panel's first tab, in two sections:
 
-- **ベル:** everything earned, then by week (its ベル): the buys (any → とりけす) and one line per day under the two
-  avatars: each person's four fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day).
+- **ベル:** everything earned, then by week (its ベル earned: earnings only; the buys live on ごほうび's かいもの きろく)
+  one line per day under the two avatars: each person's four fruits (bright = met), a star on a ふたりでぜんぶ day, the
+  day's ベル (tap → the day).
 - **目標:** the Move and weight goals (two avatar pills pick whose, either person sets either person's). The weight
   trend is in [けんこう](#kenkou).
 - **Day:** ふたりでぜんぶ (+2 or —), then me and the partner: the day's ベル and, per goal, its value (green when met)

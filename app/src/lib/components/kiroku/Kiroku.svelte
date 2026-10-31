@@ -1,29 +1,27 @@
 <script lang="ts">
   // きろく (records, design.md "Kiroku"), the island panel's first tab: at its top the ベル ledger (this week by day,
   // then the past weeks) and then 目標 (the Move and weight goals; the weight trend lives in けんこう);
-  // a day, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
+  // a day or a goal push a level (`level` = how deep, bindable:
   // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
-  // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on a buy (either of us, any buy).
+  // truth): the only inputs are the two goals (either person's: the goal screen names whose). The buys are on ごほうび.
   // Everything is computed from the store's reduced model, lazily for the opened day.
   import { tick } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { MOVE_GOAL } from '#lib/config/rules.ts';
   import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { setGoalWeight, setMoveGoal, undoBanner, undoSpend } from '#lib/store/actions.ts';
+  import { setGoalWeight, setMoveGoal } from '#lib/store/actions.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import ChoiceList from '../ui/ChoiceList.svelte';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
   import ValueInput from './ValueInput.svelte';
   import GoalCard from './GoalCard.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import { parseKcalInput, parseKgInput } from './fmt.ts';
-  import { t, formatBells, formatNum } from '#lib/i18n/index.ts';
+  import { t, formatNum } from '#lib/i18n/index.ts';
 
   type Screen =
     | { k: 'day'; date: string }
-    | { k: 'void'; id: string; label: string; bells: number }
     | { k: 'goal'; p: PersonId }
     | { k: 'moveGoal'; p: PersonId };
 
@@ -85,14 +83,6 @@
     else root?.closest('dialog')?.focus();
   }
 
-  /** なかったことに asks first (an NH choice list), then voids with もとに戻す on the banner. */
-  function askVoid(id: string, label: string, bells: number) {
-    void go({ k: 'void', id, label, bells });
-  }
-  function voidIt(id: string, label: string) {
-    back();
-    undoBanner(t('kiroku.spendVoided', { label }), undoSpend(id));
-  }
   function saveGoal(p: PersonId, kg: number | null) {
     back();
     void refocus('weight-goal');
@@ -117,7 +107,7 @@
     {#if !top}
       {#if money}
         <h2 class="sec">{t('panel.bells')}</h2>
-        <BellsLog ledger={money} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
+        <BellsLog ledger={money} {order} {names} {villagers} onday={(date) => go({ k: 'day', date })} />
       {/if}
       <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
         onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
@@ -134,18 +124,6 @@
       {@render who(s.p)}
       <ValueInput label={t('goal.move')} sub={t('goal.moveNote')} old={view.people[s.p].moveGoal} unit="kcal" parse={parseKcalInput}
         hint={t('goal.moveRange', { min: MOVE_GOAL.min, max: formatNum(MOVE_GOAL.max) })} onok={(kcal) => saveMoveGoal(s.p, kcal)} oncancel={back} />
-    {:else if top.k === 'void'}
-      {@const s = top}
-      <section class="card ask">
-        <p>{t('kiroku.voidAsk', { label: s.label, bells: formatBells(s.bells) })}</p>
-        <small>{t('kiroku.voidRefund')}</small>
-      </section>
-      <div class="wchoices">
-        <ChoiceList choices={[
-          { label: t('kiroku.voidYes'), run: () => voidIt(s.id, s.label) },
-          { label: t('kiroku.cancel'), run: back, cancel: true }
-        ]} />
-      </div>
     {/if}
   {/if}
   </div>
@@ -162,8 +140,4 @@
   .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .lvl { animation: none; } }
-  .wchoices { display: flex; justify-content: flex-end; padding-top: 8px; }
-  .ask { padding: 16px; display: grid; gap: 6px; }
-  .ask small { font-size: var(--fs-body); font-weight: 700; color: var(--text-soft); }
-  .ask p { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.4; }
 </style>
