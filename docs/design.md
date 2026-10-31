@@ -220,15 +220,44 @@ idle life (`data-covered`).
 
 ### Scene interactions
 
-`island/SceneTaps.svelte`, `island/sceneTaps.ts`, `e2e/scenery.spec.ts`. Every part of the island answers a tap
-softly and counts for nothing: ≤ 1 s, no state, no navigation, no writes; one `pointerdown` listener; ≤ 4 flourishes at
-once; taps on controls are ignored; nothing while covered or hidden; reduced motion gives a 450 ms glow; decorative and
-`aria-hidden`.
+`island/SceneTaps.svelte`, `island/sceneTaps.ts`, `island/Critters.svelte`, `island/critters.ts`, `e2e/scenery.spec.ts`,
+`e2e/critters.spec.ts`. Every part of the island answers a tap softly and counts for nothing: no ベル, no state, no
+navigation, no writes; one `pointerdown` listener; ≤ 4 flourishes at once; taps on controls are ignored; nothing while
+covered or hidden; reduced motion gives a 450 ms glow and no critters; decorative, `aria-hidden`, pointer-only.
 
-A bush jiggles and sheds seasonal leaves; a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on summer
-nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter);
-a cloud squishes; the sun glints; the moon sends a shooting star; the night sky twinkles (1 in 4 a shooting star); a clear night sends a
-shooting star every 45–120 s; the balloon hops. Each plays its `scene-<kind>` world cue ([Cues](#cues)).
+**Scenery** (≤ 1 s each): a bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out: a moth after dark, else a
+butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on
+summer nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in
+winter); a cloud squishes; the sun glints; the moon sends a shooting star; the night sky twinkles (1 in 4 a shooting
+star); a clear night sends a shooting star every 45–120 s.
+
+**Balloon** (NH's balloon present): a tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn
+in front of the hedge, behind the trees and the jar, bounces, sparkles and fades (off the island's corner it drops into
+the sea). No caption. Short skies fly a smaller balloon under the ribbon, or none.
+
+**Critters** (NH, northern hemisphere, Tokyo clock): every 1–3 minutes of on-screen time (first after 30–90 s; the
+countdown holds while covered or hidden, and the critters leave) a fish shadow or a bug comes by; ≤ 1 of each.
+
+- **Fishing:** a shadow (NH sizes 1–6) dawdles in the sea off the beach, left or right of the しまフォン button. A tap
+  near it casts a red-and-white bobber on a line from the beach; within 90u the fish swims up, nibbles 0–3 times (a
+  bob) and bites (the bobber goes under): a tap in the next 1 s catches it, a tap any earlier or none in time and it
+  flees; a cast it ignores is reeled back by the next tap. Mostly sea bass (all year); horse mackerel, anchovy (4–21h),
+  olive flounder, red snapper all year; dab Oct–Apr, squid Dec–Aug, sea butterfly Dec–Mar, puffer fish Nov–Feb, barred
+  knifejaw Mar–Nov; 1 in 14 a boot, tire or can.
+- **Bugs:** common butterfly Sep–Jun, yellow Mar–Jun and Sep–Oct, tiger Mar–Sep (4–19h) over the flower beds; darner
+  dragonfly Apr–Oct (8–17h), red dragonfly Sep–Oct (8–19h) darting over the hedge; fireflies on summer nights (19–4h);
+  bell cricket Sep–Oct and cricket Sep–Nov (17–8h) hopping in the grass; no wasps, nothing that chases. A tap on one
+  swings the net (caught); a tap within 80px startles it away. Bugs keep to spots clear of every control.
+- **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's line:
+  「〇〇を つりあげた！」 / 「〇〇を つかまえた！」, the sea bass 「…まあまあ かな？」 ("it's at least a C+!"), junk
+  「つれた！ …と思ったら、ながぐつだった」. It sits centred above (else below) the catch, inside the safe area and clear of
+  every control, popup and しずえ's box; with no room it's skipped. 2.6 s.
+
+**Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
+wing or fin loop each while on screen; between visits one timer. Art loads on first need. Layers: sea life z 1 (under
+the tint), bugs `--z-leaf` (night `--z-taps`, so fireflies glow), the catch `--z-taps`, the present under `--z-tree`.
+Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1 s, never jingles; [Cues](#cues)).
+`?critter=fish|<bug id>` (dev or `?demo`) brings one on at once and keeps it until caught; `?balloon` floats one.
 
 ## Motion
 
