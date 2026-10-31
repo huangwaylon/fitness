@@ -19,8 +19,10 @@
     live: boolean;
     /** Say a line in the speech balloon (IslandScene's Talk). */
     say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; ondone?: () => void }) => void;
+    /** Snow lies on its roof (winter: snow on the ground, as on the trees and the hedge). */
+    snow?: boolean;
   }
-  let { live, say }: Props = $props();
+  let { live, say, snow = false }: Props = $props();
 
   /** Blathers' NH colour (the roster's), for his name tag. */
   const COLOUR = '#7D593C';
@@ -57,7 +59,16 @@
 
 <button type="button" class="museum" data-scenery style:left={u(MUSEUM.x)} style:top={u(MUSEUM.base)} style:--w={u(MUSEUM.w)} disabled={!live}
   data-sfx="self" aria-label={t('museum.label')} onclick={tap}>
-  <span class="art" bind:this={art}><OfficialArt key="deco/museum" width={u(MUSEUM.w)} /></span>
+  <span class="art" bind:this={art}>
+    <OfficialArt key="deco/museum" width={u(MUSEUM.w)} />
+    {#if snow}
+      <!-- snow on the pediment's slopes and its ledge, in the render's own units (360 × 197) -->
+      <svg class="snow" viewBox="0 0 360 197" aria-hidden="true" data-roof-snow>
+        <path d="M34 64 L180 0 L326 64 Q324 70 316 68 Q309 73 302 67 Q296 66 292 61 L180 11 L68 61 Q64 66 58 67 Q51 73 44 68 Q36 70 34 64 Z" />
+        <path d="M50 64 H310 Q312 70 304 70 Q296 74 288 70 H72 Q64 74 56 70 Q48 70 50 64 Z" />
+      </svg>
+    {/if}
+  </span>
 </button>
 
 <style>
@@ -72,4 +83,6 @@
   .art { display: block; filter: drop-shadow(1px 2px 1.5px rgba(70, 50, 25, .3)); transform-origin: 50% 100%; }
   .museum:active .art { transform: scale(.97, .98); }
   .art :global(.official) { max-width: none; }
+  .art { position: relative; }
+  .snow { position: absolute; inset: 0; width: 100%; height: auto; fill: #FAFCFF; filter: drop-shadow(0 1.5px 0 #C9D6E6); pointer-events: none; }
 </style>

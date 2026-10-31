@@ -284,7 +284,10 @@ flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · centre sta
 
 ### Particles and events
 
-≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Events (`eventsAt`): cherry blossom Apr 1–10, maple week
+≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Small seasonal
+touches: snow lies on the museum's roof while it lies on the ground (Dec 11 – Feb 24, with the trees and the hedge);
+petals float on the pond in cherry-blossom week and maple leaves in maple week (NH's petals and leaves on the water),
+drifting with one slow transform. Events (`eventsAt`): cherry blossom Apr 1–10, maple week
 Nov 16–25, Toy Day Dec 24, the balloon present; the fireworks keep their own schedule ([Fireworks](#fireworks)). Only
 `transform` and `opacity` animate; everything pauses while hidden (`data-paused`); a sheet also pauses particles and
 idle life (`data-covered`).
