@@ -24,7 +24,7 @@ const BASE_POIS: Record<string, PoiKind> = {
   treeA: 'tree', treeB: 'tree', outA: 'tree', outB: 'tree', backA: 'spot', backB: 'spot', rock: 'rock',
   shoreL: 'shore', shoreC: 'shore', shoreR: 'shore', centreStage: 'stage'
 };
-const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'backC', 'backOutA', 'backOutB', 'rampTop', ...Object.keys(BASE_POIS)]);
+const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'backC', 'backOutA', 'backOutB', 'rampTop', 'pondFoot', 'pondTurn', 'pondLane', 'pondTop', ...Object.keys(BASE_POIS)]);
 
 /** Where a villager may wander now. With a visitor on the island, centre stage (a visitor's spot) and the shore in
  *  front of it are left to them. */

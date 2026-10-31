@@ -77,10 +77,12 @@ interface ApproachOpts {
   linger?: number;
   /** How far from the target it may stand (u), nearest first (default REACH): a watering can reaches across a bed. */
   reach?: readonly number[];
+  /** Somewhere set apart (the pond's back bank): the walk may take a little longer (walkGraph ACTION_MS.far). */
+  far?: boolean;
 }
 
 /** The best spot to act on (tx, ty) from `from` and the way there: the nearest clear spot by walking distance. */
-export function plan(g: WalkGeo, from: Pt, tx: number, ty: number, clear: (x: number, y: number) => boolean, spot?: Pt, reach: readonly number[] = REACH, capped = true): { pts: Pt[]; ms: number } | null {
+export function plan(g: WalkGeo, from: Pt, tx: number, ty: number, clear: (x: number, y: number) => boolean, spot?: Pt, reach: readonly number[] = REACH, capped = true, far = false): { pts: Pt[]; ms: number } | null {
   let best: { pts: Pt[]; len: number } | null = null;
   // the nearest by walking of the close spots; the further ring only when none of those will do
   for (const ring of spot ? [[spot]] : reach.map((r) => actionSpots(g, tx, ty, from, [r]))) {
@@ -94,7 +96,7 @@ export function plan(g: WalkGeo, from: Pt, tx: number, ty: number, clear: (x: nu
     if (best) break;
   }
   if (!best) return null;
-  const ms = capped ? actionMs(best.len) : (best.len / SPEED.action) * 1000;
+  const ms = capped ? actionMs(best.len, far) : (best.len / SPEED.action) * 1000;
   return ms === null ? null : { pts: best.pts, ms };
 }
 
@@ -103,7 +105,7 @@ export function approach(tx: number, ty: number, o: ApproachOpts = {}): Approach
   const c = ctx, me = actors.mine;
   if (!c || !c.enabled() || me.asleep) return { ms: 0, walked: false };
   const from = c.where('mine');
-  const p = plan(c.geo(), from, tx, ty, (x, y) => c.clear('mine', x, y), o.spot, o.reach);
+  const p = plan(c.geo(), from, tx, ty, (x, y) => c.clear('mine', x, y), o.spot, o.reach, true, o.far);
   if (!p) {
     // too far (or nowhere to stand): turn to it, and the action plays as it always did
     faceToward('mine', tx);

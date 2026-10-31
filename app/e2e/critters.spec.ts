@@ -80,6 +80,19 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y); // a cast beside the shadow, not on it
   await expect(page.locator('[data-bobber]')).toBeAttached();
   await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
+  // the 「！」: small (≤ 28px) and inside the screen; the line runs from the rod in my villager's hand
+  await page.waitForTimeout(350); // popped in (it overshoots a little on the way)
+  const bang = (await page.locator('[data-bite]').boundingBox())!;
+  expect(bang.width).toBeLessThanOrEqual(28.5);
+  expect(bang.x).toBeGreaterThanOrEqual(7.5);
+  expect(bang.x + bang.width).toBeLessThanOrEqual(390 - 7.5);
+  // (when it walked down to the beach: a shadow off the far end may be too far to walk to)
+  if (await page.locator('[data-actor="mine"] [data-tool="rod"]').count()) {
+    const tip = (await page.locator('[data-actor="mine"] [data-tool="rod"]').boundingBox())!;
+    const start = await page.locator('.line path').evaluate((p: SVGPathElement) => { const m = p.getScreenCTM()!; const q = p.getPointAtLength(0); return new DOMPoint(q.x, q.y).matrixTransform(m); });
+    expect(start.x).toBeGreaterThan(tip.x - 4), expect(start.x).toBeLessThan(tip.x + tip.width + 4);
+    expect(start.y).toBeGreaterThan(tip.y - 4), expect(start.y).toBeLessThan(tip.y + tip.height + 4);
+  }
   await expect(page.locator('[data-bobber="bite"]')).toBeAttached();
   await page.waitForTimeout(400); // a human's reaction
   await seaTap(page);

@@ -64,11 +64,15 @@
     item: FishId | PondFishId | JunkId; water: Water; size: number; shape?: 'narrow' | 'fin'; x: number; y: number; ms: number; flip: boolean; box: Box;
     /** Spots in its water a control covers (the pond under a canopy on a small phone): it never swims there. */
     keep: Box[]; gone: boolean; dash: boolean;
+    /** Closing in on a bobber in short darts (NH): each one quick off the mark, easing in. */
+    spurt?: boolean;
   }
   interface Cast {
     /** The shadow it was cast to (its water). */
     fish: Fish;
     x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
+    /** Where the 「！」 shows (u): over the bobber, kept on screen. */
+    bx?: number;
     /** Bumped by each new plan (and a hesitation): the old plan's timers check it and stand down. */
     gen: number;
     /** A first tap before the bite made the fish hesitate: the next early one scares it off. */
@@ -144,8 +148,9 @@
     const x0 = g.left + g.w * f0, x1 = g.left + g.w * f1;
     const news = document.querySelector('.news')?.getBoundingClientRect();
     const floor = Math.min(g.bottom - 16 * g.k, news?.height ? (news.top - g.r.top) * g.k - 6 : Infinity);
-    const y0 = Math.max(shoreY(x0), shoreY(x1)) + 10;
-    const y1 = Math.min(y0 + 44, floor);
+    // deep enough water: well past the foam (the bobber never lands in it), as far out as the screen allows
+    const y0 = Math.max(shoreY(x0), shoreY(x1)) + 22;
+    const y1 = Math.min(y0 + 70, floor);
     if (y1 - y0 >= 12) return { x0, x1, y0, y1 };
     // the side sea: beyond the sand's straight edge, alongside the lawn
     const [sx0, sx1] = side < 0 ? [g.left + 6 * g.k, SAND.x0 - 8] : [SAND.x1 + 8, g.right - 6 * g.k];
@@ -272,6 +277,7 @@
   function swim(f: Fish) {
     if (fishes[f.water] !== f || f.gone) return;
     if (cast?.fish !== f) {
+      f.spurt = false;
       const p = freeIn(f.box, f.keep) ?? f;
       f.ms = clamp(Math.hypot(p.x - f.x, p.y - f.y) * (f.water === 'pond' ? 160 : 110), 2500, 6000);
       f.flip = p.x > f.x;
@@ -305,35 +311,55 @@
   function castAt(f: Fish, x: number, y: number) {
     let to: Throw, spot: readonly [number, number];
     const o = pond();
+    let far = false;
     if (f.water === 'pond' && o) {
-      // the angler stands on the pond's front rim, a little toward the island's middle
+      // the line starts at the pond's front rim if my villager can't get there; it walks round to the back bank behind
+      // the water (the front rim is under the left tree's canopy) and fishes from there (walkGraph's pondside)
       to = pondCast(o, x, y);
-      spot = [Math.round(to.sx), Math.round(to.sy + 2)];
+      spot = [Math.round(clamp(to.x, o.cx - o.rx + 8, o.cx + 7)), 32]; // (further right it would stand in front of the museum)
+      far = true;
     } else {
       // the angler stands on the beach: in front, a little toward the middle; beside the island, on its sand edge
       const front = y > shoreY(x);
       const side = x < 195 ? 1 : -1;
       const [sx, sy] = front ? [x + side * 10, shoreY(x + side * 10) - 4] : [x < 195 ? SAND.x0 + 6 : SAND.x1 - 6, y - 8];
-      to = { x: front ? x : x < 195 ? Math.min(x, SAND.x0 - 6) : Math.max(x, SAND.x1 + 6), y: front ? Math.max(y, shoreY(x) + 8) : y, sx, sy };
+      to = { x: front ? x : x < 195 ? Math.min(x, SAND.x0 - 6) : Math.max(x, SAND.x1 + 6), y: front ? Math.max(y, shoreY(x) + 16) : y, sx, sy };
       spot = [Math.round(clamp(sx, BEACH.x0 + 4, BEACH.x1 - 4)), Math.round(Math.min(sy + 2, BEACH.y1 - 1))];
     }
     // my villager walks to that spot (avatar.ts), rod in hand, and casts from there
     casting = true;
-    const { ms } = approach(to.x, to.y, { spot, tool: 'rod', toolMs: 20_000, linger: 20_000 });
+    const { ms } = approach(to.x, to.y, { spot, tool: 'rod', toolMs: 20_000, linger: 20_000, far });
     if (ms) later(() => throwLine(f, to), ms);
     else throwLine(f, to);
   }
   /** Where the bobber lands and where the line starts (u). */
   interface Throw { x: number; y: number; sx: number; sy: number }
+  /** The tip of the rod in my villager's hand (u), measured (it mirrors with the facing and swings as it casts), or null
+   *  when the rod isn't out (no walk: the line starts at the water's edge instead). */
+  function rodTip(): { x: number; y: number } | null {
+    const g = geo(), path = scene?.querySelector<SVGPathElement>('[data-actor="mine"] [data-tool="rod"] .handle');
+    const m = path?.getScreenCTM();
+    if (!g || !m) return null;
+    const p = new DOMPoint(30, -34).matrixTransform(m);
+    return { x: (p.x - g.r.left) * g.k, y: (p.y - g.r.top) * g.k };
+  }
+  /** The line runs from the rod's tip (measured once the rod is out and again once its cast swing is done). */
+  function lineFromRod(c: Cast) {
+    const tip = rodTip();
+    if (tip && cast === c) Object.assign(c, { sx: tip.x, sy: tip.y });
+  }
   function throwLine(f: Fish, to: Throw) {
     casting = false;
     if (fishes[f.water] !== f || f.gone) return putRodAway();
     cast = { fish: f, ...to, landed: false, t0: 0, plan: null, under: false, rings: 0, gen: 0, hesitated: false };
     sceneSfx('cast');
     sceneSfx('plop');
+    const thrown = cast;
+    later(() => lineFromRod(thrown), 560);
     later(() => {
       const c = cast;
       if (!c) return;
+      lineFromRod(c);
       c.landed = true;
       c.t0 = performance.now();
       c.rings++;
@@ -353,16 +379,31 @@
     const d = Math.hypot(f.x - c.x, f.y - c.y) || 1;
     const ux = (c.x - f.x) / d, uy = (c.y - f.y) / d;
     const len = sizeU(f) * 0.5;
-    Object.assign(f, { ms: at(plan.arrive), flip: c.x > f.x, x: c.x - ux * len, y: c.y - uy * len * 0.6 });
+    // NH: the shadow turns to the bobber, then closes in over 2–3 short darts (450–700 ms each, a long one first) with
+    // pauses between them (300–600 ms), nose to the bobber by plan.arrive (all scaled down if that's sooner)
+    const from = fishNow(f) ?? f, end = { x: c.x - ux * len, y: c.y - uy * len * 0.6 };
+    Object.assign(f, { ms: 0, x: from.x, y: from.y, flip: c.x > from.x, spurt: true });
+    const n = d > 60 ? 3 : 2, share = n === 3 ? [0.5, 0.82, 1] : [0.62, 1];
+    const moves = share.map(() => between(450, 700)), pauses = share.slice(1).map(() => between(300, 600));
+    const total = [...moves, ...pauses].reduce((a, b) => a + b, 0), avail = at(plan.arrive);
+    const k = Math.min(1, avail / total);
+    let t = Math.max(0, avail - total * k); // a beat to turn and look first
+    moves.forEach((m, i) => {
+      later(() => live() && Object.assign(f, { ms: m * k, x: from.x + (end.x - from.x) * share[i], y: from.y + (end.y - from.y) * share[i] }), t);
+      t += (m + (pauses[i] ?? 0)) * k;
+    });
     for (const t of plan.nibbles)
       later(() => {
         if (!live()) return;
         c.rings++;
-        nibble();
+        nibble(f, c);
         sceneSfx('nibble');
       }, at(t));
     later(() => {
       if (!live()) return;
+      // NH's 「！」 (the phone's cue: NH has only the plunk) kept inside the screen, 8px from its sides
+      const g = geo(), half = g ? (14 + 8) * g.k : 0;
+      c.bx = g ? clamp(c.x, g.left + half, g.right - half) : c.x;
       c.under = true;
       c.rings++;
       sceneSfx('bite');
@@ -378,7 +419,13 @@
     return g && r ? { x: (r.left - g.r.left) * g.k, y: (r.top - g.r.top) * g.k } : null;
   }
   /** A nibble: the bobber twitches, a small gentle wiggle (nothing like the bite's plunge). */
-  function nibble() {
+  function nibble(f?: Fish, c?: Cast) {
+    // the shadow's nose bumps the bobber (2u toward it and back), in step with the bobber's twitch
+    const fin = f && c ? fishEls[f.water]?.querySelector('.fin') : null;
+    if (fin && f && c) {
+      const dx = Math.sign(c.x - f.x) * 2;
+      fin.animate([{ translate: '-50% -50%' }, { translate: `calc(-50% + ${U(dx)}) -50%`, offset: 0.3 }, { translate: '-50% -50%' }], { duration: 380, easing: 'ease-out' });
+    }
     bobEl?.animate(
       [{ translate: '0 0', rotate: '0deg' }, { translate: `0 ${U(0.9)}`, rotate: '-9deg', offset: 0.25 },
         { translate: `0 ${U(0.2)}`, rotate: '7deg', offset: 0.55 }, { translate: '0 0', rotate: '0deg' }],
@@ -859,22 +906,20 @@
   {#each WATERS as w (w)}
     {@const f = fishes[w]}
     {#if f}
-      <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {w}" class:gone={f.gone} class:dash={f.dash} data-critter={w === 'sea' ? 'fish' : 'pond'}
+      <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {w}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt} data-critter={w === 'sea' ? 'fish' : 'pond'}
         bind:this={fishEls[w]} style:translate="{U(f.x)} {U(f.y)}" style:transition-duration="{f.ms}ms" style:--w={U(sizeU(f))}>
         <i class="fin" class:flip={f.flip}>{@render teardrop()}</i>
       </span>
     {/if}
   {/each}
   {#if cast}
-    <svg class="line" class:landed={cast.landed} viewBox="0 0 390 360" preserveAspectRatio="none">
-      <path d="M{cast.sx} {cast.sy} Q{(cast.sx + cast.x) / 2} {Math.min(cast.sy, cast.y) - 12} {cast.x} {cast.y - 1.5}" />
-    </svg>
     <span class="mover bobber" data-bobber={cast.under ? 'bite' : cast.landed ? 'wait' : 'cast'} class:under={cast.under}
       style:translate="{U(cast.x)} {U(cast.y)}" style:--fx={U(cast.sx - cast.x)} style:--fy={U(cast.sy - cast.y)}>
       {#key cast.rings}{#if cast.rings}<i class="ripple" class:big={cast.under}></i>{/if}{/key}
       {#if cast.under}
         <i class="ripple big late"></i>
-        <span class="splash">{#each [-62, -30, 0, 30, 62] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+        <!-- the bite's splash: seven drops, 14u high -->
+        <span class="splash big">{#each [-75, -50, -25, 0, 25, 50, 75] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
       {/if}
       <span class="float" bind:this={bobEl}><i class="ball"></i></span>
     </span>
@@ -896,6 +941,13 @@
 </div>
 
 <div class="held">
+  {#if cast}
+    <!-- over the land (the angler stands on it), under the 「！」 -->
+    <svg class="line" class:landed={cast.landed} viewBox="0 0 390 360" preserveAspectRatio="none">
+      <!-- from the rod's tip to the bobber, slack: it sags 8u in the middle -->
+      <path d="M{cast.sx} {cast.sy} Q{(cast.sx + cast.x) / 2} {(cast.sy + cast.y) / 2 + 8} {cast.x} {cast.y - 1.5}" />
+    </svg>
+  {/if}
   {#if dig}
     {#key dig.n}
       <!-- the mound dug open: clods of earth fly up -->
@@ -904,7 +956,7 @@
   {/if}
   {#if cast?.under}
     <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
-    <span class="mover" style:translate="{U(cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
+    <span class="mover" style:translate="{U(cast.bx ?? cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
   {/if}
   {#if net}
     {#key net.n}
@@ -938,6 +990,7 @@
   /* fish shadow: NH's dark oval with a tail (head to the left unless flipped), fading in, a slow tail wag */
   .shadow { animation: fade-in 1.4s ease-out both; }
   .shadow.gone { opacity: 0; transition-duration: 1.1s, 1.1s; }
+  .shadow.spurt { transition-timing-function: cubic-bezier(.2, .7, .3, 1); }
   .shadow.dash { transition-timing-function: cubic-bezier(.2, .7, .4, 1); transition-duration: .65s, .6s; }
   .fin {
     display: block; left: 0; top: 0; width: var(--w); height: calc(var(--w) * .42); translate: -50% -50%;
@@ -971,7 +1024,7 @@
   /* the line: a thin arc from the beach to the bobber, drawn once the bobber lands */
   .line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; opacity: 0; transition: opacity .25s; }
   .line.landed { opacity: 1; }
-  .line path { fill: none; stroke: rgba(255, 255, 255, .8); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+  .line path { fill: none; stroke: rgba(255, 255, 255, .6); stroke-width: 1px; vector-effect: non-scaling-stroke; }
   /* the bobber: NH's red-and-white float, arcing in from the beach, then bobbing; under on the bite */
   .bobber .float { left: 0; top: 0; transform-origin: 50% 100%; animation: cast .3s cubic-bezier(.3, .2, .6, 1) both; }
   @keyframes cast {
@@ -994,6 +1047,8 @@
   }
   .ripple.late { animation-delay: .25s; }
   .splash { left: 0; top: 0; }
+  .splash.big i { animation: drop-big .6s cubic-bezier(.2, .7, .4, 1) both; }
+  @keyframes drop-big { from { transform: translateY(0) scale(.4); opacity: 1; } 60% { opacity: 1; } to { transform: translateY(calc(-14 * var(--su))) scale(.7); opacity: 0; } }
   .splash i {
     position: absolute; left: calc(-1.3 * var(--su)); top: calc(-1.6 * var(--su)); width: calc(2.6 * var(--su)); height: calc(3.6 * var(--su));
     border-radius: 50% 50% 45% 45%; background: rgba(255, 255, 255, .92); rotate: var(--a); transform-origin: 50% 100%;
@@ -1006,9 +1061,9 @@
   }
   .bang {
     left: 0; top: 0; translate: -50% -100%; margin-top: calc(-12 * var(--su));
-    display: grid; place-items: center; width: clamp(30px, calc(34 * var(--su)), 38px); aspect-ratio: 1; border-radius: 50%;
-    background: #FFFDF6; box-shadow: 0 3px 0 rgba(150, 110, 70, .35), 0 0 0 2px #F2484A inset;
-    font: 900 clamp(20px, calc(23 * var(--su)), 26px) / 1 var(--font-ui); color: #E8383A;
+    display: grid; place-items: center; width: clamp(26px, calc(27 * var(--su)), 28px); aspect-ratio: 1; border-radius: 50%;
+    background: #FFFDF6; box-shadow: 0 2px 0 rgba(150, 110, 70, .35), 0 0 0 2px #F2484A inset;
+    font: 900 clamp(16px, calc(17 * var(--su)), 18px) / 1 var(--font-ui); color: #E8383A;
     transform-origin: 50% 100%; animation: bang .32s cubic-bezier(.3, 1.6, .5, 1) both;
   }
   @keyframes bang { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }

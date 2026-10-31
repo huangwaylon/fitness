@@ -46,6 +46,12 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     // a cast beside the shadow, in the pond
     await page.mouse.click(f.x + (f.x < p.x ? 8 : -8), f.y);
     await expect(page.locator('[data-bobber]')).toBeAttached();
+    // my villager walks round to the back bank behind the water (the front rim is under the canopy) and the line runs
+    // from the rod in its hand
+    const v = (await page.locator('[data-actor="mine"] .vil').boundingBox())!;
+    expect(v.y + v.height).toBeLessThan(p.y);
+    expect(Math.abs(v.x + v.width / 2 - p.x)).toBeLessThan(p.w / 2);
+    await expect(page.locator('[data-actor="mine"] [data-tool="rod"]')).toBeAttached();
     await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
     await page.waitForTimeout(400);
     await page.mouse.click(p.x, p.y); // any tap is the reel

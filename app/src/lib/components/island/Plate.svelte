@@ -4,7 +4,8 @@
   // (pager.ts): it types in, two lines a page, a ▼ bobs while a page follows; a tap finishes the page, turns it, and
   // on the last page closes it; left alone a page turns after 6 s and the last goes after a read's length. Measured
   // hidden, then placed as close above (else below) the source as it can, centred on it, inside the scene's safe area
-  // and clear of every control and popup (placement.ts); with no room anywhere it's skipped.
+  // and clear of every control and popup (placement.ts); when the nearest room is far from the catch (over NEAR_PX away),
+  // it sits low in the middle instead, like NH's text box; with no room anywhere it's skipped.
   //   <Plate {scene} x={u} y={u} art="critters/sea-bass" parts={[line, note]} ondone={…} />   (x, y: the source, stage u)
   // Used by the critters' catches and the beach finds; the parent keys it per catch and sits it in a layer at --z-taps.
   import { onMount, tick } from 'svelte';
@@ -30,6 +31,8 @@
   let pg = $state<PagerState>({ pages: paginate(parts), page: 0, shown: 0 });
   let el = $state<HTMLElement>();
   const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
+  /** Further than this from the catch (px) and the plate goes low in the middle instead (NH's box). */
+  const NEAR_PX = 150;
   const typedNow = $derived(split(pg));
   const typed = $derived(typedNow[0]), untyped = $derived(typedNow[1]);
 
@@ -64,7 +67,13 @@
     void tick().then(() => {
       const g = stageGeo(scene), plate = el?.querySelector('.catch-plate')?.getBoundingClientRect();
       if (!g || !plate || !scene) return;
-      const p = place(scene, plate.width, plate.height + 4, g.r.left + x / g.k, g.r.top + y / g.k); // + the plate's lip
+      const sx = g.r.left + x / g.k, sy = g.r.top + y / g.k, h = plate.height + 4; // + the plate's lip
+      let p = place(scene, plate.width, h, sx, sy);
+      if (!p || Math.abs(p.y - sy) > NEAR_PX) {
+        // NH's box: low in the middle of the screen (the lowest free spot above the bottom band)
+        const s = scene.getBoundingClientRect(), bottom = Math.min(s.bottom, document.querySelector('.below')?.getBoundingClientRect().top ?? s.bottom);
+        p = place(scene, plate.width, h, (s.left + s.right) / 2, bottom + h / 2 + 10) ?? p;
+      }
       if (!p) return ondone();
       const cx = (p.x - g.r.left) * g.k, cy = (p.y - g.r.top) * g.k;
       at = { x: cx, y: cy, dx: x - cx, dy: y - cy, placed: true };
@@ -77,7 +86,7 @@
 <span class="mover catch" class:placed={at.placed} data-fx="catch" bind:this={el}
   style:translate="{U(at.x)} {U(at.y)}" style:--dx={U(at.dx)} style:--dy={U(at.dy)}>
   <button type="button" class="catch-plate" data-sfx="tick" data-page={pg.page} data-pages={pg.pages.length} aria-label={pg.pages.join(' ')} onclick={tapIt}>
-    <span class="catch-icon"><OfficialArt key={art} size="clamp(30px, calc(34 * var(--su)), 40px)" eager /></span>
+    <span class="catch-icon"><OfficialArt key={art} size="clamp(40px, calc(46 * var(--su)), 48px)" eager /></span>
     <span class="catch-say" aria-hidden="true">
       {#each pg.pages as p, i (i)}<span class="pg" class:now={i === pg.page}>{#if i === pg.page}<span>{typed}</span><span class="rest">{untyped}</span>{:else}{p}{/if}</span>{/each}
     </span>
@@ -93,7 +102,7 @@
   .catch-plate {
     appearance: none; border: 0; margin: 0; cursor: pointer; pointer-events: auto; text-align: left; -webkit-tap-highlight-color: transparent;
     left: 0; top: 0; translate: -50% -50%; display: flex; align-items: center; gap: 6px;
-    width: max-content; max-width: min(272px, calc(100vw - 24px)); padding: 3px 14px 3px 4px; border-radius: 22px;
+    width: max-content; max-width: min(340px, calc(100vw - 24px)); padding: 3px 14px 3px 4px; border-radius: 22px;
     background: var(--plate); color: var(--plate-ink); box-shadow: 0 var(--lip-h) 0 var(--plate-lip);
     font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.35 var(--font-ui); text-wrap: balance;
     animation: say .25s ease-out both;
