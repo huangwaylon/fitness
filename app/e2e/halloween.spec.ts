@@ -92,8 +92,10 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   const g = (await page.locator('[data-tricked]').boundingBox())!;
   expect(g.x + g.width / 2).toBeLessThan(195);
   // asking again (no candy yet): the ask alone
-  await page.locator('[data-fx="talk"].placed').click(); // finish
-  await page.locator('[data-fx="talk"].placed').click(); // close
+  // tap the trick line away (finish, then close; it may have finished typing already)
+  const talk = page.locator('[data-fx="talk"].placed');
+  for (let i = 0; i < 4 && (await talk.count()); i++) await talk.click({ timeout: 1000 }).catch(() => {});
+  await expect(talk).toHaveCount(0);
   await tapOn(page, '[data-visitor="jack"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
 });
