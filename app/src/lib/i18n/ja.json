@@ -128,7 +128,7 @@
   "sound.volume": "音量",
   "sound.nowPlaying": "♪ いまは{hour}時の曲",
   "sound.noMusic": "BGMの 曲は まだ 入ってないよ。入ったら ながれるよ。",
-  "sound.silentNote": "ミュージックは 消音モードでも なるよ（ほかのアプリの 音楽は とまるよ）。ミュージックが オフのときは、効果音は 消音モードに あわせるよ。",
+  "sound.silentNote": "消音モードのときは 音が でないよ。ほかのアプリの 音楽とも いっしょに ながれるよ。",
   "sound.opening": "♪ いまは オープニングテーマ",
   "fruit.cherry": "スタンド",
   "tree.cherry": "{a}/{g}分",

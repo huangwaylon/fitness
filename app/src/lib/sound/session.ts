@@ -1,55 +1,10 @@
 // The rules the engine follows around iOS's audio session and the AudioContext's life (docs/design.md#engine-lifecycle),
-// pure so they can be tested without an AudioContext: which session type, when a tap is needed, when a cue may
+// pure so they can be tested without an AudioContext: when a tap is needed, when a cue may
 // sound, when to let the hardware sleep, when a deck needs its fade-in, the wrap hand-off's timing and the hour clock.
 import { PREFETCH_MS, msToNextHour } from './hourly.ts';
 
-/** `navigator.audioSession.type`: 'playback' plays through the Ring/Silent switch and stops other apps' audio (the
- *  user asked for the music to play in silent mode); 'ambient' mixes with their audio and follows the switch. */
-export type SessionType = 'playback' | 'ambient';
-
-/** Only ミュージック takes the 'playback' session (the user's choice): effects alone are 'ambient'. */
-export const sessionType = (music: boolean): SessionType => (music ? 'playback' : 'ambient');
-
-/** Leaving 'playback' waits until the music's fade-out (0.6 s) is over, so the category never changes under audio
- *  that is still sounding. */
-export const SESSION_RELEASE_MS = 800;
-
 type Timers = { set: (f: () => void, ms: number) => unknown; clear: (id: unknown) => void };
 const TIMERS: Timers = { set: (f, ms) => setTimeout(f, ms), clear: (id) => clearTimeout(id as ReturnType<typeof setTimeout>) };
-
-/**
- * Switches the session type in a safe order. WebKit applies the type when audio next starts, so 'playback' is set at
- * once (inside the tap, before the context or a music deck starts); going back to 'ambient' waits for the music to
- * fade, and is dropped if the music comes back on meanwhile.
- */
-export class SessionSwitch {
-  current: SessionType | null = null;
-  #pending: unknown = null;
-  #apply: (t: SessionType) => void;
-  #timers: Timers;
-  constructor(apply: (t: SessionType) => void, timers: Timers = TIMERS) {
-    this.#apply = apply;
-    this.#timers = timers;
-  }
-
-  /** `now`: no audio is running yet (before the context exists), so even 'ambient' applies at once. */
-  want(music: boolean, now = false): void {
-    const t = sessionType(music);
-    if (this.#pending !== null) this.#timers.clear(this.#pending);
-    this.#pending = null;
-    if (t === this.current) return;
-    if (t === 'playback' || now || this.current === null) return this.#set(t);
-    this.#pending = this.#timers.set(() => {
-      this.#pending = null;
-      this.#set(t);
-    }, SESSION_RELEASE_MS);
-  }
-
-  #set(t: SessionType): void {
-    this.current = t;
-    this.#apply(t);
-  }
-}
 
 /** A `resume()` started in a tap counts as running for this long, so the tap's own sound plays. Not longer: in
  *  WebKit a resume() during an interruption (a call, Siri) stays pending until it ends, and cues let through

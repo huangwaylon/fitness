@@ -377,8 +377,8 @@ per sound (`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the
   hidden or muted); back in front the same hour fades in over 0.8 s. A deck that starts while hidden is paused again.
 - **Decks:** a fade-out's delayed pause applies only to the assignment it faded (deck generation). Failed effect
   decodes retry on a later unlock.
-- **iOS session:** `navigator.audioSession.type` is `playback` while ミュージック is on (plays in silent mode), else
-  `ambient`. The Media Session tile names the tune; ▶ resumes only in front, ⏸ holds until the next tap.
+- **iOS session:** always `ambient`, like game music: it mixes with other apps' audio and follows the Ring/Silent
+  switch (user decision). The Media Session tile names the tune; ▶ resumes only in front, ⏸ holds until the next tap.
 
 ### Audio files
 

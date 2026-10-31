@@ -77,7 +77,6 @@ function apply(): void {
   const e = engine;
   if (!e?.ctx) return;
   const s = sound.settings;
-  e.setSession(musicOn(s));
   e.setLevels(s);
   if (!anyOn(s)) e.sleep();
   else if (s.volume <= 0) {
