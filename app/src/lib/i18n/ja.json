@@ -374,7 +374,6 @@
   "chat.sp.kk-slider.1": "音楽は こころの ごはん さ",
   "chat.sp.kk-slider.2": "ミュージックを オンに したら、 一曲 やるぜ",
   "chat.sp.kk-slider.3": "土曜の よるは ここに いるぜ",
-  "chat.sp.kk-slider.song": "♪ ラ〜 ララ〜 ♪ …いい夜だな",
   "chat.sp.daisy-mae.0": "カブ、 いかがですか〜？",
   "chat.sp.daisy-mae.1": "おばあちゃんの カブは おいしいよ",
   "chat.sp.daisy-mae.2": "日曜の あさだけ くるんだよ",
@@ -438,5 +437,15 @@
   "zodiac.aquarius": "みずがめざ",
   "zodiac.pisces": "うおざ",
   "chat.sp.gulliver.intro": "…ううーん… ハッ！\nここは… どこの しま だ？\nふねから おちて しまったようだ…\nなかまが むかえに くるのを まつよ",
-  "zukan.added": "ずかんに のったよ！"
+  "zukan.added": "ずかんに のったよ！",
+  "chat.sp.kk-slider.hello": "よう、 今夜も 来てくれたな\nリクエストは あるかな？",
+  "chat.sp.kk-slider.which": "どの 曲に する？",
+  "chat.sp.kk-slider.tuning": "いまは ギターの チューニング中 さ…\nもう すこし まってて くれよな",
+  "chat.sp.kk-slider.playing": "♪～ …どうした？",
+  "chat.sp.kk-slider.bye": "…サンキュー！\nまた 来週の 土曜に な",
+  "visitor.request": "リクエスト",
+  "visitor.surprise": "おまかせ",
+  "visitor.stop": "ストップ",
+  "visitor.keep": "つづけて",
+  "visitor.other": "ほかの 曲"
 }

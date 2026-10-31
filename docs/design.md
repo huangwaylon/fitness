@@ -481,14 +481,23 @@ ja/en. The roster (personalities) loads on the first chat. One balloon at a time
 
 ### Visitors
 
-`island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors on the front beach (official
-renders), one at a time, measured clear of every control (the middle first, else a little to the side, else none):
-**K.K. Slider** with his guitar on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp**
-(see-through, a slow bob) on 1 in 4 nights 20:00–04:00, **Gulliver** washed up asleep on his side on 1 in 4 days
-06:00–18:00, seeded by the date (both phones see the same); **Jack** on Halloween night ([Halloween](#halloween));
-**Celeste** on a meteor shower's night 20:00–04:00 ([Celeste and meteor showers](#celeste-and-meteor-showers)). A tap: their introduction the first time (two pages), then
-one of their lines; with ミュージック on K.K. plays one of his songs instead ([K.K. Slider](#kk-slider); ♪
-float up). No trading, no ベル. `?visitor=<id>` (dev or `?demo`) brings one.
+`island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors (official renders), one at a time,
+seeded by the date (both phones see the same): **K.K. Slider** with his guitar on Saturday nights 18:00–24:00,
+**Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp** (see-through, a slow bob) on 1 in 4 nights 20:00–04:00,
+**Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night ([Halloween](#halloween)); **Celeste** on a meteor shower's night 20:00–04:00 ([Celeste and meteor showers](#celeste-and-meteor-showers)). They stand on the centre stage (`CENTRE_STAGE` in `island/scene.ts`: column
+0 of the tree row, NH's plaza, where the jar stood) at the villagers' scale (`VILLAGER.h` × their NH height: K.K. 1,
+Daisy Mae 0.78, Wisp 0.7 floating 12u up, Gulliver 1.1, Jack 1, Celeste 0.85) with the villagers' contact shadow; while a control still
+covers the centre (the jar), a smaller figure on the front beach (Gulliver asleep on his side), else none. A tap: their
+introduction the first time (two pages), then one of their lines. No trading, no ベル. `?visitor=<id>` (dev or `?demo`).
+
+**K.K.'s show** (NH's Saturday concert): he strums with a gentle head-bob. With ミュージック on, a tap is his greeting,
+「よう、 今夜も 来てくれたな リクエストは あるかな？」 with NH's choice box: **リクエスト** (up to four of his songs to
+pick from) or **おまかせ** (one at random). Then the island's music stops for the song (`playKK` in `sound/sound.svelte.ts`, [K.K. Slider](#kk-slider)),
+he strums harder, ♪ float up, the villagers
+sway, and a 「♪ けけボッサ」 caption sits by him (placed clear of every control). A tap mid-song offers ストップ /
+つづけて. At its end (or ストップ, or the music turned off) his sign-off 「…サンキュー！ また 来週の 土曜に な」 and the
+island's music comes back. His songs are `sound/kk.ts` `kkTracks` (the manifest's `kk`); with none he says he's
+tuning his guitar, and with the music off he only talks.
 
 ### Halloween
 
