@@ -10,12 +10,12 @@ export function staleCaches(keys: readonly string[], current: string, keep: read
   return keys.filter((k) => k !== current && k !== previous && !keep.includes(k));
 }
 
-/** The audio runtime cache (docs/design.md#engine-lifecycle): music files are 0.4–0.8 MB each, so only the most recently
- *  played few stay on the phone. */
+/** The audio runtime cache (docs/design.md#engine-lifecycle): music files (the hours, the event music, K.K.'s songs)
+ *  are 0.1–1.1 MB each, so only the most recently played few stay on the phone. */
 export const AUDIO_CACHE = 'island-audio-v1';
 const MUSIC_KEEP = 3;
 export const isAudio = (path: string): boolean => path.includes('/audio/');
-export const isMusic = (path: string): boolean => path.includes('/audio/music/');
+export const isMusic = (path: string): boolean => path.includes('/audio/music/') || path.includes('/audio/kk/');
 
 /** Least recently used first out: `keys` in use order (oldest first: a hit is re-put at the end); which to delete so
  *  at most `keep` music files remain. Effects and ambience (small) are never evicted. */

@@ -219,3 +219,14 @@ takedown comes, delete the art and the app keeps working. Personal use only, nev
 ### Sound off by default
 Music, effects and voice blips are per device and all off until turned on. The hourly music is fetched on demand,
 never precached. Why: an app opened on a train must never surprise anyone.
+
+### Event music, the wasps' and K.K.'s songs
+NH's event tracks play on its event days and hours instead of the hour's, in Tokyo time like the hours: Halloween
+(Oct 31 17–24), Turkey Day (the 4th Thursday of November 9–24), and New Year (Happy New Year! at midnight, the
+fireworks music to 02:00, its calmer version to 05:00, New Year's Day for NH's whole day, Jan 1 05:00 → Jan 2 05:00).
+The wasps' chase and sting and K.K.'s songs cut in over whatever plays and hand back to it, as in NH. The user's files
+(2026-10-31), committed like the hours. Why: the island should sound like the game on the days the game is
+different, without a setting of its own (ミュージック covers it). Dec 31's countdown tracks weren't among the files, so
+the 23:00 hour plays then. とたけけの夢 (Dreaming of K.K. Slider: NH's first-night dream where K.K. appears) has no
+moment here and was left out. K.K.'s songs are a list in the audio manifest (official titles, ja and en), so more can
+be added without code; a tap on K.K. plays one, his show's own staging uses the same list (`sound/kk.ts`).

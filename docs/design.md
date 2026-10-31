@@ -448,7 +448,7 @@ renders), one at a time, measured clear of every control (the middle first, else
 **K.K. Slider** with his guitar on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp**
 (see-through, a slow bob) on 1 in 4 nights 20:00–04:00, **Gulliver** washed up asleep on his side on 1 in 4 days
 06:00–18:00, seeded by the date (both phones see the same). A tap: their introduction the first time (two pages), then
-one of their lines; with ミュージック on K.K. plays a short original tune instead (a jingle: the hour's track ducks; ♪
+one of their lines; with ミュージック on K.K. plays one of his songs instead ([K.K. Slider](#kk-slider); ♪
 float up). No trading, no ベル. `?visitor=<id>` (dev or `?demo`) brings one.
 
 ### Zukan
@@ -524,6 +524,38 @@ file is fetched a minute early. Each file is a loop period plus a 3 s copy of it
 inside the copy (aligned to ~12 ms, 0.15 s crossfade), so the loop has no gap. Turning ミュージック on plays the
 opening theme until it ends or the panel closes. Under a sheet, the panel or the harvest the music is low-passed at 900 Hz.
 
+### Event music
+
+On NH's event days its track replaces the hour's (`events.ts eventMusicAt`, Tokyo date and hour, any weather), with
+the hour's crossfade at the boundaries (all on the hour, so the hour clock drives them):
+
+| When (Tokyo) | Track |
+| --- | --- |
+| Oct 31 17:00–24:00 | ハロウィン (Halloween) |
+| 4th Thursday of Nov 09:00–24:00 | サンクスギビングデー (Turkey Day) |
+| Jan 1 00:00 | ニューイヤー（Happy New Year）, once, if within 2 minutes of midnight |
+| Jan 1 00:00–02:00 | ニューイヤー（午前0時）, the fireworks |
+| Jan 1 02:00–05:00 | ニューイヤー（午前2時）, the calmer version |
+| Jan 1 05:00 – Jan 2 05:00 | 元日 (New Year's Day, NH's whole day) |
+
+Dec 31 23:00–24:00 plays the 23:00 hour (the countdown tracks aren't in the files).
+
+**Cut-ins** (`sound.svelte.ts`) swap at once over the island's music (0.25 s) and hand back to it: the wasps
+(`waspMusic`, called by `TreeShakes`): the nest's fall fetches Chased by Bees (ハチに追いかけられる), which loops from the
+moment they come out; a net brings the island's music straight back; a sting plays Stung by Bees (ハチにさされた) once
+(11.5 s), then the island's music fades in. The track they interrupted is kept in memory, so it comes back without
+a fetch. A chase the scene never ends lets go after 6 s. K.K.'s songs are cut-ins too ([K.K. Slider](#kk-slider)).
+The settings' note and the Now Playing tile name the event track or song.
+
+### K.K. Slider
+
+`kk.ts kkTracks`: K.K.'s songs from the manifest's `kk` list, `{ id, ja, en, file, gain }` with NH's official titles
+(けけさんびか K.K. Chorale, けけマーチ, けけワルツ, けけスウィング, けけボッサ, けけサルサ, けけレゲエ, けけロック, けけのロケンロール
+Rockin' K.K.), one-shots under `audio/kk/`. `playKK(id)` plays one over the island's music (from a tap; false when
+it can't sound), `stopKK()` ends it early, `sound.kk` is the song playing. A tap on K.K. (Saturday 18–24) with
+ミュージック on plays one (`kkPick`: never the last one again) unless one is playing; his show ending or the island
+closing stops it. Without song files, his short placeholder tune plays instead.
+
 ### Ambience
 
 `ambientFor(hour, month, weather)` on the music bus: waves always; birds 05–17 Mar–Nov when fine; cicadas 08–17
@@ -577,11 +609,14 @@ per sound (`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the
 ### Audio files
 
 `static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>`, `music.<weather>.<00–23>` = `{file, start, end?,
-gain?}`, `opening`, `ambient.<id>`. Add a file and its entry, no code change; a missing effect keeps its placeholder
-(`synth.ts`), missing music or ambience is silence. `sound.test.ts`: files exist, ≤ 1 MB a track, ≤ 20 MB in all. `npm
-run audio:music -- <dir>` (`scripts/music.ts`, ffmpeg) builds the 24 tracks from the user's MP3s: finds the loop,
-appends the copy, encodes AAC 64 kbps, sets `gain` to −16 LUFS. Audio is never precached
-([backend.md](backend.md#service-worker)).
+gain?}`, `opening`, `ambient.<id>`, `events.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code
+change; a missing effect keeps its placeholder (`synth.ts`), missing music or ambience is silence. `sound.test.ts`:
+files exist and every audio file is named, ≤ 1 MB a looped track and ≤ 20 MB for `music/` (14 MB of hours, 3.6 MB
+of events), ≤ 1.2 MB a K.K. song and ≤ 12 MB for `kk/` (9.9 MB). `npm run audio:music -- <dir>` (`scripts/music.ts`,
+ffmpeg) builds the 24 tracks from the user's MP3s: finds the loop, appends the copy, encodes AAC 64 kbps, sets `gain`
+to −16 LUFS; `-- --extras <dir>` does the same for the event loops (the wasps' chase too: a 10.3 s loop) and trims the
+one-shots (Happy New Year!, Stung by Bees, K.K.'s songs) by the OST titles. Audio is never precached
+([backend.md](backend.md#service-worker)); `music/` and `kk/` share the runtime cache's three-file LRU.
 
 ### Sound settings
 

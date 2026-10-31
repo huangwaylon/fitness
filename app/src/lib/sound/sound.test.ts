@@ -1,7 +1,7 @@
 // Settings persistence, the audio manifest (and that every file it names is on disk) and the placeholder renders
 // (docs/design.md#audio-files, #sound-settings).
-import { existsSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import raw from '../../../static/audio/manifest.json';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent } from './settings.ts';
@@ -49,18 +49,28 @@ describe('audio manifest (static/audio/manifest.json)', () => {
   it('parses cleanly: no unknown ids, hours or weathers', () => {
     expect(parseManifest(raw).problems).toEqual([]);
   });
-  it('every file it names exists, and the music stays small (≤ 1 MB a track, ≤ 20 MB in all)', () => {
+  it('every file it names exists, and the music stays small (≤ 1 MB a looped track, ≤ 1.2 MB a K.K. song, ≤ 20 MB and ≤ 12 MB in all)', () => {
     const paths = [
       ...Object.values(AUDIO.sfx),
       ...Object.values(AUDIO.ambient),
       ...Object.values(AUDIO.music).flatMap((h) => Object.values(h ?? {}).map((t) => t!.file)),
-      ...(AUDIO.opening ? [AUDIO.opening.file] : [])
+      ...(AUDIO.opening ? [AUDIO.opening.file] : []),
+      ...Object.values(AUDIO.events).map((t) => t!.file),
+      ...AUDIO.kk.map((k) => k.file)
     ] as string[];
     const missing = paths.filter((p) => !existsSync(join(STATIC, p)));
     expect(missing).toEqual([]);
     const sizes = paths.filter((p) => p.startsWith('music/')).map((p) => statSync(join(STATIC, p)).size);
     for (const s of sizes) expect(s).toBeLessThan(1024 * 1024);
     expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(20 * 1024 * 1024);
+    const kk = paths.filter((p) => p.startsWith('kk/')).map((p) => statSync(join(STATIC, p)).size);
+    for (const s of kk) expect(s).toBeLessThan(1.2 * 1024 * 1024);
+    expect(kk.reduce((a, b) => a + b, 0)).toBeLessThan(12 * 1024 * 1024);
+    // and every audio file on disk is named (nothing ships unused)
+    const onDisk = readdirSync(STATIC, { recursive: true, withFileTypes: true })
+      .filter((d) => d.isFile() && d.name !== 'manifest.json')
+      .map((d) => relative(STATIC, join(d.parentPath, d.name)));
+    expect(onDisk.filter((p) => !paths.includes(p))).toEqual([]);
   });
   it('has all 24 sunny hours, each with a loop start, a period end and a loudness gain, plus the opening', () => {
     const sunny = AUDIO.music.sunny ?? {};
@@ -90,6 +100,8 @@ describe('audio manifest (static/audio/manifest.json)', () => {
         fog: {}
       },
       ambient: { waves: 'ambient/waves.m4a', traffic: 'x' },
+      events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 }, easter: 'music/e.m4a' },
+      kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 5 }, { id: 'kk-b', file: 'kk/b.m4a' }, { id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a2.m4a' }],
       opening: 4
     });
     expect(manifest).toEqual({
@@ -104,12 +116,14 @@ describe('audio manifest (static/audio/manifest.json)', () => {
           '10': { file: 'music/e.m4a', start: 30 }
         }
       },
-      ambient: { waves: 'ambient/waves.m4a' }
+      ambient: { waves: 'ambient/waves.m4a' },
+      events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 } },
+      kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 0 }]
     });
-    expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening']);
+    expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening', 'events.easter', 'kk.1', 'kk.2']);
   });
   it('an empty or broken manifest is just silence', () => {
-    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {} }, problems: [] });
+    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, kk: [] }, problems: [] });
   });
 });
 

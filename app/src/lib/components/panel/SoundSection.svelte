@@ -2,7 +2,7 @@
   // The panel's サウンド (docs/design.md "Sound settings"): ミュージック and 効果音 as two ON/OFF rows (NH's yellow
   // highlight when on, the button tiers) and one 音量 slider. Both start OFF; turning one on plays a taste of it (the
   // opening theme, a confirm). Kept on this phone only (not synced like the language).
-  import { setSound, sound } from '#lib/sound/sound.svelte.ts';
+  import { playingLabel, setSound, sound } from '#lib/sound/sound.svelte.ts';
   import { hasMusic } from '#lib/sound/manifest.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -35,7 +35,7 @@
   </label>
 
   <p class="note">
-    {#if s.music}{sound.playing === 'opening' ? t('sound.opening') : hasMusic() ? t('sound.nowPlaying', { hour }) : t('sound.noMusic')}<br />{/if}
+    {#if s.music}{(sound.playing && playingLabel(sound.playing, hour)) || (hasMusic() ? t('sound.nowPlaying', { hour }) : t('sound.noMusic'))}<br />{/if}
     {t('sound.silentNote')}
   </p>
 </div>

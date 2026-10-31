@@ -52,6 +52,10 @@ describe('crossfade schedule', () => {
   it('nothing playing (a first start, a return to the app): only a short fade in', () => {
     expect(crossfadePlan(5, false)).toEqual({ outFrom: 5, outTo: 5, inFrom: 5, inTo: 5 + FADE_IN });
   });
+  it('a cut-in (the wasps, K.K.) swaps at once: out in a quarter second as the new one comes up', () => {
+    expect(crossfadePlan(10, true, true)).toEqual({ outFrom: 10, outTo: 10.25, inFrom: 10, inTo: 10.25 });
+    expect(crossfadePlan(10, false, true)).toEqual({ outFrom: 10, outTo: 10, inFrom: 10, inTo: 10.25 });
+  });
 });
 
 describe('ambience', () => {

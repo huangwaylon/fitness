@@ -4,26 +4,53 @@
 //   startSound({ muffled: () => ui.sheets.length > 0 })   // once, in the root layout
 //   setSound({ music: true })                             // from a tap (the settings app)
 //   sound.weather = 'rain'                                // the hour's rain arrangement (only `?weather=` sets it yet)
+//   waspMusic('chase') · playKK('kk-march')               // cut-ins over the island's music (events.ts, kk.ts)
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
 import { Engine } from './engine.ts';
 import type { Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
-import { WEATHERS, trackAt, type Weather } from './hourly.ts';
+import { WEATHERS, trackAt, type MusicTrack, type Weather } from './hourly.ts';
+import { eventMusicAt, type EventMusicId } from './events.ts';
+import { kkTracks } from './kk.ts';
 import { HourClock } from './session.ts';
 import { ambientFor } from './ambient.ts';
 import { localKV } from '#lib/sync/storage.ts';
-import { jst, now } from '#lib/time/clock.ts';
-import { t } from '#lib/i18n/index.ts';
+import { dayKey, jst, now } from '#lib/time/clock.ts';
+import { i18n, t } from '#lib/i18n/index.ts';
 import { asset } from '$app/paths';
 
-export const sound = $state<{ settings: SoundSettings; weather: Weather; playing: 'opening' | 'hour' | null }>({
+/** What the music is: the opening theme, the hour's track, an event's (events.ts, the wasps' too), a K.K. song, or
+ *  nothing. */
+export type Playing = 'opening' | 'hour' | EventMusicId | 'kk' | null;
+
+export const sound = $state<{ settings: SoundSettings; weather: Weather; playing: Playing; kk: string | null }>({
   settings: { ...DEFAULT_SOUND },
   weather: 'sunny',
-  /** What the music is: the opening theme, the hour's track, or nothing (for the settings' note). */
-  playing: null
+  /** What the music is (for the settings' note and the Now Playing tile). */
+  playing: null,
+  /** The K.K. song playing (kk.ts id), else null. */
+  kk: null
 });
+
+/** A track the engine should play: its key, whether it loops, and `cut` for a cut-in's quick swap. */
+interface Want {
+  key: string;
+  track: MusicTrack;
+  playing: Exclude<Playing, null>;
+  loop: boolean;
+  cut?: boolean;
+}
+
+/** A cut-in over the island's music, as in NH: the wasps' chase (loops until they're netted or sting), their sting
+ *  (once) or a K.K. song (once). It ends by itself (a one-shot's end, CUT_IN_MAX_MS for the chase) or is cleared. */
+let cutIn: (Want & { kk?: string }) | null = null;
+let cutInTimer: ReturnType<typeof setTimeout> | undefined;
+/** A chase the scene never ended (it went away mid-swarm) lets the island's music back after this long. */
+const CHASE_MAX_MS = 6000;
+/** The days whose midnight jingle was heard (events.ts intro): never twice. */
+const introHeard = new Set<string>();
 
 let engine: Engine | null = null;
 /** The opening theme is playing (or about to): the hourly track waits for it to end. */
@@ -39,8 +66,10 @@ function eng(): Engine {
   if (!engine) {
     engine = new Engine();
     engine.onended = (key) => {
-      if (key !== 'opening') return;
-      opening = false;
+      if (key === 'opening') opening = false;
+      else if (cutIn?.key === key) endCutIn();
+      else if (key === 'event/happy-new-year') introHeard.add(dayKey());
+      else return;
       syncMusic();
     };
     // the context came back by itself (after a call or Siri): bring the music back without waiting for a tap
@@ -89,13 +118,59 @@ function apply(): void {
   }
 }
 
-/** The music and ambience that should sound now: the opening while it plays, else the Tokyo hour's track. */
+/** The island's own music at an instant: the event's track on an event day (its midnight jingle first, once), else
+ *  the Tokyo hour's. Cut-ins (the wasps, K.K.) come on top of it. */
+function musicAt(d: Date): Want | null {
+  const ev = eventMusicAt(d);
+  const intro = ev?.intro && AUDIO.events[ev.intro];
+  if (ev?.intro && intro && !introHeard.has(dayKey(d))) return { key: `event/${ev.intro}`, track: intro, playing: ev.intro, loop: false };
+  const loop = ev && AUDIO.events[ev.id];
+  if (ev && loop) return { key: `event/${ev.id}`, track: loop, playing: ev.id, loop: true };
+  const tr = trackAt(d, sound.weather, AUDIO.music);
+  return tr && { key: tr.key, track: tr, playing: 'hour', loop: true };
+}
+
+/** What the settings' note and the Now Playing tile say about the music (null: none). */
+export function playingLabel(playing: Playing, hour: number, kk: string | null = sound.kk): string | null {
+  if (playing === 'opening') return t('sound.opening');
+  if (playing === 'hour') return t('sound.nowPlaying', { hour });
+  if (playing === 'kk') {
+    const k = kkTracks.find((s) => s.id === kk);
+    return k ? t('sound.nowPlayingTitle', { title: i18n.locale === 'en' ? k.en : k.ja }) : null;
+  }
+  return playing ? t('sound.nowPlayingTitle', { title: t(`sound.title.${playing}`) }) : null;
+}
+
+function endCutIn(): void {
+  clearTimeout(cutInTimer);
+  cutIn = null;
+  sound.kk = null;
+  engine?.pin([]);
+}
+
+/** Start a cut-in (when ミュージック can sound) and play it at once. False: it can't sound now. */
+function startCutIn(want: Want & { kk?: string }, maxMs?: number): boolean {
+  const s = sound.settings;
+  if (!musicOn(s) || s.volume <= 0 || !engine?.ctx || document.hidden) return false;
+  clearTimeout(cutInTimer);
+  const base = musicAt(now());
+  cutIn = want;
+  sound.kk = want.kk ?? null;
+  // keep the interrupted track (coming back starts at once) and, during the chase, the sting that may follow
+  engine.pin([...(base ? [base.track.file] : []), ...(want.playing === 'bee-chase' && AUDIO.events['bee-stung'] ? [AUDIO.events['bee-stung'].file] : [])]);
+  if (maxMs) cutInTimer = setTimeout(() => cutIn === want && (endCutIn(), syncMusic()), maxMs);
+  syncMusic();
+  return true;
+}
+
+/** The music and ambience that should sound now: the opening while it plays, a cut-in, else the island's (musicAt). */
 function syncMusic(): void {
   const e = engine;
   if (!e?.ctx || document.hidden) return;
   const s = sound.settings;
   if (!s.music || !anyOn(s)) {
     opening = false;
+    if (cutIn) endCutIn();
     sound.playing = null;
     e.stopMusic();
     void e.setAmbient([]);
@@ -106,16 +181,10 @@ function syncMusic(): void {
   e.muffle(coveredBy() && !opening);
   const d = now();
   const { hour, month } = jst(d);
-  if (opening && AUDIO.opening) {
-    sound.playing = 'opening';
-    void e.setTrack('opening', AUDIO.opening, false);
-    nowPlaying(t('sound.opening'));
-  } else {
-    const tr = trackAt(d, sound.weather, AUDIO.music);
-    sound.playing = tr ? 'hour' : null;
-    void e.setTrack(tr?.key ?? null, tr);
-    nowPlaying(tr ? t('sound.nowPlaying', { hour }) : null);
-  }
+  const want: Want | null = opening && AUDIO.opening ? { key: 'opening', track: AUDIO.opening, playing: 'opening', loop: false } : cutIn ?? musicAt(d);
+  sound.playing = want?.playing ?? null;
+  void e.setTrack(want?.key ?? null, want?.track ?? null, want?.loop, want?.cut);
+  nowPlaying(playingLabel(sound.playing, hour));
   void e.setAmbient(ambientFor(hour, month, sound.weather).filter((l) => AUDIO.ambient[l.id]));
 }
 
@@ -172,8 +241,8 @@ function prefetchFirst(): void {
   if (silent(s)) return;
   const e = eng();
   e.warm();
-  const tr = musicOn(s) && !e.ctx ? trackAt(now(), sound.weather, AUDIO.music) : null;
-  if (tr) e.prefetch(tr.file);
+  const tr = musicOn(s) && !e.ctx ? musicAt(now()) : null;
+  if (tr) e.prefetch(tr.track.file);
 }
 
 /** The next hour's track a minute early (only while it could play: visible, ミュージック on and audible), and the change
@@ -182,8 +251,8 @@ const hourClock = new HourClock(
   now,
   (at) => {
     const s = sound.settings;
-    const tr = trackAt(at, sound.weather, AUDIO.music);
-    if (tr && s.music && s.volume > 0 && engine?.ctx && !document.hidden) engine.prefetch(tr.file);
+    const tr = musicAt(at);
+    if (tr && s.music && s.volume > 0 && engine?.ctx && !document.hidden) engine.prefetch(tr.track.file);
   },
   syncMusic
 );
@@ -212,6 +281,40 @@ export function play(id: SoundId, o?: { gain?: number; rate?: number; delay?: nu
   if (s.volume <= 0 || !s.sfx) return;
   if (id === 'chime' && engine?.needsUnlock(false) !== false) announceAt = Date.now();
   else engine?.play(id, o);
+}
+
+/** The wasps (island/TreeShakes.svelte), as in NH: `nest` (it fell: fetch the chase ahead), `chase` (they're out:
+ *  Chased by Bees cuts in over the island's music and loops), `caught` (netted: the island's music comes straight
+ *  back), `stung` (Stung by Bees, once, then the island's music fades back in). Only with ミュージック on. */
+export function waspMusic(phase: 'nest' | 'chase' | 'caught' | 'stung'): void {
+  const chase = AUDIO.events['bee-chase'], stung = AUDIO.events['bee-stung'];
+  if (phase === 'nest') {
+    if (chase && musicOn(sound.settings) && engine?.ctx) engine.prefetch(chase.file);
+  } else if (phase === 'chase') {
+    if (chase) startCutIn({ key: 'event/bee-chase', track: chase, playing: 'bee-chase', loop: true, cut: true }, CHASE_MAX_MS);
+  } else if (cutIn?.playing === 'bee-chase') {
+    // caught or stung: the chase ends either way
+    endCutIn();
+    if (phase === 'stung' && stung && startCutIn({ key: 'event/bee-stung', track: stung, playing: 'bee-stung', loop: false, cut: true })) return;
+    const base = musicAt(now());
+    if (base && engine?.ctx) void engine.setTrack(base.key, base.track, base.loop, true);
+    syncMusic();
+  }
+}
+
+/** K.K. plays song `id` (kk.ts kkTracks) over the island's music, which stops for it and comes back after (NH's
+ *  show). Only with ミュージック on and audio unlocked (call it from a tap). `sound.kk` is the song while it plays.
+ *  False: it can't sound now (no such song, music off, locked or muted). */
+export function playKK(id: string): boolean {
+  const k = kkTracks.find((s) => s.id === id);
+  return !!k && startCutIn({ key: `kk/${k.id}`, track: k, playing: 'kk', loop: false, cut: true, kk: k.id });
+}
+
+/** Stop K.K.'s song early (the show ends, he leaves): the island's music fades back in. */
+export function stopKK(): void {
+  if (!cutIn?.kk) return;
+  endCutIn();
+  syncMusic();
 }
 
 /** Once, in the root layout. `muffled`: a sheet, the phone or the harvest is up (the music goes soft and dull under

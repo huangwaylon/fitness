@@ -7,6 +7,14 @@ import raw from '../../../static/audio/manifest.json';
 import { isSoundId, type SoundId } from './ids.ts';
 import { WEATHERS, hourKey, type MusicFiles, type MusicTrack, type Weather } from './hourly.ts';
 import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
+import { EVENT_MUSIC_IDS, type EventMusicId } from './events.ts';
+
+/** One of K.K.'s songs (`kk[]`, in NH's song-list order): NH's official titles, a one-shot file under audio/kk/. */
+export interface KKTrack extends MusicTrack {
+  id: string;
+  ja: string;
+  en: string;
+}
 
 interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
@@ -14,6 +22,9 @@ interface AudioManifest {
   opening: MusicTrack | null;
   music: MusicFiles;
   ambient: Partial<Record<AmbientId, string>>;
+  /** Event music (events.ts): loops like the hours, the midnight jingle and the sting one-shots. */
+  events: Partial<Record<EventMusicId, MusicTrack>>;
+  kk: KKTrack[];
 }
 
 const HOURS = new Set(Array.from({ length: 24 }, (_, h) => hourKey(h)));
@@ -64,7 +75,19 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
   }
   const opening = root.opening === undefined || root.opening === null ? null : track(root.opening);
   if (!opening && root.opening !== undefined && root.opening !== null) problems.push('opening');
-  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient }, problems };
+  const events: AudioManifest['events'] = {};
+  for (const [k, v] of Object.entries(obj(root.events))) {
+    const t = track(v);
+    if (EVENT_MUSIC_IDS.includes(k as EventMusicId) && t) events[k as EventMusicId] = t;
+    else problems.push(`events.${k}`);
+  }
+  const kk: KKTrack[] = [];
+  (Array.isArray(root.kk) ? root.kk : []).forEach((v: unknown, i) => {
+    const o = obj(v), t = track(v);
+    if (t && str(o.id) && str(o.ja) && str(o.en) && !kk.some((k) => k.id === o.id)) kk.push({ id: o.id, ja: o.ja, en: o.en, ...t, start: 0 });
+    else problems.push(`kk.${i}`);
+  });
+  return { manifest: { sfx, opening: opening && { ...opening, start: 0 }, music, ambient, events, kk }, problems };
 }
 
 export const AUDIO = parseManifest(raw).manifest;
