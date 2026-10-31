@@ -1,13 +1,14 @@
 <script module lang="ts">
-  type Tab = 'kiroku' | 'settings';
+  type Tab = 'kiroku' | 'health' | 'settings';
   /** The last tab, for this session (a reload opens on きろく again). */
   let lastTab: Tab = 'kiroku';
 </script>
 
 <script lang="ts">
   // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
-  // itself, in two tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, then からだ and the
-  // goals) and せってい (むらびと, サウンド, ことば, つうしん, あそびかた). A few things push a level with ‹ in the title
+  // itself, in three tabs pinned under the title bar (design.md "Panel"): きろく (the ベル ledger, then the goals),
+  // けんこう (the Health data over time, its own chunk loaded with the tab) and せってい (むらびと, サウンド, ことば,
+  // つうしん, あそびかた). A few things push a level with ‹ in the title
   // bar (a week, a day, the villager picker, the full guide); ✕, the backdrop and Esc close it. The wallet stays on the
   // jar and per-fruit detail in the tree popups (one home per datum).
   import { tick } from 'svelte';
@@ -37,6 +38,9 @@
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
   let tab = $state<Tab>(lastTab);
+  /** けんこう's code: its own chunk, fetched when the tab is first shown. */
+  let healthTab: Promise<typeof import('../health/Health.svelte')> | null = null;
+  const loadHealth = () => (healthTab ??= import('../health/Health.svelte'));
   function pick(to: Tab) {
     if (to === tab) return;
     tab = lastTab = to;
@@ -92,7 +96,7 @@
   {#if !deep}
     <!-- A segmented switch (toggle buttons), pinned under the title bar while the tab scrolls -->
     <div class="tabs" role="group" aria-label={t('panel.title')}>
-      {#each ['kiroku', 'settings'] as const as id (id)}
+      {#each ['kiroku', 'health', 'settings'] as const as id (id)}
         <button type="button" class="tab" aria-pressed={tab === id} data-tab={id} data-sfx={tab === id ? 'none' : 'tick'} onclick={() => pick(id)}>{t(`panel.tab.${id}`)}</button>
       {/each}
     </div>
@@ -105,6 +109,8 @@
       <div class="page"><HelpGuide {view} /></div>
     {:else if view && me && tab === 'kiroku'}
       <Kiroku bind:this={kiroku} bind:level={kirokuLevel} />
+    {:else if view && me && tab === 'health'}
+      {#await loadHealth() then { default: Health }}<Health />{/await}
     {:else if view && me}
       <section class="sec" aria-labelledby="sec-villager">
         <h2 id="sec-villager">{t('panel.villager')}</h2>
@@ -140,7 +146,8 @@
   /* the row holds the tabs' 4px lip (and a focus ring's 3px) inside its own box: the fade under it starts below the lip */
   .tabs { flex: none; position: relative; z-index: 1; display: flex; gap: 8px; justify-content: center; padding: 0 0 calc(var(--lip-h) + 4px); }
   .tab {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); min-width: 112px; padding: 0 18px; border-radius: var(--r-pill);
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); flex: 1 1 0; min-width: 0; max-width: 132px; padding: 0 10px; border-radius: var(--r-pill);
+    white-space: nowrap;
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
   .tab[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }

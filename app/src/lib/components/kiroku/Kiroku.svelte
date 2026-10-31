@@ -1,7 +1,7 @@
 <script lang="ts">
   // きろく (records, design.md "Kiroku"), the island panel's first tab: at its top the ベル ledger (this week by day,
-  // then the past weeks) and then からだ (the weight trend, the two goals), each under a section heading;
-  // a day, the weight screen, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
+  // then the past weeks) and then 目標 (the Move and weight goals; the weight trend lives in けんこう);
+  // a day, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
   // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
   // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on a buy (either of us, any buy).
   // Everything is computed from the store's reduced model, lazily for the opened day.
@@ -11,14 +11,10 @@
   import { bellsLedger, dayDetail } from '#lib/model/history.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { setGoalWeight, setMoveGoal, undoBanner, undoSpend } from '#lib/store/actions.ts';
-  import { weightTrend } from '#lib/model/weight.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ChoiceList from '../ui/ChoiceList.svelte';
   import DayDetail from './DayDetail.svelte';
   import BellsLog from './BellsLog.svelte';
-  import WeightCard from './WeightCard.svelte';
-  import WeightDetail from './WeightDetail.svelte';
   import ValueInput from './ValueInput.svelte';
   import GoalCard from './GoalCard.svelte';
   import Avatar from '../characters/Avatar.svelte';
@@ -28,7 +24,6 @@
   type Screen =
     | { k: 'day'; date: string }
     | { k: 'void'; id: string; label: string; bells: number }
-    | { k: 'weight'; p: PersonId }
     | { k: 'goal'; p: PersonId }
     | { k: 'moveGoal'; p: PersonId };
 
@@ -54,10 +49,6 @@
   const goalP = $derived<PersonId>(goalPick ?? me);
   // One computation per screen and model (not per use).
   const money = $derived(m && !top ? bellsLedger(m.state, m.now) : null);
-  const today = $derived(m ? localDateAt(m.now) : '');
-  // The weight trend: both people on the からだ list, one on its own screen.
-  const trends = $derived(m && (!top || top?.k === 'weight')
-    ? { A: weightTrend(m.state, 'A', m.now), B: weightTrend(m.state, 'B', m.now) } : null);
   const day = $derived(m && top?.k === 'day' ? dayDetail(m.state, top.date, m.now) : null);
 
   /** The element that scrolls きろく: the nearest scrolling ancestor (the panel's body). */
@@ -128,17 +119,10 @@
         <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
-      {#if trends}
-        <h2 class="sec">{t('panel.body')}</h2>
-        <WeightCard {trends} {order} {names} {villagers} {today} onopen={(p) => go({ k: 'weight', p })} />
-        <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
-          onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
-      {/if}
+      <GoalCard person={goalP} {order} {names} {villagers} moveGoal={view.people[goalP].moveGoal} goalWeight={m.state.prefs[goalP].goalWeight ?? null}
+        onperson={(p) => (goalPick = p)} onmove={() => go({ k: 'moveGoal', p: goalP })} onweight={() => go({ k: 'goal', p: goalP })} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
-    {:else if top.k === 'weight' && trends}
-      {@const p = top.p}
-      <WeightDetail w={trends[p]} person={p} name={names[p]} villager={villagers[p]} mine={p === me} {today} />
     {:else if top.k === 'goal'}
       {@const s = top}
       {@render who(s.p)}
@@ -172,7 +156,6 @@
   .kiroku { padding-bottom: 8px; }
   /* the section headings: the same small soft label as the panel's other sections */
   .sec { margin: 6px 2px -4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .04em; }
-  .sec ~ .sec { margin-top: 10px; }
   .who { display: flex; align-items: center; gap: 8px; margin: 0 2px; font-size: var(--fs-body); }
   .who small { color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */

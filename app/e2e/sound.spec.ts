@@ -186,13 +186,21 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
 
   // the island panel (tap the ribbon)
   await step('島', 'ribbon (→ the panel)', () => btn(/^きょう [\d,]+\sベル$/).tap(), ['phone-open']);
-  await step('きろく', 'weight card', () => btn(/の体重のながれ/, dlg).first().tap(), ['page']);
-  await step('きろく', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', 'day', () => dlg.locator('button.dbtn').first().tap(), ['page']);
   await step('きろく', 'back (‹) to the panel', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
   await step('きろく', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
   await step('きろく', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
+  await step('パネル', 'けんこう tab', () => dlg.locator('.tab[data-tab=health]').tap(), ['tick']);
+  await step('けんこう', '1年', () => dlg.locator('[data-period=year]').tap(), ['tick']);
+  await step('けんこう', '1年 again', () => dlg.locator('[data-period=year]').tap(), []);
+  await step('けんこう', '1か月', () => dlg.locator('[data-period=month]').tap(), ['tick']);
+  await step('けんこう', 'one person', () => dlg.locator('[data-who=A]').tap(), ['tick']);
+  await step('けんこう', '‹', () => dlg.locator('[data-nav=back]').tap(), ['tick']);
+  await step('けんこう', 'きょう', () => dlg.locator('[data-nav=today]').tap(), ['tick']);
+  await step('けんこう', 'きょう again (aria-disabled)', () => dlg.locator('[data-nav=today]').tap({ force: true }), ['boop']);
+  await step('けんこう', '› at today (aria-disabled)', () => dlg.locator('[data-nav=on]').tap({ force: true }), ['boop']);
+  await step('けんこう', 'ふたり', () => dlg.locator('[data-who=both]').tap(), ['tick']);
   await step('パネル', 'せってい tab', () => dlg.locator('.tab[data-tab=settings]').tap(), ['tick']);
   await step('パネル', 'せってい tab again', () => dlg.locator('.tab[data-tab=settings]').tap(), []);
   await step('むらびと', 'かえる', () => dlg.locator('[data-push=villager]').tap(), ['page']);

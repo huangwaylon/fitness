@@ -118,6 +118,29 @@ Steps, exercise, Move, Stand and weight come only from the Shortcut; the app nev
 (`moveGoal`, `goalWeight`) stay editable for either person (`data.person`), and either may void any buy (`spend_void`);
 other prefs are the sender's own. Why: all health data is already in Apple Health, so manual edits only add a second, conflicting source.
 
+### Health trends (けんこう)
+A third panel tab, けんこう (Health), between きろく and せってい, shows the Health data over time for the personal trainer
+(user request, 2026-10-31; team discussion in `docs/reviews/kenkou/discussion.md`). Computed on read in the browser
+from the same rows (`model/health.ts`), no backend change, its code loaded with the tab.
+- **Values:** a day's value is Apple Health's latest row, not the as-of-lock value: the trainer wants the truth, and the
+  ベル keep theirs.
+- **No record, not zero:** no row, 0 steps, or the Watch not worn (Move, Exercise and Stand all 0, steps from the phone)
+  is a day without data for those metrics: no bar, out of every average, goal count and change, counted as 記録なし
+  (from the first activity record), and labelled 「1日の平均（記録のある日）」. Today is drawn, not counted. Why: zeros
+  from a Watch on its charger would read as lazy days and drag the averages.
+- **Periods:** 1週 and 1か月 (30 days) by day, 3か月 by week (13, ending on the last day shown), 1年 and すべて by calendar
+  month (daily averages per bucket), so long ranges stay readable on a phone; ‹ › and a drag on any chart step a whole
+  period, きょう comes back; the change compares with the period of equal length just before.
+- **Each chart:** both people side by side in a fixed colour each (ウェイ blue, うめ orange; a CVD-safe pair, checked with
+  a validator), solid = goal met, the goal dashed (per person for Move), the 7-day average on day bars, a tap for exact
+  numbers. Weight is per person on its own axis (one axis would flatten both).
+- **今週と 先週** at the top (user request): both of us, calendar weeks Mon–Sun (the app's week; the Wednesday lock is the
+  economy's only), this week so far over its finished days with data. It is the tab's one summary card, so the charts'
+  headers don't repeat it per metric for the week.
+- **Weight moved here:** the weight trend left きろく (no information twice); its goal is still set in きろく's 目標 card.
+- **No export:** no copy/CSV of a summary (user decision); the trainer reads the screen.
+Why: the trainer needs exact, comparable numbers over weeks to years, without leaving the game's look.
+
 ## App and hosting
 
 ### PWA on GitHub Pages

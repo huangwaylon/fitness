@@ -1,4 +1,4 @@
-// The demo backend (`?demo`, `?demo=harvest`, `?demo&as=B`): generated rows (rows.ts) and the session's taps, run
+// The demo backend (`?demo`, `?demo=harvest`, `?demo&as=B`, `?demo&weeks=60` for a longer history): generated rows (rows.ts) and the session's taps, run
 // through the same model as the live app. Nothing is sent. Its taps are kept under `island-demo.*` for the (scene) day,
 // shared by both players' tabs; it never touches the live key, queue or cache. Loaded only in the demo.
 // Its clock is the scene clock: `?demo&date=2026-11-03T12:10` builds the rows and runs the model on that day.
@@ -8,7 +8,7 @@ import { addDays } from '#lib/time/dates.ts';
 import { dayKey, now as sceneNow } from '#lib/time/clock.ts';
 import { harvestOf } from '#lib/model/week.ts';
 import { weekBells } from '#lib/model/bells.ts';
-import { DEMO, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { DEMO, localKV, readJson, sessionKV, writeJson } from '#lib/sync/storage.ts';
 import type { QueuedEvent } from '#lib/sync/queue.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from '../backend.ts';
@@ -43,7 +43,7 @@ export class DemoBackend implements Backend {
 
   async refresh(): Promise<void> {
     if (!this.#cache) {
-      this.#cache = demoCache(this.now(), this.#me);
+      this.#cache = demoCache(this.now(), this.#me, Number(sessionKV()?.getItem(DEMO.weeks)) || undefined);
       this.#events = this.#load();
       globalThis.window?.addEventListener('storage', (e) => {
         if (e.key !== DEMO.events) return;
