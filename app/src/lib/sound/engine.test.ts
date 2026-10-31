@@ -286,4 +286,20 @@ describe('ambience', () => {
       delete ambient.waves;
     }
   });
+  it('a bed without a file is the procedural one, rendered when idle, looping; a variant is a layer of its own', async () => {
+    await import('./ambientSynth.ts'); // the chunk is here (the engine imports it on first use)
+    const { e, ctx } = await unlocked();
+    const n = ctx.sources.length;
+    const p = e.setAmbient([{ id: 'crickets', gain: 0.35 }]);
+    await vi.advanceTimersByTimeAsync(100);
+    await p;
+    expect(ctx.sources.slice(n).find((s) => s.loop)?.buffer).toBeTruthy();
+    const p2 = e.setAmbient([{ id: 'crickets', gain: 0.35 }, { id: 'birds', gain: 0.3, v: 'autumn' }]);
+    await vi.advanceTimersByTimeAsync(100);
+    await p2;
+    const loops = ctx.sources.slice(n).filter((s) => s.loop);
+    expect(loops).toHaveLength(2);
+    e.pause();
+    expect(loops.every((s) => s.stopped === 'now')).toBe(true);
+  });
 });

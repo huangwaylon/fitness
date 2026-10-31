@@ -25,9 +25,11 @@ import { asset } from '$app/paths';
  *  nothing. */
 export type Playing = 'opening' | 'hour' | EventMusicId | 'kk' | null;
 
-export const sound = $state<{ settings: SoundSettings; weather: Weather; playing: Playing; kk: string | null }>({
+export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: string | null }>({
   settings: { ...DEFAULT_SOUND },
   weather: 'sunny',
+  /** A downpour: the rain bed louder (ambient.ts). */
+  heavy: false,
   /** What the music is (for the settings' note and the Now Playing tile). */
   playing: null,
   /** The K.K. song playing (kk.ts id), else null. */
@@ -185,7 +187,7 @@ function syncMusic(): void {
   sound.playing = want?.playing ?? null;
   void e.setTrack(want?.key ?? null, want?.track ?? null, want?.loop, want?.cut);
   nowPlaying(playingLabel(sound.playing, hour));
-  void e.setAmbient(ambientFor(hour, month, sound.weather).filter((l) => AUDIO.ambient[l.id]));
+  void e.setAmbient(ambientFor(hour, month, sound.weather, { heavy: sound.heavy }));
 }
 
 const mediaSession = (): MediaSession | null => (typeof navigator !== 'undefined' && 'mediaSession' in navigator ? navigator.mediaSession : null);
@@ -365,6 +367,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
     });
     $effect(() => {
       void sound.weather;
+      void sound.heavy;
       untrack(syncMusic);
     });
   });

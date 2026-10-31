@@ -79,6 +79,24 @@ describe('ambience', () => {
     expect(ids(12, 1)).toContain('wind');
     expect(ids(12, 1, 'snow')).not.toContain('crickets');
   });
+  it('the season of the birds: the bush warbler in spring, a few birds in winter, quieter; none at night', () => {
+    const birds = (h: number, m: number) => ambientFor(h, m, 'sunny').find((l) => l.id === 'birds');
+    expect(birds(7, 4)?.v).toBe('spring');
+    expect(birds(7, 7)?.v).toBe('summer');
+    expect(birds(7, 10)?.v).toBe('autumn');
+    expect(birds(7, 1)?.v).toBe('winter');
+    expect(birds(7, 1)!.gain).toBeLessThan(birds(7, 4)!.gain);
+    expect(birds(16, 1)).toBeUndefined();
+    expect(birds(21, 5)).toBeUndefined();
+  });
+  it('a downpour: the rain louder, the surf under it; no insects in the rain', () => {
+    const gain = (id: string, heavy: boolean) => ambientFor(12, 6, 'rain', { heavy }).find((l) => l.id === id)!.gain;
+    expect(gain('rain', true)).toBeGreaterThan(gain('rain', false));
+    expect(gain('waves', true)).toBeLessThan(gain('waves', false));
+    expect(ids(21, 10, 'rain')).not.toContain('crickets');
+    expect(ids(13, 8, 'rain')).not.toContain('cicadas');
+    expect(ids(13, 1, 'snow')).toEqual(['waves', 'wind']);
+  });
   it('every layer stays soft', () => {
     for (const l of ambientFor(6, 8, 'sunny')) expect(l.gain).toBeLessThanOrEqual(0.55);
   });
