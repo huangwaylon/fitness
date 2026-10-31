@@ -121,13 +121,14 @@ the personal trainer to review, one person at a time; computed on read from the 
   the visible range (「10/2–10/31」, the year when it isn't this one; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの
   1日平均」 under it) › and きょう (‹ › and きょう are `aria-disabled` when there's nothing that way).
 - **A card per metric**, steps first (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド, like the tree's popup; the canopy and the beds keep the rings' order):
-  the person's goal; 1日の平均（記録のある日） large,
-  前の期間より ↑/↓ % beside it, then 目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key in the person's
-  colour (with 記録なし's stub).
+  the person's goal; 1日の平均 large,
+  前の期間より ↑/↓ % beside it, then 目標 n/N日（%）, ベスト and 記録なし n日 (when there are any); the chart; a one-line key in the person's
+  colour (with 記録なし's stub when the period has such a day).
 - **Chart** (`BarChart`, hand-drawn SVG): one series, a bar per day (1週, 1か月), per week (3か月: 13 weeks ending on the
   last day shown) or per calendar month (1年, すべて), the bucket's daily average, wide bars in the person's colour
   (ウェイ blue, うめ orange, `--person-a/-b`); solid when the goal was met, pale when not (a week or month: darker the
-  more of its days met it); today outlined (still running); a finished day or bucket with no record gets a short faint
+  more of its days met it); every value as reported (a 66-step day is its short bar, a 0 a 1px sliver on the axis);
+  today outlined (still running); a finished day or bucket with no row at all gets a short faint
   stub on the axis (7 px, hatched, a dashed neutral outline, `--text-soft`: plainly missing, never a gap that reads as
   zero nor a column that reads as a value; its callout says 記録なし). Dashed: their goal (stepped when their Move goal changed). No trend line
   (user decision): the bars, the goal and the stats carry it. On 1週 each bar carries its value (`620`, `9.2k`). A tap shows that bar's one value (inside
@@ -138,15 +139,15 @@ the personal trainer to review, one person at a time; computed on read from the 
   apart; – under two weigh-ins), the chart on an axis fitted to their weights (dots = weigh-ins or a bucket's average,
   joined by a thin line across the days between weigh-ins; no smoothed line; dashes = the goal, or a 「目標 66.0 ↓」
   label when it's far off), and the goal month at that pace (only when the period ends today).
-- **Rules** (decisions.md "Health trends"): a day's value is Health's latest; no record = no row, under 500 steps (the
-  phone left home: steps only), or the Watch not clearly worn (Move under 100 kcal and Stand under 30 min: Move,
-  Exercise and Stand together), left out of every average, best day, goal count and change, and counted as 記録なし
-  from the first activity record on; today is drawn (anything above 0) but left out of the numbers; the previous period is the same
-  length just before (1年: the 12 months before). The tab's footnote says so.
+- **Rules** (decisions.md "Health trends"): a day's value is Health's latest, as is: every day with a row is counted
+  in the averages, best day, goal count and change whatever its value (0 or 66 steps included; nothing is cut off);
+  記録なし = no row for that metric (nothing arrived: before the first sync, a day the Shortcut didn't cover), left out
+  of the numbers and counted from the first activity record on; today is drawn but left out of the numbers (a partial
+  day); the previous period is the same length just before (1年: the 12 months before). The tab's footnote says so.
 - **Cost:** the tab's code and its strings (`i18n/kenkou.*.json`, merged by `i18n/kenkou.ts`) load with the tab, so
   the island's first load doesn't grow; the daily series is built once per model and day (memoised); a period switch at
-  4× CPU with two years of data is ~100 ms and a person switch ~20–70 ms, with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day without
-  the Watch now and then.
+  4× CPU with two years of data is ~100 ms and a person switch ~20–70 ms, with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day now and
+  then whose Watch rows never arrived (steps only: 記録なし for Move, Exercise and Stand).
 
 ### Sheets and harvest
 

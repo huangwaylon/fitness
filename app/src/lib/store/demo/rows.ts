@@ -1,7 +1,7 @@
 // `?demo`: believable sheet rows for both people (ウェイ = A = me, うめ = B), generated around the real clock and fed
 // through the same model as the live app, so the island, the wallet and きろく agree and every tap really recomputes.
 // Activity rows start 8 weeks before this one (`?demo&weeks=N`: N; the economy's first week follows the data), with a
-// day now and then without the Watch (steps only), so けんこう has a missing day to leave out. Deterministic per date
+// day now and then whose Watch rows never arrived (steps only), so けんこう has a 記録なし day. Deterministic per date
 // (a seeded RNG), so a reload shows the same history.
 import type { PersonId, ShopItemId } from '#lib/types.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
@@ -13,7 +13,7 @@ import { mulberry32 } from '#lib/random.ts';
 import { shopPrice } from '#lib/config/rules.ts';
 
 const DEMO_WEEKS_BACK = 8;
-/** About one day in 25 the Watch stays on the charger (Move, Exercise and Stand 0; steps from the phone). */
+/** About one day in 25 only steps reach the sheet (no Move, Exercise or Stand row: 記録なし in けんこう, no fruit). */
 const NO_WATCH = 0.04;
 /** About 1 in 5 met goals reach 1.5× (がんばり), so the cap shows up now and then. */
 const STRETCH_ODDS = 0.2;
@@ -62,10 +62,13 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
       const steps = around(8000), mins = around(60), kcal = around(p === 'A' ? 600 : 450), stand = around(120);
       const watch = isToday || rng(`${p}|watch|${d}`)() >= NO_WATCH;
       if (syncAt > at(d, 6) && syncAt < now) {
-        metrics.push(
-          [iso(syncAt), p, d, 'steps', Math.max(300, steps)], [iso(syncAt), p, d, 'exercise_min', watch ? Math.max(0, mins) : 0],
-          [iso(syncAt), p, d, 'move_kcal', watch ? Math.max(30, kcal) : 0], [iso(syncAt), p, d, 'stand_min', watch ? Math.max(5, stand) : 0]
-        );
+        metrics.push([iso(syncAt), p, d, 'steps', Math.max(300, steps)]);
+        if (watch) {
+          metrics.push(
+            [iso(syncAt), p, d, 'exercise_min', Math.max(0, mins)], [iso(syncAt), p, d, 'move_kcal', Math.max(30, kcal)],
+            [iso(syncAt), p, d, 'stand_min', Math.max(5, stand)]
+          );
+        }
       }
     }
   }

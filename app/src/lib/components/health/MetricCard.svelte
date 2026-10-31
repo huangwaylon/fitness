@@ -1,7 +1,8 @@
 <script lang="ts">
   // One metric's card (けんこう), for the chosen person: its fruit and name with their goal; the daily average over the
-  // recorded days, the change against the previous period, the goal met n/N days (%), the best day and the days with no
-  // record; then the chart (in the person's colour) and a one-line key.
+  // finished days with data (Apple Health's values as is), the change against the previous period, the goal met n/N
+  // days (%), the best day and the days with no row (記録なし, only when there are any); then the chart (in the
+  // person's colour) and a one-line key (its 記録なし swatch only when the period has such a day).
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import { bucketValues, metricStats, METRIC_FRUIT, type HealthSeries, type Metric, type Range } from '#lib/model/health.ts';
   import { fruitArt } from '#lib/art.ts';
@@ -68,7 +69,7 @@
       <span><i class="k-miss"></i><i class="k-mid"></i><i class="k-met"></i>{t('health.key.share')}</span>
     {/if}
     <span><i class="k-goal"></i>{t('goal.title')}</span>
-    <span><i class="k-none"></i>{t('health.noData')}</span>
+    {#if s.missing}<span><i class="k-none"></i>{t('health.noData')}</span>{/if}
   </p>
 </section>
 

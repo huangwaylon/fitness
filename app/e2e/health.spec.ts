@@ -16,7 +16,7 @@ async function openHealth(page: Page, query = '?demo') {
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
-test('the tab: one person at a time, a card per metric, steps first, then 体重; averages over the days with data', async ({ page }) => {
+test('the tab: one person at a time, a card per metric, steps first, then 体重; averages over every day with data', async ({ page }) => {
   await openHealth(page);
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
@@ -24,13 +24,13 @@ test('the tab: one person at a time, a card per metric, steps first, then 体重
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
-  await expect(move.locator('.lab')).toHaveText('1日の平均（記録のある日）');
+  await expect(move.locator('.lab')).toHaveText('1日の平均');
   await expect(move.locator('.avg')).toHaveText(/^[\d,]+ kcal$/);
   await expect(move.locator('.chg .cv')).toHaveText(/^[↑↓→] [+−±]\d+%$/);
   await expect(move.locator('.sub')).toContainText(/目標 \d+\/\d+日（\d+%）/);
   await expect(move.locator('.sub')).toContainText(/ベスト [\d,]+ kcal（\d+\/\d+）/);
   await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 8,000歩');
-  await expect(sheet(page).locator('.health > .note')).toContainText('100kcal未満');
+  await expect(sheet(page).locator('.health > .note')).toContainText('数字を そのまま');
   // one series: every bar in this phone's person's colour
   await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
   expect(await sheet(page).locator('.mc path.bar.pA').count()).toBeGreaterThan(100);
@@ -67,7 +67,7 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(range(page)).toHaveText('10/18–10/24');
 });
 
-test('a day without data (the Watch on its charger, the phone left home) is a short faint stub on the axis and 記録なし, not a zero', async ({ page }) => {
+test('every day with data is its bar, as reported; only a day with no row is a short faint stub on the axis and 記録なし', async ({ page }) => {
   await openHealth(page, '?demo&weeks=60');
   await sheet(page).locator('[data-period=quarter]').click();
   await sheet(page).locator('[data-period=month]').click();
@@ -76,6 +76,9 @@ test('a day without data (the Watch on its charger, the phone left home) is a sh
     const card = sheet(page).locator(`.mc[data-metric=${m}]`);
     const n = Number((await card.locator('.sub').textContent())!.match(/記録なし (\d+)日/)?.[1] ?? 0);
     await expect(card.locator('rect.none'), m).toHaveCount(n); // one stub per day counted as 記録なし
+    await expect(card.locator('path.bar'), m).toHaveCount(30 - n); // every other day of the 30 is a bar, whatever its value
+    if (n) await expect(card.locator('.key'), m).toContainText('記録なし');
+    else await expect(card.locator('.key'), m).not.toContainText('記録なし'); // the swatch only when the period has such a day
     stubs += n;
   }
   expect(stubs).toBeGreaterThan(0);
@@ -90,7 +93,6 @@ test('a day without data (the Watch on its charger, the phone left home) is a sh
   // its tap callout says 記録なし
   await chart.click({ position: { x: sb.x - cb.x + sb.width / 2, y: cb.height - 40 } });
   await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
-  await expect(sheet(page).locator('.mc .key').first()).toContainText('記録なし');
 });
 
 test('体重: the period’s plain change (first week → last week, else first → last weigh-in), no trend words', async ({ page }) => {

@@ -12,7 +12,7 @@
   "health.unit.day": "By day",
   "health.unit.week": "Weekly, daily average",
   "health.unit.month": "Monthly, daily average",
-  "health.avgHead": "Daily average (days with data)",
+  "health.avgHead": "Daily average",
   "health.changeHead": "vs previous period",
   "health.met": "Goal {n}/{d} days ({p}%)",
   "health.best": "Best {v} ({date})",
@@ -34,5 +34,5 @@
   "health.weight.avgOf": "(average of {n})",
   "health.weight.avgKey": "Average weigh-in",
   "health.weight.chartLabel": "{name}'s weight, {range}. Average {kg}",
-  "health.note": "Averages, best days and goal days count days with data only: a day the Watch wasn't really worn (Move under 100 kcal and Stand under 30 min) has no Move, Exercise or Stand; a day under 500 steps (the phone left at home) has no steps; today (still running) is left out. The previous period is the same length, just before."
+  "health.note": "Apple Health's numbers as they are: a 0- or 66-step day is a day like any other, in the averages, best days and goal days. No data means nothing at all arrived for that day (a hatched stub on the chart, left out of the averages). Today, still running, is drawn but not counted. The previous period is the same length, just before."
 }
