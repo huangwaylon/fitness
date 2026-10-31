@@ -1,14 +1,12 @@
-// The ベル economy on read: each week's earnings (live until the week locks on its
-// Wednesday 04:00, then fixed at the lock), what has landed in the wallet by `now`, the buys replayed against it, the
-// shared menu and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for
-// locked weeks, across States of the same sheet revision.
-import type {
-  DayBells, HarvestBonus, LocalDate, MenuItemView, PersonId, RingBells, RingFruit, WalletItem, WeekKey
-} from '#lib/types.ts';
-import { DEFAULT_MENU, ESCALATING_ITEMS, ESCALATION } from '#lib/config/rules.ts';
+// The ベル economy on read: each week's earnings (live until the week locks on its Wednesday 04:00, then fixed at the
+// lock), what has landed in the wallet by `now`, the buys replayed against it, and the きろく ledger. Pure functions of
+// the reduced State; results are cached per State (a State is never mutated) and, for locked weeks, across States of
+// the same sheet revision.
+import type { DayBells, LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
+import { RULES } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
-import { duoBonus, earnWeek, zeroRings, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
-import { finalMs, firstWeek, latestAt, moveGoalOn, provisionalMs, rowsUpTo, type State } from './state.ts';
+import { earnWeek, noneMet, togetherDays, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
+import { finalMs, firstWeek, moveGoalOn, rowsUpTo, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
 
 /** `t` for an open week: every row counts. */
@@ -19,11 +17,10 @@ const earnTimeOf = (wk: WeekKey, now: number): number => (now >= finalMs(wk) ? f
 
 /** One person's week as of t, for `earnWeek`. */
 function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInput {
-  const dates = weekDays(wk);
   return {
     person,
     weekKey: wk,
-    days: dates.map((date) => ({
+    days: weekDays(wk).map((date) => ({
       date,
       steps: metricAsOf(s, person, date, 'steps', t),
       exerciseMin: metricAsOf(s, person, date, 'exercise_min', t),
@@ -39,17 +36,18 @@ export interface WeekBells {
   weekKey: WeekKey;
   A: WeekEarning;
   B: WeekEarning;
-  /** The weekly bonus; it lands at the Sunday 19:30 harvest. */
-  bonus: HarvestBonus;
-  /** bonus.A + bonus.B + bonus.duo. */
-  bonusBells: number;
+  /** ふたりでぜんぶ per day, Mon..Sun. */
+  together: boolean[];
+  /** Per day, Mon..Sun: both people's ベル + RULES.together on a together day. */
+  dayTotals: number[];
 }
 
 function computeWeekBells(s: State, wk: WeekKey, t: number): WeekBells {
   const A = earnWeek(earnInput(s, 'A', wk, t));
   const B = earnWeek(earnInput(s, 'B', wk, t));
-  const bonus = { A: A.bonus, B: B.bonus, duo: duoBonus(A, B) };
-  return { weekKey: wk, A, B, bonus, bonusBells: bonus.A + bonus.B + bonus.duo };
+  const together = togetherDays(A, B);
+  const dayTotals = A.days.map((d, i) => d.bells + B.days[i].bells + (together[i] ? RULES.together : 0));
+  return { weekKey: wk, A, B, together, dayTotals };
 }
 
 const perState = new WeakMap<State, Map<string, WeekBells>>();
@@ -77,71 +75,52 @@ export function weekBells(s: State, wk: WeekKey, now: number): WeekBells {
   return w;
 }
 
-/** The weeks that earn, from the economy's first week (the demo's own) to the week of `now`. */
+/** The weeks that earn, from the economy's first week to the week of `now` (none before any data). */
 export function economyWeeks(s: State, now: number): WeekKey[] {
   const cur = weekKeyOf(localDateAt(now));
   const out: WeekKey[] = [];
-  for (let wk = firstWeek(s); wk <= cur; wk = addDays(wk, 7)) out.push(wk);
+  const first = firstWeek(s);
+  if (first !== null) for (let wk = first; wk <= cur; wk = addDays(wk, 7)) out.push(wk);
   return out;
 }
 
-/** A person's earnings of one day (zeros for a date outside the week). */
-export function dayBells(e: WeekEarning | undefined, date: LocalDate): { bells: number; rings: RingBells } {
-  const d = e?.days.find((x) => x.date === date);
-  return { bells: d?.bells ?? 0, rings: d ? { ...d.rings } : zeroRings() };
+/** A person's earnings of one day (nothing for a date outside the week). */
+export function dayBells(e: WeekEarning, date: LocalDate): DayBells {
+  const d = e.days.find((x) => x.date === date);
+  return { date, bells: d?.bells ?? 0, met: d ? { ...d.met } : noneMet() };
 }
 
-/** A person's daily ベル of a week, counting only days up to `today` (a future-dated row never earns early). */
-export const dailyUpTo = (e: WeekEarning, today: LocalDate): number => e.days.reduce((n, d) => (d.date <= today ? n + d.bells : n), 0);
+/** The week's ベル, counting only days up to `today` (a future-dated row never earns early). */
+export interface WeekSum { A: number; B: number; together: number; togetherDays: number; total: number }
+export function weekSum(w: WeekBells, today: LocalDate): WeekSum {
+  const out: WeekSum = { A: 0, B: 0, together: 0, togetherDays: 0, total: 0 };
+  w.A.days.forEach((d, i) => {
+    if (d.date > today) return;
+    out.A += d.bells;
+    out.B += w.B.days[i].bells;
+    if (w.together[i]) {
+      out.togetherDays++;
+      out.together += RULES.together;
+    }
+  });
+  out.total = out.A + out.B + out.together;
+  return out;
+}
 
 // ---------- the wallet and spends ----------
-
-/** The shared menu, one list: the latest valid `pref` menu by either person, else the defaults in the viewer's language. */
-function menuAt(s: State, locale: 'ja' | 'en'): WalletItem[] {
-  return latestAt(s.menu, Infinity)?.map((x) => ({ ...x })) ?? DEFAULT_MENU.map((x) => ({ id: x.id, label: x.label[locale], bells: x.bells }));
-}
-
-/** An item's menu price as of server time t (the latest `pref` menu stamped by then, else the defaults); undefined if not on it. */
-function basePriceAt(s: State, item: string, t: number): number | undefined {
-  return (latestAt(s.menu, t) ?? DEFAULT_MENU).find((x) => x.id === item)?.bells;
-}
-
-/** Whether a menu item id's price rises with each repeat in a week (ESCALATING_ITEMS: keyed by id, so a rename keeps it). */
-const escalates = (item: string): boolean => ESCALATING_ITEMS.includes(item);
-
-/**
- * The price of an escalating item's buy after n earlier ones this week: base × 1.5^n (ESCALATION), for n ≥ 1 rounded
- * to the nearest 50 ベル with an exact half rounding down, and never below the base. Exact integer maths (BigInt), so
- * 1,200 → 1,800 → 2,700 → 4,050 and 2,500 → 3,750 → 5,600 (5,625: a half, down) on every engine.
- */
-export function treatPrice(base: number, n: number): number {
-  if (n <= 0) return base;
-  const { num, den, roundTo } = ESCALATION;
-  const top = BigInt(base) * BigInt(num) ** BigInt(n);
-  const bottom = BigInt(den) ** BigInt(n) * BigInt(roundTo);
-  const q = top / bottom;
-  const steps = 2n * (top % bottom) > bottom ? q + 1n : q; // > : a remainder of exactly half rounds down
-  return Math.max(base, Number(steps) * roundTo);
-}
-
-/** Where the escalation counts buys: one item id in one Tokyo week. */
-const countKey = (item: string, t: number): string => `${weekKeyOf(localDateAt(t))}|${item}`;
-const ENFORCE_FROM = Date.parse(ESCALATION.enforceFrom);
 
 /** An accepted buy (a buy the wallet couldn't cover is ignored and never listed). */
 export interface LedgerSpend {
   spendId: string;
   at: number;
   by: PersonId;
-  /** The menu item id it was bought from. */
-  item: string;
-  label: string;
+  item: ShopItemId;
   bells: number;
   voided: boolean;
   voidedAt: number | null;
 }
 
-/** The wallet's totals: everything earned (daily + the bonuses that landed), the accepted buys, and the difference. */
+/** The wallet's totals: everything earned, the accepted buys, and the difference. */
 interface WalletBalance { balance: number; earned: number; spent: number }
 
 interface WalletState {
@@ -150,36 +129,23 @@ interface WalletState {
   weeks: WeekBells[];
   /** Accepted buys in server order. */
   spends: LedgerSpend[];
-  /** Accepted, not voided buys per item id in the week of `now`, both people. */
-  boughtThisWeek: Map<string, number>;
 }
 
 const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
 
 /**
- * The wallet at `now`. Earnings land as they happen: a day's ベル (its current value) count from that day, a week's
- * bonus from its Sunday 19:30. Buys and voids replay in server order; a buy counts only if the wallet covered it then
- * (earned by its time − spent so far), so the balance never goes negative, and the buyer's void gives it back.
- * An escalating item's buy (from ESCALATION.enforceFrom) must also carry its price at its place in that order:
- * treatPrice(the menu price then, the accepted and not yet voided buys of that id earlier in its week). Two phones
- * buying at once both send the same price; the server's first is accepted, the second no longer matches and is ignored.
- * A void frees its buy for the buys after it (the next price steps back down); buys before it never change.
+ * The wallet at `now`. A day's ベル (its current value) count from that day. Buys and voids replay in server order; a
+ * buy counts only if the wallet covered it then (earned on days up to its date − spent so far), so the balance never
+ * goes negative, and the buyer's void gives it back.
  */
 export function walletAt(s: State, now: number): WalletState {
   const memo = walletMemo.get(s);
   if (memo && memo.now === now) return memo.v;
   const today = localDateAt(now);
   const weeks = economyWeeks(s, now).map((wk) => weekBells(s, wk, now));
-  // Earned by time t: the days up to t's date + the bonuses landed by t. Both lists ascend.
+  // Earned per day, ascending.
   const days: { date: LocalDate; bells: number }[] = [];
-  const bonuses: { at: number; bells: number }[] = [];
-  for (const w of weeks) {
-    for (let i = 0; i < 7; i++) {
-      const date = w.A.days[i].date;
-      if (date <= today) days.push({ date, bells: w.A.days[i].bells + w.B.days[i].bells });
-    }
-    if (provisionalMs(w.weekKey) <= now) bonuses.push({ at: provisionalMs(w.weekKey), bells: w.bonusBells });
-  }
+  for (const w of weeks) w.A.days.forEach((d, i) => d.date <= today && days.push({ date: d.date, bells: w.dayTotals[i] }));
   const earnedBy = (t: number): number => {
     const d = localDateAt(t);
     let n = 0;
@@ -187,91 +153,48 @@ export function walletAt(s: State, now: number): WalletState {
       if (x.date > d) break;
       n += x.bells;
     }
-    for (const x of bonuses) {
-      if (x.at > t) break;
-      n += x.bells;
-    }
     return n;
   };
-  const earned = days.reduce((n, x) => n + x.bells, 0) + bonuses.reduce((n, x) => n + x.bells, 0);
+  const earned = days.reduce((n, x) => n + x.bells, 0);
 
   let spent = 0;
   const accepted = new Map<string, LedgerSpend>();
-  const counts = new Map<string, number>();
   const spends: LedgerSpend[] = [];
-  const voids = s.spendVoids.filter((v) => s.bellSpends.some((x) => x.spendId === v.spendId));
   const ops = [
     ...s.bellSpends.map((rec) => ({ at: rec.at, spend: rec, void: null })),
-    ...voids.map((rec) => ({ at: rec.at, spend: null, void: rec }))
+    ...s.spendVoids.map((rec) => ({ at: rec.at, spend: null, void: rec }))
   ].sort((x, y) => x.at - y.at || (x.spend ? -1 : 1) - (y.spend ? -1 : 1));
   for (const o of ops) {
     if (o.spend) {
       const sp = o.spend;
-      const key = countKey(sp.item, sp.at);
-      const n = counts.get(key) ?? 0;
-      if (escalates(sp.item) && sp.at >= ENFORCE_FROM) {
-        const base = basePriceAt(s, sp.item, sp.at);
-        if (base === undefined || sp.bells !== treatPrice(base, n)) continue; // not this week's price: ignored
-      }
       if (earnedBy(sp.at) - spent < sp.bells) continue; // the wallet couldn't cover it: ignored
-      counts.set(key, n + 1);
       spent += sp.bells;
-      const entry: LedgerSpend = {
-        spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, label: sp.label, bells: sp.bells, voided: false, voidedAt: null
-      };
+      const entry: LedgerSpend = { spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, bells: sp.bells, voided: false, voidedAt: null };
       accepted.set(sp.spendId, entry);
       spends.push(entry);
     } else if (o.void) {
       const entry = accepted.get(o.void.spendId);
       if (!entry || entry.voided) continue;
       spent -= entry.bells;
-      const key = countKey(entry.item, entry.at);
-      counts.set(key, (counts.get(key) ?? 1) - 1);
       entry.voided = true;
       entry.voidedAt = o.void.at;
     }
   }
-  const cur = `${weekKeyOf(today)}|`;
-  const boughtThisWeek = new Map<string, number>();
-  for (const [k, c] of counts) if (k.startsWith(cur) && c > 0) boughtThisWeek.set(k.slice(cur.length), c);
-  const v: WalletState = { wallet: { balance: earned - spent, earned, spent }, weeks, spends, boughtThisWeek };
+  const v: WalletState = { wallet: { balance: earned - spent, earned, spent }, weeks, spends };
   walletMemo.set(s, { now, v });
   return v;
 }
 
-/**
- * The menu as the wallet shows it at `now`: each item's base, this week's buys of it (both people) and the price of the
- * next buy (treatPrice for an escalating item, else the base).
- */
-export function menuView(s: State, locale: 'ja' | 'en', now: number): MenuItemView[] {
-  const { boughtThisWeek } = walletAt(s, now);
-  return menuAt(s, locale).map((x) => {
-    const bought = boughtThisWeek.get(x.id) ?? 0;
-    const esc = escalates(x.id);
-    return { ...x, basePrice: x.bells, price: esc ? treatPrice(x.bells, bought) : x.bells, boughtThisWeek: bought, escalates: esc };
-  });
-}
-
 // ---------- the きろく ledger ----------
 
-/** One day of the ledger: both people's earnings. */
+/** One day of the ledger: each person's goals and ふたりでぜんぶ. */
 export interface LedgerDay {
   date: LocalDate;
   weekKey: WeekKey;
-  /** Both people. */
+  /** Both people + ふたりでぜんぶ. */
   bells: number;
   people: Record<PersonId, DayBells>;
-}
-
-/** A week's bonus row: it lands at the Sunday 19:30 harvest (`at`). */
-export interface LedgerBonus {
-  weekKey: WeekKey;
-  at: number;
-  bonus: HarvestBonus;
-  /** bonus.A + bonus.B + bonus.duo. */
-  bells: number;
-  /** The week's four badges per person. */
-  ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
+  together: boolean;
 }
 
 export interface BellsLedger {
@@ -279,36 +202,23 @@ export interface BellsLedger {
   earned: number;
   /** Newest first, from the economy's first day to today. */
   days: LedgerDay[];
-  /** Newest first, weeks whose harvest has opened. */
-  bonuses: LedgerBonus[];
   /** Newest first. */
   spends: LedgerSpend[];
 }
 
-/** The きろく ledger at `now`: every day's earnings, the weekly bonuses and the spends. */
+/** The きろく ledger at `now`: every day's earnings and the spends. */
 export function bellsLedger(s: State, now: number): BellsLedger {
   const p = walletAt(s, now);
   const today = localDateAt(now);
   const days: LedgerDay[] = [];
-  const bonuses: LedgerBonus[] = [];
   for (const w of p.weeks) {
-    for (let i = 0; i < 7; i++) {
-      const [a, b] = [w.A.days[i], w.B.days[i]];
-      if (a.date > today) break;
-      const day = (d: typeof a): DayBells => ({ date: d.date, bells: d.bells, rings: { ...d.rings } });
-      days.push({ date: a.date, weekKey: w.weekKey, bells: a.bells + b.bells, people: { A: day(a), B: day(b) } });
-    }
-    if (provisionalMs(w.weekKey) <= now) {
-      bonuses.push({
-        weekKey: w.weekKey, at: provisionalMs(w.weekKey), bonus: { ...w.bonus }, bells: w.bonusBells,
-        ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } }
+    w.A.days.forEach((a, i) => {
+      if (a.date > today) return;
+      days.push({
+        date: a.date, weekKey: w.weekKey, bells: w.dayTotals[i], together: w.together[i],
+        people: { A: dayBells(w.A, a.date), B: dayBells(w.B, a.date) }
       });
-    }
+    });
   }
-  return {
-    earned: p.wallet.earned,
-    days: days.reverse(),
-    bonuses: bonuses.reverse(),
-    spends: p.spends.map((x) => ({ ...x })).reverse()
-  };
+  return { earned: p.wallet.earned, days: days.reverse(), spends: p.spends.map((x) => ({ ...x })).reverse() };
 }

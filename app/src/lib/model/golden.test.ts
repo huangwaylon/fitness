@@ -3,8 +3,9 @@
 //
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
 // Health syncs (one before a lock, one after), a double-counted day corrected by a lower re-sync (A, 12-03: latest
-// wins) and a lower re-sync after a lock (A, 11-29: the locked week stays put), wallet buys, a void and a menu edit. The 外ごはん and カフェ buys pay the escalating
-// price of their week (a buy of an escalating item at any other price is ignored).
+// wins), a lower re-sync after a lock (A, 11-29: the locked week stays put), ふたりでぜんぶ days (11-05, 12-16, 12-20),
+// wallet buys, a void, a void by someone else (ignored), buys at a wrong price or of an unknown item (ignored) and a buy
+// beyond the wallet (ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,
@@ -18,7 +19,6 @@ import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import type { PersonId, WeekView } from '#lib/types.ts';
-import { DEFAULT_MENU } from '#lib/config/rules.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, weekBells } from './bells.ts';
 import { provisionalMs, reduce } from './state.ts';
@@ -70,24 +70,27 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     const all = Object.values(VIEWS).flatMap((v) => PEOPLE.map((p) => v[p]));
     expect(Object.keys(DIGESTS).length).toBe(660);
     expect(Object.keys(VIEWS).length).toBe(50);
-    // Badges but never all four for both (the ふたりボーナス is covered by bells.test.ts).
-    expect(all.some((v) => v.harvest && v.harvest.bonus.A > 0 && v.harvest.bonus.B > 0)).toBe(true);
-    // A harvest where one person met no badge (with v2's 120 Stand minutes every week from 11-02 has a badge; an empty
-    // harvest for both is model/bells.test.ts's).
-    expect(all.some((v) => v.harvest && (v.harvest.bonus.A === 0 || v.harvest.bonus.B === 0))).toBe(true);
-    expect(all.some((v) => v.harvest?.weekKey === '2026-10-26' && v.harvest.bonus.A === 400)).toBe(true); // v1: +400 a badge
-    expect(all.some((v) => v.harvest?.weekKey === '2026-11-02' && v.harvest.bonus.A % 450 === 0 && v.harvest.bonus.A > 0)).toBe(true); // v2: +450 a badge
-    // Four fruits only, everywhere.
+    // Harvest recaps with and without ふたりでぜんぶ days.
+    expect(all.some((v) => v.harvest && v.harvest.togetherDays === 2 && v.harvest.bells.together === 4)).toBe(true);
+    expect(all.some((v) => v.harvest && v.harvest.togetherDays === 0 && v.harvest.totalBells > 0)).toBe(true);
+    // Four fruits only, everywhere; at most 4 ベル a person a day.
     expect(all.every((v) => PEOPLE.every((p) => Object.keys(v.people[p].rings).join() === 'pear,peach,cherry,apple'))).toBe(true);
+    expect(all.every((v) => PEOPLE.every((p) => v.people[p].today.bells >= 0 && v.people[p].today.bells <= 4))).toBe(true);
+    // Today's ふたりでぜんぶ, met (Sunday 12-20 19:29) and not.
+    expect(all.some((v) => v.together.met && v.together.left === 0 && v.wallet.today === 10)).toBe(true);
+    expect(all.some((v) => !v.together.met && v.together.left > 0)).toBe(true);
     // Move and Stand earn, and the Move goal changes (g1–g3).
-    expect(all.some((v) => v.people.A.rings.pear.todayBells > 0 && v.people.B.rings.cherry.todayBells > 0)).toBe(true);
-    expect(all.some((v) => v.harvest?.ringBadges.A.cherry || v.harvest?.ringBadges.B.cherry)).toBe(true);
+    expect(all.some((v) => v.people.A.rings.pear.met && v.people.B.rings.cherry.met)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
-    expect(all.some((v) => v.menu.some((x) => x.id === 'taiyaki'))).toBe(true);
     const end = bellsLedger(reduce(ROWS), END);
-    expect(end.spends.map((x) => [x.spendId, x.voided])).toEqual([['bs-taiyaki', false], ['bs-daytrip', false], ['bs-ice', false], ['bs-cafe', true], ['bs-early', false]]); // bs-upgrade (160,000) is refused
-    expect(DEFAULT_MENU.some((x) => x.id === 'taiyaki')).toBe(false);
+    // bs-wrong (5 ベル), bs-trip (no such reward) and bs-b20 (beyond the wallet: it is empty) are ignored; B's void of
+    // A's dinner too.
+    expect(end.spends.map((x) => [x.spendId, x.voided]).reverse()).toEqual([
+      ['bs-early', false], ['bs-snack', true], ['bs-dinner', false], ['bs-snack-2', false],
+      ...['b10', 'b11', 'b12', 'b13', 'b14', 'b15', 'b16', 'b17', 'b18', 'b19'].map((id) => [`bs-${id}`, false])
+    ]);
+    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(0);
   });
 
   it('matches the full WeekView at every key instant, for both people', () => {
@@ -111,13 +114,13 @@ describe('golden: the WeekView on a 10-week timeline', () => {
       const tMs = Date.parse(t);
       const s = reduce(rowsAt(tMs));
       const l = bellsLedger(s, tMs);
-      const earned = l.days.reduce((n, d) => n + d.bells, 0) + l.bonuses.reduce((n, b) => n + b.bells, 0);
+      const earned = l.days.reduce((n, d) => n + d.bells, 0);
       expect(l.earned, t).toBe(earned);
       for (const me of PEOPLE) {
         const v = buildWeekView(s, me, tMs);
         expect(v.wallet.balance, t).toBe(l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0));
         const h = v.harvest;
-        if (h && provisionalMs(h.weekKey) <= tMs) expect(h.ringBadges, `${t} badges`).toEqual(l.bonuses.find((b) => b.weekKey === h.weekKey)!.ringBadges);
+        if (h) expect(h.totalBells, `${t} harvest`).toBe(l.days.filter((d) => d.weekKey === h.weekKey).reduce((n, d) => n + d.bells, 0));
       }
     }
   });
@@ -127,7 +130,8 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     const t = Date.parse('2026-11-24T19:01:00.000Z'); // Wednesday 04:01 JST
     const atHarvest = weekBells(reduce(rowsAt(provisionalMs(week) + 60_000)), week, provisionalMs(week) + 60_000);
     const atLock = weekBells(reduce(rowsAt(t)), week, t);
-    expect(atLock.B.daily).toBeGreaterThan(atHarvest.B.daily);
+    const daily = (w: typeof atLock) => w.B.days.reduce((n, d) => n + d.bells, 0);
+    expect(daily(atLock)).toBeGreaterThan(daily(atHarvest));
     expect(weekBells(reduce(ROWS), week, END)).toEqual(atLock);
   });
 

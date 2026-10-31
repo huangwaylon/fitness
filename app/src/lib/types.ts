@@ -12,79 +12,38 @@ export type WeekKey = string;
  */
 export type RingFruit = 'pear' | 'peach' | 'cherry' | 'apple';
 
-/** ベル per ring fruit. */
+/** A number per ring fruit (ベル: 1 when its goal was met). */
 export type RingBells = Record<RingFruit, number>;
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
 
-/** A shared menu entry (one list for both), editable in the app (`pref` menu): either person can buy it from the wallet. */
-export interface WalletItem {
-  id: string;
-  label: string;
-  bells: number;
-}
-
-/**
- * A menu entry as the wallet shows it. `bells` / `basePrice`: the menu's
- * price; `price`: what the next buy costs now (the base, or for an escalating item the base × 1.5 per accepted, not
- * voided buy of that id this week by either person, model/bells.ts `treatPrice`).
- */
-export interface MenuItemView extends WalletItem {
-  price: number;
-  basePrice: number;
-  /** Accepted, not voided buys of this id in the current Tokyo week, both people. */
-  boughtThisWeek: number;
-  /** In ESCALATING_ITEMS (rules.ts): おやつ, カフェ・デザート, 外ごはん by default. */
-  escalates: boolean;
-}
+/** The two rewards (config/rules.ts SHOP): 🍡 おやつ and 🍜 外食. */
+export type ShopItemId = 'snack' | 'dinner';
 
 /** The shared wallet as the island shows it. */
-export interface WalletView {
+interface WalletView {
   /** Every ベル earned minus the accepted buys (never negative: a buy above the balance is ignored on read). */
   balance: number;
-  /** Both people, today so far. */
+  /** Both people today so far, ふたりでぜんぶ included. */
   today: number;
 }
 
-/** One person's earnings of one day. */
+/** One person's earnings of one day: +1 ベル per goal met. */
 export interface DayBells {
   date: LocalDate;
   bells: number;
-  /** Per ring fruit; sums to `bells`. */
-  rings: RingBells;
+  /** The daily goal met, per ring fruit. */
+  met: Record<RingFruit, boolean>;
 }
 
-/** The Sunday harvest's weekly bonus: +badges.bells per badge each, +badges.duoPerBadge per badge both met (ふたりボーナス). */
-export interface HarvestBonus {
-  A: number;
-  B: number;
-  duo: number;
-}
-
-/** A ring fruit's progress today and this week. Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
+/** A ring fruit's progress today. Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
 export interface RingProgress {
   /** Today's amount from Apple Health. */
   today: number;
-  /** Today's daily goal at the week's rule version (rules.ts goals; 🍐 the person's Move goal in force today). */
+  /** Today's daily goal (rules.ts goals; 🍐 the person's Move goal in force today). */
   goal: number;
-  /** Today's goal is met (🍎 also by the tsuyu rule). */
+  /** Today's goal is met: +1 ベル. */
   met: boolean;
-  /** Today's ベル of this fruit. */
-  todayBells: number;
-  /** Days this week meeting the daily goal. */
-  weekDays: number;
-  /** The badge threshold: 5 days (🍑🍐🍒), 4 (🍎). */
-  weekGoalDays: number;
-  badge: boolean;
-  /**
-   * The milestone curve (docs/design.md#milestone-curve). Present in a week with a curve (v2, from
-   * 2026-11-02); absent in v1 weeks. `milestone`: steps reached today, 0–4 (4 = the goal met).
-   */
-  milestone?: number;
-  /** The next milestone's amount, in `today`/`goal` units (minutes, kcal rounded up, steps); null once the goal is met. */
-  nextAt?: number | null;
-  /** What reaching `nextAt` adds: nextBells − todayBells (「あと 8分で +45」); null once the goal is met. */
-  nextGain?: number | null;
 }
 
 export interface PersonWeekView {
@@ -92,9 +51,9 @@ export interface PersonWeekView {
   villagerName: string;
   /** Animal Crossing villager key from the roster (e.g. 'goldie'); null = default for this person. */
   villager: string | null;
-  /** Today's earnings so far, per ring fruit (`rings` sums to `bells`). */
+  /** Today's ベル so far (0–4) and, per ring fruit, the ベル it earned (1 = met). */
   today: { bells: number; rings: RingBells };
-  /** This week's daily earnings so far (without the weekly bonus). */
+  /** This week's ベル so far (this person's goals; ふたりでぜんぶ is shared, not in here). */
   weekBells: number;
   /** The four ring fruits. */
   rings: Record<RingFruit, RingProgress>;
@@ -103,14 +62,22 @@ export interface PersonWeekView {
   lastSyncAt: string | null;
 }
 
+/** Today's ふたりでぜんぶ: both people meet all four goals. */
+export interface TogetherView {
+  met: boolean;
+  /** Goals still to meet today, both people counted (0–8). */
+  left: number;
+}
+
+/** The Sunday harvest: a recap of the week (its ベル landed day by day; nothing more lands here). */
 export interface HarvestView {
   weekKey: WeekKey;
-  /** The week's weekly bonus; it counts whether or not 「受け取る」 is tapped. */
-  bonus: HarvestBonus;
-  /** The week's total ベル, both people: daily earnings + the bonus. */
+  /** The week's ベル: each person's goals, and ふたりでぜんぶ (shared). */
+  bells: { A: number; B: number; together: number };
+  /** Days both people met all four goals. */
+  togetherDays: number;
+  /** bells.A + bells.B + bells.together. */
   totalBells: number;
-  /** The week's four badges per person (lit = met, +bonus each). */
-  ringBadges: Record<PersonId, Record<RingFruit, boolean>>;
   /** Who tapped 「受け取る」 (a ceremony only). */
   confirmedBy: PersonId[];
 }
@@ -122,10 +89,9 @@ export interface WeekView {
   weekKey: WeekKey;
   today: LocalDate;
   people: Record<PersonId, PersonWeekView>;
+  together: TogetherView;
   /** The shared wallet. */
   wallet: WalletView;
-  /** The shared menu, one list (latest `pref` menu by either person, else the defaults), with this week's prices. */
-  menu: MenuItemView[];
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;
   /** i18n key (`host.*`) for the host しずえ's one line, plus params. */

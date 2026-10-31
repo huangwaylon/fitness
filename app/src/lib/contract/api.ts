@@ -38,9 +38,9 @@ export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'step
 
 /**
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`,
- * `goalWeight` (kg) and `moveGoal` (kcal), and the shared `menu`.
+ * `goalWeight` (kg) and `moveGoal` (kcal).
  */
-export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal', 'menu'] as const;
+export const PREF_KEYS = ['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'] as const;
 
 /** The `pref` keys either person may set for either person (`data.person`): the two goals. The rest are the sender's own. */
 const PERSON_PREF_KEYS = ['goalWeight', 'moveGoal'] as const;

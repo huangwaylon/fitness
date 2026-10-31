@@ -39,12 +39,9 @@ const SPECS: Record<string, Spec> = {
   'fruit/apple': [128, 'Apple_NH_Inv_Icon.png'],
   'fruit/pear': [128, 'Pear_NH_Inv_Icon.png'],
   'fruit/cherry': [128, 'Cherry_NH_Inv_Icon.png'],
-  // The wallet's five default treats (one list): NH item art (an item someone adds shows the bag of bells).
-  'items/snack': [96, 'Cookies_NH_Icon.png'],
-  'items/cafe': [96, 'Coffee_Cup_NH_Icon.png'],
-  'items/dinner': [96, 'Pizza_Margherita_NH_Icon.png'],
-  'items/want': [96, 'Present_NH_Inv_Icon.png'],
-  'items/trip': [96, 'Nook_Miles_Ticket_NH_Inv_Icon.png'],
+  // The wallet's two rewards: soft serve (おやつ) and shoyu ramen (外食).
+  'items/snack': [128, 'Soft_Serve_NH_Inv_Icon.png'],
+  'items/dinner': [128, 'Shoyu_Ramen_NH_Icon.png'],
   // Island flower beds (scale pass): the NH inventory art of each planted flower, trimmed to the figure (TRIM).
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
   'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],
@@ -58,7 +55,6 @@ const SPECS: Record<string, Spec> = {
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
   // NookPhone (しまフォン launcher).
   // v4 launcher: full squircle tiles (92 px) and bare menu glyphs (180 px, transparent; drawn on our tile).
-  'money/miles': [96, 'Nook_Miles_NH_Icon.png'],
   // v4 trees: the hardwood in its four seasonal looks is the NH fruit tree (each bears one fruit kind);
   // A11: the seasonal sources are only 329×409, so they ship at full
   // resolution (never upscaled: the orchard draws them ≤ 104u ≈ 315 device px); summer has a big
@@ -84,7 +80,6 @@ const SPECS: Record<string, Spec> = {
   'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Game-derived replacements for hand-drawn chrome.
-  'phone/nook-shopping': [92, 'NookPhone_Nook_Shopping_NH_Icon.png'], // ごほうび財布 (reward wallet)
   // v4 seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
   'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],

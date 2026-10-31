@@ -1,12 +1,6 @@
-// A treat's picture: official NH item art for the five defaults (static/art/items); an item someone added
-// shows the bag of bells.
-const ART: Record<string, string> = {
-  snack: 'items/snack',
-  cafe: 'items/cafe',
-  dinner: 'items/dinner',
-  want: 'items/want',
-  trip: 'items/trip'
-};
+// A reward's picture: official NH item art (static/art/items): soft serve for おやつ, shoyu ramen for 外食.
+import type { ShopItemId } from '#lib/types.ts';
 
-/** The art key for a treat (its own, or the bag of bells). */
-export const itemArt = (id: string): string => ART[id] ?? 'money/bells';
+const ART: Record<ShopItemId, string> = { snack: 'items/snack', dinner: 'items/dinner' };
+
+export const itemArt = (id: ShopItemId): string => ART[id];

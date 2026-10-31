@@ -1,4 +1,4 @@
-// Demo smoke test: tap, undo, harvest, きろく (read-only, the goals), on `?demo` (no backend, no key).
+// Demo smoke test: buy, undo, the harvest recap, きろく (read-only, the goals), on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -20,96 +20,69 @@ async function openSettings(page: Page) {
   await expect(sheet(page).locator('.tab[data-tab=settings]')).toHaveAttribute('aria-pressed', 'true');
 }
 
-/** `きょう 620 ベル` → 620. */
-
-test('buy: a treat comes back with とりけす', async ({ page }) => {
+test('buy: a reward comes back with とりけす', async ({ page }) => {
   await page.goto('jar?demo');
-  const treats = page.locator('.treats');
-  const balance = async () => (await page.locator('.hero .total').innerText()).replace(/\D/g, '');
+  const shop = page.locator('.shop');
+  const balance = async () => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
   const before = await balance();
-  await treats.locator('button.item:not([aria-disabled="true"])').first().click();
+  await shop.locator('button[data-item="dinner"]').click();
+  await expect(sheet(page).locator('.price')).toContainText('20');
   await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect.poll(balance).not.toBe(before);
+  await expect(page.getByText(/外食を 買いました！ −20\sベル/)).toBeVisible();
+  await expect.poll(balance).toBe(before - 20);
   await page.getByRole('button', { name: 'とりけす' }).click();
   await expect.poll(balance).toBe(before);
   // やめる closes the confirm without spending
-  await treats.locator('button.item:not([aria-disabled="true"])').first().click();
+  await shop.locator('button[data-item="snack"]').click();
   await sheet(page).getByRole('button', { name: 'やめる' }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect.poll(balance).toBe(before);
 });
 
-test('escalating treats: おやつ twice this week costs more each time; とりけす steps it back down', async ({ page }) => {
-  await page.goto('jar?demo&date=2026-11-02T10:00'); // a Monday morning: no おやつ bought yet this week
-  const snack = page.locator('.treats button[data-item="snack"]');
-  const price = () => snack.locator('.pr').getAttribute('data-price');
-  await expect.poll(price).toBe('1200');
-  await expect(snack.locator('.nth')).toHaveCount(0);
-  await snack.click();
-  await expect(sheet(page).locator('.price')).toContainText('1,200');
-  await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect.poll(price).toBe('1800');
-  await expect(snack.locator('.nth')).toHaveText('こんしゅう 2かいめ');
-  await expect(snack.locator('.was')).toHaveText('1,200');
-  await snack.click();
-  await expect(sheet(page).locator('.price')).toContainText('1,800');
-  await expect(sheet(page).locator('.nth')).toContainText('こんしゅう 2かいめ');
-  await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect(page.getByText(/おやつを 買いました！ −1,800\sベル/)).toBeVisible();
-  await expect.poll(price).toBe('2700');
-  await expect(snack.locator('.nth')).toHaveText('こんしゅう 3かいめ');
-  await page.getByRole('button', { name: 'とりけす' }).click();
-  await expect.poll(price).toBe('1800');
-  await expect(snack.locator('.nth')).toHaveText('こんしゅう 2かいめ');
-  // ほしいもの stays flat
-  await expect(page.locator('.treats button[data-item="want"] .pr')).toHaveAttribute('data-price', '8000');
-});
-
-test('wallet: one balance (the island plate’s), one list of five treats, no sections or bars', async ({ page }) => {
+test('wallet: one balance (the island plate’s) and exactly two rewards with their art: おやつ 6, 外食 20', async ({ page }) => {
   await page.goto('?demo');
   const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
   await page.locator('.if-scene .jar').click();
   await expect(page.locator('.jar-screen')).toBeVisible();
   await expect(page.locator('.hero .total')).toContainText(plate.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-  // the demo's list: the five defaults (and whatever the demo couple added after them)
-  const names = await page.locator('.treats .nm').allInnerTexts();
-  expect(names.slice(0, 5)).toEqual(['おやつ', 'カフェ・デザート', '外ごはん', 'ほしいもの', '旅のごほうび']);
+  const shop = page.locator('.shop');
+  await expect(shop.locator('button.item')).toHaveCount(2);
+  await expect(shop.locator('.nm')).toHaveText(['おやつ', '外食']);
+  await expect(shop.locator('.pr')).toHaveText([/^6\sベル$/, /^20\sベル$/]);
+  await expect(shop.locator('.ex').first()).toContainText('たこやき');
+  await expect(shop.locator('.ex').last()).toContainText('マーラータン');
+  for (const id of ['snack', 'dinner']) await expect(shop.locator(`button[data-item=${id}] img`)).toHaveAttribute('src', new RegExp(`items/${id}\\.webp`));
+  // nothing of the old shop: no editor, no escalation
+  await expect(page.locator('.edit, .nth, .was')).toHaveCount(0);
 });
 
-test('menu: adding a treat to the shared list', async ({ page }) => {
-  await page.goto('jar?demo');
-  const treats = page.locator('.treats');
-  await treats.getByRole('button', { name: 'メニューを かえる' }).click();
-  await sheet(page).getByRole('button', { name: /ふやす/ }).click();
-  await sheet(page).locator('input.lbl').last().fill('たいやき');
-  await sheet(page).locator('input.num').last().fill('250');
-  await sheet(page).getByRole('button', { name: '保存' }).click();
-  await expect(treats.getByRole('button', { name: /^たいやき 250\sベル/ })).toBeVisible();
-});
-
-test('harvest: four badges per person, the together bonus, and the bonus lands in the wallet', async ({ page }) => {
+test('harvest: a recap of the week: each of us, ふたりで ぜんぶ, the total; the coins land in the jar', async ({ page }) => {
   await page.goto('?demo=harvest');
   const tally = page.locator('.overlay .tally');
-  await expect(tally.getByText('バッジ', { exact: true })).toBeVisible();
-  await expect(tally.locator('.trow:not(.duo) .badges')).toHaveCount(2);
-  for (const row of await tally.locator('.trow:not(.duo) .badges').all()) await expect(row.locator('.b')).toHaveCount(4);
-  await expect(tally.locator('.duo')).toContainText('ふたりボーナス');
+  await expect(tally.locator('.trow:not(.duo)')).toHaveCount(2);
+  for (const row of await tally.locator('.trow:not(.duo) .plus').all()) await expect(row).toHaveText(/^\+\d+\sベル$/);
+  await expect(tally.locator('.duo')).toContainText('ふたりで ぜんぶ');
+  await expect(tally.locator('.duo .hint')).toHaveText(/^\d+日 · 1日 \+2\sベル$/);
+  await expect(tally.locator('.total')).toContainText('今週の ベル');
+  await expect(tally.getByText(/バッジ|ボーナス/)).toHaveCount(0);
   await page.getByRole('button', { name: '受け取る！' }).click();
   await expect(page.getByText('おさいふに 入りました！')).toBeVisible();
   await page.getByRole('button', { name: '島へもどる' }).click();
   await expect(page.getByRole('button', { name: '受け取る！' })).toHaveCount(0);
 });
 
-test('きろく: a day is read-only: both people’s four fruits with their ベル, no ✎ or keypad', async ({ page }) => {
+test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day is read-only: values, ✓ and +1', async ({ page }) => {
   await page.goto('?demo');
   await openPanel(page);
-  await sheet(page).getByRole('button', { name: /^今週/ }).click();
-  await expect(sheet(page).locator('.pen-btn')).toHaveCount(0);
-  await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
+  const day = sheet(page).locator('li.day:not(.head)').first();
+  await expect(day.locator('.marks')).toHaveCount(2);
+  await expect(day.locator('.marks').first().locator('.m')).toHaveCount(4);
+  await expect(day.locator('.tot')).toHaveText(/^\+\d+\sベル$|^0\sベル$/);
+  await sheet(page).getByRole('button', { name: /\(月\)/ }).first().click();
   await expect(sheet(page).locator('.pc')).toHaveCount(2);
-  for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row.fr`)).toHaveCount(4);
+  for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row`)).toHaveCount(4);
+  await expect(sheet(page).locator('.duo')).toContainText('ふたりで ぜんぶ');
   await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
-  await expect(sheet(page).getByText(/見るだけ|なおせます|なおした/)).toHaveCount(0);
 });
 
 test('きろく: the weight trend (from Health, no logging by hand) and a goal', async ({ page }) => {
@@ -141,7 +114,7 @@ test('きろく: the weight trend (from Health, no logging by hand) and a goal',
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the four ring fruits, today against the goal, today’s ベル and the week toward each badge', async ({ page }) => {
+test('tree popup: the four goals, ✓ or what is left, +1 each, and today’s ふたりで ぜんぶ', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -154,35 +127,23 @@ test('tree popup: the four ring fruits, today against the goal, today’s ベル
   const [p, c, r] = await Promise.all([pop, page.locator('button.canopy').nth(0), page.locator('.ribbon')].map((l) => l.boundingBox()));
   expect(p!.y + p!.height).toBeLessThan(c!.y + c!.height);
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
-  const rows = pop.locator('.row:not(.hd)');
+  const rows = pop.locator('.row');
   await expect(rows).toHaveCount(4);
   await expect(rows.locator('.lbl')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数']); // Apple's ring order, then steps
-  await expect(rows.nth(0).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
-  await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/60分$/);
-  await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/180分$/);
-  await expect(rows.nth(3).locator('.amt')).toHaveText(/^[\d,]+\/8,000歩$/);
-  // the week: days met / 5 · 5 · 5 · 4 (or a ✓ once the badge is met)
-  const weeks = await rows.evaluateAll((els) => els.map((e) => (e.querySelector('.wk.badge') ? 'ok' : e.querySelector('.wk')!.textContent!.trim())));
-  weeks.forEach((w, i) => expect(w === 'ok' || w.endsWith(`/${[5, 5, 5, 4][i]}`), `${i}: ${w}`).toBe(true));
-  // a v1 week has no milestone pips and no nudge
-  await expect(pop.locator('.steps i')).toHaveCount(0);
-  await expect(pop.locator('.next')).toHaveCount(0);
+  const units = [/kcal$/, /分$/, /分$/, /歩$/];
+  for (let i = 0; i < 4; i++) {
+    const row = rows.nth(i);
+    if (await row.locator('.amt.met').count()) await expect(row.locator('.amt svg.ok')).toHaveCount(1);
+    else await expect(row.locator('.amt')).toHaveText(new RegExp(`^あと [\\d,]+ ?${units[i].source}`));
+    await expect(row.locator('b')).toHaveText('+1');
+  }
+  await expect(pop.locator('.duo')).toHaveText(/^ふたりで ぜんぶ まで：あと [1-8]つ$|^ふたりで ぜんぶ！ \+2$/);
+  // nothing of the old popup: no pips, nudges or badge weeks
+  await expect(pop.locator('.steps, .next, .wk')).toHaveCount(0);
   // its last line: when this person's data last arrived (one home: not on the partner card)
   await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
   // ground fruit: four kinds under each tree
   await expect(page.locator('.fruit.k0')).toHaveCount(8);
-});
-
-test('tree popup, v2 milestones (from 11-02): four pips per ring fruit, one 「あと…で +N」 nudge', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-03T12:10'); // ?date= moves the demo's calendar too (no pinned clock)
-  await islandReady(page);
-  await page.locator('button.canopy').nth(0).click();
-  const rows = page.locator('.detail .row:not(.hd)');
-  await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/120分$/);
-  const pips = await rows.evaluateAll((els) => els.map((e) => e.querySelectorAll('.steps i').length));
-  expect(pips).toEqual([4, 4, 4, 4]);
-  const next = page.locator('.detail .next');
-  if (await next.count()) await expect(next).toHaveText(/^あと [\d,]+ ?(分|kcal|歩)で \+[\d,]+$/);
 });
 
 test('partner: a villager card (their line, ハイタッチ), no numbers and no sync time (those are on their tree)', async ({ page }) => {
@@ -212,14 +173,14 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await input.fill('50');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await input.fill('450');
+  await input.fill('2000');
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('ムーブの目標を かえました')).toBeVisible();
-  await expect(goals).toContainText('450 kcal');
-  // today's tree popup reads the new goal
+  await expect(goals).toContainText('2,000 kcal');
+  // today's tree popup reads the new goal: no day reaches 2,000 kcal, so what is left shows
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
-  await expect(page.locator('.detail .row:not(.hd)').nth(0).locator('.amt')).toHaveText(/\/450kcal$/);
+  await expect(page.locator('.detail .row').nth(0).locator('.amt')).toHaveText(/^あと [\d,]+ kcal$/);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
   await openPanel(page);
@@ -233,7 +194,7 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await sheet(page).getByRole('button', { name: 'けってい' }).click();
   await expect(goals).toContainText('520 kcal');
   await goals.locator('button.pp').nth(0).click();
-  await expect(goals).toContainText('450 kcal');
+  await expect(goals).toContainText('2,000 kcal');
 });
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
@@ -288,7 +249,7 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   expect(b.x + b.width).toBeGreaterThan(vw - 40);
   await close.click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  // the panel: two tabs and ✕ at its top level, ‹ + ✕ one level in (a week, a day, the picker, the guide), ‹ goes back
+  // the panel: two tabs and ✕ at its top level, ‹ + ✕ one level in (a day, the picker, the guide), ‹ goes back
   await openPanel(page);
   const bar = sheet(page).locator('.titlebar');
   const tabs = sheet(page).locator('.tabs');
@@ -304,28 +265,23 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
     await bar.locator('.back').click();
     await expect(sheet(page).locator(`[data-push=${push}]`)).toBeVisible();
   }
-  // きろく: week → day, then ‹ ‹ back to the tab's top, with the tabs again
+  // きろく: a day, then ‹ back to the tab's top, with the tabs again
   await sheet(page).locator('.tab[data-tab=kiroku]').click();
-  await sheet(page).getByRole('button', { name: /^今週/ }).click();
+  await sheet(page).locator('button.dbtn').first().click();
   await expect(tabs).toHaveCount(0); // a level in: only that screen
-  await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
-  await bar.locator('.back').click();
-  await expect(sheet(page).locator('.days')).toBeVisible();
+  await expect(sheet(page).locator('.pc')).toHaveCount(2);
   await bar.locator('.back').click();
   await expect(tabs).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
   await bar.locator('.close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  // the wallet: ‹ 島へ top-left; the buy confirm and the editor have ✕
+  // the wallet: ‹ 島へ top-left; the buy confirm has ✕
   await page.locator('.if-scene .jar').click();
   await expect(page.locator('.jar-screen a.back')).toBeVisible();
-  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
+  await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
   close = sheet(page).locator('.navbar .close');
   await expect(close).toBeVisible();
   await close.click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await page.locator('.treats .edit').click();
-  await sheet(page).locator('.navbar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.locator('.jar-screen a.back').click();
   await expect(page.locator('.if-scene')).toBeVisible();
@@ -405,22 +361,12 @@ test('404 at 320: the page fits the screen (ja breaks only at its spaces) and no
   await expect(page.locator('.overlay')).toHaveCount(0);
 });
 
-test('a sheet opened while the undo banner is up starts at its top (the menu editor’s intro line in view)', async ({ page }) => {
-  await page.goto('jar?demo');
-  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
-  await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
-  await page.locator('button.edit').click();
-  await expect(sheet(page).locator('.hint')).toBeVisible();
-  expect(await sheet(page).evaluate((d) => d.scrollTop)).toBe(0);
-});
-
 test('with the undo banner up, a sheet’s footer (買う！) rises above it: a tap on 買う！ reaches 買う！', async ({ page }) => {
   await page.goto('jar?demo');
-  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
+  await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
-  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
+  await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
   const buy = sheet(page).getByRole('button', { name: '買う！' });
   await expect(buy).toBeVisible();
   await sheet(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished)));
@@ -440,7 +386,7 @@ test('the panel remembers its tab for the session; a reload opens on きろく',
   await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('きろく opens light: the newest three weeks of ベル (and four week cards); 「まえの週も 見る」 adds older ones', async ({ page }) => {
+test('きろく opens light: the newest three weeks of ベル; 「まえの週も 見る」 adds older ones', async ({ page }) => {
   await page.goto('?demo');
   await openPanel(page);
   const weeks = sheet(page).locator('section.week');

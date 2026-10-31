@@ -6,7 +6,7 @@ import { addDays, weekDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger } from './bells.ts';
-import { dayDetail, historyWeeks, weekDetail } from './history.ts';
+import { dayDetail } from './history.ts';
 import { compactRows } from './compact.ts';
 import { ewmaTrend, project, trendAt, weighIns, weightTrend } from './weight.ts';
 
@@ -173,8 +173,8 @@ describe('weight never earns', () => {
       const a = reduce(base);
       const b = reduce(heavy);
       const all = (s: ReturnType<typeof reduce>) => JSON.stringify({
-        A: buildWeekView(s, 'A', now), B: buildWeekView(s, 'B', now), history: historyWeeks(s, now), ledger: bellsLedger(s, now),
-        week: weekDetail(s, WK, now), days: D.map((d) => dayDetail(s, d, now))
+        A: buildWeekView(s, 'A', now), B: buildWeekView(s, 'B', now), ledger: bellsLedger(s, now),
+        days: D.map((d) => dayDetail(s, d, now))
       });
       expect(all(b)).toBe(all(a));
       expect(weightTrend(b, 'A', now).points.length).toBeGreaterThan(0);

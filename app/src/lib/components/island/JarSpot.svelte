@@ -1,9 +1,9 @@
 <script lang="ts">
   // The island's jar + its ベル nameplate: one button (≥ 64px), the doorway to the wallet (ごほうび) (Jar.svelte is the one jar
   // drawing). The plate shows the shared wallet. When new ベル arrive (a sync), they fly
-  // in (CoinFlow): for each person and fruit that earned more than this phone last showed (SCENE.bellsSeen, per day),
-  // a "+N" pops over that fruit under its tree and three coins hop into the jar; the plate counts up as they land and
-  // the jar squashes. Anything else that raises the wallet (the Sunday bonus) rises with a "+N" pop over the jar.
+  // in (CoinFlow): for each person and goal met since this phone last showed it (SCENE.bellsSeen, per day), a "+1"
+  // pops over that fruit under its tree and three coins hop into the jar; the plate counts up as they land and the jar
+  // squashes. Anything else that raises the wallet (ふたりでぜんぶ's +2) rises with a "+N" pop over the jar.
   // It all waits while a sheet or the harvest covers the scene. Reduced motion: no flight, the plate just changes.
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
@@ -37,8 +37,8 @@
   /** Jar art: JAR.w wide (viewBox 54 × 68); the button's top sits that far above the base. */
   const JAR_H = (JAR.w * 68) / 54;
   const MOUTH: [number, number] = [JAR.x, JAR.base - JAR_H + 10];
-  /** At most this many flights at once (one per person × fruit is 10). */
-  const MAX_FLIGHTS = 10;
+  /** At most this many flights at once (one per person × fruit is 8). */
+  const MAX_FLIGHTS = 8;
 
   const target = $derived(view.wallet.balance);
   // svelte-ignore state_referenced_locally

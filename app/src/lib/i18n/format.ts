@@ -57,8 +57,3 @@ export function lastSyncLine(iso: string | null, now: Date): { text: string; lat
   if (day === addDays(today, -1)) return { text: t('tree.syncedYesterday', { time: timeOf(at) }), late };
   return { text: md(day), late };
 }
-
-const ordinal = new Intl.PluralRules('en-US', { type: 'ordinal' });
-const ORD_SUFFIX: Partial<Record<Intl.LDMLPluralRule, string>> = { one: 'st', two: 'nd', few: 'rd' };
-/** An escalating treat's count this week: 「こんしゅう 2かいめ」 / "2nd this week". */
-export const nthThisWeek = (n: number): string => t('menu.nth', { n, ord: `${n}${ORD_SUFFIX[ordinal.select(n)] ?? 'th'}` });

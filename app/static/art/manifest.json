@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 23,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -313,35 +313,17 @@
       "h": 512,
       "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH.png"
     },
-    "items/cafe": {
-      "path": "items/cafe.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Coffee_Cup_NH_Icon.png"
-    },
     "items/dinner": {
       "path": "items/dinner.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pizza_Margherita_NH_Icon.png"
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Shoyu_Ramen_NH_Icon.png"
     },
     "items/snack": {
       "path": "items/snack.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cookies_NH_Icon.png"
-    },
-    "items/trip": {
-      "path": "items/trip.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Nook_Miles_Ticket_NH_Inv_Icon.png"
-    },
-    "items/want": {
-      "path": "items/want.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Present_NH_Inv_Icon.png"
+      "w": 128,
+      "h": 128,
+      "source": "https://nookipedia.com/wiki/File:Soft_Serve_NH_Inv_Icon.png"
     },
     "money/bells": {
       "path": "money/bells.webp",
@@ -354,18 +336,6 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Leaf_NH_Icon.png"
-    },
-    "money/miles": {
-      "path": "money/miles.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Nook_Miles_NH_Icon.png"
-    },
-    "phone/nook-shopping": {
-      "path": "phone/nook-shopping.webp",
-      "w": 92,
-      "h": 92,
-      "source": "https://nookipedia.com/wiki/File:NookPhone_Nook_Shopping_NH_Icon.png"
     },
     "reactions/curiosity": {
       "path": "reactions/curiosity.webp",

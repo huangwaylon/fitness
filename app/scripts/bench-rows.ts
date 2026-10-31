@@ -54,7 +54,7 @@ export function syntheticRows(days: number): SnapshotRows {
       events.push([at(date, '20:01'), 'A', `hf:${d}`, 'highfive', '{}']);
     }
     if (d % 30 === 10) {
-      events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, item: 'cafe', label: 'カフェデート', bells: 2000 })]);
+      events.push([at(date, '22:30'), 'B', `s:${d}`, 'spend', JSON.stringify({ spendId: `s${d}`, item: 'snack', bells: 6 })]);
     }
     if (d % 90 === 5) events.push([at(date, '21:30'), 'B', `mg:${d}`, 'pref', JSON.stringify({ key: 'moveGoal', value: 400 + (d % 180 === 5 ? 50 : 0) })]);
   }

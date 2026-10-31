@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import { reduce } from '#lib/model/state.ts';
 import { buildWeekView } from '#lib/model/week.ts';
-import { bellsLedger, historyWeeks } from '#lib/model/history.ts';
+import { bellsLedger } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { applySnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
@@ -17,7 +17,7 @@ const between = (rows: SnapshotRows, from: number, to: number): SnapshotRows => 
   return { metrics: f(rows.metrics), events: f(rows.events) };
 };
 const shown = (m: Pick<ComposedModel, 'state' | 'now'>) => JSON.stringify({
-  a: buildWeekView(m.state, 'A', m.now), b: buildWeekView(m.state, 'B', m.now), history: historyWeeks(m.state, m.now), ledger: bellsLedger(m.state, m.now)
+  a: buildWeekView(m.state, 'A', m.now), b: buildWeekView(m.state, 'B', m.now), ledger: bellsLedger(m.state, m.now)
 });
 
 describe('compacted cache through applySnapshot', () => {

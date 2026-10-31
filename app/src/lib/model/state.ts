@@ -1,8 +1,8 @@
-// Snapshot rows → validated, indexed state. Whose goal a `pref` sets (`data.person`) and what the wallet covers are
+// Snapshot rows → validated, indexed state. Whose goal a `pref` sets (`data.person`) and which buys are valid are
 // read-time rules here (an invalid or unknown event is ignored, not refused), so the sheet stays a dumb append-only log.
 // Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
-import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
-import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
+import type { LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
+import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, shopPrice } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -22,21 +22,16 @@ const cutoffMemo = (fn: (wk: WeekKey) => number) => {
     return t;
   };
 };
-/** Sunday 19:30 JST of the week: the harvest opens and the weekly bonus lands. */
+/** Sunday 19:30 JST of the week: the harvest recap opens. */
 export const provisionalMs = cutoffMemo((wk) => jstMs(addDays(wk, 6), CUTOFFS.provisional.hour, CUTOFFS.provisional.minute));
 /** Wednesday 04:00 JST after the week: late Health data still counts up to here, then the week locks (its earnings are final). */
 export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.hour, CUTOFFS.final.minute));
 
 /**
- * The demo (`?demo`, lib/store/demo/rows.ts) shows weeks before the economy starts, so it moves the calendar: its own
- * first earning week. It travels with the state (`reduce(rows, calendar)`), never as a module global; live state
- * always has `calendar: null`.
+ * The economy's first week: the first week with an activity row stamped by its lock (a week whose rows all came after
+ * its lock, like a baseline of old days, could never earn). Compaction always keeps such a row. Null before any data.
  */
-export interface DemoCalendar { firstWeek: WeekKey }
-type Cal = Pick<State, 'calendar'>;
-
-/** First week of the economy (Mon 2026-10-26), or the demo's own one. */
-export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_START;
+export const firstWeek = (s: Pick<State, 'start'>): WeekKey | null => s.start;
 
 /** The latest week lock (a Wednesday 04:00) at or before `t`: what `rev` reuses earnings up to, and compaction compacts through. */
 export function lastLockAt(t: number): number {
@@ -48,8 +43,8 @@ export function lastLockAt(t: number): number {
 // ---------- records ----------
 
 interface Timed<T> { at: number; v: T }
-/** A buy from the wallet: `{spendId, item, label, bells}`. */
-interface BellSpendRec { at: number; person: PersonId; spendId: string; item: string; label: string; bells: number }
+/** A buy from the wallet: `{spendId, item, bells}`, a SHOP item at its price. */
+interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number }
 
 /** `goalWeight`: the person's optional goal in kg, shown on the weight chart; never earns. */
 interface Prefs { locale?: 'ja' | 'en'; villagerName?: string; villager?: string; goalWeight?: number }
@@ -59,8 +54,6 @@ export interface State {
   metrics: Record<PersonId, Map<LocalDate, Partial<Record<ActivityMetric, Timed<number>[]>>>>;
   /** Buys from the wallet, in server order. */
   bellSpends: BellSpendRec[];
-  /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
-  menu: Timed<WalletItem[]>[];
   /**
    * Body weight, kept apart from the activity metrics so the economy can't read it: ingested `weight` rows per
    * person, keyed by date, ascending `at`. A day's weight is its latest row (`model/weight.ts`).
@@ -75,8 +68,8 @@ export interface State {
   moveGoals: Record<PersonId, Timed<number>[]>;
   /** Newest metrics row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
-  /** The demo's calendar; null for real data. */
-  calendar: DemoCalendar | null;
+  /** The economy's first week (`firstWeek`). */
+  start: WeekKey | null;
   /**
    * The sheet's data revision (`snapshot.rev`, docs/backend.md#revision) the rows were cached under, or null. With
    * it, locked weeks' earnings are reused across States (`weekBells`), since rows stamped before a past time never
@@ -148,12 +141,19 @@ const push = <K, V>(m: Map<K, V[]>, k: K, v: V) => {
   else m.set(k, [v]);
 };
 
+const weeks = new Map<LocalDate, WeekKey>();
+/** A date's week, memoised (reduce asks for every activity row). */
+const weekOf = (d: LocalDate): WeekKey => {
+  let wk = weeks.get(d);
+  if (wk === undefined) weeks.set(d, (wk = weekKeyOf(d)));
+  return wk;
+};
+
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". */
-export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, rev: string | null = null): State {
+export function reduce(r: SnapshotRows, rev: string | null = null): State {
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],
-    menu: [],
     weights: { A: new Map(), B: new Map() },
     spendVoids: [],
     harvests: [],
@@ -161,8 +161,8 @@ export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, re
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
     lastSync: { A: null, B: null },
-    calendar,
-    rev: calendar ? null : rev,
+    start: null,
+    rev,
     ats: []
   };
   const byAt = <T extends readonly unknown[]>(rows: T[]) => {
@@ -190,6 +190,8 @@ export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, re
       let day = s.metrics[person].get(date);
       if (!day) s.metrics[person].set(date, (day = {}));
       (day[metric] ??= []).push({ at, v: value });
+      const wk = weekOf(date);
+      if ((s.start === null || wk < s.start) && at <= finalMs(wk)) s.start = wk;
     }
     else continue;
     synced(person, at, String(iso));
@@ -213,47 +215,15 @@ type Data = Record<string, unknown>;
 /** `person`: whose data the event changes (a goal's `data.person`, else the sender). */
 type OnEvent = (s: State, person: PersonId, at: number, d: Data) => void;
 
-const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
-const MENU_ID_RE = /^[\w-]+$/;
-
-/**
- * A `pref` menu value: a JSON array (or the array itself) of `{id, label, bells}` with unique ids, at most
- * LIMITS.menuMaxItems (other keys are ignored). Anything invalid ignores the whole pref (the previous menu stays).
- */
-export function parseMenu(v: unknown): WalletItem[] | null {
-  let list = v;
-  if (typeof v === 'string') {
-    try {
-      list = JSON.parse(v);
-    } catch {
-      return null;
-    }
-  }
-  if (!Array.isArray(list) || list.length > LIMITS.menuMaxItems) return null;
-  const out: WalletItem[] = [];
-  const ids = new Set<string>();
-  for (const x of list) {
-    if (!x || typeof x !== 'object') return null;
-    const { id, label, bells } = x as Record<string, unknown>;
-    const l = typeof label === 'string' ? label.trim() : '';
-    if (typeof id !== 'string' || id.length > LIMITS.menuIdMaxChars || !MENU_ID_RE.test(id) || ids.has(id)) return null;
-    if (!l || l.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return null;
-    ids.add(id);
-    out.push({ id, label: l, bells });
-  }
-  return out;
-}
-
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<EventType, OnEvent> = {
   spend(s, person, at, d) {
-    // A buy from the wallet. Validity only: whether the wallet covered it is decided on read (bells.ts).
-    const label = typeof d.label === 'string' ? d.label.trim() : '';
-    const { spendId, bells } = d;
-    if (!isId(spendId) || !label || label.length > LIMITS.spendLabelMaxChars || !isBells(bells)) return;
-    if (typeof d.item !== 'string' || d.item.length > LIMITS.menuIdMaxChars) return;
+    // A buy from the wallet: a SHOP item at exactly its price. Whether the wallet covered it is decided on read (bells.ts).
+    const { spendId, item } = d;
+    const bells = shopPrice(item);
+    if (!isId(spendId) || bells === undefined || d.bells !== bells) return;
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
-    s.bellSpends.push({ at, person, spendId, item: d.item, label, bells });
+    s.bellSpends.push({ at, person, spendId, item: item as ShopItemId, bells });
   },
   spend_void(s, person, at, d) {
     const spendId = d.spendId;
@@ -271,11 +241,6 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     s.highfives.push({ at, person });
   },
   pref(s, person, at, d) {
-    if (d.key === 'menu') {
-      const items = parseMenu(d.value);
-      if (items) s.menu.push({ at, v: items });
-      return;
-    }
     if (d.key === 'moveGoal') {
       // An integer kcal in MOVE_GOAL; anything else is ignored (the previous goal stays).
       const v = d.value;

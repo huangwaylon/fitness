@@ -9,7 +9,7 @@ import { moveGoalOn, reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { metricAsOf } from './inputs.ts';
 import { weekBells } from './bells.ts';
-import { bellsLedger, dayDetail, historyWeeks, weekDetail } from './history.ts';
+import { bellsLedger, dayDetail } from './history.ts';
 
 // A week of the economy: Sunday 19:30 = 11-22, the lock = Wednesday 11-25 04:00 JST.
 const WK = '2026-11-16';
@@ -124,7 +124,7 @@ describe('goals: either person sets either person’s', () => {
       events: [
         ev(jst(DAYS[2], '09:00'), 'B', 'pref', { person: 'A', key: 'villagerName', value: 'X' }),
         ev(jst(DAYS[2], '09:01'), 'B', 'pref', { person: 'C', key: 'moveGoal', value: 450 }),
-        ev(jst(DAYS[2], '09:02'), 'B', 'spend', { person: 'A', spendId: 's1', item: 'snack', label: 'おやつ', bells: 100 })
+        ev(jst(DAYS[2], '09:02'), 'B', 'spend', { person: 'A', spendId: 's1', item: 'snack', bells: 6 })
       ]
     });
     const s = reduce(rows);
@@ -135,60 +135,46 @@ describe('goals: either person sets either person’s', () => {
   });
 });
 
-describe('history views', () => {
-  const rows = withRows(goodWeek(), { metrics: [metric(jst(DAYS[0], '23:00'), 'B', DAYS[0], 'exercise_min', 45)] });
+describe('the day', () => {
+  const rows = withRows(goodWeek(), { metrics: [metric(jst(DAYS[0], '23:00'), 'B', DAYS[0], 'exercise_min', 65)] });
 
-  it('week list: newest first from the economy’s first week, both people, harvested flag', () => {
-    const now = ms('2026-11-24', '12:00'); // Tuesday of the next week: WK's harvest opened
-    const weeks = historyWeeks(reduce(rows), now);
-    expect(weeks.map((w) => w.weekKey)).toEqual(['2026-11-23', '2026-11-16', '2026-11-09', '2026-11-02', '2026-10-26']); // the economy starts 2026-10-26
-    expect(weeks[1]).toMatchObject({ current: false, harvested: false });
-    expect(weeks[1].people.A.ringWeek).toEqual({ peach: { days: 0, goal: 5 }, pear: { days: 0, goal: 5 }, cherry: { days: 7, goal: 5 }, apple: { days: 7, goal: 4 } });
-  });
-
-  it('week detail and day detail show both people’s four fruits and their ベル', () => {
+  it('shows both people’s four values, the goals met and their ベル', () => {
     const s = reduce(rows);
-    const wd = weekDetail(s, WK, WED_MID);
-    expect(wd.people.A.days[0]).toMatchObject({ steps: 9000, exerciseMin: 30, moveKcal: 500, standMin: 150 });
-    expect(wd.people.B.days[0]).toMatchObject({ exerciseMin: 45 });
-    expect(wd.people.A.days[4].future).toBe(true);
     const dd = dayDetail(s, DAYS[1], WED_MID);
-    expect(dd.people.A).toMatchObject({ steps: 9000, exerciseMin: 30, move: { value: 500, goal: 600 }, standMin: 150 });
-    expect(dd.people.A.rings).toMatchObject({ pear: 98, cherry: 120 }); // 500 / 600 is past 75% (v2 milestones: 98); 150 stand min, capped at 120
-    expect(dd.people.A.bells).toBe(Object.values(dd.people.A.rings).reduce((a, b) => a + b, 0));
+    // 9,000 steps and 150 Stand minutes meet their goals; 30 exercise minutes and 500 of 600 kcal don't
+    expect(dd.people.A).toEqual({ bells: 2, met: { pear: false, peach: false, cherry: true, apple: true }, steps: 9000, exerciseMin: 30, move: { value: 500, goal: 600 }, standMin: 150 });
+    expect(dd.people.B.met.pear).toBe(true); // 500 of うめ's 400
+    expect(dayDetail(s, DAYS[0], WED_MID).people.B).toMatchObject({ bells: 4, exerciseMin: 65 });
+    expect(dd.together).toBe(false);
     // a future day earns nothing yet, whatever rows are dated to it
     expect(dayDetail(s, DAYS[5], WED_MID).people.A.bells).toBe(0);
   });
 });
 
-describe('harvest taps (one acceptance rule for the island and きろく)', () => {
+describe('harvest taps', () => {
   const SUN = DAYS[6];
   const harvest = (at: string, person: PersonId, week = WK) => ev(at, person, 'harvest', { week });
   const view = (rows: SnapshotRows, me: PersonId, t: number) => buildWeekView(reduce(rows), me, t);
-  const harvested = (rows: SnapshotRows, t: number) => historyWeeks(reduce(rows), t).find((w) => w.weekKey === WK)!.harvested;
   const AFTER = ms(SUN, '21:00');
 
-  it('both taps after Sunday 19:30 harvest the week, in both views', () => {
+  it('both taps after Sunday 19:30 close the harvest', () => {
     const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A'), harvest(jst(SUN, '20:00'), 'B')] });
     expect(view(rows, 'A', AFTER).harvest).toBeNull();
-    expect(harvested(rows, AFTER)).toBe(true);
   });
 
-  it('one tap: the island waits for the partner and きろく is not harvested', () => {
+  it('one tap: the island waits for the partner', () => {
     const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A')] });
     expect(view(rows, 'B', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['A'] });
-    expect(harvested(rows, AFTER)).toBe(false);
+    expect(view(rows, 'A', AFTER).host).toMatchObject({ key: 'host.harvest_waiting' });
   });
 
   it('a tap before the harvest opened does not count anywhere', () => {
     const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '18:00'), 'A'), harvest(jst(SUN, '20:00'), 'B')] });
     expect(view(rows, 'A', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['B'] });
-    expect(harvested(rows, AFTER)).toBe(false);
   });
 
   it('a tap for a week that is not the open one is ignored', () => {
     const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '19:40'), 'A', '2026-11-09'), harvest(jst(SUN, '20:00'), 'B')] });
     expect(view(rows, 'A', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['B'] });
-    expect(harvested(rows, AFTER)).toBe(false);
   });
 });

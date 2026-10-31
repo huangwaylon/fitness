@@ -89,7 +89,7 @@ shared, rotate that key ([runbook §4](runbook.md#4-rotate-a-key)).
 
 ## 5. One-time baseline (optional)
 Duplicate the Shortcut, set the range in steps 2 and 4–8 to the last **84 days**, run it once, delete the copy.
-Only this week and last week (until Wednesday 04:00) still earn; older days fill きろく's history and the weight
+Only this week and last week (until Wednesday 04:00) still earn; older days fill the weight
 trend.
 
 ## 6. Troubleshooting

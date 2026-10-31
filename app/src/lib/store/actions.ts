@@ -6,10 +6,9 @@ import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import { parseMenu } from '#lib/model/state.ts';
-import type { PersonId, WalletItem } from '#lib/types.ts';
+import type { PersonId, ShopItemId } from '#lib/types.ts';
 import { isWeightKg, roundKg } from '#lib/contract/api.ts';
-import { MOVE_GOAL } from '#lib/config/rules.ts';
+import { MOVE_GOAL, shopPrice } from '#lib/config/rules.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
 const UNDO_MS = 5000;
@@ -39,35 +38,24 @@ export function confirmHarvest(): SendResult {
   return week.send('harvest', { week: wk });
 }
 
-// ---- The wallet: buy from the shared menu, undo, edit the menu. No approvals.
+// ---- The wallet: buy one of the two rewards, undo. No approvals.
 
 /**
- * Buy a menu item from the wallet at its current price (an escalating food treat's price this week, `MenuItemView.price`):
- * shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is unknown or the wallet can't cover it (the
- * model would ignore the buy anyway). `bells`: what was charged.
+ * Buy a reward (SHOP) from the wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is
+ * unknown or the wallet can't cover it (the model would ignore the buy anyway). `bells`: what was charged.
  */
-export function buy(itemId: string): SendResult & { bells?: number } {
+export function buy(item: ShopItemId): SendResult & { bells?: number } {
   const v = week.view;
-  const item = v?.menu.find((x) => x.id === itemId);
-  if (!v || !item || v.wallet.balance < item.price) return { ok: false };
-  const r = week.send('spend', { spendId: newId(), item: item.id, label: item.label, bells: item.price }, { holdMs: UNDO_MS });
-  return { ...r, bells: item.price };
+  const bells = shopPrice(item);
+  if (!v || bells === undefined || v.wallet.balance < bells) return { ok: false };
+  const r = week.send('spend', { spendId: newId(), item, bells }, { holdMs: UNDO_MS });
+  return { ...r, bells };
 }
 
 /** Take a buy back (the buyer only; the model ignores anyone else's `spend_void`). */
 export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }
-
-/** Replace the shared menu, one list (either of us; the latest edit wins). `{ok:false}` if the list is invalid. */
-export function saveMenu(items: WalletItem[]): SendResult {
-  const clean = parseMenu(items.map((x) => ({ id: x.id, label: x.label, bells: Math.round(x.bells) })));
-  if (!clean) return { ok: false };
-  return week.send('pref', { key: 'menu', value: JSON.stringify(clean) });
-}
-
-/** A fresh id for a new menu item. */
-export const newMenuItemId = (): string => newId().replace(/[^\w-]/g, '').slice(0, 24);
 
 // ---- The goals, in きろく's 目標 card: either person sets either person's (`person`). Health data itself is never
 // entered here: Apple Health is the source of truth.

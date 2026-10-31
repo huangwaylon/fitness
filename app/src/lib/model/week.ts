@@ -1,11 +1,9 @@
 // Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the wallet, the harvest). The
-// ベル economy itself (earnings, the wallet, buys, the menu, the ledger) lives in bells.ts; golden.test.ts pins the views.
-import type {
-  HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, WalletView, WeekKey, WeekView
-} from '#lib/types.ts';
-import { PEOPLE, RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
-import { milestoneBells, type WeekEarning } from '#lib/scoring/bells.ts';
-import { dailyUpTo, dayBells, menuView, walletAt, weekBells, type WeekBells } from './bells.ts';
+// ベル economy itself (earnings, the wallet, buys, the ledger) lives in bells.ts; golden.test.ts pins the views.
+import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, TogetherView, WeekKey, WeekView } from '#lib/types.ts';
+import { PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
+import { ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
+import { dayBells, walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, type State } from './state.ts';
 
@@ -13,17 +11,15 @@ import { firstWeek, moveGoalOn, partnerOf, provisionalMs, type State } from './s
 function harvestWeekAt(s: State, t: number, confirms: Map<WeekKey, Set<PersonId>>): WeekKey | null {
   const cur = weekKeyOf(localDateAt(t));
   for (const wk of [cur, addDays(cur, -7)]) {
-    if (t < provisionalMs(wk) || wk < firstWeek(s)) continue;
+    const first = firstWeek(s);
+    if (t < provisionalMs(wk) || first === null || wk < first) continue;
     return (confirms.get(wk)?.size ?? 0) < 2 ? wk : null;
   }
   return null;
 }
 
-/**
- * Accepted harvest taps: only for the week that was open at the time of the tap. The one rule for both the island
- * (`buildWeekView`) and きろく (`historyWeeks`), so a stale or early tap never shows 収穫済 while the island still asks.
- */
-export function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
+/** Accepted harvest taps: only for the week that was open at the time of the tap. */
+function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId>> {
   const confirms = new Map<WeekKey, Set<PersonId>>();
   for (const h of s.harvests) {
     if (h.at > now) break;
@@ -37,49 +33,41 @@ export function replayHarvests(s: State, now: number): Map<WeekKey, Set<PersonId
 
 // ---------- view ----------
 
-/** A ring fruit's progress today and its badge days this week. */
+/** A ring fruit's progress today. */
 function ringView(e: WeekEarning, key: RingFruit, today: LocalDate, moveGoal: number): RingProgress {
-  const r = rulesFor(e.weekKey);
   const d = e.days.find((x) => x.date === today);
   const amount: Record<RingFruit, [today: number, goal: number]> = {
     pear: [d?.moveKcal ?? 0, d?.moveGoal ?? moveGoal],
-    peach: [d?.exerciseMin ?? 0, r.goals.exerciseMin],
-    cherry: [d?.standMin ?? 0, r.goals.standMin],
-    apple: [d?.steps ?? 0, r.goals.steps]
+    peach: [d?.exerciseMin ?? 0, RULES.goals.exerciseMin],
+    cherry: [d?.standMin ?? 0, RULES.goals.standMin],
+    apple: [d?.steps ?? 0, RULES.goals.steps]
   };
-  const f = e.fruits[key];
-  const view: RingProgress = {
-    today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false, todayBells: d?.rings[key] ?? 0,
-    weekDays: f.weekDays, weekGoalDays: f.weekGoalDays, badge: f.badge
-  };
-  // The milestone fields only exist in a week with a curve, so v1 views stay as they were.
-  if (!r.curve) return view;
-  const pay = milestoneBells(e.weekKey, key)!; // a week with a curve has its steps
-  const milestone = d?.milestone?.[key] ?? 0;
-  const next = milestone < pay.length ? milestone : null;
-  return {
-    ...view,
-    milestone,
-    nextAt: next === null ? null : Math.ceil(r.curve.at[next] * view.goal),
-    nextGain: next === null ? null : pay[next] - view.todayBells
-  };
+  return { today: amount[key][0], goal: amount[key][1], met: d?.met[key] ?? false };
 }
 
 /** One person's card. Both players see everything (no privacy filter). */
-function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate): PersonWeekView {
+function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate, weekBells: number): PersonWeekView {
   const pref = s.prefs[person];
   const moveGoal = moveGoalOn(s, person, today);
   const rings = Object.fromEntries(RING_FRUITS.map((k) => [k, ringView(e, k, today, moveGoal)])) as PersonWeekView['rings'];
+  const day = dayBells(e, today);
   return {
     person,
     villagerName: pref.villagerName ?? PEOPLE[person].villager,
     villager: pref.villager ?? null,
-    today: dayBells(e, today),
-    weekBells: dailyUpTo(e, today),
+    today: { bells: day.bells, rings: ringBells(day.met) },
+    weekBells,
     rings,
     moveGoal,
     lastSyncAt: s.lastSync[person]
   };
+}
+
+/** Today's ふたりでぜんぶ: met, or how many goals both people still have to meet. */
+function togetherView(w: WeekBells, today: LocalDate): TogetherView {
+  const i = w.A.days.findIndex((d) => d.date === today);
+  const left = (['A', 'B'] as const).reduce((n, p) => n + RING_FRUITS.filter((f) => !w[p].days[i]?.met[f]).length, 0);
+  return { met: w.together[i] ?? false, left };
 }
 
 /** しずえ's line (usage.test.ts checks every key emitted here exists in ja and en). */
@@ -100,9 +88,9 @@ export function buildWeekView(s: State, me: PersonId, now: number): WeekView {
   const locale = s.prefs[me].locale ?? 'ja';
 
   const startOfToday = jstMs(today, 0, 0);
-  const earning = weekBells(s, weekKey, now);
-  const wallet = walletView(s, earning, today, now);
-  const menu = menuView(s, locale, now);
+  const w = weekBells(s, weekKey, now);
+  const sum = weekSum(w, today);
+  const i = w.A.days.findIndex((d) => d.date === today);
   const base: Omit<WeekView, 'host'> = {
     me,
     partner,
@@ -110,29 +98,25 @@ export function buildWeekView(s: State, me: PersonId, now: number): WeekView {
     weekKey,
     today,
     people: {
-      [me]: personView(s, me, earning[me], today),
-      [partner]: personView(s, partner, earning[partner], today)
+      [me]: personView(s, me, w[me], today, sum[me]),
+      [partner]: personView(s, partner, w[partner], today, sum[partner])
     } as Record<PersonId, PersonWeekView>,
-    wallet,
-    menu,
+    together: togetherView(w, today),
+    wallet: { balance: walletAt(s, now).wallet.balance, today: w.dayTotals[i] ?? 0 },
     harvest: harvestView(s, now),
     highFivesToday: s.highfives.filter((h) => h.person === partner && h.at >= startOfToday && h.at <= now).length
   };
   return { ...base, host: hostLine(base) };
 }
 
-/** The wallet's balance at `now`, and what both people earned today. */
-function walletView(s: State, cur: WeekBells, today: LocalDate, now: number): WalletView {
-  return { balance: walletAt(s, now).wallet.balance, today: dayBells(cur.A, today).bells + dayBells(cur.B, today).bells };
-}
-
-/** A week's harvest card: its bonus, total and badges (also the demo's `?demo=harvest`). */
+/** A week's harvest recap: each person's ベル, the ふたりでぜんぶ days and the total (also the demo's `?demo=harvest`). */
 export function harvestOf(w: WeekBells, confirmedBy: PersonId[]): HarvestView {
+  const sum = weekSum(w, w.A.days[6].date);
   return {
     weekKey: w.weekKey,
-    bonus: { ...w.bonus },
-    totalBells: w.A.daily + w.B.daily + w.bonusBells,
-    ringBadges: { A: { ...w.A.badges }, B: { ...w.B.badges } },
+    bells: { A: sum.A, B: sum.B, together: sum.together },
+    togetherDays: sum.togetherDays,
+    totalBells: sum.total,
     confirmedBy
   };
 }

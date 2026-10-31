@@ -1,43 +1,24 @@
 <script lang="ts">
-  // しまフォン → あそびかた, written for a 10-year-old: no taps needed, the four fruits and their daily goals
-  // (what each pays), the weekly badges and the together bonus, the one shared wallet with the treat guide,
-  // the protein tip and the one-line setup. Every number comes from the rules (and my own Move goal), so the page never disagrees with the island.
+  // せってい → あそびかた, written for a 10-year-old: the four goals (+1 ベル each, my own Move goal), ふたりでぜんぶ, the
+  // two rewards, the Sunday recap; then the protein tip and the one-line setup. Every number comes from the rules (and
+  // my own Move goal), so the page never disagrees with the island.
   import { version } from '$app/env';
   import type { RingFruit, WeekView } from '#lib/types.ts';
-  import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
-  import { milestoneBells } from '#lib/scoring/bells.ts';
+  import { RING_FRUITS, RULES, shopPrice } from '#lib/config/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { fruitArt } from '#lib/art.ts';
-  import { dayMax } from '../island/progress.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { weightTrend } from '#lib/model/weight.ts';
 
   let { view }: { view: WeekView } = $props();
-  const r = $derived(rulesFor(view.weekKey));
   const moveGoal = $derived(view.people[view.me].moveGoal);
-  /** Each fruit: its daily goal and what it pays. */
+  /** Each fruit's daily goal. */
   const goal = (f: RingFruit): string =>
-    f === 'peach' ? t('help.goal.min', { n: r.goals.exerciseMin })
+    f === 'peach' ? t('help.goal.min', { n: RULES.goals.exerciseMin })
     : f === 'pear' ? t('help.goal.kcal', { n: formatNum(moveGoal) })
-    : f === 'cherry' ? t('help.goal.min', { n: r.goals.standMin })
-    : t('help.goal.steps', { n: formatNum(r.goals.steps) });
-  const pays = (f: RingFruit): string =>
-    f === 'peach' ? t('help.pay.perMin', { b: r.bells.perExerciseMin })
-    : f === 'pear' ? t('help.pay.atGoal', { b: formatBells(r.bells.moveAtGoal) })
-    : f === 'cherry' ? t('help.pay.perMin', { b: r.bells.perStandMin })
-    : formatBells(r.bells.stepDay);
-
-  /** v2 (from 2026-11-02): every fruit pays in four steps of the goal:
-   *  each step's amount and the fruit's ベル for the day once it's reached. Null in a v1 week (linear pay). */
-  const stepsOf = (f: RingFruit): { at: string; bells: string }[] | null => {
-    if (!r.curve) return null;
-    const bells = milestoneBells(view.weekKey, f);
-    if (!bells) return null;
-    const goalOf = { peach: r.goals.exerciseMin, pear: moveGoal, cherry: r.goals.standMin, apple: r.goals.steps }[f];
-    return r.curve.at.map((x, k) => ({ at: t('help.step', { n: formatNum(Math.ceil(x * goalOf)), u: t(`kiroku.unit.${f}`) }), bells: formatNum(bells[k]) }));
-  };
-  const curved = $derived(RING_FRUITS.some((f) => stepsOf(f)));
+    : f === 'cherry' ? t('help.goal.min', { n: RULES.goals.standMin })
+    : t('help.goal.steps', { n: formatNum(RULES.goals.steps) });
 
   /** The protein tip (not tracked): 1.6 g per kg a day, per person from their goal weight (else their
    *  weight trend), rounded to 5 g; just the rule when neither is known. */
@@ -53,48 +34,20 @@
 
 <div class="howto">
   <section class="card">
-    <h3><span class="hi"><OfficialArt key="money/bells" size={32} /></span>{t('help.bells.title')}</h3>
-    <p>{t('help.bells.body')}</p>
-  </section>
-
-  <section class="card">
-    <h3><span class="hi"><OfficialArt key={fruitArt('cherry')} size={30} /></span>{t('help.fruit.title')}</h3>
-    {#if curved}<p>{t('help.steps')}</p>{/if}
+    <h3><span class="hi"><OfficialArt key="money/bells" size={32} /></span>{t('help.title')}</h3>
+    <p>{t('help.goals', { b: formatBells(RULES.perGoal) })}</p>
     <ul class="fruits">
       {#each RING_FRUITS as f (f)}
-        {@const steps = stepsOf(f)}
         <li>
           <OfficialArt key={fruitArt(f)} size={26} />
           <span class="nm"><b>{t(`fruit.${f}`)}</b><small>{goal(f)}</small></span>
-          {#if !steps}<span class="pay money">{pays(f)}</span>{/if}
-          {#if steps}
-            <!-- the four steps: the amount, then the day's ベル once it's reached (the last step pays the most) -->
-            <span class="steps" role="list">
-              {#each steps as st, k (k)}<span class="st" role="listitem"><small>{st.at}</small><b class="money">{st.bells}</b></span>{/each}
-            </span>
-          {/if}
+          <span class="pay money">{formatBells(RULES.perGoal, { signed: true })}</span>
         </li>
       {/each}
     </ul>
-    <p class="note">{t('help.fruit.max', { bells: formatBells(dayMax(view.weekKey)) })}</p>
-  </section>
-
-  <section class="card">
-    <h3><span class="hi"><OfficialArt key="money/miles" size={30} /></span>{t('help.badge.title')}</h3>
-    <p>{t('help.badge.body', { bells: formatBells(r.badges.bells) })}</p>
-    <ul class="chips">
-      {#each RING_FRUITS as f (f)}
-        <li><OfficialArt key={fruitArt(f)} size={20} /><span class="money">{t('help.badge.days', { n: view.people[view.me].rings[f].weekGoalDays })}</span></li>
-      {/each}
-    </ul>
-    <p class="note">{t('help.badge.duo', { bells: formatBells(r.badges.duoPerBadge) })}</p>
-  </section>
-
-  <section class="card">
-    <h3><span class="hi"><OfficialArt key="phone/nook-shopping" size={26} /></span>{t('help.wallet.title')}</h3>
-    <p>{t('help.wallet.body')}</p>
-    <p class="note">{t('help.treats')}</p>
-    <p class="note">{t('help.escalate')}</p>
+    <p>{t('help.together', { b: formatBells(RULES.together, { signed: true }) })}</p>
+    <p>{t('help.shop', { snack: formatBells(shopPrice('snack') ?? 0), dinner: formatBells(shopPrice('dinner') ?? 0) })}</p>
+    <p>{t('help.sunday')}</p>
   </section>
 
   <section class="card">
@@ -119,24 +72,12 @@
   p { margin: 0; font-size: var(--fs-body); font-weight: 700; line-height: 1.5; }
   .note { font-size: var(--fs-s); color: var(--text-soft); }
   .fruits { list-style: none; margin: 0; padding: 0; display: grid; }
-  .fruits li { display: flex; align-items: center; gap: 10px; min-height: 48px; }
+  .fruits li { display: flex; align-items: center; gap: 10px; min-height: 44px; }
   .fruits li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   .fruits :global(.official) { flex: none; }
   .nm { flex: 1; min-width: 0; display: grid; gap: 1px; }
   .nm b { font-size: var(--fs-body); }
   .nm small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .pay { flex: none; font-size: var(--fs-s); text-align: right; }
-  .fruits li:has(.steps) { flex-wrap: wrap; padding: 6px 0 8px; row-gap: 4px; }
-  .steps { flex: 1 0 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-left: 36px; }
-  .st { display: grid; justify-items: center; gap: 1px; padding: 4px 2px; border-radius: var(--r-chip); background: var(--hl); }
-  .st small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
-  .st b { font-size: var(--fs-s); }
-  .st:last-child { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
-  /* night: the soft lilac is only 3.5:1 on the cream-tinted cell */
-  :global(:root[data-tod='night']) .st small { color: var(--text); }
-  /* the four badges in two rows of two (a flex wrap left one alone on a row at 390 and 320) */
-  .chips { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-  .chips li { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--r-pill); background: var(--hl); }
-  .chips .money { font-size: var(--fs-s); }
+  .pay { flex: none; font-size: var(--fs-body); text-align: right; }
   .ver { margin: 16px 0 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
 </style>
