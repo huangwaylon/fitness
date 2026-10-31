@@ -53,7 +53,7 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
     });
   });
 
-  it('a strength workout earns nothing of its own any more: only its minutes, toward 🍑', () => {
+  it('a workout added by hand earns only its minutes, toward 🍑, whatever its type', () => {
     const d = day0({}, { workouts: [workout(D[0], 'Traditional Strength Training', 45)] });
     expect(d.rings).toEqual({ peach: 135, pear: 0, cherry: 0, apple: 0 });
     expect(d.bells).toBe(135);
@@ -71,7 +71,7 @@ describe('earnWeek: the daily table (ADR 0021 §3)', () => {
     expect(day0({ ex: [60] }).met.peach).toBe(true);
   });
 
-  it('🍑 minutes are max(Watch, workouts added in きろく), never a sum; steps no longer turn into minutes', () => {
+  it('🍑 minutes are max(Watch, workouts added in きろく), never a sum; steps never count as minutes', () => {
     const manual = (min: number) => workout(D[0], 'Yoga', min);
     const mins = (ex: number | null, w: Workout[] = [], st: number | null = null) => day0({ ex: [ex], st: [st] }, { workouts: w }).exerciseMin;
     expect(mins(30, [], 20000)).toBe(30); // ADR 0021 §2: 20,000 steps add no minutes
@@ -198,11 +198,11 @@ describe('earnWeek: weekly badges (ADR 0021 §4)', () => {
   });
 });
 
-describe('ADR 0021: the headline number', () => {
-  it('v1 without the gym: a minimum on-target week is 11,000 ベル for the two of them (this week lost its 🥥)', () => {
+describe('the headline number', () => {
+  it('v1: a minimum on-target week is 11,000 ベル for the two of them', () => {
     // Each person exactly at every badge line and no more: 60 exercise min, the Move goal and 180 stand min on 5 days,
     // 8,000 steps on 4. Daily 3 × (5 × 180) + 4 × 200 = 3,500; badges 4 × 400 = 1,600; ふたりボーナス 4 × 200 = 800.
-    // Each person's own Move goal: ウェイ 600, うめ 400. A gym arrival or a strength workout adds nothing.
+    // Each person's own Move goal: ウェイ 600, うめ 400.
     const onTarget = (person: PersonId, goal: number) => earnWeek(input({
       person,
       days: days(WK, { ex: [60, 60, 60, 60, 60], kcal: Array(5).fill(goal), stand: [180, 180, 180, 180, 180], st: [8000, 8000, 8000, 8000], goal })
@@ -216,7 +216,7 @@ describe('ADR 0021: the headline number', () => {
   });
 });
 
-describe('RULES v2 from 2026-11-02 (push exercise; rebalanced without the gym)', () => {
+describe('RULES v2 from 2026-11-02 (push exercise)', () => {
   const WK2 = '2026-11-02';
   const day = (c: Cols, p: Partial<EarnInput> = {}) => earnWeek(input({ weekKey: WK2, days: days(WK2, c), ...p })).days[0];
 

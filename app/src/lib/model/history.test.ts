@@ -102,7 +102,7 @@ describe('metric_set', () => {
     expect(earnAt(rows, 'A', THU_AFTER).daily).toBeGreaterThan(earnAt(base, 'A', THU_AFTER).daily);
   });
 
-  it('lowering after Sunday, before the lock, lowers the week (no keep-the-max any more)', () => {
+  it('lowering after Sunday, before the lock, lowers the week (the latest edit wins, not the max)', () => {
     const base = goodWeek();
     const lowered = withRows(base, { events: DAYS.map((d) => ev(new Date(MON_AFTER).toISOString(), 'A', 'metric_set', { date: d, metric: 'steps', value: 0 })) });
     expect(earnAt(lowered, 'A', THU_AFTER).daily).toBeLessThan(earnAt(base, 'A', THU_AFTER).daily);
@@ -153,7 +153,7 @@ describe('metric_set', () => {
 });
 
 describe('workouts (added by hand in きろく)', () => {
-  it('a strength workout is only its minutes now: no gym day, no 🥥, nothing else earns', () => {
+  it('a workout added by hand counts only its minutes toward 🍑, whatever its type', () => {
     const base = goodWeek();
     const rows = withRows(base, { events: [added(jst(DAYS[1], '22:00'), 'A', 'm:lift', DAYS[1], 'Traditional Strength Training', 50)] });
     const day = earnAt(rows, 'A').days[1];
@@ -327,7 +327,7 @@ describe('harvest taps (one acceptance rule for the island and きろく)', () =
     expect(harvested(rows, AFTER)).toBe(false);
   });
 
-  it('a tap before the harvest opened does not count anywhere (it used to show 収穫済 in きろく)', () => {
+  it('a tap before the harvest opened does not count anywhere', () => {
     const rows = withRows(goodWeek(), { events: [harvest(jst(SUN, '18:00'), 'A'), harvest(jst(SUN, '20:00'), 'B')] });
     expect(view(rows, 'A', AFTER).harvest).toMatchObject({ weekKey: WK, confirmedBy: ['B'] });
     expect(harvested(rows, AFTER)).toBe(false);

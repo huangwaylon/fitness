@@ -25,7 +25,7 @@ describe('reduce: rows', () => {
     expect(s.lastSync).toEqual({ A: at(WK), B: null });
   });
 
-  it('the old workouts and presence tabs (Watch workouts, gym arrivals) are not read any more', () => {
+  it('tabs the model doesn’t read (old `workouts` and `presence` rows still in the sheet) are ignored', () => {
     const old = {
       workouts: [[at(WK, '20:00'), 'A', 'w1', WK, 'Yoga', at(WK, '07:00'), at(WK, '07:30'), 30, null]],
       presence: [[at(WK, '18:00'), 'A', 'エニタイム', at(WK, '18:00')]]
@@ -33,8 +33,6 @@ describe('reduce: rows', () => {
     const s = reduce({ ...rows([]), ...old } as SnapshotRows);
     expect(s.workouts).toEqual({ A: [], B: [] });
     expect(s.lastSync).toEqual({ A: null, B: null });
-    expect(s).not.toHaveProperty('gym');
-    expect(s).not.toHaveProperty('gymSets');
   });
 });
 
@@ -103,7 +101,7 @@ describe('reduce: events', () => {
     expect([...s.metricSets.A.entries()].map(([k, l]) => [k, l.map((x) => x.v)])).toEqual([[`${WK}|steps`, [5000]]]);
   });
 
-  it('workout_add: m: id, a known type, 1–600 minutes, open week, first id wins; a strength field is ignored', () => {
+  it('workout_add: m: id, a known type, 1–600 minutes, open week, first id wins; unknown fields are ignored', () => {
     const add = (when: string, d: object) => ev(when, 'A', 'workout_add', { date: WK, type: 'Yoga', durationMin: 30, ...d });
     const s = reduce(rows([
       add(at(WK, '21:00'), { id: 'm:1', strength: true }),
@@ -123,7 +121,7 @@ describe('reduce: events', () => {
     const s = reduce(rows([
       add,
       ev(at(WK, '19:00'), 'A', 'workout_edit', { id: 'm:1', excluded: true }), // before the add
-      ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1', strength: true }), // the old strength mark: ignored
+      ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1', strength: true }), // no `excluded`: ignored
       ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1', excluded: true, strength: null }),
       ev(at(WK, '21:00'), 'A', 'workout_edit', { id: 'm:1' }),
       ev(at(WK, '21:00'), 'B', 'workout_edit', { id: 'm:1', excluded: true }), // B's own (no such workout)
@@ -136,7 +134,7 @@ describe('reduce: events', () => {
     expect(s.workoutExcluded.get('A|m:1')!.map((x) => x.v)).toEqual([true, false]);
   });
 
-  it('gym_set is no longer an event type: ignored', () => {
+  it('an event type the model doesn’t know (the old `gym_set` rows in the sheet) is ignored', () => {
     const s = reduce(rows([ev(at(WK, '21:00'), 'A', 'gym_set', { date: WK, on: true })]));
     expect({ ...s, ats: [] }).toEqual({ ...reduce(rows([])), ats: [] });
   });

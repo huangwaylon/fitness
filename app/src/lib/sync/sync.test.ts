@@ -139,7 +139,7 @@ describe('write queue', () => {
     expect(calls[0].id).toBe(a.id); // same client id on retry: the server dedupes
   });
   it('drops events the server can never accept, and stops on unauthorized', async () => {
-    enqueue('spend', { spendId: 'x', label: '', pot: 'treat', item: 'ice', bells: 0 });
+    enqueue('spend', { spendId: 'x', label: '', item: 'ice', bells: 0 });
     enqueue('highfive', {});
     let n = 0;
     handler = () => (++n === 1 ? { ok: false, error: 'bad_request' } : { ok: false, error: 'unauthorized' });
@@ -179,7 +179,7 @@ describe('write queue', () => {
   });
   it('holdEvent keeps a held event back while its banner is held, and releases it', async () => {
     const t = 1_000_000;
-    const held = enqueue('spend', { spendId: 's', label: 'x', pot: 'treat', item: 'ice', bells: 2000 }, t, 5000);
+    const held = enqueue('spend', { spendId: 's', label: 'x', item: 'ice', bells: 2000 }, t, 5000);
     expect(holdEvent(held.id, t + 60_000)).toBe(true);
     await flush(() => t + 5000);
     expect(calls).toHaveLength(0);
@@ -214,7 +214,7 @@ describe('write queue', () => {
   it('an edit of a held workout_add, or a void of a held spend, waits for it (else the server would refuse it)', async () => {
     const t = 1_000_000;
     const add = enqueue('workout_add', { id: 'm:x', date: '2026-11-02', type: 'Yoga', durationMin: 30 }, t, 5000);
-    const edit = enqueue('workout_edit', { id: 'm:x', strength: true }, t + 1);
+    const edit = enqueue('workout_edit', { id: 'm:x', excluded: true }, t + 1);
     const buy = enqueue('spend', { spendId: 's1', item: 'snack', label: 'おやつ', bells: 1200 }, t + 2, 5000);
     const back = enqueue('spend_void', { spendId: 's1' }, t + 3);
     await flush(() => t + 4);

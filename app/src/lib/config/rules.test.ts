@@ -31,21 +31,12 @@ const earnings = () => {
 
 describe('RULES', () => {
   it('the versions in use are pinned: append a new version instead of editing one', () => {
-    // RULES[0] was edited in place, all in the economy's first week (ベル are play money; nothing had paid):
-    // 2026-10-30 ADR 0019 amendment (strength 400 ベル, 3-day badge), the same day's goals review (duo per shared
-    // badge), ADR 0021 (five automatic fruits, no check-ins; the 14,400 on-target week), and on 2026-10-31 the gym 🥥
-    // went (ADR 0021 amendment "no gym; four metrics"): the user accepted that this week loses its gym ベル. A new
-    // version from the current week would have replaced RULES[0] for every week that has ever earned anyway, so it
-    // would be the same edit with an unused first entry. From here on, append a version instead.
     expect(RULES[0]).toEqual({
       from: '2026-10-26',
       goals: { exerciseMin: 60, standMin: 180, steps: 8000 },
       bells: { perExerciseMin: 3, moveAtGoal: 180, perStandMin: 1, stepDay: 200 },
       badges: { exerciseDays: 5, moveDays: 5, standDays: 5, stepDays: 4, bells: 400, duoPerBadge: 200 }
     });
-    // v2 "push exercise" (ADR 0021 amendment), appended on 2026-10-30 for the next Monday; its milestone curve ("v2
-    // milestone curve") was added the same day, and on 2026-10-31 it was rebalanced without the gym (🍑 7 a minute,
-    // badges 450, the duo 500), all before any v2 week had earned.
     expect(RULES[1]).toEqual({
       from: '2026-11-02',
       goals: { exerciseMin: 60, standMin: 120, steps: 8000 },

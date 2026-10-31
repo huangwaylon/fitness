@@ -79,7 +79,7 @@ describe('compactRows', () => {
     expect(views(after, Date.parse(jst(addDays(wk, 30), '00:00')))).toBe(views(rows, Date.parse(jst(addDays(wk, 30), '00:00'))));
   });
 
-  it('no longer keeps the row that answered Sunday 19:30: only the lock counts for a locked week', () => {
+  it('a locked week keeps only the rows its lock and its edits read (not the one that answered Sunday 19:30)', () => {
     const wk = '2026-11-02';
     const sun = addDays(wk, 6);
     const m = (date: string, hm: string, v: number): MetricRow => [jst(date, hm), 'A', wk, 'steps', v];
