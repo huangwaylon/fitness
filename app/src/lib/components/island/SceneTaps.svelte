@@ -27,8 +27,10 @@
   import type { Choice } from './pager.ts';
   import TapeDeck from './TapeDeck.svelte';
   import { water } from './sceneDay.ts';
-  import { findArt } from './beach.ts';
-  import { dayKey } from '#lib/time/clock.ts';
+  import { ISLAND_SEED, findArt } from './beach.ts';
+  import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
+  import { addDays, localDateAt } from '#lib/time/dates.ts';
+  import { nextStarMs, showerAt } from './meteor.ts';
   import { LONG_REACH, approach } from './avatar.ts';
 
   interface Props {
@@ -308,16 +310,25 @@
     };
   });
 
-  // A clear night: a shooting star on its own every 15–40 s (not while covered / hidden).
+  // A clear night: a shooting star on its own every 15–40 s; a meteor shower's night (meteor.ts, Celeste's): every 3–8 s
+  // (not while covered / hidden).
+  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
+  const hooks = import.meta.env.DEV || q.has('demo');
+  const islandSeed = (hooks && q.get('seed')) || ISLAND_SEED;
+  const shower = $derived.by(() => {
+    const c = minuteNow(), date = localDateAt(c.getTime());
+    return showerAt(date, addDays(date, -1), jst(c).hour, islandSeed, hooks && q.has('shower'));
+  });
   $effect(() => {
     if (!night || !enabled() || reducedMotion()) return;
+    const fast = shower;
     let id: ReturnType<typeof setTimeout>;
     const arm = () => {
       id = setTimeout(() => {
         const r = scene?.querySelector('.stage')?.getBoundingClientRect();
         if (r && enabled()) shootingStar(r);
         arm();
-      }, 15_000 + Math.random() * 25_000);
+      }, nextStarMs(fast));
     };
     arm();
     return () => clearTimeout(id);

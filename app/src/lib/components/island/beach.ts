@@ -173,13 +173,15 @@ export function fragmentDay(wishDate: string, hour: number, next: (d: string) =>
 }
 
 /** The morning after a wish, 2–3 fragments lie on the beach: mostly star fragments, now and then a large one or the
- *  season's zodiac fragment. */
-export function fragmentsOn(date: string, seed = ISLAND_SEED): Fragment[] {
+ *  season's zodiac fragment. After a wish on a meteor shower's night (`shower`, meteor.ts), 4–5, the zodiac one twice
+ *  as likely. */
+export function fragmentsOn(date: string, seed = ISLAND_SEED, shower = false): Fragment[] {
   const r = dayRand(date, 'fragments', seed);
-  const n = 2 + (r() < 0.5 ? 1 : 0);
+  const n = (shower ? 4 : 2) + (r() < 0.5 ? 1 : 0);
+  const zodiac = shower ? 0.4 : 0.2;
   return Array.from({ length: n }, (_, i) => {
     const k = r();
-    const id = k < 0.2 ? zodiacOf(date) : k < 0.4 ? 'large-star-fragment' : 'star-fragment';
+    const id = k < zodiac ? zodiacOf(date) : k < zodiac + 0.2 ? 'large-star-fragment' : 'star-fragment';
     // spread along the beach, one in each third
     const x = BEACH.x0 + ((i + 0.2 + r() * 0.6) / n) * (BEACH.x1 - BEACH.x0);
     return { uid: `g${i}`, id, x, y: BEACH.y0 + r() * (BEACH.y1 - BEACH.y0) };
