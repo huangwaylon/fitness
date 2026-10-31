@@ -338,3 +338,12 @@ different, without a setting of its own (ミュージック covers it). Dec 31's
 the 23:00 hour plays then. とたけけの夢 (Dreaming of K.K. Slider: NH's first-night dream where K.K. appears) has no
 moment here and was left out. K.K.'s songs are a list in the audio manifest (official titles, ja and en), so more can
 be added without code; a tap on K.K. plays one, his show's own staging uses the same list (`sound/kk.ts`).
+
+### Procedural ambience beds
+The island's ambience (surf, wind, rain, birds, cicadas, higurashi, crickets) is synthesised in the app, not recorded:
+original loops rendered once into buffers when first needed, with Japanese garden birds and insects after their calls
+(the bush warbler in spring, the bulbul in autumn, aburazemi and minminzemi in summer, the evening higurashi, bell
+crickets on autumn nights). A file in the manifest still replaces any bed. Why: no copyrighted or downloaded audio,
+and no megabytes to fetch for sounds that sit under the music; quiet, varied enough over 12–40 s loops that start at a
+random point. If a bed wears thin, a CC0 recording can take its place without code.
+

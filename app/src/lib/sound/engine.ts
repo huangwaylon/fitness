@@ -16,7 +16,7 @@ import { LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
 import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
 import { IdleTimer, QUEUED_DROP_MS, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
-import type { AmbientId } from './ambient.ts';
+import type { AmbientLayer } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
 
 /** The music when muffled (a sheet or the phone is up: NH muffles its BGM under the phone and menus). */
@@ -44,6 +44,7 @@ interface Deck {
 type AudioSessionNav = Navigator & { audioSession?: { type: string } };
 type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
 type Synth = typeof import('./synth.ts');
+type BedSynth = typeof import('./ambientSynth.ts');
 
 /** A 50 ms silent WAV: played once inside the first tap so iOS lets the music <audio> elements play later. */
 function silentWav(): Blob {
@@ -116,8 +117,10 @@ export class Engine {
   /** The same, resolved (path → URL): a file already here starts inside the tap that asks for it (setTrack). */
   #urls = new Map<string, string>();
   #pinned: string[] = [];
-  #ambient = new Map<AmbientId, { src: AudioBufferSourceNode; gain: GainNode }>();
-  #ambientBuffers = new Map<AmbientId, Promise<AudioBuffer | null>>();
+  /** The sounding layers and their buffers, by bed and variant (`birds:spring`). */
+  #ambient = new Map<string, { src: AudioBufferSourceNode; gain: GainNode }>();
+  #ambientBuffers = new Map<string, Promise<AudioBuffer | null>>();
+  #beds: Promise<BedSynth> | null = null;
   #ambientToken = 0;
   /** When the last resume() was asked for (performance.now()): a tap's own cue may sound while it settles. */
   #resumeAt = -Infinity;
@@ -713,17 +716,41 @@ export class Engine {
     this.#held = false;
   }
 
-  /** The ambience layers to sound now (only ids with a file): new ones fade in, gone ones fade out (`immediate`: stop
-   *  at once, for pause(): the suspended clock would freeze a fade, so they'd still sound on the way back). Loops are
-   *  decoded buffers (short, mono), so they loop without the gap an <audio loop> can have. */
-  async setAmbient(layers: { id: AmbientId; gain: number }[], immediate = false): Promise<void> {
+  /** A bed's buffer: its file when the manifest names one, else the procedural bed (ambientSynth.ts, its own chunk),
+   *  rendered when the main thread is idle, one bed at a time. */
+  #bed(ctx: AudioContext, l: AmbientLayer): Promise<AudioBuffer | null> {
+    const path = AUDIO.ambient[l.id];
+    if (path) return this.#decode(path);
+    this.#beds ??= import('./ambientSynth.ts');
+    return this.#beds.then(
+      (m) =>
+        new Promise((done) =>
+          whenIdle(() => {
+            const data = m.renderBed(l.id, l.v);
+            const b = ctx.createBuffer(1, data.length, m.RATE);
+            b.getChannelData(0).set(data);
+            done(b);
+          })
+        ),
+      () => {
+        this.#beds = null; // offline before the chunk came: the next change tries again
+        return null;
+      }
+    );
+  }
+
+  /** The ambience layers to sound now: new ones fade in, gone ones fade out (`immediate`: stop at once, for pause():
+   *  the suspended clock would freeze a fade, so they'd still sound on the way back). Loops are buffers (short, mono),
+   *  so they loop without the gap an <audio loop> can have. */
+  async setAmbient(layers: AmbientLayer[], immediate = false): Promise<void> {
     const ctx = this.ctx;
     if (!ctx) return;
     const token = ++this.#ambientToken;
-    const want = new Map(layers.map((l) => [l.id, l.gain]));
-    for (const [id, a] of this.#ambient) {
-      if (want.has(id)) {
-        a.gain.gain.setTargetAtTime(want.get(id)!, ctx.currentTime, 0.5);
+    const keyOf = (l: AmbientLayer) => (l.v ? `${l.id}:${l.v}` : l.id);
+    const want = new Map(layers.map((l) => [keyOf(l), l]));
+    for (const [key, a] of this.#ambient) {
+      if (want.has(key)) {
+        a.gain.gain.setTargetAtTime(want.get(key)!.gain, ctx.currentTime, 0.5);
         continue;
       }
       if (immediate) {
@@ -734,27 +761,28 @@ export class Engine {
         a.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
         a.src.stop(ctx.currentTime + 2.5);
       }
-      this.#ambient.delete(id);
+      this.#ambient.delete(key);
     }
-    for (const [id, gain] of want) {
-      if (this.#ambient.has(id)) continue;
-      const path = AUDIO.ambient[id];
-      if (!path) continue;
-      if (!this.#ambientBuffers.has(id)) this.#ambientBuffers.set(id, this.#decode(path));
-      const buf = await this.#ambientBuffers.get(id)!;
-      if (!buf) this.#ambientBuffers.delete(id); // offline: the next change tries again
-      if (!buf || token !== this.#ambientToken || this.#ambient.has(id)) continue;
+    for (const [key, l] of want) {
+      if (this.#ambient.has(key)) continue;
+      if (!this.#ambientBuffers.has(key)) this.#ambientBuffers.set(key, this.#bed(ctx, l));
+      const buf = await this.#ambientBuffers.get(key)!;
+      if (!buf) this.#ambientBuffers.delete(key); // offline: the next change tries again
+      if (!buf || token !== this.#ambientToken || this.#ambient.has(key)) continue;
       const src = ctx.createBufferSource();
       src.buffer = buf;
       src.loop = true;
       const g = ctx.createGain();
       g.gain.value = 0;
-      g.gain.setTargetAtTime(gain, ctx.currentTime, 0.8);
+      g.gain.setTargetAtTime(l.gain, ctx.currentTime, 0.8);
       src.connect(g).connect(this.#bus.ambient);
       src.onended = () => g.disconnect();
       src.start(ctx.currentTime, Math.random() * buf.duration); // a random point: not the same surf every launch
-      this.#ambient.set(id, { src, gain: g });
+      this.#ambient.set(key, { src, gain: g });
     }
+    // test hook (e2e/weather.spec.ts): the layers sounding, when the page set an array there
+    const log = globalThis as { __ambient?: string[] };
+    if (log.__ambient && token === this.#ambientToken) log.__ambient = [...this.#ambient.keys()];
   }
 
   /** The page went to the background (or the phone locked): silence at once and let the hardware sleep. The front

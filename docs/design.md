@@ -849,9 +849,18 @@ closing stops it. Without song files, his short placeholder tune plays instead.
 
 ### Ambience
 
-`ambientFor(hour, month, weather)` on the music bus: waves always; birds 05–17 Mar–Nov when fine; cicadas 08–17
-Jul–Aug; higurashi 04–08 and 16–19 Jul–Aug; crickets 17–05 Sep–Nov; wind Dec–Feb or snow; rain. Files only (none are
-listed yet).
+`ambientFor(hour, month, weather, { heavy })` on the music bus (ミュージック), crossfaded (0.5 s) as the hour, season or
+weather changes: waves always (softer under a downpour); birds 05–17 on fine days, most at dawn, the season's
+(spring's bush warbler ホーホケキョ, the sparrows, the white-eye, the great tit, autumn's bulbul; a few in winter to 16:00,
+quieter); cicadas 08–17 Jul–Aug; higurashi 04–08 and 16–19 Jul–Aug; crickets (bell crickets and field crickets) 17–05
+Sep–Nov; no insects or birds in rain or snow; wind Dec–Feb (louder on snow days); rain (louder when heavy).
+
+The beds are **procedural** (`ambientSynth.ts`, its own chunk, loaded with the first bed): original loops rendered as
+mono samples at 22.05 kHz, deterministic, 12–40 s each (1–1.8 MB of samples), when the main thread is idle, one bed at
+a time, then kept. Noise beds (surf, wind, rain) are filtered noise with slow swells, their tail crossfaded into their
+head; calls (birds, cicadas, crickets) are short synthesised voices written into a circular buffer with a small
+outdoor echo, so nothing jumps at the wrap. Each starts at a random point. Hidden: stopped at once with the context
+suspended, nothing renders. A file at `ambient.<id>` in the manifest replaces a bed.
 
 ### UI sounds
 
@@ -901,7 +910,7 @@ per sound (`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the
 
 `static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>`, `music.<weather>.<00–23>` = `{file, start, end?,
 gain?}`, `opening`, `ambient.<id>`, `events.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code
-change; a missing effect keeps its placeholder (`synth.ts`), missing music or ambience is silence. `sound.test.ts`:
+change; a missing effect keeps its placeholder (`synth.ts`), missing ambience its procedural bed, missing music is silence. `sound.test.ts`:
 files exist and every audio file is named, ≤ 1 MB a looped track and ≤ 20 MB for `music/` (14 MB of hours, 3.6 MB
 of events), ≤ 1.2 MB a K.K. song and ≤ 12 MB for `kk/` (9.9 MB). `npm run audio:music -- <dir>` (`scripts/music.ts`,
 ffmpeg) builds the 24 tracks from the user's MP3s: finds the loop, appends the copy, encodes AAC 64 kbps, sets `gain`
