@@ -197,19 +197,6 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   const future = dlg.locator('button.day[aria-disabled="true"]');
   if (await future.count()) await step('きろく', 'a future day (aria-disabled)', () => future.first().tap({ force: true }), ['boop']);
   await step('きろく', 'day', () => btn(/\(月\)$/, dlg).tap(), ['page']);
-  await step('きろく', '✎ steps', () => btn(/歩数 ✎$/, dlg.locator('.pc').first()).tap(), ['page']);
-  const pad = dlg.locator('.atm');
-  await step('きろく', 'keypad 1', () => btn('1', pad).tap(), ['key']);
-  await step('きろく', 'keypad ⌫', () => btn('ひとつ消す', pad).or(pad.locator('.key.fn').first()).first().tap(), ['key-fn']);
-  await step('きろく', 'keypad 2', () => btn('2', pad).tap(), ['key']);
-  await step('きろく', 'keypad C', () => pad.locator('.key.fn').nth(1).tap(), ['key-fn']);
-  await step('きろく', 'けってい with nothing typed (aria-disabled)', () => btn('けってい', dlg).tap({ force: true }), ['boop']);
-  await step('きろく', 'やめる (choice)', () => btn('やめる', dlg).tap(), ['back']);
-  await step('きろく', '✎ steps again', () => btn(/歩数 ✎$/, dlg.locator('.pc').first()).tap(), ['page']);
-  for (const k of '4321') await btn(k, pad).tap();
-  await step('きろく', 'けってい', () => btn('けってい', dlg).tap(), ['choice-pick']);
-  const undo = btn('とりけす');
-  await step('きろく', 'とりけす (banner)', () => undo.tap(), ['undo']);
   await step('きろく', 'back (‹) to the week', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', 'back (‹) to the list', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('きろく', '✎ Move goal', () => btn(/ムーブ（1日） ✎$/, dlg).tap(), ['page']);
@@ -249,6 +236,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   if (await cant.count()) await step('ごほうび', 'a treat it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
   await step('ごほうび', 'a treat', () => treats.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
   await step('ごほうび', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
+  const undo = btn('とりけす');
   await step('ごほうび', 'とりけす', () => undo.tap(), ['undo']);
   await page.waitForTimeout(400);
   await step('ごほうび', 'a treat, then やめる', () => treats.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);

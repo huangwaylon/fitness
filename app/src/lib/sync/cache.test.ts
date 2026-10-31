@@ -140,7 +140,7 @@ describe('resync (rev, docs/backend.md#revision)', () => {
 
   it('a flush that throws does not wedge later flushes ', async () => {
     const ev = enqueue('highfive', {});
-    await expect(flush(Date.now, () => { throw new Error('boom'); })).rejects.toThrow('boom');
+    await expect(flush(() => { throw new Error('boom'); })).rejects.toThrow('boom');
     const r = await flush();
     expect(r.acked.map((e) => e.id)).toEqual([ev.id]);
   });

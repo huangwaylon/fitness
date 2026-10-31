@@ -1,5 +1,5 @@
 // The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
-// until the server acks them. Undo windows (`holdMs`) and week locks are decided here.
+// until the server acks them. Undo windows (`holdMs`) are decided here.
 import type { EventReply, EventType } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
@@ -16,8 +16,6 @@ export interface QueuedEvent {
   nextAt: number;
   /** Demo only: the sender when it isn't `me` (the demo's two players share one event list across tabs). */
   person?: PersonId;
-  /** An edit of a week that locks (server-clock ms): rows stamped at or after it are refused. */
-  lockAt?: number;
   /** Client time the server acked it (ms): set once it left the queue for `ackedEvents()`. */
   ackedAt?: number;
 }
@@ -78,8 +76,8 @@ export function keepAcked(list: QueuedEvent[]): void {
 }
 
 /** `holdMs`: not sent before then (an undo window); it still shows in the optimistic view at once. */
-export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0, lockAt?: number): QueuedEvent {
-  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs, ...(lockAt === undefined ? {} : { lockAt }) };
+export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0): QueuedEvent {
+  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs };
   saveQueue([...queued(), ev]);
   return ev;
 }
@@ -104,7 +102,7 @@ export function holdEvent(id: string, until: number): boolean {
 /**
  * The connection is back (the `online` event) or the user asked to sync: events waiting out a backoff go again now.
  * Without it a queue that backed off to minutes while offline sat out the rest of its wait with the network up (and
- * the sync pill gone, since the snapshot succeeds), and an edit behind it could miss its lock. Held events (undo
+ * the sync pill gone, since the snapshot succeeds). Held events (undo
  * windows) keep their time.
  */
 export function retryNow(now = Date.now()): void {
@@ -119,11 +117,8 @@ export function backoffMs(tries: number, rand = Math.random): number {
   return Math.round(base * (0.8 + 0.4 * rand()));
 }
 
-/**
- * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo).
- * `expired`: edits dropped unsent because their week locked while they waited (offline).
- */
-interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; expired: QueuedEvent[]; remaining: number; error?: GasError }
+/** `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo). */
+interface FlushResult { sent: number; acked: QueuedEvent[]; dropped: QueuedEvent[]; remaining: number; error?: GasError }
 
 let flushing: Promise<FlushResult> | null = null;
 /** The event currently in flight (it can't be undone any more). */
@@ -133,21 +128,12 @@ let flushingId: string | null = null;
 const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.nextAt > now;
 
 /**
- * What an event changes, for ordering: a later event on the same thing (the same workout, day's metric or spend)
- * never passes a held one, so the server keeps the order the screen showed (a `workout_edit` stamped before its
- * `workout_add`, or a `spend_void` before its `spend`, would be ignored on read). Null: nothing else touches it.
+ * What an event changes, for ordering: a later event on the same spend never passes a held one, so the server keeps
+ * the order the screen showed (a `spend_void` stamped before its `spend` would be ignored on read). Null: nothing else
+ * touches it.
  */
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
-  const d = ev.data;
-  switch (ev.type) {
-    // `person`: whose data (absent = the sender, always me in the queue).
-    case 'metric_set': return `metric|${String(d.person ?? '')}|${String(d.date)}|${String(d.metric)}`;
-    case 'workout_add':
-    case 'workout_edit': return `workout|${String(d.person ?? '')}|${String(d.id)}`;
-    case 'spend':
-    case 'spend_void': return `spend|${String(d.spendId)}`;
-    default: return null;
-  }
+  return ev.type === 'spend' || ev.type === 'spend_void' ? `spend|${String(ev.data.spendId)}` : null;
 }
 
 /**
@@ -174,31 +160,23 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
 
 /**
  * Send queued events in order until one fails. Events still in their undo window are skipped, not waited for
- * (a held buy must not delay an edit behind it by 5 s), except by later events on the same subject;
+ * (a held buy must not delay a goal behind it by 5 s), except by later events on the same subject;
  * everything else keeps queue order. Acked (`{ok}` or `{ok, duplicate}`) → removed. `bad_request` /
  * `too_large` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
- * so order is preserved) with a backoff. `unauthorized` stops the flush. `expired(ev, t)`: an edit that can no
- * longer land before its lock → dropped unsent (reported).
+ * so order is preserved) with a backoff. `unauthorized` stops the flush.
  */
-export function flush(now: () => number = Date.now, expired: (ev: QueuedEvent, t: number) => boolean = () => false): Promise<FlushResult> {
+export function flush(now: () => number = Date.now): Promise<FlushResult> {
   if (flushing) return flushing;
   const p = (async (): Promise<FlushResult> => {
     let sent = 0;
     const acked: QueuedEvent[] = [];
     const dropped: QueuedEvent[] = [];
-    const late: QueuedEvent[] = [];
     let error: GasError | undefined;
     const tried = new Set<string>();
     for (;;) {
-      const t = now();
-      const { ev } = due(queued(), t, (x) => tried.has(x.id));
+      const { ev } = due(queued(), now(), (x) => tried.has(x.id));
       if (!ev) break;
       tried.add(ev.id);
-      if (expired(ev, t)) {
-        late.push(ev);
-        saveQueue(queued().filter((x) => x.id !== ev.id));
-        continue;
-      }
       flushingId = ev.id;
       const key = getKey();
       const r = await post<Extract<EventReply, { ok: true }>>('event', { id: ev.id, type: ev.type, data: ev.data });
@@ -226,7 +204,7 @@ export function flush(now: () => number = Date.now, expired: (ev: QueuedEvent, t
       }
       break;
     }
-    return { sent, acked, dropped, expired: late, remaining: queued().length, error };
+    return { sent, acked, dropped, remaining: queued().length, error };
   })();
   flushing = p;
   // cleared however it settles: a throw (storage) must not wedge every later flush

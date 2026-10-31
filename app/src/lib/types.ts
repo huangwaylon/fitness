@@ -15,15 +15,6 @@ export type RingFruit = 'pear' | 'peach' | 'cherry' | 'apple';
 /** ベル per ring fruit. */
 export type RingBells = Record<RingFruit, number>;
 
-/** A workout added by hand in きろく (`workout_add`): its minutes count toward the day's exercise minutes (max, never a sum). */
-export interface Workout {
-  id: string;
-  date: LocalDate;
-  /** Canonical (English) workout name, e.g. "Yoga", "Outdoor Walk" (contract/labels.ts WORKOUT_TYPES). */
-  type: string;
-  durationMin: number;
-}
-
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
 
 /** A shared menu entry (one list for both), editable in the app (`pref` menu): either person can buy it from the wallet. */
@@ -72,7 +63,7 @@ export interface HarvestBonus {
 
 /** A ring fruit's progress today and this week. Units: 🍑 minutes, 🍐 kcal, 🍒 minutes, 🍎 steps. */
 export interface RingProgress {
-  /** Today's counted amount (🍑 max(Watch, workouts added in きろく)). */
+  /** Today's amount from Apple Health. */
   today: number;
   /** Today's daily goal at the week's rule version (rules.ts goals; 🍐 the person's Move goal in force today). */
   goal: number;

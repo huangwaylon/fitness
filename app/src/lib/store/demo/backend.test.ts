@@ -35,15 +35,15 @@ describe('demo isolation', () => {
     const b = new DemoBackend(h, 'plain', 'A');
     await b.refresh();
     expect(h.status).toBe('ready');
-    const r = b.send('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, { holdMs: 5000 });
+    const r = b.send('pref', { key: 'moveGoal', value: 500 }, { holdMs: 5000 });
     expect(r.ok).toBe(true);
-    expect(b.events().list).toHaveLength(1);
-    expect(b.events().list.some((e) => e.id === live.id)).toBe(false); // the live queue is not the demo's
+    expect(b.events()).toHaveLength(1);
+    expect(b.events().some((e) => e.id === live.id)).toBe(false); // the live queue is not the demo's
     for (const [k, v] of before) expect(kv.m.get(k)).toBe(v);
     expect([...kv.m.keys()].filter((k) => !before.has(k))).toEqual([DEMO.events]);
     expect(queued().map((e) => e.id)).toEqual([live.id]);
     expect(r.undo!()).toBe(true);
-    expect(b.events().list).toEqual([]);
+    expect(b.events()).toEqual([]);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -51,7 +51,7 @@ describe('demo isolation', () => {
     kv.m.set(DEMO.events, JSON.stringify({ day: 'Mon Jan 01 2001', events: [{ id: 'old', type: 'highfive', data: {} }] }));
     const b = new DemoBackend(host(), 'plain', 'B');
     await b.refresh();
-    expect(b.events().list).toEqual([]);
+    expect(b.events()).toEqual([]);
     expect(b.cache()?.me).toBe('B');
     expect(b.cache()?.demo).toBeTruthy(); // the demo calendar travels with its rows, never as a global
   });

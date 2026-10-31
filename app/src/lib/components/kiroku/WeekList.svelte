@@ -1,12 +1,11 @@
 <script lang="ts">
   // 3.1 Week list (からだ: what our bodies did): newest first, one cream Nook Miles+ card per week.
-  // Each card: the week (今週 or dates), 🔒 once it locked, ✓ once harvested, and per person the villager and the four
+  // Each card: the week (今週 or dates), ✓ once harvested, and per person the villager and the four
   // badge fruits (lit = met); this week also shows the days met so far under each. The ベル live in the ベル tab.
   import type { PersonId } from '#lib/types.ts';
   import type { HistoryWeek } from '#lib/model/history.ts';
   import Avatar from '../characters/Avatar.svelte';
   import BadgeRow from '../ui/BadgeRow.svelte';
-  import Glyph from './Glyph.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { weekRange } from '#lib/i18n/format.ts';
 
@@ -27,10 +26,9 @@
   {#each weeks as w, i (w.weekKey)}
     <li style:animation-delay="{Math.min(i, 6) * 40}ms">
       <button type="button" class="card wk" class:cur={w.current} data-sfx="page" onclick={() => onopen(w.weekKey)}
-        aria-label="{w.current ? t('kiroku.thisWeek') : t('kiroku.weekOf', { range: weekRange(w.weekKey) })}{w.locked ? ' ' + t('kiroku.locked') : ''}{w.harvested ? ' ' + t('kiroku.harvested') : ''}">
+        aria-label="{w.current ? t('kiroku.thisWeek') : t('kiroku.weekOf', { range: weekRange(w.weekKey) })}{w.harvested ? ' ' + t('kiroku.harvested') : ''}">
         <span class="head">
           <span class="when">{#if w.current}<b>{t('kiroku.thisWeek')}</b>{/if}<span class="range">{weekRange(w.weekKey)}</span></span>
-          {#if w.locked}<Glyph kind="lock" size={16} label={t('kiroku.locked')} />{/if}
           {#if w.harvested}<span class="hv" title={t('kiroku.harvested')}><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg></span>{/if}
         </span>
         {#each order as p (p)}

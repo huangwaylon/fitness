@@ -6,7 +6,7 @@ import { configureTransport, post } from './transport.ts';
 import { ackedEvents, backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, retryNow, unqueue } from './queue.ts';
 import { applySnapshot, configureCache, loadCache, refreshSnapshot } from './cache.ts';
 import { keyFromHash, setKey } from './pairing.ts';
-import { composeModel, missesLock } from '#lib/store/view.ts';
+import { composeModel } from '#lib/store/view.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { emptyRows, mergeRows, maxAt } from '#lib/model/snapshot.ts';
 
@@ -95,20 +95,20 @@ describe('post', () => {
 
 describe('write queue', () => {
   it('persists events and sends them in order until acked (duplicates count as acked)', async () => {
-    enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 });
+    enqueue('pref', { key: 'moveGoal', value: 500 });
     enqueue('highfive', {});
     expect(queued()).toHaveLength(2);
     let n = 0;
     handler = () => (++n === 2 ? { ok: true, duplicate: true } : { ok: true });
     const r = await flush();
     expect(r).toMatchObject({ sent: 2, remaining: 0 });
-    expect(calls.map((c) => c.type)).toEqual(['metric_set', 'highfive']);
-    expect(calls[0]).toMatchObject({ action: 'event', key: KEY, data: { date: '2026-11-02', metric: 'steps', value: 5000 } });
+    expect(calls.map((c) => c.type)).toEqual(['pref', 'highfive']);
+    expect(calls[0]).toMatchObject({ action: 'event', key: KEY, data: { key: 'moveGoal', value: 500 } });
     expect(typeof calls[0].id).toBe('string');
     expect(queued()).toEqual([]);
   });
   it('reports only acked events: one undone while an earlier event is in flight is not acked', async () => {
-    const first = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 });
+    const first = enqueue('pref', { key: 'moveGoal', value: 500 });
     const second = enqueue('highfive', {});
     handler = (body) => {
       // While the first event is on the wire, the user taps 取り消す on the second.
@@ -151,8 +151,8 @@ describe('write queue', () => {
   it('a held (undo-window) event does not block later events; it still goes once due', async () => {
     const t = 1_000_000;
     const held = enqueue('spend_void', { spendId: 's1' }, t, 5000);
-    const tick = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t);
-    expect(nextRetryAt(t)).toBe(t); // the edit is due now, not in 5 s
+    const tick = enqueue('pref', { key: 'moveGoal', value: 500 }, t);
+    expect(nextRetryAt(t)).toBe(t); // the goal is due now, not in 5 s
     let r = await flush(() => t);
     expect(r.acked.map((e) => e.id)).toEqual([tick.id]);
     expect(queued().map((e) => e.id)).toEqual([held.id]);
@@ -167,14 +167,14 @@ describe('write queue', () => {
     const a = enqueue('highfive', {}, t);
     await flush(() => t);
     const retryAt = queued()[0].nextAt;
-    enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t);
+    enqueue('pref', { key: 'moveGoal', value: 500 }, t);
     handler = () => ({ ok: true });
     calls = [];
     await flush(() => t + 1);
     expect(calls).toHaveLength(0);
     expect(nextRetryAt(t + 1)).toBe(retryAt);
     await flush(() => retryAt);
-    expect(calls.map((c) => c.type)).toEqual(['highfive', 'metric_set']);
+    expect(calls.map((c) => c.type)).toEqual(['highfive', 'pref']);
     expect(calls[0].id).toBe(a.id);
   });
   it('holdEvent keeps a held event back while its banner is held, and releases it', async () => {
@@ -188,65 +188,25 @@ describe('write queue', () => {
     expect(calls.map((c) => c.id)).toEqual([held.id]);
     expect(holdEvent(held.id, t + 9000)).toBe(false); // already sent
   });
-  it('a later event on the same subject never passes a held one; other subjects still go first', async () => {
+  it('a void of a held spend waits for it (else the model would ignore it); other events still go first', async () => {
     const t = 1_000_000;
-    const fix = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5000 }, t, 5000);
-    const island = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 6000 }, t + 1);
-    const other = enqueue('metric_set', { date: '2026-11-02', metric: 'exercise_min', value: 30 }, t + 2);
-    expect(nextRetryAt(t + 2)).toBe(t + 2); // `other` is due; the blocked later edit is not
-    await flush(() => t + 2);
+    const buy = enqueue('spend', { spendId: 's1', item: 'snack', label: 'おやつ', bells: 1200 }, t, 5000);
+    const back = enqueue('spend_void', { spendId: 's1' }, t + 1);
+    const other = enqueue('spend_void', { spendId: 's0' }, t + 2);
+    expect(nextRetryAt(t + 2)).toBe(t + 2); // `other` is due; the blocked void is not
+    await flush(() => t + 3);
     expect(calls.map((c) => c.id)).toEqual([other.id]);
-    expect(nextRetryAt(t + 3)).toBe(t + 5000); // wakes when the held fix goes, not every 250 ms
+    expect(nextRetryAt(t + 3)).toBe(t + 5000); // wakes when the held buy goes, not every 250 ms
     await flush(() => t + 5000);
-    expect(calls.map((c) => c.id)).toEqual([other.id, fix.id, island.id]); // the screen's order
-  });
-  it('subjects include whose data: a metric_set waits behind a held one for the same person, day and metric only', async () => {
-    const t = 1_000_000;
-    const held = enqueue('metric_set', { person: 'B', date: '2026-11-02', metric: 'steps', value: 1 }, t, 5000);
-    const same = enqueue('metric_set', { person: 'B', date: '2026-11-02', metric: 'steps', value: 2 }, t + 1);
-    const mine = enqueue('metric_set', { person: 'A', date: '2026-11-02', metric: 'steps', value: 3 }, t + 2);
-    const minutes = enqueue('metric_set', { person: 'B', date: '2026-11-02', metric: 'exercise_min', value: 4 }, t + 3);
-    await flush(() => t + 4);
-    expect(calls.map((c) => c.id)).toEqual([mine.id, minutes.id]);
-    await flush(() => t + 5000);
-    expect(calls.map((c) => c.id)).toEqual([mine.id, minutes.id, held.id, same.id]);
-  });
-  it('an edit of a held workout_add, or a void of a held spend, waits for it (else the server would refuse it)', async () => {
-    const t = 1_000_000;
-    const add = enqueue('workout_add', { id: 'm:x', date: '2026-11-02', type: 'Yoga', durationMin: 30 }, t, 5000);
-    const edit = enqueue('workout_edit', { id: 'm:x', excluded: true }, t + 1);
-    const buy = enqueue('spend', { spendId: 's1', item: 'snack', label: 'おやつ', bells: 1200 }, t + 2, 5000);
-    const back = enqueue('spend_void', { spendId: 's1' }, t + 3);
-    await flush(() => t + 4);
-    expect(calls).toEqual([]);
-    await flush(() => t + 5000);
-    expect(calls.map((c) => c.id)).toEqual([add.id, edit.id]);
-    await flush(() => t + 5002);
-    expect(calls.map((c) => c.id)).toEqual([add.id, edit.id, buy.id, back.id]);
+    expect(calls.map((c) => c.id)).toEqual([other.id, buy.id, back.id]); // the screen's order
   });
   it('undoing the held event lets the blocked one go', async () => {
     const t = 1_000_000;
-    const fix = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5 }, t, 5000);
-    const later = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 6 }, t + 1);
-    expect(unqueue(fix.id)).toBe(true);
+    const buy = enqueue('spend', { spendId: 's1', item: 'snack', label: 'おやつ', bells: 1200 }, t, 5000);
+    const later = enqueue('spend_void', { spendId: 's1' }, t + 1);
+    expect(unqueue(buy.id)).toBe(true);
     await flush(() => t + 2);
     expect(calls.map((c) => c.id)).toEqual([later.id]);
-  });
-  it('an edit that would reach the server after its lock is dropped unsent and reported', async () => {
-    const t = 1_000_000;
-    const late = enqueue('metric_set', { date: '2026-11-02', metric: 'steps', value: 5 }, t, 0, t + 10_000);
-    const fine = enqueue('highfive', {}, t);
-    const r = await flush(() => t + 10_000, (ev, now) => missesLock(ev, now, 0));
-    expect(r.expired.map((e) => e.id)).toEqual([late.id]);
-    expect(calls.map((c) => c.id)).toEqual([fine.id]);
-    expect(queued()).toEqual([]);
-  });
-  it('missesLock judges by the eventual send time (held → nextAt) on the server clock', () => {
-    const lockAt = 100_000;
-    expect(missesLock({ nextAt: 90_000, lockAt }, 80_000, 0)).toBe(false);
-    expect(missesLock({ nextAt: 100_000, lockAt }, 80_000, 0)).toBe(true); // held until the lock: refused there
-    expect(missesLock({ nextAt: 90_000, lockAt }, 80_000, 15_000)).toBe(true); // the server clock is ahead
-    expect(missesLock({ nextAt: 0 }, 1e12, 0)).toBe(false); // not an edit
   });
   it('a second flush while one is running shares it', async () => {
     enqueue('highfive', {});
@@ -356,7 +316,7 @@ describe('snapshot cache', () => {
     expect(next.rows).toBe(prev.rows);
     expect(next.rowsAt).toBe(prev.rowsAt);
     const m = composeModel(prev, [], 0);
-    expect(composeModel(next, [], 1000, undefined, m).state).toBe(m.state);
+    expect(composeModel(next, [], 1000, m).state).toBe(m.state);
     expect(mergeRows(prev.rows, {})).toBe(prev.rows);
   });
   it('a reply for another person starts from scratch', () => {
@@ -390,34 +350,28 @@ describe('snapshot cache', () => {
 });
 
 describe('optimistic view', () => {
-  it('shows queued events at once, judged like the server will (open weeks, server clock)', () => {
+  it('shows queued events at once, judged like the server will (server clock)', () => {
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, Date.parse('2026-11-04T12:00:00.000Z'));
     const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST
-    expect(composeView(cache, [], now).people.A.rings.apple.today).toBe(0);
+    expect(composeView(cache, [], now).people.A.moveGoal).toBe(600);
     const q = [
-      { id: 'q1', type: 'metric_set' as const, data: { date: '2026-11-04', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt: now },
-      { id: 'q2', type: 'metric_set' as const, data: { date: '2026-10-27', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt: now }, // locked week
+      { id: 'q1', type: 'pref' as const, data: { key: 'moveGoal', value: 450 }, queuedAt: now, tries: 0, nextAt: now },
+      { id: 'q2', type: 'metric_set' as unknown as 'pref', data: { date: '2026-11-04', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt: now }, // a stale removed type
       { id: 'q3', type: 'pref' as const, data: { key: 'locale', value: 'ja' }, queuedAt: now, tries: 0, nextAt: now }
     ];
     const v = composeView(cache, q, now);
-    expect(v.people.A.rings.apple).toMatchObject({ today: 9000, met: true });
-    expect([...composeModel(cache, q, now).state.metricSets.A.keys()]).toEqual(['2026-11-04|steps']);
+    expect(v.people.A.moveGoal).toBe(450);
+    expect(v.people.A.rings.apple.today).toBe(0); // the removed type is ignored
     expect(v.locale).toBe('ja');
     // Once the server has the event (same id), the queued copy is ignored.
     const acked = { ...cache, rows: mergeRows(cache.rows, { events: [['2026-11-04T12:00:01.000Z', 'A', 'q3', 'pref', '{"key":"locale","value":"en"}']] }) };
     expect(composeView(acked, q, now).locale).toBe('en');
   });
-  it('an unsent edit that would land after the lock is not shown; live events ignore a stray `person`', () => {
-    const now = Date.parse('2026-11-04T12:00:00.000Z'); // Wed 21:00 JST: the week of 11-02 locks Wed 11-11 04:00
+  it('live events are always mine: a stray `person` on a queued event never changes the sender', () => {
+    const now = Date.parse('2026-11-04T12:00:00.000Z');
     const cache = applySnapshot(null, { me: 'A', now: '2026-11-04T12:00:00.000Z', rows: rowsA() }, now);
-    const lockAt = Date.parse('2026-11-10T19:00:00.000Z');
-    const set = (id: string, nextAt: number, extra = {}) => ({ id, type: 'metric_set' as const, data: { date: '2026-11-04', metric: 'steps', value: 9000 }, queuedAt: now, tries: 0, nextAt, lockAt, ...extra });
-    expect(composeView(cache, [set('ok', now + 5000)], now).people.A.rings.apple.today).toBe(9000);
-    expect(composeView(cache, [set('late', lockAt)], now).people.A.rings.apple.today).toBe(0);
-    // Already acked (not in the pending set): shown whatever its nextAt, the server judged it.
-    expect(composeModel(cache, [set('acked', lockAt)], now, new Set()).state.metricSets.A.size).toBe(1);
-    // A crafted `person` on a live queued event is ignored: it is always me.
-    expect(composeModel(cache, [set('p', now, { person: 'B' })], now).state.metricSets.B.size).toBe(0);
+    const ev = { id: 'p', type: 'highfive' as const, data: {}, queuedAt: now, tries: 0, nextAt: now, person: 'B' as const };
+    expect(composeModel(cache, [ev], now).state.highfives.map((h) => h.person)).toEqual(['A']);
   });
   it('the same event listed twice is applied once', () => {
     const now = Date.parse('2026-11-04T12:00:00.000Z');

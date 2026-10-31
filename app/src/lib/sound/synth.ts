@@ -71,11 +71,6 @@ const RECIPES: Record<SoundId, Ev[]> = {
   // a switch: two quick notes up (on) / down (off), the off one rounder
   'toggle-on': [mallet(C6, 0, 0.07, 0.7), mallet(G6, 0.045, 0.12, 0.9)],
   'toggle-off': [{ ...mallet(G6, 0, 0.07, 0.75), wave: 'tri' }, { ...mallet(C6, 0.045, 0.12, 0.8), wave: 'tri' }],
-  // a keypad key: a tiny "tok" (NH's text-entry keyboard), barely there
-  key: [
-    { kind: 'tone', f: 1700, to: 1250, glide: 0.02, t: 0, d: 0.035, g: 0.7, wave: 'tri', attack: 0.001 },
-    { kind: 'noise', t: 0, d: 0.012, g: 0.25, lo: 2500, hi: 9000, shape: 'decay' }
-  ],
   // a page turned: a paper flick
   page: [
     { kind: 'noise', t: 0, d: 0.15, g: 1, lo: 1800, hi: 9000, shape: 'swell' },

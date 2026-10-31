@@ -15,23 +15,14 @@ export interface ComposedModel {
 }
 
 /**
- * An unsent edit that can no longer land before its week's lock (server clock): it would be refused, so it is not
- * shown as applied and the queue drops it with a message. It goes out no earlier than `nextAt`.
- */
-export const missesLock = (ev: Pick<QueuedEvent, 'lockAt' | 'nextAt'>, clientNow: number, skewMs: number): boolean =>
-  ev.lockAt !== undefined && Math.max(ev.nextAt, clientNow) + skewMs >= ev.lockAt;
-
-
-/**
  * Queued events become rows stamped just after the newest server row (in queue order) on the server's clock, so
- * read-time rules (week locks, the wallet balance, the harvest week) judge them as the server will.
- * `pending`: the still-unsent part of `queue` (only those can miss their lock; acked ones already landed).
+ * read-time rules (the wallet balance, the harvest week) judge them as the server will.
  * `prev`: the last result; its state is reused when the rows and the queued rows are the same (reduce is the
  * expensive part). Live rows pass their `rev` so locked weeks' earnings are reused across
  * States, unless a queued row is stamped before the latest lock (an old offline tap): the server will stamp it
  * later, so it must not pin a locked week.
  */
-export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, pending?: Set<string>, prev?: ComposedModel | null): ComposedModel {
+export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, prev?: ComposedModel | null): ComposedModel {
   const known = new Set(cache.rows.events.map((r) => String(r[2])));
   const lastAt = cache.since ? Date.parse(cache.since) : 0;
   let floor = Number.isNaN(lastAt) ? 0 : lastAt;
@@ -39,7 +30,6 @@ export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientN
   for (const ev of queue) {
     if (known.has(ev.id)) continue; // acked but the ack was lost: the server row wins
     known.add(ev.id); // the same event twice (sent + still queued, overlapping flushes) is one row
-    if ((!pending || pending.has(ev.id)) && missesLock(ev, clientNow, cache.skewMs)) continue;
     const at = Math.max(ev.queuedAt + cache.skewMs, floor + 1);
     floor = at;
     // Only the demo's shared event list names another sender; live events are always mine.

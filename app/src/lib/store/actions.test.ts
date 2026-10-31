@@ -6,7 +6,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { addWorkout, buy, excludeWorkout, saveMenu, setGoalWeight, setMetric, setMoveGoal, setWeight, undoSpend } from './actions.ts';
+import { buy, saveMenu, setGoalWeight, setMoveGoal, undoSpend } from './actions.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
 
@@ -76,28 +76,16 @@ describe('wallet actions', () => {
   });
 });
 
-describe('きろく edits name whose data', () => {
-  it('every edit carries an explicit person, mine or the partner’s', () => {
-    const date = '2026-11-17';
-    expect(setMetric('B', date, 'steps', 4000.4).ok).toBe(true);
-    expect(setMetric('A', '2026-11-18', 'exercise_min', 45).ok).toBe(true);
-    expect(excludeWorkout('B', 'm:1', date, true).ok).toBe(true);
-    expect(addWorkout('B', date, 'Yoga', 30).ok).toBe(true);
-    expect(setWeight('B', date, 61.24).ok).toBe(true);
-    expect(setGoalWeight('B', 58).ok).toBe(true);
+describe('the goals name whose goal', () => {
+  it('setGoalWeight carries an explicit person, mine or the partner’s, rounded to one decimal; null clears it', () => {
+    expect(setGoalWeight('B', 58.04).ok).toBe(true);
     expect(setGoalWeight('A', null).ok).toBe(true);
+    expect(setGoalWeight('A', 19).ok).toBe(false);
     expect(queued().map((e) => [e.type, e.data])).toEqual([
-      ['metric_set', { person: 'B', date, metric: 'steps', value: 4000 }],
-      ['metric_set', { person: 'A', date: '2026-11-18', metric: 'exercise_min', value: 45 }],
-      ['workout_edit', { person: 'B', id: 'm:1', excluded: true }],
-      ['workout_add', { person: 'B', id: expect.stringMatching(/^m:[\w-]+$/), date, type: 'Yoga', durationMin: 30 }],
-      ['metric_set', { person: 'B', date, metric: 'weight', value: 61.2 }],
       ['pref', { person: 'B', key: 'goalWeight', value: 58 }],
       ['pref', { person: 'A', key: 'goalWeight', value: null }]
     ]);
-    // the activity edits are held for the undo banner and must land before the week's lock
-    const edit = queued()[2];
-    expect(edit.nextAt).toBeGreaterThan(edit.queuedAt);
-    expect(edit.lockAt).toBe(Date.parse('2026-11-25T04:00:00+09:00'));
+    // a goal is sent at once (no undo window)
+    expect(queued().every((e) => e.nextAt === e.queuedAt)).toBe(true);
   });
 });

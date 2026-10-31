@@ -1,16 +1,15 @@
-// Snapshot rows → validated, indexed state. Whose data an edit changes (`data.person`), which weeks are open
-// and what the wallet covers are read-time rules here (an invalid event is ignored, not refused), so the sheet stays a dumb append-only log.
+// Snapshot rows → validated, indexed state. Whose goal a `pref` sets (`data.person`) and what the wallet covers are
+// read-time rules here (an invalid or unknown event is ignored, not refused), so the sheet stays a dumb append-only log.
+// Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
 import type { LocalDate, PersonId, WalletItem, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, ECONOMY_START, LIMITS, MOVE_GOAL, PEOPLE } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { rowAt } from './snapshot.ts';
 import {
-  DATE_RE, editTarget, EVENT_TYPES, isId, isPersonId, isActivityMetric, isWeightKg, MANUAL_ID_RE, MANUAL_WORKOUT_MIN, roundKg, validMetricValue, WEIGHT_KG,
+  DATE_RE, eventSubject, EVENT_TYPES, isId, isPersonId, isActivityMetric, isWeightKg, roundKg, WEIGHT_KG,
   type ActivityMetric, type EventType, type SnapshotRows
 } from '#lib/contract/api.ts';
-import { WORKOUT_TYPES } from '#lib/contract/labels.ts';
 
-export const PEOPLE_IDS: PersonId[] = ['A', 'B'];
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
 
 // ---------- time ----------
@@ -25,7 +24,7 @@ const cutoffMemo = (fn: (wk: WeekKey) => number) => {
 };
 /** Sunday 19:30 JST of the week: the harvest opens and the weekly bonus lands. */
 export const provisionalMs = cutoffMemo((wk) => jstMs(addDays(wk, 6), CUTOFFS.provisional.hour, CUTOFFS.provisional.minute));
-/** Wednesday 04:00 JST after the week: late data and edits still count up to here, then the week locks. */
+/** Wednesday 04:00 JST after the week: late Health data still counts up to here, then the week locks (its earnings are final). */
 export const finalMs = cutoffMemo((wk) => jstMs(addDays(wk, 9), CUTOFFS.final.hour, CUTOFFS.final.minute));
 
 /**
@@ -46,35 +45,9 @@ export function lastLockAt(t: number): number {
   return lock <= t ? lock : finalMs(addDays(prev, -7));
 }
 
-/** A week locks (its earnings are final) at its Wednesday 04:00; weeks before the first week never lock. */
-export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
-
-/**
- * Open for edits at t (docs/design.md#open-weeks): the day has happened, and its week has not reached its
- * Wednesday 04:00 lock. Unlike `isLockedAt` (weeks before the first earning week never lock) it applies to every
- * week, so edits never reach more than ~9.5 days back.
- */
-export const editableAt = (date: LocalDate, t: number): boolean => date <= localDateAt(t) && t < finalMs(weekKeyOf(date));
-
 // ---------- records ----------
 
 interface Timed<T> { at: number; v: T }
-/** An accepted edit of someone's data: `by` made it (either person edits either person's data). */
-interface Edit<T> extends Timed<T> { by: PersonId }
-
-/** A workout added by hand in きろく (`workout_add`). */
-interface WorkoutRec {
-  at: number;
-  id: string;
-  date: LocalDate;
-  type: string;
-  durationMin: number;
-  /** Who added it (the `workout_add`'s sender). */
-  by: PersonId;
-}
-
-/** A `workout_edit`: a hand-added workout left out of scoring (`excluded`) or back in. `person`: whose workout; `by`: who changed it. */
-interface WorkoutEditRec { at: number; person: PersonId; by: PersonId; id: string; excluded: boolean }
 /** A buy from the wallet: `{spendId, item, label, bells}`. */
 interface BellSpendRec { at: number; person: PersonId; spendId: string; item: string; label: string; bells: number }
 
@@ -88,21 +61,11 @@ export interface State {
   bellSpends: BellSpendRec[];
   /** The shared menu (`pref` menu by either person), ascending `at`: the latest wins. */
   menu: Timed<WalletItem[]>[];
-  /** Accepted activity `metric_set` (steps, minutes) per person edited, keyed `date|metric`, ascending `at`. */
-  metricSets: Record<PersonId, Map<string, Edit<number>[]>>;
   /**
-   * Body weight, kept apart from the activity metrics so the economy can't read it: ingested `weight` rows
-   * and accepted `metric_set {metric:'weight'}` per person, keyed by date, ascending `at`. A day's weight is the latest
-   * of the two (`model/weight.ts`).
+   * Body weight, kept apart from the activity metrics so the economy can't read it: ingested `weight` rows per
+   * person, keyed by date, ascending `at`. A day's weight is its latest row (`model/weight.ts`).
    */
   weights: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
-  weightSets: Record<PersonId, Map<LocalDate, Timed<number>[]>>;
-  /** Accepted `workout_edit`s, ascending `at`. */
-  workoutEdits: WorkoutEditRec[];
-  /** Index of `workoutEdits` per workout key `person|id`. */
-  workoutExcluded: Map<string, Timed<boolean>[]>;
-  /** Accepted `workout_add`s, ascending `at`. */
-  workouts: Record<PersonId, WorkoutRec[]>;
   /** Accepted `spend_void`s (by the spender, after the spend). */
   spendVoids: { at: number; person: PersonId; spendId: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
@@ -191,12 +154,7 @@ export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, re
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],
     menu: [],
-    metricSets: { A: new Map(), B: new Map() },
     weights: { A: new Map(), B: new Map() },
-    weightSets: { A: new Map(), B: new Map() },
-    workoutEdits: [],
-    workoutExcluded: new Map(),
-    workouts: { A: [], B: [] },
     spendVoids: [],
     harvests: [],
     highfives: [],
@@ -212,7 +170,6 @@ export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, re
     s.ats.push(out.map((x) => x.at));
     return out;
   };
-  const c: Ctx = { s, workoutById: new Map() };
   const lastSyncMs: Record<PersonId, number> = { A: -Infinity, B: -Infinity };
   const synced = (p: PersonId, at: number, iso: string) => {
     if (at > lastSyncMs[p]) {
@@ -241,26 +198,20 @@ export function reduce(r: SnapshotRows, calendar: DemoCalendar | null = null, re
   for (const { r: row, at } of byAt(r.events ?? [])) {
     const [, person, , type, raw] = row;
     const d = parseData(raw);
-    // A type the server wouldn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
+    // A type the server doesn't accept (a hand edit of the sheet, or a row of a type since removed) is ignored, and
+    // so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
-    const target = editTarget(type, d, person);
-    if (target) ON_EVENT[type](c, target, at, d, person);
+    const subject = eventSubject(type, d, person);
+    if (subject) ON_EVENT[type](s, subject, at, d);
   }
-  // The per-workout lookup is an index of workoutEdits (one source).
-  for (const e of s.workoutEdits) push(s.workoutExcluded, `${e.person}|${e.id}`, { at: e.at, v: e.excluded });
   return s;
 }
 
 // ---------- events ----------
 
-interface Ctx {
-  s: State;
-  /** Hand-added workouts by `person|id`. */
-  workoutById: Map<string, WorkoutRec>;
-}
 type Data = Record<string, unknown>;
-/** `person`: whose data the event changes (`data.person`, else the sender); `by`: the sender. */
-type OnEvent = (c: Ctx, person: PersonId, at: number, d: Data, by: PersonId) => void;
+/** `person`: whose data the event changes (a goal's `data.person`, else the sender). */
+type OnEvent = (s: State, person: PersonId, at: number, d: Data) => void;
 
 const isBells = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0 && v <= LIMITS.bellsMax;
 const MENU_ID_RE = /^[\w-]+$/;
@@ -293,13 +244,9 @@ export function parseMenu(v: unknown): WalletItem[] | null {
   return out;
 }
 
-/**
- * One handler per event type: each accepts (indexes) the event or ignores it. The edits (docs/design.md#editing)
- * change `person`'s data (either person's) and remember `by`; activity edits only count while the day's week
- * is open (docs/design.md#open-weeks).
- */
+/** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<EventType, OnEvent> = {
-  spend({ s }, person, at, d) {
+  spend(s, person, at, d) {
     // A buy from the wallet. Validity only: whether the wallet covered it is decided on read (bells.ts).
     const label = typeof d.label === 'string' ? d.label.trim() : '';
     const { spendId, bells } = d;
@@ -308,37 +255,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
     s.bellSpends.push({ at, person, spendId, item: d.item, label, bells });
   },
-  metric_set({ s }, person, at, d, by) {
-    const date = normDate(d.date);
-    const metric = d.metric;
-    if (!date) return;
-    if (metric === 'weight') {
-      // A weight earns nothing, so no week lock: any day up to today, one decimal, 20–300 kg.
-      if (validMetricValue('weight', d.value) && date <= localDateAt(at)) push(s.weightSets[person], date, { at, v: d.value });
-      return;
-    }
-    if (!isActivityMetric(metric) || !validMetricValue(metric, d.value)) return;
-    if (editableAt(date, at)) push(s.metricSets[person], `${date}|${metric}`, { at, v: d.value, by });
-  },
-  workout_edit({ s, workoutById }, person, at, d, by) {
-    if (typeof d.id !== 'string') return;
-    const w = workoutById.get(`${person}|${d.id}`);
-    if (!w || w.at > at || !editableAt(w.date, at) || typeof d.excluded !== 'boolean') return;
-    s.workoutEdits.push({ at, person, by, id: d.id, excluded: d.excluded });
-  },
-  workout_add({ s, workoutById }, person, at, d, by) {
-    const date = normDate(d.date);
-    const id = typeof d.id === 'string' && MANUAL_ID_RE.test(d.id) ? d.id : null;
-    const dur = d.durationMin;
-    if (!id || !date || typeof d.type !== 'string' || !WORKOUT_TYPES.includes(d.type)) return;
-    if (typeof dur !== 'number' || !Number.isInteger(dur) || dur < MANUAL_WORKOUT_MIN.min || dur > MANUAL_WORKOUT_MIN.max) return;
-    const key = `${person}|${id}`;
-    if (workoutById.has(key) || !editableAt(date, at)) return;
-    const w: WorkoutRec = { at, id, date, type: d.type, durationMin: dur, by };
-    workoutById.set(key, w);
-    s.workouts[person].push(w);
-  },
-  spend_void({ s }, person, at, d) {
+  spend_void(s, person, at, d) {
     const spendId = d.spendId;
     if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
@@ -346,14 +263,14 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
   },
-  harvest({ s }, person, at, d) {
+  harvest(s, person, at, d) {
     const week = normDate(d.week);
     if (week) s.harvests.push({ at, person, week });
   },
-  highfive({ s }, person, at) {
+  highfive(s, person, at) {
     s.highfives.push({ at, person });
   },
-  pref({ s }, person, at, d) {
+  pref(s, person, at, d) {
     if (d.key === 'menu') {
       const items = parseMenu(d.value);
       if (items) s.menu.push({ at, v: items });
@@ -389,12 +306,9 @@ export function moveGoalOn(s: Pick<State, 'moveGoals'>, person: PersonId, date: 
   return PEOPLE[person].moveGoal;
 }
 
-/** Latest entry with `at ≤ t`, or undefined. Lists are in ascending `at`. */
-export function latestTimed<T>(list: Timed<T>[] | undefined, t: number): Timed<T> | undefined {
+/** The value of the latest entry with `at ≤ t`, or undefined. Lists are in ascending `at`. */
+export function latestAt<T>(list: Timed<T>[] | undefined, t: number): T | undefined {
   if (!list) return undefined;
-  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t) return list[i];
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t) return list[i].v;
   return undefined;
 }
-
-/** The value of the latest entry with `at ≤ t`, or undefined. */
-export const latestAt = <T>(list: Timed<T>[] | undefined, t: number): T | undefined => latestTimed(list, t)?.v;

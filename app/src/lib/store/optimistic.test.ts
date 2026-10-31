@@ -39,12 +39,6 @@ beforeEach(() => {
 describe('live optimistic view', () => {
   const cache = applySnapshot(null, { me: 'A', now: new Date(NOW).toISOString(), rows: rows() }, NOW);
 
-  it('a workout added in きろく (Watch forgotten) raises the week’s 🍑 ベル at once', () => {
-    const before = composeView(cache, [], NOW);
-    const after = composeView(cache, [ev('c1', 'workout_add', { id: 'm:yoga', date: '2026-11-17', type: 'Yoga', durationMin: 45 })], NOW);
-    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 230); // v2: 45 of 60 min
-  });
-
   it('a new Move goal re-prices today’s 🍐 at once', () => {
     const before = composeView(cache, [], NOW);
     expect(before.people.A.rings.pear).toMatchObject({ today: 450, goal: 600, todayBells: 98, milestone: 3, nextAt: 600, nextGain: 82 }); // v2 milestones: 75%

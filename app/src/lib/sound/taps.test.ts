@@ -22,7 +22,6 @@ const SELF: Record<string, string> = {
   'lib/components/phone/SoundApp.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
-  'lib/components/kiroku/NumberPad.svelte': 'each key → key / key-fn (typed digits too)',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
   'lib/components/island/JarSpot.svelte': 'the jar → jar-tap',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
@@ -33,7 +32,7 @@ const SELF: Record<string, string> = {
 const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
-  'lib/components/kiroku/ValueInput.svelte': 'the weight / Move goal field: the system keyboard clicks',
+  'lib/components/kiroku/ValueInput.svelte': 'the goal fields (weight, Move): the system keyboard clicks',
   'lib/components/wallet/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
   'lib/components/phone/VillagerApp.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/phone/LangApp.svelte': 'the language already chosen does nothing',

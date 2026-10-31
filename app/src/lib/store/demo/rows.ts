@@ -1,11 +1,11 @@
 // `?demo`: believable sheet rows for both people (ウェイ = A = me, うめ = B), generated around the real clock and fed
-// through the same model as the live app, so the island, the wallet and きろく agree and every edit really recomputes.
+// through the same model as the live app, so the island, the wallet and きろく agree and every tap really recomputes.
 // The economy starts 2026-10-26, so the demo moves the model's calendar (`DemoCalendar`, carried by the state): its
 // first week is 8 weeks before this one. Deterministic per date (a seeded RNG), so a reload shows the same history.
 import type { PersonId, WeekKey } from '#lib/types.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { addDays, jstMs, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
-import { finalMs, provisionalMs } from '#lib/model/state.ts';
+import { provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { maxAt } from '#lib/model/snapshot.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -69,18 +69,7 @@ function demoRows(now: number): SnapshotRows {
     ev(Math.max(p0 + 2000, Math.min(p0 + 40 * 60_000, now - 1000)), 'A', 'harvest', { week: wk });
   }
 
-  // Edits in the change log (each made while its week was still open).
   const w = (k: number) => addDays(cur, -7 * k);
-  const inOpen = (date: string, t: number) => t < finalMs(weekKeyOf(date));
-  const edit = (t: number, p: PersonId, type: EventRow[3], data: { date?: string } & Record<string, unknown>, date: string) => {
-    if (inOpen(date, t)) ev(t, p, type, data);
-  };
-  // うめ forgot her Watch at the PT studio: minutes fixed the next day (last week).
-  edit(at(addDays(w(1), 2), 21, 4), 'B', 'metric_set', { date: addDays(w(1), 1), metric: 'exercise_min', value: 55 }, addDays(w(1), 1));
-  // ウェイ: a walk that the Watch double-counted (2 weeks ago: steps lowered).
-  edit(at(addDays(w(2), 3), 22, 50), 'A', 'metric_set', { date: addDays(w(2), 2), metric: 'steps', value: 6400 }, addDays(w(2), 2));
-  // うめ: a Pilates class without her Watch, added by hand (3 weeks ago): its minutes count toward 🍑.
-  edit(at(addDays(w(3), 4), 20, 12), 'B', 'workout_add', { id: 'm:demo-pilates', date: addDays(w(3), 3), type: 'Pilates', durationMin: 35 }, addDays(w(3), 3));
   // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
   ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 

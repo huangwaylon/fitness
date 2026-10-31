@@ -60,17 +60,12 @@ function randomSheet(seed: number) {
       const b = { at: t, by, spendId: `s${id++}`, item, bells };
       buys.push(b);
       events.push([iso(t), by, `e${i}`, 'spend', JSON.stringify({ spendId: b.spendId, item, label: item, bells })]);
-    } else if (r < 0.85) {
+    } else {
       const target = pick(buys);
       // A void of an earlier buy, by the buyer or the partner (ignored), sometimes a second one (ignored).
       const v = { at: t, by: rand() < 0.75 ? target.by : by, spendId: target.spendId };
       voids.push(v);
       events.push([iso(t), v.by, `e${i}`, 'spend_void', JSON.stringify({ spendId: v.spendId })]);
-    } else {
-      // An edit of a recent day, either person's, often down (it can uncover an earlier buy).
-      const date = localDateAt(t - Math.floor(rand() * 3) * 86_400_000);
-      const metric = pick(['steps', 'exercise_min', 'stand_min'] as const);
-      events.push([iso(t), by, `e${i}`, 'metric_set', JSON.stringify({ person: pick(PEOPLE), date, metric, value: Math.floor(rand() * 60) })]);
     }
   }
   return { rows: { metrics, events }, buys, voids, end: t };
@@ -155,7 +150,7 @@ describe('the milestone curve (v2) and the linear rules (v1): more never pays le
       date, steps: f === 'apple' ? v : null, exerciseMin: f === 'peach' ? v : null, moveKcal: f === 'pear' ? v : null,
       standMin: f === 'cherry' ? v : null, moveGoal: 600
     };
-    return earnWeek({ person: 'A', weekKey: wk, days: [day], workouts: [] }).days[2].rings[f];
+    return earnWeek({ person: 'A', weekKey: wk, days: [day] }).days[2].rings[f];
   };
   const goalOf = (wk: string, f: RingFruit): number => {
     const g = rulesFor(wk).goals;

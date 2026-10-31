@@ -1,7 +1,7 @@
 // ベル per day for the four fruits (🍐 Move, 🍑 Exercise, 🍒 Stand, 🍎 steps), weekly badges, the
 // ふたりボーナス.
 import { describe, expect, it } from 'vitest';
-import type { PersonId, Workout } from '#lib/types.ts';
+import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { duoBonus, earnWeek, milestoneBells, type EarnDay, type EarnInput } from './bells.ts';
@@ -10,9 +10,6 @@ import { duoBonus, earnWeek, milestoneBells, type EarnDay, type EarnInput } from
 const WK = '2026-10-26';
 const D = weekDays(WK);
 
-let n = 0;
-/** A workout added by hand in きろく. */
-const workout = (date: string, type: string, durationMin: number): Workout => ({ id: `m:${n++}`, date, type, durationMin });
 type Cols = Partial<Record<'ex' | 'st' | 'kcal' | 'stand', (number | null)[]>> & { goal?: number | number[] };
 /** A week of metrics, column by column (missing = null); the Move goal per day (default 600). */
 const days = (wk: string, c: Cols = {}): EarnDay[] =>
@@ -23,7 +20,7 @@ const days = (wk: string, c: Cols = {}): EarnDay[] =>
 
 function input(p: Partial<EarnInput> = {}): EarnInput {
   const weekKey = p.weekKey ?? WK;
-  return { person: 'A', weekKey, days: days(weekKey), workouts: [], ...p };
+  return { person: 'A', weekKey, days: days(weekKey), ...p };
 }
 const day0 = (c: Cols, p: Partial<EarnInput> = {}) => earnWeek(input({ days: days(WK, c), ...p })).days[0];
 const all = (v: number) => Array(7).fill(v);
@@ -53,8 +50,8 @@ describe('earnWeek: the daily table', () => {
     });
   });
 
-  it('a workout added by hand earns only its minutes, toward 🍑, whatever its type', () => {
-    const d = day0({}, { workouts: [workout(D[0], 'Traditional Strength Training', 45)] });
+  it('exercise minutes earn only toward 🍑; the fruits are in ring order', () => {
+    const d = day0({ ex: [45] });
     expect(d.rings).toEqual({ peach: 135, pear: 0, cherry: 0, apple: 0 });
     expect(d.bells).toBe(135);
     expect(Object.keys(d.met)).toEqual(['pear', 'peach', 'cherry', 'apple']);
@@ -71,13 +68,11 @@ describe('earnWeek: the daily table', () => {
     expect(day0({ ex: [60] }).met.peach).toBe(true);
   });
 
-  it('🍑 minutes are max(Watch, workouts added in きろく), never a sum; steps never count as minutes', () => {
-    const manual = (min: number) => workout(D[0], 'Yoga', min);
-    const mins = (ex: number | null, w: Workout[] = [], st: number | null = null) => day0({ ex: [ex], st: [st] }, { workouts: w }).exerciseMin;
-    expect(mins(30, [], 20000)).toBe(30); // 20,000 steps add no minutes
-    expect(mins(null, [], 20000)).toBe(0);
-    expect(mins(30, [manual(20), manual(15)])).toBe(35); // manual workouts of a day add up, then max
-    expect(mins(30, [manual(20)])).toBe(30);
+  it('🍑 minutes are the Watch’s; steps never count as minutes', () => {
+    const mins = (ex: number | null, st: number | null = null) => day0({ ex: [ex], st: [st] }).exerciseMin;
+    expect(mins(30, 20000)).toBe(30); // 20,000 steps add no minutes
+    expect(mins(null, 20000)).toBe(0);
+    expect(mins(-5)).toBe(0);
   });
 
   it('🍐 Move: 180 at the goal, proportional (floored) below it, capped above; the day’s own goal applies', () => {
@@ -120,11 +115,10 @@ describe('earnWeek: the daily table', () => {
 
   it('🍎 tsuyu (Jun 1–Jul 20): 30 counted exercise minutes also earn the step reward', () => {
     const june = '2027-06-07';
-    const apple = (wk: string, i: number, ex: number, extra: Workout[] = []) =>
-      earnWeek(input({ weekKey: wk, days: days(wk, { ex: all(ex), st: all(1000) }), workouts: extra })).days[i].rings.apple;
+    const apple = (wk: string, i: number, ex: number) =>
+      earnWeek(input({ weekKey: wk, days: days(wk, { ex: all(ex), st: all(1000) }) })).days[i].rings.apple;
     expect(apple(june, 0, 30)).toBe(200);
     expect(apple(june, 0, 29)).toBe(0);
-    expect(apple(june, 0, 0, [workout('2027-06-07', 'Yoga', 30)])).toBe(200); // a hand-added workout counts
     expect(apple('2027-07-19', 1, 30)).toBe(200); // Tue Jul 20: last day
     expect(apple('2027-07-19', 2, 30)).toBe(0); // Wed Jul 21
     expect(apple('2027-05-31', 0, 60)).toBe(0); // Mon May 31
@@ -135,8 +129,7 @@ describe('earnWeek: the daily table', () => {
   it('only dates in the week count; the first metrics row of a date wins', () => {
     const row = (date: string, steps: number, kcal: number): EarnDay => ({ date, steps, exerciseMin: 0, moveKcal: kcal, standMin: 0, moveGoal: 600 });
     const e = earnWeek(input({
-      days: [row(D[0], 8000, 0), row(D[0], 100, 600), row('2026-11-02', 9000, 600)],
-      workouts: [workout('2026-10-25', 'Pilates', 30), workout('2026-11-02', 'Pilates', 30)]
+      days: [row(D[0], 8000, 0), row(D[0], 100, 600), row('2026-11-02', 9000, 600)]
     }));
     expect(e.days[0].rings.apple).toBe(200);
     expect(e.days[0].rings.pear).toBe(0);
@@ -296,8 +289,6 @@ describe('v2 milestone curve from 2026-11-02 (25 / 50 / 75 / 100% of the goal)',
     expect([0, 14, 14.99, 15, 15.5, 29.99, 30, 31, 44.99, 45, 46, 59.99, 60, 61, 200].map(peach))
       .toEqual([0, 0, 0, 45, 45, 45, 120, 120, 120, 230, 230, 230, 420, 420, 420]);
     expect([14, 15, 30, 45, 60].map((x) => day({ ex: [x] }).milestone!.peach)).toEqual([0, 1, 2, 3, 4]);
-    // Workouts added in きろく count as before: max(Watch, manual).
-    expect(day({ ex: [10] }, { workouts: [workout(D2[0], 'Outdoor Walk', 31)] }).rings.peach).toBe(120);
   });
 
   it('🍎 Steps (goal 8,000): 2k → 20, 4k → 60, 6k → 110, 8k → 200, just below / at / above each step', () => {

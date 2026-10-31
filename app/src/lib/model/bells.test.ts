@@ -140,13 +140,6 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
     expect(weekDetail(reduce(r), WK, LOCKED).bells).toBe(0);
   });
 
-  it('an edit (metric_set) in the open week moves the earnings, even down', () => {
-    const r = plus(perfectWeek(['A']), { events: [ev(jst(D[3], '08:00'), 'A', 'metric_set', { date: D[0], metric: 'steps', value: 1000 })] });
-    const w = weekBells(reduce(r), WK, MON_AFTER);
-    expect(w.A.days[0].rings.apple).toBe(0);
-    expect(w.A.days[0].bells).toBe(720);
-  });
-
   it('a locked week is the same from a fresh State of the same rows (cache) and with a revision', () => {
     const r = perfectWeek();
     const a = weekBells(reduce(r), WK, LOCKED);
@@ -209,21 +202,6 @@ describe('buys: the wallet must cover them, the buyer can undo them', () => {
     const p = walletAt(s, MON_AFTER);
     expect(p.spends.map((x) => [x.spendId, x.voided])).toEqual([['a', true], ['c', false]]);
     expect(p.wallet.balance).toBe(3480);
-  });
-
-  it('a later down-edit of an open week can uncover an earlier buy: it is ignored on read (pinned: an open question for the user)', () => {
-    // Monday: A earns 920 by 09:00 and buys for 900 at 10:00. At 11:00 the exercise minutes are fixed down to 10 (below the first milestone, 🍑 0):
-    // the replay uses the day's current ベル, so the buy is no longer covered and drops out (the balance stays ≥ 0).
-    const day = D[0];
-    const at = jst(day, '09:00');
-    const rows = rowsOf({
-      metrics: [metric(at, 'A', day, 'steps', 9000), metric(at, 'A', day, 'exercise_min', 60), metric(at, 'A', day, 'move_kcal', 700), metric(at, 'A', day, 'stand_min', 200)],
-      events: [spend(jst(day, '10:00'), 'A', 's1', 900, 'x', 'trip')]
-    });
-    const edit = ev(jst(day, '11:00'), 'B', 'metric_set', { person: 'A', date: day, metric: 'exercise_min', value: 10 });
-    const noon = ms(day, '12:00');
-    expect(walletAt(reduce(rows), noon).wallet).toEqual({ earned: 920, spent: 900, balance: 20 });
-    expect(walletAt(reduce(plus(rows, { events: [edit] })), noon)).toMatchObject({ wallet: { earned: 500, spent: 0, balance: 500 }, spends: [] });
   });
 
   it('buys are never locked: a void long after still counts', () => {
@@ -419,9 +397,9 @@ describe('the きろく ledger and history fields', () => {
     const l = bellsLedger(reduce(r), MON_AFTER);
     expect(l.earned).toBe(18480);
     expect(walletAt(reduce(r), MON_AFTER).wallet).toEqual({ earned: 18480, spent: 500, balance: 17980 });
-    expect(l.days[0]).toMatchObject({ date: '2026-11-23', weekKey: '2026-11-23', bells: 0, locked: false });
+    expect(l.days[0]).toMatchObject({ date: '2026-11-23', weekKey: '2026-11-23', bells: 0 });
     const sun = l.days.find((d) => d.date === D[6])!;
-    expect(sun).toMatchObject({ weekKey: WK, bells: 1840, locked: false, people: { A: { date: D[6], bells: 920 }, B: { bells: 920 } } });
+    expect(sun).toMatchObject({ weekKey: WK, bells: 1840, people: { A: { date: D[6], bells: 920 }, B: { bells: 920 } } });
     expect(sun.people.A.rings).toEqual({ peach: 420, pear: 180, cherry: 120, apple: 200 });
     expect(l.days.at(-1)!.date).toBe('2026-10-26');
     expect(l.days).toHaveLength(29); // 10-26 → 11-23
@@ -432,7 +410,6 @@ describe('the きろく ledger and history fields', () => {
     expect(l.spends.map((x) => [x.spendId, x.by, x.item, x.label, x.bells, x.voided])).toEqual([
       ['s2', 'B', 'spa', 'スパ', 15000, true], ['s1', 'A', 'ice', 'アイス', 500, false]
     ]);
-    expect(bellsLedger(reduce(r), LOCKED).days.find((d) => d.date === D[0])!.locked).toBe(true);
   });
 
   it('week list, week detail and day detail carry the ベル and the badges', () => {
@@ -451,8 +428,7 @@ describe('the きろく ledger and history fields', () => {
     const mid = ms(D[1], '12:00');
     expect(D.map((x) => dayDetail(s, x, mid).people.A.bells)).toEqual([920, 920, 0, 0, 0, 0, 0]); // future days: 0
     expect(dayDetail(s, D[3], MON_AFTER).people.A).toMatchObject({
-      bells: 920, rings: { peach: 420 }, met: four, exercise: { value: 60, watch: 60, source: 'watch', edited: false },
-      move: { value: 700, goal: 600, edited: false }, stand: { value: 200, edited: false }
+      bells: 920, rings: { peach: 420 }, met: four, exerciseMin: 60, move: { value: 700, goal: 600 }, standMin: 200, steps: 9000
     });
   });
 });

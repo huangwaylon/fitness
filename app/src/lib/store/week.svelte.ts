@@ -67,8 +67,7 @@ class WeekStore implements Host {
     const b = this.#backend;
     const cache = b?.cache();
     if (!b || !cache) return;
-    const { list, unsent } = b.events();
-    const m = composeModel(cache, list, b.now?.() ?? Date.now(), unsent, untrack(() => this.model));
+    const m = composeModel(cache, b.events(), b.now?.() ?? Date.now(), untrack(() => this.model));
     const v = buildWeekView(m.state, m.me, m.now);
     b.decorate?.(m, v);
     this.model = m;

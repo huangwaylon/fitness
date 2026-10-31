@@ -2,14 +2,13 @@
   // 3.5 ベル, the passbook (like NH's ATM statement): everything ever saved, then the ledger by week,
   // newest first, each with its total (the home of the week's ベル): the Sunday bonus, the spends (my own → とりけす,
   // asked first) and one line per day (each person's ベル and the pair's; tap → the day, where the per-fruit ベル
-  // live). A week shows 🔒 once it locked (its days are final); a day can still change until then.
+  // live).
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerBonus, LedgerDay, LedgerSpend } from '#lib/model/history.ts';
   import { localDateAt, weekKeyOf } from '#lib/time/dates.ts';
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Bells from '../ui/Bells.svelte';
-  import Glyph from './Glyph.svelte';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { stampOf, weekRange } from '#lib/i18n/format.ts';
   import { dayTitle } from './fmt.ts';
@@ -25,15 +24,14 @@
   }
   let { ledger, me, order, names, villagers, onvoid, onday }: Props = $props();
 
-  interface Week { weekKey: WeekKey; days: LedgerDay[]; bonus: LedgerBonus | null; spends: LedgerSpend[]; bells: number; locked: boolean }
+  interface Week { weekKey: WeekKey; days: LedgerDay[]; bonus: LedgerBonus | null; spends: LedgerSpend[]; bells: number }
   const weeks = $derived.by((): Week[] => {
     const m = new Map<WeekKey, Week>();
-    const get = (wk: WeekKey) => m.get(wk) ?? m.set(wk, { weekKey: wk, days: [], bonus: null, spends: [], bells: 0, locked: false }).get(wk)!;
+    const get = (wk: WeekKey) => m.get(wk) ?? m.set(wk, { weekKey: wk, days: [], bonus: null, spends: [], bells: 0 }).get(wk)!;
     for (const d of ledger.days) {
       const w = get(d.weekKey);
       w.days.push(d);
       w.bells += d.bells;
-      w.locked = d.locked;
     }
     for (const b of ledger.bonuses) {
       const w = get(b.weekKey);
@@ -56,7 +54,6 @@
   <section class="week">
     <h4>
       <span class="money">{weekRange(w.weekKey)}</span>
-      {#if w.locked}<Glyph kind="lock" size={14} label={t('kiroku.locked')} />{/if}
       <b class="money">{formatBells(w.bells, { signed: true })}</b>
     </h4>
     <ul class="card rows">
