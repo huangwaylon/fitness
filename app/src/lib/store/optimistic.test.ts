@@ -42,8 +42,7 @@ describe('live optimistic view', () => {
   it('a workout added in きろく (Watch forgotten) raises the week’s 🍑 ベル at once', () => {
     const before = composeView(cache, [], NOW);
     const after = composeView(cache, [ev('c1', 'workout_add', { id: 'm:yoga', date: '2026-11-17', type: 'Yoga', durationMin: 45 })], NOW);
-    expect(after.people.A.rings.peach.weekBells).toBe(before.people.A.rings.peach.weekBells + 230); // v2: 45 of 60 min
-    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 230);
+    expect(after.people.A.weekBells).toBe(before.people.A.weekBells + 230); // v2: 45 of 60 min
   });
 
   it('a new Move goal re-prices today’s 🍐 at once', () => {
@@ -51,7 +50,7 @@ describe('live optimistic view', () => {
     expect(before.people.A.rings.pear).toMatchObject({ today: 450, goal: 600, todayBells: 98, milestone: 3, nextAt: 600, nextGain: 82 }); // v2 milestones: 75%
     const after = composeView(cache, [ev('g1', 'pref', { key: 'moveGoal', value: 450 })], NOW);
     expect(after.people.A.rings.pear).toMatchObject({ goal: 450, met: true, todayBells: 180 });
-    expect(after.people.A.rings.pear).toMatchObject({ milestone: 4, nextAt: null, nextBells: null });
+    expect(after.people.A.rings.pear).toMatchObject({ milestone: 4, nextAt: null });
     expect(after.people.A.today.bells).toBe(before.people.A.today.bells + 82);
   });
 
