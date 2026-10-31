@@ -86,7 +86,7 @@ export interface RingProgress {
   weekGoalDays: number;
   badge: boolean;
   /**
-   * The milestone curve (docs/reviews/round-19/milestones-contract.md). Present in a week with a curve (v2, from
+   * The milestone curve (docs/design.md#milestone-curve). Present in a week with a curve (v2, from
    * 2026-11-02); absent in v1 weeks. `milestone`: steps reached today, 0–4 (4 = the goal met).
    */
   milestone?: number;
