@@ -1,4 +1,4 @@
-// The rules the engine follows around iOS's audio session and the AudioContext's life (docs/design/sound.md §11),
+// The rules the engine follows around iOS's audio session and the AudioContext's life (docs/design.md#engine-lifecycle),
 // pure so they can be tested without an AudioContext: which session type, when a tap is needed, when a cue may
 // sound, when to let the hardware sleep, when a deck needs its fade-in, the wrap hand-off's timing and the hour clock.
 import { PREFETCH_MS, msToNextHour } from './hourly.ts';

@@ -1,4 +1,4 @@
-// きろく (history-and-editing.md): every recorded week and day, with its ベル, for both people, computed on read from the
+// きろく (docs/design.md#kiroku): every recorded week and day, with its ベル, for both people, computed on read from the
 // same state as the WeekView. Pure; the UI asks for one opened week or day at a time (lazy).
 import type { HarvestBonus, LocalDate, PersonId, RingBells, RingFruit, WeekKey } from '#lib/types.ts';
 import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
@@ -31,7 +31,7 @@ const ringWeekOf = (e: WeekEarning): RingWeek =>
 type MinutesSource = 'watch' | 'edit' | 'manual';
 
 /**
- * One accepted edit, derived from the event rows (§4.4). `person`: whose data it changed; `by`: who made it (either
+ * One accepted edit, derived from the event rows (docs/design.md#change-log). `person`: whose data it changed; `by`: who made it (either
  * person may edit either person's data). `before` is the value as of `at − 1`.
  */
 export interface EditLog {

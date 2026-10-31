@@ -1,4 +1,4 @@
-// History and editing (docs/design/history-and-editing.md §4–5): edits on top of the ベル model.
+// History and editing (docs/design.md#editing): edits on top of the ベル model.
 // Anyone's data (`data.person`; absent = the sender), open weeks only (this week, and last week until Wednesday
 // 04:00 JST). Workouts are only the ones added by hand in きろく (`workout_add`): minutes toward 🍑, nothing more.
 import { describe, expect, it } from 'vitest';

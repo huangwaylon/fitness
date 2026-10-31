@@ -94,7 +94,7 @@ describe('IndexedDB cache', () => {
   });
 });
 
-describe('resync (rev, sheets-architecture.md §2.1)', () => {
+describe('resync (rev, docs/backend.md#revision)', () => {
   it('the same rev merges `since` pages', async () => {
     await refreshSnapshot();
     reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [['2026-11-02T05:30:00.000Z', 'A', '2026-11-02', 'steps', 9000]] } });

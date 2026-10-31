@@ -1,4 +1,4 @@
-// static/audio/manifest.json → which sounds have real files (docs/design/sound.md §9). Bundled at build time like
+// static/audio/manifest.json → which sounds have real files (docs/design.md#audio-files). Bundled at build time like
 // the art manifest, so the engine knows synchronously what to fetch and what to synthesise. The audio SOURCE is
 // pluggable: drop a file under static/audio/, add its line to the JSON, rebuild. Unknown keys are ignored (and
 // flagged by the test), so a typo never breaks the app.

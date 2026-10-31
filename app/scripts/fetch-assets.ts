@@ -73,7 +73,7 @@ const SPECS: Record<string, Spec> = {
   'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
   'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
   'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
-  // Scale pass (docs/design/design.md §S.2): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
+  // Scale pass (docs/design.md#layout-and-scale): the hedge uses the 3D catalog renders (`*_Bush_NH_Icon`,
   // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
   'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
   'bushes/white-azalea': [128, 'White-Azalea_Bush_NH_Icon.png'],
@@ -97,7 +97,7 @@ const SPECS: Record<string, Spec> = {
   'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
 };
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
- *  scene sizes are true to the tile unit (docs/design/design.md §S.2). */
+ *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
 const TRIM = ['bushes/', 'flowers/'];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>

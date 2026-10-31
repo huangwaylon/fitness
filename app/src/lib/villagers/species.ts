@@ -1,4 +1,4 @@
-// Shared character types: the five expressions (design.md §M.3), and the NH species + personalities the
+// Shared character types: the five expressions (docs/design.md#motion), and the NH species + personalities the
 // roster is tagged with (the picker's search matches species names in both languages).
 
 export type Expression = 'happy' | 'cheer' | 'sleepy' | 'surprised' | 'proud';

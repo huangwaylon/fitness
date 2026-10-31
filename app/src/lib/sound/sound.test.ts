@@ -1,5 +1,5 @@
 // Settings persistence, the audio manifest (and that every file it names is on disk), the placeholder renders and
-// the dialogue blips (sound.md §4, §8, §9, §10).
+// the dialogue blips (docs/design.md#ui-sounds-and-blips, #audio-files, #sound-settings).
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

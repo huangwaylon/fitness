@@ -1,4 +1,4 @@
-// Every tap has a sound (docs/design/sound.md §13 "Every tap"): each tappable element in components/ and routes/
+// Every tap has a sound (docs/design.md#taps): each tappable element in components/ and routes/
 // names one in data-sfx (taps.ts), and the ones that leave it to their handler (`self`) or stay silent (`none`) say
 // why here. A new button without a data-sfx fails this test.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -96,7 +96,7 @@ function scan(): Tap[] {
 const taps = scan();
 const VALID = new Set<string>([...TAP_SFX, 'self', 'none']);
 
-describe('every tap has a sound (sound.md §13)', () => {
+describe('every tap has a sound (docs/design.md#taps)', () => {
   it('finds the app\'s tappables', () => {
     expect(taps.length).toBeGreaterThan(45);
   });

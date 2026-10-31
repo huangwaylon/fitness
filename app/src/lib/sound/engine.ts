@@ -1,4 +1,4 @@
-// The Web Audio engine (docs/design/sound.md §6, §11). Browser only; the pure rules it follows live in mix.ts,
+// The Web Audio engine (docs/design.md#engine-lifecycle). Browser only; the pure rules it follows live in mix.ts,
 // hourly.ts, ambient.ts and session.ts (tested there). One AudioContext, created inside the first tap after a sound
 // setting is on (iOS only starts audio from a gesture), never while everything is off.
 //

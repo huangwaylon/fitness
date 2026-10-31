@@ -1,4 +1,4 @@
-// Dialogue blips (docs/design/sound.md §4), pure: which typed glyphs get a blip and at what pitch. NH's Animalese
+// Dialogue blips (docs/design.md#ui-sounds-and-blips), pure: which typed glyphs get a blip and at what pitch. NH's Animalese
 // "reads" each syllable of the line in a sped-up voice; here every other spoken glyph gets one short blip (the box
 // types at 33 ms a glyph, too fast for one each), punctuation and spaces are silent, the pitch follows the glyph (so
 // the same line always sounds the same) and a question rises at the end.

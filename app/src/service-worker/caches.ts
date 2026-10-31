@@ -10,7 +10,7 @@ export function staleCaches(keys: readonly string[], current: string, keep: read
   return keys.filter((k) => k !== current && k !== previous && !keep.includes(k));
 }
 
-/** The audio runtime cache (docs/design/sound.md §11): music files are 0.4–0.8 MB each, so only the most recently
+/** The audio runtime cache (docs/design.md#engine-lifecycle): music files are 0.4–0.8 MB each, so only the most recently
  *  played few stay on the phone. */
 export const AUDIO_CACHE = 'island-audio-v1';
 const MUSIC_KEEP = 3;

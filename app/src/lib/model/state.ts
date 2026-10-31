@@ -43,7 +43,7 @@ export const firstWeek = (s: Cal): WeekKey => s.calendar?.firstWeek ?? ECONOMY_S
 export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= firstWeek(s) && t >= finalMs(wk);
 
 /**
- * Open for edits at t (history-and-editing.md §4.3): the day has happened, and its week has not reached its
+ * Open for edits at t (docs/design.md#open-weeks): the day has happened, and its week has not reached its
  * Wednesday 04:00 lock. Unlike `isLockedAt` this also closes weeks before the first earning week, so edits never reach
  * more than ~9.5 days back.
  */
@@ -107,7 +107,7 @@ export interface State {
   /** The demo's calendar; null for real data. */
   calendar: DemoCalendar | null;
   /**
-   * The sheet's data revision (`snapshot.rev`, sheets-architecture.md §2.1) the rows were cached under, or null. With
+   * The sheet's data revision (`snapshot.rev`, docs/backend.md#revision) the rows were cached under, or null. With
    * it, locked weeks' earnings are reused across States (`weekBells`), since rows stamped before a past time never
    * change while `rev` stays the same.
    */
@@ -276,9 +276,9 @@ export function parseMenu(v: unknown): WalletItem[] | null {
 }
 
 /**
- * One handler per event type: each accepts (indexes) the event or ignores it. The edits (history-and-editing.md §4)
+ * One handler per event type: each accepts (indexes) the event or ignores it. The edits (docs/design.md#editing)
  * change `person`'s data (either person's) and remember `by`; activity edits only count while the day's week
- * is open (§4.3).
+ * is open (docs/design.md#open-weeks).
  */
 const ON_EVENT: Record<EventType, OnEvent> = {
   spend({ s }, person, at, d) {
@@ -324,7 +324,7 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     const spendId = d.spendId;
     if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
-    // The spender only (§4.2), once, after the spend.
+    // The spender only, once, after the spend.
     if (!sp || sp.person !== person || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
   },

@@ -1,4 +1,4 @@
-// The hourly music, from the user's own files to static/audio/music/ (docs/design/sound.md §9.2). The files are
+// The hourly music, from the user's own files to static/audio/music/ (docs/design.md#audio-files). The files are
 // user-provided and committed by the user's decision; this script never downloads anything.
 //   node scripts/music.ts <source dir> [--dry]
 // Source: "1-01. Opening Theme.mp3", then "1-02. 1200 AM (Sunny).mp3" … "1-25. 1100 PM (Sunny).mp3" (one per hour).

@@ -1,5 +1,5 @@
 // The audio session, the resume and unlock conditions, the idle suspend and the hand-off timing (session.ts), and the
-// loudness gain (hourly.ts trackLevel), without an AudioContext (sound.md §11).
+// loudness gain (hourly.ts trackLevel), without an AudioContext (docs/design.md#engine-lifecycle).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IDLE_SUSPEND_MS,

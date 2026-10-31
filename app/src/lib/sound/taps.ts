@@ -1,4 +1,4 @@
-// Every tap's sound (docs/design/sound.md §13 "Every tap"), from one delegated listener instead of a cue() in each
+// Every tap's sound (docs/design.md#taps), from one delegated listener instead of a cue() in each
 // handler. A control names its sound in `data-sfx`:
 //   <button data-sfx="open">     a cue from TAP_SFX, played on the click: a commit, so never on a scroll or a drag
 //   data-sfx="self"              the handler plays the outcome's own cue (buy → purchase,

@@ -1,4 +1,4 @@
-// Mix rules (docs/design/sound.md §7), pure so they can be tested without an AudioContext: the voice limit, the
+// Mix rules (docs/design.md#mix), pure so they can be tested without an AudioContext: the voice limit, the
 // pitch jitter and the music duck under a jingle.
 import { SOUNDS, type SoundId } from './ids.ts';
 
