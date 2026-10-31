@@ -54,10 +54,10 @@
 {/if}
 
 <style>
-  /* centred on the column (left/right 0 inside the centred .island), 16px under the safe area (the notch / Dynamic
-     Island); the chip, when shown, sits centred 12px under the ribbon */
+  /* centred on the column (left/right 0 inside the centred .island), its centre in the middle of the sky (--hud-top,
+     tokens.css); the chip, when shown, sits centred 12px under the ribbon */
   .ribbon-wrap {
-    position: absolute; z-index: var(--z-hud); left: 0; right: 0; top: calc(var(--safe-top) + 16px);
+    position: absolute; z-index: var(--z-hud); left: 0; right: 0; top: var(--hud-top);
     display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none;
   }
   .ribbon-wrap > :global(*) { pointer-events: auto; }

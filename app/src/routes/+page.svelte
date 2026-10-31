@@ -95,9 +95,9 @@
 <style>
   /* The island is centred in the visible ocean, from the horizon down to the bottom of the screen (above the home
      indicator), never under the ribbon: IslandScene centres it between the horizon and --island-bottom, and keeps
-     the horizon under --hud-bottom (the ribbon's lip, Hud.svelte). */
+     the horizon under --hud-bottom (the ribbon's lip, tokens.css). */
   .island {
-    --hud-bottom: calc(var(--safe-top) + 16px + var(--hit) + var(--lip-h));
+    --hud-bottom: calc(var(--hud-top) + var(--hit) + var(--lip-h));
     --island-bottom: var(--safe-bottom);
     --scene-h: var(--vh-fill);
     position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden;
