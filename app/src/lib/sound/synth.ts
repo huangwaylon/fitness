@@ -181,6 +181,23 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.07, g: 1, lo: 1500, hi: 10000, shape: 'decay' },
     { kind: 'tone', f: 260, to: 120, glide: 0.06, t: 0, d: 0.1, g: 0.5, attack: 0.001 },
     bell(E7, 0.05, 0.25, 0.15)
+  ],
+  // beach finds: a shell picked off the sand (two porcelain clinks and a little grit), the shovel biting the earth
+  // twice (a gritty crunch and a dull knock), a glass bottle's "tink" and its cork's "pon"
+  shell: [
+    { kind: 'noise', t: 0, d: 0.05, g: 0.3, lo: 2500, hi: 9000, shape: 'decay', grains: 300 },
+    bell(A6, 0.01, 0.14, 0.6), bell(E7, 0.06, 0.18, 0.5)
+  ],
+  dig: [
+    { kind: 'noise', t: 0, d: 0.14, g: 1, lo: 200, hi: 1800, shape: 'decay', grains: 300 },
+    { kind: 'tone', f: 120, to: 60, glide: 0.08, t: 0.02, d: 0.12, g: 0.6, attack: 0.002 },
+    { kind: 'noise', t: 0.3, d: 0.14, g: 0.85, lo: 200, hi: 2000, shape: 'decay', grains: 300 },
+    { kind: 'tone', f: 110, to: 55, glide: 0.08, t: 0.32, d: 0.12, g: 0.5, attack: 0.002 }
+  ],
+  bottle: [
+    bell(E7, 0, 0.3, 0.55),
+    { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },
+    { kind: 'noise', t: 0.14, d: 0.04, g: 0.25, lo: 1500, hi: 6000, shape: 'decay' }
   ]
 };
 

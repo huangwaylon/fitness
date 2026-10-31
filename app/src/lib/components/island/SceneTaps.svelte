@@ -21,6 +21,7 @@
   import { BEDS, BED_X, BED_ROWS, BUSH_U, FLOWER_U, HEDGE_BASE, HEDGE_X, HORIZON_U, type Tod } from './scene.ts';
   import { PETAL, hitStage, sceneSfx } from './sceneTaps.ts';
   import Critters from './Critters.svelte';
+  import Finds from './Finds.svelte';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -60,6 +61,9 @@
   const night = $derived(tod === 'night');
   const roll = (n: number) => Math.random() * n < 1;
   let critters = $state<ReturnType<typeof Critters>>();
+  let finds = $state<ReturnType<typeof Finds>>();
+  /** A shooting star is crossing until then (a tap in the sky meanwhile is a wish: NH). */
+  let shootUntil = 0;
 
   function later(fn: () => void, ms: number) {
     const id = setTimeout(() => {
@@ -123,6 +127,8 @@
     const calm = reducedMotion();
     // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
     if (!calm && critters?.tap(e.clientX, e.clientY)) return;
+    // then the day's finds: a shell, a fragment, the bottle, a dig spot (they work under reduced motion too)
+    if (finds?.tap(e.clientX, e.clientY)) return;
     // the sky ends at the scene's horizon, which on a tall phone rises above the stage's own (open sea behind the island)
     if (y < horizonPx(stage, r)) return sky(e, r, x, y, calm);
     const hit = hitStage(x * k, Math.max(y * k, HORIZON_U));
@@ -198,6 +204,11 @@
     if (!night) return;
     if (calm) return spawn({ kind: 'glow', x, y }, 450);
     spawn({ kind: 'star', x, y });
+    // NH: a tap while a shooting star crosses is a wish; star fragments wash up the next morning
+    if (performance.now() < shootUntil) {
+      sceneSfx('wish');
+      return finds?.wish(x * (390 / r.width), y * (390 / r.width));
+    }
     sceneSfx('star');
     if (roll(4)) shootingStar(r);
   }
@@ -213,6 +224,7 @@
     const h = horizon - top;
     const y0 = top + h * (0.3 + Math.random() * 0.2);
     spawn({ kind: 'shoot', x: r.width * (0.55 + Math.random() * 0.35), y: Math.min(y0, horizon - 80) }, 1000);
+    shootUntil = performance.now() + 1100;
     sceneSfx('shooting-star');
   }
 
@@ -269,6 +281,7 @@
 </script>
 
 <Critters bind:this={critters} {scene} {tod} {enabled} />
+<Finds bind:this={finds} {scene} {enabled} />
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}

@@ -11,6 +11,7 @@ import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { BUGS, FISH, JUNK, critterArt } from '#lib/components/island/critters.ts';
+import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beach.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
@@ -90,7 +91,9 @@ describe('official art (static/art/manifest.json)', () => {
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`),
     // the scene's catches (island/critters.ts critterArt)
-    ...[...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK].map((id) => critterArt(id as keyof typeof FISH))
+    ...[...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK].map((id) => critterArt(id as keyof typeof FISH)),
+    // the beach finds (island/beach.ts findArt)
+    ...[...SHELLS.map(([id]) => id), ...FOSSILS, ...FRAGMENTS, 'message-bottle', 'shovel'].map(findArt)
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {

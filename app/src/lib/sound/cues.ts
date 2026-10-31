@@ -98,7 +98,14 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-catch': { sound: 'catch', delay: 0.25, world: true },
   'scene-flee': { sound: 'splash', gain: 0.6, step: 3, world: true },
   'scene-net': { sound: 'net', world: true },
-  'scene-bug-flee': { sound: 'swish', gain: 0.6, step: 5, world: true }
+  'scene-bug-flee': { sound: 'swish', gain: 0.6, step: 5, world: true },
+  // beach finds: a shell's clink, a star fragment's glint, the bottle's glass and cork, the shovel (the fossil's
+  // reveal plays the catch tune), a wish on a shooting star
+  'scene-shell': { sound: 'shell', world: true },
+  'scene-fragment': { sound: 'sparkle', gain: 0.5, step: 7, world: true },
+  'scene-bottle': { sound: 'bottle', world: true },
+  'scene-dig': { sound: 'dig', world: true },
+  'scene-wish': { sound: 'sparkle', gain: 0.45, step: 12, world: true }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the

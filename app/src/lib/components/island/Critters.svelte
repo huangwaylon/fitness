@@ -15,13 +15,14 @@
   // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
   // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
   //   ?critter=fish | <fish id> | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook).
-  import { onMount, tick } from 'svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { onMount } from 'svelte';
+  import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
   import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, SAND, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
+  import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, caption, critterArt,
@@ -37,7 +38,6 @@
   }
   let { scene, tod, enabled }: Props = $props();
 
-  interface Box { x0: number; x1: number; y0: number; y1: number }
   interface Fish { item: FishId | JunkId; size: number; shape?: 'narrow' | 'fin'; x: number; y: number; ms: number; flip: boolean; box: Box; gone: boolean; dash: boolean }
   interface Cast {
     x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number;
@@ -47,7 +47,7 @@
     hesitated: boolean;
   }
   interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[]; sat: boolean }
-  interface Card { n: number; x: number; y: number; dx: number; dy: number; art: string; text: string; placed: boolean }
+  interface Card { n: number; x: number; y: number; art: string; text: string }
   interface Net { n: number; x: number; y: number }
 
   // Everything in stage units (u: 390 across), drawn with calc(n × --su).
@@ -63,7 +63,6 @@
   let net = $state<Net | null>(null);
   let seq = 0;
   let bugEl = $state<HTMLElement>();
-  let cardEl = $state<HTMLElement>();
   let hopEl = $state<HTMLElement>();
   const night = $derived(tod === 'night');
 
@@ -83,14 +82,7 @@
   }
 
   // ---------- geometry ----------
-  /** The stage's box, px → u, and what of it is on screen (u). */
-  function geo() {
-    const stage = scene?.querySelector<HTMLElement>('.stage');
-    if (!scene || !stage) return null;
-    const r = stage.getBoundingClientRect(), s = scene.getBoundingClientRect();
-    const k = 390 / r.width;
-    return { r, k, left: (s.left - r.left) * k, right: (s.right - r.left) * k, bottom: (s.bottom - r.top) * k, w: s.width * k };
-  }
+  const geo = () => stageGeo(scene);
   /** The beach's sea edge (SAND's front, rounded at the corners) at x, in u. */
   function shoreY(x: number): number {
     const { x0, x1, y1, rb } = SAND;
@@ -101,7 +93,7 @@
   /** Where a shadow can swim on one side (−1 left, 1 right): the open sea off the front beach, just past the foam, down
    *  to above the screen's bottom edge and しずえ's box; where that's too shallow (a short browser viewport), the strip
    *  of side sea beside the island; null when neither has room. */
-  function seaBox(g: NonNullable<ReturnType<typeof geo>>, side: -1 | 1): Box | null {
+  function seaBox(g: StageGeo, side: -1 | 1): Box | null {
     const [f0, f1] = side < 0 ? [0.06, 0.44] : [0.56, 0.94];
     const x0 = g.left + g.w * f0, x1 = g.left + g.w * f1;
     const news = document.querySelector('.news')?.getBoundingClientRect();
@@ -121,7 +113,7 @@
   const HEDGE: Box = { x0: 50, x1: 340, y0: 14, y1: 46 };
   const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
   /** The front beach (a crab, a wharf roach): the sand between the cliff's foot and the foam, on screen. */
-  function beach(g: NonNullable<ReturnType<typeof geo>>): Box | null {
+  function beach(g: StageGeo): Box | null {
     const x0 = Math.max(g.left + 16, 66), x1 = Math.min(g.right - 16, 324);
     const y0 = PLATEAU.y1 + 15, y1 = Math.min(shoreY(195) - 6, g.bottom - 12 * g.k);
     return x1 - x0 > 20 && y1 - y0 >= 4 ? { x0, x1, y0, y1 } : null;
@@ -136,7 +128,7 @@
   /** A cicada's perch: the visible trunk of a tree, midway between its canopy and its fruit row (both buttons, measured:
    *  the row's 44px tap target reaches up the trunk on a small phone), so a tap on the cicada (a finger's fuzzy hit
    *  included) lands on neither; null when the gap is under 20px. */
-  function trunk(g: NonNullable<ReturnType<typeof geo>>, side: -1 | 1): Box | null {
+  function trunk(g: StageGeo, side: -1 | 1): Box | null {
     const tree = scene?.querySelectorAll<HTMLElement>('.canopy')[side < 0 ? 0 : 1];
     const row = scene?.querySelectorAll<HTMLElement>('.row-btn')[side < 0 ? 0 : 1];
     if (!tree || !row) return null;
@@ -146,27 +138,6 @@
     return { x0: x - 2, x1: x + 2, y0: y - 1.5, y1: y + 1.5 };
   }
 
-  /** The UI nothing of ours may cover, in client px: every control (the ribbon and its tails, the sync chip, the
-   *  trees, the fruit rows, the jar and its plate, the villagers) but the balloon, a tree's popup
-   *  and しずえ's box, padded 6px. */
-  function guards(): Box[] {
-    const out: Box[] = [];
-    for (const el of document.querySelectorAll('button, .detail, .news')) {
-      if (el.classList.contains('balloon')) continue;
-      const r = el.getBoundingClientRect();
-      if (!r.width || !r.height) continue;
-      const px = el.classList.contains('ribbon') ? 20 : 6; // the ribbon's folded tails hang 16px outside it
-      out.push({ x0: r.left - px, y0: r.top - 6, x1: r.right + px, y1: r.bottom + 6 });
-    }
-    return out;
-  }
-  const hits = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
-  /** The guards in stage units, grown by `pad` u (a bug's wings and the net's swing around it). */
-  function guardsU(g: NonNullable<ReturnType<typeof geo>>, pad: number): Box[] {
-    return guards().map((b) => ({
-      x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad
-    }));
-  }
   /** A spot in `area` clear of the guards (null when there's none to be found). */
   function freeIn(area: Box, keep: Box[]): { x: number; y: number } | null {
     for (let i = 0; i < 16; i++) {
@@ -408,44 +379,14 @@
   }
 
   // ---------- the catch ----------
-  /** The catch held up: NH's caption on a plate with the official icon, which pops up out of the catch at (x, y) (u).
-   *  The plate goes as close above (else below) the catch as it can, centred on it, inside the scene's safe area and
-   *  clear of every control and popup (guards); with no room anywhere it's skipped (the catch tune still plays).
-   *  Gone after 2.6 s. */
-  async function show(item: FishId | JunkId | BugId, x: number, y: number) {
+  /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
+   *  (Plate.svelte places it clear of every control). */
+  function show(item: FishId | JunkId | BugId, x: number, y: number) {
     // the shared ずかん: the first catch of each fish or bug (junk isn't a find)
     if (item in FISH) recordFind('fish', item);
     else if (item in BUGS) recordFind('bug', item);
     const c = caption(item);
-    const n = ++seq;
-    card = { n, x, y, dx: 0, dy: 0, art: critterArt(item), text: t(c.key, c.name ? { name: t(c.name) } : undefined), placed: false };
-    later(() => card?.n === n && (card = null), 2600);
-    await tick();
-    const g = geo(), plate = cardEl?.querySelector('.catch-plate')?.getBoundingClientRect();
-    if (!g || !plate || card?.n !== n || !scene) return;
-    const at = place(plate.width, plate.height + 4, g.r.left + x / g.k, g.r.top + y / g.k); // + the plate's lip
-    if (!at) return (card = null);
-    const cx = (at.x - g.r.left) * g.k, cy = (at.y - g.r.top) * g.k;
-    Object.assign(card, { x: cx, y: cy, dx: x - cx, dy: y - cy, placed: true });
-  }
-  /** Where a w × h plate (client px) centred near (sx, sy) fits: the scene's safe area (under the status bar, above
-   *  the bottom band, 8px from the sides), overlapping no guard. Tries above the source first, then below, moving out
-   *  4px at a time; then the same against either side. */
-  function place(w: number, h: number, sx: number, sy: number): { x: number; y: number } | null {
-    const s = scene!.getBoundingClientRect();
-    const top = Math.max(s.top, scene!.querySelector('.band')?.getBoundingClientRect().top ?? s.top) + 4;
-    const bottom = Math.min(s.bottom, document.querySelector('.below')?.getBoundingClientRect().top ?? s.bottom) - 4;
-    const L = s.left + 8 + w / 2, R = s.right - 8 - w / 2;
-    if (L > R) return null;
-    const keep = guards();
-    const fits = (x: number, y: number) => {
-      const b = { x0: x - w / 2, x1: x + w / 2, y0: y - h / 2, y1: y + h / 2 };
-      return b.y0 >= top && b.y1 <= bottom && !keep.some((k) => hits(b, k));
-    };
-    for (const x of [clamp(sx, L, R), L, R])
-      for (let d = 0; d < 600; d += 4)
-        for (const y of [sy - h / 2 - 14 - d, sy + h / 2 + 14 + d]) if (fits(x, y)) return { x, y };
-    return null;
+    card = { n: ++seq, x, y, art: critterArt(item), text: t(c.key, c.name ? { name: t(c.name) } : undefined) };
   }
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
@@ -638,15 +579,8 @@
     {/key}
   {/if}
   {#if card}
-    {#key card.n}
-      <span class="mover catch" class:placed={card.placed} data-fx="catch" bind:this={cardEl}
-        style:translate="{U(card.x)} {U(card.y)}" style:--dx={U(card.dx)} style:--dy={U(card.dy)}>
-        <span class="catch-plate">
-          <span class="catch-icon"><OfficialArt key={card.art} size="clamp(30px, calc(34 * var(--su)), 40px)" eager /></span>
-          <span class="catch-say">{card.text}</span>
-        </span>
-      </span>
-    {/key}
+    {@const c = card}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} text={c.text} ondone={() => card?.n === c.n && (card = null)} />{/key}
   {/if}
 </div>
 
@@ -844,23 +778,6 @@
   .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; }
   @keyframes swing { 0% { transform: rotate(-70deg); opacity: 0; } 20% { opacity: 1; } 70% { transform: rotate(25deg); opacity: 1; } 100% { transform: rotate(32deg); opacity: 0; } }
 
-  /* the catch: NH's caption on a plate like the jar's (cream pill, 4px lip, the plate's ink), the official icon at its
-     start, popped up out of the catch; measured hidden, then placed (see place) */
-  .catch:not(.placed), .catch:not(.placed) * { visibility: hidden; animation: none !important; }
-  .catch { animation: fade-out 2.6s linear both; }
-  @keyframes fade-out { 85% { opacity: 1; } 100% { opacity: 0; } }
-  .catch-plate {
-    left: 0; top: 0; translate: -50% -50%; display: flex; align-items: center; gap: 6px;
-    width: max-content; max-width: min(272px, calc(100vw - 24px)); padding: 3px 12px 3px 4px; border-radius: var(--r-pill);
-    background: var(--plate); color: var(--plate-ink); box-shadow: 0 var(--lip-h) 0 var(--plate-lip);
-    font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.3 var(--font-ui); text-wrap: balance;
-    animation: say .25s ease-out both;
-  }
-  @keyframes say { from { opacity: 0; transform: translateY(4px) scale(.96); } }
-  .catch-icon { flex: none; line-height: 0; animation: lift .55s cubic-bezier(.3, 1.5, .5, 1) both; }
-  .catch-icon :global(.official) { max-width: none; filter: drop-shadow(0 1.5px 1.5px rgba(60, 40, 20, .3)); }
-  /* the icon starts at the catch (the plate's centre + --dx/--dy) and pops over to its place */
-  @keyframes lift { from { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } 25% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .sea-life, .air-life { display: none; }
     .held * { animation-name: fade-in !important; transform: none !important; }

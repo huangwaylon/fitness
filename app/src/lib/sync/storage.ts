@@ -40,7 +40,12 @@ export const SCENE = {
   highFivesSeen: (day: string) => `hf-seen:${day}`,
   /** localStorage `bells-seen` = `{ date, parts: { A, B } }`: today's ベル per person and fruit already shown flying into
    *  the wallet, so only new earnings fly in. */
-  bellsSeen: 'bells-seen'
+  bellsSeen: 'bells-seen',
+  /** localStorage `scene-day` = `{ date, picked: [uid…] }`: the day items (shells, fossils, the bottle, fragments, weeds)
+   *  this phone picked up, dug or pulled today (island/sceneDay.ts; a new day starts empty). */
+  day: 'scene-day',
+  /** localStorage `scene-wish` = the Tokyo date whose morning brings star fragments (a wish on a shooting star). */
+  wish: 'scene-wish'
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */

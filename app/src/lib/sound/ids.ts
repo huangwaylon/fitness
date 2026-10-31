@@ -20,13 +20,16 @@ export type SoundId =
   | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow'
   // the island's critters and the balloon (docs/design.md#scene-interactions): a bobber plop, the bite (the bobber
   // yanked under), the reel, a little catch tune, the net's swing, the balloon's pop
-  | 'plop' | 'bite' | 'reel' | 'catch' | 'net' | 'burst';
+  | 'plop' | 'bite' | 'reel' | 'catch' | 'net' | 'burst'
+  // beach finds (docs/design.md#beach-finds): a shell's clink, the shovel in the earth, a bottle's glass and cork
+  | 'shell' | 'dig' | 'bottle';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
   | 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shooting-star'
   | 'splash' | 'fish' | 'sand' | 'grass' | 'snow' | 'balloon' | 'butterfly'
-  | 'present' | 'cast' | 'plop' | 'nibble' | 'bite' | 'reel' | 'catch' | 'flee' | 'net' | 'bug-flee';
+  | 'present' | 'cast' | 'plop' | 'nibble' | 'bite' | 'reel' | 'catch' | 'flee' | 'net' | 'bug-flee'
+  | 'shell' | 'fragment' | 'bottle' | 'dig' | 'wish';
 
 interface SoundDef {
   bus: 'sfx';
@@ -84,7 +87,10 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   // a catch's little tune: an effect, not a jingle (it must not duck the music)
   catch: { bus: 'sfx', gain: 0.42, jitter: 10, max: 1 },
   net: { bus: 'sfx', gain: 0.38, jitter: 70, max: 2 },
-  burst: { bus: 'sfx', gain: 0.42, jitter: 50, max: 1 }
+  burst: { bus: 'sfx', gain: 0.42, jitter: 50, max: 1 },
+  shell: { bus: 'sfx', gain: 0.38, jitter: 60, max: 2 },
+  dig: { bus: 'sfx', gain: 0.45, jitter: 50, max: 1 },
+  bottle: { bus: 'sfx', gain: 0.4, jitter: 40, max: 1 }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

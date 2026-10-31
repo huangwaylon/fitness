@@ -26,8 +26,9 @@ export function lruEvict(keys: readonly string[]): string[] {
 
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
-/** The island's catches (fish, bugs, junk): shown only after a catch, so cached on first use, not at install. */
-export const isCritterArt = (path: string): boolean => path.includes('/art/critters/');
+/** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle)
+ *  and the visitors' extras: shown only when one is about or in the ずかん, so cached on first use, not at install. */
+export const isCritterArt = (path: string): boolean => path.includes('/art/critters/') || path.includes('/art/finds/');
 /** The two default villagers' art is precached (lib/villagers/look.ts DEFAULT_VILLAGER); the rest is cached on use. */
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
