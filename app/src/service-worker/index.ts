@@ -2,7 +2,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, SHELL, isAudio, isFont, isMusic, isVillagerArt, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, SHELL, isAudio, isFont, isMusic, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -21,15 +21,19 @@ const VILLAGERS = 'island-villagers-v1';
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
 // never precached: AUDIO_CACHE.
 const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
+/** Past the browser's HTTP cache (GitHub Pages: max-age 600): a static file or the shell fetched within 10 minutes
+ *  before a deploy would otherwise be stored stale for the whole version. The hashed chunks can't be stale. */
+const fresh = (path: string) => new Request(path, { cache: 'reload' });
+const HASHED = new Set(immutable.map((f) => f.path));
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      await cache.addAll(PRECACHE);
+      await cache.addAll(PRECACHE.map((p) => (HASHED.has(p) ? p : fresh(p))));
       // The SPA shell (ssr = false): any navigation can be served by the scope root.
       try {
-        await cache.add(SCOPE);
+        await cache.add(fresh(SCOPE));
       } catch {
         /* offline at install; the shell is cached on the next navigation */
       }
@@ -61,14 +65,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // the Apps Script backend: always live
 
-  // Network first (a fresh shell points at the current chunks), the cached shell when offline or after 3 s; the
-  // network response still refreshes the cache when it lands late.
+  // Network first (a fresh shell points at the current chunks), the cached shell when offline or after 3 s. The
+  // response becomes the offline shell only where this version has none (keepShell); off the response's path.
   if (req.mode === 'navigate') {
-    const net = fetch(req).then(async (res) => {
-      if (res.ok) await (await caches.open(CACHE)).put(SCOPE, res.clone());
-      return res;
-    });
-    event.waitUntil(net.then(() => {}, () => {}));
+    const net = fetch(req);
+    // cloned in the first callback on `net`, before respondWith below can hand the body to the page
+    event.waitUntil(
+      net.then((res) => {
+        const copy = res.clone();
+        return caches.open(CACHE).then((c) => keepShell(c, SCOPE, copy));
+      }).catch(() => {})
+    );
     event.respondWith(
       (async () => {
         let timer: ReturnType<typeof setTimeout> | undefined;

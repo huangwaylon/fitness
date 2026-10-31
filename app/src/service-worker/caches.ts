@@ -38,3 +38,14 @@ export function precachable(path: string): boolean {
   if (isFont(p) || isAudio(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
+
+/**
+ * A navigation's response becomes this version's offline shell only if the version has none yet (offline at
+ * install). Never over one: right after a deploy the old worker still answers navigations, and the new build's
+ * HTML in the old cache would point at chunks no cache holds, a blank screen offline if the new worker's install
+ * then fails. Each version's install caches its own shell.
+ */
+export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: string, res: Response): Promise<void> {
+  if (res.ok && !(await cache.match(scope))) return cache.put(scope, res);
+  await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
+}

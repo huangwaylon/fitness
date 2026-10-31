@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, isAudio, isMusic, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, isAudio, isMusic, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -52,5 +52,30 @@ describe('precache', () => {
       expect(precachable(p)).toBe(false);
     }
     expect(precachable('/fitness/audio/music/hour-07.m4a')).toBe(false);
+  });
+});
+
+describe('the offline shell from a navigation (keepShell)', () => {
+  const fakeCache = (has: boolean) => {
+    const puts: string[] = [];
+    return { puts, cache: { match: async () => (has ? new Response('old') : undefined), put: async (k: RequestInfo | URL) => void puts.push(String(k)) } };
+  };
+
+  it('kept when this version has no shell yet (offline at install)', async () => {
+    const c = fakeCache(false);
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('<html>'));
+    expect(c.puts).toEqual(['/fitness/']);
+  });
+
+  it('never over the version’s own shell (a newer build’s HTML would point at chunks no cache holds)', async () => {
+    const c = fakeCache(true);
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('<html>new build'));
+    expect(c.puts).toEqual([]);
+  });
+
+  it('never an error page', async () => {
+    const c = fakeCache(false);
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('nope', { status: 404 }));
+    expect(c.puts).toEqual([]);
   });
 });
