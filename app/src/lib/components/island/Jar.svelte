@@ -1,23 +1,19 @@
 <script lang="ts">
-  // The jar (v5 §5, F6): ONE drawing for the island and the ごほうび hero.
-  // Glass #DDF2FB (round 7: lit from the upper left, a white streak there and a soft #BFDCEA shade toward the
-  // lower right, over the coins too), a stack of coins up to the fill line, a yuzu lid with a leaf; no ink.
-  //   <Jar fill={0.6} width="132px" />            fill 0–1 of the glass (wallet/fill.ts walletFill) (the coins slide, 1.4 s, eased)
-  //   <Jar fill={old} band={after} width="96px" /> band: a lighter "this harvest" layer up to `band`
+  // The jar: ONE drawing for the island, the ごほうび hero and the harvest. Glass lit from the upper left (a white
+  // streak there, a soft #BFDCEA shade toward the lower right, over the coins too), a stack of coins up to the fill
+  // line, a yuzu lid with a leaf; no ink.
+  //   <Jar fill={0.6} width="132px" />   fill 0–1 of the glass (wallet/fill.ts walletFill); the coins slide, 1.4 s
   // The art is 54 × 68 (height = width × 68 / 54). Set `name` to give it a view-transition-name, so a
   // route change can morph the island jar into the ごほうび hero jar (ui-state/jarTransition.ts + tokens.css).
   interface Props {
     /** 0–1: how full the glass is (0 = empty; a little shows as soon as there is anything). */
     fill: number;
-    /** 0–1, ≥ fill: a lighter coin layer on top (a harvest about to drop in). */
-    band?: number;
     /** CSS width (default 60px). */
     width?: string;
     /** view-transition-name (one per page). */
     name?: string;
-    class?: string;
   }
-  let { fill, band, width = '60px', name, class: cls = '' }: Props = $props();
+  let { fill, width = '60px', name }: Props = $props();
   const uid = $props.id();
 
   const BODY = 'M13 18 Q4 24 4 36 V58 Q4 66 12 66 H42 Q50 66 50 58 V36 Q50 24 41 18 Z';
@@ -26,7 +22,7 @@
   const slide = (f: number) => ((1 - Math.min(1, Math.max(0, f))) * 44 + (f > 0 ? 0 : 8)).toFixed(2);
 </script>
 
-<svg class="jarart {cls}" viewBox="0 0 54 68" style:width style:view-transition-name={name} aria-hidden="true">
+<svg class="jarart" viewBox="0 0 54 68" style:width style:view-transition-name={name} aria-hidden="true">
   <defs>
     <clipPath id="{uid}-body"><path d={BODY} /></clipPath>
     <linearGradient id="{uid}-shade" x1="0" y1="0" x2="1" y2="1">
@@ -35,9 +31,6 @@
   </defs>
   <path d={BODY} class="glass" />
   <g clip-path="url(#{uid}-body)">
-    {#if band != null && band > fill}
-      <g class="coins band" style:transform="translateY({slide(band)}px)">{@render coins()}</g>
-    {/if}
     <g class="coins" style:transform="translateY({slide(fill)}px)">{@render coins()}</g>
   </g>
   <path d={BODY} fill="url(#{uid}-shade)" />
@@ -62,7 +55,6 @@
   .coinfill { fill: var(--jar-coin-rim); }
   .coin { fill: var(--jar-coin); }
   .coins { transition: transform 1.4s var(--ease-soft); will-change: transform; }
-  .band { opacity: .5; }
   .glint { fill: #fff; opacity: .85; }
   .lid-lip { fill: var(--c-yuzu-lip); }
   .lid { fill: var(--c-yuzu); }

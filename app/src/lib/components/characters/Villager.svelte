@@ -128,7 +128,7 @@
   .face { display: block; transform-origin: 50% 100%; transform: scaleX(var(--facing, 1)); transition: transform 200ms var(--ease-soft); }
   .face.lean { transform: translateX(calc(var(--in) * 4%)) rotate(calc(var(--in) * 6deg)); }
   .body { display: block; transform-origin: 50% 100%; }
-  .body.bob { animation: if-bob var(--dur-bob, 2400ms) var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
+  .body.bob { animation: if-bob 2400ms var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
   .body.sleep { animation: if-breath-slow 4000ms var(--ease-idle) infinite; }
   .body.walk { animation: if-walkbounce 640ms linear infinite; }
   .face.turning { animation: if-turn 1400ms var(--ease-soft) both; transition: none; }

@@ -21,9 +21,9 @@
   //   --island-bottom the top edge of the bottom chrome (the phone), from the scene's bottom. Default 0.
   // The island (32u..356u: the hedge's top to the beach's foam) is centred between the horizon and --island-bottom,
   // at most as wide as keeps the sand (u 30–360) 5px inside each screen edge (12px of grass on tall phones) and as
-  // tall as keeps its horizon --isle-pad (12px) under --hud-bottom, so on a short screen it scales down instead of
+  // tall as keeps its horizon 12px under --hud-bottom, so on a short screen it scales down instead of
   // running under the phone. The horizon sits at stage y HORIZON_U (a short open-sea strip behind the island), or at
-  // --sky-max of the scene on tall phones (more open sea above and below); the sea runs on under the island and
+  // 27% of the scene on tall phones (more open sea above and below); the sea runs on under the island and
   // behind the bottom chrome. Read back --horizon-y / --stage-top (set on
   // .if-scene) to place overlays.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
@@ -185,18 +185,17 @@
     /* the layout (see the contract at the top of the script). The island's box in stage units: the hedge's top
        (32u) to the beach's foam (356u), centred on 194u. Round 20 (user): it is centred in the visible OCEAN, the
        horizon down to the phone's top (--sea-bottom). The horizon is the stage's own (8u, 24u above the hedge) unless
-       that would make the sky taller than --sky-max of the scene; then it stops there and the island sits lower in
+       that would make the sky taller than 27% of the scene; then it stops there and the island sits lower in
        open sea. Centred, the island's own horizon lands at --sea-bottom − 372u, so that is where it starts. */
     --sh: var(--scene-h, var(--scene-h-auto));
     --ib: var(--island-bottom, 0px);
     --hb: var(--hud-bottom, 0px);
     --sea-bottom: calc(var(--sh) - var(--ib));
     --fit-w: calc((100cqw - 10px) * 390 / 330);
-    /* at most as big as keeps the island's own horizon --isle-pad under the ribbon */
-    --stage-w: min(calc((var(--sea-bottom) - var(--hb) - var(--isle-pad, 12px)) * 390 / 372), var(--fit-w), 560px);
-    --stage-h: calc(var(--stage-w) * 360 / 390);
-    /* the sky never takes more than --sky-max of the scene (sizing #6) */
-    --horizon-y: max(40px, min(calc(var(--sea-bottom) - var(--stage-w) * 372 / 390), calc(var(--sh) * var(--sky-max, .27))));
+    /* at most as big as keeps the island's own horizon 12px under the ribbon */
+    --stage-w: min(calc((var(--sea-bottom) - var(--hb) - 12px) * 390 / 372), var(--fit-w), 560px);
+    /* the sky never takes more than 27% of the scene */
+    --horizon-y: max(40px, min(calc(var(--sea-bottom) - var(--stage-w) * 372 / 390), calc(var(--sh) * .27)));
     --stage-top: calc((var(--horizon-y) + var(--sea-bottom)) / 2 - var(--stage-w) * 194 / 390);
     --sky-h: var(--horizon-y);
   }

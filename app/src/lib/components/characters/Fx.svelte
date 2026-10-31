@@ -13,11 +13,11 @@
   // sweat drop, zzz, confetti, dust puffs and a glint. A 0×0 anchor: the parent positions it (head
   // top centre for most, the feet for puffs, the temple for sweat). Removes itself via `ondone`.
   //   <Fx kind="hearts" ondone={() => …} />
-  //   <Fx kind="confetti" count={36} />
   // Transform/opacity only, pointer-events none, aria-hidden. Reduced motion: one static icon that
   // fades in and out (notes/hearts/sparkles), nothing for the rest.
   import { onMount } from 'svelte';
   import { reducedMotion } from '#lib/time/clock.ts';
+  import { mulberry32 } from '#lib/random.ts';
 
   interface Props {
     kind: FxKind;
@@ -25,27 +25,28 @@
     spread?: string;
     /** Outward direction for notes / zzz: 1 = right, -1 = left. */
     dir?: 1 | -1;
-    /** Confetti pieces (default 16; harvest 36). */
-    count?: number;
-
     ondone?: () => void;
   }
-  let { kind, spread = '60px', dir = 1, count = 16, ondone }: Props = $props();
+  let { kind, spread = '60px', dir = 1, ondone }: Props = $props();
 
   const reduced = $derived(reducedMotion());
   const CONFETTI = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
-  // deterministic-ish pieces per instance
-  const pieces = $derived(Array.from({ length: kind === 'confetti' ? count : 0 }, (_, i) => {
-    const a = (i / Math.max(1, count)) * Math.PI - Math.PI;
-    return {
-      c: CONFETTI[i % CONFETTI.length],
-      round: i % 3 === 0,
-      dx: Math.cos(a) * (40 + Math.random() * 80),
-      up: 60 + Math.random() * 60,
-      rot: Math.random() * 720,
-      delay: Math.random() * 120
-    };
-  }));
+  const CONFETTI_N = 16;
+  // the same seeded burst every time
+  const pieces = $derived.by(() => {
+    const rnd = mulberry32(7);
+    return Array.from({ length: kind === 'confetti' ? CONFETTI_N : 0 }, (_, i) => {
+      const a = (i / CONFETTI_N) * Math.PI - Math.PI;
+      return {
+        c: CONFETTI[i % CONFETTI.length],
+        round: i % 3 === 0,
+        dx: Math.cos(a) * (40 + rnd() * 80),
+        up: 60 + rnd() * 60,
+        rot: rnd() * 720,
+        delay: rnd() * 120
+      };
+    });
+  });
 
   onMount(() => {
     const ms = reduced ? 1200 : FX_MS[kind];

@@ -41,7 +41,7 @@
       <div><dt>{t('weight.since')}</dt><dd class="money">{kgDelta(w.sinceStart)}</dd></div>
     </dl>
     {#if w.perWeek !== null}<p class="pace">{t('weight.pace', { d: kgDelta(w.perWeek) })}</p>{/if}
-    <WeightChart points={w.points} goal={w.goal} to={today} weeks={WEIGHT.chartWeeks}
+    <WeightChart points={w.points} goal={w.goal} to={today}
       label={t('weight.chartLabel', { name, weeks: WEIGHT.chartWeeks, kg: kgText(w.latest.trend) })} />
     <p class="legend" aria-hidden="true">
       <span><i class="ldot"></i>{t('weight.legend.day')}</span>

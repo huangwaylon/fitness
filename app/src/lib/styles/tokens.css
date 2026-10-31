@@ -28,7 +28,6 @@
   --card: var(--c-card);       /* round 13: cards on the page / in sheets (one step lighter than the panel) */
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --leaf-text: var(--c-leaf-text); /* green text on the themed panel / card (night: a light green, 5.8:1 on navy) */
-  --hud: #33261B;              /* the corner clock over the sky: deeper ink, ≥ 4.5:1 on every day sky top (round 7 F12) */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
   --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
@@ -59,7 +58,7 @@
   --ease-soft:cubic-bezier(.25,.8,.25,1);
   --ease-squash:cubic-bezier(.3,0,.5,1);
   --ease-idle:cubic-bezier(.45,0,.55,1);
-  --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms; --dur-slow:600ms; --dur-emote:2200ms;
+  --dur-tap:90ms; --dur-quick:140ms; --dur-base:260ms; --dur-pop:360ms; --dur-emote:2200ms;
 
   /* ---------- platform + layout ---------- */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -120,7 +119,7 @@
   --sh-ctl-press: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge);
   --sh-obj: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge);
   --sh-obj-press: inset 0 0 0 2px var(--c-edge), 0 1px 0 var(--c-edge);
-  --fill-on-surface: var(--ctl); --fill-on-bg: var(--ctl);
+  --fill-on-surface: var(--ctl);
 
   /* ---------- the ground ellipse under villagers / props (v5 §5 depth rule; also read outside .if-scene) ---------- */
   --sh-ground: rgba(40, 60, 40, .18);
@@ -129,11 +128,11 @@
 }
 
 /* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
-:root[data-tod="dusk"] { --bg:#F6DFC0; --surface:#F6DFC0; --lip:#E8B98A; --hud:#FFFFFF; } /* the clock over the dusk sky top #5B6FC4 (4.65:1) */
+:root[data-tod="dusk"] { --bg:#F6DFC0; --surface:#F6DFC0; --lip:#E8B98A; }
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
   --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
-  --text:#FFF6E0; --text-soft:#D2D9F5; --hud:#FFF6E0; --focus:#FFF6E0; --leaf-text:#9EE6A6;
+  --text:#FFF6E0; --text-soft:#D2D9F5; --focus:#FFF6E0; --leaf-text:#9EE6A6;
   --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
   color-scheme: dark;
 }
@@ -157,7 +156,7 @@
 /* ---------- reduced motion = static ---------- */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --dur-tap:0ms; --dur-quick:0ms; --dur-base:120ms; --dur-pop:120ms; --dur-slow:120ms; --dur-emote:1600ms;
+    --dur-tap:0ms; --dur-quick:0ms; --dur-base:120ms; --dur-pop:120ms; --dur-emote:1600ms;
     --ease-bounce: ease; --ease-squash: ease;
   }
 }
@@ -244,8 +243,12 @@
   --tod-tint:#9AA4DE;
   --plate:#FFF6E0;
 }
-/* Pause every scene animation while the tab is hidden (§S.13). */
+/* Pause every scene animation while the tab is hidden (§S.5). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
+/* Under a sheet (the phone, a card) the endless loops hold still too: clouds, sea glints, stars, fireflies and the
+   villagers' idle bob, so the compositor draws no frames for a scene nobody is looking at. One-off motions (a hop,
+   an emote) still finish. */
+.if-scene[data-covered] :is(.cloud, .glints, .star, .ff, .body.bob) { animation-play-state: paused !important; }
 
 /* §M.2 motion primitives: all on `.body` (transform-origin 50% 100%) unless noted; every one starts
    and ends at `transform: none`, so the idle loop resumes without a jump. */
