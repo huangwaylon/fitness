@@ -74,6 +74,10 @@
   /* The one tap-target floor. min-height (and min-width for icon-only controls) on anything
      tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
   --hit: 44px;
+  /* The island's ribbon (Hud.svelte): its centre in the middle of the sky, between the safe area and the horizon (27%
+     of the screen, IslandScene's cap, which is the horizon on every phone size), never closer than 16px to the safe
+     area. The island page sets --hud-bottom (its lip) from it; the banners on 島 go under it. */
+  --hud-top: max(calc(var(--safe-top) + 16px), calc((var(--safe-top) + var(--vh-fill) * .27) / 2 - (var(--hit) + var(--lip-h)) / 2));
   /* A list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
 

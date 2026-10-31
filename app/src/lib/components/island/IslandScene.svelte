@@ -13,7 +13,7 @@
   // villagers (me on the left, the partner on the right) on their motion rig, ≤ 3 particles and ONE multiply
   // tint for the time of day over land and sea (the jar, stars and fireflies stay above it).
   // The HUD (sync chip, today's ベル ribbon, NookPhone) overlays the sky; clouds keep below it
-  // (Clouds.svelte --cloud-lane, ≈ 100px under the safe area).
+  // (Clouds.svelte keeps its lanes clear of the ribbon in the sky band's middle).
   // Layout contract (for the page): the island is CENTRED in the visible ocean (horizon → bottom chrome).
   //   --scene-h       the scene's height (give it the whole page, e.g. 100dvh, and keep it stable);
   //                   fallback clamp(300px, 100dvh − var(--island-bottom), 600px).

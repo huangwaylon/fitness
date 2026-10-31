@@ -2,9 +2,9 @@
   // Two soft clouds (design.md "Environment"): the round lobes on an elliptical base, filled with ONE
   // vertical gradient (white to 55%, a pale-blue underside below; tinted per time of day in tokens.css), no
   // lip. C1 / C2 drift at 140 / 100 s (transform only). Sizes: 120 / 86px at 393, 100 / 72 compact, 64 / 48 at
-  // 320. Lanes: C1 just under the HUD (top = max(--cloud-lane, 26%)), C2 lower, over the horizon cloud bank, so the sun
-  // (Sky.svelte, upper left at 58% and drawn above them) is never hidden. Short skies (band ≤ 190px): both rest
-  // just above the horizon as small far-off clouds. Night: --cloud-op.
+  // 320. Lanes keep clear of the ribbon in the band's middle: C1 high (6% down), C2 low, over the horizon cloud bank
+  // (12% up); the sun (Sky.svelte, low at the left) is drawn above them. Short skies (band ≤ 190px): C1 just above
+  // the horizon, C2 high. Night: --cloud-op.
   const uid = $props.id();
   const CLOUDS: { id: string; w: number; h: number; dur: number; op: number; delay: number; circles: number[][] }[] = [
     { id: 'c1', w: 150, h: 52, dur: 140, op: 0.97, delay: 0.3, circles: [[30, 32, 17], [62, 22, 22], [98, 25, 19], [126, 34, 13]] },
@@ -34,14 +34,14 @@
     opacity: calc(var(--op) * var(--cloud-op, 1));
     animation: drift 140s linear infinite; will-change: transform;
   }
-  .c1 { width: 120px; top: max(var(--cloud-lane, 100px), 26%); }
-  .c2 { width: 86px; top: auto; bottom: 30%; }
+  .c1 { width: 120px; top: 6%; }
+  .c2 { width: 86px; top: auto; bottom: 12%; }
   @media (max-height: 700px), (max-width: 359px) { .c1 { width: 100px; } .c2 { width: 72px; } }
   @keyframes drift { from { transform: translateX(-110%); } to { transform: translateX(calc(100cqw + 10%)); } }
-  /* short skies: two small far-off clouds resting just above the horizon (the band's bottom) */
+  /* short skies: one small far-off cloud just above the horizon, one high above the ribbon */
   @container sky (max-height: 190px) {
     .c1 { top: auto; bottom: 6px; }
-    .c2 { bottom: 26%; }
+    .c2 { top: 4%; bottom: auto; }
   }
   @media (max-width: 339px) { .c1 { width: 64px; } .c2 { width: 48px; } }
   /* reduced motion: still clouds, placed clear of the sun (the global rule would park them off screen) */

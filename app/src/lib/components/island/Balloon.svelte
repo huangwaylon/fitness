@@ -31,7 +31,7 @@
   const GOLD = ['#F2C33F', '#FFEA9A', '#C28A1C', '#FFF4C4'];
   const gold = Math.random() < 0.05;
   const [body, light, shade, rim] = gold ? GOLD : COLOURS[Math.floor(Math.random() * COLOURS.length)];
-  // The breeze blows either way; the altitude varies a little (0–0.6 balloon widths under the cloud lane).
+  // The breeze blows either way; the altitude varies a little (0–0.3 balloon widths under the ribbon).
   const ltr = Math.random() < 0.5;
   const alt = Math.random() * 0.6;
   const gid = $props.id();
@@ -112,9 +112,10 @@
   /* the balloon's size: everything below is in em (the balloon's width) */
   .fly {
     --bw: clamp(22px, 7.6cqw, 34px);
-    /* C1's cloud lane (just under the HUD ribbon) + a little, but the present always clears the horizon bank */
+    /* just under the ribbon (--hud-top is the screen's, the band starts at the safe area) + a little, but the present
+       always clears the horizon bank */
     position: absolute; z-index: 3; left: 0; font-size: var(--bw);
-    top: min(calc(max(var(--cloud-lane, 100px), 26%) + var(--alt) * 1em), calc(100cqh - 2.55em));
+    top: min(calc(var(--hud-top) + var(--hit) + var(--lip-h) - var(--safe-top) + 8px + var(--alt) * .5em), calc(100cqh - 2.55em));
     animation: across 22s linear both; will-change: transform;
   }
   /* short skies (under 190px): a smaller balloon low in the band, its present just over the horizon, under the HUD;

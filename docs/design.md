@@ -31,7 +31,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ### Island
 
-Top to bottom: the ribbon 「きょう +620 ベル」 (both people today; counts up; tap → [the panel](#panel)), a sync chip
+Top to bottom: the ribbon 「きょう +620 ベル」 (both people today; counts up; centred in the sky between the safe
+area and the horizon; tap → [the panel](#panel)), a sync chip
 only when sync isn't ok, the scene, しずえ's box only with news. Nothing else sits at the bottom: the island is centred
 in the visible ocean, from the horizon down to the screen's bottom above the home indicator, and never runs under the
 ribbon.
