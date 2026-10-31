@@ -1,5 +1,7 @@
 # 0023 — Anyone edits anyone's data; gym overrides
-**Status:** Accepted (user decision 2026-10-31). Amends [history-and-editing.md](../design/history-and-editing.md) §4.2
+**Status:** Accepted (user decision 2026-10-31); the gym overrides (decision 3, the 🥥 parts of 1 and 4) were removed
+the same day with the gym itself, see the amendment below and [0021](0021-activity-rings-no-check-ins.md) "no gym;
+four metrics". Amends [history-and-editing.md](../design/history-and-editing.md) §4.2
 ("own data only") and [0021](0021-activity-rings-no-check-ins.md) (an arrival or a strength workout makes a 🥥 day).
 Keeps the week lock ([0019](0019-bells-daily-earning-two-pots.md): edits count only until the Wednesday 04:00 after
 the week), ADR 0015 (append-only, compute-on-read) and ADR 0016 (everything visible).
@@ -33,3 +35,9 @@ misses a visit and sometimes fires without one, and the only fix was a workout m
   never meets a lock in practice; it still checks it (🔒) like every edit.
 - **Open question for the user:** the week lock is kept ("any data" could mean locked weeks too). Dropping it would
   let an edit change a week whose ベル were already spent, so buys made from them could stop being covered.
+
+## Amendment 2026-10-31: the gym overrides are gone
+With the gym 🥥 removed (ADR 0021 amendment "no gym; four metrics"), `gym_set` is no longer an event type: the server
+refuses it (`bad_request`), the model ignores old rows of it, and the tree popup's きのう / きょう chips, きろく's 🥥 row and
+its ✎ are gone. Decisions 1, 2 and 5 stand for the remaining edits (`metric_set`, `workout_edit {excluded}`,
+`workout_add`, the two goal prefs). The two `gym_set` rows already in the sheet do nothing.

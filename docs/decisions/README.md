@@ -24,9 +24,9 @@ Numbered `NNNN-title.md`. Superseded decisions stay, marked as such; the newest 
 | [0018](0018-official-art-public-site.md) | Official NH art; public repo and site for now | Accepted | |
 | [0019](0019-bells-daily-earning-two-pots.md) | ベル earned daily; same goals for both; two shared pots | Partly superseded (daily ベル, badges, harvest, lock stand) | 0021 (what earns), 0022 (one wallet) |
 | [0020](0020-weight-trend-never-rewarded.md) | Body-weight trend in きろく; weight never earns ベル | Accepted | |
-| [0021](0021-activity-rings-no-check-ins.md) | Activity Rings (Move/Exercise/Stand) + steps + gym; no manual check-ins; gym arrival action | Accepted (amended 2026-10-30: no questions, values, `gym` action) | |
+| [0021](0021-activity-rings-no-check-ins.md) | Activity Rings (Move/Exercise/Stand) + steps; no manual check-ins | Accepted (amended 2026-10-30: no questions, values; 2026-10-31: no gym, four metrics, v2 rebalanced) | |
 | [0022](0022-one-wallet-small-luxuries.md) | One shared wallet; one menu list of five small luxuries | Accepted (amended 2026-10-30: one list) | |
-| [0023](0023-anyone-edits-anyones-data-gym-overrides.md) | Anyone edits anyone's data (`data.person`); `gym_set` turns a 🥥 day on or off | Accepted (lock kept: open question) | |
+| [0023](0023-anyone-edits-anyones-data-gym-overrides.md) | Anyone edits anyone's data (`data.person`) | Accepted (lock kept: open question); `gym_set` removed 2026-10-31 | 0021 (no gym) |
 
 **Current rules in one place:** 0021 (what earns and its values), 0022 (the wallet and menu), 0019 (daily ベル, badges,
-harvest, lock), 0023 (who edits what, gym overrides), 0020 (weight), 0015 (backend), 0007 (language), 0016 (no privacy rules, no alerts), 0018 (art).
+harvest, lock), 0023 (who edits what), 0020 (weight), 0015 (backend), 0007 (language), 0016 (no privacy rules, no alerts), 0018 (art).
