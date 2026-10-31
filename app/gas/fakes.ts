@@ -55,7 +55,6 @@ export class FakeSheet {
       setNumberFormat(f: string) { cells((r, c) => sheet.formats.set(`${r}:${c}`, f)); return range; },
       setNumberFormats(fs: string[][]) { cells((r, c, i, j) => sheet.formats.set(`${r}:${c}`, fs[i][j])); return range; },
       setFontWeight() { return range; },
-      clearContent() { cells((r, c) => { if (sheet.rows[r - 1]) sheet.rows[r - 1][c - 1] = ''; }); return range; },
       getSheet() { return sheet; }
     };
     return range;
