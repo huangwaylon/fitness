@@ -23,7 +23,7 @@
   import { sceneSfx } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
-  import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
+  import { ISLAND_SEED, bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
   import { fragmentDay, fragmentsDue } from './stars.ts';
   import { showerNight } from './meteor.ts';
@@ -46,6 +46,9 @@
   const want = hooks ? q.get('find') : null;
 
   const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
+  /** The dig spot's crack: five jagged arms of unequal length (8, 6, 7.5, 5, 6.5u) and four side cracks. */
+  const CRACK = 'M0 0 L1.2 -3.4 L.6 -5.2 L1.8 -8 M0 0 L2.8 .6 L4.2 -.4 L6 .4 M0 0 L-.6 2.8 L.6 4.8 L-.2 7.4 M0 0 L-2.4 -.8 L-3.4 .2 L-5 -.4 '
+    + 'M0 0 L-2 -2.4 L-2.6 -4.4 L-4.4 -5.2 M.9 -4.4 L2.6 -5 M3.6 .2 L4.2 1.6 M.1 4.2 L-1.4 4.9 M-2.3 -3.3 L-3.8 -2.8';
   const rand = Math.random;
 
   /** Bumped when this phone takes something (the lists re-derive). */
@@ -61,10 +64,17 @@
     return (hour * 60 + minute) * 60_000 + clock.getSeconds() * 1000;
   });
 
+  /** This morning's fragments, picked or not (the shells and the bottle keep their distance from where they lay). */
+  const allFragments = $derived.by<Fragment[]>(() => {
+    void taken;
+    const n = want === 'fragment' ? 3 : fragmentsDue(wishes(), date, jst(clock).hour);
+    // after a meteor shower's night (the night before this morning) the season's zodiac fragment is likelier
+    return fragmentsOn(date, n, seed, showerNight(addDays(date, -1), seed));
+  });
   const shells = $derived.by<Shell[]>(() => {
     void taken;
     const gone = takenOn(date);
-    return shellsAt(date, msOfDay, seed).filter((s) => !gone.has(s.uid));
+    return shellsAt(date, msOfDay, seed, allFragments).filter((s) => !gone.has(s.uid));
   });
   const spots = $derived.by<DigSpot[]>(() => {
     void taken;
@@ -79,7 +89,7 @@
   });
   const bottle = $derived.by<Bottle | null>(() => {
     void taken;
-    const b = want === 'bottle' ? { uid: 'b-demo', note: 3, x: 250, y: 347, at: 0 } : bottleAt(date, msOfDay, seed);
+    const b = want === 'bottle' ? bottleNow(date, [...allFragments, ...shellsAt(date, msOfDay, seed, allFragments)], seed) : bottleAt(date, msOfDay, seed, allFragments);
     return b && !takenOn(date).has(b.uid) ? b : null;
   });
   const mushrooms = $derived.by<Mushroom[]>(() => {
@@ -95,10 +105,8 @@
     want === 'earth-egg' || (eggTime(eventAt(date, jst(now()).hour, forcedEvent())) && eggInDig(date, s.uid, seed));
   const fragments = $derived.by<Fragment[]>(() => {
     void taken;
-    const n = want === 'fragment' ? 3 : fragmentsDue(wishes(), date, jst(clock).hour);
     const gone = takenOn(date);
-    // after a meteor shower's night (the night before this morning) the season's zodiac fragment is likelier
-    return fragmentsOn(date, n, seed, showerNight(addDays(date, -1), seed)).filter((f) => !gone.has(f.uid));
+    return allFragments.filter((f) => !gone.has(f.uid));
   });
 
   // Shells that wash up while you watch slide in from the foam; the ones already there when the island opens just lie.
@@ -210,7 +218,7 @@
       sceneSfx('dig');
       const n = ++seq;
       dig = { n, x: s.x, y: s.y, held: walked };
-      later(() => dig?.n === n && (dig = null), 3200);
+      later(() => dig?.n === n && (dig = null), 6400);
       if (special) plate(s.x, s.y - 4, findArt(special), () => t('beach.dug', { name: t(`beach.name.${special}`) }), 650);
       else plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
       later(() => sceneSfx('catch'), 650);
@@ -281,9 +289,12 @@
 
 <div class="finds" aria-hidden="true">
   {#each visibleSpots as s (s.uid)}
-    <!-- NH's dig spot: a star-shaped crack in the ground, foreshortened -->
+    <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
+         a lighter lip of earth under each, foreshortened -->
     <span class="item spot" data-find="fossil" style:translate="{U(s.x)} {U(s.y)}">
-      <svg viewBox="-10 -10 20 20"><path d="M0 -8.5 L1.3 -1.3 L8.5 0 L1.3 1.3 L0 8.5 L-1.3 1.3 L-8.5 0 L-1.3 -1.3 Z" /></svg>
+      <svg viewBox="-10 -10 20 20">
+        <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
+      </svg>
     </span>
   {/each}
   {#each visibleMushrooms as m (m.uid)}
@@ -296,22 +307,27 @@
       <OfficialArt key={findArt(s.id)} size="calc(14 * var(--su))" />
     </span>
   {/each}
-  {#each fragments as f (f.uid)}
-    <span class="item frag" data-find="fragment" data-id={f.id} style:translate="{U(f.x)} {U(f.y)}">
+  {#each fragments as f, k (f.uid)}
+    <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
+    <span class="item frag" data-find="fragment" data-id={f.id} style:translate="{U(f.x)} {U(f.y)}" style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(12 * var(--su))" />
+      <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
     </span>
   {/each}
   {#if bottle}
+    <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
     <span class="item bottle" data-find="bottle" style:translate="{U(bottle.x)} {U(bottle.y)}">
-      <OfficialArt key={findArt('message-bottle')} size="calc(15 * var(--su))" />
+      <i class="foam"></i>
+      <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(15 * var(--su))" /></span>
     </span>
   {/if}
   {#if dig}
     {#key dig.n}
       <span class="item digfx" style:translate="{U(dig.x)} {U(dig.y)}">
         <i class="hole"></i>
-        {#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx} style:--i={i}></i>{/each}
-        {#if !dig.held}<span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(24 * var(--su))" eager /></span>{/if}
+        <!-- two strikes of the shovel, a burst of earth on each -->
+        {#each [0, 1] as k (k)}{#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx + k * 0.3} style:--i={i} style:--k={k}></i>{/each}{/each}
+        {#if !dig.held}<span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(30 * var(--su))" eager /></span>{/if}
       </span>
     {/key}
   {/if}
@@ -341,32 +357,46 @@
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .item :global(.official) { max-width: none; }
   /* a shell lies on the sand at its own angle, a soft contact shadow under it */
-  .shell > :global(*), .frag > :global(*), .bottle > :global(*) { translate: -50% -60%; filter: drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
+  .shell > :global(*), .frag > :global(*) { translate: -50% -60%; filter: drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
   .shell > :global(*) { rotate: var(--tilt); }
   .shell.fresh { animation: wash 1.1s cubic-bezier(.3, .7, .4, 1) both; }
   @keyframes wash { from { transform: translateY(calc(12 * var(--su))); opacity: 0; } 40% { opacity: 1; } }
-  .bottle > :global(*) { rotate: -64deg; }
+  .bottle .rock { translate: -50% -60%; line-height: 0; transform-origin: 50% 70%; animation: bottle-rock 2.4s ease-in-out infinite alternate; }
+  .bottle .rock > :global(*) { rotate: -64deg; filter: drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
+  @keyframes bottle-rock { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+  .foam {
+    display: block; width: calc(20 * var(--su)); height: calc(6 * var(--su)); translate: -50% -30%; border-radius: 50%;
+    border: 1.2px solid rgba(255, 255, 255, .9); opacity: 0; animation: foam 4s ease-out infinite;
+  }
+  @keyframes foam { 0% { transform: scale(.4); opacity: 0; } 8% { opacity: .9; } 30% { transform: scale(1.2); opacity: 0; } 100% { opacity: 0; } }
+  .twinkle {
+    width: calc(9 * var(--su)); translate: 10% -120%; fill: #FFFBE6; filter: drop-shadow(0 0 2px #FFE070); opacity: 0;
+    animation: twinkle var(--tw, 4s) ease-out var(--twd, 0s) infinite;
+  }
+  @keyframes twinkle { 0%, 80% { transform: scale(0) rotate(0); opacity: 0; } 88% { transform: scale(1) rotate(40deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
   /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */
   .mush > :global(*) { translate: -50% -92%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   .mush.flip > :global(*) { scale: -1 1; }
   .frag > :global(*) { filter: drop-shadow(0 0 3px rgba(255, 246, 190, .9)); }
   /* the dig spot */
-  .spot svg { width: calc(19 * var(--su)); translate: -50% -50%; scale: 1 .55; fill: rgba(92, 60, 30, .78); overflow: visible; }
-  /* digging: the shovel strikes twice, earth flies, a hole opens and closes again */
-  .shovel { translate: -20% -95%; transform-origin: 30% 100%; animation: shovel .62s cubic-bezier(.3, .6, .4, 1) both; }
+  .spot svg { width: calc(19 * var(--su)); translate: -50% -50%; scale: 1 .7; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .spot .crack { stroke: #4E321A; stroke-opacity: .85; stroke-width: 1.6; }
+  .spot .lip { stroke: #C9A46A; stroke-width: .8; }
+  /* digging: the shovel strikes twice (.28 s each), a burst of earth on each, and leaves an open hole for 6 s */
+  .shovel { translate: -20% -95%; transform-origin: 30% 100%; animation: shovel .68s cubic-bezier(.3, .6, .4, 1) both; }
   @keyframes shovel {
-    0% { transform: rotate(-40deg) translateY(-6px); opacity: 0; } 15% { opacity: 1; }
-    35% { transform: rotate(8deg); } 50% { transform: rotate(-28deg) translateY(-4px); } 70% { transform: rotate(10deg); }
+    0% { transform: rotate(-40deg) translateY(-6px); opacity: 0; } 10% { opacity: 1; }
+    37% { transform: rotate(8deg); } 52% { transform: rotate(-32deg) translateY(-4px); } 78% { transform: rotate(10deg); }
     90% { opacity: 1; } 100% { transform: rotate(-10deg) translateY(-8px); opacity: 0; }
   }
   .hole {
-    display: block; width: calc(15 * var(--su)); height: calc(7 * var(--su)); translate: -50% -50%; border-radius: 50%;
-    background: radial-gradient(closest-side, #6B4A2A, #8A6238 70%, rgba(138, 98, 56, 0)); animation: hole 3.2s ease-out .3s both;
+    display: block; width: calc(18 * var(--su)); height: calc(8 * var(--su)); translate: -50% -50%; border-radius: 50%;
+    background: radial-gradient(closest-side, #4E321A, #6B4A2A 55%, #8A6238 78%, rgba(138, 98, 56, 0)); animation: hole 6s ease-out .25s both;
   }
-  @keyframes hole { from { transform: scale(.3); opacity: 0; } 12% { transform: scale(1); opacity: 1; } 80% { opacity: 1; } to { opacity: 0; } }
+  @keyframes hole { from { transform: scale(.3); opacity: 0; } 5% { transform: scale(.7); opacity: 1; } 10% { transform: scale(1); } 85% { opacity: 1; } to { opacity: 0; } }
   .clod {
     display: block; width: calc(4 * var(--su)); height: calc(3.4 * var(--su)); border-radius: 50%; background: #8A6238;
-    animation: clod .6s cubic-bezier(.3, .8, .6, 1) calc(.25s + var(--i) * 40ms) both;
+    animation: clod .6s cubic-bezier(.3, .8, .6, 1) calc(.24s + var(--k) * .28s + var(--i) * 40ms) both;
   }
   @keyframes clod {
     0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; }

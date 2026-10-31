@@ -454,11 +454,17 @@ fragment is a ずかん `find` (never ベル).
 - **Seashells** (NH's eight beach shells: sea snail, cowrie, venus comb, sand dollar, coral, conch, giant clam and the
   summer shell, rare, 3× likelier June–September): one washes up on the front beach every 60–120 s, the newest three lie
   on the sand (one arriving on screen slides in from the foam). A tap picks it up: 「タカラガイを ひろった！」.
+- **Where things lie on the beach** (`beach.ts` `beachSpot`): the shells, the fragments and the bottle keep 34u apart
+  (`BEACH_GAP`, about two of them side by side): each, as it arrives, takes a spot that far from everything lying there
+  (the morning's fragments, the last two shells, a bottle), trying every 5u of sand in a seeded order, else the spot
+  furthest from the rest (a crowded morning of fragments). The whole day is worked out once per date and seed, so a new
+  arrival never moves what's already there and both phones agree. Depth varies a little (y 329–345u).
 - **Fossils** (all 73 of NH's: the 14 standalone ones and every piece of the 21 dinosaurs, `FOSSIL_SETS`, each as likely
-  as any other): NH's star-shaped ✕ crack on the lawn, 1–2 at
+  as any other): NH's dig spot, a dark, uneven star-shaped crack in the soil (five jagged arms of unequal length, little
+  side cracks, a lighter lip of earth under each), 1–2 at
   a time on six spots measured clear of every control (beside the trunks, between the fruit rows and the beds; a spot a
-  control covers on a small screen isn't shown). A tap digs it up (the official shovel strikes twice, earth flies, a
-  hole): 「化石を ほりだした！ アンモナイトだ！」. The next spot turns up 20–40 s later.
+  control covers on a small screen isn't shown). A tap digs it up (the official shovel strikes twice, 0.28 s each, a burst
+  of earth on each; an open hole, 18 × 8u, stays 6 s and fades): 「化石を ほりだした！ アンモナイトだ！」. The next spot turns up 20–40 s later.
 - **Mushroom season** (`island/mushrooms.ts`): NH's November mushrooms beside the trees: every November day 1–2 (half
   the days two) on the four trunk spots (beside each trunk, between the canopy and the fruit row, relative to `TREE`; one
   a control covers on this screen isn't shown), NH's weights (skinny 35, round 30, flat 30, elegant 5); not a hard gate:
@@ -466,12 +472,14 @@ fragment is a ずかん `find` (never ベル).
   (`scene-mushroom`). 1 in 20 November dig spots hold the rare mushroom instead of their fossil (their own stream):
   「めずらしいキノコを ほりだした！」. Cosmetic: no ベル and no `find` (the ずかん has no kind for them).
   `?find=mushroom|rare-mushroom` (dev or `?demo`) brings one now / makes every dig spot the rare one.
-- **Message bottle:** every 8–14 minutes one lies at the water's edge for 6; a tap reads its note (16 short, kind notes,
+- **Message bottle:** every 8–14 minutes one lies at the water's edge for 6, half in the foam, rocking ±4° (2.4 s), a
+  small ring of foam every 4 s; a tap reads its note (16 short, kind notes,
   ja/en). Not a find.
 - **Star fragments:** each wish on a shooting star ([Shooting stars](#shooting-stars)) is one fragment on the front
   beach the next morning (a wish before 05:00: that morning), from 05:00 for the day, at most 8 (the beach's room): star
   fragments, now and then a large one or the season's zodiac fragment (after a meteor shower's night twice as likely),
-  one to each eighth of the sand (seeded per day, so a later wish only adds one further along; `fragmentsOn`).
+  one to each eighth of the sand where it has room (seeded per day, so a later wish only adds one further along;
+  `fragmentsOn`); each twinkles now and then (every 3–5 s, out of step: NH's beach glimmer).
 - The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
   44px. `?find=bottle|fragment|mushroom|rare-mushroom` (dev or `?demo`)
   brings one now.
