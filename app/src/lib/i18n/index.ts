@@ -10,6 +10,12 @@ const catalogs: Record<Locale, Catalog> = { ja, en };
 
 type Params = Record<string, string | number | null | undefined>;
 
+/** A lazily loaded part's own strings (kenkou.ts), merged in once its chunk loads. */
+export function addCatalog(extra: Record<Locale, Catalog>): void {
+  Object.assign(catalogs.ja, extra.ja);
+  Object.assign(catalogs.en, extra.en);
+}
+
 function interpolate(msg: string, params?: Params): string {
   if (!params) return msg.replace(/\{\w+\}/g, '');
   return msg.replace(/\{(\w+)\}/g, (_, k: string) => {

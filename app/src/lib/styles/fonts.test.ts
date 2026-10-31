@@ -4,8 +4,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaTab from '#lib/i18n/kenkou.ja.json';
+import enTab from '#lib/i18n/kenkou.en.json';
+
+const ja = { ...jaMain, ...jaTab };
+const en = { ...enMain, ...enTab };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');
