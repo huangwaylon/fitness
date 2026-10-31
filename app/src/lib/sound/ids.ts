@@ -37,7 +37,9 @@ export type SceneSfx =
   | 'present' | 'cast' | 'plop' | 'nibble' | 'bite' | 'reel' | 'catch' | 'flee' | 'net' | 'bug-flee'
   | 'shell' | 'fragment' | 'bottle' | 'dig' | 'wish' | 'weed' | 'water' | 'clonk' | 'glint' | 'visitor'
   // shaking a tree (island/treeShake.ts): a nest lands, its wasps buzz out, they sting; a branch picked up
-  | 'nest' | 'buzz' | 'sting' | 'twig';
+  | 'nest' | 'buzz' | 'sting' | 'twig'
+  // mushroom season (island/mushrooms.ts): one picked up beside a tree
+  | 'mushroom';
 
 interface SoundDef {
   bus: 'sfx';

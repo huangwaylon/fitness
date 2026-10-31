@@ -151,6 +151,7 @@
   "shake.branch": "木のえだを ひろう",
   "beach.picked": "{name}を ひろった！",
   "beach.fossil": "化石を ほりだした！ {name}だ！",
+  "beach.dug": "{name}を ほりだした！",
   "beach.bottle": "メッセージボトル！ 『{note}』",
   "beach.wish": "ながれぼしに おねがい！",
   "beach.note.0": "きょうも いい天気に なりますように",

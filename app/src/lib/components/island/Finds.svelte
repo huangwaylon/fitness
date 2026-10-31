@@ -2,15 +2,16 @@
   // Beach finds (docs/design.md "Beach finds"), after NH: seashells keep washing up on the front beach (one every 1–2
   // minutes, the newest three on the sand), fossil dig spots (NH's ✕ crack) on the lawn, 1–2 at a time, a new one a
   // little while after you dig; a message bottle at the water's edge every 8–14 minutes for six; star fragments on the
-  // beach the morning after a wish on a shooting star. A tap picks a shell, a fragment or the bottle up (it lifts off the
+  // beach the morning after a wish on a shooting star; in mushroom season, mushrooms beside the trees (mushrooms.ts). A tap picks a shell, a fragment or the bottle up (it lifts off the
   // sand) or digs a fossil up (a shovel, a puff of earth, a hole), with NH's caption on the catch plate. The first find
-  // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル.
+  // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル. Mushrooms are cosmetic (no
+  // find): picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption.
   // Everything derives from the Tokyo date and the time (beach.ts), so both phones broadly see the same island; what
   // this phone took is hidden here only (sceneDay.ts). SceneTaps mounts this inside the stage and asks it about each
   // tap after the critters (`tap`). Cheap: static images and one-shot animations; no timers but the dig's short wait,
   // the clock is the scene's minute tick.
-  //   ?find=bottle | fragment (dev or ?demo): a bottle or this morning's fragments now (the e2e's hook); ?seed= varies the
-  //   island's seed.
+  //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
+  //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Plate from './Plate.svelte';
@@ -23,6 +24,7 @@
   import { guardsU, clearAt, stageGeo } from './placement.ts';
   import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentDay, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wishDay, wishFor } from './sceneDay.ts';
+  import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -73,6 +75,14 @@
     const b = want === 'bottle' ? { uid: 'b-demo', note: 3, x: 250, y: 347, at: 0 } : bottleAt(date, msOfDay, seed);
     return b && !takenOn(date).has(b.uid) ? b : null;
   });
+  const mushrooms = $derived.by<Mushroom[]>(() => {
+    void taken;
+    const gone = takenOn(date);
+    const list = want === 'mushroom' ? [{ uid: 'm-demo', id: 'round-mushroom' as const, x: MUSHROOM_SPOTS[0][0], y: MUSHROOM_SPOTS[0][1], flip: false }] : mushroomsOn(date, seed);
+    return list.filter((m) => !gone.has(m.uid));
+  });
+  /** Whether a dig spot holds the rare mushroom (`?find=rare-mushroom`: every one). */
+  const rare = (s: DigSpot): boolean => want === 'rare-mushroom' || rareMushroom(date, s.uid, seed);
   const fragments = $derived.by<Fragment[]>(() => {
     void taken;
     if (want !== 'fragment' && wishDay() !== date) return [];
@@ -145,6 +155,11 @@
     sceneSfx('bottle');
     plate(b.x, b.y, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
   }
+  function pickMushroom(m: Mushroom) {
+    pickUp(m.uid, m.x, m.y - 6, findArt(m.id), 0);
+    sceneSfx('mushroom');
+    plate(m.x, m.y - 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
+  }
   function digUp(s: DigSpot) {
     take(date, s.uid);
     digHold = Date.now() + 20_000 + rand() * 20_000;
@@ -152,11 +167,14 @@
     holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
     taken++;
     sceneSfx('dig');
-    const added = recordFind('fossil', s.fossil);
     const n = ++seq;
     dig = { n, x: s.x, y: s.y };
     later(() => dig?.n === n && (dig = null), 3200);
-    plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
+    if (rare(s)) plate(s.x, s.y - 4, findArt('rare-mushroom'), () => t('beach.dug', { name: t('beach.name.rare-mushroom') }), 650);
+    else {
+      const added = recordFind('fossil', s.fossil);
+      plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
+    }
     later(() => sceneSfx('catch'), 650);
   }
 
@@ -171,7 +189,8 @@
       ...shells.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => pickShell(s) })),
       ...fragments.map((f) => ({ d: Math.hypot(f.x - x, f.y - y), go: () => pickFragment(f) })),
       ...(bottle ? [{ d: Math.hypot(bottle.x - x, bottle.y - y), go: () => pickBottle(bottle!) }] : []),
-      ...visibleSpots.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => digUp(s) }))
+      ...visibleSpots.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => digUp(s) })),
+      ...visibleMushrooms.map((m) => ({ d: Math.hypot(m.x - x, m.y - 6 - y), go: () => pickMushroom(m) }))
     ];
     const best = hits.filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
     if (!best) return false;
@@ -190,6 +209,14 @@
     const keep = guardsU(g, -5 * g.k);
     visibleSpots = list.filter((s) => clearAt(keep, s.x, s.y, 10, 6));
   });
+  let visibleMushrooms = $state<Mushroom[]>([]);
+  $effect(() => {
+    const list = mushrooms;
+    const g = stageGeo(scene);
+    if (!g) return void (visibleMushrooms = []);
+    const keep = guardsU(g, -5 * g.k);
+    visibleMushrooms = list.filter((m) => clearAt(keep, m.x, m.y - 7, 7, 7));
+  });
 
   /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; x, y in u): star fragments on the beach
    *  the next morning (before dawn: this morning), and NH's moment on the plate. */
@@ -206,6 +233,11 @@
     <!-- NH's dig spot: a star-shaped crack in the ground, foreshortened -->
     <span class="item spot" data-find="fossil" style:translate="{U(s.x)} {U(s.y)}">
       <svg viewBox="-10 -10 20 20"><path d="M0 -8.5 L1.3 -1.3 L8.5 0 L1.3 1.3 L0 8.5 L-1.3 1.3 L-8.5 0 L-1.3 -1.3 Z" /></svg>
+    </span>
+  {/each}
+  {#each visibleMushrooms as m (m.uid)}
+    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} style:translate="{U(m.x)} {U(m.y)}">
+      <OfficialArt key={findArt(m.id)} size="calc(13 * var(--su))" />
     </span>
   {/each}
   {#each shells as s (s.uid)}
@@ -260,6 +292,9 @@
   .shell.fresh { animation: wash 1.1s cubic-bezier(.3, .7, .4, 1) both; }
   @keyframes wash { from { transform: translateY(calc(12 * var(--su))); opacity: 0; } 40% { opacity: 1; } }
   .bottle > :global(*) { rotate: -64deg; }
+  /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */
+  .mush > :global(*) { translate: -50% -92%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
+  .mush.flip > :global(*) { scale: -1 1; }
   .frag > :global(*) { filter: drop-shadow(0 0 3px rgba(255, 246, 190, .9)); }
   /* the dig spot */
   .spot svg { width: calc(19 * var(--su)); translate: -50% -50%; scale: 1 .55; fill: rgba(92, 60, 30, .78); overflow: visible; }

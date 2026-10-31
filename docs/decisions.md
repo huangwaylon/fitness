@@ -205,6 +205,12 @@ frequent); the wasps are caught with a tap within 1.5 s or sting. Nothing pays o
 never pays), a sting is a puffy eye for a minute, and the caught wasp is a ずかん find like any bug (an existing event,
 no script change). The wasp is in the bug table with weight 0, so it only ever comes from a nest.
 
+### Mushrooms are cosmetic
+November's mushrooms (beside the trees, 1–2 a day; now and then in October and December) and the rare mushroom (1 in 20
+November dig spots) are picked up for a caption only: no ベル and no ずかん `find`. Why: the ずかん's kinds are NH's
+museum (fish, bugs, fossils) plus the shells; NH's mushrooms are crafting materials with no catalogue page, and a new
+find kind would need a script redeploy for a seasonal flourish. Seeded by the date, so both phones see the same ones.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

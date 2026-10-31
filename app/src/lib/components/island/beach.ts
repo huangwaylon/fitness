@@ -16,7 +16,7 @@ export function dayRand(date: string, stream: string, seed = ISLAND_SEED): () =>
 }
 
 /** A weighted pick from [id, weight] pairs. */
-function weighted<T extends string>(list: readonly (readonly [T, number])[], r: () => number): T {
+export function weighted<T extends string>(list: readonly (readonly [T, number])[], r: () => number): T {
   const total = list.reduce((s, [, w]) => s + w, 0);
   let x = r() * total;
   for (const [id, w] of list) if ((x -= w) < 0) return id;
