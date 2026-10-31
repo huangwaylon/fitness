@@ -111,13 +111,15 @@ export function bushBug(month: number, hour: number, r: () => number): BugId | n
 
 // ---------- timing ----------
 
-/** Visible time until the next ambient critter: 30–90 s for the first, then 60–180 s (NH's island is alive, not busy). */
-export const nextSpawnMs = (r: () => number, first = false): number => (first ? 30_000 + r() * 60_000 : 60_000 + r() * 120_000);
+/** Visible time until the next ambient visit: 5–12 s for the first, then 15–40 s, so a fish shadow is usually there to
+ *  fish (user: fish more often); bugs stay occasional (`spawnKind`). */
+export const nextSpawnMs = (r: () => number, first = false): number => (first ? 5_000 + r() * 7_000 : 15_000 + r() * 25_000);
 
-/** Which ambient critter to bring on: a fish shadow or a bug, whichever slot is free (≤ 1 of each, so ≤ 2 at once). */
+/** Which ambient critter to bring on (≤ 1 of each, so ≤ 2 at once): a fish whenever the sea is empty; otherwise a bug
+ *  only 1 visit in 4, so they stay a rare surprise. */
 export function spawnKind(slots: { fish: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'bug' | null {
-  const free = [!slots.fish && 'fish', !slots.bug && bugAbout && 'bug'].filter(Boolean) as ('fish' | 'bug')[];
-  return free.length ? free[Math.floor(r() * free.length)] : null;
+  if (!slots.fish) return 'fish';
+  return !slots.bug && bugAbout && r() < 0.25 ? 'bug' : null;
 }
 
 /** How long an ambient critter stays if nobody plays with it (ms). */

@@ -78,10 +78,10 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
 
 describe('visits', () => {
   it('come every 1–3 minutes of on-screen time (the first sooner)', () => {
-    expect(nextSpawnMs(() => 0)).toBe(60_000);
-    expect(nextSpawnMs(() => 0.999)).toBeLessThan(180_000);
-    expect(nextSpawnMs(() => 0, true)).toBe(30_000);
-    expect(nextSpawnMs(() => 0.999, true)).toBeLessThan(90_000);
+    expect(nextSpawnMs(() => 0)).toBe(15_000);
+    expect(nextSpawnMs(() => 0.999)).toBeLessThan(40_000);
+    expect(nextSpawnMs(() => 0, true)).toBe(5_000);
+    expect(nextSpawnMs(() => 0.999, true)).toBeLessThan(12_000);
   });
   it('at most one fish and one bug at a time', () => {
     expect(spawnKind({ fish: true, bug: true }, true, () => 0)).toBeNull();
@@ -89,6 +89,7 @@ describe('visits', () => {
     expect(spawnKind({ fish: false, bug: true }, true, () => 0.9)).toBe('fish');
     expect(spawnKind({ fish: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
     expect(spawnKind({ fish: true, bug: false }, false, () => 0)).toBeNull();
+    expect(spawnKind({ fish: true, bug: false }, true, () => 0.5)).toBeNull(); // bugs: only 1 visit in 4
   });
 });
 
