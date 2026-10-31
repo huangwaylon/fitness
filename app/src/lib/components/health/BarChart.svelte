@@ -1,8 +1,9 @@
 <script lang="ts">
   // One metric's chart (けんこう), one person's: a bar per day (1週, 1か月) or per week / month (the daily average of its
-  // recorded days) in their colour, solid when the goal was met and pale when not; today's bar is outlined (still
-  // running); a day with no record gets a short faint hatched stub on the axis (plainly missing: not a gap that reads as zero, and
-  // not a column that reads as a value). The dashed line is their
+  // days with data) in their colour, solid when the goal was met and pale when not: Apple Health's values as is, so a
+  // 66-step day is its short bar and a 0 a 1px sliver on the axis; today's bar is outlined (still running); a day with
+  // no row at all gets a short faint hatched stub on the axis (plainly missing: not a gap that reads as zero, and not a
+  // column that reads as a value). The dashed line is their
   // goal (stepped when their Move goal changed); with room (1週) each bar carries its value. A tap shows that bar's exact numbers; a horizontal drag turns the page (gestures.ts).
   // Hand-drawn SVG at the measured width.
   import type { LocalDate, PersonId } from '#lib/types.ts';
@@ -18,7 +19,7 @@
     /** Whose bars (their colour). */
     p: PersonId;
     vals: BucketValue[];
-    /** The first record (days before it aren't "no record"). */
+    /** The first activity row (days before it aren't "no record"). */
     first: LocalDate;
     today: LocalDate;
     label: string;
@@ -114,16 +115,16 @@
           <g class="plot" class:dragging={dx !== 0} style:--slide="{slide * 28}px" style:transform="translateX({dx * 0.5}px)">
             {#if sel !== null}<rect class="hl" x={pad.l + sel * bw} y={pad.t - 4} width={bw} height={base - pad.t + 4} rx="4" />{/if}
             {#each vals as b, i (i)}
-              {#if b.v !== null && b.v > 0}
+              {#if b.v !== null}
                 <path class="bar p{p}" class:now={b.today} style:opacity={b.today ? null : 0.34 + 0.66 * (b.met / Math.max(1, b.days))} d={bar(barX(i), b.v)} />
-              {:else if b.v === null && missing(i)}
+              {:else if missing(i)}
                 <rect class="none" x={barX(i) + 0.5} y={base - NONE_H} width={Math.max(1, barW - 1)} height={NONE_H - 0.5} rx={Math.min(1.5, barW / 2)} fill="url(#hatch-{metric})" />
               {/if}
             {/each}
             <path class="goal" d={goalPath} />
             {#if labels}
               {#each vals as b, i (i)}
-                {#if b.v !== null && b.v > 0}<text class="val" x={cx(i)} y={Math.min(y(b.v), base - 1) - 4} text-anchor="middle">{barNum(b.v)}</text>{/if}
+                {#if b.v !== null}<text class="val" x={cx(i)} y={Math.min(y(b.v), base - 1) - 4} text-anchor="middle">{barNum(b.v)}</text>{/if}
               {/each}
             {/if}
           </g>
@@ -163,7 +164,7 @@
   .bar.now { fill-opacity: .3; stroke-width: 1.5; stroke-dasharray: 3 2; }
   .pA { fill: var(--person-a); stroke: var(--person-a); }
   .pB { fill: var(--person-b); stroke: var(--person-b); }
-  /* no record: a short faint hatched stub on the axis, plainly missing (neither a zero nor a value) */
+  /* no row: a short faint hatched stub on the axis, plainly missing (neither a zero nor a value) */
   .none { stroke: color-mix(in srgb, var(--text-soft) 50%, transparent); stroke-width: 1; stroke-dasharray: 2 1.5; }
   .hatch { fill: color-mix(in srgb, var(--text-soft) 45%, transparent); }
   .goal { fill: none; stroke: var(--text-soft); stroke-width: 1.5; stroke-dasharray: 5 4; }

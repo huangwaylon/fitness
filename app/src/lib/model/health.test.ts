@@ -1,4 +1,4 @@
-// けんこう's numbers (model/health.ts): averages over recorded days only (no row, steps 0, the Watch not worn), today
+// けんこう's numbers (model/health.ts): Apple Health's values as is (nothing cut off), only a missing row is no record, today
 // left out of the stats, weekly and monthly buckets, the change against the previous period, goal-met counts, the
 // ranges and their navigation, and the edge cases (no data, one person only, sparse weight).
 import { describe, expect, it } from 'vitest';
@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  bucketValues, canShift, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, STEPS_MIN, weightBuckets, weightStats, WORN_KCAL, WORN_STAND
+  bucketValues, canShift, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
 } from './health.ts';
 
 const jst = (date: string, hm = '22:00') => new Date(`${date}T${hm}:00+09:00`).toISOString();
@@ -21,13 +21,13 @@ const day = (p: PersonId, date: string, v: { steps?: number; ex?: number; kcal?:
 const rows = (metrics: MetricRow[], events: EventRow[] = []): SnapshotRows => ({ metrics, events });
 const series = (r: SnapshotRows, now = NOW) => healthSeries(reduce(r), now);
 
-describe('days with no record', () => {
+describe('as reported, and days with no record', () => {
   // 10-25..10-30 finished, 10-31 today
   const r = rows([
     ...day('A', '2026-10-25', { steps: 9000, ex: 70, kcal: 650, stand: 130 }),
-    ...day('A', '2026-10-26', { steps: 5000, ex: 0, kcal: 0, stand: 0 }), // Watch not worn
-    ...day('A', '2026-10-27', { steps: 0, ex: 30, kcal: 300, stand: 60 }), // phone left at home: steps missing only
-    ...day('A', '2026-10-28', { steps: 7000, ex: 0, kcal: 200, stand: 90 }), // worn, a real 0 for exercise
+    ...day('A', '2026-10-26', { steps: 66, ex: 0, kcal: 0, stand: 0 }), // barely moved: every value is real
+    m('A', '2026-10-27', 'steps', 5000), // steps only: no Move, Exercise or Stand row that day
+    ...day('A', '2026-10-28', { steps: 7000, ex: 0, kcal: 200, stand: 90 }),
     // 10-29: no row at all
     ...day('A', '2026-10-30', { steps: 11000, ex: 50, kcal: 700, stand: 125 }),
     ...day('A', TODAY, { steps: 1000, ex: 5, kcal: 80, stand: 10 }, '11:00') // running
@@ -35,30 +35,25 @@ describe('days with no record', () => {
   const hs = series(r);
   const week = rangeFor('week', TODAY, hs.from);
 
-  it('the Watch not worn: Move, Exercise and Stand have no record that day; steps keep theirs', () => {
-    const i = 1; // 10-26
+  it('a day’s values are Apple Health’s as is (66 steps, 0 kcal); only a missing row is no record, metric by metric', () => {
     expect(hs.from).toBe('2026-10-25');
-    expect(hs.people.A.values.move[i]).toBeNull();
-    expect(hs.people.A.values.exercise[i]).toBeNull();
-    expect(hs.people.A.values.stand[i]).toBeNull();
-    expect(hs.people.A.values.steps[i]).toBe(5000);
-    expect(hs.people.A.values.steps[2]).toBeNull(); // steps 0
-    expect(hs.people.A.values.exercise[3]).toBe(0); // worn: 0 is real
+    expect(hs.people.A.values.steps.slice(0, 5)).toEqual([9000, 66, 5000, 7000, null]);
+    expect(hs.people.A.values.move.slice(0, 5)).toEqual([650, 0, null, 200, null]);
+    expect(hs.people.A.values.exercise[1]).toBe(0);
+    expect(hs.people.A.values.stand[2]).toBeNull();
   });
 
-  it('averages count recorded, finished days only (today out) and say how many are missing', () => {
+  it('averages count every finished day with a row (today out) and say how many have none', () => {
     const steps = metricStats(hs, 'A', 'steps', week);
-    // 10-25..10-30: 9000, 5000, –, 7000, –, 11000 → 4 days; 10-24 is before the first record (not missing)
-    expect(steps.days).toBe(4);
-    expect(steps.avg).toBe(8000);
-    expect(steps.missing).toBe(2);
+    // 10-25..10-30: 9000, 66, 5000, 7000, –, 11000 → 5 days; 10-24 is before the first record (not missing)
+    expect(steps.days).toBe(5);
+    expect(steps.avg).toBe(32066 / 5);
+    expect(steps.missing).toBe(1);
     expect(steps.met).toBe(2); // 9000, 11000
     expect(steps.best).toEqual({ date: '2026-10-30', v: 11000 });
     const ex = metricStats(hs, 'A', 'exercise', week);
-    // 70, –, 30, 0, –, 50 → 150 / 4
-    expect(ex.days).toBe(4);
-    expect(ex.avg).toBe(37.5);
-    expect(ex.met).toBe(1);
+    // 70, 0, –, 0, –, 50 → 120 / 4
+    expect(ex).toMatchObject({ days: 4, avg: 30, met: 1, missing: 2 });
     const stand = metricStats(hs, 'A', 'stand', week);
     expect(stand.met).toBe(2); // 130, 125
   });
@@ -73,9 +68,9 @@ describe('days with no record', () => {
     expect(s.met).toBe(1); // 420 ≥ 400 on 10-28; 420 < 450 on 10-30
   });
 
-  it('day bars: today shows its running value, flagged; a missing day has no bar', () => {
+  it('day bars: the 66-step day is its bar, today shows its running value, flagged; a missing day has no bar', () => {
     const b = bucketValues(hs, 'A', 'steps', week);
-    expect(b.map((x) => x.v)).toEqual([9000, 5000, null, 7000, null, 11000, 1000]);
+    expect(b.map((x) => x.v)).toEqual([9000, 66, 5000, 7000, null, 11000, 1000]);
     expect(b.at(-1)!.today).toBe(true);
     expect(b[0].goal).toBe(8000);
   });
@@ -212,39 +207,18 @@ describe('edge cases', () => {
   });
 });
 
-describe('worn and carried: the thresholds', () => {
+describe('nothing cut off', () => {
   const week = (hs: ReturnType<typeof series>) => rangeFor('week', TODAY, hs.from);
-  it('Watch metrics count a finished day from WORN_KCAL Move or WORN_STAND Stand minutes, all three together', () => {
-    expect([WORN_KCAL, WORN_STAND, STEPS_MIN]).toEqual([100, 30, 500]);
-    const hs = series(rows([
-      ...day('A', '2026-10-26', { steps: 9000, kcal: 99, ex: 5, stand: 29 }), // just under both: not worn
-      ...day('A', '2026-10-27', { steps: 9000, kcal: 100, ex: 0, stand: 0 }), // Move at the line
-      ...day('A', '2026-10-28', { steps: 9000, kcal: 20, ex: 10, stand: 30 }) // Stand at the line
-    ]));
-    const ex = bucketValues(hs, 'A', 'exercise', week(hs)).map((b) => b.v);
-    expect(ex.slice(1, 4)).toEqual([null, 0, 10]);
-    expect(bucketValues(hs, 'A', 'move', week(hs))[1].v).toBeNull();
-    expect(metricStats(hs, 'A', 'stand', week(hs))).toMatchObject({ days: 2, missing: 3, avg: 15 });
-  });
 
-  it('steps count a finished day from STEPS_MIN', () => {
-    const hs = series(rows([
-      ...day('A', '2026-10-29', { steps: 499, kcal: 300, stand: 60 }),
-      ...day('A', '2026-10-30', { steps: 500, kcal: 300, stand: 60 })
-    ]));
-    expect(bucketValues(hs, 'A', 'steps', week(hs)).slice(4, 6).map((b) => b.v)).toEqual([null, 500]);
-    expect(metricStats(hs, 'A', 'steps', week(hs))).toMatchObject({ avg: 500, days: 1, missing: 1 });
-  });
-
-  it('today, still running, is drawn with anything above 0 and never counted', () => {
+  it('today, still running, is drawn as reported (even 0) and never counted', () => {
     const hs = series(rows([...day('A', TODAY, { steps: 120, kcal: 40, ex: 0, stand: 3 }, '09:00')]));
-    const b = bucketValues(hs, 'A', 'move', week(hs)).at(-1)!;
-    expect(b).toMatchObject({ v: 40, today: true });
+    expect(bucketValues(hs, 'A', 'move', week(hs)).at(-1)!).toMatchObject({ v: 40, today: true });
     expect(bucketValues(hs, 'A', 'steps', week(hs)).at(-1)!.v).toBe(120);
+    expect(bucketValues(hs, 'A', 'exercise', week(hs)).at(-1)!.v).toBe(0);
     expect(metricStats(hs, 'A', 'move', week(hs))).toMatchObject({ avg: null, days: 0 });
   });
 
-  it('real week (Mon 10/26–Fri 10/30): a phone left home and barely-worn Watch days stay out of the averages', () => {
+  it('real week (Mon 10/26–Fri 10/30): 66 steps and 0 kcal days are plotted and counted', () => {
     const steps = [66, 7000, 4963, 12268, 3404], kcalA = [0, 0, 0, 527, 615], standA = [0, 0, 0, 80, 95];
     const kcalB = [89, 3, 0, 26, 141], standB = [22, 0, 0, 4, 36];
     const hs = series(rows(steps.flatMap((st, i) => [
@@ -252,11 +226,22 @@ describe('worn and carried: the thresholds', () => {
       ...day('B', addDays('2026-10-26', i), { steps: 6000, kcal: kcalB[i], ex: 0, stand: standB[i] })
     ])));
     const r = week(hs);
-    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: (7000 + 4963 + 12268 + 3404) / 4, days: 4, missing: 1, best: { date: '2026-10-29', v: 12268 } });
-    expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: 571, days: 2, missing: 3 });
-    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: 141, days: 1, missing: 4, met: 0 });
-    expect(metricStats(hs, 'B', 'stand', r)).toMatchObject({ avg: 36, days: 1 });
-    expect(bucketValues(hs, 'B', 'move', r).slice(1, 6).map((b) => b.v)).toEqual([null, null, null, null, 141]);
+    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: (66 + 7000 + 4963 + 12268 + 3404) / 5, days: 5, missing: 0, best: { date: '2026-10-29', v: 12268 } });
+    expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: (527 + 615) / 5, days: 5, missing: 0, met: 1 });
+    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: (89 + 3 + 26 + 141) / 5, days: 5, missing: 0, met: 0 });
+    expect(metricStats(hs, 'B', 'stand', r)).toMatchObject({ avg: (22 + 4 + 36) / 5, days: 5 });
+    expect(bucketValues(hs, 'A', 'steps', r).slice(1, 6).map((b) => b.v)).toEqual([66, 7000, 4963, 12268, 3404]);
+    expect(bucketValues(hs, 'B', 'move', r).slice(1, 6).map((b) => b.v)).toEqual([89, 3, 0, 26, 141]);
+  });
+
+  it('1か月 on the real shape: the low days (168, 140, 100, 66 steps) are in the average, the best and the goal days', () => {
+    const low: Record<string, number> = { '2026-10-09': 168, '2026-10-14': 140, '2026-10-15': 100, '2026-10-26': 66 };
+    const metrics: MetricRow[] = [];
+    for (let d = '2026-10-03'; d <= '2026-10-31'; d = addDays(d, 1)) metrics.push(m('A', d, 'steps', low[d] ?? 9000));
+    const now = Date.parse(jst('2026-11-01', '12:00'));
+    const hs = series(rows(metrics), now);
+    const s = metricStats(hs, 'A', 'steps', rangeFor('month', '2026-11-01', hs.from)); // 10-03..10-31 finished
+    expect(s).toMatchObject({ days: 29, missing: 0, met: 25, avg: (25 * 9000 + 168 + 140 + 100 + 66) / 29 });
   });
 });
 

@@ -4,13 +4,13 @@
 // Rules:
 // - A day's value is Apple Health's latest row (metricAsOf at `now`), the truth for a trainer. (The ベル of a locked
 //   week stay as of its lock, so a sync after a lock can show here and not in the ledger.)
-// - No record: a day with no row; for steps, under STEPS_MIN (the phone wasn't carried); for Move, Exercise and Stand
-//   together, a day the Watch wasn't clearly worn (Move under WORN_KCAL and Stand under WORN_STAND). Such a day has no
-//   bar (a short faint stub at the axis instead) and stays out of every average, best day and goal count, and is counted
-//   as 記録なし.
+// - As reported: every day with a row for a metric is a data point, whatever its value (0 steps, 66 steps, 12 kcal):
+//   drawn as its bar and counted in the averages, best day, goal days and change. Nothing is cut off.
+// - No record: only a day with no row for that metric (nothing received: before the first sync, a day the Shortcut
+//   didn't cover). It has no bar (a short faint stub at the axis instead), stays out of the stats and is counted as 記録なし.
 // - Weight: the period's weigh-ins, their average and the plain change (model/weight.ts plainChange: the first week's
 //   average → the last week's, else the first weigh-in → the last), and from it the goal month.
-// - Today is still running: it is drawn (a lighter bar, whenever it has anything above 0) but stays out of the stats.
+// - Today is still running (a partial day): it is drawn (an outlined bar) but stays out of the stats.
 // - A goal is met as on the stamp card: kcal ≥ that day's Move goal, exercise ≥ 60, whole Stand minutes ≥ 120, steps ≥
 //   8,000. Days met / days recorded.
 // - Periods end on an anchor day (today until ‹): 1週 = 7 days and 1か月 = 30 days by day, 3か月 = 13 weeks by week
@@ -34,14 +34,8 @@ export const PERIODS = ['week', 'month', 'quarter', 'year', 'all'] as const;
 export type Period = (typeof PERIODS)[number];
 /** Day-based periods: their length in days (1年 and すべて go by calendar month). */
 const DAYS: Partial<Record<Period, number>> = { week: 7, month: 30, quarter: 91 };
-/** A finished day counts for Move, Exercise and Stand only when the Watch was clearly worn: this much Move or… */
-export const WORN_KCAL = 100;
-/** …this many Stand minutes. Under both: a Watch on its charger, or on for minutes, not a lazy day. */
-export const WORN_STAND = 30;
-/** A finished day counts for steps only from this many (fewer: the phone stayed home). */
-export const STEPS_MIN = 500;
 
-/** One person's days, index i = `from` + i days. null = no record. */
+/** One person's days, index i = `from` + i days: Apple Health's value as is, null = no row. */
 interface PersonSeries {
   values: Record<Metric, (number | null)[]>;
   /** The Move goal in force each day (the other goals are fixed). */
@@ -89,16 +83,7 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const kg: (number | null)[] = [];
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
-      const raw = (m: Metric) => metricAsOf(s, p, d, ROW[m], now);
-      // today (still running, drawn but never counted) shows anything above 0
-      const live = d === to;
-      const steps = raw('steps');
-      values.steps.push(steps === null || steps < (live ? 1 : STEPS_MIN) ? null : steps);
-      const watch = [raw('move'), raw('exercise'), raw('stand')];
-      const worn = live ? watch.some((v) => v !== null && v > 0) : (watch[0] ?? 0) >= WORN_KCAL || (watch[2] ?? 0) >= WORN_STAND;
-      values.move.push(worn ? watch[0] : null);
-      values.exercise.push(worn ? watch[1] : null);
-      values.stand.push(worn ? watch[2] : null);
+      for (const m of METRICS) values[m].push(metricAsOf(s, p, d, ROW[m], now));
       moveGoal.push(moveGoalOn(s, p, d));
       kg.push(kgBy.get(d) ?? null);
     }
@@ -220,7 +205,7 @@ export interface MetricStats {
   avg: number | null;
   /** Recorded finished days. */
   days: number;
-  /** Finished days in the period with no record (no data, the Watch not worn, the phone not carried), since the first activity record. */
+  /** Finished days in the period with no row for this metric, since the first activity record. */
   missing: number;
   /** Recorded days the goal was met. */
   met: number;

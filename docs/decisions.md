@@ -133,14 +133,14 @@ from the same rows (`model/health.ts`), no backend change, its code loaded with 
 - **One person at a time** (user request): a ウェイ / うめ switch at the top, this phone's person by default (kept for
   the session, like the period); every card shows that person only. Why: the point is one person's trends, and one
   series reads better on a phone (wider bars, values on 1週).
-- **No record, not zero:** a finished day counts for Move, Exercise and Stand only when the Watch was clearly worn:
-  Move ≥ 100 kcal or Stand ≥ 30 min (`WORN_KCAL`, `WORN_STAND` in `model/health.ts`), else all three are 記録なし; it
-  counts for steps only from 500 (`STEPS_MIN`; fewer: the phone stayed home); no row is 記録なし too. Such a day has a
-  short faint stub on the axis instead of a bar (user decision: a full-height hatched column read like a huge value), stays out of every average, best day, goal count and change, is counted as
-  記録なし (from the first activity record), and the averages say 「1日の平均（記録のある日）」. Today is drawn (anything
-  above 0), not counted. Why: a Watch on its charger, or worn for minutes (3 kcal, 26 kcal and 4 min of Stand), and a
-  phone left on the desk (66 steps) are not lazy days; counted, they dragged the real averages down. These thresholds
-  are けんこう's only: the ベル keep the stamp card's rules.
+- **As reported, nothing cut off** (user decision: "report the apple health data as is"): every day with a row for a
+  metric is a real data point, whatever its value (0, 66 steps, 3 kcal): drawn as its bar and counted in every
+  average, best day, goal count and change. 記録なし is only a day with no row for that metric (nothing received:
+  before the first sync, a day the Shortcut didn't cover): a short faint stub on the axis instead of a bar (user
+  decision: a full-height hatched column read like a huge value), out of the numbers, counted as 記録なし n日 (from
+  the first activity record). Today is drawn but not counted: it is a partial day, and counting it would drag every
+  average down until the evening sync; the footnote and its callout (きょう（とちゅう）) say so. Why: a barely-moving
+  day is the truth a trainer wants to see; a threshold hid real days and inflated the averages.
 - **Periods:** 1週 and 1か月 (30 days) by day, 3か月 by week (13, ending on the last day shown), 1年 and すべて by calendar
   month (daily averages per bucket), so long ranges stay readable on a phone; ‹ › and a drag on any chart step a whole
   period, きょう comes back; the change compares with the period of equal length just before.

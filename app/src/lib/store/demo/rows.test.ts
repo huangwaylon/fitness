@@ -69,10 +69,10 @@ describe('?demo&weeks=60: a longer history for けんこう', () => {
     const weighed = cache.rows.metrics.filter((m) => m[3] === 'weight').map((m) => String(m[2])).sort();
     expect(weighed[0] <= weeks[0]).toBe(true);
   });
-  it('now and then a day without the Watch: steps only', () => {
+  it('now and then a day whose Watch rows never arrived: steps only', () => {
     const days = new Map<string, Record<string, number>>();
     for (const [, p, d, m, v] of cache.rows.metrics) if (p === 'A' && m !== 'weight') days.set(String(d), { ...days.get(String(d)), [m]: Number(v) });
-    const bare = [...days.values()].filter((x) => x.steps > 0 && x.move_kcal === 0 && x.exercise_min === 0 && x.stand_min === 0);
+    const bare = [...days.values()].filter((x) => x.steps > 0 && !('move_kcal' in x) && !('exercise_min' in x) && !('stand_min' in x));
     expect(bare.length).toBeGreaterThan(3);
     expect(bare.length).toBeLessThan(days.size / 10);
   });
