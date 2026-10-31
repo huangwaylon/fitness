@@ -112,7 +112,8 @@ for (const e of EMOTIONS) SPECS[`reactions/${e.toLowerCase()}`] = [96, `Emotion_
 SPECS['reactions/pose-viva'] = [96, 'Viva_NH_Reaction_Icon.png'];
 // Every roster villager (src/lib/villagers/roster.ts): a full-body render + the round head icon.
 // The 2.0 villagers' `<Name>_NH.png` is a small (~230 px) promo crop with the feet cut off: use the full-body model.
-const MODEL_FIRST = new Set(['roswell', 'zoe', 'ace', 'frett', 'quinn', 'marlo', 'faith', 'petri', 'cephalobot', 'rio', 'chabwick', 'azalea', 'sasha', 'shino', 'audie', 'rosie']);
+const MODEL_FIRST = new Set(['roswell', 'zoe', 'ace', 'frett', 'quinn', 'marlo', 'faith', 'petri', 'cephalobot', 'rio', 'chabwick', 'azalea', 'sasha', 'shino', 'audie', 'rosie',
+  'colton', 'tiansheng']);
 // Special characters (たぬきち, しずえ…): `<Name>_NH.png` is their posed NH artwork (K.K.'s guitar, Blathers' book),
 // but some are tiny (Sable's is 122 px) or sit on white (Label's): those use the 3D model; Kapp'n's large render is
 // `_NH_2`. Their head icon is `<Name>_NH_Character_Icon.png`; K.K. has none, his flat head icon is the Question one.

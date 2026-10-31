@@ -10,14 +10,14 @@ import { PERSONALITIES, SPECIES } from './species.ts';
 const VILLAGERS = Object.values(ROSTER).filter((v) => !v.special);
 const SPECIALS = ROSTER_IDS.filter((id) => ROSTER[id].special);
 
-const FILES = manifest.files as Record<string, { path: string }>;
+const FILES = manifest.files as Record<string, { path: string; h: number }>;
 const ART = join(import.meta.dirname, '..', '..', '..', 'static', 'art');
 
 describe('villager roster', () => {
   it('ids are unique, lowercase and match their entry', () => {
     expect(new Set(ROSTER_IDS).size).toBe(ROSTER_IDS.length);
     expect(ROSTER_IDS.length).toBe(Object.keys(ROSTER).length);
-    expect(VILLAGERS).toHaveLength(158); // a dropped row is noticed
+    expect(VILLAGERS).toHaveLength(417); // every NH villager (Nookipedia's nh_villager list, 3.0): a dropped row is noticed
     expect(SPECIALS).toHaveLength(23);
     for (const id of ROSTER_IDS) {
       expect(id).toMatch(/^[a-z][a-z0-9-]*$/);
@@ -46,6 +46,19 @@ describe('villager roster', () => {
       expect(FILES[key], key).toBeDefined();
       expect(existsSync(join(ART, FILES[key].path)), FILES[key].path).toBe(true);
     }
+  });
+
+  it('includes the Sanrio six and the 2.0 / 3.0 additions, with their official Japanese names', () => {
+    const ja = (id: string) => ROSTER[id as keyof typeof ROSTER]?.nameJa;
+    expect(['chai', 'chelsea', 'etoile', 'marty', 'rilla', 'toby'].map(ja)).toEqual(['フィーカ', 'チェルシー', 'エトワール', 'マーティー', 'リラ', 'トビー']);
+    expect(['ace', 'azalea', 'cephalobot', 'chabwick', 'faith', 'frett', 'marlo', 'petri', 'quinn', 'rio', 'roswell', 'zoe'].every(isRosterId)).toBe(true);
+    expect(['mineru', 'tiansheng', 'viche', 'tulin'].map(ja)).toEqual(['ミネル', 'テンシン', 'みさき', 'チューリ']);
+    expect([ja('big-top'), ja('ohare'), ja('wart-jr')]).toEqual(['３ごう', 'サントス', 'サム']);
+    expect([ROSTER.etoile.nameEn, ROSTER.ohare.nameEn, ROSTER['wart-jr'].nameEn]).toEqual(['Étoile', "O'Hare", 'Wart Jr.']);
+  });
+
+  it('every villager render is a full-size figure, not a small crop (MODEL_FIRST in scripts/fetch-assets.ts)', () => {
+    for (const v of VILLAGERS) expect(FILES[`villagers/${v.id}`].h, v.id).toBeGreaterThanOrEqual(380);
   });
 
   it('the villagers span every species, every personality and both genders', () => {
@@ -84,6 +97,8 @@ describe('villager roster', () => {
     for (const id of ['raymond', 'kid-cat', 'agent-s', 'rocket', 'tad', 'octavian', 'coach', 'tank', 'chabwick', 'curt', 'axel'] as const)
       expect(ROSTER[id].noMirror).toBe(true);
     expect(ROSTER.marcie.noMirror).toBe(true); // the star mark over one eye
+    for (const id of ['big-top', 'bill', 'victoria', 'walker', 'mott', 'puck', 'samson'] as const) expect(ROSTER[id].noMirror).toBe(true);
+    for (const id of ['rasher', 'walt', 'stinky', 'cece'] as const) expect(ROSTER[id].noMirror).toBe(true); // one-sided faces
     expect(ROSTER.bob.noMirror).toBe(false);
     // Special characters: K.K.'s guitar, the DAL text on Orville's mug and Wilbur's badge.
     for (const id of ['kk-slider', 'orville', 'wilbur'] as const) expect(ROSTER[id].noMirror).toBe(true);
