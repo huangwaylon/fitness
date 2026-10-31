@@ -4,7 +4,7 @@
 // change carries over; parameterised (`walkGeo(extra)`) for the spots that come and go and for the tests. A straight
 // segment when it stays in the mask and misses every obstacle, else the shortest way through the nodes (a visibility
 // graph of ~15 points: no nav-mesh, nothing per frame).
-import { BED_ROWS, BED_X, HEDGE_BASE, PLATEAU, PLAZA, TREE, VILLAGER } from './scene.ts';
+import { BED_ROWS, BED_X, CENTRE_STAGE, HEDGE_BASE, PLATEAU, TREE, VILLAGER } from './scene.ts';
 import { BEACH } from './beach.ts';
 import { ROCK } from './care.ts';
 
@@ -53,7 +53,7 @@ export function walkGeo(extra: WalkExtra = {}): WalkGeo {
     homeA: [xs.A, VILLAGER.foot], homeB: [xs.B, VILLAGER.foot],
     midA: [xs.A, mid], midB: [xs.B, mid], centre: [(xs.A + xs.B) / 2, mid],
     // the plaza: the open middle, kept for a visitor (the villagers wander there when nobody's visiting)
-    plaza: [PLAZA.x, PLAZA.base],
+    plaza: [CENTRE_STAGE.x, CENTRE_STAGE.base],
     treeA: [Math.max(inner, TREE.x.A + 40), TREE.base + 18], treeB: [Math.min(390 - inner, TREE.x.B - 40), TREE.base + 18],
     outA: [TREE.x.A - 40, TREE.base + 20], outB: [TREE.x.B + 40, TREE.base + 20],
     backA: [TREE.x.A + 40, lawn.y0 + 30], backB: [TREE.x.B - 40, lawn.y0 + 30], backC: [195, lawn.y0 + 22],

@@ -56,7 +56,8 @@ ribbon.
   ribbon's padding tightens (realistic widths, 「+18」 and 9,999, fit 320 with 12px to spare). Each goal met flies in as
   a +1 coin from its fruit on the island (+2 with its がんばり), up into the jar (CoinFlow, in a layer over the stage); ふたりでぜんぶ as a +2
   under the jar. Tap → ごほうび (the page zooms about the jar, which morphs into the hero jar).
-- **The plaza:** the island's middle (column 0 of the tree row, `PLAZA`), a round sand patch kept open for a visitor.
+- **Centre stage:** the island's open middle (column 0 of the tree row, `scene.ts` `CENTRE_STAGE`), plain lawn kept free
+  of every placement for a visitor.
 - **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner opens their card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
@@ -262,14 +263,15 @@ each surface one fill, one gradient, one soft shade, sparse flecks; no strokes o
 
 ### Layout and scale
 
-An elastic sky over a **stage of 390 × 360 units (u)**. The island (32u–356u) is centred between the horizon and the
+An elastic sky over a **stage of 390 × 360 units (u)**. The island (14u–356u: the hedge's top to the foam; the horizon at 0u) is centred between the horizon and the
 screen's bottom above the home indicator (`--island-bottom`); the sky is at most 27% of the screen; nothing runs under
 the ribbon. Back
 to front: sky · sea · ground · hedge · trees + fruit · flower beds · villagers · particles · one tint.
 
-`scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 80 · trees + plaza
-173 · bed back 266 · front 297. Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u (cols −3…3) ·
-flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · the plaza patch 104u × 44u (col 0).
+`scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 62 · trees + centre stage
+173 · bed back 266 · front 297 (grass y 32–316, sand from 26: the back runs 111u behind the trunks, the rock and a
+weed spot in the gaps between the canopies and centre stage). Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u (cols −3…3) ·
+flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · centre stage (col 0, a visitor's spot).
 
 ### Environment
 
@@ -328,7 +330,7 @@ its person's flowers through one Tokyo day (a quick run of canopy taps shakes it
 - **Tap or shake:** one canopy tap opens (or closes) the popup as before; a quick run, the third tap within 1.2 s
   and each quick tap after, is a shake: the popup closes, the tree rustles and drops its leaves (`tree-shake`).
 - **What falls:** 1 in 8 shakes a wasp nest (at most one per tree an hour, `tree-nest` in localStorage), else 1 in 7
-  a dangling bug, else 1 in 5 a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the plaza's side,
+  a dangling bug, else 1 in 5 a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the middle's side,
   between the canopy's and the fruit row's buttons, until a tap picks it up (a hop and gone, `scene-twig`; cosmetic).
   No ベル ever: scenery never pays (NH's bells and furniture from trees are left out).
 - **The nest:** it falls beside the trunk on the outer side (`scene-nest`); 0.6 s later three wasps buzz out
@@ -432,13 +434,13 @@ fragment is a ずかん `find` (never ベル).
 **Island care** (`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts`; no ベル, no find):
 
 - **Weeds** (our own tufts: NH's icon is a sack of them) sprout every 30–60 minutes on the lawn's free spots (`LAWN`:
-  beside the trunks, in front of the hedge by the plaza, between the villagers' feet; a showing dig spot keeps its spot),
+  beside the trunks, in front of the hedge beside centre stage, between the villagers' feet; a showing dig spot keeps its spot),
   the newest three at a time. A tap pulls one: it pops up and tumbles away with two clods of earth (`scene-weed`).
 - **Watering:** a flower tap is NH's watering can (it tilts in over the bloom, three drops, a late glint; `scene-water`)
   on top of the wiggle. A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell tomorrow (NH's
   hybrids, simplified: tulips → purple, black, orange; roses → black, orange, pink, purple, blue; cosmos → orange,
   black; mums → pink, green; pansies → blue, purple), for that whole day (`scene-garden` in localStorage).
-- **The rock** (NH's rock, in front of the hedge, left of the plaza): a tap clonks it (a jolt, `scene-clonk`), 1 in 4 a
+- **The rock** (NH's rock, in front of the hedge, left of centre stage): a tap clonks it (a jolt, `scene-clonk`), 1 in 4 a
   sparkle (NH's money rock, without the money), 1 in 8 a pill bug or a centipede crawls out from under it.
 - Weeds, dig spots and the rock are measured clear of the controls themselves on each screen (a spot a control covers
   isn't shown); a flower's tap cell is a reach away from every lawn spot. `?hybrid` (dev or `?demo`) shows one.

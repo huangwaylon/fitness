@@ -208,7 +208,7 @@
   /* ground (spring) */
   --grass:#7CC95A; --grass-hi:#9BD970; --fleck-hi:#A8E07A; --fleck-lo:#5EAE47; --grass-shade:#3F8F33; --overhang:#5FA847;
   --cliff-top:#DDA472; --cliff-bottom:#B97A50; --strata:#C88B5D;
-  --sand-hi:#FCE7AE; --sand:#F4D184; --sand-wet:#E2B66E; --sand-shade:#D6AE68; --plaza-hi:#FBE7B4; --plaza:#EFD08E;
+  --sand-hi:#FCE7AE; --sand:#F4D184; --sand-wet:#E2B66E; --sand-shade:#D6AE68;
   /* contact shadows: on grass / on sand (snow in winter); dusk stretches them to the right */
   --sh-c:rgba(34,74,28,.32); --sh-sand:rgba(140,98,40,.28); --sh-scale:1;
   --tod-tint:transparent;
@@ -224,7 +224,7 @@
 }
 .if-scene[data-season="winter"] {
   --grass:#F5F8FF; --grass-hi:#FFFFFF; --grass-shade:#B9C8E6; --overhang:#D5E0F2;
-  --sand-hi:#F6F0E2; --sand:#EEE6D4; --sand-wet:#D2C7B0; --sand-shade:#C9BEA6; --plaza-hi:#FAF8F3; --plaza:#E8E2D6;
+  --sand-hi:#F6F0E2; --sand:#EEE6D4; --sand-wet:#D2C7B0; --sand-shade:#C9BEA6;
   --sh-c:rgba(80,110,160,.25); --sh-sand:rgba(80,110,160,.25);
   --sky-top:#8EC2EE; --sky-mid:#BFE0F8; --sky-hz:#EEF7FF;
 }

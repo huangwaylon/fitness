@@ -20,7 +20,7 @@
   //                   fallback clamp(300px, 100dvh − var(--island-bottom), 600px).
   //   --hud-bottom    the bottom edge of the top chrome (the ribbon), from the scene's top. Default 0.
   //   --island-bottom the top edge of the bottom chrome (the phone), from the scene's bottom. Default 0.
-  // The island (32u..356u: the hedge's top to the beach's foam) is centred between the horizon and --island-bottom,
+  // The island (14u..356u: the hedge's top to the beach's foam) is centred between the horizon and --island-bottom,
   // at most as wide as keeps the sand (u 30–360) 5px inside each screen edge (12px of grass on tall phones) and as
   // tall as keeps its horizon 12px under --hud-bottom, so on a short screen it scales down instead of
   // running under the phone. The horizon sits at stage y HORIZON_U (a short open-sea strip behind the island), or at
@@ -320,20 +320,20 @@
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: clip;
     container-type: inline-size; isolation: isolate;
     /* the layout (see the contract at the top of the script). The island's box in stage units: the hedge's top
-       (32u) to the beach's foam (356u), centred on 194u. It is centred in the visible OCEAN, the
-       horizon down to the phone's top (--sea-bottom). The horizon is the stage's own (8u, 24u above the hedge) unless
+       (14u) to the beach's foam (356u), centred on 185u. It is centred in the visible OCEAN, the
+       horizon down to the phone's top (--sea-bottom). The horizon is the stage's own (0u, 14u above the hedge) unless
        that would make the sky taller than 27% of the scene; then it stops there and the island sits lower in
-       open sea. Centred, the island's own horizon lands at --sea-bottom − 372u, so that is where it starts. */
+       open sea. Centred, the island's own horizon lands at --sea-bottom − 370u, so that is where it starts. */
     --sh: var(--scene-h, var(--scene-h-auto));
     --ib: var(--island-bottom, 0px);
     --hb: var(--hud-bottom, 0px);
     --sea-bottom: calc(var(--sh) - var(--ib));
     --fit-w: calc((100cqw - 10px) * 390 / 330);
     /* at most as big as keeps the island's own horizon 12px under the ribbon */
-    --stage-w: min(calc((var(--sea-bottom) - var(--hb) - 12px) * 390 / 372), var(--fit-w), 560px);
+    --stage-w: min(calc((var(--sea-bottom) - var(--hb) - 12px) * 390 / 370), var(--fit-w), 560px);
     /* the sky never takes more than 27% of the scene */
-    --horizon-y: max(40px, min(calc(var(--sea-bottom) - var(--stage-w) * 372 / 390), calc(var(--sh) * .27)));
-    --stage-top: calc((var(--horizon-y) + var(--sea-bottom)) / 2 - var(--stage-w) * 194 / 390);
+    --horizon-y: max(40px, min(calc(var(--sea-bottom) - var(--stage-w) * 370 / 390), calc(var(--sh) * .27)));
+    --stage-top: calc((var(--horizon-y) + var(--sea-bottom)) / 2 - var(--stage-w) * 185 / 390);
     --sky-h: var(--horizon-y);
   }
   /* tall phones (390 × 844, 430 × 932): the stage may grow until the grass is 12px inside each edge (the beach and the
