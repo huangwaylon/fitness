@@ -405,10 +405,11 @@ derive from the Tokyo date and time plus a seed (`?seed=` in the demo), so both 
 what a phone picks up is hidden there only (`scene-day` in localStorage), and the first of each shell, fossil and
 fragment is a ずかん `find` (never ベル).
 
-- **Seashells** (NH's seven: sea snail, cowrie, venus comb, sand dollar, coral, conch, giant clam): one washes up on the
-  front beach every 60–120 s, the newest three lie on the sand (one arriving on screen slides in from the foam). A tap
-  picks it up: 「タカラガイを ひろった！」.
-- **Fossils** (32: NH's standalone fossils and one piece of each dinosaur): NH's star-shaped ✕ crack on the lawn, 1–2 at
+- **Seashells** (NH's eight beach shells: sea snail, cowrie, venus comb, sand dollar, coral, conch, giant clam and the
+  summer shell, rare, 3× likelier June–September): one washes up on the front beach every 60–120 s, the newest three lie
+  on the sand (one arriving on screen slides in from the foam). A tap picks it up: 「タカラガイを ひろった！」.
+- **Fossils** (all 73 of NH's: the 14 standalone ones and every piece of the 21 dinosaurs, `FOSSIL_SETS`, each as likely
+  as any other): NH's star-shaped ✕ crack on the lawn, 1–2 at
   a time on six spots measured clear of every control (beside the trunks, between the fruit rows and the beds; a spot a
   control covers on a small screen isn't shown). A tap digs it up (the official shovel strikes twice, earth flies, a
   hole): 「化石を ほりだした！ アンモナイトだ！」. The next spot turns up 20–40 s later.
@@ -511,9 +512,11 @@ villager and the deck goes for the day (once a day per phone). No ベル. `?stre
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
-(Critterpedia) in きろく: さかな 33, むし 67 (the wasp, bagworm and spider from a shaken tree and the flea included), かせき 32, かいがら 7, shared between the two of us (the first `find` of
-either). A kind's page lists every entry in the game's order: the official icon (loaded lazily) and the name for the
-found ones, a silhouette (the icon in one shade) and ？？？ for the rest; 「コンプリート！」 when all are in. The names of
+(Critterpedia) in きろく: さかな 33, むし 67 (the wasp, bagworm and spider from a shaken tree and the flea included),
+かせき 73, かいがら 8, shared between the two of us (the first `find` of either). A kind's page lists every entry in the
+game's order: the official icon (loaded lazily) and the name for the found ones, a silhouette (the icon in one shade)
+and ？？？ for the rest; 「コンプリート！」 when all are in. The fossils are laid out like NH's museum: the standalone ones,
+then each dinosaur under its name with how many of its pieces are in (「Tレックス 1 / 3」) and its pieces. The names of
 everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん, the first critter of a session
 or a beach find's plate, out of the island's first load. A tap on a
 found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish and bugs, NH's catch line.

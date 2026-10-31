@@ -134,7 +134,7 @@ for (const name of [
 const FIND_FILES: Record<string, string> = {
   'sea-snail': 'Sea_Snail_NH_Inv_Icon.png', cowrie: 'Cowrie_NH_Inv_Icon.png', 'venus-comb': 'Venus_Comb_NH_Inv_Icon.png',
   'sand-dollar': 'Sand_Dollar_NH_Inv_Icon.png', coral: 'Coral_NH_Inv_Icon.png', conch: 'Conch_NH_Inv_Icon.png',
-  'giant-clam': 'Giant_Clam_NH_Inv_Icon.png', 'message-bottle': 'Message_Bottle_NH_Inv_Icon.png', shovel: 'Shovel_NH_Icon.png',
+  'giant-clam': 'Giant_Clam_NH_Inv_Icon.png', 'summer-shell': 'Summer_Shell_NH_Inv_Icon.png', 'message-bottle': 'Message_Bottle_NH_Inv_Icon.png', shovel: 'Shovel_NH_Icon.png',
   'star-fragment': 'Star_Fragment_NH_Inv_Icon.png', 'large-star-fragment': 'Large_Star_Fragment_NH_Inv_Icon.png'
 };
 for (const z of ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpius', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'])
@@ -144,7 +144,14 @@ for (const f of [
   'Anomalocaris', 'Archaeopteryx', 'Dunkleosteus', 'Eusthenopteron', 'Acanthostega', 'Australopith', 'T. Rex Skull',
   'Tricera Skull', 'Stego Skull', 'Brachio Skull', 'Mammoth Skull', 'Sabertooth Skull', 'Dimetrodon Skull', 'Ankylo Skull',
   'Plesio Skull', 'Spino Skull', 'Iguanodon Skull', 'Pachy Skull', 'Diplo Skull', 'Ptera Body', 'Megacero Skull',
-  'Parasaur Skull', 'Ophthalmo Skull', 'Archelon Skull'
+  'Parasaur Skull', 'Ophthalmo Skull', 'Archelon Skull',
+  // the rest of each dinosaur (beach.ts FOSSIL_SETS)
+  'T. Rex Torso', 'T. Rex Tail', 'Tricera Torso', 'Tricera Tail', 'Stego Torso', 'Stego Tail', 'Brachio Chest', 'Brachio Pelvis',
+  'Brachio Tail', 'Mammoth Torso', 'Sabertooth Tail', 'Dimetrodon Torso', 'Ankylo Torso', 'Ankylo Tail', 'Plesio Torso',
+  'Plesio Tail', 'Spino Torso', 'Spino Tail', 'Iguanodon Torso', 'Iguanodon Tail', 'Pachy Tail', 'Diplo Neck', 'Diplo Chest',
+  'Diplo Pelvis', 'Diplo Tail', 'Diplo Tail Tip', 'Left Ptera Wing', 'Right Ptera Wing', 'Megacero Torso', 'Megacero Tail',
+  'Parasaur Torso', 'Parasaur Tail', 'Ophthalmo Torso', 'Archelon Tail', 'Deinony Torso', 'Deinony Tail', 'Left Megalo Side',
+  'Right Megalo Side', 'Quetzal Torso', 'Left Quetzal Wing', 'Right Quetzal Wing'
 ])
   FIND_FILES[f.toLowerCase().replace(/\. /g, '-').replace(/ /g, '-')] = `${f.replace(/ /g, '_')}_NH_Icon.png`;
 // Island care: the watering can and the rock by the hedge (the weeds are ours: NH's icon is a sack of them).
