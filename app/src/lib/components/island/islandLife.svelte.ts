@@ -13,7 +13,7 @@ import type { ReactionId } from '../motion/reactions.ts';
 import { localKV, SCENE, writeRaw, type KV } from '#lib/sync/storage.ts';
 
 /** Thursday–Saturday under this many ベル this week: the low-week encouragement beat (R15). */
-const LOW_WEEK_BELLS = 1000;
+const LOW_WEEK_BELLS = 6;
 
 interface Ctx {
   view: () => WeekView;
@@ -25,9 +25,9 @@ interface Ctx {
   day: () => boolean;
 }
 
-/** On-screen daytime until the next balloon (ms): 30–60 s for the first, then 2–3 minutes from one to the next (its
- *  22 s flight included: the countdown holds while one is up). */
-const balloonMs = (first = false, r = Math.random): number => (first ? 30_000 + r() * 30_000 : 98_000 + r() * 60_000);
+/** On-screen daytime until the next balloon (ms): 20–40 s for the first, then 45–90 s from one to the next (the
+ *  countdown holds while one is up). */
+const balloonMs = (first = false, r = Math.random): number => (first ? 20_000 + r() * 20_000 : 45_000 + r() * 45_000);
 
 /** Four ripeness stages of a fruit's day (a stage-up is R7): < 25% · < 60% · < 100% · the goal. */
 const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);
@@ -144,7 +144,7 @@ export class IslandLife {
       }
       if (stagedUp.length) return react('R7', swap);
     }
-    if (dayScore(v.people[v.partner], v.weekKey) > dayScore(p.people[v.partner], p.weekKey)) react('R3');
+    if (dayScore(v.people[v.partner]) > dayScore(p.people[v.partner])) react('R3');
   }
 
   #start(): () => void {
@@ -180,7 +180,7 @@ export class IslandLife {
       if (once('open')) beats.push('R1');
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
       // evening: my partner turns to me while my day is still under half (a nudge to move, not to report in)
-      if (h >= 18 && h < 22 && dayScore(me, view.weekKey) < 50 && once('evening')) beats.push('R12');
+      if (h >= 18 && h < 22 && dayScore(me) < 50 && once('evening')) beats.push('R12');
       if (wd >= 4 && wd <= 6 && me.weekBells < LOW_WEEK_BELLS && once('lowweek')) beats.push('R15');
     }
     // the director's event queue plays them one at a time
@@ -190,7 +190,7 @@ export class IslandLife {
       paused: () => ctx.covered() || this.hidden,
       asleep: () => actors.mine.asleep && actors.partner.asleep,
       night: ctx.night,
-      scores: () => { const v = ctx.view(); return [dayScore(v.people.A, v.weekKey), dayScore(v.people.B, v.weekKey)]; },
+      scores: () => { const v = ctx.view(); return [dayScore(v.people.A), dayScore(v.people.B)]; },
       treeShake: (id) => {
         const v = ctx.view();
         this.shakeN[id === 'mine' ? v.me : v.partner]++;

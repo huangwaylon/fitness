@@ -1,5 +1,6 @@
-// The island's critters (docs/design.md "Scene interactions"): which fish and bugs are about (NH's northern-hemisphere
-// months and hours), when the next one shows up, and how a fishing bite and a net swing turn out. Pure (no DOM, no
+// The island's critters (docs/design.md "Scene interactions"): which fish and bugs come (any month: NH's
+// northern-hemisphere months only weight the odds; hours keep day bugs to the day and night ones to the night), when the
+// next one shows up, and how a fishing bite and a net swing turn out. Pure (no DOM, no
 // timers): Critters.svelte owns the motion and the timers and asks this module what happens. Nothing here counts for
 // anything: a catch is a caption and an icon, never ベル or a write.
 
@@ -95,17 +96,21 @@ export const BUGS: Record<BugId, Bug> = {
 export function inHours([from, to]: readonly [number, number], h: number): boolean {
   return from <= to ? h >= from && h < to : h >= from || h < to;
 }
-const about = (c: Seasonal & { also?: readonly [number, number] }, month: number, hour: number) =>
-  c.months.includes(month) && (inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour)));
+/** Odds for a critter in its NH months against out of them: the season is a flavour, never a gate (user). */
+export const IN_SEASON = 3;
+const inHoursOf = (c: Seasonal & { also?: readonly [number, number] }, hour: number) => inHours(c.hours, hour) || (!!c.also && inHours(c.also, hour));
+/** Its odds at (month, hour): 0 outside its hours, else its weight, ×IN_SEASON in its months. */
+export const oddsAt = (c: Seasonal & { also?: readonly [number, number] }, month: number, hour: number): number =>
+  !inHoursOf(c, hour) ? 0 : c.weight * (c.months.includes(month) ? IN_SEASON : 1);
 
-/** A weighted pick among the ids about at (month, hour) with weight > 0, or null. `r` is a uniform [0, 1) source. */
+/** A weighted pick among the ids that can come at (month, hour), or null. `r` is a uniform [0, 1) source. */
 function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number): K | null {
-  const live = (Object.keys(table) as K[]).filter((k) => table[k].weight > 0 && about(table[k], month, hour));
-  const total = live.reduce((s, k) => s + table[k].weight, 0);
+  const live = (Object.keys(table) as K[]).map((k) => [k, oddsAt(table[k], month, hour)] as const).filter(([, w]) => w > 0);
+  const total = live.reduce((s, [, w]) => s + w, 0);
   if (!total) return null;
   let x = r() * total;
-  for (const k of live) if ((x -= table[k].weight) < 0) return k;
-  return live[live.length - 1];
+  for (const [k, w] of live) if ((x -= w) < 0) return k;
+  return live[live.length - 1][0];
 }
 
 /** The fish under a new shadow (always someone: the sea bass never takes a day off). */
@@ -119,27 +124,27 @@ export function hookItem(fish: FishId, r: () => number): FishId | JunkId {
 /** An ambient bug for (month, hour), or null when nobody is about (with the moths out every night, never in NH's table). */
 export const pickBug = (month: number, hour: number, r: () => number): BugId | null => pick(BUGS, month, hour, r);
 
-/** What flies out of a shaken bush: 1 in 10 a bug (a moth after dark, else a butterfly of the season; 1 in 4 of those a
- *  ladybug while ladybugs are about), or nothing. */
+/** What flies out of a shaken bush: 1 in 3 a bug (a moth after dark, else a butterfly, 1 in 4 a ladybug by day), or
+ *  nothing. */
 export function bushBug(month: number, hour: number, r: () => number): BugId | null {
-  if (r() * 10 >= 1) return null;
-  if (about(BUGS.moth, month, hour)) return 'moth';
-  if (about(BUGS.ladybug, month, hour) && r() < 0.25) return 'ladybug';
-  const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && about(BUGS[k], month, hour));
+  if (r() * 3 >= 1) return null;
+  if (oddsAt(BUGS.moth, month, hour) > 0) return 'moth';
+  if (oddsAt(BUGS.ladybug, month, hour) > 0 && r() < 0.25) return 'ladybug';
+  const flutter = (Object.keys(BUGS) as BugId[]).filter((k) => k.endsWith('-butterfly') && oddsAt(BUGS[k], month, hour) > 0);
   return flutter.length ? flutter[Math.floor(r() * flutter.length)] : null;
 }
 
 // ---------- timing ----------
 
-/** Visible time until the next ambient visit: 5–12 s for the first, then 15–40 s, so a fish shadow is usually there to
- *  fish (user: fish more often); bugs stay occasional (`spawnKind`). */
-export const nextSpawnMs = (r: () => number, first = false): number => (first ? 5_000 + r() * 7_000 : 15_000 + r() * 25_000);
+/** Visible time until the next ambient visit: 3–6 s for the first, then 8–15 s, so a fish is basically always there
+ *  (back a few seconds after a catch or a flee) and a bug comes by every so often (user: frequent, it's for fun). */
+export const nextSpawnMs = (r: () => number, first = false): number => (first ? 3_000 + r() * 3_000 : 8_000 + r() * 7_000);
 
-/** Which ambient critter to bring on (≤ 1 of each, so ≤ 2 at once): a fish whenever the sea is empty; otherwise a bug
- *  only 1 visit in 4, so they stay a rare surprise. */
+/** Which ambient critter to bring on (≤ 1 of each, so ≤ 2 animating at once): a fish whenever the sea is empty,
+ *  otherwise a bug when none is about (most visits; `r` keeps a little air between them). */
 export function spawnKind(slots: { fish: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'bug' | null {
   if (!slots.fish) return 'fish';
-  return !slots.bug && bugAbout && r() < 0.25 ? 'bug' : null;
+  return !slots.bug && bugAbout && r() < 0.8 ? 'bug' : null;
 }
 
 /** How long an ambient critter stays if nobody plays with it (ms). */

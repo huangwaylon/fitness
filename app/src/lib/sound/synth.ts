@@ -88,11 +88,7 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'tone', f: 420, to: 1250, glide: 0.3, t: 0.02, d: 0.3, g: 0.12, attack: 0.03 },
     bell(G7, 0.3, 0.25, 0.12)
   ],
-  // remove: a soft "poof" of smoke
-  poof: [
-    { kind: 'noise', t: 0, d: 0.22, g: 1, lo: 250, hi: 1800, shape: 'swell' },
-    { kind: 'tone', f: 560, to: 190, glide: 0.15, t: 0, d: 0.17, g: 0.35, wave: 'tri', attack: 0.004 }
-  ],
+
   // undo: the app-open chirp played backwards (a glide down), then a low note
   undo: [{ kind: 'tone', f: 1300, to: 600, glide: 0.06, t: 0, d: 0.1, g: 0.8, attack: 0.001 }, mallet(E6, 0.06, 0.18, 0.35)],
   rustle: [

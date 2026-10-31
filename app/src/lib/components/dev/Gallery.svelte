@@ -112,7 +112,7 @@
   <section>
     <h2>Money</h2>
     <div class="row">
-      <span class="amt"><LeafCoin size="1.1em" />146,200 ベル</span>
+      <span class="amt"><LeafCoin size="1.1em" />26 ベル</span>
     </div>
   </section>
 

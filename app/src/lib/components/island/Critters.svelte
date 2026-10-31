@@ -455,8 +455,10 @@
   // A countdown of on-screen time: it runs while the island is live and visible, holds under a sheet or in a hidden
   // tab (and the critters leave), and resumes where it was.
   let remaining = nextSpawnMs(rand, true);
+  /** `?critter=` (dev or ?demo) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
+  const pinned = typeof location !== 'undefined' && new URLSearchParams(location.search).has('critter') && (import.meta.env.DEV || new URLSearchParams(location.search).has('demo'));
   $effect(() => {
-    if (!scene || !enabled() || reducedMotion()) return;
+    if (!scene || !enabled() || reducedMotion() || pinned) return;
     let started = performance.now();
     let id: ReturnType<typeof setTimeout>;
     const arm = () => {
