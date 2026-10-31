@@ -11,8 +11,8 @@ Google's consoles quietly act as the wrong account when several are signed in.
 
 ## 1. Create the spreadsheet
 
-1. Go to **sheets.new** and rename it **Island Fund**. Don't add tabs. The script creates `metrics`, `workouts`,
-   `presence` (gym arrivals), `events` and `uploads`, with headers, the first time it runs (§8).
+1. Go to **sheets.new** and rename it **Island Fund**. Don't add tabs. The script creates `metrics`, `events` and
+   `uploads`, with headers, the first time it runs (§8).
 2. Sharing is optional. To look at the data by hand from your own accounts, **Share** with both addresses as
    **Viewer**, general access **Restricted**. Never choose *Anyone with the link*.
 3. Don't edit or delete rows by hand unless you must (then run `resync`, §3). Every tab is append-only, and the app
@@ -79,10 +79,10 @@ read -s KEY            # paste KEY_A, press Enter
 post() { curl -sSL "$URL" -H 'Content-Type: text/plain;charset=utf-8' --data "$1"; echo; }
 
 post "{\"key\":\"$KEY\",\"action\":\"whoami\"}"
-# → {"ok":true,"me":"A","build":"<12 hex>"}    (and the five tabs now exist in the sheet)
+# → {"ok":true,"me":"A","build":"<12 hex>"}    (and the three tabs now exist in the sheet)
 
 post "{\"key\":\"$KEY\",\"action\":\"ingest\",\"dates\":\"Sep 28, 2026 at 7:11 AM\",\"steps\":\"855\",\"exercise_minutes\":\"0\"}"
-# → {"ok":true,"metrics":2,"workouts":0}; run it again → "metrics":0 (higher-only, idempotent)
+# → {"ok":true,"metrics":2}; run it again → "metrics":0 (higher-only, idempotent)
 
 post '{"key":"wrong","action":"whoami"}'
 # → {"ok":false,"error":"unauthorized"}
@@ -95,8 +95,8 @@ The test `ingest` above writes real rows for 2026-09-28 (before the economy star
 
 ## 6. Point the Shortcuts at it
 
-Build the health-sync Shortcut and the gym Arrive automation with the `/exec` URL and each person's key:
-[shortcut-health-sync.md](shortcut-health-sync.md) §2–5. Every `ingest` leaves an audit row in the `uploads` tab
+Build the health-sync Shortcut with the `/exec` URL and each person's key:
+[shortcut-health-sync.md](shortcut-health-sync.md) §2–4 (there is no gym automation any more: §5 there). Every `ingest` leaves an audit row in the `uploads` tab
 (status, size, warnings and the body's shape; never the key).
 
 ## 7. Pairing the phones
@@ -110,12 +110,11 @@ app: iOS keeps a separate storage for the Home Screen app, so a key saved in Saf
 | Tab | Rows | Written by |
 |---|---|---|
 | `metrics` | `at, person, date, metric, value` (`steps`, `exercise_min`, `move_kcal`, `stand_min`, `weight`) | `ingest` |
-| `workouts` | `at, person, id, date, type, start, end, duration_min, avg_hr` | `ingest` (optional `workouts` field) |
-| `presence` | `at, person, label, arrived_at`: gym arrivals (the name is historical) | `gym` |
 | `events` | `at, person, id, type, data` (buys, menu and goal prefs, harvest taps, high-fives, きろく edits) | the app (`event`) |
 | `uploads` | `at, person, status, bytes, error` (an audit line per `ingest`) | `ingest` |
 
-`at` is the server time (ISO UTC). The full contract: [sheets-architecture.md](../design/sheets-architecture.md).
+An older sheet may still have `workouts` and `presence` tabs: nothing uses them any more, delete them by hand
+(runbook §9). `at` is the server time (ISO UTC). The full contract: [sheets-architecture.md](../design/sheets-architecture.md).
 
 ## 9. Does it need the shared-finances Cloud project or a published consent screen?
 

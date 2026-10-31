@@ -136,7 +136,7 @@ lines of the two v2 amendments.
 - **Removed, with no compatibility path:** the `gym` action, the `gym_set` event (ADR 0023), the `presence` and
   `workouts` tabs (not in `TABS`, not in `snapshot`, not read), the Shortcut's optional `workouts` field (ignored now),
   `workout_edit {strength}` and `workout_add {strength}`. Old rows of them in the sheet are ignored on read; the user
-  can delete the two tabs by hand (runbook §8). One Code.js redeploy.
+  can delete the two tabs by hand (runbook §9). One Code.js redeploy.
 - **Kept:** workouts added by hand in きろく (`workout_add`, Watch forgotten) count toward 🍑 as max(Watch, the day's added
   minutes); `workout_edit {excluded}` leaves one out or puts it back. The types offered are the nine of きろく's list
   (`contract/labels.ts`).

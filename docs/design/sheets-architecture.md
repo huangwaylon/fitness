@@ -13,10 +13,12 @@ tab is **append-only**; the app never updates or deletes a row.
 | Tab | Columns | Written by |
 |---|---|---|
 | `metrics` | `at`, `person`, `date`, `metric` (`steps`\|`exercise_min`\|`move_kcal`\|`stand_min`\|`weight`), `value` | `ingest`. The activity metrics (daily totals) **only when higher** than the highest row so far for (person, date, metric). `weight` (kg, one decimal; ADR 0020) **whenever it differs** from the last row for (person, date) |
-| `workouts` | `at`, `person`, `id`, `date`, `type`, `start`, `end`, `duration_min`, `avg_hr` | `ingest`, only for an unseen `id` (`workoutKey(type, start)`, stable across re-sends and phone languages) |
-| `presence` | `at`, `person`, `label`, `arrived_at` | `gym`: one row per gym arrival (ADR 0021). `label` is free text (≤ 40, `''` shows as ジム); `arrived_at` = the request's `at`, else the row's `at`. The tab keeps its historical name |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON) | `event` (client-generated `id`; a repeated `id` is acked as a duplicate, so retries are safe) |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest` audit: status, size, warnings and the body's *shape* (field types, line counts, first item), never the body or the key |
+
+The old `workouts` (Watch workouts) and `presence` (gym arrivals) tabs are gone from the contract since 2026-10-31
+([ADR 0021](../decisions/0021-activity-rings-no-check-ins.md) amendment "no gym; four metrics"): the script never
+creates, reads or writes them and `snapshot` doesn't return them. Delete them by hand ([runbook](../ops/runbook.md) §9).
 
 ### Events
 
@@ -41,9 +43,8 @@ dates.
   | type | data | |
   |---|---|---|
   | `metric_set` | `{person?, date, metric, value}` | an activity metric (integer; steps 0–100,000, minutes 0–1,440, kcal 0–10,000) overrides the day's value, also lower; or `metric:'weight'` (kg, 20–300, one decimal; no week lock) |
-  | `workout_edit` | `{person?, id, strength?: true\|false\|null, excluded?: boolean}` | count as strength or not (`null` = automatic), or leave out of scoring |
-  | `workout_add` | `{person?, id:'m:<id>', date, type, durationMin 1–600, strength?}` | a workout added by hand (a known type) |
-  | `gym_set` | `{person?, date, on: true\|false}` | the day's 🥥 by hand: on without an arrival, off despite one; the latest wins per person and date |
+  | `workout_add` | `{person?, id:'m:<id>', date, type, durationMin 1–600}` | a workout added by hand (one of きろく's types, `contract/labels.ts`): its minutes count toward 🍑 |
+  | `workout_edit` | `{person?, id, excluded: boolean}` | leave a hand-added workout out of scoring, or put it back |
   | `pref` | `{person?, key: 'moveGoal'\|'goalWeight', value}` | either person's goals (the other keys refuse `person`) |
 
 **ベル on read** (`model/bells.ts`): earnings are recomputed from the rows, so they move with late syncs and edits
@@ -59,12 +60,12 @@ never throws (an uncaught error would return Google's HTML page). There is no `d
 
 | `action` | Request | Reply |
 |---|---|---|
-| `ingest` | The Shortcut's daily Text lists, one line per day ([shortcut-health-sync.md](../ops/shortcut-health-sync.md) §1): `dates`, `steps`, `exercise_minutes`, `calories` (active kcal → `move_kcal`), `stand_minutes` (→ `stand_min`), `weight` (kg, 0 = none), each optional; optional `workouts {types, starts, ends, avgHrs}` (one line per workout); other fields ignored | `{ok, metrics, workouts, skipped?, unknownTypes?, warnings?}`: rows appended; a list whose length differs from `dates` is dropped with a warning (the rest is saved); a value above the `metric_set` bounds is skipped |
-| `gym` | `place?` (text ≤ 40, a label only), `at?` (ISO 8601 instant with offset: the true arrival time) | `{ok}`. The key is the person |
+| `ingest` | The Shortcut's daily Text lists, one line per day ([shortcut-health-sync.md](../ops/shortcut-health-sync.md) §1): `dates`, `steps`, `exercise_minutes`, `calories` (active kcal → `move_kcal`), `stand_minutes` (→ `stand_min`), `weight` (kg, 0 = none), each optional; other fields ignored (an old `workouts` field too) | `{ok, metrics, skipped?, warnings?}`: rows appended; a list whose length differs from `dates` is dropped with a warning (the rest is saved); a value above the `metric_set` bounds is skipped |
 | `event` | `id, type, data` | `{ok, duplicate?}` |
-| `snapshot` | `since?` (ISO, the max `at` the client has) | `{ok, me, now, rev, rows:{metrics, workouts, presence, events}}`: compact arrays in column order, rows with `at > since`, both people |
+| `snapshot` | `since?` (ISO, the max `at` the client has) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people |
 | `uploads` | — | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 ingest audit rows, newest first |
 | `whoami` | — | `{ok, me, build}` (pairing; creates any missing tab) |
+| (anything else, e.g. the removed `gym`) | | `{ok:false, error:'bad_request'}` |
 | `health` | **no `key`** | `{ok:true, build}`: up, authorized and running `build`; no Properties read, no lock, no sheet (the monitor, [runbook](../ops/runbook.md) §5) |
 
 - **Auth:** the person is whichever of the Script Properties `KEY_A` / `KEY_B` matches, compared in constant time; a
@@ -75,11 +76,9 @@ never throws (an uncaught error would return Google's HTML page). There is no `d
   `REV`), also when it fails after appending.
 - **Tail reads.** The app only appends with increasing `at`, so "every row after X" is a tail: the script reads a tab
   backwards in doubling chunks (256, 512, …) and stops at the first chunk that starts at or before X. `snapshot` with
-  `since` reads only the new rows; `ingest`'s higher-only check and workout dedupe read from the day before the body's
+  `since` reads only the new rows; `ingest`'s higher-only check reads from the day before the body's
   earliest date; `uploads` reads back to the caller's last 20. `snapshot` without `since` and the `event` id dedupe
   read the whole tab.
-- **Gym rows** are judged on read: an arrival more than 48 h from its server `at` is ignored, and a person's repeat
-  within 2 minutes is dropped; any arrival makes its Tokyo date a 🥥 day.
 - `build`: the first 12 hex characters of SHA-256 over the bundle (`app/gas/build.ts`; `dev` unbundled), on line 3 of
   `Code.js` (`// build: …`). `bundle.test.ts` checks it.
 
@@ -87,7 +86,7 @@ never throws (an uncaught error would return Google's HTML page). There is no `d
 
 `since` only finds rows appended after it, so a cached client would never see a row **deleted or corrected by hand**,
 or pasted with an old `at`. The server keeps a data revision, the Script Property `REV`, returned with every
-`snapshot`. It changes when, and only when, a synced tab (`metrics`, `workouts`, `presence`, `events`) changed outside
+`snapshot`. It changes when, and only when, a synced tab (`metrics`, `events`) changed outside
 the app:
 
 - **Rows added or deleted by hand** (or a tab recreated): the script records each synced tab's last row (`ROWS`) after
@@ -102,8 +101,7 @@ discards the cache (never the unsent queue) and fetches a full `snapshot`, as do
 
 ## 3. Code layout
 
-- `app/gas/parse.ts`: pure parser of the Shortcut body (English and Japanese Shortcuts date text, Japanese workout
-  names mapped back to canonical types). `app/gas/main.ts`: `doPost`, auth, the lock, sheet helpers, the actions.
+- `app/gas/parse.ts`: pure parser of the Shortcut body (English and Japanese Shortcuts date text). `app/gas/main.ts`: `doPost`, auth, the lock, sheet helpers, the actions.
   `npm run gas:build` bundles both (with `contract/`) via esbuild into `app/apps-script/Code.js`, one global script.
   `apps-script/appsscript.json`: scope `spreadsheets.currentonly`, the web app, timezone `Asia/Tokyo`.
 - `app/src/lib/model/`: pure compute-on-read. `state.ts` validates and indexes rows (an event the script would refuse
@@ -122,7 +120,7 @@ discards the cache (never the unsent queue) and fetches a full `snapshot`, as do
 ## 4. Testing
 
 - `gas/parse.test.ts`, `gas/main.test.ts` (an in-memory fake of the Apps Script services, `gas/fakes.ts`: auth,
-  never-throws, higher-only and changed-only metrics, dedupe, `since`, `rev`, the gym action, rate limit, body cap),
+  never-throws, higher-only and changed-only metrics, dedupe, `since`, `rev`, the refused `gym` action and `gym_set`, rate limit, body cap),
   `gas/perf.test.ts` (hot paths at year-3 volume), `gas/bundle.test.ts`.
 - The economy: `scoring/bells.test.ts`, `model/bells.test.ts`; きろく and edits: `model/history.test.ts`; weight:
   `model/weight.test.ts`; `model/compact.test.ts`.
