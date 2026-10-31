@@ -181,6 +181,15 @@ the ベル stay computed from the goals on read, so a pick-up can never earn, lo
 loses the record only sees a fruit fall again. Syncing pick-ups was weighed and left out: two phones disagreeing about
 a cosmetic fruit costs nothing, a new event type costs a script redeploy. Replaces the ground piles in thirds.
 
+### Shaking a tree: taps in a quick run, wasps without a cost
+A single tap on a tree stays its popup; a quick run of taps (the third within 1.2 s) is NH's shake. Why: the popup is
+the tree's one home for the day's numbers, so it keeps the single tap, and a run is how people shake a tree in NH
+anyway (tapping while the popup is open was weighed: it would make closing the popup a shake). A shake drops a branch
+now and then and a wasp nest 1 in 8 (at most one per tree an hour, no daily cap: the user asked for it fun and
+frequent); the wasps are caught with a tap within 1.5 s or sting. Nothing pays or costs: no ベル from trees (scenery
+never pays), a sting is a puffy eye for a minute, and the caught wasp is a ずかん find like any bug (an existing event,
+no script change). The wasp is in the bug table with weight 0, so it only ever comes from a nest.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

@@ -58,6 +58,7 @@ export const CATCH_LINES: Record<FishId | BugId | JunkId, readonly [string, stri
   "migratory-locust": ["トノサマバッタを つかまえた！\nバッタのキング！", "I caught a migratory locust! Things just went south for this guy!"],
   mantis: ["カマキリを つかまえた！\nいいカマ してるぅ～！", "I caught a mantis! Man, 'tis so cool!"],
   "orchid-mantis": ["ハナカマキリを つかまえた！\n花で待ち受ける ハンター！", "I caught an orchid mantis! Our friendship is blooming!"],
+  wasp: ["ハチを つかまえた！\nブン！ ブン！ ブン！\n（手づかみ しないでね）", "I caught a wasp! That's gotta sting..."],
   "bell-cricket": ["スズムシを つかまえた！\nリンリン♪ 小さな音楽家♪", "I caught a bell cricket! It would make a great bellhop!"],
   cricket: ["コオロギを つかまえた！\n秋の日の 音楽家！", "I caught a cricket! What a chirp thrill!"],
   moth: ["ガを つかまえちゃった！！\nコワくない、コワくない・・・", "I caught a moth! And I had a ball doing it!"],

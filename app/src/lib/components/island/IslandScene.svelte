@@ -46,6 +46,8 @@
   import Balloon from './Balloon.svelte';
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
+  import TreeShakes from './TreeShakes.svelte';
+  import { PUFFY_MS } from './treeShake.ts';
   import { chatLine, moodOf } from './chat.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -54,7 +56,7 @@
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
-  import { actors } from '../motion/director.svelte.ts';
+  import { actors, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { jst, minuteNow, now } from '#lib/time/clock.ts';
 
   interface Props {
@@ -154,6 +156,17 @@
     if (q.has('hybrid') && (import.meta.env.DEV || q.has('demo'))) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
     return garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
   });
+  // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright and a puffy eye for a while.
+  let shakes = $state<ReturnType<typeof TreeShakes>>();
+  let puffy = $state<Record<'mine' | 'partner', boolean>>({ mine: false, partner: false });
+  const unpuff: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeout>>> = {};
+  function sting(side: 'mine' | 'partner') {
+    setMotion(side, 'surprise');
+    setEmote(side, 'mark-bang');
+    puffy[side] = true;
+    clearTimeout(unpuff[side]);
+    unpuff[side] = setTimeout(() => (puffy[side] = false), PUFFY_MS);
+  }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
@@ -173,7 +186,8 @@
 
     {#each ['A', 'B'] as const as pid (pid)}
       <FruitTree person={view.people[pid]} x={TREE.x[slot(pid)]} {foliage} shakeN={life.shakeN[pid]}
-        celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)} />
+        celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
+        onshake={() => shakes?.shaken(pid, slot(pid))} />
     {/each}
 
     <!-- the jar + its plate (JarSpot): one button, the doorway to the wallet (ごほうび) -->
@@ -195,7 +209,7 @@
             life.tapVillager(id, id === 'mine' ? undefined : onpartner);
           }}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
-            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} />
+            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} puffy={puffy[id]} />
         </button>
       </div>
     {/each}
@@ -205,6 +219,8 @@
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} />
       <Talk bind:this={talk} scene={sceneEl} />
+      <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
+      <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} />
     {/if}
     <div class="tint"></div>
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>

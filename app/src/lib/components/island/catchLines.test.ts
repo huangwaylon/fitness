@@ -8,7 +8,7 @@ const names = ja as Record<string, string>;
 describe("NH's catch lines", () => {
   it('every fish, bug and piece of junk has its official line in Japanese and English', () => {
     const ids = [...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK] as (keyof typeof CATCH_LINES)[];
-    expect(ids).toHaveLength(83);
+    expect(ids).toHaveLength(84);
     expect(Object.keys(CATCH_LINES).sort()).toEqual([...ids].sort());
     for (const id of ids) {
       const [j, e] = CATCH_LINES[id];

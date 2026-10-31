@@ -18,15 +18,14 @@
   import { onMount } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
-  import { week } from '#lib/store/week.svelte.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
   import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, SAND, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
+  import { catchLine, loadLines } from './catchLine.ts';
   import {
-    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, caption, critterArt,
+    BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
     hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, type BitePlan, type BugId, type FishId,
     type Flight, type JunkId
   } from './critters.ts';
@@ -406,16 +405,6 @@
     if (seq !== n) return;
     card = { n, x, y, art: critterArt(item), text };
   }
-  /** NH's own catch line (catchLines.ts, loaded with the first critter), else our short caption. */
-  async function catchLine(item: FishId | JunkId | BugId): Promise<string> {
-    const lines = await loadLines().catch(() => null);
-    const line = lines?.[item]?.[i18n.locale === 'en' ? 1 : 0];
-    if (line) return line.replace('<Player>', week.view?.people[week.view.me].villagerName ?? '');
-    const c = caption(item);
-    return t(c.key, c.name ? { name: t(c.name) } : undefined);
-  }
-  let lineChunk: Promise<typeof import('./catchLines.ts')['CATCH_LINES']> | null = null;
-  const loadLines = () => (lineChunk ??= import('./catchLines.ts').then((m) => m.CATCH_LINES));
   /** The catch plate's box (a tap on it dismisses it, NH's A). */
   let heldEl = $state<HTMLElement>();
 

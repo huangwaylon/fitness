@@ -23,6 +23,7 @@ const SELF: Record<string, string> = {
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
   'lib/components/island/JarSpot.svelte': 'the jar → jar-tap',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
+  'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon'
 };
 
