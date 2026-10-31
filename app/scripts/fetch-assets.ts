@@ -105,9 +105,8 @@ const trims = (key: string) =>
 
 // v4 reaction icons (the NH reaction wheel: grey cat face + coloured accents), shown inside our emote bubble.
 const EMOTIONS = [
-  'Joy', 'Delight', 'Love', 'Surprise', 'Laughter', 'Sleepy', 'Happiness', 'Greetings', 'Encouraging',
-  'Glee', 'Pleased', 'Pride', 'Inspiration', 'Daydreaming', 'Dozing', 'Amazed', 'Curiosity', 'Thought',
-  'Flourish', 'Bashfulness', 'Sheepishness', 'Worry', 'Confident', 'Shocked'
+  'Joy', 'Love', 'Surprise', 'Laughter', 'Sleepy', 'Happiness', 'Encouraging', 'Glee', 'Pleased', 'Pride',
+  'Inspiration', 'Dozing', 'Curiosity', 'Thought', 'Flourish', 'Sheepishness', 'Worry', 'Shocked'
 ];
 for (const e of EMOTIONS) SPECS[`reactions/${e.toLowerCase()}`] = [96, `Emotion_${e}_NH_Icon.png`];
 // The pose-style reaction (a player silhouette) of the both-of-us dance (motion/reactions.ts).
