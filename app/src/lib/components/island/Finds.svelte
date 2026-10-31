@@ -19,6 +19,7 @@
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { recordFind } from '#lib/store/actions.ts';
   import { sceneSfx } from './sceneTaps.ts';
+  import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, stageGeo } from './placement.ts';
   import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentDay, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wishDay, wishFor } from './sceneDay.ts';
@@ -114,9 +115,10 @@
   });
 
   /** The plate, `delay` ms after the tap; a first find of its kind gets a second page saying it's in the ずかん. */
-  function plate(x: number, y: number, art: string, text: string, delay = 0, added = false) {
+  function plate(x: number, y: number, art: string, text: () => string, delay = 0, added = false) {
     const n = ++seq;
-    later(() => (card = { n, x, y, art, parts: added ? [text, t('zukan.added')] : [text] }), delay);
+    const names = loadNames().catch(() => {});
+    later(() => void names.then(() => (card = { n, x, y, art, parts: added ? [text(), t('zukan.added')] : [text()] })), delay);
   }
   function pickUp(uid: string, x: number, y: number, art: string, tilt: number) {
     take(date, uid);
@@ -130,18 +132,18 @@
     pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
     sceneSfx('shell');
     const added = recordFind('shell', s.id);
-    plate(s.x, s.y, findArt(s.id), t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
+    plate(s.x, s.y, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
   }
   function pickFragment(f: Fragment) {
     pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
     sceneSfx('fragment');
     recordFind('fragment', f.id);
-    plate(f.x, f.y, findArt(f.id), t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
+    plate(f.x, f.y, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
   }
   function pickBottle(b: Bottle) {
     pickUp(b.uid, b.x, b.y, findArt('message-bottle'), -64);
     sceneSfx('bottle');
-    plate(b.x, b.y, findArt('message-bottle'), t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
+    plate(b.x, b.y, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
   }
   function digUp(s: DigSpot) {
     take(date, s.uid);
@@ -154,7 +156,7 @@
     const n = ++seq;
     dig = { n, x: s.x, y: s.y };
     later(() => dig?.n === n && (dig = null), 3200);
-    plate(s.x, s.y - 4, findArt(s.fossil), t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
+    plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
     later(() => sceneSfx('catch'), 650);
   }
 
@@ -195,7 +197,7 @@
     const { hour } = jst(now());
     wishFor(fragmentDay(date, hour, (d) => addDays(d, 1)));
     taken++; // before dawn the fragments are this morning's
-    plate(x, y, findArt('star-fragment'), t('beach.wish'));
+    plate(x, y, findArt('star-fragment'), () => t('beach.wish'));
   }
 </script>
 

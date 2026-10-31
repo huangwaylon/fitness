@@ -3,8 +3,9 @@
 import { describe, expect, it } from 'vitest';
 import jaMain from './ja.json';
 import jaTab from './kenkou.ja.json';
+import jaNames from './catch.ja.json';
 
-const ja = { ...jaMain, ...jaTab };
+const ja = { ...jaMain, ...jaTab, ...jaNames };
 
 /** The longest stretch of a string with no break opportunity under keep-all, in characters ({n} counts as one). */
 function longestRun(s: string): number {
@@ -21,7 +22,7 @@ describe('ja copy under keep-all', () => {
 
 describe('catalog text', () => {
   it('has no broken characters (U+FFFD) in either language', async () => {
-    const en = (await import('./en.json')).default as Record<string, string>;
+    const en = { ...(await import('./en.json')).default, ...(await import('./catch.en.json')).default } as Record<string, string>;
     const bad = [...Object.entries(ja as Record<string, string>), ...Object.entries(en)].filter(([, v]) => v.includes('\uFFFD')).map(([k]) => k);
     expect(bad).toEqual([]);
   });

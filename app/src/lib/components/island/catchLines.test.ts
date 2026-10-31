@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CATCH_LINES } from './catchLines.ts';
 import { BUGS, FISH, JUNK } from './critters.ts';
-import ja from '#lib/i18n/ja.json';
+import ja from '#lib/i18n/catch.ja.json';
 
 const names = ja as Record<string, string>;
 

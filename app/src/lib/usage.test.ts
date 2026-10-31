@@ -9,6 +9,8 @@ import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaTab from '#lib/i18n/kenkou.ja.json';
 import enTab from '#lib/i18n/kenkou.en.json';
+import jaNames from '#lib/i18n/catch.ja.json';
+import enNames from '#lib/i18n/catch.en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
@@ -42,14 +44,21 @@ const prefixes = new Set([
 const hostLines = new Set([...code.matchAll(/(?:hostLine\(|===\s*)'(\w+)'/g)].map((m) => m[1]));
 const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk && [...prefixes].some((p) => p.length > 1 && key.startsWith(p)));
 
-/** The main catalogs and けんこう's (loaded with its tab), as `t()` sees them once both are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab };
-const en: Record<string, string> = { ...enMain, ...enTab };
+/** The main catalogs, けんこう's (loaded with its tab) and the catchables' names (loaded with the first catch or the
+ *  ずかん), as `t()` sees them once all are in. */
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaNames };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enNames };
+/** A lazily loaded catalog's own key prefixes. */
+const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
 
 describe('i18n catalogs', () => {
   it('keep けんこう’s strings (health.*) in its own catalog, out of the first load', () => {
     for (const c of [jaTab, enTab]) expect(Object.keys(c).filter((k) => !k.startsWith('health.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('health.'))).toEqual([]);
+  });
+  it('keep the catchables’ names in their own catalog (i18n/catch.ts), out of the first load', () => {
+    for (const c of [jaNames, enNames]) expect(Object.keys(c).filter((k) => !NAME_KEY.test(k))).toEqual([]);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => NAME_KEY.test(k))).toEqual([]);
   });
   it('have the same keys', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ja).sort());

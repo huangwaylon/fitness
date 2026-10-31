@@ -8,9 +8,11 @@ import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaTab from '#lib/i18n/kenkou.ja.json';
 import enTab from '#lib/i18n/kenkou.en.json';
+import jaNames from '#lib/i18n/catch.ja.json';
+import enNames from '#lib/i18n/catch.en.json';
 
-const ja = { ...jaMain, ...jaTab };
-const en = { ...enMain, ...enTab };
+const ja = { ...jaMain, ...jaTab, ...jaNames };
+const en = { ...enMain, ...enTab, ...enNames };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');

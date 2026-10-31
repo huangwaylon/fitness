@@ -7,6 +7,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import type { PersonId } from '#lib/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/catch.ts'; // the entries' names (their own catalog, out of the island's first load)
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
   import { bare, entries, type Entry, type ZukanKind } from './zukan.ts';
 
