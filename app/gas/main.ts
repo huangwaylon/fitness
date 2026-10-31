@@ -6,7 +6,7 @@
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
 import { parseShortcut } from './parse.ts';
-import { parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
+import { jstMs, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
@@ -373,7 +373,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
   // body's days is after the day before its earliest one: a tail. One day of slack covers a
   // phone in a zone ahead of Tokyo. Each Shortcut run's 31-day body reads ~a month of rows, not the whole tab.
   const days = parsed.metrics.map((x) => x.date).sort();
-  const from = days.length ? new Date(Date.parse(`${days[0]}T00:00:00+09:00`) - DAY_MS).toISOString() : '';
+  const from = days.length ? new Date(jstMs(days[0], 0, 0) - DAY_MS).toISOString() : '';
   return withLock((): IngestReply => {
     const at = nextAt();
     const mSheet = tab('metrics');

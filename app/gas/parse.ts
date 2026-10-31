@@ -32,9 +32,10 @@ const pad = (n: number | string) => String(n).padStart(2, '0');
 
 /**
  * Shortcuts' date text in the phone's language and zone (Tokyo), English or Japanese:
- * "Sep 30, 2026 at 8:59 AM", "2026/09/30 8:59", "2026年9月30日 午後8:59". Returns the calendar day and the time.
+ * "Sep 30, 2026 at 8:59 AM", "2026/09/30 8:59", "2026年9月30日 午後8:59". Returns the calendar day (`YYYY-MM-DD`), or null
+ * for text that isn't a real date and time (Feb 30, 8:61).
  */
-export function shortcutDate(v: string): { day: string; time: string } | null {
+export function shortcutDate(v: string): string | null {
   const s = v.trim().replace(/[  ]/g, ' ');
   const en = s.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}), (\d{4})(?:,? (?:at )?(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?)?$/);
   const ja = s.match(/^(\d{4})[/年](\d{1,2})[/月](\d{1,2})日?(?:\s*(午前|午後)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
@@ -46,10 +47,9 @@ export function shortcutDate(v: string): { day: string; time: string } | null {
   if (ap === 'pm' || ap === '午後') hour = (hour % 12) + 12;
   if (ap === 'am' || ap === '午前') hour %= 12;
   const day = `${y}-${pad(mo)}-${pad(d)}`;
-  const time = `${pad(hour)}:${mi ?? '00'}:${sec ?? '00'}`;
-  // A real calendar day (no Feb 30) and a real time (no 08:59:75, which would make a NaN duration).
+  // A real calendar day (no Feb 30) and a real time (no 08:59:75): anything else isn't what Shortcuts writes.
   if (new Date(Date.UTC(Number(y), mo - 1, Number(d))).toISOString().slice(0, 10) !== day || hour > 23 || Number(mi ?? 0) > 59 || Number(sec ?? 0) > 59) return null;
-  return { day, time };
+  return day;
 }
 
 // ---------------------------------------------------------------- body
@@ -93,14 +93,14 @@ export function parseShortcut(body: unknown): ParsedBody {
       if (metric !== 'weight') {
         // the same ceiling a manual edit gets (one bad line must not become the day's permanent maximum)
         const v = Math.round(n);
-        if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day.day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
-        metrics.push({ date: day.day, metric, value: v });
+        if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
+        metrics.push({ date: day, metric, value: v });
         return;
       }
       if (n === 0) return; // no weigh-in that day
       const kg = roundKg(n);
       if (kg < WEIGHT_KG.min || kg > WEIGHT_KG.max) { skipped++; return; }
-      metrics.push({ date: day.day, metric, value: kg });
+      metrics.push({ date: day, metric, value: kg });
     });
   }
 

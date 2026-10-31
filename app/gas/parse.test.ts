@@ -13,19 +13,19 @@ const BODY = {
 };
 
 describe('shortcutDate: Shortcuts date text, English or Japanese', () => {
-  it('reads the calendar day and time as written (Tokyo)', () => {
-    expect(shortcutDate('Sep 30, 2026 at 8:59 AM')).toEqual({ day: '2026-09-30', time: '08:59:00' });
-    expect(shortcutDate('Oct 28, 2026 at 12:05 AM')).toEqual({ day: '2026-10-28', time: '00:05:00' });
-    expect(shortcutDate('Oct 28, 2026 at 8:10 PM')).toEqual({ day: '2026-10-28', time: '20:10:00' });
-    expect(shortcutDate('2026/10/28 7:05')).toEqual({ day: '2026-10-28', time: '07:05:00' });
-    expect(shortcutDate('2026年10月28日 午後8:10')).toEqual({ day: '2026-10-28', time: '20:10:00' });
+  it('reads the calendar day as written (Tokyo), whatever the time', () => {
+    expect(shortcutDate('Sep 30, 2026 at 8:59 AM')).toBe('2026-09-30');
+    expect(shortcutDate('Oct 28, 2026 at 12:05 AM')).toBe('2026-10-28');
+    expect(shortcutDate('Oct 28, 2026 at 8:10 PM')).toBe('2026-10-28');
+    expect(shortcutDate('2026/10/28 7:05')).toBe('2026-10-28');
+    expect(shortcutDate('2026年10月28日 午後8:10')).toBe('2026-10-28');
     expect(shortcutDate('2026-10-28')).toBeNull();
     expect(shortcutDate('Feb 30, 2026')).toBeNull();
     expect(shortcutDate('soon')).toBeNull();
   });
 
   it('refuses a time that does not exist (seconds included)', () => {
-    expect(shortcutDate('2026/10/28 8:59:30')).toEqual({ day: '2026-10-28', time: '08:59:30' });
+    expect(shortcutDate('2026/10/28 8:59:30')).toBe('2026-10-28');
     expect(shortcutDate('2026/10/28 8:59:75')).toBeNull();
     expect(shortcutDate('Oct 28, 2026 at 8:61 AM')).toBeNull();
     expect(shortcutDate('2026/10/28 24:00')).toBeNull();
