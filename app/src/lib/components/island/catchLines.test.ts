@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { CATCH_LINES } from './catchLines.ts';
 import { BUGS, FISH, JUNK } from './critters.ts';
+import { SEA } from './sea.ts';
 import ja from '#lib/i18n/catch.ja.json';
 
 const names = ja as Record<string, string>;
 
 describe("NH's catch lines", () => {
-  it('every fish, bug and piece of junk has its official line in Japanese and English', () => {
-    const ids = [...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK] as (keyof typeof CATCH_LINES)[];
-    expect(ids).toHaveLength(103);
+  it('every fish, bug, sea creature and piece of junk has its official line in Japanese and English', () => {
+    const ids = [...Object.keys(FISH), ...Object.keys(BUGS), ...Object.keys(SEA), ...JUNK] as (keyof typeof CATCH_LINES)[];
+    expect(ids).toHaveLength(143);
     expect(Object.keys(CATCH_LINES).sort()).toEqual([...ids].sort());
     for (const id of ids) {
       const [j, e] = CATCH_LINES[id];
@@ -21,6 +22,10 @@ describe("NH's catch lines", () => {
     for (const id of [...Object.keys(FISH), ...Object.keys(BUGS)] as (keyof typeof CATCH_LINES)[]) {
       const name = (names[`critter.name.${id}`] ?? 'スズキ').replace(/\s/g, ''); // the sea bass has its own caption key
       expect(CATCH_LINES[id][0].replace(/\s/g, ''), id).toContain(name);
+    }
+    for (const id of Object.keys(SEA) as (keyof typeof CATCH_LINES)[]) {
+      expect(CATCH_LINES[id][0].replace(/\s/g, ''), id).toContain(names[`sea.name.${id}`].replace(/\s/g, ''));
+      expect(CATCH_LINES[id][0], id).toMatch(/とったよ！|とれちゃった！/); // NH's dive line: 「〇〇を とったよ！」
     }
     expect(CATCH_LINES['sea-bass'][1]).toBe("I caught a sea bass! No, wait—it's at least a C+!");
     expect(CATCH_LINES['sea-bass'][0]).toBe('スズキを 釣り上げた！\n鈴木・・・じゃなくて、鱸なのね！');

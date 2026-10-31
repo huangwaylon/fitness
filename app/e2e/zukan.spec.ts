@@ -22,7 +22,8 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   await expect(row).toContainText(`1 / ${Object.keys(BUGS).length}`);
   await expect(page.locator('[data-zukan="fish"]')).toContainText('0 / 33');
   await expect(page.locator('[data-zukan="fossil"]')).toContainText('0 / 73');
-  await expect(page.locator('[data-zukan="shell"]')).toContainText('0 / 8');
+  await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
+  await expect(page.locator('[data-zukan="shell"]')).toContainText('0 / 9');
   await row.click();
   await expect(page.locator('.tile.unknown')).toHaveCount(Object.keys(BUGS).length - 1);
   await page.locator('button.tile[data-entry="common-butterfly"]').click();

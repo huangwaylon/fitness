@@ -52,8 +52,24 @@
   font-style: normal;
   font-display: swap;
   font-weight: 500;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-67-500-normal.woff2) format('woff2');
+  unicode-range: U+2466,U+2600,U+4eab,U+4fe3,U+4ff5,U+51a5,U+51f0,U+536f,U+53d4,U+53f1,U+54a5,U+559d,U+55e3,U+58fa,U+5962,U+59ea,U+5c16,U+5cef,U+5d16,U+5f10,U+5fd6,U+6190,U+6216,U+634f,U+63bb,U+66d6,U+6756,U+6bc5,U+6e26,U+727d,U+731f,U+76f2,U+7729,U+7a7f,U+7aff,U+7c9f,U+818f,U+8236,U+82b9,U+8338,U+85aa,U+88b4,U+8b33,U+904d,U+93a7,U+96cc,U+96eb,U+9aed,U+9b8e,U+fa11;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-73-500-normal.woff2) format('woff2');
   unicode-range: U+221e,U+2514,U+51f9,U+5270,U+5449,U+5824,U+59a5,U+5a29,U+5d07,U+5e16,U+60e3,U+614c,U+6276,U+643e,U+64ab,U+6562,U+6681,U+670b,U+6734,U+67af,U+6a3d,U+6b05,U+6dc0,U+6e4a,U+7259,U+732a,U+7409,U+78a7,U+7a6b,U+8015,U+809b,U+817a,U+830e,U+837b,U+85ab,U+8a23,U+8a93,U+8b00,U+8b19,U+8b21,U+8cbf,U+8fb0,U+901d,U+91b8,U+9320,U+932c,U+9688,U+96f6,U+9df2,U+ff6a;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-74-500-normal.woff2) format('woff2');
+  unicode-range: U+2002,U+2025,U+4f8d,U+51e1,U+51f8,U+5507,U+5598,U+58f1,U+5983,U+59ac,U+5c3c,U+5de7,U+5e7d,U+5eca,U+5f61,U+606d,U+60f9,U+636e,U+64ec,U+67da,U+67ff,U+6813,U+68f2,U+693f,U+6b6a,U+6bbb,U+6ef4,U+7092,U+717d,U+7261,U+73c8,U+7432,U+7483,U+76fe,U+7709,U+78d0,U+81a3,U+81b3,U+82af,U+8305,U+8309,U+8870,U+88fe,U+8cd1,U+8d66,U+906e,U+971e,U+9812,U+ff79,U+ff90;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';
@@ -70,6 +86,22 @@
   font-weight: 500;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-79-500-normal.woff2) format('woff2');
   unicode-range: U+25b3,U+30f5,U+4eae,U+4f46,U+4f51,U+5203,U+52ff,U+55a7,U+564c,U+565b,U+57f9,U+5805,U+5b64,U+5e06,U+5f70,U+5f90,U+60e8,U+6182,U+62f3,U+62fe,U+63aa,U+64a4,U+65d7,U+673a,U+6851,U+68cb,U+68df,U+6d1e,U+6e58,U+6e9d,U+77b3,U+7832,U+7c3f,U+7db4,U+7f70,U+80aa,U+80c6,U+8105,U+819d,U+8276,U+8679,U+8986,U+8c9d,U+8fc5,U+916c,U+9665,U+9699,U+96c0,U+9a19,U+ff8b;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-81-500-normal.woff2) format('woff2');
+  unicode-range: U+2010,U+2502,U+25b6,U+4f3a,U+514b,U+5265,U+52c3,U+5339,U+53ec,U+54c0,U+55b0,U+5854,U+5b8f,U+5cb3,U+5e84,U+60da,U+6247,U+6249,U+628a,U+62cd,U+65ac,U+6838,U+690e,U+6cf0,U+6f02,U+6f2c,U+6f70,U+708a,U+7434,U+75be,U+77ef,U+7c60,U+7c98,U+7d1b,U+7e2b,U+80a5,U+81e3,U+820c,U+8210,U+8475,U+862d,U+8650,U+8997,U+906d,U+91c8,U+9700,U+9727,U+9df9,U+ff3a,U+ff9a;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-83-500-normal.woff2) format('woff2');
+  unicode-range: U+2500,U+3008-3009,U+4ead,U+4f0f,U+4fca,U+53eb,U+543e,U+57a2,U+5cf0,U+5e8f,U+5fe0,U+61b2,U+62d8,U+6442,U+64b2,U+6589,U+659c,U+67f1,U+68c4,U+6cb8,U+6d12,U+6de1,U+6fe1,U+70c8,U+723d,U+73e0,U+7656,U+773a,U+7948,U+7b87,U+7c92,U+7d3a,U+7e1b,U+7e4a,U+819a,U+8358,U+83c5,U+84bc,U+864e,U+8912,U+8c9e,U+8d05,U+92fc,U+9396,U+98fd,U+99d2,U+ff64,U+ff7a,U+ff83;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';
@@ -190,6 +222,14 @@
   font-weight: 500;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-101-500-normal.woff2) format('woff2');
   unicode-range: U+25bc,U+3012,U+4ef2,U+4f0a,U+516b,U+5373,U+539a,U+53b3,U+559c,U+56f0,U+5727,U+5742,U+5965,U+59ff,U+5bc6,U+5dfb,U+5e45,U+5ead,U+5fb3,U+6211,U+6253,U+639b,U+63a8,U+6545,U+6575,U+6628,U+672d,U+68a8,U+6bdb,U+6d25,U+707d,U+767e,U+7834,U+7b46,U+7bc9,U+8074,U+82e6,U+8349,U+8a2a,U+8d70,U+8da3,U+8fce,U+91cc,U+967d,U+97ff,U+9996,U+ff1c,U+ff2f,U+ff32,U+ff34;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-102-500-normal.woff2) format('woff2');
+  unicode-range: U+3d,U+5e,U+25cf,U+4e0e,U+4e5d,U+4e73,U+4e94,U+4f3c,U+5009,U+5145,U+51ac,U+5238,U+524a,U+53f3,U+547c,U+5802,U+5922,U+5a66,U+5c0e,U+5de6,U+5fd8,U+5feb,U+6797,U+685c,U+6b7b,U+6c5f-6c60,U+6cc9,U+6ce2,U+6d17,U+6e21,U+7167,U+7642,U+76db,U+8001,U+821e,U+8857,U+89d2,U+8b1b,U+8b70,U+8cb4,U+8cde,U+8f03,U+8f2a,U+968e,U+9b54,U+9e7f,U+9ebb,U+ff05,U+ff33;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';
@@ -388,8 +428,24 @@
   font-style: normal;
   font-display: swap;
   font-weight: 700;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-67-700-normal.woff2) format('woff2');
+  unicode-range: U+2466,U+2600,U+4eab,U+4fe3,U+4ff5,U+51a5,U+51f0,U+536f,U+53d4,U+53f1,U+54a5,U+559d,U+55e3,U+58fa,U+5962,U+59ea,U+5c16,U+5cef,U+5d16,U+5f10,U+5fd6,U+6190,U+6216,U+634f,U+63bb,U+66d6,U+6756,U+6bc5,U+6e26,U+727d,U+731f,U+76f2,U+7729,U+7a7f,U+7aff,U+7c9f,U+818f,U+8236,U+82b9,U+8338,U+85aa,U+88b4,U+8b33,U+904d,U+93a7,U+96cc,U+96eb,U+9aed,U+9b8e,U+fa11;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-73-700-normal.woff2) format('woff2');
   unicode-range: U+221e,U+2514,U+51f9,U+5270,U+5449,U+5824,U+59a5,U+5a29,U+5d07,U+5e16,U+60e3,U+614c,U+6276,U+643e,U+64ab,U+6562,U+6681,U+670b,U+6734,U+67af,U+6a3d,U+6b05,U+6dc0,U+6e4a,U+7259,U+732a,U+7409,U+78a7,U+7a6b,U+8015,U+809b,U+817a,U+830e,U+837b,U+85ab,U+8a23,U+8a93,U+8b00,U+8b19,U+8b21,U+8cbf,U+8fb0,U+901d,U+91b8,U+9320,U+932c,U+9688,U+96f6,U+9df2,U+ff6a;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-74-700-normal.woff2) format('woff2');
+  unicode-range: U+2002,U+2025,U+4f8d,U+51e1,U+51f8,U+5507,U+5598,U+58f1,U+5983,U+59ac,U+5c3c,U+5de7,U+5e7d,U+5eca,U+5f61,U+606d,U+60f9,U+636e,U+64ec,U+67da,U+67ff,U+6813,U+68f2,U+693f,U+6b6a,U+6bbb,U+6ef4,U+7092,U+717d,U+7261,U+73c8,U+7432,U+7483,U+76fe,U+7709,U+78d0,U+81a3,U+81b3,U+82af,U+8305,U+8309,U+8870,U+88fe,U+8cd1,U+8d66,U+906e,U+971e,U+9812,U+ff79,U+ff90;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';
@@ -406,6 +462,22 @@
   font-weight: 700;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-79-700-normal.woff2) format('woff2');
   unicode-range: U+25b3,U+30f5,U+4eae,U+4f46,U+4f51,U+5203,U+52ff,U+55a7,U+564c,U+565b,U+57f9,U+5805,U+5b64,U+5e06,U+5f70,U+5f90,U+60e8,U+6182,U+62f3,U+62fe,U+63aa,U+64a4,U+65d7,U+673a,U+6851,U+68cb,U+68df,U+6d1e,U+6e58,U+6e9d,U+77b3,U+7832,U+7c3f,U+7db4,U+7f70,U+80aa,U+80c6,U+8105,U+819d,U+8276,U+8679,U+8986,U+8c9d,U+8fc5,U+916c,U+9665,U+9699,U+96c0,U+9a19,U+ff8b;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-81-700-normal.woff2) format('woff2');
+  unicode-range: U+2010,U+2502,U+25b6,U+4f3a,U+514b,U+5265,U+52c3,U+5339,U+53ec,U+54c0,U+55b0,U+5854,U+5b8f,U+5cb3,U+5e84,U+60da,U+6247,U+6249,U+628a,U+62cd,U+65ac,U+6838,U+690e,U+6cf0,U+6f02,U+6f2c,U+6f70,U+708a,U+7434,U+75be,U+77ef,U+7c60,U+7c98,U+7d1b,U+7e2b,U+80a5,U+81e3,U+820c,U+8210,U+8475,U+862d,U+8650,U+8997,U+906d,U+91c8,U+9700,U+9727,U+9df9,U+ff3a,U+ff9a;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-83-700-normal.woff2) format('woff2');
+  unicode-range: U+2500,U+3008-3009,U+4ead,U+4f0f,U+4fca,U+53eb,U+543e,U+57a2,U+5cf0,U+5e8f,U+5fe0,U+61b2,U+62d8,U+6442,U+64b2,U+6589,U+659c,U+67f1,U+68c4,U+6cb8,U+6d12,U+6de1,U+6fe1,U+70c8,U+723d,U+73e0,U+7656,U+773a,U+7948,U+7b87,U+7c92,U+7d3a,U+7e1b,U+7e4a,U+819a,U+8358,U+83c5,U+84bc,U+864e,U+8912,U+8c9e,U+8d05,U+92fc,U+9396,U+98fd,U+99d2,U+ff64,U+ff7a,U+ff83;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';
@@ -526,6 +598,14 @@
   font-weight: 700;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-101-700-normal.woff2) format('woff2');
   unicode-range: U+25bc,U+3012,U+4ef2,U+4f0a,U+516b,U+5373,U+539a,U+53b3,U+559c,U+56f0,U+5727,U+5742,U+5965,U+59ff,U+5bc6,U+5dfb,U+5e45,U+5ead,U+5fb3,U+6211,U+6253,U+639b,U+63a8,U+6545,U+6575,U+6628,U+672d,U+68a8,U+6bdb,U+6d25,U+707d,U+767e,U+7834,U+7b46,U+7bc9,U+8074,U+82e6,U+8349,U+8a2a,U+8d70,U+8da3,U+8fce,U+91cc,U+967d,U+97ff,U+9996,U+ff1c,U+ff2f,U+ff32,U+ff34;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-102-700-normal.woff2) format('woff2');
+  unicode-range: U+3d,U+5e,U+25cf,U+4e0e,U+4e5d,U+4e73,U+4e94,U+4f3c,U+5009,U+5145,U+51ac,U+5238,U+524a,U+53f3,U+547c,U+5802,U+5922,U+5a66,U+5c0e,U+5de6,U+5fd8,U+5feb,U+6797,U+685c,U+6b7b,U+6c5f-6c60,U+6cc9,U+6ce2,U+6d17,U+6e21,U+7167,U+7642,U+76db,U+8001,U+821e,U+8857,U+89d2,U+8b1b,U+8b70,U+8cb4,U+8cde,U+8f03,U+8f2a,U+968e,U+9b54,U+9e7f,U+9ebb,U+ff05,U+ff33;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';

@@ -4,17 +4,19 @@
 // timers): Critters.svelte owns the motion and the timers and asks this module what happens. Nothing here counts for
 // anything: a catch is a caption and an icon, never ベル or a write.
 
+import type { SeaId } from './sea.ts';
+
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
-interface Seasonal {
+export interface Seasonal {
   months: readonly number[];
   hours: readonly [number, number];
   /** Relative odds among the critters about at that moment. */
   weight: number;
 }
 
-const ALL_YEAR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
-const ALL_DAY = [0, 24] as const;
-const span = (a: number, b: number): number[] => (a <= b ? range(a, b) : [...range(a, 12), ...range(1, b)]);
+export const ALL_YEAR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+export const ALL_DAY = [0, 24] as const;
+export const span = (a: number, b: number): number[] => (a <= b ? range(a, b) : [...range(a, 12), ...range(1, b)]);
 const range = (a: number, b: number): number[] => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 
 export type FishId =
@@ -216,7 +218,7 @@ export const oddsAt = (c: Seasonal & { also?: readonly [number, number] }, month
   !inHoursOf(c, hour) ? 0 : c.weight * (c.months.includes(month) ? IN_SEASON : 1);
 
 /** A weighted pick among the ids that can come at (month, hour), or null. `r` is a uniform [0, 1) source. */
-function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number): K | null {
+export function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number): K | null {
   const live = (Object.keys(table) as K[]).map((k) => [k, oddsAt(table[k], month, hour)] as const).filter(([, w]) => w > 0);
   const total = live.reduce((s, [, w]) => s + w, 0);
   if (!total) return null;
@@ -274,10 +276,13 @@ export function stalkTap(state: StalkState, swing: 'catch' | 'startle' | 'none')
  *  (back a few seconds after a catch or a flee) and a bug comes by every so often (user: frequent, it's for fun). */
 export const nextSpawnMs = (r: () => number, first = false): number => (first ? 3_000 + r() * 3_000 : 8_000 + r() * 7_000);
 
-/** Which ambient critter to bring on (≤ 1 of each, so ≤ 2 animating at once): a fish whenever the sea is empty,
+/** The share of the sea's turns that bring a bubble spot to dive at instead of a fish shadow (island/sea.ts). */
+export const BUBBLE_SHARE = 0.25;
+/** Which ambient critter to bring on (≤ 1 in the sea, ≤ 1 bug, so ≤ 2 animating at once): whenever the sea is empty a
+ *  fish shadow, or 1 in 4 a bubble spot (the sea holds one or the other, so it's no busier than with fish alone);
  *  otherwise a bug when none is about (most visits; `r` keeps a little air between them). */
-export function spawnKind(slots: { fish: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'bug' | null {
-  if (!slots.fish) return 'fish';
+export function spawnKind(slots: { sea: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'sea' | 'bug' | null {
+  if (!slots.sea) return r() < BUBBLE_SHARE ? 'sea' : 'fish';
   return !slots.bug && bugAbout && r() < 0.8 ? 'bug' : null;
 }
 
@@ -361,12 +366,13 @@ export function netSwing(distPx: number, sizePx: number): 'catch' | 'startle' | 
 // ---------- captions ----------
 
 /** The catch caption: NH's 「〇〇を つりあげた！」 / 「〇〇を つかまえた！」, the sea bass's famous joke, or the junk's
- *  letdown. Returns an i18n key and its params (the name is looked up by the caller under critter.name.<id>). */
-export function caption(item: FishId | JunkId | BugId): { key: string; name?: string } {
+ *  letdown (a sea creature: 「〇〇を とったよ！」). Returns an i18n key and its params (the name is looked up by the caller under critter.name.<id>). */
+export function caption(item: FishId | JunkId | BugId | SeaId): { key: string; name?: string } {
   if (item === 'sea-bass') return { key: 'critter.seaBass' };
   if ((JUNK as readonly string[]).includes(item)) return { key: `critter.junk.${item}` };
+  if (!(item in FISH) && !(item in BUGS)) return { key: 'critter.caughtSea', name: `sea.name.${item}` };
   return { key: item in FISH ? 'critter.caughtFish' : 'critter.caughtBug', name: `critter.name.${item}` };
 }
 
-/** The official icon of a catch (static/art/critters/, fetched by scripts/fetch-assets.ts). */
-export const critterArt = (item: FishId | JunkId | BugId): string => `critters/${item}`;
+/** The official icon of a catch (static/art/critters/, fetched by scripts/fetch-assets.ts; the sea creatures too). */
+export const critterArt = (item: FishId | JunkId | BugId | SeaId): string => `critters/${item}`;

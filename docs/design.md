@@ -396,8 +396,18 @@ in its NH northern-hemisphere months; hours still hold (butterflies and bees by 
   scuttles sideways, a snail barely moves). A tap on one swings the net (caught); within 80px it startles away. A
   shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
   fruit row).
+- **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): the sea
+  holds one thing at a time, and 1 turn in 4 it's a spot of bubbles rising and popping where a shadow would swim
+  (gone after 30 s), instead of a fish. A tap on it (a 44px reach) is a dive: a splash and a ring (`scene-splash`).
+  NH's speeds decide: still and slow ones are caught at once; a medium one half the time, else, like a fast one, its
+  shadow (NH's size 1–5) darts a little way off inside its patch of sea and a second tap on it within 1.6 s (medium),
+  1.3 s (fast) or 1.0 s (very fast) catches it, else it gets away (`scene-flee`); a very fast one is clean away 1 time
+  in 3. Months and hours as NH's, weighting the odds (×3 in season, rare = low weight: the gigas giant clam, the sea
+  pig, the vampire squid, the giant isopod). The catch line is NH's dive line (「タコを とったよ！ …」). 1 bubble spot in
+  25 is NH's pearl (a quick one; 「しんじゅを ひろった！」, a shell in the ずかん). `?sea=<id>|pearl` (dev or `?demo`)
+  brings a spot at once and keeps it until dived.
 - **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's own catch
-  line for it (`island/catchLines.ts`, all 80 fish and bugs and the three pieces of junk: English from Nookipedia,
+  line for it (`island/catchLines.ts`, every fish, bug and sea creature and the three pieces of junk: English from Nookipedia,
   Japanese from the game's messages, a line break where the game has one; 「スズキを 釣り上げた！ 鈴木・・・じゃなくて、
   鱸なのね！」 / "I caught a sea bass! No, wait—it's at least a C+!"), loaded with the first critter of a session. It
   sits centred above (else below) the catch, inside the safe area and clear of every control, popup and しずえ's box;
@@ -529,19 +539,19 @@ villager and the deck goes for the day (once a day per phone). No ベル. `?stre
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
 (Critterpedia) in きろく: さかな 33, むし 67 (the wasp, bagworm and spider from a shaken tree and the flea included),
-かせき 73, かいがら 8, shared between the two of us (the first `find` of either). A kind's page lists every entry in the
+うみのさち 40 (diving), かせき 73, かいがら 9 (the pearl from diving last), shared between the two of us (the first `find` of either). A kind's page lists every entry in the
 game's order: the official icon (loaded lazily) and the name for the found ones, a silhouette (the icon in one shade)
 and ？？？ for the rest; 「コンプリート！」 when all are in. The fossils are laid out like NH's museum: the standalone ones,
 then each dinosaur under its name with how many of its pieces are in (「Tレックス 1 / 3」) and its pieces. The names of
 everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん, the first critter of a session
 or a beach find's plate, out of the island's first load. A tap on a
-found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish and bugs, NH's catch line.
+found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish, bugs and sea creatures, NH's catch line.
 
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
 wing or fin loop each while on screen; between visits one timer. Art loads on first need. Layers: sea life z 1 (under
 the tint), bugs `--z-leaf` (night `--z-taps`, so fireflies glow), the catch `--z-taps`, the present under `--z-tree`.
 Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1 s, never jingles; [Cues](#cues)).
-`?critter=fish|<bug id>` (dev or `?demo`) brings one on at once and keeps it until caught; `?balloon` floats one.
+`?critter=fish|<fish id>|<bug id>` (dev or `?demo`) brings one on at once and keeps it until caught; `?balloon` floats one.
 
 ## Motion
 

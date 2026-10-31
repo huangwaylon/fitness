@@ -329,8 +329,9 @@ describe('events', () => {
       { type: 'spend', data: { spendId: 's7', item: 'dinner', bells: 15 } },
       ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'].map((key) => ({ type: 'pref', data: { key, value: null } })),
       { type: 'harvest', data: { week: '2026-10-26' } },
-      ...['fish', 'bug', 'fossil', 'shell', 'fragment'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
-      { type: 'find', data: { kind: 'fossil', id: 't-rex-skull' } }
+      ...['fish', 'bug', 'sea', 'fossil', 'shell', 'fragment'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
+      { type: 'find', data: { kind: 'fossil', id: 't-rex-skull' } },
+      { type: 'find', data: { kind: 'sea', id: 'gigas-giant-clam' } }
     ];
     ok.forEach((e, i) => expect(a('event', { id: `ok${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: true }));
     const bad = [
@@ -348,7 +349,7 @@ describe('events', () => {
       { type: 'pref', data: { key: 'locale' } },
       { type: 'harvest', data: { week: 'soon' } },
       { type: 'harvest', data: { week: '2026-02-30' } }, // not a calendar date
-      { type: 'find', data: { kind: 'bells', id: 'sea-bass' } }, // finds are scenery: fish, bug, fossil, shell, fragment
+      { type: 'find', data: { kind: 'bells', id: 'sea-bass' } }, // finds are scenery: fish, bug, sea, fossil, shell, fragment
       { type: 'find', data: { kind: 'fish' } },
       { type: 'find', data: { kind: 'fish', id: 'Sea Bass' } },
       { type: 'find', data: { kind: 'fish', id: 7 } },

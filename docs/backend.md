@@ -39,7 +39,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `highfive` | `{}` | |
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000) |
-| `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `fossil` · `shell` · `fragment` (`FIND_KINDS`), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
+| `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` (`FIND_KINDS`), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
 
 **Finds:** the client sends a `find` only the first time either person finds that `kind:id` (the model holds queued
 events too, so a second catch before the ack sends nothing; a race between the two phones only adds a duplicate the
