@@ -1,7 +1,6 @@
-// Renders the app icons from design/icon/icon-source.png (the couple jogging past Tokyo Tower, the user's art) with
-// Playwright + the installed Chrome, at exact pixel sizes. Usage (from app/): npm run icons:build → static/icons/*.png
-// (commit them). The source already has small rounded corners on white, so every icon crops INSET px off each edge to
-// leave a full-bleed square (iOS and Android round or mask it themselves).
+// Renders the app icons from design/icon/icon-source.png (the couple on a bench on the island, the user's art) with
+// Playwright + the installed Chrome, at exact pixel sizes. Usage (from app/): npm run icons:build → static/icons/*
+// (commit them). The source is a full-bleed square (iOS and Android round or mask it themselves).
 // - apple-touch-icon-180 and icon-192 (PNG), icon-512 and icon-maskable-512 (WebP via cwebp: ~30 KB instead of ~370 KB
 //   of photographic PNG, since they're in the install precache): the full square (both faces sit well inside the
 //   maskable 80% safe circle).
@@ -17,10 +16,9 @@ const ICONS = join(APP, 'static', 'icons');
 const src = 'data:image/png;base64,' + readFileSync(join(APP, 'design', 'icon', 'icon-source.png')).toString('base64');
 
 const SIZE = 1254; // the source's side
-const INSET = 40; // clears the source's rounded white corners
 type Crop = { x: number; y: number; side: number };
-const FULL: Crop = { x: INSET, y: INSET, side: SIZE - 2 * INSET };
-const FACES: Crop = { x: 170, y: 110, side: 900 };
+const FULL: Crop = { x: 0, y: 0, side: SIZE };
+const FACES: Crop = { x: 157, y: 20, side: 940 };
 
 const jobs: [crop: Crop, px: number, file: string][] = [
   [FULL, 180, 'apple-touch-icon-180.png'],
