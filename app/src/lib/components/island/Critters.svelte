@@ -18,7 +18,8 @@
   import { onMount } from 'svelte';
   import Plate from './Plate.svelte';
   import { artUrl } from '#lib/art.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { jst, now, reducedMotion } from '#lib/time/clock.ts';
   import { HEDGE_BASE, HEDGE_X, BUSH_U, PLATEAU, SAND, TREE, type Tod } from './scene.ts';
   import { hitStage, sceneSfx } from './sceneTaps.ts';
@@ -164,6 +165,7 @@
     const id = want ?? pickFish(month, hour, rand);
     const item = want ?? hookItem(id, rand);
     preload(critterArt(item));
+    void loadLines().catch(() => {});
     const p = inBox(box);
     fish = { item, size: FISH[id].size, shape: FISH[id].shape, ...p, ms: 0, flip: rand() < 0.5, box, gone: false, dash: false };
     later(swim, 400);
@@ -300,6 +302,7 @@
     const g = geo();
     if (!id || !g || bug) return;
     preload(critterArt(id));
+    void loadLines().catch(() => {});
     const flight = BUGS[id].flight;
     const side = rand() < 0.5 ? -1 : 1;
     const ground = BUGS[id].ground;
@@ -394,16 +397,35 @@
   // ---------- the catch ----------
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
    *  (Plate.svelte places it clear of every control). */
-  function show(item: FishId | JunkId | BugId, x: number, y: number) {
+  async function show(item: FishId | JunkId | BugId, x: number, y: number) {
     // the shared ずかん: the first catch of each fish or bug (junk isn't a find)
     if (item in FISH) recordFind('fish', item);
     else if (item in BUGS) recordFind('bug', item);
-    const c = caption(item);
-    card = { n: ++seq, x, y, art: critterArt(item), text: t(c.key, c.name ? { name: t(c.name) } : undefined) };
+    const n = ++seq;
+    const text = await catchLine(item);
+    if (seq !== n) return;
+    card = { n, x, y, art: critterArt(item), text };
   }
+  /** NH's own catch line (catchLines.ts, loaded with the first critter), else our short caption. */
+  async function catchLine(item: FishId | JunkId | BugId): Promise<string> {
+    const lines = await loadLines().catch(() => null);
+    const line = lines?.[item]?.[i18n.locale === 'en' ? 1 : 0];
+    if (line) return line.replace('<Player>', week.view?.people[week.view.me].villagerName ?? '');
+    const c = caption(item);
+    return t(c.key, c.name ? { name: t(c.name) } : undefined);
+  }
+  let lineChunk: Promise<typeof import('./catchLines.ts')['CATCH_LINES']> | null = null;
+  const loadLines = () => (lineChunk ??= import('./catchLines.ts').then((m) => m.CATCH_LINES));
+  /** The catch plate's box (a tap on it dismisses it, NH's A). */
+  let heldEl = $state<HTMLElement>();
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
   export function tap(px: number, py: number): boolean {
+    const plate = card && heldEl?.querySelector('.catch-plate')?.getBoundingClientRect();
+    if (plate && px >= plate.left && px <= plate.right && py >= plate.top && py <= plate.bottom + 4) {
+      card = null;
+      return true;
+    }
     if (cast) {
       reelIn();
       return true;
@@ -579,7 +601,7 @@
   {/if}
 </div>
 
-<div class="held" aria-hidden="true">
+<div class="held" aria-hidden="true" bind:this={heldEl}>
   {#if cast?.under}
     <!-- over the land and the tint, so the 「！」 is never hidden behind the beach -->
     <span class="mover" style:translate="{U(cast.x)} {U(cast.y)}"><span class="bang" data-bite>！</span></span>
@@ -593,7 +615,7 @@
   {/if}
   {#if card}
     {@const c = card}
-    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} text={c.text} ondone={() => card?.n === c.n && (card = null)} />{/key}
+    {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} text={c.text} ms={Math.min(5600, 2600 + c.text.length * 45)} ondone={() => card?.n === c.n && (card = null)} />{/key}
   {/if}
 </div>
 

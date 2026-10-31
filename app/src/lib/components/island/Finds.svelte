@@ -99,6 +99,7 @@
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
   let card = $state<Card | null>(null);
+  let heldEl = $state<HTMLElement>();
   let seq = 0;
   const timers = new Set<ReturnType<typeof setTimeout>>();
   function later(fn: () => void, ms: number) {
@@ -166,6 +167,12 @@
   export function tap(px: number, py: number): boolean {
     const g = stageGeo(scene);
     if (!g || !enabled()) return false;
+    // a tap on the plate dismisses it (NH's A)
+    const plate = card && heldEl?.querySelector('.catch-plate')?.getBoundingClientRect();
+    if (plate && px >= plate.left && px <= plate.right && py >= plate.top && py <= plate.bottom + 4) {
+      card = null;
+      return true;
+    }
     const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
     const reach = 22 * g.k;
     type Hit = { d: number; go: () => void };
@@ -241,7 +248,7 @@
   {/if}
 </div>
 
-<div class="held" aria-hidden="true">
+<div class="held" aria-hidden="true" bind:this={heldEl}>
   {#if card}
     {@const c = card}
     {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} text={c.text} ms={c.text.length > 24 ? 3800 : 2600} ondone={() => card?.n === c.n && (card = null)} />{/key}
