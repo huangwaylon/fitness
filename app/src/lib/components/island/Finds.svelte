@@ -24,6 +24,7 @@
   import { guardsU, clearAt, stageGeo } from './placement.ts';
   import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentDay, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wishDay, wishFor } from './sceneDay.ts';
+  import { showerNight } from './meteor.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { approach } from './avatar.ts';
   import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
@@ -89,7 +90,8 @@
     void taken;
     if (want !== 'fragment' && wishDay() !== date) return [];
     const gone = takenOn(date);
-    return fragmentsOn(date, seed).filter((f) => !gone.has(f.uid));
+    // a wish on a meteor shower's night (the night before this morning) brings more
+    return fragmentsOn(date, seed, showerNight(addDays(date, -1), seed)).filter((f) => !gone.has(f.uid));
   });
 
   // Shells that wash up while you watch slide in from the foam; the ones already there when the island opens just lie.

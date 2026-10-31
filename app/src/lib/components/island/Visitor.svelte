@@ -12,15 +12,16 @@
   import { untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { jst, minuteNow } from '#lib/time/clock.ts';
+  import { jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
   import { kkPick } from '#lib/sound/kk.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { ISLAND_SEED } from './beach.ts';
+  import { ISLAND_SEED, zodiacOf } from './beach.ts';
   import { approach } from './avatar.ts';
+  import { showerAt } from './meteor.ts';
   import { VISITORS, visitorAt, visitorLine, type VisitorId } from './visitors.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import type { Choice } from './pager.ts';
@@ -41,6 +42,8 @@
   const seed = (hooks && q.get('seed')) || ISLAND_SEED;
   const want = hooks ? (q.get('visitor') as VisitorId | null) : null;
   const force = forcedEvent();
+  /** `?shower` (dev or ?demo): tonight is a meteor shower's night. */
+  const forceShower = hooks && q.has('shower');
   const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
 
   /** How each stands: height (u), and its box above its foot (half-width, height) for the clearance check. */
@@ -49,7 +52,8 @@
     'daisy-mae': { h: 48, hw: 16, up: 48 },
     wisp: { h: 30, hw: 16, up: 44 }, // floating: drawn a third of its height above the sand, bobbing
     gulliver: { h: 40, hw: 22, up: 14 }, // lying down: the render turned on its side
-    jack: { h: 48, hw: 17, up: 48 }
+    jack: { h: 48, hw: 17, up: 48 },
+    celeste: { h: 44, hw: 15, up: 44 }
   };
   /** Visitors outside the roster (an event's guest): their render and name-tag colour (Jack: his robe's purple). */
   const ART: Partial<Record<VisitorId, string>> = { jack: 'villagers/jack' };
@@ -60,7 +64,8 @@
     if (want && VISITORS.includes(want)) return want;
     const date = localDateAt(clock.getTime());
     const { hour, weekday } = jst(clock);
-    return visitorAt(date, addDays(date, -1), hour, weekday, seed, eventAt(date, hour, force));
+    const prev = addDays(date, -1);
+    return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, force), showerAt(date, prev, hour, seed, forceShower));
   });
   /** Where it stands this time (the front beach, the middle first), or null when the controls leave no room. */
   let spot = $state<{ x: number; y: number } | null>(null);
@@ -165,7 +170,9 @@
       return say?.(name, t(`chat.sp.${id}.intro`), target, { colour });
     }
     last = visitorLine(id, Math.random, last);
-    say?.(name, t(last), target, { colour });
+    // Celeste names the season's sign (its zodiac fragment is the likelier one after tonight's wishes)
+    const sign = zodiacOf(localDateAt(now().getTime())).replace(/-fragment$/, '');
+    say?.(name, t(last, { sign: t(`zodiac.${sign}`) }), target, { colour });
   }
 
   /** A tap on the scene (client px), after the care: true when the visitor took it. */

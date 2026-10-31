@@ -357,7 +357,8 @@ covered or hidden; reduced motion gives a 450 ms glow and no critters; decorativ
 butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on
 summer nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in
 winter); a cloud squishes; the sun glints; the moon sends a shooting star; the night sky twinkles (1 in 4 a shooting
-star); a clear night sends a shooting star every 15–40 s.
+star); a clear night sends a shooting star every 15–40 s (a meteor shower's night: every 3–8 s, [Celeste and meteor
+showers](#celeste-and-meteor-showers)).
 
 **Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
 the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
@@ -426,7 +427,8 @@ fragment is a ずかん `find` (never ベル).
   ja/en). Not a find.
 - **Star fragments:** a tap in the night sky while a shooting star crosses is a wish (「ながれぼしに おねがい！」,
   `scene-wish` in localStorage); the next morning (a wish before 05:00: that morning) 2–3 fragments lie on the beach:
-  star fragments, now and then a large one or the season's zodiac fragment.
+  star fragments, now and then a large one or the season's zodiac fragment; after a meteor shower's night 4–5, the
+  zodiac one twice as likely.
 - The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
   44px. `?find=bottle|fragment|mushroom|rare-mushroom` (dev or `?demo`)
   brings one now.
@@ -473,7 +475,8 @@ ja/en. The roster (personalities) loads on the first chat. One balloon at a time
 renders), one at a time, measured clear of every control (the middle first, else a little to the side, else none):
 **K.K. Slider** with his guitar on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp**
 (see-through, a slow bob) on 1 in 4 nights 20:00–04:00, **Gulliver** washed up asleep on his side on 1 in 4 days
-06:00–18:00, seeded by the date (both phones see the same); **Jack** on Halloween night ([Halloween](#halloween)). A tap: their introduction the first time (two pages), then
+06:00–18:00, seeded by the date (both phones see the same); **Jack** on Halloween night ([Halloween](#halloween));
+**Celeste** on a meteor shower's night 20:00–04:00 ([Celeste and meteor showers](#celeste-and-meteor-showers)). A tap: their introduction the first time (two pages), then
 one of their lines; with ミュージック on K.K. plays one of his songs instead ([K.K. Slider](#kk-slider); ♪
 float up). No trading, no ベル. `?visitor=<id>` (dev or `?demo`) brings one.
 
@@ -497,6 +500,17 @@ or `?demo`, forces it with its evening):
   nose glasses (鼻めがね) for a minute (not kept across a reload). No inventory, no ベル.
 - **Villagers:** in the evening their day lines include three Halloween ones, weighed double (about 1 tap in 6).
 - **Music:** the Halloween BGM belongs to the hourly music (the audio side), not this.
+
+### Celeste and meteor showers
+
+`island/meteor.ts`, `island/visitors.ts`, `e2e/celeste.spec.ts`. NH's meteor showers: about one night in ten, at most one a
+week (a week has one with a 0.7 chance, on one of its seven nights; seeded by the week's Monday, so both phones agree;
+2026-11-12 is one). That night Celeste (フーコ, the official render) is the visitor from 20:00 to 04:00 (after Jack on
+Halloween, before K.K. and Wisp), and shooting stars cross every 3–8 s instead of every 15–40 s. Her introduction (two
+pages) says the shower is on; her lines explain wishing (tap the sky while a star crosses), the fragments it brings, and
+the season's sign (「いまの 季節の 星座は さそりざ。」, `zodiac.<sign>`). A wish that night brings 4–5 fragments the next
+morning instead of 2–3, the season's zodiac fragment twice as likely (`fragmentsOn(date, seed, shower)`, the night
+before the morning). No ベル. `?shower` (dev or `?demo`) makes tonight a shower's night; `?visitor=celeste` brings her.
 
 ### Group stretching
 
