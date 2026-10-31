@@ -667,8 +667,12 @@ game's order: the official icon (loaded lazily) and the name for the found ones,
 and ？？？ for the rest; 「コンプリート！」 when all are in. The fossils are laid out like NH's museum: the standalone ones,
 then each dinosaur under its name with how many of its pieces are in (「Tレックス 1 / 3」) and its pieces. The names of
 everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん, the first critter of a session
-or a beach find's plate, out of the island's first load. A tap on a
-found one shows it on top: the icon, the name, 「7/4 ウェイが 見つけた」 and, for fish, bugs and sea creatures, NH's catch line.
+or a beach find's plate, out of the island's first load. The page's head is pinned (as the むらびと picker's): one card
+with the kind and its count (「3 / 80」, the page's summary while nothing is picked; under it the hint while nothing is
+found) stays put while the grid scrolls in its own scroller under it (overscroll contained, to the bottom edge; the
+panel body holds still on this level, IslandPanel's `.fill`). A tap on a found one shows it in that head, the grid
+staying where it was scrolled: the icon (48px), the name, 「7/4 ウェイが 見つけた」 and, for fish, bugs and sea
+creatures, NH's catch line, two lines at most; a longer one ends in NH's ▼ and a tap opens the rest (and closes it).
 
 **Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
 wing or fin loop each while on screen; between visits one timer. Art loads on first need (the pond's fish table too).
