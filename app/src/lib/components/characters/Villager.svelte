@@ -45,10 +45,12 @@
     shadow?: boolean;
     /** Stung by a shaken tree's wasps (island/TreeShakes.svelte): NH's swollen eye, for a while. */
     puffy?: boolean;
+    /** Tricked by Jack on Halloween (island/Visitor.svelte): NH's trick changes your look; here, party nose glasses. */
+    tricked?: boolean;
   }
   let {
     person = 'A', villager, expression = 'happy', size = 48, head, emote = false,
-    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, puffy = false
+    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, puffy = false, tricked = false
   }: Props = $props();
 
   const pref = $derived(week.view?.people?.[person]?.villager);
@@ -108,6 +110,16 @@
         {#snippet fallback()}<RosterSilhouette id={look.id} head={headOnly} height={h} />{/snippet}
       </OfficialArt>
       {#if puffy && !headOnly}<span class="puffy" data-puffy aria-hidden="true"></span>{/if}
+      {#if tricked && !headOnly}
+        <svg class="tricked" data-tricked viewBox="0 0 72 34" aria-hidden="true">
+          <path d="M28 12 Q36 7 44 12" fill="none" stroke="#2B2230" stroke-width="2.6" stroke-linecap="round" />
+          <circle cx="18" cy="13" r="9.5" fill="rgba(255,255,255,.35)" stroke="#2B2230" stroke-width="3" />
+          <circle cx="54" cy="13" r="9.5" fill="rgba(255,255,255,.35)" stroke="#2B2230" stroke-width="3" />
+          <path d="M22 29 Q29 22 36 26 Q43 22 50 29 Q43 27 36 30 Q29 27 22 29 Z" fill="#3A2A22" />
+          <ellipse cx="36" cy="21" rx="6.5" ry="7" fill="#FF9AA8" />
+          <ellipse cx="34" cy="18.5" rx="2" ry="1.6" fill="#FFE1E6" />
+        </svg>
+      {/if}
     </span>
   </span>
   {#if shownEmote}
@@ -137,6 +149,12 @@
     background: radial-gradient(circle at 36% 32%, #FFE3E6 0 14%, #FF9FAE 34%, #EE6F86 78%, #D95773);
     box-shadow: 0 1px 2px rgb(120 30 50 / .3); transform-origin: 50% 70%; animation: puff-up 420ms var(--ease-bounce) both;
   }
+  /* Jack's trick: party nose glasses (鼻めがね) over the face, popping on with a wobble */
+  .tricked {
+    position: absolute; left: 14%; top: 11%; width: 72%; height: auto; overflow: visible;
+    filter: drop-shadow(0 1px 1px rgb(40 20 30 / .3)); transform-origin: 50% 40%; animation: trick-on 520ms var(--ease-bounce) both;
+  }
+  @keyframes trick-on { from { transform: scale(.2) rotate(-20deg); opacity: 0; } 50% { opacity: 1; } }
   @keyframes puff-up { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
   .body.bob { animation: if-bob 2400ms var(--ease-idle) infinite; animation-delay: var(--bob-delay, 0s); }
   .body.sleep { animation: if-breath-slow 4000ms var(--ease-idle) infinite; }

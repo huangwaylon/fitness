@@ -216,6 +216,16 @@ The shared wallet's jar sits in the HUD, on the right of 「きょう +N ベル�
 still fly from the fruit on the island up into it. Why: today's ベル and the wallet read together where the eye
 already goes, and the island's middle is free for visitors.
 
+### NH events by date rule: Halloween
+Dated NH events are one rule each in `island/events.ts` (a Tokyo `MM-DD` and the hour its evening starts), read by
+whatever shows them; only Halloween so far (Oct 31: pumpkins all day; 17:00–24:00 the lit lanterns, a light wash,
+Jack and the villagers' Halloween lines). Jack is a visitor and comes first that night, even over K.K. on a Saturday
+(Oct 31 2026 is one). With no inventory, his "trick or treat" is a choice in the balloon: candy delights him, nothing
+earns his trick, party glasses on my villager for a minute, not kept across a reload. Cosmetic and local: no ベル, no
+event, no script change. Why: the user asked for NH's Halloween on the night (2026-10-31), light and without touching
+the economy; one rule table keeps the next event (Toy Day, the countdown) a small change. The music is the audio
+side's (the hour's track), not here.
+
 ### Official NH art
 Official Animal Crossing: New Horizons renders, fetched by hand with `npm run assets:fetch` into `app/static/art/`
 (with a manifest), never hot-linked. `<OfficialArt>` falls back to our own SVG drawings. Why: the real look; if a

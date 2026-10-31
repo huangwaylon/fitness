@@ -7,17 +7,23 @@
   // after a read's length. One at a time; a new line replaces the last. It sits as close above (else below) the speaker
   // as it can, inside the scene's safe area and clear of every control, a tree's popup, しずえ's box and the speaker
   // (placement.ts); with no room it's skipped. The box is sized for its longest page, so it never jumps between pages.
-  //   <Talk bind:this={talk} scene={el} />   talk.say(name, ['page…', 'next part…'], speakerEl, { colour })
+  // A line may end on a choice (NH's answers: Jack's 「キャンディを あげる」): its answers show in a row at the balloon's
+  // foot (the box keeps their room on every page) once the last page has typed; until one is picked a tap on the box
+  // does nothing (left alone 15 s, it closes unanswered).
+  //   <Talk bind:this={talk} scene={el} />   talk.say(name, ['page…', 'next part…'], speakerEl, { colour, choices })
   import { tick } from 'svelte';
   import { place, type Box } from './placement.ts';
-  import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type PagerState } from './pager.ts';
+  import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
 
-  interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; below: boolean; placed: boolean }
+  interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; below: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number }
   let said = $state<Said | null>(null);
   let pg = $state<PagerState>({ pages: [''], page: 0, shown: 0 });
   let el = $state<HTMLElement>();
+  let menu = $state<HTMLElement>();
+  /** The answers show once the last page has typed. */
+  const asking = $derived(!!said?.choices.length && pg.page >= pg.pages.length - 1 && !typing(pg));
   let seq = 0;
   let typer: ReturnType<typeof setInterval> | undefined;
   let idle: ReturnType<typeof setTimeout> | undefined;
@@ -42,7 +48,8 @@
   function rest(n: number) {
     clearTimeout(idle);
     const last = pg.page >= pg.pages.length - 1;
-    const read = Math.max(2800, 900 + [...pg.pages[pg.page]].length * 70);
+    // a question waits longer for its answer (then closes unanswered)
+    const read = said?.choices.length ? 15000 : Math.max(2800, 900 + [...pg.pages[pg.page]].length * 70);
     idle = setTimeout(() => {
       if (said?.n !== n) return;
       if (last) said = null;
@@ -56,7 +63,7 @@
   /** A tap on the box (NH's A): finish the page, turn it, or close on the last. */
   function tapIt() {
     const s = said;
-    if (!s) return;
+    if (!s || asking) return;
     const r = tapBox(pg);
     pg = r.state;
     if (r.action === 'close') return stop(), (said = null);
@@ -64,25 +71,42 @@
     run(s.n);
   }
 
+  function choose(c: Choice) {
+    stop();
+    said = null;
+    c.pick();
+  }
+
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
    *  head). `avoid`: more boxes to keep clear of (client px), e.g. the speaker's emote; `colour`: the name tag's. */
-  export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string } = {}) {
+  export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string; choices?: Choice[] } = {}) {
     stop();
     const n = ++seq;
     pg = { pages: paginate(parts), page: 0, shown: 0 };
-    said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, below: false, placed: false };
+    said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, below: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0 };
     await tick();
+    // the answers' row: measured first, then the balloon keeps its room at its foot
+    const m = menu?.getBoundingClientRect();
+    if (m && said?.n === n) {
+      Object.assign(said, { mw: m.width, mh: m.height });
+      await tick();
+    }
     const stage = scene?.querySelector('.stage')?.getBoundingClientRect();
     const box = el?.getBoundingClientRect(), src = from.getBoundingClientRect();
     if (!scene || !stage || !box || said?.n !== n) return;
     const sx = src.left + src.width / 2, sy = src.top;
     // never over the speaker itself
     const self = { x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 };
-    const at = place(scene, box.width, box.height + 10, sx, sy, [...(o.avoid ?? []), self]); // + the tail
+    const avoid = [...(o.avoid ?? []), self];
+    // + the tail; a question with no room clear of the controls may sit over them (it waits for its answer)
+    const at = place(scene, box.width, box.height + 10, sx, sy, avoid) ?? (said.mh ? place(scene, box.width, box.height + 10, sx, sy, avoid, true) : null);
     if (!at) return (said = null);
     const below = at.y > sy;
     const tail = Math.max(-box.width / 2 + 18, Math.min(box.width / 2 - 18, sx - at.x));
-    Object.assign(said, { x: at.x - stage.left, y: at.y - stage.top + (below ? 5 : -5), tail, below, placed: true });
+    const bx = at.x - stage.left, by = at.y - stage.top + (below ? 5 : -5);
+    // the answers' row: centred in the room at the balloon's foot
+    const mx = bx - said.mw / 2, my = by + box.height / 2 - 10 - said.mh;
+    Object.assign(said, { x: bx, y: by, tail, below, placed: true, mx, my });
     run(n);
   }
 </script>
@@ -94,6 +118,7 @@
       <button type="button" class="say" class:placed={said.placed} class:below={said.below} data-fx="talk" data-sfx="tick" bind:this={el}
         aria-label="{said.name}: {pg.pages.join(' ')}" data-page={pg.page} data-pages={pg.pages.length}
         style:left="{said.x}px" style:top="{said.y}px" style:--tail="{said.tail}px" style:--tag={said.colour} style:--tag-ink={tagInk(said.colour)}
+        style:padding-bottom={said.mh ? `${said.mh + 18}px` : null} style:min-width={said.mw ? `${said.mw + 16}px` : null}
         onclick={tapIt}>
         <b class="who">{said.name}</b>
         <span class="text" aria-hidden="true">
@@ -103,6 +128,15 @@
         {#if arrow(pg)}<i class="next" data-next aria-hidden="true"></i>{/if}
         <span class="sr" role="status">{pg.pages.join(' ')}</span>
       </button>
+      {#if said.choices.length}
+        <!-- NH's answers: a row of pills at the balloon's foot (beside it in the DOM: a button can't hold buttons) -->
+        <div class="choices" class:placed={said.placed} class:asking data-fx="choices" bind:this={menu}
+          style:left="{said.placed ? said.mx : said.x}px" style:top="{said.placed ? said.my : said.y}px">
+          {#each said.choices as c, i (i)}
+            <button type="button" class="choice" data-sfx="choice-pick" tabindex={asking ? 0 : -1} onclick={() => choose(c)}>{c.label}</button>
+          {/each}
+        </div>
+      {/if}
     {/key}
   {/if}
 </div>
@@ -139,6 +173,15 @@
     animation: bob .6s ease-in-out infinite alternate;
   }
   @keyframes bob { from { transform: translateY(-1.5px); } to { transform: translateY(1.5px); } }
+  /* the answers: a row at the balloon's foot, over its kept room; they pop in once the last page has typed */
+  .choices { position: absolute; display: flex; gap: 6px; width: max-content; pointer-events: none; visibility: hidden; }
+  .choices.placed.asking { visibility: visible; pointer-events: auto; animation: pop .22s cubic-bezier(.3, 1.4, .5, 1) both; }
+  .choice {
+    appearance: none; border: 0; margin: 0; cursor: pointer; min-height: 36px; padding: 6px 11px; border-radius: 999px;
+    background: #FFE9A8; color: var(--c-ink, #4A3A2C); font: 700 13px/1.3 var(--font-ui); white-space: nowrap;
+    box-shadow: 0 2px 0 rgba(170, 120, 60, .35); -webkit-tap-highlight-color: transparent;
+  }
+  .choice:hover, .choice:focus-visible { background: #FFD66B; outline: none; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @keyframes pop { from { transform: scale(.6); opacity: 0; } }
 </style>

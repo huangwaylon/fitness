@@ -434,7 +434,7 @@ its bottom-right (0.6 s) only while another page follows. Left alone a finished 
 closes after a read's length. The balloon's name tag sits tilted on its top-left in the speaker's own NH colour (the
 roster's), its ink picked to read on it. The box is a button (`data-sfx` tick), placed clear of every control; no
 voices or blips. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction, a
-first find adds 「ずかんに のったよ！」 after the catch line.
+first find adds 「ずかんに のったよ！」 after the catch line. A line may end on NH's answers (Jack's trick or treat, [Halloween](#halloween)).
 
 ### Villager chats
 
@@ -452,9 +452,30 @@ ja/en. The roster (personalities) loads on the first chat. One balloon at a time
 renders), one at a time, measured clear of every control (the middle first, else a little to the side, else none):
 **K.K. Slider** with his guitar on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp**
 (see-through, a slow bob) on 1 in 4 nights 20:00–04:00, **Gulliver** washed up asleep on his side on 1 in 4 days
-06:00–18:00, seeded by the date (both phones see the same). A tap: their introduction the first time (two pages), then
+06:00–18:00, seeded by the date (both phones see the same); **Jack** on Halloween night ([Halloween](#halloween)). A tap: their introduction the first time (two pages), then
 one of their lines; with ミュージック on K.K. plays one of his songs instead ([K.K. Slider](#kk-slider); ♪
 float up). No trading, no ベル. `?visitor=<id>` (dev or `?demo`) brings one.
+
+### Halloween
+
+`island/events.ts`, `island/Halloween.svelte`, `island/Visitor.svelte`, `e2e/halloween.spec.ts`. NH's Halloween on Oct 31
+(Tokyo), the first of the dated events (`eventAt`: a date rule and the hour its evening starts; `?event=halloween`, dev
+or `?demo`, forces it with its evening):
+
+- **All day:** NH's orange pumpkins (22u) on the lawn, in front of the hedge in the middle, a pair mid-lawn and one between each trunk and
+  its person's bed (`HALLOWEEN_SPOTS` in `scene.ts`, from the shared columns and rows), each shown only where it's
+  clear of every control on this screen. Decoration: no taps.
+- **17:00–24:00:** they become NH's orange spooky lanterns (jack-o'-lanterns), lit above the night tint with a soft
+  candle glow and flicker, under a light purple-to-orange wash (soft light). **Jack** (パンプキング, the official render,
+  the visitors' size and centre-stage spot) comes instead of anyone else, K.K. included. His first tap: his
+  introduction (two pages) and 「トリック オア トリート！」; later taps the ask alone, and after a treat one of his lines.
+  The ask ends on NH's answers, a row of pills at the balloon's foot once its last page has typed (the box keeps their
+  room on every page; a tap on the box waits for an answer; unanswered it closes after 15 s; with no room clear of the
+  controls the question may sit over them): 「キャンディを あげる」 → he's delighted (a joyful cue, the candy pops up over
+  his head in orange and purple glints); 「なにも あげない」 → his trick: my villager starts with a 「！」 and wears party
+  nose glasses (鼻めがね) for a minute (not kept across a reload). No inventory, no ベル.
+- **Villagers:** in the evening their day lines include three Halloween ones, weighed double (about 1 tap in 6).
+- **Music:** the Halloween BGM belongs to the hourly music (the audio side), not this.
 
 ### Zukan
 

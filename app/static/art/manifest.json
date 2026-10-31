@@ -583,6 +583,18 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Present_NH_Inv_Icon.png"
     },
+    "deco/pumpkin": {
+      "path": "deco/pumpkin.webp",
+      "w": 96,
+      "h": 93,
+      "source": "https://nookipedia.com/wiki/File:Orange_Pumpkin_NH_Inv_Icon.png"
+    },
+    "deco/spooky-lantern": {
+      "path": "deco/spooky-lantern.webp",
+      "w": 91,
+      "h": 82,
+      "source": "https://nookipedia.com/wiki/File:Spooky_Lantern_(Orange)_NH_Icon.png"
+    },
     "finds/acanthostega": {
       "path": "finds/acanthostega.webp",
       "w": 96,
@@ -1140,6 +1152,12 @@
       "w": 312,
       "h": 512,
       "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH.png"
+    },
+    "items/candy": {
+      "path": "items/candy.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Candy_NH_Inv_Icon.png"
     },
     "items/dinner": {
       "path": "items/dinner.webp",
@@ -3708,6 +3726,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Isabelle_NH_Character_Icon.png"
+    },
+    "villagers/jack": {
+      "path": "villagers/jack.webp",
+      "w": 348,
+      "h": 512,
+      "source": "https://nookipedia.com/wiki/File:Jack_NH_Model.png"
     },
     "villagers/jacob": {
       "path": "villagers/jacob.webp",

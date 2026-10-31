@@ -24,6 +24,7 @@
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
   import Visitor from './Visitor.svelte';
+  import type { Choice } from './pager.ts';
   import { water } from './sceneDay.ts';
   import { findArt } from './beach.ts';
   import { dayKey } from '#lib/time/clock.ts';
@@ -38,9 +39,11 @@
     /** The pointerdown that just closed a tree's popup: that tap only closes it. */
     swallowed?: () => Event | null;
     /** A visitor's line in the speech balloon (IslandScene's Talk). */
-    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string }) => void;
+    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; choices?: Choice[] }) => void;
+    /** Jack's trick (Visitor.svelte), when he gets no candy. */
+    ontrick?: () => void;
   }
-  let { scene, season, tod, enabled, swallowed, say }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick }: Props = $props();
 
   type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'splash' | 'sand' | 'grass' | 'glow';
   interface Fx {
@@ -297,7 +300,7 @@
 <Critters bind:this={critters} {scene} {tod} {enabled} />
 <Finds bind:this={finds} {scene} {enabled} />
 <Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
-<Visitor bind:this={visitor} {scene} {enabled} {say} />
+<Visitor bind:this={visitor} {scene} {enabled} {say} {ontrick} />
 
 <div class="drops" aria-hidden="true">
   {#each drops as p (p.id)}

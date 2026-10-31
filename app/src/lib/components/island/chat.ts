@@ -2,6 +2,7 @@
 // Pure: a pick of an i18n key (and its params) from the pools in ja.json / en.json, `chat.<mood>.<n>`, now and then a
 // line about the day (the hour and today's goals: never ベル), a sleepy one at night. Kid-friendly and short.
 import type { Personality } from '#lib/villagers/species.ts';
+import type { EventId } from './events.ts';
 
 /** A villager's NH personality, or a special character's own flavour. */
 export type Mood = Personality | 'special';
@@ -18,6 +19,8 @@ export interface ChatCtx {
   met: number;
   /** The villager was asleep (a tap wakes them). */
   asleep: boolean;
+  /** An NH event's evening is on (events.ts): its own lines join the day's (Halloween: chat.day.halloween.<n>). */
+  event?: EventId;
 }
 
 export interface Line { key: string; params?: Record<string, string | number> }
@@ -31,17 +34,22 @@ export const FOLLOW_UPS: ReadonlySet<string> = new Set([
 /** The pages of a line: its own, then its follow-up if it has one (i18n keys). */
 export const pagesOf = (l: Line): string[] => (FOLLOW_UPS.has(l.key) ? [l.key, `${l.key}.more`] : [l.key]);
 
+/** Lines per event (chat.day.<event>.0 …). */
+export const EVENT_LINES: Record<EventId, number> = { halloween: 3 };
+
 /** How often a tap asks about the day instead of a personality line. */
 const DAY_ODDS = 0.3;
 
 /** The day's lines for this moment: the morning, the evening and night, the goals so far. */
-function dayLines({ hour, met }: ChatCtx): Line[] {
+function dayLines({ hour, met, event }: ChatCtx): Line[] {
   const out: Line[] = [{ key: 'chat.day.any.0' }, { key: 'chat.day.any.1' }];
   if (hour >= 5 && hour < 10) out.push(...[0, 1, 2].map((i) => ({ key: `chat.day.morning.${i}` })));
   if (hour >= 19 || hour < 5) out.push(...[0, 1, 2].map((i) => ({ key: `chat.day.night.${i}` })));
   if (met >= 4) out.push({ key: 'chat.day.allMet' }, { key: 'chat.day.allMet' });
   else if (met > 0) out.push({ key: 'chat.day.someMet', params: { n: met } });
   else if (hour >= 12) out.push({ key: 'chat.day.noneYet' });
+  // an event's lines weigh double: most day lines on the night are about it
+  if (event) for (let i = 0; i < EVENT_LINES[event]; i++) out.push({ key: `chat.day.${event}.${i}` }, { key: `chat.day.${event}.${i}` });
   return out;
 }
 

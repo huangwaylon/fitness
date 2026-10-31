@@ -46,6 +46,9 @@
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
   import TreeShakes from './TreeShakes.svelte';
+  import Halloween from './Halloween.svelte';
+  import { eventAt, forcedEvent } from './events.ts';
+  import { TRICK_MS } from './visitors.ts';
   import { PUFFY_MS } from './treeShake.ts';
   import { chatLine, moodOf, pagesOf } from './chat.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -86,6 +89,9 @@
   const clock = $derived(minuteNow());
   const month = $derived(jst(clock).month);
   const ev = $derived(eventsAt(clock));
+  // NH's dated events (events.ts): Halloween's pumpkins all day, Jack, the lanterns and the villagers' lines at night
+  const forced = forcedEvent();
+  const nhEvent = $derived(eventAt(localDateAt(clock.getTime()), jst(clock).hour, forced));
 
   // I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.
   const slot = (pid: PersonId): 'A' | 'B' => (pid === view.me ? 'A' : 'B');
@@ -139,7 +145,8 @@
     const entry = ROSTER[resolveLook({ villager: p.villager, person: v.me }).id];
     const mood = moodOf(entry);
     const met = RING_FRUITS.filter((f) => p.rings[f].met).length;
-    const line = chatLine(mood, { hour: jst(now()).hour, met, asleep }, Math.random, lastLine);
+    const event = nhEvent?.night ? nhEvent.id : undefined;
+    const line = chatLine(mood, { hour: jst(now()).hour, met, asleep, event }, Math.random, lastLine);
     lastLine = line.key;
     // above the villager's head, clear of its emote (the ♪ of the tap) as it floats up
     const r = btn.getBoundingClientRect();
@@ -165,6 +172,16 @@
     puffy[side] = true;
     clearTimeout(unpuff[side]);
     unpuff[side] = setTimeout(() => (puffy[side] = false), PUFFY_MS);
+  }
+  // Jack's trick (no candy for him): my villager's face goes goofy for a minute (NH's trick changes your look)
+  let tricked = $state(false);
+  let untrick: ReturnType<typeof setTimeout> | undefined;
+  function trick() {
+    setMotion('mine', 'surprise');
+    setEmote('mine', 'mark-bang');
+    tricked = true;
+    clearTimeout(untrick);
+    untrick = setTimeout(() => (tricked = false), TRICK_MS);
   }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
@@ -205,7 +222,7 @@
             life.tapVillager(id, id === 'mine' ? undefined : onpartner);
           }}>
           <Villager person={s.person.person} villager={s.person.villager} size={u(VILLAGER.h)} eager
-            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} puffy={puffy[id]} />
+            actor={live ? id : undefined} side={s.side} emoteSize="var(--emote-size)" shadow animate={live} puffy={puffy[id]} tricked={id === 'mine' && tricked} />
         </button>
       </div>
     {/each}
@@ -214,12 +231,13 @@
     {#if live}
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
-        say={(name, parts, from, o) => talk?.say(name, parts, from, o)} />
+        say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} />
       <Talk bind:this={talk} scene={sceneEl} />
       <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
       <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} />
     {/if}
     <div class="tint"></div>
+    {#if live && nhEvent?.id === 'halloween'}<Halloween scene={sceneEl} night={nhEvent.night} />{/if}
     <div class="fall"><Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} /></div>
   </div>
 </div>

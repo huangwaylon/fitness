@@ -50,3 +50,6 @@ export function tagInk(hex: string): string {
   const L = 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
   return L > 0.36 ? '#4A3A2C' : '#FFF9E3';
 }
+
+/** An answer on a dialogue's last page (Talk.svelte): its label and what picking it does (the balloon closes first). */
+export interface Choice { label: string; pick: () => void }
