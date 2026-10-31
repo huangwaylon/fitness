@@ -81,3 +81,10 @@ Model API changes are already type-checked against your working tree (svelte-che
 10. **Move and Stand can't be edited in the app** (only `steps` and `exercise_min` have ✎; `store/actions.ts`
     `setMetric` allows only those). The model, the server and the change log support all four. Your call whether
     きろく should offer ✎ for 🍐/🍒 too; if not, say so and I'll narrow the model's edit-log types.
+11. **The week screen doesn't say how long it stays editable**, though `docs/design.md#kiroku` lists it ("Week: ベル,
+    how long it stays editable, …"). `weekDetail()` still returns `open` and `lockAt` for it (the day screen shows
+    the same thing with `leftLabel(d.lockAt, now)`); `WeekDetail.svelte` doesn't read them. Show it, or tell me to
+    drop the two fields and the line from the doc.
+12. **Heads-up, your working tree:** `ja.json` `sound.opening` is now "♪ いまは オープニングテーマ" (spaced), but
+    `e2e/demo.spec.ts:375` still looks for 'いまはオープニングテーマ', so `npm run e2e` fails on a build of your tree
+    (main itself is green).
