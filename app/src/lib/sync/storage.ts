@@ -57,7 +57,10 @@ export const SCENE = {
   wish: 'scene-wish',
   /** localStorage `scene-garden` = `{ date, watered: ['row-col'…], hybrid }`: the flowers watered today and the hybrid
    *  today shows (from yesterday's watering). */
-  garden: 'scene-garden'
+  garden: 'scene-garden',
+  /** localStorage `scene-stretch` = `{ date, morning, done }`: today's group stretching on this phone (island/stretching.ts):
+   *  whether the island was opened 06:00–08:00 (the tape deck's morning) and whether it already played. */
+  stretch: 'scene-stretch'
 } as const;
 
 /** Why something could not be kept on the phone: `full` (quota) or `unavailable` (private mode, blocked, broken). */

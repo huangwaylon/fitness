@@ -1,5 +1,5 @@
 {
-  "version": 33,
+  "version": 34,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -708,6 +708,12 @@
       "w": 91,
       "h": 82,
       "source": "https://nookipedia.com/wiki/File:Spooky_Lantern_(Orange)_NH_Icon.png"
+    },
+    "deco/tape-deck": {
+      "path": "deco/tape-deck.webp",
+      "w": 66,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Tape_Deck_NH_Icon.png"
     },
     "finds/acanthostega": {
       "path": "finds/acanthostega.webp",

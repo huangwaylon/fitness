@@ -23,6 +23,7 @@
   import { VISITORS, visitorAt, visitorLine, type VisitorId } from './visitors.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import type { Choice } from './pager.ts';
+  import { stretch } from '../motion/stretch.svelte.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -72,6 +73,19 @@
   });
 
   let el = $state<HTMLElement>();
+  /** Group stretching: an awake visitor joins in on the villagers' beat (Gulliver sleeps through it). */
+  const pose = $derived(who && who !== 'gulliver' ? stretch.pose : null);
+  let bodyEl = $state<HTMLElement>();
+  $effect(() => {
+    const p = pose;
+    void stretch.n;
+    if (!bodyEl) return;
+    bodyEl.removeAttribute('data-act');
+    if (p) {
+      void bodyEl.offsetWidth;
+      bodyEl.setAttribute('data-act', p);
+    }
+  });
   /** Visitors who introduced themselves this session. */
   const met = new Set<VisitorId>();
   let last: string | undefined;
@@ -167,7 +181,7 @@
 {#if who && spot}
   <div class="visitors" aria-hidden="true">
     <span class="visitor {who}" data-visitor={who} bind:this={el} style:translate="{U(spot.x)} {U(spot.y)}">
-      <span class="art"><OfficialArt key={ART[who] ?? `villagers/${who}`} size={U(LOOK[who].h)} /></span>
+      <span class="art"><span class="body" bind:this={bodyEl}><OfficialArt key={ART[who] ?? `villagers/${who}`} size={U(LOOK[who].h)} /></span></span>
       {#if notes}
         {#key notes}<span class="notes">{#each [0, 1, 2] as i (i)}<i style:--i={i}>♪</i>{/each}</span>{/key}
       {/if}
@@ -193,6 +207,11 @@
   .art { translate: -50% -97%; filter: drop-shadow(0 2px 1.5px rgba(80, 60, 30, .3)); animation: arrive .6s ease-out both; }
   .art :global(.official) { max-width: none; }
   @keyframes arrive { from { opacity: 0; } }
+  /* group stretching: the same stretches as the villagers (tokens.css), from the feet */
+  .body { display: block; transform-origin: 50% 100%; }
+  .body:global([data-act='warmup']) { animation: if-warmup 2000ms ease-in-out both; }
+  .body:global([data-act='sidebend']) { animation: if-sidebend 2000ms ease-in-out both; }
+  .body:global([data-act='leap']) { animation: if-leap 2000ms ease-in-out both; }
   /* Gulliver: washed up, asleep on his side */
   .gulliver .art { translate: -50% -60%; rotate: -84deg; transform-origin: 50% 60%; }
   /* Wisp: see-through, floating a little above the sand with a slow bob, a soft glow */

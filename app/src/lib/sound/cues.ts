@@ -22,8 +22,8 @@ export type Cue =
   | 'buy' | 'badge-met' | 'harvest-receive'
   // scenery taps (island/sceneTaps.ts sceneSfx)
   | `scene-${SceneSfx}`
-  // a visitor's own (K.K.'s song)
-  | 'kk-song';
+  // a visitor's own (K.K.'s song); group stretching's tune
+  | 'kk-song' | 'stretch';
 
 interface CueDef {
   sound: SoundId;
@@ -126,7 +126,9 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-mushroom': { sound: 'pop', gain: 0.7, step: 7, world: true },
   // visitors: a soft pop for a tap; K.K.'s tune (a jingle, only with the music on)
   'scene-visitor': { sound: 'pop', gain: 0.6, world: true },
-  'kk-song': { sound: 'kk-song', world: true }
+  'kk-song': { sound: 'kk-song', world: true },
+  // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks)
+  stretch: { sound: 'stretch-song', world: true }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the
