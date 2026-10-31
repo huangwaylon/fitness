@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLEAR_GAP, SHOWER_GAP, nextStarMs, showerAt, showerNight } from './meteor.ts';
+import { SHOWER_GAP, nextStarMs, showerAt, showerNight } from './meteor.ts';
 import { fragmentsOn, zodiacOf } from './beach.ts';
 import { visitorAt } from './visitors.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
@@ -38,13 +38,10 @@ describe('meteor showers', () => {
     expect(showerAt(plain, addDays(plain, -1), 21, undefined, true)).toBe(true);
     expect(showerAt(plain, addDays(plain, -1), 12, undefined, true)).toBe(false);
   });
-  it('shooting stars every 3–8 s on a shower night, every 15–40 s on a clear one', () => {
+  it('shooting stars every 3–8 s on a shower night (a clear one has its showers: stars.test)', () => {
     expect(SHOWER_GAP).toEqual([3_000, 8_000]);
-    expect(CLEAR_GAP).toEqual([15_000, 40_000]);
-    expect(nextStarMs(true, () => 0)).toBe(3_000);
-    expect(nextStarMs(true, () => 0.999)).toBeLessThan(8_000);
-    expect(nextStarMs(false, () => 0)).toBe(15_000);
-    expect(nextStarMs(false, () => 0.999)).toBeLessThan(40_000);
+    expect(nextStarMs(() => 0)).toBe(3_000);
+    expect(nextStarMs(() => 0.999)).toBeLessThan(8_000);
   });
 });
 
@@ -61,12 +58,11 @@ describe('Celeste', () => {
     expect(visitorAt(sat, addDays(sat, -1), 21, 6)).toBe('celeste');
     expect(visitorAt('2026-10-31', '2026-10-30', 21, 6, undefined, { id: 'halloween', night: true }, true)).toBe('jack');
   });
-  it('a wish on a shower night brings 4–5 fragments the next morning, the zodiac one likelier', () => {
+  it('a wish on a shower night is a fragment the next morning like any (one per wish: stars.ts), the zodiac one likelier', () => {
     let zPlain = 0, zShower = 0, nPlain = 0, nShower = 0;
     for (const d of days('2026-01-01', 365)) {
-      const plain = fragmentsOn(d), shower = fragmentsOn(d, undefined, true);
-      expect(plain.length).toBeGreaterThanOrEqual(2), expect(plain.length).toBeLessThanOrEqual(3);
-      expect(shower.length).toBeGreaterThanOrEqual(4), expect(shower.length).toBeLessThanOrEqual(5);
+      const plain = fragmentsOn(d, 8), shower = fragmentsOn(d, 8, undefined, true);
+      expect(plain).toHaveLength(8), expect(shower).toHaveLength(8);
       nPlain += plain.length, nShower += shower.length;
       zPlain += plain.filter((f) => f.id === zodiacOf(d)).length;
       zShower += shower.filter((f) => f.id === zodiacOf(d)).length;

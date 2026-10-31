@@ -166,27 +166,34 @@ export function bottleAt(date: string, ms: number, seed = ISLAND_SEED): Bottle |
 
 export interface Fragment { uid: string; id: string; x: number; y: number }
 
-/** The day a wish brings star fragments: a wish on a shooting star before dawn (5:00) lands them that morning, after
- *  dusk the next morning (NH: the day after). */
-export function fragmentDay(wishDate: string, hour: number, next: (d: string) => string): string {
-  return hour < 5 ? wishDate : next(wishDate);
-}
-
-/** The morning after a wish, 2–3 fragments lie on the beach: mostly star fragments, now and then a large one or the
- *  season's zodiac fragment. After a wish on a meteor shower's night (`shower`, meteor.ts), 4–5, the zodiac one twice
- *  as likely. */
-export function fragmentsOn(date: string, seed = ISLAND_SEED, shower = false): Fragment[] {
-  const r = dayRand(date, 'fragments', seed);
-  const n = (shower ? 4 : 2) + (r() < 0.5 ? 1 : 0);
+/** The morning after `n` wishes (stars.ts fragmentsDue), `n` fragments lie on the beach: mostly star fragments, now
+ *  and then a large one or the season's zodiac fragment (twice as likely after a meteor shower's night, `shower`,
+ *  meteor.ts), spread along the sand one to each stretch of it (so they never pile up), each where it landed whatever
+ *  `n` (a later wish only adds one further along). */
+export function fragmentsOn(date: string, n: number, seed = ISLAND_SEED, shower = false): Fragment[] {
+  const slots = SLOTS(date, seed);
   const zodiac = shower ? 0.4 : 0.2;
   return Array.from({ length: n }, (_, i) => {
+    const r = dayRand(date, `fragment@${i}`, seed);
     const k = r();
     const id = k < zodiac ? zodiacOf(date) : k < zodiac + 0.2 ? 'large-star-fragment' : 'star-fragment';
-    // spread along the beach, one in each third
-    const x = BEACH.x0 + ((i + 0.2 + r() * 0.6) / n) * (BEACH.x1 - BEACH.x0);
+    // the beach in MAX_FRAGMENTS stretches, taken in a seeded order: one fragment to a stretch
+    const slot = slots[i % slots.length];
+    const x = BEACH.x0 + ((slot + 0.2 + r() * 0.6) / FRAGMENT_SLOTS) * (BEACH.x1 - BEACH.x0);
     return { uid: `g${i}`, id, x, y: BEACH.y0 + r() * (BEACH.y1 - BEACH.y0) };
   });
 }
+/** The beach's stretches for fragments (stars.ts MAX_FRAGMENTS), in the day's order. */
+const FRAGMENT_SLOTS = 8;
+const SLOTS = (date: string, seed: string): number[] => {
+  const r = dayRand(date, 'fragment-slots', seed);
+  const s = Array.from({ length: FRAGMENT_SLOTS }, (_, i) => i);
+  for (let i = s.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [s[i], s[j]] = [s[j], s[i]];
+  }
+  return s;
+};
 
 /** The official icon of a beach item (static/art/finds/, fetched by scripts/fetch-assets.ts). */
 export const findArt = (id: string): string => `finds/${id}`;

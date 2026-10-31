@@ -110,6 +110,9 @@ export const POND = { cx: 117, cy: 46, rx: 26, ry: 9 } as const;
  *  place of the hedge's columns −1…1; `x` its centre, `base` the front of its slab (the hedge's row), `w` its width
  *  (u): 100u wide, 55u tall (a little taller than the bushes, as a building is). */
 export const MUSEUM = { x: col(0), base: ROWS.hedge, w: 100 } as const;
+/** The island's back edge (u): nothing of it stands higher than this (the museum's roof), so the fireworks (and
+ *  anything in the open sea behind the island) keep above it. */
+export const ISLAND_TOP_U = 6;
 
 /** Flower beds (scale pass): two tidy 2 × 2 beds, mirrored about the middle, on columns ±2/±3 of the
  *  front two rows (the villagers stand on columns ±1; column 0 stays open for their strolls). One flower per
@@ -150,18 +153,15 @@ export function props(month: number): Prop[] {
 export interface Events {
   cherry: boolean;
   maple: boolean;
-  fireworks: boolean;
   toyDay: boolean;
-  newYear: boolean;
 }
+/** (The fireworks keep their own schedule: fireworks.ts.) */
 export function eventsAt(d: Date): Events {
-  const { month: m, day, hour: h, weekday } = jst(d);
+  const { month: m, day } = jst(d);
   return {
     cherry: m === 4 && day <= 10,
     maple: m === 11 && day >= 16 && day <= 25,
-    fireworks: m === 8 && weekday === 0 && h >= 19,
-    toyDay: m === 12 && day === 24,
-    newYear: (m === 12 && day === 31 && h >= 22) || (m === 1 && day === 1 && h < 2)
+    toyDay: m === 12 && day === 24
   };
 }
 

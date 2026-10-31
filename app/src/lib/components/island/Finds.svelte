@@ -1,8 +1,9 @@
 <script lang="ts">
   // Beach finds (docs/design.md "Beach finds"), after NH: seashells keep washing up on the front beach (one every 1–2
   // minutes, the newest three on the sand), fossil dig spots (NH's ✕ crack) on the lawn, 1–2 at a time, a new one a
-  // little while after you dig; a message bottle at the water's edge every 8–14 minutes for six; star fragments on the
-  // beach the morning after a wish on a shooting star; in mushroom season, mushrooms beside the trees (mushrooms.ts). A tap picks a shell, a fragment or the bottle up (it lifts off the
+  // little while after you dig; a message bottle at the water's edge every 8–14 minutes for six; a star fragment on the
+  // beach the morning after each wish on a shooting star (stars.ts: one per wish, from 5:00, at most 8); in mushroom
+  // season, mushrooms beside the trees (mushrooms.ts). A tap picks a shell, a fragment or the bottle up (it lifts off the
   // sand) or digs a fossil up (a shovel, a puff of earth, a hole), with NH's caption on the catch plate. The first find
   // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル. Mushrooms are cosmetic (no
   // find): picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption.
@@ -12,7 +13,7 @@
   // the clock is the scene's minute tick.
   //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
   //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Plate from './Plate.svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -21,9 +22,10 @@
   import { recordFind } from '#lib/store/actions.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
-  import { guardsU, clearAt, stageGeo } from './placement.ts';
-  import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentDay, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
-  import { take, takenOn, wishDay, wishFor } from './sceneDay.ts';
+  import { guardsU, clearAt, place, stageGeo } from './placement.ts';
+  import { ISLAND_SEED, bottleAt, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
+  import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
+  import { fragmentDay, fragmentsDue } from './stars.ts';
   import { showerNight } from './meteor.ts';
   import { eggTime, eventAt, forcedEvent } from './events.ts';
   import { eggInDig } from './eggs.ts';
@@ -93,10 +95,10 @@
     want === 'earth-egg' || (eggTime(eventAt(date, jst(now()).hour, forcedEvent())) && eggInDig(date, s.uid, seed));
   const fragments = $derived.by<Fragment[]>(() => {
     void taken;
-    if (want !== 'fragment' && wishDay() !== date) return [];
+    const n = want === 'fragment' ? 3 : fragmentsDue(wishes(), date, jst(clock).hour);
     const gone = takenOn(date);
-    // a wish on a meteor shower's night (the night before this morning) brings more
-    return fragmentsOn(date, seed, showerNight(addDays(date, -1), seed)).filter((f) => !gone.has(f.uid));
+    // after a meteor shower's night (the night before this morning) the season's zodiac fragment is likelier
+    return fragmentsOn(date, n, seed, showerNight(addDays(date, -1), seed)).filter((f) => !gone.has(f.uid));
   });
 
   // Shells that wash up while you watch slide in from the foam; the ones already there when the island opens just lie.
@@ -255,14 +257,26 @@
     visibleMushrooms = list.filter((m) => clearAt(keep, m.x, m.y - 7, 7, 7));
   });
 
-  /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; x, y in u): star fragments on the beach
-   *  the next morning (before dawn: this morning), and NH's moment on the plate. */
-  export function wish(x: number, y: number): void {
+  /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; client px): one more star fragment on the
+   *  beach the next morning (before dawn: this morning, from 5:00), and a brief caption by the tap. */
+  export function wish(px: number, py: number): void {
     const { hour } = jst(now());
-    wishFor(fragmentDay(date, hour, (d) => addDays(d, 1)));
-    taken++; // before dawn the fragments are this morning's
-    plate(x, y, findArt('star-fragment'), () => t('beach.wish'), 0, false, false);
+    addWish(fragmentDay(date, hour, (d) => addDays(d, 1)), date);
+    taken++;
+    const n = ++seq;
+    note = { n, x: 0, y: 0, placed: false };
+    void tick().then(() => {
+      const s = scene?.querySelector('.stage')?.getBoundingClientRect(), b = noteEl?.getBoundingClientRect();
+      if (!scene || !s || !b || note?.n !== n) return;
+      const at = place(scene, b.width, b.height, px, py);
+      if (!at) return void (note = null);
+      note = { n, x: at.x - s.left, y: at.y - s.top, placed: true };
+      later(() => note?.n === n && (note = null), 1900);
+    });
   }
+  /** The wish's caption (stage px, placed clear of every control). */
+  let note = $state<{ n: number; x: number; y: number; placed: boolean } | null>(null);
+  let noteEl = $state<HTMLElement>();
 </script>
 
 <div class="finds" aria-hidden="true">
@@ -309,6 +323,9 @@
 </div>
 
 <div class="held">
+  {#if note}
+    {#key note.n}<span class="wish" class:placed={note.placed} data-fx="wish-note" bind:this={noteEl} style:left="{note.x}px" style:top="{note.y}px">{t('beach.wish')}</span>{/key}
+  {/if}
   {#if card}
     {@const c = card}
     {#key c.n}<Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} ondone={() => card?.n === c.n && ((card = null), putAway('mine'))} />{/key}
@@ -356,6 +373,15 @@
     50% { transform: translate(calc(var(--dx) * 7 * var(--su)), calc(-10 * var(--su))); }
     100% { transform: translate(calc(var(--dx) * 12 * var(--su)), calc(2 * var(--su))); opacity: 0; }
   }
+  /* a wish: a small cream caption by the tap that floats up a little and fades (NH has no words for it: the moment) */
+  .wish {
+    position: absolute; translate: -50% -50%; width: max-content; padding: 5px 12px; border-radius: 999px;
+    background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C); font: 700 13px/1.3 var(--font-ui);
+    box-shadow: 0 2px 0 rgba(150, 110, 70, .28), 0 0 12px rgba(255, 246, 190, .55); pointer-events: none;
+    animation: wish-note 1.9s ease-out both;
+  }
+  .wish:not(.placed) { visibility: hidden; animation: none; }
+  @keyframes wish-note { 0% { transform: translateY(6px) scale(.85); opacity: 0; } 15% { transform: none; opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
   /* picked up: it lifts off the sand and fades */
   .lift > :global(*) { translate: -50% -60%; rotate: var(--tilt); animation: lift .5s ease-out both; }
   @keyframes lift { to { transform: translateY(calc(-16 * var(--su))) scale(1.15); opacity: 0; } }

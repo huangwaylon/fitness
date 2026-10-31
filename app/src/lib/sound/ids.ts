@@ -30,7 +30,9 @@ export type SoundId =
   // visitors: K.K.'s little tune on his guitar (an original, a jingle: the music ducks under it)
   | 'kk-song'
   // group stretching (island/stretching.ts): a bright little march on the piano for the stretches (an original, ~6 s)
-  | 'stretch-song';
+  | 'stretch-song'
+  // the night sky: a wish's soft chime; fireworks: a rocket's rising whistle and the burst (a soft boom and a crackle)
+  | 'wish' | 'whistle' | 'firework';
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
@@ -42,8 +44,8 @@ export type SceneSfx =
   | 'nest' | 'buzz' | 'sting' | 'twig'
   // mushroom season (island/mushrooms.ts): one picked up beside a tree
   | 'mushroom'
-  // the museum's door (island/Museum.svelte)
-  | 'museum';
+  // the museum's door (island/Museum.svelte); fireworks (island/Fireworks.svelte)
+  | 'museum' | 'launch' | 'firework';
 
 interface SoundDef {
   bus: 'sfx';
@@ -110,7 +112,12 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   clonk: { bus: 'sfx', gain: 0.45, jitter: 50, max: 2 },
   buzz: { bus: 'sfx', gain: 0.4, jitter: 40, max: 1 },
   'kk-song': { bus: 'sfx', gain: 0.6, jitter: 0, max: 1, jingle: true },
-  'stretch-song': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true }
+  'stretch-song': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true },
+  // a wish: an effect, not a jingle (it must not duck the music)
+  wish: { bus: 'sfx', gain: 0.38, jitter: 20, max: 1 },
+  // fireworks come every couple of seconds for hours: kept low, two at most
+  whistle: { bus: 'sfx', gain: 0.16, jitter: 120, max: 2 },
+  firework: { bus: 'sfx', gain: 0.28, jitter: 90, max: 2 }
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];

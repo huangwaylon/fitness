@@ -53,8 +53,12 @@ export const SCENE = {
   /** localStorage `tree-nest` = `{ A?: ms, B?: ms }`: when a shaken tree last dropped a wasp nest on this phone (at most
    *  one an hour per tree; island/treeShake.ts). */
   nest: 'tree-nest',
-  /** localStorage `scene-wish` = the Tokyo date whose morning brings star fragments (a wish on a shooting star). */
+  /** localStorage `scene-wish` = `{ <Tokyo date>: n }`: this phone's wishes on shooting stars, each a star fragment on
+   *  that morning's beach (island/stars.ts, sceneDay.ts). */
   wish: 'scene-wish',
+  /** localStorage `fireworks-day` = the Tokyo date this phone last showed the both-of-us-met-everything volley
+   *  (island/Fireworks.svelte: once a day). */
+  fireworks: 'fireworks-day',
   /** localStorage `scene-garden` = `{ date, watered: ['row-col'…], hybrid }`: the flowers watered today and the hybrid
    *  today shows (from yesterday's watering). */
   garden: 'scene-garden',

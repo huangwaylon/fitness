@@ -113,7 +113,7 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-fragment': { sound: 'sparkle', gain: 0.5, step: 7, world: true },
   'scene-bottle': { sound: 'bottle', world: true },
   'scene-dig': { sound: 'dig', world: true },
-  'scene-wish': { sound: 'sparkle', gain: 0.45, step: 12, world: true },
+  'scene-wish': { sound: 'wish', world: true },
   // island care: a weed pulled, a flower watered, the rock's clonk and, now and then, its sparkle
   'scene-weed': { sound: 'pluck', world: true },
   'scene-water': { sound: 'sprinkle', world: true },
@@ -132,6 +132,9 @@ export const CUES: Record<Cue, CueDef> = {
   'footstep-grass': { sound: 'step-grass', gain: 0.3, world: true },
   'footstep-sand': { sound: 'step-sand', gain: 0.3, world: true },
   'footstep-snow': { sound: 'step-snow', gain: 0.3, world: true },
+  // fireworks (island/Fireworks.svelte): the rocket's whistle as it rises, the burst as it opens
+  'scene-launch': { sound: 'whistle', world: true },
+  'scene-firework': { sound: 'firework', world: true },
   // the museum's door: a soft knock before Blathers speaks
   'scene-museum': { sound: 'clonk', gain: 0.45, step: 5, world: true },
   'kk-song': { sound: 'kk-song', world: true },

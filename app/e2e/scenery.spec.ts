@@ -79,14 +79,14 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page).toHaveURL(/\/jar/);
 });
 
-test('night sky: the moon twinkles and sends a shooting star; a tap in the open sky lights a star', async ({ page }) => {
+test('night sky: the moon twinkles; a tap in the open sky lights a star (shooting stars come in showers: sky.spec)', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T22:00');
   await islandReady(page);
   await expect(page.locator('.if-scene[data-tod="night"]')).toHaveCount(1);
   const moon = await centre(page, '.if-scene .orb');
   await page.mouse.click(moon.x, moon.y);
   await expect(page.locator('[data-fx="moon"]')).toHaveCount(1);
-  await expect(page.locator('[data-fx="shoot"]').first()).toBeAttached();
+  await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
   // the open sky, away from the moon and the clouds: a star twinkles where the finger was
   const sky = await page.locator('.if-scene .stage').evaluate((st) => {

@@ -15,8 +15,9 @@ describe('scene clock in Tokyo time', () => {
   it('dayKey, clockTime and the seasonal events follow it', () => {
     expect(dayKey(new Date('2026-10-29T15:05:00Z'))).toBe('2026-10-30');
     expect(clockTime(new Date('2026-10-29T15:05:00Z'))).toBe('0:05');
-    expect(eventsAt(sunNight).fireworks).toBe(true);
-    expect(eventsAt(new Date('2026-08-02T09:30:00Z')).fireworks).toBe(false); // 18:30 JST
+    expect(eventsAt(new Date('2026-11-16T03:00:00Z')).maple).toBe(true); // Nov 16, 12:00 JST
+    expect(eventsAt(new Date('2026-11-15T14:30:00Z')).maple).toBe(false); // Nov 15, 23:30 JST
+    expect(eventsAt(new Date('2026-12-23T15:30:00Z')).toyDay).toBe(true); // Dec 24, 00:30 JST
   });
 });
 

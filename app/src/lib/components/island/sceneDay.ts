@@ -2,6 +2,7 @@
 // (they derive from the date, so both phones see the same ones; each hides what it took), and the wish that brings star
 // fragments. In localStorage (sync/storage.ts SCENE): losing it only puts a shell back on the sand.
 import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+import { addWish, type Wishes } from './stars.ts';
 
 interface Day { date: string; picked: string[] }
 
@@ -19,9 +20,15 @@ export function take(date: string, uid: string): void {
   if (!d.picked.includes(uid)) writeJson(localKV(), SCENE.day, { date, picked: [...d.picked.slice(-199), uid] });
 }
 
-/** The date whose morning brings star fragments, or null. */
-export const wishDay = (): string | null => readJson<string>(localKV(), SCENE.wish);
-export const wishFor = (date: string): void => void writeJson(localKV(), SCENE.wish, date);
+/** This phone's wishes on shooting stars: the morning each brings its fragment to → how many (stars.ts). An older
+ *  phone's single date (2–3 fragments that morning) reads as two wishes. */
+export function wishes(): Wishes {
+  const w = readJson<Wishes | string>(localKV(), SCENE.wish);
+  if (typeof w === 'string') return { [w]: 2 };
+  return w && typeof w === 'object' ? w : {};
+}
+/** One more wish, for `day`'s morning (`today`: older mornings are dropped). */
+export const wish = (day: string, today: string): void => void writeJson(localKV(), SCENE.wish, addWish(wishes(), day, today));
 
 interface Garden { date: string; watered: string[]; hybrid?: { cell: string; flower: string } | null }
 

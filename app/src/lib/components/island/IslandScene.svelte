@@ -45,6 +45,7 @@
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
   import Balloon from './Balloon.svelte';
+  import Fireworks from './Fireworks.svelte';
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
   import TreeShakes from './TreeShakes.svelte';
@@ -62,7 +63,7 @@
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
-  import { actors, onStep, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
+  import { actors, applyStep, busy, onStep, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
   import { hitStage } from './sceneTaps.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { depthZ, walkGeo } from './walkGraph.ts';
@@ -274,14 +275,24 @@
     if (ms) life.later(() => shakes?.shaken(pid, slot(pid)), ms);
     else shakes?.shaken(pid, slot(pid));
   }
+  // Fireworks (design.md "Fireworks"): our volley when both of us met all four today; a villager cheers at a burst now
+  // and then (awake and not busy with something else); a tap in the sky during a show sends one more (SceneTaps).
+  let fireworks = $state<ReturnType<typeof Fireworks>>();
+  const allMet = $derived((['A', 'B'] as const).every((p) => RING_FRUITS.every((f) => view.people[p].rings[f].met)));
+  function cheer() {
+    const id = Math.random() < 0.5 ? 'mine' : 'partner';
+    if (actors[id].asleep || busy(id)) return;
+    applyStep(id, { actor: id, motion: 'hop', emote: Math.random() < 0.5 ? 'glee' : 'mark-sparkle' });
+  }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
 </script>
 
 <div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-paused={life.hidden || undefined} data-covered={covered || undefined}>
-  <Sky {tod} fireworks={ev.fireworks || ev.newYear || life.devFireworks || wedding.fireworks}>
+  <Sky {tod}>
     {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
   </Sky>
+  {#if live}<Fireworks bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
   <div class="stage">
     <Sea />
@@ -329,6 +340,7 @@
       <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
       <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy}
         exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met}
+        skyTap={(x, y) => !!fireworks?.tap(x, y)}
         say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} />
       <Talk bind:this={talk} scene={sceneEl} />
       <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
