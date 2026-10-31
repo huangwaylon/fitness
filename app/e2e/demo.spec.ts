@@ -1,4 +1,4 @@
-// Demo smoke test (round 9 acceptance): tap, undo, harvest, きろく edit, on `?demo` (no backend, no key).
+// Demo smoke test: tap, undo, harvest, きろく edit, on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -53,7 +53,7 @@ test('escalating treats: おやつ twice this week costs more each time; とり�
   await expect(page.locator('.treats button[data-item="want"] .pr')).toHaveAttribute('data-price', '8000');
 });
 
-test('wallet (ADR 0022): one balance (the island plate’s), one list of five treats, no sections, pots or bars', async ({ page }) => {
+test('wallet: one balance (the island plate’s), one list of five treats, no sections or bars', async ({ page }) => {
   await page.goto('?demo');
   const plate = await page.locator('.if-scene .jar .jar-plate').innerText();
   await page.locator('.if-scene .jar').click();
@@ -65,7 +65,7 @@ test('wallet (ADR 0022): one balance (the island plate’s), one list of five tr
   await expect(page.locator('[data-pot], [data-section], .rope')).toHaveCount(0);
 });
 
-test('menu: adding a treat to the shared list (ADR 0022)', async ({ page }) => {
+test('menu: adding a treat to the shared list', async ({ page }) => {
   await page.goto('jar?demo');
   const treats = page.locator('.treats');
   await treats.getByRole('button', { name: 'メニューを かえる' }).click();
@@ -107,7 +107,7 @@ test('きろく: editing a day’s steps', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
 });
 
-test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', async ({ page }) => {
+test('きろく: the weight trend, logging a weight and a goal', async ({ page }) => {
   await page.goto('?demo');
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
@@ -141,7 +141,7 @@ test('きろく: the weight trend, logging a weight and a goal (ADR 0020)', asyn
   await expect(ribbon).toHaveAttribute('aria-label', bells!);
 });
 
-test('tree popup: the four ring fruits, today against the goal, today’s ベル and the week toward each badge (ADR 0021)', async ({ page }) => {
+test('tree popup: the four ring fruits, today against the goal, today’s ベル and the week toward each badge', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -149,7 +149,7 @@ test('tree popup: the four ring fruits, today against the goal, today’s ベル
   await page.locator('button.canopy').nth(0).click();
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
-  // it opens upwards (round 20): above its tree's trunk, under the ribbon
+  // it opens upwards: above its tree's trunk, under the ribbon
   await page.waitForTimeout(400);
   const [p, c, r] = await Promise.all([pop, page.locator('button.canopy').nth(0), page.locator('.ribbon')].map((l) => l.boundingBox()));
   expect(p!.y + p!.height).toBeLessThan(c!.y + c!.height);
@@ -199,7 +199,7 @@ test('partner: a villager card (their line, when their data came, ハイタッ�
   await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
 });
 
-test('きろく: the Move goal (ADR 0021), a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s (ADR 0023)', async ({ page }) => {
+test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
   await page.goto('?demo');
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
   await page.locator('.app[data-app=kiroku]').click();
@@ -220,7 +220,7 @@ test('きろく: the Move goal (ADR 0021), a numeric field ≥ 16px, 100–2,000
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
   await expect(page.locator('.detail .row:not(.hd)').nth(0).locator('.amt')).toHaveText(/\/450kcal$/);
-  // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal (ADR 0023)
+  // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
   await page.locator('.app[data-app=kiroku]').click();
@@ -237,7 +237,7 @@ test('きろく: the Move goal (ADR 0021), a numeric field ≥ 16px, 100–2,000
   await expect(goals).toContainText('450 kcal');
 });
 
-test('きろく: editing the partner’s steps (ADR 0023), with who fixed it in the change log', async ({ page }) => {
+test('きろく: editing the partner’s steps, with who fixed it in the change log', async ({ page }) => {
   await page.goto('?demo');
   await page.getByRole('button', { name: 'しまフォンを開く' }).click();
   await page.locator('.app[data-app=kiroku]').click();
@@ -273,7 +273,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await canopies.nth(0).click();
   await expect(popups).toHaveCount(1);
   await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'true');
-  await page.waitForTimeout(3200); // no auto-close (it used to close after 2.6 s)
+  await page.waitForTimeout(3200); // no auto-close: it stays past 3 s
   await expect(popups).toHaveCount(1);
   await canopies.nth(1).click(); // the other tree: it moves there
   await expect(popups).toHaveCount(1);

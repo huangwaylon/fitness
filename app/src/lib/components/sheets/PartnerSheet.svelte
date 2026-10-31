@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Partner sheet (v5 §3, round 17 IA §4.3): tap the partner's villager on 島 → a villager card, the way talking to a
+  // Partner sheet: tap the partner's villager on 島 → a villager card, the way talking to a
   // villager works in NH: their name (the title bar), their face, one line they say about their day (picked from their rings: an NH
   // beat that replaces the numbers, never adds one), when their data last arrived (it explains low numbers right
   // where you'd ask) and one action, ハイタッチ. Their numbers live on their tree (the popup), not here.
@@ -49,7 +49,7 @@
 <style>
   .head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
   .who { flex: 1; min-width: 0; display: grid; gap: 6px; }
-  /* flush with the bubble's left edge (round 21: 6px left of it) */
+  /* flush with the bubble's left edge */
   .sync { margin-left: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* their line: a small cream speech bubble with its tail toward the face */
   .say {

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { asset, resolve } from '$app/paths';
   import { routeOf } from '#lib/ui-state/paths.ts';
-  // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks; round 8).
+  // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks).
   import '@fontsource/fredoka/latin-600.css';
   import '@fontsource/fredoka/latin-700.css';
-  // Zen Maru Gothic trimmed to the slices the app uses (round 5 P6; scripts/font-subsets.ts).
+  // Zen Maru Gothic trimmed to the slices the app uses (scripts/font-subsets.ts).
   import '#lib/styles/fonts.css';
   import '#lib/styles/tokens.css';
   import '#lib/styles/theme.css';
@@ -34,15 +34,15 @@
   const pageKind = $derived(route.startsWith('/jar') ? 'jar' : 'island');
 
   let laterFor = $state<string | null>(null);
-  /** The harvest being finished: kept through the end card even after confirming drops it from the view (U5). */
+  /** The harvest being finished: kept through the end card even after confirming drops it from the view. */
   let kept = $state<HarvestView | null>(null);
   const harvest = $derived(kept ?? week.view?.harvest ?? null);
   const showHarvest = $derived(
     !onPair && !page.error && !!week.view && !!harvest && (!!kept || (!harvest.confirmedBy.includes(week.view.me) && laterFor !== harvest.weekKey))
   );
-  // Pages hold their toasts while the harvest is up (U6).
+  // Pages hold their toasts while the harvest is up.
   ui.provideOverlay(() => showHarvest);
-  /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route (round 8). */
+  /** The overlay is loaded the first time a harvest opens (Sunday evening), not on every route. */
   const loadHarvest = lazy(() => import('#lib/components/sheets/HarvestOverlay.svelte'));
   let Harvest = $state<typeof import('#lib/components/sheets/HarvestOverlay.svelte').default | null>(null);
   // Loaded in script, so the page goes inert only once the overlay can show; a failed load (and no reload) leaves the
@@ -103,7 +103,7 @@
 
 <Sprites />
 
-<!-- U9: the harvest is a real modal, so everything behind it is inert. -->
+<!-- The harvest is a real modal, so everything behind it is inert. -->
 <div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
 {#if week.status === 'unconfigured'}
   <main class="state">
@@ -138,14 +138,14 @@
     onkeep={() => (kept = $state.snapshot(harvest))} ondone={() => (kept = null)} />
 {/if}
 
-<!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert (round 7 F1). -->
+<!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert. -->
 {#if !showHarvest && !ui.sheets.length}<ToastHost />{/if}
 
 <style>
   .page { min-height: var(--vh-page); background: var(--bg); }
   /* 島: the island floats in the flat map sea, which runs on under the dialogue box and the action. */
   .page[data-page='island'] { background: var(--sea-flat); }
-  /* not set up / error: on the tan panel, not the sea (round 21: the soft ink line was 2.1:1 on the sea blue) */
+  /* not set up / error: on the tan panel, not the sea (the soft ink line is only 2.1:1 on the sea blue) */
   .page[data-page='island']:has(> .state:not([aria-busy])) { background: var(--bg); }
   /* Not set up / error / loading: one figure, one line, one action. */
   .state {

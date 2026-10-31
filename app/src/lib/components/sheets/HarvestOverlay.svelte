@@ -1,12 +1,12 @@
 <script lang="ts">
-  // 日曜の収穫 (Sunday harvest overlay, ADR 0019 §4, ≤ 60 s): the week's recap → the bonus lands in the wallet.
+  // 日曜の収穫 (Sunday harvest overlay, ≤ 60 s): the week's recap → the bonus lands in the wallet.
   // The island stays visible behind a light cool tint; しずえ's dialogue box, one card and the CTA sit at the bottom,
-  // in the thumb zone. Recap (round 17 IA §4.6): per person the five badges (ADR 0021; lit = met, +badges.bells each)
+  // in the thumb zone. Recap: per person the four ring-fruit badges (lit = met, +badges.bells each)
   // under one 「バッジ」 label and their bonus, then ふたりボーナス (+duoPerBadge for each badge both met) and the
   // week's bonus as the one big number. 「受け取る」 is a ceremony (the bonus counts either way): it records that I saw
-  // it, then the end card drops the bonus into the one shared wallet (ADR 0022): coins fall into the jar, a +N pops and
+  // it, then the end card drops the bonus into the one shared wallet: coins fall into the jar, a +N pops and
   // fades, and the balance counts up (the one resting number). No confetti (not in the games): an item-get beat.
-  // A real modal (U9): a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
+  // A real modal: a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
   import { RING_FRUITS, rulesFor } from '#lib/config/rules.ts';
   import Avatar from '../characters/Avatar.svelte';
@@ -42,7 +42,7 @@
   const b = $derived(harvest.bonus);
   const bonusTotal = $derived(b.A + b.B + b.duo);
 
-  /** Each person's five badges for the harvested week. */
+  /** Each person's four ring-fruit badges for the harvested week. */
   const badges = $derived(harvest.ringBadges);
 
   let step = $state<'tally' | 'done'>('tally');
@@ -64,12 +64,12 @@
       step = 'done';
       countUp();
       // the item-get fanfare (it ducks the music); the coins fall into the jar silently under it: NH's item-get
-      // plays alone (round 14 review R3)
+      // plays alone
       cue('harvest-receive');
     } else cue('boop');
   }
 
-  // Sounds (docs/design/sound.md §5): the badges reveal one by one (BadgeRow stagger 0.5 s + 0.6 s per person +
+  // Sounds (docs/design.md "Cues"): the badges reveal one by one (BadgeRow stagger 0.5 s + 0.6 s per person +
   // 0.15 s per fruit); once the last one is up, NH's Nook Miles achievement jingle if any badge was met.
   const anyBadge = $derived(people.some((p) => RING_FRUITS.some((f) => badges[p][f])));
   $effect(() => {
@@ -81,7 +81,7 @@
   function modal(node: HTMLDialogElement) {
     if (!node.open) node.showModal?.();
     node.focus();
-    // the island behind stays put while the overlay is up (round 10 H2)
+    // the island behind stays put while the overlay is up
     return { destroy: lockScroll() };
   }
   const hostLine = $derived(step === 'tally' ? t('harvest.hello') : t('harvest.doneHost'));
@@ -148,7 +148,7 @@
 </dialog>
 
 <style>
-  /* The island stays visible (v5 §4) under a cool tint (F3) that fades in below the sky: by day a light
+  /* The island stays visible under a cool tint that fades in below the sky: by day a light
      periwinkle over the sea and island only, so the clouds stay white and the sun yellow; softer at night. */
   .overlay {
     position: fixed; inset: 0; z-index: var(--z-harvest); overflow: hidden auto; overscroll-behavior: contain;
@@ -165,7 +165,7 @@
     position: relative; z-index: 1; max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
     padding: calc(var(--safe-top) + 12px) calc(var(--side) + var(--safe-right)) var(--pad-bottom) calc(var(--side) + var(--safe-left));
   }
-  /* the plate | the step dots, centred on the screen | ✕ (round 21: the dots sat 27–30px right of centre) */
+  /* the plate | the step dots, centred on the screen | ✕ (equal 1fr sides keep the dots on the true centre) */
   .head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 44px; gap: 8px; }
   .head > :global(:first-child) { justify-self: start; }
   .head > :global(:last-child) { justify-self: end; }
@@ -190,7 +190,7 @@
   .duo:not(.got) .plus { color: var(--text-soft); }
 
   .total { display: grid; justify-items: center; gap: 4px; padding-top: 10px; margin-top: 6px; box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 50%, transparent); overflow: hidden; animation: totalGrow .6s var(--ease-soft) 2.1s both; }
-  /* Like the rows, the total takes no room until it arrives, so the card is always sized to what it shows (round 7 F11). */
+  /* Like the rows, the total takes no room until it arrives, so the card is always sized to what it shows. */
   @keyframes totalGrow { from { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; } to { max-height: 220px; opacity: 1; padding-top: 10px; margin-top: 6px; } }
   .lbl { font-weight: 700; color: var(--text-soft); }
   .total :global(.hero-num) { animation: if-pop var(--dur-pop) var(--ease-bounce) 2.3s both; }

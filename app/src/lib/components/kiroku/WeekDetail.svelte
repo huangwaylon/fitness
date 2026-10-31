@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 3.2 Week detail (round 17 IA §4.7): the week and its ベル (one number) and 🔒 once locked; per person the four
+  // 3.2 Week detail: the week and its ベル (one number) and 🔒 once locked; per person the four
   // badges with the days met so far (and the ふたりボーナス once it landed); then the week's table: one row per day
   // (tap → the day), a line per person, the four metrics in the fruit columns (met = bold green); the change log.
   import type { PersonId } from '#lib/types.ts';

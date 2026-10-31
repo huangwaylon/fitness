@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Pairing (ADR 0015): paste your key, or open `…/pair#key=…` once inside the installed PWA (storage is per-app on
+  // Pairing: paste your key, or open `…/pair#key=…` once inside the installed PWA (storage is per-app on
   // iOS). `whoami` confirms the person; the key is kept in localStorage and sent in each request body.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -57,10 +57,10 @@
   }
 </script>
 
-<!-- Style guide v4 §R.7: the dodo airport brings you to the island; しずえ greets you; paste the key. -->
+<!-- The dodo airport brings you to the island; しずえ greets you; paste the key. -->
 <!-- The key field and the button ride above the on-screen keyboard (--kb, keyboardInset): the page gains --kb of
      bottom padding so it can scroll, and on focus the whole form (field + つなぐ) scrolls to just above the keyboard
-     (data-kb-scroll). Round 10 H3: no transform and no sticky lift, which moved the button over the art or the field. -->
+     (data-kb-scroll). No transform and no sticky lift: either would move the button over the art or the field. -->
 <main class="pair" {@attach keyboardInset}>
   <button type="button" class="lang" data-sfx="tick" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe" /></svg>{i18n.locale === 'ja' ? 'English' : '日本語'}
@@ -86,7 +86,7 @@
       aria-describedby="pair-msg"
       data-sfx="none"
     />
-    <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button (N8). -->
+    <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button. -->
     <p id="pair-msg" class="msg" class:info={!msg} role="status">{msg || (code && !ready ? t('pair.keyHint') : '')}</p>
     <button type="submit" class="btn" aria-disabled={!ready} disabled={busy} data-sfx="confirm">{t('pair.go')}</button>
   </form>
@@ -107,7 +107,7 @@
   }
   .lang svg { width: 18px; height: 18px; }
   .port { width: 220px; margin: 0 auto; }
-  /* しずえ's only instruction here: always room for 2 lines, also on compact screens (N4 / C33). */
+  /* しずえ's only instruction here: always room for 2 lines, also on compact screens. */
   .pair :global(.talk) { --talk-lines: 2; min-height: calc(var(--pair-host) + 4px); }
   form { display: grid; gap: 8px; padding: 14px 16px 10px; }
   .lbl { font-weight: 700; font-size: var(--fs-talk); text-align: center; }

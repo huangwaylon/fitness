@@ -64,7 +64,7 @@ export function pendingTimers(id: ActorId): number {
 }
 
 // しずえ: several <Host>s can be mounted (island bubble, harvest overlay, gallery). The director drives
-// only the most recent live claim; `present` stays true while any claim is held (P3).
+// only the most recent live claim; `present` stays true while any claim is held.
 const hostClaims: number[] = [];
 let claimN = 0;
 export const hostOwner = $state({ id: 0 });
@@ -164,7 +164,7 @@ export function applyStep(id: ActorId, s: Step) {
   if (s.fx) addFx(id, s.fx);
 }
 
-// v5 §6: events play one at a time. A reaction that arrives while another event is still playing
+// Events play one at a time. A reaction that arrives while another event is still playing
 // waits in a short queue (≤ 3, no duplicates) and starts 400 ms after the current one ends. Direct
 // touch feedback (tapping a villager or the jar, waking a sleeper) never waits.
 const IMMEDIATE = new Set<ReactionId>(['R9', 'R10', 'R14', 'R18']);
@@ -188,7 +188,7 @@ function drainLater() {
   }, Math.max(0, eventUntil - Date.now()));
 }
 
-/** Play a catalogue reaction (§M.5), or queue it behind the event that is playing. Preempts idle life
+/** Play a catalogue reaction, or queue it behind the event that is playing. Preempts idle life
  *  on every actor it touches. `swap` plays the 'mine' part on the partner (e.g. the partner's fruit
  *  ripened). */
 export function react(rid: ReactionId, swap = false) {
@@ -232,7 +232,7 @@ const WALK_MS = 1600;
 const WALK_WAIT_MS = 1200;
 const PUFF_MS = 640;
 
-/** A walk (stroll): out `dx` stage units, wait, and back (§M.2 Walking). */
+/** A walk (stroll): out `dx` stage units, wait, and back (design.md "Motion"). */
 export function stroll(id: 'mine' | 'partner', dx: number, onWait?: () => void) {
   const a = actors[id];
   if (reducedMotion()) return;
@@ -300,7 +300,7 @@ export function resetAll() {
   }
 }
 
-/** しずえ tapped with nothing left to read (§M.6): a hop and a random happy reaction. */
+/** しずえ tapped with nothing left to read: a hop and a random happy reaction. */
 export function hostTap() {
   if (!actors.host.present) return;
   cancel('host');

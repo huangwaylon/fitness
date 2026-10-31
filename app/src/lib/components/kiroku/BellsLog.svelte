@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 3.5 ベル, the passbook (round 17 IA §4.7, like NH's ATM statement): everything ever saved, then the ledger by week,
+  // 3.5 ベル, the passbook (like NH's ATM statement): everything ever saved, then the ledger by week,
   // newest first, each with its total (the home of the week's ベル): the Sunday bonus, the spends (my own → とりけす,
   // asked first) and one line per day (each person's ベル and the pair's; tap → the day, where the per-fruit ベル
   // live). A week shows 🔒 once it locked (its days are final); a day can still change until then.
@@ -135,7 +135,7 @@
   .dbtn:active { background: var(--hl); }
   .dt { width: 5.4em; flex: none; font: 700 var(--fs-body)/1.2 var(--font-num); }
   .pp { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 2px 10px; }
-  /* a fixed slot per person, so the second avatar lines up from day to day (round 21: it wandered 0–20px with the digits) */
+  /* a fixed slot per person, so the second avatar lines up from day to day (otherwise it wanders with the digits' width) */
   .pv { display: inline-flex; align-items: center; gap: 4px; min-width: 4.6em; font-size: var(--fs-s); color: var(--text-soft); }
   .pv .money { font-size: var(--fs-s); }
   .dbtn b { font-size: var(--fs-body); white-space: nowrap; }

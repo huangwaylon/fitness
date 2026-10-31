@@ -1,5 +1,5 @@
 <script lang="ts">
-  // NH's choice list (v5 §3, F8): cream bubbles stacked at the right, in the one-action slot. Like the game, the
+  // NH's choice list: cream bubbles stacked at the right, in the one-action slot. Like the game, the
   // first option starts under a yuzu ▶ cursor (the default answer); hover, focus or ↑/↓ moves the cursor (with NH's
   // little cursor tick), and picking one plays the confirm (Ⓑ for a `cancel` choice; the "can't" boop for a
   // `disabled` one, which does nothing: taps.ts).
@@ -47,7 +47,7 @@
     font: 700 var(--fs-talk)/1 var(--font-ui); animation: if-pop var(--dur-pop) var(--ease-bounce) both;
     transition: transform var(--dur-base) var(--ease-bounce), color var(--dur-quick);
   }
-  /* NH's highlight: the answer under the cursor turns yellow (round 13 selected tier) */
+  /* NH's highlight: the answer under the cursor turns yellow (the selected tier) */
   .choice.sel {
     color: var(--c-ink); background: var(--c-yuzu);
     /* a white-cream halo keeps the yellow pill >= 3:1 on the island's sea too */

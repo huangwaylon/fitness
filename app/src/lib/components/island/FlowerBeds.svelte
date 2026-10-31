@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Flower beds (scale pass, docs/design/design.md §S.2): two tidy 2 × 2 beds mirrored about the jar,
+  // Flower beds (docs/design.md "Layout and scale"): two tidy 2 × 2 beds mirrored about the jar,
   // one flower per tile on the NH grid (columns ±2/±3, the beds' back row and the front row), the back row
   // one species and the front row another. FLOWER_U tall (≈ 0.45 × a villager). Contact shadows are drawn
   // in Ground.svelte. Winter: roses and pansies, each with a little snow cap.

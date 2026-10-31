@@ -1,9 +1,9 @@
-/* Island Fund design tokens v5 (docs/design/design.md, Tokens).
+/* Island Fund design tokens (docs/design.md "Chrome and tokens").
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
    One system: 15 colours, 5 radii (+ pill for the ribbon / plate / choices), 5 type sizes, weights 500/700,
-   outlines only on tappable things (round 13 --sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
+   outlines only on tappable things (--sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
    Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
    ignored. Game objects (ribbon, plate, dialogue box, choices) stay cream / yellow at every time of day.
    Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
@@ -11,13 +11,13 @@
 :root {
   /* ---------- palette (15) ---------- */
   --c-ink:#4A3A2C;   --c-ink-soft:#6B5544;              /* text (never black) */
-  --c-cream:#FFF9E3; --c-paper:#F5E4BC; --c-lip:#E0C48A; /* surfaces + the lip under them. Round 13: paper is
+  --c-cream:#FFF9E3; --c-paper:#F5E4BC; --c-lip:#E0C48A; /* surfaces + the lip under them. Paper is
                                                            NH's tan list panel, a step darker than the cards */
-  --c-card:#FFFCF2;                                      /* round 13: the white-cream card / button on a panel */
-  --c-edge:#937047;                                      /* round 13: the brown outline + lip of a tappable cream thing
+  --c-card:#FFFCF2;                                      /* the white-cream card / button on a panel */
+  --c-edge:#937047;                                      /* the brown outline + lip of a tappable cream thing
                                                            (>= 3:1 on paper, cream, card and yuzu) */
   --c-leaf:#6ED07A;  --c-leaf-lip:#4FB35C; --c-leaf-edge:#2F8A3F; /* the action; -edge = its outline + lip (>= 3:1) */
-  --c-leaf-text:#256E33;                                 /* round 16 #4: green TEXT on a light fill (4.98:1 on paper,
+  --c-leaf-text:#256E33;                                 /* green TEXT on a light fill (4.98:1 on paper,
                                                            ~5.8:1 on a card); -lip is never a text colour */
   --c-yuzu:#FFD84D;  --c-yuzu-lip:#E6B22E;               /* the focus (ribbon, nameplates) */
   --c-mint:#7BD7C1;  --c-mint-lip:#63B4B5;               /* NH map mint (tiles, bars track) */
@@ -25,7 +25,7 @@
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
-  --card: var(--c-card);       /* round 13: cards on the page / in sheets (one step lighter than the panel) */
+  --card: var(--c-card);       /* cards on the page / in sheets (one step lighter than the panel) */
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --leaf-text: var(--c-leaf-text); /* green text on the themed panel / card (night: a light green, 5.8:1 on navy) */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
@@ -35,7 +35,7 @@
      Builder A block below */
 
   /* ---------- type: 11 axes · 13 small · 15 body · 18 talk/button · 22-26 title/score · 36-44 hero ----------
-     Round 10 T1: --fs-s is the floor for content text (13px); --fs-xs (11px) only for chart axes and table
+     --fs-s is the floor for content text (13px); --fs-xs (11px) only for chart axes and table
      headers. No literal 11px / 12px in components. --fs-input: every input / textarea / select (iOS zooms
      the page on focus below 16px; enforced by lib/inputs.test.ts). */
   --font-ui: "Zen Maru Gothic", "Fredoka", ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
@@ -49,7 +49,7 @@
   --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-tile:30%; --r-pill:999px;
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
-  --lip-h:4px;      /* the one lip depth (F9) */
+  --lip-h:4px;      /* the one lip depth */
   --sh-lip:0 var(--lip-h) 0 var(--lip);
   --sh-float:0 12px 32px rgba(74, 58, 44, .18);
 
@@ -71,14 +71,14 @@
   --side: 18px;       /* page side padding (14 at 320) */
   --gap: 12px;        /* stack gap (8 compact) */
   --talk-lines: 2;    /* dialogue box lines (1 compact) */
-  /* Round 10 T2: the one tap-target floor. min-height (and min-width for icon-only controls) on anything
+  /* The one tap-target floor. min-height (and min-width for icon-only controls) on anything
      tappable; a smaller visual can keep its size and grow an ::after hit area to --hit. */
   --hit: 44px;
-  /* round 21: a list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
+  /* A list row that holds an edged 44px object (✎, とりけす): 3px clear above it and under its 4px lip */
   --row-obj: calc(var(--hit) + var(--lip-h) + 6px);
   --phone-h: 92px;
 
-  /* ---------- stacking: one z scale (round 21) ----------
+  /* ---------- stacking: one z scale ----------
      The page: the scene's stage < the HUD (ribbon, sync chip) < the dock (しまフォン, しずえ's box). Modal <dialog>s
      (sheets, the phone, the harvest) live in the top layer above every z-index; the banner is a popover shown after
      them, so it sits above an open sheet (--z-toast is its fallback without popover support).
@@ -89,7 +89,7 @@
   --z-tree: 30; --z-canopy: 32; --z-fruit: 33; --z-fruit-row: 34; --z-fall: 50; --z-villager: 51; --z-villager-mine: 52;
   --z-leaf: 70; --z-tint: 80; --z-jar: 81; --z-taps: 82; --z-coin: 90; --z-coin-gain: 91; --z-gain: 92; --z-popup: 95;    /* the island's NookPhone button: 68px disc + 2px + the 「しまフォン」 plate + its lip */
 
-  /* ---------- viewport heights (round 10, ios-scroll-audit L3) ----------
+  /* ---------- viewport heights ----------
      --vh-fill: 100dvh, for things that fill the visible screen and never scroll themselves (island, phone,
      sheet max-height). --vh-page: 100svh, the min-height of a page the document scrolls (stable while
      Safari's toolbars collapse). --vh1: 1dvh for clamps. Each falls back to vh before Safari 15.4 (the
@@ -97,14 +97,14 @@
      does not resize the layout viewport for the keyboard; --kb is only padding / sticky bottom. */
   --vh-fill: 100vh; --vh-page: 100vh; --vh1: 1vh;
 
-  /* ---------- fluid scale (round 10 T4): clamps instead of breakpoint steps ---------- */
+  /* ---------- fluid scale: clamps instead of breakpoint steps ---------- */
   --cta-h: clamp(48px, calc(6.6 * var(--vh1)), 60px);  /* the one action */
-  /* しまフォン grid: tiles follow the smaller of width and height, so a tall phone gets bigger tiles (sizing #7) */
+  /* しまフォン grid: tiles follow the smaller of width and height, so a tall phone gets bigger tiles */
   --tile: clamp(52px, min(22vw, calc(11 * var(--vh1))), 96px); --tile-gap: clamp(12px, 4.5vw, 22px);
-  --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ふたりの壺 hero jar */
+  --jar-h: clamp(84px, calc(16 * var(--vh1)), 160px);  /* ごほうび hero jar */
   --key-h: clamp(46px, calc(7 * var(--vh1)), 64px);    /* NumberPad keys */
 
-  /* ---------- surfaces (round 10 T3) + button tiers (round 13, docs/reviews/round-13/button-contrast.md) ----------
+  /* ---------- surfaces + button tiers ----------
      The panel (--bg / --surface: NH's tan) is a step darker than what sits on it (--card: white-cream).
      Anything tappable also carries an EDGE: a 2px outline + the 4px lip in one colour that is >= 3:1 against
      the panel (WCAG 1.4.11), like Pocket Camp's outlined cream buttons. Static cards keep the soft --lip only,
@@ -121,13 +121,13 @@
   --sh-obj-press: inset 0 0 0 2px var(--c-edge), 0 1px 0 var(--c-edge);
   --fill-on-surface: var(--ctl);
 
-  /* ---------- the ground ellipse under villagers / props (v5 §5 depth rule; also read outside .if-scene) ---------- */
+  /* ---------- the ground ellipse under villagers / props (the depth rule; also read outside .if-scene) ---------- */
   --sh-ground: rgba(40, 60, 40, .18);
 
   color-scheme: light;
 }
 
-/* ---------- time of day (v5 §5 table): dawn and day are cream / ink ---------- */
+/* ---------- time of day: dawn and day are cream / ink ---------- */
 :root[data-tod="dusk"] { --bg:#F6DFC0; --surface:#F6DFC0; --lip:#E8B98A; }
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
@@ -145,7 +145,7 @@
 }
 
 /* ---------- small screens: compact = SE height or < 360 wide; tiny = 320 phones ----------
-   (--cta-h / --tile / --tile-gap are fluid clamps now: no steps here) */
+   (--cta-h / --tile / --tile-gap are fluid clamps: no steps here) */
 @media (max-height: 700px), (max-width: 359px) {
   :root { --gap: 8px; --talk-lines: 1; --fs-talk: 1rem; }
 }
@@ -166,7 +166,7 @@
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
 
 /* ======================================================================================
-   Builder A: scene + fx + keyframes (design.md §M.2, §M.4).
+   Builder A: scene + fx + keyframes (design.md "Motion").
    Scene tokens live on the scene element itself (.if-scene[data-season][data-tod], set by
    island/IslandScene.svelte), so a scene renders the same whatever <html> says and the dev
    gallery can show every season × time of day side by side.
@@ -176,10 +176,10 @@
   --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
   --firefly:#F3FF9E; --firefly-glow:#E8F59A;
   --dur-walk:1600ms; /* = WALK_MS in motion/director.svelte.ts */
-  /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar), v5 §5 */
+  /* depth: the ground ellipse under anything standing on the ground (villagers, trees, the jar) */
   --sh-ground: rgba(40, 60, 40, .18);
 }
-/* Round 7 (docs/design/design.md §S.3, "Pocket Camp diorama"): the scene is painted like the official
+/* docs/design.md "Environment", a "Pocket Camp diorama": the scene is painted like the official
    renders. Light from the upper left; every surface = one base + one gentle gradient + one soft lower shade +
    sparse flecks; no strokes or lips on scenery; soft radial contact shadows in the colour of the surface.
    The sea is NH blue with a turquoise shallow ring; time of day = ONE multiply tint over land and sea
@@ -243,14 +243,14 @@
   --tod-tint:#9AA4DE;
   --plate:#FFF6E0;
 }
-/* Pause every scene animation while the tab is hidden (§S.5). */
+/* Pause every scene animation while the tab is hidden (design.md "Particles and events"). */
 .if-scene[data-paused] *, .if-scene[data-paused] *::before, .if-scene[data-paused] *::after { animation-play-state: paused !important; }
 /* Under a sheet (the phone, a card) the endless loops hold still too: clouds, sea glints, stars, fireflies and the
    villagers' idle bob, so the compositor draws no frames for a scene nobody is looking at. One-off motions (a hop,
    an emote) still finish. */
 .if-scene[data-covered] :is(.cloud, .glints, .star, .ff, .body.bob) { animation-play-state: paused !important; }
 
-/* §M.2 motion primitives: all on `.body` (transform-origin 50% 100%) unless noted; every one starts
+/* Motion primitives (design.md "Motion"): all on `.body` (transform-origin 50% 100%) unless noted; every one starts
    and ends at `transform: none`, so the idle loop resumes without a jump. */
 @keyframes if-bob { 0%,100% { transform: none; } 50% { transform: translateY(-2%) scale(.985,1.015); } }
 @keyframes if-bob-soft { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
@@ -273,7 +273,7 @@
   50% { transform: rotate(-5deg); } 66.6% { transform: rotate(5deg); } 83.3% { transform: rotate(-2deg); }
 }
 /* on .face (origin at the feet): look around = lean and tilt toward the middle, then the other way, and
-   back (A9: no paper-doll mirror flip). --in = +1 when the middle of the island is to the right. */
+   back (no paper-doll mirror flip). --in = +1 when the middle of the island is to the right. */
 @keyframes if-turn {
   0%,100% { transform: scaleX(var(--facing,1)); }
   14%,42% { transform: scaleX(var(--facing,1)) translateX(calc(var(--in,1) * 4%)) rotate(calc(var(--in,1) * 6deg)); }
@@ -312,7 +312,7 @@
   0%,100% { transform: none; } 16% { transform: rotate(4deg); } 33% { transform: rotate(-4deg); }
   50% { transform: rotate(3deg); } 67% { transform: rotate(-3deg); } 84% { transform: rotate(1.5deg); }
 }
-/* a front-facing bow (N2: there is no official bow render): the figure dips and squashes from the feet, holds, rises */
+/* a front-facing bow (there is no official bow render): the figure dips and squashes from the feet, holds, rises */
 @keyframes if-bow { 0%,100% { transform: none; } 30%,62% { transform: translateY(1.5%) scale(1.03,.91); } }
 @keyframes if-talk { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
 @keyframes if-headshake {
@@ -327,8 +327,8 @@
 @keyframes if-fade-hold { 0% { opacity: 0; } 5.5%, 94.5% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes if-twinkle { 0%,100% { transform: scale(.2); opacity: 0; } 50% { transform: none; opacity: 1; } }
 
-/* Jar ⇄ ふたりの壺 shared element (round 6): the island jar carries view-transition-name: jar (<Jar name="jar">);
-   when the ふたりの壺 hero jar carries it too, it morphs jar-to-jar on top of the page zoom (ui-state/jarTransition.ts,
+/* Jar ⇄ ごほうび shared element: the island jar carries view-transition-name: jar (<Jar name="jar">);
+   when the ごほうび hero jar carries it too, it morphs jar-to-jar on top of the page zoom (ui-state/jarTransition.ts,
    data-vt in / out / fade). In: 320ms, back: 280ms, both cubic-bezier(.4,0,.2,1). */
 ::view-transition-group(jar) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 ::view-transition-old(jar), ::view-transition-new(jar) { animation-duration: 320ms; height: 100%; }

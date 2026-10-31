@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The treats list's editor (ADR 0022: one list) in a sheet. Each row: the name and the price in ベル (16px inputs:
+  // The treats list's editor (one shared list) in a sheet. Each row: the name and the price in ベル (16px inputs:
   // iOS never zooms), and × to remove; ＋ adds a row; 保存 hands the cleaned list back (empty names and prices out of
   // range are dropped; the page saves it as the shared `pref`). やめる / closing the sheet drops the draft.
   //   <MenuEditor bind:open items={menu} onsave={(items) => …} />

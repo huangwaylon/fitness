@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Scenery taps (docs/design/scene-interactions.md): the island's decorative scenery answers a tap with a ≤ 1 s
+  // Scenery taps (docs/design.md "Scene interactions"): the island's decorative scenery answers a tap with a ≤ 1 s
   // flourish after NH / Pocket Camp, and nothing else (no points, no state, no sheets). A bush rustles and sheds a few
   // leaves (petals in spring, maple leaves in autumn, a clump of snow in winter); a flower wiggles and drops a petal
   // with a sparkle (rarely a butterfly flutters off it; on a summer night, a firefly); a cloud squishes and puffs; the

@@ -1,4 +1,4 @@
-// How full the island's jar looks (ADR 0022: one wallet).
+// How full the island's jar looks (the one shared wallet).
 
 /** A full jar on the island = this many ベル in the wallet (a few weeks of trip treats saved up). */
 const FULL_AT = 60_000;

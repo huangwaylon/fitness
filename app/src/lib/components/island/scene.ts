@@ -1,4 +1,4 @@
-// Island scene v4 data (design.md §S): stage coordinates and season tables. Stage units (u):
+// Island scene data (design.md "Island scene"): stage coordinates and season tables. Stage units (u):
 // x 0–390, y 0–360, origin top-left, y down; "base" = the y of the feet / trunk bottom.
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { BushId, FlowerId } from '#lib/art.ts';
@@ -12,7 +12,7 @@ export const u = (n: number): string => `${((n * 100) / STAGE_W).toFixed(3)}cqw`
 
 export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
-/** The NH tile grid (scale pass, docs/design/design.md §S.2). One tile = TILE u wide; a tile row is
+/** The NH tile grid (docs/design.md "Layout and scale"). One tile = TILE u wide; a tile row is
  *  ROW u deep on screen (NH's camera foreshortens ground depth to ≈ 0.7 of the width). Columns are centred on
  *  the jar: col(k) = 195 + k·TILE, k = −3…3 (7 tiles across the plateau). Every size is a multiple of the
  *  villager height VILLAGER.h ≈ 1.8 tiles, measured against in-game screenshots (`.refs/scale/`). */
@@ -23,14 +23,14 @@ const col = (k: number): number => 195 + k * TILE;
  *  (the villagers stand on the front row). */
 const ROWS = { hedge: 80, trees: 173, bedBack: 266, front: 297 } as const;
 
-/** One tree per person (round 6): a plain official hardwood of the season (in AC a tree bears one kind of
+/** One tree per person: a plain official hardwood of the season (in AC a tree bears one kind of
  *  fruit, so this one bears none), trunk on column ±2. NH hardwood ≈ 1.5 × a villager tall, canopy ≈ 2.2
  *  tiles wide. Today's fruit lies on the ground in front of its trunk, the way NH drops fruit around a
  *  shaken tree. `x` = trunk centre; `base` = trunk bottom. */
 export const TREE = { base: ROWS.trees, h: 120, x: { A: col(-2), B: col(2) } as const };
 /** The seasonal hardwood renders are 329 × 409 (summer 509 × 640: the same shape). */
 export const OAK_AR = 329 / 409;
-/** Ground fruit (game-designer round 6, ADR 0021): per ring fruit 0–3 items = thirds of today's goal (todayPct), in
+/** Ground fruit: per ring fruit 0–3 items = thirds of today's goal (todayPct), in
  *  a fixed arc in front of the trunk, 🍑 🍐 🍒 🍎 left to right (RING_FRUITS order). [dx, dy] from the trunk base.
  *  NH puts one dropped item per tile; 4 kinds × 3 items can't, so they sit at a 20u pitch (compromise), centred on the
  *  trunk, and the row leans FRUIT_LEAN u away from the jar (out from the plaza), so it stays clear of the jar's plate
@@ -48,7 +48,7 @@ export const fruitCount = (pct: number): number => Math.max(0, Math.min(3, Math.
  *  jar; their heads stay below the ground fruit. */
 export const VILLAGER = { foot: ROWS.front, h: 80, x: { A: col(-1), B: col(1) } as const };
 
-/** Jar (§S.6): the plaza centrepiece on column 0 of the tree row, on a round sand patch; 52u wide (≈ 1.2
+/** Jar (design.md "Layout and scale"): the plaza centrepiece on column 0 of the tree row, on a round sand patch; 52u wide (≈ 1.2
  *  tiles, 65u ≈ 0.8 villager tall: a little over one-tile furniture so the coins and the plate stay legible). */
 export const JAR = { x: col(0), base: ROWS.trees, w: 52 };
 
@@ -84,7 +84,7 @@ export const HEDGE_X = [-3, -2, -1, 0, 1, 2, 3].map(col);
 export const HEDGE_BASE = ROWS.hedge;
 export const BUSH_U = 48;
 
-/** Round 7 (design.md §S.3, "Pocket Camp diorama"): the island is an organic rounded plateau with
+/** design.md "Environment", a "Pocket Camp diorama": the island is an organic rounded plateau with
  *  sea on both sides. Grass top surface x 44–346, y 50–316 (rounded corners: rt at the back, rb at the
  *  front), a cliff 12u tall at the front tapering to 6u at the sides, and a sand crescent around it
  *  (x 30–360, down to y 352) with a wet band, two foam lines and a turquoise shallow ring. */
@@ -110,13 +110,13 @@ export const FLOWER_SCALE: Partial<Record<FlowerId, number>> = { 'orange-pansies
 export const BED_X = { left: [col(-3), col(-2)], right: [col(2), col(3)] };
 export const BED_ROWS = [ROWS.bedBack, ROWS.front];
 
-/** Back row (round 6: the hedge only; no building, bench, cedar or path). */
+/** Back row (the hedge only; no building, bench, cedar or path). */
 export function props(season: Season, month: number): Prop[] {
   const [b1, b2] = hedgePair(season, month);
   return HEDGE_X.map((x, i) => ({ key: `bushes/${i % 2 ? b2 : b1}`, h: BUSH_U, x, base: HEDGE_BASE, z: 20 }));
 }
 
-/** Japan-date events (§S.10). */
+/** Japan-date events (design.md "Particles and events"). */
 export interface Events {
   cherry: boolean;
   maple: boolean;

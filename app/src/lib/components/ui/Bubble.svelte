@@ -1,9 +1,9 @@
 <script lang="ts">
-  // NH dialogue box (v5 §3): wobbly cream box (a game object: cream at every time of day), tilted yuzu nameplate that pops in after the box,
+  // NH dialogue box: wobbly cream box (a game object: cream at every time of day), tilted yuzu nameplate that pops in after the box,
   // letter-by-letter reveal at 33 ms/char (tap to finish). The box holds --talk-lines lines (2; 1 on compact screens)
   // and never grows. しずえ stands on the left with her feet on the bubble's baseline (official art by pose; the season
   // picks her outfit), the tail pointing at her. Reduced motion: text appears at once.
-  // The real text lives in an aria-live node. Sound: NH's Animalese-style blips as it types (おしゃべり, sound.md §4),
+  // The real text lives in an aria-live node. Sound: NH's Animalese-style blips as it types (おしゃべり, design.md "UI sounds and blips"),
   // しずえ's voice by default, a lower one for anyone else (`name`).
   import { talk } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -31,7 +31,7 @@
 
   const TYPE_MS = 33;
   const PAUSE_MS = 180;
-  /** Live: turning reduced motion on mid-line finishes the line at once (review P10). */
+  /** Live: turning reduced motion on mid-line finishes the line at once. */
   const reduced = $derived(reducedMotion());
 
   /** Glyphs with their reveal delay (ms). */

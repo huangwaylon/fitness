@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Two soft clouds (round 7, design.md §S.3): the round lobes on an elliptical base, filled with ONE
+  // Two soft clouds (design.md "Environment"): the round lobes on an elliptical base, filled with ONE
   // vertical gradient (white to 55%, a pale-blue underside below; tinted per time of day in tokens.css), no
   // lip. C1 / C2 drift at 140 / 100 s (transform only). Sizes: 120 / 86px at 393, 100 / 72 compact, 64 / 48 at
   // 320. Lanes: C1 just under the HUD (top = max(--cloud-lane, 26%)), C2 lower, over the horizon cloud bank, so the sun

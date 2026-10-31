@@ -1,14 +1,14 @@
 <script lang="ts">
-  // One person's tree (round 6, faithful to AC; ADR 0021): a plain official hardwood of the season (an AC tree bears one
+  // One person's tree (faithful to AC): a plain official hardwood of the season (an AC tree bears one
   // kind of fruit, so this one bears none), with today's fruit lying on the ground in front of the trunk, the way NH
   // drops fruit around a shaken tree: per ring fruit 0–3 items = thirds of today's goal (scene.ts fruitCount),
   // 🍑 🍐 🍒 🍎 left to right (RING_FRUITS). A kind with nothing yet shows one faint item where it will fall. When a
   // kind earns an item (new data from the Watch), the tree shakes (±4°, 3 swings, 500ms) and the new item drops in with
   // a bounce. Narrow stages (< 360px) show one item per kind, sized by its count. The tree stands still otherwise
-  // (v5 §6 idle budget).
+  // (the idle budget).
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
-  // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail
-  // (round 17 IA §3.1): a nameplate (whose tree), then per fruit today / goal, today's ベル and the week's badge pips
+  // tall, same popup with the nearest fruit highlighted). The popup is the one home of a person's per-fruit detail:
+  // a nameplate (whose tree), then per fruit today / goal, today's ベル and the week's badge pips
   // (●●●○○ = 3 of 5 days; ✓ once the badge is met). It stays until this tree is tapped again, the other tree is
   // tapped, or a tap lands elsewhere. `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate`
   // pops + sparkles a fruit.
@@ -97,7 +97,7 @@
     cue('fruit-land');
   };
 
-  /** `sound`: a tap or a real event rustles; idle life's shake stays silent (round 14 review). */
+  /** `sound`: a tap or a real event rustles; idle life's shake stays silent. */
   function shake(sound = false) {
     const el = treeEl;
     if (!el) return;
@@ -146,7 +146,7 @@
 
   /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD (its measured bottom + room for the
    *  nameplate), measured from its layout box (offsetLeft/Top ignore the pop-in transform). It always opens upwards,
-   *  its tail on the tree (round 20, user); where the sky is short it is pushed down over the canopy, never flipped. */
+   *  its tail on the tree; where the sky is short it is pushed down over the canopy, never flipped. */
   function keepInside(el: HTMLElement) {
     const scene = el.closest('.scene');
     const stage = el.offsetParent as HTMLElement | null;
@@ -230,14 +230,14 @@
   /* fruit items lie on the ground (z above the trunk, below the villagers) */
   .fruit { position: absolute; aspect-ratio: 1; translate: -50% -50%; line-height: 0; pointer-events: none; }
   .f { display: block; transform-origin: 50% 100%; }
-  /* round 7: a soft radial contact shadow under each item (0.45 of its size, +6% right and down) */
+  /* a soft radial contact shadow under each item (0.45 of its size, +6% right and down) */
   .fruit::before {
     content: ''; position: absolute; z-index: -1; left: 11%; width: 90%; bottom: -8%; height: 26%; border-radius: 50%;
     background: radial-gradient(closest-side, var(--sh-c), transparent); pointer-events: none;
   }
   .fruit.ghost::before { display: none; }
-  /* nothing earned yet: a small flat silhouette where it will fall, like NH's catalogue "not yet" (round 16 #19: a
-     faded copy read as grey pebbles) */
+  /* nothing earned yet: a small flat silhouette where it will fall, like NH's catalogue "not yet" (a
+     faded copy reads as grey pebbles) */
   .fruit.ghost .f { scale: .7; opacity: .2; }
   .fruit.ghost :global(.official) { filter: brightness(0); }
   /* a newly earned item falls from the canopy and bounces (250ms after the shake starts) */
@@ -282,7 +282,7 @@
     content: ''; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -5px; width: 10px; height: 10px; margin-left: -5px;
     background: inherit; transform: rotate(45deg);
   }
-  /* whose tree (round 16 #15): NH's tilted yuzu nameplate on the bubble's top edge */
+  /* whose tree: NH's tilted yuzu nameplate on the bubble's top edge */
   .plate {
     position: absolute; left: 10px; top: 0; translate: 0 -55%; rotate: -3deg; padding: 3px 10px; border-radius: var(--r-pill);
     background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); box-shadow: 0 2px 0 var(--c-yuzu-lip);
@@ -314,12 +314,12 @@
     grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 3px; padding: 5px 8px 1px;
     border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
   }
-  /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree (sizing #10) */
+  /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree */
   @container (max-width: 400px) {
     .detail { grid-template-columns: 20px auto auto auto auto; }
     .lbl { display: none; }
     .row { column-gap: 10px; }
-    /* the longest value (2,384/8,000歩) ran into its fruit (1px); keep a clear gap (round 21) */
+    /* a clear gap, so the longest value (2,384/8,000歩) never touches its fruit */
     .amt { padding-left: 4px; }
   }
   /* short screens: tighter rows, so the popup covers less of the canopy when the sky is short (keepInside) */

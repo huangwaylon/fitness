@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Any route error or unknown URL (round 5 U1): Tom Nook and a cozy bilingual line instead of SvelteKit's raw
+  // Any route error or unknown URL: Tom Nook and a cozy bilingual line instead of SvelteKit's raw
   // "500 Internal Error", with safe areas, and two ways back: the island and the demo.
   import { resolve } from '$app/paths';
   import { page } from '$app/state';

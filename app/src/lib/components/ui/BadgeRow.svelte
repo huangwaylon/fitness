@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A week's four badges (ADR 0021 §4): the ring fruits, lit when that badge was met, faded when not. `progress`
+  // A week's four badges: the ring fruits, lit when that badge was met, faded when not. `progress`
   // (a week still running) puts the days met so far under each fruit: 3/5.
   //   <BadgeRow badges={{ peach: true, pear: false, cherry: true, apple: true }} size="28px" />
   import type { RingFruit } from '#lib/types.ts';
@@ -44,9 +44,9 @@
     background: color-mix(in srgb, var(--lip) 35%, transparent); }
   .b :global(svg:not(.ok)) { width: var(--b); height: var(--b); }
   .b:not(.on) :global(.official), .b:not(.on) > :global(svg) { opacity: .4; filter: saturate(0); }
-  /* round 16 #16: an unearned badge stays visible on the night navy */
+  /* an unearned badge stays visible on the night navy */
   :global(:root[data-tod='night']) .b:not(.on) :global(.official) { opacity: .6; }
-  /* round 21: and its disc reads as a disc, not a dark hole in the navy card (r19 left this) */
+  /* and its disc reads as a disc, not a dark hole in the navy card */
   :global(:root[data-tod='night']) .b:not(.on) { background: color-mix(in srgb, var(--text) 14%, transparent); }
   .b.on { background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-cream)); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .ok {

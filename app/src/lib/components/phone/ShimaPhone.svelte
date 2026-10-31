@@ -1,9 +1,9 @@
 <script lang="ts">
-  // しまフォン launcher (v5 §4): a NookPhone-screen sheet: the title bar and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
+  // しまフォン launcher: a NookPhone-screen sheet: the title bar and a 3-column grid of squircle app tiles: official NookPhone tiles (passport, rescue) or
   // official glyphs on our tile colours. Each app slides in from the right inside the phone, with a ‹ back.
-  // The title bar stays put; only `.phone-body` (home grid or the app) scrolls (round 10).
+  // The title bar stays put; only `.phone-body` (home grid or the app) scrolls.
   // Apps: help, villager (+ name), language, sync, sound. (No privacy settings: both players see everything; no alerts.)
-  // Sounds (docs/design/sound.md §5): the phone opens and closes with its own little tune, an app opens with a pop,
+  // Sounds (docs/design.md "Cues"): the phone opens and closes with its own little tune, an app opens with a pop,
   // ‹ back is the cancel tone.
   import { tick as nextTick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -38,7 +38,7 @@
   ];
 
   let app = $state<AppId | null>(null);
-  /** きろく is loaded the first time it opens, so the island doesn't pay for it up front (round 7 L1). */
+  /** きろく is loaded the first time it opens, so the island doesn't pay for it up front. */
   const loadKiroku = lazy(() => import('../kiroku/Kiroku.svelte'));
   let kiroku: { back: () => boolean } | undefined = $state();
   let entry = $state<KirokuEntry | null>(null);
@@ -46,7 +46,7 @@
   const view = $derived(week.view);
   const title = $derived(app ? t(`phone.app.${app}`) : t('phone.name'));
 
-  /** U15: もどる puts focus back on the app tile it came from. */
+  /** もどる puts focus back on the app tile it came from. */
   async function back() {
     cue('back');
     if (app === 'kiroku' && kiroku?.back()) return;
@@ -56,7 +56,7 @@
     document.querySelector<HTMLElement>(`.app[data-app="${from}"]`)?.focus();
   }
 
-  /** Closing the phone ends its banner too (round 7 F2), and the next open starts on the home screen. */
+  /** Closing the phone ends its banner too, and the next open starts on the home screen. */
   function closed() {
     if (toasts.current) toasts.dismiss();
     app = null;
@@ -138,15 +138,15 @@
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .fail { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
   .titlebar { flex: none; position: relative; z-index: 1; margin-bottom: 8px; }
-  /* the paper sheet's fade under the title bar (round 21): rows scrolling up fade out instead of being cut at a hard edge;
+  /* the paper sheet's fade under the title bar: rows scrolling up fade out instead of being cut at a hard edge;
      at the top it covers only the 14px gap above the first row */
   .titlebar::after {
     content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
     background: linear-gradient(var(--surface), transparent);
   }
 
-  /* Home: six tiles in two rows, centred a little above the middle of the phone (sizing #7: they used to sit in
-     the top third of an empty screen); the row gap grows with the phone's height. */
+  /* Home: six tiles in two rows, centred a little above the middle of the phone (not in the top
+     third of an empty screen); the row gap grows with the phone's height. */
   .grid {
     display: grid; grid-template-columns: repeat(3, minmax(var(--tile), 1fr)); justify-items: center;
     gap: clamp(calc(var(--tile-gap) + 4px), calc(5 * var(--vh1)), 48px) var(--tile-gap); padding: 10px 0 18px;
@@ -156,7 +156,7 @@
     appearance: none; background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 8px;
     min-width: var(--tile); animation: if-pop var(--dur-pop) var(--ease-bounce) both; border-radius: var(--r-btn); color: var(--text);
   }
-  /* Every tile is the same squircle (round 19, user): its fill, the round-13 edge (2px outline + 4px lip in a darker
+  /* Every tile is the same squircle: its fill, the edge (2px outline + 4px lip in a darker
      shade of the fill) and the glyph inside. The official full tiles (きろく, 村人, つうしん) are drawn a touch larger
      than the squircle on their own background colour, so their baked-in rounded edges are cropped away. */
   .tile {
@@ -173,7 +173,7 @@
   .app:active .tile { transform: translateY(2px) scale(1.08, .9); transition-duration: var(--dur-tap); }
   .lbl { font: 700 clamp(var(--fs-s), calc(var(--tile) / 5.5), var(--fs-body))/1.1 var(--font-ui); white-space: nowrap; }
 
-  /* The one scroller (ios-scroll-audit M2 / architecture §1). It bleeds 8px past the phone's side padding so
+  /* The one scroller. It bleeds 8px past the phone's side padding so
      focus rings and lips are not clipped by its overflow. A screen that fills the phone (the NumberPad) is
      stretched to the body's height, so its keys sit at the bottom with no magic number. */
   .phone-body {

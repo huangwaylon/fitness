@@ -1,4 +1,4 @@
-// The motion and reaction catalogues (design.md §M.2, §M.5, §M.6, §M.7) as data.
+// The motion and reaction catalogues (design.md "Motion") as data.
 // A "step" is one motion + one emote + optional fx on one actor; reactions are short step lists.
 import type { EmoteIcon } from '#lib/art.ts';
 import type { Cue } from '#lib/sound/cues.ts';
@@ -29,9 +29,8 @@ export interface Step {
   face?: 'other' | 'jar' | 'home';
   /** しずえ pose for the duration (wave / stand / bow). */
   pose?: 'wave' | 'stand' | 'bow';
-  /** The sound under this step (sound/cues.ts; docs/design/sound.md §5). Only events and taps sound: the startup
-   *  beats, idle life, naps, the dance and R2 (an answer already confirmed, the coins are its reward) stay silent
-   *  (round 14 review). */
+  /** The sound under this step (sound/cues.ts; docs/design.md "Cues"). Only events and taps sound: the startup
+   *  beats, idle life, naps, the dance and R2 (an answer already confirmed, the coins are its reward) stay silent. */
   cue?: Cue;
 }
 
@@ -46,9 +45,9 @@ export interface Reaction {
   ms: number;
 }
 
-/** §M.5 villager reactions (+ the matching しずえ beat where §M.6 has one). Villagers get floating marks
+/** Villager reactions (+ the matching しずえ beat where there is one). Villagers get floating marks
  *  (`mark-*`, ours) and the official colour glyphs (love, surprise, glee, inspiration, curiosity,
- *  thought, daydreaming), never the player's cat faces (A1; Villager also maps any stray one).
+ *  thought, daydreaming), never the player's cat faces (Villager also maps any stray one).
  *  しずえ keeps the accent-heavy cat faces (joy, laughter, pride, flourish, shocked, sleepy). */
 export const REACTIONS: Record<ReactionId, Reaction> = {
   R1: { name: 'first open', ms: 2200, steps: [
@@ -104,7 +103,7 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
   ] }
 };
 
-/** Idle-life actions (§M.7). */
+/** Idle-life actions (design.md "Motion"). */
 export type IdleAction =
   | 'look' | 'wiggle' | 'hum' | 'hop' | 'stroll' | 'peek' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch' | 'doze';
 
@@ -121,7 +120,7 @@ export interface IdleEntry {
   pair?: boolean;
 }
 
-/** v5 §6: idle life stays in the background. Small body motions only (no emote bubbles, no notes:
+/** Idle life stays in the background. Small body motions only (no emote bubbles, no notes:
  *  emotes are for events), mostly the quiet ones. */
 export const IDLE_POOL: IdleEntry[] = [
   { action: 'look', weight: 14 },

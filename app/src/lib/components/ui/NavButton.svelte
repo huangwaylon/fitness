@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The one back / close button (docs/design/design.md "Navigation"): a round cream NH game-object button (the
-  // round-13 edge tier, 44px), ‹ back always top-left, ✕ close always top-right. `text` adds a visible label to the
+  // The one back / close button (docs/design.md "Navigation"): a round cream NH game-object button (the
+  // edged tier, 44px), ‹ back always top-left, ✕ close always top-right. `text` adds a visible label to the
   // back pill (‹ 島へ on a full page). `href` makes it a link (a page's way back).
   //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" href="/" />
   import { t } from '#lib/i18n/index.ts';

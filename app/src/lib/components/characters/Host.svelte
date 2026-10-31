@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The host しずえ (Isabelle), design.md §M.6: the official render by pose, a generic silhouette
+  // The host しずえ (Isabelle), design.md "Motion": the official render by pose, a generic silhouette
   // as fallback, plus her motion: idle bob, a bounce while her line is typing (`talking`), and the
   // beats the stage director plays (greeting hop, bow, head-shake, pose swaps with a 160 ms
   // crossfade, a reaction bubble at her top-right, sparkles / notes / sweat).
@@ -12,7 +12,7 @@
   // from motion/director when she is tapped with nothing left to read.
   // Winter (snow season): the full-body cardigan replaces every pose. Night 22–05: slow breathing.
   // If a player picked しずえ as their villager, たぬきち hosts instead (hostWho.ts): his one render for every pose.
-  // 'bow' (N2): NH has no bow render, so it shows the stand render (same outfit) and plays a CSS bow
+  // 'bow': NH has no bow render, so it shows the stand render (same outfit) and plays a CSS bow
   // each time the pose becomes 'bow'.
   import { onMount, untrack } from 'svelte';
   import OfficialArt from './OfficialArt.svelte';
@@ -49,7 +49,7 @@
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
   const nook = $derived(hostIsNook());
   // asleep-ish by the scene clock (the island naps 22–05), not by the chrome palette
-  // (minuteNow, not theme.tod: the time of day only changes at 05:00 and 19:00, so 22:00 was missed: round 16 M4)
+  // (minuteNow, not theme.tod: the time of day only changes at 05:00 and 19:00, so it would miss 22:00)
   const night = $derived.by(() => {
     const hr = jst(minuteNow()).hour;
     return hr >= 22 || hr < 5;

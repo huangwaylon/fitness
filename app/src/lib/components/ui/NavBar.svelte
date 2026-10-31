@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The one title bar (docs/design/design.md "Navigation"), on every sheet, the しまフォン and its apps: the title centred,
+  // The one title bar (docs/design.md "Navigation"), on every sheet, the しまフォン and its apps: the title centred,
   // ‹ back top-left when there is a level to go back to, ✕ top-right on every sheet (it closes the whole sheet, from any
   // level). Back and close never swap places, and the title never moves.
   //   <NavBar title="きろく" onback={…} onclose={…} />

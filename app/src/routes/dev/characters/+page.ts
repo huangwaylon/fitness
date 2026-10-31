@@ -1,5 +1,5 @@
 // Dev-only art gallery (Builder A): 404 outside `vite dev`. The gallery is imported only inside the DEV branch, so
-// the production build has no chunk for it (round 8).
+// the production build has no chunk for it.
 import { error } from '@sveltejs/kit';
 
 export async function load() {

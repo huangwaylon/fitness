@@ -12,7 +12,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('idle life cleanup (P2)', () => {
+describe('idle life cleanup', () => {
   it('stop() cancels the chat follow-ups, so nobody is left facing inward', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, pendingTimers, resetAll } = await import('./director.svelte.ts');
@@ -56,7 +56,7 @@ describe('idle life cleanup (P2)', () => {
     expect(actors.mine.motionN + actors.partner.motionN + actors.mine.emoteN + actors.partner.emoteN).toBe(0);
   });
 
-  it('a reaction that preempts an actor also drops the idle-owned cancellers (N8)', async () => {
+  it('a reaction that preempts an actor also drops the idle-owned cancellers', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, cancel, resetAll } = await import('./director.svelte.ts');
     const { IDLE_POOL } = await import('./reactions.ts');
@@ -85,7 +85,7 @@ describe('idle life cleanup (P2)', () => {
   });
 });
 
-describe('event queue (v5 §6)', () => {
+describe('event queue', () => {
   it('plays events one at a time; touch feedback never waits', async () => {
     const { react, queuedEvents, actors, resetAll } = await import('./director.svelte.ts');
     resetAll();
@@ -104,7 +104,7 @@ describe('event queue (v5 §6)', () => {
   });
 });
 
-describe('idle life while the page is hidden (round 16 M11)', () => {
+describe('idle life while the page is hidden', () => {
   it('stops its timer on hide (no polling) and wakes on show', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { resetAll } = await import('./director.svelte.ts');

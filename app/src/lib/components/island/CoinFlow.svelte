@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  // ベル flowing into the jar (ADR 0019 §3, round 11): when new earnings arrive, a small "+150" pops over the fruit
+  // ベル flowing into the jar: when new earnings arrive, a small "+150" pops over the fruit
   // that earned them and three coins hop from there into the jar, one after another (NH's bell pickup: a short arc,
   // a little spin, no trail). Each flight calls `onland` once its last coin is in, so the jar can squash and its
   // plate count up in step. In stage units (the stage is the container). Reduced motion: the parent skips this.

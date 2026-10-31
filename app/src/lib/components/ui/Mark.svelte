@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Villager marks (A1, ours): the bright floating symbols NH villagers show over their heads instead
+  // Villager marks (ours): the bright floating symbols NH villagers show over their heads instead
   // of the player's cat-face icons. Bold colour, a white outline so they read on sky and grass alike.
   //   <Mark id="note" />   ♪♫ · bang ! · question ? · sweat 💦 · heart ♥ · sparkle ✦ · zzz
   import type { MarkId } from '#lib/art.ts';

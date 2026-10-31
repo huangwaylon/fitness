@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Sync chip under the HUD clock (review r6 (c)): shown only when sync is not ok (offline, or the last refresh
+  // Sync chip under the HUD ribbon: shown only when sync is not ok (offline, or the last refresh
   // or send failed). A lasting system state, so it is a chip, not しずえ. Tap = retry now (flush + refresh);
   // while that runs it says 同期中…. A failed save (data may be lost) is the store's one banner + R17 instead.
   import { week } from '#lib/store/week.svelte.ts';

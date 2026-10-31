@@ -3,14 +3,14 @@
 </script>
 
 <script lang="ts">
-  // Bottom sheet on a native <dialog> (focus trap + Esc for free), opening from the thumb. One skin (v5 §4):
+  // Bottom sheet on a native <dialog> (focus trap + Esc for free), opening from the thumb. One skin:
   // the chrome surface (cream; navy at night), radius 32, a lip, the one title bar (NavBar: the title centred, ✕
-  // top-right; nothing advertises swipe-down, user 2026-10-30), one CTA in `footer`. Backdrop tap and Esc also close.
+  // top-right; nothing advertises swipe-down), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
-  // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock, round 10 H2).
+  // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
   // variant="phone": the しまフォン launcher (NookPhone screen, rounded all round, full height minus the status bar).
   // The phone itself does not scroll: it is a flex column, and the app puts its scrolling body in a
-  // `.phone-body` child (round 10 architecture: fixed status row + title bar, one scroller).
+  // `.phone-body` child (fixed status row + title bar, one scroller).
   import { untrack, type Snippet } from 'svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -33,7 +33,7 @@
   let { open = $bindable(), label, title, variant = 'paper', onclose, children, footer }: Props = $props();
   let dlg: HTMLDialogElement | undefined = $state();
   const id = ++seq;
-  /** The topmost open sheet hosts the banner (round 7 F1). */
+  /** The topmost open sheet hosts the banner. */
   const hosts = $derived(open && ui.sheets.at(-1) === id);
 
   $effect(() => {
@@ -99,29 +99,29 @@
     max-height: calc(var(--vh-fill) - var(--safe-top) - 24px);
     background: var(--surface); color: var(--text);
     border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--sh-float);
-    /* vertical only: a stray wide child can never turn a sheet into a 2-D pan (round 10 M1) */
+    /* vertical only: a stray wide child can never turn a sheet into a 2-D pan */
     overflow: hidden auto; overscroll-behavior: contain;
   }
   dialog:focus { outline: none; }
   /* the one sheet motion (design.md "Navigation"): up in 240ms, ease-out, no overshoot */
   dialog[open] { animation: up 240ms cubic-bezier(.2, .8, .2, 1); }
   dialog::backdrop { background: var(--scrim); }
-  /* U14: the content can scroll above the keyboard too (the footer is lifted by --kb). */
+  /* The content can scroll above the keyboard too (the footer is lifted by --kb). */
   .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }
   dialog:has(.foot) .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
   /* the title bar: 14px from the sheet's top edge, the content 10px under it; it stays put while a long sheet scrolls,
-     so ✕ is always in reach (round 19: the menu editor scrolled it away) */
+     so ✕ is always in reach (a long sheet like the menu editor would scroll it away) */
   .bar {
     position: sticky; top: 0; z-index: 3; padding: 14px 0 8px; margin-bottom: 2px;
     background: linear-gradient(var(--surface) 85%, transparent);
   }
   .foot {
-    /* `bottom`, not a transform: it can never lift the row above a short sheet's top (round 10 H3) */
+    /* `bottom`, not a transform: it can never lift the row above a short sheet's top */
     position: sticky; bottom: var(--kb, 0px); z-index: 2;
     padding: 10px calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 12px) calc(var(--side) + var(--safe-left));
     background: linear-gradient(transparent, var(--surface) 30%);
   }
-  /* The phone: paper (--surface) so its cream controls and cards have a body (sizing #1); a non-scrolling flex
+  /* The phone: paper (--surface) so its cream controls and cards have a body; a non-scrolling flex
      column whose `.phone-body` is the one scroller. --body-pad is that scroller's bottom padding. */
   dialog.phone {
     --body-pad: calc(22px + var(--kb, 0px));
@@ -133,7 +133,7 @@
   dialog.phone[open] { display: flex; }
   dialog.phone .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
-    /* 14px over the title bar, as on a paper sheet: ✕ and ‹ sit 18px from the phone's top and its side (round 21: 10 / 18) */
+    /* 14px over the title bar, as on a paper sheet: ✕ and ‹ sit 18px from the phone's top and its side */
     padding: 14px calc(18px + var(--safe-right)) 0 calc(18px + var(--safe-left));
   }
   /* An undo banner is up: the last row can scroll clear of it. */

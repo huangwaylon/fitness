@@ -1,4 +1,4 @@
-// Stale-build recovery (round 9): a lazy chunk that fails to load (the deploy replaced it) reloads the page once,
+// Stale-build recovery: a lazy chunk that fails to load (the deploy replaced it) reloads the page once,
 // and the next open works; the failed import is not remembered.
 import { expect, test } from '@playwright/test';
 

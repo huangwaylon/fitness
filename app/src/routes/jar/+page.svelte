@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ごほうび, the shared wallet (ADR 0022, round 17 IA §4.5: Nook's Cranny, about spending only; the route keeps its
+  // ごほうび, the shared wallet (Nook's Cranny, about spending only; the route keeps its
   // /jar path): the page's title bar (‹ 島へ top-left, the title centred: design.md "Navigation"), a hero (the island's jar, so the route change still morphs one into the
   // other, over the wallet's balance: the number on the island's plate), then one simple list of big buy tiles (the
   // five defaults: おやつ, カフェ・デザート, 外ごはん, ほしいもの, 旅のごほうび). A quiet ✎ changes the list (shared by both). Buying asks first,
@@ -61,7 +61,7 @@
     </div>
 
     <MenuShelf items={menu} {balance} onbuy={(item) => (askId = item.id)} onedit={() => (editOpen = true)} />
-    <!-- the treat guide (user, round 19): a gentle line, no cap; the full version is in あそびかた -->
+    <!-- the treat guide: a gentle line, no cap; the full version is in あそびかた -->
     <p class="hint">{t('wallet.hint')}</p>
   </main>
 
@@ -78,7 +78,7 @@
   .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 52px; gap: 8px; }
   .top h1 { margin: 0; font-size: var(--fs-title); text-align: center; white-space: nowrap; }
   .top > :global(.nav) { justify-self: start; }
-  /* the undo banner (56px, 16px over the bottom) never covers the last card (sizing #18) */
+  /* the undo banner (56px, 16px over the bottom) never covers the last card */
   .jar-screen.undoing { padding-bottom: calc(var(--pad-bottom) + 88px); }
 
   /* the hero: the island's jar over the wallet's balance (the plate's number, one per screen) */
