@@ -60,6 +60,24 @@ describe('compacted cache through applySnapshot', () => {
     expect(next.rowsAt).toBe(t);
   });
 
+  it('a poll compacts again only past a newer lock (compaction is a fixed point; skipping it drops nothing)', () => {
+    const t = at(45, '12:00'); // Thursday: the week of day 35 locked on day 44, 04:00
+    const c = applySnapshot(null, { me: 'A', now: new Date(t).toISOString(), rev: 'r1', rows: between(all, 0, t) }, t);
+    expect(c.compactedAt).toBe(at(44, '04:00'));
+    // Polls until the next lock add their open-week rows as they are: no pass over the whole cache.
+    const t2 = at(50, '21:40');
+    const next = applySnapshot(c, { me: 'A', now: new Date(t2).toISOString(), rev: 'r1', rows: between(all, t, t2) }, t2);
+    expect(next.compactedAt).toBe(c.compactedAt);
+    expect(next.rows.metrics.length).toBe(c.rows.metrics.length + between(all, t, t2).metrics.length);
+    expect(next.rowsAt).toBe(c.rowsAt);
+    // Past the next lock (day 51, 04:00) the poll compacts the week that just locked.
+    const t3 = at(51, '08:10');
+    const after = applySnapshot(next, { me: 'A', now: new Date(t3).toISOString(), rev: 'r1', rows: between(all, t2, t3) }, t3);
+    expect(after.compactedAt).toBe(at(51, '04:00'));
+    expect(after.rows.metrics.length).toBeLessThan(next.rows.metrics.length);
+    expect(shown({ state: reduce(after.rows), now: t3 })).toBe(shown({ state: reduce(between(all, 0, t3)), now: t3 }));
+  });
+
   it('passes rev to the model, except while a queued row is stamped before the latest lock (an old offline tap)', () => {
     const t = at(44, '04:10'); // Wednesday, 10 minutes after the lock
     const c = applySnapshot(null, { me: 'A', now: new Date(t - 3 * 3600_000).toISOString(), rev: 'r1', rows: between(all, 0, t - 3 * 3600_000) }, t - 3 * 3600_000);

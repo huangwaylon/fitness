@@ -63,3 +63,17 @@ describe('week helpers', () => {
     expect((parseInstant('2026-11-02 07:00:00 +0900') - parseInstant('2026-11-01T22:00:00Z')) / 60000).toBe(0);
   });
 });
+
+describe('parseInstant on the server format', () => {
+  it('equals Date.parse for every in-range instant, and leaves the rest to it', () => {
+    let t = Date.UTC(1999, 11, 31, 23, 59, 59, 999);
+    for (let i = 0; i < 20_000; i++, t += 7_919_377) {
+      const s = new Date(t).toISOString();
+      expect(parseInstant(s), s).toBe(Date.parse(s));
+    }
+    for (const s of ['2028-02-29T12:00:00.000Z', '2026-12-31T23:59:59.999Z', '2026-01-01T00:00:00.000Z']) expect(parseInstant(s)).toBe(Date.parse(s));
+    expect(parseInstant('2026-02-30T00:00:00.000Z')).toBe(Date.parse('2026-02-30T00:00:00.000Z')); // Date.parse's call (it rolls over)
+    expect(() => parseInstant('2026-13-01T00:00:00.000Z')).toThrow();
+    expect(() => parseInstant('2026-1x-01T00:00:00.000Z')).toThrow();
+  });
+});
