@@ -5,7 +5,11 @@ import { DATE_RE } from '../contract/api.ts';
 export const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Parse an ISO instant or a compact-offset timestamp (`2026-11-02 07:15:00 +0900`) to epoch ms. */
+/**
+ * Parse an ISO instant or a compact-offset timestamp (`2026-11-02 07:15:00 +0900`) to epoch ms. Without an offset
+ * (a hand-pasted cell, `?date=`) it is Tokyo wall-clock time, a bare date Tokyo midnight (never UTC, as `Date.parse`
+ * reads a bare date).
+ */
 export function parseInstant(ts: string): number {
   // Fast path: the server's own `at` (`2026-11-02T07:15:00.000Z`), most of what the model parses.
   if (ts.length === 24 && ts.charCodeAt(23) === 90 && ts.charCodeAt(10) === 84) {
@@ -20,6 +24,8 @@ export function parseInstant(ts: string): number {
   } else if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) {
     // No offset at all: treat as Tokyo wall-clock time (never the server's zone).
     s = `${s.replace(' ', 'T')}+09:00`;
+  } else if (DATE_RE.test(s)) {
+    s = `${s}T00:00:00+09:00`;
   } else if (/^\d{4}-\d{2}-\d{2} /.test(s)) {
     s = s.replace(' ', 'T');
   }

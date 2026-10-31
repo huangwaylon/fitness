@@ -18,6 +18,10 @@ describe('toLocalDate', () => {
     expect(toLocalDate('2026-11-01T23:59:00+09:00')).toBe('2026-11-01');
     expect(toLocalDate('2026-11-02T00:10:00')).toBe('2026-11-02');
   });
+  it('a bare date is Tokyo midnight, not UTC (09:00 in Tokyo)', () => {
+    expect(new Date(parseInstant('2026-11-03')).toISOString()).toBe('2026-11-02T15:00:00.000Z');
+    expect(toLocalDate('2026-11-03')).toBe('2026-11-03');
+  });
   it('handles year boundaries', () => {
     expect(toLocalDate('2026-12-31T15:00:00Z')).toBe('2027-01-01');
   });

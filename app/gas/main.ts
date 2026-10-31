@@ -1,5 +1,4 @@
-// Island Fund web app: the only reader and writer of the bound *Island Fund* spreadsheet (ADR 0015,
-// docs/design/sheets-architecture.md). Bundled by `npm run gas:build` into app/apps-script/Code.js.
+// Island Fund web app: the only reader and writer of the bound *Island Fund* spreadsheet (docs/backend.md). Bundled by `npm run gas:build` into app/apps-script/Code.js.
 //
 // CRITICAL: `doPost` must never throw. An uncaught error returns Google's HTML error page, which the client cannot
 // tell apart from a network blip. Every reply is JSON: {ok:true, …} or {ok:false, error}.
@@ -7,7 +6,7 @@
 // Never read `e.parameter`: a key in the query string lands in Google's request logs. Keys go in the body only.
 // There is deliberately no `doGet`.
 import { parseShortcut } from './parse.ts';
-import { parseInstant } from '../src/lib/time/dates.ts';
+import { parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import { WORKOUT_TYPES } from '../src/lib/contract/labels.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { LIMITS } from '../src/lib/config/rules.ts';
@@ -308,7 +307,7 @@ function text(v: unknown, kind: 'at' | 'date' | 'text' = 'text'): string {
   if (isDate(v)) {
     if (Number.isNaN(v.getTime())) return '';
     // Tokyo is UTC+9 with no DST; a pasted bare date is Tokyo midnight.
-    return kind === 'date' ? new Date(v.getTime() + 9 * 3600_000).toISOString().slice(0, 10) : v.toISOString();
+    return kind === 'date' ? new Date(v.getTime() + ZONE_OFFSET_MS).toISOString().slice(0, 10) : v.toISOString();
   }
   return v === null || v === undefined ? '' : String(v);
 }
@@ -380,7 +379,7 @@ function ingest(me: PersonId, body: Rec, bytes: number): IngestReply {
     const mSheet = tab('metrics');
     const latest = new Map<string, number>();
     // Steps and minutes: the highest row so far, and only a higher value is appended (a day only goes up).
-    // Weight (ADR 0020): the LAST row so far, and any different value is appended (a weight goes down too).
+    // Weight: the LAST row so far, and any different value is appended (a weight goes down too).
     if (parsed.metrics.length) {
       for (const r of readTail(mSheet, 'metrics', reachesBack(from))) {
         const k = `${text(r[1])}|${text(r[2], 'date')}|${text(r[3])}`;
@@ -422,7 +421,7 @@ function event(me: PersonId, body: Rec): EventReply {
   if (!isRec(data)) return fail('bad_request');
   const json = JSON.stringify(data);
   if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
-  // `person` (whose data an edit changes, ADR 0023): only `A` / `B`, only on the edit types (and the goal prefs).
+  // `person` (whose data an edit changes): only `A` / `B`, only on the edit types (and the goal prefs).
   if (!editTarget(body.type, data, me) || !validEventData(body.type, data)) return fail('bad_request');
   const type = body.type;
   return withLock((): EventReply => {
@@ -454,7 +453,7 @@ function validEventData(type: string, d: Rec): boolean {
     case 'harvest':
       return typeof d.week === 'string' && DATE_RE.test(d.week);
     case 'metric_set':
-      // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal (ADR 0020).
+      // Steps and minutes: integers in bounds; weight: 20–300 kg with at most one decimal.
       return isLocalDate(d.date) && isMetricKey(d.metric) && validMetricValue(d.metric, d.value);
     case 'workout_edit':
       // A workout added in きろく left out of scoring, or put back.
