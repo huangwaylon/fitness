@@ -223,25 +223,26 @@ covered or hidden; reduced motion gives a 450 ms glow and no critters; decorativ
 butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on
 summer nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in
 winter); a cloud squishes; the sun glints; the moon sends a shooting star; the night sky twinkles (1 in 4 a shooting
-star); a clear night sends a shooting star every 45–120 s.
+star); a clear night sends a shooting star every 15–40 s.
 
-**Balloon** (NH's balloon present): a tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn
-in front of the hedge, behind the trees and the jar, bounces, sparkles and fades (off the island's corner it drops into
-the sea). No caption. Short skies fly a smaller balloon under the ribbon, or none.
+**Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
+the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
+behind the trees and the jar, bounces, sparkles and fades (off the island's corner it drops into the sea). No caption.
+Short skies fly a smaller balloon under the ribbon, or none.
 
-**Critters** (NH, northern hemisphere, Tokyo clock): every 1–3 minutes of on-screen time (first after 30–90 s; the
-countdown holds while covered or hidden, and the critters leave) a fish shadow or a bug comes by; ≤ 1 of each.
+**Critters** (NH species, Tokyo clock; for fun, frequent): a visit every 8–15 s of on-screen time (the first after
+3–6 s; the countdown holds while covered or hidden, and the critters leave): a fish shadow whenever the sea is empty,
+else usually a bug; ≤ 1 of each. **Seasons are a flavour, not a gate:** any fish or bug can come in any month, 3× likelier
+in its NH northern-hemisphere months; hours still hold (butterflies and bees by day, fireflies and moths at night).
 
-- **Fishing:** a shadow (NH sizes 1–6) dawdles off the front beach (on a short screen, beside the island). A tap
-  near it casts a red-and-white bobber on a line from the beach; within 90u the fish swims up, nibbles 0–3 times (a
-  bob) and bites (the bobber goes under): a tap in the next 1 s catches it, a tap any earlier or none in time and it
-  flees; a cast it ignores is reeled back by the next tap. Mostly sea bass (all year); horse mackerel, anchovy (4–21h),
-  olive flounder, red snapper all year; dab Oct–Apr, squid Dec–Aug, sea butterfly Dec–Mar, puffer fish Nov–Feb, barred
-  knifejaw Mar–Nov; 1 in 14 a boot, tire or can.
-- **Bugs:** common butterfly Sep–Jun, yellow Mar–Jun and Sep–Oct, tiger Mar–Sep (4–19h) over the flower beds; darner
-  dragonfly Apr–Oct (8–17h), red dragonfly Sep–Oct (8–19h) darting over the hedge; fireflies on summer nights (19–4h);
-  bell cricket Sep–Oct and cricket Sep–Nov (17–8h) hopping in the grass; no wasps, nothing that chases. A tap on one
-  swings the net (caught); a tap within 80px startles it away. Bugs keep to spots clear of every control.
+- **Fishing:** a shadow (NH sizes 1–6) dawdles off the front beach. A tap near it (1.5× the old reach) casts a
+  red-and-white bobber; the fish swims up and nibbles 0–3 times (small wiggles), then bites: a 「！」 pops, the bobber is
+  yanked under with its own sound, and a tap anywhere on the sea in the next 1.6 s catches it. The first early tap only
+  makes it hesitate and nibble again; a second scares it off. Mostly sea bass; 1 in 14 a boot, tire or can.
+- **Bugs** (21 NH species: butterflies, the honeybee and ladybug over the beds; dragonflies over the hedge; cicadas
+  perched on the trunks; fireflies at night; grasshoppers, the locust, mantises and crickets in the grass): a tap on
+  one swings the net (caught); within 80px it startles away. A shaken bush lets one out 1 in 3. Bugs keep clear of
+  every control.
 - **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's line:
   「〇〇を つりあげた！」 / 「〇〇を つかまえた！」, the sea bass 「…まあまあ かな？」 ("it's at least a C+!"), junk
   「つれた！ …と思ったら、ながぐつだった」. It sits centred above (else below) the catch, inside the safe area and clear of

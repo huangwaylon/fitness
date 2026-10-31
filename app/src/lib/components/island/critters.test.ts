@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BITE_WINDOW_MS, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  hookItem, inHours, netSwing, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BugId, type FishId
+  hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 import ja from '#lib/i18n/ja.json';
@@ -19,17 +19,16 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(inHours([4, 19], 19)).toBe(false);
     expect(inHours([0, 24], 0)).toBe(true);
   });
-  it('keeps each fish to its months', () => {
-    const seen = (month: number, hour = 12) => {
-      const r = mulberry32(month * 31 + hour);
-      return new Set(Array.from({ length: 4000 }, () => pickFish(month, hour, r)));
+  it('every fish can come in any month; its NH months make it 3× likelier', () => {
+    const count = (id: FishId, month: number) => {
+      const r = mulberry32(month * 31 + 7);
+      return Array.from({ length: 20_000 }, () => pickFish(month, 12, r)).filter((f) => f === id).length;
     };
-    expect(seen(1).has('sea-butterfly')).toBe(true);
-    expect(seen(7).has('sea-butterfly')).toBe(false);
-    expect(seen(7).has('barred-knifejaw')).toBe(true);
-    expect(seen(1).has('barred-knifejaw')).toBe(false);
-    expect(seen(9).has('squid')).toBe(false);
-    expect(seen(12, 22).has('anchovy')).toBe(false); // 4 am – 9 pm
+    expect(count('sea-butterfly', 7)).toBeGreaterThan(0); // NH: Dec–Mar, still possible in July
+    const ratio = count('sea-butterfly', 1) / count('sea-butterfly', 7);
+    expect(ratio).toBeGreaterThan(2);
+    expect(oddsAt(FISH['sea-butterfly'], 1, 12)).toBe(FISH['sea-butterfly'].weight * IN_SEASON);
+    expect(oddsAt(FISH.anchovy, 12, 22)).toBe(0); // its hours still hold: 4 am – 9 pm
   });
   it('the sea bass is the most common catch, every month', () => {
     for (let m = 1; m <= 12; m++) {
@@ -43,51 +42,27 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
       expect(top, `month ${m}`).toBe('sea-bass');
     }
   });
-  it('bugs by month and hour: butterflies by day, fireflies on summer nights, crickets on autumn evenings, only moths on a winter night', () => {
-    const about = (month: number, hour: number) => {
+  it('bugs: any month, only in their hours (day bugs by day, fireflies and moths at night); in season 3× likelier', () => {
+    const seen = (month: number, hour: number) => {
       const r = mulberry32(month * 100 + hour);
-      return new Set(Array.from({ length: 4000 }, () => pickBug(month, hour, r)));
-    };
-    expect(about(5, 12).has('common-butterfly')).toBe(true);
-    expect(about(7, 12).has('common-butterfly')).toBe(false); // NH: Sep–Jun
-    expect(about(7, 21)).toEqual(new Set(['firefly', 'moth', 'emperor-butterfly']));
-    expect(about(10, 20)).toEqual(new Set(['bell-cricket', 'cricket', 'moth']));
-    expect(about(10, 12).has('red-dragonfly')).toBe(true);
-    expect(about(1, 23)).toEqual(new Set(['moth']));
-    expect(about(1, 18)).toEqual(new Set(['common-butterfly'])); // NH: 4 am – 7 pm, even in winter
-  });
-  it("NH's seasons for the new bugs (northern hemisphere, Nookipedia)", () => {
-    const about = (month: number, hour: number) => {
-      const r = mulberry32(month * 7 + hour);
       return new Set(Array.from({ length: 6000 }, () => pickBug(month, hour, r)));
     };
-    const spring = about(4, 10);
-    for (const id of ['common-butterfly', 'yellow-butterfly', 'tiger-butterfly', 'honeybee', 'ladybug', 'peacock-butterfly'] as BugId[])
-      expect(spring.has(id), id).toBe(true);
-    const summer = about(7, 10);
-    for (const id of ['darner-dragonfly', 'banded-dragonfly', 'robust-cicada', 'grasshopper'] as BugId[]) expect(summer.has(id), id).toBe(true);
-    expect(summer.has('red-dragonfly')).toBe(false); // late summer – autumn (Sep–Oct)
-    expect(about(7, 17).has('evening-cicada')).toBe(true); // dawn and dusk only
-    expect(about(7, 12).has('evening-cicada')).toBe(false);
-    expect(about(7, 6).has('evening-cicada')).toBe(true);
-    expect(about(8, 20).has('emperor-butterfly')).toBe(true); // a summer evening
-    const autumn = about(10, 10);
-    for (const id of ['red-dragonfly', 'rice-grasshopper', 'migratory-locust', 'mantis', 'orchid-mantis'] as BugId[]) expect(autumn.has(id), id).toBe(true);
-    // winter: the common butterfly by day, moths at night; nothing tropical
-    for (const m of [12, 1, 2]) {
-      expect(about(m, 12)).toEqual(new Set(['common-butterfly']));
-      expect(about(m, 21)).toEqual(new Set(['moth']));
-    }
-    // the cicada perches on a trunk; every flight is one of the five
+    expect(seen(1, 12).has('honeybee')).toBe(true); // NH: Mar–Jul, now a flavour, not a gate
+    expect(seen(1, 22).has('firefly')).toBe(true);
+    expect(seen(7, 12).has('firefly')).toBe(false); // night only
+    expect(seen(7, 22).has('honeybee')).toBe(false); // day only
+    expect(seen(7, 17).has('evening-cicada')).toBe(true); // dawn and dusk
+    expect(seen(7, 12).has('evening-cicada')).toBe(false);
+    expect(oddsAt(BUGS['red-dragonfly'], 10, 12)).toBe(BUGS['red-dragonfly'].weight * IN_SEASON);
+    expect(oddsAt(BUGS['red-dragonfly'], 4, 12)).toBe(BUGS['red-dragonfly'].weight);
     expect(BUGS['robust-cicada'].flight).toBe('perch');
     for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch']).toContain(b.flight);
   });
-  it('a shaken bush: mostly nothing; a moth after dark; a butterfly (now and then a ladybug) by day', () => {
+  it('a shaken bush: a bug 1 in 3 (a moth after dark; a butterfly, now and then a ladybug, by day)', () => {
     expect(bushBug(5, 12, rolls(0.5))).toBeNull();
     expect(bushBug(5, 22, rolls(0.05))).toBe('moth');
     expect(bushBug(5, 12, rolls(0.05, 0.1))).toBe('ladybug');
     expect(BUGS[bushBug(5, 12, rolls(0.05, 0.9, 0))!].flight).toBe('flutter');
-    expect(bushBug(7, 12, rolls(0.05, 0.9, 0))).toBe('tiger-butterfly'); // July: the common one is out of season
     expect(bushBug(5, 12, rolls(0.05, 0.9, 0.99))).toMatch(/-butterfly$/); // never a bee out of a bush
   });
   it('1 in 14 a piece of junk instead of the fish', () => {
@@ -100,11 +75,11 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
 });
 
 describe('visits', () => {
-  it('come every 1–3 minutes of on-screen time (the first sooner)', () => {
-    expect(nextSpawnMs(() => 0)).toBe(15_000);
-    expect(nextSpawnMs(() => 0.999)).toBeLessThan(40_000);
-    expect(nextSpawnMs(() => 0, true)).toBe(5_000);
-    expect(nextSpawnMs(() => 0.999, true)).toBeLessThan(12_000);
+  it('come often: every 8–15 s of on-screen time (the first after 3–6 s)', () => {
+    expect(nextSpawnMs(() => 0)).toBe(8_000);
+    expect(nextSpawnMs(() => 0.999)).toBeLessThan(15_000);
+    expect(nextSpawnMs(() => 0, true)).toBe(3_000);
+    expect(nextSpawnMs(() => 0.999, true)).toBeLessThan(6_000);
   });
   it('at most one fish and one bug at a time', () => {
     expect(spawnKind({ fish: true, bug: true }, true, () => 0)).toBeNull();
@@ -112,7 +87,8 @@ describe('visits', () => {
     expect(spawnKind({ fish: false, bug: true }, true, () => 0.9)).toBe('fish');
     expect(spawnKind({ fish: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
     expect(spawnKind({ fish: true, bug: false }, false, () => 0)).toBeNull();
-    expect(spawnKind({ fish: true, bug: false }, true, () => 0.5)).toBeNull(); // bugs: only 1 visit in 4
+    expect(spawnKind({ fish: true, bug: false }, true, () => 0.5)).toBe('bug'); // most visits bring a bug
+    expect(spawnKind({ fish: true, bug: false }, true, () => 0.9)).toBeNull(); // a little air between them
   });
 });
 

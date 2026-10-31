@@ -250,7 +250,7 @@
     };
   });
 
-  // A clear night: now and then a shooting star on its own (45–120 s apart; not while covered / hidden).
+  // A clear night: a shooting star on its own every 15–40 s (not while covered / hidden).
   $effect(() => {
     if (!night || !enabled() || reducedMotion()) return;
     let id: ReturnType<typeof setTimeout>;
@@ -259,7 +259,7 @@
         const r = scene?.querySelector('.stage')?.getBoundingClientRect();
         if (r && enabled()) shootingStar(r);
         arm();
-      }, 45_000 + Math.random() * 75_000);
+      }, 15_000 + Math.random() * 25_000);
     };
     arm();
     return () => clearTimeout(id);

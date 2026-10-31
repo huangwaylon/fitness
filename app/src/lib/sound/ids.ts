@@ -8,8 +8,8 @@ export type Bus = 'music' | 'sfx';
 export type SoundId =
   // UI (NookPhone and menus)
   | 'cursor' | 'confirm' | 'cancel' | 'phone-open' | 'phone-close' | 'phone-app'
-  // UI taps (docs/design.md#taps): a soft select, the switch pair, a page, the "can't" boop, sync, remove, undo
-  | 'select' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'whoosh' | 'poof' | 'undo'
+  // UI taps (docs/design.md#taps): a soft select, the switch pair, a page, the "can't" boop, sync, undo
+  | 'select' | 'toggle-on' | 'toggle-off' | 'page' | 'boop' | 'whoosh' | 'undo'
   // island actions and money
   | 'rustle' | 'thud' | 'coin' | 'bells' | 'purchase'
   // jingles (duck the music, one at a time)
@@ -55,7 +55,6 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   page: { bus: 'sfx', gain: 0.24, jitter: 60, max: 1 },
   boop: { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
   whoosh: { bus: 'sfx', gain: 0.38, jitter: 30, max: 1 },
-  poof: { bus: 'sfx', gain: 0.42, jitter: 40, max: 1 },
   undo: { bus: 'sfx', gain: 0.45, jitter: 0, max: 1 },
   rustle: { bus: 'sfx', gain: 0.6, jitter: 80, max: 2 },
   thud: { bus: 'sfx', gain: 0.7, jitter: 60, max: 2 },

@@ -11,7 +11,7 @@ import { CUES, cue, type Cue } from './cues.ts';
 
 /** The cues a control may name. */
 export const TAP_SFX = [
-  'tick', 'open', 'confirm', 'back', 'toggle-on', 'toggle-off', 'page', 'sync', 'remove', 'undo', 'choice-pick'
+  'tick', 'open', 'confirm', 'back', 'toggle-on', 'toggle-off', 'page', 'sync', 'undo', 'choice-pick'
 ] as const satisfies readonly Cue[];
 type TapCue = (typeof TAP_SFX)[number];
 
