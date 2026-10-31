@@ -52,7 +52,10 @@
   const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];
 
   onMount(() => {
-    if (reducedMotion()) ondone?.();
+    // no room under the HUD (the ribbon and its sync chip, 6px clear): no balloon today
+    const hud = document.querySelector('.ribbon-wrap')?.getBoundingClientRect();
+    const top = fly?.getBoundingClientRect().top ?? Infinity;
+    if (reducedMotion() || (hud && hud.height && top < hud.bottom + 6)) ondone?.();
     return () => clearTimeout(gone);
   });
 </script>
@@ -114,9 +117,9 @@
     top: min(calc(max(var(--cloud-lane, 100px), 26%) + var(--alt) * 1em), calc(100cqh - 2.55em));
     animation: across 22s linear both; will-change: transform;
   }
-  /* short skies (Clouds.svelte's rule: under 190px there's no room under the ribbon): a smaller balloon in the strip
-     above the HUD ribbon (which sits 56px down the band), still behind the HUD */
-  @container sky (max-height: 190px) { .fly { --bw: 20px; top: 2px; } }
+  /* short skies (under 190px): a smaller balloon low in the band, its present just over the horizon, under the HUD;
+     where even that would reach the ribbon (or the sync chip under it), it doesn't come at all (onMount) */
+  @container sky (max-height: 190px) { .fly { --bw: 16px; top: calc(100cqh + 6px - 2.6em); } }
   .fly.rtl { animation-name: across-rtl; }
   @keyframes across { from { transform: translateX(-1.6em); } to { transform: translateX(calc(100cqw + .4em)); } }
   @keyframes across-rtl { from { transform: translateX(calc(100cqw + .4em)); } to { transform: translateX(-1.6em); } }

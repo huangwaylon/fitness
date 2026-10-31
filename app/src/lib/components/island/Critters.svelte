@@ -12,7 +12,7 @@
   // with one wing / fin loop each while on screen; nothing exists between visits but one timer. Covered or hidden:
   // they all leave at once and the countdown holds. Reduced motion: no critters. Decorative, pointer-only.
   //   ?critter=fish | <bug id> (dev or ?demo): one now, staying until caught (the e2e's hook).
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { artUrl } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -35,8 +35,8 @@
   interface Box { x0: number; x1: number; y0: number; y1: number }
   interface Fish { item: FishId | JunkId; size: number; x: number; y: number; ms: number; flip: boolean; box: Box; gone: boolean; dash: boolean }
   interface Cast { x: number; y: number; sx: number; sy: number; landed: boolean; t0: number; plan: BitePlan | null; under: boolean; rings: number }
-  interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; hops: number }
-  interface Card { n: number; x: number; y: number; dx: number; dy: number; cx: number; art: string; text: string }
+  interface Bug { id: BugId; flight: Flight; x: number; y: number; ms: number; flip: boolean; gone: boolean; area: Box; keep: Box[] }
+  interface Card { n: number; x: number; y: number; dx: number; dy: number; art: string; text: string; placed: boolean }
   interface Net { n: number; x: number; y: number }
 
   // Everything in stage units (u: 390 across), drawn with calc(n × --su).
@@ -52,6 +52,7 @@
   let net = $state<Net | null>(null);
   let seq = 0;
   let bugEl = $state<HTMLElement>();
+  let cardEl = $state<HTMLElement>();
   let hopEl = $state<HTMLElement>();
   const night = $derived(tod === 'night');
 
@@ -96,11 +97,40 @@
     return y1 - y0 >= 14 ? { x0, x1, y0, y1 } : null;
   }
   const inBox = (b: Box) => ({ x: between(b.x0, b.x1), y: between(b.y0, b.y1) });
-  /** The open places a bug keeps to, clear of the trees, the jar and the villagers (a bug over a button couldn't be
-   *  netted: the tap is the button's). */
-  const BEDS: Box[] = [{ x0: 45, x1: 115, y0: 212, y1: 285 }, { x0: 275, x1: 345, y0: 212, y1: 285 }];
-  const HEDGE: Box = { x0: 50, x1: 340, y0: 18, y1: 66 };
-  const GRASS: Box[] = [{ x0: 48, x1: 118, y0: 250, y1: 306 }, { x0: 272, x1: 342, y0: 250, y1: 306 }];
+  /** The open places a bug keeps to: the flower beds, the hedge tops, the grass in front of the beds. */
+  const BEDS: Box[] = [{ x0: 45, x1: 110, y0: 212, y1: 285 }, { x0: 280, x1: 345, y0: 212, y1: 285 }];
+  const HEDGE: Box = { x0: 50, x1: 340, y0: 14, y1: 46 };
+  const GRASS: Box[] = [{ x0: 48, x1: 112, y0: 250, y1: 306 }, { x0: 278, x1: 342, y0: 250, y1: 306 }];
+
+  /** The UI nothing of ours may cover, in client px: every control (the ribbon and its tails, the sync chip, the
+   *  trees, the fruit rows, the jar and its plate, the villagers, the しまフォン button) but the balloon, a tree's popup
+   *  and しずえ's box, padded 6px. */
+  function guards(): Box[] {
+    const out: Box[] = [];
+    for (const el of document.querySelectorAll('button, .detail, .news')) {
+      if (el.classList.contains('balloon')) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      const px = el.classList.contains('ribbon') ? 20 : 6; // the ribbon's folded tails hang 16px outside it
+      out.push({ x0: r.left - px, y0: r.top - 6, x1: r.right + px, y1: r.bottom + 6 });
+    }
+    return out;
+  }
+  const hits = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  /** The guards in stage units, grown by `pad` u (a bug's wings and the net's swing around it). */
+  function guardsU(g: NonNullable<ReturnType<typeof geo>>, pad: number): Box[] {
+    return guards().map((b) => ({
+      x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad
+    }));
+  }
+  /** A spot in `area` clear of the guards (null when there's none to be found). */
+  function freeIn(area: Box, keep: Box[]): { x: number; y: number } | null {
+    for (let i = 0; i < 16; i++) {
+      const p = inBox(area);
+      if (!keep.some((b) => p.x > b.x0 && p.x < b.x1 && p.y > b.y0 && p.y < b.y1)) return p;
+    }
+    return null;
+  }
   const sizeU = (f: Fish) => 8 + f.size * 4.5;
 
   function preload(key: string) {
@@ -207,7 +237,7 @@
     const f = fish!;
     fish = null;
     sceneSfx('catch');
-    show(f.item, c.x, c.y, shoreY(c.x) - 6, shoreY(c.x) - 2);
+    show(f.item, c.x, c.y);
   }
 
   // ---------- bugs ----------
@@ -219,18 +249,23 @@
     const side = rand() < 0.5 ? -1 : 1;
     const area = from || id === 'moth' || flight === 'dart' ? HEDGE : flight === 'hop' ? GRASS[side < 0 ? 0 : 1] : BEDS[side < 0 ? 0 : 1];
     // flyers come in from the side of their patch; a firefly blinks on, a cricket is just there in the grass
-    const start = from ?? (flight === 'drift' || flight === 'hop' ? inBox(area) : { x: side < 0 ? g.left - 16 : g.right + 16, y: between(area.y0, area.y1) });
-    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, hops: 0 };
+    // its patch, minus the controls (measured once: the villagers and the jar don't move far)
+    const keep = guardsU(g, 16);
+    const spot = freeIn(area, keep);
+    if (!spot) return;
+    const start = from ?? (flight === 'drift' || flight === 'hop' ? spot : { x: side < 0 ? g.left - 16 : g.right + 16, y: spot.y });
+    bug = { id, flight, ...start, ms: 0, flip: side < 0, gone: false, area, keep };
     later(fly, 60);
     if (stay) later(() => bugLeave(), STAY_MS.bug);
   }
   function fly() {
     const b = bug;
     if (!b || b.gone) return;
-    const p = inBox(b.area);
+    const p = freeIn(b.area, b.keep);
+    if (!p) return bugLeave();
     if (b.flight === 'hop') {
-      // a short hop along the grass, then a sit
-      const x = clamp(b.x + (rand() < 0.5 ? -1 : 1) * between(14, 30), b.area.x0, b.area.x1);
+      // a short hop along the grass toward a free spot, then a sit
+      const x = clamp(b.x + Math.sign(p.x - b.x || 1) * Math.min(Math.abs(p.x - b.x), between(14, 30)), b.area.x0, b.area.x1);
       const y = clamp(b.y + between(-8, 8), b.area.y0, b.area.y1);
       Object.assign(b, { ms: 420, flip: x > b.x, x, y });
       hopEl?.animate([{ translate: '0 0' }, { translate: `0 ${U(-9)}`, offset: 0.45 }, { translate: '0 0' }], { duration: 420, easing: 'ease-out' });
@@ -262,20 +297,41 @@
   }
 
   // ---------- the catch ----------
-  /** The catch held up: its official icon pops up from (x, y) to stand on `top` (u) with NH's caption under it, kept on
-   *  screen and above `floor` (u: the beach, so it never reaches the しまフォン button); gone after 2.6 s. */
-  function show(item: FishId | JunkId | BugId, x: number, y: number, top: number, floor = 340) {
-    const g = geo();
-    if (!g) return;
-    // the icon over the catch, the caption (≤ 236px wide) under it, both kept 10px inside the screen's edges
-    const ix = clamp(x, g.left + 34 * g.k, g.right - 34 * g.k);
-    const cx = clamp(x, g.left + 128 * g.k, g.right - 128 * g.k);
-    // the icon (≈ 44u) stays under the horizon; two lines of caption (≈ 50px) above the floor
-    const cy = Math.max(52, Math.min(top, floor - 52 * g.k));
+  /** The catch held up: NH's caption on a plate with the official icon, which pops up out of the catch at (x, y) (u).
+   *  The plate goes as close above (else below) the catch as it can, centred on it, inside the scene's safe area and
+   *  clear of every control and popup (guards); with no room anywhere it's skipped (the catch tune still plays).
+   *  Gone after 2.6 s. */
+  async function show(item: FishId | JunkId | BugId, x: number, y: number) {
     const c = caption(item);
     const n = ++seq;
-    card = { n, x: ix, y: cy, dx: x - ix, dy: y - cy, cx: cx - ix, art: critterArt(item), text: t(c.key, c.name ? { name: t(c.name) } : undefined) };
+    card = { n, x, y, dx: 0, dy: 0, art: critterArt(item), text: t(c.key, c.name ? { name: t(c.name) } : undefined), placed: false };
     later(() => card?.n === n && (card = null), 2600);
+    await tick();
+    const g = geo(), plate = cardEl?.querySelector('.catch-plate')?.getBoundingClientRect();
+    if (!g || !plate || card?.n !== n || !scene) return;
+    const at = place(plate.width, plate.height + 4, g.r.left + x / g.k, g.r.top + y / g.k); // + the plate's lip
+    if (!at) return (card = null);
+    const cx = (at.x - g.r.left) * g.k, cy = (at.y - g.r.top) * g.k;
+    Object.assign(card, { x: cx, y: cy, dx: x - cx, dy: y - cy, placed: true });
+  }
+  /** Where a w × h plate (client px) centred near (sx, sy) fits: the scene's safe area (under the status bar, above
+   *  the bottom band, 8px from the sides), overlapping no guard. Tries above the source first, then below, moving out
+   *  4px at a time; then the same against either side. */
+  function place(w: number, h: number, sx: number, sy: number): { x: number; y: number } | null {
+    const s = scene!.getBoundingClientRect();
+    const top = Math.max(s.top, scene!.querySelector('.band')?.getBoundingClientRect().top ?? s.top) + 4;
+    const bottom = Math.min(s.bottom, document.querySelector('.below')?.getBoundingClientRect().top ?? s.bottom) - 4;
+    const L = s.left + 8 + w / 2, R = s.right - 8 - w / 2;
+    if (L > R) return null;
+    const keep = guards();
+    const fits = (x: number, y: number) => {
+      const b = { x0: x - w / 2, x1: x + w / 2, y0: y - h / 2, y1: y + h / 2 };
+      return b.y0 >= top && b.y1 <= bottom && !keep.some((k) => hits(b, k));
+    };
+    for (const x of [clamp(sx, L, R), L, R])
+      for (let d = 0; d < 600; d += 4)
+        for (const y of [sy - h / 2 - 14 - d, sy + h / 2 + 14 + d]) if (fits(x, y)) return { x, y };
+    return null;
   }
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
@@ -298,7 +354,7 @@
         later(() => {
           if (bug === b) bug = null;
           sceneSfx('catch');
-          show(b.id, x, y, y - 10);
+          show(b.id, x, y);
         }, 160);
         later(() => (net = null), 420);
         return true;
@@ -421,9 +477,12 @@
   {/if}
   {#if card}
     {#key card.n}
-      <span class="mover catch" data-fx="catch" style:translate="{U(card.x)} {U(card.y)}" style:--dx={U(card.dx)} style:--dy={U(card.dy)} style:--cx={U(card.cx)}>
-        <span class="icon"><OfficialArt key={card.art} size="clamp(38px, calc(46 * var(--su)), 54px)" eager /></span>
-        <span class="say">{card.text}</span>
+      <span class="mover catch" class:placed={card.placed} data-fx="catch" bind:this={cardEl}
+        style:translate="{U(card.x)} {U(card.y)}" style:--dx={U(card.dx)} style:--dy={U(card.dy)}>
+        <span class="catch-plate">
+          <span class="catch-icon"><OfficialArt key={card.art} size="clamp(30px, calc(34 * var(--su)), 40px)" eager /></span>
+          <span class="catch-say">{card.text}</span>
+        </span>
       </span>
     {/key}
   {/if}
@@ -531,19 +590,23 @@
   .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; }
   @keyframes swing { 0% { transform: rotate(-70deg); opacity: 0; } 20% { opacity: 1; } 70% { transform: rotate(25deg); opacity: 1; } 100% { transform: rotate(32deg); opacity: 0; } }
 
-  /* the catch: the icon pops up from where it was caught; NH's caption under it */
+  /* the catch: NH's caption on a plate like the jar's (cream pill, 4px lip, the plate's ink), the official icon at its
+     start, popped up out of the catch; measured hidden, then placed (see place) */
+  .catch:not(.placed), .catch:not(.placed) * { visibility: hidden; animation: none !important; }
   .catch { animation: fade-out 2.6s linear both; }
   @keyframes fade-out { 85% { opacity: 1; } 100% { opacity: 0; } }
-  .catch .icon { left: 0; top: 0; line-height: 0; translate: -50% -100%; animation: lift .55s cubic-bezier(.3, 1.5, .5, 1) both; }
-  .catch .icon { width: max-content; }
-  .catch .icon :global(.official) { max-width: none; filter: drop-shadow(0 2px 2px rgba(60, 40, 20, .3)); }
-  @keyframes lift { from { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; } 30% { opacity: 1; } }
-  .say {
-    left: var(--cx); top: 2px; translate: -50% 0; width: max-content; max-width: 236px; padding: 3px 12px 4px; border-radius: 14px;
-    background: var(--c-cream); color: var(--c-ink); font: 700 var(--fs-s) / 1.35 var(--font-ui); text-align: center; text-wrap: balance;
-    box-shadow: 0 2px 0 rgba(147, 112, 71, .35); animation: say .3s ease-out .3s both;
+  .catch-plate {
+    left: 0; top: 0; translate: -50% -50%; display: flex; align-items: center; gap: 6px;
+    width: max-content; max-width: min(272px, calc(100vw - 24px)); padding: 3px 12px 3px 4px; border-radius: var(--r-pill);
+    background: var(--plate); color: var(--plate-ink); box-shadow: 0 var(--lip-h) 0 var(--plate-lip);
+    font: 700 clamp(13px, calc(14 * var(--su)), 15px) / 1.3 var(--font-ui); text-wrap: balance;
+    animation: say .25s ease-out both;
   }
-  @keyframes say { from { opacity: 0; transform: translateY(-4px); } }
+  @keyframes say { from { opacity: 0; transform: translateY(4px) scale(.96); } }
+  .catch-icon { flex: none; line-height: 0; animation: lift .55s cubic-bezier(.3, 1.5, .5, 1) both; }
+  .catch-icon :global(.official) { max-width: none; filter: drop-shadow(0 1.5px 1.5px rgba(60, 40, 20, .3)); }
+  /* the icon starts at the catch (the plate's centre + --dx/--dy) and pops over to its place */
+  @keyframes lift { from { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } 25% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
     .sea-life, .air-life { display: none; }
     .held * { animation-name: fade-in !important; transform: none !important; }
