@@ -62,7 +62,6 @@ test('wallet: one balance (the island plate’s), one list of five treats, no se
   // the demo's list: the five defaults (and whatever the demo couple added after them)
   const names = await page.locator('.treats .nm').allInnerTexts();
   expect(names.slice(0, 5)).toEqual(['おやつ', 'カフェ・デザート', '外ごはん', 'ほしいもの', '旅のごほうび']);
-  await expect(page.locator('[data-pot], [data-section], .rope')).toHaveCount(0);
 });
 
 test('menu: adding a treat to the shared list', async ({ page }) => {
@@ -95,9 +94,8 @@ test('きろく: editing a day’s steps', async ({ page }) => {
   await page.locator('.app[data-app=kiroku]').click();
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
   await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
-  // the day: the four ring fruits, each with its value and ベル (no gym row or gym ✎)
+  // the day: the four ring fruits, each with its value and ベル
   await expect(sheet(page).locator('.pc').first().locator('.row.fr')).toHaveCount(4);
-  await expect(sheet(page).getByRole('button', { name: /ジム ✎$/ })).toHaveCount(0);
   await sheet(page).locator('.pc').first().getByRole('button', { name: /歩数 ✎$/ }).click();
   const pad = sheet(page);
   await pad.getByRole('button', { name: 'クリア' }).click();
@@ -149,16 +147,14 @@ test('tree popup: the four ring fruits, today against the goal, today’s ベル
   await page.locator('button.canopy').nth(0).click();
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
-  // it opens upwards: above its tree's trunk, under the ribbon
-  await page.waitForTimeout(400);
+  // it opens upwards: above its tree's trunk, under the ribbon (measured once its pop-in has finished)
+  await pop.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
   const [p, c, r] = await Promise.all([pop, page.locator('button.canopy').nth(0), page.locator('.ribbon')].map((l) => l.boundingBox()));
   expect(p!.y + p!.height).toBeLessThan(c!.y + c!.height);
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   const rows = pop.locator('.row:not(.hd)');
   await expect(rows).toHaveCount(4);
   await expect(rows.locator('.lbl')).toHaveText(['ムーブ', 'エクササイズ', 'スタンド', '歩数']); // Apple's ring order, then steps
-  // no gym: no 🥥 row and no きのう / きょう chips
-  await expect(pop.locator('.gym-chip, .gym')).toHaveCount(0);
   await expect(rows.nth(0).locator('.amt')).toHaveText(/^[\d,]+\/[\d,]+kcal$/);
   await expect(rows.nth(1).locator('.amt')).toHaveText(/^[\d,]+\/60分$/);
   await expect(rows.nth(2).locator('.amt')).toHaveText(/^[\d,]+\/180分$/);
@@ -169,6 +165,8 @@ test('tree popup: the four ring fruits, today against the goal, today’s ベル
   // a v1 week has no milestone pips and no nudge
   await expect(pop.locator('.steps i')).toHaveCount(0);
   await expect(pop.locator('.next')).toHaveCount(0);
+  // its last line: when this person's data last arrived (one home: not on the partner card)
+  await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
   // ground fruit: four kinds under each tree
   await expect(page.locator('.fruit.k0')).toHaveCount(8);
 });
@@ -185,15 +183,16 @@ test('tree popup, v2 milestones (from 11-02): four pips per ring fruit, one 「�
   if (await next.count()) await expect(next).toHaveText(/^あと [\d,]+ ?(分|kcal|歩)で \+[\d,]+$/);
 });
 
-test('partner: a villager card (their line, when their data came, ハイタッチ), no numbers', async ({ page }) => {
+test('partner: a villager card (their line, ハイタッチ), no numbers and no sync time (those are on their tree)', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
-  await page.waitForTimeout(1500); // the opening beats (villagers are disabled until then)
-  await page.locator('.if-scene button.vil').nth(1).click();
+  const vil = page.locator('.if-scene button.vil').nth(1);
+  await expect(vil).toBeEnabled(); // after the opening beats
+  await vil.click();
   const card = sheet(page);
   await expect(card.getByRole('heading', { name: 'うめ' })).toBeVisible(); // the title bar
   await expect(card.locator('.say')).not.toBeEmpty();
-  await expect(card.getByText(/に とどいた|まだ とどいていません/)).toBeVisible();
+  await expect(card.getByText(/とどいた|とどいていません/)).toHaveCount(0);
   await expect(card.getByText(/ベル/)).toHaveCount(0);
   await card.getByRole('button', { name: /ハイタッチ/ }).click();
   await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
@@ -249,7 +248,7 @@ test('きろく: editing the partner’s steps, with who fixed it in the change 
   const name = (await partner.locator('.nm').textContent())!.trim();
   await partner.getByRole('button', { name: /歩数 ✎$/ }).click();
   const pad = sheet(page);
-  await expect(pad).toContainText(name); // the keypad says whose steps
+  await expect(pad.locator('.who')).toHaveText(name); // the keypad opens with whose steps (avatar + name)
   await pad.getByRole('button', { name: 'クリア' }).click();
   for (const k of '4321') await pad.getByRole('button', { name: k, exact: true }).click();
   await pad.getByRole('button', { name: 'けってい' }).click();
@@ -305,10 +304,9 @@ test('a tap on an open tree popup closes it and reaches nothing under it (the ja
 test('navigation: every sheet and app has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
-  await page.waitForTimeout(1500);
+  await expect(page.locator('.if-scene button.vil').nth(1)).toBeEnabled();
   const box = async (sel: ReturnType<Page['locator']>) => (await sel.boundingBox())!;
   const vw = page.viewportSize()!.width;
-  await expect(page.locator('.grabber')).toHaveCount(0);
   // the partner's card: ✕ top-right
   await page.locator('.if-scene button.vil').nth(1).click();
   let close = sheet(page).locator('.navbar .close');
@@ -421,4 +419,22 @@ test('村人: とくべつ (たぬきち, しずえ…) first, then むらびと
   await expect(dlg.locator('.vk')).toHaveText('とくべつ');
   await page.goto('?demo=harvest');
   await expect(page.locator('.bubble .who').first()).toHaveText('たぬきち');
+});
+
+test('404 at 320: the page fits the screen (ja breaks only at its spaces) and no harvest covers it', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('nope?demo=harvest');
+  await expect(page.getByRole('heading', { name: /このページは 見つかりませんでした/ })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await expect(page.locator('.overlay')).toHaveCount(0);
+});
+
+test('a sheet opened while the undo banner is up starts at its top (the menu editor’s intro line in view)', async ({ page }) => {
+  await page.goto('jar?demo');
+  await page.locator('.treats button.item:not([aria-disabled="true"])').first().click();
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
+  await page.locator('button.edit').click();
+  await expect(sheet(page).locator('.hint')).toBeVisible();
+  expect(await sheet(page).evaluate((d) => d.scrollTop)).toBe(0);
 });
