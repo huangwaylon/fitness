@@ -25,20 +25,50 @@ export function weighted<T extends string>(list: readonly (readonly [T, number])
 
 // ---------- catalogs (official NH items; art in static/art/finds/, names under beach.name.<id>) ----------
 
-/** NH's seashells on the beach (the summer shell and the diving shells aside), with how often each washes up. */
+/** NH's eight beach seashells (the pearl comes from diving: island/sea.ts), with how often each washes up; the summer
+ *  shell is NH's summer one (June–September): ×SHELL_SEASON then, rare otherwise, never a gate. */
 export const SHELLS = [
-  ['sea-snail', 4], ['cowrie', 4], ['venus-comb', 3], ['sand-dollar', 3], ['coral', 2], ['conch', 1.5], ['giant-clam', 1]
+  ['sea-snail', 4], ['cowrie', 4], ['venus-comb', 3], ['sand-dollar', 3], ['coral', 2], ['conch', 1.5], ['giant-clam', 1],
+  ['summer-shell', 0.6]
 ] as const;
 type ShellId = (typeof SHELLS)[number][0];
+const SUMMER_SHELL_MONTHS = [6, 7, 8, 9];
+const SHELL_SEASON = 3;
+/** The shells' odds in `month` (the summer shell ×SHELL_SEASON in its months). */
+export const shellOdds = (month: number): (readonly [ShellId, number])[] =>
+  SHELLS.map(([id, w]) => [id, id === 'summer-shell' && SUMMER_SHELL_MONTHS.includes(month) ? w * SHELL_SEASON : w] as const);
 
-/** Fossils to dig up: NH's standalone fossils and one piece of each dinosaur (the skull, the pteranodon's body). */
-export const FOSSILS = [
+/** NH's 14 standalone fossils. */
+const STANDALONE = [
   'amber', 'ammonite', 'trilobite', 'dinosaur-track', 'shark-tooth-pattern', 'coprolite', 'myllokunmingia', 'juramaia',
-  'anomalocaris', 'archaeopteryx', 'dunkleosteus', 'eusthenopteron', 'acanthostega', 'australopith', 't-rex-skull',
-  'tricera-skull', 'stego-skull', 'brachio-skull', 'mammoth-skull', 'sabertooth-skull', 'dimetrodon-skull', 'ankylo-skull',
-  'plesio-skull', 'spino-skull', 'iguanodon-skull', 'pachy-skull', 'diplo-skull', 'ptera-body', 'megacero-skull',
-  'parasaur-skull', 'ophthalmo-skull', 'archelon-skull'
+  'anomalocaris', 'archaeopteryx', 'dunkleosteus', 'eusthenopteron', 'acanthostega', 'australopith'
 ] as const;
+/** NH's 21 fossils in pieces, each with its pieces in the game's order (the ずかん shows each as a set: 「Tレックス 2/3」). */
+export const FOSSIL_SETS = {
+  't-rex': ['t-rex-skull', 't-rex-torso', 't-rex-tail'],
+  tricera: ['tricera-skull', 'tricera-torso', 'tricera-tail'],
+  stego: ['stego-skull', 'stego-torso', 'stego-tail'],
+  brachio: ['brachio-skull', 'brachio-chest', 'brachio-pelvis', 'brachio-tail'],
+  mammoth: ['mammoth-skull', 'mammoth-torso'],
+  sabertooth: ['sabertooth-skull', 'sabertooth-tail'],
+  dimetrodon: ['dimetrodon-skull', 'dimetrodon-torso'],
+  ankylo: ['ankylo-skull', 'ankylo-torso', 'ankylo-tail'],
+  plesio: ['plesio-skull', 'plesio-torso', 'plesio-tail'],
+  spino: ['spino-skull', 'spino-torso', 'spino-tail'],
+  iguanodon: ['iguanodon-skull', 'iguanodon-torso', 'iguanodon-tail'],
+  pachy: ['pachy-skull', 'pachy-tail'],
+  diplo: ['diplo-skull', 'diplo-neck', 'diplo-chest', 'diplo-pelvis', 'diplo-tail', 'diplo-tail-tip'],
+  ptera: ['ptera-body', 'left-ptera-wing', 'right-ptera-wing'],
+  megacero: ['megacero-skull', 'megacero-torso', 'megacero-tail'],
+  parasaur: ['parasaur-skull', 'parasaur-torso', 'parasaur-tail'],
+  ophthalmo: ['ophthalmo-skull', 'ophthalmo-torso'],
+  archelon: ['archelon-skull', 'archelon-tail'],
+  deinony: ['deinony-torso', 'deinony-tail'],
+  megalo: ['left-megalo-side', 'right-megalo-side'],
+  quetzal: ['quetzal-torso', 'left-quetzal-wing', 'right-quetzal-wing']
+} as const;
+/** Every fossil to dig up (NH's 73): the standalone ones, then each set's pieces; each as likely as any other. */
+export const FOSSILS = [...STANDALONE, ...Object.values(FOSSIL_SETS).flat()];
 type FossilId = (typeof FOSSILS)[number];
 
 /** NH's zodiac fragments by season (from the day each sign starts: [month, day]), then the two plain fragments. */
@@ -89,10 +119,11 @@ export const MAX_SHELLS = 3;
 export function shellsAt(date: string, ms: number, seed = ISLAND_SEED): Shell[] {
   const r = dayRand(date, 'shells', seed);
   const times = arrivals(r, SHELL_GAP, ms, 0.25);
+  const odds = shellOdds(Number(date.slice(5, 7)));
   return times.slice(-MAX_SHELLS).map((at) => {
     // each shell's own stream (so the list doesn't shift as more arrive)
     const s = dayRand(date, `shell@${at}`, seed);
-    return { uid: `s${at}`, id: weighted(SHELLS, s), x: BEACH.x0 + s() * (BEACH.x1 - BEACH.x0), y: BEACH.y0 + s() * (BEACH.y1 - BEACH.y0), tilt: Math.round(s() * 50 - 25), at };
+    return { uid: `s${at}`, id: weighted(odds, s), x: BEACH.x0 + s() * (BEACH.x1 - BEACH.x0), y: BEACH.y0 + s() * (BEACH.y1 - BEACH.y0), tilt: Math.round(s() * 50 - 25), at };
   });
 }
 

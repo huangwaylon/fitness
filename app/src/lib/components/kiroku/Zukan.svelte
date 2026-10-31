@@ -1,6 +1,7 @@
 <script lang="ts">
   // A ずかん page (docs/design.md "Zukan"): every entry of one kind in the game's order, the official icon (lazy) and the
-  // name for the ones either of us has found, a silhouette and ？？？ for the rest. A tap on a found one shows it on top:
+  // name for the ones either of us has found, a silhouette and ？？？ for the rest; the fossils' dinosaurs each as a set
+  // under its name with its pieces found (「Tレックス 2/3」). A tap on a found one shows it on top:
   // the icon, the name, when and who found it first, and (fish and bugs) NH's catch line.
   import { tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -9,7 +10,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/catch.ts'; // the entries' names (their own catalog, out of the island's first load)
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
-  import { bare, entries, type Entry, type ZukanKind } from './zukan.ts';
+  import { bare, entries, groups, type Entry, type ZukanKind } from './zukan.ts';
 
   interface Props {
     kind: ZukanKind;
@@ -20,6 +21,7 @@
   let { kind, finds, names, villagers }: Props = $props();
 
   const list = $derived(entries(kind));
+  const runs = $derived(groups(kind));
   const found = $derived(list.filter((e) => finds.has(findKey(kind, e.id))).length);
   let pick = $state<Entry | null>(null);
   let line = $state('');
@@ -60,24 +62,32 @@
   <p class="hint">{t('zukan.hint')}</p>
 {/if}
 
-<ul class="grid">
-  {#each list as e (e.id)}
-    {@const f = finds.has(findKey(kind, e.id))}
-    <li>
-      {#if f}
-        <button type="button" class="tile" class:on={pick?.id === e.id} data-sfx="tick" data-entry={e.id} aria-label={bare(t(e.name))} onclick={() => open(e)}>
-          <OfficialArt key={e.art} size={40} />
-          <span class="nm">{bare(t(e.name))}</span>
-        </button>
-      {:else}
-        <span class="tile unknown" data-entry={e.id} aria-label={t('zukan.unknown')}>
-          <span class="sil"><OfficialArt key={e.art} size={40} /></span>
-          <span class="nm">{t('zukan.unknown')}</span>
-        </span>
-      {/if}
-    </li>
-  {/each}
-</ul>
+{#each runs as run, i (i)}
+  {#if run.name}
+    {@const n = run.entries.filter((e) => finds.has(findKey(kind, e.id))).length}
+    <h4 class="set" data-set={run.name.slice(run.name.lastIndexOf('.') + 1)}>
+      <span>{t(run.name)}</span><b class="money" class:all={n === run.entries.length}>{t('zukan.count', { n, total: run.entries.length })}</b>
+    </h4>
+  {/if}
+  <ul class="grid">
+    {#each run.entries as e (e.id)}
+      {@const f = finds.has(findKey(kind, e.id))}
+      <li>
+        {#if f}
+          <button type="button" class="tile" class:on={pick?.id === e.id} data-sfx="tick" data-entry={e.id} aria-label={bare(t(e.name))} onclick={() => open(e)}>
+            <OfficialArt key={e.art} size={40} />
+            <span class="nm">{bare(t(e.name))}</span>
+          </button>
+        {:else}
+          <span class="tile unknown" data-entry={e.id} aria-label={t('zukan.unknown')}>
+            <span class="sil"><OfficialArt key={e.art} size={40} /></span>
+            <span class="nm">{t('zukan.unknown')}</span>
+          </span>
+        {/if}
+      </li>
+    {/each}
+  </ul>
+{/each}
 
 <style>
   .zhead { display: flex; align-items: baseline; justify-content: space-between; padding: 12px 16px; }
@@ -91,6 +101,8 @@
   .zdetail .nm { font-size: var(--fs-talk); }
   .who { display: flex; align-items: center; gap: 6px; color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
   .line { margin: 2px 0 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; white-space: pre-line; }
+  .set { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 6px 4px -2px; font-size: var(--fs-body); }
+  .set b { font-size: var(--fs-s); }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 8px; }
   .tile {
     appearance: none; border: 0; font: inherit; color: inherit; width: 100%; min-height: 84px; padding: 6px 2px 4px; border-radius: 14px;

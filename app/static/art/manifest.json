@@ -739,6 +739,18 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ankylo_Skull_NH_Icon.png"
     },
+    "finds/ankylo-tail": {
+      "path": "finds/ankylo-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ankylo_Tail_NH_Icon.png"
+    },
+    "finds/ankylo-torso": {
+      "path": "finds/ankylo-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ankylo_Torso_NH_Icon.png"
+    },
     "finds/anomalocaris": {
       "path": "finds/anomalocaris.webp",
       "w": 96,
@@ -763,6 +775,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Archelon_Skull_NH_Icon.png"
     },
+    "finds/archelon-tail": {
+      "path": "finds/archelon-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Archelon_Tail_NH_Icon.png"
+    },
     "finds/aries-fragment": {
       "path": "finds/aries-fragment.webp",
       "w": 96,
@@ -775,11 +793,29 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Australopith_NH_Icon.png"
     },
+    "finds/brachio-chest": {
+      "path": "finds/brachio-chest.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Brachio_Chest_NH_Icon.png"
+    },
+    "finds/brachio-pelvis": {
+      "path": "finds/brachio-pelvis.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Brachio_Pelvis_NH_Icon.png"
+    },
     "finds/brachio-skull": {
       "path": "finds/brachio-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Brachio_Skull_NH_Icon.png"
+    },
+    "finds/brachio-tail": {
+      "path": "finds/brachio-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Brachio_Tail_NH_Icon.png"
     },
     "finds/cancer-fragment": {
       "path": "finds/cancer-fragment.webp",
@@ -817,11 +853,29 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Cowrie_NH_Inv_Icon.png"
     },
+    "finds/deinony-tail": {
+      "path": "finds/deinony-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Deinony_Tail_NH_Icon.png"
+    },
+    "finds/deinony-torso": {
+      "path": "finds/deinony-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Deinony_Torso_NH_Icon.png"
+    },
     "finds/dimetrodon-skull": {
       "path": "finds/dimetrodon-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Dimetrodon_Skull_NH_Icon.png"
+    },
+    "finds/dimetrodon-torso": {
+      "path": "finds/dimetrodon-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dimetrodon_Torso_NH_Icon.png"
     },
     "finds/dinosaur-track": {
       "path": "finds/dinosaur-track.webp",
@@ -829,11 +883,41 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Dinosaur_Track_NH_Icon.png"
     },
+    "finds/diplo-chest": {
+      "path": "finds/diplo-chest.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Diplo_Chest_NH_Icon.png"
+    },
+    "finds/diplo-neck": {
+      "path": "finds/diplo-neck.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Diplo_Neck_NH_Icon.png"
+    },
+    "finds/diplo-pelvis": {
+      "path": "finds/diplo-pelvis.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Diplo_Pelvis_NH_Icon.png"
+    },
     "finds/diplo-skull": {
       "path": "finds/diplo-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Diplo_Skull_NH_Icon.png"
+    },
+    "finds/diplo-tail": {
+      "path": "finds/diplo-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Diplo_Tail_NH_Icon.png"
+    },
+    "finds/diplo-tail-tip": {
+      "path": "finds/diplo-tail-tip.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Diplo_Tail_Tip_NH_Icon.png"
     },
     "finds/dunkleosteus": {
       "path": "finds/dunkleosteus.webp",
@@ -877,6 +961,18 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Iguanodon_Skull_NH_Icon.png"
     },
+    "finds/iguanodon-tail": {
+      "path": "finds/iguanodon-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Iguanodon_Tail_NH_Icon.png"
+    },
+    "finds/iguanodon-torso": {
+      "path": "finds/iguanodon-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Iguanodon_Torso_NH_Icon.png"
+    },
     "finds/juramaia": {
       "path": "finds/juramaia.webp",
       "w": 96,
@@ -888,6 +984,24 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Large_Star_Fragment_NH_Inv_Icon.png"
+    },
+    "finds/left-megalo-side": {
+      "path": "finds/left-megalo-side.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Left_Megalo_Side_NH_Icon.png"
+    },
+    "finds/left-ptera-wing": {
+      "path": "finds/left-ptera-wing.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Left_Ptera_Wing_NH_Icon.png"
+    },
+    "finds/left-quetzal-wing": {
+      "path": "finds/left-quetzal-wing.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Left_Quetzal_Wing_NH_Icon.png"
     },
     "finds/leo-fragment": {
       "path": "finds/leo-fragment.webp",
@@ -907,11 +1021,29 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Mammoth_Skull_NH_Icon.png"
     },
+    "finds/mammoth-torso": {
+      "path": "finds/mammoth-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Mammoth_Torso_NH_Icon.png"
+    },
     "finds/megacero-skull": {
       "path": "finds/megacero-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Megacero_Skull_NH_Icon.png"
+    },
+    "finds/megacero-tail": {
+      "path": "finds/megacero-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Megacero_Tail_NH_Icon.png"
+    },
+    "finds/megacero-torso": {
+      "path": "finds/megacero-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Megacero_Torso_NH_Icon.png"
     },
     "finds/message-bottle": {
       "path": "finds/message-bottle.webp",
@@ -931,17 +1063,41 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ophthalmo_Skull_NH_Icon.png"
     },
+    "finds/ophthalmo-torso": {
+      "path": "finds/ophthalmo-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ophthalmo_Torso_NH_Icon.png"
+    },
     "finds/pachy-skull": {
       "path": "finds/pachy-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Pachy_Skull_NH_Icon.png"
     },
+    "finds/pachy-tail": {
+      "path": "finds/pachy-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pachy_Tail_NH_Icon.png"
+    },
     "finds/parasaur-skull": {
       "path": "finds/parasaur-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Parasaur_Skull_NH_Icon.png"
+    },
+    "finds/parasaur-tail": {
+      "path": "finds/parasaur-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Parasaur_Tail_NH_Icon.png"
+    },
+    "finds/parasaur-torso": {
+      "path": "finds/parasaur-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Parasaur_Torso_NH_Icon.png"
     },
     "finds/pisces-fragment": {
       "path": "finds/pisces-fragment.webp",
@@ -955,17 +1111,53 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Plesio_Skull_NH_Icon.png"
     },
+    "finds/plesio-tail": {
+      "path": "finds/plesio-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Plesio_Tail_NH_Icon.png"
+    },
+    "finds/plesio-torso": {
+      "path": "finds/plesio-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Plesio_Torso_NH_Icon.png"
+    },
     "finds/ptera-body": {
       "path": "finds/ptera-body.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ptera_Body_NH_Icon.png"
     },
+    "finds/quetzal-torso": {
+      "path": "finds/quetzal-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Quetzal_Torso_NH_Icon.png"
+    },
     "finds/rare-mushroom": {
       "path": "finds/rare-mushroom.webp",
       "w": 62,
       "h": 62,
       "source": "https://nookipedia.com/wiki/File:Rare_Mushroom_NH_Icon.png"
+    },
+    "finds/right-megalo-side": {
+      "path": "finds/right-megalo-side.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Right_Megalo_Side_NH_Icon.png"
+    },
+    "finds/right-ptera-wing": {
+      "path": "finds/right-ptera-wing.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Right_Ptera_Wing_NH_Icon.png"
+    },
+    "finds/right-quetzal-wing": {
+      "path": "finds/right-quetzal-wing.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Right_Quetzal_Wing_NH_Icon.png"
     },
     "finds/rock": {
       "path": "finds/rock.webp",
@@ -984,6 +1176,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Sabertooth_Skull_NH_Icon.png"
+    },
+    "finds/sabertooth-tail": {
+      "path": "finds/sabertooth-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Sabertooth_Tail_NH_Icon.png"
     },
     "finds/sagittarius-fragment": {
       "path": "finds/sagittarius-fragment.webp",
@@ -1033,6 +1231,18 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Spino_Skull_NH_Icon.png"
     },
+    "finds/spino-tail": {
+      "path": "finds/spino-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Spino_Tail_NH_Icon.png"
+    },
+    "finds/spino-torso": {
+      "path": "finds/spino-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Spino_Torso_NH_Icon.png"
+    },
     "finds/star-fragment": {
       "path": "finds/star-fragment.webp",
       "w": 96,
@@ -1045,11 +1255,41 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Stego_Skull_NH_Icon.png"
     },
+    "finds/stego-tail": {
+      "path": "finds/stego-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Stego_Tail_NH_Icon.png"
+    },
+    "finds/stego-torso": {
+      "path": "finds/stego-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Stego_Torso_NH_Icon.png"
+    },
+    "finds/summer-shell": {
+      "path": "finds/summer-shell.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Summer_Shell_NH_Inv_Icon.png"
+    },
     "finds/t-rex-skull": {
       "path": "finds/t-rex-skull.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:T._Rex_Skull_NH_Icon.png"
+    },
+    "finds/t-rex-tail": {
+      "path": "finds/t-rex-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:T._Rex_Tail_NH_Icon.png"
+    },
+    "finds/t-rex-torso": {
+      "path": "finds/t-rex-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:T._Rex_Torso_NH_Icon.png"
     },
     "finds/taurus-fragment": {
       "path": "finds/taurus-fragment.webp",
@@ -1068,6 +1308,18 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Tricera_Skull_NH_Icon.png"
+    },
+    "finds/tricera-tail": {
+      "path": "finds/tricera-tail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Tricera_Tail_NH_Icon.png"
+    },
+    "finds/tricera-torso": {
+      "path": "finds/tricera-torso.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Tricera_Torso_NH_Icon.png"
     },
     "finds/trilobite": {
       "path": "finds/trilobite.webp",

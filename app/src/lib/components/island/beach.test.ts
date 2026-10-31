@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BEACH, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots, fragmentDay, fragmentsOn,
-  shellsAt, zodiacOf
+  BEACH, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots, fragmentDay,
+  fragmentsOn, shellOdds, shellsAt, zodiacOf
 } from './beach.ts';
 import { addDays } from '#lib/time/dates.ts';
 import jaMain from '#lib/i18n/ja.json';
@@ -48,7 +48,34 @@ describe('shells', () => {
   });
 });
 
+describe('the summer shell', () => {
+  it('washes up all year, 3× likelier in NH’s summer (June–September), and stays rare (seeded days)', () => {
+    const count = (month: string) => {
+      let n = 0, all = 0;
+      for (let d = 1; d <= 28; d++) for (let h = 2; h <= 23; h += 3) for (const x of shellsAt(`2026-${month}-${String(d).padStart(2, '0')}`, h * H)) (all++, (n += x.id === 'summer-shell' ? 1 : 0));
+      return n / all;
+    };
+    const winter = count('01'), summer = count('07');
+    expect(winter).toBeGreaterThan(0); // never a gate
+    expect(summer / winter).toBeGreaterThan(2);
+    expect(summer).toBeLessThan(0.15);
+    expect(shellOdds(7).find(([id]) => id === 'summer-shell')![1]).toBe(3 * shellOdds(1).find(([id]) => id === 'summer-shell')![1]);
+  });
+});
+
 describe('fossils', () => {
+  it('NH’s 73: the 14 standalone ones and every piece of the 21 in sets, each once', () => {
+    expect(new Set(FOSSILS).size).toBe(73);
+    expect(Object.keys(FOSSIL_SETS)).toHaveLength(21);
+    expect(Object.values(FOSSIL_SETS).flat()).toHaveLength(59);
+    expect(FOSSIL_SETS['t-rex']).toEqual(['t-rex-skull', 't-rex-torso', 't-rex-tail']);
+    expect(FOSSIL_SETS.diplo).toHaveLength(6);
+    expect(FOSSIL_SETS.brachio).toHaveLength(4);
+    // every piece can turn up at a dig spot (seeded days)
+    const dug = new Set<string>();
+    for (let d = 0; d < 2000; d++) for (const s of digSpots(addDays('2026-01-01', d), new Set())) dug.add(s.fossil);
+    expect(dug.size).toBeGreaterThan(65);
+  });
   it('1–2 dig spots at a time on distinct lawn spots; a dug one gives way to the next', () => {
     for (let d = 1; d <= 20; d++) {
       const date = `2026-05-${String(d).padStart(2, '0')}`;
@@ -101,7 +128,7 @@ describe('names', () => {
     const keys = [...SHELLS.map(([id]) => id), ...FOSSILS, ...FRAGMENTS].map((id) => `beach.name.${id}`);
     keys.push(...Array.from({ length: NOTES }, (_, i) => `beach.note.${i}`));
     for (const cat of [ja, en] as Record<string, string>[]) expect(keys.filter((k) => !cat[k])).toEqual([]);
-    expect(FOSSILS).toHaveLength(32);
-    expect(SHELLS).toHaveLength(7);
+    expect(FOSSILS).toHaveLength(73);
+    expect(SHELLS).toHaveLength(8);
   });
 });
