@@ -98,7 +98,7 @@
     </div>
   {/if}
 
-  <div class="panel-body" bind:this={body}>
+  <div class="panel-body" class:fill={push === 'villager'} bind:this={body}>
     {#if push === 'villager' && view}
       <div class="page"><VillagerPicker {view} /></div>
     {:else if push === 'help' && view}
@@ -151,6 +151,9 @@
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .panel-body > :global(*) { flex: none; }
+  /* the villager picker pins its head and scrolls its own grid (to the bottom edge): the body holds still */
+  .panel-body.fill { overflow: hidden; padding-bottom: 0; }
+  .panel-body.fill > .page { flex: 1; min-height: 0; }
   /* a pushed level slides in from the right (design.md "Navigation") */
   .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
