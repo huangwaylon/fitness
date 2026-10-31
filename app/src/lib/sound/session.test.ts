@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IDLE_SUSPEND_MS,
+  HourClock,
   IdleTimer,
   RESUME_WINDOW_MS,
   SESSION_RELEASE_MS,
@@ -231,5 +232,44 @@ describe('loudness gain', () => {
     expect(trackLevel(40)).toBeCloseTo(10 ** (12 / 20));
     expect(trackLevel(-90)).toBeCloseTo(10 ** (-24 / 20));
     expect(trackLevel(NaN)).toBe(1);
+  });
+});
+
+describe('the hour clock (HourClock)', () => {
+  const HOUR = 3_600_000;
+  const make = () => {
+    const calls: string[] = [];
+    const c = new HourClock(
+      () => new Date(),
+      (at) => calls.push(`prefetch ${at.toISOString().slice(11, 16)}`),
+      () => calls.push(`change ${new Date().toISOString().slice(11, 16)}`)
+    );
+    return { c, calls };
+  };
+
+  it('prefetches the next hour a minute before it, changes on the hour and re-arms itself', () => {
+    vi.setSystemTime(new Date('2026-11-02T00:30:00Z'));
+    const { c, calls } = make();
+    c.start();
+    vi.advanceTimersByTime(2 * HOUR);
+    expect(calls).toEqual(['prefetch 01:00', 'change 01:00', 'prefetch 02:00', 'change 02:00']);
+    c.stop();
+  });
+
+  it('stopped (the app hidden): nothing fetches or changes, however long; start() picks up the current hour', () => {
+    vi.setSystemTime(new Date('2026-11-02T00:30:00Z'));
+    const { c, calls } = make();
+    c.start();
+    c.stop();
+    expect(c.armed).toBe(false);
+    vi.advanceTimersByTime(5 * HOUR);
+    expect(calls).toEqual([]);
+    expect(vi.getTimerCount()).toBe(0);
+    c.start();
+    c.start(); // twice (visibilitychange and pageshow): still one pair of timers
+    expect(vi.getTimerCount()).toBe(2);
+    vi.advanceTimersByTime(HOUR);
+    expect(calls).toEqual(['prefetch 06:00', 'change 06:00']);
+    c.stop();
   });
 });
