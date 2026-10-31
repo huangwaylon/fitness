@@ -1,5 +1,5 @@
 {
-  "version": 25,
+  "version": 26,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -67,11 +67,23 @@
       "h": 101,
       "source": "https://nookipedia.com/wiki/File:Yellow-Tea-Olive_Bush_NH_Icon.png"
     },
+    "critters/agrias-butterfly": {
+      "path": "critters/agrias-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Agrias_Butterfly_NH_Icon.png"
+    },
     "critters/anchovy": {
       "path": "critters/anchovy.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Anchovy_NH_Icon.png"
+    },
+    "critters/atlas-moth": {
+      "path": "critters/atlas-moth.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Atlas_Moth_NH_Icon.png"
     },
     "critters/banded-dragonfly": {
       "path": "critters/banded-dragonfly.webp",
@@ -109,11 +121,29 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Boot_NH_Icon.png"
     },
+    "critters/brown-cicada": {
+      "path": "critters/brown-cicada.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Brown_Cicada_NH_Icon.png"
+    },
     "critters/butterfly-fish": {
       "path": "critters/butterfly-fish.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Butterfly_Fish_NH_Icon.png"
+    },
+    "critters/centipede": {
+      "path": "critters/centipede.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Centipede_NH_Icon.png"
+    },
+    "critters/cicada-shell": {
+      "path": "critters/cicada-shell.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cicada_Shell_NH_Icon.png"
     },
     "critters/clownfish": {
       "path": "critters/clownfish.webp",
@@ -145,11 +175,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Dab_NH_Icon.png"
     },
+    "critters/damselfly": {
+      "path": "critters/damselfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Damselfly_NH_Icon.png"
+    },
     "critters/darner-dragonfly": {
       "path": "critters/darner-dragonfly.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Darner_Dragonfly_NH_Icon.png"
+    },
+    "critters/drone-beetle": {
+      "path": "critters/drone-beetle.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Drone_Beetle_NH_Icon.png"
     },
     "critters/emperor-butterfly": {
       "path": "critters/emperor-butterfly.webp",
@@ -181,11 +223,29 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Football_Fish_NH_Icon.png"
     },
+    "critters/giant-cicada": {
+      "path": "critters/giant-cicada.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Giant_Cicada_NH_Icon.png"
+    },
+    "critters/giant-stag": {
+      "path": "critters/giant-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Giant_Stag_NH_Icon.png"
+    },
     "critters/giant-trevally": {
       "path": "critters/giant-trevally.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Giant_Trevally_NH_Icon.png"
+    },
+    "critters/goliath-beetle": {
+      "path": "critters/goliath-beetle.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Goliath_Beetle_NH_Icon.png"
     },
     "critters/grasshopper": {
       "path": "critters/grasshopper.webp",
@@ -205,11 +265,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Hammerhead_Shark_NH_Icon.png"
     },
+    "critters/hermit-crab": {
+      "path": "critters/hermit-crab.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Hermit_Crab_NH_Icon.png"
+    },
     "critters/honeybee": {
       "path": "critters/honeybee.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Honeybee_NH_Icon.png"
+    },
+    "critters/horned-dynastid": {
+      "path": "critters/horned-dynastid.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Horned_Dynastid_NH_Icon.png"
     },
     "critters/horse-mackerel": {
       "path": "critters/horse-mackerel.webp",
@@ -217,11 +289,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Horse_Mackerel_NH_Icon.png"
     },
+    "critters/jewel-beetle": {
+      "path": "critters/jewel-beetle.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Jewel_Beetle_NH_Icon.png"
+    },
     "critters/ladybug": {
       "path": "critters/ladybug.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ladybug_NH_Icon.png"
+    },
+    "critters/long-locust": {
+      "path": "critters/long-locust.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Long_Locust_NH_Icon.png"
     },
     "critters/mahi-mahi": {
       "path": "critters/mahi-mahi.webp",
@@ -240,6 +324,18 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Migratory_Locust_NH_Icon.png"
+    },
+    "critters/miyama-stag": {
+      "path": "critters/miyama-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Miyama_Stag_NH_Icon.png"
+    },
+    "critters/monarch-butterfly": {
+      "path": "critters/monarch-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Monarch_Butterfly_NH_Icon.png"
     },
     "critters/moray-eel": {
       "path": "critters/moray-eel.webp",
@@ -289,17 +385,47 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Orchid_Mantis_NH_Icon.png"
     },
+    "critters/paper-kite-butterfly": {
+      "path": "critters/paper-kite-butterfly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Paper_Kite_Butterfly_NH_Icon.png"
+    },
     "critters/peacock-butterfly": {
       "path": "critters/peacock-butterfly.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Peacock_Butterfly_NH_Icon.png"
     },
+    "critters/pill-bug": {
+      "path": "critters/pill-bug.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pill_Bug_NH_Icon.png"
+    },
     "critters/puffer-fish": {
       "path": "critters/puffer-fish.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Puffer_Fish_NH_Icon.png"
+    },
+    "critters/queen-alexandras-birdwing": {
+      "path": "critters/queen-alexandras-birdwing.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Queen_Alexandra's_Birdwing_NH_Icon.png"
+    },
+    "critters/rainbow-stag": {
+      "path": "critters/rainbow-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Rainbow_Stag_NH_Icon.png"
+    },
+    "critters/rajah-brookes-birdwing": {
+      "path": "critters/rajah-brookes-birdwing.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Rajah_Brooke's_Birdwing_NH_Icon.png"
     },
     "critters/ray": {
       "path": "critters/ray.webp",
@@ -343,6 +469,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Saw_Shark_NH_Icon.png"
     },
+    "critters/saw-stag": {
+      "path": "critters/saw-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Saw_Stag_NH_Icon.png"
+    },
     "critters/sea-bass": {
       "path": "critters/sea-bass.webp",
       "w": 96,
@@ -360,6 +492,12 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Sea_Horse_NH_Icon.png"
+    },
+    "critters/snail": {
+      "path": "critters/snail.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Snail_NH_Icon.png"
     },
     "critters/squid": {
       "path": "critters/squid.webp",
@@ -391,11 +529,29 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Tuna_NH_Icon.png"
     },
+    "critters/walker-cicada": {
+      "path": "critters/walker-cicada.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Walker_Cicada_NH_Icon.png"
+    },
+    "critters/walking-stick": {
+      "path": "critters/walking-stick.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Walking_Stick_NH_Icon.png"
+    },
     "critters/whale-shark": {
       "path": "critters/whale-shark.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Whale_Shark_NH_Icon.png"
+    },
+    "critters/wharf-roach": {
+      "path": "critters/wharf-roach.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Wharf_Roach_NH_Icon.png"
     },
     "critters/yellow-butterfly": {
       "path": "critters/yellow-butterfly.webp",

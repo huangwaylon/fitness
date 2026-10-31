@@ -78,7 +78,23 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(oddsAt(BUGS['red-dragonfly'], 10, 12)).toBe(BUGS['red-dragonfly'].weight * IN_SEASON);
     expect(oddsAt(BUGS['red-dragonfly'], 4, 12)).toBe(BUGS['red-dragonfly'].weight);
     expect(BUGS['robust-cicada'].flight).toBe('perch');
-    for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch']).toContain(b.flight);
+    for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'hop', 'perch', 'crawl']).toContain(b.flight);
+  });
+  it('47 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass and the beds', () => {
+    expect(Object.keys(BUGS)).toHaveLength(47);
+    for (const id of ['walker-cicada', 'brown-cicada', 'giant-cicada', 'saw-stag', 'rainbow-stag', 'horned-dynastid', 'goliath-beetle', 'drone-beetle'] as BugId[])
+      expect(BUGS[id].flight, id).toBe('perch');
+    expect(BUGS['hermit-crab']).toMatchObject({ flight: 'crawl', ground: 'beach' });
+    expect(BUGS['wharf-roach']).toMatchObject({ flight: 'crawl', ground: 'beach' });
+    expect(BUGS['pill-bug'].ground).toBe('grass');
+    expect(BUGS.snail.ground).toBe('beds');
+    for (const b of Object.values(BUGS)) expect(b.flight === 'crawl', JSON.stringify(b)).toBe(!!b.ground);
+    // day and night still hold: the Goliath beetle and the Atlas moth are night bugs, the paper kite a day one
+    expect(oddsAt(BUGS['goliath-beetle'], 7, 12)).toBe(0);
+    expect(oddsAt(BUGS['goliath-beetle'], 7, 22)).toBeGreaterThan(0);
+    expect(oddsAt(BUGS['atlas-moth'], 1, 22)).toBe(BUGS['atlas-moth'].weight); // weighted, not gated by the month
+    expect(oddsAt(BUGS['paper-kite-butterfly'], 7, 22)).toBe(0);
+    expect(BUGS['queen-alexandras-birdwing'].weight).toBeLessThan(BUGS['paper-kite-butterfly'].weight);
   });
   it('a shaken bush: a bug 1 in 3 (a moth after dark; a butterfly, now and then a ladybug, by day)', () => {
     expect(bushBug(5, 12, rolls(0.5))).toBeNull();

@@ -84,20 +84,27 @@ export type BugId =
   | 'common-butterfly' | 'yellow-butterfly' | 'tiger-butterfly' | 'peacock-butterfly' | 'emperor-butterfly' | 'honeybee'
   | 'ladybug' | 'darner-dragonfly' | 'banded-dragonfly' | 'red-dragonfly' | 'robust-cicada' | 'evening-cicada' | 'firefly'
   | 'rice-grasshopper' | 'grasshopper' | 'migratory-locust' | 'mantis' | 'orchid-mantis' | 'bell-cricket' | 'cricket'
-  | 'moth';
+  | 'moth' | 'walker-cicada' | 'brown-cicada' | 'giant-cicada' | 'cicada-shell' | 'saw-stag' | 'miyama-stag' | 'giant-stag'
+  | 'rainbow-stag' | 'horned-dynastid' | 'goliath-beetle' | 'drone-beetle' | 'jewel-beetle' | 'walking-stick' | 'hermit-crab'
+  | 'wharf-roach' | 'pill-bug' | 'centipede' | 'snail' | 'paper-kite-butterfly' | 'agrias-butterfly'
+  | 'queen-alexandras-birdwing' | 'rajah-brookes-birdwing' | 'monarch-butterfly' | 'atlas-moth' | 'damselfly' | 'long-locust';
 
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers, a dragonfly darts and hovers over the
- *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada flies in to a
- *  tree's trunk and perches there, singing. */
-export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch';
+ *  lawn, a firefly drifts and blinks, a grasshopper, a cricket or a mantis hops in the grass, a cicada or a beetle flies
+ *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a bed. */
+export type Flight = 'flutter' | 'dart' | 'drift' | 'hop' | 'perch' | 'crawl';
+/** Where a crawler keeps to: the front beach (NH's beach and rocks), the grass, the flower beds. */
+type Ground = 'beach' | 'grass' | 'beds';
 
 interface Bug extends Seasonal {
   flight: Flight;
   /** A second span of hours (NH's evening cicada: dawn and dusk). */
   also?: readonly [number, number];
+  /** A crawler's ground. */
+  ground?: Ground;
 }
 
-/** NH bugs that suit this island (no wasps, nothing that chases, nothing tropical in winter): months and hours as in
+/** NH bugs that suit this island (no wasps, nothing that chases, no tarantulas or scorpions): months and hours as in
  *  NH's northern hemisphere (Nookipedia). Spring: the butterflies, the honeybee, the ladybug, the peacock butterfly;
  *  summer: the emperor butterfly at dusk, the dragonflies, the cicadas on the trunks, fireflies at night; autumn: the
  *  red dragonfly, the grasshoppers and the locust, the crickets in the evening, the mantises; winter: the common
@@ -124,7 +131,39 @@ export const BUGS: Record<BugId, Bug> = {
   'orchid-mantis': { months: span(3, 11), hours: [8, 17], flight: 'hop', weight: 1 },
   'bell-cricket': { months: [9, 10], hours: [17, 8], flight: 'hop', weight: 2 },
   cricket: { months: [9, 10, 11], hours: [17, 8], flight: 'hop', weight: 2 },
-  moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 1 }
+  moth: { months: ALL_YEAR, hours: [19, 4], flight: 'flutter', weight: 1 },
+  // on the trees: the rest of the cicadas (and a shell left on a trunk), the beetles (NH's stumps are trunks here), the
+  // walking stick at dawn and dusk; the big beetles come out at night
+  'walker-cicada': { months: [8, 9], hours: [8, 17], flight: 'perch', weight: 3 },
+  'brown-cicada': { months: [7, 8], hours: [8, 17], flight: 'perch', weight: 3 },
+  'giant-cicada': { months: [7, 8], hours: [8, 17], flight: 'perch', weight: 2 },
+  'cicada-shell': { months: [7, 8], hours: ALL_DAY, flight: 'perch', weight: 1 },
+  'saw-stag': { months: [7, 8], hours: ALL_DAY, flight: 'perch', weight: 1.5 },
+  'miyama-stag': { months: [7, 8], hours: ALL_DAY, flight: 'perch', weight: 1.5 },
+  'giant-stag': { months: [7, 8], hours: [23, 8], flight: 'perch', weight: 1 },
+  'rainbow-stag': { months: span(6, 9), hours: [19, 8], flight: 'perch', weight: 0.7 },
+  'horned-dynastid': { months: [7, 8], hours: [17, 8], flight: 'perch', weight: 1 },
+  'goliath-beetle': { months: span(6, 9), hours: [17, 8], flight: 'perch', weight: 0.5 },
+  'drone-beetle': { months: span(6, 8), hours: ALL_DAY, flight: 'perch', weight: 1 },
+  'jewel-beetle': { months: span(4, 8), hours: ALL_DAY, flight: 'perch', weight: 0.7 },
+  'walking-stick': { months: span(7, 11), hours: [4, 8], also: [17, 19], flight: 'perch', weight: 1 },
+  // on the beach and in the grass: the hermit crab after dark, the wharf roach on the rocks, the pill bug and the
+  // centipede (NH: under rocks), the snail on the flowers (NH: rain only; a rare one here)
+  'hermit-crab': { months: ALL_YEAR, hours: [19, 8], flight: 'crawl', ground: 'beach', weight: 2 },
+  'wharf-roach': { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beach', weight: 1.5 },
+  'pill-bug': { months: span(9, 6), hours: [23, 16], flight: 'crawl', ground: 'grass', weight: 1.5 },
+  centipede: { months: span(9, 6), hours: [16, 23], flight: 'crawl', ground: 'grass', weight: 1 },
+  snail: { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 0.7 },
+  // flying: the big tropical butterflies (rare), the monarch in autumn, the Atlas moth at night, the damselfly in
+  // winter, the long locust
+  'paper-kite-butterfly': { months: ALL_YEAR, hours: [8, 19], flight: 'flutter', weight: 2 },
+  'agrias-butterfly': { months: span(4, 9), hours: [8, 17], flight: 'flutter', weight: 1 },
+  'queen-alexandras-birdwing': { months: span(5, 9), hours: [8, 16], flight: 'flutter', weight: 0.5 },
+  'rajah-brookes-birdwing': { months: [...span(4, 9), 12, 1, 2], hours: [8, 17], flight: 'flutter', weight: 0.7 },
+  'monarch-butterfly': { months: span(9, 11), hours: [4, 17], flight: 'flutter', weight: 2 },
+  'atlas-moth': { months: span(4, 9), hours: [19, 4], flight: 'flutter', weight: 0.7 },
+  damselfly: { months: span(11, 2), hours: ALL_DAY, flight: 'dart', weight: 2 },
+  'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 }
 };
 
 /** Inside [from, to) of the day, wrapping past midnight when to < from. */

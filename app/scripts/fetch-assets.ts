@@ -105,7 +105,12 @@ for (const name of [
   // the rest of NH's sea and pier fish
   'Zebra Turkeyfish', 'Ribbon Eel', 'Football Fish', 'Clownfish', 'Surgeonfish', 'Butterfly Fish', 'Sea Horse', 'Moray Eel',
   'Napoleonfish', 'Ray', 'Ocean Sunfish', 'Mahi-Mahi', 'Giant Trevally', 'Tuna', 'Blue Marlin', 'Suckerfish', 'Oarfish',
-  'Saw Shark', 'Hammerhead Shark', 'Great White Shark', 'Whale Shark', 'Barreleye', 'Coelacanth'
+  'Saw Shark', 'Hammerhead Shark', 'Great White Shark', 'Whale Shark', 'Barreleye', 'Coelacanth',
+  // more NH bugs: on the trees, on the beach and in the grass, flying
+  'Walker Cicada', 'Brown Cicada', 'Giant Cicada', 'Cicada Shell', 'Saw Stag', 'Miyama Stag', 'Giant Stag', 'Rainbow Stag',
+  'Horned Dynastid', 'Goliath Beetle', 'Drone Beetle', 'Jewel Beetle', 'Walking Stick', 'Hermit Crab', 'Wharf Roach',
+  'Pill Bug', 'Centipede', 'Snail', 'Paper Kite Butterfly', 'Agrias Butterfly', "Queen Alexandra's Birdwing",
+  "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust'
 ])
   SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
