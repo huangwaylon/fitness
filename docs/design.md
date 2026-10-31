@@ -55,19 +55,25 @@ week (no cap). 買う！ asks first, applies at once and waits 5 s with とり�
 ### Panel
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`, a top sheet: the safe area
-over its title bar 「しまの てちょう」, rounded at the bottom, stopping 24px short of the screen's bottom). One scroller,
-in this order: **きろく** ([Kiroku](#kiroku)), **からだ / 目標**, **むらびと** (my villager and よびな; かえる → the
-picker: 23 special characters and 158 villagers), **サウンド** ([Sound settings](#sound-settings)), **ことば**
-(日本語 / English), **つうしん** (when each of us last synced; いま つうしん) and **あそびかた** (one line; くわしく →
-the guide: step tables, the treat guide and escalation, a protein hint of 1.6 g per kg a day, not tracked). A week, a
-day, the weight screen, the picker and the guide push a level with ‹; ✕, the backdrop and Esc close the panel.
-The panel is its own chunk, loaded on the first tap.
+over its title bar 「しまの てちょう」, rounded at the bottom, stopping 24px short of the screen's bottom). Two tabs sit
+pinned under the title bar (NH's yellow for the one shown); it opens on **きろく**, and remembers the last tab for the
+session:
+
+- **きろく:** the ベル ledger by week and day, then からだ (the weight trend) and 目標 (the Move and weight goals), then
+  the week cards ([Kiroku](#kiroku)).
+- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and 158 villagers),
+  **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last
+  synced; いま つうしん) and **あそびかた** (one line; くわしく → the guide: step tables, the treat guide and escalation,
+  a protein hint of 1.6 g per kg a day, not tracked).
+
+A week, a day, the weight screen, a goal, the picker and the guide push a level with ‹ (the tabs hide while a level is
+open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on the first tap.
 
 ### Kiroku
 
-きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history at the top of the panel, two sections:
+きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, the panel's first tab, in two sections:
 
-- **きろく (ベル):** everything earned, then by week: the Sunday bonus, the buys (my own → とりけす) and one line per day
+- **ベル:** everything earned, then by week: the Sunday bonus, the buys (my own → とりけす) and one line per day
   (tap → the day).
 - **からだ・目標:** a weight card per person (→ the weight screen), 目標 (the Move and weight goals; two avatar pills
   pick whose, either person sets either person's), then one card per week, newest first: ✓ once both harvested, each

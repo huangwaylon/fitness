@@ -34,6 +34,7 @@ const NONE: Record<string, string> = {
   'lib/components/wallet/MenuEditor.svelte': 'name and price fields: the system keyboard clicks',
   'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
+  'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
   'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing'
 };
 

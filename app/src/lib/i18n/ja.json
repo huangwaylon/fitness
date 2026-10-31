@@ -240,6 +240,8 @@
   "panel.change": "かえる",
   "panel.more": "くわしく",
   "panel.helpSummary": "Apple Watchを つけて すごすだけ。4つの くだもので ベルが たまって、ふたりの ごほうびに つかえるよ。",
-  "panel.kiroku": "きろく",
-  "panel.body": "からだ・目標"
+  "panel.body": "からだ・目標",
+  "panel.tab.kiroku": "きろく",
+  "panel.tab.settings": "せってい",
+  "panel.bells": "ベル"
 }

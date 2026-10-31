@@ -8,10 +8,16 @@ async function islandReady(page: Page) {
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
 }
 
-/** Tap today's ベル ribbon: the island panel slides down (きろく first). */
+/** Tap today's ベル ribbon: the island panel slides down (on the きろく tab, or the last tab this session). */
 async function openPanel(page: Page) {
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await expect(sheet(page).locator('.panel-body')).toBeVisible();
+}
+/** The panel on its せってい tab (むらびと, サウンド, ことば, つうしん, あそびかた). */
+async function openSettings(page: Page) {
+  await openPanel(page);
+  await sheet(page).locator('.tab[data-tab=settings]').click();
+  await expect(sheet(page).locator('.tab[data-tab=settings]')).toHaveAttribute('aria-pressed', 'true');
 }
 
 /** `きょう 620 ベル` → 620. */
@@ -282,11 +288,14 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   expect(b.x + b.width).toBeGreaterThan(vw - 40);
   await close.click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  // the panel: ✕ at its top level, ‹ + ✕ one level in (a week, a day, the picker, the guide), ‹ goes back a level
+  // the panel: two tabs and ✕ at its top level, ‹ + ✕ one level in (a week, a day, the picker, the guide), ‹ goes back
   await openPanel(page);
   const bar = sheet(page).locator('.titlebar');
+  const tabs = sheet(page).locator('.tabs');
+  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true'); // きろく first
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
+  await sheet(page).locator('.tab[data-tab=settings]').click();
   for (const push of ['villager', 'help']) {
     await sheet(page).locator(`[data-push=${push}]`).click();
     await expect(bar.locator('.back')).toBeVisible();
@@ -295,14 +304,15 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
     await bar.locator('.back').click();
     await expect(sheet(page).locator(`[data-push=${push}]`)).toBeVisible();
   }
-  // きろく: week → day, then ‹ ‹ back to the panel's top, with every section again
+  // きろく: week → day, then ‹ ‹ back to the tab's top, with the tabs again
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
   await sheet(page).getByRole('button', { name: /^今週/ }).click();
-  await expect(sheet(page).locator('[data-push=villager]')).toHaveCount(0); // a level in: only that screen
+  await expect(tabs).toHaveCount(0); // a level in: only that screen
   await sheet(page).getByRole('button', { name: /\(月\)$/ }).click();
   await bar.locator('.back').click();
   await expect(sheet(page).locator('.days')).toBeVisible();
   await bar.locator('.back').click();
-  await expect(sheet(page).locator('[data-push=villager]')).toBeVisible();
+  await expect(tabs).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
   await bar.locator('.close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
@@ -327,7 +337,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   const audio: string[] = [];
   page.on('request', (r) => r.url().includes('/audio/') && audio.push(new URL(r.url()).pathname));
   await page.goto('?demo');
-  await openPanel(page);
+  await openSettings(page);
   const row = (name: string) => sheet(page).getByRole('switch', { name: new RegExp(`^${name}`) });
   for (const n of ['ミュージック', '効果音']) await expect(row(n)).toHaveAttribute('aria-checked', 'false');
   await expect(row('おしゃべり')).toHaveCount(0); // the villagers don't speak: no voice setting
@@ -343,7 +353,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await sheet(page).locator('.titlebar .close').click();
   await expect.poll(() => audio.some((p) => /\/audio\/music\/hour-\d\d\.m4a$/.test(p))).toBe(true);
   await page.reload();
-  await openPanel(page);
+  await openSettings(page);
   await expect(row('効果音')).toHaveAttribute('aria-checked', 'true');
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
   await expect(sheet(page).getByRole('slider', { name: '音量' })).toHaveValue('4');
@@ -353,6 +363,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
 test('focus ring: none on the panel’s くわしく after tap → ‹ back; the keyboard still shows it', async ({ page }) => {
   await page.goto('?demo');
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).tap();
+  await sheet(page).locator('.tab[data-tab=settings]').tap();
   const tile = sheet(page).locator('[data-push=help]');
   await tile.tap();
   await sheet(page).locator('.titlebar .back').tap();
@@ -371,7 +382,7 @@ test('focus ring: none on the panel’s くわしく after tap → ‹ back; the
 
 test('むらびと: the panel shows my villager; かえる → とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
   await page.goto('?demo');
-  await openPanel(page);
+  await openSettings(page);
   await sheet(page).locator('[data-push=villager]').click();
   const dlg = sheet(page);
   await expect(dlg.locator('.grp')).toHaveText(['とくべつ', 'むらびと']);
@@ -415,4 +426,16 @@ test('with the undo banner up, a sheet’s footer (買う！) rises above it: a 
   await sheet(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished)));
   const hit = await buy.evaluate((b) => { const r = b.getBoundingClientRect(); const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!top && b.contains(top); });
   expect(hit).toBe(true);
+});
+
+test('the panel remembers its tab for the session; a reload opens on きろく', async ({ page }) => {
+  await page.goto('?demo');
+  await openSettings(page);
+  await sheet(page).locator('.titlebar .close').click();
+  await openPanel(page);
+  await expect(sheet(page).locator('.tab[data-tab=settings]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('#sec-sound')).toBeVisible();
+  await page.reload();
+  await openPanel(page);
+  await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
 });

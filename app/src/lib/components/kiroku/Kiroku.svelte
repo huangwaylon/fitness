@@ -1,8 +1,8 @@
 <script lang="ts">
-  // きろく (records, design.md "Kiroku"), the island panel's first part: at its top the ベル ledger (this week by day,
+  // きろく (records, design.md "Kiroku"), the island panel's first tab: at its top the ベル ledger (this week by day,
   // then the past weeks) and then からだ (the weight trend, the two goals, the week cards), each under a section heading;
   // a week → its days, a day, the weight screen, a goal or a buy's とりけす push a level (`level` = how deep, bindable:
-  // the panel shows its other sections only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
+  // the panel shows its tabs only at 0 and its ‹ calls `back()`). Read-only (Apple Health is the source of
   // truth): the only inputs are the two goals (either person's: the goal screen names whose) and とりけす on my buys.
   // Everything is computed from the store's reduced model, lazily for the opened week/day.
   import { tick } from 'svelte';
@@ -130,7 +130,7 @@
   {#if m && view}
     {#if !top}
       {#if money}
-        <h2 class="sec">{t('panel.kiroku')}</h2>
+        <h2 class="sec">{t('panel.bells')}</h2>
         <BellsLog ledger={money} {me} {order} {names} {villagers} onvoid={askVoid} onday={(date) => go({ k: 'day', date })} />
       {/if}
       {#if weeks && trends}
