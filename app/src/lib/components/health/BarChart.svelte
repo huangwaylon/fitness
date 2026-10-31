@@ -1,7 +1,8 @@
 <script lang="ts">
   // One metric's chart (けんこう), one person's: a bar per day (1週, 1か月) or per week / month (the daily average of its
   // recorded days) in their colour, solid when the goal was met and pale when not; today's bar is outlined (still
-  // running); a day with no record gets a pale hatched column (not a gap that reads as zero). The dashed line is their
+  // running); a day with no record gets a short faint hatched stub on the axis (plainly missing: not a gap that reads as zero, and
+  // not a column that reads as a value). The dashed line is their
   // goal (stepped when their Move goal changed); with room (1週) each bar carries its value. A tap shows that bar's exact numbers; a horizontal drag turns the page (gestures.ts).
   // Hand-drawn SVG at the measured width.
   import type { LocalDate, PersonId } from '#lib/types.ts';
@@ -48,6 +49,8 @@
   const top = $derived(ticks.at(-1) ?? 1);
   const y = (v: number) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
   const base = $derived(y(0));
+  /** A no-record day's stub: this tall on the axis, far below any value worth reading. */
+  const NONE_H = 7;
 
   /** One bar per bucket, wide (a gap of about a third between them). */
   const barW = $derived(Math.max(1.5, Math.min(28, bw * 0.68)));
@@ -100,7 +103,7 @@
     <svg width={w} height={H} viewBox="0 0 {w} {H}" role="img" aria-label={label}>
       <defs>
         <clipPath id="clip-{metric}"><rect x={pad.l} y="0" width={plotW} height={H} /></clipPath>
-        <pattern id="hatch-{metric}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch" width="2" height="6" /></pattern>
+        <pattern id="hatch-{metric}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="hatch" width="1.2" height="3" /></pattern>
       </defs>
       {#each ticks as v (v)}
         <line class="grid" class:zero={v === 0} x1={pad.l} x2={w - pad.r} y1={y(v)} y2={y(v)} />
@@ -114,7 +117,7 @@
               {#if b.v !== null && b.v > 0}
                 <path class="bar p{p}" class:now={b.today} style:opacity={b.today ? null : 0.34 + 0.66 * (b.met / Math.max(1, b.days))} d={bar(barX(i), b.v)} />
               {:else if b.v === null && missing(i)}
-                <rect class="none" x={barX(i)} y={pad.t} width={barW} height={base - pad.t} rx={Math.min(3, barW / 2)} fill="url(#hatch-{metric})" />
+                <rect class="none" x={barX(i) + 0.5} y={base - NONE_H} width={Math.max(1, barW - 1)} height={NONE_H - 0.5} rx={Math.min(1.5, barW / 2)} fill="url(#hatch-{metric})" />
               {/if}
             {/each}
             <path class="goal" d={goalPath} />
@@ -160,9 +163,9 @@
   .bar.now { fill-opacity: .3; stroke-width: 1.5; stroke-dasharray: 3 2; }
   .pA { fill: var(--person-a); stroke: var(--person-a); }
   .pB { fill: var(--person-b); stroke: var(--person-b); }
-  /* no record: a pale hatched column, plainly not a zero */
-  .none { stroke: color-mix(in srgb, var(--text-soft) 30%, transparent); stroke-width: 1; }
-  .hatch { fill: color-mix(in srgb, var(--text-soft) 22%, transparent); }
+  /* no record: a short faint hatched stub on the axis, plainly missing (neither a zero nor a value) */
+  .none { stroke: color-mix(in srgb, var(--text-soft) 50%, transparent); stroke-width: 1; stroke-dasharray: 2 1.5; }
+  .hatch { fill: color-mix(in srgb, var(--text-soft) 45%, transparent); }
   .goal { fill: none; stroke: var(--text-soft); stroke-width: 1.5; stroke-dasharray: 5 4; }
   .val { fill: var(--text); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
   .tip {

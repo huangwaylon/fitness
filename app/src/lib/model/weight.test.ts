@@ -1,4 +1,4 @@
-// the weight trend (daily value, EWMA, weekly pace, since start, goal projection), and weight never earns.
+// body weight (a day's value, the plain change over a period, its weekly pace, the goal month), and weight never earns.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
@@ -8,7 +8,7 @@ import { buildWeekView } from './week.ts';
 import { bellsLedger } from './bells.ts';
 import { dayDetail } from './history.ts';
 import { compactRows } from './compact.ts';
-import { ewmaTrend, project, trendAt, weighIns, weightTrend } from './weight.ts';
+import { plainChange, project, weighIns, type PlainChange } from './weight.ts';
 
 const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toISOString();
 const ms = (date: string, hm: string) => Date.parse(jst(date, hm));
@@ -45,89 +45,68 @@ describe('a day’s weight: the latest row, not the max', () => {
   });
 });
 
-describe('the trend (gap-aware 10% EWMA)', () => {
-  it('daily weigh-ins move the trend 10% of the way each day', () => {
-    const t = ewmaTrend([{ date: '2026-11-01', kg: 70 }, { date: '2026-11-02', kg: 69 }, { date: '2026-11-03', kg: 69 }]);
-    expect(t.map((p) => p.trend)).toEqual([70, 69.9, 69.81]);
+describe('plainChange: the first week’s average → the last week’s, else the first weigh-in → the last', () => {
+  const D0 = '2026-08-03';
+  /** One weigh-in on each of these days after D0. */
+  const at = (pairs: [number, number][]) => pairs.map(([d, kg]) => ({ date: addDays(D0, d), kg }));
+
+  it('under two weigh-ins: nothing to compare', () => {
+    expect(plainChange([])).toBeNull();
+    expect(plainChange(at([[0, 70]]))).toBeNull();
   });
 
-  it('a gap of g days weighs the next weigh-in 1 − 0.9^g', () => {
-    const t = ewmaTrend([{ date: '2026-11-01', kg: 70 }, { date: '2026-11-08', kg: 68 }]);
-    expect(t[1].trend).toBeCloseTo(70 - 2 * (1 - 0.9 ** 7), 2);
+  it('under two weeks apart: first → last; a weekly pace only from 7 days apart', () => {
+    expect(plainChange(at([[0, 70], [3, 70.4], [5, 69]]))).toEqual({ basis: 'ends', from: 70, to: 69, at: addDays(D0, 5), change: -1, perWeek: null });
+    expect(plainChange(at([[0, 70], [10, 69]]))).toMatchObject({ basis: 'ends', change: -1, perWeek: -0.7 });
+    // 12 days apart: the two weeks would overlap
+    expect(plainChange(at([[0, 70], [12, 69]]))?.basis).toBe('ends');
   });
 
-  it('noise averages out: a noisy flat series keeps a flat trend', () => {
-    const days = Array.from({ length: 60 }, (_, i) => ({ date: addDays('2026-09-01', i), kg: 70 + (i % 2 ? 0.6 : -0.6) }));
-    const t = ewmaTrend(days);
-    expect(Math.abs(t.at(-1)!.trend - 70)).toBeLessThan(0.1);
+  it('from 13 days apart: the two weeks’ averages, over the days between their middles', () => {
+    // days 0..6 vs 7..13, each week averaging its own weigh-ins
+    const c = plainChange(at([[0, 70], [2, 71], [7, 69], [13, 68]]))!;
+    expect(c).toEqual({ basis: 'weeks', from: 70.5, to: 68.5, at: addDays(D0, 10), change: -2, perWeek: -1.56 }); // −2 over 9 days
   });
 
-  it('trendAt carries the last weigh-in forward', () => {
-    const t = ewmaTrend([{ date: '2026-11-01', kg: 70 }, { date: '2026-11-05', kg: 69 }]);
-    expect(trendAt(t, '2026-10-31')).toBeNull();
-    expect(trendAt(t, '2026-11-03')).toBe(70);
+  it('a steady loss of 0.5 kg a week reads as −0.5 a week; a noisy flat stretch reads as flat', () => {
+    const steady = at(Array.from({ length: 84 }, (_, i) => [i, 72 - (0.5 * i) / 7] as [number, number]));
+    const c = plainChange(steady)!;
+    expect(c.basis).toBe('weeks');
+    expect(c.perWeek!).toBeCloseTo(-0.5, 2);
+    expect(c.change).toBeCloseTo(-5.5, 1); // 77 days between the weeks' middles
+    const noisy = at(Array.from({ length: 28 }, (_, i) => [i, 70 + (i % 2 ? 0.6 : -0.6)] as [number, number]));
+    // a ±0.6 kg daily swing: 0.2 at most (its first and last weigh-ins alone would say +1.2)
+    expect(Math.abs(plainChange(noisy)!.change)).toBeLessThanOrEqual(0.2);
+  });
+
+  it('sparse weigh-ins: a week of one is that weigh-in', () => {
+    expect(plainChange(at([[0, 70], [30, 69], [60, 67]]))).toMatchObject({ basis: 'weeks', from: 70, to: 67, change: -3, perWeek: -0.35 });
   });
 });
 
-describe('weightTrend: week change, since start, pace, goal', () => {
-  /** A steady loss of 0.5 kg a week from 72 kg, weighed every morning for `days` days from 2026-08-03. */
-  function steady(days: number, person: PersonId = 'A'): SnapshotRows {
-    const r = rowsOf();
-    for (let i = 0; i < days; i++) {
-      const d = addDays('2026-08-03', i);
-      r.metrics.push(kg(jst(d, '08:00'), person, d, Math.round((72 - (0.5 * i) / 7) * 10) / 10));
-    }
-    return r;
-  }
-  const end = (days: number) => ms(addDays('2026-08-03', days - 1), '21:00');
+describe('project(): the goal month at the period’s pace', () => {
+  const c = (o: Partial<PlainChange>): PlainChange => ({ basis: 'weeks', from: 71, to: 70, at: '2026-11-01', change: -1, perWeek: -0.5, ...o });
 
-  it('no weigh-ins: an empty trend', () => {
-    const w = weightTrend(reduce(rowsOf()), 'A', ms('2026-11-01', '12:00'));
-    expect(w).toMatchObject({ points: [], latest: null, weekChange: null, sinceStart: null, perWeek: null, projection: null });
+  it('a goal ahead: a date from the last week at that pace', () => {
+    expect(project(c({}), 69)).toEqual({ kind: 'date', date: '2026-11-15' });
+    expect(project(c({ from: 60, to: 61, change: 1, perWeek: 0.5 }), 62)).toEqual({ kind: 'date', date: '2026-11-15' });
   });
 
-  it('the first week: no week change or pace yet', () => {
-    const w = weightTrend(reduce(steady(5)), 'A', end(5));
-    expect(w.latest?.kg).toBe(71.7);
-    expect(w.weekChange).toBeNull();
-    expect(w.perWeek).toBeNull();
-    expect(w.sinceStart).toBeLessThan(0);
+  it('at or past the goal (seen from the start) is reached', () => {
+    expect(project(c({}), 70)).toEqual({ kind: 'reached' });
+    expect(project(c({ to: 69.5 }), 70)).toEqual({ kind: 'reached' });
   });
 
-  it('a steady loss shows as about −0.5 kg a week once the trend catches up', () => {
-    const w = weightTrend(reduce(steady(84)), 'A', end(84));
-    expect(w.points).toHaveLength(84);
-    expect(w.perWeek!).toBeCloseTo(-0.5, 1);
-    expect(w.weekChange!).toBeCloseTo(-0.5, 1);
-    expect(w.sinceStart!).toBeLessThan(-4.5); // the trend lags the scale a little (72 → 66.1)
-    expect(w.sinceStart!).toBeGreaterThan(-6);
+  it('none: moving away, too slow, too far out, or first → last only', () => {
+    expect(project(c({}), 75)).toEqual({ kind: 'none' });
+    expect(project(c({ perWeek: -0.01 }), 60)).toEqual({ kind: 'none' });
+    expect(project(c({ perWeek: null }), 60)).toEqual({ kind: 'none' });
+    expect(project(c({ perWeek: -0.2 }), 25)).toEqual({ kind: 'none' }); // 225 weeks
+    expect(project(c({ basis: 'ends' }), 69)).toEqual({ kind: 'none' });
   });
+});
 
-  it('a goal ahead gets a date at the current pace; behind is reached; the wrong way has none', () => {
-    const rows = steady(84);
-    const at = jst('2026-10-25', '22:00');
-    const withGoal = (g: number | null) => weightTrend(reduce({ ...rows, events: [ev(at, 'A', 'pref', { key: 'goalWeight', value: g })] }), 'A', end(84));
-    const w = withGoal(64);
-    expect(w.goal).toBe(64);
-    expect(w.projection?.kind).toBe('date');
-    const date = (w.projection as { date: string }).date;
-    // (64 − trend) / −0.5 a week, from the latest weigh-in
-    const weeks = (64 - w.latest!.trend) / w.perWeek!;
-    expect(date).toBe(addDays(w.latest!.date, Math.ceil(weeks * 7)));
-    expect(withGoal(70).projection).toEqual({ kind: 'reached' });
-    expect(withGoal(null).goal).toBeNull();
-    // a gain goal while losing: no date
-    expect(withGoal(80).projection).toEqual({ kind: 'none' });
-  });
-
-  it('project(): too slow or too far out has no date', () => {
-    const p = { date: '2026-11-01', kg: 70, trend: 70 };
-    expect(project(p, p, 60, -0.01)).toEqual({ kind: 'none' });
-    expect(project(p, p, 60, null)).toEqual({ kind: 'none' });
-    expect(project(p, p, 25, -0.2)).toEqual({ kind: 'none' }); // 225 weeks
-    expect(project(p, p, 69, -0.5)).toEqual({ kind: 'date', date: '2026-11-15' });
-  });
-
+describe('goalWeight', () => {
   it('goalWeight: per person; null clears it, an invalid value keeps the previous one', () => {
     const D = '2026-11-10';
     const s = reduce(rowsOf({ events: [
@@ -177,13 +156,13 @@ describe('weight never earns', () => {
         days: D.map((d) => dayDetail(s, d, now))
       });
       expect(all(b)).toBe(all(a));
-      expect(weightTrend(b, 'A', now).points.length).toBeGreaterThan(0);
+      expect(weighIns(b, 'A', now).length).toBeGreaterThan(0);
     }
   });
 });
 
 describe('compactRows keeps the latest weight row per day (not the largest)', () => {
-  it('a locked week’s weight rows shrink to the newest one and the trend is unchanged', () => {
+  it('a locked week’s weight rows shrink to the newest one and the weigh-ins are unchanged', () => {
     const d = '2026-11-02';
     const rows: SnapshotRows = rowsOf({
       metrics: [
@@ -195,6 +174,6 @@ describe('compactRows keeps the latest weight row per day (not the largest)', ()
     const now = ms(addDays(d, 30), '00:00');
     const small = compactRows(rows, now);
     expect(small.metrics.filter((r) => r[3] === 'weight').map((r) => r[4])).toEqual([68.4, 68.2]);
-    expect(weightTrend(reduce(small), 'A', now)).toEqual(weightTrend(reduce(rows), 'A', now));
+    expect(weighIns(reduce(small), 'A', now)).toEqual(weighIns(reduce(rows), 'A', now));
   });
 });

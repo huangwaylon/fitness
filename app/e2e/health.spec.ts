@@ -67,16 +67,48 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(range(page)).toHaveText('10/18–10/24');
 });
 
-test('a day without data (the Watch on its charger, the phone left home) is a hatched column and 記録なし, not a zero', async ({ page }) => {
+test('a day without data (the Watch on its charger, the phone left home) is a short faint stub on the axis and 記録なし, not a zero', async ({ page }) => {
   await openHealth(page, '?demo&weeks=60');
   await sheet(page).locator('[data-period=quarter]').click();
   await sheet(page).locator('[data-period=month]').click();
+  let stubs = 0;
   for (const m of ['move', 'exercise', 'stand', 'steps']) {
     const card = sheet(page).locator(`.mc[data-metric=${m}]`);
     const n = Number((await card.locator('.sub').textContent())!.match(/記録なし (\d+)日/)?.[1] ?? 0);
-    await expect(card.locator('rect.none'), m).toHaveCount(n); // one hatched column per day counted as 記録なし
+    await expect(card.locator('rect.none'), m).toHaveCount(n); // one stub per day counted as 記録なし
+    stubs += n;
   }
+  expect(stubs).toBeGreaterThan(0);
+  // a stub sits on the axis and stays short (never a column that reads as a value)
+  const card = sheet(page).locator('.mc').filter({ has: page.locator('rect.none') }).first();
+  const stub = card.locator('rect.none').first();
+  const chart = card.locator('.chart');
+  await chart.scrollIntoViewIfNeeded();
+  const [sb, cb] = [(await stub.boundingBox())!, (await chart.boundingBox())!];
+  expect(sb.height).toBeLessThanOrEqual(8);
+  expect(Math.abs(sb.y + sb.height - (cb.y + cb.height - 24))).toBeLessThanOrEqual(1.5); // on the baseline
+  // its tap callout says 記録なし
+  await chart.click({ position: { x: sb.x - cb.x + sb.width / 2, y: cb.height - 40 } });
+  await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
   await expect(sheet(page).locator('.mc .key').first()).toContainText('記録なし');
+});
+
+test('体重: the period’s plain change (first week → last week, else first → last weigh-in), no trend words', async ({ page }) => {
+  await openHealth(page);
+  const card = sheet(page).locator('.wc');
+  const chg = card.locator('.chips .chg');
+  await chg.scrollIntoViewIfNeeded();
+  // 1か月: the first week's average → the last week's, and per week
+  await expect(chg.locator('dt')).toHaveText('期間の変化');
+  await expect(chg.locator('.money')).toHaveText(/^[+−±]\d+\.\d kg$/);
+  await expect(chg.locator('.basis')).toHaveText('最初の週→最後の週');
+  await expect(chg).toContainText(/1週間に [+−±]\d+\.\d kg/);
+  // 1週: one week, so the first weigh-in → the last, no weekly pace
+  await sheet(page).locator('[data-period=week]').click();
+  await expect(chg.locator('.basis')).toHaveText('最初→最後の記録');
+  await expect(chg).not.toContainText('1週間に');
+  await expect(card).not.toContainText('ながれ');
+  await expect(card.locator('.note')).toHaveCount(0);
 });
 
 test('period: 1週 by day, 3か月 by week, 1年 by month; ‹ › page through and きょう comes back', async ({ page }) => {

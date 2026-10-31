@@ -98,5 +98,6 @@
   .k-mid { opacity: .67; margin-left: -3px; }
   .k-mid + .k-met { margin-left: -3px; }
   .k-goal { width: 14px; border-top: 2px dashed var(--text-soft); }
-  .k-none { width: 8px; height: 11px; border-radius: 2px 2px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--text-soft) 45%, transparent) 0 1.5px, transparent 1.5px 3.5px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-soft) 40%, transparent); }
+  /* the chart's no-record stub: short, faint and hatched, on a baseline */
+  .k-none { width: 9px; height: 5px; align-self: center; margin-top: 4px; border: 1px dashed color-mix(in srgb, var(--text-soft) 50%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text-soft) 45%, transparent); border-radius: 1.5px 1.5px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--text-soft) 45%, transparent) 0 1px, transparent 1px 2.2px); }
 </style>

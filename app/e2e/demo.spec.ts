@@ -91,13 +91,13 @@ test('きろく: per day each of us four goals and ふたりで ぜんぶ; a day
   await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
 });
 
-test('けんこう: the weight trend (from Health, no logging by hand); its goal is set in きろく', async ({ page }) => {
+test('けんこう: body weight (from Health, no logging by hand); its goal is set in きろく', async ({ page }) => {
   await page.goto('?demo');
   const ribbon = page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
   await expect(ribbon).toBeVisible();
   const bells = await ribbon.getAttribute('aria-label');
   await openKiroku(page);
-  // きろく no longer repeats the weight: the trend lives in けんこう
+  // きろく no longer repeats the weight: it lives in けんこう
   await expect(sheet(page).locator('.kiroku')).not.toContainText('ながれ');
   await sheet(page).locator('.tab[data-tab=health]').click();
   const card = sheet(page).locator('.wc');

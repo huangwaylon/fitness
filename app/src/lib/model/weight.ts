@@ -1,43 +1,45 @@
-// Body-weight trend: a calm view of where each person's weight is heading. Shown only: nothing here feeds
-// the ベル economy (bells.ts never imports this file, and weight rows live in their own State maps).
+// Body weight: each person's weigh-ins and, over a period, a plain change and the month a goal may be reached. Shown
+// only: nothing here feeds the ベル economy (bells.ts never imports this file, and weight rows live in their own State
+// maps).
 //
 // Rules:
 // - A day's weight is its latest ingested row stamped at or before T. The Shortcut sends the day's Body Mass from
 //   Apple Health (gas/parse.ts), and the server appends a row whenever it differs from the day's last row, so the
 //   latest row is the current one (unlike steps, which take the max).
-// - The trend is an exponentially weighted moving average (WEIGHT.alpha = 0.1 a day, gap-aware), seeded with the
-//   first weigh-in.
+// - The change over a period (plainChange) is plain arithmetic on the weigh-ins, no smoothing: the average of the
+//   first week's weigh-ins (the 7 days from the first) → the average of the last week's (the 7 days to the last), when
+//   the two weeks don't overlap (the weigh-ins span 14 days or more); else the first weigh-in → the last. Per week: that
+//   change over the days between the two weeks' middles (their weigh-ins' mean date), from 7 days apart.
+// - The goal date (project) extends that weekly pace from the last week's average; only from two weeks, not toward a
+//   goal it is moving away from, too slow (WEIGHT.minPacePerWeek) or too far out (WEIGHT.projectMaxWeeks).
 import type { LocalDate, PersonId } from '#lib/types.ts';
 import { WEIGHT } from '#lib/config/rules.ts';
 import { addDays, daysBetween, localDateAt } from '#lib/time/dates.ts';
 import { roundKg as round1 } from '#lib/contract/api.ts';
 import { latestAt, type State } from './state.ts';
 
-interface WeighIn { date: LocalDate; kg: number }
-export interface WeightPoint extends WeighIn { trend: number }
+export interface WeighIn { date: LocalDate; kg: number }
 
-type WeightProjection =
+export type WeightProjection =
   | { kind: 'reached' }
-  /** The trend reaches the goal around `date` at the current pace. */
+  /** The goal is reached around `date` at the period's pace. */
   | { kind: 'date'; date: LocalDate }
-  /** Heading the other way, too slow, or too far out: no date (the UI stays encouraging). */
+  /** Heading the other way, too slow, too far out or too few weigh-ins: no date (the UI stays encouraging). */
   | { kind: 'none' };
 
-export interface WeightTrend {
-  /** Every weigh-in day with its trend, ascending. */
-  points: WeightPoint[];
-  latest: WeightPoint | null;
-  /** Trend now − the trend 7 days before the latest weigh-in; null without a weigh-in that far back. */
-  weekChange: number | null;
-  /** Trend now − the first weigh-in. */
-  sinceStart: number | null;
-  /** The trend's average change per week over the last WEIGHT.rateDays (null under WEIGHT.minRateDays of data). */
+export interface PlainChange {
+  /** `weeks`: the first week's average → the last week's; `ends`: the first weigh-in → the last. */
+  basis: 'weeks' | 'ends';
+  /** Where it starts and ends (kg, two decimals), and when the end stands (the last week's middle, or the last weigh-in). */
+  from: number;
+  to: number;
+  at: LocalDate;
+  /** to − from, one decimal. */
+  change: number;
+  /** The change per week (two decimals); null when the two ends are under 7 days apart. */
   perWeek: number | null;
-  goal: number | null;
-  projection: WeightProjection | null;
 }
 
-/** Trend values and the weekly pace keep two decimals (shown with one). */
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
 /** Every day with a weight as of T (none after T's own date), ascending: each day's latest row stamped at or before T. */
@@ -52,64 +54,39 @@ export function weighIns(s: State, p: PersonId, t: number): WeighIn[] {
   return out;
 }
 
-/**
- * The trend through ascending weigh-ins: trend₀ = the first weight; then, g days after the previous weigh-in,
- * trend += (1 − (1 − α)^g) × (weight − trend). With daily weigh-ins that's the classic 10% EWMA.
- */
-export function ewmaTrend(days: readonly WeighIn[]): WeightPoint[] {
-  const out: WeightPoint[] = [];
-  let trend = 0;
-  let prev: LocalDate | null = null;
-  for (const d of days) {
-    if (prev === null) trend = d.kg;
-    else {
-      const g = Math.max(1, daysBetween(prev, d.date));
-      trend += (1 - (1 - WEIGHT.alpha) ** g) * (d.kg - trend);
-    }
-    prev = d.date;
-    out.push({ date: d.date, kg: d.kg, trend: round2(trend) });
-  }
-  return out;
+/** The average weigh-in and the mean date (days after `base`) of some weigh-ins. */
+function mean(days: readonly WeighIn[], base: LocalDate): { kg: number; day: number } {
+  let kg = 0, day = 0;
+  for (const d of days) (kg += d.kg), (day += daysBetween(base, d.date));
+  return { kg: kg / days.length, day: day / days.length };
 }
 
-/** The trend on a date: the trend of the last weigh-in on or before it (null before the first). */
-export function trendAt(points: readonly WeightPoint[], date: LocalDate): number | null {
-  let v: number | null = null;
-  for (const p of points) {
-    if (p.date > date) break;
-    v = p.trend;
-  }
-  return v;
-}
-
-/** Where the trend meets the goal at the current pace. */
-export function project(latest: WeightPoint, start: WeightPoint, goal: number, perWeek: number | null): WeightProjection {
-  const losing = goal <= start.kg;
-  if (losing ? latest.trend <= goal : latest.trend >= goal) return { kind: 'reached' };
-  const diff = goal - latest.trend;
-  if (perWeek === null || Math.abs(perWeek) < WEIGHT.minPacePerWeek || Math.sign(perWeek) !== Math.sign(diff)) return { kind: 'none' };
-  const weeks = diff / perWeek;
-  if (weeks > WEIGHT.projectMaxWeeks) return { kind: 'none' };
-  return { kind: 'date', date: addDays(latest.date, Math.ceil(weeks * 7)) };
-}
-
-/** One person's weight trend as of `now` (both people's are visible to both). */
-export function weightTrend(s: State, p: PersonId, now: number): WeightTrend {
-  const points = ewmaTrend(weighIns(s, p, now));
-  const goal = s.prefs[p].goalWeight ?? null;
-  const start = points[0] ?? null;
-  const latest = points.at(-1) ?? null;
-  if (!start || !latest) return { points, latest, weekChange: null, sinceStart: null, perWeek: null, goal, projection: null };
-  const weekAgo = trendAt(points, addDays(latest.date, -7));
-  const span = Math.min(WEIGHT.rateDays, daysBetween(start.date, latest.date));
-  const base = span >= WEIGHT.minRateDays ? trendAt(points, addDays(latest.date, -span)) : null;
-  const perWeek = base === null ? null : round2(((latest.trend - base) / span) * 7);
+/** The plain change over ascending weigh-ins (one period's); null under two. */
+export function plainChange(days: readonly WeighIn[]): PlainChange | null {
+  if (days.length < 2) return null;
+  const first = days[0].date, last = days.at(-1)!.date;
+  const weeks = daysBetween(first, last) >= 13;
+  const a = weeks ? mean(days.filter((d) => daysBetween(first, d.date) < 7), first) : { kg: days[0].kg, day: 0 };
+  const b = weeks ? mean(days.filter((d) => daysBetween(d.date, last) < 7), first) : { kg: days.at(-1)!.kg, day: daysBetween(first, last) };
+  const span = b.day - a.day;
   return {
-    points, latest,
-    weekChange: weekAgo === null ? null : round1(latest.trend - weekAgo),
-    sinceStart: round1(latest.trend - start.kg),
-    perWeek,
-    goal,
-    projection: goal === null ? null : project(latest, start, goal, perWeek)
+    basis: weeks ? 'weeks' : 'ends',
+    from: round2(a.kg),
+    to: round2(b.kg),
+    at: addDays(first, Math.round(b.day)),
+    change: round1(b.kg - a.kg),
+    perWeek: span >= 7 ? round2(((b.kg - a.kg) / span) * 7) : null
   };
+}
+
+/** Where the period's pace meets the goal: reached once the end is at or past it (seen from the start). */
+export function project(c: PlainChange, goal: number): WeightProjection {
+  const losing = goal <= c.from;
+  if (losing ? c.to <= goal : c.to >= goal) return { kind: 'reached' };
+  const diff = goal - c.to;
+  const pace = c.basis === 'weeks' ? c.perWeek : null;
+  if (pace === null || Math.abs(pace) < WEIGHT.minPacePerWeek || Math.sign(pace) !== Math.sign(diff)) return { kind: 'none' };
+  const weeks = diff / pace;
+  if (weeks > WEIGHT.projectMaxWeeks) return { kind: 'none' };
+  return { kind: 'date', date: addDays(c.at, Math.ceil(weeks * 7)) };
 }
