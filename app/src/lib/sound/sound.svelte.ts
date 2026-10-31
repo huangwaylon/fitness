@@ -1,9 +1,9 @@
 // Sound for the app (docs/design.md#sound): the settings, the unlock on the first tap, the hourly music clock, the
-// weather hook, the muffle under sheets and the pause in the background. App moments go through cue() (cues.ts);
+// weather, the muffle under sheets and the pause in the background. App moments go through cue() (cues.ts);
 // this module decides whether anything may sound at all. Nothing is created while every setting is off.
 //   startSound({ muffled: () => ui.sheets.length > 0 })   // once, in the root layout
 //   setSound({ music: true })                             // from a tap (the settings app)
-//   sound.weather = 'rain'                                // the weather hook: the hour's rain arrangement
+//   sound.weather = 'rain'                                // the hour's rain arrangement (only `?weather=` sets it yet)
 import { untrack } from 'svelte';
 import { SOUNDS, type SoundId } from './ids.ts';
 import { Engine } from './engine.ts';

@@ -43,8 +43,8 @@ export const isLockedAt = (s: Cal, wk: WeekKey, t: number): boolean => wk >= fir
 
 /**
  * Open for edits at t (docs/design.md#open-weeks): the day has happened, and its week has not reached its
- * Wednesday 04:00 lock. Unlike `isLockedAt` this also closes weeks before the first earning week, so edits never reach
- * more than ~9.5 days back.
+ * Wednesday 04:00 lock. Unlike `isLockedAt` (weeks before the first earning week never lock) it applies to every
+ * week, so edits never reach more than ~9.5 days back.
  */
 export const editableAt = (date: LocalDate, t: number): boolean => date <= localDateAt(t) && t < finalMs(weekKeyOf(date));
 
