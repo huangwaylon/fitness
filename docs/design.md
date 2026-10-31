@@ -488,12 +488,17 @@ fragment is a ずかん `find` (never ベル).
 
 - **Weeds** (our own tufts: NH's icon is a sack of them) sprout every 30–60 minutes on the lawn's free spots (`LAWN`:
   beside the trunks, in front of the hedge beside centre stage, between the villagers' feet; a showing dig spot keeps its spot),
-  the newest three at a time. A tap pulls one: it pops up and tumbles away with two clods of earth (`scene-weed`).
-- **Watering:** a flower tap is NH's watering can (it tilts in over the bloom, three drops, a late glint; `scene-water`)
-  on top of the wiggle. A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell tomorrow (NH's
+  the newest three at a time: NH's chunky, rounded clump about half a tile wide (20u: five broad blades with a light
+  highlight, a darker clump behind) on a soft contact shadow, so it never reads as the lawn's printed grass; one that
+  sprouts while the island is open pops up once (0 → 1.15 → 1, 420 ms). A tap pulls one: it pops up and tumbles away
+  with two clods of earth (`scene-weed`).
+- **Watering:** a flower tap is NH's watering can (it tilts in over the bloom, five drops 60 ms apart, a late glint;
+  `scene-water`) on top of the wiggle. A flower watered today keeps a glitter for the rest of the day (NH): one small
+  glint every 4–6 s, out of step between cells, so the beds show what's been watered (`sceneDay.ts` `wateredOn`). A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell tomorrow (NH's
   hybrids, simplified: tulips → purple, black, orange; roses → black, orange, pink, purple, blue; cosmos → orange,
   black; mums → pink, green; pansies → blue, purple), for that whole day (`scene-garden` in localStorage).
-- **The rock** (NH's rock, in front of the hedge, left of centre stage): a tap clonks it (a jolt, `scene-clonk`), 1 in 4 a
+- **The rock** (NH's rock, in front of the hedge, left of centre stage): a tap clonks it (the shovel comes down, 0.3 s, then
+  it squashes 1.06 × 0.94 and bounces back over 280 ms; `scene-clonk`), 1 in 4 a
   sparkle (NH's money rock, without the money), 1 in 8 a pill bug or a centipede crawls out from under it.
 - Weeds, dig spots and the rock are measured clear of the controls themselves on each screen (a spot a control covers
   isn't shown); a flower's tap cell is a reach away from every lawn spot. `?hybrid` (dev or `?demo`) shows one.

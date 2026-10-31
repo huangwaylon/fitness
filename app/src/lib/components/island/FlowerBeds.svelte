@@ -19,6 +19,7 @@
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { WATERED, wateredOn } from './sceneDay.ts';
 
   interface Props {
     season: Season;
@@ -54,6 +55,15 @@
     untrack(() => {
       if (rec.date !== d) rec = fruitDay(d);
     });
+  });
+  /** The cells watered today (NH: a watered flower keeps a glitter for the rest of the day). */
+  let watered = $state<string[]>([]);
+  $effect(() => {
+    const d = date;
+    const read = () => (watered = wateredOn(d));
+    read();
+    document.addEventListener(WATERED, read);
+    return () => document.removeEventListener(WATERED, read);
   });
   /** Flowers opening right now (their bloom plays once). */
   let opening = $state<string[]>([]);
@@ -114,6 +124,10 @@
       <span class="sway" style:animation-delay="{-(s.c * 0.9 + s.r * 1.7)}s">{@render budArt(PETAL[s.species], h)}</span>
     {/if}
     {#if season === 'winter'}<span class="cap"></span>{/if}
+    {#if watered.includes(s.cell)}
+      <!-- watered today: one small glint every 4–6 s, out of step between cells -->
+      <svg class="wet" data-watered viewBox="0 0 24 24" aria-hidden="true" style:--wd="{4 + ((s.r * 2 + s.c) % 3)}s" style:--wo="{-(s.c * 1.7 + s.r * 0.9)}s"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
+    {/if}
   </span>
 {/each}
 
@@ -138,6 +152,11 @@
   /* feet on the row line: the trimmed art's stem ends at its bottom edge */
   .fl { position: absolute; width: max-content; transform: translate(-50%, -96%); line-height: 0; pointer-events: none; }
   .b, .sway, .budart { display: block; transform-origin: 50% 100%; }
+  .wet {
+    position: absolute; left: 62%; top: 8%; width: calc(8 * 100cqw / 390); height: auto; fill: #FFFBE8;
+    filter: drop-shadow(0 0 2px rgba(190, 230, 255, .9)); opacity: 0; animation: wet-glint var(--wd) ease-out var(--wo) infinite;
+  }
+  @keyframes wet-glint { 0%, 84% { transform: scale(0) rotate(0); opacity: 0; } 91% { transform: scale(1) rotate(40deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
   /* a bud sways gently from its base, ±1.5° every 3.6 s (held still under a sheet) */
   .sway { animation: bud-sway 3.6s ease-in-out infinite; }
   :global(.if-scene[data-covered]) .sway { animation-play-state: paused; }
