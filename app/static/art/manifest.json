@@ -1,5 +1,5 @@
 {
-  "version": 27,
+  "version": 29,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -811,6 +811,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Ptera_Body_NH_Icon.png"
     },
+    "finds/rock": {
+      "path": "finds/rock.webp",
+      "w": 90,
+      "h": 66,
+      "source": "https://nookipedia.com/wiki/File:Rock_NH_Icon.png"
+    },
     "finds/sabertooth-skull": {
       "path": "finds/sabertooth-skull.webp",
       "w": 96,
@@ -907,11 +913,71 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Virgo_Fragment_NH_Inv_Icon.png"
     },
+    "finds/watering-can": {
+      "path": "finds/watering-can.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Watering_Can_NH_Icon.png"
+    },
+    "flowers/black-cosmos": {
+      "path": "flowers/black-cosmos.webp",
+      "w": 78,
+      "h": 103,
+      "source": "https://nookipedia.com/wiki/File:Black_Cosmos_NH_Inv_Icon.png"
+    },
+    "flowers/black-roses": {
+      "path": "flowers/black-roses.webp",
+      "w": 83,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Black_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/black-tulips": {
+      "path": "flowers/black-tulips.webp",
+      "w": 66,
+      "h": 107,
+      "source": "https://nookipedia.com/wiki/File:Black_Tulips_NH_Inv_Icon.png"
+    },
+    "flowers/blue-pansies": {
+      "path": "flowers/blue-pansies.webp",
+      "w": 95,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:Blue_Pansies_NH_Inv_Icon.png"
+    },
+    "flowers/blue-roses": {
+      "path": "flowers/blue-roses.webp",
+      "w": 83,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Blue_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/green-mums": {
+      "path": "flowers/green-mums.webp",
+      "w": 90,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:Green_Mums_NH_Inv_Icon.png"
+    },
+    "flowers/orange-cosmos": {
+      "path": "flowers/orange-cosmos.webp",
+      "w": 78,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Orange_Cosmos_NH_Inv_Icon.png"
+    },
     "flowers/orange-pansies": {
       "path": "flowers/orange-pansies.webp",
       "w": 95,
       "h": 95,
       "source": "https://nookipedia.com/wiki/File:Orange_Pansies_NH_Inv_Icon.png"
+    },
+    "flowers/orange-roses": {
+      "path": "flowers/orange-roses.webp",
+      "w": 83,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Orange_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/orange-tulips": {
+      "path": "flowers/orange-tulips.webp",
+      "w": 66,
+      "h": 107,
+      "source": "https://nookipedia.com/wiki/File:Orange_Tulips_NH_Inv_Icon.png"
     },
     "flowers/pink-cosmos": {
       "path": "flowers/pink-cosmos.webp",
@@ -919,11 +985,41 @@
       "h": 104,
       "source": "https://nookipedia.com/wiki/File:Pink_Cosmos_NH_Inv_Icon.png"
     },
+    "flowers/pink-mums": {
+      "path": "flowers/pink-mums.webp",
+      "w": 90,
+      "h": 105,
+      "source": "https://nookipedia.com/wiki/File:Pink_Mums_NH_Inv_Icon.png"
+    },
+    "flowers/pink-roses": {
+      "path": "flowers/pink-roses.webp",
+      "w": 83,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Pink_Roses_NH_Inv_Icon.png"
+    },
     "flowers/purple-mums": {
       "path": "flowers/purple-mums.webp",
       "w": 90,
       "h": 105,
       "source": "https://nookipedia.com/wiki/File:Purple_Mums_NH_Inv_Icon.png"
+    },
+    "flowers/purple-pansies": {
+      "path": "flowers/purple-pansies.webp",
+      "w": 95,
+      "h": 95,
+      "source": "https://nookipedia.com/wiki/File:Purple_Pansies_NH_Inv_Icon.png"
+    },
+    "flowers/purple-roses": {
+      "path": "flowers/purple-roses.webp",
+      "w": 83,
+      "h": 104,
+      "source": "https://nookipedia.com/wiki/File:Purple_Roses_NH_Inv_Icon.png"
+    },
+    "flowers/purple-tulips": {
+      "path": "flowers/purple-tulips.webp",
+      "w": 66,
+      "h": 107,
+      "source": "https://nookipedia.com/wiki/File:Purple_Tulips_NH_Inv_Icon.png"
     },
     "flowers/red-roses": {
       "path": "flowers/red-roses.webp",

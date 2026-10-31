@@ -93,7 +93,7 @@ describe('official art (static/art/manifest.json)', () => {
     // the scene's catches (island/critters.ts critterArt)
     ...[...Object.keys(FISH), ...Object.keys(BUGS), ...JUNK].map((id) => critterArt(id as keyof typeof FISH)),
     // the beach finds (island/beach.ts findArt)
-    ...[...SHELLS.map(([id]) => id), ...FOSSILS, ...FRAGMENTS, 'message-bottle', 'shovel'].map(findArt)
+    ...[...SHELLS.map(([id]) => id), ...FOSSILS, ...FRAGMENTS, 'message-bottle', 'shovel', 'rock', 'watering-can'].map(findArt)
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {

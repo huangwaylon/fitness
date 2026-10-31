@@ -278,6 +278,20 @@ fragment is a ずかん `find` (never ベル).
   44px; reduced motion keeps the pick-ups, without the lift or the shovel. `?find=bottle|fragment` (dev or `?demo`)
   brings one now.
 
+**Island care** (`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts`; no ベル, no find):
+
+- **Weeds** (our own tufts: NH's icon is a sack of them) sprout every 30–60 minutes on the lawn's free spots (`LAWN`:
+  beside the trunks, in front of the hedge by the jar, between the villagers' feet; a showing dig spot keeps its spot),
+  the newest three at a time. A tap pulls one: it pops up and tumbles away with two clods of earth (`scene-weed`).
+- **Watering:** a flower tap is NH's watering can (it tilts in over the bloom, three drops, a late glint; `scene-water`)
+  on top of the wiggle. A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell tomorrow (NH's
+  hybrids, simplified: tulips → purple, black, orange; roses → black, orange, pink, purple, blue; cosmos → orange,
+  black; mums → pink, green; pansies → blue, purple), for that whole day (`scene-garden` in localStorage).
+- **The rock** (NH's rock, in front of the hedge by the jar's lid): a tap clonks it (a jolt, `scene-clonk`), 1 in 4 a
+  sparkle (NH's money rock, without the money), 1 in 8 a pill bug or a centipede crawls out from under it.
+- Weeds, dig spots and the rock are measured clear of the controls themselves on each screen (a spot a control covers
+  isn't shown); a flower's tap cell is a reach away from every lawn spot. `?hybrid` (dev or `?demo`) shows one.
+
 ### Villager chats
 
 `island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop (R9) and says a line in
