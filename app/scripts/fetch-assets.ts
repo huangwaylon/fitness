@@ -94,6 +94,12 @@ const SPECS: Record<string, Spec> = {
   'deco/spooky-lantern': [128, 'Spooky_Lantern_(Orange)_NH_Icon.png'],
   'items/candy': [96, 'Candy_NH_Inv_Icon.png'],
   'villagers/jack': [512, 'Jack_NH_Model.png', 'Jack_NH.png'],
+  // NH's holiday hosts (island/visitors.ts HOSTS; visitors only, not in the roster): Franklin (Turkey Day), Jingle (Toy
+  // Day), Pavé (Festivale), Zipper (Bunny Day)
+  'villagers/franklin': [512, 'Franklin_NH_Model.png', 'Franklin_NH.png'],
+  'villagers/jingle': [512, 'Jingle_NH_Model.png'],
+  'villagers/pave': [512, 'Pavé_NH_Model.png', 'Pavé_NH.png'],
+  'villagers/zipper': [512, 'Zipper_T._Bunny_NH_Model.png'],
   // group stretching's tape deck (island/TapeDeck.svelte)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
   // Game-derived replacements for hand-drawn chrome.
@@ -166,6 +172,8 @@ for (const f of [
 Object.assign(FIND_FILES, { 'watering-can': 'Watering_Can_NH_Icon.png', rock: 'Rock_NH_Icon.png' });
 // Mushroom season (island/mushrooms.ts): NH's four ground mushrooms beside the trees and the rare one dug up.
 for (const m of ['Round', 'Skinny', 'Flat', 'Elegant', 'Rare']) FIND_FILES[`${m.toLowerCase()}-mushroom`] = `${m}_Mushroom_NH_Icon.png`;
+// Bunny Day's eggs (island/eggs.ts): dug up, from a balloon, on the line.
+for (const e of ['Earth', 'Sky', 'Water']) FIND_FILES[`${e.toLowerCase()}-egg`] = `${e}_Egg_NH_Inv_Icon.png`;
 for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96, file];
 // The hybrid flowers a watered bed can grow the next day (NH's genetics, simplified), trimmed like the beds' flowers.
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',

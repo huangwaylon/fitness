@@ -30,14 +30,15 @@
   import { hitStage, sceneSfx } from './sceneTaps.ts';
   import { guardsU, stageGeo, type Box, type StageGeo } from './placement.ts';
   import { recordFind } from '#lib/store/actions.ts';
-  import { catchLine, loadLines } from './catchLine.ts';
-  import { BEACH } from './beach.ts';
+  import { catchLine, loadLines, loadNames } from './catchLine.ts';
+  import { BEACH, findArt } from './beach.ts';
+  import { eggTime, eventAt, forcedEvent } from './events.ts';
+  import { eggOnLine } from './eggs.ts';
+  import { localDateAt } from '#lib/time/dates.ts';
   import { LONG_REACH, approach, goHomeLater, turnTo } from './avatar.ts';
   import { HOLD_MS, actors, holdUp, putAway, useTool } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { findArt } from './beach.ts';
   import type { DiveItem } from './sea.ts';
-  import { loadNames } from './catchLine.ts';
   import {
     BUGS, CAST_U, FISH, HESITATE_MS, HESITATE_U, NOTICE_U, REAR_MS, STAY_MS, bitePlan, bushBug, castPhase, critterArt,
     fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs, oddsAt, pickBug, pickFish, reel, spawnKind, stalkTap, type BitePlan,
@@ -529,11 +530,23 @@
   /** The catch held up: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (u)
    *  (Plate.svelte places it clear of every control). */
   async function show(item: FishId | JunkId | BugId | DiveItem, x: number, y: number) {
+    // Bunny Day's celebrations: now and then a fish on the line is NH's water egg (a caption only, no find)
+    const t0 = now();
+    if (item in FISH && eggTime(eventAt(localDateAt(t0.getTime()), jst(t0).hour, forcedEvent())) && eggOnLine(rand)) {
+      const n = ++seq;
+      await loadNames().catch(() => {});
+      if (seq !== n) return;
+      card = { n, x, y, art: findArt('water-egg'), parts: [t('beach.fished', { name: t('beach.name.water-egg') })] };
+      holdUp('mine', findArt('water-egg'), HOLD_MS);
+      return;
+    }
     // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
     // a second page saying so
     const pearl = item === 'pearl';
     const added = pearl ? recordFind('shell', item) : item in FISH ? recordFind('fish', item) : item in BUGS ? recordFind('bug', item)
       : S && item in S.SEA ? recordFind('sea', item) : false;
+    // a fish tells the island (Turkey Day: Franklin is waiting for one)
+    if (item in FISH) scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
     const n = ++seq;
     const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item);
     if (seq !== n) return;

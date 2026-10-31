@@ -32,6 +32,8 @@
   import { eventAt, forcedEvent } from './events.ts';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
+  import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
+  import { critterArt, type FishId } from './critters.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -54,16 +56,21 @@
 
   /** NH heights relative to a villager (VILLAGER.h): K.K. stands about as tall, Daisy Mae is a child, Wisp a small
    *  ghost floating a little off the ground, Gulliver a tall seagull. */
-  const REL: Record<VisitorId, number> = { 'kk-slider': 1, 'daisy-mae': 0.78, wisp: 0.7, gulliver: 1.1, jack: 1, celeste: 0.85 };
+  const REL: Record<VisitorId, number> = { 'kk-slider': 1, 'daisy-mae': 0.78, wisp: 0.7, gulliver: 1.1, jack: 1, celeste: 0.85,
+    franklin: 1, jingle: 1.05, pave: 1.1, zipper: 0.9 };
   /** Floating off the ground (u). */
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
   /** The front beach's smaller figures, for when the centre stage is covered: height and half-width (u). */
   const BEACH: Record<VisitorId, { h: number; hw: number }> = {
-    'kk-slider': { h: 48, hw: 15 }, 'daisy-mae': { h: 48, hw: 16 }, wisp: { h: 30, hw: 16 }, gulliver: { h: 44, hw: 18 }, jack: { h: 48, hw: 17 }, celeste: { h: 44, hw: 15 }
+    'kk-slider': { h: 48, hw: 15 }, 'daisy-mae': { h: 48, hw: 16 }, wisp: { h: 30, hw: 16 }, gulliver: { h: 44, hw: 18 }, jack: { h: 48, hw: 17 }, celeste: { h: 44, hw: 15 },
+    franklin: { h: 46, hw: 15 }, jingle: { h: 46, hw: 17 }, pave: { h: 46, hw: 20 }, zipper: { h: 46, hw: 13 }
   };
-  /** Visitors outside the roster (an event's guest): their render and name-tag colour (Jack: his robe's purple). */
-  const ART: Partial<Record<VisitorId, string>> = { jack: 'villagers/jack' };
-  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8' };
+  /** Visitors outside the roster (an event's guest): their render and name-tag colour (Jack: his robe's purple; the
+   *  holiday hosts: Nookipedia's title colours). */
+  const ART: Partial<Record<VisitorId, string>> = {
+    jack: 'villagers/jack', franklin: 'villagers/franklin', jingle: 'villagers/jingle', pave: 'villagers/pave', zipper: 'villagers/zipper'
+  };
+  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', pave: '#0A96AE', zipper: '#FFE20B' };
 
   const clock = $derived(minuteNow());
   const who = $derived.by<VisitorId | null>(() => {
@@ -156,9 +163,10 @@
     caption = p ? { x: p.x - st.left, y: p.y - st.top, placed: true } : null;
   }
 
-  /** Jack got his candy this session (then he just chats); `treat` replays his joy. */
+  /** Jack got his candy this session (then he just chats); `treat` replays his joy (Franklin's too, with his fish). */
   let treated = false;
   let treat = $state(0);
+  let treatArt = $state('items/candy');
   let treatTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(treatTimer));
 
@@ -177,6 +185,7 @@
         { label: t('visitor.jack.give'), pick: () => {
           treated = true;
           cue('emote-joy');
+          treatArt = 'items/candy';
           treat++;
           clearTimeout(treatTimer);
           treatTimer = setTimeout(() => (treat = 0), 2400);
@@ -193,14 +202,60 @@
     });
   }
 
+  /** Franklin on Turkey Day (NH: "a fish for the dish"): his introduction ends on the ask; the next fish caught that day
+   *  (Critters tells the scene: `island:catch`) makes him happy, and after that he chats. This phone's own record of the
+   *  day (scene-franklin), so a reload keeps it. */
+  function franklin(name: string, target: Element, colour: string) {
+    const d = franklinDay(today());
+    if (d.fed) {
+      last = visitorLine('franklin', Math.random, last);
+      return say?.(name, t(last), target, { colour });
+    }
+    const parts = met.has('franklin') || d.asked ? [t('chat.sp.franklin.ask')] : [t('chat.sp.franklin.intro'), t('chat.sp.franklin.ask')];
+    met.add('franklin');
+    writeJson(localKV(), SCENE.franklin, { ...d, asked: true });
+    say?.(name, parts, target, { colour });
+  }
+  const today = () => localDateAt(now().getTime());
+  function franklinDay(date: string): { date: string; asked: boolean; fed: boolean } {
+    const d = readJson<{ date: string; asked: boolean; fed: boolean }>(localKV(), SCENE.franklin);
+    return d && d.date === date ? d : { date, asked: false, fed: false };
+  }
+  let thanksTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => clearTimeout(thanksTimer));
+  $effect(() => {
+    const host = scene;
+    if (!host) return;
+    const onCatch = (e: Event) => {
+      const fish = (e as CustomEvent<{ kind: string; id: string }>).detail?.id;
+      const d = franklinDay(today());
+      if (who !== 'franklin' || !fish || !d.asked || d.fed) return;
+      writeJson(localKV(), SCENE.franklin, { ...d, fed: true });
+      // after the catch's plate has had its moment: his joy, the fish over his head, his thanks
+      clearTimeout(thanksTimer);
+      thanksTimer = setTimeout(() => {
+        cue('emote-joy');
+        treatArt = critterArt(fish as FishId);
+        treat++;
+        clearTimeout(treatTimer);
+        treatTimer = setTimeout(() => (treat = 0), 2400);
+        const a = el?.querySelector('.art');
+        if (a) say?.(t('visitor.franklin'), t('chat.sp.franklin.thanks', { fish: t(`critter.name.${fish}`) }), a, { colour: TAG.franklin });
+      }, 2800);
+    };
+    host.addEventListener('island:catch', onCatch);
+    return () => host.removeEventListener('island:catch', onCatch);
+  });
+
   async function talk(id: VisitorId) {
     const target = art();
     if (!target) return;
     sceneSfx('visitor');
     const name = t(`visitor.${id}`);
     if (id === 'jack') return jack(name, target, TAG.jack!);
+    if (id === 'franklin') return franklin(name, target, TAG.franklin!);
     // their name tag in their own NH colour (the roster, loaded on the first visit's tap)
-    const colour = (await import('#lib/villagers/roster.ts')).ROSTER[id]?.colour;
+    const colour = TAG[id] ?? ((await import('#lib/villagers/roster.ts')).ROSTER as Record<string, { colour?: string }>)[id]?.colour;
     if (id === 'kk-slider') {
       // mid-song: nothing disruptive, but he'll stop if asked
       if (playing)
@@ -274,7 +329,7 @@
         <!-- Jack's joy at a treat: the candy pops up over his head in a little spooky sparkle -->
         {#key treat}
           <span class="treat" data-treat>
-            <span class="candy"><OfficialArt key="items/candy" size={U(22)} eager /></span>
+            <span class="candy"><OfficialArt key={treatArt} size={U(22)} eager /></span>
             {#each [0, 1, 2, 3, 4] as i (i)}<i style:--i={i}></i>{/each}
           </span>
         {/key}

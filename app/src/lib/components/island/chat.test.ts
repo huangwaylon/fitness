@@ -58,7 +58,7 @@ describe('villager chats', () => {
     expect(pagesOf({ key: 'chat.jock.2' })).toEqual(['chat.jock.2']);
   });
   it('on an event night (Halloween) its lines join the day\'s, in both languages; never otherwise', () => {
-    for (let i = 0; i < EVENT_LINES.halloween; i++) for (const c of cat) expect(c[`chat.day.halloween.${i}`], `${i}`).toBeTruthy();
+    for (const [ev, n] of Object.entries(EVENT_LINES)) for (let i = 0; i < n; i++) for (const c of cat) expect(c[`chat.day.${ev}.${i}`], `${ev} ${i}`).toBeTruthy();
     const keys = Array.from({ length: 1000 }, (_, i) => chatLine('normal', { hour: 20, met: 1, asleep: false, event: 'halloween' }, mulberry32(i)).key);
     const share = keys.filter((k) => k.startsWith('chat.day.halloween.')).length / keys.length;
     expect(share).toBeGreaterThan(0.08), expect(share).toBeLessThan(0.25); // now and then: about half the day lines

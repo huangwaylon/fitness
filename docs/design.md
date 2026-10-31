@@ -484,9 +484,10 @@ ja/en. The roster (personalities) loads on the first chat. One balloon at a time
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors (official renders), one at a time,
 seeded by the date (both phones see the same): **K.K. Slider** with his guitar on Saturday nights 18:00–24:00,
 **Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp** (see-through, a slow bob) on 1 in 4 nights 20:00–04:00,
-**Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night ([Halloween](#halloween)); **Celeste** on a meteor shower's night 20:00–04:00 ([Celeste and meteor showers](#celeste-and-meteor-showers)). They stand on the centre stage (`CENTRE_STAGE` in `island/scene.ts`: column
+**Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night ([Halloween](#halloween)); **Celeste** on a meteor shower's night 20:00–04:00 ([Celeste and meteor showers](#celeste-and-meteor-showers)); NH's holiday hosts on their days
+([Holiday hosts](#holiday-hosts)). They stand on the centre stage (`CENTRE_STAGE` in `island/scene.ts`: column
 0 of the tree row, NH's plaza, where the jar stood) at the villagers' scale (`VILLAGER.h` × their NH height: K.K. 1,
-Daisy Mae 0.78, Wisp 0.7 floating 12u up, Gulliver 1.1, Jack 1, Celeste 0.85) with the villagers' contact shadow; while a control still
+Daisy Mae 0.78, Wisp 0.7 floating 12u up, Gulliver 1.1, Jack 1, Celeste 0.85, Franklin 1, Jingle 1.05, Pavé 1.1, Zipper 0.9) with the villagers' contact shadow; while a control still
 covers the centre (the jar), a smaller figure on the front beach (Gulliver asleep on his side), else none. A tap: their
 introduction the first time (two pages), then one of their lines. No trading, no ベル. `?visitor=<id>` (dev or `?demo`).
 
@@ -519,6 +520,27 @@ or `?demo`, forces it with its evening):
   nose glasses (鼻めがね) for a minute (not kept across a reload). No inventory, no ベル.
 - **Villagers:** in the evening their day lines include three Halloween ones, weighed double (about 1 tap in 6).
 - **Music:** the Halloween BGM belongs to the hourly music (the audio side), not this.
+
+### Holiday hosts
+
+`island/events.ts`, `island/visitors.ts` (`HOSTS`), `island/eggs.ts`, `e2e/holidays.spec.ts`. Each of NH's holidays is one
+date rule in `events.ts` (verified on Nookipedia; `nthWeekday`, `easter`), and its host takes the visitor slot from the
+hour its main part starts, before anyone else (official renders, Nookipedia's title colour on the name tag; an
+introduction, then four lines; ja/en; their day's two villager lines join the chats):
+
+- **Franklin** (フランクリン), Turkey Day: the fourth Thursday of November, 09:00–24:00 (2026-11-26). His introduction ends
+  on NH's ask, a fish for the dish; the next fish caught that day (Critters tells the scene, `island:catch`) makes him
+  happy: the fish pops up over his head and he thanks you by its name (「おお！ りっぱな スズキ！」). Kept for the day on
+  this phone (`scene-franklin`); after that he chats. No ベル, the fish is still the ずかん's.
+- **Jingle** (ジングル), Toy Day: Dec 24, all day in NH (from 05:00), beside the Toy Day decorations.
+- **Pavé** (ベルリーナ), Festivale: Shrove Monday, 48 days before Easter (2027-02-08), all day.
+- **Zipper** (ぴょんたろう), Bunny Day: Easter Sunday; NH's celebrations run the seven days before, and Zipper comes on the
+  first and the last day (2027-03-21 and 03-28). All week, NH's eggs turn up (cosmetic, a caption, no find): a balloon
+  drops a sky egg (そらとぶたまご) instead of its present 1 in 3, a dig spot holds an earth egg (じめんのたまご) 1 in 4 (its own
+  stream), a fish on the line is a water egg (サカナのたまご) 1 in 6.
+
+Jack keeps Halloween ([Halloween](#halloween)). `?event=<id>` (dev or `?demo`) forces a day; `?visitor=<id>` brings a
+host; `?find=earth-egg` makes every dig spot an egg.
 
 ### Celeste and meteor showers
 
