@@ -31,6 +31,7 @@
   import { eggInDig } from './eggs.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { approach } from './avatar.ts';
+  import { pickPresent, presentArt, presentLine } from './presents.ts';
   import { HOLD_MS, holdUp, putAway } from '../motion/director.svelte.ts';
 
   interface Props {
@@ -46,6 +47,10 @@
   const want = hooks ? q.get('find') : null;
 
   const U = (n: number) => `calc(${n.toFixed(1)} * var(--su))`;
+  /** A present's confetti: [angle from straight up, colour, distance (u)], wrapping-paper colours. */
+  const CONFETTI: [number, string, number][] = [[-84, '#F2484A', 28], [-62, '#FFD23F', 34], [-40, '#4FC3F7', 31], [-18, '#8BD45B', 37],
+    [4, '#F78FB3', 33], [24, '#FFD23F', 36], [46, '#F2484A', 30], [68, '#4FC3F7', 29], [86, '#8BD45B', 26], [-50, '#FFFFFF', 24],
+    [34, '#FFFFFF', 25], [-6, '#F2484A', 22], [-74, '#F78FB3', 21], [76, '#FFD23F', 22]];
   /** The dig spot's crack: five jagged arms of unequal length (8, 6, 7.5, 5, 6.5u) and four side cracks. */
   const CRACK = 'M0 0 L1.2 -3.4 L.6 -5.2 L1.8 -8 M0 0 L2.8 .6 L4.2 -.4 L6 .4 M0 0 L-.6 2.8 L.6 4.8 L-.2 7.4 M0 0 L-2.4 -.8 L-3.4 .2 L-5 -.4 '
     + 'M0 0 L-2 -2.4 L-2.6 -4.4 L-4.4 -5.2 M.9 -4.4 L2.6 -5 M3.6 .2 L4.2 1.6 M.1 4.2 L-1.4 4.9 M-2.3 -3.3 L-3.8 -2.8';
@@ -205,16 +210,29 @@
   export function present(x: number, y: number, art: string, size: number) {
     presents = [...presents.slice(-2), { uid: `p${++seq}`, x, y, art, size }];
   }
-  function pickPresent(p: (typeof presents)[number]) {
+  /** A present opening where it lay: the box pops (a squash, the lid off), confetti in the wrapping's colours bursts
+   *  out with sparkles. */
+  let opening = $state<{ n: number; x: number; y: number; art: string; size: number } | null>(null);
+  /** NH's balloon present, picked up: my villager walks over, the wrapping pops open (confetti, a little fanfare) and
+   *  what was inside is held up over its head while the plate reads 「◯◯を てにいれた！」 (presents.ts: furniture,
+   *  clothing or a seasonal DIY recipe; never ベル, not kept). On Bunny Day the sky egg is just picked up. */
+  function openPresent(p: (typeof presents)[number]) {
     walkTo(p.uid, p.x, p.y, () => {
       presents = presents.filter((q) => q.uid !== p.uid);
+      if (p.art.endsWith('sky-egg')) {
+        const n = ++seq;
+        lift = { n, x: p.x, y: p.y, art: p.art, tilt: 0 };
+        later(() => lift?.n === n && (lift = null), 500);
+        sceneSfx('present');
+        return plate(p.x, p.y, p.art, () => t('beach.picked', { name: t('beach.name.sky-egg') }), 180);
+      }
+      const inside = pickPresent(date, rand), art = presentArt(inside), line = presentLine(inside);
       const n = ++seq;
-      lift = { n, x: p.x, y: p.y, art: p.art, tilt: 0 };
-      later(() => lift?.n === n && (lift = null), 500);
+      opening = { n, x: p.x, y: p.y, art: p.art, size: p.size };
+      later(() => opening?.n === n && (opening = null), 1100);
       sceneSfx('present');
-      // NH: a pick-up line, no ベル (what's inside is left out, like the trees' furniture)
-      const egg = p.art.endsWith('sky-egg');
-      plate(p.x, p.y, p.art, () => t('beach.picked', { name: t(egg ? 'beach.name.sky-egg' : 'beach.name.present') }), 180);
+      later(() => sceneSfx('catch'), 260);
+      plate(p.x, p.y, art, () => t(line.key, { name: t(line.name) }), 420);
     });
   }
   function pickMushroom(m: Mushroom) {
@@ -256,7 +274,7 @@
       ...(bottle ? [{ d: Math.hypot(bottle.x - x, bottle.y - y), go: () => pickBottle(bottle!) }] : []),
       ...visibleSpots.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => digUp(s) })),
       ...visibleMushrooms.map((m) => ({ d: Math.hypot(m.x - x, m.y - 6 - y), go: () => pickMushroom(m) })),
-      ...presents.map((p) => ({ d: Math.hypot(p.x - x, p.y - y), go: () => pickPresent(p) }))
+      ...presents.map((p) => ({ d: Math.hypot(p.x - x, p.y - y), go: () => openPresent(p) }))
     ];
     const best = hits.filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
     if (!best) return false;
@@ -353,6 +371,18 @@
       </span>
     {/key}
   {/if}
+  {#if opening}
+    {#key opening.n}
+      <!-- the present pops open: the box squashes and its lid flies off, confetti and sparkles burst out -->
+      <span class="item opening" data-fx="present-open" style:translate="{U(opening.x)} {U(opening.y)}">
+        <span class="box"><OfficialArt key={opening.art} size={U(opening.size)} eager /></span>
+        {#each CONFETTI as [a, c, d], i (i)}<i class="bit" style:--a="{a}deg" style:--c={c} style:--d={U(d)} style:--i={i}></i>{/each}
+        {#each [[-12, -14, 0], [11, -18, 1], [2, -24, 2]] as [dx, dy, k] (k)}
+          <svg class="pop-spark" viewBox="0 0 24 24" style:--dx={U(dx)} style:--dy={U(dy)} style:--k={k}><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
+        {/each}
+      </span>
+    {/key}
+  {/if}
   {#if lift}
     {#key lift.n}
       <span class="item lift" style:translate="{U(lift.x)} {U(lift.y)}" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(14 * var(--su))" eager /></span>
@@ -396,6 +426,26 @@
     animation: twinkle var(--tw, 4s) ease-out var(--twd, 0s) infinite;
   }
   @keyframes twinkle { 0%, 80% { transform: scale(0) rotate(0); opacity: 0; } 88% { transform: scale(1) rotate(40deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
+  /* a present opening: the box squashes and pops up and away (its lid off), confetti bursts out, three sparkles */
+  .opening .box { translate: -50% -50%; line-height: 0; transform-origin: 50% 100%; animation: box-pop .5s cubic-bezier(.3, 1.4, .5, 1) both; }
+  @keyframes box-pop {
+    0% { transform: none; } 25% { transform: scale(1.18, .8); } 55% { transform: translateY(-30%) scale(.9, 1.15) rotate(-6deg); opacity: 1; }
+    100% { transform: translateY(-70%) scale(1.25) rotate(8deg); opacity: 0; }
+  }
+  .bit {
+    display: block; width: calc(4 * var(--su)); height: calc(6 * var(--su)); margin: calc(-3 * var(--su)) 0 0 calc(-2 * var(--su));
+    border-radius: 1px; background: var(--c); box-shadow: 0 0 0 .5px rgba(0, 0, 0, .08); rotate: var(--a); transform-origin: 50% 100%; opacity: 0;
+    animation: confetti .9s cubic-bezier(.2, .7, .4, 1) calc(.12s + var(--i) * 12ms) both;
+  }
+  @keyframes confetti {
+    0% { transform: translateY(0) scale(.4) rotate(0); opacity: 1; } 55% { opacity: 1; }
+    100% { transform: translateY(calc(var(--d) * -1)) scale(1) rotate(200deg); opacity: 0; }
+  }
+  .pop-spark {
+    width: calc(10 * var(--su)); translate: calc(-50% + var(--dx)) calc(-50% + var(--dy)); fill: #FFF8D8;
+    filter: drop-shadow(0 0 2px #FFE070); opacity: 0; animation: pop-spark .6s ease-out calc(.2s + var(--k) * .12s) both;
+  }
+  @keyframes pop-spark { 0% { transform: scale(0) rotate(0); opacity: 0; } 40% { transform: scale(1.1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
   /* a balloon's present where it landed, a soft shadow at its foot */
   .gift > :global(*) { translate: -50% -50%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */

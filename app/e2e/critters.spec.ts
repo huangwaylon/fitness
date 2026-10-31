@@ -58,9 +58,13 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
     const d = Math.hypot(o.x + o.width / 2 - (g.x + g.width / 2), o.y + o.height - (g.y + g.height));
     expect(d, await other.getAttribute('data-care') ?? await other.getAttribute('data-find') ?? '').toBeGreaterThan(16);
   }
-  // a tap picks it up: a pick-up line, no ベル
+  // a tap: my villager walks over, the present pops open (confetti), and what was inside (NH's furniture, clothing or a
+  // DIY recipe) is held up over its head with 「◯◯を てにいれた！」; no ベル
   await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
-  await expect(page.locator('[data-fx="catch"]')).toContainText('プレゼントを ひろった！', { timeout: 4000 });
+  await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
+  await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
+  await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
+  await expect(page.locator('[data-holding^="presents/"]')).toHaveCount(1);
   await expect(gift).toHaveCount(0);
   await unchanged(page, before);
 });

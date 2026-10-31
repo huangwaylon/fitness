@@ -1,5 +1,5 @@
 {
-  "version": 39,
+  "version": 40,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -2154,6 +2154,222 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Leaf_NH_Icon.png"
+    },
+    "presents/acoustic-guitar": {
+      "path": "presents/acoustic-guitar.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Acoustic_Guitar_NH_Icon.png"
+    },
+    "presents/apple-chair": {
+      "path": "presents/apple-chair.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Apple_Chair_NH_Icon.png"
+    },
+    "presents/baby-panda": {
+      "path": "presents/baby-panda.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Baby_Panda_NH_Icon.png"
+    },
+    "presents/beach-chair": {
+      "path": "presents/beach-chair.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Beach_Chair_(Blue)_NH_Icon.png"
+    },
+    "presents/bonsai-shelf": {
+      "path": "presents/bonsai-shelf.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Bonsai_Shelf_NH_Icon.png"
+    },
+    "presents/candy-machine": {
+      "path": "presents/candy-machine.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Candy_Machine_NH_Icon.png"
+    },
+    "presents/cat-tower": {
+      "path": "presents/cat-tower.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cat_Tower_(Beige)_NH_Icon.png"
+    },
+    "presents/cherry-lamp": {
+      "path": "presents/cherry-lamp.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cherry_Lamp_(Cherry)_NH_Icon.png"
+    },
+    "presents/coconut-juice": {
+      "path": "presents/coconut-juice.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Coconut_Juice_NH_Icon.png"
+    },
+    "presents/cute-bed": {
+      "path": "presents/cute-bed.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cute_Bed_NH_Icon.png"
+    },
+    "presents/dharma": {
+      "path": "presents/dharma.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dharma_(Red)_NH_Icon.png"
+    },
+    "presents/diy-recipe": {
+      "path": "presents/diy-recipe.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:DIY_Recipe_NH_Inv_Icon.png"
+    },
+    "presents/fan": {
+      "path": "presents/fan.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Fan_(White)_NH_Icon.png"
+    },
+    "presents/flower-stand": {
+      "path": "presents/flower-stand.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Flower_Stand_NH_Icon.png"
+    },
+    "presents/froggy-chair": {
+      "path": "presents/froggy-chair.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Froggy_Chair_(Green)_NH_Icon.png"
+    },
+    "presents/humidifier": {
+      "path": "presents/humidifier.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Humidifier_NH_Icon.png"
+    },
+    "presents/inflatable-sofa": {
+      "path": "presents/inflatable-sofa.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Inflatable_Sofa_(Pink)_NH_Icon.png"
+    },
+    "presents/knit-hat": {
+      "path": "presents/knit-hat.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Knit_Hat_(Red)_NH_Icon.png"
+    },
+    "presents/kotatsu": {
+      "path": "presents/kotatsu.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Kotatsu_NH_Icon.png"
+    },
+    "presents/lucky-cat": {
+      "path": "presents/lucky-cat.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Lucky_Cat_(White)_NH_Icon.png"
+    },
+    "presents/mama-panda": {
+      "path": "presents/mama-panda.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Mama_Panda_NH_Icon.png"
+    },
+    "presents/mini-fridge": {
+      "path": "presents/mini-fridge.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Mini_Fridge_NH_Icon.png"
+    },
+    "presents/music-stand": {
+      "path": "presents/music-stand.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Music_Stand_NH_Icon.png"
+    },
+    "presents/orange-end-table": {
+      "path": "presents/orange-end-table.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Orange_End_Table_NH_Icon.png"
+    },
+    "presents/pansy-table": {
+      "path": "presents/pansy-table.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pansy_Table_(Yellow)_NH_Icon.png"
+    },
+    "presents/peach-chair": {
+      "path": "presents/peach-chair.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Peach_Chair_(White_Peach)_NH_Icon.png"
+    },
+    "presents/pear-wardrobe": {
+      "path": "presents/pear-wardrobe.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pear_Wardrobe_NH_Icon.png"
+    },
+    "presents/piggy-bank": {
+      "path": "presents/piggy-bank.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Piggy_Bank_(Pink)_NH_Icon.png"
+    },
+    "presents/pot": {
+      "path": "presents/pot.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Pot_NH_Icon.png"
+    },
+    "presents/rocking-chair": {
+      "path": "presents/rocking-chair.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Rocking_Chair_NH_Icon.png"
+    },
+    "presents/snow-globe": {
+      "path": "presents/snow-globe.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Snow_Globe_NH_Icon.png"
+    },
+    "presents/straw-umbrella-hat": {
+      "path": "presents/straw-umbrella-hat.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Straw_Umbrella_Hat_NH_Icon.png"
+    },
+    "presents/tiki-torch": {
+      "path": "presents/tiki-torch.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Tiki_Torch_NH_Icon.png"
+    },
+    "presents/toy-box": {
+      "path": "presents/toy-box.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Toy_Box_NH_Icon.png"
+    },
+    "presents/ukulele": {
+      "path": "presents/ukulele.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ukulele_(Natural)_NH_Icon.png"
+    },
+    "presents/wooden-block-toy": {
+      "path": "presents/wooden-block-toy.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Wooden-Block_Toy_NH_Icon.png"
     },
     "reactions/curiosity": {
       "path": "reactions/curiosity.webp",
