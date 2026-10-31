@@ -157,7 +157,8 @@ export class LiveBackend implements Backend {
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
-      toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
+      // a refused ずかん find (an older deployment of the script) is scenery: it goes quietly
+      if (r.dropped.some((e) => e.type !== 'find')) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
     }
     if (r.error === 'unauthorized') {
