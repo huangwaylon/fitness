@@ -1,3 +1,8 @@
+<script module lang="ts">
+  /** Weeks shown at first, and added per 「まえの週」 tap. */
+  const WEEKS_AT_ONCE = 3;
+</script>
+
 <script lang="ts">
   // 3.5 ベル, the passbook (like NH's ATM statement): everything ever saved, then the ledger by week,
   // newest first, each with its total (the home of the week's ベル): the Sunday bonus, the spends (my own → とりけす,
@@ -41,6 +46,8 @@
     for (const s of ledger.spends) get(weekKeyOf(localDateAt(s.at))).spends.push(s);
     return [...m.values()].sort((a, b) => b.weekKey.localeCompare(a.weekKey));
   });
+  /** The newest weeks first; older ones a tap away, so opening the panel doesn't build every week's rows at once. */
+  let shown = $state(WEEKS_AT_ONCE);
 </script>
 
 <section class="card earned">
@@ -50,7 +57,7 @@
 
 {#if !weeks.length}<p class="empty">{t('kiroku.empty')}</p>{/if}
 
-{#each weeks as w (w.weekKey)}
+{#each weeks.slice(0, shown) as w (w.weekKey)}
   <section class="week">
     <h4>
       <span class="money">{weekRange(w.weekKey)}</span>
@@ -93,8 +100,12 @@
     </ul>
   </section>
 {/each}
+{#if weeks.length > shown}
+  <button type="button" class="btn small paper more" data-sfx="page" onclick={() => (shown += WEEKS_AT_ONCE)}>{t('kiroku.earlier')}</button>
+{/if}
 
 <style>
+  .more { justify-self: center; }
   .earned { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 16px; margin-bottom: 6px; }
   .earned small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .earned :global(.eb) { font-size: clamp(1.125rem, 5.6vw, var(--fs-title)); }

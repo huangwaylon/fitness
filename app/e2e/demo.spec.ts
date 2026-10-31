@@ -439,3 +439,12 @@ test('the panel remembers its tab for the session; a reload opens on きろく',
   await openPanel(page);
   await expect(sheet(page).locator('.tab[data-tab=kiroku]')).toHaveAttribute('aria-pressed', 'true');
 });
+
+test('きろく opens light: the newest three weeks of ベル (and four week cards); 「まえの週も 見る」 adds older ones', async ({ page }) => {
+  await page.goto('?demo');
+  await openPanel(page);
+  const weeks = sheet(page).locator('section.week');
+  await expect(weeks).toHaveCount(3);
+  await sheet(page).getByRole('button', { name: 'まえの週も 見る' }).first().click();
+  await expect.poll(() => weeks.count()).toBeGreaterThan(3);
+});
