@@ -16,13 +16,17 @@ async function openHealth(page: Page, query = '?demo') {
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
-test('the tab: one person at a time, a card per metric, steps first, then the body (体重, 体脂肪率, BMI, 除脂肪体重), then the rings; averages over every day with data', async ({ page }) => {
+test('the tab: one person at a time, a card per metric; かつどう (steps, then the rings) and からだ (体重, 体脂肪率, BMI, 除脂肪体重); averages over every day with data', async ({ page }) => {
   await openHealth(page);
   await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true'); // it opens on 1週
+  await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true'); // and on かつどう
+  await expect(sheet(page).locator('[data-group]')).toHaveText(['かつどう', 'からだ']);
   await sheet(page).locator('[data-period=month]').click();
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
+  await expect(sheet(page).locator('.health > .seg').nth(2)).toHaveAttribute('aria-label', 'どの データ'); // the group right under the period
+  await expect(sheet(page).locator('.health > .seg').nth(2).locator('xpath=following-sibling::*[1]')).toHaveClass(/nav/);
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'ムーブ', 'エクササイズ', 'スタンド']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
@@ -36,6 +40,18 @@ test('the tab: one person at a time, a card per metric, steps first, then the bo
   // one series: every bar in this phone's person's colour
   await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
   expect(await sheet(page).locator('.mc path.bar.pA').count()).toBeGreaterThan(100);
+  // からだ: the body cards, the same period and range; no activity footnote
+  await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('data-sfx', 'tick');
+  await sheet(page).locator('[data-group=body]').click();
+  await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('data-sfx', 'none');
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重']);
+  await expect(sheet(page).locator('.health .mc')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-period=month]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(range(page)).toHaveText('10/2–10/31');
+  await expect(sheet(page).locator('.health > .note')).toHaveCount(0);
+  await sheet(page).locator('[data-group=activity]').click();
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
 });
 
 test('whose data: this phone’s person by default; switching changes the numbers and the colour and keeps the period and range', async ({ page }) => {
@@ -62,6 +78,8 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(steps.locator('path.bar.pA')).not.toHaveCount(0);
   await expect(steps.locator('.avg')).not.toHaveText(avgB);
   expect(await fill()).not.toBe(barB);
+  await sheet(page).locator('[data-group=body]').click(); // the body cards: still ウェイ's, the same range
+  await expect(range(page)).toHaveText('10/18–10/24');
   await expect(sheet(page).locator('.wc')).toHaveAttribute('data-person', 'A');
   await expect(sheet(page).locator('.wc').getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1);
   // the same period and visible range
@@ -98,6 +116,7 @@ test('every day with data is its bar, as reported; only a day with no row is a s
 
 test('体重: the period’s plain change (first week → last week, else first → last weigh-in), no trend words', async ({ page }) => {
   await openHealth(page);
+  await sheet(page).locator('[data-group=body]').click();
   const card = sheet(page).locator('.wc');
   const chg = card.locator('.chips .chg');
   await sheet(page).locator('[data-period=month]').click();
@@ -117,6 +136,7 @@ test('体重: the period’s plain change (first week → last week, else first 
 
 test('the body cards: each its average, count and plain change in its unit, its own chart, per person; a tap shows a day', async ({ page }) => {
   await openHealth(page);
+  await sheet(page).locator('[data-group=body]').click();
   await sheet(page).locator('[data-period=month]').click();
   const units = { body_fat_pct: /^\d+\.\d%$/, bmi: /^\d+\.\d$/, lean_kg: /^\d+\.\d kg$/ } as const;
   const deltas = { body_fat_pct: /^[+−±]\d+\.\d%$/, bmi: /^[+−±]\d+\.\d$/, lean_kg: /^[+−±]\d+\.\d kg$/ } as const;
@@ -235,11 +255,13 @@ test('the panel opens on it at 1週, every time from the ribbon; whose data is k
   expect(js.length).toBeGreaterThan(before); // its own chunk
   await expect(sheet(page).locator('[data-who=A]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-period=quarter]').click();
+  await sheet(page).locator('[data-group=body]').click();
   await sheet(page).locator('[data-who=B]').click();
   await sheet(page).locator('.titlebar .close').click();
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true'); // かつどう again
   await expect(sheet(page).locator('[data-who=B]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('.tab[data-tab=kiroku]').click(); // another tab, closed: the next opening is けんこう again
   await sheet(page).locator('.titlebar .close').click();
@@ -255,8 +277,9 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
   test(`${w}x${h}, two years of data: nothing overflows, every control is a thumb’s size, the range row stays put`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await openHealth(page, '?demo&weeks=104');
-    for (const per of ['week', 'month', 'quarter', 'year', 'all']) {
+    for (const per of ['week', 'month', 'quarter', 'year', 'all']) for (const g of ['body', 'activity']) {
       await sheet(page).locator(`[data-period=${per}]`).click();
+      await sheet(page).locator(`[data-group=${g}]`).click();
       const m = await page.evaluate(() => {
         const ctl = [...document.querySelectorAll('dialog[open] .health button')].map((b) => b.getBoundingClientRect());
         const cards = [...document.querySelectorAll('dialog[open] .health section.card')].map((c) => c.getBoundingClientRect());
@@ -267,17 +290,23 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
           outside: cards.filter((r) => r.left < body.left - 1 || r.right > body.right + 1).length
         };
       });
-      expect(m, per).toEqual({ overflow: 0, small: 0, outside: 0 });
+      expect(m, `${per} ${g}`).toEqual({ overflow: 0, small: 0, outside: 0 });
     }
     // labels on the axis don't collide
     const labels = await sheet(page).locator('.mc[data-metric=steps] svg text').evaluateAll((ts) => ts.map((t) => t.getBoundingClientRect()).filter((r) => r.top > 0));
     const xs = labels.filter((r, _, all) => r.top === Math.max(...all.map((x) => x.top))).sort((a, b) => a.left - b.left);
     for (let i = 1; i < xs.length; i++) expect(xs[i].left).toBeGreaterThanOrEqual(xs[i - 1].right);
-    // the range row is still on screen after scrolling down to 体重
-    await sheet(page).locator('.wc').scrollIntoViewIfNeeded();
-    const nav = (await sheet(page).locator('.health .nav').boundingBox())!;
-    const bar = (await sheet(page).locator('.tabs').boundingBox())!;
-    expect(nav.y).toBeGreaterThanOrEqual(bar.y + bar.height - 8);
-    expect(nav.y).toBeLessThan(bar.y + bar.height + 20);
+    // the range row is still on screen after scrolling down to スタンド, and on からだ to 除脂肪体重
+    const navPut = async () => {
+      const nav = (await sheet(page).locator('.health .nav').boundingBox())!;
+      const bar = (await sheet(page).locator('.tabs').boundingBox())!;
+      expect(nav.y).toBeGreaterThanOrEqual(bar.y + bar.height - 8);
+      expect(nav.y).toBeLessThan(bar.y + bar.height + 20);
+    };
+    await sheet(page).locator('.mc[data-metric=stand]').scrollIntoViewIfNeeded();
+    await navPut();
+    await sheet(page).locator('[data-group=body]').click();
+    await sheet(page).locator('.bc[data-metric=lean_kg]').scrollIntoViewIfNeeded();
+    await navPut();
   });
 }

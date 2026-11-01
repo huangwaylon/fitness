@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  bodyBuckets, bodyStats, bucketValues, CARDS, canShift, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
+  bodyBuckets, bodyStats, bucketValues, CARDS, canShift, GROUPS, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
 } from './health.ts';
 import { weekBells } from './bells.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
@@ -277,8 +277,9 @@ describe('one person at a time', () => {
 });
 
 describe('the body metrics (body fat %, BMI, lean body mass)', () => {
-  it('けんこう’s order: steps, then the body (weight first), then the rings', () => {
-    expect(CARDS).toEqual(['steps', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'move', 'exercise', 'stand']);
+  it('けんこう’s groups: かつどう (steps, then the rings), からだ (weight first, then the body metrics)', () => {
+    expect(GROUPS).toEqual(['activity', 'body']);
+    expect(CARDS).toEqual({ activity: ['steps', 'move', 'exercise', 'stand'], body: ['weight', 'body_fat_pct', 'bmi', 'lean_kg'] });
   });
 
   it('a day’s value is its latest row, one decimal; out of bounds is ignored; sparse like weight, per person', () => {

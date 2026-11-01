@@ -96,6 +96,7 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   const bells = await ribbon.getAttribute('aria-label');
   await openKiroku(page);
   await sheet(page).locator('.tab[data-tab=health]').click();
+  await sheet(page).locator('[data-group=body]').click(); // からだ
   const card = sheet(page).locator('.wc');
   await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
   await expect(card.getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1); // this phone's person's (the tab shows one person)

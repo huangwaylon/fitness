@@ -190,6 +190,9 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('けんこう', '1年', () => dlg.locator('[data-period=year]').tap(), ['tick']);
   await step('けんこう', '1年 again', () => dlg.locator('[data-period=year]').tap(), []);
   await step('けんこう', '1か月', () => dlg.locator('[data-period=month]').tap(), ['tick']);
+  await step('けんこう', 'からだ', () => dlg.locator('[data-group=body]').tap(), ['tick']);
+  await step('けんこう', 'からだ again', () => dlg.locator('[data-group=body]').tap(), []);
+  await step('けんこう', 'かつどう', () => dlg.locator('[data-group=activity]').tap(), ['tick']);
   await step('けんこう', 'うめ', () => dlg.locator('[data-who=B]').tap(), ['tick']);
   await step('けんこう', 'うめ again', () => dlg.locator('[data-who=B]').tap(), []);
   await step('けんこう', '‹', () => dlg.locator('[data-nav=back]').tap(), ['tick']);

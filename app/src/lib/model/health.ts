@@ -31,11 +31,15 @@ const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
 export type Metric = (typeof METRICS)[number];
 /** The body metrics' cards (からだ, after 体重): body fat %, BMI, lean body mass. */
 const BODY = ['body_fat_pct', 'bmi', 'lean_kg'] as const satisfies readonly BodyMetric[];
+/** けんこう's two card groups, picked under the period: かつどう (activity) and からだ (body). */
+export const GROUPS = ['activity', 'body'] as const;
+export type Group = (typeof GROUPS)[number];
 /**
- * けんこう's cards in order (the user's: "after steps, put weight next, then the other graphs"): 🍎 Steps, then the body
- * (体重, 体脂肪率, BMI, 除脂肪体重, kept together), then the rings' 🍐 Move, 🍑 Exercise, 🍒 Stand.
+ * Each group's cards in order (the user's: "move the body related metrics to the body metrics tab, and the remaining in
+ * the activity tab"): かつどう 🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a scale
+ * writes at one weigh-in).
  */
-export const CARDS = ['steps', 'weight', ...BODY, 'move', 'exercise', 'stand'] as const satisfies readonly (Metric | 'weight' | BodyMetric)[];
+export const CARDS = { activity: METRICS, body: ['weight', ...BODY] } as const satisfies Record<Group, readonly (Metric | 'weight' | BodyMetric)[]>;
 export const METRIC_FRUIT: Record<Metric, RingFruit> = { move: 'pear', exercise: 'peach', stand: 'cherry', steps: 'apple' };
 const ROW: Record<Metric, ActivityMetric> = { move: 'move_kcal', exercise: 'exercise_min', stand: 'stand_min', steps: 'steps' };
 
