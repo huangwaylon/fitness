@@ -172,7 +172,7 @@ natural.
 
 ### Shaking a tree
 A quick run of taps (the third within 1.2 s) shakes; a single tap stays the popup. A nest 1 in 8 (at most one per tree
-an hour), its wasps caught or stinging (a fright and a sweat drop). Why: the popup keeps the single tap, and a run is
+an hour), its wasps caught or stinging (a fright, a sweat drop and NH's swollen eye, on each render's measured eye). Why: the popup keeps the single tap, and a run is
 how people shake a tree in NH.
 
 ### Mushrooms are cosmetic

@@ -77,12 +77,13 @@
   </section>
 
   <section>
-    <h2>On the head (the birthday hat, Jack's glasses: villagers/heads.ts)</h2>
+    <h2>On the head (the birthday hat, Jack's glasses, a sting's swollen eye: villagers/heads.ts)</h2>
     <div class="grid roster" data-heads>
       {#each ['goldie', 'anchovy', 'ruby', 'dotty', 'marshal', 'raymond', 'ankha', 'hamlet', 'tank', 'merengue', 'roald', 'pekoe', 'tom-nook', 'kk-slider', 'isabelle', 'cyrano', 'gigi', 'chief', 'apple', 'biskit'] as id (id)}
         <figure>
           <Villager villager={id} size={96} hat="deco/birthday-hat-pink" animate={false} />
           <Villager villager={id} size={96} tricked animate={false} />
+          <Villager villager={id} size={96} swollen animate={false} />
           <figcaption><code>{id}</code></figcaption>
         </figure>
       {/each}
