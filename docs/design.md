@@ -250,12 +250,20 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   foam, the speckled sand, NH's grass with leaf flecks, ragged dirt paths with tufts and pebbles, running-bond brick
   paths, the flagstone plaza and aprons, the meandering river and pond (dark channel, light shallows, muddy banks,
   overhanging grass), the cliff's strata, the stairs, the bridges' decks, the dock and every still thing's contact
-  shadow. 8 chunks of 362.5u per season (2 px a unit, ~440 KB a season), drawn by 40 bands bent onto the log
-  (`WorldGround`); chunks 0–3 at once, 4–7 when the camera nears them or the browser is idle. Upright sprites stand at
+  shadow. 8 chunks of 362.5u per look (2 px a unit), drawn by 40 bands bent onto the log (`WorldGround`); chunks 0–3
+  at once, 4–7 when the camera nears them or the browser is idle; only the day's look loads. **Six looks**, each
+  dressed by `scripts/terrain-seasons.ts` (painted over the ground, under the contact shadows): spring (clover, 491 KB),
+  **spring-petals** in the blossom days Apr 1–10 (cherry petals heaped under the blossoming oaks, along the paths' edges
+  and the plaza's curb, a thin scatter elsewhere; 571 KB), summer (lush: tall tufts, clover, deeper green; 516 KB),
+  autumn (dry patches in the warm grass; 446 KB), **autumn-leaves** in the fall foliage Oct 16 – Dec 10 (maple leaves
+  heaped under the oaks and blown along the paths; 543 KB), winter (snow in soft drifts lit from the upper left and
+  blue in their lee, banks along the paths with their shade on the path, snow thinning out over the sand, the banks
+  snowy to the water's edge: NH's rivers never freeze; 405 KB). Time of day is never baked (the tint does it). Upright sprites stand at
   the near edges: the cliff's face (strata, the grass lip, the stairs carved in), the bridges' fronts, the dock's.
 - **The live water** (`WorldWater`): the shore's foam wash (`ShoreWash`), the waterfall's sheets, foam and mist
   (`Waterfall`), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
-  or maple leaves afloat in their weeks): CSS only, held still under a sheet and while hidden.
+  or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u along the east
+  reach and the crossing, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
 - **Layout** (`world.ts`): まえ: the airport at (362, 22) with its dock, palms on the sand, plumeria at the grass edge,
   the villagers' homes A (132, 214) and B (262, 214), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
   332), the tape deck between them, the rock, the dig spots, the hedge along the river at z 596. The river rises at the
@@ -264,6 +272,18 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   (195, 900), the banner lamps, the bench, Resident Services (195, 1068), the bulletin board, the pond (44, 772). おく:
   Nook's Cranny (100, 1338), Able Sisters (282, 1338), the museum (190, 1648), the cliff (z 1806…1850) with its stairs
   (x 36…84) and log fence, the campsite (150, 1960). All the buildings are NH's map icons (one render family).
+  **Decor** (NH's catalog icons, `fetch-assets.ts`): streetlamps at the stone bridge, meadow flowers in three-flower
+  clumps (`meadow-<i>`, the season's species: `scene.ts` MEADOW, NH's flowers blooming on under the snow), a simple
+  wooden fence, garden rocks, the month's bushes either side of the path to the plaza, a bamboo grove (NH's bamboo)
+  behind a bamboo lattice fence between Able Sisters and the museum, garden lanterns, a corral fence on the upper tier.
+  `scenery.test` keeps every piece off the water, the paths, the footprints and the features' spots, and the walk
+  reaching every door; bamboo and rocks are obstacles like the trees.
+- **Winter and night looks** (`scripts/derive-art.ts`, `npm run assets:derive`): NH has no snowy renders of the
+  buildings or the cedar, so each is derived from its official render, cut as the shipped one: the roof's (and the
+  signs', chimney's, awning's, posts') regions found by colour from seeds, snow laid from their top edges with a pile
+  into the air, drips over the eaves and the lip's shade below (`<art>-winter`, `trees/cedar-winter`); the windows'
+  glass found the same way lights up warm with a halo (`<art>-lit`), laid over the building at dusk (.7) and night,
+  over the tint (as the fireflies) like the lamps' glow (`deco/lamp-glow`, drawn).
 - **Sizes** (`scene.ts`): villager 80u · hardwood 120u · cedar 140–150u · palm ~110u · bush 34–40u · flower 30u ·
   hanging fruit 20u · ground fruit 24u.
 - **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
@@ -287,15 +307,15 @@ he says so.
 - **Seasons** (`ui-state/season.ts`): winter (snow) Dec 11 – Feb 24, spring to May 31, summer to Sep 15, autumn to Dec
   10. Oaks: blossom Apr 1–10, fall leaves Oct 16 – Dec 10.
 - **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
-  Night is soft periwinkle, never black.
+  Night is soft periwinkle, never black; the windows and lamps light up from dusk.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
   Jan–Mar camellia). Two flower beds by season.
 
 ### Particles and events
 
-≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Snow lies on the
-museum's roof while it lies on the ground; petals float on the pond in cherry-blossom week and maple leaves in maple
-week. Events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, Toy Day Dec 24, the balloon present.
+≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Snow lies on every
+roof and on the cedars while it lies on the ground; petals float on the pond and down the river in cherry-blossom week
+and maple leaves in maple week. Events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, Toy Day Dec 24, the balloon present.
 
 ### Weather
 

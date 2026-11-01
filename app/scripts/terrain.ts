@@ -2,7 +2,7 @@
 // river and pond with their banks, paths, the plaza, the cliff with its stairs and the waterfall's rocks, the bridges'
 // decks, the airport's dock, building aprons and the contact shadows of everything still) painted by one fragment
 // shader (seeded noise, signed distances, soft masks: no outlines) in the installed Chrome (WebGL2), cut into 8
-// chunks along z per season and written as WebP. Plus the upright sprites that stand at the bridges' and the dock's
+// chunks along z per look (the four seasons, the blossom days' petals and the fall foliage's leaves: terrain-seasons.ts) and written as WebP. Plus the upright sprites that stand at the bridges' and the dock's
 // near edges, so they read raised.
 //
 // Usage (from app/): node scripts/terrain.ts [--season=summer] [--chunk=3] [--no-sprites]
@@ -14,6 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { LOOKS, baseOf, dressDefines, dressGeometry, SEASON_GLSL } from './terrain-seasons.ts';
 import { BUILDINGS, BRIDGES, CLIFF, DOCK, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, PLAZA, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -24,7 +25,7 @@ const PX = 2;
 const SPRITE_PX = 3;
 const CHUNKS = 8;
 const CHUNK_D = BAND_D * 5;
-const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
+const SEASONS = LOOKS;
 type Season = (typeof SEASONS)[number];
 const Q = 80;
 
@@ -143,15 +144,15 @@ const hex = (h: string) => {
   const n = parseInt(h.slice(1), 16);
   return `vec3(${f(((n >> 16) & 255) / 255)},${f(((n >> 8) & 255) / 255)},${f((n & 255) / 255)})`;
 };
-const PALETTES: Record<Season, Record<string, string>> = {
+const PALETTES: Record<ReturnType<typeof baseOf>, Record<string, string>> = {
   spring: { GRASS: '#7CC95A', GRASS_HI: '#9BD970', FLECK_HI: '#A8E07A', FLECK_LO: '#5EAE47', GRASS_SHADE: '#3F8F33', OVERHANG: '#5FA847', SAND_HI: '#FBE6B0', SAND: '#F3D493', SAND_LO: '#EBC983', SAND_WET: '#D9AC66', SPECK: '#E2BE7C' },
   summer: { GRASS: '#5DBE4A', GRASS_HI: '#7CCF5E', FLECK_HI: '#8ED96C', FLECK_LO: '#46A23A', GRASS_SHADE: '#2F7F2A', OVERHANG: '#4CA03E', SAND_HI: '#FBE6B0', SAND: '#F3D493', SAND_LO: '#EBC983', SAND_WET: '#D9AC66', SPECK: '#E2BE7C' },
   autumn: { GRASS: '#A8C457', GRASS_HI: '#C2D46E', FLECK_HI: '#D9C26A', FLECK_LO: '#8AA845', GRASS_SHADE: '#6F8A35', OVERHANG: '#90AA48', SAND_HI: '#FBE6B0', SAND: '#F3D493', SAND_LO: '#EBC983', SAND_WET: '#D9AC66', SPECK: '#E2BE7C' },
   winter: { GRASS: '#EEF3FC', GRASS_HI: '#FFFFFF', FLECK_HI: '#FFFFFF', FLECK_LO: '#C9D6EC', GRASS_SHADE: '#9FB2D6', OVERHANG: '#E4ECF8', SAND_HI: '#F6F0E2', SAND: '#EEE6D4', SAND_LO: '#E4DAC4', SAND_WET: '#CFC3AA', SPECK: '#D6CBB4' }
 };
 function defines(season: Season): string {
-  const p = PALETTES[season];
-  return [...Object.entries(p).map(([k, v]) => `#define ${k} ${hex(v)}`), `#define WINTER ${season === 'winter' ? 1 : 0}`, `#define AUTUMN ${season === 'autumn' ? 1 : 0}`, `#define SPRING_S ${season === 'spring' ? 1 : 0}`].join('\n');
+  const b = baseOf(season), p = PALETTES[b];
+  return [...Object.entries(p).map(([k, v]) => `#define ${k} ${hex(v)}`), `#define WINTER ${b === 'winter' ? 1 : 0}`, `#define AUTUMN ${b === 'autumn' ? 1 : 0}`, `#define SPRING_S ${b === 'spring' ? 1 : 0}`, dressDefines(season)].join('\n');
 }
 
 // ---- the shader ---------------------------------------------------------------------------------------------------
@@ -818,6 +819,9 @@ vec3 terrain(vec2 p){
     if (l < 3.0){ c = mix(c, c*0.8, (1.0 - smoothstep(0.0, 2.5, l))); c = mix(c, sat3(flagCol(p, 5.0), 0.3)*0.9, aa(l, AAW)); }
   }
 
+  // ---- the seasonal dressing (terrain-seasons.ts): petals, leaves, clover, tufts, the snow's drifts and banks
+  c = dress(p, c, dL, dG, aG, pz, pd, bAll, ws);
+
   // ---- contact shadows (light from the upper left)
   float sa = shadowAt(p);
   vec3 tint = mix(vec3(0.70,0.62,0.50), vec3(0.50,0.66,0.47), aG);
@@ -1201,7 +1205,7 @@ void main(){
 }
 `;
 
-const fragFor = (season: Season) => `#version 300 es\nprecision highp float;\nprecision highp int;\n${defines(season)}\n${geometry()}\n${LIB}\n${TERRAIN}`;
+const fragFor = (season: Season) => `#version 300 es\nprecision highp float;\nprecision highp int;\n${defines(season)}\n${geometry()}\n${LIB}\n${dressGeometry()}\n${SEASON_GLSL}\n${TERRAIN}`;
 
 // ---- the renderer (Chrome) ---------------------------------------------------------------------------------------
 
