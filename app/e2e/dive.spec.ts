@@ -34,7 +34,7 @@ test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a
   // the bubbles sit in the open sea, on no control
   expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', b)).toBe('');
   await page.mouse.click(b.x, b.y);
-  await expect(page.locator('[data-dive="splash"]')).toBeAttached();
+  // the splash lives for under half a second after the walk: the catch and the splash's cue are what stay
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('seaweed'));
   await expect(page.locator('[data-bubbles]')).toHaveCount(0);
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'seaweed' }]);

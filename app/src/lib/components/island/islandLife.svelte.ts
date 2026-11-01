@@ -195,8 +195,8 @@ export class IslandLife {
 
     // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
     if (hookFlag('balloon')) this.later(() => (this.balloon = true), 400);
-    // `?wander` (dev or ?demo only): the partner sets off on an outing now (the e2e's hook)
-    if (hookFlag('wander')) this.later(() => wander('partner'), 3200); // after the opening beats
+    // `?wander` (dev or ?demo only): the partner sets off on a one-stop outing now (the e2e's hook)
+    if (hookFlag('wander')) this.later(() => wander('partner', 1), 3200); // after the opening beats
 
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);

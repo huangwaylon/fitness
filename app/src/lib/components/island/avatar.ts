@@ -185,11 +185,11 @@ function checkFollow() {
 }
 
 /** Idle life: send a villager off to a point of interest or a few (one walker leaves home at a time). */
-export function wander(id: Villager): boolean {
+export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_HOPS)): boolean {
   const c = ctx, other = otherOf(id);
   if (!c || !c.enabled() || !free(id) || awayFromHome(id)) return false;
   if (actors[other].walking || awayFromHome(other)) return false;
-  return hop(id, 1 + Math.floor(Math.random() * MAX_HOPS));
+  return hop(id, stops);
 }
 
 function hop(id: Villager, left: number): boolean {

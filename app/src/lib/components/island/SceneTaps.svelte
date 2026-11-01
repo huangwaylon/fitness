@@ -318,8 +318,8 @@
    *  a pumpkin, another present), u, beyond both their halves. */
   const PRESENT_GAP = 16;
   /** Where a present falling from x (u) lands: on the open lawn in front of the hedge, between the trees (x 150–240,
-   *  y 86–96), the spot nearest x that keeps PRESENT_GAP from everything lying there and covers no control; null when
-   *  there's none (it falls into the sea instead). `size`: the present's size (u). */
+   *  y 86–96), the spot nearest x that keeps PRESENT_GAP from everything lying there and covers no control (a villager
+   *  walking by doesn't count); null when there's none (it falls into the sea instead). `size`: the present's size (u). */
   function landing(x: number, size: number): [number, number] | null {
     const stage = scene?.querySelector<HTMLElement>('.stage'), g = stageGeo(scene);
     if (!stage || !g) return null;
@@ -330,7 +330,8 @@
       const r = el.matches('[data-care="rock"]') ? 11 : Math.max(8, (b.width * g.k) / 2);
       return { x: cx, y: foot - r * 0.6, r };
     });
-    const keep = guardsU(g, 2);
+    // the villagers only pass by (it lies behind them): the controls that stay put
+    const keep = guardsU(g, 2, (el) => !!el.closest('[data-actor]'));
     const half = size / 2;
     const xs = Array.from({ length: 31 }, (_, i) => 150 + i * 3).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
     for (const cx of xs)
