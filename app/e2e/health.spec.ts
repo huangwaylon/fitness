@@ -18,6 +18,8 @@ const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 
 test('the tab: one person at a time, a card per metric, steps first, then 体重; averages over every day with data', async ({ page }) => {
   await openHealth(page);
+  await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true'); // it opens on 1週
+  await sheet(page).locator('[data-period=month]').click();
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/who/); // whose data comes first
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド', '体重']);
@@ -69,7 +71,6 @@ test('whose data: this phone’s person by default; switching changes the number
 
 test('every day with data is its bar, as reported; only a day with no row is a short faint stub on the axis and 記録なし', async ({ page }) => {
   await openHealth(page, '?demo&weeks=60');
-  await sheet(page).locator('[data-period=quarter]').click();
   await sheet(page).locator('[data-period=month]').click();
   let stubs = 0;
   for (const m of ['move', 'exercise', 'stand', 'steps']) {
@@ -99,6 +100,7 @@ test('体重: the period’s plain change (first week → last week, else first 
   await openHealth(page);
   const card = sheet(page).locator('.wc');
   const chg = card.locator('.chips .chg');
+  await sheet(page).locator('[data-period=month]').click();
   await chg.scrollIntoViewIfNeeded();
   // 1か月: the first week's average → the last week's, and per week
   await expect(chg.locator('dt')).toHaveText('期間の変化');
@@ -189,7 +191,7 @@ test('a tap on a bar shows that day’s one value (and again closes it)', async 
   await expect(tip).toHaveCount(0); // another person closes the callout
 });
 
-test('the panel opens on it; it remembers its period and person for the session; its code loads with the panel, not the island', async ({ page }) => {
+test('the panel opens on it at 1週, every time from the ribbon; whose data is kept for the session; its code loads with the panel, not the island', async ({ page }) => {
   const js: string[] = [];
   page.on('response', (r) => r.url().endsWith('.js') && js.push(r.url()));
   await page.goto('?demo');
@@ -206,8 +208,13 @@ test('the panel opens on it; it remembers its period and person for the session;
   await sheet(page).locator('[data-who=B]').click();
   await sheet(page).locator('.titlebar .close').click();
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
-  await expect(sheet(page).locator('[data-period=quarter]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-period=week]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-who=B]')).toHaveAttribute('aria-pressed', 'true');
+  await sheet(page).locator('.tab[data-tab=kiroku]').click(); // another tab, closed: the next opening is けんこう again
+  await sheet(page).locator('.titlebar .close').click();
+  await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
+  await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');
   await page.reload(); // a new session: this phone's person again
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await sheet(page).locator('.tab[data-tab=health]').click();
