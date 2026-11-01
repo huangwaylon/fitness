@@ -14,7 +14,7 @@ export const MAX_BYTES = 256;
 /** A `replay` message (relay → client): today's world in as few messages as this allows. */
 export const REPLAY_BYTES = 16_000;
 /** A walk's waypoints between `from` and `to` (more: the receiver plans the way itself). */
-export const VIA_MAX = 12;
+export const VIA_MAX = 10;
 /** A walk takes at most this long (ms). */
 export const WALK_MS_MAX = 60_000;
 
@@ -50,6 +50,10 @@ export type How = (typeof HOWS)[number];
 export const DROPS = ['none', 'branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
 export type Drop = (typeof DROPS)[number];
 
+/** Which way a villager faces at a walk's end: as drawn (toward the camera), toward the island's middle, left, right. */
+export const FACES = ['home', 'in', 'l', 'r'] as const;
+export type Face = (typeof FACES)[number];
+
 /** A world point (v2: integer world units within the plan). */
 export type Pt = readonly [number, number];
 
@@ -64,8 +68,8 @@ export type Target = string | readonly [number, number];
 export type Intent =
   /** A villager's walk (v2): to `to`; with `from`, `via` (the waypoints between, ≤ VIA_MAX), `s` (when it set off, the
    *  relay's clock) and `ms` (how long it takes; 0: put there), the partner's phone plays the very same walk at the same
-   *  time (docs/backend.md#shared-world "Villagers"). */
-  | { kind: 'walk'; to: Target; at?: number; from?: Pt; via?: Pt[]; s?: number; ms?: number }
+   *  time (docs/backend.md#shared-world "Villagers"), facing `f` at the end. */
+  | { kind: 'walk'; to: Target; at?: number; from?: Pt; via?: Pt[]; s?: number; ms?: number; f?: Face }
   | { kind: 'act'; act: Act; id?: string; at?: number; pt?: Pt }
   | { kind: 'catch'; what: string; id?: string; at?: Pt; how?: How }
   | { kind: 'pick'; id: string; what: string; at?: Pt }
@@ -161,11 +165,12 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
     case 'walk': {
       if (!isTarget(o.to, v) || !opt(o, 'at', isTime)) return null;
       // the very walk (v2): where from, the way, when and how long
-      if (v === 1 && (o.from !== undefined || o.via !== undefined || o.s !== undefined || o.ms !== undefined)) return null;
-      if ((o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs) || !opt(o, 'via', isVia)) return null;
+      if (v === 1 && (o.from !== undefined || o.via !== undefined || o.s !== undefined || o.ms !== undefined || o.f !== undefined)) return null;
+      if ((o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs) || !opt(o, 'via', isVia) || !opt(o, 'f', oneOf(FACES))) return null;
       return {
         kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
-        ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
+        ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {}),
+        ...(o.f !== undefined ? { f: o.f as Face } : {})
       };
     }
     case 'act':

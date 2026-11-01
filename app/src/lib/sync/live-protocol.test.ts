@@ -164,13 +164,17 @@ describe('live protocol: the shared world (v2)', () => {
 
 describe('live protocol: the very walk, acks and the day in one replay', () => {
   it('a v2 walk may carry where from, the way (≤ VIA_MAX points), when it set off and how long', () => {
-    const w = { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400]], s: 1_793_500_000_000, ms: 2400 };
+    const w = { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400]], s: 1_793_500_000_000, ms: 2400, f: 'home' };
     expect(parseClient(j2(w))).toEqual({ v: 2, ...w });
+    expect(parseClient(j2({ ...w, f: 'up' }))).toBeNull();
     expect(parseClient(j2({ ...w, via: Array.from({ length: VIA_MAX + 1 }, () => [1, 1]) }))).toBeNull();
     expect(parseClient(j2({ ...w, ms: 60_001 }))).toBeNull();
     expect(parseClient(j2({ ...w, from: [1.5, 2] }))).toBeNull();
     expect(parseClient(j({ kind: 'walk', to: [1, 2], ms: 10 }))).toBeNull();
-    expect(j2({ ...w, via: Array.from({ length: VIA_MAX }, () => [-230, 2650]), c: 1_793_500_000_123 }).length).toBeLessThanOrEqual(MAX_BYTES);
+    // the longest, sent (with its number) and relayed (with who and t), fits a message
+    const most = { ...w, to: [-230, 2650], from: [-230, 2650], via: Array.from({ length: VIA_MAX }, () => [-230, 2650]), ms: 60_000 };
+    expect(j2({ ...most, c: 1_793_500_000_123 }).length).toBeLessThanOrEqual(MAX_BYTES);
+    expect(parseServer(j2({ ...most, who: 'A', t: 1_793_500_000_123 }))).not.toBeNull();
   });
   it('an intent may carry its sequence number c (a positive integer); a hello may ask for a batch', () => {
     expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 7 }))).toEqual({ v: 2, c: 7, kind: 'pick', id: 'a', what: 'weed' });
