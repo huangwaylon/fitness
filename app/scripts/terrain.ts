@@ -1,6 +1,7 @@
 // The island's baked ground (docs/design.md "World"): the whole flat plan of world.ts (sea rings, beach, grass, the
-// stream and pond with their banks, paths, the campsite's worn clearing, the cliff with its stairs and the waterfall's
-// rocks, and the contact shadows of everything still) painted by one fragment shader (seeded noise, signed distances,
+// stream and pond with their banks, paths, the campsite's worn clearing, the stone bridge's deck (NH's model seen from
+// above: static/art/bridges/stone-deck, scripts/models.ts), the cliff with its stairs and the waterfall's rocks, and
+// the contact shadows of everything still) painted by one fragment shader (seeded noise, signed distances,
 // soft masks: no outlines) in the installed Chrome (WebGL2), cut into 8 chunks along z per look (the four seasons, the
 // blossom days' petals and the fall foliage's leaves: terrain-seasons.ts) and written as WebP. Plus the cliff's
 // upright face, a sprite standing at its foot.
@@ -15,7 +16,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LOOKS, baseOf, dressDefines, dressGeometry, SEASON_GLSL } from './terrain-seasons.ts';
-import { BUILDINGS, CAMPSITE, CLIFF, FACE_H, FLOWERS, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
+import { BRIDGE, BUILDINGS, CAMPSITE, CLIFF, FACE_H, FLOWERS, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'terrain');
@@ -118,7 +119,9 @@ function geometry(): string {
     `const vec4 POND = ${v4(POND.x, POND.z, POND.rx, POND.rz)}; const vec4 SPRING = ${v4(SPRING.x, SPRING.z, SPRING.rx, SPRING.rz)};`,
     `const vec4 CLIFFR = ${v4(CLIFF.x0, CLIFF.z0, CLIFF.x1, CLIFF.z1)}; const vec2 STAIR = ${v2(CLIFF.stair[0], CLIFF.stair[1])}; const vec2 FALL = ${v2(CLIFF.fall[0], CLIFF.fall[1])};`,
     // the campsite's worn clearing (dirt) in front of the tent
-    `const vec4 AP_CA = ${v4(CAMPSITE.x, CAMPSITE.z - 30, campW * 0.5, 40)};`
+    `const vec4 AP_CA = ${v4(CAMPSITE.x, CAMPSITE.z - 30, campW * 0.5, 40)};`,
+    // the bridge's deck: [centre x, near z, far z, width]
+    `const vec4 DECK = ${v4(BRIDGE.x, BRIDGE.z0, BRIDGE.z1, BRIDGE.w)};`
   ].join('\n');
 }
 
@@ -149,6 +152,7 @@ uniform vec2 uOrigin;   // world (x, z) at the canvas's bottom-left pixel corner
 uniform float uPx;      // pixels per unit
 uniform int uMode;      // 0 terrain, 4 the cliff's face
 uniform vec2 uSize;     // sprite size in units
+uniform sampler2D uDeck; // the bridge's deck from above (premultiplied; v 0 at its near end)
 out vec4 outColor;
 
 // ---- hashing and noise (integer hashes: deterministic) ----
@@ -511,14 +515,14 @@ vec3 rockBlob(vec2 p, vec2 c0, vec2 r, vec3 col, vec3 base, int seed){
 vec3 terrain(vec2 p){
   float dL = landD(p);
   Riv rv = river(p);
-  float isMouth = step(378.0, p.x)*step(p.y, 790.0);
+  float isMouth = step(p.x, 12.0)*step(p.y, 700.0);   // the mouth on the west beach
   // ---- beach and sea
   vec3 c;
   if (dL > 14.0) c = seaCol(p, dL);
   else c = shoreCol(p, dL, sandCol(p, dL), aa(rv.s - 3.0, 4.0)*isMouth);
 
   // ---- the river mouth fans into the shallows
-  if (dL > -8.0 && p.x > 410.0){
+  if (dL > -8.0 && p.x < -20.0){
     float fan = (1.0 - smoothstep(-4.0, 30.0, rv.s + 0.6*fbm(p/9.0, 941, 2)*10.0)) * isMouth * smoothstep(0.0, 14.0, dL) * (1.0 - smoothstep(60.0, 120.0, dL));
     c = mix(c, vec3(0.50,0.86,0.89), fan*0.4);
   }
@@ -596,7 +600,7 @@ vec3 terrain(vec2 p){
     c = mix(c, vec3(1.0), (1.0 - smoothstep(0.0, 1.0, abs(ws - 0.8 - 0.5*gn(p/3.0, 960))))*(1.0 - bankGrass)*(1.0 - seaT)*0.5*smoothstep(-0.2, 0.4, gn(p/2.0, 961)));
     vec3 wc = waterCol(p, depthT, la);
     // toward the mouth the river takes the sea's shallow colours, then the sea's own
-    float mouth = smoothstep(415.0, 465.0, p.x)*isMouth;
+    float mouth = (1.0 - smoothstep(-75.0, -25.0, p.x))*isMouth;
     wc = mix(wc, mix(vec3(0.38,0.78,0.90), vec3(0.52,0.86,0.89), 1.0 - depthT), mouth*0.7);
     if (seaT > 0.0) wc = mix(wc, seaCol(p, max(dL, 10.0)), seaT);
     // near banks: a shadow strip under the grass lip; far banks: the earth face, its grass hanging over
@@ -758,6 +762,18 @@ vec3 terrain(vec2 p){
 
   // ---- the seasonal dressing (terrain-seasons.ts): petals, leaves, clover, tufts, the snow's drifts and banks
   c = dress(p, c, dL, dG, aG, pd, ws);
+
+  // ---- the stone bridge's deck (NH's model from above), with its soft shadow a little right of and in front of it
+  {
+    vec2 hd = vec2(0.5*DECK.w, 0.5*(DECK.z - DECK.y)), cd = vec2(DECK.x, 0.5*(DECK.y + DECK.z));
+    float sd = boxD(p, cd + vec2(2.5, -2.0), hd - vec2(1.5, 1.0), 3.0);
+    c = mix(c, c*vec3(0.62,0.70,0.78), (1.0 - smoothstep(-3.0, 3.0, sd))*0.5);
+    vec2 q = vec2((p.x - DECK.x)/DECK.w + 0.5, (p.y - DECK.y)/(DECK.z - DECK.y));
+    if (q.x >= 0.0 && q.x <= 1.0 && q.y >= 0.0 && q.y <= 1.0){
+      vec4 t = texture(uDeck, q);
+      c = c*(1.0 - t.a) + t.rgb;
+    }
+  }
 
   // ---- contact shadows (light from the upper left)
   float sa = shadowAt(p);
@@ -935,7 +951,7 @@ const fragFor = (season: Season) => `#version 300 es\nprecision highp float;\npr
 // ---- the renderer (Chrome) ---------------------------------------------------------------------------------------
 
 const PAGE = /* js */ `
-window.setup = (vert, frags) => {
+window.setup = async (vert, frags, decks) => {
   const cv = document.createElement('canvas'); document.body.appendChild(cv);
   const gl = cv.getContext('webgl2', { preserveDrawingBuffer: true, premultipliedAlpha: false, antialias: false, alpha: true });
   const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
@@ -946,12 +962,25 @@ window.setup = (vert, frags) => {
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
     progs[k] = p;
   }
+  // each program's deck texture (premultiplied, mipmapped: the bake draws it at a third of its pixels)
+  const tex = {};
+  for (const [k, url] of Object.entries(decks)) {
+    const img = new Image(); img.src = url; await img.decode();
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    tex[k] = t;
+  }
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
   window.draw = ({ prog, w, h, origin, px, mode, size }) => {
     cv.width = w; cv.height = h; gl.viewport(0, 0, w, h);
     const p = progs[prog]; gl.useProgram(p);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex[prog]); gl.uniform1i(gl.getUniformLocation(p, 'uDeck'), 0);
     gl.uniform2f(gl.getUniformLocation(p, 'uOrigin'), origin[0], origin[1]);
     gl.uniform1f(gl.getUniformLocation(p, 'uPx'), px);
     gl.uniform1i(gl.getUniformLocation(p, 'uMode'), mode);
@@ -996,7 +1025,10 @@ async function main() {
   await page.setContent('<body style="margin:0"></body>');
   await page.addScriptTag({ content: PAGE });
   const frags = Object.fromEntries(seasons.map((s) => [s, fragFor(s)]));
-  await page.evaluate(([v, fr]) => (window as any).setup(v, fr), [VERT, frags] as const);
+  // the deck's art (scripts/models.ts), the snowy one for winter
+  const deckUrl = (season: Season) => `data:image/webp;base64,${readFileSync(join(APP, 'static', 'art', 'bridges', `stone-deck${baseOf(season) === 'winter' ? '-winter' : ''}.webp`)).toString('base64')}`;
+  const decks = Object.fromEntries(seasons.map((s) => [s, deckUrl(s)]));
+  await page.evaluate(([v, fr, dk]) => (window as any).setup(v, fr, dk), [VERT, frags, decks] as const);
   const tmp = mkdtempSync(join(tmpdir(), 'terrain-'));
   const W = Math.round((PLAN.x1 - PLAN.x0) * PX), H = Math.round(CHUNK_D * PX);
   const bytes: Record<string, number[]> = {};

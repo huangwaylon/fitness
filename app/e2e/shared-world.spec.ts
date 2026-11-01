@@ -118,7 +118,7 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
   await open(b, '&as=B');
   for (const p of [a, b]) await go(p, 300);
   await a.waitForTimeout(400);
-  for (const [tapper, watcher, tx, tz] of [[a, b, 240, 500], [b, a, 160, 640]] as const) {
+  for (const [tapper, watcher, tx, tz] of [[a, b, 240, 500], [b, a, 150, 560]] as const) {
     const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
     await tapper.mouse.click(x, y);
     // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart)

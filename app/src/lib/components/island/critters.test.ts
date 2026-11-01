@@ -302,13 +302,14 @@ describe('captions', () => {
 });
 
 describe('the waters (world units): the sea, the pond, the river, its mouth, the clifftop', () => {
-  it('a tap in the pond is the pond, on the stream the river (its mouth on the east beach, the clifftop at the falls’ pool and above the cliff), off the island the sea, on the land neither', () => {
+  it('a tap in the pond is the pond, on the stream the river (its mouth on the west beach, the clifftop at the falls’ pool and above the cliff), off the island the sea, on the land neither', () => {
     expect(waterAt(POND.x, POND.z, false)).toBe('pond');
     expect(waterAt(POND.x + POND.rx + 8, POND.z, false)).toBe('pond'); // a finger's slack round the rim
     expect(waterAt(POND.x + POND.rx + 30, POND.z, false)).toBeNull();
     expect(waterAt(RIVER[6][0], RIVER[6][1], false)).toBe('river');
-    expect(waterAt(195, 640, false)).toBeNull();
-    expect(waterAt(RIVER[11][0], RIVER[11][1], false)).toBe('mouth');
+    expect(waterAt(RIVER[12][0], RIVER[12][1], false)).toBe('river'); // the reach across, beside the bridge
+    expect(waterAt(195, 560, false)).toBeNull();
+    expect(waterAt(RIVER[18][0], RIVER[18][1], false)).toBe('mouth');
     expect(waterAt(RIVER[1][0], RIVER[1][1], false)).toBe('clifftop');
     expect(waterAt(372, CLIFF.z0 - 20, false)).toBe('clifftop'); // the falls' pool
     expect(waterAt(SPRING.x, SPRING.z, false)).toBe('clifftop'); // the spring

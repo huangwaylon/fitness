@@ -103,7 +103,7 @@ test('the stream at おく: a river fish (NH: River) in its reach, cast from the
 
 test("NH's own waters: the salmon at the river mouth, the char on the clifftop, the koi in the pond", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const [id, water, z] of [['salmon', 'mouth', CAMS.oku], ['char', 'clifftop', CAMS.oku], ['koi', 'pond', CAMS.oku]] as const) {
+  for (const [id, water, z] of [['salmon', 'mouth', CAMS.mae], ['char', 'clifftop', CAMS.oku], ['koi', 'pond', CAMS.oku]] as const) {
     expect(POND_FISH[id].water).toBe(water);
     await open(page, `&critter=${id}`, z);
     const s = page.locator(`[data-critter="pond"][data-water="${water}"]`);

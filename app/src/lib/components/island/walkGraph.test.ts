@@ -2,7 +2,7 @@ import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import { actionSpots, facingFor, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
-import { CAMPSITE, FLOWERS, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver } from './world.ts';
+import { BRIDGE_RAIL, CAMPSITE, FLOWERS, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver, onBridge } from './world.ts';
 
 const crosses = (a: Pt, b: Pt, o: Box) => {
   for (let i = 0; i <= 100; i++) {
@@ -45,11 +45,14 @@ describe('the walk geometry (from the world constants)', () => {
     expect(walkable(g, CAMPSITE.x, CAMPSITE.z + 20)).toBe(false);
     expect(walkable(g, 60, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(true); // the stairs
   });
-  it('up the cliff only by the stairs; nothing crosses the stream', () => {
+  it('up the cliff only by the stairs; the stream crossed only on the bridge', () => {
     const r = route(g, g.nodes.homeA, g.nodes.centreStage)!;
     sound(g, g.nodes.homeA, r);
     for (const [a, b] of [[g.nodes.homeA, r[0]], ...r.slice(1).map((p, i) => [r[i], p])] as [Pt, Pt][])
-      for (let k = 0; k <= 40; k++) expect(inRiver(a[0] + ((b[0] - a[0]) * k) / 40, a[1] + ((b[1] - a[1]) * k) / 40)).toBe(false);
+      for (let k = 0; k <= 40; k++) {
+        const x = a[0] + ((b[0] - a[0]) * k) / 40, z = a[1] + ((b[1] - a[1]) * k) / 40;
+        expect(inRiver(x, z) && !onBridge(x, z, BRIDGE_RAIL)).toBe(false);
+      }
     const up = route(g, g.nodes['door-campsite'], g.nodes.stairN)!;
     sound(g, g.nodes['door-campsite'], up);
     const way = [g.nodes['door-campsite'], ...up];

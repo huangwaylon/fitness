@@ -2,14 +2,14 @@
 // across, z into the island), the obstacles on it and a graph of named nodes to route around them. Pure, built from
 // world.ts, so a layout change carries over; parameterised (`walkGeo(extra)`) for what comes and goes (a visitor) and
 // for the tests.
-// Ground: land (sand and grass) and the cliff's stairs; not the sea, the stream, the pond, the spring, the cliff face
+// Ground: land (sand and grass), the bridge's deck and the cliff's stairs; not the sea, the stream (but for the bridge), the pond, the spring, the cliff face
 // (but for the stairs), the campsite's footprint, trunks, the rock, bushes and props. The static part is rasterised once (a 4u grid, ~5 ms) so a segment test is a few lookups; a
 // visitor's box is tested on top. Routing: a straight segment when it is clear, else the shortest way through the
 // nodes (named ones and the padded corners of the obstacles): a visibility graph precomputed once, Dijkstra per walk.
 import type { Box } from './geom.ts';
 import {
-  BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
-  SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onLand, type Pt
+  BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
+  SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onBridge, onLand, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -79,7 +79,7 @@ const onStairs = (x: number, z: number) => x >= CLIFF.stair[0] + 4 && x <= CLIFF
 
 /** The ground itself, before obstacles: land, off the water and the cliff face. */
 function ground(x: number, z: number): boolean {
-  if (onStairs(x, z)) return true;
+  if (onStairs(x, z) || onBridge(x, z, BRIDGE_RAIL + 1)) return true;
   if (!onLand(x, z)) return false;
   if (z >= CLIFF.z0 - 6 && z <= CLIFF.z1 + 4 && x >= CLIFF.x0 - 20 && x <= CLIFF.x1 + 20) return false;
   if (inOval(POND, x, z, 4) || inOval(SPRING, x, z, 4)) return false;
@@ -102,8 +102,8 @@ function build() {
     for (let i = 0; i < w; i++) {
       const x = GX0 + (i + 0.5) * CELL;
       if (!ground(x, z)) continue;
-      // the stairs cut through whatever they cross
-      if (!onStairs(x, z) && obstacles.some((o) => inBox(o, x, z, PAD))) continue;
+      // the stairs and the bridge cut through whatever they cross
+      if (!onStairs(x, z) && !onBridge(x, z, BRIDGE_RAIL + 1) && obstacles.some((o) => inBox(o, x, z, PAD))) continue;
       ok[j * w + i] = 1;
     }
   }
@@ -125,7 +125,8 @@ function namedNodes(): Record<string, Pt> {
     stairS: [60, CLIFF.z0 - 14], stairN: [60, CLIFF.z1 + 14],
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],
     pondside: [POND.x + 4, POND.z + POND.rz + 14],
-    riverEast: [340, 880], riverBend: [356, 742], mouth: [414, 668], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
+    riverEast: [340, 880], riverBend: [330, 742], mouth: [-12, 596],
+    bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
   };
   for (const b of BUILDINGS) nodes[`door-${b.id}`] = [b.x, b.z - 16];
   return nodes;

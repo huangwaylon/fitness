@@ -130,7 +130,9 @@ describe('official art (static/art/manifest.json)', () => {
     // Bunny Day's eggs (island/eggs.ts)
     ...EGGS.map(findArt),
     // a present's recipe card (island/Finds.svelte); its items' and recipes' icons are outside the manifest (catalog.test)
-    'presents/diy-recipe'
+    'presents/diy-recipe',
+    // the bridge's deck from above: baked into the ground (scripts/terrain.ts), never shown by the app itself
+    'bridges/stone-deck'
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {
@@ -146,7 +148,7 @@ describe('official art (static/art/manifest.json)', () => {
     expect(keys.filter((k) => !used(k) && !(LOOK.test(k) && used(k.replace(LOOK, ''))))).toEqual([]);
   });
   it('every key named in the code exists', () => {
-    const named = [...literals].filter((l) => /^(bushes|deco|flowers|fruit|host|money|reactions|season|trees|villagers)\/[\w-]+$/.test(l));
+    const named = [...literals].filter((l) => /^(bridges|bushes|deco|flowers|fruit|host|money|reactions|season|trees|villagers)\/[\w-]+$/.test(l));
     expect(named.filter((k) => !keys.includes(k))).toEqual([]);
   });
 });

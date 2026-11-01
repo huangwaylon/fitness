@@ -2,16 +2,17 @@
   // The live water (docs/design.md "World"): the only moving parts of the ground, each a light world node over the
   // baked terrain, CSS-animated (transform and opacity only; no timers, no rAF), held still under a sheet and while
   // hidden. The shore's foam wash along the front beach (ShoreWash, a ground quad), the waterfall through the cliff
-  // (Waterfall, upright, over the cliff's upright face), glints twinkling on the open sea (a fixed pool, a few in view at a time), short flow streaks
+  // (Waterfall, upright, over the cliff's upright face), the stone bridge's near end standing at its deck's near edge
+  // (the deck is baked), glints twinkling on the open sea (a fixed pool, a few in view at a time), short flow streaks
   // drifting down the stream, and the pond's lily pads with one slow ripple (petals or maple leaves afloat in their
   // weeks, on the pond and riding the stream).
   import { asset } from '$app/paths';
   import { useWorld } from './camera.svelte.ts';
-  import { CLIFF, FACE_H, FALL_H, POND, RIVER, SHORE_Z } from './world.ts';
+  import { BRIDGE, CLIFF, FACE_H, FALL_H, POND, RIVER, SHORE_Z, onBridge } from './world.ts';
   import ShoreWash from './ShoreWash.svelte';
   import Waterfall from './Waterfall.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { seasonArt } from '#lib/art.ts';
+  import { art, seasonArt } from '#lib/art.ts';
 
   let { floating = null, night = false, winter = false }: { floating?: 'petal' | 'maple' | null; night?: boolean; winter?: boolean } = $props();
   const w = useWorld();
@@ -35,8 +36,8 @@
         const t = (j + 0.5) / n, side = (k % 2 ? 1 : -1) * aw * 0.22;
         const nx = -(bz - az) / len, nz = (bx - ax) / len;
         const x = ax + (bx - ax) * t + nx * side, z = az + (bz - az) * t + nz * side;
-        // the waterfall's drop has its own sheet
-        if (z > CLIFF.z0 - 10 && z < CLIFF.z1 + 10) continue;
+        // the waterfall's drop has its own sheet; none on the bridge
+        if ((z > CLIFF.z0 - 10 && z < CLIFF.z1 + 10) || onBridge(x, z, -18)) continue;
         out.push({ x, z, a, d: -((k * 0.53) % 2.5) });
       }
     }
@@ -50,17 +51,20 @@
     let k = 0;
     for (let i = 0; i < RIVER.length - 1; i++) {
       const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1];
-      if (az > CLIFF.z0 - 10 || ax > 420) continue;
+      if (az > CLIFF.z0 - 10 || ax < -30) continue;
       const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / 50));
       const a = (Math.atan2(-(bz - az), bx - ax) * 180) / Math.PI;
       for (let j = 0; j < n; j++, k++) {
         const t = (j + 0.3) / n, side = (((k * 7) % 5) - 2) * 2.4;
         const nx = -(bz - az) / len, nz = (bx - ax) / len;
-        out.push({ x: ax + (bx - ax) * t + nx * side, z: az + (bz - az) * t + nz * side, a, d: -((k * 3.7) % 15), spin: k % 2 ? 1 : -1 });
+        const x = ax + (bx - ax) * t + nx * side, z = az + (bz - az) * t + nz * side;
+        if (!onBridge(x, z, -20)) out.push({ x, z, a, d: -((k * 3.7) % 15), spin: k % 2 ? 1 : -1 });
       }
     }
     return out;
   })();
+  /** The bridge's near end shows its top 36% (the posts and the deck's lip; the abutment below sinks into the bank). */
+  const FRONT = art('bridges/stone-front'), FRONT_H = +(FRONT ? ((BRIDGE.w * FRONT.h) / FRONT.w) * 0.36 : 9).toFixed(1);
   /** The bake's version (its chunks' byte counts summed): a new bake is a new URL (the art cache outlives builds). */
   const BAKE = Object.values(import.meta.glob<{ bytes?: Record<string, number[]> }>('./terrain.json', { eager: true, import: 'default' }))[0];
   const V = Object.values(BAKE?.bytes ?? {}).flat().reduce((a, b) => a + b, 0);
@@ -75,6 +79,13 @@
        over it -->
   <div class="node up" {@attach w.at({ x: (CLIFF.x0 + CLIFF.x1) / 2, z: CLIFF.z0, h: FACE_H })}>
     <img class="front" src={sprite('cliff-face')} alt="" draggable="false" style:width="calc({CLIFF.x1 - CLIFF.x0} * var(--u))" style:height="calc({FACE_H} * var(--u))" />
+  </div>
+  <!-- the bridge's near end (NH's model seen level, its top: the end posts and the deck's lip), standing at the deck's
+       near edge -->
+  <div class="node up" {@attach w.at({ x: BRIDGE.x, z: BRIDGE.z0, h: FRONT_H })}>
+    <div class="front bridge" style:width="calc({BRIDGE.w} * var(--u))" style:height="calc({FRONT_H} * var(--u))">
+      <OfficialArt key={winter ? 'bridges/stone-front-winter' : 'bridges/stone-front'} width="100%" eager />
+    </div>
   </div>
   <div class="node up" {@attach w.at({ x: (CLIFF.fall[0] + CLIFF.fall[1]) / 2, z: CLIFF.z0, h: FALL_H, dz: -0.5 })}>
     <div class="fall"><Waterfall {night} w={CLIFF.fall[1] - CLIFF.fall[0] + 8} h={FALL_H} /></div>
@@ -136,6 +147,7 @@
   .node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
   .node.up .fall { position: absolute; left: 0; bottom: 0; translate: -50% 0; }
   .front { position: absolute; left: 0; bottom: 0; translate: -50% 0; display: block; max-width: none; }
+  .bridge { overflow: hidden; }
   /* a four-point glint twinkling on the sea: 1.6 s of a 4.8 s cycle, each out of step */
   .glint {
     position: absolute; left: 0; bottom: 0; width: calc(12 * var(--u)); height: calc(12 * var(--u)); translate: -50% 0; fill: #FFFFFF;

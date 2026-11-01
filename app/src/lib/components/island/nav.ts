@@ -1,11 +1,11 @@
 // Navigation on the rolling-log island (spec §4, docs/design.md "Walking"): where a tap sends my villager and the way
 // there. Pure, from world.ts's constants, so a layout change carries over.
 //   Obstacles: convex polygons grown by PAD (8u, half a walker's footprint): the stream as a chain of quads along its
-//   centreline, the pond and the spring as 16- and 12-gons, the cliff as two strips either side of the stairs, the
+//   centreline (cut at the bridge's deck), the pond and the spring as 16- and 12-gons, the cliff as two strips either side of the stairs, the
 //   campsite's footprint, the trunks, bushes, the rock, the props, the
 //   hedge, the bamboo and the rocks (walkGraph.ts's sizes). The sea is everything off the land (a convex rounded rectangle, so a straight walk between two
 //   points on land stays on land).
-//   Nodes: the obstacles' corners (a step outside them) plus named ones (homes, the campsite's door, the stairs' ends,
+//   Nodes: the obstacles' corners (a step outside them) plus named ones (homes, the campsite's door, the bridge's and the stairs' ends,
 //   the shore, the pondside, the riverbank's casting spots, centre stage). Their visibility graph is built once
 //   (only bitangent edges: an edge that would cut into its own corner's polygon is never on a shortest way); a walk
 //   is a straight segment when it is clear, else A* over the graph plus the start and the goal.
@@ -13,8 +13,8 @@
 //   or the nearest walkable point within 40u (anything else).
 import type { Box } from './geom.ts';
 import {
-  BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
-  SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, type BuildingId, type Pt
+  BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
+  SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -173,17 +173,37 @@ export function doorOf(id: BuildingId): Pt {
   return [b.x, b.z - 16];
 }
 
-/** The stream as convex quads along its centreline. */
+/** The stream as convex quads along its centreline, cut where the bridge's deck crosses it (inside its rails). */
 function riverQuads(): Poly[] {
   const out: Poly[] = [];
-  // each segment a quad: offset ±(half-width + pad) square to it, overlapping its neighbours by a pad at the joints
-  // (so a bend leaves no gap)
+  type Seg = { a: Pt; b: Pt; wa: number; wb: number };
+  const lo = BRIDGE.x - BRIDGE.w / 2 + BRIDGE_RAIL, hi = BRIDGE.x + BRIDGE.w / 2 - BRIDGE_RAIL;
+  const segs: Seg[] = [];
   for (let i = 0; i < RIVER.length - 1; i++) {
     const [ax, az, wa] = RIVER[i], [bx, bz, wb] = RIVER[i + 1];
-    const dx = bx - ax, dz = bz - az, L = Math.hypot(dx, dz) || 1;
+    const s: Seg = { a: [ax, az], b: [bx, bz], wa, wb };
+    const zMid = (az + bz) / 2;
+    if (zMid < BRIDGE.z0 || zMid > BRIDGE.z1 || Math.min(ax, bx) >= hi || Math.max(ax, bx) <= lo) {
+      segs.push(s);
+      continue;
+    }
+    // keep the parts of the segment outside the deck's x-range [lo, hi]
+    const t = (x: number) => (x - ax) / (bx - ax);
+    const at = (x: number): Pt => [x, az + (bz - az) * t(x)];
+    const wAt = (x: number) => wa + (wb - wa) * t(x);
+    const [l, r, wl, wr] = ax < bx ? [s.a, s.b, wa, wb] : [s.b, s.a, wb, wa];
+    if (l[0] < lo) segs.push({ a: l, b: at(lo), wa: wl, wb: wAt(lo) });
+    if (r[0] > hi) segs.push({ a: at(hi), b: r, wa: wAt(hi), wb: wr });
+  }
+  // each piece a quad: offset ±(half-width + pad) square to it, overlapping its neighbours by a pad at the joints
+  // (so a bend leaves no gap), but not into the deck at a cut
+  const cut = (p: Pt) => Math.abs(p[0] - lo) < 0.01 || Math.abs(p[0] - hi) < 0.01;
+  for (const s of segs) {
+    const dx = s.b[0] - s.a[0], dz = s.b[1] - s.a[1], L = Math.hypot(dx, dz) || 1;
     const ux = dx / L, uz = dz / L, nx = -uz, nz = ux;
-    const ha = wa / 2 + PAD, hb = wb / 2 + PAD;
-    const a: Pt = [ax - ux * PAD, az - uz * PAD], b: Pt = [bx + ux * PAD, bz + uz * PAD];
+    const ea = cut(s.a) ? 0 : PAD, eb = cut(s.b) ? 0 : PAD;
+    const ha = s.wa / 2 + PAD, hb = s.wb / 2 + PAD;
+    const a: Pt = [s.a[0] - ux * ea, s.a[1] - uz * ea], b: Pt = [s.b[0] + ux * eb, s.b[1] + uz * eb];
     out.push(poly([
       [a[0] + nx * ha, a[1] + nz * ha], [b[0] + nx * hb, b[1] + nz * hb], [b[0] - nx * hb, b[1] - nz * hb], [a[0] - nx * ha, a[1] - nz * ha]
     ], 'water'));
@@ -225,9 +245,10 @@ function namedNodes(): Record<string, Pt> {
     stairS: [(CLIFF.stair[0] + CLIFF.stair[1]) / 2, CLIFF.z0 - 14], stairN: [(CLIFF.stair[0] + CLIFF.stair[1]) / 2, CLIFF.z1 + 14],
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],
     pondside: [POND.x + 4, POND.z + POND.rz + 14],
-    // the stream's casting spots: its west bank below the falls, the bend, the mouth (the east beach south of it), the
+    // the stream's casting spots: its west bank below the falls, the bend, the mouth (the west beach in front of it), the
     // falls' pool (NH's clifftop: the upper tier is beyond the horizon)
-    riverEast: [340, 880], riverBend: [356, 742], mouth: [414, 668], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
+    riverEast: [340, 880], riverBend: [330, 742], mouth: [-12, 596],
+    bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
   };
   for (const b of BUILDINGS) nodes[`door-${b.id}`] = doorOf(b.id);
   return nodes;
@@ -492,6 +513,7 @@ export interface Snap {
 
 /** The water at a point (unpadded), or null. */
 export function waterAt(x: number, z: number): WaterKind | null {
+  if (onBridge(x, z)) return null;
   if (!onLand(x, z)) return 'sea';
   if (inOval(POND, x, z)) return 'pond';
   if (inOval(SPRING, x, z)) return 'spring';

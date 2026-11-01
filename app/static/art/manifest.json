@@ -1,6 +1,30 @@
 {
-  "version": 45,
+  "version": 46,
   "files": {
+    "bridges/stone-deck": {
+      "path": "bridges/stone-deck.webp",
+      "w": 222,
+      "h": 300,
+      "source": "rendered from NH's model BridgeStone03 (scripts/models.ts)"
+    },
+    "bridges/stone-deck-winter": {
+      "path": "bridges/stone-deck-winter.webp",
+      "w": 222,
+      "h": 300,
+      "source": "rendered from NH's model BridgeStone03 (scripts/models.ts)"
+    },
+    "bridges/stone-front": {
+      "path": "bridges/stone-front.webp",
+      "w": 166,
+      "h": 119,
+      "source": "rendered from NH's model BridgeStone03 (scripts/models.ts)"
+    },
+    "bridges/stone-front-winter": {
+      "path": "bridges/stone-front-winter.webp",
+      "w": 166,
+      "h": 119,
+      "source": "rendered from NH's model BridgeStone03 (scripts/models.ts)"
+    },
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
       "w": 125,

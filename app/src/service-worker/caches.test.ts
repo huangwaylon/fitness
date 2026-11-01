@@ -52,7 +52,10 @@ describe('precache', () => {
   it('leaves the world’s winter and night looks and its decor out: cached on first use', () => {
     for (const p of ['art/deco/resident-services-winter.webp', 'art/trees/cedar-winter.webp', 'art/deco/airport-lit.webp', 'art/deco/lamp-glow.webp',
       'art/deco/fence-bamboo.webp', 'art/deco/garden-lantern-white.webp', 'art/trees/bamboo.webp', 'art/flowers/purple-windflowers.webp', 'art/flowers/red-tulips.webp', 'art/flowers/pink-cosmos.webp']) expect(precachable(p)).toBe(false);
-    for (const p of ['art/deco/resident-services.webp', 'art/trees/cedar.webp']) expect(precachable(p)).toBe(true);
+    for (const p of ['art/deco/resident-services.webp', 'art/trees/cedar.webp', 'art/bridges/stone-front.webp']) expect(precachable(p)).toBe(true);
+  });
+  it('leaves the bridge deck out: the terrain bake draws it, the app never shows it', () => {
+    for (const p of ['art/bridges/stone-deck.webp', 'art/bridges/stone-deck-winter.webp']) expect(precachable(p)).toBe(false);
   });
   it('keeps the shell, the default villagers and the scene art', () => {
     for (const p of ['_app/immutable/entry/app.js', 'art/fruit/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {

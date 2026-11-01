@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { PAD, buildingAt, reachable, clear, doorOf, findPath, footprint, nav, nearestWalkable, pathLength, snapTap, walkable, waterAt, type Nav } from './nav.ts';
-import { BUILDINGS, CENTRE_STAGE, CLIFF, HOMES, LAND, POND, RIVER, ROCK, SHORE_Z, inOval, inRiver, onLand, riverNear, type Pt } from './world.ts';
+import { BRIDGE, BUILDINGS, CENTRE_STAGE, CLIFF, HOMES, LAND, POND, RIVER, ROCK, SHORE_Z, inOval, inRiver, onBridge, onLand, riverNear, type Pt } from './world.ts';
 
 const g = nav();
 
 /** The raw ground at a point, from world.ts alone (not nav's polygons): what a walk must never touch. */
 function forbidden(x: number, z: number): string | null {
+  if (onBridge(x, z)) return null;
   if (!onLand(x, z)) return 'sea';
   if (inRiver(x, z)) return 'river';
   if (inOval(POND, x, z)) return 'pond';
@@ -53,7 +54,8 @@ describe('the obstacles', () => {
   it('water, the cliff face, the tent, trunks and the rock are not walkable; the stairs and the lawn are', () => {
     expect(walkable(g, HOMES.A[0], HOMES.A[1])).toBe(true);
     expect(walkable(g, POND.x, POND.z)).toBe(false);
-    expect(walkable(g, 195, 640)).toBe(true); // the lawn between the sections (no river across the island)
+    expect(walkable(g, BRIDGE.x, (BRIDGE.z0 + BRIDGE.z1) / 2)).toBe(true); // the bridge over the stream
+    expect(walkable(g, BRIDGE.x - BRIDGE.w / 2 + 1, (BRIDGE.z0 + BRIDGE.z1) / 2)).toBe(false); // its rail
     for (const i of [5, 7, 9]) expect(walkable(g, RIVER[i][0], RIVER[i][1]), `stream ${i}`).toBe(false);
     expect(walkable(g, 250, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(false); // the cliff face
     expect(walkable(g, (CLIFF.stair[0] + CLIFF.stair[1]) / 2, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(true); // the stairs
@@ -66,6 +68,7 @@ describe('the obstacles', () => {
     const r = rng(7);
     for (let i = 0; i < 4000; i++) {
       const [x, z] = randomWalkable(r, g);
+      if (onBridge(x, z)) continue;
       const near = riverNear(x, z);
       expect(near.d - near.hw, `${x}, ${z}`).toBeGreaterThan(PAD - 0.5);
       expect(inOval(POND, x, z, PAD - 0.5)).toBe(false);
@@ -193,13 +196,14 @@ describe('snapping a tap', () => {
     expect(s.water).toBe('river');
     expect(walkable(g, s.to[0], s.to[1])).toBe(true);
     expect(Math.hypot(s.to[0] - mx, s.to[1] - mz)).toBeLessThan(RIVER[6][2] / 2 + PAD + 4);
-    // the west bank, facing the water (the strip beyond it is a pocket nobody can reach)
-    for (const x of [365, 380]) {
-      const e = snapTap(g, x, 900)!;
-      expect(e.kind).toBe('bank');
-      expect(e.to[0]).toBeLessThan(372 - 15);
-      expect(e.face).toBe('r');
-    }
+    // the nearer bank, facing the water: the west one, or the east strip's (reached round the bend)
+    const w = snapTap(g, 365, 900)!;
+    expect(w).toMatchObject({ kind: 'bank', face: 'r' });
+    expect(w.to[0]).toBeLessThan(372 - 15);
+    const e = snapTap(g, 382, 900)!;
+    expect(e).toMatchObject({ kind: 'bank', face: 'l' });
+    expect(e.to[0]).toBeGreaterThan(372 + 15);
+    expect(reachable(g, e.to[0], e.to[1])).toBe(true);
   });
 
   it('the pond and the sea go to their banks; a tap far out at sea finds the beach', () => {
@@ -218,16 +222,14 @@ describe('snapping a tap', () => {
     expect(waterAt(195, 640)).toBeNull();
   });
 
-  it('a pocket nobody can walk to (the strip east of the stream, walled in by the cliff and the mouth) sends you to the nearest main ground, facing it', () => {
-    expect(walkable(g, 404, 900)).toBe(true);
-    expect(reachable(g, 404, 900)).toBe(false);
-    expect(findPath(g, [...HOMES.A], [404, 900])).toBeNull();
-    const s = snapTap(g, 404, 900)!;
-    expect(s.kind).toBe('near');
-    expect(reachable(g, s.to[0], s.to[1])).toBe(true);
-    expect(s.to[0]).toBeLessThan(372);
-    expect(s.face).toBe('r');
-    expect(findPath(g, [...HOMES.A], s.to)).not.toBeNull();
+  it('the strip east of the stream is reached round the bend, and おく from the lawn only over the bridge', () => {
+    expect(reachable(g, 404, 900)).toBe(true);
+    const p = findPath(g, [...HOMES.B], [404, 900])!;
+    sound(HOMES.B, p);
+    const up = findPath(g, [...HOMES.A], [...CENTRE_STAGE])!;
+    sound(HOMES.A, up);
+    // the way up crosses the stream on the deck
+    expect(up.some((q, i) => i > 0 && Math.min(up[i - 1][1], q[1]) < BRIDGE.z0 && Math.max(up[i - 1][1], q[1]) > BRIDGE.z1 && Math.abs(q[0] - BRIDGE.x) < BRIDGE.w / 2)).toBe(true);
   });
 
   it('anything else goes to the nearest walkable point within 40u, or nowhere', () => {

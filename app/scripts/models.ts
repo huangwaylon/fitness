@@ -96,6 +96,11 @@ export const JOBS: Job[] = [
   // rocks
   prop('deco/garden-rock', 'FtrGardenrock', null, ['day'], 80),
   prop('deco/flat-rock', 'FtrGardenrockLow', null, ['day'], 60),
+  // the stone bridge (NH's BridgeStone03, three tiles long), turned to span the stream along z: its deck from straight
+  // above, the image's height along z and its centre the bridge's (baked into the ground: scripts/terrain.ts), and its
+  // near end seen level (an upright piece at the deck's near edge: WorldWater)
+  { px: 300, anchor: 'origin', pitch: 90, rotY: 90, looks: [{ key: 'bridges/stone-deck', parts: [['BridgeStone', 'BridgeStone03']], outputs: ['day', 'winter'] }] },
+  { px: 120, anchor: 'origin', pitch: 0, rotY: 90, looks: [{ key: 'bridges/stone-front', parts: [['BridgeStone', 'BridgeStone03']], outputs: ['day', 'winter'] }] },
   // bushes in bloom (stage 3), the colour a row of the flowers' gradient; winter: NH's snowy bush
   ...([
     ['white-azalea', 'Azalea', 'Petal', 0.03, 2], ['pink-azalea', 'Azalea', 'Petal', 0.09, 2],

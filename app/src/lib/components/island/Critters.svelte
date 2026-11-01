@@ -2,7 +2,7 @@
   // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH, in the rolling-log world
   // (world.ts units: x across, z into the island): now and then (ambient life's slots, island/ambient.ts: the same on both phones) a fish
   // shadow swims in the sea in front of the front beach (seen from まえ), another in a fresh water in view, NH's fresh
-  // water by where it is (the pond, the river's reaches, the river mouth on the east beach, the falls' pool (clifftop) and the
+  // water by where it is (the pond, the river's reaches, the river mouth on the west beach, the falls' pool (clifftop) and the
   // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
   // where NH keeps it; a shaken bush sometimes lets a butterfly or a moth out. A catch is an official icon and NH's
   // line, and the first of each a ずかん find (never ベル).
