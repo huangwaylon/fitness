@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RoomCore, type Meta } from '../../../../relay/src/room.ts';
 import { dayStart, parseServer, tokyoDay, type Intent, type Relayed, type Who } from './live-protocol.ts';
-import { apply, applyRow, emptyDay, lying, rowOf, taken, takenIds, caught, wishesFor, type DayEvent, type WorldDay } from './world-day.ts';
+import { apply, applyRow, canonical, emptyDay, hash, lying, rowOf, taken, takenIds, caught, wishesFor, type DayEvent, type WorldDay } from './world-day.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -15,7 +15,8 @@ class Sock {
   closed = false;
   send(d: string) {
     const m = parseServer(d);
-    if (m && 'who' in m && m.kind !== 'presence' && m.kind !== 'changed') this.inbox.push(m as Relayed);
+    if (m?.kind === 'replay') this.inbox.push(...m.es);
+    else if (m && 'who' in m && m.kind !== 'presence' && m.kind !== 'changed') this.inbox.push(m as Relayed);
   }
   close() {
     this.closed = true;
@@ -39,14 +40,28 @@ function island() {
     mine: DayEvent[] = [];
     sock: Sock | null = null;
     lost: string[] = [];
+    /** What I sent, numbered (a resend is the same), and what waits for the socket. */
+    sent: { c: number; i: Intent }[] = [];
+    waiting: { c: number; i: Intent }[] = [];
+    seq = 0;
     constructor(public who: Who) {}
-    open(since = dayStart(DAY)) {
+    open(since = dayStart(DAY), batch = false) {
       const s = new Sock();
       socks.push(s);
       room.open(s);
-      room.message(s, JSON.stringify({ v: 2, kind: 'hello', key: this.who === 'A' ? KEY_A : KEY_B, since }));
+      room.message(s, JSON.stringify({ v: 2, kind: 'hello', key: this.who === 'A' ? KEY_A : KEY_B, since, ...(batch ? { batch } : {}) }));
       this.sock = s;
       this.drain();
+      for (const w of this.waiting.splice(0)) this.send(w);
+    }
+    send(w: { c: number; i: Intent }) {
+      if (!this.sock) return void this.waiting.push(w);
+      room.message(this.sock, JSON.stringify({ v: 2, c: w.c, ...w.i }));
+      this.sent.push(w);
+    }
+    /** The last `k` sent again, as after a reconnect that missed their acks. */
+    resendLast(k: number) {
+      for (const w of this.sent.slice(-k)) if (this.sock) room.message(this.sock, JSON.stringify({ v: 2, c: w.c, ...w.i }));
     }
     close() {
       if (!this.sock) return;
@@ -60,7 +75,7 @@ function island() {
       const a = apply(this.day, e, this.who);
       if (!a.fresh) return false;
       this.mine.push(e);
-      if (this.sock) room.message(this.sock, JSON.stringify({ v: 2, ...i }));
+      this.send({ c: ++this.seq, i });
       return true;
     }
     /** Fold what the relay sent me (in its order). */
@@ -137,6 +152,48 @@ describe('the shared day: two phones on the relay', () => {
     expect(B.lost).toEqual(['pick:s2000']);
     // once it's theirs, a tap of mine claims nothing
     expect(B.act({ kind: 'pick', id: 's2000', what: 'shell:cowrie' })).toBe(false);
+  });
+
+  it('a scripted session of every kind (conflicts, a dropped socket and its resends, a late join in one replay): the same canonical day on every phone', () => {
+    const { A, B, tick } = island();
+    A.open();
+    B.open();
+    const both = () => (A.drain(), B.drain());
+    for (let i = 0; i < 40; i++) {
+      tick(700);
+      const p = i % 3 ? A : B, q = p === A ? B : A;
+      const at = T0 + i * 700;
+      switch (i % 8) {
+        case 0: p.act({ kind: 'catch', what: 'sea-bass', id: `sea:${i}`, at: [120, -60], how: 'rod' }); break;
+        case 1: p.act({ kind: 'pick', id: `s${i}`, what: 'find:shell:cowrie', at: [150, 40] }); break;
+        case 2: p.act({ kind: 'put', id: `p${p.who.toLowerCase()}${i}`, what: 'present', at: [200, 400] }); break;
+        case 3: p.act({ kind: 'shake', tree: `oak-${i}`, drop: 'branch', at }); break;
+        case 4: p.act({ kind: 'world', op: 'watered', id: `fl:${i}:500` }); break;
+        case 5: p.act({ kind: 'walk', to: [100 + i, 500], from: [132, 214], s: at, ms: 900 }); break;
+        case 6: p.act({ kind: 'world', op: 'woke', id: 'gulliver' }); break;
+        default: p.act({ kind: 'world', op: 'wished', id: '2026-11-02' });
+      }
+      // now and then both tap the same thing at once (the relay's first wins)
+      if (i % 5 === 0) {
+        p.act({ kind: 'pick', id: `both${i}`, what: 'weed' });
+        q.act({ kind: 'pick', id: `both${i}`, what: 'weed' });
+      }
+      if (i % 2) both();
+      // B's socket drops for a stretch: what it does meanwhile goes after it's back (a resend of one the relay has is
+      // acked, not kept twice)
+      if (i === 20) B.close();
+      if (i === 26) {
+        B.open(T0);
+        B.resendLast(4);
+      }
+    }
+    both();
+    const C = new (Object.getPrototypeOf(B).constructor)('B') as typeof B;
+    C.open(dayStart(DAY), true);
+    const hashes = [A, B, C].map((p) => hash(canonical(p.day)));
+    expect(new Set(hashes).size).toBe(1);
+    expect(Object.keys(A.day.claims).length).toBeGreaterThan(10);
+    expect(A.day.woke.gulliver).toBeDefined();
   });
 
   it('a phone opening later puts today’s island back together from the relay (and its own changes)', () => {

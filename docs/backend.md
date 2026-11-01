@@ -392,7 +392,22 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   screen; their outcomes (a catch, a find) are shared.
 - **Budget** (Free plan): an intent is ≤ 100 bytes sent (tested), ≤ 140 relayed. A busy day of two people (~300
   walks, ~200 catches and pick-ups, ~50 shakes) is ~550 incoming messages: ~28 DO requests (20:1), ~550 storage writes
-  (of 100,000 rows/day), and a replay on each open (outgoing messages are free). Nothing per frame.
+  (of 100,000 rows/day), and a replay on each open (outgoing messages are free). Nothing per frame. With every villager
+  move told (2026-11-01): a walk ~100–200 bytes, one per move (a tap-walk, a walk home, a stop; a burst within one
+  task is one message), said again every 5 s while one is under way and the partner is here, one more on each join
+  and reconnect; a wake ~70 bytes. A busy hour together (~120 moves, ~60 resays, ~40 world changes, pings) is ~250
+  incoming messages, ~13 DO requests; a day of it ~2,000 messages, ~100 DO requests and ~1,500 storage writes: under
+  1 % of the 100k requests, 1.5 % of the writes. The acks, presence and replays go out (free). Per frame: none (the
+  director moves the feet by the clock; a message only at a walk's start).
+- **Checked** (`e2e/sync-harness.spec.ts`): two players run a scripted session (four tap-walks, a pick-up, a catch,
+  a present put down and picked up, a watered flower, a shake, a wish, both grabbing one thing at once), then both
+  phones (and a third opening later) must have the same canonical day (`world-day.ts canonical`, `hash`) and each
+  villager at the same point, awake or asleep alike. On the demo's two tabs in CI; against the test relay with
+  `RELAY_E2E=1 … --workers=1` (2026-11-02 00:10, from Tokyo, n = 3 runs): tap → the partner's villager sets off on the
+  other phone median 34–40 ms (max 56), a pick-up / catch / put / watering / shake there 15–28 ms, a phone opening
+  later has the same island 364–391 ms after its navigation starts (the page's load included); acks 29–38 ms; nothing
+  resent. The simulated room (`world-day.test.ts`, the real `RoomCore`) runs a 40-change session with conflicts, a
+  dropped socket and its resends, and a late batched join: the same hash on every phone.
 
 ## Push
 

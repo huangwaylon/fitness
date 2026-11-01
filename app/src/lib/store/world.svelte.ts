@@ -213,12 +213,20 @@ class SharedWorld {
     if (this.#day) writeJson(localKV(), this.#key(), { day: this.#day.day, events: this.#events });
   }
 
+  /** My own wishes heard back from the relay this session, by morning (see #heard). */
+  #ownWishes: Record<string, number> = {};
   #heard(m: Relayed): void {
     if (!isDayEvent(m)) return;
     const { v: _v, ...e } = m;
     const d = this.#today();
     if (m.who === this.#me) {
-      // my own, from the relay's replay (a phone that lost its record of the day): folded quietly, nothing to play
+      // my own, from the relay's replay (a phone that lost its record of the day): folded quietly, nothing to play. A
+      // wish is known by when, and the relay's stamp isn't the time I kept it with: only the ones beyond those I have
+      // for that morning count (a phone that lost its record gets them back, one that has them doesn't count twice)
+      if (e.kind === 'world' && e.op === 'wished') {
+        const seen = (this.#ownWishes[e.id] = (this.#ownWishes[e.id] ?? 0) + 1);
+        if (seen <= (d.wishes[e.id]?.[m.who] ?? 0)) return;
+      }
       if (e.kind !== 'act' && apply(d, e, this.#me).fresh) {
         this.#keep(e);
         this.rev++;
@@ -251,6 +259,9 @@ class SharedWorld {
     if (i.kind === 'shake') i = { ...i, at: Math.round(t) };
     const e = { ...i, who: me, t } as DayEvent;
     const d = this.#today();
+    // a walk I make now is my villager's newest, whatever the clock says of the last one (a `?date=` preview against
+    // the relay's stamps)
+    if (e.kind === 'walk') delete d.walks[me];
     const a = apply(d, e, this.#me);
     if (e.kind === 'act' || a.fresh) {
       // to the relay first, at once (the partner sees it within its one way); then kept, and the sheet's row (held)

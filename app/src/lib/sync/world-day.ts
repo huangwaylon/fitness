@@ -52,7 +52,7 @@ export interface WorldDay {
   watered: Record<string, Who>;
   /** Wishes on shooting stars, each for the morning (`YYYY-MM-DD`) its fragment comes: who wished how often. */
   wishes: Record<string, Partial<Record<Who, number>>>;
-  /** The wishes folded (`who:t`), so a replay counts none twice. */
+  /** The wishes folded (`who:t:morning`), so a replay counts none twice. */
   wished: string[];
   /** Sleeping visitors woken today (`gulliver`), by whom: awake on both phones for the day. */
   woke: Record<string, Who>;
@@ -124,12 +124,15 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
         return { fresh: true, beat: null };
       }
       if (e.op === 'wished') {
-        // each wish once (a replay of one I have is no second wish)
-        const k = `${e.who}:${e.t}`;
+        // each wish once (a replay of one I have is no second wish); a count the sheet's row brought first is a floor,
+        // not more wishes on top (the row, then the relay's own of the same wish, is one wish)
+        const k = `${e.who}:${e.t}:${e.id}`;
         if (d.wished.includes(k)) return SAME;
         d.wished.push(k);
         const w = (d.wishes[e.id] ??= {});
-        w[e.who] = (w[e.who] ?? 0) + 1;
+        const heard = d.wished.filter((x) => x.startsWith(`${e.who}:`) && x.endsWith(`:${e.id}`)).length;
+        if (heard <= (w[e.who] ?? 0)) return { fresh: false, beat: null };
+        w[e.who] = heard;
         return { fresh: true, beat: null };
       }
       return SAME;
@@ -144,6 +147,29 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
       // an act only plays (the partner's villager walks there with the tool): nothing to keep
       return { fresh: true, beat: null };
   }
+}
+
+/** The day as both phones must have it, in one stable string (keys sorted, times that differ per phone left out): what
+ *  is claimed and by whom, what lies about and where, every shake, the watered flowers, the wishes, where each
+ *  villager is going, the visitors woken. Two phones with the same `canonical` show the same island. */
+export function canonical(d: WorldDay): string {
+  const sorted = <T>(o: Record<string, T>): [string, T][] => Object.entries(o).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return JSON.stringify({
+    day: d.day,
+    claims: sorted(d.claims).map(([k, c]) => [k, c.who]),
+    puts: sorted(d.puts).map(([k, p]) => [k, p.what, p.at[0], p.at[1], p.who]),
+    shakes: d.shakes.map((s) => [s.tree, s.drop, s.who, s.t]),
+    watered: sorted(d.watered),
+    wishes: sorted(d.wishes).map(([k, w]) => [k, w.A ?? 0, w.B ?? 0]),
+    walks: (['A', 'B'] as const).map((w) => d.walks[w]?.to ?? null),
+    woke: sorted(d.woke)
+  });
+}
+/** A short hash of a string (FNV-1a, 32 bits, hex): the two-phone checks compare these. */
+export function hash(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(16).padStart(8, '0');
 }
 
 /** Whether a critter (by its shared id) is gone today: caught, or it got away. */

@@ -255,6 +255,24 @@ is the record. Not done: streaming positions or the interactive moments (a cast'
 mood stay on the phone that taps; their outcome is shared), a rejection message to the losing phone (the winner's own
 intent tells it), every event to the sheet (a day row instead), sharing the balloon's flight.
 
+### One island, each villager its own phone's (2026-11-01)
+The two phones show the same island, not mirrored: A (ウェイ) lives on the left and B (うめ) on the right on both,
+every shared id by person. Each person's phone is the authority for their own villager: every walk and put of it goes
+over the relay as the very walk (`walk {to, from, via, s, ms, f}`, `s` on the relay's clock), and the other phone
+plays that walk from the same start at the same time, catching up when late, walking off a small gap, jumping a big
+one; while that person has the island open their villager there is the relay's to move (`director setRemote`), so
+neither phone's own life (a follow, an outing, a walk home) moves the other's villager. A join, a reconnect and every
+5 s of a walk under way say it again. Wakes go the same way (`act wake` with its time: both doze off again at the
+same moment); the night's hours are cut on the relay's clock. The room relays before it writes (the output gate cost
+~10 ms a kept intent), acks a numbered intent, knows a resend by its number, and replays the day in a few batched
+messages, the phone's own included. Why: replaying only a tap's target let each phone plan the way from where it had
+the villager, and each phone's own life moved both villagers, so they drifted (and the layout put "me" on the left);
+the very walk with one owner is ~100 bytes a move, gives the same point at the same time (0.3 u apart under way in
+the two-tab check, the same point at the end, measured 30–45 ms tap → set off on the other phone via the test
+relay), and stays far inside the Free plan. Not done: streaming positions per frame (a walk is described whole), a
+shared high-five or follow while both are here (left out rather than run on two phones at once), the visitor's beats
+beyond Gulliver's waking.
+
 ### Decor is a last-writer-wins map, the sheet keeps each item's latest op
 The island's decorations ([Decorating](design.md#decorating)) are persistent, shared by both of us, either may move
 or remove any. Each change is one op carrying the item's whole state (`{id, at, item, x, z, f, p}`) or its removal

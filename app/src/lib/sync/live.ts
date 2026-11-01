@@ -72,6 +72,8 @@ export interface LiveMetrics {
   ackMs: number[];
   /** Kept intents still waiting for their ack. */
   pending: number;
+  /** The last close's code (0: none yet). */
+  closed: number;
 }
 
 export interface Live {
@@ -176,7 +178,7 @@ export function createLive(o: LiveOptions): Live {
   const outbox = new Map<number, { m: object; at: number }>();
   let seq = 0;
   const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
-  const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0 };
+  const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, closed: 0 };
   let resend: ReturnType<typeof setTimeout>[] = [];
 
   const setStatus = (s: Partial<LiveStatus>) => {
@@ -323,6 +325,7 @@ export function createLive(o: LiveOptions): Live {
     };
     s.onclose = (e: CloseEvent) => {
       if (ws !== s) return;
+      mx.closed = e.code;
       ws = null;
       clearTimers();
       setStatus({ connected: false, peer: false });

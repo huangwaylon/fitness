@@ -6,7 +6,7 @@ import { ISLAND_SEED } from './daySeed.ts';
 const query = (): URLSearchParams => new URLSearchParams(typeof location === 'undefined' ? '' : location.search);
 
 /** Whether the hooks apply: a dev build, or `?demo`. */
-const hooksOn = (q: URLSearchParams = query()): boolean => import.meta.env.DEV || q.has('demo');
+export const hooksOn = (q: URLSearchParams = query()): boolean => import.meta.env.DEV || q.has('demo');
 
 /** A hook's value (`''` for a bare `?flag`), or null when it isn't set or the hooks are off. */
 export function hook(name: string): string | null {
