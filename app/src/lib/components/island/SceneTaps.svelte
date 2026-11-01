@@ -371,7 +371,7 @@
     if (!d || !g || !enabled()) return;
     const sx = d.x - g.r.left, sy = d.y - g.r.top;
     // the present's size in world units, a little bigger than on the balloon's string
-    const size = (d.size / w.view.s) * 1.2;
+    const size = Math.max(30, (d.size / w.view.s) * 1.2);
     const spot = d.land !== undefined ? (d.land && { x: d.land[0], z: d.land[1] }) : landing(sx, size);
     const to = spot ?? seaUnder(sx);
     if (!to) return;

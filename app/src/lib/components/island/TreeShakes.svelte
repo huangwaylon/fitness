@@ -320,7 +320,7 @@
   {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
   <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })}>
     <span class="drop {b.what}" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
-      <OfficialArt key={b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut'} size={u(b.what === 'branch' ? 22 : 16)} eager />
+      <OfficialArt key={b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut'} size={u(b.what === 'branch' ? 36 : 28)} eager />
     </span>
     {#if b.what === 'branch'}
       <button type="button" class="pick" data-branch={b.tree} data-sfx="self" aria-label={t('shake.branch')} style:top={u(-9)}

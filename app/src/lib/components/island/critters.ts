@@ -379,9 +379,9 @@ export function castInto(water: Water, x: number, z: number): { x: number; z: nu
 
 /** A shadow's length (u) by NH's size 1 (tiny) – 6 (huge): one teardrop, 0.42 of its length tall; the eels' long thin
  *  one (`narrow`) is 32u at 0.18. */
-const SHADOW_U = [14, 18, 23, 28, 34, 46] as const;
+const SHADOW_U = [20, 26, 32, 40, 48, 64] as const;
 export const shadowLen = (size: number, shape?: 'narrow' | 'fin'): number =>
-  shape === 'narrow' ? 32 : SHADOW_U[Math.min(6, Math.max(1, Math.round(size))) - 1];
+  shape === 'narrow' ? 44 : SHADOW_U[Math.min(6, Math.max(1, Math.round(size))) - 1];
 /** A fresh-water shadow is drawn smaller than the sea's (the pond's 80u across, the river 30u wide): NH's sizes 1–6
  *  still read apart, a size 6 still fits along the river. */
 export const POND_SHADOW = 0.65;

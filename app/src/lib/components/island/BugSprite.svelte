@@ -156,6 +156,9 @@
 
 <style>
   .sprite { position: absolute; left: 0; top: 0; display: block; }
+  /* NH's proportions against an 80u villager (a butterfly ≈ 29u across, a ladybug ≈ 14u, a beetle ≈ 18–24u): every
+     bug's own sizes below are 1.6× (its --su); the fireflies' cloud keeps its spread */
+  .sprite:not(.drift) { --su: calc(var(--u, 1px) * 1.6); }
   .sprite svg { position: absolute; overflow: visible; translate: -50% -50%; }
   .flutter svg { width: calc(18 * var(--su)); }
   .moth svg { width: calc(14 * var(--su)); }

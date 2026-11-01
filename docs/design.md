@@ -328,8 +328,12 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   the trees, the bushes: `<art>-winter`) and the models' emissive light (the campsite's lantern and door, the lamps'
   glass: `<art>-lit`), laid over at dusk (.7) and night, over the tint (as the fireflies), with the lamps' glow
   (`deco/lamp-glow`, drawn: `scripts/derive-art.ts`).
-- **Sizes** (`scene.ts`): villager 80u · hardwood 120u · cedar 140–150u · palm ~110u · bush 34–40u · flower 30u ·
-  hanging fruit 20u · ground fruit 24u.
+- **Sizes** (`scene.ts`), NH's proportions against an 80u villager (≈ 45 × 76px at the front on a 393px screen): hardwood
+  120u · cedar 140–150u · palm ~110u · bush 34–40u · flower 30u · hanging fruit 20u · ground fruit 24u · a shell 32u
+  (its art, ≈ 22px drawn) · a star fragment 24u · the bottle 28u · a mushroom 26u · a dig spot 26u · a weed 24u · a
+  branch 36u, a coconut 28u · a present ≥ 30u · the bugs 1.6× their drawn sizes (a butterfly ≈ 29u, a beetle ≈ 18–24u,
+  a ladybug ≈ 14u, the tarantula ≈ 27u) · fish shadows 20–64u by NH's size 1–6 (an eel 44u; fresh water 0.65×).
+  Every tap target is at least 44px ([Scene interactions](#scene-interactions)).
 - **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
   a haze where the ground meets the sky; one tint for the time of day over the land.
 - **The cliff's face** sorts behind everything that stands (its depth at the plan's far end): a walker on the stairs
@@ -563,7 +567,7 @@ northern-hemisphere months; hours still hold.
   it where it stands); the fish closes in over 2–3 darts, nibbles
   0–3 times, then bites: the bobber is yanked under, a small 「！」 pops over it, and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
-- **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (14–46u, the eels long and thin; a fin for
+- **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (20–64u, the eels long and thin; a fin for
   the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.
 - **Bugs** (74 of NH's 80, `BUGS`), each where NH keeps it: butterflies and moths in flight and landing on the flowers
   (the moth round the lamps); the ladybug and mantises on a flower's head; dragonflies and fireflies near water;

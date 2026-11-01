@@ -358,10 +358,10 @@ describe('the waters (world units): the sea, the pond, the river, its mouth, the
 
 describe('fish shadows', () => {
   it("NH's sizes 1–6 as one teardrop each, the eels long and thin", () => {
-    expect([1, 2, 3, 4, 5, 6].map((n) => shadowLen(n))).toEqual([14, 18, 23, 28, 34, 46]);
-    expect(shadowLen(3, 'narrow')).toBe(32);
-    expect(shadowLen(6, 'fin')).toBe(46);
-    expect(shadowLen(9)).toBe(46);
+    expect([1, 2, 3, 4, 5, 6].map((n) => shadowLen(n))).toEqual([20, 26, 32, 40, 48, 64]);
+    expect(shadowLen(3, 'narrow')).toBe(44);
+    expect(shadowLen(6, 'fin')).toBe(64);
+    expect(shadowLen(9)).toBe(64);
     expect(shadowLen(6) * POND_SHADOW).toBeLessThan(POND.rx * 2 * 0.55 + 10); // a size 6 still fits the pond's open middle
   });
 });
