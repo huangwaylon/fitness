@@ -7,7 +7,7 @@
   // weeks, on the pond and riding the river). The bridges' and the dock's upright front faces stand at their near edges, so they read raised.
   import { asset } from '$app/paths';
   import { useWorld } from './camera.svelte.ts';
-  import { BRIDGES, CLIFF, DOCK, POND, RIVER } from './world.ts';
+  import { BRIDGES, CLIFF, DOCK, FACE_H, FALL_H, POND, RIVER } from './world.ts';
   import ShoreWash from './ShoreWash.svelte';
   import Waterfall from './Waterfall.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -48,8 +48,9 @@
   const FLOATS = (() => {
     const out: { x: number; z: number; a: number; d: number; spin: number }[] = [];
     let k = 0;
-    for (let i = 3; i < 13; i++) {
+    for (let i = 0; i < RIVER.length - 1; i++) {
       const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1];
+      if (az > CLIFF.z0 - 10 || bx < 40) continue;
       const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / 50));
       const a = (Math.atan2(-(bz - az), bx - ax) * 180) / Math.PI;
       for (let j = 0; j < n; j++, k++) {
@@ -79,11 +80,11 @@
   </div>
   <!-- the cliff's upright face (rock strata, the grass lip, the stairs carved in, the falls' wet niche) and the falls
        over it -->
-  <div class="node up" {@attach w.at({ x: (CLIFF.x0 + CLIFF.x1) / 2, z: CLIFF.z0, h: 30 })}>
-    <img class="front" src={sprite('cliff-face')} alt="" draggable="false" style:width="calc({CLIFF.x1 - CLIFF.x0} * var(--u))" style:height="calc(30 * var(--u))" />
+  <div class="node up" {@attach w.at({ x: (CLIFF.x0 + CLIFF.x1) / 2, z: CLIFF.z0, h: FACE_H })}>
+    <img class="front" src={sprite('cliff-face')} alt="" draggable="false" style:width="calc({CLIFF.x1 - CLIFF.x0} * var(--u))" style:height="calc({FACE_H} * var(--u))" />
   </div>
-  <div class="node up" {@attach w.at({ x: (CLIFF.fall[0] + CLIFF.fall[1]) / 2, z: CLIFF.z0, h: 34, dz: -0.5 })}>
-    <div class="fall"><Waterfall {night} /></div>
+  <div class="node up" {@attach w.at({ x: (CLIFF.fall[0] + CLIFF.fall[1]) / 2, z: CLIFF.z0, h: FALL_H, dz: -0.5 })}>
+    <div class="fall"><Waterfall {night} w={CLIFF.fall[1] - CLIFF.fall[0] + 8} h={FALL_H} /></div>
   </div>
   {#each FRONTS as f (f.id)}
     <div class="node up" {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: 6 })}>

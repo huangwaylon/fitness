@@ -114,7 +114,6 @@ const SPECS: Record<string, Spec> = {
   'trees/bamboo': [128, 'Bamboo_Tree_NH_Icon.png'],
   'deco/garden-rock': [128, 'Garden_Rock_NH_Icon.png'],
   'deco/flat-rock': [128, 'Flat_Garden_Rock_NH_Icon.png'],
-  'deco/tall-rock': [128, 'Tall_Garden_Rock_NH_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
   // Jack is given; Jack himself (the 3D model: his NH artwork is a small crop; a visitor only, so not in the roster).
@@ -239,7 +238,7 @@ SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
  *  scene sizes are true to the tile unit (docs/design.md#world). */
 const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', 'trees/palm', 'trees/cedar',
   'deco/airport', 'deco/resident-services', 'deco/nooks-cranny', 'deco/able-sisters', 'deco/museum-icon', 'deco/campsite',
-  'deco/banner-lamp', 'deco/streetlamp', 'deco/bulletin-board', 'deco/plaza-bench', 'deco/signpost', 'deco/campsite-sign', 'deco/log-fence', 'deco/fence-', 'deco/garden-', 'trees/bamboo', 'deco/flat-rock', 'deco/tall-rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+  'deco/banner-lamp', 'deco/streetlamp', 'deco/bulletin-board', 'deco/plaza-bench', 'deco/signpost', 'deco/campsite-sign', 'deco/log-fence', 'deco/fence-', 'deco/garden-', 'trees/bamboo', 'deco/flat-rock', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');
