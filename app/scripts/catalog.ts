@@ -1,7 +1,7 @@
 // Build the balloon presents' catalogue (docs/design.md "Balloon"): NH's furniture and clothing a balloon can hold and
 // NH's DIY recipes balloons carry, with their official ja/en names and icons.
-// Usage (from app/): node scripts/catalog.ts            (data + any icon not on disk yet)
-//                    node scripts/catalog.ts --data     (data only)   --force (re-download every icon)
+// Usage (from app/): npm run catalog:build                 (data + any icon not on disk yet)
+//                    npm run catalog:build -- --data    (data only)   --force (re-download every icon)
 //
 // Sources:
 // - The ACNH community spreadsheet as JSON (Norviah/animal-crossing, json/data/*.json): every NH item with its catalog

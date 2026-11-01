@@ -20,6 +20,7 @@
   import Zukan from './Zukan.svelte';
   import type { ZukanKind } from './zukan.ts';
   import { findsView } from '#lib/model/finds.ts';
+  import { tallyTotals } from '#lib/model/tally.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { parseKcalInput, parseKgInput } from './fmt.ts';
   import { t, formatNum } from '#lib/i18n/index.ts';
@@ -128,7 +129,7 @@
       <h2 class="sec" data-sec="zukan">{t('zukan.title')}</h2>
       <ZukanCard finds={findsView(m.state)} onopen={(kind) => go({ k: 'zukan', kind })} />
     {:else if top.k === 'zukan'}
-      <Zukan kind={top.kind} finds={findsView(m.state)} {names} {villagers} />
+      <Zukan kind={top.kind} finds={findsView(m.state)} counts={tallyTotals(m.state.tallies)} {order} {names} {villagers} />
     {:else if top.k === 'day' && day}
       <DayDetail d={day} {me} {partner} {names} {villagers} />
     {:else if top.k === 'goal'}

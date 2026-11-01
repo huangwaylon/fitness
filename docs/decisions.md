@@ -177,6 +177,12 @@ without making the sea busier.
 The island has no river, so all 46 freshwater fish come to one small pond, fished like the sea. Why: NH's fishing is
 half freshwater; a river doesn't fit the stage.
 
+### Balloon presents are NH's shop stock, counted in the ずかん
+A present holds one of NH's 1,836 orderable Nook's Cranny and Able Sisters items or, in season, one of the 126 recipes
+balloons carry, at NH's odds without Bells or materials; the ずかん has them as カタログ and レシピ and counts every
+catch (「×12」) from one `tally` row per person and day, which the script replaces in place of appending. Why: the real
+pool and the satisfaction of a growing count, at ~730 small rows a year instead of one per catch.
+
 ### The museum is the ずかん's door
 A tap is one line from Blathers, then the panel opens on the ずかん. Why: NH's museum, without making the door wait.
 

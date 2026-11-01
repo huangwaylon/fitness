@@ -1,21 +1,26 @@
 // The ずかん's catalog (kiroku/zukan.ts): every entry of every kind has its official icon on disk and its name in both
 // languages, the counts are NH's, and the fossil page groups each dinosaur's pieces under its name.
 import { describe, expect, it } from 'vitest';
-import { artKeys } from '#lib/art.ts';
-import ja from '#lib/i18n/catch.ja.json';
-import en from '#lib/i18n/catch.en.json';
+import { art } from '#lib/art.ts';
+import jaCatch from '#lib/i18n/catch.ja.json';
+import enCatch from '#lib/i18n/catch.en.json';
+import jaCatalog from '#lib/i18n/catalog.ja.json';
+import enCatalog from '#lib/i18n/catalog.en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import { ITEMS, RECIPES } from '../island/catalog.ts';
 import { FOSSILS } from '../island/beach.ts';
 import { ZUKAN_KINDS, KIND_ART, entries, groups } from './zukan.ts';
 
-const art = new Set(artKeys());
-const names = [ja, en] as Record<string, string>[];
+const names = [{ ...jaMain, ...jaCatch, ...jaCatalog }, { ...enMain, ...enCatch, ...enCatalog }] as Record<string, string>[];
 
 describe('the ずかん', () => {
   it('has every kind’s entries with an icon and a name in both languages', () => {
     for (const kind of ZUKAN_KINDS) {
-      expect(art.has(KIND_ART[kind]), kind).toBe(true);
+      expect(art(KIND_ART[kind]), kind).toBeTruthy();
+      for (const c of names) expect(c[`zukan.kind.${kind}`], kind).toBeTruthy();
       for (const e of entries(kind)) {
-        expect(art.has(e.art), `${kind} ${e.id} icon`).toBe(true);
+        expect(art(e.art), `${kind} ${e.id} icon`).toBeTruthy();
         for (const c of names) expect(c[e.name], `${kind} ${e.id} name`).toBeTruthy();
       }
     }
@@ -41,5 +46,17 @@ describe('the ずかん', () => {
     expect(g.flatMap((s) => s.entries.map((e) => e.id)).sort()).toEqual([...FOSSILS].sort());
     // any other kind is one run
     expect(groups('bug')).toEqual([{ name: null, entries: entries('bug') }]);
+  });
+  it('has a balloon’s presents: the catalogue by NH’s categories, the recipes by their season, every entry once', () => {
+    expect(entries('item')).toHaveLength(ITEMS.length);
+    expect(entries('recipe')).toHaveLength(RECIPES.length);
+    for (const kind of ['item', 'recipe'] as const) {
+      const g = groups(kind);
+      expect(g.every((r) => r.name && r.entries.length > 0)).toBe(true);
+      for (const r of g) for (const c of names) expect(c[r.name!], r.name!).toBeTruthy();
+      expect(g.flatMap((r) => r.entries.map((e) => e.id)).sort()).toEqual(entries(kind).map((e) => e.id).sort());
+    }
+    expect(groups('item').map((r) => r.name)[0]).toBe('zukan.cat.housewares');
+    expect(entries('item').find((e) => e.id === 'froggy-chair')).toEqual({ id: 'froggy-chair', art: 'finds/items/froggy-chair', name: 'item.name.froggy-chair' });
   });
 });

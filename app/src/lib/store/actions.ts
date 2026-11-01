@@ -6,9 +6,11 @@ import type { SendResult } from './backend.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import type { PersonId, ShopItemId } from '#lib/types.ts';
+import type { LocalDate, PersonId, ShopItemId } from '#lib/types.ts';
 import { isWeightKg, roundKg, type FindKind } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
+import { addToTally, latestByDay } from '#lib/model/tally.ts';
+import { localDateAt } from '#lib/time/dates.ts';
 import { MOVE_GOAL, shopPrice } from '#lib/config/rules.ts';
 
 /** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
@@ -99,12 +101,36 @@ export function setVillager(villager: string) {
 }
 
 // ---- The island's finds (the ずかん): a catch or a pick-up is sent once per kind and id, the first time either of us
-// finds it. Never ベル.
+// finds it, and counted in the day's tally (its 「×12」). Never ベル.
 
-/** Record a find for the shared ずかん, unless one of us already found it (the model includes queued events, so a
- *  second catch before the first is acked sends nothing). True when it was new. */
+/** A catch's tally waits this long before it is sent, and the next catches ride along: a busy minute is one request
+ *  (the server keeps one row per person and day, docs/backend.md#tally). */
+const TALLY_HOLD_MS = 60_000;
+/** The tally waiting to be sent: a newer one replaces it within the same window. */
+let held: { date: LocalDate; until: number; undo: () => boolean } | null = null;
+
+/** One more of `kind:id` in my tally of today (the model's day, so the demo's `?date=` too). */
+function countOne(kind: FindKind, id: string): void {
+  const m = week.model;
+  if (!m) return;
+  const date = localDateAt(m.now);
+  const mine = latestByDay(m.state.tallies).find((r) => r.person === m.me && r.date === date);
+  const counts = addToTally(mine?.counts ?? {}, findKey(kind, id));
+  const now = Date.now();
+  const same = held && held.date === date && held.until > now ? held : null;
+  const holdMs = same ? same.until - now : TALLY_HOLD_MS;
+  same?.undo();
+  const r = week.send('tally', { date, counts }, { holdMs });
+  held = r.undo ? { date, until: now + holdMs, undo: r.undo } : null;
+}
+
+/** Record a catch or a pick-up: counted in today's tally, and a find for the shared ずかん unless one of us already
+ *  found it (the model includes queued events, so a second catch before the first is acked sends no find). True when
+ *  it was new. */
 export function recordFind(kind: FindKind, id: string): boolean {
   const m = week.model;
-  if (!m || findsView(m.state).has(findKey(kind, id))) return false;
+  if (!m) return false;
+  countOne(kind, id);
+  if (findsView(m.state).has(findKey(kind, id))) return false;
   return week.send('find', { kind, id }).ok;
 }

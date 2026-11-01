@@ -34,9 +34,14 @@ const BOX: Record<string, [number, number, number, number]> = {
   'villagers/hamlet': [28, 20, 329, 482]
 };
 
-/** Manifest entry for a key like 'villagers/raymond', or null when that art isn't on disk. */
+/** The balloon catalogue's icons (components/island/catalog.ts, scripts/catalog.ts): ~2,000 files, all 96 px squares,
+ *  so they stay out of the bundled manifest. */
+const CATALOG_KEY = /^finds\/(items|recipes)\/[a-z][a-z0-9-]*$/;
+const CATALOG_SIZE = [96, 96] as const;
+
+/** Manifest entry for a key like 'villagers/raymond' (or a catalogue icon's), or null when that art isn't on disk. */
 export function art(key: string | null | undefined): ArtEntry | null {
-  const size = key ? FILES[key] : undefined;
+  const size = key ? (FILES[key] ?? (CATALOG_KEY.test(key) ? CATALOG_SIZE : undefined)) : undefined;
   if (!key || !size) return null;
   return { path: `${key}.webp`, w: size[0], h: size[1], ...(BOX[key] && { box: BOX[key] }) };
 }

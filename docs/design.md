@@ -312,9 +312,19 @@ NH's balloon present: by day every 45–90 s of on-screen time (the first after 
 smaller one or none on a short sky). A tap pops it; the present falls onto the lawn behind the trees, on the nearest
 spot clear of what lies there and of every control, bounces and stays until tapped (not kept across a reload). My
 villager walks over, the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
-plate reads 「ロッキングチェアを てにいれた！」 (`island/presents.ts`): one of 35 NH furniture and clothing items (some
-likelier in their season) or, in their NH windows, a seasonal DIY recipe (half the presents then), shown on NH's
-recipe card. Never Bells, nothing kept. On Bunny Day a sky egg instead. Off the island it drops into the sea.
+plate reads 「カエルのチェアを てにいれた！」 (`island/catalog.ts`, its own chunk with its names, fetched when a present
+lands). What's inside follows NH (Nookipedia, Balloon: the item drop rates, Bells and materials left out): furniture 35 :
+clothing 20 : a season's DIY recipe 15 while a recipe season is on, else 50 : 25. The pool is NH's shop stock, 1,836
+base items (no colour variants): orderable, sold by Nook's Cranny or the Able Sisters, no event, never DIY items, Nook
+Miles exclusives or special characters'; the shops' season stock only in season (a kotatsu Dec–Feb), clothing twice as
+likely in its style's season. The 126 recipes balloons carry, each in its NH window (northern hemisphere): cherry
+blossoms Apr 1–10, young spring bamboo Feb 25–May 21, summer shells Jun–Aug, acorns and pine cones Sep 1–Dec 10, maple
+Nov 16–25, mushrooms November, ornaments Dec 15–Jan 6, snowflakes Dec 11–Feb 24, Halloween October, Shamrock Day
+Mar 10–17, Bunny Day's egg balloons on its days; a recipe shows NH's recipe card. Never Bells, nothing kept, but counted
+in the ずかん (カタログ, レシピ: a first one gets the plate's second page). On Bunny Day a sky egg instead. Off the island it
+drops into the sea. The catalogue is built by `npm run catalog:build` (`scripts/catalog.ts`: the ACNH spreadsheet's
+JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px webp under `static/art/finds/items|recipes/`,
+~1.8 KB each, cached by the service worker on first use).
 
 ### Critters
 
@@ -408,10 +418,14 @@ he talks opens it at once.
 
 ### Zukan
 
-`kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん in
-きろく, shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's 46), むし 70, うみのさち 40,
-かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with 「Tレックス 1 / 3」), かいがら 9 (the
-pearl last). A kind's page: every entry in the game's order, the official icon and name for found ones, a silhouette and
+`kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
+`e2e/zukan.spec.ts`. The ずかん in きろく, shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
+46), むし 70, うみのさち 40, かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
+「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,
+こもの, かべかけ, てんじょう, トップス... かさ) and レシピ 126 (by season). Every catch and pick-up counts: each found tile shows
+「×12」 and the picked entry's head the total and each of us (the day tallies, `tally`, backend.md#tally); a find from
+before the tallies counts 1. カタログ and レシピ load their names with the page (`i18n/catalog.ts`, the language on screen)
+and build their grid a slice per frame, as the むらびと picker. A kind's page: every entry in the game's order, the official icon and name for found ones, a silhouette and
 ？？？ for the rest, 「コンプリート！」 when all are in. The page's head is pinned: the kind and its count, and the picked
 entry (icon, name, 「7/4 ウェイが 見つけた」 and NH's catch line, two lines, ▼ for more); the grid scrolls under it.
 Names of everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん or the first catch.

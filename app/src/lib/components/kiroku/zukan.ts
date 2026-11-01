@@ -1,13 +1,16 @@
-// The ずかん's catalog (docs/design.md "Zukan"): every fish (the sea's and the pond's), bug, sea creature, fossil and shell the island has, in the game's order,
-// with each entry's icon and name key. Pure; the panel's ずかん reads it with the model's finds (model/finds.ts).
+// The ずかん's catalog (docs/design.md "Zukan"): every fish (the sea's and the pond's), bug, sea creature, fossil and shell the
+// island has, in the game's order, and what a balloon's present can hold (カタログ: furniture and clothing; レシピ: DIY
+// recipes; island/catalog.ts), with each entry's icon and name key. Pure; the panel's ずかん reads it with the model's
+// finds (model/finds.ts) and counts (model/tally.ts).
 import type { FindKind } from '#lib/contract/api.ts';
 import { BUGS, FISH, critterArt, type Catch } from '../island/critters.ts';
 import { POND_FISH } from '../island/pondFish.ts';
 import { FOSSILS, FOSSIL_SETS, SHELLS, findArt } from '../island/beach.ts';
 import { PEARL, SEA } from '../island/sea.ts';
+import { CLOTHING_CATEGORIES, FURNITURE_CATEGORIES, ITEMS, RECIPES, RECIPE_SEASONS, catalogArt, catalogName } from '../island/catalog.ts';
 
 export type ZukanKind = Exclude<FindKind, 'fragment'>;
-export const ZUKAN_KINDS: readonly ZukanKind[] = ['fish', 'bug', 'sea', 'fossil', 'shell'];
+export const ZUKAN_KINDS: readonly ZukanKind[] = ['fish', 'bug', 'sea', 'fossil', 'shell', 'item', 'recipe'];
 
 export interface Entry { id: string; art: string; name: string }
 
@@ -31,17 +34,30 @@ export function entries(kind: ZukanKind): Entry[] {
   if (kind === 'bug') return Object.keys(BUGS).map((id) => ({ id, art: critterArt(id as keyof typeof BUGS), name: `critter.name.${id}` }));
   if (kind === 'sea') return Object.keys(SEA).map((id) => ({ id, art: critterArt(id as keyof typeof SEA), name: `sea.name.${id}` }));
   if (kind === 'fossil') return FOSSILS.map(fossil);
+  if (kind === 'item') return ITEMS.map(({ id }) => present('item', id));
+  if (kind === 'recipe') return RECIPES.map(({ id }) => present('recipe', id));
   // the beach's shells, then the pearl from diving
   return [...SHELLS.map(([id]) => id), PEARL].map((id) => ({ id, art: findArt(id), name: `beach.name.${id}` }));
 }
 const fossil = (id: string): Entry => ({ id, art: findArt(id), name: `beach.name.${id}` });
+const present = (kind: 'item' | 'recipe', id: string): Entry => ({ id, art: catalogArt({ kind, id }), name: catalogName({ kind, id }) });
 
-/** A run of a page's entries: a fossil set (its name key) or the loose ones (no name). */
+/** A run of a page's entries: a fossil set, a catalogue category or a recipe season (its name key) or the loose ones
+ *  (no name). */
 export interface Group { name: string | null; entries: Entry[] }
 
 /** A kind's page as the ずかん lays it out: the fossils as NH's museum does (the standalone ones, then each dinosaur's
- *  pieces together under its name, 「Tレックス 2/3」); any other kind is one run. */
+ *  pieces together under its name, 「Tレックス 2/3」), the catalogue by NH's categories (かぐ, こもの... トップス...), the
+ *  recipes by their season; any other kind is one run. */
 export function groups(kind: ZukanKind): Group[] {
+  if (kind === 'item')
+    return [...FURNITURE_CATEGORIES, ...CLOTHING_CATEGORIES].map((c) => ({
+      name: `zukan.cat.${c}`, entries: ITEMS.filter((i) => i.category === c).map(({ id }) => present('item', id))
+    }));
+  if (kind === 'recipe')
+    return (Object.keys(RECIPE_SEASONS) as (keyof typeof RECIPE_SEASONS)[]).map((season) => ({
+      name: `zukan.season.${season}`, entries: RECIPES.filter((r) => r.season === season).map(({ id }) => present('recipe', id))
+    }));
   if (kind !== 'fossil') return [{ name: null, entries: entries(kind) }];
   const inSets = new Set<string>(Object.values(FOSSIL_SETS).flat());
   return [
@@ -56,5 +72,8 @@ export const bare = (name: string): string => name.replace(/^(an?|some) /, '');
 /** The icon that stands for a kind on the summary card. */
 export const KIND_ART: Record<ZukanKind, string> = {
   fish: critterArt('sea-bass'), bug: critterArt('common-butterfly'), sea: critterArt('octopus'), fossil: findArt('ammonite'),
-  shell: findArt('cowrie')
+  shell: findArt('cowrie'), item: catalogArt({ kind: 'item', id: 'froggy-chair' }), recipe: 'presents/diy-recipe'
 };
+
+/** The kinds whose entries come from a balloon's present (their names: i18n/catalog.ts, loaded with the page). */
+export const isPresentKind = (kind: ZukanKind): kind is 'item' | 'recipe' => kind === 'item' || kind === 'recipe';

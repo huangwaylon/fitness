@@ -11,6 +11,8 @@ import jaTab from '#lib/i18n/kenkou.ja.json';
 import enTab from '#lib/i18n/kenkou.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
+import jaCatalog from '#lib/i18n/catalog.ja.json';
+import enCatalog from '#lib/i18n/catalog.en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
@@ -20,7 +22,6 @@ import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/components/island/beac
 import { PEARL, SEA } from '#lib/components/island/sea.ts';
 import { MUSHROOMS } from '#lib/components/island/mushrooms.ts';
 import { EGGS } from '#lib/components/island/eggs.ts';
-import { PRESENTS, presentArt, type PresentId } from '#lib/components/island/presents.ts';
 
 const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
@@ -51,10 +52,12 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab) and the catchables' names (loaded with the first catch or the
  *  ずかん), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaNames };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enNames };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaNames, ...jaCatalog };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enNames, ...enCatalog };
 /** A lazily loaded catalog's own key prefixes. */
-const NAME_KEY = /^(critter|sea|beach|present)\.name\.|^fossil\.set\./;
+const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
+/** The balloon catalogue's names (i18n/catalog.ts, per language). */
+const CATALOG_KEY = /^(item|recipe)\.name\./;
 
 describe('i18n catalogs', () => {
   it('keep けんこう’s strings (health.*) in its own catalog, out of the first load', () => {
@@ -64,6 +67,10 @@ describe('i18n catalogs', () => {
   it('keep the catchables’ names in their own catalog (i18n/catch.ts), out of the first load', () => {
     for (const c of [jaNames, enNames]) expect(Object.keys(c).filter((k) => !NAME_KEY.test(k))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => NAME_KEY.test(k))).toEqual([]);
+  });
+  it('keep the balloon catalogue’s names (i18n/catalog.ts) in their own catalogs, out of the first load', () => {
+    for (const c of [jaCatalog, enCatalog]) expect(Object.keys(c).filter((k) => !CATALOG_KEY.test(k))).toEqual([]);
+    for (const c of [jaMain, enMain, jaNames, enNames]) expect(Object.keys(c).filter((k) => CATALOG_KEY.test(k))).toEqual([]);
   });
   it('have the same keys', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ja).sort());
@@ -122,8 +129,8 @@ describe('official art (static/art/manifest.json)', () => {
     ...[...MUSHROOMS.map(([id]) => id), 'rare-mushroom'].map(findArt),
     // Bunny Day's eggs (island/eggs.ts)
     ...EGGS.map(findArt),
-    // what a balloon's present holds (island/presents.ts presentArt)
-    ...(Object.keys(PRESENTS) as PresentId[]).map(presentArt)
+    // a present's recipe card (island/Finds.svelte); its items' and recipes' icons are outside the manifest (catalog.test)
+    'presents/diy-recipe'
   ]);
   /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {

@@ -123,7 +123,9 @@ set the new `/exec` URL in `GAS_URL` and in both Shortcuts.
 
 ## 8. Refresh the official art
 The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts/fetch-assets.ts`, then
-`cd app && npm run assets:fetch` (needs `cwebp`: `brew install webp`).
+`cd app && npm run assets:fetch` (needs `cwebp`: `brew install webp`). The balloon catalogue (its items, recipes, names
+and ~2,000 icons) is rebuilt with `npm run catalog:build` (`app/scripts/catalog.ts`; `-- --data` skips the icons); it
+prints anything the two sources disagree on.
 
 ## 9. What the sheet should hold
 Exactly three tabs, `metrics`, `events` and `uploads`, with the headers in [backend.md](../backend.md#tabs) (the script
