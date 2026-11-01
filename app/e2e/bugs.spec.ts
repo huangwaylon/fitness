@@ -78,7 +78,8 @@ test('a tap on my villager sends a flea hopping off into the grass; a tap on it 
   await expect(flea).toBeAttached();
   await page.waitForTimeout(2600); // its first hop lands in the grass
   const p = await at(page, '[data-critter="flea"]');
-  expect(await clear(page, p)).toBe('');
+  // clear of every control (the partner idling about may pass in front of it for a moment)
+  await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('flea'));
 });
@@ -116,6 +117,7 @@ test('NH’s flower bugs: a ladybug and a mantis sit still on a flower’s head 
     expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);
   }
   const m = await at(page, '[data-critter="orchid-mantis"]');
+  await expect.poll(() => clear(page, m), { timeout: 8000 }).toBe('');
   await page.mouse.click(m.x, m.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('orchid-mantis').slice(0, 6), { timeout: 4000 });
 });
