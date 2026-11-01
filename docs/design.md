@@ -354,7 +354,20 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   sheds a leaf (`creak`), the bar rings (`clang`), the pump gushes (`pump`), the sandcastle and the snowboy puff, the
   rest knock softly. The shishi-odoshi tips (NH's model posed: `deco/shishiodoshi-tip`) every 15–25 s while it's in
   view and on a tap, and knocks back on its stone: `kon` (local, cosmetic). The new sounds are synthesized
-  (`sound/synth.ts`). `fixedDecor.test` holds the plan's rules: まえ one piece for good and two seasonal at most,
+  (`sound/synth.ts`).
+  **The decor's life** (ambient life's beats, `island/ambient.ts`, `IslandScene`): an outing now and then stops at the
+  front bench and sits 20–40 s; on a day a sit on the pond's bench (each its own seat); in the evening (19–22) a
+  villager goes to sit at the campfire on its own stool (A west, B east) for 30–60 s; on a day its person met the
+  exercise goal (🍑) a villager goes to the pull-up bar now and then and does pull-ups there; when both met every goal
+  today, at dusk (17:00–19:00, each quarter hour both are home) they set off together for the front bench and sit side
+  by side facing the sea for 90 s. A villager standing still on a seat (`world.ts` SEATS, just behind it) is drawn
+  seated (sunk SEAT_DROP behind the seat, which covers its legs); both on one bench: a ♥ each. Like every outing, each
+  phone sends its own villager's walk (villagerSync) and plays the partner's from the slot only while they're away;
+  seated, the pull-ups and the ♥ follow from where the villagers stand, so both phones draw the same
+  (`e2e/sync-harness.spec.ts`: A seated on the front bench is seated on B). Ambient only: a tap never sends one to sit.
+  The pump waters every wild flower within 70u (each the shared `watered` op, as a tap's watering). The snowboy says a
+  line in its voice on a tap (「さむいって いいね〜」…; melting: 「すこし ちいさく なっちゃった…」).
+  `fixedDecor.test` holds the plan's rules: まえ one piece for good and two seasonal at most,
   nothing over the finds or the sea view, nothing over 40u in front of z 300, 40u from Gulliver and Daisy Mae; every
   spot 20u off a path, 24u off the dig, weed and flower spots, 30u off trunks, 60u off centre stage, the cake and the
   arch, 12u off the water.

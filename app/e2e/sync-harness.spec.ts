@@ -8,6 +8,7 @@
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
+import { CAMS, SEATS } from '../src/lib/components/island/world.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -185,6 +186,20 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   }
   await Promise.all([[a, 96], [b, 312]].map(([p, x]) => w(p as Page, 'decorSet', { id: d1, item: 'tanuki', x, z: 504, f: 0 })));
   await a.waitForTimeout(500); // (the demo's room is a log both tabs write: one race at a time)
+  // the fixed decor (docs/design.md "The fixed decor"): A's pump waters the flowers round it (the shared watered op:
+  // on both), and A's villager sitting on the front bench is drawn seated on both phones (from where it stands)
+  await w(a, 'go', CAMS.oku);
+  await a.waitForTimeout(400);
+  const pump = await a.locator('[data-fixture="pump"]').evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return [r.left + r.width / 2, r.top + r.height * 0.6];
+  });
+  await a.mouse.click(pump[0], pump[1]);
+  await w(a, 'go', 300);
+  await w(a, 'put', ...SEATS.seatMaeL);
+  await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
+  await expect(b.locator('[data-actor="partner"]')).toHaveAttribute('data-seat', 'seatMaeL', { timeout: 4000 });
+  await a.waitForTimeout(300);
   // both grab the same thing at once: one wins, both agree on who
   await Promise.all([a, b].map((p) => w(p, 'share', { kind: 'pick', id: `h${run}x`, what: 'weed' })));
   await a.waitForTimeout(2500); // the walks are over, everything has arrived

@@ -1,7 +1,7 @@
 // The fixed decor (docs/design.md "Decor"): NH's outdoor furniture standing for good and the seasons' pieces taking
 // their spots; a tap answers where the piece stands (nobody walks); the shishi-odoshi tips and knocks; the sandcastle
 // is gone at 18:00; the seasonal lamps light at night.
-import { CAMS } from '../src/lib/components/island/world.ts';
+import { CAMS, SEATS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void; cam(): number };
@@ -59,4 +59,34 @@ test('the seasons swap their pieces in: the blossom days’ picnic set and pond 
   await expect(page.locator('[data-glow="lantern-1"]')).toHaveCount(1);
   await open(page, '2026-12-20T11:00', CAMS.oku);
   await expect(page.locator('[data-fixture="hammock"]')).toHaveAttribute('data-look', 'deco/illumi-tree');
+});
+
+test('the pump waters the flowers round it (each glitters for the day, on both phones as a tap’s watering)', async ({ page }) => {
+  await open(page, '2026-07-20T11:00', CAMS.oku);
+  await expect(page.locator('[data-watered]')).toHaveCount(0);
+  const p = await centre(page, '[data-fixture="pump"]');
+  await page.mouse.click(p.x, p.y);
+  await expect.poll(() => cues(page)).toContain('scene-pump');
+  await expect.poll(() => page.locator('[data-watered]').count()).toBeGreaterThanOrEqual(2);
+});
+
+test('the snowboy says a line in its voice; it melts over three days', async ({ page }) => {
+  // a snow day in the island's seed with three dry days after it (weather.ts dayWeather)
+  await open(page, '2027-01-09T11:00', CAMS.mae);
+  await expect(page.locator('[data-fixture="snowboy"]')).toHaveAttribute('data-look', 'deco/snowboy-0');
+  const s = await centre(page, '[data-fixture="snowboy"]');
+  await page.mouse.click(s.x, s.y);
+  await expect(page.getByText('さむいって いいね〜').first()).toBeVisible();
+  await open(page, '2027-01-11T11:00', CAMS.mae);
+  await expect(page.locator('[data-fixture="snowboy"]')).toHaveAttribute('data-look', 'deco/snowboy-2');
+});
+
+test('sitting: my villager on the front bench is drawn seated, and stands again elsewhere', async ({ page }) => {
+  await open(page, '2026-07-20T11:00', CAMS.mae);
+  const [x, z] = SEATS.seatMaeL;
+  await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [x, z]);
+  await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
+  // stood up elsewhere: not seated
+  await page.evaluate(() => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(150, 260));
+  await expect(page.locator('[data-actor="mine"][data-seat]')).toHaveCount(0);
 });

@@ -104,8 +104,11 @@ export interface AmbientWorld {
   pois: readonly Poi[];
   /** 'evening' (19–22: no day-only moves) and 'asleep' (22–05: the villagers only doze). */
   phase: 'day' | 'evening' | 'asleep';
-  /** Each person's day score (progress.ts dayScore: today's ベル as % of a full day), for dancing together. */
+  /** Each person's day score (progress.ts dayScore: today's ベル as % of a full day), for dancing together and the dusk
+   *  meet-up at the bench (both 100: every goal met). */
   scores: Record<Who, number>;
+  /** Each person's exercise goal (🍑) met today: their villager may go do a pull-up. */
+  exercise?: Record<Who, boolean>;
 }
 
 // ---------- what a slot holds ----------
@@ -115,8 +118,9 @@ type IdleMove = Exclude<IdleAction, 'wander' | 'chat' | 'dance' | 'doze'>;
 export type VillagerBeat =
   /** A small move, `at` ms into the slot. */
   | { kind: 'idle'; action: IdleMove; at: number }
-  /** A walk to 1–MAX_HOPS points of interest, lingering at each, then home; it starts on the slot's boundary. */
-  | { kind: 'outing'; stops: readonly { node: string; linger: number }[] }
+  /** A walk to 1–MAX_HOPS points of interest, lingering at each, then home; it starts on the slot's boundary.
+   *  `together`: both set off at once (the dusk meet-up at the bench). */
+  | { kind: 'outing'; stops: readonly { node: string; linger: number }[]; together?: boolean }
   /** Both villagers: a chat or a dance, the same for both; the lead's starts it. */
   | { kind: 'pair'; action: 'chat' | 'dance'; with: Who; lead: boolean; at: number }
   | { kind: 'doze' };
@@ -199,6 +203,23 @@ function recent(date: LocalDate, slot: number, who: Who, phase: AmbientWorld['ph
   return out;
 }
 
+/** A seat (a bench's, a stool: world.ts SEATS): a villager sits there SIT_LINGER. */
+const isSeat = (node: string) => /^(seat|stool)/.test(node);
+const SIT_LINGER = [20_000, 40_000] as const;
+/** The dusk meet-up (both met every goal today): both sit on the front bench, facing the sunset over the sea, from
+ *  17:00 to 19:00, at each quarter hour when both are home. */
+const MEET_HOURS = [17, 19] as const;
+const MEET_EVERY = 90;
+const MEET_LINGER = 90_000;
+/** In the evening (19–22) an outing is to the campfire's stool this often (A's the west stool, B's the east). */
+const FIRE_ODDS = 0.45;
+const FIRE_LINGER = [30_000, 60_000] as const;
+/** On a day its person met the exercise goal, an outing is to the pull-up bar this often (a rep there). */
+const BAR_ODDS = 0.2;
+const BAR_LINGER = 7_000;
+/** A day outing is to the pond's bench this often. */
+const POND_ODDS = 0.12;
+
 /** An outing from `v`: 1–MAX_HOPS stops among `pois` (sorted by node), each away from the last and within reach of home. */
 function outing(v: VillagerState, pois: readonly Poi[], r: () => number): VillagerBeat | null {
   const hops = 1 + Math.floor(r() * MAX_HOPS);
@@ -208,7 +229,7 @@ function outing(v: VillagerState, pois: readonly Poi[], r: () => number): Villag
     const ok = pois.filter((p) => d2(p.at, from) > NEAR_U ** 2 && d2(p.at, v.home) <= WANDER_REACH_U ** 2);
     if (!ok.length) break;
     const p = pickOne(ok, r);
-    stops.push({ node: p.node, linger: between(r, POI_LINGER) });
+    stops.push({ node: p.node, linger: between(r, isSeat(p.node) ? SIT_LINGER : POI_LINGER) });
     from = p.at;
   }
   return stops.length ? { kind: 'outing', stops } : null;
@@ -227,10 +248,22 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
   const { r, outing: o, who, pool, first } = roll(date, slot, w.phase);
   // one villager out at a time, from home
   const nobodyOut = PEOPLE.every((p) => atHome(w.villagers[p]));
+  const hour = Math.floor(slot / 360);
+  // both met every goal today: at dusk they meet on the front bench, side by side (each phone sends its own villager)
+  if (w.phase === 'day' && hour >= MEET_HOURS[0] && hour < MEET_HOURS[1] && slot % MEET_EVERY === 0 && nobodyOut && free('A') && free('B') && w.scores.A >= 100 && w.scores.B >= 100) {
+    const go = (node: string): VillagerBeat => ({ kind: 'outing', stops: [{ node, linger: MEET_LINGER }], together: true });
+    return { A: go('seatMaeL'), B: go('seatMaeR') };
+  }
   const goers = PEOPLE.filter((p) => free(p) && !w.villagers[p].present && nobodyOut);
   if (goers.length && o < OUTING_ODDS) {
     const p = goers.length === 2 ? who : goers[0];
-    const pois = [...w.pois].sort((a, b) => (a.node < b.node ? -1 : a.node > b.node ? 1 : 0));
+    const special = r();
+    // the evening: to the campfire's stool; an exercise day: a pull-up at the bar
+    if (w.phase === 'evening' && special < FIRE_ODDS) return { [p]: { kind: 'outing', stops: [{ node: p === 'A' ? 'stoolW' : 'stoolE', linger: between(r, FIRE_LINGER) }] } };
+    if (w.phase === 'day' && w.exercise?.[p] && special < BAR_ODDS) return { [p]: { kind: 'outing', stops: [{ node: 'pullup', linger: BAR_LINGER }] } };
+    // now and then a sit on the pond's bench (its own seat each)
+    if (w.phase === 'day' && special > 1 - POND_ODDS) return { [p]: { kind: 'outing', stops: [{ node: p === 'A' ? 'seatPondL' : 'seatPondR', linger: between(r, SIT_LINGER) }] } };
+    const pois = [...w.pois].sort((a, b) => (a.node < b.node ? -1 : a.node > b.node ? 1 : 0)).filter((q) => !SPECIAL.has(q.node));
     const beat = outing(w.villagers[p], pois, r);
     if (beat) return { [p]: beat };
   }
@@ -248,6 +281,9 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
   if (e.action === 'chat') return both('chat', who, at);
   return { [who]: { kind: 'idle', action: e.action as IdleMove, at } };
 }
+
+/** The nodes only their own beats go to (the far stools, the bar, the pond bench). */
+const SPECIAL = new Set(['stoolW', 'stoolE', 'pullup', 'seatPondL', 'seatPondR']);
 
 const both = (action: 'chat' | 'dance', who: Who, at: number): Partial<Record<Who, VillagerBeat>> => ({
   [who]: { kind: 'pair', action, with: other(who), lead: true, at },

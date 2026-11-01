@@ -28,7 +28,7 @@ interface IdleContext {
   /** Which person's villager is mine. */
   me: () => PersonId;
   /** Send a villager through an outing's points of interest (island/avatar.ts outing); false when it can't go now. */
-  outing?: (id: 'mine' | 'partner', stops: readonly { node: string; linger: number }[]) => boolean;
+  outing?: (id: 'mine' | 'partner', stops: readonly { node: string; linger: number }[], together?: boolean) => boolean;
   /** The visitor's turn (island/Visitor.svelte, visitorLife.ts) with the slot's PRNG: every slot, awake or asleep (they
    *  keep their own hours), beside whatever the villagers do. */
   visitor?: (r: () => number) => void;
@@ -140,7 +140,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
   /** A villager's beat from the slot (a pair's from its lead: the other's entry is the same chat or dance). */
   function play(id: 'mine' | 'partner', b: VillagerBeat) {
     if (busy(id)) return;
-    if (b.kind === 'outing') return void ctx.outing?.(id, b.stops);
+    if (b.kind === 'outing') return void ctx.outing?.(id, b.stops, b.together);
     if (b.kind === 'doze' || (b.kind === 'pair' && !b.lead)) return;
     later(id, b.at, () => (b.kind === 'pair' ? pair(id, b.action) : move(id, b.action)));
   }

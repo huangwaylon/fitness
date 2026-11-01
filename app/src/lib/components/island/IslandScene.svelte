@@ -44,7 +44,8 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
-  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, SHORE_Z, TREE_H, flowerById, surfaceAt, type BuildingId } from './world.ts';
+  import { todayPct } from './progress.ts';
+  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, seatAt, surfaceAt, type BuildingId } from './world.ts';
   import { campLine, doorAt, partnerOnline } from './buildings.ts';
   import { RING_MS, stepCue } from './tapWalk.ts';
   import { buildingAt, nav } from './nav.ts';
@@ -281,6 +282,23 @@
     return visited.geo;
   }
   const feet = (id: 'mine' | 'partner') => livePos(id);
+
+  // Sitting (docs/design.md "Decor: sitting"): a villager standing still on a seat (world.ts SEATS: the benches', the
+  // campfire's stools) is drawn seated, sunk behind the seat; one at the pull-up bar on its person's exercise day does a
+  // few pull-ups. From where it stands only, so both phones draw the same. Both on one bench: a heart each.
+  const seated = $derived(Object.fromEntries((['mine', 'partner'] as const).map((id) => [id, actors[id].walking || actors[id].asleep ? null : seatAt(Math.round(actors[id].x), Math.round(actors[id].y))])) as Record<'mine' | 'partner', string | null>);
+  const repping = $derived(Object.fromEntries((['mine', 'partner'] as const).map((id) => {
+    const a = actors[id], pid = id === 'mine' ? view.me : view.partner;
+    return [id, !a.walking && !a.asleep && Math.abs(a.x - PULLUP_AT[0]) <= 3 && Math.abs(a.y - PULLUP_AT[1]) <= 3 && todayPct(view.people[pid].rings.peach) >= 100];
+  })) as Record<'mine' | 'partner', boolean>);
+  const benchOf = (seat: string | null) => (seat?.startsWith('seat') ? seat.slice(0, -1) : null);
+  let sharedBench: string | null = null;
+  $effect(() => {
+    const b = benchOf(seated.mine);
+    const both = b && b === benchOf(seated.partner) ? b : null;
+    if (both && both !== sharedBench) untrack(() => (setEmote('mine', 'mark-heart'), setEmote('partner', 'mark-heart')));
+    sharedBench = both;
+  });
   function standsClear(id: ActorId, x: number, z: number): boolean {
     const g = stageGeo(sceneEl);
     if (!g || !world.inView(x, z, -24)) return false;
@@ -734,7 +752,7 @@
 
         {#each ['mine', 'partner'] as const as id (id)}
           {@const sd = sides[id]}
-          <div class="actor" class:walking={live && actors[id].walking} data-actor={id} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
+          <div class="actor" class:walking={live && actors[id].walking} data-actor={id} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
             {@attach world.at(live ? { x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true } : { x: sd.home[0], z: sd.home[1], h: VILLAGER.h })}>
             <button type="button" class="vil" disabled={!live} data-sfx="self"
               aria-label={id === 'mine'
@@ -838,6 +856,12 @@
 
   /* the feet at the node's origin (camera.svelte.ts places it) */
   .actor { width: 0; height: 0; transform-origin: 0 0; }
+  /* seated: sunk behind the seat (the bench or the stool in front covers the legs) */
+  .actor[data-seat] .vil { translate: -50% calc(2px + var(--seat-drop)); }
+  /* at the bar: three pull-ups, a rest, again */
+  .actor[data-rep] .vil { animation: pullup 4.2s ease-in-out infinite; }
+  @keyframes pullup { 0%, 64%, 100% { translate: -50% 2px; } 8%, 16% { translate: -50% calc(2px - var(--rep-lift)); } 24%, 32% { translate: -50% 2px; } 40%, 48% { translate: -50% calc(2px - var(--rep-lift)); } 56% { translate: -50% 2px; } }
+  :global(.if-scene:is([data-paused], [data-covered])) .actor[data-rep] .vil { animation-play-state: paused; }
   .actor.walking { will-change: transform; }
   .vil {
     position: absolute; left: 0; bottom: 0; translate: -50% 2px; width: max-content;

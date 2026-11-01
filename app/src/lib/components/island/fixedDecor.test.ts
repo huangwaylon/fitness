@@ -4,9 +4,10 @@
 import { describe, expect, it } from 'vitest';
 import { CASTLE_HOURS, decorHeight, piecesOn, snowboyStage, swapsOn, WINDOWS } from './fixedDecor.ts';
 import {
-  ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, SCENERY, SPRING, inOval, riverNear, type Pt
+  ARCH, CAKE, CENTRE_STAGE, DECOR_SLOTS, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, LAWN_SPOTS, PATHS, POND, PULLUP_AT, SCENERY, SEATS, SPRING, inOval, riverNear, seatAt, type Pt
 } from './world.ts';
 import { spotWhy } from './decor.ts';
+import { route, walkGeo, walkable } from './walkGraph.ts';
 import { dayWeather } from './weather.ts';
 import { addDays } from '#lib/time/dates.ts';
 import PLACES from './models.json';
@@ -90,5 +91,16 @@ describe('the fixed decor', () => {
   it('keeps a decoration a player puts down off every spot, filled or not', () => {
     for (const s of DECOR_SLOTS) expect(spotWhy('tanuki', 0, s.x, s.z, []), s.id).not.toBeNull();
     expect(decorHeight('deco/park-bench')).toBeCloseTo(40, 0);
+  });
+  it('has flowers round the pump to water, and every seat and the bar on walkable ground', () => {
+    const pump = DECOR_SLOTS.find((s) => s.id === 'pump')!;
+    expect(FLOWERS.filter((f) => Math.hypot(f.x - pump.x, f.z - pump.z) <= 70).length).toBeGreaterThanOrEqual(2);
+    const g = walkGeo();
+    for (const [name, [x, z]] of [...Object.entries(SEATS), ['pullup', PULLUP_AT] as const]) {
+      expect(walkable(g, x, z), name).toBe(true);
+      expect(route(g, [132, 214], [x, z]), name).not.toBeNull();
+    }
+    expect(seatAt(...SEATS.seatPondR)).toBe('seatPondR');
+    expect(seatAt(SEATS.seatPondR[0] + 6, SEATS.seatPondR[1])).toBeNull();
   });
 });
