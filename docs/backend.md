@@ -159,8 +159,11 @@ non-2xx or non-JSON = `unavailable`).
 ### Snapshot cache
 
 `sync/cache.ts`: `{me, rows, since, rev, rowsAt, skewMs, fetchedAt}` in IndexedDB (database `island`; in memory if
-unavailable). A refresh posts `snapshot` with `since`, merges (`model/snapshot.ts`: deduped by natural key, ordered by
-`at`; an empty poll keeps the same rows object, so nothing re-reduces), records the server clock skew and saves in
+unavailable), as two records: `meta` (all but the rows, a few hundred bytes, written on every refresh) and `rows`
+(written only when the row set changed, in the same transaction). An app before 2026-11-02 kept one `snapshot` record
+(`v: 1`, rows inside, rewritten whole on every refresh: ~130 KB at two days of use); it is read once and moved to the
+two on the next save, which deletes it, so the update never refetches. A refresh posts `snapshot` with `since`, merges (`model/snapshot.ts`: deduped by natural key, ordered by
+`at`; an empty poll keeps the same rows object, so nothing re-reduces and no rows are written), records the server clock skew and saves in
 order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
 lands after pairing again is dropped.
 

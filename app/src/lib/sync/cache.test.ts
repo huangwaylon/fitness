@@ -92,6 +92,69 @@ describe('IndexedDB cache', () => {
     await reload();
     expect((await loadCache())?.rows.metrics).toHaveLength(2);
   });
+
+  /** The raw records in the `island` database's `cache` store. */
+  const raw = async (write?: Record<string, unknown>): Promise<Record<string, unknown>> => {
+    const d = await new Promise<IDBDatabase>((ok) => {
+      const r = idb.open('island', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('cache');
+      r.onsuccess = () => ok(r.result);
+    });
+    const t = d.transaction('cache', 'readwrite');
+    const s = t.objectStore('cache');
+    for (const [k, v] of Object.entries(write ?? {})) s.put(v, k);
+    const out: Record<string, unknown> = {};
+    for (const k of ['meta', 'rows', 'snapshot']) s.get(k).onsuccess = (e) => { out[k] = (e.target as IDBRequest).result; };
+    await new Promise((ok) => { t.oncomplete = ok; });
+    d.close();
+    return out;
+  };
+
+  it('an empty poll writes only the meta; new rows write the rows too', async () => {
+    await refreshSnapshot();
+    await reload();
+    const marker = { ...rows(), marker: true };
+    await raw({ rows: marker }); // what is on disk now, so a rewrite would show
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } });
+    await refreshSnapshot(() => 7);
+    await cacheWritten();
+    let disk = await raw();
+    expect(disk.rows).toEqual(marker);
+    expect(disk.meta).toMatchObject({ v: 2, me: 'A', since: '2026-11-02T01:00:00.000Z', rev: 'r1', fetchedAt: 7 });
+    expect(disk.meta).not.toHaveProperty('rows');
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [['2026-11-02T05:30:00.000Z', 'A', '2026-11-02', 'steps', 9000]] } });
+    await refreshSnapshot();
+    await cacheWritten();
+    disk = await raw();
+    expect((disk.rows as SnapshotRows).metrics).toHaveLength(2);
+    expect(disk.rows).not.toHaveProperty('marker');
+  });
+
+  it('moves the old single record (v 1) to the two in place: no full refetch', async () => {
+    const old = { ...applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 3) };
+    await raw({ snapshot: old });
+    configureCache({ indexedDB: idb });
+    expect(await loadCache()).toEqual(old);
+    reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } });
+    const r = await refreshSnapshot();
+    expect(calls.map((c) => c.since)).toEqual(['2026-11-02T01:00:00.000Z']);
+    expect(r.ok && r.cache.rows).toEqual(rows(2));
+    await cacheWritten();
+    const disk = await raw();
+    expect(disk.snapshot).toBeUndefined();
+    expect(disk.rows).toEqual(rows(2));
+    expect(disk.meta).toMatchObject({ v: 2, rev: 'r1' });
+    await reload();
+    expect((await loadCache())?.rows).toEqual(rows(2));
+  });
+
+  it('a clear removes every record, the old one too', async () => {
+    await refreshSnapshot();
+    await raw({ snapshot: { v: 1 } });
+    setKey('cd'.repeat(32), 'B');
+    await cacheWritten();
+    expect(await raw()).toEqual({ meta: undefined, rows: undefined, snapshot: undefined });
+  });
 });
 
 describe('resync (rev, docs/backend.md#revision)', () => {

@@ -36,12 +36,24 @@ export interface SnapshotCache {
 
 const DB_NAME = 'island';
 const STORE = 'cache';
-const KEY = 'snapshot';
+/**
+ * Two records: the small `meta` (everything but the rows, written on every refresh) and the `rows` (written only when
+ * the row set changed: most polls bring nothing and keep the same rows object). `snapshot` is the old single record
+ * (`v: 1`, rows inside), read once and moved to the two on the next save, in the same transaction that deletes it.
+ */
+const META = 'meta';
+const ROWS = 'rows';
+const LEGACY = 'snapshot';
+
+/** The `meta` record: the cache without its rows. */
+type Meta = Omit<SnapshotCache, 'v' | 'rows'> & { v: 2 };
 
 let idb: IDBFactory | null = typeof indexedDB !== 'undefined' ? indexedDB : null;
 let db: Promise<IDBDatabase | null> | null = null;
 /** The cache as last loaded or saved (`undefined`: not loaded yet). The source of truth in this session. */
 let mem: SnapshotCache | null | undefined;
+/** The rows object known to be in the `rows` record (null: none there, or only in the old `snapshot` one). */
+let diskRows: SnapshotRows | null = null;
 let loading: Promise<SnapshotCache | null> | null = null;
 /** Writes in order (a clear after a save must not be overtaken by it). */
 let writes: Promise<unknown> = Promise.resolve();
@@ -51,6 +63,7 @@ export function configureCache(o: { indexedDB: IDBFactory | null }): void {
   idb = o.indexedDB;
   db = null;
   mem = undefined;
+  diskRows = null;
   loading = null;
   writes = Promise.resolve();
 }
@@ -85,11 +98,12 @@ function open(): Promise<IDBDatabase | null> {
   return db;
 }
 
-async function tx<T>(mode: IDBTransactionMode, run: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+/** One transaction over the store: every request `run` makes commits together, or none does. */
+async function tx<T>(mode: IDBTransactionMode, run: (s: IDBObjectStore) => T): Promise<T> {
   const d = await open();
   if (!d) throw new Error('no IndexedDB');
   const t = d.transaction(STORE, mode);
-  const out = req(run(t.objectStore(STORE)));
+  const out = run(t.objectStore(STORE));
   await new Promise<void>((ok, fail) => {
     t.oncomplete = () => ok();
     t.onerror = () => fail(t.error);
@@ -98,31 +112,61 @@ async function tx<T>(mode: IDBTransactionMode, run: (s: IDBObjectStore) => IDBRe
   return out;
 }
 
-const valid = (c: unknown): c is SnapshotCache => {
+const validRows = (r: unknown): r is SnapshotRows => {
+  const x = r as SnapshotRows | null;
+  return !!x && Array.isArray(x.events) && Array.isArray(x.metrics);
+};
+const validLegacy = (c: unknown): c is SnapshotCache => {
   const x = c as SnapshotCache | null;
-  return !!x && x.v === 1 && !!x.rows && Array.isArray(x.rows.events) && Array.isArray(x.rows.metrics);
+  return !!x && x.v === 1 && validRows(x.rows);
+};
+const validMeta = (m: unknown): m is Meta => {
+  const x = m as Meta | null;
+  return !!x && x.v === 2 && (x.me === 'A' || x.me === 'B');
 };
 
-/** The cached snapshot (from IndexedDB once per session). */
+/** The cached snapshot (from IndexedDB once per session): the `meta` and `rows` records, else the old `snapshot`. */
 export function loadCache(): Promise<SnapshotCache | null> {
   if (mem !== undefined) return Promise.resolve(mem);
   loading ??= (async () => {
     let c: SnapshotCache | null = null;
+    let onDisk: SnapshotRows | null = null;
     try {
-      const got: unknown = await tx('readonly', (s) => s.get(KEY));
-      if (valid(got)) c = got;
+      const [meta, rows, legacy] = await tx('readonly', (s) => {
+        const all = Promise.all([META, ROWS, LEGACY].map((k) => req(s.get(k))));
+        all.catch(() => {}); // a failed read fails the transaction, which is what's awaited
+        return all;
+      });
+      if (validMeta(meta) && validRows(rows)) {
+        const { v: _v, ...rest } = meta;
+        c = { ...rest, v: 1, rows };
+        onDisk = rows;
+      } else if (validLegacy(legacy)) c = legacy; // the next save moves it to the two records
     } catch {
       // No IndexedDB (or it failed): start empty, kept in memory.
     }
-    if (mem === undefined) mem = c; // a save or clear while loading wins
+    if (mem === undefined) { // a save or clear while loading wins
+      mem = c;
+      diskRows = onDisk;
+    }
     return mem;
   })();
   return loading;
 }
 
 async function put(c: SnapshotCache): Promise<boolean> {
+  const { v: _v, rows, demo: _demo, ...rest } = c;
+  const meta: Meta = { ...rest, v: 2 };
+  const withRows = rows !== diskRows;
   try {
-    await tx('readwrite', (s) => s.put(c, KEY));
+    await tx('readwrite', (s) => {
+      if (withRows) {
+        s.put(rows, ROWS);
+        s.delete(LEGACY);
+      }
+      s.put(meta, META);
+    });
+    if (withRows) diskRows = rows;
     return true;
   } catch (e) {
     if (idb) reportStorageProblem(e);
@@ -130,7 +174,10 @@ async function put(c: SnapshotCache): Promise<boolean> {
   }
 }
 
-/** Keep `c` (in memory at once; on disk in order). Resolves false if it could not be stored (already reported). */
+/**
+ * Keep `c` (in memory at once; on disk in order). Only the meta is written unless the rows changed (another rows
+ * object: an empty poll keeps the same one). Resolves false if it could not be stored (already reported).
+ */
 export function saveCache(c: SnapshotCache): Promise<boolean> {
   mem = c;
   const p = writes.then(() => (mem === c ? put(c) : true));
@@ -145,8 +192,11 @@ export const cacheWritten = (): Promise<void> => writes.then(() => undefined);
 export function clearCache(): Promise<void> {
   mem = null;
   const p = writes.then(async () => {
+    diskRows = null;
     try {
-      await tx('readwrite', (s) => s.delete(KEY));
+      await tx('readwrite', (s) => {
+        for (const k of [META, ROWS, LEGACY]) s.delete(k);
+      });
     } catch {
       /* nothing stored */
     }
