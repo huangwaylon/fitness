@@ -1,7 +1,5 @@
 <script module lang="ts">
   type Tab = 'kiroku' | 'health' | 'settings';
-  /** The last tab, for this session (a reload opens on けんこう, the first, again). */
-  let lastTab: Tab = 'health';
 </script>
 
 <script lang="ts">
@@ -29,6 +27,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import { resetHealth } from '../health/healthLast.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -39,13 +38,14 @@
   let kirokuLevel = $state(0);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
-  let tab = $state<Tab>(lastTab);
+  /** Every opening from the ribbon starts on けんこう (a door or the museum picks its own tab): closing resets it. */
+  let tab = $state<Tab>('health');
   /** けんこう's code: its own chunk, fetched when the tab is first shown. */
   let healthTab: Promise<typeof import('../health/Health.svelte')> | null = null;
   const loadHealth = () => (healthTab ??= import('../health/Health.svelte'));
   function pick(to: Tab) {
     if (to === tab) return;
-    tab = lastTab = to;
+    tab = to;
     body?.scrollTo({ top: 0 });
   }
 
@@ -76,11 +76,13 @@
     kiroku?.back();
   }
 
-  /** Closing ends its banner too, and the next open starts at the top. */
+  /** Closing ends its banner too, and the next open starts at the top, on けんこう at 1週 (the sheet unmounts its body). */
   function closed() {
     if (toasts.current) toasts.dismiss();
     push = null;
     kirokuLevel = 0;
+    tab = 'health';
+    resetHealth();
   }
 
   // The museum's door (design.md "Museum"): きろく's ずかん, at its top level, scrolled to.
@@ -89,7 +91,7 @@
     ui.zukan = false; // answered: a remount (back from ごほうび) doesn't ask again
     open = true; // mounted already, this may run before the HUD's own effect sees the ask
     push = null;
-    tab = lastTab = 'kiroku';
+    tab = 'kiroku';
     void tick().then(() => kiroku?.showZukan());
   });
 
@@ -100,7 +102,7 @@
     ui.door = null;
     open = true;
     push = null;
-    tab = lastTab = 'settings';
+    tab = 'settings';
     void tick().then(() => {
       if (d === 'villager') return go('villager');
       const sec = d === 'sync' ? body?.querySelector<HTMLElement>('#sec-sync') : null;

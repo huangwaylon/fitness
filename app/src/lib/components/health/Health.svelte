@@ -1,7 +1,6 @@
 <script module lang="ts">
   import type { Period } from '#lib/model/health.ts';
-  /** The period and whose data (null: this phone's person), kept for the session like the panel's tab. */
-  const last: { period: Period; who: 'A' | 'B' | null } = { period: 'month', who: null };
+  import { last } from './healthLast.ts';
 </script>
 
 <script lang="ts">

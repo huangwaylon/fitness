@@ -195,7 +195,7 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await expect(page.locator('.detail .row[data-row=pear] .amt svg')).toHaveCount(0);
   // the partner's goals: the second avatar pill switches the card, and ✎ sets the partner's goal
   await page.keyboard.press('Escape');
-  await openPanel(page);
+  await openKiroku(page); // the ribbon opens on けんこう
   const other = goals.locator('button.pp').nth(1);
   const partner = (await other.textContent())!.trim();
   await other.click();
@@ -391,13 +391,13 @@ test('with the undo banner up, a sheet’s footer (買う！) rises above it: a 
   expect(hit).toBe(true);
 });
 
-test('the panel remembers its tab for the session; a reload opens on けんこう', async ({ page }) => {
+test('the panel opens on けんこう from the ribbon every time, whichever tab it closed on', async ({ page }) => {
   await page.goto('?demo');
   await openSettings(page);
+  await expect(sheet(page).locator('#sec-sound')).toBeVisible();
   await sheet(page).locator('.titlebar .close').click();
   await openPanel(page);
-  await expect(sheet(page).locator('.tab[data-tab=settings]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet(page).locator('#sec-sound')).toBeVisible();
+  await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await openPanel(page);
   await expect(sheet(page).locator('.tab[data-tab=health]')).toHaveAttribute('aria-pressed', 'true');

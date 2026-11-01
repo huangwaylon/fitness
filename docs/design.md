@@ -67,8 +67,8 @@ first, applies at once and waits 5 s with とりけす before it is sent.
 ### Panel
 
 Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」, full
-height, three tabs pinned under the title (NH yellow for the one shown): けんこう · きろく · せってい. It opens on
-けんこう and remembers the last tab for the session. Its own chunk, loaded on the first tap.
+height, three tabs pinned under the title (NH yellow for the one shown): けんこう · きろく · せってい. Every opening
+from the ribbon starts on けんこう at 1週 (a building's door or the museum opens its own tab). Its own chunk, loaded on the first tap.
 
 - **けんこう:** the Health data over time ([Kenkou](#kenkou)); its own chunk.
 - **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
@@ -99,7 +99,7 @@ Esc close the panel.
 trainer, one person at a time, computed on read.
 
 - **Whose data:** two avatar pills (this phone's person first and chosen on opening; kept for the session).
-- **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月, kept for the session), then a sticky row: ‹ the
+- **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (1週 on every opening; kept while the panel stays open), then a sticky row: ‹ the
   visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」 under it) › and きょう.
 - **A card per metric** (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド): the goal; 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
