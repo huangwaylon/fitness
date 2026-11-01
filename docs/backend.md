@@ -172,9 +172,9 @@ each minute (not while hidden: a missed minute recomputes once on return).
 
 ### When it syncs
 
-On launch (after painting from the cache), when the app becomes visible (≤ every 30 s), on a sync tap, on `online`, and
-1.5 s after an ack (a `fresh` re-read so server timestamps replace optimistic ones). Each refresh flushes the queue,
-then fetches.
+On launch (after painting from the cache), when the app becomes visible (≤ every 30 s), on a sync tap, on `online`,
+1.5 s after an ack (a `fresh` re-read so server timestamps replace optimistic ones), and while the app is on screen
+whenever the relay says the sheet changed ([Push](#push)). Each refresh flushes the queue, then fetches.
 
 ## Live relay
 
@@ -194,7 +194,7 @@ intents, never data of record: the sheet path above is unchanged and still catch
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 1`, ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, y], at?}`, `act {act, id?, at?}`,
   `catch {what, id?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`, `present-opened`,
-  `watered`, `shaken`). The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
+  `watered`, `shaken`), `saved {}` ([Push](#push)). Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes. Another
   `v` closes 4004 (the client waits for the next show, i.e. a reload).
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
@@ -211,8 +211,61 @@ intents, never data of record: the sheet path above is unchanged and still catch
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
   partner one-way median 19 ms (p90 44), clock offset ±9 ms.
 - **Tests:** `relay/test/` (keys, origins, the bucket, the room: auth, relay to the other person only, stamping, rate
-  limit, replay and ring trimming, replacement, presence, hello timeout, the socket cap) with `cd relay && npm test`
-  (also `.github/workflows/relay.yml`); `live-protocol.test.ts` and `live.test.ts` in the app's vitest.
+  limit, replay and ring trimming, replacement, presence, hello timeout, the socket cap, the nudge and `changed`; the
+  notify secret, signatures and window) with `cd relay && npm test`
+  (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest; the push's
+  script side in `gas/main.test.ts`.
+
+## Push
+
+While the app is on screen, a change to the sheet reaches the other phone in well under a second instead of at its next
+open (decisions: *Push through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) is unchanged, so
+without the relay (or before the push is turned on) the app behaves as before.
+
+- **Apps Script → relay:** after a request that appended `metrics` or `events` rows (an `ingest` with a changed value,
+  a new `event`; never a duplicate, a refusal or a read), `doPost` POSTs `{what: 'ingest'|'event', who, at, rev}` (`at`
+  = the newest row's, `rev` = the revision) to `https://island-fund-relay.island-fund-relay.workers.dev/notify`, after
+  the lock is released (`gas/main.ts notifyRelay`). It needs the `script.external_request` scope
+  ([runbook §11](ops/runbook.md#11-turn-on-the-push)); until the script has it, `UrlFetchApp` throws, and that or any
+  reply but 204 pauses notifying for 10 minutes (CacheService `relay:pause`), so a write pays one cache read.
+- **Auth:** the notify secret is HMAC-SHA256(key `"<KEY_A>:<KEY_B>"` trimmed and lower-cased,
+  `island-relay-notify/1`), derived by both servers from the person keys they already hold; a phone holds only its own
+  key, so it can't sign. Nothing to provision; rotating a key rotates it (the relay's and Script Properties' keys must
+  match, runbook §4). Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
+  `"<time>.<body>"`), hex; the relay refuses a signature more than 5 minutes off (401), a body over 256 bytes (413) or
+  a bad notice (400), and answers 204 with `X-Island-Heard: <sockets>` (`relay/src/notify.ts`). The secret never
+  travels and no key is in a URL or a log.
+- **Relay → phones:** the room sends `changed {what, who, at, rev, t}` to every authenticated socket, the writer's
+  too (a Shortcut upload reaches its own phone). Nothing is stored.
+- **The nudge:** after the queue gets an ack, the phone sends `saved {}` over its socket; the room relays it to the
+  partner like any intent (only when they are there). It covers events before the Apps Script push is on, and stops
+  (sent and heeded) once a `changed` has reached the phone this session.
+- **Client** (`store/live.ts`, the one socket `sync/live.ts liveRelay()`, opened when the backend starts and
+  reconnected on pairing): `onChange` → one `refresh({fresh: true})` 300 ms later (changes arriving together make one),
+  skipped when the cache already has it (same `rev`, `at` ≤ `since`) and for my own `event` (the re-read after the ack
+  fetches it). The CSP's `connect-src` allows the relay's `wss://` origin.
+- **Cost** (Free plan, measured by `npm run smoke`): one notify = 1 Worker request + 1 DO request; a nudge = 1/20 of a
+  DO request. Budget for two phones: [Request budget](#request-budget).
+- **Measured** (from a Mac in Tokyo, test relay): notify POST → `changed` on both phones median 53–70 ms (max 92);
+  the nudge one way median 19 ms. Apps Script's own `health` (no sheet) takes ~1 s, the relay's ~20–50 ms.
+
+### Request budget
+
+Free plan limits (developers.cloudflare.com, 2026-11): Workers 100,000 requests/day; Durable Objects 100,000
+requests/day (a WebSocket connect is one, incoming messages count 20:1, outgoing free), 13,000 GB-s/day of duration
+(an idle hibernatable object is not billed), 5 M rows read and 100,000 rows written/day, 5 GB storage; KV 1,000
+writes/day (unused). A generous day for two phones:
+
+| Source | Count/day | Worker req | DO req | DO GB-s |
+|---|---|---|---|---|
+| Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) |
+| Pings (every 60 s while shown, 2 × 2 h) | 240 | 0 | 12 | ~300 |
+| Notifies (2 Shortcuts hourly + 100 events) | ~150 | 150 | 150 | ~190 |
+| Nudges and intents (later: presence taps) | ~2,000 | 0 | 100 | ~100 |
+| **Total** | | **~270 (0.3 %)** | **~380 (0.4 %)** | **~740 (6 %)** |
+
+Duration is the binding limit and stays under a tenth of it even if the island's presence multiplies the traffic
+tenfold. Apps Script's side: one `UrlFetchApp` call per write, ~150 a day against the consumer quota of 20,000.
 
 ## Service worker
 

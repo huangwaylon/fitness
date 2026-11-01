@@ -1,6 +1,6 @@
 # Runbook
 
-Three pieces, no server of our own (plus an optional live relay, §10):
+Three pieces, no server of our own (plus an optional live relay, §10, which also pushes sheet changes, §11):
 - **The data:** the Google Sheet *Island Fund* (append-only rows in `metrics`, `events`, `uploads`).
 - **The backend:** the Apps Script bound to it, deployed as a web app (one `/exec` URL, keys `KEY_A`/`KEY_B`).
 - **The app:** a static PWA on GitHub Pages that computes everything in the browser from the rows.
@@ -57,6 +57,8 @@ Lost phone, leak, any doubt:
 2. Script editor → **Project Settings → Script Properties** → edit `KEY_A` (or `KEY_B`) → **Save**. No redeploy.
    The old key keeps working for up to 5 minutes (key cache), then gets `unauthorized`.
 3. That person's app opens the pairing screen: paste the new key. Put it in their Shortcut's **Key** text too.
+4. Set the same key on the relay (§10 **Keys**): its sockets and the push's secret (§11) are derived from both keys,
+   so until the two sides match the push pauses itself and the phones fall back to polling.
 
 ## 5. Resync (REV)
 Script Property `REV` is the data revision: when it changes, each phone drops its cache and refetches every row on
@@ -136,7 +138,8 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
 1. `npm ci`, `npm run check`, `npm test`.
 2. `npm run deploy:test`, then `npm run smoke` (the test copy; its keys are in the gitignored `relay/.smoke-keys`,
    `KEY_A=…`/`KEY_B=…` lines; new ones: `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env
-   test`). Every line should say `ok`.
+   test`). Every line should say `ok`, including the push's (a signed `/notify` reaches both test clients; an unsigned
+   or 6-minute-old one gets 401).
 3. `npm run deploy` (production). `curl https://island-fund-relay.island-fund-relay.workers.dev/health` → `ok:true`.
 
 **Keys:** the relay's `KEY_A`/`KEY_B` must equal Script Properties'. Set or rotate (§4) with
@@ -145,3 +148,22 @@ open sockets keep their session until they reconnect). Without them the relay le
 live presence. **Logs:** `npx wrangler tail`. **Off switch:** build the app with `VITE_LIVE_URL=` (empty), or
 `npx wrangler delete` (the app keeps working without it). A protocol change (`live-protocol.ts`) needs the relay
 deployed before the app: an older relay refuses the new kinds.
+
+## 11. Turn on the push
+The push ([backend.md](../backend.md#push)) needs the Apps Script to make one outgoing request per write, which takes
+the `script.external_request` scope. Until it is granted the code tries, fails silently and pauses (the app works
+exactly as before; events still reach the partner at once through the nudge). Adding a scope to a deployed web app
+that the owner hasn't authorized breaks every request (*Authorization is required*), so the order matters:
+
+1. (Lead) Add `"https://www.googleapis.com/auth/script.external_request"` to `oauthScopes` in
+   `app/apps-script/appsscript.json` and the manifest test (`gas/bundle.test.ts`); **don't commit yet**. From
+   `app/apps-script/`, `npx -y @google/clasp@3.4.1 push --force`: it updates the editor's code only; the live
+   deployment stays on its version.
+2. (Owner, once) Open the sheet → **Extensions → Apps Script**, pick `authorizeRelay` in the function menu → **Run** →
+   **Review permissions** → the Island Fund account → **Allow** ("Connect to an external service"). The log should say
+   `relay notify: 204`.
+3. (Lead) Commit the manifest, `npm run gas:deploy` (§2). `health` must answer the new build (HTML means step 2 was
+   skipped: run it, then deploy again).
+
+Check: with the app open on one phone, run the other's Shortcut; the steps update within a few seconds. Off switch:
+remove the scope and redeploy (or `npx wrangler delete`): the script pauses itself and polling carries on.
