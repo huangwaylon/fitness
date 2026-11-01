@@ -2,7 +2,7 @@ import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import { ACTION_MS, actionMs, actionSpots, facingFor, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
-import { BED_XS, BED_ZS, BRIDGES, BUILDINGS, CLIFF, GOAL_TREES, HOMES, POND, ROCK, inRiver } from './world.ts';
+import { BED_XS, BED_ZS, CAMPSITE, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver } from './world.ts';
 
 const crosses = (a: Pt, b: Pt, o: Box) => {
   for (let i = 0; i <= 100; i++) {
@@ -23,8 +23,8 @@ function sound(g: WalkGeo, from: Pt, pts: Pt[]) {
 
 describe('the walk geometry (from the world constants)', () => {
   const g = walkGeo();
-  it('the homes, the doors, the bridges’ and the stairs’ ends and the shore are walkable and reachable from home', () => {
-    for (const name of ['homeA', 'homeB', 'treeA', 'treeB', 'rock', 'shoreC', 'stoneN', 'logN', 'stairS', 'stairN', 'centreStage', 'pondside', 'door-rs', 'door-cranny', 'door-museum', 'door-able', 'clifftop']) {
+  it('the homes, the campsite’s door, the stairs’ ends, the shore and the casting spots are walkable and reachable from home', () => {
+    for (const name of ['homeA', 'homeB', 'treeA', 'treeB', 'rock', 'shoreC', 'stairS', 'stairN', 'centreStage', 'pondside', 'door-campsite', 'clifftop', 'riverEast', 'riverBend', 'mouth']) {
       const p = g.nodes[name];
       expect(p, name).toBeDefined();
       expect(walkable(g, p[0], p[1]), name).toBe(true);
@@ -33,34 +33,26 @@ describe('the walk geometry (from the world constants)', () => {
       sound(g, g.nodes.homeA, r!);
     }
   });
-  it('trunks, beds, the rock, water, the cliff face and building footprints are not walkable; the bridges and stairs are', () => {
+  it('trunks, beds, the rock, water, the cliff face and the tent are not walkable; the stairs are', () => {
     expect(g.nodes.homeA).toEqual([...HOMES.A]);
     expect(walkable(g, GOAL_TREES.A[0], GOAL_TREES.A[1])).toBe(false);
     expect(walkable(g, (BED_XS.A[0] + BED_XS.A[1]) / 2, (BED_ZS[0] + BED_ZS[1]) / 2)).toBe(false);
     expect(walkable(g, ROCK[0], ROCK[1])).toBe(false);
     expect(walkable(g, POND.x, POND.z)).toBe(false);
-    expect(walkable(g, 120, 645)).toBe(false); // the river
+    expect(walkable(g, RIVER[6][0], RIVER[6][1])).toBe(false); // the stream
     expect(walkable(g, 195, -40)).toBe(false); // the sea
-    expect(walkable(g, 200, 1828)).toBe(false); // the cliff face
-    const rs = BUILDINGS.find((b) => b.id === 'rs')!;
-    expect(walkable(g, rs.x, rs.z + 20)).toBe(false);
-    for (const b of BRIDGES) expect(walkable(g, b.x, (b.z0 + b.z1) / 2), b.id).toBe(true);
-    expect(walkable(g, 60, 1828)).toBe(true); // the stairs
+    expect(walkable(g, 200, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(false); // the cliff face
+    expect(walkable(g, CAMPSITE.x, CAMPSITE.z + 20)).toBe(false);
+    expect(walkable(g, 60, (CLIFF.z0 + CLIFF.z1) / 2)).toBe(true); // the stairs
   });
-  it('across the river only by a bridge; up the cliff only by the stairs', () => {
+  it('up the cliff only by the stairs; nothing crosses the stream', () => {
     const r = route(g, g.nodes.homeA, g.nodes.centreStage)!;
     sound(g, g.nodes.homeA, r);
-    const pts = [g.nodes.homeA, ...r];
-    for (let i = 1; i < pts.length; i++) {
-      const [a, b] = [pts[i - 1], pts[i]];
-      for (let k = 0; k <= 40; k++) {
-        const x = a[0] + ((b[0] - a[0]) * k) / 40, z = a[1] + ((b[1] - a[1]) * k) / 40;
-        if (inRiver(x, z)) expect(BRIDGES.some((br) => Math.abs(x - br.x) <= br.w / 2 && z >= br.z0 && z <= br.z1)).toBe(true);
-      }
-    }
-    const up = route(g, g.nodes['door-museum'], g.nodes.clifftop)!;
-    sound(g, g.nodes['door-museum'], up);
-    const way = [g.nodes['door-museum'], ...up];
+    for (const [a, b] of [[g.nodes.homeA, r[0]], ...r.slice(1).map((p, i) => [r[i], p])] as [Pt, Pt][])
+      for (let k = 0; k <= 40; k++) expect(inRiver(a[0] + ((b[0] - a[0]) * k) / 40, a[1] + ((b[1] - a[1]) * k) / 40)).toBe(false);
+    const up = route(g, g.nodes['door-campsite'], g.nodes.stairN)!;
+    sound(g, g.nodes['door-campsite'], up);
+    const way = [g.nodes['door-campsite'], ...up];
     for (let i = 1; i < way.length; i++)
       for (let k = 0; k <= 40; k++) {
         const x = way[i - 1][0] + ((way[i][0] - way[i - 1][0]) * k) / 40, z = way[i - 1][1] + ((way[i][1] - way[i - 1][1]) * k) / 40;
@@ -86,9 +78,10 @@ describe('the walk geometry (from the world constants)', () => {
     expect(route(g, [HOMES.A[0], HOMES.A[1] + 2], g.nodes.homeB)).not.toBeNull();
   });
   it('a tap on the water goes to the nearest bank', () => {
-    const p = nearestWalkable(g, 195, 640)!;
+    const [x, z] = [POND.x + POND.rx - 6, POND.z];
+    const p = nearestWalkable(g, x, z)!;
     expect(walkable(g, p[0], p[1])).toBe(true);
-    expect(Math.hypot(p[0] - 195, p[1] - 640)).toBeLessThanOrEqual(40);
+    expect(Math.hypot(p[0] - x, p[1] - z)).toBeLessThanOrEqual(40);
   });
 });
 

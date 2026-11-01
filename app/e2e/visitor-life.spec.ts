@@ -17,9 +17,9 @@ const rig = (page: Page, id: string) =>
     return `${s.scale}|${s.rotate}|${s.translate}|${s.transform}|${s.opacity}`;
   });
 const NIGHT = new Set(['wisp', 'celeste', 'kk-slider', 'jack']);
-/** Where each stands: Daisy Mae and Gulliver at まえ, the rest at centre stage (ひろば). */
-const camOf = (id: string) => (id === 'daisy-mae' || id === 'gulliver' ? 150 : 860);
-/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+/** Where each stands: Daisy Mae and Gulliver at まえ, the rest at centre stage (おく). */
+const camOf = (id: string) => (id === 'daisy-mae' || id === 'gulliver' ? -13 : 642);
+/** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
   // (again until it holds: the scene may still re-fit its camera as it settles in)
@@ -107,7 +107,7 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 26_000 });
   // the visit ends 30 s after it began, however long the walk from the campsite took (the route's length moves with
   // the scenery the walk goes round)
-  await expect(v).toHaveAttribute('data-phase', 'leave', { timeout: 20_000 });
+  await expect(v).toHaveAttribute('data-phase', 'leave', { timeout: 32_000 });
   await expect(v).toHaveClass(/walking/);
   await expect(v.locator('.art')).toBeHidden({ timeout: 20_000 });
   await expect(page.locator('[data-visitor]')).toHaveCount(0, { timeout: 30_000 });
@@ -145,7 +145,7 @@ test('nobody crosses the island to say hello at centre stage (the partner keeps 
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('[data-visitor="jingle"]')).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.waitForTimeout(6000);
-  // still on the front lawn (an idle wander may take it about there), nowhere near the plaza
+  // still on the front lawn (an idle wander may take it about there), nowhere near the campsite
   const d = await page.evaluate(() => {
     const p = document.querySelector('[data-actor="partner"]')!.getBoundingClientRect();
     const [x, y] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 900);
@@ -156,7 +156,7 @@ test('nobody crosses the island to say hello at centre stage (the partner keeps 
 
 test('Celeste points at a falling star', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T21:00&visitor=celeste&critter=none');
-  await camera(page, 860);
+  await camera(page, 642);
   const v = page.locator('[data-visitor="celeste"]');
   await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
   await page.evaluate(() => document.querySelector('.if-scene')!.dispatchEvent(new CustomEvent('island:star', { detail: { x: 40 } })));

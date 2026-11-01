@@ -1,6 +1,6 @@
 <script lang="ts">
   // Halloween on the island (docs/design.md "Halloween"; events.ts): on Oct 31 a few of NH's orange pumpkins sit on the
-  // health lawn and around the plaza (world nodes); from 17:00 they are spooky lanterns (NH's jack-o'-lanterns), lit
+  // health lawn and round the campsite's clearing (world nodes); from 17:00 they are spooky lanterns (NH's jack-o'-lanterns), lit
   // above the night tint with a soft flicker, and a light purple and orange wash lies over the island. Decoration only:
   // no taps, never over a control (when the camera settles, a pumpkin in view that a control covers isn't shown). Jack
   // is a visitor (Visitor.svelte).
@@ -13,9 +13,10 @@
   let { scene, night }: { scene?: HTMLElement; night: boolean } = $props();
   const w = useWorld();
 
-  /** Where they sit (world x, z): four on the health lawn by its edges, clear of the trees and the villagers (まえ), four around the plaza, clear of
-   *  centre stage, the cake, the arch, the lamps and the bench (ひろば). */
-  const SPOTS: readonly Pt[] = [[40, 160], [350, 170], [36, 560], [360, 520], [110, 880], [282, 868], [150, 984], [242, 988]];
+  /** Where they sit (world x, z): four on the health lawn by its edges, clear of the trees and the villagers (まえ), four
+   *  round the campsite's clearing, clear of centre stage, the cake, the arch and the lanterns, two by the tent's door
+   *  (おく). */
+  const SPOTS: readonly Pt[] = [[40, 160], [350, 170], [36, 560], [360, 520], [112, 872], [296, 914], [146, 958], [248, 958]];
   /** Lit at night they stand over the time-of-day tint (IslandScene's .stage: --z-tint 60000080). */
   const ABOVE_TINT = 60_000_081;
 

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { nav, walkable } from './nav.ts';
 import { ROLL_DEFAULTS, project, radiusFor } from './roll.ts';
-import { BRIDGES, BUILDINGS, CAMS, HOMES, PIVOT, POND, SKY, TILT, surfaceAt, type Pt } from './world.ts';
+import { CAMPSITE, CAMS, CLIFF, HOMES, PIVOT, POND, SKY, TILT, surfaceAt, type Pt } from './world.ts';
 import { BAND_BOTTOM, BAND_TOP, Follow, LERP, SNAP_BACK_MS, band, followStep, followTarget, inBand, isFar, needsFollow, planTap, stepCue, type CamView } from './tapWalk.ts';
 import { CUES } from '#lib/sound/cues.ts';
 import { SPEED } from './walkGraph.ts';
@@ -26,35 +26,26 @@ describe('planning a tap', () => {
     expect(p.ms).toBe(Math.round((p.len / RUN) * 1000));
   });
 
-  it('crosses to the plaza over a bridge, the ring at the snapped spot', () => {
-    const p = planTap(g, [...HOMES.A], 195, 900)!;
-    expect(p.to).toEqual([195, 900]);
-    let at: Pt = [...HOMES.A], over = false;
-    for (const q of p.pts) {
-      if ((at[1] - 640) * (q[1] - 640) < 0) {
-        const x = at[0] + ((q[0] - at[0]) * (640 - at[1])) / (q[1] - at[1]);
-        over = BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2);
-        expect(over).toBe(true);
-      }
-      at = q;
-    }
-    expect(over).toBe(true);
+  it('runs up to the campsite’s clearing, the ring at the tapped spot', () => {
+    const p = planTap(g, [...HOMES.A], 196, 900)!;
+    expect(p.to).toEqual([196, 900]);
+    expect(p.pts.at(-1)).toEqual([196, 900]);
+    expect(p.ms).toBe(Math.round((p.len / RUN) * 1000));
   });
 
   it('a tap on the pond walks to its bank and faces the water; a building’s footprint to its door', () => {
     const p = planTap(g, [...HOMES.A], POND.x, POND.z)!;
     expect(p.snap.kind).toBe('bank');
     expect(walkable(g, p.to[0], p.to[1])).toBe(true);
-    const rs = BUILDINGS.find((b) => b.id === 'rs')!;
-    const d = planTap(g, [...HOMES.A], rs.x, rs.z + 20)!;
-    expect(d.snap).toMatchObject({ kind: 'door', building: 'rs' });
-    expect(d.to).toEqual(g.named['door-rs']);
+    const d = planTap(g, [...HOMES.A], CAMPSITE.x, CAMPSITE.z + 20)!;
+    expect(d.snap).toMatchObject({ kind: 'door', building: 'campsite' });
+    expect(d.to).toEqual(g.named['door-campsite']);
   });
 
   it('a tap where my villager already stands goes nowhere; a door does (it opens the building)', () => {
     expect(planTap(g, [...HOMES.A], HOMES.A[0], HOMES.A[1])).toBeNull();
-    const door = g.named['door-cranny'];
-    expect(planTap(g, door, 100, 1360)).toMatchObject({ snap: { kind: 'door', building: 'cranny' } });
+    const door = g.named['door-campsite'];
+    expect(planTap(g, door, CAMPSITE.x + 10, CAMPSITE.z + 20)).toMatchObject({ snap: { kind: 'door', building: 'campsite' } });
   });
 });
 
@@ -165,19 +156,16 @@ describe('Follow (the lifecycle)', () => {
 });
 
 describe('footsteps by the ground', () => {
-  it('pick grass, sand, brick, wood and stone from the plan, snow in winter, a splash in the rain, nothing in water', () => {
+  it('pick grass, sand and the stairs’ stone from the plan, snow in winter, a splash in the rain, nothing in water', () => {
     const at = (x: number, z: number, winter = false, rain = false) => stepCue(surfaceAt(x, z), winter, rain);
+    const stair = (CLIFF.stair[0] + CLIFF.stair[1]) / 2, mid = (CLIFF.z0 + CLIFF.z1) / 2;
     expect(at(150, 400)).toBe('footstep-grass');
     expect(at(150, 50)).toBe('footstep-sand');
-    expect(at(195, 1100 + 80)).toBe('footstep-brick');
-    expect(at(296, 640)).toBe('footstep-wood');
-    expect(at(195, 640)).toBe('footstep-stone');
-    expect(at(195, 900)).toBe('footstep-stone');
+    expect(at(stair, mid)).toBe('footstep-stone');
     expect(at(150, 400, true)).toBe('footstep-snow');
-    expect(at(195, 900, true)).toBe('footstep-stone');
+    expect(at(stair, mid, true)).toBe('footstep-stone');
     expect(at(150, 400, false, true)).toBe('footstep-splash');
-    expect(at(296, 640, false, true)).toBe('footstep-wood');
     expect(at(POND.x, POND.z)).toBeNull();
-    for (const c of ['footstep-wood', 'footstep-stone', 'footstep-brick'] as const) expect(CUES[c]).toBeDefined();
+    expect(CUES['footstep-stone']).toBeDefined();
   });
 });

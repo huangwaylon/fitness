@@ -4,16 +4,20 @@
   // the ribbon, which sits in the band's middle) as ONE soft radial glow, or the moon (a crescent with a soft
   // glow) + 10 stars (2 twinkle); two drifting soft clouds (Clouds.svelte), the balloon present and the fireworks
   // (Fireworks.svelte, passed in as children). The sun / moon sit above the clouds, so a cloud never hides them. The visible band (below the
-  // safe area) is a size container named `sky`.
+  // safe area) is a size container named `sky`. Two layers in the stage (IslandScene): `sky`, the gradient, the bank,
+  // the clouds and the balloon, under the world and its time-of-day tint; `lights`, the sun or moon and the stars, over
+  // the tint (lights are never dimmed).
   import type { Snippet } from 'svelte';
   import Clouds from './Clouds.svelte';
   import type { Tod } from './scene.ts';
 
   interface Props {
     tod: Tod;
+    /** The sky itself (under the tint) or its lights (over it). */
+    layer?: 'sky' | 'lights';
     children?: Snippet;
   }
-  let { tod, children }: Props = $props();
+  let { tod, layer = 'sky', children }: Props = $props();
   const uid = $props.id();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
@@ -23,7 +27,8 @@
   ];
 </script>
 
-<div class="sky" aria-hidden="true">
+{#if layer === 'lights'}
+<div class="sky lights" aria-hidden="true">
   <div class="band">
     {#if night}
       {#each STARS as [x, y], i (i)}
@@ -33,6 +38,16 @@
         </svg>
       {/each}
     {/if}
+    {#if night}
+      <span class="orb moon"><svg viewBox="12 12 36 36"><path d="M34 12 A18 18 0 1 0 48 40 A14 14 0 1 1 34 12 Z" /></svg></span>
+    {:else}
+      <span class="orb sun" class:low></span>
+    {/if}
+  </div>
+</div>
+{:else}
+<div class="sky" aria-hidden="true">
+  <div class="band">
     <!-- NH's distant cloud bank resting on the horizon (static): fills the low sky on tall phones -->
     <svg class="bank" viewBox="0 0 400 40" preserveAspectRatio="none">
       <defs>
@@ -44,20 +59,18 @@
       <path fill="url(#{uid}-bank)" d="M0 40 V30 Q8 18 22 24 Q30 10 48 18 Q58 8 72 20 Q84 14 92 26 Q104 20 112 30 Q126 28 132 34 Q150 26 164 32 Q176 22 192 28 Q204 14 222 20 Q234 6 252 16 Q264 10 274 22 Q288 16 296 28 Q312 22 322 30 Q338 20 352 26 Q364 12 380 20 Q392 16 400 26 V40 Z" />
     </svg>
     <Clouds />
-    {#if night}
-      <span class="orb moon"><svg viewBox="12 12 36 36"><path d="M34 12 A18 18 0 1 0 48 40 A14 14 0 1 1 34 12 Z" /></svg></span>
-    {:else}
-      <span class="orb sun" class:low></span>
-    {/if}
     {@render children?.()}
   </div>
 </div>
+{/if}
 
 <style>
   .sky {
     position: absolute; inset: 0 0 auto 0; z-index: 0; height: var(--sky-h);
     background: linear-gradient(180deg, var(--sky-top), var(--sky-mid) 55%, var(--sky-hz));
   }
+  /* the lights: over the world's tint (the stage's --z-tint), under the taps */
+  .sky.lights { z-index: calc(var(--z-tint) + 1); background: none; pointer-events: none; }
   .bank {
     position: absolute; left: 0; bottom: -8px; width: 100%; height: clamp(16px, 18cqh, 54px);
     opacity: calc(.9 * var(--cloud-op, 1)); pointer-events: none;

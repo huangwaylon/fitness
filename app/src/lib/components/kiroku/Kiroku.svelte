@@ -82,14 +82,6 @@
     return true;
   }
 
-  /** The museum's door: back to the top, the ずかん's heading at the top of the panel. */
-  export async function showZukan() {
-    stack = [];
-    saved = [];
-    await tick();
-    root?.querySelector<HTMLElement>('[data-sec="zukan"]')?.scrollIntoView({ block: 'start' });
-  }
-
   /** After けってい: focus back on the goal's ✎, else on the panel. */
   async function refocus(key: string) {
     await tick();

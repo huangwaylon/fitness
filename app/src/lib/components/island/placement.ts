@@ -61,7 +61,7 @@ export type Side = 'top' | 'left' | 'right' | 'bottom';
 export const GAP = 12;
 /** How far a balloon may stand off its speaker (px, beyond GAP) before something else gives way. */
 export const NEAR = 40;
-/** How far it may stand off to keep clear of every control (or of all but the museum) before the island's things may
+/** How far it may stand off to keep clear of every control (or of all but the campsite) before the island's things may
  *  sit under it instead: a breath, so the tail stays at the speaker. */
 export const SNUG = 16;
 /** The boxes a balloon keeps clear of, and (optionally) how far off it may stand for that. */
@@ -147,7 +147,7 @@ function safeArea(scene: HTMLElement): Box {
 
 /** Where a speech balloon goes (docs/design.md "Dialogue"), NH's rule for every speaker: by the speaker, its tail at
  *  them, at most NEAR px off: above the head when there's room, else beside it, else below the feet. Room gives way
- *  step by step, nearness doesn't: clear of every control, else over the museum (a building that is also a control),
+ *  step by step, nearness doesn't: clear of every control, else over the campsite (a building that is also a control),
  *  both only within SNUG px so the tail stays at the speaker; else over the island's things (the trees, the fruit rows)
  *  but not the villagers; else over the villagers too. Never over the HUD, しずえ's box, a tree's popup or another
  *  overlay showing, nor `extra` (the speaker itself, its emote); never off the safe area. Only when nothing near fits does it stand further off (clear of the HUD). `own`: the
@@ -162,7 +162,7 @@ export function placeBy(scene: HTMLElement, w: number, h: number, from: Box, ext
 
 /** Where a w × h box (client px) centred near (sx, sy) fits (a plate, a caption by what it's about): the scene's safe
  *  area, clear of every control, above the point first, then below, as close as it can, sliding along; failing that
- *  near, over the museum (`data-scenery`, a building that is also a control); only then further off. Null when there's
+ *  near, over the campsite (`data-scenery`, a building that is also a control); only then further off. Null when there's
  *  no room. */
 export function place(scene: HTMLElement, w: number, h: number, sx: number, sy: number, extra: Box[] = []): { x: number; y: number } | null {
   const area = safeArea(scene);

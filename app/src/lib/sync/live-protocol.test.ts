@@ -91,8 +91,11 @@ describe('live protocol: relay messages', () => {
 });
 
 describe('live protocol: v2 world points', () => {
-  it('takes a node id or an integer point within the world plan (island/world.ts PLAN)', () => {
-    expect([WORLD_X, WORLD_Z]).toEqual([[PLAN.x0, PLAN.x1], [PLAN.z0, PLAN.z1]]);
+  it('takes a node id or an integer point within the world extent (island/world.ts PLAN lies inside it)', () => {
+    expect(WORLD_X[0]).toBeLessThanOrEqual(PLAN.x0);
+    expect(WORLD_X[1]).toBeGreaterThanOrEqual(PLAN.x1);
+    expect(WORLD_Z[0]).toBeLessThanOrEqual(PLAN.z0);
+    expect(WORLD_Z[1]).toBeGreaterThanOrEqual(PLAN.z1);
     expect(parseClient(j2({ kind: 'walk', to: [-230, 2650], at: 9 }))).toEqual({ v: 2, kind: 'walk', to: [-230, 2650], at: 9 });
     expect(parseClient(j2({ kind: 'walk', to: 'bridgeStoneN' }))).toEqual({ v: 2, kind: 'walk', to: 'bridgeStoneN' });
     for (const to of [[621, 0], [0, -461], [-231, 0], [0, 2651], [0.5, 0], [0, 0, 0]]) expect(parseClient(j2({ kind: 'walk', to })), String(to)).toBeNull();

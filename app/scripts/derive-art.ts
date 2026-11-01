@@ -1,6 +1,6 @@
 // The art NH has no render for, derived from the official renders (docs/design.md "World"): each building's snowy
 // roof for winter and its lit windows for the night, the cedar under snow, and a lamp's glow (drawn). Usage (from app/):
-//   npm run assets:derive [-- --only=deco/airport --force --debug --out=/tmp/x]
+//   npm run assets:derive [-- --only=deco/campsite --force --debug --out=/tmp/x]
 // Writes static/art/<key>.webp and their entries in static/art/manifest.json (fetch-assets.ts's shape; their source
 // says "derived", so fetch-assets keeps them). Run after assets:fetch. Needs cwebp/dwebp (brew install webp). The
 // sources are read from Nookipedia at full resolution and cut exactly as fetch-assets.ts cuts the shipped art (alpha
@@ -275,61 +275,16 @@ function lampGlow(size: number): Img {
 }
 
 // ---- the derived art's recipes (pixel coordinates in the shipped, trimmed art) ----------------------------------------
-const BUILDING_SRC: Record<string, string> = {
-  rs: 'Resident_Services_NH_Map_Icon.png', cranny: "Nook's_Cranny_(Upgraded)_NH_Map_Icon.png", able: 'Able_Sisters_NH_Map_Icon.png',
-  museum: 'Museum_(Upgraded)_NH_Map_Icon.png', campsite: 'Campsite_NH_Map_Icon.png', airport: 'Airport_(Blue)_NH_Map_Icon.png'
-};
-const ART_KEY: Record<string, string> = { rs: 'resident-services', cranny: 'nooks-cranny', able: 'able-sisters', museum: 'museum-icon', campsite: 'campsite', airport: 'airport' };
+const BUILDING_SRC: Record<string, string> = { campsite: 'Campsite_NH_Map_Icon.png' };
+const ART_KEY: Record<string, string> = { campsite: 'campsite' };
 const SNOW: Record<string, Snow[]> = {
-  rs: [
-    { seeds: [[60, 95], [260, 95], [150, 25], [150, 92], [120, 100], [190, 100], [40, 110], [280, 110]], hue: [215, 270], sat: [0.12, 1], cover: Infinity, pile: 3, drip: 4 }
-  ],
-  cranny: [
-    { seeds: [[30, 80], [270, 80], [150, 85], [60, 40], [240, 40]], hue: [215, 245], sat: [0.25, 1], cover: Infinity, pile: 3, drip: 4 },
-    { seeds: [[150, 67], [90, 67], [210, 67]], hue: [215, 265], sat: [0.0, 1], val: [0.2, 0.75], box: [65, 58, 235, 78], cover: 2, pile: 1 },
-    { seeds: [[215, 25], [75, 25], [150, 6]], hue: [0, 30], sat: [0.3, 1], box: [65, 0, 235, 50], cover: 3, pile: 2 }
-  ],
-  able: [
-    { seeds: [[60, 70], [90, 95], [20, 95], [150, 60]], hue: [140, 185], sat: [0.25, 1], val: [0.2, 0.8], box: [0, 40, 150, 110], cover: Infinity, pile: 3, drip: 3 },
-    { seeds: [[200, 8], [170, 30], [230, 30], [280, 85], [130, 95], [150, 70], [255, 60]], hue: [140, 185], sat: [0.25, 1], box: [100, 0, 305, 105], cover: Infinity, pile: 3, drip: 2 },
-    { seeds: [[265, 35], [265, 45]], val: [0.1, 0.45], box: [250, 25, 285, 70], cover: 3, pile: 3 },
-    { seeds: [[200, 45], [160, 55], [240, 55]], hue: [195, 225], sat: [0.3, 1], box: [145, 35, 265, 85], cover: 3, pile: 2 },
-    { seeds: [[200, 85], [150, 90], [250, 90]], hue: [60, 95], sat: [0.4, 1], box: [135, 78, 275, 112], cover: 2, pile: 2 }
-  ],
-  museum: [
-    { seeds: [[30, 70], [260, 70], [145, 8], [80, 40], [210, 40]], hue: [160, 190], sat: [0.3, 1], cover: Infinity, pile: 4, drip: 3 }
-  ],
   campsite: [
     { seeds: [[150, 8], [150, 20], [90, 50], [210, 50]], hue: [20, 62], sat: [0.0, 0.85], val: [0.6, 1], box: [30, 0, 255, 150], cover: 26, pile: 3 },
     { seeds: [[17, 20], [266, 18]], hue: [0, 40], val: [0.2, 0.5], box: [10, 10, 275, 40], cover: 2, pile: 2 },
     { seeds: [[230, 113], [215, 115]], hue: [0, 30], val: [0.3, 0.75], box: [205, 108, 252, 125], cover: 3, pile: 2 }
-  ],
-  airport: [
-    { seeds: [[180, 28], [140, 30], [230, 30]], sat: [0, 0.2], val: [0.8, 1], box: [118, 22, 248, 40], cover: 5, pile: 3, drip: 2 },
-    { seeds: [[200, 104], [80, 104], [150, 110]], sat: [0, 0.25], val: [0.8, 1], box: [36, 98, 246, 140], cover: 5, pile: 3, drip: 2 },
-    { seeds: [[70, 75], [90, 75]], box: [38, 70, 110, 80], val: [0.3, 1], cover: 2, pile: 2 },
-    { seeds: [[13, 178], [79, 178], [143, 178], [208, 178], [272, 178]], hue: [0, 30], sat: [0.3, 1], val: [0.3, 0.9], box: [0, 170, 284, 190], cover: 3, pile: 3 },
-    { seeds: [[100, 214], [180, 214], [20, 214], [260, 214]], hue: [0, 30], sat: [0.3, 1], val: [0.3, 0.9], box: [0, 208, 284, 218], cover: 2, pile: 2 }
   ]
 };
 const LIT: Record<string, Lit[]> = {
-  rs: [{ seeds: [[45, 185], [45, 200], [40, 172], [50, 172]], val: [0, 0.5], box: [30, 158, 66, 206] }, { seeds: [[255, 185], [255, 200], [250, 172], [260, 172]], val: [0, 0.5], box: [244, 158, 280, 206] }],
-  cranny: [
-    { seeds: [[30, 160], [50, 160], [80, 160], [30, 125], [80, 125]], hue: [190, 230], sat: [0.2, 1], box: [22, 112, 88, 172] },
-    { seeds: [[225, 160], [270, 160], [225, 125], [270, 125]], hue: [190, 230], sat: [0.2, 1], box: [212, 112, 278, 172] },
-    { seeds: [[118, 125], [130, 125], [118, 145], [130, 145], [163, 125], [175, 125], [163, 145], [175, 145]], val: [0, 0.45], box: [110, 115, 182, 165] }
-  ],
-  able: [
-    { seeds: [[50, 160], [70, 150], [90, 175], [35, 160], [102, 160]], hue: [195, 235], sat: [0.2, 1], box: [28, 135, 108, 192] },
-    { seeds: [[193, 128], [215, 128], [193, 152], [215, 152]], hue: [195, 235], sat: [0.2, 1], box: [180, 115, 228, 168] },
-    { seeds: [[140, 135]], val: [0.75, 1], sat: [0, 0.4], box: [130, 125, 152, 150] }
-  ],
-  museum: [{ seeds: [[145, 150], [130, 120], [160, 180]], val: [0, 0.35], box: [104, 104, 186, 196] }],
-  airport: [
-    { seeds: [[150, 60], [200, 60], [130, 60], [235, 60], [180, 45]], hue: [170, 215], sat: [0.25, 1], box: [120, 34, 245, 92] },
-    { seeds: [[145, 165], [210, 165]], hue: [170, 215], sat: [0.2, 1], box: [133, 150, 225, 180] },
-    { seeds: [[72, 165], [72, 190]], hue: [190, 230], val: [0.2, 0.75], box: [62, 140, 92, 208] }
-  ],
   campsite: [{ seeds: [[30, 65], [30, 55], [30, 80]], hue: [0, 50], sat: [0.3, 1], val: [0.6, 1], box: [18, 38, 46, 92] }]
 };
 const CEDAR_SNOW: Snow[] = [

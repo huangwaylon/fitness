@@ -18,7 +18,7 @@ export type SoundId =
   | 'pop' | 'surprise' | 'heart' | 'sparkle' | 'oops'
   // scenery taps (docs/design.md#scene-interactions): quiet, jittered, two at most
   | 'swish' | 'puff' | 'twinkle' | 'splash' | 'step-sand' | 'step-grass' | 'step-snow' | 'step-splash'
-  | 'step-wood' | 'step-stone' | 'step-brick'
+  | 'step-stone'
   // the island's critters and the balloon (docs/design.md#scene-interactions): a bobber plop, the bite (the bobber
   // yanked under), the reel, a little catch tune, the net's swing, the balloon's pop
   | 'plop' | 'bite' | 'reel' | 'catch' | 'net' | 'burst'
@@ -45,8 +45,8 @@ export type SceneSfx =
   | 'nest' | 'buzz' | 'sting' | 'twig'
   // mushroom season (island/mushrooms.ts): one picked up beside a tree
   | 'mushroom'
-  // the museum's door (island/Museum.svelte); fireworks (island/Fireworks.svelte)
-  | 'museum' | 'launch' | 'firework';
+  // fireworks (island/Fireworks.svelte)
+  | 'launch' | 'firework';
 
 interface SoundDef {
   bus: 'sfx';
@@ -97,9 +97,7 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   'step-grass': { bus: 'sfx', gain: 0.35, jitter: 90, max: 2 },
   'step-snow': { bus: 'sfx', gain: 0.4, jitter: 90, max: 2 },
   'step-splash': { bus: 'sfx', gain: 0.35, jitter: 90, max: 2 },
-  'step-wood': { bus: 'sfx', gain: 0.4, jitter: 80, max: 2 },
   'step-stone': { bus: 'sfx', gain: 0.35, jitter: 80, max: 2 },
-  'step-brick': { bus: 'sfx', gain: 0.35, jitter: 80, max: 2 },
   plop: { bus: 'sfx', gain: 0.4, jitter: 60, max: 2 },
   // the bite must be heard over the waves: the loudest of the scenery (still ≤ 0.5)
   bite: { bus: 'sfx', gain: 0.5, jitter: 40, max: 1 },

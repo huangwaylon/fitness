@@ -1,6 +1,6 @@
 <script lang="ts">
   // The birthday cake (docs/design.md "Birthdays"; birthday.ts): on one of our birthdays NH's birthday cake stands in front
-  // of centre stage (world.ts CAKE, seen from ひろば: a world node), its candles lit. A tap (a scene item like the
+  // of centre stage (world.ts CAKE, the campsite's clearing seen from おく: a world node), its candles lit. A tap (a scene item like the
   // visitors, a 44px reach, while it's on screen) plays a little music box (an original tune, a jingle) and blows the
   // candles out: a puff of smoke, out for the day on this phone. No ベル.
   import OfficialArt from '../characters/OfficialArt.svelte';

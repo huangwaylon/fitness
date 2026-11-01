@@ -13,8 +13,9 @@ export type LiveV = (typeof LIVE_VS)[number];
 export const MAX_BYTES = 256;
 
 /**
- * The world's plan extent (world units; island/world.ts PLAN, kept equal by its test): a v2 walk's point lies within it.
- * Here because the Worker bundles this file alone (and sync/ may not import components/).
+ * The world's extent (world units): a v2 walk's point lies within it. island/world.ts PLAN lies inside it (its test):
+ * the two-section island's plan is shorter than the extent the deployed relay checks, which stays as it was. Here
+ * because the Worker bundles this file alone (and sync/ may not import components/).
  */
 export const WORLD_X = [-230, 620] as const;
 export const WORLD_Z = [-460, 2650] as const;

@@ -3,11 +3,11 @@
   // baked terrain, CSS-animated (transform and opacity only; no timers, no rAF), held still under a sheet and while
   // hidden. The shore's foam wash along the front beach (ShoreWash, a ground quad), the waterfall through the cliff
   // (Waterfall, upright, over the cliff's upright face), glints twinkling on the open sea (a fixed pool, a few in view at a time), short flow streaks
-  // drifting down the river, and the pond's lily pads with one slow ripple (petals or maple leaves afloat in their
-  // weeks, on the pond and riding the river). The bridges' and the dock's upright front faces stand at their near edges, so they read raised.
+  // drifting down the stream, and the pond's lily pads with one slow ripple (petals or maple leaves afloat in their
+  // weeks, on the pond and riding the stream).
   import { asset } from '$app/paths';
   import { useWorld } from './camera.svelte.ts';
-  import { BRIDGES, CLIFF, DOCK, FACE_H, FALL_H, POND, RIVER, SHORE_Z } from './world.ts';
+  import { CLIFF, FACE_H, FALL_H, POND, RIVER, SHORE_Z } from './world.ts';
   import ShoreWash from './ShoreWash.svelte';
   import Waterfall from './Waterfall.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -19,8 +19,8 @@
   /** Glints on the open sea: in front of the beach, along both sides and behind the island. [x, z] */
   const GLINTS: [number, number][] = [
     [40, -120], [170, -180], [290, -100], [-120, -70], [430, -210], [110, -290],
-    [-150, 420], [540, 520], [-160, 980], [550, 1120], [-150, 1560], [545, 1700],
-    [60, 2520], [300, 2480], [-80, 2600], [470, 2560]
+    [-150, 420], [540, 520], [-160, 900], [550, 1000], [-140, 1260], [540, 1300],
+    [60, 1400], [300, 1380], [-80, 1480], [470, 1450]
   ];
   /** Flow streaks: along the river every ~60u, alternately either side of its middle, heading downstream. */
   const STREAKS = (() => {
@@ -42,15 +42,15 @@
     }
     return out;
   })();
-  /** Petals or maple leaves riding the river in their weeks (NH's official petal and leaf icons): one every ~50u along
-   *  the east reach and the crossing below the plaza, each drifting 36u downstream over 15 s, turning slowly, then the
-   *  next lap from its spot (the cycles out of step). Above the falls the spring's reach has none. */
+  /** Petals or maple leaves riding the stream in their weeks (NH's official petal and leaf icons): one every ~50u below
+   *  the falls down to the mouth, each drifting 36u downstream over 15 s, turning slowly, then the next lap from its
+   *  spot (the cycles out of step). Above the falls the spring's reach has none, nor the mouth's open water. */
   const FLOATS = (() => {
     const out: { x: number; z: number; a: number; d: number; spin: number }[] = [];
     let k = 0;
     for (let i = 0; i < RIVER.length - 1; i++) {
       const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1];
-      if (az > CLIFF.z0 - 10 || bx < 40) continue;
+      if (az > CLIFF.z0 - 10 || ax > 420) continue;
       const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / 50));
       const a = (Math.atan2(-(bz - az), bx - ax) * 180) / Math.PI;
       for (let j = 0; j < n; j++, k++) {
@@ -65,13 +65,6 @@
   const BAKE = Object.values(import.meta.glob<{ bytes?: Record<string, number[]> }>('./terrain.json', { eager: true, import: 'default' }))[0];
   const V = Object.values(BAKE?.bytes ?? {}).flat().reduce((a, b) => a + b, 0);
   const sprite = (name: string) => `${asset(`terrain/sprites/${name}${winter ? '-winter' : ''}.webp` as Parameters<typeof asset>[0])}?v=${V}`;
-  /** The bridges' and the dock's front faces (terrain.ts bakes them, 3 px a unit): their size in units, the bottom edge
-   *  at the near edge of the deck (the dock's at the waterline). */
-  const FRONTS = [
-    { id: 'bridge-stone', x: BRIDGES[0].x, z: BRIDGES[0].z0, w: 52, h: 12 },
-    { id: 'bridge-log', x: BRIDGES[1].x, z: BRIDGES[1].z0, w: 34, h: 7.14 },
-    { id: 'dock-front', x: (DOCK.x0 + DOCK.x1) / 2, z: DOCK.z0, w: DOCK.x1 - DOCK.x0, h: 11 }
-  ];
 </script>
 
 <div class="water" aria-hidden="true" data-world-water>
@@ -86,11 +79,6 @@
   <div class="node up" {@attach w.at({ x: (CLIFF.fall[0] + CLIFF.fall[1]) / 2, z: CLIFF.z0, h: FALL_H, dz: -0.5 })}>
     <div class="fall"><Waterfall {night} w={CLIFF.fall[1] - CLIFF.fall[0] + 8} h={FALL_H} /></div>
   </div>
-  {#each FRONTS as f (f.id)}
-    <div class="node up" {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: 6 })}>
-      <img class="front" src={sprite(f.id)} alt="" draggable="false" style:width="calc({f.w} * var(--u))" style:height="calc({f.h} * var(--u))" />
-    </div>
-  {/each}
 
   {#each GLINTS as [x, z], i (i)}
     <div class="node" {@attach w.at({ x, z, h: 10, zi: 5 })}>

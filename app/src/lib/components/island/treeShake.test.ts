@@ -84,14 +84,14 @@ describe('every tree shakes, each its own way (NH)', () => {
   it("every oak, cedar and palm of the scenery is a tree to shake (bamboo isn't), its outer side by where it stands", () => {
     const kinds = SCENERY.filter((s) => ['oak', 'cedar', 'palm'].includes(s.kind));
     expect(SCENERY_TREES.map((t) => t.id)).toEqual(kinds.map((s) => s.id));
-    expect(SCENERY_TREES.length).toBeGreaterThanOrEqual(20);
+    expect(SCENERY_TREES.length).toBeGreaterThanOrEqual(12);
     expect(SCENERY_TREES.some((t) => t.id.startsWith('bamboo'))).toBe(false);
     for (const t of SCENERY_TREES) expect(t.out).toBe(t.x < 195 ? -1 : 1);
   });
   it("a goal tree is its person's, where their slot puts it on this phone", () => {
     expect(goalTree('B', 'A')).toMatchObject({ id: 'goal-B', kind: 'goal', out: -1 });
     expect(treeById('goal-A', () => 'B')).toMatchObject({ id: 'goal-A', out: 1 });
-    expect(treeById('palm-2', () => 'A')).toMatchObject({ kind: 'palm' });
+    expect(treeById('palm-3', () => 'A')).toMatchObject({ kind: 'palm' });
     expect(treeById('bamboo-1', () => 'A')).toBeNull();
   });
   it("a palm drops its two coconuts the first time it's shaken in a day, then only (rarely) a nest: no branch, no bagworm", () => {
@@ -117,31 +117,31 @@ describe('every tree shakes, each its own way (NH)', () => {
 
 describe("the day's shakes (shared by both phones)", () => {
   const shakes: Shake[] = [
-    { tree: 'oak-p1', drop: 'branch', who: 'A', t: 1 },
+    { tree: 'oak-k1', drop: 'branch', who: 'A', t: 1 },
     { tree: 'palm-1', drop: 'coconut', who: 'B', t: 2 },
-    { tree: 'oak-p1', drop: 'nest', who: 'B', t: 3 },
-    { tree: 'oak-p1', drop: 'branch', who: 'B', t: 4 },
+    { tree: 'oak-k1', drop: 'nest', who: 'B', t: 3 },
+    { tree: 'oak-k1', drop: 'branch', who: 'B', t: 4 },
     { tree: 'cedar-k1', drop: 'bagworm', who: 'A', t: 5 },
     { tree: 'goal-B', drop: 'branch', who: 'A', t: 6 }
   ];
   it('names what each left alike on both phones', () => {
     expect(shakes.map((_, i) => dropIds(shakes, i))).toEqual([
-      ['br:oak-p1:0'], ['co:palm-1:0', 'co:palm-1:1'], ['ws:oak-p1:0'], ['br:oak-p1:1'], ['dg:cedar-k1:0'], ['br:goal-B:0']
+      ['br:oak-k1:0'], ['co:palm-1:0', 'co:palm-1:1'], ['ws:oak-k1:0'], ['br:oak-k1:1'], ['dg:cedar-k1:0'], ['br:goal-B:0']
     ]);
   });
   it('the nest rule and the coconuts read the day', () => {
-    expect(lastNestOf(shakes, 'oak-p1')).toBe(3);
+    expect(lastNestOf(shakes, 'oak-k1')).toBe(3);
     expect(lastNestOf(shakes, 'palm-1')).toBeUndefined();
     expect(bearsCoconuts(shakes, 'palm-1')).toBe(false);
-    expect(bearsCoconuts(shakes, 'palm-2')).toBe(true);
+    expect(bearsCoconuts(shakes, 'palm-3')).toBe(true);
   });
   it("what lies about (picked ones gone), beside its tree, a goal tree's by its slot on this phone", () => {
     const tree = (me: 'A' | 'B') => (id: string) => treeById(id, (p) => (p === me ? 'A' : 'B'));
-    const mine = fallen(shakes, tree('A'), (id) => id === 'br:oak-p1:0');
-    expect(mine.map((f) => f.id)).toEqual(['co:palm-1:0', 'co:palm-1:1', 'br:oak-p1:1', 'br:goal-B:0']);
+    const mine = fallen(shakes, tree('A'), (id) => id === 'br:oak-k1:0');
+    expect(mine.map((f) => f.id)).toEqual(['co:palm-1:0', 'co:palm-1:1', 'br:oak-k1:1', 'br:goal-B:0']);
     for (const f of mine) expect(['grass', 'sand', 'dirt']).toContain(surfaceAt(f.x, f.z));
     // the partner's phone (me: B) has the goal trees the other way round: B's tree on its left
-    const theirs = fallen(shakes, tree('B'), (id) => id === 'br:oak-p1:0');
+    const theirs = fallen(shakes, tree('B'), (id) => id === 'br:oak-k1:0');
     expect(theirs.find((f) => f.id === 'br:goal-B:0')!.x).toBeLessThan(195);
     expect(mine.find((f) => f.id === 'br:goal-B:0')!.x).toBeGreaterThan(195);
   });

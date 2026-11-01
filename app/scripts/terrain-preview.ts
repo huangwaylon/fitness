@@ -1,5 +1,5 @@
 // Preview of the baked terrain through the rolling log, exactly as the island draws it (roll.ts's bands and
-// quadMatrix), with the official sprites, the upright fronts (bridges, dock, cliff face) and the live Waterfall
+// quadMatrix), with the official sprites, the cliff's upright face and the live Waterfall
 // standing as billboards; plus 2x crops of the flat chunks and close-ups. Usage (from app/):
 // node scripts/terrain-preview.ts [--season=summer] [--sprites] → /tmp/world-build/terrain/*.png
 import { chromium } from '@playwright/test';
@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { compile } from 'svelte/compiler';
 import { render } from 'svelte/server';
 import { band, quadMatrix, radiusFor, project, ROLL_DEFAULTS } from '../src/lib/components/island/roll.ts';
-import { BAND_D, BANDS, BUILDINGS, CLIFF, FACE_H, FALL_H, GOAL_TREES, PIVOT, PLAN, SCENERY, SKY, TILT, TREE_H, BRIDGES, DOCK, HEDGE_XS, HEDGE_Z } from '../src/lib/components/island/world.ts';
+import { BAND_D, BANDS, BUILDINGS, CAMS, CLIFF, FACE_H, FALL_H, GOAL_TREES, PIVOT, PLAN, SCENERY, SKY, TILT, TREE_H, HEDGE_XS, HEDGE_Z } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = '/tmp/world-build/terrain';
@@ -74,8 +74,6 @@ function view(camZ: number, vw: number, vh: number): string {
     for (const b of BUILDINGS) things.push({ x: b.x, z: b.z, h: b.h, src: art(b.key) });
     for (const x of HEDGE_XS) things.push({ x, z: HEDGE_Z, h: 34, src: art('bushes/red-hibiscus') });
   }
-  const S = BRIDGES[0], L = BRIDGES[1];
-  things.push({ x: S.x, z: S.z0, h: 12, src: sp('bridge-stone') }, { x: L.x, z: L.z0, h: (L.w / 5) * 1.05, src: sp('bridge-log') }, { x: (DOCK.x0 + DOCK.x1) / 2, z: DOCK.z0, h: 11, src: sp('dock-front') });
   things.push({ x: (CLIFF.x0 + CLIFF.x1) / 2, z: CLIFF.z0, h: FACE_H, src: sp('cliff-face') });
   things.push({ x: (CLIFF.fall[0] + CLIFF.fall[1]) / 2, z: CLIFF.z0 - 0.5, h: FALL_H, html: fall.body });
   things.sort((a, b) => b.z - a.z);
@@ -101,7 +99,7 @@ function view(camZ: number, vw: number, vh: number): string {
 const browser = await chromium.launch({ channel: 'chrome' });
 for (const [vw, vh] of [[390, 844], [320, 568]]) {
   const page = await browser.newPage({ viewport: { width: vw, height: vh }, deviceScaleFactor: 2 });
-  for (const [name, camZ] of [['mae', 150], ['hiroba', 860], ['oku', 1380]] as const) {
+  for (const [name, camZ] of [['mae', CAMS.mae], ['oku', CAMS.oku]] as const) {
     writeFileSync(join(OUT, 'view.html'), view(camZ, vw, vh));
     await page.goto(`file://${join(OUT, 'view.html')}`, { waitUntil: 'load' });
     await page.waitForTimeout(400);
@@ -115,7 +113,7 @@ for (const [vw, vh] of [[390, 844], [320, 568]]) {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
   const s = 1, R = radiusFor((PIVOT - SKY) * 844, TILT, 'cylinder'), P = { ...ROLL_DEFAULTS, R };
   const yAt = (z: number, camZ: number) => PIVOT * 844 + project(195, z, camZ, P).y * s;
-  for (const [name, camZ, z0, z1] of [['cliff', 1380, 1790, 1880], ['river', 860, 600, 700], ['plazapaths', 860, 650, 810]] as const) {
+  for (const [name, camZ, z0, z1] of [['cliff', CAMS.oku, CLIFF.z0 - 60, CLIFF.z1 + 20], ['clearing', CAMS.oku, 760, 1000]] as const) {
     writeFileSync(join(OUT, 'view.html'), view(camZ, 390, 844));
     await page.goto(`file://${join(OUT, 'view.html')}`, { waitUntil: 'load' });
     await page.waitForTimeout(400);

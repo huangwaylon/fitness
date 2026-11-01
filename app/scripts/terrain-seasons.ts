@@ -1,9 +1,9 @@
 // The ground's seasonal dressing (docs/design.md "World", phase 3), painted by the terrain bake (scripts/terrain.ts)
-// into the same chunks: what lies on the plan in each look, over the grass, the paths and the plaza, under the
+// into the same chunks: what lies on the plan in each look, over the grass and the paths, under the
 // contact shadows. Six looks, each its own lazily loaded chunk set (static/terrain/<look>/):
 //   spring         fresh grass with clover
 //   spring-petals  NH's cherry-blossom days (Apr 1–10, the blossom foliage): petals drifted under the blossoming oaks,
-//                  along the paths' edges and the plaza's curb, a thin scatter everywhere else
+//                  along the paths' edges, a thin scatter everywhere else
 //   summer         lush: deeper grass, tall tufts with their shade, clover
 //   autumn         warmer grass, dry patches
 //   autumn-leaves  the fall foliage (Oct 16 – Dec 10): maple leaves heaped under the oaks, blown along the paths
@@ -13,7 +13,7 @@
 // Time of day is never baked: the scene's tint does it.
 //
 // The bake includes this module with three small hooks (see LOOKS, dressDefines, dressGeometry, SEASON_GLSL and the
-// call `c = dress(p, c, dL, dG, aG, pz, pd, bAll, ws);` right before its contact shadows).
+// call `c = dress(p, c, dL, dG, aG, pd, ws);` right before its contact shadows).
 import { BUILDINGS, CLIFF, GOAL_TREES, SCENERY, TREE_H } from '../src/lib/components/island/world.ts';
 
 export const LOOKS = ['spring', 'summer', 'autumn', 'winter', 'spring-petals', 'autumn-leaves'] as const;
@@ -166,16 +166,15 @@ vec3 tufts(vec2 p, vec3 c, float dens, int seed){
 /** The snow's drifts: a soft height field over the lawns. */
 float driftH(vec2 p){ return 0.85*gn(p/58.0, 2201) + 0.28*gn(p/24.0 + 3.0, 2202) + 0.035*gn(p/7.0, 2203); }
 
-vec3 dress(vec2 p, vec3 c, float dL, float dG, float aG, float pz, float pd, float bAll, float ws){
+vec3 dress(vec2 p, vec3 c, float dL, float dG, float aG, float pd, float ws){
   // the paths' normal (derivatives first, while every pixel of the quad is here)
-  float pe = min(pd, bAll);
+  float pe = pd;
   vec2 n = -vec2(dFdx(pe), dFdy(pe)); n = n/max(length(n), 1e-4);   // (measured: the quad derivatives come out mirrored here)
   float lie = lieMask(p, dL, ws);
   if (lie <= 0.0) return c;
-  float onPath = 1.0 - smoothstep(-0.5, 0.5, min(pd, min(bAll, pz)));
+  float onPath = 1.0 - smoothstep(-0.5, 0.5, pd);
   float lawn = aG*(1.0 - onPath);
-  float edge = (1.0 - smoothstep(0.0, 5.0, abs(min(pd, bAll) + 1.0)));       // along the paths' edges
-  float curb = (1.0 - smoothstep(0.0, 6.0, abs(pz + 2.0)));                    // along the plaza's curb
+  float edge = (1.0 - smoothstep(0.0, 5.0, abs(pd + 1.0)));                  // along the paths' edges
   vec3 o = c;
 #if WINTER
   // ---- winter: drifts lit from the upper left, blue in their lee; banks along the paths
@@ -228,7 +227,7 @@ vec3 dress(vec2 p, vec3 c, float dL, float dG, float aG, float pz, float pd, flo
 #if PETALS
   {
     float t = underTrees(p);
-    float dens = 0.06 + 0.7*t + 0.35*edge + 0.3*curb*smoothstep(-8.0, 0.0, pz) + 0.12*smoothstep(0.2, 0.7, fbm(p/40.0, 2401, 2));
+    float dens = 0.06 + 0.7*t + 0.35*edge + 0.12*smoothstep(0.2, 0.7, fbm(p/40.0, 2401, 2));
     dens *= mix(0.35, 1.0, aG);                                                 // a few blown onto the sand
     c = petals(p, c, min(dens, 0.95), 6.0, 2411);
     c = petals(p + 2.7, c, min(dens*0.6, 0.9), 8.5, 2421);
@@ -239,7 +238,7 @@ vec3 dress(vec2 p, vec3 c, float dL, float dG, float aG, float pz, float pd, flo
     float t = underTrees(p);
     // the grass under a tree a little browner, where the leaves have lain
     c = mix(c, c*vec3(1.04,0.92,0.78), lawn*t*0.3);
-    float dens = 0.03 + 0.85*t + 0.3*edge + 0.25*curb*smoothstep(-8.0, 0.0, pz);
+    float dens = 0.03 + 0.85*t + 0.3*edge;
     dens *= mix(0.12, 1.0, aG);
     c = leaves(p, c, min(dens, 0.95), 6.5, 2511);
     c = leaves(p + 3.1, c, min(dens*0.7*t + 0.02, 0.9), 5.0, 2521);

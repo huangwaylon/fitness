@@ -1,36 +1,39 @@
 // The rolling-log island's world (docs/design.md "World"): one flat plan bent over a log by roll.ts. World units
 // (1u = 1 CSS px at 390 wide at the pivot): x across (0…390 is the screen at the pivot, centre 195), z into the island
-// (bigger = further back; the front shoreline is SHORE_Z, a wide beach in front of the health lawn). Everything here is pure data: the terrain bake
-// (scripts/terrain.ts), the scene's sprites, the walk graph and the critters all read the same constants.
+// (bigger = further back; the front shoreline is SHORE_Z, a wide beach in front of the health lawn). Two sections: まえ
+// (the sea, the beach, the health lawn) and おく (the campsite's clearing, the pond, the bamboo, the falls). Everything
+// here is pure data: the terrain bake (scripts/terrain.ts), the scene's sprites, the walk graph and the critters all
+// read the same constants.
 
 export type Pt = readonly [number, number];
 
 /** The plan's extent (the baked terrain covers it; wider than the land so the perspective never shows an edge). */
-export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 2650 } as const;
+export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
 /** The ground is cut into bands of BAND_D (40 of them). */
 export const BANDS = 40;
 export const BAND_D = (PLAN.z1 - PLAN.z0) / BANDS;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
-export const LAND = { x0: -40, x1: 430, z0: -30, z1: 2250, r: 130 } as const;
+export const LAND = { x0: -40, x1: 430, z0: -30, z1: 1260, r: 130 } as const;
 /** The front shoreline (the sea's edge in front of the beach). */
 export const SHORE_Z = LAND.z0;
-/** The front beach (SHORE_Z … BEACH_FRONT, 140u: fishing and diving from it at はま) is deeper than the side and back
+/** The front beach (SHORE_Z … BEACH_FRONT, 140u: fishing and diving from it at まえ) is deeper than the side and back
  *  beaches. */
 const BEACH_FRONT = 110;
 const BEACH_SIDE = 30;
 /** The grass (tier 1 and tier 2 as one area; the cliff crosses it). */
 export const GRASS = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: BEACH_FRONT, z1: LAND.z1 - BEACH_SIDE, r: 90 } as const;
 
-/** The camera's three stops (camZ: the world z at the pivot line), front to back: まえ (home, the scroller's bottom:
- *  the sea and the wide beach in front, the health lawn), ひろば (the plaza, Resident Services, the pond, the river),
- *  おく (the scroller's top: the shops, the museum, the cliff and the campsite clear below the HUD, the forest behind). */
-export const CAMS = { mae: 114, hiroba: 860, oku: 1440 } as const;
+/** The camera's two stops (camZ: the world z at the pivot line), front to back: まえ (home, the scroller's bottom: a
+ *  wide band of sea, the beach, the health lawn; sections.ts fits it to the screen) and おく (the scroller's top: the campsite's clearing clear below
+ *  the HUD, the pond, the bamboo grove and the falls; sections.ts raises it on a screen whose HUD would cover the
+ *  campsite). */
+export const CAMS = { mae: -13, oku: 642 } as const;
 export const CAM_MIN = CAMS.mae;
 export const CAM_MAX = CAMS.oku;
 /** The pivot line's share of the height, and the horizon's (the sky above it). */
 export const PIVOT = 0.72;
-export const SKY = 0.16;
+export const SKY = 0.21;
 export const TILT = 64;
 
 /** The live window (spec §7): only sprites in [camZ − BEHIND, camZ + AHEAD] are displayed. */
@@ -39,58 +42,51 @@ export const AHEAD = 900;
 
 // ---- water ----------------------------------------------------------------------------------------------------------
 
-/** The river's centreline [x, z, width]: the spring on the upper tier, the waterfall, down the east side, west across
- *  the island between the health lawn and the plaza, out through the west beach (the mouth, widening into the sea). */
+/** The stream's centreline [x, z, width]: the spring on the upper tier, the falls over the cliff, a short meander down
+ *  the east side and out through the east beach (the mouth, widening into the sea). */
 export const RIVER: readonly (readonly [number, number, number])[] = [
-  [372, 1870, 22], [372, 1770, 26], [372, 1720, 34], [372, 1676, 36],
-  // the east reach meanders gently, its width breathing (NH's rivers are never ruler-straight)
-  [378, 1590, 30], [366, 1480, 34], [378, 1370, 29], [362, 1250, 35], [376, 1130, 28], [364, 1010, 34], [377, 890, 29],
-  [366, 720, 30],
-  [330, 650, 30], [260, 636, 30], [195, 640, 30], [120, 648, 30], [50, 640, 32], [-10, 628, 38], [-44, 620, 52], [-80, 614, 76], [-130, 608, 96]
+  [364, 1146, 20], [368, 1108, 24], [372, 1082, 32], [372, 1040, 36],
+  // the reach below the falls meanders gently, its width breathing (NH's rivers are never ruler-straight)
+  [377, 990, 30], [366, 930, 33], [378, 870, 29], [367, 812, 32], [376, 768, 31],
+  [394, 736, 36], [420, 714, 48], [448, 700, 66], [490, 690, 88], [540, 684, 100]
 ];
-/** The spring on the upper tier the river rises from. */
-export const SPRING = { x: 372, z: 1880, rx: 30, rz: 18 } as const;
-/** The pond (an oval of water), with lily pads. */
-export const POND = { x: 44, z: 772, rx: 40, rz: 22 } as const;
+/** The spring on the upper tier the stream rises from. */
+export const SPRING = { x: 364, z: 1152, rx: 28, rz: 16 } as const;
+/** The pond (an oval of water), with lily pads: west of the path to the campsite. */
+export const POND = { x: 74, z: 772, rx: 46, rz: 26 } as const;
 
-/** Where a freshwater cast lands, NH's locations (spec Q3): the pond, the river, its mouth, or the clifftop (tier 2). */
+/** Where a freshwater cast lands, NH's locations (spec Q3): the pond, the river, its mouth, or the clifftop. */
 export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
 
-// ---- the cliff, bridges, stairs -------------------------------------------------------------------------------------
+// ---- the cliff ------------------------------------------------------------------------------------------------------
 
-/** The cliff to tier 2: its face from z0 (foot) to z1 (top edge) across x0…x1; stone stairs and the waterfall cut it. */
-export const CLIFF = { z0: 1676, z1: 1720, x0: -12, x1: 402, stair: [36, 84] as Pt, fall: [351, 393] as Pt } as const;
+/** The cliff to tier 2, behind the campsite: its face from z0 (foot) to z1 (top edge) across x0…x1; stone stairs and
+ *  the falls cut it. */
+export const CLIFF = { z0: 1040, z1: 1080, x0: -12, x1: 402, stair: [36, 84] as Pt, fall: [351, 393] as Pt } as const;
 /** The cliff's upright face (a sprite at its foot) and the waterfall's height over it, in u. */
 export const FACE_H = 40;
 export const FALL_H = 45;
-export const BRIDGES = [
-  { id: 'stone', kind: 'stone', x: 195, z0: 618, z1: 664, w: 44 },
-  { id: 'log', kind: 'log', x: 296, z0: 622, z1: 660, w: 34 }
-] as const;
+/** The upper tier is beyond the horizon from both stops: the falls' pool (this far in front of the cliff's foot) is
+ *  where NH's clifftop river shows (its fish come there). */
+export const FALLS_POOL = 46;
 
-// ---- paths and the plaza --------------------------------------------------------------------------------------------
+// ---- paths ----------------------------------------------------------------------------------------------------------
 
-/** The plaza: an ellipse paved in light stone; centre stage is its middle. */
-export const PLAZA = { x: 195, z: 900, rx: 140, rz: 104 } as const;
-/** Paths (24u wide, about half an NH tile): dirt on the front, brick around the shops. Polylines [x, z]. */
+/** Paths (24u wide, about half an NH tile): dirt, wandering. Polylines [x, z]. (No brick: the shops are gone.) */
 const PATH_W = 24;
-export const PATHS: { dirt: readonly (readonly Pt[])[]; brick: readonly (readonly Pt[])[] } = {
+export const PATHS: { dirt: readonly (readonly Pt[])[] } = {
   dirt: [
-    [[193, 96], [199, 170], [190, 250], [198, 340], [191, 450], [197, 540], [195, 618]],
-    [[195, 664], [190, 720], [197, 800]],
+    // the beach to the campsite's clearing, the lawn's spurs to the homes, the clearing to the stairs
+    [[193, 96], [199, 170], [190, 250], [198, 340], [191, 450], [197, 540], [192, 640], [199, 740], [193, 830], [195, 900]],
     [[132, 236], [150, 252], [172, 257], [193, 266]], [[262, 236], [245, 250], [221, 255], [197, 262]],
-    [[296, 660], [304, 710], [296, 770], [272, 822]]
-  ],
-  brick: [
-    [[195, 1000], [192, 1090], [197, 1170], [176, 1214], [146, 1252], [104, 1290]], [[197, 1172], [222, 1218], [250, 1258], [278, 1292]],
-    [[197, 1170], [193, 1260], [199, 1360], [191, 1440], [190, 1470]], [[191, 1432], [150, 1452], [108, 1488], [74, 1540], [62, 1600], [60, 1670]],
-    [[60, 1726], [70, 1760], [96, 1786], [138, 1798]]
+    [[184, 902], [146, 934], [104, 968], [72, 1004], [60, 1034]]
   ]
 };
 
 // ---- buildings ------------------------------------------------------------------------------------------------------
 
-export type BuildingId = 'rs' | 'cranny' | 'able' | 'museum' | 'airport' | 'campsite';
+/** The one building left: the campsite (its tent), where visitors arrive and stay. */
+export type BuildingId = 'campsite';
 export interface Building {
   id: BuildingId;
   /** Art key (static/art). */
@@ -103,16 +99,9 @@ export interface Building {
   /** Footprint depth behind the door line (not walkable). */
   depth: number;
 }
-export const BUILDINGS: readonly Building[] = [
-  { id: 'airport', key: 'deco/airport', x: 362, z: -8, h: 96, depth: 40 },
-  { id: 'rs', key: 'deco/resident-services', x: 195, z: 1068, h: 118, depth: 46 },
-  { id: 'cranny', key: 'deco/nooks-cranny', x: 100, z: 1338, h: 100, depth: 46 },
-  { id: 'able', key: 'deco/able-sisters', x: 282, z: 1338, h: 94, depth: 46 },
-  { id: 'museum', key: 'deco/museum-icon', x: 190, z: 1518, h: 104, depth: 46 },
-  { id: 'campsite', key: 'deco/campsite', x: 150, z: 1830, h: 70, depth: 40 }
-];
-/** The airport's wooden dock over the sea (Wilbur stands on it while the partner's app is open). */
-export const DOCK = { x0: 300, x1: 420, z0: -78, z1: -20 } as const;
+export const BUILDINGS: readonly Building[] = [{ id: 'campsite', key: 'deco/campsite', x: 196, z: 984, h: 80, depth: 40 }];
+/** The campsite. */
+export const CAMPSITE = BUILDINGS[0];
 
 // ---- まえ: the health lawn ------------------------------------------------------------------------------------------
 
@@ -133,29 +122,30 @@ export const ROCK: Pt = [112, 478];
  *  beds, by the beach) and two behind the trees, off the canopies' columns (on a short screen the HUD stands over
  *  those). */
 export const DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [66, 150], [326, 152], [140, 440], [236, 462]];
-/** Lawn spots for weeds (z 120…1200, off paths, beds, trunks and water). */
+/** Lawn spots for weeds (z 120…900, off paths, beds, trunks and water). */
 export const LAWN_SPOTS: readonly Pt[] = [
   [96, 150], [300, 150], [20, 280], [372, 280], [120, 400], [270, 380], [40, 430], [350, 420], [230, 500], [150, 520],
-  [300, 520], [90, 700], [140, 760], [260, 740], [320, 780], [110, 1120], [290, 1130]
+  [300, 520], [140, 680], [262, 664], [128, 852], [232, 828]
 ];
-/** The seasonal hedge along the river's front bank, with gaps at the two bridges. */
-export const HEDGE_Z = 596;
-export const HEDGE_XS: readonly number[] = [36, 80, 124, 250, 340];
+/** The seasonal hedge between the lawn and the campsite's ground, with a gap for the path (its streetlamps). */
+export const HEDGE_Z = 600;
+export const HEDGE_XS: readonly number[] = [36, 80, 124, 266, 310];
 /** Beach finds lie at z 10…90 on x 120…300. */
 export const BEACH_BOX = { x0: 120, x1: 300, z0: -18, z1: 90 } as const;
 /** The sea's fishing water (in front of the shoreline, at the front of まえ). */
 export const SEA_BOX = { x0: 40, x1: 290, z0: -100, z1: -48 } as const;
 
-// ---- ひろば: the plaza ------------------------------------------------------------------------------------------------
+// ---- おく: the campsite's clearing ------------------------------------------------------------------------------------
 
-/** Centre stage: the plaza's middle, where visitors stand. */
-export const CENTRE_STAGE: Pt = [PLAZA.x, PLAZA.z];
-export const ARCH: Pt = [195, 960];
-export const CAKE: Pt = [195, 860];
+/** Centre stage: the clearing in front of the campsite's tent, where visitors stand. */
+export const CENTRE_STAGE: Pt = [196, 898];
+/** The wedding arch frames Reese and Cyrus, just behind them; the birthday cake stands in front of centre stage. */
+export const ARCH: Pt = [196, 922];
+export const CAKE: Pt = [196, 852];
 
 // ---- the scenery (still sprites: trees, bushes, props) ----------------------------------------------------------------
 
-type SceneryKind = 'oak' | 'cedar' | 'palm' | 'bamboo' | 'bush' | 'rock' | 'prop' | 'fence';
+type SceneryKind = 'oak' | 'cedar' | 'palm' | 'bamboo' | 'bush' | 'rock' | 'prop';
 export interface Scenery {
   id: string;
   kind: SceneryKind;
@@ -168,70 +158,42 @@ export interface Scenery {
 }
 const s = (id: string, kind: SceneryKind, key: string, x: number, z: number, h: number, flip = false): Scenery => ({ id, kind, key, x, z, h, flip });
 export const SCENERY: readonly Scenery[] = [
-  // まえ: palms on the sand, plumeria at the grass edge, an oak and a cedar behind the lawn
-  s('palm-1', 'palm', 'trees/palm', 6, 64, 124), s('palm-2', 'palm', 'trees/palm', 54, 98, 98, true), s('palm-3', 'palm', 'trees/palm', 388, 108, 112),
+  // まえ, kept clear (the health lawn, its beds and trees, open lawn and the path; the sea wide in front): the island's
+  // two palms, at the front beach's outer edges by the water (clear of the lawn, the finds and the sea view),
+  // plumeria at the grass edge, an oak and a cedar behind the lawn
+  s('palm-1', 'palm', 'trees/palm', 26, 40, 116), s('palm-3', 'palm', 'trees/palm', 366, 46, 110, true),
   s('plumeria-w', 'bush', 'bushes/white-plumeria', 100, 122, 34), s('plumeria-p', 'bush', 'bushes/pink-plumeria', 292, 122, 34),
-  s('oak-m1', 'oak', 'oak', 250, 520, 112), s('cedar-m1', 'cedar', 'trees/cedar', 20, 470, 140),
-  // ひろば
-  s('lamp-1', 'prop', 'deco/banner-lamp', 72, 820, 52), s('lamp-2', 'prop', 'deco/banner-lamp', 318, 820, 52),
-  s('lamp-3', 'prop', 'deco/banner-lamp', 72, 990, 52), s('lamp-4', 'prop', 'deco/banner-lamp', 318, 990, 52),
-  s('bench', 'prop', 'deco/plaza-bench', 300, 905, 26), s('board', 'prop', 'deco/bulletin-board', 98, 1062, 34),
-  s('oak-p1', 'oak', 'oak', 26, 1010, 116), s('oak-p2', 'oak', 'oak', 30, 1160, 120), s('oak-p3', 'oak', 'oak', 330, 1170, 116),
-  s('bush-p1', 'bush', 'bushes/pink-azalea', 110, 1110, 34), s('bush-p2', 'bush', 'bushes/pink-azalea', 280, 1110, 34),
-  s('cedar-p1', 'cedar', 'trees/cedar', 414, 960, 140), s('cedar-p2', 'cedar', 'trees/cedar', 416, 1240, 150), s('cedar-p3', 'cedar', 'trees/cedar', 412, 700, 130),
-  // おく
-  s('sign-shop', 'prop', 'deco/signpost', 196, 1236, 32),
-  s('oak-k1', 'oak', 'oak', 56, 1506, 118), s('oak-k2', 'oak', 'oak', 326, 1510, 118),
-  s('bush-k1', 'bush', 'bushes/holly', 120, 1545, 32), s('bush-k2', 'bush', 'bushes/holly', 262, 1545, 32),
-  s('lamp-k1', 'prop', 'deco/streetlamp', 140, 1470, 46), s('lamp-k2', 'prop', 'deco/streetlamp', 242, 1470, 46),
-  s('cedar-k1', 'cedar', 'trees/cedar', 412, 1520, 150), s('cedar-k2', 'cedar', 'trees/cedar', 20, 1440, 140),
-  // the official log fence along the cliff top, one segment touching the next
-  ...Array.from({ length: 9 }, (_, i) => s(`fence-${i}`, 'fence', 'deco/log-fence', 100 + i * 25, 1732, 24)),
-  s('camp-sign', 'prop', 'deco/campsite-sign', 82, 1800, 30),
-  s('cedar-t1', 'cedar', 'trees/cedar', 30, 1910, 150), s('cedar-t2', 'cedar', 'trees/cedar', 250, 1900, 150),
-  s('cedar-t3', 'cedar', 'trees/cedar', 310, 1820, 140), s('cedar-t4', 'cedar', 'trees/cedar', 196, 1970, 140),
-  s('palm-4', 'palm', 'trees/palm', 340, 2000, 120),
-  // the forest behind the campsite: cedars along the upper tier's back, palms on the back beach
-  s('cedar-f1', 'cedar', 'trees/cedar', -6, 2060, 150), s('cedar-f2', 'cedar', 'trees/cedar', 62, 2120, 160), s('cedar-f3', 'cedar', 'trees/cedar', 140, 2070, 145),
-  s('cedar-f4', 'cedar', 'trees/cedar', 214, 2150, 160), s('cedar-f5', 'cedar', 'trees/cedar', 288, 2085, 150), s('cedar-f6', 'cedar', 'trees/cedar', 372, 2140, 155),
-  s('cedar-f7', 'cedar', 'trees/cedar', 110, 2190, 150), s('cedar-f8', 'cedar', 'trees/cedar', 330, 2200, 150),
-  s('palm-5', 'palm', 'trees/palm', 30, 2236, 110, true), s('palm-6', 'palm', 'trees/palm', 250, 2242, 116),
-  // NH's decor (scripts/fetch-assets.ts). Streetlamps at the stone bridge's front corners; meadow flowers in three-
-  // flower clumps (`meadow-<i>`, the season's species: scene.ts MEADOW); a wooden fence behind the west clump; garden
-  // rocks; the month's bushes either side of the path to the plaza (`month-bush-a|b`: scene.ts hedgePair)
-  s('lamp-b1', 'prop', 'deco/streetlamp', 166, 598, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 224, 598, 46),
-  s('meadow-0', 'prop', 'meadow-0', -2, 356, 22), s('meadow-1', 'prop', 'meadow-1', 12, 368, 20), s('meadow-2', 'prop', 'meadow-2', 0, 382, 22),
-  s('meadow-3', 'prop', 'meadow-3', 384, 350, 22), s('meadow-4', 'prop', 'meadow-4', 372, 364, 20), s('meadow-5', 'prop', 'meadow-5', 388, 378, 22, true),
-  s('fence-w1', 'fence', 'deco/fence-wooden', 10, 398, 20), s('fence-w2', 'fence', 'deco/fence-wooden', 41, 398, 20),
-  s('rock-g1', 'rock', 'deco/garden-rock', -2, 252, 20),
-  s('bush-m1', 'bush', 'month-bush-a', 150, 700, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 700, 34),
-  s('rock-m1', 'rock', 'deco/flat-rock', 98, 800, 12),
-  s('meadow-6', 'prop', 'meadow-6', 24, 880, 22), s('meadow-7', 'prop', 'meadow-7', 38, 894, 20), s('meadow-8', 'prop', 'meadow-8', 20, 906, 22, true),
-  // おく: a bamboo grove behind its lattice fence between Able Sisters and the museum; garden lanterns on the museum's
-  // path and at the stairs' foot; a tall rock at the cliff's foot
-  s('fence-b1', 'fence', 'deco/fence-bamboo', 280, 1440, 22), s('fence-b2', 'fence', 'deco/fence-bamboo', 304, 1440, 22), s('fence-b3', 'fence', 'deco/fence-bamboo', 328, 1440, 22),
-  s('bamboo-1', 'bamboo', 'trees/bamboo', 276, 1470, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 318, 1462, 72, true),
-  s('bamboo-3', 'bamboo', 'trees/bamboo', 297, 1490, 70, true),
-  s('lantern-1', 'prop', 'deco/garden-lantern', 240, 1420, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 262, 1478, 24),
-  s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1656, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1656, 24),
-  s('rock-t1', 'rock', 'deco/garden-rock', 150, 1654, 22),
-  // tier 2: a corral fence behind the campsite's west side, meadow flowers east of it, a flat rock by the spring
-  s('fence-c1', 'fence', 'deco/fence-corral', 64, 1950, 22), s('fence-c2', 'fence', 'deco/fence-corral', 91, 1950, 22), s('fence-c3', 'fence', 'deco/fence-corral', 118, 1950, 22),
-  s('meadow-9', 'prop', 'meadow-9', 232, 1772, 22), s('meadow-10', 'prop', 'meadow-10', 246, 1784, 20), s('meadow-11', 'prop', 'meadow-11', 226, 1792, 22, true),
-  s('rock-f1', 'rock', 'deco/flat-rock', 330, 1910, 12),
-  // denser: palms on the side beaches, a clump by home B, streetlamps by both homes, a rock and flowers on the upper tier
-  s('palm-s1', 'palm', 'trees/palm', -26, 214, 100, true), s('palm-s2', 'palm', 'trees/palm', 416, 262, 104),
-  s('meadow-12', 'prop', 'meadow-12', 372, 140, 22), s('meadow-13', 'prop', 'meadow-13', 386, 152, 20), s('meadow-14', 'prop', 'meadow-14', 364, 160, 22, true),
-  s('lamp-h1', 'prop', 'deco/streetlamp', 96, 290, 44), s('lamp-h2', 'prop', 'deco/streetlamp', 296, 290, 44),
-  s('rock-c1', 'rock', 'deco/garden-rock', 30, 1850, 18),
-  s('meadow-15', 'prop', 'meadow-15', 296, 1858, 22), s('meadow-16', 'prop', 'meadow-16', 310, 1870, 20), s('meadow-17', 'prop', 'meadow-17', 290, 1880, 22, true)
+  s('oak-m1', 'oak', 'oak', 268, 516, 112), s('cedar-m1', 'cedar', 'trees/cedar', 20, 470, 140),
+  // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the hedge's gap, the month's bushes either side of
+  // the path (`month-bush-a|b`: scene.ts hedgePair), the pond on the west with a flat rock and a clump by it, the bamboo
+  // grove on the east by the stream, an oak and cedars at the edges, meadow flowers in three-flower clumps (`meadow-<i>`,
+  // the season's species: scene.ts MEADOW), the campsite's tent in its clearing with its sign,
+  // garden lanterns either side of the clearing and white ones at the stairs' foot, a rock at the cliff's foot
+  s('lamp-b1', 'prop', 'deco/streetlamp', 166, 606, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 226, 606, 46),
+  s('bush-m1', 'bush', 'month-bush-a', 152, 716, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 724, 34),
+  s('rock-m1', 'rock', 'deco/flat-rock', 148, 818, 12),
+  s('meadow-6', 'prop', 'meadow-6', 6, 712, 22), s('meadow-7', 'prop', 'meadow-7', 20, 724, 20), s('meadow-8', 'prop', 'meadow-8', 2, 736, 22, true),
+  s('bamboo-1', 'bamboo', 'trees/bamboo', 290, 804, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 322, 794, 72, true),
+  s('bamboo-3', 'bamboo', 'trees/bamboo', 306, 824, 70, true),
+  s('cedar-k1', 'cedar', 'trees/cedar', 16, 642, 140),
+  s('oak-k1', 'oak', 'oak', 36, 904, 116), s('cedar-k2', 'cedar', 'trees/cedar', -2, 1000, 144),
+  s('camp-sign', 'prop', 'deco/campsite-sign', 92, 930, 30),
+  s('bush-k1', 'bush', 'bushes/holly', 114, 1000, 32), s('bush-k2', 'bush', 'bushes/holly', 282, 1000, 32),
+  s('lantern-1', 'prop', 'deco/garden-lantern', 140, 896, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 254, 900, 24),
+  s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1022, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1022, 24),
+  s('rock-t1', 'rock', 'deco/garden-rock', 316, 1022, 20),
+  s('meadow-9', 'prop', 'meadow-9', 262, 856, 22), s('meadow-10', 'prop', 'meadow-10', 276, 868, 20), s('meadow-11', 'prop', 'meadow-11', 256, 876, 22, true),
+  // the forest on the upper tier behind the cliff (short enough that its tops stay under the HUD)
+  s('cedar-f1', 'cedar', 'trees/cedar', -6, 1110, 126), s('cedar-f2', 'cedar', 'trees/cedar', 64, 1160, 130), s('cedar-f3', 'cedar', 'trees/cedar', 140, 1104, 122),
+  s('cedar-f4', 'cedar', 'trees/cedar', 214, 1170, 130), s('cedar-f5', 'cedar', 'trees/cedar', 284, 1112, 126), s('cedar-f6', 'cedar', 'trees/cedar', 130, 1200, 124)
 ];
 
 // ---- geometry helpers -----------------------------------------------------------------------------------------------
 
-/** The river's half-width and centre x at z along its north–south reach, or null off it (the east run, z ≥ 720). */
+/** The stream's half-width and centre x at z along its north–south reach, or null off it (z ≥ 768, before it turns to
+ *  the mouth). */
 export function riverNS(z: number): { x: number; hw: number } | null {
-  for (let i = 0; i < RIVER.length - 1 && RIVER[i][1] > 720; i++) {
+  for (let i = 0; i < RIVER.length - 1 && RIVER[i][1] > 768; i++) {
     const a = RIVER[i], b = RIVER[i + 1];
     if (z <= a[1] && z >= b[1]) {
       const t = (a[1] - z) / (a[1] - b[1] || 1);
@@ -264,12 +226,12 @@ export function inRiver(x: number, z: number): boolean {
 export const inOval = (o: { x: number; z: number; rx: number; rz: number }, x: number, z: number, grow = 0): boolean =>
   ((x - o.x) / (o.rx + grow)) ** 2 + ((z - o.z) / (o.rz + grow)) ** 2 <= 1;
 
-/** NH's freshwater location of a cast at (x, z): the pond, the river mouth (the wide reach on the west beach), the
- *  clifftop (above the cliff) or the river. */
+/** NH's freshwater location of a cast at (x, z): the pond, the clifftop (above the cliff, or the falls' pool at its
+ *  foot: the upper tier is beyond the horizon), the river mouth (the wide reach on the east beach) or the river. */
 export function freshWhere(x: number, z: number): FreshWhere {
   if (inOval(POND, x, z, 12)) return 'pond';
-  if (z > CLIFF.z1) return 'clifftop';
-  if (x < 20 && z < 700) return 'mouth';
+  if (z > CLIFF.z0 - FALLS_POOL) return 'clifftop';
+  if (x > 396 && z < 770) return 'mouth';
   return 'river';
 }
 
@@ -297,17 +259,13 @@ function polyDist(line: readonly Pt[], x: number, z: number): number {
   return d;
 }
 
-export type Surface = 'sea' | 'sand' | 'grass' | 'dirt' | 'brick' | 'stone' | 'wood' | 'water';
+export type Surface = 'sea' | 'sand' | 'grass' | 'dirt' | 'stone' | 'water';
 /** What the ground is at (x, z): footsteps and taps pick their sound and flourish from it. */
 export function surfaceAt(x: number, z: number): Surface {
-  for (const b of BRIDGES) if (Math.abs(x - b.x) <= b.w / 2 && z >= b.z0 && z <= b.z1) return b.kind === 'log' ? 'wood' : 'stone';
-  if (x >= DOCK.x0 && x <= DOCK.x1 && z >= DOCK.z0 && z <= DOCK.z1) return 'wood';
   if (!onLand(x, z)) return 'sea';
   if (inRiver(x, z) || inOval(POND, x, z) || inOval(SPRING, x, z)) return 'water';
   if (x >= CLIFF.stair[0] && x <= CLIFF.stair[1] && z >= CLIFF.z0 - 4 && z <= CLIFF.z1 + 4) return 'stone';
   if (!onGrass(x, z)) return 'sand';
-  if (inOval({ ...PLAZA, rx: PLAZA.rx, rz: PLAZA.rz }, x, z)) return 'stone';
-  for (const p of PATHS.brick) if (polyDist(p, x, z) <= PATH_W / 2) return 'brick';
   for (const p of PATHS.dirt) if (polyDist(p, x, z) <= PATH_W / 2) return 'dirt';
   return 'grass';
 }

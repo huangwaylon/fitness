@@ -1,8 +1,7 @@
 <script lang="ts">
-  // The island's still scenery (docs/design.md "World"): the trees that aren't goal trees (oaks, cedars, palms), the
-  // bushes (the river-bank hedge of the month, the plumeria at the beach, the plaza's and the museum's), the plaza's
-  // and the shops' props, the log fence along the cliff top, and the six buildings (one NH map-icon family), each an
-  // upright world node at its feet. An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
+  // The island's still scenery (docs/design.md "World"): the trees that aren't goal trees (oaks, cedars, palms, bamboo),
+  // the bushes (the hedge of the month, the plumeria at the beach, the campsite's hollies), the props (lamps, lanterns,
+  // meadow clumps, rocks) and the campsite's tent (an NH map icon), each an upright world node at its feet. An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
   // villager just in front of the trunk covers it while the leaves cover their head. Contact shadows are baked into the
   // ground. A bush answers a tap (SceneTaps finds it by data-bush), and so does a tree's leaves (data-tree: a rustle,
   // three quick taps shake it); a building is a door (`onbuilding`).
@@ -21,14 +20,12 @@
     month: number;
     /** False in the gallery's thumbnails (nothing answers a tap). */
     live?: boolean;
-    /** A building's door was tapped (the art's element, for a balloon's tail). */
+    /** The campsite's door was tapped (the art's element, for a balloon's tail). */
     onbuilding?: (id: BuildingId, el: HTMLElement) => void;
-    /** Hide a building's own node (the museum is drawn by Museum.svelte, with its snow and Blathers). */
-    skip?: readonly BuildingId[];
-    /** At dusk and night the buildings' windows and the lamps light up. */
+    /** At dusk and night the campsite's lantern and the lamps light up. */
     tod?: Tod;
   }
-  let { season, foliage, month, live = true, onbuilding, skip = [], tod = 'day' }: Props = $props();
+  let { season, foliage, month, live = true, onbuilding, tod = 'day' }: Props = $props();
   const w = useWorld();
 
   /** The oak render's trunk and canopy (the summer render and the seasonal ones share the shape). */
@@ -56,7 +53,7 @@
   <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0 })}>
     <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush'} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
       style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))" style:clip-path={clip}>
-      <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1200} />
+      <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1080} />
       {#if live && (s.kind === 'cedar' || s.kind === 'palm' || part === 'canopy')}
         <!-- its leaves answer a tap (SceneTaps: a rustle; three quick taps shake it) -->
         <i class="hit {s.kind}" data-tree={s.id}></i>
@@ -75,15 +72,13 @@
 {/each}
 
 {#each BUILDINGS as b (b.id)}
-  {#if !skip.includes(b.id)}
-    <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h })}>
-      <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
-        style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
-        onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
-        <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager={b.z < 1200} />
-      </button>
-    </div>
-  {/if}
+  <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h })}>
+    <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
+      style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
+      onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
+      <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager />
+    </button>
+  </div>
 {/each}
 
 {#if lit}

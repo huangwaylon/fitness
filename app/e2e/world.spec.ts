@@ -1,12 +1,12 @@
 // The rolling-log world (docs/design.md "World"): one depth order for everything (behind a tree a villager is hidden
 // by it; just in front it covers the trunk while the canopy covers its head; a building likewise), the native scroller
-// is the camera with three stops (まえ, ひろば, おく), taps land on transformed sprites near the horizon, and nothing
+// is the camera with two stops (まえ, おく), taps land on transformed sprites near the horizon, and nothing
 // runs once it is still.
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-type W = { go(z: number): void; cam(): number; idle(): boolean; at(x: number, z: number): [number, number]; put(x: number, z: number): void };
+type W = { go(z: number): void; cam(): number; stops(): number[]; idle(): boolean; at(x: number, z: number): [number, number]; put(x: number, z: number): void };
 const world = async (page: Page) => {
   await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
   await page.waitForTimeout(500);
@@ -41,24 +41,26 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
 }
 
 test('a villager behind a tree is hidden by it; just in front it covers the trunk and the canopy covers its head', async ({ page }) => {
-  await open(page, 860);
-  // the plaza's oak at (330, 1170)
-  expect(await topAt(page, 330, 1186, 0.55)).toMatch(/^oak-p3:/);
-  expect(await topAt(page, 330, 1162, 0.92)).toBe('mine');
-  expect(await topAt(page, 330, 1162, 0.08)).toBe('oak-p3:canopy');
-  expect(await topAt(page, 330, 1120, 0.1)).toBe('mine');
+  await open(page, 300);
+  // the oak behind the lawn at (268, 516)
+  expect(await topAt(page, 268, 532, 0.55)).toMatch(/^oak-m1:/);
+  expect(await topAt(page, 268, 508, 0.92)).toBe('mine');
+  expect(await topAt(page, 268, 508, 0.08)).toBe('oak-m1:canopy');
+  expect(await topAt(page, 268, 466, 0.1)).toBe('mine');
 });
 
 test('behind a building it is hidden, in front of it it covers it', async ({ page }) => {
-  await open(page, 1100);
-  expect(await topAt(page, 195, 1090, 0.6)).toBe('building:rs');
-  expect(await topAt(page, 195, 1050, 0.4)).toBe('mine');
+  await open(page, 760);
+  // the campsite's tent at (196, 984)
+  expect(await topAt(page, 196, 1000, 0.6)).toBe('building:campsite');
+  expect(await topAt(page, 196, 960, 0.4)).toBe('mine');
 });
 
-test('the camera is the scroller: three stops, the sprites follow it, nothing runs once it stops', async ({ page }) => {
+test('the camera is the scroller: two stops, the sprites follow it, nothing runs once it stops', async ({ page }) => {
   await page.goto('?demo&season=summer');
   await world(page);
-  expect(await call(page, (w) => w.cam())).toBe(114); // まえ: the bottom of the scroller
+  const [front, back] = await call(page, (w) => w.stops());
+  expect(await call(page, (w) => w.cam())).toBe(front); // まえ: the bottom of the scroller
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight)).toBe(true);
   /** The transforms of the scenery shown now, by id. */
   const shown = () => page.locator('[data-scenery-id]').evaluateAll((els) =>
@@ -66,15 +68,15 @@ test('the camera is the scroller: three stops, the sprites follow it, nothing ru
   const before = await shown();
   await page.locator('[data-world-scroller]').evaluate((e) => e.scrollBy(0, -400));
   await page.waitForTimeout(500);
-  // mandatory snapping: past half way to ひろば it goes on to it
-  expect(await call(page, (w) => w.cam())).toBeGreaterThan(400);
+  // it settles onto the nearer stop: past half way, おく
+  await expect.poll(() => call(page, (w) => w.cam()), { timeout: 3000 }).toBe(back);
   const after = await shown(), both = Object.keys(after).filter((k) => k in before);
   expect(both.length).toBeGreaterThan(0);
   expect(both.every((k) => after[k] !== before[k])).toBe(true);
   // once still, no frame is pending (polled: on a slow runner the snap's smooth scroll, or an ambient beat that sets a
   // villager walking, can still be under way)
   await expect.poll(() => call(page, (w) => w.idle()), { timeout: 10_000 }).toBe(true);
-  for (const z of [860, 1440, 114]) {
+  for (const z of [back, 300, front]) {
     await call(page, (w, [z]) => w.go(z), [z]);
     await page.waitForTimeout(300);
     expect(Math.round(await call(page, (w) => w.cam()))).toBe(z);
@@ -82,12 +84,12 @@ test('the camera is the scroller: three stops, the sprites follow it, nothing ru
 });
 
 test('a tap on a sprite far up near the horizon lands on it (hit-testing follows the transforms)', async ({ page }) => {
-  await open(page, 1000);
-  // the museum, far up the island: its door is a button, small near the horizon
-  const door = page.locator('[data-building="museum"] button');
+  await open(page, 300);
+  // the campsite, far up the island: its door is a button, small near the horizon
+  const door = page.locator('[data-building="campsite"] button');
   const r = (await door.boundingBox())!;
   expect(r.height).toBeGreaterThan(10);
-  const hit = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-building="museum"]'), [r.x + r.width / 2, r.y + r.height * 0.8]);
+  const hit = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-building="campsite"]'), [r.x + r.width / 2, r.y + r.height * 0.8]);
   expect(hit).toBe(true);
 });
 

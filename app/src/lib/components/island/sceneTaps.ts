@@ -21,7 +21,7 @@ export type SceneHit =
   | { kind: 'river' };
 
 /** What a tap on the ground at world point (x, z) hit (bushes and flowers are found from the tapped element first;
- *  buttons are filtered out before this): the sea, the pond, the river, sand, or grass (paths and the plaza count as
+ *  buttons are filtered out before this): the sea, the pond, the river, sand, or grass (paths count as
  *  grass: a dust puff). */
 export function hitWorld(x: number, z: number): SceneHit {
   const k = surfaceAt(x, z);

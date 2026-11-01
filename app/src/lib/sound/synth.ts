@@ -129,7 +129,7 @@ const RECIPES: Record<SoundId, Ev[]> = {
   sparkle: [bell(G6, 0, 0.25, 0.5), bell(C7, 0.05, 0.3, 0.45), bell(E7, 0.1, 0.35, 0.4)],
   oops: [{ kind: 'tone', f: 700, to: 420, glide: 0.22, t: 0, d: 0.3, g: 0.9, wave: 'tri', vib: [9, 40] }],
   // scenery: a soft swish through flowers, an airy cloud "pof", a shooting star's rising "shiing", a water plop, and
-  // footsteps in sand (gritty), grass (soft), snow (a squeaky crunch), on wet ground (a small splash), wood, stone and brick
+  // footsteps in sand (gritty), grass (soft), snow (a squeaky crunch), on wet ground (a small splash) and stone
   swish: [
     { kind: 'noise', t: 0, d: 0.22, g: 1, lo: 2200, hi: 8000, shape: 'swell' },
     { kind: 'noise', t: 0.01, d: 0.18, g: 0.3, lo: 500, hi: 2000, shape: 'swell' }
@@ -157,19 +157,10 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.12, g: 1, lo: 900, hi: 6000, shape: 'decay', grains: 260 },
     { kind: 'tone', f: 1300, to: 700, glide: 0.04, t: 0.005, d: 0.05, g: 0.12, attack: 0.002 }
   ],
-  // a hollow knock on the log bridge and the dock, a hard tap on the plaza's and the bridge's stone, a duller one on
-  // the shops' brick
-  'step-wood': [
-    { kind: 'tone', f: 210, to: 150, glide: 0.05, t: 0, d: 0.09, g: 0.7, attack: 0.001, wave: 'tri' },
-    { kind: 'noise', t: 0, d: 0.06, g: 0.5, lo: 500, hi: 2400, shape: 'decay', grains: 120 }
-  ],
+  // a hard tap on the stairs' stone
   'step-stone': [
     { kind: 'noise', t: 0, d: 0.05, g: 1, lo: 2200, hi: 9000, shape: 'decay', grains: 220 },
     { kind: 'tone', f: 950, to: 800, glide: 0.02, t: 0, d: 0.03, g: 0.12, attack: 0.001 }
-  ],
-  'step-brick': [
-    { kind: 'noise', t: 0, d: 0.06, g: 1, lo: 1100, hi: 5200, shape: 'decay', grains: 200 },
-    { kind: 'tone', f: 520, to: 430, glide: 0.03, t: 0, d: 0.04, g: 0.15, attack: 0.001 }
   ],
   // critters: a bobber's "pocha" (a quick falling note and a little water), the bite's gulp and splash, the reel's ratchet, an original catch tune
   // (four mallet notes up and a twinkle: not NH's), the net's airy swing and the balloon's "pan!" with a glint

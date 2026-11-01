@@ -85,7 +85,8 @@
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. */
   export function tap(px: number, py: number): boolean {
     const r = el?.querySelector('.radio')?.getBoundingClientRect();
-    if (!spot || !r || !enabled()) return false;
+    // (out of view its node is hidden but keeps its last box: no tap there)
+    if (!spot || !r || !enabled() || !w.inView(spot[0], spot[1])) return false;
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     if (Math.abs(px - cx) > Math.max(22, r.width / 2 + 6) || Math.abs(py - cy) > Math.max(22, r.height / 2 + 6)) return false;
     if (!playing) play();
