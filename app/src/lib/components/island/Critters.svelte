@@ -258,7 +258,8 @@
     }
     const p = box && freeIn(box, keep);
     if (!box || !p) return false;
-    const item = want ?? hookItem(id, rand);
+    // a dev hook's fish (kept until caught: `stay` false) is always a fish, never junk
+    const item = want ?? (stay ? hookItem(id, rand) : id);
     preload(critterArt(item));
     void loadLines().catch(() => {});
     const f: Fish = { item, water, size: look.size, shape: look.shape, ...p, ms: 0, flip: rand() < 0.5, box, keep, gone: false, dash: false };
