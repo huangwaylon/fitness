@@ -3,6 +3,7 @@
 // the static prefix of a dynamic key (`panel.tab.${id}`). The host's lines (`host.<line>`) are
 // picked by name.
 import { DECOR_ART } from './components/island/decor.ts';
+import { FIXED_ART } from './components/island/fixedDecor.ts';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -134,6 +135,8 @@ describe('official art (static/art/manifest.json)', () => {
     'presents/diy-recipe',
     // the decorations in their four facings (island/decor.ts decorArt)
     ...DECOR_ART,
+    // the fixed decor's built keys (island/fixedDecor.ts: the snowboy's melting stages, the shishi-odoshi tipped)
+    ...FIXED_ART,
     // the bridge's deck from above: baked into the ground (scripts/terrain.ts), never shown by the app itself
     'bridges/stone-deck'
   ]);

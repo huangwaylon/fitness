@@ -16,7 +16,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LOOKS, baseOf, dressDefines, dressGeometry, SEASON_GLSL } from './terrain-seasons.ts';
-import { BRIDGE, BUILDINGS, CAMPSITE, CLIFF, FACE_H, FLOWERS, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
+import { BRIDGE, BUILDINGS, CAMPSITE, CLIFF, DECOR_SLOTS, FACE_H, FLOWERS, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'terrain');
@@ -99,6 +99,8 @@ for (const s of SCENERY) {
   else if (s.kind === 'bush') sh(s.x + 0.08 * s.h, s.z - 0.03 * s.h, 0.6 * s.h, 0.25 * s.h, 0.6);
   else sh(s.x + 0.1 * w, s.z - 1, Math.max(5, w * 0.48), Math.max(2.6, w * 0.16), 0.55);
 }
+// the decor that stands all year (a seasonal piece casts its own: Scenery)
+for (const d of DECOR_SLOTS) if (d.key) sh(d.x + 0.06 * d.foot[0], d.z - 1, d.foot[0] * 0.5, Math.max(3, d.foot[1] * 0.42), 0.5);
 for (const x of HEDGE_XS) sh(x + 3, HEDGE_Z - 1.5, 21, 8.5, 0.6);
 // the wild flowers' small soft shadows
 for (const fl of FLOWERS) sh(fl.x + 2, fl.z - 0.5, 8, 3, 0.32);

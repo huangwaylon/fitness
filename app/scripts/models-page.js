@@ -134,11 +134,23 @@ async function loadLook(look, o) {
   for (const p of look.parts) {
     const c = await dae.loadAsync(`/src/${p.folder}/${p.dae}`);
     group.add(c.scene);
+    c.scene.traverse((n) => { if (n.isMesh) n.userData.folder = p.folder; });
     c.scene.traverse((n) => {
       if (n.name === 'DoorModel0' && !door) { n.updateWorldMatrix(true, false); door = new THREE.Vector3().setFromMatrixPosition(n.matrixWorld); }
     });
   }
   if (o.rotY) group.rotation.y = THREE.MathUtils.degToRad(o.rotY);
+  // a pose: a joint turned (degrees about its own x, y, z), e.g. the shishi-odoshi's tube tipped
+  for (const [name, r] of Object.entries(look.pose || {})) {
+    const j = group.getObjectByName(name);
+    if (j) j.rotation.set(j.rotation.x + THREE.MathUtils.degToRad(r[0]), j.rotation.y + THREE.MathUtils.degToRad(r[1]), j.rotation.z + THREE.MathUtils.degToRad(r[2]));
+  }
+  // a part's place (a snowboy's head on its body): moved up and scaled about its origin
+  for (const [i, p] of look.parts.entries()) if (p.at) {
+    const s = group.children[i];
+    s.position.y += p.at[0];
+    s.scale.multiplyScalar(p.at[1]);
+  }
   group.updateMatrixWorld(true);
   const meshes = [];
   group.traverse((n) => { if (n.isMesh) meshes.push(n); });
@@ -147,8 +159,13 @@ async function loadLook(look, o) {
   const lo = { ...o, ...look };
   for (const m of meshes) {
     const name = (Array.isArray(m.material) ? m.material[0] : m.material).name || (m.name || m.parent?.name || '').split('__').pop();
-    if (!mats.has(name)) mats.set(name, await materialsFor(name, look.files, lo));
+    // a part's own textures first (two parts may share a material's name: a snowboy's body and its face)
+    const key = `${m.userData.folder}|${name}`;
+    const others = new Set(look.parts.map((q) => q.folder).filter((f) => f !== m.userData.folder));
+    const files = [...look.files.filter(([f]) => !others.has(f)), ...look.files.filter(([f]) => others.has(f))];
+    if (!mats.has(key)) mats.set(key, await materialsFor(name, files, lo));
     m.userData.mat = name;
+    m.userData.key = key;
     m.castShadow = m.receiveShadow = true;
     m.frustumCulled = false;
     const g = m.geometry;
@@ -158,12 +175,12 @@ async function loadLook(look, o) {
   const hidden = (m) => HIDE.has(m.userData.mat) || (lo.hide || []).some((h) => m.name.includes(h) || m.userData.mat === h);
   const set = (v) => {
     for (const m of meshes) {
-      const name = m.userData.mat, M = mats.get(name), snow = name === 'mWinterSnow';
+      const name = m.userData.mat, M = mats.get(m.userData.key), snow = name === 'mWinterSnow';
       m.visible = !hidden(m) && (v === 'winter' || !snow || !!lo.snowAlways) && !(v === 'lit' && snow);
       m.material = v === 'lit' ? M.lit : v === 'mask' ? M.mask : M.std;
     }
   };
-  return { group, door, meshes, set, tris: Math.round(tris), mats: [...mats.keys()] };
+  return { group, door, meshes, set, tris: Math.round(tris), mats: [...new Set([...mats.keys()].map((k) => k.split('|').pop()))] };
 }
 
 /** o: { looks: [{ name, parts: [{folder, dae}], files, outputs: [day|winter|lit|trunk|canopy], grdRow?, grdBlock?,

@@ -11,8 +11,11 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from './world.ts';
+  import { ARCH, BUILDINGS, DECOR_SLOTS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from './world.ts';
   import { FIRE_AT, GLOW_AT, LIT_ART, hedgePair, sceneryKey, type Tod } from './scene.ts';
+  import { LAMP_GLOW, piecesOn, swapsOn } from './fixedDecor.ts';
+  import { islandSeed } from './devHooks.ts';
+  import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import PLACES from './models.json';
 
@@ -26,8 +29,11 @@
     onbuilding?: (id: BuildingId, el: HTMLElement) => void;
     /** At dusk and night the campsite's lantern and the lamps light up. */
     tod?: Tod;
+    /** The Tokyo date and hour: the decor's seasonal pieces (fixedDecor.ts). */
+    date?: string;
+    hour?: number;
   }
-  let { season, foliage, month, live = true, onbuilding, tod = 'day' }: Props = $props();
+  let { season, foliage, month, live = true, onbuilding, tod = 'day', date, hour = 12 }: Props = $props();
   const w = useWorld();
 
   /** An icon oak's trunk and canopy cut from its one image (a rendered oak has its own -trunk / -canopy layers). */
@@ -38,6 +44,39 @@
     const [a, b] = hedgePair(month);
     return HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, kind: 'bush', key: `bushes/${i % 2 ? b : a}`, x, z: HEDGE_Z, h: BUSH_H }));
   });
+  /** The fixed decor today (fixedDecor.ts): the decor's spots' pieces, and the scenery that takes a seasonal look. */
+  const swaps = $derived(date ? swapsOn(date) : {});
+  const pieces = $derived(date ? piecesOn(date, hour, islandSeed(), ARCH) : []);
+  /** A piece whose shadow isn't baked into the ground (it comes and goes): its own soft shadow. */
+  const BAKED = new Set(DECOR_SLOTS.filter((d) => d.key).map((d) => d.key));
+  const fixtures = $derived(pieces.map((p): Scenery & { fixture: string; shade: boolean } => ({ id: `fx-${p.id}`, kind: 'prop', key: p.key, x: p.x, z: p.z, h: p.h, fixture: p.id, shade: !BAKED.has(p.key) })));
+  const scenery = $derived(SCENERY.map((s) => (swaps[s.id] ? { ...s, key: swaps[s.id].key, h: swaps[s.id].h } : s)));
+  const glowOf = (key: string) => GLOW_AT[key] ?? LAMP_GLOW[key] ?? (key === 'deco/illumi-tree' ? 0.5 : 0);
+  // The shishi-odoshi (docs/design.md "Decor"): every 15–25 s while it's in view, and on a tap (SceneTaps), its tube
+  // tips (NH's own model posed: deco/shishiodoshi-tip), spills and knocks back on the stone: "kon". Local and cosmetic.
+  let tipped = $state(false);
+  let shishiEl = $state<HTMLElement>();
+  const TIP_MS = 700;
+  function tip() {
+    if (tipped) return;
+    tipped = true;
+    setTimeout(() => {
+      tipped = false;
+      if (shishiEl && shownNow(shishiEl)) sceneSfx('kon');
+    }, TIP_MS);
+  }
+  $effect(() => {
+    if (!live) return;
+    let timer = 0;
+    const idle = () => {
+      const scene = shishiEl?.closest('.if-scene');
+      return !shishiEl || document.hidden || !!scene?.matches('[data-paused], [data-covered]') || !shownNow(shishiEl);
+    };
+    const next = () => (timer = window.setTimeout(() => (idle() || tip(), next()), 15_000 + Math.random() * 10_000));
+    next();
+    document.addEventListener('island:shishi', tip);
+    return () => (clearTimeout(timer), document.removeEventListener('island:shishi', tip));
+  });
   /** The winter look: a derived one (sceneryKey) or a render's own (<key>-winter: NH's snowy model). */
   const wintry = (k: string) => (season === 'winter' && !k.endsWith('-winter') && art(`${k}-winter`) ? `${k}-winter` : k);
   const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : wintry(sceneryKey(s.key, season, month)));
@@ -46,7 +85,7 @@
   const lit = $derived(tod === 'night' ? 1 : tod === 'dusk' ? 0.7 : 0);
   /** A light's pool on the ground: over the ground's tint plane, under every upright thing. */
   const POOL_Z = 4;
-  const lamps = SCENERY.filter((s) => GLOW_AT[s.key]);
+  const lamps = $derived([...scenery, ...fixtures].filter((s) => glowOf(s.key)));
   const fires = SCENERY.filter((s) => FIRE_AT[s.key]);
   const winter = $derived(season === 'winter');
   const wOf = (key: string, h: number) => {
@@ -79,7 +118,7 @@
   {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
   {@const th = trunkHit(s, part)}
   <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th })}>
-    <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={live && !!FIRE_AT[s.key]}
+    <span class="art" data-look={key} class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={live && !!FIRE_AT[s.key]}
       data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
       style:clip-path={layered(base) ? inset3d(key, s.flip) : clip}>
@@ -96,12 +135,35 @@
   </div>
 {/snippet}
 
-{#each [...SCENERY, ...hedge] as s (s.id)}
+{#each [...scenery, ...hedge] as s (s.id)}
   {#if s.kind === 'oak'}
     {@render sprite(s, TRUNK, 'trunk')}
     {@render sprite(s, CANOPY, 'canopy')}
   {:else}
     {@render sprite(s)}
+  {/if}
+{/each}
+
+{#each fixtures as f (f.id + f.key)}
+  <!-- the fixed decor (fixedDecor.ts): a tap answers where it stands (SceneTaps: data-fixture) -->
+  <div class="spr" data-scenery-id={f.id} data-kind="decor" data-part="body" {@attach w.at({ x: f.x, z: f.z, h: f.h })}>
+    {#if f.fixture === 'shishi'}
+      <span class="art fixture shishi" class:tipped bind:this={shishiEl} data-fixture={live ? f.fixture : undefined} data-look={f.key} data-tipped={tipped || undefined}
+        style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
+        <span class="frame rest"><OfficialArt key={f.key} size="calc({f.h} * var(--u))" eager /></span>
+        <span class="frame tip"><OfficialArt key={`${f.key}-tip`} size="calc({f.h} * var(--u))" eager /></span>
+      </span>
+    {:else}
+      <span class="art fixture" data-fixture={live ? f.fixture : undefined} data-look={f.key}
+        style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
+        <OfficialArt key={f.key} size="calc({f.h} * var(--u))" eager={f.z < 1080} />
+      </span>
+    {/if}
+  </div>
+  {#if f.shade}
+    <div class="spr shade-node" {@attach w.at({ mode: 'flat', x: f.x + 2, z: f.z - 1, h: 4, zi: POOL_Z })}>
+      <span class="shade" style:width="calc({wOf(f.key, f.h) * 0.95} * var(--u))"></span>
+    </div>
   {/if}
 {/each}
 
@@ -126,7 +188,7 @@
     {/if}
   {/each}
   {#each lamps as l (l.id)}
-    {@const k = l.h / 46}
+    {@const k = Math.max(l.h, 24) / 46}
     {#if art(`${l.key}-lit`)}
       <!-- the lamp's own head lit (its render's -lit look), under the glow -->
       <div class="spr lit" data-lit={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, dz: -0.4, light: true })}>
@@ -138,9 +200,9 @@
     <!-- a lamp at night (NH's warm point light): its head lit (a bright core in the lamp-glow), a wide soft halo round
          it, and a pool of light on the ground at its foot; untinted, in the lamp's depth, faded in at dusk -->
     <div class="spr lit" data-glow={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, dz: -0.5, light: true })}>
-      <span class="halo" style:bottom="calc({l.h * GLOW_AT[l.key] - 75 * k} * var(--u))" style:width="calc({150 * k} * var(--u))"></span>
-      <span class="glow" style:bottom="calc({l.h * GLOW_AT[l.key] - 30 * k} * var(--u))"><OfficialArt key="deco/lamp-glow" size="calc({60 * k} * var(--u))" /></span>
-      <span class="core" style:bottom="calc({l.h * GLOW_AT[l.key] - 11 * k} * var(--u))" style:width="calc({22 * k} * var(--u))"></span>
+      <span class="halo" style:bottom="calc({l.h * glowOf(l.key) - 75 * k} * var(--u))" style:width="calc({150 * k} * var(--u))"></span>
+      <span class="glow" style:bottom="calc({l.h * glowOf(l.key) - 30 * k} * var(--u))"><OfficialArt key="deco/lamp-glow" size="calc({60 * k} * var(--u))" /></span>
+      <span class="core" style:bottom="calc({l.h * glowOf(l.key) - 11 * k} * var(--u))" style:width="calc({22 * k} * var(--u))"></span>
     </div>
     <div class="spr lit pool-node" data-pool={l.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: l.x + 2, z: l.z - 2, h: 4, zi: POOL_Z, light: true })}>
       <span class="pool" style:width="calc({140 * k} * var(--u))"></span>
@@ -183,7 +245,15 @@
     line-height: 0; pointer-events: none;
   }
   .art :global(.official), .door :global(.official) { max-width: none; }
-  .art.bush, .art.fire { pointer-events: auto; cursor: pointer; }
+  .art.bush, .art.fire, .art.fixture[data-fixture] { pointer-events: auto; cursor: pointer; }
+  /* the shishi-odoshi's two frames: at rest, and tipped while it spills */
+  .shishi .frame { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-end; line-height: 0; }
+  .shishi .tip { opacity: 0; }
+  .shishi.tipped .tip { opacity: 1; }
+  .shishi.tipped .rest { opacity: 0; }
+  /* a piece's soft contact shadow when it isn't baked into the ground (a seasonal one) */
+  .shade-node { will-change: auto; }
+  .shade { position: absolute; left: 0; aspect-ratio: 3.2; translate: -50% -50%; border-radius: 50%; background: radial-gradient(closest-side, rgba(40, 60, 30, .3), rgba(40, 60, 30, .14) 60%, rgba(40, 60, 30, 0)); filter: var(--tod-filter,); }
   /* the fire: its embers glow (the render's emissive look, breathing) and three tongues of flame flicker over the
      logs, each out of step, out of step with the halo too */
   .embers { opacity: .8; animation: embers 2.9s ease-in-out infinite; }

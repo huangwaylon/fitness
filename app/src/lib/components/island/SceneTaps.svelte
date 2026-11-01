@@ -31,7 +31,7 @@
   import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
-  import { HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
+  import { ARCH, DECOR_SLOTS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
   import { hitWorld, petalOf, sceneSfx, shownNow, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import Critters from './Critters.svelte';
@@ -228,6 +228,8 @@
     const fireEl = t.closest<HTMLElement>('[data-campfire]');
     const fire = fireEl && SCENERY.find((s) => s.id === fireEl.dataset.campfire);
     if (fireEl && fire) return poke(fireEl, fire);
+    const fxEl = t.closest<HTMLElement>('[data-fixture]');
+    if (fxEl) return fixture(fxEl, fxEl.dataset.fixture ?? '', fxEl.dataset.look ?? '');
     const flowerEl = t.closest<HTMLElement>('[data-flower]');
     const fl = flowerEl && flowerById(flowerEl.dataset.flower ?? '');
     if (flowerEl && fl) return flower(flowerEl, fl);
@@ -280,6 +282,29 @@
     jiggle(el, RUSTLE, 420, BUSH_ORIGIN);
     spawn({ kind: 'fire', x: f.x, y: f.z, lift: f.h * 0.3 });
     sceneSfx('campfire');
+  }
+
+  /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
+  function fixture(el: HTMLElement, id: string, look: string) {
+    const slot = DECOR_SLOTS.find((d) => d.id === id);
+    const [x, z] = slot ? [slot.x, slot.z] : ARCH;
+    turnTo(x);
+    jiggle(el, WIGGLE, 520, BUSH_ORIGIN);
+    if (id === 'bench-mae' || id === 'bench-pond') {
+      spawn({ kind: 'bush', x, y: z, lift: 24, v: shed(season) });
+      return sceneSfx('bench');
+    }
+    if (id === 'shishi') {
+      document.dispatchEvent(new CustomEvent('island:shishi'));
+      return;
+    }
+    if (id === 'pullup') return sceneSfx('bar');
+    if (id === 'pump') return sceneSfx('pump');
+    if (id === 'sandcastle' || /snowboy/.test(look)) {
+      spawn({ kind: id === 'sandcastle' ? 'sand' : 'grass', x, y: z, v: id === 'sandcastle' ? undefined : 'snow', flip: roll(2) });
+      return sceneSfx(id === 'sandcastle' ? 'sand' : 'snow');
+    }
+    sceneSfx('decor');
   }
 
   /** A wild flower: my villager waters it. */

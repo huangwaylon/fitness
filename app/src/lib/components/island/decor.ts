@@ -9,7 +9,7 @@
 import type { Box } from './geom.ts';
 import { DECOR_ITEMS, type Placed } from '#lib/contract/decor.ts';
 import {
-  ARCH, BEACH_BOX, BRIDGE, CAKE, CENTRE_STAGE, CLIFF, DIG_SPOTS, FLOWERS, GOAL_TREES, HOMES, LAND, LAWN_SPOTS, POND, SPRING,
+  ARCH, BEACH_BOX, BRIDGE, CAKE, CENTRE_STAGE, CLIFF, DECOR_U, DIG_SPOTS, FLOWERS, GOAL_TREES, HOMES, LAND, LAWN_SPOTS, POND, SPRING,
   inOval, onBridge, onLand, riverNear, type Pt
 } from './world.ts';
 import { MUSHROOM_SPOTS } from './mushrooms.ts';
@@ -21,8 +21,6 @@ export type DecorItem = (typeof DECOR_ITEMS)[number];
 export type Facing = 0 | 1 | 2 | 3;
 export { DECOR_ITEMS };
 
-/** World units per model unit: NH's furniture beside an 80u villager (a chair 38u, the stone lantern 59u). */
-const DECOR_U = 3;
 /** NH's half tile (u): the grid an item's footprint snaps to. */
 export const CELL = 12;
 /** Each item's footprint in cells (cols across × rows deep, facing the camera). */

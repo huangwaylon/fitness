@@ -318,8 +318,8 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   clearing, the bamboo by the stream, the bridge with its lamps and the hedge), each section's mass balanced across the
   path; what fills between them is scattered: the wild flowers' clumps and the weeds' lawn spots by seeded
   best-candidate sampling (a Poisson-disk sampler: each pick the open-lawn candidate farthest from everything there,
-  the picks taking turns either side of the path), every kind keeping its own gap (a clump 80u from a clump, 52u from a
-  trunk, 72u from the bamboo, 40u from a prop; a weed spot 64u from the next), none under a canopy, behind a villager's
+  the picks taking turns either side of the path), every kind keeping its own gap (a clump 76u from a clump, 52u from a
+  trunk, 72u from the bamboo, 34u from a prop; a weed spot 64u from the next), none under a canopy, behind a villager's
   spot, where a goal tree's fruit falls, in the villagers' stage in front of the homes or off the screen's edge.
   `scenery.test` checks the gaps and that no open lawn is more than 90u from anything (no dead zones). Rerun it after
   moving a composed piece, then `npm run terrain` (the shadows).
@@ -329,11 +329,35 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   blooming on under the snow), 30u (pansies, windflowers, mums lower, lilies taller), each with a baked soft shadow.
   Each flower's id is where it stands (`fl:<x>:<z>`): watering, hybrids and the flower bugs key on it.
   **Decor** (NH's models and catalog icons): streetlamps, garden lanterns, garden and flat rocks, the month's bushes, a
-  bamboo grove, and the campfire on the clearing's east side (262, 944; NH's `FtrCampfire` at 2.6u a model unit, as the
-  lanterns) with two log stools at it, clear of centre stage and the tent's door. Unlit by day; from dusk (.7) and at
-  night its render's emissive look breathes, three tongues of flame flicker over the logs, a warm halo and a pool of
-  light on the clearing, all lights (untinted, in the fire's depth: a villager in front covers them), still while
-  covered or hidden.
+  bamboo grove, and the campfire on the clearing's east side (262, 944; NH's `FtrCampfire`) with two log stools at it,
+  clear of centre stage and the tent's door. Unlit by day; from dusk (.7) and at night its render's emissive look
+  breathes, three tongues of flame flicker over the logs, a warm halo and a pool of light on the clearing, all lights
+  (untinted, in the fire's depth: a villager in front covers them), still while covered or hidden.
+  **The fixed decor** (`world.ts` DECOR_SLOTS, `island/fixedDecor.ts`, `e2e/fixed-decor.spec.ts`): NH's outdoor
+  furniture at one scale (world.ts DECOR_U, 3u a model unit, the decorations' too: a bench 40u beside an 80u villager;
+  the campfire 47u, the stools 19u), each in its own spot with a footprint. For good: まえ's one bench at the left grass
+  edge facing the sea (`FtrParkbenche`, 40, 130); おく's hammock by the pond's front (98, 700), the log bench on its back
+  bank (`FtrLogSofaL`) with the rod stand by the casting spot, the pump (250, 806), the shishi-odoshi at the bamboo's
+  foot, the pull-up bar stand on the east lawn by the stream (`FtrPullupstand`, 330, 902) and the firewood by the tent
+  (`FtrFirewood`). The seasons, never a new spot (a seasonal piece takes its own spot or the place of what stands
+  there): the blossom days (Apr 1–10) the picnic set in the log bench's place and the cherry-blossom pond stone in the
+  flat rock's; the young bamboo's window (Feb 25 – May 21) the bamboo-shoot lamp for the clearing's east lantern; the
+  summer (Jun 1 – Sep 15) the beach chair and the sandcastle on the east beach (the castle from 05:00 until the tide
+  takes it at 18:00); acorns' window (Sep 1 – Dec 10) the tree's-bounty lamp for the west lantern, the mushroom lamp in
+  November; the foliage (Oct 16 – Dec 10) the maple-leaf pond stone; Dec 15 – Jan 6 the illuminated tree in the
+  hammock's place; Dec 26 – Jan 7 kadomatsu for the stairs' white lanterns; a snowboy on the front lawn on a snow day
+  (NH's snowball and its face), melting through NH's three stages over the next three days; Bunny Day's egg arch on the
+  arch's spot. The seasonal lamps and the illuminated tree light at dusk like the lanterns. All from the date, the hour
+  and the seed: the same on both phones. Every spot is a walk obstacle all year and a spot a decoration can't take
+  ([Decorating](#decorating)), so a seasonal piece never lands on one. The permanent pieces' shadows are baked; a
+  seasonal one draws its own. A tap answers where it stands (nobody walks, my villager turns to it): a bench creaks and
+  sheds a leaf (`creak`), the bar rings (`clang`), the pump gushes (`pump`), the sandcastle and the snowboy puff, the
+  rest knock softly. The shishi-odoshi tips (NH's model posed: `deco/shishiodoshi-tip`) every 15–25 s while it's in
+  view and on a tap, and knocks back on its stone: `kon` (local, cosmetic). The new sounds are synthesized
+  (`sound/synth.ts`). `fixedDecor.test` holds the plan's rules: まえ one piece for good and two seasonal at most,
+  nothing over the finds or the sea view, nothing over 40u in front of z 300, 40u from Gulliver and Daisy Mae; every
+  spot 20u off a path, 24u off the dig, weed and flower spots, 30u off trunks, 60u off centre stage, the cake and the
+  arch, 12u off the water.
   `scenery.test` keeps every piece off the water, the paths, the footprints and the features' spots, and the walk
   reaching every door; bamboo and rocks are obstacles like the trees.
 - **Winter and night looks** (`scripts/models.ts`, [Official art](#official-art)): NH's own snowy models (the campsite,

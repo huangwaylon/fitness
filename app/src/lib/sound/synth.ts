@@ -223,6 +223,27 @@ const RECIPES: Record<SoundId, Ev[]> = {
     { kind: 'noise', t: 0, d: 0.5, g: 0.35, lo: 90, hi: 600, shape: 'swell' },
     { kind: 'noise', t: 0.02, d: 0.9, g: 0.5, lo: 1800, hi: 7500, shape: 'decay', grains: 28 }
   ],
+  // a bench's wooden creak: a slow rubbing glide with a grainy flutter
+  creak: [
+    { kind: 'tone', f: 160, to: 215, glide: 0.28, t: 0, d: 0.34, g: 0.55, wave: 'sq', attack: 0.04, trem: [38, 0.7] },
+    { kind: 'noise', t: 0, d: 0.32, g: 0.3, lo: 300, hi: 1400, shape: 'swell', grains: 60 }
+  ],
+  // the shishi-odoshi: the bamboo's hollow knock on the stone ("kon") and the water spilling after it
+  kon: [
+    { kind: 'tone', f: 540, to: 400, glide: 0.035, t: 0, d: 0.32, g: 1, wave: 'tri', attack: 0.001, partials: [[2.71, 0.35, 0.3], [4.2, 0.12, 0.2]] },
+    { kind: 'noise', t: 0, d: 0.03, g: 0.5, lo: 1500, hi: 6000, shape: 'decay' },
+    { kind: 'noise', t: 0.06, d: 0.45, g: 0.22, lo: 1200, hi: 6500, shape: 'swell', grains: 90 }
+  ],
+  // the pull-up bar: a soft ring of a steel tube
+  clang: [
+    { kind: 'tone', f: 830, t: 0, d: 0.7, g: 0.6, attack: 0.001, partials: [[2.76, 0.35, 0.5], [5.4, 0.15, 0.3]] },
+    { kind: 'noise', t: 0, d: 0.02, g: 0.3, lo: 2000, hi: 8000, shape: 'decay' }
+  ],
+  // the pump: the handle's squeak and the water's gush
+  pump: [
+    { kind: 'tone', f: 900, to: 1350, glide: 0.14, t: 0, d: 0.18, g: 0.35, wave: 'sq', attack: 0.01, vib: [30, 40] },
+    { kind: 'noise', t: 0.16, d: 0.55, g: 0.8, lo: 400, hi: 3200, shape: 'swell', grains: 260 }
+  ],
   clonk: [
     { kind: 'tone', f: 230, to: 170, glide: 0.06, t: 0, d: 0.16, g: 1, wave: 'tri', attack: 0.001, partials: [[2.4, 0.3, 0.3]] },
     { kind: 'noise', t: 0, d: 0.04, g: 0.5, lo: 1500, hi: 6000, shape: 'decay' }

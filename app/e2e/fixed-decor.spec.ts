@@ -1,0 +1,62 @@
+// The fixed decor (docs/design.md "Decor"): NH's outdoor furniture standing for good and the seasons' pieces taking
+// their spots; a tap answers where the piece stands (nobody walks); the shishi-odoshi tips and knocks; the sandcastle
+// is gone at 18:00; the seasonal lamps light at night.
+import { CAMS } from '../src/lib/components/island/world.ts';
+import { expect, test, type Page } from '@playwright/test';
+
+type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void; cam(): number };
+const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
+
+async function open(page: Page, when: string, camZ: number) {
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
+  await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), camZ);
+    await page.waitForTimeout(250);
+    return page.evaluate(() => Math.round((window as unknown as { __world: W }).__world.cam()));
+  }, { timeout: 5000 }).toBe(camZ);
+}
+const centre = (page: Page, sel: string) =>
+  page.locator(sel).first().evaluate((el) => {
+    const b = el.getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top + b.height * 0.6 };
+  });
+const mine = (page: Page) => page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
+
+test('まえ in summer: the bench at the grass edge, the beach chair and the sandcastle; a tap on the bench creaks it where it is', async ({ page }) => {
+  await open(page, '2026-07-20T11:00', CAMS.mae);
+  for (const id of ['bench-mae', 'beach-chair', 'sandcastle']) await expect(page.locator(`[data-fixture="${id}"]`), id).toBeVisible();
+  const home = await mine(page);
+  const b = await centre(page, '[data-fixture="bench-mae"]');
+  await page.mouse.click(b.x, b.y);
+  await expect.poll(() => cues(page)).toContain('scene-bench');
+  await page.waitForTimeout(400);
+  expect(await mine(page)).toBe(home);
+  // the tide takes the sandcastle at 18:00 (the same on both phones: the date and the hour)
+  await open(page, '2026-07-20T18:05', CAMS.mae);
+  await expect(page.locator('[data-fixture="bench-mae"]')).toBeVisible();
+  await expect(page.locator('[data-fixture="sandcastle"]')).toHaveCount(0);
+});
+
+test('おく: the hammock, the pond bench and rod stand, the pump, the shishi-odoshi, the pull-up bar and the firewood; the shishi-odoshi tips and knocks', async ({ page }) => {
+  await open(page, '2026-07-20T11:00', CAMS.oku);
+  for (const id of ['hammock', 'bench-pond', 'rod-stand', 'pump', 'shishi', 'pullup', 'firewood']) await expect(page.locator(`[data-fixture="${id}"]`), id).toBeAttached();
+  const s = await centre(page, '[data-fixture="shishi"]');
+  await page.mouse.click(s.x, s.y);
+  await expect(page.locator('[data-fixture="shishi"][data-tipped]')).toHaveCount(1);
+  await expect(page.locator('[data-fixture="shishi"][data-tipped]')).toHaveCount(0, { timeout: 3000 });
+  await expect.poll(() => cues(page)).toContain('scene-kon');
+});
+
+test('the seasons swap their pieces in: the blossom days’ picnic set and pond stone, November’s mushroom lamp lit at night, the winter’s illuminated tree', async ({ page }) => {
+  await open(page, '2026-04-05T11:00', CAMS.oku);
+  await expect(page.locator('[data-fixture="bench-pond"]')).toHaveAttribute('data-look', 'deco/picnic-set');
+  await expect(page.locator('[data-scenery-id="rock-m1"] [data-look]')).toHaveAttribute('data-look', 'deco/pond-stone-sakura');
+  await open(page, '2026-11-10T21:00', CAMS.oku);
+  await expect(page.locator('[data-scenery-id="lantern-1"] [data-look]')).toHaveAttribute('data-look', 'deco/mushroom-lamp');
+  await expect(page.locator('[data-glow="lantern-1"]')).toHaveCount(1);
+  await open(page, '2026-12-20T11:00', CAMS.oku);
+  await expect(page.locator('[data-fixture="hammock"]')).toHaveAttribute('data-look', 'deco/illumi-tree');
+});

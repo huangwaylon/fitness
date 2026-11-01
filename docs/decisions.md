@@ -359,3 +359,12 @@ drawn at runtime: the world stays DOM sprites with no WebGL, no runtime cost and
 unit (a WebGL layer would add ~145 KB of three.js, megabytes of models and a frame on every scroll, and couldn't
 interleave with the DOM sprites' depth order). The model files never enter the repo, only the renders. Why: the user
 asked for the game's own models ("let's use them going forward"), and they read as one family at every season.
+
+### The fixed decor: spots that hold one piece each, the seasons taking turns in them
+NH's outdoor furniture stands in fixed spots (world.ts DECOR_SLOTS), at the decorations' one scale (3u a model unit).
+Each spot holds a piece for good or the seasons' pieces in turn, and some seasonal pieces stand in the place of a lamp
+or a rock (fixedDecor.ts); variety comes from the calendar, not density, and the island never gains a spot. Every spot
+is a walk obstacle all year and a place a player's decoration can't take, even while empty, so a seasonal piece never
+lands on one and the walk graph never changes with the date. Pure on the date, the hour and the seed: no sync needed.
+Why: the user approved the decor plan (one sea-facing bench at the front, the pull-up bar, seasonal swaps "never
+additions"), and two phones must show the same island.
