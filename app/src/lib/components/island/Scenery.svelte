@@ -12,7 +12,7 @@
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { t } from '#lib/i18n/index.ts';
   import { BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from './world.ts';
-  import { GLOW_AT, LIT_ART, hedgePair, sceneryKey, type Tod } from './scene.ts';
+  import { FIRE_AT, GLOW_AT, LIT_ART, hedgePair, sceneryKey, type Tod } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import PLACES from './models.json';
 
@@ -47,6 +47,7 @@
   /** A light's pool on the ground: over the ground's tint plane, under every upright thing. */
   const POOL_Z = 4;
   const lamps = SCENERY.filter((s) => GLOW_AT[s.key]);
+  const fires = SCENERY.filter((s) => FIRE_AT[s.key]);
   const winter = $derived(season === 'winter');
   const wOf = (key: string, h: number) => {
     const a = art(key);
@@ -78,7 +79,8 @@
   {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
   {@const th = trunkHit(s, part)}
   <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th })}>
-    <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
+    <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={live && !!FIRE_AT[s.key]}
+      data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
       style:clip-path={layered(base) ? inset3d(key, s.flip) : clip}>
       <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1080} />
@@ -144,6 +146,26 @@
       <span class="pool" style:width="calc({140 * k} * var(--u))"></span>
     </div>
   {/each}
+  {#each fires as f (f.id)}
+    {@const k = f.h / 40}
+    <!-- the campfire's flames (its render's emissive look) flickering, a warm halo round them and their light on the
+         clearing; untinted, in the fire's depth, faded in at dusk -->
+    <div class="spr lit" data-lit={f.id} style:opacity={lit} {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: -0.4, light: true })}>
+      <span class="halo fire-halo" style:bottom="calc({f.h * FIRE_AT[f.key] - 60 * k} * var(--u))" style:width="calc({150 * k} * var(--u))"></span>
+      <span class="art embers" style={at3d(`${f.key}-lit`, f.h, f.flip)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(`${f.key}-lit`, f.h)} * var(--u))">
+        <OfficialArt key={`${f.key}-lit`} size="calc({f.h} * var(--u))" />
+      </span>
+      <!-- NH's flames over the logs: three tongues, each flickering out of step -->
+      <span class="flames" style:bottom="calc({f.h * FIRE_AT[f.key] - 8 * k} * var(--u))" style:--k={k}>
+        <i class="tongue" style:--s="1" style:--x="0" style:--d="0s"></i>
+        <i class="tongue" style:--s=".72" style:--x="-5" style:--d="-.4s"></i>
+        <i class="tongue" style:--s=".66" style:--x="5" style:--d="-.9s"></i>
+      </span>
+    </div>
+    <div class="spr lit pool-node" data-pool={f.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: f.x, z: f.z - 2, h: 4, zi: POOL_Z, light: true })}>
+      <span class="pool fire-pool" style:width="calc({180 * k} * var(--u))"></span>
+    </div>
+  {/each}
   {#each BUILDINGS as b (b.id)}
     {#if LIT_ART[b.key]}
       <!-- the light from the tent's lantern on the clearing in front of it -->
@@ -161,7 +183,25 @@
     line-height: 0; pointer-events: none;
   }
   .art :global(.official), .door :global(.official) { max-width: none; }
-  .art.bush { pointer-events: auto; cursor: pointer; }
+  .art.bush, .art.fire { pointer-events: auto; cursor: pointer; }
+  /* the fire: its embers glow (the render's emissive look, breathing) and three tongues of flame flicker over the
+     logs, each out of step, out of step with the halo too */
+  .embers { opacity: .8; animation: embers 2.9s ease-in-out infinite; }
+  @keyframes embers { 0%, 100% { opacity: .8; } 45% { opacity: .62; } }
+  .flames { position: absolute; left: 0; width: 0; height: 0; }
+  .tongue {
+    position: absolute; left: calc(var(--x) * var(--k) * var(--u)); bottom: 0;
+    width: calc(14 * var(--s) * var(--k) * var(--u)); height: calc(14 * var(--s) * var(--k) * var(--u)); translate: -50% 0;
+    border-radius: 50% 0 50% 50%; rotate: -45deg; transform-origin: 50% 50%;
+    background: radial-gradient(circle at 62% 38%, #FFF6C4 0 16%, #FFD45C 36%, #FF9A2E 62%, #F2601C 88%);
+    box-shadow: 0 0 calc(5 * var(--k) * var(--u)) rgba(255, 150, 60, .8);
+    animation: tongue 1.1s ease-in-out var(--d) infinite;
+  }
+  @keyframes tongue { 0%, 100% { transform: scale(1, 1); opacity: .95; } 30% { transform: scale(.88, 1.1); opacity: 1; } 60% { transform: scale(1.06, .9); opacity: .85; } 80% { transform: scale(.94, 1.04); } }
+  .fire-halo { background: radial-gradient(closest-side, rgba(255, 176, 84, .7), rgba(255, 140, 56, .36) 34%, rgba(255, 120, 40, .12) 64%, rgba(255, 120, 40, 0)); animation: fire-halo 2.3s ease-in-out infinite; }
+  @keyframes fire-halo { 0%, 100% { opacity: 1; } 40% { opacity: .78; } 70% { opacity: .92; } }
+  .fire-pool { background: radial-gradient(closest-side, rgba(255, 180, 90, .7), rgba(255, 150, 64, .38) 40%, rgba(255, 140, 56, .1) 75%, rgba(255, 140, 56, 0)); }
+  :global(.if-scene:is([data-paused], [data-covered])) :is(.embers, .tongue, .fire-halo) { animation-play-state: paused; }
   /* a tree's tap area: its leaves (not the art's whole box: the sand and grass round it stay the ground's) */
   .hit { position: absolute; pointer-events: auto; cursor: pointer; left: 8%; right: 8%; top: 2%; bottom: 40%; border-radius: 42%; }
   .hit.cedar { left: 16%; right: 16%; top: 2%; bottom: 32%; }

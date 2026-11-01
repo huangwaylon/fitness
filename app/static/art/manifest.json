@@ -1,5 +1,5 @@
 {
-  "version": 46,
+  "version": 47,
   "files": {
     "bridges/stone-deck": {
       "path": "bridges/stone-deck.webp",
@@ -1375,6 +1375,18 @@
       "h": 68,
       "source": "https://nookipedia.com/wiki/File:Birthday_Hat_(Pink)_NH_Icon.png"
     },
+    "deco/campfire": {
+      "path": "deco/campfire.webp",
+      "w": 107,
+      "h": 101,
+      "source": "rendered from NH's model FtrCampfire (scripts/models.ts)"
+    },
+    "deco/campfire-lit": {
+      "path": "deco/campfire-lit.webp",
+      "w": 107,
+      "h": 101,
+      "source": "rendered from NH's model FtrCampfire (scripts/models.ts)"
+    },
     "deco/campsite": {
       "path": "deco/campsite.webp",
       "w": 261,
@@ -1440,6 +1452,12 @@
       "w": 64,
       "h": 64,
       "source": "derived (drawn: scripts/derive-art.ts)"
+    },
+    "deco/log-stool": {
+      "path": "deco/log-stool.webp",
+      "w": 45,
+      "h": 50,
+      "source": "rendered from NH's model FtrLogStoolS (scripts/models.ts)"
     },
     "deco/party-popper": {
       "path": "deco/party-popper.webp",

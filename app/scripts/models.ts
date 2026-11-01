@@ -93,6 +93,9 @@ export const JOBS: Job[] = [
   prop('deco/streetlamp', 'FtrStreetlamp', 'FtrStreetlampReBody0', ['day', 'lit'], 150, { halo: 1.4 }),
   prop('deco/garden-lantern', 'FtrLampGarden', 'FtrLampGardenReBody0', ['day', 'lit'], 90, { halo: 1.4 }),
   prop('deco/garden-lantern-white', 'FtrLampGarden', 'FtrLampGardenReBody1', ['day', 'lit'], 90, { halo: 1.4 }),
+  // the campfire by the tent (its flames are the model's emissive: the lit look) and its log stools
+  prop('deco/campfire', 'FtrCampfire', null, ['day', 'lit'], 100, { halo: 1.2 }),
+  prop('deco/log-stool', 'FtrLogStoolS', 'FtrLogStoolSReBody0', ['day'], 50),
   // rocks
   prop('deco/garden-rock', 'FtrGardenrock', null, ['day'], 80),
   prop('deco/flat-rock', 'FtrGardenrockLow', null, ['day'], 60),

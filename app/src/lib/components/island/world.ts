@@ -177,7 +177,8 @@ export const SCENERY: readonly Scenery[] = [
   // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the bridge's front corners, the month's bushes either side of
   // the path (`month-bush-a|b`: scene.ts hedgePair), the pond on the west with a flat rock and a clump by it, the bamboo
   // grove on the east by the stream, an oak and cedars at the edges, the campsite's tent in its clearing with its sign,
-  // garden lanterns either side of the clearing and white ones at the stairs' foot, a rock at the cliff's foot
+  // garden lanterns either side of the clearing and white ones at the stairs' foot, a rock at the cliff's foot, the
+  // campfire on the clearing's east side (clear of centre stage and the tent's door) with two log stools at it
   s('lamp-b1', 'prop', 'deco/streetlamp', 168, 612, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 222, 612, 46),
   s('bush-m1', 'bush', 'month-bush-a', 152, 716, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 724, 34),
   s('rock-m1', 'rock', 'deco/flat-rock', 148, 818, 12),
@@ -190,6 +191,8 @@ export const SCENERY: readonly Scenery[] = [
   s('lantern-1', 'prop', 'deco/garden-lantern', 140, 896, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 254, 900, 24),
   s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1022, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1022, 24),
   s('rock-t1', 'rock', 'deco/garden-rock', 316, 1022, 20),
+  s('campfire', 'prop', 'deco/campfire', 262, 944, 40),
+  s('stool-1', 'prop', 'deco/log-stool', 234, 954, 17), s('stool-2', 'prop', 'deco/log-stool', 291, 950, 17, true),
   // the forest on the upper tier behind the cliff (short enough that its tops stay under the HUD)
   s('cedar-f1', 'cedar', 'trees/cedar', -6, 1110, 126), s('cedar-f2', 'cedar', 'trees/cedar', 64, 1160, 130), s('cedar-f3', 'cedar', 'trees/cedar', 140, 1104, 122),
   s('cedar-f4', 'cedar', 'trees/cedar', 214, 1170, 130), s('cedar-f5', 'cedar', 'trees/cedar', 284, 1112, 126), s('cedar-f6', 'cedar', 'trees/cedar', 130, 1200, 124)

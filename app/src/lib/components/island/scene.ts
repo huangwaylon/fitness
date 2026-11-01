@@ -59,6 +59,9 @@ export function sceneryKey(key: string, season: Season, month: number): string {
  *  time-of-day tint). */
 export const LIT_ART: Record<string, string> = { 'deco/campsite': 'deco/campsite-lit' };
 /** The lamps that glow at night (deco/lamp-glow), and where the light hangs: a share of the lamp's height. */
+/** The fires (the campfire by the tent): lit at dusk and night (their render's -lit look, flickering, a warm halo and
+ *  a pool of light), and where the flames' light sits: a share of the fire's height. */
+export const FIRE_AT: Record<string, number> = { 'deco/campfire': 0.42 };
 export const GLOW_AT: Record<string, number> = { 'deco/streetlamp': 0.9, 'deco/garden-lantern': 0.62, 'deco/garden-lantern-white': 0.62 };
 
 /** The wild flowers' kinds by season (world.ts FLOWERS: a clump is one kind, clumps take the list in turn), NH's
