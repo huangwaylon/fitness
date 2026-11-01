@@ -43,6 +43,8 @@
   const halt = () => {
     stop();
     clearInterval(watcher);
+    sized?.disconnect();
+    sized = undefined;
   };
   $effect(() => halt);
   /** Close the box and run its `ondone`. */
@@ -160,8 +162,22 @@
   /** While it talks the balloon follows its speaker (steps, the layout changing); it closes if the speaker goes. A move
    *  must last (3 looks, 0.6 s) before the balloon goes after it, so a hop or a bob doesn't shake it; once it follows,
    *  every look does until the speaker stands still again. */
+  /** The balloon's own size: it can change after it was placed (its font arriving late on a slow phone), and a wider
+   *  box at the same centre would run off the screen: placed again. */
+  let sized: ResizeObserver | undefined;
   function watch(n: number) {
     clearInterval(watcher);
+    sized?.disconnect();
+    if (el) {
+      let w0 = el.offsetWidth, h0 = el.offsetHeight;
+      sized = new ResizeObserver(() => {
+        if (said?.n !== n || !el || (Math.abs(el.offsetWidth - w0) < 1 && Math.abs(el.offsetHeight - h0) < 1)) return;
+        w0 = el.offsetWidth;
+        h0 = el.offsetHeight;
+        if (!held && !at(n)) close();
+      });
+      sized.observe(el);
+    }
     let moved = 0;
     watcher = setInterval(() => {
       if (said?.n !== n || !speaker) return clearInterval(watcher);
