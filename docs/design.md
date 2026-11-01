@@ -50,7 +50,7 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the page zooms
   about the jar, which morphs into the hero jar).
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
-- **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner's opens their
+- **Villagers:** mine hops when tapped and says nothing ([Villager taps](#villager-taps)); the partner's opens their
   card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
@@ -540,12 +540,12 @@ plate for every discovery (catches, finds, a present, its first-find page): the 
 ▼ in its own room at the right; the captions (the wish, K.K.'s song, Gulliver's sleep talk) share one pill
 (`.if-caption`: the plate's colours, 13px).
 
-### Villager chats
+### Villager taps
 
-`island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop and says a line in NH's
-balloon right over its head (the tap's ♪ floats up behind it). Lines follow the villager's NH personality (12 each; special characters 10 of their own), 3 in
-10 about the day (the morning, the night, today's goals so far, never ベル), a sleepy one when the tap wakes them; never
-the same twice running. The roster loads on the first chat. One balloon at a time.
+A tap on my villager is a squish with a ♪ and the tap sound (R9), and in NH's flea months now and then a flea hops off
+it ([Critters](#critters)); it opens no balloon and no sheet (it was too easy to tap by accident). The speech balloon
+(`island/Talk.svelte`) is for the island's other speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a
+time.
 
 ### Visitors
 
@@ -628,7 +628,7 @@ On one: both villagers wear NH's birthday hat; NH's cake stands in front of cent
 lit; confetti over both villagers the first time that day on this phone (`scene-birthday`); しずえ's 「うめさん、
 おたんじょうび おめでとう！」. A tap on the cake plays a music box and blows the candles out for the day. Each goal the
 birthday person meets that day pops NH's party popper over their villager. An NH villager's own birthday (Nookipedia's
-dates, a small module of their own) puts the hat on that villager and they say so in their chats.
+dates, a small module of their own) puts the hat on that villager.
 
 ### Wedding countdown
 

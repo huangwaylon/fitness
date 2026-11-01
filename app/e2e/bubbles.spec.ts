@@ -73,14 +73,6 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
       await balloon(page);
       await expectBy(page, '.museum .art', 56);
     });
-    test('my villager, right over its head', async ({ page }) => {
-      await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-      await expect(page.locator('[data-actor="mine"] .vil')).toBeVisible();
-      await tapAt(page, '[data-actor="mine"] .vil');
-      await balloon(page);
-      await page.waitForTimeout(700); // its hop (R9) over: the balloon stays put through it
-      await expectBy(page, '[data-actor="mine"] .vil', 24); // the tail at the head, the ♪ behind the balloon
-    });
   });
 }
 
