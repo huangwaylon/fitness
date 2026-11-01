@@ -6,6 +6,8 @@
 import { claimOf, tokyoDay, type Drop, type How, type Intent, type Pt, type Target, type Who } from './live-protocol.ts';
 import { ISLAND_MAX } from '#lib/contract/island.ts';
 
+type Walk = Extract<Intent, { kind: 'walk' }>;
+
 /** One change to the day: an intent with who made it and when (the relay's clock; my own: my serverNow() at sending). */
 export type DayEvent = Extract<Intent, { kind: 'catch' | 'pick' | 'put' | 'shake' | 'world' | 'walk' | 'act' }> & { who: Who; t: number };
 
@@ -52,8 +54,8 @@ export interface WorldDay {
   wishes: Record<string, Partial<Record<Who, number>>>;
   /** The wishes folded (`who:t`), so a replay counts none twice. */
   wished: string[];
-  /** Each person's last walk: where their villager stands. */
-  walks: Partial<Record<Who, { to: Target; t: number }>>;
+  /** Each person's last walk: where their villager is going (or stands), the very walk when it came with it. */
+  walks: Partial<Record<Who, { to: Target; t: number } & Partial<Omit<Walk, 'kind' | 'to' | 'at'>>>>;
 }
 
 export const emptyDay = (day: number): WorldDay => ({ day, claims: {}, puts: {}, shakes: [], watered: {}, wishes: {}, wished: [], walks: {} });
@@ -127,7 +129,8 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
     case 'walk': {
       const was = d.walks[e.who];
       if (was && (was.t > e.t || (was.t === e.t && String(was.to) === String(e.to)))) return SAME;
-      d.walks[e.who] = { to: e.to, t: e.t };
+      const { kind: _k, who: _w, at: _a, ...w } = e;
+      d.walks[e.who] = w;
       return { fresh: true, beat: null };
     }
     default:

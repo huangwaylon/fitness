@@ -346,6 +346,19 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   people's) and the wishes for the mornings to come (`applyRow`; a claim known from a row becomes news when the
   relay's own arrives, so the partner's animation still plays). A shake carries `at`, the shaker's own time, its
   identity on both phones and in the row.
+- **Villagers** (`island/villagerSync.ts`, `motion/director.svelte.ts` `onOwnMove` / `setRemote`): each person's
+  phone moves their own villager and is the one that does. Every walk and put of mine (a tap-walk, a walk home, a
+  stop under a sheet or by a reaction, back home after 30 s away; a burst within one task is one message) goes as the
+  very walk: `walk {to, from, via, s, ms, f}`, `s` on the relay's clock. The partner's phone plays it from the same
+  start at the same time: on time it walks the way; late (a slow message, a phone opening mid-walk) it starts where
+  the walk is by now (`along`) and arrives when it does there; a gap ≤ 160u from where their villager stands here is
+  walked off within the walk's own time, a bigger one (or the scene hidden) is a jump; a walk already over is a
+  brisk catch-up within 120u (≤ 600 ms), else a put at its end, facing `f`. While the partner has the island open
+  (presence), their villager is the relay's to move here: this phone's own life (a follow, an outing, a walk home, a
+  meeting with the visitor, a put under a sheet) leaves it alone, and a reaction here doesn't stop its walk. On a
+  partner's arrival my villager's current walk goes again (they find it where mine is), and a walk under way is
+  said again every 5 s while they're here (a phone that missed its start finds it on its way). Idle motions and the
+  ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act).
 - **What's shared:** the critters: each where its seed puts it ([Ambient life](#ambient-life)), and its catch or
   escape by its id (`catch {what, id: <kind>:<slot>, at, how}`: `rod`, `net`, `dive`, `dig`, or `flee`, claimed at the
   tap so the relay's first wins; my cast as an `act` so my villager walks down with the rod on the other phone too), a

@@ -119,11 +119,49 @@ export function cancel(id: ActorId) {
     dropped?.();
   }
   const a = actors[id];
+  // my villager stopped mid-walk: it ends at this segment's end (the partner's phone stops it there too)
+  if (id === 'mine' && a.walking) {
+    const t = clock(), left = a.walkMs ? Math.max(0, a.t0 + a.walkMs - t) : 0;
+    ownMove?.({ id, from: livePos(id, t), pts: left ? [[a.x, a.y]] : [], ms: left, face: a.face });
+  }
+  const rw = remote[id] && a.walking ? remoteWalk[id] : undefined;
   a.motion = null;
   a.walking = false; // a segment under way slides on to its end and stops there
   a.pose = null;
   a.busyUntil = 0;
   walks[id].clear();
+  // a remote villager's walk is its phone's: a reaction here doesn't stop it (it goes on from where it is by now)
+  if (rw) {
+    const { at, rest, left } = along(rw.from, rw.pts, rw.ms, clock() - rw.t0);
+    if (left) walkTo(id, rest, { ms: left, from: at, face: rw.face, remote: true });
+  }
+}
+
+/** Where a walk along `pts` from `from` taking `ms` has its walker `t` ms after it set off: the point, the rest of the
+ *  way, and how long that takes (0: arrived). Segments share the time by length (as walkTo does). */
+export function along(from: Pt, pts: readonly Pt[], ms: number, t: number): { at: Pt; rest: Pt[]; left: number } {
+  const end = pts.length ? pts[pts.length - 1] : from;
+  if (!pts.length || ms <= 0 || t >= ms) return { at: end, rest: [], left: 0 };
+  const lens: number[] = [];
+  let prev = from;
+  for (const p of pts) {
+    lens.push(Math.hypot(p[0] - prev[0], p[1] - prev[1]));
+    prev = p;
+  }
+  const len = lens.reduce((s, l) => s + l, 0);
+  if (len < 1) return { at: end, rest: [], left: 0 };
+  const t0 = Math.max(0, t);
+  let d = (t0 / ms) * len;
+  prev = from;
+  for (let i = 0; i < pts.length; i++) {
+    if (d <= lens[i]) {
+      const k = lens[i] ? d / lens[i] : 1;
+      return { at: [prev[0] + (pts[i][0] - prev[0]) * k, prev[1] + (pts[i][1] - prev[1]) * k], rest: pts.slice(i), left: ms - t0 };
+    }
+    d -= lens[i];
+    prev = pts[i];
+  }
+  return { at: end, rest: [], left: 0 };
 }
 
 export function busy(id: ActorId): boolean {
@@ -286,12 +324,44 @@ export function routeHome(id: ActorId): Pt[] {
   return router?.(id) ?? [actors[id].home];
 }
 
-/** Put an actor at (x, y) at once (no walk): back home after a long absence, frozen under a sheet. */
-export function place(id: ActorId, x: number, y: number) {
+// The shared world's villagers (island/villagerSync.ts, docs/backend.md#shared-world "Villagers"): each person's phone
+// moves their own villager and tells the other phone every walk and put of it (`onOwnMove`); there, while that person
+// has the island open, their villager is the relay's to move (`setRemote`): this phone's own life (a follow, an
+// outing, a walk home, a put under a sheet) leaves it alone, and only `remote` walks and puts move it.
+/** A walk or a put of an actor (a put: `ms` 0, `pts` empty, `from` where). */
+export interface Move {
+  id: ActorId;
+  from: Pt;
+  pts: readonly Pt[];
+  ms: number;
+  face?: Facing;
+}
+let ownMove: ((m: Move) => void) | null = null;
+/** Every walk and put of my villager (the scene sends them over the relay). */
+export function onOwnMove(fn: typeof ownMove): () => void {
+  ownMove = fn;
+  return () => {
+    if (ownMove === fn) ownMove = null;
+  };
+}
+const remote: Partial<Record<ActorId, boolean>> = {};
+/** A remote actor's walk under way (to go on with after a cancel). */
+const remoteWalk: Partial<Record<ActorId, { from: Pt; pts: readonly Pt[]; ms: number; t0: number; face?: Facing }>> = {};
+/** `id` is moved from elsewhere (the partner's villager while they're here): only `remote` walks and puts move it. */
+export function setRemote(id: ActorId, on: boolean): void {
+  remote[id] = on;
+}
+export const isRemote = (id: ActorId): boolean => !!remote[id];
+
+/** Put an actor at (x, y) at once (no walk): back home after a long absence, frozen under a sheet. `fromRemote`: the
+ *  relay's put of a remote actor (setRemote); a local one of it does nothing. */
+export function place(id: ActorId, x: number, y: number, fromRemote = false) {
+  if (remote[id] && !fromRemote) return;
   const a = actors[id];
   for (const c of walks[id]) c();
   walks[id].clear();
   Object.assign(a, { x, y, from: [x, y], t0: 0, walkMs: 0, walking: false });
+  if (id === 'mine') ownMove?.({ id, from: [x, y], pts: [], ms: 0, face: a.face });
 }
 
 const clock = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -330,6 +400,8 @@ interface WalkOpts {
   then?: () => void;
   /** Face this way on arrival. */
   face?: Facing;
+  /** The relay's walk of a remote actor (setRemote): a local one of it does nothing. */
+  remote?: boolean;
 }
 
 /** A segment started (the scene keeps its one rAF running while anyone is on the way). */
@@ -345,6 +417,7 @@ export function onMove(fn: typeof moved): () => void {
  *  frame: livePos), facing the way it goes, the walk bounce, a dust puff and a footstep every other step. A new walk
  *  replaces the last; returns the total ms. */
 export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): number {
+  if (remote[id] && !o.remote) return 0;
   const a = actors[id];
   for (const c of walks[id]) c();
   walks[id].clear();
@@ -362,6 +435,8 @@ export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): numbe
     return 0;
   }
   const total = o.ms ?? (len / (o.speed ?? 90)) * 1000;
+  if (id === 'mine') ownMove?.({ id, from, pts, ms: total, face: o.face });
+  if (o.remote) remoteWalk[id] = { from, pts, ms: total, t0: clock(), face: o.face };
   const own = (ms: number, fn: () => void) => {
     const c = later(id, ms, () => {
       walks[id].delete(c);

@@ -8,7 +8,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-type W = { go(z: number): void; at(x: number, z: number): [number, number] };
+type W = { go(z: number): void; at(x: number, z: number): [number, number]; mine(): [number, number]; partner(): [number, number] };
 const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), z);
 const DATE = '2026-11-04T12:00';
 
@@ -100,6 +100,46 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
     expect(l.treeB).toBeGreaterThan(195);
   }
   for (const k of Object.keys(la)) expect(Math.abs(la[k] - lb[k]), k).toBeLessThanOrEqual(4);
+  await ctx.close();
+});
+
+/** Where a person's villager stands on a tab now (its own, or the partner's), world units. */
+const feet = (page: Page, own: boolean) =>
+  page.evaluate((own) => {
+    const w = (window as unknown as { __world: W }).__world;
+    return own ? w.mine() : w.partner();
+  }, own);
+
+test('two players: a tap-walk on one tab plays on the other from the same start at the same time, and ends at the same point', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  for (const p of [a, b]) await go(p, 300);
+  await a.waitForTimeout(400);
+  for (const [tapper, watcher, tx, tz] of [[a, b, 240, 500], [b, a, 160, 640]] as const) {
+    const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
+    await tapper.mouse.click(x, y);
+    // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart)
+    let worst = 0;
+    for (let i = 0; i < 8; i++) {
+      await tapper.waitForTimeout(150);
+      const [p, q] = await Promise.all([feet(tapper, true), feet(watcher, false)]);
+      worst = Math.max(worst, Math.hypot(p[0] - q[0], p[1] - q[1]));
+    }
+    console.log(`drift under way (worst of 8 samples): ${worst.toFixed(1)}u`);
+    expect(worst).toBeLessThan(40);
+    await tapper.waitForTimeout(2500);
+    const [p, q] = await Promise.all([feet(tapper, true), feet(watcher, false)]);
+    expect(Math.hypot(p[0] - q[0], p[1] - q[1])).toBeLessThan(1.5);
+    expect(Math.hypot(p[0] - tx, p[1] - tz)).toBeLessThan(4);
+  }
+  // a tab opening later (B's phone again) has A's villager where A's tab has it
+  const c = await ctx.newPage();
+  await open(c, '&as=B');
+  const [pa, pc] = await Promise.all([feet(a, true), feet(c, false)]);
+  expect(Math.hypot(pa[0] - pc[0], pa[1] - pc[1])).toBeLessThan(1.5);
   await ctx.close();
 });
 
