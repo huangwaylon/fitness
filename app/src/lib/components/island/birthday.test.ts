@@ -47,7 +47,7 @@ describe('our birthdays (config)', () => {
   it('NH’s birthday hats (pink for mine, blue for the partner’s) and the lines in both languages', () => {
     expect(HATS).toEqual({ mine: 'deco/birthday-hat-pink', partner: 'deco/birthday-hat-blue' });
     expect((ja as Record<string, string>)['host.birthday'].replace('{name}', 'うめ')).toBe('うめさん、おたんじょうび おめでとう！');
-    for (const cat of [ja, en] as Record<string, string>[]) expect(cat['host.birthday']).toContain('{name}'), expect(cat['chat.birthday']).toBeTruthy();
+    for (const cat of [ja, en] as Record<string, string>[]) expect(cat['host.birthday']).toContain('{name}');
   });
 });
 

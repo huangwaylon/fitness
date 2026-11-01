@@ -40,7 +40,6 @@
   import { eventAt, forcedEvent } from './events.ts';
   import { TRICK_MS } from './visitors.ts';
   import { STUNG_SWEAT_MS } from './treeShake.ts';
-  import { chatLine, moodOf, pagesOf } from './chat.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
@@ -162,39 +161,18 @@
   // `live` is fixed per scene (the gallery's thumbnails are never live).
   // svelte-ignore state_referenced_locally
   const life = new IslandLife({ view: () => view, live, covered: () => covered, night: () => tod === 'night', day: () => tod === 'day' });
-  // Villager chats (design.md "Villager chats"): a tap on mine hops (R9) and says a line in its NH personality; a tap on
-  // the partner keeps opening their card. The roster (personalities) loads on the first chat, out of the first load.
+  // A tap on mine hops (R9) and says nothing (it was too easy to tap by accident); now and then a flea hops off it.
+  // The speech balloon (Talk) is for the island's other speakers: the doors, the visitors, Blathers, Wilbur.
   let talk = $state<ReturnType<typeof Talk>>();
   /** The scenery taps (a tap on my villager may send a flea hopping off it). */
   let sceneTaps = $state<ReturnType<typeof SceneTaps>>();
-  let lastLine: string | undefined;
-  async function chat(btn: HTMLElement, asleep: boolean) {
-    const v = view, p = v.people[v.me];
-    const { ROSTER } = await import('#lib/villagers/roster.ts');
-    const entry = ROSTER[resolveLook({ villager: p.villager, person: v.me }).id];
-    const mood = moodOf(entry);
-    const met = RING_FRUITS.filter((f) => p.rings[f].met).length;
-    const event = nhEvent?.night ? nhEvent.id : undefined;
-    // my villager's own NH birthday (villagers/birthdays.ts): it says so the first time, then now and then
-    const mineBday = !asleep && isBirthday(villagerBdays?.[resolveLook({ villager: p.villager, person: v.me }).id], today);
-    const line = mineBday && (lastLine !== 'chat.birthday' && (!toldBday || Math.random() < 1 / 3))
-      ? { key: 'chat.birthday' }
-      : chatLine(mood, { hour: jst(now()).hour, met, asleep, event }, Math.random, lastLine);
-    if (line.key === 'chat.birthday') toldBday = true;
-    lastLine = line.key;
-    // right over the villager's head, like any speaker's (the tap's ♪ floats up behind it)
-    if (actors.mine.walking) return; // it only speaks standing still
-    const pages = pagesOf(line).map((k) => t(k, line.params));
-    talk?.say(p.villagerName, pages, btn, { colour: entry?.colour });
-  }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
   const today = $derived(dayKey(clock));
   // Birthdays (birthday.ts): ours from the people config (both villagers wear NH's birthday hat, the cake, the
   // confetti, a popper on a goal), and an NH villager's own from the roster's birthdays (a small chunk of its own,
-  // loaded with the island, never with the first load or the roster): that villager wears the hat and says so.
+  // loaded with the island, never with the first load or the roster): that villager wears the hat.
   const bday = $derived(birthdaysOn(today));
   let villagerBdays = $state<Record<string, string> | null>(null);
-  let toldBday = false;
   $effect(() => {
     if (live) void import('#lib/villagers/birthdays.ts').then((m) => (villagerBdays = m.BIRTHDAYS));
   });
@@ -582,7 +560,6 @@
                 ? t('island.me', { name: sd.person.villagerName, bells: formatBells(sd.person.today.bells) })
                 : t('island.highfive', { name: sd.person.villagerName })}
               onclick={(e) => {
-                if (id === 'mine') void chat(e.currentTarget, actors.mine.asleep);
                 if (id === 'mine') sceneTaps?.villagerTap(e.currentTarget);
                 life.tapVillager(id, id === 'mine' ? undefined : onpartner);
               }}>

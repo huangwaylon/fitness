@@ -61,7 +61,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(page.locator('.fxa.confetti')).toHaveCount(0); // once a day
   });
 
-test('ウェイ’s birthday too; none the day after; an NH villager’s own birthday: its hat and its line', async ({ page }) => {
+test('ウェイ’s birthday too; none the day after; an NH villager’s own birthday: its hat', async ({ page }) => {
   await page.goto('?demo&date=2026-10-06T12:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
@@ -77,6 +77,4 @@ test('ウェイ’s birthday too; none the day after; an NH villager’s own bir
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('.vil [data-hat]')).toHaveCount(1);
   await expect(page.locator('[data-cake]')).toHaveCount(0);
-  await page.locator('.vil').first().click();
-  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('たんじょうび', { timeout: 4000 });
 });
