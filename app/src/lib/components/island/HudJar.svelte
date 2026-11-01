@@ -56,7 +56,7 @@
    *  like FruitTree's), on screen in stage units; off screen (the camera elsewhere) the coins rise from the screen's
    *  foot under it. */
   const fruitAt = (p: PersonId, i: number): [number, number] => {
-    const [tx, tz] = GOAL_TREES[p === view.me ? 'A' : 'B'];
+    const [tx, tz] = GOAL_TREES[p];
     const x = tx + (tx < 195 ? -FRUIT_LEAN : FRUIT_LEAN) + FRUIT_SPOTS[i][0], z = tz + FRUIT_SPOTS[i][1];
     const w = live(), k = stage ? 390 / stage.width : 1;
     if (!w) return [x, 600];

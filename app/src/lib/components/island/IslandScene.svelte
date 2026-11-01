@@ -56,7 +56,7 @@
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
   import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
   import { HYBRIDS, hybridFor } from './care.ts';
-  import { garden } from './sceneDay.ts';
+  import { absoluteGarden, garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -105,12 +105,17 @@
     return { date, arch: archOn(date, weekday), day: weddingDay(date), fireworks: weddingDay(date) && hour >= FIREWORKS_FROM };
   });
 
-  // I stand on the left (layout slot A), my partner on the right (slot B), whichever person I am.
-  const slot = (pid: PersonId): 'A' | 'B' => (pid === view.me ? 'A' : 'B');
+  // The same island on both phones (docs/design.md "Shared world"): A (ウェイ) lives on the left, B (うめ) on the right,
+  // whichever of us holds the phone: homes, goal trees, flower beds, every shared id by person.
+  const sideOf = (pid: PersonId): 'left' | 'right' => (pid === 'A' ? 'left' : 'right');
   const sides = $derived<Record<'mine' | 'partner', { person: PersonWeekView; home: readonly [number, number]; side: 'left' | 'right' }>>({
-    mine: { person: view.people[view.me], home: HOMES.A, side: 'left' },
-    partner: { person: view.people[view.partner], home: HOMES.B, side: 'right' }
+    mine: { person: view.people[view.me], home: HOMES[view.me], side: sideOf(view.me) },
+    partner: { person: view.people[view.partner], home: HOMES[view.partner], side: sideOf(view.partner) }
   });
+
+  // a garden this phone kept before the worlds were made identical: its cells turned to the island's own, once
+  // svelte-ignore state_referenced_locally
+  if (live) absoluteGarden(view.me);
 
   const covered = $derived(paused || ui.overlay);
 
@@ -198,7 +203,7 @@
     if (hookFlag('hybrid')) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
     const mine = garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
     // both people's waterings yesterday (the shared day's: whose bed and the cell), so both phones grow the same one, in
-    // the same person's bed (each phone has its own bed on the left)
+    // the same person's bed (A's on the left)
     const both = shared.wateredYesterday().flatMap((id) => {
       const m = /^([AB])\.(\d)-([01])$/.exec(id);
       return m ? [`${m[2]}-${m[1]}${m[3]}`] : [];
@@ -207,7 +212,7 @@
     const h = hybridFor(today, both, row);
     if (!h) return null;
     const [r, pc] = h.cell.split('-');
-    return { cell: `${r}-${+pc[1] + (pc[0] === view.me ? 0 : 2)}`, flower: h.flower };
+    return { cell: `${r}-${+pc[1] + (pc[0] === 'A' ? 0 : 2)}`, flower: h.flower };
   });
   // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop.
   let shakes = $state<ReturnType<typeof TreeShakes>>();
@@ -448,10 +453,10 @@
   });
   // A shaken tree: my villager walks up to its trunk and shakes it (avatar.ts), then what falls falls (TreeShakes:
   // every tree on the island, its drop by its kind; the goal trees' canopies count their own taps, FruitTree).
-  /** A tree by id where it stands on this phone (a goal tree by its person's slot). */
-  const treeOf = (id: string): ShakeTree | null => treeById(id, (p) => slot(p));
+  /** A tree by id (the same on both phones). */
+  const treeOf = (id: string): ShakeTree | null => treeById(id);
   function shakeTree(pid: PersonId) {
-    shakeAt(goalTree(pid, slot(pid)));
+    shakeAt(goalTree(pid));
   }
   function shakeAt(tr: ShakeTree) {
     const { ms } = approach(tr.x, tr.z, { motion: 'shake' });
@@ -619,17 +624,17 @@
         <Scenery {season} {foliage} {month} {live} {tod} onbuilding={building} />
 
         {#each ['A', 'B'] as const as pid (pid)}
-          {@const t = GOAL_TREES[slot(pid)]}
+          {@const t = GOAL_TREES[pid]}
           <FruitTree person={view.people[pid]} x={t[0]} z={t[1]} {foliage} shakeN={life.shakeN[pid]}
             celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
             onshake={() => shakeTree(pid)} />
         {/each}
 
-        <FlowerBeds {season} {hybrid} people={[view.people[view.me], view.people[view.partner]]} />
+        <FlowerBeds {season} {hybrid} people={[view.people.A, view.people.B]} />
 
         {#each ['mine', 'partner'] as const as id (id)}
           {@const sd = sides[id]}
-          <div class="actor" class:walking={live && actors[id].walking} data-actor={id} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
+          <div class="actor" class:walking={live && actors[id].walking} data-actor={id} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : '0s'}
             {@attach world.at(live ? { x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true } : { x: sd.home[0], z: sd.home[1], h: VILLAGER.h })}>
             <button type="button" class="vil" disabled={!live} data-sfx="self"
               aria-label={id === 'mine'

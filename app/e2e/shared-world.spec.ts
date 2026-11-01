@@ -67,6 +67,42 @@ test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line
   await expect(nuts).toHaveCount(1);
 });
 
+test('two players see the same island, not mirrored: A (ウェイ) on the left, B (うめ) on the right on both tabs', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  /** Where each person's villager, goal tree and bed stand on a tab (screen x of their middles, the same camera). */
+  const layout = (p: Page) => p.evaluate(() => {
+    const mid = (sel: string) => {
+      const r = document.querySelector(sel)!.getBoundingClientRect();
+      return Math.round(r.left + r.width / 2);
+    };
+    const out: Record<string, number> = {};
+    for (const who of ['A', 'B']) {
+      out[`villager${who}`] = mid(`[data-person="${who}"] .vil`);
+      out[`tree${who}`] = mid(`[data-tree-node="${who}"]`);
+    }
+    out.bedLeft = mid('[data-flower="0-0"]');
+    out.bedRight = mid('[data-flower="0-3"]');
+    return out;
+  });
+  for (const p of [a, b]) await go(p, 0);
+  await a.waitForTimeout(500);
+  const [la, lb] = [await layout(a), await layout(b)];
+  // my own villager is A's on tab A and B's on tab B, yet both stand where their person lives
+  await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-person', 'A');
+  await expect(b.locator('[data-actor="mine"]')).toHaveAttribute('data-person', 'B');
+  for (const l of [la, lb]) {
+    expect(l.villagerA).toBeLessThan(l.villagerB);
+    expect(l.treeA).toBeLessThan(195);
+    expect(l.treeB).toBeGreaterThan(195);
+  }
+  for (const k of Object.keys(la)) expect(Math.abs(la[k] - lb[k]), k).toBeLessThanOrEqual(4);
+  await ctx.close();
+});
+
 test('two players: a shake on one tab plays on the other (their villager walks over), and a pick-up there is gone here', async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -137,12 +173,12 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   await expect(shells(b)).toHaveCount(2, { timeout: 4000 });
   // the partner's villager went for it: their line on B (in view at まえ)
   await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('を ひろった！', { timeout: 5000 });
-  // A waters a flower of A's own bed (left on A's tab): it glitters on B's tab too, in A's bed (right on B's)
+  // A waters a flower of A's own bed (on the left, on both tabs): it glitters on B's tab too, the same flower
   await a.locator('[data-flower="1-0"]').click();
   await expect(a.locator('[data-flower="1-0"] [data-watered], [data-watered]').first()).toBeAttached({ timeout: 4000 });
   await expect(b.locator('[data-watered]')).toHaveCount(1, { timeout: 5000 });
   const wb = await b.locator('[data-watered]').evaluate((el) => el.closest('[data-flower]')?.getAttribute('data-flower') ?? el.parentElement?.closest('[data-flower]')?.getAttribute('data-flower'));
-  if (wb) expect(wb).toBe('1-2');
+  if (wb) expect(wb).toBe('1-0');
   // B's phone again, later: the day as it is
   const c = await ctx.newPage();
   await c.goto(`?demo&date=${DATE}&critter=none&as=B`);

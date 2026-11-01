@@ -105,7 +105,7 @@ export const CAMPSITE = BUILDINGS[0];
 
 // ---- まえ: the health lawn ------------------------------------------------------------------------------------------
 
-/** The villagers' home spots: A (mine, left) and B (the partner's, right). */
+/** The villagers' home spots: A (ウェイ) on the left and B (うめ) on the right, on both phones. */
 export const HOMES = { A: [132, 214] as Pt, B: [262, 214] as Pt } as const;
 /** Goal flower beds (2 × 2, 40u pitch) beside each villager: A at x 40/80, B at 312/352; rows z 196 (back) / 236. */
 export const BED_XS = { A: [40, 80], B: [312, 352] } as const;

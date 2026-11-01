@@ -285,7 +285,7 @@
     const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
     water(dayKey(), `${row}-${col}`);
     // the partner's phone: the flower glitters there too (whose bed it is, theirs or mine), my villager waters it
-    const cell = sharedCell(`${row}-${col}`, shared.me ?? 'A');
+    const cell = sharedCell(`${row}-${col}`);
     if (cell) shared.share({ kind: 'world', op: 'watered', id: cell });
     // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
     const { ms, walked } = approach(fx0, fz, { tool: 'can', toolMs: 900, reach: LONG_REACH });
@@ -449,7 +449,7 @@
           sceneSfx('bush');
         });
       } else if (e.kind === 'world' && e.op === 'watered') {
-        const cell = localCell(e.id, shared.me ?? 'A')?.split('-').map(Number);
+        const cell = localCell(e.id)?.split('-').map(Number);
         if (!cell) return;
         const [row, col] = cell, fx0 = [...BED_XS.A, ...BED_XS.B][col], fz = BED_ZS[row];
         if (fx0 === undefined || fz === undefined) return;

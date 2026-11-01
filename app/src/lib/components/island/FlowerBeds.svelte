@@ -2,8 +2,8 @@
   // Flower beds (docs/design.md "World", "Trees"): two tidy 2 × 2 beds beside the villagers' homes (world.ts BED_XS,
   // BED_ZS), one flower per tile, each a world node, the back row one species and the front row another; FLOWER_U tall
   // (≈ 0.4 × a villager). Contact shadows are baked into the ground. Winter: roses and pansies, each with a little snow cap.
-  // Each bed is the goal flowers of the person whose villager stands beside it (mine on the left, the partner's on the
-  // right), one per goal in reading order (BED_FRUIT): a closed bud on its leaves and stem until that goal is met today, then it
+  // Each bed is the goal flowers of the person whose villager stands beside it (A's on the left, B's on the right, on
+  // both phones), one per goal in reading order (BED_FRUIT): a closed bud on its leaves and stem until that goal is met today, then it
   // blooms (the bud squashes, the flower pops open with a bounce, petal bits and a glint, a soft pop) once per phone
   // (fruit-day's `bloomed`), so a reload finds it open; buds again at the next Tokyo day.
   // A tap wiggles a flower (SceneTaps.svelte finds it by data-flower="row-col").
@@ -26,7 +26,7 @@
 
   interface Props {
     season: Season;
-    /** The people beside the left bed and the right bed (me, then the partner). */
+    /** The people beside the left bed and the right bed (A, then B). */
     people: [PersonWeekView, PersonWeekView];
     /** A hybrid colour in one cell today (`row-col`; the day after a watering, IslandScene). */
     hybrid?: { cell: string; flower: string } | null;
@@ -52,11 +52,10 @@
     });
   });
   /** The cells watered today (NH: a watered flower keeps a glitter for the rest of the day), by either of us (the shared
-   *  day's: each person's bed is on the left of their own phone). */
+   *  day's). */
   let mineWatered = $state<string[]>([]);
   const watered = $derived.by(() => {
-    const me = people[0].person;
-    const theirs = date === dayKey() ? Object.keys(shared.day.watered).map((id) => localCell(id, me)).filter((c): c is string => !!c) : [];
+    const theirs = date === dayKey() ? Object.keys(shared.day.watered).map((id) => localCell(id)).filter((c): c is string => !!c) : [];
     return [...new Set([...mineWatered, ...theirs])];
   });
   $effect(() => {

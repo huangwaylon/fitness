@@ -296,7 +296,7 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u along the east
   reach and the crossing, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
 - **Layout** (`world.ts`): まえ: the airport at (362, −8) with its dock, palms on the sand, plumeria at the grass edge,
-  the villagers' homes A (132, 214) and B (262, 214), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
+  the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
   332), the tape deck between them, the rock, the dig spots, the hedge along the river at z 596. The river rises at the
   spring on the upper tier, falls through the cliff (x 351…393), meanders gently down the east side (its width
   breathing, 28–36u) and west across the island at
@@ -453,6 +453,11 @@ JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px w
 `e2e/shared-world.spec.ts` ([backend](backend.md#shared-world)). Both phones show the same island: what's caught or
 picked up is gone on both, what a shake drops lies on both, each villager stands where its person sent it.
 
+- **One layout, not mirrored:** A (ウェイ) lives on the left and B (うめ) on the right on both phones, whichever of us
+  holds it: the homes, the goal trees, the flower beds (cells `row-col`, columns 0–1 A's), the meeting spots and every
+  shared id are by person, never by "mine / the partner's" (`?demo` and `?demo&as=B` show the same island; a garden kept
+  from before is turned round once, `sceneDay.ts absoluteGarden`).
+
 - **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager runs over (at
   most 3 s on the way) and does it with its tool (the net, the rod, the shovel, a shake, a pick-up); a catch or a find
   is held up over their head with a small plate (「うめが スズキを つかまえた！」, `world.partner.*`) when it's in view,
@@ -543,7 +548,7 @@ the line. The first of each shell, fossil and fragment is a ずかん `find`, wr
   (`scene-weed`), gone on both phones (our villager pulls it on the other).
 - **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today, by
   either of us, glitters for the day on both phones (`wateredOn` and the shared day's `watered`, by whose bed: `A.0-1`;
-  each phone has its own bed on the left). The beds watered yesterday, both people's, have a 1 in 4 chance of a hybrid
+  A's bed on the left, B's on the right, on both phones). The beds watered yesterday, both people's, have a 1 in 4 chance of a hybrid
   colour in one watered cell today, the same one on both phones (NH's hybrids, simplified; `scene-garden`).
 - **The rock** (on the health lawn behind the left tree): a tap clonks it with the shovel (on both phones); 1 in 4 a
   sparkle, 1 in 8 a pill bug or a centipede crawls out (on both: a `put`).

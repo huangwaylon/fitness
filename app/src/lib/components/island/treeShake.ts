@@ -50,14 +50,14 @@ export const SCENERY_TREES: readonly ShakeTree[] = SCENERY.filter((s) => s.kind 
   id: s.id, kind: s.kind as TreeKind, x: s.x, z: s.z, h: s.h, out: side(s.x)
 }));
 
-/** A person's goal tree where it stands on this phone (my tree on the left, slot A; the partner's on the right). */
-export const goalTree = (person: 'A' | 'B', slot: 'A' | 'B'): ShakeTree =>
-  ({ id: `goal-${person}`, kind: 'goal', x: GOAL_TREES[slot][0], z: GOAL_TREES[slot][1], h: TREE_H, out: slot === 'A' ? -1 : 1 });
+/** A person's goal tree (A's on the left, B's on the right, on both phones). */
+export const goalTree = (person: 'A' | 'B'): ShakeTree =>
+  ({ id: `goal-${person}`, kind: 'goal', x: GOAL_TREES[person][0], z: GOAL_TREES[person][1], h: TREE_H, out: person === 'A' ? -1 : 1 });
 
-/** A tree by id on this phone (`slotOf`: where a person's goal tree stands here), or null. */
-export function treeById(id: string, slotOf: (p: 'A' | 'B') => 'A' | 'B'): ShakeTree | null {
+/** A tree by id (the same on both phones), or null. */
+export function treeById(id: string): ShakeTree | null {
   const g = /^goal-([AB])$/.exec(id);
-  if (g) return goalTree(g[1] as 'A' | 'B', slotOf(g[1] as 'A' | 'B'));
+  if (g) return goalTree(g[1] as 'A' | 'B');
   return SCENERY_TREES.find((t) => t.id === id) ?? null;
 }
 
