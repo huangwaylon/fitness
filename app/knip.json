@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignore": ["apps-script/Code.js"],
-  "ignoreDependencies": ["@fontsource/zen-maru-gothic"],
+  "ignore": ["apps-script/Code.js", "scripts/models-page.js"],
+  "ignoreDependencies": ["@fontsource/zen-maru-gothic", "three"],
   "ignoreBinaries": ["cwebp", "dwebp"]
 }
