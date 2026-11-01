@@ -106,8 +106,8 @@ test('the camera follows a run up the island (snapping off), gives it back after
   await shot(page, 'followed');
   await expect.poll(() => call(page, (w) => w.snapping())).toBe('');
 
-  // a touch on the scroller ends a follow at once
-  const [x2, y2] = await call(page, (w) => w.at(195, 1060 - 60));
+  // a touch on the scroller ends a follow at once (a far tap up the island from where the camera now rests)
+  const [x2, y2] = await call(page, (w) => w.at(195, w.cam() + 700));
   await page.mouse.click(x2, y2);
   await expect.poll(() => call(page, (w) => w.following())).toBe(true);
   await page.locator('[data-world-scroller]').dispatchEvent('touchstart');
