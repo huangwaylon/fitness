@@ -64,15 +64,6 @@ becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health
 read access to Steps, Exercise Minutes, Active Energy, Stand Time and Body Mass when asked. Without an Apple Watch, leave
 out step 4 and `steps_watch`.
 
-**Adding the Watch's steps to an existing Shortcut** (each phone, with its own devices) [U: menu names]:
-1. Open しまの同期 → the **Find Health Samples: Steps** action → **Add Filter** → **Source** → **is** → pick this
-   iPhone by name. Keep Start Date in the last 1 month, Group by Day and Fill Missing as they are.
-2. Long-press that action → **Duplicate**. In the copy change Source to this Apple Watch (by name), and drag it below
-   the first Steps' two **Get Details** actions (they keep reading the iPhone's samples). Under the copy add **Get
-   Details of Health Sample** → **Value**, its input the copy's Health Samples; rename that variable `StepWatchValues`.
-3. **Get Contents of URL** → **Add new field** → **Text**: key `steps_watch`, value `StepWatchValues`.
-4. Tap ▶: the reply has no `warnings`, and きょう's steps match Health's.
-
 **Test:** tap ▶. Expect `{"ok":true,…}` with no `warnings`.
 
 ## 3. The automation
