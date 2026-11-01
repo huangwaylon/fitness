@@ -240,7 +240,7 @@ describe('ingest', () => {
   });
 
   it('the body metrics: generic metric rows, latest wins like weight, and the snapshot carries them', () => {
-    const bb = (fat: string) => ({ dates: 'Oct 27, 2026 at 7:00 AM', body_fat: fat, bmi: '22.8', lean_mass: '52.1' });
+    const bb = (fat: string) => ({ dates: 'Oct 27, 2026 at 7:00 AM', body_fat_percentage: fat, body_mass_index: '22.8', lean_body_mass: '52.1' });
     expect(a('ingest', bb('0.223'))).toEqual({ ok: true, metrics: 3 });
     tick();
     expect(a('ingest', bb('22.3'))).toEqual({ ok: true, metrics: 0 }); // the same 22.3 %, as a percent this time

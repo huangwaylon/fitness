@@ -21,9 +21,9 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`app/
   "calories": "249.26\n310.5\n…",
   "stand_minutes": "58\n142\n…",
   "weight": "0\n68.4\n…",
-  "body_fat": "0\n22.3\n…",
-  "bmi": "0\n22.8\n…",
-  "lean_mass": "0\n52.1\n…"
+  "body_fat_percentage": "0\n22.3\n…",
+  "body_mass_index": "0\n22.8\n…",
+  "lean_body_mass": "0\n52.1\n…"
 }
 ```
 
@@ -36,11 +36,11 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`app/
 | `calories` | That day's **Active Energy** in kcal (the Move ring, not total); rounded; max 10,000 | `move_kcal` |
 | `stand_minutes` | That day's **Stand Time** in minutes; max 1,440 | `stand_min` |
 | `weight` | That day's Body Mass in **kg**, `0` = no weigh-in; 20–300 kg | `weight` |
-| `body_fat` | That day's **Body Fat Percentage**, `0` = no sample; a fraction (`0.223`) or a percent (`22.3`, `22.3%`): a value ≤ 1 is read as a fraction; 2–70 % | `body_fat_pct` (%, one decimal) |
-| `bmi` | That day's **Body Mass Index**, `0` = no sample; 10–60 | `bmi` (one decimal) |
-| `lean_mass` | That day's **Lean Body Mass** in **kg**, `0` = no sample; 10–150 kg | `lean_kg` (one decimal) |
+| `body_fat_percentage` | That day's **Body Fat Percentage**, `0` = no sample; a fraction (`0.223`) or a percent (`22.3`, `22.3%`): a value ≤ 1 is read as a fraction; 2–70 % | `body_fat_pct` (%, one decimal) |
+| `body_mass_index` | That day's **Body Mass Index**, `0` = no sample; 10–60 | `bmi` (one decimal) |
+| `lean_body_mass` | That day's **Lean Body Mass** in **kg**, `0` = no sample; 10–150 kg | `lean_kg` (one decimal) |
 
-- Lists are optional (at least one); other fields are ignored. A Shortcut without `body_fat`, `bmi` and `lean_mass`
+- Lists are optional (at least one); other fields are ignored. A Shortcut without `body_fat_percentage`, `body_mass_index` and `lean_body_mass`
   (set up before they existed) keeps working; add them (§2 steps 8a–8c) to see them in けんこう. A list whose line count differs from `dates` is
   dropped with a warning; an unreadable or over-max line is skipped.
 - Why two step lists: Find Health Samples adds up every source's samples, so the iPhone's and the Watch's steps of the
@@ -68,7 +68,7 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 8a | **Find Health Samples** | **Body Fat Percentage** (体脂肪率), same as step 8 → **Value** → `BodyFatValues` (no sample = 0) |
 | 8b | **Find Health Samples** | **Body Mass Index** (ボディマス指数), same as step 8 → **Value** → `BMIValues` |
 | 8c | **Find Health Samples** | **Lean Body Mass** (除脂肪体重), same as step 8 → **Value** → `LeanValues` |
-| 9 | **Get Contents of URL** | the `/exec` URL, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat` = BodyFatValues, `bmi` = BMIValues, `lean_mass` = LeanValues |
+| 9 | **Get Contents of URL** | the `/exec` URL, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat_percentage` = BodyFatValues, `body_mass_index` = BMIValues, `lean_body_mass` = LeanValues |
 
 Every list must use the same range (the last 1 month), **Group by Day** and **Fill Missing** (a day without samples
 becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health's units in **kg** and **kcal** (Lean Body Mass follows the weight unit). Allow
@@ -90,7 +90,7 @@ On each iPhone, open **しまの同期** and:
 3. Repeat 1–2 with **Body Mass Index** (ボディマス指数) → **BMIValues**, and with **Lean Body Mass** (除脂肪体重) →
    **LeanValues**.
 4. In **Get Contents of URL** (step 9), under Request Body, tap **Add new field** → **Text** three times: key
-   `body_fat`, value **BodyFatValues**; key `bmi`, value **BMIValues**; key `lean_mass`, value **LeanValues**. Each
+   `body_fat_percentage`, value **BodyFatValues**; key `body_mass_index`, value **BMIValues**; key `lean_body_mass`, value **LeanValues**. Each
    must be **Text** (not Number or Array), like `weight`.
 5. Tap ▶. When asked, allow Shortcuts to read Body Fat Percentage, Body Mass Index and Lean Body Mass. Expect
    `{"ok":true,…}` with no `warnings`. A day without a measurement is `0` and simply has no point in けんこう.
@@ -121,8 +121,8 @@ trend.
 | `unauthorized` | Wrong or rotated key in step 1 |
 | HTML instead of JSON | Script authorization lapsed: [google-setup §9](google-setup.md#9-day-8-authorization-check) |
 | `bad_request`, `…: expected Text` | That field is Number/Array in step 9: make it **Text** |
-| `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat`, `bmi`, `lean_mass`) |
-| `warnings: ["body_fat: 0.5 on … is outside 2–70…"]` | Body fat came through in an unexpected form: send the `uploads` row's first line to the developer |
+| `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat_percentage`, `body_mass_index`, `lean_body_mass`) |
+| `warnings: ["body_fat_percentage: 0.5 on … is outside 2–70…"]` | Body fat came through in an unexpected form: send the `uploads` row's first line to the developer |
 | Lean body mass ~2.2× too high, or skipped | Health's weight unit is pounds: set kg |
 | `skipped` in the reply | A date or number didn't parse, or was over its max; the `uploads` row shows each field's first line |
 | Weight ~2.2× too high | Health's weight unit is pounds: set kg |

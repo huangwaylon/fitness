@@ -117,14 +117,14 @@ cache (never the unsent queue) and fetch everything. Locked weeks' earnings are 
 
 `gas/parse.ts`: newline-joined Text lists, one line per day, each optional: `dates` (Shortcuts' date text, English or
 Japanese; only the day is used), `steps` (the iPhone's), `steps_watch` (the Apple Watch's), `exercise_minutes` (→ `exercise_min`), `calories` (→ `move_kcal`),
-`stand_minutes` (→ `stand_min`), `weight` (kg; 0 = none), `body_fat` (→ `body_fat_pct`, %; 0 = none), `bmi` (→ `bmi`;
-0 = none), `lean_mass` (→ `lean_kg`, kg; 0 = none). Other fields are ignored. A list whose length differs from
+`stand_minutes` (→ `stand_min`), `weight` (kg; 0 = none), `body_fat_percentage` (→ `body_fat_pct`, %; 0 = none), `body_mass_index` (→ `bmi`;
+0 = none), `lean_body_mass` (→ `lean_kg`, kg; 0 = none). Other fields are ignored. A list whose length differs from
 `dates` is dropped with a warning; an unreadable line, an activity value above `METRIC_BOUNDS`, a weight
 outside 20–300 kg or a body value outside `BODY_BOUNDS` (body fat 2–70 %, BMI 10–60, lean 10–150 kg) is skipped (out of
 bounds: with a warning). A body with none of the fields is `bad_request` (audited as `error`); a Shortcut that doesn't
 send the body lists yet is ingested as before.
 
-**Body metrics** (`body_fat`, `bmi`, `lean_mass`): aligned to `dates` like `weight`, stored with one decimal, latest
+**Body metrics** (`body_fat_percentage`, `body_mass_index`, `lean_body_mass`): aligned to `dates` like `weight`, stored with one decimal, latest
 wins, never earn. Body fat may come as Shortcuts writes Health's percentage: a fraction (`0.223`) or a percent (`22.3`,
 `22.3%`); a plausible body fat is ≥ 2 %, so a value ≤ 1 (without a `%`) is a fraction and is ×100. Lean body mass is in
 kg like weight (no unit conversion: Health's mass unit must be kg).
