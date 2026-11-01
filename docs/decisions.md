@@ -293,3 +293,11 @@ call (keep the tab, add the doors); the back of the island gets a reason to visi
 Wilbur stands on the dock while the partner's app is open (the relay's presence over the phone's one socket); the
 partner's villager replays my tap-to-walks. Why: NH-faithful, and no new UI.
 
+
+### Snowy roofs and lit windows are derived from the official renders
+NH has no winter or night renders of the buildings (Nookipedia's map icons come in one look) nor of the cedar, so
+`scripts/derive-art.ts` derives them from the official art: snow laid on the regions it finds by colour, the windows'
+glass lit warm. Overlaid SVG shapes (the museum's old roof snow) never matched a roofline; the derived art lays over
+its render pixel for pixel. The ground's petals, leaves and snow are ours like all terrain, in their own looks (the
+blossom days and the fall foliage get their own chunk sets), so only the day's look loads. Why: official art wherever
+it exists, and the user asked for a polished, detailed look over plain shapes.
