@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, LIVE_V, LIVE_VS, NEST_GAP_MS, claimOf, isStored, otherVersion, parseClient, tokyoDay, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, isStored, otherVersion, parseClient, tokyoDay, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -25,8 +25,11 @@ export interface RoomIO<S extends Sock> {
   keys: Keys;
   now(): number;
   /** Persist the day's world (fire and forget). */
-  save(ring: Relayed[]): void;
+  save(ring: Kept[]): void;
 }
+
+/** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again). */
+export type Kept = Relayed & { c?: number };
 
 /** A socket must say hello within this long. */
 export const HELLO_MS = 10_000;
@@ -48,7 +51,7 @@ export class RoomCore<S extends Sock> {
   private nests = new Map<string, number>();
   private day = -1;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Relayed[] = []) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = []) {
     for (const e of ring) this.lastT = Math.max(this.lastT, e.t);
     this.fresh();
   }
@@ -107,21 +110,37 @@ export class RoomCore<S extends Sock> {
       else if (!meta.who) this.shut(s, CLOSE.unauthorized, 'hello first');
       return; // a malformed intent from a known person: dropped
     }
-    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v);
+    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.batch === true);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
     // a socket keeps its hello's version: a phone switching mid-socket is confused, not upgraded
     if (msg.v !== this.vOf(s)) return this.shut(s, CLOSE.version, `version ${msg.v} after a hello in ${this.vOf(s)}`);
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
-    const { v, ...intent } = msg;
-    const out: Relayed = { ...intent, v, who: meta.who, t: this.stamp() };
-    // the shared world (v2): a claim already made today, or a second nest within the hour, goes nowhere
-    if (v === 2 && isStored(out) && !this.remember(out)) return;
-    if (v === 1 && out.kind === 'world') this.remember(out);
+    const { v, c, ...intent } = msg;
+    const who = meta.who;
+    const stored = (v === 2 && isStored(intent)) || (v === 1 && intent.kind === 'world');
+    if (stored && c !== undefined) {
+      // a resend (after a reconnect) of one the room has, the same intent with the same number: acked again, not
+      // relayed twice
+      const same = JSON.stringify(intent);
+      const had = this.fresh().find((e) => e.who === who && e.c === c && JSON.stringify(bare(e)) === same);
+      if (had) return this.ack(s, c, had.t, true);
+    }
+    const out: Relayed = { ...intent, v, who, t: this.stamp() };
+    // the shared world (v2): a claim already made today, a second nest within the hour, or a walk older than the one
+    // kept goes nowhere
+    if (v === 2 && stored && !this.admit(out, c)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
+    // to the partner first, then kept: a message sent after a storage write waits for it (the output gate)
     // a walk's target means another thing in each version (stage units in v1, world units in v2): only to its own
-    for (const p of this.authed(other(meta.who))) if (out.kind !== 'walk' || this.vOf(p) === v) this.send(p, out);
+    for (const p of this.authed(other(who))) if (out.kind !== 'walk' || this.vOf(p) === v) this.send(p, out);
+    if (stored) this.keep(c !== undefined ? { ...out, c } : out);
+    if (c !== undefined) this.ack(s, c, out.t, true);
   }
 
-  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV): void {
+  private ack(s: S, c: number, t: number, ok: boolean): void {
+    this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
+  }
+
+  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, batch = false): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     if (meta.who) {
@@ -140,7 +159,11 @@ export class RoomCore<S extends Sock> {
     const t = this.io.now();
     this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer: peers.length > 0, t });
     if (since !== undefined) {
-      for (const e of this.fresh()) if (e.t > since && e.who !== who && (e.kind !== 'walk' || e.v === v)) this.send(s, e);
+      const day = this.fresh().filter((e) => e.t > since && (e.kind !== 'walk' || e.v === v));
+      // batch: the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back);
+      // else one message each, the partner's only (a phone from before the batch)
+      if (batch) for (const es of chunks(day.map(strip))) this.send(s, { v: LIVE_V, kind: 'replay', es, t });
+      else for (const e of day) if (e.who !== who) this.send(s, strip(e));
     }
     if (!was.length) for (const p of peers) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
   }
@@ -187,7 +210,7 @@ export class RoomCore<S extends Sock> {
   }
 
   /** Today's world (a new Tokyo day starts empty): the ring, its claims and nests rebuilt when the day turns. */
-  private fresh(): Relayed[] {
+  private fresh(): Kept[] {
     const today = tokyoDay(this.io.now());
     if (today === this.day) return this.ring;
     this.day = today;
@@ -204,19 +227,53 @@ export class RoomCore<S extends Sock> {
     if (e.kind === 'shake' && e.drop === 'nest') this.nests.set(e.tree, Math.max(this.nests.get(e.tree) ?? 0, e.t));
   }
 
-  /** Keep a change in the day's world; false when the world refuses it (claimed already, a nest too soon). A walk
-   *  replaces its person's last one. */
-  private remember(e: Relayed): boolean {
-    const ring = this.fresh();
+  /** Whether the day's world takes a change: false when it refuses it (claimed already, a nest too soon, a walk sent
+   *  before the one it holds: a late resend). */
+  private admit(e: Relayed, seq?: number): boolean {
+    this.fresh();
     const c = claimOf(e);
     if (c && this.claims.has(c)) return false;
     if (e.kind === 'shake' && e.drop === 'nest' && e.t - (this.nests.get(e.tree) ?? -Infinity) < NEST_GAP_MS) return false;
-    const keep = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : ring;
-    this.ring = [...keep, e].slice(-RING_MAX);
-    this.index(e);
-    this.io.save(this.ring);
+    if (e.kind === 'walk' && seq !== undefined) {
+      const last = this.ring.find((x) => x.kind === 'walk' && x.who === e.who);
+      if (last?.c !== undefined && last.c > seq) return false;
+    }
     return true;
   }
+
+  /** Keep a change the world took (admit) in the day's world. A walk replaces its person's last one. */
+  private keep(e: Kept): void {
+    const ring = this.fresh();
+    const rest = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : ring;
+    this.ring = [...rest, e].slice(-RING_MAX);
+    this.index(e);
+    this.io.save(this.ring);
+  }
+}
+
+/** A kept change's intent alone (as its sender sent it). */
+const bare = ({ c: _c, v: _v, who: _w, t: _t, ...i }: Kept): Omit<Kept, 'c' | 'v' | 'who' | 't'> => i;
+
+/** A kept change as sent: without its sender's sequence number. */
+const strip = ({ c: _c, ...e }: Kept): Relayed => e;
+
+/** The day's changes in runs whose `replay` message stays within REPLAY_BYTES. */
+function chunks(es: Relayed[]): Relayed[][] {
+  const out: Relayed[][] = [];
+  let run: Relayed[] = [], size = 0;
+  const room = REPLAY_BYTES - 80; // the message around them
+  for (const e of es) {
+    const n = JSON.stringify(e).length + 1;
+    if (run.length && size + n > room) {
+      out.push(run);
+      run = [];
+      size = 0;
+    }
+    run.push(e);
+    size += n;
+  }
+  if (run.length) out.push(run);
+  return out;
 }
 
 const other = (w: Who): Who => (w === 'A' ? 'B' : 'A');

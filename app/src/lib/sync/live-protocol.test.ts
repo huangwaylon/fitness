@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, DROPS, HOWS, MAX_BYTES, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, DROPS, HOWS, MAX_BYTES, VIA_MAX, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -159,5 +159,38 @@ describe('live protocol: the shared world (v2)', () => {
     const d = tokyoDay(Date.UTC(2026, 10, 1, 3));
     expect(dayStart(d)).toBe(Date.UTC(2026, 9, 31, 15));
     expect(tokyoDay(Date.UTC(2026, 9, 31, 15) - 1)).toBe(d - 1);
+  });
+});
+
+describe('live protocol: the very walk, acks and the day in one replay', () => {
+  it('a v2 walk may carry where from, the way (≤ VIA_MAX points), when it set off and how long', () => {
+    const w = { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400]], s: 1_793_500_000_000, ms: 2400 };
+    expect(parseClient(j2(w))).toEqual({ v: 2, ...w });
+    expect(parseClient(j2({ ...w, via: Array.from({ length: VIA_MAX + 1 }, () => [1, 1]) }))).toBeNull();
+    expect(parseClient(j2({ ...w, ms: 60_001 }))).toBeNull();
+    expect(parseClient(j2({ ...w, from: [1.5, 2] }))).toBeNull();
+    expect(parseClient(j({ kind: 'walk', to: [1, 2], ms: 10 }))).toBeNull();
+    expect(j2({ ...w, via: Array.from({ length: VIA_MAX }, () => [-230, 2650]), c: 1_793_500_000_123 }).length).toBeLessThanOrEqual(MAX_BYTES);
+  });
+  it('an intent may carry its sequence number c (a positive integer); a hello may ask for a batch', () => {
+    expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 7 }))).toEqual({ v: 2, c: 7, kind: 'pick', id: 'a', what: 'weed' });
+    expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 0 }))).toBeNull();
+    expect(parseClient(j2({ kind: 'pick', id: 'a', what: 'weed', c: 1.5 }))).toBeNull();
+    expect(parseClient(j2({ kind: 'hello', key: KEY, batch: true }))).toEqual({ v: 2, kind: 'hello', key: KEY, batch: true });
+    expect(parseClient(j2({ kind: 'hello', key: KEY, batch: 1 }))).toBeNull();
+    expect(parseClient(j2({ kind: 'act', act: 'wake', id: 'B', at: 1_793_500_000_000 }))).toMatchObject({ act: 'wake', id: 'B' });
+    expect(parseClient(j2({ kind: 'world', op: 'woke', id: 'gulliver' }))).toMatchObject({ op: 'woke' });
+  });
+  it('an ack, and a replay up to REPLAY_BYTES (its bad events left out); nothing else that long', () => {
+    expect(parseServer(j2({ kind: 'ack', c: 3, t: 9, ok: false }))).toEqual({ v: 2, kind: 'ack', c: 3, t: 9, ok: false });
+    expect(parseServer(j2({ kind: 'ack', c: 3, t: 9 }))).toBeNull();
+    const e = { v: 2, kind: 'pick', id: 'p1', what: 'find:shell:cowrie', at: [150, 40], who: 'A', t: 5 };
+    const es = Array.from({ length: 120 }, (_, i) => ({ ...e, id: `p${i}` }));
+    const raw = j2({ kind: 'replay', es: [...es, { kind: 'pick', who: 'C', t: 1 }], t: 10 });
+    expect(raw.length).toBeGreaterThan(MAX_BYTES);
+    const m = parseServer(raw);
+    expect(m?.kind === 'replay' && m.es.length).toBe(120);
+    expect(parseServer(j2({ kind: 'replay', es: Array.from({ length: 200 }, () => e), t: 10 }))).toBeNull();
+    expect(parseServer(j2({ kind: 'walk', to: [1, 2], who: 'B', t: 4, pad: 'x'.repeat(300), note: '"kind":"replay"' }))).toBeNull();
   });
 });

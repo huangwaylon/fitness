@@ -9,7 +9,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy:test": "wrangler deploy --env test",
-    "smoke": "node scripts/smoke.ts"
+    "smoke": "node scripts/smoke.ts",
+    "latency": "node scripts/latency.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261031.1",

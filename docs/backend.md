@@ -215,13 +215,21 @@ intents, never data of record: the sheet path above is unchanged and still catch
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 2` (the rolling-log world; the relay still speaks `v: 1` to an older phone, answering each socket in the version
-  of its hello), ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, z], at?}` (v2: world units, a
-  tap-to-walk's destination, integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
+  of its hello), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,
+  from?, via?, s?, ms?}` (v2: world units, where the villager is going, and with `from`, `via` (≤ 12 waypoints), `s`
+  (when it set off, the relay's clock) and `ms` (how long, ≤ 60 s; 0 = put there) the very walk, [Shared
+  world](#shared-world) "Villagers"; integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
   `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?, pt?}`,
   `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
-  `present-opened`, `watered`, `shaken`, `wished`), `saved {}` ([Push](#push)); the shared world's (v2 only, [Shared
+  `present-opened`, `watered`, `shaken`, `wished`, `woke`), `saved {}` ([Push](#push)); the shared world's (v2 only, [Shared
   world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
-  to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes (the island
+  to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
+  `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
+  the world refused it: a claim already made, a nest too soon, a walk numbered before the one it keeps), and a resend
+  of a kept intent with the same `c` (after a reconnect) is acked again, never relayed or kept twice. It relays to
+  the partner before it writes the day to storage (a message sent after a write waits for it: the output gate), so a
+  kept intent reaches the partner as fast as a passing one; its ack goes after the write (an ack is durable).
+  `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes (the island
   stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004, before or after the hello, with
   the reason `protocol version N unsupported (relay speaks 1, 2)`, and so does a message (or a second hello) in
   another version than the socket's hello; the client waits for the next show, i.e. a reload. `GET /health` lists
@@ -229,8 +237,10 @@ intents, never data of record: the sheet path above is unchanged and still catch
   phones run the world: take 1 out of `LIVE_VS` and redeploy (a phone still on v1 is closed 4004, reloads, updates).
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
 - **Replay:** the room keeps today's shared world in DO storage ([Shared world](#shared-world)); a hello with `since`
-  (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the partner's newer ones after
-  the welcome.
+  (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the newer ones after the welcome:
+  with `batch: true` (today's app) all of them, mine too (a phone that lost its record gets it back), in `replay {es}`
+  messages of ≤ 16,000 bytes (~150 changes each) in the room's order; without it (an older app) one message each, the
+  partner's only.
 - **Cost:** the Hibernation API (`ctx.acceptWebSocket`): an idle socket keeps no DO in memory. Free plan: 100k
   requests/day (incoming WebSocket messages count 20:1), 13,000 GB-s/day; two people tapping are far below.
 - **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
@@ -241,7 +251,11 @@ intents, never data of record: the sheet path above is unchanged and still catch
   `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off). What the room
   keeps (`isStored`: the shared world's intents and walks) goes even with the partner away.
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
-  partner one-way median 19 ms (p90 44), clock offset ±9 ms.
+  partner one-way median 19 ms (p90 44), clock offset ±9 ms. `npm run latency` (2026-11-01, the test copy, both
+  clients on one Mac, n = 30 each): a passing `act` one way median 21–23 ms (p90 26–40); the kept ones (walk, catch,
+  pick, put, watered) were median 31–35 ms (p90 36–45) while the room wrote before relaying, and are 21–22 ms (p90
+  25–35) relaying first; their ack median 31–33 ms. A late join of the day (169–352 changes): one message each, the
+  last 134 ms after the hello (169 messages, 17 KB) → 3 `replay` messages, the last 29 ms after it (36 KB).
 - **Tests:** `relay/test/` (keys, origins, the bucket, the room: auth, relay to the other person only, stamping, rate
   limit, replay and ring trimming, replacement, presence, hello timeout, the socket cap, the nudge and `changed`; the
   notify secret, signatures and window) with `cd relay && npm test`

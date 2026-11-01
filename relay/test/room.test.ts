@@ -368,6 +368,78 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
     expect(b2.kinds()).toEqual(['welcome', 'pick']);
   });
 
+  it('acks an intent with its `c` (the room\'s time; refused: ok false), a resend is the same intent, a stale walk is refused', () => {
+    const a = join2(KEY_A), b = join2(KEY_B);
+    a.sent = [];
+    b.sent = [];
+    say2(a, { kind: 'pick', id: 'sh1', what: 'find:shell:cowrie', c: 5 });
+    expect(b.kinds()).toEqual(['pick']);
+    const t = (b.sent[0] as { t: number }).t;
+    expect(a.sent).toEqual([{ v: 2, kind: 'ack', c: 5, t, ok: true }]);
+    expect(b.sent[0]).not.toHaveProperty('c');
+    // the same again (a reconnect resent it): acked again, the partner hears it once
+    now += 1000;
+    say2(a, { kind: 'pick', id: 'sh1', what: 'find:shell:cowrie', c: 5 });
+    expect(a.sent.at(-1)).toEqual({ v: 2, kind: 'ack', c: 5, t, ok: true });
+    expect(b.kinds()).toEqual(['pick']);
+    // B's claim of it: refused
+    say2(b, { kind: 'pick', id: 'sh1', what: 'find:shell:cowrie', c: 9 });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'ack', c: 9, ok: false });
+    // walks: a later one replaces the kept one; an older one resent after it is refused
+    say2(a, { kind: 'walk', to: [100, 300], c: 7 });
+    say2(a, { kind: 'walk', to: [120, 300], c: 6 });
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 6, ok: false });
+    expect(b.sent.filter((m) => m.kind === 'walk')).toHaveLength(1);
+    // an act without c: no ack
+    a.sent = [];
+    say2(a, { kind: 'act', act: 'rock' });
+    expect(a.sent).toEqual([]);
+  });
+
+  it('relays to the partner before it keeps (a send after a storage write waits for it)', () => {
+    const order: string[] = [];
+    const base = io();
+    room = new RoomCore({ ...base, save: (r) => void (order.push('saved'), saved.push(r)) });
+    const a = join2(KEY_A), b = join2(KEY_B);
+    const send = b.send.bind(b);
+    b.send = (d: string) => void (order.push('sent'), send(d));
+    say2(a, { kind: 'catch', what: 'koi', id: 'fish:1', how: 'rod' });
+    expect(order).toEqual(['sent', 'saved']);
+  });
+
+  it('a walk carries the very walk: where from, the way, when it set off and how long', () => {
+    const a = join2(KEY_A), b = join2(KEY_B);
+    say2(a, { kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400], [190, 700]], s: now - 30, ms: 2400 });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'walk', to: [195, 900], from: [132, 214], via: [[160, 400], [190, 700]], s: now - 30, ms: 2400, who: 'A' });
+    const n = b.sent.length;
+    say2(a, { kind: 'walk', to: [195, 900], via: Array.from({ length: 13 }, () => [1, 1]) });
+    say2(a, { kind: 'walk', to: [195, 900], ms: 60_001 });
+    expect(b.sent.length).toBe(n);
+  });
+
+  it('a batch hello gets the day in replay messages (mine too, in order, within REPLAY_BYTES each)', () => {
+    const a = join2(KEY_A);
+    for (let i = 0; i < 300; i++) {
+      say2(a, { kind: 'pick', id: `p${i}`, what: 'find:shell:cowrie', at: [150, 40], c: i + 1 });
+      now += 60;
+    }
+    const b = join2(KEY_B);
+    say2(b, { kind: 'walk', to: [262, 300] });
+    bye(b);
+    const b2 = new FakeSock();
+    socks.push(b2);
+    room.open(b2);
+    room.message(b2, JSON.stringify({ v: 2, kind: 'hello', key: KEY_B, since: 0, batch: true }));
+    const replays = b2.sent.filter((m) => m.kind === 'replay') as unknown as { es: { kind: string; who: string; c?: number }[] }[];
+    expect(replays.length).toBeGreaterThan(1);
+    const es = replays.flatMap((r) => r.es);
+    expect(es).toHaveLength(301);
+    expect(es.at(-1)).toMatchObject({ kind: 'walk', who: 'B' });
+    expect(es.some((e) => e.c !== undefined)).toBe(false);
+    for (const r of replays) expect(JSON.stringify(r).length).toBeLessThanOrEqual(16_000);
+    expect(b2.kinds()[0]).toBe('welcome');
+  });
+
   it('at most one nest per tree per hour', () => {
     const a = join2(KEY_A);
     const b = join2(KEY_B);
