@@ -454,6 +454,11 @@ JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px w
 `e2e/shared-world.spec.ts` ([backend](backend.md#shared-world)). Both phones show the same island: what's caught or
 picked up is gone on both, what a shake drops lies on both, each villager stands where its person sent it.
 
+- **The villagers move as one:** each of us moves our own villager; the other phone plays the very same walk (from
+  the same spot, at the same time, along the same way, facing the same way at its end), catching up when a message
+  is late and walking off a small gap, so both phones have each villager at the same point (a two-tab check: within
+  a step under way, the same point at the end). While the partner has the island open their villager follows only
+  their phone (`island/villagerSync.ts`, [backend](backend.md#shared-world)).
 - **One layout, not mirrored:** A (ウェイ) lives on the left and B (うめ) on the right on both phones, whichever of us
   holds it: the homes, the goal trees, the meeting spots are by person, never by "mine / the partner's", and every
   shared id is by person or by where the thing stands (a flower's `fl:<x>:<z>`); `?demo` and `?demo&as=B` show the

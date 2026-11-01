@@ -8,7 +8,7 @@
 // villager to their tree (`goalWalk`), ふたりでぜんぶ brings both to the middle for a high-five (`meetUp`).
 // The scene attaches what this needs from the DOM (`attachAvatar`): the walk geometry, a check that a villager standing
 // at a spot covers no control, and where an actor's feet are right now.
-import { actors, addFx, applyStep, awayFromHome, busy, faceToward, later, place, setEmote, setMotion, setRouter, walkTo } from '../motion/director.svelte.ts';
+import { actors, addFx, applyStep, awayFromHome, busy, faceToward, isRemote, later, place, setEmote, setMotion, setRouter, walkTo } from '../motion/director.svelte.ts';
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
 import type { ActorId } from '../motion/reactions.ts';
@@ -152,7 +152,7 @@ export function partnerTo(x: number, z: number): boolean {
   steered.partner = Date.now();
   partnerStay = restAt(p.to, actors.partner.home);
   clearTimeout(homeTimers.partner);
-  walkTo('partner', p.pts, { speed: SPEED.run, from, face: p.snap.face });
+  walkTo('partner', p.pts, { speed: SPEED.run, from, face: p.snap.face, remote: true });
   return true;
 }
 
@@ -164,8 +164,12 @@ export function partnerRestsAt(x: number, z: number): void {
   partnerStay = restAt(to, actors.partner.home);
   if (!actors.partner.walking && !busy('partner')) {
     clearTimeout(homeTimers.partner);
-    place('partner', to[0], to[1]);
+    place('partner', to[0], to[1], true);
   }
+}
+/** Where the partner's villager rests when it isn't the relay's to move (their last walk's end; villagerSync). */
+export function setPartnerRest(x: number, z: number): void {
+  partnerStay = restAt([x, z], actors.partner.home);
 }
 /** A rest spot (null: home, within 8u of it). */
 const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
@@ -208,7 +212,8 @@ const free = (id: Villager) => !actors[id].asleep && !busy(id) && !actors[id].wa
 /** Mine has been away FOLLOW_MS: the partner comes over and stands beside it (then they chat). */
 function checkFollow() {
   const c = ctx;
-  if (!c || !c.enabled() || !awayFromHome('mine')) return;
+  // the partner's villager is theirs to move while they're here (villagerSync)
+  if (!c || !c.enabled() || !awayFromHome('mine') || isRemote('partner')) return;
   if (!shouldFollow(away.since, Date.now(), free('partner') && !away.followed)) return;
   if (actors.mine.walking) return void (followTimer = setTimeout(checkFollow, 1000));
   const g = c.geo(), at = c.where('mine'), from = c.where('partner');
@@ -227,7 +232,7 @@ function checkFollow() {
 /** Idle life: send a villager off to a point of interest or a few (one walker leaves home at a time). */
 export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_HOPS)): boolean {
   const c = ctx, other = otherOf(id);
-  if (!c || !c.enabled() || !free(id) || awayFromHome(id)) return false;
+  if (!c || !c.enabled() || !free(id) || awayFromHome(id) || isRemote(id)) return false;
   if (actors[other].walking || awayFromHome(other)) return false;
   return hop(id, stops);
 }
@@ -397,7 +402,7 @@ export const visitorWalkable = (x: number, y: number): boolean => walkable(open(
 
 /** A villager is free to go over to the visitor: the partner, both villagers home, nobody walking. */
 export function villagerFree(): boolean {
-  if (!ctx?.enabled() || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
+  if (!ctx?.enabled() || isRemote('partner') || actors.mine.walking || actors.partner.walking || awayFromHome('mine') || awayFromHome('partner')) return false;
   return free('partner');
 }
 

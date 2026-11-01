@@ -61,7 +61,9 @@
   import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
-  import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, snapHome, stayingAt, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, setPartnerRest, snapHome, stayingAt, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { RUN_RING_U_S, linkVillagers, playPartner } from './villagerSync.ts';
+  import type { DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { flushSync, onMount, untrack } from 'svelte';
@@ -339,10 +341,9 @@
     if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
     const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
     if (b0 && door) return building(b0, door), true;
+    // (the partner's phone plays the very walk: villagerSync.ts tells it every move of mine, and the relay keeps it)
     const r = sendTo(x, z);
     if (!r) return false;
-    // the partner's phone runs mine there too, and the relay keeps it (where mine stands, for a phone opening later)
-    shared.share({ kind: 'walk', to: [Math.round(r.to[0]), Math.round(r.to[1])] });
     ring(r.to[0], r.to[1]);
     return true;
   }
@@ -412,6 +413,8 @@
       put: (x: number, z: number) => (place('mine', x, z), world.kick()),
       /** My villager's feet now (e2e: tap-to-walk). */
       mine: () => livePos('mine'),
+      /** The partner's villager's feet now (e2e: the shared world). */
+      partner: () => livePos('partner'),
       /** The scroller's two ends for this screen (まえ, おく). */
       stops: () => [camMin, camMax]
     };
@@ -523,20 +526,43 @@
   });
   /** A node id or a world point (a walk's target). */
   const pointOf = (to: string | readonly [number, number]) => (typeof to === 'string' ? nav().named[to] : to);
+  // The villagers on both phones (villagerSync.ts): every move of mine goes over the relay as the very walk; the
+  // partner's plays here from the same start at the same time, and while they have the island open their villager is
+  // theirs to move (this phone's own life leaves it alone).
+  // (on the relay's own clock: a `?date=` preview shifts the island's day, not when a walk set off)
+  const relayNow = () => (relay ?? demoRelay)?.serverNow() ?? Date.now();
+  // svelte-ignore state_referenced_locally
+  const link = live ? linkVillagers({ share: (w) => void shared.share(w), serverNow: relayNow, enabled: () => live }) : null;
+  $effect(() => {
+    const r = relay ?? demoRelay;
+    if (!link || !r) return;
+    return r.onStatus((st) => link.partnerHere(st.connected && st.peer));
+  });
+  $effect(() => () => link?.detach());
+  /** The partner's walk, played here: the very walk when it came with it (rested at its end when it's over), else (an
+   *  older app: only where to) planned here from where their villager stands. */
+  function partnerWalk(w: Extract<DayEvent, { kind: 'walk' }>, now: boolean) {
+    const to = pointOf(w.to);
+    if (!to) return;
+    setPartnerRest(to[0], to[1]);
+    steered.partner = Date.now();
+    const how = playPartner(w, relayNow(), !covered && !life.hidden);
+    if (how === 'walk' || how === 'jump') {
+      // a run (a tap on their phone: NH's ring where it goes)
+      if (now && w.ms && w.from && Math.hypot(to[0] - w.from[0], to[1] - w.from[1]) / (w.ms / 1000) >= RUN_RING_U_S) ring(to[0], to[1], true);
+      return;
+    }
+    if (how) return;
+    if (!now || covered) return partnerRestsAt(to[0], to[1]);
+    if (partnerTo(to[0], to[1])) ring(to[0], to[1], true);
+  }
   onMount(() => {
     if (!live) return;
-    // where the partner sent their villager earlier today (a phone opening later: the shared day's last walk)
+    // where the partner's villager is today (a phone opening later: the shared day's last walk, played to now)
     const w0 = shared.day.walks[view.partner];
-    const p0 = w0 && pointOf(w0.to);
-    if (p0) partnerRestsAt(p0[0], p0[1]);
+    if (w0) partnerWalk({ kind: 'walk', ...w0, who: view.partner }, false);
     return shared.on(({ e, live: now }) => {
-      if (e.kind !== 'walk' || e.who !== view.partner) return;
-      const to = pointOf(e.to);
-      if (!to) return;
-      // the partner's tap-to-walk: their villager runs there here too (its ring where they tapped); an older one (the
-      // day's, heard on opening) just puts it there
-      if (!now || covered) return partnerRestsAt(to[0], to[1]);
-      if (partnerTo(to[0], to[1])) ring(to[0], to[1], true);
+      if (e.kind === 'walk' && e.who === view.partner) partnerWalk(e, now);
     });
   });
   // The campsite's door (docs/design.md "Buildings"): a tap says who is visiting today (nobody lives inside; the
