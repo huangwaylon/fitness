@@ -14,7 +14,9 @@ export const LIVE = {
   me: 'island.me',
   queue: 'island.queue',
   /** Events the server acked whose rows the snapshot cache hasn't fetched back yet (queue.ts `ackedEvents()`). */
-  acked: 'island.acked'
+  acked: 'island.acked',
+  /** `{ me, date }`: the Tokyo day my all-four goals were last reported to the relay (sync/push.ts: once a day). */
+  goalSent: 'island.goalSent'
 } as const;
 
 export const DEMO = {
@@ -34,7 +36,10 @@ export const DEVICE = {
   sound: 'island.sound',
   /** localStorage: the language last shown (`ja` / `en`), so an English launch loads its strings before the first paint
    *  (the `locale` pref stays the truth). */
-  locale: 'island.locale'
+  locale: 'island.locale',
+  /** localStorage: `{ on, endpoint?, lang?, at? }`: せってい's つうち switch and what the relay was last given
+   *  (sync/push.ts; off by default). */
+  push: 'island.push'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

@@ -83,12 +83,13 @@ export default defineConfig({
       paths: { base: (process.env.BASE_PATH ?? '/fitness') as `/${string}` },
       // Static hosting has no headers: SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its
       // inline bootstrap script to script-src. Only the Apps Script origins (the /exec URL and its 302 target) and the
-      // live relay's socket (lib/sync/live.ts LIVE_URL) are reachable besides our own.
+      // live relay (its socket, lib/sync/live.ts LIVE_URL, and its /push/* endpoints, lib/sync/push.ts PUSH_URL) are
+      // reachable besides our own.
       csp: {
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com', 'wss://island-fund-relay.island-fund-relay.workers.dev'],
+          'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev'],
           'img-src': ['self', 'data:'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
           'media-src': ['self', 'blob:'],

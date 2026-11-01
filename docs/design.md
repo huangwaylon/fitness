@@ -14,7 +14,8 @@ daily goal) into one shared wallet, spent on two treats: おやつ and 外食. J
   app ([Health data](#health-data)).
 - **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes every number on the
   phone (`lib/model/`, pure functions).
-- **Principles:** zero required taps a day; both people see all data; no notifications; everything always animates
+- **Principles:** zero required taps a day; both people see all data; one opt-in notification (the partner met every
+  goal, [backend](backend.md#notifications)) and nothing else; everything always animates
   (no reduced-motion variants).
 
 Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/` · `model/` · `sync/` · `store/` ·
@@ -72,8 +73,9 @@ height, three tabs pinned under the title (NH yellow for the one shown): けん�
 - **けんこう:** the Health data over time ([Kenkou](#kenkou)); its own chunk.
 - **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
 - **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH
-  villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば**
-  (日本語 / English), **つうしん** (when each of us last synced; いま つうしん) and **あそびかた** (くわしく → the guide:
+  villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **つうち** (one
+  switch, off by default and per phone: 「うめの ぜんぶ たっせいを しらせる」, once a day, never 22:00–08:00;
+  [backend](backend.md#notifications)), **ことば** (日本語 / English), **つうしん** (when each of us last synced; いま つうしん) and **あそびかた** (くわしく → the guide:
   the goals, ふたりでぜんぶ, the treats, the Sunday recap, a protein hint of 1.6 g per kg a day).
 
 A day, a goal, the picker and the guide push a level with ‹ (the tabs hide while a level is open); ✕, the backdrop and
