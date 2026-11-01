@@ -23,7 +23,7 @@ export type Cue =
   // scenery taps (island/sceneTaps.ts sceneSfx)
   | `scene-${SceneSfx}`
   // a walking villager's footsteps (island/IslandScene: by the ground under it; a splash on a rainy day)
-  | 'footstep-grass' | 'footstep-sand' | 'footstep-snow' | 'footstep-splash'
+  | 'footstep-grass' | 'footstep-sand' | 'footstep-snow' | 'footstep-splash' | 'footstep-wood' | 'footstep-stone' | 'footstep-brick'
   // group stretching's tune
   | 'stretch'
   // a birthday's cake
@@ -134,6 +134,9 @@ export const CUES: Record<Cue, CueDef> = {
   'footstep-sand': { sound: 'step-sand', gain: 0.3, world: true },
   'footstep-snow': { sound: 'step-snow', gain: 0.3, world: true },
   'footstep-splash': { sound: 'step-splash', gain: 0.3, world: true },
+  'footstep-wood': { sound: 'step-wood', gain: 0.3, world: true },
+  'footstep-stone': { sound: 'step-stone', gain: 0.3, world: true },
+  'footstep-brick': { sound: 'step-brick', gain: 0.3, world: true },
   // fireworks (island/Fireworks.svelte): the rocket's whistle as it rises, the burst as it opens
   'scene-launch': { sound: 'whistle', world: true },
   'scene-firework': { sound: 'firework', world: true },
