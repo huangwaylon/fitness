@@ -10,7 +10,7 @@ Apple Watch. Their activity, measured automatically, grows fruit and earns **ベ
 daily goal) into one shared wallet, spent on two treats: おやつ and 外食. Japanese first, English per person.
 
 - **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
-  weight) several times a day. **Apple Health is the source of truth:** no health number is entered or fixed in the
+  weight, body fat %, BMI, lean body mass) several times a day. **Apple Health is the source of truth:** no health number is entered or fixed in the
   app ([Health data](#health-data)).
 - **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes every number on the
   phone (`lib/model/`, pure functions).
@@ -102,7 +102,9 @@ trainer, one person at a time, computed on read.
 - **Whose data:** two avatar pills (this phone's person first and chosen on opening; kept for the session).
 - **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (1週 on every opening; kept while the panel stays open), then a sticky row: ‹ the
   visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」 under it) › and きょう.
-- **Cards, in this order** (`model/health.ts` CARDS, the user's): 🍎 歩数, 体重, then 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド.
+- **Cards, in this order** (`model/health.ts` CARDS, the user's "after steps, put weight next, then the other graphs"):
+  🍎 歩数, then the body kept together (体重, 体脂肪率, BMI, 除脂肪体重: what a scale writes at one weigh-in), then 🍐 ムーブ,
+  🍑 エクササイズ, 🍒 スタンド.
 - **A card per activity metric**: the goal; 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年, すべて), each
@@ -110,9 +112,13 @@ trainer, one person at a time, computed on read.
   the goal was met, pale when not; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
   The goal dashed (stepped when the Move or steps goal changed). On 1週 each bar carries its value. A tap shows one value; a
   horizontal drag turns the page (right = older); vertical drags scroll the panel.
-- **体重** (`WeightCard`, `WeightChart`): 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
+- **体重** (`WeightCard`, `DotChart`): 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
   to the weights (dots joined by a thin line; the goal dashed, or a 「目標 66.0 ↓」 label when far off) and the goal
   month at that pace (only when the period ends today).
+- **体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`): as 体重 without a goal: 平均 (n回の記録), 期間の変化 (the same
+  plain change, in the metric's unit: `−0.4%`, `+0.2`, `−0.3 kg`) and per week, and the dot chart on an axis fitted to the
+  values (at least 2 points of body fat or 2 kg, 1 of BMI). A day with no measurement has no dot; 記録なし when the
+  period has none. Never earns, no good / bad colours.
 - **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
   a day with no row (counted from the first activity record); today is drawn but not counted; the previous period is
   the same length just before. The footnote says so.
@@ -200,7 +206,8 @@ A day's ベル count in the wallet from that day. Buys and voids replay in serve
 
 ## Health data
 
-Steps, exercise, Move, Stand and weight come only from the Shortcut's `metrics` rows; a day's value is its latest row,
+Steps, exercise, Move, Stand, weight and the body metrics (body fat %, BMI, lean body mass) come only from the
+Shortcut's `metrics` rows; a day's value is its latest row,
 so each sync replaces it with Health's current total (a locked week's earnings stay as of its lock). Nothing in the
 app enters or fixes them.
 
@@ -216,6 +223,11 @@ smoothing: over the visible period, the first week's average weigh-in → the la
 days or more, else the first weigh-in → the last; under two, none (–). Per week: that change over the days between the
 two weeks' middles, shown from 7 days apart. Goal month: from the last week's average at that pace, only when it heads
 to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆっくり いこうね」; at the goal 「目標に届いています」).
+
+The body metrics (`body_fat_pct` %, `bmi`, `lean_kg` kg; `State.body`, apart from the activity rows like weight) are
+read the same way: a day's latest row, one decimal, within their bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg);
+けんこう's 期間の変化 is the same plain change; no goal. They never earn: bells.ts reads only the activity metrics, and
+the cache keeps only their newest row per day once the week has locked, like weight.
 
 ## Island scene
 

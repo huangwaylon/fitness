@@ -1,5 +1,6 @@
 // けんこう's formatters: a metric's value with its unit, the axis numbers, the range label and the period change.
 import type { LocalDate } from '#lib/types.ts';
+import type { BodyMetric } from '#lib/contract/api.ts';
 import type { Metric, Range } from '#lib/model/health.ts';
 import { formatNum, i18n, t } from '#lib/i18n/index.ts';
 import { md } from '#lib/i18n/format.ts';
@@ -59,4 +60,17 @@ export function xLabels(r: Range, plotW: number, px = 46): { i: number; text: st
 export function pctText(c: number): string {
   const r = Math.round(c * 100);
   return `${r < 0 ? '−' : r > 0 ? '+' : '±'}${Math.abs(r)}%`;
+}
+
+/** A body metric with its unit, one decimal: `22.3%` · `22.8` (BMI has none) · `52.1 kg`. */
+export function bodyText(m: BodyMetric, v: number): string {
+  const s = v.toFixed(1);
+  return m === 'body_fat_pct' ? t('health.body.pct', { v: s }) : m === 'lean_kg' ? t('weight.kg', { kg: s }) : s;
+}
+
+/** A body metric's change: `−0.4%`, `+0.2`, `±0.0 kg` (a true minus sign); `–` when there's none yet. */
+export function bodyDelta(m: BodyMetric, d: number | null): string {
+  if (d === null) return '–';
+  const r = Math.round(d * 10) / 10;
+  return (r < 0 ? '−' : r > 0 ? '+' : '±') + bodyText(m, Math.abs(r));
 }

@@ -7,8 +7,10 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  bucketValues, canShift, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
+  bodyBuckets, bodyStats, bucketValues, CARDS, canShift, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor, weightBuckets, weightStats
 } from './health.ts';
+import { weekBells } from './bells.ts';
+import { weekKeyOf } from '#lib/time/dates.ts';
 
 const jst = (date: string, hm = '22:00') => new Date(`${date}T${hm}:00+09:00`).toISOString();
 const TODAY = '2026-10-31';
@@ -173,8 +175,8 @@ describe('edge cases', () => {
     expect(hs.activityFrom).toBe(TODAY);
     expect(metricStats(hs, 'A', 'steps', r).missing).toBe(0);
     const b = weightBuckets(hs, 'A', r);
-    expect(b[0]).toEqual({ kg: null, n: 0 });
-    expect(b.find((x) => x.kg === 69)).toBeTruthy();
+    expect(b[0]).toEqual({ v: null, n: 0 });
+    expect(b.find((x) => x.v === 69)).toBeTruthy();
     // a period with no weigh-in says nothing; one weigh-in has no change
     expect(weightStats(hs, 'A', rangeFor('week', '2026-09-20', hs.from))).toEqual({ n: 0, avg: null, change: null, projection: null });
     expect(weightStats(hs, 'A', rangeFor('week', '2026-09-03', hs.from))).toMatchObject({ n: 1, avg: 70, change: null });
@@ -271,5 +273,52 @@ describe('one person at a time', () => {
     expect(bucketValues(hs, 'A', 'steps', r).map((x) => x.goal)).toEqual([8000, 8000, 12000, 12000, 12000, 12000, 12000]); // 12,000 from 10-27 on
     expect(bucketValues(hs, 'B', 'steps', r).map((x) => x.goal)).toEqual(Array(7).fill(8000));
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 2, days: 6 }); // 10-25 and 10-26 (today isn't counted)
+  });
+});
+
+describe('the body metrics (body fat %, BMI, lean body mass)', () => {
+  it('けんこう’s order: steps, then the body (weight first), then the rings', () => {
+    expect(CARDS).toEqual(['steps', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'move', 'exercise', 'stand']);
+  });
+
+  it('a day’s value is its latest row, one decimal; out of bounds is ignored; sparse like weight, per person', () => {
+    const hs = series(rows([
+      m('A', '2026-10-20', 'body_fat_pct', 23.1, '08:00'),
+      m('A', '2026-10-20', 'body_fat_pct', 22.84, '09:00'), // a re-sync: the latest wins
+      m('A', '2026-10-22', 'body_fat_pct', 71, '08:00'), // above 70 %: not a body fat
+      m('A', '2026-10-22', 'bmi', 23.0, '08:00'),
+      m('B', '2026-10-24', 'lean_kg', 41.2, '08:00'),
+      m('B', '2026-10-25', 'lean_kg', 9, '08:00') // below 10 kg
+    ]));
+    expect(hs.from).toBe('2026-10-20'); // body rows start the series like weight
+    expect(hs.activityFrom).toBe(TODAY); // and aren't activity days
+    expect(hs.people.A.body.body_fat_pct.slice(0, 3)).toEqual([22.8, null, null]);
+    expect(hs.people.A.body.bmi[2]).toBe(23);
+    expect(hs.people.B.body.lean_kg.slice(4, 6)).toEqual([41.2, null]);
+    expect(hs.people.A.body.lean_kg.every((v) => v === null)).toBe(true);
+    const r = rangeFor('month', TODAY, hs.from);
+    expect(bodyStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, change: null });
+    expect(bodyStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, change: null });
+  });
+
+  it('the period’s average and plain change (first week → last week), weekly buckets average their measurements', () => {
+    // 10-02..10-31: 25.0 % then 0.05 lower every day
+    const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'body_fat_pct', Math.round((25 - 0.05 * i) * 10) / 10, '08:00'));
+    const hs = series(rows(metrics));
+    const s = bodyStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY, hs.from));
+    expect(s.n).toBe(30);
+    expect(s.change).toMatchObject({ basis: 'weeks', change: -1.1, perWeek: -0.35 });
+    const w = bodyStats(hs, 'A', 'body_fat_pct', rangeFor('week', TODAY, hs.from));
+    expect(w.change).toMatchObject({ basis: 'ends' });
+    const q = bodyBuckets(hs, 'A', 'body_fat_pct', rangeFor('quarter', TODAY, hs.from));
+    expect(q.at(-1)).toEqual({ v: 23.7, n: 7 }); // 10-25..10-31
+    expect(q[0]).toEqual({ v: null, n: 0 });
+  });
+
+  it('never moves a ベル', () => {
+    const base = [...day('A', '2026-10-26', { steps: 9000, ex: 70, kcal: 650, stand: 130 })];
+    const body = [m('A', '2026-10-26', 'body_fat_pct', 22, '08:00'), m('A', '2026-10-26', 'bmi', 23, '08:00'), m('A', '2026-10-26', 'lean_kg', 55, '08:00')];
+    const wk = weekKeyOf('2026-10-26');
+    expect(weekBells(reduce(rows([...base, ...body])), wk, NOW)).toEqual(weekBells(reduce(rows(base)), wk, NOW));
   });
 });

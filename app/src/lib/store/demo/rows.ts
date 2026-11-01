@@ -95,12 +95,12 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   ev(at(addDays(w(4), 3), 19, 34), 'A', 'spend_void', { spendId: 'demo-snack-void' });
   if (today > cur) buy(at(addDays(cur, 0), 18, 30), 'A', 'demo-snack-now', 'snack');
 
-  // Body weight: 12 weeks of morning weigh-ins (or the whole longer history), gently down with day-to-day water noise
+  // Body weight (and the scale's body fat, BMI and lean body mass): 12 weeks of morning weigh-ins (or the whole longer history), gently down with day-to-day water noise
   // and a slow seasonal swing, a few days skipped, synced after breakfast; and a goal each. Weight never earns, so none
   // of this moves a ベル.
-  const WEIGHT_DEMO: Record<PersonId, { start: number; perWeek: number; noise: number; skip: number; goal: number }> = {
-    A: { start: 72.6, perWeek: -0.35, noise: 0.9, skip: 0.15, goal: 66 },
-    B: { start: 58.4, perWeek: -0.2, noise: 0.7, skip: 0.25, goal: 55.5 }
+  const WEIGHT_DEMO: Record<PersonId, { start: number; perWeek: number; noise: number; skip: number; goal: number; fat: number; fatPerWeek: number; height: number }> = {
+    A: { start: 72.6, perWeek: -0.35, noise: 0.9, skip: 0.15, goal: 66, fat: 22.4, fatPerWeek: -0.15, height: 1.74 },
+    B: { start: 58.4, perWeek: -0.2, noise: 0.7, skip: 0.25, goal: 55.5, fat: 28.1, fatPerWeek: -0.1, height: 1.58 }
   };
   const wWeeks = Math.max(12, weeksBack);
   const wStart = addDays(cur, -7 * wWeeks);
@@ -112,7 +112,15 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
       // the same overall loss as 12 weeks at perWeek, spread over a longer history
       const kg = c.start + (c.perWeek * 12 * i) / (7 * wWeeks) + 0.6 * Math.sin(i / 58) + (r() + r() + r() - 1.5) * c.noise;
       const syncAt = at(d, 8, 10 + Math.floor(r() * 30));
-      if (syncAt < now) metrics.push([iso(syncAt), p, d, 'weight', Math.round(kg * 10) / 10]);
+      if (syncAt >= now) continue;
+      metrics.push([iso(syncAt), p, d, 'weight', Math.round(kg * 10) / 10]);
+      // the smart scale writes body fat, BMI and lean body mass with the weigh-in (body fat slowly down, noisy)
+      const fat = c.fat + (c.fatPerWeek * 12 * i) / (7 * wWeeks) + (r() + r() - 1) * 0.8;
+      metrics.push(
+        [iso(syncAt), p, d, 'body_fat_pct', Math.round(fat * 10) / 10],
+        [iso(syncAt), p, d, 'bmi', Math.round((kg / c.height ** 2) * 10) / 10],
+        [iso(syncAt), p, d, 'lean_kg', Math.round(kg * (1 - fat / 100) * 10) / 10]
+      );
     }
   }
   ev(at(wStart, 21, 0), 'A', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.A.goal });

@@ -28,6 +28,21 @@ const until = (rows: SnapshotRows, t: number): SnapshotRows => ({
 });
 
 describe('compactRows', () => {
+  it('keeps only the newest row of a locked day’s weight and body metrics (read as of now only)', () => {
+    const r = (at: string, metric: MetricRow[3], v: number): MetricRow => [at, 'A', '2026-09-01', metric, v];
+    const rows: SnapshotRows = {
+      metrics: [
+        r('2026-09-01T00:00:00.000Z', 'body_fat_pct', 22.5), r('2026-09-01T01:00:00.000Z', 'body_fat_pct', 22.3),
+        r('2026-09-01T00:00:00.000Z', 'bmi', 23), r('2026-09-01T00:00:00.000Z', 'lean_kg', 54),
+        r('2026-09-01T00:00:00.000Z', 'weight', 70.1), r('2026-09-01T01:00:00.000Z', 'weight', 70)
+      ],
+      events: []
+    };
+    expect(compactRows(rows, Date.parse('2026-10-31T00:00:00.000Z')).metrics.map((x) => [x[3], x[4]])).toEqual([
+      ['body_fat_pct', 22.3], ['bmi', 23], ['lean_kg', 54], ['weight', 70]
+    ]);
+  });
+
   const all = syntheticRows(120);
   const nowAt = (day: number, time: string) => Date.parse(jst(addDays(FIRST_DAY, day), time));
 

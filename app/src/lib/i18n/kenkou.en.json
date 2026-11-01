@@ -34,5 +34,13 @@
   "health.weight.avgOf": "(average of {n})",
   "health.weight.avgKey": "Average weigh-in",
   "health.weight.chartLabel": "{name}'s weight, {range}. Average {kg}",
+  "health.body.body_fat_pct": "Body fat",
+  "health.body.bmi": "BMI",
+  "health.body.lean_kg": "Lean body mass",
+  "health.body.pct": "{v}%",
+  "health.body.count": "{n} measurements",
+  "health.body.basis.ends": "First → last measurement",
+  "health.body.dayKey": "Measurements",
+  "health.body.chartLabel": "{name}'s {metric}, {range}. Average {v}",
   "health.note": "Apple Health's numbers as they are: a 0- or 66-step day is a day like any other, in the averages, best days and goal days. No data means nothing at all arrived for that day (a hatched stub on the chart, left out of the averages). Today, still running, is drawn but not counted. The previous period is the same length, just before."
 }

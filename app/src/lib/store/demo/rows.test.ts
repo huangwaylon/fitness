@@ -7,6 +7,7 @@ import { provisionalMs, reduce } from '#lib/model/state.ts';
 import { economyWeeks, weekBells, weekSum } from '#lib/model/bells.ts';
 import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { isActivityMetric } from '#lib/contract/api.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);
@@ -52,7 +53,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
     expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'highfive', 'pref'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
-    expect([...metrics].sort()).toEqual(['exercise_min', 'move_kcal', 'stand_min', 'steps', 'weight']);
+    expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
     const goals = new Set(settled.flatMap((wk) => [0, 1, 2, 3, 4, 5, 6].map((i) => dayDetail(s, addDays(wk, i), now).people.B.move.goal)));
     expect([...goals].sort()).toEqual([400, 450]);
@@ -71,7 +72,7 @@ describe('?demo&weeks=60: a longer history for けんこう', () => {
   });
   it('now and then a day whose Watch rows never arrived: steps only', () => {
     const days = new Map<string, Record<string, number>>();
-    for (const [, p, d, m, v] of cache.rows.metrics) if (p === 'A' && m !== 'weight') days.set(String(d), { ...days.get(String(d)), [m]: Number(v) });
+    for (const [, p, d, m, v] of cache.rows.metrics) if (p === 'A' && isActivityMetric(m)) days.set(String(d), { ...days.get(String(d)), [m]: Number(v) });
     const bare = [...days.values()].filter((x) => x.steps > 0 && !('move_kcal' in x) && !('exercise_min' in x) && !('stand_min' in x));
     expect(bare.length).toBeGreaterThan(3);
     expect(bare.length).toBeLessThan(days.size / 10);

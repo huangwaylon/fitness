@@ -34,5 +34,13 @@
   "health.weight.avgOf": "（{n}回の平均）",
   "health.weight.avgKey": "記録の平均",
   "health.weight.chartLabel": "{name}の体重 {range}。平均 {kg}",
+  "health.body.body_fat_pct": "体脂肪率",
+  "health.body.bmi": "BMI",
+  "health.body.lean_kg": "除脂肪体重",
+  "health.body.pct": "{v}%",
+  "health.body.count": "{n}回の記録",
+  "health.body.basis.ends": "最初→最後の記録",
+  "health.body.dayKey": "測った日",
+  "health.body.chartLabel": "{name}の{metric} {range}。平均 {v}",
   "health.note": "Apple ヘルスケアの 数字を そのまま。0歩や 66歩の日も その日の記録として 平均・ベスト・目標の日数に 入ります。記録なしは データが ひとつも 届いていない日だけ（グラフでは しましまの 印、平均には 入りません）。とちゅうの きょうは グラフに 出ますが 平均には 入りません。前の期間は 同じ長さの ひとつ前。"
 }
