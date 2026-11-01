@@ -19,14 +19,14 @@ const measure = (page: Page, speaker: string) =>
     }).map((el) => el.className);
     const onScreen = b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight;
     const face = b.left < s.right && s.left < b.right && b.top < s.top + s.height * 0.5 && s.top < b.bottom;
-    return { dist, hud, onScreen, face, side };
+    return { dist, hud, onScreen, face, side, box: [b.left, b.top, b.right, b.bottom, innerWidth, innerHeight, s.left, s.top, s.width, s.height] };
   }, speaker);
 
 async function expectBy(page: Page, speaker: string, near: number) {
   const m = await measure(page, speaker);
   expect(m.dist, `tail ${m.dist}px off (${m.side})`).toBeLessThanOrEqual(near);
   expect(m.hud).toEqual([]);
-  expect(m.onScreen).toBe(true);
+  expect(m.onScreen, `on screen: ${JSON.stringify(m.box)}`).toBe(true);
   expect(m.face).toBe(false);
 }
 async function tapAt(page: Page, sel: string, fy = 0.5) {

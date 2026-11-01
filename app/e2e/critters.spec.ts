@@ -39,9 +39,10 @@ async function cast(page: Page) {
   for (let i = 0; i < 3; i++) {
     const f = await at(page, '[data-critter="fish"]');
     await page.mouse.click(f.x, f.y);
-    if (await page.locator('[data-bobber="wait"]').waitFor({ state: 'attached', timeout: 1500 }).then(() => true, () => false)) return;
+    // the cast has begun (my villager may still be walking down to the shore): a second tap now would be an early one
+    if (await page.locator('[data-bobber]').waitFor({ state: 'attached', timeout: 1500 }).then(() => true, () => false)) break;
   }
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached();
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
