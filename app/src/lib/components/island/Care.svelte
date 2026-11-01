@@ -3,8 +3,9 @@
   // minutes, the newest three); a tap pulls one (it pops out of the ground with a puff of earth). The rock by the hedge
   // answers a tap with a clonk (it jolts), 1 in 4 a sparkle, 1 in 8 a pill bug or a centipede crawls out from under it.
   // (Watering a flower and the next day's hybrid live with the flower beds: SceneTaps, FlowerBeds.) No ベル, no find.
-  // The weeds derive from the Tokyo date (care.ts), so both phones broadly see the same; what this phone pulled is its
-  // own (sceneDay.ts). The weeds stand on world.ts LAWN_SPOTS and the rock at world.ts ROCK, each a world node at its
+  // The weeds derive from the Tokyo date (care.ts), so both phones see the same; a weed either of us pulls is gone on
+  // both (the shared day's `pick`, first wins; docs/backend.md#shared-world), and the partner's pulls and rock taps play
+  // here (their villager walks over and does it). The weeds stand on world.ts LAWN_SPOTS and the rock at world.ts ROCK, each a world node at its
   // foot. SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`, client px).
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
   import { timers } from './timers.ts';
@@ -18,7 +19,10 @@
   import { digSpots, findArt } from './beach.ts';
   import { ROCK, rockTap, weedsAt, type Weed } from './care.ts';
   import { take, takenOn } from './sceneDay.ts';
-  import { approach } from './avatar.ts';
+  import { approach, partnerAct } from './avatar.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
+  import { taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
+  import { onMount } from 'svelte';
 
   interface Props {
     scene?: HTMLElement;
@@ -37,7 +41,8 @@
   const weeds = $derived.by<Weed[]>(() => {
     void pulled;
     const { hour, minute } = jst(clock);
-    const gone = takenOn(date);
+    // what was taken today: by me (once my villager got there: this phone's own record) and by the partner (the shared day)
+    const gone = date === dayKey() ? takenOn(date).union(takenByOthers(shared.day, shared.me)) : takenOn(date);
     const dug = new Set(digSpots(date, gone, seed).map((s) => `${s.x},${s.y}`));
     return weedsAt(date, (hour * 60 + minute) * 60_000, seed, dug).filter((w) => !gone.has(w.uid));
   });
@@ -93,10 +98,13 @@
   const going = new Set<string>();
   function pull(weed: Weed) {
     if (going.has(weed.uid)) return;
+    // first wins: claimed at the tap
+    if (!shared.share({ kind: 'pick', id: weed.uid, what: 'weed', at: [Math.round(weed.x), Math.round(weed.y)] }).fresh) return;
     going.add(weed.uid);
     const { ms } = approach(weed.x, weed.y, { motion: 'squish' });
     after(ms, () => {
       going.delete(weed.uid);
+      if ((takenBy(shared.day, weed.uid)?.who ?? shared.me) !== shared.me) return; // the partner pulled it first
       take(date, weed.uid);
       pulled++;
       sceneSfx('weed');
@@ -105,6 +113,8 @@
   }
   function hitRock() {
     const what = rockTap(Math.random);
+    // the partner's phone: my villager strikes the rock too (a bug out from under it comes on its own: Critters)
+    shared.share({ kind: 'act', act: 'rock', pt: [ROCK.x, ROCK.y] });
     const { ms, walked } = approach(ROCK.x, ROCK.y, { tool: 'shovel', toolMs: 700, motion: 'nod' });
     // the shovel comes down on it (in my villager's hand; else a floating one), then the clonk
     if (!walked) spawn({ kind: 'strike', x: ROCK.x, y: ROCK.y, lift: ROCK.h * 0.5 }, 400);
@@ -119,6 +129,25 @@
       sceneSfx('glint');
     } else if (what === 'bug') rockBug?.(ROCK.x, ROCK.y);
   }
+
+  // The partner's pulls and rock taps (the shared day's news): their villager walks over and does it; the weed is gone
+  // here already (the list re-derives), its puff of earth plays where it stood.
+  onMount(() =>
+    shared.on(({ e, live }) => {
+      if (!live || !enabled()) return;
+      if (e.kind === 'pick' && e.what === 'weed' && e.at) {
+        const [x, z] = e.at;
+        const { ms } = partnerAct(x, z, { motion: 'squish' });
+        after(ms, () => {
+          sceneSfx('weed');
+          spawn({ kind: 'pull', x, y: z }, 700);
+        });
+      } else if (e.kind === 'act' && e.act === 'rock') {
+        const { ms } = partnerAct(ROCK.x, ROCK.y, { tool: 'shovel', toolMs: 700, motion: 'nod' });
+        after(ms + 300, () => clonk('clonk'));
+      }
+    })
+  );
 
   /** A tap on the scene (client px), after the finds: true when the care took it. Reach: a 44px target around where
    *  it is on screen now. */

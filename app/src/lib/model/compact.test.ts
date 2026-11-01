@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compactRows } from './compact.ts';
-import { reduce } from './state.ts';
+import { latestIslandDay, reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, dayDetail } from './history.ts';
 import { mergeRows } from './snapshot.ts';
@@ -146,5 +146,29 @@ describe('compactRows: the day tallies', () => {
     expect(tallyTotals(reduce(small).tallies).all).toEqual(tallyTotals(reduce(rows).tallies).all);
     expect(Object.fromEntries(tallyTotals(reduce(small).tallies).all)).toEqual({ 'fish:dab': 4, 'bug:moth': 2 });
     expect(compactRows(small, now)).toBe(small);
+  });
+});
+
+describe('compactRows: the island days', () => {
+  it('keeps only the latest island day of each person (a tally of that day apart); the model reads the same', () => {
+    const d = (at: string, person: 'A' | 'B', id: string, date: string, taken: string[]): EventRow =>
+      [at, person, id, 'island', JSON.stringify({ date, taken, puts: [], shakes: [], watered: [], wishes: {} })];
+    const rows: SnapshotRows = {
+      metrics: [],
+      events: [
+        d('2026-11-01T01:00:00.000Z', 'A', 'a1', '2026-11-01', ['w1']),
+        ['2026-11-01T01:30:00.000Z', 'A', 't1', 'tally', JSON.stringify({ date: '2026-11-01', counts: { 'fish:dab': 1 } })],
+        d('2026-11-01T02:00:00.000Z', 'B', 'b1', '2026-11-01', ['s1']),
+        d('2026-11-01T03:00:00.000Z', 'A', 'a2', '2026-11-01', ['w1', 'w2'])
+      ]
+    };
+    const small = compactRows(rows, Date.parse('2026-11-01T04:00:00.000Z'));
+    expect(small.events.map((r) => r[2])).toEqual(['t1', 'b1', 'a2']);
+    const s = reduce(small);
+    expect(latestIslandDay(s.islandDays, 'A', '2026-11-01')?.data.taken).toEqual(['w1', 'w2']);
+    expect(latestIslandDay(reduce(rows).islandDays, 'A', '2026-11-01')?.data.taken).toEqual(['w1', 'w2']);
+    expect(latestIslandDay(s.islandDays, 'B', '2026-11-02')).toBeNull();
+    // a bad row is ignored
+    expect(reduce({ metrics: [], events: [['2026-11-01T05:00:00.000Z', 'A', 'x', 'island', '{"date":"2026-11-01"}']] }).islandDays).toEqual([]);
   });
 });

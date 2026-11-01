@@ -4,6 +4,7 @@
 // the same day, so they show the same island: what is caught or picked up is gone on both, a tree's drops lie on both,
 // each villager stands where its person sent it. Pure: no clock, no storage (store/world.svelte.ts keeps it).
 import { claimOf, tokyoDay, type Drop, type How, type Intent, type Pt, type Target, type Who } from './live-protocol.ts';
+import { ISLAND_MAX } from '#lib/contract/island.ts';
 
 /** One change to the day: an intent with who made it and when (the relay's clock; my own: my serverNow() at sending). */
 export type DayEvent = Extract<Intent, { kind: 'catch' | 'pick' | 'put' | 'shake' | 'world' | 'walk' | 'act' }> & { who: Who; t: number };
@@ -26,12 +27,14 @@ export interface Put {
   t: number;
 }
 
-/** A tree's shake (its outcome), in order. */
+/** A tree's shake (its outcome), in order. `t`: when the shaker's phone shook it (the intent's `at`, else the relay's
+ *  time), the same on both phones; `row`: known from the sheet's day row only (the relay's own may still come). */
 export interface Shake {
   tree: string;
   drop: Drop;
   who: Who;
   t: number;
+  row?: boolean;
 }
 
 export interface WorldDay {
@@ -47,11 +50,13 @@ export interface WorldDay {
   watered: Record<string, Who>;
   /** Wishes on shooting stars, each for the morning (`YYYY-MM-DD`) its fragment comes: who wished how often. */
   wishes: Record<string, Partial<Record<Who, number>>>;
+  /** The wishes folded (`who:t`), so a replay counts none twice. */
+  wished: string[];
   /** Each person's last walk: where their villager stands. */
   walks: Partial<Record<Who, { to: Target; t: number }>>;
 }
 
-export const emptyDay = (day: number): WorldDay => ({ day, claims: {}, puts: {}, shakes: [], watered: {}, wishes: {}, walks: {} });
+export const emptyDay = (day: number): WorldDay => ({ day, claims: {}, puts: {}, shakes: [], watered: {}, wishes: {}, wished: [], walks: {} });
 
 /** What folding one event did: `fresh` it changed the day (not a repeat); `beat` an earlier claim of the same thing
  *  by the other person that this one overrides (the relay heard theirs first: I lost the race), or null. */
@@ -68,13 +73,19 @@ const SAME: Applied = { fresh: false, beat: null };
  * dropped theirs otherwise), so theirs replaces mine and comes back as `beat`. A repeat (same who and claim, a replay
  * of what I have already) changes nothing. An event of another day is ignored.
  */
-export function apply(d: WorldDay, e: DayEvent, me: Who | null): Applied {
+export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Applied {
   if (tokyoDay(e.t) !== d.day) return SAME;
   const c = claimOf(e);
   if (e.kind === 'catch' || e.kind === 'pick') {
     if (!c) return SAME;
     const was = d.claims[c];
-    if (was && (was.who === e.who || was.who !== me || e.who === me)) return SAME;
+    // the sheet's row had it, and here's the change itself (its what, how and where): the same claim, now news
+    const upgrade = was?.what === 'row' && was.who === e.who;
+    if (was && !upgrade && (was.who === e.who || was.who !== me || e.who === me)) return SAME;
+    if (upgrade) {
+      d.claims[c] = { ...was, what: e.what, ...(e.kind === 'catch' && e.how ? { how: e.how } : {}), ...(e.at ? { at: e.at } : {}) };
+      return { fresh: true, beat: null };
+    }
     d.claims[c] = { who: e.who, t: e.t, what: e.what, ...(e.kind === 'catch' && e.how ? { how: e.how } : {}), ...(e.at ? { at: e.at } : {}) };
     return { fresh: true, beat: was ?? null };
   }
@@ -83,12 +94,20 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null): Applied {
       if (d.puts[e.id]) return SAME;
       d.puts[e.id] = { id: e.id, what: e.what, at: e.at, who: e.who, t: e.t };
       return { fresh: true, beat: null };
-    case 'shake':
-      // the same shake again (a replay of one I folded already): who and time match
-      if (d.shakes.some((s) => s.tree === e.tree && s.who === e.who && s.t === e.t)) return SAME;
-      d.shakes.push({ tree: e.tree, drop: e.drop, who: e.who, t: e.t });
-      d.shakes.sort((a, b) => a.t - b.t);
+    case 'shake': {
+      // the same shake again (a replay of one I folded already, or the row's and then the relay's): its tree, who and
+      // the shaker's own time match
+      const t = e.at ?? e.t;
+      const was = d.shakes.find((s) => s.tree === e.tree && s.who === e.who && s.t === t);
+      if (was) {
+        if (!was.row || row) return SAME;
+        delete was.row;
+        return { fresh: true, beat: null };
+      }
+      d.shakes.push({ tree: e.tree, drop: e.drop, who: e.who, t, ...(row ? { row } : {}) });
+      d.shakes.sort((a, b) => a.t - b.t || (a.who < b.who ? -1 : a.who > b.who ? 1 : 0));
       return { fresh: true, beat: null };
+    }
     case 'world':
       if (e.op === 'watered') {
         if (d.watered[e.id]) return SAME;
@@ -96,6 +115,10 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null): Applied {
         return { fresh: true, beat: null };
       }
       if (e.op === 'wished') {
+        // each wish once (a replay of one I have is no second wish)
+        const k = `${e.who}:${e.t}`;
+        if (d.wished.includes(k)) return SAME;
+        d.wished.push(k);
         const w = (d.wishes[e.id] ??= {});
         w[e.who] = (w[e.who] ?? 0) + 1;
         return { fresh: true, beat: null };
@@ -120,9 +143,16 @@ export const taken = (d: WorldDay, id: string): Claim | null => d.claims[`pick:$
 /** The ids picked up, dug or pulled today (a day item's uid, a put's id). */
 export const takenIds = (d: WorldDay): Set<string> =>
   new Set(Object.keys(d.claims).filter((k) => k.startsWith('pick:')).map((k) => k.slice(5)));
+/** The ids someone else took today (a phone hides its own once its villager has got there, not at the tap). */
+export const takenByOthers = (d: WorldDay, me: Who | null): Set<string> =>
+  new Set(Object.entries(d.claims).filter(([k, c]) => k.startsWith('pick:') && c.who !== me).map(([k]) => k.slice(5)));
 /** What lies about now: the day's puts nobody has picked up or caught. */
-export const lying = (d: WorldDay): Put[] =>
-  Object.values(d.puts).filter((p) => !taken(d, p.id) && !caught(d, p.id)).sort((a, b) => a.t - b.t);
+export const lying = (d: WorldDay, me: Who | null = null, mineGone?: (id: string, claimedAt: number) => boolean): Put[] =>
+  Object.values(d.puts).filter((p) => {
+    const c = taken(d, p.id) ?? caught(d, p.id);
+    // my own claim leaves it there until my villager has got to it (`mineGone`); anyone else's takes it at once
+    return !c || (me !== null && c.who === me && !!mineGone && !mineGone(p.id, c.t));
+  }).sort((a, b) => a.t - b.t);
 /** How many wishes, everyone's, bring a fragment on the morning of `date`. */
 export const wishesFor = (d: WorldDay, date: string): number => Object.values(d.wishes[date] ?? {}).reduce((s, n) => s + (n ?? 0), 0);
 
@@ -148,9 +178,10 @@ export interface DayRow {
 /** `who`'s part of the day, as the sheet row keeps it. */
 export function rowOf(d: WorldDay, who: Who): DayRow {
   const row: DayRow = {
-    taken: Object.entries(d.claims).filter(([k, c]) => k.startsWith('pick:') && c.who === who).map(([k]) => k.slice(5)),
-    puts: Object.values(d.puts).filter((p) => p.who === who).map((p) => [p.id, p.what, p.at[0], p.at[1]]),
-    shakes: d.shakes.filter((s) => s.who === who && s.drop !== 'none').map((s) => [s.tree, s.drop, s.t]),
+    taken: Object.entries(d.claims).filter(([k, c]) => k.startsWith('pick:') && c.who === who).map(([k]) => k.slice(5)).slice(-ISLAND_MAX.taken),
+    // things that stay (presents; a bug out of a bush is gone in seconds)
+    puts: Object.values(d.puts).filter((p) => p.who === who && !p.what.startsWith('bug:')).map((p) => [p.id, p.what, p.at[0], p.at[1]] as DayRow['puts'][number]).slice(-ISLAND_MAX.puts),
+    shakes: d.shakes.filter((s) => s.who === who && s.drop !== 'none').map((s) => [s.tree, s.drop, s.t] as DayRow['shakes'][number]).slice(-ISLAND_MAX.shakes),
     watered: Object.entries(d.watered).filter(([, w]) => w === who).map(([c]) => c),
     wishes: Object.fromEntries(Object.entries(d.wishes).flatMap(([day, w]) => (w[who] ? [[day, w[who]!]] : [])))
   };
@@ -164,8 +195,7 @@ export function rowOf(d: WorldDay, who: Who): DayRow {
 export function applyRow(d: WorldDay, row: DayRow, who: Who, t: number, me: Who | null): void {
   for (const id of row.taken) if (!taken(d, id)) d.claims[`pick:${id}`] = { who, t, what: 'row' };
   for (const [id, what, x, z] of row.puts) apply(d, { kind: 'put', id, what, at: [x, z], who, t }, me);
-  for (const [tree, drop, ts] of row.shakes)
-    if (!d.shakes.some((s) => s.tree === tree && s.who === who && Math.abs(s.t - ts) < 5000)) apply(d, { kind: 'shake', tree, drop, who, t: ts }, me);
+  for (const [tree, drop, ts] of row.shakes) apply(d, { kind: 'shake', tree, drop, at: ts, who, t }, me, true);
   for (const cell of row.watered) d.watered[cell] ??= who;
   for (const [day, n] of Object.entries(row.wishes)) {
     const w = (d.wishes[day] ??= {});

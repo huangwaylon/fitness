@@ -482,6 +482,39 @@ describe('tally (one row per person and day)', () => {
   });
 });
 
+describe('island (the shared island: one row per person and day)', () => {
+  const day = (id: string, date: string, more: Record<string, unknown> = {}) =>
+    ({ id, type: 'island', data: { date, taken: ['s1000', 'w3'], puts: [['pa1', 'present', 120, 300]], shakes: [['oak-p1', 'branch', 1_793_000_000_000]], watered: ['A.0-1'], wishes: { '2026-10-30': 1 }, at: [100, 500], ...more } });
+
+  it('checks the shape: a real date not after tomorrow, well-formed ids, points within the plan, known drops', () => {
+    expect(a('event', day('i1', '2026-10-29'))).toEqual({ ok: true });
+    expect(a('event', day('i2', '2026-10-30', { at: undefined }))).toEqual({ ok: true });
+    for (const [i, more] of [
+      { date: '2026-11-01' },
+      { taken: ['has space'] },
+      { puts: [['p1', 'present', 9999, 0]] },
+      { shakes: [['oak-p1', 'fruit', 1]] },
+      { watered: ['C.0-1'] },
+      { wishes: { tomorrow: 1 } },
+      { at: [1.5, 2] },
+      { extra: 1 },
+      { taken: Array.from({ length: 401 }, (_, k) => `w${k}`) }
+    ].entries()) expect(a('event', day(`x${i}`, '2026-10-29', more)), JSON.stringify(more)).toEqual({ ok: false, error: 'bad_request' });
+  });
+
+  it('a new day row replaces the sender’s older one of that day; a tally of the same day and the other person stay', () => {
+    a('event', day('a1', '2026-10-29'));
+    tick();
+    b('event', day('b1', '2026-10-29'));
+    tick();
+    a('event', { id: 't1', type: 'tally', data: { date: '2026-10-29', counts: { 'fish:dab': 1 } } });
+    tick();
+    expect(a('event', day('a2', '2026-10-29', { taken: ['s1000', 'w3', 'w4'] }))).toEqual({ ok: true });
+    expect(data('events').map((r) => [r[1], r[2], r[3]])).toEqual([['B', 'b1', 'island'], ['A', 't1', 'tally'], ['A', 'a2', 'island']]);
+    expect(JSON.parse(String(data('events').at(-1)![4])).taken).toEqual(['s1000', 'w3', 'w4']);
+  });
+});
+
 describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);

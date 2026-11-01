@@ -7,11 +7,11 @@
 //   world.share(intent)          a change of mine: folded, kept, sent; returns what folding it did
 //   world.on(fn)                 the partner's changes (`live`: it just happened: play it)
 //   world.day                    today's WorldDay (reactive through `world.rev`)
-import { emptyDay, apply, type Applied, type Claim, type DayEvent, type WorldDay } from '#lib/sync/world-day.ts';
+import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
 import { tokyoDay, type Intent, type Relayed, type Who } from '#lib/sync/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { now } from '#lib/time/clock.ts';
+import { dayKey, now } from '#lib/time/clock.ts';
 
 /** A partner's change this recent is played as it happens (their villager walks over and does it); older (a
  *  replay when this phone opens) it only changes the island. */
@@ -41,6 +41,13 @@ class SharedWorld {
   #me: Who | null = null;
   #demo = false;
   #subs = new Set<(n: WorldNews) => void>();
+  /** Wishes on shooting stars, kept past the day they were made in (each brings its fragment the next morning): the
+   *  morning (YYYY-MM-DD) → who → how many. */
+  #wishes: Record<string, Partial<Record<Who, number>>> | null = null;
+  /** Yesterday's watered cells (both people's: tomorrow's hybrid flowers grow from them). */
+  #prev: { day: number; watered: string[] } | null = null;
+  /** Where my part of the day goes to the sheet (store/actions.ts sendIslandDay: held, one row per person and day). */
+  #sink: ((date: string, row: DayRow) => void) | null = null;
 
   /** The island's clock on the relay's (a `?date=` preview moves it; the relay's offset from the pings). */
   now(): number {
@@ -66,8 +73,15 @@ class SharedWorld {
   #today(): WorldDay {
     const today = tokyoDay(this.now());
     if (this.#day?.day === today) return this.#day;
-    // first look today: what this phone kept of it
+    // first look today: what this phone kept of it (and of yesterday, its watered flowers)
     const kept = readJson<{ day?: number; events?: DayEvent[] }>(localKV(), this.#key());
+    const prev = this.#day?.day === today - 1 ? this.#day : null;
+    if (prev) this.#keepPrev(today - 1, Object.keys(prev.watered));
+    else if (kept?.day === today - 1 && Array.isArray(kept.events)) {
+      const y = emptyDay(today - 1);
+      for (const e of kept.events) apply(y, e, this.#me);
+      this.#keepPrev(today - 1, Object.keys(y.watered));
+    }
     const d = emptyDay(today);
     this.#events = kept?.day === today && Array.isArray(kept.events) ? kept.events : [];
     for (const e of this.#events) apply(d, e, this.#me);
@@ -80,7 +94,10 @@ class SharedWorld {
     if (relay === this.#relay && me === this.#me && demo === this.#demo) return;
     this.#off?.();
     this.#off = null;
-    if (demo !== this.#demo || me !== this.#me) this.#day = null;
+    if (demo !== this.#demo || me !== this.#me) {
+      this.#day = null;
+      this.#wishes = null;
+    }
     this.#relay = relay;
     this.#me = me;
     this.#demo = demo;
@@ -88,7 +105,97 @@ class SharedWorld {
     this.rev++;
   }
 
+  #prevKey(): string {
+    return this.#demo ? `${DEMO.world}.prev.${this.#me ?? 'A'}` : LIVE.worldPrev;
+  }
+  #keepPrev(day: number, watered: string[]): void {
+    const was = this.#readPrev();
+    const all = was?.day === day ? [...new Set([...was.watered, ...watered])] : watered;
+    this.#prev = { day, watered: all };
+    writeJson(localKV(), this.#prevKey(), this.#prev);
+  }
+  #readPrev(): { day: number; watered: string[] } | null {
+    if (this.#prev) return this.#prev;
+    const p = readJson<{ day?: number; watered?: string[] }>(localKV(), this.#prevKey());
+    return p && typeof p.day === 'number' && Array.isArray(p.watered) ? (this.#prev = { day: p.day, watered: p.watered }) : null;
+  }
+
+  /** Yesterday's watered cells, both people's (`A.0-1`: whose bed and the cell), for today's hybrids. */
+  wateredYesterday(): string[] {
+    void this.rev;
+    const today = this.#today().day, p = this.#readPrev();
+    return p?.day === today - 1 ? p.watered : [];
+  }
+
+  /** My part of the day goes to the sheet through `fn` (held: store/actions.ts sendIslandDay). */
+  set sink(fn: ((date: string, row: DayRow) => void) | null) {
+    this.#sink = fn;
+  }
+
+  /** The sheet's island days (model/state.ts islandDays, each person's latest by day): today's folded in (what the
+   *  relay didn't bring: both apps were closed, an outage), yesterday's watering and wishes kept for today. */
+  rows(rows: readonly { at: number; person: Who; data: DayRow & { date: string } }[]): void {
+    const d = this.#today(), today = dayKey(now()), yesterday = dayKey(new Date(now().getTime() - 86_400_000));
+    const latest = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) {
+      if (r.data.date !== today && r.data.date !== yesterday) continue;
+      const k = `${r.person}|${r.data.date}`, was = latest.get(k);
+      if (!was || r.at >= was.at) latest.set(k, r);
+    }
+    let changed = false;
+    for (const r of latest.values()) {
+      if (r.data.date === today) {
+        const before = JSON.stringify(d);
+        applyRow(d, r.data, r.person, Math.min(r.at, this.now()), this.#me);
+        changed ||= JSON.stringify(d) !== before;
+      } else if (r.data.watered.length) {
+        const p = this.#readPrev();
+        if (!p || p.day !== d.day - 1 || r.data.watered.some((c) => !p.watered.includes(c))) {
+          this.#keepPrev(d.day - 1, r.data.watered);
+          changed = true;
+        }
+      }
+      // wishes for the mornings to come (made yesterday evening for this morning, or today for tomorrow's)
+      for (const [morning, n] of Object.entries(r.data.wishes)) {
+        if (morning < today) continue;
+        this.#wishes ??= readJson<Record<string, Partial<Record<Who, number>>>>(localKV(), this.#wishKey()) ?? {};
+        const w = (this.#wishes[morning] ??= {});
+        if ((w[r.person] ?? 0) < n) {
+          w[r.person] = n;
+          writeJson(localKV(), this.#wishKey(), this.#wishes);
+          changed = true;
+        }
+      }
+    }
+    if (changed) this.rev++;
+  }
+
+  #wishKey(): string {
+    return this.#demo ? `${DEMO.world}.wishes.${this.#me ?? 'A'}` : LIVE.wishes;
+  }
+
+  /** How many wishes `who` made for the morning of `date` (stars.ts: one fragment each). */
+  wishesOf(who: Who, date: string): number {
+    void this.rev;
+    this.#wishes ??= readJson<Record<string, Partial<Record<Who, number>>>>(localKV(), this.#wishKey()) ?? {};
+    return this.#wishes[date]?.[who] ?? 0;
+  }
+
+  /** A wish (mine or the partner's) noted for its morning; mornings gone by are dropped. */
+  #noteWish(e: DayEvent): void {
+    if (e.kind !== 'world' || e.op !== 'wished') return;
+    const today = dayKey(now());
+    const all = this.#wishes ?? readJson<Record<string, Partial<Record<Who, number>>>>(localKV(), this.#wishKey()) ?? {};
+    const out: Record<string, Partial<Record<Who, number>>> = {};
+    for (const [d, w] of Object.entries(all)) if (d >= today) out[d] = w;
+    const w = (out[e.id] ??= {});
+    w[e.who] = (w[e.who] ?? 0) + 1;
+    this.#wishes = out;
+    writeJson(localKV(), this.#wishKey(), out);
+  }
+
   #keep(e: DayEvent): void {
+    this.#noteWish(e);
     this.#events = [...this.#events, e].slice(-MAX);
     writeJson(localKV(), this.#key(), { day: this.#day!.day, events: this.#events });
   }
@@ -118,13 +225,18 @@ class SharedWorld {
    *  kept, and sent (the relay keeps it for the partner, or tells them now). */
   share(i: Shared): Applied {
     const me = this.#me ?? 'A';
-    const e = { ...i, who: me, t: this.now() } as DayEvent;
+    const t = this.now();
+    // a shake carries when it was shaken (its identity on both phones and in the sheet's row)
+    if (i.kind === 'shake') i = { ...i, at: Math.round(t) };
+    const e = { ...i, who: me, t } as DayEvent;
     const d = this.#today();
     const a = apply(d, e, this.#me);
     if (e.kind === 'act' || a.fresh) {
       if (e.kind !== 'act') {
         this.#keep(e);
         this.rev++;
+        // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day)
+        if (e.kind !== 'catch' && this.#me) this.#sink?.(dayKey(now()), rowOf(d, this.#me));
       }
       this.#relay?.send(i);
     }
@@ -144,6 +256,8 @@ class SharedWorld {
     this.#relay = null;
     this.#me = null;
     this.#day = null;
+    this.#wishes = null;
+    this.#prev = null;
     this.#events = [];
     this.#subs.clear();
     this.rev++;

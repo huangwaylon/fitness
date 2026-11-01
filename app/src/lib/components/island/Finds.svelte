@@ -7,8 +7,11 @@
   // sand) or digs a fossil up (a shovel, a puff of earth, a hole), with NH's caption on the catch plate. The first find
   // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル. Mushrooms are cosmetic (no
   // find): picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption.
-  // Everything derives from the Tokyo date and the time (beach.ts), so both phones broadly see the same island; what
-  // this phone took is hidden here only (sceneDay.ts). Everything lies in the world (world units: beach.ts, mushrooms.ts),
+  // Everything derives from the Tokyo date and the time (beach.ts), so both phones see the same island; what either of
+  // us takes is gone on both (the shared day: docs/backend.md#shared-world, a `pick` claimed at the tap, first wins;
+  // this phone's own record too, sceneDay.ts), and the partner's pick-up plays here: their villager walks over, picks
+  // it up or digs, and holds it up. A balloon's present that lands is put on the island for both (`put`), opened by
+  // either. Wishes are both people's: a fragment for each. Everything lies in the world (world units: beach.ts, mushrooms.ts),
   // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
   // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; no
   // timers but the dig's short wait, the clock is the scene's minute tick.
@@ -36,7 +39,10 @@
   import { eggTime, eventNow } from './events.ts';
   import { eggInDig } from './eggs.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
-  import { approach } from './avatar.ts';
+  import { approach, partnerAct } from './avatar.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
+  import { lying, taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
+  import { tellPartner, type PartnerNews } from './partnerNews.ts';
   import { loadCatalogNames } from '#lib/i18n/catalog.ts';
 
   interface Props {
@@ -67,6 +73,21 @@
 
   const clock = $derived(minuteNow());
   const date = $derived(dayKey(clock));
+  /** What's gone today: what this phone took (once my villager got there) and what the partner took (the shared day). */
+  const goneOn = (d: string): Set<string> => {
+    const mine = takenOn(d);
+    return d === dayKey() ? mine.union(takenByOthers(shared.day, shared.me)) : mine;
+  };
+  /** Both people's wishes for a morning (stars.ts: one fragment each): mine and the partner's. */
+  const allWishes = () => {
+    const w = { ...wishes() };
+    const them = shared.me === 'A' ? 'B' : 'A';
+    for (const d of [date, addDays(date, 1)]) {
+      const n = shared.wishesOf(them, d);
+      if (n) w[d] = (w[d] ?? 0) + n;
+    }
+    return w;
+  };
   const msOfDay = $derived.by(() => {
     const { hour, minute } = jst(clock);
     return (hour * 60 + minute) * 60_000 + clock.getSeconds() * 1000;
@@ -75,19 +96,19 @@
   /** This morning's fragments, picked or not (the shells and the bottle keep their distance from where they lay). */
   const allFragments = $derived.by<Fragment[]>(() => {
     void taken;
-    const n = want === 'fragment' ? 3 : fragmentsDue(wishes(), date, jst(clock).hour);
+    const n = want === 'fragment' ? 3 : fragmentsDue(allWishes(), date, jst(clock).hour);
     // after a meteor shower's night (the night before this morning) the season's zodiac fragment is likelier
     return fragmentsOn(date, n, seed, showerNight(addDays(date, -1), seed));
   });
   const shells = $derived.by<Shell[]>(() => {
     void taken;
-    const gone = takenOn(date);
+    const gone = goneOn(date);
     return shellsAt(date, msOfDay, seed, allFragments).filter((s) => !gone.has(s.uid));
   });
   const spots = $derived.by<DigSpot[]>(() => {
     void taken;
     void digHold;
-    const list = digSpots(date, takenOn(date), seed);
+    const list = digSpots(date, goneOn(date), seed);
     return digHold > Date.now() ? list.filter((s) => shown.has(s.uid)) : list;
   });
   /** Dig spots already on screen (a new one waits out digHold). */
@@ -98,11 +119,11 @@
   const bottle = $derived.by<Bottle | null>(() => {
     void taken;
     const b = want === 'bottle' ? bottleNow(date, [...allFragments, ...shellsAt(date, msOfDay, seed, allFragments)], seed) : bottleAt(date, msOfDay, seed, allFragments);
-    return b && !takenOn(date).has(b.uid) ? b : null;
+    return b && !goneOn(date).has(b.uid) ? b : null;
   });
   const mushrooms = $derived.by<Mushroom[]>(() => {
     void taken;
-    const gone = takenOn(date);
+    const gone = goneOn(date);
     const list = want === 'mushroom' ? [{ uid: 'm-demo', id: 'round-mushroom' as const, x: MUSHROOM_SPOTS[0][0], y: MUSHROOM_SPOTS[0][1], flip: false }] : mushroomsOn(date, seed);
     return list.filter((m) => !gone.has(m.uid));
   });
@@ -113,7 +134,7 @@
     want === 'earth-egg' || (eggTime(eventNow()) && eggInDig(date, s.uid, seed));
   const fragments = $derived.by<Fragment[]>(() => {
     void taken;
-    const gone = takenOn(date);
+    const gone = goneOn(date);
     return allFragments.filter((f) => !gone.has(f.uid));
   });
 
@@ -161,6 +182,11 @@
 
   /** Things my villager is walking to (a second tap meanwhile does nothing). */
   const going = new Set<string>();
+  /** Claim a thing on the ground for me (first wins): false when the partner has it already. */
+  const claim = (uid: string, what: string, x: number, y: number): boolean =>
+    shared.share({ kind: 'pick', id: uid, what, at: [Math.round(x), Math.round(y)] }).fresh;
+  /** Still mine when my villager gets there: the partner's claim may have reached the relay first. */
+  const stillMine = (uid: string) => (takenBy(shared.day, uid)?.who ?? shared.me) === shared.me;
   /** My villager walks to the find (avatar.ts), picks it up and holds it up over its head while the plate reads. The
    *  find is decided (and the ずかん written) at the tap; what shows waits for the walk. */
   function walkTo(uid: string, x: number, y: number, fn: (walked: boolean) => void, tool?: { tool: 'shovel'; toolMs: number }) {
@@ -175,36 +201,52 @@
     else go();
   }
   function pickShell(s: Shell) {
-    const added = recordFind('shell', s.id);
+    if (!claim(s.uid, `shell:${s.id}`, s.x, s.y)) return;
     walkTo(s.uid, s.x, s.y, () => {
+      if (!stillMine(s.uid)) return;
+      const added = recordFind('shell', s.id);
       pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
       sceneSfx('shell');
       plate(s.x, s.y, 4, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
     });
   }
   function pickFragment(f: Fragment) {
-    recordFind('fragment', f.id);
+    if (!claim(f.uid, `fragment:${f.id}`, f.x, f.y)) return;
     walkTo(f.uid, f.x, f.y, () => {
+      if (!stillMine(f.uid)) return;
+      recordFind('fragment', f.id);
       pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
       sceneSfx('fragment');
       plate(f.x, f.y, 4, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
     });
   }
   function pickBottle(b: Bottle) {
+    if (!claim(b.uid, 'bottle', b.x, b.y)) return;
     walkTo(b.uid, b.x, b.y, () => {
+      if (!stillMine(b.uid)) return;
       pickUp(b.uid, b.x, b.y, findArt('message-bottle'), -64);
       sceneSfx('bottle');
       plate(b.x, b.y, 4, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
     });
   }
-  /** Balloon presents lying where they fell (SceneTaps lands them: world x, y = z; size in u), until picked up. Not kept
-   *  across a reload. */
-  let presents = $state<{ uid: string; x: number; y: number; art: string; size: number }[]>([]);
-  /** A balloon's present has landed on the lawn at world (x, z) (SceneTaps): it lies there until a tap picks it up (NH). */
+  /** Balloon presents lying where they fell (SceneTaps lands them: world x, y = z; size in u), until either of us picks
+   *  one up: the shared day's puts (a reload or the partner's phone finds them there too; the partner's at a usual
+   *  size). */
+  const sizes = new Map<string, number>();
+  /** Presents opened here (gone once my villager has opened it; the partner's at once). */
+  const presents = $derived(lying(shared.day, shared.me, (id) => (void taken, takenOn(date).has(id))).filter((p) => p.what === 'present' || p.what === 'sky-egg').slice(-3)
+    .map((p) => ({ uid: p.id, x: p.at[0], y: p.at[1], art: p.what === 'sky-egg' ? findArt('sky-egg') : 'deco/present', size: sizes.get(p.id) ?? PRESENT_U })));
+  /** A present's size where it lies (u), when it wasn't this phone's balloon. */
+  const PRESENT_U = 24;
+  /** A balloon's present has landed on the lawn at world (x, z) (SceneTaps): it lies there until a tap picks it up (NH),
+   *  on both phones. */
   export function present(x: number, z: number, art: string, size: number) {
-    presents = [...presents.slice(-2), { uid: `p${++seq}`, x, y: z, art, size }];
+    const uid = `p${(shared.me ?? 'A').toLowerCase()}${shared.now().toString(36)}`;
+    sizes.set(uid, size);
+    shared.share({ kind: 'put', id: uid, what: art.endsWith('sky-egg') ? 'sky-egg' : 'present', at: [Math.round(x), Math.round(z)] });
     if (!art.endsWith('sky-egg')) void catalog().catch(() => {});
   }
+  type Inside = ReturnType<typeof import('./catalog.ts')['pickPresent']>;
   /** What a present can hold (catalog.ts, ~2,000 entries) and their names: their own chunks, fetched when one lands. */
   let catalogChunk: Promise<typeof import('./catalog.ts')> | null = null;
   const catalog = () => (catalogChunk ??= Promise.all([import('./catalog.ts'), loadCatalogNames(i18n.locale)]).then(([m]) => m,
@@ -217,9 +259,23 @@
    *  clothing or a seasonal DIY recipe at NH's odds; never ベル, not kept, but counted in the ずかん's カタログ / レシピ, a
    *  first one with the plate's second page). On Bunny Day the sky egg is just picked up. */
   function openPresent(p: (typeof presents)[number]) {
-    walkTo(p.uid, p.x, p.y, () => {
-      presents = presents.filter((q) => q.uid !== p.uid);
-      if (p.art.endsWith('sky-egg')) {
+    if (p.art.endsWith('sky-egg')) {
+      if (!claim(p.uid, 'sky-egg', p.x, p.y)) return;
+      return void walkTo(p.uid, p.x, p.y, () => opened(p, null));
+    }
+    // what's inside is decided at the tap (and claimed with it: the partner's phone shows what I got)
+    void catalog().then((C) => {
+      const inside = C.pickPresent(date, rand, eggTime(eventNow()));
+      if (!claim(p.uid, `present:${inside.kind}:${inside.id}`, p.x, p.y)) return;
+      walkTo(p.uid, p.x, p.y, () => opened(p, inside));
+    }, () => {});
+  }
+  function opened(p: (typeof presents)[number], inside: Inside | null) {
+    {
+      if (!stillMine(p.uid)) return;
+      take(date, p.uid);
+      taken++;
+      if (!inside) {
         const n = ++seq;
         lift = { n, x: p.x, y: p.y, lift: p.size / 2, art: p.art, tilt: 0 };
         later(() => lift?.n === n && (lift = null), 500);
@@ -232,17 +288,18 @@
       sceneSfx('present');
       later(() => sceneSfx('catch'), 260);
       void catalog().then((C) => {
-        const inside = C.pickPresent(date, rand, eggTime(eventNow()));
         const added = recordFind(inside.kind, inside.id);
         const name = C.catalogName(inside);
         // a recipe shows NH's DIY card, its name bare ("a DIY recipe for cherry-blossom clock")
         if (inside.kind === 'recipe') plate(p.x, p.y, p.size / 2, 'presents/diy-recipe', () => t('present.gotRecipe', { name: t(name).replace(/^(an?|some) /, '') }), 420, added);
         else plate(p.x, p.y, p.size / 2, C.catalogArt(inside), () => t('present.got', { name: t(name) }), 420, added);
       }, () => {});
-    });
+    }
   }
   function pickMushroom(m: Mushroom) {
+    if (!claim(m.uid, `mushroom:${m.id}`, m.x, m.y)) return;
     walkTo(m.uid, m.x, m.y, () => {
+      if (!stillMine(m.uid)) return;
       pickUp(m.uid, m.x, m.y, findArt(m.id), 0, 6);
       sceneSfx('mushroom');
       plate(m.x, m.y, 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
@@ -250,8 +307,10 @@
   }
   function digUp(s: DigSpot) {
     const special = rare(s) ? 'rare-mushroom' : egg(s) ? 'earth-egg' : null;
-    const added = special ? false : recordFind('fossil', s.fossil);
+    if (!claim(s.uid, special ? `dug:${special}` : `fossil:${s.fossil}`, s.x, s.y)) return;
     walkTo(s.uid, s.x, s.y, (walked) => {
+      if (!stillMine(s.uid)) return;
+      const added = special ? false : recordFind('fossil', s.fossil);
       take(date, s.uid);
       digHold = Date.now() + 20_000 + rand() * 20_000;
       clearTimeout(holdTimer);
@@ -266,6 +325,53 @@
       later(() => sceneSfx('catch'), 650);
     }, { tool: 'shovel', toolMs: 640 });
   }
+
+  // The partner's pick-ups (the shared day's news): gone here already (the lists re-derive); just now, their villager
+  // walks over, picks it up (or digs it, or opens the present) and holds it up with their line.
+  onMount(() =>
+    shared.on(({ e, live }) => {
+      if (e.kind === 'put' && e.what === 'present') void catalog().catch(() => {});
+      if (e.kind !== 'pick' || !live || !e.at || !enabled()) return;
+      const [kind, id, id2] = e.what.split(':');
+      const [x, z] = e.at;
+      const news = (n: Omit<PartnerNews, 'x' | 'z'>) => tellPartner({ ...n, x, z });
+      if (kind === 'fossil' || kind === 'dug') {
+        const { ms } = partnerAct(x, z, { tool: 'shovel', toolMs: 640 });
+        later(() => {
+          const n = ++seq;
+          dig = { n, x, y: z, held: true };
+          later(() => dig?.n === n && (dig = null), 6400);
+          sceneSfx('dig');
+          news({ art: findArt(id), verb: 'dug', name: `beach.name.${id}` });
+        }, ms);
+        return;
+      }
+      if (kind === 'present') {
+        const { ms } = partnerAct(x, z, { motion: 'squish' });
+        later(() => {
+          const n = ++seq;
+          opening = { n, x, y: z, art: 'deco/present', size: PRESENT_U };
+          later(() => opening?.n === n && (opening = null), 1100);
+          sceneSfx('present');
+          void catalog().then((C) => {
+            const inside = { kind: id as 'item' | 'recipe', id: id2 };
+            news({ art: inside.kind === 'recipe' ? 'presents/diy-recipe' : C.catalogArt(inside), verb: 'got', name: t(C.catalogName(inside)) });
+          }, () => {});
+        }, ms);
+        return;
+      }
+      const art = kind === 'bottle' ? findArt('message-bottle') : kind === 'sky-egg' ? findArt('sky-egg') : findArt(id);
+      const name = kind === 'bottle' ? 'beach.name.message-bottle' : kind === 'sky-egg' ? 'beach.name.sky-egg' : `beach.name.${id}`;
+      if (!['shell', 'fragment', 'bottle', 'mushroom', 'sky-egg'].includes(kind)) return;
+      const { ms } = partnerAct(x, z, { motion: 'squish' });
+      later(() => {
+        const n = ++seq;
+        lift = { n, x, y: z, lift: 0, art, tilt: 0 };
+        later(() => lift?.n === n && (lift = null), 500);
+        news({ art, verb: 'picked', name });
+      }, ms);
+    })
+  );
 
   /** A tap on the scene (client px), after the critters: true when a find took it. Reach: a 44px target around where
    *  the item is on screen now (`up`: its middle's height above its foot, u). */
@@ -329,7 +435,10 @@
    *  beach the next morning (before dawn: this morning, from 5:00), and a brief caption by the tap. */
   export function wish(px: number, py: number): void {
     const { hour } = jst(now());
-    addWish(fragmentDay(date, hour, (d) => addDays(d, 1)), date);
+    const morning = fragmentDay(date, hour, (d) => addDays(d, 1));
+    addWish(morning, date);
+    // the partner's beach gets its fragment too (both people's wishes count: the shared world)
+    shared.share({ kind: 'world', op: 'wished', id: morning });
     taken++;
     const n = ++seq;
     note = { n, x: 0, y: 0, placed: false };

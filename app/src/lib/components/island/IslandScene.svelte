@@ -52,6 +52,7 @@
   import { nav } from './nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
+  import { sendIslandDay } from '#lib/store/actions.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { visitorNow } from './visitors.ts';
@@ -204,7 +205,18 @@
     if (!live) return null;
     const row = (r: number) => (r ? BEDS[season].front : BEDS[season].back);
     if (hookFlag('hybrid')) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
-    return garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
+    const mine = garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
+    // both people's waterings yesterday (the shared day's: whose bed and the cell), so both phones grow the same one, in
+    // the same person's bed (each phone has its own bed on the left)
+    const both = shared.wateredYesterday().flatMap((id) => {
+      const m = /^([AB])\.(\d)-([01])$/.exec(id);
+      return m ? [`${m[2]}-${m[1]}${m[3]}`] : [];
+    });
+    if (!both.length) return mine;
+    const h = hybridFor(today, both, row);
+    if (!h) return null;
+    const [r, pc] = h.cell.split('-');
+    return { cell: `${r}-${+pc[1] + (pc[0] === view.me ? 0 : 2)}`, flower: h.flower };
   });
   // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop.
   let shakes = $state<ReturnType<typeof TreeShakes>>();
@@ -589,6 +601,17 @@
     });
   });
   $effect(() => () => demoRelay?.stop());
+  // the sheet keeps each person's part of the day (held: one row per person and day), and gives the partner's back
+  $effect(() => {
+    if (!live) return;
+    shared.sink = (date, row) => sendIslandDay(date, row);
+    return () => (shared.sink = null);
+  });
+  $effect(() => {
+    const m = week.model;
+    if (!live || !m) return;
+    untrack(() => shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data }))));
+  });
   $effect(() => {
     if (!relay) return;
     return relay.onStatus((st) => (partnerHere = wilburShows(st, !!week.demo)));

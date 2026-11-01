@@ -115,3 +115,38 @@ test('two players: a bug netted on one tab is gone on the other, where their vil
   expect(day.events).toContainEqual(expect.objectContaining({ kind: 'catch', id: 'hook:ladybug', who: 'A' }));
   await ctx.close();
 });
+
+test('two players: a shell picked up on one tab is gone on the other, and from a tab opening later; a watered flower glitters on both', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
+    await p.goto(`?demo&date=${DATE}&critter=none${as}`);
+    await expect(p.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  }
+  const shells = (p: Page) => p.locator('[data-find="shell"]');
+  for (const p of [a, b]) await expect(shells(p)).toHaveCount(3);
+  await a.waitForTimeout(1500);
+  const s = await shells(a).first().evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  });
+  await a.mouse.click(s.x, s.y);
+  await expect(a.locator('[data-fx="catch"]')).toContainText('を ひろった！', { timeout: 4000 });
+  await expect(shells(a)).toHaveCount(2);
+  await expect(shells(b)).toHaveCount(2, { timeout: 4000 });
+  // the partner's villager went for it: their line on B (in view at まえ)
+  await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('を ひろった！', { timeout: 5000 });
+  // A waters a flower of A's own bed (left on A's tab): it glitters on B's tab too, in A's bed (right on B's)
+  await a.locator('[data-flower="1-0"]').click();
+  await expect(a.locator('[data-flower="1-0"] [data-watered], [data-watered]').first()).toBeAttached({ timeout: 4000 });
+  await expect(b.locator('[data-watered]')).toHaveCount(1, { timeout: 5000 });
+  const wb = await b.locator('[data-watered]').evaluate((el) => el.closest('[data-flower]')?.getAttribute('data-flower') ?? el.parentElement?.closest('[data-flower]')?.getAttribute('data-flower'));
+  if (wb) expect(wb).toBe('1-2');
+  // B's phone again, later: the day as it is
+  const c = await ctx.newPage();
+  await c.goto(`?demo&date=${DATE}&critter=none&as=B`);
+  await expect(c.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  await expect(shells(c)).toHaveCount(2);
+  await ctx.close();
+});
