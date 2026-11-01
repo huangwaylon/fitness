@@ -1,6 +1,6 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
-import { FLOWERS } from '../src/lib/components/island/world.ts';
+import { CAMS, FLOWERS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
 
 /** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
@@ -125,4 +125,31 @@ test('night sky: the moon twinkles; a tap in the open sky lights a star (shootin
   await page.mouse.click(sky!.x, sky!.y);
   await expect(page.locator('[data-fx="star"]')).toHaveCount(1);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
+});
+
+test('the campfire by the tent: unlit by day, its flames and light at night; a tap pokes it where it is (embers, a crackle)', async ({ page }) => {
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  const go = async (when: string) => {
+    await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
+    await islandReady(page);
+    await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
+    await expect.poll(async () => {
+      await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), CAMS.oku);
+      await page.waitForTimeout(250);
+      return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+    }, { timeout: 5000 }).toBe(CAMS.oku);
+  };
+  await go('2026-11-04T12:00');
+  await expect(page.locator('[data-campfire="campfire"]')).toBeVisible();
+  await expect(page.locator('[data-lit="campfire"]')).toHaveCount(0);
+  await go('2026-11-04T22:00');
+  await expect(page.locator('[data-lit="campfire"] .tongue')).toHaveCount(3);
+  await expect(page.locator('[data-pool="campfire"]')).toHaveCount(1);
+  const home = await page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
+  const f = await centre(page, '[data-campfire="campfire"]');
+  await page.mouse.click(f.x, f.y);
+  await expect(page.locator('[data-fx="fire"] .ember')).toHaveCount(5);
+  expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('scene-campfire');
+  await page.waitForTimeout(400);
+  expect(await page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform)).toBe(home); // nobody walked
 });

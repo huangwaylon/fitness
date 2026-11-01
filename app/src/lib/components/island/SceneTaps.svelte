@@ -78,7 +78,7 @@
   let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk, tree }: Props = $props();
   const w = useWorld();
 
-  type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
+  type Kind = 'bush' | 'fire' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
   /** The flourishes drawn in the fixed sky (stage px); the rest are world nodes where the tap landed. */
   const SKY_KINDS: readonly Kind[] = ['cloud', 'sun', 'moon', 'star', 'shoot', 'wish'];
   interface Fx {
@@ -225,6 +225,9 @@
     const bushEl = t.closest<HTMLElement>('[data-bush]');
     const b = bushEl && bushAt(bushEl.dataset.bush ?? '');
     if (bushEl && b) return bush(bushEl, b);
+    const fireEl = t.closest<HTMLElement>('[data-campfire]');
+    const fire = fireEl && SCENERY.find((s) => s.id === fireEl.dataset.campfire);
+    if (fireEl && fire) return poke(fireEl, fire);
     const flowerEl = t.closest<HTMLElement>('[data-flower]');
     const fl = flowerEl && flowerById(flowerEl.dataset.flower ?? '');
     if (flowerEl && fl) return flower(flowerEl, fl);
@@ -269,6 +272,14 @@
     spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
     bushBug(b.x, b.z, b.h * 0.7);
     sceneSfx('bush');
+  }
+
+  /** The campfire poked (where it is: nobody walks): its logs shift, sparks fly up, a soft crackle. */
+  function poke(el: HTMLElement, f: { x: number; z: number; h: number }) {
+    turnTo(f.x);
+    jiggle(el, RUSTLE, 420, BUSH_ORIGIN);
+    spawn({ kind: 'fire', x: f.x, y: f.z, lift: f.h * 0.3 });
+    sceneSfx('campfire');
   }
 
   /** A wild flower: my villager waters it. */
@@ -542,7 +553,7 @@
       </span>
     </div>
   {/if}
-  <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 40, dz: -4 })}>
+  <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 40, dz: -4, light: f.kind === 'fire' })}>
     <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:--c={f.color}>
       {#if f.kind === 'bush'}
         {#each [-1, 0.3, 1] as dx, i (i)}
@@ -552,6 +563,8 @@
             {:else}<OfficialArt key={seasonArt(f.v as SeasonItem)} size="calc(15 * var(--su))" eager />{/if}
           </span>
         {/each}
+      {:else if f.kind === 'fire'}
+        {#each [-1, -0.4, 0.2, 0.7, 1.1] as dx, i (i)}<i class="ember" style:--dx={dx} style:--i={i}></i>{/each}
       {:else if f.kind === 'flower'}
         <i class="petal" style:--dx="-1"></i><i class="petal two" style:--dx="1"></i>
         <svg class="spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
@@ -730,6 +743,16 @@
   .print.r { left: calc(2.5 * var(--su)); top: calc(-6.5 * var(--su)); animation-delay: .1s; }
   .snow .print { background: rgba(110, 140, 190, .45); }
   @keyframes print { 0% { opacity: 0; } 15% { opacity: 1; } 60% { opacity: .9; } 100% { opacity: 0; } }
+  /* the campfire poked: five embers rise, drift and wink out (a light: untinted) */
+  .ember {
+    left: 0; top: 0; width: calc(2.6 * var(--su)); height: calc(2.6 * var(--su)); margin: calc(-1.3 * var(--su));
+    border-radius: 50%; background: #FFD27A; box-shadow: 0 0 calc(3 * var(--su)) #FF9A3C;
+    animation: ember .95s ease-out calc(var(--i) * 70ms) both;
+  }
+  @keyframes ember {
+    0% { transform: translate(0, 0) scale(1); opacity: 0; } 15% { opacity: 1; }
+    100% { transform: translate(calc(var(--dx) * 9 * var(--su)), calc(-34 * var(--su))) scale(.4); opacity: 0; }
+  }
   .puff {
     left: 0; top: 0; width: calc(8.5 * var(--su)); height: calc(8.5 * var(--su)); margin: calc(-7 * var(--su)) 0 0 calc(-4.25 * var(--su));
     border-radius: 50%; background: rgba(255, 248, 228, .92); animation: puff .6s ease-out calc(var(--i) * 35ms) both;

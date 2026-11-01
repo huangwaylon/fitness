@@ -317,7 +317,11 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   blooming on under the snow), 30u (pansies, windflowers, mums lower, lilies taller), each with a baked soft shadow.
   Each flower's id is where it stands (`fl:<x>:<z>`): watering, hybrids and the flower bugs key on it.
   **Decor** (NH's models and catalog icons): streetlamps, garden lanterns, garden and flat rocks, the month's bushes, a
-  bamboo grove.
+  bamboo grove, and the campfire on the clearing's east side (262, 944; NH's `FtrCampfire` at 2.6u a model unit, as the
+  lanterns) with two log stools at it, clear of centre stage and the tent's door. Unlit by day; from dusk (.7) and at
+  night its render's emissive look breathes, three tongues of flame flicker over the logs, a warm halo and a pool of
+  light on the clearing, all lights (untinted, in the fire's depth: a villager in front covers them), still while
+  covered or hidden.
   `scenery.test` keeps every piece off the water, the paths, the footprints and the features' spots, and the walk
   reaching every door; bamboo and rocks are obstacles like the trees.
 - **Winter and night looks** (`scripts/models.ts`, [Official art](#official-art)): NH's own snowy models (the campsite,
@@ -438,7 +442,8 @@ the same bug: [Shared world](#shared-world)); a tree's leaves rustle (three quic
 tree](#shaking-a-tree)); a flower is watered ([Island care](#island-care));
 the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
 the sun glints; the moon bobs; the night sky twinkles (and grants a wish while a shooting star crosses: [Shooting
-stars](#shooting-stars)); the pond rings.
+stars](#shooting-stars)); the pond rings; the campfire is poked where it is (its logs shift, five embers rise, a soft
+crackle: `crackle`, synthesized).
 
 **Tap targets** (`island/hitbox.ts`, `e2e/hits.spec.ts`): everything tappable answers on its whole visible body,
 base included, at least 44 × 44px about its middle; in front wins. A tree is its leaves (Scenery's `.hit`, the canopy
