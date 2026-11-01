@@ -212,7 +212,9 @@ export class IslandLife {
         return {
           villagers: { [v.me]: { ...mine, present: true, lastIntent: at(steered.mine) }, [v.partner]: { ...partner, present: partnerHere(), lastIntent: at(steered.partner) } } as Record<PersonId, VillagerState>,
           pois: ambientPois(),
-          scores: { A: dayScore(v.people.A), B: dayScore(v.people.B) }
+          scores: { A: dayScore(v.people.A), B: dayScore(v.people.B) },
+          // the exercise goal (🍑) met today: a pull-up at the bar now and then
+          exercise: { A: todayPct(v.people.A.rings.peach) >= 100, B: todayPct(v.people.B.rings.peach) >= 100 }
         };
       },
       outing,

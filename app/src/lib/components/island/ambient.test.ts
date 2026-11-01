@@ -213,3 +213,34 @@ describe('ambient life: the critters', () => {
     expect(pickBug(11, 13, spawnRand(bug))).toBe(pickBug(11, 13, spawnRand(structuredClone(bug))));
   });
 });
+
+describe('ambient life: the decor (benches, the campfire, the pull-up bar)', () => {
+  const seats: Poi[] = [...POIS, { node: 'seatMaeL', at: [27, 146] }, { node: 'stoolW', at: [232, 969] }, { node: 'pullup', at: [330, 917] }];
+  it('a seat is sat on for 20–40 s; the far seats and the bar only by their own beats', () => {
+    const all = beats(day(world({ pois: seats }), 9 * 360, 16 * 360));
+    const stops = all.flatMap(([, b]) => (b.kind === 'outing' ? b.stops : []));
+    for (const s of stops.filter((s) => s.node === 'seatMaeL')) expect(s.linger >= 20_000 && s.linger <= 40_000).toBe(true);
+    expect(stops.some((s) => s.node === 'pullup' || s.node === 'stoolW')).toBe(false);
+  });
+  it('on an exercise day a villager goes to the pull-up bar now and then (its own person’s only)', () => {
+    const all = beats(day(world({ pois: seats, exercise: { A: true, B: false } }), 9 * 360, 16 * 360));
+    const bar = all.filter(([, b]) => b.kind === 'outing' && b.stops.some((s) => s.node === 'pullup'));
+    expect(bar.length).toBeGreaterThan(0);
+    expect(bar.every(([who]) => who === 'A')).toBe(true);
+  });
+  it('in the evening they go sit at the campfire, each on their own stool', () => {
+    const all = beats(day(world({ pois: seats, phase: 'evening' }), 19 * 360, 22 * 360));
+    const fire = all.filter(([, b]) => b.kind === 'outing' && b.stops.some((s) => /^stool/.test(s.node)));
+    expect(fire.length).toBeGreaterThan(0);
+    for (const [who, b] of fire) expect(b.kind === 'outing' && b.stops[0].node).toBe(who === 'A' ? 'stoolW' : 'stoolE');
+  });
+  it('both met every goal: at dusk they set off together for the front bench, side by side; not otherwise', () => {
+    const at = (scores: Record<Who, number>, hour: number) => villagerBeats(world({ pois: seats, scores }), DATE, hour * 360);
+    expect(at({ A: 100, B: 100 }, 17)).toEqual({
+      A: { kind: 'outing', stops: [{ node: 'seatMaeL', linger: 90_000 }], together: true },
+      B: { kind: 'outing', stops: [{ node: 'seatMaeR', linger: 90_000 }], together: true }
+    });
+    for (const b of Object.values(at({ A: 100, B: 60 }, 17))) expect(b.kind === 'outing' && b.together).toBeFalsy();
+    for (const b of Object.values(at({ A: 100, B: 100 }, 15))) expect(b.kind === 'outing' && b.together).toBeFalsy();
+  });
+});

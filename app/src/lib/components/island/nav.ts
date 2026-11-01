@@ -14,7 +14,7 @@
 import type { Box } from './geom.ts';
 import {
   BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
-  DECOR_SLOTS, SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, type BuildingId, type Pt
+  DECOR_SLOTS, PULLUP_AT, SCENERY, SEATS, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -252,7 +252,9 @@ function namedNodes(): Record<string, Pt> {
     // the stream's casting spots: its west bank below the falls, the bend, the mouth (the west beach in front of it), the
     // falls' pool (NH's clifftop: the upper tier is beyond the horizon)
     riverEast: [340, 880], riverBend: [330, 742], mouth: [-12, 596],
-    bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
+    bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18],
+    // the benches' and the stools' seats, the pull-up bar (world.ts SEATS)
+    ...SEATS, pullup: PULLUP_AT
   };
   for (const b of BUILDINGS) nodes[`door-${b.id}`] = doorOf(b.id);
   return nodes;

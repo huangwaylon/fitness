@@ -239,13 +239,15 @@ export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_
 
 /** Idle life's outing from the slot (ambient.ts villagerBeats): through those points of interest, lingering at each as
  *  given, then home; the same walk on both phones. */
-export function outing(id: Villager, stops: readonly Stop[]): boolean {
+export function outing(id: Villager, stops: readonly Stop[], together = false): boolean {
   const c = ctx, other = otherOf(id);
   if (!c || !c.enabled() || !free(id) || awayFromHome(id) || !stops.length) return false;
-  if (actors[other].walking || awayFromHome(other)) return false;
+  if (!together && (actors[other].walking || awayFromHome(other))) return false;
   return hop(id, stops.length, stops);
 }
 type Stop = { node: string; linger: number };
+/** Seats a wander of its own never picks (the slot's beats send a villager there). */
+const FAR_SEATS = new Set(['stoolW', 'stoolE', 'seatPondL', 'seatPondR']);
 
 /** The next point of interest (`stops`' next, or one at random) and on; false (home soon) when there's none to go to. */
 function hop(id: Villager, left: number, stops?: readonly Stop[]): boolean {
@@ -253,7 +255,8 @@ function hop(id: Villager, left: number, stops?: readonly Stop[]): boolean {
   if (!c || !c.enabled() || busy(id)) return goHomeLater(id, 1500), false;
   const g = c.geo(), from = c.where(id);
   const stop = stops?.[stops.length - left];
-  const list = pois(g, presence.visitor, actors[id].home).filter((p) => (stop ? p.name === stop.node : c.clear(id, p.at[0], p.at[1])));
+  // (a stop the slot named may be further than a random wander goes: the campfire, the bar, the pond's bench)
+  const list = pois(g, presence.visitor, stop ? undefined : actors[id].home).filter((p) => (stop ? p.name === stop.node : c.clear(id, p.at[0], p.at[1]) && p.kind !== 'bar' && !FAR_SEATS.has(p.name)));
   for (let tries = 0; tries < 4; tries++) {
     const p = stop ? list[0] : pickPoi(list, from, Math.random);
     if (!p) break;
@@ -272,7 +275,9 @@ function hop(id: Villager, left: number, stops?: readonly Stop[]): boolean {
 function arrived(id: Villager, kind: PoiKind, left: number, stops?: readonly Stop[], linger?: number) {
   const c = ctx, other = otherOf(id);
   if (!c) return;
-  if (!actors[other].walking && adjacent(c.where(id), c.where(other))) chat(id);
+  // a seat or the bar: it sits (or does its pull-up) facing us (IslandScene draws it seated: world.ts seatAt)
+  if (kind === 'seat' || kind === 'bar') actors[id].face = 'home';
+  else if (!actors[other].walking && adjacent(c.where(id), c.where(other))) chat(id);
   else if (kind === 'shore') {
     actors[id].face = 'home'; // out to sea, toward the camera
     setMotion(id, 'turn');

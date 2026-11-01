@@ -234,6 +234,31 @@ export const DECOR_SLOTS: readonly DecorSlot[] = [
   { id: 'firewood', x: 150, z: 972, foot: [18, 12], key: 'deco/firewood' }
 ];
 
+/** Where a villager sits (docs/design.md "Decor: sitting"): just behind a bench's seat or a stool (the piece in front
+ *  covers its legs: SEAT_DROP), two to a bench; and where it stands at the pull-up bar. Walk-graph nodes (walkGraph.ts,
+ *  nav.ts): the same names on both phones. */
+const slotAt = (id: string) => DECOR_SLOTS.find((d) => d.id === id)!;
+const seat = (id: string, dx: number): Pt => {
+  const d = slotAt(id);
+  return [d.x + dx, d.z + d.foot[1] / 2 + 9];
+};
+const stool = (id: string): Pt => {
+  const s = SCENERY.find((x) => x.id === id)!;
+  return [s.x, s.z + 13];
+};
+export const SEATS: Record<string, Pt> = {
+  seatMaeL: seat('bench-mae', -13), seatMaeR: seat('bench-mae', 13),
+  seatPondL: seat('bench-pond', -14), seatPondR: seat('bench-pond', 14),
+  stoolW: stool('stool-1'), stoolE: stool('stool-2')
+};
+/** Where a villager stands to do a pull-up (just behind the bar stand). */
+export const PULLUP_AT: Pt = seat('pullup', 0);
+/** How far a seated villager sinks (u): the bench's seat (or the stool) covers its legs. */
+export const SEAT_DROP = 12;
+/** The seat (its name) a villager standing at (x, z) is on, or null. */
+export const seatAt = (x: number, z: number): string | null =>
+  Object.entries(SEATS).find(([, [sx, sz]]) => Math.abs(sx - x) <= 3 && Math.abs(sz - z) <= 3)?.[0] ?? null;
+
 // ---- wild flowers ---------------------------------------------------------------------------------------------------
 
 /** NH's flowers growing wild over the lawn: clumps of 2–5 of one kind (scene.ts WILD: the season's), on open grass off

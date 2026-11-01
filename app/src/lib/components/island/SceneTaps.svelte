@@ -31,7 +31,7 @@
   import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
-  import { ARCH, DECOR_SLOTS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
+  import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
   import { hitWorld, petalOf, sceneSfx, shownNow, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import Critters from './Critters.svelte';
@@ -48,6 +48,7 @@
   import { eggTime, eventNow } from './events.ts';
   import { eggInBalloon } from './eggs.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
 
   interface Props {
@@ -284,6 +285,20 @@
     sceneSfx('campfire');
   }
 
+  let snowLine = 0;
+  /** The pump (NH's water pump): its gush waters every wild flower within PUMP_U (each as a tap's watering does: on
+   *  both phones, the shared day's `watered`), a sprinkle over the nearest two. */
+  const PUMP_U = 70;
+  function pump(x: number, z: number) {
+    sceneSfx('pump');
+    const near = FLOWERS.filter((f) => Math.hypot(f.x - x, f.z - z) <= PUMP_U).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z));
+    for (const f of near) {
+      water(dayKey(), f.id);
+      shared.share({ kind: 'world', op: 'watered', id: f.id });
+    }
+    for (const f of near.slice(0, 2)) spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195 });
+    if (near.length) setTimeout(() => sceneSfx('water'), 420);
+  }
   /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
   function fixture(el: HTMLElement, id: string, look: string) {
     const slot = DECOR_SLOTS.find((d) => d.id === id);
@@ -299,7 +314,12 @@
       return;
     }
     if (id === 'pullup') return sceneSfx('bar');
-    if (id === 'pump') return sceneSfx('pump');
+    if (id === 'pump') return pump(x, z);
+    if (/snowboy/.test(look)) {
+      // the snowboy's line, in its voice (melting: a little smaller)
+      const melt = Number(look.slice(-1)) >= 2;
+      say?.(t('world.snowboy'), t(melt ? 'world.snowboy.melt' : `world.snowboy.${snowLine++ % 3}`), el, { colour: '#DDEBFA' });
+    }
     if (id === 'sandcastle' || /snowboy/.test(look)) {
       spawn({ kind: id === 'sandcastle' ? 'sand' : 'grass', x, y: z, v: id === 'sandcastle' ? undefined : 'snow', flip: roll(2) });
       return sceneSfx(id === 'sandcastle' ? 'sand' : 'snow');

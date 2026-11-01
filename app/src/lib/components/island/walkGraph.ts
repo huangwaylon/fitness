@@ -9,7 +9,7 @@
 import type { Box } from './geom.ts';
 import {
   BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
-  DECOR_SLOTS, SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onBridge, onLand, type Pt
+  DECOR_SLOTS, PULLUP_AT, SCENERY, SEATS, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onBridge, onLand, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -147,7 +147,9 @@ function namedNodes(): Record<string, Pt> {
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],
     pondside: [POND.x + 4, POND.z + POND.rz + 14],
     riverEast: [340, 880], riverBend: [330, 742], mouth: [-12, 596],
-    bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18]
+    bridgeS: [BRIDGE.x, BRIDGE.z0 - 12], bridgeN: [BRIDGE.x, BRIDGE.z1 + 12], clifftop: [CLIFF.fall[0] - 14, CLIFF.z0 - FALLS_POOL + 18],
+    // the benches' and the stools' seats, the pull-up bar (world.ts SEATS)
+    ...SEATS, pullup: PULLUP_AT
   };
   for (const b of BUILDINGS) nodes[`door-${b.id}`] = [b.x, b.z - 16];
   return nodes;

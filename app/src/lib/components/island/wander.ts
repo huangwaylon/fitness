@@ -16,14 +16,15 @@ const ADJACENT_U = 64;
 export const POI_LINGER: readonly [number, number] = [3000, 5000];
 export const MAX_HOPS = 3;
 
-export type PoiKind = 'tree' | 'rock' | 'shore' | 'stage' | 'spot';
+export type PoiKind = 'tree' | 'rock' | 'shore' | 'stage' | 'spot' | 'seat' | 'bar';
 export interface Poi { name: string; at: Pt; kind: PoiKind }
 
 /** The fixed points of interest (walkGraph nodes): beside and behind the trees, the rock, the shore (stares at the
  *  sea), centre stage. Extra nodes a later layout adds (a pondside) are points of interest too. */
 const BASE_POIS: Record<string, PoiKind> = {
   treeA: 'tree', treeB: 'tree', outA: 'tree', outB: 'tree', backA: 'spot', backB: 'spot', rock: 'rock',
-  shoreL: 'shore', shoreC: 'shore', shoreR: 'shore', centreStage: 'stage'
+  shoreL: 'shore', shoreC: 'shore', shoreR: 'shore', centreStage: 'stage',
+  seatMaeL: 'seat', seatMaeR: 'seat', seatPondL: 'seat', seatPondR: 'seat', stoolW: 'seat', stoolE: 'seat', pullup: 'bar'
 };
 const FIXED = new Set(['homeA', 'homeB', 'midA', 'midB', 'centre', 'stairS', 'stairN', 'riverEast', 'riverBend', 'mouth', 'clifftop', ...Object.keys(BASE_POIS)]);
 
