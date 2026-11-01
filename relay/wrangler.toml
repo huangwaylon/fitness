@@ -1,0 +1,38 @@
+# The live relay (docs/backend.md#live-relay): one Worker + one SQLite-backed Durable Object (the island room) on the
+# Workers Free plan. Deploy: `npm run deploy` (production) or `npm run deploy:test` (the smoke-test copy, its own
+# secrets and room). Secrets: `npx wrangler secret put KEY_A` / `KEY_B` (add `--env test` for the test copy).
+name = "island-fund-relay"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+ALLOWED_ORIGINS = "https://huangwaylon.github.io"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "IslandRoom"
+
+# The Free plan has only SQLite-backed Durable Objects: new_sqlite_classes, never new_classes.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["IslandRoom"]
+
+[observability]
+enabled = true
+head_sampling_rate = 0.1
+
+[env.test]
+name = "island-fund-relay-test"
+
+[env.test.vars]
+ALLOWED_ORIGINS = "https://huangwaylon.github.io"
+
+[[env.test.durable_objects.bindings]]
+name = "ROOM"
+class_name = "IslandRoom"
+
+[[env.test.migrations]]
+tag = "v1"
+new_sqlite_classes = ["IslandRoom"]

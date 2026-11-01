@@ -1,0 +1,137 @@
+// The live relay's wire protocol (docs/backend.md#live-relay), shared by the Worker (relay/, imported by relative path)
+// and the client (live.ts). Intents, not positions: a tap's target and what it did, never a stream of coordinates.
+// Every message is one small JSON object (≤ MAX_BYTES), versioned by `v`, and checked by the same parsers on both
+// sides. No imports: the Worker bundles this file as is.
+
+export const LIVE_V = 1;
+/** Anything longer is dropped unread by both sides. */
+export const MAX_BYTES = 256;
+
+export type Who = 'A' | 'B';
+
+/** What my villager did with a tap (phase 2 maps these to the director's walk-then-act). */
+export const ACTS = ['weed', 'water', 'dig', 'shake', 'fruit', 'present', 'cast', 'net', 'talk', 'visitor', 'star', 'tap'] as const;
+export type Act = (typeof ACTS)[number];
+
+/** A change to the shared island, applied at once on the other phone (and persisted through the outbox in phase 2). */
+export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken'] as const;
+export type WorldOp = (typeof WORLD_OPS)[number];
+
+/** A walk-graph node id or a stage point (stage units, integers). */
+export type Target = string | readonly [number, number];
+
+/** The intents a client sends; the relay stamps `who` and `t` and passes them to the other person only. */
+export type Intent =
+  | { kind: 'walk'; to: Target; at?: number }
+  | { kind: 'act'; act: Act; id?: string; at?: number }
+  | { kind: 'catch'; what: string; id?: string }
+  | { kind: 'emote'; emote: string }
+  | { kind: 'world'; op: WorldOp; id: string };
+
+/** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen). */
+export type ClientMsg =
+  | { v: 1; kind: 'hello'; key: string; since?: number }
+  | { v: 1; kind: 'ping'; c: number }
+  | ({ v: 1 } & Intent);
+
+/** An intent as relayed: who sent it and the relay's clock when it arrived (ms since the epoch). */
+export type Relayed = Intent & { v: 1; who: Who; t: number };
+
+/** Relay → client. */
+export type ServerMsg =
+  | { v: 1; kind: 'welcome'; me: Who; peer: boolean; t: number }
+  | { v: 1; kind: 'pong'; c: number; t: number }
+  | { v: 1; kind: 'presence'; who: Who; on: boolean; t: number }
+  | Relayed;
+
+/** Close codes (4000–4999 are the application's). */
+export const CLOSE = {
+  /** No or a wrong key, or a message before hello. */
+  unauthorized: 4001,
+  /** The same person connected again (another tab or phone): this one stops until it is shown again. */
+  replaced: 4002,
+  /** No hello in time. */
+  timeout: 4003,
+  /** The relay is updating its protocol: reconnect later. */
+  version: 4004
+} as const;
+
+const ID = /^[\w:.-]{1,32}$/;
+const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
+const KEY = /^[0-9a-f]{32,128}$/;
+
+type Obj = Record<string, unknown>;
+const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
+const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x < 1e14;
+const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
+const isCoord = (x: unknown): x is number => Number.isInteger(x) && Math.abs(x as number) <= 100_000;
+const isTarget = (x: unknown): x is Target =>
+  isId(x) || (Array.isArray(x) && x.length === 2 && isCoord(x[0]) && isCoord(x[1]));
+const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
+const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T => list.includes(x as T);
+
+/** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. */
+function intentOf(o: Obj): Intent | null {
+  switch (o.kind) {
+    case 'walk':
+      if (!isTarget(o.to) || !opt(o, 'at', isTime)) return null;
+      return { kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}) };
+    case 'act':
+      if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime)) return null;
+      return { kind: 'act', act: o.act, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as number } : {}) };
+    case 'catch':
+      if (!isId(o.what) || !opt(o, 'id', isId)) return null;
+      return { kind: 'catch', what: o.what, ...(o.id !== undefined ? { id: o.id as string } : {}) };
+    case 'emote':
+      if (typeof o.emote !== 'string' || !TOKEN.test(o.emote)) return null;
+      return { kind: 'emote', emote: o.emote };
+    case 'world':
+      if (!oneOf(WORLD_OPS)(o.op) || !isId(o.id)) return null;
+      return { kind: 'world', op: o.op, id: o.id };
+    default:
+      return null;
+  }
+}
+
+function parseObj(raw: unknown): Obj | null {
+  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
+  try {
+    const o: unknown = JSON.parse(raw);
+    return isObj(o) && o.v === LIVE_V ? o : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A client message as the relay accepts it, or null (wrong version, too big, unknown kind or a bad field). */
+export function parseClient(raw: unknown): ClientMsg | null {
+  const o = parseObj(raw);
+  if (!o) return null;
+  if (o.kind === 'hello') {
+    if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
+    return { v: 1, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}) };
+  }
+  if (o.kind === 'ping') return isTime(o.c) ? { v: 1, kind: 'ping', c: o.c } : null;
+  const i = intentOf(o);
+  return i && { v: 1, ...i };
+}
+
+const isWho = (x: unknown): x is Who => x === 'A' || x === 'B';
+
+/** A relay message as the client accepts it, or null. */
+export function parseServer(raw: unknown): ServerMsg | null {
+  const o = parseObj(raw);
+  if (!o || !isTime(o.t)) return null;
+  const t = o.t;
+  switch (o.kind) {
+    case 'welcome':
+      return isWho(o.me) && typeof o.peer === 'boolean' ? { v: 1, kind: 'welcome', me: o.me, peer: o.peer, t } : null;
+    case 'pong':
+      return isTime(o.c) ? { v: 1, kind: 'pong', c: o.c, t } : null;
+    case 'presence':
+      return isWho(o.who) && typeof o.on === 'boolean' ? { v: 1, kind: 'presence', who: o.who, on: o.on, t } : null;
+  }
+  if (!isWho(o.who)) return null;
+  const i = intentOf(o);
+  return i && { ...i, v: 1, who: o.who, t };
+}

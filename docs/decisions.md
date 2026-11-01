@@ -25,6 +25,15 @@ The app paints from a local snapshot and polls for rows newer than the last `at`
 optimistic and queue until sent. When the sheet's `rev` changes (a hand edit), the client drops its cache and
 refetches everything. Why: Apps Script takes 1–4 s, and that must never block a tap.
 
+### Live relay on Cloudflare
+While both phones have the app open, each sees the other's villager act at once: a Worker with one SQLite-backed
+Durable Object (the island room, `relay/`) on the Workers Free plan relays small intents (where I tapped and what I
+did, never positions) between the two, over a WebSocket opened only while the app is visible and authenticated with
+the same person key as the sheet. It is presence only: the sheet stays the record (shared changes also go through the
+outbox), so a relay outage loses liveness, never data. Why: Apps Script can't push and takes seconds, polling it
+faster would burn its quota; the Free plan needs no payment method, the Hibernation API makes idle sockets free, and
+the edge is in Tokyo (~20 ms one way). Firebase RTDB (Spark) was the fallback.
+
 ### Shortcut health sync
 Each iPhone runs one built-in Shortcut that posts daily totals (`steps`, `exercise_minutes`, `calories` as Move
 kcal, `stand_minutes`, `weight`). It is triggered when everyday apps open, because Health can't be read while the
