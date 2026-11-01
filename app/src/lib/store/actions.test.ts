@@ -6,7 +6,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { buy, setGoalWeight, setMoveGoal, undoSpend } from './actions.ts';
+import { buy, setGoalWeight, setMoveGoal, setStepsGoal, undoSpend } from './actions.ts';
 import type { ShopItemId } from '#lib/types.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -54,6 +54,13 @@ describe('wallet actions', () => {
     expect(queued()).toEqual([]);
     expect(setMoveGoal('B', 549.6).ok).toBe(true);
     expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'moveGoal', value: 550 }]]);
+  });
+
+  it('setStepsGoal sends pref stepsGoal for either person: a whole 500 in 1,000–30,000, refuses the rest', () => {
+    for (const bad of [500, 30500, 8250, 8000.5, NaN, Infinity]) expect(setStepsGoal('A', bad)).toEqual({ ok: false });
+    expect(queued()).toEqual([]);
+    expect(setStepsGoal('B', 10000).ok).toBe(true);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'stepsGoal', value: 10000 }]]);
   });
 });
 

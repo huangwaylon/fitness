@@ -8,7 +8,7 @@ async function islandReady(page: Page) {
   await expect(page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
 }
 
-/** Tap today's ベル ribbon: the island panel slides down (on the きろく tab, or the last tab this session). */
+/** Tap today's ベル ribbon: the island panel slides down (on けんこう, every time). */
 async function openPanel(page: Page) {
   await page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ }).click();
   await expect(sheet(page).locator('.panel-body')).toBeVisible();
@@ -216,6 +216,48 @@ test('きろく: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from
   await expect(goals).toContainText('520 kcal');
   await goals.locator('button.pp').nth(0).click();
   await expect(goals).toContainText('2,000 kcal');
+});
+
+test('きろく: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and けんこう follow it', async ({ page }) => {
+  await page.goto('?demo');
+  await openKiroku(page);
+  const goals = sheet(page).locator('.goals');
+  await expect(goals).toContainText('8,000歩');
+  await goals.getByRole('button', { name: /歩数（1日） ✎$/ }).click();
+  const input = sheet(page).getByRole('textbox');
+  await expect(input).toHaveAttribute('inputmode', 'numeric');
+  expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
+  await expect(sheet(page).locator('.wi .hint')).toHaveText('1,000〜30,000歩、500歩ずつで入れてね');
+  for (const bad of ['500', '8250', '30500']) {
+    await input.fill(bad);
+    await sheet(page).getByRole('button', { name: 'けってい' }).click();
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+  }
+  await input.fill('30,000');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(page.getByText('歩数の目標を かえました')).toBeVisible();
+  await expect(goals).toContainText('30,000歩');
+  // today's tree popup and けんこう read the new goal: no demo day reaches 30,000 steps
+  await page.keyboard.press('Escape');
+  await page.locator('button.canopy').nth(0).click();
+  await expect(page.locator('.detail .row[data-row=apple] .amt')).toHaveText(/^[\d,]+ \/ 30,000歩$/);
+  await expect(page.locator('.detail .row[data-row=apple] .amt svg')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await openPanel(page);
+  await expect(sheet(page).locator('.mc[data-metric=steps] header .goal')).toHaveText('目標 30,000歩');
+  // the partner's: the second avatar pill, ✎ sets theirs; mine stays
+  await sheet(page).locator('.tab[data-tab=kiroku]').click();
+  const other = goals.locator('button.pp').nth(1);
+  const partner = (await other.textContent())!.trim();
+  await other.click();
+  await expect(goals).toContainText('8,000歩');
+  await goals.getByRole('button', { name: /歩数（1日） ✎$/ }).click();
+  await expect(sheet(page)).toContainText(partner);
+  await sheet(page).getByRole('textbox').fill('6500');
+  await sheet(page).getByRole('button', { name: 'けってい' }).click();
+  await expect(goals).toContainText('6,500歩');
+  await goals.locator('button.pp').nth(0).click();
+  await expect(goals).toContainText('30,000歩');
 });
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
-import { moveGoalOn, reduce } from './state.ts';
+import { moveGoalOn, reduce, stepsGoalOn } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { metricAsOf } from './inputs.ts';
 import { weekBells } from './bells.ts';
@@ -99,15 +99,19 @@ describe('Apple Health is the source of truth', () => {
 });
 
 describe('goals: either person sets either person’s', () => {
-  it('`person` on moveGoal / goalWeight names whose goal; without it, the sender’s', () => {
+  it('`person` on moveGoal / stepsGoal / goalWeight names whose goal; without it, the sender’s', () => {
     const rows = withRows(goodWeek(), {
       events: [
         ev(jst(DAYS[2], '09:07'), 'B', 'pref', { person: 'A', key: 'moveGoal', value: 450 }),
         ev(jst(DAYS[2], '09:08'), 'B', 'pref', { person: 'A', key: 'goalWeight', value: 58.5 }),
-        ev(jst(DAYS[2], '09:09'), 'B', 'pref', { key: 'goalWeight', value: 52 })
+        ev(jst(DAYS[2], '09:09'), 'B', 'pref', { key: 'goalWeight', value: 52 }),
+        ev(jst(DAYS[2], '09:10'), 'B', 'pref', { person: 'A', key: 'stepsGoal', value: 6000 })
       ]
     });
     const s = reduce(rows);
+    expect(stepsGoalOn(s, 'A', DAYS[2])).toBe(6000);
+    expect(stepsGoalOn(s, 'A', DAYS[1])).toBe(8000);
+    expect(stepsGoalOn(s, 'B', DAYS[2])).toBe(8000);
     expect(moveGoalOn(s, 'A', DAYS[2])).toBe(450);
     expect(moveGoalOn(s, 'A', DAYS[1])).toBe(600); // never re-prices earlier days
     expect(moveGoalOn(s, 'B', DAYS[2])).toBe(400);

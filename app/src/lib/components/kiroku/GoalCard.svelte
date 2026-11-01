@@ -1,6 +1,7 @@
 <script lang="ts">
-  // 目標: one person's two goals in one place on きろく's からだ, each with ✎: the Move goal (the 🍐 ring's daily
-  // kcal, per person, from today on; earlier days keep theirs) and the weight goal (shown only, never earns). The two
+  // 目標: one person's goals in one place on きろく's からだ, each with ✎: the Move goal (the 🍐 ring's daily kcal) and
+  // the steps goal (🍎, 8,000 unless set), per person, from today on (earlier days keep theirs), and the weight goal
+  // (shown only, never earns). The two
   // avatars on top switch whose goals these are; either person may set either person's.
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -17,12 +18,14 @@
     names: Record<PersonId, string>;
     villagers: Record<PersonId, string | null>;
     moveGoal: number;
+    stepsGoal: number;
     goalWeight: number | null;
     onperson: (p: PersonId) => void;
     onmove: () => void;
+    onsteps: () => void;
     onweight: () => void;
   }
-  let { person, order, names, villagers, moveGoal, goalWeight, onperson, onmove, onweight }: Props = $props();
+  let { person, order, names, villagers, moveGoal, stepsGoal, goalWeight, onperson, onmove, onsteps, onweight }: Props = $props();
 </script>
 
 <section class="card goals" aria-labelledby="goals-h">
@@ -41,6 +44,12 @@
     <span class="k">{t('goal.move')}</span>
     <b class="v money">{t('kiroku.kcal', { n: formatNum(moveGoal) })}</b>
     <button type="button" class="pen-btn" data-sfx="page" data-focus="move-goal" aria-label="{names[person]} {t('goal.move')} ✎" onclick={onmove}><Glyph kind="pen" size={18} /></button>
+  </div>
+  <div class="row">
+    <span class="ic"><OfficialArt key={fruitArt('apple')} size={22} /></span>
+    <span class="k">{t('goal.steps')}</span>
+    <b class="v money">{t('kiroku.steps', { n: formatNum(stepsGoal) })}</b>
+    <button type="button" class="pen-btn" data-sfx="page" data-focus="steps-goal" aria-label="{names[person]} {t('goal.steps')} ✎" onclick={onsteps}><Glyph kind="pen" size={18} /></button>
   </div>
   <div class="row">
     <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-scale" /></svg></span>

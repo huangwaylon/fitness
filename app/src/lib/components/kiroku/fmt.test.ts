@@ -1,6 +1,6 @@
 // The きろく formatters: weights and the two goal fields.
 import { describe, expect, it } from 'vitest';
-import { kgDelta, kgText, parseKcalInput, parseKgInput } from './fmt.ts';
+import { kgDelta, kgText, parseKcalInput, parseKgInput, parseStepsInput } from './fmt.ts';
 
 describe('weight text', () => {
   it('formats weights and changes with a true minus', () => {
@@ -26,6 +26,14 @@ describe('Move goal input', () => {
     expect(parseKcalInput(' 1,200 kcal')).toBe(1200);
     expect(parseKcalInput('６００')).toBe(600);
     for (const s of ['', '99', '2001', '600.5', 'abc', '-400']) expect(parseKcalInput(s)).toBeNull();
+  });
+  it('reads a typed steps goal: whole 500s in 1,000–30,000', () => {
+    expect(parseStepsInput('8000')).toBe(8000);
+    expect(parseStepsInput(' 10,500 歩')).toBe(10500);
+    expect(parseStepsInput('12000 steps')).toBe(12000);
+    expect(parseStepsInput('８０００')).toBe(8000);
+    expect([parseStepsInput('1000'), parseStepsInput('30000')]).toEqual([1000, 30000]);
+    for (const s of ['', '500', '30500', '8250', '8000.5', 'abc', '-8000']) expect(parseStepsInput(s)).toBeNull();
   });
 });
 

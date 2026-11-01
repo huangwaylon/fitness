@@ -102,13 +102,15 @@ The first week with an activity row stamped by its lock. Why: no start date in t
 can't earn.
 
 ### Four automatic fruits
-🍐 Move (active kcal, per-person goal), 🍑 Exercise (60 min), 🍒 Stand (120 min), 🍎 Steps (8,000), in Apple's ring
+🍐 Move (active kcal, per-person goal), 🍑 Exercise (60 min), 🍒 Stand (120 min), 🍎 Steps (per-person goal, 8,000 by
+default), in Apple's ring
 order (けんこう and the tree's popup put steps first). Why: the Watch measures them with no effort; Move follows each
 person's own Fitness goal.
 
-### Move goal per person
-`pref` `moveGoal` (100–2,000 kcal), set by either person, applies from the Tokyo day it is set. Why: Move kcal depend
-on body size, and the past must not re-price.
+### Move and steps goals per person
+`pref` `moveGoal` (100–2,000 kcal) and `stepsGoal` (1,000–30,000 in 500s, 8,000 until set), set by either person, apply
+from the Tokyo day they are set. Why: Move kcal depend on body size and a day's walking on the person, and the past
+must not re-price.
 
 ### Harvest and week lock
 Sunday 19:30 the recap opens (ceremony only); the Wednesday 04:00 after, the week's earnings lock (spends never do).

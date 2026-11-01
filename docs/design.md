@@ -88,7 +88,8 @@ Esc close the panel.
 - **ベル:** everything earned, then by week (earnings only) one line per day under the two avatars: each person's four
   fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day); on a がんばり day a smaller second
   line with each person's がんばり ベル.
-- **目標:** the Move and weight goals; two avatar pills pick whose (either person sets either person's).
+- **目標:** the Move, steps and weight goals; two avatar pills pick whose (either person sets either person's). The
+  steps goal (歩数（1日）, ✎) takes 1,000–30,000 in 500s in a 16px numeric field; 8,000 for both until set.
 - **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found.
 - **Day:** ふたりでぜんぶ (+2 or —), then each person: the day's ベル and per goal its value (green when met, the
   「がんばり」 chip at 1.5×) and +1, then any がんばり row, like the tree's popup.
@@ -106,7 +107,7 @@ trainer, one person at a time, computed on read.
 - **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年, すべて), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
   the goal was met, pale when not; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
-  The goal dashed (stepped when the Move goal changed). On 1週 each bar carries its value. A tap shows one value; a
+  The goal dashed (stepped when the Move or steps goal changed). On 1週 each bar carries its value. A tap shows one value; a
   horizontal drag turns the page (right = older); vertical drags scroll the panel.
 - **体重** (`WeightCard`, `WeightChart`): 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
   to the weights (dots joined by a thin line; the goal dashed, or a 「目標 66.0 ↓」 label when far off) and the goal
@@ -147,12 +148,14 @@ Lists follow Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS
 | 🍐 Move | active kcal (`calories` → `move_kcal`) | per person `pref` moveGoal, 100–2,000 (default ウェイ 600, うめ 400) |
 | 🍑 Exercise | Watch exercise minutes (`exercise_minutes` → `exercise_min`) | 60 min |
 | 🍒 Stand | Stand Time (`stand_minutes` → `stand_min`) | 120 min |
-| 🍎 Steps | `steps` (max of `steps`, `steps_watch`) | 8,000 |
+| 🍎 Steps | `steps` (max of `steps`, `steps_watch`) | per person `pref` stepsGoal, 1,000–30,000 in 500s (default 8,000 for both) |
 
-The Move goal on a day is the last one set on or before that Tokyo date.
+The Move and steps goals on a day are the last ones set on or before that Tokyo date (a change never re-prices an
+earlier day). Everything that reads a goal reads that day's: the ベル, the tree's popup and the flower beds, けんこう's goal
+line and goal days, あそびかた, and the all-four notification.
 
 **がんばり (stretch):** +1 more for each goal reached at 1.5× (`STRETCH.multiplier`): 🍐 1.5 × that day's Move goal,
-🍑 90 min, 🍒 180 min, 🍎 12,000 steps; at most **+2 a person a day** (`STRETCH.cap`, paid to the first in
+🍑 90 min, 🍒 180 min, 🍎 1.5 × that day's steps goal (12,000 for 8,000); at most **+2 a person a day** (`STRETCH.cap`, paid to the first in
 `RING_FRUITS` order). A person earns 0–4 + 0–2 a day.
 
 **ふたりでぜんぶ:** +2 shared when both meet all four goals the same Tokyo day (がんばり doesn't enter it). A day pays
@@ -200,7 +203,7 @@ Steps, exercise, Move, Stand and weight come only from the Shortcut's `metrics` 
 so each sync replaces it with Health's current total (a locked week's earnings stay as of its lock). Nothing in the
 app enters or fixes them.
 
-What the app sends ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either person's
+What the app sends ([backend.md](backend.md#events)): the goals (`pref` `moveGoal`, `stepsGoal`, `goalWeight`, either person's
 via `data.person`), buys and voids, harvest taps, high-fives, the sender's `locale`, `villagerName` and `villager`, and
 the ずかん's finds (`find`, the first of each). A buy and its とりけす wait 5 s before they are sent (touching the banner
 holds it, ≤ 2 min).

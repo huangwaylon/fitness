@@ -8,18 +8,20 @@ export const RING_FRUITS = ['pear', 'peach', 'cherry', 'apple'] as const satisfi
 
 /**
  * The stamp card. Per person per Tokyo day, all or nothing per goal: +`perGoal` ベル for each daily goal met (🍐 the
- * person's Move goal, `moveGoalOn`; 🍑 exerciseMin; 🍒 standMin; 🍎 steps), so at most 4 a day. ふたりでぜんぶ:
+ * person's Move goal, `moveGoalOn`; 🍑 exerciseMin; 🍒 standMin; 🍎 the person's steps goal, `stepsGoalOn`), so at most
+ * 4 a day. ふたりでぜんぶ:
  * +`together` shared when both people meet all four goals on the same day.
  */
 export const RULES = {
-  goals: { exerciseMin: 60, standMin: 120, steps: 8000 },
+  goals: { exerciseMin: 60, standMin: 120 },
   perGoal: 1,
   together: 2
 } as const;
 
 /**
  * がんばり (the stretch bonus). Per person per Tokyo day: +`perGoal` more for each goal reached at `multiplier` × its
- * target (🍐 1.5 × the Move goal in force that day; 🍑 90 min; 🍒 180 min; 🍎 12,000 steps), at most `cap` ベル a day
+ * target (🍐 1.5 × the Move goal in force that day; 🍑 90 min; 🍒 180 min; 🍎 1.5 × the steps goal in force that day,
+ * 12,000 for 8,000), at most `cap` ベル a day
  * (the first fruits in RING_FRUITS order take them). So a person earns 0–4 + 0–2 a day; ふたりでぜんぶ ignores it.
  */
 export const STRETCH = { multiplier: 1.5, perGoal: 1, cap: 2 } as const;
@@ -47,6 +49,16 @@ export const PEOPLE: Record<PersonId, { villager: string; moveGoal: number; birt
 
 /** A `pref` moveGoal: an integer kcal in this range (inclusive); anything else is ignored (the previous goal stays). */
 export const MOVE_GOAL = { min: 100, max: 2000 } as const;
+
+/**
+ * The daily steps goal (🍎): `fallback` for everyone until set with `pref` stepsGoal, which takes a whole multiple of
+ * `step` in [min, max] (anything else is ignored: the previous goal stays).
+ */
+export const STEPS_GOAL = { fallback: 8000, min: 1000, max: 30000, step: 500 } as const;
+
+/** A steps goal that may be set: a whole multiple of STEPS_GOAL.step in [min, max]. */
+export const isStepsGoal = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v >= STEPS_GOAL.min && v <= STEPS_GOAL.max && v % STEPS_GOAL.step === 0;
 
 /**
  * A week's two times (JST): Sunday 19:30 (the harvest recap opens) and the Wednesday 04:00 after (the week locks: rows

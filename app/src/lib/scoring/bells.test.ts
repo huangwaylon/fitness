@@ -4,20 +4,20 @@
 import { describe, expect, it } from 'vitest';
 import type { PersonId, RingFruit } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
-import { RING_FRUITS, RULES, SHOP, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
+import { RING_FRUITS, RULES, SHOP, STEPS_GOAL, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
 import { allMet, earnWeek, ringBells, togetherDays, type EarnDay, type WeekEarning } from './bells.ts';
 
 const WK = '2026-11-02';
 
 type Day = Partial<Omit<EarnDay, 'date'>>;
-/** One person's week from per-day metrics (missing = no row); the Move goal defaults to 600. */
+/** One person's week from per-day metrics (missing = no row); the Move goal defaults to 600, the steps goal to 8,000. */
 const week = (ds: (Day | null)[], person: PersonId = 'A', wk = WK): WeekEarning =>
   earnWeek({
     person,
     weekKey: wk,
     days: weekDays(wk).flatMap((date, i) => {
       const d = ds[i];
-      return d ? [{ date, steps: null, exerciseMin: null, moveKcal: null, standMin: null, moveGoal: 600, ...d }] : [];
+      return d ? [{ date, steps: null, exerciseMin: null, moveKcal: null, standMin: null, moveGoal: 600, stepsGoal: 8000, ...d }] : [];
     })
   });
 
@@ -42,13 +42,14 @@ const pairWeek = (a: WeekEarning, b: WeekEarning): number =>
   [a, b].reduce((n, e) => n + e.days.reduce((m, d) => m + d.bells, 0), 0) + togetherDays(a, b).filter(Boolean).length * RULES.together;
 
 describe('the rules', () => {
-  it('are a stamp card: +1 a goal, +2 ふたりでぜんぶ, goals 60 min / 120 min / 8,000 steps', () => {
-    expect(RULES).toEqual({ goals: { exerciseMin: 60, standMin: 120, steps: 8000 }, perGoal: 1, together: 2 });
+  it('are a stamp card: +1 a goal, +2 ふたりでぜんぶ, goals 60 min / 120 min, steps 8,000 unless set (1,000–30,000 by 500)', () => {
+    expect(RULES).toEqual({ goals: { exerciseMin: 60, standMin: 120 }, perGoal: 1, together: 2 });
+    expect(STEPS_GOAL).toEqual({ fallback: 8000, min: 1000, max: 30000, step: 500 });
   });
 
   it('がんばり: +1 per goal at 1.5×, at most +2 a day: 90 min, 180 min, 12,000 steps, 900 / 600 kcal', () => {
     expect(STRETCH).toEqual({ multiplier: 1.5, perGoal: 1, cap: 2 });
-    expect([RULES.goals.exerciseMin, RULES.goals.standMin, RULES.goals.steps, 600, 400].map(stretchOf)).toEqual([90, 180, 12000, 900, 600]);
+    expect([RULES.goals.exerciseMin, RULES.goals.standMin, STEPS_GOAL.fallback, 600, 400].map(stretchOf)).toEqual([90, 180, 12000, 900, 600]);
   });
 });
 
@@ -83,6 +84,17 @@ describe('earnWeek: one person', () => {
     expect(week([{ moveKcal: 900, moveGoal: 0 }]).days[0].met.pear).toBe(false); // no goal: never met
   });
 
+  it('🍎 is the person\'s steps goal in force that day, and its がんばり 1.5× of it', () => {
+    const days = week([
+      { steps: 9999, stepsGoal: 10000 }, { steps: 10000, stepsGoal: 10000 }, { steps: 14999, stepsGoal: 10000 }, { steps: 15000, stepsGoal: 10000 },
+      { steps: 5000, stepsGoal: 5000 }, { steps: 7500, stepsGoal: 5000 }, { steps: 30000, stepsGoal: 0 }
+    ]).days;
+    expect(days.map((d) => [d.met.apple, d.stretched.apple, d.bells])).toEqual([
+      [false, false, 0], [true, false, 1], [true, false, 1], [true, true, 2], [true, false, 1], [true, true, 2], [false, false, 0] // no goal: never met
+    ]);
+    expect(days[1].stepsGoal).toBe(10000);
+  });
+
   it('a day with no row, a missing metric or a negative value meets nothing', () => {
     const w = week([null, { steps: 9000 }, { exerciseMin: -5, moveKcal: -1, standMin: -3, steps: -10 }]);
     expect(w.days.map((d) => d.bells)).toEqual([0, 1, 0, 0, 0, 0, 0]);
@@ -93,8 +105,8 @@ describe('earnWeek: one person', () => {
     const w = earnWeek({
       person: 'B', weekKey: WK,
       days: [
-        { date: '2026-11-01', steps: 9000, exerciseMin: 70, moveKcal: 700, standMin: 200, moveGoal: 400 },
-        { date: '2026-11-03', steps: 8100, exerciseMin: 61.7, moveKcal: 401, standMin: 121, moveGoal: 400 }
+        { date: '2026-11-01', steps: 9000, exerciseMin: 70, moveKcal: 700, standMin: 200, moveGoal: 400, stepsGoal: 8000 },
+        { date: '2026-11-03', steps: 8100, exerciseMin: 61.7, moveKcal: 401, standMin: 121, moveGoal: 400, stepsGoal: 8000 }
       ]
     });
     expect(w.days.map((d) => d.date)).toEqual(weekDays(WK));

@@ -305,6 +305,35 @@ describe('the Move goal in force: per person, from the day it is set, never re-p
   });
 });
 
+describe('the steps goal in force: 8,000 for everyone by default, per person from the day it is set, never re-pricing earlier days', () => {
+  // A: 10,000 steps every day: over the default 8,000 (not its 12,000 がんばり), under a goal of 12,000.
+  const walked = rowsOf({ metrics: D.map((d) => metric(jst(d, '22:00'), 'A', d, 'steps', 10000)) });
+  const goal = (at: string, p: PersonId, value: number, person?: PersonId) => ev(at, p, 'pref', { key: 'stepsGoal', value, ...(person ? { person } : {}) });
+  const apples = (r: SnapshotRows, now: number) => weekBells(reduce(r), WK, now).A.days.map((d) => [d.bells, d.stepsGoal]);
+
+  it('the default: 8,000 for both', () => {
+    expect(apples(walked, MON_AFTER)).toEqual(D.map(() => [1, 8000]));
+    const v = buildWeekView(reduce(walked), 'A', ms(D[2], '12:00'));
+    expect([v.people.A.stepsGoal, v.people.B.stepsGoal]).toEqual([8000, 8000]);
+  });
+
+  it('a change applies from its Tokyo day on: the week, the ribbon’s ring, the stretch, and the history keeps each day’s', () => {
+    const r = plus(walked, { events: [goal(jst(D[2], '07:00'), 'A', 12000), goal(jst(D[4], '23:59'), 'B', 6500, 'A')] });
+    expect(apples(r, MON_AFTER)).toEqual([[1, 8000], [1, 8000], [0, 12000], [0, 12000], [2, 6500], [2, 6500], [2, 6500]]);
+    expect(buildWeekView(reduce(r), 'A', ms(D[1], '23:00')).people.A.stepsGoal).toBe(8000); // Tuesday: still the old goal
+    expect(buildWeekView(reduce(r), 'A', ms(D[2], '12:00')).people.A.rings.apple).toEqual({ today: 10000, goal: 12000, met: false, stretched: false });
+    expect(buildWeekView(reduce(r), 'A', ms(D[5], '12:00')).people.A.rings.apple).toEqual({ today: 10000, goal: 6500, met: true, stretched: true });
+    expect(buildWeekView(reduce(r), 'B', ms(D[5], '12:00')).people.B.stepsGoal).toBe(8000); // B set A's, not their own
+    expect(dayDetail(reduce(r), D[0], MON_AFTER).people.A.met.apple).toBe(true);
+    expect(dayDetail(reduce(r), D[3], MON_AFTER).people.A.met.apple).toBe(false);
+  });
+
+  it('only a whole 500 in 1,000–30,000 is taken; a change after the week never re-prices it', () => {
+    const r = plus(walked, { events: [goal(jst(D[1], '08:00'), 'A', 999), goal(jst(D[1], '08:00'), 'A', 30500), goal(jst(D[1], '08:00'), 'A', 10250), goal(jst(MON, '08:00'), 'A', 20000)] });
+    expect(apples(r, MON_AFTER)).toEqual(D.map(() => [1, 8000]));
+  });
+});
+
 describe('がんばり: +1 per goal at 1.5×, at most +2 a person a day, in the wallet, the ribbon and きろく', () => {
   /** A's day: every goal met, these metrics raised to (at least) 1.5×. */
   const big = (at: string, d: string, over: Partial<Record<MetricRow[3], number>>): MetricRow[] =>

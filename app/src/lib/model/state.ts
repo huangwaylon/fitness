@@ -2,7 +2,7 @@
 // read-time rules here (an invalid or unknown event is ignored, not refused), so the sheet stays a dumb append-only log.
 // Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
 import type { LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
-import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, shopPrice } from '#lib/config/rules.ts';
+import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, STEPS_GOAL, isStepsGoal, shopPrice } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
 import type { TallyRow } from './tally.ts';
@@ -73,6 +73,8 @@ export interface State {
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
+  /** Accepted `pref` stepsGoal per person, ascending `at` (`stepsGoalOn` picks the one in force). */
+  stepsGoals: Record<PersonId, Timed<number>[]>;
   /** Newest metrics row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
   /** The economy's first week (`firstWeek`). */
@@ -168,6 +170,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     tallies: [],
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
+    stepsGoals: { A: [], B: [] },
     lastSync: { A: null, B: null },
     start: null,
     rev,
@@ -260,6 +263,11 @@ const ON_EVENT: Record<EventType, OnEvent> = {
       if (typeof v === 'number' && Number.isInteger(v) && v >= MOVE_GOAL.min && v <= MOVE_GOAL.max) s.moveGoals[person].push({ at, v });
       return;
     }
+    if (d.key === 'stepsGoal') {
+      // A whole STEPS_GOAL.step in STEPS_GOAL's range; anything else is ignored (the previous goal stays).
+      if (isStepsGoal(d.value)) s.stepsGoals[person].push({ at, v: d.value });
+      return;
+    }
     const p = s.prefs[person];
     if (d.key === 'locale' && (d.value === 'ja' || d.value === 'en')) p.locale = d.value;
     else if (d.key === 'villagerName' && typeof d.value === 'string') {
@@ -279,9 +287,18 @@ const ON_EVENT: Record<EventType, OnEvent> = {
  * stamped by t), else PEOPLE[p].moveGoal. A change applies from the day it's made, never to earlier days.
  */
 export function moveGoalOn(s: Pick<State, 'moveGoals'>, person: PersonId, date: LocalDate, t = Infinity): number {
-  const list = s.moveGoals[person];
+  return goalOn(s.moveGoals[person], date, t) ?? PEOPLE[person].moveGoal;
+}
+
+/** A person's steps goal on `date`, as moveGoalOn: the latest `pref` stepsGoal by then, else STEPS_GOAL.fallback. */
+export function stepsGoalOn(s: Pick<State, 'stepsGoals'>, person: PersonId, date: LocalDate, t = Infinity): number {
+  return goalOn(s.stepsGoals[person], date, t) ?? STEPS_GOAL.fallback;
+}
+
+/** The latest goal made on or before that Tokyo date (and stamped by t), or undefined. */
+function goalOn(list: Timed<number>[], date: LocalDate, t: number): number | undefined {
   for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t && localDateAt(list[i].at) <= date) return list[i].v;
-  return PEOPLE[person].moveGoal;
+  return undefined;
 }
 
 /** The value of the latest entry with `at ≤ t`, or undefined. Lists are in ascending `at`. */
