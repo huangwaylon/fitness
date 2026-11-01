@@ -50,6 +50,8 @@ interface Job {
   looks: Look[];
   /** Image height in px (the day look's crop; the rest share it). About 3 px per world unit of the sprite's height. */
   px: number;
+  /** Or a fixed scale, px per model unit (a decoration's four facings: one size whatever its crop). */
+  ppu?: number;
   /** Camera pitch (degrees down): 30 for the upright sprites, 90 for ground pieces seen from above. */
   pitch?: number;
   rotY?: number;
@@ -121,6 +123,20 @@ export const JOBS: Job[] = [
   }))
 ];
 
+// the decorations (island/decor.ts DECOR_ART; docs/design.md "Decorating"): NH's outdoor furniture, each in its four
+// facings (f × 90° about the up axis: toward the camera, its right, away, its left), at one scale (px per model unit:
+// DECOR_U u per unit × 3 px per u) so the facings stand the same size, its body's first colour
+const DECOR_PPU = 3 * 3;
+const DECOR: [string, string][] = [
+  ['stone-lantern', 'FtrStonelantern'], ['birdbath', 'FtrBirdbus'], ['garden-wagon', 'FtrGardenwagon'], ['iron-table', 'FtrIrongardenTable'],
+  ['iron-chair', 'FtrIrongardenChair'], ['brick-well', 'FtrWellBrick'], ['tanuki', 'FtrOrnamentTanuki'], ['monstera', 'FtrPlantMonstera'],
+  ['signpost', 'FtrSignpost'], ['wheelbarrow', 'FtrHandcart']
+];
+JOBS.push(...DECOR.flatMap(([id, model]) => [0, 1, 2, 3].map((f): Job => ({
+  px: 0, ppu: DECOR_PPU, anchor: 'origin', rotY: f * 90,
+  looks: [{ key: `decor/${id}-${f}`, parts: [[model, model]], tex: [`${model}ReBody0`, `${model}ReFabric0`], outputs: ['day'] }]
+}))));
+
 // ---- the run ------------------------------------------------------------------------------------------------------
 
 const MODELS = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');
@@ -137,10 +153,12 @@ for (const f of [...folders, ...jobs.flatMap((j) => j.looks.flatMap((l) => l.par
 // copy only the named folders (only their .dae and .png files) into a scratch dir
 const scratch = mkdtempSync(join(tmpdir(), 'nh-models-'));
 const SHARED = ['StrcShareTexture', 'PltShareTexture', 'BridgeShareTexture', 'FenceShareTexture'];
+/** Colour folders a model may lack (a decoration's fabric): skipped when missing. */
+const OPTIONAL = /Re(Body|Fabric)\d$/;
 for (const f of [...folders, ...SHARED]) {
   const src = join(MODELS, F(f));
   if (!existsSync(src)) {
-    if (SHARED.includes(f)) continue;
+    if (SHARED.includes(f) || OPTIONAL.test(f)) continue;
     throw new Error(`missing model folder ${src}`);
   }
   mkdirSync(join(scratch, F(f)));
@@ -179,7 +197,7 @@ for (const j of jobs) {
     return { name: l.key, parts: l.parts.map(([f, d]) => ({ folder: F(f), dae: `${d}.dae` })), files: fs.map((f) => [F(f), readdirSync(join(scratch, F(f)))]), outputs: l.outputs, grdRow: l.grdRow ?? ROW.summer, grdRows: l.grdRows, grdBlock: l.grdBlock, snowAlways: l.snowAlways, hide: l.hide };
   });
   const r = await page.evaluate((o) => (window as unknown as { renderSet: (o: unknown) => Promise<{ images: Record<string, string>; opaque: Record<string, number[]>; w: number; h: number; anchor: [number, number]; units: [number, number]; tris: number[]; ms: { total: number } }> }).renderSet(o), {
-    looks, pitch: j.pitch ?? 30, rotY: j.rotY, targetH: j.px, nrm: 0.6, aoI: 0.6, anchor: j.anchor ?? 'origin', emiW: j.emiW, emiDefault: j.emiDefault, halo: j.halo
+    looks, pitch: j.pitch ?? 30, rotY: j.rotY, targetH: j.ppu ? undefined : j.px, ppu: j.ppu, nrm: 0.6, aoI: 0.6, anchor: j.anchor ?? 'origin', emiW: j.emiW, emiDefault: j.emiDefault, halo: j.halo
   });
   let bytes = 0;
   for (const [id, url] of Object.entries(r.images)) {

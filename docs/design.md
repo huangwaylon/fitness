@@ -507,9 +507,40 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 
 ### Decorating
 
-`contract/decor.ts`, `store/decor.svelte.ts`, `island/decor.ts` ([backend](backend.md#events), decisions: *Decor is a
-last-writer-wins map*). Either of us puts NH's outdoor furniture on the island (ten items, at most 30 on it), moves it
-and takes it away; both phones show the same layout, kept for good (not day-scoped).
+`contract/decor.ts`, `store/decor.svelte.ts`, `island/decor.ts`, `island/Decor.svelte`, `island/DecorMode.svelte`,
+`e2e/decor.spec.ts` ([backend](backend.md#events), decisions: *Decor is a last-writer-wins map*). Either of us puts
+NH's outdoor furniture on the island, moves it and takes it away; both phones show the same layout, kept for good
+(not day-scoped).
+
+- **The items** (ten, NH's models in four facings, `scripts/models.ts` at one scale: 3u a model unit, a villager 80u):
+  いしどうろう (stone lantern), バードバス, ガーデンワゴン, アイアンガーデンテーブル and チェア, レンガのいど, たぬきのおきもの,
+  モンステラ, みちしるべ (signpost), いちりんしゃ (wheelbarrow). None of them is in the fixed decor (benches, the campfire,
+  the shishi-odoshi, the hammock, the pull-up bar) and none is seasonal. At most 30 on the island, shared: either of us
+  moves or takes away anyone's.
+- **In:** せってい → もようがえ → はじめる (the panel closes; no new HUD control on the island). The tray stands at the
+  screen's foot in the thumb's reach: the ten items in two rows of five and ✓ おわる with the count (「3/30」); a bar
+  above it says what to do, or what is held and why it can't go.
+- **Place:** a tap on an item puts it down as a ghost on the nearest fine spot in the middle of the view (lifted with
+  a hop, its footprint on the ground). One finger on it drags it (the island doesn't scroll under it; a drag on empty
+  ground still scrolls it, and a tap on the ground moves the ghost there); it moves a half tile (12u) at a time, its
+  footprint green where it may stand and red where not, the bar saying why (「みずの うえには おけません」). ↻ まわす turns
+  it a quarter, ✕ やめる lets it go, ✓ ここに おく places it (greyed while red).
+- **Where:** on grass, sand or a path (NH lets furniture stand anywhere on the ground); not over the water, off the
+  island or in front of the cliff's foot (the upper tier is out of view), not on the bridge or its ends, a fixed thing
+  (trunks, bushes, lamps, rocks, the tent's footprint, the tape deck), another decoration, a villager, or what a tap
+  must reach (the homes, the dig spots, the weeds' and mushrooms' spots, the flowers, the beach finds, a goal tree's
+  fallen fruit, centre stage, the doors, the stairs' and the bridge's ends, the banks one fishes from, the villagers'
+  outing spots); and never so it walls a place or a villager in (the walk graph with it must still reach every named
+  spot home reached without decorations: tested on a drop, ~3 ms, not every move).
+- **Move, put away:** a tap or a drag on a placed item picks it up (the same bar, with 🗑 しまう); ✓ puts it where it
+  is now, ✕ back where it was. しまう takes it away at once with とりけす on the banner for 5 s (a new one where it
+  stood). ✓ おわる places what's held (if it may stand there) and leaves the mode.
+- **Out of the mode** a placed item is a world thing: in the one depth order, an obstacle the villagers walk round
+  (the walk mask's cells under it and the tap navigation rebuilt when the layout changes), and a tap jiggles it where
+  it stands (my villager turns to it: no walk). The partner's change, just made, puffs where it lands and their
+  villager turns to it.
+- **Cost:** the renders are 1–3 KB each, fetched as an item first shows (the tray's ten with the mode); the mode is
+  its own chunk. A drag moves one world node a frame while the finger is down; nothing runs when still.
 
 ### Critters
 
@@ -949,7 +980,9 @@ another. Outputs keep the scene's art keys (`trees/oak-summer`, `bushes/holly`, 
 nodes, a villager between them). `island/models.json` holds where each stands (its feet or door point as fractions of
 the image, `Scenery`'s anchor) and its size in model units. NH has no model of the plumeria or the campsite sign: those stay catalog icons. The stone
 bridge is rendered twice: its deck from straight above (`bridges/stone-deck`, the terrain bake's texture, never shown
-or precached by the app) and its near end seen level (`bridges/stone-front`, an upright piece).
+or precached by the app) and its near end seen level (`bridges/stone-front`, an upright piece). The decorations
+([Decorating](#decorating), `decor/<item>-<f>`) are rendered in their four facings (a quarter turn each about the up
+axis) at one scale (`ppu`, px per model unit) rather than one height, so every facing stands the same size.
 
 ## Sound
 

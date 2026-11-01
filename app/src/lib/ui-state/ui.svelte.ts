@@ -2,6 +2,8 @@
 // own toasts until it closes; and the open sheets, newest last (the banner renders inside the topmost one).
 class Ui {
   sheets = $state<number[]>([]);
+  /** The island's decorate mode is on (docs/design.md "Decorating": せってい → もようがえ starts it, ✓ おわる ends it). */
+  decorating = $state(false);
   #overlay: () => boolean = () => false;
   /** The harvest overlay is up (read straight from the layout's state: no mirroring effect). */
   get overlay(): boolean {
