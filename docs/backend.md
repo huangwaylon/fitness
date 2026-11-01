@@ -176,6 +176,44 @@ On launch (after painting from the cache), when the app becomes visible (≤ eve
 1.5 s after an ack (a `fresh` re-read so server timestamps replace optimistic ones). Each refresh flushes the queue,
 then fetches.
 
+## Live relay
+
+Presence between the two phones while both have the app open (decisions: *Live relay on Cloudflare*). It carries
+intents, never data of record: the sheet path above is unchanged and still catches an offline phone up.
+
+- **Where:** `relay/` (its own package, outside the app's build): a Worker (`src/index.ts`) and one Durable Object,
+  `IslandRoom` (`idFromName('island')`), SQLite-backed (`new_sqlite_classes`, the only kind the Free plan has).
+  Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
+  its own secrets and room for the smoke test. `GET /health` → `{ok, v, t}`.
+- **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
+  `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
+- **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
+  `KEY_A`/`KEY_B` (the same keys as Script Properties; unset = nobody gets in) and answers `welcome {me, peer, t}`, or
+  closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
+  (4002, no presence flicker). At most 8 sockets.
+- **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
+  `v: 1`, ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, y], at?}`, `act {act, id?, at?}`,
+  `catch {what, id?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`, `present-opened`,
+  `watered`, `shaken`). The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
+  to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes. Another
+  `v` closes 4004 (the client waits for the next show, i.e. a reload).
+- **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
+- **Replay:** the room keeps the last 50 `world` events (≤ 6 h old) in DO storage; a hello with `since` (the last
+  world `t` that phone saw) gets the partner's newer ones after the welcome.
+- **Cost:** the Hibernation API (`ctx.acceptWebSocket`): an idle socket keeps no DO in memory. Free plan: 100k
+  requests/day (incoming WebSocket messages count 20:1), 13,000 GB-s/day; two people tapping are far below.
+- **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
+  on hide or offline (no socket, no timers), reconnects after a drop with backoff (1 s doubling to 60 s, ±25 %); after
+  4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome, +2 s, then every 60 s; the offset is
+  the shortest round trip's of the last 8 (`serverNow()`). `send(intent)` is a no-op returning false unless welcomed
+  and, except for `world`, the partner is present; it never throws or blocks. `on()` delivers the partner's intents,
+  `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off).
+- **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
+  partner one-way median 19 ms (p90 44), clock offset ±9 ms.
+- **Tests:** `relay/test/` (keys, origins, the bucket, the room: auth, relay to the other person only, stamping, rate
+  limit, replay and ring trimming, replacement, presence, hello timeout, the socket cap) with `cd relay && npm test`
+  (also `.github/workflows/relay.yml`); `live-protocol.test.ts` and `live.test.ts` in the app's vitest.
+
 ## Service worker
 
 `app/src/service-worker/` (pure rules in `caches.ts`).

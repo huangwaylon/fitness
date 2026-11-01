@@ -1,0 +1,33 @@
+# The live relay's checks (docs/ops/runbook.md §10): type-check and unit tests of relay/ and the shared protocol.
+# Deploying stays manual (`npm run deploy` from relay/, needs the Cloudflare login).
+name: Relay checks
+
+on:
+  push:
+    branches: [main]
+    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', '.github/workflows/relay.yml']
+  pull_request:
+    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', '.github/workflows/relay.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: relay
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: relay/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm test

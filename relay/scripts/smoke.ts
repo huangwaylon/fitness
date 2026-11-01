@@ -1,0 +1,157 @@
+// Smoke test of a deployed relay from this machine: two test clients (the test copy's KEY_A / KEY_B from .smoke-keys
+// or the environment), the origin and key checks, presence, a relayed intent, and round-trip times.
+//   npm run smoke                       (the test copy)
+//   RELAY_URL=wss://… npm run smoke     (another deployment with those keys)
+import { readFileSync } from 'node:fs';
+
+const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
+const ORIGIN = 'https://huangwaylon.github.io';
+const N = Number(process.env.N ?? 30);
+
+function keys(): { KEY_A: string; KEY_B: string } {
+  if (process.env.KEY_A && process.env.KEY_B) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B };
+  const kv = Object.fromEntries(readFileSync(`${import.meta.dirname}/../.smoke-keys`, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
+  return kv as { KEY_A: string; KEY_B: string };
+}
+
+type Msg = Record<string, unknown> & { kind: string };
+
+class Client {
+  ws: WebSocket;
+  inbox: Msg[] = [];
+  waiters: { pred: (m: Msg) => boolean; res: (m: Msg) => void }[] = [];
+  closed: Promise<number>;
+  constructor(origin = ORIGIN) {
+    // Node's WebSocket (undici) takes headers; a browser sends its page's Origin by itself.
+    this.ws = new WebSocket(URL_, { headers: { Origin: origin } } as never);
+    this.ws.addEventListener('message', (e) => {
+      const m = JSON.parse(String(e.data)) as Msg;
+      const w = this.waiters.findIndex((x) => x.pred(m));
+      if (w >= 0) this.waiters.splice(w, 1)[0].res(m);
+      else this.inbox.push(m);
+    });
+    this.closed = new Promise((r) => this.ws.addEventListener('close', (e) => r(e.code)));
+  }
+  open(): Promise<void> {
+    return new Promise((res, rej) => {
+      this.ws.addEventListener('open', () => res());
+      this.ws.addEventListener('error', () => rej(new Error('connect failed')));
+    });
+  }
+  send(m: object) {
+    this.ws.send(JSON.stringify({ v: 1, ...m }));
+  }
+  next(pred: (m: Msg) => boolean, ms = 5000): Promise<Msg> {
+    const i = this.inbox.findIndex(pred);
+    if (i >= 0) return Promise.resolve(this.inbox.splice(i, 1)[0]);
+    return new Promise((res, rej) => {
+      const w = { pred, res: (m: Msg) => (clearTimeout(t), res(m)) };
+      const t = setTimeout(() => {
+        this.waiters.splice(this.waiters.indexOf(w), 1);
+        rej(new Error('timed out waiting'));
+      }, ms);
+      this.waiters.push(w);
+    });
+  }
+}
+
+const stats = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const q = (p: number) => s[Math.min(s.length - 1, Math.floor(p * s.length))];
+  return `min ${s[0].toFixed(0)} · median ${q(0.5).toFixed(0)} · p90 ${q(0.9).toFixed(0)} · max ${s.at(-1)!.toFixed(0)} ms (n=${s.length})`;
+};
+
+function check(ok: boolean, what: string) {
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}`);
+  if (!ok) process.exitCode = 1;
+}
+
+const { KEY_A, KEY_B } = keys();
+const http = URL_.replace(/^ws/, 'http');
+
+const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number }>);
+check(health.ok === true, '/health answers ok');
+
+const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
+check(bad.status === 403, `a foreign origin is refused (${bad.status})`);
+const evil = await new Client('https://evil.test').open().then(() => 'opened', () => 'refused');
+check(evil === 'refused', `a foreign origin's socket is refused (${evil})`);
+
+const stranger = new Client();
+await stranger.open();
+stranger.send({ kind: 'hello', key: 'c3'.repeat(32) });
+check((await stranger.closed) === 4001, 'an unknown key is closed with 4001');
+
+const t0 = performance.now();
+const a = new Client();
+await a.open();
+const tOpen = performance.now() - t0;
+a.send({ kind: 'hello', key: KEY_A });
+const wa = await a.next((m) => m.kind === 'welcome');
+check(wa.me === 'A', `A welcomed (connect ${tOpen.toFixed(0)} ms, hello → welcome ${(performance.now() - t0 - tOpen).toFixed(0)} ms)`);
+
+const b = new Client();
+await b.open();
+b.send({ kind: 'hello', key: KEY_B });
+const wb = await b.next((m) => m.kind === 'welcome');
+check(wb.me === 'B' && wb.peer === true, 'B welcomed, sees A present');
+check((await a.next((m) => m.kind === 'presence')).on === true, 'A hears B arrive');
+
+// clock offset and RTT from pings
+// paced under the relay's 20 msg/s per connection (a faster loop is rate-limited: messages dropped)
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const rtts: number[] = [];
+let best = { rtt: Infinity, off: 0 };
+for (let i = 0; i < N; i++) {
+  const c = Date.now();
+  const p0 = performance.now();
+  a.send({ kind: 'ping', c });
+  const pong = await a.next((m) => m.kind === 'pong' && m.c === c);
+  const rtt = performance.now() - p0;
+  rtts.push(rtt);
+  await pause(80);
+  if (rtt < best.rtt) best = { rtt, off: (pong.t as number) - (c + rtt / 2) };
+}
+console.log(`     ping RTT: ${stats(rtts)}; clock offset ${best.off.toFixed(0)} ms (± ${(best.rtt / 2).toFixed(0)})`);
+
+// A → relay → B → relay → A: twice what a partner's tap takes to show up
+b.ws.addEventListener('message', (e) => {
+  const m = JSON.parse(String(e.data)) as Msg;
+  if (m.kind === 'act' && m.who === 'A') b.send({ kind: 'act', act: 'tap', id: m.id as string });
+});
+await pause(1000);
+const loops: number[] = [];
+for (let i = 0; i < N; i++) {
+  const id = `s${i}`;
+  const p0 = performance.now();
+  a.send({ kind: 'act', act: 'tap', id });
+  await a.next((m) => m.kind === 'act' && m.who === 'B' && m.id === id);
+  loops.push(performance.now() - p0);
+  await pause(80);
+}
+console.log(`     A→B→A relay loop: ${stats(loops)}`);
+check(true, `one-way to the partner ≈ ${(stats(loops.map((x) => x / 2)))}`);
+
+a.send({ kind: 'world', op: 'weed-pulled', id: 'smoke' });
+const w = await b.next((m) => m.kind === 'world');
+check(w.who === 'A' && w.id === 'smoke', 'a world op reaches B stamped from A');
+const since = (w.t as number) - 1;
+
+b.ws.close(1000);
+check((await a.next((m) => m.kind === 'presence')).on === false, 'A hears B leave');
+
+const b2 = new Client();
+await b2.open();
+b2.send({ kind: 'hello', key: KEY_B, since });
+await b2.next((m) => m.kind === 'welcome');
+const replay = await b2.next((m) => m.kind === 'world');
+check(replay.id === 'smoke', 'a reconnecting B gets the world op it missed');
+
+const a2 = new Client();
+await a2.open();
+a2.send({ kind: 'hello', key: KEY_A });
+await a2.next((m) => m.kind === 'welcome');
+check((await a.closed) === 4002, 'a second A replaces the first (4002)');
+
+a2.ws.close(1000);
+b2.ws.close(1000);

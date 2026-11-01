@@ -1,6 +1,6 @@
 # Runbook
 
-Three pieces, no server of our own:
+Three pieces, no server of our own (plus an optional live relay, §10):
 - **The data:** the Google Sheet *Island Fund* (append-only rows in `metrics`, `events`, `uploads`).
 - **The backend:** the Apps Script bound to it, deployed as a web app (one `/exec` URL, keys `KEY_A`/`KEY_B`).
 - **The app:** a static PWA on GitHub Pages that computes everything in the browser from the rows.
@@ -128,3 +128,20 @@ Exactly three tabs, `metrics`, `events` and `uploads`, with the headers in [back
 rewrites a wrong header itself). Any other tab (`presence`, `workouts`) is unused: delete it (right-click the tab →
 **Delete**; not a synced tab, no `resync`). Rows of an event type or metric the app doesn't know never reach the phones
 (`snapshot` leaves them out); deleting them by hand is optional (it bumps `REV`, so each phone refetches once).
+
+## 10. Deploy the live relay
+The Cloudflare Worker in `relay/` ([backend.md](../backend.md#live-relay)), on the Workers Free plan of the
+umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from `relay/`:
+
+1. `npm ci`, `npm run check`, `npm test`.
+2. `npm run deploy:test`, then `npm run smoke` (the test copy; its keys are in the gitignored `relay/.smoke-keys`,
+   `KEY_A=…`/`KEY_B=…` lines; new ones: `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env
+   test`). Every line should say `ok`.
+3. `npm run deploy` (production). `curl https://island-fund-relay.island-fund-relay.workers.dev/health` → `ok:true`.
+
+**Keys:** the relay's `KEY_A`/`KEY_B` must equal Script Properties'. Set or rotate (§4) with
+`npx wrangler secret put KEY_A` and `npx wrangler secret put KEY_B` from `relay/` (it prompts; takes effect at once,
+open sockets keep their session until they reconnect). Without them the relay lets nobody in and the app simply has no
+live presence. **Logs:** `npx wrangler tail`. **Off switch:** build the app with `VITE_LIVE_URL=` (empty), or
+`npx wrangler delete` (the app keeps working without it). A protocol change (`live-protocol.ts`) needs the relay
+deployed before the app: an older relay refuses the new kinds.
