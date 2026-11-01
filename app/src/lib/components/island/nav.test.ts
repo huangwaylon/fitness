@@ -285,8 +285,10 @@ describe('performance budget (spec §4: the graph ≤ 5 ms at load, a query ≤ 
     times.sort((x, y) => x - y);
     const p50 = times[times.length >> 1], p95 = times[Math.floor(times.length * 0.95)];
     console.info(`nav: ${n.nodes.length} nodes, ${n.adj.reduce((s, a) => s + a.length, 0) / 2} edges, ${n.polys.length} polygons; build median ${builds[3].toFixed(2)} ms; tap→path p50 ${p50.toFixed(3)} ms, p95 ${p95.toFixed(3)} ms`);
-    // headroom for a loaded test machine: the budget is measured on the phone (docs), the test catches regressions
-    expect(builds[3]).toBeLessThan(15);
-    expect(p95).toBeLessThan(2);
+    // the budget itself (5 ms, 1 ms) only with PERF=1 on a quiet machine; otherwise a bound far above it that a shared CI
+    // runner never nears but a blow-up (an O(n³) build, a query scanning every edge) still fails
+    const strict = process.env.PERF === '1';
+    expect(builds[3]).toBeLessThan(strict ? 5 : 150);
+    expect(p95).toBeLessThan(strict ? 1 : 20);
   });
 });
