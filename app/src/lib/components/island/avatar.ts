@@ -389,7 +389,9 @@ function chat(id: Villager) {
 export function goalWalk(id: Villager): number {
   const c = ctx;
   if (!c || !c.enabled() || actors[id].asleep) return 0;
-  const tx = id === 'mine' ? c.geo().nodes.treeA : c.geo().nodes.treeB;
+  // their tree stands on their side (A's on the left): the one nearer their home
+  const { treeA, treeB } = c.geo().nodes, hx = actors[id].home[0];
+  const tx = Math.abs(treeA[0] - hx) <= Math.abs(treeB[0] - hx) ? treeA : treeB;
   const from = c.where(id);
   const p = plan(c.geo(), from, tx[0], tx[1] - 18, (x, y) => c.clear(id, x, y), undefined, [0, 26, 40], false);
   if (!p) return 0;
@@ -405,8 +407,10 @@ export function meetUp(): number {
   const c = ctx;
   if (!c || !c.enabled() || actors.mine.asleep || actors.partner.asleep) return 0;
   const g = c.geo();
+  // each to the meeting spot on its own side (whose home is further left takes the left one: A's)
+  const left = leftOf();
   const ways = (['mine', 'partner'] as const).map((id) => {
-    const from = c.where(id), to = MEET[id];
+    const from = c.where(id), to = MEET[id === left ? 'A' : 'B'];
     const pts = c.clear(id, to[0], to[1]) ? route(g, from, to) : null;
     return { id, from, pts, len: pts ? routeLength(from, pts) : 0 };
   });
@@ -414,17 +418,21 @@ export function meetUp(): number {
   const ms = Math.max(400, (Math.max(...ways.map((w) => w.len)) / SPEED.action) * 1000);
   for (const w of ways) {
     clearTimeout(homeTimers[w.id]);
-    walkTo(w.id, w.pts!, { ms, from: w.from, face: w.id === 'mine' ? 'r' : 'l' });
+    walkTo(w.id, w.pts!, { ms, from: w.from, face: w.id === left ? 'r' : 'l' });
   }
   setTimeout(() => highFive(), ms);
   for (const w of ways) goHomeLater(w.id, ms + 2400 + rand(LINGER[0], LINGER[1]));
   return ms;
 }
 
+/** The villager whose home is on the left (A's, on both phones). */
+const leftOf = (): Villager => (actors.mine.home[0] <= actors.partner.home[0] ? 'mine' : 'partner');
+
 /** The high-five: both hop, face to face, with sparkles and one joyful sound. */
 function highFive() {
+  const left = leftOf();
   for (const id of ['mine', 'partner'] as const) {
-    actors[id].face = id === 'mine' ? 'r' : 'l';
+    actors[id].face = id === left ? 'r' : 'l';
     setMotion(id, 'hop');
     setEmote(id, 'mark-sparkle');
     addFx(id, 'sparkles');

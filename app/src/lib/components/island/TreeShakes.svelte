@@ -50,7 +50,7 @@
     scene?: HTMLElement;
     /** The wasps reached the villager on `side`. */
     onsting?: (side: Side) => void;
-    /** A tree by id where it stands on this phone (a goal tree by its person's slot), or null. */
+    /** A tree by id (the same on both phones), or null. */
     treeOf: (id: string) => ShakeTree | null;
     /** The partner shook a tree: rustle it (their villager has just got there). */
     rustle?: (tree: ShakeTree) => void;
