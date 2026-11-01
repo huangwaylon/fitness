@@ -68,8 +68,11 @@ test('the camera is the scroller: two stops, the sprites follow it, nothing runs
   const before = await shown();
   await page.locator('[data-world-scroller]').evaluate((e) => e.scrollBy(0, -400));
   await page.waitForTimeout(500);
-  // it settles onto the nearer stop: past half way, おく
-  await expect.poll(() => call(page, (w) => w.cam()), { timeout: 3000 }).toBe(back);
+  // it rests where the scroll left it (no settling)
+  const at = await call(page, (w) => w.cam());
+  expect(at).toBeGreaterThan(front);
+  await page.waitForTimeout(600);
+  expect(await call(page, (w) => w.cam())).toBe(at);
   const after = await shown(), both = Object.keys(after).filter((k) => k in before);
   expect(both.length).toBeGreaterThan(0);
   expect(both.every((k) => after[k] !== before[k])).toBe(true);
@@ -99,4 +102,21 @@ test('the ground is baked: the bands in view show the season’s terrain chunks;
   const shown = await page.locator('[data-world-ground] .gband:not([style*="hidden"]) img').evaluateAll((els) => [...new Set(els.map((e) => (e as HTMLImageElement).src.split('/').slice(-2).join('/')))]);
   expect(shown.length).toBeGreaterThan(0);
   for (const s of shown) expect(s).toMatch(/^summer\/[0-7]\.webp\?v=\d+$/);
+});
+
+test('at night a lamp’s light sorts with its lamp: a tree in front covers it, the lamp’s own sprite is under it', async ({ page }) => {
+  await page.goto('?demo&season=summer&date=2026-07-01T21:00&critter=none');
+  await world(page);
+  await call(page, (w) => w.go(642));
+  await page.waitForTimeout(400);
+  const z = await page.evaluate(() => {
+    const zi = (sel: string) => Number(getComputedStyle(document.querySelector(sel)!).zIndex);
+    const f = (sel: string) => getComputedStyle(document.querySelector(sel)!).filter;
+    return { glow: zi('[data-glow="lantern-3"]'), lamp: zi('[data-scenery-id="lantern-3"]'), canopy: zi('[data-scenery-id="oak-k1"][data-part="canopy"]'), lit: f('[data-glow="lantern-3"]'), tree: f('[data-scenery-id="oak-k1"]') };
+  });
+  expect(z.glow).toBeGreaterThan(z.lamp);
+  expect(z.glow).toBeLessThan(z.canopy);
+  // the light is never tinted; the tree is (the time of day's tint, at the source)
+  expect(z.lit).toBe('none');
+  expect(z.tree).toMatch(/url/);
 });

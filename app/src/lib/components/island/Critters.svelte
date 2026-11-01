@@ -153,8 +153,6 @@
   const loc = (dx: number, dy: number) => `calc(${dx.toFixed(2)} * var(--u)) calc(${dy.toFixed(2)} * var(--u))`;
   const fishLoc = (f: Fish) => loc(f.x - f.ax, -(f.z - f.az));
   const bugLoc = (b: Bug) => loc(b.x - b.ax, -(b.z - b.az) * b.g - b.lift);
-  /** Over the tint at night (a firefly glows): between --z-tint and --z-taps inside the stage. */
-  const NIGHT_Z = 60_310_000;
 
   /** One shadow in the sea and one in each fresh water, at most. */
   const none = (): Record<Water, Fish | null> => ({ sea: null, pond: null, river: null, mouth: null, clifftop: null });
@@ -1290,7 +1288,7 @@
   {#if bug}
     {@const b = bug}
     {#key b.n}
-      <div class="node" {@attach w.at({ x: b.ax, z: b.az, h: 80, dz: -16, zi: night ? NIGHT_Z : undefined })}>
+      <div class="node" {@attach w.at({ x: b.ax, z: b.az, h: 80, dz: -16, light: night })}>
         <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} bind:this={bugEl}
           style:translate={b.freeze ?? bugLoc(b)} style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
           <span class="hopper" bind:this={hopEl}>

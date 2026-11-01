@@ -28,7 +28,7 @@ export const GRASS = { x0: LAND.x0 + BEACH_SIDE, x1: LAND.x1 - BEACH_SIDE, z0: B
  *  wide band of sea, the beach, the health lawn; sections.ts fits it to the screen) and おく (the scroller's top: the campsite's clearing clear below
  *  the HUD, the pond, the bamboo grove and the falls; sections.ts raises it on a screen whose HUD would cover the
  *  campsite). */
-export const CAMS = { mae: -13, oku: 642 } as const;
+export const CAMS = { mae: 30, oku: 642 } as const;
 export const CAM_MIN = CAMS.mae;
 export const CAM_MAX = CAMS.oku;
 /** The pivot line's share of the height, and the horizon's (the sky above it). */
@@ -37,7 +37,7 @@ export const SKY = 0.21;
 export const TILT = 64;
 
 /** The live window (spec §7): only sprites in [camZ − BEHIND, camZ + AHEAD] are displayed. */
-export const BEHIND = 260;
+export const BEHIND = 600;
 export const AHEAD = 900;
 
 // ---- water ----------------------------------------------------------------------------------------------------------

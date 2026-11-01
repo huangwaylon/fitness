@@ -195,3 +195,17 @@ export function unproject(dx: number, up: number, camZ: number, p: RollParams): 
   const z = camZ + (para ? p.R * Math.tan(t) : p.R * t);
   return { x: p.cx + dx / project(p.cx, z, camZ, p).scale, z, theta: t };
 }
+
+/** The camera at which a monotonic f (the screen y of something, growing as the camera moves back) reaches `want`,
+ *  within [lo, hi] (bisection; an end when it's never reached there): the scroller's two ends are fitted with it. */
+export function solveCam(f: (cam: number) => number, want: number, lo: number, hi: number): number {
+  if (f(lo) >= want) return lo;
+  if (f(hi) <= want) return hi;
+  let a = lo, b = hi;
+  for (let i = 0; i < 40 && b - a > 0.25; i++) {
+    const m = (a + b) / 2;
+    if (f(m) < want) a = m;
+    else b = m;
+  }
+  return b;
+}

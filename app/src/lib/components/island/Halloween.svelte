@@ -17,8 +17,6 @@
    *  round the campsite's clearing, clear of centre stage, the cake, the arch and the lanterns, two by the tent's door
    *  (おく). */
   const SPOTS: readonly Pt[] = [[40, 160], [350, 170], [36, 560], [360, 520], [112, 872], [296, 914], [146, 958], [248, 958]];
-  /** Lit at night they stand over the time-of-day tint (IslandScene's .stage: --z-tint 60300000). */
-  const ABOVE_TINT = 60_310_000;
 
   /** The spots not under a control on this screen, measured when the camera settles (and on a resize). */
   let hidden = $state<ReadonlySet<string>>(new Set());
@@ -49,7 +47,7 @@
   {#if night}<div class="wash"></div>{/if}
   {#each SPOTS as [x, z], i (`${x},${z}`)}
     {#if !hidden.has(`${x},${z}`)}
-    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, zi: night ? ABOVE_TINT : undefined })}>
+    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, light: night })}>
       {#if night}<span class="glow"></span>{/if}
       <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={su(PUMPKIN_U)} /></span>
     </span>
