@@ -135,6 +135,16 @@
       if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn')) {
         openTree = null;
         closedBy = e;
+        // a tap on the popup itself only closes it: the click that follows (the popup gone from under the finger) must
+        // not reach what stood under it (a villager, a door)
+        if (e.target instanceof Element && e.target.closest('.detail')) {
+          const eat = (c: Event) => {
+            c.stopPropagation();
+            c.preventDefault();
+          };
+          document.addEventListener('click', eat, { capture: true, once: true });
+          setTimeout(() => document.removeEventListener('click', eat, { capture: true }), 700);
+        }
       }
     };
     const esc = (e: KeyboardEvent) => {

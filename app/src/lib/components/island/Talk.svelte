@@ -142,7 +142,8 @@
   let watcher: ReturnType<typeof setInterval> | undefined;
   /** Place the balloon by its speaker as it stands now (placement.ts placeBy: NH's rule); false when there's no room. */
   function at(n: number): boolean {
-    const st = scene?.querySelector('.stage')?.getBoundingClientRect(), box = el?.getBoundingClientRect();
+    // its layout size (a pop-in's scale, mid-way, would make the box look smaller than it stands)
+    const st = scene?.querySelector('.stage')?.getBoundingClientRect(), box = el && { width: el.offsetWidth, height: el.offsetHeight };
     if (!scene || !st || !box || !speaker || said?.n !== n) return false;
     const src = (seen = speaker.getBoundingClientRect());
     const from = { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom };
