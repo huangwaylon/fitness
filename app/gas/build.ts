@@ -27,6 +27,11 @@ function onEdit(e) {
 function resync() {
   IslandFund.resync();
 }
+
+/** Run once from the editor to grant the push's permission and test it (docs/ops/runbook.md#11-turn-on-the-push). */
+function authorizeRelay() {
+  IslandFund.authorizeRelay();
+}
 `;
 
 /** The first 12 hex chars of SHA-256 over the bundle built with BUILD = "dev": changes with any code change. */

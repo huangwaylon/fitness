@@ -2,6 +2,8 @@
 // - getRange outside the sheet's max rows/columns throws (as in Sheets), so appends must grow the sheet;
 // - a `YYYY-MM-DD` string written into a cell that is not plain-text formatted becomes a Date (Sheets' auto-typing);
 // - getLastRow is the last row with any content.
+// - UrlFetchApp throws without the external-request scope (`relay: 'denied'`, the manifest's state until it is granted).
+import { createHmac } from 'node:crypto';
 
 const MAX_COLS = 26;
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
@@ -68,6 +70,9 @@ export class FakeSheet {
 
 interface FakeOptions { keyA?: string | null; keyB?: string | null }
 
+/** A UrlFetchApp request as the fake saw it. */
+interface FakeFetch { url: string; headers: Record<string, string>; payload: string }
+
 export function makeGas(opts: FakeOptions = {}) {
   const sheets = new Map<string, FakeSheet>();
   const props = new Map<string, string>();
@@ -75,7 +80,14 @@ export function makeGas(opts: FakeOptions = {}) {
   if (opts.keyB !== null) props.set('KEY_B', opts.keyB ?? 'b'.repeat(64));
   // Values with their expiry (ms since epoch), honouring `put`'s expirationSeconds against the (fakeable) Date.
   const cache = new Map<string, { v: string; until: number }>();
-  const state = { lockAvailable: true, lockHeld: false, flushes: 0, spreadsheetThrows: false, propReads: 0, propWrites: 0 };
+  const state = {
+    lockAvailable: true, lockHeld: false, flushes: 0, spreadsheetThrows: false, propReads: 0, propWrites: 0,
+    /** What the relay answers: a status, or `denied` (no external-request scope: fetch throws). */
+    relay: 204 as number | 'denied',
+    fetches: [] as FakeFetch[],
+    /** Whether the script lock was held during each fetch. */
+    fetchedUnderLock: [] as boolean[]
+  };
 
   const globals = {
     SpreadsheetApp: {
@@ -117,8 +129,23 @@ export function makeGas(opts: FakeOptions = {}) {
     CacheService: {
       getScriptCache: () => ({
         get: (k: string) => { const e = cache.get(k); return e && e.until > Date.now() ? e.v : null; },
-        put: (k: string, v: string, seconds = 600) => { cache.set(k, { v, until: Date.now() + seconds * 1000 }); }
+        put: (k: string, v: string, seconds = 600) => { cache.set(k, { v, until: Date.now() + seconds * 1000 }); },
+        remove: (k: string) => { cache.delete(k); }
       })
+    },
+    Utilities: {
+      computeHmacSha256Signature: (value: string, key: string) => [...createHmac('sha256', key).update(value).digest()].map((x) => (x > 127 ? x - 256 : x))
+    },
+    UrlFetchApp: {
+      fetch(url: string, o: { headers: Record<string, string>; payload: string }) {
+        if (state.relay === 'denied') {
+          throw new Error('Exception: You do not have permission to call UrlFetchApp.fetch. Required permissions: https://www.googleapis.com/auth/script.external_request');
+        }
+        state.fetches.push({ url, headers: o.headers, payload: o.payload });
+        state.fetchedUnderLock.push(state.lockHeld);
+        const code = state.relay;
+        return { getResponseCode: () => code };
+      }
     },
     ContentService: {
       MimeType: { JSON: 'application/json' },
