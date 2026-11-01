@@ -132,3 +132,29 @@ test('?fireworks starts a show on any night; none on an ordinary one', async ({ 
   await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 });
 });
+
+// The sun and the moon are the sky's, behind the world: a tree top rising over the horizon stands in front of them
+for (const [w, h] of [[393, 852], [320, 568]] as const)
+  for (const [tod, at] of [['day', '12:00'], ['dusk', '17:00'], ['night', '21:00']] as const)
+    test(`a tree in front of the ${tod === 'night' ? 'moon' : 'sun'} at ${w}px (${tod})`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: h });
+      await open(page, `&date=2026-11-04T${at}&critter=none&weather=clear`);
+      // probe the paint order: the orb and the trees' art made hit-testable for it
+      await page.addStyleTag({ content: '.if-scene .orb, [data-scenery-id] .art { pointer-events: auto !important; } .if-scene .hit { pointer-events: none !important; }' });
+      await page.waitForTimeout(500);
+      const tops = await page.evaluate(() => {
+        const o = document.querySelector('.if-scene .orb')!.getBoundingClientRect();
+        // every point of the orb's core where a tree's art also lies: what is on top there
+        const out: string[] = [];
+        for (let y = o.top + o.height * 0.3; y < o.bottom - o.height * 0.3; y += 3)
+          for (let x = o.left + o.width * 0.3; x < o.right - o.width * 0.3; x += 3) {
+            const all = document.elementsFromPoint(x, y);
+            if (!all.some((e) => e.closest('[data-kind="cedar"], [data-kind="oak"], [data-kind="palm"]')) || !all.some((e) => e.closest('.orb'))) continue;
+            out.push(all[0].closest('.orb') ? 'orb' : 'tree');
+          }
+        return out;
+      });
+      // at 393 the cedar behind the lawn rises across the orb at the front stop
+      if (w === 393) expect(tops.length).toBeGreaterThan(0);
+      expect(tops).not.toContain('orb');
+    });

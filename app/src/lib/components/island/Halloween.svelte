@@ -17,8 +17,8 @@
    *  round the campsite's clearing, clear of centre stage, the cake, the arch and the lanterns, two by the tent's door
    *  (おく). */
   const SPOTS: readonly Pt[] = [[40, 160], [350, 170], [36, 560], [360, 520], [112, 872], [296, 914], [146, 958], [248, 958]];
-  /** Lit at night they stand over the time-of-day tint (IslandScene's .stage: --z-tint 60000080). */
-  const ABOVE_TINT = 60_000_081;
+  /** Lit at night they stand over the time-of-day tint (IslandScene's .stage: --z-tint 60300000). */
+  const ABOVE_TINT = 60_310_000;
 
   /** The spots not under a control on this screen, measured when the camera settles (and on a resize). */
   let hidden = $state<ReadonlySet<string>>(new Set());

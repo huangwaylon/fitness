@@ -154,7 +154,7 @@
   const fishLoc = (f: Fish) => loc(f.x - f.ax, -(f.z - f.az));
   const bugLoc = (b: Bug) => loc(b.x - b.ax, -(b.z - b.az) * b.g - b.lift);
   /** Over the tint at night (a firefly glows): between --z-tint and --z-taps inside the stage. */
-  const NIGHT_Z = 60000081;
+  const NIGHT_Z = 60_310_000;
 
   /** One shadow in the sea and one in each fresh water, at most. */
   const none = (): Record<Water, Fish | null> => ({ sea: null, pond: null, river: null, mouth: null, clifftop: null });

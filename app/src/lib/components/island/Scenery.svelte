@@ -39,7 +39,7 @@
   const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : sceneryKey(s.key, season, month));
   /** Lights: the windows and lamps (over the time-of-day tint, as the fireflies: between --z-tint and --z-taps). */
   const lit = $derived(tod === 'night' ? 1 : tod === 'dusk' ? 0.7 : 0);
-  const NIGHT_Z = 60000081;
+  const NIGHT_Z = 60_310_000;
   const lamps = SCENERY.filter((s) => GLOW_AT[s.key]);
   const winter = $derived(season === 'winter');
   const wOf = (key: string, h: number) => {
@@ -92,9 +92,25 @@
     {/if}
   {/each}
   {#each lamps as l (l.id)}
+    {@const k = l.h / 46}
+    <!-- a lamp at night (NH's warm point light): its head lit (a bright core in the lamp-glow), a wide soft halo round
+         it, and a pool of light on the ground at its foot; all over the tint, faded in at dusk -->
     <div class="spr lit" data-glow={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, zi: NIGHT_Z })}>
-      <span class="glow" style:bottom="calc({l.h * GLOW_AT[l.key] - 22} * var(--u))"><OfficialArt key="deco/lamp-glow" size="calc(44 * var(--u))" /></span>
+      <span class="halo" style:bottom="calc({l.h * GLOW_AT[l.key] - 75 * k} * var(--u))" style:width="calc({150 * k} * var(--u))"></span>
+      <span class="glow" style:bottom="calc({l.h * GLOW_AT[l.key] - 30 * k} * var(--u))"><OfficialArt key="deco/lamp-glow" size="calc({60 * k} * var(--u))" /></span>
+      <span class="core" style:bottom="calc({l.h * GLOW_AT[l.key] - 11 * k} * var(--u))" style:width="calc({22 * k} * var(--u))"></span>
     </div>
+    <div class="spr lit pool-node" data-pool={l.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: l.x + 2, z: l.z - 2, h: 4, zi: NIGHT_Z - 1 })}>
+      <span class="pool" style:width="calc({140 * k} * var(--u))"></span>
+    </div>
+  {/each}
+  {#each BUILDINGS as b (b.id)}
+    {#if LIT_ART[b.key]}
+      <!-- the light from the tent's lantern on the clearing in front of it -->
+      <div class="spr lit pool-node" data-pool={b.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: b.x - 40, z: b.z - 10, h: 4, zi: NIGHT_Z - 1 })}>
+        <span class="pool" style:width="calc(130 * var(--u))"></span>
+      </div>
+    {/if}
   {/each}
 {/if}
 
@@ -114,6 +130,13 @@
   .lit { transition: opacity 1.2s ease; }
   .glow { position: absolute; left: 0; translate: -50% 0; line-height: 0; mix-blend-mode: screen; }
   .glow :global(.official) { max-width: none; }
+  /* the lamp's head: a warm white core; round it a soft wide halo; at its foot a pool of light on the ground (flat) */
+  .core, .halo, .pool { position: absolute; left: 0; aspect-ratio: 1; border-radius: 50%; pointer-events: none; }
+  /* (plain alpha: each node is its own layer, so a blend mode would only blend within it) */
+  .core { translate: -50% 0; background: radial-gradient(closest-side, #FFFDF2 0 42%, #FFE596 62%, rgba(255, 196, 80, .6) 78%, rgba(255, 190, 70, 0)); }
+  .halo { translate: -50% 0; background: radial-gradient(closest-side, rgba(255, 214, 110, .78), rgba(255, 186, 72, .42) 30%, rgba(255, 170, 60, .16) 60%, rgba(255, 170, 60, 0)); }
+  .pool-node { will-change: auto; }
+  .pool { translate: -50% -50%; background: radial-gradient(closest-side, rgba(255, 210, 110, .72), rgba(255, 186, 76, .4) 40%, rgba(255, 170, 64, .12) 75%, rgba(255, 170, 64, 0)); }
   .door {
     appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; pointer-events: auto;
     -webkit-tap-highlight-color: transparent; border-radius: 10% 10% 4% 4%;
