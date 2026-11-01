@@ -871,7 +871,7 @@
   @keyframes v-strum { from { rotate: -1.5deg; translate: 0 0; } to { rotate: 1.5deg; translate: 0 -.6%; } }
   @keyframes v-strum-hard { from { rotate: -3.5deg; translate: 0 0; } to { rotate: 3.5deg; translate: 0 -2%; } }
   /* Wisp: see-through and glowing, floating with a slow bob, drifting a little side to side, a flicker */
-  .wisp .art { filter: drop-shadow(0 0 6px rgba(220, 235, 255, .9)); }
+  .wisp .art { filter: var(--leaf-tint,) drop-shadow(0 0 6px rgba(220, 235, 255, .9)); }
   .wisp .idle { animation: v-breathe var(--breath) ease-in-out infinite, v-drift 7.4s ease-in-out infinite, v-flicker 5.3s linear infinite; }
   @keyframes v-drift { 0%, 100% { translate: 0 0; } 25% { translate: 4% -6%; } 50% { translate: 0 -2%; } 75% { translate: -4% -6%; } }
   @keyframes v-flicker { 0%, 100% { opacity: .84; } 9% { opacity: .62; } 12% { opacity: .84; } 47% { opacity: .8; } 50% { opacity: .56; } 54% { opacity: .82; } 80% { opacity: .88; } }
@@ -964,7 +964,7 @@
 
   /* the heart float over Reese and Cyrus */
   .float { left: 0; top: calc(var(--h) * -1.5); width: calc(var(--h) * .5); translate: -50% 0; animation: v-appear .6s ease-out both, bob 3.4s ease-in-out infinite alternate; }
-  .float svg { width: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(120, 40, 70, .3)); }
+  .float svg { width: 100%; overflow: visible; filter: var(--leaf-tint,) drop-shadow(0 2px 2px rgba(120, 40, 70, .3)); }
   .float .hb { fill: #FF7FAE; } .float .hl { fill: none; stroke: #FFE3EE; stroke-width: 3; stroke-linecap: round; }
   .float .string { fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 1.4; }
   @keyframes bob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(calc(var(--h) * -.06)) rotate(3deg); } }

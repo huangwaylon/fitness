@@ -493,7 +493,7 @@
   @keyframes tree-glow { 0%, 100% { opacity: 0; } 50% { opacity: .18; } }
   .glint {
     position: absolute; width: var(--g); height: var(--g); translate: -50% -50%; fill: #FFF7CF; opacity: 0;
-    filter: drop-shadow(0 0 3px #FFE070) drop-shadow(0 0 1px #fff);
+    filter: var(--leaf-tint,) drop-shadow(0 0 3px #FFE070) drop-shadow(0 0 1px #fff);
     animation: glint 2.6s ease-in-out calc(var(--k) * .65s + var(--late)) infinite both;
   }
   @keyframes glint {

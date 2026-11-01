@@ -58,7 +58,7 @@
   /* a world node at its foot (its depth among the island's things) */
   .party { width: 0; height: 0; pointer-events: none; }
   .party > * { position: absolute; left: 0; top: 0; line-height: 0; }
-  .cake { translate: -50% -94%; filter: drop-shadow(0 2px 1px rgba(80, 50, 40, .3)); animation: cake-in .5s var(--ease-bounce) both; }
+  .cake { translate: -50% -94%; filter: var(--leaf-tint,) drop-shadow(0 2px 1px rgba(80, 50, 40, .3)); animation: cake-in .5s var(--ease-bounce) both; }
   .cake :global(.official) { max-width: none; }
   @keyframes cake-in { from { transform: scale(.4); opacity: 0; } }
   .flames { top: calc(-23 * var(--su)); }

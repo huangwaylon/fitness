@@ -1310,16 +1310,16 @@
     position: absolute; display: block; left: 0; top: 0; width: var(--w); height: calc(var(--w) * .42); translate: -50% -50%;
     animation: wag 1.3s ease-in-out infinite alternate;
   }
-  .fin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: rgba(10, 36, 70, .55); filter: blur(calc(1.5 * var(--u))); }
+  .fin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: rgba(10, 36, 70, .55); filter: var(--leaf-tint,) blur(calc(1.5 * var(--u))); }
   /* the fresh waters' are smaller and seen through shallower water: a sharper edge */
-  .shadow:not(.sea) .fin svg { fill: rgba(10, 36, 70, .62); filter: blur(calc(.7 * var(--u))); }
+  .shadow:not(.sea) .fin svg { fill: rgba(10, 36, 70, .62); filter: var(--leaf-tint,) blur(calc(.7 * var(--u))); }
   /* NH's long thin shadow (the eels) and the fin cutting the surface (the sharks, the sunfish, the suckerfish): a dark
      sail over the shadow's front half with a thin white wake at its foot */
   .is-narrow .fin { height: calc(var(--w) * .18); }
   .is-fin .fin::before {
     content: ''; position: absolute; left: 28%; bottom: 44%; width: 20%; height: 95%;
     background: linear-gradient(180deg, rgba(36, 58, 92, .95), rgba(44, 70, 108, .85)); clip-path: polygon(38% 0, 100% 100%, 0 100%);
-    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .85));
+    filter: var(--tod-filter,) drop-shadow(0 1px 0 rgba(255, 255, 255, .85));
   }
   @keyframes wag { from { transform: skewY(-4deg) scale(1, .96); } to { transform: skewY(4deg) scale(.97, 1); } }
   @keyframes fade-in { from { opacity: 0; } }

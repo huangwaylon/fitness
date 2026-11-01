@@ -59,7 +59,7 @@
   .halloween { display: contents; }
   /* world nodes at their foot: by day among the island's things by depth; lit at night above the time-of-day tint */
   .pumpkin { width: 0; height: 0; pointer-events: none; }
-  .art { position: absolute; left: 0; top: 0; line-height: 0; translate: -50% -94%; filter: drop-shadow(0 1.5px 1px rgba(80, 50, 20, .35)); }
+  .art { position: absolute; left: 0; top: 0; line-height: 0; translate: -50% -94%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 1px rgba(80, 50, 20, .35)); }
   .art :global(.official) { max-width: none; }
   .night .art { animation: flicker 2.6s ease-in-out calc(var(--i) * -.9s) infinite; }
   /* the candle inside: a warm round glow that breathes unevenly */

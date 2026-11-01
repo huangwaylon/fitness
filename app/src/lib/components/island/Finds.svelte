@@ -544,12 +544,12 @@
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .item :global(.official) { max-width: none; }
   /* a shell lies on the sand at its own angle, a soft contact shadow under it */
-  .shell > :global(*), .frag > :global(*) { translate: -50% -60%; filter: drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
+  .shell > :global(*), .frag > :global(*) { translate: -50% -60%; filter: var(--leaf-tint,) drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
   .shell > :global(*) { rotate: var(--tilt); }
   .shell.fresh { animation: wash 1.1s cubic-bezier(.3, .7, .4, 1) both; }
   @keyframes wash { from { transform: translateY(calc(12 * var(--su))); opacity: 0; } 40% { opacity: 1; } }
   .bottle .rock { translate: -50% -60%; line-height: 0; transform-origin: 50% 70%; animation: bottle-rock 2.4s ease-in-out infinite alternate; }
-  .bottle .rock > :global(*) { rotate: -64deg; filter: drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
+  .bottle .rock > :global(*) { rotate: -64deg; filter: var(--leaf-tint,) drop-shadow(0 1px 0 rgba(120, 90, 50, .35)); }
   @keyframes bottle-rock { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
   .foam {
     display: block; width: calc(20 * var(--su)); height: calc(6 * var(--su)); translate: -50% -30%; border-radius: 50%;
@@ -557,7 +557,7 @@
   }
   @keyframes foam { 0% { transform: scale(.4); opacity: 0; } 8% { opacity: .9; } 30% { transform: scale(1.2); opacity: 0; } 100% { opacity: 0; } }
   .twinkle {
-    width: calc(9 * var(--su)); translate: 10% -120%; fill: #FFFBE6; filter: drop-shadow(0 0 2px #FFE070); opacity: 0;
+    width: calc(9 * var(--su)); translate: 10% -120%; fill: #FFFBE6; filter: var(--leaf-tint,) drop-shadow(0 0 2px #FFE070); opacity: 0;
     animation: twinkle var(--tw, 4s) ease-out var(--twd, 0s) infinite;
   }
   @keyframes twinkle { 0%, 80% { transform: scale(0) rotate(0); opacity: 0; } 88% { transform: scale(1) rotate(40deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
@@ -578,15 +578,15 @@
   }
   .pop-spark {
     width: calc(10 * var(--su)); translate: calc(-50% + var(--dx)) calc(-50% + var(--dy)); fill: #FFF8D8;
-    filter: drop-shadow(0 0 2px #FFE070); opacity: 0; animation: pop-spark .6s ease-out calc(.2s + var(--k) * .12s) both;
+    filter: var(--leaf-tint,) drop-shadow(0 0 2px #FFE070); opacity: 0; animation: pop-spark .6s ease-out calc(.2s + var(--k) * .12s) both;
   }
   @keyframes pop-spark { 0% { transform: scale(0) rotate(0); opacity: 0; } 40% { transform: scale(1.1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
   /* a balloon's present where it landed, standing on its foot, a soft shadow there */
-  .gift > :global(*) { translate: -50% -100%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
+  .gift > :global(*) { translate: -50% -100%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */
-  .mush > :global(*) { translate: -50% -92%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
+  .mush > :global(*) { translate: -50% -92%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   .mush.flip > :global(*) { scale: -1 1; }
-  .frag > :global(*) { filter: drop-shadow(0 0 3px rgba(255, 246, 190, .9)); }
+  .frag > :global(*) { filter: var(--leaf-tint,) drop-shadow(0 0 3px rgba(255, 246, 190, .9)); }
   /* the dig spot */
   .spot svg { width: calc(19 * var(--su)); translate: -50% -50%; scale: 1 .7; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .spot .crack { stroke: #4E321A; stroke-opacity: .85; stroke-width: 1.6; }
