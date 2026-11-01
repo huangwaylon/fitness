@@ -221,3 +221,29 @@ describe('live protocol: decorations (v2)', () => {
     expect(j2({ ...big, who: 'B', t: T }).length).toBeLessThanOrEqual(MAX_BYTES);
   });
 });
+
+describe('live protocol: the tent (v2)', () => {
+  const T = 1_793_000_000_000;
+  const set = { kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, item: 'f4041', x: 7, z: 0, f: 1, p: T };
+  it('a decor op in the tent keeps its scope; its tiles are the room’s', () => {
+    expect(parseClient(j2(set))).toEqual({ v: 2, ...set });
+    expect(parseServer(j2({ ...set, who: 'A', t: T }))).toEqual({ v: 2, ...set, who: 'A', t: T });
+    expect(parseClient(j2({ kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 2, kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true });
+    for (const bad of [j2({ ...set, x: 8 }), j2({ ...set, sc: 'x' }), j2({ ...set, z: -1 })]) expect(parseClient(bad), bad).toBeNull();
+  });
+  it('a drag and the villager inside are presence only: never kept, never claimed, small', () => {
+    const drag = { kind: 'drag', id: 'dmh1abc2a', x: -12, z: 33, f: 2 };
+    expect(parseClient(j2(drag))).toEqual({ v: 2, ...drag });
+    expect(parseClient(j2({ ...drag, it: 'f4041', end: true }))).toEqual({ v: 2, ...drag, it: 'f4041', end: true });
+    expect(j2(drag).length).toBeLessThanOrEqual(60);
+    for (const bad of [j2({ ...drag, x: 41 }), j2({ ...drag, x: 1.5 }), j2({ ...drag, end: 1 }), j2({ ...drag, it: 'Bad Item' }), j({ ...drag })]) expect(parseClient(bad), bad).toBeNull();
+    const walk = { kind: 'tent', in: true, from: [-7, 22], via: [[0, 10]], to: [20, -30], s: T, ms: 1800 };
+    expect(parseClient(j2(walk))).toEqual({ v: 2, ...walk });
+    expect(parseServer(j2({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 2, kind: 'tent', in: false, who: 'B', t: T });
+    for (const bad of [j2({ ...walk, in: 1 }), j2({ ...walk, to: [50, 0] }), j2({ ...walk, via: [[0, 99]] })]) expect(parseClient(bad), bad).toBeNull();
+    for (const i of [drag, walk]) {
+      expect(isStored(i as never)).toBe(false);
+      expect(claimOf(i as never)).toBeNull();
+    }
+  });
+});

@@ -1,0 +1,103 @@
+// The tent's room (docs/design.md "The tent", docs/backend.md#events `decor`, docs/decisions.md "Decor is a
+// last-writer-wins map"): what either of us put in the tent, kept for good. The island's decor ops with a room scope
+// (`sc: 't'`), in the same event type and the same relay intent: a piece set at a spot (`{sc, id, at, item, x, z, f, p}`:
+// placed or moved, its whole state, x and z its footprint's back-left tile) or taken away (`{sc, id, at, rm: true}`,
+// final), and the wallpaper and the floor (`{sc, id: TENT_WALL | TENT_FLOOR, at, item, x: 0, z: 0, f: 0, p}`, never
+// removed). The same merge as the island's: a removal beats everything, else the latest `at`, then B over A; the sheet
+// keeps each id's latest op. Shared by the Apps Script, the model, the relay protocol and the tent; pure and
+// dependency-free (the items themselves are the app's: components/tent/items.json).
+
+/** At most this many pieces in the tent, shared (the rugs count; the wallpaper and the floor don't). */
+export const TENT_MAX = 40;
+/** The room's tiles across and deep (components/tent/grid.ts ROOM). */
+const ROOM = 8;
+/** The wallpaper's and the floor's ids: one op each, the latest wins. */
+export const TENT_WALL = 'dtentwall';
+export const TENT_FLOOR = 'dtentfloor';
+
+type Who = 'A' | 'B';
+type Facing = 0 | 1 | 2 | 3;
+export type TentOp =
+  | { sc: 't'; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; rm?: undefined }
+  | { sc: 't'; id: string; at: number; rm: true };
+export type TentEntry = TentOp & { who: Who };
+/** A piece in the tent as the room shows it. */
+export interface TentPiece {
+  id: string;
+  item: string;
+  x: number;
+  z: number;
+  f: Facing;
+  p: number;
+  at: number;
+  who: Who;
+}
+
+const ID = /^d[0-9a-z]{6,24}$/;
+/** An item's code (NH's internal id with its kind: f furniture or a rug, w a wallpaper, g a floor). */
+const ITEM = /^[fwg]\d{1,6}$/;
+const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
+const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
+
+/** A tent op's data (`sc: 't'`), its known keys only, each well-formed, or null. */
+export function tentOpOf(d: Record<string, unknown>): TentOp | null {
+  if (d.sc !== 't' || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
+  const keys = Object.keys(d);
+  const surface = d.id === TENT_WALL ? 'w' : d.id === TENT_FLOOR ? 'g' : null;
+  if (d.rm !== undefined) {
+    if (surface || d.rm !== true || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'rm')) return null;
+    return { sc: 't', id: d.id, at: d.at, rm: true };
+  }
+  if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p'].includes(k))) return null;
+  if (typeof d.item !== 'string' || !ITEM.test(d.item) || d.item[0] !== (surface ?? 'f')) return null;
+  if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
+  if (surface && (d.x || d.z || d.f)) return null;
+  return { sc: 't', id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p };
+}
+
+/** Whether entry `a` beats `b` (the same id): a removal beats a set; else the later `at`, then B over A. */
+function tentBeats(a: TentEntry, b: TentEntry): boolean {
+  if (!!a.rm !== !!b.rm) return !!a.rm;
+  if (a.at !== b.at) return a.at > b.at;
+  return a.who > b.who;
+}
+
+/** Merge an entry into the map (id → its winning entry): true when it changed it. */
+export function mergeTent(m: Map<string, TentEntry>, e: TentEntry): boolean {
+  const was = m.get(e.id);
+  if (was && (was === e || !tentBeats(e, was))) return false;
+  m.set(e.id, e);
+  return true;
+}
+
+const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR;
+
+/** The room: every piece set and not removed (the oldest TENT_MAX by when they were first placed, then by id), and
+ *  the wallpaper and the floor (null: the tent's own). */
+export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[]; wall: string | null; floor: string | null } {
+  const pieces: TentPiece[] = [];
+  let wall: string | null = null, floor: string | null = null;
+  for (const e of entries) {
+    if (e.rm) continue;
+    if (e.id === TENT_WALL) wall = e.item;
+    else if (e.id === TENT_FLOOR) floor = e.item;
+    else pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who });
+  }
+  pieces.sort((a, b) => a.p - b.p || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return { pieces: pieces.slice(0, TENT_MAX), wall, floor };
+}
+
+/** What the sheet does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there), `full`
+ *  (a new piece past the cap: refused) or `append` (the same id's older rows are deleted). */
+export function tentAccept(held: readonly TentEntry[], e: TentEntry): 'append' | 'stale' | 'full' {
+  const same = held.filter((h) => h.id === e.id);
+  if (same.some((h) => !tentBeats(e, h))) return 'stale';
+  if (!e.rm && !same.length && !isSurface(e.id)) {
+    const m = new Map<string, TentEntry>();
+    for (const h of held) mergeTent(m, h);
+    let n = 0;
+    for (const h of m.values()) if (!h.rm && !isSurface(h.id)) n++;
+    if (n >= TENT_MAX) return 'full';
+  }
+  return 'append';
+}

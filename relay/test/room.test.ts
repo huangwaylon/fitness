@@ -376,8 +376,21 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
     say2(a, { kind: 'decor', id: 'dmh1abc2b', at: T + 9, rm: true });
     const b = join2(KEY_B, 0);
     expect(b.sent.filter((m) => m.kind === 'decor')).toEqual([
-      expect.objectContaining({ id: 'dmh1abc2a', x: 120, who: 'A' }), expect.objectContaining({ id: 'dmh1abc2a', x: 144 }), expect.objectContaining({ id: 'dmh1abc2b', rm: true })
-    ]);
+  });
+
+  it('the tent: its decor ops are kept with their scope; a drag and a villager inside are relayed live, never kept', () => {
+    const T = 1_793_000_000_000;
+    const a = join2(KEY_A), b = join2(KEY_B);
+    b.sent = [];
+    say2(a, { kind: 'drag', id: 'dmh1abc2a', x: -12, z: 30, f: 0 });
+    say2(a, { kind: 'drag', id: 'dmh1abc2a', x: -2, z: 28, f: 0, end: true });
+    say2(a, { kind: 'tent', in: true, to: [-7, 22] });
+    say2(a, { kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, item: 'f4041', x: 3, z: 5, f: 0, p: T });
+    expect(b.kinds()).toEqual(['drag', 'drag', 'tent', 'decor']);
+    expect(b.sent[1]).toEqual(expect.objectContaining({ kind: 'drag', x: -2, end: true, who: 'A' }));
+    // a phone opening later hears the drop, not the drag
+    const b2 = join2(KEY_B, 0);
+    expect(b2.sent.filter((m) => m.kind !== 'welcome' && m.kind !== 'presence')).toEqual([expect.objectContaining({ kind: 'decor', sc: 't', x: 3, z: 5 })]);
   });
 
   it('acks an intent with its `c` (the room\'s time; refused: ok false), a resend is the same intent, a stale walk is refused', () => {

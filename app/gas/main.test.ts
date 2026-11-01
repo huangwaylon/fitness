@@ -559,6 +559,31 @@ describe('decor (the island\'s decorations: each item\'s latest op)', () => {
   });
 });
 
+describe('decor in the tent (`sc: \'t\'`: each piece\'s latest op, the wallpaper and the floor, a cap of its own)', () => {
+  const T = 1_793_000_000_000;
+  const set = (id: string, at: number, more: Record<string, unknown> = {}) =>
+    ({ id: `tc-${id}-${at}`, type: 'decor', data: { sc: 't', id, at, item: 'f4041', x: 1, z: 2, f: 0, p: T, ...more } });
+  const ops = () => data('events').filter((r) => r[3] === 'decor').map((r) => [r[1], JSON.parse(String(r[4]))]);
+
+  it('checks the shape: a piece on a tile of the room, a wallpaper, a floor; never an island item', () => {
+    expect(a('event', set('d000001', T))).toEqual({ ok: true });
+    expect(a('event', set('dtentwall', T, { item: 'w4840', x: 0, z: 0 }))).toEqual({ ok: true });
+    for (const [i, more] of [{ x: 8 }, { item: 'tanuki' }, { item: 'w4840' }, { extra: 1 }].entries())
+      expect(a('event', set('d000002', T + i, more)), JSON.stringify(more)).toEqual({ ok: false, error: 'bad_request' });
+  });
+
+  it('keeps each piece\'s latest op, apart from the island\'s, and caps the pieces at 40 (the island\'s 30 don\'t count)', () => {
+    for (let k = 0; k < 30; k++) a('event', { id: `isl${k}`, type: 'decor', data: { id: `di${String(k).padStart(6, '0')}`, at: T + k, item: 'tanuki', x: 120, z: 480, f: 0, p: T } });
+    for (let k = 0; k < 40; k++) b('event', set(`d${String(k).padStart(6, '0')}`, T + k));
+    expect(a('event', set('d999999', T + 100))).toEqual({ ok: false, error: 'bad_request', detail: 'tent full' });
+    // the wallpaper still changes, a piece still moves (its one row replaced)
+    expect(a('event', set('dtentfloor', T + 101, { item: 'g5018', x: 0, z: 0 }))).toEqual({ ok: true });
+    expect(a('event', set('d000004', T + 102, { x: 6 }))).toEqual({ ok: true });
+    expect(ops().filter(([, d]) => d.id === 'd000004')).toEqual([['A', expect.objectContaining({ x: 6 })]]);
+    expect(ops()).toHaveLength(30 + 40 + 1);
+  });
+});
+
 describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);
