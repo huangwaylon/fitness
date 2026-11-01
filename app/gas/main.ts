@@ -518,6 +518,9 @@ function event(me: PersonId, body: Rec): EventReply {
   const id = body.id;
   if (!isId(id)) return fail('bad_request');
   if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
+  // High-fives go over the relay only now (docs/backend.md#events). An older app still posts them: acknowledge it and
+  // store nothing (no lock, no row, no notify), never `bad_request`, which that app would show as a failed save.
+  if (body.type === 'highfive') return { ok: true };
   const data = body.data === undefined ? {} : body.data;
   if (!isRec(data)) return fail('bad_request');
   const json = JSON.stringify(data);

@@ -21,6 +21,10 @@ const a = (action: string, extra: object = {}) => post({ key: KEY_A, action, ...
 const b = (action: string, extra: object = {}) => post({ key: KEY_B, action, ...extra });
 const tick = (ms = 1000) => vi.setSystemTime(Date.now() + ms);
 const data = (tab: string) => gas.sheets.get(tab)?.data() ?? [];
+/** A plain event to write (any type with a stored row; a `highfive` stores none). */
+const WEEK = '2026-10-26';
+const PLAIN = { type: 'harvest', data: { week: WEEK } };
+const PLAIN_JSON = JSON.stringify(PLAIN.data);
 
 // The Shortcut's body (the `uploads` log, 2026-10-30): daily totals, one line per day; calories = Move kcal.
 const REAL = {
@@ -107,7 +111,7 @@ describe('keys', () => {
   it('a locked request reads and writes Properties once each', () => {
     a('whoami');
     const [r, w] = [gas.state.propReads, gas.state.propWrites];
-    a('event', { id: 'e1', type: 'highfive' });
+    a('event', { id: 'e1', ...PLAIN });
     expect([gas.state.propReads - r, gas.state.propWrites - w]).toEqual([1, 1]);
   });
 });
@@ -147,8 +151,8 @@ describe('never throws', () => {
 
   it('bad action fields are bad_request', () => {
     expect(a('event', { id: 'e1', type: 'nope', data: {} }).error).toBe('bad_request');
-    expect(a('event', { id: '', type: 'highfive', data: {} }).error).toBe('bad_request');
-    expect(a('event', { id: 'e1', type: 'highfive', data: [1] }).error).toBe('bad_request');
+    expect(a('event', { id: '', ...PLAIN }).error).toBe('bad_request');
+    expect(a('event', { id: 'e1', type: 'harvest', data: [1] }).error).toBe('bad_request');
     expect(a('event', { id: 'e1', type: 'pref', data: { value: 'x'.repeat(30_000) } }).error).toBe('too_large');
     expect(a('snapshot', { since: 5 }).error).toBe('bad_request');
     expect(a('snapshot', { since: 'yesterday' }).error).toBe('bad_request'); // would compare as text and hide every row
@@ -331,9 +335,9 @@ describe('events', () => {
     expect(a('event', ev)).toEqual({ ok: true });
     expect(a('event', ev)).toEqual({ ok: true, duplicate: true });
     expect(b('event', { ...ev, id: 'B-1' })).toEqual({ ok: true });
-    expect(a('event', { id: 'A-2', type: 'highfive' })).toEqual({ ok: true });
+    expect(a('event', { id: 'A-2', ...PLAIN })).toEqual({ ok: true });
     expect(data('events').map((r) => [r[1], r[2], r[3], r[4]])).toEqual([
-      ['A', 'A-1730170000-1', 'pref', JSON.stringify(ev.data)], ['B', 'B-1', 'pref', JSON.stringify(ev.data)], ['A', 'A-2', 'highfive', '{}']
+      ['A', 'A-1730170000-1', 'pref', JSON.stringify(ev.data)], ['B', 'B-1', 'pref', JSON.stringify(ev.data)], ['A', 'A-2', 'harvest', PLAIN_JSON]
     ]);
   });
 
@@ -375,6 +379,18 @@ describe('events', () => {
   });
 });
 
+describe('highfive (relay-only now; old phones still send it)', () => {
+  it('is acknowledged and stores nothing, takes no lock and notifies no one', () => {
+    a('whoami');
+    gas.state.lockAvailable = false;
+    expect(a('event', { id: 'h1', type: 'highfive', data: {} })).toEqual({ ok: true });
+    expect(a('event', { id: 'h1', type: 'highfive' })).toEqual({ ok: true }); // a retry
+    expect(a('event', { id: 'h2', type: 'highfive', data: { person: 'B' } })).toEqual({ ok: true }); // never a "save failed"
+    expect(data('events')).toEqual([]);
+    expect(gas.state.fetches).toEqual([]);
+  });
+});
+
 describe('voids and person-bearing events', () => {
   it('spend_void appends with the server `at`, the sender as person and the data as JSON; an empty one is refused', () => {
     expect(a('event', { id: 's1', type: 'spend', data: { spendId: 'sp-1', item: 'snack', bells: 8 } })).toEqual({ ok: true });
@@ -385,7 +401,7 @@ describe('voids and person-bearing events', () => {
   });
 
   it('spend_void must name a buy on the sheet; either person may undo it; a second void is acknowledged, not appended', () => {
-    expect(a('event', { id: 'h1', type: 'highfive', data: { spendId: 'hf' } })).toEqual({ ok: true }); // not a spend
+    expect(a('event', { id: 'h1', type: 'harvest', data: { week: WEEK, spendId: 'hf' } })).toEqual({ ok: true }); // not a spend
     expect(a('event', { id: 'p1', type: 'pref', data: { key: 'villagerName', value: 'sp-9' } })).toEqual({ ok: true });
     expect(a('event', { id: 's1', type: 'spend', data: { spendId: 'sp-9x', item: 'dinner', bells: 15 } })).toEqual({ ok: true });
     for (const spendId of ['nope', 'hf', 'sp-9']) {
@@ -395,7 +411,7 @@ describe('voids and person-bearing events', () => {
     expect(a('event', { id: 'v2', type: 'spend_void', data: { spendId: 'sp-9x' } })).toEqual({ ok: true, duplicate: true });
     expect(b('event', { id: 'v1', type: 'spend_void', data: { spendId: 'sp-9x' } })).toEqual({ ok: true, duplicate: true }); // a retry
     expect(data('events').map((r) => [r[1], r[2], r[3]])).toEqual([
-      ['A', 'h1', 'highfive'], ['A', 'p1', 'pref'], ['A', 's1', 'spend'], ['B', 'v1', 'spend_void']
+      ['A', 'h1', 'harvest'], ['A', 'p1', 'pref'], ['A', 's1', 'spend'], ['B', 'v1', 'spend_void']
     ]);
   });
 
@@ -415,7 +431,7 @@ describe('voids and person-bearing events', () => {
       { type: 'pref', data: { person: 'B', key: 'villagerName', value: 'うめ' } },
       { type: 'spend_void', data: { person: 'B', spendId: 'sp-1' } },
       { type: 'spend', data: { person: 'B', spendId: 's1', item: 'snack', bells: 8 } },
-      { type: 'highfive', data: { person: 'B' } }
+      { type: 'harvest', data: { week: WEEK, person: 'B' } }
     ];
     bad.forEach((e, i) => expect(a('event', { id: `q${i}`, ...e }), JSON.stringify(e)).toEqual({ ok: false, error: 'bad_request' }));
     expect(data('events').map((r) => [r[1], r[3], JSON.parse(String(r[4])).person])).toEqual(ok.map((e) => ['A', e.type, e.data.person]));
@@ -454,11 +470,11 @@ describe('tally (one row per person and day)', () => {
     tick();
     b('event', tally('b1', '2026-10-29', { 'bug:moth': 3 }));
     tick();
-    a('event', { id: 'h1', type: 'highfive' });
+    a('event', { id: 'h1', ...PLAIN });
     tick();
     expect(a('event', tally('a3', '2026-10-29', { 'fish:dab': 4, 'bug:moth': 1 }))).toEqual({ ok: true });
     expect(data('events').map((r) => [r[1], r[2], r[3]])).toEqual([
-      ['A', 'a1', 'tally'], ['B', 'b1', 'tally'], ['A', 'h1', 'highfive'], ['A', 'a3', 'tally']
+      ['A', 'a1', 'tally'], ['B', 'b1', 'tally'], ['A', 'h1', 'harvest'], ['A', 'a3', 'tally']
     ]);
     expect(JSON.parse(String(data('events').at(-1)![4]))).toEqual({ date: '2026-10-29', counts: { 'fish:dab': 4, 'bug:moth': 1 } });
     // a retry of the same id is a duplicate, not a second row
@@ -588,16 +604,16 @@ describe('snapshot', () => {
   it('returns every row of both people as compact arrays, then only rows after `since`', () => {
     a('ingest', REAL);
     tick();
-    a('event', { id: 'e1', type: 'highfive', data: {} });
+    a('event', { id: 'e1', ...PLAIN });
     tick();
-    b('event', { id: 'e2', type: 'highfive', data: {} });
+    b('event', { id: 'e2', ...PLAIN });
 
     const full = b('snapshot');
     expect(full).toMatchObject({ ok: true, me: 'B', now: expect.any(String) });
     expect(Object.keys(full.rows).sort()).toEqual(['events', 'metrics']);
     expect(full.rows.metrics).toHaveLength(6);
     expect(full.rows.metrics[0]).toEqual(['2026-10-29T03:00:00.000Z', 'A', '2026-09-28', 'steps', 855]);
-    expect(full.rows.events).toEqual([['2026-10-29T03:00:01.000Z', 'A', 'e1', 'highfive', '{}'], ['2026-10-29T03:00:02.000Z', 'B', 'e2', 'highfive', '{}']]);
+    expect(full.rows.events).toEqual([['2026-10-29T03:00:01.000Z', 'A', 'e1', 'harvest', PLAIN_JSON], ['2026-10-29T03:00:02.000Z', 'B', 'e2', 'harvest', PLAIN_JSON]]);
 
     const since = full.rows.events[0][0];
     const inc = a('snapshot', { since });
@@ -608,8 +624,8 @@ describe('snapshot', () => {
 
   it('only rows the client reads leave the sheet: a hand-typed unknown event type, metric or person is not sent', () => {
     a('whoami');
-    a('event', { id: 'e1', type: 'highfive' });
-    gas.sheets.get('events')!.rows.push(['2026-10-29T03:00:00.500Z', 'A', 'x1', 'no_such_type', '{}'], ['2026-10-29T03:00:00.600Z', 'C', 'x2', 'highfive', '{}']);
+    a('event', { id: 'e1', ...PLAIN });
+    gas.sheets.get('events')!.rows.push(['2026-10-29T03:00:00.500Z', 'A', 'x1', 'no_such_type', '{}'], ['2026-10-29T03:00:00.600Z', 'C', 'x2', 'harvest', PLAIN_JSON]);
     gas.sheets.get('metrics')!.rows.push(['2026-10-29T03:00:00.500Z', 'A', '2026-10-29', 'no_such_metric', 30], ['2026-10-29T03:00:00.600Z', 'B', '2026-10-29', 'steps', 30]);
     const { rows } = a('snapshot');
     expect(rows.events.map((r: unknown[]) => r[2])).toEqual(['e1']);
@@ -631,7 +647,7 @@ describe('snapshot', () => {
     let count = reads();
     expect(a('snapshot', { since }).rows).toEqual({ metrics: [], events: [] });
     expect(count()).toBe(0);
-    b('event', { id: 'e1', type: 'highfive' });
+    b('event', { id: 'e1', ...PLAIN });
     expect(a('snapshot', { since }).rows.events).toHaveLength(1);
     gas.sheets.get('metrics')!.rows.push(['2026-10-29T03:00:00.000Z', 'B', '2026-10-29', 'steps', 5]); // pasted by hand
     count = reads();
@@ -640,8 +656,8 @@ describe('snapshot', () => {
   });
 
   it('every request gets a strictly later `at`, even within the same millisecond', () => {
-    a('event', { id: 'x1', type: 'highfive' });
-    a('event', { id: 'x2', type: 'highfive' });
+    a('event', { id: 'x1', ...PLAIN });
+    a('event', { id: 'x2', ...PLAIN });
     const [r1, r2] = data('events');
     expect(String(r2[0]) > String(r1[0])).toBe(true);
     expect(a('snapshot', { since: r1[0] }).rows.events.map((r: unknown[]) => r[2])).toEqual(['x2']);
@@ -673,7 +689,7 @@ describe('rev: resync after hand changes (docs/backend.md#revision)', () => {
     const r0 = rev();
     expect(r0).toMatch(/^[0-9a-z]+$/);
     a('ingest', REAL);
-    b('event', { id: 'e1', type: 'highfive' });
+    b('event', { id: 'e1', ...PLAIN });
     expect(rev()).toBe(r0);
   });
 
@@ -684,8 +700,8 @@ describe('rev: resync after hand changes (docs/backend.md#revision)', () => {
     const r1 = rev();
     expect(r1).not.toBe(r0);
     expect(rev()).toBe(r1);
-    gas.sheets.get('events')!.rows.push(['2026-01-01T00:00:00.000Z', 'A', 'old', 'highfive', '{}']); // pasted, `at` below since
-    a('event', { id: 'e2', type: 'highfive' });
+    gas.sheets.get('events')!.rows.push(['2026-01-01T00:00:00.000Z', 'A', 'old', 'harvest', PLAIN_JSON]); // pasted, `at` below since
+    a('event', { id: 'e2', ...PLAIN });
     expect(rev()).not.toBe(r1);
   });
 
@@ -720,7 +736,7 @@ describe('rev: resync after hand changes (docs/backend.md#revision)', () => {
     const r0 = rev();
     resync();
     const bumped = gas.props.get('REV');
-    a('event', { id: 'e3', type: 'highfive' });
+    a('event', { id: 'e3', ...PLAIN });
     expect(gas.props.get('REV')).toBe(bumped);
     expect(rev()).not.toBe(r0);
   });
@@ -738,7 +754,7 @@ describe('limits', () => {
   it('busy when the script lock cannot be taken; nothing is written', () => {
     gas.state.lockAvailable = false;
     expect(a('ingest', REAL)).toEqual({ ok: false, error: 'busy' });
-    expect(a('event', { id: 'e', type: 'highfive' })).toEqual({ ok: false, error: 'busy' });
+    expect(a('event', { id: 'e', ...PLAIN })).toEqual({ ok: false, error: 'busy' });
     expect(a('snapshot')).toEqual({ ok: false, error: 'busy' });
     expect(data('metrics')).toEqual([]);
     gas.state.lockAvailable = true;
@@ -757,7 +773,7 @@ describe('the push to the relay (docs/backend.md#push)', () => {
   const notices = () => gas.state.fetches.map((f) => JSON.parse(f.payload));
 
   it('after a write that appends synced rows, POSTs {what, who, at, rev} outside the lock, signed as the relay checks', () => {
-    a('event', { id: 'e1', type: 'highfive' });
+    a('event', { id: 'e1', ...PLAIN });
     expect(gas.state.fetches).toHaveLength(1);
     const f = gas.state.fetches[0];
     expect(f.url).toBe(RELAY_NOTIFY_URL);
@@ -773,10 +789,10 @@ describe('the push to the relay (docs/backend.md#push)', () => {
   });
 
   it('says nothing when nothing synced was written: a duplicate, an unchanged ingest, a refusal, a read', () => {
-    a('event', { id: 'e1', type: 'highfive' });
+    a('event', { id: 'e1', ...PLAIN });
     a('ingest', day('Oct 28, 2026', 9000, 30));
     gas.state.fetches = [];
-    a('event', { id: 'e1', type: 'highfive' });
+    a('event', { id: 'e1', ...PLAIN });
     a('ingest', day('Oct 28, 2026', 9000, 30));
     a('ingest', { nothing: 'here' });
     a('event', { id: 'e2', type: 'spend', data: { spendId: 's', item: 'snack', bells: 1 } });
@@ -787,26 +803,26 @@ describe('the push to the relay (docs/backend.md#push)', () => {
 
   it('without the external-request scope the write still succeeds, and notifying pauses for 10 minutes', () => {
     gas.state.relay = 'denied';
-    expect(a('event', { id: 'e1', type: 'highfive' })).toEqual({ ok: true });
+    expect(a('event', { id: 'e1', ...PLAIN })).toEqual({ ok: true });
     expect(gas.cache.get('relay:pause')?.v).toBe('error');
     gas.state.relay = 204;
-    expect(a('event', { id: 'e2', type: 'highfive' })).toEqual({ ok: true });
+    expect(a('event', { id: 'e2', ...PLAIN })).toEqual({ ok: true });
     expect(gas.state.fetches).toEqual([]); // paused: not even tried
     tick(NOTIFY_PAUSE_SECONDS * 1000 + 1);
-    a('event', { id: 'e3', type: 'highfive' });
+    a('event', { id: 'e3', ...PLAIN });
     expect(notices().map((n) => n.at)).toEqual([data('events')[2][0]]);
   });
 
   it('a refusal by the relay (keys differ, relay down) pauses too; the reply is unchanged', () => {
     gas.state.relay = 401;
-    expect(a('event', { id: 'e1', type: 'highfive' })).toEqual({ ok: true });
-    a('event', { id: 'e2', type: 'highfive' });
+    expect(a('event', { id: 'e1', ...PLAIN })).toEqual({ ok: true });
+    a('event', { id: 'e2', ...PLAIN });
     expect(gas.state.fetches).toHaveLength(1);
     expect(gas.cache.get('relay:pause')?.v).toBe('401');
   });
 
   it('authorizeRelay (run from the editor) lifts a pause and sends a notice with the last `at` and REV', () => {
-    a('event', { id: 'e1', type: 'highfive' });
+    a('event', { id: 'e1', ...PLAIN });
     gas.cache.set('relay:pause', { v: 'error', until: Date.now() + 600_000 });
     gas.state.fetches = [];
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});

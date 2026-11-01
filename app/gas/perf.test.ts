@@ -87,9 +87,9 @@ describe('year-3 volume', () => {
 
   it('an event write reads one column of ids (the duplicate check), never the whole tab', () => {
     const events = gas.sheets.get('events')!.data().length;
-    const write = measure(() => post({ action: 'event', id: 'perf-1', type: 'highfive', data: {} }));
+    const write = measure(() => post({ action: 'event', id: 'perf-1', type: 'harvest', data: { week: '2026-10-26' } }));
     expect(write.reply).toEqual({ ok: true });
-    const again = measure(() => post({ action: 'event', id: 'perf-1', type: 'highfive', data: {} }));
+    const again = measure(() => post({ action: 'event', id: 'perf-1', type: 'harvest', data: { week: '2026-10-26' } }));
     expect(again.reply).toEqual({ ok: true, duplicate: true });
     console.log(`events rows: ${events}; event: ${write.cells} cells, ${write.ms} ms; duplicate: ${again.cells} cells`);
     expect(write.cells).toBeLessThanOrEqual(events + 1); // one cell per row: the id column only
