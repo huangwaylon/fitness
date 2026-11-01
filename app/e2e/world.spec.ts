@@ -65,9 +65,9 @@ test('the camera is the scroller: three stops, the sprites follow it, nothing ru
   await page.waitForTimeout(500);
   expect(await call(page, (w) => w.cam())).toBeGreaterThan(400);
   expect(await page.locator('[data-tree-node]').first().evaluate((e) => (e as HTMLElement).style.transform)).not.toBe(before);
-  // proximity snapping settles on a stop (ひろば) or stays put; either way, once still, no frame is pending
-  await page.waitForTimeout(800);
-  expect(await call(page, (w) => w.idle())).toBe(true);
+  // proximity snapping settles on a stop (ひろば) or stays put; either way, once still, no frame is pending (polled: on
+  // a slow runner the snap's smooth scroll, or an ambient beat that sets a villager walking, can still be under way)
+  await expect.poll(() => call(page, (w) => w.idle()), { timeout: 10_000 }).toBe(true);
   for (const z of [860, 1380, 150]) {
     await call(page, (w, [z]) => w.go(z), [z]);
     await page.waitForTimeout(300);
