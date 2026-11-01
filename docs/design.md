@@ -6,15 +6,16 @@ What the app is and how it behaves. The backend is in [backend.md](backend.md), 
 ## Product
 
 A two-player Animal Crossing–style island for a couple in Tokyo (ウェイ = A, うめ = B), each with an iPhone and an
-Apple Watch. Their activity, measured automatically, grows fruit and earns **ベル** (play money, a stamp card: +1 per daily goal)
-into one shared wallet, spent on two treats: おやつ and 外食. Japanese first, English per person.
+Apple Watch. Their activity, measured automatically, grows fruit and earns **ベル** (play money, a stamp card: +1 per
+daily goal) into one shared wallet, spent on two treats: おやつ and 外食. Japanese first, English per person.
 
 - **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
   weight) several times a day. **Apple Health is the source of truth:** no health number is entered or fixed in the
   app ([Health data](#health-data)).
 - **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes every number on the
   phone (`lib/model/`, pure functions).
-- **Principles:** zero required taps a day; both people see all data; no notifications.
+- **Principles:** zero required taps a day; both people see all data; no notifications; everything always animates
+  (no reduced-motion variants).
 
 Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/` · `model/` · `sync/` · `store/` ·
 `ui-state/` · `sound/` · `components/`, `routes/`. `deps.test.ts` enforces the import direction.
@@ -22,7 +23,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ## Simplicity rules
 
 - No tab bar: 島 (the island) and ごほうび (the wallet), plus one panel for everything else (tap the ribbon).
-- One focal point per screen (島: today's ベル, which is also the door to the panel; ごほうび: the balance).
+- One focal point per screen (島: today's ベル, also the door to the panel; ごほうび: the balance).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
   characters), only with news.
@@ -31,168 +32,130 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ### Island
 
-Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the panel](#panel))
-with the jar beside it on its right, the two one row centred in the sky between the safe area and the horizon, a sync chip
-only when sync isn't ok, the scene, しずえ's box only with news. Nothing else sits at the bottom: the island is centred
-in the visible ocean, from the horizon down to the screen's bottom above the home indicator, and never runs under the
-ribbon.
+Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
+panel](#panel)) with the jar on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
+しずえ's box only with news. The island is centred in the visible ocean, from the horizon to the screen's bottom, and
+never runs under the ribbon.
 
-- **Trees:** one per person; today's four fruits hang in the canopy, grey at 0 and colouring in toward the goal; a met
-  one falls to the ground for a tap to pick up, and that goal's flower blooms in the person's bed ([Trees](#trees)). A tap opens a
-  popup: per goal, 🍎 steps first, then Move, Exercise, Stand (its own order; the canopy and the beds keep
-  `RING_FRUITS`), today's amount against the goal, met or not (「14,164 / 8,000歩」, 「638 / 600 kcal」), a ✓ before
-  it once met, and a small yuzu chip 「がんばり」 after it at 1.5× ([がんばり](#goals)): the same chip on every row at
-  1.5×, whichever the cap pays; no ベル on the rows. Then one ledger, word left and ベル right: 「もくひょう +3」 (goals
-  met), 「がんばり +1」 when any goal is at 1.5× (「がんばり（上限 2） +2」 when three or four were reached), and under a
-  hairline this person's total, 「うめの きょう +6 ベル」 (goals + がんばり). Then a star line for today's ふたりでぜんぶ,
-  「ふたりで ぜんぶ まで：あと 2つ」 (goals left, both people) or 「ふたりで ぜんぶ！ +2 ふたりに」: the pair's, shown in
-  both popups and outside either total, so ウェイ's total + うめ's + ふたりでぜんぶ is the ribbon. No stretch target on
-  rows not yet at 1.5× (mocked: it repeated がんばり on every row and widened the popup at 320; あそびかた lists them). The last
-  line says, softly, when that person's data last arrived (「15:24 に とどいた」, 「きのう 21:10」, 「10/29」), with a
-  small dot once it is over 6 hours old.
-- **Jar** (`island/HudJar.svelte`, in the HUD row): a cream pill as tall as the ribbon, with its lip, the jar (our
-  drawing, 36–42px wide) rising out of its left end, then the shared balance and a leaf ▶ dot. The ribbon's right tail
-  sits in the 20–26px gap; the row's left pad balances the left tail, so the pair is centred; on a narrow phone the
-  ribbon's padding tightens (realistic widths, 「+18」 and 9,999, fit 320 with 12px to spare). Each goal met flies in as
-  a +1 coin from its fruit on the island (+2 with its がんばり), up into the jar (CoinFlow, in a layer over the stage); ふたりでぜんぶ as a +2
-  under the jar. Tap → ごほうび (the page zooms about the jar, which morphs into the hero jar).
-- **Centre stage:** the island's open middle (column 0 of the tree row, `scene.ts` `CENTRE_STAGE`), plain lawn kept free
-  of every placement for a visitor.
-- **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner opens their card.
+- **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: per goal (🍎
+  steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
+  「がんばり」 chip at 1.5× ([Goals](#goals)); no ベル on the rows. Then the ledger: 「もくひょう +3」, 「がんばり +1」
+  (「がんばり（上限 2） +2」 when three or four were reached) and this person's total 「うめの きょう +6 ベル」; then
+  ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
+  totals plus it make the ribbon. The last line says when that person's data last arrived (「15:24 に とどいた」), with
+  a dot once it is over 6 hours old.
+- **Jar** (`island/HudJar.svelte`): a cream pill as tall as the ribbon, the jar rising out of its left end, the shared
+  balance and a leaf ▶. Each newly met goal flies in as a +1 coin from its fruit (+2 with its がんばり; `CoinFlow`),
+  ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the page zooms
+  about the jar, which morphs into the hero jar).
+- **Centre stage:** the island's open middle (`scene.ts` `CENTRE_STAGE`), kept free for a visitor.
+- **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner's opens their
+  card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
 
-ごほうび (`routes/jar/+page.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the balance, then two big
-tiles with NH item art: 🍦 おやつ 8 ベル (たこやき・アイス・あんみつ・ポテチ・スイーツ・スタバ) and 🍜 外食 15 ベル (マーラータン・
-おすし・ラーメン・韓国料理・トッポッキ). One the wallet can't cover is sunk with あと N ベル. 買う！ asks first, applies at
-once and waits 5 s with とりけす before it is sent.
+ごほうび (`routes/jar/+page.svelte`, `wallet/Shop.svelte`): the jar over 「ふたりのベル」 and the balance, then two tiles
+with NH item art: 🍦 おやつ 8 ベル and 🍜 外食 15 ベル. One the wallet can't cover is sunk with あと N ベル. 買う！ asks
+first, applies at once and waits 5 s with とりけす before it is sent.
 
-Under the tiles, 「かいもの きろく」 (`wallet/Purchases.svelte`): the buys, newest first, one line each: the item's art and
-name, the day (10/31(土)), who bought it (their villager's head and よびな) and the price. Ten at first, ten more per
-「もっと見る」. Each line has ✕ (either of us, any buy: one wallet, in case of a mistake): it asks first, NH style
-(「このかいものを けしますか？ 8 ベル もどります」 はい / いいえ); はい sends a `spend_void`, the line leaves the list, the ベル
-go back, and the banner carries とりけす for 5 s like a buy's.
+「かいもの きろく」 (`wallet/Purchases.svelte`) lists the buys, newest first (art, name, day, who, price), ten at a time
+(「もっと見る」). ✕ on any line (either of us, any buy) asks NH-style (「このかいものを けしますか？ 8 ベル もどります」);
+はい sends a `spend_void`, the ベル go back, and the banner carries とりけす for 5 s.
 
 ### Panel
 
-Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`, a top sheet: the safe area
-over its title bar 「しまの てちょう」, filling the screen to its bottom edge, rounded there like the screen's corners;
-its height never changes between tabs). Three tabs sit
-pinned under the title bar (NH's yellow for the one shown), けんこう · きろく · せってい; it opens on **けんこう**, and
-remembers the last tab for the session (a new launch opens on けんこう again):
+Tap the ribbon → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「しまの てちょう」, full
+height, three tabs pinned under the title (NH yellow for the one shown): けんこう · きろく · せってい. It opens on
+けんこう and remembers the last tab for the session. Its own chunk, loaded on the first tap.
 
-- **けんこう:** the Health data over time for the trainer, one person at a time: whose data, then a chart per metric and 体重
-  ([Kenkou](#kenkou)); its own chunk, loaded when the panel first opens on it (never with the island).
-- **きろく:** the ベル ledger by week and day, then 目標 (the Move and weight goals) ([Kiroku](#kiroku)).
-- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH villagers; its head (my villager, よびな, the search) stays pinned while the head grid scrolls under it),
-  **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 / English), **つうしん** (when each of us last
-  synced; いま つうしん) and **あそびかた** (one line; くわしく → the guide: the four goals at +1 each, ふたりでぜんぶ
-  +2, the two treats and their prices, the Sunday recap; a protein hint of 1.6 g per kg a day, not tracked).
+- **けんこう:** the Health data over time ([Kenkou](#kenkou)); its own chunk.
+- **きろく:** the ベル ledger, 目標 and the ずかん ([Kiroku](#kiroku)).
+- **せってい:** **むらびと** (my villager and よびな; かえる → the picker: 23 special characters and all 417 NH
+  villagers, its head pinned over the scrolling grid), **サウンド** ([Sound settings](#sound-settings)), **ことば**
+  (日本語 / English), **つうしん** (when each of us last synced; いま つうしん) and **あそびかた** (くわしく → the guide:
+  the goals, ふたりでぜんぶ, the treats, the Sunday recap, a protein hint of 1.6 g per kg a day).
 
-A day, a goal, the picker and the guide push a level with ‹ (the tabs hide while a level is
-open); ✕, the backdrop and Esc close the panel. It is its own chunk, loaded on the first tap.
+A day, a goal, the picker and the guide push a level with ‹ (the tabs hide while a level is open); ✕, the backdrop and
+Esc close the panel.
 
 ### Kiroku
 
-きろく (`model/history.ts`, `components/kiroku/*`) is a read-only history, the panel's second tab, in two sections:
+きろく (`model/history.ts`, `components/kiroku/*`), read-only:
 
-- **ベル:** everything earned, then by week (its ベル earned: earnings only; the buys live on ごほうび's かいもの きろく)
-  one line per day under the two avatars: each person's four fruits (bright = met), a star on a ふたりでぜんぶ day, the
-  day's ベル (tap → the day); on a day either of us reached 1.5× of a goal, a smaller second line in the same columns:
-  「がんばり」 under the date and each person's がんばり ベル (+1 / +2) under their fruits.
-- **目標:** the Move and weight goals (two avatar pills pick whose, either person sets either person's). The weight
-  itself is in [けんこう](#kenkou).
-- **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found (→ that kind's page).
-- **Day:** ふたりでぜんぶ (+2 or —), then me and the partner: the day's ベル and, per goal, its value (green when met,
-  the popup's 「がんばり」 chip at 1.5×) and its goal's +1, then a がんばり row when any (+1, +2, or 「がんばり（上限 2）」
-  +2), like the tree's popup.
+- **ベル:** everything earned, then by week (earnings only) one line per day under the two avatars: each person's four
+  fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day); on a がんばり day a smaller second
+  line with each person's がんばり ベル.
+- **目標:** the Move and weight goals; two avatar pills pick whose (either person sets either person's).
+- **ずかん** ([Zukan](#zukan)): one row per kind with how many either of us has found.
+- **Day:** ふたりでぜんぶ (+2 or —), then each person: the day's ベル and per goal its value (green when met, the
+  「がんばり」 chip at 1.5×) and +1, then any がんばり row, like the tree's popup.
 
 ### Kenkou
 
-けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`) is the Health data over time, read-only, for
-the personal trainer to review, one person at a time; computed on read from the same model, nothing sent. Top to bottom:
+けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the Health data over time for the personal
+trainer, one person at a time, computed on read.
 
-- **Whose data:** two avatar pills, ウェイ · うめ (this phone's person first and chosen on opening; the pressed one
-  carries the person's colour under the name). Every card follows it. Switching keeps the period and the visible range
-  and closes an open callout (one derived pass, no long task at 4× CPU). The choice is kept for the session like the
-  period (closing and reopening the panel keeps it); a new launch starts on this phone's person again.
-- **Controls:** the period 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月, kept for the session), then a sticky row: ‹
-  the visible range (「10/2–10/31」, the year when it isn't this one; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの
-  1日平均」 under it) › and きょう (‹ › and きょう are `aria-disabled` when there's nothing that way).
-- **A card per metric**, steps first (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド, like the tree's popup; the canopy and the beds keep the rings' order):
-  the person's goal; 1日の平均 large,
-  前の期間より ↑/↓ % beside it, then 目標 n/N日（%）, ベスト and 記録なし n日 (when there are any); the chart; a one-line key in the person's
-  colour (with 記録なし's stub when the period has such a day).
-- **Chart** (`BarChart`, hand-drawn SVG): one series, a bar per day (1週, 1か月), per week (3か月: 13 weeks ending on the
-  last day shown) or per calendar month (1年, すべて), the bucket's daily average, wide bars in the person's colour
-  (ウェイ blue, うめ orange, `--person-a/-b`); solid when the goal was met, pale when not (a week or month: darker the
-  more of its days met it); every value as reported (a 66-step day is its short bar, a 0 a 1px sliver on the axis);
-  today outlined (still running); a finished day or bucket with no row at all gets a short faint
-  stub on the axis (7 px, hatched, a dashed neutral outline, `--text-soft`: plainly missing, never a gap that reads as
-  zero nor a column that reads as a value; its callout says 記録なし). Dashed: their goal (stepped when their Move goal changed). No trend line
-  (user decision): the bars, the goal and the stats carry it. On 1週 each bar carries its value (`620`, `9.2k`). A tap shows that bar's one value (inside
-  the chart, on the side away from the bar); a horizontal drag turns the page (right = older); vertical drags scroll
-  the panel (`touch-action: pan-y`).
-- **体重** (`WeightCard`, `WeightChart`): the person's 平均 (n回の記録), 期間の変化 ([Weight](#weight): the period's plain
-  change, with what it compares, 「最初の週→最後の週」 or 「最初→最後の記録」, and 1週間に when the two are a week or more
-  apart; – under two weigh-ins), the chart on an axis fitted to their weights (dots = weigh-ins or a bucket's average,
-  joined by a thin line across the days between weigh-ins; no smoothed line; dashes = the goal, or a 「目標 66.0 ↓」
-  label when it's far off), and the goal month at that pace (only when the period ends today).
-- **Rules** (decisions.md "Health trends"): a day's value is Health's latest, as is: every day with a row is counted
-  in the averages, best day, goal count and change whatever its value (0 or 66 steps included; nothing is cut off);
-  記録なし = no row for that metric (nothing arrived: before the first sync, a day the Shortcut didn't cover), left out
-  of the numbers and counted from the first activity record on; today is drawn but left out of the numbers (a partial
-  day); the previous period is the same length just before (1年: the 12 months before). The tab's footnote says so.
-- **Cost:** the tab's code and its strings (`i18n/kenkou.*.json`, merged by `i18n/kenkou.ts`) load with the tab, so
-  the island's first load doesn't grow; the daily series is built once per model and day (memoised); a period switch at
-  4× CPU with two years of data is ~100 ms and a person switch ~20–70 ms, with no long task. `?demo&weeks=60` makes a longer demo history (default 8 weeks), with a day now and
-  then whose Watch rows never arrived (steps only: 記録なし for Move, Exercise and Stand).
+- **Whose data:** two avatar pills (this phone's person first and chosen on opening; kept for the session).
+- **Controls:** 1週 · 1か月 · 3か月 · 1年 · すべて (default 1か月, kept for the session), then a sticky row: ‹ the
+  visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」 under it) › and きょう.
+- **A card per metric** (🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド): the goal; 1日の平均 with 前の期間より ↑/↓ %;
+  目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
+- **Chart** (`BarChart`, SVG): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年, すべて), each
+  the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
+  the goal was met, pale when not; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
+  The goal dashed (stepped when the Move goal changed). On 1週 each bar carries its value. A tap shows one value; a
+  horizontal drag turns the page (right = older); vertical drags scroll the panel.
+- **体重** (`WeightCard`, `WeightChart`): 平均 (n回の記録), 期間の変化 ([Weight](#weight)), the chart on an axis fitted
+  to the weights (dots joined by a thin line; the goal dashed, or a 「目標 66.0 ↓」 label when far off) and the goal
+  month at that pace (only when the period ends today).
+- **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
+  a day with no row (counted from the first activity record); today is drawn but not counted; the previous period is
+  the same length just before. The footnote says so.
+- **Cost:** the tab's code and strings (`i18n/kenkou.*.json`) load with the tab; the daily series is memoised per
+  model and day. `?demo&weeks=60` makes a longer history with some missing Watch days.
 
 ### Sheets and harvest
 
 - One sheet skin (`ui/Sheet.svelte`, a native `<dialog>`): tan paper, cream cards (navy at night), sticky title bar,
   one CTA in a sticky footer above the keyboard.
-- **Partner card:** face, one line about their day, ハイタッチ (when their data arrived is on their tree).
-- **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped, a recap of the week: each
-  person's ベル, the ふたりでぜんぶ days (+2 each) and the week's total; 受け取る → the week's coins fall into the jar. ✕ =
-  あとで. Nothing more lands: the week's ベル came in day by day.
+- **Partner card:** face, one line about their day, ハイタッチ.
+- **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped, the week's recap: each
+  person's ベル, the ふたりでぜんぶ days and the total; 受け取る → the coins fall into the jar (ceremony only). ✕ = あとで.
 - **Pair** (`routes/pair`): paste the key, or open a `#key=` link in the installed app.
 
 ### Navigation
 
-✕ sits top-right and closes the whole sheet from any level; ‹ sits top-left only when there is a level to go up to; a
-full page has ‹ 島へ. Backdrop tap and Esc also close. `ui/NavBar.svelte` + `ui/NavButton.svelte`; `ui/nav.test.ts`
-fails on a modal without them. Sheets rise and levels slide in over 240 ms.
+✕ top-right closes the whole sheet from any level; ‹ top-left only when there is a level to go up to; a full page has
+‹ 島へ. Backdrop tap and Esc also close. `ui/NavBar.svelte` + `ui/NavButton.svelte`; `ui/nav.test.ts` fails on a
+modal without them. Sheets rise and levels slide in over 240 ms.
 
 ## Economy
 
 A stamp card with small numbers. Rule `scoring/bells.ts`, economy on read `model/bells.ts`, values `config/rules.ts`
-(`RULES`, `STRETCH`, `SHOP`); pinned by their tests, `model/properties.test.ts` and the golden fixtures. Earnings are recomputed
-from the rows, so they move whenever data arrives.
+(`RULES`, `STRETCH`, `SHOP`); pinned by their tests, `model/properties.test.ts` and the golden fixtures. Earnings are
+recomputed from the rows.
 
 ### Goals
 
-Every list shows them in Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS`), except けんこう and the tree's popup (steps first). Per person per Tokyo
-day, all or nothing: **+1 ベル for each goal met**, so at most 4 (plus がんばり, below).
+Lists follow Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS`), except けんこう and the tree's popup
+(steps first). Per person per Tokyo day, all or nothing: **+1 ベル for each goal met**.
 
 | Fruit | Metric (Shortcut field → stored) | Daily goal |
 |---|---|---|
 | 🍐 Move | active kcal (`calories` → `move_kcal`) | per person `pref` moveGoal, 100–2,000 (default ウェイ 600, うめ 400) |
 | 🍑 Exercise | Watch exercise minutes (`exercise_minutes` → `exercise_min`) | 60 min |
 | 🍒 Stand | Stand Time (`stand_minutes` → `stand_min`) | 120 min |
-| 🍎 Steps | `steps` | 8,000 |
+| 🍎 Steps | `steps` (max of `steps`, `steps_watch`) | 8,000 |
 
-The Move goal on a day is the last one set on or before that Tokyo date: a change never re-prices earlier days.
+The Move goal on a day is the last one set on or before that Tokyo date.
 
-**がんばり (stretch):** +1 more for each goal reached at 1.5× its target (`STRETCH.multiplier`), at most **+2 a person
-a day** (`STRETCH.cap`), on every day alike. The targets: 🍐 1.5 × that day's Move goal (900 kcal for 600, 600 for 400),
-🍑 90 min, 🍒 180 min (whole minutes, like the goal), 🍎 12,000 steps; at or above counts. When three or four are
-reached, the cap is paid to the first ones in `RING_FRUITS` order (so the per-fruit ベル add up to the day). A person
-earns 0–4 + 0–2 a day. Locked weeks read it as of the lock, like the goals.
+**がんばり (stretch):** +1 more for each goal reached at 1.5× (`STRETCH.multiplier`): 🍐 1.5 × that day's Move goal,
+🍑 90 min, 🍒 180 min, 🍎 12,000 steps; at most **+2 a person a day** (`STRETCH.cap`, paid to the first in
+`RING_FRUITS` order). A person earns 0–4 + 0–2 a day.
 
-**ふたりでぜんぶ:** +2 shared when both people meet all four goals on the same Tokyo day (がんばり doesn't enter it). A
-day pays 0–14 for the pair.
+**ふたりでぜんぶ:** +2 shared when both meet all four goals the same Tokyo day (がんばり doesn't enter it). A day pays
+0–14 for the pair.
 
 ### Numbers check
 
@@ -200,79 +163,71 @@ day pays 0–14 for the pair.
 
 | Week | How | ベル |
 |---|---|---|
-| Most | every goal every day, both, and two at 1.5× every day | (4 + 2) × 7 × 2 + 2 × 7 = **98** |
+| Most | every goal every day, both, two at 1.5× every day | (4 + 2) × 7 × 2 + 2 × 7 = **98** |
 | Perfect | every goal every day, both, no がんばり | 4 × 7 × 2 + 2 × 7 = **70** |
-| Typical | each goal met on 5 of 7 days, both perfect on 3 days with one goal at 1.5× | 23 × 2 + 3 × 2 = **52** |
-| Lazy | two easy goals a day (say Move and Stand), never all four | 2 × 7 × 2 = **28** |
-
-The most a week pays buys four おやつ and four 外食 (92); a perfect week three of each (69); a typical week two of each
-(46, 6 left over); a lazy one a 外食 and a おやつ.
+| Typical | each goal on 5 of 7 days, both perfect on 3 days with one at 1.5× | 23 × 2 + 3 × 2 = **52** |
+| Lazy | two easy goals a day, never all four | 2 × 7 × 2 = **28** |
 
 ### Rewards
 
-Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 8 ベル** (`snack`: takoyaki, ice cream, anmitsu, chips, sweets,
-Starbucks) and 🍜 **外食 15 ベル** (`dinner`: malatang, sushi, ramen, Korean food, tteokbokki). A buy is
-`spend {spendId, item, bells}` with `bells` exactly the item's price (the server refuses anything else; the model
-ignores it too). Either person buys, no approvals; either person undoes any buy (`spend_void`).
+Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 8 ベル** (`snack`) and 🍜 **外食 15 ベル** (`dinner`). A buy is
+`spend {spendId, item, bells}` with `bells` exactly the item's price (the server refuses anything else). Either person
+buys; either person undoes any buy (`spend_void`).
 
 ### The first week
 
 The economy starts with the data: its first week is the first one with an activity row stamped by that week's lock
-(`firstWeek`). A baseline of old days, synced long after their weeks locked, never earns and never moves it.
+(`firstWeek`). A baseline of old days synced after their weeks locked never earns.
 
 ### Harvest and lock
 
 - **Sunday 19:30 JST:** the harvest recap opens (nothing lands then: the week's ベル came in day by day).
 - **The following Wednesday 04:00 JST:** the week locks. Until then its earnings move with late syncs; after, they are
-  computed as of the lock, so the past stays put. The lock is internal: nothing shows it.
+  computed as of the lock. The lock is internal: nothing shows it.
 
 ### Wallet and buys
 
-A day's ベル count in the wallet from that day (at their current value). Buys and voids replay in server order.
+A day's ベル count in the wallet from that day. Buys and voids replay in server order.
 
-- **Coverage:** a buy counts only if covered: everything earned on days up to its date minus earlier accepted buys.
-  An uncovered buy is ignored, so the balance never goes negative (a higher Move goal set later the same day can lower
-  that day's ベル and so uncover a buy).
-- **Voids:** either of us, any buy, once (`spend_void`); the ベル return. Buys and voids never lock (the lock freezes
-  earnings, not spending), so a buy can be erased any time.
+- **Coverage:** a buy counts only if covered (everything earned up to its date minus earlier accepted buys); an
+  uncovered buy is ignored, so the balance never goes negative.
+- **Voids:** either of us, any buy, once; the ベル return. Buys and voids never lock.
 
 ## Health data
 
-Apple Health is the source of truth. Steps, exercise, Move, Stand and weight come only from the Shortcut's `metrics`
-rows; a day's value (activity and weight) is its latest row, so each sync replaces it with Health's current total (a
-locked week's earnings stay as of its lock). Nothing in the app enters or fixes them.
+Steps, exercise, Move, Stand and weight come only from the Shortcut's `metrics` rows; a day's value is its latest row,
+so each sync replaces it with Health's current total (a locked week's earnings stay as of its lock). Nothing in the
+app enters or fixes them.
 
-What the app sends instead ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either
-person's: `data.person`, absent = the sender), buys and voids, harvest taps, high-fives, and the sender's own
-`locale`, `villagerName` and `villager`, and the island's finds for the ずかん (`find`, the first of each, never ベル). A buy and its とりけす are shown at once and wait 5 s with とりけす before they
-are sent (touching the banner holds it, ≤ 2 min).
+What the app sends ([backend.md](backend.md#events)): the two goals (`pref` `moveGoal`, `goalWeight`, either person's
+via `data.person`), buys and voids, harvest taps, high-fives, the sender's `locale`, `villagerName` and `villager`, and
+the ずかん's finds (`find`, the first of each). A buy and its とりけす wait 5 s before they are sent (touching the banner
+holds it, ≤ 2 min).
 
 ## Weight
 
-`model/weight.ts`, for けんこう's 期間の変化 and goal month; never earns (`deps.test.ts`: the economy never imports it).
-Plain arithmetic, no smoothing: over the visible period, the average of the first week's weigh-ins (the 7 days from the
-first) → the average of the last week's (the 7 days to the last), when the weigh-ins span 14 days or more; else (1週, or
-a short stretch) the first weigh-in → the last; under two, none (–). Per week: that change over the days between the
-two weeks' middles (their weigh-ins' mean date), shown from 7 days apart. Goal month: from the last week's average at
-that pace, only from two weeks, when it heads to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆっくり
-いこうね」; at or past the goal: 「目標に届いています」).
+`model/weight.ts`, for けんこう's 期間の変化 and goal month; never earns (`deps.test.ts`). Plain arithmetic, no
+smoothing: over the visible period, the first week's average weigh-in → the last week's when the weigh-ins span 14
+days or more, else the first weigh-in → the last; under two, none (–). Per week: that change over the days between the
+two weeks' middles, shown from 7 days apart. Goal month: from the last week's average at that pace, only when it heads
+to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆっくり いこうね」; at the goal 「目標に届いています」).
 
 ## Island scene
 
 `lib/components/island/*`: a Pocket Camp–style diorama in SVG/CSS around official renders. Light from the upper left;
-each surface one fill, one gradient, one soft shade, sparse flecks; no strokes or lips on scenery.
+each surface one fill, one gradient, one soft shade; no strokes on scenery. Only `transform` and `opacity` animate;
+everything pauses while hidden (`data-paused`), and a sheet pauses particles, critters and idle life
+(`data-covered`). Nothing on the island pays ベル.
 
 ### Layout and scale
 
-An elastic sky over a **stage of 390 × 360 units (u)**. The island (14u–356u: the hedge's top to the foam; the horizon at 0u) is centred between the horizon and the
-screen's bottom above the home indicator (`--island-bottom`); the sky is at most 27% of the screen; nothing runs under
-the ribbon. Back
-to front: sky · sea · ground · hedge · trees + fruit · flower beds · villagers · particles · one tint.
+An elastic sky over a **stage of 390 × 360 units (u)** (`--su` = one unit). The island (14u–356u, the horizon at 0u)
+is centred between the horizon and the screen's bottom (`--island-bottom`); the sky is at most 27% of the screen. Back
+to front: sky · sea · ground · pond · hedge · museum · trees + fruit · flower beds · villagers · particles · one tint.
 
-`scene.ts`: **1 tile = 44u**, **1 row = 31u** deep; `col(k) = 195 + 44k`, k = −3…3; row bases hedge 62 · trees + centre stage
-173 · bed back 266 · front 297 (grass y 32–316, sand from 26: the back runs 111u behind the trunks, the rock and a
-weed spot in the gaps between the canopies and centre stage). Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u (cols −3…3) ·
-flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · centre stage (col 0, a visitor's spot).
+`scene.ts`: **1 tile = 44u**, **1 row = 31u**; `col(k) = 195 + 44k`, k = −3…3; rows: hedge 62 · trees + centre stage
+173 · bed back 266 · front 297. Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u · flower 32u ·
+hanging fruit 20u · ground fruit 24u. The back row reads bush · pond · museum · bush · bush.
 
 ### Environment
 
@@ -281,633 +236,401 @@ flower 32u (cols ±2/±3) · hanging fruit 20u · ground fruit 24u · centre sta
 - **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
   Night is soft periwinkle, never black.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
-  Jan–Mar camellia). Two flower beds by season, each its person's goal flowers ([Trees](#trees)). A newly met goal shakes its tree and its fruit drops.
+  Jan–Mar camellia). Two flower beds by season.
 
 ### Particles and events
 
-≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Small seasonal
-touches: snow lies on the museum's roof while it lies on the ground (Dec 11 – Feb 24, with the trees and the hedge);
-petals float on the pond in cherry-blossom week and maple leaves in maple week (NH's petals and leaves on the water),
-drifting with one slow transform. Events (`eventsAt`): cherry blossom Apr 1–10, maple week
-Nov 16–25, Toy Day Dec 24, the balloon present; the fireworks keep their own schedule ([Fireworks](#fireworks)). Only
-`transform` and `opacity` animate; everything pauses while hidden (`data-paused`); a sheet also pauses particles and
-idle life (`data-covered`).
+≤ 3 particles (petals, maple leaves, snowflakes on a snow day, summer fireflies but not in the rain). Snow lies on the
+museum's roof while it lies on the ground; petals float on the pond in cherry-blossom week and maple leaves in maple
+week. Events (`eventsAt`): cherry blossom Apr 1–10, maple week Nov 16–25, Toy Day Dec 24, the balloon present.
 
 ### Weather
 
-`island/weather.ts` (pure), `island/weatherNow.svelte.ts` (the state, each minute), `island/Weather.svelte`,
-`e2e/weather.spec.ts`. NH's weather, seeded by the date (a weather day runs 05:00 → 05:00), so both phones agree:
-about one day in six is wet: rain all day (light or a downpour), a wet morning (to 12:00), or heavy rain that clears at
-16:00 and leaves a **rainbow** 16:00–17:00 (building to its peak at half past; 1 in 8 double). In December–February a
-wet day snows instead (about one in four; light or heavy). Fine days only: **fog** at 07:00 October–March (1 in 8),
-the **aurora** on winter nights 19:00–04:00 (1 in 10, never on a meteor shower's night). NH's fireworks days (August
-Sundays, Dec 31, Jan 1) and meteor shower nights are always fine.
+`island/weather.ts` (pure), `island/weatherNow.svelte.ts`, `island/Weather.svelte`, `e2e/weather.spec.ts`. Seeded by the
+date (a weather day runs 05:00 → 05:00), so both phones agree: about one day in six is wet (rain all day, light or a
+downpour; a wet morning; or heavy rain that clears at 16:00 and leaves a **rainbow** 16:00–17:00, 1 in 8 double). In
+December–February a wet day snows instead (about one in four). Fine days only: **fog** at 07:00 October–March (1 in 8),
+the **aurora** on winter nights 19:00–04:00 (1 in 10, not on a meteor shower's night). Fireworks days and meteor shower
+nights are always fine.
 
-- **Look:** the sky goes grey (an overcast over the sky, darker at night); a wet day's darker multiply tint over land
-  and sea; rain is ONE tiled layer of streaks moved by transform (denser and faster in a downpour), snow two slow tiled
-  layers plus the three official snowflakes (they fall only on snow days now, not every winter day); fog a haze with
-  two drifting banks; the rainbow soft arcs low in the sky's right; the aurora three swaying curtains of light. All over
-  the time-of-day tint and under every control; paused with the scene.
-- **Sound:** the hour's rain or snow arrangement (`sound.weather`; a missing one falls back to the sunny hour: no
-  rain/snow files are in the manifest yet), the rain bed (louder in a downpour), footsteps splash in the rain.
-- **Critters (NH):** the coelacanth only in rain or snow; the snail only in the rain; NH's 34 "any except rain" bugs
-  (butterflies, moths, dragonflies, grasshoppers, crickets, mantises, the honeybee, the ladybug, fireflies, the mosquito…)
-  stay away while it rains, and a shaken bush lets nothing out. No shooting-star showers unless the night is clear.
-- `?weather=clear|rain|heavy|snow|fog|aurora|rainbow` (dev or `?demo`) forces one for the load, any hour.
+- **Look:** an overcast sky and a darker tint on a wet day; rain one tiled layer of streaks moved by transform; snow
+  two tiled layers plus NH's snowflakes (only on snow days); fog a haze with two drifting banks; the rainbow soft arcs
+  low on the right; the aurora three swaying curtains. Over the tint, under every control.
+- **Sound:** the hour's rain or snow arrangement when there is one, the rain bed, footsteps splash.
+- **Critters:** the coelacanth only in rain or snow; the snail only in rain; NH's "any except rain" bugs stay away
+  while it rains. No shooting-star showers unless the night is clear.
 
 ### Trees
 
-`island/FruitTree.svelte`, `island/FlowerBeds.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit and
-its person's flowers through one Tokyo day (a quick run of canopy taps shakes it instead: [Shaking a tree](#shaking-a-tree)):
+`island/FruitTree.svelte`, `island/FlowerBeds.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit and its
+person's flowers through one Tokyo day (a quick run of canopy taps shakes it: [Shaking a tree](#shaking-a-tree)):
 
-- **Hanging:** each goal's fruit hangs in the canopy, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour as
-  today's amount nears the goal (grayscale = 1 − share, washed lighter while grey so a dark apple never reads as a
-  black lump; a 1.2 s fade as new data arrives).
-- **Falling:** met, it falls to its spot on the ground in front of the trunk: the tree shakes, the fruit drops and
-  bounces with a thud, a puff of dust; several fall 150 ms apart. The fall plays once per phone, the first time the
-  island shows that fruit met (on opening, after a 0.7 s beat; with live data, once its colour has filled in); a
-  reload finds it lying there.
-- **Picking up:** a tap on a fallen fruit picks it up (NH's pick-up: a hop and gone, a sparkle, a little pop). It
-  stays gone on this phone until the next Tokyo day (midnight, the model's day). Either person may pick up either
-  tree's fruit; it is cosmetic: no ベル (those come from the goal, on read), no event, never synced. The fruit row is
-  the one button: a tap within 22u (or 22px on a small stage, a 44px target for a lone fruit) of a fallen fruit picks
-  up the nearest, else it opens the popup as before; from the keyboard (focusable once something lies there) it
-  picks up the first.
-- **Goal flowers:** each 2 × 2 flower bed belongs to the person whose villager stands beside it (mine on the left, the
-  partner's on the right), one flower per goal in reading order, the same in both beds (`BED_FRUIT`): 🍐 Move
-  back-left, 🍑 Exercise back-right, 🍒 Stand front-left, 🍎 Steps front-right. The species stay the season's bed
-  (autumn: pink cosmos behind, purple mums in front), not the fruit's colour: a tidy two-species bed is how NH players
-  plant, and 🍒 and 🍎 would both be red. Not met today: NH's growth stage before the bloom at the flower's full height
-  (its leaves and stem, a closed bud about 0.45 of the head's width in a darker shade of its petals, green sepals),
-  swaying ±1.5° every 3.6 s. Met: it blooms once per phone (as the tree's fruit lands: 1.3 s after opening, else 1.5 s
-  after the data; several 150 ms apart): the bud squashes (120 ms), the flower pops .6 → 1.14 and settles (to 620 ms),
-  five petal-coloured bits burst 10–14u, a white glint at 300 ms, a soft pop (`flower-bloom`). A reload finds it open;
-  buds again at the next Tokyo day. A tap still waters it (watering a bud is fine); a hybrid shows once its cell blooms.
-- **All four met:** four warm glints (24u, #FFF7CF with a gold glow) twinkle on the canopy in turn over a soft gold
-  pulse (NH's money tree; a 2.6 s loop, the right tree .33 s later), above the night tint, paused under a sheet.
+- **Hanging:** each goal's fruit, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour toward the goal
+  (grayscale = 1 − share, washed lighter while grey).
+- **Falling:** met, the tree shakes and the fruit drops to the ground in front of the trunk with a thud and a puff;
+  once per phone, the first time the island shows it met; a reload finds it lying there.
+- **Picking up:** a tap on a fallen fruit picks it up (a hop, a sparkle, a pop), gone on this phone until the next
+  Tokyo day. Either person may pick up either tree's fruit; cosmetic, never synced. The fruit row is one button: a tap
+  within 22u of a fallen fruit picks up the nearest, else it opens the popup.
+- **Goal flowers:** each 2 × 2 bed belongs to the person standing beside it, one flower per goal (`BED_FRUIT`: 🍐
+  back-left, 🍑 back-right, 🍒 front-left, 🍎 front-right) in the season's species. Not met: a swaying bud. Met: it
+  blooms once per phone (a squash, a pop, petal bits, a glint, `flower-bloom`); a reload finds it open.
+- **All four met:** four warm glints twinkle on the canopy over a soft gold pulse (NH's money tree).
 - `fruit-day` in localStorage (`{ date, dropped, picked, bloomed }`, ids `A:pear`): losing it only drops a fruit and
-  blooms a flower again. Cost: transform and opacity, a static filter on eight small images, eight small swaying buds,
-  four glints on a perfect day.
+  blooms a flower again.
 
 ### Shaking a tree
 
-`island/treeShake.ts`, `island/TreeShakes.svelte`, `e2e/shake.spec.ts`. NH's shake, beside the tree's popup:
+`island/treeShake.ts`, `island/TreeShakes.svelte`, `e2e/shake.spec.ts`.
 
-- **Tap or shake:** one canopy tap opens (or closes) the popup as before; a quick run, the third tap within 1.2 s
-  and each quick tap after, is a shake: the popup closes, the tree rustles and drops its leaves (`tree-shake`).
-- **What falls:** 1 in 8 shakes a wasp nest (at most one per tree an hour, `tree-nest` in localStorage), else 1 in 7
-  a dangling bug, else 1 in 5 a tree branch (NH's 木の枝 art). A branch lies beside the trunk on the middle's side,
-  between the canopy's and the fruit row's buttons, until a tap picks it up (a hop and gone, `scene-twig`; cosmetic).
-  No ベル ever: scenery never pays (NH's bells and furniture from trees are left out).
-- **The nest:** it falls beside the trunk on the outer side (`scene-nest`); 0.6 s later three wasps buzz out
-  (`scene-buzz`) and charge the villager on that side (the left tree's at mine) for 1.5 s, a ≥ 44px button. A tap on
-  them in time nets one: the net's swing, `scene-catch`, NH's catch line on the plate (「ハチを つかまえた！ ブン！ ブン！
-  ブン！ （手づかみ しないでね）」 / "I caught a wasp! That's gotta sting...") and the shared ずかん's wasp (a `find`;
-  the wasp is never about on its own: weight 0). Too late, they sting (`scene-sting`): that villager starts with a 「！」
-  (`surprise`), then a sweat drop, and the wasps fly off (they fly at that villager's face where it stands: mine has
-  usually walked over to shake the tree). NH's swollen eye is an emote here: one lump can't sit on the eye of 440
-  different renders. The nest fades
-  once they are out.
-- **A dangling bug** (NH's hardwood shake): a bagworm, or in the spider's hours (19:00–08:00) a spider 3 times in 8
-  (NH's 50 : 30), drops out of the canopy on its thread beside the trunk on the outer side and sways there for 10 s,
-  its ≥ 44px tap target between the canopy's and the fruit row's buttons. A tap nets it (the net's swing, NH's catch
-  line, a ずかん find); left alone it climbs back up. Both are weight 0 in the bug table: never about on their own.
-- `?shake=nest|branch|bagworm|spider` (dev or `?demo`) makes the next shake drop that.
+- **Tap or shake:** one canopy tap opens or closes the popup; the third tap within 1.2 s (and each quick tap after) is
+  a shake: the popup closes, the tree rustles and drops leaves (`tree-shake`).
+- **What falls:** 1 in 8 a wasp nest (at most one per tree an hour, `tree-nest`), else 1 in 7 a dangling bug, else 1
+  in 5 a branch (it lies beside the trunk until a tap picks it up; cosmetic).
+- **The nest:** three wasps buzz out and charge the villager on that side for 1.5 s; a tap in time nets one (NH's catch
+  line, a ずかん find). Too late, they sting: a 「！」, a sweat drop, and they fly off. The wasp is weight 0 in the bug
+  table: it only ever comes from a nest. The chase and sting have their own music ([Event music](#event-music)).
+- **A dangling bug:** a bagworm, or in the spider's hours (19:00–08:00) a spider 3 times in 8, drops on its thread and
+  sways for 10 s; a tap nets it, left alone it climbs back up.
 
 ### Scene interactions
 
-`island/SceneTaps.svelte`, `island/sceneTaps.ts`, `island/Critters.svelte`, `island/critters.ts`, `e2e/scenery.spec.ts`,
-`e2e/critters.spec.ts`. Every part of the island answers a tap softly and counts for nothing: no ベル, no state, no
-navigation, no writes; one `pointerdown` listener; ≤ 4 flourishes at once; taps on controls are ignored; nothing while
-covered or hidden; decorative, `aria-hidden`, pointer-only.
+`island/SceneTaps.svelte`, `island/sceneTaps.ts`, `e2e/scenery.spec.ts`. Every part of the island answers a tap softly
+and counts for nothing (no ベル, state, navigation or writes); one `pointerdown` listener; ≤ 4 flourishes at once;
+taps on controls are ignored; nothing while covered or hidden; decorative, `aria-hidden`, pointer-only.
 
-**Scenery** (≤ 1 s each): a bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out: a moth after dark, else a
-butterfly of the season, sometimes a ladybug); a flower wiggles (1 in 8 by day outside winter a butterfly, 1 in 2 on
-summer nights a firefly); the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in
-winter); a cloud squishes; the sun glints; the moon bobs and twinkles; the night sky twinkles where it's tapped (and
-grants a wish while a shooting star crosses: [Shooting stars](#shooting-stars); a meteor shower's night: [Celeste and
-meteor showers](#celeste-and-meteor-showers)); the pond rings like the sea, smaller.
+A bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out); a flower is watered ([Island care](#island-care));
+the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
+the sun glints; the moon bobs; the night sky twinkles (and grants a wish while a shooting star crosses: [Shooting
+stars](#shooting-stars)); the pond rings.
 
-**Balloon** (NH's balloon present): by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under
-the ribbon. A tap pops it (a "pan!", confetti in its colours); the present falls onto the lawn in front of the hedge,
-behind the trees (between them, x 150–240u, the spot nearest where it fell that keeps 16u beyond both halves from
-anything lying on the lawn: a weed, the rock, a dig spot, a mushroom, a branch, a pumpkin, another present; and covers
-no control), bounces and sparkles, and stays there, as in NH, until a tap opens it (not kept across a reload). My
-villager walks over (the usual walk-then-act), the wrapping pops (the box squashes and flies off, 14 bits of confetti in
-wrapping-paper colours, three sparkles, the present's pop and the catch fanfare) and what was inside is held up over
-its head while the plate reads 「ロッキングチェアを てにいれた！」 (`island/presents.ts`): NH's balloon presents hold
-furniture, clothing, a DIY recipe or Bells; here 35 of NH's cute furniture and clothing items (official icons and
-names; a kotatsu or a knit hat likelier in winter, a beach chair or a fan in summer, spring's flower pieces in spring)
-and, in their NH windows, the seasonal DIY recipes NH's balloons carry (cherry-blossom Apr 1–10, young spring bamboo
-Mar–May, the tree's bounty Sep 1 – Dec 10, maple leaves Nov 16–25, mushrooms in November, ornaments Dec 15 – Jan 6,
-snowflakes Dec 11 – Feb 24: half the presents then), shown as NH's DIY recipe card with 「DIYレシピ「さくらクロック」を
-てにいれた！」. Never Bells, nothing kept (no inventory). On Bunny Day a sky egg instead, just picked up. Off the
-island's corner, or with nowhere clear, it drops into the sea.
-Short skies fly a smaller balloon under the ribbon, or none.
+### Balloon
 
-**Critters** (NH species, Tokyo clock; for fun, frequent): a visit every 8–15 s of on-screen time (the first after
-3–6 s; the countdown holds while covered or hidden, and the critters leave): a fish shadow whenever the sea is empty,
-then one whenever the pond is ([Pond](#pond)), else usually a bug; ≤ 1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any fish or bug can come in any month, 3× likelier
-in its NH northern-hemisphere months; hours still hold (butterflies and bees by day, fireflies and moths at night).
+NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under the ribbon (a
+smaller one or none on a short sky). A tap pops it; the present falls onto the lawn behind the trees, on the nearest
+spot clear of what lies there and of every control, bounces and stays until tapped (not kept across a reload). My
+villager walks over, the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
+plate reads 「ロッキングチェアを てにいれた！」 (`island/presents.ts`): one of 35 NH furniture and clothing items (some
+likelier in their season) or, in their NH windows, a seasonal DIY recipe (half the presents then), shown on NH's
+recipe card. Never Bells, nothing kept. On Bunny Day a sky egg instead. Off the island it drops into the sea.
 
-- **Fishing** (the same in the sea and the pond: `critters.ts` `Water`, the sea's box or the pond's oval): a shadow
-  (NH sizes 1–6) dawdles in deep enough water off the front beach (22–92u past the foam, as the screen allows; or in
-  the pond). A tap near it (1.5× the old reach) casts a red-and-white bobber (at least 16u past the foam), the line
-  running from the tip of the rod in my villager's hand (measured; slack, sagging 8u; at the water's edge when it
-  didn't walk); the fish turns to it and closes in over 2–3 short darts (450–700 ms each, quick off the mark) with
-  pauses (300–600 ms) between them, then nibbles 0–3 times (its nose bumps the bobber 2u as the bobber twitches), then
-  bites: the bobber is yanked under with its own sound and a bigger splash (seven drops, 14u high), a small 「！」 pops
-  over it (26–28px, kept 8px inside the screen: NH has only the plunk, the phone gets a cue), and a tap anywhere in the
-  next 1.6 s catches it. The first early tap only
-  makes it hesitate and nibble again; a second scares it off. 1 in 14 a boot, tire or can.
-- **Fish** (all 34 of NH's sea and pier fish, `FISH`): mostly sea bass; the blowfish (フグ) on winter nights and the puffer fish (ハリセンボン) in summer; the reef fish of spring and summer, the big ones
-  (ray, tuna, marlin, oarfish), the sharks after dark in summer and, rarest of all, the coelacanth (no weather here, so
-  no rain gate). NH's shadows: one dark teardrop with its tail joined on (rgba(10, 36, 70, .55), a 1.5u blur), its length by
-  NH's size 1–6: 14 / 18 / 23 / 28 / 34 / 46u, 0.42 of that tall (`SHADOW_U`); the eels' long thin one 32u at 0.18; a fin
-  cutting the surface for the sharks, the ocean sunfish and the suckerfish. The pier fish come to the beach (there's no pier).
-- **Bugs** (70 of NH's 80, `BUGS`): butterflies (the paper kite, agrias, monarch, the two birdwings, the common
-  bluebottle and the great purple emperor among them) and the Madagascan sunset moth,
-  the honeybee and a snail on the beds; the ladybug and the mantises sitting on a flower's head (NH's flower bugs: a
-  1u bob every 2.4 s; the orchid mantis on a white flower when the beds have one); dragonflies and the damselfly
-  darting over the open lawn (y 110–200u, clear of the controls); the cicadas (a shell
-  now and then), the stag beetles, the horned dynastid, the Goliath, drone and jewel beetles and the walking stick (a thin darker outline keeps it findable on the bark) on
-  the trunks; fireflies (a little cloud of four 7px lights, drifting and blinking out of step) and the Atlas moth at
-  night; grasshoppers, locusts, crickets, the pill bug and the
-  centipede in the grass; the hermit crab (after dark) and the wharf roach on the front beach. More of NH's: the
-  mosquito on summer evenings; the stink bugs on the beds (the man-faced one at night); the tiger beetle (it runs),
-  the earth-boring dung beetle and the walking leaf in the grass; NH's stump beetles (violin, citrus long-horned,
-  rosalia batesi: the island has no stumps, so a trunk, like the jewel beetle) and the scarab at night on the trunks;
-  the **mole cricket** under a little mound of earth in the grass that twitches as it chirps (a tap digs it up: clods
-  fly, `scene-dig`); the **tarantula** (winter) and the **scorpion** (summer), rare, in the grass at night: the first
-  tap on or near one makes it rear up (NH: it's been come at); a tap while it's reared and it charges and scuttles off
-  (`scene-bug-flee`); once it settles (1.6 s) a tap nets it. A tap on my villager sends a **flea** hopping off into
-  the grass 1 in 10 (Apr–Nov; 1 in 30 otherwise; `?flea` always). On the pond's water ([Pond](#pond)): the
-  **pondskater** skating in quick glides and the **diving beetle** paddling (May–September by day), the **giant water
-  bug** at night (April–September). Fliers come in from the
-  side, perchers fly in to a trunk (a shell and a walking stick are just there), crawlers fade in and creep (a crab
-  scuttles sideways, a snail barely moves). A butterfly lands on a flower's head every 2–3 hops and rests there 2–4 s, its wings slowly opening and
-  closing (1.2 s). A tap on one swings the net (caught); within 80px it startles away: it rises 40u up and away in
-  full view and fades over the last 40% of its flight. A
-  shaken bush lets one out 1 in 3. Bugs keep clear of every control (the trunk spot sits between the canopy and the
-  fruit row).
-- **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): the sea
-  holds one thing at a time, and 1 turn in 4 it's a spot of bubbles rising and popping where a shadow would swim
-  (gone after 30 s), instead of a fish. A tap on it (a 44px reach) is a dive: a splash and a ring (`scene-splash`).
-  NH's speeds decide: still and slow ones are caught at once; a medium one half the time, else, like a fast one, its
-  shadow (NH's size 1–5) darts a little way off inside its patch of sea and a second tap on it within 1.6 s (medium),
-  1.3 s (fast) or 1.0 s (very fast) catches it, else it gets away (`scene-flee`); a very fast one is clean away 1 time
-  in 3. Months and hours as NH's, weighting the odds (×3 in season, rare = low weight: the gigas giant clam, the sea
-  pig, the vampire squid, the giant isopod). The catch line is NH's dive line (「タコを とったよ！ …」). 1 bubble spot in
-  25 is NH's pearl (a quick one; 「しんじゅを ひろった！」, a shell in the ずかん). `?sea=<id>|pearl` (dev or `?demo`)
-  brings a spot at once and keeps it until dived.
-- **The catch:** the official critterpedia icon pops out of the catch onto a plate like the jar's with NH's own catch
-  line for it (`island/catchLines.ts`, every fish (the pond's too), bug and sea creature and the three pieces of junk: English from Nookipedia,
-  Japanese from the game's messages, a line break where the game has one; 「スズキを 釣り上げた！ 鈴木・・・じゃなくて、
-  鱸なのね！」 / "I caught a sea bass! No, wait—it's at least a C+!"), loaded with the first critter of a session. It
-  sits centred above (else below) the catch, inside the safe area and clear of every control, popup and しずえ's box
-  (the item held up over my villager's head included); when the nearest room is over 150px from the catch it sits low in
-  the middle instead, like NH's text box; with no room it's skipped. Up to 340px wide (two lines fit), the icon 40–48px
-  (NH holds the catch up big). 2.6 s plus the line's length; a tap on it dismisses it (NH's A).
+### Critters
 
-**Beach finds** (`island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`): the day's items
-derive from the Tokyo date and time plus a seed (`?seed=` in the demo), so both phones broadly see the same island;
-what a phone picks up is hidden there only (`scene-day` in localStorage), and the first of each shell, fossil and
-fragment is a ずかん `find` (never ベル).
+`island/Critters.svelte`, `island/critters.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo clock, for fun and
+frequent: a visit every 8–15 s of on-screen time (the first after 3–6 s; the countdown holds while covered or hidden,
+and the critters leave): a fish shadow whenever the sea is empty, then the pond ([Pond](#pond)), else usually a bug; ≤
+1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
+northern-hemisphere months; hours still hold.
 
-- **Seashells** (NH's eight beach shells: sea snail, cowrie, venus comb, sand dollar, coral, conch, giant clam and the
-  summer shell, rare, 3× likelier June–September): one washes up on the front beach every 60–120 s, the newest three lie
-  on the sand (one arriving on screen slides in from the foam). A tap picks it up: 「タカラガイを ひろった！」.
-- **Where things lie on the beach** (`beach.ts` `beachSpot`): the shells, the fragments and the bottle keep 34u apart
-  (`BEACH_GAP`, about two of them side by side): each, as it arrives, takes a spot that far from everything lying there
-  (the morning's fragments, the last two shells, a bottle), trying every 5u of sand in a seeded order, else the spot
-  furthest from the rest (a crowded morning of fragments). The whole day is worked out once per date and seed, so a new
-  arrival never moves what's already there and both phones agree. Depth varies a little (y 329–345u).
-- **Fossils** (all 73 of NH's: the 14 standalone ones and every piece of the 21 dinosaurs, `FOSSIL_SETS`, each as likely
-  as any other): NH's dig spot, a dark, uneven star-shaped crack in the soil (five jagged arms of unequal length, little
-  side cracks, a lighter lip of earth under each), 1–2 at
-  a time on six spots measured clear of every control (beside the trunks, between the fruit rows and the beds; a spot a
-  control covers on a small screen isn't shown). A tap digs it up (the official shovel strikes twice, 0.28 s each, a burst
-  of earth on each; an open hole, 18 × 8u, stays 6 s and fades): 「化石を ほりだした！ アンモナイトだ！」. The next spot turns up 20–40 s later.
-- **Mushroom season** (`island/mushrooms.ts`): NH's November mushrooms beside the trees: every November day 1–2 (half
-  the days two) on the four trunk spots (beside each trunk, between the canopy and the fruit row, relative to `TREE`; one
-  a control covers on this screen isn't shown), NH's weights (skinny 35, round 30, flat 30, elegant 5); not a hard gate:
-  1 in 8 October and December days bring one, other months none. A tap picks it up: 「まるいキノコを ひろった！」
-  (`scene-mushroom`). 1 in 20 November dig spots hold the rare mushroom instead of their fossil (their own stream):
-  「めずらしいキノコを ほりだした！」. Cosmetic: no ベル and no `find` (the ずかん has no kind for them).
-  `?find=mushroom|rare-mushroom` (dev or `?demo`) brings one now / makes every dig spot the rare one.
-- **Message bottle:** every 8–14 minutes one lies at the water's edge for 6, half in the foam, rocking ±4° (2.4 s), a
-  small ring of foam every 4 s; a tap reads its note (16 short, kind notes,
-  ja/en). Not a find.
-- **Star fragments:** each wish on a shooting star ([Shooting stars](#shooting-stars)) is one fragment on the front
-  beach the next morning (a wish before 05:00: that morning), from 05:00 for the day, at most 8 (the beach's room): star
-  fragments, now and then a large one or the season's zodiac fragment (after a meteor shower's night twice as likely),
-  one to each eighth of the sand where it has room (seeded per day, so a later wish only adds one further along;
-  `fragmentsOn`); each twinkles now and then (every 3–5 s, out of step: NH's beach glimmer).
-- The plate is the catch's (`island/Plate.svelte`, placed by `island/placement.ts` clear of every control); taps reach
-  44px. `?find=bottle|fragment|mushroom|rare-mushroom` (dev or `?demo`)
-  brings one now.
+- **Fishing** (the sea's box or the pond's oval: `critters.ts` `Water`): a shadow (NH sizes 1–6) dawdles off the front
+  beach. A tap near it casts a bobber from the rod in my villager's hand; the fish closes in over 2–3 darts, nibbles
+  0–3 times, then bites: the bobber is yanked under, a small 「！」 pops over it, and a tap anywhere in the next 1.6 s
+  catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
+- **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (14–46u, the eels long and thin; a fin for
+  the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.
+- **Bugs** (70 of NH's 80, `BUGS`), each where NH keeps it: butterflies and moths in flight and landing on the flowers;
+  the ladybug and mantises on a flower's head; dragonflies over the lawn; cicadas, beetles and the walking stick on
+  the trunks (NH's stump bugs too: the island has no stumps); fireflies at night; grasshoppers, crickets, the pill bug
+  and the centipede in the grass; the hermit crab and the wharf roach on the beach; the mole cricket under a chirping
+  mound (a tap digs it up); the tarantula and the scorpion at night, gentle: the first tap makes one rear up, a second
+  while reared makes it charge off, and once it settles a tap nets it; a flea hops off my villager 1 in 10 taps
+  (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond. A tap nets one; within 80px it startles
+  away. Bugs keep clear of every control. Left out: the palm-tree bugs, the dung beetle, the ant and the fly
+  ([decisions.md](decisions.md#the-rest-of-nhs-bugs-what-the-island-can-hold)).
+- **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): 1 turn in
+  4 the sea holds a spot of bubbles instead of a shadow (gone after 30 s). A tap dives: still and slow creatures are
+  caught at once; a medium one half the time, else, like a fast one, its shadow darts off and a second tap on it in
+  time (1.6 / 1.3 / 1.0 s) catches it; a very fast one gets clean away 1 time in 3. 1 spot in 25 is a pearl (a shell
+  in the ずかん).
+- **The catch:** the official icon pops onto a plate with NH's catch line (`island/catchLines.ts`: English from
+  Nookipedia, Japanese from the game), loaded with the first critter. The plate sits above (else below) the catch,
+  clear of every control and overlay, else low in the middle like NH's box; a tap dismisses it. The catch is held up
+  over my villager's head while it reads.
+- **Cost:** critters move by CSS transitions between waypoints a timer picks (no rAF), one wing or fin loop each; one
+  timer between visits; art on first need. World cues `scene-<kind>`, quiet and jittered ([Cues](#cues)).
 
-**Island care** (`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts`; no ベル, no find):
+### Beach finds
 
-- **Weeds** (our own tufts: NH's icon is a sack of them) sprout every 30–60 minutes on the lawn's free spots (`LAWN`:
-  beside the trunks, in front of the hedge beside centre stage, between the villagers' feet; a showing dig spot keeps its spot),
-  the newest three at a time: NH's chunky, rounded clump about half a tile wide (20u: five broad blades with a light
-  highlight, a darker clump behind) on a soft contact shadow, so it never reads as the lawn's printed grass; one that
-  sprouts while the island is open pops up once (0 → 1.15 → 1, 420 ms). A tap pulls one: it pops up and tumbles away
-  with two clods of earth (`scene-weed`).
-- **Watering:** a flower tap is NH's watering can (it tilts in over the bloom, five drops 60 ms apart, a late glint;
-  `scene-water`) on top of the wiggle. A flower watered today keeps a glitter for the rest of the day (NH): one small
-  glint every 4–6 s, out of step between cells, so the beds show what's been watered (`sceneDay.ts` `wateredOn`). A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell tomorrow (NH's
-  hybrids, simplified: tulips → purple, black, orange; roses → black, orange, pink, purple, blue; cosmos → orange,
-  black; mums → pink, green; pansies → blue, purple), for that whole day (`scene-garden` in localStorage).
-- **The rock** (NH's rock, in front of the hedge, left of centre stage): a tap clonks it (the shovel comes down, 0.3 s, then
-  it squashes 1.06 × 0.94 and bounces back over 280 ms; `scene-clonk`), 1 in 4 a
-  sparkle (NH's money rock, without the money), 1 in 8 a pill bug or a centipede crawls out from under it.
-- Weeds, dig spots and the rock are measured clear of the controls themselves on each screen (a spot a control covers
-  isn't shown); a flower's tap cell is a reach away from every lawn spot. `?hybrid` (dev or `?demo`) shows one.
+`island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`. The day's items derive from the
+Tokyo date and time plus a seed, so both phones broadly agree; what a phone picks up is hidden there only (`scene-day`),
+and the first of each shell, fossil and fragment is a ずかん `find`.
+
+- **Seashells** (NH's eight; the summer shell rare, likelier June–September): one washes up every 60–120 s, the newest
+  three lie on the sand. A tap picks it up: 「タカラガイを ひろった！」.
+- **Where things lie** (`beachSpot`): shells, fragments and the bottle keep 34u apart (`BEACH_GAP`), each taking a
+  spot that far from everything there in a seeded order; worked out once per date and seed, so nothing moves.
+- **Fossils** (all 73 of NH's: the standalone ones and every dinosaur piece, `FOSSIL_SETS`): NH's star-shaped dig
+  spot, 1–2 at a time on six spots clear of every control. A tap digs it up (the shovel, a burst of earth, an open
+  hole that fades): 「化石を ほりだした！ アンモナイトだ！」. The next turns up 20–40 s later.
+- **Mushrooms** (`island/mushrooms.ts`): every November day 1–2 beside the trunks (1 in 8 October and December days
+  one), NH's weights; a tap picks one up. 1 in 20 November dig spots hold the rare mushroom. Cosmetic: no `find`.
+- **Message bottle:** every 8–14 minutes one rocks at the water's edge for 6; a tap reads its note (16 kind notes).
+- **Star fragments:** each wish on a shooting star is one fragment on the beach the next morning (from 05:00, at most
+  8), now and then a large one or the season's zodiac fragment (twice as likely after a meteor shower), twinkling now
+  and then.
+
+### Island care
+
+`island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts` (no ベル, no find):
+
+- **Weeds** sprout every 30–60 minutes on the lawn's free spots (`LAWN`), the newest three at a time; a tap pulls one
+  (`scene-weed`).
+- **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today
+  glitters for the day (`wateredOn`). A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell
+  tomorrow (NH's hybrids, simplified; `scene-garden`).
+- **The rock** (in front of the hedge, left of centre stage): a tap clonks it with the shovel; 1 in 4 a sparkle, 1 in 8
+  a pill bug or a centipede crawls out.
+- Weeds, dig spots and the rock are measured clear of the controls on each screen (a covered spot isn't shown).
+
+### Pond
+
+`island/Pond.svelte`, `island/pondFish.ts`, `e2e/pond.spec.ts`. NH's pond, small, on the back row at the left
+(`scene.ts` `POND`, an oval of water 52 × 18u, lily pads, reeds, one slow ripple).
+
+- **Its fish:** all 46 of NH's freshwater fish (river, river mouth, clifftop and pond: the island has no river),
+  `POND_FISH`, its own chunk fetched with the pond's first shadow. Season weights the odds, hours hold, rare = low
+  weight.
+- **Visits:** as often as the sea's (its own slot), one shadow at a time, 45 s if nobody fishes, drawn at 0.65 of the
+  sea's size. Fishing is the sea's; my villager walks round to the back bank (walkGraph's `pondside`) and fishes from
+  there.
+- **Its bugs:** the pondskater and diving beetle by day in summer, the giant water bug at night.
+- **The catch:** a ずかん `find` of kind `fish`, like the sea's.
+
+### Museum
+
+`island/Museum.svelte`, `island/blathers.ts`, `e2e/museum.spec.ts`. NH's museum (the upgraded building, 100u wide) on
+the back row in the middle (`scene.ts` `MUSEUM`), the door to the ずかん: a button (「はくぶつかん：ずかんを ひらく」, a
+soft knock). A tap and Blathers says one line: drowsy by day (05:00–19:00), lively at night, and 3 times in 5 about the
+latest find of the last week. When his box closes the panel opens on きろく scrolled to the ずかん; a second tap while
+he talks opens it at once.
+
+### Zukan
+
+`kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん in
+きろく, shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's 46), むし 70, うみのさち 40,
+かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with 「Tレックス 1 / 3」), かいがら 9 (the
+pearl last). A kind's page: every entry in the game's order, the official icon and name for found ones, a silhouette and
+？？？ for the rest, 「コンプリート！」 when all are in. The page's head is pinned: the kind and its count, and the picked
+entry (icon, name, 「7/4 ウェイが 見つけた」 and NH's catch line, two lines, ▼ for more); the grid scrolls under it.
+Names of everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん or the first catch.
 
 ### Dialogue
 
 `island/pager.ts`, `island/Talk.svelte`, `island/Plate.svelte`, `e2e/dialogue.spec.ts`. The speech balloon and the catch
-plate read like NH's dialogue box: the text types in at 33 ms a glyph, two lines a page (split at the text's line
-breaks: NH's own catch lines carry the game's; each part of a dialogue starts a page; the box is sized for its longest
-page). A tap on the box finishes the page at once, the next turns it, and the last closes it; a small orange ▼ bobs at
-its bottom-right (0.6 s) only while another page follows. Left alone a finished page turns after 6 s and the last
-closes after a read's length. The balloon's name tag sits tilted on its top-left in the speaker's own NH colour (the
-roster's), its ink picked to read on it. The box is a button (`data-sfx` tick); no voices or blips.
+plate read like NH's box: 33 ms a glyph, two lines a page (split at the text's line breaks). A tap finishes the page,
+the next turns it, the last closes it; an orange ▼ bobs while another page follows. Left alone a page turns after 6 s
+and the last closes after a read's length. The balloon's name tag is tilted on its top-left in the speaker's NH
+colour. No voices. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction,
+a first find adds 「ずかんに のったよ！」. A line may end on NH's answers (Jack, K.K.).
 
-Where it stands, one rule for every speaker (my villager, the visitors, Blathers at the museum; `placement.ts`
-`placeBy`, `e2e/bubbles.spec.ts`): by the speaker, its tail pointing at them, at most 40px off (beyond the tail's
-12px): above the head when there's room, else beside it (the tail on its side, at the upper part of the figure), else
-below the feet, sliding along so the tail can still reach. What counts as room gives way step by step, nearness
-doesn't: clear of every control, else over the museum (a building that is also a control), both only within 16px so
-the tail stays at the speaker; else over the island's things (the trees, the fruit rows) but not the villagers; else
-over them too. Never over the HUD (the ribbon, the
-jar, the sync chip, the panel's controls), しずえ's box, a tree's popup or another overlay showing; never over the
-speaker or what floats with it (my villager's ♪); never off the scene. Only when nothing near fits at all does it stand
-further off. It follows the speaker while it talks (a move that lasts 0.6 s, so a hop doesn't shake it) and closes if
-they go; my villager hushes as it sets off walking. (A visitor's balloon used to float above the museum, 100px+ off
-their head: the search took the first spot clear of every control at any distance, before letting the museum sit
-under a balloon by the head.) Plates and captions (`place`: the catch plate, the wish, K.K.'s 「♪ title」) keep clear
-of every control, above the point then below, nearest first, over the museum before further off. Multi-page: some villager lines go on (`<key>.more`), a visitor's first tap is their introduction, a
-first find adds 「ずかんに のったよ！」 after the catch line. A line may end on NH's answers (Jack's trick or treat, [Halloween](#halloween)).
+Where it stands, one rule for every speaker (my villager, the visitors, Blathers; `placement.ts` `placeBy`,
+`e2e/bubbles.spec.ts`): by the speaker, its tail pointing at them, at most 40px off: above the head when there's room,
+else beside it, else below the feet, sliding along so the tail still reaches. Room gives way step by step, nearness
+doesn't: clear of every control, else over the museum (both within 16px); else over the island's things (trees, fruit
+rows) but not the villagers; else over them too. Never over the HUD, しずえ's box, a popup or another overlay, the
+speaker, or off the scene. It follows a speaker who moves (a move lasting 0.6 s) and closes if they go. Plates and
+captions (`place`: the catch plate, the wish, K.K.'s caption) keep clear of every control, nearest first.
 
 ### Villager chats
 
-`island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop (R9) and says a line in
-NH's speech balloon (cream, a nameplate with my よびな, a tail to the speaker; 33 ms a glyph; ≥ 2.8 s), above the head
-and its own ♪ (where: [Dialogue](#dialogue)). The partner's tap still opens their card.
-Lines follow the villager's NH personality (lazy, peppy, smug, cranky, normal, jock, snooty, sisterly: 12 each; special
-characters 10 of their own), 3 in 10 about the day instead (the morning, the night, today's goals so far: 「目標 2つ
-クリア！ あと すこし！」, never ベル), a sleepy one when the tap wakes them; never the same line twice in a row. Kid-friendly,
-ja/en. The roster (personalities) loads on the first chat. One balloon at a time; a new tap replaces it.
+`island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop and says a line in NH's
+balloon above its head. Lines follow the villager's NH personality (12 each; special characters 10 of their own), 3 in
+10 about the day (the morning, the night, today's goals so far, never ベル), a sleepy one when the tap wakes them; never
+the same twice running. The roster loads on the first chat. One balloon at a time.
 
 ### Visitors
 
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors (official renders), one at a time,
-seeded by the date (both phones see the same): **K.K. Slider** with his guitar on Saturday nights 18:00–24:00,
-**Daisy Mae** on Sunday mornings 05:00–12:00, **Wisp** (see-through, a slow bob) on 1 in 4 nights 20:00–04:00,
-**Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night ([Halloween](#halloween)); **Celeste** on a meteor shower's night 20:00–04:00 ([Celeste and meteor showers](#celeste-and-meteor-showers)); NH's holiday hosts on their days
-([Holiday hosts](#holiday-hosts)). They stand on the centre stage (`CENTRE_STAGE` in `island/scene.ts`: column
-0 of the tree row, NH's plaza, where the jar stood) at the villagers' scale (`VILLAGER.h` × their NH height: K.K. 1,
-Daisy Mae 0.78, Wisp 0.7 floating 12u up, Gulliver 1.1, Jack 1, Celeste 0.85, Franklin 1, Jingle 1.05, Pavé 1.1, Zipper 0.9) with the villagers' contact shadow; while a control still
-covers the centre (the jar), a smaller figure on the front beach, else none. A tap: their introduction the first time
-(two pages), then one of their lines. No trading, no ベル. `?visitor=<id>` (dev or `?demo`). They're alive: see
-[Visitors: life](#visitors-life).
+seeded by the date: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy Mae** on Sunday mornings 05:00–12:00,
+**Wisp** on 1 in 4 nights 20:00–04:00, **Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night,
+**Celeste** on a meteor shower's night, the holiday hosts on their days, the wedding couple on its days. Priority
+(`visitorAt`): the event's host (Jack included), the wedding couple, Celeste, then K.K. and the rest. They stand on
+centre stage at the villagers' scale times their NH height, with a contact shadow (a smaller figure on the front beach
+while a control covers the centre). A tap: their introduction the first time, then one of their lines. No trading, no
+ベル.
 
-**K.K.'s show** (NH's Saturday concert): he strums with a gentle head-bob. With ミュージック on, a tap is his greeting,
-「よう、 今夜も 来てくれたな リクエストは あるかな？」 with NH's choice box: **リクエスト** (up to four of his songs to
-pick from) or **おまかせ** (one at random). Then the island's music stops for the song (`playKK` in `sound/sound.svelte.ts`, [K.K. Slider](#kk-slider)),
-he strums harder, ♪ float up, the villagers
-sway, and a 「♪ けけボッサ」 caption sits by him (placed clear of every control). A tap mid-song offers ストップ /
-つづけて. At its end (or ストップ, or the music turned off) his sign-off 「…サンキュー！ また 来週の 土曜に な」 and the
-island's music comes back. His songs are `sound/kk.ts` `kkTracks` (the manifest's `kk`); with none he says he's
-tuning his guitar, and with the music off he only talks.
+**K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
+**おまかせ**. The island's music stops for the song ([K.K. Slider](#kk-slider)), he strums harder, ♪ float up, the
+villagers sway and a 「♪ けけボッサ」 caption sits by him. A tap mid-song offers ストップ / つづけて. At its end his
+sign-off and the island's music returns. With no song files he says he's tuning his guitar; with the music off he only
+talks.
 
 ### Visitors: life
 
 `island/visitorLife.ts` (pure), `island/Visitor.svelte`, `island/avatar.ts` (`meetVisitor`, `visitorRoute`),
-`e2e/visitor-life.spec.ts`. The visitor is the stage director's fourth actor (`'visitor'` in `motion/director.svelte.ts`):
-its walks, motions, emotes, fx and facing go through the same calls as the villagers' ([Motion](#motion),
-[Walking](#walking)), and idle life's scheduler gives it a beat on every tick (`visitor` in `idleLife.svelte.ts`, awake or
-asleep: visitors keep their own hours).
+`e2e/visitor-life.spec.ts`. The visitor is the stage director's fourth actor (`'visitor'`): its walks, motions,
+emotes, fx and facing use the villagers' calls, and idle life gives it a beat on every tick (awake or asleep).
 
-- **Always (CSS, transform and opacity only):** a breath (`scale`, about 1.5% taller with a tiny squash at the bottom of
-  it, 2.4–3.2 s, each visitor its own) and now and then a weight shift (`rotate` + `translate`, a ~9 s loop with holds);
-  the contact shadow breathes with it and shrinks under a hop. Each property animates on its own, so a signature loop
-  adds to the breath.
-- **Signatures (NH):** K.K. strums with a head-bob (harder and quicker during a song) and nods with notes on a beat;
-  Wisp floats, drifts a little side to side and flickers, with a soft glow; Jack sways theatrically and twirls (a spin
-  through edge-on) with a spooky glint; Daisy Mae shifts her turnip bundle (a wobble) and hums (♪); Franklin waddles,
-  flaps and looks one way then the other for something to cook; Jingle bounces, a jingle sparkle; Pavé does Festivale's
-  dance steps all day and a bigger samba with confetti; Zipper hops on the spot and hops along when he walks; Celeste
-  looks up at the sky and, when a shooting star crosses (SceneTaps' `island:star`), turns to it and points; Reese and
-  Cyrus lean toward each other in turn and nuzzle with hearts.
-- **Gulliver** sleeps face down on the lawn (on his front, his beak in the sand; standing with a droop where lying would
-  cover a control) with a snoring breath and the zzz loop, twitching now and then. A tap is a nudge (my villager walks
-  over first): a twitch and his sleep talk (「…ムニャムニャ…」, a small caption, not the balloon); the **fifth** wakes him
-  (NH): a start, a 「！」 glyph and a sweat drop, he eases up onto his feet, looks at my villager and introduces himself.
-  He stays up for the day (this session).
-- **A beat** (`pickAct`): the signature (likeliest), one of their emotes (never the same twice running), a look at the
-  nearest villager, for those who roam a **stroll**, back to their spot when away, or (at most every 45 s, when the
-  partner is home and free and nobody is walking) **a villager comes over**: the partner walks beside them (else a step
-  in front to one side: centre stage sits between the fruit rows), they face each other, a nod and an emote, the
-  visitor answers with theirs (K.K. a nod, the rest a hop), a laugh, and the partner wanders home. One walker at a time.
-  Half the quiet beats get a second one 4–6.5 s later. Nothing while a line of theirs is in the balloon.
-- **Strolls:** Daisy Mae (30u), Franklin (28u), Zipper (30u) and Celeste (26u) amble (48 u/s) to a spot around theirs,
-  level with it or in front (never back under the canopies), walkable, clear of every control and 44u from either
-  villager, along the walk graph; a look around there and back 4–7 s later. K.K., Gulliver, Jack, Wisp, Pavé, Jingle and
-  the pair stay put. While a visitor is out the villagers route around where it stands now.
-- **A tap:** the visitor walks back to its spot first if it had strolled off (160 u/s; the balloon anchors to it there),
-  turns to my villager with a little hop (K.K. nods from his stool, Wisp wobbles, Gulliver starts) and speaks once the
-  hop lands and my villager is beside them; it stands still until the balloon closes. A tap elsewhere on the island
-  now and then draws a glance that way. The live box is `[data-visitor] .art` (its client rect is where it is now).
-- **Arriving and leaving:** when a visit starts with the island open they come the NH way: walkers up from the water's
-  edge in front of centre stage along the walk graph (80 u/s, fading in at the edge; Zipper hops), Wisp floats down
-  from the sky (2.2 s), Celeste flies down (1.6 s), K.K. (on his stool) and Gulliver (washed up) appear, Jack in a spooky
-  puff; their depth follows the feet like the villagers'. When the visit ends they leave the same way (Gulliver, woken,
-  flies off; asleep he just fades), then the next visitor, if any, arrives. On a page's first paint they're simply there
-  (a 0.7 s pop in place). `?arrive` plays the arrival on load, `?leave=<ms>` ends the visit after that long, `?stroll`
-  and `?meet` start a stroll or the partner's hello (dev or `?demo`).
-- **Performance:** no rAF; CSS keyframes on transform/opacity and the director's timers; `will-change` only while
-  walking; everything pauses under a sheet or with the page hidden (`[data-covered]`, `[data-paused]`). At 4× CPU
-  throttling (390 and 320, a visitor with the scenery): 16.7 ms frames (p95 16.7–16.8, none over 33 ms), task time
-  30–51 ms/s against 21–22 with nobody visiting.
+- **Always (CSS):** a breath (2.4–3.2 s, each its own) and now and then a weight shift, on separate transform
+  properties so loops add up; the contact shadow breathes with it.
+- **Signatures (NH):** K.K. strums with a head-bob (harder mid-song); Wisp floats, drifts and flickers; Jack sways and
+  twirls with a spooky glint; Daisy Mae shifts her turnips and hums; Franklin waddles, flaps and looks about; Jingle
+  bounces with a sparkle; Pavé dances Festivale's steps and a samba with confetti; Zipper hops; Celeste looks up and
+  points when a shooting star crosses (`island:star`); Reese and Cyrus lean toward each other and nuzzle.
+- **Gulliver** sleeps face down on the lawn (snoring, zzz, a twitch). A tap is a nudge: a twitch and his sleep talk
+  (「…ムニャムニャ…」, a small caption); the **fifth** wakes him: a start, a 「！」, he gets up and introduces himself
+  (awake for the day).
+- **A beat** (`pickAct`): the signature, an emote (never the same twice running), a look at the nearest villager, a
+  stroll for those who roam, home when away, or at most every 45 s **the partner comes over** (beside them, they face
+  each other, a nod and emotes, then home; one walker at a time). Nothing while their line is in the balloon.
+- **Strolls:** Daisy Mae, Franklin, Zipper and Celeste amble to a walkable spot around theirs (level or in front, clear
+  of every control and the villagers) and back 4–7 s later; the others stay put. The villagers route around them.
+- **A tap:** the visitor walks back to its spot if it strolled, turns to my villager with a little hop and speaks once
+  my villager is beside them, standing still until the balloon closes. A tap elsewhere now and then draws a glance.
+- **Arriving and leaving:** when a visit starts or ends with the island open: walkers up from the water's edge along
+  the walk graph, Wisp floats down, Celeste flies down, K.K. and Gulliver appear, Jack in a spooky puff; they leave the
+  same way. On a page's first paint they're simply there.
+- **Cost:** no rAF; CSS keyframes and the director's timers; `will-change` only while walking; paused with the scene.
 
 ### Halloween
 
-`island/events.ts`, `island/Halloween.svelte`, `island/Visitor.svelte`, `e2e/halloween.spec.ts`. NH's Halloween on Oct 31
-(Tokyo), the first of the dated events (`eventAt`: a date rule and the hour its evening starts; `?event=halloween`, dev
-or `?demo`, forces it with its evening):
+`island/events.ts`, `island/Halloween.svelte`, `island/Visitor.svelte`, `e2e/halloween.spec.ts`. NH's Halloween on Oct
+31 (Tokyo):
 
-- **All day:** NH's orange pumpkins (22u) on the lawn, in front of the hedge in the middle, a pair mid-lawn and one between each trunk and
-  its person's bed (`HALLOWEEN_SPOTS` in `scene.ts`, from the shared columns and rows), each shown only where it's
-  clear of every control on this screen. Decoration: no taps.
-- **17:00–24:00:** they become NH's orange spooky lanterns (jack-o'-lanterns), lit above the night tint with a soft
-  candle glow and flicker, under a light purple-to-orange wash (soft light). **Jack** (パンプキング, the official render,
-  the visitors' size and centre-stage spot) comes instead of anyone else, K.K. included. His first tap: his
-  introduction (two pages) and 「トリック オア トリート！」; later taps the ask alone, and after a treat one of his lines.
-  The ask ends on NH's answers, a row of pills at the balloon's foot once its last page has typed (the box keeps their
-  room on every page; a tap on the box waits for an answer; unanswered it closes after 15 s; with no room clear of the
-  controls the question may sit over them): 「キャンディを あげる」 → he's delighted (a joyful cue, the candy pops up over
-  his head in orange and purple glints); 「なにも あげない」 → his trick: my villager starts with a 「！」 and wears party
-  nose glasses (鼻めがね) for a minute (not kept across a reload). No inventory, no ベル.
-- **Villagers:** in the evening their day lines include three Halloween ones, weighed double (about 1 tap in 6).
-- **Music:** the Halloween BGM belongs to the hourly music (the audio side), not this.
+- **All day:** NH's pumpkins on the lawn (`HALLOWEEN_SPOTS`, each only where clear of every control).
+- **17:00–24:00:** they become lit jack-o'-lanterns under a purple-to-orange wash, and **Jack** comes instead of anyone
+  else. His ask, 「トリック オア トリート！」, ends on NH's answers: 「キャンディを あげる」 delights him (the candy pops up
+  over his head); 「なにも あげない」 is his trick: my villager wears party nose glasses for a minute (not kept across a
+  reload). Unanswered it closes after 15 s.
+- **Villagers:** three Halloween day lines join their chats in the evening.
 
 ### Holiday hosts
 
-`island/events.ts`, `island/visitors.ts` (`HOSTS`), `island/eggs.ts`, `e2e/holidays.spec.ts`. Each of NH's holidays is one
-date rule in `events.ts` (verified on Nookipedia; `nthWeekday`, `easter`), and its host takes the visitor slot from the
-hour its main part starts, before anyone else (official renders, Nookipedia's title colour on the name tag; an
-introduction, then four lines; ja/en; their day's two villager lines join the chats):
+`island/events.ts`, `island/visitors.ts` (`HOSTS`), `island/eggs.ts`, `e2e/holidays.spec.ts`. Each NH holiday is one date
+rule in `events.ts` (`nthWeekday`, `easter`); its host takes the visitor slot from the hour its main part starts, with
+an introduction, four lines and two villager day lines:
 
-- **Franklin** (フランクリン), Turkey Day: the fourth Thursday of November, 09:00–24:00 (2026-11-26). His introduction ends
-  on NH's ask, a fish for the dish; the next fish caught that day (Critters tells the scene, `island:catch`) makes him
-  happy: the fish pops up over his head and he thanks you by its name (「おお！ りっぱな スズキ！」). Kept for the day on
-  this phone (`scene-franklin`); after that he chats. No ベル, the fish is still the ずかん's.
-- **Jingle** (ジングル), Toy Day: Dec 24, all day in NH (from 05:00), beside the Toy Day decorations.
-- **Pavé** (ベルリーナ), Festivale: Shrove Monday, 48 days before Easter (2027-02-08), all day.
-- **Zipper** (ぴょんたろう), Bunny Day: Easter Sunday; NH's celebrations run the seven days before, and Zipper comes on the
-  first and the last day (2027-03-21 and 03-28). All week, NH's eggs turn up (cosmetic, a caption, no find): a balloon
-  drops a sky egg (そらとぶたまご) instead of its present 1 in 3, a dig spot holds an earth egg (じめんのたまご) 1 in 4 (its own
-  stream), a fish on the line is a water egg (サカナのたまご) 1 in 6.
-
-Jack keeps Halloween ([Halloween](#halloween)). `?event=<id>` (dev or `?demo`) forces a day; `?visitor=<id>` brings a
-host; `?find=earth-egg` makes every dig spot an egg.
+- **Franklin**, Turkey Day (the fourth Thursday of November, 09:00–24:00): his introduction asks for a fish; the next
+  fish caught that day (`island:catch`) makes him happy and he thanks you by its name. Kept for the day on this phone
+  (`scene-franklin`).
+- **Jingle**, Toy Day (Dec 24, from 05:00), beside the Toy Day decorations.
+- **Pavé**, Festivale (Shrove Monday, 48 days before Easter), all day.
+- **Zipper**, Bunny Day (Easter Sunday; the seven days before are the celebration, and he comes on the first and the
+  last). All week NH's eggs turn up as captions: a balloon drops a sky egg 1 in 3, a dig spot holds an earth egg 1 in
+  4, a fish on the line is a water egg 1 in 6.
 
 ### Birthdays
 
 `island/birthday.ts`, `island/Birthday.svelte`, `island/Cake.svelte`, `villagers/birthdays.ts`, `e2e/birthday.spec.ts`.
-Ours come from the people config (`PEOPLE` in `config/rules.ts`: ウェイ `10-06`, うめ `03-04`, Tokyo dates; null turns a
-person's off; Feb 29 falls on Feb 28 in other years). On one of them: both villagers wear NH's birthday hat (mine
-pink, the partner's blue); NH's birthday cake stands in front of the centre stage (else behind it by the hedge;
-measured clear of every control and the visitor), its five candles lit; confetti over both villagers the first time
-the island opens that day on this phone (a fanfare; `scene-birthday`); しずえ's line 「うめさん、おたんじょうび おめでとう！」
-(the harvest still comes first). A tap on the cake (a scene item, a 44px reach) plays a little music box (`music-box`,
-an original waltz, a jingle) and blows the candles out: a puff of smoke, out for the day on this phone. Each time the
-birthday person meets a goal that day, NH's party popper goes off over their villager with confetti. An NH villager's
-own birthday (all 417 and the 23 special characters, Nookipedia's dates, in their own small module loaded with the
-island, never with the first load or the roster) puts the hat on that villager, and my villager says so in its chats
-(「きょうは わたしの たんじょうび なの！」, the first tap, then now and then). No ベル.
+Ours come from `PEOPLE` in `config/rules.ts` (ウェイ `10-06`, うめ `03-04`; null turns one off; Feb 29 falls on Feb 28).
+On one: both villagers wear NH's birthday hat; NH's cake stands in front of centre stage (else behind it), its candles
+lit; confetti over both villagers the first time that day on this phone (`scene-birthday`); しずえ's 「うめさん、
+おたんじょうび おめでとう！」. A tap on the cake plays a music box and blows the candles out for the day. Each goal the
+birthday person meets that day pops NH's party popper over their villager. An NH villager's own birthday (Nookipedia's
+dates, a small module of their own) puts the hat on that villager and they say so in their chats.
 
 ### Wedding countdown
 
-`island/wedding.ts`, `island/Wedding.svelte`, `island/Visitor.svelte`, `e2e/wedding.spec.ts`. Our wedding is 2027-10-08
-(Tokyo). On the milestone days before it, 365, 200, 100, 50, 30, 7 and 1 days to go and the day itself (2026-10-08,
-2027-03-22, 06-30, 08-19, 09-08, 10-01, 10-07, 10-08), Reese and Cyrus (リサ, カイゾー: NH's wedding couple, official
-renders) are the visitor from 06:00 to midnight, side by side on the centre stage (0.76 of a villager, so the pair
-clears both canopies) under a pink heart float that bobs on its string. Reese's introduction ends on the count,
-「けっこんしき まで あと 100日！」 (on the day 「ごけっこん おめでとう！」); then they take turns, Cyrus a line of his, Reese one of
-hers and the count again. On the day: the villagers turn to each other, bow and glow with hearts as the island opens,
-under a burst of confetti the first time that day on this phone (`scene-wedding`), and fireworks from 19:00 (the
-show: [Fireworks](#fireworks)). Every June Sunday (NH's Wedding Season) NH's wedding arch (cute) stands behind the centre stage, measured
-clear of every control (the tape deck keeps clear of it). No ベル. My villager walking over to a visitor stands
-beside them (the figure's half-width plus a villager's), never on them.
+`island/wedding.ts`, `island/Wedding.svelte`, `e2e/wedding.spec.ts`. Our wedding is 2027-10-08 (Tokyo). On the
+milestone days (365, 200, 100, 50, 30, 7 and 1 days to go, and the day) Reese and Cyrus are the visitor from 06:00 to
+midnight, side by side under a heart float; Reese's introduction ends on the count (「けっこんしき まで あと 100日！」, on
+the day 「ごけっこん おめでとう！」), then they take turns. On the day the villagers bow and glow with hearts, confetti
+bursts the first time that day (`scene-wedding`) and fireworks from 19:00. Every June Sunday NH's wedding arch stands
+behind centre stage.
 
 ### Celeste and meteor showers
 
-`island/meteor.ts`, `island/visitors.ts`, `e2e/celeste.spec.ts`. NH's meteor showers: about one night in ten, at most one a
-week (a week has one with a 0.7 chance, on one of its seven nights; seeded by the week's Monday, so both phones agree;
-2026-11-12 is one). That night Celeste (フーコ, the official render) is the visitor from 20:00 to 04:00 (after Jack on
-Halloween, before K.K. and Wisp), and shooting stars cross every 3–8 s instead of in a shower every few minutes
-([Shooting stars](#shooting-stars)). Her introduction (two pages) says the shower is on; her lines explain wishing (tap
-the sky while a star crosses), the fragments it brings, and the season's sign (「いまの 季節の 星座は さそりざ。」,
-`zodiac.<sign>`). Each wish that night is a fragment the next morning like any wish (so a shower night brings many),
-the season's zodiac fragment twice as likely (`fragmentsOn(date, n, seed, shower)`, the night before the morning). No
-ベル. `?shower` (dev or `?demo`) makes tonight a shower's night; `?visitor=celeste` brings her.
-
-### Group stretching
-
-`island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`, `e2e/radio.spec.ts`. NH's ラジオ体操: NH's
-tape deck (official icon) comes out on the lawn on a day either of us met 🍑 Exercise, or when the island is opened
-06:00–08:00 (kept for the day: `scene-stretch` in localStorage), in front of the hedge beside the plaza (else between the
-villagers' feet; measured clear of every control, the rock, a dig spot and a mushroom, else not shown); a ♪ floats up
-from it now and then. A tap (a scene item like the visitors, a 44px reach) plays its tape (`stretch`, an original
-~6 s march on a soft piano, a jingle: the music ducks) and both villagers, and the visitor if one is out and awake
-(Gulliver sleeps through it), do three of NH's stretches together on one beat: Posture Warm-Up, Side Bends, Jump (2 s
-each, `if-warmup`, `if-sidebend`, `if-leap`); a villager out on a walk walks home first, a sleeper joins in and dozes
-off again, event reactions wait for the end (`holdEvents`). ♪ rise from the deck while it plays; then a note over each
-villager and the deck goes for the day (once a day per phone). No ベル. `?stretch` (dev or `?demo`) brings it out.
-
-### Zukan
-
-`kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `e2e/zukan.spec.ts`. The ずかん
-(Critterpedia) in きろく: さかな 80 (the sea's 34 and the pond's 46, in NH's critterpedia order: the freshwater fish
-first), むし 70 (the wasp, bagworm and spider from a shaken tree, the flea and the pond's three included),
-うみのさち 40 (diving), かせき 73, かいがら 9 (the pearl from diving last), shared between the two of us (the first `find` of either). A kind's page lists every entry in the
-game's order: the official icon (loaded lazily) and the name for the found ones, a silhouette (the icon in one shade)
-and ？？？ for the rest; 「コンプリート！」 when all are in. The fossils are laid out like NH's museum: the standalone ones,
-then each dinosaur under its name with how many of its pieces are in (「Tレックス 1 / 3」) and its pieces. The names of
-everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん, the first critter of a session
-or a beach find's plate, out of the island's first load. The page's head is pinned (as the むらびと picker's): one card
-with the kind and its count (「3 / 80」, the page's summary while nothing is picked; under it the hint while nothing is
-found) stays put while the grid scrolls in its own scroller under it (overscroll contained, to the bottom edge; the
-panel body holds still on this level, IslandPanel's `.fill`). A tap on a found one shows it in that head, the grid
-staying where it was scrolled: the icon (48px), the name, 「7/4 ウェイが 見つけた」 and, for fish, bugs and sea
-creatures, NH's catch line, two lines at most; a longer one ends in NH's ▼ and a tap opens the rest (and closes it).
-
-**Cost:** transforms and opacity only; critters move by CSS transitions between waypoints a timer picks (no rAF), one
-wing or fin loop each while on screen; between visits one timer. Art loads on first need (the pond's fish table too).
-Layers: sea life z 1 (under the tint; the pond's shadows over the pond), bugs `--z-leaf` (night `--z-taps`, so
-fireflies glow), the catch `--z-taps`, the present under `--z-tree`.
-Cues: `scene-<kind>` world cues, quiet and jittered (≤ 0.5, ≤ 2 at once, < 1 s, never jingles; [Cues](#cues)).
-`?critter=fish|pond|<fish id>|<pond fish id>|<bug id>` (dev or `?demo`) brings one on at once and keeps it until
-caught; `?balloon` floats one.
-
-### Pond
-
-`island/Pond.svelte`, `island/pondFish.ts`, `island/Critters.svelte`, `e2e/pond.spec.ts`. NH's pond, small, on the back
-row at the left, between the corner bush and the museum where the hedge's column −2 bush was (`scene.ts` `POND`, its
-water an oval 52 × 18u; the back row reads bush · pond · museum · bush · bush): a light earthen bank lit from the upper left, the far
-bank's inner wall in shade, NH's teal water lighter toward the front, two lily pads (one with a pink bloom), reeds and
-cattails on the back-left bank, one slow ripple ring (its one animation). Drawn in stage units in its own svg, over the
-ground, under the hedge and everything standing, under the tint.
-
-- **Its fish:** all 46 of NH's freshwater fish, the river's, the river mouth's, the clifftop's and the pond's
-  (`POND_FISH`, NH's critterpedia order; months, hours and shadows from the game's data; the island has no river, so
-  they all come here). Like the sea's, the season only weights the odds (3× in its NH months), the hours hold, rare is a
-  low weight (the golden trout and the stringfish rarest; the crucian carp, carp, black bass, bluegill, pale chub and
-  dace common). Deviations: the clifftop char and cherry salmon keep 4 pm – 9 am in autumn (NH: all day).
-- **Visits:** as often as the sea's (a visit fills the sea first, then the pond: its own slot beside the sea's fish or
-  bubble spot), one shadow at a time, 45 s if nobody
-  fishes; drawn at 0.65 of the sea's size with a sharper edge (NH's sizes 1–6 still read apart), clear of any control over the pond on a small
-  screen. Fishing is the sea's: a tap on the water or within a finger's slack of it (`POND_REACH`) casts: the front rim is under the left tree's canopy, so my villager walks round to the back bank behind the
-  water (up the gap between the pond and the museum, walkGraph's `pondside`; a far walk, up to 1.45 s) and fishes from
-  there, the line from its rod; the bobber stays inside the water, a flee is a dive.
-- **Its bugs:** NH's three water bugs keep to its water as crawlers (`BUGS`, ground `pond`): the pondskater and the
-  diving beetle by day in summer, the giant water bug at night; netted like any bug.
-- **The catch:** NH's catch line (`catchLines.ts`), the icon, and the first of each a ずかん `find` (kind `fish`: the
-  script checks a find's id by shape, not a list, so no script change). A tap on the water with no fish rings it.
-- **Cost:** the table (`pondFish.ts`) is its own chunk, fetched with the pond's first shadow; the names come with the
-  catch catalog like every catchable's; icons on first need.
-
-### Museum
-
-`island/Museum.svelte`, `island/blathers.ts`, `e2e/museum.spec.ts`. NH's museum (the upgraded building, the official
-render, 100u wide) on the back row in the middle, where the hedge's three middle bushes were (`scene.ts` `MUSEUM`,
-`hedgeKept`), the door to the ずかん: a button
-(`aria-label` 「はくぶつかん：ずかんを ひらく」, `scene-museum`, a soft knock). A tap and Blathers (フータ, his NH colour on the
-name tag) says one line in NH's dialogue box: by day (05:00–19:00) drowsy (「ホ… ホー？ むにゃ… おっと、ようこそ
-はくぶつかんへ！」), at night lively (「ホーホー！ 今夜も ずかんを ごらんに なりますかな？」); when either of us found
-something in the last week, 3 times in 5 about the latest find instead (「ホー！ さいきん コイを 見つけたそうですな！」).
-When the box closes (tapped away, or read through) the panel opens on きろく scrolled to the ずかん (`ui.zukan`); a
-second tap on the museum while he talks opens it at once. Our own lines in his manner, ja/en. No ベル, no write.
+`island/meteor.ts`, `island/visitors.ts`, `e2e/celeste.spec.ts`. About one night in ten, at most one a week (a week has
+one with a 0.7 chance, seeded by its Monday): Celeste is the visitor 20:00–04:00 and shooting stars cross every 3–8 s.
+Her lines explain wishing, the fragments and the season's sign (`zodiac.<sign>`). Each wish is a fragment the next
+morning, the zodiac fragment twice as likely.
 
 ### Shooting stars
 
-`island/stars.ts`, `island/SceneTaps.svelte`, `island/Finds.svelte`, `e2e/sky.spec.ts`. NH's shooting stars on a clear
-night, in NH's hours (19:00–04:00):
+`island/stars.ts`, `island/SceneTaps.svelte`, `e2e/sky.spec.ts`. On a clear night in NH's hours (19:00–04:00):
 
-- **Showers:** every 3–8 minutes of on-screen night (the first 30–90 s after the night sky shows), 1–3 streaks a second
-  or three apart; 1 in 6 a bigger shower of 5–8 in quick succession. The countdown holds while covered or hidden. On a
-  meteor shower's night (about one in ten, Celeste's: [Celeste and meteor showers](#celeste-and-meteor-showers)) one
-  crosses every 3–8 s instead.
-- **The streak:** a quick white streak falling to the lower left (146°–170°, up to 150 px), its whole path inside the
-  sky (under the status bar, above the horizon) and clear of every control (the ribbon, the jar, the sync chip): a short
-  sky beside the HUD gets a shorter, flatter one in the lane above or below it, or none.
-- **A wish:** a tap anywhere in the sky while one crosses (its 0.9 s and a moment's grace), once a star: three
-  sparkles at the finger, a soft rising chime (`scene-wish`) and a brief cream caption 「ながれぼしに おねがい！」 placed
-  clear of every control. Each wish is a star fragment on the beach the next morning ([Beach finds](#scene-interactions);
-  `scene-wish` in localStorage: `{ <morning>: n }` per phone, older mornings dropped).
-- `?shower` (dev or `?demo`) makes tonight a meteor shower's night (a star every 3–8 s, Celeste).
+- **Showers:** every 3–8 minutes of on-screen night (the first after 30–90 s), 1–3 streaks; 1 in 6 a bigger shower of
+  5–8. The countdown holds while covered or hidden. A meteor shower's night: one every 3–8 s.
+- **The streak:** a quick white streak falling to the lower left, its whole path in the sky and clear of every control
+  (a short sky beside the HUD gets a shorter one, or none).
+- **A wish:** a tap in the sky while one crosses, once a star: sparkles, a chime (`scene-wish`) and 「ながれぼしに
+  おねがい！」. Each is a fragment the next morning (`scene-wish`: `{ <morning>: n }`, older mornings dropped).
 
 ### Fireworks
 
-`island/fireworks.ts`, `island/Fireworks.svelte`, `e2e/sky.spec.ts`. NH's fireworks:
+`island/fireworks.ts`, `island/Fireworks.svelte`, `e2e/sky.spec.ts`.
 
-- **When:** NH's Fireworks Show, every Sunday in August 19:00–24:00, a shell every 2–4.5 s (1 in 5 two at once); New
-  Year's countdown, Dec 31 23:00–24:00, one every 6–10 s, then a volley of 8 at midnight and the show until 01:00.
-- **Our wedding night** (2027-10-08, [the wedding countdown](#wedding-countdown)): the show from 19:00.
-- **Our celebration:** the day both of us meet all four goals, a volley of 3–5, once a day per phone (`fireworks-day`
-  in localStorage): at once from 18:00, or at 18:00 while the island is open.
-- **The look:** a shell rises from behind the island with a short trail and bursts: a peony (two rings), a ring, a gold
-  willow that droops, a heart, a star, now and then a little pixel pattern (NH's leaf, a smile, an apple: after the
-  custom-design fireworks Isabelle launches); NH's colours. A flash, then ~16–30 sparks out to the burst's radius,
-  drifting down as they fade (2.7 s).
-- **Where:** over the night sky and, on a tall phone, the open sea behind the island (they open low over the water as in
-  NH), down to the island's back edge (`ISLAND_TOP_U`); each burst's whole circle (18–58 px, the size at random, smaller
-  where it must) clear of every control. A tap in the sky during a show sends one more where it was tapped (if there's
-  room there). The layer sits over the stage and its tint (lights), under the HUD.
-- **Villagers:** now and then (≥ 6 s apart, 3 in 10 bursts) one of them cheers: a hop and a glad mark (awake and not
-  busy).
-- **Sound:** a thin rising whistle and a soft low boom with a crackle (`scene-launch`, `scene-firework`), low and two
-  at most (it can run for hours).
-- **Cost:** each spark one transform/opacity keyframe animation on the compositor; ≤ 4 bursts at once, each gone after
-  2.7 s; one timer between them; paused with the scene. At 4× CPU on a 390 × 844 night with a show, a shower, the
-  critters and the fireflies: frames at 16.7 ms p99, no long task.
-- `?fireworks` (dev or `?demo`): a show now, any night.
+- **When:** every Sunday in August 19:00–24:00; New Year's countdown, Dec 31 23:00, a volley at midnight and the show
+  until 01:00; our wedding night from 19:00; and a volley of 3–5 the evening both of us meet all four goals (once a day
+  per phone, from 18:00; `fireworks-day`).
+- **The look:** a shell rises from behind the island and bursts (peony, ring, willow, heart, star, now and then a little
+  pixel pattern), NH's colours, sparks drifting down (2.7 s).
+- **Where:** the night sky and the open sea behind the island, each burst's whole circle clear of every control; a tap
+  in the sky during a show sends one more there. Villagers cheer now and then.
+- **Cost:** one transform/opacity keyframe per spark, ≤ 4 bursts at once, one timer between them.
+
+### Group stretching
+
+`island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`, `e2e/radio.spec.ts`. NH's tape deck comes
+out on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (`scene-stretch`), on the lawn clear
+of every control. A tap plays its tape (an original ~6 s march) and both villagers, and an awake visitor, do three of
+NH's stretches together (`if-warmup`, `if-sidebend`, `if-leap`); event reactions wait (`holdEvents`). Then the deck
+goes for the day.
+
+### Dev params
+
+Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with `?demo`; `?date`, `?theme` and
+`?season` work everywhere:
+
+| Param | Effect |
+|---|---|
+| `?demo` (`=harvest`, `&as=B`, `&weeks=60`) | Made-up data, no backend; the harvest recap; play as B; a longer history |
+| `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only |
+| `?theme=`, `?season=` | Preview a time of day or a season |
+| `?seed=` | The island's seed (finds, weather, visitors) |
+| `?weather=clear\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather |
+| `?event=<id>` | Force an event day (and its evening) |
+| `?visitor=<id>`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
+| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off); a dive spot; a flea on every villager tap |
+| `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
+| `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
+| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show; a meteor shower's night; the tape deck; a hybrid flower; the partner wanders |
 
 ## Motion
 
 - **Rig** (`Villager.svelte`, `Host.svelte`): `.actor` › `.face` (facing) › `.body` (one motion) › the art; emotes and
   fx sit beside `.face`, so they never squash or mirror. The director (`motion/director.svelte.ts`) holds one state per
-  actor; `holdEvents(ms)` makes event reactions queue behind a routine ([Group stretching](#group-stretching)).
+  actor (mine, the partner's, しずえ, the visitor); `holdEvents(ms)` queues event reactions behind a routine.
 - **Primitives:** `if-` keyframes in `tokens.css`; durations in `MOTION_MS` (`motion/reactions.ts`) must match.
-- **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble
-  (`Emote.svelte`). Effects (`Fx.svelte`) remove themselves.
-- **Reactions** (`REACTIONS`, R1–R19): events such as first open, the partner's day growing, high-fives, a goal met,
-  all four goals met, taps, waking, a low week (Thu–Sat), a sync problem, the harvest. They never fire
-  on first render; pages `emit(…)` (`motion/bus.svelte.ts`).
-- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (a look around, a wiggle, a wander off, a glance up at the jar in the HUD, …) (しずえ ≤ every 20–30 s), no
-  emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden or covered.
-  The partner's outings ([Walking](#walking)) ride on its ticks.
-- **No reduced-motion variants** anywhere (user): everything always animates.
+- **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble (`Emote.svelte`).
+  Effects (`Fx.svelte`) remove themselves.
+- **Reactions** (`REACTIONS`, R1–R19): first open, the partner's day growing, high-fives, a goal met, all four met,
+  taps, waking, a low week (Thu–Sat), a sync problem, the harvest. Never on first render; pages `emit(…)`
+  (`motion/bus.svelte.ts`).
+- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (しずえ ≤ every 20–30 s), no
+  emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden or covered. The partner's outings
+  ride on its ticks.
 
 ### Walking
 
 `island/walkGraph.ts`, `island/wander.ts` (pure), `island/avatar.ts`, `motion/director.svelte.ts` `walkTo`,
 `e2e/movement.spec.ts`.
 
-- **My villager is me:** on each phone a tap on something to do walks my villager there first, then the action plays
-  where it stands: a bush (a shake), a flower (the watering can in hand), the rock (the shovel), a weed, a dig spot
-  (the shovel), a fallen fruit, a branch, a mushroom, a shell, a fragment or the bottle, a tree to shake, the sea
-  (down to the beach, the rod in hand, then the cast), bubbles (down to the water's edge, a hop, then the dive), a bug
-  (the net in hand; the bug holds still until the swing; a tarantula or a scorpion once it has settled), a mole
-  cricket's mound (the shovel), a dangling bagworm or spider (the net), a visitor (they speak once it's there). With the
-  tool in hand the scene's floating one stays away. A flea is tapped off my villager itself: no walk.
-- **Snappy:** 240 u/s, a walk clamped to 150–900 ms; one that would take over 1.2 s (or with nowhere clear to stand)
-  isn't made: the villager turns to it and the action plays as before. The outcome is decided at the tap (a find is in
-  the ずかん at once); only what shows waits for the walk. The reel, a dive's chase, a tarantula's rear and charge
-  and the wasps never walk (their timing is the game); the villager just turns.
-- **Where it stands:** around the target at 26u, else 40u (a can or a net also across a bed, 74–96u, level with it),
-  the nearest by walking; a spot counts only if the standing figure (0.45 × 0.92 of its height) covers no control, no visitor and
-  no canopy, measured, and stays on screen. Bubbles and plates are placed against the villager's live box (the held-up
-  item is a guard too).
-- **After:** it stays 4–6 s, then wanders home at 90 u/s. A new tap re-targets from where it is. A sheet stops
-  everyone where they stand; uncovered, they wander home; hidden for over 30 s, they're home on return, no walk. A
-  balloon opens only over a villager standing still; setting off closes it.
-- **Hold-up:** a catch or a find (fish, bug, wasp, shell, fragment, bottle, fossil, mushroom) is lifted over my
-  villager's head (`if-holdup`: a squash, a rise, held; the item rises and bobs) while its plate reads.
-- **Walk mask:** the lawn (inside the plateau, in front of the hedge), the front beach, the low front of the cliff
-  between the homes as the way down, and the pond's back bank with the lane up to it beside the museum; obstacles are
-  the trunks, the beds, the rock and the pond's water (grown by an 8u footprint). ~25 named nodes (homes, beside and
-  behind each tree, mid-lawn, centre stage, the rock, the ramp, the shore, the way up to the pondside) built from the
-  scene's constants; a straight segment when it's clear, else the shortest route through the nodes (a visibility
-  graph, no nav-mesh). `walkGeo(extra)` takes more zones, obstacles and nodes (a museum door).
-- **Rendering:** the actor's feet at `translate(x, y)` u, one CSS transition of `transform` per segment (duration =
-  length / speed, linear); no rAF; `will-change` only while walking. Facing by the direction (`LOOKS_RIGHT` says how a
-  render looks as drawn; `NO_MIRROR` ones lean instead of flipping). Depth from the feet's y (`depthZ`): behind the
-  trees 27, between the trees and the beds 47, among the beds 50, the front row 51, the beach 53; set at a segment's
-  start toward the camera and at its end away from it; in one band the nearer is in front. The walk cycle is
-  `if-walkbounce` (a ±2° rock and a squash at each footfall; quick steps at 360 ms, a wander's at 640), a dust puff
-  every other step.
-- **The villagers' own outings:** the partner's villager goes about the island: on an idle tick (at most one per 9 s,
-  about every other tick) it walks at 90 u/s to a point of interest, 1–3 of them, staying 3–5 s at each, then home:
-  beside or behind either tree (a stretch), the rock (a nod), the shore (it stares out to sea), centre stage (left to a
-  visitor while one is out, with the shore in front of it), the pond's back bank (`pondside`), and any spot a later layout adds
-  as a walk node (a museum door). Mine does the same only when I've left the island alone for 2 min. One villager leaves
-  home at a time; nothing starts after 10 min without input (idle life stops). `?wander` (dev or `?demo`) sends the
-  partner off at once.
-- **Follow and chat:** when mine has been away over 8 s (a line out, one tap after another) the partner comes over and
-  stands beside it; two villagers standing within 64u chat (face each other, a nod, a laugh: idle life's chat). When
-  mine heads home, a partner who came along does too.
-- **Goals:** a fruit newly met walks that person's villager briskly to their own tree (as the fruit falls), and its
-  reaction (R6, or R8 for all four) plays there; ふたりでぜんぶ (both all four for the first time) brings both to the
-  middle of the lawn, a step either side of centre stage's column, for a high-five (both hop with sparkles, one
-  `emote-joy`). Then they wander home.
-- **Footsteps:** a quiet step under a walker by the ground under its feet (`footstep-grass`, `-sand`, `-snow` in
-  winter: the scenery's step sounds at 0.3), at most one per 320 ms; world cues, so silent under a sheet.
+- **My villager is me:** a tap on something to do walks my villager there first, then the action plays where it
+  stands (the bush shaken, the can, the shovel, the rod, the net; a visitor speaks once it's there). A flea is tapped
+  off my villager itself: no walk.
+- **Snappy:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't made: the
+  villager turns to it. The outcome is decided at the tap; the reel, a dive's chase, a tarantula and the wasps never
+  wait for a walk.
+- **Where it stands:** around the target at 26u, else 40u (a can or a net also across a bed), the nearest by walking;
+  a spot counts only if the standing figure covers no control, visitor or canopy and stays on screen.
+- **After:** it stays 4–6 s, then wanders home at 90 u/s. A sheet stops everyone; uncovered, they wander home; hidden
+  over 30 s, they're home on return. A balloon opens only over a villager standing still.
+- **Hold-up:** a catch or a find is lifted over my villager's head (`if-holdup`) while its plate reads.
+- **Walk mask:** the lawn, the front beach, the cliff's low front as the way down, and the pond's back bank; obstacles
+  are the trunks, the beds, the rock and the pond. ~25 named nodes; a straight segment when clear, else the shortest
+  route through the nodes (a visibility graph).
+- **Rendering:** the feet at `translate(x, y)` u, one CSS transition per segment; no rAF; `will-change` only while
+  walking. Facing by direction (`LOOKS_RIGHT`; `NO_MIRROR` renders lean instead of flipping). Depth from the feet's y
+  (`depthZ`). The walk cycle is `if-walkbounce`, a dust puff every other step.
+- **The villagers' own outings:** the partner's villager walks to 1–3 points of interest (beside a tree, the rock, the
+  shore, centre stage, the pondside), then home; mine does the same only after 2 min without input. One villager away
+  at a time; nothing after 10 min without input.
+- **Follow and chat:** when mine has been away over 8 s the partner comes over; two villagers within 64u chat.
+- **Goals:** a newly met fruit walks that person's villager to their tree, where the reaction plays; ふたりでぜんぶ
+  brings both to the middle for a high-five.
+- **Footsteps:** a quiet step by the ground under the walker (`footstep-grass`, `-sand`, `-snow`, `-splash`), ≤ 1 per
+  320 ms; world cues.
 
 ## Chrome and tokens
 
@@ -918,144 +641,122 @@ night, in NH's hours (19:00–04:00):
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
 - **Type:** Zen Maru Gothic (UI, Japanese) and Fredoka (numbers); `word-break: keep-all` for Japanese.
 - **Tokens** (`styles/tokens.css`): ink `#4A3A2C`, cream `#FFF9E3`, paper `#F5E4BC`, card `#FFFCF2`, edge `#937047`,
-  leaf `#6ED07A`, yuzu `#FFD84D`, mint `#7BD7C1`, coral `#FF8F7A` (errors only), the chart pair `--person-a` `#2F86BD` / `--person-b` `#D2701F` (night `#7EC8F0` / `#FFB066`; CVD-checked); semantic tokens in components; one
-  `--z-*` stacking scale.
+  leaf `#6ED07A`, yuzu `#FFD84D`, mint `#7BD7C1`, coral `#FF8F7A` (errors only), the chart pair `--person-a`
+  `#2F86BD` / `--person-b` `#D2701F` (night `#7EC8F0` / `#FFB066`; CVD-checked); one `--z-*` stacking scale.
 - **Theme:** `data-tod` comes only from the Tokyo clock (`prefers-color-scheme` ignored); night chrome `#3A4886`. The
-  ribbon, plate, dialogue and choices stay cream/yellow. Previews: `?theme=`, `?season=`, `?date=`.
+  ribbon, plate, dialogue and choices stay cream/yellow.
 
 ## Small screens
 
 Compact = `(max-height: 700px) or (max-width: 359px)`, tiny = `(max-width: 339px)`; portrait; wider screens centre a
 480px column. No horizontal scroll at 320, inputs ≥ 16px (`inputs.test.ts`), targets ≥ 44px; the keyboard inset `--kb`
-from `visualViewport` (`ui/keyboardInset.ts`). Short screens scale the island down. Check at 393×852, 375×667 and 320×568, day, dusk, night and winter.
+from `visualViewport` (`ui/keyboardInset.ts`). Short screens scale the island down. Check at 393×852, 375×667 and
+320×568, day, dusk, night and winter.
 
 ## Official art
 
 Official NH renders only from `static/art/` through `<OfficialArt>`, with a fallback so a missing file never breaks a
-screen; WebP, never upscaled. Manifest and helpers `lib/art.ts`; files from `scripts/fetch-assets.ts`. Groups:
-villagers (all 417 of NH + 23 special characters; roster `lib/villagers/roster.ts`, loaded with the picker; the
-island draws through `lib/villagers/look.ts`: ids, facing, defaults goldie and anchovy), host (しずえ, たぬきち),
-fruit, seasonal oaks, bushes, flowers, season particles, reactions, money, deco. Ours: sky, sea, ground, the jar (HUD and ごほうび), effects, marks,
-UI sprites. Names follow the Japanese game (しずえ, ベル); no Nintendo fonts.
+screen; WebP, never upscaled. Manifest and helpers `lib/art.ts` (the manifest ships as `{ key: [w, h] }`); files from
+`scripts/fetch-assets.ts`. Groups: villagers (all 417 + 23 special characters; roster `lib/villagers/roster.ts`, loaded
+with the picker; `lib/villagers/look.ts`: ids, facing, defaults goldie and anchovy), host (しずえ, たぬきち), fruit,
+trees, bushes, flowers, particles, reactions, money, deco, critters, finds, presents. Ours: sky, sea, ground, the jar,
+effects, marks, UI sprites. Names follow the Japanese game; no Nintendo fonts.
 
 ## Sound
 
-`lib/sound/`. Off by default, kept per phone. Nothing sounds without a visible reason (idle life is silent). The
-hourly music and opening are the user's own files; every effect is an original placeholder, replaceable by a file.
+`lib/sound/`. Off by default, kept per phone. Nothing sounds without a visible reason (idle life is silent). The music
+is the user's own files; every effect is an original placeholder (`synth.ts`), replaceable by a file.
 
 ### Hourly music
 
-One track per **Tokyo hour** (`hourly.ts`) in sunny / rain / snow arrangements (`sound.weather`, from the island's
-[weather](#weather); a missing variant falls back to the hour's sunny track). A 3 s crossfade on the hour; the next
-file is fetched a minute early. Each file is a loop period plus a 3 s copy of its start; two `<audio>` decks hand over
-inside the copy (aligned to ~12 ms, 0.15 s crossfade), so the loop has no gap. Turning ミュージック on plays the
-opening theme until it ends or the panel closes. Under a sheet, the panel or the harvest the music is low-passed at 900 Hz.
+One track per **Tokyo hour** (`hourly.ts`) in sunny / rain / snow arrangements (`sound.weather`; a missing variant falls
+back to sunny). A 3 s crossfade on the hour; the next file is fetched a minute early. Each file is a loop period plus a
+3 s copy of its start; two `<audio>` decks hand over inside the copy, so the loop has no gap. Turning ミュージック on
+plays the opening theme first. Under a sheet, the panel or the harvest the music is low-passed at 900 Hz.
 
 ### Event music
 
-On NH's event days its track replaces the hour's (`events.ts eventMusicAt`, Tokyo date and hour, any weather), with
-the hour's crossfade at the boundaries (all on the hour, so the hour clock drives them):
+On NH's event days its track replaces the hour's (`events.ts eventMusicAt`, Tokyo date and hour), with the hour's
+crossfade at the boundaries:
 
 | When (Tokyo) | Track |
 | --- | --- |
 | Oct 31 17:00–24:00 | ハロウィン (Halloween) |
 | 4th Thursday of Nov 09:00–24:00 | サンクスギビングデー (Turkey Day) |
-| Jan 1 00:00 | ニューイヤー（Happy New Year）, once, if within 2 minutes of midnight |
+| Jan 1 00:00 | ニューイヤー（Happy New Year）, once, within 2 minutes of midnight |
 | Jan 1 00:00–02:00 | ニューイヤー（午前0時）, the fireworks |
-| Jan 1 02:00–05:00 | ニューイヤー（午前2時）, the calmer version |
-| Jan 1 05:00 – Jan 2 05:00 | 元日 (New Year's Day, NH's whole day) |
+| Jan 1 02:00–05:00 | ニューイヤー（午前2時） |
+| Jan 1 05:00 – Jan 2 05:00 | 元日 (New Year's Day) |
 
-Dec 31 23:00–24:00 plays the 23:00 hour (the countdown tracks aren't in the files).
-
-**Cut-ins** (`sound.svelte.ts`) swap at once over the island's music (0.25 s) and hand back to it: the wasps
-(`waspMusic`, called by `TreeShakes`): the nest's fall fetches Chased by Bees (ハチに追いかけられる), which loops from the
-moment they come out; a net brings the island's music straight back; a sting plays Stung by Bees (ハチにさされた) once
-(11.5 s), then the island's music fades in. The track they interrupted is kept in memory, so it comes back without
-a fetch. A chase the scene never ends lets go after 6 s. K.K.'s songs are cut-ins too ([K.K. Slider](#kk-slider)).
-The settings' note and the Now Playing tile name the event track or song.
+**Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it: the wasps (`waspMusic`):
+Chased by Bees loops from the nest's fall; a net brings the island's music back; a sting plays Stung by Bees once. K.K.'s
+songs are cut-ins too. The settings' note and the Now Playing tile name the event track or song.
 
 ### K.K. Slider
 
-`kk.ts kkTracks`: K.K.'s songs from the manifest's `kk` list, `{ id, ja, en, file, gain }` with NH's official titles
-(けけさんびか K.K. Chorale, けけマーチ, けけワルツ, けけスウィング, けけボッサ, けけサルサ, けけレゲエ, けけロック, けけのロケンロール
-Rockin' K.K.), one-shots under `audio/kk/`. `playKK(id)` plays one over the island's music (from a tap; false when
-it can't sound), `stopKK()` ends it early, `sound.kk` is the song playing. A tap on K.K. (Saturday 18–24) with
-ミュージック on plays one (`kkPick`: never the last one again) unless one is playing; his show ending or the island
-closing stops it. Without song files he says he's tuning his guitar.
+`kk.ts kkTracks`: K.K.'s songs from the manifest's `kk` list (`{ id, ja, en, file, gain }`, NH's official titles),
+one-shots under `audio/kk/`. `playKK(id)` plays one over the island's music, `stopKK()` ends it, `sound.kk` is the song
+playing; `kkPick` never repeats the last one.
 
 ### Ambience
 
-`ambientFor(hour, month, weather, { heavy })` on the music bus (ミュージック), crossfaded (0.5 s) as the hour, season or
-weather changes: waves always (softer under a downpour); birds 05–17 on fine days, most at dawn, the season's
-(spring's bush warbler ホーホケキョ, the sparrows, the white-eye, the great tit, autumn's bulbul; a few in winter to 16:00,
-quieter); cicadas 08–17 Jul–Aug; higurashi 04–08 and 16–19 Jul–Aug; crickets (bell crickets and field crickets) 17–05
-Sep–Nov; no insects or birds in rain or snow; wind Dec–Feb (louder on snow days); rain (louder when heavy).
+`ambientFor(hour, month, weather, { heavy })` on the music bus, crossfaded (0.5 s): waves always; birds 05–17 on fine
+days (the season's: the bush warbler in spring, the bulbul in autumn); cicadas 08–17 Jul–Aug; higurashi 04–08 and 16–19
+Jul–Aug; crickets 17–05 Sep–Nov; nothing alive in rain or snow; wind Dec–Feb; rain.
 
-The beds are **procedural** (`ambientSynth.ts`, its own chunk, loaded with the first bed): original loops rendered as
-mono samples at 22.05 kHz, deterministic, 12–40 s each (1–1.8 MB of samples), when the main thread is idle, one bed at
-a time, then kept. Noise beds (surf, wind, rain) are filtered noise with slow swells, their tail crossfaded into their
-head; calls (birds, cicadas, crickets) are short synthesised voices written into a circular buffer with a small
-outdoor echo, so nothing jumps at the wrap. Each starts at a random point. Hidden: stopped at once with the context
-suspended, nothing renders. A file at `ambient.<id>` in the manifest replaces a bed.
+The beds are **procedural** (`ambientSynth.ts`, its own chunk): original loops rendered once into buffers when the main
+thread is idle, deterministic, 12–40 s each, starting at a random point. Hidden: stopped, nothing renders. A file at
+`ambient.<id>` in the manifest replaces a bed.
 
 ### UI sounds
 
-Soft mallets and bells for the phone, cursor, confirm and cancel. Dialogue is silent: the villagers don't speak (the
-text just types).
+Soft mallets and bells for the panel, cursor, confirm and cancel. Dialogue is silent.
 
 ### Cues
 
 `cues.ts CUES` maps moments to sounds, levels and delays; nothing calls `play()` directly. Reactions name a cue per
-step, taps in `data-sfx`, outcomes call `cue()`. Examples: tree tap → rustle, fruit lands → thud, a fallen fruit picked up → pop, each coin → coin
-(climbing a pentatonic run), a ふたりでぜんぶ week in the harvest → miles, 受け取る → fanfare, buy → purchase, villager/jar tap → pop, first open of
-the day → chime (waits up to 15 s for the first tap), scenery → `scene-<kind>`. **World cues** (the island's own
-sounds) are skipped while a sheet, the panel or the harvest covers the scene; UI cues always play.
+step, taps in `data-sfx`, outcomes call `cue()` (tree tap → rustle, fruit lands → thud, each coin → a climbing
+pentatonic run, 受け取る → fanfare, buy → purchase, first open of the day → chime, scenery → `scene-<kind>`). **World
+cues** (the island's own sounds) are skipped while a sheet, the panel or the harvest covers the scene; UI cues always
+play.
 
 ### Taps
 
 Every tappable names its sound in `data-sfx`; one capture listener (`taps.ts`) plays it on the click. `self`: the
-handler plays the outcome's cue; `none`: silent (text fields). A control with `aria-disabled="true"` has its click
-swallowed and plays `boop`. Enforced by `taps.test.ts`, walked by `e2e/sound.spec.ts`.
+handler plays the outcome's cue; `none`: silent. A control with `aria-disabled="true"` has its click swallowed and
+plays `boop`. Enforced by `taps.test.ts`, walked by `e2e/sound.spec.ts`.
 
 ### Mix
 
-Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0.8). ≤ 6 voices and a cap
-per sound (`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the music to 25%. Effects jitter pitch
-(UI and jingles don't).
+Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0.8). ≤ 6 voices and a cap per sound
+(`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the music to 25%. Effects jitter pitch.
 
 ### Engine lifecycle
 
 `sound.svelte.ts` drives `engine.ts`; the rules are pure in `session.ts`; `engine.test.ts` uses a fake context.
 
 - **Unlock:** no context until a setting is on. `pointerup`, `touchend`, `click` or `keydown` creates and resumes it
-  and unlocks both decks; `pointerdown` only wakes it, so scenery taps are heard. With ミュージック on, the hour's file is
-  fetched 1 s after launch, so the first tap starts it inside the gesture; a track that should play but doesn't is
-  started by the next tap.
+  and unlocks both decks; `pointerdown` only wakes it. With ミュージック on, the hour's file is fetched 1 s after launch,
+  so the first tap starts it inside the gesture.
 - **Nothing queues:** a cue on a context that isn't running is dropped; a tap's own sound may run within 250 ms of its
-  resume and is cancelled if the context still isn't running 300 ms later.
-- **Idle suspend:** with only effects on (or the music held by an outside ⏸) the context sleeps 10 s after
-  the last sound.
-- **Background:** hidden → decks paused, ambience stopped, context suspended, the hour clock stopped (no prefetch while
-  hidden or muted); back in front the same hour fades in over 0.8 s. A deck that starts while hidden is paused again.
-- **Decks:** a fade-out's delayed pause applies only to the assignment it faded (deck generation). Failed effect
-  decodes retry on a later unlock.
-- **iOS session:** always `ambient`, like game music: it mixes with other apps' audio and follows the Ring/Silent
-  switch (user decision). The Media Session tile names the tune; ▶ resumes only in front, ⏸ holds until the next tap.
+  resume.
+- **Idle suspend:** with only effects on the context sleeps 10 s after the last sound.
+- **Background:** hidden → decks paused, ambience stopped, context suspended, the hour clock stopped; back in front the
+  hour fades in over 0.8 s.
+- **iOS session:** always `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch. The Media
+  Session tile names the tune.
 
 ### Audio files
 
 `static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>`, `music.<weather>.<00–23>` = `{file, start, end?,
-gain?}`, `opening`, `ambient.<id>`, `events.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code
-change; a missing effect keeps its placeholder (`synth.ts`), missing ambience its procedural bed, missing music is silence. `sound.test.ts`:
-files exist and every audio file is named, ≤ 1 MB a looped track and ≤ 20 MB for `music/` (14 MB of hours, 3.6 MB
-of events), ≤ 1.2 MB a K.K. song and ≤ 12 MB for `kk/` (9.9 MB). `npm run audio:music -- <dir>` (`scripts/music.ts`,
-ffmpeg) builds the 24 tracks from the user's MP3s: finds the loop, appends the copy, encodes AAC 64 kbps, sets `gain`
-to −16 LUFS; `-- --extras <dir>` does the same for the event loops (the wasps' chase too: a 10.3 s loop) and trims the
-one-shots (Happy New Year!, Stung by Bees, K.K.'s songs) by the OST titles. Audio is never precached
-([backend.md](backend.md#service-worker)); `music/` and `kk/` share the runtime cache's three-file LRU.
+gain?}`, `opening`, `ambient.<id>`, `events.<id>` (the same shape) and `kk[]`. Add a file and its entry, no code change;
+a missing effect keeps its placeholder, missing ambience its procedural bed, missing music is silence. `sound.test.ts`:
+files exist and are named, ≤ 1 MB a looped track, ≤ 20 MB for `music/`, ≤ 1.2 MB a K.K. song, ≤ 12 MB for `kk/`. `npm
+run audio:music -- <dir>` (`scripts/music.ts`, ffmpeg) builds the hours from the user's MP3s (finds the loop, appends the
+copy, AAC 64 kbps, `gain` to −16 LUFS); `-- --extras <dir>` does the event loops and one-shots. Audio is never
+precached ([backend.md](backend.md#service-worker)).
 
 ### Sound settings
 
-The panel's サウンド: **ミュージック** (music, ambience), **効果音** (effects, jingles), **音量** 0–10; both off at
-first; turning one on previews it. 音量 0 mutes in place. In localStorage (`island.sound`), never
-synced.
+The panel's サウンド: **ミュージック** (music, ambience), **効果音** (effects, jingles), **音量** 0–10; both off at first;
+turning one on previews it. In localStorage (`island.sound`), never synced.
