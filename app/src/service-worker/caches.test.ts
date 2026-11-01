@@ -49,6 +49,11 @@ describe('precache', () => {
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
     for (const p of ['icons/icon-192.png', 'icons/apple-touch-icon-180.png', '/fitness/icons/icon-512.webp']) expect(precachable(p)).toBe(false);
   });
+  it('leaves the world’s winter and night looks and its decor out: cached on first use', () => {
+    for (const p of ['art/deco/resident-services-winter.webp', 'art/trees/cedar-winter.webp', 'art/deco/airport-lit.webp', 'art/deco/lamp-glow.webp',
+      'art/deco/fence-bamboo.webp', 'art/deco/garden-lantern-white.webp', 'art/trees/bamboo.webp', 'art/flowers/purple-windflowers.webp']) expect(precachable(p)).toBe(false);
+    for (const p of ['art/deco/resident-services.webp', 'art/trees/cedar.webp', 'art/flowers/red-tulips.webp', 'art/flowers/pink-cosmos.webp']) expect(precachable(p)).toBe(true);
+  });
   it('keeps the shell, the default villagers and the scene art', () => {
     for (const p of ['_app/immutable/entry/app.js', 'art/fruit/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
       expect(precachable(p)).toBe(true);

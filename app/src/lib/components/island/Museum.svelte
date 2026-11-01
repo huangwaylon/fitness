@@ -68,13 +68,8 @@
   <button type="button" class="museum" data-scenery disabled={!live} data-sfx="self" aria-label={t('museum.label')} onclick={tap}
     style:width={u(W)} style:height={u(M.h)}>
     <span class="art" bind:this={art}>
-      <OfficialArt key={M.key} width={u(W)} />
-      {#if snow}
-        <!-- snow on the roof's two slopes, in the icon's own units (293 × 214) -->
-        <svg class="snow" viewBox="0 0 293 214" aria-hidden="true" data-roof-snow>
-          <path d="M0 80 L146 1 L293 80 Q291 88 282 85 Q274 92 265 85 Q258 86 252 80 L146 20 L40 80 Q35 87 27 85 Q18 92 10 85 Q2 88 0 80 Z" />
-        </svg>
-      {/if}
+      <!-- winter: the snowy roof derived from the render (scripts/derive-art.ts) -->
+      <span class="look" data-roof-snow={snow || undefined}><OfficialArt key={snow ? 'deco/museum-icon-winter' : M.key} width={u(W)} /></span>
     </span>
   </button>
 </div>
@@ -90,5 +85,5 @@
   .art { position: relative; display: block; transform-origin: 50% 100%; }
   .museum:active .art { transform: scale(.97, .98); }
   .art :global(.official) { max-width: none; }
-  .snow { position: absolute; inset: 0; width: 100%; height: auto; fill: #FAFCFF; filter: drop-shadow(0 1.5px 0 #C9D6E6); pointer-events: none; }
+  .look { display: block; line-height: 0; }
 </style>

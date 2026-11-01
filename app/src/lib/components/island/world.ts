@@ -144,7 +144,7 @@ export const CAKE: Pt = [195, 860];
 
 // ---- the scenery (still sprites: trees, bushes, props) ----------------------------------------------------------------
 
-type SceneryKind = 'oak' | 'cedar' | 'palm' | 'bush' | 'prop' | 'fence';
+type SceneryKind = 'oak' | 'cedar' | 'palm' | 'bamboo' | 'bush' | 'rock' | 'prop' | 'fence';
 export interface Scenery {
   id: string;
   kind: SceneryKind;
@@ -179,7 +179,30 @@ export const SCENERY: readonly Scenery[] = [
   s('camp-sign', 'prop', 'deco/campsite-sign', 82, 1930, 30),
   s('cedar-t1', 'cedar', 'trees/cedar', 30, 2040, 150), s('cedar-t2', 'cedar', 'trees/cedar', 250, 2030, 150),
   s('cedar-t3', 'cedar', 'trees/cedar', 310, 1950, 140), s('cedar-t4', 'cedar', 'trees/cedar', 196, 2100, 140),
-  s('palm-4', 'palm', 'trees/palm', 340, 2130, 120)
+  s('palm-4', 'palm', 'trees/palm', 340, 2130, 120),
+  // NH's decor (scripts/fetch-assets.ts). Streetlamps at the stone bridge's front corners; meadow flowers in three-
+  // flower clumps (`meadow-<i>`, the season's species: scene.ts MEADOW); a wooden fence behind the west clump; garden
+  // rocks; the month's bushes either side of the path to the plaza (`month-bush-a|b`: scene.ts hedgePair)
+  s('lamp-b1', 'prop', 'deco/streetlamp', 166, 598, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 224, 598, 46),
+  s('meadow-0', 'prop', 'meadow-0', -2, 356, 22), s('meadow-1', 'prop', 'meadow-1', 12, 368, 20), s('meadow-2', 'prop', 'meadow-2', 0, 382, 22),
+  s('meadow-3', 'prop', 'meadow-3', 384, 350, 22), s('meadow-4', 'prop', 'meadow-4', 372, 364, 20), s('meadow-5', 'prop', 'meadow-5', 388, 378, 22, true),
+  s('fence-w1', 'fence', 'deco/fence-wooden', 10, 398, 20), s('fence-w2', 'fence', 'deco/fence-wooden', 41, 398, 20),
+  s('rock-g1', 'rock', 'deco/garden-rock', -2, 252, 20),
+  s('bush-m1', 'bush', 'month-bush-a', 150, 700, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 700, 34),
+  s('rock-m1', 'rock', 'deco/flat-rock', 98, 800, 12),
+  s('meadow-6', 'prop', 'meadow-6', 24, 880, 22), s('meadow-7', 'prop', 'meadow-7', 38, 894, 20), s('meadow-8', 'prop', 'meadow-8', 20, 906, 22, true),
+  // おく: a bamboo grove behind its lattice fence between Able Sisters and the museum; garden lanterns on the museum's
+  // path and at the stairs' foot; a tall rock at the cliff's foot
+  s('fence-b1', 'fence', 'deco/fence-bamboo', 280, 1440, 22), s('fence-b2', 'fence', 'deco/fence-bamboo', 304, 1440, 22), s('fence-b3', 'fence', 'deco/fence-bamboo', 328, 1440, 22),
+  s('bamboo-1', 'bamboo', 'trees/bamboo', 276, 1470, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 318, 1462, 72, true),
+  s('bamboo-3', 'bamboo', 'trees/bamboo', 296, 1506, 70, true), s('bamboo-4', 'bamboo', 'trees/bamboo', 336, 1500, 64),
+  s('lantern-1', 'prop', 'deco/garden-lantern', 240, 1420, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 250, 1514, 24),
+  s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1786, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1786, 24),
+  s('rock-t1', 'rock', 'deco/tall-rock', 150, 1784, 30),
+  // tier 2: a corral fence behind the campsite's west side, meadow flowers east of it, a flat rock by the spring
+  s('fence-c1', 'fence', 'deco/fence-corral', 64, 2080, 22), s('fence-c2', 'fence', 'deco/fence-corral', 91, 2080, 22), s('fence-c3', 'fence', 'deco/fence-corral', 118, 2080, 22),
+  s('meadow-9', 'prop', 'meadow-9', 232, 1902, 22), s('meadow-10', 'prop', 'meadow-10', 246, 1914, 20), s('meadow-11', 'prop', 'meadow-11', 226, 1922, 22, true),
+  s('rock-f1', 'rock', 'deco/flat-rock', 330, 2040, 12)
 ];
 
 // ---- geometry helpers -----------------------------------------------------------------------------------------------

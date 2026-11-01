@@ -61,6 +61,8 @@ function staticObstacles(): Box[] {
   for (const s of SCENERY) {
     if (s.kind === 'oak' || s.kind === 'cedar') out.push(box(s.x, s.z, 12, 6, 6));
     else if (s.kind === 'palm') out.push(box(s.x, s.z, 8, 5, 5));
+    else if (s.kind === 'bamboo') out.push(box(s.x, s.z, 7, 4, 4));
+    else if (s.kind === 'rock') out.push(box(s.x, s.z, 10, 5, 5));
     else if (s.kind === 'bush') out.push(box(s.x, s.z, 16, 7, 7));
     else if (s.kind === 'fence') out.push(box(s.x, s.z, 22, 3, 3));
     else out.push(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4));

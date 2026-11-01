@@ -47,6 +47,39 @@ export function hedgePair(month: number): [BushId, BushId] {
   return ['pink-camellia', 'red-camellia'];
 }
 
+/** The meadow's clumps (world.ts `meadow-<i>`): NH flowers growing wild, the season's species in turn (NH's flowers
+ *  bloom on under the snow, so winter keeps its pansies and windflowers). */
+export const MEADOW: Record<Season, readonly string[]> = {
+  spring: ['flowers/pink-hyacinths', 'flowers/white-tulips', 'flowers/purple-hyacinths', 'flowers/pink-tulips', 'flowers/white-hyacinths'],
+  summer: ['flowers/white-lilies', 'flowers/orange-lilies', 'flowers/pink-lilies', 'flowers/yellow-lilies'],
+  autumn: ['flowers/white-cosmos', 'flowers/yellow-mums', 'flowers/red-cosmos', 'flowers/white-mums', 'flowers/yellow-cosmos', 'flowers/red-mums'],
+  winter: ['flowers/white-pansies', 'flowers/red-windflowers', 'flowers/yellow-pansies', 'flowers/purple-windflowers', 'flowers/red-pansies', 'flowers/white-windflowers']
+};
+/** NH has no snowy renders of the cedar and the buildings: scripts/derive-art.ts derives these from them. */
+const WINTER_ART: Record<string, string> = {
+  'trees/cedar': 'trees/cedar-winter', 'deco/resident-services': 'deco/resident-services-winter', 'deco/nooks-cranny': 'deco/nooks-cranny-winter',
+  'deco/able-sisters': 'deco/able-sisters-winter', 'deco/museum-icon': 'deco/museum-icon-winter', 'deco/campsite': 'deco/campsite-winter', 'deco/airport': 'deco/airport-winter'
+};
+/** A scenery key resolved for the day: a meadow clump's flower, the month's bushes (`month-bush-a|b`: hedgePair), the
+ *  winter look of a cedar or a building. */
+export function sceneryKey(key: string, season: Season, month: number): string {
+  const m = /^meadow-(\d+)$/.exec(key);
+  if (m) {
+    const list = MEADOW[season], i = Number(m[1]);
+    return list[(i * 2 + (i >> 1)) % list.length];
+  }
+  if (key === 'month-bush-a' || key === 'month-bush-b') return `bushes/${hedgePair(month)[key.endsWith('a') ? 0 : 1]}`;
+  return (season === 'winter' && WINTER_ART[key]) || key;
+}
+/** A building's lit windows at dusk and night (scripts/derive-art.ts derives them from its render; laid over it above the
+ *  time-of-day tint). */
+export const LIT_ART: Record<string, string> = {
+  'deco/resident-services': 'deco/resident-services-lit', 'deco/nooks-cranny': 'deco/nooks-cranny-lit', 'deco/able-sisters': 'deco/able-sisters-lit',
+  'deco/museum-icon': 'deco/museum-icon-lit', 'deco/campsite': 'deco/campsite-lit', 'deco/airport': 'deco/airport-lit'
+};
+/** The lamps that glow at night (deco/lamp-glow), and where the light hangs: a share of the lamp's height. */
+export const GLOW_AT: Record<string, number> = { 'deco/streetlamp': 0.9, 'deco/banner-lamp': 0.88, 'deco/garden-lantern': 0.62, 'deco/garden-lantern-white': 0.62 };
+
 /** Flower beds: two tidy 2 × 2 beds beside the villagers' homes, one flower per tile, the back row one species and
  *  the front row another, as NH players plan a bed. NH flowers keep blooming under snow, so winter keeps roses and
  *  pansies, on snow mounds. A flower ≈ 0.4 × a villager. */
