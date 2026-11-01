@@ -45,7 +45,7 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { BEDS, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
-  import { BUILDINGS, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, PLAN, surfaceAt, type BuildingId } from './world.ts';
+  import { BUILDINGS, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, PLAN, SHORE_Z, surfaceAt, type BuildingId } from './world.ts';
   import { fitted, nearest, restFor, sectionFor, solveCam } from './sections.ts';
   import { WILBUR_AT, doorAt, doorLine, wilburShows, type DoorOpens } from './buildings.ts';
   import { Follow, RING_MS, stepCue } from './tapWalk.ts';
@@ -297,7 +297,7 @@
     world.view.camZ = CAMS.mae;
     const foot = world.worldAt(world.view.vw / 2, world.view.vh)?.z ?? -100;
     world.view.camZ = keepCam;
-    camMin = Math.round(Math.min(CAMS.mae, CAMS.mae - (foot + 70)));
+    camMin = Math.round(Math.min(CAMS.mae, CAMS.mae - (foot - SHORE_Z + 66)));
     // おく: up the island until the campsite's top clears the HUD (CLEAR px under it), as far as the plan reaches
     hudBottom = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - world.view.top);
     const camp = BUILDINGS.find((b) => b.id === 'campsite')!;

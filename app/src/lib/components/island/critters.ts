@@ -8,7 +8,7 @@ import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
-  BEACH_BOX, BED_XS, BED_ZS, BRIDGES, CLIFF, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SPRING, TREE_H, freshWhere, inOval,
+  BEACH_BOX, BED_XS, BED_ZS, BRIDGES, CLIFF, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
   riverNS, riverNear, type FreshWhere
 } from './world.ts';
 
@@ -395,7 +395,7 @@ export interface Swim { cx: number; cz: number; ux: number; uz: number; L: numbe
 export const swimAt = (a: Swim, s: number, t: number): { x: number; z: number } => ({ x: a.cx + a.ux * s * a.L - a.uz * t * a.W, z: a.cz + a.uz * s * a.L + a.ux * t * a.W });
 
 /** The sea's fishing water: SEA_BOX, reaching in to just past the foam (from まえ only its near strip is on screen). */
-export const SEA_SWIM: Swim = { cx: (SEA_BOX.x0 + SEA_BOX.x1) / 2, cz: (SEA_BOX.z0 - 16) / 2, ux: 1, uz: 0, L: (SEA_BOX.x1 - SEA_BOX.x0) / 2, W: (-16 - SEA_BOX.z0) / 2 };
+export const SEA_SWIM: Swim = { cx: (SEA_BOX.x0 + SEA_BOX.x1) / 2, cz: (SEA_BOX.z0 + SHORE_Z - 16) / 2, ux: 1, uz: 0, L: (SEA_BOX.x1 - SEA_BOX.x0) / 2, W: (SHORE_Z - 16 - SEA_BOX.z0) / 2 };
 
 /** Patches along the river's centreline from RIVER[i0] to RIVER[i1], one every `step` u, each a reach's stretch. */
 function reaches(i0: number, i1: number, step: number, keep: (x: number, z: number) => boolean): Swim[] {

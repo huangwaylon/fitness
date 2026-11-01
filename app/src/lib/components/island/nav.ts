@@ -14,7 +14,7 @@
 import type { Box } from './geom.ts';
 import {
   BED_XS, BED_ZS, BRIDGES, BUILDINGS, CENTRE_STAGE, CLIFF, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
-  SCENERY, SPRING, TAPE_DECK, inOval, inRiver, onLand, type BuildingId, type Pt
+  SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onLand, type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -259,7 +259,7 @@ function namedNodes(): Record<string, Pt> {
     treeA: [tax + 34, taz - 6], treeB: [tbx - 34, tbz - 6], outA: [tax - 30, taz - 30], outB: [tbx + 30, tbz - 30],
     backA: [tax + 30, taz + 60], backB: [tbx - 30, tbz + 60],
     rock: [ROCK[0] + 24, ROCK[1] - 4],
-    shoreL: [96, 22], shoreC: [195, 20], shoreR: [270, 22],
+    shoreL: [96, SHORE_Z + 22], shoreC: [195, SHORE_Z + 20], shoreR: [270, SHORE_Z + 22],
     stoneS: [stone.x, stone.z0 - 12], stoneN: [stone.x, stone.z1 + 12], logS: [log.x, log.z0 - 12], logN: [log.x, log.z1 + 12],
     stairS: [(CLIFF.stair[0] + CLIFF.stair[1]) / 2, CLIFF.z0 - 14], stairN: [(CLIFF.stair[0] + CLIFF.stair[1]) / 2, CLIFF.z1 + 14],
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],

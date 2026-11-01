@@ -10,7 +10,7 @@
 import type { Box } from './geom.ts';
 import {
   BED_XS, BED_ZS, BRIDGES, BUILDINGS, CENTRE_STAGE, CLIFF, DOCK, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, POND, ROCK,
-  SCENERY, SPRING, TAPE_DECK, inOval, inRiver, onLand, type Pt
+  SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onLand, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -43,7 +43,7 @@ export interface WalkExtra {
 
 const PAD = 8;
 const CELL = 4;
-const GX0 = -60, GX1 = 452, GZ0 = -60, GZ1 = 2180;
+const GX0 = -60, GX1 = 452, GZ0 = -60, GZ1 = 2270;
 
 interface Grid { w: number; h: number; ok: Uint8Array }
 interface Vis { pts: Pt[]; names: string[]; adj: number[][] | null }
@@ -84,7 +84,7 @@ const onStairs = (x: number, z: number) => x >= CLIFF.stair[0] + 4 && x <= CLIFF
 /** The ground itself, before obstacles: land, off the water and the cliff face. */
 function ground(x: number, z: number): boolean {
   if (onBridge(x, z) || onStairs(x, z)) return true;
-  if (x >= DOCK.x0 && x <= DOCK.x1 && z >= DOCK.z0 && z < 6) return false;
+  if (x >= DOCK.x0 && x <= DOCK.x1 && z >= DOCK.z0 && z < DOCK.z1 - 4) return false;
   if (!onLand(x, z)) return false;
   if (z >= CLIFF.z0 - 6 && z <= CLIFF.z1 + 4 && x >= CLIFF.x0 - 20 && x <= CLIFF.x1 + 20) return false;
   if (inOval(POND, x, z, 4) || inOval(SPRING, x, z, 4)) return false;
@@ -126,7 +126,7 @@ function namedNodes(): Record<string, Pt> {
     treeA: [tax + 34, taz - 6], treeB: [tbx - 34, tbz - 6], outA: [tax - 30, taz - 30], outB: [tbx + 30, tbz - 30],
     backA: [tax + 30, taz + 60], backB: [tbx - 30, tbz + 60],
     rock: [ROCK[0] + 24, ROCK[1] - 4],
-    shoreL: [96, 22], shoreC: [195, 20], shoreR: [270, 22],
+    shoreL: [96, SHORE_Z + 22], shoreC: [195, SHORE_Z + 20], shoreR: [270, SHORE_Z + 22],
     stoneS: [195, BRIDGES[0].z0 - 12], stoneN: [195, BRIDGES[0].z1 + 12], logS: [296, BRIDGES[1].z0 - 12], logN: [296, BRIDGES[1].z1 + 12],
     stairS: [60, CLIFF.z0 - 14], stairN: [60, CLIFF.z1 + 14],
     centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],

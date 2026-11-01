@@ -232,18 +232,19 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 `e2e/world.spec.ts`, `e2e/world-perf.spec.ts` (on demand: `WORLD_PERF=1`).
 
 - **Units:** world units (1u = 1 CSS px at 390 wide at the pivot); x across (0…390 is the screen at the pivot), z into
-  the island (0 = the front shoreline). The plan spans x −230…620, z −400…2500; the land x −40…430, z 0…2160 (a
-  130u corner radius), the front beach z 0…110, the side and back beaches 30u.
+  the island (the front shoreline is SHORE_Z −30). The plan spans x −230…620, z −460…2650; the land x −40…430, z
+  −30…2250 (a 130u corner radius), the front beach z −30…110 (140u: fishing and diving from it), the side and back
+  beaches 30u. The back zone is compact: the museum 1518, the cliff 1676…1720, the campsite 1830, a cedar forest
+  behind it and palms on the back beach.
 - **The rolling log** (`roll.ts`): θ = (z − camZ) / R on a cylinder seen at a 64° tilt with a mild perspective; R is
   set per screen so the horizon sits at 16% of the height and the pivot at 72%. `unproject` inverts it (Newton with a
   bisection fallback): a tap's world point, null in the sky.
 - **The camera** is a native vertical scroller (overscroll contained; a drag scrolls, a tap is a click) in three
-  **sections** (`sections.ts`, `e2e/sections.spec.ts`): **まえ** (the scroller's foot, where it opens: the sea, the
-  beach, the airport, the health lawn), **ひろば** (the plaza, Resident Services, the pond, the river) and **おく**
+  **sections** (`sections.ts`, `e2e/sections.spec.ts`): **まえ** (the scroller's foot, where it opens: the sea with its
+  fish shadows, the wide beach, the airport, the health lawn), **ひろば** (the plaza, Resident Services, the pond, the river) and **おく**
   (Nook's Cranny, Able Sisters, the museum, the cliff, the waterfall, the campsite). The stops are world.ts's CAMS
-  (150, 860, 1380) fitted to the screen: まえ lower on a short screen so the sea in front of the beach stays in view,
-  おく further back until the campsite's top is 16px under the HUD (as far as the plan reaches: 1,428 at 393 × 852, 1,424 at 402 × 874, 1,568 at 375 × 667;
-  the plaza stays 860). The camera rests only on a stop: mandatory snapping (`scroll-snap-type: y mandatory`, `scroll-snap-stop:
+  (114, 860, 1440) fitted to the screen: まえ lower on a short screen so the sea in front of the beach stays in view,
+  おく further back until the campsite's top is 16px under the HUD (as far as the plan reaches). The camera rests only on a stop: mandatory snapping (`scroll-snap-type: y mandatory`, `scroll-snap-stop:
   always`), and one section a swipe, however hard the fling: a fling that carries past the next stop is caught there
   (one frame of `overflow: hidden` cuts the momentum, as iOS allows; Chrome's touch fling skipped the middle stop in
   spite of `scroll-snap-stop`). A stop is a whole-px scroll position and reads back as exactly its camZ. A
@@ -279,15 +280,15 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   mist), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
   or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u along the east
   reach and the crossing, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
-- **Layout** (`world.ts`): まえ: the airport at (362, 22) with its dock, palms on the sand, plumeria at the grass edge,
+- **Layout** (`world.ts`): まえ: the airport at (362, −8) with its dock, palms on the sand, plumeria at the grass edge,
   the villagers' homes A (132, 214) and B (262, 214), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
   332), the tape deck between them, the rock, the dig spots, the hedge along the river at z 596. The river rises at the
   spring on the upper tier, falls through the cliff (x 351…393), meanders gently down the east side (its width
   breathing, 28–36u) and west across the island at
   z ≈ 640 to its mouth on the west beach, crossed by a stone bridge (x 195) and a log bridge (x 296). ひろば: the plaza
   (195, 900), the banner lamps, the bench, Resident Services (195, 1068), the bulletin board, the pond (44, 772). おく:
-  Nook's Cranny (100, 1338), Able Sisters (282, 1338), the museum (190, 1648), the cliff (z 1806…1850) with its stairs
-  (x 36…84) and log fence, the campsite (150, 1960). All the buildings are NH's map icons (one render family).
+  Nook's Cranny (100, 1338), Able Sisters (282, 1338), the museum (190, 1518), the cliff (z 1676…1720) with its stairs
+  (x 36…84) and log fence, the campsite (150, 1830). All the buildings are NH's map icons (one render family).
   **Decor** (NH's catalog icons, `fetch-assets.ts`): streetlamps at the stone bridge, meadow flowers in three-flower
   clumps (`meadow-<i>`, the season's species: `scene.ts` MEADOW, NH's flowers blooming on under the snow), a simple
   wooden fence, garden rocks, the month's bushes either side of the path to the plaza, a bamboo grove (NH's bamboo)

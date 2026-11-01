@@ -25,7 +25,7 @@ async function choose(page: Page, choice: ReturnType<Page['locator']>) {
   const r = (await choice.boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
 }
-/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+/** The camera to a world z (114 まえ, 860 ひろば), settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
   // (again until it holds: the scene may still re-fit its camera as it settles in)
@@ -110,7 +110,7 @@ test('K.K. with the music off just introduces himself', async ({ page }) => {
 for (const [w, h] of [[390, 844], [320, 568]] as const)
   test(`visitors stand where NH puts them (Daisy Mae on the front lawn, Gulliver on the beach, Wisp at centre stage) clear of every control; the first tap is an introduction (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
-    const at = { 'daisy-mae': [150, 206, 396], wisp: [860, 195, 900], gulliver: [150, 96, 30] } as const;
+    const at = { 'daisy-mae': [114, 206, 396], wisp: [860, 195, 900], gulliver: [114, 96, 30] } as const;
     for (const [q, id, name] of [['2026-11-01T08:00&critter=none', 'daisy-mae', 'ウリ'], ['2026-11-04T22:00&visitor=wisp&critter=none', 'wisp', 'ゆうたろう'], ['2026-11-04T12:00&visitor=gulliver&critter=none', 'gulliver', 'ジョニー']] as const) {
       await page.goto(`?demo&date=${q}`);
       await expect(ribbon(page)).toBeVisible();
@@ -144,7 +144,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 test('out of view, a visitor takes no tap: K.K. at centre stage seen from まえ', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await camera(page, 150);
+  await camera(page, 114);
   // his feet: a speck sunk at the horizon (the ribbon stands over his head); a tap there just below the horizon
   const [x, y] = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 900));
   expect(y).toBeLessThan(200);

@@ -5,7 +5,7 @@
 // caption, an icon and (the first time) a ずかん `find`, never ベル.
 import { pickOne, shuffle, weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS } from './world.ts';
+import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z } from './world.ts';
 
 // ---------- catalogs (official NH items; art in static/art/finds/, names under beach.name.<id>) ----------
 
@@ -79,7 +79,7 @@ export function zodiacOf(date: string): string {
 /** The front beach between the grass and the foam (shells, the bottle, fragments). */
 export const BEACH = { x0: BEACH_BOX.x0, x1: BEACH_BOX.x1, y0: BEACH_BOX.z0 + 8, y1: BEACH_BOX.z1 } as const;
 /** The water's edge (the bottle lies half in the foam). */
-const EDGE_Z = 3;
+const EDGE_Z = SHORE_Z + 3;
 /** The least gap (u) between two things lying on the front beach (shells, fragments, the bottle): about two of them
  *  side by side, so they never clump or touch. */
 export const BEACH_GAP = 34;

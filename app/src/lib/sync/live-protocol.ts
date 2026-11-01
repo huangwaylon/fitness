@@ -17,7 +17,7 @@ export const MAX_BYTES = 256;
  * Here because the Worker bundles this file alone (and sync/ may not import components/).
  */
 export const WORLD_X = [-230, 620] as const;
-export const WORLD_Z = [-400, 2500] as const;
+export const WORLD_Z = [-460, 2650] as const;
 
 export type Who = 'A' | 'B';
 
