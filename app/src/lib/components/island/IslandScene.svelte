@@ -1,6 +1,6 @@
 <script lang="ts">
   // The island (docs/design.md "World"): NH's rolling-log island in 2D DOM. A native vertical scroller is the camera
-  // (its scrollTop → camZ, camera.svelte.ts; overscroll contained), with three proximity snaps: まえ (home: the health
+  // (its scrollTop → camZ, camera.svelte.ts; overscroll contained), in three sections it always rests on (sections.ts: mandatory snaps, one a swipe): まえ (home: the health
   // lawn, the beach, the airport), ひろば (the plaza, Resident Services, the pond) and おく (the shops, the museum, the
   // cliff and the campsite). The ground is baked raster chunks bent onto the log by 40 bands (WorldGround), the live
   // water on top (WorldWater); every upright thing is a world node at its feet, placed by one projector in one depth
@@ -45,7 +45,8 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { BEDS, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
-  import { CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, surfaceAt, type BuildingId } from './world.ts';
+  import { BUILDINGS, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, PLAN, surfaceAt, type BuildingId } from './world.ts';
+  import { fitted, nearest, restFor, sectionFor, solveCam } from './sections.ts';
   import { WILBUR_AT, doorAt, doorLine, wilburShows, type DoorOpens } from './buildings.ts';
   import { Follow, RING_MS, stepCue } from './tapWalk.ts';
   import { nav } from './nav.ts';
@@ -55,7 +56,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { visitorNow } from './visitors.ts';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
-  import { camAt, scrollFor } from './roll.ts';
+  import { camAt, horizonAhead, scrollFor } from './roll.ts';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { HYBRIDS, hybridFor } from './care.ts';
@@ -238,7 +239,11 @@
   /** まえ, the scroller's bottom: camZ 150 (world.ts CAMS), lower on a short screen so the sea in front of the beach (its
    *  fishing and diving) stays in view: the screen's foot at least at z −70. */
   let camMin = $state<number>(CAM_MIN);
-  const trackH = $derived(vh + (CAM_MAX - camMin) * s);
+  /** おく, the scroller's top: camZ 1380 (world.ts CAMS), further back on a screen whose HUD would cover the campsite. */
+  let camMax = $state<number>(CAM_MAX);
+  const trackH = $derived(vh + (camMax - camMin) * s);
+  /** The three sections' stops for this screen (sections.ts): the camera rests on one, never between. */
+  const secs = $derived(fitted(camMin, camMax));
 
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
@@ -293,6 +298,13 @@
     const foot = world.worldAt(world.view.vw / 2, world.view.vh)?.z ?? -100;
     world.view.camZ = keepCam;
     camMin = Math.round(Math.min(CAMS.mae, CAMS.mae - (foot + 70)));
+    // おく: up the island until the campsite's top clears the HUD (CLEAR px under it), as far as the plan reaches
+    hudBottom = Math.max(0, (document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0) - world.view.top);
+    const camp = BUILDINGS.find((b) => b.id === 'campsite')!;
+    const topAt = (cam: number) => ((world.view.camZ = cam), world.screenAt(camp.x, camp.z, camp.h).sy);
+    const far = Math.max(CAMS.oku, PLAN.z1 - horizonAhead(world.P) - 40);
+    camMax = Math.round(solveCam(topAt, hudBottom + CLEAR, CAMS.oku, far));
+    world.view.camZ = keepCam;
     vh = world.view.vh;
     s = world.view.s;
     horizonPx = world.view.horizon;
@@ -336,43 +348,103 @@
   // ---- camera follow (tapWalk.ts): while my villager runs somewhere the camera can't see, the scroller eases after it ----
   /** The top chrome's bottom edge (px): the follow band starts 80px under it. */
   let hudBottom = 0;
+  /** How far under the HUD the back stop keeps the campsite's top (px). */
+  const CLEAR = 16;
+  const camView = () => ({ P: world.P, pivot: world.view.pivot, vh: world.view.vh, s: world.view.s, hudBottom });
   const follow = new Follow({
     cam: () => world.view.camZ,
-    range: () => [camMin, CAM_MAX],
-    view: () => ({ P: world.P, pivot: world.view.pivot, vh: world.view.vh, s: world.view.s, hudBottom }),
-    moveTo: (z) => scroller && (scroller.scrollTop = scrollFor(z, CAM_MAX, world.view.s)),
-    snap: (on) => scroller && (!on || (!pinned && !held)) && (scroller.style.scrollSnapType = on ? '' : 'none'),
+    range: () => [camMin, camMax],
+    view: camView,
+    moveTo: (z) => scroller && (scroller.scrollTop = scrollFor(z, camMax, world.view.s)),
+    snap: (on, land) => {
+      if (!scroller) return;
+      if (!on) return void (scroller.style.scrollSnapType = 'none');
+      if (pinned || held) return;
+      // after an arrival: ease onto the section that frames the walker; after a touch the finger has it (snapping on)
+      if (land) landOn(restFor(camView(), secs, world.view.camZ, livePos('mine')[1]).z);
+      else scroller.style.scrollSnapType = '';
+    },
     kick: () => world.kick()
   });
+  // ---- the sections: mandatory snapping (one stop a swipe); a programmatic move lands on a stop with snapping off,
+  // then hands it back ----
+  let landing: number | null = null;
+  let landTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Ease the camera onto a stop, snapping off meanwhile (a mandatory snap would cut the ease short), back on there. */
+  function landOn(z: number) {
+    if (!scroller) return;
+    scroller.style.scrollSnapType = 'none';
+    landing = z;
+    clearTimeout(landTimer);
+    // the ease's end comes as a settled scroll (onScroll); this is the backstop when nothing scrolls at all
+    landTimer = setTimeout(landed, 900);
+    scroller.scrollTo({ top: stopPx(z), behavior: 'smooth' });
+  }
+  /** A stop's scroll position, whole px (the scroller rests on whole px: a stop is then exactly its camZ). */
+  const stopPx = (z: number) => Math.round(scrollFor(z, camMax, s));
+  /** The camera for a scroll position: a stop's own camZ within a px of it (no rounding drift on a stop), else the
+   *  projection's. */
+  function camOf(top: number): number {
+    for (const q of secs) if (Math.abs(top - stopPx(q.z)) < 0.75) return q.z;
+    return camAt(top, camMin, camMax, world.view.s);
+  }
+  /** One section a swipe: the stop the gesture started from (a touch, or the first wheel tick after a rest). A fling
+   *  that carries past the next stop is caught there (momentum cut by a frame of overflow: hidden, the way iOS allows),
+   *  whatever the engine makes of scroll-snap-stop. */
+  let from: number | null = null;
+  function catchFling() {
+    if (!scroller || from === null || landing !== null || follow.active || pinned || held) return;
+    const cam = camOf(scroller.scrollTop);
+    const lo = secs[Math.max(0, from - 1)].z, hi = secs[Math.min(secs.length - 1, from + 1)].z;
+    if (cam <= hi + 2 && cam >= lo - 2) return;
+    const z = cam > hi ? hi : lo, el = scroller;
+    from = secs.findIndex((q) => q.z === z);
+    el.style.overflowY = 'hidden';
+    el.scrollTop = stopPx(z);
+    requestAnimationFrame(() => (el.style.overflowY = ''));
+  }
+  function landed() {
+    clearTimeout(landTimer);
+    if (landing === null) return;
+    landing = null;
+    if (scroller && !pinned && !held) scroller.style.scrollSnapType = '';
+  }
   function onScroll() {
     world.kick();
+    catchFling();
     clearTimeout(settle);
     if (!follow.active) talk?.hold(true);
     settle = setTimeout(() => {
       world.rest.z = Math.round(world.view.camZ);
       talk?.hold(false);
+      if (landing !== null && Math.abs(world.view.camZ - landing) < 1) landed();
+      from = null;
     }, 160);
   }
-  /** Ease the camera to a world z (a stop, or what was tapped far off). */
+  /** Ease the camera to a world z (held there: a popup's room; e2e). */
   export function goTo(z: number, smooth = true) {
-    scroller?.scrollTo({ top: scrollFor(Math.min(CAM_MAX, Math.max(camMin, z)), CAM_MAX, s), behavior: smooth ? 'smooth' : 'instant' });
+    scroller?.scrollTo({ top: scrollFor(Math.min(camMax, Math.max(camMin, z)), camMax, s), behavior: smooth ? 'smooth' : 'instant' });
   }
   onMount(() => {
     if (!scroller) return;
     measure();
     world.onTick(() => {
       const chasing = live && follow.step(livePos('mine')[1], inMotion('mine'));
-      if (scroller) world.view.camZ = live ? camAt(scroller.scrollTop, camMin, CAM_MAX, world.view.s) : camMin;
+      if (scroller) world.view.camZ = live ? camOf(scroller.scrollTop) : camMin;
       if (live) edgeCheck();
       return anyMoving() || chasing;
     });
-    hudBottom = document.querySelector('.ribbon-wrap')?.getBoundingClientRect().bottom ?? 0;
-    // any touch takes the camera back from the chase
-    const grab = () => follow.stop();
+    // any touch takes the camera back from the chase (or from an ease onto a stop)
+    const grab = (e: Event) => {
+      follow.stop(true);
+      landed();
+      // a new swipe counts from the stop it starts at (a wheel's from its first tick)
+      if (e.type === 'touchstart' || from === null) from = secs.indexOf(nearest(secs, world.view.camZ));
+    };
     scroller.addEventListener('touchstart', grab, { passive: true });
     scroller.addEventListener('wheel', grab, { passive: true });
     flushSync(); // the track's height for this screen, before scrolling to its foot
-    scroller.scrollTop = scrollFor(camMin, CAM_MAX, world.view.s);
+    scroller.scrollTop = scrollFor(camMin, camMax, world.view.s);
     world.view.camZ = camMin;
     world.rest.ready = true;
     if (live) {
@@ -385,7 +457,8 @@
       world.release = () => {
         if (!held || !scroller) return;
         held = false;
-        if (!pinned) scroller.style.scrollSnapType = '';
+        // back onto the nearest section
+        if (!pinned) landOn(nearest(secs, world.view.camZ).z);
       };
     }
     world.invalidate();
@@ -394,10 +467,12 @@
     const ro = new ResizeObserver(() => {
       // the first call is the observe itself (already measured)
       if (first) return void (first = false);
-      const keep = world.view.camZ;
+      // a new screen: the same section's stop, refitted (or the same camera when pinned or held)
+      const keep = world.view.camZ, was = nearest(secs, keep).id;
       measure();
       requestAnimationFrame(() => {
-        if (scroller && live) scroller.scrollTop = scrollFor(keep, CAM_MAX, world.view.s);
+        const z = pinned || held ? keep : (secs.find((q) => q.id === was)?.z ?? keep);
+        if (scroller && live) scroller.scrollTop = scrollFor(z, camMax, world.view.s);
         world.invalidate();
       });
     });
@@ -414,7 +489,9 @@
       /** Put my villager at a world point (e2e: the depth order). */
       put: (x: number, z: number) => (place('mine', x, z), world.kick()),
       /** My villager's feet now (e2e: tap-to-walk), whether the camera is following it, the snapping now. */
-      mine: () => livePos('mine'), following: () => follow.active, snapping: () => scroller?.style.scrollSnapType ?? ''
+      mine: () => livePos('mine'), following: () => follow.active, snapping: () => scroller?.style.scrollSnapType ?? '',
+      /** The sections' stops for this screen (e2e: a fling rests on one). */
+      stops: () => secs.map((q) => q.z)
     };
     return () => {
       offMove();
@@ -605,9 +682,10 @@
 
   <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
     <div class="track" style:height="{trackH}px">
-      <div class="snap" data-snap="oku" style:top="0"></div>
-      <div class="snap" data-snap="hiroba" style:top="{scrollFor(CAMS.hiroba, CAM_MAX, s)}px"></div>
-      <div class="snap end" data-snap="mae" style:bottom="0"></div>
+      {#each secs as q (q.id)}
+        <!-- a section's stop: the scroller rests only on these (mandatory, one a swipe) -->
+        <div class="snap" data-snap={q.id} style:top="{stopPx(q.z)}px"></div>
+      {/each}
       <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px">
         <WorldGround {season} {foliage} />
         <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
@@ -655,7 +733,7 @@
 
         {#if live && edge && partnerHere}
           <button type="button" class="edge {edge}" data-partner-edge={edge} data-sfx="tick" aria-label={t('island.toPartner', { name: sides.partner.person.villagerName })}
-            onclick={() => goTo(livePos('partner')[1])}>
+            onclick={() => landOn(sectionFor(camView(), secs, livePos('partner')[1]).z)}>
             <Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />
           </button>
         {/if}
@@ -703,13 +781,13 @@
   /* the camera: a native scroller (drag scrolls; a tap is a click), its document never scrolls */
   .scroller {
     position: absolute; inset: 0; z-index: var(--z-stage); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: y proximity; touch-action: pan-y;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: y mandatory; touch-action: pan-y;
   }
   .scroller::-webkit-scrollbar { display: none; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
-  .snap { position: absolute; left: 0; width: 1px; height: 1px; scroll-snap-align: start; pointer-events: none; }
-  .snap.end { scroll-snap-align: end; }
+  /* a stop: always (a fling never skips past a section) */
+  .snap { position: absolute; left: 0; width: 1px; height: 1px; scroll-snap-align: start; scroll-snap-stop: always; pointer-events: none; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   .stage {
     position: sticky; top: 0; width: 100%; overflow: hidden; container-type: inline-size; contain: layout paint;

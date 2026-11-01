@@ -237,10 +237,19 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 - **The rolling log** (`roll.ts`): θ = (z − camZ) / R on a cylinder seen at a 64° tilt with a mild perspective; R is
   set per screen so the horizon sits at 16% of the height and the pivot at 72%. `unproject` inverts it (Newton with a
   bisection fallback): a tap's world point, null in the sky.
-- **The camera** is a native vertical scroller (overscroll contained; a drag scrolls, a tap is a click) with three
-  proximity stops: **まえ** camZ 150 (the scroller's foot: the sea, the beach, the airport, the health lawn; lower on a
-  short screen so the sea in front of the beach stays in view), **ひろば** 860 (the plaza, Resident Services, the pond,
-  the river) and **おく** 1380 (Nook's Cranny, Able Sisters, the museum, the cliff, the waterfall, the campsite above).
+- **The camera** is a native vertical scroller (overscroll contained; a drag scrolls, a tap is a click) in three
+  **sections** (`sections.ts`, `e2e/sections.spec.ts`): **まえ** (the scroller's foot, where it opens: the sea, the
+  beach, the airport, the health lawn), **ひろば** (the plaza, Resident Services, the pond, the river) and **おく**
+  (Nook's Cranny, Able Sisters, the museum, the cliff, the waterfall, the campsite). The stops are world.ts's CAMS
+  (150, 860, 1380) fitted to the screen: まえ lower on a short screen so the sea in front of the beach stays in view,
+  おく further back until the campsite's top is 16px under the HUD (as far as the plan reaches: 1,428 at 393 × 852, 1,424 at 402 × 874, 1,568 at 375 × 667;
+  the plaza stays 860). The camera rests only on a stop: mandatory snapping (`scroll-snap-type: y mandatory`, `scroll-snap-stop:
+  always`), and one section a swipe, however hard the fling: a fling that carries past the next stop is caught there
+  (one frame of `overflow: hidden` cuts the momentum, as iOS allows; Chrome's touch fling skipped the middle stop in
+  spite of `scroll-snap-stop`). A stop is a whole-px scroll position and reads back as exactly its camZ. A
+  programmatic move (the end of a follow, a popup letting the camera go, the partner's edge face) eases onto a stop
+  with snapping off and turns it back on there; a touch hands the camera to the finger at once. A resize keeps the
+  section. Nothing runs per frame for it (the scroll events do the checking).
 - **The projector** (`camera.svelte.ts` `World`): every upright thing is a node at its feet (`{@attach world.at(…)}`)
   placed by one tick: an upright billboard (translate + scale, faded near the horizon, sunk behind it), a flat mark
   (also squashed by the ground's foreshortening) or a ground quad (a matrix3d, like the bands). **One depth order**: the
@@ -737,7 +746,8 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 | `?wilbur` | Wilbur on the dock (as when the partner's app is open) |
 
 The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
-`at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`) for the e2e and the console.
+`at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`; `stops()`: the sections'
+camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 
 ## Motion
 
@@ -778,7 +788,9 @@ The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there a
 - **Camera follow** (`tapWalk.ts Follow`): when the runner or its destination is out of the band [HUD bottom + 80,
   vh − 90], or the tap was far round the log (θ > 35°, a tiny target near the horizon), the scroller eases (lerp 0.12
   a frame) toward the camera that keeps the runner in the band and leans as far toward the destination as that allows;
-  snapping is off meanwhile and back 300 ms after arrival; any touch takes the camera back. A tree's popup needing room above its canopy eases the camera up the island too, and lets go when it closes.
+  snapping is off meanwhile; 300 ms after arrival it eases onto the section that frames the walker (`restFor`) and
+  snapping is back; any touch takes the camera back. A tree's popup needing room above its canopy eases the camera up
+  the island too, and lets go (onto the nearest section) when it closes.
   The camera never moves for the partner or a visitor.
 - **Snappy actions:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't
   made: the villager turns to it. A building's door or a visitor across the island is a run instead. The outcome is

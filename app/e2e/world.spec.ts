@@ -60,13 +60,19 @@ test('the camera is the scroller: three stops, the sprites follow it, nothing ru
   await world(page);
   expect(await call(page, (w) => w.cam())).toBe(150); // まえ: the bottom of the scroller
   expect(await page.evaluate(() => document.scrollingElement!.scrollHeight <= innerHeight)).toBe(true);
-  const before = await page.locator('[data-tree-node]').first().evaluate((e) => (e as HTMLElement).style.transform);
+  /** The transforms of the scenery shown now, by id. */
+  const shown = () => page.locator('[data-scenery-id]').evaluateAll((els) =>
+    Object.fromEntries(els.filter((e) => (e as HTMLElement).style.visibility !== 'hidden').map((e) => [`${(e as HTMLElement).dataset.sceneryId}:${(e as HTMLElement).dataset.part}`, (e as HTMLElement).style.transform])));
+  const before = await shown();
   await page.locator('[data-world-scroller]').evaluate((e) => e.scrollBy(0, -400));
   await page.waitForTimeout(500);
+  // mandatory snapping: past half way to ひろば it goes on to it
   expect(await call(page, (w) => w.cam())).toBeGreaterThan(400);
-  expect(await page.locator('[data-tree-node]').first().evaluate((e) => (e as HTMLElement).style.transform)).not.toBe(before);
-  // proximity snapping settles on a stop (ひろば) or stays put; either way, once still, no frame is pending (polled: on
-  // a slow runner the snap's smooth scroll, or an ambient beat that sets a villager walking, can still be under way)
+  const after = await shown(), both = Object.keys(after).filter((k) => k in before);
+  expect(both.length).toBeGreaterThan(0);
+  expect(both.every((k) => after[k] !== before[k])).toBe(true);
+  // once still, no frame is pending (polled: on a slow runner the snap's smooth scroll, or an ambient beat that sets a
+  // villager walking, can still be under way)
   await expect.poll(() => call(page, (w) => w.idle()), { timeout: 10_000 }).toBe(true);
   for (const z of [860, 1380, 150]) {
     await call(page, (w, [z]) => w.go(z), [z]);

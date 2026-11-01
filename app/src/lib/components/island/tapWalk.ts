@@ -117,9 +117,10 @@ export class Follow {
     cam: () => number;
     range: () => [number, number];
     view: () => CamView;
-    /** Move the camera (the scroller's scrollTop) and turn its snapping off / back on. */
+    /** Move the camera (the scroller's scrollTop); turn its snapping off, or back on (`land`: after an arrival, ease
+     *  onto a section's stop first; a touch just hands the camera back to the finger). */
     moveTo: (camZ: number) => void;
-    snap: (on: boolean) => void;
+    snap: (on: boolean, land?: boolean) => void;
     /** Ask for frames (the World's kick). */
     kick: () => void;
   }) {}
@@ -152,12 +153,14 @@ export class Follow {
     return true;
   }
 
-  /** Arrival or a touch: the camera is the user's again; snapping comes back shortly. */
-  stop(): void {
+  /** Arrival (the camera eases onto a section SNAP_BACK_MS later) or a touch (`touch`: snapping is back at once, the
+   *  finger has the camera). */
+  stop(touch = false): void {
     if (this.dest === null) return;
     this.dest = null;
     clearTimeout(this.snapTimer);
-    this.snapTimer = setTimeout(() => this.io.snap(true), SNAP_BACK_MS);
+    if (touch) this.io.snap(true, false);
+    else this.snapTimer = setTimeout(() => this.io.snap(true, true), SNAP_BACK_MS);
   }
 
   dispose(): void {

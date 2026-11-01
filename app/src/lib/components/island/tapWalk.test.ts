@@ -113,10 +113,10 @@ describe('Follow (the lifecycle)', () => {
   afterEach(() => vi.useRealTimers());
 
   function rig(cam0 = CAMS.mae) {
-    const st = { cam: cam0 as number, snap: true, kicks: 0, moves: 0 };
+    const st = { cam: cam0 as number, snap: true, land: false, kicks: 0, moves: 0 };
     const f = new Follow({
       cam: () => st.cam, range: () => [CAMS.mae - 60, CAMS.oku], view: () => view(),
-      moveTo: (z) => ((st.cam = z), st.moves++), snap: (on) => (st.snap = on), kick: () => st.kicks++
+      moveTo: (z) => ((st.cam = z), st.moves++), snap: (on, land) => ((st.snap = on), (st.land = !!land)), kick: () => st.kicks++
     });
     return { f, st };
   }
@@ -143,18 +143,19 @@ describe('Follow (the lifecycle)', () => {
     expect(st.snap).toBe(false);
     vi.advanceTimersByTime(SNAP_BACK_MS);
     expect(st.snap).toBe(true);
+    expect(st.land).toBe(true); // it eases onto a section
   });
 
-  it('a touch stops it at once (the camera is the user’s)', () => {
+  it('a touch stops it at once (the camera is the user’s, snapping back at once, no landing of its own)', () => {
     const { f, st } = rig();
     f.start(214, 1300);
     f.step(220, true);
     const moves = st.moves;
-    f.stop();
+    f.stop(true);
+    expect(st.snap).toBe(true);
+    expect(st.land).toBe(false);
     expect(f.step(240, true)).toBe(false);
     expect(st.moves).toBe(moves);
-    vi.advanceTimersByTime(SNAP_BACK_MS);
-    expect(st.snap).toBe(true);
   });
 
   it('a far tap eases the camera even when the band would not ask', () => {
