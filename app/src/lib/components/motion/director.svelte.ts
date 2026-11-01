@@ -189,8 +189,8 @@ export function applyStep(id: ActorId, s: Step) {
 
 // Events play one at a time. A reaction that arrives while another event is still playing
 // waits in a short queue (≤ 3, no duplicates) and starts 400 ms after the current one ends. Direct
-// touch feedback (tapping a villager or the jar, waking a sleeper) never waits.
-const IMMEDIATE = new Set<ReactionId>(['R9', 'R10', 'R14', 'R18']);
+// touch feedback (tapping a villager, the high-five a tap on the partner starts, the jar, waking a sleeper) never waits.
+const IMMEDIATE = new Set<ReactionId>(['R4', 'R9', 'R14', 'R18']);
 const EVENT_GAP_MS = 400;
 const queue: { rid: ReactionId; swap: boolean }[] = [];
 let eventUntil = 0;

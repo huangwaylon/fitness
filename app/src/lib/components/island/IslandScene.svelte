@@ -7,7 +7,7 @@
   // order (nearer in front, ties by x; a tree's canopy hangs over its trunk). The sky, the HUD, the weather and the
   // fireworks stay fixed outside the curved layer. Nothing runs when still: a scroll frame, a walk (the one rAF while
   // someone is on the way) or a change places what moved.
-  //   <IslandScene {view} onpartner paused />
+  //   <IslandScene {view} onhighfive paused />
   // Layout contract (for the page): give it the whole page (--scene-h, e.g. 100dvh); --hud-bottom is the top chrome's
   // bottom edge. Read back --horizon-y (set on .if-scene) to place overlays in the sky.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
@@ -58,7 +58,7 @@
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion } from '../motion/director.svelte.ts';
+  import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
   import { approach, attachAvatar, partnerTo, presence, freeze, sendTo, snapHome, stayingAt, thaw, SNAP_HOME_MS } from './avatar.ts';
@@ -70,8 +70,8 @@
 
   interface Props {
     view: WeekView;
-    /** Partner villager tapped (open the partner sheet). */
-    onpartner?: () => void;
+    /** The high-five with the partner's villager (a tap on them): send it (the store, the banner, R4). */
+    onhighfive?: () => void;
     /** A sheet / overlay covers the scene: idle life and particles pause. */
     paused?: boolean;
     /** Interactive + idle life + reactions (false for gallery thumbnails). */
@@ -83,7 +83,7 @@
     tod?: Tod;
   }
   let {
-    view, onpartner, paused = false, live = true,
+    view, onhighfive, paused = false, live = true,
     season: seasonProp, foliage: foliageProp, tod: todProp
   }: Props = $props();
 
@@ -166,6 +166,24 @@
   let talk = $state<ReturnType<typeof Talk>>();
   /** The scenery taps (a tap on my villager may send a flea hopping off it). */
   let sceneTaps = $state<ReturnType<typeof SceneTaps>>();
+  // A tap on the partner is a high-five (NH's reaction, no card): mine walks up beside them (a step away, running if
+  // it's far), they wait (both woken if asleep), then both hop face to face with the sparkles (R4) and it's sent. One at
+  // a time: a tap while one is under way does nothing more.
+  let fiving = false;
+  function highFiveTap() {
+    if (!live || covered || fiving) return;
+    fiving = true;
+    cue('villager-tap');
+    for (const id of ['mine', 'partner'] as const) if (actors[id].asleep) wake(id);
+    const [px, pz] = livePos('partner');
+    if (actors.partner.walking) place('partner', px, pz);
+    const { ms } = approach(px, pz, { reach: [40, 56], long: true });
+    actors.partner.busyUntil = Math.max(actors.partner.busyUntil, Date.now() + ms + 2400);
+    life.later(() => {
+      fiving = false;
+      if (!covered) onhighfive?.();
+    }, ms + 120);
+  }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
   const today = $derived(dayKey(clock));
   // Birthdays (birthday.ts): ours from the people config (both villagers wear NH's birthday hat, the cake, the
@@ -560,8 +578,10 @@
                 ? t('island.me', { name: sd.person.villagerName, bells: formatBells(sd.person.today.bells) })
                 : t('island.highfive', { name: sd.person.villagerName })}
               onclick={(e) => {
-                if (id === 'mine') sceneTaps?.villagerTap(e.currentTarget);
-                life.tapVillager(id, id === 'mine' ? undefined : onpartner);
+                if (id === 'mine') {
+                  sceneTaps?.villagerTap(e.currentTarget);
+                  life.tapMine();
+                } else highFiveTap();
               }}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
                 actor={live ? id : undefined} side={sd.side} emoteSize="var(--emote-size)" shadow animate={live} tricked={id === 'mine' && tricked} hat={live ? hatOf(id, sd.person) : null} />
@@ -578,7 +598,7 @@
         {/if}
 
         {#if live && edge && partnerHere}
-          <button type="button" class="edge {edge}" data-partner-edge={edge} data-sfx="tick" aria-label={t('island.highfive', { name: sides.partner.person.villagerName })}
+          <button type="button" class="edge {edge}" data-partner-edge={edge} data-sfx="tick" aria-label={t('island.toPartner', { name: sides.partner.person.villagerName })}
             onclick={() => goTo(livePos('partner')[1])}>
             <Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />
           </button>

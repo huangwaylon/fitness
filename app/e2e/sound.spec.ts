@@ -173,19 +173,9 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   // まえ again (a locator's tap may scroll the island's sticky stage), and the partner home from any outing
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(0));
   await expect(page.locator('.if-scene button.vil').nth(1)).toBeVisible({ timeout: 15_000 });
-  await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
-  await expect(dlg).toHaveCount(1);
-  await step('なかま', '✕', () => dlg.locator('.navbar .close').tap(), ['back']);
-  await expect(dlg).toHaveCount(0);
-  await page.waitForTimeout(400);
-  await page.locator('.if-scene button.vil').nth(1).tap();
-  await expect(dlg).toHaveCount(1);
-  await page.waitForTimeout(300);
-  await step('なかま', 'Esc', () => page.keyboard.press('Escape'), ['back']);
-  await page.waitForTimeout(400);
-  await page.locator('.if-scene button.vil').nth(1).tap();
-  await expect(dlg).toHaveCount(1);
-  await step('なかま', 'ハイタッチ', () => btn(/ハイタッチ/, dlg).tap());
+  await step('島', 'partner villager (→ the high-five)', () => page.locator('.if-scene button.vil').nth(1).tap(), ['villager-tap']);
+  await expect(dlg).toHaveCount(0); // no card
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.includes('emote-joy')), { timeout: 6000 }).toBe(true);
   await page.waitForTimeout(2000);
 
   // the island panel (tap the ribbon)

@@ -110,12 +110,11 @@ export class IslandLife {
     this.#pending.add(t);
   };
 
-  /** A villager tapped: wake it or play its tap reaction, then `then` after the squish. */
-  tapVillager(id: 'mine' | 'partner', then?: () => void): void {
+  /** My villager tapped: wake it or play its squish (the partner's tap is the high-five, IslandScene). */
+  tapMine(): void {
     if (!this.#ctx.live) return;
-    if (actors[id].asleep) wake(id);
-    else react(id === 'mine' ? 'R9' : 'R10');
-    this.later(() => then?.(), 200);
+    if (actors.mine.asleep) wake('mine');
+    else react('R9');
   }
 
   #diff(p: WeekView, v: WeekView): void {

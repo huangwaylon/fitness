@@ -2,9 +2,9 @@
   // 島 Island: the scene full bleed under a light HUD: today's ベル ribbon at the top with the jar (the shared wallet)
   // beside it, the pair centred; the ribbon is the focal point and the door to everything else (tap → the island panel slides down: きろく, むらびと, settings, あそびかた).
   // The day needs zero taps (the Watch and the Shortcut fill the trees);
-  // ハイタッチ lives with the partner's villager (tap them → their villager card), as talking to a villager does in NH.
+  // ハイタッチ lives with the partner's villager: a tap on them and mine walks over for it (no card).
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
-  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → their card; my villager → a hop.
+  // news (the harvest). Tap the jar → the wallet (ごほうび); a tree → its popup; the partner → a high-five; my villager → a hop.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -13,7 +13,6 @@
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
   import HudJar from '#lib/components/island/HudJar.svelte';
-  import PartnerSheet from '#lib/components/sheets/PartnerSheet.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -24,7 +23,6 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { minuteNow } from '#lib/time/clock.ts';
 
-  let partnerOpen = $state(false);
   let panelOpen = $state(false);
 
   const view = $derived(week.view);
@@ -56,7 +54,7 @@
     return h.confirmedBy.includes(view.me) ? hostLine('harvest_waiting', { name: view.people[view.partner].villagerName }) : hostLine('harvest_ready');
   });
 
-  // The partner sheet has closed by now, so R4 plays in the scene behind it.
+  // A tap on the partner's villager, once mine stands beside them (IslandScene): send it, then both hop (R4).
   function sendHighFive() {
     if (!view) return;
     highFive();
@@ -91,16 +89,15 @@
          comes from the --z-* scale (tokens.css). -->
     <Hud bells={view.wallet.today} bind:panelOpen>
       {#snippet jar()}
-        <HudJar {view} covered={partnerOpen || panelOpen || ui.overlay} onjar={() => goto(resolve('/jar'))} {later} />
+        <HudJar {view} covered={panelOpen || ui.overlay} onjar={() => goto(resolve('/jar'))} {later} />
       {/snippet}
     </Hud>
     <div class="top">
-      <IslandScene {view} onpartner={() => (partnerOpen = true)} paused={partnerOpen || panelOpen} />
+      <IslandScene {view} onhighfive={sendHighFive} paused={panelOpen} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news"><Bubble text={news} host={false} /></div>{/if}
   </main>
-  <PartnerSheet bind:open={partnerOpen} onhighfive={sendHighFive} />
 {/if}
 
 <style>

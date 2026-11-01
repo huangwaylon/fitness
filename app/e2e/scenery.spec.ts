@@ -85,10 +85,9 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0);
 
-  // the partner opens their villager card (mine only hops: nothing to fill in)
+  // neither villager opens a sheet (the partner is a high-five, mine only hops)
   await page.locator('.if-scene button.vil').nth(1).click();
-  await expect(page.locator('dialog[open]')).toHaveCount(1);
-  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.locator('.if-scene button.vil').first().click();
   await page.waitForTimeout(400);
