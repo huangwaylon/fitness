@@ -62,7 +62,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
   import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, setPartnerRest, snapHome, stayingAt, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
-  import { RUN_RING_U_S, linkVillagers, playPartner } from './villagerSync.ts';
+  import { RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import type { DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
@@ -532,7 +532,7 @@
   // (on the relay's own clock: a `?date=` preview shifts the island's day, not when a walk set off)
   const relayNow = () => (relay ?? demoRelay)?.serverNow() ?? Date.now();
   // svelte-ignore state_referenced_locally
-  const link = live ? linkVillagers({ share: (w) => void shared.share(w), serverNow: relayNow, enabled: () => live }) : null;
+  const link = live ? linkVillagers({ share: (w) => void shared.share(w), me: () => view.me, serverNow: relayNow, enabled: () => live }) : null;
   $effect(() => {
     const r = relay ?? demoRelay;
     if (!link || !r) return;
@@ -563,6 +563,8 @@
     if (w0) partnerWalk({ kind: 'walk', ...w0, who: view.partner }, false);
     return shared.on(({ e, live: now }) => {
       if (e.kind === 'walk' && e.who === view.partner) partnerWalk(e, now);
+      // a villager woke on their phone (theirs tapped, or both at a high-five): here too, until the same moment
+      else if (e.kind === 'act' && e.act === 'wake' && now) playWake(e, view.me, relayNow());
     });
   });
   // The campsite's door (docs/design.md "Buildings"): a tap says who is visiting today (nobody lives inside; the

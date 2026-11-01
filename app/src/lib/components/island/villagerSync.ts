@@ -7,14 +7,18 @@
 // their villager is the relay's to move here (director setRemote): this phone's own life leaves it alone. A join gets
 // my villager as it is (its current walk again), and a long walk is said again every RESAY_MS, so a phone that missed
 // the start finds it on its way. Plain TS: the relay and the clock come in through `VillagerLink`.
-import { actors, along, isRemote, livePos, onOwnMove, place, setRemote, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
-import { VIA_MAX, type Face, type Intent, type Pt } from '#lib/sync/live-protocol.ts';
+import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
+import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/sync/live-protocol.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
+/** A villager woke (`id` whose, `at` when on the relay's clock). */
+type Woke = Extract<Intent, { kind: 'act' }> & { act: 'wake'; id: Who; at: number };
 
 export interface VillagerLink {
-  /** Send (and keep in the day) a walk of mine. */
-  share(w: Walk): void;
+  /** Send (and keep in the day) a walk of mine, or a wake. */
+  share(w: Walk | Woke): void;
+  /** Who I am (whose villager is `mine`). */
+  me(): Who;
   /** The relay's clock (ms). */
   serverNow(): number;
   /** Whether my villager's moves may be told now (live, and not the gallery). */
@@ -86,6 +90,17 @@ export function playPartner(w: Walk, now: number, visible = true): 'walk' | 'cat
   return 'walk';
 }
 
+/** A villager woke on the partner's phone (a tap on theirs, a high-five): it wakes here too, for what's left of its
+ *  WAKE_MS (the same moment it goes back to sleep on both). Returns whether it woke. */
+export function playWake(e: { id?: string; at?: number }, me: Who, now: number): boolean {
+  if (e.id !== 'A' && e.id !== 'B') return false;
+  const id = e.id === me ? 'mine' : 'partner';
+  const left = WAKE_MS - Math.max(0, now - (e.at ?? now));
+  if (left < 250 || !actors[id].asleep) return false;
+  wake(id, { remote: true, ms: left });
+  return true;
+}
+
 /** Tell the partner's phone my villager's every move, and play theirs here (see the top). Returns the detach. */
 export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere(on: boolean): void; joined(): void } {
   /** My villager's current walk (as sent) and when it ends (the relay's clock). */
@@ -109,6 +124,12 @@ export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere
         say(mine);
       });
   });
+  // a wake here (mine tapped, or both at a high-five) wakes the same villager there
+  const offWake = onWake((id) => {
+    if (!link.enabled()) return;
+    const me = link.me();
+    link.share({ kind: 'act', act: 'wake', id: id === 'mine' ? me : me === 'A' ? 'B' : 'A', at: Math.round(link.serverNow()) });
+  });
   const tick = () => {
     // a walk still under way, said again (a phone that missed its start finds it on its way)
     if (!here || !mine || !mine.ms || link.serverNow() >= mine.s! + mine.ms) return;
@@ -117,6 +138,7 @@ export function linkVillagers(link: VillagerLink): { detach(): void; partnerHere
   return {
     detach() {
       off();
+      offWake();
       if (resay) clearInterval(resay);
       resay = null;
       setRemote('partner', false);

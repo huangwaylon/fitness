@@ -143,6 +143,53 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
   await ctx.close();
 });
 
+test('two players: asleep at night on both tabs; a tap wakes my villager on both, and both put it back to sleep at the same moment', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
+    await p.goto(`?demo&date=2026-11-04T23:00&critter=none${as}`);
+    await expect(p.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+    await p.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  }
+  const zzz = (p: Page, who: string) => p.locator(`[data-person="${who}"] .fxa.zzz`);
+  for (const p of [a, b]) for (const who of ['A', 'B']) await expect(zzz(p, who)).toHaveCount(1, { timeout: 4000 });
+  await a.waitForTimeout(600);
+  const v = (await a.locator('[data-person="A"] .vil').boundingBox())!;
+  await a.mouse.click(v.x + v.width / 2, v.y + v.height * 0.6);
+  for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(0, { timeout: 1500 });
+  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1);
+  // ten seconds later: asleep again on both (the same moment: the wake's own time on each)
+  await a.waitForTimeout(9000);
+  for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(1, { timeout: 2500 });
+  await ctx.close();
+});
+
+test('two players: Gulliver woken on one tab is up on the other too, and for a tab opening later', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
+    await p.goto(`?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none${as}`);
+    await expect(p.getByRole('button', { name: /^きょう [\d,]+\sベル$/ })).toBeVisible();
+  }
+  const g = (p: Page) => p.locator('[data-visitor="gulliver"]');
+  for (const p of [a, b]) await expect(g(p)).toHaveAttribute('data-asleep', 'lie', { timeout: 5000 });
+  for (let i = 0; i < 5; i++) {
+    const r = (await a.locator('[data-visitor="gulliver"] .art').boundingBox())!;
+    await a.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+    await a.waitForTimeout(i ? 300 : 500);
+  }
+  await expect(g(a)).not.toHaveAttribute('data-asleep', /./);
+  await expect(g(b)).not.toHaveAttribute('data-asleep', /./, { timeout: 2000 });
+  const c = await ctx.newPage();
+  await c.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none&as=B');
+  await expect(g(c)).toBeAttached({ timeout: 5000 });
+  await c.waitForTimeout(800);
+  await expect(g(c)).not.toHaveAttribute('data-asleep', /./);
+  await ctx.close();
+});
+
 test('two players: a shake on one tab plays on the other (their villager stays where it is), and a pick-up there is gone here', async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });

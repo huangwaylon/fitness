@@ -359,6 +359,12 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   partner's arrival my villager's current walk goes again (they find it where mine is), and a walk under way is
   said again every 5 s while they're here (a phone that missed its start finds it on its way). Idle motions and the
   ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act).
+- **Sleep:** the villagers doze 22:00–05:00 on the relay's clock (`islandLife`: put to sleep or woken at the hour it
+  turns, the same moment on both phones; no longer re-checked each minute, which put a woken villager back to sleep
+  early). A wake here (a tap on mine, a high-five wakes both) is `act {act: wake, id: <whose>, at}` (the relay's
+  clock): the other phone wakes the same villager for what's left of its 10 s (`villagerSync.ts playWake`), so both
+  doze off again at the same moment (and stay up past 05:00). Gulliver woken (the fifth nudge) is `world {op: woke,
+  id: gulliver}`, kept in the day (`WorldDay.woke`): up on both phones, and for a phone opening later.
 - **What's shared:** the critters: each where its seed puts it ([Ambient life](#ambient-life)), and its catch or
   escape by its id (`catch {what, id: <kind>:<slot>, at, how}`: `rod`, `net`, `dive`, `dig`, or `flee`, claimed at the
   tap so the relay's first wins; my cast as an `act` so my villager walks down with the rod on the other phone too), a
