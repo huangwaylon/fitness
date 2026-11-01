@@ -10,6 +10,7 @@ import { setKey } from '#lib/sync/pairing.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { composeModel, notInCache } from './view.ts';
 import { mergeRows } from '#lib/model/snapshot.ts';
+import { reduce } from '#lib/model/state.ts';
 
 class Mem implements KV {
   m = new Map<string, string>();
@@ -68,5 +69,35 @@ describe('live optimistic view', () => {
     const later = enqueue('spend_void', { spendId: 's1' }, NOW, 5000);
     expect((await flush(() => NOW + 5000)).sent).toBe(1);
     expect(unqueue(later.id)).toBe(false);
+  });
+
+  it('queued events fold over the cached rows’ one reduce: the same State as a whole reduce, the base untouched', () => {
+    const base = applySnapshot(null, { me: 'A', rev: 'r1', now: new Date(NOW).toISOString(), rows: {
+      ...rows(),
+      events: [
+        ['2026-11-17T12:00:01.000Z', 'A', 'p0', 'pref', '{"key":"villagerName","value":"ウェイ"}'],
+        ['2026-11-17T12:00:02.000Z', 'B', 'f0', 'find', '{"kind":"fish","id":"dab"}'],
+        ['2026-11-17T12:00:03.000Z', 'A', 's0', 'spend', '{"spendId":"sp0","item":"snack","bells":8}']
+      ]
+    } }, NOW);
+    const q = [
+      ev('g1', 'pref', { key: 'moveGoal', value: 450 }), ev('n1', 'pref', { key: 'villagerName', value: 'うめ' }),
+      ev('v1', 'spend_void', { spendId: 'sp0' }), ev('f1', 'find', { kind: 'bug', id: 'moth' }), ev('h1', 'harvest', { week: '2026-11-09' })
+    ];
+    const plain = composeModel(base, [], NOW);
+    const snap = JSON.stringify(plain.state, (_k, v) => (v instanceof Map ? [...v] : v));
+    const folded = composeModel(base, q, NOW, plain);
+    expect(folded.state).not.toBe(plain.state);
+    // the cached rows' State is reused (not reduced again) and never changed by the fold
+    expect(composeModel(base, [], NOW).state).toBe(plain.state);
+    expect(JSON.stringify(plain.state, (_k, v) => (v instanceof Map ? [...v] : v))).toBe(snap);
+    expect(folded.state.metrics).toBe(plain.state.metrics);
+    // …and the fold is exactly what reducing everything at once gives
+    const whole = { state: reduce({ ...base.rows, events: [...base.rows.events, ...JSON.parse(folded.from!.extra)] }, folded.from!.rev) };
+    const norm = (s: unknown) => JSON.stringify(s, (_k, v) => (v instanceof Map ? [...v] : v));
+    expect(norm(folded.state)).toBe(norm(whole.state));
+    expect(folded.state.prefs.A.villagerName).toBe('うめ');
+    expect(folded.state.spendVoids.map((x) => x.spendId)).toEqual(['sp0']);
+    expect(plain.state.spendVoids).toEqual([]);
   });
 });

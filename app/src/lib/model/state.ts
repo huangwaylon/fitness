@@ -12,7 +12,7 @@ import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
   BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isActivityMetric, isBodyMetric, isWeightKg, roundKg, WEIGHT_KG,
-  type ActivityMetric, type BodyMetric, type EventType, type FindKind, type SnapshotRows
+  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -240,6 +240,46 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
+    if (subject) ON_EVENT[type](s, subject, at, d);
+  }
+  return s;
+}
+
+/**
+ * `reduce` of `base`'s rows plus `events`, without reducing the base again and without touching it (a State is never
+ * mutated: bells.ts caches per State): the lists the events can change are copied, the rest is shared. Only for
+ * events stamped after every event of the base (the queued ones: view.ts composeModel); otherwise null.
+ */
+export function foldEvents(base: State, events: readonly EventRow[], rev: string | null): State | null {
+  const baseAts = base.ats[1] ?? [];
+  const s: State = {
+    ...base,
+    bellSpends: [...base.bellSpends],
+    spendVoids: [...base.spendVoids],
+    harvests: [...base.harvests],
+    highfives: [...base.highfives],
+    finds: [...base.finds],
+    tallies: [...base.tallies],
+    islandDays: [...base.islandDays],
+    decor: [...base.decor],
+    tent: [...base.tent],
+    prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B } },
+    moveGoals: { A: [...base.moveGoals.A], B: [...base.moveGoals.B] },
+    stepsGoals: { A: [...base.stepsGoals.A], B: [...base.stepsGoals.B] },
+    rev,
+    ats: [base.ats[0] ?? [], [...baseAts]]
+  };
+  let last = baseAts.length ? baseAts[baseAts.length - 1] : -Infinity;
+  for (const row of events) {
+    const at = rowAt(row, false);
+    if (at === null || !isPersonId(row[1])) continue;
+    if (at < last) return null; // not after the base: only a whole reduce orders it right
+    last = at;
+    s.ats[1].push(at);
+    const d = parseData(row[4]);
+    const type = row[3];
+    if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
+    const subject = eventSubject(type, d, row[1]);
     if (subject) ON_EVENT[type](s, subject, at, d);
   }
   return s;

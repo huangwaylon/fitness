@@ -580,9 +580,16 @@
       decor.sink = null;
     };
   });
+  // (only for a new State or a new day: the minute tick replaces the model but keeps its State, and these rows with it)
+  let fed = '';
+  let fedState: unknown = null;
   $effect(() => {
     const m = week.model;
     if (!live || !m) return;
+    const day = dayKey(now());
+    if (m.state === fedState && day === fed) return;
+    fedState = m.state;
+    fed = day;
     untrack(() => {
       shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })));
       decor.rows(m.state.decor);
