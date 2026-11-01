@@ -53,9 +53,10 @@ test('a quick one (a lobster) darts off as a shadow; a second tap on it in time 
   await page.mouse.click(b.x, b.y);
   await expect(page.locator('[data-dive="chase"]')).toBeAttached({ timeout: 3000 }); // the walk to the water's edge, then the dive
   await page.waitForTimeout(350); // it has darted
-  await page.screenshot({ path: '/tmp/world-build/critters-dive-chase.png' });
+  // (the tap first: the chase is a 1 s window, a screenshot on a slow runner could eat it)
   const s = await at(page, '[data-dive="chase"]');
   await page.mouse.click(s.x, s.y);
+  await page.screenshot({ path: '/tmp/world-build/critters-dive-chase.png' });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('lobster'));
   expect(await finds(page)).toEqual([{ kind: 'sea', id: 'lobster' }]);
 });
