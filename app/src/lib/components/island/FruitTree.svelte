@@ -33,7 +33,7 @@
   import { RULES, STRETCH } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
-  import { OVER, useWorld } from './camera.svelte.ts';
+  import { useWorld } from './camera.svelte.ts';
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
@@ -291,46 +291,49 @@
     tap(near(spots).f);
   }
 
-  /** {@attach}: keep the popup inside the scene (8px margin) and under the HUD (its measured bottom + room for the
-   *  nameplate), measured from its layout box (offsetLeft/Top ignore the pop-in transform). It always opens upwards,
-   *  its tail on the tree; where the sky is short it is pushed down over the canopy, never flipped. */
-  let roomFor: ReturnType<typeof setTimeout> | undefined;
-  onDestroy(() => clearTimeout(roomFor));
+  /** {@attach}: the popup in screen space (docs/design.md "Trees"): over every tint and weather (never dimmed), in the
+   *  same place whichever the camera: centred, a little toward its tree's side, in the middle of the band between the
+   *  HUD and the screen's foot, always wholly in view; a tail toward the tree when the tree is above or below it on
+   *  screen. Measured again as its rows come in and as the camera comes to rest (the tail follows the tree). */
+  let popEl = $state<HTMLElement>();
   function keepInside(el: HTMLElement) {
-    // measured again as its rows come in (the first layout may be short)
+    popEl = el;
     const ro = new ResizeObserver(() => fitPopup(el));
     ro.observe(el);
     fitPopup(el);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      popEl = undefined;
+    };
   }
+  $effect(() => {
+    void w.rest.z;
+    void w.rest.vh;
+    if (popEl) fitPopup(popEl);
+  });
   function fitPopup(el: HTMLElement) {
-    const scene = el.closest('.scene');
-    if (!scene) return;
-    const sc = scene.getBoundingClientRect();
-    // its layout box (the pop-in's scale aside): centred on the canopy's top, standing on it
-    const [ax, ay] = w.clientAt(x, z, H - 4);
+    const stage = el.closest('.stage');
+    if (!stage) return;
+    const st = stage.getBoundingClientRect();
     const wd = el.offsetWidth, h = el.offsetHeight;
     const hud = document.querySelector('.ribbon-wrap');
-    const floor = hud ? hud.getBoundingClientRect().bottom + 16 : sc.top + 88;
-    const left = ax - wd / 2, top = ay - h;
-    if (top < floor && w.lookAt) {
-      // no room above (the tree stands high on screen): the camera eases up the island until the canopy sits low enough
-      // for the popup to stand on it (the popup, a world node, rides along); it comes back when the popup closes. Not
-      // at once: a quick run of taps is a shake, and the tree mustn't slide from under the finger.
-      const need = floor + 6 - top;
-      const [bx, by] = w.clientAt(x, z);
-      const at = w.worldAt(bx - w.view.left, by - w.view.top + need);
-      const n = taps;
-      clearTimeout(roomFor);
-      if (at) roomFor = setTimeout(() => open && taps === n && w.lookAt?.(w.view.camZ + (z - at.z)), 450);
-    }
-    let dx = 0;
-    if (left < sc.left + 8) dx = sc.left + 8 - left;
-    else if (left + wd > sc.right - 8) dx = sc.right - 8 - (left + wd);
-    el.style.marginLeft = `${dx}px`;
-    el.style.marginTop = '0px';
-    el.style.setProperty('--tail', `${-dx}px`);
+    // the band: 28px under the HUD (room for the nameplate) to 16px over the home indicator
+    const floor = (hud ? hud.getBoundingClientRect().bottom - st.top : 88) + 28;
+    const ceil = st.height - Math.max(16, parseFloat(getComputedStyle(el).getPropertyValue('--safe-b')) || 0) - 16;
+    const [ax, ay] = w.clientAt(x, z, H * 0.8);
+    const tx = ax - st.left, ty = ay - st.top;
+    const side = tx < st.width / 2 ? -1 : 1;
+    const left = Math.min(st.width - 8 - wd, Math.max(8, st.width / 2 + side * 20 - wd / 2));
+    const top = Math.min(ceil - h, Math.max(floor, (floor + ceil) / 2 - h / 2));
+    el.style.left = `${left}px`;
+    el.style.top = `${top}px`;
+    // the tail: toward the tree, on the edge facing it (none while the tree is behind the popup or off screen)
+    const seen = w.inView(x, z, 40);
+    el.dataset.tail = !seen ? 'none' : ty > top + h ? 'down' : ty + H * 0.8 < top ? 'up' : 'none';
+    el.style.setProperty('--tail', `${Math.min(wd / 2 - 16, Math.max(-wd / 2 + 16, tx - (left + wd / 2)))}px`);
   }
+
+
 
 
   const leafKey = $derived(foliage === 'blossom' ? seasonArt('petal') : foliage === 'fall' ? seasonArt('maple-leaf') : foliage === 'snow' ? seasonArt('snowflake') : null);
@@ -422,8 +425,8 @@
 
 {#if open}
   {#key taps}
-    <!-- the popup: drawn at its true size over everything, its tail on the canopy -->
-    <div class="node pop" {@attach w.at({ x, z, lift: H - 4, h: H, zi: OVER, inv: true, always: true })}>
+    <!-- the popup: in screen space over everything (every tint and weather), its tail toward the tree -->
+    <div class="pop">
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="detail" id={detailId} role="status" onpointerdown={() => cue('tick')} {@attach keepInside}>
       <span class="plate">{person.villagerName}</span>
@@ -522,20 +525,22 @@
   }
   /* NH-style popup: a nameplate, then one row per fruit (icon · word · ✓ once met and amount / goal · +1), in shared columns
      (subgrid) so the numbers line up */
-  .pop > .detail { scale: var(--inv, 1); transform-origin: 50% 100%; }
+  .pop { position: absolute; inset: 0; z-index: var(--z-popup); pointer-events: none; --safe-b: env(safe-area-inset-bottom, 0px); }
   .detail {
-    position: absolute; left: 0; top: 0; translate: -50% -100%; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
+    position: absolute; left: 0; top: 0; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
     /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches a visitor or
        the other tree drawn under it */
     pointer-events: auto; cursor: default;
-    transform-origin: 50% 100%; animation: if-pop 360ms var(--ease-bounce) both;
+    transform-origin: 50% 50%; animation: if-pop 360ms var(--ease-bounce) both;
   }
   .detail::after {
     content: ''; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -5px; width: 10px; height: 10px; margin-left: -5px;
     background: inherit; transform: rotate(45deg);
   }
+  .detail:global([data-tail='up'])::after { bottom: auto; top: -5px; }
+  .detail:global([data-tail='none'])::after { display: none; }
   /* whose tree: NH's tilted yuzu nameplate on the bubble's top edge */
   .plate {
     position: absolute; left: 10px; top: 0; translate: 0 -55%; rotate: -3deg; padding: 3px 10px; border-radius: var(--r-pill);

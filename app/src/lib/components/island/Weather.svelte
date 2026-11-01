@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { WET } from './weather.ts';
   // The weather on the island (design.md "Weather"; the day's weather: weatherNow.svelte.ts, weather.ts).
   // Two placements, each cheap: `sky` (after the sky, behind the island): the overcast over the sky, the rainbow after
   // a downpour clears (16:00–17:00, brightest at half past, now and then double) and the aurora on a winter night;
@@ -37,7 +38,7 @@
   {#if sky !== 'clear'}<div class="overcast" data-sky={sky} aria-hidden="true"></div>{/if}
 {:else}
   {#if sky !== 'clear'}
-    <div class="wet" data-sky={sky} aria-hidden="true"></div>
+    <div class="wet" data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1]}></div>
     <div class="precip" aria-hidden="true">
       {#if sky === 'snow'}
         <i class="snow far"></i><i class="snow near"></i>
@@ -91,10 +92,9 @@
   /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
      stage's own tokens, IslandScene) ---- */
   .wet, .precip, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  /* the wet day's darkening: over the whole stage like the time-of-day tint, fading out up the sky (no edge) */
-  .wet { z-index: var(--z-tint); mix-blend-mode: multiply; background: #AEB8C8; opacity: .55; -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask); }
-  .wet[data-sky='heavy'] { background: #97A2B4; opacity: .65; }
-  .wet[data-sky='snow'] { background: #DCE2EA; opacity: .5; }
+  /* the wet day's darkening (weather.ts WET): on the ground like the time-of-day tint, fading out up the sky (no edge);
+     the sprites take it in their own filter (IslandScene --tod-filter) */
+  .wet { z-index: var(--z-ground-tint); mix-blend-mode: multiply; -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask); }
   .precip { z-index: calc(var(--z-tint) + 1); }
   /* one tile of streaks, moved down one tile per loop (seamless) */
   .rain {

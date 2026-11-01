@@ -75,7 +75,7 @@ for (const [w, h] of [[390, 844], [320, 568]])
       await page.goto(`?demo&${q}`);
       await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
       await page.waitForTimeout(1500);
-      for (const [name, cam] of [['mae', -13], ['oku', 642]] as const) {
+      for (const [name, cam] of [['mae', 30], ['oku', 642]] as const) {
         await page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), cam);
         await page.waitForTimeout(1200);
         await page.screenshot({ path: `${OUT}/${name}-${look}-${w}x${h}.png` });

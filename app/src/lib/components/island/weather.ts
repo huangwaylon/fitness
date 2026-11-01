@@ -11,6 +11,8 @@ import { addDays } from '#lib/time/dates.ts';
 
 /** The sky at an hour: fine, rain, a downpour, snow. */
 export type Sky = 'clear' | 'rain' | 'heavy' | 'snow';
+/** A wet sky's darkening: a colour multiplied in at an opacity (Weather's ground plane and IslandScene's sprite tint). */
+export const WET: Record<Exclude<Sky, 'clear'>, readonly [string, number]> = { rain: ['#AEB8C8', 0.55], heavy: ['#97A2B4', 0.65], snow: ['#DCE2EA', 0.5] };
 /** A day's weather: fine all day; rain all day (light or heavy); rain until noon; heavy rain until 16:00, then clear
  *  (the rainbow's day); snow all day (light or heavy). */
 export type Pattern = 'clear' | 'rain' | 'heavy' | 'am-rain' | 'clears' | 'snow' | 'heavy-snow';

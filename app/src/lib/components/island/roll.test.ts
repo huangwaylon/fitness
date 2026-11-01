@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROLL_DEFAULTS, band, quadMatrix, camAt, horizonAhead, horizonUp, project, radiusFor, scrollFor, sinkBelow, unproject, zIndexAt, type RollParams } from './roll.ts';
+import { ROLL_DEFAULTS, band, quadMatrix, camAt, horizonAhead, horizonUp, project, radiusFor, scrollFor, sinkBelow, solveCam, unproject, zIndexAt, type RollParams } from './roll.ts';
 
 const P: RollParams = { ...ROLL_DEFAULTS, R: 700, tilt: 64 };
 const RAD = Math.PI / 180;
@@ -175,5 +175,16 @@ describe('unproject(): the inverse', () => {
   it('a tap above the horizon is the sky', () => {
     expect(unproject(0, horizonUp(P) + 2, 500, P)).toBeNull();
     expect(unproject(0, horizonUp(P) - 2, 500, P)).not.toBeNull();
+  });
+});
+
+describe('solveCam (the scroller’s ends)', () => {
+  it('finds the camera that puts a point on the line asked for, or an end of the range', () => {
+    const P = { ...ROLL_DEFAULTS, R: 700 };
+    const top = (cam: number) => 0.72 * 852 + project(195, 984, cam, P).y - 80 * project(195, 984, cam, P).scale;
+    const cam = solveCam(top, 151, 400, 900);
+    expect(Math.abs(top(cam) - 151)).toBeLessThan(1);
+    expect(solveCam(top, -1e9, 400, 900)).toBe(400);
+    expect(solveCam(top, 1e9, 400, 900)).toBe(900);
   });
 });

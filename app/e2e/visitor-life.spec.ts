@@ -18,7 +18,7 @@ const rig = (page: Page, id: string) =>
   });
 const NIGHT = new Set(['wisp', 'celeste', 'kk-slider', 'jack']);
 /** Where each stands: Daisy Mae and Gulliver at まえ, the rest at centre stage (おく). */
-const camOf = (id: string) => (id === 'daisy-mae' || id === 'gulliver' ? -13 : 642);
+const camOf = (id: string) => (id === 'daisy-mae' || id === 'gulliver' ? 30 : 642);
 /** The camera to a world z (まえ, 642 おく: the campsite's clearing), settled. */
 async function camera(page: Page, z: number) {
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);

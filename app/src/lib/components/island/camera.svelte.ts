@@ -32,6 +32,9 @@ export interface NodeSpec {
   always?: boolean;
   /** Set --inv = 1 / scale on the node (a popup or a label drawn at its true size). */
   inv?: boolean;
+  /** A light (a lamp's glow, a lit window, a firefly): sorted by its depth like any node, but never dimmed by the time
+   *  of day's tint (IslandScene's --tod-filter skips it). */
+  light?: boolean;
 }
 
 interface Node extends NodeSpec {
@@ -57,10 +60,6 @@ export class World {
   readonly view = { camZ: CAMS.mae as number, s: 1, vw: 390, vh: 844, pivot: 844 * PIVOT, horizon: 844 * SKY, left: 0, top: 0 };
   /** What components may read reactively: the camera when it settles, the screen's size. */
   readonly rest = $state({ z: CAMS.mae as number, s: 1, vw: 390, vh: 844, horizon: 844 * SKY, ready: false });
-  /** Ease the camera to a world z and hold it there (no snapping) until `release` (the scene sets these: a tree's popup
-   *  asks for room above its canopy). */
-  lookAt: ((z: number) => void) | null = null;
-  release: (() => void) | null = null;
   /** Writes in the last frame and the nodes registered (perf). */
   readonly perf = { writes: 0, nodes: 0, frames: 0 };
 
@@ -288,6 +287,11 @@ export class World {
       el.style.position = 'absolute';
       el.style.left = '0';
       el.style.top = '0';
+      // the time of day's tint, at the source (IslandScene): every world node but a light and what stands over
+      // everything (a held-up catch, a popup's anchor)
+      const lit = !!n.light || (n.zi ?? 0) >= OVER;
+      el.classList.toggle('wn-lit', lit);
+      el.classList.toggle('wn', !lit);
       if (n.mode === 'quad' && n.box) {
         el.style.width = `calc(${n.box.x1 - n.box.x0} * var(--u))`;
         el.style.height = `calc(${n.box.z1 - n.box.z0} * var(--u))`;

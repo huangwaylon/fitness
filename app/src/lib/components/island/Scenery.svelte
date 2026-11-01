@@ -41,9 +41,11 @@
   /** The winter look: a derived one (sceneryKey) or a render's own (<key>-winter: NH's snowy model). */
   const wintry = (k: string) => (season === 'winter' && !k.endsWith('-winter') && art(`${k}-winter`) ? `${k}-winter` : k);
   const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : wintry(sceneryKey(s.key, season, month)));
-  /** Lights: the windows and lamps (over the time-of-day tint, as the fireflies: between --z-tint and --z-taps). */
+  /** Lights: the windows and lamps, each in its lamp's (or building's) depth just in front of it, never tinted (camera.svelte.ts
+   *  `light`): a tree in front of a lamp covers its glow. Their pools on the ground lie under every upright thing. */
   const lit = $derived(tod === 'night' ? 1 : tod === 'dusk' ? 0.7 : 0);
-  const NIGHT_Z = 60_310_000;
+  /** A light's pool on the ground: over the ground's tint plane, under every upright thing. */
+  const POOL_Z = 4;
   const lamps = SCENERY.filter((s) => GLOW_AT[s.key]);
   const winter = $derived(season === 'winter');
   const wOf = (key: string, h: number) => {
@@ -105,7 +107,7 @@
 {#if lit}
   {#each BUILDINGS as b (b.id)}
     {#if LIT_ART[b.key]}
-      <div class="spr lit" data-lit={b.id} style:opacity={lit} {@attach w.at({ x: b.x, z: b.z, h: b.h, zi: NIGHT_Z })}>
+      <div class="spr lit" data-lit={b.id} style:opacity={lit} {@attach w.at({ x: b.x, z: b.z, h: b.h, dz: -0.5, light: true })}>
         <span class="art" style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))">
           <OfficialArt key={LIT_ART[b.key]} size="calc({b.h} * var(--u))" />
         </span>
@@ -116,27 +118,27 @@
     {@const k = l.h / 46}
     {#if art(`${l.key}-lit`)}
       <!-- the lamp's own head lit (its render's -lit look), under the glow -->
-      <div class="spr lit" data-lit={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, zi: NIGHT_Z })}>
+      <div class="spr lit" data-lit={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, dz: -0.4, light: true })}>
         <span class="art" style={at3d(`${l.key}-lit`, l.h, l.flip)} style:height="calc({l.h} * var(--u))" style:width="calc({wOf(`${l.key}-lit`, l.h)} * var(--u))">
           <OfficialArt key={`${l.key}-lit`} size="calc({l.h} * var(--u))" />
         </span>
       </div>
     {/if}
     <!-- a lamp at night (NH's warm point light): its head lit (a bright core in the lamp-glow), a wide soft halo round
-         it, and a pool of light on the ground at its foot; all over the tint, faded in at dusk -->
-    <div class="spr lit" data-glow={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, zi: NIGHT_Z })}>
+         it, and a pool of light on the ground at its foot; untinted, in the lamp's depth, faded in at dusk -->
+    <div class="spr lit" data-glow={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, dz: -0.5, light: true })}>
       <span class="halo" style:bottom="calc({l.h * GLOW_AT[l.key] - 75 * k} * var(--u))" style:width="calc({150 * k} * var(--u))"></span>
       <span class="glow" style:bottom="calc({l.h * GLOW_AT[l.key] - 30 * k} * var(--u))"><OfficialArt key="deco/lamp-glow" size="calc({60 * k} * var(--u))" /></span>
       <span class="core" style:bottom="calc({l.h * GLOW_AT[l.key] - 11 * k} * var(--u))" style:width="calc({22 * k} * var(--u))"></span>
     </div>
-    <div class="spr lit pool-node" data-pool={l.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: l.x + 2, z: l.z - 2, h: 4, zi: NIGHT_Z - 1 })}>
+    <div class="spr lit pool-node" data-pool={l.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: l.x + 2, z: l.z - 2, h: 4, zi: POOL_Z, light: true })}>
       <span class="pool" style:width="calc({140 * k} * var(--u))"></span>
     </div>
   {/each}
   {#each BUILDINGS as b (b.id)}
     {#if LIT_ART[b.key]}
       <!-- the light from the tent's lantern on the clearing in front of it -->
-      <div class="spr lit pool-node" data-pool={b.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: b.x - 40, z: b.z - 10, h: 4, zi: NIGHT_Z - 1 })}>
+      <div class="spr lit pool-node" data-pool={b.id} style:opacity={lit} {@attach w.at({ mode: 'flat', x: b.x - 40, z: b.z - 10, h: 4, zi: POOL_Z, light: true })}>
         <span class="pool" style:width="calc(130 * var(--u))"></span>
       </div>
     {/if}

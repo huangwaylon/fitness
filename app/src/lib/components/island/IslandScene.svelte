@@ -13,7 +13,7 @@
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { showAt } from './fireworks.ts';
-  import { hook, hookFlag } from './devHooks.ts';
+  import { hookFlag } from './devHooks.ts';
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import Villager from '../characters/Villager.svelte';
   import { formatBells, t } from '#lib/i18n/index.ts';
@@ -29,6 +29,7 @@
   import FlowerBeds from './FlowerBeds.svelte';
   import Particles from './Particles.svelte';
   import { raining, weather } from './weatherNow.svelte.ts';
+  import { WET } from './weather.ts';
   import Balloon from './Balloon.svelte';
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
@@ -44,9 +45,8 @@
   import { IslandLife } from './islandLife.svelte.ts';
   import { BEDS, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
   import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, PLAN, SHORE_Z, TREE_H, surfaceAt, type BuildingId } from './world.ts';
-  import { fitted, nearest, restFor, sectionFor, solveCam } from './sections.ts';
   import { campLine, doorAt, partnerOnline } from './buildings.ts';
-  import { Follow, RING_MS, stepCue } from './tapWalk.ts';
+  import { RING_MS, stepCue } from './tapWalk.ts';
   import { nav } from './nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
@@ -54,7 +54,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { visitorNow } from './visitors.ts';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
-  import { camAt, horizonAhead, scrollFor } from './roll.ts';
+  import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
   import { HYBRIDS, hybridFor } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
@@ -123,10 +123,6 @@
   let sceneEl = $state<HTMLElement>();
   $effect(() => {
     if (covered) openTree = null;
-  });
-  // the popup closed: a camera held for its room is let go (it snaps back to the stop)
-  $effect(() => {
-    if (!openTree) untrack(() => world.release?.());
   });
   $effect(() => {
     if (!openTree) return;
@@ -248,8 +244,6 @@
   /** おく, the scroller's top: camZ 470 (world.ts CAMS), further back on a screen whose HUD would cover the campsite. */
   let camMax = $state<number>(CAM_MAX);
   const trackH = $derived(vh + (camMax - camMin) * s);
-  /** The two sections' stops for this screen (sections.ts): the scroller's ends; it settles onto the nearer. */
-  const secs = $derived(fitted(camMin, camMax));
 
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
@@ -290,10 +284,10 @@
     return clearAt(keep, sx, sy - h * 0.46, h * 0.225, h * 0.46);
   }
 
-  // ---- the camera: the scroller's scrollTop → camZ, read on each frame; settled → world.rest.z ----
+  // ---- the camera (docs/decisions.md "Free scrolling"): the scroller's scrollTop → camZ, read on each frame; still →
+  // world.rest.z. Only the finger moves it: plain native scrolling between the two ends (まえ at the foot, where it
+  // opens; おく at the top), no snapping, no settling, no follow, no programmatic moves (but the e2e hook's). ----
   let settle: ReturnType<typeof setTimeout> | undefined;
-  /** The camera is held where something asked (a popup's room), or pinned by the e2e hook (no settling). */
-  let held = false, pinned = false;
   function measure() {
     if (!scroller) return;
     const r = scroller.getBoundingClientRect();
@@ -331,23 +325,21 @@
     life.later(() => (rings = rings.filter((g) => g.n !== n)), RING_MS + 50);
   }
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
-   *  knocks at its door (walk there, then its character answers). */
+   *  knocks at its door (walk there, then its line). */
   function walkThere(x: number, z: number, _hit: SceneHit): boolean {
     if (!live || covered || actors.mine.asleep) return false;
-    const from = livePos('mine');
     const r = sendTo(x, z);
     if (!r) return false;
     // the partner's phone runs mine there too, and the relay keeps it (where mine stands, for a phone opening later)
     shared.share({ kind: 'walk', to: [Math.round(r.to[0]), Math.round(r.to[1])] });
     ring(r.to[0], r.to[1]);
-    follow.start(from[1], r.to[1], world.screenAt(x, z).theta);
     const b = r.snap.kind === 'door' ? r.snap.building : undefined;
     const el = b && sceneEl?.querySelector<HTMLElement>(`[data-building="${b}"] .door`);
     if (b && el) life.later(() => knock(b, el), r.ms + 120);
     return true;
   }
 
-  // ---- the partner off screen: a round face of their villager pinned at the top or the bottom edge; a tap scrolls there ----
+  // ---- the partner off screen: a round face of their villager pinned at the top or the bottom edge (a cue only) ----
   let edge = $state<'top' | 'bottom' | null>(null);
   function edgeCheck() {
     const [x, z] = livePos('partner'), p = world.screenAt(x, z, VILLAGER.h * 0.5);
@@ -355,195 +347,68 @@
     if (e !== edge) edge = e;
   }
 
-  // ---- camera follow (tapWalk.ts): while my villager runs somewhere the camera can't see, the scroller eases after it ----
-  /** The top chrome's bottom edge (px): the follow band starts 80px under it. */
+  /** The top chrome's bottom edge (px). */
   let hudBottom = 0;
-  /** How far under the HUD the stops keep the campsite's top and the goal trees' canopies (px). */
+  /** How far under the HUD the ends keep the campsite's top and the goal trees' canopies (px). */
   const CLEAR = 16;
-  /** Where the front stop puts the shoreline: this share down the screen (the sea under it). */
-  const SHORE_AT = 0.74;
-  /** Where the back stop puts the campsite's feet: this share of the height under the horizon. */
+  /** Where the front end puts the shoreline: this share down the screen (the sea under it). */
+  const SHORE_AT = 0.83;
+  /** Where the back end puts the campsite's feet: this share of the height under the horizon. */
   const CAMP_AT = 0.17;
-  const camView = () => ({ P: world.P, pivot: world.view.pivot, vh: world.view.vh, s: world.view.s, hudBottom });
-  const follow = new Follow({
-    cam: () => world.view.camZ,
-    range: () => [camMin, camMax],
-    view: camView,
-    moveTo: (z) => scroller && (scroller.scrollTop = scrollFor(z, camMax, world.view.s)),
-    snap: (on, land) => {
-      if (!scroller) return;
-      if (!on) return snapOn(false);
-      if (pinned || held) return;
-      // after an arrival: ease onto the section that frames the walker; after a touch the finger has it (snapping on)
-      if (land) landOn(restFor(camView(), secs, world.view.camZ, livePos('mine')[1]).z);
-      else snapOn(true);
-    },
-    kick: () => world.kick()
-  });
-  // ---- the sections (docs/decisions.md "Two sections, smooth"): the scroller scrolls freely with the native momentum
-  // between the two stops (its ends) and settles softly onto the nearer when it comes to rest: CSS proximity snapping
-  // where the browser takes it (folded into the fling's own deceleration), else, resting between them, an ease of
-  // SETTLE_MS. A programmatic move (the end of a follow, a popup letting the camera go, the partner's edge face) is the
-  // same ease. `?settle=js` (dev or ?demo): the ease alone, no CSS snapping (the comparison). Nothing runs when still. ----
-  const SETTLE_MS = 400;
-  const cssSnap = hook('settle') !== 'js';
-  /** The scroller's CSS snapping on (proximity) or off (an ease, a follow, a pin, a hold). */
-  function snapOn(on: boolean) {
-    if (scroller) scroller.style.scrollSnapType = on && cssSnap ? '' : 'none';
-  }
-  /** The stop an ease is landing on, and its frame. */
-  let landing: number | null = null;
-  let easeRaf = 0;
-  /** A finger is on the scroller (a rest under it is the finger's, not a place to settle from). */
-  let touching = false;
-  /** Ease the camera onto a stop (ease-out, SETTLE_MS), snapping off meanwhile and back on there. */
-  function landOn(z: number) {
-    if (!scroller) return;
-    const el = scroller, to = stopPx(z), from0 = el.scrollTop;
-    cancelAnimationFrame(easeRaf);
-    snapOn(false);
-    landing = z;
-    if (Math.abs(to - from0) < 0.75) {
-      el.scrollTop = to;
-      return landed();
-    }
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const k = Math.min(1, (now - t0) / SETTLE_MS);
-      el.scrollTop = from0 + (to - from0) * (1 - (1 - k) ** 3);
-      if (k < 1) easeRaf = requestAnimationFrame(step);
-      else {
-        easeRaf = 0;
-        landed();
-      }
-    };
-    easeRaf = requestAnimationFrame(step);
-  }
-  /** A stop's scroll position, whole px (the scroller rests on whole px: a stop is then exactly its camZ). */
-  const stopPx = (z: number) => Math.round(scrollFor(z, camMax, s));
-  /** The camera for a scroll position: a stop's own camZ within a px of it (no rounding drift on a stop), else the
-   *  projection's. */
-  function camOf(top: number): number {
-    for (const q of secs) if (Math.abs(top - stopPx(q.z)) < 0.75) return q.z;
-    return camAt(top, camMin, camMax, world.view.s);
-  }
-  function landed() {
-    cancelAnimationFrame(easeRaf);
-    easeRaf = 0;
-    if (landing === null) return;
-    landing = null;
-    if (!pinned && !held) snapOn(true);
-  }
-  /** At rest between the stops (the fling and any CSS snap done, no finger down): settle onto the nearer. */
-  function settleCheck() {
-    if (!scroller || !live || touching || landing !== null || follow.active || pinned || held) return;
-    const near = nearest(secs, camOf(scroller.scrollTop));
-    if (Math.abs(scroller.scrollTop - stopPx(near.z)) > 0.75) landOn(near.z);
-  }
   function onScroll() {
     world.kick();
     clearTimeout(settle);
-    if (!follow.active) talk?.hold(true);
+    talk?.hold(true);
     settle = setTimeout(() => {
       world.rest.z = Math.round(world.view.camZ);
       talk?.hold(false);
-      settleCheck();
     }, 140);
   }
-  /** Ease the camera to a world z (held there: a popup's room; e2e). */
-  export function goTo(z: number, smooth = true) {
-    scroller?.scrollTo({ top: scrollFor(Math.min(camMax, Math.max(camMin, z)), camMax, s), behavior: smooth ? 'smooth' : 'instant' });
+  /** Put the camera at a world z at once (the e2e hook). */
+  function goTo(z: number) {
+    scroller?.scrollTo({ top: scrollFor(Math.min(camMax, Math.max(camMin, z)), camMax, s), behavior: 'instant' });
   }
   onMount(() => {
     if (!scroller) return;
     measure();
     world.onTick(() => {
-      const chasing = live && follow.step(livePos('mine')[1], inMotion('mine'));
-      if (scroller) world.view.camZ = live ? camOf(scroller.scrollTop) : camMin;
+      if (scroller) world.view.camZ = live ? camAt(scroller.scrollTop, camMin, camMax, world.view.s) : camMin;
       if (live) edgeCheck();
-      return anyMoving() || chasing;
+      return anyMoving();
     });
-    // any touch takes the camera back from the chase (or from an ease onto a stop); lifted, it settles once at rest
-    const grab = (e: Event) => {
-      follow.stop(true);
-      landed();
-      if (e.type === 'touchstart') touching = true;
-    };
-    const lift = () => {
-      touching = false;
-      clearTimeout(settle);
-      settle = setTimeout(() => {
-        world.rest.z = Math.round(world.view.camZ);
-        talk?.hold(false);
-        settleCheck();
-      }, 140);
-    };
-    scroller.addEventListener('touchstart', grab, { passive: true });
-    scroller.addEventListener('touchend', lift, { passive: true });
-    scroller.addEventListener('touchcancel', lift, { passive: true });
-    scroller.addEventListener('wheel', grab, { passive: true });
-    snapOn(true);
     flushSync(); // the track's height for this screen, before scrolling to its foot
     scroller.scrollTop = scrollFor(camMin, camMax, world.view.s);
     world.view.camZ = camMin;
     world.rest.ready = true;
-    if (live) {
-      world.lookAt = (z) => {
-        if (!scroller) return;
-        held = true;
-        landed();
-        snapOn(false);
-        goTo(z);
-      };
-      world.release = () => {
-        if (!held || !scroller) return;
-        held = false;
-        // back onto the nearest section
-        if (!pinned) landOn(nearest(secs, world.view.camZ).z);
-      };
-    }
     world.invalidate();
     const offMove = live ? onMove(() => world.kick()) : () => {};
     let first = true;
     const ro = new ResizeObserver(() => {
       // the first call is the observe itself (already measured)
       if (first) return void (first = false);
-      // a new screen: the same section's stop, refitted (or the same camera when pinned or held)
-      const keep = world.view.camZ, was = nearest(secs, keep).id;
+      // a new screen: the same camera, refitted (within the new ends)
+      const keep = world.view.camZ;
       measure();
       requestAnimationFrame(() => {
-        const z = pinned || held ? keep : (secs.find((q) => q.id === was)?.z ?? keep);
-        if (scroller && live) scroller.scrollTop = scrollFor(z, camMax, world.view.s);
+        if (scroller && live) scroller.scrollTop = scrollFor(Math.min(camMax, Math.max(camMin, keep)), camMax, world.view.s);
         world.invalidate();
       });
     });
     ro.observe(scroller);
     if (live) (window as unknown as { __world?: unknown }).__world = {
       cam: () => world.view.camZ, idle: () => world.idle(), perf: world.perf,
-      /** Put the camera at z at once (e2e; the settling is off from then on, so it stays exactly there). */
-      go: (z: number) => {
-        pinned = true;
-        landed();
-        snapOn(false);
-        goTo(z, false);
-      },
+      /** Put the camera at z at once (e2e). */
+      go: (z: number) => goTo(z),
       at: (x: number, z: number) => world.clientAt(x, z), P: world.P,
       /** Put my villager at a world point (e2e: the depth order). */
       put: (x: number, z: number) => (place('mine', x, z), world.kick()),
-      /** My villager's feet now (e2e: tap-to-walk), whether the camera is following it, the snapping now. */
-      mine: () => livePos('mine'), following: () => follow.active, snapping: () => scroller?.style.scrollSnapType ?? '',
-      /** The sections' stops for this screen (e2e: a fling rests on one), and how it settles (css: proximity + the ease;
-       *  js: the ease alone). */
-      stops: () => secs.map((q) => q.z), settle: () => (cssSnap ? 'css' : 'js'), easing: () => landing !== null
+      /** My villager's feet now (e2e: tap-to-walk). */
+      mine: () => livePos('mine'),
+      /** The scroller's two ends for this screen (まえ, おく). */
+      stops: () => [camMin, camMax]
     };
     return () => {
       offMove();
-      scroller?.removeEventListener('touchstart', grab);
-      scroller?.removeEventListener('touchend', lift);
-      scroller?.removeEventListener('touchcancel', lift);
-      scroller?.removeEventListener('wheel', grab);
-      cancelAnimationFrame(easeRaf);
-      follow.dispose();
       ro.disconnect();
       clearTimeout(settle);
       world.stop();
@@ -674,9 +539,9 @@
     const door = doorAt(id);
     let { ms, walked } = approach(door[0], door[1] + 12, { spot: door, far: true });
     if (!walked) {
-      // too far for an action walk: run there (tap-to-walk), the camera following
-      const from = livePos('mine'), r = sendTo(door[0], door[1]);
-      if (r) (ms = r.ms), follow.start(from[1], r.to[1], world.screenAt(door[0], door[1]).theta);
+      // too far for an action walk: run there (tap-to-walk)
+      const r = sendTo(door[0], door[1]);
+      if (r) ms = r.ms;
     }
     life.later(() => knock(id, el), ms + 120);
   }
@@ -698,6 +563,26 @@
   }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
+  // The time of day's tint (and a wet day's darkening), at the source (docs/decisions.md "Lights in depth"): the ground
+  // takes it as one multiply plane over its bands and the sky's low band; every world node takes the same multiply as
+  // a colour-matrix filter, so a light (a lamp's glow, a lit window, a firefly: camera.svelte.ts `light`) sorts in depth
+  // like anything else, untinted (a tree in front of a lamp covers its glow). Recomputed when the time of day or the
+  // weather changes; nothing per frame.
+  const fid = `${uid}-tod`;
+  let shade = $state<[number, number, number] | null>(null);
+  $effect(() => {
+    void tod;
+    const sky = live ? weather.sky : 'clear';
+    const el = sceneEl;
+    if (!el) return;
+    const hex = (h: string): [number, number, number] | null => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as [number, number, number] : null);
+    const base = hex(getComputedStyle(el).getPropertyValue('--tod-tint').trim()) ?? [1, 1, 1];
+    const wet = sky !== 'clear' ? WET[sky] : null, w = wet && hex(wet[0]);
+    const rgb = base.map((c, i) => c * (w ? 1 - wet![1] * (1 - w[i]) : 1)) as [number, number, number];
+    shade = rgb.every((c) => c > 0.995) ? null : rgb;
+  });
+  const shadeMatrix = $derived(shade ? `${shade[0].toFixed(3)} 0 0 0 0 0 ${shade[1].toFixed(3)} 0 0 0 0 0 ${shade[2].toFixed(3)} 0 0 0 0 0 1 0` : '');
+
   // The scenery that comes only on its days (the weather, the fireworks, an event's decorations): loaded the first time
   // it's due, then kept, so its code stays out of the first load.
   const weatherC = lazyComponent(() => import('./Weather.svelte')), fireworksC = lazyComponent(() => import('./Fireworks.svelte'));
@@ -715,14 +600,13 @@
 
   <div class="scroller" bind:this={scroller} onscroll={onScroll} data-world-scroller>
     <div class="track" style:height="{trackH}px">
-      {#each secs as q (q.id)}
-        <!-- a section's stop (the scroller's ends): it settles onto the nearer (proximity, then the ease) -->
-        <div class="snap" data-snap={q.id} style:top="{stopPx(q.z)}px"></div>
-      {/each}
-      <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px">
+      <div class="stage" style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : 'none'}>
+        <svg class="defs" aria-hidden="true" width="0" height="0">
+          <filter id={fid} color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values={shadeMatrix || '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'} /></filter>
+        </svg>
         <!-- the sky is the stage's backdrop, behind every world thing (a tree top rising over the horizon stands in front
-             of the sun or moon), so the time-of-day tint over the world reaches up into its low band (no edge at the
-             horizon); the sun or moon and the stars sit high in the sky, above the tint's reach -->
+             of the sun or moon); the ground's tint plane reaches into its low band (no edge at the horizon); the sun or
+             moon and the stars sit high in the sky, above the plane's reach -->
         <Sky {tod}>
           {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
         </Sky>
@@ -764,10 +648,10 @@
         {/each}
 
         {#if live && edge && partnerHere}
-          <button type="button" class="edge {edge}" data-partner-edge={edge} data-sfx="tick" aria-label={t('island.toPartner', { name: sides.partner.person.villagerName })}
-            onclick={() => landOn(sectionFor(camView(), secs, livePos('partner')[1]).z)}>
+          <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
+          <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
             <Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />
-          </button>
+          </span>
         {/if}
 
         {#each rings as r (r.n)}
@@ -813,13 +697,11 @@
   /* the camera: a native scroller (drag scrolls; a tap is a click), its document never scrolls */
   .scroller {
     position: absolute; inset: 0; z-index: var(--z-stage); overflow-y: auto; overflow-x: hidden; overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: y proximity; touch-action: pan-y;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-y;
   }
   .scroller::-webkit-scrollbar { display: none; }
   .scene:not([data-live]) .scroller { overflow: hidden; }
   .track { position: relative; }
-  /* a stop (proximity: the browser may fold it into a fling's deceleration; IslandScene eases onto it otherwise) */
-  .snap { position: absolute; left: 0; width: 1px; height: 1px; scroll-snap-align: start; pointer-events: none; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   .stage {
     position: sticky; top: 0; width: 100%; overflow: hidden; container-type: inline-size; contain: layout paint;
@@ -828,6 +710,8 @@
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
        tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
     --z-fall: 60100000; --z-leaf: 60200000; --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
+    /* the ground's tint plane: over the bands and the sky, under every world node (they tint themselves) */
+    --z-ground-tint: 2;
   }
   /* a little haze where the ground meets the sky */
   .haze {
@@ -847,15 +731,18 @@
   .vil:disabled { cursor: default; }
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-  /* ONE time-of-day layer: a multiply tint over the whole stage (the land, the sea, every sprite, the tree tops rising
-     over the horizon and the sky's low band, its backdrop here), fading out up the sky (its own table up there, the
-     sun or moon and the stars in it), so no edge shows anywhere; the lights (the lit windows and lamps, the fireflies,
-     the fireworks) stand over it. Day: none. */
+  /* the time of day's tint on the ground: one multiply plane over the bands and the sky's low band, fading out up the
+     sky (its own table up there, the sun or moon and the stars in it), so no edge shows; every world node takes the
+     same multiply in its own filter (--tod-filter), the lights (lamps, lit windows, fireflies) none. Day: none. */
   .tint {
-    position: absolute; inset: 0; z-index: var(--z-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
+    position: absolute; inset: 0; z-index: var(--z-ground-tint); background: var(--tod-tint); mix-blend-mode: multiply; pointer-events: none;
     -webkit-mask-image: var(--tint-mask); mask-image: var(--tint-mask);
   }
-  .stage { --tint-mask: linear-gradient(to bottom, transparent calc(var(--horizon-y) - 120px), #000 calc(var(--horizon-y) - 50px)); }
+  .stage { --tint-mask: linear-gradient(to bottom, transparent calc(var(--horizon-y) - 70px), #000 calc(var(--horizon-y) - 16px)); }
+  /* every world node tints itself (the same multiply as the plane), but the lights */
+  .stage :global(.wn) { filter: var(--tod-filter); }
+  .fall { filter: var(--tod-filter); }
+  .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk: stretched to the right */
   .vil :global(.shadow) {
     width: calc(var(--h) * .6); height: calc(var(--h) * .12); margin-left: calc(var(--h) * -.3); bottom: calc(var(--h) * -.05);
@@ -870,7 +757,7 @@
   .ring-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
   /* the partner off screen: their villager's face at the edge (under the HUD at the top, over the foot at the bottom) */
   .edge {
-    position: absolute; left: 50%; z-index: var(--z-taps); translate: -50% 0; width: 44px; height: 44px; padding: 6px; border: 0;
+    position: absolute; left: 50%; z-index: var(--z-taps); translate: -50% 0; width: 44px; height: 44px; padding: 6px; border: 0; pointer-events: none;
     border-radius: 50%; background: var(--plate); box-shadow: 0 3px 0 var(--plate-lip); display: grid; place-items: center; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
