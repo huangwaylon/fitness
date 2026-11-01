@@ -8,7 +8,7 @@
   // weeks, on the pond and riding the stream).
   import { asset } from '$app/paths';
   import { useWorld } from './camera.svelte.ts';
-  import { BRIDGE, CLIFF, FACE_H, FALL_H, POND, RIVER, SHORE_Z, onBridge } from './world.ts';
+  import { BRIDGE, CLIFF, FACE_H, FALL_H, PLAN, POND, RIVER, SHORE_Z, onBridge } from './world.ts';
   import ShoreWash from './ShoreWash.svelte';
   import Waterfall from './Waterfall.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -76,8 +76,9 @@
     <ShoreWash x0={70} x1={320} />
   </div>
   <!-- the cliff's upright face (rock strata, the grass lip, the stairs carved in, the falls' wet niche) and the falls
-       over it -->
-  <div class="node up" {@attach w.at({ x: (CLIFF.x0 + CLIFF.x1) / 2, z: CLIFF.z0, h: FACE_H })}>
+       over it; sorted behind everything that stands (dz to the plan's far end): whoever is on the stairs or the tier
+       above stands on it or in front of it, never behind -->
+  <div class="node up" data-cliff-face {@attach w.at({ x: (CLIFF.x0 + CLIFF.x1) / 2, z: CLIFF.z0, h: FACE_H, dz: PLAN.z1 - CLIFF.z0 })}>
     <img class="front" src={sprite('cliff-face')} alt="" draggable="false" style:width="calc({CLIFF.x1 - CLIFF.x0} * var(--u))" style:height="calc({FACE_H} * var(--u))" />
   </div>
   <!-- the bridge's near end (NH's model seen level, its top: the end posts and the deck's lip), standing at the deck's
