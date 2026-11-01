@@ -238,6 +238,26 @@ describe('live: messages', () => {
     last().open();
     expect(last().sent[0]).toEqual({ v: 1, kind: 'hello', key: KEY, since: 1_790_000_000_500 });
   });
+
+  it('reports sheet changes: the push (mine too) and the partner\'s nudge, never as intents', () => {
+    const changes: unknown[] = [];
+    const intents: Relayed[] = [];
+    const off = live.onChange((c) => changes.push(c));
+    live.on((m) => intents.push(m));
+    live.start();
+    last().welcome();
+    const n = { what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'r1' };
+    last().recv({ kind: 'changed', ...n, t: 5 });
+    last().recv({ kind: 'saved', who: 'B', t: 6 });
+    last().recv({ kind: 'saved', who: 'A', t: 7 }); // my own echo
+    expect(changes).toEqual([n, { who: 'B', what: 'event' }]);
+    expect(intents).toEqual([]);
+    expect(live.send({ kind: 'saved' })).toBe(true);
+    expect(last().sent.at(-1)).toEqual({ v: 1, kind: 'saved' });
+    off();
+    last().recv({ kind: 'changed', ...n, t: 8 });
+    expect(changes).toHaveLength(2);
+  });
 });
 
 describe('live: the relay clock', () => {

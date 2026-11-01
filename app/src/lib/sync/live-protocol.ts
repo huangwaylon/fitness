@@ -26,7 +26,9 @@ export type Intent =
   | { kind: 'act'; act: Act; id?: string; at?: number }
   | { kind: 'catch'; what: string; id?: string }
   | { kind: 'emote'; emote: string }
-  | { kind: 'world'; op: WorldOp; id: string };
+  | { kind: 'world'; op: WorldOp; id: string }
+  /** I just wrote rows to the sheet (an event was acked): the partner refetches the snapshot now. */
+  | { kind: 'saved' };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen). */
 export type ClientMsg =
@@ -42,7 +44,24 @@ export type ServerMsg =
   | { v: 1; kind: 'welcome'; me: Who; peer: boolean; t: number }
   | { v: 1; kind: 'pong'; c: number; t: number }
   | { v: 1; kind: 'presence'; who: Who; on: boolean; t: number }
+  | ({ v: 1; kind: 'changed'; t: number } & Notice)
   | Relayed;
+
+/** What the Apps Script wrote (`ingest`: health rows, `event`: an event row). */
+const NOTICE_WHAT = ['ingest', 'event'] as const;
+export type NoticeWhat = (typeof NOTICE_WHAT)[number];
+
+/**
+ * The sheet changed: Apps Script POSTs this to the relay's /notify after a write (signed, docs/backend.md#push), and the
+ * room passes it to every connected phone as `changed`. `at` is the newest row's server time (the snapshot's `since`
+ * domain), `rev` the data revision.
+ */
+export interface Notice {
+  what: NoticeWhat;
+  who: Who;
+  at: string;
+  rev: string;
+}
 
 /** Close codes (4000–4999 are the application's). */
 export const CLOSE = {
@@ -59,6 +78,8 @@ export const CLOSE = {
 const ID = /^[\w:.-]{1,32}$/;
 const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 const KEY = /^[0-9a-f]{32,128}$/;
+const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
+const REV = /^[0-9a-z]{1,24}$/;
 
 type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -88,6 +109,8 @@ function intentOf(o: Obj): Intent | null {
     case 'world':
       if (!oneOf(WORLD_OPS)(o.op) || !isId(o.id)) return null;
       return { kind: 'world', op: o.op, id: o.id };
+    case 'saved':
+      return { kind: 'saved' };
     default:
       return null;
   }
@@ -118,6 +141,23 @@ export function parseClient(raw: unknown): ClientMsg | null {
 
 const isWho = (x: unknown): x is Who => x === 'A' || x === 'B';
 
+/** A notice's fields from `o` (known fields only), or null. */
+function noticeOf(o: Obj): Notice | null {
+  if (!oneOf(NOTICE_WHAT)(o.what) || !isWho(o.who) || typeof o.at !== 'string' || !AT.test(o.at) || typeof o.rev !== 'string' || !REV.test(o.rev)) return null;
+  return { what: o.what, who: o.who, at: o.at, rev: o.rev };
+}
+
+/** The body of a /notify POST as the relay accepts it (`{what, who, at, rev}`, ≤ MAX_BYTES), or null. @public (relay/) */
+export function parseNotice(raw: unknown): Notice | null {
+  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
+  try {
+    const o: unknown = JSON.parse(raw);
+    return isObj(o) ? noticeOf(o) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** A relay message as the client accepts it, or null. */
 export function parseServer(raw: unknown): ServerMsg | null {
   const o = parseObj(raw);
@@ -130,6 +170,10 @@ export function parseServer(raw: unknown): ServerMsg | null {
       return isTime(o.c) ? { v: 1, kind: 'pong', c: o.c, t } : null;
     case 'presence':
       return isWho(o.who) && typeof o.on === 'boolean' ? { v: 1, kind: 'presence', who: o.who, on: o.on, t } : null;
+    case 'changed': {
+      const n = noticeOf(o);
+      return n && { v: 1, kind: 'changed', ...n, t };
+    }
   }
   if (!isWho(o.who)) return null;
   const i = intentOf(o);

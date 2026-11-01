@@ -14,6 +14,7 @@ describe('live protocol: client messages', () => {
     expect(parseClient(j({ kind: 'catch', what: 'sea-bass' }))).toEqual({ v: 1, kind: 'catch', what: 'sea-bass' });
     expect(parseClient(j({ kind: 'emote', emote: 'mark-note' }))).toEqual({ v: 1, kind: 'emote', emote: 'mark-note' });
     expect(parseClient(j({ kind: 'world', op: 'fruit-collected', id: 'tree-2.1' }))).toEqual({ v: 1, kind: 'world', op: 'fruit-collected', id: 'tree-2.1' });
+    expect(parseClient(j({ kind: 'saved', at: 'x' }))).toEqual({ v: 1, kind: 'saved' });
   });
 
   it('accepts every act, world op and both kinds of walk target', () => {
@@ -63,6 +64,16 @@ describe('live protocol: relay messages', () => {
     expect(parseServer(j({ kind: 'pong', c: 1, t: 2 }))).toEqual({ v: 1, kind: 'pong', c: 1, t: 2 });
     expect(parseServer(j({ kind: 'presence', who: 'B', on: false, t: 3 }))).toEqual({ v: 1, kind: 'presence', who: 'B', on: false, t: 3 });
     expect(parseServer(j({ kind: 'walk', to: [1, 2], who: 'B', t: 4 }))).toEqual({ v: 1, kind: 'walk', to: [1, 2], who: 'B', t: 4 });
+    expect(parseServer(j({ kind: 'saved', who: 'A', t: 5 }))).toEqual({ v: 1, kind: 'saved', who: 'A', t: 5 });
+  });
+
+  it('accepts a sheet change with its known fields only, and refuses a bad one', () => {
+    const n = { what: 'event', who: 'B', at: '2026-11-01T01:02:03.456Z', rev: 'mhf0a1b2' };
+    expect(parseServer(j({ kind: 'changed', ...n, t: 6, extra: 1 }))).toEqual({ v: 1, kind: 'changed', ...n, t: 6 });
+    expect(parseServer(j({ kind: 'changed', ...n }))).toBeNull();
+    expect(parseServer(j({ kind: 'changed', ...n, at: 'yesterday', t: 6 }))).toBeNull();
+    expect(parseServer(j({ kind: 'changed', ...n, what: 'resync', t: 6 }))).toBeNull();
+    expect(parseServer(j({ kind: 'changed', ...n, rev: undefined, t: 6 }))).toBeNull();
   });
 
   it('refuses a relayed intent without who or t, and an unknown person', () => {

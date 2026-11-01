@@ -2,6 +2,7 @@
 // or the environment), the origin and key checks, presence, a relayed intent, and round-trip times.
 //   npm run smoke                       (the test copy)
 //   RELAY_URL=wss://… npm run smoke     (another deployment with those keys)
+import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
@@ -144,14 +145,53 @@ const b2 = new Client();
 await b2.open();
 b2.send({ kind: 'hello', key: KEY_B, since });
 await b2.next((m) => m.kind === 'welcome');
-const replay = await b2.next((m) => m.kind === 'world');
-check(replay.id === 'smoke', 'a reconnecting B gets the world op it missed');
+const missed = await b2.next((m) => m.kind === 'world');
+check(missed.id === 'smoke', 'a reconnecting B gets the world op it missed');
 
 const a2 = new Client();
 await a2.open();
 a2.send({ kind: 'hello', key: KEY_A });
 await a2.next((m) => m.kind === 'welcome');
 check((await a.closed) === 4002, 'a second A replaces the first (4002)');
+
+// The push (docs/backend.md#push): a signed /notify, as Apps Script sends it, reaches both phones as `changed`.
+const notifyUrl = new URL('/notify', http);
+const unsigned = await fetch(notifyUrl, { method: 'POST', body: '{}' });
+check(unsigned.status === 401, `an unsigned notify is refused (${unsigned.status})`);
+check((await fetch(notifyUrl)).status === 405, 'a GET /notify is refused');
+const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update('island-relay-notify/1').digest('hex');
+const pushes: number[] = [];
+for (let i = 0; i < Math.min(N, 10); i++) {
+  const at = new Date().toISOString();
+  const body = JSON.stringify({ what: 'ingest', who: 'A', at, rev: 'smoke1' });
+  const t = String(Date.now());
+  const p0 = performance.now();
+  const r = await fetch(notifyUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${body}`).digest('hex') },
+    body
+  });
+  if (i === 0) check(r.status === 204 && r.headers.get('X-Island-Heard') === '2', `a signed notify is accepted (${r.status}, heard by ${r.headers.get('X-Island-Heard')})`);
+  await Promise.all([a2, b2].map((c) => c.next((m) => m.kind === 'changed' && m.at === at)));
+  pushes.push(performance.now() - p0);
+  await pause(200);
+}
+console.log(`     notify POST → changed on both phones: ${stats(pushes)}`);
+const replay = JSON.stringify({ what: 'ingest', who: 'A', at: new Date().toISOString(), rev: 'smoke1' });
+const old = String(Date.now() - 6 * 60_000);
+const stale = await fetch(notifyUrl, { method: 'POST', headers: { 'X-Island-Time': old, 'X-Island-Sig': createHmac('sha256', secret).update(`${old}.${replay}`).digest('hex') }, body: replay });
+check(stale.status === 401, `a notify signed 6 min ago is refused (${stale.status})`);
+
+// The nudge after an acked write: B says `saved`, A hears it.
+const nudges: number[] = [];
+for (let i = 0; i < Math.min(N, 10); i++) {
+  const p0 = performance.now();
+  b2.send({ kind: 'saved' });
+  await a2.next((m) => m.kind === 'saved' && m.who === 'B');
+  nudges.push(performance.now() - p0);
+  await pause(80);
+}
+console.log(`     saved nudge B → A: ${stats(nudges)}`);
 
 a2.ws.close(1000);
 b2.ws.close(1000);

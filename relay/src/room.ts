@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, LIVE_V, MAX_BYTES, parseClient, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, LIVE_V, MAX_BYTES, parseClient, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -119,6 +119,14 @@ export class RoomCore<S extends Sock> {
       for (const e of this.fresh()) if (e.t > since && e.who !== who) this.send(s, e);
     }
     if (!was.length) for (const p of peers) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+  }
+
+  /** The sheet changed (Apps Script's /notify): every connected phone hears it, the writer's own too. Returns how many. */
+  notify(n: Notice): number {
+    const to = this.authed();
+    const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, t: this.io.now() };
+    for (const s of to) this.send(s, m);
+    return to.length;
   }
 
   /** A socket closed (or errored). Its person's partner hears they left, unless another socket of theirs is open. */
