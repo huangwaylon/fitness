@@ -105,7 +105,9 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
   await expect(v.locator('.art')).toBeHidden();
   await expect(v.locator('.art')).toBeVisible({ timeout: 26_000 });
   await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 26_000 });
-  await expect(v).toHaveAttribute('data-phase', 'leave', { timeout: 12_000 });
+  // the visit ends 30 s after it began, however long the walk from the campsite took (the route's length moves with
+  // the scenery the walk goes round)
+  await expect(v).toHaveAttribute('data-phase', 'leave', { timeout: 20_000 });
   await expect(v).toHaveClass(/walking/);
   await expect(v.locator('.art')).toBeHidden({ timeout: 20_000 });
   await expect(page.locator('[data-visitor]')).toHaveCount(0, { timeout: 30_000 });
