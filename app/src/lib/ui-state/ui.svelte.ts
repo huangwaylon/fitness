@@ -4,6 +4,14 @@ class Ui {
   sheets = $state<number[]>([]);
   /** The island's decorate mode is on (docs/design.md "Decorating": せってい → もようがえ starts it, ✓ おわる ends it). */
   decorating = $state(false);
+  /** The island's camera when the tent was entered (its world z): the island opens there again on the way out. */
+  islandZ: number | null = null;
+  /** The camera to come back to, once (then null). */
+  takeIslandZ(): number | null {
+    const z = this.islandZ;
+    this.islandZ = null;
+    return z;
+  }
   #overlay: () => boolean = () => false;
   /** The harvest overlay is up (read straight from the layout's state: no mirroring effect). */
   get overlay(): boolean {

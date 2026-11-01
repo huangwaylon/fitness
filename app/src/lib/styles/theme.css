@@ -117,3 +117,18 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 @keyframes vt-grow { from { transform: scale(.6); opacity: 0; } }
 @keyframes vt-pull-in { from { transform: scale(1.12); opacity: 0; } }
 @keyframes vt-rise { from { transform: translateY(16px); opacity: 0; } }
+
+/* ---------- 島 ⇄ テント (ui-state/doorTransition.ts) ----------
+   NH's door: a black iris closes on the door we go through (260ms, easing in), stays black while the route changes
+   and the room's first frame is drawn, then opens out of the arriving screen's door (420ms). One fixed layer over
+   everything; its radius is a registered property, so the cut-out animates on its own. */
+@property --door-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
+:root[data-door]::after {
+  content: ''; position: fixed; inset: 0; z-index: 2147483000; pointer-events: auto;
+  background: radial-gradient(circle at var(--door-x, 50%) var(--door-y, 75%), transparent calc(var(--door-r) - 1px), #120c08 var(--door-r));
+}
+:root[data-door="close"]::after { animation: door-close 260ms cubic-bezier(.5, 0, .9, .6) both; }
+:root[data-door="black"]::after { --door-r: 0px; }
+:root[data-door="open"]::after { animation: door-open 420ms cubic-bezier(.2, .6, .4, 1) both; pointer-events: none; }
+@keyframes door-close { from { --door-r: 150vmax; } to { --door-r: 0px; } }
+@keyframes door-open { from { --door-r: 0px; } to { --door-r: 150vmax; } }

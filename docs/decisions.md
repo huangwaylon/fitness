@@ -357,7 +357,7 @@ NH's snowy models and the models' emissive light give the winter and night looks
 onto the icons; each tree's gradient gives its seasons; an oak renders as trunk and canopy layers. Pre-rendered, not
 drawn at runtime: the world stays DOM sprites with no WebGL, no runtime cost and the same lazy loading, at ~3 px per
 unit (a WebGL layer would add ~145 KB of three.js, megabytes of models and a frame on every scroll, and couldn't
-interleave with the DOM sprites' depth order). The model files never enter the repo, only the renders. Why: the user
+interleave with the DOM sprites' depth order). The model files never enter the repo, only the renders and the tent's converted models (below). Why: the user
 asked for the game's own models ("let's use them going forward"), and they read as one family at every season.
 
 ### The fixed decor: spots that hold one piece each, the seasons taking turns in them
@@ -368,3 +368,15 @@ is a walk obstacle all year and a place a player's decoration can't take, even w
 lands on one and the walk graph never changes with the date. Pure on the date, the hour and the seed: no sync needed.
 Why: the user approved the decor plan (one sea-facing bench at the front, the pull-up bar, seasonal swaps "never
 additions"), and two phones must show the same island.
+
+### The tent's inside is three.js, its models NH's own, converted
+The tent opens a room that is truly 3D (`components/tent/`): three.js at runtime, in its own chunk fetched only when
+the tent opens, drawn on demand at a capped pixel ratio, disposed on the way out. Its furniture, rugs, wallpapers and
+floors are NH's own files converted by `scripts/room-models.ts` into compact glTFs and WebPs committed under
+`static/room/` (about 8 MB for ~390 pieces and 82 surfaces, ≈ 18 KB a piece): the starter set and every furniture a
+balloon can bring that NH has a model of here, so a ずかん find can always be placed. The raw game files never enter
+the repo; the conversion is reproducible. The villagers stay billboards of their renders. The page's CSP gains
+`wasm-unsafe-eval` (the meshopt decoder is WebAssembly) and `blob:` for images and fetches (three decodes the models'
+textures from blob URLs). Why: the user asked for a fully 3D room "the size of a large room in animal crossing" to
+furnish and walk in; the island's DOM world couldn't, a WebGL layer there would cost the island, and on its own screen
+it costs the island nothing. Model files public: the user's call.

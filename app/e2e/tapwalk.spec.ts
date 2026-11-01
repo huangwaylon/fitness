@@ -93,24 +93,21 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   expect(await call(page, (w) => w.cam())).toBe(front);
 });
 
-test('the campsite: a tap and its line about today’s guest (nobody inside), my villager staying where it is', async ({ page }) => {
+test('the campsite: a tap goes into the tent in place, my villager staying where it is (no walk to the door)', async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
   const home = await call(page, (w) => w.mine());
   await page.locator('[data-building="campsite"] .door').click();
-  const box = page.locator('[data-fx="talk"]');
-  await expect(box).toContainText('キャンプサイト', { timeout: 2000 });
   expect(await call(page, (w) => w.mine())).toEqual(home);
-  await shot(page, 'campsite-door');
-  for (let i = 0; i < 4 && (await box.count()); i++) await box.click().catch(() => {});
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await expect(page.locator('.tap-ring')).toHaveCount(0);
+  await expect(page).toHaveURL(/\/tent\?/);
 });
 
-test('a tap at the tent’s foot knocks at its door in place (the footprint is the campsite’s)', async ({ page }) => {
+test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)', async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
   // the ground just inside the tent's footprint (taps on the art itself are the door button's)
   await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' });
   const [x, y] = await call(page, (w) => w.at(170, 1000));
   await page.mouse.click(x, y);
-  await expect(page.locator('[data-fx="talk"]')).toContainText('キャンプサイト', { timeout: 2000 });
   await expect(page.locator('.tap-ring')).toHaveCount(0);
+  await expect(page).toHaveURL(/\/tent\?/);
 });

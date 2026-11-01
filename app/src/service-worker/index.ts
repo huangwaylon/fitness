@@ -4,7 +4,7 @@ import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { notificationFor, openApp } from './notify.ts';
-import { AUDIO_CACHE, SHELL, isAudio, isCritterArt, isDecorArt, isFont, isMusic, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, ROOM_CACHE, SHELL, isAudio, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, precachable, staleCaches } from './caches.ts';
 
 // The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -50,7 +50,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE])) await caches.delete(key);
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE])) await caches.delete(key);
       await self.clients.claim();
     })()
   );
@@ -116,15 +116,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // fonts, villagers, critters and the decor: cached on first use (critters and the decor share the villagers' on-use art cache)
-  if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname) || isDecorArt(url.pathname)) {
-    const font = isFont(url.pathname);
+  // fonts, villagers, critters, the decor and the tent's room: cached on first use (critters and the decor share the
+  // villagers' on-use art cache; the room has its own)
+  if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname) || isDecorArt(url.pathname) || isRoomAsset(url.pathname)) {
+    const font = isFont(url.pathname), room = isRoomAsset(url.pathname);
     event.respondWith(
       (async () => {
         // the two default villagers are precached (fonts never are)
-        const precached = font ? undefined : await caches.open(CACHE).then((c) => c.match(req));
+        const precached = font || room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
         if (precached) return precached;
-        const cache = await caches.open(font ? FONTS : VILLAGERS);
+        const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
         const hit = await cache.match(req);
         if (hit) return hit;
         const res = await fetch(req);

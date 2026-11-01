@@ -14,6 +14,8 @@ export default defineConfig({
     ...devices['iPhone 13'],
     browserName: 'chromium',
     channel: process.env.CI ? undefined : 'chrome',
+    // the tent's room is WebGL: headless Chromium draws it in software (SwiftShader)
+    launchOptions: { args: ['--enable-unsafe-swiftshader'] },
     baseURL: `http://127.0.0.1:${PORT}${BASE}/`,
     serviceWorkers: 'block', // every test starts from the network build, not a cached shell
     locale: 'ja-JP',

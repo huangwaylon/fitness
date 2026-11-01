@@ -46,7 +46,10 @@
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { todayPct } from './progress.ts';
   import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, PULLUP_AT, SEAT_DROP, SHORE_Z, TREE_H, flowerById, seatAt, surfaceAt, type BuildingId } from './world.ts';
-  import { campLine, doorAt, partnerOnline } from './buildings.ts';
+  import { doorAt, partnerOnline } from './buildings.ts';
+  import { provideDoor } from '#lib/ui-state/doorTransition.ts';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { RING_MS, stepCue } from './tapWalk.ts';
   import { buildingAt, nav } from './nav.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
@@ -55,7 +58,6 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { decor } from '#lib/store/decor.svelte.ts';
   import Decor from './Decor.svelte';
-  import { visitorNow } from './visitors.ts';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
   import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
   import { hybridFor, hybridsOf } from './care.ts';
@@ -411,8 +413,11 @@
       return anyMoving();
     });
     flushSync(); // the track's height for this screen, before scrolling to its foot
-    scroller.scrollTop = scrollFor(camMin, camMax, world.view.s);
-    world.view.camZ = camMin;
+    // back out of the tent: the camera where it was when we went in (else the scroller's foot, まえ)
+    const back = live ? ui.takeIslandZ() : null;
+    const z0 = back === null ? camMin : Math.min(camMax, Math.max(camMin, back));
+    scroller.scrollTop = scrollFor(z0, camMax, world.view.s);
+    world.view.camZ = z0;
     world.rest.ready = true;
     world.invalidate();
     const offMove = live ? onMove(() => world.kick()) : () => {};
@@ -650,21 +655,25 @@
       offDecor();
     };
   });
-  // The campsite's door (docs/design.md "Buildings"): a tap says who is visiting today (nobody lives inside; the
-  // balloon's tail at the door).
-  function building(id: BuildingId, el: HTMLElement) {
-    if (!live || covered) return;
-    // in place (only a tap on empty ground walks): my villager turns to the door and the line is said
+  // The campsite's door (docs/design.md "Buildings", "The tent"): a tap goes into the tent, its own screen (the door's
+  // iris closes on it: ui-state/doorTransition.ts); the camera is kept for the way back out.
+  function building(id: BuildingId, _el: HTMLElement) {
+    if (!live || covered || id !== 'campsite' || entering) return;
+    // in place (only a tap on empty ground walks): my villager turns to the door, and in we go
     turnTo(doorAt(id)[0]);
-    knock(id, el);
+    entering = true;
+    ui.islandZ = world.view.camZ;
+    cue('scene-bench');
+    void goto(resolve('/tent') + location.search).finally(() => (entering = false));
   }
-  /** At the door: the campsite's line about today's guest (the balloon's tail at the door). */
-  function knock(id: BuildingId, el: HTMLElement) {
-    if (covered) return;
-    const guest = visitorNow(minuteNow());
-    cue('tick');
-    talk?.say(t(`world.building.${id}`), t(campLine(!!guest), { name: guest ? t(`visitor.${guest}`) : '' }), el, { colour: '#B5D98A' });
-  }
+  let entering = false;
+  // the tent's door for the iris (its button's middle on screen)
+  onMount(() =>
+    provideDoor(() => {
+      const r = sceneEl?.querySelector<HTMLElement>('[data-building="campsite"] .door')?.getBoundingClientRect();
+      return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height * 0.7 } : null;
+    })
+  );
   // Fireworks (design.md "Fireworks"): our volley when both of us met all four today; a villager cheers at a burst now
   // and then (awake and not busy with something else); a tap in the sky during a show sends one more (SceneTaps).
   let fireworks = $state<{ tap(px: number, py: number): boolean }>();

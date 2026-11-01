@@ -89,12 +89,14 @@ export default defineConfig({
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev'],
-          'img-src': ['self', 'data:'],
+          'connect-src': ['self', 'https://script.google.com', 'https://script.googleusercontent.com', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'blob:'],
+          // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
+          'img-src': ['self', 'data:', 'blob:'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
           'media-src': ['self', 'blob:'],
           'style-src': ['self', 'unsafe-inline'],
-          'script-src': ['self'],
+          // the tent's meshopt decoder is WebAssembly (compiled, never eval'd JavaScript)
+          'script-src': ['self', 'wasm-unsafe-eval'],
           'object-src': ['none'],
           'base-uri': ['self'],
           'form-action': ['none']
