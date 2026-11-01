@@ -6,7 +6,7 @@
 // otherwise only, rarely, a nest (NH: no branches or bagworms from a palm, no furniture from any tree here). At most one
 // nest per tree per NEST_GAP_MS, on both phones (the shared day's shakes; the relay refuses a second); out of it the
 // wasps charge the villager who shook it, and a tap on them within SWARM_MS nets one (the ずかん's wasp), else they
-// sting (a fright: a 「！」 and a sweat drop). No ベル ever (scenery never pays). A shake is shared (docs/backend.md#
+// sting (a fright: a 「！」 and a sweat drop, and NH's swollen eye for a while). No ベル ever (scenery never pays). A shake is shared (docs/backend.md#
 // shared-world): its outcome goes to the partner, whose phone plays it at the same tree, and what it left (a branch,
 // coconuts) lies there on both phones, by ids from the day's shakes, until one of us picks it up.
 import type { Drop } from '#lib/sync/live-protocol.ts';
@@ -108,9 +108,10 @@ export const SWARM_MS = 1500;
 /** A tap on the swarm `ms` after it came out: netted while it is still on its way, else too late (it has stung). */
 export const netsSwarm = (ms: number): boolean => ms >= 0 && ms <= SWARM_MS;
 
-/** A sting's fright: a 「！」, then a sweat drop (an emote: NH's swollen eye can't be placed on 440 different faces),
- *  the sweat this long after the 「！」. */
+/** A sting's fright: a 「！」, then a sweat drop this long after it. */
 export const STUNG_SWEAT_MS = 1300;
+/** How long a sting leaves its swollen eye (NH's lump over one eye, placed on each render's eye: villagers/heads.ts). */
+export const SWOLLEN_MS = 60 * 1000;
 
 // ---------- the day's shakes (shared) ----------
 

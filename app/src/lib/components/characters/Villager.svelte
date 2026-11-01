@@ -7,7 +7,7 @@
   //   <Villager person="A" actor="mine" side="left" />     driven by the stage director (island scene)
   // Rig: .face (scaleX = facing; `if-turn`) › .body (origin at the feet; idle bob OR one motion) › art.
   // The emote bubble and fx are siblings of .face, so they never squash or mirror.
-  import { TYPICAL_HEAD, loadHeads, type HeadBox } from '#lib/villagers/heads.ts';
+  import { TYPICAL_HEAD, loadHeads, swollenEye, type HeadBox } from '#lib/villagers/heads.ts';
   import type { PersonId } from '#lib/types.ts';
   import OfficialArt from './OfficialArt.svelte';
   import Emote from './Emote.svelte';
@@ -48,10 +48,12 @@
     hat?: string | null;
     /** Tricked by Jack on Halloween (island/Visitor.svelte): NH's trick changes your look; here, party nose glasses. */
     tricked?: boolean;
+    /** Stung by a shaken tree's wasps (island/TreeShakes.svelte): NH's swollen eye, for a while. */
+    swollen?: boolean;
   }
   let {
     person = 'A', villager, expression = 'happy', size = 48, head, emote = false,
-    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, tricked = false, hat = null
+    animate = true, eager = false, actor, side = 'left', emoteSize = '44px', shadow = false, tricked = false, swollen = false, hat = null
   }: Props = $props();
 
   const pref = $derived(week.view?.people?.[person]?.villager);
@@ -87,13 +89,15 @@
   const facing = $derived(wantRight === null || look.noMirror ? 1 : wantRight === look.looksRight ? 1 : -1);
   const holding = $derived(st?.holding ?? null);
 
-  // What sits on the head (the birthday hat, Jack's glasses) goes where this render's head is (villagers/heads.ts,
-  // measured from the art), loaded the first time one is worn.
+  // What sits on the head (the birthday hat, Jack's glasses, a sting's swollen eye) goes where this render's head and
+  // eyes are (villagers/heads.ts, measured from the art), loaded the first time one is worn.
   let heads = $state.raw<Record<string, HeadBox> | null>(null);
   $effect(() => {
-    if ((hat || tricked) && !headOnly && !heads) void loadHeads().then((t) => (heads = t), () => {});
+    if ((hat || tricked || swollen) && !headOnly && !heads) void loadHeads().then((t) => (heads = t), () => {});
   });
   const headBox = $derived(heads?.[look.id] ?? TYPICAL_HEAD);
+  // the lump waits for the table (a typical face's eye could be a cheek on this one)
+  const eye = $derived(swollen && heads ? swollenEye(headBox, look.looksRight) : null);
 
   // Replay the same motion back to back: drop the attribute, reflow, set it again.
   let bodyEl = $state<HTMLElement | null>(null);
@@ -120,6 +124,7 @@
       <OfficialArt {key} size={h} {eager}>
         {#snippet fallback()}<RosterSilhouette id={look.id} head={headOnly} height={h} />{/snippet}
       </OfficialArt>
+      {#if eye && !headOnly}<span class="swollen" data-swollen aria-hidden="true" style:left="{eye.x * 100}%" style:top="{eye.y * 100}%" style:width="{eye.w * 100}%"></span>{/if}
       {#if hat && !headOnly}<span class="hat" data-hat aria-hidden="true" style:left="{headBox[0] * 100}%" style:top="{headBox[1] * 100}%"><OfficialArt key={hat} size="calc(var(--h) * .24)" eager /></span>{/if}
       {#if tricked && !headOnly}
         <svg class="tricked" data-tricked viewBox="0 0 72 34" aria-hidden="true" style:left="{headBox[0] * 100}%" style:top="{headBox[2] * 100}%" style:width="{headBox[3] * 74}%">
@@ -166,6 +171,12 @@
   }
   @keyframes trick-on { from { transform: scale(.2) rotate(-20deg); opacity: 0; } 50% { opacity: 1; } }
   @keyframes puff-up { from { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } }
+  /* NH's sting: one eye swollen shut under a round pink lump, centred on the eye (villagers/heads.ts swollenEye) */
+  .swollen {
+    position: absolute; translate: -50% -42%; aspect-ratio: 1.1; border-radius: 50% 50% 46% 46%; /* a little onto the cheek */
+    background: radial-gradient(circle at 36% 32%, #FFE3E6 0 14%, #FF9FAE 34%, #EE6F86 78%, #D95773);
+    box-shadow: 0 1px 2px rgb(120 30 50 / .3); transform-origin: 50% 70%; animation: puff-up 420ms var(--ease-bounce) both;
+  }
   /* NH's birthday hat: perched on the top of the head, a little tilted, popping on */
   .hat { position: absolute; translate: -50% -90%; rotate: -8deg; line-height: 0; animation: puff-up 420ms var(--ease-bounce) both; } /* its brim on the head's top */
   .right .hat { rotate: 8deg; }

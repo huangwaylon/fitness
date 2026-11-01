@@ -39,7 +39,7 @@
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt, forcedEvent } from './events.ts';
   import { TRICK_MS } from './visitors.ts';
-  import { STUNG_SWEAT_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
+  import { STUNG_SWEAT_MS, SWOLLEN_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
@@ -220,14 +220,19 @@
     const both = shared.wateredYesterday().filter(flowerById);
     return both.length ? hybridFor(today, both, kindOf) : mine;
   });
-  // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop.
+  // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop, and
+  // NH's swollen eye for a while.
   let shakes = $state<ReturnType<typeof TreeShakes>>();
   let stung = $state<Record<'mine' | 'partner', boolean>>({ mine: false, partner: false });
   const unsting: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeout>>> = {};
+  let swollen = $state<Record<'mine' | 'partner', boolean>>({ mine: false, partner: false });
+  const unswell: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeout>>> = {};
   function sting(side: 'mine' | 'partner') {
     setMotion(side, 'surprise');
     setEmote(side, 'mark-bang');
-    stung[side] = true;
+    stung[side] = swollen[side] = true;
+    clearTimeout(unswell[side]);
+    unswell[side] = setTimeout(() => (swollen[side] = false), SWOLLEN_MS);
     clearTimeout(unsting[side]);
     unsting[side] = setTimeout(() => {
       setEmote(side, 'mark-sweat');
@@ -742,7 +747,7 @@
                 } else highFiveTap();
               }}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
-                actor={live ? id : undefined} side={sd.side} emoteSize="var(--emote-size)" shadow animate={live} tricked={id === 'mine' && tricked} hat={live ? hatOf(id, sd.person) : null} />
+                actor={live ? id : undefined} side={sd.side} emoteSize="var(--emote-size)" shadow animate={live} tricked={id === 'mine' && tricked} swollen={swollen[id]} hat={live ? hatOf(id, sd.person) : null} />
             </button>
           </div>
         {/each}

@@ -432,8 +432,9 @@ NH).
   them). What lies (branches, coconuts) is the shared day's: a reload or the other phone finds it there, and a pick-up
   by either of us takes it on both (first wins). `?shake=nest|branch|bagworm|spider|coconut` forces the next drop.
 - **The nest:** three wasps buzz out and charge the villager who shook it for 1.5 s; a tap in time nets one (NH's catch
-  line, a ずかん find). Too late, they sting: a 「！」, a sweat drop, and they fly off. The wasp is weight 0 in the bug
-  table: it only ever comes from a nest. The chase and sting have their own music ([Event music](#event-music)).
+  line, a ずかん find). Too late, they sting: a 「！」, a sweat drop, and they fly off; NH's swollen eye (a pink lump on
+  the villager's own eye, the near one on a render drawn looking right) stays for a minute. The wasp is weight 0 in the
+  bug table: it only ever comes from a nest. The chase and sting have their own music ([Event music](#event-music)).
 - **A dangling bug:** a bagworm, or in the spider's hours (19:00–08:00) a spider 3 times in 8, drops on its thread and
   sways for 10 s; a tap nets it, left alone it climbs back up.
 
@@ -868,8 +869,9 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 
 - **Rig** (`Villager.svelte`, `Host.svelte`): `.actor` › `.face` (facing) › `.body` (one motion) › the art; emotes and
   fx sit beside `.face`, so they never squash or mirror. What sits on the head (the birthday hat, Jack's party glasses)
-  goes where each render's head is: `villagers/heads.json`, measured from the art's alpha by `npm run heads`
-  (`scripts/heads.ts`), loaded only when one is worn. The director (`motion/director.svelte.ts`) holds one state per
+  goes where each render's head is, a sting's swollen eye on its eye: `villagers/heads.json`, measured from the art by
+  `npm run heads` (`scripts/heads.ts`: the head from the alpha, the eyes as lit dark blobs, a level pair, with a
+  hand-checked table where that misses), loaded only when one is worn. The director (`motion/director.svelte.ts`) holds one state per
   actor (mine, the partner's, しずえ, the visitor); `holdEvents(ms)` queues event reactions behind a routine.
 - **Primitives:** `if-` keyframes in `tokens.css`; durations in `MOTION_MS` (`motion/reactions.ts`) must match.
 - **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble (`Emote.svelte`).

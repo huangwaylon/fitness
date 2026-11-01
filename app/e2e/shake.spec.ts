@@ -1,8 +1,15 @@
 // Shaking a tree (docs/design.md "Shaking a tree"): one tap still opens the popup; a quick run of taps shakes the tree.
 // A shake may drop a branch (a tap picks it up), a bagworm or a spider dangling on its thread (a tap nets it) or, rarely,
 // a wasp nest: its wasps charge the villager on that side; a tap on them in time nets one (NH's catch line), else they
-// sting (a fright and a sweat drop). `?shake=nest|branch|bagworm|spider` forces the next shake's drop. Nothing changes ベル.
+// sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
+// forces the next shake's drop. Nothing changes ベル.
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { swollenEye, type HeadBox } from '../src/lib/villagers/heads.ts';
+import { LOOKS_RIGHT } from '../src/lib/villagers/facing.ts';
+import { ROSTER, type RosterId } from '../src/lib/villagers/roster.ts';
+
+const HEADS = JSON.parse(readFileSync(new URL('../src/lib/villagers/heads.json', import.meta.url), 'utf8')) as Record<string, HeadBox>;
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -70,7 +77,19 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   expect(day.events).toContainEqual(expect.objectContaining({ kind: 'shake', tree: 'goal-A', drop: 'nest' }));
 });
 
-test('too late: the wasps sting the villager on that side (a fright and a sweat drop) and fly off', async ({ page }) => {
+/** My villager's swollen eye against where heads.json puts this render's eye (mirrored with the villager's facing), as
+ *  fractions of its drawn figure: { dx, dy } off, and the lump's width. */
+const swellOn = (page: Page, id: string) =>
+  page.locator('[data-actor="mine"]').evaluate((actor, [want, looksRight]) => {
+    const lump = actor.querySelector('[data-swollen]'), body = actor.querySelector('.body');
+    if (!lump || !body) return null;
+    const art = body.getBoundingClientRect(), l = lump.getBoundingClientRect();
+    const facing = Number(getComputedStyle(actor.querySelector('.villager')!).getPropertyValue('--facing')) || 1;
+    const x = (l.left + l.width / 2 - art.left) / art.width, y = (l.top + l.height / 2 - art.top) / art.height;
+    return { dx: (facing < 0 ? 1 - x : x) - want.x, dy: y - want.y, w: l.width / art.width, looksRight };
+  }, [swollenEye(HEADS[id], LOOKS_RIGHT.has(id as RosterId)), LOOKS_RIGHT.has(id as RosterId)] as const);
+
+test('too late: the wasps sting the villager on that side (a fright, a sweat drop, the swollen eye) and fly off', async ({ page }) => {
   await open(page, '&shake=nest');
   await shake(page);
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
@@ -80,6 +99,37 @@ test('too late: the wasps sting the villager on that side (a fright and a sweat 
   expect(Math.abs(w.x + w.width / 2 - (v.x + v.width / 2))).toBeLessThan(v.width);
   expect(await cues(page)).toContain('scene-sting');
   await expect(page.locator('button[data-swarm]')).toHaveCount(0, { timeout: 2000 });
+  // NH's swollen eye on Goldie's own eye (drawn looking right: her right one), and it stays after the fright
+  await expect(page.locator('[data-actor="mine"] [data-swollen]')).toHaveCount(1);
+  await page.waitForTimeout(3000);
+  await expect(page.locator('[data-actor="mine"] [data-stung]')).toHaveCount(0);
+  const at = (await swellOn(page, 'goldie'))!;
+  expect(Math.abs(at.dx)).toBeLessThan(0.02);
+  expect(Math.abs(at.dy)).toBeLessThan(0.02);
+  await expect(page.locator('[data-actor="partner"] [data-swollen]')).toHaveCount(0);
+});
+
+test('the swollen eye sits on the eye whatever the face: tall ears, wide heads, specials, glasses, masks, profiles', async ({ page }) => {
+  test.setTimeout(90_000);
+  await open(page, '&shake=nest');
+  await shake(page);
+  await expect(page.locator('[data-actor="mine"] [data-swollen]')).toHaveCount(1, { timeout: 4000 });
+  // my villager changes while the eye is still swollen (60 s): it moves to each render's eye
+  const sheet = page.locator('dialog[open]');
+  await ribbon(page).click();
+  await sheet.locator('.tab[data-tab=settings]').click();
+  await sheet.locator('[data-push=villager]').click();
+  const search = sheet.getByRole('searchbox');
+  for (const id of ['raymond', 'ankha', 'dotty', 'tucker', 'blathers', 'tank', 'kk-slider', 'tom-nook', 'wisp', 'agent-s', 'daisy-mae', 'bunnie', 'hamlet', 'gulliver'] as const) {
+    await search.fill(ROSTER[id].nameEn);
+    await sheet.getByRole('radio', { name: ROSTER[id].nameJa, exact: true }).click();
+    await expect(page.locator(`[data-actor="mine"] img[src*="/villagers/${id}.webp"]`)).toHaveCount(1);
+    await expect.poll(async () => Math.abs((await swellOn(page, id))?.dx ?? 1), { message: id }).toBeLessThan(0.02);
+    const at = (await swellOn(page, id))!;
+    expect(Math.abs(at.dy), id).toBeLessThan(0.02);
+    expect(at.w, id).toBeGreaterThanOrEqual(0.09);
+    expect(at.w, id).toBeLessThanOrEqual(0.27);
+  }
 });
 
 test('a shaken branch lies beside the trunk until a tap picks it up', async ({ page }) => {
