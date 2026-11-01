@@ -431,12 +431,16 @@ else beside it, else below the feet, sliding along so the tail still reaches. Ro
 doesn't: clear of every control, else over the museum (both within 16px); else over the island's things (trees, fruit
 rows) but not the villagers; else over them too. Never over the HUD, しずえ's box, a popup or another overlay, the
 speaker, or off the scene. It follows a speaker who moves (a move lasting 0.6 s) and closes if they go. Plates and
-captions (`place`: the catch plate, the wish, K.K.'s caption) keep clear of every control, nearest first.
+captions (`place`: the catch plate, the wish, K.K.'s caption) keep clear of every control, nearest first. Every balloon,
+plate and caption keeps 12px (`EDGE`) from the screen's sides and foot, above the home indicator. The catch plate is one
+plate for every discovery (catches, finds, a present, its first-find page): the icon at its start, two lines a page, the
+▼ in its own room at the right; the captions (the wish, K.K.'s song, Gulliver's sleep talk) share one pill
+(`.if-caption`: the plate's colours, 13px).
 
 ### Villager chats
 
 `island/chat.ts`, `island/Talk.svelte`, `e2e/chat.spec.ts`. A tap on my villager keeps its hop and says a line in NH's
-balloon above its head. Lines follow the villager's NH personality (12 each; special characters 10 of their own), 3 in
+balloon right over its head (the tap's ♪ floats up behind it). Lines follow the villager's NH personality (12 each; special characters 10 of their own), 3 in
 10 about the day (the morning, the night, today's goals so far, never ベル), a sleepy one when the tap wakes them; never
 the same twice running. The roster loads on the first chat. One balloon at a time.
 
@@ -591,7 +595,9 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 ## Motion
 
 - **Rig** (`Villager.svelte`, `Host.svelte`): `.actor` › `.face` (facing) › `.body` (one motion) › the art; emotes and
-  fx sit beside `.face`, so they never squash or mirror. The director (`motion/director.svelte.ts`) holds one state per
+  fx sit beside `.face`, so they never squash or mirror. What sits on the head (the birthday hat, Jack's party glasses)
+  goes where each render's head is: `villagers/heads.json`, measured from the art's alpha by `npm run heads`
+  (`scripts/heads.ts`), loaded only when one is worn. The director (`motion/director.svelte.ts`) holds one state per
   actor (mine, the partner's, しずえ, the visitor); `holdEvents(ms)` queues event reactions behind a routine.
 - **Primitives:** `if-` keyframes in `tokens.css`; durations in `MOTION_MS` (`motion/reactions.ts`) must match.
 - **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble (`Emote.svelte`).

@@ -17,7 +17,6 @@
   // `ondone` runs once the box closes (tapped away, answered or read through; at once when there's no room for it),
   // not when a new line replaces it.
   import { tick } from 'svelte';
-  import type { Box } from './geom.ts';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from './pager.ts';
 
@@ -105,9 +104,8 @@
   }
 
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
-   *  head). `avoid`: what floats with the speaker (client px, e.g. its emote): kept clear, moved along as the speaker
-   *  moves, and the balloon stands off it as off the speaker; `colour`: the name tag's. */
-  export async function say(name: string, parts: string | readonly string[], from: Element, o: { avoid?: Box[]; colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
+   *  head); `colour`: the name tag's. */
+  export async function say(name: string, parts: string | readonly string[], from: Element, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
     halt();
     const n = ++seq;
     done = o.ondone;
@@ -121,28 +119,24 @@
       await tick();
     }
     if (!scene || said?.n !== n) return;
-    speaker = { from, avoid: o.avoid ?? [], at: from.getBoundingClientRect() };
+    speaker = from;
     if (!at(n)) return close();
     run(n);
     watch(n);
   }
 
-  /** The open balloon's speaker and what else it keeps clear of (to follow the speaker as it moves). */
-  let speaker: { from: Element; avoid: Box[]; at: DOMRect } | undefined;
+  /** The open balloon's speaker (to follow it as it moves). */
+  let speaker: Element | undefined;
   let seen: DOMRect | undefined;
   let watcher: ReturnType<typeof setInterval> | undefined;
   /** Place the balloon by its speaker as it stands now (placement.ts placeBy: NH's rule); false when there's no room. */
   function at(n: number): boolean {
     const st = scene?.querySelector('.stage')?.getBoundingClientRect(), box = el?.getBoundingClientRect();
     if (!scene || !st || !box || !speaker || said?.n !== n) return false;
-    const src = (seen = speaker.from.getBoundingClientRect());
-    // what floats with it, where the speaker is now; the balloon stands off them all (never over the speaker)
-    const dx = src.left - speaker.at.left, dy = src.top - speaker.at.top;
-    const avoid = speaker.avoid.map((b) => ({ x0: b.x0 + dx, x1: b.x1 + dx, y0: b.y0 + dy, y1: b.y1 + dy }));
-    const from = avoid.reduce((a, b) => ({ x0: Math.min(a.x0, b.x0), x1: Math.max(a.x1, b.x1), y0: Math.min(a.y0, b.y0), y1: Math.max(a.y1, b.y1) }),
-      { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom });
-    const self = { x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 };
-    const p = placeBy(scene, box.width, box.height, from, [...avoid, self], layer);
+    const src = (seen = speaker.getBoundingClientRect());
+    const from = { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom };
+    // never over the speaker
+    const p = placeBy(scene, box.width, box.height, from, [{ x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 }], layer);
     if (!p) return false;
     // the tail: along the balloon's edge facing the speaker, at its head (from above or below) or upper part (beside)
     const side = p.side === 'top' || p.side === 'bottom';
@@ -162,8 +156,8 @@
     let moved = 0;
     watcher = setInterval(() => {
       if (said?.n !== n || !speaker) return clearInterval(watcher);
-      if (!speaker.from.isConnected) return close();
-      const r = speaker.from.getBoundingClientRect();
+      if (!speaker.isConnected) return close();
+      const r = speaker.getBoundingClientRect();
       if (!seen || Math.abs(r.left - seen.left) + Math.abs(r.top - seen.top) + Math.abs(r.width - seen.width) < 8) return void (moved = 0);
       if (++moved < 3) return;
       said.follow = true;
