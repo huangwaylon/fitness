@@ -3,17 +3,14 @@
   // streak there, a soft #BFDCEA shade toward the lower right, over the coins too), a stack of coins up to the fill
   // line, a yuzu lid with a leaf; no ink.
   //   <Jar fill={0.6} width="132px" />   fill 0–1 of the glass (wallet/fill.ts walletFill); the coins slide, 1.4 s
-  // The art is 54 × 68 (height = width × 68 / 54). Set `name` to give it a view-transition-name, so a
-  // route change can morph the island jar into the ごほうび hero jar (ui-state/jarTransition.ts + tokens.css).
+  // The art is 54 × 68 (height = width × 68 / 54).
   interface Props {
     /** 0–1: how full the glass is (0 = empty; a little shows as soon as there is anything). */
     fill: number;
     /** CSS width (default 60px). */
     width?: string;
-    /** view-transition-name (one per page). */
-    name?: string;
   }
-  let { fill, width = '60px', name }: Props = $props();
+  let { fill, width = '60px' }: Props = $props();
   const uid = $props.id();
 
   /** The glass, its bottom bowed (2.6u at the middle) like the trunks' bases in NH's three-quarter view; it touches y 67.3. */
@@ -23,7 +20,7 @@
   const slide = (f: number) => ((1 - Math.min(1, Math.max(0, f))) * 44 + (f > 0 ? 0 : 8)).toFixed(2);
 </script>
 
-<svg class="jarart" viewBox="0 0 54 68" style:width style:view-transition-name={name} aria-hidden="true">
+<svg class="jarart" viewBox="0 0 54 68" style:width aria-hidden="true">
   <defs>
     <clipPath id="{uid}-body"><path d={BODY} /></clipPath>
     <linearGradient id="{uid}-shade" x1="0" y1="0" x2="1" y2="1">

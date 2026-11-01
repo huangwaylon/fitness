@@ -99,28 +99,21 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 
 
 /* ---------- 島 ⇄ ごほうび (ui-state/jarTransition.ts) ----------
-   The jar itself morphs island → hero (view-transition-name: jar; timings in the scene block of tokens.css).
-   Around it the pages crossfade with a slight push about the jar (--vt-x / --vt-y): in 320ms, back 280ms,
-   cubic-bezier(.4,0,.2,1); the Jar page's blocks rise 16px with a 40ms stagger. */
-:root[data-vt="in"]::view-transition-old(root), :root[data-vt="in"]::view-transition-new(root),
-:root[data-vt="out"]::view-transition-old(root), :root[data-vt="out"]::view-transition-new(root) {
-  transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); mix-blend-mode: normal;
-  animation-duration: 320ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); animation-fill-mode: both;
-}
-:root[data-vt="out"]::view-transition-old(root), :root[data-vt="out"]::view-transition-new(root) { animation-duration: 280ms; }
-:root[data-vt="in"]::view-transition-old(root) { animation-name: vt-push-out; }
-:root[data-vt="in"]::view-transition-new(root) { animation-name: vt-fade-in; }
-:root[data-vt="out"]::view-transition-old(root) { animation-name: vt-fade-out; z-index: 1; }
-:root[data-vt="out"]::view-transition-new(root) { animation-name: vt-pull-in; }
+   Live, about the jar (--vt-x / --vt-y), cubic-bezier(.4,0,.2,1) (the exits ease in): the page we leave plays its
+   exit (data-leave, held until the route changes), then the arriving one its entrance (data-enter). In: the island
+   pushes in toward the jar (scale 1.12, fading, 160ms), the wallet grows out of it (from .6, 320ms) and its blocks
+   rise 16px with a 40ms stagger; back: the wallet shrinks into the jar (to .9, 140ms), the island pulls back in
+   (from 1.12, 280ms). No snapshots (no View Transition): the ground's bands stay composited the whole way. */
+:root[data-leave] .page > main, :root[data-enter] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); }
+:root[data-leave="in"] .page > main { animation: vt-push-out 160ms cubic-bezier(.4, 0, 1, 1) both; }
+:root[data-leave="out"] .page > main { animation: vt-shrink 140ms cubic-bezier(.4, 0, 1, 1) both; }
+:root[data-enter="in"] .page > main { animation: vt-grow 320ms cubic-bezier(.4, 0, .2, 1) both; }
+:root[data-enter="out"] .page > main { animation: vt-pull-in 280ms cubic-bezier(.4, 0, .2, 1) both; }
+:root[data-leave] .page { pointer-events: none; }
+:root[data-enter="in"] .jar-screen > :not(.top, .hero) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) both; }
+:root[data-enter="in"] .jar-screen > :nth-child(n + 4) { animation-delay: 40ms; }
 @keyframes vt-push-out { to { transform: scale(1.12); opacity: 0; } }
-@keyframes vt-fade-in { from { opacity: 0; } }
-@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-shrink { to { transform: scale(.9); opacity: 0; } }
+@keyframes vt-grow { from { transform: scale(.6); opacity: 0; } }
 @keyframes vt-pull-in { from { transform: scale(1.12); opacity: 0; } }
 @keyframes vt-rise { from { transform: translateY(16px); opacity: 0; } }
-/* The Jar page's blocks rise in after the jar (live inside the new snapshot, or as the fallback entrance). */
-:root:is([data-vt="in"], [data-enter="in"]) .jar-screen > :not(.top, .hero) { animation: vt-rise 320ms cubic-bezier(.4, 0, .2, 1) both; }
-:root:is([data-vt="in"], [data-enter="in"]) .jar-screen > :nth-child(n + 4) { animation-delay: 40ms; }
-/* No View Transitions (older iOS): the arriving page zooms out of / back into the jar as a plain entrance. */
-:root[data-enter="in"] .page > main { transform-origin: var(--vt-x, 50%) var(--vt-y, 70%); animation: vt-grow 320ms cubic-bezier(.4, 0, .2, 1) both; }
-:root[data-enter="out"] .page > main { animation: vt-fade-in 280ms cubic-bezier(.4, 0, .2, 1) both; }
-@keyframes vt-grow { from { transform: scale(.6); opacity: 0; } }

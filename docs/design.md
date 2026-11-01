@@ -47,8 +47,8 @@ panel](#panel)) with the jar on its right, the two centred in the sky; a sync ch
   a dot once it is over 6 hours old.
 - **Jar** (`island/HudJar.svelte`): a cream pill as tall as the ribbon, the jar rising out of its left end, the shared
   balance and a leaf ▶. Each newly met goal flies in as a +1 coin from its fruit (+2 with its がんばり; `CoinFlow`),
-  ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the page zooms
-  about the jar, which morphs into the hero jar).
+  ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the island zooms
+  into the jar and ごほうび grows out of it; live CSS, no View Transition: its snapshot of the banded ground striped on iPhone).
 - **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
 - **Villagers:** mine hops when tapped and says nothing; a tap on the partner's is a high-five
   ([Villager taps](#villager-taps)). Neither opens a sheet.
