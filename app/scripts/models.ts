@@ -190,7 +190,7 @@ for (const j of jobs) {
     const inset = r.opaque[id]?.map((f) => +(f * 100).toFixed(1)) as [number, number, number, number] | undefined;
     places[key] = { ax: +(r.anchor[0] / r.w).toFixed(4), ay: +(r.anchor[1] / r.h).toFixed(4), mu: [+r.units[0].toFixed(1), +r.units[1].toFixed(1)], ...(inset && { inset }) };
   }
-  report.push(`${j.looks.map((l) => l.key).join(', ')}: ${r.w}×${r.h}, ${Object.keys(r.images).length} images, ${(bytes / 1024).toFixed(1)} KB, ${r.tris.join('/')} tris, ${r.ms.total} ms`);
+  report.push(`${j.looks.map((l) => l.key).join(', ')}: ${r.w}×${r.h} px (${r.units.map((u) => u.toFixed(1)).join(' × ')} model units), ${Object.keys(r.images).length} images, ${(bytes / 1024).toFixed(1)} KB, ${r.tris.join('/')} tris, ${r.ms.total} ms`);
   console.log(report[report.length - 1]);
 }
 await browser.close();
