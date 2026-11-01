@@ -209,7 +209,7 @@
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .rock > :global(*) { translate: -50% -92%; transform-origin: 50% 100%; filter: var(--leaf-tint,) drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
   .rock :global(.official) { max-width: none; }
-  .weed svg, .up svg { width: calc(20 * var(--su)); translate: -50% -92%; overflow: visible; }
+  .weed svg, .up svg { width: calc(24 * var(--su)); translate: -50% -92%; overflow: visible; }
   .flip svg { scale: -1 1; }
   .front { fill: #4DB04A; } .back { fill: #2F7F36; } .base { fill: #2F7F36; }
   .hi { fill: none; stroke: #8FD66A; stroke-width: .9; stroke-linecap: round; }

@@ -228,7 +228,7 @@
   const presents = $derived(lying(shared.day, shared.me, (id) => (void taken, takenOn(date).has(id))).filter((p) => p.what === 'present' || p.what === 'sky-egg').slice(-3)
     .map((p) => ({ uid: p.id, x: p.at[0], y: p.at[1], art: p.what === 'sky-egg' ? findArt('sky-egg') : 'deco/present', size: sizes.get(p.id) ?? PRESENT_U })));
   /** A present's size where it lies (u), when it wasn't this phone's balloon. */
-  const PRESENT_U = 24;
+  const PRESENT_U = 30;
   /** A balloon's present has landed on the lawn at world (x, z) (SceneTaps): it lies there until a tap picks it up (NH),
    *  on both phones. */
   export function present(x: number, z: number, art: string, size: number) {
@@ -459,7 +459,7 @@
 {#each visibleMushrooms as m (m.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14 })}>
     <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} data-uid={m.uid}>
-      <OfficialArt key={findArt(m.id)} size="calc(13 * var(--su))" />
+      <OfficialArt key={findArt(m.id)} size="calc(26 * var(--su))" />
     </span>
   </div>
 {/each}
@@ -471,7 +471,7 @@
 {#each shells as s (s.uid)}
   <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12 })}>
     <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} data-uid={s.uid} style:--tilt="{s.tilt}deg">
-      <OfficialArt key={findArt(s.id)} size="calc(14 * var(--su))" />
+      <OfficialArt key={findArt(s.id)} size="calc(32 * var(--su))" />
     </span>
   </div>
 {/each}
@@ -479,7 +479,7 @@
   <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
   <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14 })}>
     <span class="item frag" data-find="fragment" data-id={f.id} data-uid={f.uid} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
-      <OfficialArt key={findArt(f.id)} size="calc(12 * var(--su))" />
+      <OfficialArt key={findArt(f.id)} size="calc(24 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
     </span>
   </div>
@@ -489,7 +489,7 @@
   <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12 })}>
     <span class="item bottle" data-find="bottle" data-uid={bottle.uid}>
       <i class="foam"></i>
-      <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(15 * var(--su))" /></span>
+      <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(28 * var(--su))" /></span>
     </span>
   </div>
 {/if}
@@ -524,7 +524,7 @@
 {#if lift}
   {#key lift.n}
     <div class="node" aria-hidden="true" {@attach w.at({ x: lift.x, z: lift.y, lift: lift.lift, h: 30, dz: -2 })}>
-      <span class="item lift" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(14 * var(--su))" eager /></span>
+      <span class="item lift" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(28 * var(--su))" eager /></span>
     </div>
   {/key}
 {/if}
@@ -588,7 +588,7 @@
   .mush.flip > :global(*) { scale: -1 1; }
   .frag > :global(*) { filter: var(--leaf-tint,) drop-shadow(0 0 3px rgba(255, 246, 190, .9)); }
   /* the dig spot */
-  .spot svg { width: calc(19 * var(--su)); translate: -50% -50%; scale: 1 .7; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .spot svg { width: calc(26 * var(--su)); translate: -50% -50%; scale: 1 .7; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .spot .crack { stroke: #4E321A; stroke-opacity: .85; stroke-width: 1.6; }
   .spot .lip { stroke: #C9A46A; stroke-width: .8; }
   /* digging: the shovel strikes twice (.28 s each), a burst of earth on each, and leaves an open hole for 6 s */
