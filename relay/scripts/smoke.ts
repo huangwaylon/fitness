@@ -193,5 +193,19 @@ for (let i = 0; i < Math.min(N, 10); i++) {
 }
 console.log(`     saved nudge B → A: ${stats(nudges)}`);
 
+// Goal notifications (docs/backend.md#notifications): the /push/* checks that change nothing in the room (the full
+// path, a real browser subscription through to a shown notification, is checked by hand: runbook §12).
+const pushPost = (p: string, body: unknown, origin = ORIGIN) =>
+  fetch(new URL(p, http), { method: 'POST', headers: { Origin: origin, 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+const yesterday = new Date(Date.now() + 9 * 3600_000 - 86_400_000).toISOString().slice(0, 10);
+const goalOf = (key: string) => ({ key, date: yesterday, both: false, name: 'smoke' });
+check((await pushPost('/push/goal', goalOf('c3'.repeat(32)))).status === 401, 'a goal with an unknown key is refused (401)');
+check((await pushPost('/push/goal', goalOf(KEY_A), 'https://evil.test')).status === 403, "a foreign origin's goal is refused (403)");
+const offService = { key: KEY_B, sub: { endpoint: 'https://evil.test/x', keys: { p256dh: 'B'.repeat(87), auth: 'A'.repeat(22) } }, lang: 'ja' };
+check((await pushPost('/push/subscribe', offService)).status === 400, 'a subscription off the push services is refused (400)');
+const staleGoal = await pushPost('/push/goal', goalOf(KEY_A));
+const sg = (await staleGoal.json()) as { outcome?: string };
+check(staleGoal.status === 200 && sg.outcome === 'stale' && staleGoal.headers.get('Access-Control-Allow-Origin') === ORIGIN, `yesterday's goal is stale (${sg.outcome}), with CORS for the page`);
+
 a2.ws.close(1000);
 b2.ws.close(1000);
