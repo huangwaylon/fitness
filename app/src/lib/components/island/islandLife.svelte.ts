@@ -74,7 +74,8 @@ export class IslandLife {
     // Naps 22:00–5:00 on the relay's clock (the same moment on both phones; a tap wakes a villager for a moment, on
     // both: director.svelte.ts wake, villagerSync): put to sleep or woken at the hour it turns, not at every minute
     // (that put a woken villager back to sleep early).
-    const sleepyNow = () => asleepHour(new Date(now().getTime() + relayOffset()));
+    // (`?awake`, the hooks on: never: the two-phone harness against the relay runs at whatever hour it is)
+    const sleepyNow = () => !hookFlag('awake') && asleepHour(new Date(now().getTime() + relayOffset()));
     setSleepClock(sleepyNow);
     $effect(() => {
       let was: boolean | null = null;

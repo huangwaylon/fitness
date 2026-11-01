@@ -25,6 +25,9 @@ export interface VillagerLink {
   enabled(): boolean;
 }
 
+/** After this phone's socket (re)connects, my villager as it is goes again this long after (ms): the day's replay is
+ *  in by then (the room may hold an older walk of it). */
+export const JOIN_SAY_MS = 400;
 /** A walk still under way is said again this often (ms), while the partner is here. */
 export const RESAY_MS = 5000;
 /** A partner's villager further than this (u) from where their walk has it by now jumps there; nearer, it walks the gap

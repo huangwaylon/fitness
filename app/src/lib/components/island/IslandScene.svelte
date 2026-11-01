@@ -13,7 +13,7 @@
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while `live` and not `paused`.
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { showAt } from './fireworks.ts';
-  import { hookFlag } from './devHooks.ts';
+  import { hook, hookFlag, hooksOn } from './devHooks.ts';
   import type { PersonId, PersonWeekView, WeekView } from '#lib/types.ts';
   import Villager from '../characters/Villager.svelte';
   import { formatBells, t } from '#lib/i18n/index.ts';
@@ -48,7 +48,7 @@
   import { campLine, doorAt, partnerOnline } from './buildings.ts';
   import { RING_MS, stepCue } from './tapWalk.ts';
   import { buildingAt, nav } from './nav.ts';
-  import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
+  import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { sendDecor, sendIslandDay } from '#lib/store/actions.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
@@ -64,8 +64,8 @@
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
   import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, setPartnerRest, snapHome, stayingAt, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
-  import { RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
-  import type { DayEvent } from '#lib/sync/world-day.ts';
+  import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
+  import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { flushSync, onMount, untrack } from 'svelte';
@@ -418,7 +418,26 @@
       /** The partner's villager's feet now (e2e: the shared world). */
       partner: () => livePos('partner'),
       /** The scroller's two ends for this screen (まえ, おく). */
-      stops: () => [camMin, camMax]
+      stops: () => [camMin, camMax],
+      /** The island as both phones must have it (e2e: the two-phone checks): the shared day's canonical hash, and each
+       *  person's villager (where it stands, rounded, and whether it dozes). */
+      state: () => ({
+        day: hash(canonical(shared.day)),
+        villagers: Object.fromEntries((['mine', 'partner'] as const).map((id) => {
+          const [x, z] = livePos(id);
+          return [id === 'mine' ? view.me : view.partner, { x: Math.round(x), z: Math.round(z), asleep: actors[id].asleep, walking: actors[id].walking }];
+        }))
+      }),
+      ...(hooksOn() ? {
+        /** A change of mine straight into the shared world (e2e: the two-phone harness), and when each of the
+         *  partner's arrived here (Date.now(), by kind and id), and the socket's counters. */
+        share: (i: Parameters<typeof shared.share>[0]) => shared.share(i).fresh,
+        heard: () => heardAt,
+        /** The shared day's canonical form (what `state().day` hashes). */
+        canon: () => canonical(shared.day),
+        metrics: () => (relay ?? demoRelay)?.metrics?.() ?? null,
+        status: () => (relay ?? demoRelay)?.status() ?? null
+      } : {})
     };
     return () => {
       offMove();
@@ -500,8 +519,14 @@
   const relay = live && LIVE_URL && !week.demo ? liveRelay() : null;
   // The shared island (docs/backend.md#shared-world, store/world.svelte.ts): the day's changes, mine and the partner's,
   // over this relay; in the demo the two players' tabs share it (sync/live-local.ts: `?demo` and `?demo&as=B`).
+  // `?relay=<wss url>&key=<person key>` (the hooks on: the e2e's two-phone harness against the test relay, each its own
+  // browser context): the demo talks to a real relay instead
+  const testRelay = (): Live | null => {
+    const url = hook('relay'), key = hook('key');
+    return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
+  };
   // svelte-ignore state_referenced_locally
-  const demoRelay = live && week.demo ? createLocalLive(view.me) : null;
+  const demoRelay = live && week.demo ? (testRelay() ?? createLocalLive(view.me)) : null;
   $effect(() => {
     if (!live) return;
     const me = view.me;
@@ -546,9 +571,19 @@
   $effect(() => {
     const r = relay ?? demoRelay;
     if (!link || !r) return;
-    return r.onStatus((st) => link.partnerHere(st.connected && st.peer));
+    let up = false, soon: ReturnType<typeof setTimeout> | undefined;
+    const off = r.onStatus((st) => {
+      link.partnerHere(st.connected && st.peer);
+      // (re)connected: once the day's replay is in, my villager as it is here (the room may hold an older walk of it,
+      // from a session that ended elsewhere)
+      if (st.connected && !up) soon = setTimeout(() => link.joined(), JOIN_SAY_MS);
+      up = st.connected;
+    });
+    return () => (off(), clearTimeout(soon));
   });
   $effect(() => () => link?.detach());
+  /** When each of the partner's changes arrived here (e2e, the hooks on). */
+  const heardAt: Record<string, number> = {};
   /** The partner's walk, played here: the very walk when it came with it (rested at its end when it's over), else (an
    *  older app: only where to) planned here from where their villager stands. */
   function partnerWalk(w: Extract<DayEvent, { kind: 'walk' }>, now: boolean) {
@@ -572,6 +607,7 @@
     const w0 = shared.day.walks[view.partner];
     if (w0) partnerWalk({ kind: 'walk', ...w0, who: view.partner }, false);
     return shared.on(({ e, live: now }) => {
+      if (hooksOn()) heardAt[`${e.kind}:${'id' in e ? e.id : 'tree' in e ? e.tree : ''}`] = Date.now();
       if (e.kind === 'walk' && e.who === view.partner) partnerWalk(e, now);
       // a villager woke on their phone (theirs tapped, or both at a high-five): here too, until the same moment
       else if (e.kind === 'act' && e.act === 'wake' && now) playWake(e, view.me, relayNow());

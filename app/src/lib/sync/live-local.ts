@@ -77,9 +77,17 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       setStatus({ peer: true });
       if (!was) post({ k: 'hi', who: me }); // answer a newcomer at once
     } else if (w.k === 'bye' && w.who !== me) setStatus({ peer: false });
-    else if (w.k === 'm' && w.m.who !== me) deliver(w.m);
+    else if (w.k === 'm' && w.m.who !== me && !lostRace(w.m)) deliver(w.m);
   };
   const bye = () => post({ k: 'bye', who: me });
+  /** Two tabs claiming the same thing at once both kept it (each played the room on its own): the room's order is the
+   *  earlier (then A's), and the later claim is one the room would have refused, so it's never delivered. The tab
+   *  that sent the later one hears the earlier and gives it up (world-day apply's `beat`). */
+  const mine = new Map<string, { t: number }>();
+  const lostRace = (m: Relayed): boolean => {
+    const c = claimOf(m), my = c ? mine.get(c) : undefined;
+    return !!my && (my.t < m.t || (my.t === m.t && me < m.who));
+  };
 
   return {
     start() {
@@ -112,6 +120,8 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       lastT = Math.max(now().getTime(), lastT + 1);
       const m = { ...i, v: 2, who: me, t: lastT } as Relayed;
       if (isStored(m) && !keep(m)) return true; // refused by the room: it went, and nobody hears it
+      const c = claimOf(m);
+      if (c) mine.set(c, { t: m.t });
       post({ k: 'm', m });
       return true;
     },
