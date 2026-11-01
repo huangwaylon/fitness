@@ -2,5 +2,5 @@
 .shots/
 .DS_Store
 # a stray npm install / svelte-kit sync at the repo root
-node_modules/
+node_modules
 .svelte-kit/
