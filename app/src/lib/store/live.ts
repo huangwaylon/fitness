@@ -9,6 +9,7 @@ import { getKey, onStorageProblem, type StorageProblem } from '#lib/sync/storage
 import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
+import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import { pendingAcked } from './view.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
 
@@ -16,6 +17,8 @@ import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult
 const REFRESH_FLOOR_MS = 30_000;
 /** After acked writes, re-read the server so its timestamps replace the optimistic ones. */
 const RECONCILE_MS = 1500;
+/** Sheet changes arriving together (a burst of pushes) make one refresh. */
+const PUSH_GATHER_MS = 300;
 
 export class LiveBackend implements Backend {
   #host: Host;
@@ -25,6 +28,11 @@ export class LiveBackend implements Backend {
   #refreshSeq = 0;
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
+  #pushTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The relay socket (docs/backend.md#push): sheet changes in, `saved` nudges out. */
+  #live: Live | null = null;
+  /** Apps Script's push (`changed`) reached this phone this session, so it covers events too: no `saved` nudges. */
+  #pushWorks = false;
   #started = false;
   /** Storage problems already shown this session. */
   #told = new Set<StorageProblem>();
@@ -57,6 +65,13 @@ export class LiveBackend implements Backend {
     this.#started = true;
     // back online: also what backed off while offline goes now (refresh → retryNow)
     addEventListener('online', () => void this.refresh({}));
+    // The relay: while the app is on screen, a change to the sheet (the partner's tap, a Shortcut's upload) is fetched
+    // at once instead of on the next open. Polling stays as it was, so a relay outage only loses the immediacy.
+    if (LIVE_URL) {
+      this.#live = liveRelay();
+      this.#live.onChange((c) => this.#sheetChanged(c));
+      this.#live.start();
+    }
     // Full storage or private mode: the app works from memory, but say so once.
     onStorageProblem((p) => {
       if (this.#told.has(p)) return;
@@ -122,6 +137,29 @@ export class LiveBackend implements Backend {
     this.#cache = null;
     keepAcked([]);
     this.#lastFetch = 0;
+    this.#pushWorks = false;
+    // paired as someone else: the socket speaks for the old key
+    if (this.#live) {
+      this.#live.stop();
+      this.#live.start();
+    }
+  }
+
+  /**
+   * The relay says the sheet changed: refresh now (gathered, `fresh` so a fetch already in flight is followed by one
+   * more). Skipped when the cache already holds it, and for my own events (the re-read after the ack fetches those).
+   */
+  #sheetChanged(c: SheetChange): void {
+    if (c.at) this.#pushWorks = true;
+    else if (this.#pushWorks) return; // a nudge, and the push already brings events
+    const cache = this.#cache;
+    if (c.at && cache && c.who === cache.me && c.what === 'event') return;
+    if (c.at && cache && c.rev === cache.rev && cache.since !== null && c.at <= cache.since) return;
+    if (this.#pushTimer) return;
+    this.#pushTimer = setTimeout(() => {
+      this.#pushTimer = null;
+      void this.refresh({ fresh: true });
+    }, PUSH_GATHER_MS);
   }
 
   /**
@@ -165,6 +203,8 @@ export class LiveBackend implements Backend {
       return;
     }
     if (r.error) this.#host.offline = true;
+    // the partner's phone fetches now (until Apps Script's own push is seen to work)
+    if (r.sent > 0 && !this.#pushWorks) this.#live?.send({ kind: 'saved' });
     if (r.sent > 0 && reconcile) {
       if (this.#reconcileTimer) clearTimeout(this.#reconcileTimer);
       // fresh: a fetch that started before the ack may not have the rows yet
