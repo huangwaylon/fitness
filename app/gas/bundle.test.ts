@@ -29,7 +29,7 @@ describe('apps-script/Code.js', () => {
       runtimeVersion: 'V8',
       timeZone: 'Asia/Tokyo',
       exceptionLogging: 'STACKDRIVER',
-      oauthScopes: ['https://www.googleapis.com/auth/spreadsheets.currentonly'],
+      oauthScopes: ['https://www.googleapis.com/auth/spreadsheets.currentonly', 'https://www.googleapis.com/auth/script.external_request'],
       webapp: { executeAs: 'USER_DEPLOYING', access: 'ANYONE_ANONYMOUS' }
     });
   });
