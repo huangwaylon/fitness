@@ -92,6 +92,7 @@ class SharedWorld {
   /** Use `relay` (null: none, alone) as `me`; `demo`: the demo's own keys. Replaces an earlier one. */
   attach(relay: Live | null, me: Who | null, demo = false): void {
     if (relay === this.#relay && me === this.#me && demo === this.#demo) return;
+    if (this.#writing) this.#flush(); // the record being written is the old one's
     this.#off?.();
     this.#off = null;
     if (demo !== this.#demo || me !== this.#me) {
@@ -196,14 +197,34 @@ class SharedWorld {
 
   #keep(e: DayEvent): void {
     this.#noteWish(e);
-    this.#events = [...this.#events, e].slice(-MAX);
-    writeJson(localKV(), this.#key(), { day: this.#day!.day, events: this.#events });
+    // a villager's walk replaces its person's last (only where it is going counts)
+    if (e.kind === 'walk') this.#events = this.#events.filter((x) => !(x.kind === 'walk' && x.who === e.who));
+    this.#events.push(e);
+    if (this.#events.length > MAX) this.#events.splice(0, this.#events.length - MAX);
+    // written once per burst (a replay of the day, a frame's changes), not once per change
+    if (this.#writing) return;
+    this.#writing = true;
+    queueMicrotask(() => this.#flush());
+  }
+  #writing = false;
+  #flush(): void {
+    if (!this.#writing) return;
+    this.#writing = false;
+    if (this.#day) writeJson(localKV(), this.#key(), { day: this.#day.day, events: this.#events });
   }
 
   #heard(m: Relayed): void {
-    if (!isDayEvent(m) || m.who === this.#me) return;
+    if (!isDayEvent(m)) return;
     const { v: _v, ...e } = m;
     const d = this.#today();
+    if (m.who === this.#me) {
+      // my own, from the relay's replay (a phone that lost its record of the day): folded quietly, nothing to play
+      if (e.kind !== 'act' && apply(d, e, this.#me).fresh) {
+        this.#keep(e);
+        this.rev++;
+      }
+      return;
+    }
     const a: Applied = apply(d, e, this.#me);
     // an act is only played; anything else that changed nothing (a replay of what I have) is news to nobody
     if (e.kind !== 'act') {
@@ -232,13 +253,15 @@ class SharedWorld {
     const d = this.#today();
     const a = apply(d, e, this.#me);
     if (e.kind === 'act' || a.fresh) {
+      // to the relay first, at once (the partner sees it within its one way); then kept, and the sheet's row (held)
+      this.#relay?.send(i);
       if (e.kind !== 'act') {
         this.#keep(e);
         this.rev++;
-        // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day)
-        if (e.kind !== 'catch' && this.#me) this.#sink?.(dayKey(now()), rowOf(d, this.#me));
+        // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day); a walk's row
+        // waits for the next change or the hold (where my villager stands is the relay's to carry)
+        if (e.kind !== 'catch' && e.kind !== 'walk' && this.#me) this.#sink?.(dayKey(now()), rowOf(d, this.#me));
       }
-      this.#relay?.send(i);
     }
     return a;
   }
@@ -251,6 +274,7 @@ class SharedWorld {
 
   /** Forget the day (tests). */
   reset(): void {
+    if (this.#writing) this.#flush();
     this.#off?.();
     this.#off = null;
     this.#relay = null;

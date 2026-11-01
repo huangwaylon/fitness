@@ -249,7 +249,11 @@ intents, never data of record: the sheet path above is unchanged and still catch
   the shortest round trip's of the last 8 (`serverNow()`). `send(intent)` is a no-op returning false unless welcomed
   and, for what the room doesn't keep, the partner is present; it never throws or blocks. `on()` delivers the partner's intents,
   `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off). What the room
-  keeps (`isStored`: the shared world's intents and walks) goes even with the partner away.
+  keeps (`isStored`: the shared world's intents and walks) goes even with the partner away, numbered (`c`), and waits
+  in an outbox (≤ 120, a walk replacing the walk before it) until its `ack`: sent offline or lost with a dropped
+  socket, it goes again after the next welcome (12 at once, then one every 60 ms; another day's dropped). The hello
+  asks for the day as `replay` (`batch`), each change delivered in order, mine too. `metrics()`: messages and bytes
+  each way, resends, the last acks' round trips, what's waiting.
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
   partner one-way median 19 ms (p90 44), clock offset ±9 ms. `npm run latency` (2026-11-01, the test copy, both
   clients on one Mac, n = 30 each): a passing `act` one way median 21–23 ms (p90 26–40); the kept ones (walk, catch,
@@ -319,7 +323,10 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   the day's events; the demo's per tab) so a reload needs only what's new; `share(intent)` folds my change (refused
   when the partner already has it), keeps it and sends it; `on(fn)` the partner's, `live` when it happened in the last
   12 s (the island plays it: their villager turns to it and it plays at the target), else (heard on opening) it
-  only changes the island. Attached to the phone's one socket when the backend starts (`store/live.ts`), so the
+  only changes the island. My change goes to the relay first, at once (never behind the sheet's 2-minute hold), then
+  is folded and kept; my own heard back in the relay's replay is folded quietly. The day's record is written once per
+  burst (a microtask after the last change: a replay of 300 changes is one write, not 300). Attached to the phone's
+  one socket when the backend starts (`store/live.ts`), so the
   partner's changes are heard on any tab of the app.
 - **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty): the
   last 400 changes (`world`, `catch` with an id, `pick`, `put`, `shake`) and each person's last v2 `walk` (replacing

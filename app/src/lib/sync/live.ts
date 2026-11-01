@@ -59,6 +59,20 @@ const storedSince: SinceStore = {
   }
 };
 
+/** What the socket did (counters since the page loaded, and the last acks' round trips): for the budget and the e2e. */
+export interface LiveMetrics {
+  sent: number;
+  sentBytes: number;
+  recv: number;
+  recvBytes: number;
+  /** Kept intents sent again after a reconnect (never acked before it). */
+  resent: number;
+  /** The last acks' round trips (ms), oldest first. */
+  ackMs: number[];
+  /** Kept intents still waiting for their ack. */
+  pending: number;
+}
+
 export interface Live {
   /** Begin following visibility: connected while shown, closed while hidden. */
   start(): void;
@@ -76,6 +90,8 @@ export interface Live {
   status(): LiveStatus;
   /** The relay's clock estimate (ms since the epoch): Date.now() corrected by the offset from pings. */
   serverNow(): number;
+  /** Counters (optional: the demo's relay has none). */
+  metrics?(): LiveMetrics;
 }
 
 /** Reconnect delays: 1 s doubling to 60 s, ±25 % jitter. */
@@ -87,6 +103,12 @@ const PING_EVERY_MS = 60_000;
 const SAMPLES = 8;
 /** Beyond this much unsent, send() drops (a stalled socket never piles up). */
 const MAX_BUFFERED = 4096;
+/** Kept intents waiting for their ack at most (the oldest go first: the sheet's day row still has them). */
+const OUTBOX_MAX = 120;
+/** After a reconnect the waiting ones go again, this many at once, then one every RESEND_GAP_MS (the relay's bucket). */
+const RESEND_BURST = 12;
+const RESEND_GAP_MS = 60;
+const ACKS_KEPT = 20;
 
 /** Retry delay after `n` consecutive failures (n ≥ 0); `r` in [0, 1). */
 export function backoff(n: number, r = Math.random()): number {
@@ -148,6 +170,13 @@ export function createLive(o: LiveOptions): Live {
     for (const f of changeSubs) safe(() => f(c));
   };
   const statusSubs = new Set<(s: LiveStatus) => void>();
+  /** Kept intents sent (or not yet: offline) and not acked, by their sequence number, in order: they go again after a
+   *  reconnect (the relay knows a resend by its number). A walk replaces the walk before it. */
+  const outbox = new Map<number, { m: object; at: number }>();
+  let seq = 0;
+  const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
+  const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0 };
+  let resend: ReturnType<typeof setTimeout>[] = [];
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
@@ -164,12 +193,17 @@ export function createLive(o: LiveOptions): Live {
     if (pingEvery) clearInterval(pingEvery);
     pingEvery = null;
     sent.clear();
+    for (const r of resend) clearTimeout(r);
+    resend = [];
   };
 
   const raw = (m: object): boolean => {
     if (!ws || ws.readyState !== 1 || ws.bufferedAmount > MAX_BUFFERED) return false;
     try {
-      ws.send(JSON.stringify(m));
+      const s = JSON.stringify(m);
+      ws.send(s);
+      mx.sent++;
+      mx.sentBytes += s.length;
       return true;
     } catch {
       return false;
@@ -221,19 +255,51 @@ export function createLive(o: LiveOptions): Live {
       if (!key) return drop();
       // a new Tokyo day since the page loaded: that day's whole world
       lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld });
+      // batch: the day in a few replay messages, mine included
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, batch: true });
     };
     s.onmessage = (e: MessageEvent) => {
+      if (typeof e.data === 'string') {
+        mx.recv++;
+        mx.recvBytes += e.data.length;
+      }
       const m = parseServer(e.data);
       if (!m) return;
       switch (m.kind) {
-        case 'welcome':
+        case 'welcome': {
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
           samples = [];
           setStatus({ connected: true, me: m.me, peer: m.peer });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
           pingEvery = setInterval(ping, PING_EVERY_MS);
+          // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
+          // that day's, gone
+          const today = tokyoDay(m.t);
+          for (const [k, o] of outbox) if (tokyoDay(o.at + offset) !== today) outbox.delete(k);
+          [...outbox.values()].forEach((o, i) => {
+            const go = () => {
+              o.at = Date.now();
+              if (raw(o.m)) mx.resent++;
+            };
+            if (i < RESEND_BURST) go();
+            else resend.push(setTimeout(go, (i - RESEND_BURST + 1) * RESEND_GAP_MS));
+          });
+          return;
+        }
+        case 'ack': {
+          const o = outbox.get(m.c);
+          if (!o) return;
+          outbox.delete(m.c);
+          mx.ackMs = [...mx.ackMs, Date.now() - o.at].slice(-ACKS_KEPT);
+          return;
+        }
+        case 'replay':
+          // the day so far, in the room's order (mine too: folding my own again changes nothing)
+          for (const r of m.es) {
+            if (isStored(r) && r.t > lastWorld) since.set((lastWorld = r.t));
+            for (const f of subs) safe(() => f(r));
+          }
           return;
         case 'pong': {
           if (!sent.delete(m.c)) return;
@@ -247,9 +313,6 @@ export function createLive(o: LiveOptions): Live {
           return;
         case 'changed':
           return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
-        case 'ack':
-        case 'replay':
-          return;
         default:
           if (m.who === st.me) return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
@@ -300,12 +363,20 @@ export function createLive(o: LiveOptions): Live {
       drop();
     },
     send(i) {
-      // what the room keeps (the shared world, a walk) goes even with the partner away: they hear it when they open
-      if (!st.connected || (!st.peer && !isStored(i))) return false;
-      const m = { v: LIVE_V, ...i };
+      // what the room keeps (the shared world, a walk) goes even with the partner away (they hear it when they open),
+      // numbered, and is kept here until its ack: offline or dropped, it goes again after the next welcome
+      const kept = isStored(i);
+      if (!kept && (!st.connected || !st.peer)) return false;
+      const c = kept ? nextSeq() : undefined;
+      const m = { v: LIVE_V, ...(c !== undefined ? { c } : {}), ...i };
       const s = JSON.stringify(m);
       if (s.length > MAX_BYTES || !parseClient(s)) return false;
-      return raw(m);
+      if (c !== undefined) {
+        if (i.kind === 'walk') for (const [k, o] of outbox) if ((o.m as Intent).kind === 'walk') outbox.delete(k);
+        outbox.set(c, { m, at: Date.now() });
+        while (outbox.size > OUTBOX_MAX) outbox.delete(outbox.keys().next().value!);
+      }
+      return st.connected && raw(m);
     },
     on(fn) {
       subs.add(fn);
@@ -321,7 +392,8 @@ export function createLive(o: LiveOptions): Live {
       return () => void statusSubs.delete(fn);
     },
     status: () => st,
-    serverNow: () => Date.now() + offset
+    serverNow: () => Date.now() + offset,
+    metrics: () => ({ ...mx, pending: outbox.size })
   };
 }
 

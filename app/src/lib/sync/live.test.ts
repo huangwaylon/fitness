@@ -93,7 +93,7 @@ describe('live: connecting', () => {
     expect(FakeWS.all).toHaveLength(1);
     last().open();
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
-    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())) });
+    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), batch: true });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false });
@@ -203,14 +203,60 @@ describe('live: messages', () => {
     last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
     expect(live.status().peer).toBe(true);
     expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(true);
-    expect(last().sent.slice(1)).toEqual([
+    // the kept ones numbered (their acks), in order
+    const out = last().sent.slice(1);
+    expect(out.map(({ c: _c, ...m }) => m)).toEqual([
       { v: 2, kind: 'walk', to: [10, 20] },
       { v: 2, kind: 'world', op: 'weed-pulled', id: 'w1' },
       { v: 2, kind: 'pick', id: 's1', what: 'shell:conch' },
       { v: 2, kind: 'emote', emote: 'glee' }
     ]);
+    const cs = out.map((m) => m.c as number | undefined);
+    expect(cs[3]).toBeUndefined();
+    expect(cs[0]! < cs[1]! && cs[1]! < cs[2]!).toBe(true);
     last().recv({ kind: 'presence', who: 'B', on: false, t: Date.now() });
     expect(live.send({ kind: 'emote', emote: 'glee' })).toBe(false);
+  });
+
+  it('keeps a kept intent until its ack: one sent offline or never acked goes again after the next welcome (the last walk only)', () => {
+    live.start();
+    last().welcome(false);
+    live.send({ kind: 'pick', id: 's1', what: 'shell:conch' });
+    live.send({ kind: 'walk', to: [10, 20] });
+    const [p1, w1] = last().sent.slice(1) as { c: number }[];
+    last().recv({ kind: 'ack', c: p1.c, t: Date.now(), ok: true });
+    expect(live.metrics?.().pending).toBe(1);
+    last().drop();
+    // offline: kept, sent at the welcome
+    expect(live.send({ kind: 'walk', to: [30, 40] })).toBe(false);
+    expect(live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' })).toBe(false);
+    vi.advanceTimersByTime(2000);
+    last().welcome(false);
+    const again = last().sent.slice(1) as { kind: string; c: number; to?: number[] }[];
+    expect(again.map((m) => m.kind)).toEqual(['walk', 'world']);
+    expect(again[0].to).toEqual([30, 40]);
+    expect(again[0].c).not.toBe(w1.c);
+    expect(live.metrics?.()).toMatchObject({ resent: 2, pending: 2 });
+    for (const m of again) last().recv({ kind: 'ack', c: m.c, t: Date.now(), ok: true });
+    expect(live.metrics?.().pending).toBe(0);
+    expect(live.metrics?.().ackMs).toHaveLength(3);
+  });
+
+  it('hears the day as replay messages: each change in order, mine included, `since` moved on', () => {
+    const got: Relayed[] = [];
+    live.on((m) => got.push(m));
+    live.start();
+    last().welcome();
+    last().recv({ kind: 'replay', t: 1_790_000_001_000, es: [
+      { v: 2, kind: 'pick', id: 'w1', what: 'weed', who: 'B', t: 1_790_000_000_500 },
+      { v: 2, kind: 'walk', to: [10, 20], who: 'A', t: 1_790_000_000_600 },
+      { v: 2, kind: 'pick', id: 'w2', what: 'weed', who: 'Q', t: 1_790_000_000_700 }
+    ] });
+    expect(got.map((m) => [m.kind, m.who])).toEqual([['pick', 'B'], ['walk', 'A']]);
+    last().drop();
+    vi.advanceTimersByTime(2000);
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', since: 1_790_000_000_600 });
   });
 
   it('refuses a malformed or oversized intent, and a stalled socket', () => {
@@ -251,7 +297,7 @@ describe('live: messages', () => {
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: 1_790_000_000_600 });
+    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: 1_790_000_000_600, batch: true });
     // the page reloads: the kept since
     live.stop();
     live = make();
