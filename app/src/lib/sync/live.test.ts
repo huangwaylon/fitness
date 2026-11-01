@@ -30,7 +30,7 @@ class FakeWS {
     this.onopen?.();
   }
   recv(m: object) {
-    this.onmessage?.({ data: JSON.stringify({ v: 1, ...m }) });
+    this.onmessage?.({ data: JSON.stringify({ v: 2, ...m }) });
   }
   drop(code = 1006) {
     this.readyState = 3;
@@ -85,7 +85,7 @@ describe('live: connecting', () => {
     live.start();
     expect(FakeWS.all).toHaveLength(1);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 1, kind: 'hello', key: KEY });
+    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false });
@@ -193,8 +193,8 @@ describe('live: messages', () => {
     expect(live.status().peer).toBe(true);
     expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(true);
     expect(last().sent.slice(1)).toEqual([
-      { v: 1, kind: 'world', op: 'weed-pulled', id: 'w1' },
-      { v: 1, kind: 'walk', to: [10, 20] }
+      { v: 2, kind: 'world', op: 'weed-pulled', id: 'w1' },
+      { v: 2, kind: 'walk', to: [10, 20] }
     ]);
     last().recv({ kind: 'presence', who: 'B', on: false, t: Date.now() });
     expect(live.send({ kind: 'walk', to: [10, 20] })).toBe(false);
@@ -222,7 +222,7 @@ describe('live: messages', () => {
     last().recv({ kind: 'act', act: 'shake', id: 't2', who: 'A', t: 6 });
     last().recv({ kind: 'act', act: 'explode', who: 'B', t: 7 });
     last().onmessage?.({ data: 'garbage' });
-    expect(got).toEqual([{ v: 1, kind: 'act', act: 'shake', id: 't2', who: 'B', t: 5 }]);
+    expect(got).toEqual([{ v: 2, kind: 'act', act: 'shake', id: 't2', who: 'B', t: 5 }]);
     expect(err).toHaveBeenCalled();
     off();
     last().recv({ kind: 'emote', emote: 'glee', who: 'B', t: 8 });
@@ -236,7 +236,7 @@ describe('live: messages', () => {
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 1, kind: 'hello', key: KEY, since: 1_790_000_000_500 });
+    expect(last().sent[0]).toEqual({ v: 2, kind: 'hello', key: KEY, since: 1_790_000_000_500 });
   });
 
   it('reports sheet changes: the push (mine too) and the partner\'s nudge, never as intents', () => {
@@ -253,7 +253,7 @@ describe('live: messages', () => {
     expect(changes).toEqual([n, { who: 'B', what: 'event' }]);
     expect(intents).toEqual([]);
     expect(live.send({ kind: 'saved' })).toBe(true);
-    expect(last().sent.at(-1)).toEqual({ v: 1, kind: 'saved' });
+    expect(last().sent.at(-1)).toEqual({ v: 2, kind: 'saved' });
     off();
     last().recv({ kind: 'changed', ...n, t: 8 });
     expect(changes).toHaveLength(2);

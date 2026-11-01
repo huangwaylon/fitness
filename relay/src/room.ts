@@ -1,13 +1,15 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, LIVE_V, MAX_BYTES, parseClient, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, LIVE_V, LIVE_VS, MAX_BYTES, parseClient, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
-/** A socket's attachment (survives hibernation): who it is once its hello was accepted, and when it opened. */
+/** A socket's attachment (survives hibernation): who it is once its hello was accepted, when it opened, and the protocol
+ *  version it spoke in its hello (absent: 1, a socket from before v2). */
 export interface Meta {
   who: Who | null;
   opened: number;
+  v?: LiveV;
 }
 
 export interface Sock {
@@ -58,9 +60,15 @@ export class RoomCore<S extends Sock> {
     });
   }
 
+  /** The version a socket speaks (its hello's). */
+  private vOf(s: S): LiveV {
+    return this.io.meta(s)?.v ?? 1;
+  }
+
+  /** Send in the socket's own version (a v1 phone keeps its push and presence). */
   private send(s: S, m: ServerMsg): void {
     try {
-      s.send(JSON.stringify(m));
+      s.send(JSON.stringify({ ...m, v: this.vOf(s) }));
     } catch {
       /* closing: its close handler tidies up */
     }
@@ -92,16 +100,17 @@ export class RoomCore<S extends Sock> {
       else if (otherVersion(raw)) this.shut(s, CLOSE.version, 'version');
       return; // a malformed intent from a known person: dropped
     }
-    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since);
+    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
-    const { v: _v, ...intent } = msg;
-    const out: Relayed = { ...intent, v: LIVE_V, who: meta.who, t: this.stamp() };
+    const { v, ...intent } = msg;
+    const out: Relayed = { ...intent, v, who: meta.who, t: this.stamp() };
     if (out.kind === 'world') this.remember(out);
-    for (const p of this.authed(other(meta.who))) this.send(p, out);
+    // a walk's target means another thing in each version (stage units in v1, world units in v2): only to its own
+    for (const p of this.authed(other(meta.who))) if (out.kind !== 'walk' || this.vOf(p) === v) this.send(p, out);
   }
 
-  private hello(s: S, meta: Meta, key: string, since?: number): void {
+  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     if (meta.who) return; // a repeated hello: nothing changes
@@ -111,7 +120,7 @@ export class RoomCore<S extends Sock> {
       this.io.setMeta(old, { who: null, opened: this.io.meta(old)?.opened ?? 0 });
       this.shut(old, CLOSE.replaced, 'replaced');
     }
-    this.io.setMeta(s, { ...meta, who });
+    this.io.setMeta(s, { ...meta, who, v });
     const peers = this.authed(other(who));
     const t = this.io.now();
     this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer: peers.length > 0, t });
@@ -180,7 +189,7 @@ function otherVersion(raw: unknown): boolean {
   if (typeof raw !== 'string' || raw.length > MAX_BYTES) return false;
   try {
     const o = JSON.parse(raw) as { v?: unknown } | null;
-    return typeof o?.v === 'number' && o.v !== LIVE_V;
+    return typeof o?.v === 'number' && !(LIVE_VS as readonly number[]).includes(o.v);
   } catch {
     return false;
   }

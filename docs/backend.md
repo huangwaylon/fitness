@@ -205,11 +205,14 @@ intents, never data of record: the sheet path above is unchanged and still catch
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
-  `v: 1`, ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, y], at?}`, `act {act, id?, at?}`,
+  `v: 2` (the rolling-log world; the relay still speaks `v: 1` to an older phone, answering each socket in the version
+  of its hello), ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, z], at?}` (v2: world units, a
+  tap-to-walk's destination; a walk never crosses versions, as v1 meant stage units), `act {act, id?, at?}`,
   `catch {what, id?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`, `present-opened`,
   `watered`, `shaken`), `saved {}` ([Push](#push)). Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
-  to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes. Another
-  `v` closes 4004 (the client waits for the next show, i.e. a reload).
+  to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes (the island
+  stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004 (the client waits for the next
+  show, i.e. a reload). Deploy order for a version bump: the relay first (it speaks both), then the app.
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
 - **Replay:** the room keeps the last 50 `world` events (≤ 6 h old) in DO storage; a hello with `since` (the last
   world `t` that phone saw) gets the partner's newer ones after the welcome.

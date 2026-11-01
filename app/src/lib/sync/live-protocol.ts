@@ -3,7 +3,12 @@
 // Every message is one small JSON object (≤ MAX_BYTES), versioned by `v`, and checked by the same parsers on both
 // sides. No imports: the Worker bundles this file as is.
 
-export const LIVE_V = 1;
+export const LIVE_V = 2;
+/** @public (relay/) The versions the relay still speaks: v1 phones (before the rolling-log world) keep their push and presence; only a
+ *  walk, whose target changed meaning (stage units in v1, world units in v2), never crosses versions. */
+export const LIVE_VS = [1, 2] as const;
+/** @public (relay/) */
+export type LiveV = (typeof LIVE_VS)[number];
 /** Anything longer is dropped unread by both sides. */
 export const MAX_BYTES = 256;
 
@@ -17,7 +22,7 @@ export type Act = (typeof ACTS)[number];
 export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken'] as const;
 export type WorldOp = (typeof WORLD_OPS)[number];
 
-/** A walk-graph node id or a stage point (stage units, integers). */
+/** A walk-graph node id or a world point (v2: world units x, z, integers; v1: stage units). */
 export type Target = string | readonly [number, number];
 
 /** The intents a client sends; the relay stamps `who` and `t` and passes them to the other person only. */
@@ -32,19 +37,19 @@ export type Intent =
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen). */
 export type ClientMsg =
-  | { v: 1; kind: 'hello'; key: string; since?: number }
-  | { v: 1; kind: 'ping'; c: number }
-  | ({ v: 1 } & Intent);
+  | { v: LiveV; kind: 'hello'; key: string; since?: number }
+  | { v: LiveV; kind: 'ping'; c: number }
+  | ({ v: LiveV } & Intent);
 
 /** An intent as relayed: who sent it and the relay's clock when it arrived (ms since the epoch). */
-export type Relayed = Intent & { v: 1; who: Who; t: number };
+export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 
 /** Relay → client. */
 export type ServerMsg =
-  | { v: 1; kind: 'welcome'; me: Who; peer: boolean; t: number }
-  | { v: 1; kind: 'pong'; c: number; t: number }
-  | { v: 1; kind: 'presence'; who: Who; on: boolean; t: number }
-  | ({ v: 1; kind: 'changed'; t: number } & Notice)
+  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number }
+  | { v: LiveV; kind: 'pong'; c: number; t: number }
+  | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
+  | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
   | Relayed;
 
 /** What the Apps Script wrote (`ingest`: health rows, `event`: an event row). */
@@ -116,27 +121,29 @@ function intentOf(o: Obj): Intent | null {
   }
 }
 
-function parseObj(raw: unknown): Obj | null {
+function parseObj(raw: unknown, versions: readonly number[] = [LIVE_V]): Obj | null {
   if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
   try {
     const o: unknown = JSON.parse(raw);
-    return isObj(o) && o.v === LIVE_V ? o : null;
+    return isObj(o) && versions.includes(o.v as number) ? o : null;
   } catch {
     return null;
   }
 }
 
-/** A client message as the relay accepts it, or null (wrong version, too big, unknown kind or a bad field). */
+/** A client message as the relay accepts it (any version in LIVE_VS, kept on it), or null (another version, too big,
+ *  unknown kind or a bad field). */
 export function parseClient(raw: unknown): ClientMsg | null {
-  const o = parseObj(raw);
+  const o = parseObj(raw, LIVE_VS);
   if (!o) return null;
+  const v = o.v as LiveV;
   if (o.kind === 'hello') {
     if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
-    return { v: 1, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}) };
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}) };
   }
-  if (o.kind === 'ping') return isTime(o.c) ? { v: 1, kind: 'ping', c: o.c } : null;
+  if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   const i = intentOf(o);
-  return i && { v: 1, ...i };
+  return i && { v, ...i };
 }
 
 const isWho = (x: unknown): x is Who => x === 'A' || x === 'B';
@@ -165,17 +172,17 @@ export function parseServer(raw: unknown): ServerMsg | null {
   const t = o.t;
   switch (o.kind) {
     case 'welcome':
-      return isWho(o.me) && typeof o.peer === 'boolean' ? { v: 1, kind: 'welcome', me: o.me, peer: o.peer, t } : null;
+      return isWho(o.me) && typeof o.peer === 'boolean' ? { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t } : null;
     case 'pong':
-      return isTime(o.c) ? { v: 1, kind: 'pong', c: o.c, t } : null;
+      return isTime(o.c) ? { v: LIVE_V, kind: 'pong', c: o.c, t } : null;
     case 'presence':
-      return isWho(o.who) && typeof o.on === 'boolean' ? { v: 1, kind: 'presence', who: o.who, on: o.on, t } : null;
+      return isWho(o.who) && typeof o.on === 'boolean' ? { v: LIVE_V, kind: 'presence', who: o.who, on: o.on, t } : null;
     case 'changed': {
       const n = noticeOf(o);
-      return n && { v: 1, kind: 'changed', ...n, t };
+      return n && { v: LIVE_V, kind: 'changed', ...n, t };
     }
   }
   if (!isWho(o.who)) return null;
   const i = intentOf(o);
-  return i && { ...i, v: 1, who: o.who, t };
+  return i && { ...i, v: LIVE_V, who: o.who, t };
 }
