@@ -36,7 +36,7 @@ export const isCritterArt = (path: string): boolean =>
  *  flowers: cached on first use, not at install. */
 export const isDecorArt = (path: string): boolean =>
   /\/art\/.+-(winter|lit)\.webp$/.test(path) ||
-  /\/art\/(deco\/(fence-(wooden|corral|bamboo)|garden-(lantern|lantern-white|rock)|flat-rock|tall-rock|lamp-glow)|trees\/bamboo)\.webp$/.test(path) ||
+  /\/art\/(deco\/(fence-(wooden|corral|bamboo)|garden-(lantern|lantern-white|rock)|flat-rock|lamp-glow)|trees\/bamboo)\.webp$/.test(path) ||
   /\/art\/flowers\/((pink|purple|white)-hyacinths|(white|pink)-tulips|(white|orange|pink|yellow)-lilies|(white|yellow|red)-(cosmos|mums)|(white|yellow|red)-pansies|(red|purple|white)-windflowers)\.webp$/.test(path);
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */

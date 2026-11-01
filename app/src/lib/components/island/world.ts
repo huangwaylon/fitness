@@ -37,7 +37,10 @@ export const AHEAD = 900;
 /** The river's centreline [x, z, width]: the spring on the upper tier, the waterfall, down the east side, west across
  *  the island between the health lawn and the plaza, out through the west beach (the mouth, widening into the sea). */
 export const RIVER: readonly (readonly [number, number, number])[] = [
-  [372, 2000, 22], [372, 1900, 26], [372, 1850, 28], [372, 1806, 30], [374, 1500, 30], [370, 1200, 30], [372, 900, 30], [366, 720, 30],
+  [372, 2000, 22], [372, 1900, 26], [372, 1850, 34], [372, 1806, 36],
+  // the east reach meanders gently, its width breathing (NH's rivers are never ruler-straight)
+  [378, 1720, 30], [366, 1610, 34], [379, 1490, 28], [375, 1370, 31], [362, 1250, 35], [376, 1130, 28], [364, 1010, 34], [377, 890, 29],
+  [366, 720, 30],
   [330, 650, 30], [260, 636, 30], [195, 640, 30], [120, 648, 30], [50, 640, 32], [-10, 628, 38], [-44, 620, 52], [-80, 614, 76], [-130, 608, 96]
 ];
 /** The spring on the upper tier the river rises from. */
@@ -51,7 +54,10 @@ export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
 // ---- the cliff, bridges, stairs -------------------------------------------------------------------------------------
 
 /** The cliff to tier 2: its face from z0 (foot) to z1 (top edge) across x0…x1; stone stairs and the waterfall cut it. */
-export const CLIFF = { z0: 1806, z1: 1850, x0: -12, x1: 402, stair: [36, 84] as Pt, fall: [356, 388] as Pt } as const;
+export const CLIFF = { z0: 1806, z1: 1850, x0: -12, x1: 402, stair: [36, 84] as Pt, fall: [351, 393] as Pt } as const;
+/** The cliff's upright face (a sprite at its foot) and the waterfall's height over it, in u. */
+export const FACE_H = 40;
+export const FALL_H = 45;
 export const BRIDGES = [
   { id: 'stone', kind: 'stone', x: 195, z0: 618, z1: 664, w: 44 },
   { id: 'log', kind: 'log', x: 296, z0: 622, z1: 660, w: 34 }
@@ -198,7 +204,7 @@ export const SCENERY: readonly Scenery[] = [
   s('bamboo-3', 'bamboo', 'trees/bamboo', 296, 1506, 70, true), s('bamboo-4', 'bamboo', 'trees/bamboo', 336, 1500, 64),
   s('lantern-1', 'prop', 'deco/garden-lantern', 240, 1420, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 250, 1514, 24),
   s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1786, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1786, 24),
-  s('rock-t1', 'rock', 'deco/tall-rock', 150, 1784, 30),
+  s('rock-t1', 'rock', 'deco/garden-rock', 150, 1784, 22),
   // tier 2: a corral fence behind the campsite's west side, meadow flowers east of it, a flat rock by the spring
   s('fence-c1', 'fence', 'deco/fence-corral', 64, 2080, 22), s('fence-c2', 'fence', 'deco/fence-corral', 91, 2080, 22), s('fence-c3', 'fence', 'deco/fence-corral', 118, 2080, 22),
   s('meadow-9', 'prop', 'meadow-9', 232, 1902, 22), s('meadow-10', 'prop', 'meadow-10', 246, 1914, 20), s('meadow-11', 'prop', 'meadow-11', 226, 1922, 22, true),
@@ -209,7 +215,7 @@ export const SCENERY: readonly Scenery[] = [
 
 /** The river's half-width and centre x at z along its north–south reach, or null off it (the east run, z ≥ 720). */
 export function riverNS(z: number): { x: number; hw: number } | null {
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < RIVER.length - 1 && RIVER[i][1] > 720; i++) {
     const a = RIVER[i], b = RIVER[i + 1];
     if (z <= a[1] && z >= b[1]) {
       const t = (a[1] - z) / (a[1] - b[1] || 1);

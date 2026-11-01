@@ -15,7 +15,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LOOKS, baseOf, dressDefines, dressGeometry, SEASON_GLSL } from './terrain-seasons.ts';
-import { BUILDINGS, BRIDGES, CLIFF, DOCK, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, PLAZA, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
+import { BUILDINGS, BRIDGES, CLIFF, DOCK, FACE_H, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, PLAZA, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'terrain');
@@ -667,7 +667,7 @@ vec3 terrain(vec2 p){
   float nz = rv.nz, depthT = sat(-ws/(rv.hw + 1.0)*1.25), hwB = rv.hw;
   vec2 nrm = rv.n;
   vec2 la = vec2(rv.along, rv.across);
-  float pondS = ellD(p, POND) + 1.3*gn(p/9.0, 953) + 0.4*gn(p/2.2, 946), sprS = ellD(p, SPRING) + 1.3*gn(p/9.0, 954) + 0.4*gn(p/2.2, 945);
+  float pondS = ellD(p, POND) + 2.4*gn(p/15.0, 958) + 1.3*gn(p/9.0, 953) + 0.4*gn(p/2.2, 946), sprS = ellD(p, SPRING) + 1.3*gn(p/9.0, 954) + 0.4*gn(p/2.2, 945);
   if (inCliff > 0.5) ws = 1e5;
   if (pondS < ws){ ws = pondS; vec2 q = (p - POND.xy)/(POND.zw*POND.zw); nrm = normalize(q); nz = nrm.y; depthT = sat(-pondS/POND.w*1.25); la = vec2(p.x, p.y - POND.y); hwB = POND.w; }
   if (sprS < ws){ ws = sprS; vec2 q = (p - SPRING.xy)/(SPRING.zw*SPRING.zw); nrm = normalize(q); nz = nrm.y; depthT = sat(-sprS/SPRING.w*1.25); la = vec2(p.x, p.y - SPRING.y); hwB = SPRING.w; }
@@ -721,6 +721,35 @@ vec3 terrain(vec2 p){
         float shd = aa(min(blade(lq - vec2(0.5, 0.6), 0.6, th), 9.0), AAW*2.0)*rootOk*wa;
         c = mix(c, c*0.7, shd*0.45);
         c = mix(c, mix(GRASS, GRASS_HI, 0.25 + 0.5*r.y)*(0.82 + 0.18*sat(lq.y/th)), aa(bl, AAW)*rootOk);
+      }
+    }
+  }
+  // reeds in clumps at the pond's edge (its far and west banks): long slanted blades, a few cattails
+  {
+    float pe = ellD(p, POND) + 2.4*gn(p/15.0, 958) + 1.3*gn(p/9.0, 953);
+    float side = smoothstep(-0.3, 0.4, (p.y - POND.y)/POND.w*0.7 - (p.x - POND.x)/POND.z*0.6);
+    float clump = smoothstep(-0.35, 0.25, gn(p/10.0, 1601))*(0.3 + 0.7*side);
+    if (pe > -4.0 && pe < 4.0 && clump > 0.0){
+      vec2 rg = floor(p/1.7);
+      for (int j = -2; j <= 0; j++) for (int i = -1; i <= 1; i++){
+        ivec2 id = ivec2(rg) + ivec2(i, j);
+        vec2 r = h2(id, 1602);
+        vec2 root = (vec2(id) + 0.2 + 0.6*h2(id, 1603))*1.7;
+        float rp = ellD(root, POND) + 2.4*gn(root/15.0, 958) + 1.3*gn(root/9.0, 953);
+        if (r.x > 0.8*clump || rp < -2.5 || rp > 2.0) continue;
+        float ln = 5.0 + 4.0*r.y, ang = (h1(id, 1604) - 0.5)*0.6;
+        vec2 lq = mat2(cos(ang), sin(ang), -sin(ang), cos(ang))*(p - root);
+        float bd = blade(lq, 0.62, ln);
+        c = mix(c, c*0.68, aa(blade(lq - vec2(0.7, 0.9), 0.5, ln), AAW*2.0)*0.35);      // its shade
+        vec3 rc = mix(vec3(0.30,0.52,0.22), vec3(0.52,0.72,0.32), sat(lq.y/ln))*(0.9 + 0.2*h1(id, 1605));
+#if WINTER
+        rc = mix(rc, vec3(0.62,0.58,0.42), 0.6);
+#endif
+        c = mix(c, rc, aa(bd, AAW));
+        if (h1(id, 1606) < 0.28){ // a cattail: a brown head on the blade
+          float hd = length((lq - vec2(0.0, ln*0.8))*vec2(1.0, 0.42)) - 0.85;
+          c = mix(c, mix(vec3(0.42,0.27,0.15), vec3(0.58,0.38,0.22), sat(lq.x + 0.5)), aa(hd, AAW));
+        }
       }
     }
   }
@@ -1077,11 +1106,11 @@ vec4 dockFront(vec2 u){
 // the cliff's upright face: u.x 0…414 (world x −12…402), u.y 0 (its foot at z 1806) … H (the tier-2 grass's lip)
 vec4 cliffFace(vec2 u){
   float W = uSize.x, H = uSize.y;
-  float stL = STAIR.x + 12.0, stR = STAIR.y + 12.0, fL = FALL.x - 4.0 + 12.0, fR = FALL.y + 4.0 + 12.0;
+  float stL = STAIR.x + 12.0, stR = STAIR.y + 12.0, fL = FALL.x - 1.0 + 12.0, fR = FALL.y + 1.0 + 12.0;
   // the top edge: the grass lip's silhouette, scalloped, with blades sticking up
   float scal = abs(sin(u.x*0.29 + 2.0*gn(vec2(u.x/9.0, 1.0), 1501)));
   float topY = H - 0.5 - 0.7*scal + 0.5*gn(vec2(u.x/1.3, 2.0), 1502);
-  float lipY = topY - 3.0 - 1.4*scal - 0.6*gn(vec2(u.x/2.2, 3.0), 1503);
+  float lipY = topY - 4.2 - 1.6*scal - 0.7*gn(vec2(u.x/2.2, 3.0), 1503);
   // the ends round off into the beach
   float endD = min(u.x, W - u.x);
   topY -= 6.0*(1.0 - smoothstep(0.0, 7.0, endD));
@@ -1092,12 +1121,17 @@ vec4 cliffFace(vec2 u){
   // ---- rock: four strata, each lit on its top ledge and darker below, rounded masses, grooves, chips
   float v = sat(u.y/max(lipY, 1.0));
   vec3 c = mix(vec3(0.60,0.39,0.24), vec3(0.87,0.65,0.45), smoothstep(0.0, 1.0, v));
-  float lv = v*4.0 + 0.22*gn(vec2(u.x/26.0, 0.0), 701) + 0.08*gn(vec2(u.x/6.0, v*3.0), 702);
+  float lv = v*3.0 + 0.32*gn(vec2(u.x/30.0, 0.0), 701) + 0.12*gn(vec2(u.x/7.0, v*3.0), 702);
   float k = floor(lv), fr = lv - k;
-  c *= mix(0.80, 1.06, pow(fr, 0.75));
+  c *= mix(0.82, 1.06, pow(fr, 0.75));
+  // NH's cliffs are scored top to bottom: rounded vertical ribs and grooves, lit on their left flanks
+  float rib = gn(vec2(u.x/3.4, u.y/40.0 + k*1.7), 1550) + 0.5*gn(vec2(u.x/1.6, u.y/18.0), 1551);
+  float ribd = gn(vec2((u.x + 0.6)/3.4, u.y/40.0 + k*1.7), 1550) - gn(vec2((u.x - 0.6)/3.4, u.y/40.0 + k*1.7), 1550);
+  c *= 1.0 + 0.10*rib - 0.22*ribd;
+  c = mix(c, c*0.62, smoothstep(0.55, 0.85, -rib)*0.55);                        // the deep grooves
   c *= 1.0 + 0.06*(h1(ivec2(int(k), 0), 703) - 0.5);
-  c = mix(c, c*0.55, (1.0 - smoothstep(0.0, 0.08, fr))*step(0.5, k));             // the crease under each ledge
-  c = mix(c, c*1.22 + 0.04, smoothstep(0.86, 0.94, fr)*(1.0 - smoothstep(0.96, 1.0, fr)));   // the ledge's lit top
+  c = mix(c, c*0.6, (1.0 - smoothstep(0.0, 0.07, fr))*step(0.5, k)*smoothstep(-0.3, 0.3, gn(vec2(u.x/14.0, k), 1552)));   // broken creases between layers
+  c = mix(c, c*1.22 + 0.04, smoothstep(0.88, 0.95, fr)*(1.0 - smoothstep(0.97, 1.0, fr))*smoothstep(-0.2, 0.3, gn(vec2(u.x/10.0, k), 1553)));   // a ledge catching the light
   vec4 vb = voro(vec2(u.x/13.0, u.y/6.0 + k*0.37), 1504, 0.75);
   float bt = h1(ivec2(vb.zw), 1505);
   c *= 1.0 + 0.09*(bt - 0.5);
@@ -1126,19 +1160,24 @@ vec4 cliffFace(vec2 u){
   // ---- the stairs: side walls and six stone steps going up the face
   if (inStair > 0.5){
     float su = u.x - stL, sw = stR - stL, side = min(su, sw - su);
-    float sv = u.y/H*6.0, sk = floor(sv), sf = sv - sk;
+    float sv = u.y/H*8.0, sk = floor(sv), sf = sv - sk;
     ivec2 sid = ivec2(int(sk), int(floor((su + 9.0*h1(ivec2(int(sk), 1), 1513))/16.0)));
     vec3 slab = mix(vec3(0.69,0.68,0.64), vec3(0.80,0.79,0.75), h1(sid, 1514));
-    slab *= 0.9 + 0.12*sk/5.0;                                                         // the upper steps nearer the light
+    slab *= 0.88 + 0.14*sk/7.0;                                                        // the upper steps nearer the light
     // a step: its riser (facing us, in shade) then its tread (seen from above, lit), the nosing between
-    float tread = smoothstep(0.56, 0.6, sf);
-    vec3 sc = mix(slab*mix(0.5, 0.66, sf/0.58), slab*mix(1.12, 0.98, (sf - 0.6)/0.4), tread);
-    sc = mix(sc, slab*1.32, smoothstep(0.55, 0.59, sf)*(1.0 - smoothstep(0.62, 0.68, sf)));   // the lit nosing
+    float tread = smoothstep(0.40, 0.45, sf);
+    vec3 sc = mix(slab*mix(0.36, 0.55, sf/0.42), slab*mix(1.2, 0.98, (sf - 0.45)/0.55), tread);
+    sc = mix(sc, slab*1.36, smoothstep(0.40, 0.45, sf)*(1.0 - smoothstep(0.49, 0.56, sf)));   // the lit, rounded nosing
     sc *= 1.0 - 0.2*smoothstep(0.88, 1.0, sf);                                               // the next riser's shade
     float jx = fract((su + 9.0*h1(ivec2(int(sk), 1), 1513))/16.0);
     sc = mix(sc*0.62, sc, smoothstep(0.0, 0.02, jx)*smoothstep(1.0, 0.98, jx));
     sc *= 1.0 + 0.07*gn(u/1.0, 1515) + 0.04*gn(u/0.35, 1516);
     sc = mix(sc, sc*0.86, smoothstep(0.6, 0.9, gn(u/0.9, 1517))*0.4);                         // worn pits
+#if !WINTER
+    // moss in the joints, at the back of each tread and creeping up the risers' feet
+    float mossy = max(1.0 - smoothstep(0.0, 0.06, min(jx, 1.0 - jx)), max(smoothstep(0.86, 0.97, sf), 1.0 - smoothstep(0.0, 0.12, sf)));
+    sc = mix(sc, vec3(0.40,0.56,0.27)*(0.9 + 0.2*gn(u/0.7, 1530)), mossy*smoothstep(0.1, 0.6, gn(u/2.2, 1531) + 0.25)*0.7);
+#endif
 #if WINTER
     sc = mix(sc, vec3(0.95,0.97,1.0), tread*smoothstep(-0.1, 0.4, gn(u/2.5, 1518) + 0.2)*0.85);
 #endif
@@ -1165,13 +1204,30 @@ vec4 cliffFace(vec2 u){
   og = mix(vec3(0.80,0.86,0.96), vec3(1.0), smoothstep(lipY, lipY + 2.0, u.y));
 #endif
   float tq = floor(u.x/1.5); float th = h1(ivec2(int(tq), 9), 1523);
-  float tl = (lipY - u.y) - (0.8 + 2.6*th)*(1.0 - abs(fract(u.x/1.5) - 0.5)*2.0);
-  float hang = step(u.y, lipY)*step(tl, 0.0)*step(0.45, h1(ivec2(int(tq), 9), 1524));
+  float tl = (lipY - u.y) - (1.2 + 3.8*th)*(1.0 - abs(fract(u.x/1.5) - 0.5)*2.0);
+  float hang = step(u.y, lipY)*step(tl, 0.0)*step(0.3, h1(ivec2(int(tq), 9), 1524));
   float topA = sat(step(lipY, u.y) + hang)*(1.0 - inStair)*(1.0 - inFall);
-  c = mix(c, c*0.6, (1.0 - smoothstep(0.0, 1.6, lipY - u.y - (0.8 + 2.6*th)))*(1.0 - topA)*(1.0 - inStair)*0.35);
+  c = mix(c, c*0.55, (1.0 - smoothstep(0.0, 2.2, lipY - u.y - (1.2 + 3.8*th)))*(1.0 - topA)*(1.0 - inStair)*0.45);
   c = mix(c, og, topA);
   // the river's edge where it tips over, wet and bright
   c = mix(c, vec3(0.62,0.80,0.90), inFall*smoothstep(lipY, topY, u.y)*0.8);
+  // boulders at its foot: rounded, lit from the upper left, mossy (snowy) tops, out of the stairs and the falls
+  for (int i = 0; i < 16; i++){
+    float bx = 10.0 + float(i)*25.0 + 12.0*(h1(ivec2(i, 3), 1540) - 0.5), br = 3.2 + 3.0*h1(ivec2(i, 4), 1541);
+    if (h1(ivec2(i, 5), 1542) < 0.3 || abs(bx - 0.5*(stL + stR)) < 0.5*(stR - stL) + br + 2.0 || abs(bx - 0.5*(fL + fR)) < 0.5*(fR - fL) + br) continue;
+    vec2 q = (u - vec2(bx, 0.55*br))/vec2(br*1.25, br*0.85);
+    float d = (length(q) - 1.0 + 0.08*gn(q*3.0 + float(i), 1543))*br;
+    if (d > 0.6) continue;
+    vec3 rc = mix(vec3(0.55,0.53,0.50), vec3(0.66,0.63,0.58), h1(ivec2(i, 6), 1544));
+    rc *= 0.72 + 0.38*sat(0.6 + dot(q, vec2(-0.55, 0.7))) + 0.05*gn(u/0.5, 1545);
+#if WINTER
+    rc = mix(rc, vec3(0.96,0.97,1.0), smoothstep(0.25, 0.6, q.y + 0.1*gn(u, 1546)));
+#else
+    rc = mix(rc, vec3(0.42,0.58,0.28), smoothstep(0.45, 0.85, q.y + 0.2*gn(u*0.9, 1546))*0.6);
+#endif
+    float ba = aa(d, 0.15);
+    c = mix(c, rc, ba); a = max(a, ba);
+  }
   // grass tufts at the foot, growing up in front
   vec2 fq = vec2(fract(u.x/2.1) - 0.5, u.y); float fh = h1(ivec2(int(floor(u.x/2.1)), 4), 1525);
   float footT = aa(blade(vec2(fq.x*2.1, fq.y + 0.2), 0.5, 1.0 + 2.4*fh), 0.12)*step(0.4, fh)*(1.0 - inStair)*(1.0 - inFall);
@@ -1263,7 +1319,7 @@ const SPRITES = [
   { name: 'bridge-stone', mode: 1, w: S.w + 8, h: 12, z: S.z0, x: S.x },
   { name: 'bridge-log', mode: 2, w: L.w, h: (L.w / 5) * 1.05, z: L.z0, x: L.x },
   { name: 'dock-front', mode: 3, w: DOCK.x1 - DOCK.x0, h: 11, z: DOCK.z0, x: (DOCK.x0 + DOCK.x1) / 2 },
-  { name: 'cliff-face', mode: 4, w: CLIFF.x1 - CLIFF.x0, h: 30, z: CLIFF.z0, x: (CLIFF.x0 + CLIFF.x1) / 2 }
+  { name: 'cliff-face', mode: 4, w: CLIFF.x1 - CLIFF.x0, h: FACE_H, z: CLIFF.z0, x: (CLIFF.x0 + CLIFF.x1) / 2 }
 ];
 
 async function main() {

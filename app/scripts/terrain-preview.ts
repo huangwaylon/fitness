@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { compile } from 'svelte/compiler';
 import { render } from 'svelte/server';
 import { band, quadMatrix, radiusFor, project, ROLL_DEFAULTS } from '../src/lib/components/island/roll.ts';
-import { BAND_D, BANDS, BUILDINGS, CLIFF, GOAL_TREES, PIVOT, PLAN, SCENERY, SKY, TILT, TREE_H, BRIDGES, DOCK, HEDGE_XS, HEDGE_Z } from '../src/lib/components/island/world.ts';
+import { BAND_D, BANDS, BUILDINGS, CLIFF, FACE_H, FALL_H, GOAL_TREES, PIVOT, PLAN, SCENERY, SKY, TILT, TREE_H, BRIDGES, DOCK, HEDGE_XS, HEDGE_Z } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = '/tmp/world-build/terrain';
@@ -46,8 +46,7 @@ async function load(name: string) {
   return (await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)).default;
 }
 const wash = render(await load('ShoreWash'), { props: { x0: 90, x1: 300 } });
-const fall = render(await load('Waterfall'), { props: { night: false } });
-const FALL_W = 40, FALL_H = 34, FACE_H = 30;
+const fall = render(await load('Waterfall'), { props: { night: false, w: CLIFF.fall[1] - CLIFF.fall[0] + 8, h: FALL_H } });
 
 function view(camZ: number, vw: number, vh: number): string {
   const s = vw / 390;

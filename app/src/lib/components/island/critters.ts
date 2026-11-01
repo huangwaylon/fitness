@@ -417,9 +417,9 @@ const offBridges = (x: number, z: number) => !BRIDGES.some((b) => Math.abs(x - b
 export function freshAreas(where: FreshWhere): Swim[] {
   if (where === 'pond') return [{ cx: POND.x, cz: POND.z, ux: 1, uz: 0, L: POND.rx * 0.55, W: POND.rz * 0.4 }];
   if (where === 'clifftop')
-    return [...reaches(0, 2, 60, (x, z) => z > CLIFF.z1 + 14 && z < SPRING.z - SPRING.rz), { cx: SPRING.x, cz: SPRING.z, ux: 1, uz: 0, L: SPRING.rx * 0.5, W: SPRING.rz * 0.4 }];
-  if (where === 'mouth') return reaches(11, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');
-  return reaches(3, 12, 90, (x, z) => z < CLIFF.z0 - 16 && freshWhere(x, z) === 'river' && offBridges(x, z));
+    return [...reaches(0, RIVER.length - 1, 60, (x, z) => z > CLIFF.z1 + 14 && z < SPRING.z - SPRING.rz), { cx: SPRING.x, cz: SPRING.z, ux: 1, uz: 0, L: SPRING.rx * 0.5, W: SPRING.rz * 0.4 }];
+  if (where === 'mouth') return reaches(0, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');
+  return reaches(0, RIVER.length - 1, 90, (x, z) => z < CLIFF.z0 - 16 && freshWhere(x, z) === 'river' && offBridges(x, z));
 }
 
 /** A patch a bug keeps to (world): x0…x1 across, z0…z1 deep, l0…l1 units above the ground. */

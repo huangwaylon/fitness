@@ -259,15 +259,20 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   heaped under the oaks and blown along the paths; 543 KB), winter (snow in soft drifts lit from the upper left and
   blue in their lee, banks along the paths with their shade on the path, snow thinning out over the sand, the banks
   snowy to the water's edge: NH's rivers never freeze; 405 KB). Time of day is never baked (the tint does it). Upright sprites stand at
-  the near edges: the cliff's face (strata, the grass lip, the stairs carved in), the bridges' fronts, the dock's.
+  the near edges: the cliff's face (40u tall, world.ts FACE_H: three broken layers scored top to bottom by NH's rounded
+  ribs and grooves, a thick scalloped grass lip with long drooping tufts, eight carved stone steps with lit rounded
+  noses and moss in the joints, mossy boulders at its foot), the bridges' fronts, the dock's. The pond's edge wanders
+  and reed clumps (a few cattails) grow on its far and west banks.
 - **The live water** (`WorldWater`): the shore's foam wash (`ShoreWash`), the waterfall's sheets, foam and mist
-  (`Waterfall`), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
+  (`Waterfall`: 50u wide and 45u tall, layered sheets with two slow translucent curtains, a wide foam pool, spray and
+  mist), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
   or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u along the east
   reach and the crossing, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
 - **Layout** (`world.ts`): まえ: the airport at (362, 22) with its dock, palms on the sand, plumeria at the grass edge,
   the villagers' homes A (132, 214) and B (262, 214), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
   332), the tape deck between them, the rock, the dig spots, the hedge along the river at z 596. The river rises at the
-  spring on the upper tier, falls through the cliff (x 356…388), runs down the east side and west across the island at
+  spring on the upper tier, falls through the cliff (x 351…393), meanders gently down the east side (its width
+  breathing, 28–36u) and west across the island at
   z ≈ 640 to its mouth on the west beach, crossed by a stone bridge (x 195) and a log bridge (x 296). ひろば: the plaza
   (195, 900), the banner lamps, the bench, Resident Services (195, 1068), the bulletin board, the pond (44, 772). おく:
   Nook's Cranny (100, 1338), Able Sisters (282, 1338), the museum (190, 1648), the cliff (z 1806…1850) with its stairs
