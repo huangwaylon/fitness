@@ -39,6 +39,14 @@ outbox), so a relay outage loses liveness, never data. Why: Apps Script can't pu
 faster would burn its quota; the Free plan needs no payment method, the Hibernation API makes idle sockets free, and
 the edge is in Tokyo (~20 ms one way). Firebase RTDB (Spark) was the fallback.
 
+### Relay versions side by side
+The relay speaks every protocol version in `LIVE_VS` at once (1 and 2): each socket keeps its hello's version, the
+relay's messages and the shared intents reach every phone in its own, and a walk passes only between phones of the
+same version. Any other version, or a switch mid-socket, is closed 4004 with a reason, so the phone parks until a
+reload. Why: the two phones update at different times (a service worker update waits for the next open), so a hard
+switch would cut presence and the push for whichever updates last, and a stage point can't be mapped to the world.
+The order is fixed: deploy the relay with the new version first, then the app; drop the old one once both run it.
+
 ### Push through the relay
 When the sheet changes, the Apps Script POSTs a small signed notice (`what`, `who`, newest `at`, `rev`) to the relay,
 which tells the open phones to fetch now; a phone also nudges its partner over the socket after an acked event. The
@@ -217,6 +225,14 @@ ground runs it there (200 u/s, the camera following), where it stays for the ses
 island is a run too. With the relay, my tap-to-walk replays on the partner's phone (the destination only; their
 planner walks it). Why: every tap keeps its meaning, timing games never wait, and NH's island is walked, not panned
 past.
+
+### Ambient life from the clock
+What the island does on its own is a function of the Tokyo date, the 10-second slot and the shared world, with PRNGs
+keyed by date, slot and kind, on the relay's clock (`island/ambient.ts`): idle life's beats, the visitor's and the
+critters' visits. Why: both phones show the same villager outings, visitor beats and critters with no messages, no
+leader and nothing stored, and it costs nothing when one phone is alone. Where a critter shows stays each camera's,
+and what a person does by hand stays on their phone. Not done: streaming ambient moves over the relay (a message per
+beat and a leader to elect).
 
 ### Visitors are the director's fourth actor
 The visitor moves through the same director, idle life and walk graph as the villagers, with CSS loops for continuous

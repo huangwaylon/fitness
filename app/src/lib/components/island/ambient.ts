@@ -1,0 +1,308 @@
+// Deterministic ambient life (docs/backend.md#ambient-life): what the island does on its own in each 10-second slot of
+// the Tokyo day (a villager's outing or small move, the visitor's beat, a fish, bubbles or a bug coming by), from the
+// date, the slot and the shared world only, with PRNGs keyed by date + slot + kind. Both phones compute the same slot
+// from the same inputs, so they show the same island without a message: the relay's clock (live.ts serverNow) aligns the
+// slots, the relay's intents keep the inputs shared (a walk). What one person does by hand stays theirs (a cast's
+// bite, a line read), and so does where on a screen a critter shows (each camera sees its own part of the world).
+// idleLife.svelte.ts plays the villagers' and the visitor's slots, Critters.svelte the critters'. Engine-proof:
+// integer world points, squared distances (never Math.hypot), plain string order, mulberry32.
+import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
+import type { LocalDate } from '#lib/types.ts';
+import type { PersonId as Who } from '#lib/types.ts';
+import { mulberry32, pickOne } from '#lib/random.ts';
+import { IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
+import { BUBBLE_SHARE } from './critters.ts';
+import { dayRand } from './daySeed.ts';
+import { MAX_HOPS, POI_LINGER } from './wander.ts';
+import type { Pt } from './world.ts';
+
+// ---------- the slot clock ----------
+
+/** One slot: every decision belongs to one, and every walk starts on a boundary. */
+export const SLOT_MS = 10_000;
+const DAY_MS = 86_400_000;
+export const SLOTS_PER_DAY = DAY_MS / SLOT_MS;
+/** The critters' stays are chained within blocks of this many slots (10 min; a block never spans an hour or a day), so
+ *  a slot's critters are a function of its block alone. */
+const BLOCK = 60;
+
+export interface SlotTime {
+  /** The Tokyo date. */
+  date: LocalDate;
+  /** The slot of that date, 0 … SLOTS_PER_DAY − 1. */
+  slot: number;
+  /** How far into the slot (ms). */
+  into: number;
+  /** The Tokyo hour and month (1–12) the slot is in. */
+  hour: number;
+  month: number;
+}
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * The slot a clock reading falls in, on the relay's clock: `ms` the island's clock (clock.ts now(), so a `?date=`
+ * preview moves the slots too), `offset` the relay's clock minus the device's (live.serverNow() − Date.now(); 0 when
+ * offline: alone, nobody has to agree).
+ */
+export function slotAt(ms: number, offset = 0): SlotTime {
+  const tokyo = ms + offset + ZONE_OFFSET_MS;
+  const day = Math.floor(tokyo / DAY_MS);
+  const inDay = tokyo - day * DAY_MS;
+  const d = new Date(day * DAY_MS);
+  const slot = Math.floor(inDay / SLOT_MS);
+  return {
+    date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`,
+    slot,
+    into: inDay - slot * SLOT_MS,
+    hour: Math.floor(inDay / 3_600_000),
+    month: d.getUTCMonth() + 1
+  };
+}
+
+/** How long until the next slot begins (ms, on the device's clock: what a setTimeout waits). */
+export const msToNextSlot = (ms: number, offset = 0): number => SLOT_MS - slotAt(ms, offset).into;
+
+/** A slot is decided and played this long after its start (its walks start then, its moves `at` after it): by then an
+ *  intent the partner sent before the start has reached this phone (one way ~20 ms, p90 ~45 ms: backend.md "Measured"). */
+export const DECIDE_MS = 500;
+
+/** When a slot begins (ms since the epoch, the relay's clock). Slots sit on whole 10 s of the epoch (Tokyo is +9 h). */
+export const slotStart = (date: LocalDate, slot: number): number =>
+  Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10)) - ZONE_OFFSET_MS + slot * SLOT_MS;
+
+/** A PRNG for one kind of decision in one slot ('villager', 'visitor', 'critter:sea', …): the same on both phones. */
+export const slotRand = (date: LocalDate, slot: number, kind: string): (() => number) => dayRand(date, `ambient:${kind}:${slot}`);
+const between = (r: () => number, [a, b]: readonly [number, number]) => Math.round(a + r() * (b - a));
+
+// ---------- the world snapshot ----------
+
+/** A point a villager may wander to: a walk-graph node and its world point. */
+export interface Poi {
+  node: string;
+  at: Pt;
+}
+
+export interface VillagerState {
+  /** Where it stands (world units, rounded). */
+  at: Pt;
+  home: Pt;
+  /** Free for an idle beat: awake, standing, not mid-reaction. From the shared state only (a partner's walk or act
+   *  arrives over the relay); my own touches that never reach the relay must not count, or the phones disagree. */
+  free: boolean;
+  /** Its person has the island open (on their own phone: always; the partner's: the relay's presence): it makes small
+   *  moves but no outings, as its person may tap it any moment. */
+  present?: boolean;
+  /** The relay's `t` of its owner's last walk or act (my own: the serverNow() I sent it at), if any: idle life leaves
+   *  a villager its owner is steering alone for HOLD_SLOTS (held()). */
+  lastIntent?: number;
+}
+
+export interface AmbientWorld {
+  villagers: Record<Who, VillagerState>;
+  /** Where a villager may wander (the world's points of interest, any order: sorted here). */
+  pois: readonly Poi[];
+  /** 'evening' (19–22: no day-only moves) and 'asleep' (22–05: the villagers only doze). */
+  phase: 'day' | 'evening' | 'asleep';
+  /** Each person's day score (progress.ts dayScore: today's ベル as % of a full day), for dancing together. */
+  scores: Record<Who, number>;
+}
+
+// ---------- what a slot holds ----------
+
+type IdleMove = Exclude<IdleAction, 'wander' | 'chat' | 'dance' | 'doze'>;
+
+export type VillagerBeat =
+  /** A small move, `at` ms into the slot. */
+  | { kind: 'idle'; action: IdleMove; at: number }
+  /** A walk to 1–MAX_HOPS points of interest, lingering at each, then home; it starts on the slot's boundary. */
+  | { kind: 'outing'; stops: readonly { node: string; linger: number }[] }
+  /** Both villagers: a chat or a dance, the same for both; the lead's starts it. */
+  | { kind: 'pair'; action: 'chat' | 'dance'; with: Who; lead: boolean; at: number }
+  | { kind: 'doze' };
+
+type CritterKind = 'fish' | 'bubbles' | 'fresh' | 'bug';
+
+export interface Spawn {
+  kind: CritterKind;
+  /** When it comes, ms into its first slot. */
+  at: number;
+  /** Its first slot and how many it stays (it leaves at the end of the last one, on a boundary, unless caught first). */
+  slot: number;
+  slots: number;
+  /** Seeds what it is: the species pickers take spawnRand(spawn) (critters.ts pickFish / pickBug, pondFish.ts
+   *  pickFresh, sea.ts pickDive), so the lazily loaded tables stay out of this module. Where it shows is the
+   *  phone's (the waters and patches its camera sees). */
+  seed: number;
+}
+
+
+// ---------- the villagers ----------
+
+/** Idle life leaves a villager alone this many slots after its owner's last walk or act (12: 2 min, idle life's
+ *  MINE_WANDER_IDLE). */
+export const HOLD_SLOTS = 12;
+/** The chance a slot sends a free villager out on an outing when nobody is out (idle life: every other tick or so). */
+const OUTING_ODDS = 0.3;
+/** Outings stay within this of home (u, the world spec's 600u), and a stop is never where it stands (30u). */
+export const WANDER_REACH_U = 600;
+const NEAR_U = 30;
+/** With both day scores ≥ 80 a pair beat is a dance this often (idle life weights it 15). */
+const DANCE_BOOST = 0.25;
+/** A small move lands this far into its slot at most (ms), so it is done before the next. */
+const IDLE_AT_MAX = 6_000;
+const PEOPLE: readonly Who[] = ['A', 'B'];
+const other = (w: Who): Who => (w === 'A' ? 'B' : 'A');
+
+const d2 = (a: Pt, b: Pt) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2;
+const atHome = (v: VillagerState) => d2(v.at, v.home) <= NEAR_U ** 2;
+
+/** Whether its owner steered it in the HOLD_SLOTS slots' time before the slot starting at `start`. Only intents before
+ *  the start count (one sent after it counts from the next slot), and a slot is decided DECIDE_MS after its start, by
+ *  when the partner's phone has the intent too. */
+export function held(v: VillagerState, start: number): boolean {
+  return v.lastIntent !== undefined && v.lastIntent < start && start - v.lastIntent <= HOLD_SLOTS * SLOT_MS;
+}
+
+type PoolEntry = (typeof IDLE_POOL)[number];
+/** How far back a roll can rule a move out (slots): the last two, or the longest `every` gap. */
+const LOOKBACK = Math.max(2, ...IDLE_POOL.map((e) => (e.every ?? 0) / SLOT_MS));
+
+function pickEntry(pool: readonly PoolEntry[], r: () => number): PoolEntry | null {
+  const total = pool.reduce((s, e) => s + e.weight, 0);
+  if (total <= 0) return null;
+  let x = r() * total;
+  for (const e of pool) if ((x -= e.weight) < 0) return e;
+  return pool[pool.length - 1];
+}
+
+/** A slot's first roll for the villagers, from the date and slot alone: whose turn and what from the hour's pool. The
+ *  final beat checks it against the snapshot and the recent rolls (no repeat, each move's `every` gap). */
+function roll(date: LocalDate, slot: number, phase: AmbientWorld['phase']) {
+  const r = slotRand(date, slot, 'villager');
+  const outing = r();
+  const who: Who = r() < 0.5 ? 'A' : 'B';
+  const hour = Math.floor(slot / 360);
+  const pool = IDLE_POOL.filter((e) => !(e.day && phase !== 'day') && !(e.hours && !(hour >= e.hours[0] && hour < e.hours[1])));
+  return { r, outing, who, pool, first: pickEntry(pool, r) };
+}
+
+/** The moves `who` rolled in the slots before `slot` that rule a move out now: the last two (no repeats) and any within
+ *  its `every` gap. Rolls only (whether they happened doesn't matter), so the phones agree without history. */
+function recent(date: LocalDate, slot: number, who: Who, phase: AmbientWorld['phase']): Set<IdleAction> {
+  const out = new Set<IdleAction>();
+  for (let k = 1; k <= LOOKBACK && slot - k >= 0; k++) {
+    const p = roll(date, slot - k, phase);
+    if (p.who !== who || !p.first) continue;
+    if (k <= 2 || k * SLOT_MS < (p.first.every ?? 0)) out.add(p.first.action);
+  }
+  return out;
+}
+
+/** An outing from `v`: 1–MAX_HOPS stops among `pois` (sorted by node), each away from the last and within reach of home. */
+function outing(v: VillagerState, pois: readonly Poi[], r: () => number): VillagerBeat | null {
+  const hops = 1 + Math.floor(r() * MAX_HOPS);
+  const stops: { node: string; linger: number }[] = [];
+  let from = v.at;
+  for (let i = 0; i < hops; i++) {
+    const ok = pois.filter((p) => d2(p.at, from) > NEAR_U ** 2 && d2(p.at, v.home) <= WANDER_REACH_U ** 2);
+    if (!ok.length) break;
+    const p = pickOne(ok, r);
+    stops.push({ node: p.node, linger: between(r, POI_LINGER) });
+    from = p.at;
+  }
+  return stops.length ? { kind: 'outing', stops } : null;
+}
+
+/** The villagers' beats in one slot of the day, from the slot and the shared world at its start: at most one villager's,
+ *  both for a pair, or the night's doze. */
+export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): Partial<Record<Who, VillagerBeat>> {
+  const start = slotStart(date, slot);
+  const free = (p: Who) => w.villagers[p].free && !held(w.villagers[p], start);
+  if (w.phase === 'asleep') {
+    const out: Partial<Record<Who, VillagerBeat>> = {};
+    for (const p of PEOPLE) if (w.villagers[p].free) out[p] = { kind: 'doze' };
+    return out;
+  }
+  const { r, outing: o, who, pool, first } = roll(date, slot, w.phase);
+  // one villager out at a time, from home
+  const nobodyOut = PEOPLE.every((p) => atHome(w.villagers[p]));
+  const goers = PEOPLE.filter((p) => free(p) && !w.villagers[p].present && nobodyOut);
+  if (goers.length && o < OUTING_ODDS) {
+    const p = goers.length === 2 ? who : goers[0];
+    const pois = [...w.pois].sort((a, b) => (a.node < b.node ? -1 : a.node > b.node ? 1 : 0));
+    const beat = outing(w.villagers[p], pois, r);
+    if (beat) return { [p]: beat };
+  }
+  if (!free(who) || !first) return {};
+  const mate = other(who);
+  const pairOk = free(mate);
+  const low = Math.min(w.scores.A, w.scores.B);
+  const at = Math.floor(r() * IDLE_AT_MAX);
+  if (pairOk && low >= 80 && r() < DANCE_BOOST) return both('dance', who, at);
+  const no = recent(date, slot, who, w.phase);
+  const allowed = (e: PoolEntry) => !no.has(e.action) && (!e.pair || pairOk) && (e.action !== 'dance' || low >= 70);
+  const e = allowed(first) ? first : pickEntry(pool.filter(allowed), r);
+  if (!e) return {};
+  if (e.action === 'dance') return both('dance', who, at);
+  if (e.action === 'chat') return both('chat', who, at);
+  return { [who]: { kind: 'idle', action: e.action as IdleMove, at } };
+}
+
+const both = (action: 'chat' | 'dance', who: Who, at: number): Partial<Record<Who, VillagerBeat>> => ({
+  [who]: { kind: 'pair', action, with: other(who), lead: true, at },
+  [other(who)]: { kind: 'pair', action, with: who, lead: false, at }
+});
+
+// ---------- the critters ----------
+
+/** Per slot, the chance a channel with room brings someone; how long each stays (slots: a fish ~45 s, bubbles 30 s,
+ *  a bug ~18 s, critters.ts STAY_MS and sea.ts BUBBLE_STAY_MS); BUBBLE_SHARE of the sea's turns bring bubbles. */
+const CHANNELS = {
+  sea: { odds: 0.6 },
+  fresh: { odds: 0.6 },
+  bug: { odds: 0.5 }
+} as const;
+type Channel = keyof typeof CHANNELS;
+const STAY: Record<CritterKind, readonly [number, number]> = { fish: [4, 5], fresh: [4, 5], bubbles: [3, 3], bug: [2, 2] };
+/** A critter comes this far into its first slot at most (ms). */
+const SPAWN_AT_MAX = 8_000;
+
+/** One channel's critters through a block: a slot's roll brings one when the channel is empty (the last one's stay
+ *  is over); stays end within the block. A function of (date, block, channel) alone, kept for the last few blocks. */
+const chains = new Map<string, Spawn[]>();
+function chain(date: LocalDate, block: number, ch: Channel): Spawn[] {
+  const key = `${date}|${block}|${ch}`;
+  let out = chains.get(key);
+  if (out) return out;
+  out = [];
+  const first = block * BLOCK, end = first + BLOCK;
+  let freeAt = first;
+  for (let s = first; s < end; s++) {
+    const r = slotRand(date, s, `critter:${ch}`);
+    if (r() >= CHANNELS[ch].odds || s < freeAt) continue;
+    const kind: CritterKind = ch === 'sea' ? (r() < BUBBLE_SHARE ? 'bubbles' : 'fish') : ch;
+    const slots = Math.min(between(r, STAY[kind]), end - s);
+    out.push({ kind, slot: s, slots, at: Math.floor(r() * SPAWN_AT_MAX), seed: Math.floor(r() * 2 ** 32) });
+    freeAt = s + slots;
+  }
+  if (chains.size >= 24) chains.delete(chains.keys().next().value!);
+  chains.set(key, out);
+  return out;
+}
+
+/** The critters there in `slot`: those that come in it and those still staying from before (a phone opening mid-stay
+ *  shows them too, `slot - spawn.slot` slots in). One at a time in the sea (a shadow or bubbles), in fresh water and
+ *  among the bugs; the phone skips a channel it has no room for (no water in view, no bug about at this hour). */
+export function crittersAt(date: LocalDate, slot: number): Spawn[] {
+  const out: Spawn[] = [];
+  for (const ch of Object.keys(CHANNELS) as Channel[])
+    for (const c of chain(date, Math.floor(slot / BLOCK), ch)) if (c.slot <= slot && slot < c.slot + c.slots) out.push(c);
+  return out;
+}
+
+/** The critters coming in `slot`. */
+export const spawnsIn = (date: LocalDate, slot: number): Spawn[] => crittersAt(date, slot).filter((s) => s.slot === slot);
+
+/** A species picker's random source for a spawn (pickFish(month, hour, spawnRand(s), sky), …). */
+export const spawnRand = (s: Spawn): (() => number) => mulberry32(s.seed);

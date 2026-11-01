@@ -1,0 +1,215 @@
+import { describe, expect, it } from 'vitest';
+import { shuffle, seeded } from '#lib/random.ts';
+import type { PersonId as Who } from '#lib/types.ts';
+import {
+  DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand, spawnsIn,
+  villagerBeats, type AmbientWorld, type Poi, type VillagerBeat
+} from './ambient.ts';
+import { BUBBLE_SHARE, pickBug, pickFish } from './critters.ts';
+import { pickAct } from './visitorLife.ts';
+
+const DATE = '2026-11-01';
+const T0 = Date.parse('2026-11-01T00:00:00+09:00');
+
+const POIS: Poi[] = [
+  { node: 'treeA', at: [62, 350] }, { node: 'treeB', at: [330, 350] }, { node: 'rock', at: [112, 500] },
+  { node: 'shoreL', at: [100, 20] }, { node: 'shoreR', at: [290, 20] }, { node: 'centreStage', at: [195, 900] },
+  { node: 'museumDoor', at: [190, 1620] }
+];
+
+function world(o: Partial<AmbientWorld> = {}): AmbientWorld {
+  return {
+    villagers: { A: { at: [132, 214], home: [132, 214], free: true }, B: { at: [262, 214], home: [262, 214], free: true } },
+    pois: POIS,
+    phase: 'day',
+    scores: { A: 50, B: 50 },
+    ...o
+  };
+}
+
+const day = (w: AmbientWorld, from = 0, to = SLOTS_PER_DAY) => Array.from({ length: to - from }, (_, i) => villagerBeats(w, DATE, from + i));
+const beats = (slots: ReturnType<typeof day>) => slots.flatMap((s) => Object.entries(s) as [Who, VillagerBeat][]);
+
+describe('ambient life: the slot clock', () => {
+  it('cuts the Tokyo day into 8,640 slots of 10 s, with the hour and month', () => {
+    expect(slotAt(T0)).toEqual({ date: DATE, slot: 0, into: 0, hour: 0, month: 11 });
+    expect(slotAt(T0 - 1)).toEqual({ date: '2026-10-31', slot: SLOTS_PER_DAY - 1, into: SLOT_MS - 1, hour: 23, month: 10 });
+    expect(slotAt(T0 + 13.5 * 3600_000 + 4_321)).toEqual({ date: DATE, slot: 13.5 * 360, into: 4_321, hour: 13, month: 11 });
+  });
+
+  it('corrects the device clock by the relay offset, so two phones whose clocks disagree share the slot', () => {
+    const relay = T0 + 7 * 3600_000 + 2_500;
+    const fast = relay + 4_000, slow = relay - 9_000; // device clocks; offset = serverNow − Date.now
+    expect(slotAt(fast, relay - fast)).toEqual(slotAt(slow, relay - slow));
+    expect(slotAt(fast).slot).not.toBe(slotAt(slow).slot);
+    expect(msToNextSlot(fast, relay - fast)).toBe(7_500);
+  });
+
+  it('slotStart is where slotAt begins a slot, on whole 10 s of the epoch', () => {
+    for (const ms of [T0, T0 + 1, T0 + 86_399_999, Date.parse('2027-03-01T05:06:07.890Z')]) {
+      const s = slotAt(ms);
+      expect(slotStart(s.date, s.slot)).toBe(ms - s.into);
+      expect(slotStart(s.date, s.slot) % SLOT_MS).toBe(0);
+    }
+  });
+
+  it('gives each slot and kind its own PRNG, the same on every phone (the visitor beats from it)', () => {
+    const draw = (kind: string, slot = 100) => Array.from({ length: 5 }, slotRand(DATE, slot, kind));
+    expect(draw('visitor')).toEqual(draw('visitor'));
+    expect(draw('visitor')).not.toEqual(draw('host'));
+    expect(draw('visitor')).not.toEqual(draw('visitor', 101));
+    const beat = () => pickAct('daisy-mae', { speaking: false, asleep: false, walking: false, away: false, sinceMeet: Infinity, villagerFree: true }, slotRand(DATE, 4321, 'visitor'));
+    expect(beat()).toBe(beat());
+  });
+});
+
+describe('ambient life: the same on both phones', () => {
+  it('gives the same beats for the same date, slot and world, whichever phone and however often asked', () => {
+    const a = day(world(), 4000, 4400);
+    // the other phone: its own copy of the world, its points of interest listed in another order
+    const w2 = structuredClone(world());
+    w2.pois = shuffle([...POIS], seeded('other phone'));
+    expect(day(w2, 4000, 4400)).toEqual(a);
+    expect(day(world(), 4000, 4400)).toEqual(a);
+  });
+
+  it('varies with the slot and the date', () => {
+    const a = JSON.stringify(day(world(), 4000, 4100));
+    expect(JSON.stringify(day(world(), 4100, 4200))).not.toBe(a);
+    expect(JSON.stringify(Array.from({ length: 100 }, (_, i) => villagerBeats(world(), '2026-11-02', 4000 + i)))).not.toBe(a);
+  });
+
+  it('computes a whole day, villagers and critters, in well under a second (one slot per 10 s on a phone)', () => {
+    const t = performance.now();
+    day(world());
+    for (let s = 0; s < SLOTS_PER_DAY; s++) spawnsIn(DATE, s);
+    expect(performance.now() - t).toBeLessThan(1500);
+  });
+});
+
+describe('ambient life: the villagers', () => {
+  it('mixes outings, small moves and pair moves through the day, one villager a slot (both for a pair)', () => {
+    const slots = day(world(), 10 * 360, 18 * 360);
+    const all = beats(slots);
+    expect(new Set(all.map(([, b]) => b.kind))).toEqual(new Set(['idle', 'outing', 'pair']));
+    for (const s of slots) {
+      const v = Object.values(s);
+      if (v.length === 2) {
+        expect(v.every((b) => b.kind === 'pair')).toBe(true);
+        expect(v.filter((b) => b.kind === 'pair' && b.lead)).toHaveLength(1);
+      } else expect(v.length).toBeLessThanOrEqual(1);
+    }
+    const outings = all.filter(([, b]) => b.kind === 'outing').length / slots.length;
+    expect(outings).toBeGreaterThan(0.2);
+    expect(outings).toBeLessThan(0.4);
+    const idle = new Set(all.flatMap(([, b]) => (b.kind === 'idle' ? [b.action] : [])));
+    expect(idle).toEqual(new Set(['look', 'wiggle', 'hop', 'peek', 'treeshake'])); // stretch is a morning move
+  });
+
+  it('keeps the hours: stretching only 5–10, no day-only moves in the evening, only dozing asleep', () => {
+    const morning = beats(day(world(), 5 * 360, 10 * 360));
+    expect(morning.some(([, b]) => b.kind === 'idle' && b.action === 'stretch')).toBe(true);
+    const evening = beats(day(world({ phase: 'evening' }), 19 * 360, 22 * 360));
+    expect(evening.some(([, b]) => b.kind === 'idle' && ['hop', 'peek', 'treeshake', 'stretch'].includes(b.action))).toBe(false);
+    const w = world({ phase: 'asleep' });
+    w.villagers.B.free = false;
+    for (const s of day(w, 0, 50)) expect(s).toEqual({ A: { kind: 'doze' } });
+  });
+
+  it('sends one villager out at a time, from home, to points of interest within reach and never where it stands', () => {
+    for (const [, b] of beats(day(world(), 9 * 360, 12 * 360))) {
+      if (b.kind !== 'outing') continue;
+      expect(b.stops.length).toBeGreaterThanOrEqual(1);
+      expect(b.stops.length).toBeLessThanOrEqual(3);
+      expect(b.stops.map((x) => x.node)).not.toContain('museumDoor'); // > 600u from home
+      for (let i = 1; i < b.stops.length; i++) expect(b.stops[i].node).not.toBe(b.stops[i - 1].node);
+      for (const x of b.stops) expect(x.linger).toBeGreaterThanOrEqual(3000);
+    }
+    const away = world();
+    away.villagers.B.at = [62, 350]; // B is out by its tree
+    expect(beats(day(away, 9 * 360, 12 * 360)).some(([, b]) => b.kind === 'outing')).toBe(false);
+    expect(WANDER_REACH_U).toBe(600);
+  });
+
+  it('never sends out a villager whose person has the island open (their own phone, or the relay says so)', () => {
+    const w = world();
+    w.villagers.A.present = true;
+    const all = beats(day(w, 9 * 360, 12 * 360));
+    expect(all.some(([who, b]) => who === 'A' && b.kind === 'outing')).toBe(false);
+    expect(all.some(([who, b]) => who === 'A' && b.kind === 'idle')).toBe(true);
+    expect(all.some(([who, b]) => who === 'B' && b.kind === 'outing')).toBe(true);
+  });
+
+  it('pairs only two free villagers, and dances only when both day scores reach 70', () => {
+    const w = world();
+    w.villagers.B.free = false;
+    const one = beats(day(w, 9 * 360, 12 * 360));
+    expect(one.every(([who]) => who === 'A')).toBe(true);
+    expect(one.some(([, b]) => b.kind === 'pair')).toBe(false);
+    const low = beats(day(world({ scores: { A: 90, B: 60 } }), 9 * 360, 12 * 360));
+    expect(low.some(([, b]) => b.kind === 'pair' && b.action === 'dance')).toBe(false);
+    const high = beats(day(world({ scores: { A: 90, B: 85 } }), 9 * 360, 12 * 360));
+    const dances = high.filter(([, b]) => b.kind === 'pair' && b.action === 'dance').length;
+    expect(dances).toBeGreaterThan(low.filter(([, b]) => b.kind === 'pair').length / 4);
+  });
+
+  it('leaves a villager its owner is steering alone for 12 slots after the last walk sent before the slot', () => {
+    const w = world();
+    w.villagers.A.lastIntent = slotStart(DATE, 4000) - 1;
+    expect(held(w.villagers.A, slotStart(DATE, 4000))).toBe(true);
+    expect(held(w.villagers.A, slotStart(DATE, 4000 + HOLD_SLOTS - 1))).toBe(true);
+    expect(held(w.villagers.A, slotStart(DATE, 4000 + HOLD_SLOTS))).toBe(false);
+    expect(held(w.villagers.A, slotStart(DATE, 3999))).toBe(false); // sent after that slot began
+    expect(held({ ...w.villagers.A, lastIntent: slotStart(DATE, 4000) }, slotStart(DATE, 4000))).toBe(false); // counts from the next
+    for (const s of day(w, 4000, 4000 + HOLD_SLOTS)) {
+      expect(s.A).toBeUndefined();
+      expect(s.B?.kind).not.toBe('pair');
+    }
+    expect(beats(day(w, 4000 + HOLD_SLOTS, 4200)).some(([who]) => who === 'A')).toBe(true);
+    expect(DECIDE_MS).toBeLessThan(SLOT_MS / 10);
+  });
+
+  it('times small moves within the slot and starts outings on its boundary', () => {
+    for (const [, b] of beats(day(world(), 9 * 360, 10 * 360))) {
+      if (b.kind === 'idle' || b.kind === 'pair') expect(b.at >= 0 && b.at < 6000).toBe(true);
+      else expect('at' in b).toBe(false);
+    }
+  });
+});
+
+describe('ambient life: the critters', () => {
+  const all = Array.from({ length: SLOTS_PER_DAY }, (_, s) => spawnsIn(DATE, s)).flat();
+
+  it('never brings two at once to the sea, fresh water or the bugs, each staying its time within its block', () => {
+    for (const ch of [['fish', 'bubbles'], ['fresh'], ['bug']]) {
+      const s = all.filter((x) => ch.includes(x.kind));
+      for (let i = 1; i < s.length; i++) expect(s[i].slot).toBeGreaterThanOrEqual(s[i - 1].slot + s[i - 1].slots);
+    }
+    for (const x of all) {
+      expect(x.at).toBeLessThan(8000);
+      expect(x.slots).toBeLessThanOrEqual(x.kind === 'fish' || x.kind === 'fresh' ? 5 : x.kind === 'bubbles' ? 3 : 2);
+      expect(Math.floor(x.slot / 60)).toBe(Math.floor((x.slot + x.slots - 1) / 60)); // within its 10-minute block
+    }
+    const busy = (k: string[]) => all.filter((x) => k.includes(x.kind)).reduce((n, x) => n + x.slots, 0) / SLOTS_PER_DAY;
+    expect(busy(['fish', 'bubbles'])).toBeGreaterThan(0.6); // a fish is basically always there
+    expect(busy(['bug'])).toBeGreaterThan(0.3);
+    expect(all.filter((x) => x.kind === 'bubbles').length / all.filter((x) => x.kind === 'fish' || x.kind === 'bubbles').length).toBeCloseTo(BUBBLE_SHARE, 1);
+  });
+
+  it('a phone opening mid-stay sees who is there, as the phone that saw them come', () => {
+    const x = all.filter((c) => c.slots >= 3)[10];
+    expect(crittersAt(DATE, x.slot + 2)).toContainEqual(x);
+    expect(crittersAt(DATE, x.slot + x.slots)).not.toContainEqual(x);
+    expect(spawnsIn(DATE, x.slot + 2)).not.toContainEqual(x);
+    expect(spawnsIn(DATE, x.slot)).toContainEqual(x);
+  });
+
+  it('seeds the species: the same fish and bug on both phones from the real pickers', () => {
+    const fish = all.filter((x) => x.kind === 'fish').slice(0, 40);
+    const names = fish.map((x) => pickFish(11, 13, spawnRand(x)));
+    expect(fish.map((x) => pickFish(11, 13, spawnRand(structuredClone(x))))).toEqual(names);
+    expect(new Set(names).size).toBeGreaterThan(3);
+    const bug = all.find((x) => x.kind === 'bug')!;
+    expect(pickBug(11, 13, spawnRand(bug))).toBe(pickBug(11, 13, spawnRand(structuredClone(bug))));
+  });
+});

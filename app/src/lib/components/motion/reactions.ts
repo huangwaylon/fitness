@@ -129,24 +129,18 @@ interface IdleEntry {
 }
 
 /** Idle life stays in the background. Small body motions only (no emote bubbles, no notes:
- *  emotes are for events), mostly the quiet ones. */
+ *  emotes are for events), mostly the quiet ones. Outings to points of interest come on their own odds
+ *  (island/ambient.ts OUTING_ODDS). */
 export const IDLE_POOL: IdleEntry[] = [
   { action: 'look', weight: 14 },
   { action: 'wiggle', weight: 8 },
   { action: 'hop', weight: 6, day: true },
-  // a walk to a point of interest or a few (island/avatar.ts wander): mine only when I've left it alone a while; the
-  // partner's outings come on their own beat (idle life's tick, below the pool)
-  { action: 'wander', weight: 8, every: 60_000 },
   { action: 'peek', weight: 6, day: true, every: 120_000 }, // a glance up at the jar in the HUD
   { action: 'treeshake', weight: 5, day: true, every: 60_000 },
   { action: 'chat', weight: 8, every: 60_000, pair: true },
   { action: 'dance', weight: 3, pair: true },
   { action: 'stretch', weight: 6, hours: [5, 10] }
 ];
-
-/** Idle cadence (ms): 9–15 s while someone is around, 25–40 s after 3 min without input. */
-export const IDLE_GAP: [number, number] = [9_000, 15_000];
-export const IDLE_GAP_SLOW: [number, number] = [25_000, 40_000];
 
 /** しずえ's idle moves (every 20–30 s at most). */
 export const HOST_IDLE = ['swap', 'wiggle', 'hop'] as const;

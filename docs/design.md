@@ -382,9 +382,11 @@ JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px w
 ### Critters
 
 `island/Critters.svelte`, `island/critters.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo clock, for fun and
-frequent: a visit every 8–15 s of on-screen time (the first after 3–6 s; the countdown holds while covered or hidden,
-and the critters leave): a fish shadow whenever the sea in view is empty, then a freshwater shadow in a water in view
-([Pond](#pond)), else usually a bug where the camera can see; ≤ 1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
+frequent, and the same on both phones (ambient life's 10-second slots, `island/ambient.ts`, docs/backend.md "Ambient
+life"): the sea holds a shadow or, 1 turn in 4, bubbles most of the time, a fresh water in view its own shadow
+([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and leaving at the
+same boundary; this phone shows each where its camera sees it (covered or hidden, the critters leave; back, those still
+staying are there); ≤ 1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
 northern-hemisphere months; hours still hold.
 
 - **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
@@ -539,7 +541,7 @@ talks.
 
 `island/visitorLife.ts` (pure), `island/Visitor.svelte`, `island/avatar.ts` (`meetVisitor`, `visitorRoute`),
 `e2e/visitor-life.spec.ts`. The visitor is the stage director's fourth actor (`'visitor'`): its walks, motions,
-emotes, fx and facing use the villagers' calls, and idle life gives it a beat on every tick (awake or asleep).
+emotes, fx and facing use the villagers' calls, and idle life gives it a beat on every slot (awake or asleep), drawn from the slot's PRNG.
 
 - **Always (CSS):** a breath (2.4–3.2 s, each its own) and now and then a weight shift, on separate transform
   properties so loops add up; the contact shadow breathes with it.
@@ -684,9 +686,11 @@ The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there a
 - **Reactions** (`REACTIONS`, R1–R19): first open, the partner's day growing, high-fives, a goal met, all four met,
   taps, waking, a low week (Thu–Sat), a sync problem, the harvest. Never on first render; pages `emit(…)`
   (`motion/bus.svelte.ts`).
-- **Idle life** (`motion/idleLife.svelte.ts`): every 9–15 s one actor does one small thing (しずえ ≤ every 20–30 s), no
-  emotes or fx; slower after 3 min idle, stopped after 10 min; paused while hidden or covered. The partner's outings
-  ride on its ticks.
+- **Idle life** (`motion/idleLife.svelte.ts`): on ambient life's 10-second slots (`island/ambient.ts`, the relay's
+  clock), so both phones play the same: each slot one villager does one small thing or sets off on an outing, or both
+  chat or dance, and the visitor takes its beat from the slot's PRNG (しずえ now and then), no emotes or fx; one slot in
+  three after 3 min idle, stopped after 10 min; paused while hidden or covered. Only a villager whose person isn't on
+  the island (the relay's presence) goes on outings; one its person just walked is left alone 2 min.
 
 ### Walking
 

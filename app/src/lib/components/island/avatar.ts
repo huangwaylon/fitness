@@ -34,10 +34,13 @@ const homeTimers: Partial<Record<'mine' | 'partner', ReturnType<typeof setTimeou
 let followTimer: ReturnType<typeof setTimeout> | undefined;
 /** When my villager left home for something (the partner follows after FOLLOW_MS), and whether the partner did. */
 const away = { since: 0, followed: false };
-/** A visitor is on the island (Visitor.svelte): centre stage is theirs. `beat`: the visitor's turn on idle life's tick
- *  (Visitor.svelte sets it while one is out; island/visitorLife.ts). */
-export const presence: { visitor: boolean; beat: (() => void) | null } = { visitor: false, beat: null };
+/** A visitor is on the island (Visitor.svelte): centre stage is theirs. `beat`: the visitor's turn on idle life's slot,
+ *  with the slot's PRNG (Visitor.svelte sets it while one is out; island/visitorLife.ts). */
+export const presence: { visitor: boolean; beat: ((r: () => number) => void) | null } = { visitor: false, beat: null };
 type Villager = 'mine' | 'partner';
+/** When each villager's person last steered it (device ms): my taps here, the partner's walks over the relay. Ambient
+ *  life leaves it alone a while after (ambient.ts held). */
+export const steered: Partial<Record<Villager, number>> = {};
 const otherOf = (id: Villager): Villager => (id === 'mine' ? 'partner' : 'mine');
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -138,6 +141,7 @@ export function approach(tx: number, ty: number, o: ApproachOpts = {}): Approach
   const c = ctx, me = actors.mine;
   if (!c || !c.enabled() || me.asleep) return { ms: 0, walked: false };
   const from = c.where('mine');
+  steered.mine = Date.now();
   let p = plan(c.geo(), from, tx, ty, (x, y) => c.clear('mine', x, y), o.spot, o.reach, true, o.far);
   if (!p && o.long) {
     // a run across the island: the spot needn't be on screen now (the camera follows the runner)
@@ -182,6 +186,7 @@ export function sendTo(x: number, z: number): { to: Pt; ms: number } | null {
   const from = c.where('mine');
   const pts = route(g, from, to);
   if (!pts) return null;
+  steered.mine = Date.now();
   clearTimeout(homeTimers.mine);
   c.hush?.();
   const off = Math.hypot(to[0] - x, to[1] - z) > 6;
@@ -205,6 +210,7 @@ export function partnerTo(x: number, z: number): boolean {
   const from = c.where('partner');
   const pts = route(g, from, to);
   if (!pts) return false;
+  steered.partner = Date.now();
   clearTimeout(homeTimers.partner);
   walkTo('partner', pts, { speed: SPEED.run, from });
   return true;
@@ -269,18 +275,30 @@ export function wander(id: Villager, stops = 1 + Math.floor(Math.random() * MAX_
   return hop(id, stops);
 }
 
-function hop(id: Villager, left: number): boolean {
+/** Idle life's outing from the slot (ambient.ts villagerBeats): through those points of interest, lingering at each as
+ *  given, then home; the same walk on both phones. */
+export function outing(id: Villager, stops: readonly Stop[]): boolean {
+  const c = ctx, other = otherOf(id);
+  if (!c || !c.enabled() || !free(id) || awayFromHome(id) || !stops.length) return false;
+  if (actors[other].walking || awayFromHome(other)) return false;
+  return hop(id, stops.length, stops);
+}
+type Stop = { node: string; linger: number };
+
+/** The next point of interest (`stops`' next, or one at random) and on; false (home soon) when there's none to go to. */
+function hop(id: Villager, left: number, stops?: readonly Stop[]): boolean {
   const c = ctx;
   if (!c || !c.enabled() || busy(id)) return goHomeLater(id, 1500), false;
   const g = c.geo(), from = c.where(id);
-  const list = pois(g, presence.visitor, actors[id].home).filter((p) => c.clear(id, p.at[0], p.at[1]));
+  const stop = stops?.[stops.length - left];
+  const list = pois(g, presence.visitor, actors[id].home).filter((p) => (stop ? p.name === stop.node : c.clear(id, p.at[0], p.at[1])));
   for (let tries = 0; tries < 4; tries++) {
-    const p = pickPoi(list, from, Math.random);
+    const p = stop ? list[0] : pickPoi(list, from, Math.random);
     if (!p) break;
     const pts = route(g, from, p.at);
-    if (!pts) continue;
+    if (!pts) break;
     clearTimeout(homeTimers[id]);
-    walkTo(id, pts, { speed: SPEED.wander, from, then: () => arrived(id, p.kind, left - 1) });
+    walkTo(id, pts, { speed: SPEED.wander, from, then: () => arrived(id, p.kind, left - 1, stops, stop?.linger) });
     return true;
   }
   if (awayFromHome(id)) goHomeLater(id, 500);
@@ -289,7 +307,7 @@ function hop(id: Villager, left: number): boolean {
 
 /** At a point of interest (or beside the other): chat if the other stands close, else a look around (at the shore: a
  *  stare out to sea); then the next point or home. */
-function arrived(id: Villager, kind: PoiKind, left: number) {
+function arrived(id: Villager, kind: PoiKind, left: number, stops?: readonly Stop[], linger?: number) {
   const c = ctx, other = otherOf(id);
   if (!c) return;
   if (!actors[other].walking && adjacent(c.where(id), c.where(other))) chat(id);
@@ -297,10 +315,10 @@ function arrived(id: Villager, kind: PoiKind, left: number) {
     actors[id].face = 'home'; // out to sea, toward the camera
     setMotion(id, 'turn');
   } else setMotion(id, kind === 'tree' ? 'stretch' : kind === 'rock' ? 'nod' : 'turn');
-  const stay = rand(POI_LINGER[0], POI_LINGER[1]);
+  const stay = linger ?? rand(POI_LINGER[0], POI_LINGER[1]);
   if (left > 0) {
     clearTimeout(homeTimers[id]);
-    homeTimers[id] = setTimeout(() => hop(id, left), stay);
+    homeTimers[id] = setTimeout(() => hop(id, left, stops), stay);
   } else if (!(id === 'partner' && away.followed)) goHomeLater(id, stay);
 }
 
@@ -397,6 +415,18 @@ let openGeo: WalkGeo | null = null;
 const open = (): WalkGeo => (openGeo ??= walkGeo());
 /** The visitor's way from `from` to `to` on the walk graph (null: none). */
 export const visitorRoute = (from: Pt, to: Pt): Pt[] | null => route(open(), from, to);
+/** Each villager as ambient life sees it (ambient.ts VillagerState): where it stands (rounded), its home, whether it is
+ *  free; `null` before the scene attached. */
+export function ambientVillager(id: Villager): { at: Pt; home: Pt; free: boolean } | null {
+  const c = ctx;
+  if (!c) return null;
+  const [x, z] = c.where(id);
+  return { at: [Math.round(x), Math.round(z)], home: actors[id].home, free: free(id) };
+}
+
+/** The points of interest an outing may go to (every one, by node: ambient.ts keeps them within reach of home). */
+export const ambientPois = (): { node: string; at: Pt }[] => (ctx ? pois(ctx.geo(), presence.visitor).map((p) => ({ node: p.name, at: p.at })) : []);
+
 /** Whether the visitor may stand at (x, y): walkable ground. */
 export const visitorWalkable = (x: number, y: number): boolean => walkable(open(), x, y);
 

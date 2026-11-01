@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BITE_WINDOW_MS, BUBBLE_SHARE, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, pondBox, castInto, waterAt, shadowLen, POND_SHADOW,
+  BITE_WINDOW_MS, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
+  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, reel, stalkTap, pondBox, castInto, waterAt, shadowLen, POND_SHADOW,
   FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
@@ -229,32 +229,6 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     for (let i = 0; i < 14_000; i++) if ((JUNK as readonly string[]).includes(hookItem('sea-bass', r))) junk++;
     expect(junk).toBeGreaterThan(800);
     expect(junk).toBeLessThan(1200);
-  });
-});
-
-describe('visits', () => {
-  it('come often: every 8–15 s of on-screen time (the first after 3–6 s)', () => {
-    expect(nextSpawnMs(() => 0)).toBe(8_000);
-    expect(nextSpawnMs(() => 0.999)).toBeLessThan(15_000);
-    expect(nextSpawnMs(() => 0, true)).toBe(3_000);
-    expect(nextSpawnMs(() => 0.999, true)).toBeLessThan(6_000);
-  });
-  it('the sea holds a fish shadow or, 1 turn in 4, a bubble spot to dive at: one at a time (seeded)', () => {
-    const r = mulberry32(9);
-    const n = Array.from({ length: 8000 }, () => spawnKind({ sea: false, fresh: true, bug: true }, true, r));
-    expect(n.filter((k) => k === 'sea').length / n.length).toBeCloseTo(BUBBLE_SHARE, 1);
-    expect(n.every((k) => k === 'sea' || k === 'fish')).toBe(true);
-    for (const x of [0, 0.5, 0.99]) expect(spawnKind({ sea: true, fresh: true, bug: true }, true, () => x)).toBeNull();
-  });
-  it('at most one in the sea, one in each fresh water and one bug at a time', () => {
-    expect(spawnKind({ sea: true, fresh: true, bug: true }, true, () => 0)).toBeNull();
-    expect(spawnKind({ sea: true, fresh: true, bug: false }, true, () => 0)).toBe('bug');
-    expect(spawnKind({ sea: false, fresh: true, bug: true }, true, () => 0.9)).toBe('fish');
-    expect(spawnKind({ sea: false, fresh: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
-    expect(spawnKind({ sea: true, fresh: false, bug: false }, true, () => 0)).toBe('fresh'); // then a fresh water in view, as often as the sea
-    expect(spawnKind({ sea: true, fresh: true, bug: false }, false, () => 0)).toBeNull();
-    expect(spawnKind({ sea: true, fresh: true, bug: false }, true, () => 0.5)).toBe('bug'); // most visits bring a bug
-    expect(spawnKind({ sea: true, fresh: true, bug: false }, true, () => 0.9)).toBeNull(); // a little air between them
   });
 });
 

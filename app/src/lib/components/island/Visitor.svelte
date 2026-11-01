@@ -251,24 +251,25 @@
     rawSay?.(name, parts, from, { ...o, ondone: () => (speakingUntil = 0) });
   }
 
-  /** Idle life's beat (presence.beat): one small thing, and now and then a quieter second one a few seconds later. */
+  /** Idle life's beat (presence.beat), drawn from the slot's PRNG (`r`: the same on both phones, island/ambient.ts): one
+   *  small thing, and now and then a quieter second one a few seconds later. */
   let lastEmote: EmoteIcon | null = null;
   let lastMeet = 0;
-  function beat(follow = true) {
+  function beat(r: () => number = Math.random, follow = true) {
     const id = shown, s = spot;
     if (!id || !s || phase !== 'here' || !enabled()) return;
     const act = pickAct(id, {
       speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome('visitor'),
       sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree(), playing: !!playing
-    }, Math.random);
+    }, r);
     if (!act) return;
     if (act === 'signature') signature(id);
-    else if (act === 'emote') setEmote('visitor', (lastEmote = pickEmote(id, Math.random, lastEmote)));
+    else if (act === 'emote') setEmote('visitor', (lastEmote = pickEmote(id, r, lastEmote)));
     else if (act === 'look') look();
-    else if (act === 'wander') stroll();
+    else if (act === 'wander') stroll(r);
     else if (act === 'home') back(VISITOR_SPEED.stroll);
     else if (act === 'meet') meet(id);
-    if (follow && (act === 'signature' || act === 'emote' || act === 'look') && Math.random() < 0.5) later('visitor', rand(4000, 6500), () => beat(false));
+    if (follow && (act === 'signature' || act === 'emote' || act === 'look') && r() < 0.5) later('visitor', 4000 + r() * 2500, () => beat(r, false));
   }
   $effect(() => {
     if (!shown) return;
@@ -310,12 +311,12 @@
 
   /** A stroll (the ones who roam in NH): to a spot near theirs that's walkable, clear of the villagers and, where it's
    *  on screen, of every control, then a look around and, a while later, back. */
-  function stroll(): boolean {
+  function stroll(r: () => number = Math.random): boolean {
     const id = shown, s = spot, g = stageGeo(scene);
     if (!id || !s || !g) return false;
     const keep = guardsU(g, -5 * g.k, (el) => getComputedStyle(el).visibility === 'hidden'); // (out-of-view world nodes)
     const from = where();
-    for (const p of strollSpots(home(), BEHAVIOUR[id].roam, Math.random)) {
+    for (const p of strollSpots(home(), BEHAVIOUR[id].roam, r)) {
       if (!visitorWalkable(p[0], p[1]) || !standsClear(keep, p[0], p[1], s.h)) continue;
       if ((['mine', 'partner'] as const).some((v) => Math.hypot(livePos(v)[0] - p[0], livePos(v)[1] - p[1]) < 44)) continue;
       const pts = visitorRoute(from, p);

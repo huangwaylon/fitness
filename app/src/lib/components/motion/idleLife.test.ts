@@ -12,28 +12,27 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+const WORLD = {
+  villagers: { A: { at: [132, 214], home: [132, 214], free: true }, B: { at: [262, 214], home: [262, 214], free: true } },
+  pois: [],
+  scores: { A: 50, B: 50 }
+} as const;
+const base = { paused: () => false, asleep: () => false, treeShake: () => {}, me: () => 'A' as const, world: () => structuredClone(WORLD) as never };
+/** Every slot, mine (A) leads a chat with the partner. */
+const chatCtx = () => ({
+  ...base,
+  beats: () => ({ A: { kind: 'pair', action: 'chat', with: 'B', lead: true, at: 0 }, B: { kind: 'pair', action: 'chat', with: 'A', lead: false, at: 0 } }) as never
+});
+
 describe('idle life cleanup', () => {
   it('stop() cancels the chat follow-ups, so nobody is left facing inward', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, pendingTimers, resetAll } = await import('./director.svelte.ts');
-    const { IDLE_POOL } = await import('./reactions.ts');
     resetAll();
     vi.setSystemTime(new Date('2026-10-29T12:00:00'));
-    // At noon with low scores the pool is everything but stretch and dance: aim the weighted pick at chat.
-    const pool = IDLE_POOL.filter((e) => e.action !== 'stretch' && e.action !== 'dance');
-    const total = pool.reduce((s, e) => s + e.weight, 0);
-    const before = pool.slice(0, pool.findIndex((e) => e.action === 'chat')).reduce((s, e) => s + e.weight, 0);
-    // calls: first delay, actor (0.5 → mine), weighted pick, then the chat glyph picks
-    const seq = [0, 0.5, (before + 1) / total, 0, 0, 0, 0, 0];
-    let calls = 0;
-    const stop = startIdleLife({
-      paused: () => false,
-      asleep: () => false,
-      scores: () => [50, 50],
-      treeShake: () => {},
-      random: () => seq[Math.min(calls++, seq.length - 1)]
-    });
-    await vi.advanceTimersByTimeAsync(2_600);
+    // the slot's beat (ambient.ts): mine leads a chat
+    const stop = startIdleLife(chatCtx());
+    await vi.advanceTimersByTimeAsync(10_600);
     expect(actors.mine.face).toBe('in'); // chat started: facing each other
     await vi.advanceTimersByTimeAsync(400);
     stop();
@@ -50,7 +49,7 @@ describe('idle life cleanup', () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, resetAll } = await import('./director.svelte.ts');
     resetAll();
-    const stop = startIdleLife({ paused: () => false, asleep: () => false, scores: () => [0, 0], treeShake: () => {} });
+    const stop = startIdleLife(base);
     stop();
     await vi.advanceTimersByTimeAsync(120_000);
     expect(actors.mine.motionN + actors.partner.motionN + actors.mine.emoteN + actors.partner.emoteN).toBe(0);
@@ -59,22 +58,11 @@ describe('idle life cleanup', () => {
   it('a reaction that preempts an actor also drops the idle-owned cancellers', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, cancel, resetAll } = await import('./director.svelte.ts');
-    const { IDLE_POOL } = await import('./reactions.ts');
     resetAll();
     vi.setSystemTime(new Date('2026-10-29T12:00:00'));
-    const pool = IDLE_POOL.filter((e) => e.action !== 'stretch' && e.action !== 'dance');
-    const total = pool.reduce((s, e) => s + e.weight, 0);
-    const before = pool.slice(0, pool.findIndex((e) => e.action === 'chat')).reduce((s, e) => s + e.weight, 0);
-    const seq = [0, 0.5, (before + 1) / total, 0, 0, 0, 0, 0];
-    let calls = 0;
-    const stop = startIdleLife({
-      paused: () => false,
-      asleep: () => false,
-      scores: () => [50, 50],
-      treeShake: () => {},
-      random: () => seq[Math.min(calls++, seq.length - 1)]
-    });
-    await vi.advanceTimersByTimeAsync(2_600);
+    // the slot's beat (ambient.ts): mine leads a chat
+    const stop = startIdleLife(chatCtx());
+    await vi.advanceTimersByTimeAsync(10_600);
     expect(actors.mine.face).toBe('in');
     expect(stop.owned()).toBeGreaterThan(0);
     cancel('mine');
@@ -111,7 +99,7 @@ describe('idle life while the page is hidden', () => {
     resetAll();
     const doc = document as unknown as { hidden: boolean; addEventListener: ReturnType<typeof vi.fn> };
     let ticks = 0;
-    const stop = startIdleLife({ paused: () => (ticks++, false), asleep: () => false, scores: () => [0, 0], treeShake: () => {} });
+    const stop = startIdleLife({ ...base, paused: () => (ticks++, false) });
     const onVis = doc.addEventListener.mock.calls.find((c) => c[0] === 'visibilitychange')![1] as () => void;
     doc.hidden = true;
     onVis();
@@ -121,28 +109,33 @@ describe('idle life while the page is hidden', () => {
     doc.hidden = false;
     onVis();
     expect(vi.getTimerCount()).toBeGreaterThan(0);
-    await vi.advanceTimersByTimeAsync(30_000);
+    await vi.advanceTimersByTimeAsync(11_000);
     expect(ticks).toBeGreaterThan(0);
     stop();
   });
 });
 
 describe('the visitor’s beat', () => {
-  it('runs on every tick (awake or asleep: visitors keep their own hours), never under a sheet', async () => {
+  it('runs on every slot with the slot’s PRNG (awake or asleep: visitors keep their own hours), never under a sheet', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { lastEvent, resetAll } = await import('./director.svelte.ts');
     resetAll();
     lastEvent.at = 0;
     let beats = 0, covered = false, asleep = false;
-    // random 0.5: the first tick at 3.5 s, then every 12 s
-    const stop = startIdleLife({ paused: () => covered, asleep: () => asleep, scores: () => [0, 0], treeShake: () => {}, visitor: () => beats++, random: () => 0.5 });
-    await vi.advanceTimersByTimeAsync(3_600);
+    vi.setSystemTime(new Date('2026-10-29T12:00:03Z'));
+    const draws: number[] = [];
+    // a slot every 10 s, played 0.5 s past its start: 7.5 s from now, then every 10 s
+    const stop = startIdleLife({ ...base, paused: () => covered, asleep: () => asleep, visitor: (r) => (beats++, draws.push(r())) });
+    await vi.advanceTimersByTimeAsync(7_400);
+    expect(beats).toBe(0);
+    await vi.advanceTimersByTimeAsync(200);
     expect(beats).toBe(1);
-    await vi.advanceTimersByTimeAsync(12_000);
+    await vi.advanceTimersByTimeAsync(10_000);
     expect(beats).toBe(2);
     asleep = true;
-    await vi.advanceTimersByTimeAsync(12_000);
+    await vi.advanceTimersByTimeAsync(10_000);
     expect(beats).toBe(3);
+    expect(new Set(draws).size).toBe(3); // each slot its own PRNG
     covered = true;
     await vi.advanceTimersByTimeAsync(120_000);
     expect(beats).toBe(3);
@@ -162,5 +155,53 @@ describe('the visitor’s beat', () => {
     expect(actors.visitor.walking).toBe(false);
     expect(pendingTimers('visitor')).toBe(0);
     resetAll();
+  });
+});
+
+describe('idle life on ambient life’s slots', () => {
+  it('plays the slot’s beats for whoever is mine, small moves at their `at`, outings through the given stops', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { actors, lastEvent, resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    lastEvent.at = 0;
+    vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+    const outings: unknown[] = [];
+    let slots: number[] = [];
+    const stop = startIdleLife({
+      ...base,
+      me: () => 'B', // A's villager is the partner on this phone
+      outing: (id, stops) => (outings.push([id, stops]), true),
+      beats: (_w, _d, slot) => ((slots = [...slots, slot]), slot % 2 ? { A: { kind: 'outing', stops: [{ node: 'rock', linger: 3000 }] } } : { B: { kind: 'idle', action: 'hop', at: 2000 } })
+    });
+    await vi.advanceTimersByTimeAsync(600); // the slot starting now, played 0.5 s in
+    const n = actors.mine.motionN;
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(actors.mine.motionN).toBe(n + 1); // B (mine) hops 2 s into its slot
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(outings).toEqual([['partner', [{ node: 'rock', linger: 3000 }]]]);
+    expect(slots[1]).toBe(slots[0] + 1);
+    stop();
+    resetAll();
+  });
+
+  it('after 3 min without input plays one slot in three, and stops after 10 min', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { lastEvent, resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    lastEvent.at = 0;
+    vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+    const played: number[] = [];
+    const stop = startIdleLife({ ...base, beats: (_w, _d, slot) => (played.push(slot), {}) });
+    await vi.advanceTimersByTimeAsync(175_000);
+    const fast = played.length;
+    expect(fast).toBe(18);
+    await vi.advanceTimersByTimeAsync(300_000);
+    expect(played.slice(fast).every((s) => s % 3 === 0)).toBe(true);
+    expect(played.length - fast).toBe(10);
+    await vi.advanceTimersByTimeAsync(600_000);
+    const at10 = played.length;
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(played.length).toBe(at10);
+    stop();
   });
 });

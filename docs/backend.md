@@ -236,6 +236,44 @@ intents, never data of record: the sheet path above is unchanged and still catch
   (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest; the push's
   script side in `gas/main.test.ts`.
 
+## Ambient life
+
+What the island does on its own (a villager's outing or small move, the visitor's beat, a fish, bubbles or a bug
+coming by) is decided per 10-second slot of the Tokyo day from the date, the slot and the shared world, so both phones
+show the same island without a message (decisions: *Ambient life from the clock*). `app/src/lib/components/island/ambient.ts`
+(pure, tests `ambient.test.ts`); idle life and the critters play it.
+
+- **Clock:** `slotAt(ms, offset)` → `{date, slot, into, hour, month}`, 8,640 slots a day on whole 10 s of the epoch.
+  `ms` is the island's clock (`clock.ts now()`, so a `?date=` preview moves the slots); `offset` the relay's clock minus
+  the device's from the shared socket's pings (`ambientClock.ts relayOffset`: `liveRelay().serverNow() − Date.now()`,
+  0 before any welcome: alone, nobody has to agree). A slot is played `DECIDE_MS` (500 ms) after it starts, by when an
+  intent sent before the start has reached the partner; walks start then, small moves at their `at` within the slot.
+- **Randomness:** `slotRand(date, slot, kind)` = `dayRand(date, "ambient:<kind>:<slot>")` (the island seed's mulberry32),
+  kinds `villager`, `visitor`, `host`, `critter:<channel>`; species from `spawnRand(spawn)` with the existing pickers
+  (`pickFish`, `pickFresh`, `pickDive`, `pickBug`), so the lazy tables stay out. Engine-proof: integer world points,
+  squared distances, plain string order.
+- **Villagers** (`villagerBeats(world, date, slot)`): the world is each person's villager (`at`, `home`, `free`:
+  awake, standing, not busy; `lastIntent`: when its person last steered it, `avatar.ts steered`: my taps here, the
+  partner's walks over the relay), the points of interest (`wander.ts pois`), the phase and both day scores. Beats are
+  keyed by person (idle life maps them to mine and partner): one a slot, an idle move from `IDLE_POOL` (its hours,
+  day-only moves, `every` gaps against the recent slots' rolls), an outing of 1–3 stops within 600u with lingers (30 %
+  of slots, one villager out at a time, from home; `avatar.ts outing`), a chat or a dance for two free villagers
+  (dancing only with both scores ≥ 70), or the night's doze. A villager whose person has the island open (`present`:
+  mine always, the partner's by the relay's presence) makes small moves but no outings, and one is left alone 12 slots
+  (2 min) after its person's last walk (`held`).
+- **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
+  `visitor` PRNG; a phone whose visitor is speaking skips it.
+- **Critters** (`spawnsIn(date, slot)`, `crittersAt(date, slot)`): per channel (the sea: a shadow or bubbles,
+  `BUBBLE_SHARE`; fresh water; bugs) a slot brings one with odds 0.6 / 0.6 / 0.5 when the last one's stay is over, at
+  `at` ms into the slot, staying 4–5 slots (bubbles 3, a bug 2); the stays are chained per 10-minute block from the date
+  and slot alone, ending within it, so a phone opening mid-stay finds the ones still there. `Critters.svelte` shows
+  each where its camera sees that water or patch (the fresh water among those in view), or not at all.
+- **Agreement and its limits:** the same inputs give the same slot (tested with shuffled inputs and skewed clocks).
+  The phones differ where their inputs do: a clock offset off by more than the 500 ms margin, a walk sent within
+  ~20 ms of a boundary, a villager's position from before the phones met, a local skip (a sheet, a reaction playing,
+  the 3-minute slow-down), and the camera (each phone shows the critters its view holds). What a person does by hand
+  stays local: a cast's bite plan, a dive's outcome, a line read, a tap's reaction, a balloon, a shooting star.
+
 ## Push
 
 While the app is on screen, a change to the sheet reaches the other phone in well under a second instead of at its next

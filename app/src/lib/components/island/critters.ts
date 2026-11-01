@@ -330,22 +330,9 @@ export function stalkTap(state: StalkState, swing: 'catch' | 'startle' | 'none')
 
 // ---------- timing ----------
 
-/** Visible time until the next ambient visit: 3–6 s for the first, then 8–15 s, so a fish is basically always there
- *  (back a few seconds after a catch or a flee) and a bug comes by every so often (user: frequent, it's for fun). */
-export const nextSpawnMs = (r: () => number, first = false): number => (first ? 3_000 + r() * 3_000 : 8_000 + r() * 7_000);
-
-/** The share of the sea's turns that bring a bubble spot to dive at instead of a fish shadow (island/sea.ts). */
+/** The share of the sea's turns that bring a bubble spot to dive at instead of a fish shadow (island/sea.ts; the turns
+ *  themselves: island/ambient.ts). */
 export const BUBBLE_SHARE = 0.25;
-/** Which ambient critter to bring on (≤ 1 in the sea, ≤ 1 in each fresh water, ≤ 1 bug): whenever the sea is empty a
- *  fish shadow, or 1 in 4 a bubble spot (the sea holds one or the other); then whenever a fresh water in view is empty a
- *  shadow there (as often as the sea's); otherwise a bug when none is about (most visits; `r` keeps a little air
- *  between them). A slot is true when taken, or when none of it is in view (the sea from ひろば; every fresh water
- *  holding its shadow already, or none on screen). */
-export function spawnKind(slots: { sea: boolean; fresh: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'sea' | 'fresh' | 'bug' | null {
-  if (!slots.sea) return r() < BUBBLE_SHARE ? 'sea' : 'fish';
-  if (!slots.fresh) return 'fresh';
-  return !slots.bug && bugAbout && r() < 0.8 ? 'bug' : null;
-}
 
 /** How long an ambient critter stays if nobody plays with it (ms). */
 export const STAY_MS = { fish: 45_000, bug: 18_000 } as const;
