@@ -332,6 +332,9 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   hanging fruit 20u · ground fruit 24u.
 - **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
   a haze where the ground meets the sky; one tint for the time of day over the land.
+- **The cliff's face** sorts behind everything that stands (its depth at the plan's far end): a walker on the stairs
+  or on the tier above draws in front of it, as does everything below it (`e2e/world.spec.ts`: the foot, the middle
+  and the top of the stairs, and further back).
 - **The tint at the source** (IslandScene): the ground takes it as one multiply plane; every world node but a light
   takes the same multiply as an SVG colour-matrix filter on what it draws (each image, svg and drawn bit; a wrapper's
   ::before / ::after), never on a wrapper, so a tap's shake, a hop or a bob, which WebKit draws in a layer of its own,

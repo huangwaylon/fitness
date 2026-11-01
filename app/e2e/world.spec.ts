@@ -156,3 +156,29 @@ test('at night the tint is on what each thing draws, never on what a tap reactio
   }
   expect(await page.locator('[data-glow] img').first().evaluate((e) => getComputedStyle(e).filter)).toBe('none');
 });
+
+test('on the stairs and on the tier above, a villager draws in front of the cliff’s face; below it, in front as ever', async ({ page }) => {
+  await page.goto('?demo&season=summer&date=2026-07-01T10:00&critter=none&visitor=none');
+  await world(page);
+  const [, back] = await call(page, (w) => w.stops());
+  await call(page, (w, [z]) => w.go(z), [back]);
+  await page.waitForTimeout(400);
+  // the face lets taps through: make it hit-testable for the probe
+  await page.addStyleTag({ content: '[data-cliff-face] img { pointer-events: auto !important; }' });
+  /** Who is on top at my villager's middle and just above its feet, standing at (x, z). */
+  const onTop = async (x: number, z: number) => {
+    await call(page, (w, [x, z]) => w.put(x, z), [x, z]);
+    await page.waitForTimeout(200);
+    const r = (await page.locator('[data-actor="mine"] .vil img').first().boundingBox())!;
+    return page.evaluate((pts) => pts.map(([px, py]) => {
+      const e = document.elementFromPoint(px, py);
+      return e?.closest('[data-actor="mine"]') ? 'mine' : e?.closest('[data-cliff-face]') ? 'cliff' : e?.className.toString() || e?.tagName || null;
+    }), [[r.x + r.width / 2, r.y + r.height * 0.5], [r.x + r.width / 2, r.y + r.height * 0.9]]);
+  };
+  const shots = process.env.SHOTS_DIR;
+  // at the foot of the stairs, half way up, at the top and further back on the tier above (the stairs: x 36–84)
+  for (const [z, name] of [[1036, 'foot'], [1060, 'mid'], [1084, 'top'], [1110, 'above']] as const) {
+    expect(await onTop(60, z), `${name} of the stairs`).toEqual(['mine', 'mine']);
+    if (shots) await page.screenshot({ path: `${shots}/stairs-${name}.png` });
+  }
+});
