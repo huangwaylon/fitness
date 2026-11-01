@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, LIVE_V, LIVE_VS, MAX_BYTES, parseClient, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, LIVE_V, LIVE_VS, otherVersion, parseClient, type LiveV, type Notice, type Relayed, type ServerMsg, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 
@@ -96,12 +96,15 @@ export class RoomCore<S extends Sock> {
     if (!meta) return;
     const msg = parseClient(raw);
     if (!msg) {
-      if (!meta.who) this.shut(s, CLOSE.unauthorized, 'hello first');
-      else if (otherVersion(raw)) this.shut(s, CLOSE.version, 'version');
+      const v = otherVersion(raw);
+      if (v !== null) this.shut(s, CLOSE.version, versionReason(v));
+      else if (!meta.who) this.shut(s, CLOSE.unauthorized, 'hello first');
       return; // a malformed intent from a known person: dropped
     }
     if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
+    // a socket keeps its hello's version: a phone switching mid-socket is confused, not upgraded
+    if (msg.v !== this.vOf(s)) return this.shut(s, CLOSE.version, `version ${msg.v} after a hello in ${this.vOf(s)}`);
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
     const { v, ...intent } = msg;
     const out: Relayed = { ...intent, v, who: meta.who, t: this.stamp() };
@@ -113,7 +116,11 @@ export class RoomCore<S extends Sock> {
   private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
-    if (meta.who) return; // a repeated hello: nothing changes
+    if (meta.who) {
+      // a repeated hello: nothing changes, unless it speaks another version
+      if (v !== this.vOf(s)) this.shut(s, CLOSE.version, `version ${v} after a hello in ${this.vOf(s)}`);
+      return;
+    }
     const was = this.authed(who);
     for (const old of was) {
       // drop it from the room first, so its close doesn't announce me gone
@@ -184,13 +191,5 @@ export class RoomCore<S extends Sock> {
 
 const other = (w: Who): Who => (w === 'A' ? 'B' : 'A');
 
-/** A message from a client speaking another protocol version (it should reload, not keep sending). */
-function otherVersion(raw: unknown): boolean {
-  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return false;
-  try {
-    const o = JSON.parse(raw) as { v?: unknown } | null;
-    return typeof o?.v === 'number' && !(LIVE_VS as readonly number[]).includes(o.v);
-  } catch {
-    return false;
-  }
-}
+/** The close reason for a phone speaking a version the relay doesn't (≤ 123 bytes: the browser console and the logs). */
+const versionReason = (v: number): string => `protocol version ${String(v).slice(0, 12)} unsupported (relay speaks ${LIVE_VS.join(', ')})`;

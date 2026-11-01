@@ -196,7 +196,7 @@ intents, never data of record: the sheet path above is unchanged and still catch
 - **Where:** `relay/` (its own package, outside the app's build): a Worker (`src/index.ts`) and one Durable Object,
   `IslandRoom` (`idFromName('island')`), SQLite-backed (`new_sqlite_classes`, the only kind the Free plan has).
   Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy, `island-fund-relay-test`, with
-  its own secrets and room for the smoke test. `GET /health` → `{ok, v, t}`; `POST /notify` ([Push](#push));
+  its own secrets and room for the smoke test. `GET /health` → `{ok, v, versions, t}`; `POST /notify` ([Push](#push));
   `POST /push/*` ([Notifications](#notifications)).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://huangwaylon.github.io`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
@@ -207,12 +207,16 @@ intents, never data of record: the sheet path above is unchanged and still catch
 - **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 2` (the rolling-log world; the relay still speaks `v: 1` to an older phone, answering each socket in the version
   of its hello), ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, z], at?}` (v2: world units, a
-  tap-to-walk's destination; a walk never crosses versions, as v1 meant stage units), `act {act, id?, at?}`,
+  tap-to-walk's destination, integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
+  `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?}`,
   `catch {what, id?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`, `present-opened`,
   `watered`, `shaken`), `saved {}` ([Push](#push)). Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes (the island
-  stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004 (the client waits for the next
-  show, i.e. a reload). Deploy order for a version bump: the relay first (it speaks both), then the app.
+  stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004, before or after the hello, with
+  the reason `protocol version N unsupported (relay speaks 1, 2)`, and so does a message (or a second hello) in
+  another version than the socket's hello; the client waits for the next show, i.e. a reload. `GET /health` lists
+  `versions`. Deploy order for a version bump: the relay first (it speaks both), then the app. Dropping v1 once both
+  phones run the world: take 1 out of `LIVE_VS` and redeploy (a phone still on v1 is closed 4004, reloads, updates).
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
 - **Replay:** the room keeps the last 50 `world` events (≤ 6 h old) in DO storage; a hello with `since` (the last
   world `t` that phone saw) gets the partner's newer ones after the welcome.

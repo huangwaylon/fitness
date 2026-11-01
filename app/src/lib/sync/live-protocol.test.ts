@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, MAX_BYTES, WORLD_OPS, parseClient, parseServer, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MAX_BYTES, WORLD_OPS, WORLD_X, WORLD_Z, isWorldPt, otherVersion, parseClient, parseServer, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
 const j = (o: object) => JSON.stringify({ v: 1, ...o });
@@ -86,5 +87,25 @@ describe('live protocol: relay messages', () => {
     expect(parseServer(j2({ kind: 'walk', to: 'a', who: 'C', t: 4 }))).toBeNull();
     expect(parseServer(j2({ kind: 'welcome', me: 'Z', peer: true, t: 1 }))).toBeNull();
     expect(parseServer(j2({ kind: 'hello', key: KEY, t: 1 }))).toBeNull();
+  });
+});
+
+describe('live protocol: v2 world points', () => {
+  it('takes a node id or an integer point within the world plan (island/world.ts PLAN)', () => {
+    expect([WORLD_X, WORLD_Z]).toEqual([[PLAN.x0, PLAN.x1], [PLAN.z0, PLAN.z1]]);
+    expect(parseClient(j2({ kind: 'walk', to: [-230, 2500], at: 9 }))).toEqual({ v: 2, kind: 'walk', to: [-230, 2500], at: 9 });
+    expect(parseClient(j2({ kind: 'walk', to: 'bridgeStoneN' }))).toEqual({ v: 2, kind: 'walk', to: 'bridgeStoneN' });
+    for (const to of [[621, 0], [0, -401], [-231, 0], [0, 2501], [0.5, 0], [0, 0, 0]]) expect(parseClient(j2({ kind: 'walk', to })), String(to)).toBeNull();
+    expect(parseServer(j2({ kind: 'walk', to: [700, 0], who: 'B', t: 4 }))).toBeNull();
+    // v1 keeps its stage units
+    expect(parseClient(j({ kind: 'walk', to: [5000, -4000] }))).toEqual({ v: 1, kind: 'walk', to: [5000, -4000] });
+    expect(isWorldPt([620, -400])).toBe(true);
+  });
+
+  it('tells a version nobody speaks apart from junk', () => {
+    expect(otherVersion(JSON.stringify({ v: 3, kind: 'hello' }))).toBe(3);
+    expect(otherVersion(JSON.stringify({ v: 0 }))).toBe(0);
+    for (const x of [j({ kind: 'x' }), j2({ kind: 'x' }), JSON.stringify({ kind: 'ping' }), JSON.stringify({ v: '3' }), 'nope', 'null', '[3]', 3])
+      expect(otherVersion(x), String(x)).toBeNull();
   });
 });
