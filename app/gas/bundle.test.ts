@@ -17,6 +17,7 @@ describe('apps-script/Code.js', () => {
     expect(code).toMatch(/^function doPost\(e\) \{$/m);
     expect(code).toMatch(/^function onEdit\(e\) \{$/m);
     expect(code).toMatch(/^function resync\(\) \{$/m);
+    expect(code).toMatch(/^function authorizeRelay\(\) \{$/m);
     expect(code).not.toMatch(/function doGet/);
     expect(code).not.toMatch(/^\s*(import|export)\s/m);
     expect(code).not.toMatch(/\brequire\(/);

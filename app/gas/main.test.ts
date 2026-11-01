@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, onEdit, RATE_PER_MINUTE, resync } from './main.ts';
+import { createHmac } from 'node:crypto';
+import { authorizeRelay, doPost, KEY_CACHE_SECONDS, MAX_BODY_CHARS, NOTIFY_PAUSE_SECONDS, onEdit, RATE_PER_MINUTE, RELAY_NOTIFY_URL, resync } from './main.ts';
 import { install, makeGas, type Gas } from './fakes.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -581,5 +582,70 @@ describe('limits', () => {
   it('replies are JSON-typed', () => {
     const out = doPost({ postData: { contents: JSON.stringify({ key: KEY_A, action: 'whoami' }) } }) as unknown as { mime: string };
     expect(out.mime).toBe('application/json');
+  });
+});
+
+describe('the push to the relay (docs/backend.md#push)', () => {
+  const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update('island-relay-notify/1').digest('hex');
+  const notices = () => gas.state.fetches.map((f) => JSON.parse(f.payload));
+
+  it('after a write that appends synced rows, POSTs {what, who, at, rev} outside the lock, signed as the relay checks', () => {
+    a('event', { id: 'e1', type: 'highfive' });
+    expect(gas.state.fetches).toHaveLength(1);
+    const f = gas.state.fetches[0];
+    expect(f.url).toBe(RELAY_NOTIFY_URL);
+    const at = data('events')[0][0];
+    expect(JSON.parse(f.payload)).toEqual({ what: 'event', who: 'A', at, rev: a('snapshot').rev });
+    expect(f.headers['X-Island-Time']).toBe(String(Date.now()));
+    expect(f.headers['X-Island-Sig']).toBe(createHmac('sha256', secret).update(`${f.headers['X-Island-Time']}.${f.payload}`).digest('hex'));
+    expect(gas.state.fetchedUnderLock).toEqual([false]);
+    expect(f.payload).not.toContain(KEY_A);
+    tick();
+    b('ingest', day('Oct 28, 2026', 9000, 30));
+    expect(notices()[1]).toEqual({ what: 'ingest', who: 'B', at: data('metrics').at(-1)![0], rev: expect.any(String) });
+  });
+
+  it('says nothing when nothing synced was written: a duplicate, an unchanged ingest, a refusal, a read', () => {
+    a('event', { id: 'e1', type: 'highfive' });
+    a('ingest', day('Oct 28, 2026', 9000, 30));
+    gas.state.fetches = [];
+    a('event', { id: 'e1', type: 'highfive' });
+    a('ingest', day('Oct 28, 2026', 9000, 30));
+    a('ingest', { nothing: 'here' });
+    a('event', { id: 'e2', type: 'spend', data: { spendId: 's', item: 'snack', bells: 1 } });
+    a('snapshot');
+    a('whoami');
+    expect(gas.state.fetches).toEqual([]);
+  });
+
+  it('without the external-request scope the write still succeeds, and notifying pauses for 10 minutes', () => {
+    gas.state.relay = 'denied';
+    expect(a('event', { id: 'e1', type: 'highfive' })).toEqual({ ok: true });
+    expect(gas.cache.get('relay:pause')?.v).toBe('error');
+    gas.state.relay = 204;
+    expect(a('event', { id: 'e2', type: 'highfive' })).toEqual({ ok: true });
+    expect(gas.state.fetches).toEqual([]); // paused: not even tried
+    tick(NOTIFY_PAUSE_SECONDS * 1000 + 1);
+    a('event', { id: 'e3', type: 'highfive' });
+    expect(notices().map((n) => n.at)).toEqual([data('events')[2][0]]);
+  });
+
+  it('a refusal by the relay (keys differ, relay down) pauses too; the reply is unchanged', () => {
+    gas.state.relay = 401;
+    expect(a('event', { id: 'e1', type: 'highfive' })).toEqual({ ok: true });
+    a('event', { id: 'e2', type: 'highfive' });
+    expect(gas.state.fetches).toHaveLength(1);
+    expect(gas.cache.get('relay:pause')?.v).toBe('401');
+  });
+
+  it('authorizeRelay (run from the editor) lifts a pause and sends a notice with the last `at` and REV', () => {
+    a('event', { id: 'e1', type: 'highfive' });
+    gas.cache.set('relay:pause', { v: 'error', until: Date.now() + 600_000 });
+    gas.state.fetches = [];
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    authorizeRelay();
+    expect(notices()).toEqual([{ what: 'event', who: 'A', at: data('events')[0][0], rev: gas.props.get('REV') }]);
+    expect(log).toHaveBeenCalledWith('relay notify: 204 (204 = the push works)');
+    log.mockRestore();
   });
 });

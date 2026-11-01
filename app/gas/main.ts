@@ -14,6 +14,7 @@ import {
   type ApiError, type EventReply, type Fail, type HealthReply, type IngestReply, type SnapshotReply, type SnapshotRows,
   type TabName, type UploadsReply, type WhoamiReply
 } from '../src/lib/contract/api.ts';
+import type { Notice, NoticeWhat } from '../src/lib/sync/live-protocol.ts';
 
 /** Set by `npm run gas:build` (a hash of the bundle); `dev` when main.ts runs unbundled (tests). */
 declare const __BUILD__: string | undefined;
@@ -33,6 +34,12 @@ const MAX_EVENT_DATA_CHARS = 20_000;
 /** `readTail` reads a tab backwards in chunks of this many rows, doubling each time. */
 const TAIL_CHUNK = 256;
 const DAY_MS = 86400_000;
+/** The live relay's push endpoint (docs/backend.md#push). */
+export const RELAY_NOTIFY_URL = 'https://island-fund-relay.island-fund-relay.workers.dev/notify';
+/** What the notify secret signs; the relay derives the same (relay/src/notify.ts). */
+const NOTIFY_LABEL = 'island-relay-notify/1';
+/** After a notify that didn't land (no external-request scope yet, the relay down), none are tried for this long. */
+export const NOTIFY_PAUSE_SECONDS = 600;
 
 /** Every reply is one of the client contract's shapes (src/lib/contract/api.ts), so the server is compile-checked against it. */
 type Reply = IngestReply | EventReply | SnapshotReply | WhoamiReply | HealthReply;
@@ -70,9 +77,10 @@ function handle(e: GAS.PostEvent | undefined): Reply {
   if (!me) return fail('unauthorized');
   if (!underRateLimit(me)) return fail('busy');
 
+  wrote = null;
   switch (body.action) {
-    case 'ingest': return ingest(me, body, typeof post?.length === 'number' ? post.length : text.length);
-    case 'event': return event(me, body);
+    case 'ingest': return pushed(me, 'ingest', ingest(me, body, typeof post?.length === 'number' ? post.length : text.length));
+    case 'event': return pushed(me, 'event', event(me, body));
     case 'snapshot': return snapshot(me, body);
     case 'uploads': return uploads(me);
     case 'whoami': return withLock((): WhoamiReply => { for (const t of Object.keys(TABS) as TabName[]) heal(tab(t), t); return { ok: true, me, build: BUILD }; });
@@ -251,6 +259,62 @@ export function resync(): void {
   PropertiesService.getScriptProperties().setProperty('REV', newRev());
 }
 
+// ---------------------------------------------------------------- the push to the live relay
+
+/** The newest synced row this request appended, and the revision then (null: it wrote none). */
+let wrote: { at: string; rev: string } | null = null;
+
+/** After a write that appended synced rows, tell the relay (outside the lock), so open phones fetch at once. */
+function pushed<R extends { ok: boolean }>(me: PersonId, what: NoticeWhat, reply: R): R {
+  const w = wrote;
+  wrote = null;
+  if (reply.ok && w) notifyRelay({ what, who: me, at: w.at, rev: w.rev });
+  return reply;
+}
+
+const hex = (bytes: number[]): string => bytes.map((b) => ((b + 256) % 256).toString(16).padStart(2, '0')).join('');
+
+/**
+ * POST the notice to the relay, signed (relay/src/notify.ts): secret = HMAC-SHA256(key "<KEY_A>:<KEY_B>", NOTIFY_LABEL),
+ * signature = HMAC-SHA256(key secret, "<ms>.<body>"). A phone holds only its own key, so only the two servers can sign.
+ * Best effort and never throws: the phones still poll. Until the script has the external-request scope, UrlFetchApp
+ * throws; that (or any reply but 204) pauses notifying for NOTIFY_PAUSE_SECONDS, so a write pays for one cache read.
+ * Returns the relay's status, or 0 when nothing was sent.
+ */
+function notifyRelay(n: Notice): number {
+  let cache: GAS.Cache | null = null;
+  try {
+    cache = CacheService.getScriptCache();
+    if (cache.get('relay:pause')) return 0;
+    const { a, b } = keys();
+    if (!a || !b) return 0;
+    const secret = hex(Utilities.computeHmacSha256Signature(NOTIFY_LABEL, `${a.trim().toLowerCase()}:${b.trim().toLowerCase()}`));
+    const body = JSON.stringify(n);
+    const t = String(Date.now());
+    const code = UrlFetchApp.fetch(RELAY_NOTIFY_URL, {
+      method: 'post', contentType: 'application/json', payload: body, muteHttpExceptions: true, followRedirects: false,
+      headers: { 'X-Island-Time': t, 'X-Island-Sig': hex(Utilities.computeHmacSha256Signature(`${t}.${body}`, secret)) }
+    }).getResponseCode();
+    if (code !== 204) cache.put('relay:pause', String(code), NOTIFY_PAUSE_SECONDS);
+    return code;
+  } catch {
+    try { cache?.put('relay:pause', 'error', NOTIFY_PAUSE_SECONDS); } catch { /* best effort */ }
+    return 0;
+  }
+}
+
+/**
+ * Run once from the script editor after adding the `script.external_request` scope (docs/ops/runbook.md#11-turn-on-the-push):
+ * Google asks for the permission, then this sends a notice (nothing new: the phones' fetch finds no rows) and logs the
+ * relay's answer, 204 when the push works.
+ */
+export function authorizeRelay(): void {
+  try { CacheService.getScriptCache().remove('relay:pause'); } catch { /* best effort */ }
+  const p = PropertiesService.getScriptProperties().getProperties();
+  const at = new Date(Date.parse(p.LAST_AT ?? '') || Date.now()).toISOString();
+  console.log(`relay notify: ${notifyRelay({ what: 'event', who: 'A', at, rev: p.REV || 'none' })} (204 = the push works)`);
+}
+
 // ---------------------------------------------------------------- sheet helpers
 
 function tab(name: TabName): GAS.Sheet {
@@ -332,6 +396,7 @@ function appendRows(sh: GAS.Sheet, name: TabName, rows: unknown[][]): void {
     st.rows[name] = start + rows.length - 1;
     st.dirty = true;
     learnTail(name, text(rows[rows.length - 1][0]));
+    wrote = { at: text(rows[rows.length - 1][0]), rev: st.rev };
   }
 }
 

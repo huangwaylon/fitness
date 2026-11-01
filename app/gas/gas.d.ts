@@ -30,6 +30,7 @@ declare namespace GAS {
   interface Cache {
     get(key: string): string | null;
     put(key: string, value: string, expirationSeconds?: number): void;
+    remove(key: string): void;
   }
   interface Properties {
     getProperty(key: string): string | null;
@@ -44,6 +45,17 @@ declare namespace GAS {
   interface EditEvent {
     range?: Range;
   }
+  interface HTTPResponse {
+    getResponseCode(): number;
+  }
+  interface FetchOptions {
+    method: 'post';
+    contentType: string;
+    payload: string;
+    headers: Record<string, string>;
+    muteHttpExceptions: boolean;
+    followRedirects: boolean;
+  }
   interface PostEvent {
     postData?: { contents?: string; length?: number; type?: string };
   }
@@ -54,3 +66,7 @@ declare const PropertiesService: { getScriptProperties(): GAS.Properties };
 declare const LockService: { getScriptLock(): GAS.Lock };
 declare const CacheService: { getScriptCache(): GAS.Cache };
 declare const ContentService: { createTextOutput(text: string): GAS.TextOutput; MimeType: { JSON: unknown } };
+/** Byte values are signed (-128..127), as Java's. */
+declare const Utilities: { computeHmacSha256Signature(value: string, key: string): number[] };
+/** Needs the `script.external_request` scope; without it `fetch` throws. */
+declare const UrlFetchApp: { fetch(url: string, options: GAS.FetchOptions): GAS.HTTPResponse };
