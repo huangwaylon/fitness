@@ -760,7 +760,7 @@ The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there a
   it see each other unless a polygon is between). Nodes: the polygons' corners a step outside plus the named nodes
   (the walk mask's names, so a relayed node id means the same); only bitangent edges up to 320u are kept. ~400 nodes,
   ~2,060 edges, 119 polygons; built in ~2.8 ms (median, M-series Mac; the walk mask's grid takes ~80 ms there), a
-  tap's snap and A* p50 0.05 ms, p95 0.15 ms (`nav.test.ts` holds the budget). Each node knows its connected region, so a tap
+  tap's snap and A* p50 0.05 ms, p95 0.15 ms (`PERF=1 npx vitest run nav` checks the budget; CI only catches blow-ups). Each node knows its connected region, so a tap
   never aims at a pocket nobody can reach.
 - **Footsteps** by the ground under the walker (`tapWalk.ts stepCue` over `world.ts surfaceAt`): grass, sand, snow
   (grass and dirt in winter), the shops' brick, the plaza's and the stone bridge's stone, the log bridge's and the
