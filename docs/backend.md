@@ -208,9 +208,10 @@ intents, never data of record: the sheet path above is unchanged and still catch
   `v: 2` (the rolling-log world; the relay still speaks `v: 1` to an older phone, answering each socket in the version
   of its hello), ≤ 256 bytes (an intent ~60–100). Intents: `walk {to: node id | [x, z], at?}` (v2: world units, a
   tap-to-walk's destination, integers within the plan `WORLD_X` −230…620 × `WORLD_Z` −400…2500, equal to
-  `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?}`,
-  `catch {what, id?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`, `present-opened`,
-  `watered`, `shaken`), `saved {}` ([Push](#push)). Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
+  `island/world.ts` PLAN; v1: stage units, |n| ≤ 100,000; a walk never crosses versions), `act {act, id?, at?, pt?}`,
+  `catch {what, id?, at?, how?}`, `emote {emote}`, `world {op, id}` (`weed-pulled`, `fruit-collected`, `dug`,
+  `present-opened`, `watered`, `shaken`, `wished`), `saved {}` ([Push](#push)); the shared world's (v2 only, [Shared
+  world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`. The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. `ping {c}` → `pong {c, t}`; `presence {who, on}` when the partner comes or goes (the island
   stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004, before or after the hello, with
   the reason `protocol version N unsupported (relay speaks 1, 2)`, and so does a message (or a second hello) in
@@ -218,16 +219,18 @@ intents, never data of record: the sheet path above is unchanged and still catch
   `versions`. Deploy order for a version bump: the relay first (it speaks both), then the app. Dropping v1 once both
   phones run the world: take 1 out of `LIVE_VS` and redeploy (a phone still on v1 is closed 4004, reloads, updates).
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
-- **Replay:** the room keeps the last 50 `world` events (≤ 6 h old) in DO storage; a hello with `since` (the last
-  world `t` that phone saw) gets the partner's newer ones after the welcome.
+- **Replay:** the room keeps today's shared world in DO storage ([Shared world](#shared-world)); a hello with `since`
+  (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the partner's newer ones after
+  the welcome.
 - **Cost:** the Hibernation API (`ctx.acceptWebSocket`): an idle socket keeps no DO in memory. Free plan: 100k
   requests/day (incoming WebSocket messages count 20:1), 13,000 GB-s/day; two people tapping are far below.
 - **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
   on hide or offline (no socket, no timers), reconnects after a drop with backoff (1 s doubling to 60 s, ±25 %); after
   4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome, +2 s, then every 60 s; the offset is
   the shortest round trip's of the last 8 (`serverNow()`). `send(intent)` is a no-op returning false unless welcomed
-  and, except for `world`, the partner is present; it never throws or blocks. `on()` delivers the partner's intents,
-  `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off).
+  and, for what the room doesn't keep, the partner is present; it never throws or blocks. `on()` delivers the partner's intents,
+  `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off). What the room
+  keeps (`isStored`: the shared world's intents and walks) goes even with the partner away.
 - **Measured** (`npm run smoke` from a Mac in Tokyo, edge NRT): connect ~65 ms, ping RTT median 18–21 ms (p90 23–40),
   partner one-way median 19 ms (p90 44), clock offset ±9 ms.
 - **Tests:** `relay/test/` (keys, origins, the bucket, the room: auth, relay to the other person only, stamping, rate
@@ -273,6 +276,42 @@ show the same island without a message (decisions: *Ambient life from the clock*
   ~20 ms of a boundary, a villager's position from before the phones met, a local skip (a sheet, a reaction playing,
   the 3-minute slow-down), and the camera (each phone shows the critters its view holds). What a person does by hand
   stays local: a cast's bite plan, a dive's outcome, a line read, a tap's reaction, a balloon, a shooting star.
+
+## Shared world
+
+Both phones show the same island (decisions: *A shared world: the seed for what comes, the relay for what we do*).
+What comes by itself is a function of the date, the slot and world coordinates ([Ambient life](#ambient-life)); what
+a person does is a small intent over the relay, kept by the room for the day, folded by both phones into the same day.
+
+- **The day** (`sync/world-day.ts`, pure, tests `world-day.test.ts`): a `WorldDay` folded from the day's intents in
+  the relay's order: claims (`catch:<id>`, `pick:<id>`: who got it, what, how, where), puts, the shakes in order,
+  watered cells, wishes, each person's last walk. First wins, and the relay's order makes it so: a partner's claim of
+  something I claimed too means the relay heard theirs first (it drops a later claim, never relaying or keeping it),
+  so theirs replaces mine (`beat`) and my phone shows it caught by them. A repeat changes nothing; another day's is
+  ignored.
+- **The store** (`store/world.svelte.ts`, `world`): today's day on this phone, kept in localStorage (`island.world`,
+  the day's events; the demo's per tab) so a reload needs only what's new; `share(intent)` folds my change (refused
+  when the partner already has it), keeps it and sends it; `on(fn)` the partner's, `live` when it happened in the last
+  12 s (the island plays it: their villager runs over, at most 3 s on the way, and does it), else (heard on opening) it
+  only changes the island. Attached to the phone's one socket when the backend starts (`store/live.ts`), so the
+  partner's changes are heard on any tab of the app.
+- **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty): the
+  last 400 changes (`world`, `catch` with an id, `pick`, `put`, `shake`) and each person's last v2 `walk` (replacing
+  the one before), in DO storage, its claims and nests rebuilt after a hibernation. It refuses a claim it already
+  holds today and a second nest from a tree within the hour (`NEST_GAP_MS`). A hello's `since` replays the partner's
+  after it; a page's first hello asks from Tokyo midnight (or the kept `since`), so a phone opening later hears the
+  day.
+- **The demo** (`sync/live-local.ts`): the demo's two players are two tabs of one browser (`?demo`, `?demo&as=B`);
+  a BroadcastChannel carries the intents and the sending tab plays the room's rules on a log in localStorage
+  (`island-demo.relay`), so the e2e's two-player tests (`e2e/shared-world.spec.ts`) run on it without a network.
+- **What's shared:** where each villager stands (the last walk: a phone opening later puts the partner's villager
+  there; mine stays where I sent it for the day), the partner's tap ring, and every tree's shakes: the outcome
+  (`shake {tree, drop}`), what it left lying (a branch `br:<tree>:<k>`, coconuts `co:<tree>:0|1`, named from the
+  day's shakes so both phones agree), a dangling bug (`dg:<tree>:<k>`) and the nest's wasps (`ws:<tree>:<k>`) as
+  critters to catch, the nest rule.
+- **Budget** (Free plan): an intent is ≤ 100 bytes sent (tested), ≤ 140 relayed. A busy day of two people (~300
+  walks, ~200 catches and pick-ups, ~50 shakes) is ~550 incoming messages: ~28 DO requests (20:1), ~550 storage writes
+  (of 100,000 rows/day), and a replay on each open (outgoing messages are free). Nothing per frame.
 
 ## Push
 

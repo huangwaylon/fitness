@@ -69,8 +69,11 @@
     cake?: boolean;
     /** Tap-to-walk (spec §4): a tap nothing else took, on the ground at world (x, z): true when my villager set off. */
     walk?: (x: number, z: number, hit: SceneHit) => boolean;
+    /** A tap on a tree (Scenery's data-tree: an oak, a cedar, a palm): it rustles, three quick ones shake it (IslandScene;
+     *  true when it took the tap). */
+    tree?: (id: string) => boolean;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk, tree }: Props = $props();
   const w = useWorld();
 
   type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
@@ -165,6 +168,13 @@
     return Math.abs(x - (r.left + r.width / 2)) <= w / 2 && Math.abs(y - (r.top + r.height / 2)) <= h / 2;
   }
 
+  /** Whether (x, y) (client px) is on the sun, the moon or a cloud. */
+  function inSky(x: number, y: number): boolean {
+    const orb = scene?.querySelector('.orb')?.getBoundingClientRect();
+    if (orb && near(orb, x, y, 0.7)) return true;
+    return [...(scene?.querySelectorAll('.cloud') ?? [])].some((c) => near(c.getBoundingClientRect(), x, y));
+  }
+
   /** A tap on my villager (IslandScene's button): now and then a flea hops off it (Critters). */
   export function villagerTap(el: Element) {
     if (enabled()) critters?.fromVillager(el);
@@ -208,7 +218,10 @@
     if (visitor?.tap(cx, cy)) return;
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
-    // the tapped element: a bush (Scenery's art) or a flower (FlowerBeds)
+    // the tapped element: a tree (Scenery's canopy), a bush (Scenery's art) or a flower (FlowerBeds)
+    // (a tree top reaching into the sky leaves the sun, the moon and the clouds theirs)
+    const treeEl = t.closest<HTMLElement>('[data-tree]');
+    if (treeEl && !(cy - r.top < w.view.horizon && inSky(cx, cy)) && tree?.(treeEl.dataset.tree ?? '')) return;
     const bushEl = t.closest<HTMLElement>('[data-bush]');
     const b = bushEl && bushAt(bushEl.dataset.bush ?? '');
     if (bushEl && b) return bush(bushEl, b);

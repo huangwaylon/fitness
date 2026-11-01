@@ -16,7 +16,12 @@ export const LIVE = {
   /** Events the server acked whose rows the snapshot cache hasn't fetched back yet (queue.ts `ackedEvents()`). */
   acked: 'island.acked',
   /** `{ me, date }`: the Tokyo day my all-four goals were last reported to the relay (sync/push.ts: once a day). */
-  goalSent: 'island.goalSent'
+  goalSent: 'island.goalSent',
+  /** `{ day, t }`: the relay time of the last shared-world change this phone heard that Tokyo day (sync/live.ts: the
+   *  hello's `since`, so a reload hears only what's new). */
+  since: 'island.liveSince',
+  /** `{ day, events }`: today's shared world as this phone folded it (store/world.svelte.ts: mine and the partner's). */
+  world: 'island.world'
 } as const;
 
 export const DEMO = {
@@ -27,7 +32,11 @@ export const DEMO = {
   /** sessionStorage: which player this tab is (`?demo&as=B`). */
   as: 'island-demo.as',
   /** sessionStorage: how many weeks of history the demo makes (`?demo&weeks=60`; default 8). */
-  weeks: 'island-demo.weeks'
+  weeks: 'island-demo.weeks',
+  /** localStorage: the demo's relay (sync/live-local.ts): `{ day, log }`, the day's shared world both tabs keep. */
+  relay: 'island-demo.relay',
+  /** localStorage `island-demo.world.<A|B>`: the demo's shared world as each player's tab folded it (store/world.svelte.ts). */
+  world: 'island-demo.world'
 } as const;
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */
@@ -58,9 +67,6 @@ export const SCENE = {
    *  phone has shown falling and picked up, and the goal flowers it has shown blooming (`A:pear`; island/fruitDay.ts;
    *  a new day starts empty). */
   fruit: 'fruit-day',
-  /** localStorage `tree-nest` = `{ A?: ms, B?: ms }`: when a shaken tree last dropped a wasp nest on this phone (at most
-   *  one an hour per tree; island/treeShake.ts). */
-  nest: 'tree-nest',
   /** localStorage `scene-wish` = `{ <Tokyo date>: n }`: this phone's wishes on shooting stars, each a star fragment on
    *  that morning's beach (island/stars.ts, sceneDay.ts). */
   wish: 'scene-wish',

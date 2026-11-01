@@ -65,7 +65,9 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   await expect(page.locator('[data-stung]')).toHaveCount(0);
   await expect(page.locator('[data-nest]')).toHaveCount(0); // the nest goes once the wasps are out
   await expect(ribbon(page)).toHaveAttribute('aria-label', bells!);
-  expect(JSON.parse((await page.evaluate(() => localStorage.getItem('tree-nest')))!)).toHaveProperty('A');
+  // the shared day keeps the nest (one per tree an hour, on both phones): my tree's
+  const day = JSON.parse((await page.evaluate(() => localStorage.getItem('island-demo.world.A')))!) as { events: { kind: string; tree?: string; drop?: string }[] };
+  expect(day.events).toContainEqual(expect.objectContaining({ kind: 'shake', tree: 'goal-A', drop: 'nest' }));
 });
 
 test('too late: the wasps sting the villager on that side (a fright and a sweat drop) and fly off', async ({ page }) => {

@@ -1,47 +1,60 @@
 <script lang="ts">
-  // What a shaken tree drops (docs/design.md "Trees", "Shaking a tree"; island/treeShake.ts): FruitTree reports a shake
-  // (a quick run of canopy taps) and this rolls the drop. A tree branch falls beside the trunk on the jar's side and lies
-  // there until a tap picks it up (a pop, gone; cosmetic). Now and then a bagworm (at night sometimes a spider) drops
-  // out of the canopy on its thread beside the trunk on the outer side and dangles there, swaying, for DANGLE_MS: a tap
-  // nets it (NH's catch line, the ずかん's bagworm or spider), else it climbs back up. Rarely a wasp nest falls beside the trunk on the outer side:
-  // it lands with a thud, and SWARM_DELAY_MS later three wasps buzz out and charge the villager standing on that side
-  // for SWARM_MS. A tap on them in time nets one (the net's swing, NH's catch line on the plate, the shared ずかん's
-  // wasp); too late and they sting (`onsting`: the scene gives that villager a fright and a sweat drop), then fly off.
-  // Nothing here pays ベル. `?shake=nest|branch|bagworm|spider` (dev or ?demo) makes the next shake drop that (the e2e's hook).
-  // Everything is a world node beside its tree (world.ts GOAL_TREES); the swarm's node follows the villager's feet as it
-  // flies (its live position, frames only while it's out).
+  // What a shaken tree drops (docs/design.md "Trees", "Shaking a tree"; island/treeShake.ts), for every tree on the
+  // island: a goal tree reports a shake from its canopy (FruitTree), any other from SceneTaps (IslandScene counts the
+  // taps), and this rolls the drop by the kind of tree. A tree branch falls beside the trunk on the inner side and lies
+  // there until a tap picks it up (a pop, gone; cosmetic); a palm drops its two coconuts round its foot (a tap picks one
+  // up). Now and then a bagworm (at night sometimes a spider) drops out of the canopy on its thread beside the trunk
+  // on the outer side and dangles there, swaying, for DANGLE_MS: a tap nets it (NH's catch line, the ずかん's bagworm or
+  // spider), else it climbs back up. Rarely a wasp nest falls beside the trunk on the outer side: it lands with a thud,
+  // and SWARM_DELAY_MS later three wasps buzz out and charge the villager who shook it for SWARM_MS. A tap on them in
+  // time nets one (the net's swing, NH's catch line on the plate, the shared ずかん's wasp); too late and they sting
+  // (`onsting`: the scene gives that villager a fright and a sweat drop), then fly off. Nothing here pays ベル.
+  // Shared (docs/backend.md#shared-world): my shake's outcome goes to the partner (world.share), and theirs plays here:
+  // their villager runs to the tree and shakes it, the same drop falls, their wasps charge them. What lies (branches,
+  // coconuts) is the shared day's, so a reload or the partner's phone finds it there; a pick-up or a catch by either of
+  // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut` (dev or ?demo) makes the next
+  // shake drop that (the e2e's hook). Everything is a world node beside its tree; the swarm's node follows the
+  // villager's feet as it flies (its live position, frames only while it's out).
   import CatchPlate from './CatchPlate.svelte';
   import { cardFor, type CatchCard } from './catchCard.ts';
   import { pickUp } from '../motion/transitions.ts';
   import { timers } from './timers.ts';
   import { hookOneOf } from './devHooks.ts';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import type { PersonId } from '#lib/types.ts';
   import { t } from '#lib/i18n/index.ts';
   import { recordFind } from '#lib/store/actions.ts';
-  import { TREE, VILLAGER, u } from './scene.ts';
-  import { GOAL_TREES } from './world.ts';
+  import { world } from '#lib/store/world.svelte.ts';
+  import { caught, taken } from '#lib/sync/world-day.ts';
+  import type { Drop } from '#lib/sync/live-protocol.ts';
+  import { VILLAGER, u } from './scene.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { critterArt, type BugId } from './critters.ts';
-  import { catchLine, loadLines } from './catchLine.ts';
+  import { catchLine, loadLines, loadNames } from './catchLine.ts';
   import { jst } from '#lib/time/clock.ts';
   import { artUrl } from '#lib/art.ts';
   import {
-    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakenBug, type ShakeDrop
+    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
+    type ShakeDrop, type ShakeTree
   } from './treeShake.ts';
-  import { approach, turnTo } from './avatar.ts';
+  import { approach, partnerAct, turnTo } from './avatar.ts';
   import { livePos } from '../motion/director.svelte.ts';
+  import { tellPartner } from './partnerNews.ts';
 
   type Side = 'mine' | 'partner';
   interface Props {
     scene?: HTMLElement;
     /** The wasps reached the villager on `side`. */
     onsting?: (side: Side) => void;
+    /** A tree by id where it stands on this phone (a goal tree by its person's slot), or null. */
+    treeOf: (id: string) => ShakeTree | null;
+    /** The partner shook a tree: rustle it (their villager has just got there). */
+    rustle?: (tree: ShakeTree) => void;
   }
-  let { scene, onsting }: Props = $props();
+  let { scene, onsting, treeOf, rustle }: Props = $props();
   const w = useWorld();
 
   const { later, clear } = timers();
@@ -50,69 +63,89 @@
     stopSwarm();
   });
 
-  /** Where things land beside a trunk (world units from its foot): just in front of the trunk's line (FRONT), a branch
-   *  on the inner side, a nest and a dangling bug on the outer. Their nodes stand NEAR in front of the tree's own
-   *  (the canopy's and the fruit row's buttons), so a branch's or a bug's own tap target is on top. */
-  const FRONT = 2, NEAR = -60;
-  const NEST_DX = 34, BRANCH_DX = 36;
-  /** Where a falling thing starts: inside the canopy (u above the ground). */
-  const FROM = TREE.h * 0.55;
-  /** A dangling bug hangs beside the trunk on the outer side, at a branch's height (its tap target between the canopy's
-   *  and the fruit row's buttons; u above the ground). */
-  const DANGLE_DX = 30;
+  /** Their nodes stand NEAR in front of the tree's own (the canopy's and the fruit row's buttons), so a branch's or a
+   *  bug's own tap target is on top. */
+  const NEAR = -60;
+  /** Where a falling thing starts: inside the canopy (u above the ground), by the tree's height. */
+  const fromOf = (tr: ShakeTree) => tr.h * 0.55;
+  /** A dangling bug hangs at a branch's height (its tap target between the canopy's and the fruit row's buttons). */
   const DANGLE_UP = 22;
   /** The wasps come out of the nest this high, and go for the villager's face. */
   const NEST_UP = 10, FACE = VILLAGER.h * 0.78;
 
   let seq = 0;
   /** World x, y = the world's z. */
-  let nests = $state<{ n: number; pid: PersonId; x: number; y: number; fading: boolean }[]>([]);
-  let branches = $state<{ n: number; pid: PersonId; x: number; y: number }[]>([]);
-  let swarm = $state<{ n: number; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
+  let nests = $state<{ n: number; tree: string; x: number; y: number; from: number; fading: boolean }[]>([]);
+  let swarm = $state<{ n: number; id: string; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
   /** The net's swing at world (x, z), `lift` up. */
   let net = $state<{ n: number; x: number; z: number; lift: number } | null>(null);
   let card = $state<CatchCard | null>(null);
-  let dangler = $state<{ n: number; pid: PersonId; id: 'bagworm' | 'spider'; x: number; y: number; up: boolean } | null>(null);
+  let dangler = $state<{ n: number; id: string; tree: string; bug: 'bagworm' | 'spider'; x: number; y: number; from: number; up: boolean } | null>(null);
+
+  /** What the day's shakes left lying (the shared day: a reload or the partner's phone finds it too), and which of it
+   *  fell while this island watched (only those fall; the rest just lie there). */
+  const lyingNow = $derived.by(() => {
+    const d = world.day;
+    return fallen(d.shakes, treeOf, (id) => !!taken(d, id));
+  });
+  const dropping = new SvelteSet<string>();
 
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
-  let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider']) ?? undefined;
+  let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider', 'coconut']) ?? undefined;
 
-  /** A shake of `pid`'s tree, standing on `slot` (A: the left, beside my villager; B: the right, the partner's). */
-  export function shaken(pid: PersonId, slot: 'A' | 'B') {
-    const now = Date.now();
+  /** My villager shook `tree` (it has walked up to it): roll what falls by its kind, share it, play it. */
+  export function shaken(tree: ShakeTree) {
+    const d = world.day, now = world.now();
     const bugForced = forced === 'bagworm' || forced === 'spider' ? forced : undefined;
-    let drop = shakeDrop(Math.random, now, lastNest(pid), bugForced ? 'bug' : (forced as ShakeDrop | undefined));
+    const force = bugForced ? 'bug' : (forced as ShakeDrop | undefined);
+    let drop: ShakeDrop = shakeDrop(Math.random, now, lastNestOf(d.shakes, tree.id), force, tree.kind, bearsCoconuts(d.shakes, tree.id));
     forced = undefined;
-    if (drop === 'nest' && (swarm || dangler?.pid === pid || nests.some((s) => s.pid === pid))) drop = null;
-    if (drop === 'branch' && branches.some((b) => b.pid === pid)) drop = null;
-    if (drop === 'bug' && (dangler || nests.some((s) => s.pid === pid))) drop = null;
-    const [tx, tz] = GOAL_TREES[slot], out = slot === 'A' ? -1 : 1, fz = tz - FRONT;
-    if (drop === 'bug') {
-      const id = bugForced ?? shakenBug(jst().hour, Math.random);
+    // one thing of a kind at a tree at a time
+    if (drop === 'nest' && (swarm || dangler?.tree === tree.id || nests.some((s) => s.tree === tree.id))) drop = null;
+    if (drop === 'branch' && lyingNow.some((b) => b.tree === tree.id && b.what === 'branch')) drop = null;
+    if (drop === 'bug' && (dangler || nests.some((s) => s.tree === tree.id))) drop = null;
+    const wire = wireDrop(drop, jst().hour, Math.random, bugForced);
+    world.share({ kind: 'shake', tree: tree.id, drop: wire });
+    play(tree, 'mine', wire);
+  }
+
+  /** The `drop` of a shake of `tree` by `side`, as it falls here (its ids from the day's shakes). */
+  function play(tree: ShakeTree, side: Side, drop: Drop) {
+    if (drop === 'none') return;
+    const d = world.day;
+    const i = d.shakes.findLastIndex((s) => s.tree === tree.id && s.drop === drop);
+    const ids = i >= 0 ? dropIds(d.shakes, i) : [];
+    const from = fromOf(tree);
+    if (drop === 'bagworm' || drop === 'spider') {
+      const id = ids[0] ?? `dg:${tree.id}:x`;
       void loadLines().catch(() => {});
-      const url = artUrl(critterArt(id));
+      const url = artUrl(critterArt(drop));
       if (url) new Image().src = url;
-      const d = { n: ++seq, pid, id, x: tx + out * DANGLE_DX, y: fz, up: false };
-      dangler = d;
-      later(() => dangler?.n === d.n && (dangler = { ...d, up: true }), DANGLE_MS);
-      later(() => dangler?.n === d.n && (dangler = null), DANGLE_MS + 900);
-    } else if (drop === 'branch') {
-      branches = [...branches, { n: ++seq, pid, x: tx - out * BRANCH_DX, y: fz }];
+      const at = dropAt(tree, drop);
+      const g = { n: ++seq, id, tree: tree.id, bug: drop, x: at.x, y: at.z, from, up: false };
+      dangler = g;
+      later(() => dangler?.n === g.n && (dangler = { ...g, up: true }), DANGLE_MS);
+      later(() => dangler?.n === g.n && (dangler = null), DANGLE_MS + 900);
+    } else if (drop === 'branch' || drop === 'coconut') {
+      for (const id of ids) dropping.add(id);
       later(() => sceneSfx('twig'), 520);
+      later(() => ids.forEach((id) => dropping.delete(id)), 900);
     } else if (drop === 'nest') {
-      markNest(pid, now);
       void loadLines().catch(() => {});
-      const nest = { n: ++seq, pid, x: tx + out * NEST_DX, y: fz, fading: false };
+      const at = dropAt(tree, 'nest');
+      const nest = { n: ++seq, tree: tree.id, x: at.x, y: at.z, from, fading: false };
       nests = [...nests, nest];
-      later(() => (sceneSfx('nest'), waspMusic('nest')), 560);
-      later(() => charge(nest.n, nest.x, nest.y, slot), 560 + SWARM_DELAY_MS);
+      later(() => (sceneSfx('nest'), side === 'mine' && waspMusic('nest')), 560);
+      later(() => charge(nest.n, ids[0] ?? `ws:${tree.id}:x`, nest.x, nest.y, side), 560 + SWARM_DELAY_MS);
     }
   }
 
-  /** A tap on the dangling bug: netted (the net's swing, NH's catch line, a ずかん find). */
+  /** A tap on the dangling bug: netted (the net's swing, NH's catch line, a ずかん find), unless the partner has it. */
   function netDangler() {
     const d = dangler;
     if (!d || d.up || netting) return;
+    // first wins: claimed at the tap (the relay's first claim is the catch: the partner's phone hears it)
+    if (!world.share({ kind: 'catch', what: d.bug, id: d.id, at: [Math.round(d.x), Math.round(d.y)], how: 'net' }).fresh) return;
     // my villager walks over with the net (avatar.ts); caught at the tap, swung on arrival
     netting = true;
     const { ms } = approach(d.x, d.y, { tool: 'net', toolMs: 450 });
@@ -122,16 +155,19 @@
   function swingAt(d: NonNullable<typeof dangler>) {
     netting = false;
     if (dangler === d) dangler = null;
+    // the partner's claim reached the relay first: theirs (their villager holds it up)
+    const c = caught(world.day, d.id);
+    if (c && c.who !== world.me) return;
     net = { n: ++seq, x: d.x, z: d.y, lift: DANGLE_UP };
     sceneSfx('net');
     later(() => (net = null), 420);
     later(async () => {
       sceneSfx('catch');
-      const added = recordFind('bug', d.id);
+      const added = recordFind('bug', d.bug);
       const n = ++seq;
-      const text = await catchLine(d.id as BugId);
+      const text = await catchLine(d.bug as BugId);
       const [sx, sy] = w.screenU(d.x, d.y, DANGLE_UP);
-      card = cardFor(n, sx, sy, critterArt(d.id), text, added);
+      card = cardFor(n, sx, sy, critterArt(d.bug), text, added);
     }, 160);
   }
 
@@ -140,7 +176,7 @@
   function swarmAt(): [number, number, number] {
     const s = swarm;
     if (!s) return [0, 0, 0];
-    const t = Math.min(1, Math.max(0, (performance.now() - s.at) / SWARM_MS)), e = t * t * (1.6 - 0.6 * t);
+    const k = Math.min(1, Math.max(0, (performance.now() - s.at) / SWARM_MS)), e = k * k * (1.6 - 0.6 * k);
     const [vx, vz] = livePos(s.side);
     return [s.x0 + (vx - s.x0) * e, s.z0 + (vz - s.z0) * e, NEST_UP + (FACE - NEST_UP) * e];
   }
@@ -151,19 +187,20 @@
     stopFrames = null;
   }
 
-  function charge(nestN: number, x: number, z: number, slot: 'A' | 'B') {
-    const side: Side = slot === 'A' ? 'mine' : 'partner';
+  function charge(nestN: number, id: string, x: number, z: number, side: Side) {
     const n = ++seq;
     stopSwarm();
-    swarm = { n, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < 195 ? -1 : 1 };
+    // the partner already netted these (their catch came in while the nest fell)
+    if (caught(world.day, id)) return fadeNest(nestN);
+    swarm = { n, id, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < 195 ? -1 : 1 };
     stopFrames = w.moveStart();
     sceneSfx('buzz');
-    waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music
+    if (side === 'mine') waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music
     later(() => {
       if (swarm?.n !== n) return;
       swarm = { ...swarm, stung: true };
       sceneSfx('sting');
-      waspMusic('stung');
+      if (side === 'mine') waspMusic('stung');
       onsting?.(side);
       later(() => {
         if (swarm?.n !== n) return;
@@ -179,11 +216,12 @@
     later(() => (nests = nests.filter((s) => s.n !== n)), 1800);
   }
 
-  /** A tap on the swarm: netted while it's on its way. */
+  /** A tap on the swarm: netted while it's on its way (mine only: the partner's wasps are theirs to net). */
   function netIt() {
     const s = swarm;
-    if (!s || s.stung || !netsSwarm(performance.now() - s.at)) return;
+    if (!s || s.stung || s.side !== 'mine' || !netsSwarm(performance.now() - s.at)) return;
     const [x, z, lift] = swarmAt();
+    world.share({ kind: 'catch', what: 'wasp', id: s.id, at: [Math.round(x), Math.round(z)], how: 'swarm' });
     swarm = null;
     stopSwarm();
     turnTo(x); // no walk: the wasps' timing stays as it is
@@ -203,26 +241,70 @@
     }, 160);
   }
 
-  /** NH's pick-up: a hop and gone. */
-  /** Branches my villager is walking to. */
-  const going = new Set<number>();
-  /** My villager walks over (avatar.ts) and picks the branch up. */
-  function pick(n: number) {
-    const b = branches.find((x) => x.n === n);
-    if (!b || going.has(n)) return;
-    going.add(n);
-    const { ms } = approach(b.x, b.y, { motion: 'squish' });
+  /** Branches and coconuts my villager is walking to. */
+  const going = new Set<string>();
+  /** My villager walks over (avatar.ts) and picks it up (a pop, gone; a coconut held up with its line). First wins:
+   *  claimed at the tap. */
+  function pick(id: string) {
+    const b = lyingNow.find((x) => x.id === id);
+    if (!b || going.has(id)) return;
+    const coconut = b.what === 'coconut';
+    if (coconut) void loadNames().catch(() => {});
+    if (!world.share({ kind: 'pick', id, what: b.what, at: [Math.round(b.x), Math.round(b.z)] }).fresh) return;
+    going.add(id);
+    const { ms } = approach(b.x, b.z, { motion: 'squish' });
     later(() => {
-      going.delete(n);
+      going.delete(id);
       sceneSfx('twig');
-      branches = branches.filter((x) => x.n !== n);
+      if (!coconut) return;
+      const n = ++seq;
+      const [sx, sy] = w.screenU(b.x, b.z, 4);
+      void loadNames().then(() => (card = cardFor(n, sx, sy, 'finds/coconut', t('beach.picked', { name: t('beach.name.coconut') }))), () => {});
     }, ms);
   }
+
+  // The partner's shakes and catches (the shared day's news): their villager runs to the tree and shakes it, the same
+  // drop falls; they net the dangling bug or their wasps, or pick up a branch or a coconut, and it's gone here too.
+  onMount(() =>
+    world.on(({ e, live }) => {
+      if (e.kind === 'shake') {
+        const tree = treeOf(e.tree);
+        if (!tree || !live) return;
+        const { ms } = partnerAct(tree.x, tree.z + 14, { motion: 'shake' });
+        later(() => {
+          rustle?.(tree);
+          play(tree, 'partner', e.drop);
+        }, ms);
+      } else if (e.kind === 'catch' && e.id && /^(dg|ws):/.test(e.id)) {
+        const d = dangler;
+        if (d?.id === e.id) {
+          dangler = null;
+          if (live) {
+            partnerAct(d.x, d.y, { tool: 'net', toolMs: 450 });
+            tellPartner({ art: critterArt(d.bug), verb: 'caught', name: `critter.name.${d.bug}`, x: d.x, z: d.y, lift: DANGLE_UP });
+          }
+        }
+        const s = swarm;
+        if (s?.id === e.id) {
+          swarm = null;
+          stopSwarm();
+          const nest = nests.find((ns) => !ns.fading);
+          if (nest) fadeNest(nest.n);
+          if (live) tellPartner({ art: critterArt('wasp'), verb: 'caught', name: 'critter.name.wasp', x: s.x0, z: s.z0 });
+        }
+      } else if (e.kind === 'pick' && /^(br|co):/.test(e.id) && live) {
+        const b = fallen(world.day.shakes, treeOf, () => false).find((x) => x.id === e.id);
+        if (!b) return;
+        partnerAct(b.x, b.z, { motion: 'squish' });
+        if (b.what === 'coconut') tellPartner({ art: 'finds/coconut', verb: 'picked', name: 'beach.name.coconut', x: b.x, z: b.z });
+      }
+    })
+  );
 </script>
 
 {#each nests as s (s.n)}
-  <div class="node" {@attach w.at({ x: s.x, z: s.y, h: FROM, dz: NEAR })}>
-    <span class="drop nest" class:fading={s.fading} data-nest={s.pid} style:--from={u(-FROM)}>
+  <div class="node" {@attach w.at({ x: s.x, z: s.y, h: s.from, dz: NEAR })}>
+    <span class="drop nest" class:fading={s.fading} data-nest={s.tree} style:--from={u(-s.from)}>
       <!-- NH's wasp nest: a papery grey-brown hive, banded, with its dark mouth -->
       <svg viewBox="0 0 24 28" aria-hidden="true">
         <path d="M12 1.5 C17.5 1.5 21.5 7 21.5 14 C21.5 21.5 17 26.5 12 26.5 C7 26.5 2.5 21.5 2.5 14 C2.5 7 6.5 1.5 12 1.5 Z" fill="#B49A78" />
@@ -235,13 +317,19 @@
   </div>
 {/each}
 
-{#each branches as b (b.n)}
-  <div class="node" {@attach w.at({ x: b.x, z: b.y, h: FROM, dz: NEAR, inv: true })}>
-    <span class="drop branch" style:--from={u(-FROM)} out:pickUp>
-      <OfficialArt key="finds/tree-branch" size={u(22)} eager />
+{#each lyingNow as b (b.id)}
+  {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })}>
+    <span class="drop {b.what}" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
+      <OfficialArt key={b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut'} size={u(b.what === 'branch' ? 22 : 16)} eager />
     </span>
-    <button type="button" class="pick" data-branch={b.pid} data-sfx="self" aria-label={t('shake.branch')} style:top={u(-9)}
-      onclick={() => pick(b.n)}></button>
+    {#if b.what === 'branch'}
+      <button type="button" class="pick" data-branch={b.tree} data-sfx="self" aria-label={t('shake.branch')} style:top={u(-9)}
+        onclick={() => pick(b.id)}></button>
+    {:else}
+      <button type="button" class="pick" data-coconut={b.id} data-sfx="self" aria-label={t('shake.coconut')} style:top={u(-7)}
+        onclick={() => pick(b.id)}></button>
+    {/if}
   </div>
 {/each}
 
@@ -249,11 +337,11 @@
   {@const d = dangler}
   {#key d.n}
     <!-- a bagworm or a spider on its thread, out of the canopy beside the trunk: it drops, sways, and climbs back up -->
-    <div class="node" {@attach w.at({ x: d.x, z: d.y, h: FROM, dz: NEAR, inv: true })}>
-      <span class="dangle {d.id}" class:up={d.up} data-dangle={d.id} style:top={u(-FROM)} style:--len={u(FROM - DANGLE_UP)}>
+    <div class="node" {@attach w.at({ x: d.x, z: d.y, h: d.from, dz: NEAR, inv: true })}>
+      <span class="dangle {d.bug}" class:up={d.up} data-dangle={d.bug} style:top={u(-d.from)} style:--len={u(d.from - DANGLE_UP)}>
         <i class="thread"></i>
         <svg class="dbug" viewBox="-8 -8 16 16" aria-hidden="true">
-          {#if d.id === 'bagworm'}
+          {#if d.bug === 'bagworm'}
             <path d="M0 -6 C3.6 -5 4.4 1 3 5.6 C1.6 7.4 -1.6 7.4 -3 5.6 C-4.4 1 -3.6 -5 0 -6 Z" fill="#8A6A3E" />
             <path d="M-3.4 -1.6 L3.4 -2.6 M-3.8 1.6 L3.8 .8 M-3.2 4.6 L3.2 4" stroke="#5E4628" stroke-width=".8" stroke-linecap="round" />
             <path d="M-2.6 -3.6 L-1 -5 M1.4 -4.8 L2.8 -3.4 M-3.6 .6 L-5 -.4 M3.8 -.6 L5 -1.8" stroke="#6E8A3E" stroke-width="1" stroke-linecap="round" />
@@ -265,7 +353,7 @@
           {/if}
         </svg>
       </span>
-      <button type="button" class="pick" data-dangler={d.id} data-sfx="self" aria-label={t('shake.dangle')} disabled={d.up}
+      <button type="button" class="pick" data-dangler={d.bug} data-sfx="self" aria-label={t('shake.dangle')} disabled={d.up}
         style:top={u(-DANGLE_UP)} onclick={netDangler}></button>
     </div>
   {/key}
@@ -276,7 +364,7 @@
   {#key s.n}
     <!-- the swarm: a ≥ 44px button over every world thing, flying from the nest to the villager's face (its live spot) -->
     <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt })}>
-      <button type="button" class="swarm" class:stung={s.stung} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')}
+      <button type="button" class="swarm" class:stung={s.stung} class:theirs={s.side !== 'mine'} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')}
         style:--away={u(s.away * 120)} onclick={netIt}>
         {#each [[-11, -4, 0], [10, -9, 0.13], [1, 9, 0.26]] as [dx, dy, d], k (k)}
           <svg class="wasp" viewBox="-8 -8 16 16" aria-hidden="true" style:--dx={u(dx)} style:--dy={u(dy)} style:animation-delay="-{d}s">
@@ -326,6 +414,8 @@
   .drop :global(.official) { max-width: none; }
   .nest svg { width: calc(20 * 100cqw / 390); display: block; }
   .nest.fading { transition: opacity 600ms ease; opacity: 0; }
+  /* lying there since before this island watched (a reload, the partner's phone): no fall */
+  .drop.still { animation: none; }
   /* a branch: ≥ 44px to tap, over the grass beside the trunk (between the canopy and the fruit row) */
   .pick {
     position: absolute; left: 0; translate: -50% -50%; width: max(calc(44px * var(--inv, 1)), calc(30 * 100cqw / 390)); aspect-ratio: 1; pointer-events: auto;
@@ -354,6 +444,8 @@
     -webkit-tap-highlight-color: transparent;
   }
   .swarm.stung { animation: away 900ms ease-in both; pointer-events: none; }
+  /* the partner's wasps: theirs to net, on their phone */
+  .swarm.theirs { pointer-events: none; }
   @keyframes away { from { translate: 0 0; opacity: 1; } to { translate: var(--away) -25cqw; opacity: 0; } }
   .wasp {
     /* NH's wasps are big and plain to see: each about a third of a villager's head */

@@ -364,13 +364,25 @@ person's flowers through one Tokyo day (a quick run of canopy taps shakes it: [S
 
 ### Shaking a tree
 
-`island/treeShake.ts`, `island/TreeShakes.svelte`, `e2e/shake.spec.ts`.
+`island/treeShake.ts`, `island/TreeShakes.svelte`, `e2e/shake.spec.ts`, `e2e/shared-world.spec.ts`. Every tree on the
+island shakes: the two goal trees and every oak, cedar and palm of the scenery (`SCENERY_TREES`; bamboo doesn't, as in
+NH).
 
-- **Tap or shake:** one canopy tap opens or closes the popup; the third tap within 1.2 s (and each quick tap after) is
-  a shake: the popup closes, the tree rustles and drops leaves (`tree-shake`).
-- **What falls:** 1 in 8 a wasp nest (at most one per tree an hour, `tree-nest`), else 1 in 7 a dangling bug, else 1
-  in 5 a branch (it lies beside the trunk until a tap picks it up; cosmetic).
-- **The nest:** three wasps buzz out and charge the villager on that side for 1.5 s; a tap in time nets one (NH's catch
+- **Tap or shake:** on a goal tree one canopy tap opens or closes the popup; on any other tree a tap on its leaves
+  (Scenery's `data-tree` hit area, the leaves only: the ground round it stays the ground's) rustles it. The third tap
+  within 1.2 s (and each quick tap after) is a shake: a goal tree's popup closes, my villager walks up to the trunk and
+  shakes it, the tree rustles (`tree-shake`).
+- **What falls, by the kind of tree (NH's):** a hardwood (an oak, a goal tree) or a cedar: 1 in 8 a wasp nest, else 1
+  in 7 a dangling bug, else 1 in 5 a branch (it lies beside the trunk until a tap picks it up; cosmetic). A palm: its
+  two coconuts the first time it's shaken in a Tokyo day (they lie round its foot; a tap picks one up, NH's 「ヤシのみを
+  ひろった！」), after that only, 1 in 8, a nest (NH: no branches or bagworms from a palm). At most one nest per tree an
+  hour, on both phones. No furniture (NH's hardwoods drop some; scenery here never pays), and no fruit from a goal tree:
+  its fruit falls when its goal is met.
+- **Shared** ([Shared world](#shared-world)): a shake's outcome goes to the partner; on their phone my villager runs to
+  the tree (at most 3 s), shakes it and the same thing falls; their wasps charge their villager (only they can net
+  them). What lies (branches, coconuts) is the shared day's: a reload or the other phone finds it there, and a pick-up
+  by either of us takes it on both (first wins). `?shake=nest|branch|bagworm|spider|coconut` forces the next drop.
+- **The nest:** three wasps buzz out and charge the villager who shook it for 1.5 s; a tap in time nets one (NH's catch
   line, a ずかん find). Too late, they sting: a 「！」, a sweat drop, and they fly off. The wasp is weight 0 in the bug
   table: it only ever comes from a nest. The chase and sting have their own music ([Event music](#event-music)).
 - **A dangling bug:** a bagworm, or in the spider's hours (19:00–08:00) a spider 3 times in 8, drops on its thread and
@@ -408,6 +420,22 @@ in the ずかん (カタログ, レシピ: a first one gets the plate's second p
 drops into the sea. The catalogue is built by `npm run catalog:build` (`scripts/catalog.ts`: the ACNH spreadsheet's
 JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px webp under `static/art/finds/items|recipes/`,
 ~1.8 KB each, cached by the service worker on first use).
+
+### Shared world
+
+`store/world.svelte.ts`, `sync/world-day.ts`, `island/partnerNews.ts`, `island/PartnerNews.svelte`,
+`e2e/shared-world.spec.ts` ([backend](backend.md#shared-world)). Both phones show the same island: what's caught or
+picked up is gone on both, what a shake drops lies on both, each villager stands where its person sent it.
+
+- **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager runs over (at
+  most 3 s on the way) and does it with its tool (the net, the rod, the shovel, a shake, a pick-up); a catch or a find
+  is held up over their head with a small plate (「うめが スズキを つかまえた！」, `world.partner.*`) when it's in view,
+  else a notice slides in at the edge on their side (the item's icon and the line, 3.6 s). Heard on opening (older),
+  it only changes the island.
+- **First wins:** of two people tapping the same thing, the relay's first claim is it; the other phone sees it taken
+  by them (their villager holds it up) and its own tap does nothing more.
+- **Late and alone:** a phone opening later hears the day from the relay (and keeps it: a reload needs only what's
+  new); with the relay unreachable each phone keeps its own and they catch up when it's back.
 
 ### Critters
 
@@ -743,8 +771,10 @@ The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there a
   door (and knocks: its character answers, as a tap on the building does), water (sea, river, pond, spring) to the
   nearest bank facing the water, anything else to the nearest walkable point within 40u; ground nobody can reach (the
   sand east of the river, walled in by its cedars) to the nearest reachable point, facing it. The partner's relayed
-  walks replay the same planner. A cream ring marks the spot and shrinks away (NH has none: the least feedback). It
-  stays there for the session (`sessionStorage`: the next open finds it home).
+  walks replay the same planner (their softer ring where they tapped). A cream ring marks the spot and shrinks away (NH
+  has none: the least feedback). It stays there for the rest of the Tokyo day (`island-stay` in localStorage, with the
+  date; a new day finds it home), and so does it on the partner's phone: the relay keeps each person's last walk, so a
+  phone opening later puts their villager where they sent it ([Shared world](#shared-world)).
 - **Camera follow** (`tapWalk.ts Follow`): when the runner or its destination is out of the band [HUD bottom + 80,
   vh − 90], or the tap was far round the log (θ > 35°, a tiny target near the horizon), the scroller eases (lerp 0.12
   a frame) toward the camera that keeps the runner in the band and leans as far toward the destination as that allows;

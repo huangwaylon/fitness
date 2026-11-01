@@ -1,17 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { configureStorage, type KV } from '#lib/sync/storage.ts';
+import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, SHAKE_WINDOW_MS, SWARM_MS, lastNest, markNest, netsSwarm, shakeDrop, shakeTap, shakenBug
+  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, SCENERY_TREES, SHAKE_WINDOW_MS, SWARM_MS, bearsCoconuts, dropIds, fallen, goalTree, lastNestOf, netsSwarm,
+  shakeDrop, shakeTap, shakenBug, treeById, wireDrop
 } from './treeShake.ts';
 import { BUGS, pickBug } from './critters.ts';
 import { CATCH_LINES } from './catchLines.ts';
-
-function memKV(): KV {
-  const m = new Map<string, string>();
-  return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
-}
-beforeEach(() => configureStorage({ local: memKV() }));
+import { SCENERY, surfaceAt } from './world.ts';
+import type { Shake } from '#lib/sync/world-day.ts';
 
 /** Taps at these times (ms), in order: which ones shake. */
 function run(times: number[]): boolean[] {
@@ -43,7 +39,7 @@ describe('what a shake drops', () => {
   it('about 1 in 8 shakes a nest when one is due, 1 in 7 of the rest a dangling bug, about 1 in 5 of the rest a branch (seeded)', () => {
     const r = mulberry32(42);
     const n = 20_000;
-    const got = { nest: 0, bug: 0, branch: 0, none: 0 };
+    const got = { nest: 0, bug: 0, branch: 0, coconut: 0, none: 0 };
     for (let i = 0; i < n; i++) got[shakeDrop(r, 0, undefined) ?? 'none']++;
     expect(got.nest / n).toBeCloseTo(1 / NEST_ODDS, 1);
     expect(got.bug / (n - got.nest)).toBeCloseTo(1 / BUG_ODDS, 1);
@@ -82,17 +78,75 @@ describe('what a shake drops', () => {
     expect(shakeDrop(() => 0, 0, undefined, 'branch')).toBe('branch');
     expect(shakeDrop(() => 0.99, 0, 0, 'bug')).toBe('bug');
   });
-  it("each tree's last nest is kept on this phone; a broken record has none", () => {
-    expect(lastNest('A')).toBeUndefined();
-    markNest('A', 5000);
-    markNest('B', 7000);
-    expect([lastNest('A'), lastNest('B')]).toEqual([5000, 7000]);
-    const kv = memKV();
-    kv.setItem('tree-nest', '{"A":"x"}');
-    configureStorage({ local: kv });
-    expect(lastNest('A')).toBeUndefined();
+});
+
+describe('every tree shakes, each its own way (NH)', () => {
+  it("every oak, cedar and palm of the scenery is a tree to shake (bamboo isn't), its outer side by where it stands", () => {
+    const kinds = SCENERY.filter((s) => ['oak', 'cedar', 'palm'].includes(s.kind));
+    expect(SCENERY_TREES.map((t) => t.id)).toEqual(kinds.map((s) => s.id));
+    expect(SCENERY_TREES.length).toBeGreaterThanOrEqual(20);
+    expect(SCENERY_TREES.some((t) => t.id.startsWith('bamboo'))).toBe(false);
+    for (const t of SCENERY_TREES) expect(t.out).toBe(t.x < 195 ? -1 : 1);
+  });
+  it("a goal tree is its person's, where their slot puts it on this phone", () => {
+    expect(goalTree('B', 'A')).toMatchObject({ id: 'goal-B', kind: 'goal', out: -1 });
+    expect(treeById('goal-A', () => 'B')).toMatchObject({ id: 'goal-A', out: 1 });
+    expect(treeById('palm-2', () => 'A')).toMatchObject({ kind: 'palm' });
+    expect(treeById('bamboo-1', () => 'A')).toBeNull();
+  });
+  it("a palm drops its two coconuts the first time it's shaken in a day, then only (rarely) a nest: no branch, no bagworm", () => {
+    const r = mulberry32(11);
+    expect(shakeDrop(r, 0, undefined, undefined, 'palm', true)).toBe('coconut');
+    const got = new Set(Array.from({ length: 3000 }, () => shakeDrop(r, 0, undefined, undefined, 'palm', false)));
+    expect(got).toEqual(new Set(['nest', null]));
+    // the dev hook can't make a palm drop a branch, nor a hardwood a coconut
+    expect(shakeDrop(r, 0, undefined, 'branch', 'palm', false)).not.toBe('branch');
+    expect(shakeDrop(() => 0.99, 0, undefined, 'coconut', 'oak')).not.toBe('coconut');
+    expect(shakeDrop(() => 0.99, 0, undefined, 'coconut', 'palm', false)).toBe('coconut');
+  });
+  it('a cedar and an oak drop like a hardwood (nest, bagworm or spider, branch)', () => {
+    const r = mulberry32(12);
+    for (const kind of ['oak', 'cedar'] as const) {
+      const got = new Set(Array.from({ length: 4000 }, () => shakeDrop(r, 0, undefined, undefined, kind)));
+      expect(got).toEqual(new Set(['nest', 'bug', 'branch', null]));
+    }
+    expect(wireDrop('bug', 12, r)).toBe('bagworm');
+    expect(wireDrop(null, 12, r)).toBe('none');
   });
 });
+
+describe("the day's shakes (shared by both phones)", () => {
+  const shakes: Shake[] = [
+    { tree: 'oak-p1', drop: 'branch', who: 'A', t: 1 },
+    { tree: 'palm-1', drop: 'coconut', who: 'B', t: 2 },
+    { tree: 'oak-p1', drop: 'nest', who: 'B', t: 3 },
+    { tree: 'oak-p1', drop: 'branch', who: 'B', t: 4 },
+    { tree: 'cedar-k1', drop: 'bagworm', who: 'A', t: 5 },
+    { tree: 'goal-B', drop: 'branch', who: 'A', t: 6 }
+  ];
+  it('names what each left alike on both phones', () => {
+    expect(shakes.map((_, i) => dropIds(shakes, i))).toEqual([
+      ['br:oak-p1:0'], ['co:palm-1:0', 'co:palm-1:1'], ['ws:oak-p1:0'], ['br:oak-p1:1'], ['dg:cedar-k1:0'], ['br:goal-B:0']
+    ]);
+  });
+  it('the nest rule and the coconuts read the day', () => {
+    expect(lastNestOf(shakes, 'oak-p1')).toBe(3);
+    expect(lastNestOf(shakes, 'palm-1')).toBeUndefined();
+    expect(bearsCoconuts(shakes, 'palm-1')).toBe(false);
+    expect(bearsCoconuts(shakes, 'palm-2')).toBe(true);
+  });
+  it("what lies about (picked ones gone), beside its tree, a goal tree's by its slot on this phone", () => {
+    const tree = (me: 'A' | 'B') => (id: string) => treeById(id, (p) => (p === me ? 'A' : 'B'));
+    const mine = fallen(shakes, tree('A'), (id) => id === 'br:oak-p1:0');
+    expect(mine.map((f) => f.id)).toEqual(['co:palm-1:0', 'co:palm-1:1', 'br:oak-p1:1', 'br:goal-B:0']);
+    for (const f of mine) expect(['grass', 'sand', 'dirt']).toContain(surfaceAt(f.x, f.z));
+    // the partner's phone (me: B) has the goal trees the other way round: B's tree on its left
+    const theirs = fallen(shakes, tree('B'), (id) => id === 'br:oak-p1:0');
+    expect(theirs.find((f) => f.id === 'br:goal-B:0')!.x).toBeLessThan(195);
+    expect(mine.find((f) => f.id === 'br:goal-B:0')!.x).toBeGreaterThan(195);
+  });
+});
+
 
 describe('the swarm', () => {
   it('a tap nets it while it is on its way; after SWARM_MS it has stung', () => {

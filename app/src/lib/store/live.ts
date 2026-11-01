@@ -5,12 +5,13 @@ import { resolve } from '$app/paths';
 import type { EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
-import { getKey, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
+import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
 import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import { pendingAcked } from './view.ts';
+import { world } from './world.svelte.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
 
 /** Background refreshes (app becoming visible) at most this often. */
@@ -70,6 +71,8 @@ export class LiveBackend implements Backend {
     if (LIVE_URL) {
       this.#live = liveRelay();
       this.#live.onChange((c) => this.#sheetChanged(c));
+      // the shared island hears the partner even while another tab of the app is on screen (docs/backend.md#shared-world)
+      world.attach(this.#live, getStoredMe());
       this.#live.start();
     }
     // Full storage or private mode: the app works from memory, but say so once.
