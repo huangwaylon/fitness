@@ -9,6 +9,7 @@ import { parseShortcut } from './parse.ts';
 import { jstMs, localDateAt, parseInstant, ZONE_OFFSET_MS } from '../src/lib/time/dates.ts';
 import { isTally } from '../src/lib/contract/tally.ts';
 import { isIslandDay } from '../src/lib/contract/island.ts';
+import { decorAccept, decorOpOf, type DecorEntry } from '../src/lib/contract/decor.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { shopPrice } from '../src/lib/config/rules.ts';
 import {
@@ -529,10 +530,15 @@ function event(me: PersonId, body: Rec): EventReply {
     noteRows(sh, 'events', last);
     // id, and for a void also type and data (columns 3–5); for a day row (a tally, an island day) also the person
     // (columns 2–5).
-    const daily = type === 'tally' || type === 'island';
+    // (a decor op also the person: columns 2–5, docs/backend.md#events `decor`)
+    const daily = type === 'tally' || type === 'island' || type === 'decor';
     const rows = last >= 2 ? sh.getRange(2, daily ? 2 : 3, last - 1, type === 'spend_void' ? 3 : daily ? 4 : 1).getValues() : [];
     for (const r of rows) if (text(r[daily ? 1 : 0]) === id) return { ok: true, duplicate: true };
-    if (daily) dropDaily(sh, rows, me, type, data.date as string);
+    if (type === 'decor') {
+      const v = decorTarget(sh, rows, me, data);
+      if (v === 'full') return fail('bad_request', 'decor full');
+      if (v === 'stale') return { ok: true, duplicate: true };
+    } else if (daily) dropDaily(sh, rows, me, type, data.date as string);
     if (type === 'spend_void') {
       const v = voidTarget(rows, data.spendId as string);
       // A void must name a buy on the sheet; a second void of the same buy (the other phone got there first) changes
@@ -565,6 +571,8 @@ function validEventData(type: string, d: Rec): boolean {
       return isTally(d, localDateAt(Date.now()));
     case 'island':
       return isIslandDay(d, localDateAt(Date.now()));
+    case 'decor':
+      return decorOpOf(d) !== null;
     default:
       return true;
   }
@@ -592,6 +600,35 @@ function dropDaily(sh: GAS.Sheet, rows: unknown[][], me: PersonId, type: string,
   const st = current();
   st.rows.events = sh.getLastRow();
   st.dirty = true;
+}
+
+/**
+ * A `decor` op (contract/decor.ts) against the events tab's `[person, id, type, data]` rows, which hold each item's latest
+ * op only: `stale` when a row of the same item beats it (a removal, or a later op: acknowledged, nothing appended),
+ * `full` for a new item past DECOR_MAX, else `append`, and the item's older rows are deleted first (the rows below move
+ * up, still in `at` order, as a tally's). The sheet's decor stays one row per item ever placed.
+ */
+function decorTarget(sh: GAS.Sheet, rows: unknown[][], me: PersonId, d: Rec): 'append' | 'stale' | 'full' {
+  const e = { ...decorOpOf(d)!, who: me } as DecorEntry;
+  const held: DecorEntry[] = [], at: number[] = [];
+  rows.forEach((r, i) => {
+    if (text(r[2]) !== 'decor' || !isPersonId(r[0])) return;
+    let x: unknown;
+    try { x = JSON.parse(text(r[3])); } catch { return; }
+    const op = isRec(x) ? decorOpOf(x) : null;
+    if (!op) return;
+    held.push({ ...op, who: r[0] } as DecorEntry);
+    at.push(i + 2);
+  });
+  const v = decorAccept(held, e);
+  if (v !== 'append') return v;
+  const old = held.flatMap((h, i) => (h.id === e.id ? [at[i]] : []));
+  if (!old.length) return v;
+  for (const row of old.reverse()) sh.deleteRow(row);
+  const st = current();
+  st.rows.events = sh.getLastRow();
+  st.dirty = true;
+  return v;
 }
 
 /**

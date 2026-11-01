@@ -368,6 +368,18 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
     expect(b2.kinds()).toEqual(['welcome', 'pick']);
   });
 
+  it('relays and keeps a decoration\'s set and removal, replaying them to a phone that opens later', () => {
+    const T = 1_793_000_000_000;
+    const a = join2(KEY_A);
+    say2(a, { kind: 'decor', id: 'dmh1abc2a', at: T, item: 'tanuki', x: 120, z: 480, f: 1, p: T });
+    say2(a, { kind: 'decor', id: 'dmh1abc2a', at: T + 5, item: 'tanuki', x: 144, z: 480, f: 1, p: T });
+    say2(a, { kind: 'decor', id: 'dmh1abc2b', at: T + 9, rm: true });
+    const b = join2(KEY_B, 0);
+    expect(b.sent.filter((m) => m.kind === 'decor')).toEqual([
+      expect.objectContaining({ id: 'dmh1abc2a', x: 120, who: 'A' }), expect.objectContaining({ id: 'dmh1abc2a', x: 144 }), expect.objectContaining({ id: 'dmh1abc2b', rm: true })
+    ]);
+  });
+
   it('acks an intent with its `c` (the room\'s time; refused: ok false), a resend is the same intent, a stale walk is refused', () => {
     const a = join2(KEY_A), b = join2(KEY_B);
     a.sent = [];

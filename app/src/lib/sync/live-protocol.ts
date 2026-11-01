@@ -82,7 +82,15 @@ export type Intent =
   | { kind: 'emote'; emote: string }
   | { kind: 'world'; op: WorldOp; id: string }
   /** I just wrote rows to the sheet (an event was acked): the partner refetches the snapshot now. */
-  | { kind: 'saved' };
+  | { kind: 'saved' }
+  /** An island decoration set (placed or moved: its whole state) or removed (`rm`), contract/decor.ts's op; `at` the
+   *  sender's relay clock. Kept by the room for the day; the sheet keeps it for good. */
+  | ({ kind: 'decor' } & DecorWire);
+
+/** A decor op on the wire (contract/decor.ts DecorOp; checked here again: the Worker bundles this file alone). */
+type DecorWire =
+  | { id: string; at: number; item: string; x: number; z: number; f: number; p: number; rm?: undefined }
+  | { id: string; at: number; rm: true };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
  *  the day's world as `replay` messages, mine included). An intent's `c` (this phone's sequence number, increasing
@@ -141,6 +149,8 @@ const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 const KEY = /^[0-9a-f]{32,128}$/;
 const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
 const REV = /^[0-9a-z]{1,24}$/;
+/** A decoration's id and its item (contract/decor.ts: the item list is the app's; any token here). */
+const DECOR_ID = /^d[0-9a-z]{6,24}$/;
 
 type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -201,6 +211,12 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
       return { kind: 'world', op: o.op, id: o.id };
     case 'saved':
       return { kind: 'saved' };
+    case 'decor': {
+      if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !isTime(o.at)) return null;
+      if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', id: o.id, at: o.at, rm: true } : null;
+      if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, WORLD_X) || !within(o.z, WORLD_Z) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
+      return { kind: 'decor', id: o.id, at: o.at, item: o.item, x: o.x as number, z: o.z as number, f: o.f as number, p: o.p };
+    }
     default:
       return null;
   }
@@ -313,7 +329,7 @@ export const NEST_GAP_MS = 3600_000;
 /** Whether the room keeps an intent in the day's world (replayed to a phone that opens later): the shared world's
  *  changes and each person's last walk (where their villager stands). */
 export const isStored = (i: Intent): boolean =>
-  i.kind === 'world' || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined);
+  i.kind === 'world' || i.kind === 'decor' || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined);
 
 /** What an intent claims for the day, if anything: a critter (by its shared id), a thing on the ground, a thing put
  *  down. The first claim the relay hears wins; a later one of the same key is dropped (never relayed, never kept). */
