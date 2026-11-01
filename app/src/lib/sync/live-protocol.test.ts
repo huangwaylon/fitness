@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, DROPS, HOWS, MAX_BYTES, VIA_MAX, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, DROPS, HOWS, MAX_BYTES, SAY_MAX, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -245,5 +245,34 @@ describe('live protocol: the tent (v2)', () => {
       expect(isStored(i as never)).toBe(false);
       expect(claimOf(i as never)).toBeNull();
     }
+  });
+});
+
+describe('live protocol: a phrase (v2 `say`, presence only)', () => {
+  it('cleans it: NFC, no controls, newlines or bidi tricks, blanks squeezed, trimmed, at most SAY_MAX', () => {
+    expect(cleanSay('  やっほー！ ')).toBe('やっほー！');
+    expect(cleanSay('が\nんば\r\nろう\t！')).toBe('が んば ろう ！');
+    expect(cleanSay('a\u202Eb\u2066c\u200Bd\u0000e\u0007\uFEFF')).toBe('abcde');
+    expect(cleanSay('x    y')).toBe('x y');
+    expect(cleanSay('é')).toBe('é');
+    expect(cleanSay('ふたりで　ぜんぶ')).toBe('ふたりで　ぜんぶ');
+    const family = '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}';
+    expect(cleanSay(`${family} やったね`)).toBe(`${family} やったね`);
+    expect(cleanSay('あ'.repeat(30))).toBe('あ'.repeat(SAY_MAX));
+    expect(Array.from(cleanSay('\u{1F600}'.repeat(30))!)).toHaveLength(SAY_MAX);
+    expect(cleanSay('\uD800x')).toBe('x'); // a lone surrogate
+    expect(cleanSay('<b>hi</b>')).toBe('<b>hi</b>'); // text: rendered as text
+    for (const x of ['', '   ', '\n\u200B', 5, null, {}, 'x'.repeat(2000)]) expect(cleanSay(x)).toBeNull();
+  });
+
+  it('a v2 intent, cleaned on the way in and out; never v1; never kept or claimed', () => {
+    expect(parseClient(j2({ kind: 'say', text: ' がんばろう！\n', at: 4 }))).toEqual({ v: 2, kind: 'say', text: 'がんばろう！' });
+    expect(parseClient(j({ kind: 'say', text: 'hi' }))).toBeNull();
+    for (const text of [undefined, '', ' \n ', 3]) expect(parseClient(j2({ kind: 'say', text }))).toBeNull();
+    expect(parseServer(j2({ kind: 'say', text: 'a\u202Eb', who: 'B', t: 9 }))).toEqual({ v: 2, kind: 'say', text: 'ab', who: 'B', t: 9 });
+    expect(isStored({ kind: 'say', text: 'x' })).toBe(false);
+    expect(claimOf({ kind: 'say', text: 'x' })).toBeNull();
+    // twenty of the widest characters still fit a relayed message
+    expect(JSON.stringify({ v: 2, kind: 'say', text: '\u{1F600}'.repeat(SAY_MAX), who: 'A', t: 1_793_527_259_353 }).length).toBeLessThanOrEqual(MAX_BYTES);
   });
 });

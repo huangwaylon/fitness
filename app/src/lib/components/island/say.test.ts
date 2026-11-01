@@ -1,0 +1,60 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RECENT_MAX, SAY_GAP_MS, SAY_PRESETS, recentSays, rememberSay, sayGate } from './say.ts';
+import { DEVICE, type KV } from '#lib/sync/storage.ts';
+import ja from '#lib/i18n/ja.json';
+import en from '#lib/i18n/en.json';
+import { SAY_MAX } from '#lib/sync/live-protocol.ts';
+
+const kv = (): KV & { m: Map<string, string> } => {
+  const m = new Map<string, string>();
+  return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
+};
+
+describe('my villager’s phrases', () => {
+  it('six presets, each a phrase that fits the balloon, in both languages', () => {
+    expect(SAY_PRESETS).toHaveLength(6);
+    for (const cat of [ja, en] as Record<string, string>[])
+      for (const id of SAY_PRESETS) expect(Array.from(cat[`say.${id}`]).length, id).toBeLessThanOrEqual(SAY_MAX);
+  });
+
+  it('keeps my own last few, newest first, once each, cleaned', () => {
+    const s = kv();
+    expect(recentSays(s)).toEqual([]);
+    rememberSay('ねむい', s);
+    rememberSay(' あるこう\n', s);
+    rememberSay('ねむい', s);
+    expect(recentSays(s)).toEqual(['ねむい', 'あるこう']);
+    for (const x of ['a', 'b', 'c']) rememberSay(x, s);
+    expect(recentSays(s)).toEqual(['c', 'b', 'a']);
+    expect(recentSays(s)).toHaveLength(RECENT_MAX);
+    s.m.set(DEVICE.says, JSON.stringify(['ok', 5, '\u202E', 'x'.repeat(40)]));
+    expect(recentSays(s)).toEqual(['ok', 'x'.repeat(SAY_MAX)]);
+    s.m.set(DEVICE.says, 'not json');
+    expect(recentSays(s)).toEqual([]);
+  });
+});
+
+describe('sayGate: one phrase per 1.5 s over the relay', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it('sends at once, then a quicker one waits its turn, a newer one replacing it', () => {
+    const sent: string[] = [];
+    const g = sayGate((t) => sent.push(t));
+    g.say('a');
+    expect(sent).toEqual(['a']);
+    vi.advanceTimersByTime(500);
+    g.say('b');
+    g.say('c');
+    expect(sent).toEqual(['a']);
+    vi.advanceTimersByTime(SAY_GAP_MS - 500);
+    expect(sent).toEqual(['a', 'c']);
+    vi.advanceTimersByTime(SAY_GAP_MS);
+    g.say('d');
+    expect(sent).toEqual(['a', 'c', 'd']);
+    g.say('e');
+    g.stop();
+    vi.advanceTimersByTime(5000);
+    expect(sent).toEqual(['a', 'c', 'd']);
+  });
+});

@@ -40,7 +40,8 @@ const NONE: Record<string, string> = {
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/IslandPanel.svelte': 'the tab already shown does nothing',
   'lib/components/health/Health.svelte': 'the period or person already shown does nothing',
-  'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing'
+  'lib/components/kiroku/GoalCard.svelte': 'the person already shown does nothing',
+  'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */

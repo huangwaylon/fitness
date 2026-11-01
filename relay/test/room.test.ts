@@ -294,6 +294,40 @@ describe('two protocol versions (v2: the rolling-log world)', () => {
     expect(b.closed?.code).toBe(CLOSE.version);
   });
 
+  it('a phrase (`say`) goes live to a v2 partner only, cleaned, at most one a second, and is never kept', () => {
+    const a = join2(KEY_A);
+    const b1 = join(KEY_B);
+    a.sent = [];
+    say2(a, { kind: 'say', text: 'やっほー！' });
+    expect(b1.sent.map((m) => m.kind)).not.toContain('say'); // a v1 phone never hears one
+    say(b1, { kind: 'say', text: 'hi' }); // nor sends one
+    expect(a.sent).toEqual([]);
+    const b2 = join2(KEY_B);
+    b2.sent = [];
+    now += 1000;
+    say2(a, { kind: 'say', text: '  が\nんば\u202Eろう\u0000！ ', extra: '<b>' });
+    expect(b2.sent).toEqual([{ v: 2, kind: 'say', text: 'が んばろう！', who: 'A', t: expect.any(Number) }]);
+    now += 500;
+    say2(a, { kind: 'say', text: 'too soon' });
+    say2(a, { kind: 'say', text: 'x'.repeat(40) });
+    expect(b2.sent).toHaveLength(1);
+    now += 600;
+    say2(a, { kind: 'say', text: 'x'.repeat(40) });
+    expect(b2.sent.at(-1)).toMatchObject({ kind: 'say', text: 'x'.repeat(20) });
+    say2(a, { kind: 'say', text: ' \n ' }); // nothing left: dropped
+    now += 1000;
+    say2(a, { kind: 'say', text: '\u200B' });
+    expect(b2.sent).toHaveLength(2);
+    expect(saved).toEqual([]);
+    expect(a.closed).toBeNull();
+    // a phone opening later hears none of it
+    const b3 = new FakeSock();
+    socks.push(b3);
+    room.open(b3);
+    room.message(b3, JSON.stringify({ v: 2, kind: 'hello', key: KEY_B, since: 0, batch: true }));
+    expect(b3.sent.flatMap((m) => (m.kind === 'replay' ? m.es : [m])).map((m) => m.kind)).not.toContain('say');
+  });
+
   it('relays v2 walks only to points within the world plan', () => {
     const a = join2(KEY_A);
     const b = join2(KEY_B);

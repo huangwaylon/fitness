@@ -294,6 +294,17 @@ the confirmed spot crosses).
 The visitor moves through the same director, idle life and walk graph as the villagers, with CSS loops for continuous
 life. Why: one animation system, and pausing under a sheet or a hidden page already applies.
 
+### A villager's phrase is presence (2026-11-02)
+A tap on my villager opens a phrase picker (six presets, my own last few, a 20-character field); the pick shows over my
+villager on both phones for 4 s through one small relay intent, `say {text}` (v2), that the room relays live and keeps
+nowhere: not in the day's ring, not in a replay, not in the sheet or the outbox. Its text is cleaned by the same
+`cleanSay` on the phone, at the relay and on the receiving phone (controls, newlines, bidi tricks out, ≤ 20 code
+points) and rendered as text; the phone sends one per 1.5 s (a newer pick waits, replacing the waiting one), the room
+passes one per person per second. Only a v2 phone hears it; an older app's parser drops the unknown kind. Why: the
+user ("speech bubble options… pick one to show to everyone for a few seconds, plus one with custom text"); a phrase is
+a moment, not a record, so a closed phone missing it is right, and an additive kind needs no version bump (the relay
+went first). Not done: a phrase history, reactions to a phrase, phrases while the island is covered.
+
 ### Speech balloons stand by their speaker
 One placement rule for every balloon: by the speaker, at most 40px off, loosening what may sit under it (the museum,
 the trees, the villagers) before ever standing further off; never over the HUD. Why: a reader must see who speaks;
