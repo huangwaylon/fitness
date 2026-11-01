@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type Relayed, type Who } from '../../app/src/lib/sync/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, RoomCore, type Meta } from './room.ts';
+import { HELLO_MS, RoomCore, type Kept, type Meta } from './room.ts';
 import type { GoalOutcome, GoalReq, PushLang, PushSub } from '../../app/src/lib/sync/push-protocol.ts';
 import { PushCore, type StoredSub } from './push.ts';
 import { isPushPath, pushRoute, type PushRoom } from './pushRoute.ts';
@@ -36,7 +36,7 @@ export class IslandRoom extends DurableObject<Env> implements PushRoom {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     void ctx.blockConcurrencyWhile(async () => {
-      const ring = (await ctx.storage.get<Relayed[]>(RING)) ?? [];
+      const ring = (await ctx.storage.get<Kept[]>(RING)) ?? [];
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
         meta: (s) => (s.deserializeAttachment() as Meta | null) ?? null,

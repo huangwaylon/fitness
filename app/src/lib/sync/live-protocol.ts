@@ -9,8 +9,14 @@ export const LIVE_V = 2;
 export const LIVE_VS = [1, 2] as const;
 /** @public (relay/) */
 export type LiveV = (typeof LIVE_VS)[number];
-/** Anything longer is dropped unread by both sides. */
+/** Anything longer is dropped unread by both sides (but a `replay`, the relay's day in one message: REPLAY_BYTES). */
 export const MAX_BYTES = 256;
+/** A `replay` message (relay → client): today's world in as few messages as this allows. */
+export const REPLAY_BYTES = 16_000;
+/** A walk's waypoints between `from` and `to` (more: the receiver plans the way itself). */
+export const VIA_MAX = 12;
+/** A walk takes at most this long (ms). */
+export const WALK_MS_MAX = 60_000;
 
 /**
  * The world's extent (world units): a v2 walk's point lies within it. island/world.ts PLAN lies inside it (its test):
@@ -22,14 +28,16 @@ export const WORLD_Z = [-460, 2650] as const;
 
 export type Who = 'A' | 'B';
 
-/** What my villager did with a tap (the partner's villager plays it too: walk there, the tool, the motion): `id` names
- *  the thing (a bush, the rock, a shadow being cast at), `at` where it is (a world point). */
-export const ACTS = ['weed', 'water', 'dig', 'shake', 'fruit', 'present', 'cast', 'net', 'talk', 'visitor', 'star', 'tap', 'bush', 'rock'] as const;
+/** What my villager did with a tap (the partner's villager plays it too: the tool, the motion): `id` names the thing (a
+ *  bush, the rock, a shadow being cast at), `pt` where it is (a world point). `wake`: a dozing villager woke (`id` whose,
+ *  A or B; `at` when, the relay's clock): it is awake on both phones for the same 10 s. */
+export const ACTS = ['weed', 'water', 'dig', 'shake', 'fruit', 'present', 'cast', 'net', 'talk', 'visitor', 'star', 'tap', 'bush', 'rock', 'wake'] as const;
 export type Act = (typeof ACTS)[number];
 
-/** A change to the shared island (docs/backend.md#shared-world): `watered` a flower (world.ts FLOWERS id), `wished` on a shooting
- *  star (its id the morning the fragment comes), the rest kept for older phones. */
-export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken', 'wished'] as const;
+/** A change to the shared island (docs/backend.md#shared-world): `watered` a flower (world.ts FLOWERS id), `wished` on a
+ *  shooting star (its id the morning the fragment comes), `woke` a sleeping visitor woken for the day (its id:
+ *  `gulliver`), the rest kept for older phones. */
+export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken', 'wished', 'woke'] as const;
 export type WorldOp = (typeof WORLD_OPS)[number];
 
 /** How a critter left the island (a `catch`): netted, reeled in, dived for, dug up (a mole cricket), netted out of the
@@ -54,7 +62,10 @@ export type Target = string | readonly [number, number];
  *  (a thing on the ground by its id: picked up, dug, pulled or opened, first wins), `put` (something this phone put in
  *  the world: a present landed, a bug out of a bush), `shake` (a tree's outcome), and `act`'s `pt` (where to play it). */
 export type Intent =
-  | { kind: 'walk'; to: Target; at?: number }
+  /** A villager's walk (v2): to `to`; with `from`, `via` (the waypoints between, ≤ VIA_MAX), `s` (when it set off, the
+   *  relay's clock) and `ms` (how long it takes; 0: put there), the partner's phone plays the very same walk at the same
+   *  time (docs/backend.md#shared-world "Villagers"). */
+  | { kind: 'walk'; to: Target; at?: number; from?: Pt; via?: Pt[]; s?: number; ms?: number }
   | { kind: 'act'; act: Act; id?: string; at?: number; pt?: Pt }
   | { kind: 'catch'; what: string; id?: string; at?: Pt; how?: How }
   | { kind: 'pick'; id: string; what: string; at?: Pt }
@@ -67,19 +78,24 @@ export type Intent =
   /** I just wrote rows to the sheet (an event was acked): the partner refetches the snapshot now. */
   | { kind: 'saved' };
 
-/** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen). */
+/** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
+ *  the day's world as `replay` messages, mine included). An intent's `c` (this phone's sequence number, increasing
+ *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
-  | { v: LiveV; kind: 'hello'; key: string; since?: number }
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; batch?: true }
   | { v: LiveV; kind: 'ping'; c: number }
-  | ({ v: LiveV } & Intent);
+  | ({ v: LiveV; c?: number } & Intent);
 
 /** An intent as relayed: who sent it and the relay's clock when it arrived (ms since the epoch). */
 export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 
-/** Relay → client. */
+/** Relay → client. `ack`: my intent `c` reached the room at `t` (`ok` false: refused, a claim already made, a nest too
+ *  soon, a walk older than one it holds). `replay`: today's world since the hello's `since`, in the room's order. */
 export type ServerMsg =
   | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
+  | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
+  | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
   | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
   | Relayed;
@@ -125,6 +141,7 @@ const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !
 const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x < 1e14;
 const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
 const isWhat = (x: unknown): x is string => typeof x === 'string' && WHAT.test(x);
+const isSeq = (x: unknown): x is number => Number.isInteger(x) && (x as number) > 0 && (x as number) < 1e15;
 const isCoord = (x: unknown): x is number => Number.isInteger(x) && Math.abs(x as number) <= 100_000;
 const within = (x: unknown, [lo, hi]: readonly [number, number]): boolean => Number.isInteger(x) && (x as number) >= lo && (x as number) <= hi;
 /** A world point within the plan's extent. @public (tests) */
@@ -133,15 +150,24 @@ export const isWorldPt = (x: unknown): x is readonly [number, number] =>
 /** A walk's target in version `v`: a node id, or a point in that version's units. */
 const isTarget = (x: unknown, v: LiveV): x is Target =>
   isId(x) || (v === 1 ? Array.isArray(x) && x.length === 2 && isCoord(x[0]) && isCoord(x[1]) : isWorldPt(x));
+const isWalkMs = (x: unknown): x is number => Number.isInteger(x) && (x as number) >= 0 && (x as number) <= WALK_MS_MAX;
+const isVia = (x: unknown): x is Pt[] => Array.isArray(x) && x.length <= VIA_MAX && x.every(isWorldPt);
 const opt = <T>(o: Obj, k: string, ok: (x: unknown) => x is T): boolean => o[k] === undefined || ok(o[k]);
 const oneOf = <T extends string>(list: readonly T[]) => (x: unknown): x is T => list.includes(x as T);
 
 /** The intent in `o` (of version `v`), rebuilt from its known fields only (anything extra is dropped), or null. */
 function intentOf(o: Obj, v: LiveV): Intent | null {
   switch (o.kind) {
-    case 'walk':
+    case 'walk': {
       if (!isTarget(o.to, v) || !opt(o, 'at', isTime)) return null;
-      return { kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}) };
+      // the very walk (v2): where from, the way, when and how long
+      if (v === 1 && (o.from !== undefined || o.via !== undefined || o.s !== undefined || o.ms !== undefined)) return null;
+      if ((o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs) || !opt(o, 'via', isVia)) return null;
+      return {
+        kind: 'walk', to: o.to, ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
+        ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
+      };
+    }
     case 'act':
       if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime) || (v === 1 && o.pt !== undefined) || !opt(o, 'pt', isWorldPt)) return null;
       return { kind: 'act', act: o.act, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}) };
@@ -173,8 +199,8 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
   }
 }
 
-function parseObj(raw: unknown, versions: readonly number[] = [LIVE_V]): Obj | null {
-  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
+function parseObj(raw: unknown, versions: readonly number[] = [LIVE_V], max = MAX_BYTES): Obj | null {
+  if (typeof raw !== 'string' || raw.length > max) return null;
   try {
     const o: unknown = JSON.parse(raw);
     return isObj(o) && versions.includes(o.v as number) ? o : null;
@@ -190,12 +216,13 @@ export function parseClient(raw: unknown): ClientMsg | null {
   if (!o) return null;
   const v = o.v as LiveV;
   if (o.kind === 'hello') {
-    if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}) };
+    if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime) || (o.batch !== undefined && o.batch !== true)) return null;
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.batch ? { batch: true as const } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
+  if (!opt(o, 'c', isSeq)) return null;
   const i = intentOf(o, v);
-  return i && { v, ...i };
+  return i && { v, ...(o.c !== undefined ? { c: o.c as number } : {}), ...i };
 }
 
 /** The `v` of a message in a version the relay doesn't speak (that phone should reload, not keep sending), else null.
@@ -229,12 +256,26 @@ export function parseNotice(raw: unknown): Notice | null {
   }
 }
 
-/** A relay message as the client accepts it, or null. */
+/** A relayed intent from `o`, or null. */
+function relayedOf(o: unknown): Relayed | null {
+  if (!isObj(o) || !isWho(o.who) || !isTime(o.t)) return null;
+  const i = intentOf(o, LIVE_V);
+  return i && { ...i, v: LIVE_V, who: o.who, t: o.t };
+}
+
+/** A relay message as the client accepts it, or null. A `replay` may be longer (≤ REPLAY_BYTES); its events that don't
+ *  parse are left out. */
 export function parseServer(raw: unknown): ServerMsg | null {
-  const o = parseObj(raw);
+  const big = typeof raw === 'string' && raw.length > MAX_BYTES && raw.includes('"kind":"replay"');
+  const o = parseObj(raw, [LIVE_V], big ? REPLAY_BYTES : MAX_BYTES);
   if (!o || !isTime(o.t)) return null;
   const t = o.t;
+  if (big && o.kind !== 'replay') return null;
   switch (o.kind) {
+    case 'ack':
+      return isSeq(o.c) && typeof o.ok === 'boolean' ? { v: LIVE_V, kind: 'ack', c: o.c, t, ok: o.ok } : null;
+    case 'replay':
+      return Array.isArray(o.es) ? { v: LIVE_V, kind: 'replay', es: o.es.map(relayedOf).filter((e): e is Relayed => !!e), t } : null;
     case 'welcome':
       return isWho(o.me) && typeof o.peer === 'boolean' ? { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t } : null;
     case 'pong':
@@ -246,9 +287,7 @@ export function parseServer(raw: unknown): ServerMsg | null {
       return n && { v: LIVE_V, kind: 'changed', ...n, t };
     }
   }
-  if (!isWho(o.who)) return null;
-  const i = intentOf(o, LIVE_V);
-  return i && { ...i, v: LIVE_V, who: o.who, t };
+  return relayedOf(o);
 }
 
 // ---------- the shared world's day (docs/backend.md#shared-world) ----------

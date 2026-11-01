@@ -247,6 +247,9 @@ export function createLive(o: LiveOptions): Live {
           return;
         case 'changed':
           return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
+        case 'ack':
+        case 'replay':
+          return;
         default:
           if (m.who === st.me) return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
