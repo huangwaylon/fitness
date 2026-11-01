@@ -1,6 +1,6 @@
 <script lang="ts">
   // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH, in the rolling-log world
-  // (world.ts units: x across, z into the island): now and then (a visit every 8–15 s the island is on screen) a fish
+  // (world.ts units: x across, z into the island): now and then (ambient life's slots, island/ambient.ts: the same on both phones) a fish
   // shadow swims in the sea in front of the front beach (seen from まえ), another in a fresh water in view, NH's fresh
   // water by where it is (the pond, the river's reaches, the river mouth on the west beach, the clifftop river and the
   // spring: pondFish.ts, its own chunk, fetched with the first such shadow), or a bug of the season and hour comes by
@@ -44,6 +44,8 @@
   import { onMount, untrack } from 'svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
+  import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
+  import { relayOffset } from './ambientClock.ts';
   import { su, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
@@ -62,8 +64,8 @@
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
     BUGS, BUSHES, CAST_U, FISH, FLOWER_CELLS, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
-    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing, nextSpawnMs,
-    oddsAt, patches, perches, pickBug, pickFish, reel, spawnKind, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
+    bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing, 
+    oddsAt, patches, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
@@ -242,17 +244,19 @@
   const loadPond = () => (pondChunk ??= import('./pondFish.ts'));
 
   /** A shadow in `water` where the camera can see it (`pinned`: or anywhere in it), `want` being one of its fish. */
-  async function spawnFish(water: Water, stay = true, want?: FishId | PondFishId, pinned = false): Promise<boolean> {
+  /** `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is (ambient life's seeded
+   *  species, the same on both phones). */
+  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand): Promise<boolean> {
     if (fishes[water]) return true;
     const { month, hour } = jst(now());
     let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
     if (water === 'sea') {
-      id = want ?? pickFish(month, hour, rand, weather.sky);
+      id = want ?? pickFish(month, hour, r, weather.sky);
       look = FISH[id as FishId];
     } else {
       const { POND_FISH, pickFresh } = await loadPond();
       if (fishes[water] || !enabled()) return !!fishes[water];
-      id = want ?? pickFresh(water, month, hour, rand);
+      id = want ?? pickFresh(water, month, hour, r);
       look = POND_FISH[id as PondFishId];
     }
     const ok = swimOk({ water, ...look }, guards(4));
@@ -268,14 +272,14 @@
     }
     if (!area || !p) return false;
     // a dev hook's fish (kept until caught: `stay` false) is always a fish, never junk
-    const item = want ?? (stay ? hookItem(id, rand) : id);
+    const item = want ?? (stay ? hookItem(id, r) : id);
     preload(critterArt(item));
     void loadLines().catch(() => {});
     const f: Fish = { n: ++seq, item, water, size: look.size, shape: look.shape, ...p, ax: p.x, az: p.z, ms: 0, flip: rand() < 0.5, rot: 0, area, gone: false, dash: false };
     fishes[water] = f;
     const fp = fishes[water]!; // the state's proxy (the timers compare against it)
     later(() => swim(fp), 400);
-    if (stay) later(() => leaveFish(fp), STAY_MS.fish);
+    if (stay) later(() => leaveFish(fp), stay === true ? STAY_MS.fish : stay);
     return true;
   }
   /** Turn a shadow toward (x, z): head right (mirrored) or left, tilted along the way it swims. */
@@ -562,7 +566,7 @@
   /** A bug comes on where NH keeps it and the camera can see it (`pinned`: or at its place anyway); false when there's
    *  nowhere clear for it right now. `from`: it flies (or hops) in from there (a shaken bush, my villager, the rock),
    *  keeping to `area`. */
-  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; stay?: boolean; pinned?: boolean } = {}): boolean {
+  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; stay?: boolean | number; pinned?: boolean } = {}): boolean {
     const { from, area, stay = true, pinned = false } = o;
     if (!id || bug) return !!bug;
     void loadSprite();
@@ -612,7 +616,7 @@
     // a perch or a flower is its one spot
     if (!bug.patch) bug.patch = { x0: spot.x, x1: spot.x, z0: spot.z, z1: spot.z, l0: spot.lift, l1: spot.lift };
     later(fly, 60);
-    if (stay) later(() => bugLeave(), STAY_MS.bug);
+    if (stay) later(() => bugLeave(), stay === true ? STAY_MS.bug : stay);
     return true;
   }
   function go(b: Bug, p: P3, ms: number) {
@@ -735,19 +739,19 @@
   // ---------- diving ----------
   /** A spot of bubbles rises in the sea in front of the beach (where a shadow would swim, on screen), with a sea
    *  creature (or a pearl) under it. */
-  async function spawnBubbles(stay = true, want?: string, pinned = false) {
+  async function spawnBubbles(stay: boolean | number = true, want?: string, pinned = false, r = rand) {
     const m = await loadSea().catch(() => null);
     if (!m || fishes.sea || bubbles || diving) return;
     const ok = (x: number, z: number) => inWater('sea', x, z) && seen(x, z, 0, guards(8), 16, 6);
     const p = freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: -24 } : null);
     if (!p) return;
     const { month, hour } = jst(now());
-    const item = (want as DiveItem | undefined) ?? m.pickDive(month, hour, rand);
+    const item = (want as DiveItem | undefined) ?? m.pickDive(month, hour, r);
     preload(item === m.PEARL ? findArt(item) : critterArt(item));
     void loadLines().catch(() => {});
     const b = { n: ++seq, item, ...p };
     bubbles = b;
-    if (stay) later(() => bubbles?.n === b.n && (bubbles = null), m.BUBBLE_STAY_MS);
+    if (stay) later(() => bubbles?.n === b.n && (bubbles = null), stay === true ? m.BUBBLE_STAY_MS : stay);
   }
   /** NH's dive at the bubbles: a splash and a ripple; what's there is caught, darts off as a shadow, or is gone. */
   function diveAt(b: NonNullable<typeof bubbles>) {
@@ -933,38 +937,52 @@
   }
 
   // ---------- the visits ----------
-  // A countdown of on-screen time: it runs while the island is live and visible, holds under a sheet or in a hidden
-  // tab (and the critters leave), and resumes where it was.
-  let remaining = nextSpawnMs(rand, true);
+  // Ambient life's critters (island/ambient.ts, docs/backend.md#ambient-life): each 10-second slot of the day brings the
+  // same on both phones, on the relay's clock: a sea shadow or bubbles, a fresh-water shadow or a bug, its species from
+  // the slot's seed, staying to the same boundary. This phone shows each where its camera sees that water or patch (none
+  // in view, or the place taken: not here). While the island is live and visible; under a sheet or in a hidden tab the
+  // critters leave, and coming back shows the ones still staying.
   /** `?critter=` (dev or ?demo) shows that one alone: no ambient visits around it, so it can be looked at and tested. */
   const pinned = hookFlag('critter') || hookFlag('sea');
   /** `?flea` (dev or ?demo): every tap on my villager sends a flea hopping off it (the e2e's hook). */
   const forceFlea = hookFlag('flea');
   /** The fresh waters on screen without a shadow (only waters near the view get a turn). */
   const freshOpen = (): FreshWhere[] => FRESH.filter((wh) => !fishes[wh] && areasOf(wh).some(inViewArea));
+  /** The first look at the slots after the island shows (ms): the scene measured and the camera placed by then. */
+  const FIRST_LOOK_MS = 3000;
+  /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms). */
+  function visit(c: Spawn, end: number) {
+    const stay = end - (now().getTime() + relayOffset());
+    if (stay < 1000) return;
+    const { month, hour } = jst(now());
+    const r = spawnRand(c);
+    if (c.kind === 'fish') {
+      if (seaInView() && !fishes.sea && !bubbles && !diving) void spawnFish('sea', stay, undefined, false, r);
+    } else if (c.kind === 'bubbles') {
+      if (seaInView() && !fishes.sea && !bubbles && !diving) void spawnBubbles(stay, undefined, false, r);
+    } else if (c.kind === 'fresh') {
+      const open = freshOpen();
+      if (open.length) void spawnFish(pickOne(open, r)!, stay, undefined, false, r);
+    } else if (!bug) spawnBug(pickBug(month, hour, r, weather.sky), { stay });
+  }
   $effect(() => {
     if (!scene || !enabled() || pinned) return;
-    let started = performance.now();
     let id: ReturnType<typeof setTimeout>;
-    const arm = () => {
-      started = performance.now();
-      id = setTimeout(visit, remaining);
+    /** The slot now: those coming in it (at their `at`) and, the first time, those still staying from before. */
+    const slotNow = (first: boolean) => {
+      const t = slotAt(now().getTime(), relayOffset());
+      for (const c of crittersAt(t.date, t.slot)) {
+        const end = slotStart(t.date, c.slot + c.slots);
+        if (c.slot === t.slot && c.at > t.into) later(() => visit(c, end), c.at - t.into);
+        else if (first || c.slot === t.slot) visit(c, end);
+      }
+      // a moment past the boundary, so the next reading is in the next slot
+      id = setTimeout(() => slotNow(false), msToNextSlot(now().getTime(), relayOffset()) + 20);
     };
-    const visit = () => {
-      const { month, hour } = jst(now());
-      const open = freshOpen();
-      const kind = spawnKind({ sea: !!(fishes.sea || bubbles || diving) || !seaInView(), fresh: !open.length, bug: !!bug }, pickBug(month, hour, () => 0, weather.sky) !== null, rand);
-      if (kind === 'fish') void spawnFish('sea');
-      else if (kind === 'fresh') void spawnFish(pickOne(open, rand)!);
-      else if (kind === 'sea') void spawnBubbles();
-      else if (kind === 'bug') spawnBug(pickBug(month, hour, rand, weather.sky));
-      remaining = nextSpawnMs(rand);
-      arm();
-    };
-    arm();
+    // the first look once the scene has settled (measured, the camera placed), as the old first visit after 3–6 s
+    id = setTimeout(() => slotNow(true), FIRST_LOOK_MS);
     return () => {
       clearTimeout(id);
-      remaining = Math.max(1000, remaining - (performance.now() - started));
       clearAll();
     };
   });

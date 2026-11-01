@@ -1,14 +1,17 @@
-// Idle life (design.md "Motion"): one scheduler per live scene. Every 9–15 s one actor does one
-// small background thing from its pool (look around, wiggle, hop, wander off to a point of interest, a glance up at
-// the jar, tree shake,
-// chat, dance, stretch; しずえ swaps pose / wiggles / hops). No emote bubbles or fx: those mark events. In the
-// evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab
-// is hidden or a sheet is open; slows after 3 min without input and stops after
-// 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and
-// stop() cancels them all, so nothing writes to the actors after the scene unmounts.
-import { HOST_IDLE, IDLE_GAP, IDLE_GAP_SLOW, IDLE_POOL, type ActorId, type IdleAction } from './reactions.ts';
-import { actors, addFx, applyStep, awayFromHome, busy, later as directorLater, lastEvent, setEmote, setMotion } from './director.svelte.ts';
-import { jst } from '#lib/time/clock.ts';
+// Idle life (design.md "Motion", docs/backend.md#ambient-life): one scheduler per live scene, on the 10-second slots of
+// ambient life (island/ambient.ts), so both phones play the same: each slot (DECIDE_MS after it starts, on the relay's
+// clock) one villager does one small background thing (look around, wiggle, hop, a glance up at the jar, tree shake,
+// stretch), sets off on an outing to points of interest, or both chat or dance; the visitor takes its beat from the
+// slot's own PRNG; しずえ now and then swaps pose / wiggles / hops. No emote bubbles or fx: those mark events. In the
+// evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab is hidden or
+// a sheet is open; after 3 min without input it plays one slot in three (the same ones on both phones) and stops after
+// 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and stop() cancels them
+// all, so nothing writes to the actors after the scene unmounts.
+import { HOST_IDLE, type ActorId, type IdleAction } from './reactions.ts';
+import { actors, addFx, applyStep, busy, later as directorLater, lastEvent, setEmote, setMotion } from './director.svelte.ts';
+import { now } from '#lib/time/clock.ts';
+import type { PersonId } from '#lib/types.ts';
+import { DECIDE_MS, msToNextSlot, slotAt, slotRand, villagerBeats, type AmbientWorld, type VillagerBeat } from '../island/ambient.ts';
 
 interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
@@ -17,44 +20,37 @@ interface IdleContext {
   asleep: () => boolean;
   /** Evening (tod night but still awake): no day-only actions. */
   night?: () => boolean;
-  /** Both people's day scores (today's ベル as % of a full day, progress.ts dayScore), for the dance-together weight. */
-  scores: () => [number, number];
   /** Shake that actor's own tree (+ a falling leaf). */
   treeShake: (id: 'mine' | 'partner') => void;
-  /** Send a villager off on a walk to a point of interest or a few (island/avatar.ts); false when it can't go now. */
-  wander?: (id: 'mine' | 'partner') => boolean;
-  /** The visitor's turn (island/Visitor.svelte, visitorLife.ts): on every tick, awake or asleep (they keep their own
-   *  hours), beside whatever the villagers do. */
-  visitor?: () => void;
-  /** Random source (tests). */
-  random?: () => number;
+  /** The shared world ambient life decides from (the villagers by person, the points of interest, the day scores); null
+   *  before the scene is measured. */
+  world: () => Omit<AmbientWorld, 'phase'> | null;
+  /** Which person's villager is mine. */
+  me: () => PersonId;
+  /** Send a villager through an outing's points of interest (island/avatar.ts outing); false when it can't go now. */
+  outing?: (id: 'mine' | 'partner', stops: readonly { node: string; linger: number }[]) => boolean;
+  /** The visitor's turn (island/Visitor.svelte, visitorLife.ts) with the slot's PRNG: every slot, awake or asleep (they
+   *  keep their own hours), beside whatever the villagers do. */
+  visitor?: (r: () => number) => void;
+  /** The relay's clock minus this device's (live.ts serverNow() − Date.now()); 0 without one. */
+  offset?: () => number;
+  /** The slot's beats (tests); ambient.ts villagerBeats. */
+  beats?: typeof villagerBeats;
 }
 
-/** The partner's outings: at most one per this long (ms), and the chance a tick sends it off when it's free. */
-const PARTNER_WANDER_GAP = 9_000;
-const PARTNER_WANDER_ODDS = 0.5;
-/** Mine wanders on its own only when I haven't touched the island for this long. */
-const MINE_WANDER_IDLE = 120_000;
-
-function pickWeighted<T extends { weight: number }>(items: T[], rnd: () => number): T | null {
-  const total = items.reduce((s, i) => s + i.weight, 0);
-  if (total <= 0) return null;
-  let r = rnd() * total;
-  for (const i of items) if ((r -= i.weight) < 0) return i;
-  return items[items.length - 1] ?? null;
-}
+/** Slots played after 3 min without input: one in this many. */
+const SLOW_EVERY = 3;
+/** しずえ moves at most one slot in this many, and on a quarter of those. */
+const HOST_EVERY = 2;
+const HOST_ODDS = 0.25;
 
 /** Start the scheduler; returns stop(). */
 export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => number } {
-  const rnd = ctx.random ?? Math.random;
-  const rand = (a: number, b: number) => a + rnd() * (b - a);
-  const pick = <T>(xs: readonly T[]): T => xs[Math.floor(rnd() * xs.length)];
   let timer: ReturnType<typeof setTimeout> | null = null;
   let stopped = false;
   let lastInput = Date.now();
-  let lastHost = 0;
-  const last: Partial<Record<ActorId, IdleAction | string>> = {};
-  const lastAt: Record<string, number> = {};
+  let lastHost = -Infinity;
+  let lastHostMove: string | undefined;
   const owned = new Set<() => void>();
 
   /** A follow-up beat on an actor, cancelled by stop() (and by any reaction that preempts the actor). */
@@ -71,16 +67,18 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     owned.add(c);
   }
 
-  function schedule(ms?: number) {
+  /** The island's clock (a `?date=` preview included); with offset(), the relay's. */
+  const clock = () => now().getTime();
+  const offset = () => ctx.offset?.() ?? 0;
+
+  function schedule() {
     if (stopped) return;
     if (timer) clearTimeout(timer);
-    const idle = Date.now() - lastInput;
-    if (idle > 10 * 60_000) {
+    if (Date.now() - lastInput > 10 * 60_000) {
       timer = null; // asleep until the next touch / visibility change
       return;
     }
-    const [a, b] = idle > 3 * 60_000 ? IDLE_GAP_SLOW : IDLE_GAP;
-    timer = setTimeout(tick, ms ?? rand(a, b));
+    timer = setTimeout(tick, msToNextSlot(clock() - DECIDE_MS, offset()));
   }
 
   function wakeUp() {
@@ -94,44 +92,42 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     if (document.hidden) return; // asleep until the page shows again (onVis), no polling while hidden
     // covered by a sheet: no polling; the next touch or key (closing the sheet) wakes it
     if (ctx.paused()) return;
-    if (Date.now() - lastEvent.at < 3_000) return schedule(3_000);
-    ctx.visitor?.();
+    const { date, slot } = slotAt(clock() - DECIDE_MS, offset());
+    if (Date.now() - lastInput > 3 * 60_000 && slot % SLOW_EVERY) return schedule();
+    ctx.visitor?.(slotRand(date, slot, 'visitor'));
+    if (Date.now() - lastEvent.at < 3_000) return schedule(); // an event is playing: the villagers leave it be
     if (ctx.asleep()) {
-      doze();
-      return schedule(rand(20_000, 30_000));
-    }
-    const r = rnd();
-    let id: ActorId = r < 0.4 ? 'partner' : r < 0.8 ? 'mine' : 'host';
-    if (id === 'host' && (!actors.host.present || Date.now() - lastHost < 20_000)) id = rnd() < 0.5 ? 'mine' : 'partner';
-    // the partner goes about the island on its own: a walk to a point of interest or a few, every other tick or so
-    if (ctx.wander && !actors.partner.asleep && !busy('partner') && Date.now() - (lastAt['partner:wander'] ?? 0) > PARTNER_WANDER_GAP &&
-      rnd() < PARTNER_WANDER_ODDS && ctx.wander('partner')) {
-      lastAt['partner:wander'] = Date.now();
+      doze(slot);
       return schedule();
     }
-    if (busy(id)) return schedule(1_500);
-    if (id === 'host') hostIdle();
-    else villagerIdle(id);
+    const w = ctx.world();
+    if (w) {
+      const beats = (ctx.beats ?? villagerBeats)({ ...w, phase: ctx.night?.() ? 'evening' : 'day' }, date, slot);
+      const me = ctx.me();
+      for (const [who, b] of Object.entries(beats) as [PersonId, VillagerBeat][]) play(who === me ? 'mine' : 'partner', b);
+    }
+    const hr = slotRand(date, slot, 'host');
+    if (actors.host.present && slot - lastHost >= HOST_EVERY && hr() < HOST_ODDS) hostIdle(slot, hr);
     schedule();
   }
 
-  function doze() {
+  function doze(slot: number) {
     for (const id of ['mine', 'partner'] as const) {
       const a = actors[id];
       if (!a.asleep || busy(id)) continue;
       if (!a.fx.some((f) => f.kind === 'zzz')) addFx(id, 'zzz');
     }
-    if (actors.host.present && Date.now() - lastHost > 60_000) {
-      lastHost = Date.now();
+    if (actors.host.present && slot - lastHost >= 6) {
+      lastHost = slot;
       setEmote('host', 'sleepy');
     }
   }
 
-  function hostIdle() {
-    lastHost = Date.now();
-    const options = HOST_IDLE.filter((a) => a !== last.host);
-    const a = pick(options);
-    last.host = a;
+  function hostIdle(slot: number, r: () => number) {
+    lastHost = slot;
+    const options = HOST_IDLE.filter((a) => a !== lastHostMove);
+    const a = options[Math.floor(r() * options.length)];
+    lastHostMove = a;
     if (a === 'swap') {
       const h = actors.host;
       h.pose = h.pose === 'stand' ? 'wave' : 'stand';
@@ -141,31 +137,20 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     else setMotion('host', 'hop');
   }
 
-  function villagerIdle(id: 'mine' | 'partner') {
-    const other = id === 'mine' ? 'partner' : 'mine';
-    const h = jst().hour;
-    const evening = ctx.night?.() ?? false;
-    const [sa, sb] = ctx.scores();
-    const t = Date.now();
-    const pool = IDLE_POOL.filter((e) => {
-      if (e.action === last[id]) return false;
-      if (e.day && evening) return false;
-      if (e.hours && !(h >= e.hours[0] && h < e.hours[1])) return false;
-      if (e.every && t - (lastAt[`${id}:${e.action}`] ?? 0) < e.every) return false;
-      if (e.pair && busy(other)) return false;
-      // one villager out at a time; mine only when left alone a while
-      if (e.action === 'wander' && (!ctx.wander || actors[other].walking || awayFromHome(other) || (id === 'mine' && t - lastInput < MINE_WANDER_IDLE))) return false;
-      if (e.action === 'dance' && Math.min(sa, sb) < 70) return false;
-      return true;
-    }).map((e) => (e.action === 'dance' && Math.min(sa, sb) >= 80 ? { ...e, weight: 15 } : e));
-    const choice = pickWeighted(pool, rnd);
-    if (!choice) return;
-    last[id] = choice.action;
-    lastAt[`${id}:${choice.action}`] = t;
-    const me = actors[id];
-    me.busyUntil = t + 2_400;
-    switch (choice.action) {
+  /** A villager's beat from the slot (a pair's from its lead: the other's entry is the same chat or dance). */
+  function play(id: 'mine' | 'partner', b: VillagerBeat) {
+    if (busy(id)) return;
+    if (b.kind === 'outing') return void ctx.outing?.(id, b.stops);
+    if (b.kind === 'doze' || (b.kind === 'pair' && !b.lead)) return;
+    later(id, b.at, () => (b.kind === 'pair' ? pair(id, b.action) : move(id, b.action)));
+  }
+
+  function move(id: 'mine' | 'partner', action: IdleAction) {
+    if (busy(id)) return;
+    actors[id].busyUntil = Date.now() + 2_400;
+    switch (action) {
       case 'look':
+      case 'daydream':
         return setMotion(id, 'turn');
       case 'wiggle':
         return setMotion(id, 'wiggle');
@@ -173,35 +158,32 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
         return setMotion(id, 'hum');
       case 'hop':
         return setMotion(id, 'hop');
-      case 'wander':
-        me.busyUntil = 0; // the walk sets its own
-        ctx.wander?.(id);
-        return;
       case 'peek':
         // a glance up at the jar (in the sky HUD beside the ribbon since it left the island): turn to it, then home
         applyStep(id, { actor: id, face: 'jar', motion: 'turn' });
         return later(id, 1_800, () => (actors[id].face = 'home'));
-      case 'daydream':
-        return setMotion(id, 'turn');
       case 'treeshake':
         return ctx.treeShake(id);
       case 'stretch':
         return setMotion(id, 'stretch');
-      case 'chat': {
-        lastAt[`${other}:chat`] = t;
-        actors[other].busyUntil = t + 3_200;
-        me.busyUntil = t + 3_200;
-        applyStep(id, { actor: id, face: 'other', motion: 'nod' });
-        later(other, 900, () => applyStep(other, { actor: other, face: 'other', motion: 'laugh' }));
-        later(id, 3_000, () => (actors[id].face = 'home'));
-        later(other, 3_000, () => (actors[other].face = 'home'));
-        return;
-      }
-      case 'dance':
-        actors[other].busyUntil = t + 2_000;
-        for (const a of [id, other] as const) setMotion(a, 'dance');
-        return;
     }
+  }
+
+  function pair(id: 'mine' | 'partner', action: 'chat' | 'dance') {
+    const other = id === 'mine' ? 'partner' : 'mine';
+    if (busy(id) || busy(other)) return;
+    const t = Date.now();
+    if (action === 'dance') {
+      actors[other].busyUntil = t + 2_000;
+      for (const a of [id, other] as const) setMotion(a, 'dance');
+      return;
+    }
+    actors[other].busyUntil = t + 3_200;
+    actors[id].busyUntil = t + 3_200;
+    applyStep(id, { actor: id, face: 'other', motion: 'nod' });
+    later(other, 900, () => applyStep(other, { actor: other, face: 'other', motion: 'laugh' }));
+    later(id, 3_000, () => (actors[id].face = 'home'));
+    later(other, 3_000, () => (actors[other].face = 'home'));
   }
 
   const onVis = () => {
@@ -212,7 +194,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
   addEventListener('pointerdown', wakeUp, { passive: true });
   addEventListener('keydown', wakeUp, { passive: true });
   document.addEventListener('visibilitychange', onVis);
-  schedule(rand(2_500, 4_500));
+  schedule();
 
   const stop = () => {
     stopped = true;
