@@ -139,8 +139,11 @@ describe('official art (static/art/manifest.json)', () => {
     if (group === 'reactions') return literals.has(id);
     return ['bushes', 'flowers', 'season', 'money'].includes(group) && literals.has(id);
   };
+  /** A 3D render's other looks (scripts/models.ts): the scene asks for `<key>-winter`, `-lit`, `-trunk`, `-canopy`. */
+  const LOOK = /-(winter|lit|trunk|canopy)$/;
+  const used = (k: string) => literals.has(k) || built.has(k) || byId(k);
   it('every file is used', () => {
-    expect(keys.filter((k) => !literals.has(k) && !built.has(k) && !byId(k))).toEqual([]);
+    expect(keys.filter((k) => !used(k) && !(LOOK.test(k) && used(k.replace(LOOK, ''))))).toEqual([]);
   });
   it('every key named in the code exists', () => {
     const named = [...literals].filter((l) => /^(bushes|deco|flowers|fruit|host|money|reactions|season|trees|villagers)\/[\w-]+$/.test(l));

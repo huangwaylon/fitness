@@ -1,7 +1,8 @@
 <script lang="ts">
   // The island's still scenery (docs/design.md "World"): the trees that aren't goal trees (oaks, cedars, palms, bamboo),
   // the bushes (the hedge of the month, the plumeria at the beach, the campsite's hollies), the props (lamps, lanterns,
-  // meadow clumps, rocks) and the campsite's tent (an NH map icon), each an upright world node at its feet. An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
+  // meadow clumps, rocks) and the campsite's tent, each an upright world node at its feet: NH's own models rendered
+  // (scripts/models.ts) where NH has one, standing on their feet (or door) point (models.json). An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
   // villager just in front of the trunk covers it while the leaves cover their head. Contact shadows are baked into the
   // ground. A bush answers a tap (SceneTaps finds it by data-bush), and so does a tree's leaves (data-tree: a rustle,
   // three quick taps shake it); a building is a door (`onbuilding`).
@@ -13,6 +14,7 @@
   import { BUILDINGS, HEDGE_XS, HEDGE_Z, SCENERY, type BuildingId, type Scenery } from './world.ts';
   import { GLOW_AT, LIT_ART, hedgePair, sceneryKey, type Tod } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
+  import PLACES from './models.json';
 
   interface Props {
     season: Season;
@@ -28,7 +30,7 @@
   let { season, foliage, month, live = true, onbuilding, tod = 'day' }: Props = $props();
   const w = useWorld();
 
-  /** The oak render's trunk and canopy (the summer render and the seasonal ones share the shape). */
+  /** An icon oak's trunk and canopy cut from its one image (a rendered oak has its own -trunk / -canopy layers). */
   const TRUNK = 'polygon(29% 53%, 71% 53%, 72% 84%, 88% 89%, 88% 100%, 12% 100%, 12% 89%, 28% 84%)';
   const CANOPY = 'polygon(0 0, 100% 0, 100% 67%, 66% 67%, 66% 56%, 34% 56%, 34% 67%, 0 67%)';
   const BUSH_H = 40;
@@ -36,7 +38,9 @@
     const [a, b] = hedgePair(month);
     return HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, kind: 'bush', key: `bushes/${i % 2 ? b : a}`, x, z: HEDGE_Z, h: BUSH_H }));
   });
-  const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : sceneryKey(s.key, season, month));
+  /** The winter look: a derived one (sceneryKey) or a render's own (<key>-winter: NH's snowy model). */
+  const wintry = (k: string) => (season === 'winter' && !k.endsWith('-winter') && art(`${k}-winter`) ? `${k}-winter` : k);
+  const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(foliage) : wintry(sceneryKey(s.key, season, month)));
   /** Lights: the windows and lamps (over the time-of-day tint, as the fireflies: between --z-tint and --z-taps). */
   const lit = $derived(tod === 'night' ? 1 : tod === 'dusk' ? 0.7 : 0);
   const NIGHT_Z = 60_310_000;
@@ -46,13 +50,30 @@
     const a = art(key);
     return a ? (h * a.w) / a.h : h;
   };
+  /** A render stands on its feet (or door) point (scripts/models.ts: models.json), not its box's bottom centre. */
+  const P = PLACES as unknown as Record<string, { ax: number; ay: number; inset?: [number, number, number, number] }>;
+  const at3d = (key: string, h: number, flip = false): string | null => {
+    const p = P[key];
+    if (!p) return null;
+    const wd = wOf(key, h);
+    return `left:calc(${-(flip ? 1 - p.ax : p.ax) * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u));translate:none`;
+  };
+  /** A layer's box clipped to what it shows (the canopy's clear lower half stands in front of no one). */
+  const inset3d = (key: string, flip = false): string | null => {
+    const i = P[key]?.inset;
+    return i ? `inset(${i[0]}% ${flip ? i[3] : i[1]}% ${i[2]}% ${flip ? i[1] : i[3]}%)` : null;
+  };
+  /** The oak's trunk and canopy as their own renders (else the one image cut by TRUNK / CANOPY). */
+  const layered = (key: string) => !!art(`${key}-trunk`);
 </script>
 
 {#snippet sprite(s: Scenery, clip: string | null = null, part = 'body')}
-  {@const key = keyOf(s)}
+  {@const base = keyOf(s)}
+  {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
   <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0 })}>
-    <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush'} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
-      style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))" style:clip-path={clip}>
+    <span class="art" class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} data-bush={s.kind === 'bush' ? s.id : undefined}
+      style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
+      style:clip-path={layered(base) ? inset3d(key, s.flip) : clip}>
       <OfficialArt {key} size="calc({s.h} * var(--u))" eager={s.z < 1080} />
       {#if live && (s.kind === 'cedar' || s.kind === 'palm' || part === 'canopy')}
         <!-- its leaves answer a tap (SceneTaps: a rustle; three quick taps shake it) -->
@@ -74,7 +95,7 @@
 {#each BUILDINGS as b (b.id)}
   <div class="spr building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h })}>
     <button type="button" class="door" disabled={!live} data-sfx="self" data-scenery aria-label={t(`world.building.${b.id}`)}
-      style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
+      style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))"
       onclick={(e) => onbuilding?.(b.id, e.currentTarget)}>
       <OfficialArt key={sceneryKey(b.key, season, month)} size="calc({b.h} * var(--u))" eager />
     </button>
@@ -85,7 +106,7 @@
   {#each BUILDINGS as b (b.id)}
     {#if LIT_ART[b.key]}
       <div class="spr lit" data-lit={b.id} style:opacity={lit} {@attach w.at({ x: b.x, z: b.z, h: b.h, zi: NIGHT_Z })}>
-        <span class="art" style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))">
+        <span class="art" style={at3d(b.key, b.h)} style:height="calc({b.h} * var(--u))" style:width="calc({wOf(b.key, b.h)} * var(--u))">
           <OfficialArt key={LIT_ART[b.key]} size="calc({b.h} * var(--u))" />
         </span>
       </div>
@@ -93,6 +114,14 @@
   {/each}
   {#each lamps as l (l.id)}
     {@const k = l.h / 46}
+    {#if art(`${l.key}-lit`)}
+      <!-- the lamp's own head lit (its render's -lit look), under the glow -->
+      <div class="spr lit" data-lit={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, zi: NIGHT_Z })}>
+        <span class="art" style={at3d(`${l.key}-lit`, l.h, l.flip)} style:height="calc({l.h} * var(--u))" style:width="calc({wOf(`${l.key}-lit`, l.h)} * var(--u))">
+          <OfficialArt key={`${l.key}-lit`} size="calc({l.h} * var(--u))" />
+        </span>
+      </div>
+    {/if}
     <!-- a lamp at night (NH's warm point light): its head lit (a bright core in the lamp-glow), a wide soft halo round
          it, and a pool of light on the ground at its foot; all over the tint, faded in at dusk -->
     <div class="spr lit" data-glow={l.id} style:opacity={lit} {@attach w.at({ x: l.x, z: l.z, h: l.h, zi: NIGHT_Z })}>

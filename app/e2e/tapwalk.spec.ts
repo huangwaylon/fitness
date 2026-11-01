@@ -124,7 +124,7 @@ test('a tap at the tent’s foot knocks at its door (the footprint snaps to the 
   await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
   // the ground just inside the tent's footprint (taps on the art itself are the door button's)
   await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' });
-  const [x, y] = await call(page, (w) => w.at(150, 1000));
+  const [x, y] = await call(page, (w) => w.at(170, 1000));
   await page.mouse.click(x, y);
   await expect(page.locator('[data-fx="talk"]')).toContainText('キャンプサイト', { timeout: 8000 });
 });

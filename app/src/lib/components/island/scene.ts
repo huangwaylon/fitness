@@ -55,7 +55,8 @@ export const MEADOW: Record<Season, readonly string[]> = {
   autumn: ['flowers/white-cosmos', 'flowers/yellow-mums', 'flowers/red-cosmos', 'flowers/white-mums', 'flowers/yellow-cosmos', 'flowers/red-mums'],
   winter: ['flowers/white-pansies', 'flowers/red-windflowers', 'flowers/yellow-pansies', 'flowers/purple-windflowers', 'flowers/red-pansies', 'flowers/white-windflowers']
 };
-/** NH has no snowy renders of the cedar and the campsite: scripts/derive-art.ts derives these from them. */
+/** The cedar's and the campsite's snowy looks (NH's own snowy models: scripts/models.ts; the other renders' -winter
+ *  looks Scenery picks itself). */
 const WINTER_ART: Record<string, string> = { 'trees/cedar': 'trees/cedar-winter', 'deco/campsite': 'deco/campsite-winter' };
 /** A scenery key resolved for the day: a meadow clump's flower, the month's bushes (`month-bush-a|b`: hedgePair), the
  *  winter look of a cedar or a building. */
@@ -68,7 +69,7 @@ export function sceneryKey(key: string, season: Season, month: number): string {
   if (key === 'month-bush-a' || key === 'month-bush-b') return `bushes/${hedgePair(month)[key.endsWith('a') ? 0 : 1]}`;
   return (season === 'winter' && WINTER_ART[key]) || key;
 }
-/** A building's lit windows at dusk and night (scripts/derive-art.ts derives them from its render; laid over it above the
+/** A building's lit windows at dusk and night (its render's emissive look: scripts/models.ts; laid over it above the
  *  time-of-day tint). */
 export const LIT_ART: Record<string, string> = { 'deco/campsite': 'deco/campsite-lit' };
 /** The lamps that glow at night (deco/lamp-glow), and where the light hangs: a share of the lamp's height. */
