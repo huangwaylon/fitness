@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { FOLLOW_MS, adjacent, besideSpots, goalMoves, pickPoi, pois, shouldFollow } from './wander.ts';
-import { walkGeo, walkable, type WalkGeo } from './walkGraph.ts';
+import { walkGeo, walkable } from './walkGraph.ts';
 import { GOAL_TREES } from './world.ts';
 
 describe('points of interest', () => {
@@ -90,10 +90,10 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     return { d, a, off };
   }
 
-  it('mine away over 8 s (a line out, one tap after another): the partner comes over, they chat; home together', async () => {
+  it('mine away over 8 s (sent across the lawn): the partner comes over, they chat', async () => {
     const { d, a, off } = await scene();
-    const r = a.approach(100, 300, { linger: 15_000 }); // by the left tree, a while (a line out, taps one after another)
-    expect(r.walked).toBe(true);
+    const r = a.sendTo(100, 300)!; // by the left tree: a tap on empty ground walks
+    expect(r).not.toBeNull();
     expect(d.actors.mine.walking).toBe(true);
     await vi.advanceTimersByTimeAsync(r.ms + 100);
     expect(d.actors.partner.walking).toBe(false);
@@ -101,25 +101,21 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     expect(d.awayFromHome('partner')).toBe(true); // on its way
     await vi.advanceTimersByTimeAsync(4000);
     expect(adjacent([d.actors.partner.x, d.actors.partner.y], [d.actors.mine.x, d.actors.mine.y])).toBe(true);
+    a.snapHome(); // (a tap's walk stays for the session: back home for the next case)
     await vi.advanceTimersByTimeAsync(30_000);
-    expect(d.awayFromHome('mine')).toBe(false);
-    expect(d.awayFromHome('partner')).toBe(false);
     off();
   });
 
-  it('an action walk is clamped to 150–900 ms; one beyond 1.2 s is not made (the villager turns)', async () => {
+  it('an action on something plays in place: no walk, my villager turns to it', async () => {
     const { d, a, off } = await scene();
-    const near = a.approach(d.actors.mine.x + 40, d.actors.mine.y);
-    expect(near.ms).toBeGreaterThanOrEqual(150);
-    expect(near.ms).toBeLessThanOrEqual(900);
-    await vi.advanceTimersByTimeAsync(20_000);
-    off();
-    const g: WalkGeo = { zones: [{ x0: 0, x1: 2000, y0: 150, y1: 320 }], obstacles: [], nodes: {}, pad: 8 };
-    const off2 = a.attachAvatar({ geo: () => g, clear: () => true, where: (id) => [d.actors[id].x, d.actors[id].y], enabled: () => true });
-    const far = a.approach(1500, 300);
-    expect(far).toEqual({ ms: 0, walked: false });
+    const [x0, y0] = [d.actors.mine.x, d.actors.mine.y];
+    a.turnTo(x0 + 40);
+    expect(d.actors.mine.walking).toBe(false);
     expect(d.actors.mine.face).toBe('r');
-    off2();
+    a.turnTo(x0 - 300);
+    expect(d.actors.mine.face).toBe('l');
+    expect([d.actors.mine.x, d.actors.mine.y]).toEqual([x0, y0]);
+    off();
   });
 
   it('one walker leaves home at a time', async () => {
@@ -150,12 +146,13 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
 
   it('a sheet freezes the walkers where they are; uncovered they wander home', async () => {
     const { d, a, off } = await scene();
-    a.approach(100, 300);
+    expect(a.wander('partner', 1)).toBe(true);
+    await vi.advanceTimersByTimeAsync(200);
     a.freeze();
-    expect(d.actors.mine.walking).toBe(false);
+    expect(d.actors.partner.walking).toBe(false);
     a.thaw();
-    await vi.advanceTimersByTimeAsync(20_000);
-    expect(d.awayFromHome('mine')).toBe(false);
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(d.awayFromHome('partner')).toBe(false);
     off();
   });
 });

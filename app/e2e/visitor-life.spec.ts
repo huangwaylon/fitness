@@ -59,7 +59,7 @@ test('Gulliver sleeps face down until the fifth nudge (NH), then stands and intr
   await expect(g).toHaveAttribute('data-asleep', 'lie');
   await expect(g.locator('.fxa.zzz')).toHaveCount(1);
   await tapOn(page, '[data-visitor="gulliver"] .art');
-  await page.waitForTimeout(1100); // my villager walks over
+  await page.waitForTimeout(400); // the first nudge
   for (let i = 1; i < 5; i++) {
     if (i > 1) await tapOn(page, '[data-visitor="gulliver"] .art');
     await expect(g.locator('[data-mumble]')).toBeVisible();

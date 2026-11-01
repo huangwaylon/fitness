@@ -44,7 +44,8 @@
   import { pickOne } from '#lib/random.ts';
   import { hook, hookFlag } from './devHooks.ts';
   import { weather } from './weatherNow.svelte.ts';
-  import { onMount, untrack } from 'svelte';
+  import { onMount } from 'svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -58,13 +59,13 @@
   import { findArt } from './beach.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggOnLine } from './eggs.ts';
-  import { LONG_REACH, approach, goHomeLater, partnerAct, turnTo } from './avatar.ts';
+  import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
   import type { How } from '#lib/sync/live-protocol.ts';
   import { LANDS, PACE, STILL, bubblesAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
-  import { actors, livePos, useTool } from '../motion/director.svelte.ts';
+  import { livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
@@ -143,8 +144,8 @@
   /** A shared critter's id and where its itinerary comes from: its seed, when it came (relay ms) and how long it stays
    *  in all (ms). */
   interface Shared { cid?: string; path?: { seed: number; t0: number; total: number } }
-  /** `held`: the net is in my villager's hand (no floating one). Stage units (the screen's overlay). */
-  interface Net { n: number; x: number; y: number; held?: boolean }
+  /** The net swung at a bug (stage units: the screen's overlay). */
+  interface Net { n: number; x: number; y: number }
 
   const rand = Math.random;
   const between = (a: number, b: number) => a + rand() * (b - a);
@@ -366,10 +367,6 @@
     later(() => fishes[f.water] === f && (fishes[f.water] = null), 700);
   }
 
-  /** My villager is walking down to cast (a tap meanwhile does nothing). */
-  let casting = false;
-  /** …or to dive at the bubbles. */
-  let diveWalk = false;
   /** Where the angler stands to cast at a bobber at (x, z) in `water` (world): on the beach in front of it, facing the
    *  sea; the pond's back bank (walkGraph's pondside: in front, my villager would hide the little pond); the river's
    *  bank, the far one where the channel runs across (the line in view), else the island's side. */
@@ -387,49 +384,28 @@
   function castAt(f: Fish, x: number, z: number) {
     const to = castInto(f.water, x, z);
     const spot = anglerSpot(f.water, to.x, to.z);
-    // my villager walks to that spot (avatar.ts), rod in hand, and casts from there
-    casting = true;
-    // the partner's phone: my villager walks down to the water with the rod out too
+    // in place (only a tap on empty ground walks): my villager turns to it and the line flies out from the bank
+    turnTo(to.x);
+    // the partner's phone: their line goes out there too
     if (f.cid) shared.share({ kind: 'act', act: 'cast', id: f.cid, pt: [Math.round(to.x), Math.round(to.z)] });
-    const { ms } = approach(to.x, to.z, { spot: [Math.round(spot[0]), Math.round(spot[1])], tool: 'rod', toolMs: 20_000, linger: 20_000, far: f.water !== 'sea' });
-    const th = { ...to, sx: spot[0], sz: spot[1] };
-    if (ms) later(() => throwLine(f, th), ms);
-    else throwLine(f, th);
+    throwLine(f, { ...to, sx: spot[0], sz: spot[1] });
   }
-  /** The tip of the rod in my villager's hand (client px), measured (it mirrors with the facing and swings as it
-   *  casts), or null when the rod isn't out (no walk: the line starts at the bank instead). */
-  function rodTip(): readonly [number, number] | null {
-    const path = scene?.querySelector<SVGPathElement>('[data-actor="mine"] [data-tool="rod"] .handle');
-    const m = path?.getScreenCTM();
-    if (!m) return null;
-    const p = new DOMPoint(30, -34).matrixTransform(m);
-    return [p.x, p.y];
-  }
-  /** The line's start relative to the bobber (its node's local units): the rod's tip, or the bank. */
+  /** The line's start relative to the bobber (its node's local units): the bank, where an angler would stand. */
   function lineFrom(c: Cast): [number, number] {
     const [bx, by] = w.clientAt(c.x, c.z), k = w.scaleAt(c.x, c.z) * w.view.s;
-    const [tx, ty] = rodTip() ?? w.clientAt(c.sx, c.sz, 6);
+    const [tx, ty] = w.clientAt(c.sx, c.sz, 6);
     return [(tx - bx) / k, (ty - by) / k];
   }
-  /** The line runs from the rod's tip (measured once the rod is out and again once its cast swing is done). */
-  function lineFromRod(c: Cast) {
-    if (cast !== c) return;
-    [c.fx, c.fy] = lineFrom(c);
-  }
   function throwLine(f: Fish, to: { x: number; z: number; sx: number; sz: number }) {
-    casting = false;
-    if (fishes[f.water] !== f || f.gone) return putRodAway();
+    if (fishes[f.water] !== f || f.gone) return;
     const c0: Cast = { fish: f, ...to, fx: 0, fy: 0, landed: false, t0: 0, plan: null, under: false, rings: 0, bdx: 0, gen: 0, hesitated: false };
     [c0.fx, c0.fy] = lineFrom(c0);
     cast = c0;
     sceneSfx('cast');
     sceneSfx('plop');
-    const thrown = cast;
-    later(() => lineFromRod(thrown), 560);
     later(() => {
       const c = cast;
       if (!c) return;
-      lineFromRod(c);
       c.landed = true;
       c.t0 = performance.now();
       c.rings++;
@@ -540,16 +516,6 @@
     const at = stageAt(c.x, c.z);
     show(f.item, at.x, at.y, f.cid);
   }
-
-  /** The line's in (caught, gone or never cast): the rod goes away and my villager heads home in a while. */
-  function putRodAway() {
-    if (actors.mine.tool !== 'rod') return;
-    useTool('mine', null);
-    goHomeLater('mine', 3000);
-  }
-  $effect(() => {
-    if (!cast && actors.mine.tool === 'rod' && !casting) untrack(putRodAway);
-  });
 
   // ---------- bugs ----------
   // (what they are and how they move: critterPath.ts STILL, LANDS, PACE, groundOk)
@@ -962,11 +928,13 @@
     if (!live || !at) return gone();
     const [x, z] = at;
     if (b) Object.assign(b, { held: true, ms: 0 });
-    let ms: number;
-    if (how === 'rod') ms = partnerAct(x, z, { spot: anglerSpot(f?.water ?? waterAt(x, z, true) ?? 'sea', x, z), tool: 'rod', toolMs: 1800 }).ms + 900;
-    else if (how === 'dive') ms = partnerAct(x, z, { spot: anglerSpot('sea', x, z), motion: 'hop' }).ms + 450;
-    else if (how === 'dig') ms = partnerAct(x, z, { tool: 'shovel', toolMs: 640 }).ms + 260;
-    else ms = partnerAct(x, z, { tool: 'net', toolMs: 450, reach: LONG_REACH }).ms + 300;
+    // in place: their villager turns to it, and the net or the shovel shows at the catch (a reel or a dive: a splash)
+    partnerTurnTo(x);
+    const p = stageAt(x, z);
+    if (how === 'dig') dig = { n: ++seq, ...p };
+    else if (how !== 'rod' && how !== 'dive') net = { n: ++seq, ...p };
+    later(() => (net = dig = null), 700);
+    const ms = how === 'rod' ? 900 : how === 'dive' ? 450 : how === 'dig' ? 260 : 300;
     later(() => {
       gone();
       if (how === 'rod' || how === 'dive') sceneSfx('splash');
@@ -990,16 +958,14 @@
       if (e.kind === 'catch' && e.id && !/^(dg|ws):/.test(e.id)) theirCatch(e, live, !!beat);
       else if (e.kind === 'put' && e.what.startsWith('bug:')) theirBug(e);
       else if (e.kind === 'act' && e.act === 'cast' && live && e.pt) {
-        // the partner casts: their villager walks down to the water with the rod out (their bite is theirs)
-        const [x, z] = e.pt, wt = waterAt(x, z, true) ?? 'sea';
-        partnerAct(x, z, { spot: anglerSpot(wt, x, z), tool: 'rod', toolMs: 8000, linger: 8000, far: wt !== 'sea' });
+        // the partner casts: their villager turns to the water where it stands (their bite is theirs)
+        partnerTurnTo(e.pt[0]);
       }
     })
   );
 
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it. */
   export function tap(px: number, py: number): boolean {
-    if (casting) return true;
     if (cast) {
       reelIn();
       return true;
@@ -1035,45 +1001,41 @@
         }
       }
       if (b.flight === 'burrow') {
-        // dug up: a puff of earth and it's caught; a tap anywhere else leaves it under its mound. My villager walks
-        // over with the shovel first (avatar.ts).
+        // dug up: the shovel at the mound, a puff of earth and it's caught; a tap anywhere else leaves it under its
+        // mound. My villager turns to it where it stands (avatar.ts).
         if (swing !== 'catch') return false;
         if (b.held) return true;
         if (!claim(b.cid, b.id, b.x, b.z, 'dig')) return true;
         b.held = true;
-        const { ms } = approach(b.x, b.z, { tool: 'shovel', toolMs: 640 });
+        turnTo(b.x);
+        const p = (bugEl && stageOf(bugEl)) ?? at;
+        dig = { n: ++seq, ...p };
+        sceneSfx('dig');
+        if (bug === b) bug = null;
         later(() => {
-          const p = (bugEl && stageOf(bugEl)) ?? at;
-          dig = { n: ++seq, ...p };
-          sceneSfx('dig');
-          if (bug === b) bug = null;
-          later(() => {
-            sceneSfx('catch');
-            show(b.id, p.x, p.y, b.cid);
-          }, 260);
-          later(() => (dig = null), 700);
-        }, ms);
+          sceneSfx('catch');
+          show(b.id, p.x, p.y, b.cid);
+        }, 260);
+        later(() => (dig = null), 700);
         return true;
       }
       if (swing === 'catch') {
         if (b.held) return true;
         // first wins: claimed at the tap (the relay's first claim is the catch)
         if (!claim(b.cid, b.id, b.x, b.z, 'net')) return true;
-        // it holds still where it is (mid-flight included) while my villager walks over with the net (avatar.ts)
+        // it holds still where it is (mid-flight included) under the net, swung where it is (my villager turns to it)
         const cs = getComputedStyle(bugEl).translate;
         Object.assign(b, { held: true, ms: 0, freeze: cs && cs !== 'none' ? cs : undefined });
-        const { ms, walked } = approach(b.x, b.z, { tool: 'net', toolMs: 450, reach: LONG_REACH });
+        turnTo(b.x);
+        const p = (bugEl && stageOf(bugEl)) ?? at;
+        net = { n: ++seq, ...p };
+        sceneSfx('net');
         later(() => {
-          const p = (bugEl && stageOf(bugEl)) ?? at;
-          net = { n: ++seq, ...p, held: walked };
-          sceneSfx('net');
-          later(() => {
-            if (bug === b) bug = null;
-            sceneSfx('catch');
-            show(b.id, p.x, p.y, b.cid);
-          }, walked ? 420 : 160); // in hand, the swing finishes before the hold-up
-          later(() => (net = null), 420);
-        }, ms);
+          if (bug === b) bug = null;
+          sceneSfx('catch');
+          show(b.id, p.x, p.y, b.cid);
+        }, 160);
+        later(() => (net = null), 420);
         return true;
       }
       if (swing === 'startle') {
@@ -1100,14 +1062,9 @@
     if (spot && S && sea && !theirs(spot.cid)) {
       const [bx, by] = w.clientAt(spot.x, spot.z), reach = Math.max(S.DIVE_U * w.scaleAt(spot.x, spot.z) * w.view.s, 22);
       if (Math.hypot(px - bx, py - by) <= reach) {
-        if (diveWalk) return true;
-        // my villager walks down to the water's edge (avatar.ts), hops and dives; the chase after it never walks
-        diveWalk = true;
-        const { ms } = approach(spot.x, spot.z, { spot: anglerSpot('sea', spot.x, spot.z), motion: 'hop' });
-        later(() => {
-          diveWalk = false;
-          if (bubbles === spot) diveAt(spot);
-        }, ms);
+        // in place (avatar.ts): my villager turns to the bubbles and the dive plays there; the chase never walks
+        turnTo(spot.x);
+        diveAt(spot);
         return true;
       }
     }
@@ -1306,14 +1263,14 @@
 <div class="held">
   {#if dig}
     {#key dig.n}
-      <!-- the mound dug open: clods of earth fly up -->
-      <span class="fx digfx" style:translate="{su(dig.x)} {su(dig.y)}">{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
+      <!-- the mound dug open: the shovel strikes, clods of earth fly up -->
+      <span class="fx digfx" style:translate="{su(dig.x)} {su(dig.y)}"><span class="shovel"><OfficialArt key={findArt('shovel')} size="calc(30 * var(--su))" eager /></span>{#each [-50, -15, 20, 55] as a (a)}<i style:--a="{a}deg"></i>{/each}</span>
     {/key}
   {/if}
   {#if net}
     {#key net.n}
-      <span class="fx netfx" data-net={net.held ? 'held' : 'float'} style:translate="{su(net.x)} {su(net.y)}">
-        <svg class:held={net.held} viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
+      <span class="fx netfx" data-net="float" style:translate="{su(net.x)} {su(net.y)}">
+        <svg viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
       </span>
     {/key}
   {/if}
@@ -1448,12 +1405,16 @@
     position: absolute; left: calc(-1.4 * var(--su)); top: calc(-1.4 * var(--su)); width: calc(2.8 * var(--su)); height: calc(2.8 * var(--su));
     border-radius: 45%; background: #8A6A44; rotate: var(--a); transform-origin: 50% 100%; animation: clod .6s cubic-bezier(.2, .7, .4, 1) both;
   }
+  .digfx .shovel { position: absolute; left: 0; top: 0; line-height: 0; translate: -20% -95%; transform-origin: 30% 100%; animation: dig-shovel .6s cubic-bezier(.3, .6, .4, 1) both; }
+  @keyframes dig-shovel {
+    0% { transform: rotate(-40deg) translateY(-6px); opacity: 0; } 12% { opacity: 1; } 45% { transform: rotate(8deg); }
+    80% { opacity: 1; } 100% { transform: rotate(-10deg) translateY(-8px); opacity: 0; }
+  }
   @keyframes clod { from { transform: translateY(0) scale(.6); opacity: 1; } 60% { opacity: 1; } to { transform: translateY(calc(-14 * var(--su))) scale(.9); opacity: 0; } }
   /* at night the bugs sit above the tint: dim them like the island (a firefly keeps its light) */
   .bug.night:not(.drift) .face { filter: brightness(.8) saturate(.85); }
 
   /* the net: one swing across the bug */
-  .netfx svg.held { display: none; }
   .netfx svg { width: calc(30 * var(--su)); translate: -50% -50%; overflow: visible; transform-origin: 80% 80%; animation: swing .4s cubic-bezier(.3, .7, .4, 1) both; }
   .hoop { fill: rgba(255, 255, 255, .25); stroke: #F4E9D2; stroke-width: 1.6; }
   .mesh { stroke: rgba(255, 255, 255, .6); stroke-width: .5; }

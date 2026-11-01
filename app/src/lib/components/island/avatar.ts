@@ -1,19 +1,18 @@
-// My villager is me (docs/design.md "Walking"): a tap on something to do on the island (a bush, a flower, the rock, a
-// weed, a dig spot, a fallen fruit or branch, a tree to shake, the sea to cast into, a bug to net, a shell, a visitor)
-// walks my villager to it first, then the action plays there, tool in hand. The outcome is decided at the tap; the
-// walk is cosmetic and short (240 u/s, 150–900 ms; a walk over 1.2 s isn't made: the villager turns and the action
-// plays from where it is). Afterwards it stays 4–6 s, then wanders home at 90 u/s. A new tap re-targets it from where
-// it is. Under a sheet everyone stops where they are; hidden for over 30 s, everyone is back home.
+// My villager is me (docs/design.md "Walking"): only a tap on empty ground walks it there (`sendTo`, and it stays
+// there for the day); a tap on something to do on the island (a bush, a flower, the rock, a weed, a dig spot, a fallen
+// fruit or branch, a tree to shake, the water to cast into, a bug to net, a shell, a visitor, the partner) acts in
+// place: my villager turns to it (`turnTo`) and the action plays at the target, its tool there. A new tap re-targets a
+// walk from where it is. Under a sheet everyone stops where they are; hidden for over 30 s, everyone is back home.
 // The villagers also go about on their own (phase 2): the partner's wanders between points of interest (idle life asks:
 // `wander`), comes over when mine has been away a while and they chat side by side; a goal met walks that person's
 // villager to their tree (`goalWalk`), ふたりでぜんぶ brings both to the middle for a high-five (`meetUp`).
 // The scene attaches what this needs from the DOM (`attachAvatar`): the walk geometry, a check that a villager standing
 // at a spot covers no control, and where an actor's feet are right now.
-import { actors, addFx, applyStep, awayFromHome, busy, faceToward, later, place, setEmote, setMotion, setRouter, useTool, walkTo, type Tool } from '../motion/director.svelte.ts';
+import { actors, addFx, applyStep, awayFromHome, busy, faceToward, later, place, setEmote, setMotion, setRouter, walkTo } from '../motion/director.svelte.ts';
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
-import type { ActorId, Motion } from '../motion/reactions.ts';
-import { REACH, SPEED, actionMs, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
+import type { ActorId } from '../motion/reactions.ts';
+import { REACH, SPEED, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 import type { EmoteIcon } from '#lib/art.ts';
 import { nav } from './nav.ts';
 import { planTap, type TapPlan } from './tapWalk.ts';
@@ -93,43 +92,16 @@ export function attachAvatar(c: AvatarCtx): () => void {
   };
 }
 
-/** A watering can or a net reaches further: across a bed (two tiles) from its edge. */
-export const LONG_REACH = [26, 40, 74, 96] as const;
-
 /** Linger at a spot before wandering home (ms). */
 const LINGER: readonly [number, number] = [4000, 6000];
 
-export interface Approach {
-  /** Play the action this many ms from now. */
-  ms: number;
-  /** My villager walked to it (or stands at it already): the tool is in its hand, so the scene's floating one stays away. */
-  walked: boolean;
-}
-
-interface ApproachOpts {
-  tool?: Tool;
-  /** How long the tool stays out (ms). */
-  toolMs?: number;
-  /** A body motion on arrival (a shake, a nod). */
-  motion?: Motion;
-  /** Stand exactly here (u) instead of around the target (the angler's spot on the beach). */
-  spot?: Pt;
-  /** Linger this long instead (ms; a fishing line stays out a while). */
-  linger?: number;
-  /** How far from the target it may stand (u), nearest first (default REACH): a watering can reaches across a bed. */
-  reach?: readonly number[];
-  /** Somewhere set apart (the pond's back bank): the walk may take a little longer (walkGraph ACTION_MS.far). */
-  far?: boolean;
-  /** Worth a run across the island (a visitor, a door): too far for an action walk, it runs there (SPEED.run). */
-  long?: boolean;
-}
-
-/** The best spot to act on (tx, ty) from `from` and the way there: the nearest clear spot by walking distance. */
-export function plan(g: WalkGeo, from: Pt, tx: number, ty: number, clear: (x: number, y: number) => boolean, spot?: Pt, reach: readonly number[] = REACH, capped = true, far = false): { pts: Pt[]; ms: number } | null {
+/** The best spot to stand at by (tx, ty) from `from` and the way there (at SPEED.action): the nearest clear spot by
+ *  walking distance, the close ring first (a goal met walks its villager to the tree). */
+export function plan(g: WalkGeo, from: Pt, tx: number, ty: number, clear: (x: number, y: number) => boolean, reach: readonly number[] = REACH): { pts: Pt[]; ms: number } | null {
   let best: { pts: Pt[]; len: number } | null = null;
   // the nearest by walking of the close spots; the further ring only when none of those will do
-  for (const ring of spot ? [[spot]] : reach.map((r) => actionSpots(g, tx, ty, from, [r]))) {
-    for (const c of ring) {
+  for (const r of reach) {
+    for (const c of actionSpots(g, tx, ty, from, [r])) {
       if (!clear(c[0], c[1])) continue;
       const pts = route(g, from, c);
       if (!pts) continue;
@@ -138,48 +110,15 @@ export function plan(g: WalkGeo, from: Pt, tx: number, ty: number, clear: (x: nu
     }
     if (best) break;
   }
-  if (!best) return null;
-  const ms = capped ? actionMs(best.len, far) : (best.len / SPEED.action) * 1000;
-  return ms === null ? null : { pts: best.pts, ms };
+  return best && { pts: best.pts, ms: (best.len / SPEED.action) * 1000 };
 }
 
-/** Send my villager to act on a target at (tx, ty) u. */
-export function approach(tx: number, ty: number, o: ApproachOpts = {}): Approach {
-  const c = ctx, me = actors.mine;
-  if (!c || !c.enabled() || me.asleep) return { ms: 0, walked: false };
-  const from = c.where('mine');
+/** My villager and a tap on something to act on at x (docs/design.md "Walking": only a tap on empty ground walks): it
+ *  stays where it is and turns to it; the action plays at the target (its tool there, as NH's floating ones). */
+export function turnTo(tx: number): void {
+  if (!ctx?.enabled() || actors.mine.asleep) return;
   steered.mine = Date.now();
-  let p = plan(c.geo(), from, tx, ty, (x, y) => c.clear('mine', x, y), o.spot, o.reach, true, o.far);
-  if (!p && o.long) {
-    // a run across the island: the spot needn't be on screen now (the camera follows the runner)
-    const run = plan(c.geo(), from, tx, ty, () => true, o.spot, o.reach, false);
-    if (run) p = { pts: run.pts, ms: (routeLength(from, run.pts) / SPEED.run) * 1000 };
-  }
-  if (!p) {
-    // too far (or nowhere to stand): turn to it, and the action plays as it always did
-    faceToward('mine', tx);
-    return { ms: 0, walked: false };
-  }
-  clearTimeout(homeTimers.mine);
-  if (p.ms > 0) c.hush?.();
-  const end = p.pts.at(-1) ?? from;
-  const face = Math.abs(tx - end[0]) < 3 ? undefined : tx < end[0] ? 'l' : 'r';
-  away.since ||= Date.now();
-  clearTimeout(followTimer);
-  followTimer = setTimeout(checkFollow, Math.max(0, away.since + FOLLOW_MS - Date.now()) + 50);
-  walkTo('mine', p.pts, { ms: p.ms, from, face });
-  const act = () => {
-    if (o.tool) useTool('mine', o.tool, o.toolMs);
-    if (o.motion) setMotion('mine', o.motion);
-  };
-  if (p.ms) setTimeout(act, p.ms);
-  else {
-    if (face) me.face = face;
-    act();
-  }
-  me.busyUntil = Math.max(me.busyUntil, Date.now() + p.ms + (o.toolMs ?? 600));
-  goHomeLater('mine', p.ms + (o.toolMs ?? 0) + (o.linger ?? LINGER[0] + Math.random() * (LINGER[1] - LINGER[0])));
-  return { ms: p.ms, walked: true };
+  faceToward('mine', tx);
 }
 
 /** Tap-to-walk (spec §4, tapWalk.ts): my villager runs (200 u/s) to the tapped ground, a building's door (its
@@ -231,51 +170,16 @@ export function partnerRestsAt(x: number, z: number): void {
 /** A rest spot (null: home, within 8u of it). */
 const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
 
-/** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here runs
- *  over too, from wherever it stands (the spot needn't be on screen; at most PARTNER_MS on the way), and plays it there
- *  with its tool, then rests where they sent it. `ms`: when it's there (0: it plays where it stands, asleep or with
- *  nowhere to go). */
-export function partnerAct(tx: number, ty: number, o: ApproachOpts = {}): Approach {
-  const c = ctx, them = actors.partner;
-  if (!c || !c.enabled() || them.asleep) return { ms: 0, walked: false };
-  const from = c.where('partner');
+/** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here turns
+ *  to it where it stands (no walking over, as on their own phone) and the result plays at the target. */
+export function partnerTurnTo(tx: number): void {
+  if (!ctx?.enabled() || actors.partner.asleep) return;
   steered.partner = Date.now();
-  const run = plan(c.geo(), from, tx, ty, () => true, o.spot, o.reach, false);
-  const act = () => {
-    if (o.tool) useTool('partner', o.tool, o.toolMs);
-    if (o.motion) setMotion('partner', o.motion);
-  };
-  if (!run) {
-    faceToward('partner', tx);
-    act();
-    return { ms: 0, walked: false };
-  }
-  clearTimeout(homeTimers.partner);
-  const end = run.pts.at(-1) ?? from;
-  const len = routeLength(from, run.pts);
-  const ms = len < 2 ? 0 : Math.min(PARTNER_MS, (len / SPEED.run) * 1000);
-  const face = Math.abs(tx - end[0]) < 3 ? undefined : tx < end[0] ? 'l' : 'r';
-  if (ms) {
-    walkTo('partner', run.pts, { ms, from, face });
-    setTimeout(act, ms);
-  } else {
-    if (face) them.face = face;
-    act();
-  }
-  them.busyUntil = Math.max(them.busyUntil, Date.now() + ms + (o.toolMs ?? 600));
-  goHomeLater('partner', ms + (o.toolMs ?? 0) + (o.linger ?? LINGER[0] + Math.random() * (LINGER[1] - LINGER[0])));
-  return { ms, walked: true };
-}
-/** The partner's villager hurries: a walk to what they did takes at most this long (ms). */
-const PARTNER_MS = 3000;
-
-/** Turn my villager to face a target (an action that never walks: the reel, a wasp). */
-export function turnTo(tx: number): void {
-  if (ctx?.enabled() && !actors.mine.asleep) faceToward('mine', tx);
+  faceToward('partner', tx);
 }
 
 /** After `ms`, wander home (90 u/s), unless something else took the villager by then (then a little later). */
-export function goHomeLater(id: 'mine' | 'partner', ms: number): void {
+function goHomeLater(id: 'mine' | 'partner', ms: number): void {
   clearTimeout(homeTimers[id]);
   homeTimers[id] = setTimeout(() => goHome(id), ms);
 }
@@ -393,7 +297,7 @@ export function goalWalk(id: Villager): number {
   const { treeA, treeB } = c.geo().nodes, hx = actors[id].home[0];
   const tx = Math.abs(treeA[0] - hx) <= Math.abs(treeB[0] - hx) ? treeA : treeB;
   const from = c.where(id);
-  const p = plan(c.geo(), from, tx[0], tx[1] - 18, (x, y) => c.clear(id, x, y), undefined, [0, 26, 40], false);
+  const p = plan(c.geo(), from, tx[0], tx[1] - 18, (x, y) => c.clear(id, x, y), [0, 26, 40]);
   if (!p) return 0;
   const { ms } = p;
   clearTimeout(homeTimers[id]);

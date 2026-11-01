@@ -72,13 +72,10 @@ describe('walkTo (the director)', () => {
     expect([actors.mine.x, actors.mine.y, actors.mine.walkMs, actors.mine.from]).toEqual([5, 6, 0, [5, 6]]);
   });
 
-  it('the hold-up: the item over the head, then gone; a tool goes away after its time', async () => {
-    const { actors, holdUp, resetAll, useTool } = await import('./director.svelte.ts');
+  it('the hold-up: the item over the head, then gone', async () => {
+    const { actors, holdUp, resetAll } = await import('./director.svelte.ts');
     resetAll();
-    useTool('mine', 'net', 450);
-    expect(actors.mine.tool).toBe('net');
     holdUp('mine', 'critters/wasp', 1000);
-    expect(actors.mine.tool).toBeNull(); // both hands up
     expect(actors.mine.holding?.art).toBe('critters/wasp');
     expect(actors.mine.motion).toBe('holdup');
     await vi.advanceTimersByTimeAsync(1001);

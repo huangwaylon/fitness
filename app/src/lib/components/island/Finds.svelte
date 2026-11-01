@@ -9,8 +9,8 @@
   // find): picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption.
   // Everything derives from the Tokyo date and the time (beach.ts), so both phones see the same island; what either of
   // us takes is gone on both (the shared day: docs/backend.md#shared-world, a `pick` claimed at the tap, first wins;
-  // this phone's own record too, sceneDay.ts), and the partner's pick-up plays here: their villager walks over, picks
-  // it up or digs, and holds it up. A balloon's present that lands is put on the island for both (`put`), opened by
+  // this phone's own record too, sceneDay.ts), and the partner's pick-up plays here: their villager turns to it, it
+  // is picked up or dug where it lies, and their line shows. A balloon's present that lands is put on the island for both (`put`), opened by
   // either. Wishes are both people's: a fragment for each. Everything lies in the world (world units: beach.ts, mushrooms.ts),
   // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
   // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; no
@@ -39,7 +39,7 @@
   import { eggTime, eventNow } from './events.ts';
   import { eggInDig } from './eggs.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
-  import { approach, partnerAct } from './avatar.ts';
+  import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { lying, taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
   import { tellPartner, type PartnerNews } from './partnerNews.ts';
@@ -153,8 +153,7 @@
 
   // ---------- the moment of a find (world x, and y = the world's z; `lift` units above the ground) ----------
   interface Lift { n: number; x: number; y: number; lift: number; art: string; tilt: number }
-  /** `held`: the shovel is in my villager's hand (no floating one). */
-  interface Dig { n: number; x: number; y: number; held?: boolean }
+  interface Dig { n: number; x: number; y: number }
   let lift = $state<Lift | null>(null);
   let dig = $state<Dig | null>(null);
   let card = $state<CatchCard | null>(null);
@@ -180,29 +179,20 @@
     later(() => lift?.n === n && (lift = null), 500);
   }
 
-  /** Things my villager is walking to (a second tap meanwhile does nothing). */
-  const going = new Set<string>();
   /** Claim a thing on the ground for me (first wins): false when the partner has it already. */
   const claim = (uid: string, what: string, x: number, y: number): boolean =>
     shared.share({ kind: 'pick', id: uid, what, at: [Math.round(x), Math.round(y)] }).fresh;
   /** Still mine when my villager gets there: the partner's claim may have reached the relay first. */
   const stillMine = (uid: string) => (takenBy(shared.day, uid)?.who ?? shared.me) === shared.me;
-  /** My villager walks to the find (avatar.ts), picks it up and holds it up over its head while the plate reads. The
-   *  find is decided (and the ずかん written) at the tap; what shows waits for the walk. */
-  function walkTo(uid: string, x: number, y: number, fn: (walked: boolean) => void, tool?: { tool: 'shovel'; toolMs: number }) {
-    if (going.has(uid)) return;
-    going.add(uid);
-    const { ms, walked } = approach(x, y, tool ?? { motion: 'squish' });
-    const go = () => {
-      going.delete(uid);
-      fn(walked);
-    };
-    if (ms) later(go, ms);
-    else go();
+  /** My villager turns to the find (avatar.ts) where it stands, and it's picked up there: lifted while the plate
+   *  reads. The find is decided (and the ずかん written) at the tap. */
+  function pickHere(x: number, fn: () => void) {
+    turnTo(x);
+    fn();
   }
   function pickShell(s: Shell) {
     if (!claim(s.uid, `shell:${s.id}`, s.x, s.y)) return;
-    walkTo(s.uid, s.x, s.y, () => {
+    pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
       const added = recordFind('shell', s.id);
       pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
@@ -212,7 +202,7 @@
   }
   function pickFragment(f: Fragment) {
     if (!claim(f.uid, `fragment:${f.id}`, f.x, f.y)) return;
-    walkTo(f.uid, f.x, f.y, () => {
+    pickHere(f.x, () => {
       if (!stillMine(f.uid)) return;
       recordFind('fragment', f.id);
       pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
@@ -222,7 +212,7 @@
   }
   function pickBottle(b: Bottle) {
     if (!claim(b.uid, 'bottle', b.x, b.y)) return;
-    walkTo(b.uid, b.x, b.y, () => {
+    pickHere(b.x, () => {
       if (!stillMine(b.uid)) return;
       pickUp(b.uid, b.x, b.y, findArt('message-bottle'), -64);
       sceneSfx('bottle');
@@ -254,20 +244,20 @@
   /** A present opening where it lay: the box pops (a squash, the lid off), confetti in the wrapping's colours bursts
    *  out with sparkles. */
   let opening = $state<{ n: number; x: number; y: number; art: string; size: number } | null>(null);
-  /** NH's balloon present, picked up: my villager walks over, the wrapping pops open (confetti, a little fanfare) and
+  /** NH's balloon present, picked up: where it lies, the wrapping pops open (confetti, a little fanfare) and
    *  what was inside is held up over its head while the plate reads 「◯◯を てにいれた！」 (catalog.ts: furniture,
    *  clothing or a seasonal DIY recipe at NH's odds; never ベル, not kept, but counted in the ずかん's カタログ / レシピ, a
    *  first one with the plate's second page). On Bunny Day the sky egg is just picked up. */
   function openPresent(p: (typeof presents)[number]) {
     if (p.art.endsWith('sky-egg')) {
       if (!claim(p.uid, 'sky-egg', p.x, p.y)) return;
-      return void walkTo(p.uid, p.x, p.y, () => opened(p, null));
+      return void pickHere(p.x, () => opened(p, null));
     }
     // what's inside is decided at the tap (and claimed with it: the partner's phone shows what I got)
     void catalog().then((C) => {
       const inside = C.pickPresent(date, rand, eggTime(eventNow()));
       if (!claim(p.uid, `present:${inside.kind}:${inside.id}`, p.x, p.y)) return;
-      walkTo(p.uid, p.x, p.y, () => opened(p, inside));
+      pickHere(p.x, () => opened(p, inside));
     }, () => {});
   }
   function opened(p: (typeof presents)[number], inside: Inside | null) {
@@ -298,7 +288,7 @@
   }
   function pickMushroom(m: Mushroom) {
     if (!claim(m.uid, `mushroom:${m.id}`, m.x, m.y)) return;
-    walkTo(m.uid, m.x, m.y, () => {
+    pickHere(m.x, () => {
       if (!stillMine(m.uid)) return;
       pickUp(m.uid, m.x, m.y, findArt(m.id), 0, 6);
       sceneSfx('mushroom');
@@ -308,7 +298,7 @@
   function digUp(s: DigSpot) {
     const special = rare(s) ? 'rare-mushroom' : egg(s) ? 'earth-egg' : null;
     if (!claim(s.uid, special ? `dug:${special}` : `fossil:${s.fossil}`, s.x, s.y)) return;
-    walkTo(s.uid, s.x, s.y, (walked) => {
+    pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
       const added = special ? false : recordFind('fossil', s.fossil);
       take(date, s.uid);
@@ -318,16 +308,16 @@
       taken++;
       sceneSfx('dig');
       const n = ++seq;
-      dig = { n, x: s.x, y: s.y, held: walked };
+      dig = { n, x: s.x, y: s.y };
       later(() => dig?.n === n && (dig = null), 6400);
       if (special) plate(s.x, s.y, 4, findArt(special), () => t('beach.dug', { name: t(`beach.name.${special}`) }), 650);
       else plate(s.x, s.y, 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
       later(() => sceneSfx('catch'), 650);
-    }, { tool: 'shovel', toolMs: 640 });
+    });
   }
 
   // The partner's pick-ups (the shared day's news): gone here already (the lists re-derive); just now, their villager
-  // walks over, picks it up (or digs it, or opens the present) and holds it up with their line.
+  // turns to it, it is picked up (or dug, or the present opened) where it lay, with their line.
   onMount(() =>
     shared.on(({ e, live }) => {
       if (e.kind === 'put' && e.what === 'present') void catalog().catch(() => {});
@@ -336,40 +326,34 @@
       const [x, z] = e.at;
       const news = (n: Omit<PartnerNews, 'x' | 'z'>) => tellPartner({ ...n, x, z });
       if (kind === 'fossil' || kind === 'dug') {
-        const { ms } = partnerAct(x, z, { tool: 'shovel', toolMs: 640 });
-        later(() => {
-          const n = ++seq;
-          dig = { n, x, y: z, held: true };
-          later(() => dig?.n === n && (dig = null), 6400);
-          sceneSfx('dig');
-          news({ art: findArt(id), verb: 'dug', name: `beach.name.${id}` });
-        }, ms);
+        partnerTurnTo(x);
+        const n = ++seq;
+        dig = { n, x, y: z };
+        later(() => dig?.n === n && (dig = null), 6400);
+        sceneSfx('dig');
+        news({ art: findArt(id), verb: 'dug', name: `beach.name.${id}` });
         return;
       }
       if (kind === 'present') {
-        const { ms } = partnerAct(x, z, { motion: 'squish' });
-        later(() => {
-          const n = ++seq;
-          opening = { n, x, y: z, art: 'deco/present', size: PRESENT_U };
-          later(() => opening?.n === n && (opening = null), 1100);
-          sceneSfx('present');
-          void catalog().then((C) => {
-            const inside = { kind: id as 'item' | 'recipe', id: id2 };
-            news({ art: inside.kind === 'recipe' ? 'presents/diy-recipe' : C.catalogArt(inside), verb: 'got', name: t(C.catalogName(inside)) });
-          }, () => {});
-        }, ms);
+        partnerTurnTo(x);
+        const n = ++seq;
+        opening = { n, x, y: z, art: 'deco/present', size: PRESENT_U };
+        later(() => opening?.n === n && (opening = null), 1100);
+        sceneSfx('present');
+        void catalog().then((C) => {
+          const inside = { kind: id as 'item' | 'recipe', id: id2 };
+          news({ art: inside.kind === 'recipe' ? 'presents/diy-recipe' : C.catalogArt(inside), verb: 'got', name: t(C.catalogName(inside)) });
+        }, () => {});
         return;
       }
       const art = kind === 'bottle' ? findArt('message-bottle') : kind === 'sky-egg' ? findArt('sky-egg') : findArt(id);
       const name = kind === 'bottle' ? 'beach.name.message-bottle' : kind === 'sky-egg' ? 'beach.name.sky-egg' : `beach.name.${id}`;
       if (!['shell', 'fragment', 'bottle', 'mushroom', 'sky-egg'].includes(kind)) return;
-      const { ms } = partnerAct(x, z, { motion: 'squish' });
-      later(() => {
-        const n = ++seq;
-        lift = { n, x, y: z, lift: 0, art, tilt: 0 };
-        later(() => lift?.n === n && (lift = null), 500);
-        news({ art, verb: 'picked', name });
-      }, ms);
+      partnerTurnTo(x);
+      const n = ++seq;
+      lift = { n, x, y: z, lift: 0, art, tilt: 0 };
+      later(() => lift?.n === n && (lift = null), 500);
+      news({ art, verb: 'picked', name });
     })
   );
 
@@ -514,7 +498,7 @@
       <span class="item digfx">
         <!-- two strikes of the shovel, a burst of earth on each -->
         {#each [0, 1] as k (k)}{#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx + k * 0.3} style:--i={i} style:--k={k}></i>{/each}{/each}
-        {#if !dig.held}<span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(30 * var(--su))" eager /></span>{/if}
+        <span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(30 * var(--su))" eager /></span>
       </span>
     </div>
   {/key}

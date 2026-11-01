@@ -20,7 +20,6 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { actors, removeFx } from '../motion/director.svelte.ts';
   import type { ActorId, Motion } from '../motion/reactions.ts';
-  import type { Tool } from '../motion/director.svelte.ts';
 
   interface Props {
     person?: PersonId;
@@ -86,9 +85,7 @@
   });
   const lean = $derived(wantRight !== null && look.noMirror && wantRight !== look.looksRight);
   const facing = $derived(wantRight === null || look.noMirror ? 1 : wantRight === look.looksRight ? 1 : -1);
-  const tool = $derived(st?.tool ?? null);
   const holding = $derived(st?.holding ?? null);
-  const TOOL_ART: Partial<Record<Tool, string>> = { can: 'finds/watering-can', shovel: 'finds/shovel' };
 
   // What sits on the head (the birthday hat, Jack's glasses) goes where this render's head is (villagers/heads.ts,
   // measured from the art), loaded the first time one is worn.
@@ -135,19 +132,6 @@
         </svg>
       {/if}
     </span>
-    {#if tool && !headOnly}
-      <!-- the tool in hand, on the side the render looks to (mirrors with the facing) -->
-      {#key st?.toolN}
-        <span class="tool {tool}" data-tool={tool}>
-          {#if TOOL_ART[tool]}<OfficialArt key={TOOL_ART[tool]} size="calc(var(--h) * .3)" eager />
-          {:else if tool === 'net'}
-            <svg viewBox="-20 -20 40 40"><path class="handle" d="M6 6 L19 19" /><circle class="hoop" cx="-1" cy="-1" r="9.5" /><path class="mesh" d="M-10 -1 H8 M-1 -10 V8 M-7.5 -7.5 L5.5 5.5 M-7.5 5.5 L5.5 -7.5" /></svg>
-          {:else}
-            <svg viewBox="-4 -40 44 44"><path class="handle" d="M0 0 L30 -34" /><path class="reel" d="M5 -6 h4" /></svg>
-          {/if}
-        </span>
-      {/key}
-    {/if}
   </span>
   {#if holding && !headOnly}
     <!-- NH's hold-up: the catch or find lifted over the head while its plate reads (placement.ts keeps clear of it) -->
@@ -191,24 +175,6 @@
   .body.walk { animation: if-walkbounce var(--step, 640ms) linear infinite; }
   .face.lean { transform: translateX(calc(var(--lean) * 4%)) rotate(calc(var(--lean) * 6deg)); }
 
-  /* a tool in hand: at the hip on the side the render looks to; each comes out with its own little swing */
-  .tool { position: absolute; bottom: 18%; left: 2%; line-height: 0; transform-origin: 70% 90%; pointer-events: none; }
-  .drawn-right .tool { left: auto; right: 2%; scale: -1 1; }
-  .tool :global(.official) { max-width: none; }
-  .tool svg { width: calc(var(--h) * .36); overflow: visible; }
-  .tool.net svg { width: calc(var(--h) * .42); }
-  .tool .hoop { fill: rgba(255, 255, 255, .25); stroke: #F4E9D2; stroke-width: 1.6; }
-  .tool .mesh { stroke: rgba(255, 255, 255, .6); stroke-width: .5; fill: none; }
-  .tool .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; fill: none; }
-  .tool .reel { stroke: #6B5B4B; stroke-width: 3; stroke-linecap: round; }
-  .tool.can { animation: tool-pour 900ms ease-out both; }
-  .tool.shovel { animation: tool-dig 640ms cubic-bezier(.3, .6, .4, 1) both; }
-  .tool.net { animation: tool-swing 420ms cubic-bezier(.3, .7, .4, 1) both; bottom: 30%; }
-  .tool.rod { animation: tool-cast 520ms cubic-bezier(.3, .7, .4, 1) both; bottom: 30%; }
-  @keyframes tool-pour { 0% { transform: translateY(10%) scale(.6); opacity: 0; } 18% { transform: none; opacity: 1; } 40%, 75% { transform: rotate(-28deg); } 100% { transform: rotate(-8deg); } }
-  @keyframes tool-dig { 0% { transform: rotate(30deg) scale(.6); opacity: 0; } 15% { opacity: 1; } 40% { transform: rotate(-20deg); } 60% { transform: rotate(14deg); } 80% { transform: rotate(-10deg); } 100% { transform: none; } }
-  @keyframes tool-swing { 0% { transform: rotate(60deg) scale(.7); opacity: 0; } 20% { opacity: 1; } 70% { transform: rotate(-30deg); } 100% { transform: rotate(-24deg); } }
-  @keyframes tool-cast { 0% { transform: rotate(50deg); opacity: 0; } 20% { opacity: 1; } 55% { transform: rotate(-20deg); } 100% { transform: rotate(-6deg); } }
   /* the hold-up: up out of the hands to over the head, then a slow bob */
   .held-up {
     position: absolute; z-index: 2; left: 50%; bottom: 97%; line-height: 0; translate: -50% 0; pointer-events: none;

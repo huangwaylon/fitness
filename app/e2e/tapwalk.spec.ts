@@ -1,6 +1,7 @@
-// Tap-to-walk and the campsite's door (spec §3–4, docs/design.md "Walking", "Buildings"): a tap on the ground sends
-// my villager there along nav.ts's way (never through the water), a cream ring marks the spot, the camera stays where
-// the finger left it, and the campsite is one tap: walk to its door, its line about today's guest.
+// Tap-to-walk and the campsite's door (spec §3–4, docs/design.md "Walking", "Buildings"): a tap on empty ground sends
+// my villager there along nav.ts's way (never through the water), a cream ring marks the spot, the walk stays for the
+// day, the camera stays where the finger left it; a tap on the water or the campsite acts in place (no walk): a
+// ripple, its line about today's guest.
 import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
@@ -61,15 +62,19 @@ test('a tap by the campsite runs my villager up the path, never through the wate
   await shot(page, 'after-run');
 });
 
-test('a tap on the pond walks to its bank, facing the water; the walk stays for the session', async ({ page }) => {
+test('a tap on the pond ripples and walks nowhere; a walk stays for the session', async ({ page }) => {
   await open(page, undefined, 560);
+  const home = await call(page, (w) => w.mine());
   const [x, y] = await call(page, (w) => w.at(74, 772));
   await page.mouse.click(x, y);
+  await expect(page.locator('[data-fx="splash"], .splash').first()).toBeAttached();
+  await expect(page.locator('.tap-ring')).toHaveCount(0);
+  expect((await track(page, 1500)).at(-1)).toEqual(home);
+  // a tap on the grass beside it walks there, and it's still there after a reload
+  const [gx, gy] = await call(page, (w) => w.at(150, 760));
+  await page.mouse.click(gx, gy);
   const end = (await track(page)).at(-1)!;
-  // on the bank: out of the water (rx 46, rz 26) by the pad, within reach of it
-  const d = Math.hypot((end[0] - 74) / 46, (end[1] - 772) / 26);
-  expect(d).toBeGreaterThan(1);
-  expect(Math.hypot(end[0] - 74, end[1] - 772)).toBeLessThan(80);
+  expect(Math.hypot(end[0] - 150, end[1] - 760)).toBeLessThan(3);
   await page.reload();
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(400);
@@ -88,23 +93,24 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   expect(await call(page, (w) => w.cam())).toBe(front);
 });
 
-test('the campsite: walk to the door, its line about today’s guest (nobody inside)', async ({ page }) => {
+test('the campsite: a tap and its line about today’s guest (nobody inside), my villager staying where it is', async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
+  const home = await call(page, (w) => w.mine());
   await page.locator('[data-building="campsite"] .door').click();
   const box = page.locator('[data-fx="talk"]');
-  await expect(box).toContainText('キャンプサイト', { timeout: 8000 });
-  const end = await call(page, (w) => w.mine());
-  expect(Math.hypot(end[0] - 196, end[1] - (984 - 16))).toBeLessThan(30);
+  await expect(box).toContainText('キャンプサイト', { timeout: 2000 });
+  expect(await call(page, (w) => w.mine())).toEqual(home);
   await shot(page, 'campsite-door');
   for (let i = 0; i < 4 && (await box.count()); i++) await box.click().catch(() => {});
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
-test('a tap at the tent’s foot knocks at its door (the footprint snaps to the door)', async ({ page }) => {
+test('a tap at the tent’s foot knocks at its door in place (the footprint is the campsite’s)', async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00&visitor=none', 642);
   // the ground just inside the tent's footprint (taps on the art itself are the door button's)
   await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' });
   const [x, y] = await call(page, (w) => w.at(170, 1000));
   await page.mouse.click(x, y);
-  await expect(page.locator('[data-fx="talk"]')).toContainText('キャンプサイト', { timeout: 8000 });
+  await expect(page.locator('[data-fx="talk"]')).toContainText('キャンプサイト', { timeout: 2000 });
+  await expect(page.locator('.tap-ring')).toHaveCount(0);
 });

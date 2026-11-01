@@ -1,8 +1,8 @@
-// Walking (docs/design.md "Walking"): my villager walks to what I tap and does it there (tool in hand), holds up a catch,
-// stays a moment and wanders home; the partner's wanders between points of interest with footsteps under it. Neither
-// ends up over a control, mine stays a thumb-sized button while it walks, and a sheet stops them where they are.
+// Walking (docs/design.md "Walking"): only a tap on empty ground walks my villager; a tap on something to do acts in
+// place (my villager turns to it, the tool shows at the target) and a catch is held up where it stands; the partner's
+// wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
+// thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
-import { FLOWERS } from '../src/lib/components/island/world.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function open(page: Page, q = '') {
@@ -10,6 +10,9 @@ async function open(page: Page, q = '') {
   await expect(ribbon(page)).toBeVisible();
   await page.waitForTimeout(800); // the opening beats
 }
+/** A world point on screen (client px). */
+const at = (page: Page, x: number, z: number) =>
+  page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), [x, z] as const);
 /** My villager's feet (client px), from its actor's live transform. */
 const feet = (page: Page, id = 'mine') =>
   page.locator(`[data-actor="${id}"]`).evaluate((el) => {
@@ -39,7 +42,7 @@ const overlaps = (page: Page, id = 'mine') =>
   }, id);
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a tap on a weed: my villager walks there, then pulls it; it never stands over a control (${w}px)`, async ({ page }) => {
+  test(`a tap on a weed pulls it where it is: my villager stays put (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await open(page);
     const weeds = page.locator('[data-care="weed"]');
@@ -52,51 +55,41 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0]);
     const n = await weeds.count();
     await page.mouse.click(p.x, p.y - 4);
-    // under way: walking, the weed still there, the villager still a ≥ 44px button
-    await expect(page.locator('[data-actor="mine"].walking')).toBeAttached();
-    await expect(weeds).toHaveCount(n);
-    const btn = await page.locator('[data-actor="mine"] .vil').boundingBox();
-    expect(Math.min(btn!.width, btn!.height)).toBeGreaterThanOrEqual(44);
-    // there: pulled, standing beside it, over no control
-    await expect(weeds).toHaveCount(n - 1, { timeout: 2000 });
+    // pulled at once, nobody walked
+    await expect(weeds).toHaveCount(n - 1, { timeout: 1000 });
+    await page.waitForTimeout(400);
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     const there = await feet(page);
-    expect(Math.hypot(there.x - home.x, there.y - home.y)).toBeGreaterThan(20);
-    expect(Math.hypot(there.x - p.x, there.y - p.y)).toBeLessThan(60);
-    expect(await overlaps(page)).toEqual([]);
+    expect(Math.hypot(there.x - home.x, there.y - home.y)).toBeLessThan(1);
     await page.screenshot({ path: test.info().outputPath(`weed-${w}.png`) });
-    // a moment later it wanders home
-    await expect.poll(async () => { const f = await feet(page); return Math.round(Math.hypot(f.x - home.x, f.y - home.y)); }, { timeout: 12_000 }).toBeLessThan(2);
   });
 
-test('a second tap re-targets the walk from where the villager is', async ({ page }) => {
+test('a tap on the ground walks there, never over a control, a thumb-sized button on the way; a second tap re-targets the walk from where the villager is', async ({ page }) => {
   await open(page);
-  // across the lawn to a clump of flowers on the right, then (mid-walk) to one on the left: it turns from where it is
-  const right = FLOWERS.find((f) => f.x > 220)!, left = FLOWERS[0];
-  const a = await centre(page, `[data-flower="${right.id}"]`), b = await centre(page, `[data-flower="${left.id}"]`);
-  await page.mouse.click(a.x, a.y - 4);
+  const home = await feet(page);
+  const a = await at(page, 210, 290), b = await at(page, 175, 185);
+  await page.mouse.click(a[0], a[1]);
+  await expect(page.locator('[data-actor="mine"].walking')).toBeAttached();
+  const btn = await page.locator('[data-actor="mine"] .vil').boundingBox();
+  expect(Math.min(btn!.width, btn!.height)).toBeGreaterThanOrEqual(44);
   await page.waitForTimeout(150);
-  await page.mouse.click(b.x, b.y - 4);
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0, { timeout: 2000 });
+  await page.mouse.click(b[0], b[1]);
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0, { timeout: 4000 });
   const f = await feet(page);
-  expect(Math.hypot(f.x - b.x, f.y - b.y)).toBeLessThan(130); // the can's reach (from the flower's middle)
+  expect(Math.hypot(f.x - home.x, f.y - home.y)).toBeGreaterThan(20);
+  expect(Math.hypot(f.x - b[0], f.y - b[1])).toBeLessThan(12);
   expect(await overlaps(page)).toEqual([]);
 });
 
-test('a netted bug holds still until the swing (net in hand when my villager walks over); the catch is held up while the plate reads', async ({ page }) => {
+test('a netted bug holds still under the net, swung where it is (no walk); the catch is held up while the plate reads', async ({ page }) => {
   await open(page, '&critter=common-butterfly');
   const bug = page.locator('[data-critter="common-butterfly"]');
   await expect(bug).toBeAttached();
   await page.waitForTimeout(1600); // it has flown in
-  // note every tool that comes out (it's in hand for the swing only)
-  await page.evaluate(() => {
-    const w = window as { __tools?: string[] };
-    w.__tools = [];
-    new MutationObserver(() => document.querySelectorAll<HTMLElement>('[data-tool]').forEach((t) => w.__tools!.push(t.dataset.tool!))).observe(document.body, { subtree: true, childList: true });
-  });
+  const home = await feet(page);
   const p = await centre(page, '[data-critter="common-butterfly"]');
   await page.mouse.click(p.x, p.y);
-  // held still where it was until the swing lands (the walk is ≥ 150 ms)
+  // held still where it was under the net
   const still = await page.evaluate(() => {
     const el = document.querySelector('[data-critter="common-butterfly"]')!;
     const at = () => JSON.stringify(el.getBoundingClientRect());
@@ -104,13 +97,13 @@ test('a netted bug holds still until the swing (net in hand when my villager wal
     return new Promise<boolean>((done) => setTimeout(() => done(!el.isConnected || at() === a), 100));
   });
   expect(still).toBe(true);
-  // the net: in my villager's hand when it could walk there (a bug by the flowers), else swung where the bug is as before
-  const swing = await page.locator('[data-net]').getAttribute('data-net', { timeout: 2000 });
-  const tools = await page.evaluate(() => (window as { __tools?: string[] }).__tools);
-  if (swing === 'held') expect(tools).toContain('net');
-  else expect(tools).not.toContain('net');
+  // the net floats and swings where the bug is; my villager stays where it stood
+  await expect(page.locator('[data-net="float"]')).toBeAttached({ timeout: 2000 });
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
   const held = page.locator('[data-actor="mine"] [data-holding="critters/common-butterfly"]');
   await expect(held).toBeVisible({ timeout: 3000 });
+  const f = await feet(page);
+  expect(Math.hypot(f.x - home.x, f.y - home.y)).toBeLessThan(1); // held up where it stands
   await expect(page.locator('.catch-plate')).toBeVisible();
   // the plate keeps clear of the held-up catch and the villager
   const plate = (await page.locator('.catch-plate').boundingBox())!, item = (await held.boundingBox())!;
@@ -120,8 +113,8 @@ test('a netted bug holds still until the swing (net in hand when my villager wal
 
 test('a sheet stops the walk where it is', async ({ page }) => {
   await open(page);
-  const p = await centre(page, '[data-care="weed"]', 1);
-  await page.mouse.click(p.x, p.y - 4);
+  const p = await at(page, 210, 290);
+  await page.mouse.click(p[0], p[1]);
   await page.waitForTimeout(120);
   await ribbon(page).click();
   await expect(page.locator('dialog[open]')).toBeVisible();
@@ -170,7 +163,7 @@ test('under a sheet the walkers stop and no footstep sounds', async ({ page }) =
 });
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a visitor: my villager walks over to talk and stands beside them, never in front (${w}px)`, async ({ page }) => {
+  test(`a visitor: a tap and they speak, my villager turning to them where it stands (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none');
     await expect(ribbon(page)).toBeVisible();
@@ -178,13 +171,10 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     // a host stands on centre stage, the campsite's clearing (おく)
     await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
     await page.waitForTimeout(400);
+    const home = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
     const v = await centre(page, '[data-visitor="jingle"] .art');
     await page.mouse.click(v.x, v.y);
-    // from home it's a run up the path to the campsite (a few seconds), then the host speaks
-    await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 4000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
-    // their middle is still theirs: no villager of mine under it
-    const onTop = await page.evaluate(({ x, y }) => document.elementsFromPoint(x, y).some((e) => e.closest('[data-actor="mine"]')), v);
-    expect(onTop).toBe(false);
-    expect(await overlaps(page)).toEqual([]);
+    expect(await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine())).toEqual(home);
   });

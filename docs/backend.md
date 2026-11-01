@@ -318,7 +318,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **The store** (`store/world.svelte.ts`, `world`): today's day on this phone, kept in localStorage (`island.world`,
   the day's events; the demo's per tab) so a reload needs only what's new; `share(intent)` folds my change (refused
   when the partner already has it), keeps it and sends it; `on(fn)` the partner's, `live` when it happened in the last
-  12 s (the island plays it: their villager runs over, at most 3 s on the way, and does it), else (heard on opening) it
+  12 s (the island plays it: their villager turns to it and it plays at the target), else (heard on opening) it
   only changes the island. Attached to the phone's one socket when the backend starts (`store/live.ts`), so the
   partner's changes are heard on any tab of the app.
 - **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty): the

@@ -47,7 +47,7 @@
   import { weather } from './weatherNow.svelte.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggInBalloon } from './eggs.ts';
-  import { LONG_REACH, approach, partnerAct } from './avatar.ts';
+  import { partnerTurnTo, turnTo } from './avatar.ts';
   import { onMount } from 'svelte';
 
   interface Props {
@@ -97,8 +97,6 @@
     flip?: boolean;
     /** cloud: the side the puffs fly off (−1 / 1). */
     dir?: number;
-    /** flower: the can is in my villager's hand (no floating can). */
-    held?: boolean;
     /** shoot: its heading (deg) and length (px). */
     a?: number;
     len?: number;
@@ -110,7 +108,7 @@
   const skyFx = $derived(fx.filter((f) => SKY_KINDS.includes(f.kind)));
   const groundFx = $derived(fx.filter((f) => !SKY_KINDS.includes(f.kind)));
   let seq = 0;
-  const { later, after, clear } = timers();
+  const { later, clear } = timers();
   const night = $derived(tod === 'night');
   const roll = (n: number) => Math.random() * n < 1;
   let critters = $state<ReturnType<typeof Critters>>();
@@ -262,18 +260,15 @@
     }
   }
 
-  /** A bush: my villager walks up to it and gives it a shake (avatar.ts), then THAT bush rustles and sheds (and on the
-   *  partner's phone my villager shakes it too). */
+  /** A bush: my villager turns to it (avatar.ts) and THAT bush rustles and sheds (and on the partner's phone too). */
   function bush(el: HTMLElement, b: { x: number; z: number; h: number }) {
     const id = el.dataset.bush;
     if (id) shared.share({ kind: 'act', act: 'bush', id, pt: [Math.round(b.x), Math.round(b.z)] });
-    const { ms } = approach(b.x, b.z, { motion: 'shake' });
-    after(ms, () => {
-      jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
-      spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
-      bushBug(b.x, b.z, b.h * 0.7);
-      sceneSfx('bush');
-    });
+    turnTo(b.x);
+    jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
+    spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
+    bushBug(b.x, b.z, b.h * 0.7);
+    sceneSfx('bush');
   }
 
   /** A wild flower: my villager waters it. */
@@ -284,15 +279,13 @@
     water(dayKey(), f.id);
     // the partner's phone: the flower glitters there too, my villager waters it
     shared.share({ kind: 'world', op: 'watered', id: f.id });
-    // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
-    const { ms, walked } = approach(f.x, f.z, { tool: 'can', toolMs: 900, reach: LONG_REACH });
-    after(ms, () => {
-      jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
-      // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
-      spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > 195, held: walked });
-      sceneSfx('water');
-      if (rare === 'butterfly') sceneSfx('butterfly');
-    });
+    // my villager turns to it; the watering can floats over the bloom
+    turnTo(f.x);
+    jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
+    // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
+    spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > 195 });
+    sceneSfx('water');
+    if (rare === 'butterfly') sceneSfx('butterfly');
   }
 
   /** A tap in the sky (x, y: px from the stage's top-left). */
@@ -439,22 +432,18 @@
       if (e.kind === 'act' && e.act === 'bush' && e.id) {
         const b = bushAt(e.id), el = scene?.querySelector<HTMLElement>(`[data-bush="${e.id}"]`);
         if (!b) return;
-        const { ms } = partnerAct(b.x, b.z, { motion: 'shake' });
-        after(ms, () => {
-          jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
-          spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
-          sceneSfx('bush');
-        });
+        partnerTurnTo(b.x);
+        jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
+        spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
+        sceneSfx('bush');
       } else if (e.kind === 'world' && e.op === 'watered') {
         const f = flowerById(e.id);
         if (!f) return;
         const el = scene?.querySelector<HTMLElement>(`[data-flower="${f.id}"]`);
-        const { ms } = partnerAct(f.x, f.z, { tool: 'can', toolMs: 900, reach: LONG_REACH });
-        after(ms, () => {
-          jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
-          spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195, held: true });
-          sceneSfx('water');
-        });
+        partnerTurnTo(f.x);
+        jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
+        spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195 });
+        sceneSfx('water');
       }
     })
   );
@@ -566,7 +555,7 @@
       {:else if f.kind === 'flower'}
         <i class="petal" style:--dx="-1"></i><i class="petal two" style:--dx="1"></i>
         <svg class="spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
-        {#if !f.held}<span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(22 * var(--su))" eager /></span>{:else}<span data-fx="water"></span>{/if}
+        <span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(22 * var(--su))" eager /></span>
         {#each [0, 1, 2, 3, 4] as i (i)}<i class="drip" style:--i={i} style:--dx={(i % 3) - 1}></i>{/each}
         <svg class="spark late" viewBox="0 0 24 24"><path d={STAR} /></svg>
         {#if f.rare === 'butterfly'}

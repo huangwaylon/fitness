@@ -47,7 +47,7 @@
   import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, SHORE_Z, TREE_H, flowerById, surfaceAt, type BuildingId } from './world.ts';
   import { campLine, doorAt, partnerOnline } from './buildings.ts';
   import { RING_MS, stepCue } from './tapWalk.ts';
-  import { nav } from './nav.ts';
+  import { buildingAt, nav } from './nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { sendIslandDay } from '#lib/store/actions.ts';
@@ -61,7 +61,7 @@
   import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { walkGeo } from './walkGraph.ts';
-  import { approach, attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, snapHome, stayingAt, thaw, SNAP_HOME_MS } from './avatar.ts';
+  import { attachAvatar, partnerRestsAt, partnerTo, presence, freeze, sendTo, snapHome, stayingAt, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
   import type { SceneHit } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { flushSync, onMount, untrack } from 'svelte';
@@ -163,9 +163,9 @@
   let talk = $state<ReturnType<typeof Talk>>();
   /** The scenery taps (a tap on my villager may send a flea hopping off it). */
   let sceneTaps = $state<ReturnType<typeof SceneTaps>>();
-  // A tap on the partner is a high-five (NH's reaction, no card): mine walks up beside them (a step away, running if
-  // it's far), they wait (both woken if asleep), then both hop face to face with the sparkles (R4) and it's sent. One at
-  // a time: a tap while one is under way does nothing more.
+  // A tap on the partner is a high-five (NH's reaction, no card), in place (only a tap on empty ground walks): both
+  // woken if asleep, the partner stops where it is, a sparkle flies from mine to them, and it's sent: the two turn to
+  // each other and hop with the sparkles (R4). One at a time: a tap while one is under way does nothing more.
   let fiving = false;
   function highFiveTap() {
     if (!live || covered || fiving) return;
@@ -174,12 +174,26 @@
     for (const id of ['mine', 'partner'] as const) if (actors[id].asleep) wake(id);
     const [px, pz] = livePos('partner');
     if (actors.partner.walking) place('partner', px, pz);
-    const { ms } = approach(px, pz, { reach: [40, 56], long: true });
-    actors.partner.busyUntil = Math.max(actors.partner.busyUntil, Date.now() + ms + 2400);
+    turnTo(px);
+    actors.partner.busyUntil = Math.max(actors.partner.busyUntil, Date.now() + 2400);
+    zapStart();
+    onhighfive?.();
+    life.later(() => (fiving = false), 2400);
+  }
+  /** The high-five's sparkle, flying from my villager's hands to the partner's in an arc (ZAP_MS). */
+  let zap = $state<{ n: number; t0: number } | null>(null);
+  const ZAP_MS = 520;
+  function zapStart() {
+    const t0 = performance.now(), n = (zap?.n ?? 0) + 1, stop = world.moveStart();
+    zap = { n, t0 };
     life.later(() => {
-      fiving = false;
-      if (!covered) onhighfive?.();
-    }, ms + 120);
+      stop();
+      if (zap?.n === n) zap = null;
+    }, ZAP_MS + 60);
+  }
+  function zapAt(): readonly [number, number, number] {
+    const k = Math.min(1, (performance.now() - (zap?.t0 ?? 0)) / ZAP_MS), [ax, az] = livePos('mine'), [bx, bz] = livePos('partner');
+    return [ax + (bx - ax) * k, az + (bz - az) * k, VILLAGER.h * (0.55 + Math.sin(Math.PI * k) * 0.35)];
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
   const today = $derived(dayKey(clock));
@@ -319,16 +333,17 @@
   }
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
    *  knocks at its door (walk there, then its line). */
-  function walkThere(x: number, z: number, _hit: SceneHit): boolean {
+  function walkThere(x: number, z: number, hit: SceneHit): boolean {
     if (!live || covered || actors.mine.asleep) return false;
+    // only empty ground walks: water ripples and a building's footprint knocks at its door where my villager stands
+    if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
+    const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
+    if (b0 && door) return building(b0, door), true;
     const r = sendTo(x, z);
     if (!r) return false;
     // the partner's phone runs mine there too, and the relay keeps it (where mine stands, for a phone opening later)
     shared.share({ kind: 'walk', to: [Math.round(r.to[0]), Math.round(r.to[1])] });
     ring(r.to[0], r.to[1]);
-    const b = r.snap.kind === 'door' ? r.snap.building : undefined;
-    const el = b && sceneEl?.querySelector<HTMLElement>(`[data-building="${b}"] .door`);
-    if (b && el) life.later(() => knock(b, el), r.ms + 120);
     return true;
   }
 
@@ -439,7 +454,7 @@
     wasCovered = c;
     untrack(() => (c ? freeze() : thaw()));
   });
-  // A shaken tree: my villager walks up to its trunk and shakes it (avatar.ts), then what falls falls (TreeShakes:
+  // A shaken tree: it shakes where it stands, my villager turning to it (avatar.ts), and what falls falls (TreeShakes:
   // every tree on the island, its drop by its kind; the goal trees' canopies count their own taps, FruitTree).
   /** A tree by id (the same on both phones). */
   const treeOf = (id: string): ShakeTree | null => treeById(id);
@@ -447,9 +462,8 @@
     shakeAt(goalTree(pid));
   }
   function shakeAt(tr: ShakeTree) {
-    const { ms } = approach(tr.x, tr.z, { motion: 'shake' });
-    if (ms) life.later(() => shakes?.shaken(tr), ms);
-    else shakes?.shaken(tr);
+    turnTo(tr.x);
+    shakes?.shaken(tr);
   }
   /** Any other tree (SceneTaps' tap on its art): a tap rustles it; the third quick one is a shake (treeShake.ts). */
   const treeTaps: Record<string, number[]> = {};
@@ -525,18 +539,13 @@
       if (partnerTo(to[0], to[1])) ring(to[0], to[1], true);
     });
   });
-  // The campsite's door (docs/design.md "Buildings"): my villager walks to it, and a knock says who is visiting today
-  // (nobody lives inside; the balloon's tail at the door).
+  // The campsite's door (docs/design.md "Buildings"): a tap says who is visiting today (nobody lives inside; the
+  // balloon's tail at the door).
   function building(id: BuildingId, el: HTMLElement) {
     if (!live || covered) return;
-    const door = doorAt(id);
-    let { ms, walked } = approach(door[0], door[1] + 12, { spot: door, far: true });
-    if (!walked) {
-      // too far for an action walk: run there (tap-to-walk)
-      const r = sendTo(door[0], door[1]);
-      if (r) ms = r.ms;
-    }
-    life.later(() => knock(id, el), ms + 120);
+    // in place (only a tap on empty ground walks): my villager turns to the door and the line is said
+    turnTo(doorAt(id)[0]);
+    knock(id, el);
   }
   /** At the door: the campsite's line about today's guest (the balloon's tail at the door). */
   function knock(id: BuildingId, el: HTMLElement) {
@@ -647,6 +656,14 @@
           </span>
         {/if}
 
+        {#if zap}
+          {#key zap.n}
+            <!-- the high-five's sparkle, flying from mine to the partner -->
+            <div class="zap-node" aria-hidden="true" {@attach world.at({ x: 0, z: 0, h: 20, live: zapAt, always: true, light: true })}>
+              <svg class="zap" viewBox="0 0 24 24" data-zap><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /><circle cx="12" cy="12" r="3" /></svg>
+            </div>
+          {/key}
+        {/if}
         {#each rings as r (r.n)}
           <!-- where a tap sent my villager: a cream ring on the ground, shrinking out (NH has none; the least feedback) -->
           <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring" class:partner={r.partner} data-ring={r.partner ? 'partner' : 'mine'}></i></div>
@@ -748,6 +765,11 @@
   @keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
   .fall { position: absolute; inset: 0; z-index: var(--z-fall); pointer-events: none; }
   .ring-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
+  .zap-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
+  .zap { position: absolute; left: calc(-13 * var(--u)); top: calc(-13 * var(--u)); width: calc(26 * var(--u)); height: calc(26 * var(--u)); animation: zap .52s linear both; }
+  .zap path { fill: var(--fx-spark); }
+  .zap circle { fill: #fff; }
+  @keyframes zap { from { transform: scale(.5) rotate(0); opacity: 0; } 15% { opacity: 1; } 50% { transform: scale(1.15) rotate(90deg); } 85% { opacity: 1; } to { transform: scale(.7) rotate(180deg); opacity: 0; } }
   /* the partner off screen: their villager's face at the edge (under the HUD at the top, over the foot at the bottom) */
   .edge {
     position: absolute; left: 50%; z-index: var(--z-taps); translate: -50% 0; width: 44px; height: 44px; padding: 6px; border: 0; pointer-events: none;

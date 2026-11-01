@@ -39,7 +39,7 @@ async function cast(page: Page) {
   for (let i = 0; i < 3; i++) {
     const f = await at(page, '[data-critter="fish"]');
     await page.mouse.click(f.x, f.y);
-    // the cast has begun (my villager may still be walking down to the shore): a second tap now would be an early one
+    // the cast has begun (in place: no walk first): a second tap now would be an early one
     if (await page.locator('[data-bobber]').waitFor({ state: 'attached', timeout: 1500 }).then(() => true, () => false)) break;
   }
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
@@ -70,7 +70,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
     const d = Math.hypot(o.x + o.width / 2 - (g.x + g.width / 2), o.y + o.height - (g.y + g.height));
     expect(d, await other.getAttribute('data-care') ?? await other.getAttribute('data-find') ?? '').toBeGreaterThan(16);
   }
-  // a tap: my villager walks over, the present pops open (confetti), and what was inside (NH's furniture, clothing or a
+  // a tap: the present pops open where it lies (confetti), and what was inside (NH's furniture, clothing or a
   // DIY recipe) is held up over its head with 「◯◯を てにいれた！」; no ベル
   await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
   await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
@@ -105,19 +105,13 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   await page.mouse.click(f.x + (f.x < 195 ? 40 : -40), f.y); // a cast beside the shadow, not on it
   await expect(page.locator('[data-bobber]')).toBeAttached();
   await expect(page.locator('[data-bite]')).toHaveText('！', { timeout: 10_000 });
-  // the 「！」: small (≤ 28px) and inside the screen; the line runs from the rod in my villager's hand
+  // the 「！」: small (≤ 28px) and inside the screen; the line runs from the bank, nobody walked
   await page.waitForTimeout(350); // popped in (it overshoots a little on the way)
   const bang = (await page.locator('[data-bite]').boundingBox())!;
   expect(bang.width).toBeLessThanOrEqual(28.5);
   expect(bang.x).toBeGreaterThanOrEqual(7.5);
   expect(bang.x + bang.width).toBeLessThanOrEqual(390 - 7.5);
-  // (when it walked down to the beach: a shadow off the far end may be too far to walk to)
-  if (await page.locator('[data-actor="mine"] [data-tool="rod"]').count()) {
-    const tip = (await page.locator('[data-actor="mine"] [data-tool="rod"]').boundingBox())!;
-    const start = await page.locator('.line path').evaluate((p: SVGPathElement) => { const m = p.getScreenCTM()!; const q = p.getPointAtLength(0); return new DOMPoint(q.x, q.y).matrixTransform(m); });
-    expect(start.x).toBeGreaterThan(tip.x - 4), expect(start.x).toBeLessThan(tip.x + tip.width + 4);
-    expect(start.y).toBeGreaterThan(tip.y - 4), expect(start.y).toBeLessThan(tip.y + tip.height + 4);
-  }
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
   await expect(page.locator('[data-bobber="bite"]')).toBeAttached();
   await page.waitForTimeout(400); // a human's reaction
   await seaTap(page);

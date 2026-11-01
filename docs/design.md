@@ -36,7 +36,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
 panel](#panel)) with the jar on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
 しずえ's box only with news. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
-(home, the health lawn) back to ひろば and おく, a tap walks my villager there.
+(home, the health lawn) back to ひろば and おく, a tap on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: per goal (🍎
   steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
@@ -326,8 +326,8 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
 
 ### Buildings
 
-`island/buildings.ts`, `island/Scenery.svelte`, `island/Museum.svelte`, `e2e/tapwalk.spec.ts`. A building is one tap: my villager walks (or runs,
-the camera following) to its door, NH's character inside answers in the balloon (its tail at the door, their colour
+`island/buildings.ts`, `island/Scenery.svelte`, `island/Museum.svelte`, `e2e/tapwalk.spec.ts`. A building is one tap (on it or its footprint's
+ground; my villager turns to it where it stands, no walk): NH's character inside answers in the balloon (its tail at the door, their colour
 on the name tag) and when it closes the feature opens. Resident Services: しずえ (たぬきち 22:00–05:00) → せってい;
 Nook's Cranny: まめきち・つぶきち → ごほうび; Able Sisters: あさみ → the むらびと picker; Dodo Airlines: モーリー →
 つうしん (せってい at its sync section); the museum: フータ → the ずかん ([Museum](#museum)); the campsite: who is
@@ -395,16 +395,16 @@ NH).
 
 - **Tap or shake:** on a goal tree one canopy tap opens or closes the popup; on any other tree a tap on its leaves
   (Scenery's `data-tree` hit area, the leaves only: the ground round it stays the ground's) rustles it. The third tap
-  within 1.2 s (and each quick tap after) is a shake: a goal tree's popup closes, my villager walks up to the trunk and
-  shakes it, the tree rustles (`tree-shake`).
+  within 1.2 s (and each quick tap after) is a shake: a goal tree's popup closes, the tree shakes where it stands and
+  rustles (`tree-shake`), my villager turning to it (no walk).
 - **What falls, by the kind of tree (NH's):** a hardwood (an oak, a goal tree) or a cedar: 1 in 8 a wasp nest, else 1
   in 7 a dangling bug, else 1 in 5 a branch (it lies beside the trunk until a tap picks it up; cosmetic). A palm: its
   two coconuts the first time it's shaken in a Tokyo day (they lie round its foot; a tap picks one up, NH's 「ヤシのみを
   ひろった！」), after that only, 1 in 8, a nest (NH: no branches or bagworms from a palm). At most one nest per tree an
   hour, on both phones. No furniture (NH's hardwoods drop some; scenery here never pays), and no fruit from a goal tree:
   its fruit falls when its goal is met.
-- **Shared** ([Shared world](#shared-world)): a shake's outcome goes to the partner; on their phone my villager runs to
-  the tree (at most 3 s), shakes it and the same thing falls; their wasps charge their villager (only they can net
+- **Shared** ([Shared world](#shared-world)): a shake's outcome goes to the partner; on their phone my villager turns to
+  the tree, it shakes and the same thing falls; their wasps charge their villager (only they can net
   them). What lies (branches, coconuts) is the shared day's: a reload or the other phone finds it there, and a pick-up
   by either of us takes it on both (first wins). `?shake=nest|branch|bagworm|spider|coconut` forces the next drop.
 - **The nest:** three wasps buzz out and charge the villager who shook it for 1.5 s; a tap in time nets one (NH's catch
@@ -432,8 +432,8 @@ stars](#shooting-stars)); the pond rings.
 NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in the sky's lane above the
 ribbon (none on a sky too short). A tap pops it; the present falls onto the lawn nearest the current view, on the
 nearest open grass clear of what lies there and of every control, bounces and stays until tapped (not kept across a
-reload). My
-villager walks over, the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
+reload). A tap
+opens it where it lies: the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
 plate reads 「カエルのチェアを てにいれた！」 (`island/catalog.ts`, its own chunk with its names, fetched when a present
 lands). What's inside follows NH (Nookipedia, Balloon: the item drop rates, Bells and materials left out): furniture 35 :
 clothing 20 : a season's DIY recipe 15 while a recipe season is on, else 50 : 25. The pool is NH's shop stock, 1,836
@@ -459,10 +459,10 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
   shared id is by person or by where the thing stands (a flower's `fl:<x>:<z>`); `?demo` and `?demo&as=B` show the
   same island.
 
-- **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager runs over (at
-  most 3 s on the way) and does it with its tool (the net, the rod, the shovel, a shake, a pick-up); a catch or a find
-  is held up over their head with a small plate (「うめが スズキを つかまえた！」, `world.partner.*`) when it's in view,
-  else a notice slides in at the edge on their side (the item's icon and the line, 3.6 s). Heard on opening (older),
+- **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager turns to it
+  where it stands (no run over, as on their phone) and it plays at the target (the net or the shovel there, a splash,
+  a shake, a pick-up); a catch or a find is held up over their head with a small plate (「うめが スズキを
+  つかまえた！」, `world.partner.*`) when it's in view, else a notice slides in at the edge on their side (the item's icon and the line, 3.6 s). Heard on opening (older),
   it only changes the island.
 - **First wins:** of two people tapping the same thing, the relay's first claim is it; the other phone sees it taken
   by them (their villager holds it up) and its own tap does nothing more.
@@ -480,13 +480,14 @@ water, the swim patch, the trunk, the flower head or the patch of grass, and eve
 at its time after it came (`critterPath.ts`), so both phones have it at the same spot doing the same thing, and a phone
 opening mid-stay finds it where the other shows it; each phone shows it when its camera sees that spot (covered or
 hidden, the critters leave; back, those still staying are there); ≤ 1 in each water and 1 bug. A catch or an escape
-is shared by the critter's id (first wins): it's gone on both phones, and on the partner's their villager runs over
-and nets it, reels it in, dives or digs, and holds it up. A bug out of a shaken bush, from under the rock or off my
+is shared by the critter's id (first wins): it's gone on both phones, and on the partner's their villager turns to it
+and it's netted, reeled in, dived for or dug there, and held up. A bug out of a shaken bush, from under the rock or off my
 villager is put on the island for both (`put`), its moves from its id. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
 northern-hemisphere months; hours still hold.
 
 - **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
-  sizes 1–6) dawdles there; my villager walks to the shore (or the bank) to fish. A tap near it casts a bobber from the rod in my villager's hand; the fish closes in over 2–3 darts, nibbles
+  sizes 1–6) dawdles there. A tap near it casts a bobber, the line from the bank in front of it (my villager turns to
+  it where it stands); the fish closes in over 2–3 darts, nibbles
   0–3 times, then bites: the bobber is yanked under, a small 「！」 pops over it, and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (14–46u, the eels long and thin; a fin for
@@ -521,8 +522,8 @@ northern-hemisphere months; hours still hold.
 `island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`. The day's items derive from the
 Tokyo date and time plus a seed, so both phones agree; what either of us picks up, digs or opens is gone on both
 ([Shared world](#shared-world): a `pick`, claimed at the tap, first wins; this phone keeps its own in `scene-day` too),
-the next dig spot is the same on both, and on the other phone our villager walks over, picks it up and holds it up with
-the line. The first of each shell, fossil and fragment is a ずかん `find`, written when it's picked up (and still ours).
+the next dig spot is the same on both, and on the other phone our villager turns to it, it's picked up (or dug) where
+it lies, with the line. The first of each shell, fossil and fragment is a ずかん `find`, written when it's picked up (and still ours).
 
 - **Seashells** (NH's eight; the summer shell rare, likelier June–September): one washes up every 60–120 s, the newest
   three lie on the sand. A tap picks it up: 「タカラガイを ひろった！」.
@@ -621,9 +622,9 @@ it ([Critters](#critters)); it opens no balloon and no sheet (it was too easy to
 (`island/Talk.svelte`) is for the island's other speakers: the doors, the visitors, Blathers, Wilbur. One balloon at a
 time.
 
-A tap on the partner's villager is a **ハイタッチ** straight away (no card): the tap sound, then my villager walks up a
-step beside them (`approach`, running if it's far) while they wait where they are (either woken first if asleep),
-and both hop face to face with the sparkles and one joyful sound (R4, which never waits behind another reaction).
+A tap on the partner's villager is a **ハイタッチ** straight away (no card), in place: the tap sound, they stop where
+they are (either woken first if asleep), a sparkle flies in an arc from my villager to them, and both turn to each
+other and hop with the sparkles and one joyful sound (R4, which never waits behind another reaction).
 Then it's sent: the `highfive` event (the store, synced as before), the banner 「うめさんに ハイタッチ！」 on this
 phone, and on theirs 「ウェイさんからハイタッチ！」 with their villager's R5. A tap while one is under way adds
 nothing. Their numbers and when their data last arrived are on their tree's popup (the card's one line about their
@@ -638,7 +639,7 @@ seeded by the date: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy Ma
 (`visitorAt`): the event's host (Jack included), the wedding couple, Celeste, then K.K. and the rest. They stand on
 centre stage in the plaza (ひろば) at the villagers' scale times their NH height, with a contact shadow; as in NH,
 **Gulliver washes up on the front beach** and **Daisy Mae wanders the front lawn** (both seen from まえ). A tap (while
-they're on screen): my villager runs over, then their introduction the first time, then one of their lines
+they're on screen): my villager turns to them where it stands, then their introduction the first time, then one of their lines
 (`visitorInView` says whether they're on screen now). No trading, no ベル.
 
 **K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
@@ -668,8 +669,8 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
   while their line is in the balloon.
 - **Strolls:** Daisy Mae, Franklin, Zipper and Celeste amble to a walkable spot around theirs (level or in front, clear
   of every control and the villagers) and back 4–7 s later; the others stay put. The villagers route around them.
-- **A tap:** the visitor walks back to its spot if it strolled, turns to my villager with a little hop and speaks once
-  my villager is beside them, standing still until the balloon closes. A tap elsewhere now and then draws a glance.
+- **A tap:** my villager turns to them where it stands; the visitor walks back to its spot if it strolled, turns to
+  my villager with a little hop and speaks, standing still until the balloon closes. A tap elsewhere now and then draws a glance.
 - **Arriving and leaving:** when a visit starts or ends with the island open: walkers come from the campsite along
   the paths (and go back there), Wisp floats down, Celeste flies down, K.K. and Gulliver appear, Jack in a spooky puff;
   they leave the same way. On a page's first paint they're simply there.
@@ -808,39 +809,31 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 `island/walkGraph.ts`, `island/nav.ts`, `island/tapWalk.ts`, `island/wander.ts` (pure), `island/avatar.ts`,
 `motion/director.svelte.ts` `walkTo`, `e2e/movement.spec.ts`, `e2e/world.spec.ts`, `e2e/tapwalk.spec.ts`.
 
-- **My villager is me:** a tap on something to do walks my villager there first, then the action plays where it
-  stands (the bush shaken, the can, the shovel, the rod, the net; a visitor speaks once it's there). A flea is tapped
-  off my villager itself: no walk.
-- **Tap-to-walk** (anywhere on the ground nothing else took; `tapWalk.ts planTap` over `nav.ts`): my villager runs
-  there (200 u/s), over the bridges and up the stairs. A tap that isn't walkable snaps: a building's footprint to its
-  door (and knocks: its character answers, as a tap on the building does), water (sea, river, pond, spring) to the
-  nearest bank facing the water, anything else to the nearest walkable point within 40u; ground nobody can reach (the
-  sand east of the river, walled in by its cedars) to the nearest reachable point, facing it. The partner's relayed
-  walks replay the same planner (their softer ring where they tapped). A cream ring marks the spot and shrinks away (NH
-  has none: the least feedback). It stays there for the rest of the Tokyo day (`island-stay` in localStorage, with the
-  date; a new day finds it home), and so does it on the partner's phone: the relay keeps each person's last walk, so a
-  phone opening later puts their villager where they sent it ([Shared world](#shared-world)).
-- **Camera follow** (`tapWalk.ts Follow`): when the runner or its destination is out of the band [HUD bottom + 80,
-  vh − 90], or the tap was far round the log (θ > 35°, a tiny target near the horizon), the scroller eases (lerp 0.12
-  a frame) toward the camera that keeps the runner in the band and leans as far toward the destination as that allows;
-  snapping is off meanwhile; 300 ms after arrival it eases onto the section that frames the walker (`restFor`) and
-  snapping is back; any touch takes the camera back. A tree's popup needing room above its canopy eases the camera up
-  the island too, and lets go (onto the nearest section) when it closes.
-  The camera never moves for the partner or a visitor.
-- **Snappy actions:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't
-  made: the villager turns to it. A building's door or a visitor across the island is a run instead. The outcome is
-  decided at the tap; the reel, a dive's chase, a tarantula and the wasps never wait for a walk.
-- **Where it stands:** around the target at 26u, else 40u (a can or a net also at arm's length), the nearest by walking;
-  a spot counts only if the standing figure covers no control, visitor or canopy and stays on screen.
-- **After:** it stays 4–6 s, then wanders back to where it rests (home, or where a tap sent it) at 90 u/s. A sheet
-  stops everyone; uncovered, they wander back; hidden over 30 s, they're back on return. A balloon opens only over a
-  villager standing still, and steps aside while the camera scrolls.
+- **My villager is me, and only empty ground walks it:** a tap on something to do (a tree, a bush, a flower, the rock,
+  a weed, a dig spot, a shell or a find, a fallen fruit, branch, coconut, mushroom or present, a bug, a fish shadow,
+  the bubbles, the water, the tape deck, a building, a visitor, the partner) acts in place: my villager turns to it
+  where it stands and the action plays at the target, its tool there (NH's floating can, shovel and net; a cast's line
+  from the bank). A catch or a find is held up over my villager's head where it stands. A flea is tapped off my
+  villager itself.
+- **Tap-to-walk** (a tap on grass or sand that nothing else took; `tapWalk.ts planTap` over `nav.ts`): my villager runs
+  there (200 u/s), over the bridges and up the stairs. A tap on ground it can't stand on snaps to the nearest walkable
+  point within 40u; ground nobody can reach (the sand east of the river, walled in by its cedars) to the nearest
+  reachable point, facing it. Water never walks (it ripples), and a building's footprint knocks at its door in place.
+  The partner's relayed walks replay the same planner (their softer ring where they tapped). A cream ring marks the
+  spot and shrinks away (NH has none: the least feedback). It stays there for the rest of the Tokyo day
+  (`island-stay` in localStorage, with the date; a new day finds it home), and so does it on the partner's phone: the
+  relay keeps each person's last walk, so a phone opening later puts their villager where they sent it ([Shared
+  world](#shared-world)).
+- **The camera never moves for a walk** (nor for the partner or a visitor): only the finger scrolls.
 - **Hold-up:** a catch or a find is lifted over my villager's head (`if-holdup`) while its plate reads.
+- **Sheets and hiding:** a sheet stops everyone where they are; uncovered, the outings wander back; hidden over 30 s,
+  they're back on return. A balloon opens only over a villager standing still, and steps aside while the camera
+  scrolls.
 - **Walk mask** (`walkGeo`): land, the plaza, both bridges and the stairs; not the sea, the river, the pond, the spring,
   the cliff face, building footprints, trunks, the rock, bushes or props. Rasterised once on a 4u grid; named
   nodes (homes, the trees, the shore, both ends of each bridge and of the stairs, every door, the pondside, the river's
   casting spots, centre stage) and the obstacles' padded corners make a visibility graph built once (~15 ms); a
-  straight segment when clear, else Dijkstra through it. Action walks and outings use it.
+  straight segment when clear, else Dijkstra through it. Outings, goal walks and the meet-up use it.
 - **Navigation for taps** (`nav.ts`): the same ground as convex polygons grown by an 8u pad (the river a chain of
   quads cut at the bridges' decks, the pond a 16-gon, the cliff two strips either side of the stairs, the footprints,
   trunks, bushes, props, the hedge, the fences, the bamboo, the rocks; off the land is the sea, and the land is convex, so two points on
