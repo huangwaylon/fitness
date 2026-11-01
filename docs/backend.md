@@ -400,13 +400,15 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   1 % of the 100k requests, 1.5 % of the writes. The acks, presence and replays go out (free). Per frame: none (the
   director moves the feet by the clock; a message only at a walk's start).
 - **Checked** (`e2e/sync-harness.spec.ts`): two players run a scripted session (four tap-walks, a pick-up, a catch,
-  a present put down and picked up, a watered flower, a shake, a wish, both grabbing one thing at once), then both
-  phones (and a third opening later) must have the same canonical day (`world-day.ts canonical`, `hash`) and each
-  villager at the same point, awake or asleep alike. On the demo's two tabs in CI; against the test relay with
+  a present put down and picked up, a watered flower, a shake, a wish, two decorations placed, one moved by the other
+  phone and one put away, both moving one at once, both grabbing one thing at once), then both phones (and a third
+  opening later) must have the same canonical day (`world-day.ts canonical`, `hash`), the same decorations (each
+  item's id, kind, spot and facing) and each villager at the same point, awake or asleep alike. On the demo's two tabs in CI; against the test relay with
   `RELAY_E2E=1 … --workers=1` (2026-11-02 00:10, from Tokyo, n = 3 runs): tap → the partner's villager sets off on the
   other phone median 34–40 ms (max 56), a pick-up / catch / put / watering / shake there 15–28 ms, a phone opening
   later has the same island 364–391 ms after its navigation starts (the page's load included); acks 29–38 ms; nothing
-  resent. The simulated room (`world-day.test.ts`, the real `RoomCore`) runs a 40-change session with conflicts, a
+  resent. A decoration's change there median 21 ms (max 23; 2026-11-02, n = 4), the phone opening later with the same
+  layout from the relay's replay alone (its own storage). The simulated room (`world-day.test.ts`, the real `RoomCore`) runs a 40-change session with conflicts, a
   dropped socket and its resends, and a late batched join: the same hash on every phone.
 
 ## Push
