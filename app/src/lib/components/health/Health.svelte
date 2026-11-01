@@ -6,7 +6,7 @@
 <script lang="ts">
   // けんこう (health, design.md "Kenkou"): the island panel's first tab (it opens on it), the Health data over time for
   // the personal trainer, one person at a time. First whose data (ウェイ / うめ, this phone's person by default;
-  // switching keeps the period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年 / すべて), then
+  // switching keeps the period and the range), then one period for every chart (1週 / 1か月 / 3か月 / 1年), then
   // which cards (かつどう / からだ, かつどう on each opening; switching keeps the period, range and person) and a sticky
   // row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
@@ -44,7 +44,7 @@
   let sel = $state<{ k: Card; i: number } | null>(null);
 
   const today = $derived(hs?.to ?? '');
-  const range = $derived(hs ? rangeFor(period, anchor ?? today, hs.from) : null);
+  const range = $derived(hs ? rangeFor(period, anchor ?? today) : null);
   const can = $derived(hs && range ? canShift(range, hs.from, today) : { back: false, on: false });
   const unitKey = $derived(range?.unit ?? 'day');
 

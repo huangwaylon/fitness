@@ -35,7 +35,7 @@ describe('as reported, and days with no record', () => {
     ...day('A', TODAY, { steps: 1000, ex: 5, kcal: 80, stand: 10 }, '11:00') // running
   ]);
   const hs = series(r);
-  const week = rangeFor('week', TODAY, hs.from);
+  const week = rangeFor('week', TODAY);
 
   it('a day’s values are Apple Health’s as is (66 steps, 0 kcal); only a missing row is no record, metric by metric', () => {
     expect(hs.from).toBe('2026-10-25');
@@ -66,7 +66,7 @@ describe('as reported, and days with no record', () => {
       ...day('B', '2026-10-30', { steps: 1, kcal: 420, ex: 1, stand: 1 })
     ], [[jst('2026-10-29', '08:00'), 'B', 'g1', 'pref', JSON.stringify({ key: 'moveGoal', value: 450 })]]);
     const h = series(r2);
-    const s = metricStats(h, 'B', 'move', rangeFor('week', TODAY, h.from));
+    const s = metricStats(h, 'B', 'move', rangeFor('week', TODAY));
     expect(s.met).toBe(1); // 420 ≥ 400 on 10-28; 420 < 450 on 10-30
   });
 
@@ -86,42 +86,38 @@ describe('periods, buckets and the previous period', () => {
   const hs = series(rows(metrics));
 
   it('1週 and 1か月 go by day, 3か月 by week (13, ending on the anchor), 1年 by calendar month', () => {
-    expect(rangeFor('week', TODAY, hs.from)).toMatchObject({ from: '2026-10-25', to: TODAY, unit: 'day' });
-    expect(rangeFor('month', TODAY, hs.from).buckets).toHaveLength(30);
-    const q = rangeFor('quarter', TODAY, hs.from);
+    expect(rangeFor('week', TODAY)).toMatchObject({ from: '2026-10-25', to: TODAY, unit: 'day' });
+    expect(rangeFor('month', TODAY).buckets).toHaveLength(30);
+    const q = rangeFor('quarter', TODAY);
     expect(q.unit).toBe('week');
     expect(q.buckets).toHaveLength(13);
     expect(q.buckets.at(-1)).toEqual({ from: '2026-10-25', to: TODAY });
-    const y = rangeFor('year', TODAY, hs.from);
+    const y = rangeFor('year', TODAY);
     expect(y.buckets).toHaveLength(12);
     expect(y.buckets[0]).toEqual({ from: '2025-11-01', to: '2025-11-30' });
     expect(y.buckets.at(-1)).toEqual({ from: '2026-10-01', to: TODAY });
-    expect(rangeFor('year', '2026-03-15', hs.from).buckets[1]).toEqual({ from: '2025-05-01', to: '2025-05-31' });
-    const all = rangeFor('all', TODAY, hs.from);
-    expect(all.from).toBe('2026-06-01');
-    expect(all.buckets).toHaveLength(5);
+    expect(rangeFor('year', '2026-03-15').buckets[1]).toEqual({ from: '2025-05-01', to: '2025-05-31' });
   });
 
   it('a week bucket averages its recorded days; the bucket holding today leaves today out', () => {
-    const q = rangeFor('quarter', TODAY, hs.from);
+    const q = rangeFor('quarter', TODAY);
     const b = bucketValues(hs, 'A', 'steps', q);
     expect(b.at(-1)).toMatchObject({ v: 10000, days: 6, met: 6, today: false });
-    const y = bucketValues(hs, 'A', 'steps', rangeFor('year', TODAY, hs.from));
+    const y = bucketValues(hs, 'A', 'steps', rangeFor('year', TODAY));
     expect(y[0]).toMatchObject({ v: null, days: 0 }); // before any data
     expect(y.at(-1)).toMatchObject({ v: 10000, days: 30 });
   });
 
   it('the change against the previous period of equal length', () => {
-    const r = rangeFor('month', addDays(TODAY, -90), hs.from); // the 30 days ending 90 days ago …
-    const prev = previousRange(r, hs.from)!;
+    const r = rangeFor('month', addDays(TODAY, -90)); // the 30 days ending 90 days ago …
+    const prev = previousRange(r);
     expect(prev.to).toBe(addDays(r.from, -1));
     expect(daysIn(prev)).toBe(30);
     // the first 30 days were 6,000, the next 30 days 10,000
-    const r2 = rangeFor('month', addDays(start, 59), hs.from);
+    const r2 = rangeFor('month', addDays(start, 59));
     expect(metricStats(hs, 'A', 'steps', r2).change).toBeCloseTo(10000 / 6000 - 1);
     // no previous data: no change
-    expect(metricStats(hs, 'A', 'steps', rangeFor('month', addDays(start, 29), hs.from)).change).toBeNull();
-    expect(metricStats(hs, 'A', 'steps', rangeFor('all', TODAY, hs.from)).change).toBeNull();
+    expect(metricStats(hs, 'A', 'steps', rangeFor('month', addDays(start, 29))).change).toBeNull();
   });
 
   it('‹ › step a whole period, never past today; ‹ only while there is older data', () => {
@@ -129,11 +125,9 @@ describe('periods, buckets and the previous period', () => {
     expect(shiftAnchor('month', '2026-10-01', 1, TODAY)).toBe(TODAY);
     expect(shiftAnchor('year', TODAY, -1, TODAY)).toBe('2025-10-31');
     expect(shiftAnchor('year', '2026-02-14', -1, TODAY)).toBe('2025-02-28');
-    expect(shiftAnchor('all', TODAY, -1, TODAY)).toBe(TODAY);
-    expect(canShift(rangeFor('month', TODAY, hs.from), hs.from, TODAY)).toEqual({ back: true, on: false });
-    expect(canShift(rangeFor('year', TODAY, hs.from), hs.from, TODAY)).toEqual({ back: false, on: false });
-    expect(canShift(rangeFor('week', '2026-10-01', hs.from), hs.from, TODAY)).toEqual({ back: true, on: true });
-    expect(canShift(rangeFor('all', TODAY, hs.from), hs.from, TODAY)).toEqual({ back: false, on: false });
+    expect(canShift(rangeFor('month', TODAY), hs.from, TODAY)).toEqual({ back: true, on: false });
+    expect(canShift(rangeFor('year', TODAY), hs.from, TODAY)).toEqual({ back: false, on: false });
+    expect(canShift(rangeFor('week', '2026-10-01'), hs.from, TODAY)).toEqual({ back: true, on: true });
   });
 });
 
@@ -144,7 +138,7 @@ describe('edge cases', () => {
     const hs = series(rows([]));
     expect(hs.any).toBe(false);
     expect(hs.from).toBe(TODAY);
-    const r = rangeFor('month', TODAY, hs.from);
+    const r = rangeFor('month', TODAY);
     expect(metricStats(hs, 'A', 'steps', r)).toEqual({ avg: null, days: 0, missing: 0, met: 0, best: null, change: null });
     expect(bucketValues(hs, 'B', 'move', r).every((b) => b.v === null)).toBe(true);
     expect(canShift(r, hs.from, TODAY).back).toBe(false);
@@ -153,7 +147,7 @@ describe('edge cases', () => {
 
   it('one person only: the other has no record anywhere', () => {
     const hs = series(rows([...day('A', '2026-10-30', { steps: 9000, ex: 10, kcal: 100, stand: 10 })]));
-    const r = rangeFor('week', TODAY, hs.from);
+    const r = rangeFor('week', TODAY);
     expect(metricStats(hs, 'A', 'steps', r).days).toBe(1);
     expect(metricStats(hs, 'B', 'steps', r)).toMatchObject({ avg: null, days: 0, missing: 1 });
   });
@@ -164,7 +158,7 @@ describe('edge cases', () => {
       m('A', '2026-10-20', 'weight', 69, '08:00'),
       m('A', '2026-10-22', 'weight', 68, '08:00')
     ]));
-    const r = rangeFor('month', TODAY, hs.from); // 10-02..10-31
+    const r = rangeFor('month', TODAY); // 10-02..10-31
     const s = weightStats(hs, 'A', r);
     expect(s.n).toBe(2);
     expect(s.avg).toBe(68.5);
@@ -178,8 +172,8 @@ describe('edge cases', () => {
     expect(b[0]).toEqual({ v: null, n: 0 });
     expect(b.find((x) => x.v === 69)).toBeTruthy();
     // a period with no weigh-in says nothing; one weigh-in has no change
-    expect(weightStats(hs, 'A', rangeFor('week', '2026-09-20', hs.from))).toEqual({ n: 0, avg: null, change: null, projection: null });
-    expect(weightStats(hs, 'A', rangeFor('week', '2026-09-03', hs.from))).toMatchObject({ n: 1, avg: 70, change: null });
+    expect(weightStats(hs, 'A', rangeFor('week', '2026-09-20'))).toEqual({ n: 0, avg: null, change: null, projection: null });
+    expect(weightStats(hs, 'A', rangeFor('week', '2026-09-03'))).toMatchObject({ n: 1, avg: 70, change: null });
     expect(weightStats(hs, 'B', r).n).toBe(0);
   });
 
@@ -188,18 +182,18 @@ describe('edge cases', () => {
     const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'weight', Math.round((72 - 0.1 * i) * 10) / 10, '08:00'));
     const goal = (g: number) => [[jst('2026-10-01', '08:00'), 'A', `g${g}`, 'pref', JSON.stringify({ key: 'goalWeight', value: g })] as EventRow];
     const hs = series(rows(metrics, goal(66)));
-    const s = weightStats(hs, 'A', rangeFor('month', TODAY, hs.from));
+    const s = weightStats(hs, 'A', rangeFor('month', TODAY));
     // 10-02..10-08 average 71.7 (mean day 10-05); 10-25..10-31 average 69.4 (mean day 10-28): 23 days apart
     expect(s.change).toMatchObject({ basis: 'weeks', from: 71.7, to: 69.4, at: '2026-10-28', change: -2.3, perWeek: -0.7 });
     // (66 − 69.4) / −0.7 = 4.86 weeks → 35 days after 10-28
     expect(s.projection).toEqual({ kind: 'date', date: '2026-12-02' });
     // the 1週 period: first weigh-in → last, too short for a pace or a date
-    const w = weightStats(hs, 'A', rangeFor('week', TODAY, hs.from));
+    const w = weightStats(hs, 'A', rangeFor('week', TODAY));
     expect(w.change).toMatchObject({ basis: 'ends', from: 69.7, to: 69.1, change: -0.6, perWeek: null });
     expect(w.projection).toEqual({ kind: 'none' });
     // moving away from the goal: none; already past it: reached
-    expect(weightStats(series(rows(metrics, goal(75))), 'A', rangeFor('month', TODAY, hs.from)).projection).toEqual({ kind: 'none' });
-    expect(weightStats(series(rows(metrics, goal(70))), 'A', rangeFor('month', TODAY, hs.from)).projection).toEqual({ kind: 'reached' });
+    expect(weightStats(series(rows(metrics, goal(75))), 'A', rangeFor('month', TODAY)).projection).toEqual({ kind: 'none' });
+    expect(weightStats(series(rows(metrics, goal(70))), 'A', rangeFor('month', TODAY)).projection).toEqual({ kind: 'reached' });
   });
 
   it('is memoised per State and day', () => {
@@ -210,7 +204,7 @@ describe('edge cases', () => {
 });
 
 describe('nothing cut off', () => {
-  const week = (hs: ReturnType<typeof series>) => rangeFor('week', TODAY, hs.from);
+  const week = (hs: ReturnType<typeof series>) => rangeFor('week', TODAY);
 
   it('today, still running, is drawn as reported (even 0) and never counted', () => {
     const hs = series(rows([...day('A', TODAY, { steps: 120, kcal: 40, ex: 0, stand: 3 }, '09:00')]));
@@ -242,7 +236,7 @@ describe('nothing cut off', () => {
     for (let d = '2026-10-03'; d <= '2026-10-31'; d = addDays(d, 1)) metrics.push(m('A', d, 'steps', low[d] ?? 9000));
     const now = Date.parse(jst('2026-11-01', '12:00'));
     const hs = series(rows(metrics), now);
-    const s = metricStats(hs, 'A', 'steps', rangeFor('month', '2026-11-01', hs.from)); // 10-03..10-31 finished
+    const s = metricStats(hs, 'A', 'steps', rangeFor('month', '2026-11-01')); // 10-03..10-31 finished
     expect(s).toMatchObject({ days: 29, missing: 0, met: 25, avg: (25 * 9000 + 168 + 140 + 100 + 66) / 29 });
   });
 });
@@ -255,7 +249,7 @@ describe('one person at a time', () => {
       metrics.push(...day('B', addDays('2026-10-24', i), { steps: 4000, ex: 20, kcal: 300, stand: 60 }));
     }
     const hs = series(rows(metrics, [[jst('2026-10-28', '08:00'), 'B', 'g1', 'pref', JSON.stringify({ key: 'moveGoal', value: 250 })]]));
-    const r = rangeFor('week', TODAY, hs.from);
+    const r = rangeFor('week', TODAY);
     const a = bucketValues(hs, 'A', 'move', r), b = bucketValues(hs, 'B', 'move', r);
     expect(a.slice(0, 6).map((x) => x.v)).toEqual([700, 700, 700, 700, 700, 700]);
     expect(b.slice(0, 6).map((x) => x.v)).toEqual([300, 300, 300, 300, 300, 300]);
@@ -269,7 +263,7 @@ describe('one person at a time', () => {
     const metrics: MetricRow[] = [];
     for (let i = 0; i < 7; i++) metrics.push(...day('A', addDays('2026-10-24', i), { steps: 10000, ex: 70, kcal: 700, stand: 130 }));
     const hs = series(rows(metrics, [[jst('2026-10-27', '21:00'), 'B', 'g1', 'pref', JSON.stringify({ person: 'A', key: 'stepsGoal', value: 12000 })]]));
-    const r = rangeFor('week', TODAY, hs.from);
+    const r = rangeFor('week', TODAY);
     expect(bucketValues(hs, 'A', 'steps', r).map((x) => x.goal)).toEqual([8000, 8000, 12000, 12000, 12000, 12000, 12000]); // 12,000 from 10-27 on
     expect(bucketValues(hs, 'B', 'steps', r).map((x) => x.goal)).toEqual(Array(7).fill(8000));
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 2, days: 6 }); // 10-25 and 10-26 (today isn't counted)
@@ -297,7 +291,7 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     expect(hs.people.A.body.bmi[2]).toBe(23);
     expect(hs.people.B.body.lean_kg.slice(4, 6)).toEqual([41.2, null]);
     expect(hs.people.A.body.lean_kg.every((v) => v === null)).toBe(true);
-    const r = rangeFor('month', TODAY, hs.from);
+    const r = rangeFor('month', TODAY);
     expect(bodyStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, change: null });
     expect(bodyStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, change: null });
   });
@@ -306,12 +300,12 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     // 10-02..10-31: 25.0 % then 0.05 lower every day
     const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'body_fat_pct', Math.round((25 - 0.05 * i) * 10) / 10, '08:00'));
     const hs = series(rows(metrics));
-    const s = bodyStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY, hs.from));
+    const s = bodyStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY));
     expect(s.n).toBe(30);
     expect(s.change).toMatchObject({ basis: 'weeks', change: -1.1, perWeek: -0.35 });
-    const w = bodyStats(hs, 'A', 'body_fat_pct', rangeFor('week', TODAY, hs.from));
+    const w = bodyStats(hs, 'A', 'body_fat_pct', rangeFor('week', TODAY));
     expect(w.change).toMatchObject({ basis: 'ends' });
-    const q = bodyBuckets(hs, 'A', 'body_fat_pct', rangeFor('quarter', TODAY, hs.from));
+    const q = bodyBuckets(hs, 'A', 'body_fat_pct', rangeFor('quarter', TODAY));
     expect(q.at(-1)).toEqual({ v: 23.7, n: 7 }); // 10-25..10-31
     expect(q[0]).toEqual({ v: null, n: 0 });
   });

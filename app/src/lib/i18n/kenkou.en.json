@@ -4,7 +4,6 @@
   "health.period.month": "1M",
   "health.period.quarter": "3M",
   "health.period.year": "1Y",
-  "health.period.all": "All",
   "health.group": "Which data",
   "health.group.activity": "Activity",
   "health.group.body": "Body",
