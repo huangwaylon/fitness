@@ -29,6 +29,19 @@ export class FakeSheet {
     this.maxRows += n;
     return this;
   }
+  /** Removes the row; the rows (and their formats) below move up and the sheet is a row shorter, as in Sheets. */
+  deleteRow(row: number) {
+    if (row < 1 || row > this.maxRows) throw new Error(`bad row ${row}`);
+    this.rows.splice(row - 1, 1);
+    const formats = new Map<string, string>();
+    for (const [k, f] of this.formats) {
+      const [r, c] = k.split(':').map(Number);
+      if (r !== row) formats.set(r > row ? `${r - 1}:${c}` : k, f);
+    }
+    this.formats = formats;
+    this.maxRows--;
+    return this;
+  }
   setFrozenRows(n: number) { this.frozen = n; }
   getRange(row: number, col: number, numRows = 1, numCols = 1) {
     if (row < 1 || col < 1 || numRows < 1 || numCols < 1) throw new Error(`bad range ${row},${col},${numRows},${numCols}`);

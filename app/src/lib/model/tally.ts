@@ -70,17 +70,3 @@ export function addToTally(t: Tally, key: string, n = 1): Tally {
   if (!(key in t) && Object.keys(t).length >= TALLY_MAX_KEYS) return t;
   return { ...t, [key]: Math.min(TALLY_MAX_N, (t[key] ?? 0) + n) };
 }
-
-/**
- * Two tallies of the same person's day as one: the larger count of each key. The phone seeds its day from the
- * server's row (a reinstall, or the day started on another phone) so the next send never lowers a count.
- */
-export function mergeTally(a: Tally, b: Tally): Tally {
-  const out: Tally = { ...a };
-  let size = Object.keys(out).length;
-  for (const k in b) {
-    if (k in out) out[k] = Math.max(out[k], b[k]);
-    else if (size < TALLY_MAX_KEYS) (out[k] = b[k]), size++;
-  }
-  return out;
-}

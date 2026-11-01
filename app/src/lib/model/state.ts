@@ -4,6 +4,8 @@
 import type { LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
 import { CUTOFFS, LIMITS, MOVE_GOAL, PEOPLE, shopPrice } from '#lib/config/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
+import { isTally } from '#lib/contract/tally.ts';
+import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
   DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isActivityMetric, isWeightKg, roundKg, WEIGHT_KG,
@@ -65,6 +67,9 @@ export interface State {
   highfives: { at: number; person: PersonId }[];
   /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
   finds: { at: number; person: PersonId; kind: FindKind; id: string }[];
+  /** Each person's day tallies (`tally`: the ずかん's counts, model/tally.ts), in server order, replaced rows included
+   *  (a day's latest wins). Never read by the economy. */
+  tallies: TallyRow[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
@@ -160,6 +165,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     harvests: [],
     highfives: [],
     finds: [],
+    tallies: [],
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
     lastSync: { A: null, B: null },
@@ -243,6 +249,9 @@ const ON_EVENT: Record<EventType, OnEvent> = {
   },
   find(s, person, at, d) {
     if (isFind(d)) s.finds.push({ at, person, kind: d.kind as FindKind, id: d.id as string });
+  },
+  tally(s, person, at, d) {
+    if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts });
   },
   pref(s, person, at, d) {
     if (d.key === 'moveGoal') {

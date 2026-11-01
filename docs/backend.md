@@ -40,12 +40,23 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
 | `highfive` | `{}` | |
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000) |
-| `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` (`FIND_KINDS`), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
+| `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` · `item` · `recipe` (`FIND_KINDS`; the last two: what a balloon's present held), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
+| `tally` | `{date, counts}` | one person's counts of one Tokyo day for the ずかん's 「×12」 (`contract/tally.ts`): `date` a real date not after tomorrow (server's Tokyo date), `counts` 1–300 keys `kind:id` (a find's kind and id) → whole 1–999. One row per person and day: see **Tally** below. Never ベル |
 
 **Finds:** the client sends a `find` only the first time either person finds that `kind:id` (the model holds queued
 events too, so a second catch before the ack sends nothing; a race between the two phones only adds a duplicate the
 model folds away). The model's `findsView` (`model/finds.ts`) keeps the first find per `kind:id` across both people
 (its Tokyo date and finder); the economy never imports it (`deps.test.ts`).
+
+<a id="tally"></a>**Tally:** every catch and pick-up adds one to the phone's tally of the day (`store/actions.ts` recordFind), sent as
+the day's whole tally: held a minute (the next catches replace the held one), so a busy minute is one request. The
+script keeps one row per person and day: before appending, it deletes the sender's older `tally` rows of that date
+(only rows whose data mentions it are parsed). The rows below move up still in `at` order, so `since` reads stay a tail,
+and the script records the new last row itself (no revision bump). A phone that cached a replaced row keeps it
+harmlessly: the model reads each person's latest tally of a day (`model/tally.ts`, by `at`) and sums days and people
+into totals per entry and per person; compaction drops replaced rows from the cache. The next tally starts from the
+latest row of the day (another phone's or before a reload), so a send never lowers a count. Two people × a year ≈ 730
+rows of a few hundred bytes.
 
 `person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the `goalWeight` / `moveGoal` prefs
 (`eventSubject`, shared by both sides). The row's `person` column is always the sender. There are no health-data events:
@@ -147,7 +158,8 @@ lands after pairing again is dropped.
 
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
 metric) it keeps the latest row at the lock and the latest overall; per person the newest row. Weight keeps the newest
-row per day. Views are unchanged; ~90% of rows go.
+row per day. Views are unchanged; ~90% of rows go. A `tally` replaced by a later one of the same person and day goes
+too (the sheet no longer has it).
 
 ### Write queue
 

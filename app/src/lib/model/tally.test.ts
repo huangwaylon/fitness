@@ -3,7 +3,7 @@ import { TALLY_MAX_KEYS, TALLY_MAX_N, isTally, isTallyKey } from '#lib/contract/
 import { isFind } from '#lib/contract/api.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { PersonId } from '#lib/types.ts';
-import { addToTally, countOf, latestByDay, mergeTally, tallyTotals, type TallyRow } from './tally.ts';
+import { addToTally, countOf, latestByDay, tallyTotals, type TallyRow } from './tally.ts';
 
 const row = (at: number, person: PersonId, date: string, counts: Record<string, number>): TallyRow => ({ at, person, date, counts });
 
@@ -72,12 +72,6 @@ describe('the counts (model/tally.ts)', () => {
     const full = Object.fromEntries(Array.from({ length: TALLY_MAX_KEYS }, (_, i) => [`item:x${i}`, 1]));
     expect(addToTally(full, 'fish:dab')).toBe(full);
     expect(addToTally(full, 'item:x0')['item:x0']).toBe(2);
-  });
-  it('merging the server’s row of the day never lowers a count', () => {
-    expect(mergeTally({ 'fish:dab': 3, 'bug:moth': 1 }, { 'fish:dab': 2, 'item:froggy-chair': 1 })).toEqual({ 'fish:dab': 3, 'bug:moth': 1, 'item:froggy-chair': 1 });
-    const full = Object.fromEntries(Array.from({ length: TALLY_MAX_KEYS }, (_, i) => [`item:x${i}`, 1]));
-    expect(Object.keys(mergeTally(full, { 'fish:dab': 1, 'item:x1': 4 }))).toHaveLength(TALLY_MAX_KEYS);
-    expect(mergeTally(full, { 'item:x1': 4 })['item:x1']).toBe(4);
   });
   it('sums years of rows fast (two people, three years, the latest of several sends a day)', () => {
     const rows: TallyRow[] = [];

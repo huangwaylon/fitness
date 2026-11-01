@@ -5,7 +5,8 @@ import { buildWeekView } from './week.ts';
 import { bellsLedger, dayDetail } from './history.ts';
 import { mergeRows } from './snapshot.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
-import type { MetricRow, SnapshotRows } from '#lib/contract/api.ts';
+import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
+import { tallyTotals } from './tally.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';
 
 /** Everything the app shows, as one comparable value. */
@@ -107,5 +108,28 @@ describe('compactRows', () => {
     expect(compactRows(rows, now).metrics.map((r) => r[4])).toEqual([13300, 13000]);
     expect(views(compactRows(rows, now), now)).toBe(views(rows, now));
     expect(reduce(compactRows(rows, now)).metrics.A.get(wk)!.steps!.map((r) => r.v)).toEqual([13300, 13000]);
+  });
+});
+
+describe('compactRows: the day tallies', () => {
+  it('keeps only the latest tally of each person’s day (the server deleted the rest); the counts are unchanged', () => {
+    const t = (at: string, person: 'A' | 'B', id: string, date: string, counts: Record<string, number>): EventRow =>
+      [at, person, id, 'tally', JSON.stringify({ date, counts })];
+    const rows: SnapshotRows = {
+      metrics: [],
+      events: [
+        t('2026-11-01T01:00:00.000Z', 'A', 'a1', '2026-11-01', { 'fish:dab': 1 }),
+        t('2026-11-01T02:00:00.000Z', 'B', 'b1', '2026-11-01', { 'bug:moth': 2 }),
+        ['2026-11-01T02:30:00.000Z', 'A', 'h1', 'highfive', '{}'],
+        t('2026-11-01T03:00:00.000Z', 'A', 'a2', '2026-11-01', { 'fish:dab': 3 }),
+        t('2026-11-02T01:00:00.000Z', 'A', 'a3', '2026-11-02', { 'fish:dab': 1 })
+      ]
+    };
+    const now = Date.parse('2026-11-02T03:00:00.000Z');
+    const small = compactRows(rows, now);
+    expect(small.events.map((r) => r[2])).toEqual(['b1', 'h1', 'a2', 'a3']);
+    expect(tallyTotals(reduce(small).tallies).all).toEqual(tallyTotals(reduce(rows).tallies).all);
+    expect(Object.fromEntries(tallyTotals(reduce(small).tallies).all)).toEqual({ 'fish:dab': 4, 'bug:moth': 2 });
+    expect(compactRows(small, now)).toBe(small);
   });
 });
