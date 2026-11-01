@@ -26,7 +26,10 @@ export const LIVE = {
    *  (store/world.svelte.ts: kept past the day they were made in). */
   wishes: 'island.wishes',
   /** `{ day, watered }`: yesterday's watered flowers (world.ts FLOWERS ids), both people's (store/world.svelte.ts: today's hybrids). */
-  worldPrev: 'island.worldPrev'
+  worldPrev: 'island.worldPrev',
+  /** `[entry…]`: the island's decorations, each item's winning op (store/decor.svelte.ts: the layout before the sheet
+   *  answers, and what the relay brought since). */
+  decor: 'island.decor'
 } as const;
 
 export const DEMO = {
@@ -41,7 +44,9 @@ export const DEMO = {
   /** localStorage: the demo's relay (sync/live-local.ts): `{ day, log }`, the day's shared world both tabs keep. */
   relay: 'island-demo.relay',
   /** localStorage `island-demo.world.<A|B>`: the demo's shared world as each player's tab folded it (store/world.svelte.ts). */
-  world: 'island-demo.world'
+  world: 'island-demo.world',
+  /** localStorage: the demo's decorations (store/decor.svelte.ts), both players' tabs' (kept for good, as the sheet). */
+  decor: 'island-demo.decor'
 } as const;
 
 /** This phone's own preferences (not data, never synced; shared by the live app and the demo). */

@@ -2,6 +2,7 @@
 // from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
 // the static prefix of a dynamic key (`panel.tab.${id}`). The host's lines (`host.<line>`) are
 // picked by name.
+import { DECOR_ART } from './components/island/decor.ts';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -131,6 +132,8 @@ describe('official art (static/art/manifest.json)', () => {
     ...EGGS.map(findArt),
     // a present's recipe card (island/Finds.svelte); its items' and recipes' icons are outside the manifest (catalog.test)
     'presents/diy-recipe',
+    // the decorations in their four facings (island/decor.ts decorArt)
+    ...DECOR_ART,
     // the bridge's deck from above: baked into the ground (scripts/terrain.ts), never shown by the app itself
     'bridges/stone-deck'
   ]);

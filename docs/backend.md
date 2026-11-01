@@ -379,6 +379,12 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   balloon's present (`put` where it lands; its contents in the opener's `pick`), watered flowers (`world watered`, by
   the flower's id), wishes (`world wished`, by the morning), a bush shaken and the rock struck (`act` with `pt`, played by the
   partner's villager).
+- **The decorations** (`store/decor.svelte.ts`, [Decorating](design.md#decorating)): not the day's, kept for good. Each
+  change is one `decor` op, sent to the relay at once (kept in the day's ring, replayed to a phone opening later that
+  day) and to the sheet's queue (the record across days: each item's latest op); the store merges whatever arrives,
+  from wherever, by id (`contract/decor.ts`), and keeps the merged map in localStorage (`island.decor`) so a reload
+  shows the layout before the sheet answers. My op's `at` is the relay's clock and always after the op it replaces
+  (a phone whose clock is behind still moves what it saw).
 - **Still each phone's own:** the camera (each shows what its view holds of the same world), a balloon's flight and
   where this phone's lands (its present is shared once down), shooting stars and the night's showers' timing, the
   visitor's lines and a tap on them, a cast's bite plan and hesitation, a dive's chase, a tarantula rearing, the plates

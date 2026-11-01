@@ -50,8 +50,10 @@
   import { buildingAt, nav } from './nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
-  import { sendIslandDay } from '#lib/store/actions.ts';
+  import { sendDecor, sendIslandDay } from '#lib/store/actions.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
+  import { decor } from '#lib/store/decor.svelte.ts';
+  import Decor from './Decor.svelte';
   import { visitorNow } from './visitors.ts';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
   import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
@@ -336,7 +338,7 @@
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
    *  knocks at its door (walk there, then its line). */
   function walkThere(x: number, z: number, hit: SceneHit): boolean {
-    if (!live || covered || actors.mine.asleep) return false;
+    if (!live || covered || decorating || actors.mine.asleep) return false;
     // only empty ground walks: water ripples and a building's footprint knocks at its door where my villager stands
     if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
     const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
@@ -505,6 +507,7 @@
     const me = view.me;
     untrack(() => {
       shared.attach(relay ?? demoRelay, me, !!week.demo);
+      decor.attach(relay ?? demoRelay, me, !!week.demo);
       demoRelay?.start();
     });
   });
@@ -513,12 +516,19 @@
   $effect(() => {
     if (!live) return;
     shared.sink = (date, row) => sendIslandDay(date, row);
-    return () => (shared.sink = null);
+    decor.sink = (op) => sendDecor(op);
+    return () => {
+      shared.sink = null;
+      decor.sink = null;
+    };
   });
   $effect(() => {
     const m = week.model;
     if (!live || !m) return;
-    untrack(() => shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data }))));
+    untrack(() => {
+      shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })));
+      decor.rows(m.state.decor);
+    });
   });
   $effect(() => {
     if (!relay) return;
@@ -622,9 +632,14 @@
   const HalloweenC = $derived(halloweenC.get(live && nhEvent?.id === 'halloween'));
   const BirthdayC = $derived(birthdayC.get(live && !!bday.length));
   const WeddingC = $derived(weddingC.get(live && (wedding.arch || wedding.day)));
+  // The decorate mode (docs/design.md "Decorating"): its tray and ghost are their own chunk, loaded on the first use.
+  const decorating = $derived(live && ui.decorating);
+  const decorModeC = lazyComponent(() => import('./DecorMode.svelte'));
+  const DecorModeC = $derived(decorModeC.get(decorating));
+  let decorMode = $state<{ pick(id: string, e: PointerEvent): void; moving(): string | null }>();
 </script>
 
-<div class="if-scene scene" bind:this={sceneEl} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
+<div class="if-scene scene" bind:this={sceneEl} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={live ? weather.sky : undefined} data-paused={life.hidden || undefined}
   data-covered={covered || undefined} data-live={live || undefined} style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
   {#if live && FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
 
@@ -656,6 +671,11 @@
         {/each}
 
         <Flowers {season} {hybrid} />
+
+        {#if live}
+          <Decor editing={decorating} hidden={decorating ? (decorMode?.moving() ?? null) : null} onpick={(id, e) => decorMode?.pick(id, e)} />
+          {#if decorating && DecorModeC && sceneEl}<DecorModeC bind:this={decorMode} scene={sceneEl} ondone={() => (ui.decorating = false)} />{/if}
+        {/if}
 
         {#each ['mine', 'partner'] as const as id (id)}
           {@const sd = sides[id]}
@@ -700,7 +720,7 @@
         <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={live && raining()} />
         {#if live}
           <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-          <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere}
+          <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden && !decorating} swallowed={() => closedBy} walk={walkThere}
             exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
             skyTap={(x, y) => !!fireworks?.tap(x, y)}
             say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />

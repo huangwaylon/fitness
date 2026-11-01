@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
   // The island panel: tap today's ベル ribbon → it slides down from the top with everything that isn't on the island
   // itself, in three tabs pinned under the title bar (design.md "Panel"): けんこう (the Health data over time, its own
   // chunk loaded with the tab; the panel opens on it), きろく (the ベル ledger, then the goals) and せってい (むらびと, サウンド, つうち, ことば,
@@ -121,6 +122,13 @@
           <Avatar person={view.me} villager={me.villager} size={48} />
           <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
           <button type="button" class="btn small paper" data-push="villager" data-sfx="page" onclick={() => go('villager')}>{t('panel.change')}</button>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="sec-decor">
+        <h2 id="sec-decor">{t('panel.decor')}</h2>
+        <div class="card help">
+          <p>{t('panel.decorSummary')}</p>
+          <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
         </div>
       </section>
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound">{t('panel.sound')}</h2><SoundSection /></section>

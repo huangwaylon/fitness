@@ -1,5 +1,5 @@
 {
-  "version": 47,
+  "version": 49,
   "files": {
     "bridges/stone-deck": {
       "path": "bridges/stone-deck.webp",
@@ -1506,6 +1506,246 @@
       "w": 113,
       "h": 119,
       "source": "https://nookipedia.com/wiki/File:Wedding_Arch_(Cute)_NH_Icon.png"
+    },
+    "decor/birdbath-0": {
+      "path": "decor/birdbath-0.webp",
+      "w": 69,
+      "h": 100,
+      "source": "rendered from NH's model FtrBirdbus (scripts/models.ts)"
+    },
+    "decor/birdbath-1": {
+      "path": "decor/birdbath-1.webp",
+      "w": 69,
+      "h": 99,
+      "source": "rendered from NH's model FtrBirdbus (scripts/models.ts)"
+    },
+    "decor/birdbath-2": {
+      "path": "decor/birdbath-2.webp",
+      "w": 69,
+      "h": 94,
+      "source": "rendered from NH's model FtrBirdbus (scripts/models.ts)"
+    },
+    "decor/birdbath-3": {
+      "path": "decor/birdbath-3.webp",
+      "w": 69,
+      "h": 94,
+      "source": "rendered from NH's model FtrBirdbus (scripts/models.ts)"
+    },
+    "decor/brick-well-0": {
+      "path": "decor/brick-well-0.webp",
+      "w": 130,
+      "h": 181,
+      "source": "rendered from NH's model FtrWellBrick (scripts/models.ts)"
+    },
+    "decor/brick-well-1": {
+      "path": "decor/brick-well-1.webp",
+      "w": 130,
+      "h": 189,
+      "source": "rendered from NH's model FtrWellBrick (scripts/models.ts)"
+    },
+    "decor/brick-well-2": {
+      "path": "decor/brick-well-2.webp",
+      "w": 130,
+      "h": 181,
+      "source": "rendered from NH's model FtrWellBrick (scripts/models.ts)"
+    },
+    "decor/brick-well-3": {
+      "path": "decor/brick-well-3.webp",
+      "w": 130,
+      "h": 189,
+      "source": "rendered from NH's model FtrWellBrick (scripts/models.ts)"
+    },
+    "decor/garden-wagon-0": {
+      "path": "decor/garden-wagon-0.webp",
+      "w": 169,
+      "h": 113,
+      "source": "rendered from NH's model FtrGardenwagon (scripts/models.ts)"
+    },
+    "decor/garden-wagon-1": {
+      "path": "decor/garden-wagon-1.webp",
+      "w": 86,
+      "h": 130,
+      "source": "rendered from NH's model FtrGardenwagon (scripts/models.ts)"
+    },
+    "decor/garden-wagon-2": {
+      "path": "decor/garden-wagon-2.webp",
+      "w": 169,
+      "h": 110,
+      "source": "rendered from NH's model FtrGardenwagon (scripts/models.ts)"
+    },
+    "decor/garden-wagon-3": {
+      "path": "decor/garden-wagon-3.webp",
+      "w": 87,
+      "h": 128,
+      "source": "rendered from NH's model FtrGardenwagon (scripts/models.ts)"
+    },
+    "decor/iron-chair-0": {
+      "path": "decor/iron-chair-0.webp",
+      "w": 49,
+      "h": 114,
+      "source": "rendered from NH's model FtrIrongardenChair (scripts/models.ts)"
+    },
+    "decor/iron-chair-1": {
+      "path": "decor/iron-chair-1.webp",
+      "w": 55,
+      "h": 103,
+      "source": "rendered from NH's model FtrIrongardenChair (scripts/models.ts)"
+    },
+    "decor/iron-chair-2": {
+      "path": "decor/iron-chair-2.webp",
+      "w": 49,
+      "h": 85,
+      "source": "rendered from NH's model FtrIrongardenChair (scripts/models.ts)"
+    },
+    "decor/iron-chair-3": {
+      "path": "decor/iron-chair-3.webp",
+      "w": 55,
+      "h": 103,
+      "source": "rendered from NH's model FtrIrongardenChair (scripts/models.ts)"
+    },
+    "decor/iron-table-0": {
+      "path": "decor/iron-table-0.webp",
+      "w": 83,
+      "h": 85,
+      "source": "rendered from NH's model FtrIrongardenTable (scripts/models.ts)"
+    },
+    "decor/iron-table-1": {
+      "path": "decor/iron-table-1.webp",
+      "w": 83,
+      "h": 90,
+      "source": "rendered from NH's model FtrIrongardenTable (scripts/models.ts)"
+    },
+    "decor/iron-table-2": {
+      "path": "decor/iron-table-2.webp",
+      "w": 83,
+      "h": 92,
+      "source": "rendered from NH's model FtrIrongardenTable (scripts/models.ts)"
+    },
+    "decor/iron-table-3": {
+      "path": "decor/iron-table-3.webp",
+      "w": 83,
+      "h": 90,
+      "source": "rendered from NH's model FtrIrongardenTable (scripts/models.ts)"
+    },
+    "decor/monstera-0": {
+      "path": "decor/monstera-0.webp",
+      "w": 82,
+      "h": 153,
+      "source": "rendered from NH's model FtrPlantMonstera (scripts/models.ts)"
+    },
+    "decor/monstera-1": {
+      "path": "decor/monstera-1.webp",
+      "w": 69,
+      "h": 151,
+      "source": "rendered from NH's model FtrPlantMonstera (scripts/models.ts)"
+    },
+    "decor/monstera-2": {
+      "path": "decor/monstera-2.webp",
+      "w": 82,
+      "h": 135,
+      "source": "rendered from NH's model FtrPlantMonstera (scripts/models.ts)"
+    },
+    "decor/monstera-3": {
+      "path": "decor/monstera-3.webp",
+      "w": 69,
+      "h": 143,
+      "source": "rendered from NH's model FtrPlantMonstera (scripts/models.ts)"
+    },
+    "decor/signpost-0": {
+      "path": "decor/signpost-0.webp",
+      "w": 77,
+      "h": 91,
+      "source": "rendered from NH's model FtrSignpost (scripts/models.ts)"
+    },
+    "decor/signpost-1": {
+      "path": "decor/signpost-1.webp",
+      "w": 26,
+      "h": 90,
+      "source": "rendered from NH's model FtrSignpost (scripts/models.ts)"
+    },
+    "decor/signpost-2": {
+      "path": "decor/signpost-2.webp",
+      "w": 77,
+      "h": 90,
+      "source": "rendered from NH's model FtrSignpost (scripts/models.ts)"
+    },
+    "decor/signpost-3": {
+      "path": "decor/signpost-3.webp",
+      "w": 26,
+      "h": 91,
+      "source": "rendered from NH's model FtrSignpost (scripts/models.ts)"
+    },
+    "decor/stone-lantern-0": {
+      "path": "decor/stone-lantern-0.webp",
+      "w": 75,
+      "h": 178,
+      "source": "rendered from NH's model FtrStonelantern (scripts/models.ts)"
+    },
+    "decor/stone-lantern-1": {
+      "path": "decor/stone-lantern-1.webp",
+      "w": 68,
+      "h": 177,
+      "source": "rendered from NH's model FtrStonelantern (scripts/models.ts)"
+    },
+    "decor/stone-lantern-2": {
+      "path": "decor/stone-lantern-2.webp",
+      "w": 75,
+      "h": 178,
+      "source": "rendered from NH's model FtrStonelantern (scripts/models.ts)"
+    },
+    "decor/stone-lantern-3": {
+      "path": "decor/stone-lantern-3.webp",
+      "w": 68,
+      "h": 177,
+      "source": "rendered from NH's model FtrStonelantern (scripts/models.ts)"
+    },
+    "decor/tanuki-0": {
+      "path": "decor/tanuki-0.webp",
+      "w": 78,
+      "h": 115,
+      "source": "rendered from NH's model FtrOrnamentTanuki (scripts/models.ts)"
+    },
+    "decor/tanuki-1": {
+      "path": "decor/tanuki-1.webp",
+      "w": 56,
+      "h": 124,
+      "source": "rendered from NH's model FtrOrnamentTanuki (scripts/models.ts)"
+    },
+    "decor/tanuki-2": {
+      "path": "decor/tanuki-2.webp",
+      "w": 78,
+      "h": 122,
+      "source": "rendered from NH's model FtrOrnamentTanuki (scripts/models.ts)"
+    },
+    "decor/tanuki-3": {
+      "path": "decor/tanuki-3.webp",
+      "w": 56,
+      "h": 130,
+      "source": "rendered from NH's model FtrOrnamentTanuki (scripts/models.ts)"
+    },
+    "decor/wheelbarrow-0": {
+      "path": "decor/wheelbarrow-0.webp",
+      "w": 89,
+      "h": 82,
+      "source": "rendered from NH's model FtrHandcart (scripts/models.ts)"
+    },
+    "decor/wheelbarrow-1": {
+      "path": "decor/wheelbarrow-1.webp",
+      "w": 89,
+      "h": 77,
+      "source": "rendered from NH's model FtrHandcart (scripts/models.ts)"
+    },
+    "decor/wheelbarrow-2": {
+      "path": "decor/wheelbarrow-2.webp",
+      "w": 89,
+      "h": 77,
+      "source": "rendered from NH's model FtrHandcart (scripts/models.ts)"
+    },
+    "decor/wheelbarrow-3": {
+      "path": "decor/wheelbarrow-3.webp",
+      "w": 89,
+      "h": 82,
+      "source": "rendered from NH's model FtrHandcart (scripts/models.ts)"
     },
     "finds/acanthostega": {
       "path": "finds/acanthostega.webp",

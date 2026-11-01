@@ -91,24 +91,42 @@ function nearRiver(x: number, z: number): boolean {
   return inRiver(x + 4, z) || inRiver(x - 4, z) || inRiver(x, z + 4) || inRiver(x, z - 4);
 }
 
-let shared: { grid: Grid; obstacles: Box[]; vis: Vis } | null = null;
+let shared: { grid: Grid; obstacles: Box[]; statics: number; vis: Vis } | null = null;
+/** Whether the grid cell (i, j) is walkable: on the ground and off every obstacle (the stairs and the bridge cut
+ *  through whatever they cross). */
+function cellOk(i: number, j: number, obstacles: readonly Box[]): boolean {
+  const x = GX0 + (i + 0.5) * CELL, z = GZ0 + (j + 0.5) * CELL;
+  if (!ground(x, z)) return false;
+  return onStairs(x, z) || onBridge(x, z, BRIDGE_RAIL + 1) || !obstacles.some((o) => inBox(o, x, z, PAD));
+}
 function build() {
   if (shared) return shared;
   const obstacles = staticObstacles();
   const w = Math.ceil((GX1 - GX0) / CELL), h = Math.ceil((GZ1 - GZ0) / CELL);
   const ok = new Uint8Array(w * h);
-  for (let j = 0; j < h; j++) {
-    const z = GZ0 + (j + 0.5) * CELL;
-    for (let i = 0; i < w; i++) {
-      const x = GX0 + (i + 0.5) * CELL;
-      if (!ground(x, z)) continue;
-      // the stairs and the bridge cut through whatever they cross
-      if (!onStairs(x, z) && !onBridge(x, z, BRIDGE_RAIL + 1) && obstacles.some((o) => inBox(o, x, z, PAD))) continue;
-      ok[j * w + i] = 1;
-    }
-  }
-  shared = { grid: { w, h, ok }, obstacles, vis: { pts: [], names: [], adj: null } };
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (cellOk(i, j, obstacles)) ok[j * w + i] = 1;
+  shared = { grid: { w, h, ok }, obstacles, statics: obstacles.length, vis: { pts: [], names: [], adj: null } };
   return shared;
+}
+
+/** The fixed obstacles' boxes (unpadded): what a decoration may not stand on (island/decor.ts). */
+export const fixedObstacles = (): readonly Box[] => build().obstacles.slice(0, build().statics);
+
+/** The island's decorations as obstacles (store/decor.svelte.ts, their boxes): they join the obstacles in place (every
+ *  island geo shares the array), only the grid cells under the old and the new boxes are tested again, and the
+ *  corner graph is rebuilt on the next walk that needs it. */
+export function setWalkDecor(boxes: readonly Box[]): void {
+  const s = build(), g = s.grid;
+  const was = s.obstacles.slice(s.statics);
+  if (was.length === boxes.length && was.every((b, k) => b.x0 === boxes[k].x0 && b.x1 === boxes[k].x1 && b.y0 === boxes[k].y0 && b.y1 === boxes[k].y1)) return;
+  s.obstacles.length = s.statics;
+  s.obstacles.push(...boxes);
+  for (const b of [...was, ...boxes]) {
+    const i0 = Math.max(0, Math.floor((b.x0 - PAD - GX0) / CELL)), i1 = Math.min(g.w - 1, Math.floor((b.x1 + PAD - GX0) / CELL));
+    const j0 = Math.max(0, Math.floor((b.y0 - PAD - GZ0) / CELL)), j1 = Math.min(g.h - 1, Math.floor((b.y1 + PAD - GZ0) / CELL));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) g.ok[j * g.w + i] = cellOk(i, j, s.obstacles) ? 1 : 0;
+  }
+  Object.assign(s.vis, { pts: [], names: [], adj: null });
 }
 
 /** The named nodes: homes, the goal trees, the rock, the shore, the stairs' ends, the campsite's door, the pondside,

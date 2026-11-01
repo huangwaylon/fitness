@@ -1,0 +1,111 @@
+<script lang="ts">
+  // The island's decorations (docs/design.md "Decorating"): every placed item an upright world node at its feet (NH's
+  // model rendered in its facing, scripts/models.ts), in the one depth order, a walk obstacle (the walk mask and the
+  // tap navigation take their boxes when the layout changes: walkGraph setWalkDecor, nav setNavDecor). Outside the
+  // decorate mode a tap jiggles it where it stands (my villager turns to it, no walk); in it, a tap or a drag picks it
+  // up (DecorMode). The partner's change, just made, puffs where it lands.
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { art } from '#lib/art.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { decor } from '#lib/store/decor.svelte.ts';
+  import { cue } from '#lib/sound/cues.ts';
+  import { useWorld } from './camera.svelte.ts';
+  import { blockOf, decorArt, decorH, type DecorItem, type Facing } from './decor.ts';
+  import { setWalkDecor } from './walkGraph.ts';
+  import { setNavDecor } from './nav.ts';
+  import { partnerTurnTo, turnTo } from './avatar.ts';
+  import PLACES from './models.json';
+  import { onMount } from 'svelte';
+
+  interface Props {
+    /** The decorate mode is on: a tap or a drag on an item picks it up. */
+    editing?: boolean;
+    /** The item being moved (DecorMode draws it): hidden here. */
+    hidden?: string | null;
+    /** A pointerdown on an item in the decorate mode. */
+    onpick?: (id: string, e: PointerEvent) => void;
+  }
+  let { editing = false, hidden = null, onpick }: Props = $props();
+  const w = useWorld();
+
+  const items = $derived(decor.items);
+  // the walk goes round them (only the cells and graph they touch change)
+  $effect(() => {
+    const boxes = items.map(blockOf);
+    setWalkDecor(boxes);
+    setNavDecor(boxes);
+  });
+
+  const P = PLACES as unknown as Record<string, { ax: number; ay: number }>;
+  /** A render stands on its feet point (models.json), its height decorH. */
+  function look(item: DecorItem, f: Facing) {
+    const key = decorArt(item, f), h = decorH(item, f), a = art(key), p = P[key];
+    const wd = a ? (h * a.w) / a.h : h;
+    return { key, h, wd, style: p ? `left:calc(${-p.ax * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u))` : '' };
+  }
+
+  function jiggle(el: Element) {
+    for (const a of el.getAnimations()) if (a.id === 'jiggle') a.cancel();
+    el.animate([{ scale: '1 1' }, { scale: '1.08 .9', offset: 0.25 }, { scale: '.96 1.06', offset: 0.55 }, { scale: '1 1' }], { duration: 380, easing: 'ease-out', id: 'jiggle' });
+  }
+  function tap(e: MouseEvent, x: number) {
+    if (editing) return;
+    jiggle(e.currentTarget as Element);
+    cue('tick');
+    turnTo(x);
+  }
+
+  // the partner's change, just made: a puff where it stands, their villager turning to it
+  let puffs = $state<{ n: number; x: number; z: number }[]>([]);
+  let n = 0;
+  onMount(() =>
+    decor.on(({ e, was, live }) => {
+      if (!live) return;
+      const at = e.rm ? was : e;
+      if (!at) return;
+      const k = ++n;
+      puffs = [...puffs.slice(-2), { n: k, x: at.x, z: at.z }];
+      partnerTurnTo(at.x);
+      setTimeout(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
+    })
+  );
+</script>
+
+{#each items as p (p.id)}
+  {#if p.id !== hidden}
+    {@const l = look(p.item, p.f)}
+    <div class="spr" data-decor-node={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
+      <button type="button" class="deco" class:editing data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
+        style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
+        onclick={(e) => tap(e, p.x)} onpointerdown={(e) => editing && onpick?.(p.id, e)}>
+        <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />
+      </button>
+    </div>
+  {/if}
+{/each}
+{#each puffs as q (q.n)}
+  <div class="spr" aria-hidden="true" {@attach w.at({ mode: 'flat', x: q.x, z: q.z, h: 4, zi: 9 })}><i class="puff"></i></div>
+{/each}
+
+<style>
+  .spr { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
+  .deco {
+    position: absolute; left: 0; bottom: 0; display: flex; justify-content: center; align-items: flex-end; line-height: 0;
+    appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; pointer-events: auto;
+    -webkit-tap-highlight-color: transparent; transform-origin: 50% 100%;
+  }
+  .deco :global(.official) { max-width: none; }
+  /* its tap target: its whole body, base included, at least 44px on screen (--inv: the node's 1 / scale) */
+  .deco::after {
+    content: ''; position: absolute; left: 50%; bottom: calc(-4 * var(--u)); translate: -50% 0;
+    width: max(100%, calc(45px * var(--inv, 1))); height: max(calc(100% + 4 * var(--u)), calc(45px * var(--inv, 1)));
+  }
+  .deco:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  /* in the decorate mode a finger on an item drags it (the world doesn't scroll under it) */
+  .deco.editing { touch-action: none; cursor: grab; }
+  .puff {
+    position: absolute; left: 0; top: 0; width: calc(50 * var(--u)); height: calc(50 * var(--u)); translate: -50% -50%; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, .9), rgba(255, 255, 255, .5) 55%, transparent); animation: puff .6s ease-out both;
+  }
+  @keyframes puff { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
+</style>

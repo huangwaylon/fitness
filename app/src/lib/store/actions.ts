@@ -161,3 +161,11 @@ export function sendIslandDay(date: LocalDate, row: object): void {
   const r = week.send('island', { date, ...row }, { holdMs });
   islandHeld = r.undo ? { date, until: now + holdMs, undo: r.undo } : null;
 }
+
+// ---- The island's decorations (docs/backend.md#events `decor`): each change of mine is one op, sent at once (the
+// sheet keeps each item's latest; store/decor.svelte.ts merges them).
+
+/** A decoration's op (placed, moved or removed) for the sheet. */
+export function sendDecor(op: object): void {
+  if (week.model) week.send('decor', { ...op });
+}
