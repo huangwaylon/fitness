@@ -1,0 +1,58 @@
+import { describe, expect, it } from 'vitest';
+import { TENT_FLOOR, TENT_MAX, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
+import { decorOpOf } from './decor.ts';
+
+const T0 = 1_790_000_000_000;
+const set = (id: string, at: number, o: Partial<{ item: string; x: number; z: number; f: number; p: number }> = {}) =>
+  ({ sc: 't', id, at, item: 'f4041', x: 1, z: 2, f: 0, p: at, ...o }) as Record<string, unknown>;
+
+describe('a tent op', () => {
+  it('a piece at a tile, the wallpaper and the floor, a removal; nothing else', () => {
+    expect(tentOpOf(set('dabc123', T0))).toEqual({ sc: 't', id: 'dabc123', at: T0, item: 'f4041', x: 1, z: 2, f: 0, p: T0 });
+    expect(tentOpOf({ sc: 't', id: 'dabc123', at: T0, rm: true })).toEqual({ sc: 't', id: 'dabc123', at: T0, rm: true });
+    expect(tentOpOf(set(TENT_WALL, T0, { item: 'w4840', x: 0, z: 0 }))).not.toBeNull();
+    expect(tentOpOf(set(TENT_FLOOR, T0, { item: 'g5018', x: 0, z: 0 }))).not.toBeNull();
+    for (const bad of [
+      set('dabc123', T0, { x: 8 }), set('dabc123', T0, { z: -1 }), set('dabc123', T0, { f: 4 }), set('dabc123', T0, { item: 'w4840' }),
+      set('dabc123', T0, { item: 'stone-lantern' }), set('dabc123', T0, { p: T0 + 1 }), { ...set('dabc123', T0), extra: 1 },
+      set(TENT_WALL, T0, { item: 'g5018', x: 0, z: 0 }), set(TENT_WALL, T0, { item: 'w4840', x: 1, z: 0 }),
+      { sc: 't', id: TENT_FLOOR, at: T0, rm: true }, { ...set('dabc123', T0), sc: 'i' }, set('x1', T0)
+    ]) expect(tentOpOf(bad), JSON.stringify(bad)).toBeNull();
+  });
+
+  it('is never an island op, nor an island op a tent one (the scope keeps them apart on old phones too)', () => {
+    expect(decorOpOf(set('dabc123', T0))).toBeNull();
+    expect(tentOpOf({ id: 'dabc123', at: T0, item: 'stone-lantern', x: 100, z: 200, f: 0, p: T0 })).toBeNull();
+  });
+});
+
+describe('the room’s layout', () => {
+  const e = (id: string, at: number, who: 'A' | 'B', o = {}) => ({ ...tentOpOf(set(id, at, o))!, who }) as TentEntry;
+
+  it('last writer wins, B over A at the same time, a removal over everything', () => {
+    const m = new Map<string, TentEntry>();
+    mergeTent(m, e('dabc123', T0 + 5, 'A', { x: 3 }));
+    expect(mergeTent(m, e('dabc123', T0 + 4, 'B', { x: 4 }))).toBe(false);
+    expect(mergeTent(m, e('dabc123', T0 + 5, 'B', { x: 5 }))).toBe(true);
+    expect(tentLayout(m.values()).pieces[0].x).toBe(5);
+    mergeTent(m, { sc: 't', id: 'dabc123', at: T0, rm: true, who: 'A' });
+    expect(tentLayout(m.values()).pieces).toEqual([]);
+  });
+
+  it('the wallpaper and the floor apart from the pieces; the oldest TENT_MAX pieces', () => {
+    const es = [e(TENT_WALL, T0, 'A', { item: 'w4795', x: 0, z: 0 }), ...Array.from({ length: TENT_MAX + 2 }, (_, i) => e(`dp${String(i).padStart(5, '0')}`, T0 + i, 'A'))];
+    const l = tentLayout(es);
+    expect(l.wall).toBe('w4795');
+    expect(l.floor).toBeNull();
+    expect(l.pieces).toHaveLength(TENT_MAX);
+    expect(l.pieces[0].id).toBe('dp00000');
+  });
+
+  it('the sheet: stale when beaten, full past the cap (the surfaces never count), else append', () => {
+    const held = Array.from({ length: TENT_MAX }, (_, i) => e(`dp${String(i).padStart(5, '0')}`, T0 + i, 'A'));
+    expect(tentAccept(held, e('dnew0001', T0 + 99, 'B'))).toBe('full');
+    expect(tentAccept(held, e(TENT_FLOOR, T0 + 99, 'B', { item: 'g5018', x: 0, z: 0 }))).toBe('append');
+    expect(tentAccept(held, e('dp00001', T0, 'B'))).toBe('stale');
+    expect(tentAccept(held, e('dp00001', T0 + 100, 'B', { x: 6 }))).toBe('append');
+  });
+});

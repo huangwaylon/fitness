@@ -85,12 +85,20 @@ export type Intent =
   | { kind: 'saved' }
   /** An island decoration set (placed or moved: its whole state) or removed (`rm`), contract/decor.ts's op; `at` the
    *  sender's relay clock. Kept by the room for the day; the sheet keeps it for good. */
-  | ({ kind: 'decor' } & DecorWire);
+  | ({ kind: 'decor' } & DecorWire)
+  /** A piece of the tent's furniture being dragged (presence only: relayed to the partner while they're there, never
+   *  kept, replayed or written; the drop is its `decor` op): where the finger has it now (`x`, `z` model units of the
+   *  room, the piece's middle), its facing, `it` the item when it isn't placed yet, `end` when the finger let go. */
+  | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true }
+  /** My villager in the tent (presence only, like a drag): `in` whether it's inside; a walk there (`from` → `via` → `to`,
+   *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone). */
+  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number };
 
-/** A decor op on the wire (contract/decor.ts DecorOp; checked here again: the Worker bundles this file alone). */
+/** A decor op on the wire (contract/decor.ts DecorOp, or the tent's with `sc: 't'`, contract/tent.ts; checked here
+ *  again: the Worker bundles this file alone). */
 type DecorWire =
-  | { id: string; at: number; item: string; x: number; z: number; f: number; p: number; rm?: undefined }
-  | { id: string; at: number; rm: true };
+  | { sc?: 't'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; rm?: undefined }
+  | { sc?: 't'; id: string; at: number; rm: true };
 
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen; `batch`:
  *  the day's world as `replay` messages, mine included). An intent's `c` (this phone's sequence number, increasing
@@ -151,6 +159,10 @@ const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
 const REV = /^[0-9a-z]{1,24}$/;
 /** A decoration's id and its item (contract/decor.ts: the item list is the app's; any token here). */
 const DECOR_ID = /^d[0-9a-z]{6,24}$/;
+/** The tent's room: its tiles (a `decor` op's x and z with `sc: 't'`) and its extent in model units (a drag, a walk). */
+const TENT_TILES = [0, 7] as const;
+const TENT_U = [-40, 40] as const;
+const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
 
 type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -212,11 +224,24 @@ function intentOf(o: Obj, v: LiveV): Intent | null {
     case 'saved':
       return { kind: 'saved' };
     case 'decor': {
-      if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !isTime(o.at)) return null;
-      if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', id: o.id, at: o.at, rm: true } : null;
-      if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, WORLD_X) || !within(o.z, WORLD_Z) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
-      return { kind: 'decor', id: o.id, at: o.at, item: o.item, x: o.x as number, z: o.z as number, f: o.f as number, p: o.p };
+      if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !isTime(o.at) || (o.sc !== undefined && o.sc !== 't')) return null;
+      const sc = o.sc === 't' ? { sc: 't' as const } : {};
+      if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', ...sc, id: o.id, at: o.at, rm: true } : null;
+      const [xs, zs] = o.sc === 't' ? [TENT_TILES, TENT_TILES] : [WORLD_X, WORLD_Z];
+      if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, xs) || !within(o.z, zs) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
+      return { kind: 'decor', ...sc, id: o.id, at: o.at, item: o.item, x: o.x as number, z: o.z as number, f: o.f as number, p: o.p };
     }
+    case 'drag':
+      if (v === 1 || typeof o.id !== 'string' || !DECOR_ID.test(o.id) || !within(o.x, TENT_U) || !within(o.z, TENT_U) || !within(o.f, [0, 3])) return null;
+      if ((o.it !== undefined && (typeof o.it !== 'string' || !TOKEN.test(o.it))) || (o.end !== undefined && o.end !== true)) return null;
+      return { kind: 'drag', id: o.id, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.it !== undefined ? { it: o.it as string } : {}), ...(o.end ? { end: true as const } : {}) };
+    case 'tent':
+      if (v === 1 || typeof o.in !== 'boolean' || !opt(o, 'to', isTentPt) || (o.from !== undefined && !isTentPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
+      if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isTentPt))) return null;
+      return {
+        kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
+        ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
+      };
     default:
       return null;
   }

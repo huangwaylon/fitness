@@ -7,6 +7,7 @@ import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/d
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
+import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -83,6 +84,9 @@ export interface State {
   /** The island's decorations (`decor`: each item's ops, contract/decor.ts), in server order; the layout is their merge
    *  (store/decor.svelte.ts). Never read by the economy. */
   decor: DecorEntry[];
+  /** The tent's room (`decor` with `sc: 't'`: each piece's ops, the wallpaper's and the floor's, contract/tent.ts), in
+   *  server order (store/tent.svelte.ts merges them). Never read by the economy. */
+  tent: TentEntry[];
   prefs: Record<PersonId, Prefs>;
   /** Accepted `pref` moveGoal (kcal) per person, ascending `at` (`moveGoalOn` picks the one in force). */
   moveGoals: Record<PersonId, Timed<number>[]>;
@@ -186,6 +190,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null): State {
     tallies: [],
     islandDays: [],
     decor: [],
+    tent: [],
     prefs: { A: {}, B: {} },
     moveGoals: { A: [], B: [] },
     stepsGoals: { A: [], B: [] },
@@ -281,6 +286,11 @@ const ON_EVENT: Record<EventType, OnEvent> = {
     if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
   },
   decor(s, person, _at, d) {
+    if (d.sc === 't') {
+      const t = tentOpOf(d);
+      if (t) s.tent.push({ ...t, who: person } as TentEntry);
+      return;
+    }
     const op = decorOpOf(d);
     if (op) s.decor.push({ ...op, who: person } as DecorEntry);
   },

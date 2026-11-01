@@ -10,6 +10,7 @@ import { jstMs, localDateAt, parseInstant, ZONE_OFFSET_MS } from '../src/lib/tim
 import { isTally } from '../src/lib/contract/tally.ts';
 import { isIslandDay } from '../src/lib/contract/island.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../src/lib/contract/decor.ts';
+import { tentAccept, tentOpOf, type TentEntry } from '../src/lib/contract/tent.ts';
 import type { PersonId } from '../src/lib/types.ts';
 import { shopPrice } from '../src/lib/config/rules.ts';
 import {
@@ -536,7 +537,7 @@ function event(me: PersonId, body: Rec): EventReply {
     for (const r of rows) if (text(r[daily ? 1 : 0]) === id) return { ok: true, duplicate: true };
     if (type === 'decor') {
       const v = decorTarget(sh, rows, me, data);
-      if (v === 'full') return fail('bad_request', 'decor full');
+      if (v === 'full') return fail('bad_request', data.sc === 't' ? 'tent full' : 'decor full');
       if (v === 'stale') return { ok: true, duplicate: true };
     } else if (daily) dropDaily(sh, rows, me, type, data.date as string);
     if (type === 'spend_void') {
@@ -572,7 +573,8 @@ function validEventData(type: string, d: Rec): boolean {
     case 'island':
       return isIslandDay(d, localDateAt(Date.now()));
     case 'decor':
-      return decorOpOf(d) !== null;
+      // the island's, or the tent's (`sc: 't'`: contract/tent.ts)
+      return decorOpOf(d) !== null || tentOpOf(d) !== null;
     default:
       return true;
   }
@@ -605,22 +607,25 @@ function dropDaily(sh: GAS.Sheet, rows: unknown[][], me: PersonId, type: string,
 /**
  * A `decor` op (contract/decor.ts) against the events tab's `[person, id, type, data]` rows, which hold each item's latest
  * op only: `stale` when a row of the same item beats it (a removal, or a later op: acknowledged, nothing appended),
- * `full` for a new item past DECOR_MAX, else `append`, and the item's older rows are deleted first (the rows below move
+ * `full` for a new item past DECOR_MAX (the tent's, `sc: 't'`: TENT_MAX, among the tent's own), else `append`, and the item's older rows are deleted first (the rows below move
  * up, still in `at` order, as a tally's). The sheet's decor stays one row per item ever placed.
  */
 function decorTarget(sh: GAS.Sheet, rows: unknown[][], me: PersonId, d: Rec): 'append' | 'stale' | 'full' {
-  const e = { ...decorOpOf(d)!, who: me } as DecorEntry;
-  const held: DecorEntry[] = [], at: number[] = [];
+  // the island's ops and the tent's are kept apart (each its own ids, each its own cap)
+  const tent = d.sc === 't';
+  const parse = (x: Rec) => (tent ? tentOpOf(x) : decorOpOf(x));
+  const e = { ...parse(d)!, who: me };
+  const held: (DecorEntry | TentEntry)[] = [], at: number[] = [];
   rows.forEach((r, i) => {
     if (text(r[2]) !== 'decor' || !isPersonId(r[0])) return;
     let x: unknown;
     try { x = JSON.parse(text(r[3])); } catch { return; }
-    const op = isRec(x) ? decorOpOf(x) : null;
+    const op = isRec(x) ? parse(x) : null;
     if (!op) return;
-    held.push({ ...op, who: r[0] } as DecorEntry);
+    held.push({ ...op, who: r[0] } as DecorEntry | TentEntry);
     at.push(i + 2);
   });
-  const v = decorAccept(held, e);
+  const v = tent ? tentAccept(held as TentEntry[], e as TentEntry) : decorAccept(held as DecorEntry[], e as DecorEntry);
   if (v !== 'append') return v;
   const old = held.flatMap((h, i) => (h.id === e.id ? [at[i]] : []));
   if (!old.length) return v;
