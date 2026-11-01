@@ -59,7 +59,8 @@ const storedSince: SinceStore = {
   }
 };
 
-/** What the socket did (counters since the page loaded, and the last acks' round trips): for the budget and the e2e. */
+/** What the socket did (counters since the page loaded, and the last acks' round trips): for the budget and the e2e.
+ *  @public (the e2e) */
 export interface LiveMetrics {
   sent: number;
   sentBytes: number;

@@ -11,11 +11,11 @@ export const LIVE_VS = [1, 2] as const;
 export type LiveV = (typeof LIVE_VS)[number];
 /** Anything longer is dropped unread by both sides (but a `replay`, the relay's day in one message: REPLAY_BYTES). */
 export const MAX_BYTES = 256;
-/** A `replay` message (relay → client): today's world in as few messages as this allows. */
+/** A `replay` message (relay → client): today's world in as few messages as this allows. @public (relay/) */
 export const REPLAY_BYTES = 16_000;
 /** A walk's waypoints between `from` and `to` (more: the receiver plans the way itself). */
 export const VIA_MAX = 10;
-/** A walk takes at most this long (ms). */
+/** A walk takes at most this long (ms). @public (relay/) */
 export const WALK_MS_MAX = 60_000;
 
 /**
@@ -50,8 +50,10 @@ export type How = (typeof HOWS)[number];
 export const DROPS = ['none', 'branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
 export type Drop = (typeof DROPS)[number];
 
-/** Which way a villager faces at a walk's end: as drawn (toward the camera), toward the island's middle, left, right. */
+/** Which way a villager faces at a walk's end: as drawn (toward the camera), toward the island's middle, left, right.
+ *  @public (relay/) */
 export const FACES = ['home', 'in', 'l', 'r'] as const;
+/** @public (relay/) */
 export type Face = (typeof FACES)[number];
 
 /** A world point (v2: integer world units within the plan). */
