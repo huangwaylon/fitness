@@ -7,6 +7,7 @@
 //   summer         lush: deeper grass, tall tufts with their shade, clover
 //   autumn         warmer grass, dry patches
 //   autumn-leaves  the fall foliage (Oct 16 – Dec 10): maple leaves heaped under the oaks, blown along the paths
+//                  (the front lawn tidier: small piles close under its trees, a few strays; none on the sand)
 //   winter         snow in soft drifts (lit from the upper left, blue in their lee), banks piled along the paths with
 //                  their shade on the path, snow thinning out over the sand, snowy river banks (NH's water never freezes,
 //                  so the water stays open: only its rim darkens under the snow's lip)
@@ -235,13 +236,16 @@ vec3 dress(vec2 p, vec3 c, float dL, float dG, float aG, float pd, float ws){
 #endif
 #if LEAVES
   {
-    float t = underTrees(p);
+    // the front lawn (in front of the hedge) keeps tidy: smaller piles close under its trees, a few strays, none on
+    // the path's edges; おく as before; none on the sand anywhere
+    float front = 1.0 - smoothstep(560.0, 620.0, p.y);
+    float t = mix(underTrees(p), smoothstep(0.45, 1.0, underTrees(p)), front);
     // the grass under a tree a little browner, where the leaves have lain
-    c = mix(c, c*vec3(1.04,0.92,0.78), lawn*t*0.3);
-    float dens = 0.03 + 0.85*t + 0.3*edge;
-    dens *= mix(0.12, 1.0, aG);
+    c = mix(c, c*vec3(1.04,0.92,0.78), lawn*t*mix(0.3, 0.18, front));
+    float dens = mix(0.03 + 0.85*t + 0.3*edge, 0.006 + 0.55*t, front);
+    dens *= aG;
     c = leaves(p, c, min(dens, 0.95), 6.5, 2511);
-    c = leaves(p + 3.1, c, min(dens*0.7*t + 0.02, 0.9), 5.0, 2521);
+    c = leaves(p + 3.1, c, min(dens*0.7*t + 0.02*mix(1.0, 0.3, front)*aG, 0.9), 5.0, 2521);
   }
 #endif
 #endif
