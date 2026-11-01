@@ -1,9 +1,9 @@
-// Island care (docs/design.md "Island care"): weeds that sprout over the day, the flower beds' watering and the hybrid
-// a watered bed can grow the next day, the rock by the hedge. Pure and seeded by the date (beach.ts dayRand), so both
+// Island care (docs/design.md "Island care"): weeds that sprout over the day, the hybrid a watered flower can grow the
+// next day, the rock by the hedge. Pure and seeded by the date (beach.ts dayRand), so both
 // phones broadly see the same weeds and hybrids; what a phone pulled or watered is its own (sceneDay.ts). Nothing here
 // counts for anything: no ベル, no find.
 import { pickOne } from '#lib/random.ts';
-import type { FlowerId } from '#lib/art.ts';
+import type { FlowerId, FlowerKind } from '#lib/art.ts';
 import { LAWN } from './beach.ts';
 import { ROCK as W_ROCK } from './world.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
@@ -34,30 +34,33 @@ export function weedsAt(date: string, ms: number, seed = ISLAND_SEED, taken: Rea
   });
 }
 
-/** NH's hybrids a bed's flower can give (simplified genetics): the colours a watered bed of each can grow. */
-export const HYBRIDS: Record<FlowerId, readonly string[]> = {
-  'red-tulips': ['purple-tulips', 'black-tulips', 'orange-tulips'],
-  'yellow-tulips': ['orange-tulips', 'purple-tulips'],
-  'red-roses': ['black-roses', 'orange-roses', 'pink-roses'],
-  'white-roses': ['purple-roses', 'pink-roses', 'blue-roses'],
-  'pink-cosmos': ['orange-cosmos', 'black-cosmos'],
-  'purple-mums': ['pink-mums', 'green-mums'],
-  'orange-pansies': ['blue-pansies', 'purple-pansies']
+/** NH's hybrids (simplified genetics): the rarer colours of each kind a watered flower can give. */
+const HYBRIDS: Record<FlowerKind, readonly FlowerId[]> = {
+  tulips: ['purple-tulips', 'black-tulips', 'orange-tulips'],
+  roses: ['black-roses', 'orange-roses', 'pink-roses', 'purple-roses', 'blue-roses'],
+  cosmos: ['orange-cosmos', 'black-cosmos'],
+  mums: ['pink-mums', 'green-mums', 'purple-mums'],
+  lilies: ['orange-lilies', 'pink-lilies'],
+  pansies: ['blue-pansies', 'purple-pansies', 'orange-pansies'],
+  hyacinths: ['purple-hyacinths', 'pink-hyacinths'],
+  windflowers: ['purple-windflowers', 'red-windflowers']
 };
+/** The hybrid colours a flower can give (never its own). */
+export const hybridsOf = (id: FlowerId): FlowerId[] => (HYBRIDS[id.slice(id.indexOf('-') + 1) as FlowerKind] ?? []).filter((h) => h !== id);
 /** "Rarely": the chance a day after watering brings a hybrid. */
 export const HYBRID_ODDS = 0.25;
 
-export interface Hybrid { cell: string; flower: string }
+export interface Hybrid { id: string; flower: string }
 
-/** The hybrid that shows on `date` given the cells (`row-col`) watered the day before and each row's flower: 1 in 4, in
- *  one watered cell, a colour that flower can give. Null otherwise. */
-export function hybridFor(date: string, wateredYesterday: readonly string[], rowFlower: (row: number) => FlowerId, seed = ISLAND_SEED): Hybrid | null {
+/** The hybrid that shows on `date` given the flowers (ids) watered the day before and each one's kind: 1 in 4, on one
+ *  watered flower, a colour its kind can give. Null otherwise. */
+export function hybridFor(date: string, wateredYesterday: readonly string[], kindOf: (id: string) => FlowerId, seed = ISLAND_SEED): Hybrid | null {
   if (!wateredYesterday.length) return null;
   const r = dayRand(date, 'hybrid', seed);
   if (r() >= HYBRID_ODDS) return null;
-  const cell = [...wateredYesterday].sort()[Math.floor(r() * wateredYesterday.length)];
-  const options = HYBRIDS[rowFlower(Number(cell.split('-')[0]))];
-  return { cell, flower: pickOne(options, r) };
+  const id = [...wateredYesterday].sort()[Math.floor(r() * wateredYesterday.length)];
+  const options = hybridsOf(kindOf(id));
+  return options.length ? { id, flower: pickOne(options, r) } : null;
 }
 
 /** A tap on the rock by the hedge: a clonk, 1 in 4 a sparkle (NH's money rock, without the money), 1 in 8 a pill bug

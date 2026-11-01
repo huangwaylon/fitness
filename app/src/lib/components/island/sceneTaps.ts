@@ -2,7 +2,7 @@
 // sound hook for it. Pure (no DOM): SceneTaps.svelte unprojects the tap (camera.svelte.ts) and calls hitWorld;
 // the sky (sun, moon, clouds) moves and resizes, so the component hit-tests those against their live boxes instead.
 // No points, no state: a scenery tap only plays a ≤ 1 s flourish.
-import type { FlowerId } from '#lib/art.ts';
+import type { FlowerColour, FlowerId } from '#lib/art.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { SceneSfx } from '#lib/sound/ids.ts';
 import { POND, SPRING, inOval, surfaceAt } from './world.ts';
@@ -10,8 +10,8 @@ import { POND, SPRING, inOval, surfaceAt } from './world.ts';
 export type SceneHit =
   /** A hedge bush or another bush (its node's data-bush id), found from the tapped element. */
   | { kind: 'bush'; id: string }
-  /** row 0 = the beds' back row, 1 = the front row; col 0–3 left to right (FlowerBeds' data-flower="row-col"). */
-  | { kind: 'flower'; row: number; col: number }
+  /** A wild flower (Flowers' data-flower: its world.ts FLOWERS id). */
+  | { kind: 'flower'; id: string }
   | { kind: 'grass' }
   | { kind: 'sand' }
   | { kind: 'sea' }
@@ -31,16 +31,12 @@ export function hitWorld(x: number, z: number): SceneHit {
   return { kind: 'grass' };
 }
 
-/** A petal's colour per flower species (the bloom in the official render). */
-export const PETAL: Record<FlowerId, string> = {
-  'red-tulips': '#F0544F',
-  'yellow-tulips': '#FFD54A',
-  'red-roses': '#E8394A',
-  'white-roses': '#FFFFFF',
-  'pink-cosmos': '#FF9BC4',
-  'purple-mums': '#A879D9',
-  'orange-pansies': '#FF9C3A'
+/** A petal's colour by the flower's colour (the bloom in the official renders). */
+const PETAL: Record<FlowerColour, string> = {
+  red: '#F0544F', white: '#FFFFFF', yellow: '#FFD54A', pink: '#FF9BC4', orange: '#FF9C3A', purple: '#A879D9',
+  blue: '#6F9BF0', black: '#5A2A3A', green: '#9BD86A'
 };
+export const petalOf = (id: FlowerId): string => PETAL[id.slice(0, id.indexOf('-')) as FlowerColour] ?? PETAL.pink;
 
 /** The one hook between scenery taps and the sound engine: the `scene-<kind>` cue (sound/cues.ts, all world cues,
  *  so they're quiet under a sheet). Callers fire it at the moment of the tap, so a delay (if any) belongs in the cue. */

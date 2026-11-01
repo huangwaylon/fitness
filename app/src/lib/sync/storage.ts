@@ -25,7 +25,7 @@ export const LIVE = {
   /** `{ <morning>: { A?, B? } }`: both people's wishes on shooting stars by the morning each brings its fragment
    *  (store/world.svelte.ts: kept past the day they were made in). */
   wishes: 'island.wishes',
-  /** `{ day, watered }`: yesterday's watered flower bed cells, both people's (store/world.svelte.ts: today's hybrids). */
+  /** `{ day, watered }`: yesterday's watered flowers (world.ts FLOWERS ids), both people's (store/world.svelte.ts: today's hybrids). */
   worldPrev: 'island.worldPrev'
 } as const;
 
@@ -68,9 +68,8 @@ export const SCENE = {
   /** localStorage `scene-day` = `{ date, picked: [uid…] }`: the day items (shells, fossils, the bottle, fragments, weeds)
    *  this phone picked up, dug or pulled today (island/sceneDay.ts; a new day starts empty). */
   day: 'scene-day',
-  /** localStorage `fruit-day` = `{ date, dropped: [id…], picked: [id…], bloomed: [id…] }`: today's met fruit this
-   *  phone has shown falling and picked up, and the goal flowers it has shown blooming (`A:pear`; island/fruitDay.ts;
-   *  a new day starts empty). */
+  /** localStorage `fruit-day` = `{ date, dropped: [id…], picked: [id…] }`: today's met fruit this phone has shown
+   *  falling and picked up (`A:pear`; island/fruitDay.ts; a new day starts empty). */
   fruit: 'fruit-day',
   /** localStorage `scene-wish` = `{ <Tokyo date>: n }`: this phone's wishes on shooting stars, each a star fragment on
    *  that morning's beach (island/stars.ts, sceneDay.ts). */
@@ -78,7 +77,7 @@ export const SCENE = {
   /** localStorage `fireworks-day` = the Tokyo date this phone last showed the both-of-us-met-everything volley
    *  (island/Fireworks.svelte: once a day). */
   fireworks: 'fireworks-day',
-  /** localStorage `scene-garden` = `{ date, watered: ['row-col'…], hybrid }`: the flowers watered today and the hybrid
+  /** localStorage `scene-garden` = `{ date, watered: ['fl:x:z'…], hybrid }`: the flowers watered today and the hybrid
    *  today shows (from yesterday's watering). */
   garden: 'scene-garden',
   /** localStorage `scene-stretch` = `{ date, morning, done }`: today's group stretching on this phone (island/stretching.ts):

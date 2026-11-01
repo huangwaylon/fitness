@@ -278,7 +278,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await canopies.nth(1).click({ position: { x: (await canopies.nth(1).boundingBox())!.width / 2, y: (await canopies.nth(1).boundingBox())!.height - 8 } });
   await expect(popups).toHaveCount(0);
   await canopies.nth(0).click();
-  await page.mouse.click(20, 300); // the sky: it closes
+  await page.mouse.click(205, 300); // the path, elsewhere: it closes
   await expect(popups).toHaveCount(0);
   await canopies.nth(0).click();
   await page.keyboard.press('Escape');

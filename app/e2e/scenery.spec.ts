@@ -1,5 +1,6 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sea, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the jar still work.
+import { FLOWERS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
 
 /** The island is up: today's ベル ribbon shows (the app asks no questions, so nothing to answer first). */
@@ -60,7 +61,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
     ['bush', () => centre(page, '[data-bush="plumeria-w"]'), '[data-fx="bush"]'], // the white plumeria at the beach's edge
-    ['flower', () => centre(page, '[data-flower="1-0"]'), '[data-fx="flower"]'],
+    ['flower', () => centre(page, `[data-flower="${FLOWERS[0].id}"]`), '[data-fx="flower"]'],
     ['grass', () => lawn(page), '.if-scene .tap-ring'],
     ['sea', () => sea(page), '[data-fx="splash"]'],
     ['sun', () => orb(page), '[data-fx="sun"]']

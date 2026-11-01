@@ -184,7 +184,7 @@ test('a shark: a fin cuts the surface (NH), and the catch names it', async ({ pa
 test('a tap on a butterfly nets it', async ({ page }) => {
   const before = await open(page, '&critter=common-butterfly');
   await expect(page.locator('[data-critter="common-butterfly"]')).toBeAttached();
-  await page.waitForTimeout(2200); // in over its flower bed
+  await page.waitForTimeout(2200); // in over its flowers
   const b = await at(page, '[data-critter="common-butterfly"]');
   await page.mouse.click(b.x, b.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('common-butterfly'));

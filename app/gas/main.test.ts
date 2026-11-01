@@ -484,7 +484,7 @@ describe('tally (one row per person and day)', () => {
 
 describe('island (the shared island: one row per person and day)', () => {
   const day = (id: string, date: string, more: Record<string, unknown> = {}) =>
-    ({ id, type: 'island', data: { date, taken: ['s1000', 'w3'], puts: [['pa1', 'present', 120, 300]], shakes: [['oak-p1', 'branch', 1_793_000_000_000]], watered: ['A.0-1'], wishes: { '2026-10-30': 1 }, at: [100, 500], ...more } });
+    ({ id, type: 'island', data: { date, taken: ['s1000', 'w3'], puts: [['pa1', 'present', 120, 300]], shakes: [['oak-p1', 'branch', 1_793_000_000_000]], watered: ['fl:130:344'], wishes: { '2026-10-30': 1 }, at: [100, 500], ...more } });
 
   it('checks the shape: a real date not after tomorrow, well-formed ids, points within the plan, known drops', () => {
     expect(a('event', day('i1', '2026-10-29'))).toEqual({ ok: true });
@@ -494,7 +494,7 @@ describe('island (the shared island: one row per person and day)', () => {
       { taken: ['has space'] },
       { puts: [['p1', 'present', 9999, 0]] },
       { shakes: [['oak-p1', 'fruit', 1]] },
-      { watered: ['C.0-1'] },
+      { watered: ['a flower'] },
       { wishes: { tomorrow: 1 } },
       { at: [1.5, 2] },
       { extra: 1 },

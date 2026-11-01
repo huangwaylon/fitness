@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MUSHROOMS, MUSHROOM_SPOTS, OFF_SEASON_ODDS, RARE_ODDS, mushroomsOn, rareMushroom } from './mushrooms.ts';
 import { DIG_SPOTS, LAWN } from './beach.ts';
-import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE } from './scene.ts';
-import { GOAL_TREES, HOMES, TAPE_DECK } from './world.ts';
+import { OAK_AR } from './scene.ts';
+import { FLOWERS, GOAL_TREES, HOMES, SCENERY, TAPE_DECK, onGrass, surfaceAt } from './world.ts';
 import { addDays } from '#lib/time/dates.ts';
 import ja from '#lib/i18n/catch.ja.json';
 import en from '#lib/i18n/catch.en.json';
@@ -50,16 +50,16 @@ describe('mushroom season', () => {
     expect(n['elegant-mushroom'] ?? 0).toBeLessThan(n['skinny-mushroom'] / 3);
     for (const id of ['skinny-mushroom', 'round-mushroom', 'flat-mushroom']) expect(n[id]).toBeGreaterThan(40);
   });
-  it('they grow beside the trunks, clear of the canopy and the fruit row, away from the dig spots, the weeds and the deck', () => {
+  it('they grow beside the front lawn’s oak and cedar, past their canopies, away from the villagers, the dig spots, the weeds, the deck and the flowers', () => {
     expect(MUSHROOM_SPOTS).toHaveLength(4);
-    const half = (TREE.h * OAK_AR) / 2, row = -FRUIT_SPOTS[0][0] + FRUIT_U;
+    const trees = SCENERY.filter((s) => s.id === 'oak-m1' || s.id === 'cedar-m1');
     for (const [x, z] of MUSHROOM_SPOTS) {
-      const [tx, tz] = Math.abs(x - GOAL_TREES.A[0]) < Math.abs(x - GOAL_TREES.B[0]) ? GOAL_TREES.A : GOAL_TREES.B;
-      expect(Math.abs(x - tx)).toBeLessThanOrEqual(70);
-      expect(Math.abs(x - tx)).toBeGreaterThan(half + 6); // past the canopy
-      expect(Math.abs(x - (tx + (tx < 195 ? -FRUIT_LEAN : FRUIT_LEAN)))).toBeGreaterThan(row + 6); // past the fruit row
-      expect(z - tz).toBeGreaterThanOrEqual(0), expect(z - tz).toBeLessThanOrEqual(40);
-      for (const [dx, dz] of [...DIG_SPOTS, ...LAWN, TAPE_DECK, HOMES.A, HOMES.B]) expect(Math.hypot(x - dx, z - dz)).toBeGreaterThan(24);
+      const t = trees.reduce((a, b) => (Math.hypot(b.x - x, b.z - z) < Math.hypot(a.x - x, a.z - z) ? b : a));
+      expect(Math.abs(x - t.x)).toBeLessThanOrEqual(70);
+      expect(Math.abs(x - t.x)).toBeGreaterThan(t.h * (t.kind === 'oak' ? OAK_AR : 0.25) / 2 + 4); // past the canopy
+      expect(z - t.z).toBeGreaterThanOrEqual(0), expect(z - t.z).toBeLessThanOrEqual(40);
+      expect(onGrass(x, z) && surfaceAt(x, z) === 'grass').toBe(true);
+      for (const [dx, dz] of [...DIG_SPOTS, ...LAWN, TAPE_DECK, HOMES.A, HOMES.B, ...Object.values(GOAL_TREES), ...FLOWERS.map((f) => [f.x, f.z] as const)]) expect(Math.hypot(x - dx, z - dz)).toBeGreaterThan(24);
     }
   });
   it('about 1 in 20 November dig spots hold the rare mushroom (its own stream), none in other months', () => {

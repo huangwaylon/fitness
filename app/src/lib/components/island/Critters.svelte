@@ -17,7 +17,7 @@
   //   of a shadow; a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
   //   shadow and a second tap on it in time catches it, or it gets away. Now and then the spot holds NH's pearl.
   //   Bugs (NH's by month and hour, where NH keeps them: critters.ts bugPlace): cicadas and beetles on the trunks of the
-  //   goal trees, the oaks and the cedars, NH's palm beetles on the palms, butterflies and the bee over the flower beds
+  //   goal trees, the oaks and the cedars, NH's palm beetles on the palms, butterflies and the bee over the flowers
   //   (now and then resting on a flower), a ladybug or a mantis on a flower's head, the moth round the lamps at night,
   //   dragonflies and fireflies near the water, grasshoppers, crickets and the night's tarantula and scorpion in the
   //   grass, the hermit crab and the wharf roach on the beach, the water bugs on the pond and the river's still reach.
@@ -68,10 +68,10 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { ROCK, SEA_BOX, SHORE_Z } from './world.ts';
+  import { ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
   import { nearestWalkable, walkGeo } from './walkGraph.ts';
   import {
-    BUGS, BUSHES, CAST_U, FISH, FLOWER_CELLS, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
+    BUGS, BUSHES, CAST_U, FISH, FRESH, HESITATE_MS, HESITATE_U, NOTICE_U, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bitePlan,
     bugPlace, bushBug, castInto, castPhase, critterArt, findKind, freshAreas, shadowLen, fleaJumps, hesitatePlan, hookItem, netSwing,
     oddsAt, patches, perches, pickBug, pickFish, reel, stalkTap, swimAt, waterAt, type BitePlan, type BugId, type BugPlace, type Catch,
     type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
@@ -553,17 +553,17 @@
 
   // ---------- bugs ----------
   // (what they are and how they move: critterPath.ts STILL, LANDS, PACE, groundOk)
-  /** The bed flowers' heads (world, lift measured from the flower as drawn: a bud's or a bloom's): where a ladybug or a
-   *  mantis sits and a butterfly rests. The orchid mantis prefers white flowers. */
-  function flowerHeads(): (P3 & { white: boolean })[] {
-    const out: (P3 & { white: boolean })[] = [];
+  /** The wild flowers' heads (world, lift measured from the flower as drawn): where a ladybug or a mantis sits and a
+   *  butterfly rests. The orchid mantis prefers white flowers. */
+  function flowerHeads(): (P3 & { fid: string; white: boolean })[] {
+    const out: (P3 & { fid: string; white: boolean })[] = [];
     const s = w.view.s;
-    for (const c of FLOWER_CELLS) {
-      const el = scene?.querySelector<HTMLElement>(`[data-flower="${c.cell}"]`);
-      const r = el?.getBoundingClientRect();
-      if (!el || !r?.width) continue;
-      const foot = w.clientAt(c.x, c.z)[1], k = w.scaleAt(c.x, c.z) * s;
-      out.push({ x: c.x, z: c.z, lift: Math.max(6, (foot - (r.top + r.height * 0.16)) / k), white: !!el.querySelector('img[src*="white"]') });
+    for (const el of scene?.querySelectorAll<HTMLElement>('[data-flower]') ?? []) {
+      const f = flowerById(el.dataset.flower ?? '');
+      const r = el.getBoundingClientRect();
+      if (!f || !r.width) continue;
+      const foot = w.clientAt(f.x, f.z)[1], k = w.scaleAt(f.x, f.z) * s;
+      out.push({ fid: f.id, x: f.x, z: f.z, lift: Math.max(6, (foot - (r.top + r.height * 0.16)) / k), white: el.dataset.white !== undefined });
     }
     return out;
   }
@@ -602,7 +602,7 @@
     const ok = (p: P3) => groundOk(place, p.x, p.z) && seen(p.x, p.z, p.lift, keep);
     if (flight === 'perch') spot = perchSpot(BUGS[id].tree === 'palm', keep, pinned);
     else if (flight === 'flower') {
-      // a ladybug or a mantis sits on a flower's head (the orchid mantis on a white one if the beds have any)
+      // a ladybug or a mantis sits on a flower's head (the orchid mantis on a white one if there are any)
       let heads = flowerHeads();
       const shown = heads.filter((h) => seen(h.x, h.z, h.lift, keep, 5, 5));
       if (shown.length || !pinned) heads = shown;
@@ -646,7 +646,7 @@
   /** A shared bug: where its seed puts it (critterPath.ts bugPath), wherever that is (the projector shows it when the
    *  camera sees it), and where in its stay it is now. */
   function sharedBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number } & Shared, p: NonNullable<Shared['path']>): boolean {
-    const white = flowerHeads().filter((h) => h.white).map((h) => FLOWER_CELLS.find((c) => c.x === h.x && c.z === h.z)?.cell ?? '');
+    const white = flowerHeads().filter((h) => h.white).map((h) => h.fid);
     const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white, avoid: o.avoid });
     if (!path) return false;
     const e = shared.now() - p.t0, { k, at } = legAt(path.legs, path.start, e);
@@ -717,7 +717,8 @@
         b.rest = 2 + Math.floor(rand() * 2);
       } else if ((b.hops = (b.hops ?? 0) + 1) > (b.rest ?? 2)) {
         const keep = guards(4);
-        const h = pickOne(flowerHeads().filter((h) => Math.abs(h.x - b.x) < 120 && Math.abs(h.z - b.z) < 120 && seen(h.x, h.z, h.lift, keep, 5, 5)), rand);
+        const p = b.patch;
+        const h = pickOne(flowerHeads().filter((h) => (p ? h.x >= p.x0 && h.x <= p.x1 && h.z >= p.z0 && h.z <= p.z1 : Math.abs(h.x - b.x) < 120 && Math.abs(h.z - b.z) < 120) && seen(h.x, h.z, h.lift, keep, 5, 5)), rand);
         if (h) {
           const ms = between(1100, 1600);
           go(b, { ...h, lift: h.lift + 2 }, ms);

@@ -42,7 +42,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), `goalWeight` (20–300 kg, one decimal, or null), `moveGoal` (integer 100–2,000), `stepsGoal` (1,000–30,000, a multiple of 500) |
 | `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` · `item` · `recipe` (`FIND_KINDS`; the last two: what a balloon's present held), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
 | `tally` | `{date, counts}` | one person's counts of one Tokyo day for the ずかん's 「×12」 (`contract/tally.ts`): `date` a real date not after tomorrow (server's Tokyo date), `counts` 1–300 keys `kind:id` (a find's kind and id) → whole 1–999. One row per person and day: see **Tally** below. Never ベル |
-| `island` | `{date, taken, puts, shakes, watered, wishes, at?}` | one person's part of one Tokyo day's shared island ([Shared world](#shared-world), `contract/island.ts`): ids picked up, dug, pulled or opened (≤ 400), things put down `[id, what, x, z]` (≤ 60), shakes that left something `[tree, drop, at]` (≤ 120), flower bed cells watered `A.0-1`, wishes by the morning they bring a fragment, where their villager stands (`[x, z]` within the plan); `date` not after tomorrow. One row per person and day, replaced like a tally. Never ベル |
+| `island` | `{date, taken, puts, shakes, watered, wishes, at?}` | one person's part of one Tokyo day's shared island ([Shared world](#shared-world), `contract/island.ts`): ids picked up, dug, pulled or opened (≤ 400), things put down `[id, what, x, z]` (≤ 60), shakes that left something `[tree, drop, at]` (≤ 120), flowers watered (`fl:<x>:<z>`, world.ts FLOWERS, ≤ 40), wishes by the morning they bring a fragment, where their villager stands (`[x, z]` within the plan); `date` not after tomorrow. One row per person and day, replaced like a tally. Never ベル |
 
 **Finds:** the client sends a `find` only the first time either person finds that `kind:id` (the model holds queued
 events too, so a second catch before the ack sends nothing; a race between the two phones only adds a duplicate the
@@ -335,7 +335,7 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   critters to catch, the nest rule; the day's things on the ground (shells, fragments, the bottle, dig spots and the
   next one, mushrooms, weeds, fallen goal fruit `fr:<person>:<fruit>`, branches, coconuts: `pick {id, what, at}`), a
   balloon's present (`put` where it lands; its contents in the opener's `pick`), watered flowers (`world watered`, by
-  whose bed), wishes (`world wished`, by the morning), a bush shaken and the rock struck (`act` with `pt`, played by the
+  the flower's id), wishes (`world wished`, by the morning), a bush shaken and the rock struck (`act` with `pt`, played by the
   partner's villager).
 - **Still each phone's own:** the camera (each shows what its view holds of the same world), a balloon's flight and
   where this phone's lands (its present is shared once down), shooting stars and the night's showers' timing, the

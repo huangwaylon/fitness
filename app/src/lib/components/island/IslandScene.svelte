@@ -26,7 +26,7 @@
   import WorldWater from './WorldWater.svelte';
   import Scenery from './Scenery.svelte';
   import FruitTree from './FruitTree.svelte';
-  import FlowerBeds from './FlowerBeds.svelte';
+  import Flowers from './Flowers.svelte';
   import Particles from './Particles.svelte';
   import { raining, weather } from './weatherNow.svelte.ts';
   import { WET } from './weather.ts';
@@ -43,8 +43,8 @@
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
-  import { BEDS, VILLAGER, eventsAt, u, type Tod } from './scene.ts';
-  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, GOAL_TREES, HOMES, PLAN, SHORE_Z, TREE_H, surfaceAt, type BuildingId } from './world.ts';
+  import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
+  import { CAMPSITE, CAMS, CAM_MAX, CAM_MIN, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PLAN, SHORE_Z, TREE_H, flowerById, surfaceAt, type BuildingId } from './world.ts';
   import { campLine, doorAt, partnerOnline } from './buildings.ts';
   import { RING_MS, stepCue } from './tapWalk.ts';
   import { nav } from './nav.ts';
@@ -55,8 +55,8 @@
   import { visitorNow } from './visitors.ts';
   import { World, dropLive, provideWorld } from './camera.svelte.ts';
   import { camAt, horizonAhead, scrollFor, solveCam } from './roll.ts';
-  import { HYBRIDS, hybridFor } from './care.ts';
-  import { absoluteGarden, garden } from './sceneDay.ts';
+  import { hybridFor, hybridsOf } from './care.ts';
+  import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { actors, applyStep, busy, inMotion, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -112,10 +112,6 @@
     mine: { person: view.people[view.me], home: HOMES[view.me], side: sideOf(view.me) },
     partner: { person: view.people[view.partner], home: HOMES[view.partner], side: sideOf(view.partner) }
   });
-
-  // a garden this phone kept before the worlds were made identical: its cells turned to the island's own, once
-  // svelte-ignore state_referenced_locally
-  if (live) absoluteGarden(view.me);
 
   const covered = $derived(paused || ui.overlay);
 
@@ -199,20 +195,12 @@
     bday.length || isBirthday(villagerBdays?.[resolveLook({ villager: person.villager, person: person.person }).id], today) ? HATS[id] : null;
   const hybrid = $derived.by(() => {
     if (!live) return null;
-    const row = (r: number) => (r ? BEDS[season].front : BEDS[season].back);
-    if (hookFlag('hybrid')) return { cell: '0-1', flower: HYBRIDS[row(0)][0] };
-    const mine = garden(today, addDays(today, -1), (w) => hybridFor(today, w, row)).hybrid;
-    // both people's waterings yesterday (the shared day's: whose bed and the cell), so both phones grow the same one, in
-    // the same person's bed (A's on the left)
-    const both = shared.wateredYesterday().flatMap((id) => {
-      const m = /^([AB])\.(\d)-([01])$/.exec(id);
-      return m ? [`${m[2]}-${m[1]}${m[3]}`] : [];
-    });
-    if (!both.length) return mine;
-    const h = hybridFor(today, both, row);
-    if (!h) return null;
-    const [r, pc] = h.cell.split('-');
-    return { cell: `${r}-${+pc[1] + (pc[0] === 'A' ? 0 : 2)}`, flower: h.flower };
+    const kindOf = (id: string) => wildFlower(flowerById(id) ?? FLOWERS[0], season);
+    if (hookFlag('hybrid')) return { id: FLOWERS[0].id, flower: hybridsOf(kindOf(FLOWERS[0].id))[0] };
+    const mine = garden(today, addDays(today, -1), (w) => hybridFor(today, w.filter(flowerById), kindOf)).hybrid;
+    // both people's waterings yesterday (the shared day's), so both phones grow the same one
+    const both = shared.wateredYesterday().filter(flowerById);
+    return both.length ? hybridFor(today, both, kindOf) : mine;
   });
   // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop.
   let shakes = $state<ReturnType<typeof TreeShakes>>();
@@ -630,7 +618,7 @@
             onshake={() => shakeTree(pid)} />
         {/each}
 
-        <FlowerBeds {season} {hybrid} people={[view.people.A, view.people.B]} />
+        <Flowers {season} {hybrid} />
 
         {#each ['mine', 'partner'] as const as id (id)}
           {@const sd = sides[id]}

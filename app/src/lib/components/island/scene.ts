@@ -1,9 +1,8 @@
 // Island scene data (design.md "Island scene"): sizes and season tables. Where things stand is world.ts (the rolling
 // world's coordinates); this keeps what every scene shares besides: the unit helpers, the sizes measured against the
-// villager (NH's scale), the beds' and the hedge's species by season, the fruit's spots around a tree, the dated events.
+// villager (NH's scale), the wild flowers' and the hedge's species by season, the fruit's spots around a tree, the dated events.
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
-import type { BushId, FlowerId } from '#lib/art.ts';
-import type { RingFruit } from '#lib/types.ts';
+import type { BushId, FlowerId, FlowerKind } from '#lib/art.ts';
 import { jst } from '#lib/time/clock.ts';
 
 /** World units → CSS length (relative to the stage's width: 390 units across at the pivot; the stage is the container). */
@@ -47,25 +46,12 @@ export function hedgePair(month: number): [BushId, BushId] {
   return ['pink-camellia', 'red-camellia'];
 }
 
-/** The meadow's clumps (world.ts `meadow-<i>`): NH flowers growing wild, the season's species in turn (NH's flowers
- *  bloom on under the snow, so winter keeps its pansies and windflowers). */
-export const MEADOW: Record<Season, readonly string[]> = {
-  spring: ['flowers/pink-hyacinths', 'flowers/white-tulips', 'flowers/purple-hyacinths', 'flowers/pink-tulips', 'flowers/white-hyacinths'],
-  summer: ['flowers/white-lilies', 'flowers/orange-lilies', 'flowers/pink-lilies', 'flowers/yellow-lilies'],
-  autumn: ['flowers/white-cosmos', 'flowers/yellow-mums', 'flowers/red-cosmos', 'flowers/white-mums', 'flowers/yellow-cosmos', 'flowers/red-mums'],
-  winter: ['flowers/white-pansies', 'flowers/red-windflowers', 'flowers/yellow-pansies', 'flowers/purple-windflowers', 'flowers/red-pansies', 'flowers/white-windflowers']
-};
 /** The cedar's and the campsite's snowy looks (NH's own snowy models: scripts/models.ts; the other renders' -winter
  *  looks Scenery picks itself). */
 const WINTER_ART: Record<string, string> = { 'trees/cedar': 'trees/cedar-winter', 'deco/campsite': 'deco/campsite-winter' };
-/** A scenery key resolved for the day: a meadow clump's flower, the month's bushes (`month-bush-a|b`: hedgePair), the
- *  winter look of a cedar or a building. */
+/** A scenery key resolved for the day: the month's bushes (`month-bush-a|b`: hedgePair), the winter look of a cedar
+ *  or a building. */
 export function sceneryKey(key: string, season: Season, month: number): string {
-  const m = /^meadow-(\d+)$/.exec(key);
-  if (m) {
-    const list = MEADOW[season], i = Number(m[1]);
-    return list[(i * 2 + (i >> 1)) % list.length];
-  }
   if (key === 'month-bush-a' || key === 'month-bush-b') return `bushes/${hedgePair(month)[key.endsWith('a') ? 0 : 1]}`;
   return (season === 'winter' && WINTER_ART[key]) || key;
 }
@@ -75,22 +61,21 @@ export const LIT_ART: Record<string, string> = { 'deco/campsite': 'deco/campsite
 /** The lamps that glow at night (deco/lamp-glow), and where the light hangs: a share of the lamp's height. */
 export const GLOW_AT: Record<string, number> = { 'deco/streetlamp': 0.9, 'deco/garden-lantern': 0.62, 'deco/garden-lantern-white': 0.62 };
 
-/** Flower beds: two tidy 2 × 2 beds beside the villagers' homes, one flower per tile, the back row one species and
- *  the front row another, as NH players plan a bed. NH flowers keep blooming under snow, so winter keeps roses and
- *  pansies, on snow mounds. A flower ≈ 0.4 × a villager. */
-export const BEDS: Record<Season, { back: FlowerId; front: FlowerId }> = {
-  spring: { back: 'red-tulips', front: 'yellow-tulips' },
-  summer: { back: 'red-roses', front: 'white-roses' },
-  autumn: { back: 'pink-cosmos', front: 'purple-mums' },
-  winter: { back: 'red-roses', front: 'orange-pansies' }
+/** The wild flowers' kinds by season (world.ts FLOWERS: a clump is one kind, clumps take the list in turn), NH's
+ *  flowers blooming in their months: spring tulips and hyacinths, summer lilies and roses, autumn cosmos and mums,
+ *  winter pansies and windflowers (NH's flowers bloom on under the snow). A flower ≈ 0.4 × a villager. */
+export const WILD: Record<Season, readonly FlowerId[]> = {
+  spring: ['red-tulips', 'white-hyacinths', 'yellow-tulips', 'pink-hyacinths', 'white-tulips', 'purple-hyacinths', 'pink-tulips'],
+  summer: ['white-lilies', 'red-roses', 'orange-lilies', 'white-roses', 'pink-lilies', 'yellow-lilies', 'pink-roses'],
+  autumn: ['pink-cosmos', 'yellow-mums', 'white-cosmos', 'purple-mums', 'red-cosmos', 'white-mums', 'yellow-cosmos', 'red-mums'],
+  winter: ['white-pansies', 'red-windflowers', 'yellow-pansies', 'purple-windflowers', 'orange-pansies', 'white-windflowers', 'red-pansies']
 };
+/** A wild flower's kind this season (its clump's). */
+export const wildFlower = (f: { clump: number }, season: Season): FlowerId => WILD[season][f.clump % WILD[season].length];
 export const FLOWER_U = 30;
-/** Per-species height (pansies and mums grow low). */
-export const FLOWER_SCALE: Partial<Record<FlowerId, number>> = { 'orange-pansies': 0.8, 'purple-mums': 0.92 };
-/** Each bed is its person's goal flowers (the bed beside their villager), one per goal in reading order, the same in
- *  both beds: 🍐 Move back-left, 🍑 Exercise back-right, 🍒 Stand front-left, 🍎 Steps front-right. `BED_FRUIT[row][k]`,
- *  row 0 the back (world.ts BED_ZS[0]), k = 0 for the bed's left column, 1 for its right. */
-export const BED_FRUIT: [RingFruit, RingFruit][] = [['pear', 'peach'], ['cherry', 'apple']];
+/** Per-kind height (pansies, windflowers and mums grow low, lilies tall). */
+const KIND_SCALE: Partial<Record<FlowerKind, number>> = { pansies: 0.8, windflowers: 0.86, mums: 0.92, lilies: 1.06 };
+export const flowerScale = (id: FlowerId): number => KIND_SCALE[id.slice(id.indexOf('-') + 1) as FlowerKind] ?? 1;
 
 /** Halloween's pumpkins, 22u. */
 export const PUMPKIN_U = 22;

@@ -3,12 +3,12 @@
 // world.ts, so a layout change carries over; parameterised (`walkGeo(extra)`) for what comes and goes (a visitor) and
 // for the tests.
 // Ground: land (sand and grass) and the cliff's stairs; not the sea, the stream, the pond, the spring, the cliff face
-// (but for the stairs), the campsite's footprint, trunks, beds, the rock, bushes and props. The static part is rasterised once (a 4u grid, ~5 ms) so a segment test is a few lookups; a
+// (but for the stairs), the campsite's footprint, trunks, the rock, bushes and props. The static part is rasterised once (a 4u grid, ~5 ms) so a segment test is a few lookups; a
 // visitor's box is tested on top. Routing: a straight segment when it is clear, else the shortest way through the
 // nodes (named ones and the padded corners of the obstacles): a visibility graph precomputed once, Dijkstra per walk.
 import type { Box } from './geom.ts';
 import {
-  BED_XS, BED_ZS, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
+  BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, ROCK,
   SCENERY, SHORE_Z, SPRING, TAPE_DECK, inOval, inRiver, onLand, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
@@ -66,7 +66,6 @@ function staticObstacles(): Box[] {
     else out.push(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4));
   }
   for (const x of HEDGE_XS) out.push(box(x, HEDGE_Z, 18, 7, 7));
-  for (const xs of [BED_XS.A, BED_XS.B]) out.push({ x0: xs[0] - 18, x1: xs[1] + 18, y0: BED_ZS[1] - 12, y1: BED_ZS[0] + 8 });
   out.push(box(ROCK[0], ROCK[1], 12, 5, 5), box(TAPE_DECK[0], TAPE_DECK[1], 7, 4, 4));
   for (const b of BUILDINGS) {
     const w = widthOf(b.key, b.h);

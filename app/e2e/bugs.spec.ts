@@ -83,7 +83,7 @@ test('a tap on my villager sends a flea hopping off into the grass; a tap on it 
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('flea'));
 });
 
-test('a stink bug on the flower beds and a long-horned beetle on a trunk are netted, clear of every control', async ({ page }) => {
+test('a stink bug on the flowers and a long-horned beetle on a trunk are netted, clear of every control', async ({ page }) => {
   for (const id of ['man-faced-stink-bug', 'citrus-long-horned-beetle'] as const) {
     await open(page, `&date=2026-05-10T21:00&critter=${id}`);
     await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
@@ -95,7 +95,7 @@ test('a stink bug on the flower beds and a long-horned beetle on a trunk are net
   }
 });
 
-/** The bed flower whose head (its top third) is under the point, if any. */
+/** Whether a flower's head (its top third) is under the point. */
 const onFlowerHead = (page: Page, p: { x: number; y: number }) =>
   page.evaluate(({ x, y }) => [...document.querySelectorAll('[data-flower]')].some((el) => {
     const r = el.getBoundingClientRect();

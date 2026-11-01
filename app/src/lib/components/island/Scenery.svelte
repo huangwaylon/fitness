@@ -1,7 +1,7 @@
 <script lang="ts">
   // The island's still scenery (docs/design.md "World"): the trees that aren't goal trees (oaks, cedars, palms, bamboo),
   // the bushes (the hedge of the month, the plumeria at the beach, the campsite's hollies), the props (lamps, lanterns,
-  // meadow clumps, rocks) and the campsite's tent, each an upright world node at its feet: NH's own models rendered
+  // rocks) and the campsite's tent, each an upright world node at its feet: NH's own models rendered
   // (scripts/models.ts) where NH has one, standing on their feet (or door) point (models.json). An oak is two nodes (its trunk and its canopy, the canopy's depth 14u nearer), so a
   // villager just in front of the trunk covers it while the leaves cover their head. Contact shadows are baked into the
   // ground. A bush answers a tap (SceneTaps finds it by data-bush), and so does a tree's leaves (data-tree: a rustle,

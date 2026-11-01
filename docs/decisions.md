@@ -164,10 +164,11 @@ once-a-day flourishes are per phone in localStorage; seeded content (finds, weat
 the date so both phones agree without syncing. Only a ずかん `find` is written. Why: the economy stays computed from the
 goals on read, and a lost record only replays a flourish.
 
-### Fruit on the tree, flowers in the bed
-Each goal's fruit colours in with progress, falls when met and is picked up for the day; the person's bed shows the
-goal flowers (bud → bloom) and all four make the canopy glint. Why: NH's harvest feel, completion visible after the
-pick-up, no new object on a small stage.
+### Fruit on the tree, wild flowers on the lawn
+Each goal's fruit colours in with progress, falls when met and is picked up for the day, and all four make the canopy
+glint. The flowers are scenery, not metrics: NH's flowers scattered in small clumps over the lawn, watered for fun.
+Why: NH's harvest feel, completion visible after the pick-up; one place for the goals (the trees) keeps the lawn
+natural.
 
 ### Shaking a tree
 A quick run of taps (the third within 1.2 s) shakes; a single tap stays the popup. A nest 1 in 8 (at most one per tree

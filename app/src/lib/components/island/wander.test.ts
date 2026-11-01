@@ -3,6 +3,7 @@ import type { WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { FOLLOW_MS, adjacent, besideSpots, goalMoves, pickPoi, pois, shouldFollow } from './wander.ts';
 import { walkGeo, walkable, type WalkGeo } from './walkGraph.ts';
+import { GOAL_TREES } from './world.ts';
 
 describe('points of interest', () => {
   const g = walkGeo();
@@ -136,7 +137,7 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     const ms = a.goalWalk('partner');
     expect(ms).toBeGreaterThan(0);
     await vi.advanceTimersByTimeAsync(ms + 10);
-    expect(d.actors.partner.y).toBeGreaterThan(d.actors.partner.home[1]); // back by the trees
+    expect(Math.hypot(d.actors.partner.x - GOAL_TREES.B[0], d.actors.partner.y - GOAL_TREES.B[1])).toBeLessThan(60); // by its tree
     await vi.advanceTimersByTimeAsync(30_000);
     const meet = a.meetUp();
     expect(meet).toBeGreaterThan(0);

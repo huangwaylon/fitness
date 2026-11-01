@@ -51,7 +51,7 @@ const SPECS: Record<string, Spec> = {
   // The wallet's two rewards: soft serve (おやつ) and shoyu ramen (外食).
   'items/snack': [128, 'Soft_Serve_NH_Inv_Icon.png'],
   'items/dinner': [128, 'Shoyu_Ramen_NH_Icon.png'],
-  // Island flower beds (scale pass): the NH inventory art of each planted flower, trimmed to the figure (TRIM).
+  // The wild flowers (island/scene.ts WILD): the NH inventory art of each, trimmed to the figure (TRIM).
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
   'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],
   'flowers/red-roses': [128, 'Red_Roses_NH_Inv_Icon.png'],
@@ -181,11 +181,11 @@ for (const m of ['Round', 'Skinny', 'Flat', 'Elegant', 'Rare']) FIND_FILES[`${m.
 // Bunny Day's eggs (island/eggs.ts): dug up, from a balloon, on the line.
 for (const e of ['Earth', 'Sky', 'Water']) FIND_FILES[`${e.toLowerCase()}-egg`] = `${e}_Egg_NH_Inv_Icon.png`;
 for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96, file];
-// The hybrid flowers a watered bed can grow the next day (NH's genetics, simplified), trimmed like the beds' flowers.
+// The hybrid flowers a watered flower can grow the next day (NH's genetics, simplified: island/care.ts), trimmed alike.
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
   'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
-// The meadow's wild flowers (island/scene.ts MEADOW), the season's species in turn.
+// More of the wild flowers' kinds (island/scene.ts WILD), the season's in turn.
 for (const f of ['Pink Hyacinths', 'Purple Hyacinths', 'White Hyacinths', 'White Tulips', 'Pink Tulips', 'White Lilies', 'Orange Lilies', 'Pink Lilies',
   'Yellow Lilies', 'White Cosmos', 'Yellow Cosmos', 'Red Cosmos', 'White Mums', 'Yellow Mums', 'Red Mums', 'White Pansies', 'Yellow Pansies', 'Red Pansies',
   'Red Windflowers', 'Purple Windflowers', 'White Windflowers'])

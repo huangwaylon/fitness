@@ -146,8 +146,11 @@ export function seasonArt(id: SeasonItem): string {
   return `season/${id}`;
 }
 
-export type FlowerId =
-  | 'red-tulips' | 'yellow-tulips' | 'red-roses' | 'white-roses' | 'pink-cosmos' | 'purple-mums' | 'orange-pansies';
+/** NH's flowers (static/art/flowers: a colour and a kind; not every pair exists, the scene's tables name only shipped
+ *  ones: scenery.test). */
+export type FlowerKind = 'tulips' | 'roses' | 'cosmos' | 'mums' | 'lilies' | 'pansies' | 'hyacinths' | 'windflowers';
+export type FlowerColour = 'red' | 'white' | 'yellow' | 'pink' | 'orange' | 'purple' | 'blue' | 'black' | 'green';
+export type FlowerId = `${FlowerColour}-${FlowerKind}`;
 export function flowerArt(id: FlowerId): string {
   return `flowers/${id}`;
 }

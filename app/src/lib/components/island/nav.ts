@@ -2,7 +2,7 @@
 // there. Pure, from world.ts's constants, so a layout change carries over.
 //   Obstacles: convex polygons grown by PAD (8u, half a walker's footprint): the stream as a chain of quads along its
 //   centreline, the pond and the spring as 16- and 12-gons, the cliff as two strips either side of the stairs, the
-//   campsite's footprint, the trunks, beds, bushes, the rock, the props, the
+//   campsite's footprint, the trunks, bushes, the rock, the props, the
 //   hedge, the bamboo and the rocks (walkGraph.ts's sizes). The sea is everything off the land (a convex rounded rectangle, so a straight walk between two
 //   points on land stays on land).
 //   Nodes: the obstacles' corners (a step outside them) plus named ones (homes, the campsite's door, the stairs' ends,
@@ -13,7 +13,7 @@
 //   or the nearest walkable point within 40u (anything else).
 import type { Box } from './geom.ts';
 import {
-  BED_XS, BED_ZS, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
+  BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
   SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
@@ -208,7 +208,6 @@ function obstacles(): Poly[] {
     else out.push(rect(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4), 'thing'));
   }
   for (const x of HEDGE_XS) out.push(rect(box(x, HEDGE_Z, 18, 7, 7), 'thing'));
-  for (const xs of [BED_XS.A, BED_XS.B]) out.push(rect({ x0: xs[0] - 18, x1: xs[1] + 18, y0: BED_ZS[1] - 12, y1: BED_ZS[0] + 8 }, 'thing'));
   out.push(rect(box(ROCK[0], ROCK[1], 12, 5, 5), 'thing'), rect(box(TAPE_DECK[0], TAPE_DECK[1], 7, 4, 4), 'thing'));
   return out;
 }
