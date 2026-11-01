@@ -17,6 +17,7 @@ declare namespace GAS {
     getMaxRows(): number;
     getRange(row: number, column: number, numRows?: number, numColumns?: number): Range;
     insertRowsAfter(afterPosition: number, howMany: number): Sheet;
+    deleteRow(rowPosition: number): Sheet;
     setFrozenRows(rows: number): void;
   }
   interface Spreadsheet {

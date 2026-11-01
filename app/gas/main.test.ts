@@ -330,7 +330,7 @@ describe('events', () => {
       { type: 'spend', data: { spendId: 's7', item: 'dinner', bells: 15 } },
       ...['locale', 'villagerName', 'villager', 'goalWeight', 'moveGoal'].map((key) => ({ type: 'pref', data: { key, value: null } })),
       { type: 'harvest', data: { week: '2026-10-26' } },
-      ...['fish', 'bug', 'sea', 'fossil', 'shell', 'fragment'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
+      ...['fish', 'bug', 'sea', 'fossil', 'shell', 'fragment', 'item', 'recipe'].map((kind) => ({ type: 'find', data: { kind, id: 'sea-bass' } })),
       { type: 'find', data: { kind: 'fossil', id: 't-rex-skull' } },
       { type: 'find', data: { kind: 'sea', id: 'gigas-giant-clam' } }
     ];
@@ -350,7 +350,7 @@ describe('events', () => {
       { type: 'pref', data: { key: 'locale' } },
       { type: 'harvest', data: { week: 'soon' } },
       { type: 'harvest', data: { week: '2026-02-30' } }, // not a calendar date
-      { type: 'find', data: { kind: 'bells', id: 'sea-bass' } }, // finds are scenery: fish, bug, sea, fossil, shell, fragment
+      { type: 'find', data: { kind: 'bells', id: 'sea-bass' } }, // finds are scenery: fish, bug, sea, fossil, shell, fragment, a present's item or recipe
       { type: 'find', data: { kind: 'fish' } },
       { type: 'find', data: { kind: 'fish', id: 'Sea Bass' } },
       { type: 'find', data: { kind: 'fish', id: 7 } },
@@ -414,6 +414,57 @@ describe('voids and person-bearing events', () => {
     expect(a('event', { ...ev, data: { ...ev.data, value: 500 } })).toEqual({ ok: true, duplicate: true });
     expect(data('events')).toHaveLength(1);
     expect(JSON.parse(String(data('events')[0][4])).value).toBe(450);
+  });
+});
+
+describe('tally (one row per person and day)', () => {
+  const tally = (id: string, date: string, counts: Record<string, number>) => ({ id, type: 'tally', data: { date, counts } });
+
+  it('checks the shape: a real date not after tomorrow, well-formed keys, whole counts', () => {
+    expect(a('event', tally('t1', '2026-10-29', { 'fish:sea-bass': 2, 'item:froggy-chair': 1 }))).toEqual({ ok: true });
+    expect(a('event', tally('t2', '2026-10-30', { 'bug:moth': 1 }))).toEqual({ ok: true }); // a phone's clock a little ahead
+    for (const [i, d] of [
+      { date: '2026-11-01', counts: { 'bug:moth': 1 } }, // the future
+      { date: '2026-02-30', counts: { 'bug:moth': 1 } },
+      { date: '2026-10-29', counts: {} },
+      { date: '2026-10-29', counts: { 'bells:moth': 1 } },
+      { date: '2026-10-29', counts: { 'bug:moth': 0 } },
+      { date: '2026-10-29', counts: { 'bug:moth': 1 }, person: 'B' }
+    ].entries()) expect(a('event', { id: `x${i}`, type: 'tally', data: d }), JSON.stringify(d)).toEqual({ ok: false, error: 'bad_request' });
+  });
+
+  it('a new tally replaces the sender’s older one of that day; other days and the other person stay', () => {
+    a('event', tally('a1', '2026-10-28', { 'fish:dab': 1 }));
+    tick();
+    a('event', tally('a2', '2026-10-29', { 'fish:dab': 1 }));
+    tick();
+    b('event', tally('b1', '2026-10-29', { 'bug:moth': 3 }));
+    tick();
+    a('event', { id: 'h1', type: 'highfive' });
+    tick();
+    expect(a('event', tally('a3', '2026-10-29', { 'fish:dab': 4, 'bug:moth': 1 }))).toEqual({ ok: true });
+    expect(data('events').map((r) => [r[1], r[2], r[3]])).toEqual([
+      ['A', 'a1', 'tally'], ['B', 'b1', 'tally'], ['A', 'h1', 'highfive'], ['A', 'a3', 'tally']
+    ]);
+    expect(JSON.parse(String(data('events').at(-1)![4]))).toEqual({ date: '2026-10-29', counts: { 'fish:dab': 4, 'bug:moth': 1 } });
+    // a retry of the same id is a duplicate, not a second row
+    expect(a('event', tally('a3', '2026-10-29', { 'fish:dab': 4 }))).toEqual({ ok: true, duplicate: true });
+    expect(data('events')).toHaveLength(4);
+  });
+
+  it('keeps the revision and the tail: a cached phone catches up with `since` (the replaced row stays harmless in its cache)', () => {
+    a('event', tally('a1', '2026-10-29', { 'fish:dab': 1 }));
+    tick();
+    const before = b('snapshot');
+    tick();
+    a('event', tally('a2', '2026-10-29', { 'fish:dab': 2 }));
+    const inc = b('snapshot', { since: before.rows.events.at(-1)[0] });
+    expect(inc.rev).toBe(before.rev);
+    expect(inc.rows.events.map((r: unknown[]) => r[2])).toEqual(['a2']);
+    // and a poll after that reads nothing new
+    tick();
+    expect(b('snapshot', { since: inc.rows.events.at(-1)[0] }).rows.events).toEqual([]);
+    expect(b('snapshot').rows.events.map((r: unknown[]) => r[2])).toEqual(['a2']);
   });
 });
 

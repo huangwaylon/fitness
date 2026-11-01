@@ -1,4 +1,4 @@
-// Cache compaction for `metrics` rows: with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
+// Cache compaction for `metrics` rows (and the day tallies a later one replaced, see latestTallies): with frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric,
 // but once its week has locked (Wednesday 04:00) the model only ever reads that day's value at a few fixed times.
 // Keeping the row that answers each of those times leaves the views unchanged and drops ~90% of the rows.
 //
@@ -7,7 +7,7 @@
 // or before the lock is kept, and the latest overall (the day's current value). Weight is read only as of now, so
 // only its newest row per (person, date) is kept.
 import type { PersonId } from '#lib/types.ts';
-import { DATE_RE, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, type EventRow, type MetricRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { finalMs } from './state.ts';
 import { rowAt } from './snapshot.ts';
@@ -46,6 +46,31 @@ export function compactRows(rows: SnapshotRows, now: number): SnapshotRows {
     latestBy(list, Infinity);
     if (list[0].row[3] !== 'weight') latestBy(list, finalMs(weekKeyOf(String(list[0].row[2]))));
   }
-  if (keep.size === rows.metrics.length) return rows;
-  return { ...rows, metrics: rows.metrics.filter((_, i) => keep.has(i)) };
+  const events = latestTallies(rows.events);
+  if (keep.size === rows.metrics.length && events === rows.events) return rows;
+  return { ...rows, metrics: keep.size === rows.metrics.length ? rows.metrics : rows.metrics.filter((_, i) => keep.has(i)), events };
+}
+
+/**
+ * `events` without the tallies a later one of the same person and day replaced (the server deletes those, a cached
+ * phone keeps them: model/tally.ts reads only the latest). Returns `events` itself when none was replaced.
+ */
+function latestTallies(events: EventRow[]): EventRow[] {
+  const latest = new Map<string, { at: number; i: number }>();
+  const tallies: number[] = [];
+  events.forEach((row, i) => {
+    if (row[3] !== 'tally') return;
+    const at = rowAt(row);
+    let date: unknown;
+    try { date = (JSON.parse(String(row[4])) as { date?: unknown }).date; } catch { return; }
+    if (at === null || typeof date !== 'string') return;
+    tallies.push(i);
+    const k = `${row[1]}|${date}`;
+    const prev = latest.get(k);
+    if (!prev || at >= prev.at) latest.set(k, { at, i });
+  });
+  if (latest.size === tallies.length) return events;
+  const keep = new Set([...latest.values()].map((x) => x.i));
+  const drop = new Set(tallies.filter((i) => !keep.has(i)));
+  return events.filter((_, i) => !drop.has(i));
 }
