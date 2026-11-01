@@ -24,9 +24,11 @@ import { moveGoalOn, stepsGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
 
-/** The four metrics in けんこう's order, steps first (🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; the island keeps the rings' order). */
-export const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
+/** The four activity metrics (🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; the island keeps the rings' order). */
+const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
 export type Metric = (typeof METRICS)[number];
+/** けんこう's cards in order (the user's): 🍎 Steps, then 体重, then the rings' 🍐 Move, 🍑 Exercise, 🍒 Stand. */
+export const CARDS = ['steps', 'weight', 'move', 'exercise', 'stand'] as const satisfies readonly (Metric | 'weight')[];
 export const METRIC_FRUIT: Record<Metric, RingFruit> = { move: 'pear', exercise: 'peach', stand: 'cherry', steps: 'apple' };
 const ROW: Record<Metric, ActivityMetric> = { move: 'move_kcal', exercise: 'exercise_min', stand: 'stand_min', steps: 'steps' };
 
