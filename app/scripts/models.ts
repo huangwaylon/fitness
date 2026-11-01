@@ -30,8 +30,10 @@ type Out = 'day' | 'winter' | 'lit' | 'trunk' | 'canopy';
 interface Look {
   /** The art key of its day image; the others add -winter, -lit, -trunk, -canopy. */
   key: string;
-  /** [model folder (without .Nin_NX_NVN), .dae name (without .dae)]. */
-  parts: [string, string][];
+  /** [model folder (without .Nin_NX_NVN), .dae name (without .dae), and where it sits: [up (model units), scale]]. */
+  parts: ([string, string] | [string, string, [number, number]])[];
+  /** Joints turned (degrees about their x, y, z): a pose (the shishi-odoshi's tube tipped). */
+  pose?: Record<string, [number, number, number]>;
   /** Folders whose textures it also reads (a furniture body's colour: <Ftr>ReBody<n>; a sign's language). */
   tex?: string[];
   outputs: Out[];
@@ -96,8 +98,9 @@ export const JOBS: Job[] = [
   prop('deco/garden-lantern', 'FtrLampGarden', 'FtrLampGardenReBody0', ['day', 'lit'], 90, { halo: 1.4 }),
   prop('deco/garden-lantern-white', 'FtrLampGarden', 'FtrLampGardenReBody1', ['day', 'lit'], 90, { halo: 1.4 }),
   // the campfire by the tent (its flames are the model's emissive: the lit look) and its log stools
-  prop('deco/campfire', 'FtrCampfire', null, ['day', 'lit'], 100, { halo: 1.2 }),
-  prop('deco/log-stool', 'FtrLogStoolS', 'FtrLogStoolSReBody0', ['day'], 50),
+  // (at the decor's scale: island/world.ts DECOR_U)
+  prop('deco/campfire', 'FtrCampfire', null, ['day', 'lit'], 0, { halo: 1.2, ppu: 9 }),
+  prop('deco/log-stool', 'FtrLogStoolS', 'FtrLogStoolSReBody0', ['day'], 0, { ppu: 9 }),
   // rocks
   prop('deco/garden-rock', 'FtrGardenrock', null, ['day'], 80),
   prop('deco/flat-rock', 'FtrGardenrockLow', null, ['day'], 60),
@@ -136,6 +139,49 @@ JOBS.push(...DECOR.flatMap(([id, model]) => [0, 1, 2, 3].map((f): Job => ({
   px: 0, ppu: DECOR_PPU, anchor: 'origin', rotY: f * 90,
   looks: [{ key: `decor/${id}-${f}`, parts: [[model, model]], tex: [`${model}ReBody0`, `${model}ReFabric0`], outputs: ['day'] }]
 }))));
+
+// the fixed decor (island/world.ts DECOR, docs/design.md "Decor"): NH's outdoor furniture at the decorations' scale
+// (one family: DECOR_U u per model unit, 3 px per u), each in its first colour unless a later one suits the spot
+const FIX: Partial<Job> = { ppu: DECOR_PPU };
+const fixed = (key: string, model: string, tex: string[], outputs: Out[] = ['day'], extra: Partial<Job> = {}): Job => ({
+  px: 0, anchor: 'origin', ...FIX, ...extra, looks: [{ key, parts: [[model, model]], tex, outputs }]
+});
+JOBS.push(
+  fixed('deco/park-bench', 'FtrParkbenche', ['FtrParkbencheReBody0']),
+  fixed('deco/log-bench', 'FtrLogSofaL', ['FtrLogSofaLReBody0', 'FtrLogSofaLReFabric0']),
+  fixed('deco/rod-stand', 'FtrRodstand', ['FtrRodstandReBody0']),
+  fixed('deco/hammock', 'FtrHammock', ['FtrHammockReBody0', 'FtrHammockReFabric0']),
+  fixed('deco/firewood', 'FtrFirewood', []),
+  fixed('deco/pullup', 'FtrPullupstand', ['FtrPullupstandReBody1']),
+  fixed('deco/pump', 'FtrHandpump', ['FtrHandpumpReBody0']),
+  // the shishi-odoshi at rest and tipped (its tube's joint turned): one camera, so the two frames line up
+  {
+    px: 0, anchor: 'origin', ...FIX,
+    looks: [
+      { key: 'deco/shishiodoshi', parts: [['FtrShishiodoshi', 'FtrShishiodoshi']], tex: ['FtrShishiodoshiReBody0'], outputs: ['day'] },
+      { key: 'deco/shishiodoshi-tip', parts: [['FtrShishiodoshi', 'FtrShishiodoshi']], tex: ['FtrShishiodoshiReBody0'], outputs: ['day'], pose: { Shishiodoshi: [35, 0, 0] } }
+    ]
+  },
+  // the seasons' pieces
+  fixed('deco/pond-stone-sakura', 'FtrStonewaterbowlSakura', []),
+  fixed('deco/pond-stone-maple', 'FtrStonewaterbowlAutumun', []),
+  fixed('deco/picnic-set', 'FtrSakuraPicnicset', []),
+  fixed('deco/bamboo-shoot-lamp', 'FtrBambooshootLamp', [], ['day', 'lit'], { halo: 1.2 }),
+  fixed('deco/mushroom-lamp', 'FtrMushroomLamp', ['FtrMushroomLampReBody0'], ['day', 'lit'], { halo: 1.2 }),
+  fixed('deco/nut-lamp', 'FtrNutLamp', ['FtrNutLampReBody0'], ['day', 'lit'], { halo: 1.2 }),
+  fixed('deco/beach-chair', 'FtrBeachbed', ['FtrBeachbedReBody2']),
+  fixed('deco/sandcastle', 'FtrSandcastle', ['FtrSandcastleReBody0']),
+  fixed('deco/illumi-tree', 'FtrIllumiTree', ['FtrIllumiTreeReBody0'], ['day', 'lit'], { halo: 1 }),
+  fixed('deco/kadomatsu', 'FtrKadomatsu', []),
+  fixed('deco/egg-arch', 'FtrEggArch', []),
+  // the snowboy (NH's snowball body and its face on top) and its three days of melting: one camera for the four
+  {
+    px: 0, anchor: 'origin', ...FIX,
+    looks: ([['SnowBall', 8.5, 0.75], ['SnowBall1Day', 7.5, 0.7], ['SnowBall2Day', 5.5, 0.62], ['SnowBall3Day', 3, 0.5]] as const).map(([body, up, s], i) => ({
+      key: `deco/snowboy-${i}`, parts: [[body, body], ['SnowBallFaceC', 'SnowBallFaceC', [up, s]]] as Look['parts'], outputs: ['day'] as Out[]
+    }))
+  }
+);
 
 // ---- the run ------------------------------------------------------------------------------------------------------
 
@@ -194,7 +240,7 @@ const report: string[] = [];
 for (const j of jobs) {
   const looks = j.looks.map((l) => {
     const fs = [...(l.tex ?? []), ...l.parts.map((p) => p[0]), ...SHARED].filter((f, i, a) => a.indexOf(f) === i && existsSync(join(scratch, F(f))));
-    return { name: l.key, parts: l.parts.map(([f, d]) => ({ folder: F(f), dae: `${d}.dae` })), files: fs.map((f) => [F(f), readdirSync(join(scratch, F(f)))]), outputs: l.outputs, grdRow: l.grdRow ?? ROW.summer, grdRows: l.grdRows, grdBlock: l.grdBlock, snowAlways: l.snowAlways, hide: l.hide };
+    return { name: l.key, parts: l.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), pose: l.pose, files: fs.map((f) => [F(f), readdirSync(join(scratch, F(f)))]), outputs: l.outputs, grdRow: l.grdRow ?? ROW.summer, grdRows: l.grdRows, grdBlock: l.grdBlock, snowAlways: l.snowAlways, hide: l.hide };
   });
   const r = await page.evaluate((o) => (window as unknown as { renderSet: (o: unknown) => Promise<{ images: Record<string, string>; opaque: Record<string, number[]>; w: number; h: number; anchor: [number, number]; units: [number, number]; tris: number[]; ms: { total: number } }> }).renderSet(o), {
     looks, pitch: j.pitch ?? 30, rotY: j.rotY, targetH: j.ppu ? undefined : j.px, ppu: j.ppu, nrm: 0.6, aoI: 0.6, anchor: j.anchor ?? 'origin', emiW: j.emiW, emiDefault: j.emiDefault, halo: j.halo

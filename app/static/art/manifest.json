@@ -1,5 +1,5 @@
 {
-  "version": 49,
+  "version": 50,
   "files": {
     "bridges/stone-deck": {
       "path": "bridges/stone-deck.webp",
@@ -1357,6 +1357,24 @@
       "h": 250,
       "source": "https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png"
     },
+    "deco/bamboo-shoot-lamp": {
+      "path": "deco/bamboo-shoot-lamp.webp",
+      "w": 41,
+      "h": 65,
+      "source": "rendered from NH's model FtrBambooshootLamp (scripts/models.ts)"
+    },
+    "deco/bamboo-shoot-lamp-lit": {
+      "path": "deco/bamboo-shoot-lamp-lit.webp",
+      "w": 41,
+      "h": 65,
+      "source": "rendered from NH's model FtrBambooshootLamp (scripts/models.ts)"
+    },
+    "deco/beach-chair": {
+      "path": "deco/beach-chair.webp",
+      "w": 176,
+      "h": 82,
+      "source": "rendered from NH's model FtrBeachbed (scripts/models.ts)"
+    },
     "deco/birthday-cake": {
       "path": "deco/birthday-cake.webp",
       "w": 88,
@@ -1377,14 +1395,14 @@
     },
     "deco/campfire": {
       "path": "deco/campfire.webp",
-      "w": 107,
-      "h": 101,
+      "w": 150,
+      "h": 140,
       "source": "rendered from NH's model FtrCampfire (scripts/models.ts)"
     },
     "deco/campfire-lit": {
       "path": "deco/campfire-lit.webp",
-      "w": 107,
-      "h": 101,
+      "w": 150,
+      "h": 140,
       "source": "rendered from NH's model FtrCampfire (scripts/models.ts)"
     },
     "deco/campsite": {
@@ -1410,6 +1428,18 @@
       "w": 261,
       "h": 219,
       "source": "rendered from NH's model StrcCampsiteTentA00 + StrcCampsiteTentA00Door0 (scripts/models.ts)"
+    },
+    "deco/egg-arch": {
+      "path": "deco/egg-arch.webp",
+      "w": 268,
+      "h": 235,
+      "source": "rendered from NH's model FtrEggArch (scripts/models.ts)"
+    },
+    "deco/firewood": {
+      "path": "deco/firewood.webp",
+      "w": 56,
+      "h": 61,
+      "source": "rendered from NH's model FtrFirewood (scripts/models.ts)"
     },
     "deco/flat-rock": {
       "path": "deco/flat-rock.webp",
@@ -1447,17 +1477,77 @@
       "h": 81,
       "source": "rendered from NH's model FtrGardenrock (scripts/models.ts)"
     },
+    "deco/hammock": {
+      "path": "deco/hammock.webp",
+      "w": 178,
+      "h": 86,
+      "source": "rendered from NH's model FtrHammock (scripts/models.ts)"
+    },
+    "deco/illumi-tree": {
+      "path": "deco/illumi-tree.webp",
+      "w": 177,
+      "h": 291,
+      "source": "rendered from NH's model FtrIllumiTree (scripts/models.ts)"
+    },
+    "deco/illumi-tree-lit": {
+      "path": "deco/illumi-tree-lit.webp",
+      "w": 177,
+      "h": 291,
+      "source": "rendered from NH's model FtrIllumiTree (scripts/models.ts)"
+    },
+    "deco/kadomatsu": {
+      "path": "deco/kadomatsu.webp",
+      "w": 63,
+      "h": 157,
+      "source": "rendered from NH's model FtrKadomatsu (scripts/models.ts)"
+    },
     "deco/lamp-glow": {
       "path": "deco/lamp-glow.webp",
       "w": 64,
       "h": 64,
       "source": "derived (drawn: scripts/derive-art.ts)"
     },
+    "deco/log-bench": {
+      "path": "deco/log-bench.webp",
+      "w": 179,
+      "h": 113,
+      "source": "rendered from NH's model FtrLogSofaL (scripts/models.ts)"
+    },
     "deco/log-stool": {
       "path": "deco/log-stool.webp",
-      "w": 45,
-      "h": 50,
+      "w": 52,
+      "h": 57,
       "source": "rendered from NH's model FtrLogStoolS (scripts/models.ts)"
+    },
+    "deco/mushroom-lamp": {
+      "path": "deco/mushroom-lamp.webp",
+      "w": 51,
+      "h": 146,
+      "source": "rendered from NH's model FtrMushroomLamp (scripts/models.ts)"
+    },
+    "deco/mushroom-lamp-lit": {
+      "path": "deco/mushroom-lamp-lit.webp",
+      "w": 51,
+      "h": 146,
+      "source": "rendered from NH's model FtrMushroomLamp (scripts/models.ts)"
+    },
+    "deco/nut-lamp": {
+      "path": "deco/nut-lamp.webp",
+      "w": 64,
+      "h": 69,
+      "source": "rendered from NH's model FtrNutLamp (scripts/models.ts)"
+    },
+    "deco/nut-lamp-lit": {
+      "path": "deco/nut-lamp-lit.webp",
+      "w": 64,
+      "h": 69,
+      "source": "rendered from NH's model FtrNutLamp (scripts/models.ts)"
+    },
+    "deco/park-bench": {
+      "path": "deco/park-bench.webp",
+      "w": 158,
+      "h": 120,
+      "source": "rendered from NH's model FtrParkbenche (scripts/models.ts)"
     },
     "deco/party-popper": {
       "path": "deco/party-popper.webp",
@@ -1465,17 +1555,95 @@
       "h": 87,
       "source": "https://nookipedia.com/wiki/File:Party_Popper_NH_Inv_Icon.png"
     },
+    "deco/picnic-set": {
+      "path": "deco/picnic-set.webp",
+      "w": 131,
+      "h": 97,
+      "source": "rendered from NH's model FtrSakuraPicnicset (scripts/models.ts)"
+    },
+    "deco/pond-stone-maple": {
+      "path": "deco/pond-stone-maple.webp",
+      "w": 162,
+      "h": 75,
+      "source": "rendered from NH's model FtrStonewaterbowlAutumun (scripts/models.ts)"
+    },
+    "deco/pond-stone-sakura": {
+      "path": "deco/pond-stone-sakura.webp",
+      "w": 162,
+      "h": 75,
+      "source": "rendered from NH's model FtrStonewaterbowlSakura (scripts/models.ts)"
+    },
     "deco/present": {
       "path": "deco/present.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Present_NH_Inv_Icon.png"
     },
+    "deco/pullup": {
+      "path": "deco/pullup.webp",
+      "w": 89,
+      "h": 213,
+      "source": "rendered from NH's model FtrPullupstand (scripts/models.ts)"
+    },
+    "deco/pump": {
+      "path": "deco/pump.webp",
+      "w": 88,
+      "h": 110,
+      "source": "rendered from NH's model FtrHandpump (scripts/models.ts)"
+    },
     "deco/pumpkin": {
       "path": "deco/pumpkin.webp",
       "w": 96,
       "h": 93,
       "source": "https://nookipedia.com/wiki/File:Orange_Pumpkin_NH_Inv_Icon.png"
+    },
+    "deco/rod-stand": {
+      "path": "deco/rod-stand.webp",
+      "w": 75,
+      "h": 195,
+      "source": "rendered from NH's model FtrRodstand (scripts/models.ts)"
+    },
+    "deco/sandcastle": {
+      "path": "deco/sandcastle.webp",
+      "w": 78,
+      "h": 104,
+      "source": "rendered from NH's model FtrSandcastle (scripts/models.ts)"
+    },
+    "deco/shishiodoshi": {
+      "path": "deco/shishiodoshi.webp",
+      "w": 88,
+      "h": 114,
+      "source": "rendered from NH's model FtrShishiodoshi (scripts/models.ts)"
+    },
+    "deco/shishiodoshi-tip": {
+      "path": "deco/shishiodoshi-tip.webp",
+      "w": 88,
+      "h": 114,
+      "source": "rendered from NH's model FtrShishiodoshi (scripts/models.ts)"
+    },
+    "deco/snowboy-0": {
+      "path": "deco/snowboy-0.webp",
+      "w": 138,
+      "h": 146,
+      "source": "rendered from NH's model SnowBall + SnowBallFaceC (scripts/models.ts)"
+    },
+    "deco/snowboy-1": {
+      "path": "deco/snowboy-1.webp",
+      "w": 138,
+      "h": 146,
+      "source": "rendered from NH's model SnowBall1Day + SnowBallFaceC (scripts/models.ts)"
+    },
+    "deco/snowboy-2": {
+      "path": "deco/snowboy-2.webp",
+      "w": 138,
+      "h": 146,
+      "source": "rendered from NH's model SnowBall2Day + SnowBallFaceC (scripts/models.ts)"
+    },
+    "deco/snowboy-3": {
+      "path": "deco/snowboy-3.webp",
+      "w": 138,
+      "h": 146,
+      "source": "rendered from NH's model SnowBall3Day + SnowBallFaceC (scripts/models.ts)"
     },
     "deco/spooky-lantern": {
       "path": "deco/spooky-lantern.webp",

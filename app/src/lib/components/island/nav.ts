@@ -14,7 +14,7 @@
 import type { Box } from './geom.ts';
 import {
   BRIDGE, BRIDGE_RAIL, BUILDINGS, CENTRE_STAGE, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAND, POND, RIVER, ROCK,
-  SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, type BuildingId, type Pt
+  DECOR_SLOTS, SCENERY, SHORE_Z, TAPE_DECK, inOval, inRiver, onLand, SPRING, onBridge, type BuildingId, type Pt
 } from './world.ts';
 import { art } from '#lib/art.ts';
 
@@ -221,13 +221,15 @@ function obstacles(decor: readonly Box[]): Poly[] {
   for (const b of BUILDINGS) out.push(rect(footprint(b.id), 'building', PAD, b.id));
   for (const t of [GOAL_TREES.A, GOAL_TREES.B]) out.push(rect(box(t[0], t[1], 13, 6, 6), 'thing'));
   for (const s of SCENERY) {
-    if (s.kind === 'oak' || s.kind === 'cedar') out.push(rect(box(s.x, s.z, 12, 6, 6), 'thing'));
+    if (s.foot) out.push(rect(box(s.x, s.z, s.foot[0] / 2, s.foot[1] / 2), 'thing'));
+    else if (s.kind === 'oak' || s.kind === 'cedar') out.push(rect(box(s.x, s.z, 12, 6, 6), 'thing'));
     else if (s.kind === 'palm') out.push(rect(box(s.x, s.z, 8, 5, 5), 'thing'));
     else if (s.kind === 'bush') out.push(rect(box(s.x, s.z, 16, 7, 7), 'thing'));
     else if (s.kind === 'bamboo') out.push(rect(box(s.x, s.z, 7, 4, 4), 'thing'));
     else if (s.kind === 'rock') out.push(rect(box(s.x, s.z, 10, 5, 5), 'thing'));
     else out.push(rect(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4), 'thing'));
   }
+  for (const d of DECOR_SLOTS) out.push(rect(box(d.x, d.z, d.foot[0] / 2, d.foot[1] / 2), 'thing'));
   for (const x of HEDGE_XS) out.push(rect(box(x, HEDGE_Z, 18, 7, 7), 'thing'));
   out.push(rect(box(ROCK[0], ROCK[1], 12, 5, 5), 'thing'), rect(box(TAPE_DECK[0], TAPE_DECK[1], 7, 4, 4), 'thing'));
   for (const b of decor) out.push(rect(b, 'thing'));

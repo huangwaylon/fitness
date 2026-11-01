@@ -183,7 +183,7 @@ export const SCENERY: readonly Scenery[] = [
   // campfire on the clearing's east side (clear of centre stage and the tent's door) with two log stools at it
   s('lamp-b1', 'prop', 'deco/streetlamp', 168, 612, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 222, 612, 46),
   s('bush-m1', 'bush', 'month-bush-a', 152, 716, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 724, 34),
-  s('rock-m1', 'rock', 'deco/flat-rock', 142, 764, 12),
+  { ...s('rock-m1', 'rock', 'deco/flat-rock', 142, 764, 12), foot: [52, 18] },
   s('bamboo-1', 'bamboo', 'trees/bamboo', 294, 774, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 326, 764, 72, true),
   s('bamboo-3', 'bamboo', 'trees/bamboo', 310, 794, 70, true),
   s('cedar-k1', 'cedar', 'trees/cedar', 8, 694, 140),
@@ -193,40 +193,45 @@ export const SCENERY: readonly Scenery[] = [
   s('lantern-1', 'prop', 'deco/garden-lantern', 140, 896, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 254, 900, 24),
   s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1022, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1022, 24),
   s('rock-t1', 'rock', 'deco/garden-rock', 316, 1022, 20),
-  s('campfire', 'prop', 'deco/campfire', 262, 944, 40),
-  s('stool-1', 'prop', 'deco/log-stool', 234, 954, 17), s('stool-2', 'prop', 'deco/log-stool', 291, 950, 17, true),
+  s('campfire', 'prop', 'deco/campfire', 262, 944, 47),
+  s('stool-1', 'prop', 'deco/log-stool', 232, 956, 19), s('stool-2', 'prop', 'deco/log-stool', 293, 952, 19, true),
   // the forest on the upper tier behind the cliff (short enough that its tops stay under the HUD)
   s('cedar-f1', 'cedar', 'trees/cedar', -6, 1110, 126), s('cedar-f2', 'cedar', 'trees/cedar', 64, 1160, 130), s('cedar-f3', 'cedar', 'trees/cedar', 140, 1104, 122),
   s('cedar-f4', 'cedar', 'trees/cedar', 214, 1170, 130), s('cedar-f5', 'cedar', 'trees/cedar', 284, 1112, 126), s('cedar-f6', 'cedar', 'trees/cedar', 130, 1200, 124)
 ];
 
-/** The decor's spots (docs/design.md "Decor"): NH's outdoor furniture standing for good and the seasonal pieces that
- *  take turns in a spot of their own (a seasonal piece never adds a spot). Every spot is a walk obstacle all year, so
- *  a decoration a player puts down never stands where a seasonal piece will come. foot: [width, depth] in u. */
+/** World units per model unit for NH's outdoor furniture (the fixed decor and the decorations a player puts down:
+ *  decor.ts): one family, one scale (a bench 40u beside an 80u villager). */
+export const DECOR_U = 3;
+/** The decor's spots (docs/design.md "Decor"): NH's outdoor furniture standing for good (`key`) and the seasonal
+ *  pieces that take turns in a spot of their own (fixedDecor.ts: a seasonal piece never adds a spot). Every spot is a
+ *  walk obstacle all year, so a decoration a player puts down never stands where a seasonal piece will come. foot:
+ *  [width, depth] in u, centred on its feet. */
 export interface DecorSlot {
   id: string;
   x: number;
   z: number;
   foot: readonly [number, number];
+  /** Its look all year (else only its seasons' pieces: fixedDecor.ts). */
+  key?: string;
 }
 export const DECOR_SLOTS: readonly DecorSlot[] = [
   // まえ: the one bench at the left grass edge, facing the sea; summer's beach chair and sandcastle on the east beach
   // (clear of the finds and Gulliver); a snowboy on the lawn after a snow day
-  { id: 'bench-mae', x: 40, z: 130, foot: [52, 14] },
+  { id: 'bench-mae', x: 40, z: 130, foot: [52, 14], key: 'deco/park-bench' },
   { id: 'beach-chair', x: 340, z: 76, foot: [56, 22] },
   { id: 'sandcastle', x: 330, z: -6, foot: [26, 18] },
-  { id: 'snowboy', x: 252, z: 336, foot: [28, 20] },
+  { id: 'snowboy', x: 252, z: 336, foot: [30, 20] },
   // おく: a hammock by the pond's front (the illuminated tree in its weeks), the log bench on the pond's back bank
-  // (the blossom week's picnic set) with the rod stand, a pond stone where the flat rock lies in its weeks, the pump,
-  // the shishi-odoshi between the bamboo and the stream, the pull-up bar stand on the east lawn by the stream, the
-  // firewood by the tent
-  { id: 'hammock', x: 98, z: 700, foot: [56, 16] },
-  { id: 'bench-pond', x: 86, z: 824, foot: [56, 16] },
-  { id: 'rod-stand', x: 34, z: 818, foot: [22, 10] },
-  { id: 'pump', x: 250, z: 806, foot: [24, 14] },
-  { id: 'shishi', x: 332, z: 816, foot: [26, 18] },
-  { id: 'pullup', x: 330, z: 902, foot: [28, 12] },
-  { id: 'firewood', x: 140, z: 962, foot: [18, 12] }
+  // (the blossom week's picnic set) with the rod stand, the pump, the shishi-odoshi at the bamboo's foot,
+  // the pull-up bar stand on the east lawn by the stream, the firewood by the tent
+  { id: 'hammock', x: 98, z: 700, foot: [56, 16], key: 'deco/hammock' },
+  { id: 'bench-pond', x: 92, z: 846, foot: [56, 16], key: 'deco/log-bench' },
+  { id: 'rod-stand', x: 34, z: 818, foot: [22, 10], key: 'deco/rod-stand' },
+  { id: 'pump', x: 250, z: 806, foot: [24, 14], key: 'deco/pump' },
+  { id: 'shishi', x: 282, z: 744, foot: [26, 18], key: 'deco/shishiodoshi' },
+  { id: 'pullup', x: 330, z: 902, foot: [28, 12], key: 'deco/pullup' },
+  { id: 'firewood', x: 150, z: 972, foot: [18, 12], key: 'deco/firewood' }
 ];
 
 // ---- wild flowers ---------------------------------------------------------------------------------------------------

@@ -26,7 +26,7 @@ const SECTIONS = [
 
 /** Per-kind minimum gaps (u) from a clump's centre / a weed spot to each kind of thing. */
 const GAP = {
-  clump: { clump: 80, tree: 52, grove: 72, bush: 42, prop: 40, rock: 36, spot: 36, home: 50, path: 34, water: 26, hedge: 44, building: 30 },
+  clump: { clump: 76, tree: 52, grove: 72, bush: 42, prop: 34, rock: 30, spot: 36, home: 50, path: 34, water: 26, hedge: 44, building: 30 },
   weed: { clump: 40, weed: 64, tree: 30, grove: 30, bush: 28, prop: 30, rock: 26, spot: 30, home: 30, path: 22, water: 18, hedge: 30, building: 24 }
 } as const;
 

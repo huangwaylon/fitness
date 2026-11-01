@@ -716,7 +716,7 @@
         <WorldWater floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null} night={tod === 'night'} winter={season === 'winter'} />
         <div class="haze" aria-hidden="true"></div>
 
-        <Scenery {season} {foliage} {month} {live} {tod} onbuilding={building} />
+        <Scenery {season} {foliage} {month} {live} {tod} date={today} hour={jst(clock).hour} onbuilding={building} />
 
         {#each ['A', 'B'] as const as pid (pid)}
           {@const t = GOAL_TREES[pid]}
