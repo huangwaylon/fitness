@@ -20,7 +20,7 @@
   import { su } from './scene.ts';
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { recordFind } from '#lib/store/actions.ts';
@@ -35,7 +35,7 @@
   import { eggInDig } from './eggs.ts';
   import { MUSHROOM_SPOTS, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { approach } from './avatar.ts';
-  import { pickPresent, presentArt, presentLine } from './presents.ts';
+  import { loadCatalogNames } from '#lib/i18n/catalog.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -197,13 +197,19 @@
   /** A balloon's present has landed on the lawn (SceneTaps): it lies there until a tap picks it up (NH). */
   export function present(x: number, y: number, art: string, size: number) {
     presents = [...presents.slice(-2), { uid: `p${++seq}`, x, y, art, size }];
+    if (!art.endsWith('sky-egg')) void catalog().catch(() => {});
   }
+  /** What a present can hold (catalog.ts, ~2,000 entries) and their names: their own chunks, fetched when one lands. */
+  let catalogChunk: Promise<typeof import('./catalog.ts')> | null = null;
+  const catalog = () => (catalogChunk ??= Promise.all([import('./catalog.ts'), loadCatalogNames(i18n.locale)]).then(([m]) => m,
+    (e: unknown) => ((catalogChunk = null), Promise.reject(e))));
   /** A present opening where it lay: the box pops (a squash, the lid off), confetti in the wrapping's colours bursts
    *  out with sparkles. */
   let opening = $state<{ n: number; x: number; y: number; art: string; size: number } | null>(null);
   /** NH's balloon present, picked up: my villager walks over, the wrapping pops open (confetti, a little fanfare) and
-   *  what was inside is held up over its head while the plate reads 「◯◯を てにいれた！」 (presents.ts: furniture,
-   *  clothing or a seasonal DIY recipe; never ベル, not kept). On Bunny Day the sky egg is just picked up. */
+   *  what was inside is held up over its head while the plate reads 「◯◯を てにいれた！」 (catalog.ts: furniture,
+   *  clothing or a seasonal DIY recipe at NH's odds; never ベル, not kept, but counted in the ずかん's カタログ / レシピ, a
+   *  first one with the plate's second page). On Bunny Day the sky egg is just picked up. */
   function openPresent(p: (typeof presents)[number]) {
     walkTo(p.uid, p.x, p.y, () => {
       presents = presents.filter((q) => q.uid !== p.uid);
@@ -214,13 +220,19 @@
         sceneSfx('present');
         return plate(p.x, p.y, p.art, () => t('beach.picked', { name: t('beach.name.sky-egg') }), 180);
       }
-      const inside = pickPresent(date, rand), art = presentArt(inside), line = presentLine(inside);
       const n = ++seq;
       opening = { n, x: p.x, y: p.y, art: p.art, size: p.size };
       later(() => opening?.n === n && (opening = null), 1100);
       sceneSfx('present');
       later(() => sceneSfx('catch'), 260);
-      plate(p.x, p.y, art, () => t(line.key, { name: t(line.name) }), 420);
+      void catalog().then((C) => {
+        const inside = C.pickPresent(date, rand, eggTime(eventNow()));
+        const added = recordFind(inside.kind, inside.id);
+        const name = C.catalogName(inside);
+        // a recipe shows NH's DIY card, its name bare ("a DIY recipe for cherry-blossom clock")
+        if (inside.kind === 'recipe') plate(p.x, p.y, 'presents/diy-recipe', () => t('present.gotRecipe', { name: t(name).replace(/^(an?|some) /, '') }), 420, added);
+        else plate(p.x, p.y, C.catalogArt(inside), () => t('present.got', { name: t(name) }), 420, added);
+      }, () => {});
     });
   }
   function pickMushroom(m: Mushroom) {

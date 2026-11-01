@@ -6,6 +6,9 @@ import { BUGS, FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
 import { FOSSIL_SETS, digSpots } from '../src/lib/components/island/beach.ts';
 import { addDays } from '../src/lib/time/dates.ts';
+import { readFileSync } from 'node:fs';
+/** The catalogue's rows (island/catalog.json; its module needs Vite's JSON import). */
+const { items: ITEMS, recipes: RECIPES } = JSON.parse(readFileSync(new URL('../src/lib/components/island/catalog.json', import.meta.url), 'utf8')) as { items: string[]; recipes: string[] };
 
 test.use({ viewport: { width: 390, height: 844 } });
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -121,3 +124,59 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
     await page.screenshot({ path: `/tmp/zukan-pin/fish-${vp.width}.png` });
   });
 }
+
+
+// カタログ and レシピ (a balloon's presents): the same page, by NH's categories and the recipes' seasons, built a slice per
+// frame; every found tile shows how many we've had (the day tallies), the head too, for each of us.
+test('the catalogue and the recipes: found entries with their counts, in all and per person (390x844)', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const at = Date.parse('2026-07-04T11:00:00+09:00');
+    const ev = (i: number, type: string, data: object, person: 'A' | 'B') => ({ id: `seed-${i}`, type, data, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person });
+    const events = [
+      ev(0, 'find', { kind: 'item', id: 'froggy-chair' }, 'A'),
+      ev(1, 'tally', { date: '2026-07-03', counts: { 'item:froggy-chair': 2 } }, 'A'),
+      ev(2, 'tally', { date: '2026-07-04', counts: { 'item:froggy-chair': 1 } }, 'A'),
+      ev(3, 'find', { kind: 'recipe', id: 'mush-lamp' }, 'B'),
+      ev(4, 'tally', { date: '2026-07-04', counts: { 'item:froggy-chair': 1 } }, 'B'),
+      // a later tally of the same day replaces the earlier one
+      ev(5, 'tally', { date: '2026-07-04', counts: { 'item:froggy-chair': 2, 'recipe:mush-lamp': 1 } }, 'B')
+    ];
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-07-04', events }));
+  });
+  await page.goto('?demo&date=2026-07-04T12:00');
+  await expect(ribbon(page)).toBeVisible();
+  await ribbon(page).click();
+  await page.locator('dialog[open] .tab[data-tab=kiroku]').click();
+  await expect(page.locator('[data-zukan="item"]')).toContainText(`1 / ${ITEMS.length}`);
+  await expect(page.locator('[data-zukan="recipe"]')).toContainText(`1 / ${RECIPES.length}`);
+
+  await page.locator('[data-zukan="item"]').click();
+  const head = page.locator('[data-zukan-head]');
+  await expect(head).toContainText('カタログ');
+  await expect(head).toContainText(`1 / ${ITEMS.length}`);
+  // by NH's categories, every tile built in the end (a slice per frame)
+  await expect(page.locator('h4.set')).toHaveCount(12);
+  await expect(page.locator('[data-zukan-grid] [data-entry]')).toHaveCount(ITEMS.length, { timeout: 10_000 });
+  const chair = page.locator('button.tile[data-entry="froggy-chair"]');
+  await expect(chair).toHaveAttribute('aria-label', 'カエルのチェア');
+  await expect(chair.locator('[data-times]')).toHaveText('×5');
+  await expect(page.locator('.tile.unknown')).toHaveCount(ITEMS.length - 1);
+  await chair.click();
+  const detail = head.locator('[data-zukan-detail="froggy-chair"]');
+  await expect(detail).toContainText('カエルのチェア');
+  await expect(detail.locator('[data-zukan-times]')).toHaveText('×5');
+  await expect(detail.locator('[data-zukan-person="A"]')).toContainText('×3');
+  await expect(detail.locator('[data-zukan-person="B"]')).toContainText('×2');
+  await expect(detail).toContainText('7/4');
+  await page.screenshot({ path: '/tmp/zukan-catalog/catalog-390.png' });
+
+  await page.locator('dialog[open] button.nav.back').click();
+  await page.locator('[data-zukan="recipe"]').click();
+  await expect(page.locator('h4.set')).toHaveCount(11);
+  const lamp = page.locator('button.tile[data-entry="mush-lamp"]');
+  await expect(lamp.locator('[data-times]')).toHaveText('×1');
+  await lamp.click();
+  await expect(head.locator('[data-zukan-detail="mush-lamp"]')).toContainText('キノコのランプ');
+  await page.screenshot({ path: '/tmp/zukan-catalog/recipes-390.png' });
+});

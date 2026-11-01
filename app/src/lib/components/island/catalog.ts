@@ -93,7 +93,8 @@ export function pickPresent(date: string, r: () => number, bunnyDay = false): Pr
   return { kind: 'item', id: item.id };
 }
 
-/** A present's icon under static/ (the item's official icon, or the recipe's DIY card). */
-export const catalogArt = ({ kind, id }: Present): string => `art/finds/${kind === 'item' ? 'items' : 'recipes'}/${id}.webp`;
-/** A present's name key (i18n/catalog.*.json). */
-export const catalogName = ({ kind, id }: Present): string => `${kind}.name.${id}`;
+/** An entry's icon (an art key, lib/art.ts: static/art/finds/items|recipes/<id>.webp): the item's official icon, or
+ *  what the recipe makes. */
+export const catalogArt = ({ kind, id }: Present): string => (kind === 'item' ? `finds/items/${id}` : `finds/recipes/${id}`);
+/** An entry's name key (i18n/catalog.*.json). */
+export const catalogName = ({ kind, id }: Present): string => (kind === 'item' ? `item.name.${id}` : `recipe.name.${id}`);

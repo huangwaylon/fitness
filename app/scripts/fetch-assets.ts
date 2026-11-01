@@ -197,18 +197,10 @@ for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96,
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
   'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
-// A balloon's present opened (island/presents.ts): NH's furniture and clothing it can hold (the official icon, a
-// variation's where the item has them), and NH's DIY recipe card for its seasonal recipes; held up over my villager.
+// NH's DIY recipe card, held up when a balloon's present held a recipe (island/Finds.svelte; the presents' own icons are the
+// catalogue's, scripts/catalog.ts), and the four pieces of furniture the rolling-log spike lays out (routes/roll).
 const PRESENT_FILES: Record<string, string> = {
-  'rocking-chair': 'Rocking_Chair', 'froggy-chair': 'Froggy_Chair_(Green)', 'cute-bed': 'Cute_Bed', 'baby-panda': 'Baby_Panda',
-  'mama-panda': 'Mama_Panda', 'lucky-cat': 'Lucky_Cat_(White)', 'apple-chair': 'Apple_Chair', 'peach-chair': 'Peach_Chair_(White_Peach)',
-  'pear-wardrobe': 'Pear_Wardrobe', 'orange-end-table': 'Orange_End_Table', 'cherry-lamp': 'Cherry_Lamp_(Cherry)', ukulele: 'Ukulele_(Natural)',
-  'acoustic-guitar': 'Acoustic_Guitar', 'tiki-torch': 'Tiki_Torch', 'bonsai-shelf': 'Bonsai_Shelf', 'beach-chair': 'Beach_Chair_(Blue)',
-  'mini-fridge': 'Mini_Fridge', 'cat-tower': 'Cat_Tower_(Beige)', 'toy-box': 'Toy_Box', dharma: 'Dharma_(Red)', 'piggy-bank': 'Piggy_Bank_(Pink)',
-  'candy-machine': 'Candy_Machine', 'flower-stand': 'Flower_Stand', 'pansy-table': 'Pansy_Table_(Yellow)',
-  'music-stand': 'Music_Stand', 'wooden-block-toy': 'Wooden-Block_Toy', 'inflatable-sofa': 'Inflatable_Sofa_(Pink)', fan: 'Fan_(White)',
-  kotatsu: 'Kotatsu', humidifier: 'Humidifier', 'knit-hat': 'Knit_Hat_(Red)', 'straw-umbrella-hat': 'Straw_Umbrella_Hat',
-  'coconut-juice': 'Coconut_Juice', pot: 'Pot', 'snow-globe': 'Snow_Globe'
+  'froggy-chair': 'Froggy_Chair_(Green)', 'mama-panda': 'Mama_Panda', 'lucky-cat': 'Lucky_Cat_(White)', 'cherry-lamp': 'Cherry_Lamp_(Cherry)'
 };
 for (const [id, file] of Object.entries(PRESENT_FILES)) SPECS[`presents/${id}`] = [96, `${file}_NH_Icon.png`];
 SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];

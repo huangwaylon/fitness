@@ -10,6 +10,7 @@ import {
 } from './catalog.ts';
 import { inPool, seasons, slug, withArticle } from '../../../../scripts/catalog.ts';
 import { precachable } from '../../../service-worker/caches.ts';
+import { art } from '#lib/art.ts';
 
 const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
 const all: Present[] = [...ITEMS.map(({ id }) => ({ kind: 'item' as const, id })), ...RECIPES.map(({ id }) => ({ kind: 'recipe' as const, id }))];
@@ -55,7 +56,7 @@ describe('the catalogue (scripts/catalog.ts)', () => {
   it('has an icon for every entry (~2 KB webp), and no stray file', () => {
     const sizes: number[] = [];
     for (const p of all) {
-      const f = join(STATIC, catalogArt(p));
+      const f = join(STATIC, `art/${catalogArt(p)}.webp`);
       expect(existsSync(f), f).toBe(true);
       sizes.push(statSync(f).size);
     }
@@ -65,7 +66,9 @@ describe('the catalogue (scripts/catalog.ts)', () => {
       expect(readdirSync(join(STATIC, 'art/finds', dir)).sort()).toEqual(list.map((e) => `${e.id}.webp`).sort());
   });
   it('keeps the icons out of the service worker’s install (cached on first use, like the other finds)', () => {
-    expect(all.filter((p) => precachable(catalogArt(p)))).toEqual([]);
+    expect(all.filter((p) => precachable(`art/${catalogArt(p)}.webp`))).toEqual([]);
+    // and lib/art.ts knows every icon (a 96 px square) without the manifest
+    expect(all.filter((p) => art(catalogArt(p))?.w !== 96)).toEqual([]);
   });
 });
 
@@ -125,8 +128,8 @@ describe('the pool rules', () => {
     expect(new Set(ps.map((p) => p.id)).size).toBeGreaterThan(900);
   });
   it('names its art and its name key', () => {
-    expect(catalogArt({ kind: 'item', id: 'froggy-chair' })).toBe('art/finds/items/froggy-chair.webp');
-    expect(catalogArt({ kind: 'recipe', id: 'frozen-fence' })).toBe('art/finds/recipes/frozen-fence.webp');
+    expect(catalogArt({ kind: 'item', id: 'froggy-chair' })).toBe('finds/items/froggy-chair');
+    expect(catalogArt({ kind: 'recipe', id: 'frozen-fence' })).toBe('finds/recipes/frozen-fence');
     expect(catalogName({ kind: 'recipe', id: 'frozen-fence' })).toBe('recipe.name.frozen-fence');
   });
 });

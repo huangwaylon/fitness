@@ -64,7 +64,12 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
   await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
-  await expect(page.locator('[data-holding^="presents/"]')).toHaveCount(1);
+  await expect(page.locator('[data-holding^="finds/items/"], [data-holding="presents/diy-recipe"]')).toHaveCount(1);
+  // the ずかん's カタログ / レシピ: a first find of it, and one more in today's tally (held a minute before it's sent)
+  const sent = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []) as { type: string; data: Record<string, unknown> }[]);
+  const find = sent.find((e) => e.type === 'find')!.data as { kind: string; id: string };
+  expect(['item', 'recipe']).toContain(find.kind);
+  expect(sent.filter((e) => e.type === 'tally').map((e) => e.data.counts)).toEqual([{ [`${find.kind}:${find.id}`]: 1 }]);
   await expect(gift).toHaveCount(0);
   await unchanged(page, before);
 });

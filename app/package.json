@@ -12,6 +12,7 @@
     "e2e": "playwright test",
     "prepare": "svelte-kit sync || true",
     "assets:fetch": "node scripts/fetch-assets.ts",
+    "catalog:build": "node scripts/catalog.ts",
     "fonts:subset": "node scripts/font-subsets.ts",
     "icons:build": "node scripts/icons.ts",
     "audio:music": "node scripts/music.ts",

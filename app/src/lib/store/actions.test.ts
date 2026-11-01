@@ -72,14 +72,37 @@ describe('the goals name whose goal', () => {
 });
 
 describe('the island’s finds (the ずかん)', () => {
-  it('recordFind sends {kind, id} the first time either of us finds it, and nothing once the model has it', async () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const model = async (events: [string, 'A' | 'B', string, string, string][] = []) => {
     const { reduce } = await import('#lib/model/state.ts');
+    week.model = { state: reduce({ metrics: [], events: events as never }), me: 'A', now: NOW } as unknown as typeof week.model;
+  };
+
+  it('recordFind sends {kind, id} the first time either of us finds it, and nothing once the model has it', async () => {
     const { recordFind } = await import('./actions.ts');
-    week.model = { state: reduce({ metrics: [], events: [] }) } as unknown as typeof week.model;
+    await model();
     expect(recordFind('fish', 'tuna')).toBe(true);
-    expect(queued().map((e) => [e.type, e.data])).toEqual([['find', { kind: 'fish', id: 'tuna' }]]);
-    week.model = { state: reduce({ metrics: [], events: [['2026-11-18T01:00:00.000Z', 'B', 'x', 'find', '{"kind":"bug","id":"snail"}']] }) } as unknown as typeof week.model;
+    expect(queued().filter((e) => e.type === 'find').map((e) => e.data)).toEqual([{ kind: 'fish', id: 'tuna' }]);
+    await model([['2026-11-18T01:00:00.000Z', 'B', 'x', 'find', '{"kind":"bug","id":"snail"}']]);
     expect(recordFind('bug', 'snail')).toBe(false); // うめ found it already
-    expect(queued()).toHaveLength(1);
+    expect(queued().filter((e) => e.type === 'find')).toHaveLength(1);
+  });
+
+  it('every catch counts in today’s tally: one held tally a minute, the newest replacing the one still held', async () => {
+    const { recordFind } = await import('./actions.ts');
+    // my tally of today already on the sheet (another phone, or before a reload): it carries on from there
+    await model([['2026-11-18T01:00:00.000Z', 'A', 't0', 'tally', '{"date":"2026-11-18","counts":{"fish:dab":2}}']]);
+    recordFind('fish', 'dab');
+    vi.advanceTimersByTime(20_000);
+    // the model (live: the queue on top of the rows) shows the held tally as today's latest
+    const tallyOf = () => queued().filter((e) => e.type === 'tally');
+    await model([
+      ['2026-11-18T01:00:00.000Z', 'A', 't0', 'tally', '{"date":"2026-11-18","counts":{"fish:dab":2}}'],
+      ['2026-11-18T12:00:00.000Z', 'A', tallyOf()[0].id, 'tally', JSON.stringify(tallyOf()[0].data)]
+    ]);
+    recordFind('bug', 'moth');
+    expect(tallyOf().map((e) => e.data)).toEqual([{ date: '2026-11-18', counts: { 'fish:dab': 3, 'bug:moth': 1 } }]);
+    // held until the first catch's minute is up, not a new minute from the second
+    expect(tallyOf()[0].nextAt).toBe(NOW + 60_000);
   });
 });

@@ -3,26 +3,63 @@
   // name for the ones either of us has found, a silhouette and ？？？ for the rest; the fossils' dinosaurs each as a set
   // under its name with its pieces found (「Tレックス 2/3」). The page's head (its count, then the picked entry) is pinned
   // while the grid scrolls under it; a tap on a found one shows it there, the grid staying where it was scrolled:
-  // the icon, the name, when and who found it first, and (fish, bugs, sea creatures) NH's catch line.
+  // the icon, the name, when and who found it first, how many we've had (「×12」, each of us too) and (fish, bugs, sea
+  // creatures) NH's catch line. カタログ and レシピ (a balloon's presents, ~1,800 and ~130 entries) load their names with
+  // the page, and the grid is built a slice per frame (as the むらびと picker), each tile's icon loading as it nears view.
+  // Every found tile shows its count.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import type { PersonId } from '#lib/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/catch.ts'; // the entries' names (their own catalog, out of the island's first load)
+  import { loadCatalogNames } from '#lib/i18n/catalog.ts';
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
-  import { bare, entries, groups, type Entry, type ZukanKind } from './zukan.ts';
+  import { countOf, type Totals } from '#lib/model/tally.ts';
+  import { bare, entries, groups, isPresentKind, type Entry, type ZukanKind } from './zukan.ts';
 
   interface Props {
     kind: ZukanKind;
     finds: Map<string, FirstFind>;
+    /** How many of each we've had (the day tallies). */
+    counts: Totals;
+    /** Me first: the order the counts are shown in. */
+    order: readonly PersonId[];
     names: Record<PersonId, string>;
     villagers: Record<PersonId, string | null>;
   }
-  let { kind, finds, names, villagers }: Props = $props();
+  let { kind, finds, counts, order, names, villagers }: Props = $props();
 
   const list = $derived(entries(kind));
   const runs = $derived(groups(kind));
   const found = $derived(list.filter((e) => finds.has(findKey(kind, e.id))).length);
+  const times = (id: string, person?: PersonId) => countOf(counts, findKey(kind, id), finds.has(findKey(kind, id)), person);
+
+  /** The catalogue's names (their own chunk, the language on screen); the other kinds' come with catch.ts. */
+  let namesIn = $state<string | null>(null);
+  $effect(() => {
+    const locale = i18n.locale;
+    if (!isPresentKind(kind)) return;
+    let live = true;
+    void loadCatalogNames(locale).then(() => live && (namesIn = locale), () => {});
+    return () => void (live = false);
+  });
+  const named = $derived(!isPresentKind(kind) || namesIn === i18n.locale);
+
+  // The grid is built a slice per frame (1,800 tiles at once is a long task on a phone): the first screenful at once,
+  // then STEP more each frame.
+  const FIRST = 60;
+  const STEP = 120;
+  let limit = $derived.by(() => {
+    void kind;
+    return FIRST;
+  });
+  $effect(() => {
+    if (limit >= list.length) return;
+    const raf = requestAnimationFrame(() => (limit += STEP));
+    return () => cancelAnimationFrame(raf);
+  });
+  /** Each run's first entry's place in the page (for the slice built so far). */
+  const starts = $derived(runs.reduce<number[]>((a, r, i) => [...a, i ? a[i - 1] + runs[i - 1].entries.length : 0], []));
   let pick = $state<Entry | null>(null);
   let line = $state('');
   /** The catch line runs past its two lines (measured as it shows), and whether it's opened to the full text. */
@@ -60,8 +97,13 @@
           <div class="zdetail" data-zukan-detail={pick.id}>
             <span class="big"><OfficialArt key={pick.art} size={48} /></span>
             <div class="txt">
-              <b class="nm">{bare(t(pick.name))}</b>
+              <b class="nm">{bare(t(pick.name))} <span class="times" data-zukan-times>{t('zukan.times', { n: times(pick.id) })}</span></b>
               <span class="who"><Avatar person={f.person} villager={villagers[f.person]} size={20} />{t('zukan.foundBy', { date: date(f.date), name: names[f.person] })}</span>
+              <span class="each">
+                {#each order as p (p)}
+                  <span class="one" data-zukan-person={p}><Avatar person={p} villager={villagers[p]} size={18} />{t('zukan.personTimes', { name: names[p], n: countOf(counts, findKey(kind, pick.id), false, p) })}</span>
+                {/each}
+              </span>
               {#if line && long}
                 <!-- a long catch line shows two lines and NH's ▼; a tap opens the rest (and closes it again) -->
                 <button type="button" class="line more" class:open={more} aria-expanded={more} data-sfx="tick" onclick={() => (more = !more)}>{line}</button>
@@ -72,13 +114,15 @@
           </div>
         {/if}
       {:else if !found}
-        <p class="hint">{t('zukan.hint')}</p>
+        <p class="hint">{t(isPresentKind(kind) ? 'zukan.hintPresent' : 'zukan.hint')}</p>
       {/if}
     </section>
   </div>
 
   <div class="zscroll" data-zukan-grid>
     {#each runs as run, i (i)}
+      {@const built = run.entries.slice(0, Math.max(0, limit - starts[i]))}
+      {#if built.length}
       {#if run.name}
         {@const n = run.entries.filter((e) => finds.has(findKey(kind, e.id))).length}
         <h4 class="set" data-set={run.name.slice(run.name.lastIndexOf('.') + 1)}>
@@ -86,13 +130,14 @@
         </h4>
       {/if}
       <ul class="grid">
-        {#each run.entries as e (e.id)}
+        {#each built as e (e.id)}
           {@const f = finds.has(findKey(kind, e.id))}
           <li>
             {#if f}
-              <button type="button" class="tile" class:on={pick?.id === e.id} data-sfx="tick" data-entry={e.id} aria-label={bare(t(e.name))} onclick={() => open(e)}>
+              <button type="button" class="tile" class:on={pick?.id === e.id} data-sfx="tick" data-entry={e.id} aria-label={named ? bare(t(e.name)) : ''} onclick={() => open(e)}>
                 <OfficialArt key={e.art} size={40} />
-                <span class="nm">{bare(t(e.name))}</span>
+                <span class="nm">{named ? bare(t(e.name)) : ''}</span>
+                <b class="n" data-times>{t('zukan.times', { n: times(e.id) })}</b>
               </button>
             {:else}
               <span class="tile unknown" data-entry={e.id} aria-label={t('zukan.unknown')}>
@@ -103,6 +148,7 @@
           </li>
         {/each}
       </ul>
+      {/if}
     {/each}
   </div>
 </div>
@@ -128,6 +174,9 @@
   .txt { flex: 1; display: grid; gap: 2px; min-width: 0; }
   .zdetail .nm { font-size: var(--fs-body); line-height: 1.3; }
   .who { display: flex; align-items: center; gap: 6px; color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
+  .times { color: var(--text-soft); font-size: var(--fs-s); white-space: nowrap; }
+  .each { display: flex; flex-wrap: wrap; gap: 2px 12px; color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
+  .one { display: inline-flex; align-items: center; gap: 4px; }
   /* the catch line: two lines at most until opened */
   .line {
     margin: 2px 0 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; white-space: pre-line;
@@ -153,13 +202,15 @@
   .set b { font-size: var(--fs-s); }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 8px; }
   .tile {
-    appearance: none; border: 0; font: inherit; color: inherit; width: 100%; min-height: 84px; padding: 6px 2px 4px; border-radius: 14px;
+    position: relative; appearance: none; border: 0; font: inherit; color: inherit; width: 100%; min-height: 84px; padding: 6px 2px 4px; border-radius: 14px;
     display: grid; justify-items: center; align-content: start; gap: 2px; background: var(--card); box-shadow: var(--sh-lip); line-height: 0;
   }
   button.tile { cursor: pointer; box-shadow: var(--sh-ctl); }
   button.tile:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .tile.on { background: var(--ctl-sel); color: var(--c-ink); }
   .tile .nm { font-size: .6875rem; font-weight: 700; line-height: 1.25; text-align: center; overflow-wrap: anywhere; word-break: keep-all; }
+  /* the count, NH's 「×12」, in the tile's corner */
+  .tile .n { position: absolute; top: 4px; right: 6px; font-size: .625rem; line-height: 1; color: var(--text-soft); }
   .unknown { opacity: .9; }
   .unknown .nm { color: var(--text-soft); }
   /* a silhouette: the official icon, all one shade */
