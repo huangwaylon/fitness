@@ -20,7 +20,9 @@
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { FRUIT_LEAN, FRUIT_SPOTS, STAGE_W, TREE } from './scene.ts';
+  import { FRUIT_LEAN, FRUIT_SPOTS } from './scene.ts';
+  import { GOAL_TREES } from './world.ts';
+  import { live } from './camera.svelte.ts';
 
   interface Props {
     view: WeekView;
@@ -50,10 +52,16 @@
 
   type Seen = { date: string; parts: Record<PersonId, Partial<RingBells>> };
   const zero = (): Partial<RingBells> => ({});
-  /** Where a person's fruit row is (the tree's trunk, leaning out from the island's middle like FruitTree's row). */
-  const slotX = (p: PersonId) => {
-    const x = TREE.x[p === view.me ? 'A' : 'B'];
-    return x + (x < STAGE_W / 2 ? -FRUIT_LEAN : FRUIT_LEAN);
+  /** Where a person's fallen fruit lies (world units: the tree's trunk, the row leaning out from the island's middle
+   *  like FruitTree's), on screen in stage units; off screen (the camera elsewhere) the coins rise from the screen's
+   *  foot under it. */
+  const fruitAt = (p: PersonId, i: number): [number, number] => {
+    const [tx, tz] = GOAL_TREES[p === view.me ? 'A' : 'B'];
+    const x = tx + (tx < 195 ? -FRUIT_LEAN : FRUIT_LEAN) + FRUIT_SPOTS[i][0], z = tz + FRUIT_SPOTS[i][1];
+    const w = live(), k = stage ? 390 / stage.width : 1;
+    if (!w) return [x, 600];
+    const [sx, sy] = w.screenU(x, z);
+    return [sx, Math.min(sy, w.view.vh * k)];
   };
 
   /** The stage's box and the jar's mouth (the top of the glass, under the lid) in its units; false if either is gone. */
@@ -61,7 +69,7 @@
     const st = document.querySelector<HTMLElement>('.if-scene .stage')?.getBoundingClientRect();
     const jar = artEl?.getBoundingClientRect();
     if (!st?.width || !jar?.width) return false;
-    const k = STAGE_W / st.width;
+    const k = 390 / st.width;
     stage = { left: st.left, top: st.top, width: st.width };
     mouth = [(jar.left + jar.width / 2 - st.left) * k, (jar.top + jar.height * 0.22 - st.top) * k];
     return true;
@@ -79,7 +87,7 @@
       RING_FRUITS.forEach((f, i) => {
         const d = now[p][f] - (base[p]?.[f] ?? 0);
         if (d > 0 && out.length < MAX_FLIGHTS) {
-          out.push({ id: ++flightN, from: [slotX(p) + FRUIT_SPOTS[i][0], TREE.base + FRUIT_SPOTS[i][1]], bells: d, delay: out.length * 320 });
+          out.push({ id: ++flightN, from: fruitAt(p, i), bells: d, delay: out.length * 320 });
         }
       });
     }
@@ -93,8 +101,9 @@
     void view.people.B.today.rings;
     if (covered) return;
     untrack(() => {
+      const measured = measure();
       const fresh = newFlights();
-      const motion = !fresh.length || measure();
+      const motion = !fresh.length || measured;
       if (!motion || to <= jarBells) {
         jarBells = to;
         flights = [];

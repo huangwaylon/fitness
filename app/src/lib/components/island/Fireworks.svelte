@@ -5,9 +5,9 @@
   // evening both of us meet all four goals (once a day per phone). Every burst opens where its whole circle is inside the
   // sky and clear of every control (the ribbon, the sync chip); a tap in the sky during a show sends one more there
   // (SceneTaps asks `tap`). Now and then a villager cheers. A soft whistle and boom (world cues, low).
-  // Its layer: the scene's width, from under the status bar down to the island's back edge (ISLAND_TOP_U): the night sky
-  // and, on a tall phone, the open sea behind the island where NH's fireworks open low over the water; over the stage
-  // and its tint (they're lights), under the HUD.
+  // Its layer: fixed on screen, the scene's width from under the status bar down a little past the horizon (IslandScene's
+  // --horizon-y; the far island and the open sea behind it, where NH's shells rise from, so a short sky under the HUD
+  // still has room); over the stage and its tint (they're lights), under the HUD.
   // Cheap: a burst is ~20–30 sparks, each a dot with ONE transform/opacity keyframe animation (on the compositor), gone
   // after 2.7 s; at most 4 bursts at once; between bursts nothing but one timer. Paused with the scene (data-paused), and
   // no new ones while covered or hidden. In its layer's px.
@@ -18,7 +18,6 @@
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { uiBoxes } from './placement.ts';
-  import { ISLAND_TOP_U } from './scene.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { PAIR_ODDS, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape, type Spark } from './fireworks.ts';
 
@@ -117,7 +116,7 @@
   }
 </script>
 
-<div class="fireworks" bind:this={band} style:--top-u={ISLAND_TOP_U} aria-hidden="true">
+<div class="fireworks" bind:this={band} aria-hidden="true">
   {#each bursts as b (b.id)}
     <span class="burst {b.shape}" data-firework={b.shape} style:left="{b.x}px" style:top="{b.y}px" style:--rad={b.rad} style:--rise="{b.rise}px">
       <b class="shell"></b>
@@ -128,11 +127,11 @@
 </div>
 
 <style>
-  /* over the sky and the sea behind the island, down to the island's back edge (in the scene: --stage-top, --stage-w),
-     above the stage (they're lights: not under the night tint), under the HUD (outside the scene) */
+  /* the fixed sky and a little of the far ground below the horizon (in the scene: --horizon-y; a fifth of the ground's
+     height), above the stage (they're lights: not under the night tint), under the HUD (outside the scene) */
   .fireworks {
     position: absolute; left: 0; right: 0; top: var(--safe-top); z-index: calc(var(--z-stage) + 1); pointer-events: none; overflow: hidden;
-    height: calc(var(--stage-top) + var(--stage-w) * var(--top-u) / 390 - var(--safe-top));
+    height: calc(var(--horizon-y) + (100% - var(--horizon-y)) * .2 - var(--safe-top));
   }
   .burst { position: absolute; width: 0; height: 0; }
   .burst > * { position: absolute; left: 0; top: 0; }

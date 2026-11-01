@@ -126,8 +126,10 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await page.locator('button.canopy').nth(0).click();
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
-  // it opens upwards: above its tree's trunk, under the ribbon (measured once its pop-in has finished)
+  // it opens upwards: above its tree's trunk, under the ribbon (measured once its pop-in has finished and the camera has
+  // eased up the island to make room for it on a short screen)
   await pop.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
+  await page.waitForTimeout(700);
   const [p, c, r] = await Promise.all([pop, page.locator('button.canopy').nth(0), page.locator('.ribbon')].map((l) => l.boundingBox()));
   expect(p!.y + p!.height).toBeLessThan(c!.y + c!.height);
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);

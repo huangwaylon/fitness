@@ -10,7 +10,7 @@ const names = ja as Record<string, string>;
 describe("NH's catch lines", () => {
   it('every fish (sea and pond), bug, sea creature and piece of junk has its official line in Japanese and English', () => {
     const ids = [...Object.keys(FISH), ...Object.keys(POND_FISH), ...Object.keys(BUGS), ...Object.keys(SEA), ...JUNK] as (keyof typeof CATCH_LINES)[];
-    expect(ids).toHaveLength(144 + 46 + 3);
+    expect(ids).toHaveLength(148 + 46 + 3); // 34 sea fish, 74 bugs, 40 sea creatures; 46 fresh-water fish; 3 junk
     expect(Object.keys(CATCH_LINES).sort()).toEqual([...ids].sort());
     for (const id of ids) {
       const [j, e] = CATCH_LINES[id];

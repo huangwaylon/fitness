@@ -1,16 +1,35 @@
 // Birthdays (docs/design.md "Birthdays"): on one of ours (config: ウェイ Oct 6, うめ Mar 4) NH's birthday hats on both
-// villagers, the cake by the centre stage (a tap: its music box, the candles out for the day), confetti the first
+// villagers, the cake in front of centre stage (world.ts CAKE, seen from ひろば; a tap: its music box, the candles out for the day), confetti the first
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+/** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
 const under = (page: Page, sel: string) =>
   page.evaluate((s) => {
     const b = document.querySelector(s)!.getBoundingClientRect();
     const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button')).map((e) => e.className));
+    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-building]')).map((e) => e.className));
   }, sel);
+/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+async function camera(page: Page, z: number) {
+  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
+  // (again until it holds: the scene may still re-fit its camera as it settles in)
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+    await page.waitForTimeout(250);
+    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+  }, { timeout: 5000 }).toBe(z);
+  await page.waitForTimeout(250);
+}
+/** A world node's origin (its foot) on screen against where a world point projects (px apart). */
+const offFrom = (page: Page, sel: string, x: number, z: number) =>
+  page.evaluate(([sel, x, z]) => {
+    const r = document.querySelector(sel as string)!.getBoundingClientRect();
+    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x as number, z as number);
+    return Math.hypot(r.left - px, r.top - py);
+  }, [sel, x, z] as const);
 async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).first().boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
@@ -24,7 +43,9 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
     await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
+    await camera(page, 860);
     await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
+    expect(await offFrom(page, '[data-cake]', 195, 860)).toBeLessThan(2);
     expect(await under(page, '[data-cake] .official')).toEqual([]);
     await expect(page.locator('.fxa.confetti').first()).toBeAttached({ timeout: 4000 });
     await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');

@@ -125,6 +125,15 @@
     watch(n);
   }
 
+  /** The camera is moving (a scroll): the balloon steps aside until it settles, then stands by its speaker again
+   *  (placing it every frame would measure every control each frame). */
+  let held = $state(false);
+  export function hold(on: boolean) {
+    if (on === held) return;
+    held = on;
+    if (!on && said?.placed && !at(said.n)) close();
+  }
+
   /** The open balloon's speaker (to follow it as it moves). */
   let speaker: Element | undefined;
   let seen: DOMRect | undefined;
@@ -166,7 +175,7 @@
   }
 </script>
 
-<div class="talk" bind:this={layer}>
+<div class="talk" class:held bind:this={layer}>
   {#if said}
     {@const [typed, untyped] = split(pg)}
     {#key said.n}
@@ -198,6 +207,7 @@
 
 <style>
   .talk { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; }
+  .talk.held { visibility: hidden; }
   /* NH's speech balloon: cream, round, a soft lip, the name tag on its top-left edge, a tail to the speaker */
   .say {
     appearance: none; border: 0; margin: 0; cursor: pointer; pointer-events: auto; text-align: left; -webkit-tap-highlight-color: transparent;

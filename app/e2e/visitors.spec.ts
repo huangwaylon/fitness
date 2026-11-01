@@ -1,6 +1,7 @@
 // Visitors (docs/design.md "Visitors"): K.K. on Saturday nights (a song with the music on), Daisy Mae on Sunday
-// mornings, Wisp on some nights, Gulliver washed up on some days (asleep until the fifth nudge). On the front beach, never over a control; a tap gives
-// a line (an introduction first), no trading, no ベル.
+// mornings, Wisp on some nights, Gulliver washed up on some days (asleep until the fifth nudge). K.K., Wisp and the
+// hosts stand at centre stage (the plaza, seen from ひろば), Gulliver on the front beach and Daisy Mae on the front lawn
+// (seen from まえ), never under a control; a tap gives a line (an introduction first), no trading, no ベル.
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -15,6 +16,33 @@ const under = (page: Page, sel: string) =>
     const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
     return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button')).map((e) => e.className));
   }, sel);
+
+/** Press a balloon's choice where it is on screen (a locator click would first scroll it "into view": the stage is
+ *  sticky in the camera's scroller, so that moves the camera). */
+async function choose(page: Page, choice: ReturnType<Page['locator']>) {
+  await expect(choice).toBeVisible();
+  await page.waitForTimeout(300); // its pop-in
+  const r = (await choice.boundingBox())!;
+  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+}
+/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+async function camera(page: Page, z: number) {
+  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
+  // (again until it holds: the scene may still re-fit its camera as it settles in)
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+    await page.waitForTimeout(250);
+    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+  }, { timeout: 5000 }).toBe(z);
+  await page.waitForTimeout(250);
+}
+/** The visitor's feet on screen (its world node's origin) against where a world point projects (px apart). */
+const offFrom = (page: Page, id: string, x: number, z: number) =>
+  page.evaluate(([id, x, z]) => {
+    const r = document.querySelector(`[data-visitor="${id}"]`)!.getBoundingClientRect();
+    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x as number, z as number);
+    return Math.hypot(r.left - px, r.top - py);
+  }, [id, x, z] as const);
 
 const music = (page: Page) => page.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: true, volume: 0.8 })));
 /** Tap the balloon through its pages until its question is asked (its choices then show): only while a page is
@@ -42,27 +70,28 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
   await page.goto('?demo&date=2026-10-24T19:00&critter=none'); // a Saturday (not Halloween: Jack's night)
   await expect(ribbon(page)).toBeVisible();
   const bells = await ribbon(page).getAttribute('aria-label');
+  // at centre stage: out of sight from まえ (only a speck on the horizon), seen from ひろば
+  await camera(page, 860);
   await expect(page.locator('[data-visitor="kk-slider"] .art')).toBeVisible();
+  expect(await offFrom(page, 'kk-slider', 195, 900)).toBeLessThan(2);
   expect(await under(page, '[data-visitor="kk-slider"] .art')).toEqual([]);
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('リクエストは あるかな？');
   await readOut(page);
   await expect(page.locator('.choice')).toHaveText(['リクエスト', 'おまかせ']);
-  await page.locator('.choice', { hasText: 'リクエスト' }).click();
+  await choose(page, page.locator('.choice', { hasText: 'リクエスト' }));
   await readOut(page);
   const song = (await page.locator('.choice').first().textContent())!;
-  await page.locator('.choice').first().click();
+  await choose(page, page.locator('.choice').first());
   // the show: the caption, the villagers sway, he strums harder
   await expect(page.locator('[data-fx="kk-caption"].placed')).toHaveText(`♪ ${song}`);
   await expect(page.locator('.if-scene[data-show]')).toHaveCount(1);
   await expect(page.locator('[data-visitor="kk-slider"].show')).toHaveCount(1);
-  // a tap mid-song (on his head: my villager walked over and stands in front of him): nothing disruptive, but ストップ
-  // ends it with his sign-off
-  const kkBox = (await page.locator('[data-visitor="kk-slider"] .art').boundingBox())!;
-  await page.mouse.click(kkBox.x + kkBox.width / 2, kkBox.y + kkBox.height * 0.12);
+  // a tap mid-song: nothing disruptive, but ストップ ends it with his sign-off
+  await tapOn(page, '[data-visitor="kk-slider"] .art');
   await readOut(page);
-  await page.locator('.choice', { hasText: 'ストップ' }).click();
+  await choose(page, page.locator('.choice', { hasText: 'ストップ' }));
   await expect(page.locator('[data-fx="kk-caption"]')).toHaveCount(0);
   await expect(page.locator('.if-scene[data-show]')).toHaveCount(0);
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンキュー');
@@ -72,18 +101,23 @@ test('K.K. comes on Saturday from 18:00 (not on Friday); with the music on he as
 test('K.K. with the music off just introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await expect(ribbon(page)).toBeVisible();
+  await camera(page, 860);
   await tapOn(page, '[data-visitor="kk-slider"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '2');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('とたけけ だ');
 });
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`visitors stand on the centre stage (or the beach) clear of every control; the first tap is an introduction (${w}px)`, async ({ page }) => {
+  test(`visitors stand where NH puts them (Daisy Mae on the front lawn, Gulliver on the beach, Wisp at centre stage) clear of every control; the first tap is an introduction (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
+    const at = { 'daisy-mae': [150, 206, 396], wisp: [860, 195, 900], gulliver: [150, 96, 30] } as const;
     for (const [q, id, name] of [['2026-11-01T08:00&critter=none', 'daisy-mae', 'ウリ'], ['2026-11-04T22:00&visitor=wisp&critter=none', 'wisp', 'ゆうたろう'], ['2026-11-04T12:00&visitor=gulliver&critter=none', 'gulliver', 'ジョニー']] as const) {
       await page.goto(`?demo&date=${q}`);
       await expect(ribbon(page)).toBeVisible();
+      const [cam, x, z] = at[id];
+      await camera(page, cam);
       await expect(page.locator(`[data-visitor="${id}"] .art`)).toBeVisible();
+      expect(await offFrom(page, id, x, z), id).toBeLessThan(2);
       expect(await under(page, `[data-visitor="${id}"] .art`), id).toEqual([]);
       await tapOn(page, `[data-visitor="${id}"] .art`);
       if (id === 'gulliver') {
@@ -106,6 +140,18 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       expect(notSelf).toEqual([]);
     }
   });
+
+test('out of view, a visitor takes no tap: K.K. at centre stage seen from まえ', async ({ page }) => {
+  await page.goto('?demo&date=2026-10-24T20:00&critter=none');
+  await expect(ribbon(page)).toBeVisible();
+  await camera(page, 150);
+  // his feet: a speck sunk at the horizon (the ribbon stands over his head); a tap there just below the horizon
+  const [x, y] = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 900));
+  expect(y).toBeLessThan(200);
+  await page.mouse.click(x, y + 3);
+  await page.waitForTimeout(400);
+  await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
+});
 
 test('nobody visits on an ordinary weekday evening', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T19:00');

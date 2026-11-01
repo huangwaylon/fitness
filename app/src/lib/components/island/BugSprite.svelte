@@ -18,7 +18,8 @@
   /** How a percher is drawn: a cicada (or its shell), a stag beetle with its jaws, a horned or round beetle, a
    *  long-horned beetle with its feelers, a stick. */
   const PERCH: Partial<Record<BugId, 'stag' | 'beetle' | 'longhorn' | 'stick'>> = {
-    'saw-stag': 'stag', 'miyama-stag': 'stag', 'giant-stag': 'stag', 'rainbow-stag': 'stag',
+    'saw-stag': 'stag', 'miyama-stag': 'stag', 'giant-stag': 'stag', 'rainbow-stag': 'stag', 'cyclommatus-stag': 'stag', 'golden-stag': 'stag',
+    'horned-atlas': 'beetle', 'horned-elephant': 'beetle',
     'horned-dynastid': 'beetle', 'goliath-beetle': 'beetle', 'drone-beetle': 'beetle', 'jewel-beetle': 'beetle', 'walking-stick': 'stick',
     'violin-beetle': 'beetle', 'scarab-beetle': 'beetle', 'citrus-long-horned-beetle': 'longhorn', 'rosalia-batesi-beetle': 'longhorn'
   };
@@ -45,8 +46,8 @@
     <svg viewBox="-6 -9 12 17"><path class="jaw" d="M-1.2 -5.4 C-3.6 -7 -3.4 -8.6 -2 -9 M1.2 -5.4 C3.6 -7 3.4 -8.6 2 -9" />
       <ellipse class="shellb" cx="0" cy="1.2" rx="3.4" ry="4.8" /><path class="seam" d="M0 -2.6 V5.8" /><ellipse class="bhead" cx="0" cy="-4.4" rx="2.3" ry="1.6" /></svg>
   {:else if flight === 'perch' && PERCH[id] === 'beetle'}
-    <!-- a beetle on the trunk (the horned dynastid with its horn) -->
-    <svg viewBox="-6 -9 12 17">{#if id === 'horned-dynastid'}<path class="horn" d="M0 -5 C-.2 -7.4 .8 -8.8 2.2 -8.8" />{/if}
+    <!-- a beetle on the trunk (the horned ones with their horn) -->
+    <svg viewBox="-6 -9 12 17">{#if id === 'horned-dynastid' || id === 'horned-atlas' || id === 'horned-elephant'}<path class="horn" d="M0 -5 C-.2 -7.4 .8 -8.8 2.2 -8.8" />{/if}
       <ellipse class="shellb" cx="0" cy="1.2" rx="3.7" ry="4.8" /><path class="seam" d="M0 -2.4 V5.8" /><ellipse class="bhead" cx="0" cy="-4.2" rx="2.4" ry="1.7" /></svg>
   {:else if flight === 'perch' && PERCH[id] === 'longhorn'}
     <!-- a long-horned beetle on the trunk: a slim body, spots, its long feelers swept back -->
@@ -244,6 +245,12 @@
   .giant-stag { --beetle: #2A1E16; --beetle-head: #15100C; }
   .rainbow-stag { --beetle: #3BAA6E; --beetle-head: #8E5AD0; }
   .goliath-beetle { --beetle: #F2EEE4; }
+  /* NH's palm beetles: the cyclommatus stag's bronze, the golden stag's gold, the atlas's black sheen, the elephant's
+     velvet brown */
+  .cyclommatus-stag { --beetle: #B8742E; --beetle-head: #6A3E16; }
+  .golden-stag { --beetle: #E2B83A; --beetle-head: #7A5A12; }
+  .horned-atlas { --beetle: #23261F; --beetle-head: #151711; }
+  .horned-elephant { --beetle: #7A5236; --beetle-head: #3A2616; }
   .goliath-beetle .seam { stroke: #2A2420; stroke-width: 1; }
   .drone-beetle { --beetle: #3F6E3C; --beetle-head: #2A4A28; }
   .jewel-beetle { --beetle: #2FA05A; --beetle-head: #1F6E3E; }

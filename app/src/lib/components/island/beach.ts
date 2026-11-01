@@ -5,7 +5,7 @@
 // caption, an icon and (the first time) a ずかん `find`, never ベル.
 import { pickOne, shuffle, weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { shoreY } from './scene.ts';
+import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS } from './world.ts';
 
 // ---------- catalogs (official NH items; art in static/art/finds/, names under beach.name.<id>) ----------
 
@@ -74,10 +74,12 @@ export function zodiacOf(date: string): string {
   return `${sign}-fragment`;
 }
 
-// ---------- where things lie (stage units, docs/design.md "Layout and scale") ----------
+// ---------- where things lie (world units: x across, y = the world's z, docs/design.md "World") ----------
 
-/** The front beach between the cliff's foot and the foam (shells, the bottle, fragments): x and a 0–1 depth. */
-export const BEACH = { x0: 74, x1: 316, y0: 331, y1: 345 } as const;
+/** The front beach between the grass and the foam (shells, the bottle, fragments). */
+export const BEACH = { x0: BEACH_BOX.x0, x1: BEACH_BOX.x1, y0: BEACH_BOX.z0 + 8, y1: BEACH_BOX.z1 } as const;
+/** The water's edge (the bottle lies half in the foam). */
+const EDGE_Z = 3;
 /** The least gap (u) between two things lying on the front beach (shells, fragments, the bottle): about two of them
  *  side by side, so they never clump or touch. */
 export const BEACH_GAP = 34;
@@ -94,19 +96,17 @@ function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }
   let best: Pt = { x: xs[0], y: BEACH.y1 }, bestD = -1;
   const tenth = (v: number) => Math.round(v * 10) / 10;
   for (const x0 of xs) {
-    const x = tenth(x0), y = tenth(edge ? shoreY(x) - 3 : BEACH.y0 - 2 + r() * (BEACH.y1 - BEACH.y0 + 2));
+    const x = tenth(x0), y = tenth(edge ? EDGE_Z : BEACH.y0 - 2 + r() * (BEACH.y1 - BEACH.y0 + 2));
     const d = Math.min(Infinity, ...near.map((p) => Math.hypot(p.x - x, p.y - y)));
     if (d >= BEACH_GAP) return { x, y };
     if (d > bestD) (best = { x, y }), (bestD = d);
   }
   return best;
 }
-/** Open lawn for a dig spot or a weed, clear of every control at 320–430 px (measured: the canopies, the fruit rows,
- *  the villagers) and a tap's reach away from the flowers: beside the trunks under the canopies (the dig spots), in
- *  front of the hedge (between the right canopy and centre stage) and between the villagers' feet (weeds too).
- *  Centre stage (scene.ts CENTRE_STAGE, a visitor's spot) stays clear. */
-export const LAWN: readonly (readonly [number, number])[] = [[68, 143], [142, 143], [248, 143], [322, 143], [226, 92], [195, 310]];
-export const DIG_SPOTS = LAWN.slice(0, 4);
+/** Open lawn for a weed (world.ts LAWN_SPOTS: the health lawn and the plaza's edges, off the paths, beds and trunks;
+ *  a dig spot takes its own spots, world.ts DIG_SPOTS). Centre stage (a visitor's spot) stays clear. */
+export const LAWN: readonly (readonly [number, number])[] = LAWN_SPOTS;
+export const DIG_SPOTS: readonly (readonly [number, number])[] = DIGS;
 
 // ---------- the schedules ----------
 

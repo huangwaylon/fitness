@@ -24,7 +24,7 @@ async function controlsClear(page: Page) {
         const r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
         if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return true;
         const hit = document.elementFromPoint(x, y);
-        return !hit?.closest('.overcast, .wet, .precip, .fog, .rainbow, .aurora');
+        return !hit?.closest('.overcast, .wet[data-sky], .precip, .fog, .rainbow, .aurora');
       })
   );
   expect(ok).toBe(true);
@@ -40,6 +40,15 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await expect(page.locator('.precip .rain')).toBeVisible();
       await expect(page.locator('.precip .rain.heavy')).toHaveCount(0);
       await expect(page.locator('.overcast')).toBeVisible();
+      // screen space over the whole scene (the stage is the viewport); the wet tint from the horizon down
+      const geo = await page.evaluate(() => {
+        const s = document.querySelector('.if-scene')!, sc = s.getBoundingClientRect(), p = document.querySelector('.precip')!.getBoundingClientRect();
+        const wet = document.querySelector('.wet[data-sky]')!.getBoundingClientRect(), hy = parseFloat(getComputedStyle(s).getPropertyValue('--horizon-y'));
+        return { dw: Math.abs(p.width - sc.width), dh: Math.abs(p.height - sc.height), wetTop: wet.top - sc.top, hy };
+      });
+      expect(geo.dw).toBeLessThan(1);
+      expect(geo.dh).toBeLessThan(1);
+      expect(Math.abs(geo.wetTop - (geo.hy - 2))).toBeLessThan(1);
       await controlsClear(page);
       await page.screenshot({ path: test.info().outputPath(`rain-${w}.png`) });
     });
@@ -66,7 +75,7 @@ test.describe('the day itself', () => {
 
   test('a fine day has no weather layers; a seeded rain day does on both phones', async ({ page, browser }) => {
     await open(page, 'date=2026-06-10T11:00&weather=clear');
-    await expect(page.locator('.overcast, .wet, .precip .rain, .fog, .rainbow, .aurora')).toHaveCount(0);
+    await expect(page.locator('.overcast, .wet[data-sky], .precip .rain, .fog, .rainbow, .aurora')).toHaveCount(0);
     // the same date on another phone gets the same sky
     const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
     await other.goto(page.url().replace('&weather=clear', ''));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROLL_DEFAULTS, band, quadMatrix, camAt, horizonAhead, horizonUp, project, radiusFor, scrollFor, sinkBelow, zIndexAt, type RollParams } from './roll.ts';
+import { ROLL_DEFAULTS, band, quadMatrix, camAt, horizonAhead, horizonUp, project, radiusFor, scrollFor, sinkBelow, unproject, zIndexAt, type RollParams } from './roll.ts';
 
 const P: RollParams = { ...ROLL_DEFAULTS, R: 700, tilt: 64 };
 const RAD = Math.PI / 180;
@@ -153,5 +153,27 @@ describe('quadMatrix(): a band as a trapezoid', () => {
   });
   it('a rectangle is a plain scale and translate', () => {
     expect(quadMatrix(100, 20, [5, 7, 205, 7, 205, 47, 5, 47]).map((v) => v + 0)).toEqual([2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 5, 7, 0, 1]);
+  });
+});
+
+describe('unproject(): the inverse', () => {
+  it('round-trips project() everywhere below the horizon, on both curves', () => {
+    for (const curve of ['cylinder', 'parabola'] as const) {
+      const q = { ...P, curve };
+      for (const camZ of [150, 860])
+        for (let z = camZ - 400; z < camZ + horizonAhead(q) - 30; z += 37)
+          for (const x of [-100, 60, 195, 330, 500]) {
+            const a = project(x, z, camZ, q);
+            if (!a.visible || a.theta < -1.39 || a.theta > (q.tilt - 1) * RAD) continue;
+            const w = unproject(a.x, -a.y, camZ, q)!;
+            expect(w.z, `${curve} z ${z}`).toBeCloseTo(z, 3);
+            expect(w.x, `${curve} x ${x}`).toBeCloseTo(x, 3);
+          }
+    }
+  });
+
+  it('a tap above the horizon is the sky', () => {
+    expect(unproject(0, horizonUp(P) + 2, 500, P)).toBeNull();
+    expect(unproject(0, horizonUp(P) - 2, 500, P)).not.toBeNull();
   });
 });

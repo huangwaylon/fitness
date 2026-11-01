@@ -27,10 +27,10 @@ export function lruEvict(keys: readonly string[]): string[] {
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
 /** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle),
- *  the balloon presents and the visitors' extras: shown only when one is about or in the ずかん, so cached on first use,
- *  not at install. */
+ *  the balloon presents and the visitors' extras (shown only when one is about or in the ずかん), and the baked terrain
+ *  (one season of four shows; its URLs carry a content version, terrain.json): cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean =>
-  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/');
+  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/');
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */
 const isAppIcon = (path: string): boolean => path.includes('/icons/');

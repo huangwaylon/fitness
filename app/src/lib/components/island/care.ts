@@ -5,6 +5,7 @@
 import { pickOne } from '#lib/random.ts';
 import type { FlowerId } from '#lib/art.ts';
 import { LAWN } from './beach.ts';
+import { ROCK as W_ROCK } from './world.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 
 /** A weed sprouts on any free spot of the lawn (beach.ts LAWN: a dig spot takes its spot first). */
@@ -65,5 +66,5 @@ export function rockTap(r: () => number): 'clonk' | 'sparkle' | 'bug' {
   const x = r();
   return x < 0.125 ? 'bug' : x < 0.375 ? 'sparkle' : 'clonk';
 }
-/** The rock's place (stage units): on the lawn in front of the hedge, between the left canopy and centre stage (a visitor's spot). */
-export const ROCK = { x: 164, y: 92, h: 15 } as const;
+/** The rock (world.ts ROCK: on the health lawn behind the left tree; y = the world's z), 22u tall. */
+export const ROCK = { x: W_ROCK[0], y: W_ROCK[1], h: 22 } as const;

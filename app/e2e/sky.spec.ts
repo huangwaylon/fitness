@@ -40,7 +40,8 @@ test('a shooting star crosses the sky, never the ribbon; a tap meanwhile is a wi
   await expect(streak.first()).toBeAttached({ timeout: 10_000 }); // a meteor shower's night: one every 3–8 s
   // its path (sampled as it flies): in the sky, off the ribbon and the jar
   const rib = (await ribbon(page).boundingBox())!, jar = (await page.locator('.hud-jar').first().boundingBox())!;
-  const horizon = (await page.locator('.if-scene .stage').boundingBox())!.y + 30;
+  // the fixed sky ends at the camera's horizon (--horizon-y)
+  const horizon = await page.locator('.if-scene').evaluate((sc) => sc.getBoundingClientRect().top + parseFloat(getComputedStyle(sc).getPropertyValue('--horizon-y')));
   for (let i = 0; i < 6; i++) {
     const head = await page.locator('[data-fx="shoot"] .streak').first().evaluate((el) => {
       const r = el.getBoundingClientRect();

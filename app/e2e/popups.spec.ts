@@ -58,7 +58,12 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await page.mouse.click(b.x < w / 2 ? w - 20 : 20, b.y);
       await expect(page.locator(plate)).toBeVisible();
       await expectClear(page, plate);
-      while ((await page.locator(plate).getAttribute('data-page')) !== '1') await page.locator(plate).click();
+      // (a tap where it is: Playwright's own click would scroll the island's sticky stage to it, moving the camera)
+      while ((await page.locator(plate).getAttribute('data-page')) !== '1') {
+        const r = (await page.locator(plate).boundingBox())!;
+        await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+        await page.waitForTimeout(120);
+      }
       await expect(page.locator(plate)).toContainText('ずかんに のったよ！');
       await expectClear(page, plate);
     });

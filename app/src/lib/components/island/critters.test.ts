@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   BITE_WINDOW_MS, BUBBLE_SHARE, BUGS, CAST_U, FISH, HESITATE_MS, JUNK, NOTICE_U, bitePlan, bushBug, castPhase, caption, hesitatePlan,
-  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, inOval, pondBox, pondCast, waterAt, shadowLen, POND_SHADOW,
-  type BugId, type FishId
+  fleaJumps, hookItem, IN_SEASON, inHours, netSwing, oddsAt, nextSpawnMs, pickBug, pickFish, reel, spawnKind, stalkTap, pondBox, castInto, waterAt, shadowLen, POND_SHADOW,
+  FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
 } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
+import { POND, SCENERY, SEA_BOX, freshWhere, inOval, inRiver, riverNear, surfaceAt } from './world.ts';
 import jaMain from '#lib/i18n/ja.json';
 import enMain from '#lib/i18n/en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
@@ -95,8 +96,8 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     for (const id of ['ladybug', 'mantis', 'orchid-mantis'] as BugId[]) expect(BUGS[id].flight, id).toBe('flower');
     for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'flower', 'hop', 'perch', 'crawl', 'stalk', 'burrow', 'dangle']).toContain(b.flight);
   });
-  it('70 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass, the beds and the pond (and the wasp of a shaken nest)', () => {
-    expect(Object.keys(BUGS)).toHaveLength(70);
+  it('74 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass, the beds and the water (and the wasp of a shaken nest)', () => {
+    expect(Object.keys(BUGS)).toHaveLength(74);
     // the pond's three keep to its water, in NH's months and hours (the giant water bug at night)
     for (const id of ['pondskater', 'diving-beetle', 'giant-water-bug'] as BugId[]) expect(BUGS[id].ground, id).toBe('pond');
     expect(oddsAt(BUGS.pondskater, 7, 12)).toBe(BUGS.pondskater.weight * IN_SEASON);
@@ -106,8 +107,8 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
       expect(BUGS[id].flight, id).toBe('perch');
     expect(BUGS['hermit-crab']).toMatchObject({ flight: 'crawl', ground: 'beach' });
     expect(BUGS['wharf-roach']).toMatchObject({ flight: 'crawl', ground: 'beach' });
-    expect(BUGS['pill-bug'].ground).toBe('grass');
-    expect(BUGS.snail.ground).toBe('beds');
+    expect(BUGS['pill-bug'].ground).toBe('rock'); // NH: out from under a hit rock
+    expect(BUGS.snail.ground).toBe('bush'); // NH: on rocks and bushes, in the rain
     for (const b of Object.values(BUGS)) expect(b.flight === 'crawl', JSON.stringify(b)).toBe(!!b.ground);
     // day and night still hold: the Goliath beetle and the Atlas moth are night bugs, the paper kite a day one
     expect(oddsAt(BUGS['goliath-beetle'], 7, 12)).toBe(0);
@@ -119,7 +120,8 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
   it('the rest of NH’s bugs: on the trunks, the flowers and the ground, the mole cricket under the lawn, the night’s tarantula and scorpion', () => {
     for (const id of ['violin-beetle', 'citrus-long-horned-beetle', 'rosalia-batesi-beetle', 'scarab-beetle'] as BugId[]) expect(BUGS[id].flight, id).toBe('perch');
     for (const id of ['stinkbug', 'man-faced-stink-bug'] as BugId[]) expect(BUGS[id], id).toMatchObject({ flight: 'crawl', ground: 'beds' });
-    for (const id of ['tiger-beetle', 'earth-boring-dung-beetle', 'walking-leaf'] as BugId[]) expect(BUGS[id], id).toMatchObject({ flight: 'crawl', ground: 'grass' });
+    for (const id of ['tiger-beetle', 'earth-boring-dung-beetle'] as BugId[]) expect(BUGS[id], id).toMatchObject({ flight: 'crawl', ground: 'grass' });
+    expect(BUGS['walking-leaf']).toMatchObject({ flight: 'crawl', ground: 'tree' }); // NH: disguised under trees
     expect(BUGS['mole-cricket'].flight).toBe('burrow');
     for (const id of ['tarantula', 'scorpion'] as BugId[]) {
       expect(BUGS[id].flight).toBe('stalk');
@@ -139,6 +141,61 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     const seen = new Set(Array.from({ length: 30_000 }, () => pickBug(1, 22, r)));
     expect(seen.has('tarantula')).toBe(true);
     expect(seen.has('scorpion')).toBe(true); // out of season, still possible
+  });
+  it("NH's palm beetles on the palms (5: the Goliath, the cyclommatus and golden stags, the horned atlas and elephant), summer nights", () => {
+    const palm = (Object.keys(BUGS) as BugId[]).filter((id) => BUGS[id].tree === 'palm').sort();
+    expect(palm).toEqual(['cyclommatus-stag', 'golden-stag', 'goliath-beetle', 'horned-atlas', 'horned-elephant']);
+    for (const id of palm) {
+      expect(BUGS[id].flight, id).toBe('perch');
+      expect(bugPlace(id), id).toBe('palm');
+      expect(BUGS[id].hours, id).toEqual([17, 8]); // NH: 5 pm – 8 am
+      expect(oddsAt(BUGS[id], 7, 22), id).toBe(BUGS[id].weight * IN_SEASON);
+      expect(oddsAt(BUGS[id], 7, 12), id).toBe(0);
+    }
+    for (const id of ['cyclommatus-stag', 'golden-stag', 'horned-atlas', 'horned-elephant'] as BugId[]) expect(BUGS[id].months, id).toEqual([7, 8]);
+    expect(BUGS['goliath-beetle'].months).toEqual([6, 7, 8, 9]);
+    // NH's golden stag sells for 12,000 against the others' 8,000: the rarest
+    expect(BUGS['golden-stag'].weight).toBeLessThan(BUGS['horned-atlas'].weight);
+    expect(bugPlace('rainbow-stag')).toBe('trunk');
+  });
+  it("where NH keeps each bug: trunks, palms, flowers, lamps, near water, the grass, the beach, the water, the rock, under trees, bushes", () => {
+    expect(bugPlace('robust-cicada')).toBe('trunk');
+    expect(bugPlace('jewel-beetle')).toBe('trunk'); // NH's stumps: the island has none
+    expect(bugPlace('ladybug')).toBe('flower');
+    expect(bugPlace('common-butterfly')).toBe('flowers');
+    expect(bugPlace('moth')).toBe('lights');
+    for (const id of ['darner-dragonfly', 'red-dragonfly', 'damselfly', 'firefly'] as BugId[]) expect(bugPlace(id), id).toBe('water-air');
+    for (const id of ['grasshopper', 'tarantula', 'mole-cricket', 'tiger-beetle'] as BugId[]) expect(bugPlace(id), id).toBe('grass');
+    expect(bugPlace('hermit-crab')).toBe('beach');
+    expect(bugPlace('stinkbug')).toBe('beds');
+    expect(bugPlace('pondskater')).toBe('water');
+    expect(bugPlace('pill-bug')).toBe('rock');
+    expect(bugPlace('walking-leaf')).toBe('under-tree');
+    expect(bugPlace('snail')).toBe('bush');
+    // every place has somewhere in the world
+    for (const id of Object.keys(BUGS) as BugId[]) {
+      const pl = bugPlace(id);
+      if (pl === 'trunk' || pl === 'palm') expect(perches(pl === 'palm').length, id).toBeGreaterThan(0);
+      else if (pl !== 'flower') expect(patches(pl).length, id).toBeGreaterThan(0);
+    }
+  });
+  it('the trunks: palms for the palm beetles, the hardwood and cedar trunks for the rest, up the bare trunk', () => {
+    const palms = perches(true), trees = perches(false);
+    expect(palms.map((p) => p.tree).sort()).toEqual(SCENERY.filter((s) => s.kind === 'palm').map((s) => s.id).sort());
+    expect(trees.some((p) => p.tree === 'goal-A') && trees.some((p) => p.tree === 'goal-B')).toBe(true);
+    expect(trees.every((p) => !/palm/.test(p.tree))).toBe(true);
+    for (const p of [...palms, ...trees]) expect(p.lift / p.h, p.tree).toBeLessThan(0.45);
+  });
+  it('the ground bugs keep to their ground: the beach on the sand, the lawn on the grass, the water bugs on the water', () => {
+    const r = mulberry32(3);
+    const inside = (pl: Parameters<typeof patches>[0], test: (x: number, z: number) => boolean) => {
+      let n = 0, hit = 0;
+      for (const a of patches(pl)) for (let i = 0; i < 40; i++, n++) if (test(a.x0 + r() * (a.x1 - a.x0), a.z0 + r() * (a.z1 - a.z0))) hit++;
+      return hit / n;
+    };
+    expect(inside('beach', (x, z) => surfaceAt(x, z) === 'sand')).toBeGreaterThan(0.9);
+    expect(inside('grass', (x, z) => ['grass', 'dirt'].includes(surfaceAt(x, z)))).toBeGreaterThan(0.9);
+    expect(inside('water', (x, z) => waterAt(x, z, false, 0) !== null)).toBe(1);
   });
   it('a tarantula or a scorpion: the first tap makes it rear up; a tap while reared and it charges; settled, a tap nets it', () => {
     expect(stalkTap('calm', 'catch')).toBe('rear'); // came at it too fast
@@ -184,20 +241,20 @@ describe('visits', () => {
   });
   it('the sea holds a fish shadow or, 1 turn in 4, a bubble spot to dive at: one at a time (seeded)', () => {
     const r = mulberry32(9);
-    const n = Array.from({ length: 8000 }, () => spawnKind({ sea: false, pond: true, bug: true }, true, r));
+    const n = Array.from({ length: 8000 }, () => spawnKind({ sea: false, fresh: true, bug: true }, true, r));
     expect(n.filter((k) => k === 'sea').length / n.length).toBeCloseTo(BUBBLE_SHARE, 1);
     expect(n.every((k) => k === 'sea' || k === 'fish')).toBe(true);
-    for (const x of [0, 0.5, 0.99]) expect(spawnKind({ sea: true, pond: true, bug: true }, true, () => x)).toBeNull();
+    for (const x of [0, 0.5, 0.99]) expect(spawnKind({ sea: true, fresh: true, bug: true }, true, () => x)).toBeNull();
   });
-  it('at most one in the sea, one in the pond and one bug at a time', () => {
-    expect(spawnKind({ sea: true, pond: true, bug: true }, true, () => 0)).toBeNull();
-    expect(spawnKind({ sea: true, pond: true, bug: false }, true, () => 0)).toBe('bug');
-    expect(spawnKind({ sea: false, pond: true, bug: true }, true, () => 0.9)).toBe('fish');
-    expect(spawnKind({ sea: false, pond: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
-    expect(spawnKind({ sea: true, pond: false, bug: false }, true, () => 0)).toBe('pond'); // then the pond, as often as the sea
-    expect(spawnKind({ sea: true, pond: true, bug: false }, false, () => 0)).toBeNull();
-    expect(spawnKind({ sea: true, pond: true, bug: false }, true, () => 0.5)).toBe('bug'); // most visits bring a bug
-    expect(spawnKind({ sea: true, pond: true, bug: false }, true, () => 0.9)).toBeNull(); // a little air between them
+  it('at most one in the sea, one in each fresh water and one bug at a time', () => {
+    expect(spawnKind({ sea: true, fresh: true, bug: true }, true, () => 0)).toBeNull();
+    expect(spawnKind({ sea: true, fresh: true, bug: false }, true, () => 0)).toBe('bug');
+    expect(spawnKind({ sea: false, fresh: true, bug: true }, true, () => 0.9)).toBe('fish');
+    expect(spawnKind({ sea: false, fresh: false, bug: false }, false, () => 0.9)).toBe('fish'); // nobody about: the sea still has fish
+    expect(spawnKind({ sea: true, fresh: false, bug: false }, true, () => 0)).toBe('fresh'); // then a fresh water in view, as often as the sea
+    expect(spawnKind({ sea: true, fresh: true, bug: false }, false, () => 0)).toBeNull();
+    expect(spawnKind({ sea: true, fresh: true, bug: false }, true, () => 0.5)).toBe('bug'); // most visits bring a bug
+    expect(spawnKind({ sea: true, fresh: true, bug: false }, true, () => 0.9)).toBeNull(); // a little air between them
   });
 });
 
@@ -270,29 +327,54 @@ describe('captions', () => {
   });
 });
 
-describe('the water box: the sea or the pond', () => {
-  const pond = { cx: 100, cy: 40, rx: 40, ry: 16 };
-  it('a tap in the pond is the pond, off the island the sea, on the land neither', () => {
-    expect(waterAt(pond, 100, 40, false)).toBe('pond');
-    expect(waterAt(pond, 135, 42, false)).toBe('pond');
-    expect(waterAt(pond, 141, 40, false)).toBeNull(); // just past the rim: the lawn
-    expect(waterAt(pond, 100, 40, true)).toBe('pond'); // the pond wins
-    expect(waterAt(pond, 200, 340, true)).toBe('sea');
-    expect(waterAt(null, 100, 40, false)).toBeNull(); // no pond on this screen
-    expect(waterAt(pond, 150, 40, false, 1.6)).toBe('pond'); // a finger's slack around a small pond
-    expect(waterAt(pond, 170, 40, false, 1.6)).toBeNull();
+describe('the waters (world units): the sea, the pond, the river, its mouth, the clifftop', () => {
+  it('a tap in the pond is the pond, on the river the river (its mouth on the west beach, the clifftop above the cliff), off the island the sea, on the land neither', () => {
+    expect(waterAt(POND.x, POND.z, false)).toBe('pond');
+    expect(waterAt(POND.x + POND.rx + 8, POND.z, false)).toBe('pond'); // a finger's slack round the rim
+    expect(waterAt(POND.x + POND.rx + 30, POND.z, false)).toBeNull();
+    expect(waterAt(372, 1000, false)).toBe('river');
+    expect(waterAt(195, 640, false)).toBe('river');
+    expect(waterAt(-30, 624, false)).toBe('mouth');
+    expect(waterAt(372, 1950, false)).toBe('clifftop');
+    expect(waterAt(372, 2010, false)).toBe('clifftop'); // the spring
+    expect(waterAt(195, -60, true)).toBe('sea');
+    expect(waterAt(195, 400, false)).toBeNull();
+  });
+  it("every fresh water's swim patches lie in that water (NH's locations by where you cast)", () => {
+    for (const wh of FRESH) {
+      const areas = freshAreas(wh);
+      expect(areas.length, wh).toBeGreaterThan(0);
+      for (const a of areas) {
+        expect(freshWhere(a.cx, a.cz), `${wh} ${a.cx},${a.cz}`).toBe(wh);
+        if (wh === 'river' || wh === 'mouth') for (const [s, t] of [[1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+          const p = swimAt(a, s, t);
+          expect(inRiver(p.x, p.z), `${wh} ${p.x},${p.z}`).toBe(true);
+        }
+      }
+    }
+    // the river: both reaches (the east run and the crossing)
+    const river = freshAreas('river');
+    expect(river.some((a) => a.cz > 900 && a.cx > 350)).toBe(true);
+    expect(river.some((a) => a.cz < 700 && a.cx < 260)).toBe(true);
+    // the sea's water is in front of the front beach
+    const p = swimAt(SEA_SWIM, 0, 1);
+    expect(p.z).toBeLessThan(-10);
+    expect(SEA_SWIM.cx - SEA_SWIM.L).toBe(SEA_BOX.x0);
   });
   it('a pond shadow keeps to the open water inside the rim', () => {
-    const b = pondBox(pond);
-    for (const [x, y] of [[b.x0, b.y0], [b.x1, b.y0], [b.x0, b.y1], [b.x1, b.y1]]) expect(inOval(pond, x, y)).toBe(true);
+    const b = pondBox();
+    for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]]) expect(inOval(POND, x, z)).toBe(true);
   });
-  it('a cast lands inside the rim, the angler on the front rim', () => {
-    for (const [x, y] of [[100, 40], [139, 40], [70, 28], [130, 55]]) {
-      const c = pondCast(pond, x, y);
-      expect(inOval(pond, c.x, c.y, 0.76), `${x},${y}`).toBe(true);
-      expect(c.sy).toBeGreaterThan(pond.cy); // in front
-      expect(inOval(pond, c.sx, c.sy - 2.5, 1.01)).toBe(true); // on the rim
+  it('a cast lands inside the water, clear of its edge', () => {
+    for (const [x, z] of [[POND.x, POND.z], [POND.x + POND.rx + 6, POND.z], [POND.x - 30, POND.z - 20]]) {
+      const c = castInto('pond', x, z);
+      expect(inOval(POND, c.x, c.z, -POND.rz * 0.2), `${x},${z}`).toBe(true);
     }
+    for (const [x, z] of [[372 + 20, 1000], [195, 640 - 20], [-30, 640]]) {
+      const c = castInto(freshWhere(x, z) === 'mouth' ? 'mouth' : 'river', x, z), r = riverNear(c.x, c.z);
+      expect(r.d, `${x},${z}`).toBeLessThanOrEqual(r.hw * 0.56);
+    }
+    expect(castInto('sea', 195, -2).z).toBeLessThanOrEqual(-10);
   });
 });
 
@@ -302,6 +384,6 @@ describe('fish shadows', () => {
     expect(shadowLen(3, 'narrow')).toBe(32);
     expect(shadowLen(6, 'fin')).toBe(46);
     expect(shadowLen(9)).toBe(46);
-    expect(shadowLen(6) * POND_SHADOW).toBeLessThan(52); // a size 6 still fits the pond's water (52u across)
+    expect(shadowLen(6) * POND_SHADOW).toBeLessThan(POND.rx * 2 * 0.55 + 10); // a size 6 still fits the pond's open middle
   });
 });

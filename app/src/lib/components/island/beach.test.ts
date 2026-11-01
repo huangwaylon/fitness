@@ -117,8 +117,8 @@ describe('the message bottle and the star fragments', () => {
         expect(x.x).toBeGreaterThanOrEqual(BEACH.x0), expect(x.x).toBeLessThanOrEqual(BEACH.x1);
         expect(x.y).toBeGreaterThanOrEqual(BEACH.y0 - 2), expect(x.y).toBeLessThanOrEqual(BEACH.y1);
       }
-      const xs = f.map((x) => x.x).sort((a, b) => a - b);
-      for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeGreaterThan(4); // never piled up
+      expect(Math.min(...f.flatMap((a, i) => f.slice(i + 1).map((b) => Math.hypot(a.x - b.x, a.y - b.y)))))
+        .toBeGreaterThan(20); // never piled up (the sand is deep: they spread both ways)
       expect(fragmentsOn(date, 3)).toEqual(f.slice(0, 3)); // a later wish only adds one
     }
     expect(ids).toEqual(new Set(['star-fragment', 'large-star-fragment', 'scorpius-fragment', 'sagittarius-fragment']));
@@ -164,7 +164,7 @@ describe('where things lie on the beach', () => {
   it('the bottle lies at the water’s edge, half in the foam; a new shell never moves the ones already lying there', () => {
     for (let m = 0; m < 24 * 60; m += 11) {
       const b = bottleAt('2026-11-04', m * 60_000);
-      if (b) expect(b.y).toBeGreaterThan(BEACH.y1);
+      if (b) expect(b.y).toBeLessThan(BEACH.y0); // in front of the sand (the shoreline is z 0)
     }
     const s = shellsAt('2026-11-04', 15 * H);
     for (let k = 1; k < 6; k++) for (const x of shellsAt('2026-11-04', 15 * H + k * 61_000)) {

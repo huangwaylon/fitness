@@ -2,10 +2,12 @@
   // The weather on the island (design.md "Weather"; the day's weather: weatherNow.svelte.ts, weather.ts).
   // Two placements, each cheap: `sky` (after the sky, behind the island): the overcast over the sky, the rainbow after
   // a downpour clears (16:00–17:00, brightest at half past, now and then double) and the aurora on a winter night;
-  // `stage` (inside the stage, over the time-of-day tint and under every control): the wet day's darker tint, the
-  // rain (ONE tiled layer of streaks moving by transform, denser and faster in a downpour), the snow (two tiled layers
-  // of soft flakes, slow) and the morning fog (a haze and two drifting banks). Transform and opacity only; paused with
-  // the scene (data-paused / data-covered). Nothing to tap.
+  // `stage` (inside the stage, the whole viewport, fixed while the island scrolls under it: over the time-of-day tint
+  // and every world thing, under the scenery taps and every control): the wet day's darker tint over the ground (from
+  // the horizon down), the rain (ONE tiled layer of streaks moving by transform, denser and faster in a downpour), the
+  // snow (two tiled layers of soft flakes, slow) and the morning fog (a haze and two drifting banks), over sky and
+  // ground. Screen space, never bent by the log. Transform and opacity only; paused with the scene (data-paused /
+  // data-covered). Nothing to tap.
   import { weather } from './weatherNow.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
 
@@ -86,16 +88,13 @@
     to { transform: translateX(5%) scaleY(1.08) skewX(10deg); opacity: .8; }
   }
 
-  /* ---- the stage (z over the time-of-day tint 80, under the scenery taps 82 and every control) ---- */
-  /* the whole scene from the stage: its top (-stage top) to the scene's bottom, the viewport's width */
-  .wet, .precip, .fog {
-    position: absolute; pointer-events: none; overflow: hidden;
-    top: calc(-1 * var(--if-st)); height: var(--sh); left: calc(50cqw - 50vw); width: 100vw;
-  }
-  .wet { top: calc(var(--if-hy) - var(--if-st)); height: calc(var(--sh) - var(--if-hy)); z-index: var(--z-tint); mix-blend-mode: multiply; background: #AEB8C8; opacity: .55; }
+  /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
+     stage's own tokens, IslandScene) ---- */
+  .wet, .precip, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .wet { top: calc(var(--horizon-y) - 2px); z-index: var(--z-tint); mix-blend-mode: multiply; background: #AEB8C8; opacity: .55; }
   .wet[data-sky='heavy'] { background: #97A2B4; opacity: .65; }
   .wet[data-sky='snow'] { background: #DCE2EA; opacity: .5; }
-  .precip { z-index: 81; }
+  .precip { z-index: calc(var(--z-tint) + 1); }
   /* one tile of streaks, moved down one tile per loop (seamless) */
   .rain {
     position: absolute; left: 0; right: 0; top: -160px; bottom: 0; will-change: transform;
@@ -117,7 +116,7 @@
   @keyframes snow { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 200px, 0); } }
   @keyframes snow-far { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 140px, 0); } }
 
-  .fog { z-index: 81; background: linear-gradient(180deg, #F4F6F8 0%, #F4F6F8b0 40%, #F4F6F888 100%); opacity: .75; }
+  .fog { z-index: calc(var(--z-tint) + 1); background: linear-gradient(180deg, #F4F6F8 0%, #F4F6F8b0 40%, #F4F6F888 100%); opacity: .75; }
   .bank {
     position: absolute; width: 90%; height: 40%; border-radius: 50%;
     background: radial-gradient(closest-side, #ffffffd0, #ffffff00); animation: drift 38s ease-in-out infinite alternate; will-change: transform;

@@ -4,12 +4,31 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+/** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a control over it). */
 const under = (page: Page, sel: string) =>
   page.evaluate((s) => {
     const b = document.querySelector(s)!.getBoundingClientRect();
     const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button')).map((e) => e.className));
+    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-building]')).map((e) => e.className));
   }, sel);
+/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+async function camera(page: Page, z: number) {
+  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
+  // (again until it holds: the scene may still re-fit its camera as it settles in)
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+    await page.waitForTimeout(250);
+    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+  }, { timeout: 5000 }).toBe(z);
+  await page.waitForTimeout(250);
+}
+/** A world node's origin (its foot) on screen against where a world point projects (px apart). */
+const offFrom = (page: Page, sel: string, x: number, z: number) =>
+  page.evaluate(([sel, x, z]) => {
+    const r = document.querySelector(sel as string)!.getBoundingClientRect();
+    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x as number, z as number);
+    return Math.hypot(r.left - px, r.top - py);
+  }, [sel, x, z] as const);
 async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).first().boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
@@ -22,7 +41,9 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
     const pair = page.locator('[data-visitor="reese"]');
+    await camera(page, 860);
     await expect(pair.locator('.art')).toBeVisible();
+    expect(await offFrom(page, '[data-visitor="reese"]', 195, 900)).toBeLessThan(2);
     await expect(pair).toHaveAttribute('data-stage', 'true');
     await expect(pair.locator('[data-heart-float]')).toBeVisible();
     expect(await under(page, '[data-visitor="reese"] .art')).toEqual([]);
@@ -41,7 +62,9 @@ test('no countdown the day before; the arch on a June Sunday, clear of every con
   await expect(page.locator('[data-visitor="reese"]')).toHaveCount(0);
   await expect(page.locator('[data-arch]')).toHaveCount(0);
   await page.goto('?demo&date=2027-06-27T12:00&critter=none');
+  await camera(page, 860);
   await expect(page.locator('[data-arch] .official')).toBeVisible();
+  expect(await offFrom(page, '[data-arch]', 195, 960)).toBeLessThan(2);
   expect(await under(page, '[data-arch] .official')).toEqual([]);
 });
 
@@ -51,6 +74,7 @@ test('the wedding day: confetti and hearts on the villagers, Reese’s congratul
   await expect(page.locator('.fxa.confetti').first()).toBeAttached({ timeout: 4000 });
   await expect(page.locator('.fxa.hearts').first()).toBeAttached();
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 }); // the show (Fireworks.svelte)
+  await camera(page, 860);
   await tapOn(page, '[data-visitor="reese"] .art');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ごけっこん おめでとう', { timeout: 4000 });
   // the confetti once a day on this phone; the hearts every time

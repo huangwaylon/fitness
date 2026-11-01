@@ -69,7 +69,10 @@ const SPECS: Record<string, Spec> = {
   'trees/oak-summer': [640, 'Oak_Tree_NH.png'],
   'trees/oak-fall': [409, 'Oak_Tree_NH_Fall.png'],
   'trees/oak-winter': [409, 'Oak_Tree_NH_Winter.png'],
-  // The hedge (docs/design.md#layout-and-scale) uses the 3D catalog renders (`*_Bush_NH_Icon`,
+  // the beach's palms and the cliff's cedars: the official renders, trimmed to the tree (TRIM)
+  'trees/palm': [360, 'Palm_Tree_NH.png'],
+  'trees/cedar': [420, 'Cedar_Tree_NH.png'],
+  // The hedge (docs/design.md#world) uses the 3D catalog renders (`*_Bush_NH_Icon`,
   // 128 px, the largest Nookipedia has), trimmed to the figure (TRIM), one species per season, two colours.
   'bushes/pink-azalea': [128, 'Pink-Azalea_Bush_NH_Icon.png'],
   'bushes/white-azalea': [128, 'White-Azalea_Bush_NH_Icon.png'],
@@ -82,8 +85,25 @@ const SPECS: Record<string, Spec> = {
   'bushes/holly': [128, 'Holly_Bush_NH_Icon.png'],
   'bushes/pink-camellia': [128, 'Pink-Camellia_Bush_NH_Icon.png'],
   'bushes/red-camellia': [128, 'Red-Camellia_Bush_NH_Icon.png'],
+  'bushes/white-plumeria': [128, 'White-Plumeria_Bush_NH_Icon.png'],
+  'bushes/pink-plumeria': [128, 'Pink-Plumeria_Bush_NH_Icon.png'],
   // Island decorations.
-  'deco/airport': [256, 'Airport_(Blue)_NH_Map_Icon.png'],
+  // NH's buildings as their map icons (320×256 at one scale: never upscaled, so trimmed (TRIM) they still match, each
+  // standing on its slab's bottom edge)
+  'deco/airport': [320, 'Airport_(Blue)_NH_Map_Icon.png'],
+  'deco/resident-services': [320, 'Resident_Services_NH_Map_Icon.png'],
+  'deco/nooks-cranny': [320, "Nook's_Cranny_(Upgraded)_NH_Map_Icon.png"],
+  'deco/able-sisters': [320, 'Able_Sisters_NH_Map_Icon.png'],
+  'deco/museum-icon': [320, 'Museum_(Upgraded)_NH_Map_Icon.png'],
+  'deco/campsite': [320, 'Campsite_NH_Map_Icon.png'],
+  // the plaza's and paths' furniture (NH's catalog icons, trimmed: TRIM)
+  'deco/banner-lamp': [128, 'Street_Lamp_with_Banners_(Bronze_-_Green)_NH_Icon.png'],
+  'deco/streetlamp': [128, 'Streetlamp_NH_Icon.png'],
+  'deco/bulletin-board': [128, 'Bulletin_Board_(Standard_-_Scenery)_NH_Icon.png'],
+  'deco/plaza-bench': [128, 'Plaza_Bench_(Classic)_NH_Icon.png'],
+  'deco/signpost': [128, 'Signpost_(Shop)_NH_Icon.png'],
+  'deco/campsite-sign': [128, 'Campsite_Sign_NH_Icon.png'],
+  'deco/log-fence': [128, 'Log_Fence_NH_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
   // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
   // Jack is given; Jack himself (the 3D model: his NH artwork is a small crop; a visitor only, so not in the roster).
@@ -108,9 +128,6 @@ const SPECS: Record<string, Spec> = {
   'deco/party-popper': [96, 'Party_Popper_NH_Inv_Icon.png'],
   // group stretching's tape deck (island/TapeDeck.svelte)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
-  // the museum at the back of the island (island/Museum.svelte): NH's upgraded museum, the official render, drawn ~84u
-  // wide (≤ 120 CSS px), shipped at 3× that
-  'deco/museum': [360, 'Museum_NH.png'],
   // Game-derived replacements for hand-drawn chrome.
   // Seasonal particles.
   'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
@@ -136,6 +153,8 @@ for (const name of [
   'Horned Dynastid', 'Goliath Beetle', 'Drone Beetle', 'Jewel Beetle', 'Walking Stick', 'Hermit Crab', 'Wharf Roach',
   'Pill Bug', 'Centipede', 'Snail', 'Paper Kite Butterfly', 'Agrias Butterfly', "Queen Alexandra's Birdwing",
   "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust',
+  // the palm trees' beetles (Goliath Beetle is above)
+  'Cyclommatus Stag', 'Golden Stag', 'Horned Atlas', 'Horned Elephant',
   // only from a shaken tree's wasp nest (island/treeShake.ts)
   'Wasp',
   // the rest of NH's bugs the island can hold (a flea off a villager, a bagworm or a spider from a shaken tree)
@@ -198,15 +217,13 @@ for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses',
   'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 // NH's DIY recipe card, held up when a balloon's present held a recipe (island/Finds.svelte; the presents' own icons are the
-// catalogue's, scripts/catalog.ts), and the four pieces of furniture the rolling-log spike lays out (routes/roll).
-const PRESENT_FILES: Record<string, string> = {
-  'froggy-chair': 'Froggy_Chair_(Green)', 'mama-panda': 'Mama_Panda', 'lucky-cat': 'Lucky_Cat_(White)', 'cherry-lamp': 'Cherry_Lamp_(Cherry)'
-};
-for (const [id, file] of Object.entries(PRESENT_FILES)) SPECS[`presents/${id}`] = [96, `${file}_NH_Icon.png`];
+// catalogue's, scripts/catalog.ts).
 SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
- *  scene sizes are true to the tile unit (docs/design.md#layout-and-scale). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
+ *  scene sizes are true to the tile unit (docs/design.md#world). */
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper', 'trees/palm', 'trees/cedar',
+  'deco/airport', 'deco/resident-services', 'deco/nooks-cranny', 'deco/able-sisters', 'deco/museum-icon', 'deco/campsite',
+  'deco/banner-lamp', 'deco/streetlamp', 'deco/bulletin-board', 'deco/plaza-bench', 'deco/signpost', 'deco/campsite-sign', 'deco/log-fence', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
   TRIM.some((p) => key.startsWith(p)) || (key.startsWith('villagers/') && !key.endsWith('-icon') && key !== 'villagers/hamlet');

@@ -5,10 +5,11 @@
 
 <script lang="ts">
   // Visitors (docs/design.md "Visitors"), after NH: K.K. Slider with his guitar on Saturday nights, Daisy Mae on Sunday
-  // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. They stand on the centre
-  // stage (CENTRE_STAGE: the plaza, where the jar stood) at the villagers' scale (each at their NH height relative to a
-  // villager), with the same contact shadow; where a control still covers it, a smaller figure on the front beach;
-  // else none. A tap: their introduction the first time, then one of their lines (no trading, no ベル).
+  // mornings, Wisp floating by on some nights (see-through, a slow bob), Gulliver on some days. Most stand at centre
+  // stage (world.ts CENTRE_STAGE: the plaza's middle, seen from ひろば); Gulliver lies washed up on the front beach and
+  // Daisy Mae wanders the front lawn (both seen from まえ), as in NH. Each is one world node (camera.svelte.ts) at the
+  // villagers' scale (their NH height relative to a villager), with the same contact shadow. A tap: their introduction
+  // the first time, then one of their lines (no trading, no ベル).
   // K.K.'s show (NH's Saturday concert): with ミュージック on, a tap is his greeting and 「リクエストは あるかな？」
   // (リクエスト: a few of his songs to pick from; おまかせ: one at random); the island's music stops for the song
   // (sound/kk.ts, sound.svelte.ts playKK), he strums harder, ♪ float up, the villagers sway, a 「♪ title」 caption
@@ -24,8 +25,9 @@
   // breathes with it (CSS); idle life's beat gives them one small thing at a time: their NH signature, an emote, a look
   // at the nearest villager, a stroll for those who roam, or a villager coming over to say hello. A tap: they turn to
   // my villager with a little hop, back on their spot first if they'd strolled off, then speak (and stand still while
-  // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (up from the shore,
-  // down from the sky, or appearing) and leave when it ends; on a page's first paint they're simply there.
+  // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (walking from the
+  // campsite along the paths, down from the sky, or appearing) and leave when it ends (back to the campsite); on a
+  // page's first paint they're simply there. visitors.ts visitorInView tells whether they're on screen.
   // `?arrive` (dev or ?demo): the arrival plays on load; `?leave=<ms>`: the visit ends after that long; `?stroll`: a
   // stroll now; `?meet`: the partner comes over now.
   import { dayRecord } from './dayRecord.ts';
@@ -35,10 +37,10 @@
   import Emote from '../characters/Emote.svelte';
   import Fx from '../characters/Fx.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
-  import { actors, addFx, awayFromHome, cancel, faceToward, later, place as placeActor, removeFx, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
+  import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, removeFx, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
   import type { Motion } from '../motion/reactions.ts';
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
-  import { depthZ, type Pt } from './walkGraph.ts';
+  import type { Pt } from './walkGraph.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow, now } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -49,9 +51,11 @@
   import { EDGE, clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
   import { hook, hookFlag } from './devHooks.ts';
-  import { approach, meetVisitor, presence, shore, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
-  import { BED_ROWS, CENTRE_STAGE, su, VILLAGER } from './scene.ts';
-  import { visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { approach, meetVisitor, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
+  import { su, VILLAGER } from './scene.ts';
+  import { BUILDINGS, CENTRE_STAGE } from './world.ts';
+  import { useWorld } from './camera.svelte.ts';
+  import { visitorLine, visitorNow, visitorPlace, type VisitorId } from './visitors.ts';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
@@ -77,11 +81,14 @@
   const WIDE: Partial<Record<VisitorId, number>> = { reese: 1.95 };
   /** Floating off the ground (u). */
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
-  /** The front beach's smaller figures, for when the centre stage is covered: height and half-width (u). */
-  const BEACH: Record<VisitorId, { h: number; hw: number }> = {
-    'kk-slider': { h: 48, hw: 15 }, 'daisy-mae': { h: 48, hw: 16 }, wisp: { h: 30, hw: 16 }, gulliver: { h: 44, hw: 18 }, jack: { h: 48, hw: 17 }, celeste: { h: 44, hw: 15 },
-    franklin: { h: 46, hw: 15 }, jingle: { h: 46, hw: 17 }, pave: { h: 46, hw: 20 }, zipper: { h: 46, hw: 13 }, reese: { h: 42, hw: 30 }
-  };
+  /** Where they stand (world x, z): centre stage, but Gulliver washed up face down near the front beach's water's edge
+   *  (left of the day's finds) and Daisy Mae on the front lawn between the tape deck and the dig spots (NH). */
+  const SPOT: Partial<Record<VisitorId, Pt>> = { gulliver: [96, 30], 'daisy-mae': [206, 396] };
+  /** The campsite's door: walkers arrive from it and leave into it (spec §3). */
+  const CAMP: Pt = ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
+  /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
+  const MEET_NEAR = 600;
+  const w = useWorld();
   /** Visitors outside the roster (an event's guest): their render and name-tag colour (Jack: his robe's purple; the
    *  holiday hosts: Nookipedia's title colours). */
   const ART: Partial<Record<VisitorId, string>> = {
@@ -129,20 +136,12 @@
   let nudges = 0;
   const sleeping = $derived(shown === 'gulliver' && !woke);
 
-  /** Where it stands this time and how tall (u): the centre stage at its NH scale, else the beach, else nowhere.
-   *  `lie`: asleep, Gulliver lies down there (the lying figure clear of the controls too). */
-  let spot = $state<{ x: number; y: number; h: number; stage: boolean; lie: boolean } | null>(null);
-  $effect(() => {
-    const id = shown, g = stageGeo(scene);
-    if (!id || !g) return void (spot = null);
-    // clear of the controls themselves (their 6px tap padding may run over a head)
-    const keep = guardsU(g, -5 * g.k);
-    const h = VILLAGER.h * REL[id], up = h + (FLOAT[id] ?? 0);
-    const lie = id === 'gulliver' && clearAt(keep, CENTRE_STAGE.x, CENTRE_STAGE.base - h * 0.2, h * 0.44, h * 0.28);
-    if (clearAt(keep, CENTRE_STAGE.x, CENTRE_STAGE.base - up / 2, h * 0.32 * (WIDE[id] ?? 1), up / 2)) return void (spot = { x: CENTRE_STAGE.x, y: CENTRE_STAGE.base, h, stage: true, lie });
-    const b = BEACH[id], bup = b.h + (FLOAT[id] ? 9 : 0);
-    const x = [195, 160, 230, 125, 265].find((x) => clearAt(keep, x, 349 - bup / 2, b.hw, bup / 2));
-    spot = x === undefined ? null : { x, y: 349, h: b.h, stage: false, lie: true };
+  /** Where it stands this visit and how tall (u). `stage`: at centre stage; `lie`: Gulliver, who lies there asleep. */
+  const spot = $derived.by(() => {
+    const id = shown;
+    if (!id) return null;
+    const [x, z] = SPOT[id] ?? CENTRE_STAGE;
+    return { x, z, h: VILLAGER.h * REL[id], stage: !SPOT[id], lie: id === 'gulliver' };
   });
   // a new visitor with a spot: they arrive (once per visit)
   let arrivedFor: VisitorId | null = null;
@@ -156,29 +155,41 @@
 
   const st = actors.visitor;
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
-  const home = (): Pt => [spot?.x ?? CENTRE_STAGE.x, spot?.y ?? CENTRE_STAGE.base];
+  const home = (): Pt => [spot?.x ?? CENTRE_STAGE[0], spot?.z ?? CENTRE_STAGE[1]];
+  /** Where the feet are right now (world u), mid-walk included. */
+  const where = (): Pt => livePos('visitor');
+  // where the feet are, for visitors.ts visitorInView (しずえ's line when the guest is out of view)
+  $effect(() => {
+    if (!shown) return;
+    const fn = (): readonly [number, number] => where();
+    visitorPlace.where = fn;
+    return () => {
+      if (visitorPlace.where === fn) visitorPlace.where = null;
+    };
+  });
 
-  /** Here they come: up from the shore (walking or hopping) along the walk graph, down from the sky, or appearing; a
-   *  pop in place on the page's first paint (and on the beach, where there's no room to walk). */
+  /** Here they come: from the campsite (walking or hopping) along the walk graph, down from the sky, or appearing; a
+   *  pop in place on the page's first paint. */
   function arrive(id: VisitorId, s: NonNullable<typeof spot>) {
     cancel('visitor');
     edge = false;
-    const at: Pt = [s.x, s.y], b = BEHAVIOUR[id];
+    const at: Pt = [s.x, s.z], b = BEHAVIOUR[id];
     st.home = at;
     st.face = 'home';
     st.fx = [];
     st.emote = null;
     way = id === 'gulliver' && sleeping ? 'appear' : b.arrive;
     if (sleeping) later('visitor', 400, () => addFx('visitor', 'zzz'));
-    if (!liveArrival || !s.stage) {
+    if (!liveArrival) {
       placeActor('visitor', at[0], at[1]);
+      w.kick();
       phase = 'pop';
       later('visitor', POP_MS, () => (phase = 'here'));
       return;
     }
     phase = 'arrive';
     if (way === 'walk' || way === 'hop') {
-      const from = shore(), pts = visitorRoute(from, at);
+      const from = CAMP, pts = visitorRoute(from, at);
       if (pts) {
         placeActor('visitor', from[0], from[1]);
         edge = true;
@@ -192,11 +203,12 @@
       way = 'appear';
     }
     placeActor('visitor', at[0], at[1]);
+    w.kick();
     later('visitor', wayMs(way), () => (phase = 'here'));
   }
 
-  /** Their time is up: off the way they came (down to the shore and into the sea's edge, up into the sky, gone in a
-   *  puff), then the next visitor (if any) arrives. */
+  /** Their time is up: off the way they came (back to the campsite and into it, up into the sky, gone in a puff),
+   *  then the next visitor (if any) arrives. */
   function depart() {
     const id = shown;
     if (!id) return;
@@ -208,7 +220,6 @@
     way = id === 'gulliver' && sleeping ? 'appear' : BEHAVIOUR[id].leave;
     const done = () => {
       shown = null;
-      spot = null;
       arrivedFor = null;
       phase = 'pop';
       edge = false;
@@ -218,8 +229,8 @@
         shown = next;
       }
     };
-    if ((way === 'walk' || way === 'hop') && spot?.stage) {
-      const from = where(), to = shore(), pts = visitorRoute(from, to);
+    if (way === 'walk' || way === 'hop') {
+      const from = where(), to = CAMP, pts = visitorRoute(from, to);
       if (pts) {
         walkTo('visitor', pts, { speed: VISITOR_SPEED.arrive, from, then: () => {
           edge = true;
@@ -230,14 +241,6 @@
       way = 'appear';
     }
     later('visitor', wayMs(way), done);
-  }
-
-  /** Where the feet are now (u), mid-walk included: the rig's live translate. */
-  function where(): Pt {
-    const g = stageGeo(scene);
-    if (!el || !g) return [st.x, st.y];
-    const [x, y] = getComputedStyle(el).translate.split(' ').map((v) => parseFloat(v));
-    return Number.isFinite(x) && Number.isFinite(y) ? [Math.round(x * g.k), Math.round(y * g.k)] : [st.x, st.y];
   }
 
   /** A line of theirs is in the balloon (until it closes, or 20 s at most: another speaker may replace it). */
@@ -256,7 +259,7 @@
     if (!id || !s || phase !== 'here' || !enabled()) return;
     const act = pickAct(id, {
       speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome('visitor'),
-      sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: s.stage && villagerFree(), playing: !!playing
+      sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree(), playing: !!playing
     }, Math.random);
     if (!act) return;
     if (act === 'signature') signature(id);
@@ -294,24 +297,27 @@
     }
   }
 
-  /** A look at the nearest villager (or at `x`, u), then back. */
+  /** The partner may come over: the visitor stands within MEET_NEAR of its home (Daisy Mae, Gulliver at まえ). */
+  const meetable = (s: { x: number; z: number }) => Math.hypot(actors.partner.home[0] - s.x, actors.partner.home[1] - s.z) <= MEET_NEAR;
+
+  /** A look at the nearest villager (or at world `x`), then back. */
   function look(x?: number) {
-    const [vx, vy] = where();
-    const tx = x ?? (['mine', 'partner'] as const).map((v) => actors[v]).sort((a, b) => Math.hypot(a.x - vx, a.y - vy) - Math.hypot(b.x - vx, b.y - vy))[0].x;
+    const [vx, vz] = where();
+    const tx = x ?? (['mine', 'partner'] as const).map((v) => livePos(v)).sort((a, b) => Math.hypot(a[0] - vx, a[1] - vz) - Math.hypot(b[0] - vx, b[1] - vz))[0][0];
     faceToward('visitor', tx);
     later('visitor', rand(1800, 2800), () => !speaking() && (st.face = 'home'));
   }
 
-  /** A stroll (the ones who roam in NH): to a spot near theirs that's walkable, clear of every control and the
-   *  villagers, then a look around and, a while later, back. */
+  /** A stroll (the ones who roam in NH): to a spot near theirs that's walkable, clear of the villagers and, where it's
+   *  on screen, of every control, then a look around and, a while later, back. */
   function stroll(): boolean {
     const id = shown, s = spot, g = stageGeo(scene);
-    if (!id || !s?.stage || !g) return false;
-    const keep = guardsU(g, -5 * g.k), h = s.h;
+    if (!id || !s || !g) return false;
+    const keep = guardsU(g, -5 * g.k, (el) => getComputedStyle(el).visibility === 'hidden'); // (out-of-view world nodes)
     const from = where();
     for (const p of strollSpots(home(), BEHAVIOUR[id].roam, Math.random)) {
-      if (!visitorWalkable(p[0], p[1]) || !clearAt(keep, p[0], p[1] - h / 2, h * 0.32, h / 2)) continue;
-      if ((['mine', 'partner'] as const).some((v) => Math.hypot(actors[v].x - p[0], actors[v].y - p[1]) < 44)) continue;
+      if (!visitorWalkable(p[0], p[1]) || !standsClear(keep, p[0], p[1], s.h)) continue;
+      if ((['mine', 'partner'] as const).some((v) => Math.hypot(livePos(v)[0] - p[0], livePos(v)[1] - p[1]) < 44)) continue;
       const pts = visitorRoute(from, p);
       if (!pts) continue;
       walkTo('visitor', pts, { speed: VISITOR_SPEED.stroll, from, then: () => {
@@ -321,6 +327,13 @@
       return true;
     }
     return false;
+  }
+
+  /** A figure h units tall standing at world (x, z) covers no control (off screen: nothing to cover). */
+  function standsClear(keep: ReturnType<typeof guardsU>, x: number, z: number, h: number): boolean {
+    if (!w.inView(x, z)) return true;
+    const [sx, sy] = w.screenU(x, z), k = w.scaleAt(x, z);
+    return clearAt(keep, sx, sy - (h * k) / 2, h * k * 0.32, (h * k) / 2);
   }
 
   /** Back to their spot (ms until there; 0: already). */
@@ -349,10 +362,14 @@
     if (!host) return;
     let lastStar = 0;
     const onStar = (e: Event) => {
-      const x = (e as CustomEvent<{ x: number }>).detail?.x, g = stageGeo(host);
-      if (shown !== 'celeste' || phase !== 'here' || speaking() || !g || Date.now() - lastStar < 2500) return;
+      const x = (e as CustomEvent<{ x: number }>).detail?.x;
+      if (shown !== 'celeste' || phase !== 'here' || speaking() || Date.now() - lastStar < 2500) return;
       lastStar = Date.now();
-      if (Number.isFinite(x)) faceToward('visitor', x * g.k);
+      // the star's screen x (px from the scene's left) → a world x level with her
+      if (Number.isFinite(x)) {
+        const [vx, vz] = where(), p = w.screenAt(vx, vz);
+        faceToward('visitor', vx + (x - p.sx) / (p.scale * w.view.s));
+      }
       setMotion('visitor', 'point');
       setEmote('visitor', Math.random() < 0.5 ? 'mark-sparkle' : 'inspiration');
       later('visitor', 2600, () => !speaking() && (st.face = 'home'));
@@ -399,8 +416,6 @@
     if (!want) return { flip: 1, lean: 0 };
     return d ? { flip: want === d ? 1 : -1, lean: 0 } : { flip: 1, lean: want === 'r' ? 1 : -1 };
   });
-  /** Depth: on their spot among the island's things (45); walking on from the shore, by the feet's y like the villagers. */
-  const z = $derived(spot && !spot.stage ? 55 : st.zy < BED_ROWS[0] ? 45 : depthZ(st.zy));
   /** Visitors who introduced themselves this session. */
   const met = new Set<VisitorId>();
   let last: string | undefined;
@@ -602,26 +617,36 @@
    *  draws a glance that way. */
   let lastGlance = 0;
   export function tap(px: number, py: number): boolean {
-    const id = shown, a = art(), g = stageGeo(scene);
-    if (!id || !a || !spot || !g || phase === 'leave' || !enabled()) return false;
+    const id = shown, a = art();
+    if (!id || !a || !spot || phase === 'leave' || !enabled()) return false;
     const pad = 8; // a finger's slack around the figure (px)
     const inside = (r: { left: number; right: number; top: number; bottom: number }) =>
       px >= r.left - pad && px <= r.right + pad && py >= r.top - pad && py <= r.bottom + pad;
-    // the figure where it is now, or on its spot (a tap aimed at it as it arrives or strolls off)
-    // (Gulliver lying face down is wider than tall)
-    const lying = sleeping && spot.lie && spot.stage;
-    const hw = (lying ? spot.h * 0.5 : spot.stage ? spot.h * 0.32 * (WIDE[id] ?? 1) : BEACH[id].hw) / g.k, hx = g.r.left + spot.x / g.k, hy = g.r.top + spot.y / g.k;
-    if (!inside(a.getBoundingClientRect()) && !inside({ left: hx - hw, right: hx + hw, top: hy - (lying ? spot.h * 0.6 : spot.h) / g.k, bottom: hy })) {
-      if (phase === 'here' && !sleeping && !speaking() && !st.walking && Date.now() - lastGlance > 3000 && Math.random() < 0.5) {
+    // the figure where it is now (only while on screen: a node out of view keeps its last box), or on its spot (a tap
+    // aimed at it as it arrives or strolls off); Gulliver lying face down is wider than tall
+    const lying = sleeping && spot.lie;
+    const hwU = lying ? spot.h * 0.5 : spot.h * 0.32 * (WIDE[id] ?? 1), hU = (lying ? spot.h * 0.6 : spot.h) + (FLOAT[id] ?? 0);
+    const now = where();
+    const box = (x: number, z: number) => {
+      const p = w.screenAt(x, z), k = p.scale * w.view.s, cx = p.sx + w.view.left, cy = p.sy + w.view.top;
+      return { left: cx - hwU * k, right: cx + hwU * k, top: cy - hU * k, bottom: cy };
+    };
+    // on screen: in view, its feet clear of the horizon (a speck sunk behind it is out of reach)
+    const seen = (x: number, z: number) => w.inView(x, z, 20) && w.screenAt(x, z).sy > w.view.horizon + 24;
+    const onFigure = seen(now[0], now[1]) && inside(a.getBoundingClientRect());
+    const onSpot = seen(spot.x, spot.z) && inside(box(spot.x, spot.z));
+    if (!onFigure && !onSpot) {
+      const at = w.worldAtClient(px, py);
+      if (at && w.inView(now[0], now[1]) && phase === 'here' && !sleeping && !speaking() && !st.walking && Date.now() - lastGlance > 3000 && Math.random() < 0.5) {
         lastGlance = Date.now();
-        look((px - g.r.left) * g.k);
+        look(at.x);
       }
       return false;
     }
     // my villager walks over to talk (avatar.ts); they speak once it's there (a tap meanwhile is the same tap)
     if (talkTimer) return true;
     // it stands beside them, not on them: the figure's half-width plus a villager's (a pair is wider)
-    const { ms } = approach(spot.x, spot.y, { reach: [hw * g.k + 22, hw * g.k + 36] });
+    const { ms } = approach(spot.x, spot.z, { reach: [hwU + 22, hwU + 36], long: true });
     if (sleeping) {
       // a nudge: he twitches and mumbles in his sleep; the fifth wakes him (NH)
       talkTimer = setTimeout(() => {
@@ -705,10 +730,10 @@
 
 {#if shown && spot}
   {@const b = BEHAVIOUR[shown]}
-  <div class="visitors" class:beach={!spot.stage} style:z-index={z} aria-hidden="true">
-    <span class="visitor {shown}" class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
+  <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks -->
+  <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos('visitor'), always: true, inv: true })} class:show={!!playing} class:walking={st.walking} class:edge data-visitor={shown} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
-      style:translate="{su(st.x)} {su(st.y)}" style:transition-duration="{st.walkMs}ms" style:--h={su(spot.h)} style:--lift={su(spot.stage ? (FLOAT[shown] ?? 0) : 0)}
+      style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)}
       style:--breath="{b.breath}ms" style:--step="{st.stepMs}ms" style:--flip={facing.flip} style:--lean={facing.lean}>
       <i class="shade"></i>
       {#if shown === 'wisp'}<i class="glow"></i>{/if}
@@ -741,8 +766,7 @@
           </span>
         {/key}
       {/if}
-    </span>
-  </div>
+  </span>
 {/if}
 {#if playing && caption}
   <span class="caption if-caption" class:placed={caption.placed} data-fx="kk-caption" bind:this={capEl} style:left="{caption.x}px" style:top="{caption.y}px">♪ {titleOf(playing)}</span>
@@ -755,13 +779,10 @@
 {/snippet}
 
 <style>
-  /* on the centre stage: among the island's things (z 45: over the trees' row and the hedge, under the villagers 51–52;
-     the spot is measured clear of every control), under the time-of-day tint; on the beach in front of everyone. Walking
-     on from the shore, the depth goes by the feet like the villagers' (inline z-index) */
-  .visitors { position: absolute; inset: 0; z-index: 45; pointer-events: none; --su: calc(100cqw / 390); }
-  /* the feet at (x, y): a walk is one transition of translate per segment (its duration set per segment: director) */
-  .visitor { position: absolute; left: 0; top: 0; width: 0; height: 0; transition: translate 0ms linear; }
-  .visitor.walking { will-change: translate; }
+  /* the feet at the node's origin (camera.svelte.ts places it and sets its depth among the island's things, under the
+     time-of-day tint); taps go to the scene (SceneTaps asks `tap`) */
+  .visitor { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
+  .visitor.walking { will-change: transform; }
   .visitor > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .art { translate: -50% calc(-97% - var(--lift)); transform-origin: 50% 100%; transition: opacity .5s ease, rotate .6s ease-out, translate .6s ease-out, scale .6s ease-out, transform-origin .6s ease-out; }
   .visitor.edge .art { opacity: 0; }
@@ -852,7 +873,6 @@
   /* Gulliver asleep: face down on the ground (on his front, his beak in the sand), a slow snoring breath; he eases up
      onto his feet when woken (the transition) */
   .visitor[data-asleep='lie'] .art { translate: -50% calc(-50% - var(--h) * .2); rotate: -90deg; scale: .92; transform-origin: 50% 50%; }
-  .visitor[data-asleep='lie']:not([data-stage]) .art { translate: -50% -50%; }
   .visitor[data-asleep] .idle { animation: v-snore 4s ease-in-out infinite; }
   .visitor[data-asleep='lie'] .shade { width: var(--h); translate: -50% -60%; animation-duration: 4s; }
   .visitor[data-asleep='stand'] .face { rotate: 5deg; }
@@ -927,7 +947,8 @@
   .fxa.zzz { left: calc(var(--h) * -.12); top: calc(var(--h) * .1); }
   .fxa.sweat { left: calc(var(--h) * .2); top: calc(var(--h) * .2); }
   .fxa.notes { left: calc(var(--h) * .18); top: calc(var(--h) * .12); }
-  .mumble { left: 0; bottom: 4px; translate: calc(-60% + var(--shift, 0px)) 0; animation: v-mumble 1.6s ease-out both; }
+  /* drawn at its true size (the node's --inv), nudged in from the screen's edge */
+  .mumble { left: 0; bottom: 4px; transform-origin: 40% 100%; scale: var(--inv, 1); translate: calc(-60% + var(--shift, 0px) * var(--inv, 1)) 0; animation: v-mumble 1.6s ease-out both; }
   @keyframes v-mumble { from { opacity: 0; transform: translateY(6px) scale(.8); } 15% { opacity: 1; transform: none; } 80% { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
 
   /* the heart float over Reese and Cyrus */

@@ -25,7 +25,7 @@
   let opened = $state(false);
   // The museum's door: open the panel (it shows the ずかん itself, IslandPanel)
   $effect(() => {
-    if (!ui.zukan) return;
+    if (!ui.zukan && !ui.door) return;
     opened = true;
     panelOpen = true;
   });
@@ -72,7 +72,8 @@
     position: absolute; z-index: var(--z-hud); left: 0; right: 0; top: var(--hud-top);
     display: flex; flex-direction: column; align-items: center; gap: 12px; pointer-events: none;
   }
-  .ribbon-wrap > :global(*) { pointer-events: auto; }
+  /* only the controls take taps: the gaps between them let a tap through to the sky (the sun, the moon) */
+  .ribbon-wrap > :global(*:not(.hud-row)), .hud-row > :global(*) { pointer-events: auto; }
   /* the ribbon and the jar: one row, centred as a group (the ribbon's left tail counted in: the row's 16px left pad
      balances it), 24px apart (the right tail sits in the gap); on a narrow phone both tighten */
   .hud-row { display: flex; align-items: center; gap: clamp(20px, 6vw, 26px); padding-left: 16px; max-width: 100%; }

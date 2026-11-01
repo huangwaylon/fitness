@@ -30,6 +30,8 @@ function guards(skip?: (el: Element) => boolean): Box[] {
   for (const el of document.querySelectorAll('button, .detail, .news, [data-guard]')) {
     if (el.classList.contains('balloon') || el.closest('[data-fx]:not(.placed)')) continue; // an overlay still being measured
     if (skip?.(el)) continue;
+    // a world node out of view keeps its last box: not on screen, not in the way
+    if ((el as HTMLElement).checkVisibility && !(el as HTMLElement).checkVisibility({ visibilityProperty: true })) continue;
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
     const px = el.classList.contains('ribbon') ? 20 : 6;

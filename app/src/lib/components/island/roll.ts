@@ -161,3 +161,37 @@ export function zIndexAt(z: number, x: number, zMax: number): number {
 export function sinkBelow(at: Projected, p: RollParams): number {
   return at.theta > p.tilt * RAD ? Math.max(0, (at.y + horizonUp(p)) / at.scale) : 0;
 }
+
+/** The world point under a screen point (the inverse of project()): `dx` = units right of the screen's centre line, `up`
+ *  = units above the pivot line. Solves up(θ) = R·sin θ − R(1 − cos θ)·cot(tilt) for θ in [−80°, tilt − 1°] (monotonic
+ *  there: up' = R·ground > 0) with Newton steps and a bisection fallback, then z = camZ + R·θ and x = cx + dx / scale.
+ *  Null above the horizon (a tap in the sky) or below the near limit. */
+export function unproject(dx: number, up: number, camZ: number, p: RollParams): { x: number; z: number; theta: number } | null {
+  const phi = p.tilt * RAD;
+  const cot = Math.cos(phi) / Math.sin(phi);
+  const para = p.curve === 'parabola';
+  // the parabola is parameterised by the distance d = R·tan θ (surface()'s theta = atan(d / R))
+  const upAt = (t: number) => {
+    if (para) {
+      const d = p.R * Math.tan(t);
+      return d - ((d * d) / (2 * p.R)) * cot;
+    }
+    return p.R * Math.sin(t) - p.R * (1 - Math.cos(t)) * cot;
+  };
+  const slope = (t: number) => (para ? (p.R * (1 - Math.tan(t) * cot)) / Math.cos(t) ** 2 : p.R * (Math.cos(t) - Math.sin(t) * cot));
+  let lo = -NEAR, hi = phi - RAD;
+  if (up > upAt(hi) || up < upAt(lo)) return null;
+  let t = Math.max(lo, Math.min(hi, up / p.R));
+  for (let i = 0; i < 40; i++) {
+    const v = upAt(t) - up;
+    if (Math.abs(v) < 1e-7) break;
+    if (v > 0) hi = t;
+    else lo = t;
+    const d = slope(t);
+    let n = d > 1e-9 ? t - v / d : NaN;
+    if (!(n > lo && n < hi)) n = (lo + hi) / 2; // Newton left the bracket: bisect
+    t = n;
+  }
+  const z = camZ + (para ? p.R * Math.tan(t) : p.R * t);
+  return { x: p.cx + dx / project(p.cx, z, camZ, p).scale, z, theta: t };
+}

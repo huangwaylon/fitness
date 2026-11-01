@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MUSHROOMS, MUSHROOM_SPOTS, OFF_SEASON_ODDS, RARE_ODDS, mushroomsOn, rareMushroom } from './mushrooms.ts';
-import { DIG_SPOTS } from './beach.ts';
-import { TREE } from './scene.ts';
+import { DIG_SPOTS, LAWN } from './beach.ts';
+import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE } from './scene.ts';
+import { GOAL_TREES, HOMES, TAPE_DECK } from './world.ts';
 import { addDays } from '#lib/time/dates.ts';
 import ja from '#lib/i18n/catch.ja.json';
 import en from '#lib/i18n/catch.en.json';
@@ -49,12 +50,16 @@ describe('mushroom season', () => {
     expect(n['elegant-mushroom'] ?? 0).toBeLessThan(n['skinny-mushroom'] / 3);
     for (const id of ['skinny-mushroom', 'round-mushroom', 'flat-mushroom']) expect(n[id]).toBeGreaterThan(40);
   });
-  it('they grow beside the trunks, between the canopy and the fruit row, away from the dig spots', () => {
+  it('they grow beside the trunks, clear of the canopy and the fruit row, away from the dig spots, the weeds and the deck', () => {
     expect(MUSHROOM_SPOTS).toHaveLength(4);
-    for (const [x, y] of MUSHROOM_SPOTS) {
-      expect(Math.min(Math.abs(x - TREE.x.A), Math.abs(x - TREE.x.B))).toBeLessThanOrEqual(24);
-      expect(y).toBeLessThan(TREE.base);
-      for (const [dx, dy] of DIG_SPOTS) expect(Math.hypot(x - dx, y - dy)).toBeGreaterThan(14);
+    const half = (TREE.h * OAK_AR) / 2, row = -FRUIT_SPOTS[0][0] + FRUIT_U;
+    for (const [x, z] of MUSHROOM_SPOTS) {
+      const [tx, tz] = Math.abs(x - GOAL_TREES.A[0]) < Math.abs(x - GOAL_TREES.B[0]) ? GOAL_TREES.A : GOAL_TREES.B;
+      expect(Math.abs(x - tx)).toBeLessThanOrEqual(70);
+      expect(Math.abs(x - tx)).toBeGreaterThan(half + 6); // past the canopy
+      expect(Math.abs(x - (tx + (tx < 195 ? -FRUIT_LEAN : FRUIT_LEAN)))).toBeGreaterThan(row + 6); // past the fruit row
+      expect(z - tz).toBeGreaterThanOrEqual(0), expect(z - tz).toBeLessThanOrEqual(40);
+      for (const [dx, dz] of [...DIG_SPOTS, ...LAWN, TAPE_DECK, HOMES.A, HOMES.B]) expect(Math.hypot(x - dx, z - dz)).toBeGreaterThan(24);
     }
   });
   it('about 1 in 20 November dig spots hold the rare mushroom (its own stream), none in other months', () => {

@@ -10,8 +10,8 @@ afterEach(() => {
 });
 
 describe('walkTo (the director)', () => {
-  it('one transition per segment: facing, depth at the start toward the camera and at the end away from it', async () => {
-    const { actors, resetAll, setHome, walkTo } = await import('./director.svelte.ts');
+  it('segment by segment: facing, and the feet move along each segment by the clock (livePos)', async () => {
+    const { actors, inMotion, livePos, resetAll, setHome, walkTo } = await import('./director.svelte.ts');
     resetAll();
     setHome('mine', 100, 200);
     const a = actors.mine;
@@ -19,15 +19,16 @@ describe('walkTo (the director)', () => {
     expect(ms).toBe(1200);
     // segment 1 (40u of 160): right, level
     expect([a.x, a.y, a.face, a.walking, a.walkMs]).toEqual([140, 200, 'r', true, 300]);
-    expect(a.zy).toBe(200);
+    expect(livePos('mine', a.t0)).toEqual([100, 200]);
+    expect(livePos('mine', a.t0 + 150)).toEqual([120, 200]);
+    expect(inMotion('mine', a.t0 + 150)).toBe(true);
+    expect(inMotion('mine', a.t0 + 301)).toBe(false);
     await vi.advanceTimersByTimeAsync(300);
-    // segment 2: away from the camera: its depth only changes at its end
-    expect([a.x, a.y]).toEqual([140, 160]);
-    expect(a.zy).toBe(200);
+    // segment 2 starts where segment 1 ended
+    expect([a.x, a.y, a.from]).toEqual([140, 160, [140, 200]]);
+    expect(livePos('mine', a.t0 + 150)).toEqual([140, 180]);
     await vi.advanceTimersByTimeAsync(300);
-    // segment 3: toward the camera: depth at once
     expect(a.y).toBe(240);
-    expect(a.zy).toBe(240);
     await vi.advanceTimersByTimeAsync(600);
     expect(a.walking).toBe(false);
     resetAll();
@@ -68,7 +69,7 @@ describe('walkTo (the director)', () => {
     cancel('mine');
     expect([actors.mine.x, actors.mine.walking]).toEqual([90, false]);
     place('mine', 5, 6);
-    expect([actors.mine.x, actors.mine.y, actors.mine.walkMs, actors.mine.zy]).toEqual([5, 6, 0, 6]);
+    expect([actors.mine.x, actors.mine.y, actors.mine.walkMs, actors.mine.from]).toEqual([5, 6, 0, [5, 6]]);
   });
 
   it('the hold-up: the item over the head, then gone; a tool goes away after its time', async () => {

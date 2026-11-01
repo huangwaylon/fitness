@@ -1,91 +1,164 @@
-// Where the villagers may walk (docs/design.md "Walking"): a walk mask of zones on the ground plane (stage units, the
-// feet's y), the obstacles in it (trunks, beds, the rock, whatever else stands on the lawn) and a small graph of named
-// nodes to route around them. Pure and built from the scene's constants (scene.ts, beach.ts, care.ts), so a layout
-// change carries over; parameterised (`walkGeo(extra)`) for the spots that come and go and for the tests. A straight
-// segment when it stays in the mask and misses every obstacle, else the shortest way through the nodes (a visibility
-// graph of ~15 points: no nav-mesh, nothing per frame).
+// Where the villagers may walk (docs/design.md "World", "Walking"): the island's walkable ground in world units (x
+// across, z into the island), the obstacles on it and a graph of named nodes to route around them. Pure, built from
+// world.ts, so a layout change carries over; parameterised (`walkGeo(extra)`) for what comes and goes (a visitor) and
+// for the tests.
+// Ground: land (sand and grass), the plaza, both bridges and the cliff's stairs; not the sea, the river (but for the
+// bridges), the pond, the spring, the cliff face (but for the stairs), building footprints, trunks, beds, the rock,
+// bushes and props. The static part is rasterised once (a 4u grid, ~5 ms) so a segment test is a few lookups; a
+// visitor's box is tested on top. Routing: a straight segment when it is clear, else the shortest way through the
+// nodes (named ones and the padded corners of the obstacles): a visibility graph precomputed once, Dijkstra per walk.
 import type { Box } from './geom.ts';
-import { BED_ROWS, BED_X, CENTRE_STAGE, HEDGE_BASE, PLATEAU, POND, TREE, VILLAGER } from './scene.ts';
-import { BEACH } from './beach.ts';
-import { ROCK } from './care.ts';
+import {
+  BED_XS, BED_ZS, BRIDGES, BUILDINGS, CENTRE_STAGE, CLIFF, DOCK, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, POND, ROCK,
+  SCENERY, SPRING, TAPE_DECK, inOval, inRiver, onLand, type Pt
+} from './world.ts';
+import { art } from '#lib/art.ts';
 
-export type Pt = readonly [number, number];
+export type { Pt };
 
 export interface WalkGeo {
-  /** Walkable ground (their union). */
-  zones: Box[];
-  /** Ground nobody walks through (grown by `pad` when tested). */
+  /** Ground nobody walks through (grown by `pad` when tested): the island's are in the grid too. */
   obstacles: Box[];
+  /** What came and goes (a visitor's box): tested on top of the grid. */
+  extra?: Box[];
   /** Named waypoints (and the points of interest the villagers wander to). */
   nodes: Record<string, Pt>;
   /** Half the walker's footprint: how far feet keep from an obstacle. */
   pad: number;
-}
-
-/** What stands on the ground besides the fixed scenery (each optional: present only when it exists on the island). */
-export interface WalkExtra {
-  /** More obstacles (a building, a pond's water). */
-  obstacles?: Box[];
-  /** More named nodes (pondside, a museum door): they join the graph and the wander points. */
-  nodes?: Record<string, Pt>;
-  /** More walkable zones (a back strip). */
+  /** The island's static walk mask (shared by every island geo). */
+  grid?: Grid;
+  /** Or plain walkable boxes (a parameterised geometry: the tests). */
   zones?: Box[];
+  /** The static nodes' visibility graph (lazily built; shared by the island's geos). */
+  vis?: Vis;
 }
 
-/** The island's walk geometry from the scene's constants. */
-export function walkGeo(extra: WalkExtra = {}): WalkGeo {
-  const front = BED_ROWS[1];
-  const lawnTop = HEDGE_BASE + 14;
-  const lawn: Box = { x0: PLATEAU.x0 + 16, x1: PLATEAU.x1 - 16, y0: lawnTop, y1: PLATEAU.y1 - 6 };
-  const beach: Box = { x0: BEACH.x0, x1: BEACH.x1, y0: PLATEAU.y1 + 12, y1: BEACH.y1 };
-  // the way down to the beach: the low front of the cliff between the villagers' homes
-  const ramp: Box = { x0: VILLAGER.x.A + 14, x1: VILLAGER.x.B - 14, y0: front - 4, y1: beach.y0 + 6 };
-  const trunk = (x: number): Box => ({ x0: x - 14, x1: x + 14, y0: TREE.base - 12, y1: TREE.base + 6 });
-  const bed = (xs: number[]): Box => ({ x0: Math.min(...xs) - 20, x1: Math.max(...xs) + 18, y0: BED_ROWS[0] - 14, y1: front + 4 });
-  // the pond (design.md "Pond"): its water is no ground; its front rim is under the left tree's canopy, so the angler
-  // stands on the back bank behind it, reached up the gap between the pond's right bank and the museum
-  const pond: Box = { x0: POND.cx - POND.rx, x1: POND.cx + POND.rx, y0: POND.cy - POND.ry + 6, y1: POND.cy + POND.ry };
-  const bank: Box = { x0: pond.x0 + 4, x1: pond.x1 + 18, y0: 28, y1: 35 };
-  const lane: Box = { x0: pond.x1 - 7, x1: pond.x1 + 18, y0: 28, y1: lawnTop + 4 };
-  const obstacles: Box[] = [
-    trunk(TREE.x.A), trunk(TREE.x.B), bed(BED_X.left), bed(BED_X.right),
-    { x0: ROCK.x - 10, x1: ROCK.x + 10, y0: ROCK.y - 6, y1: ROCK.y + 3 }, pond,
-    ...(extra.obstacles ?? [])
-  ];
-  const inner = (TREE.x.A + VILLAGER.x.A) / 2 + 22; // between a trunk and the middle
-  const xs = { A: VILLAGER.x.A, B: VILLAGER.x.B };
-  const mid = (TREE.base + BED_ROWS[0]) / 2;
+/** What stands on the ground besides the fixed scenery. */
+export interface WalkExtra {
+  /** More obstacles (a visitor's spot). */
+  obstacles?: Box[];
+  /** More named nodes: they join the graph and the wander points. */
+  nodes?: Record<string, Pt>;
+}
+
+const PAD = 8;
+const CELL = 4;
+const GX0 = -60, GX1 = 452, GZ0 = -60, GZ1 = 2180;
+
+interface Grid { w: number; h: number; ok: Uint8Array }
+interface Vis { pts: Pt[]; names: string[]; adj: number[][] | null }
+
+const box = (x: number, z: number, hw: number, back: number, front = back): Box => ({ x0: x - hw, x1: x + hw, y0: z - front, y1: z + back });
+const widthOf = (key: string, h: number) => {
+  const a = art(key);
+  return a ? (h * a.w) / a.h : h;
+};
+
+/** The fixed obstacles (feet keep PAD from them). */
+function staticObstacles(): Box[] {
+  const out: Box[] = [];
+  for (const t of [GOAL_TREES.A, GOAL_TREES.B]) out.push(box(t[0], t[1], 13, 6, 6));
+  for (const s of SCENERY) {
+    if (s.kind === 'oak' || s.kind === 'cedar') out.push(box(s.x, s.z, 12, 6, 6));
+    else if (s.kind === 'palm') out.push(box(s.x, s.z, 8, 5, 5));
+    else if (s.kind === 'bush') out.push(box(s.x, s.z, 16, 7, 7));
+    else if (s.kind === 'fence') out.push(box(s.x, s.z, 22, 3, 3));
+    else out.push(box(s.x, s.z, Math.max(5, widthOf(s.key, s.h) * 0.36), 4, 4));
+  }
+  for (const x of HEDGE_XS) out.push(box(x, HEDGE_Z, 18, 7, 7));
+  for (const xs of [BED_XS.A, BED_XS.B]) out.push({ x0: xs[0] - 18, x1: xs[1] + 18, y0: BED_ZS[1] - 12, y1: BED_ZS[0] + 8 });
+  out.push(box(ROCK[0], ROCK[1], 12, 5, 5), box(TAPE_DECK[0], TAPE_DECK[1], 7, 4, 4));
+  for (const b of BUILDINGS) {
+    const w = widthOf(b.key, b.h);
+    out.push({ x0: b.x - w / 2 + 4, x1: b.x + w / 2 - 4, y0: b.z - 2, y1: b.z + b.depth });
+  }
+  return out;
+}
+
+const inBox = (b: Box, x: number, z: number, pad = 0) => x > b.x0 - pad && x < b.x1 + pad && z > b.y0 - pad && z < b.y1 + pad;
+const onBridge = (x: number, z: number) => BRIDGES.some((b) => Math.abs(x - b.x) <= b.w / 2 - 6 && z >= b.z0 - 2 && z <= b.z1 + 2);
+const onStairs = (x: number, z: number) => x >= CLIFF.stair[0] + 4 && x <= CLIFF.stair[1] - 4 && z >= CLIFF.z0 - 6 && z <= CLIFF.z1 + 6;
+
+/** The ground itself, before obstacles: land, off the water and the cliff face. */
+function ground(x: number, z: number): boolean {
+  if (onBridge(x, z) || onStairs(x, z)) return true;
+  if (x >= DOCK.x0 && x <= DOCK.x1 && z >= DOCK.z0 && z < 6) return false;
+  if (!onLand(x, z)) return false;
+  if (z >= CLIFF.z0 - 6 && z <= CLIFF.z1 + 4 && x >= CLIFF.x0 - 20 && x <= CLIFF.x1 + 20) return false;
+  if (inOval(POND, x, z, 4) || inOval(SPRING, x, z, 4)) return false;
+  // the river and a strip of its bank (the feet keep out of the water)
+  return !inRiver(x, z) && !nearRiver(x, z);
+}
+function nearRiver(x: number, z: number): boolean {
+  // a cheap pad: the river grown by PAD / 2 (the bank is walkable up to the water's edge less a step)
+  return inRiver(x + 4, z) || inRiver(x - 4, z) || inRiver(x, z + 4) || inRiver(x, z - 4);
+}
+
+let shared: { grid: Grid; obstacles: Box[]; vis: Vis } | null = null;
+function build() {
+  if (shared) return shared;
+  const obstacles = staticObstacles();
+  const w = Math.ceil((GX1 - GX0) / CELL), h = Math.ceil((GZ1 - GZ0) / CELL);
+  const ok = new Uint8Array(w * h);
+  for (let j = 0; j < h; j++) {
+    const z = GZ0 + (j + 0.5) * CELL;
+    for (let i = 0; i < w; i++) {
+      const x = GX0 + (i + 0.5) * CELL;
+      if (!ground(x, z)) continue;
+      // bridges and stairs cut through whatever they cross
+      if (!onBridge(x, z) && !onStairs(x, z) && obstacles.some((o) => inBox(o, x, z, PAD))) continue;
+      ok[j * w + i] = 1;
+    }
+  }
+  shared = { grid: { w, h, ok }, obstacles, vis: { pts: [], names: [], adj: null } };
+  return shared;
+}
+
+/** The named nodes: homes, the goal trees, the rock, the shore, the bridges' and the stairs' ends, the doors, the
+ *  pondside, the riverbank's casting spots, centre stage. */
+function namedNodes(): Record<string, Pt> {
+  const [ax, az] = HOMES.A, [bx, bz] = HOMES.B, [tax, taz] = GOAL_TREES.A, [tbx, tbz] = GOAL_TREES.B;
   const nodes: Record<string, Pt> = {
-    homeA: [xs.A, VILLAGER.foot], homeB: [xs.B, VILLAGER.foot],
-    midA: [xs.A, mid], midB: [xs.B, mid], centre: [(xs.A + xs.B) / 2, mid],
-    // centre stage: the open middle, kept for a visitor (the villagers wander there when nobody's visiting)
-    centreStage: [CENTRE_STAGE.x, CENTRE_STAGE.base],
-    treeA: [Math.max(inner, TREE.x.A + 40), TREE.base + 18], treeB: [Math.min(390 - inner, TREE.x.B - 40), TREE.base + 18],
-    outA: [TREE.x.A - 40, TREE.base + 20], outB: [TREE.x.B + 40, TREE.base + 20],
-    backA: [TREE.x.A + 40, lawn.y0 + 30], backB: [TREE.x.B - 40, lawn.y0 + 30], backC: [195, lawn.y0 + 22],
-    backOutA: [TREE.x.A - 30, lawn.y0 + 26], backOutB: [TREE.x.B + 30, lawn.y0 + 26],
-    rock: [ROCK.x + 22, ROCK.y + 4],
-    rampTop: [(xs.A + xs.B) / 2, front + 8],
-    shoreL: [BEACH.x0 + 40, beach.y0 + 6], shoreC: [195, beach.y0 + 6], shoreR: [BEACH.x1 - 40, beach.y0 + 6],
-    // up the lane beside the pond to its back bank (the pondside: an angler's spot, a point of interest)
-    pondFoot: [lane.x0 + 1, lawnTop - 4], pondTurn: [pond.x1 + 10, lawnTop - 8], pondLane: [pond.x1 + 11, POND.cy + 4], pondTop: [pond.x1 + 11, 31], pondside: [POND.cx, 32],
-    ...(extra.nodes ?? {})
+    homeA: [ax, az], homeB: [bx, bz], centre: [195, az + 30],
+    midA: [ax, az + 60], midB: [bx, bz + 60],
+    treeA: [tax + 34, taz - 6], treeB: [tbx - 34, tbz - 6], outA: [tax - 30, taz - 30], outB: [tbx + 30, tbz - 30],
+    backA: [tax + 30, taz + 60], backB: [tbx - 30, tbz + 60],
+    rock: [ROCK[0] + 24, ROCK[1] - 4],
+    shoreL: [96, 22], shoreC: [195, 20], shoreR: [270, 22],
+    stoneS: [195, BRIDGES[0].z0 - 12], stoneN: [195, BRIDGES[0].z1 + 12], logS: [296, BRIDGES[1].z0 - 12], logN: [296, BRIDGES[1].z1 + 12],
+    stairS: [60, CLIFF.z0 - 14], stairN: [60, CLIFF.z1 + 14],
+    centreStage: [CENTRE_STAGE[0], CENTRE_STAGE[1]],
+    pondside: [POND.x + 4, POND.z + POND.rz + 14],
+    riverEast: [342, 900], riverBend: [330, 700], mouth: [-14, 596], clifftop: [SPRING.x - 44, SPRING.z - 24]
   };
-  return { zones: [lawn, beach, ramp, bank, lane, ...(extra.zones ?? [])], obstacles, nodes, pad: 8 };
+  for (const b of BUILDINGS) nodes[`door-${b.id}`] = [b.x, b.id === 'airport' ? b.z - 4 : b.z - 16];
+  return nodes;
 }
 
-const inside = (b: Box, x: number, y: number, pad = 0) => x > b.x0 - pad && x < b.x1 + pad && y > b.y0 - pad && y < b.y1 + pad;
+/** The island's walk geometry from the world's constants. */
+export function walkGeo(extra: WalkExtra = {}): WalkGeo {
+  const s = build();
+  const nodes = { ...namedNodes(), ...(extra.nodes ?? {}) };
+  return { obstacles: s.obstacles, extra: extra.obstacles ?? [], nodes, pad: PAD, grid: s.grid, vis: s.vis };
+}
+
+function gridOk(g: Grid, x: number, z: number): boolean {
+  const i = Math.floor((x - GX0) / CELL), j = Math.floor((z - GZ0) / CELL);
+  return i >= 0 && j >= 0 && i < g.w && j < g.h && g.ok[j * g.w + i] === 1;
+}
 
 /** On walkable ground and clear of every obstacle (grown by the footprint). */
-export function walkable(g: WalkGeo, x: number, y: number): boolean {
-  return g.zones.some((z) => inside(z, x, y)) && !g.obstacles.some((o) => inside(o, x, y, g.pad));
+export function walkable(g: WalkGeo, x: number, z: number): boolean {
+  if (g.extra?.some((o) => inBox(o, x, z, g.pad))) return false;
+  if (g.grid) return gridOk(g.grid, x, z);
+  return !!g.zones?.some((b) => inBox(b, x, z)) && !g.obstacles.some((o) => inBox(o, x, z, g.pad));
 }
 
-/** A straight walk from a to b stays walkable (sampled every 4u). `loose`: the first stretch near `a` may be off the
+/** A straight walk from a to b stays walkable (sampled every 3u). `loose`: the first stretch near `a` may be off the
  *  mask (a walker caught mid-step a little outside it). */
 export function segmentClear(g: WalkGeo, a: Pt, b: Pt, loose = 0): boolean {
   const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-  const n = Math.max(1, Math.ceil(len / 4));
+  const n = Math.max(1, Math.ceil(len / 3));
   for (let i = 0; i <= n; i++) {
     if (i * (len / n) < loose) continue;
     if (!walkable(g, a[0] + ((b[0] - a[0]) * i) / n, a[1] + ((b[1] - a[1]) * i) / n)) return false;
@@ -94,25 +167,62 @@ export function segmentClear(g: WalkGeo, a: Pt, b: Pt, loose = 0): boolean {
 }
 
 const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+/** Edges longer than this aren't tried (the graph stays sparse; a long walk goes node to node). */
+const EDGE_MAX = 720;
+
+/** The static nodes (named + the obstacles' padded corners) and their visibility, built once. */
+function visGraph(g: WalkGeo): Vis {
+  const v = (g.vis ??= { pts: [], names: [], adj: null });
+  if (v.adj) return v;
+  const statics = { ...g, extra: [] };
+  const named = g.grid ? namedNodes() : g.nodes;
+  const pts: Pt[] = [], names: string[] = [];
+  for (const [k, p] of Object.entries(named)) if (walkable(statics, p[0], p[1])) (pts.push(p), names.push(k));
+  const c = g.pad + 3;
+  for (const o of g.obstacles)
+    for (const p of [[o.x0 - c, o.y0 - c], [o.x1 + c, o.y0 - c], [o.x0 - c, o.y1 + c], [o.x1 + c, o.y1 + c]] as Pt[])
+      if (walkable(statics, p[0], p[1])) (pts.push(p), names.push(''));
+  const adj: number[][] = pts.map(() => []);
+  for (let i = 0; i < pts.length; i++)
+    for (let k = i + 1; k < pts.length; k++)
+      if (dist(pts[i], pts[k]) <= EDGE_MAX && segmentClear(statics, pts[i], pts[k])) (adj[i].push(k), adj[k].push(i));
+  Object.assign(v, { pts, names, adj });
+  return v;
+}
 
 /** The way from `from` to `to`: the waypoints after `from` (ending at `to`), or null when there's none. */
 export function route(g: WalkGeo, from: Pt, to: Pt): Pt[] | null {
   if (!walkable(g, to[0], to[1])) return null;
   const loose = walkable(g, from[0], from[1]) ? 0 : 12;
   if (segmentClear(g, from, to, loose)) return [to];
-  // Dijkstra over from, the nodes and to (edges where the straight walk is clear)
-  const pts: Pt[] = [from, ...Object.values(g.nodes).filter(([x, y]) => walkable(g, x, y)), to];
-  const n = pts.length, best = new Array<number>(n).fill(Infinity), prev = new Array<number>(n).fill(-1), done = new Array<boolean>(n).fill(false);
+  const v = visGraph(g);
+  // the static graph plus the extra nodes, `from` and `to`; edges to a visitor's box re-tested on the fly
+  const extraNodes = Object.entries(g.nodes).filter(([k]) => !v.names.includes(k)).map(([, p]) => p).filter((p) => walkable(g, p[0], p[1]));
+  const pts: Pt[] = [from, ...v.pts, ...extraNodes, to];
+  const n = pts.length, base = 1, nStatic = v.pts.length, best = new Array<number>(n).fill(Infinity), prev = new Array<number>(n).fill(-1), done = new Array<boolean>(n).fill(false);
+  const blocked = (i: number) => i >= base && i < base + nStatic && !walkable(g, pts[i][0], pts[i][1]);
+  const clearEdge = (i: number, k: number) => (g.extra?.length ? segmentClear(g, pts[i], pts[k], i === 0 ? loose : 0) : true);
+  const neighbours = (i: number): number[] => {
+    if (i >= base && i < base + nStatic) {
+      const out = v.adj![i - base].map((k) => k + base).filter((k) => clearEdge(i, k));
+      for (let k = base + nStatic; k < n; k++) if (dist(pts[i], pts[k]) <= EDGE_MAX && segmentClear(g, pts[i], pts[k])) out.push(k);
+      return out;
+    }
+    const out: number[] = [];
+    for (let k = 1; k < n; k++) if (k !== i && dist(pts[i], pts[k]) <= EDGE_MAX && segmentClear(g, pts[i], pts[k], i === 0 ? loose : 0)) out.push(k);
+    return out;
+  };
   best[0] = 0;
   for (;;) {
     let i = -1;
     for (let k = 0; k < n; k++) if (!done[k] && best[k] < Infinity && (i < 0 || best[k] < best[i])) i = k;
     if (i < 0 || i === n - 1) break;
     done[i] = true;
-    for (let k = 1; k < n; k++) {
-      if (done[k] || k === i) continue;
+    if (blocked(i)) continue;
+    for (const k of neighbours(i)) {
+      if (done[k] || blocked(k)) continue;
       const d = best[i] + dist(pts[i], pts[k]);
-      if (d < best[k] && segmentClear(g, pts[i], pts[k], i === 0 ? loose : 0)) {
+      if (d < best[k]) {
         best[k] = d;
         prev[k] = i;
       }
@@ -134,10 +244,11 @@ export function routeLength(from: Pt, pts: readonly Pt[]): number {
   return len;
 }
 
-/** Walk speeds (u/s): to a tapped thing, and wandering about. */
-export const SPEED = { action: 240, wander: 90 } as const;
+/** Walk speeds (u/s): to a tapped thing (a short, snappy action walk), running where a tap sends it (spec §4), and
+ *  strolling (idle outings, visitors). */
+export const SPEED = { action: 240, run: 200, wander: 90 } as const;
 /** An action walk's duration bounds (ms), and the longest walk worth making (longer: turn and act from where you are);
- *  `far`: a walk to somewhere set apart (the pond's back bank) may take a little longer. */
+ *  `far`: a walk to somewhere set apart may take a little longer. */
 export const ACTION_MS = { min: 150, max: 900, cap: 1200, far: 1450 } as const;
 
 /** How long an action walk of `len` u takes (ms): at SPEED.action, clamped to 150–900; null when it would take over
@@ -155,31 +266,19 @@ export const wanderMs = (len: number): number => (len / SPEED.wander) * 1000;
 /** How far from a target its action spots are (u): close, then a little further out. */
 export const REACH = [26, 40] as const;
 
-/** Where to stand to act on a target at (tx, ty): around it at a short reach, best first: beside it on the side the
- *  walker comes from, the other side, in front, behind, then a little further out (further still: level with it only). Each is walkable; the caller
- *  checks it against what's on screen (no control under the villager) and that a route exists. */
-export function actionSpots(g: WalkGeo, tx: number, ty: number, from: Pt, reach: readonly number[] = REACH): Pt[] {
+/** Where to stand to act on a target at (tx, tz): around it at a short reach, best first: beside it on the side the
+ *  walker comes from, the other side, in front (nearer the camera), behind, then a little further out (further still:
+ *  level with it only). Each is walkable; the caller checks it against what's on screen and that a route exists. */
+export function actionSpots(g: WalkGeo, tx: number, tz: number, from: Pt, reach: readonly number[] = REACH): Pt[] {
   const side = from[0] <= tx ? -1 : 1;
   const out: Pt[] = [];
-  const around = [[side, 0.15], [-side, 0.15], [0, 0.8], [side * 0.7, 0.7], [-side * 0.7, 0.7], [0, -0.9], [side * 0.7, -0.7], [-side * 0.7, -0.7]] as const;
+  const around = [[side, -0.15], [-side, -0.15], [0, -0.8], [side * 0.7, -0.7], [-side * 0.7, -0.7], [0, 0.9], [side * 0.7, 0.7], [-side * 0.7, 0.7]] as const;
   for (const r of reach)
-    // beyond REACH only level with it (across a bed), never down a cliff or up behind something
-    for (const [dx, dy] of r > REACH[1] ? around.slice(0, 2) : around) {
-      const x = tx + dx * r, y = ty + dy * r;
-      if (walkable(g, x, y)) out.push([Math.round(x), Math.round(y)]);
+    for (const [dx, dz] of r > REACH[1] ? around.slice(0, 2) : around) {
+      const x = tx + dx * r, z = tz + dz * r;
+      if (walkable(g, x, z)) out.push([Math.round(x), Math.round(z)]);
     }
   return out;
-}
-
-/** Depth from the feet's y (z-index): behind the trees, between the trees and the beds, among the beds, the front row
- *  (the villagers' homes), the beach. Matches the scene's layers (tokens.css --z-*: trees 30–34, back flowers 49,
- *  front flowers 53, visitors 55). */
-export function depthZ(y: number): number {
-  if (y < TREE.base) return 27;
-  if (y < BED_ROWS[0]) return 47;
-  if (y < BED_ROWS[1]) return 50;
-  if (y <= PLATEAU.y1) return 51;
-  return 53;
 }
 
 /** The facing for a walk from a to b: by the horizontal direction (null when it's nearly straight up or down). */
@@ -187,3 +286,15 @@ export function facingFor(a: Pt, b: Pt): 'l' | 'r' | null {
   const dx = b[0] - a[0];
   return Math.abs(dx) < 3 ? null : dx < 0 ? 'l' : 'r';
 }
+
+/** The nearest walkable point to (x, z) within `max` u (a tap on water goes to the bank), or null. */
+export function nearestWalkable(g: WalkGeo, x: number, z: number, max = 40): Pt | null {
+  if (walkable(g, x, z)) return [x, z];
+  for (let r = 4; r <= max; r += 4)
+    for (let a = 0; a < 16; a++) {
+      const px = x + Math.cos((a / 16) * Math.PI * 2) * r, pz = z + Math.sin((a / 16) * Math.PI * 2) * r;
+      if (walkable(g, px, pz)) return [Math.round(px), Math.round(pz)];
+    }
+  return null;
+}
+

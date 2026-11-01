@@ -4,6 +4,17 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
+/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+async function camera(page: Page, z: number) {
+  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
+  // (again until it holds: the scene may still re-fit its camera as it settles in)
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+    await page.waitForTimeout(250);
+    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+  }, { timeout: 5000 }).toBe(z);
+  await page.waitForTimeout(250);
+}
 const under = (page: Page, sel: string) =>
   page.evaluate((s) => {
     const b = document.querySelector(s)!.getBoundingClientRect();
@@ -12,11 +23,12 @@ const under = (page: Page, sel: string) =>
   }, sel);
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`a meteor shower's night: Celeste on the beach, clear of every control, explains wishes (${w}px)`, async ({ page }) => {
+  test(`a meteor shower's night: Celeste at centre stage (ひろば), clear of every control, explains wishes (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2026-11-12T21:00&critter=none');
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
+    await camera(page, 860);
     const art = page.locator('[data-visitor="celeste"] .art');
     await expect(art).toBeVisible();
     expect(await under(page, '[data-visitor="celeste"] .art')).toEqual([]);

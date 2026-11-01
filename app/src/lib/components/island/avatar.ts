@@ -13,7 +13,7 @@ import { actors, addFx, applyStep, awayFromHome, busy, faceToward, later, place,
 import { cue } from '#lib/sound/cues.ts';
 import { FOLLOW_MS, MAX_HOPS, MEET, POI_LINGER, adjacent, besideSpots, pickPoi, pois, shouldFollow, type PoiKind } from './wander.ts';
 import type { ActorId, Motion } from '../motion/reactions.ts';
-import { REACH, SPEED, actionMs, actionSpots, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
+import { REACH, SPEED, actionMs, actionSpots, nearestWalkable, route, routeLength, walkGeo, walkable, type Pt, type WalkGeo } from './walkGraph.ts';
 import type { EmoteIcon } from '#lib/art.ts';
 
 export interface AvatarCtx {
@@ -41,9 +41,38 @@ type Villager = 'mine' | 'partner';
 const otherOf = (id: Villager): Villager => (id === 'mine' ? 'partner' : 'mine');
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
+/** Where a tap sent my villager (spec §4): it stays there for the session (sessionStorage), not wandering home; the
+ *  next open finds it home again. */
+const STAY_KEY = 'island-stay';
+let stayAt: Pt | null = readStay();
+function readStay(): Pt | null {
+  try {
+    const v = JSON.parse(globalThis.sessionStorage?.getItem(STAY_KEY) ?? 'null');
+    return Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? [v[0], v[1]] : null;
+  } catch {
+    return null;
+  }
+}
+function keepStay(p: Pt | null) {
+  stayAt = p;
+  try {
+    if (p) globalThis.sessionStorage?.setItem(STAY_KEY, JSON.stringify(p));
+    else globalThis.sessionStorage?.removeItem(STAY_KEY);
+  } catch {
+    /* private mode: kept in memory only */
+  }
+}
+/** Where my villager rests this session: where a tap sent it, else its home. */
+const restOf = (id: Villager): Pt => (id === 'mine' && stayAt ? stayAt : actors[id].home);
+/** Where my villager stands at the start (the scene mounting): where a tap sent it this session, if anywhere. */
+export const stayingAt = (): Pt | null => stayAt;
+
+/** How far apart the villagers may be for the partner to come over (u): a walk across the island is too far. */
+const FOLLOW_RANGE = 600;
+
 export function attachAvatar(c: AvatarCtx): () => void {
   ctx = c;
-  setRouter((id) => (id === 'host' || id === 'visitor' ? null : route(c.geo(), c.where(id), actors[id].home)));
+  setRouter((id) => (id === 'host' || id === 'visitor' ? null : route(c.geo(), c.where(id), restOf(id))));
   return () => {
     if (ctx === c) {
       ctx = null;
@@ -81,6 +110,8 @@ interface ApproachOpts {
   reach?: readonly number[];
   /** Somewhere set apart (the pond's back bank): the walk may take a little longer (walkGraph ACTION_MS.far). */
   far?: boolean;
+  /** Worth a run across the island (a visitor, a door): too far for an action walk, it runs there (SPEED.run). */
+  long?: boolean;
 }
 
 /** The best spot to act on (tx, ty) from `from` and the way there: the nearest clear spot by walking distance. */
@@ -107,7 +138,12 @@ export function approach(tx: number, ty: number, o: ApproachOpts = {}): Approach
   const c = ctx, me = actors.mine;
   if (!c || !c.enabled() || me.asleep) return { ms: 0, walked: false };
   const from = c.where('mine');
-  const p = plan(c.geo(), from, tx, ty, (x, y) => c.clear('mine', x, y), o.spot, o.reach, true, o.far);
+  let p = plan(c.geo(), from, tx, ty, (x, y) => c.clear('mine', x, y), o.spot, o.reach, true, o.far);
+  if (!p && o.long) {
+    // a run across the island: the spot needn't be on screen now (the camera follows the runner)
+    const run = plan(c.geo(), from, tx, ty, () => true, o.spot, o.reach, false);
+    if (run) p = { pts: run.pts, ms: (routeLength(from, run.pts) / SPEED.run) * 1000 };
+  }
   if (!p) {
     // too far (or nowhere to stand): turn to it, and the action plays as it always did
     faceToward('mine', tx);
@@ -135,6 +171,45 @@ export function approach(tx: number, ty: number, o: ApproachOpts = {}): Approach
   return { ms: p.ms, walked: true };
 }
 
+/** Tap-to-walk (spec §4): my villager runs (SPEED.run) to the tapped ground, or to the nearest walkable point within
+ *  40u of it (a tap on the water: the bank, facing the water), along the walk graph (bridges, stairs), and stays there
+ *  for the session. Null when there's nowhere to go. */
+export function sendTo(x: number, z: number): { to: Pt; ms: number } | null {
+  const c = ctx, me = actors.mine;
+  if (!c || !c.enabled() || me.asleep) return null;
+  const g = c.geo(), to = nearestWalkable(g, Math.round(x), Math.round(z), 40);
+  if (!to) return null;
+  const from = c.where('mine');
+  const pts = route(g, from, to);
+  if (!pts) return null;
+  clearTimeout(homeTimers.mine);
+  c.hush?.();
+  const off = Math.hypot(to[0] - x, to[1] - z) > 6;
+  const face = off && Math.abs(x - to[0]) >= 3 ? (x < to[0] ? 'l' : 'r') : undefined;
+  const ms = walkTo('mine', pts, { speed: SPEED.run, from, face });
+  me.busyUntil = Math.max(me.busyUntil, Date.now() + ms);
+  keepStay(Math.hypot(to[0] - me.home[0], to[1] - me.home[1]) <= 8 ? null : to);
+  away.since ||= Date.now();
+  clearTimeout(followTimer);
+  followTimer = setTimeout(checkFollow, Math.max(0, away.since + FOLLOW_MS - Date.now()) + ms + 50);
+  return { to, ms };
+}
+
+/** The partner tapped somewhere on their phone (the relay's `walk`, world units): their villager here runs there too,
+ *  along the same walk graph from where it stands (no positions are sent). */
+export function partnerTo(x: number, z: number): boolean {
+  const c = ctx;
+  if (!c || !c.enabled() || actors.partner.asleep) return false;
+  const g = c.geo(), to = nearestWalkable(g, Math.round(x), Math.round(z), 40);
+  if (!to) return false;
+  const from = c.where('partner');
+  const pts = route(g, from, to);
+  if (!pts) return false;
+  clearTimeout(homeTimers.partner);
+  walkTo('partner', pts, { speed: SPEED.run, from });
+  return true;
+}
+
 /** Turn my villager to face a target (an action that never walks: the reel, a wasp). */
 export function turnTo(tx: number): void {
   if (ctx?.enabled() && !actors.mine.asleep) faceToward('mine', tx);
@@ -148,9 +223,10 @@ export function goHomeLater(id: 'mine' | 'partner', ms: number): void {
 
 function goHome(id: Villager): void {
   const c = ctx;
-  if (!c || !awayFromHome(id)) return id === 'mine' ? backHome() : undefined;
+  const home = restOf(id), at = c?.where(id);
+  if (!c || !at || Math.hypot(at[0] - home[0], at[1] - home[1]) <= 2) return id === 'mine' ? backHome() : undefined;
   if (!c.enabled() || busy(id)) return goHomeLater(id, 1500);
-  const from = c.where(id), home = actors[id].home;
+  const from = at;
   const pts = route(c.geo(), from, home);
   if (!pts) return place(id, home[0], home[1]);
   walkTo(id, pts, { speed: SPEED.wander, from, face: 'home', then: () => id === 'mine' && backHome() });
@@ -173,6 +249,7 @@ function checkFollow() {
   if (!shouldFollow(away.since, Date.now(), free('partner') && !away.followed)) return;
   if (actors.mine.walking) return void (followTimer = setTimeout(checkFollow, 1000));
   const g = c.geo(), at = c.where('mine'), from = c.where('partner');
+  if (Math.hypot(at[0] - from[0], at[1] - from[1]) > FOLLOW_RANGE) return;
   for (const s of besideSpots(g, at, from)) {
     if (!c.clear('partner', s[0], s[1])) continue;
     const pts = route(g, from, s);
@@ -196,7 +273,7 @@ function hop(id: Villager, left: number): boolean {
   const c = ctx;
   if (!c || !c.enabled() || busy(id)) return goHomeLater(id, 1500), false;
   const g = c.geo(), from = c.where(id);
-  const list = pois(g, presence.visitor).filter((p) => c.clear(id, p.at[0], p.at[1]));
+  const list = pois(g, presence.visitor, actors[id].home).filter((p) => c.clear(id, p.at[0], p.at[1]));
   for (let tries = 0; tries < 4; tries++) {
     const p = pickPoi(list, from, Math.random);
     if (!p) break;
@@ -305,7 +382,7 @@ export function thaw(): void {
 export function snapHome(): void {
   for (const id of ['mine', 'partner'] as const) {
     clearTimeout(homeTimers[id]);
-    const [x, y] = actors[id].home;
+    const [x, y] = restOf(id);
     place(id, x, y);
     actors[id].face = 'home';
   }
@@ -322,8 +399,6 @@ const open = (): WalkGeo => (openGeo ??= walkGeo());
 export const visitorRoute = (from: Pt, to: Pt): Pt[] | null => route(open(), from, to);
 /** Whether the visitor may stand at (x, y): walkable ground. */
 export const visitorWalkable = (x: number, y: number): boolean => walkable(open(), x, y);
-/** The water's edge in front of centre stage (where a visitor walks on from and off to). */
-export const shore = (): Pt => open().nodes.shoreC;
 
 /** A villager is free to go over to the visitor: the partner, both villagers home, nobody walking. */
 export function villagerFree(): boolean {
@@ -339,7 +414,7 @@ export function meetVisitor(at: Pt, answer: (x: number) => void): boolean {
   const id: Villager = 'partner', g = c.geo(), from = c.where(id);
   // beside them, else a step in front of them to one side (centre stage sits between the fruit rows)
   const side = from[0] <= at[0] ? -1 : 1;
-  const front = ([[side * 16, 78], [-side * 16, 78], [side * 10, 84], [-side * 10, 84], [0, 86]] as const)
+  const front = ([[side * 16, -40], [-side * 16, -40], [side * 10, -48], [-side * 10, -48], [0, -52]] as const)
     .map(([dx, dy]) => [Math.round(at[0] + dx), Math.round(at[1] + dy)] as Pt).filter(([x, y]) => walkable(g, x, y));
   for (const s of [...besideSpots(g, at, from), ...front]) {
     if (!c.clear(id, s[0], s[1])) continue;

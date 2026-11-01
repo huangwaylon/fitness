@@ -133,12 +133,31 @@ test('a butterfly lands on a flower now and then (its wings slowly opening and c
   expect(await onFlowerHead(page, await at(page, '[data-critter="common-butterfly"]'))).toBe(true);
 });
 
-test('a dragonfly darts over the open lawn, in front of the back row (not the sea behind it)', async ({ page }) => {
+test('a dragonfly darts near the water (NH: flying near water), clear of every control', async ({ page }) => {
   await open(page, '&date=2026-08-10T12:00&critter=darner-dragonfly');
   await expect(page.locator('[data-critter="darner-dragonfly"]')).toBeAttached();
+  await expect(page.locator('[data-critter="darner-dragonfly"]')).toHaveAttribute('data-place', 'water-air');
   await page.waitForTimeout(2500);
   const p = await at(page, '[data-critter="darner-dragonfly"]');
-  const museum = (await page.locator('[data-scenery]').first().boundingBox())!;
-  expect(p.y).toBeGreaterThan(museum.y + museum.height);
+  expect(p.y).toBeGreaterThan(0), expect(p.y).toBeLessThan(844);
   expect(await clear(page, p)).toBe('');
+});
+
+type W = { __world: { go(z: number): void; at(x: number, z: number): [number, number] } };
+test("NH's palm beetles on the palms at night (a horned atlas), the stags on a hardwood trunk; each netted", async ({ page }) => {
+  for (const [id, place] of [['horned-atlas', 'palm'], ['golden-stag', 'palm'], ['saw-stag', 'trunk']] as const) {
+    await open(page, `&date=2026-07-10T22:00&critter=${id}`);
+    const b = page.locator(`[data-critter="${id}"]`);
+    await expect(b).toHaveAttribute('data-place', place);
+    await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
+    const p = await at(page, `[data-critter="${id}"]`);
+    expect(await clear(page, p), id).toBe('');
+    // on a palm's (or a tree's) trunk: within a few units of one of its kind's foot, up the trunk
+    const trunks = await page.evaluate((kind) => [...document.querySelectorAll(kind === 'palm' ? '[data-kind="palm"] .art' : '.tree, [data-kind="oak"][data-part="trunk"] .art, [data-kind="cedar"] .art')]
+      .map((el) => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }), place === 'palm' ? 'palm' : 'oak');
+    expect(trunks.some(([l, t, r, bt]) => p.x > l && p.x < r && p.y > t && p.y < bt), id).toBe(true);
+    await page.screenshot({ path: `/tmp/world-build/critters-bug-${place}.png` });
+    await page.mouse.click(p.x, p.y);
+    await expect(page.locator('[data-fx="catch"]')).toContainText(said(id).slice(0, 8), { timeout: 4000 }); // (a three-line line turns a page)
+  }
 });

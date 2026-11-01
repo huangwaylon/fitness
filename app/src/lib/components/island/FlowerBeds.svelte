@@ -1,8 +1,7 @@
 <script lang="ts">
-  // Flower beds (docs/design.md "Layout and scale", "Trees"): two tidy 2 × 2 beds mirrored about the jar, one flower
-  // per tile on the NH grid (columns ±2/±3, the beds' back row and the front row), the back row one species and the
-  // front row another. FLOWER_U tall (≈ 0.45 × a villager). Contact shadows are drawn in Ground.svelte. Winter: roses
-  // and pansies, each with a little snow cap.
+  // Flower beds (docs/design.md "World", "Trees"): two tidy 2 × 2 beds beside the villagers' homes (world.ts BED_XS,
+  // BED_ZS), one flower per tile, each a world node, the back row one species and the front row another; FLOWER_U tall
+  // (≈ 0.4 × a villager). Contact shadows are baked into the ground. Winter: roses and pansies, each with a little snow cap.
   // Each bed is the goal flowers of the person whose villager stands beside it (mine on the left, the partner's on the
   // right), one per goal in reading order (BED_FRUIT): a closed bud on its leaves and stem until that goal is met today, then it
   // blooms (the bud squashes, the flower pops open with a bounce, petal bits and a glint, a soft pop) once per phone
@@ -13,7 +12,9 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
-  import { BEDS, BED_FRUIT, BED_ROWS, BED_X, FLOWER_SCALE, FLOWER_U, u } from './scene.ts';
+  import { BEDS, BED_FRUIT, FLOWER_SCALE, FLOWER_U, u } from './scene.ts';
+  import { BED_XS, BED_ZS } from './world.ts';
+  import { useWorld } from './camera.svelte.ts';
   import { flowerArt } from '#lib/art.ts';
   import { PETAL } from './sceneTaps.ts';
   import { flowerOf, fruitDay, fruitId, markBloomed } from './fruitDay.ts';
@@ -31,7 +32,8 @@
   }
   let { season, people, hybrid = null }: Props = $props();
   const bed = $derived(BEDS[season]);
-  const xs = [...BED_X.left, ...BED_X.right];
+  const xs = [...BED_XS.A, ...BED_XS.B];
+  const w = useWorld();
   /** The bloom's petal bits fly out at these angles (deg from straight up). */
   const BITS = [-70, -30, 5, 40, 78];
 
@@ -61,7 +63,7 @@
   let opening = $state<string[]>([]);
 
   const cells = $derived(
-    BED_ROWS.flatMap((y, r) =>
+    BED_ZS.flatMap((z, r) =>
       xs.map((x, c) => {
         const p = people[c < 2 ? 0 : 1];
         const f: RingFruit = BED_FRUIT[r][c % 2];
@@ -69,7 +71,7 @@
         const species = r ? bed.front : bed.back;
         const cell = `${r}-${c}`;
         const stage = flowerOf(id, p.rings[f].met, rec);
-        return { r, c, x, y, cell, id, f, person: p.person, species, stage, open: stage === 'open' };
+        return { r, c, x, z, cell, id, f, person: p.person, species, stage, open: stage === 'open' };
       })
     )
   );
@@ -100,8 +102,9 @@
 
 {#each cells as s (s.cell)}
   {@const h = FLOWER_U * (FLOWER_SCALE[s.species] ?? 1)}
+  <div class="node" {@attach w.at({ x: s.x, z: s.z, h })}>
   <span class="fl" class:opening={opening.includes(s.id)} data-flower={s.cell} data-goal={s.f} data-person={s.person}
-    data-stage={s.open ? 'open' : 'bud'} style:left={u(s.x)} style:top={u(s.y)} style:z-index={s.r ? 53 : 49}>
+    data-stage={s.open ? 'open' : 'bud'}>
     {#if s.open}
       <span class="b"><OfficialArt key={hybrid?.cell === s.cell ? `flowers/${hybrid.flower}` : flowerArt(s.species)} size={u(h)} /></span>
       {#if opening.includes(s.id)}
@@ -121,6 +124,7 @@
       <svg class="wet" data-watered viewBox="0 0 24 24" aria-hidden="true" style:--wd="{4 + ((s.r * 2 + s.c) % 3)}s" style:--wo="{-(s.c * 1.7 + s.r * 0.9)}s"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
     {/if}
   </span>
+  </div>
 {/each}
 
 <!-- NH's growth stage before the bloom, at the flower's full height: its leaves and stem, and a closed bud (about 0.45 of
@@ -142,7 +146,8 @@
     background: #fff; box-shadow: 0 1px 0 #DDE7F3;
   }
   /* feet on the row line: the trimmed art's stem ends at its bottom edge */
-  .fl { position: absolute; width: max-content; transform: translate(-50%, -96%); line-height: 0; pointer-events: none; }
+  .node { width: 0; height: 0; transform-origin: 0 0; will-change: transform; pointer-events: none; }
+  .fl { position: absolute; left: 0; top: 0; width: max-content; transform: translate(-50%, -96%); line-height: 0; pointer-events: auto; cursor: pointer; }
   .b, .sway, .budart { display: block; transform-origin: 50% 100%; }
   .wet {
     position: absolute; left: 62%; top: 8%; width: calc(8 * 100cqw / 390); height: auto; fill: #FFFBE8;

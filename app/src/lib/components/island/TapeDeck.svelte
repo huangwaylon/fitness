@@ -1,13 +1,16 @@
 <script lang="ts">
   // Group stretching's tape deck (docs/design.md "Group stretching"), after NH's ラジオ体操 in the plaza: it turns up on the
-  // lawn on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (stretching.ts), on a spot
-  // measured clear of every control (else the next, else none). A tap plays its tape (an original little march: the hour's
+  // lawn on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (stretching.ts), at world.ts
+  // TAPE_DECK between the villagers (a world node at its foot), where this screen's controls leave room (else not now). A tap plays its tape (an original little march: the hour's
   // music ducks) and both villagers, and the visitor if one is out and awake, do three of NH's stretches together (~6 s,
   // motion/stretch.svelte.ts), ♪ rising from the deck; once a day per phone, then the deck goes for the day. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or ?demo) brings the deck out now.
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
+  import { TAPE_DECK } from './world.ts';
+  import { useWorld } from './camera.svelte.ts';
+  import { shownNow } from './sceneTaps.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -23,12 +26,10 @@
     exercise: boolean;
   }
   let { scene, enabled, exercise }: Props = $props();
+  const w = useWorld();
 
   const want = hookFlag('stretch');
 
-  /** Where the deck may stand (stage units: x, foot y), in order: on the lawn in front of the hedge, behind centre stage
-   *  (between the rock and the back weed spot, clear above a visitor's head), else between the villagers' feet. */
-  const SPOTS: readonly (readonly [number, number])[] = [[195, 82], [195, 303]];
   /** Half its width and its height (u: the radio is about 1.4 times as wide as tall), for the clearance check. */
   const HW = 12.5, UP = 18;
 
@@ -45,19 +46,30 @@
   });
 
   let el = $state<HTMLElement>();
+  /** Its spot (world x, z), or null when a control covers it on this screen (measured when the camera settles, once the
+   *  projector has placed everything; off screen it stays: the projector hides it). */
   let spot = $state<readonly [number, number] | null>(null);
   $effect(() => {
-    const show = out, g = stageGeo(scene);
-    if (!show || !g) return void (spot = null);
-    if (playing && spot) return;
-    // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over it), and of the rock, a dig
-    // spot or a mushroom (a weed may stand behind it)
-    const keep = guardsU(g, -5 * g.k);
-    for (const it of scene?.querySelectorAll('[data-care="rock"], [data-find], [data-arch]') ?? []) {
-      const r = (it.firstElementChild ?? it).getBoundingClientRect();
-      if (r.width) keep.push({ x0: (r.left - g.r.left) * g.k, x1: (r.right - g.r.left) * g.k, y0: (r.top - g.r.top) * g.k, y1: (r.bottom - g.r.top) * g.k });
-    }
-    spot = SPOTS.find(([x, y]) => clearAt(keep, x, y - UP / 2, HW, UP / 2)) ?? null;
+    const show = out;
+    void w.rest.z;
+    void w.rest.vw;
+    if (!show) return void (spot = null);
+    if (!w.rest.ready || (playing && spot)) return;
+    let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => {
+      const g = stageGeo(scene);
+      const [x, z] = TAPE_DECK;
+      if (!g || !w.inView(x, z)) return void (spot = TAPE_DECK);
+      // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over it; the villagers only
+      // pass by), and of the rock, a dig spot or a mushroom (a weed may stand behind it)
+      const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
+      for (const it of scene?.querySelectorAll('[data-care="rock"], [data-find], [data-arch]') ?? []) {
+        const r = (it.firstElementChild ?? it).getBoundingClientRect();
+        if (r.width && shownNow(it)) keep.push({ x0: (r.left - g.r.left) * g.k, x1: (r.right - g.r.left) * g.k, y0: (r.top - g.r.top) * g.k, y1: (r.bottom - g.r.top) * g.k });
+      }
+      const k = w.scaleAt(x, z), [sx, sy] = w.screenU(x, z, UP / 2);
+      spot = clearAt(keep, sx, sy, HW * k, (UP / 2) * k) ? TAPE_DECK : null;
+    })));
+    return () => cancelAnimationFrame(id);
   });
 
   function play() {
@@ -82,7 +94,8 @@
 </script>
 
 {#if out && spot}
-  <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el} style:translate="{su(spot[0])} {su(spot[1])}" aria-hidden="true">
+  <div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: 40 })}>
+  <span class="deck" class:playing data-stretch={playing ? 'on' : 'ready'} bind:this={el}>
     <span class="radio"><OfficialArt key="deco/tape-deck" size={su(UP)} /></span>
     {#if playing}
       <span class="notes" style:--total="{STRETCH_MS}ms">{#each [0, 1, 2, 3] as i (i)}<i style:--i={i}>♪</i>{/each}</span>
@@ -90,11 +103,14 @@
       <span class="hint">♪</span>
     {/if}
   </span>
+  </div>
 {/if}
 
 <style>
-  /* on the lawn: in front of the hedge and a weed, behind the trees and the jar (it never overlaps them: measured) */
-  .deck { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 26; pointer-events: none; --su: calc(100cqw / 390); }
+  /* a world node on the lawn between the villagers, among everything else by depth (it never sits under a control:
+     measured) */
+  .node { width: 0; height: 0; pointer-events: none; }
+  .deck { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
   .deck > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .radio { translate: -50% -94%; transform-origin: 50% 100%; animation: deck-in .5s var(--ease-bounce) both; }
   .radio :global(.official) { max-width: none; filter: drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }

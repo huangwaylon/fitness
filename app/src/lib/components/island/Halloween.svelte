@@ -1,45 +1,65 @@
 <script lang="ts">
   // Halloween on the island (docs/design.md "Halloween"; events.ts): on Oct 31 a few of NH's orange pumpkins sit on the
-  // lawn; from 17:00 they are spooky lanterns (NH's jack-o'-lanterns), lit above the night tint with a soft flicker,
-  // and a light purple and orange wash lies over the island. Decoration only: no taps, never over a control (each spot
-  // is measured clear of them on this screen; a covered spot isn't shown). Jack is a visitor (Visitor.svelte).
+  // health lawn and around the plaza (world nodes); from 17:00 they are spooky lanterns (NH's jack-o'-lanterns), lit
+  // above the night tint with a soft flicker, and a light purple and orange wash lies over the island. Decoration only:
+  // no taps, never over a control (when the camera settles, a pumpkin in view that a control covers isn't shown). Jack
+  // is a visitor (Visitor.svelte).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { HALLOWEEN_SPOTS, PUMPKIN_U, su } from './scene.ts';
+  import { PUMPKIN_U, su } from './scene.ts';
+  import { useWorld } from './camera.svelte.ts';
+  import type { Pt } from './world.ts';
 
   let { scene, night }: { scene?: HTMLElement; night: boolean } = $props();
+  const w = useWorld();
 
-  /** The spots clear of every control on this screen (measured once laid out, again on a resize). */
-  let spots = $state<(readonly [number, number])[]>([]);
+  /** Where they sit (world x, z): four on the health lawn by its edges, clear of the trees and the villagers (まえ), four around the plaza, clear of
+   *  centre stage, the cake, the arch, the lamps and the bench (ひろば). */
+  const SPOTS: readonly Pt[] = [[40, 160], [350, 170], [36, 560], [360, 520], [110, 880], [282, 868], [150, 984], [242, 988]];
+  /** Lit at night they stand over the time-of-day tint (IslandScene's .stage: --z-tint 60000080). */
+  const ABOVE_TINT = 60_000_081;
+
+  /** The spots not under a control on this screen, measured when the camera settles (and on a resize). */
+  let hidden = $state<ReadonlySet<string>>(new Set());
   $effect(() => {
-    const measure = () => {
+    void w.rest.z;
+    void w.rest.vw;
+    const id = setTimeout(() => {
       const g = stageGeo(scene);
       if (!g) return;
-      const keep = guardsU(g, 2);
-      spots = HALLOWEEN_SPOTS.filter(([x, y]) => clearAt(keep, x, y - PUMPKIN_U / 2, PUMPKIN_U / 2, PUMPKIN_U / 2));
-    };
-    const id = setTimeout(measure, 300);
-    addEventListener('resize', measure);
-    return () => (clearTimeout(id), removeEventListener('resize', measure));
+      // (a world node out of view is hidden but keeps a stale box: not a control on screen)
+      const keep = guardsU(g, 2, (el) => getComputedStyle(el).visibility === 'hidden');
+      const out = new Set<string>();
+      for (const [x, z] of SPOTS) {
+        // anywhere the projector may draw it (by the horizon too, faded and sunk, where the HUD stands)
+        const pr = w.screenAt(x, z);
+        if (!pr.visible || pr.sy < -40 || pr.sy > w.view.vh + 80) continue;
+        const [sx, sy] = w.screenU(x, z), hu = PUMPKIN_U * w.scaleAt(x, z);
+        if (!clearAt(keep, sx, sy - hu / 2, hu / 2, hu / 2)) out.add(`${x},${z}`);
+      }
+      hidden = out;
+    }, 300);
+    return () => clearTimeout(id);
   });
 </script>
 
+<!-- display: contents: the pumpkins join the stage's stacking context (their depth among the island's things) -->
 <div class="halloween" class:night data-halloween={night ? 'night' : 'day'} aria-hidden="true">
   {#if night}<div class="wash"></div>{/if}
-  {#each spots as [x, y], i (`${x},${y}`)}
-    <span class="pumpkin" data-pumpkin style:translate="{su(x)} {su(y)}" style:--i={i}>
+  {#each SPOTS as [x, z], i (`${x},${z}`)}
+    {#if !hidden.has(`${x},${z}`)}
+    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, zi: night ? ABOVE_TINT : undefined })}>
       {#if night}<span class="glow"></span>{/if}
       <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={su(PUMPKIN_U)} /></span>
     </span>
+    {/if}
   {/each}
 </div>
 
 <style>
-  .halloween { position: absolute; inset: 0; pointer-events: none; --su: calc(100cqw / 390); }
-  /* by day the pumpkins sit among the props (behind the trees' canopies, the jar and the villagers); lit at night they
-     rise above the time-of-day tint, like the jar and the fireflies */
-  .pumpkin { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 31; }
-  .night .pumpkin { z-index: calc(var(--z-tint) + 1); }
+  .halloween { display: contents; }
+  /* world nodes at their foot: by day among the island's things by depth; lit at night above the time-of-day tint */
+  .pumpkin { width: 0; height: 0; pointer-events: none; }
   .art { position: absolute; left: 0; top: 0; line-height: 0; translate: -50% -94%; filter: drop-shadow(0 1.5px 1px rgba(80, 50, 20, .35)); }
   .art :global(.official) { max-width: none; }
   .night .art { animation: flicker 2.6s ease-in-out calc(var(--i) * -.9s) infinite; }
@@ -53,7 +73,7 @@
   @keyframes flicker { 0%, 100% { opacity: 1; } 45% { opacity: .9; } 52% { opacity: 1; } 70% { opacity: .94; } }
   /* the evening's wash: purple from above to a warm orange low down, over land, sea and sky, under the tint's z */
   .wash {
-    position: absolute; top: -100vh; bottom: -100vh; left: -100vw; right: -100vw; z-index: var(--z-tint);
+    position: absolute; inset: 0; z-index: var(--z-tint); pointer-events: none;
     background: linear-gradient(to bottom, rgba(120, 70, 190, .22), rgba(150, 80, 170, .14) 55%, rgba(255, 140, 60, .12));
     mix-blend-mode: soft-light;
   }

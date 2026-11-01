@@ -35,8 +35,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 Top to bottom: the ribbon 「きょう +6 ベル」 (both people today, ふたりでぜんぶ included; counts up; tap → [the
 panel](#panel)) with the jar on its right, the two centred in the sky; a sync chip only when sync isn't ok; the scene;
-しずえ's box only with news. The island is centred in the visible ocean, from the horizon to the screen's bottom, and
-never runs under the ribbon.
+しずえ's box only with news. The island is NH's rolling log under them ([World](#world)): a drag scrolls it from まえ
+(home, the health lawn) back to ひろば and おく, a tap walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: per goal (🍎
   steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
@@ -49,7 +49,7 @@ never runs under the ribbon.
   balance and a leaf ▶. Each newly met goal flies in as a +1 coin from its fruit (+2 with its がんばり; `CoinFlow`),
   ふたりでぜんぶ as a +2 under the jar; all of it waits while something covers the scene. Tap → ごほうび (the page zooms
   about the jar, which morphs into the hero jar).
-- **Centre stage:** the island's open middle (`scene.ts` `CENTRE_STAGE`), kept free for a visitor.
+- **Centre stage:** the plaza's middle (`world.ts` `CENTRE_STAGE`, ひろば), where visitors stand.
 - **Villagers:** mine hops when tapped and says a line ([Villager chats](#villager-chats)); the partner's opens their
   card.
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
@@ -216,22 +216,71 @@ to the goal at ≥ 0.05 kg a week within 156 weeks (else 「あせらず、ゆ�
 
 ## Island scene
 
-`lib/components/island/*`: a Pocket Camp–style diorama in SVG/CSS around official renders. What comes only on its days
+`lib/components/island/*`: NH's island as a rolling log in 2D DOM around official renders ([World](#world)). What comes only on its days
 (a visitor, the tape deck, the cake, the weather, the fireworks, Halloween's, a birthday's and the wedding's decorations)
 is loaded the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Light from the upper left;
 each surface one fill, one gradient, one soft shade; no strokes on scenery. Only `transform` and `opacity` animate;
 everything pauses while hidden (`data-paused`), and a sheet pauses particles, critters and idle life
 (`data-covered`). Nothing on the island pays ベル.
 
-### Layout and scale
+### World
 
-An elastic sky over a **stage of 390 × 360 units (u)** (`--su` = one unit). The island (14u–356u, the horizon at 0u)
-is centred between the horizon and the screen's bottom (`--island-bottom`); the sky is at most 27% of the screen. Back
-to front: sky · sea · ground · pond · hedge · museum · trees + fruit · flower beds · villagers · particles · one tint.
+`island/world.ts` (every coordinate), `island/roll.ts` (the projection), `island/camera.svelte.ts` (the camera and
+projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/WorldWater.svelte`, `island/Scenery.svelte`,
+`e2e/world.spec.ts`, `e2e/world-perf.spec.ts` (on demand: `WORLD_PERF=1`).
 
-`scene.ts`: **1 tile = 44u**, **1 row = 31u**; `col(k) = 195 + 44k`, k = −3…3; rows: hedge 62 · trees + centre stage
-173 · bed back 266 · front 297. Villager 80u (cols ±1, front row) · hardwood 120u (cols ±2) · bush 48u · flower 32u ·
-hanging fruit 20u · ground fruit 24u. The back row reads bush · pond · museum · bush · bush.
+- **Units:** world units (1u = 1 CSS px at 390 wide at the pivot); x across (0…390 is the screen at the pivot), z into
+  the island (0 = the front shoreline). The plan spans x −230…620, z −400…2500; the land x −40…430, z 0…2160 (a
+  130u corner radius), the front beach z 0…110, the side and back beaches 30u.
+- **The rolling log** (`roll.ts`): θ = (z − camZ) / R on a cylinder seen at a 64° tilt with a mild perspective; R is
+  set per screen so the horizon sits at 16% of the height and the pivot at 72%. `unproject` inverts it (Newton with a
+  bisection fallback): a tap's world point, null in the sky.
+- **The camera** is a native vertical scroller (overscroll contained; a drag scrolls, a tap is a click) with three
+  proximity stops: **まえ** camZ 150 (the scroller's foot: the sea, the beach, the airport, the health lawn; lower on a
+  short screen so the sea in front of the beach stays in view), **ひろば** 860 (the plaza, Resident Services, the pond,
+  the river) and **おく** 1380 (Nook's Cranny, Able Sisters, the museum, the cliff, the waterfall, the campsite above).
+- **The projector** (`camera.svelte.ts` `World`): every upright thing is a node at its feet (`{@attach world.at(…)}`)
+  placed by one tick: an upright billboard (translate + scale, faded near the horizon, sunk behind it), a flat mark
+  (also squashed by the ground's foreshortening) or a ground quad (a matrix3d, like the bands). **One depth order**: the
+  z-index from the feet (nearer in front, ties by x); a tree is two nodes, its canopy 14u nearer than its trunk, so a
+  villager just in front covers the trunk while the leaves cover its head. Overlays anchored in the world (a tree's
+  popup, a bite's 「！」) stand over everything at their true size. Only nodes in [camZ − 260, camZ + 900] are shown.
+- **The ground** is baked (`scripts/terrain.ts`, `npm run terrain`: one WebGL shader in Chrome, seeded noise, distance
+  fields with soft noisy edges, 4× supersampling, no outlines; `cwebp`): the sea's turquoise rings, wet sand and lacy
+  foam, the speckled sand, NH's grass with leaf flecks, ragged dirt paths with tufts and pebbles, running-bond brick
+  paths, the flagstone plaza and aprons, the meandering river and pond (dark channel, light shallows, muddy banks,
+  overhanging grass), the cliff's strata, the stairs, the bridges' decks, the dock and every still thing's contact
+  shadow. 8 chunks of 362.5u per season (2 px a unit, ~440 KB a season), drawn by 40 bands bent onto the log
+  (`WorldGround`); chunks 0–3 at once, 4–7 when the camera nears them or the browser is idle. Upright sprites stand at
+  the near edges: the cliff's face (strata, the grass lip, the stairs carved in), the bridges' fronts, the dock's.
+- **The live water** (`WorldWater`): the shore's foam wash (`ShoreWash`), the waterfall's sheets, foam and mist
+  (`Waterfall`), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
+  or maple leaves afloat in their weeks): CSS only, held still under a sheet and while hidden.
+- **Layout** (`world.ts`): まえ: the airport at (362, 22) with its dock, palms on the sand, plumeria at the grass edge,
+  the villagers' homes A (132, 214) and B (262, 214), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
+  332), the tape deck between them, the rock, the dig spots, the hedge along the river at z 596. The river rises at the
+  spring on the upper tier, falls through the cliff (x 356…388), runs down the east side and west across the island at
+  z ≈ 640 to its mouth on the west beach, crossed by a stone bridge (x 195) and a log bridge (x 296). ひろば: the plaza
+  (195, 900), the banner lamps, the bench, Resident Services (195, 1068), the bulletin board, the pond (44, 772). おく:
+  Nook's Cranny (100, 1338), Able Sisters (282, 1338), the museum (190, 1648), the cliff (z 1806…1850) with its stairs
+  (x 36…84) and log fence, the campsite (150, 1960). All the buildings are NH's map icons (one render family).
+- **Sizes** (`scene.ts`): villager 80u · hardwood 120u · cedar 140–150u · palm ~110u · bush 34–40u · flower 30u ·
+  hanging fruit 20u · ground fruit 24u.
+- **Fixed outside the log:** the sky (to the horizon), the HUD, the weather, the fireworks and the shooting stars;
+  a haze where the ground meets the sky; one tint for the time of day over the land.
+- **Cost:** nothing runs when still: a scroll frame, a walk (one rAF while someone is on the way) or a change places
+  what moved; style writes only when a value changes. Measured at 4× CPU throttling: see `docs/decisions.md`.
+
+### Buildings
+
+`island/doors.ts`, `island/Scenery.svelte`, `island/Museum.svelte`. A building is one tap: my villager walks (or runs,
+the camera following) to its door, NH's character inside answers in the balloon (its tail at the door, their colour
+on the name tag) and when it closes the feature opens. Resident Services: しずえ (たぬきち 22:00–05:00) → せってい;
+Nook's Cranny: まめきち・つぶきち → ごほうび; Able Sisters: あさみ → the むらびと picker; Dodo Airlines: モーリー →
+つうしん (せってい at its sync section); the museum: フータ → the ずかん ([Museum](#museum)); the campsite: who is
+visiting today. The panel keeps its せってい tab too (`ui.door` asks the panel for the section). **Wilbur** stands on the
+dock while my partner has the app open (the relay's presence, the phone's one socket; `?wilbur` shows him); a tap and
+he says so.
 
 ### Environment
 
@@ -300,8 +349,9 @@ person's flowers through one Tokyo day (a quick run of canopy taps shakes it: [S
 ### Scene interactions
 
 `island/SceneTaps.svelte`, `island/sceneTaps.ts`, `e2e/scenery.spec.ts`. Every part of the island answers a tap softly
-and counts for nothing (no ベル, state, navigation or writes); one `pointerdown` listener; ≤ 4 flourishes at once;
-taps on controls are ignored; nothing while covered or hidden; decorative, `aria-hidden`, pointer-only.
+and counts for nothing (no ベル, state, navigation or writes); one `click` listener (a drag scrolls, so it never
+reaches it); ≤ 4 flourishes at once, drawn as world nodes where the tap landed; taps on controls are ignored; nothing
+while covered or hidden; decorative, `aria-hidden`, pointer-only. What nothing else took is a walk ([Walking](#walking)).
 
 A bush jiggles and sheds seasonal leaves (1 in 10 a bug flies out); a flower is watered ([Island care](#island-care));
 the sea ripples (1 in 10 a fish shadow); sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes;
@@ -310,9 +360,10 @@ stars](#shooting-stars)); the pond rings.
 
 ### Balloon
 
-NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in a lane under the ribbon (a
-smaller one or none on a short sky). A tap pops it; the present falls onto the lawn behind the trees, on the nearest
-spot clear of what lies there and of every control, bounces and stays until tapped (not kept across a reload). My
+NH's balloon present: by day every 45–90 s of on-screen time (the first after 20–40 s), in the sky's lane above the
+ribbon (none on a sky too short). A tap pops it; the present falls onto the lawn nearest the current view, on the
+nearest open grass clear of what lies there and of every control, bounces and stays until tapped (not kept across a
+reload). My
 villager walks over, the wrapping pops (confetti, sparkles, the catch fanfare) and the item is held up while the
 plate reads 「カエルのチェアを てにいれた！」 (`island/catalog.ts`, its own chunk with its names, fetched when a present
 lands). What's inside follows NH (Nookipedia, Balloon: the item drop rates, Bells and materials left out): furniture 35 :
@@ -332,24 +383,27 @@ JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px w
 
 `island/Critters.svelte`, `island/critters.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo clock, for fun and
 frequent: a visit every 8–15 s of on-screen time (the first after 3–6 s; the countdown holds while covered or hidden,
-and the critters leave): a fish shadow whenever the sea is empty, then the pond ([Pond](#pond)), else usually a bug; ≤
-1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
+and the critters leave): a fish shadow whenever the sea in view is empty, then a freshwater shadow in a water in view
+([Pond](#pond)), else usually a bug where the camera can see; ≤ 1 in each water and 1 bug. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its NH
 northern-hemisphere months; hours still hold.
 
-- **Fishing** (the sea's box or the pond's oval: `critters.ts` `Water`): a shadow (NH sizes 1–6) dawdles off the front
-  beach. A tap near it casts a bobber from the rod in my villager's hand; the fish closes in over 2–3 darts, nibbles
+- **Fishing** (the sea in front of the beach, seen from まえ, or a fresh water: `critters.ts` `Water`): a shadow (NH
+  sizes 1–6) dawdles there; my villager walks to the shore (or the bank) to fish. A tap near it casts a bobber from the rod in my villager's hand; the fish closes in over 2–3 darts, nibbles
   0–3 times, then bites: the bobber is yanked under, a small 「！」 pops over it, and a tap anywhere in the next 1.6 s
   catches it. The first early tap makes it hesitate; a second scares it off. 1 in 14 a boot, tire or can.
 - **Fish** (all 34 of NH's sea and pier fish, `FISH`): NH's shadows by size (14–46u, the eels long and thin; a fin for
   the sharks, the ocean sunfish and the suckerfish); the coelacanth only in rain or snow.
-- **Bugs** (70 of NH's 80, `BUGS`), each where NH keeps it: butterflies and moths in flight and landing on the flowers;
-  the ladybug and mantises on a flower's head; dragonflies over the lawn; cicadas, beetles and the walking stick on
-  the trunks (NH's stump bugs too: the island has no stumps); fireflies at night; grasshoppers, crickets, the pill bug
+- **Bugs** (74 of NH's 80, `BUGS`), each where NH keeps it: butterflies and moths in flight and landing on the flowers
+  (the moth round the lamps); the ladybug and mantises on a flower's head; dragonflies and fireflies near water;
+  cicadas, beetles and the walking stick on the oaks' and cedars' trunks (NH's stump bugs too: the island has no
+  stumps); NH's palm beetles on the palms (the cyclommatus and golden stags, the horned atlas and elephant, the goliath
+  beetle); grasshoppers, crickets, the pill bug
   and the centipede in the grass; the hermit crab and the wharf roach on the beach; the mole cricket under a chirping
   mound (a tap digs it up); the tarantula and the scorpion at night, gentle: the first tap makes one rear up, a second
   while reared makes it charge off, and once it settles a tap nets it; a flea hops off my villager 1 in 10 taps
-  (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond. A tap nets one; within 80px it startles
-  away. Bugs keep clear of every control. Left out: the palm-tree bugs, the dung beetle, the ant and the fly
+  (Apr–Nov); the pondskater, diving beetle and giant water bug on the pond and the river's still reach. A tap nets one;
+  within 80px it startles away. Bugs keep clear of every control. Left out: the blue weevil beetle, the giraffe stag
+  and the horned hercules (no icons), the dung beetle, the ant and the fly
   ([decisions.md](decisions.md#the-rest-of-nhs-bugs-what-the-island-can-hold)).
 - **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): 1 turn in
   4 the sea holds a spot of bubbles instead of a shadow (gone after 30 s). A tap dives: still and slow creatures are
@@ -360,8 +414,8 @@ northern-hemisphere months; hours still hold.
   Nookipedia, Japanese from the game), loaded with the first critter. The plate sits above (else below) the catch,
   clear of every control and overlay, else low in the middle like NH's box; a tap dismisses it. The catch is held up
   over my villager's head while it reads.
-- **Cost:** critters move by CSS transitions between waypoints a timer picks (no rAF), one wing or fin loop each; one
-  timer between visits; art on first need. World cues `scene-<kind>`, quiet and jittered ([Cues](#cues)).
+- **Cost:** each critter is a world node; it moves by CSS transitions inside it between waypoints a timer picks (no
+  rAF), one wing or fin loop each; one timer between visits; art on first need. World cues `scene-<kind>`, quiet and jittered ([Cues](#cues)).
 
 ### Beach finds
 
@@ -374,7 +428,8 @@ and the first of each shell, fossil and fragment is a ずかん `find`.
 - **Where things lie** (`beachSpot`): shells, fragments and the bottle keep 34u apart (`BEACH_GAP`), each taking a
   spot that far from everything there in a seeded order; worked out once per date and seed, so nothing moves.
 - **Fossils** (all 73 of NH's: the standalone ones and every dinosaur piece, `FOSSIL_SETS`): NH's star-shaped dig
-  spot, 1–2 at a time on six spots clear of every control. A tap digs it up (the shovel, a burst of earth, an open
+  spot, 1–2 at a time on six lawn spots (`world.ts` `DIG_SPOTS`: four on the front lawn, two behind the trees), each
+  shown only where it's clear of every control on this screen. A tap digs it up (the shovel, a burst of earth, an open
   hole that fades): 「化石を ほりだした！ アンモナイトだ！」. The next turns up 20–40 s later.
 - **Mushrooms** (`island/mushrooms.ts`): every November day 1–2 beside the trunks (1 in 8 October and December days
   one), NH's weights; a tap picks one up. 1 in 20 November dig spots hold the rare mushroom. Cosmetic: no `find`.
@@ -392,28 +447,30 @@ and the first of each shell, fossil and fragment is a ずかん `find`.
 - **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today
   glitters for the day (`wateredOn`). A bed watered today has a 1 in 4 chance of a hybrid colour in one watered cell
   tomorrow (NH's hybrids, simplified; `scene-garden`).
-- **The rock** (in front of the hedge, left of centre stage): a tap clonks it with the shovel; 1 in 4 a sparkle, 1 in 8
+- **The rock** (on the health lawn behind the left tree): a tap clonks it with the shovel; 1 in 4 a sparkle, 1 in 8
   a pill bug or a centipede crawls out.
 - Weeds, dig spots and the rock are measured clear of the controls on each screen (a covered spot isn't shown).
 
 ### Pond
 
-`island/Pond.svelte`, `island/pondFish.ts`, `e2e/pond.spec.ts`. NH's pond, small, on the back row at the left
-(`scene.ts` `POND`, an oval of water 52 × 18u, lily pads, reeds, one slow ripple).
+`island/pondFish.ts`, `island/critters.ts` (`freshWhere`, `freshAreas`), `e2e/pond.spec.ts`. NH's pond at the plaza's
+left (`world.ts` `POND`, an oval 80 × 44u baked into the ground with lily pads and a slow ripple live on it), the river
+and its mouth, and the spring and the river above the cliff.
 
-- **Its fish:** all 46 of NH's freshwater fish (river, river mouth, clifftop and pond: the island has no river),
-  `POND_FISH`, its own chunk fetched with the pond's first shadow. Season weights the odds, hours hold, rare = low
-  weight.
-- **Visits:** as often as the sea's (its own slot), one shadow at a time, 45 s if nobody fishes, drawn at 0.65 of the
-  sea's size. Fishing is the sea's; my villager walks round to the back bank (walkGraph's `pondside`) and fishes from
-  there.
+- **Fresh water by where you cast** (NH's locations, `freshWhere`): the pond's 12, the river's 27, the river mouth's 3
+  (salmon, king salmon, sturgeon) and the clifftop's 4 (char, cherry salmon, golden trout, stringfish); as in NH the
+  river's own also come to the mouth and the clifftop. `FRESH`, its own chunk fetched with the first freshwater shadow.
+  Season weights the odds, hours hold, rare = low weight.
+- **Visits:** as often as the sea's (their own slot), one shadow per water, to a water in view (nearer reaches first),
+  45 s if nobody fishes, drawn at 0.65 of the sea's size; my villager fishes from the pond's bank (`pondside`) or the
+  river's nearest bank.
 - **Its bugs:** the pondskater and diving beetle by day in summer, the giant water bug at night.
 - **The catch:** a ずかん `find` of kind `fish`, like the sea's.
 
 ### Museum
 
-`island/Museum.svelte`, `island/blathers.ts`, `e2e/museum.spec.ts`. NH's museum (the upgraded building, 100u wide) on
-the back row in the middle (`scene.ts` `MUSEUM`), the door to the ずかん: a button (「はくぶつかん：ずかんを ひらく」, a
+`island/Museum.svelte`, `island/blathers.ts`, `e2e/museum.spec.ts`. NH's museum (the upgraded building's map icon, one
+family with the other buildings, 104u tall) in おく between two oaks (`world.ts` `BUILDINGS`), the door to the ずかん: a button (「はくぶつかん：ずかんを ひらく」, a
 soft knock). A tap and Blathers says one line: drowsy by day (05:00–19:00), lively at night, and 3 times in 5 about the
 latest find of the last week. When his box closes the panel opens on きろく scrolled to the ずかん; a second tap while
 he talks opens it at once.
@@ -422,7 +479,7 @@ he talks opens it at once.
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
 `e2e/zukan.spec.ts`. The ずかん in きろく, shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
-46), むし 70, うみのさち 40, かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
+46), むし 74, うみのさち 40, かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,
 こもの, かべかけ, てんじょう, トップス... かさ) and レシピ 126 (by season). Every catch and pick-up counts: each found tile shows
 「×12」 and the picked entry's head the total and each of us (the day tallies, `tally`, backend.md#tally); a find from
@@ -467,9 +524,10 @@ seeded by the date: **K.K. Slider** on Saturday nights 18:00–24:00, **Daisy Ma
 **Wisp** on 1 in 4 nights 20:00–04:00, **Gulliver** on 1 in 4 days 06:00–18:00; **Jack** on Halloween night,
 **Celeste** on a meteor shower's night, the holiday hosts on their days, the wedding couple on its days. Priority
 (`visitorAt`): the event's host (Jack included), the wedding couple, Celeste, then K.K. and the rest. They stand on
-centre stage at the villagers' scale times their NH height, with a contact shadow (a smaller figure on the front beach
-while a control covers the centre). A tap: their introduction the first time, then one of their lines. No trading, no
-ベル.
+centre stage in the plaza (ひろば) at the villagers' scale times their NH height, with a contact shadow; as in NH,
+**Gulliver washes up on the front beach** and **Daisy Mae wanders the front lawn** (both seen from まえ). A tap (while
+they're on screen): my villager runs over, then their introduction the first time, then one of their lines
+(`visitorInView` says whether they're on screen now). No trading, no ベル.
 
 **K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or
 **おまかせ**. The island's music stops for the song ([K.K. Slider](#kk-slider)), he strums harder, ♪ float up, the
@@ -489,20 +547,21 @@ emotes, fx and facing use the villagers' calls, and idle life gives it a beat on
   twirls with a spooky glint; Daisy Mae shifts her turnips and hums; Franklin waddles, flaps and looks about; Jingle
   bounces with a sparkle; Pavé dances Festivale's steps and a samba with confetti; Zipper hops; Celeste looks up and
   points when a shooting star crosses (`island:star`); Reese and Cyrus lean toward each other and nuzzle.
-- **Gulliver** sleeps face down on the lawn (snoring, zzz, a twitch). A tap is a nudge: a twitch and his sleep talk
+- **Gulliver** sleeps face down on the front beach (snoring, zzz, a twitch). A tap is a nudge: a twitch and his sleep talk
   (「…ムニャムニャ…」, a small caption); the **fifth** wakes him: a start, a 「！」, he gets up and introduces himself
   (awake for the day).
 - **A beat** (`pickAct`): the signature, an emote (never the same twice running), a look at the nearest villager, a
-  stroll for those who roam, home when away, or at most every 45 s **the partner comes over** (beside them, they face
-  each other, a nod and emotes, then home; one walker at a time). Nothing while their line is in the balloon.
+  stroll for those who roam, home when away, or at most every 45 s **the partner comes over** when the visitor is within
+  600u of their home (beside them, they face each other, a nod and emotes, then home; one walker at a time). Nothing
+  while their line is in the balloon.
 - **Strolls:** Daisy Mae, Franklin, Zipper and Celeste amble to a walkable spot around theirs (level or in front, clear
   of every control and the villagers) and back 4–7 s later; the others stay put. The villagers route around them.
 - **A tap:** the visitor walks back to its spot if it strolled, turns to my villager with a little hop and speaks once
   my villager is beside them, standing still until the balloon closes. A tap elsewhere now and then draws a glance.
-- **Arriving and leaving:** when a visit starts or ends with the island open: walkers up from the water's edge along
-  the walk graph, Wisp floats down, Celeste flies down, K.K. and Gulliver appear, Jack in a spooky puff; they leave the
-  same way. On a page's first paint they're simply there.
-- **Cost:** no rAF; CSS keyframes and the director's timers; `will-change` only while walking; paused with the scene.
+- **Arriving and leaving:** when a visit starts or ends with the island open: walkers come from the campsite along
+  the paths (and go back there), Wisp floats down, Celeste flies down, K.K. and Gulliver appear, Jack in a spooky puff;
+  they leave the same way. On a page's first paint they're simply there.
+- **Cost:** CSS keyframes and the director's timers; the one rAF only while it walks; paused with the scene.
 
 ### Halloween
 
@@ -607,6 +666,10 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show; a meteor shower's night; the tape deck; a hybrid flower; the partner wanders |
+| `?wilbur` | Wilbur on the dock (as when the partner's app is open) |
+
+The live island also sets `window.__world` (`cam()`, `go(z)`: the camera there at once, the stops' snapping off;
+`at(x, z)`: a world point's client px; `put(x, z)`: my villager there; `idle()`; `perf`) for the e2e and the console.
 
 ## Motion
 
@@ -628,33 +691,49 @@ Read once by `island/devHooks.ts`. The island's hooks work in dev builds or with
 ### Walking
 
 `island/walkGraph.ts`, `island/wander.ts` (pure), `island/avatar.ts`, `motion/director.svelte.ts` `walkTo`,
-`e2e/movement.spec.ts`.
+`e2e/movement.spec.ts`, `e2e/world.spec.ts`.
 
 - **My villager is me:** a tap on something to do walks my villager there first, then the action plays where it
   stands (the bush shaken, the can, the shovel, the rod, the net; a visitor speaks once it's there). A flea is tapped
   off my villager itself: no walk.
-- **Snappy:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't made: the
-  villager turns to it. The outcome is decided at the tap; the reel, a dive's chase, a tarantula and the wasps never
-  wait for a walk.
+- **Tap-to-walk** (anywhere on the ground nothing else took): my villager runs there (200 u/s) along the walk graph,
+  over the bridges and up the stairs; a tap on the water or anywhere off the ground goes to the nearest walkable point
+  within 40u (the bank, facing the water). A cream ring marks the spot and shrinks away (NH has none: the least
+  feedback). It stays there for the session (`sessionStorage`: the next open finds it home).
+- **Camera follow:** when the runner or its destination is out of the band under the HUD and above the foot, the
+  scroller eases after it (lerp 0.12 a frame; snapping off meanwhile, back 300 ms after); any touch takes the camera
+  back. A tree's popup needing room above its canopy eases the camera up the island too, and lets go when it closes.
+  The camera never moves for the partner or a visitor.
+- **Snappy actions:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't
+  made: the villager turns to it. A building's door or a visitor across the island is a run instead. The outcome is
+  decided at the tap; the reel, a dive's chase, a tarantula and the wasps never wait for a walk.
 - **Where it stands:** around the target at 26u, else 40u (a can or a net also across a bed), the nearest by walking;
   a spot counts only if the standing figure covers no control, visitor or canopy and stays on screen.
-- **After:** it stays 4–6 s, then wanders home at 90 u/s. A sheet stops everyone; uncovered, they wander home; hidden
-  over 30 s, they're home on return. A balloon opens only over a villager standing still.
+- **After:** it stays 4–6 s, then wanders back to where it rests (home, or where a tap sent it) at 90 u/s. A sheet
+  stops everyone; uncovered, they wander back; hidden over 30 s, they're back on return. A balloon opens only over a
+  villager standing still, and steps aside while the camera scrolls.
 - **Hold-up:** a catch or a find is lifted over my villager's head (`if-holdup`) while its plate reads.
-- **Walk mask:** the lawn, the front beach, the cliff's low front as the way down, and the pond's back bank; obstacles
-  are the trunks, the beds, the rock and the pond. ~25 named nodes; a straight segment when clear, else the shortest
-  route through the nodes (a visibility graph).
-- **Rendering:** the feet at `translate(x, y)` u, one CSS transition per segment; no rAF; `will-change` only while
-  walking. Facing by direction (`LOOKS_RIGHT`; `NO_MIRROR` renders lean instead of flipping). Depth from the feet's y
-  (`depthZ`). The walk cycle is `if-walkbounce`, a dust puff every other step.
-- **The villagers' own outings:** the partner's villager walks to 1–3 points of interest (beside a tree, the rock, the
-  shore, centre stage, the pondside), then home; mine does the same only after 2 min without input. One villager away
-  at a time; nothing after 10 min without input.
-- **Follow and chat:** when mine has been away over 8 s the partner comes over; two villagers within 64u chat.
+- **Walk mask** (`walkGeo`): land, the plaza, both bridges and the stairs; not the sea, the river, the pond, the spring,
+  the cliff face, building footprints, trunks, beds, the rock, bushes or props. Rasterised once on a 4u grid; named
+  nodes (homes, the trees, the shore, both ends of each bridge and of the stairs, every door, the pondside, the river's
+  casting spots, centre stage) and the obstacles' padded corners make a visibility graph built once (~15 ms); a
+  straight segment when clear, else Dijkstra through it.
+- **Rendering:** the feet are a world node whose position is read each frame from the director (`livePos`: along the
+  current segment by the clock) while anyone walks, the one rAF; depth from the feet's z every frame. Facing by
+  direction (`LOOKS_RIGHT`; `NO_MIRROR` renders lean instead of flipping). The walk cycle is `if-walkbounce`, a dust
+  puff every other step.
+- **The villagers' own outings:** the partner's villager walks to 1–3 points of interest within 600u of home (beside a
+  tree, the rock, the shore, the pondside), then home; mine does the same only after 2 min without input. One villager
+  away at a time; nothing after 10 min without input.
+- **Follow and chat:** when mine has been away over 8 s (and within 600u) the partner comes over; two villagers within
+  64u chat.
+- **The partner over the relay** (`LIVE_V` 2): my tap-to-walk sends `walk` with the world point; their villager on my
+  phone runs there along the same graph from where it stands (no positions are sent). Off screen, a round face of
+  their villager is pinned at the top or bottom edge; a tap scrolls to them.
 - **Goals:** a newly met fruit walks that person's villager to their tree, where the reaction plays; ふたりでぜんぶ
-  brings both to the middle for a high-five.
-- **Footsteps:** a quiet step by the ground under the walker (`footstep-grass`, `-sand`, `-snow`, `-splash`), ≤ 1 per
-  320 ms; world cues.
+  brings both to the middle of the lawn for a high-five.
+- **Footsteps:** a quiet step by the ground under the walker (`world.ts` `surfaceAt`: `footstep-grass`, `-sand`,
+  `-snow`, `-splash`), ≤ 1 per 320 ms; world cues.
 
 ## Chrome and tokens
 

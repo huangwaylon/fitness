@@ -1,20 +1,22 @@
 <script lang="ts">
   // The birthday cake (docs/design.md "Birthdays"; birthday.ts): on one of our birthdays NH's birthday cake stands in front
-  // of the centre stage (else behind it, by the hedge; measured clear of every control and the visitor, else not shown),
-  // its candles lit. A tap (a scene item like the visitors, a 44px reach) plays a little music box (an original tune, a
-  // jingle) and blows the candles out: a puff of smoke, out for the day on this phone. No ベル.
+  // of centre stage (world.ts CAKE, seen from ひろば: a world node), its candles lit. A tap (a scene item like the
+  // visitors, a 44px reach, while it's on screen) plays a little music box (an original tune, a jingle) and blows the
+  // candles out: a puff of smoke, out for the day on this phone. No ベル.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
-  import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { CENTRE_STAGE, su } from './scene.ts';
+  import { su } from './scene.ts';
+  import { CAKE } from './world.ts';
+  import { useWorld } from './camera.svelte.ts';
   import { blowOut, candlesOut } from './birthday.ts';
 
-  let { scene, enabled, on }: { scene?: HTMLElement; enabled: () => boolean; on: boolean } = $props();
-  /** Its height (u) and where it may stand (its foot): in front of the centre stage, else behind it by the hedge. */
+  // `scene` is SceneTaps' (unused: the cake is a world node)
+  let { enabled, on }: { scene?: HTMLElement; enabled: () => boolean; on: boolean } = $props();
+  /** Its height (u; the flames below are placed for it). */
   const CAKE_U = 22;
-  const SPOTS: readonly (readonly [number, number])[] = [[CENTRE_STAGE.x, CENTRE_STAGE.base + 30], [CENTRE_STAGE.x - 22, CENTRE_STAGE.base - 70]];
+  const w = useWorld();
 
   const date = $derived(localDateAt(minuteNow().getTime()));
   let out = $state(false);
@@ -22,29 +24,11 @@
   let puff = $state(0);
 
   let el = $state<HTMLElement>();
-  let spot = $state<readonly [number, number] | null>(null);
-  $effect(() => {
-    if (!on) return void (spot = null);
-    const measure = () => {
-      const g = stageGeo(scene);
-      if (!g) return;
-      const keep = guardsU(g, -5 * g.k);
-      // and the visitor standing on the centre stage
-      for (const v of scene?.querySelectorAll('[data-visitor] .art') ?? []) {
-        const r = v.getBoundingClientRect();
-        keep.push({ x0: (r.left - g.r.left) * g.k, x1: (r.right - g.r.left) * g.k, y0: (r.top - g.r.top) * g.k, y1: (r.bottom - g.r.top) * g.k });
-      }
-      spot = SPOTS.find(([x, y]) => clearAt(keep, x, y - CAKE_U / 2, CAKE_U * 0.6, CAKE_U / 2)) ?? null;
-    };
-    const id = setTimeout(measure, 400);
-    addEventListener('resize', measure);
-    return () => (clearTimeout(id), removeEventListener('resize', measure));
-  });
 
   /** A tap on the scene (client px): true when the cake took it. */
   export function tap(px: number, py: number): boolean {
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
-    if (!on || !spot || !r || !enabled()) return false;
+    if (!on || !r || !enabled() || !w.inView(CAKE[0], CAKE[1])) return false;
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     if (Math.abs(px - cx) > Math.max(22, r.width / 2 + 6) || Math.abs(py - cy) > Math.max(22, r.height / 2 + 6)) return false;
     cue('birthday-cake');
@@ -57,8 +41,8 @@
   }
 </script>
 
-{#if on && spot}
-  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} style:translate="{su(spot[0])} {su(spot[1])}" aria-hidden="true">
+{#if on}
+  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: CAKE[0], z: CAKE[1], h: CAKE_U + 20 })}>
     <span class="cake"><OfficialArt key="deco/birthday-cake" size={su(CAKE_U)} /></span>
     {#if !out}
       <!-- the candles' flames, over the five candles of NH's cake -->
@@ -71,8 +55,8 @@
 {/if}
 
 <style>
-  /* on the lawn, among the props (behind the trees' canopies and everyone in front of it) */
-  .party { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 46; pointer-events: none; --su: calc(100cqw / 390); }
+  /* a world node at its foot (its depth among the island's things) */
+  .party { width: 0; height: 0; pointer-events: none; }
   .party > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .cake { translate: -50% -94%; filter: drop-shadow(0 2px 1px rgba(80, 50, 40, .3)); animation: cake-in .5s var(--ease-bounce) both; }
   .cake :global(.official) { max-width: none; }

@@ -1,5 +1,5 @@
 {
-  "version": 40,
+  "version": 42,
   "files": {
     "bushes/blue-hydrangea": {
       "path": "bushes/blue-hydrangea.webp",
@@ -37,6 +37,12 @@
       "h": 102,
       "source": "https://nookipedia.com/wiki/File:Pink-Hydrangea_Bush_NH_Icon.png"
     },
+    "bushes/pink-plumeria": {
+      "path": "bushes/pink-plumeria.webp",
+      "w": 101,
+      "h": 97,
+      "source": "https://nookipedia.com/wiki/File:Pink-Plumeria_Bush_NH_Icon.png"
+    },
     "bushes/red-camellia": {
       "path": "bushes/red-camellia.webp",
       "w": 102,
@@ -54,6 +60,12 @@
       "w": 106,
       "h": 95,
       "source": "https://nookipedia.com/wiki/File:White-Azalea_Bush_NH_Icon.png"
+    },
+    "bushes/white-plumeria": {
+      "path": "bushes/white-plumeria.webp",
+      "w": 101,
+      "h": 97,
+      "source": "https://nookipedia.com/wiki/File:White-Plumeria_Bush_NH_Icon.png"
     },
     "bushes/yellow-hibiscus": {
       "path": "bushes/yellow-hibiscus.webp",
@@ -289,6 +301,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Crucian_Carp_NH_Icon.png"
     },
+    "critters/cyclommatus-stag": {
+      "path": "critters/cyclommatus-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Cyclommatus_Stag_NH_Icon.png"
+    },
     "critters/dab": {
       "path": "critters/dab.webp",
       "w": 96,
@@ -457,6 +475,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Gigas_Giant_Clam_NH_Icon.png"
     },
+    "critters/golden-stag": {
+      "path": "critters/golden-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Golden_Stag_NH_Icon.png"
+    },
     "critters/golden-trout": {
       "path": "critters/golden-trout.webp",
       "w": 96,
@@ -517,11 +541,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Honeybee_NH_Icon.png"
     },
+    "critters/horned-atlas": {
+      "path": "critters/horned-atlas.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Horned_Atlas_NH_Icon.png"
+    },
     "critters/horned-dynastid": {
       "path": "critters/horned-dynastid.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Horned_Dynastid_NH_Icon.png"
+    },
+    "critters/horned-elephant": {
+      "path": "critters/horned-elephant.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Horned_Elephant_NH_Icon.png"
     },
     "critters/horse-mackerel": {
       "path": "critters/horse-mackerel.webp",
@@ -1225,11 +1261,23 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Zebra_Turkeyfish_NH_Icon.png"
     },
+    "deco/able-sisters": {
+      "path": "deco/able-sisters.webp",
+      "w": 305,
+      "h": 234,
+      "source": "https://nookipedia.com/wiki/File:Able_Sisters_NH_Map_Icon.png"
+    },
     "deco/airport": {
       "path": "deco/airport.webp",
-      "w": 256,
-      "h": 205,
+      "w": 284,
+      "h": 250,
       "source": "https://nookipedia.com/wiki/File:Airport_(Blue)_NH_Map_Icon.png"
+    },
+    "deco/banner-lamp": {
+      "path": "deco/banner-lamp.webp",
+      "w": 64,
+      "h": 120,
+      "source": "https://nookipedia.com/wiki/File:Street_Lamp_with_Banners_(Bronze_-_Green)_NH_Icon.png"
     },
     "deco/birthday-cake": {
       "path": "deco/birthday-cake.webp",
@@ -1249,17 +1297,53 @@
       "h": 68,
       "source": "https://nookipedia.com/wiki/File:Birthday_Hat_(Pink)_NH_Icon.png"
     },
-    "deco/museum": {
-      "path": "deco/museum.webp",
-      "w": 360,
-      "h": 197,
-      "source": "https://nookipedia.com/wiki/File:Museum_NH.png"
+    "deco/bulletin-board": {
+      "path": "deco/bulletin-board.webp",
+      "w": 119,
+      "h": 98,
+      "source": "https://nookipedia.com/wiki/File:Bulletin_Board_(Standard_-_Scenery)_NH_Icon.png"
+    },
+    "deco/campsite": {
+      "path": "deco/campsite.webp",
+      "w": 285,
+      "h": 172,
+      "source": "https://nookipedia.com/wiki/File:Campsite_NH_Map_Icon.png"
+    },
+    "deco/campsite-sign": {
+      "path": "deco/campsite-sign.webp",
+      "w": 88,
+      "h": 113,
+      "source": "https://nookipedia.com/wiki/File:Campsite_Sign_NH_Icon.png"
+    },
+    "deco/log-fence": {
+      "path": "deco/log-fence.webp",
+      "w": 118,
+      "h": 92,
+      "source": "https://nookipedia.com/wiki/File:Log_Fence_NH_Icon.png"
+    },
+    "deco/museum-icon": {
+      "path": "deco/museum-icon.webp",
+      "w": 293,
+      "h": 214,
+      "source": "https://nookipedia.com/wiki/File:Museum_(Upgraded)_NH_Map_Icon.png"
+    },
+    "deco/nooks-cranny": {
+      "path": "deco/nooks-cranny.webp",
+      "w": 298,
+      "h": 213,
+      "source": "https://nookipedia.com/wiki/File:Nook's_Cranny_(Upgraded)_NH_Map_Icon.png"
     },
     "deco/party-popper": {
       "path": "deco/party-popper.webp",
       "w": 87,
       "h": 87,
       "source": "https://nookipedia.com/wiki/File:Party_Popper_NH_Inv_Icon.png"
+    },
+    "deco/plaza-bench": {
+      "path": "deco/plaza-bench.webp",
+      "w": 116,
+      "h": 99,
+      "source": "https://nookipedia.com/wiki/File:Plaza_Bench_(Classic)_NH_Icon.png"
     },
     "deco/present": {
       "path": "deco/present.webp",
@@ -1273,11 +1357,29 @@
       "h": 93,
       "source": "https://nookipedia.com/wiki/File:Orange_Pumpkin_NH_Inv_Icon.png"
     },
+    "deco/resident-services": {
+      "path": "deco/resident-services.webp",
+      "w": 310,
+      "h": 246,
+      "source": "https://nookipedia.com/wiki/File:Resident_Services_NH_Map_Icon.png"
+    },
+    "deco/signpost": {
+      "path": "deco/signpost.webp",
+      "w": 81,
+      "h": 98,
+      "source": "https://nookipedia.com/wiki/File:Signpost_(Shop)_NH_Icon.png"
+    },
     "deco/spooky-lantern": {
       "path": "deco/spooky-lantern.webp",
       "w": 91,
       "h": 82,
       "source": "https://nookipedia.com/wiki/File:Spooky_Lantern_(Orange)_NH_Icon.png"
+    },
+    "deco/streetlamp": {
+      "path": "deco/streetlamp.webp",
+      "w": 20,
+      "h": 113,
+      "source": "https://nookipedia.com/wiki/File:Streetlamp_NH_Icon.png"
     },
     "deco/tape-deck": {
       "path": "deco/tape-deck.webp",
@@ -2155,35 +2257,11 @@
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Leaf_NH_Icon.png"
     },
-    "presents/cherry-lamp": {
-      "path": "presents/cherry-lamp.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cherry_Lamp_(Cherry)_NH_Icon.png"
-    },
     "presents/diy-recipe": {
       "path": "presents/diy-recipe.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:DIY_Recipe_NH_Inv_Icon.png"
-    },
-    "presents/froggy-chair": {
-      "path": "presents/froggy-chair.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Froggy_Chair_(Green)_NH_Icon.png"
-    },
-    "presents/lucky-cat": {
-      "path": "presents/lucky-cat.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Lucky_Cat_(White)_NH_Icon.png"
-    },
-    "presents/mama-panda": {
-      "path": "presents/mama-panda.webp",
-      "w": 96,
-      "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mama_Panda_NH_Icon.png"
     },
     "reactions/curiosity": {
       "path": "reactions/curiosity.webp",
@@ -2317,6 +2395,12 @@
       "h": 64,
       "source": "https://nookipedia.com/wiki/File:Snowflake_NH_Inv_Icon.png"
     },
+    "trees/cedar": {
+      "path": "trees/cedar.webp",
+      "w": 215,
+      "h": 420,
+      "source": "https://nookipedia.com/wiki/File:Cedar_Tree_NH.png"
+    },
     "trees/oak-fall": {
       "path": "trees/oak-fall.webp",
       "w": 329,
@@ -2340,6 +2424,12 @@
       "w": 329,
       "h": 409,
       "source": "https://nookipedia.com/wiki/File:Oak_Tree_NH_Winter.png"
+    },
+    "trees/palm": {
+      "path": "trees/palm.webp",
+      "w": 360,
+      "h": 340,
+      "source": "https://nookipedia.com/wiki/File:Palm_Tree_NH.png"
     },
     "villagers/ace": {
       "path": "villagers/ace.webp",

@@ -177,16 +177,18 @@ Each dated NH event (Halloween, Turkey Day, Toy Day, Festivale, Bunny Day) is on
 host takes the visitor slot. Why: NH's calendar on the island with no new screens and nothing to sync.
 
 ### The rest of NH's bugs: what the island can hold
-70 of NH's 80 bugs, each where NH keeps it (stump bugs on the trunks; the tarantula and scorpion gentle). Left out:
-the palm-tree bugs, the dung beetle, the ant and the fly. Why: a bug in the wrong place reads as a mistake.
+74 of NH's 80 bugs, each where NH keeps it (stump bugs on the trunks, the palm beetles on the palms; the tarantula and
+scorpion gentle). Left out: three palm beetles with no icon (the blue weevil, the giraffe stag, the horned hercules),
+the dung beetle, the ant and the fly. Why: a bug in the wrong place reads as a mistake.
 
 ### Sea creatures by diving
 A bubble spot takes a fish shadow's turn 1 in 4; they are their own ずかん page (`find` kind `sea`). Why: NH's diving
 without making the sea busier.
 
-### One pond for every freshwater fish
-The island has no river, so all 46 freshwater fish come to one small pond, fished like the sea. Why: NH's fishing is
-half freshwater; a river doesn't fit the stage.
+### Fresh water by where you cast
+The 46 freshwater fish come to the water NH keeps them in: the pond, the river, its mouth on the west beach, the
+clifftop above the waterfall (the river's own also at the mouth and the clifftop, as in NH). Why: the world has all
+four waters now, and where you fish is half of NH's fishing.
 
 ### Balloon presents are NH's shop stock, counted in the ずかん
 A present holds one of NH's 1,836 orderable Nook's Cranny and Able Sisters items or, in season, one of the 126 recipes
@@ -210,9 +212,11 @@ The tape deck comes out on a day either of us met 🍑 Exercise or on a morning 
 once a day. Why: NH's most fitness-like ritual tied to the goal that is exercise, paying nothing.
 
 ### My villager walks to what I tap
-Walk-then-act on the existing taps, snappy (≤ 0.9 s, none over 1.2 s), the outcome decided at the tap. The partner's
-villager goes about on its own. Why: every tap keeps its meaning, timing games never wait, and the other person's taps
-don't matter on my phone.
+Walk-then-act on the existing taps, snappy (≤ 0.9 s, none over 1.2 s), the outcome decided at the tap; a tap on bare
+ground runs it there (200 u/s, the camera following), where it stays for the session; a door or a visitor across the
+island is a run too. With the relay, my tap-to-walk replays on the partner's phone (the destination only; their
+planner walks it). Why: every tap keeps its meaning, timing games never wait, and NH's island is walked, not panned
+past.
 
 ### Visitors are the director's fourth actor
 The visitor moves through the same director, idle life and walk graph as the villagers, with CSS loops for continuous
@@ -243,3 +247,33 @@ files, committed like the hours. Why: the island sounds like the game on the day
 ### Procedural ambience
 Surf, wind, rain, birds and insects are synthesised in the app; a file in the manifest replaces any bed. Why: no
 copyrighted audio and no megabytes for sounds under the music.
+
+## The island world
+
+### The rolling-log world in 2D DOM
+The island is NH's rolling log: one flat plan (x across, z in) bent over a cylinder by a pure projection (`roll.ts`,
+option A of the research, kept by the user's iPhone spike at a locked 60 fps), the camera a native scroller with three
+proximity stops (まえ, ひろば, おく), every upright thing a DOM billboard at its feet placed by one projector in one depth
+order. Not WebGL (a bundle, context loss, its own tap model and every animation ported) nor CSS 3D (nested preserve-3d
+misrenders on iOS). Measured at 4× CPU throttling on the iPhone 13 viewport: fling p95 16.8 ms, worst 33 ms once, no
+long tasks, ≤ 83 style writes a frame for ~140 nodes, nothing pending once still. Why: DOM taps, the e2e and every
+existing component stay; nothing runs when still.
+
+### The ground is baked raster, the water live
+The terrain is painted offline (`scripts/terrain.ts`: a WebGL shader in Chrome, noise, soft distance-field edges,
+supersampling) into 8 WebP chunks per season (~440 KB a season, 2 px a unit; the back half lazy) and drawn by 40 bands;
+only the water's motion (the shore's wash, the waterfall, glints, flow streaks, the pond's ripple) is live CSS, plus a
+few upright sprites (the cliff's face, the bridges' fronts). Why: the user rejected the flat vector paths, river,
+cliff and fences as "svg-y"; painterly materials (feathered dirt, varied bricks, flagstones, banks, strata) need
+textures a live SVG can't afford in 40 bands, and a picture per band costs less to draw than an SVG.
+
+### Buildings are doors; one render family
+Resident Services, Nook's Cranny, Able Sisters, the museum, the airport and the campsite are NH's map icons (one
+family; the true museum render went); a tap walks to the door, NH's character answers and its feature opens
+(せってい, ごほうび, むらびと, the ずかん, つうしん). The panel keeps its せってい tab and the HUD is unchanged. Why: the user's
+call (keep the tab, add the doors); the back of the island gets a reason to visit.
+
+### Wilbur is the only presence cue
+Wilbur stands on the dock while the partner's app is open (the relay's presence over the phone's one socket); the
+partner's villager replays my tap-to-walks. Why: NH-faithful, and no new UI.
+

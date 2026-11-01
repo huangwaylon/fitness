@@ -4,14 +4,16 @@
   // answers a tap with a clonk (it jolts), 1 in 4 a sparkle, 1 in 8 a pill bug or a centipede crawls out from under it.
   // (Watering a flower and the next day's hybrid live with the flower beds: SceneTaps, FlowerBeds.) No ベル, no find.
   // The weeds derive from the Tokyo date (care.ts), so both phones broadly see the same; what this phone pulled is its
-  // own (sceneDay.ts). SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`).
+  // own (sceneDay.ts). The weeds stand on world.ts LAWN_SPOTS and the rock at world.ts ROCK, each a world node at its
+  // foot. SceneTaps mounts this inside the stage and asks it about each tap after the finds (`tap`, client px).
   // Cheap: static art; one-shot Web Animations / CSS on a tap; the clock is the scene's minute tick.
   import { timers } from './timers.ts';
   import { islandSeed } from './devHooks.ts';
   import { su } from './scene.ts';
+  import { useWorld } from './camera.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
-  import { sceneSfx } from './sceneTaps.ts';
+  import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { digSpots, findArt } from './beach.ts';
   import { ROCK, rockTap, weedsAt, type Weed } from './care.ts';
@@ -21,10 +23,11 @@
   interface Props {
     scene?: HTMLElement;
     enabled: () => boolean;
-    /** A bug crawls out from under the rock (Critters). */
-    rockBug?: (x: number, y: number) => void;
+    /** A bug crawls out from under the rock (Critters; the rock's world x and z). */
+    rockBug?: (x: number, z: number) => void;
   }
   let { scene, enabled, rockBug }: Props = $props();
+  const w = useWorld();
 
   const seed = islandSeed();
 
@@ -38,16 +41,30 @@
     const dug = new Set(digSpots(date, gone, seed).map((s) => `${s.x},${s.y}`));
     return weedsAt(date, (hour * 60 + minute) * 60_000, seed, dug).filter((w) => !gone.has(w.uid));
   });
-  /** Only where this screen's controls leave room (measured). */
+  /** Only where this screen's controls leave room (measured when the camera settles, once the projector has placed
+   *  everything; one off screen stays: it's checked once in view). The villagers walk about: they don't count. */
   let shown = $state<Weed[]>([]);
   $effect(() => {
-    const list = weeds, g = stageGeo(scene);
-    // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over a tuft)
-    const keep = g ? guardsU(g, -5 * g.k) : [];
-    shown = g ? list.filter((w) => clearAt(keep, w.x, w.y - 5, 6, 5)) : [];
+    const list = weeds;
+    void w.rest.z;
+    void w.rest.vw;
+    if (!w.rest.ready) return;
+    let id = requestAnimationFrame(() => (id = requestAnimationFrame(() => {
+      const g = stageGeo(scene);
+      if (!g) return void (shown = []);
+      // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over a tuft)
+      const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
+      shown = list.filter((d) => {
+        if (!w.inView(d.x, d.y)) return true;
+        const k = w.scaleAt(d.x, d.y), [sx, sy] = w.screenU(d.x, d.y, 5);
+        return clearAt(keep, sx, sy, 6 * k, 5 * k);
+      });
+    })));
+    return () => cancelAnimationFrame(id);
   });
 
-  interface Fx { n: number; kind: 'pull' | 'spark' | 'strike'; x: number; y: number; flip?: boolean }
+  /** A flourish at world (x, z = y), `lift` units up. */
+  interface Fx { n: number; kind: 'pull' | 'spark' | 'strike'; x: number; y: number; lift?: number; flip?: boolean }
   let fx = $state<Fx[]>([]);
   let seq = 0;
   const { later, after, clear } = timers();
@@ -72,23 +89,23 @@
 
   /** Weeds being walked to (a second tap meanwhile does nothing). */
   const going = new Set<string>();
-  function pull(w: Weed) {
-    if (going.has(w.uid)) return;
-    going.add(w.uid);
-    const { ms } = approach(w.x, w.y, { motion: 'squish' });
+  function pull(weed: Weed) {
+    if (going.has(weed.uid)) return;
+    going.add(weed.uid);
+    const { ms } = approach(weed.x, weed.y, { motion: 'squish' });
     after(ms, () => {
-      going.delete(w.uid);
-      take(date, w.uid);
+      going.delete(weed.uid);
+      take(date, weed.uid);
       pulled++;
       sceneSfx('weed');
-      spawn({ kind: 'pull', x: w.x, y: w.y, flip: w.flip }, 700);
+      spawn({ kind: 'pull', x: weed.x, y: weed.y, flip: weed.flip }, 700);
     });
   }
   function hitRock() {
     const what = rockTap(Math.random);
     const { ms, walked } = approach(ROCK.x, ROCK.y, { tool: 'shovel', toolMs: 700, motion: 'nod' });
     // the shovel comes down on it (in my villager's hand; else a floating one), then the clonk
-    if (!walked) spawn({ kind: 'strike', x: ROCK.x, y: ROCK.y - ROCK.h * 0.5 }, 400);
+    if (!walked) spawn({ kind: 'strike', x: ROCK.x, y: ROCK.y, lift: ROCK.h * 0.5 }, 400);
     after(ms + 300, () => clonk(what));
   }
   function clonk(what: ReturnType<typeof rockTap>) {
@@ -96,32 +113,43 @@
     // NH's tool strike on a rock: it squashes under the blow and bounces back
     rockEl?.animate([{ transform: 'none' }, { transform: 'scale(1.06, .94)', offset: 0.3 }, { transform: 'scale(.97, 1.04)', offset: 0.65 }, { transform: 'none' }], { duration: 280, easing: 'ease-out' });
     if (what === 'sparkle') {
-      spawn({ kind: 'spark', x: ROCK.x + 6, y: ROCK.y - ROCK.h }, 800);
+      spawn({ kind: 'spark', x: ROCK.x + 6, y: ROCK.y, lift: ROCK.h }, 800);
       sceneSfx('glint');
     } else if (what === 'bug') rockBug?.(ROCK.x, ROCK.y);
   }
 
-  /** A tap on the scene (client px), after the finds: true when the care took it. Reach: a 44px target. */
+  /** A tap on the scene (client px), after the finds: true when the care took it. Reach: a 44px target around where
+   *  it is on screen now. */
   export function tap(px: number, py: number): boolean {
-    const g = stageGeo(scene);
-    if (!g || !enabled()) return false;
-    const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k, reach = 22 * g.k;
-    const w = shown.map((w) => ({ w, d: Math.hypot(w.x - x, w.y - 4 - y) })).filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
-    if (w) return (pull(w.w), true);
-    if (Math.hypot(ROCK.x - x, ROCK.y - ROCK.h / 2 - y) <= Math.max(reach, ROCK.h)) return (hitRock(), true);
+    if (!enabled()) return false;
+    const reach = 22;
+    const d = (x: number, z: number, up: number) => {
+      if (!w.inView(x, z, 20)) return Infinity;
+      const [cx, cy] = w.clientAt(x, z, up);
+      return Math.hypot(cx - px, cy - py);
+    };
+    const weed = shown.map((it) => ({ it, d: d(it.x, it.y, 4) })).filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
+    if (weed) return (pull(weed.it), true);
+    const rockR = Math.max(reach, ROCK.h * w.scaleAt(ROCK.x, ROCK.y) * w.view.s);
+    if (d(ROCK.x, ROCK.y, ROCK.h / 2) <= rockR) return (hitRock(), true);
     return false;
   }
 </script>
 
-<div class="care" aria-hidden="true">
-  <span class="item rock" data-care="rock" style:translate="{su(ROCK.x)} {su(ROCK.y)}">
+<!-- each a world node at its foot (the anchor: a 0 × 0 point there) -->
+<div class="node" aria-hidden="true" {@attach w.at({ x: ROCK.x, z: ROCK.y, h: ROCK.h })}>
+  <span class="item rock" data-care="rock">
     <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={su(ROCK.h)} /></span>
   </span>
-  {#each shown as w (w.uid)}
-    <span class="item weed" class:flip={w.flip} class:sprout={sprouts(w.uid)} data-care="weed" style:translate="{su(w.x)} {su(w.y)}"><i class="shade"></i>{@render tuft()}</span>
-  {/each}
-  {#each fx as f (f.n)}
-    <span class="item fx-{f.kind}" class:flip={f.flip} style:translate="{su(f.x)} {su(f.y)}">
+</div>
+{#each shown as d (d.uid)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14 })}>
+    <span class="item weed" class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed"><i class="shade"></i>{@render tuft()}</span>
+  </div>
+{/each}
+{#each fx as f (f.n)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 30, dz: -2 })}>
+    <span class="item fx-{f.kind}" class:flip={f.flip}>
       {#if f.kind === 'strike'}
         <span class="strike"><OfficialArt key={findArt('shovel')} size={su(26)} eager /></span>
       {:else if f.kind === 'pull'}
@@ -131,8 +159,8 @@
         <svg class="glint" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
       {/if}
     </span>
-  {/each}
-</div>
+  </div>
+{/each}
 
 <!-- NH's weeds: a chunky, rounded clump about half a tile wide: five broad blades in front (a light highlight down
      each), a darker clump behind -->
@@ -144,8 +172,8 @@
 {/snippet}
 
 <style>
-  /* on the lawn in front of the hedge (z 20) and behind the trees (30), the beds and everyone */
-  .care { position: absolute; inset: 0; z-index: 25; pointer-events: none; --su: calc(100cqw / 390); }
+  /* a world node: on the lawn among everything else by depth */
+  .node { width: 0; height: 0; pointer-events: none; }
   .item { position: absolute; left: 0; top: 0; width: 0; height: 0; }
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
   .rock > :global(*) { translate: -50% -92%; transform-origin: 50% 100%; filter: drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }

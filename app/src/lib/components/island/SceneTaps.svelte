@@ -3,17 +3,21 @@
   // flourish after NH / Pocket Camp, and nothing else (no points, no state, no sheets). A bush rustles and sheds a few
   // leaves (petals in spring, maple leaves in autumn, a clump of snow in winter); a flower wiggles and drops a petal
   // with a sparkle (rarely a butterfly flutters off it; on a summer night, a firefly); a cloud squishes and puffs; the
-  // sun glints; the moon bobs and twinkles; a tap in the night sky lights a star; the sea (and the pond) rings and
+  // sun glints; the moon bobs and twinkles; a tap in the night sky lights a star; the sea (the pond, the river) rings and
   // splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a dust puff (snow in winter).
   // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
   // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: Finds.wish). A popped balloon's
-  // present (Balloon.svelte sends `island:present`) falls onto the island, sparkles and fades (or sinks in the sea).
+  // present (Balloon.svelte sends `island:present`) falls onto the lawn in view, sparkles and lies there (or sinks in the sea).
   // The critters (Critters.svelte: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
-  // One pointerdown listener on the scene: anything inside a control (trees, fruit row, jar, villagers, balloon) is
-  // theirs. The hit test is in stage units (sceneTaps.ts), the sky against the live boxes of the sun / moon / clouds.
-  // Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4 flourishes at
-  // once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
+  // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
+  // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
+  // critters and the island's things; then the tapped element (a bush: Scenery's data-bush, a flower: FlowerBeds'
+  // data-flower); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
+  // the finger (the camera's inverse projection → sceneTaps.ts hitWorld). A ground flourish is a world node where the tap
+  // landed (a mark flat on the ground, a puff upright), so it stays put while the camera scrolls; the sky's stay in the
+  // fixed sky. Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4
+  // flourishes at once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
   //   ?shower (dev or ?demo): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
@@ -26,8 +30,10 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
-  import { BEDS, BED_X, BED_ROWS, BUSH_U, FLOWER_U, HEDGE_BASE, HEDGE_X, HORIZON_U, type Tod } from './scene.ts';
-  import { PETAL, hitStage, sceneSfx } from './sceneTaps.ts';
+  import { BEDS, BUSH_U, FLOWER_U, type Tod } from './scene.ts';
+  import { BED_XS, BED_ZS, HEDGE_XS, HEDGE_Z, SCENERY } from './world.ts';
+  import { PETAL, hitWorld, sceneSfx, shownNow, type SceneHit } from './sceneTaps.ts';
+  import { useWorld } from './camera.svelte.ts';
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
@@ -61,17 +67,23 @@
     skyTap?: (x: number, y: number) => boolean;
     /** One of our birthdays: the cake is out (Cake.svelte). */
     cake?: boolean;
+    /** Tap-to-walk (spec §4): a tap nothing else took, on the ground at world (x, z): true when my villager set off. */
+    walk?: (x: number, z: number, hit: SceneHit) => boolean;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk }: Props = $props();
+  const w = useWorld();
 
   type Kind = 'bush' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
+  /** The flourishes drawn in the fixed sky (stage px); the rest are world nodes where the tap landed. */
+  const SKY_KINDS: readonly Kind[] = ['cloud', 'sun', 'moon', 'star', 'shoot', 'wish'];
   interface Fx {
     id: number;
     kind: Kind;
-    /** px from the stage's top-left (sky flourishes sit above it, at negative y). */
+    /** sky: px from the stage's top-left; on the ground: world x and z, `lift` units above it. */
     x: number;
     y: number;
-    /** bush: what it sheds; grass: 'snow' in winter. */
+    lift?: number;
+    /** bush: what it sheds; grass: 'snow' in winter; splash: 'pond' (a small one). */
     v?: string;
     /** a rare extra: 'butterfly' | 'firefly' | 'fish'. */
     rare?: string;
@@ -90,6 +102,8 @@
   const LIFE_MS = 1100;
   const TAP_ID = 'scene-tap';
   let fx = $state<Fx[]>([]);
+  const skyFx = $derived(fx.filter((f) => SKY_KINDS.includes(f.kind)));
+  const groundFx = $derived(fx.filter((f) => !SKY_KINDS.includes(f.kind)));
   let seq = 0;
   const { later, after, clear } = timers();
   const night = $derived(tod === 'night');
@@ -138,8 +152,10 @@
     { scale: '1' }, { scale: '1.1 .86', offset: 0.22 }, { scale: '.95 1.07', offset: 0.5 }, { scale: '1.02 .98', offset: 0.76 }, { scale: '1' }
   ];
   const POP: Keyframe[] = [{ scale: '1' }, { scale: '1.18', offset: 0.3 }, { scale: '.96', offset: 0.65 }, { scale: '1' }];
-  /** The props are drawn at translate(−50%, −96%): this origin is their foot (the trunk of the bush / the stem). */
-  const FOOT_ORIGIN = '0% 4%';
+  /** A bush's art stands on its foot (translate −50% 0, its bottom at the node): it rustles about its foot. */
+  const BUSH_ORIGIN = '50% 100%';
+  /** A flower is drawn at translate(−50%, −96%): this origin is its stem's foot. */
+  const FLOWER_ORIGIN = '0% 4%';
 
   const shed = (s: Season): string => (s === 'spring' ? 'petal' : s === 'autumn' ? 'maple-leaf' : s === 'winter' ? 'snow' : 'leaf');
 
@@ -154,86 +170,115 @@
     if (enabled()) critters?.fromVillager(el);
   }
 
+  /** A bush by its scenery id (world.ts SCENERY, or the river-bank hedge's `hedge-<i>`): its feet and height. */
+  function bushAt(id: string): { x: number; z: number; h: number } | null {
+    const m = /^hedge-(\d+)$/.exec(id);
+    if (m) return HEDGE_XS[+m[1]] === undefined ? null : { x: HEDGE_XS[+m[1]], z: HEDGE_Z, h: BUSH_U };
+    const s = SCENERY.find((t) => t.id === id);
+    return s ? { x: s.x, z: s.z, h: s.h } : null;
+  }
+  /** A shaken bush lets a bug out now and then (Critters' hook, at the bush: world x, z and the height of its top). */
+  const bushBug = (x: number, z: number, lift: number) =>
+    (critters as unknown as { fromBush?: (x: number, z: number, lift: number) => void } | undefined)?.fromBush?.(x, z, lift);
+
+  /** Whether the click comes from the pointerdown that closed a tree's popup (IslandScene marks it in the capture phase,
+   *  before this sees the pointerdown): that tap only closes it. */
+  let downSwallowed = false;
   function onDown(e: PointerEvent) {
-    if (!e.isPrimary || e.button > 0 || !enabled() || e === swallowed?.()) return;
+    downSwallowed = !!swallowed && e === swallowed();
+  }
+
+  function onClick(e: MouseEvent) {
+    if (downSwallowed) return void (downSwallowed = false);
+    if (e.button > 0 || !enabled()) return;
     const t = e.target;
     if (!(t instanceof Element) || t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) return;
     const stage = scene?.querySelector<HTMLElement>('.stage');
     if (!stage) return;
     const r = stage.getBoundingClientRect();
-    const k = 390 / r.width; // px → u (the stage keeps its 390 : 360 aspect)
-    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const cx = e.clientX, cy = e.clientY;
     // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
-    if (critters?.tap(e.clientX, e.clientY)) return;
-    // a visitor on the beach answers with a line (K.K. with a song); then the day's finds (a shell, a fragment, the
-    // bottle, a dig spot) and the island's care (a weed to pull, the rock by the hedge)
+    if (critters?.tap(cx, cy)) return;
     // group stretching's tape deck (when it's out: small and exact, before the visitor's wider reach)
-    if (deck?.tap(e.clientX, e.clientY)) return;
+    if (deck?.tap(cx, cy)) return;
     // a birthday's cake: a music box, the candles out
-    if (cakeEl?.tap(e.clientX, e.clientY)) return;
-    if (visitor?.tap(e.clientX, e.clientY)) return;
-    if (finds?.tap(e.clientX, e.clientY)) return;
-    if (care?.tap(e.clientX, e.clientY)) return;
-    // the sky ends at the scene's horizon, which on a tall phone rises above the stage's own (open sea behind the island)
-    if (y < horizonPx(stage, r)) return sky(e, r, x, y);
-    const hit = hitStage(x * k, Math.max(y * k, HORIZON_U));
+    if (cakeEl?.tap(cx, cy)) return;
+    // a visitor answers with a line (K.K. with a song); then the day's finds (a shell, a fragment, the bottle, a dig
+    // spot, a present) and the island's care (a weed to pull, the rock)
+    if (visitor?.tap(cx, cy)) return;
+    if (finds?.tap(cx, cy)) return;
+    if (care?.tap(cx, cy)) return;
+    // the tapped element: a bush (Scenery's art) or a flower (FlowerBeds)
+    const bushEl = t.closest<HTMLElement>('[data-bush]');
+    const b = bushEl && bushAt(bushEl.dataset.bush ?? '');
+    if (bushEl && b) return bush(bushEl, b);
+    const flowerEl = t.closest<HTMLElement>('[data-flower]');
+    const cell = flowerEl?.dataset.flower?.split('-').map(Number);
+    if (flowerEl && cell?.length === 2) return flower(flowerEl, cell[0], cell[1]);
+    // the sky: above the horizon (where the ground's inverse projection finds nothing)
+    const at = cy - r.top < w.view.horizon ? null : w.worldAtClient(cx, cy);
+    if (!at) return sky(e, r, cx - r.left, cy - r.top);
+    const { x, z } = at;
+    const hit = hitWorld(x, z);
+    // tap-to-walk (spec §4): my villager sets off there (to the nearest bank for water); on land its tap ring is the
+    // flourish, on water the ripple still plays
+    const walked = walk?.(x, z, hit) ?? false;
     switch (hit.kind) {
-      case 'bush': {
-        // my villager walks up to the hedge and gives the bush a shake (avatar.ts), then it rustles
-        const i = hit.i;
-        const { ms } = approach(HEDGE_X[i], HEDGE_BASE + 4, { motion: 'shake' });
-        return after(ms, () => {
-          jiggle(stage.querySelector(`[data-bush="${i}"]`), RUSTLE, 520, FOOT_ORIGIN);
-          spawn({ kind: 'bush', x: HEDGE_X[i] / k, y: (HEDGE_BASE - BUSH_U * 0.62) / k, v: shed(season) });
-          critters?.fromBush(i);
-          sceneSfx('bush');
-        });
-      }
-      case 'flower': {
-        const { row, col } = hit;
-        const id = row ? BEDS[season].front : BEDS[season].back;
-        const fx0 = [...BED_X.left, ...BED_X.right][col];
-        // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
-        const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
-        water(dayKey(), `${row}-${col}`);
-        // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
-        const { ms, walked } = approach(fx0, BED_ROWS[row], { tool: 'can', toolMs: 900, reach: LONG_REACH });
-        return after(ms, () => {
-          jiggle(stage.querySelector(`[data-flower="${row}-${col}"]`), WIGGLE, 620, FOOT_ORIGIN);
-          // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
-          spawn({ kind: 'flower', x: fx0 / k, y: (BED_ROWS[row] - FLOWER_U * 0.72) / k, color: PETAL[id], rare, flip: fx0 > 195, held: walked });
-          sceneSfx('water');
-          if (rare === 'butterfly') sceneSfx('butterfly');
-        });
-      }
       case 'sea': {
         const rare = roll(10) ? 'fish' : undefined;
-        spawn({ kind: 'splash', x, y, rare, flip: roll(2) });
+        spawn({ kind: 'splash', x, y: z, rare, flip: roll(2) });
         return sceneSfx(rare ? 'fish' : 'splash');
       }
       case 'pond':
-        // the pond's still water: a small ring and a few drops (no fish darting off: its fish come by on their own)
-        spawn({ kind: 'splash', x, y, v: 'pond', flip: roll(2) });
+      case 'river':
+        // still or flowing fresh water: a small ring and a few drops (no fish darting off: its fish come by on their own)
+        spawn({ kind: 'splash', x, y: z, v: 'pond', flip: roll(2) });
         return sceneSfx('splash');
       case 'sand':
-        spawn({ kind: 'sand', x, y, flip: roll(2) });
+        if (walked) return;
+        spawn({ kind: 'sand', x, y: z, flip: roll(2) });
         return sceneSfx('sand');
-      case 'grass': {
+      default: {
+        if (walked) return;
         const snow = season === 'winter';
-        spawn({ kind: 'grass', x, y, v: snow ? 'snow' : undefined, flip: roll(2) });
+        spawn({ kind: 'grass', x, y: z, v: snow ? 'snow' : undefined, flip: roll(2) });
         return sceneSfx(snow ? 'snow' : 'grass');
       }
     }
   }
 
-  /** The horizon in stage px (Sea.svelte's top: --if-hy − --if-st, registered lengths resolved to px on the stage). */
-  function horizonPx(stage: HTMLElement, r: DOMRect): number {
-    const cs = getComputedStyle(stage);
-    const hy = parseFloat(cs.getPropertyValue('--if-hy')), st = parseFloat(cs.getPropertyValue('--if-st'));
-    return Number.isFinite(hy) && Number.isFinite(st) ? hy - st : HORIZON_U * (r.width / 390);
+  /** A bush: my villager walks up to it and gives it a shake (avatar.ts), then THAT bush rustles and sheds. */
+  function bush(el: HTMLElement, b: { x: number; z: number; h: number }) {
+    const { ms } = approach(b.x, b.z, { motion: 'shake' });
+    after(ms, () => {
+      jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
+      spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
+      bushBug(b.x, b.z, b.h * 0.7);
+      sceneSfx('bush');
+    });
   }
 
-  function sky(e: PointerEvent, r: DOMRect, x: number, y: number) {
+  /** A flower (row 0 the beds' back row, 1 the front; col 0–3 left to right): my villager waters it. */
+  function flower(el: HTMLElement, row: number, col: number) {
+    const id = row ? BEDS[season].front : BEDS[season].back;
+    const fx0 = [...BED_XS.A, ...BED_XS.B][col], fz = BED_ZS[row];
+    if (fx0 === undefined || fz === undefined) return;
+    // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
+    const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
+    water(dayKey(), `${row}-${col}`);
+    // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
+    const { ms, walked } = approach(fx0, fz, { tool: 'can', toolMs: 900, reach: LONG_REACH });
+    after(ms, () => {
+      jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
+      // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
+      spawn({ kind: 'flower', x: fx0, y: fz, lift: FLOWER_U * 0.72, color: PETAL[id], rare, flip: fx0 > 195, held: walked });
+      sceneSfx('water');
+      if (rare === 'butterfly') sceneSfx('butterfly');
+    });
+  }
+
+  /** A tap in the sky (x, y: px from the stage's top-left). */
+  function sky(e: MouseEvent, r: DOMRect, x: number, y: number) {
     const s = scene!;
     const orb = s.querySelector('.orb');
     const o = orb?.getBoundingClientRect();
@@ -272,14 +317,15 @@
   }
 
   /** NH's shooting star: a quick white streak falling to the lower left through the night sky, its whole path inside
-   *  the sky (under the status bar, above the horizon) and clear of every control (the ribbon, the sync chip). */
+   *  the fixed sky (under the status bar, above the horizon: the camera's --horizon-y) and clear of every control (the
+   *  ribbon, the jar, the sync chip). */
   function shootingStar() {
-    const stage = scene?.querySelector<HTMLElement>('.stage'), g = stageGeo(scene);
+    const g = stageGeo(scene);
     const band = scene?.querySelector('.band')?.getBoundingClientRect();
-    if (!stage || !g || !band) return;
+    if (!g || !band) return;
     const r = g.r, s = scene!.getBoundingClientRect();
-    // in stage px (the sky is above the stage: negative y)
-    const sky = { x0: s.left - r.left + 8, x1: s.right - r.left - 8, y0: band.top - r.top + 6, y1: horizonPx(stage, r) - 14 };
+    // in stage px (the stage is the whole viewport: the sky is its top, down to the horizon)
+    const sky = { x0: s.left - r.left + 8, x1: s.right - r.left - 8, y0: band.top - r.top + 6, y1: w.view.horizon - 14 };
     const avoid = guardsU(g, 4).map((b) => ({ x0: b.x0 / g.k, x1: b.x1 / g.k, y0: b.y0 / g.k, y1: b.y1 / g.k }));
     const path = streakPath(sky, avoid, Math.random);
     if (!path) return;
@@ -290,73 +336,93 @@
     scene?.dispatchEvent(new CustomEvent('island:star', { detail: { x: path.x } }));
   }
 
-  /** NH's balloon present, shot down: it falls from where the balloon burst onto the lawn in front of the hedge (drifting
-   *  on the breeze to the open middle between the trees), lands with a bounce and a sparkle and stays there until a tap
-   *  picks it up (Finds); past the island's edge it drops into the sea. It falls behind the trees and everyone (z under
-   *  the trees), so it never covers a control, and lands at least PRESENT_GAP clear of everything lying on the lawn. */
-  let drops = $state<{ id: number; x: number; y: number; dx: number; dy: number; size: number; sea: boolean; art: string }[]>([]);
+  /** NH's balloon present, shot down: it falls from where the balloon burst onto the lawn in view (the open spot nearest
+   *  under the burst), lands with a bounce and a sparkle and stays there until a tap picks it up (Finds); with no lawn
+   *  in view it drops into the sea. Balloon may name the landing itself (`detail.land`: a world [x, z], or null for the
+   *  sea); else it's found here. The fall is drawn in the landing spot's own node, so it goes behind whatever stands
+   *  nearer (it never covers a control), and it lands at least PRESENT_GAP clear of everything lying on the lawn. */
+  interface Drop { id: number; x: number; z: number; dx: number; dy: number; size: number; sea: boolean; art: string }
+  let drops = $state<Drop[]>([]);
   function present(e: Event) {
-    const d = (e as CustomEvent<{ x: number; y: number; size: number }>).detail;
-    const stage = scene?.querySelector<HTMLElement>('.stage');
-    if (!d || !stage || !enabled()) return;
-    const r = stage.getBoundingClientRect();
-    const k = 390 / r.width;
-    const x = d.x - r.left, y = d.y - r.top;
-    const sea = x * k < 34 || x * k > 356; // off the island's back corners
-    const spot = sea ? null : landing(x * k, d.size * k * 1.2);
-    const land = sea || !spot ? 30 / k : spot[1] / k;
-    const to = sea || !spot ? x : spot[0] / k;
+    const d = (e as CustomEvent<{ x: number; y: number; size: number; land?: readonly [number, number] | null }>).detail;
+    const g = stageGeo(scene);
+    if (!d || !g || !enabled()) return;
+    const sx = d.x - g.r.left, sy = d.y - g.r.top;
+    // the present's size in world units, a little bigger than on the balloon's string
+    const size = (d.size / w.view.s) * 1.2;
+    const spot = d.land !== undefined ? (d.land && { x: d.land[0], z: d.land[1] }) : landing(sx, size);
+    const to = spot ?? seaUnder(sx);
+    if (!to) return;
+    const p = w.screenAt(to.x, to.z), k = p.scale * w.view.s;
     const id = ++seq;
     // Bunny Day's celebrations: now and then the balloon carried NH's sky egg instead of its present
     const egg = eggTime(eventNow(minuteNow())) && eggInBalloon();
-    drops = [...drops.slice(-1), { id, x, y, dx: to - x, dy: Math.max(0, land - y), size: d.size * 1.2, sea, art: egg ? findArt('sky-egg') : 'deco/present' }];
-    if (sea) {
-      later(() => (drops = drops.filter((p) => p.id !== id)), 2000);
+    const art = egg ? findArt('sky-egg') : 'deco/present';
+    // the burst, from the landing spot, in the node's own (perspective-scaled) px
+    drops = [...drops.slice(-1), { id, x: to.x, z: to.z, dx: (sx - p.sx) / k, dy: (sy - p.sy) / k, size, sea: !spot, art }];
+    if (!spot) {
+      later(() => (drops = drops.filter((q) => q.id !== id)), 2000);
       later(() => sceneSfx('splash'), 1500);
       return;
     }
     sceneSfx('present');
     // landed (and squashed): it lies there among the day's finds until it's picked up
-    later(() => spot && finds?.present(spot[0], spot[1], egg ? findArt('sky-egg') : 'deco/present', d.size * k * 1.2), 2000);
-    later(() => (drops = drops.filter((p) => p.id !== id)), 2500);
+    later(() => finds?.present(to.x, to.z, art, size), 2000);
+    later(() => (drops = drops.filter((q) => q.id !== id)), 2500);
   }
   /** How far a landed present keeps from anything lying on the lawn (a weed, the rock, a dig spot, a mushroom, a branch,
    *  a pumpkin, another present), u, beyond both their halves. */
   const PRESENT_GAP = 16;
-  /** Where a present falling from x (u) lands: on the open lawn in front of the hedge, between the trees (x 150–240,
-   *  y 86–96), the spot nearest x that keeps PRESENT_GAP from everything lying there and covers no control (a villager
-   *  walking by doesn't count); null when there's none (it falls into the sea instead). `size`: the present's size (u). */
-  function landing(x: number, size: number): [number, number] | null {
+  /** Where a present falling from stage px x lands: on the lawn in view, the open spot nearest under the burst that
+   *  keeps PRESENT_GAP from everything lying there and covers no control (a villager walking by doesn't count); null
+   *  when there's none (it falls into the sea instead). `size`: the present's size (u). */
+  function landing(x: number, size: number): { x: number; z: number } | null {
     const stage = scene?.querySelector<HTMLElement>('.stage'), g = stageGeo(scene);
     if (!stage || !g) return null;
-    const things = [...stage.querySelectorAll('[data-care], [data-find], [data-branch], [data-nest], [data-pumpkin]')].map((el) => {
+    const things = [...stage.querySelectorAll('[data-care], [data-find], [data-branch], [data-nest], [data-pumpkin]')].flatMap((el) => {
+      if (!shownNow(el)) return [];
       const b = el.getBoundingClientRect();
       // the ground items are 0 × 0 anchors at their foot; buttons are boxes
       const cx = (b.left + b.width / 2 - g.r.left) * g.k, foot = (b.bottom - g.r.top) * g.k;
       const r = el.matches('[data-care="rock"]') ? 11 : Math.max(8, (b.width * g.k) / 2);
-      return { x: cx, y: foot - r * 0.6, r };
+      return [{ x: cx, y: foot - r * 0.6, r }];
     });
     // the villagers only pass by (it lies behind them): the controls that stay put
-    const keep = guardsU(g, 2, (el) => !!el.closest('[data-actor]'));
-    const half = size / 2;
-    const xs = Array.from({ length: 31 }, (_, i) => 150 + i * 3).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
-    for (const cx of xs)
-      for (const cy of [90, 86, 94]) {
-        // (cx, cy) is the present's centre, as it falls and as it lies
+    const keep = guardsU(g, 2, (el) => !!el.closest('[data-actor]') || !shownNow(el));
+    const v = w.view;
+    const xs = Array.from({ length: 25 }, (_, i) => v.vw * (0.14 + i * 0.03)).sort((a, b) => Math.abs(a - x) - Math.abs(b - x));
+    for (const sx of xs)
+      for (const fy of [0.66, 0.6, 0.72, 0.54, 0.78, 0.48]) {
+        const at = w.worldAt(sx, v.horizon + (v.vh - v.horizon) * fy);
+        if (!at || hitWorld(at.x, at.z).kind !== 'grass') continue;
+        // its centre on screen (u), as it lies, and its half size there
+        const [cx, foot] = w.screenU(at.x, at.z), half = (size * w.scaleAt(at.x, at.z)) / 2, cy = foot - half;
         const clear = things.every((t) => Math.hypot(t.x - cx, t.y - cy) >= PRESENT_GAP + t.r + half);
-        if (clear && !keep.some((b) => cx + half > b.x0 && cx - half < b.x1 && cy + half > b.y0 && cy - half < b.y1)) return [cx, cy];
+        if (clear && !keep.some((b) => cx + half > b.x0 && cx - half < b.x1 && cy + half > b.y0 && cy - half < b.y1))
+          return { x: Math.round(at.x), z: Math.round(at.z) };
       }
     return null;
   }
+  /** The sea in view under stage px x (a present that found no lawn): the first sea from the screen's foot up. */
+  function seaUnder(x: number): { x: number; z: number } | null {
+    const v = w.view;
+    for (let sy = v.vh - 20; sy > v.horizon + 8; sy -= 16) {
+      const at = w.worldAt(x, sy);
+      if (at && hitWorld(at.x, at.z).kind === 'sea') return at;
+    }
+    return null;
+  }
 
-  // The listener lives on the scene (no element of ours under the finger: the art keeps pointer-events: none).
+  // The listeners live on the scene (a click after a drag never comes: the scroll took it).
   $effect(() => {
     const el = scene;
     if (!el) return;
     el.addEventListener('pointerdown', onDown);
+    el.addEventListener('click', onClick);
     el.addEventListener('island:present', present);
     return () => {
       el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('click', onClick);
       el.removeEventListener('island:present', present);
     };
   });
@@ -407,14 +473,15 @@
 
 <Critters bind:this={critters} {scene} {tod} {enabled} />
 <Finds bind:this={finds} {scene} {enabled} />
-<Care bind:this={care} {scene} {enabled} rockBug={(x, y) => critters?.fromRock(x, y)} />
+<Care bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} />{/if}
 {#if TapeDeckC}<TapeDeckC bind:this={deck} {scene} {enabled} {exercise} />{/if}
 {#if CakeC}<CakeC bind:this={cakeEl} {scene} {enabled} on={cake} />{/if}
 
-<div class="drops" aria-hidden="true">
-  {#each drops as p (p.id)}
-    <span class="fx" data-fx="present" style:left="{p.x}px" style:top="{p.y}px" style:--dx="{p.dx}px" style:--dy="{p.dy}px" style:--gs="{p.size}px">
+<!-- a falling present: in its landing spot's node (behind whatever stands nearer), the fall drawn from the burst -->
+{#each drops as p (p.id)}
+  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.x, z: p.z, h: 40, always: true })}>
+    <span class="fx" data-fx="present" style:--dx="{p.dx.toFixed(1)}px" style:--dy="{p.dy.toFixed(1)}px" style:--gs="calc({p.size.toFixed(1)} * var(--su))">
       <span class="gift" class:sea={p.sea}><span class="drop-in"><OfficialArt key={p.art} size="100%" eager /></span></span>
       {#if p.sea}
         <span class="land"><i class="ring"></i><i class="ring late"></i></span>
@@ -423,13 +490,25 @@
         <svg class="spark land-spark two" viewBox="0 0 24 24"><path d={STAR} /></svg>
       {/if}
     </span>
-  {/each}
-</div>
+  </div>
+{/each}
 
-<div class="taps" aria-hidden="true">
-  {#each fx as f (f.id)}
-    <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:left="{f.x}px" style:top="{f.y}px"
-      style:--c={f.color} style:--dir={f.dir}>
+<!-- the ground's flourishes: world nodes where the tap landed (a mark flat on the ground, the rest upright) -->
+{#each groundFx as f (f.id)}
+  {#if f.kind === 'splash' || f.kind === 'sand' || f.v === 'snow'}
+    <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, mode: 'flat', h: 12 })}>
+      <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'}>
+        {#if f.kind === 'splash'}
+          <i class="ring"></i><i class="ring late"></i>
+          {#if f.rare === 'fish'}<i class="fish"></i>{/if}
+        {:else}
+          <i class="print"></i><i class="print r"></i>
+        {/if}
+      </span>
+    </div>
+  {/if}
+  <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 40, dz: -4 })}>
+    <span class="fx {f.kind}" class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:--c={f.color}>
       {#if f.kind === 'bush'}
         {#each [-1, 0.3, 1] as dx, i (i)}
           <span class="bit" style:--dx={dx} style:--i={i}>
@@ -454,13 +533,19 @@
           <i class="firefly"></i>
         {/if}
       {:else if f.kind === 'splash'}
-        <i class="ring"></i><i class="ring late"></i>
         {#each [-1, 0, 1] as dx, i (i)}<i class="drop" style:--dx={dx} style:--i={i}></i>{/each}
-        {#if f.rare === 'fish'}<i class="fish"></i>{/if}
-      {:else if f.kind === 'sand' || f.kind === 'grass'}
-        {#if f.kind === 'sand' || f.v === 'snow'}<i class="print"></i><i class="print r"></i>{/if}
+      {:else}
         {#each [-1, 0, 1] as dx, i (i)}<i class="puff" style:--dx={dx} style:--i={i}></i>{/each}
-      {:else if f.kind === 'cloud'}
+      {/if}
+    </span>
+  </div>
+{/each}
+
+<!-- the sky's flourishes: in the fixed sky (stage px), over the time-of-day tint -->
+<div class="taps" aria-hidden="true">
+  {#each skyFx as f (f.id)}
+    <span class="fx {f.kind}" data-fx={f.kind} style:left="{f.x}px" style:top="{f.y}px" style:--dir={f.dir}>
+      {#if f.kind === 'cloud'}
         {#each [-0.6, 0.2, 1] as dy, i (i)}<i class="wisp" style:--dy={dy} style:--i={i}></i>{/each}
       {:else if f.kind === 'sun'}
         <i class="halo"></i>
@@ -481,14 +566,11 @@
 </div>
 
 <style>
-  /* inside the stage, over the time-of-day tint (z 80) with the fireflies (z 82), so the sky's sparkles and a firefly
-     glow; at night the ground's flourishes are dimmed instead (the tint would only grey them) */
+  /* the sky's: inside the stage, over the time-of-day tint with the fireflies, so the sky's sparkles glow; the ground's
+     are world nodes (under the tint like the ground they're on) */
   .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
-  /* a falling present: in front of the hedge, behind the trees (z 30) and everything after them */
-  .drops { position: absolute; inset: 0; z-index: calc(var(--z-tree) - 5); pointer-events: none; --su: calc(100cqw / 390); }
-  .drops .fx > * { position: absolute; }
-  :global(.if-scene[data-tod='night']) :is(.bush, .splash, .sand, .grass, .flower .petal, .flower .spark) { opacity: .55; }
-  :global(.if-scene[data-tod='dusk']) :is(.bush, .splash, .sand, .grass, .flower .petal) { opacity: .85; }
+  /* a world node: a 0 × 0 anchor at the feet (camera.svelte.ts places it) */
+  .fxn { width: 0; height: 0; pointer-events: none; }
   .fx { position: absolute; width: 0; height: 0; }
   .fx > * { position: absolute; }
   .fx i { display: block; }
@@ -667,22 +749,23 @@
     100% { transform: rotate(var(--a)) translateX(var(--len)); opacity: 0; }
   }
 
-  /* the balloon's present: falls (gravity, a gentle sway), lands with a squash, sparkles, fades; or sinks in the sea */
+  /* the balloon's present: falls from the burst (gravity, a gentle sway) onto its spot (standing on it), lands with a
+     squash, sparkles, fades (Finds then shows it lying there); or sinks in the sea */
   .gift {
-    left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) / -2) 0 0 calc(var(--gs) / -2); line-height: 0;
+    left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) * -1) 0 0 calc(var(--gs) / -2); line-height: 0;
     animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .01s linear 2s both;
   }
   .gift .drop-in { display: block; height: 100%; transform-origin: 50% 100%; animation: gift-sway 1.5s ease-in-out both, gift-land .5s ease-out 1.5s both; }
-  @keyframes gift-fall { from { transform: translate(0, 0); } to { transform: translate(var(--dx), var(--dy)); } }
+  @keyframes gift-fall { from { transform: translate(var(--dx), calc(var(--dy) + var(--gs) / 2)); } to { transform: translate(0, 0); } }
   @keyframes gift-sway { 0% { rotate: -10deg; } 30% { rotate: 8deg; } 60% { rotate: -6deg; } 85% { rotate: 3deg; } 100% { rotate: 0deg; } }
   @keyframes gift-land { 0% { scale: 1.12 .82; } 45% { scale: .95 1.06; } 100% { scale: 1; } }
   @keyframes gift-fade { to { opacity: 0; } }
   .gift.sea { animation: gift-fall 1.5s cubic-bezier(.45, 0, .85, .55) both, gift-fade .35s ease-in 1.5s both; }
   .gift.sea .drop-in { animation: gift-sway 1.5s ease-in-out both; }
-  .land { left: var(--dx); top: var(--dy); width: 0; height: 0; opacity: 0; animation: land-on .01s 1.5s forwards; }
+  .land { left: 0; top: 0; width: 0; height: 0; opacity: 0; animation: land-on .01s 1.5s forwards; }
   @keyframes land-on { to { opacity: 1; } }
   .land .ring { animation-delay: 1.5s; } .land .ring.late { animation-delay: 1.66s; }
-  .land-spark { left: calc(var(--dx) - 16 * var(--su)); top: calc(var(--dy) - 26 * var(--su)); animation-delay: 1.55s; }
-  .land-spark.two { left: calc(var(--dx) + 6 * var(--su)); top: calc(var(--dy) - 18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
+  .land-spark { left: calc(-16 * var(--su)); top: calc(-26 * var(--su)); animation-delay: 1.55s; }
+  .land-spark.two { left: calc(6 * var(--su)); top: calc(-18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: 1.75s; }
 
 </style>

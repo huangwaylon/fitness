@@ -8,9 +8,10 @@
   // of each shell, fossil and fragment goes to the shared ずかん (`find`); none of it is ベル. Mushrooms are cosmetic (no
   // find): picked up, or the rare one dug up (1 in 20 November dig spots) with NH's caption.
   // Everything derives from the Tokyo date and the time (beach.ts), so both phones broadly see the same island; what
-  // this phone took is hidden here only (sceneDay.ts). SceneTaps mounts this inside the stage and asks it about each
-  // tap after the critters (`tap`). Cheap: static images and one-shot animations; no timers but the dig's short wait,
-  // the clock is the scene's minute tick.
+  // this phone took is hidden here only (sceneDay.ts). Everything lies in the world (world units: beach.ts, mushrooms.ts),
+  // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
+  // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; no
+  // timers but the dig's short wait, the clock is the scene's minute tick.
   //   ?find=bottle | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, this morning's fragments, a mushroom
   //   now, or the next dig spot's rare mushroom (the e2e's hooks); ?seed= varies the island's seed.
   import CatchPlate from './CatchPlate.svelte';
@@ -18,13 +19,14 @@
   import { timers } from './timers.ts';
   import { hook, islandSeed } from './devHooks.ts';
   import { su } from './scene.ts';
+  import { useWorld } from './camera.svelte.ts';
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { recordFind } from '#lib/store/actions.ts';
-  import { sceneSfx } from './sceneTaps.ts';
+  import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
@@ -43,6 +45,7 @@
     enabled: () => boolean;
   }
   let { scene, enabled }: Props = $props();
+  const w = useWorld();
 
   const seed = islandSeed();
   const want = hook('find');
@@ -127,8 +130,8 @@
     return () => clearTimeout(holdTimer);
   });
 
-  // ---------- the moment of a find ----------
-  interface Lift { n: number; x: number; y: number; art: string; tilt: number }
+  // ---------- the moment of a find (world x, and y = the world's z; `lift` units above the ground) ----------
+  interface Lift { n: number; x: number; y: number; lift: number; art: string; tilt: number }
   /** `held`: the shovel is in my villager's hand (no floating one). */
   interface Dig { n: number; x: number; y: number; held?: boolean }
   let lift = $state<Lift | null>(null);
@@ -138,19 +141,21 @@
   const { later, clear } = timers();
   $effect(() => clear);
 
-  /** The plate, `delay` ms after the tap; a first find of its kind gets a second page saying it's in the ずかん. */
-  function plate(x: number, y: number, art: string, text: () => string, delay = 0, added = false, hold = true) {
+  /** The plate by world point (x, z), `up` units above it, `delay` ms after the tap (placed by where that point is on
+   *  screen then); a first find of its kind gets a second page saying it's in the ずかん. */
+  function plate(x: number, z: number, up: number, art: string, text: () => string, delay = 0, added = false, hold = true) {
     const n = ++seq;
     const names = loadNames().catch(() => {});
     later(() => void names.then(() => {
-      card = cardFor(n, x, y, art, text(), added, hold);
+      const [sx, sy] = w.screenU(x, z, up);
+      card = cardFor(n, sx, sy, art, text(), added, hold);
     }), delay);
   }
-  function pickUp(uid: string, x: number, y: number, art: string, tilt: number) {
+  function pickUp(uid: string, x: number, y: number, art: string, tilt: number, up = 0) {
     take(date, uid);
     taken++;
     const n = ++seq;
-    lift = { n, x, y, art, tilt };
+    lift = { n, x, y, lift: up, art, tilt };
     later(() => lift?.n === n && (lift = null), 500);
   }
 
@@ -174,7 +179,7 @@
     walkTo(s.uid, s.x, s.y, () => {
       pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
       sceneSfx('shell');
-      plate(s.x, s.y, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
+      plate(s.x, s.y, 4, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
     });
   }
   function pickFragment(f: Fragment) {
@@ -182,21 +187,22 @@
     walkTo(f.uid, f.x, f.y, () => {
       pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
       sceneSfx('fragment');
-      plate(f.x, f.y, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
+      plate(f.x, f.y, 4, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
     });
   }
   function pickBottle(b: Bottle) {
     walkTo(b.uid, b.x, b.y, () => {
       pickUp(b.uid, b.x, b.y, findArt('message-bottle'), -64);
       sceneSfx('bottle');
-      plate(b.x, b.y, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
+      plate(b.x, b.y, 4, findArt('message-bottle'), () => t('beach.bottle', { note: t(`beach.note.${b.note}`) }), 180);
     });
   }
-  /** Balloon presents lying where they fell (SceneTaps lands them; u), until picked up. Not kept across a reload. */
+  /** Balloon presents lying where they fell (SceneTaps lands them: world x, y = z; size in u), until picked up. Not kept
+   *  across a reload. */
   let presents = $state<{ uid: string; x: number; y: number; art: string; size: number }[]>([]);
-  /** A balloon's present has landed on the lawn (SceneTaps): it lies there until a tap picks it up (NH). */
-  export function present(x: number, y: number, art: string, size: number) {
-    presents = [...presents.slice(-2), { uid: `p${++seq}`, x, y, art, size }];
+  /** A balloon's present has landed on the lawn at world (x, z) (SceneTaps): it lies there until a tap picks it up (NH). */
+  export function present(x: number, z: number, art: string, size: number) {
+    presents = [...presents.slice(-2), { uid: `p${++seq}`, x, y: z, art, size }];
     if (!art.endsWith('sky-egg')) void catalog().catch(() => {});
   }
   /** What a present can hold (catalog.ts, ~2,000 entries) and their names: their own chunks, fetched when one lands. */
@@ -215,10 +221,10 @@
       presents = presents.filter((q) => q.uid !== p.uid);
       if (p.art.endsWith('sky-egg')) {
         const n = ++seq;
-        lift = { n, x: p.x, y: p.y, art: p.art, tilt: 0 };
+        lift = { n, x: p.x, y: p.y, lift: p.size / 2, art: p.art, tilt: 0 };
         later(() => lift?.n === n && (lift = null), 500);
         sceneSfx('present');
-        return plate(p.x, p.y, p.art, () => t('beach.picked', { name: t('beach.name.sky-egg') }), 180);
+        return plate(p.x, p.y, p.size / 2, p.art, () => t('beach.picked', { name: t('beach.name.sky-egg') }), 180);
       }
       const n = ++seq;
       opening = { n, x: p.x, y: p.y, art: p.art, size: p.size };
@@ -230,16 +236,16 @@
         const added = recordFind(inside.kind, inside.id);
         const name = C.catalogName(inside);
         // a recipe shows NH's DIY card, its name bare ("a DIY recipe for cherry-blossom clock")
-        if (inside.kind === 'recipe') plate(p.x, p.y, 'presents/diy-recipe', () => t('present.gotRecipe', { name: t(name).replace(/^(an?|some) /, '') }), 420, added);
-        else plate(p.x, p.y, C.catalogArt(inside), () => t('present.got', { name: t(name) }), 420, added);
+        if (inside.kind === 'recipe') plate(p.x, p.y, p.size / 2, 'presents/diy-recipe', () => t('present.gotRecipe', { name: t(name).replace(/^(an?|some) /, '') }), 420, added);
+        else plate(p.x, p.y, p.size / 2, C.catalogArt(inside), () => t('present.got', { name: t(name) }), 420, added);
       }, () => {});
     });
   }
   function pickMushroom(m: Mushroom) {
     walkTo(m.uid, m.x, m.y, () => {
-      pickUp(m.uid, m.x, m.y - 6, findArt(m.id), 0);
+      pickUp(m.uid, m.x, m.y, findArt(m.id), 0, 6);
       sceneSfx('mushroom');
-      plate(m.x, m.y - 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
+      plate(m.x, m.y, 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
     });
   }
   function digUp(s: DigSpot) {
@@ -255,26 +261,30 @@
       const n = ++seq;
       dig = { n, x: s.x, y: s.y, held: walked };
       later(() => dig?.n === n && (dig = null), 6400);
-      if (special) plate(s.x, s.y - 4, findArt(special), () => t('beach.dug', { name: t(`beach.name.${special}`) }), 650);
-      else plate(s.x, s.y - 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
+      if (special) plate(s.x, s.y, 4, findArt(special), () => t('beach.dug', { name: t(`beach.name.${special}`) }), 650);
+      else plate(s.x, s.y, 4, findArt(s.fossil), () => t('beach.fossil', { name: t(`beach.name.${s.fossil}`) }), 650, added);
       later(() => sceneSfx('catch'), 650);
     }, { tool: 'shovel', toolMs: 640 });
   }
 
-  /** A tap on the scene (client px), after the critters: true when a find took it. Reach: a 44px target. */
+  /** A tap on the scene (client px), after the critters: true when a find took it. Reach: a 44px target around where
+   *  the item is on screen now (`up`: its middle's height above its foot, u). */
   export function tap(px: number, py: number): boolean {
-    const g = stageGeo(scene);
-    if (!g || !enabled()) return false;
-    const x = (px - g.r.left) * g.k, y = (py - g.r.top) * g.k;
-    const reach = 22 * g.k;
+    if (!enabled()) return false;
+    const reach = 22;
     type Hit = { d: number; go: () => void };
+    const hit = (x: number, z: number, up: number, go: () => void): Hit[] => {
+      if (!w.inView(x, z, 20)) return [];
+      const [cx, cy] = w.clientAt(x, z, up);
+      return [{ d: Math.hypot(cx - px, cy - py), go }];
+    };
     const hits: Hit[] = [
-      ...shells.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => pickShell(s) })),
-      ...fragments.map((f) => ({ d: Math.hypot(f.x - x, f.y - y), go: () => pickFragment(f) })),
-      ...(bottle ? [{ d: Math.hypot(bottle.x - x, bottle.y - y), go: () => pickBottle(bottle!) }] : []),
-      ...visibleSpots.map((s) => ({ d: Math.hypot(s.x - x, s.y - y), go: () => digUp(s) })),
-      ...visibleMushrooms.map((m) => ({ d: Math.hypot(m.x - x, m.y - 6 - y), go: () => pickMushroom(m) })),
-      ...presents.map((p) => ({ d: Math.hypot(p.x - x, p.y - y), go: () => openPresent(p) }))
+      ...shells.flatMap((s) => hit(s.x, s.y, 3, () => pickShell(s))),
+      ...fragments.flatMap((f) => hit(f.x, f.y, 3, () => pickFragment(f))),
+      ...(bottle ? hit(bottle.x, bottle.y, 3, () => pickBottle(bottle!)) : []),
+      ...visibleSpots.flatMap((s) => hit(s.x, s.y, 0, () => digUp(s))),
+      ...visibleMushrooms.flatMap((m) => hit(m.x, m.y, 6, () => pickMushroom(m))),
+      ...presents.flatMap((p) => hit(p.x, p.y, p.size / 2, () => openPresent(p)))
     ];
     const best = hits.filter((h) => h.d <= reach).sort((a, b) => a.d - b.d)[0];
     if (!best) return false;
@@ -282,24 +292,37 @@
     return true;
   }
 
-  // A dig spot shows only where it's clear of every control on this screen (measured: the villagers and the fruit
-  // rows are a little bigger on small phones).
-  let visibleSpots = $state<DigSpot[]>([]);
-  $effect(() => {
-    const list = spots;
+  /** The items lying on this screen that a control covers (measured when the camera settles, once the projector has
+   *  placed everything): a dig spot or a mushroom shows only where it's clear of every control, as on the old stage (a
+   *  tap there would go to the control). One off screen stays (the projector hides it; it's checked once it's in
+   *  view). The villagers walk about: they don't count. `hw`, `up`, `hh`: its box around its middle, u. */
+  function uncovered<T extends { x: number; y: number }>(list: T[], hw: number, up: number, hh: number): T[] {
     const g = stageGeo(scene);
-    if (!g) return void (visibleSpots = []);
+    if (!g) return [];
     // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over the crack)
-    const keep = guardsU(g, -5 * g.k);
-    visibleSpots = list.filter((s) => clearAt(keep, s.x, s.y, 10, 6));
-  });
+    const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
+    return list.filter((s) => {
+      if (!w.inView(s.x, s.y)) return true;
+      const k = w.scaleAt(s.x, s.y), [sx, sy] = w.screenU(s.x, s.y, up);
+      return clearAt(keep, sx, sy, hw * k, hh * k);
+    });
+  }
+  /** Run `fn` once the projector has placed this frame's nodes (two frames on). */
+  function placed(fn: () => void): () => void {
+    let id = requestAnimationFrame(() => (id = requestAnimationFrame(fn)));
+    return () => cancelAnimationFrame(id);
+  }
+  let visibleSpots = $state<DigSpot[]>([]);
   let visibleMushrooms = $state<Mushroom[]>([]);
   $effect(() => {
-    const list = mushrooms;
-    const g = stageGeo(scene);
-    if (!g) return void (visibleMushrooms = []);
-    const keep = guardsU(g, -5 * g.k);
-    visibleMushrooms = list.filter((m) => clearAt(keep, m.x, m.y - 7, 7, 7));
+    const list = spots, mush = mushrooms;
+    void w.rest.z;
+    void w.rest.vw;
+    if (!w.rest.ready) return;
+    return placed(() => {
+      visibleSpots = uncovered(list, 10, 0, 6);
+      visibleMushrooms = uncovered(mush, 7, 7, 7);
+    });
   });
 
   /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; client px): one more star fragment on the
@@ -324,71 +347,90 @@
   let noteEl = $state<HTMLElement>();
 </script>
 
-<div class="finds" aria-hidden="true">
-  {#each visibleSpots as s (s.uid)}
-    <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
-         a lighter lip of earth under each, foreshortened -->
-    <span class="item spot" data-find="fossil" style:translate="{su(s.x)} {su(s.y)}">
+<!-- each item a world node at its foot (the anchor: a 0 × 0 point there); a dig spot and a hole flat on the ground -->
+{#each visibleSpots as s (s.uid)}
+  <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
+       a lighter lip of earth under each, foreshortened -->
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12 })}>
+    <span class="item spot" data-find="fossil">
       <svg viewBox="-10 -10 20 20">
         <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
       </svg>
     </span>
-  {/each}
-  {#each visibleMushrooms as m (m.uid)}
-    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} style:translate="{su(m.x)} {su(m.y)}">
+  </div>
+{/each}
+{#each visibleMushrooms as m (m.uid)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14 })}>
+    <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id}>
       <OfficialArt key={findArt(m.id)} size="calc(13 * var(--su))" />
     </span>
-  {/each}
-  {#each presents as p (p.uid)}
-    <span class="item gift" data-find="present" style:translate="{su(p.x)} {su(p.y)}"><OfficialArt key={p.art} size={su(p.size)} eager /></span>
-  {/each}
-  {#each shells as s (s.uid)}
-    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} style:translate="{su(s.x)} {su(s.y)}" style:--tilt="{s.tilt}deg">
+  </div>
+{/each}
+{#each presents as p (p.uid)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size })}>
+    <span class="item gift" data-find="present"><OfficialArt key={p.art} size={su(p.size)} eager /></span>
+  </div>
+{/each}
+{#each shells as s (s.uid)}
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12 })}>
+    <span class="item shell" class:fresh={fresh(s.uid)} data-find="shell" data-id={s.id} style:--tilt="{s.tilt}deg">
       <OfficialArt key={findArt(s.id)} size="calc(14 * var(--su))" />
     </span>
-  {/each}
-  {#each fragments as f, k (f.uid)}
-    <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
-    <span class="item frag" data-find="fragment" data-id={f.id} style:translate="{su(f.x)} {su(f.y)}" style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
+  </div>
+{/each}
+{#each fragments as f, k (f.uid)}
+  <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
+  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14 })}>
+    <span class="item frag" data-find="fragment" data-id={f.id} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(12 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
     </span>
-  {/each}
-  {#if bottle}
-    <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
-    <span class="item bottle" data-find="bottle" style:translate="{su(bottle.x)} {su(bottle.y)}">
+  </div>
+{/each}
+{#if bottle}
+  <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
+  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12 })}>
+    <span class="item bottle" data-find="bottle">
       <i class="foam"></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(15 * var(--su))" /></span>
     </span>
-  {/if}
-  {#if dig}
-    {#key dig.n}
-      <span class="item digfx" style:translate="{su(dig.x)} {su(dig.y)}">
-        <i class="hole"></i>
+  </div>
+{/if}
+{#if dig}
+  {#key dig.n}
+    <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, mode: 'flat', h: 12 })}>
+      <span class="item digfx"><i class="hole"></i></span>
+    </div>
+    <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, h: 40, dz: -2 })}>
+      <span class="item digfx">
         <!-- two strikes of the shovel, a burst of earth on each -->
         {#each [0, 1] as k (k)}{#each [-1, 0, 1] as dx, i (i)}<i class="clod" style:--dx={dx + k * 0.3} style:--i={i} style:--k={k}></i>{/each}{/each}
         {#if !dig.held}<span class="shovel"><OfficialArt key={findArt("shovel")} size="calc(30 * var(--su))" eager /></span>{/if}
       </span>
-    {/key}
-  {/if}
-  {#if opening}
-    {#key opening.n}
-      <!-- the present pops open: the box squashes and its lid flies off, confetti and sparkles burst out -->
-      <span class="item opening" data-fx="present-open" style:translate="{su(opening.x)} {su(opening.y)}">
+    </div>
+  {/key}
+{/if}
+{#if opening}
+  {#key opening.n}
+    <!-- the present pops open: the box squashes and its lid flies off, confetti and sparkles burst out -->
+    <div class="node" aria-hidden="true" {@attach w.at({ x: opening.x, z: opening.y, h: 60, dz: -2 })}>
+      <span class="item opening" data-fx="present-open">
         <span class="box"><OfficialArt key={opening.art} size={su(opening.size)} eager /></span>
         {#each CONFETTI as [a, c, d], i (i)}<i class="bit" style:--a="{a}deg" style:--c={c} style:--d={su(d)} style:--i={i}></i>{/each}
         {#each [[-12, -14, 0], [11, -18, 1], [2, -24, 2]] as [dx, dy, k] (k)}
           <svg class="pop-spark" viewBox="0 0 24 24" style:--dx={su(dx)} style:--dy={su(dy)} style:--k={k}><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
         {/each}
       </span>
-    {/key}
-  {/if}
-  {#if lift}
-    {#key lift.n}
-      <span class="item lift" style:translate="{su(lift.x)} {su(lift.y)}" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(14 * var(--su))" eager /></span>
-    {/key}
-  {/if}
-</div>
+    </div>
+  {/key}
+{/if}
+{#if lift}
+  {#key lift.n}
+    <div class="node" aria-hidden="true" {@attach w.at({ x: lift.x, z: lift.y, lift: lift.lift, h: 30, dz: -2 })}>
+      <span class="item lift" style:--tilt="{lift.tilt}deg"><OfficialArt key={lift.art} size="calc(14 * var(--su))" eager /></span>
+    </div>
+  {/key}
+{/if}
 
 <div class="held">
   {#if note}
@@ -398,9 +440,8 @@
 </div>
 
 <style>
-  /* on the ground: over the grass and the sand (the ground svg), under the hedge, the trees and everyone, and under the
-     time-of-day tint like the land itself */
-  .finds { position: absolute; inset: 0; z-index: 5; pointer-events: none; --su: calc(100cqw / 390); }
+  /* a world node: on the ground among everything else by depth, under the time-of-day tint like the land itself */
+  .node { width: 0; height: 0; pointer-events: none; }
   .held { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   .item { position: absolute; left: 0; top: 0; width: 0; height: 0; }
   .item > * { position: absolute; left: 0; top: 0; line-height: 0; }
@@ -443,8 +484,8 @@
     filter: drop-shadow(0 0 2px #FFE070); opacity: 0; animation: pop-spark .6s ease-out calc(.2s + var(--k) * .12s) both;
   }
   @keyframes pop-spark { 0% { transform: scale(0) rotate(0); opacity: 0; } 40% { transform: scale(1.1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
-  /* a balloon's present where it landed, a soft shadow at its foot */
-  .gift > :global(*) { translate: -50% -50%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
+  /* a balloon's present where it landed, standing on its foot, a soft shadow there */
+  .gift > :global(*) { translate: -50% -100%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   /* a mushroom stands on the lawn beside its tree, a soft shadow at its foot */
   .mush > :global(*) { translate: -50% -92%; filter: drop-shadow(0 1.5px 0 rgba(60, 70, 30, .35)); }
   .mush.flip > :global(*) { scale: -1 1; }

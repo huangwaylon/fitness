@@ -1,37 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { hitStage, inRRect } from './sceneTaps.ts';
-import { BED_ROWS, BED_X, HEDGE_BASE, HEDGE_X, PLATEAU, POND, hedgeKept } from './scene.ts';
+import { hitWorld } from './sceneTaps.ts';
+import { BRIDGES, LAND, POND, SPRING } from './world.ts';
 
-describe('hitStage', () => {
-  it('finds each hedge bush by its tile', () => {
-    HEDGE_X.forEach((x, i) => hedgeKept(i) && expect(hitStage(x + 10, HEDGE_BASE - 20)).toEqual({ kind: 'bush', i }));
-    // the pond and the museum stand where the middle bushes were
-    expect(hitStage(HEDGE_X[1], HEDGE_BASE - 20).kind).not.toBe('bush');
-    expect(hitStage(HEDGE_X[3], HEDGE_BASE - 20).kind).not.toBe('bush');
+describe('hitWorld', () => {
+  it('finds the sea in front of the shoreline and past the side beaches', () => {
+    expect(hitWorld(195, -40)).toEqual({ kind: 'sea' });
+    expect(hitWorld(LAND.x0 - 30, 400)).toEqual({ kind: 'sea' });
+    expect(hitWorld(LAND.x1 + 30, 1200)).toEqual({ kind: 'sea' });
   });
-  it('finds the flowers, the front row first where the rows overlap', () => {
-    expect(hitStage(BED_X.left[0], BED_ROWS[0] - 20)).toEqual({ kind: 'flower', row: 0, col: 0 });
-    expect(hitStage(BED_X.right[1], BED_ROWS[1] - 2)).toEqual({ kind: 'flower', row: 1, col: 3 });
-    expect(hitStage(BED_X.left[1], BED_ROWS[0])).toEqual({ kind: 'flower', row: 1, col: 1 });
+  it('finds the front beach’s sand and the lawn (paths and the plaza count as grass)', () => {
+    expect(hitWorld(195, 50)).toEqual({ kind: 'sand' });
+    expect(hitWorld(250, 300)).toEqual({ kind: 'grass' });
+    expect(hitWorld(195, 300)).toEqual({ kind: 'grass' }); // the dirt path
+    expect(hitWorld(195, 900)).toEqual({ kind: 'grass' }); // the plaza
   });
-  it('falls back to grass, sand and sea', () => {
-    expect(hitStage(195, 230)).toEqual({ kind: 'grass' });
-    expect(hitStage(195, 340)).toEqual({ kind: 'sand' });
-    expect(hitStage(10, 200)).toEqual({ kind: 'sea' });
-    expect(hitStage(400, 200)).toEqual({ kind: 'sea' });
-    expect(hitStage(195, 4)).toEqual({ kind: 'sea' }); // the open-sea strip behind the hedge's top
+  it('finds the pond’s water (not its bank) and the spring', () => {
+    expect(hitWorld(POND.x, POND.z)).toEqual({ kind: 'pond' });
+    expect(hitWorld(POND.x + POND.rx * 0.9, POND.z)).toEqual({ kind: 'pond' });
+    expect(hitWorld(POND.x + POND.rx + 3, POND.z).kind).not.toBe('pond');
+    expect(hitWorld(SPRING.x, SPRING.z)).toEqual({ kind: 'pond' });
   });
-  it('finds the pond on the lawn (its water, not its bank)', () => {
-    expect(hitStage(POND.cx, POND.cy)).toEqual({ kind: 'pond' });
-    expect(hitStage(POND.cx + POND.rx * 0.9, POND.cy)).toEqual({ kind: 'pond' });
-    expect(hitStage(POND.cx + POND.rx + 2, POND.cy).kind).not.toBe('pond');
-  });
-});
-
-describe('inRRect', () => {
-  it('cuts the rounded corners', () => {
-    expect(inRRect(PLATEAU, PLATEAU.x0 + 2, PLATEAU.y0 + 2)).toBe(false);
-    expect(inRRect(PLATEAU, PLATEAU.x0 + 2, (PLATEAU.y0 + PLATEAU.y1) / 2)).toBe(true);
-    expect(inRRect(PLATEAU, PLATEAU.x1 - 2, PLATEAU.y1 - 2)).toBe(false);
+  it('finds the river, but a bridge is dry ground', () => {
+    expect(hitWorld(120, 648)).toEqual({ kind: 'river' });
+    expect(hitWorld(372, 1000)).toEqual({ kind: 'river' });
+    for (const b of BRIDGES) expect(hitWorld(b.x, (b.z0 + b.z1) / 2)).toEqual({ kind: 'grass' });
   });
 });

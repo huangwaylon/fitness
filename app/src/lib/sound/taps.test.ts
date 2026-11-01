@@ -26,7 +26,8 @@ const SELF: Record<string, string> = {
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
-  'lib/components/island/Museum.svelte': 'the museum → scene-museum (a soft knock), then the panel plays panel-open as the ずかん opens'
+  'lib/components/island/Museum.svelte': 'the museum → scene-museum (a soft knock), then the panel plays panel-open as the ずかん opens',
+  'lib/components/island/Scenery.svelte': 'a building’s door → tick as its NH character speaks, then the panel’s panel-open (or the shop’s page)'
 };
 
 /** `none`: deliberately silent. */
@@ -45,7 +46,9 @@ const NONE: Record<string, string> = {
 const DISABLED: Record<string, string> = {
   'lib/components/island/IslandScene.svelte': 'villagers during the opening beats (not a "can\'t", the scene is still arriving)',
   'lib/components/panel/SoundSection.svelte': 'the volume slider while all sound is off (nothing could sound anyway)',
-  'routes/pair/+page.svelte': 'つなぐ while the key is being checked (busy, not refused)'
+  'routes/pair/+page.svelte': 'つなぐ while the key is being checked (busy, not refused)',
+  'lib/components/island/Museum.svelte': 'the museum’s door in the gallery’s still thumbnails (not a live island)',
+  'lib/components/island/Scenery.svelte': 'the buildings’ doors in the gallery’s still thumbnails (not a live island)'
 };
 
 function svelteFiles(dir: string): string[] {

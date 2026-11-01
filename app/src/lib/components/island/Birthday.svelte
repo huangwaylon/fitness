@@ -1,23 +1,34 @@
 <script lang="ts">
   // A birthday on the island (docs/design.md "Birthdays"; birthday.ts): confetti over both villagers the first time the
   // island opens that day on this phone, and a party popper going off over the birthday person's villager each time
-  // they meet a goal that day (from the view, never on the first render). The hats are IslandScene's, the cake Cake.svelte,
+  // they meet a goal that day (from the view, never on the first render; a world node over the villager's head, where it
+  // stands). The hats are IslandScene's, the cake Cake.svelte,
   // しずえ's line the page's. No ベル.
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import type { PersonId, WeekView } from '#lib/types.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
-  import { addFx, setEmote } from '../motion/director.svelte.ts';
+  import { addFx, livePos, setEmote } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { firstConfetti } from './birthday.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { timers } from './timers.ts';
   import { VILLAGER, u } from './scene.ts';
+  import { OVER, useWorld } from './camera.svelte.ts';
 
   let { view, people, date }: { view: WeekView; people: PersonId[]; date: string } = $props();
 
   const side = (p: PersonId): 'mine' | 'partner' => (p === view.me ? 'mine' : 'partner');
+  const w = useWorld();
+  /** Over the villager's head (u above its feet), wherever it stands or walks. */
+  const LIFT = VILLAGER.h * 1.05;
   const { later, clear } = timers();
+  /** The poppers' frames (camera.svelte.ts moveStart), stopped with them or on unmount. */
+  const moving = new Set<() => void>();
+  onMount(() => () => {
+    for (const stop of moving) stop();
+    moving.clear();
+  });
   onMount(() => {
     if (untrack(() => firstConfetti(date)))
       later(() => {
@@ -45,22 +56,31 @@
         pops = [...pops.slice(-1), { n, side: s }];
         addFx(s, 'confetti');
         sceneSfx('balloon');
-        later(() => (pops = pops.filter((x) => x.n !== n)), 1600);
+        // its node follows the villager for the popper's moment
+        const stop = w.moveStart();
+        moving.add(stop);
+        later(() => {
+          stop();
+          moving.delete(stop);
+          pops = pops.filter((x) => x.n !== n);
+        }, 1600);
       }
     });
   });
 </script>
 
 {#each pops as p (p.n)}
-  <span class="popper" class:right={p.side === 'partner'} data-popper style:left={u(p.side === 'mine' ? VILLAGER.x.A : VILLAGER.x.B)}
-    style:top={u(VILLAGER.foot - VILLAGER.h * 1.05)} aria-hidden="true">
+  {@const at = livePos(p.side)}
+  <span class="popper" class:right={p.side === 'partner'} data-popper aria-hidden="true"
+    {@attach w.at({ x: at[0], z: at[1], lift: LIFT, h: 24, zi: OVER, live: () => [...livePos(p.side), LIFT] as const })}>
     <OfficialArt key="deco/party-popper" size={u(20)} eager />
   </span>
 {/each}
 
 <style>
   /* NH's party popper, popping up over the villager's head and going off */
-  .popper { position: absolute; z-index: var(--z-taps); width: 0; height: 0; line-height: 0; pointer-events: none; }
+  /* a world node over the villager's head, above every world thing */
+  .popper { width: 0; height: 0; line-height: 0; pointer-events: none; }
   .popper :global(.official) { position: absolute; translate: -50% -50%; max-width: none; animation: pop 1.5s cubic-bezier(.3, 1.4, .5, 1) both; }
   .right :global(.official) { scale: -1 1; }
   @keyframes pop {

@@ -93,6 +93,22 @@
     void tick().then(() => kiroku?.showZukan());
   });
 
+  // A building's door (design.md "World"): せってい, at the むらびと picker or at つうしん.
+  $effect(() => {
+    const d = ui.door;
+    if (!d) return;
+    ui.door = null;
+    open = true;
+    push = null;
+    tab = lastTab = 'settings';
+    void tick().then(() => {
+      if (d === 'villager') return go('villager');
+      const sec = d === 'sync' ? body?.querySelector<HTMLElement>('#sec-sync') : null;
+      if (sec) body?.scrollTo({ top: sec.offsetTop - 8 });
+      else body?.scrollTo({ top: 0 });
+    });
+  });
+
   // The panel's open and close tunes. It mounts on the first tap of the ribbon (Hud), already open: that is an open too.
   let wasOpen = false;
   $effect(() => {

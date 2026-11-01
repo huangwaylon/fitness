@@ -1,6 +1,7 @@
-// Halloween (docs/design.md "Halloween"; island/events.ts): on Oct 31 a few orange pumpkins on the lawn, lit as
-// jack-o'-lanterns from 17:00 under a purple and orange wash; Jack visits 17:00–24:00 and asks for candy: a treat
-// delights him, nothing earns his trick (a goofy face on my villager). Never over a control; no ベル.
+// Halloween (docs/design.md "Halloween"; island/events.ts): on Oct 31 a few orange pumpkins on the health lawn (まえ)
+// and around the plaza (ひろば), lit as jack-o'-lanterns from 17:00 under a purple and orange wash; Jack visits at
+// centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
+// villager). Never under a control; no ベル.
 import { expect, test, type Page } from '@playwright/test';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
@@ -8,30 +9,56 @@ async function tapOn(page: Page, sel: string) {
   const r = (await page.locator(sel).boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
 }
-/** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage). */
+/** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage); only what's on screen
+ *  (a world node out of view is hidden). */
 const under = (page: Page, sel: string, hud = false) =>
   page.evaluate(([s, hud]) => {
-    return [...document.querySelectorAll(s)].flatMap((el) => {
+    return [...document.querySelectorAll(s)].filter((el) => getComputedStyle(el).visibility !== 'hidden').flatMap((el) => {
       const b = el.getBoundingClientRect();
       const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
       return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !(hud && e.closest('.stage'))).map((e) => e.className));
     });
   }, [sel, hud] as const);
+/** The camera to a world z (150 まえ, 860 ひろば), settled. */
+async function camera(page: Page, z: number) {
+  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world);
+  // (again until it holds: the scene may still re-fit its camera as it settles in)
+  await expect.poll(async () => {
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+    await page.waitForTimeout(250);
+    return page.evaluate(() => Math.round((window as unknown as { __world: { cam(): number } }).__world.cam()));
+  }, { timeout: 5000 }).toBe(z);
+  await page.waitForTimeout(500); // the pumpkins re-measured where the camera settled
+}
+/** Press a balloon's answer where it is on screen (a locator click would first scroll it "into view", moving the
+ *  camera: the stage is sticky in its scroller). */
+async function press(page: Page, name: string) {
+  const b = page.getByRole('button', { name });
+  await expect(b).toBeVisible();
+  await page.waitForTimeout(300);
+  const r = (await b.boundingBox())!;
+  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+}
 /** Tap the balloon until its last page has typed (its answers show). */
 async function toAnswers(page: Page) {
   const box = page.locator('[data-fx="talk"].placed');
   for (let i = 0; i < 12 && !(await page.locator('.choices.asking').count()); i++) {
-    await box.click();
+    const b = (await box.boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
     await page.waitForTimeout(120);
   }
   await expect(page.locator('.choices.asking')).toBeVisible();
 }
 
-test('Oct 31 by day: pumpkins on the lawn, clear of every control; no Jack, no lanterns', async ({ page }) => {
+test('Oct 31 by day: pumpkins on the lawn and around the plaza, clear of every control; no Jack, no lanterns', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T16:59&critter=none');
   await expect(ribbon(page)).toBeVisible();
-  await expect(page.locator('[data-halloween="day"] .pumpkin .art').first()).toBeVisible();
+  await camera(page, 150);
+  await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
+  expect(await under(page, '.pumpkin .art')).toEqual([]);
+  await camera(page, 860);
+  expect(await page.locator('.pumpkin .art').evaluateAll((els) => els.filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().top > 140).length)).toBeGreaterThanOrEqual(3);
   expect(await under(page, '.pumpkin .art')).toEqual([]);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
   await expect(page.locator('.pumpkin .glow')).toHaveCount(0);
@@ -45,12 +72,13 @@ test('Nov 1: no Halloween', async ({ page }) => {
 });
 
 for (const [w, h] of [[390, 844], [320, 568]] as const)
-  test(`Halloween night: lanterns lit, Jack on the beach (not K.K. on this Saturday), a treat delights him (${w}px)`, async ({ page }) => {
+  test(`Halloween night: lanterns lit, Jack at centre stage (not K.K. on this Saturday), a treat delights him (${w}px)`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('?demo&date=2026-10-31T19:00&critter=none');
     await expect(ribbon(page)).toBeVisible();
     const bells = await ribbon(page).getAttribute('aria-label');
-    await expect(page.locator('[data-halloween="night"] .glow').first()).toBeVisible();
+    await camera(page, 860);
+    await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
     await expect(page.locator('[data-visitor="kk-slider"]')).toHaveCount(0);
     const jack = page.locator('[data-visitor="jack"] .art');
     await expect(jack).toBeVisible();
@@ -65,7 +93,7 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     // the question and its answers cover none of the HUD's controls (they may sit over the island's, by Jack)
     expect((await under(page, '[data-fx="talk"], .choices.asking', true))).toEqual([]);
     if (w === 390) await page.screenshot({ path: '/tmp/halloween/jack-ask-390.png' });
-    await page.getByRole('button', { name: 'キャンディを あげる' }).click();
+    await press(page, 'キャンディを あげる');
     await expect(page.locator('[data-treat] .candy')).toBeVisible();
     await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('キャンディ');
     if (w === 390) await page.waitForTimeout(300), await page.screenshot({ path: '/tmp/halloween/jack-treat-390.png' });
@@ -81,11 +109,14 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T23:59&critter=none');
   await expect(ribbon(page)).toBeVisible();
+  await camera(page, 860);
   await tapOn(page, '[data-visitor="jack"] .art');
   await toAnswers(page);
-  await page.getByRole('button', { name: 'なにも あげない' }).click();
+  await press(page, 'なにも あげない');
   await expect(page.locator('[data-tricked]')).toHaveCount(1);
   await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('イタズラ');
+  // my villager (at home, まえ) wears it
+  await camera(page, 150);
   await page.waitForTimeout(600);
   await page.screenshot({ path: '/tmp/halloween/jack-trick-390.png' });
   // only my villager's face, on the left
@@ -94,8 +125,13 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   // asking again (no candy yet): the ask alone
   // tap the trick line away (finish, then close; it may have finished typing already)
   const talk = page.locator('[data-fx="talk"].placed');
-  for (let i = 0; i < 4 && (await talk.count()); i++) await talk.click({ timeout: 1000 }).catch(() => {});
+  for (let i = 0; i < 4 && (await talk.count()); i++) {
+    const b = await talk.boundingBox().catch(() => null);
+    if (b) await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await page.waitForTimeout(150);
+  }
   await expect(talk).toHaveCount(0);
+  await camera(page, 860);
   await tapOn(page, '[data-visitor="jack"] .art');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
 });
@@ -103,6 +139,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
 test('?event=halloween brings the evening on any day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&event=halloween&critter=none');
   await expect(ribbon(page)).toBeVisible();
+  await camera(page, 860);
   await expect(page.locator('[data-visitor="jack"] .art')).toBeVisible();
   await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
 });

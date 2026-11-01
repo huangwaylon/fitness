@@ -42,6 +42,13 @@ async function wakeGulliver(page: Page, sel: string) {
     await page.waitForTimeout(250);
   }
 }
+/** The camera to world z (ひろば 860: centre stage, where most visitors stand; おく 1380: the museum). */
+async function go(page: Page, z: number) {
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  await page.waitForTimeout(400);
+  await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
+  await page.waitForTimeout(300);
+}
 const balloon = (page: Page) => expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 6000 });
 
 for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
@@ -51,6 +58,8 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
       test(`${v}: the balloon by their head, not floated above the museum`, async ({ page }) => {
         await page.goto(`?demo&date=2026-11-04T${at}&visitor=${v}&critter=none`);
         const art = `[data-visitor="${v}"] .art`;
+        // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
+        if (v !== 'gulliver' && v !== 'daisy-mae') await go(page, 860);
         await expect(page.locator(art)).toBeVisible();
         if (v === 'gulliver') await wakeGulliver(page, art);
         else await tapAt(page, art, 0.3);
@@ -59,6 +68,7 @@ for (const vp of [{ width: 390, height: 844 }, { width: 320, height: 568 }]) {
       });
     test('Blathers at the museum', async ({ page }) => {
       await page.goto('?demo&date=2026-11-04T21:00&critter=none');
+      await go(page, 1380);
       await page.getByRole('button', { name: 'はくぶつかん：ずかんを ひらく' }).click();
       await balloon(page);
       await expectBy(page, '.museum .art', 56);

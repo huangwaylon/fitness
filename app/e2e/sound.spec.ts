@@ -169,6 +169,10 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
   await expect(page.locator('.detail')).toHaveCount(1);
   await step('島', 'the tree popup (closes)', () => page.locator('.detail .plate').tap(), ['tick']);
+  await page.waitForTimeout(800); // the camera back from making room for the popup
+  // まえ again (a locator's tap may scroll the island's sticky stage), and the partner home from any outing
+  await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(0));
+  await expect(page.locator('.if-scene button.vil').nth(1)).toBeVisible({ timeout: 15_000 });
   await step('島', 'partner villager', () => page.locator('.if-scene button.vil').nth(1).tap());
   await expect(dlg).toHaveCount(1);
   await step('なかま', '✕', () => dlg.locator('.navbar .close').tap(), ['back']);

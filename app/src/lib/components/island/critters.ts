@@ -7,6 +7,10 @@
 import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
+import {
+  BEACH_BOX, BED_XS, BED_ZS, BRIDGES, CLIFF, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SPRING, TREE_H, freshWhere, inOval,
+  riverNS, riverNear, type FreshWhere
+} from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */
 export interface Seasonal {
@@ -114,7 +118,8 @@ export type BugId =
   | 'wasp' | 'common-bluebottle' | 'great-purple-emperor' | 'madagascan-sunset-moth' | 'mosquito' | 'stinkbug'
   | 'man-faced-stink-bug' | 'tiger-beetle' | 'earth-boring-dung-beetle' | 'walking-leaf' | 'violin-beetle'
   | 'citrus-long-horned-beetle' | 'rosalia-batesi-beetle' | 'scarab-beetle' | 'mole-cricket' | 'tarantula' | 'scorpion'
-  | 'flea' | 'bagworm' | 'spider' | 'pondskater' | 'diving-beetle' | 'giant-water-bug';
+  | 'flea' | 'bagworm' | 'spider' | 'pondskater' | 'diving-beetle' | 'giant-water-bug' | 'cyclommatus-stag' | 'golden-stag'
+  | 'horned-atlas' | 'horned-elephant';
 
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers (a butterfly lands on one now and then), a
  *  dragonfly darts and hovers over the lawn, a few fireflies drift and blink, a ladybug or a mantis sits on a flower's
@@ -124,13 +129,17 @@ export type BugId =
  *  chirps under a little mound of earth (dug up with a tap), and a bagworm or a spider dangles on its thread from a
  *  shaken tree (TreeShakes.svelte). */
 export type Flight = 'flutter' | 'dart' | 'drift' | 'flower' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
-/** Where a crawler keeps to: the front beach (NH's beach and rocks), the grass, the flower beds, the pond's water. */
-type Ground = 'beach' | 'grass' | 'beds' | 'pond';
+/** Where a crawler keeps to: the front beach (NH's shoreline and beach rocks), the grass, the flower beds, the water (the
+ *  pond and the river's still reach), by the rock (NH: out from under a hit rock), under a tree (the walking leaf), on a
+ *  bush (the snail in the rain: NH's rocks and bushes). */
+type Ground = 'beach' | 'grass' | 'beds' | 'pond' | 'rock' | 'tree' | 'bush';
 
 interface Bug extends Seasonal {
   flight: Flight;
   /** A crawler's ground. */
   ground?: Ground;
+  /** A percher's tree: NH's palm beetles keep to the palms; every other percher to the hardwood and cedar trunks. */
+  tree?: 'palm';
 }
 
 /** NH bugs that suit this island (no wasps about, only from a shaken nest): months and hours as in
@@ -172,17 +181,22 @@ export const BUGS: Record<BugId, Bug> = {
   'giant-stag': { months: [7, 8], hours: [23, 8], flight: 'perch', weight: 1 },
   'rainbow-stag': { months: span(6, 9), hours: [19, 8], flight: 'perch', weight: 0.7 },
   'horned-dynastid': { months: [7, 8], hours: [17, 8], flight: 'perch', weight: 1 },
-  'goliath-beetle': { months: span(6, 9), hours: [17, 8], flight: 'perch', weight: 0.5 },
+  // NH's palm beetles: on the palms only, on summer nights (the golden stag the rarest, NH's 12,000 ベル against 8,000)
+  'goliath-beetle': { months: span(6, 9), hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.5 },
+  'cyclommatus-stag': { months: [7, 8], hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.5 },
+  'golden-stag': { months: [7, 8], hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.3 },
+  'horned-atlas': { months: [7, 8], hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.5 },
+  'horned-elephant': { months: [7, 8], hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.5 },
   'drone-beetle': { months: span(6, 8), hours: ALL_DAY, flight: 'perch', weight: 1 },
   'jewel-beetle': { months: span(4, 8), hours: ALL_DAY, flight: 'perch', weight: 0.7, weather: 'dry' },
   'walking-stick': { months: span(7, 11), hours: [4, 8], also: [17, 19], flight: 'perch', weight: 1 },
   // on the beach and in the grass: the hermit crab after dark, the wharf roach on the rocks, the pill bug and the
-  // centipede (NH: under rocks), the snail on the flowers (only in the rain, as in NH)
+  // centipede by the rock (NH: out from under a hit rock), the snail on a bush (only in the rain, as in NH)
   'hermit-crab': { months: ALL_YEAR, hours: [19, 8], flight: 'crawl', ground: 'beach', weight: 2 },
   'wharf-roach': { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beach', weight: 1.5 },
-  'pill-bug': { months: span(9, 6), hours: [23, 16], flight: 'crawl', ground: 'grass', weight: 1.5 },
-  centipede: { months: span(9, 6), hours: [16, 23], flight: 'crawl', ground: 'grass', weight: 1 },
-  snail: { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 3, weather: 'rain' },
+  'pill-bug': { months: span(9, 6), hours: [23, 16], flight: 'crawl', ground: 'rock', weight: 1.5 },
+  centipede: { months: span(9, 6), hours: [16, 23], flight: 'crawl', ground: 'rock', weight: 1 },
+  snail: { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'bush', weight: 3, weather: 'rain' },
   // flying: the big tropical butterflies (rare), the monarch in autumn, the Atlas moth at night, the damselfly in
   // winter, the long locust
   'paper-kite-butterfly': { months: ALL_YEAR, hours: [8, 19], flight: 'flutter', weight: 2, weather: 'dry' },
@@ -195,8 +209,8 @@ export const BUGS: Record<BugId, Bug> = {
   'long-locust': { months: span(4, 11), hours: [8, 19], flight: 'hop', weight: 2 },
   // never about on its own (weight 0): only out of a nest shaken from a tree (island/treeShake.ts), netted in time
   wasp: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', weight: 0 },
-  // on the pond's water (Pond.svelte; NH: on rivers and ponds): the pondskater skating, the diving beetle surfacing, the
-  // giant water bug at night
+  // on the water (NH: on rivers and ponds: the pond and the river's still reach): the pondskater skating, the diving
+  // beetle surfacing, the giant water bug at night
   pondskater: { months: span(5, 9), hours: [8, 19], flight: 'crawl', ground: 'pond', weight: 2 },
   'diving-beetle': { months: span(5, 9), hours: [8, 19], flight: 'crawl', ground: 'pond', weight: 1.5 },
   'giant-water-bug': { months: span(4, 9), hours: [19, 8], flight: 'crawl', ground: 'pond', weight: 1 },
@@ -209,11 +223,10 @@ export const BUGS: Record<BugId, Bug> = {
   // on the flowers: the stink bugs (the man-faced one at night)
   stinkbug: { months: span(3, 10), hours: ALL_DAY, flight: 'crawl', ground: 'beds', weight: 2, weather: 'dry' },
   'man-faced-stink-bug': { months: span(3, 10), hours: [19, 8], flight: 'crawl', ground: 'beds', weight: 1.2, weather: 'dry' },
-  // on the ground: the tiger beetle (it runs), the earth-boring dung beetle, the walking leaf (NH: a leaf under the
-  // trees, here in the grass)
+  // on the ground: the tiger beetle (it runs), the earth-boring dung beetle, the walking leaf (NH: a leaf under the trees)
   'tiger-beetle': { months: span(2, 10), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1, weather: 'dry' },
   'earth-boring-dung-beetle': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1.5 },
-  'walking-leaf': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1 },
+  'walking-leaf': { months: span(7, 9), hours: ALL_DAY, flight: 'crawl', ground: 'tree', weight: 1 },
   // on the trunks: NH's stump beetles (the island has no stumps: a trunk, like the jewel beetle) and the scarab at night
   'violin-beetle': { months: [5, 6, 9, 10, 11], hours: ALL_DAY, flight: 'perch', weight: 1, weather: 'dry' },
   'citrus-long-horned-beetle': { months: ALL_YEAR, hours: ALL_DAY, flight: 'perch', weight: 1, weather: 'dry' },
@@ -230,6 +243,24 @@ export const BUGS: Record<BugId, Bug> = {
   bagworm: { months: ALL_YEAR, hours: ALL_DAY, flight: 'dangle', weight: 0 },
   spider: { months: ALL_YEAR, hours: [19, 8], flight: 'dangle', weight: 0 }
 };
+
+/** Where a bug is found on the island (NH's locations, docs/design.md "Critters"): on a hardwood or cedar trunk (the
+ *  cicadas, the stags; NH's stump beetles too, the island has no stumps), on a palm (NH's palm beetles), sitting on a
+ *  flower (the ladybug, the mantises), flying over the flowers (the butterflies, the bee), round a lamp at night (the
+ *  moth: NH's light sources), flying near water (the dragonflies, the fireflies), on the ground in the grass, on the
+ *  beach, crawling over the beds (the stink bugs), on the water (the pond and the river's still reach), by the rock, under
+ *  a tree (the walking leaf), on a bush (the snail). */
+export type BugPlace = 'trunk' | 'palm' | 'flower' | 'flowers' | 'lights' | 'water-air' | 'grass' | 'beach' | 'beds' | 'water' | 'rock' | 'under-tree' | 'bush';
+const GROUND_PLACE: Record<Ground, BugPlace> = { beach: 'beach', grass: 'grass', beds: 'beds', pond: 'water', rock: 'rock', tree: 'under-tree', bush: 'bush' };
+export function bugPlace(id: BugId): BugPlace {
+  const b = BUGS[id];
+  if (b.flight === 'perch') return b.tree === 'palm' ? 'palm' : 'trunk';
+  if (b.flight === 'flower') return 'flower';
+  if (b.flight === 'dart' || b.flight === 'drift') return 'water-air';
+  if (b.flight === 'crawl') return GROUND_PLACE[b.ground ?? 'grass'];
+  if (id === 'moth') return 'lights';
+  return b.flight === 'flutter' || b.flight === 'dangle' ? 'flowers' : 'grass';
+}
 
 /** Inside [from, to) of the day, wrapping past midnight when to < from. */
 export function inHours([from, to]: readonly [number, number], h: number): boolean {
@@ -305,58 +336,158 @@ export const nextSpawnMs = (r: () => number, first = false): number => (first ? 
 
 /** The share of the sea's turns that bring a bubble spot to dive at instead of a fish shadow (island/sea.ts). */
 export const BUBBLE_SHARE = 0.25;
-/** Which ambient critter to bring on (≤ 1 in the sea, ≤ 1 in the pond, ≤ 1 bug, so ≤ 3 animating at once): whenever
- *  the sea is empty a fish shadow, or 1 in 4 a bubble spot (the sea holds one or the other); then whenever the pond is
- *  empty a pond shadow (as often as the sea's); otherwise a bug when none is about (most visits; `r` keeps a little air
- *  between them). A slot is true when taken (the pond's too when this screen has none). */
-export function spawnKind(slots: { sea: boolean; pond: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'sea' | 'pond' | 'bug' | null {
+/** Which ambient critter to bring on (≤ 1 in the sea, ≤ 1 in each fresh water, ≤ 1 bug): whenever the sea is empty a
+ *  fish shadow, or 1 in 4 a bubble spot (the sea holds one or the other); then whenever a fresh water in view is empty a
+ *  shadow there (as often as the sea's); otherwise a bug when none is about (most visits; `r` keeps a little air
+ *  between them). A slot is true when taken, or when none of it is in view (the sea from ひろば; every fresh water
+ *  holding its shadow already, or none on screen). */
+export function spawnKind(slots: { sea: boolean; fresh: boolean; bug: boolean }, bugAbout: boolean, r: () => number): 'fish' | 'sea' | 'fresh' | 'bug' | null {
   if (!slots.sea) return r() < BUBBLE_SHARE ? 'sea' : 'fish';
-  if (!slots.pond) return 'pond';
+  if (!slots.fresh) return 'fresh';
   return !slots.bug && bugAbout && r() < 0.8 ? 'bug' : null;
 }
 
 /** How long an ambient critter stays if nobody plays with it (ms). */
 export const STAY_MS = { fish: 45_000, bug: 18_000 } as const;
 
-// ---------- the water: the sea or the pond ----------
+// ---------- the water: the sea, the pond, the river ----------
 
-/** Where a shadow swims: the sea off the beaches, or the pond at the back of the island. */
-export type Water = 'sea' | 'pond';
-/** An oval in stage units (the pond's water: its centre and half-axes). */
-export interface Oval { cx: number; cy: number; rx: number; ry: number }
+/** Where a shadow swims (world.ts): the sea in front of the front beach, or a fresh water by NH's locations: the pond,
+ *  the river, the river mouth (the wide reach on the west beach), the clifftop (the river above the cliff, the spring). */
+export type Water = 'sea' | FreshWhere;
+export const FRESH: readonly FreshWhere[] = ['pond', 'river', 'mouth', 'clifftop'];
 
-/** Inside the oval shrunk to `k` of its size. */
-export const inOval = (o: Oval, x: number, y: number, k = 1): boolean => ((x - o.cx) / (o.rx * k)) ** 2 + ((y - o.cy) / (o.ry * k)) ** 2 <= 1;
+/** How far around the water's edge a tap still casts into it (u: a finger's slack round a small pond or a narrow
+ *  river). */
+const WATER_REACH = 12;
 
-/** The water a tap at (x, y) u lands in: the pond's oval (grown by `reach`: the pond is small, a finger's slack around
- *  its rim still casts into it), else the sea (`sea`: the tap is off the island, beyond the beach), else none. */
-export const waterAt = (pond: Oval | null, x: number, y: number, sea: boolean, reach = 1): Water | null =>
-  pond && inOval(pond, x, y, reach) ? 'pond' : sea ? 'sea' : null;
-/** How far around the pond's water a tap still casts into it (×, the oval's size). */
-export const POND_REACH = 1.6;
+/** The water a tap at world (x, z) lands in, or null (land). `sea`: the ground there is the sea (sceneTaps hitWorld). */
+export function waterAt(x: number, z: number, sea: boolean, reach = WATER_REACH): Water | null {
+  if (inOval(POND, x, z, reach)) return 'pond';
+  if (inOval(SPRING, x, z, reach)) return 'clifftop';
+  const r = riverNear(x, z);
+  if (r.d <= r.hw + reach) return freshWhere(x, z);
+  return sea ? 'sea' : null;
+}
 
-/** Where a pond shadow dawdles: the open middle of the water, clear of the rim (a fish's length inside its oval). */
-export const pondBox = (o: Oval): { x0: number; x1: number; y0: number; y1: number } =>
-  ({ x0: o.cx - o.rx * 0.55, x1: o.cx + o.rx * 0.55, y0: o.cy - o.ry * 0.35, y1: o.cy + o.ry * 0.4 });
+/** Where a pond shadow dawdles (world): the open middle of the water, clear of the rim. */
+export const pondBox = (): { x0: number; x1: number; z0: number; z1: number } =>
+  ({ x0: POND.x - POND.rx * 0.55, x1: POND.x + POND.rx * 0.55, z0: POND.z - POND.rz * 0.4, z1: POND.z + POND.rz * 0.4 });
+
+/** Where the bobber lands for a cast at (x, z) in `water` (world): kept inside the water, clear of its edge: in the
+ *  pond's oval at 0.75 of its size, on the river within 0.55 of its half-width from the centreline, in the sea past the
+ *  foam (z ≤ −10). */
+export function castInto(water: Water, x: number, z: number): { x: number; z: number } {
+  if (water === 'sea') return { x, z: Math.min(z, -10) };
+  if (water === 'pond' || (water === 'clifftop' && inOval(SPRING, x, z, WATER_REACH))) {
+    const o = water === 'pond' ? POND : SPRING;
+    const d = Math.hypot((x - o.x) / o.rx, (z - o.z) / o.rz), k = d > 0.75 ? 0.75 / d : 1;
+    return { x: o.x + (x - o.x) * k, z: o.z + (z - o.z) * k };
+  }
+  const r = riverNear(x, z), [ax, az] = RIVER[r.i], [bx, bz] = RIVER[r.i + 1];
+  const cx = ax + (bx - ax) * r.t, cz = az + (bz - az) * r.t, max = r.hw * 0.55;
+  const k = r.d > max ? max / r.d : 1;
+  return { x: cx + (x - cx) * k, z: cz + (z - cz) * k };
+}
 
 /** A shadow's length (u) by NH's size 1 (tiny) – 6 (huge): one teardrop, 0.42 of its length tall; the eels' long thin
  *  one (`narrow`) is 32u at 0.18. */
 const SHADOW_U = [14, 18, 23, 28, 34, 46] as const;
 export const shadowLen = (size: number, shape?: 'narrow' | 'fin'): number =>
   shape === 'narrow' ? 32 : SHADOW_U[Math.min(6, Math.max(1, Math.round(size))) - 1];
-/** A pond shadow is drawn smaller than the sea's (a small pond, seen from further back): NH's sizes 1–6 still read
- *  apart, a size 6 still fits its water. */
+/** A fresh-water shadow is drawn smaller than the sea's (the pond's 80u across, the river 30u wide): NH's sizes 1–6
+ *  still read apart, a size 6 still fits along the river. */
 export const POND_SHADOW = 0.65;
 
-/** Where the bobber lands for a tap in the pond (kept a little inside the rim) and where the angler stands: on the
- *  pond's front rim, a little toward the island's middle. */
-export function pondCast(o: Oval, x: number, y: number): { x: number; y: number; sx: number; sy: number } {
-  const d = Math.hypot((x - o.cx) / o.rx, (y - o.cy) / o.ry);
-  const k = d > 0.75 ? 0.75 / d : 1;
-  const bx = o.cx + (x - o.cx) * k, by = o.cy + (y - o.cy) * k;
-  const sx = bx + (bx < 195 ? 1 : -1) * o.rx * 0.25;
-  const t = Math.max(-1, Math.min(1, (sx - o.cx) / o.rx));
-  return { x: bx, y: by, sx, sy: o.cy + o.ry * Math.sqrt(1 - t * t) + 2 };
+// ---------- where they live in the world (world.ts units) ----------
+
+/** A patch of water a shadow swims in: an oriented box round (cx, cz), half-length L along (ux, uz) (a river's
+ *  reach runs along its channel), half-width W across. */
+export interface Swim { cx: number; cz: number; ux: number; uz: number; L: number; W: number }
+/** A point of a swim patch (s along, t across, each −1…1). */
+export const swimAt = (a: Swim, s: number, t: number): { x: number; z: number } => ({ x: a.cx + a.ux * s * a.L - a.uz * t * a.W, z: a.cz + a.uz * s * a.L + a.ux * t * a.W });
+
+/** The sea's fishing water: SEA_BOX, reaching in to just past the foam (from まえ only its near strip is on screen). */
+export const SEA_SWIM: Swim = { cx: (SEA_BOX.x0 + SEA_BOX.x1) / 2, cz: (SEA_BOX.z0 - 16) / 2, ux: 1, uz: 0, L: (SEA_BOX.x1 - SEA_BOX.x0) / 2, W: (-16 - SEA_BOX.z0) / 2 };
+
+/** Patches along the river's centreline from RIVER[i0] to RIVER[i1], one every `step` u, each a reach's stretch. */
+function reaches(i0: number, i1: number, step: number, keep: (x: number, z: number) => boolean): Swim[] {
+  const out: Swim[] = [];
+  for (let i = i0; i < i1; i++) {
+    const [ax, az, aw] = RIVER[i], [bx, bz, bw] = RIVER[i + 1];
+    const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / step));
+    for (let k = 0; k < n; k++) {
+      const t = (k + 0.5) / n, x = ax + (bx - ax) * t, z = az + (bz - az) * t, hw = (aw + (bw - aw) * t) / 2;
+      if (keep(x, z)) out.push({ cx: x, cz: z, ux: (bx - ax) / len, uz: (bz - az) / len, L: 22, W: hw * 0.35 });
+    }
+  }
+  return out;
+}
+const offBridges = (x: number, z: number) => !BRIDGES.some((b) => Math.abs(x - b.x) < b.w / 2 + 16 && z > b.z0 - 16 && z < b.z1 + 16);
+/** Where a fresh water's shadows swim (world): the pond's open middle; the river's reaches (the east run below the
+ *  waterfall and the crossing, clear of the bridges); the mouth's wide reach on the west beach; the clifftop river and
+ *  the spring. */
+export function freshAreas(where: FreshWhere): Swim[] {
+  if (where === 'pond') return [{ cx: POND.x, cz: POND.z, ux: 1, uz: 0, L: POND.rx * 0.55, W: POND.rz * 0.4 }];
+  if (where === 'clifftop')
+    return [...reaches(0, 2, 60, (x, z) => z > CLIFF.z1 + 14 && z < SPRING.z - SPRING.rz), { cx: SPRING.x, cz: SPRING.z, ux: 1, uz: 0, L: SPRING.rx * 0.5, W: SPRING.rz * 0.4 }];
+  if (where === 'mouth') return reaches(11, RIVER.length - 1, 44, (x, z) => freshWhere(x, z) === 'mouth');
+  return reaches(3, 12, 90, (x, z) => z < CLIFF.z0 - 16 && freshWhere(x, z) === 'river' && offBridges(x, z));
+}
+
+/** A patch a bug keeps to (world): x0…x1 across, z0…z1 deep, l0…l1 units above the ground. */
+export interface Patch { x0: number; x1: number; z0: number; z1: number; l0: number; l1: number }
+const patch = (x: number, z: number, hx: number, hz: number, l0 = 0, l1 = l0): Patch => ({ x0: x - hx, x1: x + hx, z0: z - hz, z1: z + hz, l0, l1 });
+
+/** A trunk a bug perches on: where on it (lift: up the trunk, dx: off the foot's x where the trunk leans). */
+export interface Perch { tree: string; x: number; z: number; lift: number; dx: number; h: number }
+/** The trunks: NH's palm beetles on the palms; every other percher on the goal trees, the oaks and the cedars (their
+ *  bare trunk under the leaves: an oak's lower half, a cedar's bottom third, a palm's lower third). */
+export function perches(palm: boolean): Perch[] {
+  if (palm)
+    return SCENERY.filter((s) => s.kind === 'palm').map((s) => ({ tree: s.id, x: s.x, z: s.z, lift: s.h * 0.3, dx: (s.flip ? -1 : 1) * s.h * 0.03, h: s.h }));
+  const goal = (['A', 'B'] as const).map((k) => ({ tree: `goal-${k}`, x: GOAL_TREES[k][0], z: GOAL_TREES[k][1], lift: TREE_H * 0.28, dx: 0, h: TREE_H }));
+  const scenery = SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar').map((s) => ({ tree: s.id, x: s.x, z: s.z, lift: s.h * (s.kind === 'oak' ? 0.3 : 0.16), dx: 0, h: s.h }));
+  return [...goal, ...scenery];
+}
+
+/** The bushes (the river-bank hedge and the scenery's): x, z and height. */
+export const BUSHES: readonly { id: string; x: number; z: number; h: number }[] = [
+  ...HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, x, z: HEDGE_Z, h: 40 })),
+  ...SCENERY.filter((s) => s.kind === 'bush').map((s) => ({ id: s.id, x: s.x, z: s.z, h: s.h }))
+];
+/** The flower beds' cells (FlowerBeds' data-flower="row-col"): row 0 the back row. */
+export const FLOWER_CELLS: readonly { cell: string; x: number; z: number }[] = BED_ZS.flatMap((z, r) => [...BED_XS.A, ...BED_XS.B].map((x, c) => ({ cell: `${r}-${c}`, x, z })));
+const beds = (l0: number, l1: number) => [BED_XS.A, BED_XS.B].map(([a, b]) => ({ x0: a - 16, x1: b + 16, z0: BED_ZS[1] - 8, z1: BED_ZS[0] + 8, l0, l1 }));
+/** The open lawn (off the beds, the trunks and the paths' middle): まえ's and the bank before the plaza. */
+const LAWN: Patch[] = [
+  { x0: 22, x1: 100, z0: 262, z1: 318, l0: 0, l1: 0 }, { x0: 292, x1: 368, z0: 262, z1: 318, l0: 0, l1: 0 },
+  { x0: 40, x1: 172, z0: 372, z1: 560, l0: 0, l1: 0 }, { x0: 218, x1: 350, z0: 372, z1: 560, l0: 0, l1: 0 },
+  { x0: 76, x1: 176, z0: 690, z1: 790, l0: 0, l1: 0 }, { x0: 214, x1: 300, z0: 690, z1: 780, l0: 0, l1: 0 }
+];
+
+/** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWER_CELLS). */
+export function patches(place: BugPlace): Patch[] {
+  switch (place) {
+    case 'flowers': return beds(16, 44);
+    case 'beds': return beds(3, 7);
+    case 'lights': return SCENERY.filter((s) => s.kind === 'prop' && /lamp/.test(s.key)).map((s) => patch(s.x, s.z - 2, 16, 6, s.h * 0.75, s.h * 1.05));
+    case 'bush': return BUSHES.map((b) => patch(b.x, b.z - 1, 7, 2, b.h * 0.8, b.h * 0.86));
+    case 'water-air':
+      return [
+        patch(POND.x, POND.z, POND.rx, POND.rz, 10, 36),
+        ...reaches(3, 13, 120, (x, z) => z < CLIFF.z0 - 40).map((a) => patch(a.cx, a.cz, Math.abs(a.uz) > 0.7 ? a.W * 2 + 8 : 30, Math.abs(a.uz) > 0.7 ? 40 : a.W * 2 + 6, 10, 34))
+      ];
+    case 'water':
+      return [
+        { x0: POND.x - POND.rx * 0.6, x1: POND.x + POND.rx * 0.6, z0: POND.z - POND.rz * 0.5, z1: POND.z + POND.rz * 0.5, l0: 0, l1: 0 },
+        ...[750, 840, 930, 1020].map((z) => { const r = riverNS(z)!; return patch(r.x, z, r.hw * 0.45, 26); })
+      ];
+    case 'beach': return [{ x0: BEACH_BOX.x0 - 40, x1: BEACH_BOX.x1, z0: BEACH_BOX.z0, z1: BEACH_BOX.z1 - 10, l0: 0, l1: 0 }];
+    case 'rock': return [{ x0: ROCK[0] - 18, x1: ROCK[0] + 20, z0: ROCK[1] - 14, z1: ROCK[1] - 6, l0: 0, l1: 0 }];
+    case 'under-tree': return perches(false).filter((p) => !/cedar/.test(p.tree)).map((p) => ({ x0: p.x - 20, x1: p.x + 20, z0: p.z - 18, z1: p.z - 8, l0: 0, l1: 0 }));
+    default: return LAWN;
+  }
 }
 
 // ---------- fishing ----------
@@ -377,7 +508,7 @@ export interface BitePlan {
 /** The bite window (ms): NH's is about half a second with a controller; a phone tap, reacting to the 「！」, gets
  *  longer (a human sees it, decides and taps in ~0.4–0.8 s). */
 export const BITE_WINDOW_MS = 1600;
-/** A tap in the sea this close to a shadow (stage units) casts a bobber... */
+/** A tap in the sea this close to a shadow (world units) casts a bobber... */
 export const CAST_U = 195;
 /** ...and the shadow notices a bobber this close, so every cast it allows is noticed (the bobber lands a little nearer
  *  the beach than the tap, now and then). */
