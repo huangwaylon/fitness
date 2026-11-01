@@ -240,6 +240,8 @@ test('a tap on an open tree popup closes it and reaches nothing under it (the ot
   await page.locator('button.canopy').first().click();
   const popup = page.locator('.detail');
   await expect(popup).toHaveCount(1);
+  // where it stands once the camera has eased up the island to make room for it (a short screen)
+  await page.waitForTimeout(1000);
   const box = (await popup.boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await expect(popup).toHaveCount(0);
