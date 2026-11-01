@@ -62,9 +62,26 @@ describe('the shared island on this phone', () => {
     r.hear({ kind: 'shake', tree: 'oak-p1', drop: 'branch', who: 'B', t: T0 - 500 }); // just now
     r.hear({ kind: 'shake', tree: 'oak-p1', drop: 'branch', who: 'B', t: T0 - 500 }); // the same again
     r.hear({ kind: 'act', act: 'bush', id: 'hedge-1', pt: [80, 596], who: 'B', t: T0 - 100 });
-    r.hear({ kind: 'pick', id: 'w1', what: 'weed', who: 'A', t: T0 - 100 }); // my own echo: never
+    r.hear({ kind: 'pick', id: 'w1', what: 'weed', who: 'A', t: T0 - 100 }); // my own (the relay's replay): no news
     expect(news).toEqual([{ kind: 'put', live: false }, { kind: 'shake', live: true }, { kind: 'act', live: true }]);
     expect(lying(world.day).map((p) => p.id)).toEqual(['pb1']);
+  });
+
+  it('my own changes in the relay\'s replay are folded quietly (a phone that lost its record); a burst is written once; a walk replaces my last', async () => {
+    const r = fakeRelay();
+    world.attach(r.live, 'A');
+    const writes = vi.spyOn(kv, 'setItem');
+    r.hear({ kind: 'pick', id: 'w7', what: 'weed', who: 'A', t: T0 - 50 });
+    r.hear({ kind: 'pick', id: 'w8', what: 'weed', who: 'B', t: T0 - 40 });
+    world.share({ kind: 'walk', to: [100, 300] });
+    world.share({ kind: 'walk', to: [120, 300] });
+    expect(takenIds(world.day)).toEqual(new Set(['w7', 'w8']));
+    expect(world.day.walks.A?.to).toEqual([120, 300]);
+    expect(writes.mock.calls.filter(([k]) => k === 'island.world')).toHaveLength(0);
+    await Promise.resolve();
+    const w = writes.mock.calls.filter(([k]) => k === 'island.world');
+    expect(w).toHaveLength(1);
+    expect((JSON.parse(w[0][1]) as { events: { kind: string }[] }).events.map((e) => e.kind)).toEqual(['pick', 'pick', 'walk']);
   });
 
   it('a reload keeps the day (mine and theirs) without the relay; a new Tokyo day starts empty', () => {
@@ -97,11 +114,12 @@ describe('the shared island on this phone', () => {
     expect(world.rev).toBe(rev); // nothing new: no re-derive
   });
 
-  it('the demo\'s two players keep a day each', () => {
+  it('the demo\'s two players keep a day each (written once per burst, after it)', async () => {
     world.attach(null, 'A', true);
     world.share({ kind: 'pick', id: 'w1', what: 'weed' });
     world.attach(null, 'B', true);
     world.share({ kind: 'pick', id: 'w2', what: 'weed' });
+    await Promise.resolve();
     expect([...kv.m.keys()].filter((k) => k.startsWith('island-demo.world')).sort()).toEqual(['island-demo.world.A', 'island-demo.world.B']);
   });
 });

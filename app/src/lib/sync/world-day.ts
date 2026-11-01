@@ -126,7 +126,7 @@ export function apply(d: WorldDay, e: DayEvent, me: Who | null, row = false): Ap
       return SAME;
     case 'walk': {
       const was = d.walks[e.who];
-      if (was && was.t >= e.t) return SAME;
+      if (was && (was.t > e.t || (was.t === e.t && String(was.to) === String(e.to)))) return SAME;
       d.walks[e.who] = { to: e.to, t: e.t };
       return { fresh: true, beat: null };
     }
