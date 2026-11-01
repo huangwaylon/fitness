@@ -423,6 +423,7 @@
        *  person's villager (where it stands, rounded, and whether it dozes). */
       state: () => ({
         day: hash(canonical(shared.day)),
+        decor: hash(decorCanon()),
         villagers: Object.fromEntries((['mine', 'partner'] as const).map((id) => {
           const [x, z] = livePos(id);
           return [id === 'mine' ? view.me : view.partner, { x: Math.round(x), z: Math.round(z), asleep: actors[id].asleep, walking: actors[id].walking }];
@@ -435,6 +436,10 @@
         heard: () => heardAt,
         /** The shared day's canonical form (what `state().day` hashes). */
         canon: () => canonical(shared.day),
+        /** A decoration set (placed or moved) or removed straight into the layout, and the layout's canonical form. */
+        decorSet: (p: Parameters<typeof decor.set>[0]) => decor.set(p),
+        decorRemove: (id: string) => decor.remove(id),
+        decorCanon: () => decorCanon(),
         metrics: () => (relay ?? demoRelay)?.metrics?.() ?? null,
         status: () => (relay ?? demoRelay)?.status() ?? null
       } : {})
@@ -584,6 +589,8 @@
   $effect(() => () => link?.detach());
   /** When each of the partner's changes arrived here (e2e, the hooks on). */
   const heardAt: Record<string, number> = {};
+  /** The decorations as both phones must have them (e2e: the two-phone harness): each item's id, kind, spot and facing. */
+  const decorCanon = () => JSON.stringify([...decor.items].sort((p, q) => (p.id < q.id ? -1 : 1)).map((p) => [p.id, p.item, p.x, p.z, p.f]));
   /** The partner's walk, played here: the very walk when it came with it (rested at its end when it's over), else (an
    *  older app: only where to) planned here from where their villager stands. */
   function partnerWalk(w: Extract<DayEvent, { kind: 'walk' }>, now: boolean) {
@@ -606,12 +613,19 @@
     // where the partner's villager is today (a phone opening later: the shared day's last walk, played to now)
     const w0 = shared.day.walks[view.partner];
     if (w0) partnerWalk({ kind: 'walk', ...w0, who: view.partner }, false);
-    return shared.on(({ e, live: now }) => {
+    const offDecor = decor.on(({ e }) => {
+      if (hooksOn()) heardAt[`decor:${e.id}`] = Date.now();
+    });
+    const offShared = shared.on(({ e, live: now }) => {
       if (hooksOn()) heardAt[`${e.kind}:${'id' in e ? e.id : 'tree' in e ? e.tree : ''}`] = Date.now();
       if (e.kind === 'walk' && e.who === view.partner) partnerWalk(e, now);
       // a villager woke on their phone (theirs tapped, or both at a high-five): here too, until the same moment
       else if (e.kind === 'act' && e.act === 'wake' && now) playWake(e, view.me, relayNow());
     });
+    return () => {
+      offShared();
+      offDecor();
+    };
   });
   // The campsite's door (docs/design.md "Buildings"): a tap says who is visiting today (nobody lives inside; the
   // balloon's tail at the door).

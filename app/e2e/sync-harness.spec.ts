@@ -11,7 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-type State = { day: string; villagers: Record<'A' | 'B', { x: number; z: number; asleep: boolean; walking: boolean }> };
+type State = { day: string; decor: string; villagers: Record<'A' | 'B', { x: number; z: number; asleep: boolean; walking: boolean }> };
 type W = {
   go(z: number): void; at(x: number, z: number): [number, number]; mine(): [number, number]; partner(): [number, number];
   state(): State; share(i: object): boolean; heard(): Record<string, number>;
@@ -85,6 +85,7 @@ const diff = (x: Record<string, unknown>, y: Record<string, unknown>) =>
 
 const same = (a: State, b: State) => {
   expect(b.day).toBe(a.day);
+  expect(b.decor, 'the decorations').toBe(a.decor);
   for (const who of ['A', 'B'] as const) {
     expect(Math.hypot(a.villagers[who].x - b.villagers[who].x, a.villagers[who].z - b.villagers[who].z), `${who}'s villager`).toBeLessThanOrEqual(1);
     expect(b.villagers[who].asleep, `${who} asleep`).toBe(a.villagers[who].asleep);
@@ -155,6 +156,35 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
     expect(t1, key).not.toBeNull();
     await from.waitForTimeout(80);
   }
+  // the decorations (persistent, docs/design.md "Decorating"): placed on each phone, moved by the other, one put away,
+  // and both moving the same one at once (the later wins on both)
+  const d1 = `d${run}a1`, d2 = `d${run}b2`;
+  const decorChanges: [Page, Page, string, unknown[]][] = [
+    [a, b, 'decorSet', [{ id: d1, item: 'tanuki', x: 300, z: 456, f: 0 }]],
+    [b, a, 'decorSet', [{ id: d2, item: 'birdbath', x: 144, z: 360, f: 1 }]],
+    [b, a, 'decorSet', [{ id: d1, item: 'tanuki', x: 264, z: 480, f: 2 }]],
+    [a, b, 'decorRemove', [d2]]
+  ];
+  for (const [from, to, fn, args] of decorChanges) {
+    const id = (args[0] as { id?: string }).id ?? (args[0] as string);
+    const t0 = await from.evaluate(([fn, args]) => ((window as unknown as { __world: Record<string, (...a: unknown[]) => unknown> }).__world[fn as string](...(args as unknown[])), Date.now()), [fn, args] as const);
+    // there when the other phone's layout is this one's (the relay's op, or the sheet's row first: no news then)
+    const want = await w<string>(from, 'decorCanon');
+    const t1 = await to.evaluate(async ([want, key, after]) => {
+      const w = (window as unknown as { __world: { decorCanon(): string; heard(): Record<string, number> } }).__world, t = Date.now();
+      while (Date.now() - t < 4000) {
+        const h = w.heard()[key];
+        if (w.decorCanon() === want) return h !== undefined && h >= after ? h : Date.now();
+        await new Promise((r) => setTimeout(r, 4));
+      }
+      return null;
+    }, [want, `decor:${id}`, t0] as const);
+    note('decor → there', t1 && t1 - t0);
+    expect(t1, `decor ${fn} ${id}`).not.toBeNull();
+    await from.waitForTimeout(80);
+  }
+  await Promise.all([[a, 96], [b, 312]].map(([p, x]) => w(p as Page, 'decorSet', { id: d1, item: 'tanuki', x, z: 504, f: 0 })));
+  await a.waitForTimeout(500); // (the demo's room is a log both tabs write: one race at a time)
   // both grab the same thing at once: one wins, both agree on who
   await Promise.all([a, b].map((p) => w(p, 'share', { kind: 'pick', id: `h${run}x`, what: 'weed' })));
   await a.waitForTimeout(2500); // the walks are over, everything has arrived
