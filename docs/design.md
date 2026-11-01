@@ -525,7 +525,8 @@ NH's outdoor furniture on the island, moves it and takes it away; both phones sh
   screen's foot in the thumb's reach: the ten items in two rows of five and ✓ おわる with the count (「3/30」); a bar
   above it says what to do, or what is held and why it can't go.
 - **Place:** a tap on an item puts it down as a ghost on the nearest fine spot in the middle of the view (lifted with
-  a hop, its footprint on the ground). One finger on it drags it (the island doesn't scroll under it; a drag on empty
+  a hop, its footprint on the ground; both stand over everything while it's held, so a tree or a villager in front
+  never hides them). One finger on it drags it (the island doesn't scroll under it; a drag on empty
   ground still scrolls it, and a tap on the ground moves the ghost there); it moves a half tile (12u) at a time, its
   footprint green where it may stand and red where not, the bar saying why (「みずの うえには おけません」). ↻ まわす turns
   it a quarter, ✕ やめる lets it go, ✓ ここに おく places it (greyed while red).

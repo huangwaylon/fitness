@@ -238,7 +238,8 @@
       <b class="ar n"></b><b class="ar s"></b><b class="ar e"></b><b class="ar w"></b>
     </i>
   </div>
-  <div class="spr" data-ghost={sel.id ?? 'new'} data-item={sel.item} data-x={at[0]} data-z={at[1]} data-f={sel.f} {@attach w.at({ x: g.x, z: g.z, h: l.h + 6, live, inv: true })}>
+  <!-- what's held stands over everything while it's held (a tree or a villager in front never hides it) -->
+  <div class="spr" data-ghost={sel.id ?? 'new'} data-item={sel.item} data-x={at[0]} data-z={at[1]} data-f={sel.f} {@attach w.at({ x: g.x, z: g.z, h: l.h + 6, live, inv: true, zi: OVER - 5 })}>
     {#key `${sel.item}-${sel.f}-${sel.id}`}
       <button type="button" class="ghost" data-sfx="self" aria-label={t(`decor.item.${sel.item}`)} style={l.style}
         style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))" onpointerdown={startDrag}>

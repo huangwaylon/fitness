@@ -79,6 +79,9 @@ test('place: a tray item goes down on fine ground, a drag and a tap move it on t
   await expect(placed).toHaveAttribute('data-x', '300');
   await expect(placed).toHaveAttribute('data-f', '1');
   await expect(page.locator('[data-decor-count]')).toHaveText('1/30');
+  // nothing runs when still, in the mode too
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as unknown as { __world: W }).__world.idle())).toBe(true);
   // ✓ おわる: the tray goes; a tap on the item jiggles it where it stands (no walk)
   await page.locator('[data-decor-done]').click();
   await expect(page.locator('[data-tray]')).toHaveCount(0);
