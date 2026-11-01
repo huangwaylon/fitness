@@ -8,7 +8,7 @@ import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
-  BEACH_BOX, BED_XS, BED_ZS, CLIFF, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
+  BEACH_BOX, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, SPRING, TREE_H, freshWhere, inOval,
   riverNS, riverNear, type FreshWhere
 } from './world.ts';
 
@@ -124,12 +124,12 @@ export type BugId =
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers (a butterfly lands on one now and then), a
  *  dragonfly darts and hovers over the lawn, a few fireflies drift and blink, a ladybug or a mantis sits on a flower's
  *  head (NH's flower bugs), a grasshopper or a cricket hops in the grass, a cicada or a beetle flies
- *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a bed.
+ *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a flower clump.
  *  A tarantula or a scorpion stalks the grass at night (it rears up when it's come at: `stalkTap`), a mole cricket
  *  chirps under a little mound of earth (dug up with a tap), and a bagworm or a spider dangles on its thread from a
  *  shaken tree (TreeShakes.svelte). */
 export type Flight = 'flutter' | 'dart' | 'drift' | 'flower' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
-/** Where a crawler keeps to: the front beach (NH's shoreline and beach rocks), the grass, the flower beds, the water (the
+/** Where a crawler keeps to: the front beach (NH's shoreline and beach rocks), the grass, the flowers, the water (the
  *  pond and the river's still reach), by the rock (NH: out from under a hit rock), under a tree (the walking leaf), on a
  *  bush (the snail in the rain: NH's rocks and bushes). */
 type Ground = 'beach' | 'grass' | 'beds' | 'pond' | 'rock' | 'tree' | 'bush';
@@ -248,7 +248,7 @@ export const BUGS: Record<BugId, Bug> = {
  *  cicadas, the stags; NH's stump beetles too, the island has no stumps), on a palm (NH's palm beetles), sitting on a
  *  flower (the ladybug, the mantises), flying over the flowers (the butterflies, the bee), round a lamp at night (the
  *  moth: NH's light sources), flying near water (the dragonflies, the fireflies), on the ground in the grass, on the
- *  beach, crawling over the beds (the stink bugs), on the water (the pond and the river's still reach), by the rock, under
+ *  beach, crawling over the flowers (the stink bugs), on the water (the pond and the river's still reach), by the rock, under
  *  a tree (the walking leaf), on a bush (the snail). */
 export type BugPlace = 'trunk' | 'palm' | 'flower' | 'flowers' | 'lights' | 'water-air' | 'grass' | 'beach' | 'beds' | 'water' | 'rock' | 'under-tree' | 'bush';
 const GROUND_PLACE: Record<Ground, BugPlace> = { beach: 'beach', grass: 'grass', beds: 'beds', pond: 'water', rock: 'rock', tree: 'under-tree', bush: 'bush' };
@@ -441,9 +441,16 @@ export const BUSHES: readonly { id: string; x: number; z: number; h: number }[] 
   ...HEDGE_XS.map((x, i) => ({ id: `hedge-${i}`, x, z: HEDGE_Z, h: 40 })),
   ...SCENERY.filter((s) => s.kind === 'bush').map((s) => ({ id: s.id, x: s.x, z: s.z, h: s.h }))
 ];
-/** The flower beds' cells (FlowerBeds' data-flower="row-col"): row 0 the back row. */
-export const FLOWER_CELLS: readonly { cell: string; x: number; z: number }[] = BED_ZS.flatMap((z, r) => [...BED_XS.A, ...BED_XS.B].map((x, c) => ({ cell: `${r}-${c}`, x, z })));
-const beds = (l0: number, l1: number) => [BED_XS.A, BED_XS.B].map(([a, b]) => ({ x0: a - 16, x1: b + 16, z0: BED_ZS[1] - 8, z1: BED_ZS[0] + 8, l0, l1 }));
+/** The wild flowers' clumps (world.ts FLOWERS), each a patch round its flowers: where the butterflies and the bee
+ *  flutter and the stink bugs crawl. */
+const beds = (l0: number, l1: number, grow: number) => {
+  const by = new Map<number, Patch>();
+  for (const f of FLOWERS) {
+    const p = by.get(f.clump);
+    by.set(f.clump, p ? { ...p, x0: Math.min(p.x0, f.x - grow), x1: Math.max(p.x1, f.x + grow), z0: Math.min(p.z0, f.z - grow / 2), z1: Math.max(p.z1, f.z + grow / 2) } : { x0: f.x - grow, x1: f.x + grow, z0: f.z - grow / 2, z1: f.z + grow / 2, l0, l1 });
+  }
+  return [...by.values()];
+};
 /** The open lawn (off the beds, the trunks and the paths' middle): まえ's and the campsite's ground. */
 const LAWN: Patch[] = [
   { x0: 22, x1: 100, z0: 262, z1: 318, l0: 0, l1: 0 }, { x0: 292, x1: 368, z0: 262, z1: 318, l0: 0, l1: 0 },
@@ -452,11 +459,11 @@ const LAWN: Patch[] = [
   { x0: 214, x1: 268, z0: 760, z1: 840, l0: 0, l1: 0 }
 ];
 
-/** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWER_CELLS). */
+/** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWERS). */
 export function patches(place: BugPlace): Patch[] {
   switch (place) {
-    case 'flowers': return beds(16, 44);
-    case 'beds': return beds(3, 7);
+    case 'flowers': return beds(16, 44, 22);
+    case 'beds': return beds(3, 7, 10);
     case 'lights': return SCENERY.filter((s) => s.kind === 'prop' && /lamp/.test(s.key)).map((s) => patch(s.x, s.z - 2, 16, 6, s.h * 0.75, s.h * 1.05));
     case 'bush': return BUSHES.map((b) => patch(b.x, b.z - 1, 7, 2, b.h * 0.8, b.h * 0.86));
     case 'water-air':

@@ -84,13 +84,13 @@ describe('the shared island on this phone', () => {
     const base = { puts: [], shakes: [], watered: [], wishes: {} };
     world.rows([
       { at: T0 - 3600_000, person: 'B', data: { ...base, date: '2026-11-01', taken: ['s9', 'w4'], shakes: [['oak-k1', 'nest', T0 - 3600_000]] } },
-      { at: T0 - 20 * 3600_000, person: 'B', data: { ...base, date: '2026-10-31', taken: [], watered: ['B.0-1'], wishes: { '2026-11-01': 2 } } },
-      { at: T0 - 21 * 3600_000, person: 'A', data: { ...base, date: '2026-10-31', taken: [], watered: ['A.1-0'] } },
+      { at: T0 - 20 * 3600_000, person: 'B', data: { ...base, date: '2026-10-31', taken: [], watered: ['fl:62:530'], wishes: { '2026-11-01': 2 } } },
+      { at: T0 - 21 * 3600_000, person: 'A', data: { ...base, date: '2026-10-31', taken: [], watered: ['fl:10:724'] } },
       { at: T0, person: 'B', data: { ...base, date: '2026-10-29', taken: ['old'] } } // another day: nothing
     ]);
     expect(takenIds(world.day)).toEqual(new Set(['s9', 'w4']));
     expect(world.day.shakes.map((s) => [s.tree, s.drop, s.who])).toEqual([['oak-k1', 'nest', 'B']]);
-    expect(world.wateredYesterday().sort()).toEqual(['A.1-0', 'B.0-1']);
+    expect(world.wateredYesterday().sort()).toEqual(['fl:10:724', 'fl:62:530']);
     expect(world.wishesOf('B', '2026-11-01')).toBe(2);
     const rev = world.rev;
     world.rows([{ at: T0 - 3600_000, person: 'B', data: { ...base, date: '2026-11-01', taken: ['s9', 'w4'] } }]);

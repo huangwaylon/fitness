@@ -13,7 +13,7 @@
   import { mulberry32 } from '#lib/random.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { GOAL_TREES, onGrass, surfaceAt, type Pt } from './world.ts';
+  import { HOMES, onGrass, surfaceAt, type Pt } from './world.ts';
 
   interface Props {
     season: Season;
@@ -62,10 +62,10 @@
     const out = FIREFLY_AT.map(([x, dz, lift]) => [x, Math.round(z0 + dz), lift] as const).filter(([x, z]) => onGrass(x, z) && surfaceAt(x, z) === 'grass').slice(0, 3);
     return quiet ? out.slice(0, 1) : out;
   });
-  /** Toy Day's presents (NH's Dec 24), one on each side of the path, inward of the goal trees and clear of their
-   *  canopies and fruit rows (controls) at 390 and 320 wide. */
+  /** Toy Day's presents (NH's Dec 24), one on each side of the path, a step in front of each villager on its inner
+   *  side, clear of the villagers and the goal trees' canopies and fruit rows (controls) at 390 and 320 wide. */
   const toyDay = $derived(mode === 'fireflies' && eventsAt(minuteNow()).toyDay);
-  const TOYS: readonly Pt[] = [[GOAL_TREES.A[0] + 88, GOAL_TREES.A[1] + 28], [GOAL_TREES.B[0] - 90, GOAL_TREES.B[1] + 28]];
+  const TOYS: readonly Pt[] = [[HOMES.A[0] + 42, HOMES.A[1] - 34], [HOMES.B[0] - 42, HOMES.B[1] - 34]];
 </script>
 
 {#if mode === 'fall' && kind}

@@ -12,7 +12,7 @@
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
   // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
-  // critters and the island's things; then the tapped element (a bush: Scenery's data-bush, a flower: FlowerBeds'
+  // critters and the island's things; then the tapped element (a bush: Scenery's data-bush, a flower: Flowers'
   // data-flower); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
   // the finger (the camera's inverse projection → sceneTaps.ts hitWorld). A ground flourish is a world node where the tap
   // landed (a mark flat on the ground, a puff upright), so it stays put while the camera scrolls; the sky's stay in the
@@ -30,15 +30,15 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { guardsU, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from './stars.ts';
-  import { BEDS, BUSH_U, FLOWER_U, type Tod } from './scene.ts';
-  import { BED_XS, BED_ZS, HEDGE_XS, HEDGE_Z, SCENERY } from './world.ts';
-  import { PETAL, hitWorld, sceneSfx, shownNow, type SceneHit } from './sceneTaps.ts';
+  import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
+  import { HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type Flower } from './world.ts';
+  import { hitWorld, petalOf, sceneSfx, shownNow, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
   import Critters from './Critters.svelte';
   import Finds from './Finds.svelte';
   import Care from './Care.svelte';
   import type { Choice } from './pager.ts';
-  import { localCell, sharedCell, water } from './sceneDay.ts';
+  import { water } from './sceneDay.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { findArt } from './beach.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -220,7 +220,7 @@
     if (visitor?.tap(cx, cy)) return;
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
-    // the tapped element: a tree (Scenery's canopy), a bush (Scenery's art) or a flower (FlowerBeds)
+    // the tapped element: a tree (Scenery's canopy), a bush (Scenery's art) or a flower (Flowers)
     // (a tree top reaching into the sky leaves the sun, the moon and the clouds theirs)
     const treeEl = t.closest<HTMLElement>('[data-tree]');
     if (treeEl && !(cy - r.top < w.view.horizon && inSky(cx, cy)) && tree?.(treeEl.dataset.tree ?? '')) return;
@@ -228,8 +228,8 @@
     const b = bushEl && bushAt(bushEl.dataset.bush ?? '');
     if (bushEl && b) return bush(bushEl, b);
     const flowerEl = t.closest<HTMLElement>('[data-flower]');
-    const cell = flowerEl?.dataset.flower?.split('-').map(Number);
-    if (flowerEl && cell?.length === 2) return flower(flowerEl, cell[0], cell[1]);
+    const fl = flowerEl && flowerById(flowerEl.dataset.flower ?? '');
+    if (flowerEl && fl) return flower(flowerEl, fl);
     // the sky: above the horizon (where the ground's inverse projection finds nothing)
     const at = cy - r.top < w.view.horizon ? null : w.worldAtClient(cx, cy);
     if (!at) return sky(e, r, cx - r.left, cy - r.top);
@@ -276,23 +276,20 @@
     });
   }
 
-  /** A flower (row 0 the beds' back row, 1 the front; col 0–3 left to right): my villager waters it. */
-  function flower(el: HTMLElement, row: number, col: number) {
-    const id = row ? BEDS[season].front : BEDS[season].back;
-    const fx0 = [...BED_XS.A, ...BED_XS.B][col], fz = BED_ZS[row];
-    if (fx0 === undefined || fz === undefined) return;
+  /** A wild flower: my villager waters it. */
+  function flower(el: HTMLElement, f: Flower) {
+    const color = petalOf(wildFlower(f, season));
     // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
     const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
-    water(dayKey(), `${row}-${col}`);
-    // the partner's phone: the flower glitters there too (whose bed it is, theirs or mine), my villager waters it
-    const cell = sharedCell(`${row}-${col}`);
-    if (cell) shared.share({ kind: 'world', op: 'watered', id: cell });
+    water(dayKey(), f.id);
+    // the partner's phone: the flower glitters there too, my villager waters it
+    shared.share({ kind: 'world', op: 'watered', id: f.id });
     // my villager walks over with the watering can (then the can is in its hand, not floating over the bloom)
-    const { ms, walked } = approach(fx0, fz, { tool: 'can', toolMs: 900, reach: LONG_REACH });
+    const { ms, walked } = approach(f.x, f.z, { tool: 'can', toolMs: 900, reach: LONG_REACH });
     after(ms, () => {
       jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
       // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
-      spawn({ kind: 'flower', x: fx0, y: fz, lift: FLOWER_U * 0.72, color: PETAL[id], rare, flip: fx0 > 195, held: walked });
+      spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > 195, held: walked });
       sceneSfx('water');
       if (rare === 'butterfly') sceneSfx('butterfly');
     });
@@ -449,15 +446,13 @@
           sceneSfx('bush');
         });
       } else if (e.kind === 'world' && e.op === 'watered') {
-        const cell = localCell(e.id)?.split('-').map(Number);
-        if (!cell) return;
-        const [row, col] = cell, fx0 = [...BED_XS.A, ...BED_XS.B][col], fz = BED_ZS[row];
-        if (fx0 === undefined || fz === undefined) return;
-        const el = scene?.querySelector<HTMLElement>(`[data-flower="${row}-${col}"]`);
-        const { ms } = partnerAct(fx0, fz, { tool: 'can', toolMs: 900, reach: LONG_REACH });
+        const f = flowerById(e.id);
+        if (!f) return;
+        const el = scene?.querySelector<HTMLElement>(`[data-flower="${f.id}"]`);
+        const { ms } = partnerAct(f.x, f.z, { tool: 'can', toolMs: 900, reach: LONG_REACH });
         after(ms, () => {
           jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
-          spawn({ kind: 'flower', x: fx0, y: fz, lift: FLOWER_U * 0.72, color: PETAL[row ? BEDS[season].front : BEDS[season].back], flip: fx0 > 195, held: true });
+          spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195, held: true });
           sceneSfx('water');
         });
       }
@@ -697,7 +692,7 @@
     70% { transform: translate(calc(6 * var(--su)), calc(-40 * var(--su))) rotate(-6deg); opacity: 1; }
     100% { transform: translate(calc(24 * var(--su)), calc(-62 * var(--su))) rotate(12deg); opacity: 0; }
   }
-  /* a firefly rising out of the bed, blinking (summer nights; above the tint like the scene's own fireflies) */
+  /* a firefly rising out of the flowers, blinking (summer nights; above the tint like the scene's own fireflies) */
   .firefly {
     left: 0; top: 0; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
     background: var(--firefly, #F6FF9E); box-shadow: 0 0 7px var(--firefly-glow, #EFFF7A); animation: firefly 1.05s ease-out both;

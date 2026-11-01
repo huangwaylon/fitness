@@ -3,6 +3,7 @@
 // the relay (sync/live-local.ts plays the room: first claim wins, the day's world kept for a tab opening later).
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager walks over, and what's picked up on one tab is gone on the other.
+import { FLOWERS } from '../src/lib/components/island/world.ts';
 import { expect, test, type Page } from '@playwright/test';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -73,8 +74,8 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   const a = await ctx.newPage(), b = await ctx.newPage();
   await open(a);
   await open(b, '&as=B');
-  /** Where each person's villager, goal tree and bed stand on a tab (screen x of their middles, the same camera). */
-  const layout = (p: Page) => p.evaluate(() => {
+  /** Where each person's villager and goal tree and two wild flowers stand on a tab (screen x of their middles, the same camera). */
+  const layout = (p: Page) => p.evaluate((flowers) => {
     const mid = (sel: string) => {
       const r = document.querySelector(sel)!.getBoundingClientRect();
       return Math.round(r.left + r.width / 2);
@@ -84,10 +85,9 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
       out[`villager${who}`] = mid(`[data-person="${who}"] .vil`);
       out[`tree${who}`] = mid(`[data-tree-node="${who}"]`);
     }
-    out.bedLeft = mid('[data-flower="0-0"]');
-    out.bedRight = mid('[data-flower="0-3"]');
+    for (const id of flowers) out[id] = mid(`[data-flower="${id}"]`);
     return out;
-  });
+  }, [FLOWERS[0].id, FLOWERS[3].id]);
   for (const p of [a, b]) await go(p, 0);
   await a.waitForTimeout(500);
   const [la, lb] = [await layout(a), await layout(b)];
@@ -173,12 +173,12 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   await expect(shells(b)).toHaveCount(2, { timeout: 4000 });
   // the partner's villager went for it: their line on B (in view at まえ)
   await expect(b.locator('[data-fx="catch"], [data-partner-news]').first()).toContainText('を ひろった！', { timeout: 5000 });
-  // A waters a flower of A's own bed (on the left, on both tabs): it glitters on B's tab too, the same flower
-  await a.locator('[data-flower="1-0"]').click();
-  await expect(a.locator('[data-flower="1-0"] [data-watered], [data-watered]').first()).toBeAttached({ timeout: 4000 });
+  // A waters a flower (world.ts FLOWERS): it glitters on B's tab too, the same flower
+  const fl = `[data-flower="${FLOWERS[0].id}"]`;
+  await a.locator(fl).click();
+  await expect(a.locator(`${fl} [data-watered]`)).toBeAttached({ timeout: 4000 });
   await expect(b.locator('[data-watered]')).toHaveCount(1, { timeout: 5000 });
-  const wb = await b.locator('[data-watered]').evaluate((el) => el.closest('[data-flower]')?.getAttribute('data-flower') ?? el.parentElement?.closest('[data-flower]')?.getAttribute('data-flower'));
-  if (wb) expect(wb).toBe('1-0');
+  await expect(b.locator(`${fl} [data-watered]`)).toHaveCount(1);
   // B's phone again, later: the day as it is
   const c = await ctx.newPage();
   await c.goto(`?demo&date=${DATE}&critter=none&as=B`);

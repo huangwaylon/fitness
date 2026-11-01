@@ -58,7 +58,7 @@
   }
   /** Where the present lands (world x, z): with the sea under the balloon (the ground three quarters down the screen
    *  below it, halfway between the horizon and the screen's foot, is off the island) it drops into the sea (null); else the open grass in view nearest under it (a 12u grid over the view, low on the
-   *  screen first), ≥ 44px clear of every control and 28px of what stands or lies on the lawn (bushes, flowers, finds,
+   *  screen first), ≥ 44px clear of every control (14px on a short screen with no such room) and 28px of what stands or lies on the lawn (bushes, flowers, finds,
    *  weeds, a pumpkin, the cake, the visitor); failing that, the lawn spot nearest
    *  the view's middle; null (the sea) when none is in view either. `cx`: the balloon's client x. */
   function landing(cx: number): Pt | null {
@@ -69,10 +69,9 @@
     // every control on screen (client px; a world node out of view is hidden but keeps a stale box)
     const g = stageGeo(document.querySelector<HTMLElement>('.if-scene[data-live]') ?? undefined);
     const ui = (g ? guardsU(g, 0, (el) => getComputedStyle(el).visibility === 'hidden') : []).map((b) => ({ x0: b.x0 / g!.k + g!.r.left, x1: b.x1 / g!.k + g!.r.left, y0: b.y0 / g!.k + g!.r.top, y1: b.y1 / g!.k + g!.r.top }));
-    const PAD = 44;
     const things = [...document.querySelectorAll('.if-scene [data-care], .if-scene [data-find], .if-scene [data-branch], .if-scene [data-nest], .if-scene [data-pumpkin], .if-scene [data-cake], .if-scene [data-visitor] .art, .if-scene [data-bush], .if-scene [data-flower], .if-scene [data-toy] .art')]
       .filter((el) => getComputedStyle(el).visibility !== 'hidden').map((el) => el.getBoundingClientRect()).filter((r) => r.width || r.height);
-    const ok = ([x, z]: Pt): boolean => {
+    const ok = ([x, z]: Pt, PAD = 44): boolean => {
       // open grass all round (off paths, the water's bank, the beach's edge)
       if (!w.inView(x, z, -24) || ([[0, 0], [14, 0], [-14, 0], [0, 14], [0, -14]] as const).some(([dx, dz]) => surfaceAt(x + dx, z + dz) !== 'grass')) return false;
       const [px, py] = w.clientAt(x, z);
@@ -81,18 +80,21 @@
       return things.every((r) => px < r.left - 28 || px > r.right + 28 || py < r.top - 28 || py > r.bottom + 28);
     };
     const [z0, z1] = w.zRange();
-    let best: Pt | null = null, bestD = Infinity;
-    for (let z = Math.ceil(z0 / 12) * 12; z < Math.min(z1, z0 + 700); z += 12)
-      for (let x = -12; x <= 402; x += 12) {
-        if (!ok([x, z])) continue;
-        const [px, py] = w.clientAt(x, z);
-        // under the balloon, and low on the screen (near the camera) rather than far off
-        const d = Math.abs(px - cx) + (v.top + v.vh - py) * 0.6;
-        if (d < bestD) [best, bestD] = [[x, z], d];
-      }
-    if (best) return best;
+    // a short screen's front lawn is mostly trees and villagers: then a spot just clear of their controls will do
+    for (const pad of [44, 14]) {
+      let best: Pt | null = null, bestD = Infinity;
+      for (let z = Math.ceil(z0 / 12) * 12; z < Math.min(z1, z0 + 700); z += 12)
+        for (let x = -12; x <= 402; x += 12) {
+          if (!ok([x, z], pad)) continue;
+          const [px, py] = w.clientAt(x, z);
+          // under the balloon, and low on the screen (near the camera) rather than far off
+          const d = Math.abs(px - cx) + (v.top + v.vh - py) * 0.6;
+          if (d < bestD) [best, bestD] = [[x, z], d];
+        }
+      if (best) return best;
+    }
     const mid = (z0 + z1) / 2;
-    return [...LAWN_SPOTS].sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid)).find(ok) ?? null;
+    return [...LAWN_SPOTS].sort((a, b) => Math.abs(a[1] - mid) - Math.abs(b[1] - mid)).find((p) => ok(p)) ?? null;
   }
   // the confetti: eight bits in the balloon's colours and NH's party colours, flung out from the burst
   const BITS = [body, '#FFD84D', light, '#6FCFF6', body, '#FF8DBE', shade, '#8FD16A'];

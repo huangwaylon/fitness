@@ -15,7 +15,7 @@ export interface IslandDayData {
   puts: [string, string, number, number][];
   /** Shakes that left something: [tree, drop, t]. */
   shakes: [string, IslandDrop, number][];
-  /** Flower bed cells watered (`A.0-1`). */
+  /** The flowers watered (island/world.ts FLOWERS ids: `fl:<x>:<z>`). */
   watered: string[];
   /** Wishes: the morning each brings its fragment → how many. */
   wishes: Record<string, number>;
@@ -24,7 +24,7 @@ export interface IslandDayData {
 }
 
 /** Caps that keep a row well under the event data limit (20,000 characters): a busy day is a few dozen of each. */
-export const ISLAND_MAX = { taken: 400, puts: 60, shakes: 120, watered: 16, wishes: 4 } as const;
+export const ISLAND_MAX = { taken: 400, puts: 60, shakes: 120, watered: 40, wishes: 4 } as const;
 
 const ID = /^[\w:.-]{1,32}$/;
 const WHAT = /^[a-z][\w:.-]{0,63}$/;
@@ -51,7 +51,7 @@ export function isIslandDay(d: Record<string, unknown>, today?: LocalDate): d is
   if (!list(d.taken, ISLAND_MAX.taken, (v) => typeof v === 'string' && ID.test(v))) return false;
   if (!list(d.puts, ISLAND_MAX.puts, (v) => Array.isArray(v) && v.length === 4 && typeof v[0] === 'string' && ID.test(v[0]) && typeof v[1] === 'string' && WHAT.test(v[1]) && isPt([v[2], v[3]]))) return false;
   if (!list(d.shakes, ISLAND_MAX.shakes, (v) => Array.isArray(v) && v.length === 3 && typeof v[0] === 'string' && ID.test(v[0]) && (DROPS as readonly string[]).includes(v[1] as string) && isInt(v[2], 0, 1e14))) return false;
-  if (!list(d.watered, ISLAND_MAX.watered, (v) => typeof v === 'string' && /^[AB]\.[01]-[01]$/.test(v))) return false;
+  if (!list(d.watered, ISLAND_MAX.watered, (v) => typeof v === 'string' && ID.test(v))) return false;
   if (!isRec(d.wishes) || Object.keys(d.wishes).length > ISLAND_MAX.wishes) return false;
   for (const [k, n] of Object.entries(d.wishes)) if (!isLocalDate(k) || !isInt(n, 1, 99)) return false;
   return d.at === undefined || isPt(d.at);

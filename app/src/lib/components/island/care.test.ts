@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { HYBRIDS, HYBRID_ODDS, MAX_WEEDS, hybridFor, rockTap, weedsAt } from './care.ts';
+import { hybridsOf, HYBRID_ODDS, MAX_WEEDS, hybridFor, rockTap, weedsAt } from './care.ts';
 import { DIG_SPOTS, LAWN } from './beach.ts';
 import { mulberry32 } from '#lib/random.ts';
+import { WILD } from './scene.ts';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -27,24 +28,30 @@ describe('weeds', () => {
 });
 
 describe('hybrids', () => {
-  const row = () => 'red-roses' as const;
-  it('rarely (1 in 4) a watered cell shows a hybrid of its flower the next day; nothing without watering', () => {
+  const kind = () => 'red-roses' as const;
+  it('rarely (1 in 4) a watered flower shows a hybrid of its kind the next day; nothing without watering', () => {
     let n = 0;
     for (let d = 0; d < 400; d++) {
       const date = new Date(Date.UTC(2026, 0, 1) + d * 86_400_000).toISOString().slice(0, 10);
-      expect(hybridFor(date, [], row)).toBeNull();
-      const h = hybridFor(date, ['0-1', '1-2'], row);
+      expect(hybridFor(date, [], kind)).toBeNull();
+      const h = hybridFor(date, ['fl:130:344', 'fl:10:724'], kind);
       if (!h) continue;
       n++;
-      expect(['0-1', '1-2']).toContain(h.cell);
-      expect(HYBRIDS['red-roses']).toContain(h.flower);
+      expect(['fl:130:344', 'fl:10:724']).toContain(h.id);
+      expect(hybridsOf('red-roses')).toContain(h.flower);
     }
     expect(n / 400).toBeGreaterThan(HYBRID_ODDS - 0.07);
     expect(n / 400).toBeLessThan(HYBRID_ODDS + 0.07);
   });
-  it('every hybrid has its official art', () => {
-    for (const f of new Set(Object.values(HYBRIDS).flat()))
-      expect(existsSync(join(import.meta.dirname, '../../../../static/art/flowers', `${f}.webp`)), f).toBe(true);
+  it('a hybrid is a rarer colour of the same kind, never its own', () => {
+    expect(hybridsOf('red-roses')).not.toContain('red-roses');
+    for (const h of hybridsOf('white-cosmos')) expect(h.endsWith('-cosmos')).toBe(true);
+  });
+  it('every wild flower has hybrids, each with its official art', () => {
+    for (const k of new Set(Object.values(WILD).flat())) {
+      expect(hybridsOf(k).length, k).toBeGreaterThan(0);
+      for (const f of hybridsOf(k)) expect(existsSync(join(import.meta.dirname, '../../../../static/art/flowers', `${f}.webp`)), f).toBe(true);
+    }
   });
 });
 

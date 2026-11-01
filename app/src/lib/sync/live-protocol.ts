@@ -27,7 +27,7 @@ export type Who = 'A' | 'B';
 export const ACTS = ['weed', 'water', 'dig', 'shake', 'fruit', 'present', 'cast', 'net', 'talk', 'visitor', 'star', 'tap', 'bush', 'rock'] as const;
 export type Act = (typeof ACTS)[number];
 
-/** A change to the shared island (docs/backend.md#shared-world): `watered` a flower bed's cell, `wished` on a shooting
+/** A change to the shared island (docs/backend.md#shared-world): `watered` a flower (world.ts FLOWERS id), `wished` on a shooting
  *  star (its id the morning the fragment comes), the rest kept for older phones. */
 export const WORLD_OPS = ['weed-pulled', 'fruit-collected', 'dug', 'present-opened', 'watered', 'shaken', 'wished'] as const;
 export type WorldOp = (typeof WORLD_OPS)[number];

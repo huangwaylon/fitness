@@ -2,7 +2,7 @@ import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import { ACTION_MS, actionMs, actionSpots, facingFor, nearestWalkable, route, routeLength, segmentClear, walkGeo, walkable, wanderMs, type Pt, type WalkGeo } from './walkGraph.ts';
 import { plan } from './avatar.ts';
-import { BED_XS, BED_ZS, CAMPSITE, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver } from './world.ts';
+import { CAMPSITE, FLOWERS, CLIFF, GOAL_TREES, HOMES, POND, RIVER, ROCK, inRiver } from './world.ts';
 
 const crosses = (a: Pt, b: Pt, o: Box) => {
   for (let i = 0; i <= 100; i++) {
@@ -33,10 +33,10 @@ describe('the walk geometry (from the world constants)', () => {
       sound(g, g.nodes.homeA, r!);
     }
   });
-  it('trunks, beds, the rock, water, the cliff face and the tent are not walkable; the stairs are', () => {
+  it('trunks, the rock, water, the cliff face and the tent are not walkable; the stairs and the flowers are', () => {
     expect(g.nodes.homeA).toEqual([...HOMES.A]);
     expect(walkable(g, GOAL_TREES.A[0], GOAL_TREES.A[1])).toBe(false);
-    expect(walkable(g, (BED_XS.A[0] + BED_XS.A[1]) / 2, (BED_ZS[0] + BED_ZS[1]) / 2)).toBe(false);
+    expect(walkable(g, FLOWERS[0].x, FLOWERS[0].z)).toBe(true); // NH: you walk through flowers
     expect(walkable(g, ROCK[0], ROCK[1])).toBe(false);
     expect(walkable(g, POND.x, POND.z)).toBe(false);
     expect(walkable(g, RIVER[6][0], RIVER[6][1])).toBe(false); // the stream
@@ -59,7 +59,7 @@ describe('the walk geometry (from the world constants)', () => {
         if (z > CLIFF.z0 && z < CLIFF.z1) expect(x >= CLIFF.stair[0] && x <= CLIFF.stair[1]).toBe(true);
       }
   });
-  it('a blocked straight line goes around through the nodes, never through a bed or a trunk', () => {
+  it('a blocked straight line goes around through the nodes, never through a bush or a trunk', () => {
     const from = g.nodes.outA, to = g.nodes.homeA;
     const r = route(g, from, to)!;
     expect(r.at(-1)).toEqual(to);

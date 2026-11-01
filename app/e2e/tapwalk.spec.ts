@@ -81,7 +81,7 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   await open(page);
   const [front] = await call(page, (w) => w.stops());
   expect(await call(page, (w) => w.cam())).toBe(front);
-  const [x, y] = await call(page, (w) => w.at(240, 440));
+  const [x, y] = await call(page, (w) => w.at(230, 500));
   await page.mouse.click(x, y);
   await expect(page.locator('.tap-ring')).toHaveCount(1);
   await page.waitForTimeout(2500);

@@ -15,7 +15,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LOOKS, baseOf, dressDefines, dressGeometry, SEASON_GLSL } from './terrain-seasons.ts';
-import { BUILDINGS, CAMPSITE, CLIFF, FACE_H, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
+import { BUILDINGS, CAMPSITE, CLIFF, FACE_H, FLOWERS, GOAL_TREES, GRASS, HEDGE_XS, HEDGE_Z, LAND, PATHS, PLAN, POND, RIVER, ROCK, SCENERY, SPRING, TREE_H, BAND_D } from '../src/lib/components/island/world.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'terrain');
@@ -99,6 +99,8 @@ for (const s of SCENERY) {
   else sh(s.x + 0.1 * w, s.z - 1, Math.max(5, w * 0.48), Math.max(2.6, w * 0.16), 0.55);
 }
 for (const x of HEDGE_XS) sh(x + 3, HEDGE_Z - 1.5, 21, 8.5, 0.6);
+// the wild flowers' small soft shadows
+for (const fl of FLOWERS) sh(fl.x + 2, fl.z - 0.5, 8, 3, 0.32);
 sh(ROCK[0] + 2, ROCK[1] - 1, 16, 6.5, 0.6);
 
 // buildings: [x, z, half width, depth]

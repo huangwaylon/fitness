@@ -160,7 +160,7 @@ Lists follow Apple's ring order, Move, Exercise, Stand, then steps (`RING_FRUITS
 | 🍎 Steps | `steps` (max of `steps`, `steps_watch`) | per person `pref` stepsGoal, 1,000–30,000 in 500s (default 8,000 for both) |
 
 The Move and steps goals on a day are the last ones set on or before that Tokyo date (a change never re-prices an
-earlier day). Everything that reads a goal reads that day's: the ベル, the tree's popup and the flower beds, けんこう's goal
+earlier day). Everything that reads a goal reads that day's: the ベル, the tree's popup, けんこう's goal
 line and goal days, あそびかた, and the all-four notification.
 
 **がんばり (stretch):** +1 more for each goal reached at 1.5× (`STRETCH.multiplier`): 🍐 1.5 × that day's Move goal,
@@ -295,19 +295,22 @@ projector), `island/IslandScene.svelte`, `island/WorldGround.svelte`, `island/Wo
   mist), glints twinkling on the open sea, flow streaks down the river, the pond's lily pads and ripple (petals
   or maple leaves afloat in their weeks, and riding the river: NH's petal and leaf icons, one every ~50u along the east
   reach and the crossing, each 36u downstream over 15 s, turning): CSS only, held still under a sheet and while hidden.
-- **Layout** (`world.ts`): まえ: the airport at (362, −8) with its dock, palms on the sand, plumeria at the grass edge,
-  the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone), each person's 2 × 2 goal bed beside them, the goal trees (62 / 330,
-  332), the tape deck between them, the rock, the dig spots, the hedge along the river at z 596. The river rises at the
-  spring on the upper tier, falls through the cliff (x 351…393), meanders gently down the east side (its width
-  breathing, 28–36u) and west across the island at
-  z ≈ 640 to its mouth on the west beach, crossed by a stone bridge (x 195) and a log bridge (x 296). ひろば: the plaza
-  (195, 900), the banner lamps, the bench, Resident Services (195, 1068), the bulletin board, the pond (44, 772). おく:
-  Nook's Cranny (100, 1338), Able Sisters (282, 1338), the museum (190, 1518), the cliff (z 1676…1720) with its stairs
-  (x 36…84) and log fence, the campsite (150, 1830). All the buildings are NH's map icons (one render family).
-  **Decor** (NH's catalog icons, `fetch-assets.ts`): streetlamps at the stone bridge, meadow flowers in three-flower
-  clumps (`meadow-<i>`, the season's species: `scene.ts` MEADOW, NH's flowers blooming on under the snow), a simple
-  wooden fence, garden rocks, the month's bushes either side of the path to the plaza, a bamboo grove (NH's bamboo)
-  behind a bamboo lattice fence between Able Sisters and the museum, garden lanterns, a corral fence on the upper tier.
+- **Layout** (`world.ts`): まえ: the wide front beach, a palm at each of its outer edges by the water, plumeria at the
+  grass edge, the villagers' homes A (132, 214, ウェイ) and B (262, 214, うめ) on both phones (never mirrored per phone) with the goal trees on their outer sides (60 / 332,
+  216), the tape deck between them, the rock, the dig spots, an oak and a cedar behind the lawn, the hedge at z 600 with
+  streetlamps at its gap. One dirt path runs up the middle from the beach to the campsite's clearing, and on to the
+  stairs. The stream rises at the spring on the upper tier, falls through the cliff (x 351…393) and meanders down the
+  east side to its mouth on the east beach. おく: the month's bushes either side of the path, the pond (74, 772) with a
+  flat rock, the bamboo grove by the stream, the campsite's tent (196, 984) in its worn clearing with its sign, hollies
+  and garden lanterns, white lanterns at the stairs' foot, the cliff (z 1040…1080) with its stairs (x 36…84), a cedar
+  forest on the upper tier.
+  **Wild flowers** (`world.ts` FLOWERS, `Flowers.svelte`): NH's flowers in nine clumps of 2–5 of one kind over the
+  open lawn (four small ones on the front lawn, the rest round おく's ground), never on sand or a path; the season's
+  kinds in turn (`scene.ts` WILD: tulips and hyacinths, lilies and roses, cosmos and mums, pansies and windflowers
+  blooming on under the snow), 30u (pansies, windflowers, mums lower, lilies taller), each with a baked soft shadow.
+  Each flower's id is where it stands (`fl:<x>:<z>`): watering, hybrids and the flower bugs key on it.
+  **Decor** (NH's models and catalog icons): streetlamps, garden lanterns, garden and flat rocks, the month's bushes, a
+  bamboo grove.
   `scenery.test` keeps every piece off the water, the paths, the footprints and the features' spots, and the walk
   reaching every door; bamboo and rocks are obstacles like the trees.
 - **Winter and night looks** (`scripts/models.ts`, [Official art](#official-art)): NH's own snowy models (the campsite,
@@ -342,7 +345,7 @@ villager.
 - **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
   Night is soft periwinkle, never black; the windows and lamps light up from dusk.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
-  Jan–Mar camellia). Two flower beds by season.
+  Jan–Mar camellia). The wild flowers by season (`scene.ts` WILD).
 
 ### Particles and events
 
@@ -368,8 +371,7 @@ nights are always fine.
 
 ### Trees
 
-`island/FruitTree.svelte`, `island/FlowerBeds.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit and its
-person's flowers through one Tokyo day (a quick run of canopy taps shakes it: [Shaking a tree](#shaking-a-tree)):
+`island/FruitTree.svelte`, `island/fruitDay.ts`, `e2e/trees.spec.ts`. A tree's fruit through one Tokyo day (a quick run of canopy taps shakes it: [Shaking a tree](#shaking-a-tree)):
 
 - **Hanging:** each goal's fruit, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour toward the goal
   (grayscale = 1 − share, washed lighter while grey).
@@ -379,12 +381,11 @@ person's flowers through one Tokyo day (a quick run of canopy taps shakes it: [S
   Tokyo day (the shared day's `fr:<person>:<fruit>`; our villager picks it up on the other). Either person may pick up
   either tree's fruit; cosmetic (no ベル). The fruit row is one button: a tap within 22u of a fallen fruit picks up the
   nearest, else it opens the popup.
-- **Goal flowers:** each 2 × 2 bed belongs to the person standing beside it, one flower per goal (`BED_FRUIT`: 🍐
-  back-left, 🍑 back-right, 🍒 front-left, 🍎 front-right) in the season's species. Not met: a swaying bud. Met: it
-  blooms once per phone (a squash, a pop, petal bits, a glint, `flower-bloom`); a reload finds it open.
 - **All four met:** four warm glints twinkle on the canopy over a soft gold pulse (NH's money tree).
-- `fruit-day` in localStorage (`{ date, dropped, picked, bloomed }`, ids `A:pear`): losing it only drops a fruit and
-  blooms a flower again.
+- **The popup** stands in screen space over every tint, in the middle of the band between the HUD and the screen's
+  foot, roughly centred and leaning away from its tree (the goal trees stand at the lawn's outer edges, so the canopy
+  stays tappable beside it); a tail toward the tree when the tree is above or below it.
+- `fruit-day` in localStorage (`{ date, dropped, picked }`, ids `A:pear`): losing it only drops a fruit again.
 
 ### Shaking a tree
 
@@ -454,9 +455,9 @@ JSON for the rules and the game's ja/en names, Nookipedia for the icons; 96 px w
 picked up is gone on both, what a shake drops lies on both, each villager stands where its person sent it.
 
 - **One layout, not mirrored:** A (ウェイ) lives on the left and B (うめ) on the right on both phones, whichever of us
-  holds it: the homes, the goal trees, the flower beds (cells `row-col`, columns 0–1 A's), the meeting spots and every
-  shared id are by person, never by "mine / the partner's" (`?demo` and `?demo&as=B` show the same island; a garden kept
-  from before is turned round once, `sceneDay.ts absoluteGarden`).
+  holds it: the homes, the goal trees, the meeting spots are by person, never by "mine / the partner's", and every
+  shared id is by person or by where the thing stands (a flower's `fl:<x>:<z>`); `?demo` and `?demo&as=B` show the
+  same island.
 
 - **The partner's doings, played here:** when their change arrives (within 12 s of it), their villager runs over (at
   most 3 s on the way) and does it with its tool (the net, the rod, the shovel, a shake, a pick-up); a catch or a find
@@ -547,9 +548,9 @@ the line. The first of each shell, fossil and fragment is a ずかん `find`, wr
 - **Weeds** sprout every 30–60 minutes on the lawn's free spots (`LAWN`), the newest three at a time; a tap pulls one
   (`scene-weed`), gone on both phones (our villager pulls it on the other).
 - **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today, by
-  either of us, glitters for the day on both phones (`wateredOn` and the shared day's `watered`, by whose bed: `A.0-1`;
-  A's bed on the left, B's on the right, on both phones). The beds watered yesterday, both people's, have a 1 in 4 chance of a hybrid
-  colour in one watered cell today, the same one on both phones (NH's hybrids, simplified; `scene-garden`).
+  either of us, glitters for the day on both phones (`wateredOn` and the shared day's `watered`, by the flower's id `fl:<x>:<z>`,
+  from where it stands). The flowers watered yesterday, both people's, have a 1 in 4 chance of a hybrid colour on one
+  of them today, the same one on both phones (NH's hybrids by kind, simplified: `care.ts` hybridsOf; `scene-garden`).
 - **The rock** (on the health lawn behind the left tree): a tap clonks it with the shovel (on both phones); 1 in 4 a
   sparkle, 1 in 8 a pill bug or a centipede crawls out (on both: a `put`).
 - Weeds, dig spots and the rock are measured clear of the controls on each screen (a covered spot isn't shown).
@@ -829,20 +830,20 @@ camZ; `mine()`, `following()`, `snapping()`) for the e2e and the console.
 - **Snappy actions:** 240 u/s, a walk clamped to 150–900 ms; one over 1.2 s (or with nowhere clear to stand) isn't
   made: the villager turns to it. A building's door or a visitor across the island is a run instead. The outcome is
   decided at the tap; the reel, a dive's chase, a tarantula and the wasps never wait for a walk.
-- **Where it stands:** around the target at 26u, else 40u (a can or a net also across a bed), the nearest by walking;
+- **Where it stands:** around the target at 26u, else 40u (a can or a net also at arm's length), the nearest by walking;
   a spot counts only if the standing figure covers no control, visitor or canopy and stays on screen.
 - **After:** it stays 4–6 s, then wanders back to where it rests (home, or where a tap sent it) at 90 u/s. A sheet
   stops everyone; uncovered, they wander back; hidden over 30 s, they're back on return. A balloon opens only over a
   villager standing still, and steps aside while the camera scrolls.
 - **Hold-up:** a catch or a find is lifted over my villager's head (`if-holdup`) while its plate reads.
 - **Walk mask** (`walkGeo`): land, the plaza, both bridges and the stairs; not the sea, the river, the pond, the spring,
-  the cliff face, building footprints, trunks, beds, the rock, bushes or props. Rasterised once on a 4u grid; named
+  the cliff face, building footprints, trunks, the rock, bushes or props. Rasterised once on a 4u grid; named
   nodes (homes, the trees, the shore, both ends of each bridge and of the stairs, every door, the pondside, the river's
   casting spots, centre stage) and the obstacles' padded corners make a visibility graph built once (~15 ms); a
   straight segment when clear, else Dijkstra through it. Action walks and outings use it.
 - **Navigation for taps** (`nav.ts`): the same ground as convex polygons grown by an 8u pad (the river a chain of
   quads cut at the bridges' decks, the pond a 16-gon, the cliff two strips either side of the stairs, the footprints,
-  trunks, beds, bushes, props, the hedge, the fences, the bamboo, the rocks; off the land is the sea, and the land is convex, so two points on
+  trunks, bushes, props, the hedge, the fences, the bamboo, the rocks; off the land is the sea, and the land is convex, so two points on
   it see each other unless a polygon is between). Nodes: the polygons' corners a step outside plus the named nodes
   (the walk mask's names, so a relayed node id means the same); only bitangent edges up to 320u are kept. ~400 nodes,
   ~2,060 edges, 119 polygons; built in ~2.8 ms (median, M-series Mac; the walk mask's grid takes ~80 ms there), a

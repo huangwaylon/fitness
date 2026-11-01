@@ -1,6 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
 import { expect, test, type Page } from '@playwright/test';
+import { FLOWERS } from '../src/lib/components/island/world.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function open(page: Page, q: string) {
@@ -63,28 +64,29 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
     await expect(weeds).toHaveCount(n - 1);
   });
 
-test('a tap on a flower waters it (the can, a sprinkle); a watered bed can show a hybrid the next day', async ({ page }) => {
+test('a tap on a flower waters it (the can, a sprinkle); a watered flower can show a hybrid the next day', async ({ page }) => {
   const before = await open(page, '&date=2026-11-03T12:00');
-  const f = await at(page, '[data-flower="0-1"]');
-  await page.mouse.click(f.x, f.y - 12);
+  // the front lawn's first clump (world.ts FLOWERS), in view at まえ
+  const fl = FLOWERS[0], sel = `[data-flower="${fl.id}"]`, other = `[data-flower="${FLOWERS[1].id}"]`;
+  const f = await at(page, sel);
+  await page.mouse.click(f.x, f.y - 6);
   await expect(page.locator('[data-fx="water"]')).toBeAttached();
   expect(await cues(page)).toContain('scene-water');
-  expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-garden')))!)).toMatchObject({ date: '2026-11-03', watered: ['0-1'] });
+  expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-garden')))!)).toMatchObject({ date: '2026-11-03', watered: [fl.id] });
   await unchanged(page, before);
   // NH: a watered flower keeps a glitter for the rest of the day (only that one), after a reload too
-  await expect(page.locator('[data-flower="0-1"] [data-watered]')).toHaveCount(1);
+  await expect(page.locator(`${sel} [data-watered]`)).toHaveCount(1);
   await expect(page.locator('[data-watered]')).toHaveCount(1);
   await page.reload();
-  await expect(page.locator('[data-flower="0-1"] [data-watered]')).toHaveCount(1);
-  // 2026-11-04 is a hybrid day for a bed watered the day before (care.ts, seeded): the autumn cosmos grows black
-  // (it shows once that goal's flower has bloomed: by 23:00 every goal is met, e2e/trees.spec.ts)
-  await page.goto('?demo&date=2026-11-04T23:00');
-  await expect(page.locator('[data-flower="0-1"]')).toHaveAttribute('data-stage', 'open', { timeout: 5000 });
+  await expect(page.locator(`${sel} [data-watered]`)).toHaveCount(1);
+  // 2026-11-04 is a hybrid day for a flower watered the day before (care.ts, seeded): the autumn pink cosmos grows black
+  await page.goto('?demo&date=2026-11-04T12:00');
+  await expect(ribbon(page)).toBeVisible();
   await expect(page.locator('[data-watered]')).toHaveCount(0); // a new day: no glitter until watered again
-  await expect(page.locator('[data-flower="0-1"] img')).toHaveAttribute('src', /black-cosmos/);
-  await expect(page.locator('[data-flower="0-0"] img')).toHaveAttribute('src', /pink-cosmos/);
+  await expect(page.locator(`${sel} img`)).toHaveAttribute('src', /black-cosmos/);
+  await expect(page.locator(`${other} img`)).toHaveAttribute('src', /pink-cosmos/);
   await page.reload(); // it stays for the day
-  await expect(page.locator('[data-flower="0-1"] img')).toHaveAttribute('src', /black-cosmos/);
+  await expect(page.locator(`${sel} img`)).toHaveAttribute('src', /black-cosmos/);
 });
 
 test('the rock by the hedge: a tap clonks it (now and then a sparkle or a bug)', async ({ page }) => {

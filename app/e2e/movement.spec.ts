@@ -2,6 +2,7 @@
 // stays a moment and wanders home; the partner's wanders between points of interest with footsteps under it. Neither
 // ends up over a control, mine stays a thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from '@playwright/test';
+import { FLOWERS } from '../src/lib/components/island/world.ts';
 
 const ribbon = (page: Page) => page.getByRole('button', { name: /^きょう [\d,]+\sベル$/ });
 async function open(page: Page, q = '') {
@@ -70,14 +71,15 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
 
 test('a second tap re-targets the walk from where the villager is', async ({ page }) => {
   await open(page);
-  // across the lawn to the partner's bed, then (mid-walk) back to my own: it turns from where it is
-  const a = await centre(page, '[data-flower="1-3"]'), b = await centre(page, '[data-flower="0-0"]');
+  // across the lawn to a clump of flowers on the right, then (mid-walk) to one on the left: it turns from where it is
+  const right = FLOWERS.find((f) => f.x > 220)!, left = FLOWERS[0];
+  const a = await centre(page, `[data-flower="${right.id}"]`), b = await centre(page, `[data-flower="${left.id}"]`);
   await page.mouse.click(a.x, a.y - 4);
   await page.waitForTimeout(150);
   await page.mouse.click(b.x, b.y - 4);
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0, { timeout: 2000 });
   const f = await feet(page);
-  expect(Math.hypot(f.x - b.x, f.y - b.y)).toBeLessThan(110); // the can reaches across a bed
+  expect(Math.hypot(f.x - b.x, f.y - b.y)).toBeLessThan(130); // the can's reach (from the flower's middle)
   expect(await overlaps(page)).toEqual([]);
 });
 
@@ -102,7 +104,7 @@ test('a netted bug holds still until the swing (net in hand when my villager wal
     return new Promise<boolean>((done) => setTimeout(() => done(!el.isConnected || at() === a), 100));
   });
   expect(still).toBe(true);
-  // the net: in my villager's hand when it could walk there (a bug in my bed), else swung where the bug is as before
+  // the net: in my villager's hand when it could walk there (a bug by the flowers), else swung where the bug is as before
   const swing = await page.locator('[data-net]').getAttribute('data-net', { timeout: 2000 });
   const tools = await page.evaluate(() => (window as { __tools?: string[] }).__tools);
   if (swing === 'held') expect(tools).toContain('net');

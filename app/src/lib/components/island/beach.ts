@@ -103,7 +103,7 @@ function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }
   }
   return best;
 }
-/** Open lawn for a weed (world.ts LAWN_SPOTS: the health lawn and the campsite's ground, off the paths, beds and trunks;
+/** Open lawn for a weed (world.ts LAWN_SPOTS: the health lawn and the campsite's ground, off the paths, flowers and trunks;
  *  a dig spot takes its own spots, world.ts DIG_SPOTS). Centre stage (a visitor's spot) stays clear. */
 export const LAWN: readonly (readonly [number, number])[] = LAWN_SPOTS;
 export const DIG_SPOTS: readonly (readonly [number, number])[] = DIGS;

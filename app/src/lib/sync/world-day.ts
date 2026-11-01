@@ -46,7 +46,7 @@ export interface WorldDay {
   puts: Record<string, Put>;
   /** Every shake of the day, in order (a tree's branches and nests derive from them: island/treeShake.ts). */
   shakes: Shake[];
-  /** The flower beds' cells watered today, by whom. */
+  /** The flowers watered today (world.ts FLOWERS ids), by whom. */
   watered: Record<string, Who>;
   /** Wishes on shooting stars, each for the morning (`YYYY-MM-DD`) its fragment comes: who wished how often. */
   wishes: Record<string, Partial<Record<Who, number>>>;
@@ -167,7 +167,7 @@ export interface DayRow {
   puts: [string, string, number, number][];
   /** Their shakes that left something: [tree, drop, t]. */
   shakes: [string, Drop, number][];
-  /** The cells they watered. */
+  /** The flowers they watered. */
   watered: string[];
   /** Their wishes: the morning each brings its fragment → how many. */
   wishes: Record<string, number>;
@@ -182,7 +182,7 @@ export function rowOf(d: WorldDay, who: Who): DayRow {
     // things that stay (presents; a bug out of a bush is gone in seconds)
     puts: Object.values(d.puts).filter((p) => p.who === who && !p.what.startsWith('bug:')).map((p) => [p.id, p.what, p.at[0], p.at[1]] as DayRow['puts'][number]).slice(-ISLAND_MAX.puts),
     shakes: d.shakes.filter((s) => s.who === who && s.drop !== 'none').map((s) => [s.tree, s.drop, s.t] as DayRow['shakes'][number]).slice(-ISLAND_MAX.shakes),
-    watered: Object.entries(d.watered).filter(([, w]) => w === who).map(([c]) => c),
+    watered: Object.entries(d.watered).filter(([, w]) => w === who).map(([id]) => id).slice(-ISLAND_MAX.watered),
     wishes: Object.fromEntries(Object.entries(d.wishes).flatMap(([day, w]) => (w[who] ? [[day, w[who]!]] : [])))
   };
   const walk = d.walks[who];
@@ -196,7 +196,7 @@ export function applyRow(d: WorldDay, row: DayRow, who: Who, t: number, me: Who 
   for (const id of row.taken) if (!taken(d, id)) d.claims[`pick:${id}`] = { who, t, what: 'row' };
   for (const [id, what, x, z] of row.puts) apply(d, { kind: 'put', id, what, at: [x, z], who, t }, me);
   for (const [tree, drop, ts] of row.shakes) apply(d, { kind: 'shake', tree, drop, at: ts, who, t }, me, true);
-  for (const cell of row.watered) d.watered[cell] ??= who;
+  for (const id of row.watered) d.watered[id] ??= who;
   for (const [day, n] of Object.entries(row.wishes)) {
     const w = (d.wishes[day] ??= {});
     w[who] = Math.max(w[who] ?? 0, n);

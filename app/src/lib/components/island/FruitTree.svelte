@@ -4,8 +4,7 @@
   // amount nears its goal (fruitDay.ts greyAt). Once met it drops to the ground in front of the trunk (FRUIT_SPOTS): the
   // tree shakes, the fruit falls and bounces, a little dust, once (fruit-day in localStorage: a reload finds it lying
   // there). A tap on it picks it up (a hop, a sparkle; gone until the next Tokyo day). Picking up is cosmetic: the ベル
-  // come from the goal, on read. Each met goal's flower opens in the person's bed (FlowerBeds), and with all four met
-  // the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
+  // come from the goal, on read. With all four met the canopy glints now and then like NH's money tree, so the day's progress stays after the pick-up.
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
@@ -82,7 +81,7 @@
   let canopyEl: HTMLElement | null = $state(null);
 
   const ring = (f: RingFruit) => person.rings[f];
-  /** The popup's rows: 🍎 steps first, then Apple's rings (the canopy and the beds keep RING_FRUITS). */
+  /** The popup's rows: 🍎 steps first, then Apple's rings (the canopy keeps RING_FRUITS). */
   const POPUP_ORDER: readonly RingFruit[] = ['apple', 'pear', 'peach', 'cherry'];
   /** The day's ledger: goals met (+1 each), がんばり (the fruits at 1.5×, the ベル paid: at most STRETCH.cap, 上限 when
    *  more were reached than that) and this person's total (goals + がんばり; ふたりでぜんぶ is the pair's, apart). */
@@ -292,7 +291,8 @@
   }
 
   /** {@attach}: the popup in screen space (docs/design.md "Trees"): over every tint and weather (never dimmed), in the
-   *  same place whichever the camera: centred, a little toward its tree's side, in the middle of the band between the
+   *  same place whichever the camera: roughly centred, leaning away from its tree's side (the goal trees stand at the
+   *  lawn's outer edges, so their canopies stay tappable beside it), in the middle of the band between the
    *  HUD and the screen's foot, always wholly in view; a tail toward the tree when the tree is above or below it on
    *  screen. Measured again as its rows come in and as the camera comes to rest (the tail follows the tree). */
   let popEl = $state<HTMLElement>();
@@ -323,7 +323,7 @@
     const [ax, ay] = w.clientAt(x, z, H * 0.8);
     const tx = ax - st.left, ty = ay - st.top;
     const side = tx < st.width / 2 ? -1 : 1;
-    const left = Math.min(st.width - 8 - wd, Math.max(8, st.width / 2 + side * 20 - wd / 2));
+    const left = Math.min(st.width - 8 - wd, Math.max(8, st.width / 2 - side * 60 - wd / 2));
     const top = Math.min(ceil - h, Math.max(floor, (floor + ceil) / 2 - h / 2));
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;

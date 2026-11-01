@@ -76,9 +76,8 @@ export const FALLS_POOL = 46;
 const PATH_W = 24;
 export const PATHS: { dirt: readonly (readonly Pt[])[] } = {
   dirt: [
-    // the beach to the campsite's clearing, the lawn's spurs to the homes, the clearing to the stairs
+    // the beach to the campsite's clearing, the clearing to the stairs
     [[193, 96], [199, 170], [190, 250], [198, 340], [191, 450], [197, 540], [192, 640], [199, 740], [193, 830], [195, 900]],
-    [[132, 236], [150, 252], [172, 257], [193, 266]], [[262, 236], [245, 250], [221, 255], [197, 262]],
     [[184, 902], [146, 934], [104, 968], [72, 1004], [60, 1034]]
   ]
 };
@@ -107,22 +106,19 @@ export const CAMPSITE = BUILDINGS[0];
 
 /** The villagers' home spots: A (ウェイ) on the left and B (うめ) on the right, on both phones. */
 export const HOMES = { A: [132, 214] as Pt, B: [262, 214] as Pt } as const;
-/** Goal flower beds (2 × 2, 40u pitch) beside each villager: A at x 40/80, B at 312/352; rows z 196 (back) / 236. */
-export const BED_XS = { A: [40, 80], B: [312, 352] } as const;
-/** Row z of the bed's back and front rows (BED_FRUIT's rows, back first). */
-export const BED_ZS = [236, 196] as const;
-/** Goal trees (hardwood, 120u). */
-export const GOAL_TREES = { A: [62, 332] as Pt, B: [330, 332] as Pt } as const;
+/** Goal trees (hardwood, 120u), each beside its person's villager, on the outer side (their fruit, glints and popup
+ *  are the day's goals). */
+export const GOAL_TREES = { A: [60, 216] as Pt, B: [332, 216] as Pt } as const;
 export const TREE_H = 120;
 /** The tape deck, between the villagers. */
 export const TAPE_DECK: Pt = [195, 306];
 /** The rock. */
 export const ROCK: Pt = [112, 478];
 /** Fossil dig spots: six lawn spots, four on the front lawn in clear view from まえ (in front of the villagers and the
- *  beds, by the beach) and two behind the trees, off the canopies' columns (on a short screen the HUD stands over
+ *  trees, by the beach) and two behind the trees, off the canopies' columns (on a short screen the HUD stands over
  *  those). */
 export const DIG_SPOTS: readonly Pt[] = [[150, 162], [244, 164], [66, 150], [326, 152], [140, 440], [236, 462]];
-/** Lawn spots for weeds (z 120…900, off paths, beds, trunks and water). */
+/** Lawn spots for weeds (z 120…900, off paths, flowers, trunks and water). */
 export const LAWN_SPOTS: readonly Pt[] = [
   [96, 150], [300, 150], [20, 280], [372, 280], [120, 400], [270, 380], [40, 430], [350, 420], [230, 500], [150, 520],
   [300, 520], [140, 680], [262, 664], [128, 852], [232, 828]
@@ -158,7 +154,7 @@ export interface Scenery {
 }
 const s = (id: string, kind: SceneryKind, key: string, x: number, z: number, h: number, flip = false): Scenery => ({ id, kind, key, x, z, h, flip });
 export const SCENERY: readonly Scenery[] = [
-  // まえ, kept clear (the health lawn, its beds and trees, open lawn and the path; the sea wide in front): the island's
+  // まえ, kept clear (the health lawn, its trees, open lawn and the path; the sea wide in front): the island's
   // two palms, at the front beach's outer edges by the water (clear of the lawn, the finds and the sea view),
   // plumeria at the grass edge, an oak and a cedar behind the lawn
   s('palm-1', 'palm', 'trees/palm', 26, 40, 116), s('palm-3', 'palm', 'trees/palm', 366, 46, 110, true),
@@ -166,13 +162,11 @@ export const SCENERY: readonly Scenery[] = [
   s('oak-m1', 'oak', 'oak', 268, 516, 112), s('cedar-m1', 'cedar', 'trees/cedar', 20, 470, 140),
   // おく, uncluttered (open lawn between the pieces), NH's decor (scripts/fetch-assets.ts): streetlamps at the hedge's gap, the month's bushes either side of
   // the path (`month-bush-a|b`: scene.ts hedgePair), the pond on the west with a flat rock and a clump by it, the bamboo
-  // grove on the east by the stream, an oak and cedars at the edges, meadow flowers in three-flower clumps (`meadow-<i>`,
-  // the season's species: scene.ts MEADOW), the campsite's tent in its clearing with its sign,
+  // grove on the east by the stream, an oak and cedars at the edges, the campsite's tent in its clearing with its sign,
   // garden lanterns either side of the clearing and white ones at the stairs' foot, a rock at the cliff's foot
   s('lamp-b1', 'prop', 'deco/streetlamp', 166, 606, 46), s('lamp-b2', 'prop', 'deco/streetlamp', 226, 606, 46),
   s('bush-m1', 'bush', 'month-bush-a', 152, 716, 34), s('bush-m2', 'bush', 'month-bush-b', 240, 724, 34),
   s('rock-m1', 'rock', 'deco/flat-rock', 148, 818, 12),
-  s('meadow-6', 'prop', 'meadow-6', 6, 712, 22), s('meadow-7', 'prop', 'meadow-7', 20, 724, 20), s('meadow-8', 'prop', 'meadow-8', 2, 736, 22, true),
   s('bamboo-1', 'bamboo', 'trees/bamboo', 290, 804, 66), s('bamboo-2', 'bamboo', 'trees/bamboo', 322, 794, 72, true),
   s('bamboo-3', 'bamboo', 'trees/bamboo', 306, 824, 70, true),
   s('cedar-k1', 'cedar', 'trees/cedar', 16, 642, 140),
@@ -182,11 +176,46 @@ export const SCENERY: readonly Scenery[] = [
   s('lantern-1', 'prop', 'deco/garden-lantern', 140, 896, 24), s('lantern-2', 'prop', 'deco/garden-lantern', 254, 900, 24),
   s('lantern-3', 'prop', 'deco/garden-lantern-white', 24, 1022, 24), s('lantern-4', 'prop', 'deco/garden-lantern-white', 98, 1022, 24),
   s('rock-t1', 'rock', 'deco/garden-rock', 316, 1022, 20),
-  s('meadow-9', 'prop', 'meadow-9', 262, 856, 22), s('meadow-10', 'prop', 'meadow-10', 276, 868, 20), s('meadow-11', 'prop', 'meadow-11', 256, 876, 22, true),
   // the forest on the upper tier behind the cliff (short enough that its tops stay under the HUD)
   s('cedar-f1', 'cedar', 'trees/cedar', -6, 1110, 126), s('cedar-f2', 'cedar', 'trees/cedar', 64, 1160, 130), s('cedar-f3', 'cedar', 'trees/cedar', 140, 1104, 122),
   s('cedar-f4', 'cedar', 'trees/cedar', 214, 1170, 130), s('cedar-f5', 'cedar', 'trees/cedar', 284, 1112, 126), s('cedar-f6', 'cedar', 'trees/cedar', 130, 1200, 124)
 ];
+
+// ---- wild flowers ---------------------------------------------------------------------------------------------------
+
+/** NH's flowers growing wild over the lawn: clumps of 2–5 of one kind (scene.ts WILD: the season's), on open grass off
+ *  the paths and the sand, few on the front lawn, a few more round the campsite's ground. [centre x, z, how many]. */
+const CLUMPS: readonly (readonly [number, number, number])[] = [
+  // まえ: four small clumps, clear of the trees' canopies and the villagers
+  [165, 390, 2], [250, 420, 2], [62, 530, 3], [356, 480, 3],
+  // おく: the pond's west bank, the bamboo's lawn, by the path, the clearing's west side, the stream's bank
+  [10, 724, 4], [236, 772, 2], [266, 866, 5], [96, 868, 2], [324, 952, 4]
+];
+/** A clump's flowers round its centre (u), by how many: loose, a little wider than deep (the ground's foreshortening). */
+const CLUMP_AT: Record<number, readonly Pt[]> = {
+  2: [[-8, -2], [9, 3]],
+  3: [[-10, -3], [8, -5], [0, 6]],
+  4: [[-11, -4], [7, -6], [-4, 6], [13, 4]],
+  5: [[-12, -4], [6, -7], [-4, 5], [14, 3], [-19, 6]]
+};
+export interface Flower {
+  /** Its shared id, from where it stands (`fl:<x>:<z>`: the shared day's watered flower). */
+  id: string;
+  x: number;
+  z: number;
+  /** Its clump's index (its kind is the clump's: scene.ts wildFlower). */
+  clump: number;
+}
+/** Every wild flower (a small per-spot jitter of ±2u keeps a clump from looking stamped). */
+export const FLOWERS: readonly Flower[] = CLUMPS.flatMap(([cx, cz, n], clump) =>
+  CLUMP_AT[n].map(([dx, dz], k) => {
+    const h = ((cx * 73 + cz * 151 + k * 197) >>> 0) % 25;
+    const x = Math.round(cx + dx + (h % 5) - 2), z = Math.round(cz + dz + Math.floor(h / 5) - 2);
+    return { id: `fl:${x}:${z}`, x, z, clump };
+  })
+);
+/** A flower by its id. */
+export const flowerById = (id: string): Flower | undefined => FLOWERS.find((f) => f.id === id);
 
 // ---- geometry helpers -----------------------------------------------------------------------------------------------
 
